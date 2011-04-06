@@ -1139,9 +1139,9 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         substring10s13 = addJProp(and1, substring10, 1, is(StringClass.get(13)), 1);
 
         barcode10 = addJProp("barcode10", "Штрих-код(10)", substring10, barcode, 1);
-        skuJennyferBarcode10 = addCGProp(baseGroup, "skuJennyferBarcode10", "Товар (ИД)", object(sku), jennyferSupplierArticleSku,
-                                                                                 jennyferSupplierArticleSku, 1, barcode10, 1);
-        skuJennyferBarcode = addJProp(baseGroup, "skuJennyferBarcode", "Товар (ИД)", skuJennyferBarcode10, 1, substring10s13, 2);
+        skuJennyferBarcode10 = addCGProp(baseGroup, "skuJennyferBarcode10", "Товар (ИД)", addJProp(and1, object(sku), 1, addJProp(is(jennyferSupplier), supplierArticleSku, 1), 1), barcode10,
+                                                                                 barcode10, 1);
+        skuJennyferBarcode = addJProp(baseGroup, "skuJennyferBarcode", "Товар (ИД)", skuJennyferBarcode10, substring10s13, 1);
 
         sidDocument = addDProp(baseGroup, "sidDocument", "Код документа", StringClass.get(50), document);
         documentSIDSupplier = addCGProp(idGroup, "documentSIDSupplier", "Документ поставщика (ИД)", object(document), sidDocument, sidDocument, 1, supplierDocument, 1);
@@ -1397,7 +1397,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 
         addBoxShipmentDetailBoxShipmentSupplierBoxStockJennyferBarcode = addJProp(true, "Добавить строку поставки (Jennyfer)",
                 addAAProp(boxShipmentDetail, boxShipmentBoxShipmentDetail, supplierBoxShipmentDetail, stockShipmentDetail, skuShipmentDetail, quantityShipmentDetail),
-                1, 2, 3, skuJennyferBarcode, 4, 5, addCProp(DoubleClass.instance, 1));
+                1, 2, 3, skuJennyferBarcode, 4, addCProp(DoubleClass.instance, 1));
 
         addSimpleShipmentSimpleShipmentDetailStockBarcode = addJProp(true, "Добавить строку поставки",
                 addAAProp(simpleShipmentDetail, simpleShipmentSimpleShipmentDetail, stockShipmentDetail, skuShipmentDetail, quantityShipmentDetail),
@@ -1759,7 +1759,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
                 addBoxShipmentDetailBoxShipmentSupplierBoxStockBarcode, 1, 2, currentFreightBoxRoute, 3, 4);
 
         addBoxShipmentDetailBoxShipmentSupplierBoxRouteJennyferBarcode = addJProp(true, "Добавить строку поставки (Jennyfer)",
-                addBoxShipmentDetailBoxShipmentSupplierBoxStockJennyferBarcode, 1, 2, currentFreightBoxRoute, 3, 4, 5);
+                addBoxShipmentDetailBoxShipmentSupplierBoxStockJennyferBarcode, 1, 2, currentFreightBoxRoute, 3, 4);
 
         addSimpleShipmentDetailSimpleShipmentRouteBarcode = addJProp(true, "Добавить строку поставки",
                 addSimpleShipmentSimpleShipmentDetailStockBarcode, 1, currentFreightBoxRoute, 2, 3);
@@ -2530,8 +2530,8 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 //                addActionsOnObjectChange(objBarcode, addPropertyObject(barcodeAction3, objShipment, objRoute, objBarcode));
 
             addActionsOnObjectChange(objBarcode, addPropertyObject(
-                                                    addJProp(true, addSAProp(null), skuJennyferBarcode, 1, 2),
-                                                            objSupplier, objBarcode));
+                                                    addJProp(true, addSAProp(null), skuJennyferBarcode, 1),
+                                                            objBarcode));
 
             addActionsOnObjectChange(objBarcode, addPropertyObject(seekBarcodeAction, objBarcode));
 
@@ -2548,7 +2548,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
                                                               true,
                                                               createItemForm.addPropertyObject(addItemBarcode, createItemForm.objBarcode)
                                                       ), 1, 2,
-                                                      barcodeToObject, 2, skuJennyferBarcode, 1, 2
+                                                      barcodeToObject, 2, skuJennyferBarcode, 2
                                              ),
                                              objSupplier, objBarcode));
 
@@ -2559,12 +2559,12 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 
             addActionsOnObjectChange(objBarcode, addPropertyObject(
                     addJProp(true, addAProp(new SeekRouteActionProperty()),
-                             1, skuJennyferBarcode, 2, 3, 4),
-                    objShipment, objSupplier, objBarcode, objRoute));
+                             1, skuJennyferBarcode, 2, 3),
+                    objShipment, objBarcode, objRoute));
 
             if (box) {
                 addActionsOnObjectChange(objBarcode, addPropertyObject(addBoxShipmentDetailBoxShipmentSupplierBoxRouteBarcode, objShipment, objSupplierBox, objRoute, objBarcode));
-                addActionsOnObjectChange(objBarcode, addPropertyObject(addBoxShipmentDetailBoxShipmentSupplierBoxRouteJennyferBarcode, objShipment, objSupplierBox, objRoute, objSupplier, objBarcode));
+                addActionsOnObjectChange(objBarcode, addPropertyObject(addBoxShipmentDetailBoxShipmentSupplierBoxRouteJennyferBarcode, objShipment, objSupplierBox, objRoute, objBarcode));
             } else {
                 addActionsOnObjectChange(objBarcode, addPropertyObject(addSimpleShipmentDetailSimpleShipmentRouteBarcode, objShipment, objRoute, objBarcode));
             }

@@ -218,6 +218,9 @@ public class MapCacheAspect {
 
         U implement = modifier.fullChanges();
 
+        if(implement.getValues().size()>10)
+            return (U) thisJoinPoint.proceed();
+
         Map<U, U> hashCaches;
         synchronized(usedCaches) {
             int hashImplement = implement.getComponents().hash;
