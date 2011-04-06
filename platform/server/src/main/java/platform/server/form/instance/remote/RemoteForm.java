@@ -224,7 +224,7 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
     }
 
     private String getReportSID(Integer groupId) {
-        return getSID() + (groupId == null ? "" : "_Table" + groupId);
+        return getSID() + (groupId == null ? "" : "_Table" + form.getGroupObjectInstance(groupId).getSID());
     }
 
     private Map<String, JasperDesign> getReportDesigns(Integer groupId) {

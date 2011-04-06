@@ -70,6 +70,10 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
         return entity.getID();
     }
 
+    public String getSID() {
+        return entity.getSID();
+    }
+
     private Integer pageSize;
     public int getPageSize() {
         assert !isInTree();
