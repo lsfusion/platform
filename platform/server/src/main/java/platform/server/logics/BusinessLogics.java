@@ -112,7 +112,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     public final static SQLSyntax debugSyntax = new PostgreDataAdapter();
 
     protected DataAdapter adapter;
-    protected SQLSession sql;
+
+    protected ThreadLocal<SQLSession> sqlRef;
 
     public SQLSyntax getAdapter() {
         return adapter;
@@ -1536,7 +1537,16 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         super(exportPort);
 
         this.adapter = adapter;
-        sql = createSQL();
+        sqlRef = new ThreadLocal<SQLSession>(){
+            @Override
+            public SQLSession get() {
+                try {
+                    return createSQL();
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        };
 
         initBase();
 
@@ -1589,7 +1599,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
         // считаем системного пользователя
         try {
-            DataSession session = createSession(sql, new UserController() {
+            DataSession session = createSession(getThreadLocalSql(), new UserController() {
                 public void changeCurrentUser(DataObject user) {
                     throw new RuntimeException("not supported");
                 }
@@ -1673,6 +1683,10 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         thread.start();
 
         reloadNavigatorTree();
+    }
+
+    public SQLSession getThreadLocalSql() {
+        return sqlRef.get();
     }
 
     protected void synchronizeForms() {
@@ -2053,7 +2067,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
     public DataSession createSession() throws SQLException {
-        return createSession(sql, new UserController() {
+        return createSession(getThreadLocalSql(), new UserController() {
             public void changeCurrentUser(DataObject user) {
                 throw new RuntimeException("not supported");
             }
@@ -2201,6 +2215,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
     public void synchronizeDB() throws SQLException, IOException, ClassNotFoundException, IllegalAccessException, InstantiationException {
+
+        SQLSession sql = getThreadLocalSql();
 
         // инициализируем таблицы
         tableFactory.fillDB(sql, baseClass);
@@ -4734,6 +4750,6 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
     public void close() throws SQLException {
-        sql.close();
+        getThreadLocalSql().close();
     }
 }
