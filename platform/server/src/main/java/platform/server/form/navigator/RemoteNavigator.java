@@ -86,6 +86,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteObject i
     }
 
     WeakIdentityHashSet<DataSession> sessions = new WeakIdentityHashSet<DataSession>();
+
     public void changeCurrentUser(DataObject user) {
         this.user = user;
 
@@ -114,7 +115,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteObject i
     public void clientExceptionLog(String info) {
         Calendar cal = Calendar.getInstance();
         SimpleDateFormat sdf = new SimpleDateFormat();
-        System.err.println(info + " в " +sdf.format(cal.getTime()));
+        System.err.println(info + " в " + sdf.format(cal.getTime()));
     }
 
     // просто закэшируем, чтобы быстрее было
@@ -151,6 +152,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteObject i
     }
 
     private long lastUsedTime;
+
     public void updateLastUsedTime() {
         //забиваем на синхронизацию, потому что для времени использования совсем неактуально
         //пусть потоки меняют как хотят
@@ -190,7 +192,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteObject i
     }
 
     private DataSession createSession() throws SQLException, ClassNotFoundException, InstantiationException, IllegalAccessException {
-        DataSession session = BL.createSession(sql, new WeakUserController(this) , new WeakComputerController(this));
+        DataSession session = BL.createSession(sql, new WeakUserController(this), new WeakComputerController(this));
         sessions.add(session);
         return session;
     }
@@ -248,8 +250,9 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteObject i
 
     //используется для RelevantFormNavigator
     private WeakReference<FormInstance<T>> weakCurrentForm = null;
+
     public FormInstance<T> getCurrentForm() {
-        if(weakCurrentForm!=null)
+        if (weakCurrentForm != null)
             return weakCurrentForm.get();
         else
             return null;
@@ -340,6 +343,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteObject i
 
     private Map<FormEntity, RemoteForm> openForms = new HashMap<FormEntity, RemoteForm>();
     private Map<FormEntity, RemoteForm> invalidatedForms = new HashMap<FormEntity, RemoteForm>();
+
     public RemoteFormInterface createForm(FormEntity<T> formEntity, boolean currentSession) {
         RemoteForm remoteForm = invalidatedForms.remove(formEntity);
         if (remoteForm != null) {
@@ -543,7 +547,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteObject i
 
         public synchronized boolean isRestartAllowed() {
             //если не спрашивали, либо если отказался
-            return deniedRestart!=null && !deniedRestart;
+            return deniedRestart != null && !deniedRestart;
         }
 
         public synchronized void addMessage(CallbackMessage message) {
@@ -555,5 +559,15 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteObject i
             messages.clear();
             return result.isEmpty() ? null : result;
         }
+    }
+
+    @Override
+    public boolean showDefaultForms() throws RemoteException {
+        return BL.showDefaultForms(user);
+    }
+
+    @Override
+    public ArrayList<String> getDefaultForms() throws RemoteException {
+        return BL.getDefaultForms(user);
     }
 }

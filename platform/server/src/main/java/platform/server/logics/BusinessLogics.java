@@ -439,6 +439,51 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         }
     }
 
+    public boolean showDefaultForms(DataObject user) {
+        try {
+            DataSession session = createSession();
+
+            if (userDefaultForms.read(session, user) != null) {
+                return true;
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        return false;
+    }
+
+    public ArrayList<String> getDefaultForms(DataObject user) {
+        try {
+            DataSession session = createSession();
+
+            Query<String, String> q = new Query<String, String>(BaseUtils.toList("userId", "formId"));
+            Expr expr = userFormDefaultNumber.getExpr(session.modifier, q.mapKeys.get("userId"), q.mapKeys.get("formId"));
+            q.and(expr.getWhere());
+            q.and(q.mapKeys.get("userId").compare(user, Compare.EQUALS));
+
+            q.properties.put("sid", navigatorElementSID.getExpr(session.modifier, q.mapKeys.get("formId")));
+            q.properties.put("number", userFormDefaultNumber.getExpr(session.modifier, q.mapKeys.get("userId"), q.mapKeys.get("formId")));
+
+
+            Collection<Map<String, Object>> values = q.execute(session.sql).values();
+            ArrayList<String> result = new ArrayList<String>();
+            Map<String, String> sortedValues = new TreeMap<String, String>();
+            for (Map<String, Object> valueMap : values) {
+                String sid = (String) valueMap.get("sid");
+                Integer number = (Integer) valueMap.get("number");
+                sortedValues.put(number.toString() + Character.MIN_VALUE, sid);
+            }
+
+            for (String sid : sortedValues.values()) {
+                result.add(sid);
+            }
+
+            return result;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     protected SecurityPolicy addPolicy(String policyName, String description) throws ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException {
         DataSession session = createSession();
 
@@ -525,6 +570,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     public LP userMainRole;
     public LP nameUserMainRole;
     public LP userRoleSID;
+    public LP userRoleDefaultForms;
+    public LP userDefaultForms;
     public LP sidToRole;
     public LP inUserRole;
     public LP inLoginSID;
@@ -557,6 +604,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     public LP SIDToNavigatorElement;
     public LP permissionUserRoleForm;
     public LP permissionUserForm;
+    public LP userRoleFormDefaultNumber;
+    public LP userFormDefaultNumber;
 
     public LP customID;
     public LP stringID;
@@ -932,8 +981,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
         connection = addConcreteClass("connection", "Подключение", baseClass);
         connectionStatus = addStaticClass("connectionStatus", "Статус подключения",
-                                          new String[]{"connectedConnection", "disconnectedConnection"},
-                                          new String[]{"Подключён", "Отключён"});
+                new String[]{"connectedConnection", "disconnectedConnection"},
+                new String[]{"Подключён", "Отключён"});
 
         country = addConcreteClass("country", "Страна", baseClass.named);
 
@@ -1035,6 +1084,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         userRoleSID = addDProp(baseGroup, "userRoleSID", "Идентификатор", StringClass.get(30), userRole);
         sidToRole = addCGProp(idGroup, "sidToRole", "Роль (ИД)", object(userRole), userRoleSID, userRoleSID, 1);
         inUserRole = addDProp(baseGroup, "inUserRole", "Вкл.", LogicalClass.instance, customUser, userRole);
+        userRoleDefaultForms = addDProp(baseGroup, "userRoleDefaultForms", "Отображение форм по умолчанию", LogicalClass.instance, userRole);
         inLoginSID = addJProp("inLoginSID", true, "Логину назначена роль", inUserRole, loginToUser, 1, sidToRole, 2);
 
         name = addCUProp(baseGroup, "commonName", "Имя", addDProp("name", "Имя", InsensitiveStringClass.get(110), baseClass.named),
@@ -1050,7 +1100,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         connectionConnectTime = addDProp(baseGroup, "connectionConnectTime", "Время подключения", DateTimeClass.instance, connection);
         connectionDisconnectTime = addDProp(baseGroup, "connectionDisconnectTime", "Время отключения", DateTimeClass.instance, connection);
         connectionDisconnectTime.setDerivedForcedChange(currentDateTime,
-                                                        addJProp(equals2, connectionCurrentStatus, 1, addCProp(connectionStatus, "disconnectedConnection")), 1);
+                addJProp(equals2, connectionCurrentStatus, 1, addCProp(connectionStatus, "disconnectedConnection")), 1);
 
         connectionFormCount = addDProp(baseGroup, "connectionFormCount", "Количество открытых форм", IntegerClass.instance, connection, navigatorElement);
 
@@ -1092,10 +1142,13 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
         permissionUserRoleForm = addDProp(baseGroup, "permissionUserRoleForm", "Запретить форму", LogicalClass.instance, userRole, navigatorElement);
         permissionUserForm = addJProp(baseGroup, "permissionUserForm", "Запретить форму", permissionUserRoleForm, userMainRole, 1, 2);
+        userRoleFormDefaultNumber = addDProp(baseGroup, "userRoleFormDefaultNumber", "Номер по умолчанию", IntegerClass.instance, userRole, navigatorElement);
+        userFormDefaultNumber = addJProp(baseGroup, "userFormDefaultNumber", "Номер по умолчанию", userRoleFormDefaultNumber, userMainRole, 1, 2);
+        userDefaultForms = addJProp(baseGroup, "userDefaultForms", "Отображение форм по умолчанию", userRoleDefaultForms, userMainRole, 1);
 //        permissionUserForm = addDProp(baseGroup, "permissionUserForm", "Запретить форму", LogicalClass.instance, user, navigatorElement);
 
         selectUserRoles = addSelectFromListAction(null, "Редактировать роли", inUserRole, userRole, customUser);
-        selectRoleForms = addSelectFromListAction(null, "Редактировать формы", permissionUserRoleForm, navigatorElement, userRole);
+        //selectRoleForms = addSelectFromListAction(null, "Редактировать формы", permissionUserRoleForm, navigatorElement, userRole);
 
         // заполним сессии
         LP sessionUser = addDProp("sessionUser", "Пользователь сессии", user, session);
@@ -1121,7 +1174,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         entryDictionary = addDProp("entryDictionary", "Словарь", dictionary, dictionaryEntry);
         termDictionary = addDProp(baseGroup, "termDictionary", "Термин", StringClass.get(50), dictionaryEntry);
         translationDictionary = addDProp(baseGroup, "translationDictionary", "Перевод", StringClass.get(50), dictionaryEntry);
-        translationDictionaryTerm = addCGProp(null, "translationDictionayTerm", "Перевод", translationDictionary, termDictionary, entryDictionary , 1, termDictionary, 1);
+        translationDictionaryTerm = addCGProp(null, "translationDictionayTerm", "Перевод", translationDictionary, termDictionary, entryDictionary, 1, termDictionary, 1);
     }
 
     private void initBaseTables() {
@@ -1171,8 +1224,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     void initBaseNavigators() {
         adminElement = new NavigatorElement(baseElement, "adminElement", "Администрирование");
         NavigatorElement policyElement = new NavigatorElement(adminElement, "policyElement", "Политика безопасности");
-            addFormEntity(new UserPolicyFormEntity(policyElement, "userPolicyForm"));
-            addFormEntity(new RolePolicyFormEntity(policyElement, "rolePolicyForm"));
+        addFormEntity(new UserPolicyFormEntity(policyElement, "userPolicyForm"));
+        addFormEntity(new RolePolicyFormEntity(policyElement, "rolePolicyForm"));
         addFormEntity(new ConnectionsFormEntity(adminElement, "connectionsForm"));
         addFormEntity(new AdminFormEntity(adminElement, "adminForm"));
         addFormEntity(new DaysOffFormEntity(adminElement, "daysOffForm"));
@@ -1215,9 +1268,9 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
             RegularFilterGroupEntity filterGroup = new RegularFilterGroupEntity(genID());
             filterGroup.addFilter(new RegularFilterEntity(genID(),
-                                                          new CompareFilterEntity(addPropertyObject(connectionCurrentStatus, objConnection), Compare.EQUALS, connectionStatus.getDataObject("connectedConnection")),
-                                                          "Активные подключения",
-                                                          KeyStroke.getKeyStroke(KeyEvent.VK_F8, 0)));
+                    new CompareFilterEntity(addPropertyObject(connectionCurrentStatus, objConnection), Compare.EQUALS, connectionStatus.getDataObject("connectedConnection")),
+                    "Активные подключения",
+                    KeyStroke.getKeyStroke(KeyEvent.VK_F8, 0)));
             addRegularFilterGroup(filterGroup);
         }
     }
@@ -1228,6 +1281,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
             ObjectEntity objUser = addSingleGroupObject(customUser, selection, baseGroup, true);
             ObjectEntity objRole = addSingleGroupObject(userRole, baseGroup, true);
+            getPropertyDraw(userRoleDefaultForms).shouldBeLast = true;
 
             addObjectActions(this, objUser);
 
@@ -1256,8 +1310,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
             addPropertyDraw(objUserRole, objPolicy, baseGroup, true);
             addPropertyDraw(objUserRole, objForm, permissionUserRoleForm);
+            addPropertyDraw(objUserRole, objForm, userRoleFormDefaultNumber);
 
-            addPropertyDraw(selectRoleForms, objForm.groupTo, objUserRole).forceViewType = ClassViewType.PANEL;
 
             setReadOnly(navigatorElementSID, true);
             setReadOnly(navigatorElementCaption, true);
@@ -1266,8 +1320,6 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             PropertyDrawEntity sidDraw = getPropertyDraw(userRoleSID, objUserRole.groupTo);
             balanceDraw.addColumnGroupObject(objUserRole.groupTo);
             balanceDraw.setPropertyCaption(sidDraw.propertyObject);
-
-            addFixedFilter(new CompareFilterEntity(addPropertyObject(permissionUserRoleForm, objUserRole, objForm), Compare.EQUALS, true));
         }
 
         @Override
@@ -1324,16 +1376,16 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             RegularFilterGroupEntity filterGroup = new RegularFilterGroupEntity(genID());
             filterGroup.addFilter(
                     new RegularFilterEntity(genID(),
-                                            new NotFilterEntity(
-                                                    new CompareFilterEntity(selectionPropertyObject, Compare.EQUALS, true)),
-                                            "Невыбранные объекты",
-                                            KeyStroke.getKeyStroke(KeyEvent.VK_F9, 0)
+                            new NotFilterEntity(
+                                    new CompareFilterEntity(selectionPropertyObject, Compare.EQUALS, true)),
+                            "Невыбранные объекты",
+                            KeyStroke.getKeyStroke(KeyEvent.VK_F9, 0)
                     ), true);
             filterGroup.addFilter(
                     new RegularFilterEntity(genID(),
-                                            new CompareFilterEntity(selectionPropertyObject, Compare.EQUALS, true),
-                                            "Выбранные объекты",
-                                            KeyStroke.getKeyStroke(KeyEvent.VK_F10, 0)
+                            new CompareFilterEntity(selectionPropertyObject, Compare.EQUALS, true),
+                            "Выбранные объекты",
+                            KeyStroke.getKeyStroke(KeyEvent.VK_F10, 0)
                     ));
             addRegularFilterGroup(filterGroup);
         }
@@ -1537,7 +1589,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         super(exportPort);
 
         this.adapter = adapter;
-        sqlRef = new ThreadLocal<SQLSession>(){
+        sqlRef = new ThreadLocal<SQLSession>() {
             @Override
             public SQLSession get() {
                 try {
@@ -1697,7 +1749,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
         List<List<Object>> data = new ArrayList<List<Object>>();
         for (NavigatorElement<T> navElement : baseElement.getChildren(true)) {
-            data.add(Arrays.asList((Object)navElement.getSID(), navElement.caption));
+            data.add(Arrays.asList((Object) navElement.getSID(), navElement.caption));
         }
 
         List<ImportProperty<?>> props = new ArrayList<ImportProperty<?>>();
@@ -1791,7 +1843,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
         for (int i = 0; i < 3; i++) {
             Date newYear = new Date(currentYear + i + "/01/01");
-            if(newYear.getDay() != 5 && newYear.getDay() != 6)
+            if (newYear.getDay() != 5 && newYear.getDay() != 6)
                 addDayOff(session, countryId, newYear);
         }
 
@@ -2227,7 +2279,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         if (struct != null) {
             inputDB = new DataInputStream(new ByteArrayInputStream(struct));
 
-            if(struct.length==0) { //чисто для бага JTDS
+            if (struct.length == 0) { //чисто для бага JTDS
                 sql.rollbackTransaction();
                 return;
             }
@@ -2405,7 +2457,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
         sql.commitTransaction();
 
-        if(struct==null)
+        if (struct == null)
             fillIDs();
     }
 
@@ -2491,8 +2543,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
     protected LP[] addDProp(AbstractGroup group, String paramID, String[] sIDs, String[] captions, ValueClass[] values, ValueClass... params) {
         LP[] result = new LP[sIDs.length];
-        for(int i=0;i<sIDs.length;i++)
-            result[i] = addDProp(group, sIDs[i]+paramID, captions[i], values[i], params);
+        for (int i = 0; i < sIDs.length; i++)
+            result[i] = addDProp(group, sIDs[i] + paramID, captions[i], values[i], params);
         return result;
     }
 
@@ -2505,20 +2557,20 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
     protected LP addGDProp(AbstractGroup group, String paramID, String sID, String caption, ValueClass[] values, CustomClass[]... params) {
         CustomClass[][] listParams = new CustomClass[params[0].length][]; //
-        for(int i=0;i<listParams.length;i++) {
+        for (int i = 0; i < listParams.length; i++) {
             listParams[i] = new CustomClass[params.length];
-            for(int j=0;j<params.length;j++)
+            for (int j = 0; j < params.length; j++)
                 listParams[i][j] = params[j][i];
         }
         params = listParams;
 
         LP[] genProps = new LP[params.length];
-        for(int i=0;i<params.length;i++) {
+        for (int i = 0; i < params.length; i++) {
             String genID = "";
             String genCaption = "";
-            for(int j=0;j<params[i].length;j++) {
+            for (int j = 0; j < params[i].length; j++) {
                 genID += params[i][j].getSID();
-                genCaption = (genCaption.length()==0?"":genCaption) + params[i][j].caption;
+                genCaption = (genCaption.length() == 0 ? "" : genCaption) + params[i][j].caption;
             }
             genProps[i] = addDProp(sID + genID, caption + " (" + genCaption + ")", values[i], params[i]);
         }
@@ -2528,7 +2580,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
     protected LP[] addGDProp(AbstractGroup group, String paramID, String[] sIDs, String[] captions, ValueClass[][] values, CustomClass[]... params) {
         LP[] result = new LP[values.length];
-        for(int i=0;i<values.length;i++)
+        for (int i = 0; i < values.length; i++)
             result[i] = addGDProp(group, paramID, sIDs[i], captions[i], values[i], params);
         return result;
     }
@@ -3089,8 +3141,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
     protected LP[] addJProp(AbstractGroup group, boolean implementChange, String paramID, LP[] props, String caption, Object... params) {
         LP[] result = new LP[props.length];
-        for(int i=0;i<props.length;i++)
-            result[i] = addJProp(group, implementChange, props[i].property.sID+paramID, props[i].property.caption + (caption.length()==0?"":(" " + caption)), props[i], params);
+        for (int i = 0; i < props.length; i++)
+            result[i] = addJProp(group, implementChange, props[i].property.sID + paramID, props[i].property.caption + (caption.length() == 0 ? "" : (" " + caption)), props[i], params);
         return result;
     }
 
@@ -3119,8 +3171,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
      * mainGroupNums и getToMainNums - 1-based
      */
     private <G extends PropertyInterface, M extends PropertyInterface> LP addGCAProp(AbstractGroup group, String sID, String caption, GroupObjectEntity groupObject,
-                                                                                      LP<M> mainProperty, int[] mainGroupNums,
-                                                                                      LP<G> getterProperty, int[][] getToMainNums) {
+                                                                                     LP<M> mainProperty, int[] mainGroupNums,
+                                                                                     LP<G> getterProperty, int[][] getToMainNums) {
 
         M[] mainGrouping = (M[]) new PropertyInterface[mainGroupNums.length];
         for (int i = 0; i < mainGrouping.length; ++i) {
@@ -3141,8 +3193,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
         return addProperty(group, new LP<ClassPropertyInterface>(
                 new GroupChangeActionProperty(sID, caption, groupObject,
-                                              mainProperty.property, mainGrouping,
-                                              getterProperty.property, mapGetToMain, getterExtraIFaces.toArray(new PropertyInterface[getterExtraIFaces.size()]))));
+                        mainProperty.property, mainGrouping,
+                        getterProperty.property, mapGetToMain, getterExtraIFaces.toArray(new PropertyInterface[getterExtraIFaces.size()]))));
     }
 
     private <T extends PropertyInterface> LP addGProp(AbstractGroup group, String sID, boolean persistent, String caption, LP<T> groupProp, List<PropertyInterfaceImplement<T>> listImplements) {
@@ -3327,7 +3379,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
     private <T extends PropertyInterface> LP addSGProp(AbstractGroup group, String sID, boolean persistent, boolean notZero, String caption, LP<T> groupProp, List<PropertyInterfaceImplement<T>> listImplements) {
         boolean wrapNotZero = persistent && (notZero || !Settings.instance.isDisableSumGroupNotZero());
-        SumGroupProperty<T> property = new SumGroupProperty<T>(wrapNotZero?genSID():sID, caption, listImplements, groupProp.property);
+        SumGroupProperty<T> property = new SumGroupProperty<T>(wrapNotZero ? genSID() : sID, caption, listImplements, groupProp.property);
 
         LP result;
         if (wrapNotZero)
@@ -3438,7 +3490,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
     protected <T extends PropertyInterface> LP addDGProp(AbstractGroup group, String sID, boolean persistent, String caption, int orders, boolean ascending, LP<T> groupProp, Object... params) {
-        List<PropertyInterfaceImplement<T>> listImplements = readImplements(groupProp.listInterfaces, params);  int intNum = listImplements.size();
+        List<PropertyInterfaceImplement<T>> listImplements = readImplements(groupProp.listInterfaces, params);
+        int intNum = listImplements.size();
         LP result = addSGProp(group, sID, persistent, false, caption, groupProp, listImplements.subList(0, intNum - orders - 1));
         result.setDG(ascending, listImplements.subList(intNum - orders - 1, intNum));
         return result;
@@ -3612,7 +3665,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
     protected LP addXorUProp(AbstractGroup group, String sID, boolean persistent, String caption, LP... props) {
-        return addUProp(group, sID, persistent, caption, Union.XOR, getUParams(props,0));
+        return addUProp(group, sID, persistent, caption, Union.XOR, getUParams(props, 0));
 //        int intNum = prop1.listInterfaces.size();
 //        Object[] params = new Object[2 * (1 + intNum)];
 //        params[0] = prop1;

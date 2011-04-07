@@ -5,6 +5,7 @@ import bibliothek.gui.dock.common.CGrid;
 import bibliothek.gui.dock.common.DefaultSingleCDockable;
 import bibliothek.gui.dock.common.SingleCDockable;
 import bibliothek.gui.dock.common.menu.*;
+import bibliothek.gui.dock.common.mode.ExtendedMode;
 import bibliothek.gui.dock.common.theme.ThemeMap;
 import bibliothek.gui.dock.facile.menu.RootMenuPiece;
 import bibliothek.gui.dock.facile.menu.SubmenuPiece;
@@ -26,6 +27,7 @@ import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
 import java.rmi.RemoteException;
+import java.util.ArrayList;
 
 public class DockableMainFrame extends MainFrame {
     private CControl control;
@@ -57,16 +59,39 @@ public class DockableMainFrame extends MainFrame {
                         throw new RuntimeException(e);
                     }
                 }
+
             }
         };
 
         initDockStations(mainNavigator);
+        try {
+            if (remoteNavigator.showDefaultForms()) {
+                ArrayList<String> ids = remoteNavigator.getDefaultForms();
+                view.getForms().getFormsList().clear();
+                ClientFormDockable page = null;
+                for (String id : ids) {
+                    page = view.openClient(id.trim(), mainNavigator, false);
+                }
+                if (page != null) {
+                    page.setExtendedMode(ExtendedMode.MAXIMIZED);
+                }
+            } else {
+                ArrayList<String> savedForms = new ArrayList<String>(view.getForms().getFormsList());
+                view.getForms().getFormsList().clear();
+                for (String id : savedForms) {
+                    view.openClient(id, mainNavigator, false);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
         addWindowListener(new WindowAdapter() {
             public void windowClosing(WindowEvent event) {
                 super.windowClosing(event);
                 try {
                     DataOutputStream out = new DataOutputStream(new FileOutputStream(new File(baseDir, "layout.data")));
+                    view.getForms().write(out);
                     control.getResources().writeStream(out);
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -79,7 +104,7 @@ public class DockableMainFrame extends MainFrame {
     public void runReport(RemoteFormInterface remoteForm, boolean isModal) throws ClassNotFoundException, IOException {
         if (isModal) {
             try {
-                ReportDialog dlg = new ReportDialog(Main.frame,  remoteForm);
+                ReportDialog dlg = new ReportDialog(Main.frame, remoteForm);
                 dlg.setVisible(true);
             } catch (JRException e) {
                 throw new RuntimeException(e);
@@ -118,6 +143,7 @@ public class DockableMainFrame extends MainFrame {
         DataInputStream in = null;
         try {
             in = new DataInputStream(new FileInputStream(new File(baseDir, "layout.data")));
+            view.getForms().read(in);
             control.getResources().readStream(in);
         } catch (Exception e) {
             e.printStackTrace();
@@ -138,11 +164,10 @@ public class DockableMainFrame extends MainFrame {
         grid.add(0, 3, 1, 1, createDockable("Классовые формы", mainNavigator.relevantClassNavigator));
         grid.add(0, 4, 1, 1, createDockable("Лог", Log.getPanel()));
         grid.add(1, 0, 5, 5, view.getGridArea());
-        grid.add(0, 5, 6, 0.15, createStatusDockable(status));
+        grid.add(0, 5, 6, 0.1, createStatusDockable(status));
         control.getContentArea().deploy(grid);
-
+        //control.getFactory()
         setupMenu();
-//        setVisible(true);
 
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     }
@@ -159,7 +184,7 @@ public class DockableMainFrame extends MainFrame {
     }
 
     private JMenu createWindowMenu() {
-        SubmenuPiece dockableMenu = new SubmenuPiece("Окно", false, new SingleCDockableListMenuPiece(control));
+        RootMenuPiece dockableMenu = new RootMenuPiece("Окно", false, new SingleCDockableListMenuPiece(control));
         return dockableMenu.getMenu();
     }
 

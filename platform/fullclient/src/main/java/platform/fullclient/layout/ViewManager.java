@@ -1,11 +1,10 @@
 package platform.fullclient.layout;
 
-import bibliothek.gui.dock.common.CControl;
-import bibliothek.gui.dock.common.CGridArea;
-import bibliothek.gui.dock.common.MultipleCDockableFactory;
+import bibliothek.gui.dock.common.*;
 import bibliothek.gui.dock.common.action.predefined.CCloseAction;
 import bibliothek.gui.dock.common.event.CDockableAdapter;
 import bibliothek.gui.dock.common.intern.CDockable;
+import bibliothek.gui.dock.common.mode.ExtendedMode;
 import net.sf.jasperreports.engine.JRException;
 import platform.client.navigator.ClientNavigator;
 import platform.interop.form.RemoteFormInterface;
@@ -25,13 +24,21 @@ public class ViewManager {
 
     private CGridArea gridArea;
 
+    private FormRepository forms;
+
     public ViewManager(CControl control, ClientNavigator mainNavigator) {
         this.control = control;
 
         pageFactory = new FormFactory(mainNavigator);
         control.addMultipleDockableFactory("page", pageFactory);
         gridArea = control.createWorkingArea("Form area");
-        gridArea.setVisible(true);
+
+        forms = new FormRepository();
+        //gridArea.setVisible(true);
+    }
+
+    public FormRepository getForms() {
+        return forms;
     }
 
     public CGridArea getGridArea() {
@@ -47,12 +54,16 @@ public class ViewManager {
         page.comp.requestFocusInWindow();
     }
 
-    public void openClient(String formSID, ClientNavigator navigator, boolean currentSession) throws IOException, ClassNotFoundException, JRException {
-        openForm(new ClientFormDockable(formSID, navigator, currentSession, pageFactory));
+    public ClientFormDockable openClient(String formSID, ClientNavigator navigator, boolean currentSession) throws IOException, ClassNotFoundException, JRException {
+        ClientFormDockable page = new ClientFormDockable(formSID, navigator, currentSession, pageFactory);
+        openForm(page);
+        return page;
     }
 
-    public void openClient(ClientNavigator navigator, RemoteFormInterface remoteForm) throws IOException, ClassNotFoundException, JRException {
-        openForm(new ClientFormDockable(navigator, remoteForm, pageFactory));
+    public ClientFormDockable openClient(ClientNavigator navigator, RemoteFormInterface remoteForm) throws IOException, ClassNotFoundException, JRException {
+        ClientFormDockable page = new ClientFormDockable(navigator, remoteForm, pageFactory);
+        openForm(page);
+        return page;
     }
 
     public void openReport(String formSID, ClientNavigator navigator, boolean currentSession) throws IOException, ClassNotFoundException {
@@ -139,12 +150,17 @@ public class ViewManager {
 
         @Override
         public void visibilityChanged(CDockable dockable) {
-            if (dockable.isVisible()) {
-                pages.add(page);
-            } else {
-                pages.remove(page);
-                control.remove(page);
-                page.closed();
+            if (dockable instanceof FormDockable) {
+                String sid = ((FormDockable)dockable).getFormSID();
+                if (dockable.isVisible()) {
+                    pages.add(page);
+                    forms.add(sid);
+                } else {
+                    pages.remove(page);
+                    control.remove(page);
+                    page.closed();
+                    forms.remove(sid);
+                }
             }
         }
     }

@@ -6,6 +6,7 @@ import platform.interop.remote.ClientCallBackInterface;
 import platform.interop.remote.MethodInvocation;
 
 import java.rmi.RemoteException;
+import java.util.ArrayList;
 import java.util.List;
 
 public class RemoteNavigatorProxy<T extends RemoteNavigatorInterface>
@@ -117,5 +118,15 @@ public class RemoteNavigatorProxy<T extends RemoteNavigatorInterface>
 
     public ClientCallBackInterface getClientCallBack() throws RemoteException {
         return target.getClientCallBack();
+    }
+
+    @Override
+    public boolean showDefaultForms() throws RemoteException {
+        return target.showDefaultForms();
+    }
+
+    @Override
+    public ArrayList<String> getDefaultForms() throws RemoteException {
+        return target.getDefaultForms();
     }
 }

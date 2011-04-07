@@ -5,6 +5,7 @@ import platform.interop.remote.ClientCallBackInterface;
 import platform.interop.remote.PendingRemote;
 
 import java.rmi.RemoteException;
+import java.util.ArrayList;
 
 public interface RemoteNavigatorInterface extends PendingRemote {
 
@@ -32,4 +33,8 @@ public interface RemoteNavigatorInterface extends PendingRemote {
     void close() throws RemoteException;
 
     ClientCallBackInterface getClientCallBack() throws RemoteException;
+
+    boolean showDefaultForms() throws RemoteException;
+
+    ArrayList<String> getDefaultForms() throws RemoteException;
 }
