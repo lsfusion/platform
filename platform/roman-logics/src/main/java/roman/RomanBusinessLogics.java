@@ -658,6 +658,8 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 
         Settings.instance.setDisableSumGroupNotZero(true);
 
+        idGroup.add(objectValue);
+
         skuAttributeGroup = new AbstractGroup("Атрибуты SKU");
         baseGroup.add(skuAttributeGroup);
 
@@ -791,8 +793,8 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     @Override
     protected void initProperties() {
 
-        nameOrigin = addDProp(baseGroup, "nameOrigin", "Наименование (ориг.)", StringClass.get(50), secondNameClass);
-        nameOriginCountry = addDProp(baseGroup, "nameOriginCountry", "Наименование (ориг.)", StringClass.get(50), country); 
+        nameOrigin = addDProp(baseGroup, "nameOrigin", "Наименование (ориг.)", InsensitiveStringClass.get(50), secondNameClass);
+        nameOriginCountry = addDProp(baseGroup, "nameOriginCountry", "Наименование (ориг.)", InsensitiveStringClass.get(50), country);
 
         dictionaryComposition = addDProp(idGroup, "dictionaryComposition", "Словарь для составов (ИД)", dictionary);
         nameDictionaryComposition = addJProp(baseGroup, "nameDictionaryComposition", "Словарь для составов", name, dictionaryComposition);
@@ -981,7 +983,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         sidArticle = addDProp(baseGroup, "sidArticle", "Артикул", StringClass.get(50), article);
         sidArticleSku = addJProp(baseGroup, "sidArticleSku", "Артикул", sidArticle, articleSku, 1);
 
-        originalNameArticle = addDProp(supplierAttributeGroup, "originalNameArticle", "Наименование (ориг.)", StringClass.get(50), article);
+        originalNameArticle = addDProp(supplierAttributeGroup, "originalNameArticle", "Наименование (ориг.)", InsensitiveStringClass.get(50), article);
         originalNameArticleSku = addJProp(supplierAttributeGroup, "originalNameArticleSku", "Наименование (ориг.)", originalNameArticle, articleSku, 1);
 
         //Category
@@ -1138,9 +1140,9 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         substring10s13 = addJProp(and1, substring10, 1, is(StringClass.get(13)), 1);
 
         barcode10 = addJProp("barcode10", "Штрих-код(10)", substring10, barcode, 1);
-        skuJennyferBarcode10 = addMGProp(baseGroup, "skuJennyferBarcode10", "Товар (ИД)", addJProp(and1, object(sku), 1, addJProp(is(jennyferSupplier), supplierArticleSku, 1), 1),
+        skuJennyferBarcode10 = addMGProp("skuJennyferBarcode10", "Товар (ИД)", addJProp(and1, object(sku), 1, addJProp(is(jennyferSupplier), supplierArticleSku, 1), 1),
                                                                                  barcode10, 1);
-        skuJennyferBarcode = addJProp(baseGroup, "skuJennyferBarcode", "Товар (ИД)", skuJennyferBarcode10, substring10s13, 1);
+        skuJennyferBarcode = addJProp("skuJennyferBarcode", "Товар (ИД)", skuJennyferBarcode10, substring10s13, 1);
 
         skuBarcodeObject = addSUProp(Union.OVERRIDE, barcodeToObject, skuJennyferBarcode);
 
@@ -1892,7 +1894,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         private BarcodeFormEntity(NavigatorElement parent, String sID, String caption) {
             super(parent, sID, caption);
 
-            objBarcode = addSingleGroupObject(StringClass.get(13), "Штрих-код", baseGroup, true);
+            objBarcode = addSingleGroupObject(StringClass.get(13), "Штрих-код", objectValue, barcodeObjectName);
             objBarcode.groupTo.setSingleClassView(ClassViewType.PANEL);
 
             objBarcode.resetOnApply = true;

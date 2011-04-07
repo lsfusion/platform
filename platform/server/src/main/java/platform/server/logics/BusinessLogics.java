@@ -1118,7 +1118,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         barcode = addDProp(baseGroup, "barcode", "Штрих-код", StringClass.get(13), barcodeObject);
         barcode.setFixedCharWidth(13);
         barcodeToObject = addCGProp(null, "barcodeToObject", "Объект", object(barcodeObject), barcode, barcode, 1);
-        barcodeObjectName = addJProp(baseGroup, "Объект", name, barcodeToObject, 1);
+        barcodeObjectName = addJProp(baseGroup, "barcodeObjectName", "Объект", name, barcodeToObject, 1);
 
         barcodePrefix = addDProp(baseGroup, "barcodePrefix", "Префикс штрих-кодов", StringClass.get(13));
 
@@ -1130,7 +1130,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
         currentUserName = addJProp("Имя тек. польз.", name, currentUser);
 
-        reverseBarcode = addSDProp("Реверс", LogicalClass.instance);
+        reverseBarcode = addSDProp("reverseBarcode", "Реверс", LogicalClass.instance);
 
         classSID = addDProp("classSID", "Стат. код", classSIDValueClass, baseClass.sidClass);
         objectClass = addProperty(null, new LP<ClassPropertyInterface>(new ObjectClassProperty(genSID(), baseClass)));
@@ -3395,6 +3395,10 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
     protected LP addMGProp(LP groupProp, Object... params) {
         return addMGProp(privateGroup, genSID(), "sys", groupProp, params);
+    }
+
+    protected LP addMGProp(String sID, String caption, LP groupProp, Object... params) {
+        return addMGProp(null, sID, caption, groupProp, params);
     }
 
     protected LP addMGProp(AbstractGroup group, String sID, String caption, LP groupProp, Object... params) {

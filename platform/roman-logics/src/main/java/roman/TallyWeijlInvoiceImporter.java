@@ -37,6 +37,11 @@ public class TallyWeijlInvoiceImporter extends SingleSheetImporter {
         value = value.trim();
 
         switch (column) {
+            case K:
+                if (value.startsWith("IWBTA"))
+                    return value.substring(5);
+                else
+                    return value;
             case L:
                 switch (part) {
                     case 0: return value.substring(0, Math.min(10, value.length())); // customs code
