@@ -113,9 +113,9 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteObject i
     }
 
     public void clientExceptionLog(String info) {
-        Calendar cal = Calendar.getInstance();
-        SimpleDateFormat sdf = new SimpleDateFormat();
-        System.err.println(info + " в " + sdf.format(cal.getTime()));
+        String errorMessage = info + " в " + new SimpleDateFormat().format(Calendar.getInstance().getTime());
+        System.err.println(errorMessage);
+        logger.error(errorMessage);
     }
 
     // просто закэшируем, чтобы быстрее было
