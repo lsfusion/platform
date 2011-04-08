@@ -822,7 +822,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 
         sidDestination = addDProp(baseGroup, "sidDestination", "Код", StringClass.get(50), destination);
 
-        destinationSID = addCGProp(idGroup, "destinationSID", "Магазин (ИД)", object(destination), sidDestination, sidDestination, 1);
+        destinationSID = addAGProp(idGroup, "destinationSID", "Магазин (ИД)", sidDestination);
 
         sidBrandSupplier = addDProp(baseGroup, "sidBrandSupplier", "Код", StringClass.get(50), brandSupplier);
 
@@ -862,11 +862,11 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         sidCustomCategoryOrigin = addDProp(baseGroup, "sidCustomCategoryOrigin", "Код ЕС(10)", StringClass.get(10), customCategoryOrigin);
         sidCustomCategoryOrigin.setFixedCharWidth(10);
 
-        sidToCustomCategory4 = addCGProp(null, "sidToCustomCategory4", "Код(4)", object(customCategory4), sidCustomCategory4, sidCustomCategory4, 1);
-        sidToCustomCategory6 = addCGProp(null, "sidToCustomCategory6", "Код(6)", object(customCategory6), sidCustomCategory6, sidCustomCategory6, 1);
-        sidToCustomCategory9 = addCGProp(null, "sidToCustomCategory9", "Код(9)", object(customCategory9), sidCustomCategory9, sidCustomCategory9, 1);
-        sidToCustomCategory10 = addCGProp(null, "sidToCustomCategory10", "Код(10)", object(customCategory10), sidCustomCategory10, sidCustomCategory10, 1);
-        sidToCustomCategoryOrigin = addCGProp(null, "sidToCustomCategoryOrigin", "Код ЕС (10)", object(customCategoryOrigin), sidCustomCategoryOrigin, sidCustomCategoryOrigin, 1);
+        sidToCustomCategory4 = addAGProp("sidToCustomCategory4", "Код(4)", sidCustomCategory4);
+        sidToCustomCategory6 = addAGProp("sidToCustomCategory6", "Код(6)", customCategory6);
+        sidToCustomCategory9 = addAGProp("sidToCustomCategory9", "Код(9)", sidCustomCategory9);
+        sidToCustomCategory10 = addAGProp("sidToCustomCategory10", "Код(10)", sidCustomCategory10);
+        sidToCustomCategoryOrigin = addAGProp("sidToCustomCategoryOrigin", "Код ЕС (10)", sidCustomCategoryOrigin);
 
         importBelTnved = addAProp(new ClassifierTNVEDImportActionProperty(genSID(), "Импортировать (РБ)", this, "belarusian"));
         importEuTnved = addAProp(new ClassifierTNVEDImportActionProperty(genSID(), "Импортировать (ЕС)", this, "origin"));
@@ -925,7 +925,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         supplierColorSupplier = addDProp(idGroup, "supplierColorSupplier", "Поставщик (ИД)", supplier, colorSupplier);
         nameSupplierColorSupplier = addJProp(baseGroup, "nameSupplierColorSupplier", "Поставщик", name, supplierColorSupplier, 1);
 
-        colorSIDSupplier = addCGProp(idGroup, "colorSIDSupplier", "Цвет поставщика (ИД)", object(colorSupplier), sidColorSupplier, sidColorSupplier, 1, supplierColorSupplier, 1);
+        colorSIDSupplier = addAGProp(idGroup, "colorSIDSupplier", "Цвет поставщика (ИД)", sidColorSupplier, supplierColorSupplier);
 
         sidSizeSupplier = addDProp(baseGroup, "sidSizeSupplier", "Код", StringClass.get(50), sizeSupplier);
 
@@ -935,7 +935,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         supplierSizeSupplier = addDProp(idGroup, "supplierSizeSupplier", "Поставщик (ИД)", supplier, sizeSupplier);
         nameSupplierSizeSupplier = addJProp(baseGroup, "nameSupplierSizeSupplier", "Поставщик", name, supplierSizeSupplier, 1);
 
-        sizeSIDSupplier = addCGProp(idGroup, "sizeSIDSupplier", "Размер поставщика (ИД)", object(sizeSupplier), sidSizeSupplier, sidSizeSupplier, 1, supplierSizeSupplier, 1);
+        sizeSIDSupplier = addAGProp(idGroup, "sizeSIDSupplier", "Размер поставщика (ИД)", sidSizeSupplier, supplierSizeSupplier);
 
         // Country
         supplierCountrySupplier = addDProp(idGroup, "supplierCountrySupplier", "Поставщик (ИД)", supplier, countrySupplier);
@@ -944,13 +944,13 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         countryCountrySupplier = addDProp(idGroup, "countryCountrySupplier", "Страна (ИД)", country, countrySupplier);
         nameCountryCountrySupplier = addJProp(baseGroup, "nameCountryCountrySupplier", "Страна", name, countryCountrySupplier, 1);
 
-        countryNameSupplier = addCGProp(idGroup, "countryNameSupplier", "Страна поставщика", object(countrySupplier), name, name, 1, supplierCountrySupplier, 1);
+        countryNameSupplier = addAGProp(idGroup, "countryNameSupplier", "Страна поставщика", name, supplierCountrySupplier);
 
         // Brand
         supplierBrandSupplier = addDProp(idGroup, "supplierBrandSupplier", "Поставщик (ИД)", supplier, brandSupplier);
         nameSupplierBrandSupplier = addJProp(baseGroup, "nameSupplierBrandSupplier", "Поставщик", name, supplierBrandSupplier, 1);
 
-        brandSIDSupplier = addCGProp(idGroup, "brandSIDSupplier", "Бренд поставщика (ИД)", object(brandSupplier), sidBrandSupplier, sidBrandSupplier, 1, supplierBrandSupplier, 1);
+        brandSIDSupplier = addAGProp(idGroup, "brandSIDSupplier", "Бренд поставщика (ИД)", sidBrandSupplier, supplierBrandSupplier);
 
         brandSupplierSupplier = addDProp(idGroup, "brandSupplierSupplier", "Бренд (ИД)", brandSupplier, supplier);
         nameBrandSupplierSupplier = addJProp(baseGroup, "nameBrandSupplierSupplier", "Бренд по умолчанию", name, brandSupplierSupplier, 1);
@@ -1124,7 +1124,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         seasonArticle = addDProp(idGroup, "seasonArticle", "Сезон (ИД)", season, article);
         nameSeasonArticle = addJProp(supplierAttributeGroup, "nameSeasonArticle", "Сезон", name, seasonArticle, 1);
 
-        articleSIDSupplier = addCGProp(idGroup, "articleSIDSupplier", "Артикул (ИД)", object(article), sidArticle, sidArticle, 1, supplierArticle, 1);
+        articleSIDSupplier = addAGProp(idGroup, "articleSIDSupplier", "Артикул (ИД)", sidArticle, supplierArticle);
 
         seekArticleSIDSupplier = addJProp(true, "Поиск артикула", addSAProp(null), articleSIDSupplier, 1, 2);
 
@@ -1169,7 +1169,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         skuBarcodeObject = addSUProp(Union.OVERRIDE, barcodeToObject, skuJennyferBarcode);
 
         sidDocument = addDProp(baseGroup, "sidDocument", "Код документа", StringClass.get(50), document);
-        documentSIDSupplier = addCGProp(idGroup, "documentSIDSupplier", "Документ поставщика (ИД)", object(document), sidDocument, sidDocument, 1, supplierDocument, 1);
+        documentSIDSupplier = addAGProp(idGroup, "documentSIDSupplier", "Документ поставщика (ИД)", sidDocument, supplierDocument);
 
         // коробки
         sidSupplierBox = addDProp(baseGroup, "sidSupplierBox", "Номер короба", StringClass.get(50), supplierBox);
@@ -1182,7 +1182,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 
         supplierSupplierBox = addJProp(idGroup, "supplierSupplierBox", "Поставщик (ИД)", supplierDocument, boxInvoiceSupplierBox, 1);
 
-        supplierBoxSIDSupplier = addCGProp(idGroup, "supplierBoxSIDSupplier", "Короб поставщика (ИД)", object(supplierBox), sidSupplierBox, sidSupplierBox, 1, supplierSupplierBox, 1);
+        supplierBoxSIDSupplier = addAGProp(idGroup, "supplierBoxSIDSupplier", "Короб поставщика (ИД)", sidSupplierBox, supplierSupplierBox);
 
         seekSupplierBoxSIDSupplier = addJProp(true, "Поиск короба поставщика", addSAProp(null), supplierBoxSIDSupplier, 1, 2);
 
@@ -1221,7 +1221,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         pricePricat = addDProp(baseGroup, "pricePricat", "Цена", DoubleClass.instance, pricat);
         rrpPricat = addDProp(baseGroup, "RRP", "Рекомендованная цена", DoubleClass.instance, pricat);
         supplierPricat = addDProp("supplierPricat", "Поставщик", supplier, pricat);
-        barcodeToPricat = addCGProp(null, "barcodeToPricat", "штрих-код", object(pricat), barcodePricat, barcodePricat, 1);
+        barcodeToPricat = addAGProp("barcodeToPricat", "штрих-код", barcodePricat);
         importPricatSupplier = addIPProp();
 
         // кол-во заказа

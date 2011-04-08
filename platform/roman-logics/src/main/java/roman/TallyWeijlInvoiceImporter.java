@@ -51,9 +51,17 @@ public class TallyWeijlInvoiceImporter extends SingleSheetImporter {
                 int lastBackslashPos = value.lastIndexOf('\\');
                 return (lastBackslashPos == -1 ? value : value.substring(0, lastBackslashPos));
             case R:
-                switch (part) {
-                    case 0: return value.substring(0, value.indexOf(',')).trim(); // original name
-                    case 1: return value.substring(value.indexOf(',') + 1, value.lastIndexOf(',')).trim(); // color
+                int commonIndex = value.indexOf(',');
+                if(commonIndex>=0) {
+                    switch (part) {
+                        case 0:
+                            return value.substring(0, commonIndex).trim(); // original name
+                        case 1:
+                            int endIndex = value.lastIndexOf(',');
+                            if(endIndex < 0)
+                                endIndex = value.length();
+                            return value.substring(commonIndex + 1, endIndex).trim(); // color
+                    }
                 }
             default: return value;
         }

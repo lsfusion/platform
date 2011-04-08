@@ -65,10 +65,13 @@ public class IDTable extends GlobalTable {
         // читаем
         Query<KeyField, PropertyField> query = getGenerateQuery(idType);
 
-        Integer freeID = (Integer) BaseUtils.singleValue(query.execute(dataSession)).get(value);
+        Integer freeID;
+        synchronized (this) {
+            freeID = (Integer) BaseUtils.singleValue(query.execute(dataSession)).get(value);
+            // замещаем
+            reserveID(dataSession, idType, freeID);
+        }
 
-        // замещаем
-        reserveID(dataSession, idType, freeID);
         return freeID+1;
     }
 

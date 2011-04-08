@@ -138,7 +138,7 @@ public class BudgetBusinessLogics extends BusinessLogics<BudgetBusinessLogics> {
         LP calcPerCent = addSFProp("(prm1*prm2/100)", DoubleClass.instance, 2);
 
         monthNum = addOProp("Номер месяца", OrderType.SUM, addJProp(and1, addCProp(IntegerClass.instance, 1), is(absMonth), 1), true, true, 0, 1);
-        LP internalNum = addCGProp(null, "extNumToIntNum", "Внутренний номер", object(absMonth), monthNum, monthNum, 1);
+        LP internalNum = addAGProp("extNumToIntNum", "Внутренний номер", monthNum);
         LP monthInDate = addJProp("Реальный месяц", internalNum, extMonthInDate, 1);
         dateByMY = addJProp("Дата курса для года/месяца", dateBy, rateDay, 1, 2, monthNum, 1, 2);
 

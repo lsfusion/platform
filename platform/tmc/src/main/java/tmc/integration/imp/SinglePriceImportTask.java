@@ -26,22 +26,28 @@ import platform.server.logics.scheduler.FlagSemaphoreTask;
 import platform.server.session.*;
 import tmc.VEDBusinessLogics;
 
+import java.io.File;
+import java.io.IOException;
 import java.sql.SQLException;
+import java.text.SimpleDateFormat;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
 public class SinglePriceImportTask extends FlagSemaphoreTask {
 
     VEDBusinessLogics BL;
-    String impDbf;
+    String impPath;
+    String impFileName;
     Integer impDocID;
     Integer impSaleActionID;
     Integer impReturnDocID;
 
-    public SinglePriceImportTask(VEDBusinessLogics BL, String impDbf, Integer impDocID, Integer impSaleActionID, Integer impReturnDocID) {
+    public SinglePriceImportTask(VEDBusinessLogics BL, String impPath, String impFileName, Integer impDocID, Integer impSaleActionID, Integer impReturnDocID) {
         this.BL = BL;
-        this.impDbf = impDbf;
+        this.impPath = impPath;
+        this.impFileName = impFileName;
         this.impDocID = impDocID;
         this.impSaleActionID = impSaleActionID;
         this.impReturnDocID = impReturnDocID;
@@ -52,8 +58,7 @@ public class SinglePriceImportTask extends FlagSemaphoreTask {
         DBF impFile = null;
 
         try {
-
-            impFile = new DBF(impDbf);
+            impFile = new DBF(impPath + "\\" + impFileName + ".dbf");
             int recordCount = impFile.getRecordCount();
 
             DataClass barcodeClass = StringClass.get(13);
@@ -202,7 +207,19 @@ public class SinglePriceImportTask extends FlagSemaphoreTask {
             } catch (SQLException e) {
             }
 
-            System.out.println(session.apply(BL));
+            String apply = session.apply(BL);
+            if(apply==null) {
+                System.out.println("OK");
+                try {
+                    String copyDir = impPath + "\\" + "log";
+                    new File(copyDir).mkdirs();
+                    impFile.copyTo(copyDir + "\\" + impFileName + new SimpleDateFormat("yyyy_MM_dd_hh_mm_ss").format(new Date()) + ".dbf");
+                } catch (IOException e) {
+                    System.out.println("Logging : " + e);
+                }
+            } else
+                System.out.println(apply);
+
 
         } finally {
             if (impFile != null)

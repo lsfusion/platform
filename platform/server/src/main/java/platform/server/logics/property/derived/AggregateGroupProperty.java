@@ -4,6 +4,7 @@ import platform.base.BaseUtils;
 import platform.server.classes.ConcreteCustomClass;
 import platform.server.classes.CustomClass;
 import platform.server.data.expr.KeyExpr;
+import platform.server.data.expr.where.EqualsWhere;
 import platform.server.data.query.Query;
 import platform.server.data.where.Where;
 import platform.server.logics.BusinessLogics;
@@ -14,30 +15,57 @@ import platform.server.session.DataSession;
 import platform.server.session.PropertyChange;
 
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Map;
+import java.util.*;
 
-public class AggregateGroupProperty extends CycleGroupProperty<ClassPropertyInterface, PropertyInterface> {
+// связь один к одному
+public class AggregateGroupProperty<T extends PropertyInterface, J extends PropertyInterface> extends CycleGroupProperty<J, PropertyInterface> {
 
-    private final ObjectValueProperty objectProperty;
-    private final ConcreteCustomClass aggregateClass;
+    private final Map<J, T> mapping;
 
-    public AggregateGroupProperty(String sID, String caption, ObjectValueProperty objectProperty, ConcreteCustomClass aggregateClass, Collection<PropertyInterfaceImplement<ClassPropertyInterface>> interfaces) {
-        super(sID, caption, interfaces, objectProperty, null);
+    public Map<T, J> getMapping() {
+        return BaseUtils.reverse(mapping);
+    }
 
-        this.objectProperty = objectProperty;
-        this.aggregateClass = aggregateClass;
+    private final Property<T> property;
+    private final T aggrInterface;
+    private final Collection<PropertyMapImplement<?, T>> groupProps;
+
+    // чисто из-за ограничения конструктора
+    public static <T extends PropertyInterface<T>> AggregateGroupProperty<T, ?> create(String sID, String caption, Property<T> property, T aggrInterface, Collection<PropertyMapImplement<?, T>> groupProps) {
+        PropertyMapImplement<?, T> and = DerivedProperty.createAnd(property.interfaces, aggrInterface, property.getImplement());
+        return create(sID, caption, and, BaseUtils.merge(groupProps, BaseUtils.remove(property.interfaces, aggrInterface)), property, aggrInterface, groupProps);
+    }
+
+    // чисто для generics
+    private static <T extends PropertyInterface<T>, J extends PropertyInterface<J>> AggregateGroupProperty<T, J> create(String sID, String caption, PropertyMapImplement<J, T> and, Collection<PropertyInterfaceImplement<T>> groupInterfaces, Property<T> property, T aggrInterface, Collection<PropertyMapImplement<?, T>> groupProps) {
+        return new AggregateGroupProperty<T, J>(sID, caption, and, DerivedProperty.mapImplements(groupInterfaces, BaseUtils.reverse(and.mapping)), property, aggrInterface, groupProps);
+    }
+
+    private AggregateGroupProperty(String sID, String caption, PropertyMapImplement<J, T> and, Collection<PropertyInterfaceImplement<J>> groupInterfaces, Property<T> property, T aggrInterface, Collection<PropertyMapImplement<?, T>> groupProps) {
+        super(sID, caption, groupInterfaces, and.property, null);
+
+        mapping = and.mapping;
+        this.property = property;
+        this.aggrInterface = aggrInterface;
+        this.groupProps = groupProps;
     }
 
     @Override
-    public void setNotNull(Map<Interface<ClassPropertyInterface>, KeyExpr> mapKeys, Where where, DataSession session, BusinessLogics<?> BL) throws SQLException {
-        for(Map<Interface<ClassPropertyInterface>, DataObject> row : new Query<Interface<ClassPropertyInterface>, Object>(mapKeys, where).executeClasses(session.sql, session.env, session.baseClass).keySet()) {
-            DataObject aggrObject = session.addObject(aggregateClass, session.modifier);
-            for(Map.Entry<Interface<ClassPropertyInterface>, DataObject> propertyInterface : row.entrySet())
-                ((PropertyMapImplement<PropertyInterface, ClassPropertyInterface>) propertyInterface.getKey().implement).
-                        execute(Collections.singletonMap(objectProperty.objectInterface, aggrObject), session, propertyInterface.getValue().object, session.modifier);
+    public void setNotNull(Map<Interface<J>, KeyExpr> mapKeys, Where where, DataSession session, BusinessLogics<?> BL) throws SQLException {
+        Map<PropertyInterfaceImplement<T>, Interface<J>> aggrInterfaces = BaseUtils.reverse(DerivedProperty.mapImplements(getMapInterfaces(), mapping));
+
+        for(Map<Interface<J>, DataObject> row : new Query<Interface<J>, Object>(mapKeys, where).executeClasses(session.sql, session.env, session.baseClass).keySet()) {
+            DataObject aggrObject = session.addObject();
+
+            Map<PropertyInterfaceImplement<T>, DataObject> interfaceValues = BaseUtils.join(aggrInterfaces, row);
+            Map<T, DataObject> propValues = BaseUtils.merge(Collections.singletonMap(aggrInterface, aggrObject), // aggrInterface = aggrObject, остальные из row'а читаем
+                    BaseUtils.filterKeys(interfaceValues, BaseUtils.remove(property.interfaces, aggrInterface)));
+
+            Map<T, KeyExpr> mapPropKeys = property.getMapKeys();
+            property.setNotNull(mapPropKeys, EqualsWhere.compareValues(mapPropKeys, propValues), session, BL);
+
+            for(Map.Entry<PropertyMapImplement<?, T>, DataObject> propertyInterface : BaseUtils.filterKeys(interfaceValues, groupProps).entrySet())
+                propertyInterface.getKey().execute(propValues, session, propertyInterface.getValue().object, session.modifier);
         }
     }
 }

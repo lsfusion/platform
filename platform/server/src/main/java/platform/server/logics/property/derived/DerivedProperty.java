@@ -38,6 +38,13 @@ public class DerivedProperty {
         return mapImplement;
     }
 
+    public static <L,T extends PropertyInterface,K extends PropertyInterface> List<PropertyInterfaceImplement<K>> mapImplements(List<PropertyInterfaceImplement<T>> interfaceImplements, Map<T,K> map) {
+        List<PropertyInterfaceImplement<K>> mapImplement = new ArrayList<PropertyInterfaceImplement<K>>();
+        for(PropertyInterfaceImplement<T> interfaceImplementEntry : interfaceImplements)
+            mapImplement.add(interfaceImplementEntry.map(map));
+        return mapImplement;
+    }
+
     public static <L,T extends PropertyInterface,K extends PropertyInterface> Map<L,PropertyInterfaceImplement<K>> mapImplements(Map<L,PropertyInterfaceImplement<T>> interfaceImplements, Map<T,K> map) {
         Map<L,PropertyInterfaceImplement<K>> mapImplement = new HashMap<L, PropertyInterfaceImplement<K>>();
         for(Map.Entry<L,PropertyInterfaceImplement<T>> interfaceImplementEntry : interfaceImplements.entrySet())
@@ -104,7 +111,7 @@ public class DerivedProperty {
         return createAnd(property.interfaces, property.getImplement(), Collections.singleton(not));
     }
 
-    private static <T extends PropertyInterface> PropertyMapImplement<?,T> createAnd(Collection<T> interfaces, PropertyInterfaceImplement<T> object, PropertyInterfaceImplement<T> and) {
+    public static <T extends PropertyInterface> PropertyMapImplement<?,T> createAnd(Collection<T> interfaces, PropertyInterfaceImplement<T> object, PropertyInterfaceImplement<T> and) {
         return createAnd(interfaces, object, Collections.singleton(and));
     }
 

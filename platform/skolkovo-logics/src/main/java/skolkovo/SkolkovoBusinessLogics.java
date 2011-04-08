@@ -344,9 +344,8 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         openedVote = addJProp(baseGroup, "openedVote", "Открыто", groeq2, dateEndVote, 1, currentDate);
         closedVote = addJProp(baseGroup, "closedVote", "Закрыто", andNot1, is(vote), 1, openedVote, 1);
 
-        voteInProgressProject = addCGProp(idGroup, false, "voteInProgressProject", "Тек. заседание (ИД)",
-                                       addJProp(and1, 1, openedVote, 1), openedVote,
-                                       projectVote, 1); // активно только одно заседание
+        voteInProgressProject = addAGProp(idGroup, "voteInProgressProject", "Тек. заседание (ИД)",
+                                       openedVote, 1, projectVote, 1); // активно только одно заседание
 
         // результаты голосования
         voteResultExpertVote = addDProp(idGroup, "voteResultExpertVote", "Результат (ИД)", voteResult, expert, vote);
@@ -420,9 +419,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         quantityDoneExpertDateFromDateTo = addSGProp("quantityDoneExpertDateFromDateTo", "Кол-во заседаний",
                                      addJProp(and1, addCProp(IntegerClass.instance, 1), doneExpertVoteDateFromDateTo, 1, 2, 3, 4), 1, 3, 4); // в скольки заседаниях поучавствовал
 
-        voteSucceededProject = addCGProp(idGroup, false, "voteSucceededProject", "Успешное заседание (ИД)",
-                addJProp(and1, 1, succeededVote, 1), succeededVote,
-                projectVote, 1);
+        voteSucceededProject = addAGProp(idGroup, "voteSucceededProject", "Успешное заседание (ИД)", succeededVote, 1, projectVote, 1);
 
         noCurrentVoteProject = addJProp(baseGroup, "noCurrentVoteProject", "Нет текущих заседаний", andNot1, is(project), 1, voteInProgressProject, 1); // нету текущих заседаний
 
@@ -452,7 +449,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         generateLoginPasswordExpert = addAProp(actionGroup, new GenerateLoginPasswordActionProperty());
         generateLoginPasswordExpert.setDerivedForcedChange(addCProp(ActionClass.instance, true), is(expert), 1);
 
-        expertLogin = addCGProp(baseGroup, "expertLogin", "Эксперт (ИД)", object(expert), userLogin, userLogin, 1);
+        expertLogin = addAGProp(baseGroup, "expertLogin", "Эксперт (ИД)", userLogin);
         disableExpert = addDProp(baseGroup, "disableExpert", "Не акт.", LogicalClass.instance, expert);
 
         addCUProp("userRole", true, "Роль пользователя", addCProp(StringClass.get(30), "expert", expert));

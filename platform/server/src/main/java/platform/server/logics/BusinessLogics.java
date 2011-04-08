@@ -31,6 +31,7 @@ import platform.server.data.sql.PostgreDataAdapter;
 import platform.server.data.sql.SQLSyntax;
 import platform.server.data.type.Type;
 import platform.server.data.type.TypeSerializer;
+import platform.server.data.where.classes.ClassWhere;
 import platform.server.form.entity.*;
 import platform.server.form.entity.filter.*;
 import platform.server.form.instance.FormInstance;
@@ -1052,7 +1053,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
         sidCountry = addDProp(baseGroup, "sidCountry", "Код страны", IntegerClass.instance, country);
         generateDatesCountry = addDProp(privateGroup, "generateDatesCountry", "Генерировать выходные", LogicalClass.instance, country);
-        sidToCountry = addCGProp(null, "sidToCountry", "Страна", object(country), sidCountry, sidCountry, 1);
+        sidToCountry = addAGProp("sidToCountry", "Страна", sidCountry);
         isDayOffCountryDate = addDProp(baseGroup, "isDayOffCD", "Выходной", LogicalClass.instance, country, DateClass.instance);
 
         workingDay = addJProp(baseGroup, "workingDay", "Рабочий", andNot1, addCProp(IntegerClass.instance, 1, country, DateClass.instance), 1, 2, isDayOffCountryDate, 1, 2);
@@ -1076,13 +1077,13 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         changeUser = addProperty(null, new LP<ClassPropertyInterface>(new ChangeUserActionProperty(genSID(), customUser)));
 
         userLogin = addDProp(baseGroup, "userLogin", "Логин", StringClass.get(30), customUser);
-        loginToUser = addCGProp(null, "loginToUser", "Пользователь", object(customUser), userLogin, userLogin, 1);
+        loginToUser = addAGProp("loginToUser", "Пользователь", userLogin);
         userPassword = addDProp(baseGroup, "userPassword", "Пароль", StringClass.get(30), customUser);
         userFirstName = addDProp(baseGroup, "userFirstName", "Имя", StringClass.get(30), customUser);
         userLastName = addDProp(baseGroup, "userLastName", "Фамилия", StringClass.get(30), customUser);
 
         userRoleSID = addDProp(baseGroup, "userRoleSID", "Идентификатор", StringClass.get(30), userRole);
-        sidToRole = addCGProp(idGroup, "sidToRole", "Роль (ИД)", object(userRole), userRoleSID, userRoleSID, 1);
+        sidToRole = addAGProp(idGroup, "sidToRole", "Роль (ИД)", userRole, userRoleSID);
         inUserRole = addDProp(baseGroup, "inUserRole", "Вкл.", LogicalClass.instance, customUser, userRole);
         userRoleDefaultForms = addDProp(baseGroup, "userRoleDefaultForms", "Отображение форм по умолчанию", LogicalClass.instance, userRole);
         inLoginSID = addJProp("inLoginSID", true, "Логину назначена роль", inUserRole, loginToUser, 1, sidToRole, 2);
@@ -1107,9 +1108,9 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         userMainRole = addDProp(idGroup, "userMainRole", "Главная роль (ИД)", userRole, user);
         nameUserMainRole = addJProp(baseGroup, "nameUserMainRole", "Главная роль", name, userMainRole, 1);
 
-        nameToCountry = addCGProp(null, "nameToCountry", "Страна", object(country), name, name, 1);
+        nameToCountry = addAGProp("nameToCountry", "Страна", country, name);
 
-        nameToPolicy = addCGProp(null, "nameToPolicy", "Политика", object(policy), name, name, 1);
+        nameToPolicy = addAGProp("nameToPolicy", "Политика", policy, name);
         policyDescription = addDProp(baseGroup, "description", "Описание", StringClass.get(100), policy);
 
         userRolePolicyOrder = addDProp(baseGroup, "userRolePolicyOrder", "Порядок политики", IntegerClass.instance, userRole, policy);
@@ -1117,7 +1118,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
         barcode = addDProp(baseGroup, "barcode", "Штрих-код", StringClass.get(13), barcodeObject);
         barcode.setFixedCharWidth(13);
-        barcodeToObject = addCGProp(null, "barcodeToObject", "Объект", object(barcodeObject), barcode, barcode, 1);
+        barcodeToObject = addAGProp("barcodeToObject", "Объект", barcode);
         barcodeObjectName = addJProp(baseGroup, "barcodeObjectName", "Объект", name, barcodeToObject, 1);
 
         barcodePrefix = addDProp(baseGroup, "barcodePrefix", "Префикс штрих-кодов", StringClass.get(13));
@@ -1138,7 +1139,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
         navigatorElementSID = addDProp(baseGroup, "navigatorElementSID", "Код формы", formSIDValueClass, navigatorElement);
         navigatorElementCaption = addDProp(baseGroup, "navigatorElementCaption", "Название формы", formCaptionValueClass, navigatorElement);
-        SIDToNavigatorElement = addCGProp(null, "SIDToNavigatorElement", "Форма", object(navigatorElement), navigatorElementSID, navigatorElementSID, 1);
+        SIDToNavigatorElement = addAGProp("SIDToNavigatorElement", "Форма", navigatorElementSID);
 
         permissionUserRoleForm = addDProp(baseGroup, "permissionUserRoleForm", "Запретить форму", LogicalClass.instance, userRole, navigatorElement);
         permissionUserForm = addJProp(baseGroup, "permissionUserForm", "Запретить форму", permissionUserRoleForm, userMainRole, 1, 2);
@@ -3465,16 +3466,55 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         return mapLGProp(group, persistent, property, listImplements);
     }
 
-    protected <T extends PropertyInterface, P extends PropertyInterface> LP addAGProp(AbstractGroup group, boolean checkChange, String sID, boolean persistent, String caption, ConcreteCustomClass customClass, LP... props) {
-        ObjectValueProperty objectValueProperty = objectValue.getProperty(new ValueClass[]{customClass});
-        List<PropertyInterfaceImplement<ClassPropertyInterface>> listImplements = readImplements(Collections.singletonList(objectValueProperty.objectInterface), getUParams(props, 0));
+//    public static <T extends PropertyInterface<T>> AggregateGroupProperty create(String sID, String caption, Property<T> property, T aggrInterface, Collection<PropertyMapImplement<?, T>> groupProps) {
 
-        AggregateGroupProperty property = new AggregateGroupProperty(sID, caption, objectValueProperty, customClass, listImplements);
+    protected LP addAGProp(String sID, String caption, LP... props) {
+        return addAGProp(null, sID, caption, props);
+    }
 
+    protected LP addAGProp(AbstractGroup group, String sID, String caption, LP... props) {
+        ClassWhere<Integer> classWhere = ClassWhere.<Integer>STATIC(true);
+        for (LP<?> prop : props)
+            classWhere = classWhere.and(prop.getClassWhere());
+        return addAGProp(group, sID, caption, (CustomClass) BaseUtils.singleValue(classWhere.getCommonParent(Collections.singleton(1))), props);
+    }
+
+    protected LP addAGProp(String sID, String caption, CustomClass customClass, LP... props) {
+        return addAGProp(null, sID, caption, customClass, props);
+    }
+
+    protected LP addAGProp(AbstractGroup group, String sID, String caption, CustomClass customClass, LP... props) {
+        return addAGProp(group, false, sID, false, caption, customClass, props);
+    }
+
+    protected LP addAGProp(AbstractGroup group, boolean checkChange, String sID, boolean persistent, String caption, CustomClass customClass, LP... props) {
+        return addAGProp(group, checkChange, sID, persistent, caption, is(customClass), 1, getUParams(props, 0));
+    }
+
+    protected <T extends PropertyInterface<T>> LP addAGProp(String sID, String caption, LP<T> lp, int aggrInterface, Object... props) {
+        return addAGProp(sID, false, caption, lp, aggrInterface, props);
+    }
+
+    protected <T extends PropertyInterface> LP addAGProp(AbstractGroup group, String sID, String caption, LP<T> lp, int aggrInterface, Object... props) {
+        return addAGProp(group, false, sID, false, caption, lp, aggrInterface, props);
+    }
+
+    protected <T extends PropertyInterface<T>> LP addAGProp(String sID, boolean persistent, String caption, LP<T> lp, int aggrInterface, Object... props) {
+        return addAGProp(null, false, sID, persistent, caption, lp, aggrInterface, props);
+    }
+
+    protected <T extends PropertyInterface<T>> LP addAGProp(AbstractGroup group, boolean checkChange, String sID, boolean persistent, String caption, LP<T> lp, int aggrInterface, Object... props) {
+        List<PropertyInterfaceImplement<T>> listImplements = readImplements(lp.listInterfaces, props);
+
+        return addAGProp(group, checkChange, persistent, AggregateGroupProperty.create(sID, caption, lp.property, lp.listInterfaces.get(aggrInterface-1), (List<PropertyMapImplement<?, T>>)(List<?>)listImplements), BaseUtils.mergeList(listImplements, BaseUtils.removeList(lp.listInterfaces, aggrInterface-1)));
+    }
+
+    // чисто для generics
+    private <T extends PropertyInterface<T>, J extends PropertyInterface> LP addAGProp(AbstractGroup group, boolean checkChange, boolean persistent, AggregateGroupProperty<T, J> property, List<PropertyInterfaceImplement<T>> listImplements) {
         // нужно добавить ограничение на уникальность
         addProperty(null, new LP(property.getConstrainedProperty(checkChange)));
 
-        return mapLGProp(group, persistent, property, listImplements);
+        return mapLGProp(group, persistent, property, DerivedProperty.mapImplements(listImplements, property.getMapping()));
     }
 
     protected <T extends PropertyInterface, P extends PropertyInterface> LP addDGProp(int orders, boolean ascending, LP<T> groupProp, Object... params) {

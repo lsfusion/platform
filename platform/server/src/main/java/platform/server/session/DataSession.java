@@ -165,9 +165,13 @@ public class DataSession extends MutableObject implements SessionChanges, ExprCh
         return addObject(customClass, modifier, true, true);
     }
 
+    public DataObject addObject() throws SQLException {
+        return new DataObject(IDTable.instance.generateID(sql, IDTable.OBJECT),baseClass.unknown);
+    }
+
     public DataObject addObject(ConcreteCustomClass customClass, Modifier<? extends Changes> modifier, boolean fillDefault, boolean groupLast) throws SQLException {
 
-        DataObject object = new DataObject(IDTable.instance.generateID(sql, IDTable.OBJECT),baseClass.unknown);
+        DataObject object = addObject();
 
         // запишем объекты, которые надо будет сохранять
         changeClass(object, customClass, groupLast);

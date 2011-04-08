@@ -499,6 +499,12 @@ public class BaseUtils {
         return result;
     }
 
+    public static <K> Collection<K> remove(Collection<? extends K> set, K remove) {
+        Collection<K> result = new ArrayList<K>(set);
+        result.remove(remove);
+        return result;
+    }
+
     public static <K> Set<K> removeSet(Set<? extends K> set, Collection<? extends K> remove) {
         Set<K> result = new HashSet<K>(set);
         result.removeAll(remove);
@@ -511,6 +517,14 @@ public class BaseUtils {
             if (!remove.contains(property))
                 removeList.add(property);
         return removeList;
+    }
+
+    public static <K> List<K> removeList(List<K> list, K remove) {
+        return removeList(list, Collections.singleton(remove));
+    }
+
+    public static <K> List<K> removeList(List<K> list, int index) {
+        return removeList(list, Collections.singleton(list.get(index)));
     }
 
     public static <K> void moveElement(List<K> list, K elemFrom, K elemTo) {
@@ -1051,6 +1065,11 @@ public class BaseUtils {
         I result = it.next();
         assert !it.hasNext();
         return result;
+    }
+
+    public static <I> I single(I[] array) {
+        assert array.length == 1;
+        return array[0];
     }
 
     public static <I> I singleKey(Map<I, ?> map) {

@@ -36,8 +36,8 @@ public class PriceImportTask implements SchedulerTask {
             Integer impActionID = actionID.get(impNum);
             Integer impReturnDocID = returnDocID.get(impNum);
 
-            FlagSemaphoreTask.run(impPath + "\\tmc.new", new SinglePriceImportTask(BL, impPath + "\\datanew.dbf", impDocID, impActionID, impReturnDocID));
-            FlagSemaphoreTask.run(impPath + "\\tmc.upd", new SinglePriceImportTask(BL, impPath + "\\dataupd.dbf", impDocID, impActionID, impReturnDocID));
+            FlagSemaphoreTask.run(impPath + "\\tmc.new", new SinglePriceImportTask(BL, impPath, "datanew", impDocID, impActionID, impReturnDocID));
+            FlagSemaphoreTask.run(impPath + "\\tmc.upd", new SinglePriceImportTask(BL, impPath, "dataupd", impDocID, impActionID, impReturnDocID));
         }
     }
 }

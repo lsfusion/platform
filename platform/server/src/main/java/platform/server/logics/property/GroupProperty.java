@@ -90,7 +90,7 @@ abstract public class GroupProperty<T extends PropertyInterface> extends Functio
         return GroupExpr.create(getGroupImplements(mapKeys, modifier), groupProperty.getExpr(mapKeys, modifier), operator != 1, joinImplement);
     }
 
-    abstract Expr getChangedExpr(Expr changedExpr, Expr changedPrevExpr, Map<Interface<T>, ? extends Expr> joinImplement, Modifier<? extends Changes> modifier);
+    protected abstract Expr getChangedExpr(Expr changedExpr, Expr changedPrevExpr, Map<Interface<T>, ? extends Expr> joinImplement, Modifier<? extends Changes> modifier);
 
     @Override
     public void fillDepends(Set<Property> depends, boolean derived) {

@@ -118,6 +118,11 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
     private AbstractGroup documentManfrGroup;
     private AbstractGroup documentObligationGroup;
     private AbstractGroup documentPayGroup;
+    private AbstractGroup documentDiscountGroup;
+    private AbstractGroup documentNDSGroup;
+    private AbstractGroup documentSumGroup;
+    private LP sumOrder;
+    private AbstractGroup documentPrintRetailGroup;
 
     public VEDBusinessLogics(DataAdapter adapter, int exportPort) throws IOException, ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException, FileNotFoundException, JRException {
         super(adapter, exportPort);
@@ -403,6 +408,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
     protected void initGroups() {
         documentGroup = new AbstractGroup("Параметры документа");
+        documentGroup.createContainer = false;
         publicGroup.add(documentGroup);
 
         moveGroup = new AbstractGroup("Движение товаров");
@@ -414,24 +420,29 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         priceGroup = new AbstractGroup("Ценовые параметры");
         publicGroup.add(priceGroup);
 
-        documentPriceGroup = new AbstractGroup("Ценовые параметры документа");
+        documentPriceGroup = new AbstractGroup("Расчеты");
         documentPriceGroup.createContainer = false;
         documentGroup.add(documentPriceGroup);
 
-        documentRetailGroup = new AbstractGroup("Розн. параметры");
-        documentRetailGroup.createContainer = false;
+        documentSumGroup = new AbstractGroup("Всего");
+        documentPriceGroup.add(documentSumGroup);
+
+        documentDiscountGroup = new AbstractGroup("Скидки");
+        documentPriceGroup.add(documentDiscountGroup);
+
+        documentNDSGroup = new AbstractGroup("Налоги");
+        documentPriceGroup.add(documentNDSGroup);
+
+        documentRetailGroup = new AbstractGroup("Розн. цены");
         documentPriceGroup.add(documentRetailGroup);
 
-        documentPayGroup = new AbstractGroup("Параметры оплаты");
-        documentPayGroup.createContainer = false;
+        documentPayGroup = new AbstractGroup("Платежные средства");
         documentPriceGroup.add(documentPayGroup);
 
-        documentObligationGroup = new AbstractGroup("Параметры оплаты");
-        documentObligationGroup.createContainer = false;
+        documentObligationGroup = new AbstractGroup("Сертификаты");
         documentPriceGroup.add(documentObligationGroup);
 
-        documentManfrGroup = new AbstractGroup("Параметры изготовителя");
-        documentManfrGroup.createContainer = false;
+        documentManfrGroup = new AbstractGroup("Цены изготовителя");
         documentPriceGroup.add(documentManfrGroup);
 
         logisticsGroup = new AbstractGroup("Логистические параметры");
@@ -458,6 +469,9 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
         documentPrintGroup = new AbstractGroup("Документы");
         publicGroup.add(documentPrintGroup);
+
+        documentPrintRetailGroup = new AbstractGroup("Розничные документы");
+        documentPrintGroup.add(documentPrintRetailGroup);
 
         documentInvoiceSaleGroup = new AbstractGroup("Основание");
         documentPrintGroup.add(documentInvoiceSaleGroup);
@@ -600,7 +614,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         LP[] propsLegalEntity = addDProp(baseGroup, "LegalEntity", new String[]{"unn", "address", "tel", "bankAddress", "account"},
                 new String[]{"УНН", "Адрес", "Контактный телефон", "Адрес банка", "Счёт"}, new ValueClass[]{StringClass.get(20), StringClass.get(100), StringClass.get(20), StringClass.get(100), StringClass.get(30)}, legalEntity);
         unnLegalEntity = propsLegalEntity[0]; addressLegalEntity = propsLegalEntity[1];
-        legalEntityUnn = addCGProp(privateGroup, false, "legalEntityUnn", false, "Юр. лицо", object(legalEntity), unnLegalEntity, unnLegalEntity, 1);
+        legalEntityUnn = addAGProp("legalEntityUnn", "Юр. лицо", unnLegalEntity);
         LP[] propsLegalEntitySubject = addJProp(privateGroup, false, "Subject", propsLegalEntity, legalEntitySubject, 1);
 
         addressSubject = addCUProp(addDProp("addressStore", "Адрес", StringClass.get(100), store), propsLegalEntity[1]);
@@ -623,6 +637,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         // имена
         nameSubjectIncOrder = addJProp(baseGroup, "nameSubjectIncOrder", "Кому", name, subjectIncOrder, 1); nameImplSubjectIncOrder = addJProp(true, "Кому", name, subjectIncOrder, 1);
         nameSubjectOutOrder = addJProp(baseGroup, "nameSubjectOutOrder", "От кого", name, subjectOutOrder, 1);
+        nameSubjectIncOrder.setPreferredCharWidth(40); nameSubjectOutOrder.setPreferredCharWidth(40); nameImplSubjectIncOrder.setPreferredCharWidth(40);
 
         addressSubjectIncOrder = addJProp("addressSubjectIncOrder", "Адрес (кому)", addressSubject, subjectIncOrder, 1);
         addressSubjectOutOrder = addJProp("addressSubjectOutOrder", "Адрес (от кого)", addressSubject, subjectOutOrder, 1);
@@ -793,8 +808,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
                 addJProp(less2, currentDate, actionFrom, 1), 1,  // активация акции, если текущая дата в диапазоне акции
                 addJProp(greater2, currentDate, actionTo, 1), 1);
 
-        articleSaleAction = addCGProp(priceGroup, false, "articleAction", "Дейст. распродажа",
-                addJProp(and1, 1, addJProp(and1, inAction, 1, 2, addJProp(and1, isStarted, 1, is(saleAction), 1), 1), 1, 2), inAction, 2);
+        articleSaleAction = addAGProp(priceGroup, "articleAction", "Дейст. распродажа", addJProp(and(false, false), inAction, 1, 2, isStarted, 1, is(saleAction), 1), 1);
         articleDiscount = addSUProp("articleDiscount", true, "Тек. скидка", Union.OVERRIDE, addCProp(DoubleClass.instance, 0, article), addJProp(priceGroup, "Тек. скидка", actionDiscount, articleSaleAction, 1));
         LP actionNoExtraDiscount = addDProp(baseGroup, "actionNoExtraDiscount", "Без доп. скидок", LogicalClass.instance, saleAction);
 
@@ -814,9 +828,9 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         LP certToSaled = addDProp(baseGroup, "certToSaled", "Продан заранее", LogicalClass.instance, obligation);
         LP sverka = addJProp(equals2, 1, addJProp(and1, 1, certToSaled, 1), 2);
         LP issueCoupon = addDProp("orderSaleCoupon", "Выдать купон", LogicalClass.instance, commitSaleCheckArticleRetail, coupon);
-        issueObligation = addCUProp(documentPriceGroup, "Выдать", sverka, saleCertGiftObligation, issueCoupon);
+        issueObligation = addCUProp(documentGroup, "Выдать", sverka, saleCertGiftObligation, issueCoupon);
 
-        LP obligationIssued = addCGProp(null, "obligationIssued", true, "Выд. документ", addJProp(and1, 1, issueObligation, 1, 2), issueObligation, 2);
+        LP obligationIssued = addAGProp("obligationIssued", true, "Выд. документ", issueObligation, 1);
 
         obligationSum = addDProp(baseGroup, "obligationSum", "Сумма", DoubleClass.instance, obligation);
         setNotNull(obligationSum);
@@ -888,10 +902,10 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
         // цены в документах
         LP priceOrderDeliveryArticle = addDCProp("priceOrderDeliveryArticle", "Цена пост. с НДС", true, articleSupplierPrice, 2, articleQuantity, 1, 2, orderDelivery);
-        priceAllOrderDeliveryArticle = addSUProp(documentPriceGroup, "priceAllOrderDeliveryArticle", "Цена пост. с НДС", Union.OVERRIDE, addJProp(and1, articleSupplierPrice, 2, is(orderDelivery), 1), priceOrderDeliveryArticle);
+        priceAllOrderDeliveryArticle = addSUProp(documentSumGroup, "priceAllOrderDeliveryArticle", "Цена пост. с НДС", Union.OVERRIDE, addJProp(and1, articleSupplierPrice, 2, is(orderDelivery), 1), priceOrderDeliveryArticle);
         LP orderSalePrice = addDProp("orderSalePrice", "Цена прод.", DoubleClass.instance, orderDoOut, article);
         LP priceOrderDoArticle = addCUProp(priceOrderDeliveryArticle, orderSalePrice);
-        priceOrderArticle = addCUProp(documentPriceGroup, "priceOrderArticle", "Цена", priceOrderDoArticle, addMGProp(privateGroup, "priceOrderReturnArticle", "Цена возвр.", addJProp(and1, priceOrderDoArticle, 3, 2, returnDocumentQuantity, 1, 2, 3), 1, 2));
+        priceOrderArticle = addCUProp(documentSumGroup, "priceOrderArticle", "Цена", priceOrderDoArticle, addMGProp(privateGroup, "priceOrderReturnArticle", "Цена возвр.", addJProp(and1, priceOrderDoArticle, 3, 2, returnDocumentQuantity, 1, 2, 3), 1, 2));
         LP priceNDSOrderArticle = addJProp(round1, addJProp(backPercent, priceOrderArticle, 1, 2, ndsOrderArticle, 1, 2), 1, 2);
         priceNoNDSOrderArticle = addDUProp("Цена без НДС", priceOrderArticle, priceNDSOrderArticle);
 
@@ -911,7 +925,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
         LP saleStorePrice = addCUProp(priceGroup, "Цена прод.", addJProp(and1, requiredStorePrice, 1, 2, is(warehouse), 1), currentShopPrice);
         orderSalePrice.setDerivedForcedChange(saleStorePrice, subjectOutOrder, 1, 2, articleQuantity, 1, 2);
-        priceAllOrderSaleArticle = addSUProp(documentPriceGroup, "Цена прод.", Union.OVERRIDE, addJProp(and1, addJProp(saleStorePrice, subjectOutOrder, 1, 2), 1, 2, is(orderDoOut), 1), priceOrderDoArticle);
+        priceAllOrderSaleArticle = addSUProp(documentSumGroup, "Цена прод.", Union.OVERRIDE, addJProp(and1, addJProp(saleStorePrice, subjectOutOrder, 1, 2), 1, 2, is(orderDoOut), 1), priceOrderDoArticle);
 
         LP outOfDatePrice = addJProp(and(false, false), vtrue, articleBalanceSklCommitedQuantity, 1, 2, addJProp(diff2, requiredStorePrice, 1, 2, currentShopPrice, 1, 2), 1, 2);
         documentRevalued.setDerivedChange(outOfDatePrice, revalueShop, 1, 2);
@@ -971,7 +985,8 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         sumManfrOrderArticle = addJProp(documentManfrGroup, "sumManfrOrderArticle", "Сумма изг.", multiplyDouble2, articleQuantity, 1, 2, priceManfrOrderArticle, 1, 2);
         sumManfrOrder = addSGProp(documentManfrGroup, "sumManfrOrder", "Сумма изг.", sumManfrOrderArticle, 1);
 
-        sumOrderArticle = addJProp(documentPriceGroup, "sumOrderArticle", "Сумма", multiplyDouble2, articleQuantity, 1, 2, priceOrderArticle, 1, 2);
+        sumOrderArticle = addJProp(documentSumGroup, "sumOrderArticle", "Сумма", multiplyDouble2, articleQuantity, 1, 2, priceOrderArticle, 1, 2);
+        sumOrder = addSGProp(documentSumGroup, "sumOrder", "Сумма", sumOrderArticle, 1);
         weightOrderArticle = addJProp("weightOrderArticle", "Вес поз.", multiplyDouble2, articleQuantity, 1, 2, weightArticle, 2);
         transOrderArticle = addJProp("transOrderArticle", "Кол-во гр. мест", multiplyDouble2, articleQuantity, 1, 2, coeffTransArticle, 2);
 
@@ -993,18 +1008,18 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         LP discountOrderReturnArticle = addMGProp(privateGroup, "discountOrderReturnArticle", "Скидка возвр.", addJProp(and1, orderArticleSaleDiscount, 3, 2, returnDocumentQuantity, 1, 2, 3), 1, 2);
         discountOrderArticle = addCUProp(baseGroup, "discountOrderArticle", "Скидка", orderArticleSaleDiscount, discountOrderReturnArticle); // возвращаем ту же скидку при возврате
 
-        discountSumOrderArticle = addJProp(documentPriceGroup, "discountSumOrderArticle", "Сумма скидки", round1, addJProp(percent, sumOrderArticle, 1, 2, discountOrderArticle, 1, 2), 1, 2);
-        sumWithDiscountOrderArticle = addDUProp(documentPriceGroup, "sumWithDiscountOrderArticle", "Сумма со скидкой", sumOrderArticle, discountSumOrderArticle);
+        discountSumOrderArticle = addJProp(documentDiscountGroup, "discountSumOrderArticle", "Сумма скидки", round1, addJProp(percent, sumOrderArticle, 1, 2, discountOrderArticle, 1, 2), 1, 2);
+        sumWithDiscountOrderArticle = addDUProp(documentDiscountGroup, "sumWithDiscountOrderArticle", "Сумма со скидкой", sumOrderArticle, discountSumOrderArticle);
 
         LP orderSalePayGift = addSGProp(addJProp(and(false, false, false), obligationSum, 2, issueObligation, 1, 2, is(order), 1, is(giftObligation), 2), 1);
-        discountSumOrder = addSGProp(documentPriceGroup, "discountSumOrder", true, "Сумма скидки", discountSumOrderArticle, 1);
-        sumWithDiscountOrder = addCUProp(documentPriceGroup, "sumWithDiscountOrder", true, "Сумма со скидкой", orderSalePayGift, addSGProp(sumWithDiscountOrderArticle, 1));
+        discountSumOrder = addSGProp(documentDiscountGroup, "discountSumOrder", true, "Сумма скидки", discountSumOrderArticle, 1);
+        sumWithDiscountOrder = addCUProp(documentDiscountGroup, "sumWithDiscountOrder", true, "Сумма со скидкой", orderSalePayGift, addSGProp(sumWithDiscountOrderArticle, 1));
 
-        sumNDSOrderArticle = addJProp(documentPriceGroup, "sumNDSOrderArticle", "Сумма НДС", round1, addJProp(backPercent, sumWithDiscountOrderArticle, 1, 2, ndsOrderArticle, 1, 2), 1, 2);
-        sumNoNDSOrderArticle = addDUProp(documentPriceGroup, "sumNoNDSOrderArticle", "Сумма без НДС", sumWithDiscountOrderArticle, sumNDSOrderArticle);
+        sumNDSOrderArticle = addJProp(documentNDSGroup, "sumNDSOrderArticle", "Сумма НДС", round1, addJProp(backPercent, sumWithDiscountOrderArticle, 1, 2, ndsOrderArticle, 1, 2), 1, 2);
+        sumNoNDSOrderArticle = addDUProp(documentNDSGroup, "sumNoNDSOrderArticle", "Сумма без НДС", sumWithDiscountOrderArticle, sumNDSOrderArticle);
         // док.
-        sumNDSOrder = addSGProp(documentPriceGroup, "sumNDSOrder", "Сумма НДС", sumNDSOrderArticle, 1);
-        sumNoNDSOrder = addDUProp(documentPriceGroup, "sumNoNDSOrder", "Сумма без НДС", sumWithDiscountOrder, sumNDSOrder);
+        sumNDSOrder = addSGProp(documentNDSGroup, "sumNDSOrder", "Сумма НДС", sumNDSOrderArticle, 1);
+        sumNoNDSOrder = addDUProp(documentNDSGroup, "sumNoNDSOrder", "Сумма без НДС", sumWithDiscountOrder, sumNDSOrder);
 
         quantityOrder = addSGProp("quantityOrder", "Кол-во", articleQuantity, 1);
         weightOrder = addSGProp("weightOrder", "Общий вес", weightOrderArticle, 1);
@@ -1043,16 +1058,16 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         sumPrevRetailOrder = addSGProp("sumPrevRetailOrder", "Сумма розн. (пред.)", sumPrevRetailOrderArticle, 1);
         sumPriceChangeOrder = addJProp("sumPriceChangeOrder", "Сумма переоц.", diff, sumNewPrevRetailOrder, 1, sumPrevRetailOrder, 1);
 
-/*        // для товарного отчета
+        // для товарного отчета
         documentRevalueAct = addDProp(baseGroup, "documentRevalueAct", "Документ", documentShopPrice, revalueAct);
         LP revalueActDocument = addAGProp(baseGroup, false, "revalueActDocument", false, "Акт переоценки", revalueAct, documentRevalueAct);
         sumPriceChangeOrder.follows(revalueActDocument, 1);
         is(revalueAct).follows(documentRevalueAct, 1);
-*/
+
         orderSaleUseObligation = addDProp("orderSaleUseObligation", "Использовать", LogicalClass.instance, commitSaleCheckArticleRetail, obligation);
         LP obligationUseSum = addJProp(and1, obligationSum, 2, orderSaleUseObligation, 1, 2);
 
-        obligationDocument = addCGProp(null, "obligationDocument", "Исп. документ", addJProp(and1, 1, orderSaleUseObligation, 1, 2), orderSaleUseObligation, 2);
+        obligationDocument = addAGProp("obligationDocument", "Исп. документ", orderSaleUseObligation, 1);
 
         LP addDays = addSFProp("prm1+prm2", DateClass.instance, 2);
 
@@ -1211,11 +1226,11 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         quantityDiffCommitArticle = addDUProp(articleOrderQuantity, addCUProp("Кол-во свер.", outerCommitedQuantity, quantityCheckCommitInnerArticle));
 
         // для импорта
-        nameToCurrency = addCGProp(null, "nameToCurrency", "Валюта", object(currency), name, name, 1);
-        nameToArticleGroup = addCGProp(null, "nameToArticleGroup", "Гр. тов.", object(articleGroup), name, name, 1);
-        nameToUnitOfMeasure = addCGProp(null, "nameToUnitOfMeasure", "Ед. изм.", object(unitOfMeasure), name, name, 1);
-        nameToBrend = addCGProp(null, "nameToBrend", "Бренд", object(brend), name, name, 1);
-        nameToGender = addCGProp(null, "nameToGender", "Пол", object(gender), name, name, 1);
+        nameToCurrency = addAGProp("nameToCurrency", "Валюта", currency, name);
+        nameToArticleGroup = addAGProp("nameToArticleGroup", "Гр. тов.", articleGroup, name);
+        nameToUnitOfMeasure = addAGProp("nameToUnitOfMeasure", "Ед. изм.", unitOfMeasure, name);
+        nameToBrend = addAGProp("nameToBrend", "Бренд", brend, name);
+        nameToGender = addAGProp("nameToGender", "Пол", gender, name);
 
         dateLastImportShop = addDProp(cashRegGroup, "dateLastImportSh", "Дата прайса", DateClass.instance, shop);
         dateLastImport = addJProp(cashRegGroup, "dateLastImport", "Дата прайса", dateLastImportShop, currentShop);
@@ -1225,13 +1240,13 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         // для накладной
         seriesInvoiceDocument = addDProp(documentShipmentGroup, "seriesInvoiceDocument", "Серия", StringClass.get(4), shipmentDocument);
         numberInvoiceDocument = addDProp(documentShipmentGroup, "numberInvoiceDocument", "Номер", StringClass.get(15), shipmentDocument);
-        invoiceDocumentNumber = addCGProp(privateGroup, false, "invoiceDocumentNumber", "Документ", object(shipmentDocument), numberInvoiceDocument, numberInvoiceDocument, 1);
+        invoiceDocumentNumber = addAGProp("invoiceDocumentNumber", "Документ", numberInvoiceDocument);
         
         legalOutContract = addGDProp(baseGroup, "Contract", "legalOut", "Кого (ИД)", new ValueClass[]{supplier, storeLegalEntity}, new CustomClass[]{contractSupplier, contractSale});
         nameLegalOutContract = addJProp("nameLegalOutContract", "Кого", name, legalOutContract, 1);
         legalIncContract = addGDProp(baseGroup, "Contract", "legalInc", "С кем (ИД)", new ValueClass[]{storeLegalEntity, customerWhole}, new CustomClass[]{contractDelivery, contractCustomer});
         nameLegalIncContract = addJProp("nameLegalIncContract", "С кем", name, legalIncContract, 1);
-        contractLegalEntityLegalEntity = addCGProp(privateGroup, true, "contractLegalEntityLegalEntity", "Договор (ИД)", object(contract), object(contract), legalOutContract, 1, legalIncContract, 1);
+        contractLegalEntityLegalEntity = addAGProp("contractLegalEntityLegalEntity", "Договор (ИД)", legalOutContract, legalIncContract);
 
         LP contractOutIncOrder = addJProp(contractLegalEntityLegalEntity, legalEntityOutOrder, 1, legalEntityIncOrder, 1);
         LP contractIncOutOrder = addJProp(contractLegalEntityLegalEntity, legalEntityIncOrder, 1, legalEntityOutOrder, 1);
@@ -1802,39 +1817,54 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
                     design.setEnabled(orderSalePayCard, true, objDoc.groupTo);
                 }
 
+                ContainerView docRightContainer = null;
+
                 // так конечно делать неправильно, но DocumentFormEntity - это первый общий класс у продажи сертификатов и кассы
-                PropertyDrawEntity payView = getPropertyDraw(sumWithDiscountOrder);
+                ContainerView docDiscountContainer = design.getGroupPropertyContainer(objDoc.groupTo, documentDiscountGroup);
 
-                if (payView != null) {
+                if (docDiscountContainer != null) {
                     // делаем, чтобы суммы были внизу и как можно правее
-                    ContainerView docSumsContainer = design.get(payView).getContainer();
-                    docSumsContainer.getContainer().setSID(null); // сделано, чтобы при визуальной настройке она сразу не перетаскивала все свойства в другой контейнер при помощи ContainerMover
-                    design.mainContainer.addBack(2, docSumsContainer);
+                    docDiscountContainer.getContainer().setSID(null); // сделано, чтобы при визуальной настройке она сразу не перетаскивала все свойства в другой контейнер при помощи ContainerMover
+                    design.mainContainer.addBack(2, docDiscountContainer);
+                    if(docRightContainer!=null)
+                        design.addIntersection(docRightContainer, docDiscountContainer, DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
+                    docRightContainer = docDiscountContainer;
+                }
 
-                    PropertyDrawEntity payCash = getPropertyDraw(orderSalePayCash);
-                    PropertyDrawEntity payCard = getPropertyDraw(orderSalePayCard);
+                ContainerView docObligationContainer = design.getGroupPropertyContainer(objDoc.groupTo, documentObligationGroup);
+                if(docObligationContainer != null) {
+//                  docObligationContainer.getContainer().setSID(null); // сделано, чтобы при визуальной настройке она сразу не перетаскивала все свойства в другой контейнер при помощи ContainerMover
+                    design.mainContainer.addBack(2, docObligationContainer);
+                    if(docRightContainer!=null)
+                        design.addIntersection(docRightContainer, docObligationContainer, DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
+                    docRightContainer = docObligationContainer;
+                }
+
+//                    PropertyDrawEntity payCash = getPropertyDraw(orderSalePayCash);
+//                    PropertyDrawEntity payCard = getPropertyDraw(orderSalePayCard);
+
+                ContainerView payContainer = design.getGroupPropertyContainer(objDoc.groupTo, documentPayGroup);
+                if (payContainer != null) {
+
+                    design.mainContainer.addBack(2, payContainer);
+                    payContainer.constraints.directions = new SimplexComponentDirections(0.1, -0.1, 0, 0.1);
+
+//                        if (payCash != null) payContainer.add(design.get(payCash));
+//                        if (payCard != null) payContainer.add(design.get(payCard));
                     PropertyDrawEntity toDo = getPropertyDraw(orderSaleToDo);
-                    PropertyDrawEntity toDoSum = getPropertyDraw(orderSaleToDoSum);
-
-                    if (payCash != null || payCard != null || toDo != null || toDoSum != null) {
-
-                        ContainerView payContainer = design.createContainer("Платежные средства");
-                        design.mainContainer.addBack(2, payContainer);
-                        payContainer.constraints.directions = new SimplexComponentDirections(0.1, -0.1, 0, 0.1);
-
-                        if (payCash != null) payContainer.add(design.get(payCash));
-                        if (payCard != null) payContainer.add(design.get(payCard));
-                        if (toDo != null) {
-                            payContainer.add(design.get(toDo));
-                            design.get(toDo).design.background = Color.yellow;
-                        }
-                        if (toDoSum != null) {
-                            payContainer.add(design.get(toDoSum));
-                            design.get(toDoSum).design.background = Color.yellow;
-                        }
-
-                        design.addIntersection(docSumsContainer, payContainer, DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
+                    if (toDo != null) {
+//                            payContainer.add(design.get(toDo));
+                        design.get(toDo).design.background = Color.yellow;
                     }
+                    PropertyDrawEntity toDoSum = getPropertyDraw(orderSaleToDoSum);
+                    if (toDoSum != null) {
+//                            payContainer.add(design.get(toDoSum));
+                        design.get(toDoSum).design.background = Color.yellow;
+                    }
+
+                    if(docRightContainer!=null)
+                        design.addIntersection(docRightContainer, payContainer, DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
+                    docRightContainer = payContainer;
                 }
 
                 if (hasExternalScreen()) {
@@ -2075,7 +2105,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
         @Override
         protected Object[] getDocumentProps() {
-            return BaseUtils.add(super.getDocumentProps(), importOrder);
+            return new Object[]{baseGroup, true, documentSumGroup, true, documentNDSGroup, true, documentManfrGroup, true, documentRetailGroup, true, importOrder};
         }
 
         @Override
@@ -2250,7 +2280,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             super(parent, sID, toAdd, documentClass, true);
 
             if (!toAdd)
-                addPropertyDraw(date, objDoc);
+                addPropertyDraw(objDoc, date, objectValue, orderHour);
 
             if (allStores) {
                 addPropertyDraw(objDoc, subjectOutOrder, nameSubjectOutOrder);
@@ -3087,7 +3117,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
             addFixedFilter(new NotNullFilterEntity(getPropertyObject(shopPrice)));
 
-            addFAProp(documentPriceGroup, "Реестр цен", this, objDoc);
+            addFAProp(documentPrintRetailGroup, "Реестр цен", this, objDoc);
         }
     }
 
@@ -3104,7 +3134,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(revalChangeBalance, objDoc, objArt)));
 
-            addFAProp(documentPriceGroup, "Акт переоценки", this, objDoc);
+            addFAProp(documentPrintRetailGroup, "Акт переоценки", this, objDoc);
         }
     }
 
@@ -3252,7 +3282,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             addFixedFilter(new NotNullFilterEntity(getPropertyObject(shopPrice)));
             addFixedFilter(new NotFilterEntity(new CompareFilterEntity(getPropertyObject(shopPrice), Compare.EQUALS, addPropertyObject(prevPrice, objDoc, objArt))));
 
-            addFAProp(documentPriceGroup, "Ценники", this, objDoc);
+            addFAProp(documentPrintRetailGroup, "Ценники", this, objDoc);
         }
     }
 
@@ -3265,7 +3295,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             objDoc.groupTo.initClassView = ClassViewType.PANEL;
             ObjectEntity objArt = addSingleGroupObject(article, baseGroup, true);
 
-            addFAProp(documentPriceGroup, "Стикеры", this, objDoc);
+            addFAProp(documentPrintRetailGroup, "Стикеры", this, objDoc);
         }
     }
 

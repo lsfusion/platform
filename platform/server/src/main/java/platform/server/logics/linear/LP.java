@@ -213,4 +213,8 @@ public class LP<T extends PropertyInterface> {
             lp.follows(this, mapping);
     }
     */
+    
+    public void setPreferredCharWidth(int length) {
+        property.preferredCharWidth = length;
+    }
 }
