@@ -614,6 +614,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     ConcreteCustomClass hugoBossSupplier;
     ConcreteCustomClass mexxSupplier;
     ConcreteCustomClass bestsellerSupplier;
+    ConcreteCustomClass sOliverSupplier;
     private LP jennyferImportInvoice;
     private LP jennyferImportArticleWeightInvoice;
     private LP tallyWeijlImportInvoice;
@@ -624,6 +625,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     private LP mexxImportColorInvoice;
     private LP bestsellerImportInvoice;
     private LP bestsellerImportCompositionInvoice;
+    private LP sOliverImportInvoice;
     private AbstractGroup importInvoiceActionGroup;
     private LP printCreatePalletForm;
     private LP printCreateFreightBoxForm;
@@ -648,6 +650,22 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     private LP skuJennyferBarcode;
     private LP substring10s13;
     private LP skuBarcodeObject;
+
+    ConcreteCustomClass pricat;
+    LP barcodePricat;
+    LP articleNumberPricat;
+    LP colorCodePricat;
+    LP colorNamePricat;
+    LP sizePricat;
+    LP originalNamePricat;
+    LP countryPricat;
+    LP netWeightPricat;
+    LP compositionPricat;
+    LP pricePricat;
+    LP rrpPricat;
+    LP supplierPricat;
+    LP barcodeToPricat;
+    LP importPricatSupplier;
 
     public RomanBusinessLogics(DataAdapter adapter, int exportPort) throws IOException, ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException, FileNotFoundException, JRException {
         super(adapter, exportPort);
@@ -691,6 +709,8 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         article = addAbstractClass("article", "Артикул", baseClass);
         articleComposite = addConcreteClass("articleComposite", "Артикул (составной)", article);
         articleSingle = addConcreteClass("articleSingle", "Артикул (простой)", sku, article);
+
+        pricat = addConcreteClass("pricat", "Прайс", baseClass);
 
         item = addConcreteClass("item", "Товар", sku);
 
@@ -737,6 +757,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         hugoBossSupplier = addConcreteClass("hugoBossSupplier", "Hugo Boss", supplier);
         mexxSupplier = addConcreteClass("mexxSupplier", "Mexx", supplier);
         bestsellerSupplier = addConcreteClass("bestsellerSupplier", "Bestseller", supplier);
+        sOliverSupplier = addConcreteClass("sOliverSupplier", "s.Oliver", supplier);
 
         subject = addAbstractClass("subject", "Субъект", baseClass.named);
         importer = addConcreteClass("importer", "Импортер", subject);
@@ -858,6 +879,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         mexxImportColorInvoice = addAProp(importInvoiceActionGroup, new MexxImportColorInvoiceActionProperty(this));
         bestsellerImportInvoice = addAProp(importInvoiceActionGroup, new BestsellerImportInvoiceActionProperty(this));
         bestsellerImportCompositionInvoice = addAProp(importInvoiceActionGroup, new BestsellerImportCompositionActionProperty(this));
+        sOliverImportInvoice = addAProp(importInvoiceActionGroup, new SOliverImportInvoiceActionProperty(this));
 
         customCategory4CustomCategory6 = addDProp(idGroup, "customCategory4CustomCategory6", "Код(4)", customCategory4, customCategory6);
         customCategory6CustomCategory9 = addDProp(idGroup, "customCategory6CustomCategory9", "Код(6)", customCategory6, customCategory9);
@@ -1185,6 +1207,22 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
                 addJProp(true, addIAProp(numberListArticle, 1),
                         1, articleSIDList, 2, 1), 1, 2,
                 numberListSIDArticle, 1, 2); // если еще не было добавлено такой строки
+
+        //price and catalog (pricat)
+        barcodePricat = addDProp(baseGroup, "barcodePricat", "Штрих-код", StringClass.get(13), pricat);
+        articleNumberPricat = addDProp(baseGroup, "articleNumberPricat", "Артикул", StringClass.get(20), pricat);
+        colorCodePricat = addDProp(baseGroup, "colorCodePricat", "Код цвета", StringClass.get(20), pricat);
+        colorNamePricat = addDProp(baseGroup, "colorNamePricat", "Цвет", StringClass.get(50), pricat);
+        sizePricat = addDProp(baseGroup, "sizePricat", "Размер", StringClass.get(5), pricat);
+        originalNamePricat = addDProp(baseGroup, "originalNamePricat", "Наименование (ориг.)", StringClass.get(50), pricat);
+        countryPricat = addDProp(baseGroup, "countryPricat", "Страна происхождения", StringClass.get(20), pricat);
+        netWeightPricat = addDProp(baseGroup, "netWeightPricat", "Вес нетто", DoubleClass.instance, pricat);
+        compositionPricat = addDProp(baseGroup, "compositionPricat", "Состав", StringClass.get(50), pricat);
+        pricePricat = addDProp(baseGroup, "pricePricat", "Цена", DoubleClass.instance, pricat);
+        rrpPricat = addDProp(baseGroup, "RRP", "Рекомендованная цена", DoubleClass.instance, pricat);
+        supplierPricat = addDProp("supplierPricat", "Поставщик", supplier, pricat);
+        barcodeToPricat = addCGProp(null, "barcodeToPricat", "штрих-код", object(pricat), barcodePricat, barcodePricat, 1);
+        importPricatSupplier = addIPProp();
 
         // кол-во заказа
         quantityDataListSku = addDProp("quantityDataListSku", "Кол-во (первичное)", DoubleClass.instance, list, sku);
@@ -1816,7 +1854,11 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     }
 
     public LP addDEAProp() {
-        return addProperty(null, new LP<ClassPropertyInterface>(new DeclarationExportActionProperty("declarationExport", "Экспорт декларанта", RomanBusinessLogics.this, importer, freight)));
+        return addProperty(null, new LP<ClassPropertyInterface>(new DeclarationExportActionProperty("declarationExport", "Экспорт декларанта", this, importer, freight)));
+    }
+
+    public LP addIPProp() {
+        return addProperty(null, new LP<ClassPropertyInterface>(new PricatImportActionProperty(genSID(), this, supplier)));
     }
 
     public InvoiceFromFormEntity invoiceFromFormEntity;
@@ -1856,6 +1898,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         addFormEntity(new InvoiceFormEntity(purchase, "simpleInvoiceForm", "Инвойсы без коробов", false));
         addFormEntity(new ShipmentListFormEntity(purchase, "boxShipmentListForm", "Поставки по коробам", true));
         addFormEntity(new ShipmentListFormEntity(purchase, "simpleShipmentListForm", "Поставки без коробов", false));
+        addFormEntity(new PricatFormEntity(purchase, "pricatForm", "Прайсы"));
 
         NavigatorElement shipment = new NavigatorElement(baseElement, "shipment", "Управление фрахтами");        
         addFormEntity(new FreightShipmentFormEntity(shipment, "freightShipmentForm", "Комплектация фрахта"));
@@ -3716,6 +3759,24 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             design.setEnabled(objSupplier, false);
             design.setEnabled(objBarcode, false);
             return design;
+        }
+    }
+
+    public class PricatFormEntity extends FormEntity {
+        ObjectEntity objSupplier;
+
+        public PricatFormEntity(NavigatorElement parent, String sID, String caption) {
+            super(parent, sID, caption);
+            objSupplier = addSingleGroupObject(supplier, name, importPricatSupplier);
+            objSupplier.groupTo.setSingleClassView(ClassViewType.PANEL);
+
+            ObjectEntity objPricat = addSingleGroupObject(pricat);
+            addPropertyDraw(objPricat, baseGroup);
+            addObjectActions(this, objPricat);
+
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(supplierPricat, objPricat), Compare.EQUALS, objSupplier));
+            setReadOnly(objSupplier, true);
+            setReadOnly(importPricatSupplier, false, objSupplier.groupTo);
         }
     }
 

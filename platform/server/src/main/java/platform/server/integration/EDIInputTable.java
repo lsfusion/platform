@@ -72,6 +72,17 @@ public class EDIInputTable implements ImportInputTable {
 
         public abstract void startElement(String namespace, String localName, String qName, Attributes atts) throws SAXException;
 
+        public void addRow() {
+            if (!row.isEmpty()) {
+                List<String> single = new ArrayList<String>();
+                for (String column : columns) {
+                    single.add(row.get(column) == null ? "" : row.get(column));
+                }
+                data.add(single);
+                row = new HashMap<String, String>();
+            }
+        }
+
         public String getTokenValue() throws IOException, EDISyntaxException {
             parser.getTokenizer().ungetToken();
             return parser.getTokenizer().nextToken().getValue();

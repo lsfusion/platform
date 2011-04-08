@@ -5,8 +5,6 @@ import org.xml.sax.SAXException;
 import platform.server.integration.EDIInputTable;
 
 import java.io.*;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 public class BestsellerInvoiceEDIInputTable extends EDIInputTable {
@@ -14,7 +12,7 @@ public class BestsellerInvoiceEDIInputTable extends EDIInputTable {
     public BestsellerInvoiceEDIInputTable(ByteArrayInputStream inFile) {
         super(inFile);
         handler = new ScanningHandler("country", "colourCode", "colour", "size", "netWeight", "quantity", "price", "invoiceSID", "sid", "barcode",
-                "boxNumber", "customCode", "customCode6", "composition", "originalName", "numberSku") {
+                "boxNumber", "customCode", "customCode6", "composition", "originalName", "numberSku", "rrp") {
             String imd1 = ""
                     ,
                     imd2 = "";
@@ -26,11 +24,9 @@ public class BestsellerInvoiceEDIInputTable extends EDIInputTable {
             String boxNumber = "";
             String barcode = "";
 
-            public void startElement(String namespace, String localName, String qName, Attributes atts) throws SAXException {
-                String segmentID = atts.getValue("Id");
-
-                if (segmentID != null && (segmentID.equals("LIN") || segmentID.equals("UNS"))) {
-                    if (row.get("LINtype") != null && !row.get("LINtype").equals("EN")) {
+            @Override
+            public void addRow() {
+                if (row.get("LINtype") != null && !row.get("LINtype").equals("EN")) {
                         boolean barcodeAgain = false;
                         for (List<String> listRow : data) {
                             if (listRow.get(9).equals(barcode)) {
@@ -47,14 +43,17 @@ public class BestsellerInvoiceEDIInputTable extends EDIInputTable {
                             row.put("sid", sid);
                             row.put("boxNumber", boxNumber);
                             row.put("barcode", barcode);
-                            List<String> single = new ArrayList<String>();
-                            for (String column : columns) {
-                                single.add(row.get(column) == null ? "" : row.get(column));
-                            }
-                            data.add(single);
-                            row = new HashMap<String, String>();
+
+                            super.addRow();
                         }
                     }
+            }
+
+            public void startElement(String namespace, String localName, String qName, Attributes atts) throws SAXException {
+                String segmentID = atts.getValue("Id");
+
+                if (segmentID != null && (segmentID.equals("LIN") || segmentID.equals("UNS"))) {
+                    addRow();
                 }
                 try {
                     if (segmentID != null) {

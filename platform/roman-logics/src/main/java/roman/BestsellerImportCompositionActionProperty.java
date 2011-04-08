@@ -37,8 +37,8 @@ public class BestsellerImportCompositionActionProperty extends BaseImportActionP
         try {
             ByteArrayInputStream inFile = new ByteArrayInputStream((byte[]) value.getValue());
 
-            ImportTable table = new BestsellerInvoiceImporter(new BestsellerCompositionEDIInputTable(inFile),
-                    sidField, compositionField).getTable();
+            EDIInvoiceImporter importer = new EDIInvoiceImporter(new BestsellerCompositionEDIInputTable(inFile), sidField, compositionField);
+            ImportTable table = importer.getTable();
             new IntegrationService(executeForm.form.session, table, Arrays.asList(articleKey), properties).synchronize(true, true, false);
 
             actions.add(new MessageClientAction("Данные были успешно приняты", "Импорт"));

@@ -3,8 +3,8 @@ package roman;
 import platform.server.integration.ImportInputTable;
 import platform.server.integration.SingleSheetImporter;
 
-public class BestsellerInvoiceImporter extends SingleSheetImporter {
-    public BestsellerInvoiceImporter(ImportInputTable inputTable, Object... fields){
+public class EDIInvoiceImporter extends SingleSheetImporter {
+    public EDIInvoiceImporter(ImportInputTable inputTable, Object... fields){
         super(inputTable, fields);
     }
 

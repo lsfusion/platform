@@ -6,8 +6,6 @@ import platform.server.integration.EDIInputTable;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 public class BestsellerCompositionEDIInputTable extends EDIInputTable {
@@ -20,14 +18,7 @@ public class BestsellerCompositionEDIInputTable extends EDIInputTable {
                 String segmentID = atts.getValue("Id");
 
                 if (segmentID != null && (segmentID.equals("LIN") || segmentID.equals("UNS"))) {
-                    if (!row.isEmpty()) {
-                        List<String> single = new ArrayList<String>();
-                        for (String column : columns) {
-                            single.add(row.get(column) == null ? "" : row.get(column));
-                        }
-                        data.add(single);
-                        row = new HashMap<String, String>();
-                    }
+                    addRow();
                 }
                 try {
                     if (segmentID != null) {
