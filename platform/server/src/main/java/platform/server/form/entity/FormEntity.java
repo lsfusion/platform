@@ -555,6 +555,7 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
 
     public void customSerialize(ServerSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
         pool.writeString(outStream, caption);
+        pool.writeString(outStream, sID);
         outStream.writeBoolean(isPrintForm);
 
         pool.serializeCollection(outStream, groups);
@@ -583,6 +584,7 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
 
     public void customDeserialize(ServerSerializationPool pool, DataInputStream inStream) throws IOException {
         caption = pool.readString(inStream);
+        sID = pool.readString(inStream);
         isPrintForm = inStream.readBoolean();
 
         groups = pool.deserializeList(inStream);

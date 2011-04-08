@@ -211,6 +211,7 @@ public class FormDescriptor extends ContextIdentityObject implements ClientIdent
 
     public void customSerialize(ClientSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
         pool.writeString(outStream, caption);
+        pool.writeString(outStream, sID);
         outStream.writeBoolean(isPrintForm);
 
         pool.serializeCollection(outStream, groupObjects);
@@ -241,6 +242,7 @@ public class FormDescriptor extends ContextIdentityObject implements ClientIdent
 
     public void customDeserialize(ClientSerializationPool pool, DataInputStream inStream) throws IOException {
         caption = pool.readString(inStream);
+        sID = pool.readString(inStream);
         isPrintForm = inStream.readBoolean();
 
         groupObjects = pool.deserializeList(inStream);
