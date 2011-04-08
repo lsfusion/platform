@@ -28,6 +28,11 @@ public class SumGroupExpr extends GroupExpr {
         return new SumGroupExpr(group, query);
     }
 
+    @Override
+    public GroupType getGroupType() {
+        return GroupType.SUM;
+    }
+
     public Where calculateWhere() {
         return new NotNull();
     }
@@ -37,9 +42,5 @@ public class SumGroupExpr extends GroupExpr {
         protected ClassExprWhere getClassWhere(Where fullWhere) {
             return fullWhere.getClassWhere().map(group).and(new ClassExprWhere(SumGroupExpr.this,(IntegralClass) query.getType(fullWhere)));
         }
-    }
-
-    public boolean isMax() {
-        return false;
     }
 }

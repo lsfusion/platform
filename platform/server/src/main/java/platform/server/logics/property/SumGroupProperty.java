@@ -5,6 +5,7 @@ import platform.server.data.expr.BaseExpr;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.cases.CaseExpr;
+import platform.server.data.expr.query.GroupType;
 import platform.server.data.where.WhereBuilder;
 import platform.server.data.where.Where;
 import platform.server.session.*;
@@ -17,8 +18,13 @@ import java.util.*;
 
 public class SumGroupProperty<T extends PropertyInterface> extends GroupProperty<T> {
 
+    @Override
+    protected GroupType getGroupType() {
+        return GroupType.SUM;
+    }
+
     public SumGroupProperty(String sID, String caption, Collection<? extends PropertyInterfaceImplement<T>> interfaces, Property<T> property) {
-        super(sID, caption, interfaces, property, 1);
+        super(sID, caption, interfaces, property);
     }
 
     public Expr getChangedExpr(Expr changedExpr, Expr changedPrevExpr, Map<Interface<T>, ? extends Expr> joinImplement, Modifier<? extends Changes> modifier) {

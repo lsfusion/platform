@@ -6,6 +6,7 @@ import platform.server.classes.ConcreteCustomClass;
 import platform.server.classes.CustomClass;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
+import platform.server.data.expr.query.GroupType;
 import platform.server.data.expr.where.EqualsWhere;
 import platform.server.data.query.Query;
 import platform.server.data.where.Where;
@@ -82,6 +83,11 @@ public class AggregateGroupProperty<T extends PropertyInterface, J extends Prope
             for(Map.Entry<PropertyMapImplement<?, T>, DataObject> propertyInterface : BaseUtils.filterKeys(interfaceValues, groupProps).entrySet())
                 propertyInterface.getKey().execute(propValues, session, propertyInterface.getValue().object, session.modifier);
         }
+    }
+
+    @Override
+    protected GroupType getGroupType() {
+        return GroupType.ANY;
     }
 }
 

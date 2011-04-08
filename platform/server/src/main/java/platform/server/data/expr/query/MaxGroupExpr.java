@@ -17,7 +17,7 @@ public class MaxGroupExpr extends GroupExpr {
         super(group, expr);
     }
 
-    public MaxGroupExpr(MaxGroupExpr maxExpr, MapTranslate translator) {
+    protected MaxGroupExpr(MaxGroupExpr maxExpr, MapTranslate translator) {
         super(maxExpr, translator);
     }
 
@@ -28,6 +28,11 @@ public class MaxGroupExpr extends GroupExpr {
     @ParamLazy
     public MaxGroupExpr translateOuter(MapTranslate translator) {
         return new MaxGroupExpr(this,translator);
+    }
+
+    @Override
+    public GroupType getGroupType() {
+        return GroupType.MAX;
     }
 
     public Where calculateWhere() {
@@ -45,7 +50,4 @@ public class MaxGroupExpr extends GroupExpr {
         }
     }
 
-    public boolean isMax() {
-        return true;
-    }
 }

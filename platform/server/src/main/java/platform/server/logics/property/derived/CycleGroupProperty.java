@@ -73,7 +73,7 @@ public class CycleGroupProperty<T extends PropertyInterface,P extends PropertyIn
         // группируем по новому значению, интерфейсам, а также по изменению toChange
         Where compareWhere = groupProperty.getExpr(mapKeys, changeModifier, changedWhere).compare(changeJoin.getExpr("value"), Compare.EQUALS).and(changeJoin.getWhere());
 
-        return GroupExpr.create(toChange.getChangeExprs(), toChange.changeExpr, changedWhere.toWhere().and(compareWhere), true, toChangeKeys, (PullExpr)toChange.changeExpr);
+        return GroupExpr.create(toChange.getChangeExprs(), toChange.changeExpr, changedWhere.toWhere().and(compareWhere), getGroupType(), toChangeKeys, (PullExpr)toChange.changeExpr);
     }
 
     private Where getNullWhere(PropertyChange<Interface<T>> change, Modifier<? extends Changes> modifier, Map<P,KeyExpr> toChangeKeys) {
@@ -91,6 +91,6 @@ public class CycleGroupProperty<T extends PropertyInterface,P extends PropertyIn
             newOldWhere = newOldWhere.or(groupInterface.implement.mapExpr(mapKeys,changeModifier,newOldChangedWhere).getWhere().not());
         newOldWhere = newOldWhere.and(groupProperty.getExpr(mapKeys,modifier).getWhere());
 
-        return GroupExpr.create(toChange.getChangeExprs(), ValueExpr.TRUE, newOldChangedWhere.toWhere().and(change.getWhere(getGroupImplements(mapKeys, modifier)).and(newOldWhere)), true, toChangeKeys).getWhere();
+        return GroupExpr.create(toChange.getChangeExprs(), newOldChangedWhere.toWhere().and(change.getWhere(getGroupImplements(mapKeys, modifier)).and(newOldWhere)), toChangeKeys).getWhere();
     }
 }

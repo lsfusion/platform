@@ -5,7 +5,6 @@ import platform.base.Pair;
 import platform.base.ReversedHashMap;
 import platform.base.ReversedMap;
 import platform.interop.Compare;
-import platform.server.Settings;
 import platform.server.caches.IdentityLazy;
 import platform.server.caches.ManualLazy;
 import platform.server.caches.ParamLazy;
@@ -43,73 +42,7 @@ public abstract class GroupExpr extends QueryExpr<BaseExpr,Expr,GroupJoin> {
 //        assert checkInfinite(false);
     }
 
-/*    //не очень красиво решено
-    private class CheckInfinite extends ToString {
-
-        boolean correct = true;
-        private CheckInfinite() {
-            super(getValues(), getKeys());
-        }
-
-        @Override
-        public String getSource(Table.Join.Expr expr) {
-            for(Expr inE : expr.getJoin().joins.values())
-                inE.getSource(this);
-            return super.getSource(expr);
-        }
-
-        @Override
-        public String getSource(Table.Join.IsIn where) {
-            for(Expr inE : where.getJoin().joins.values())
-                inE.getSource(this);
-            return super.getSource(where);
-        }
-
-        @Override
-        public String getSource(OrderExpr orderExpr) {
-            for(Expr inE : orderExpr.group.values())
-                inE.getSource(this);
-            return super.getSource(orderExpr);
-        }
-
-        @Override
-        public String getSource(GroupExpr groupExpr) {
-            for(Expr inE : groupExpr.group.values())
-                inE.getSource(this);            
-            correct = correct && groupExpr.checkInfinite(true);
-            return super.getSource(groupExpr);
-        }
-    }
-
-    public boolean checkInfinite(boolean inner) {
-        Where fullWhere = getFullWhere();
-
-        if(!inner) {
-            for(Map.Entry<BaseExpr,BaseExpr> groupExpr : group.entrySet())
-                if(groupExpr.getValue() instanceof KeyExpr) { // может транслировать
-                    Type type = groupExpr.getKey().getType(fullWhere);
-                    if(type instanceof DataClass)
-                        fullWhere = fullWhere.and(groupExpr.getKey().compare(new ValueExpr(((DataClass)type).getDefaultValue(), (DataClass)type), Compare.EQUALS));
-                }
-        }
-
-        for(InnerSelectJoin innerJoin : fullWhere.getInnerJoins(true, false)) {
-            if(!innerJoin.checkKeys(getKeys()))
-                return false;
-
-            if(!inner) {
-                // проверим что внутренним хватает ключей
-                CheckInfinite check = new CheckInfinite();
-                innerJoin.where.getSource(check);
-                if(!check.correct)
-                    return false;
-            }
-        }
-
-        return true;
-    }
-  */
-    public abstract boolean isMax();
+    public abstract GroupType getGroupType();
 
     // трансляция
     public GroupExpr(GroupExpr groupExpr, MapTranslate translator) {
@@ -162,19 +95,14 @@ public abstract class GroupExpr extends QueryExpr<BaseExpr,Expr,GroupJoin> {
     }
 
     protected GroupExpr innerTranslate(MapTranslate translate) {
-        Expr transExpr = query.translateOuter(translate);
-        Map<BaseExpr, BaseExpr> transGroup = translate.translateKeys(group);
-        if(isMax())
-            return new MaxGroupExpr(transGroup, transExpr);
-        else
-            return new SumGroupExpr(transGroup, transExpr);
+        return getGroupType().createExpr(translate.translateKeys(group), query.translateOuter(translate));
     }
 
     @IdentityLazy
     public GroupJoin getGroupJoin() {
-        InnerSelectJoin innerJoin = BaseUtils.single(getInnerJoins(query, BaseUtils.reverse(group), isMax()));
+        InnerSelectJoin innerJoin = BaseUtils.single(getInnerJoins(query, BaseUtils.reverse(group), getGroupType()));
         assert innerJoin.keyEqual.isEmpty();
-        return new GroupJoin(innerContext.getKeys(), innerContext.getValues(), BaseUtils.single(getExprCases(query, isMax())).where,
+        return new GroupJoin(innerContext.getKeys(), innerContext.getValues(), BaseUtils.single(getExprCases(query, getGroupType())).where,
                 innerJoin.joins, group);
     }
 
@@ -194,21 +122,21 @@ public abstract class GroupExpr extends QueryExpr<BaseExpr,Expr,GroupJoin> {
         return "G"+tobt;
     }
 
-    public static <K> Expr create(Map<K,? extends Expr> group, Expr expr,Where where,boolean max,Map<K,? extends Expr> implement) {
-        return create(group,expr,where,max,implement,null);
+    public static <K> Expr create(Map<K,? extends Expr> group, Where where, Map<K,? extends Expr> implement) {
+        return create(group, ValueExpr.TRUE, where, GroupType.ANY, implement);
     }
 
-    public static <K> Expr create(Map<K,? extends Expr> group, Expr expr,Where where,boolean max,Map<K,? extends Expr> implement, PullExpr noPull) {
-        return create(group,expr.and(where),max,implement,noPull);
+    public static <K> Expr create(Map<K,? extends Expr> group, Expr expr,Where where,GroupType type,Map<K,? extends Expr> implement) {
+        return create(group,expr,where,type,implement,null);
     }
 
-    private static Expr add(Expr op1, Expr op2, boolean max) {
-        return max?op1.max(op2):op1.sum(op2);
+    public static <K> Expr create(Map<K,? extends Expr> group, Expr expr,Where where,GroupType type,Map<K,? extends Expr> implement, PullExpr noPull) {
+        return create(group,expr.and(where),type,implement,noPull);
     }
 
     // "определяет" вытаскивать case'ы или нет
-    private static Collection<? extends Case<? extends Expr>> getExprCases(Expr expr,boolean max) {
-        return max && Settings.instance.isSplitGroupMaxExprcases() ?expr.getCases():Collections.singleton(new Case<Expr>(Where.TRUE,expr));
+    private static Collection<? extends Case<? extends Expr>> getExprCases(Expr expr,GroupType type) {
+        return type.splitExprCases()?expr.getCases():Collections.singleton(new Case<Expr>(Where.TRUE,expr));
     }
 
     private Collection<ClassExprWhere> packNoChange = new ArrayList<ClassExprWhere>();
@@ -241,7 +169,7 @@ public abstract class GroupExpr extends QueryExpr<BaseExpr,Expr,GroupJoin> {
         Where outerWhere = falseWhere.not();
         Map<BaseExpr, BaseExpr> outerExprValues = outerWhere.getExprValues();
         if(!BaseUtils.hashEquals(packGroup,group) || !Collections.disjoint(group.values(), outerExprValues.keySet())) // если простой пак
-            return createOuterGroupCases(packGroup, query, isMax(), outerExprValues);
+            return createOuterGroupCases(packGroup, query, getGroupType(), outerExprValues);
 
         ClassExprWhere packClasses = getJoinsWhere().and(outerWhere).getClassWhere().mapBack(group).
                     and(getWhere(group.keySet()).getClassWhere());
@@ -264,7 +192,7 @@ public abstract class GroupExpr extends QueryExpr<BaseExpr,Expr,GroupJoin> {
             addNoChange(packClasses);
             return this;
         } else {
-            Expr result = createInner(packInnerGroup, packExpr, isMax());
+            Expr result = createInner(packInnerGroup, packExpr, getGroupType());
             packClassExprs.put(packClasses, result);
             return result;
         }
@@ -272,10 +200,10 @@ public abstract class GroupExpr extends QueryExpr<BaseExpr,Expr,GroupJoin> {
 
     @ParamLazy
     public Expr translateQuery(QueryTranslator translator) {
-        return createOuterGroupCases(translator.translate(group), query, isMax(), new HashMap<BaseExpr, BaseExpr>());
+        return createOuterGroupCases(translator.translate(group), query, getGroupType(), new HashMap<BaseExpr, BaseExpr>());
     }
 
-    private static <K> Expr create(Map<K, ? extends Expr> inner, Expr expr,boolean max, Map<K, ? extends Expr> outer, PullExpr noPull) {
+    private static <K> Expr create(Map<K, ? extends Expr> inner, Expr expr, GroupType type, Map<K, ? extends Expr> outer, PullExpr noPull) {
         Map<Object, Expr> pullInner = new HashMap<Object, Expr>(inner);
         Map<Object, Expr> pullOuter = new HashMap<Object, Expr>(outer);
         for(KeyExpr key : enumKeys(inner.values(),expr.getEnum()))
@@ -285,22 +213,22 @@ public abstract class GroupExpr extends QueryExpr<BaseExpr,Expr,GroupJoin> {
                 pullOuter.put(pullObject,key);
             }
 
-        return create(pullInner, expr, max, pullOuter);
+        return create(pullInner, expr, type, pullOuter);
     }
 
     // вытаскивает из outer Case'ы
-    public static <K> Expr create(Map<K, ? extends Expr> group, Expr expr,boolean max, Map<K, ? extends Expr> implement) {
+    public static <K> Expr create(Map<K, ? extends Expr> group, Expr expr, GroupType type, Map<K, ? extends Expr> implement) {
         ExprCaseList result = new ExprCaseList();
         for(MapCase<K> caseOuter : CaseExpr.pullCases(implement))
-            result.add(caseOuter.where, createOuterBase(group, expr, max, caseOuter.data));
+            result.add(caseOuter.where, createOuterBase(group, expr, type, caseOuter.data));
         return result.getExpr();
     }
 
     // если translate или packFollowFalse, на самом деле тоже самое что сверху, но иначе придется кучу generics'ов сделать
-    private static Expr createOuterGroupCases(Map<BaseExpr, ? extends Expr> innerOuter, Expr expr, boolean max, Map<BaseExpr,BaseExpr> outerExprValues) {
+    private static Expr createOuterGroupCases(Map<BaseExpr, ? extends Expr> innerOuter, Expr expr, GroupType type, Map<BaseExpr,BaseExpr> outerExprValues) {
         ExprCaseList result = new ExprCaseList();
         for(MapCase<BaseExpr> caseInnerOuter : CaseExpr.pullCases(innerOuter))
-            result.add(caseInnerOuter.where, createOuterGroupBase(caseInnerOuter.data, expr, max, outerExprValues));
+            result.add(caseInnerOuter.where, createOuterGroupBase(caseInnerOuter.data, expr, type, outerExprValues));
         return result.getExpr();
     }
 
@@ -381,39 +309,39 @@ public abstract class GroupExpr extends QueryExpr<BaseExpr,Expr,GroupJoin> {
         return groupMap(iterable, exprValues, reversed);
     }
 
-    private static <K, I extends Expr> Expr createOuterBase(Map<K,I> inner, Expr expr,boolean max, Map<K,BaseExpr> outer) {
+    private static <K, I extends Expr> Expr createOuterBase(Map<K,I> inner, Expr expr,GroupType type, Map<K,BaseExpr> outer) {
         Map<BaseExpr, I> outerInner = new HashMap<BaseExpr, I>();
         expr = expr.and(groupMap(inner, outer, outerInner));
-        return createInner(outerInner, expr, max);
+        return createInner(outerInner, expr, type);
     }
 
     // если translate или packFollowFalse, на самом деле тоже самое что сверху, но иначе придется кучу generics'ов сделать
-    private static Expr createOuterGroupBase(Map<BaseExpr, BaseExpr> innerOuter, Expr expr, boolean max, Map<BaseExpr,BaseExpr> outerExprValues) {
+    private static Expr createOuterGroupBase(Map<BaseExpr, BaseExpr> innerOuter, Expr expr, GroupType type, Map<BaseExpr,BaseExpr> outerExprValues) {
         ReversedMap<BaseExpr, BaseExpr> outerInner = new ReversedHashMap<BaseExpr, BaseExpr>();
         List<Pair<BaseExpr, BaseExpr>> equals = groupMap(innerOuter, outerExprValues, outerInner);
         expr = expr.and(getEqualsWhere(equals));
-        return createExprEquals(outerInner, expr, max, equals);
+        return createExprEquals(outerInner, expr, type, equals);
     }
 
-    private static Expr createInner(Map<BaseExpr, ? extends Expr> outerInner, Expr expr,boolean max) {
-        return createInnerCases(outerInner, expr, max);
+    private static Expr createInner(Map<BaseExpr, ? extends Expr> outerInner, Expr expr,GroupType type) {
+        return createInnerCases(outerInner, expr, type);
     }
 
-    private static Expr createInnerCases(Map<BaseExpr, ? extends Expr> outerInner, Expr expr,boolean max) {
+    private static Expr createInnerCases(Map<BaseExpr, ? extends Expr> outerInner, Expr expr, GroupType type) {
         Expr result = NULL;
         Where upWhere = Where.FALSE;
         for(MapCase<BaseExpr> caseOuterInner : CaseExpr.pullCases(outerInner)) {
-            result = add(result, createInnerExprCases(caseOuterInner.data, expr.and(caseOuterInner.where.and(upWhere.not())), max), max);
+            result = type.add(result, createInnerExprCases(caseOuterInner.data, expr.and(caseOuterInner.where.and(upWhere.not())), type));
             upWhere = upWhere.or(caseOuterInner.where);
         }
         return result;
     }
 
-    private static Expr createInnerExprCases(Map<BaseExpr, BaseExpr> outerInner, Expr expr,boolean max) {
+    private static Expr createInnerExprCases(Map<BaseExpr, BaseExpr> outerInner, Expr expr,GroupType type) {
         Expr result = NULL;
         Where upWhere = Where.FALSE;
-        for(Case<? extends Expr> exprCase : getExprCases(expr,max)) {
-            result = add(result, createInnerSplit(outerInner, exprCase.data.and(exprCase.where.and(upWhere.not())), max), max);
+        for(Case<? extends Expr> exprCase : getExprCases(expr,type)) {
+            result = type.add(result, createInnerSplit(outerInner, exprCase.data.and(exprCase.where.and(upWhere.not())), type));
             upWhere = upWhere.or(exprCase.where);
         }
         return result;
@@ -429,29 +357,29 @@ public abstract class GroupExpr extends QueryExpr<BaseExpr,Expr,GroupJoin> {
     }
 
     // "определяет" разбивать на innerJoins или нет
-    private static Collection<InnerSelectJoin> getInnerJoins(Expr expr, Map<BaseExpr, BaseExpr> outerInner, boolean max) {
+    private static Collection<InnerSelectJoin> getInnerJoins(Expr expr, Map<BaseExpr, BaseExpr> outerInner, GroupType type) {
         // если sum (не max) то exclusive
-        return getFullWhere(expr, outerInner).getInnerJoins(max, !Settings.SPLIT_GROUP_INNER_JOINS(max));
+        return getFullWhere(expr, outerInner).getInnerJoins(type.noExclusive(), !type.splitInnerJoins());
     }
 
-    private static Expr createInnerSplit(Map<BaseExpr, BaseExpr> outerInner, Expr expr,boolean max) {
+    private static Expr createInnerSplit(Map<BaseExpr, BaseExpr> outerInner, Expr expr,GroupType type) {
 
         Expr result = CaseExpr.NULL;
-        for(InnerSelectJoin innerJoin : getInnerJoins(expr, outerInner, max)) {
+        for(InnerSelectJoin innerJoin : getInnerJoins(expr, outerInner, type)) {
             Expr innerResult;
             if(!innerJoin.keyEqual.isEmpty()) { // translatе'им expr
                 QueryTranslator equalTranslator = innerJoin.keyEqual.getTranslator();
-                innerResult = createInner(equalTranslator.translate(outerInner), expr.translateQuery(equalTranslator).and(innerJoin.where), max);
+                innerResult = createInner(equalTranslator.translate(outerInner), expr.translateQuery(equalTranslator).and(innerJoin.where), type);
             } else
-                innerResult = createInnerBase(outerInner, expr.and(innerJoin.where), max);
+                innerResult = createInnerBase(outerInner, expr.and(innerJoin.where), type);
 
             // берем keyEquals
-            result = add(result, innerResult, max);
+            result = type.add(result, innerResult);
         }
         return result;
     }
 
-    private static <K> Expr createInnerBase(Map<BaseExpr, BaseExpr> outerInner, Expr expr,boolean max) {
+    private static <K> Expr createInnerBase(Map<BaseExpr, BaseExpr> outerInner, Expr expr,GroupType type) {
         Where fullWhere = getFullWhere(expr, outerInner);
 
         ReversedMap<BaseExpr, BaseExpr> innerOuter = new ReversedHashMap<BaseExpr, BaseExpr>();
@@ -465,15 +393,15 @@ public abstract class GroupExpr extends QueryExpr<BaseExpr,Expr,GroupJoin> {
                 notWhere = notWhere.and(EqualsWhere.create(notValue,exprValue.getValue()).not());
         }
 
-        return createFollowExpr(innerOuter, expr, max, notWhere).and(equalsWhere.and(notWhere));
+        return createFollowExpr(innerOuter, expr, type, notWhere).and(equalsWhere.and(notWhere));
     }
 
-    private static Expr createFollowExpr(ReversedMap<BaseExpr, BaseExpr> innerOuter, Expr expr, boolean max, Where notWhere) {
+    private static Expr createFollowExpr(ReversedMap<BaseExpr, BaseExpr> innerOuter, Expr expr, GroupType type, Where notWhere) {
         // именно так потому как нужно обеспечить инвариант что в ClassWhere должны быть все следствия
 
         return createHandleKeys(innerOuter, expr.followFalse(
                 getWhere(innerOuter).getClassWhere().mapBack(innerOuter).and(getWhere(innerOuter.keySet()).getClassWhere()).getPackWhere().and(notWhere).not(), false).
-                and(getKeepWhere(getFullWhere(innerOuter, expr))), max);
+                and(getKeepWhere(getFullWhere(innerOuter, expr))), type);
     }
 
     private static Where getKeepWhere(Where fullWhere) {
@@ -484,7 +412,7 @@ public abstract class GroupExpr extends QueryExpr<BaseExpr,Expr,GroupJoin> {
         return keepWhere;
     }
 
-    private static Expr createHandleKeys(ReversedMap<BaseExpr, BaseExpr> innerOuter, Expr expr,boolean max) {
+    private static Expr createHandleKeys(ReversedMap<BaseExpr, BaseExpr> innerOuter, Expr expr,GroupType type) {
 
         // NOGROUP - проверяем если по всем ключам группируется, значит это никакая не группировка
         Map<BaseExpr, BaseExpr> compares = new HashMap<BaseExpr, BaseExpr>();
@@ -510,27 +438,22 @@ public abstract class GroupExpr extends QueryExpr<BaseExpr,Expr,GroupJoin> {
         }
 
         // CREATEBASE - создаем с createBase
-        GroupExpr groupExpr;
-        if(max)
-            groupExpr = new MaxGroupExpr(group,expr);
-        else
-            groupExpr = new SumGroupExpr(group,expr);
-        return BaseExpr.create(groupExpr).and(freeWhere);
+        return BaseExpr.create(type.createExpr(group, expr)).and(freeWhere);
     }
 
     // уже упаковано выражение, но добавились еще equals'ы и возможно outerWhere для pack'а, increment'ый алгоритм
-    private static Expr createExprEquals(ReversedMap<BaseExpr, BaseExpr> outerInner, Expr expr,boolean max,List<Pair<BaseExpr,BaseExpr>> equals) {
+    private static Expr createExprEquals(ReversedMap<BaseExpr, BaseExpr> outerInner, Expr expr,GroupType type,List<Pair<BaseExpr,BaseExpr>> equals) {
         // assert что EqualsWhere - это Collection<BaseExpr,BaseExpr>
         KeyEqual keyEqual = new KeyEqual();
         for(Pair<BaseExpr, BaseExpr> equal : equals)
             keyEqual = keyEqual.and(KeyEqual.getKeyEqual(equal.first, equal.second));
         if(!keyEqual.isEmpty()) { // translate'им и погнали
             QueryTranslator equalTranslator = keyEqual.getTranslator();
-            return createInner(equalTranslator.translate(outerInner), expr.translateQuery(equalTranslator), max);
+            return createInner(equalTranslator.translate(outerInner), expr.translateQuery(equalTranslator), type);
         }
 
         // не было keyEqual, не добавились inner'ы keyEquals, просто pack'уем
-        return createFollowExpr(outerInner.reverse(), expr, max, Where.TRUE);
+        return createFollowExpr(outerInner.reverse(), expr, type, Where.TRUE);
     }
 
     public String getExprSource(CompileSource source, String prefix) {
@@ -544,8 +467,8 @@ public abstract class GroupExpr extends QueryExpr<BaseExpr,Expr,GroupJoin> {
         for(Map.Entry<BaseExpr,BaseExpr> groupEntry : group.entrySet())
             whereSelect.add(fromPropertySelect.get(groupEntry.getKey())+"="+groupEntry.getValue().getSource(source));
 
-        return "(" + source.syntax.getSelect(fromSelect, (isMax()?"MAX":"SUM") + "(" + fromPropertySelect.get(query) + ")",
-                BaseUtils.toString(whereSelect," AND "),"","","") + ")";
+        return "(" + source.syntax.getSelect(fromSelect, getGroupType().getString() + "(" + fromPropertySelect.get(query) + ")",
+                BaseUtils.toString(whereSelect, " AND "), "", "", "") + ")";
     }
 }
 

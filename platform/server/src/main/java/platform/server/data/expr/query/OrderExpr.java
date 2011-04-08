@@ -152,9 +152,9 @@ public class OrderExpr extends QueryExpr<KeyExpr, OrderExpr.Query,OrderJoin> imp
             platform.server.data.query.Query<KeyExpr,Object> mapQuery = new platform.server.data.query.Query<KeyExpr,Object>(BaseUtils.toMap(group.keySet())); // для кэша через Query
             mapQuery.properties.putAll(partitionMap);
             Join<Object> joinQuery = mapQuery.join(group);
-            return GroupExpr.create(joinQuery.getExprs(),ValueExpr.TRUE,trueWhere,true,partitionMap).getWhere();
+            return GroupExpr.create(joinQuery.getExprs(),trueWhere,partitionMap).getWhere();
         } else
-            return GroupExpr.create(new QueryTranslator(group).translate(partitionMap),ValueExpr.TRUE,trueWhere,true,partitionMap).getWhere();
+            return GroupExpr.create(new QueryTranslator(group).translate(partitionMap),trueWhere,partitionMap).getWhere();
     }
 
     @Override

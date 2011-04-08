@@ -1,5 +1,7 @@
 package platform.server;
 
+import platform.server.data.expr.query.GroupType;
+
 public class Settings {
 
     public static Settings instance;
@@ -51,10 +53,8 @@ public class Settings {
     // будет ли оптимизатор пытаться перестраивать условия по правилу X OR (Y AND Z) и X=>Y, то Y AND (X OR Z)
     private boolean restructWhereOnMeans = false;
 
-    // будет ли оптимизатор разбивать группирующие выражения, чтобы не было FULL JOIN и UNION ALL 
-    public static boolean SPLIT_GROUP_INNER_JOINS(boolean max) {
-        return max;
-    }
+    // будет ли оптимизатор разбивать группирующие выражения, чтобы не было FULL JOIN и UNION ALL
+    private boolean splitMaxGroupInnerJoins = true;
 
     // будет ли оптимизатор разбивать группирующие выражения на максимум, так чтобы в группируемом выражении не было бы Case'ов 
     private boolean splitGroupMaxExprcases = true;
@@ -75,6 +75,14 @@ public class Settings {
 
     public boolean isPushOrderWhere() {
         return pushOrderWhere;
+    }
+
+    public boolean isSplitMaxGroupInnerJoins() {
+        return splitMaxGroupInnerJoins;
+    }
+
+    public void setSplitMaxGroupInnerJoins(boolean splitMaxGroupInnerJoins) {
+        this.splitMaxGroupInnerJoins = splitMaxGroupInnerJoins;
     }
 
     public void setPushOrderWhere(boolean pushOrderWhere) {

@@ -19,6 +19,7 @@ import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.ValueExpr;
 import platform.server.data.expr.query.GroupExpr;
+import platform.server.data.expr.query.GroupType;
 import platform.server.data.query.Query;
 import platform.server.data.type.TypeSerializer;
 import platform.server.form.entity.*;
@@ -425,7 +426,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
 
     public int countRecords(int groupObjectID) throws SQLException {
         GroupObjectInstance group = getGroupObjectInstance(groupObjectID);
-        Expr expr = GroupExpr.create(new HashMap(), new ValueExpr(1, IntegerClass.instance), group.getWhere(group.getMapKeys(), this), false, new HashMap());
+        Expr expr = GroupExpr.create(new HashMap(), new ValueExpr(1, IntegerClass.instance), group.getWhere(group.getMapKeys(), this), GroupType.SUM, new HashMap());
         Query<Object, Object> query = new Query<Object, Object>(new HashMap<Object, KeyExpr>());
         query.properties.put("quant", expr);
         OrderedMap<Map<Object, Object>, Map<Object, Object>> result = query.execute(session.sql);
@@ -446,7 +447,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
         for (ObjectInstance object : columnKeys.keySet()) {
             keys.put(object, columnKeys.get(object).getExpr());
         }
-        Expr expr = GroupExpr.create(new HashMap(), propertyDraw.propertyObject.getExpr(keys, this), groupObject.getWhere(mapKeys, this), false, new HashMap());
+        Expr expr = GroupExpr.create(new HashMap(), propertyDraw.propertyObject.getExpr(keys, this), groupObject.getWhere(mapKeys, this), GroupType.SUM, new HashMap());
 
         Query<Object, Object> query = new Query<Object, Object>(new HashMap<Object, KeyExpr>());
         query.properties.put("sum", expr);
@@ -476,7 +477,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
 
         Query<Object, Object> query = new Query<Object, Object>(keyExprMap);
         for (PropertyDrawInstance property : toSum.keySet()) {
-            Expr exprQuant = GroupExpr.create(exprMap, new ValueExpr(1, IntegerClass.instance), groupObject.getWhere(mapKeys, this), false, keyExprMap);
+            Expr exprQuant = GroupExpr.create(exprMap, new ValueExpr(1, IntegerClass.instance), groupObject.getWhere(mapKeys, this), GroupType.SUM, keyExprMap);
             query.and(exprQuant.getWhere());
             if (property == null) {
                 query.properties.put("quant", exprQuant);
@@ -489,7 +490,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
                 for (ObjectInstance object : columnKeys.keySet()) {
                     keys.put(object, columnKeys.get(object).getExpr());
                 }
-                Expr expr = GroupExpr.create(exprMap, property.propertyObject.getExpr(keys, this), groupObject.getWhere(mapKeys, this), false, keyExprMap);
+                Expr expr = GroupExpr.create(exprMap, property.propertyObject.getExpr(keys, this), groupObject.getWhere(mapKeys, this), GroupType.SUM, keyExprMap);
                 query.properties.put(property.getsID() + i, expr);
                 if (onlyNotNull) {
                     query.and(expr.getWhere());

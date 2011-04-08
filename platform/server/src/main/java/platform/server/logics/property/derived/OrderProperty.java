@@ -104,8 +104,8 @@ public class OrderProperty<T extends PropertyInterface> extends FunctionProperty
         Expr propertyExpr = property.getExpr(mapKeys, modifier, orderWhere);
 
         if(changedWhere!=null) { // изменившиеся ряды (orderWhere) -> ряды с изменившимися partition'ами -> изменившиеся записи
-            changedWhere.add(GroupExpr.create(partitionImplements, ValueExpr.TRUE, orderWhere.toWhere(), true, partitionImplements).getWhere().map(mapExprs));
-            changedWhere.add(GroupExpr.create(getPartitionImplements(mapKeys, defaultModifier, null), ValueExpr.TRUE, orderWhere.toWhere(), true, partitionImplements).getWhere().map(mapExprs));
+            changedWhere.add(GroupExpr.create(partitionImplements, orderWhere.toWhere(), partitionImplements).getWhere().map(mapExprs));
+            changedWhere.add(GroupExpr.create(getPartitionImplements(mapKeys, defaultModifier, null), orderWhere.toWhere(), partitionImplements).getWhere().map(mapExprs));
         }
 
         return OrderExpr.create(orderType, propertyExpr, orderExprs, new HashSet<Expr>(partitionImplements.values()), mapExprs);

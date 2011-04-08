@@ -4,9 +4,11 @@ import platform.server.classes.ConcreteCustomClass;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.ValueExpr;
 import platform.server.data.expr.query.GroupExpr;
+import platform.server.data.expr.query.GroupType;
 import platform.server.data.query.Join;
 import platform.server.data.query.Query;
 import platform.server.data.type.Type;
+import platform.server.data.where.Where;
 import platform.server.logics.DataObject;
 import platform.server.logics.property.Property;
 import platform.server.logics.property.PropertyImplement;
@@ -86,7 +88,7 @@ public class ImportKey <P extends PropertyInterface> implements ImportKeyInterfa
         }, implement.property.getType());
 
         Query<P, Object> noKeysQuery = new Query<P, Object>(implement.property);
-        noKeysQuery.and(GroupExpr.create(getImplementExprs(importTable.join(importTable.getMapKeys()).getExprs()), ValueExpr.TRUE, true, noKeysQuery.mapKeys).getWhere()); // в импортируемой таблице
+        noKeysQuery.and(GroupExpr.create(getImplementExprs(importTable.join(importTable.getMapKeys()).getExprs()), Where.TRUE, noKeysQuery.mapKeys).getWhere()); // в импортируемой таблице
         noKeysQuery.and(implement.property.getExpr(noKeysQuery.mapKeys, session.modifier).getWhere().not()); // для которых неопределился объект
 
         for (Iterator<Map<P, DataObject>> iterator = noKeysQuery.executeClasses(session.sql, session.env, session.baseClass).keySet().iterator(); iterator.hasNext();) {

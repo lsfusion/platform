@@ -2,6 +2,7 @@ package platform.server.logics.property.derived;
 
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.query.GroupExpr;
+import platform.server.data.expr.query.GroupType;
 import platform.server.data.where.WhereBuilder;
 import platform.server.form.entity.ObjectEntity;
 import platform.server.form.entity.PropertyObjectEntity;
@@ -103,7 +104,7 @@ public class MaxChangeProperty<T extends PropertyInterface,P extends PropertyInt
 
         WhereBuilder onChangeWhere = new WhereBuilder();
         Expr resultExpr = GroupExpr.create(mapExprs, onChange.getExpr(onChange.getMapKeys(),
-                toChange.getChangeModifier(modifier, false), onChangeWhere), onChangeWhere.toWhere(), true, joinImplement);
+                toChange.getChangeModifier(modifier, false), onChangeWhere), onChangeWhere.toWhere(), GroupType.MAX, joinImplement);
         if(changedWhere!=null) changedWhere.add(resultExpr.getWhere());
         return resultExpr;
     }

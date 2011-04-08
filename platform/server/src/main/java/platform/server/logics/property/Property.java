@@ -10,6 +10,7 @@ import platform.server.data.*;
 import platform.server.data.expr.*;
 import platform.server.data.expr.cases.CaseExpr;
 import platform.server.data.expr.query.GroupExpr;
+import platform.server.data.expr.query.GroupType;
 import platform.server.data.expr.where.CompareWhere;
 import platform.server.data.query.MapKeysInterface;
 import platform.server.data.query.Query;
@@ -434,8 +435,8 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
         Map<T, KeyExpr> mapKeys = getMapKeys();
         WhereBuilder changedImplementWhere = cascadeWhere(changedWhere);
         MapDataChanges<T> result = getDataChanges(new PropertyChange<T>(mapKeys,
-                GroupExpr.create(implementExprs, expr, where, true, mapKeys),
-                GroupExpr.create(implementExprs, ValueExpr.TRUE, where, true, mapKeys).getWhere()),
+                GroupExpr.create(implementExprs, expr, where, GroupType.ANY, mapKeys),
+                GroupExpr.create(implementExprs, where, mapKeys).getWhere()),
                 changedImplementWhere, modifier);
         if (changedWhere != null)
             changedWhere.add(new Query<T, Object>(mapKeys, changedImplementWhere.toWhere()).join(implementExprs).getWhere());// нужно перемаппить назад
@@ -444,7 +445,7 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
 
     public void setJoinNotNull(Map<T, KeyExpr> implementKeys, Where where, DataSession session, BusinessLogics<?> BL) throws SQLException {
         Map<T, KeyExpr> mapKeys = getMapKeys();
-        setNotNull(mapKeys, GroupExpr.create(implementKeys, ValueExpr.TRUE, where, true, mapKeys).getWhere(), session, BL);
+        setNotNull(mapKeys, GroupExpr.create(implementKeys, where, mapKeys).getWhere(), session, BL);
     }
 
     public PropertyMapImplement<T, T> getImplement() {

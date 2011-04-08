@@ -3,6 +3,7 @@ package platform.server.logics.property;
 import platform.interop.Compare;
 import platform.server.Settings;
 import platform.server.data.expr.Expr;
+import platform.server.data.expr.query.GroupType;
 import platform.server.session.Changes;
 import platform.server.session.Modifier;
 
@@ -11,8 +12,12 @@ import java.util.Map;
 
 public class MaxGroupProperty<T extends PropertyInterface> extends GroupProperty<T> {
 
+    protected GroupType getGroupType() {
+        return GroupType.MAX;
+    }
+
     public MaxGroupProperty(String sID, String caption, Collection<? extends PropertyInterfaceImplement<T>> interfaces, Property<T> property) {
-        super(sID, caption, interfaces, property, 0);
+        super(sID, caption, interfaces, property);
     }
 
     @Override

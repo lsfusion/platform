@@ -1,9 +1,9 @@
 package platform.server.logics.property;
 
 import platform.base.BaseUtils;
-import platform.server.Settings;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.query.GroupExpr;
+import platform.server.data.expr.query.GroupType;
 import platform.server.data.where.WhereBuilder;
 import platform.server.session.Changes;
 import platform.server.session.Modifier;
@@ -15,7 +15,7 @@ abstract public class GroupProperty<T extends PropertyInterface> extends Functio
     protected final boolean SIMPLE_SCHEME = true;
 
     // оператор
-    int operator;
+    int groupType;
 
     public static class Interface<T extends PropertyInterface> extends PropertyInterface<Interface<T>> {
         public PropertyInterfaceImplement<T> implement;
@@ -33,10 +33,12 @@ abstract public class GroupProperty<T extends PropertyInterface> extends Functio
         return interfaces;
     }
 
-    protected GroupProperty(String sID, String caption, Collection<? extends PropertyInterfaceImplement<T>> interfaces, Property<T> property, int operator) {
+    protected abstract GroupType getGroupType();
+
+    protected GroupProperty(String sID, String caption, Collection<? extends PropertyInterfaceImplement<T>> interfaces, Property<T> property) {
         super(sID, caption, getInterfaces(interfaces));
         groupProperty = property;
-        this.operator = operator;
+        this.groupType = groupType;
     }
 
     // группировочное св-во
@@ -80,10 +82,10 @@ abstract public class GroupProperty<T extends PropertyInterface> extends Functio
         
         // новые группировочные записи
         WhereBuilder changedGroupWhere = new WhereBuilder();
-        Expr changedExpr = GroupExpr.create(getGroupImplements(mapKeys, modifier, changedGroupWhere), groupProperty.getExpr(mapKeys, modifier, changedGroupWhere), changedGroupWhere.toWhere(), operator != 1, joinImplement);
+        Expr changedExpr = GroupExpr.create(getGroupImplements(mapKeys, modifier, changedGroupWhere), groupProperty.getExpr(mapKeys, modifier, changedGroupWhere), changedGroupWhere.toWhere(), getGroupType(), joinImplement);
 
         // старые группировочные записи
-        Expr changedPrevExpr = GroupExpr.create(getGroupImplements(mapKeys, defaultModifier), groupProperty.getExpr(mapKeys), changedGroupWhere.toWhere(), operator != 1, joinImplement);
+        Expr changedPrevExpr = GroupExpr.create(getGroupImplements(mapKeys, defaultModifier), groupProperty.getExpr(mapKeys), changedGroupWhere.toWhere(), getGroupType(), joinImplement);
 
         if(changedWhere!=null) changedWhere.add(changedExpr.getWhere().or(changedPrevExpr.getWhere())); // если хоть один не null
         return getChangedExpr(changedExpr, changedPrevExpr, joinImplement, modifier);
@@ -91,7 +93,7 @@ abstract public class GroupProperty<T extends PropertyInterface> extends Functio
 
     protected Expr calculateNewExpr(Map<Interface<T>, ? extends Expr> joinImplement, Modifier<? extends Changes> modifier) {
         Map<T, Expr> mapKeys = getGroupKeys(joinImplement);
-        return GroupExpr.create(getGroupImplements(mapKeys, modifier), groupProperty.getExpr(mapKeys, modifier), operator != 1, joinImplement);
+        return GroupExpr.create(getGroupImplements(mapKeys, modifier), groupProperty.getExpr(mapKeys, modifier), getGroupType(), joinImplement);
     }
 
     protected abstract Expr getChangedExpr(Expr changedExpr, Expr changedPrevExpr, Map<Interface<T>, ? extends Expr> joinImplement, Modifier<? extends Changes> modifier);
