@@ -3777,6 +3777,25 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         lp.property.setConstraint(checkChange);
     }
 
+    protected <L extends PropertyInterface, T extends PropertyInterface> void follows(LP<T> first, LP<L> second, int... mapping) {
+        Map<L, T> mapInterfaces = new HashMap<L, T>();
+        for(int i=0;i<second.listInterfaces.size();i++) {
+            mapInterfaces.put(second.listInterfaces.get(i), first.listInterfaces.get(mapping[i]-1));
+        }
+        addProp(first.property.addFollows(new PropertyMapImplement<L, T>(second.property, mapInterfaces)));
+    }
+
+    public void followed(LP first, LP... lps) {
+        int[] mapping = new int[first.listInterfaces.size()];
+        for(int i=0;i<mapping.length;i++) {
+            mapping[i] = i+1;
+        }
+
+        for(LP lp : lps) {
+            follows(first, lp, mapping);
+        }
+    }
+
     protected void setNotNull(LP property) {
 
         ValueClass[] values = property.getMapClasses();

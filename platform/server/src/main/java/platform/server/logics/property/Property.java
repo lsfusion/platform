@@ -554,13 +554,18 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
 
     public Set<PropertyFollows<?, T>> followed = new HashSet<PropertyFollows<?, T>>();
     public Set<PropertyFollows<T, ?>> follows = new HashSet<PropertyFollows<T, ?>>();
+
     public <L extends PropertyInterface> Property addFollows(PropertyMapImplement<L, T> implement) {
+        return addFollows(implement, "Нарушено следствие - из (" + this + ") => (" + implement.property + ")");
+    }
+
+    public <L extends PropertyInterface> Property addFollows(PropertyMapImplement<L, T> implement, String caption) {
         PropertyFollows<T, L> propertyFollows = new PropertyFollows<T, L>(this, implement);
         follows.add(propertyFollows);
         implement.property.followed.add(propertyFollows);
 
         Property constraint = DerivedProperty.createAndNot(this, implement).property;
-        constraint.caption = "Нарушено следствие - из (" + this + ") => (" + implement.property + ")";
+        constraint.caption = caption;
         constraint.setConstraint(false);
         return constraint;
     }

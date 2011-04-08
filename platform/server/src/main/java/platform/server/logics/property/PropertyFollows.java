@@ -16,10 +16,20 @@ import java.util.Map;
 public class PropertyFollows<T extends PropertyInterface, L extends PropertyInterface> {
     private final Property<T> property;
     private final PropertyMapImplement<L, T> implement;
+    private int options;
+    public final static int RESOLVE_TRUE = 1;
+    public final static int RESOLVE_FALSE = 2;
+    public final static int RESOLVE_ALL = RESOLVE_TRUE | RESOLVE_FALSE;
+    public final static int RESOLVE_NOTHING = 0;
 
     public PropertyFollows(Property<T> property, PropertyMapImplement<L, T> implement) {
+        this(property, implement, RESOLVE_ALL);
+    }
+
+    public PropertyFollows(Property<T> property, PropertyMapImplement<L, T> implement, int options) {
         this.property = property;
         this.implement = implement;
+        this.options = options;
     }
 
     public Property getFollow() {
@@ -27,7 +37,7 @@ public class PropertyFollows<T extends PropertyInterface, L extends PropertyInte
     }
 
     public void resolveTrue(DataSession session, BusinessLogics<?> BL) throws SQLException {
-        if(!property.hasChanges(session.modifier)) // для оптимизации в общем то
+        if(!property.hasChanges(session.modifier) || ((options & RESOLVE_TRUE) == 0)) // для оптимизации в общем то
             return;
 
 //      f' and !f and !g(')	: g -> NotNull
@@ -39,7 +49,7 @@ public class PropertyFollows<T extends PropertyInterface, L extends PropertyInte
     }
 
     public void resolveFalse(DataSession session, BusinessLogics<?> BL) throws SQLException {
-        if(!implement.property.hasChanges(session.modifier)) // для оптимизации в общем то
+        if(!implement.property.hasChanges(session.modifier) || ((options & RESOLVE_FALSE) == 0)) // для оптимизации в общем то
             return;
 
 //      f(') and g and !g' : f -> Null
