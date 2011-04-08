@@ -2530,11 +2530,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
     protected LP addDProp(String sID, String caption, ValueClass value, ValueClass... params) {
-        return addDProp(sID, false, caption, value, params);
-    }
-
-    protected LP addDProp(String sID, boolean persistent, String caption, ValueClass value, ValueClass... params) {
-        return addDProp(null, sID, persistent, caption, value, params);
+        return addDProp(null, sID, false, caption, value, params);
     }
 
     protected LP addDProp(AbstractGroup group, String sID, String caption, ValueClass value, ValueClass... params) {
@@ -3113,11 +3109,11 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
     protected LP addJProp(AbstractGroup group, String sID, String caption, LP mainProp, Object... params) {
-        return addJProp(group, false, sID, caption, mainProp, params);
+        return addJProp(group, mainProp.property instanceof ActionProperty, sID, caption, mainProp, params);
     }
 
     protected LP addJProp(AbstractGroup group, String sID, boolean persistent, String caption, LP mainProp, Object... params) {
-        return addJProp(group, false, sID, persistent, caption, mainProp, params);
+        return addJProp(group, mainProp.property instanceof ActionProperty, sID, persistent, caption, mainProp, params);
     }
 
     protected LP addJProp(boolean implementChange, LP mainProp, Object... params) {

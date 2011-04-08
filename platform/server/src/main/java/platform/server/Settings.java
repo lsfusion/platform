@@ -176,4 +176,14 @@ public class Settings {
     public void setDisableSumGroupNotZero(boolean disableSumGroupNotZero) {
         this.disableSumGroupNotZero = disableSumGroupNotZero;
     }
+
+    private int usedChangesCacheLimit = 20;
+
+    public int getUsedChangesCacheLimit() {
+        return usedChangesCacheLimit;
+    }
+
+    public void setUsedChangesCacheLimit(int usedChangesCacheLimit) {
+        this.usedChangesCacheLimit = usedChangesCacheLimit;
+    }
 }
