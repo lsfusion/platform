@@ -645,6 +645,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     public final StringClass formSIDValueClass = StringClass.get(50);
     private final StringClass formCaptionValueClass = StringClass.get(250);
 
+    private Set<LP<?>> nameProperties = new HashSet<LP<?>>();
+
     public static int genSystemClassID(int id) {
         return 9999976 - id;
     }
@@ -1090,6 +1092,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
         name = addCUProp(baseGroup, "commonName", "Имя", addDProp("name", "Имя", InsensitiveStringClass.get(110), baseClass.named),
                 addJProp(insensitiveString2, userFirstName, 1, userLastName, 1));
+        addToNameProperties(name);
 
         connectionComputer = addDProp("connectionComputer", "Компьютер", computer, connection);
         addJProp(baseGroup, "Компьютер", hostname, connectionComputer, 1);
@@ -1117,6 +1120,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         userPolicyOrder = addJProp(baseGroup, "userPolicyOrder", "Порядок политики", userRolePolicyOrder, userMainRole, 1, 2);
 
         barcode = addDProp(baseGroup, "barcode", "Штрих-код", StringClass.get(13), barcodeObject);
+        addToNameProperties(barcode);
+
         barcode.setFixedCharWidth(13);
         barcodeToObject = addAGProp("barcodeToObject", "Объект", barcode);
         barcodeObjectName = addJProp(baseGroup, "barcodeObjectName", "Объект", name, barcodeToObject, 1);
@@ -2143,7 +2148,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
                         return getRestartController().isPendingRestart();
                     }
                 },
-                baseClass, baseClass.named, session, name, transaction, date, currentDate, notDeterministic);
+                baseClass, baseClass.named, session, name, nameProperties, transaction, date, currentDate, notDeterministic);
     }
 
     public List<DerivedChange<?, ?>> notDeterministic = new ArrayList<DerivedChange<?, ?>>();
@@ -4686,6 +4691,10 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         return addAProp(new AddObjectActionProperty(genSID(),
                 (barcode != null) ? barcode.property : null, (barcodePrefix != null) ? barcodePrefix.property : null,
                 quantity, customClass, LP.toPropertyArray(properties)));
+    }
+
+    protected void addToNameProperties(LP<?> property) {
+        nameProperties.add(property);
     }
 
     private Map<String, String> formSets;

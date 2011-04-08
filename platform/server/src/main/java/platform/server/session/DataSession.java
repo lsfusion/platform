@@ -8,7 +8,6 @@ import platform.server.caches.MapValues;
 import platform.server.classes.*;
 import platform.server.data.*;
 import platform.server.data.expr.Expr;
-import platform.server.data.expr.cases.CaseExpr;
 import platform.server.data.query.Join;
 import platform.server.data.query.Query;
 import platform.server.data.sql.SQLSyntax;
@@ -103,6 +102,7 @@ public class DataSession extends MutableObject implements SessionChanges, ExprCh
     public final BaseClass baseClass;
     public final CustomClass namedObject;
     public final LP<?> name;
+    public final Set<LP<?>> nameProps;
     public final CustomClass transaction;
     public final LP<?> date;
     public final ConcreteCustomClass sessionClass;
@@ -119,13 +119,14 @@ public class DataSession extends MutableObject implements SessionChanges, ExprCh
 
     public DataObject applyObject = null;
 
-    public DataSession(SQLSession sql, final UserController user, final ComputerController computer, IsServerRestartingController isServerRestarting, BaseClass baseClass, CustomClass namedObject, ConcreteCustomClass sessionClass, LP<?> name, CustomClass transaction, LP<?> date, LP<?> currentDate, List<DerivedChange<?,?>> notDeterministic) throws SQLException {
+    public DataSession(SQLSession sql, final UserController user, final ComputerController computer, IsServerRestartingController isServerRestarting, BaseClass baseClass, CustomClass namedObject, ConcreteCustomClass sessionClass, LP<?> name, Set<LP<?>> nameProps, CustomClass transaction, LP<?> date, LP<?> currentDate, List<DerivedChange<?,?>> notDeterministic) throws SQLException {
         this.sql = sql;
         this.isServerRestarting = isServerRestarting;
 
         this.baseClass = baseClass;
         this.namedObject = namedObject;
         this.name = name;
+        this.nameProps = nameProps;
         this.transaction = transaction;
         this.date = date;
         this.notDeterministic = notDeterministic;
@@ -352,23 +353,48 @@ public class DataSession extends MutableObject implements SessionChanges, ExprCh
             changed.and(changedWhere.toWhere()); // только на измененные смотрим
 
             // сюда надо name'ы вставить
+            List<List<String>> propCaptions = new ArrayList<List<String>>();
+            for (int i = 0; i < property.interfaces.size(); i++) {
+                propCaptions.add(new ArrayList<String>());
+            }
+
+            Property.CommonClasses<?> classes = property.getCommonClasses();
+            int interfaceIndex = 0;
             for(T propertyInterface : property.interfaces) {
-                Expr nameExpr;
-                if(property.getInterfaceType(propertyInterface) instanceof ObjectType) // иначе assert'ионы с compatible'ами нарушатся, если ключ скажем число
-                    nameExpr = name.getExpr(modifier, changed.mapKeys.get(propertyInterface));
-                else
-                    nameExpr = CaseExpr.NULL;
-                changed.properties.put("int"+propertyInterface.ID, nameExpr);
+                ValueClass valueClass = classes.interfaces.get(propertyInterface);
+                for (LP<?> nameProp : nameProps) {
+                    List<ValueClassWrapper> wrapper = Arrays.asList(new ValueClassWrapper(valueClass));
+                    if (!nameProp.property.getProperties(Arrays.asList(wrapper), true).isEmpty()) {
+                        Expr nameExpr = nameProp.getExpr(modifier, changed.mapKeys.get(propertyInterface));
+                        changed.properties.put("int" + propertyInterface.ID + "_" + propCaptions.get(interfaceIndex).size(), nameExpr);
+                        propCaptions.get(interfaceIndex).add(nameProp.property.caption);
+                    }
+                }
+                interfaceIndex++;
             }
 
             OrderedMap<Map<T, Object>, Map<String, Object>> result = changed.execute(sql, new OrderedMap<String, Boolean>(), 30, env);
-            if(result.size()>0) {
+            if (result.size() > 0) {
                 String resultString = property.toString() + '\n';
-                for(Map.Entry<Map<T,Object>,Map<String,Object>> row : result.entrySet()) {
-                    String objects = "";
-                    for(T propertyInterface : property.interfaces)
-                        objects = (objects.length()==0?"":objects+", ") + BaseUtils.nvl((String)row.getValue().get("int"+propertyInterface.ID),row.getKey().get(propertyInterface).toString()).trim();
-                    resultString += "    " + objects + '\n';
+                for (Map.Entry<Map<T,Object>, Map<String,Object>> row : result.entrySet()) {
+                    String infoStr = "";
+                    int ifaceIndex = 0;
+                    for (T propertyInterface : property.interfaces) {
+                        if (ifaceIndex > 0) {
+                            infoStr += ", ";
+                        }
+                        infoStr += "[id=" + row.getKey().get(propertyInterface).toString().trim();
+                        for (int i = 0; i < propCaptions.get(ifaceIndex).size(); i++) {
+                            Object value = row.getValue().get("int" + propertyInterface.ID + "_" + i);
+                            if (value != null) {
+                                infoStr += ", " + propCaptions.get(ifaceIndex).get(i) + '=';
+                                infoStr += value.toString().trim();
+                            }
+                        }
+                        infoStr += "]";
+                        ifaceIndex++;
+                    }
+                    resultString += "    " + infoStr + '\n';
                 }
 
                 return resultString;
