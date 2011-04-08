@@ -1,8 +1,10 @@
 package platform.server.logics.property.derived;
 
 import platform.base.BaseUtils;
+import platform.interop.Compare;
 import platform.server.classes.ConcreteCustomClass;
 import platform.server.classes.CustomClass;
+import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.where.EqualsWhere;
 import platform.server.data.query.Query;
@@ -11,7 +13,9 @@ import platform.server.logics.BusinessLogics;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
 import platform.server.logics.property.*;
+import platform.server.session.Changes;
 import platform.server.session.DataSession;
+import platform.server.session.Modifier;
 import platform.server.session.PropertyChange;
 
 import java.sql.SQLException;
@@ -48,6 +52,17 @@ public class AggregateGroupProperty<T extends PropertyInterface, J extends Prope
         this.property = property;
         this.aggrInterface = aggrInterface;
         this.groupProps = groupProps;
+    }
+
+    // для этого во многом и делалось
+    @Override
+    protected boolean noIncrement() {
+        return false;
+    }
+
+    @Override
+    public Expr getChangedExpr(Expr changedExpr, Expr changedPrevExpr, Map<Interface<J>, ? extends Expr> joinImplement, Modifier<? extends Changes> modifier) {
+        return changedExpr.ifElse(changedExpr.getWhere(), getExpr(joinImplement).and(changedPrevExpr.getWhere().not()));
     }
 
     @Override

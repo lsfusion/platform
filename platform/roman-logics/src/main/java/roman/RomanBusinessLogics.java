@@ -863,7 +863,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         sidCustomCategoryOrigin.setFixedCharWidth(10);
 
         sidToCustomCategory4 = addAGProp("sidToCustomCategory4", "Код(4)", sidCustomCategory4);
-        sidToCustomCategory6 = addAGProp("sidToCustomCategory6", "Код(6)", customCategory6);
+        sidToCustomCategory6 = addAGProp("sidToCustomCategory6", "Код(6)", sidCustomCategory6);
         sidToCustomCategory9 = addAGProp("sidToCustomCategory9", "Код(9)", sidCustomCategory9);
         sidToCustomCategory10 = addAGProp("sidToCustomCategory10", "Код(10)", sidCustomCategory10);
         sidToCustomCategoryOrigin = addAGProp("sidToCustomCategoryOrigin", "Код ЕС (10)", sidCustomCategoryOrigin);

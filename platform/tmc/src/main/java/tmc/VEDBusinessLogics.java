@@ -1059,10 +1059,10 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         sumPriceChangeOrder = addJProp("sumPriceChangeOrder", "Сумма переоц.", diff, sumNewPrevRetailOrder, 1, sumPrevRetailOrder, 1);
 
         // для товарного отчета
-        documentRevalueAct = addDProp(baseGroup, "documentRevalueAct", "Документ", documentShopPrice, revalueAct);
+/*        documentRevalueAct = addDProp(baseGroup, "documentRevalueAct", "Документ", documentShopPrice, revalueAct);
         LP revalueActDocument = addAGProp(baseGroup, false, "revalueActDocument", false, "Акт переоценки", revalueAct, documentRevalueAct);
-        sumPriceChangeOrder.follows(revalueActDocument, 1);
-        is(revalueAct).follows(documentRevalueAct, 1);
+        follows(sumPriceChangeOrder, revalueActDocument, 1);
+        follows(is(revalueAct), documentRevalueAct, 1);*/
 
         orderSaleUseObligation = addDProp("orderSaleUseObligation", "Использовать", LogicalClass.instance, commitSaleCheckArticleRetail, obligation);
         LP obligationUseSum = addJProp(and1, obligationSum, 2, orderSaleUseObligation, 1, 2);

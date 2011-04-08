@@ -67,9 +67,13 @@ abstract public class GroupProperty<T extends PropertyInterface> extends Functio
         return BaseUtils.replace(groupProperty.getMapKeys(), interfaceValues);
     }
 
+    protected boolean noIncrement() {
+        return !isStored();
+    }
+
     public Expr calculateExpr(Map<Interface<T>, ? extends Expr> joinImplement, Modifier<? extends Changes> modifier, WhereBuilder changedWhere) {
 
-        if(!hasChanges(modifier) || (changedWhere==null && (!isStored() || (Settings.instance.isNoIncrementMaxGroupProperty() && this instanceof MaxGroupProperty)))) return calculateNewExpr(joinImplement, modifier);
+        if(!hasChanges(modifier) || (changedWhere==null && noIncrement())) return calculateNewExpr(joinImplement, modifier);
 
         // если нужна инкрементность
         Map<T, Expr> mapKeys = getGroupKeys(joinImplement); // изначально чтобы новые и старые группировочные записи в одном контексте были

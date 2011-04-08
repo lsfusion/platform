@@ -15,8 +15,13 @@ public class MaxGroupProperty<T extends PropertyInterface> extends GroupProperty
         super(sID, caption, interfaces, property, 0);
     }
 
+    @Override
+    protected boolean noIncrement() {
+        return super.noIncrement() || Settings.instance.isNoIncrementMaxGroupProperty();
+    }
+
     public Expr getChangedExpr(Expr changedExpr, Expr changedPrevExpr, Map<Interface<T>, ? extends Expr> joinImplement, Modifier<? extends Changes> modifier) {
-        if(Settings.instance.isNoIncrementMaxGroupProperty())
+        if(noIncrement())
             return calculateNewExpr(joinImplement, modifier); 
         Expr prevExpr = getExpr(joinImplement);
         return changedExpr.ifElse(changedExpr.compare(prevExpr,Compare.GREATER).or(prevExpr.getWhere().not()),
