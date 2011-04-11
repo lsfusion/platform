@@ -55,8 +55,6 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         super(adapter, exportPort);
     }
 
-    AbstractCustomClass participant;
-
     AbstractCustomClass multiLanguageNamed;
 
     ConcreteCustomClass project;
@@ -103,15 +101,13 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
 
     protected void initClasses() {
 
-        participant = addAbstractClass("participant", "Участник", baseClass);
-
         multiLanguageNamed = addAbstractClass("multiLanguageNamed", "Многоязычный объект", baseClass);
 
         project = addConcreteClass("project", "Проект", multiLanguageNamed, transaction);
-        expert = addConcreteClass("expert", "Эксперт", customUser, participant);
+        expert = addConcreteClass("expert", "Эксперт", customUser);
         cluster = addConcreteClass("cluster", "Кластер", multiLanguageNamed);
 
-        claimer = addConcreteClass("claimer", "Заявитель", multiLanguageNamed, participant);
+        claimer = addConcreteClass("claimer", "Заявитель", multiLanguageNamed, emailObject);
         claimer.dialogReadOnly = false;
 
         documentTemplate = addConcreteClass("documentTemplate", "Шаблон документов", baseClass.named);
@@ -148,7 +144,6 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
     LP clusterProject, nameNativeClusterProject, nameForeignClusterProject;
     LP clusterVote, nameNativeClusterVote;
     LP claimerProject, nameNativeClaimerProject, nameForeignClaimerProject;
-    LP emailParticipant;
     LP emailDocuments;
 
     LP claimerVote, nameNativeClaimerVote, nameForeignClaimerVote;
@@ -215,7 +210,6 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
 
     LP generateDocumentsProjectDocumentType;
     LP generateVoteProject, hideGenerateVoteProject;
-    LP generateLoginPasswordExpert;
 
     LP expertLogin;
 
@@ -293,8 +287,6 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         claimerVote = addJProp(idGroup, "claimerVote", "Заявитель (ИД)", claimerProject, projectVote, 1);
         nameNativeClaimerVote = addJProp(baseGroup, "nameNativeClaimerVote", "Заявитель", nameNative, claimerVote, 1);
         nameForeignClaimerVote = addJProp(baseGroup, "nameForeignClaimerVote", "Заявитель (иностр.)", nameForeign, claimerVote, 1);
-
-        emailParticipant = addDProp(baseGroup, "emailParticipant", "E-mail", StringClass.get(50), participant);
 
         documentTemplateDocumentTemplateDetail = addDProp(idGroup, "documentTemplateDocumentTemplateDetail", "Шаблон (ИД)", documentTemplate, documentTemplateDetail);
 
@@ -446,8 +438,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         hideGenerateVoteProject = addHideCaptionProp(privateGroup, "Сгенерировать заседание", generateVoteProject, needExtraVoteProject);
 //        generateVoteProject.setDerivedForcedChange(addCProp(ActionClass.instance, true), needExtraVoteProject, 1, autoGenerateProject, 1);
 
-        generateLoginPasswordExpert = addAProp(actionGroup, new GenerateLoginPasswordActionProperty());
-        generateLoginPasswordExpert.setDerivedForcedChange(addCProp(ActionClass.instance, true), is(expert), 1);
+        generateLoginPassword.setDerivedForcedChange(addCProp(ActionClass.instance, true), is(expert), 1);
 
         expertLogin = addAGProp(baseGroup, "expertLogin", "Эксперт (ИД)", userLogin);
         disableExpert = addDProp(baseGroup, "disableExpert", "Не акт.", LogicalClass.instance, expert);
@@ -496,7 +487,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         emailDocuments = addDProp(baseGroup, "emailDocuments", "E-mail для документов", StringClass.get(50));
 
         emailLetterExpertVoteEA = addEAProp(expert, vote);
-        addEARecepient(emailLetterExpertVoteEA, emailParticipant, 1);
+        addEARecepient(emailLetterExpertVoteEA, email, 1);
 
         emailLetterExpertVote = addJProp(baseGroup, true, "emailLetterExpertVote", "Письмо о заседании (e-mail)",
                 emailLetterExpertVoteEA, 1, 2, addJProp(letterExpertSubjectLanguage, languageExpert, 1), 1);
@@ -526,7 +517,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         localeExpert = addJProp("localeExpert", "Locale", localeLanguage, languageExpert, 1);
 
         emailAuthExpertEA = addEAProp(expert);
-        addEARecepient(emailAuthExpertEA, emailParticipant, 1);
+        addEARecepient(emailAuthExpertEA, email, 1);
 
         emailAuthExpert = addJProp(baseGroup, true, "emailAuthExpert", "Аутентификация эксперта (e-mail)",
                 emailAuthExpertEA, 1, addJProp(authExpertSubjectLanguage, languageExpert, 1), 1);
@@ -605,7 +596,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
 
             objExpert = addSingleGroupObject(expert);
             addPropertyDraw(objExpert, objVote, inExpertVote);
-            addPropertyDraw(objExpert, name, emailParticipant);
+            addPropertyDraw(objExpert, name, email);
             addPropertyDraw(voteResultGroup, true, objExpert, objVote);
 
             setForceViewType(voteResultCommentGroup, ClassViewType.PANEL);
@@ -692,7 +683,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
 
             objVote = addSingleGroupObject(vote, nameNativeProjectVote, dateStartVote, dateEndVote, openedVote, succeededVote, quantityDoneVote, delete);
 
-            objExpert = addSingleGroupObject(expert, userFirstName, userLastName, userLogin, userPassword, emailParticipant, nameNativeClusterExpert);
+            objExpert = addSingleGroupObject(expert, userFirstName, userLastName, userLogin, userPassword, email, nameNativeClusterExpert);
 
             addPropertyDraw(voteResultGroup, true, objExpert, objVote);
             addPropertyDraw(objExpert, objVote, allowedEmailLetterExpertVote);
@@ -742,7 +733,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         private ExpertFormEntity(NavigatorElement parent, String sID) {
             super(parent, sID, "Реестр экспертов");
 
-            objExpert = addSingleGroupObject(expert, selection, userFirstName, userLastName, userLogin, userPassword, emailParticipant, disableExpert, nameNativeClusterExpert, nameLanguageExpert, expertResultGroup, generateLoginPasswordExpert, emailAuthExpert);
+            objExpert = addSingleGroupObject(expert, selection, userFirstName, userLastName, userLogin, userPassword, email, disableExpert, nameNativeClusterExpert, nameLanguageExpert, expertResultGroup, generateLoginPassword, emailAuthExpert);
             addObjectActions(this, objExpert);
 
             objVote = addSingleGroupObject(vote, nameNativeProjectVote, dateStartVote, dateEndVote, openedVote, succeededVote, quantityDoneVote);
@@ -1201,50 +1192,6 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         @Override
         public Set<Property> getChangeProps() {
             return BaseUtils.toSet(projectVote.property, inExpertVote.property);
-        }
-    }
-
-    public class GenerateLoginPasswordActionProperty extends ActionProperty {
-
-        private final ClassPropertyInterface expertInterface;
-
-        public GenerateLoginPasswordActionProperty() {
-            super(genSID(), "Сгенерировать логин и пароль", new ValueClass[]{expert});
-
-            Iterator<ClassPropertyInterface> i = interfaces.iterator();
-            expertInterface = i.next();
-        }
-
-        public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects) throws SQLException {
-            throw new RuntimeException("no need");
-        }
-
-        @Override
-        public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, DataSession session, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects, boolean groupLast) throws SQLException {
-            DataObject expertObject = keys.get(expertInterface);
-
-            String currentEmail = (String) emailParticipant.read(session, expertObject);
-
-            String login;
-            int indexMail;
-            if(currentEmail != null && (indexMail = currentEmail.indexOf("@"))>=0)
-                login = currentEmail.substring(0, indexMail);
-            else
-                login = "login" + expertObject.object;
-
-            Random rand = new Random();
-            String chars = "0123456789abcdefghijklmnopqrstuvwxyz";
-            String password = "";
-            for(int i=0;i<8;i++)
-                password += chars.charAt(rand.nextInt(chars.length()));
-
-            userLogin.execute(login, session, expertObject);
-            userPassword.execute(password, session, expertObject);
-        }
-
-        @Override
-        public Set<Property> getChangeProps() {
-            return BaseUtils.toSet(userLogin.property, userPassword.property);
         }
     }
 

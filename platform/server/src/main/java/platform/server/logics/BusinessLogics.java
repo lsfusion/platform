@@ -255,6 +255,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     protected AbstractCustomClass transaction, barcodeObject;
     protected AbstractCustomClass namedUniqueObject;
 
+    public AbstractCustomClass emailObject;
+
     public AbstractCustomClass user;
     public ConcreteCustomClass systemUser;
     public ConcreteCustomClass customUser;
@@ -578,6 +580,9 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     public LP inLoginSID;
     public LP currentUserName;
     public LP<?> loginToUser;
+
+    public LP email;
+    public LP generateLoginPassword;
 
     private LP connectionUser;
     private LP connectionComputer;
@@ -973,8 +978,10 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         transaction = addAbstractClass("transaction", "Транзакция", baseClass);
         barcodeObject = addAbstractClass("barcodeObject", "Штрих-кодированный объект", baseClass);
 
+        emailObject = addAbstractClass("emailObject", "Объект с почтовым ящиком", baseClass);
+
         user = addAbstractClass("user", "Пользователь", baseClass);
-        customUser = addConcreteClass("customUser", "Обычный пользователь", user, barcodeObject);
+        customUser = addConcreteClass("customUser", "Обычный пользователь", user, barcodeObject, emailObject);
         systemUser = addConcreteClass("systemUser", "Системный пользователь", user);
         computer = addConcreteClass("computer", "Рабочее место", baseClass);
         userRole = addConcreteClass("userRole", "Роль", baseClass.named);
@@ -1089,6 +1096,9 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         inUserRole = addDProp(baseGroup, "inUserRole", "Вкл.", LogicalClass.instance, customUser, userRole);
         userRoleDefaultForms = addDProp(baseGroup, "userRoleDefaultForms", "Отображение форм по умолчанию", LogicalClass.instance, userRole);
         inLoginSID = addJProp("inLoginSID", true, "Логину назначена роль", inUserRole, loginToUser, 1, sidToRole, 2);
+
+        email = addDProp(baseGroup, "email", "E-mail", StringClass.get(50), emailObject);
+        generateLoginPassword = addAProp(actionGroup, new GenerateLoginPasswordActionProperty(this));
 
         name = addCUProp(baseGroup, "commonName", "Имя", addDProp("name", "Имя", InsensitiveStringClass.get(110), baseClass.named),
                 addJProp(insensitiveString2, userFirstName, 1, userLastName, 1));
