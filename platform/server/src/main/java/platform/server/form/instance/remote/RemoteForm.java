@@ -211,14 +211,12 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
                 ids.add(node.getID());
             }
             for (String id : ids) {
-                File subReportFile = new File(getCustomReportName(id, getReportSID(groupId)));
-                if (subReportFile.exists()) {
-                    JasperDesign subreport = JRXmlLoader.load(subReportFile);
-                    designs.put(id, subreport);
-                }
+                String resourceName = "/" + getCustomReportName(id, getReportSID(groupId));
+                JasperDesign subreport = JRXmlLoader.load(getClass().getResourceAsStream(resourceName));
+                designs.put(id, subreport);
             }
             return designs;
-        } catch (JRException e) {
+        } catch (Exception e) {
             return null;
         }
     }
@@ -276,7 +274,7 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
     }
 
     public boolean hasCustomReportDesign(String sid) {
-        return new File(getCustomReportName(GroupObjectHierarchy.rootNodeName, sid)).exists();
+        return getClass().getResource("/" + getCustomReportName(GroupObjectHierarchy.rootNodeName, sid)) != null;
     }
 
     public byte[] getRichDesignByteArray() {
