@@ -7,6 +7,7 @@ import platform.client.logics.ClientPropertyDraw;
 import platform.interop.ComponentDesign;
 import platform.interop.Data;
 
+import java.awt.*;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -54,7 +55,7 @@ public class ClientFileActionClass extends ClientActionClass {
     }
 
     @Override
-    public PropertyEditorComponent getEditorComponent(ClientFormController form, ClientPropertyDraw property, Object value, Format format, ComponentDesign design) throws IOException, ClassNotFoundException {
+    public PropertyEditorComponent getEditorComponent(Component ownerComponent, ClientFormController form, ClientPropertyDraw property, Object value, Format format, ComponentDesign design) throws IOException, ClassNotFoundException {
 //         return new FileActionPropertyEditor("Файлы таблиц (*.xls)", "xls");
         return new FileActionPropertyEditor(filterDescription, filterExtensions);
     }

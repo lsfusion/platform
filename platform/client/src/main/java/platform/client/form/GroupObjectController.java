@@ -368,8 +368,8 @@ public class GroupObjectController implements GroupObjectLogicsSupplier {
                 : grid.getCurrentProperty();
     }
 
-    public Object getSelectedValue(ClientPropertyDraw cell) {
-        return grid.getSelectedValue(cell);
+    public Object getSelectedValue(ClientPropertyDraw cell, ClientGroupObjectValue columnKey) {
+        return grid.getSelectedValue(cell, columnKey);
     }
 
     public ClientFormController getForm() {

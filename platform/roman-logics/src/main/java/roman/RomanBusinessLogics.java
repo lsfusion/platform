@@ -2936,12 +2936,18 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             objCustomCategory10 = addSingleGroupObject(customCategory10, "Четвёртый уровень", sidCustomCategory10, nameCustomCategory);
             addObjectActions(this, objCustomCategory10);
 
-            objCustomCategory4Origin = addSingleGroupObject(customCategory4, "Первый уровень", sidCustomCategory4, nameCustomCategory, dumb1);
-            addPropertyDraw(dumb2, objCustomCategory10, objCustomCategory4Origin);
+            objCustomCategory4Origin = addSingleGroupObject(customCategory4, "Первый уровень", sidCustomCategory4, nameCustomCategory);
+            if (tree) {
+                addPropertyDraw(dumb1, objCustomCategory4Origin);
+                addPropertyDraw(dumb2, objCustomCategory10, objCustomCategory4Origin);
+            }
             addObjectActions(this, objCustomCategory4Origin);
 
-            objCustomCategory6Origin = addSingleGroupObject(customCategory6, "Второй уровень", sidCustomCategory6, nameCustomCategory, dumb1);
-            addPropertyDraw(dumb2, objCustomCategory10, objCustomCategory6Origin);
+            objCustomCategory6Origin = addSingleGroupObject(customCategory6, "Второй уровень", sidCustomCategory6, nameCustomCategory);
+            if (tree) {
+                addPropertyDraw(dumb1, objCustomCategory6Origin);
+                addPropertyDraw(dumb2, objCustomCategory10, objCustomCategory6Origin);
+            }
             addObjectActions(this, objCustomCategory6Origin);
 
             import1 = addPropertyDraw(importBelTnved);

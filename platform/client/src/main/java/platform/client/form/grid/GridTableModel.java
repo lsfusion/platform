@@ -147,9 +147,9 @@ public class GridTableModel extends AbstractTableModel {
         fireTableCellUpdated(row, col);
     }
 
-    public int getMinPropertyIndex(ClientPropertyDraw property) {
+    public int getPropertyIndex(ClientPropertyDraw property, ClientGroupObjectValue columnKey) {
         for (int i = 0; i < columnProps.length; ++i) {
-            if (property == columnProps[i]) {
+            if (property == columnProps[i] && (columnKey==null || columnKey.equals(columnKeys[i]))) {
                 return i;
             }
         }

@@ -30,6 +30,7 @@ import platform.server.form.view.FormView;
 import platform.server.form.view.report.ReportDesignGenerator;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.DataObject;
+import platform.server.logics.property.Property;
 import platform.server.serialization.SerializationType;
 import platform.server.serialization.ServerContext;
 import platform.server.serialization.ServerSerializationPool;
@@ -406,10 +407,10 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
     private List<ClientAction> actions = new ArrayList<ClientAction>();
     private ObjectInstance updateCurrentClass = null;
 
-    public void changePropertyDraw(int propertyID, byte[] object, boolean all, byte[] columnKeys) {
+    public void changePropertyDraw(int propertyID, byte[] columnKey, byte[] object, boolean all) {
         try {
             PropertyDrawInstance propertyDraw = form.getPropertyDraw(propertyID);
-            Map<ObjectInstance, DataObject> keys = deserializeKeys(propertyDraw, columnKeys);
+            Map<ObjectInstance, DataObject> keys = deserializeKeys(propertyDraw, columnKey);
             actions.addAll(form.changeProperty(propertyDraw, deserializeObject(object), this, all, keys));
 
             if (logger.isInfoEnabled()) {
@@ -431,6 +432,59 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public void groupChangePropertyDraw(int mainID, byte[] mainColumnKey, int getterID, byte[] getterColumnKey) {
+        try {
+            PropertyDrawInstance mainProperty = form.getPropertyDraw(mainID);
+            PropertyDrawInstance getterProperty = form.getPropertyDraw(getterID);
+
+            Map<ObjectInstance, DataObject> mainKeys = deserializeKeys(mainProperty, mainColumnKey);
+            Map<ObjectInstance, DataObject> getterKeys = deserializeKeys(getterProperty, getterColumnKey);
+            actions.addAll(
+                    form.groupChangeProperty(mainProperty, mainKeys, getterProperty, getterKeys, this)
+            );
+
+            if (logger.isInfoEnabled()) {
+                logger.info(String.format("groupChangePropertyDraw: [mainID: %1$d, mainSID: %2$s, getterID: %3$d, getterSID: %4$s]",
+                                          mainProperty.getID(), mainProperty.getsID(),
+                                          getterProperty.getID(), getterProperty.getsID()));
+                if (mainKeys.size() > 0) {
+                    logger.info("   mainColumnKeys: ");
+                    for (Map.Entry<ObjectInstance, DataObject> entry : mainKeys.entrySet()) {
+                        logger.info(String.format("     %1$s == %2$s", entry.getKey(), entry.getValue()));
+                    }
+                }
+
+                if (getterKeys.size() > 0) {
+                    logger.info("   getterColumnKeys: ");
+                    for (Map.Entry<ObjectInstance, DataObject> entry : getterKeys.entrySet()) {
+                        logger.info(String.format("     %1$s == %2$s", entry.getKey(), entry.getValue()));
+                    }
+                }
+
+                if (logger.isDebugEnabled()) {
+                    logger.debug("   current object's values: ");
+                    for (ObjectInstance obj : form.getObjects()) {
+                        logger.debug(String.format("     %1$s == %2$s", obj, obj.getObjectValue()));
+                    }
+                }
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public boolean[] isCompatibleProperties(int mainID, int[] propertiesIDs) throws RemoteException {
+        Property mainProperty = form.getPropertyDraw(mainID).propertyObject.getChangeInstance().property;
+
+        int n = propertiesIDs.length;
+        boolean result[] = new boolean[n];
+        for (int i = 0; i < n; ++i) {
+            Property property = form.getPropertyDraw(propertiesIDs[i]).propertyObject.getChangeInstance().property;
+            result[i] = mainProperty.getType().isCompatible( property.getType() );
+        }
+        return result;
     }
 
     public boolean canChangeClass(int objectID) throws RemoteException {

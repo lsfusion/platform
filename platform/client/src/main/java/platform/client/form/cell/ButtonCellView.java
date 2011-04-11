@@ -50,7 +50,7 @@ public class ButtonCellView extends ClientButton implements CellView {
 
                 try {
 
-                    PropertyEditorComponent editor = key.getEditorComponent(form, null);
+                    PropertyEditorComponent editor = key.getEditorComponent(ButtonCellView.this, form, null);
                     if (editor != null) {
                         editor.getComponent(SwingUtils.computeAbsoluteLocation(ButtonCellView.this), getBounds(), null);
                         if (editor.valueChanged())

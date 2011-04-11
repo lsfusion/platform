@@ -210,14 +210,13 @@ public class ClientFormController {
             comboBox.addItem(new ClientRegularFilterWrapped(filter));
         }
 
-        comboBox.addItemListener(new ItemListener() {
-            public void itemStateChanged(ItemEvent ie) {
+        comboBox.addItemListener(new ItemAdapter() {
+            @Override
+            public void itemSelected(ItemEvent e) {
                 try {
-                    if (ie.getStateChange() == ItemEvent.SELECTED) {
-                        setRegularFilter(filterGroup, ((ClientRegularFilterWrapped) ie.getItem()).filter);
-                    }
-                } catch (IOException e) {
-                    throw new RuntimeException("Ошибка при изменении регулярного фильтра", e);
+                    setRegularFilter(filterGroup, ((ClientRegularFilterWrapped) e.getItem()).filter);
+                } catch (IOException ioe) {
+                    throw new RuntimeException("Ошибка при изменении регулярного фильтра", ioe);
                 }
             }
         });
@@ -547,14 +546,25 @@ public class ClientFormController {
     }
 
 
-    public void changePropertyDraw(ClientPropertyDraw property, Object value, boolean all, ClientGroupObjectValue columnKey) throws IOException {
+    public void changePropertyDraw(ClientPropertyDraw property, ClientGroupObjectValue columnKey, Object value, boolean all) throws IOException {
         // для глобальных свойств пока не может быть отложенных действий
         if (property.getGroupObject() != null) {
             SwingUtils.stopSingleAction(property.getGroupObject().getActionID(), true);
         }
 
-        remoteForm.changePropertyDraw(property.getID(), BaseUtils.serializeObject(value), all, columnKey.serialize(property));
+        remoteForm.changePropertyDraw(property.getID(), columnKey.serialize(property), BaseUtils.serializeObject(value), all);
         applyRemoteChanges();
+    }
+
+    public void groupChangePropertyDraw(ClientPropertyDraw mainProperty, ClientGroupObjectValue mainColumnKey,
+                                        ClientPropertyDraw getterProperty, ClientGroupObjectValue getterColumnKey) throws IOException {
+        // для глобальных свойств пока не может быть отложенных действий
+        if (mainProperty.getGroupObject() != null) {
+            SwingUtils.stopSingleAction(mainProperty.getGroupObject().getActionID(), true);
+        }
+
+        remoteForm.groupChangePropertyDraw(mainProperty.getID(), mainColumnKey.serialize(mainProperty), getterProperty.getID(), getterColumnKey.serialize(getterProperty));
+        refreshData();
     }
 
     public void changeGridClass(ClientObject object, ClientObjectClass cls) throws IOException {

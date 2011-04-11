@@ -2,6 +2,7 @@ package platform.client.form.queries;
 
 import platform.client.ClientButton;
 import platform.client.form.GroupObjectLogicsSupplier;
+import platform.client.form.ItemAdapter;
 import platform.client.logics.*;
 import platform.client.logics.classes.ClientInsensitiveStringClass;
 import platform.client.logics.classes.ClientStringClass;
@@ -13,7 +14,6 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Vector;
@@ -23,8 +23,7 @@ abstract class QueryConditionView extends JPanel implements ValueLinkListener {
     public static final int PREFERRED_HEIGHT = 18;
 
     // Icons - загружаем один раз, для экономии
-    @SuppressWarnings({"FieldCanBeLocal"})
-    private final ImageIcon deleteIcon = new ImageIcon(getClass().getResource("/images/delete.gif"));
+    private static final ImageIcon deleteIcon = new ImageIcon(QueryConditionView.class.getResource("/images/delete.gif"));
 
     private final ClientPropertyFilter filter;
 
@@ -38,7 +37,6 @@ abstract class QueryConditionView extends JPanel implements ValueLinkListener {
     private JComboBox compareView;
 
     public QueryConditionView(ClientPropertyFilter ifilter, GroupObjectLogicsSupplier logicsSupplier) {
-
         filter = ifilter;
 
         setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
@@ -57,22 +55,17 @@ abstract class QueryConditionView extends JPanel implements ValueLinkListener {
         }
         filter.compare = (Compare) compareView.getSelectedItem();
 
-        propertyView.addItemListener(new ItemListener() {
-
-            public void itemStateChanged(ItemEvent ie) {
-                if (ie.getStateChange() == ItemEvent.SELECTED) {
-                    filter.property = (ClientPropertyDraw) ie.getItem();
-                    filterChanged();
-                }
+        propertyView.addItemListener(new ItemAdapter() {
+            public void itemSelected(ItemEvent e) {
+                filter.property = (ClientPropertyDraw) e.getItem();
+                filterChanged();
             }
         });
 
-        compareView.addItemListener(new ItemListener() {
-            public void itemStateChanged(ItemEvent e) {
-                if (e.getStateChange() == ItemEvent.SELECTED) {
-                    filter.compare = (Compare) e.getItem();
-                    conditionChanged();
-                }
+        compareView.addItemListener(new ItemAdapter() {
+            public void itemSelected(ItemEvent e) {
+                filter.compare = (Compare) e.getItem();
+                conditionChanged();
             }
         });
 
@@ -99,13 +92,10 @@ abstract class QueryConditionView extends JPanel implements ValueLinkListener {
 
         filter.value = (ClientValueLink) classValueLinkView.getSelectedItem();
 
-        classValueLinkView.addItemListener(new ItemListener() {
-
-            public void itemStateChanged(ItemEvent ie) {
-                if (ie.getStateChange() == ItemEvent.SELECTED) {
-                    filter.value = (ClientValueLink) classValueLinkView.getSelectedItem();
-                    filterChanged();
-                }
+        classValueLinkView.addItemListener(new ItemAdapter() {
+            public void itemSelected(ItemEvent e) {
+                filter.value = (ClientValueLink) classValueLinkView.getSelectedItem();
+                filterChanged();
             }
         });
 
@@ -113,18 +103,15 @@ abstract class QueryConditionView extends JPanel implements ValueLinkListener {
         delButton.setFocusable(false);
         delButton.setPreferredSize(new Dimension(PREFERRED_HEIGHT, PREFERRED_HEIGHT));
         delButton.addActionListener(new ActionListener() {
-
             public void actionPerformed(ActionEvent e) {
                 conditionRemoved(filter);
             }
         });
 
         filterChanged();
-
     }
 
     void filterChanged() {
-
         if (valueView != null) {
             remove(valueView);
         }
@@ -172,11 +159,11 @@ abstract class QueryConditionView extends JPanel implements ValueLinkListener {
     public void setSelectedPropertyDraw(ClientPropertyDraw propertyDraw) {
         if (propertyDraw != null) {
             propertyView.setSelectedItem(propertyDraw);
-            Compare compareToSet = defaultCompares.get(propertyDraw.baseType.getClass());
-            if (compareToSet == null) {
-                compareToSet = Compare.EQUALS;
+            Compare defaultCompare = defaultCompares.get(propertyDraw.baseType.getClass());
+            if (defaultCompare == null) {
+                defaultCompare = Compare.EQUALS;
             }
-            compareView.setSelectedItem(compareToSet);
+            compareView.setSelectedItem(defaultCompare);
         }
     }
 }

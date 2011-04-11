@@ -63,15 +63,15 @@ public class ClientObjectType implements ClientType, ClientTypeClass {
         return new TableCellView(key, columnKey, form);
     }
 
-    public PropertyEditorComponent getEditorComponent(ClientFormController form, ClientPropertyDraw property, Object value, Format format, ComponentDesign design) throws IOException, ClassNotFoundException {
-        return new ObjectPropertyEditor(form.getComponent(), property.createEditorForm(form.remoteForm));
+    public PropertyEditorComponent getEditorComponent(Component ownerComponent, ClientFormController form, ClientPropertyDraw property, Object value, Format format, ComponentDesign design) throws IOException, ClassNotFoundException {
+        return new ObjectPropertyEditor(ownerComponent, property.createEditorForm(form.remoteForm));
     }
 
-    public PropertyEditorComponent getObjectEditorComponent(ClientFormController form, ClientPropertyDraw property, Object value, Format format, ComponentDesign design) throws IOException, ClassNotFoundException {
+    public PropertyEditorComponent getObjectEditorComponent(Component ownerComponent, ClientFormController form, ClientPropertyDraw property, Object value, Format format, ComponentDesign design) throws IOException, ClassNotFoundException {
         RemoteDialogInterface remoteDialog = form.remoteForm.createObjectEditorDialog(property.ID);
         return remoteDialog == null
                ? null
-               : new ObjectPropertyEditor(form.getComponent(), remoteDialog);
+               : new ObjectPropertyEditor(ownerComponent, remoteDialog);
     }
 
     public PropertyEditorComponent getClassComponent(ClientFormController form, ClientPropertyDraw property, Object value, Format format) throws IOException, ClassNotFoundException {

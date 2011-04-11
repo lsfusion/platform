@@ -85,8 +85,8 @@ public class ClientAbstractCellEditor extends AbstractCellEditor
         try {
             if (cellTable.isDataChanging()) {
                 propertyEditor = KeyStrokes.isObjectEditorDialogEvent(editEvent)
-                                 ? property.getObjectEditorComponent(cellTable.getForm(), ivalue)
-                                 : property.getEditorComponent(cellTable.getForm(), ivalue);
+                                 ? property.getObjectEditorComponent(table, cellTable.getForm(), ivalue)
+                                 : property.getEditorComponent(table, cellTable.getForm(), ivalue);
             } else {
                 propertyEditor = property.getClassComponent(cellTable.getForm(), ivalue);
             }

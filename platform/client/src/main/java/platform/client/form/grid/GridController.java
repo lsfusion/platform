@@ -268,7 +268,7 @@ public class GridController {
     public void updatePropertyValues(ClientPropertyDraw property, Map<ClientGroupObjectValue, Object> values) {
         table.setColumnValues(property, values);
         if (extViews.containsKey(property)) {
-            Object value = getSelectedValue(property);
+            Object value = getSelectedValue(property, null);
             extViews.get(property).setValue((value == null) ? "" : value.toString());
             property.externalScreen.invalidate();
         }
@@ -282,8 +282,8 @@ public class GridController {
         return table.getCurrentProperty();
     }
 
-    public Object getSelectedValue(ClientPropertyDraw cell) {
-        return table.getSelectedValue(cell);
+    public Object getSelectedValue(ClientPropertyDraw cell, ClientGroupObjectValue columnKey) {
+        return table.getSelectedValue(cell, columnKey);
     }
 
     public boolean requestFocusInWindow() {

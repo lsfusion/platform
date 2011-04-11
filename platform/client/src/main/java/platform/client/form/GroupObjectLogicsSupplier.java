@@ -2,6 +2,7 @@ package platform.client.form;
 
 import platform.client.form.cell.PropertyController;
 import platform.client.logics.ClientGroupObject;
+import platform.client.logics.ClientGroupObjectValue;
 import platform.client.logics.ClientPropertyDraw;
 import platform.interop.Order;
 
@@ -16,7 +17,7 @@ public interface GroupObjectLogicsSupplier extends LogicsSupplier {
     // пока зафигачим в этот интерфейс, хотя может быть в дальнейшем выделим в отдельный
     // данный интерфейс отвечает за получение текущих выбранных значений
     ClientPropertyDraw getSelectedProperty();
-    Object getSelectedValue(ClientPropertyDraw property);
+    Object getSelectedValue(ClientPropertyDraw property, ClientGroupObjectValue columnKey);
     
     ClientFormController getForm();
 

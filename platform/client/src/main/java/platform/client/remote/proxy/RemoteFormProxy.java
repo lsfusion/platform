@@ -116,10 +116,24 @@ public class RemoteFormProxy<T extends RemoteFormInterface>
     }
 
     @PendingRemoteMethod
-    public void changePropertyDraw(int propertyID, byte[] object, boolean all, byte[] columnKeys) throws RemoteException {
+    public void changePropertyDraw(int propertyID, byte[] columnKey, byte[] object, boolean all) throws RemoteException {
         logRemoteMethodStartCall("changePropertyDraw");
-        target.changePropertyDraw(propertyID, object, all, columnKeys);
+        target.changePropertyDraw(propertyID, columnKey, object, all);
         logRemoteMethodEndVoidCall("changePropertyDraw");
+    }
+
+    @PendingRemoteMethod
+    public void groupChangePropertyDraw(int mainID, byte[] mainColumnKey, int getterID, byte[] getterColumnKey) throws RemoteException {
+        logRemoteMethodStartCall("groupChangePropertyDraw");
+        target.groupChangePropertyDraw(mainID, mainColumnKey, getterID, getterColumnKey);
+        logRemoteMethodEndVoidCall("groupChangePropertyDraw");
+    }
+
+    public boolean[] isCompatibleProperties(int mainPropertyID, int[] propertiesIDs) throws RemoteException {
+        logRemoteMethodStartCall("isCompatibleProperties");
+        boolean[] result = target.isCompatibleProperties(mainPropertyID, propertiesIDs);
+        logRemoteMethodEndCall("isCompatibleProperties", result);
+        return result;
     }
 
     public boolean canChangeClass(int objectID) throws RemoteException {

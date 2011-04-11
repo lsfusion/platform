@@ -133,7 +133,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         return groupObject;
     }
 
-    public PropertyEditorComponent getEditorComponent(ClientFormController form, Object value) throws IOException, ClassNotFoundException {
+    public PropertyEditorComponent getEditorComponent(Component ownerComponent, ClientFormController form, Object value) throws IOException, ClassNotFoundException {
         ClientType changeType = getPropertyChangeType(form);
         if (changeType == null) {
             return null;
@@ -150,14 +150,14 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
             }
         }
 
-        return changeType.getEditorComponent(form, this, value, getFormat(), design);
+        return changeType.getEditorComponent(ownerComponent, form, this, value, getFormat(), design);
     }
 
-    public PropertyEditorComponent getObjectEditorComponent(ClientFormController form, Object value) throws IOException, ClassNotFoundException {
+    public PropertyEditorComponent getObjectEditorComponent(Component ownerComponent, ClientFormController form, Object value) throws IOException, ClassNotFoundException {
         ClientType changeType = getPropertyChangeType(form);
         return changeType == null
                 ? null
-                : changeType.getObjectEditorComponent(form, this, value, getFormat(), design);
+                : changeType.getObjectEditorComponent(ownerComponent, form, this, value, getFormat(), design);
     }
 
     public PropertyEditorComponent getClassComponent(ClientFormController form, Object value) throws IOException, ClassNotFoundException {

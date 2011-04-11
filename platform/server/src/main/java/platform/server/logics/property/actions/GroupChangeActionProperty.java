@@ -96,7 +96,6 @@ public class GroupChangeActionProperty<M extends PropertyInterface, G extends Pr
         FormInstance<?> form = (FormInstance<?>) executeForm.form;
         DataSession session = form.session;
 
-
         Map<M, KeyExpr> mainKeys = mainProperty.getMapKeys();
 
         Where changeWhere = CompareWhere.compareValues(

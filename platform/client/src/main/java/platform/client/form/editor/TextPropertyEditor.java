@@ -1,12 +1,16 @@
 package platform.client.form.editor;
 
+import platform.client.SwingUtils;
 import platform.client.form.PropertyEditorComponent;
 import platform.interop.ComponentDesign;
 import platform.interop.KeyStrokes;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.*;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
@@ -29,13 +33,17 @@ public class TextPropertyEditor extends JScrollPane implements PropertyEditorCom
     private boolean state;
 
     public TextPropertyEditor(Object value, ComponentDesign design) {
+        this(null, value, design);
+    }
+
+    public TextPropertyEditor(Component owner, Object value, ComponentDesign design) {
         textArea = new JTextArea((String) value);
         textArea.setWrapStyleWord(true);
         textArea.setLineWrap(true);
 
         getViewport().add(textArea);
         setPreferredSize(new Dimension(200, 200));
-        dialog = new JDialog((Frame) null, true);
+        dialog = new JDialog(SwingUtils.getWindow(owner), Dialog.ModalityType.DOCUMENT_MODAL);
         textArea.setFont(new Font("Tahoma", Font.PLAIN, 12));
         if (design != null) {
             design.designCell(this);

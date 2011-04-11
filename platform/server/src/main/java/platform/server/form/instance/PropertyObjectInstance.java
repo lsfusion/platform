@@ -7,12 +7,13 @@ import platform.server.caches.IdentityLazy;
 import platform.server.classes.ConcreteClass;
 import platform.server.classes.CustomClass;
 import platform.server.classes.sets.AndClassSet;
-import platform.server.data.SQLSession;
 import platform.server.data.QueryEnvironment;
+import platform.server.data.SQLSession;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.type.Type;
 import platform.server.data.where.Where;
+import platform.server.form.instance.filter.CompareValue;
 import platform.server.form.instance.remote.RemoteForm;
 import platform.server.logics.DataObject;
 import platform.server.logics.property.Property;
@@ -124,22 +125,23 @@ public class PropertyObjectInstance<P extends PropertyInterface> extends Propert
         return property.read(session, getInterfaceValues(), modifier, env);
     }
 
-    public List<ClientAction> execute(DataSession session, Object value, Modifier<? extends Changes> modifier, RemoteForm executeForm, GroupObjectInstance groupObject) throws SQLException {
+    public List<ClientAction> execute(DataSession session, CompareValue getterValue, Modifier<? extends Changes> modifier, RemoteForm executeForm, GroupObjectInstance groupObject) throws SQLException {
         Map<P, KeyExpr> mapKeys = property.getMapKeys();
 
-        Map<ObjectInstance, KeyExpr> groupKeys;
-        Where changeWhere;
-        if(groupObject!=null) {
+        Map<ObjectInstance, KeyExpr> groupKeys = new HashMap<ObjectInstance, KeyExpr>();
+        Where changeWhere = Where.TRUE;
+        if (groupObject != null) {
             groupKeys = BaseUtils.filterKeys(BaseUtils.crossJoin(mapping, mapKeys), groupObject.objects);
             changeWhere = groupObject.getWhere(groupKeys, modifier);
-        } else {
-            groupKeys = new HashMap<ObjectInstance, KeyExpr>();
-            changeWhere = Where.TRUE;
         }
-        for(Map.Entry<P,PropertyObjectInterfaceInstance> mapObject : mapping.entrySet())
-            changeWhere = changeWhere.and(mapKeys.get(mapObject.getKey()).compare(mapObject.getValue().getExpr(groupKeys, modifier), Compare.EQUALS));
 
-        return session.execute(property,new PropertyChange<P>(mapKeys,session.getObjectValue(value, property.getType()).getExpr(),changeWhere), modifier ,executeForm, mapping);
+        for (Map.Entry<P, PropertyObjectInterfaceInstance> mapObject : mapping.entrySet()) {
+            changeWhere = changeWhere.and(mapKeys.get(mapObject.getKey()).compare(mapObject.getValue().getExpr(groupKeys, modifier), Compare.EQUALS));
+        }
+
+        return session.execute(property,
+                               new PropertyChange<P>(mapKeys, getterValue.getExpr(groupKeys, modifier), changeWhere),
+                               modifier, executeForm, mapping);
     }
 
     public Expr getExpr(Map<ObjectInstance, ? extends Expr> classSource, Modifier<? extends Changes> modifier) {

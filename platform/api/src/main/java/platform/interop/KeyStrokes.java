@@ -10,6 +10,10 @@ public class KeyStrokes {
         return KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0);
     }
 
+    public static KeyStroke getAltEnter() {
+        return KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, InputEvent.ALT_DOWN_MASK);
+    }
+
     public static KeyStroke getEscape() {
         return KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0);
     }
@@ -100,6 +104,10 @@ public class KeyStrokes {
 
     public static KeyStroke getImportActionPropertyKeyStroke() {
         return KeyStroke.getKeyStroke(KeyEvent.VK_I, InputEvent.ALT_DOWN_MASK);
+    }
+
+    public static KeyStroke getGroupCorrectionKeyStroke() {
+        return KeyStroke.getKeyStroke(KeyEvent.VK_F12, InputEvent.CTRL_MASK);
     }
 
     public static boolean isKeyEvent(EventObject event, int keyCode) {

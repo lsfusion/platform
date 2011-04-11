@@ -418,9 +418,24 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
         if (securityPolicy.property.change.checkPermission(property.property)) {
             dataChanged = true;
             // изменяем св-во
-            return property.getChangeInstance().execute(session, value, this, executeForm, groupObject);
+            PropertyObjectInstance<?> changeInstance = property.getChangeInstance();
+            return changeInstance.execute(session, session.getObjectValue(value, changeInstance.getType()), this, executeForm, groupObject);
         } else {
             return null;
+        }
+    }
+
+    public Collection<? extends ClientAction> groupChangeProperty(PropertyDrawInstance<?> mainPropertyDraw, Map<ObjectInstance, DataObject> mainColumnKey,
+                                                                  PropertyDrawInstance<?> getterPropertyDraw, Map<ObjectInstance, DataObject> getterColumnKey, RemoteForm executeForm) throws SQLException {
+        Property<? extends PropertyInterface> mainProperty = mainPropertyDraw.propertyObject.property;
+        Property<? extends PropertyInterface> getterProperty = getterPropertyDraw.propertyObject.property;
+
+        if (mainProperty.getType().isCompatible(getterProperty.getType()) && securityPolicy.property.change.checkPermission(mainProperty)) {
+            PropertyObjectInstance<? extends PropertyInterface> mainPropertyInstance = mainPropertyDraw.propertyObject.getRemappedPropertyObject(mainColumnKey).getChangeInstance();
+            PropertyObjectInstance<? extends PropertyInterface> getterPropertyInstance = getterPropertyDraw.propertyObject.getRemappedPropertyObject(getterColumnKey).getChangeInstance();
+            return mainPropertyInstance.execute(session, getterPropertyInstance, this, executeForm, mainPropertyDraw.toDraw);
+        } else {
+            return new ArrayList<ClientAction>();
         }
     }
 

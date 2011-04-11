@@ -1,15 +1,15 @@
 package platform.client.form.queries;
 
 import platform.client.form.GroupObjectLogicsSupplier;
+import platform.client.form.ItemAdapter;
 import platform.client.logics.ClientPropertyDraw;
 import platform.client.logics.ClientPropertyValueLink;
 
 import javax.swing.*;
 import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
 import java.util.Vector;
 
-class PropertyValueLinkView extends ValueLinkView {
+public class PropertyValueLinkView extends ValueLinkView {
 
     private final ClientPropertyValueLink valueLink;
 
@@ -22,13 +22,11 @@ class PropertyValueLinkView extends ValueLinkView {
 
         valueLink.property = (ClientPropertyDraw) propertyView.getSelectedItem();
 
-        propertyView.addItemListener(new ItemListener() {
-
-            public void itemStateChanged(ItemEvent e) {
-                if (e.getStateChange() == ItemEvent.SELECTED) {
-                    valueLink.property = (ClientPropertyDraw)e.getItem();
-                    if (listener != null)
-                        listener.valueChanged();
+        propertyView.addItemListener(new ItemAdapter() {
+            public void itemSelected(ItemEvent e) {
+                valueLink.property = (ClientPropertyDraw) e.getItem();
+                if (listener != null) {
+                    listener.valueChanged();
                 }
             }
         });
@@ -38,5 +36,4 @@ class PropertyValueLinkView extends ValueLinkView {
 
     public void propertyChanged(ClientPropertyDraw property) {
     }
-
 }

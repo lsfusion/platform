@@ -173,7 +173,7 @@ public class TreeGroupController implements GroupObjectLogicsSupplier {
     }
 
     @Override
-    public Object getSelectedValue(ClientPropertyDraw property) {
+    public Object getSelectedValue(ClientPropertyDraw property, ClientGroupObjectValue columnKey) {
         return tree.getSelectedValue(property);
     }
 

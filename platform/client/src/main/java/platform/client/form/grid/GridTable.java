@@ -10,6 +10,7 @@ import platform.client.form.GroupObjectController;
 import platform.client.form.cell.CellTableInterface;
 import platform.client.form.cell.ClientAbstractCellEditor;
 import platform.client.form.cell.ClientAbstractCellRenderer;
+import platform.client.form.grid.groupchange.GroupChangeAction;
 import platform.client.form.queries.QueryView;
 import platform.client.form.sort.MultiLineHeaderRenderer;
 import platform.client.form.sort.TableSortableHeaderManager;
@@ -22,10 +23,7 @@ import platform.interop.Scroll;
 
 import javax.swing.*;
 import javax.swing.event.*;
-import javax.swing.table.JTableHeader;
-import javax.swing.table.TableCellEditor;
-import javax.swing.table.TableColumn;
-import javax.swing.table.TableColumnModel;
+import javax.swing.table.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.IOException;
@@ -38,6 +36,10 @@ import static java.lang.Math.min;
 
 public abstract class GridTable extends ClientFormTable
         implements CellTableInterface {
+
+    private static final String GOTO_LAST_ACTION = "gotoLastRow";
+    private static final String GOTO_FIRST_ACTION = "gotoFirstRow";
+    private static final String GROUP_CORRECTION_ACTION = "groupPropertyCorrection";
 
     private final List<ClientPropertyDraw> properties = new ArrayList<ClientPropertyDraw>();
 
@@ -78,19 +80,11 @@ public abstract class GridTable extends ClientFormTable
 
         setAutoResizeMode(JTable.AUTO_RESIZE_SUBSEQUENT_COLUMNS);
 
-        model = (GridTableModel) getModel();
+        model = getModel();
 
         groupObjectController = igroupObjectController;
         form = iform;
         groupObject = groupObjectController.getGroupObject();
-
-        getSelectionModel().addListSelectionListener(new ListSelectionListener() {
-            public void valueChanged(ListSelectionEvent e) {
-                if (!e.getValueIsAdjusting()) {
-                    changeCurrentObject();
-                }
-            }
-        });
 
         sortableHeaderManager = new TableSortableHeaderManager<Pair<ClientPropertyDraw, ClientGroupObjectValue>>(this) {
             protected void orderChanged(Pair<ClientPropertyDraw, ClientGroupObjectValue> columnKey, Order modiType) {
@@ -150,6 +144,22 @@ public abstract class GridTable extends ClientFormTable
             });
         }
 
+        //имитируем продвижение фокуса вперёд, если изначально попадаем на нефокусную ячейку
+        addFocusListener(new FocusAdapter() {
+            public void focusGained(FocusEvent e) {
+                moveToFocusableCellIfNeeded();
+            }
+        });
+
+        getSelectionModel().addListSelectionListener(new ListSelectionListener() {
+            public void valueChanged(ListSelectionEvent e) {
+                if (!e.getValueIsAdjusting()) {
+                    changeCurrentObject();
+                }
+                moveToFocusableCellIfNeeded();
+            }
+        });
+
         initializeActionMap();
     }
 
@@ -199,20 +209,16 @@ public abstract class GridTable extends ClientFormTable
         actionMap.put("selectFirstColumn", firstAction);
         actionMap.put("selectLastColumn", lastAction);
 
-        //имитируем продвижение фокуса вперёд, если изначально попадаем на нефокусную ячейку
-        addFocusListener(new FocusAdapter() {
-            public void focusGained(FocusEvent e) {
-                moveToFocusableCellIfNeeded();
-            }
-        });
+        actionMap.put(GOTO_FIRST_ACTION, new ScrollToEndAction(Scroll.HOME));
+        actionMap.put(GOTO_LAST_ACTION, new ScrollToEndAction(Scroll.END));
+        actionMap.put(GROUP_CORRECTION_ACTION, new GroupChangeAction(this));
 
-        getSelectionModel().addListSelectionListener(new ListSelectionListener() {
-            public void valueChanged(ListSelectionEvent e) {
-                moveToFocusableCellIfNeeded();
-            }
-        });
+        moveToNextCellAction = nextAction;
 
-        this.moveToNextCellAction = nextAction;
+        InputMap inputMap = getInputMap();
+        inputMap.put(KeyStrokes.getCtrlHome(), GOTO_FIRST_ACTION);
+        inputMap.put(KeyStrokes.getCtrlEnd(), GOTO_LAST_ACTION);
+        inputMap.put(KeyStrokes.getGroupCorrectionKeyStroke(), GROUP_CORRECTION_ACTION);
     }
 
     int getID() {
@@ -434,6 +440,11 @@ public abstract class GridTable extends ClientFormTable
         super.doLayout();
     }
 
+    @Override
+    public GridTableModel getModel() {
+        return (GridTableModel) super.getModel();
+    }
+
     private void setPreferredColumnWidthsAsMinWidth() {
         for (int i = 0; i < model.getColumnCount(); ++i) {
             getColumnModel().getColumn(i).setPreferredWidth(getColumnModel().getColumn(i).getMinWidth());
@@ -449,22 +460,6 @@ public abstract class GridTable extends ClientFormTable
 
     @Override
     protected boolean processKeyBinding(KeyStroke ks, KeyEvent e, int condition, boolean pressed) {
-        try {
-            // Отдельно обработаем CTRL + HOME и CTRL + END
-            if (ks.equals(KeyStrokes.getCtrlHome())) {
-                form.changeGroupObject(groupObject, Scroll.HOME);
-                return true;
-            }
-
-            if (ks.equals(KeyStrokes.getCtrlEnd())) {
-                form.changeGroupObject(groupObject, Scroll.END);
-                return true;
-            }
-        } catch (IOException ioe) {
-            throw new RuntimeException("Ошибка при переходе на запись", ioe);
-        }
-
-
         boolean isReadOnlyDialog = form.isDialogMode() && form.isReadOnlyMode();
         if (isReadOnlyDialog && ks.equals(KeyStrokes.getApplyKeyStroke(isReadOnlyDialog))) {
             return false;
@@ -510,7 +505,7 @@ public abstract class GridTable extends ClientFormTable
             Object value = model.getValueAt(row, col);
 
             try {
-                form.changePropertyDraw(model.getColumnProperty(col), value, multyChange, model.getColumnKey(col));
+                form.changePropertyDraw(model.getColumnProperty(col), model.getColumnKey(col), value, multyChange);
             } catch (IOException ioe) {
                 throw new RuntimeException("Ошибка при изменении значения свойства", ioe);
             }
@@ -609,23 +604,14 @@ public abstract class GridTable extends ClientFormTable
         this.rowHighlights = rowHighlights;
     }
 
-    public Object getSelectedValue(ClientPropertyDraw property) {
-        return getSelectedValue(getMinPropertyIndex(property));
+    public Object getSelectedValue(ClientPropertyDraw property, ClientGroupObjectValue columnKey) {
+        return getSelectedValue(model.getPropertyIndex(property, columnKey));
     }
 
     private Object getSelectedValue(int col) {
         int row = getSelectedRow();
         if (row != -1 && row < getRowCount() && col != -1 && col < getColumnCount()) {
             return getValueAt(row, col);
-        } else {
-            return null;
-        }
-    }
-
-    public Object getValue(ClientPropertyDraw property, int row) {
-        int col = getMinPropertyIndex(property);
-        if (row != -1 && row < getRowCount() && col != -1 && col < getColumnCount()) {
-            return model.getValueAt(row, col);
         } else {
             return null;
         }
@@ -685,7 +671,7 @@ public abstract class GridTable extends ClientFormTable
     }
 
     public int getMinPropertyIndex(ClientPropertyDraw property) {
-        return model.getMinPropertyIndex(property);
+        return model.getPropertyIndex(property, null);
     }
 
     public GridTableModel getTableModel() {
@@ -847,6 +833,23 @@ public abstract class GridTable extends ClientFormTable
             }
 
             isInternalNavigating = false;
+        }
+    }
+
+    private class ScrollToEndAction extends AbstractAction {
+        private final Scroll direction;
+
+        private ScrollToEndAction(Scroll direction) {
+            this.direction = direction;
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            try {
+                form.changeGroupObject(groupObject, direction);
+            } catch (IOException ioe) {
+                throw new RuntimeException("Ошибка при переходе на запись", ioe);
+            }
         }
     }
 

@@ -73,7 +73,7 @@ class GroupTreeTableModel extends DefaultTreeTableModel {
         ClientPropertyDraw property = getProperty(node, column);
         if (property != null) {
             try {
-                form.changePropertyDraw(property, value, false, ((TreeGroupNode) node).key);
+                form.changePropertyDraw(property, ((TreeGroupNode) node).key, value, false);
             } catch (IOException e) {
                 throw new RuntimeException("Ошибка при изменении значения свойства", e);
             }

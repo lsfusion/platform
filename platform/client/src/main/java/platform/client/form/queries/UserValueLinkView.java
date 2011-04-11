@@ -9,12 +9,12 @@ import platform.client.logics.ClientUserValueLink;
 import javax.swing.*;
 import java.awt.*;
 
-class UserValueLinkView extends ValueLinkView {
+public class UserValueLinkView extends ValueLinkView {
 
     private final ClientUserValueLink valueLink;
     private ClientPropertyDraw property;
 
-    private final CellTable valueView;
+    private final CellTable valueTable;
 
     // нужен для получения текущих значений в таблице
     private final GroupObjectLogicsSupplier logicsSupplier;
@@ -30,7 +30,7 @@ class UserValueLinkView extends ValueLinkView {
         setBorder(compBorder.getBorder());
 
         // непосредственно объект для изменения значения свойств
-        valueView = new CellTable(false) {
+        valueTable = new CellTable(false) {
 
             protected boolean cellValueChanged(Object value) {
 
@@ -64,37 +64,36 @@ class UserValueLinkView extends ValueLinkView {
         };
 
         // приходится в явную указывать RowHeight, поскольку это JTable и он сам не растянется
-        valueView.setRowHeight(QueryConditionView.PREFERRED_HEIGHT);
-        add(valueView, BorderLayout.CENTER);
+        valueTable.setRowHeight(QueryConditionView.PREFERRED_HEIGHT);
+        add(valueTable, BorderLayout.CENTER);
     }
 
     public boolean requestFocusInWindow() {
-        return valueView.requestFocusInWindow();
+        return valueTable.requestFocusInWindow();
     }
 
     public void propertyChanged(ClientPropertyDraw iproperty) {
-
         property = iproperty;
 
-        valueView.keyChanged(property);
+        valueTable.keyChanged(property);
         
-        setValue(logicsSupplier.getSelectedValue(property));
+        setValue(logicsSupplier.getSelectedValue(property, null));
     }
 
     public void startEditing() {
-        valueView.editCellAt(0, 0);
-        Component editor = valueView.getEditorComponent();
+        valueTable.editCellAt(0, 0);
+        Component editor = valueTable.getEditorComponent();
         if (editor != null) {
             editor.requestFocusInWindow();
         }
     }
 
     public void stopEditing() {
-        valueView.stopEditing();
+        valueTable.stopEditing();
     }
 
     void setValue(Object value) {
         valueLink.value = value;
-        valueView.setValue(value);
+        valueTable.setValue(value);
     }
 }
