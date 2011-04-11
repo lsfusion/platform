@@ -14,6 +14,7 @@ import javax.swing.event.PopupMenuListener;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -110,9 +111,7 @@ public class DatePropertyEditor extends JDateChooser
 
 		Calendar calendar = format.getCalendar();
 		Date date = dateEditor.getDate();
-		if (date != null) {
-			calendar.setTime(date);
-		}
+        calendar.setTime(date != null ? date : new Date());
 		jcalendar.setCalendar(calendar);
 		popup.show(calendarButton, x, y);
 		dateSelected = false;
@@ -138,6 +137,14 @@ class DatePropertyEditorComponent extends JTextFieldDateEditor {
     //а вот так будем дурить их protected метод
     public boolean publicProcessKeyBinding(KeyStroke ks, KeyEvent ke, int condition, boolean pressed) {
         return processKeyBinding(ks, ke, condition, pressed);
+    }
+
+    public Date getDate() {
+        try {
+            return dateFormatter.parse(getText());
+        } catch (ParseException e) {
+            return null;
+        }
     }
 
 /*    @Override
