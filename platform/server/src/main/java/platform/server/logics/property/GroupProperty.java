@@ -88,7 +88,7 @@ abstract public class GroupProperty<T extends PropertyInterface> extends Functio
         Expr changedPrevExpr = GroupExpr.create(getGroupImplements(mapKeys, defaultModifier), groupProperty.getExpr(mapKeys), changedGroupWhere.toWhere(), getGroupType(), joinImplement);
 
         if(changedWhere!=null) changedWhere.add(changedExpr.getWhere().or(changedPrevExpr.getWhere())); // если хоть один не null
-        return getChangedExpr(changedExpr, changedPrevExpr, joinImplement, modifier);
+        return getChangedExpr(changedExpr, changedPrevExpr, getExpr(joinImplement), joinImplement, modifier);
     }
 
     protected Expr calculateNewExpr(Map<Interface<T>, ? extends Expr> joinImplement, Modifier<? extends Changes> modifier) {
@@ -96,7 +96,7 @@ abstract public class GroupProperty<T extends PropertyInterface> extends Functio
         return GroupExpr.create(getGroupImplements(mapKeys, modifier), groupProperty.getExpr(mapKeys, modifier), getGroupType(), joinImplement);
     }
 
-    protected abstract Expr getChangedExpr(Expr changedExpr, Expr changedPrevExpr, Map<Interface<T>, ? extends Expr> joinImplement, Modifier<? extends Changes> modifier);
+    protected abstract Expr getChangedExpr(Expr changedExpr, Expr changedPrevExpr, Expr prevExpr, Map<Interface<T>, ? extends Expr> joinImplement, Modifier<? extends Changes> modifier);
 
     @Override
     public void fillDepends(Set<Property> depends, boolean derived) {

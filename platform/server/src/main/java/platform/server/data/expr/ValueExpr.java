@@ -8,6 +8,7 @@ import platform.server.classes.ConcreteClass;
 import platform.server.classes.DoubleClass;
 import platform.server.classes.IntegerClass;
 import platform.server.classes.LogicalClass;
+import platform.server.classes.IntegerClass;
 import platform.server.data.Value;
 import platform.server.data.expr.where.MapWhere;
 import platform.server.data.query.CompileSource;

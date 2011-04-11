@@ -16,6 +16,7 @@ import platform.server.data.where.DataWhere;
 import platform.server.data.where.DataWhereSet;
 import platform.server.data.where.Where;
 import platform.server.data.where.classes.ClassExprWhere;
+import platform.server.classes.LogicalClass;
 
 public abstract class BinaryWhere<This extends BinaryWhere<This>> extends DataWhere {
 
