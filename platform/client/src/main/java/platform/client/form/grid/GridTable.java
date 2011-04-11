@@ -37,9 +37,9 @@ import static java.lang.Math.min;
 public abstract class GridTable extends ClientFormTable
         implements CellTableInterface {
 
-    private static final String GOTO_LAST_ACTION = "gotoLastRow";
-    private static final String GOTO_FIRST_ACTION = "gotoFirstRow";
-    private static final String GROUP_CORRECTION_ACTION = "groupPropertyCorrection";
+    public static final String GOTO_LAST_ACTION = "gotoLastRow";
+    public static final String GOTO_FIRST_ACTION = "gotoFirstRow";
+    public static final String GROUP_CORRECTION_ACTION = "groupPropertyCorrection";
 
     private final List<ClientPropertyDraw> properties = new ArrayList<ClientPropertyDraw>();
 
@@ -72,7 +72,6 @@ public abstract class GridTable extends ClientFormTable
     private int viewMoveInterval = 0;
     private ClientGroupObject groupObject;
     private TableSortableHeaderManager<Pair<ClientPropertyDraw, ClientGroupObjectValue>> sortableHeaderManager;
-    private GroupChangeAction groupChangeAction;
 
     public GridTable(GroupObjectController igroupObjectController, ClientFormController iform) {
         super(new GridTableModel());
@@ -199,7 +198,6 @@ public abstract class GridTable extends ClientFormTable
         final Action firstAction = new GoToLastCellAction(oldFirstAction, oldNextAction);
         final Action lastAction = new GoToLastCellAction(oldLastAction, oldPrevAction);
 
-        groupChangeAction = new GroupChangeAction(this);
         moveToNextCellAction = nextAction;
 
         ActionMap actionMap = getActionMap();
@@ -215,17 +213,13 @@ public abstract class GridTable extends ClientFormTable
 
         actionMap.put(GOTO_FIRST_ACTION, new ScrollToEndAction(Scroll.HOME));
         actionMap.put(GOTO_LAST_ACTION, new ScrollToEndAction(Scroll.END));
-        actionMap.put(GROUP_CORRECTION_ACTION, groupChangeAction);
+        actionMap.put(GROUP_CORRECTION_ACTION, new GroupChangeAction(this));
 
 
         InputMap inputMap = getInputMap();
         inputMap.put(KeyStrokes.getCtrlHome(), GOTO_FIRST_ACTION);
         inputMap.put(KeyStrokes.getCtrlEnd(), GOTO_LAST_ACTION);
         inputMap.put(KeyStrokes.getGroupCorrectionKeyStroke(), GROUP_CORRECTION_ACTION);
-    }
-
-    public ActionListener getGroupChangeAction() {
-        return groupChangeAction;
     }
 
     int getID() {
