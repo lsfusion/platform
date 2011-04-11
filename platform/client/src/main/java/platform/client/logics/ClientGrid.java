@@ -15,6 +15,7 @@ public class ClientGrid extends ClientComponent {
 
     public boolean showFind;
     public boolean showFilter;
+    public boolean showGroupChange;
     public boolean showCountQuantity;
     public boolean showCalculateSum;
     public boolean showGroup;
@@ -44,6 +45,7 @@ public class ClientGrid extends ClientComponent {
         super.customSerialize(pool, outStream, serializationType);
         outStream.writeBoolean(showFind);
         outStream.writeBoolean(showFilter);
+        outStream.writeBoolean(showGroupChange);
         outStream.writeBoolean(showCountQuantity);
         outStream.writeBoolean(showCalculateSum);
         outStream.writeBoolean(showGroup);
@@ -63,6 +65,7 @@ public class ClientGrid extends ClientComponent {
 
         showFind = inStream.readBoolean();
         showFilter = inStream.readBoolean();
+        showGroupChange = inStream.readBoolean();
         showCountQuantity = inStream.readBoolean();
         showCalculateSum = inStream.readBoolean();
         showGroup = inStream.readBoolean();
@@ -115,6 +118,15 @@ public class ClientGrid extends ClientComponent {
 
     public boolean getShowCountQuantity() {
         return showCountQuantity;
+    }
+
+    public void setShowGroupChange(boolean showGroupChange) {
+        this.showGroupChange = showGroupChange;
+        updateDependency(this, "showGroupChange");
+    }
+
+    public boolean getShowGroupChanged() {
+        return showGroupChange;
     }
 
     public void setShowCalculateSum(boolean showCalculateSum) {

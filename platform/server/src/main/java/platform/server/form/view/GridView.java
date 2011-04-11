@@ -11,6 +11,7 @@ public class GridView extends ComponentView {
 
     public boolean showFind = false;
     public boolean showFilter = true;
+    public boolean showGroupChange = true;
     public boolean showCountQuantity = true;
     public boolean showCalculateSum = true;
     public boolean showGroup = true;
@@ -42,6 +43,7 @@ public class GridView extends ComponentView {
         super.customSerialize(pool, outStream, serializationType);
         outStream.writeBoolean(showFind);
         outStream.writeBoolean(showFilter);
+        outStream.writeBoolean(showGroupChange);
         outStream.writeBoolean(showCountQuantity);
         outStream.writeBoolean(showCalculateSum);
         outStream.writeBoolean(showGroup);
@@ -61,6 +63,7 @@ public class GridView extends ComponentView {
 
         showFind = inStream.readBoolean();
         showFilter = inStream.readBoolean();
+        showGroupChange = inStream.readBoolean();
         showCountQuantity = inStream.readBoolean();
         showCalculateSum = inStream.readBoolean();
         showGroup = inStream.readBoolean();
@@ -77,6 +80,7 @@ public class GridView extends ComponentView {
     public void hideToolbarItems() {
         showFind = false;
         showFilter = false;
+        showGroupChange = false;
         showCountQuantity = false;
         showCalculateSum = false;
         showGroup = false;

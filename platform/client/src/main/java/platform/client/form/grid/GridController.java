@@ -96,6 +96,15 @@ public class GridController {
             groupObjectController.addToToolbar(Box.createHorizontalStrut(5));
         }
 
+        if (key.showGroupChange) {
+            groupObjectController.addToToolbar(new BaseGridButton("/images/groupchange.gif", "Групповая корректировка") {
+                @Override
+                public void addListener() {
+                    addActionListener(table.getGroupChangeAction());
+                }
+            });
+        }
+
         if (key.showCountQuantity) {
             groupObjectController.addToToolbar(new CountQuantityButton() {
                 public void addListener() {
