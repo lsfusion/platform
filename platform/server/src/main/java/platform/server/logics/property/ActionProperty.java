@@ -40,7 +40,7 @@ public abstract class ActionProperty extends ExecuteProperty {
         return getValueClass().getDefaultExpr().and(ClassProperty.getIsClassWhere(joinImplement, modifier, changedWhere));
     }
 
-    protected DataClass getValueClass() {
+    public DataClass getValueClass() {
         return ActionClass.instance;
     }
 }

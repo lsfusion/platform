@@ -207,8 +207,8 @@ public abstract class AbstractSaleExportTask extends FlagSemaphoreTask {
 
         for (FormRow row : data.rows) {
 
-            barField.put(((String)row.values.get(map.get(barField))).trim());
-            nameField.put(((String)row.values.get(map.get(nameField))).trim());
+            putString(barField,(String)row.values.get(map.get(barField)));
+            putString(nameField,(String)row.values.get(map.get(nameField)));
             putDouble(cenField, (Double)row.values.get(map.get(cenField)));
 
             if (map.get(kolField) != null)
@@ -228,6 +228,10 @@ public abstract class AbstractSaleExportTask extends FlagSemaphoreTask {
 
             outDbf.write();
         }
+    }
+
+    private void putString(CharField field, Object value) throws xBaseJException {
+        field.put(BaseUtils.padr(value != null ? (String) value : "", field.getLength()));
     }
 
     private void putDouble(NumField fld, Double val) throws xBaseJException {

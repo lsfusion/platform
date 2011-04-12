@@ -72,6 +72,7 @@ public interface SQLSyntax {
     String getOrderDirection(boolean descending);
 
     String getHour();
+    String getMinute();
     String getEpoch();
     String getDateTime();
     String typeConvertSuffix(Type oldType, Type newType, String name);

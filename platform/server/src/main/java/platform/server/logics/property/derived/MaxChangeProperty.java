@@ -104,7 +104,7 @@ public class MaxChangeProperty<T extends PropertyInterface,P extends PropertyInt
 
         WhereBuilder onChangeWhere = new WhereBuilder();
         Expr resultExpr = GroupExpr.create(mapExprs, onChange.getExpr(onChange.getMapKeys(),
-                toChange.getChangeModifier(modifier, false), onChangeWhere), onChangeWhere.toWhere(), GroupType.MAX, joinImplement);
+                toChange.getChangeModifier(modifier, false), onChangeWhere), onChangeWhere.toWhere(), GroupType.ANY, joinImplement);
         if(changedWhere!=null) changedWhere.add(resultExpr.getWhere());
         return resultExpr;
     }

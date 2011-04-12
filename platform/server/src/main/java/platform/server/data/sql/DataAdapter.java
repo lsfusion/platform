@@ -146,6 +146,10 @@ public abstract class DataAdapter extends AbstractConnectionPool implements SQLS
         return "EXTRACT(HOUR FROM CURRENT_TIME)";
     }
 
+    public String getMinute() {
+        return "EXTRACT(MINUTE FROM CURRENT_TIME)";
+    }
+
     public String getEpoch() {
         return "EXTRACT(EPOCH FROM CURRENT_TIMESTAMP)";
     }

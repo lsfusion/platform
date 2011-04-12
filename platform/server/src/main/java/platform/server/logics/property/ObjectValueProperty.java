@@ -43,7 +43,7 @@ public class ObjectValueProperty extends ExecuteProperty {
         return "objectValue.getLP(baseClass.named)";
     }
 
-    protected ValueClass getValueClass() {
+    public ValueClass getValueClass() {
         return typeClass;
     }
 

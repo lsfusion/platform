@@ -549,6 +549,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     protected LP transactionLater;
     public LP currentDate;
     protected LP currentHour;
+    protected LP currentMinute;
     protected LP currentEpoch;
     protected LP currentDateTime;
     public LP currentUser;
@@ -1012,12 +1013,11 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         baseElement = new NavigatorElement<T>("baseElement", "Base Group");
     }
 
-    void initSyncProperties() { // свойства для инициализации static классов
+    void initBaseProperties() {
+
         classSID = addDProp("classSID", "Стат. код", StringClass.get(250), baseClass.sidClass);
         dataName = addDProp("name", "Имя", InsensitiveStringClass.get(110), baseClass.named);
-    }
 
-    void initBaseProperties() {
         // математические св-ва
         equals2 = addCFProp(Compare.EQUALS);
         object1 = addAFProp();
@@ -1082,6 +1082,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
         currentDate = addDProp(baseGroup, "currentDate", "Тек. дата", DateClass.instance);
         currentHour = addTProp(Time.HOUR);
+        currentMinute = addTProp(Time.MINUTE);
         currentEpoch = addTProp(Time.EPOCH);
         currentDateTime = addTProp(Time.DATETIME);
         currentUser = addProperty(null, new LP<PropertyInterface>(new CurrentUserFormulaProperty(genSID(), user)));
@@ -1532,7 +1533,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         }
 
         @Override
-        protected DataClass getValueClass() {
+        public DataClass getValueClass() {
             return LogicalClass.instance;
         }
 
@@ -1634,7 +1635,6 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
         initTables();
 
-        initSyncProperties();
         initBaseProperties();
 
         initProperties();
@@ -2299,12 +2299,6 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         byte[] struct = (byte[]) sql.readRecord(StructTable.instance, new HashMap<KeyField, DataObject>(), StructTable.instance.struct);
         if (struct != null) {
             inputDB = new DataInputStream(new ByteArrayInputStream(struct));
-
-            if (struct.length == 0) { //чисто для бага JTDS
-                sql.rollbackTransaction();
-                return;
-            }
-
             fillIDs();
         }
 
@@ -2462,7 +2456,6 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
         recalculateAggregations(sql, recalculateProperties);
 //        recalculateAggregations(sql, getAggregateStoredProperties());
-
 
         // создадим индексы в базе
         for (Map.Entry<ImplementTable, Set<List<String>>> mapIndex : mapIndexes.entrySet())
@@ -4469,7 +4462,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         }
 
         @Override
-        protected DataClass getValueClass() {
+        public DataClass getValueClass() {
             FileClass fileClass = (FileClass) fileProperty.property.getType();
             return FileActionClass.getInstance(fileClass.toString(), fileClass.getExtensions());
         }

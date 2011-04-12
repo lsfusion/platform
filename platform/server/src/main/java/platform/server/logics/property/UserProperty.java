@@ -59,7 +59,7 @@ public abstract class UserProperty extends Property<ClassPropertyInterface> {
         return getValueClass().getType();
     }
 
-    protected abstract ValueClass getValueClass();
+    public abstract ValueClass getValueClass();
 
     protected ClassWhere<Field> getClassWhere(PropertyField storedField) {
         Map<Field, AndClassSet> result = new HashMap<Field, AndClassSet>();

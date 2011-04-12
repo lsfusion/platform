@@ -87,7 +87,7 @@ public class ImportFromExcelActionProperty extends ActionProperty {
     }
 
     @Override
-    protected DataClass getValueClass() {
+    public DataClass getValueClass() {
         return FileActionClass.getInstance("Файлы таблиц", "xls");
     }
 

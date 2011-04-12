@@ -4,11 +4,13 @@ import platform.server.classes.*;
 import platform.server.data.query.CompileSource;
 
 public enum Time {
-    EPOCH, HOUR, DATETIME;
+    EPOCH, HOUR, MINUTE, DATETIME;
 
     public ConcreteValueClass getConcreteValueClass() {
         switch (this) {
             case HOUR:
+                return IntegerClass.instance;
+            case MINUTE:
                 return IntegerClass.instance;
             case EPOCH:
                 return LongClass.instance;
@@ -22,6 +24,8 @@ public enum Time {
         switch(this) {
             case HOUR:
                 return compile.syntax.getHour();
+            case MINUTE:
+                return compile.syntax.getMinute();
             case EPOCH:
                 return compile.syntax.getEpoch();
             case DATETIME:

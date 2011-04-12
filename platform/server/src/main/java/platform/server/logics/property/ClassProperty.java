@@ -3,6 +3,7 @@ package platform.server.logics.property;
 import platform.server.classes.StaticClass;
 import platform.server.classes.ValueClass;
 import platform.server.data.expr.Expr;
+import platform.server.data.expr.cases.CaseExpr;
 import platform.server.data.where.Where;
 import platform.server.data.where.WhereBuilder;
 import platform.server.session.Changes;
@@ -14,14 +15,20 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-public abstract class ClassProperty<S extends StaticClass> extends AggregateProperty<ClassPropertyInterface> {
+public abstract class ClassProperty<S extends StaticClass> extends AggregateProperty<ClassPropertyInterface> implements NoValueProperty {
 
-    final S staticClass;
+    public final S staticClass;
 
     public ClassProperty(String sID, String caption, ValueClass[] classes, S staticClass) {
         super(sID, caption, DataProperty.getInterfaces(classes));
 
         this.staticClass = staticClass;
+
+        SessionDataProperty.noValueProps.add(this);
+    }
+
+    public ValueClass getValueClass() {
+        return staticClass;
     }
 
     public static Set<ValueClass> getValueClasses(Collection<ClassPropertyInterface> interfaces) {

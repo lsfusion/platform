@@ -465,7 +465,7 @@ public class CashRegController {
         }
 
         @Override
-        protected DataClass getValueClass() {
+        public DataClass getValueClass() {
             return DoubleClass.instance;
         }
     }

@@ -38,7 +38,7 @@ public class ObjectClassProperty extends ExecuteProperty {
         this.baseClass = baseClass;
     }
 
-    protected ValueClass getValueClass() {
+    public ValueClass getValueClass() {
         return baseClass.objectClass;
     }
 

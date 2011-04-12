@@ -6,6 +6,7 @@ import platform.server.caches.IdentityLazy;
 import platform.server.caches.ParamLazy;
 import platform.server.caches.hash.HashContext;
 import platform.server.classes.BaseClass;
+import platform.server.classes.DataClass;
 import platform.server.classes.sets.AndClassSet;
 import platform.server.data.expr.BaseExpr;
 import platform.server.data.expr.Expr;
@@ -23,10 +24,7 @@ import platform.server.data.type.NullReader;
 import platform.server.data.type.Type;
 import platform.server.data.where.Where;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.ListIterator;
-import java.util.Map;
+import java.util.*;
 
 @TranslateExprLazy
 public class CaseExpr extends Expr {
@@ -76,7 +74,17 @@ public class CaseExpr extends Expr {
 
     public Type getType(KeyType keyType) {
         assert !cases.isEmpty();
-        return cases.iterator().next().data.getType(keyType);
+        Iterator<ExprCase> it = cases.iterator();
+        Type type = it.next().data.getType(keyType);
+        if(type instanceof DataClass) { // для того чтобы выбрать максимальную по длине
+            DataClass dataClass = (DataClass)type;
+            while(it.hasNext()) {
+                dataClass = dataClass.getCompatible((DataClass)it.next().data.getType(keyType));
+                assert dataClass!=null;
+            }
+            return dataClass;
+        } else
+            return type;
     }
 
     public ClassReader getReader(KeyType keyType) {

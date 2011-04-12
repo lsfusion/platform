@@ -145,8 +145,8 @@ public abstract class DataClass<T> implements StaticClass, Type<T>, AndClassSet,
     }
 
     public Expr getStaticExpr(Object value) {
-        return getType().isSafeString(value)
-               ? new SystemValueExpr(value, this)
+        return getType().isSafeString(value) // идея в том что, если не Safe String то нужно по любому использовать ValueExpr, очень маловероятно что он пересекется с другим значением
+               ? new StaticValueExpr(value, this)
                : new ValueExpr(value, this);
     }
 

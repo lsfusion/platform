@@ -363,7 +363,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         completeExpertVote = addDProp(voteResultCheckGroup, "completeExpertVote", "Полнота информ.", IntegerClass.instance, expert, vote);
         completeCommentExpertVote = addDProp(voteResultCommentGroup, "completeCommentExpertVote", "Полнота информации (комм.)", TextClass.instance, expert, vote);
 
-//        doneExpertVote.followed(dateExpertVote, inClusterExpertVote, innovativeExpertVote, foreignExpertVote, innovativeCommentExpertVote, competentExpertVote, completeExpertVote, completeCommentExpertVote);
+        followed(doneExpertVote, dateExpertVote, inClusterExpertVote, innovativeExpertVote, foreignExpertVote, innovativeCommentExpertVote, competentExpertVote, completeExpertVote, completeCommentExpertVote);
 
         quantityRepliedVote = addSGProp(voteResultGroup, "quantityRepliedVote", "Ответило",
                                      addJProp(and1, addCProp(IntegerClass.instance, 1), voteResultExpertVote, 1, 2), 2); // сколько экспертов высказалось
@@ -445,7 +445,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
 
         addCUProp("userRole", true, "Роль пользователя", addCProp(StringClass.get(30), "expert", expert));
 
-        statusProject = addIfElseUProp(idGroup, "statusProject", "Статус (ИД)",
+        statusProject = addIfElseUProp(idGroup, "statusProject", true, "Статус (ИД)",
                                   addCProp(projectStatus, "accepted", project),
                                   addIfElseUProp(addCProp(projectStatus, "rejected", project),
                                                  addIfElseUProp(addCProp(projectStatus, "succeeded", project),

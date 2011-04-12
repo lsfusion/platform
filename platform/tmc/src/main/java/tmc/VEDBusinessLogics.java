@@ -123,6 +123,8 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
     private AbstractGroup documentSumGroup;
     private LP sumOrder;
     private AbstractGroup documentPrintRetailGroup;
+    private LP orderMinute;
+    private LP sumWithDiscountCouponOrderArticle;
 
     public VEDBusinessLogics(DataAdapter adapter, int exportPort) throws IOException, ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException, FileNotFoundException, JRException {
         super(adapter, exportPort);
@@ -975,6 +977,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         LP orderClientInitialSum = addDCProp("orderClientInitialSum", "Нак. сумма", clientInitialSum, true, subjectIncOrder, 1);
         orderClientSum = addSUProp(baseGroup, "Нак. сумма", Union.SUM, addCProp(DoubleClass.instance, 0, orderSaleArticleRetail), orderClientSaleSum, orderClientInitialSum);
         orderHour = addDCProp(baseGroup, "orderHour", "Час", currentHour, is(orderSale), 1, orderSaleArticleRetail);
+        orderMinute = addDCProp(baseGroup, "orderMinute", "Минута", currentMinute, is(orderSale), 1, orderSaleArticleRetail);
 
         changeQuantityTime = addTCProp(Time.EPOCH, "changeQuantityTime", "Время выбора", articleInnerQuantity, orderSaleArticleRetail);
         changeQuantityOrder = addOProp(documentGroup, "Номер", OrderType.SUM, addJProp(and1, addCProp(IntegerClass.instance, 1), articleInnerQuantity, 1, 2), true, true, 1, 1, changeQuantityTime, 1, 2);
@@ -1097,10 +1100,11 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         LP orderSalePayGiftObligation = addSGProp("orderSalePayGiftObligation", true, "Сумма под. серт.", addJProp(and1, obligationUseSum, 1, 2, is(giftObligation), 2), 1);
         orderSalePayObligation = addSUProp(documentObligationGroup, "orderSalePayObligation", true, "Сумма серт.", Union.SUM, orderSalePayGiftObligation, orderSalePayCoupon);
         sumWithDiscountObligationOrder = addJProp(documentObligationGroup, "sumWithDiscountObligationOrder", true, "Сумма к опл.", onlyPositive, addDUProp(sumWithDiscountOrder, orderSalePayObligation), 1);
-        sumWithDiscountObligationOrderArticle = addPGProp(privateGroup, "sumWithDiscountObligationOrderArticle", false, -1, true, "Сумма со скидкой", sumWithDiscountOrderArticle, sumWithDiscountObligationOrder, 1);
+        sumWithDiscountObligationOrderArticle = addPGProp(privateGroup, "sumWithDiscountObligationOrderArticle", false, -1, true, "Сумма к опл.", sumWithDiscountOrderArticle, sumWithDiscountObligationOrder, 1);
 
         // пока для товарного отчета
         sumWithDiscountCouponOrder = addJProp(documentObligationGroup, "sumWithDiscountCouponOrder", true, "Сумма без куп.", onlyPositive, addDUProp(sumWithDiscountOrder, orderSalePayCoupon), 1);
+        sumWithDiscountCouponOrderArticle = addPGProp(privateGroup, "sumWithDiscountCouponOrderArticle", false, -1, true, "Сумма без куп.", sumWithDiscountOrderArticle, sumWithDiscountCouponOrder, 1);
         sumDiscountPayCouponOrder = addSUProp(documentObligationGroup, "sumDiscountPayCouponOrder", true, "Сумма серт.", Union.SUM, discountSumOrder, orderSalePayCoupon);
 
         sumRetailIncBetweenDate = addSGProp(baseGroup, "sumRetailIncBetweenDate", "Приходная сумма за интервал",
@@ -1120,9 +1124,6 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
         sumPriceChangeBetweenDate = addSGProp(baseGroup, "sumPriceChangeBetweenDate", "Сумма переоценки за интервал",
                 addJProp(and(false, false), sumPriceChangeOrder, 1, is(orderInc), 1, addJProp(between, date, 1, object(DateClass.instance), 2, object(DateClass.instance), 3), 1, 2, 3), subjectIncOrder, 1, 2, 3);
-
-
-
 
 
         LP clientSaleSum = addSGProp(sumWithDiscountObligationOrder, subjectIncOrder, 1);
@@ -1173,7 +1174,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
                         addSCProp(addIfElseUProp(articleQuantity, articleOrderQuantity, is(commitInc), 1)),
                         addIfElseUProp(orderSaleUseObligation, issueObligation, addJProp(diff2, 1, obligationIssued, 2), 1, 2),
                         addJProp(equals2, subjectIncOrder, 1, 2),
-                        xorActionArticle, articleFormatToSell, NDS, documentRevalued,
+                        xorActionArticle, articleFormatToSell, documentRevalued,
                         addJProp(and1, changeUser, 2, is(baseClass), 1)
                 ), 1, barcodeToObject, 2);
         barcodeAction3 = addJProp(true, "Ввод штрих-кода 3",
@@ -1658,7 +1659,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             ObjectEntity objDoc = addSingleGroupObject(commitSaleCheckArticleRetail, "Чек");
 
             addPropertyDraw(objClient, barcode, name, propsCustomerCheckRetail, clientSum);
-            addPropertyDraw(objDoc, objectValue, date, orderHour, subjectOutOrder, sumWithDiscountObligationOrder);
+            addPropertyDraw(objDoc, objectValue, date, orderHour, orderMinute, subjectOutOrder, sumWithDiscountObligationOrder);
 
             addFixedFilter(new CompareFilterEntity(addPropertyObject(barcode, objClient), Compare.EQUALS, addPropertyObject(orderContragentBarcode, objDoc)));
 
@@ -2280,7 +2281,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             super(parent, sID, toAdd, documentClass, true);
 
             if (!toAdd)
-                addPropertyDraw(objDoc, date, objectValue, orderHour);
+                addPropertyDraw(objDoc, date, objectValue, orderHour, orderMinute);
 
             if (allStores) {
                 addPropertyDraw(objDoc, subjectOutOrder, nameSubjectOutOrder);
@@ -2569,10 +2570,10 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             gobjDocArt.add(objArt);
             addGroup(gobjDocArt);
 
-            addPropertyDraw(objArt, barcode, name);
+            addPropertyDraw(objArt, barcode, name, nameBrendArticle);
             addPropertyDraw(objDoc, objArt, priceAllOrderSaleArticle, articleQuantity);
-            addPropertyDraw(objDoc, objectValue, date, orderHour, orderUserBarcode, orderComputerName, subjectOutOrder, orderContragentBarcode);
-            addPropertyDraw(objDoc, objArt, discountSumOrderArticle, discountOrderArticle, sumWithDiscountOrderArticle, sumWithDiscountObligationOrderArticle);
+            addPropertyDraw(objDoc, objectValue, date, orderHour, orderMinute, orderUserBarcode, orderComputerName, subjectOutOrder, orderContragentBarcode);
+            addPropertyDraw(objDoc, objArt, discountSumOrderArticle, discountOrderArticle, sumOrderArticle, sumWithDiscountOrderArticle, sumWithDiscountCouponOrderArticle, sumWithDiscountObligationOrderArticle);
 
 
             removePropertyDraw(documentMoveGroup); // нужно, чтобы убрать Доступ. кол-во, которое не может нормально выполнить PostgreSQL
@@ -3828,7 +3829,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         }
 
         @Override
-        protected DataClass getValueClass() {
+        public DataClass getValueClass() {
             return FileActionClass.getInstance("Файлы таблиц", "xls");
         }
 
@@ -3893,7 +3894,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         }
 
         @Override
-        protected DataClass getValueClass() {
+        public DataClass getValueClass() {
             return FileActionClass.getInstance("Файлы таблиц", "xls");
         }
     }
@@ -3957,7 +3958,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         }
 
         @Override
-        protected DataClass getValueClass() {
+        public DataClass getValueClass() {
             return FileActionClass.getInstance("Файлы таблиц", "xls");
         }
     }
@@ -4034,7 +4035,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         }
 
         @Override
-        protected DataClass getValueClass() {
+        public DataClass getValueClass() {
             return FileActionClass.getInstance("Файлы таблиц", "xls");
         }
     }

@@ -16,6 +16,10 @@ public abstract class Modifier<U extends Changes<U>> extends MutableObject {
     public abstract U used(Property property,U usedChanges);
     public abstract U newChanges();
 
+    public boolean noExpr(Property property) {
+        return false;
+    }
+
     protected abstract U newFullChanges();
 
     U fullChanges; // чтобы кэшировать ссылку, можно было бы TwinLazy использовать но будет memory leak
@@ -50,3 +54,4 @@ public abstract class Modifier<U extends Changes<U>> extends MutableObject {
 
     public abstract boolean neededClass(Changes changes);
 }
+

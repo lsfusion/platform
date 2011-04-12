@@ -129,7 +129,7 @@ public class AddObjectActionProperty extends ActionProperty {
     }
 
     @Override
-    protected DataClass getValueClass() {
+    public DataClass getValueClass() {
         if (valueClass.hasChildren())
             return valueClass.getActionClass(valueClass);
         else

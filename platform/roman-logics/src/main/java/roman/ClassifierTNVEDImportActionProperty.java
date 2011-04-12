@@ -48,7 +48,7 @@ public class ClassifierTNVEDImportActionProperty extends ActionProperty {
     }
 
     @Override
-    protected DataClass getValueClass() {
+    public DataClass getValueClass() {
         return FileActionClass.getInstance("Файл базы данных \"DBF\"", "dbf");
     }
 

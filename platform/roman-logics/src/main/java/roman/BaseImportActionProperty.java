@@ -43,7 +43,7 @@ public abstract class BaseImportActionProperty extends ActionProperty {
     }
 
     @Override
-    protected DataClass getValueClass() {
+    public DataClass getValueClass() {
         String[] extArray = extensions.split(" ");
         String extString = "";
         for (String ext : extArray) {

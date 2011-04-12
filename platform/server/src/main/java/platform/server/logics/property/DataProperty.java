@@ -76,7 +76,7 @@ public abstract class DataProperty extends UserProperty {
         return cases.getExpr();
     }
 
-    protected ValueClass getValueClass() {
+    public ValueClass getValueClass() {
         return value;
     }
 

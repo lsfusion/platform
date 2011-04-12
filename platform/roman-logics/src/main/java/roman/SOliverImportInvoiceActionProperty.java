@@ -27,7 +27,7 @@ public class SOliverImportInvoiceActionProperty extends ImportBoxInvoiceActionPr
     }
 
     @Override
-    protected DataClass getValueClass() {
+    public DataClass getValueClass() {
         return FileActionClass.getInstance("Файл данных (*.edi, *.txt)", "edi txt");
     }
 }

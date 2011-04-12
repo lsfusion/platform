@@ -1939,6 +1939,8 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         tableFactory.include("freight", freight);
         tableFactory.include("freightUnit", freightUnit);
         tableFactory.include("barcodeObject", barcodeObject);
+
+        tableFactory.include("strings", StringClass.get(10));
     }
 
     @Override

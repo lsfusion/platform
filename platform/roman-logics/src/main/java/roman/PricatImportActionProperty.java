@@ -97,7 +97,7 @@ public class PricatImportActionProperty extends ActionProperty {
     }
 
     @Override
-    protected DataClass getValueClass() {
+    public DataClass getValueClass() {
         return FileActionClass.getInstance("Файл данных (*.edi, *.txt)", "edi txt");
     }
 }

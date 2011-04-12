@@ -16,12 +16,12 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-public class SessionDataProperty extends DataProperty {
+public class SessionDataProperty extends DataProperty implements NoValueProperty{
 
     public SessionDataProperty(String sID, String caption, ValueClass[] classes, ValueClass value) {
         super(sID, caption, classes, value);
 
-        properties.add(this);
+        noValueProps.add(this);
     }
 
     @Override
@@ -35,21 +35,21 @@ public class SessionDataProperty extends DataProperty {
         return false;
     }
 
-    private final static Set<SessionDataProperty> properties = new HashSet<SessionDataProperty>();
+    public final static Set<NoValueProperty> noValueProps = new HashSet<NoValueProperty>();
 
     protected static class UsedChanges extends Changes<UsedChanges> {
-        private final Set<SessionDataProperty> properties;
+        private final Set<NoValueProperty> properties;
 
         private UsedChanges() {
-            properties = new HashSet<SessionDataProperty>();
+            properties = new HashSet<NoValueProperty>();
         }
         public final static UsedChanges EMPTY = new UsedChanges();
 
-        public UsedChanges(Set<SessionDataProperty> properties) {
+        public UsedChanges(Set<NoValueProperty> properties) {
             this.properties = properties;
         }
 
-        public UsedChanges(SessionDataProperty property) {
+        public UsedChanges(NoValueProperty property) {
             properties = Collections.singleton(property);
         }
 
@@ -101,12 +101,12 @@ public class SessionDataProperty extends DataProperty {
         }
 
         public UsedChanges newFullChanges() {
-            return new UsedChanges(properties);
+            return new UsedChanges(noValueProps);
         }
 
         public UsedChanges used(Property property, UsedChanges usedChanges) {
-            if(property instanceof SessionDataProperty)
-                return new UsedChanges((SessionDataProperty) property);
+            if(property instanceof NoValueProperty)
+                return new UsedChanges((NoValueProperty) property);
             return usedChanges;
         }
 
@@ -114,10 +114,15 @@ public class SessionDataProperty extends DataProperty {
             return ExprChanges.EMPTY;
         }
 
+        @Override
+        public boolean noExpr(Property property) {
+            return property instanceof NoValueProperty;
+        }
+
         public <P extends PropertyInterface> Expr changed(Property<P> property, Map<P, ? extends Expr> joinImplement, WhereBuilder changedWhere) {
-            if(property instanceof SessionDataProperty) {
+            if(property instanceof NoValueProperty) {
                 changedWhere.add(ValueClassProperty.getIsClassWhere((Map<ClassPropertyInterface, ? extends Expr>) joinImplement, this, changedWhere));
-                return ((DataProperty)property).value.getClassExpr();
+                return ((NoValueProperty)property).getValueClass().getClassExpr();
             }
             return null;
         }
