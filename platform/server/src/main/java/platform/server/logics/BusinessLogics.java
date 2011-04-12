@@ -604,6 +604,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     public LP objectClass;
     public LP objectClassName;
     public LP classSID;
+    public LP dataName;
     public LP navigatorElementSID;
     public LP navigatorElementCaption;
 
@@ -646,7 +647,6 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     private LP selectRoleForms;
     private LP selectUserRoles;
 
-    private final ConcreteValueClass classSIDValueClass = StringClass.get(250);
     public final StringClass formSIDValueClass = StringClass.get(50);
     private final StringClass formCaptionValueClass = StringClass.get(250);
 
@@ -1012,6 +1012,11 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         baseElement = new NavigatorElement<T>("baseElement", "Base Group");
     }
 
+    void initSyncProperties() { // свойства для инициализации static классов
+        classSID = addDProp("classSID", "Стат. код", StringClass.get(250), baseClass.sidClass);
+        dataName = addDProp("name", "Имя", InsensitiveStringClass.get(110), baseClass.named);
+    }
+
     void initBaseProperties() {
         // математические св-ва
         equals2 = addCFProp(Compare.EQUALS);
@@ -1100,7 +1105,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         email = addDProp(baseGroup, "email", "E-mail", StringClass.get(50), emailObject);
         generateLoginPassword = addAProp(actionGroup, new GenerateLoginPasswordActionProperty(this));
 
-        name = addCUProp(baseGroup, "commonName", "Имя", addDProp("name", "Имя", InsensitiveStringClass.get(110), baseClass.named),
+        name = addCUProp(baseGroup, "commonName", "Имя", dataName,
                 addJProp(insensitiveString2, userFirstName, 1, userLastName, 1));
         addToNameProperties(name);
 
@@ -1148,7 +1153,6 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
         reverseBarcode = addSDProp("reverseBarcode", "Реверс", LogicalClass.instance);
 
-        classSID = addDProp("classSID", "Стат. код", classSIDValueClass, baseClass.sidClass);
         objectClass = addProperty(null, new LP<ClassPropertyInterface>(new ObjectClassProperty(genSID(), baseClass)));
         objectClassName = addJProp(baseGroup, "objectClassName", "Класс объекта", name, objectClass, 1);
 
@@ -1630,6 +1634,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
         initTables();
 
+        initSyncProperties();
         initBaseProperties();
 
         initProperties();
