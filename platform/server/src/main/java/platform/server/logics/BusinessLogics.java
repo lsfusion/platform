@@ -1607,7 +1607,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         this.adapter = adapter;
         sqlRef = new ThreadLocal<SQLSession>() {
             @Override
-            public SQLSession get() {
+            public SQLSession initialValue() {
                 try {
                     return createSQL();
                 } catch (Exception e) {
