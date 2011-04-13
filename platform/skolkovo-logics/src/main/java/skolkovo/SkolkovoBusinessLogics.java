@@ -203,8 +203,9 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
 
     LP emailLetterExpertVoteEA, emailLetterExpertVote;
     LP allowedEmailLetterExpertVote;
-    LP emailStartVoteEA, emailStartVote;
-    LP emailProtocolVoteEA, emailProtocolVote;
+    LP emailStartVoteEA, emailStartHeaderVote, emailStartVote;
+    LP emailProtocolVoteEA, emailProtocolHeaderVote, emailProtocolVote;
+    LP emailClosedVoteEA, emailClosedHeaderVote, emailClosedVote;
     LP emailAuthExpertEA, emailAuthExpert;
     LP authExpertSubjectLanguage, letterExpertSubjectLanguage;
 
@@ -256,6 +257,8 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         nameNative.setMinimumWidth(10); nameNative.setPreferredWidth(50);
         nameForeign = addDProp(baseGroup, "nameForeign", "Имя (иностр.)", InsensitiveStringClass.get(2000), multiLanguageNamed);
         nameForeign.setMinimumWidth(10); nameForeign.setPreferredWidth(50);
+
+        baseGroup.add(email.property); // сделано, чтобы email был не самой первой колонкой в диалогах
 
         LP percent = addSFProp("(prm1*100/prm2)", DoubleClass.instance, 2);
 
@@ -320,7 +323,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         quantityProjectLanguageDocumentType = addSGProp("projectLanguageDocumentType", "Кол-во док.", addCProp(IntegerClass.instance, 1, document), projectDocument, 1, languageDocument, 1, typeDocument, 1); // сколько экспертов высказалось
         LP notEnoughProjectLanguageDocumentType = addSUProp(Union.OVERRIDE, addJProp(greater2, quantityProjectLanguageDocumentType, 1, 2, 3, quantityMaxLanguageDocumentType, 2, 3),
                 addJProp(less2, addSUProp(Union.OVERRIDE, addCProp(IntegerClass.instance, 0, project, language, documentType), quantityProjectLanguageDocumentType), 1, 2, 3, quantityMinLanguageDocumentType, 2, 3));
-        notEnoughProject = addMGProp(baseGroup, "notEnoughProject", "Недостаточно док.", notEnoughProjectLanguageDocumentType, 1);
+        notEnoughProject = addMGProp(baseGroup, "notEnoughProject", true, "Недостаточно док.", notEnoughProjectLanguageDocumentType, 1);
 
         autoGenerateProject = addDProp(baseGroup, "autoGenerateProject", "Авт. зас.", LogicalClass.instance, project);
 
@@ -336,7 +339,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         openedVote = addJProp(baseGroup, "openedVote", "Открыто", groeq2, dateEndVote, 1, currentDate);
         closedVote = addJProp(baseGroup, "closedVote", "Закрыто", andNot1, is(vote), 1, openedVote, 1);
 
-        voteInProgressProject = addAGProp(idGroup, "voteInProgressProject", "Тек. заседание (ИД)",
+        voteInProgressProject = addAGProp(idGroup, "voteInProgressProject", true, "Тек. заседание (ИД)",
                                        openedVote, 1, projectVote, 1); // активно только одно заседание
 
         // результаты голосования
@@ -363,7 +366,8 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         completeExpertVote = addDProp(voteResultCheckGroup, "completeExpertVote", "Полнота информ.", IntegerClass.instance, expert, vote);
         completeCommentExpertVote = addDProp(voteResultCommentGroup, "completeCommentExpertVote", "Полнота информации (комм.)", TextClass.instance, expert, vote);
 
-        followed(doneExpertVote, dateExpertVote, inClusterExpertVote, innovativeExpertVote, foreignExpertVote, innovativeCommentExpertVote, competentExpertVote, completeExpertVote, completeCommentExpertVote);
+        followed(doneExpertVote, inClusterExpertVote, innovativeExpertVote, foreignExpertVote, innovativeCommentExpertVote, competentExpertVote, completeExpertVote, completeCommentExpertVote);
+        followed(voteResultExpertVote, dateExpertVote);
 
         quantityRepliedVote = addSGProp(voteResultGroup, "quantityRepliedVote", "Ответило",
                                      addJProp(and1, addCProp(IntegerClass.instance, 1), voteResultExpertVote, 1, 2), 2); // сколько экспертов высказалось
@@ -398,10 +402,10 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
                                         addJProp(multiplyIntegerBy2, quantityForeignVote, 1), 1,
                                         quantityDoneVote, 1);
 
-        acceptedVote = addJProp(voteResultGroup, "acceptedVote", "Положительно", and(false, false),
+        acceptedVote = addJProp(voteResultGroup, "acceptedVote", true, "Положительно", and(false, false),
                                 acceptedInClusterVote, 1, acceptedInnovativeVote, 1, acceptedForeignVote, 1);
 
-        succeededVote = addJProp(voteResultGroup, "succeededVote", "Состоялось", groeq2, quantityDoneVote, 1, limitExperts); // достаточно экспертов
+        succeededVote = addJProp(voteResultGroup, "succeededVote", true, "Состоялось", groeq2, quantityDoneVote, 1, limitExperts); // достаточно экспертов
 
         doneExpertVoteDateFromDateTo = addJProp(and(false, false, false, false), doneExpertVote, 1, 2,
                                                                           addJProp(groeq2, dateExpertVote, 1, 2, 3), 1, 2, 3,
@@ -411,16 +415,16 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         quantityDoneExpertDateFromDateTo = addSGProp("quantityDoneExpertDateFromDateTo", "Кол-во заседаний",
                                      addJProp(and1, addCProp(IntegerClass.instance, 1), doneExpertVoteDateFromDateTo, 1, 2, 3, 4), 1, 3, 4); // в скольки заседаниях поучавствовал
 
-        voteSucceededProject = addAGProp(idGroup, "voteSucceededProject", "Успешное заседание (ИД)", succeededVote, 1, projectVote, 1);
+        voteSucceededProject = addAGProp(idGroup, "voteSucceededProject", true, "Успешное заседание (ИД)", succeededVote, 1, projectVote, 1);
 
         noCurrentVoteProject = addJProp(baseGroup, "noCurrentVoteProject", "Нет текущих заседаний", andNot1, is(project), 1, voteInProgressProject, 1); // нету текущих заседаний
 
-        voteValuedProject = addJProp(idGroup, "voteValuedProject", "Оцененнное заседание (ИД)", and1, voteSucceededProject, 1, noCurrentVoteProject, 1); // нет открытого заседания и есть состояшееся заседания
+        voteValuedProject = addJProp(idGroup, "voteValuedProject", true, "Оцененнное заседание (ИД)", and1, voteSucceededProject, 1, noCurrentVoteProject, 1); // нет открытого заседания и есть состояшееся заседания
 
         acceptedProject = addJProp(baseGroup, "acceptedProject", "Оценен положительно", acceptedVote, voteValuedProject, 1);
         voteRejectedProject = addJProp(baseGroup, "rejectedProject", "Оценен отрицательно", andNot1, voteValuedProject, 1, acceptedVote, 1);
 
-        needExtraVoteProject = addJProp("needExtraVoteProject", "Треб. заседание", and(true, true, true),
+        needExtraVoteProject = addJProp("needExtraVoteProject", true, "Треб. заседание", and(true, true, true),
                                         is(project), 1,
                                         notEnoughProject, 1,
                                         voteInProgressProject, 1,
@@ -500,18 +504,25 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         emailStartVoteEA = addEAProp(vote);
         addEARecepient(emailStartVoteEA, emailDocuments);
 
-        emailStartVote = addJProp(baseGroup, true, "emailStartVote", "Созыв заседания (e-mail)", emailStartVoteEA, 1,
-                addJProp(addSFProp("(CAST(prm1 as text))||(CAST(prm2 as text))", StringClass.get(2000), 2), addCProp(StringClass.get(2000), "Созыв заседания - "), nameNativeProjectVote, 1), 1);
+        emailStartHeaderVote = addJProp("emailStartHeaderVote", "Заголовок созыва заседания", addSFProp("(CAST(prm1 as text))||(CAST(prm2 as text))", StringClass.get(2000), 2), addCProp(StringClass.get(2000), "Созыв заседания - "), nameNativeClaimerVote, 1);
+        emailStartVote = addJProp(baseGroup, true, "emailStartVote", "Созыв заседания (e-mail)", emailStartVoteEA, 1, emailStartHeaderVote, 1);
         emailStartVote.property.askConfirm = true;
-        emailStartVote.setDerivedForcedChange(addCProp(ActionClass.instance, true), openedVote, 1);
+//        emailStartVote.setDerivedForcedChange(addCProp(ActionClass.instance, true), openedVote, 1);
 
         emailProtocolVoteEA = addEAProp(vote);
         addEARecepient(emailProtocolVoteEA, emailDocuments);
 
-        emailProtocolVote = addJProp(baseGroup, true, "emailProtocolVote", "Протокол заседания (e-mail)", emailProtocolVoteEA, 1,
-                addJProp(addSFProp("(CAST(prm1 as text))||(CAST(prm2 as text))", StringClass.get(2000), 2), addCProp(StringClass.get(2000), "Протокол заседания - "), nameNativeProjectVote, 1), 1);
+        emailProtocolHeaderVote = addJProp("emailProtocolHeaderVote", "Заголовок протокола заседания", addSFProp("(CAST(prm1 as text))||(CAST(prm2 as text))", StringClass.get(2000), 2), addCProp(StringClass.get(2000), "Протокол заседания - "), nameNativeClaimerVote, 1);
+        emailProtocolVote = addJProp(baseGroup, true, "emailProtocolVote", "Протокол заседания (e-mail)", emailProtocolVoteEA, 1, emailProtocolHeaderVote, 1);
         emailProtocolVote.property.askConfirm = true;
-        emailProtocolVote.setDerivedForcedChange(addCProp(ActionClass.instance, true), closedVote, 1);
+//        emailProtocolVote.setDerivedForcedChange(addCProp(ActionClass.instance, true), closedVote, 1);
+
+        emailClosedVoteEA = addEAProp(vote);
+        addEARecepient(emailClosedVoteEA, emailDocuments);
+
+        emailClosedHeaderVote = addJProp(addSFProp("(CAST(prm1 as text))||(CAST(prm2 as text))", StringClass.get(2000), 2), addCProp(StringClass.get(2000), "Результаты заседания - "), nameNativeClaimerVote, 1);
+        emailClosedVote = addJProp(baseGroup, true, "emailClosedVote", "Результаты заседания (e-mail)", emailClosedVoteEA, 1, emailClosedHeaderVote, 1);
+        emailClosedVote.setDerivedForcedChange(addCProp(ActionClass.instance, true), closedVote, 1);
 
         isForeignExpert = addJProp("isForeignExpert", "Иностр.", equals2, languageExpert, 1, addCProp(language, "english"));
         localeExpert = addJProp("localeExpert", "Locale", localeLanguage, languageExpert, 1);
@@ -878,6 +889,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(inExpertVote, objExpert, objVote)));
 
             addAttachEAForm(emailStartVoteEA, this, EmailActionProperty.Format.PDF, objVote, 1);
+            addAttachEAForm(emailClosedVoteEA, this, EmailActionProperty.Format.PDF, emailStartHeaderVote, objVote, 1);
         }
 
         @Override
@@ -915,6 +927,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
                                               new NotNullFilterEntity(addPropertyObject(connectedExpertVote, objExpert, objVote))));
 
             addAttachEAForm(emailProtocolVoteEA, this, EmailActionProperty.Format.PDF, objVote, 1);
+            addAttachEAForm(emailClosedVoteEA, this, EmailActionProperty.Format.PDF, emailProtocolHeaderVote, objVote, 1);
         }
 
         @Override

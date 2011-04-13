@@ -2787,10 +2787,15 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
     protected void addAttachEAForm(LP<ClassPropertyInterface> eaProp, FormEntity form, EmailActionProperty.Format format, Object... params) {
+        LP attachmentName = null;
+        if (params.length > 0 && params[0] instanceof LP) {
+            attachmentName = (LP)params[0];
+            params = Arrays.copyOfRange(params, 1, params.length-1);
+        }
         Map<ObjectEntity, ClassPropertyInterface> mapObjects = new HashMap<ObjectEntity, ClassPropertyInterface>();
         for (int i = 0; i < params.length / 2; i++)
             mapObjects.put((ObjectEntity) params[2 * i], eaProp.listInterfaces.get((Integer) params[2 * i + 1] - 1));
-        ((EmailActionProperty) eaProp.property).addAttachmentForm(form, format, mapObjects);
+        ((EmailActionProperty) eaProp.property).addAttachmentForm(form, format, mapObjects, attachmentName);
     }
 
     protected LP addTAProp(LP sourceProperty, LP targetProperty) {
@@ -3514,6 +3519,10 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
     protected <T extends PropertyInterface<T>> LP addAGProp(String sID, boolean persistent, String caption, LP<T> lp, int aggrInterface, Object... props) {
         return addAGProp(null, false, sID, persistent, caption, lp, aggrInterface, props);
+    }
+
+    protected <T extends PropertyInterface<T>> LP addAGProp(AbstractGroup group, String sID, boolean persistent, String caption, LP<T> lp, int aggrInterface, Object... props) {
+        return addAGProp(group, false, sID, persistent, caption, lp, aggrInterface, props);
     }
 
     protected <T extends PropertyInterface<T>> LP addAGProp(AbstractGroup group, boolean checkChange, String sID, boolean persistent, String caption, LP<T> lp, int aggrInterface, Object... props) {

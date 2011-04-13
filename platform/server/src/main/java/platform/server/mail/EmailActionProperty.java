@@ -24,11 +24,11 @@ import platform.server.form.instance.remote.RemoteForm;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
+import platform.server.logics.linear.LP;
 import platform.server.logics.property.ActionProperty;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.PropertyInterface;
 import platform.server.logics.property.PropertyMapImplement;
-import platform.server.mail.EmailSender;
 import platform.server.session.DataSession;
 import platform.server.session.Modifier;
 
@@ -61,6 +61,7 @@ public class EmailActionProperty extends ActionProperty {
     private final List<Format> formats = new ArrayList<Format>();
     private final List<FormStorageType> types = new ArrayList<FormStorageType>();
     private final List<Map<ObjectEntity, ClassPropertyInterface>> mapObjects = new ArrayList<Map<ObjectEntity, ClassPropertyInterface>>();
+    private final List<LP> attachmentNames = new ArrayList<LP>();
 
     private final List<PropertyMapImplement<?, ClassPropertyInterface>> recepients = new ArrayList<PropertyMapImplement<?, ClassPropertyInterface>>();
 
@@ -95,13 +96,15 @@ public class EmailActionProperty extends ActionProperty {
         formats.add(Format.HTML);
         types.add(FormStorageType.INLINE);
         mapObjects.add(objects);
+        attachmentNames.add(null);
     }
 
-    public void addAttachmentForm(FormEntity form, Format format, Map<ObjectEntity, ClassPropertyInterface> objects) {
+    public void addAttachmentForm(FormEntity form, Format format, Map<ObjectEntity, ClassPropertyInterface> objects, LP attachmentName) {
         forms.add(form);
         formats.add(format);
         types.add(FormStorageType.ATTACH);
         mapObjects.add(objects);
+        attachmentNames.add(attachmentName);
     }
 
     public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapExecuteObjects) {
@@ -166,7 +169,20 @@ public class EmailActionProperty extends ActionProperty {
                 if (types.get(i) == FormStorageType.INLINE) {
                     inlineForms.add(filePath);
                 } else {
-                    attachmentForms.add(new EmailSender.AttachmentProperties(filePath, forms.get(i).caption, formats.get(i)));
+                    String attachmentName = null;
+                    LP attachmentProp = attachmentNames.get(i);
+                    if (attachmentProp != null) {
+                        // считаем, что для attachmentProp входы идут ровно также как и у ActionProp - в той же последовательности
+                        int intSize = attachmentProp.listInterfaces.size();
+                        DataObject[] input = new DataObject[intSize];
+                        for (int j = 0; j < intSize; j++)
+                            input[j] = keys.get(((List)interfaces).get(j));
+                        attachmentName = (String)attachmentProp.read(session, input);
+                    }
+                    if (attachmentName == null)
+                        attachmentName = forms.get(i).caption;
+                    attachmentName = BaseUtils.rtrim(attachmentName.replace('"', '\''));
+                    attachmentForms.add(new EmailSender.AttachmentProperties(filePath, attachmentName, formats.get(i)));
                 }
             }
 
