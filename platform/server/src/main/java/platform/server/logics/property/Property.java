@@ -557,11 +557,11 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
     public Set<PropertyFollows<T, ?>> follows = new HashSet<PropertyFollows<T, ?>>();
 
     public <L extends PropertyInterface> Property addFollows(PropertyMapImplement<L, T> implement) {
-        return addFollows(implement, "Нарушено следствие - из (" + this + ") => (" + implement.property + ")");
+        return addFollows(implement, "Нарушено следствие - из (" + this + ") => (" + implement.property + ")", PropertyFollows.RESOLVE_ALL);
     }
 
-    public <L extends PropertyInterface> Property addFollows(PropertyMapImplement<L, T> implement, String caption) {
-        PropertyFollows<T, L> propertyFollows = new PropertyFollows<T, L>(this, implement);
+    public <L extends PropertyInterface> Property addFollows(PropertyMapImplement<L, T> implement, String caption, int options) {
+        PropertyFollows<T, L> propertyFollows = new PropertyFollows<T, L>(this, implement, options);
         follows.add(propertyFollows);
         implement.property.followed.add(propertyFollows);
 

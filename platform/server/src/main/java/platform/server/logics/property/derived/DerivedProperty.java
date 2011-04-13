@@ -108,7 +108,7 @@ public class DerivedProperty {
     }
 
     public static <T extends PropertyInterface> PropertyMapImplement<?,T> createAndNot(Property<T> property, PropertyInterfaceImplement<T> not) {
-        return createAnd(property.interfaces, property.getImplement(), Collections.singleton(not));
+        return createAnd(property.interfaces, property.getImplement(), Collections.singletonList(not), Collections.singletonList(true));
     }
 
     public static <T extends PropertyInterface> PropertyMapImplement<?,T> createAnd(Collection<T> interfaces, PropertyInterfaceImplement<T> object, PropertyInterfaceImplement<T> and) {

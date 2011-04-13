@@ -3519,7 +3519,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     protected <T extends PropertyInterface<T>> LP addAGProp(AbstractGroup group, boolean checkChange, String sID, boolean persistent, String caption, LP<T> lp, int aggrInterface, Object... props) {
         List<PropertyInterfaceImplement<T>> listImplements = readImplements(lp.listInterfaces, props);
 
-        return addAGProp(group, checkChange, persistent, AggregateGroupProperty.create(sID, caption, lp.property, lp.listInterfaces.get(aggrInterface-1), (List<PropertyMapImplement<?, T>>)(List<?>)listImplements), BaseUtils.mergeList(listImplements, BaseUtils.removeList(lp.listInterfaces, aggrInterface-1)));
+        return addAGProp(group, checkChange, persistent, AggregateGroupProperty.create(sID, caption, lp.property, lp.listInterfaces.get(aggrInterface - 1), (List<PropertyMapImplement<?, T>>) (List<?>) listImplements), BaseUtils.mergeList(listImplements, BaseUtils.removeList(lp.listInterfaces, aggrInterface - 1)));
     }
 
     // чисто для generics
@@ -3832,19 +3832,19 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
     protected <L extends PropertyInterface, T extends PropertyInterface> void follows(LP<T> first, LP<L> second, int... mapping) {
         Map<L, T> mapInterfaces = new HashMap<L, T>();
-        for(int i=0;i<second.listInterfaces.size();i++) {
-            mapInterfaces.put(second.listInterfaces.get(i), first.listInterfaces.get(mapping[i]-1));
+        for (int i = 0; i < second.listInterfaces.size(); i++) {
+            mapInterfaces.put(second.listInterfaces.get(i), first.listInterfaces.get(mapping[i] - 1));
         }
         addProp(first.property.addFollows(new PropertyMapImplement<L, T>(second.property, mapInterfaces)));
     }
 
     public void followed(LP first, LP... lps) {
         int[] mapping = new int[first.listInterfaces.size()];
-        for(int i=0;i<mapping.length;i++) {
-            mapping[i] = i+1;
+        for (int i = 0; i < mapping.length; i++) {
+            mapping[i] = i + 1;
         }
 
-        for(LP lp : lps) {
+        for (LP lp : lps) {
             follows(first, lp, mapping);
         }
     }
@@ -3853,24 +3853,13 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
         ValueClass[] values = property.getMapClasses();
 
-        int size = values.length;
-        boolean boolArray[] = new boolean[size];
-        for (int i = 0; i < size - 1; i++) {
-            boolArray[i] = false;
-        }
-        boolArray[size - 1] = true;
-        Object params[] = new Object[3 * size + 1];
-        for (int i = 0; i < size; i++) {
-            params[2 * i] = is(values[i]);
-            params[2 * i + 1] = i + 1;
-        }
+        LP checkProp= addCProp(LogicalClass.instance, true, values);
 
-        params[2 * size] = property;
-        for (int i = 1; i < size + 1; i++) {
-            params[i + 2 * size] = i;
+        Map mapInterfaces = new HashMap();
+        for (int i = 0; i < property.listInterfaces.size(); i++) {
+            mapInterfaces.put(property.listInterfaces.get(i), checkProp.listInterfaces.get(i));
         }
-        LP checkProp = addJProp("Не задано свойство \"" + property.property.caption + "\"", and(boolArray), params);
-        addConstraint(checkProp, false);
+        addProp(checkProp.property.addFollows(new PropertyMapImplement(property.property, mapInterfaces), "Свойство не задано", PropertyFollows.RESOLVE_FALSE));
     }
 
     private boolean intersect(LP[] props) {
