@@ -36,8 +36,10 @@ public abstract class GroupButton extends BaseGridButton {
         GridTableModel tableModel;
         Map<Integer, List<byte[]>> selectedGroupMap = new OrderedMap<Integer, List<byte[]>>();
         Map<Integer, List<byte[]>> selectedSumMap = new OrderedMap<Integer, List<byte[]>>();
+        Map<Integer, List<byte[]>> selectedMaxMap = new OrderedMap<Integer, List<byte[]>>();
         List<JCheckBox> groupChecks = new ArrayList<JCheckBox>();
         List<JCheckBox> sumChecks = new ArrayList<JCheckBox>();
+        List<JCheckBox> maxChecks = new ArrayList<JCheckBox>();
         JCheckBox notNullCheck = new JCheckBox("Только заполненные");
         JLabel recordCountLabel;
         JScrollPane scroll;
@@ -66,7 +68,7 @@ public abstract class GroupButton extends BaseGridButton {
             KeyStroke stroke = KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0);
             getRootPane().registerKeyboardAction(escListener, stroke, JComponent.WHEN_IN_FOCUSED_WINDOW);
 
-            TitledPanel groupPanel = new TitledPanel("Группировать по");
+            TitledPanel groupByPanel = new TitledPanel("Группировать по");
             JScrollPane groupScrollPane = new JScrollPane();
             groupScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
             JPanel insideGPanel = new JPanel();
@@ -81,17 +83,21 @@ public abstract class GroupButton extends BaseGridButton {
             }
             groupScrollPane.setViewportView(insideGPanel);
             groupScrollPane.setBorder(new EmptyBorder(0,0,0,0));
-            groupPanel.add(groupScrollPane);
+            groupByPanel.add(groupScrollPane);
+
+            JPanel groupPanel = new JPanel();
+            groupPanel.setLayout(new BoxLayout(groupPanel, BoxLayout.Y_AXIS));
+            JCheckBox box = new JCheckBox("Кол-во записей");
+            box.setSelected(true);
+            sumChecks.add(box);
+            groupPanel.add(box);
 
             TitledPanel sumPanel = new TitledPanel("Суммировать");
+            sumPanel.setLayout(new BoxLayout(sumPanel, BoxLayout.Y_AXIS));
             JScrollPane sumScrollPane = new JScrollPane();
             sumScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
             JPanel insideSPanel = new JPanel();
             insideSPanel.setLayout(new BoxLayout(insideSPanel, BoxLayout.Y_AXIS));
-            JCheckBox box = new JCheckBox("Кол-во записей");
-            box.setSelected(true);
-            sumChecks.add(box);
-            insideSPanel.add(box);
             for (int i = 0; i < tableModel.getColumnCount(); i++) {
                 ClientPropertyDraw property = tableModel.getColumnProperty(i);
                 JCheckBox checkBox = new JCheckBox(tableModel.getColumnName(i).trim());
@@ -103,6 +109,28 @@ public abstract class GroupButton extends BaseGridButton {
             sumScrollPane.setViewportView(insideSPanel);
             sumScrollPane.setBorder(new EmptyBorder(0,0,0,0));
             sumPanel.add(sumScrollPane);
+
+            groupPanel.add(sumPanel);
+
+            TitledPanel maxPanel = new TitledPanel("Максимум");
+            maxPanel.setLayout(new BoxLayout(maxPanel, BoxLayout.Y_AXIS));
+            JScrollPane maxScrollPane = new JScrollPane();
+            maxScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+            JPanel insideMPanel = new JPanel();
+            insideMPanel.setLayout(new BoxLayout(insideMPanel, BoxLayout.Y_AXIS));
+            for (int i = 0; i < tableModel.getColumnCount(); i++) {
+                ClientPropertyDraw property = tableModel.getColumnProperty(i);
+                JCheckBox checkBox = new JCheckBox(tableModel.getColumnName(i).trim());
+                maxChecks.add(checkBox);
+                if (property.baseType instanceof ClientIntegralClass) {
+                    insideMPanel.add(checkBox);
+                }
+            }
+            maxScrollPane.setViewportView(insideMPanel);
+            maxScrollPane.setBorder(new EmptyBorder(0,0,0,0));
+            maxPanel.add(maxScrollPane);
+
+            groupPanel.add(maxPanel);
 
             JPanel checkNButtonPanel = new JPanel();
             checkNButtonPanel.setLayout(new BorderLayout());
@@ -124,8 +152,8 @@ public abstract class GroupButton extends BaseGridButton {
 
             JPanel westPanel = new JPanel();
             westPanel.setLayout(new BoxLayout(westPanel, BoxLayout.X_AXIS));
+            westPanel.add(groupByPanel);
             westPanel.add(groupPanel);
-            westPanel.add(sumPanel);
             westPanel.add(Box.createRigidArea(new Dimension(5, 5)));
             add(westPanel, BorderLayout.WEST);
 
@@ -186,6 +214,23 @@ public abstract class GroupButton extends BaseGridButton {
                     selectedSumMap.put(property.getID(), list);
                 }
             }
+
+            selectedMaxMap = new OrderedMap<Integer, List<byte[]>>();
+            for (int i = 0; i < maxChecks.size(); i++) {
+                if (maxChecks.get(i).isSelected()) {
+                    ClientPropertyDraw property = tableModel.getColumnProperty(i);
+                    List<byte[]> list = selectedMaxMap.get(property.getID());
+                    if (list == null) {
+                        list = new ArrayList<byte[]>();
+                    }
+                    try {
+                        list.add(tableModel.getColumnKey(i).serialize(property));
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    selectedMaxMap.put(property.getID(), list);
+                }
+            }
         }
 
         public Map<Integer, List<byte[]>> getSelectedGroupMap() {
@@ -194,6 +239,10 @@ public abstract class GroupButton extends BaseGridButton {
 
         public Map<Integer, List<byte[]>> getSelectedSumMap() {
             return selectedSumMap;
+        }
+
+        public Map<Integer, List<byte[]>> getSelectedMaxMap() {
+            return selectedMaxMap;
         }
 
         public boolean onlyNotNull() {
@@ -221,10 +270,19 @@ public abstract class GroupButton extends BaseGridButton {
             }
             for (int i = 1; i < sumChecks.size(); i++) {
                 if (sumChecks.get(i).isSelected()) {
-                    names.add(tableModel.getColumnName(i - 1).trim());
+                    names.add(tableModel.getColumnName(i - 1).trim() + " [S]");
                     minSizes.add(tableModel.getColumnProperty(i - 1).getMinimumWidth(table));
                     maxSizes.add(tableModel.getColumnProperty(i - 1).getMaximumWidth(table));
                     prefSizes.add(tableModel.getColumnProperty(i - 1).getPreferredWidth(table));
+                }
+            }
+
+            for (int i = 0; i < maxChecks.size(); i++) {
+                if (maxChecks.get(i).isSelected()) {
+                    names.add(tableModel.getColumnName(i).trim() + " [M]");
+                    minSizes.add(tableModel.getColumnProperty(i).getMinimumWidth(table));
+                    maxSizes.add(tableModel.getColumnProperty(i).getMaximumWidth(table));
+                    prefSizes.add(tableModel.getColumnProperty(i).getPreferredWidth(table));
                 }
             }
 
@@ -277,8 +335,8 @@ public abstract class GroupButton extends BaseGridButton {
             public Class getColumnClass(int column) {
                 Object value = null;
                 for (int i = 0; i < getRowCount(); i++) {
-                    if (getValueAt(i, column) != null) {
-                        value = getValueAt(i, column);
+                    value = getValueAt(i, column);
+                    if (value != null) {
                         break;
                     }
                 }

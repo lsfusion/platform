@@ -71,7 +71,8 @@ public interface RemoteFormInterface extends PendingRemote {
 
     Object calculateSum(int propertyID, byte[] columnKeys) throws RemoteException;
 
-    Map<List<Object>, List<Object>> groupData(Map<Integer, List<byte[]>> groupMap, Map<Integer, List<byte[]>> sumMap, boolean onlyNotNull) throws RemoteException;
+    Map<List<Object>, List<Object>> groupData(Map<Integer, List<byte[]>> groupMap, Map<Integer, List<byte[]>> sumMap,
+                                              Map<Integer, List<byte[]>> maxMap, boolean onlyNotNull) throws RemoteException;
 
     void refreshData() throws RemoteException;
 

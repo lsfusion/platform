@@ -471,7 +471,8 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
     }
 
     public Map<List<Object>, List<Object>> groupData(Map<PropertyDrawInstance, List<Map<ObjectInstance, DataObject>>> toGroup,
-                                                     Map<PropertyDrawInstance, List<Map<ObjectInstance, DataObject>>> toSum, boolean onlyNotNull) throws SQLException {
+                                                     Map<PropertyDrawInstance, List<Map<ObjectInstance, DataObject>>> toSum,
+                                                     Map<PropertyDrawInstance, List<Map<ObjectInstance, DataObject>>> toMax, boolean onlyNotNull) throws SQLException {
         GroupObjectInstance groupObject = ((PropertyDrawInstance) toGroup.keySet().toArray()[0]).toDraw;
         Map<ObjectInstance, KeyExpr> mapKeys = groupObject.getMapKeys();
 
@@ -491,24 +492,42 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
         }
 
         Query<Object, Object> query = new Query<Object, Object>(keyExprMap);
-        for (PropertyDrawInstance property : toSum.keySet()) {
-            Expr exprQuant = GroupExpr.create(exprMap, new ValueExpr(1, IntegerClass.instance), groupObject.getWhere(mapKeys, this), GroupType.SUM, keyExprMap);
-            query.and(exprQuant.getWhere());
-            if (property == null) {
-                query.properties.put("quant", exprQuant);
-                continue;
-            }
-            int i = 0;
-            for (Map<ObjectInstance, DataObject> columnKeys : toSum.get(property)) {
-                i++;
-                Map<ObjectInstance, Expr> keys = new HashMap<ObjectInstance, Expr>(mapKeys);
-                for (ObjectInstance object : columnKeys.keySet()) {
-                    keys.put(object, columnKeys.get(object).getExpr());
+        Expr exprQuant = GroupExpr.create(exprMap, new ValueExpr(1, IntegerClass.instance), groupObject.getWhere(mapKeys, this), GroupType.SUM, keyExprMap);
+        query.and(exprQuant.getWhere());
+        int idIndex = 0;
+        if (!toSum.isEmpty()) {
+            for (PropertyDrawInstance property : toSum.keySet()) {
+                if (property == null) {
+                    query.properties.put("quant", exprQuant);
+                    continue;
                 }
-                Expr expr = GroupExpr.create(exprMap, property.propertyObject.getExpr(keys, this), groupObject.getWhere(mapKeys, this), GroupType.SUM, keyExprMap);
-                query.properties.put(property.getsID() + i, expr);
-                if (onlyNotNull) {
-                    query.and(expr.getWhere());
+                for (Map<ObjectInstance, DataObject> columnKeys : toSum.get(property)) {
+                    idIndex++;
+                    Map<ObjectInstance, Expr> keys = new HashMap<ObjectInstance, Expr>(mapKeys);
+                    for (ObjectInstance object : columnKeys.keySet()) {
+                        keys.put(object, columnKeys.get(object).getExpr());
+                    }
+                    Expr expr = GroupExpr.create(exprMap, property.propertyObject.getExpr(keys, this), groupObject.getWhere(mapKeys, this), GroupType.SUM, keyExprMap);
+                    query.properties.put(property.getsID() + idIndex, expr);
+                    if (onlyNotNull) {
+                        query.and(expr.getWhere());
+                    }
+                }
+            }
+        }
+        if (!toMax.isEmpty()) {
+            for (PropertyDrawInstance property : toMax.keySet()) {
+                for (Map<ObjectInstance, DataObject> columnKeys : toMax.get(property)) {
+                    idIndex++;
+                    Map<ObjectInstance, Expr> keys = new HashMap<ObjectInstance, Expr>(mapKeys);
+                    for (ObjectInstance object : columnKeys.keySet()) {
+                        keys.put(object, columnKeys.get(object).getExpr());
+                    }
+                    Expr expr = GroupExpr.create(exprMap, property.propertyObject.getExpr(keys, this), groupObject.getWhere(mapKeys, this), GroupType.MAX, keyExprMap);
+                    query.properties.put(property.getsID() + idIndex, expr);
+                    if (onlyNotNull) {
+                        query.and(expr.getWhere());
+                    }
                 }
             }
         }
@@ -524,13 +543,21 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
                     groupList.add(one.get(propertyDraw.getsID() + i));
                 }
             }
+            int index = 1;
             for (PropertyDrawInstance propertyDraw : toSum.keySet()) {
                 if (propertyDraw == null) {
                     sumList.add(result.get(one).get("quant"));
                     continue;
                 }
                 for (int i = 1; i <= toSum.get(propertyDraw).size(); i++) {
-                    sumList.add(result.get(one).get(propertyDraw.getsID() + i));
+                    sumList.add(result.get(one).get(propertyDraw.getsID() + index));
+                    index++;
+                }
+            }
+            for (PropertyDrawInstance propertyDraw : toMax.keySet()) {
+                for (int i = 1; i <= toMax.get(propertyDraw).size(); i++) {
+                    sumList.add(result.get(one).get(propertyDraw.getsID() + index));
+                    index++;
                 }
             }
             resultMap.put(groupList, sumList);

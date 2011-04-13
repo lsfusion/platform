@@ -206,9 +206,10 @@ public class RemoteFormProxy<T extends RemoteFormInterface>
         return result;
     }
 
-    public Map<List<Object>, List<Object>> groupData(Map<Integer, List<byte[]>> groupMap, Map<Integer, List<byte[]>> sumMap, boolean onlyNotNull) throws RemoteException {
+    public Map<List<Object>, List<Object>> groupData(Map<Integer, List<byte[]>> groupMap, Map<Integer, List<byte[]>> sumMap,
+                                                     Map<Integer, List<byte[]>> maxMap, boolean onlyNotNull) throws RemoteException {
         logRemoteMethodStartCall("groupData");
-        Map<List<Object>, List<Object>> result = target.groupData(groupMap, sumMap, onlyNotNull);
+        Map<List<Object>, List<Object>> result = target.groupData(groupMap, sumMap, maxMap, onlyNotNull);
         logRemoteMethodEndCall("groupData", result);
         return result;
     }

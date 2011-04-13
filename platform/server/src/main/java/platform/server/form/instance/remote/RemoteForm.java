@@ -559,7 +559,8 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         }
     }
 
-    public Map<List<Object>, List<Object>> groupData(Map<Integer, List<byte[]>> groupMap, Map<Integer, List<byte[]>> sumMap, boolean onlyNotNull) {
+    public Map<List<Object>, List<Object>> groupData(Map<Integer, List<byte[]>> groupMap, Map<Integer, List<byte[]>> sumMap,
+                                                     Map<Integer, List<byte[]>> maxMap, boolean onlyNotNull) {
         try {
             Map<PropertyDrawInstance, List<Map<ObjectInstance, DataObject>>> toGroup = new OrderedMap<PropertyDrawInstance, List<Map<ObjectInstance, DataObject>>>();
             for (Integer id : groupMap.keySet()) {
@@ -583,7 +584,19 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
                 toSum.put(propertyDraw, list);
             }
 
-            return form.groupData(toGroup, toSum, onlyNotNull);
+            Map<PropertyDrawInstance, List<Map<ObjectInstance, DataObject>>> toMax = new OrderedMap<PropertyDrawInstance, List<Map<ObjectInstance, DataObject>>>();
+            for (Integer id : maxMap.keySet()) {
+                PropertyDrawInstance<?> propertyDraw = form.getPropertyDraw(id);
+                List<Map<ObjectInstance, DataObject>> list = new ArrayList<Map<ObjectInstance, DataObject>>();
+                if (propertyDraw != null) {
+                    for (byte[] columnKeys : maxMap.get(id)) {
+                        list.add(deserializeKeys(propertyDraw, columnKeys));
+                    }
+                }
+                toMax.put(propertyDraw, list);
+            }
+
+            return form.groupData(toGroup, toSum, toMax, onlyNotNull);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

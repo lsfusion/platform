@@ -148,34 +148,35 @@ public class GridController {
         if (key.showGroup) {
             groupObjectController.addToToolbar(new GroupButton() {
                 public void addListener() {
-                addActionListener(new ActionListener() {
-                    public void actionPerformed(ActionEvent e) {
-                        try {
-                            dialog = new GroupButton.GroupDialog(Main.frame, table);
-                        } catch (IOException e1) {
-                            e1.printStackTrace();
-                        }
-                        dialog.addPropertyChangeListener(new PropertyChangeListener() {
-                            public void propertyChange(PropertyChangeEvent evt) {
-                                Map<Integer, List<byte[]>> groupMap = dialog.getSelectedGroupMap();
-                                Map<Integer, List<byte[]>> sumMap = dialog.getSelectedSumMap();
-                                boolean onlyNotNull = dialog.onlyNotNull();
+                    addActionListener(new ActionListener() {
+                        public void actionPerformed(ActionEvent e) {
+                            try {
+                                dialog = new GroupButton.GroupDialog(Main.frame, table);
+                            } catch (IOException e1) {
+                                e1.printStackTrace();
+                            }
+                            dialog.addPropertyChangeListener(new PropertyChangeListener() {
+                                public void propertyChange(PropertyChangeEvent evt) {
+                                    Map<Integer, List<byte[]>> groupMap = dialog.getSelectedGroupMap();
+                                    Map<Integer, List<byte[]>> sumMap = dialog.getSelectedSumMap();
+                                    Map<Integer, List<byte[]>> maxMap = dialog.getSelectedMaxMap();
+                                    boolean onlyNotNull = dialog.onlyNotNull();
 
-                                Map<List<Object>, List<Object>> resultMap = new OrderedMap<List<Object>, List<Object>>();
-                                if (!groupMap.isEmpty() && !sumMap.isEmpty()) {
+                                    Map<List<Object>, List<Object>> resultMap = new OrderedMap<List<Object>, List<Object>>();
                                     try {
-                                        resultMap = form.groupData(groupMap, sumMap, onlyNotNull);
+                                        if (!groupMap.isEmpty()) {
+                                            resultMap = form.groupData(groupMap, sumMap, maxMap, onlyNotNull);
+                                        }
                                     } catch (IOException e1) {
                                         e1.printStackTrace();
                                     }
+                                    dialog.update(resultMap);
                                 }
-                                dialog.update(resultMap);
-                            }
-                        });
-                        dialog.setVisible(true);
-                    }
-                });
-            }
+                            });
+                            dialog.setVisible(true);
+                        }
+                    });
+                }
             });
         }
 
