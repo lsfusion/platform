@@ -6,7 +6,6 @@ import platform.server.data.sql.SQLSyntax;
 import platform.server.data.type.ParseException;
 import platform.server.form.view.report.ReportDrawField;
 
-import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Timestamp;
@@ -31,7 +30,7 @@ public class DateTimeClass extends DataClass<Timestamp> {
     }
 
     public int getPreferredWidth() {
-        return 70;
+        return 75;
     }
 
     public Format getReportFormat() {

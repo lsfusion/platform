@@ -27,7 +27,7 @@ public class TextClass extends DataClass<String> {
     }
 
     public int getPreferredWidth() {
-        return 250;
+        return 200;
     }
 
     public Format getReportFormat() {

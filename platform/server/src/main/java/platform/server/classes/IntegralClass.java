@@ -10,8 +10,8 @@ import java.text.NumberFormat;
 // класс который можно сравнивать
 public abstract class IntegralClass<T extends Number> extends DataClass<T> {
 
-    public int getMinimumWidth() { return 45; }
-    public int getPreferredWidth() { return 80; }
+    public int getMinimumWidth() { return 30; }
+    public int getPreferredWidth() { return 50; }
 
     public Format getReportFormat() {
         return NumberFormat.getInstance();

@@ -28,7 +28,7 @@ public class DateClass extends DataClass<Date> {
         return "Дата";
     }
 
-    public int getPreferredWidth() { return 70; }
+    public int getPreferredWidth() { return 75; }
 
     public Format getReportFormat() {
         return DateFormat.getDateInstance(DateFormat.SHORT);
@@ -86,14 +86,13 @@ public class DateClass extends DataClass<Date> {
     }
     
     public String getString(Object value, SQLSyntax syntax) {
-//        return "'" + value + "'";
-        throw new RuntimeException("not supported");
+        return "'" + value + "'";
     }
 
     public Date parseString(String s) throws ParseException {
         try {
             DateFormat dateFormat = DateFormat.getDateInstance(DateFormat.SHORT);
-            dateFormat.setTimeZone(Calendar.getInstance().getTimeZone());
+            dateFormat.setTimeZone(Calendar.getInstance().getTimeZone());  // todo [dale]: Нужно брать таймзону из бизнес-логики
             return DateConverter.dateToSql(dateFormat.parse(s));
         } catch (Exception e) {
             throw new ParseException("error parsing date", e);

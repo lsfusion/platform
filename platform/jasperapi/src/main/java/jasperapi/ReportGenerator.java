@@ -124,9 +124,9 @@ public class ReportGenerator {
     private static Map<String, JasperDesign> retrieveReportDesigns(RemoteFormInterface remoteForm, boolean toExcel, Integer groupId) throws IOException, ClassNotFoundException {
         byte[] designsArray;
         if (groupId == null) {
-            designsArray = remoteForm.getReportDesignsByteArray();
+            designsArray = remoteForm.getReportDesignsByteArray(toExcel);
         } else {
-            designsArray = remoteForm.getSingleGroupReportDesignByteArray(groupId);
+            designsArray = remoteForm.getSingleGroupReportDesignByteArray(toExcel, groupId);
         }
         ObjectInputStream objStream = new ObjectInputStream(new ByteArrayInputStream(designsArray));
         return (Map<String, JasperDesign>) objStream.readObject();

@@ -25,7 +25,14 @@ public class StringClass extends DataClass<String> {
     }
 
     public int getMinimumWidth() { return 30; }
-    public int getPreferredWidth() { return 250; }
+
+    public int getPreferredWidth() {
+        if (length <= 15) {
+            return Math.max(30, length * 6);
+        } else {
+            return Math.min(200, 30 + length);
+        }
+    }
 
     public Format getReportFormat() {
         return null;

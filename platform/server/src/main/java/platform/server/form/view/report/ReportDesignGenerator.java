@@ -33,24 +33,43 @@ public class ReportDesignGenerator {
     private GroupObjectHierarchy.ReportHierarchy hierarchy;
     private FormView formView;
     private Set<Integer> hiddenGroupsId;
+    private boolean toExcel;
 
-    private int defaultPageWidth = 842;
-    private final static int defaultPageHeight = 595; // эти константы есть в JasperReports Ultimate Guide
+    private static final int defaultPageWidth = 842;  //
+    private static final int defaultPageHeight = 595; // эти константы есть в JasperReports Ultimate Guide
+
+    private static final int defaultPageMargin = 20;
 
     private int pageWidth;
-    private final static int neighboursGap = 5;
+    private int pageUsableWidth;
+    private static final int neighboursGap = 5;
 
     private Map<String, JasperDesign> designs = new HashMap<String, JasperDesign>();
 
-    public ReportDesignGenerator(FormView formView, GroupObjectHierarchy.ReportHierarchy hierarchy, Set<Integer> hiddenGroupsId) {
+    public ReportDesignGenerator(FormView formView, GroupObjectHierarchy.ReportHierarchy hierarchy, Set<Integer> hiddenGroupsId, boolean toExcel) {
         this.formView = formView;
         this.hierarchy = hierarchy;
         this.hiddenGroupsId = hiddenGroupsId;
+        this.toExcel = toExcel;
 
+        pageWidth = calculatePageWidth(toExcel);
+        pageUsableWidth = pageWidth - defaultPageMargin * 2;
+    }
+
+    private int calculatePageWidth(boolean toExcel) {
         if (formView.overridePageWidth != null) {
-            defaultPageWidth = formView.overridePageWidth;
+            return formView.overridePageWidth;
+        } else if (!toExcel) {
+            return defaultPageWidth;
+        } else {
+            int maxGroupWidth = defaultPageWidth;
+            for (ReportNode reportNode : hierarchy.getAllNodes()) {
+                for (GroupObjectEntity group : reportNode.getGroupList()) {
+                    maxGroupWidth = Math.max(maxGroupWidth, calculateGroupPreferredWidth(group));
+                }
+            }
+            return maxGroupWidth;
         }
-        pageWidth = defaultPageWidth - 40;
     }
 
     public Map<String, JasperDesign> generate() throws JRException {
@@ -87,28 +106,45 @@ public class ReportDesignGenerator {
         }
     }
 
+    private List<ReportDrawField> getAllowedGroupDrawFields(GroupObjectEntity group) {
+        List<ReportDrawField> fields = new ArrayList<ReportDrawField>();
+        PropertyObjectEntity highlightProp = group.propertyHighlight;
+
+        for (PropertyDrawView property : formView.properties) {
+            GroupObjectEntity applyGroup = property.entity.propertyObject.getApplyObject(formView.entity.groups);
+            GroupObjectEntity drawGroup = property.entity.getToDraw(formView.entity);
+            if (group.equals(drawGroup) && (applyGroup == null || applyGroup == drawGroup)) {
+                ReportDrawField reportField = property.getReportDrawField();
+                if (reportField != null && (highlightProp == null || highlightProp.property != property.entity.propertyObject.property)) {
+                    fields.add(reportField);
+                }
+            }
+        }
+        return fields;
+    }
+
+    private int calculateGroupPreferredWidth(GroupObjectEntity group) {
+        int width = 0;
+        for (ReportDrawField field : getAllowedGroupDrawFields(group)) {
+            width += field.preferredWidth;
+        }
+        return width;
+    }
+
     private void createDesignGroups(JasperDesign design, ReportNode node, ReportNode parent, int treeGroupLevel) throws JRException {
         List<GroupObjectEntity> groups = node.getGroupList();
         for (GroupObjectEntity group : groups) {
             boolean hiddenGroup = hiddenGroupsId.contains(group.getID());
             GroupObjectView groupView = formView.getGroupObject(group);
-            List<ReportDrawField> drawFields = new ArrayList<ReportDrawField>();
             PropertyObjectEntity highlightProp = group.propertyHighlight;
 
             boolean hasColumnGroupProperty = false;
-            for (PropertyDrawView property : formView.properties) {
-                GroupObjectEntity applyGroup = property.entity.propertyObject.getApplyObject(formView.entity.groups);
-                GroupObjectEntity drawGroup = property.entity.getToDraw(formView.entity);
-                if (group.equals(drawGroup) && (applyGroup == null || applyGroup == drawGroup)) {
-                    ReportDrawField reportField = property.getReportDrawField();
-                    if (reportField != null && (highlightProp == null || highlightProp.property != property.entity.propertyObject.property)) {
-                        drawFields.add(reportField);
-                        hasColumnGroupProperty = hasColumnGroupProperty || reportField.hasColumnGroupObjects;
-                        if (reportField.hasCaptionProperty) {
-                            String fieldId = reportField.sID + ReportConstants.captionSuffix;
-                            addDesignField(design, fieldId, reportField.captionClass.getName());
-                        }
-                    }
+            List<ReportDrawField> drawFields = getAllowedGroupDrawFields(group);
+            for (ReportDrawField field : drawFields) {
+                hasColumnGroupProperty = hasColumnGroupProperty || field.hasColumnGroupObjects;
+                if (field.hasCaptionProperty) {
+                    String fieldId = field.sID + ReportConstants.captionSuffix;
+                    addDesignField(design, fieldId, field.captionClass.getName());
                 }
             }
 
@@ -134,7 +170,7 @@ public class ReportDesignGenerator {
                         preferredWidth += reportField.getPreferredWidth();
                     }
 
-                    if (captionWidth + preferredWidth <= pageWidth && !hasColumnGroupProperty) {
+                    if (captionWidth + preferredWidth <= pageUsableWidth && !hasColumnGroupProperty) {
                         JRDesignGroup designGroup = addDesignGroup(design, groupView, "designGroup" + group.getID());
                         reportLayout = new ReportGroupRowLayout(designGroup);
                     } else {
@@ -181,7 +217,7 @@ public class ReportDesignGenerator {
                 for(ReportDrawField reportField : drawFields) {
                     addReportFieldToLayout(reportLayout, reportField, groupCaptionStyle, groupCellStyle);
                 }
-                reportLayout.doLayout(pageWidth);
+                reportLayout.doLayout(pageUsableWidth);
             }
 
             for (ObjectView view : groupView) {
@@ -277,7 +313,7 @@ public class ReportDesignGenerator {
             design.setName(name);
         }
 
-        design.setPageWidth(defaultPageWidth);
+        design.setPageWidth(pageWidth);
         design.setPageHeight(defaultPageHeight);
 
         if (!isMain) {

@@ -24,7 +24,7 @@ public class LogicalClass extends DataClass<Boolean> {
         return "Logical";
     }
 
-    public int getPreferredWidth() { return 35; }
+    public int getPreferredWidth() { return 50; }
 
     public Format getReportFormat() {
         return null;

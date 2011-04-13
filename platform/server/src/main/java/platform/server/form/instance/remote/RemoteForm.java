@@ -89,20 +89,20 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         }
     }
 
-    public byte[] getReportDesignsByteArray() {
-        return getReportDesignsByteArray(null);
+    public byte[] getReportDesignsByteArray(boolean toExcel) {
+        return getReportDesignsByteArray(toExcel, null);
     }
 
     /// Отчет по одной группе
-    public byte[] getSingleGroupReportDesignByteArray(int groupId) {
-        return getReportDesignsByteArray(groupId);
+    public byte[] getSingleGroupReportDesignByteArray(boolean toExcel, int groupId) {
+        return getReportDesignsByteArray(toExcel, groupId);
     }
 
-    private byte[] getReportDesignsByteArray(Integer groupId) {
+    private byte[] getReportDesignsByteArray(boolean toExcel, Integer groupId) {
         ByteArrayOutputStream outStream = new ByteArrayOutputStream();
         try {
             ObjectOutputStream objOut = new ObjectOutputStream(outStream);
-            Map<String, JasperDesign> res = getReportDesigns(groupId);
+            Map<String, JasperDesign> res = getReportDesigns(toExcel, groupId);
             objOut.writeObject(res);
             return outStream.toByteArray();
         } catch (IOException e) {
@@ -202,7 +202,7 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         }
     }
 
-    private Map<String, JasperDesign> getCustomReportDesigns(Integer groupId) {
+    private Map<String, JasperDesign> getCustomReportDesigns(boolean toExcel, Integer groupId) {
         try {
             GroupObjectHierarchy.ReportHierarchy hierarchy = getReportHierarchy(groupId);
             Map<String, JasperDesign> designs = new HashMap<String, JasperDesign>();
@@ -212,7 +212,7 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
                 ids.add(node.getID());
             }
             for (String id : ids) {
-                String resourceName = "/" + getCustomReportName(id, getReportSID(groupId));
+                String resourceName = "/" + getCustomReportName(id, getReportSID(toExcel, groupId));
                 JasperDesign subreport = JRXmlLoader.load(getClass().getResourceAsStream(resourceName));
                 designs.put(id, subreport);
             }
@@ -222,14 +222,18 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         }
     }
 
-    private String getReportSID(Integer groupId) {
-        return getSID() + (groupId == null ? "" : "_Table" + form.getGroupObjectInstance(groupId).getSID());
+    private static final String xlsSuffix = "_xls";
+    private static final String tablePrefix = "_Table";
+
+    private String getReportSID(boolean toExcel, Integer groupId) {
+        String reportSID = getSID() + (groupId == null ? "" : tablePrefix + form.getGroupObjectInstance(groupId).getSID());
+        return reportSID + (toExcel ? xlsSuffix : "");
     }
 
-    private Map<String, JasperDesign> getReportDesigns(Integer groupId) {
-        String sid = getReportSID(groupId);
+    private Map<String, JasperDesign> getReportDesigns(boolean toExcel, Integer groupId) {
+        String sid = getReportSID(toExcel, groupId);
         if (hasCustomReportDesign(sid)) {
-            Map<String, JasperDesign> designs = getCustomReportDesigns(groupId);
+            Map<String, JasperDesign> designs = getCustomReportDesigns(toExcel, groupId);
             if (designs != null) {
                 return designs;
             }
@@ -242,7 +246,7 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
             }
         }
         try {
-            ReportDesignGenerator generator = new ReportDesignGenerator(richDesign, getReportHierarchy(groupId), hidedGroupsId);
+            ReportDesignGenerator generator = new ReportDesignGenerator(richDesign, getReportHierarchy(groupId), hidedGroupsId, toExcel);
             Map<String, JasperDesign> designs = generator.generate();
             for (Map.Entry<String, JasperDesign> entry : designs.entrySet()) {
                 String id = entry.getKey();
