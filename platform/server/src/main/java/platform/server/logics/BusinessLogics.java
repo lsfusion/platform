@@ -3839,13 +3839,12 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
     public void followed(LP first, LP... lps) {
-        int[] mapping = new int[first.listInterfaces.size()];
-        for (int i = 0; i < mapping.length; i++) {
-            mapping[i] = i + 1;
-        }
-
         for (LP lp : lps) {
-            follows(first, lp, mapping);
+            int[] mapping = new int[lp.listInterfaces.size()];
+            for (int i = 0; i < mapping.length; i++) {
+                mapping[i] = i + 1;
+            }
+            follows(lp, first, mapping);
         }
     }
 
@@ -3853,7 +3852,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
         ValueClass[] values = property.getMapClasses();
 
-        LP checkProp= addCProp(LogicalClass.instance, true, values);
+        LP checkProp = addCProp(LogicalClass.instance, true, values);
 
         Map mapInterfaces = new HashMap();
         for (int i = 0; i < property.listInterfaces.size(); i++) {
