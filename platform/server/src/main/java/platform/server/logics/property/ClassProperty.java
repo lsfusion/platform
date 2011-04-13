@@ -15,7 +15,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-public abstract class ClassProperty<S extends StaticClass> extends AggregateProperty<ClassPropertyInterface> implements NoValueProperty {
+public abstract class ClassProperty<S extends StaticClass> extends AggregateProperty<ClassPropertyInterface> {
 
     public final S staticClass;
 
@@ -23,8 +23,6 @@ public abstract class ClassProperty<S extends StaticClass> extends AggregateProp
         super(sID, caption, DataProperty.getInterfaces(classes));
 
         this.staticClass = staticClass;
-
-        SessionDataProperty.noValueProps.add(this);
     }
 
     public ValueClass getValueClass() {
