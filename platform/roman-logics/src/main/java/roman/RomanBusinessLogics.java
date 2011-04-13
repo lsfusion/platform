@@ -2764,7 +2764,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             specContainer.add(design.getGroupObjectContainer(objSku.groupTo));
             specContainer.tabbedPane = true;
 
-            design.get(nameRoute).minimumCharWidth = 4;
+            design.get(nameRoute).setMinimumCharWidth(4);
             design.get(nameRoute).panelLabelAbove = true;
             design.get(nameRoute).design.font = new Font("Tahoma", Font.BOLD, 48);
             design.getGroupObjectContainer(objRoute.groupTo).constraints.childConstraints = DoNotIntersectSimplexConstraint.TOTHE_RIGHT;

@@ -43,9 +43,9 @@ public class PropertyDrawView extends ComponentView {
     public Dimension maximumSize;
     public Dimension preferredSize;
 
-    public int minimumCharWidth;
-    public int maximumCharWidth;
-    public int preferredCharWidth;
+    private int minimumCharWidth;
+    private int maximumCharWidth;
+    private int preferredCharWidth;
 
     public KeyStroke editKey;
     public boolean showEditKey = true;
@@ -104,7 +104,11 @@ public class PropertyDrawView extends ComponentView {
         Type type = getType();
 
         reportField.minimumWidth = type.getMinimumWidth();
-        reportField.preferredWidth = type.getPreferredWidth();
+        reportField.setPreferredWidth(type.getPreferredWidth());
+
+        if (getPreferredCharWidth() != 0) {
+            reportField.fixedCharWidth = getPreferredCharWidth();
+        }
 
         Format format = type.getReportFormat();
         if (format instanceof DecimalFormat) {
@@ -145,9 +149,9 @@ public class PropertyDrawView extends ComponentView {
         pool.writeObject(outStream, maximumSize);
         pool.writeObject(outStream, preferredSize);
 
-        outStream.writeInt(minimumCharWidth != 0 ? minimumCharWidth : entity.propertyObject.property.minimumCharWidth);
-        outStream.writeInt(maximumCharWidth != 0 ? maximumCharWidth : entity.propertyObject.property.maximumCharWidth);
-        outStream.writeInt(preferredCharWidth != 0 ? preferredCharWidth : entity.propertyObject.property.preferredCharWidth);
+        outStream.writeInt(getMinimumCharWidth());
+        outStream.writeInt(getMaximumCharWidth());
+        outStream.writeInt(getPreferredCharWidth());
 
         pool.writeObject(outStream, editKey);
 
@@ -197,9 +201,9 @@ public class PropertyDrawView extends ComponentView {
         maximumSize = pool.readObject(inStream);
         preferredSize = pool.readObject(inStream);
 
-        minimumCharWidth = inStream.readInt();
-        maximumCharWidth = inStream.readInt();
-        preferredCharWidth = inStream.readInt();
+        setMinimumCharWidth(inStream.readInt());
+        setMaximumCharWidth(inStream.readInt());
+        setPreferredCharWidth(inStream.readInt());
 
         editKey = pool.readObject(inStream);
         showEditKey = inStream.readBoolean();
@@ -226,5 +230,29 @@ public class PropertyDrawView extends ComponentView {
     @Override
     public String toString() {
         return getCaption();
+    }
+
+    public int getMinimumCharWidth() {
+        return minimumCharWidth != 0 ? minimumCharWidth : entity.propertyObject.property.minimumCharWidth;
+    }
+
+    public void setMinimumCharWidth(int minimumCharWidth) {
+        this.minimumCharWidth = minimumCharWidth;
+    }
+
+    public int getMaximumCharWidth() {
+        return maximumCharWidth != 0 ? maximumCharWidth : entity.propertyObject.property.maximumCharWidth;
+    }
+
+    public void setMaximumCharWidth(int maximumCharWidth) {
+        this.maximumCharWidth = maximumCharWidth;
+    }
+
+    public int getPreferredCharWidth() {
+        return preferredCharWidth != 0 ? preferredCharWidth : entity.propertyObject.property.preferredCharWidth;
+    }
+
+    public void setPreferredCharWidth(int preferredCharWidth) {
+        this.preferredCharWidth = preferredCharWidth;
     }
 }

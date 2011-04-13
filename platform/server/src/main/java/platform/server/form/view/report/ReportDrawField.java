@@ -9,7 +9,8 @@ public class ReportDrawField implements AbstractRowLayoutElement {
     public Class captionClass;
 
     public int minimumWidth;
-    public int preferredWidth;
+    private int preferredWidth;
+    public Integer fixedCharWidth;
     public byte alignment;
 
     public String pattern;
@@ -17,13 +18,15 @@ public class ReportDrawField implements AbstractRowLayoutElement {
     public boolean hasColumnGroupObjects;
     public boolean hasCaptionProperty;
 
+    static final int charWidth = 8;
+
     public ReportDrawField(String sID, String caption) {
         this.sID = sID;
         this.caption = caption;
     }
 
     public int getCaptionWidth() {
-        return caption.length() * 10;
+        return caption.length() * charWidth;
     }
 
     public int getMinimumWidth() {
@@ -31,7 +34,17 @@ public class ReportDrawField implements AbstractRowLayoutElement {
     }
 
     public int getPreferredWidth() {
-        return preferredWidth;
+        int width;
+        if (fixedCharWidth != null) {
+            width = fixedCharWidth * charWidth;
+        } else {
+            width = preferredWidth;
+        }
+        return Math.max(getMinimumWidth(), Math.min(200, width));
+    }
+
+    public void setPreferredWidth(int width) {
+        preferredWidth = width;
     }
 
     public int left;

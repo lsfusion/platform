@@ -126,7 +126,7 @@ public class ReportDesignGenerator {
     private int calculateGroupPreferredWidth(GroupObjectEntity group) {
         int width = 0;
         for (ReportDrawField field : getAllowedGroupDrawFields(group)) {
-            width += field.preferredWidth;
+            width += field.getPreferredWidth();
         }
         return width;
     }
