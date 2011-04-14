@@ -22,14 +22,6 @@ public class RemoteFormProxy<T extends RemoteFormInterface>
         super(target);
     }
 
-//    @ImmutableMethod
-    public boolean hasCustomReportDesign(String sid) throws RemoteException {
-        logRemoteMethodStartCall("hasCustomReportDesign");
-        boolean result = target.hasCustomReportDesign(sid);
-        logRemoteMethodEndCall("hasCustomReportDesign", result);
-        return result;
-    }
-
     public byte[] getReportDesignsByteArray(boolean toExcel) throws RemoteException {
         logRemoteMethodStartCall("getReportDesignsByteArray");
         byte[] result = target.getReportDesignsByteArray(toExcel);

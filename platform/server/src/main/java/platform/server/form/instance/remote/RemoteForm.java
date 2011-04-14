@@ -213,7 +213,16 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
             }
             for (String id : ids) {
                 String resourceName = "/" + getCustomReportName(id, getReportSID(toExcel, groupId));
-                JasperDesign subreport = JRXmlLoader.load(getClass().getResourceAsStream(resourceName));
+                InputStream iStream = getClass().getResourceAsStream(resourceName);
+                // Если не нашли custom design для xls, пробуем найти обычный
+                if (toExcel && iStream == null) {
+                    resourceName = "/" + getCustomReportName(id, getReportSID(false, groupId));
+                    iStream = getClass().getResourceAsStream(resourceName);
+                }
+                if (iStream == null) {
+                    return null;
+                }
+                JasperDesign subreport = JRXmlLoader.load(iStream);
                 designs.put(id, subreport);
             }
             return designs;
@@ -232,11 +241,9 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
 
     private Map<String, JasperDesign> getReportDesigns(boolean toExcel, Integer groupId) {
         String sid = getReportSID(toExcel, groupId);
-        if (hasCustomReportDesign(sid)) {
-            Map<String, JasperDesign> designs = getCustomReportDesigns(toExcel, groupId);
-            if (designs != null) {
-                return designs;
-            }
+        Map<String, JasperDesign> customDesigns = getCustomReportDesigns(toExcel, groupId);
+        if (customDesigns != null) {
+            return customDesigns;
         }
 
         Set<Integer> hidedGroupsId = new HashSet<Integer>();
@@ -276,10 +283,6 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         } else {
             return "reports/auto/" + sid + "_" + name + ".jrxml";
         }
-    }
-
-    public boolean hasCustomReportDesign(String sid) {
-        return getClass().getResource("/" + getCustomReportName(GroupObjectHierarchy.rootNodeName, sid)) != null;
     }
 
     public byte[] getRichDesignByteArray() {

@@ -11,7 +11,6 @@ import java.util.Map;
 public interface RemoteFormInterface extends PendingRemote {
 
     // операции с ответом
-    boolean hasCustomReportDesign(String sid) throws RemoteException;
     byte[] getRichDesignByteArray() throws RemoteException;
 
     byte[] getReportHierarchyByteArray() throws RemoteException;
