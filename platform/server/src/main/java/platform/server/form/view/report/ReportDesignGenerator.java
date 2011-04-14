@@ -253,7 +253,9 @@ public class ReportDesignGenerator {
         dataField.setPositionType(PositionTypeEnum.FLOAT);
         dataField.setBlankWhenNull(true);
 
-        dataField.setPattern(reportField.pattern);
+        if (!toExcel || reportField.valueClass != Double.class) {
+            dataField.setPattern(reportField.pattern);
+        }
 
         layout.add(reportField, captionField, dataField);
     }

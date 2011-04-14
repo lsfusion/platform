@@ -267,9 +267,6 @@ public class ReportGenerator {
 
     private void transformTextField(JasperDesign design, JRDesignTextField textField,
                                     List<JRDesignElement> toAdd, List<JRDesignElement> toDelete) {
-        if (toExcel) {
-            textField.setPattern(null);
-        }
         String exprText = textField.getExpression().getText();
         String id = null;
         if (exprText.startsWith("$F{") && exprText.endsWith("}")) {

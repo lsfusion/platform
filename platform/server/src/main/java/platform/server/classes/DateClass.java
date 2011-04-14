@@ -28,7 +28,7 @@ public class DateClass extends DataClass<Date> {
         return "Дата";
     }
 
-    public int getPreferredWidth() { return 75; }
+    public int getPreferredWidth() { return 70; }
 
     public Format getReportFormat() {
         return DateFormat.getDateInstance(DateFormat.SHORT);
