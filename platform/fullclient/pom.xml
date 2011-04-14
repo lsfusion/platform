@@ -5,77 +5,79 @@
     <parent>
         <groupId>by.luxsoft.platform</groupId>
         <artifactId>base</artifactId>
-        <version>1.0</version>
+        <version>${main.version}</version>
         <relativePath>../base/pom.xml</relativePath>
     </parent>
     <artifactId>fullclient</artifactId>
     <packaging>jar</packaging>
     <name>FullClient</name>
-      <build>
-          <plugins>
-              <plugin>
+    <build>
+        <plugins>
+            <plugin>
                 <artifactId>maven-assembly-plugin</artifactId>
                 <configuration>
-                   <finalName>fullclient</finalName>
-                   <appendAssemblyId>true</appendAssemblyId>
-                   <archive>
-                       <manifest>
-                           <mainClass>platform.fullclient.FullMain</mainClass>
-                       </manifest>
-                       <manifestEntries>
-                             <SplashScreen-Image>platform/images/lsfusion.jpg</SplashScreen-Image>
-                     </manifestEntries>
-                   </archive>
-                   <descriptors>
-                      <descriptor>src/assemble/distribution.xml</descriptor>
-                   </descriptors>
+                    <finalName>fullclient</finalName>
+                    <appendAssemblyId>true</appendAssemblyId>
+                    <archive>
+                        <manifest>
+                            <mainClass>platform.fullclient.FullMain</mainClass>
+                        </manifest>
+                        <manifestEntries>
+                            <SplashScreen-Image>platform/images/lsfusion.jpg</SplashScreen-Image>
+                        </manifestEntries>
+                    </archive>
+                    <descriptors>
+                        <descriptor>src/assemble/distribution.xml</descriptor>
+                    </descriptors>
                 </configuration>
                 <executions>
-                  <execution>
-                    <phase>install</phase>
-                    <goals>
-                      <goal>single</goal>
-                    </goals>
-                  </execution>
+                    <execution>
+                        <phase>install</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                    </execution>
                 </executions>
-              </plugin>
-              <plugin>
+            </plugin>
+            <plugin>
                 <artifactId>maven-antrun-plugin</artifactId>
                 <executions>
-                  <execution>
-                    <phase>install</phase>
-                    <configuration>
-                      <tasks>
-                        <signjar jar="${project.build.directory}/fullclient-prod.jar" keystore="${project.basedir}/src/assemble/keystore" storepass="qwerty" alias="lsf"/>
-                      </tasks>
-                    </configuration>
-                    <goals>
-                      <goal>run</goal>
-                    </goals>
-                  </execution>
+                    <execution>
+                        <phase>install</phase>
+                        <configuration>
+                            <tasks>
+                                <signjar jar="${project.build.directory}/fullclient-prod.jar"
+                                         keystore="${project.basedir}/src/assemble/keystore" storepass="qwerty"
+                                         alias="lsf"/>
+                            </tasks>
+                        </configuration>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                    </execution>
                 </executions>
-              </plugin>
-               <plugin>
-                   <groupId>org.codehaus.mojo</groupId>
-                   <artifactId>aspectj-maven-plugin</artifactId>
-                   <executions>
-                       <execution>
-                           <goals>
-                               <goal>compile</goal>
-                           </goals>
-                       </execution>
-                  </executions>
-              </plugin>
-          </plugins>
-      </build>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>aspectj-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>compile</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
 
 
     <dependencies>
-      <dependency>
-          <groupId>by.luxsoft.platform</groupId>
-          <artifactId>client</artifactId>
-          <version>${project.version}</version>
-      </dependency>
+        <dependency>
+            <groupId>by.luxsoft.platform</groupId>
+            <artifactId>client</artifactId>
+            <version>${project.version}</version>
+        </dependency>
         <dependency>
             <groupId>by.luxsoft.platform</groupId>
             <artifactId>jasperapi</artifactId>
@@ -121,11 +123,11 @@
             <artifactId>batik-bridge</artifactId>
             <version>1.7</version>
         </dependency>
-		<dependency>
-			<groupId>net.sf.barcode4j</groupId>
-			<artifactId>barcode4j</artifactId>
-			<version>2.0</version>
-		</dependency>
+        <dependency>
+            <groupId>net.sf.barcode4j</groupId>
+            <artifactId>barcode4j</artifactId>
+            <version>2.0</version>
+        </dependency>
         <dependency>
             <groupId>org.swinglabs</groupId>
             <artifactId>swingx</artifactId>

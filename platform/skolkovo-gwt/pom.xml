@@ -6,7 +6,7 @@
     <parent>
         <groupId>by.luxsoft.platform</groupId>
         <artifactId>base</artifactId>
-        <version>1.0</version>
+        <version>${main.version}</version>
         <relativePath>../base/pom.xml</relativePath>
     </parent>
 
@@ -51,11 +51,11 @@
                 <artifactId>gwt-maven-plugin</artifactId>
                 <version>2.1.0</version>
                 <!--<executions>-->
-                    <!--<execution>-->
-                        <!--<goals>-->
-                            <!--<goal>compile</goal>-->
-                        <!--</goals>-->
-                    <!--</execution>-->
+                <!--<execution>-->
+                <!--<goals>-->
+                <!--<goal>compile</goal>-->
+                <!--</goals>-->
+                <!--</execution>-->
                 <!--</executions>-->
             </plugin>
 
@@ -66,11 +66,11 @@
                 <artifactId>maven-war-plugin</artifactId>
                 <version>2.1.1</version>
                 <!--<executions>-->
-                    <!--<execution>-->
-                        <!--<goals>-->
-                            <!--<goal>war</goal>-->
-                        <!--</goals>-->
-                    <!--</execution>-->
+                <!--<execution>-->
+                <!--<goals>-->
+                <!--<goal>war</goal>-->
+                <!--</goals>-->
+                <!--</execution>-->
                 <!--</executions>-->
             </plugin>
 

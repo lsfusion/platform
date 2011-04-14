@@ -4,7 +4,7 @@
     <parent>
         <groupId>by.luxsoft.platform</groupId>
         <artifactId>base</artifactId>
-        <version>1.0</version>
+        <version>${main.version}</version>
         <relativePath>../base/pom.xml</relativePath>
     </parent>
     <artifactId>server</artifactId>
@@ -25,14 +25,14 @@
                 </executions>
             </plugin>
             <plugin>
-              <artifactId>maven-assembly-plugin</artifactId>
-              <configuration>
-                 <finalName>server</finalName>
-                 <appendAssemblyId>true</appendAssemblyId>
-                  <descriptors>
-                     <descriptor>src/assemble/jardistrib.xml</descriptor>
-                  </descriptors>
-              </configuration>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <configuration>
+                    <finalName>server</finalName>
+                    <appendAssemblyId>true</appendAssemblyId>
+                    <descriptors>
+                        <descriptor>src/assemble/jardistrib.xml</descriptor>
+                    </descriptors>
+                </configuration>
             </plugin>
         </plugins>
     </build>
@@ -100,11 +100,11 @@
             <artifactId>mail</artifactId>
             <version>1.4</version>
         </dependency>
-		<dependency>
-			<groupId>org.apache.xmlgraphics</groupId>
-			<artifactId>batik-bridge</artifactId>
-			<version>1.7</version>
-		</dependency>
+        <dependency>
+            <groupId>org.apache.xmlgraphics</groupId>
+            <artifactId>batik-bridge</artifactId>
+            <version>1.7</version>
+        </dependency>
         <dependency>
             <groupId>net.sf.barcode4j</groupId>
             <artifactId>barcode4j</artifactId>

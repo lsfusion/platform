@@ -4,7 +4,7 @@
   <parent>
       <groupId>by.luxsoft.platform</groupId>
       <artifactId>base</artifactId>
-      <version>1.0</version>
+      <version>${main.version}</version>
       <relativePath>../base/pom.xml</relativePath>
   </parent>
 

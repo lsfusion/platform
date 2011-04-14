@@ -6,7 +6,7 @@
     <parent>
         <groupId>by.luxsoft.platform</groupId>
         <artifactId>base</artifactId>
-        <version>1.0</version>
+        <version>${main.version}</version>
         <relativePath>../base/pom.xml</relativePath>
     </parent>
     <artifactId>logics</artifactId>
@@ -16,29 +16,29 @@
     <build>
         <plugins>
             <plugin>
-              <artifactId>maven-assembly-plugin</artifactId>
-              <configuration>
-                 <finalName>fusion</finalName>
-                 <appendAssemblyId>true</appendAssemblyId>
-                 <archive>
-                     <manifest>
-                         <mainClass>platform.server.logics.BusinessLogics</mainClass>
-                     </manifest>
-                 </archive>
-                  <descriptors>
-                     <descriptor>../server/src/assemble/distribution.xml</descriptor>
-                  </descriptors>
-                  <!--<executions>-->
+                <artifactId>maven-assembly-plugin</artifactId>
+                <configuration>
+                    <finalName>fusion</finalName>
+                    <appendAssemblyId>true</appendAssemblyId>
+                    <archive>
+                        <manifest>
+                            <mainClass>platform.server.logics.BusinessLogics</mainClass>
+                        </manifest>
+                    </archive>
+                    <descriptors>
+                        <descriptor>../server/src/assemble/distribution.xml</descriptor>
+                    </descriptors>
+                    <!--<executions>-->
                     <!--<execution>-->
-                      <!--<phase>install</phase>-->
-                      <!--<goals>-->
-                        <!--<goal>single</goal>-->
-                      <!--</goals>-->
+                    <!--<phase>install</phase>-->
+                    <!--<goals>-->
+                    <!--<goal>single</goal>-->
+                    <!--</goals>-->
                     <!--</execution>-->
-                  <!--</executions>-->
-              </configuration>
+                    <!--</executions>-->
+                </configuration>
             </plugin>
-         </plugins>
+        </plugins>
     </build>
 
 </project>

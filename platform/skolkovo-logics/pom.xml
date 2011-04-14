@@ -6,7 +6,7 @@
     <parent>
         <groupId>by.luxsoft.platform</groupId>
         <artifactId>logics</artifactId>
-        <version>1.0</version>
+        <version>${main.version}</version>
         <relativePath>../logics/pom.xml</relativePath>
     </parent>
 
