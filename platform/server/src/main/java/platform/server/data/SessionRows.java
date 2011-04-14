@@ -86,6 +86,7 @@ public class SessionRows implements SessionData<SessionRows> {
         return hash;
     }
 
+    @IdentityLazy
     public Set<Value> getValues() {
         Set<Value> result = new HashSet<Value>();
         for(Map.Entry<Map<KeyField,DataObject>,Map<PropertyField,ObjectValue>> row : rows.entrySet()) {

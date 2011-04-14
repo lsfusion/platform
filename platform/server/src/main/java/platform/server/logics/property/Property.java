@@ -214,7 +214,7 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
 
         if (changedExpr != null) {
             if (changedWhere != null) changedWhere.add(changedExprWhere.toWhere());
-            return changedExpr.ifElse(changedExprWhere.toWhere(), modifier.noExpr(this)?CaseExpr.NULL:getExpr(joinImplement));
+            return changedExpr.ifElse(changedExprWhere.toWhere(), getExpr(joinImplement));
         } else
             return calculateExpr(joinImplement, modifier, changedWhere);
     }

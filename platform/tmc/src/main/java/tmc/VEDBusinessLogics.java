@@ -20,6 +20,7 @@ import platform.server.data.expr.FormulaExpr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.query.OrderType;
 import platform.server.data.sql.DataAdapter;
+import platform.server.data.type.ObjectType;
 import platform.server.form.entity.*;
 import platform.server.form.entity.filter.*;
 import platform.server.form.instance.FormInstance;
@@ -125,6 +126,10 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
     private AbstractGroup documentPrintRetailGroup;
     private LP orderMinute;
     private LP sumWithDiscountCouponOrderArticle;
+    private LP quantityCommitIncArticle;
+    private LP quantityCommitOutArticle;
+    private LP quantityIncSubjectArticleBetweenDate;
+    private LP quantityOutSubjectArticleBetweenDate;
 
     public VEDBusinessLogics(DataAdapter adapter, int exportPort) throws IOException, ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException, FileNotFoundException, JRException {
         super(adapter, exportPort);
@@ -690,11 +695,12 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         LP returnDistrCommitQuantity = addSGProp(privateGroup, "returnDistrCommitQuantity", true, "Возвр. кол-во", returnInnerCommitQuantity, 1, 2, 3);
         innerQuantity = addCUProp(documentGroup, "innerQuantity", true, "Кол-во", returnOuterQuantity, orderInnerQuantity, returnDistrCommitQuantity, addDUProp("balanceCheckQuantity", "Кол-во инв.", innerBalanceCheckDB, innerBalanceCheck));
 
+        quantityCommitIncArticle = addCUProp(addJProp(and1, outerCommitedQuantity, 1, 2, equals2, 1, 3), addJProp(and1, innerQuantity, 1, 2, 3, is(commitInc), 1));
         LP incSklCommitedQuantity = addSGProp(moveGroup, "incSklCommitedQuantity", true, "Кол-во прихода парт. на скл.",
-                addCUProp(addJProp(and1, outerCommitedQuantity, 1, 2, equals2, 1, 3),
-                        addJProp(and1, innerQuantity, 1, 2, 3, is(commitInc), 1)), subjectIncOrder, 1, 2, 3);
+                quantityCommitIncArticle, subjectIncOrder, 1, 2, 3);
 
-        LP outSklCommitedQuantity = addSGProp(moveGroup, "Кол-во отгр. парт. на скл.", addJProp("Кол-во отгр. парт.", and1, innerQuantity, 1, 2, 3, is(commitOut), 1), subjectOutOrder, 1, 2, 3);
+        quantityCommitOutArticle = addJProp("Кол-во отгр. парт.", and1, innerQuantity, 1, 2, 3, is(commitOut), 1);
+        LP outSklCommitedQuantity = addSGProp(moveGroup, "Кол-во отгр. парт. на скл.", quantityCommitOutArticle, subjectOutOrder, 1, 2, 3);
         LP outSklQuantity = addSGProp(moveGroup, "Кол-во заяв. парт. на скл.", innerQuantity, subjectOutOrder, 1, 2, 3);
 
         // тут в общем-то должен не and1 идти а разница через формулу и SUProp на 0 для склада (то есть для склада неизвестно это нет, а для контрагента просто неизвестно)
@@ -1107,25 +1113,6 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         sumWithDiscountCouponOrderArticle = addPGProp(privateGroup, "sumWithDiscountCouponOrderArticle", false, -1, true, "Сумма без куп.", sumWithDiscountOrderArticle, sumWithDiscountCouponOrder, 1);
         sumDiscountPayCouponOrder = addSUProp(documentObligationGroup, "sumDiscountPayCouponOrder", true, "Сумма серт.", Union.SUM, discountSumOrder, orderSalePayCoupon);
 
-        sumRetailIncBetweenDate = addSGProp(baseGroup, "sumRetailIncBetweenDate", "Приходная сумма за интервал",
-                addJProp(and(false, false), sumRetailOrder, 1, is(orderInc), 1, addJProp(between, date, 1, object(DateClass.instance), 2, object(DateClass.instance), 3), 1, 2, 3), subjectIncOrder, 1, 2, 3);
-        sumRetailOutBetweenDate = addSGProp(baseGroup, "sumRetailOutBetweenDate", "Расходная сумма за интервал",
-                addJProp(and(false, false), sumRetailOrder, 1, is(orderOut), 1, addJProp(between, date, 1, object(DateClass.instance), 2, object(DateClass.instance), 3), 1, 2, 3), subjectOutOrder, 1, 2, 3);
-
-        sumWithDiscountCouponIncBetweenDate = addSGProp(baseGroup, "sumWithDiscountCouponIncBetweenDate", "Приходная сумма без скидки за интервал",
-                addJProp(and(false, false), sumWithDiscountCouponOrder, 1, is(orderInc), 1, addJProp(between, date, 1, object(DateClass.instance), 2, object(DateClass.instance), 3), 1, 2, 3), subjectIncOrder, 1, 2, 3);
-        sumWithDiscountCouponOutBetweenDate = addSGProp(baseGroup, "sumWithDiscountCouponOutBetweenDate", "Расходная сумма без скидки за интервал",
-                addJProp(and(false, false), sumWithDiscountCouponOrder, 1, is(orderOut), 1, addJProp(between, date, 1, object(DateClass.instance), 2, object(DateClass.instance), 3), 1, 2, 3), subjectOutOrder, 1, 2, 3);
-
-        sumDiscountPayCouponIncBetweenDate = addSGProp(baseGroup, "sumDiscountPayCouponIncBetweenDate", "Приходная сумма скидки за интервал",
-                addJProp(and(false, false), sumDiscountPayCouponOrder, 1, is(orderInc), 1, addJProp(between, date, 1, object(DateClass.instance), 2, object(DateClass.instance), 3), 1, 2, 3), subjectIncOrder, 1, 2, 3);
-        sumDiscountPayCouponOutBetweenDate = addSGProp(baseGroup, "sumDiscountPayCouponOutBetweenDate", "Расходная сумма скидки за интервал",
-                addJProp(and(false, false), sumDiscountPayCouponOrder, 1, is(orderOut), 1, addJProp(between, date, 1, object(DateClass.instance), 2, object(DateClass.instance), 3), 1, 2, 3), subjectOutOrder, 1, 2, 3);
-
-        sumPriceChangeBetweenDate = addSGProp(baseGroup, "sumPriceChangeBetweenDate", "Сумма переоценки за интервал",
-                addJProp(and(false, false), sumPriceChangeOrder, 1, is(orderInc), 1, addJProp(between, date, 1, object(DateClass.instance), 2, object(DateClass.instance), 3), 1, 2, 3), subjectIncOrder, 1, 2, 3);
-
-
         LP clientSaleSum = addSGProp(sumWithDiscountObligationOrder, subjectIncOrder, 1);
         orderClientSaleSum.setDerivedChange(clientSaleSum, subjectIncOrder, 1);
         clientSum = addSUProp(baseGroup, "clientSum", true, "Нак. сумма", Union.SUM, clientSaleSum, clientInitialSum);
@@ -1269,6 +1256,33 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
                         new String[]{"Исполнитель ПРР", "Способ ПРР", "Код ПРР", "Убытие", "Прибытие", "Простой",
                                 "Автомобиль", "Путевой лист", "Владелец автотранспорта", "Водитель", "Экспедитор", "Вид перевозки", "Маршрут", "Переадресовка", "Прицеп", "Гаражный номер", ""},
                         StringClass.getArray(60,20,10,8,8,8, 20,10,60,60,60,20,20,50,30,15), shipmentDocumentOut);
+
+        initDateProperties();
+    }
+
+    void initDateProperties() {
+        sumRetailIncBetweenDate = addSGProp(baseGroup, "sumRetailIncBetweenDate", "Приходная сумма за интервал",
+                addJProp(and1, sumRetailOrder, 1, betweenDate, 1, 2, 3), subjectIncOrder, 1, 2, 3);
+        sumRetailOutBetweenDate = addSGProp(baseGroup, "sumRetailOutBetweenDate", "Расходная сумма за интервал",
+                addJProp(and1, sumRetailOrder, 1, betweenDate, 1, 2, 3), subjectOutOrder, 1, 2, 3);
+
+        sumWithDiscountCouponIncBetweenDate = addSGProp(baseGroup, "sumWithDiscountCouponIncBetweenDate", "Приходная сумма без скидки за интервал",
+                addJProp(and1, sumWithDiscountCouponOrder, 1, betweenDate, 1, 2, 3), subjectIncOrder, 1, 2, 3);
+        sumWithDiscountCouponOutBetweenDate = addSGProp(baseGroup, "sumWithDiscountCouponOutBetweenDate", "Расходная сумма без скидки за интервал",
+                addJProp(and1, sumWithDiscountCouponOrder, 1, betweenDate, 1, 2, 3), subjectOutOrder, 1, 2, 3);
+
+        sumDiscountPayCouponIncBetweenDate = addSGProp(baseGroup, "sumDiscountPayCouponIncBetweenDate", "Приходная сумма скидки за интервал",
+                addJProp(and1, sumDiscountPayCouponOrder, 1, betweenDate, 1, 2, 3), subjectIncOrder, 1, 2, 3);
+        sumDiscountPayCouponOutBetweenDate = addSGProp(baseGroup, "sumDiscountPayCouponOutBetweenDate", "Расходная сумма скидки за интервал",
+                addJProp(and1, sumDiscountPayCouponOrder, 1, betweenDate, 1, 2, 3), subjectOutOrder, 1, 2, 3);
+
+        sumPriceChangeBetweenDate = addSGProp(baseGroup, "sumPriceChangeBetweenDate", "Сумма переоценки за интервал",
+                addJProp(and1, sumPriceChangeOrder, 1, betweenDate, 1, 2, 3), subjectIncOrder, 1, 2, 3);
+
+        quantityIncSubjectArticleBetweenDate = addSGProp(baseGroup, "quantityIncSubjectArticleBetweenDate", "Кол-во прих. за интервал",
+                addJProp(and1, quantityCommitIncArticle, 1, 2, 3, betweenDate, 1, 4, 5), subjectIncOrder, 1, 2, 4, 5);
+        quantityOutSubjectArticleBetweenDate = addSGProp(baseGroup, "quantityOutSubjectArticleBetweenDate", "Кол-во расх. за интервал",
+                addJProp(and1, quantityCommitOutArticle, 1, 2, 3, betweenDate, 1, 4, 5), subjectIncOrder, 1, 2, 4, 5);
     }
 
     LP padlBarcodeToObject;

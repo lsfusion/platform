@@ -3,6 +3,7 @@ package platform.server.data.expr;
 import platform.base.BaseUtils;
 import platform.base.GlobalObject;
 import platform.base.TwinImmutableInterface;
+import platform.server.caches.ManualLazy;
 import platform.server.caches.hash.HashContext;
 import platform.server.classes.ConcreteClass;
 import platform.server.classes.DoubleClass;
@@ -19,6 +20,7 @@ import platform.server.data.translator.QueryTranslator;
 import platform.server.data.type.Type;
 import platform.server.data.type.TypeObject;
 import platform.server.data.where.Where;
+import platform.server.logics.DataObject;
 
 import java.util.HashSet;
 import java.util.Map;
@@ -128,5 +130,17 @@ public class ValueExpr extends AbstractValueExpr implements Value {
 
     public GlobalObject getValueClass() {
         return objectClass;
+    }
+
+    private DataObject dataObject;
+    @ManualLazy
+    public DataObject getDataObject() { // по сути множественное наследование, поэтому ManualLazy
+        if(dataObject==null)
+            dataObject = new DataObject(this);
+        return dataObject;
+    }
+    public ValueExpr(DataObject dataObject) {
+        super(dataObject.object, dataObject.objectClass);
+        this.dataObject = dataObject;
     }
 }

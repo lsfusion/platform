@@ -79,11 +79,6 @@ public class AggregateGroupProperty<T extends PropertyInterface, J extends Prope
                 propertyInterface.getKey().execute(propValues, session, propertyInterface.getValue().object, session.modifier);
         }
     }
-
-    @Override
-    protected GroupType getGroupType() {
-        return GroupType.ANY;
-    }
 }
 
 

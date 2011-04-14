@@ -9,6 +9,7 @@ import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.PullExpr;
 import platform.server.data.expr.ValueExpr;
 import platform.server.data.expr.query.GroupExpr;
+import platform.server.data.expr.query.GroupType;
 import platform.server.data.query.Join;
 import platform.server.data.where.Where;
 import platform.server.data.where.WhereBuilder;
@@ -20,6 +21,11 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class CycleGroupProperty<T extends PropertyInterface,P extends PropertyInterface> extends MaxGroupProperty<T> {
+
+    @Override
+    protected GroupType getGroupType() {
+        return GroupType.ANY;
+    }
 
     final Property<P> toChange;
 
@@ -42,23 +48,30 @@ public class CycleGroupProperty<T extends PropertyInterface,P extends PropertyIn
 
     @Override
     protected <U extends Changes<U>> U calculateUsedDataChanges(Modifier<U> modifier) {
-        return MaxChangeProperty.getUsedChanges(this,toChange,modifier).addChanges(toChange.getUsedDataChanges(modifier));
+        if(toChange!=null)
+            return MaxChangeProperty.getUsedChanges(this,toChange,modifier).addChanges(toChange.getUsedDataChanges(modifier));
+        else
+            return modifier.newChanges();
     }
 
     @Override
     protected MapDataChanges<Interface<T>> calculateDataChanges(PropertyChange<Interface<T>> change, WhereBuilder changedWhere, Modifier<? extends Changes> modifier) {
 
-        Map<P,KeyExpr> toChangeKeys = toChange.getMapKeys();
-        Expr resultExpr = getChangeExpr(change, modifier, toChangeKeys);
-//        return toChange.getDataChanges(new PropertyChange<P>(toChangeKeys,resultExpr,resultExpr.getWhere()),changedWhere,modifier);
-        DataChanges dataChanges = toChange.getDataChanges(new PropertyChange<P>(toChangeKeys,resultExpr,resultExpr.getWhere().or(getNullWhere(change, modifier, toChangeKeys))),null, modifier).changes;
-        if(changedWhere!=null) {
-            if (Settings.instance.isCalculateGroupDataChanged())
-                getExpr(change.mapKeys, new DataChangesModifier(modifier, dataChanges), changedWhere);
-            else
-                changedWhere.add(change.where);
-        }
-        return new MapDataChanges<Interface<T>>(dataChanges);
+        if(toChange!=null) {
+            Map<P,KeyExpr> toChangeKeys = toChange.getMapKeys();
+            Expr resultExpr = getChangeExpr(change, modifier, toChangeKeys);
+    //        return toChange.getDataChanges(new PropertyChange<P>(toChangeKeys,resultExpr,resultExpr.getWhere()),changedWhere,modifier);
+            DataChanges dataChanges = toChange.getDataChanges(new PropertyChange<P>(toChangeKeys,resultExpr,resultExpr.getWhere().or(getNullWhere(change, modifier, toChangeKeys))),null, modifier).changes;
+            if(changedWhere!=null) {
+                if (Settings.instance.isCalculateGroupDataChanged())
+                    getExpr(change.mapKeys, new DataChangesModifier(modifier, dataChanges), changedWhere);
+                else
+                    changedWhere.add(change.where);
+            }
+            return new MapDataChanges<Interface<T>>(dataChanges);
+        } else
+            return new MapDataChanges<Interface<T>>();
+
     }
 
     private Expr getChangeExpr(PropertyChange<Interface<T>> change, Modifier<? extends Changes> modifier, Map<P,KeyExpr> toChangeKeys) {

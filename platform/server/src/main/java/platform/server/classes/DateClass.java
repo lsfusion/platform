@@ -6,6 +6,7 @@ import platform.interop.Data;
 import platform.server.data.sql.SQLSyntax;
 import platform.server.data.type.ParseException;
 import platform.server.form.view.report.ReportDrawField;
+import sun.beans.editors.IntEditor;
 
 import java.sql.Date;
 import java.sql.PreparedStatement;
@@ -101,5 +102,10 @@ public class DateClass extends DataClass<Date> {
 
     public String getSID() {
         return sid;
+    }
+
+    @Override
+    public Object getInfiniteValue() {
+        return new Date(Long.MAX_VALUE);
     }
 }

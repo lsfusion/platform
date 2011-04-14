@@ -514,6 +514,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     protected LP greater2, less2;
     protected LP greater22, less22;
     protected LP between;
+    protected LP betweenDate;
     protected LP object1, and1, andNot1;
     protected LP equals2, diff2;
     protected LP sumDouble2;
@@ -1064,6 +1065,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         delete = addAProp(new DeleteObjectActionProperty(genSID(), baseClass));
 
         date = addDProp(baseGroup, "date", "Дата", DateClass.instance, transaction);
+
+        betweenDate = addJProp("Дата док. между", between, date, 1, object(DateClass.instance), 2, object(DateClass.instance), 3);
 
         sidCountry = addDProp(baseGroup, "sidCountry", "Код страны", IntegerClass.instance, country);
         generateDatesCountry = addDProp(privateGroup, "generateDatesCountry", "Генерировать выходные", LogicalClass.instance, country);

@@ -3,6 +3,7 @@ package platform.server.logics;
 import platform.base.BaseUtils;
 import platform.base.TwinImmutableInterface;
 import platform.interop.Compare;
+import platform.server.caches.ManualLazy;
 import platform.server.caches.hash.HashValues;
 import platform.server.classes.*;
 import platform.server.classes.sets.AndClassSet;
@@ -79,9 +80,19 @@ public class DataObject extends ObjectValue<DataObject> implements PropertyObjec
         return getType().getString(object, syntax);
     }
 
+    // по сути множественное наследование, поэтому ManualLazy
+    private ValueExpr valueExpr;
+    @ManualLazy
     public ValueExpr getExpr() {
-        return new ValueExpr(object,objectClass);
+        if(valueExpr==null)
+            valueExpr = new ValueExpr(this);
+        return valueExpr;
     }
+    public DataObject(ValueExpr valueExpr) {
+        this(valueExpr.object, valueExpr.objectClass);
+        this.valueExpr = valueExpr;
+    }
+
     public Expr getSystemExpr() {
         return new SystemValueExpr(object, objectClass);
     }
@@ -144,7 +155,7 @@ public class DataObject extends ObjectValue<DataObject> implements PropertyObjec
     }
 
     public boolean twins(TwinImmutableInterface o) {
-        return getExpr().equals(((DataObject)o).getExpr());
+        return getExpr().equals(((DataObject) o).getExpr());
     }
 
     public int hashValues(HashValues hashValues) {
@@ -155,12 +166,8 @@ public class DataObject extends ObjectValue<DataObject> implements PropertyObjec
         return Collections.<Value>singleton(getExpr());
     }
 
-    private DataObject(ValueExpr expr) {
-        this(expr.object,expr.objectClass);
-    }
-
     public DataObject translate(MapValuesTranslate mapValues) {
-        return new DataObject(mapValues.translate(getExpr()));
+        return mapValues.translate(getExpr()).getDataObject();
     }
 
     public DataObject refresh(SessionChanges session) throws SQLException {

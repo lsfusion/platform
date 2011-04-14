@@ -114,11 +114,6 @@ public class SessionDataProperty extends DataProperty implements NoValueProperty
             return ExprChanges.EMPTY;
         }
 
-        @Override
-        public boolean noExpr(Property property) {
-            return property instanceof NoValueProperty;
-        }
-
         public <P extends PropertyInterface> Expr changed(Property<P> property, Map<P, ? extends Expr> joinImplement, WhereBuilder changedWhere) {
             if(property instanceof NoValueProperty) {
                 changedWhere.add(ValueClassProperty.getIsClassWhere((Map<ClassPropertyInterface, ? extends Expr>) joinImplement, this, changedWhere));
