@@ -7,7 +7,7 @@
     <parent>
         <groupId>by.luxsoft.platform</groupId>
         <artifactId>base</artifactId>
-        <version>${main.version}</version>
+        <version>1.0-SNAPSHOT</version>
         <relativePath>../base/pom.xml</relativePath>
     </parent>
     <artifactId>jasperapi</artifactId>
@@ -18,7 +18,6 @@
         <dependency>
             <groupId>by.luxsoft.platform</groupId>
             <artifactId>api</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>net.sf.jasperreports</groupId>

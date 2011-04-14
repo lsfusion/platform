@@ -6,7 +6,7 @@
     <parent>
         <groupId>by.luxsoft.platform</groupId>
         <artifactId>base</artifactId>
-        <version>${main.version}</version>
+        <version>1.0-SNAPSHOT</version>
         <relativePath>../base/pom.xml</relativePath>
     </parent>
 
@@ -29,7 +29,6 @@
         <dependency>
             <groupId>by.luxsoft.platform</groupId>
             <artifactId>skolkovo-api</artifactId>
-            <version>1.0</version>
         </dependency>
         <dependency>
             <groupId>log4j</groupId>
