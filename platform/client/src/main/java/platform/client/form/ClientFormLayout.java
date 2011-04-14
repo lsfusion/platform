@@ -46,10 +46,11 @@ public abstract class ClientFormLayout extends JPanel {
         createContainerViews(topContainer);
 
         setLayout(new BorderLayout());
-        JScrollPane scroll = new JScrollPane(mainContainer);
-        scroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-        scroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
-        add(scroll, BorderLayout.CENTER);
+        add(mainContainer, BorderLayout.CENTER);
+//        JScrollPane scroll = new JScrollPane(mainContainer);
+//        scroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+//        scroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+//        add(scroll, BorderLayout.CENTER);
 
         // приходится делать StrongRef, иначе он тут же соберется сборщиком мусора так как ContainerFocusListener держит его как WeakReference
         focusListener = new FocusAdapter() {
