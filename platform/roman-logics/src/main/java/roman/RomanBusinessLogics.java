@@ -2732,6 +2732,8 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         public DefaultFormView createDefaultRichDesign() {
             DefaultFormView design = super.createDefaultRichDesign();
 
+            design.blockedScreen.put("changePropertyDraw", getPropertyDraw(objectValue, objBarcode).getID() + "");
+
             design.get(getPropertyDraw(sidDocument, objShipment)).caption = "Номер поставки";
             design.get(getPropertyDraw(date, objShipment)).caption = "Дата поставки";
 

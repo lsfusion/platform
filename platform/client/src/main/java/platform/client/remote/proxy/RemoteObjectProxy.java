@@ -2,6 +2,7 @@ package platform.client.remote.proxy;
 
 import org.apache.log4j.Logger;
 import platform.client.Main;
+import platform.client.form.BlockingTask;
 import platform.interop.remote.MethodInvocation;
 import platform.interop.remote.PendingRemote;
 
@@ -11,15 +12,15 @@ import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.lang.reflect.Method;
 import java.rmi.RemoteException;
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
 
 public abstract class RemoteObjectProxy<T extends PendingRemote> implements PendingRemote {
     private static Logger logger = Logger.getLogger(RemoteFormProxy.class);
 
     private List<MethodInvocation> pendingInvocations = new ArrayList<MethodInvocation>();
+
+    public Map<String, String> blockedScreen;
 
     protected T target;
 
@@ -31,18 +32,30 @@ public abstract class RemoteObjectProxy<T extends PendingRemote> implements Pend
     public Object execute(final MethodInvocation[] invocations) throws RemoteException {
         logRemoteMethodStartCall("execute");
 
+        boolean screenBlock = false;
         if (logger.isDebugEnabled()) {
             for (MethodInvocation invocation : invocations) {
                 logger.debug("  Invocation in execute: " + invocation.toString());
             }
         }
 
+        for (MethodInvocation invocation : invocations) {
+            screenBlock |= (blockedScreen != null) && (blockedScreen.containsKey(invocation.name) && invocation.args.length > 0 && invocation.args[0].toString().equals(blockedScreen.get(invocation.name)));
+        }
+
         if (Main.frame != null) {
             Main.frame.setCursor(Cursor.WAIT_CURSOR);
         }
+
+        TimerTask task = new BlockingTask();
+        Timer timer = new Timer();
+        timer.schedule(task, screenBlock ? 0 : 2500);
         Object result = target.execute(invocations);
+        timer.cancel();
+
         if (Main.frame != null) {
             Main.frame.setCursor(Cursor.DEFAULT_CURSOR);
+            Main.frame.repaint();
         }
 
         logRemoteMethodEndCall("execute", result);
@@ -52,18 +65,32 @@ public abstract class RemoteObjectProxy<T extends PendingRemote> implements Pend
     @NonFlushRemoteMethod
     public Object[] createAndExecute(final MethodInvocation creator, final MethodInvocation[] invocations) throws RemoteException {
         logRemoteMethodStartCall("createAndExecute");
+
+        boolean screenBlock = false;
         if (logger.isDebugEnabled()) {
             logger.debug("  Creator   in  createAndExecute: " + creator.toString());
             for (MethodInvocation invocation : invocations) {
                 logger.debug("  Invocation in createAndExecute: " + invocation.toString());
             }
         }
+
+        for (MethodInvocation invocation : invocations) {
+            screenBlock |= (blockedScreen != null) && (blockedScreen.containsKey(invocation.name) && invocation.args.length > 0 && invocation.args[0].toString().equals(blockedScreen.get(invocation.name)));
+        }
+
         if (Main.frame != null) {
             Main.frame.setCursor(Cursor.WAIT_CURSOR);
         }
+
+        TimerTask task = new BlockingTask();
+        Timer timer = new Timer();
+        timer.schedule(task, screenBlock ? 0 : 2500);
         Object[] result = target.createAndExecute(creator, invocations);
+        timer.cancel();
+
         if (Main.frame != null) {
             Main.frame.setCursor(Cursor.DEFAULT_CURSOR);
+            Main.frame.repaint();
         }
         logRemoteMethodEndCall("createAndExecute", result);
         return result;

@@ -13,6 +13,7 @@ import platform.client.logics.*;
 import platform.client.logics.classes.ClientObjectClass;
 import platform.client.logics.filter.ClientPropertyFilter;
 import platform.client.navigator.ClientNavigator;
+import platform.client.remote.proxy.RemoteObjectProxy;
 import platform.client.serialization.ClientSerializationPool;
 import platform.interop.ClassViewType;
 import platform.interop.KeyStrokes;
@@ -101,6 +102,10 @@ public class ClientFormController {
 
         form = new ClientSerializationPool().deserializeObject(new DataInputStream(new ByteArrayInputStream(remoteForm.getRichDesignByteArray())));
 //        form = new ClientForm(new DataInputStream(new ByteArrayInputStream(remoteForm.getRichDesignByteArray())));
+
+        if (remoteForm instanceof RemoteObjectProxy) {
+            ((RemoteObjectProxy) remoteForm).blockedScreen = form.blockedScreen;
+        }
 
         initializeForm();
     }
@@ -659,7 +664,7 @@ public class ClientFormController {
     }
 
     public Map<List<Object>, List<Object>> groupData(Map<Integer, List<byte[]>> groupMap, Map<Integer, List<byte[]>> sumMap, Map<Integer,
-                                                    List<byte[]>> maxMap, boolean onlyNotNull) throws IOException {
+            List<byte[]>> maxMap, boolean onlyNotNull) throws IOException {
         return remoteForm.groupData(groupMap, sumMap, maxMap, onlyNotNull);
     }
 

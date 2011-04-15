@@ -18,6 +18,7 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -47,6 +48,9 @@ public class FormView implements ServerIdentitySerializable, AbstractForm<Contai
     public List<RegularFilterGroupView> regularFilters = new ArrayList<RegularFilterGroupView>();
 
     public OrderedMap<PropertyDrawView,Boolean> defaultOrders = new OrderedMap<PropertyDrawView, Boolean>();
+
+    // map с названиями функций, при которых дисплей сразу будет блокироваться
+    public Map<String, String> blockedScreen = new HashMap<String, String>();
 
     private FunctionView printFunction;
     private FunctionView xlsFunction;
@@ -193,6 +197,7 @@ public class FormView implements ServerIdentitySerializable, AbstractForm<Contai
         pool.writeObject(outStream, keyStroke);
         pool.writeString(outStream, caption);
         pool.writeInt(outStream, overridePageWidth);
+        pool.writeObject(outStream, blockedScreen);
     }
 
     public void customDeserialize(ServerSerializationPool pool, DataInputStream inStream) throws IOException {
