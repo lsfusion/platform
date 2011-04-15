@@ -327,19 +327,24 @@ public class DataSession extends MutableObject implements SessionChanges, ExprCh
         return null;
     }
 
-    public String check(final BusinessLogics<?> BL) throws SQLException {
+    private IncrementApply incrementApply;
 
+    public String check(final BusinessLogics<?> BL) throws SQLException {
         resolveFollows(BL, null);
 
+        prepareApply(BL);
+
         // сохранить св-ва которые Persistent, те что входят в Persistents и DataProperty
-        for(Property<?> property : BL.getConstrainedProperties())
-            if(property.isFalse && property.hasChanges(modifier)) {
+        for (Property<?> property : BL.getConstrainedProperties()) {
+            if (property.hasChanges(modifier)) {
                 String constraintResult = check(property);
-                if(constraintResult!=null) {
+                if (constraintResult != null) {
                     // не надо DROP'ать так как Rollback автоматически drop'ает все temporary таблицы
+                    cleanApply();
                     return constraintResult;
                 }
             }
+        }
         return null;
     }
 
@@ -404,6 +409,24 @@ public class DataSession extends MutableObject implements SessionChanges, ExprCh
         return null;
     }
 
+    public void prepareApply(final BusinessLogics<?> BL) throws SQLException {
+        incrementApply = new IncrementApply(DataSession.this);
+
+        // сохранить св-ва которые Persistent, те что входят в Persistents и DataProperty
+        for (Property<?> property : BL.getStoredProperties()) {
+            if (property.hasChanges(incrementApply)) {
+                incrementApply.read(property.mapTable.table, Collections.<Property>singleton(property), baseClass);
+            }
+        }
+    }
+
+    public void cleanApply() throws SQLException {
+        if (incrementApply != null) {
+            incrementApply.dropTemporaryTables();
+            incrementApply = null;
+        }
+    }
+
     public void resolveFollows(final BusinessLogics<?> BL, List<ClientAction> actions) throws SQLException {
 
         for(Property<?> property : BL.getFollowProperties()) {
@@ -428,6 +451,8 @@ public class DataSession extends MutableObject implements SessionChanges, ExprCh
     }
 
     public void write(final BusinessLogics<?> BL, List<ClientAction> actions) throws SQLException {
+        assert incrementApply != null;
+
         // до start transaction
         if (applyObject == null) {
             applyObject = addObject(sessionClass, modifier);
@@ -437,31 +462,10 @@ public class DataSession extends MutableObject implements SessionChanges, ExprCh
 
         sql.startTransaction();
 
-        Collection<SessionTableUsage<KeyField, Property>> temporary = new ArrayList<SessionTableUsage<KeyField, Property>>();
-
-        IncrementApply increment = new IncrementApply(DataSession.this);
-
-        // сохранить св-ва которые Persistent, те что входят в Persistents и DataProperty
-        for (Property<?> property : BL.getStoredProperties())
-            if (property.hasChanges(increment))
-                temporary.add(increment.read(property.mapTable.table, Collections.<Property>singleton(property), baseClass));
-
         // записываем в базу
-        for (Map.Entry<ImplementTable, Collection<Property>> groupTable : BaseUtils.group(
-                new BaseUtils.Group<ImplementTable, Property>() {
-                    public ImplementTable group(Property key) {
-                        return key.mapTable.table;
-                    }
-                }, increment.tables.keySet()).entrySet()) {
+        for (Map.Entry<ImplementTable, Collection<Property>> groupTable : incrementApply.groupPropertiesByTables().entrySet()) {
 
-            SessionTableUsage<KeyField, Property> changeTable;
-            // временно так - если одна берем старую, иначе группой
-            if (groupTable.getValue().size() == 1) {
-                changeTable = increment.tables.get(BaseUtils.single(groupTable.getValue()));
-            } else {
-                changeTable = increment.read(groupTable.getKey(), groupTable.getValue(), baseClass);
-                temporary.add(changeTable);
-            }
+            SessionTableUsage<KeyField, Property> changeTable = incrementApply.read(groupTable.getKey(), groupTable.getValue(), baseClass);
 
             Query<KeyField, PropertyField> modifyQuery = new Query<KeyField, PropertyField>(groupTable.getKey());
             Join<Property> join = changeTable.join(modifyQuery.mapKeys);
@@ -476,9 +480,7 @@ public class DataSession extends MutableObject implements SessionChanges, ExprCh
             newClass.getValue().saveClassChanges(sql, newClass.getKey());
         }
 
-        for (SessionTableUsage<KeyField, Property> addTable : temporary) {
-            addTable.drop(sql);
-        }
+        cleanApply();
 
         sql.commitTransaction();
 

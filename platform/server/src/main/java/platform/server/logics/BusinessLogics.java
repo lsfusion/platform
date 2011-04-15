@@ -2275,9 +2275,11 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
     public List<Property> getConstrainedProperties() {
         List<Property> result = new ArrayList<Property>();
-        for (Property property : getPropertyList())
-            if (property.isStored() || property.isFalse)
+        for (Property property : getPropertyList()) {
+            if (property.isFalse) {
                 result.add(property);
+            }
+        }
         return result;
     }
 
