@@ -7,13 +7,38 @@
     <version>1.0-SNAPSHOT</version>
     <name>Base</name>
 
+    <repositories>
+        <repository>
+            <id>lsfusion</id>
+            <name>Внутренний snapshot-сервер ЛюксСофт.</name>
+            <url>http://lsfusion.ru/archiva/repository/internal</url>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+        </repository>
+        <repository>
+            <id>lsfusion.snapshots</id>
+            <name>Внутренний snapshot-сервер ЛюксСофт.</name>
+            <url>http://lsfusion.ru/archiva/repository/snapshots</url>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+        </repository>
+    </repositories>
+
     <distributionManagement>
         <repository>
-            <id>lsfusion.ru</id>
+            <id>lsfusion</id>
             <url>http://lsfusion.ru/archiva/repository/internal</url>
         </repository>
         <snapshotRepository>
-            <id>lsfusion.ru</id>
+            <id>lsfusion.snapshots</id>
             <url>http://lsfusion.ru/archiva/repository/snapshots</url>
         </snapshotRepository>
     </distributionManagement>
