@@ -525,6 +525,19 @@ public abstract class GridTable extends ClientFormTable
         }
     }
 
+    /**
+     * Переопределено, чтобы учесть групповую корректировку...
+     * <br><br>
+
+     * {@inheritDoc}
+     *
+     * @see GridTableModel#setValueAt(Object, int, int, boolean)
+     */
+    public void setValueAt(Object aValue, int row, int column) {
+        getModel().setValueAt(aValue, convertRowIndexToModel(row),
+                              convertColumnIndexToModel(column), multyChange);
+    }
+
     public boolean editCellAt(int row, int column, EventObject editEvent) {
         multyChange = KeyStrokes.isGroupCorrectionEvent(editEvent);
 

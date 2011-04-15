@@ -139,7 +139,11 @@ public class GridTableModel extends AbstractTableModel {
     }
 
     public void setValueAt(Object value, int row, int col) {
-        if (columnProps[col].checkEquals && BaseUtils.nullEquals(value, data[row][col])) {
+        setValueAt(value, row, col, false);
+    }
+
+    public void setValueAt(Object value, int row, int col, boolean multyChange) {
+        if (!multyChange && columnProps[col].checkEquals && BaseUtils.nullEquals(value, data[row][col])) {
             return;
         }
 
