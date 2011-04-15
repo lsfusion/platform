@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <jnlp spec="1.5+" codebase="http://localhost/fusion/" href="fullclient.jnlp">
     <information>
-        <title>Fusion - Full Client</title>
-        <vendor>Fusioners Ltd.</vendor>
+        <title>Fusion Client</title>
+        <vendor>Nomosoft Ltd.</vendor>
         <description>Fusion</description>
         <icon href="default.png" kind="default"/>
         <icon href="splash.jpg" kind="splash"/>
