@@ -23,11 +23,18 @@ public class FilePropertyEditor extends JFileChooser
         addChoosableFileFilter(new FileNameExtensionFilter(description, extensions));
     }
 
+    public FilePropertyEditor(boolean allFiles) {
+        super();
+        setAcceptAllFileFilterUsed(allFiles);
+    }
+
+    @Override
     public Component getComponent(Point tableLocation, Rectangle cellRectangle, EventObject editEvent) throws IOException, ClassNotFoundException {
         returnValue = this.showOpenDialog(null);
         return null;
     }
 
+    @Override
     public Object getCellEditorValue() throws RemoteException {
         try {
             return returnValue == JFileChooser.APPROVE_OPTION ? IOUtils.getFileBytes(this.getSelectedFile()) : null;
@@ -36,6 +43,7 @@ public class FilePropertyEditor extends JFileChooser
         }
     }
 
+    @Override
     public boolean valueChanged() {
         return returnValue == JFileChooser.APPROVE_OPTION;
     }

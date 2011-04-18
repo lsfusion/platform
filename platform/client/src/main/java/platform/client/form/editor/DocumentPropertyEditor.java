@@ -16,6 +16,11 @@ public class DocumentPropertyEditor extends FilePropertyEditor {
         this.value = value;
     }
 
+    public DocumentPropertyEditor(Object value, boolean allFiles) {
+        super(allFiles);
+        this.value = value;
+    }
+
     @Override
     public Component getComponent(Point tableLocation, Rectangle cellRectangle, EventObject editEvent) throws IOException, ClassNotFoundException {
         if (KeyStrokes.isSpaceEvent(editEvent)) {

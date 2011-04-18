@@ -3,18 +3,21 @@ package platform.client;
 import sun.swing.SwingUtilities2;
 
 import javax.swing.*;
+import javax.swing.Timer;
+import javax.swing.filechooser.FileSystemView;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.StringTokenizer;
-import java.util.WeakHashMap;
+import java.io.File;
+import java.io.IOException;
+import java.util.*;
 
 import static java.lang.Math.max;
 import static java.lang.Math.min;
 
 public class SwingUtils {
+
+    private static Map<String, Icon> icons = new HashMap<String, Icon>();
 
     public static void addFocusTraversalKey(Component comp, int id, KeyStroke key) {
 
@@ -120,12 +123,12 @@ public class SwingUtils {
     public static int showConfirmDialog(JComponent parentComponent, Object message, String title, int messageType, int initialValue) {
 
         Object[] options = {UIManager.getString("OptionPane.yesButtonText"),
-                            UIManager.getString("OptionPane.noButtonText")};
+                UIManager.getString("OptionPane.noButtonText")};
 
         JOptionPane dialogPane = new JOptionPane(message,
-                                                 messageType,
-                                                 JOptionPane.YES_NO_OPTION,
-                                                 null, options, options[initialValue]);
+                messageType,
+                JOptionPane.YES_NO_OPTION,
+                null, options, options[initialValue]);
 
         addFocusTraversalKey(dialogPane, KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS, KeyStroke.getKeyStroke("RIGHT"));
         addFocusTraversalKey(dialogPane, KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS, KeyStroke.getKeyStroke("UP"));
@@ -158,7 +161,7 @@ public class SwingUtils {
 
     public static Dimension clipDimension(Dimension toClip, Dimension min, Dimension max) {
         return new Dimension(max(min.width, min(max.width, toClip.width)),
-                             max(min.height, min(max.height, toClip.height))
+                max(min.height, min(max.height, toClip.height))
         );
     }
 
@@ -175,7 +178,7 @@ public class SwingUtils {
      */
     private static Dimension getUsableDeviceBounds() {
         GraphicsConfiguration gc = GraphicsEnvironment.getLocalGraphicsEnvironment()
-                    .getDefaultScreenDevice().getDefaultConfiguration();
+                .getDefaultScreenDevice().getDefaultConfiguration();
 
         Insets insets = Toolkit.getDefaultToolkit().getScreenInsets(gc);
         Rectangle bounds = gc.getBounds();
@@ -217,4 +220,24 @@ public class SwingUtils {
         }
         return result += line + "</html>";
     }
+
+    public static Icon getSystemIcon(String extension) {
+        if (icons.containsKey(extension)) {
+            return icons.get(extension);
+        } else {
+            File file = null;
+            try {
+                file = File.createTempFile("icon", "." + extension);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            FileSystemView view = FileSystemView.getFileSystemView();
+            Icon icon = view.getSystemIcon(file);
+            icons.put(extension, icon);
+            //Delete the temporary file
+            file.delete();
+            return icon;
+        }
+    }
+
 }

@@ -5,18 +5,22 @@ import platform.client.form.PropertyRendererComponent;
 import platform.interop.ComponentDesign;
 
 import javax.swing.*;
+import javax.swing.filechooser.FileSystemView;
+import java.io.File;
+import java.io.IOException;
 import java.text.Format;
 
-public class ExcelPropertyRenderer extends FilePropertyRenderer
+public class CustomFileRenderer extends FilePropertyRenderer
         implements PropertyRendererComponent {
 
-    public ExcelPropertyRenderer(Format format, ComponentDesign design) {
+    public CustomFileRenderer(Format format, ComponentDesign design) {
         super(format, design);
     }
 
     public void setValue(Object value, boolean isSelected, boolean hasFocus) {
         if (value != null) {
-            setIcon(SwingUtils.getSystemIcon("xls"));
+            byte[] union = (byte[]) value;
+            setIcon(SwingUtils.getSystemIcon(new String(union, 1, union[0])));
         } else {
             setIcon(null);
         }

@@ -37,7 +37,8 @@ abstract public class ClientClass implements Serializable {
             ClientWordClass.instance,
             ClientImageClass.instance,
             ClientExcelClass.instance,
-            ClientPDFClass.instance
+            ClientPDFClass.instance,
+            ClientCustomFileClass.instance,
         };
     }
 }
