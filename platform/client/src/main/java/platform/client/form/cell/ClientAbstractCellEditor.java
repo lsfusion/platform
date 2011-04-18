@@ -18,7 +18,7 @@ public class ClientAbstractCellEditor extends AbstractCellEditor
 
     private EventObject editEvent;
 
-    private PropertyEditorComponent propertyEditor;
+    public PropertyEditorComponent propertyEditor;
 
     public boolean editPerformed = false;
 

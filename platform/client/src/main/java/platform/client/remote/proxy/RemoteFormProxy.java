@@ -128,6 +128,13 @@ public class RemoteFormProxy<T extends RemoteFormInterface>
         return result;
     }
 
+    public Object getPropertyChangeValue(int propertyID) throws RemoteException {
+        logRemoteMethodStartCall("getPropertyChangeValue");
+        Object result = target.getPropertyChangeValue(propertyID);
+        logRemoteMethodEndCall("getPropertyChangeValue", result);
+        return result;
+    }
+
     public boolean canChangeClass(int objectID) throws RemoteException {
         logRemoteMethodStartCall("canChangeClass");
         boolean result = target.canChangeClass(objectID);

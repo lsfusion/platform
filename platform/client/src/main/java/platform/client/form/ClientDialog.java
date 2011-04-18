@@ -15,6 +15,7 @@ public class ClientDialog extends ClientModalForm {
 
     public int objectChosen = NOT_CHOSEN;
     public Object dialogValue;
+    public Object displayValue;
 
     public boolean showQuickFilterOnStartup = true;
     private boolean activatedFirstTime = true;
@@ -86,6 +87,7 @@ public class ClientDialog extends ClientModalForm {
 
                 objectChosen = CHOSEN_VALUE;
                 dialogValue = null;
+                displayValue = null;
                 ClientDialog.this.setVisible(false);
                 return true;
             }
@@ -96,6 +98,7 @@ public class ClientDialog extends ClientModalForm {
                 objectChosen = CHOSEN_VALUE;
                 try {
                     dialogValue = remoteDialog.getDialogValue();
+                    displayValue = remoteDialog.geCellDisplayValue();
                 } catch (RemoteException e) {
                     throw new RuntimeException("Ошибка при получении значения диалога", e);
                 }

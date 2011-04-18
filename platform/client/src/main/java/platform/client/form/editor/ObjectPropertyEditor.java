@@ -54,6 +54,10 @@ public class ObjectPropertyEditor extends JDialog implements PropertyEditorCompo
         return clientDialog.dialogValue;
     }
 
+    public Object getCellDisplayValue() throws RemoteException {
+        return clientDialog.displayValue;
+    }
+
     public boolean valueChanged() {
         return clientDialog.objectChosen != ClientDialog.NOT_CHOSEN;
     }

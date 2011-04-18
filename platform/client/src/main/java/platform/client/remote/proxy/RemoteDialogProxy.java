@@ -19,6 +19,13 @@ public class RemoteDialogProxy<T extends RemoteDialogInterface>
         return result;
     }
 
+    public Object geCellDisplayValue() throws RemoteException {
+        logRemoteMethodStartCall("geCellDisplayValue");
+        Object result = target.geCellDisplayValue();
+        logRemoteMethodEndCall("geCellDisplayValue", result);
+        return result;
+    }
+
     @ImmutableMethod
     public Integer getInitFilterPropertyDraw() throws RemoteException {
         logRemoteMethodStartCall("getInitFilterPropertyDraw");

@@ -4,7 +4,10 @@ import org.apache.log4j.Logger;
 import platform.client.SwingUtils;
 import platform.client.form.ClientFormController;
 import platform.client.form.ItemAdapter;
+import platform.client.form.PropertyEditorComponent;
 import platform.client.form.cell.CellTable;
+import platform.client.form.cell.ClientAbstractCellEditor;
+import platform.client.form.editor.ObjectPropertyEditor;
 import platform.client.form.grid.GridTable;
 import platform.client.form.grid.GridTableModel;
 import platform.client.logics.ClientGroupObjectValue;
@@ -12,6 +15,7 @@ import platform.client.logics.ClientPropertyDraw;
 import platform.interop.KeyStrokes;
 
 import javax.swing.*;
+import javax.swing.table.TableCellEditor;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ItemEvent;
@@ -61,7 +65,7 @@ public class ChangeDialog extends JDialog {
                 changeTypeUpdated();
             }
         });
-        cbValueType.setSelectedIndex(1);
+        changeTypeUpdated();
 
         cbMainProperties.addItemListener(new ItemAdapter() {
             @Override
@@ -74,10 +78,7 @@ public class ChangeDialog extends JDialog {
         addWindowListener(new WindowAdapter() {
             @Override
             public void windowActivated(WindowEvent e) {
-                if (valueView instanceof PropertyValueView) {
-                    ((PropertyValueView)valueView).cbGetterProperties.requestFocusInWindow();
-                }
-
+                valueView.requestFocusInWindow();
                 //чтобы срабатывал только один раз...
                 removeWindowListener(this);
             }
@@ -207,13 +208,14 @@ public class ChangeDialog extends JDialog {
     private class ExactValueView extends GroupValueView {
         private final CellTable valueTable;
         private ClientPropertyDraw property;
+        private Object selectedValue;
 
         public ExactValueView(ColumnProperty property) {
             super();
 
             setBorder(new JComboBox().getBorder());
 
-            valueTable = new ExactValueView.ExactValueTable();
+            valueTable = new ExactValueTable();
             valueTable.getActionMap().put("commitEditingAction", new AbstractAction() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
@@ -229,14 +231,27 @@ public class ChangeDialog extends JDialog {
             add(valueTable, BorderLayout.CENTER);
         }
 
+        public boolean requestFocusInWindow() {
+            return valueTable.requestFocusInWindow();
+        }
+
         public void mainPropertyChanged(ColumnProperty iproperty) {
             property = iproperty.property;
             valueTable.keyChanged(property);
+
+            valueTable.setValue(gridTable.getSelectedValue(property, iproperty.columnKey));
+            try {
+                selectedValue = form.remoteForm.getPropertyChangeValue(property.getID());
+            } catch (RemoteException e) {
+                logger.error("Ошибка при получении текущего значения свойства.");
+                selectedValue = null;
+            }
+
             revalidate();
         }
 
         public Object getSelectedValue() {
-            return valueTable.getValueAt(0, 0);
+            return selectedValue;
         }
 
         private class ExactValueTable extends CellTable {
@@ -245,6 +260,20 @@ public class ChangeDialog extends JDialog {
             }
 
             protected boolean cellValueChanged(Object value) {
+                selectedValue = value;
+
+                TableCellEditor editor = getCellEditor(0, 0);
+                if (editor instanceof ClientAbstractCellEditor) {
+                    PropertyEditorComponent propertyEditor = ((ClientAbstractCellEditor) editor).propertyEditor;
+                    if (propertyEditor instanceof ObjectPropertyEditor) {
+                        try {
+                            value = ((ObjectPropertyEditor) propertyEditor).getCellDisplayValue();
+                        } catch (RemoteException re) {
+                            throw new RuntimeException("Ошибка при получении отображаемого значения", re);
+                        }
+                    }
+                }
+
                 setValue(value);
                 return true;
             }
@@ -279,6 +308,11 @@ public class ChangeDialog extends JDialog {
             if (property != null) {
                mainPropertyChanged(property);
             }
+        }
+
+        @Override
+        public boolean requestFocusInWindow() {
+            return cbGetterProperties.requestFocusInWindow();
         }
 
         @Override

@@ -1,5 +1,6 @@
 package platform.server.form.instance;
 
+import org.apache.log4j.Logger;
 import platform.server.auth.SecurityPolicy;
 import platform.server.data.type.ObjectType;
 import platform.server.form.entity.FormEntity;
@@ -15,6 +16,7 @@ import java.sql.SQLException;
 import java.util.Collections;
 
 public class DialogInstance<T extends BusinessLogics<T>> extends FormInstance<T> {
+    private static Logger logger = Logger.getLogger(DialogInstance.class);
 
     private ObjectInstance dialogObject;
     public PropertyDrawEntity initFilterPropertyDraw;
@@ -48,5 +50,20 @@ public class DialogInstance<T extends BusinessLogics<T>> extends FormInstance<T>
 
     public Object getDialogValue() {
         return dialogObject.getObjectValue().getValue();
+    }
+
+    public Object getCellDisplayValue() {
+        try {
+            if (initFilterPropertyDraw != null) {
+                PropertyObjectInstance filterInstance = instanceFactory.getInstance(initFilterPropertyDraw.propertyObject);
+                if (filterInstance != null) {
+                    return filterInstance.read(session.sql, this, session.env);
+                }
+            }
+            return getDialogValue();
+        } catch (SQLException e) {
+            logger.error("Ошибка при получения значения свойства для отображения.", e);
+            return null;
+        }
     }
 }

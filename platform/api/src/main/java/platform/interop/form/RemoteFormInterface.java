@@ -52,6 +52,8 @@ public interface RemoteFormInterface extends PendingRemote {
 
     boolean[] isCompatibleProperties(int mainPropertyID, int[] propertiesIDs) throws RemoteException;
 
+    Object getPropertyChangeValue(int propertyID) throws RemoteException;
+
     void switchClassView(int groupID) throws RemoteException;
 
     void changeClassView(int groupID, ClassViewType classView) throws RemoteException;

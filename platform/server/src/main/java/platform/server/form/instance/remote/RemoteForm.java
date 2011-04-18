@@ -494,6 +494,15 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         return result;
     }
 
+    @Override
+    public Object getPropertyChangeValue(int propertyID) throws RemoteException {
+        try {
+            return form.getPropertyDraw(propertyID).propertyObject.getChangeInstance().read(form.session.sql, form, form.session.env);
+        } catch (SQLException e) {
+            return null;
+        }
+    }
+
     public boolean canChangeClass(int objectID) throws RemoteException {
         return form.canChangeClass((CustomObjectInstance) form.getObjectInstance(objectID));
     }
