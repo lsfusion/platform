@@ -2795,7 +2795,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         LP attachmentName = null;
         if (params.length > 0 && params[0] instanceof LP) {
             attachmentName = (LP)params[0];
-            params = Arrays.copyOfRange(params, 1, params.length-1);
+            params = Arrays.copyOfRange(params, 1, params.length);
         }
         Map<ObjectEntity, ClassPropertyInterface> mapObjects = new HashMap<ObjectEntity, ClassPropertyInterface>();
         for (int i = 0; i < params.length / 2; i++)

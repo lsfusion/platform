@@ -522,6 +522,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
 
         emailClosedHeaderVote = addJProp(addSFProp("(CAST(prm1 as text))||(CAST(prm2 as text))", StringClass.get(2000), 2), addCProp(StringClass.get(2000), "Результаты заседания - "), nameNativeClaimerVote, 1);
         emailClosedVote = addJProp(baseGroup, true, "emailClosedVote", "Результаты заседания (e-mail)", emailClosedVoteEA, 1, emailClosedHeaderVote, 1);
+        emailClosedVote.property.askConfirm = true;
         emailClosedVote.setDerivedForcedChange(addCProp(ActionClass.instance, true), closedVote, 1);
 
         isForeignExpert = addJProp("isForeignExpert", "Иностр.", equals2, languageExpert, 1, addCProp(language, "english"));
@@ -692,7 +693,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         private VoteFormEntity(NavigatorElement parent, String sID) {
             super(parent, sID, "Реестр заседаний");
 
-            objVote = addSingleGroupObject(vote, nameNativeProjectVote, dateStartVote, dateEndVote, openedVote, succeededVote, quantityDoneVote, delete);
+            objVote = addSingleGroupObject(vote, nameNativeProjectVote, dateStartVote, dateEndVote, openedVote, succeededVote, quantityDoneVote, emailClosedVote, delete);
 
             objExpert = addSingleGroupObject(expert, userFirstName, userLastName, userLogin, userPassword, email, nameNativeClusterExpert);
 
@@ -720,6 +721,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
             setReadOnly(true, objVote.groupTo);
             setReadOnly(true, objExpert.groupTo);
             setReadOnly(allowedEmailLetterExpertVote, false);
+            setReadOnly(emailClosedVote, false);
 
             setPageSize(0);
         }
