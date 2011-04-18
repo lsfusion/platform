@@ -97,7 +97,7 @@ public class GridController {
         }
 
         if (key.showGroupChange) {
-            groupObjectController.addToToolbar(new BaseGridButton("/images/groupchange.gif", "Групповая корректировка") {
+            groupObjectController.addToToolbar(new BaseGridButton("/images/groupchange.gif", "Групповая корректировка (Ctrl+F12)") {
                 @Override
                 public void addListener() {
                     addActionListener(table.getActionMap().get(GridTable.GROUP_CORRECTION_ACTION));
