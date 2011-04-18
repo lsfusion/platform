@@ -629,6 +629,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     LP currentFreightBoxRoute;
     LP isCurrentFreightBox, isCurrentPalletFreightBox;
     LP isCurrentPallet;
+    private LP changePallet;
     LP barcodeActionSeekPallet, barcodeActionSetPallet, barcodeAction3;
     private LP invoiceFormImporterFreight;
     private LP packingListFormImporterFreight;
@@ -1888,6 +1889,8 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         barcodeActionSetPallet = addJProp(true, "Установить паллету", isCurrentPalletFreightBox, barcodeToObject, 1);
         barcodeActionSetStore = addJProp(true, "Установить магазин", isStoreFreightBoxSupplierBox, barcodeToObject, 1, 2);
 
+        changePallet = addJProp(true, "Изменить паллету", isCurrentPalletFreightBox, currentFreightBoxRoute, 1);
+        
         addBoxShipmentDetailBoxShipmentSupplierBoxRouteBarcode = addJProp(true, "Добавить строку поставки",
                 addBoxShipmentDetailBoxShipmentSupplierBoxStockBarcode, 1, 2, currentFreightBoxRoute, 3, 4);
 
@@ -2513,8 +2516,8 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             objRoute = addSingleGroupObject(route, "Маршрут", name, barcodeCurrentPalletRoute, grossWeightCurrentPalletRoute, barcodeCurrentFreightBoxRoute, nameDestinationCurrentFreightBoxRoute);
             objRoute.groupTo.setSingleClassView(ClassViewType.GRID);
             addPropertyDraw(packingListFormRoute, objRoute);
-
-
+            addPropertyDraw(changePallet, objRoute);
+                        
             nameRoute = addPropertyDraw(name, objRoute);
             nameRoute.forceViewType = ClassViewType.PANEL;
 
