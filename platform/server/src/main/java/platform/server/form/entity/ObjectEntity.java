@@ -66,4 +66,9 @@ public class ObjectEntity extends IdentityObject implements PropertyObjectInterf
                 ? newObject
                 : getInstance(instanceFactory).getDataObject();
     }
+
+    @Override
+    public String toString() {
+        return getCaption();
+    }
 }

@@ -9,6 +9,7 @@ import platform.client.form.ClientFormController;
 import platform.client.form.cell.CellTableInterface;
 import platform.client.form.cell.ClientAbstractCellEditor;
 import platform.client.form.cell.ClientAbstractCellRenderer;
+import platform.client.form.grid.GridTable;
 import platform.client.form.sort.MultiLineHeaderRenderer;
 import platform.client.form.sort.TableSortableHeaderManager;
 import platform.client.logics.ClientGroupObject;
@@ -277,8 +278,15 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
                 getColumn(i).setModelIndex(i);
             }
 
-            String toolTip = !BaseUtils.isRedundantString(property.toolTip) ? property.toolTip : model.getColumnName(pos);
-            tableColumn.setToolTipText(toolTip.trim() + " (sID: " + property.getSID() + ")");
+            String propCaption = !BaseUtils.isRedundantString(property.toolTip) ? property.toolTip : model.getColumnName(pos);
+            String sid = property.getSID();
+            String tableName = property.tableName != null ? property.tableName : "&lt;none&gt;";
+            String ifaceObjects = BaseUtils.toString(property.interfacesCaptions, ", ");
+            String ifaceClasses = BaseUtils.toString(property.interfacesTypes, ", ");
+            String returnClass = property.returnClass.toString();
+
+            tableColumn.setToolTipText(
+                    String.format(GridTable.toolTipFormat, propCaption, sid, tableName, ifaceObjects, ifaceClasses, returnClass));
         }
     }
 

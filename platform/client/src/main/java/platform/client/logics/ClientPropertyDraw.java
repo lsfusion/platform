@@ -1,14 +1,15 @@
 package platform.client.logics;
 
 import platform.base.BaseUtils;
+import platform.base.context.ApplicationContext;
 import platform.client.SwingUtils;
 import platform.client.descriptor.FormDescriptor;
 import platform.client.descriptor.ObjectDescriptor;
 import platform.client.descriptor.PropertyDrawDescriptor;
-import platform.base.context.ApplicationContext;
 import platform.client.descriptor.PropertyObjectInterfaceDescriptor;
 import platform.client.form.*;
 import platform.client.form.cell.CellView;
+import platform.client.logics.classes.ClientClass;
 import platform.client.logics.classes.ClientType;
 import platform.client.logics.classes.ClientTypeSerializer;
 import platform.client.serialization.ClientIdentitySerializable;
@@ -38,6 +39,10 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
     // символьный идентификатор, нужен для обращению к свойствам в печатных формах
     public ClientType baseType;
+    public ClientClass[] interfacesTypes;
+    public ClientClass returnClass;
+
+    public String[] interfacesCaptions;
 
     public Color highlightColor;
 
@@ -80,6 +85,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
     public boolean autoHide = false;
     public boolean clearText;
+    public String tableName;
 
     public ClientPropertyDraw() {
     }
@@ -383,6 +389,18 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         checkEquals = inStream.readBoolean();
         askConfirm = inStream.readBoolean();
         clearText = inStream.readBoolean();
+
+        tableName = pool.readString(inStream);
+
+        int n = inStream.readInt();
+        interfacesCaptions = new String[n];
+        interfacesTypes = new ClientClass[n];
+        for (int i = 0; i < n; ++i) {
+            interfacesCaptions[i] = pool.readString(inStream);
+            interfacesTypes[i] = ClientTypeSerializer.deserializeClientClass(inStream);
+        }
+
+        returnClass = ClientTypeSerializer.deserializeClientClass(inStream);
     }
 
     public List<ClientObject> getKeysObjectsList(Map<ClientGroupObject, ClassViewType> classViews, Map<ClientGroupObject, GroupObjectController> controllers) {

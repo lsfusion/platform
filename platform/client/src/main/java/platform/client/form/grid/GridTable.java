@@ -40,6 +40,13 @@ public abstract class GridTable extends ClientFormTable
     public static final String GOTO_LAST_ACTION = "gotoLastRow";
     public static final String GOTO_FIRST_ACTION = "gotoFirstRow";
     public static final String GROUP_CORRECTION_ACTION = "groupPropertyCorrection";
+    public static final String toolTipFormat =
+            "<html><b>%1$s</b><br><hr>" +
+            "<b>sID:</b> %2$s<br>" +
+            "<b>Таблица:</b> %3$s<br>" +
+            "<b>Объекты :</b> %4$s<br>" +
+            "<b>Сигнатура:</b> %6$s <i>%2$s</i> (%5$s)" +
+            "</html>";
 
     private final List<ClientPropertyDraw> properties = new ArrayList<ClientPropertyDraw>();
 
@@ -879,10 +886,16 @@ public abstract class GridTable extends ClientFormTable
                 return super.getToolTipText(e);
             }
             int modelIndex = columnModel.getColumn(index).getModelIndex();
-            ClientPropertyDraw cellView = model.getColumnProperty(modelIndex);
-            String toolTip = (!BaseUtils.isRedundantString(cellView.toolTip) ? cellView.toolTip : (String) columnModel.getColumn(index).getHeaderValue()).trim();
-            toolTip += " (sID: " + cellView.getSID() + ")";
-            return toolTip;
+            ClientPropertyDraw property = model.getColumnProperty(modelIndex);
+
+            String propCaption = (!BaseUtils.isRedundantString(property.toolTip) ? property.toolTip : (String) columnModel.getColumn(index).getHeaderValue()).trim();
+            String sid = property.getSID();
+            String tableName = property.tableName != null ? property.tableName : "&lt;none&gt;";
+            String ifaceObjects = BaseUtils.toString(property.interfacesCaptions, ", ");
+            String ifaceClasses = BaseUtils.toString(property.interfacesTypes, ", ");
+            String returnClass = property.returnClass.toString();
+
+            return String.format(toolTipFormat, propCaption, sid, tableName, ifaceObjects, ifaceClasses, returnClass);
         }
 
         @Override

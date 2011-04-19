@@ -4,12 +4,16 @@ import platform.interop.form.ReportConstants;
 import platform.interop.form.layout.SimplexConstraints;
 import platform.interop.form.screen.ExternalScreen;
 import platform.interop.form.screen.ExternalScreenConstraints;
+import platform.server.classes.ValueClass;
 import platform.server.data.type.Type;
 import platform.server.data.type.TypeSerializer;
 import platform.server.form.entity.GroupObjectEntity;
 import platform.server.form.entity.PropertyDrawEntity;
+import platform.server.form.entity.PropertyObjectInterfaceEntity;
 import platform.server.form.view.report.ReportDrawField;
 import platform.server.logics.property.ExecuteProperty;
+import platform.server.logics.property.PropertyInterface;
+import platform.server.logics.table.MapKeysTable;
 import platform.server.serialization.SerializationType;
 import platform.server.serialization.ServerSerializationPool;
 
@@ -21,6 +25,8 @@ import java.io.IOException;
 import java.text.DecimalFormat;
 import java.text.Format;
 import java.text.SimpleDateFormat;
+import java.util.Collection;
+import java.util.Iterator;
 
 public class PropertyDrawView extends ComponentView {
 
@@ -189,6 +195,22 @@ public class PropertyDrawView extends ComponentView {
         outStream.writeBoolean(!(entity.propertyObject.property instanceof ExecuteProperty)); //checkEquals
         outStream.writeBoolean(entity.propertyObject.property.askConfirm);
         outStream.writeBoolean(clearText);
+
+        MapKeysTable<? extends PropertyInterface> mapTable = entity.propertyObject.property.mapTable;
+        pool.writeString(outStream, mapTable != null ? mapTable.table.name : null);
+
+        Iterator<ValueClass> classesIt = entity.propertyObject.property.getCommonClasses().interfaces.values().iterator();
+        Collection<PropertyObjectInterfaceEntity> interfacesEntities = entity.propertyObject.mapping.values();
+        outStream.writeInt(interfacesEntities.size());
+        for (PropertyObjectInterfaceEntity interfaceEntity : interfacesEntities) {
+            assert classesIt.hasNext();
+            ValueClass valueClass = classesIt.next();
+
+            pool.writeString(outStream, interfaceEntity.toString());
+            valueClass.serialize(outStream);
+        }
+
+        entity.propertyObject.property.getCommonClasses().value.serialize(outStream);
     }
 
     @Override
