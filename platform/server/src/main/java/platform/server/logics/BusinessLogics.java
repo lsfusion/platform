@@ -3170,7 +3170,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         return addJProp(group, implementChange, paramID, props, "", params);
     }
 
-    private <G extends PropertyInterface, M extends PropertyInterface> LP addGCAProp(AbstractGroup group, String sID, String caption, GroupObjectEntity groupObject, LP<G> mainProperty, LP<M> getterProperty) {
+    protected <G extends PropertyInterface, M extends PropertyInterface> LP addGCAProp(AbstractGroup group, String sID, String caption, GroupObjectEntity groupObject, LP<G> mainProperty, LP<M> getterProperty) {
         assert getterProperty.listInterfaces.size() <= mainProperty.listInterfaces.size();
         int mn = mainProperty.listInterfaces.size();
         int gn = getterProperty.listInterfaces.size();
@@ -3190,7 +3190,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     /**
      * mainGroupNums и getToMainNums - 1-based
      */
-    private <G extends PropertyInterface, M extends PropertyInterface> LP addGCAProp(AbstractGroup group, String sID, String caption, GroupObjectEntity groupObject,
+    protected <G extends PropertyInterface, M extends PropertyInterface> LP addGCAProp(AbstractGroup group, String sID, String caption, GroupObjectEntity groupObject,
                                                                                      LP<M> mainProperty, int[] mainGroupNums,
                                                                                      LP<G> getterProperty, int[][] getToMainNums) {
 
