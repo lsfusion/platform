@@ -5,6 +5,7 @@ import platform.client.form.PropertyEditorComponent;
 import platform.client.form.PropertyRendererComponent;
 import platform.client.form.editor.StringPropertyEditor;
 import platform.client.form.renderer.StringPropertyRenderer;
+import platform.interop.Compare;
 import platform.interop.ComponentDesign;
 import platform.interop.Data;
 
@@ -13,6 +14,8 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.text.Format;
 import java.text.ParseException;
+
+import static platform.interop.Compare.*;
 
 public class ClientStringClass extends ClientDataClass {
 
@@ -93,5 +96,15 @@ public class ClientStringClass extends ClientDataClass {
     @Override
     public String toString() {
         return "Строка(" + length + ")";
+    }
+
+    @Override
+    public Compare[] getFilerCompares() {
+        return Compare.values();
+    }
+
+    @Override
+    public Compare getDefaultCompare() {
+        return START_WITH;
     }
 }

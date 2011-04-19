@@ -4,8 +4,6 @@ import platform.client.ClientButton;
 import platform.client.form.GroupObjectLogicsSupplier;
 import platform.client.form.ItemAdapter;
 import platform.client.logics.*;
-import platform.client.logics.classes.ClientInsensitiveStringClass;
-import platform.client.logics.classes.ClientStringClass;
 import platform.client.logics.filter.ClientPropertyFilter;
 import platform.interop.Compare;
 
@@ -122,6 +120,8 @@ abstract class QueryConditionView extends JPanel implements ValueLinkListener {
             add(valueView);
             valueView.propertyChanged(filter.property);
         }
+        compareView.setModel(new DefaultComboBoxModel(filter.property.baseType.getFilerCompares()));
+        compareView.setSelectedItem(filter.property.baseType.getDefaultCompare());
 
         add(delButton);
 
@@ -151,19 +151,9 @@ abstract class QueryConditionView extends JPanel implements ValueLinkListener {
         valueView.startEditing();
     }
 
-    public static Map<Class, Compare> defaultCompares = new HashMap<Class, Compare>(){{
-        put(ClientStringClass.class, Compare.START_WITH);
-        put(ClientInsensitiveStringClass.class, Compare.START_WITH);
-    }};
-
     public void setSelectedPropertyDraw(ClientPropertyDraw propertyDraw) {
         if (propertyDraw != null) {
             propertyView.setSelectedItem(propertyDraw);
-            Compare defaultCompare = defaultCompares.get(propertyDraw.baseType.getClass());
-            if (defaultCompare == null) {
-                defaultCompare = Compare.EQUALS;
-            }
-            compareView.setSelectedItem(defaultCompare);
         }
     }
 }

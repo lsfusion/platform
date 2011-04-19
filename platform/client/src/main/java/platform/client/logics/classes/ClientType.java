@@ -6,6 +6,7 @@ import platform.client.form.PropertyRendererComponent;
 import platform.client.form.cell.CellView;
 import platform.client.logics.ClientGroupObjectValue;
 import platform.client.logics.ClientPropertyDraw;
+import platform.interop.Compare;
 import platform.interop.ComponentDesign;
 
 import java.awt.*;
@@ -42,4 +43,8 @@ public interface ClientType {
     String getConformedMessage();
 
     ClientTypeClass getTypeClass();
+
+    Compare[] getFilerCompares();
+
+    Compare getDefaultCompare();
 }

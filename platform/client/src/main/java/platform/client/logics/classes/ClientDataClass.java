@@ -7,6 +7,7 @@ import platform.client.form.cell.CellView;
 import platform.client.form.cell.TableCellView;
 import platform.client.logics.ClientGroupObjectValue;
 import platform.client.logics.ClientPropertyDraw;
+import platform.interop.Compare;
 import platform.interop.ComponentDesign;
 
 import java.awt.*;
@@ -14,6 +15,8 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.text.Format;
+
+import static platform.interop.Compare.*;
 
 public abstract class ClientDataClass extends ClientClass implements ClientType {
 
@@ -112,5 +115,15 @@ public abstract class ClientDataClass extends ClientClass implements ClientType 
 
     public ClientTypeClass getTypeClass() {
         return (ClientTypeClass) this;
+    }
+
+    @Override
+    public Compare[] getFilerCompares() {
+        return new Compare[] {EQUALS, GREATER, LESS, GREATER_EQUALS, LESS_EQUALS, NOT_EQUALS};
+    }
+
+    @Override
+    public Compare getDefaultCompare() {
+        return EQUALS;
     }
 }

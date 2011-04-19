@@ -11,6 +11,7 @@ import platform.client.form.renderer.IntegerPropertyRenderer;
 import platform.client.logics.ClientGroupObjectValue;
 import platform.client.logics.ClientPropertyDraw;
 import platform.client.Main;
+import platform.interop.Compare;
 import platform.interop.ComponentDesign;
 import platform.interop.Data;
 import platform.interop.form.RemoteDialogInterface;
@@ -20,6 +21,8 @@ import java.io.IOException;
 import java.text.Format;
 import java.text.NumberFormat;
 import java.text.ParseException;
+
+import static platform.interop.Compare.*;
 
 public class ClientObjectType implements ClientType, ClientTypeClass {
 
@@ -98,5 +101,15 @@ public class ClientObjectType implements ClientType, ClientTypeClass {
 
     public ClientType getDefaultType() {
         return this;
+    }
+
+    @Override
+    public Compare[] getFilerCompares() {
+        return new Compare[] {EQUALS, GREATER, LESS, GREATER_EQUALS, LESS_EQUALS, NOT_EQUALS};
+    }
+
+    @Override
+    public Compare getDefaultCompare() {
+        return EQUALS;
     }
 }
