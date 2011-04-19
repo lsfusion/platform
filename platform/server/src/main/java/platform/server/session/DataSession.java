@@ -332,6 +332,11 @@ public class DataSession extends MutableObject implements SessionChanges, ExprCh
     public String check(final BusinessLogics<?> BL) throws SQLException {
         resolveFollows(BL, null);
 
+        // до чтения persistent свойств в сессию
+        if (applyObject == null) {
+            applyObject = addObject(sessionClass, modifier);
+        }
+
         prepareApply(BL);
 
         // сохранить св-ва которые Persistent, те что входят в Persistents и DataProperty
@@ -452,11 +457,6 @@ public class DataSession extends MutableObject implements SessionChanges, ExprCh
 
     public void write(final BusinessLogics<?> BL, List<ClientAction> actions) throws SQLException {
         assert incrementApply != null;
-
-        // до start transaction
-        if (applyObject == null) {
-            applyObject = addObject(sessionClass, modifier);
-        }
 
         executeDerived(BL, actions);
 
