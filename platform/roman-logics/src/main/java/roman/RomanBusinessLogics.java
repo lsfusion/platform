@@ -630,7 +630,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     LP isCurrentFreightBox, isCurrentPalletFreightBox;
     LP isCurrentPallet;
     private LP changePallet;
-    LP barcodeActionSeekPallet, barcodeActionSetPallet, barcodeAction3;
+    LP barcodeActionSeekPallet, barcodeActionSetPallet, barcodeActionSetFreight, barcodeAction3;
     private LP invoiceFormImporterFreight;
     private LP packingListFormImporterFreight;
     private LP countrySupplierOfOriginArticleSku;
@@ -1890,6 +1890,8 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         barcodeActionSetStore = addJProp(true, "Установить магазин", isStoreFreightBoxSupplierBox, barcodeToObject, 1, 2);
 
         changePallet = addJProp(true, "Изменить паллету", isCurrentPalletFreightBox, currentFreightBoxRoute, 1);
+
+        barcodeActionSetFreight = addJProp(true, "Установить фрахт", equalsPalletFreight, barcodeToObject, 1, 2);
         
         addBoxShipmentDetailBoxShipmentSupplierBoxRouteBarcode = addJProp(true, "Добавить строку поставки",
                 addBoxShipmentDetailBoxShipmentSupplierBoxStockBarcode, 1, 2, currentFreightBoxRoute, 3, 4);
@@ -2001,7 +2003,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         addFormEntity(new ShipmentListFormEntity(purchase, "simpleShipmentListForm", "Поставки без коробов", false));
         addFormEntity(new PricatFormEntity(purchase, "pricatForm", "Прайсы"));
 
-        NavigatorElement shipment = new NavigatorElement(baseElement, "shipment", "Управление фрахтами");        
+        NavigatorElement shipment = new NavigatorElement(baseElement, "shipment", "Управление фрахтами");
         addFormEntity(new FreightShipmentFormEntity(shipment, "freightShipmentForm", "Комплектация фрахта"));
         addFormEntity(new FreightInvoiceFormEntity(shipment, "freightInvoiceForm", "Расценка фрахта"));
         addFormEntity(new FreightChangeFormEntity(shipment, "freightChangeForm", "Обработка фрахта"));
@@ -2013,6 +2015,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         addFormEntity(new CreateFreightBoxFormEntity(createFreightBoxFormAdd, "createFreightBoxFormList", "Документы генерации коробов", FormType.LIST));
         addFormEntity(new ShipmentSpecFormEntity(distribution, "boxShipmentSpecForm", "Прием товара по коробам", true));
         addFormEntity(new ShipmentSpecFormEntity(distribution, "simpleShipmentSpecForm", "Прием товара без коробов", false));
+        addFormEntity(new FreightShipmentStoreFormEntity(distribution, "freightShipmentStoreForm", "Комплектация фрахта (на складе)"));
         addFormEntity(new BalanceBrandWarehouseFormEntity(distribution, "balanceBrandWarehouseForm", "Остатки на складе (по брендам)"));
         addFormEntity(new BalanceWarehouseFormEntity(distribution, "balanceWarehouseForm", "Остатки на складе"));
         addFormEntity(new InvoiceShipmentFormEntity(distribution, "invoiceShipmentForm", "Сравнение по инвойсам"));
@@ -2776,6 +2779,63 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
                         
             design.setHighlightColor(new Color(255, 128, 128));
 
+            return design;
+        }
+    }
+
+    private class FreightShipmentStoreFormEntity extends BarcodeFormEntity {
+
+        private ObjectEntity objFreight;
+        private ObjectEntity objPallet;
+
+        private FreightShipmentStoreFormEntity(NavigatorElement parent, String sID, String caption) {
+            super(parent, sID, caption);
+
+            objFreight = addSingleGroupObject(freight, "Фрахт", objectValue, date, objectClassName, nameRouteFreight, nameFreightTypeFreight, tonnageFreight, grossWeightFreight, volumeFreight, palletCountFreight, palletNumberFreight);
+            objFreight.groupTo.setSingleClassView(ClassViewType.PANEL);
+
+            PropertyObjectEntity diffPalletFreightProperty = addPropertyObject(diffPalletFreight, objFreight);
+            getPropertyDraw(palletCountFreight).setPropertyHighlight(diffPalletFreightProperty);
+            getPropertyDraw(palletNumberFreight).setPropertyHighlight(diffPalletFreightProperty);                      
+
+            objPallet = addSingleGroupObject(pallet, "Паллета", barcode, grossWeightPallet, freightBoxNumberPallet);
+            objPallet.groupTo.setSingleClassView(ClassViewType.GRID);
+                        
+            addActionsOnObjectChange(objBarcode, addPropertyObject(barcodeActionSetFreight, objBarcode, objFreight));
+
+            addPropertyDraw(equalsPalletFreight, objPallet, objFreight);
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(freightPallet, objPallet), Compare.EQUALS, objFreight));
+            /*addFixedFilter(new CompareFilterEntity(addPropertyObject(routeCreationPalletPallet, objPallet), Compare.EQUALS, addPropertyObject(routeFreight, objFreight)));
+
+            RegularFilterGroupEntity filterGroup = new RegularFilterGroupEntity(genID());
+            filterGroup.addFilter(new RegularFilterEntity(genID(),
+                                  new OrFilterEntity(new CompareFilterEntity(addPropertyObject(freightPallet, objPallet), Compare.EQUALS, objFreight),
+                                                     new NotFilterEntity(new NotNullFilterEntity(addPropertyObject(freightPallet, objPallet)))),
+                                  "Не расписанные паллеты или в текущем фрахте",
+                                  KeyStroke.getKeyStroke(KeyEvent.VK_F11, 0)));
+            filterGroup.addFilter(new RegularFilterEntity(genID(),
+                                  new CompareFilterEntity(addPropertyObject(freightPallet, objPallet), Compare.EQUALS, objFreight),
+                                  "В текущем фрахте",
+                                  KeyStroke.getKeyStroke(KeyEvent.VK_F10, 0)));
+            filterGroup.defaultFilter = 0;
+            addRegularFilterGroup(filterGroup);*/
+
+        }
+
+        @Override
+         public DefaultFormView createDefaultRichDesign() {
+            DefaultFormView design = super.createDefaultRichDesign();
+
+            design.blockedScreen.put("changePropertyDraw", getPropertyDraw(objectValue, objBarcode).getID() + "");
+
+            design.get(getPropertyDraw(date, objFreight)).caption = "Дата отгрузки";
+            design.get(getPropertyDraw(objectClassName, objFreight)).caption = "Статус фрахта";
+
+            design.get(objFreight.groupTo).grid.constraints.fillVertical = 1;
+            design.get(objPallet.groupTo).grid.constraints.fillVertical = 2;
+
+            design.setHighlightColor(new Color(128, 255, 128));
+            
             return design;
         }
     }
