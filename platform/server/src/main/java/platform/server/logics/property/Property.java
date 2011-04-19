@@ -334,6 +334,10 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
         return null;
     }
 
+    public boolean checkEquals() {
+        return !(this instanceof ExecuteProperty);
+    }
+
     public Object read(DataSession session) throws SQLException {
         return read(session.sql, new HashMap(), session.modifier, session.env);
     }

@@ -150,6 +150,10 @@ public class JoinProperty<T extends PropertyInterface> extends FunctionProperty<
             return super.getChangeImplement();
     }
 
+    public boolean checkEquals() {
+        return implement.property.checkEquals();
+    }
+
     @Override
     public Property getFilterProperty() {
         return implement.property;

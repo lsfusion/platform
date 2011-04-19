@@ -11,7 +11,6 @@ import platform.server.form.entity.GroupObjectEntity;
 import platform.server.form.entity.PropertyDrawEntity;
 import platform.server.form.entity.PropertyObjectInterfaceEntity;
 import platform.server.form.view.report.ReportDrawField;
-import platform.server.logics.property.ExecuteProperty;
 import platform.server.logics.property.PropertyInterface;
 import platform.server.logics.table.MapKeysTable;
 import platform.server.serialization.SerializationType;
@@ -192,7 +191,7 @@ public class PropertyDrawView extends ComponentView {
             pool.serializeObject(outStream, pool.context.view.getGroupObject(groupEntity));
         }
 
-        outStream.writeBoolean(!(entity.propertyObject.property instanceof ExecuteProperty)); //checkEquals
+        outStream.writeBoolean(entity.propertyObject.property.checkEquals());
         outStream.writeBoolean(entity.propertyObject.property.askConfirm);
         outStream.writeBoolean(clearText);
 
