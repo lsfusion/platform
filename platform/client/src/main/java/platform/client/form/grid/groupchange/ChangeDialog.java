@@ -65,7 +65,6 @@ public class ChangeDialog extends JDialog {
                 changeTypeUpdated();
             }
         });
-        changeTypeUpdated();
 
         cbMainProperties.addItemListener(new ItemAdapter() {
             @Override
@@ -73,7 +72,7 @@ public class ChangeDialog extends JDialog {
                 mainPropertyChanged();
             }
         });
-        mainPropertyChanged();
+        changeTypeUpdated();
 
         addWindowListener(new WindowAdapter() {
             @Override
@@ -167,6 +166,9 @@ public class ChangeDialog extends JDialog {
 
     private void closeDialog(boolean apply) {
         result = apply ? OK_OPTION : CANCEL_OPTION;
+        if (valueView instanceof ExactValueView) {
+            SwingUtils.commitEditing(((ExactValueView) valueView).valueTable);
+        }
         setVisible(false);
     }
 
@@ -206,7 +208,7 @@ public class ChangeDialog extends JDialog {
     }
 
     private class ExactValueView extends GroupValueView {
-        private final CellTable valueTable;
+        public final CellTable valueTable;
         private ClientPropertyDraw property;
         private Object selectedValue;
 

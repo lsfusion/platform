@@ -14,7 +14,7 @@ public class ActionPropertyEditor implements PropertyEditorComponent {
     }
 
     public Object getCellEditorValue() throws RemoteException {
-        return null;
+        return true;
     }
 
     public boolean valueChanged() {

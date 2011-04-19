@@ -9,9 +9,10 @@ import java.awt.*;
 public class ActionPropertyRenderer extends JButton
         implements PropertyRendererComponent {
 
+    private static final String defaultCaption = "...";
+
     private final Color defaultBackground = getBackground();
     private Border defaultBorder;
-    private static String defaultCaption = "...";
 
     public ActionPropertyRenderer(String caption) {
         defaultBorder = getBorder();
