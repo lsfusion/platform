@@ -639,6 +639,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
                             addDProp("outWarehouse", "Распред. центр (расх.)", warehouse, orderWarehouseOut),
                             addDProp("certStore", "Магазин (серт.)", shop, saleCert));
         subjectIncOrder = addCUProp("subjectIncOrder", true, "Кому (ИД)", addJProp(and1, contragentOrder, 1, is(orderOut), 1), // generics
+                            addJProp(and1, contragentOrder, 1, is(saleCert), 1), // для сертификатов
                             addDProp("incShop", "Магазин (прих.)", shop, orderShopInc),
                             addDProp("incWarehouse", "Распред. центр (прих.)", warehouse, orderWarehouseInc));
         // имена
