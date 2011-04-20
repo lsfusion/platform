@@ -125,7 +125,7 @@ public class ClientGrid extends ClientComponent {
         updateDependency(this, "showGroupChange");
     }
 
-    public boolean getShowGroupChanged() {
+    public boolean getShowGroupChange() {
         return showGroupChange;
     }
 
