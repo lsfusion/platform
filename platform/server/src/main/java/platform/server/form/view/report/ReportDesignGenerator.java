@@ -65,7 +65,9 @@ public class ReportDesignGenerator {
             int maxGroupWidth = defaultPageWidth;
             for (ReportNode reportNode : hierarchy.getAllNodes()) {
                 for (GroupObjectEntity group : reportNode.getGroupList()) {
-                    maxGroupWidth = Math.max(maxGroupWidth, calculateGroupPreferredWidth(group));
+                    if (!hiddenGroupsId.contains(group.getID())) {
+                        maxGroupWidth = Math.max(maxGroupWidth, calculateGroupPreferredWidth(group));
+                    }
                 }
             }
             return maxGroupWidth;
