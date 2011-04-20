@@ -151,6 +151,17 @@ public class JoinProperty<T extends PropertyInterface> extends FunctionProperty<
     }
 
     public boolean checkEquals() {
+        if (implement.property instanceof AndFormulaProperty) {
+            AndFormulaProperty andProp = (AndFormulaProperty) implement.property;
+            PropertyImplement<AndFormulaProperty.Interface, PropertyInterfaceImplement<Interface>> andImplement
+                    = (PropertyImplement<AndFormulaProperty.Interface, PropertyInterfaceImplement<Interface>>) implement;
+
+            PropertyInterfaceImplement<Interface> objectIface = andImplement.mapping.get(andProp.objectInterface);
+            if (objectIface instanceof PropertyMapImplement) {
+                return ((PropertyMapImplement) objectIface).property.checkEquals();
+            }
+        }
+
         return implement.property.checkEquals();
     }
 
