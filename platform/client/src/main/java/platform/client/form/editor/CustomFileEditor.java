@@ -2,22 +2,42 @@ package platform.client.form.editor;
 
 import platform.base.BaseUtils;
 import platform.base.IOUtils;
+import platform.interop.KeyStrokes;
 
 import javax.swing.*;
+import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.rmi.RemoteException;
+import java.util.EventObject;
+import java.util.prefs.Preferences;
 
 public class CustomFileEditor extends DocumentPropertyEditor {
+    boolean allowOpen;
 
-    public CustomFileEditor(Object value) {
+
+    public CustomFileEditor(Object value, boolean allowOpen) {
         super(value, true);
+        this.allowOpen = allowOpen;
     }
+
+    @Override
+    public Component getComponent(Point tableLocation, Rectangle cellRectangle, EventObject editEvent) throws IOException, ClassNotFoundException {
+        if (allowOpen) {
+            return super.getComponent(tableLocation, cellRectangle, editEvent);
+        } else {
+            returnValue = this.showOpenDialog(null);
+        }
+        return null;
+    }
+
 
     //переопределяются те методы, в которых происходят манипуляции с массивом байт
     @Override
     public Object getCellEditorValue() throws RemoteException {
         try {
+            Preferences preferences = Preferences.userNodeForPackage(this.getClass());
+            preferences.put("LATEST_DIRECTORY", this.getSelectedFile().getAbsolutePath());
             File file = this.getSelectedFile();
             String name = file.getName();
             int index = name.lastIndexOf(".");
@@ -42,7 +62,7 @@ public class CustomFileEditor extends DocumentPropertyEditor {
             byte ext[] = new byte[union[0]];
             byte file[] = new byte[union.length - union[0] - 1];
             System.arraycopy(union, 1, ext, 0, ext.length);
-            System.arraycopy(union, 1+ext.length, file, 0, file.length);
+            System.arraycopy(union, 1 + ext.length, file, 0, file.length);
 
             BaseUtils.openFile(file, new String(ext));
 

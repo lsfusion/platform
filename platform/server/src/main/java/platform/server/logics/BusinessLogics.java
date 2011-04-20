@@ -4697,10 +4697,20 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         return addAAProp(customClass, null, null, false, properties);
     }
 
+    protected LP addAAProp(ValueClass cls, Property propertyValue, DataClass dataClass) {
+        return addAProp(new AddObjectActionProperty(genSID(), (CustomClass) cls, propertyValue, dataClass));
+        /* Пример использования:
+        addFile = addAAProp(pricat, filePricat.property, CustomFileActionClass.instance);
+        pricat - добавляемый класс
+        filePricat.property - свойство, которое изменяется
+        CustomFileActionClass.instance - класс
+         */
+    }
+
     protected LP addAAProp(CustomClass customClass, LP barcode, LP barcodePrefix, boolean quantity, LP... properties) {
         return addAProp(new AddObjectActionProperty(genSID(),
                 (barcode != null) ? barcode.property : null, (barcodePrefix != null) ? barcodePrefix.property : null,
-                quantity, customClass, LP.toPropertyArray(properties)));
+                quantity, customClass, LP.toPropertyArray(properties), null, null));
     }
 
     protected void addToNameProperties(LP<?> property) {

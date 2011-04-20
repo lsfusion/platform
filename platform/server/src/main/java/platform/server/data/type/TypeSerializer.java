@@ -60,6 +60,7 @@ public class TypeSerializer {
         if (type == Data.FILEACTION) return FileActionClass.getInstance("", "");
         //todo:!!
         if (type == Data.CLASSACTION) return new ClassActionClass(null, null);
+        if (type == Data.CUSTOMFILEACTION) return CustomFileActionClass.instance;
 
         throw new IOException();
     }

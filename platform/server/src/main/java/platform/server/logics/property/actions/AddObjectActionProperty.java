@@ -38,8 +38,15 @@ public class AddObjectActionProperty extends ActionProperty {
     // автоматически заполнить указанные свойства из входов этого свойства
     private List<Property> properties;
 
+    private Property propertyValue;
+    private DataClass dataClass;
+
     public AddObjectActionProperty(String sID, CustomClass valueClass) {
-        this(sID, null, null, false, valueClass, null);
+        this(sID, null, null, false, valueClass, null, null, null);
+    }
+
+    public AddObjectActionProperty(String sID, CustomClass valueClass, Property propertyValue, DataClass dataClass) {
+        this(sID, null, null, false, valueClass, null, propertyValue, dataClass);
     }
 
     private static ValueClass[] getValueClassList(boolean quantity, List<Property> properties) {
@@ -53,7 +60,7 @@ public class AddObjectActionProperty extends ActionProperty {
         return result.toArray(new ValueClass[result.size()]);
     }
 
-    public AddObjectActionProperty(String sID, Property barcode, Property barcodePrefix, boolean quantity, CustomClass valueClass, List<Property> properties) {
+    public AddObjectActionProperty(String sID, Property barcode, Property barcodePrefix, boolean quantity, CustomClass valueClass, List<Property> properties, Property propertyValue, DataClass dataClass) {
         super(sID, "Добавить (" + valueClass + ")", getValueClassList(quantity, properties)); // сам класс не передаем, поскольку это свойство "глобальное"
 
         this.barcode = barcode;
@@ -61,6 +68,8 @@ public class AddObjectActionProperty extends ActionProperty {
         this.quantity = quantity;
         this.valueClass = valueClass;
         this.properties = properties;
+        this.propertyValue = propertyValue;
+        this.dataClass = dataClass;
     }
 
     @Override
@@ -125,11 +134,19 @@ public class AddObjectActionProperty extends ActionProperty {
                             session, keys.get(classInterface).getValue(), form);
                 }
             }
+
+            if (propertyValue != null) {
+                propertyValue.execute(Collections.singletonMap(BaseUtils.single(propertyValue.interfaces), object),
+                        session, value.getValue(), form);
+            }
         }
     }
 
     @Override
     public DataClass getValueClass() {
+        if (dataClass != null) {
+            return dataClass;
+        }
         if (valueClass.hasChildren())
             return valueClass.getActionClass(valueClass);
         else

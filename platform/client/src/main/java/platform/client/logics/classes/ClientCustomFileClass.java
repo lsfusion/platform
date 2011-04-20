@@ -33,7 +33,7 @@ public class ClientCustomFileClass extends ClientFileClass {
 
     @Override
     public PropertyEditorComponent getComponent(Object value, Format format, ComponentDesign design) {
-        return new CustomFileEditor(value);
+        return new CustomFileEditor(value, true);
     }
 
     @Override
