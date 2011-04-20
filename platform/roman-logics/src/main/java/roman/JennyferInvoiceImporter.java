@@ -41,7 +41,7 @@ public class JennyferInvoiceImporter extends SingleSheetImporter {
         value = value.trim();
 
         switch (column) {
-            case B: return BaseUtils.newString('0', Math.max(0, 8 - value.length())) + value;
+            case B: return BaseUtils.replicate('0', Math.max(0, 8 - value.length())) + value;
             case C:
                 switch (part) {
                     case 0 : return value.substring(1); // barcode

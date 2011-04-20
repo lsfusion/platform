@@ -30,15 +30,6 @@ public class BaseUtils {
         return false;
     }
 
-    public static Object multiply(Object obj, Integer coeff) {
-
-        if (obj instanceof Integer) return ((Integer) obj) * coeff;
-        if (obj instanceof Long) return ((Long) obj) * coeff;
-        if (obj instanceof Double) return ((Double) obj) * coeff;
-
-        return obj;
-    }
-
     public static boolean[] convertArray(Boolean[] array) {
         boolean[] result = new boolean[array.length];
         for(int i=0;i<array.length;i++)
@@ -173,8 +164,8 @@ public class BaseUtils {
 
     public static <K> Set<K> filterSet(Set<K> set, Collection<K> filter) {
         Set<K> result = new HashSet<K>();
-        for (K element : set)
-            if (filter.contains(element))
+        for (K element : filter)
+            if (set.contains(element))
                 result.add(element);
         return result;
     }
@@ -553,21 +544,6 @@ public class BaseUtils {
         }
     }
 
-    public static int max(int a, int b) {
-        return a > b ? a : b;
-    }
-
-    public static int min(int a, int b) {
-        return a < b ? a : b;
-    }
-
-    public static <K> Set<K> toSet(Collection<K> collection) {
-        Set<K> set = new HashSet<K>();
-        for (K element : collection)
-            set.add(element);
-        return set;
-    }
-
     public static <B, K1 extends B, K2 extends B, V> Map<B, V> merge(Map<K1, ? extends V> map1, Map<K2, ? extends V> map2) {
         Map<B, V> result = new HashMap<B, V>(map1);
         for (Map.Entry<K2, ? extends V> entry2 : map2.entrySet()) {
@@ -672,7 +648,7 @@ public class BaseUtils {
         if (next == null)
             return end;
         else
-            return findDeadEnd(map, end);
+            return findDeadEnd(map, next);
     }
 
     public static <T> boolean equalArraySets(T[] array1, T[] array2) {
@@ -1165,6 +1141,7 @@ public class BaseUtils {
     }
 
     public static String capitalize(String s) {
+        if (s.length() == 0) return s;
         return s.substring(0, 1).toUpperCase() + s.substring(1);
     }
 
@@ -1225,16 +1202,8 @@ public class BaseUtils {
         return o == null || o.toString().trim().length() == 0;
     }
 
-    public static String newString(char ch, int count) {
-        StringBuilder builder = new StringBuilder();
-        for (int i = 0; i < count; i++) {
-            builder.append(ch);
-        }
-        return builder.toString();
-    }
-
     public static String spaces(int count) {
-        return newString(' ', count);
+        return replicate(' ', count);
     }
 
     // в отличии от padright дает нуж

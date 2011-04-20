@@ -3124,7 +3124,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         int intNum = 0;
         for (Object param : params)
             if (param instanceof Integer)
-                intNum = BaseUtils.max(intNum, (Integer) param);
+                intNum = Math.max(intNum, (Integer) param);
         return intNum;
     }
 

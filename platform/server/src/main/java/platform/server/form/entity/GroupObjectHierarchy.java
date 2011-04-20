@@ -314,7 +314,7 @@ public class GroupObjectHierarchy {
             final int selfChildCount = (parent == null ? 0 : parent.getGroupList().size());
 
             for (ReportNode child : children) {
-                maxChildLevel = BaseUtils.max(maxChildLevel, countGroupLevels(child));
+                maxChildLevel = Math.max(maxChildLevel, countGroupLevels(child));
             }
             if (parent != null) {
                 parent.setGroupLevel(maxChildLevel + selfChildCount);
