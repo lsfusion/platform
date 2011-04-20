@@ -2850,18 +2850,24 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         return addTCProp(null, time, sID, caption, changeProp, classes);
     }
 
-    protected <P extends PropertyInterface> LP addTCProp(Time time, String sID, boolean persistent, String caption, LP<P> changeProp, ValueClass... classes) {
-        return addTCProp(null, time, sID, persistent, caption, changeProp, classes);
+    protected <P extends PropertyInterface> LP addTCProp(Time time, String sID, boolean isStored, String caption, LP<P> changeProp, ValueClass... classes) {
+        return addTCProp(null, time, sID, isStored, caption, changeProp, classes);
     }
 
     protected <P extends PropertyInterface> LP addTCProp(AbstractGroup group, Time time, String sID, String caption, LP<P> changeProp, ValueClass... classes) {
         return addTCProp(group, time, sID, false, caption, changeProp, classes);
     }
 
-    protected <P extends PropertyInterface> LP addTCProp(AbstractGroup group, Time time, String sID, boolean persistent, String caption, LP<P> changeProp, ValueClass... classes) {
-        TimeChangeDataProperty<P> timeProperty = new TimeChangeDataProperty<P>(time, sID, caption, overrideClasses(changeProp.getMapClasses(), classes), changeProp.listInterfaces);
+    protected <P extends PropertyInterface> LP addTCProp(AbstractGroup group, Time time, String sID, boolean isStored, String caption, LP<P> changeProp, ValueClass... classes) {
+        TimePropertyChange<P> timeProperty = new TimePropertyChange<P>(isStored, time, sID, caption, overrideClasses(changeProp.getMapClasses(), classes), changeProp.listInterfaces);
+
         changeProp.property.timeChanges.put(time, timeProperty);
-        return addProperty(group, persistent, new LP<ClassPropertyInterface>(timeProperty));
+
+        if (isStored) {
+            timeProperty.property.markStored(tableFactory);
+        }
+
+        return addProperty(group, false, new LP<ClassPropertyInterface>(timeProperty.property));
     }
 
     protected LP addSFProp(String formula, ConcreteValueClass value, int paramCount) {

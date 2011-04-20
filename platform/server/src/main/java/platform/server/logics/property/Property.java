@@ -41,6 +41,8 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.*;
 
+import static platform.base.BaseUtils.join;
+
 public abstract class Property<T extends PropertyInterface> extends AbstractNode implements MapKeysInterface<T>, ServerIdentitySerializable {
 
     public final String sID;
@@ -132,7 +134,7 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
         changeExpr = new PullExpr(toString() + " value");
     }
 
-    public Map<Time, TimeChangeDataProperty<T>> timeChanges = new HashMap<Time, TimeChangeDataProperty<T>>();
+    public Map<Time, TimePropertyChange<T>> timeChanges = new HashMap<Time, TimePropertyChange<T>>();
 
     protected void fillDepends(Set<Property> depends, boolean derived) {
     }
@@ -207,7 +209,7 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
 
         if (changedExpr == null && isStored()) {
             if (!hasChanges(modifier)) // если нету изменений
-                return mapTable.table.join(BaseUtils.join(BaseUtils.reverse(mapTable.mapKeys), joinImplement)).getExpr(field);
+                return mapTable.table.join(join(BaseUtils.reverse(mapTable.mapKeys), joinImplement)).getExpr(field);
             if (usePreviousStored())
                 changedExpr = calculateExpr(joinImplement, modifier, changedExprWhere);
         }
@@ -365,7 +367,7 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
     }
 
     public Expr getIncrementExpr(Map<KeyField, ? extends Expr> joinImplement, Modifier<? extends Changes> modifier, WhereBuilder changedWhere) {
-        Map<T, ? extends Expr> joinKeys = BaseUtils.join(mapTable.mapKeys, joinImplement);
+        Map<T, ? extends Expr> joinKeys = join(mapTable.mapKeys, joinImplement);
         WhereBuilder incrementWhere = new WhereBuilder();
         Expr incrementExpr = getExpr(joinKeys, modifier, incrementWhere);
         changedWhere.add(incrementWhere.toWhere().and(incrementExpr.getWhere().or(getExpr(joinKeys).getWhere()))); // если старые или новые изменились
@@ -382,24 +384,34 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
 
     public <U extends Changes<U>> U getUsedDataChanges(Modifier<U> modifier) {
         U result = calculateUsedDataChanges(modifier);
-        for (TimeChangeDataProperty<T> timeProperty : timeChanges.values())
-            result = result.add(timeProperty.getUsedDataChanges(modifier));
+        for (TimePropertyChange<T> timeChange : timeChanges.values())
+            result = result.add(timeChange.property.getUsedDataChanges(modifier));
         return result;
     }
 
     public MapDataChanges<T> getDataChanges(PropertyChange<T> change, WhereBuilder changedWhere, Modifier<? extends Changes> modifier) {
-        if(!change.where.isFalse()) { // для оптимизации, если не было изменений
+        if (!change.where.isFalse()) {
+            // для оптимизации, если не было изменений
             WhereBuilder calculateChangedWhere = timeChanges.isEmpty() ? changedWhere : new WhereBuilder();
             MapDataChanges<T> dataChanges = calculateDataChanges(change, calculateChangedWhere, modifier);
-            for (Map.Entry<Time, TimeChangeDataProperty<T>> timeChange : timeChanges.entrySet()) // обновляем свойства времени изменения
-                dataChanges = dataChanges.add(timeChange.getValue().getDataChanges(new PropertyChange<ClassPropertyInterface>(
-                        BaseUtils.join(timeChange.getValue().mapInterfaces, change.mapKeys),
-                        new TimeExpr(timeChange.getKey()), calculateChangedWhere.toWhere()), null, modifier).map(timeChange.getValue().mapInterfaces));
-            if (changedWhere != null && !timeChanges.isEmpty())
+            // обновляем свойства времени изменения
+            for (Map.Entry<Time, TimePropertyChange<T>> timeChange : timeChanges.entrySet()) {
+                TimePropertyChange<T> timeProperty = timeChange.getValue();
+                dataChanges = dataChanges.add(
+                        timeProperty.property.getDataChanges(
+                                new PropertyChange<ClassPropertyInterface>(
+                                        join(timeProperty.mapInterfaces, change.mapKeys),
+                                        new TimeExpr(timeChange.getKey()), calculateChangedWhere.toWhere()
+                                ), null, modifier
+                        ).map(timeProperty.mapInterfaces)
+                );
+            }
+            if (changedWhere != null && !timeChanges.isEmpty()) {
                 changedWhere.add(calculateChangedWhere.toWhere());
+            }
             return dataChanges;
-        } else
-            return new MapDataChanges<T>();
+        }
+        return new MapDataChanges<T>();
     }
 
     protected <U extends Changes<U>> U calculateUsedDataChanges(Modifier<U> modifier) {
