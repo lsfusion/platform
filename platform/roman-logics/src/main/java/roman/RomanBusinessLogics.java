@@ -1129,9 +1129,9 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         addArticleCompositeSIDSupplier = addJProp(true, "Ввод составного артикула", addAAProp(articleComposite, sidArticle, supplierArticle), 1, 2);
         addNEArticleCompositeSIDSupplier = addJProp(true, "Ввод составного артикула (НС)", andNot1, addArticleCompositeSIDSupplier, 1, 2, articleSIDSupplier, 1, 2);
 
-        executeArticleCompositeItemSIDSupplier = addJProp(true, "Замена артикула", addEPAProp(articleCompositeItem), articleSIDSupplier, 2, 3, 1);
+        executeArticleCompositeItemSIDSupplier = addJProp(true, "Замена артикула", addEPAProp(articleCompositeItem), 1, articleSIDSupplier, 2, 3);
 
-        executeChangeFreightClass = addJProp(true, "Изменить класс фрахта", and1, addEPAProp(objectClass), 2, 1, is(freight), 1);
+        executeChangeFreightClass = addJProp(true, "Изменить класс фрахта", and1, addEPAProp(objectClass), 1, 2, is(freight), 1);
 
         supplierArticleSku = addJProp(idGroup, "supplierArticleSku", "Поставщик (ИД)", supplierArticle, articleSku, 1);
         nameSupplierArticleSku = addJProp(baseGroup, "nameSupplierArticleSku", "Поставщик", name, supplierArticleSku, 1);

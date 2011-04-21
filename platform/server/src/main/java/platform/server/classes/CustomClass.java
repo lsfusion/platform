@@ -72,6 +72,11 @@ public abstract class CustomClass extends AbstractNode implements ObjectClass, V
         }
     }
 
+    @Override
+    public Object getDefaultValue() {
+        return null;
+    }
+
     public boolean hasChildren() {
         return !children.isEmpty();
     }

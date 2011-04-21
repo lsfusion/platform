@@ -3224,7 +3224,6 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
     private <T extends PropertyInterface> LP addGProp(AbstractGroup group, String sID, boolean persistent, String caption, LP<T> groupProp, List<PropertyInterfaceImplement<T>> listImplements) {
-
         GroupProperty<T> property = new SumGroupProperty<T>(sID, caption, listImplements, groupProp.property);
         return mapLGProp(group, persistent, property, listImplements);
     }
@@ -4446,8 +4445,65 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         return addProperty(group, new LP<ClassPropertyInterface>(new SeekActionProperty(genSID(), caption, new ValueClass[]{baseClass}, lp == null ? null : lp.property)));
     }
 
-    protected LP addEPAProp(LP lp) {
-        return addAProp(new ExecutePropertyActionProperty(genSID(), "sys", lp));
+    /**
+     * Добавляет action для запуска свойств с мэппингом по порядку, т.е. на входы и выход каждого свойства мэппятся интерфейсы результирующего по порядку
+     */
+    protected LP addEPAProp(LP... lps) {
+        return addEPAProp(false, lps);
+    }
+
+    /**
+     * Добавляет action для запуска свойств с мэппингом по порядку, т.е. на входы и выход каждого свойства мэппятся интерфейсы результирующего по порядку
+     * @param writeDefaultValues Если == true, то мэппятся только входы, без выхода
+     */
+    protected LP addEPAProp(boolean writeDefaultValues, LP... lps) {
+        int[][] mapInterfaces = new int[lps.length][];
+        for (int i = 0; i < lps.length; ++i) {
+            LP lp = lps[i];
+            mapInterfaces[i] = new int[lp.listInterfaces.size() + (writeDefaultValues ? 0 : 1)];
+
+            for (int j = 0; j < mapInterfaces[i].length; ++j) {
+                mapInterfaces[i][j] = j;
+            }
+        }
+
+        return addEPAProp(writeDefaultValues, lps, mapInterfaces);
+    }
+
+    /**
+     * Добавляет action для запуска других свойств.
+     *
+     * Мэппиг задаётся перечислением свойств с указанием после каждого номеров интерфейсов результирующего свойства,
+     * которые пойдут на входы и выход данных свойств
+     * Пример 1: addEPAProp(true, userLogin, 1, inUserRole, 1, 2)
+     * Пример 2: addEPAProp(false, userLogin, 1, 3, inUserRole, 1, 2, 4)
+     *
+     * @param writeDefaultValues использовать ли значения по умолчанию для записи в свойства.
+     * Если значение этого параметра false, то мэпиться должны не только выходы, но и вход, номер интерфейса, который пойдёт на вход, должен быть указан последним
+     */
+    protected LP addEPAProp(boolean writeDefaultValues, Object... params) {
+        List<LP> lps = new ArrayList<LP>();
+        List<int[]> mapInterfaces = new ArrayList<int[]>();
+
+        int pi = 0;
+        while (pi < params.length) {
+            assert params[pi] instanceof LP;
+
+            LP lp = (LP) params[pi++];
+
+            int[] propMapInterfaces = new int[lp.listInterfaces.size() + (writeDefaultValues ? 0 : 1)];
+            for (int j = 0; j < propMapInterfaces.length; ++j) {
+                propMapInterfaces[j] = (Integer) params[pi++] - 1;
+            }
+
+            lps.add(lp);
+            mapInterfaces.add(propMapInterfaces);
+        }
+        return addEPAProp(writeDefaultValues, lps.toArray(new LP[lps.size()]), mapInterfaces.toArray(new int[mapInterfaces.size()][]));
+    }
+
+    private LP addEPAProp(boolean writeDefaultValues, LP[] lps, int[][] mapInterfaces) {
+        return addAProp(new ExecutePropertiesActionProperty(genSID(), "sys", writeDefaultValues, lps, mapInterfaces));
     }
 
     protected LP addLFAProp(AbstractGroup group, String caption, LP lp) {

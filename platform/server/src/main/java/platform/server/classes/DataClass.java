@@ -7,7 +7,6 @@ import platform.server.classes.sets.OrClassSet;
 import platform.server.data.SQLSession;
 import platform.server.data.expr.*;
 import platform.server.data.query.Query;
-import platform.server.data.type.ParseException;
 import platform.server.data.type.Type;
 import platform.server.form.entity.ObjectEntity;
 import platform.server.form.instance.DataObjectInstance;
@@ -32,7 +31,6 @@ public abstract class DataClass<T> implements StaticClass, Type<T>, AndClassSet,
 
     public abstract DataClass getCompatible(DataClass compClass);
 
-    public abstract Object getDefaultValue();
     public DataObject getDefaultObjectValue() {
         return new DataObject(getDefaultValue(), this);
     }
