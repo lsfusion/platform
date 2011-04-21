@@ -535,7 +535,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     protected LP percent2;
     protected LP yearInDate;
 
-    protected LP vtrue, vzero;
+    protected LP vtrue, vtrue1, vzero;
     protected LP positive, negative;
 
     protected LP dumb1;
@@ -1050,6 +1050,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         between = addJProp("Между", and1, groeq2, 1, 2, groeq2, 3, 1);
         vtrue = addCProp("Истина", LogicalClass.instance, true);
         vzero = addCProp("0", DoubleClass.instance, 0);
+
+        vtrue1 = addCProp("Истина", ActionClass.instance, true);
 
         dumb1 = dumb(1);
         dumb2 = dumb(2);
