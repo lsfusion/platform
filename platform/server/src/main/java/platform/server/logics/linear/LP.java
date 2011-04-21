@@ -5,8 +5,8 @@ import platform.base.OrderedMap;
 import platform.base.Result;
 import platform.interop.action.ClientAction;
 import platform.server.classes.ValueClass;
-import platform.server.data.SQLSession;
 import platform.server.data.QueryEnvironment;
+import platform.server.data.SQLSession;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.where.Where;
@@ -18,6 +18,9 @@ import platform.server.session.*;
 
 import java.sql.SQLException;
 import java.util.*;
+
+import static platform.server.logics.PropertyUtils.mapImplement;
+import static platform.server.logics.PropertyUtils.readImplements;
 
 public class LP<T extends PropertyInterface> {
 
@@ -70,8 +73,8 @@ public class LP<T extends PropertyInterface> {
     }
 
     public <D extends PropertyInterface> void setDerivedChange(boolean defaultChanged, boolean forceChanged, LP<D> valueProperty, BusinessLogics<?> BL, Object... params) {
-        List<PropertyInterfaceImplement<T>> defImplements = BusinessLogics.readImplements(listInterfaces,params);
-        DerivedChange<D,T> derivedChange = new DerivedChange<D,T>(property,BusinessLogics.mapImplement(valueProperty,defImplements.subList(0,valueProperty.listInterfaces.size())),
+        List<PropertyInterfaceImplement<T>> defImplements = readImplements(listInterfaces, params);
+        DerivedChange<D,T> derivedChange = new DerivedChange<D,T>(property, mapImplement(valueProperty, defImplements.subList(0, valueProperty.listInterfaces.size())),
                 BaseUtils.<PropertyInterfaceImplement<T>, PropertyMapImplement<?, T>>immutableCast(defImplements.subList(valueProperty.listInterfaces.size(), defImplements.size())),
                 defaultChanged, forceChanged);
 
@@ -87,7 +90,7 @@ public class LP<T extends PropertyInterface> {
     public SumGroupProperty sumGroup;
     public LP groupProperty;
     public void setDG(boolean ascending, Object... params) {
-        setDG(ascending, BusinessLogics.readImplements(groupProperty.listInterfaces, params));
+        setDG(ascending, readImplements(groupProperty.listInterfaces, params));
     }
     public <T extends PropertyInterface> void setDG(boolean ascending, List<PropertyInterfaceImplement<T>> listImplements) {
         ((SumGroupProperty<T>)sumGroup).setDataChanges(new OrderedMap<PropertyInterfaceImplement<T>, Boolean>(listImplements.subList(1, listImplements.size()), ascending),

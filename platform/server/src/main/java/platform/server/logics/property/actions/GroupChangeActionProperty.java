@@ -1,9 +1,7 @@
 package platform.server.logics.property.actions;
 
 import platform.interop.action.ClientAction;
-import platform.server.classes.ValueClass;
 import platform.server.data.expr.Expr;
-import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.where.CompareWhere;
 import platform.server.data.where.Where;
 import platform.server.form.entity.GroupObjectEntity;
@@ -13,6 +11,7 @@ import platform.server.form.instance.PropertyObjectInterfaceInstance;
 import platform.server.form.instance.remote.RemoteForm;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
+import platform.server.logics.linear.LP;
 import platform.server.logics.property.ActionProperty;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.Property;
@@ -24,71 +23,50 @@ import java.sql.SQLException;
 import java.util.*;
 
 import static platform.base.BaseUtils.*;
+import static platform.server.logics.PropertyUtils.getValueClasses;
 
-public class GroupChangeActionProperty<M extends PropertyInterface, G extends PropertyInterface> extends ActionProperty {
+public class GroupChangeActionProperty extends ActionProperty {
 
     private final GroupObjectEntity filterGroupObject;
-    private final Property<G> getterProperty;
-    private final Property<M> mainProperty;
+    private final Property getterProperty;
+    private final Property mainProperty;
 
-    private HashSet<M> grouping;
+    private HashSet<PropertyInterface> grouping;
 
-    private Map<G, M> mapGetToMain;
-    private Map<G, ClassPropertyInterface> mapGetToThis;
+    private Map<PropertyInterface, PropertyInterface> mapGetToMain;
+    private Map<PropertyInterface, ClassPropertyInterface> mapGetToThis;
 
-    private Map<M, ClassPropertyInterface> mapMainToThis;
-
-    private static <M extends PropertyInterface, G extends PropertyInterface> ValueClass[] getValueClassList(Property<M> mainProperty, Property<G> getterProperty, G[] getterExtra) {
-        List<ValueClass> result = new ArrayList<ValueClass>();
-
-        for (M mFace : mainProperty.interfaces) {
-            result.add(mainProperty.getMapClasses().get(mFace));
-        }
-
-        for (G gFace : getterExtra) {
-            result.add(getterProperty.getMapClasses().get(gFace));
-        }
-
-        return result.toArray(new ValueClass[result.size()]);
-    }
+    private Map<PropertyInterface, ClassPropertyInterface> mapMainToThis;
 
     /**
-     * @param mainProperty - свойство, куда будем писать
-     * @param getterProperty - свойство, из которого будем читать значение
+     * @param mainLP - свойство, куда будем писать
+     * @param getterLP - свойство, из которого будем читать значение
      */
-    public GroupChangeActionProperty(String sID, String caption, GroupObjectEntity filterGroupObject,
-                                     Property<M> mainProperty, M[] imainGrouping,
-                                     Property<G> getterProperty, Map<G, M> mapGetToMain, G[] getterExtra) {
-        super(sID, caption, getValueClassList(mainProperty, getterProperty, getterExtra));
+    public GroupChangeActionProperty(String sID, String caption, GroupObjectEntity filterGroupObject, LP<?> mainLP, int[] groupInts, LP<?> getterLP, int[] getterInts) {
+        super(sID, caption, getValueClasses(false, new LP[]{mainLP, getterLP}, new int[][]{null, getterInts}));
 
         this.filterGroupObject = filterGroupObject;
+        this.mainProperty = mainLP.property;
+        this.getterProperty = getterLP.property;
 
-        this.mainProperty = mainProperty;
-        this.getterProperty = getterProperty;
+        this.mapGetToMain = new HashMap<PropertyInterface, PropertyInterface>();
+        this.mapGetToThis = new HashMap<PropertyInterface, ClassPropertyInterface>();
+        this.mapMainToThis = new HashMap<PropertyInterface, ClassPropertyInterface>();
 
-        this.mapGetToMain = new HashMap<G, M>(mapGetToMain);
+        List<ClassPropertyInterface> listInterfaces = (List<ClassPropertyInterface>) interfaces;
 
-        this.grouping = new HashSet<M>(Arrays.asList(imainGrouping));
-
-        this.mapGetToThis = new HashMap<G, ClassPropertyInterface>();
-        this.mapMainToThis = new HashMap<M, ClassPropertyInterface>();
-
-        int n = mainProperty.interfaces.size();
-        Iterator<M> mainIFaces = mainProperty.interfaces.iterator();
-        int i = 0;
-        for (ClassPropertyInterface iFace : interfaces) {
-            if (i < n) {
-                assert mainIFaces.hasNext();
-
-                M mainIFace = mainIFaces.next();
-                mapMainToThis.put(mainIFace, iFace);
-                for (G getIFace : filterValues(mapGetToMain, mainIFace)) {
-                    mapGetToThis.put(getIFace, iFace);
-                }
-            } else {
-                mapGetToThis.put(getterExtra[i - n], iFace);
+        for (int i = 0; i < getterInts.length; ++i) {
+            int gi = getterInts[i];
+            if (gi < mainLP.listInterfaces.size()) {
+                mapGetToMain.put(getterLP.listInterfaces.get(i), mainLP.listInterfaces.get(gi));
             }
-            ++i;
+            mapGetToThis.put(getterLP.listInterfaces.get(i), listInterfaces.get(gi));
+        }
+
+        this.grouping = new HashSet<PropertyInterface>();
+        for (int mi : groupInts) {
+            grouping.add(mainLP.listInterfaces.get(mi));
+            mapMainToThis.put(mainLP.listInterfaces.get(mi), listInterfaces.get(mi));
         }
     }
 
@@ -96,7 +74,7 @@ public class GroupChangeActionProperty<M extends PropertyInterface, G extends Pr
         FormInstance<?> form = (FormInstance<?>) executeForm.form;
         DataSession session = form.session;
 
-        Map<M, KeyExpr> mainKeys = mainProperty.getMapKeys();
+        Map<PropertyInterface, Expr> mainKeys = mainProperty.getMapKeys();
 
         Where changeWhere = CompareWhere.compareValues(
                 filterNotKeys(mainKeys, grouping),
@@ -111,8 +89,8 @@ public class GroupChangeActionProperty<M extends PropertyInterface, G extends Pr
                             session.modifier));
         }
 
-        Map<G, Expr> getterKeys = new HashMap<G, Expr>();
-        for (G getIFace : getterProperty.interfaces) {
+        Map<PropertyInterface, Expr> getterKeys = new HashMap<PropertyInterface, Expr>();
+        for (PropertyInterface getIFace : (List<PropertyInterface>) getterProperty.interfaces) {
             if (mapGetToMain.containsKey(getIFace)) {
                 getterKeys.put(getIFace, mainKeys.get(mapGetToMain.get(getIFace)));
             } else {

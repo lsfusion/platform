@@ -65,6 +65,9 @@ import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.*;
 
+import static platform.base.BaseUtils.consecutiveInts;
+import static platform.server.logics.PropertyUtils.*;
+
 // @GenericImmutable нельзя так как Spring валится
 
 public abstract class BusinessLogics<T extends BusinessLogics<T>> extends RemoteObject implements RemoteLogicsInterface {
@@ -535,7 +538,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     protected LP percent2;
     protected LP yearInDate;
 
-    protected LP vtrue, vtrue1, vzero;
+    protected LP vtrue, actionTrue, vzero;
     protected LP positive, negative;
 
     protected LP dumb1;
@@ -1051,7 +1054,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         vtrue = addCProp("Истина", LogicalClass.instance, true);
         vzero = addCProp("0", DoubleClass.instance, 0);
 
-        vtrue1 = addCProp("Истина", ActionClass.instance, true);
+        actionTrue = addCProp("ActionTrue", ActionClass.instance, true);
 
         dumb1 = dumb(1);
         dumb2 = dumb(2);
@@ -2677,20 +2680,6 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         return derDataProp;
     }
 
-    private static ValueClass[] overrideClasses(ValueClass[] commonClasses, ValueClass[] overrideClasses) {
-        ValueClass[] classes = new ValueClass[commonClasses.length];
-        int ic = 0;
-        for (ValueClass common : commonClasses) {
-            ValueClass overrideClass;
-            if (ic < overrideClasses.length && ((overrideClass = overrideClasses[ic]) != null)) {
-                classes[ic++] = overrideClass;
-                assert !overrideClass.isCompatibleParent(common);
-            } else
-                classes[ic++] = common;
-        }
-        return classes;
-    }
-
     // сессионные
 
     protected LP addSDProp(String caption, ValueClass value, ValueClass... params) {
@@ -2928,135 +2917,6 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         return addProperty(group, new LP(prop));
     }
 
-    // Linear Implement
-
-    private static abstract class LI {
-        abstract <T extends PropertyInterface<T>> PropertyInterfaceImplement<T> map(List<T> interfaces);
-
-        abstract Object[] write();
-
-        abstract Object[] compare(LP compare, BusinessLogics BL, int intOff);
-    }
-
-    private static class LII extends LI {
-        int intNum;
-
-        private LII(int intNum) {
-            this.intNum = intNum;
-        }
-
-        <T extends PropertyInterface<T>> PropertyInterfaceImplement<T> map(List<T> interfaces) {
-            return interfaces.get(intNum - 1);
-        }
-
-        Object[] write() {
-            return new Object[]{intNum};
-        }
-
-        Object[] compare(LP compare, BusinessLogics BL, int intOff) {
-            return new Object[]{compare, intNum, intNum + intOff};
-        }
-    }
-
-    private static class LMI<P extends PropertyInterface> extends LI {
-        LP<P> lp;
-        int[] mapInt;
-
-        private LMI(LP<P> lp) {
-            this.lp = lp;
-            this.mapInt = new int[lp.listInterfaces.size()];
-        }
-
-        <T extends PropertyInterface<T>> PropertyInterfaceImplement<T> map(List<T> interfaces) {
-            PropertyMapImplement<P, T> mapRead = new PropertyMapImplement<P, T>(lp.property);
-            for (int i = 0; i < lp.listInterfaces.size(); i++)
-                mapRead.mapping.put(lp.listInterfaces.get(i), interfaces.get(mapInt[i] - 1));
-            return mapRead;
-        }
-
-        Object[] write() {
-            Object[] result = new Object[mapInt.length + 1];
-            result[0] = lp;
-            for (int i = 0; i < mapInt.length; i++)
-                result[i + 1] = mapInt[i];
-            return result;
-        }
-
-        Object[] compare(LP compare, BusinessLogics BL, int intOff) {
-            int lmiLen = mapInt.length;
-            Object[] common = new Object[lmiLen * 2 + 1];
-            Object[] shift = new Object[lmiLen + 1];
-            shift[0] = lp;
-            for (int j = 1; j <= lmiLen; j++) {
-                shift[j] = j + lmiLen;
-                common[j] = mapInt[j - 1];
-                common[j + lmiLen] = mapInt[j - 1] + intOff;
-            }
-            common[0] = BL.addJProp(compare, BaseUtils.add(BL.directLI(lp), shift));
-            return common;
-        }
-    }
-
-    public static Object[] getUParams(LP[] props, int exoff) {
-        int intNum = props[0].listInterfaces.size();
-        Object[] params = new Object[props.length * (1 + intNum + exoff)];
-        for (int i = 0; i < props.length; i++) {
-            if (exoff > 0)
-                params[i * (1 + intNum + exoff)] = 1;
-            params[i * (1 + intNum + exoff) + exoff] = props[i];
-            for (int j = 1; j <= intNum; j++)
-                params[i * (1 + intNum + exoff) + exoff + j] = j;
-        }
-        return params;
-    }
-
-    protected Object[] directLI(LP prop) {
-        return getUParams(new LP[]{prop}, 0);
-    }
-
-    // считывает "линейные" имплементации
-
-    static List<LI> readLI(Object[] params) {
-        List<LI> result = new ArrayList<LI>();
-        for (int i = 0; i < params.length; i++)
-            if (params[i] instanceof Integer)
-                result.add(new LII((Integer) params[i]));
-            else {
-                LMI impl = new LMI((LP) params[i]);
-                for (int j = 0; j < impl.mapInt.length; j++)
-                    impl.mapInt[j] = (Integer) params[i + j + 1];
-                i += impl.mapInt.length;
-                result.add(impl);
-            }
-        return result;
-    }
-
-    static Object[] writeLI(List<LI> linearImpl) {
-        Object[][] objectLI = new Object[linearImpl.size()][];
-        for (int i = 0; i < linearImpl.size(); i++)
-            objectLI[i] = linearImpl.get(i).write();
-        int size = 0;
-        for (Object[] li : objectLI)
-            size += li.length;
-        Object[] result = new Object[size];
-        int i = 0;
-        for (Object[] li : objectLI)
-            for (Object param : li)
-                result[i++] = param;
-        return result;
-    }
-
-    static <T extends PropertyInterface> List<PropertyInterfaceImplement<T>> mapLI(List<LI> linearImpl, List<T> interfaces) {
-        List<PropertyInterfaceImplement<T>> result = new ArrayList<PropertyInterfaceImplement<T>>();
-        for (LI impl : linearImpl)
-            result.add(impl.map(interfaces));
-        return result;
-    }
-
-    public static <T extends PropertyInterface> List<PropertyInterfaceImplement<T>> readImplements(List<T> listInterfaces, Object... params) {
-        return mapLI(readLI(params), listInterfaces);
-    }
-
     protected <T extends LP<?>> T addProperty(AbstractGroup group, T lp) {
         return addProperty(group, false, lp);
     }
@@ -3122,24 +2982,6 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         return addJProp(group, implementChange, genSID(), caption, mainProp, params);
     }
 
-    protected int getIntNum(Object[] params) {
-        int intNum = 0;
-        for (Object param : params)
-            if (param instanceof Integer)
-                intNum = Math.max(intNum, (Integer) param);
-        return intNum;
-    }
-
-    public static <T extends PropertyInterface, P extends PropertyInterface> PropertyImplement<T, PropertyInterfaceImplement<P>> mapImplement(LP<T> property, List<PropertyInterfaceImplement<P>> propImpl) {
-        int mainInt = 0;
-        Map<T, PropertyInterfaceImplement<P>> mapping = new HashMap<T, PropertyInterfaceImplement<P>>();
-        for (PropertyInterfaceImplement<P> implement : propImpl) {
-            mapping.put(property.listInterfaces.get(mainInt), implement);
-            mainInt++;
-        }
-        return new PropertyImplement<T, PropertyInterfaceImplement<P>>(property.property, mapping);
-    }
-
     protected LP addJProp(AbstractGroup group, String sID, String caption, LP mainProp, Object... params) {
         return addJProp(group, mainProp.property instanceof ActionProperty, sID, caption, mainProp, params);
     }
@@ -3178,51 +3020,44 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         return addJProp(group, implementChange, paramID, props, "", params);
     }
 
-    protected <G extends PropertyInterface, M extends PropertyInterface> LP addGCAProp(AbstractGroup group, String sID, String caption, GroupObjectEntity groupObject, LP<G> mainProperty, LP<M> getterProperty) {
-        assert getterProperty.listInterfaces.size() <= mainProperty.listInterfaces.size();
-        int mn = mainProperty.listInterfaces.size();
-        int gn = getterProperty.listInterfaces.size();
+    /**
+     * Создаёт свойство для группового изменения, при этом итерация идёт по всем интерфейсам, и мэппинг интерфейсов происходит по порядку
+     */
+    protected LP addGCAProp(AbstractGroup group, String sID, String caption, GroupObjectEntity groupObject, LP mainProperty, LP getterProperty) {
+        int groupInts[] = consecutiveInts(mainProperty.listInterfaces.size());
+        int getterInts[] = consecutiveInts(getterProperty.listInterfaces.size());
 
-        int mainGroupNums[] = new int[mn];
-        int sameKeys[][] = new int[gn][2];
-        for (int i = 0; i < mn; ++i) {
-            if (i < gn) {
-                sameKeys[i][0] = sameKeys[i][1] = i + 1;
-            }
-            mainGroupNums[i] = i + 1;
-        }
-
-        return addGCAProp(group, sID, caption, groupObject, mainProperty, mainGroupNums, getterProperty, sameKeys);
+        return addGCAProp(group, sID, caption, groupObject, mainProperty, groupInts, getterProperty, getterInts);
     }
 
     /**
-     * mainGroupNums и getToMainNums - 1-based
+     * Создаёт свойство для группового изменения
+     * @param params сначала идут номера интерфейсов для группировки, затем getterProperty, затем мэппинг интерфейсов getterProperty
      */
-    protected <G extends PropertyInterface, M extends PropertyInterface> LP addGCAProp(AbstractGroup group, String sID, String caption, GroupObjectEntity groupObject,
-                                                                                     LP<M> mainProperty, int[] mainGroupNums,
-                                                                                     LP<G> getterProperty, int[][] getToMainNums) {
+    protected LP addGCAProp(AbstractGroup group, String sID, String caption, GroupObjectEntity groupObject, LP mainProperty, Object... params) {
+        assert params.length > 0;
 
-        M[] mainGrouping = (M[]) new PropertyInterface[mainGroupNums.length];
-        for (int i = 0; i < mainGrouping.length; ++i) {
-            mainGrouping[i] = mainProperty.listInterfaces.get(mainGroupNums[i] - 1);
+        List<Integer> groupInts = new ArrayList<Integer>();
+        int i = 0;
+        while (!(params[i] instanceof LP)) {
+            groupInts.add((Integer) params[i++] - 1);
         }
 
-        Map<G, M> mapGetToMain = new HashMap<G, M>();
-        List<G> getterExtraIFaces = new ArrayList<G>(getterProperty.listInterfaces);
-        for (int[] getToMainNum : getToMainNums) {
-            assert getToMainNum != null && getToMainNum.length == 2;
+        LP getterProperty = (LP) params[i++];
 
-            G getterIFace = getterProperty.listInterfaces.get(getToMainNum[0] - 1);
-            M mainIFace = mainProperty.listInterfaces.get(getToMainNum[1] - 1);
-
-            mapGetToMain.put(getterIFace, mainIFace);
-            getterExtraIFaces.remove(getterIFace);
+        List<Integer> getterInts = new ArrayList<Integer>();
+        while (i < params.length) {
+            getterInts.add((Integer) params[i++] - 1);
         }
 
+        return addGCAProp(group, sID, caption, groupObject, mainProperty, groupInts.toArray(new Integer[groupInts.size()]), getterProperty, getterInts.toArray(new Integer[getterInts.size()]));
+    }
+
+    private LP addGCAProp(AbstractGroup group, String sID, String caption, GroupObjectEntity groupObject, LP mainProperty, int[] groupInts, LP getterProperty, int[] getterInts) {
         return addProperty(group, new LP<ClassPropertyInterface>(
                 new GroupChangeActionProperty(sID, caption, groupObject,
-                        mainProperty.property, mainGrouping,
-                        getterProperty.property, mapGetToMain, getterExtraIFaces.toArray(new PropertyInterface[getterExtraIFaces.size()]))));
+                        mainProperty, groupInts,
+                        getterProperty, getterInts)));
     }
 
     private <T extends PropertyInterface> LP addGProp(AbstractGroup group, String sID, boolean persistent, String caption, LP<T> groupProp, List<PropertyInterfaceImplement<T>> listImplements) {
@@ -4462,11 +4297,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         int[][] mapInterfaces = new int[lps.length][];
         for (int i = 0; i < lps.length; ++i) {
             LP lp = lps[i];
-            mapInterfaces[i] = new int[lp.listInterfaces.size() + (writeDefaultValues ? 0 : 1)];
-
-            for (int j = 0; j < mapInterfaces[i].length; ++j) {
-                mapInterfaces[i][j] = j;
-            }
+            mapInterfaces[i] = consecutiveInts(lp.listInterfaces.size() + (writeDefaultValues ? 0 : 1));
         }
 
         return addEPAProp(writeDefaultValues, lps, mapInterfaces);

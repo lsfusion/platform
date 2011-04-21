@@ -1,8 +1,6 @@
 package platform.server.logics.property.actions;
 
-import platform.base.Result;
 import platform.interop.action.ClientAction;
-import platform.server.classes.ValueClass;
 import platform.server.form.instance.FormInstance;
 import platform.server.form.instance.PropertyObjectInterfaceInstance;
 import platform.server.form.instance.remote.RemoteForm;
@@ -19,48 +17,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static platform.server.logics.PropertyUtils.getValueClasses;
+
 public class ExecutePropertiesActionProperty extends ActionProperty {
-
-    private static ValueClass[] getValueClasses(boolean writeDefaults, LP[] dataProperties, int[][] mapInterfaces) {
-        Map<Integer, ValueClass> mapClasses = new HashMap<Integer, ValueClass>();
-        for (int i = 0; i < dataProperties.length; ++i) {
-            LP dataProperty = dataProperties[i];
-            int[] mapPropInterfaces = mapInterfaces[i];
-
-            Result<ValueClass> result = new Result<ValueClass>();
-            ValueClass[] propClasses = dataProperty.getCommonClasses(result);
-            for (int j = 0; j < mapPropInterfaces.length; ++j) {
-                ValueClass valueClass = (!writeDefaults && j == mapPropInterfaces.length - 1)
-                                        ? result.result
-                                        : propClasses[j];
-
-
-                int thisIndex = mapPropInterfaces[j];
-
-                ValueClass definedValueClass = mapClasses.get(thisIndex);
-                if (definedValueClass != null) {
-                    if (definedValueClass.isCompatibleParent(valueClass)) {
-                        valueClass = definedValueClass;
-                    } else {
-                        assert valueClass.isCompatibleParent(definedValueClass);
-                    }
-                }
-
-                mapClasses.put(thisIndex, valueClass);
-            }
-        }
-
-
-        ValueClass classes[] = new ValueClass[mapClasses.size()];
-        for (int i = 0; i < mapClasses.size(); ++i) {
-            assert mapClasses.containsKey(i);
-            classes[i] = mapClasses.get(i);
-            assert classes[i] != null;
-        }
-
-        return classes;
-    }
-
     private final boolean writeDefaults;
 
     private final LP[] dataProperties;
@@ -73,7 +32,7 @@ public class ExecutePropertiesActionProperty extends ActionProperty {
      * @param imapInterfaces должны быть 0-based
      */
     public ExecutePropertiesActionProperty(String sID, String caption, boolean writeDefaults, LP[] dataProperties, int[][] imapInterfaces) {
-        super(sID, caption, getValueClasses(writeDefaults, dataProperties, imapInterfaces));
+        super(sID, caption, getValueClasses(!writeDefaults, dataProperties, imapInterfaces));
 
         this.dataProperties = dataProperties;
         this.writeDefaults = writeDefaults;

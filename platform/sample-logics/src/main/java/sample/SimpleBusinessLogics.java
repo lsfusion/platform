@@ -27,6 +27,8 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.sql.SQLException;
 
+import static platform.server.logics.PropertyUtils.directLI;
+
 public class SimpleBusinessLogics extends BusinessLogics<SimpleBusinessLogics> {
 
     public SimpleBusinessLogics(DataAdapter adapter,int port) throws IOException, ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException, JRException, FileNotFoundException {

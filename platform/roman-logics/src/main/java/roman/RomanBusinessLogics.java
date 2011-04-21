@@ -3546,8 +3546,8 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
                      additionalCompositionOriginSku, translationAdditionalCompositionSku, additionalCompositionSku);
 
             setForceViewType(itemAttributeGroup, ClassViewType.GRID, objSku.groupTo);
-            addPropertyDraw(addGCAProp(actionGroup, "translationAllMainComposition", "Перевод составов", objSku.groupTo, translationMainCompositionSku, vtrue1), objSku).forceViewType = ClassViewType.PANEL;
-            addPropertyDraw(addGCAProp(actionGroup, "translationAllAdditionalComposition", "Перевод доп. составов", objSku.groupTo, translationAdditionalCompositionSku, vtrue1), objSku).forceViewType = ClassViewType.PANEL;
+            addPropertyDraw(addGCAProp(actionGroup, "translationAllMainComposition", "Перевод составов", objSku.groupTo, translationMainCompositionSku, actionTrue), objSku).forceViewType = ClassViewType.PANEL;
+            addPropertyDraw(addGCAProp(actionGroup, "translationAllAdditionalComposition", "Перевод доп. составов", objSku.groupTo, translationAdditionalCompositionSku, actionTrue), objSku).forceViewType = ClassViewType.PANEL;
 
             objSkuFreight = addSingleGroupObject(sku, "Позиции фрахта", selection, barcode, sidArticleSku, sidColorSupplierItem, nameColorSupplierItem,
                     sidSizeSupplierItem, nameBrandSupplierArticleSku, nameArticleSku);

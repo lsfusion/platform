@@ -1400,6 +1400,8 @@ public class BaseUtils {
 
     // приходится складывать в baseUtils, потому что должна быть единая функция и для сервера и для клиента
     // так как отчеты формируются и на сервере
+    // используется в *.jrxml
+    @SuppressWarnings({"UnusedDeclaration"})
     public static String formatRussian(Date date) {
 
         // todo : сделать форматирование по timeZone сервера
@@ -1408,5 +1410,13 @@ public class BaseUtils {
         calendar.setTime(date);
 
         return "" + calendar.get(Calendar.DAY_OF_MONTH) + " " + months[calendar.get(Calendar.MONTH)] + " " + calendar.get(Calendar.YEAR);
+    }
+
+    public static int[] consecutiveInts(int length) {
+        int[] result = new int[length];
+        for (int i = 0; i < length; ++i) {
+            result[i] = i;
+        }
+        return result;
     }
 }
