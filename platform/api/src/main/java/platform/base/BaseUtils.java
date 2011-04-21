@@ -1419,4 +1419,16 @@ public class BaseUtils {
         }
         return result;
     }
+
+    public static int[] toPrimitive(List<Integer> array) {
+        if (array == null) {
+            return null;
+        }
+        final int[] result = new int[array.size()];
+        int i = 0;
+        for (int a : array) {
+            result[i++] = a;
+        }
+        return result;
+    }
 }

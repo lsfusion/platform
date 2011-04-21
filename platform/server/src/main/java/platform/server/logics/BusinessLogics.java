@@ -66,6 +66,7 @@ import java.sql.SQLException;
 import java.util.*;
 
 import static platform.base.BaseUtils.consecutiveInts;
+import static platform.base.BaseUtils.toPrimitive;
 import static platform.server.logics.PropertyUtils.*;
 
 // @GenericImmutable нельзя так как Spring валится
@@ -3032,6 +3033,17 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
     /**
      * Создаёт свойство для группового изменения
+     * Пример:
+     * <pre>
+     *   LP ценаПоставкиТовара = Свойство(Товар)
+     *   LP ценаПродажиТовара = Свойство(Магазин, Товар)
+     *
+     *   Тогда, чтобы установить цену для всех товаров в магазине, равной цене поставки товара, создаём свойство
+     *
+     *   addGCAProp(..., ценаПродажиТовара, 2, ценаПоставкиТовара, 1)
+     * </pre>
+     *
+     * @param groupObject используется для получения фильтров на набор, для которого будут происходить изменения
      * @param params сначала идут номера интерфейсов для группировки, затем getterProperty, затем мэппинг интерфейсов getterProperty
      */
     protected LP addGCAProp(AbstractGroup group, String sID, String caption, GroupObjectEntity groupObject, LP mainProperty, Object... params) {
@@ -3050,7 +3062,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             getterInts.add((Integer) params[i++] - 1);
         }
 
-        return addGCAProp(group, sID, caption, groupObject, mainProperty, groupInts.toArray(new Integer[groupInts.size()]), getterProperty, getterInts.toArray(new Integer[getterInts.size()]));
+        return addGCAProp(group, sID, caption, groupObject, mainProperty, toPrimitive(groupInts), getterProperty, toPrimitive(getterInts));
     }
 
     private LP addGCAProp(AbstractGroup group, String sID, String caption, GroupObjectEntity groupObject, LP mainProperty, int[] groupInts, LP getterProperty, int[] getterInts) {
