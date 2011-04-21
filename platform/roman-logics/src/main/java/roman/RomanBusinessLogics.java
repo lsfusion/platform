@@ -588,6 +588,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     private LP nameDictionaryComposition;
     private LP translationMainCompositionSku;
     private LP translationAdditionalCompositionSku;
+    private LP translationAllMainComposition;
     private LP sidShipmentShipmentDetail;
     private LP commonSizeSizeSupplier;
     private LP nameCommonSizeSizeSupplier;
@@ -2793,6 +2794,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 
             objFreight = addSingleGroupObject(freight, "Фрахт", objectValue, date, objectClassName, nameRouteFreight, nameFreightTypeFreight, tonnageFreight, grossWeightFreight, volumeFreight, palletCountFreight, palletNumberFreight);
             objFreight.groupTo.setSingleClassView(ClassViewType.PANEL);
+            setReadOnly(objFreight, true);
 
             PropertyObjectEntity diffPalletFreightProperty = addPropertyObject(diffPalletFreight, objFreight);
             getPropertyDraw(palletCountFreight).setPropertyHighlight(diffPalletFreightProperty);
@@ -2800,6 +2802,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 
             objPallet = addSingleGroupObject(pallet, "Паллета", barcode, grossWeightPallet, freightBoxNumberPallet);
             objPallet.groupTo.setSingleClassView(ClassViewType.GRID);
+            setReadOnly(objPallet, true);
                         
             addActionsOnObjectChange(objBarcode, addPropertyObject(barcodeActionSetFreight, objBarcode, objFreight));
 
@@ -3413,7 +3416,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 
             objBox = addSingleGroupObject(supplierBox, "Короб из инвойса", sidSupplierBox);
 
-            objSku = addSingleGroupObject(sku, "Товар", barcode, sidArticleSku, nameBrandSupplierArticleSku, nameCategoryArticleSku,
+            objSku = addSingleGroupObject(sku, "Товар в инвойсе", barcode, sidArticleSku, nameBrandSupplierArticleSku, nameCategoryArticleSku,
                      sidColorSupplierItem, nameColorSupplierItem, sidSizeSupplierItem);
 
             addPropertyDraw(quantityDocumentSku, objInvoice, objSku);
@@ -3421,7 +3424,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 
             setForceViewType(itemAttributeGroup, ClassViewType.GRID, objSku.groupTo);
 
-            objSku2 = addSingleGroupObject(sku, "Товар", barcode, sidArticleSku, nameBrandSupplierArticleSku, nameCategoryArticleSku,
+            objSku2 = addSingleGroupObject(sku, "Товар в коробе", barcode, sidArticleSku, nameBrandSupplierArticleSku, nameCategoryArticleSku,
                      sidColorSupplierItem, nameColorSupplierItem, sidSizeSupplierItem);
 
             addPropertyDraw(quantityListSku, objBox, objSku2);
@@ -3543,6 +3546,8 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
                      additionalCompositionOriginSku, translationAdditionalCompositionSku, additionalCompositionSku);
 
             setForceViewType(itemAttributeGroup, ClassViewType.GRID, objSku.groupTo);
+            addPropertyDraw(addGCAProp(actionGroup, "translationAllMainComposition", "Перевод составов", objSku.groupTo, translationMainCompositionSku, vtrue1), objSku).forceViewType = ClassViewType.PANEL;
+            addPropertyDraw(addGCAProp(actionGroup, "translationAllAdditionalComposition", "Перевод доп. составов", objSku.groupTo, translationAdditionalCompositionSku, vtrue1), objSku).forceViewType = ClassViewType.PANEL;
 
             objSkuFreight = addSingleGroupObject(sku, "Позиции фрахта", selection, barcode, sidArticleSku, sidColorSupplierItem, nameColorSupplierItem,
                     sidSizeSupplierItem, nameBrandSupplierArticleSku, nameArticleSku);
