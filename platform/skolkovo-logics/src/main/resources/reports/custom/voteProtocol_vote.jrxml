@@ -45,7 +45,7 @@
 	<group name="captionGroup1">
 		<groupExpression><![CDATA[String.valueOf($F{vote})]]></groupExpression>
 	</group>
-	<group name="textGroup1">
+	<group name="textGroup1" isStartNewPage="true">
 		<groupExpression><![CDATA[String.valueOf($F{vote})]]></groupExpression>
 		<groupHeader>
 			<band height="389" splitType="Immediate">

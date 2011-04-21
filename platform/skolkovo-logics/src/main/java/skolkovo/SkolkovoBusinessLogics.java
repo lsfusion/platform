@@ -215,6 +215,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
     LP expertLogin;
 
     LP statusProject, nameStatusProject;
+    LP statusProjectVote, nameStatusProjectVote;
 
     LP quantityTotalExpert;
     LP quantityDoneExpert;
@@ -464,6 +465,9 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
                                                  voteRejectedProject, 1),
                                   acceptedProject, 1);
         nameStatusProject = addJProp(baseGroup, "nameStatusProject", "Статус", name, statusProject, 1);
+
+        statusProjectVote = addJProp(idGroup, "statusProjectVote", "Статус проекта (ИД)", statusProject, projectVote, 1);
+        nameStatusProjectVote = addJProp(baseGroup, "nameStatusProjectVote", "Статус проекта", name, statusProjectVote, 1);
 
         // статистика по экспертам
         quantityTotalExpert = addSGProp(expertResultGroup, "quantityTotalExpert", "Всего заседаний",
@@ -718,10 +722,10 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
                                                                 KeyStroke.getKeyStroke(KeyEvent.VK_F9, 0)), false);
             addRegularFilterGroup(voteFilterGroup);
 
-            setReadOnly(true, objVote.groupTo);
-            setReadOnly(true, objExpert.groupTo);
-            setReadOnly(allowedEmailLetterExpertVote, false);
-            setReadOnly(emailClosedVote, false);
+//            setReadOnly(true, objVote.groupTo);
+//            setReadOnly(true, objExpert.groupTo);
+//            setReadOnly(allowedEmailLetterExpertVote, false);
+//            setReadOnly(emailClosedVote, false);
 
             setPageSize(0);
         }
@@ -757,8 +761,8 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
 
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(inExpertVote, objExpert, objVote)));
 
-            setReadOnly(true, objVote.groupTo);
-            setReadOnly(allowedEmailLetterExpertVote, false);
+//            setReadOnly(true, objVote.groupTo);
+//            setReadOnly(allowedEmailLetterExpertVote, false);
 
             setPageSize(0);
         }
@@ -914,7 +918,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         private VoteProtocolFormEntity(NavigatorElement parent, String sID) {
             super(parent, sID, "Протокол заседания", true);
 
-            objVote = addSingleGroupObject(1, "vote", vote, dateProjectVote, date, dateEndVote, nameNativeProjectVote, nameNativeClaimerVote, nameNativeClusterVote, quantityRepliedVote, quantityDoneVote, quantityRefusedVote, quantityConnectedVote, succeededVote, quantityInClusterVote, acceptedInClusterVote, quantityInnovativeVote, acceptedInnovativeVote, quantityForeignVote, acceptedForeignVote);
+            objVote = addSingleGroupObject(1, "vote", vote, dateProjectVote, date, dateEndVote, nameNativeProjectVote, nameNativeClaimerVote, nameNativeClusterVote, quantityRepliedVote, quantityDoneVote, quantityRefusedVote, quantityConnectedVote, succeededVote, quantityInClusterVote, acceptedInClusterVote, quantityInnovativeVote, acceptedInnovativeVote, quantityForeignVote, acceptedForeignVote, nameStatusProjectVote);
             objVote.groupTo.initClassView = ClassViewType.PANEL;
 
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(closedVote, objVote)));
