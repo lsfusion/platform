@@ -129,6 +129,9 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
     private LP quantityCommitOutArticle;
     private LP quantityIncSubjectArticleBetweenDate;
     private LP quantityOutSubjectArticleBetweenDate;
+    private LP exclActionStore;
+    private LP inclActionStore;
+    private LP actionOutArticle;
 
     public VEDBusinessLogics(DataAdapter adapter, int exportPort) throws IOException, ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException, FileNotFoundException, JRException {
         super(adapter, exportPort);
@@ -518,7 +521,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
     LP importOrder;
     LP importArticlesRRP;
     LP importArticlesInfo;
-    LP articleSaleAction;
+    LP actionArticleStore;
 
     LP articleFormatMin;
     LP articleFormatToSell;
@@ -552,7 +555,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
     LP addPercent;
     LP addvArticle;
     LP currentRRPPriceStoreArticle;
-    LP articleDiscount;
+    LP discountArticleStore;
     LP currentStoreDiscount;
 
     LP fullNameArticle;
@@ -816,9 +819,13 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
                 addJProp(less2, currentDate, actionFrom, 1), 1,  // активация акции, если текущая дата в диапазоне акции
                 addJProp(greater2, currentDate, actionTo, 1), 1);
 
-        articleSaleAction = addAGProp(priceGroup, "articleAction", "Дейст. распродажа", addJProp(and(false, false), inAction, 1, 2, isStarted, 1, is(saleAction), 1), 1);
-        articleDiscount = addSUProp("articleDiscount", true, "Тек. скидка", Union.OVERRIDE, addCProp(DoubleClass.instance, 0, article), addJProp(priceGroup, "Тек. скидка", actionDiscount, articleSaleAction, 1));
+        exclActionStore = addDProp(baseGroup, "exclActionStore", "Искл.", LogicalClass.instance, action, store);
+        inclActionStore = addJProp("inclActionStore", "Вкл.", andNot1, addCProp(LogicalClass.instance, true, action, store), 1, 2, exclActionStore, 1, 2);
+        actionArticleStore = addAGProp(priceGroup, "actionArticleStore", "Дейст. распродажа", addJProp(and(false, false, false), inAction, 1, 2, isStarted, 1, is(saleAction), 1, inclActionStore, 1, 3), 1);
+        discountArticleStore = addSUProp("discountArticleStore", true, "Тек. скидка", Union.OVERRIDE, addCProp(DoubleClass.instance, 0, article, store), addJProp(priceGroup, "Тек. скидка", actionDiscount, actionArticleStore, 1, 2));
         LP actionNoExtraDiscount = addDProp(baseGroup, "actionNoExtraDiscount", "Без доп. скидок", LogicalClass.instance, saleAction);
+
+        actionOutArticle = addJProp("actionOutArticle", "Дейст. распродажа", actionArticleStore, 2, subjectOutOrder, 1);
 
         LP articleActionToGroup = addDProp("articleActionToGroup", "Группа акций", groupArticleAction, articleAction);
         addJProp(baseGroup, "Группа акций", name, articleActionToGroup, 1);
@@ -1012,7 +1019,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
                 addSUProp(Union.MAX,
                         addSGProp(addMGProp(addJProp(and1, actionDiscount, 3, articleActionActive, 1, 2, 3), 1, 2, articleActionToGroup, 3), 1, 2),
                         addJProp(and1, addJProp(customerCheckRetailDiscount, subjectIncOrder, 1), 1, is(article), 2)), 1, 2,
-                addJProp(actionNoExtraDiscount, articleSaleAction, 1), 2, orderNoDiscount, 1),
+                addJProp(actionNoExtraDiscount, actionOutArticle, 1, 2), 1, 2, orderNoDiscount, 1),
                 true, 1, 2, articleQuantity, 1, 2);
         LP discountOrderReturnArticle = addMGProp(privateGroup, "discountOrderReturnArticle", "Скидка возвр.", addJProp(and1, orderArticleSaleDiscount, 3, 2, returnDocumentQuantity, 1, 2, 3), 1, 2);
         discountOrderArticle = addCUProp(baseGroup, "discountOrderArticle", "Скидка", orderArticleSaleDiscount, discountOrderReturnArticle); // возвращаем ту же скидку при возврате
@@ -1294,10 +1301,11 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
     private LP initRequiredStorePrice(AbstractGroup group, String sID, boolean persistent, String caption, LP deliveryPriceStoreArticle, LP storeProp) {
         LP currentRRPPriceObjectArticle = addJProp(currentRRPPriceStoreArticle, storeProp, 1, 2);
         LP currentObjectDiscount = addJProp(currentStoreDiscount, storeProp, 1);
+        LP discountPriceObjectArticle = addJProp(discountArticleStore, 2, storeProp, 1);
 
         LP addDeliveryObjectArticle = addJProp("Необх. цена с нац.", addPercent, addJProp(addPercent, deliveryPriceStoreArticle, 1, 2, addvArticle, 2), 1, 2, currentNDS, 2);
         LP currentPriceObjectArticle = addSUProp("Необх. цена", Union.MAX, addDeliveryObjectArticle, currentRRPPriceObjectArticle);
-        LP actionPriceObjectArticle = addJProp("Акц. цена", removePercent, currentPriceObjectArticle, 1, 2, articleDiscount, 2);
+        LP actionPriceObjectArticle = addJProp("Акц. цена", removePercent, currentPriceObjectArticle, 1, 2, discountPriceObjectArticle, 1, 2);
         return addJProp(group, sID, persistent, caption, round1, addJProp(removePercent, actionPriceObjectArticle, 1, 2, currentObjectDiscount, 1), 1, 2);
     }
 
@@ -2404,7 +2412,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             addPropertyDraw(orderSaleUseObligation, objDoc, objObligation);
 
             if (toAdd) {
-                objArt.groupTo.propertyHighlight = addPropertyObject(articleSaleAction, objArt);
+                objArt.groupTo.propertyHighlight = addPropertyObject(actionOutArticle, objDoc, objArt);
 
                 objObligation.groupTo.propertyHighlight = addPropertyObject(orderSaleObligationCanNotBeUsed, objDoc, objObligation);
                 addHintsNoUpdate(obligationDocument);
@@ -3247,8 +3255,14 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         protected ActionFormEntity(NavigatorElement parent, String sID) {
             super(parent, sID, "Акции");
 
+            ObjectEntity objShop = addSingleGroupObject(shop);
+
             ObjectEntity objAction = addSingleGroupObject(action, publicGroup, true);
             addObjectActions(this, objAction);
+
+            PropertyDrawEntity exclProp = addPropertyDraw(exclActionStore, objAction, objShop);
+            exclProp.addColumnGroupObject(objShop.groupTo);
+            exclProp.setPropertyCaption(addPropertyObject(name, objShop));
 
             ObjectEntity objArtGroup = addSingleGroupObject(articleGroup, publicGroup, true);
             ObjectEntity objArt = addSingleGroupObject(article, baseGroup, true, priceGroup);
@@ -3551,13 +3565,13 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         }
     }
 
-    private class ArticleInfoFormEntity extends FormEntity {
+    private class ArticleInfoFormEntity extends BarcodeFormEntity {
         public final ObjectEntity objArt;
 
         protected ArticleInfoFormEntity(NavigatorElement parent, String sID) {
             super(parent, sID, "Справочник товаров");
 
-            objArt = addSingleGroupObject(article, objectValue, name, barcode, currentRRP, nameCurrencyArticle, nameArticleGroupArticle, fullNameArticle, nameUnitOfMeasureArticle, nameBrendArticle, nameCountryArticle, gigienaArticle, spirtArticle, statusArticle, weightArticle, coeffTransArticle);
+            objArt = addSingleGroupObject(article, objectValue, name, barcode, addvArticle, currentRRP, nameCurrencyArticle, nameArticleGroupArticle, fullNameArticle, nameUnitOfMeasureArticle, nameBrendArticle, nameCountryArticle, gigienaArticle, spirtArticle, statusArticle, weightArticle, coeffTransArticle);
             addPropertyDraw(importArticlesRRP);
             addPropertyDraw(importArticlesInfo);
         }
