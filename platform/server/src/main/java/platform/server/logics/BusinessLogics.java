@@ -2786,7 +2786,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     protected void addAttachEAForm(LP<ClassPropertyInterface> eaProp, FormEntity form, EmailActionProperty.Format format, Object... params) {
         LP attachmentName = null;
         if (params.length > 0 && params[0] instanceof LP) {
-            attachmentName = (LP)params[0];
+            attachmentName = (LP) params[0];
             params = Arrays.copyOfRange(params, 1, params.length);
         }
         Map<ObjectEntity, ClassPropertyInterface> mapObjects = new HashMap<ObjectEntity, ClassPropertyInterface>();
@@ -3726,7 +3726,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         for (int i = 0; i < property.listInterfaces.size(); i++) {
             mapInterfaces.put(property.listInterfaces.get(i), checkProp.listInterfaces.get(i));
         }
-        addProp(checkProp.property.addFollows(new PropertyMapImplement(property.property, mapInterfaces), "Свойство не задано", PropertyFollows.RESOLVE_FALSE));
+        addProp(checkProp.property.addFollows(new PropertyMapImplement(property.property, mapInterfaces), "Свойство " + property.property.sID + " не задано", PropertyFollows.RESOLVE_FALSE));
     }
 
     private boolean intersect(LP[] props) {
@@ -4373,7 +4373,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         @Override
         public DataClass getValueClass() {
             FileClass fileClass = (FileClass) fileProperty.property.getType();
-            return FileActionClass.getInstance(fileClass.toString(), fileClass.getExtensions());
+            return FileActionClass.getDefinedInstance(false, fileClass.toString(), fileClass.getExtensions());
         }
 
         public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects) throws SQLException {
@@ -4604,14 +4604,15 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         return addAAProp(customClass, null, null, false, properties);
     }
 
+    /** Пример использования:
+    fileActPricat = addAAProp(pricat, filePricat.property, FileActionClass.getCustomInstance(true));
+    pricat - добавляемый класс
+    filePricat.property - свойство, которое изменяется
+    FileActionClass.getCustomInstance(true) - класс
+     неявный assertion, что класс свойства должен быть совместим с классом Action
+     */
     protected LP addAAProp(ValueClass cls, Property propertyValue, DataClass dataClass) {
         return addAProp(new AddObjectActionProperty(genSID(), (CustomClass) cls, propertyValue, dataClass));
-        /* Пример использования:
-        addFile = addAAProp(pricat, filePricat.property, CustomFileActionClass.instance);
-        pricat - добавляемый класс
-        filePricat.property - свойство, которое изменяется
-        CustomFileActionClass.instance - класс
-         */
     }
 
     protected LP addAAProp(CustomClass customClass, LP barcode, LP barcodePrefix, boolean quantity, LP... properties) {

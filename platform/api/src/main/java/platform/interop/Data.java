@@ -24,5 +24,4 @@ public class Data {
     public final static byte PDF = 19;
     public final static byte DATETIME = 20;
     public final static byte CUSTOMFILECLASS = 21;
-    public final static byte CUSTOMFILEACTION = 22;
 }

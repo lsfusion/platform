@@ -2,6 +2,7 @@ package platform.client.logics.classes;
 
 import platform.client.form.ClientFormController;
 import platform.client.form.PropertyEditorComponent;
+import platform.client.form.editor.CustomFileEditor;
 import platform.client.form.editor.FilePropertyEditor;
 import platform.client.logics.ClientPropertyDraw;
 import platform.interop.ComponentDesign;
@@ -14,6 +15,9 @@ import java.io.IOException;
 import java.text.Format;
 
 public class ClientFileActionClass extends ClientActionClass {
+
+    private boolean multiple;
+    private boolean custom;
     private String filterDescription;
     private String filterExtensions[];
 
@@ -27,6 +31,8 @@ public class ClientFileActionClass extends ClientActionClass {
     public ClientFileActionClass(DataInputStream inStream) throws IOException {
         super(inStream);
 
+        multiple = inStream.readBoolean();
+        custom = inStream.readBoolean();
         filterDescription = inStream.readUTF();
         int extCount = inStream.readInt();
         if (extCount <= 0) {
@@ -56,6 +62,6 @@ public class ClientFileActionClass extends ClientActionClass {
 
     @Override
     public PropertyEditorComponent getEditorComponent(Component ownerComponent, ClientFormController form, ClientPropertyDraw property, Object value, Format format, ComponentDesign design) throws IOException, ClassNotFoundException {
-        return new FilePropertyEditor(filterDescription, filterExtensions);
+        return custom ? new CustomFileEditor(value, false, multiple) : new CustomFileEditor(value, false, multiple, filterDescription, filterExtensions);
     }
 }

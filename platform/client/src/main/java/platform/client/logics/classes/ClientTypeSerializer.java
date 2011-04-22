@@ -54,8 +54,7 @@ public class ClientTypeSerializer {
         if (type == Data.ACTION) return new ClientActionClass(inStream);
         if (type == Data.CLASSACTION) return new ClientClassActionClass(inStream);
         if (type == Data.FILEACTION) return new ClientFileActionClass(inStream);
-        if (type == Data.CUSTOMFILEACTION) return new ClientCustomFileActionClass(inStream);
-        
+
         throw new IOException();
     }
 }

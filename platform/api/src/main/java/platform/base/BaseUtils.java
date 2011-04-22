@@ -32,7 +32,7 @@ public class BaseUtils {
 
     public static boolean[] convertArray(Boolean[] array) {
         boolean[] result = new boolean[array.length];
-        for(int i=0;i<array.length;i++)
+        for (int i = 0; i < array.length; i++)
             result[i] = array[i];
         return result;
     }
@@ -198,12 +198,12 @@ public class BaseUtils {
         return result;
     }
 
-    public static <K,V> Map<K,V> mergeEquals(Map<K, V> full, Map<K, V> part) {
+    public static <K, V> Map<K, V> mergeEquals(Map<K, V> full, Map<K, V> part) {
         assert full.keySet().containsAll(part.keySet());
-        
-        Map<K,V> result = new HashMap<K, V>();
-        for(Map.Entry<K, V> partEntry : part.entrySet())
-            if(full.get(partEntry.getKey()).equals(partEntry.getValue()))
+
+        Map<K, V> result = new HashMap<K, V>();
+        for (Map.Entry<K, V> partEntry : part.entrySet())
+            if (full.get(partEntry.getKey()).equals(partEntry.getValue()))
                 result.put(partEntry.getKey(), partEntry.getValue());
         return result;
     }
@@ -266,18 +266,18 @@ public class BaseUtils {
         return result;
     }
 
-    public static <K,V> Map<K, V> toMap(List<K> from, List<V> to) {
+    public static <K, V> Map<K, V> toMap(List<K> from, List<V> to) {
         assert from.size() == to.size();
         Map<K, V> result = new HashMap<K, V>();
-        for (int i=0;i<from.size();i++)
+        for (int i = 0; i < from.size(); i++)
             result.put(from.get(i), to.get(i));
         return result;
     }
 
-    public static <K> Map<Object,K> toObjectMap(Set<K> collection) {
-        Map<Object,K> result = new HashMap<Object, K>();
-        for(K object : collection)
-            result.put(new Object(),object);
+    public static <K> Map<Object, K> toObjectMap(Set<K> collection) {
+        Map<Object, K> result = new HashMap<Object, K>();
+        for (K object : collection)
+            result.put(new Object(), object);
         return result;
     }
 
@@ -561,9 +561,9 @@ public class BaseUtils {
 
     public static <B, K1 extends B, K2 extends B, V> Map<K1, V> replace(Map<K1, ? extends V> map1, Map<K2, ? extends V> map2) {
         Map<K1, V> result = new HashMap<K1, V>(map1);
-        for(Map.Entry<K1, V> entry : result.entrySet()) {
+        for (Map.Entry<K1, V> entry : result.entrySet()) {
             V value2 = map2.get(entry.getKey());
-            if(value2!=null)
+            if (value2 != null)
                 entry.setValue(value2);
         }
         return result;
@@ -1097,7 +1097,7 @@ public class BaseUtils {
 
     public static String rtrim(String string) {
         int len = string.length();
-        while (len > 0 && string.charAt(len-1) == ' ') len--;
+        while (len > 0 && string.charAt(len - 1) == ' ') len--;
         return string.substring(0, len);
     }
 
@@ -1396,7 +1396,7 @@ public class BaseUtils {
         }
     }
 
-    public static String[] months = new String[] {"января", "февраля", "марта", "апреля", "мая", "июня", "июля", "августа", "сентября", "октября", "ноября", "декабря"};
+    public static String[] months = new String[]{"января", "февраля", "марта", "апреля", "мая", "июня", "июля", "августа", "сентября", "октября", "ноября", "декабря"};
 
     // приходится складывать в baseUtils, потому что должна быть единая функция и для сервера и для клиента
     // так как отчеты формируются и на сервере
@@ -1412,6 +1412,49 @@ public class BaseUtils {
         return "" + calendar.get(Calendar.DAY_OF_MONTH) + " " + months[calendar.get(Calendar.MONTH)] + " " + calendar.get(Calendar.YEAR);
     }
 
+    public static String getFileExtension(File file) {
+        String name = file.getName();
+        int index = name.lastIndexOf(".");
+        String extension = (index == -1) ? "" : name.substring(index + 1);
+        return extension;
+    }
+
+    public static byte[] filesToBytes(boolean custom, File... files) {
+        ByteArrayOutputStream byteOutStream = new ByteArrayOutputStream();
+        DataOutputStream outStream = new DataOutputStream(byteOutStream);
+
+        byte result[] = null;
+        try {
+            outStream.writeInt(files.length);
+            for (File file : files) {
+
+                byte fileBytes[] = IOUtils.getFileBytes(file);
+                byte ext[] = new byte[0];
+                //int length = fileBytes.length;
+
+                if (custom) {
+                    byte[] extBytes = getFileExtension(file).getBytes();
+                    ext = new byte[extBytes.length + 1];
+                    ext[0] = (byte)extBytes.length;
+                    System.arraycopy(extBytes, 0, ext, 1, extBytes.length);
+                }
+                byte[] union = new byte[ext.length + fileBytes.length];
+                System.arraycopy(ext, 0, union, 0, ext.length);
+                System.arraycopy(fileBytes, 0, union, ext.length, fileBytes.length);
+
+                outStream.writeInt(union.length);
+                outStream.write(union);
+            }
+
+            result = byteOutStream.toByteArray();
+            outStream.close();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        return result;
+    }
+    
     public static int[] consecutiveInts(int length) {
         int[] result = new int[length];
         for (int i = 0; i < length; ++i) {

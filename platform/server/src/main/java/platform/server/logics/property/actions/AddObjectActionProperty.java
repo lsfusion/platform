@@ -87,6 +87,13 @@ public class AddObjectActionProperty extends ActionProperty {
             quantityAdd = (Integer) keys.get(interfaces.iterator().next()).getValue();
         }
 
+        ArrayList<byte[]> values = null;
+        if (dataClass instanceof FileActionClass) {
+            FileActionClass clazz = (FileActionClass) dataClass;
+            values = clazz.getFiles(value.getValue());
+            quantityAdd = values.size();
+        }
+
         for (int k = 0; k < quantityAdd; k++) {
             DataObject object;
             if (valueClass.hasChildren())
@@ -137,7 +144,7 @@ public class AddObjectActionProperty extends ActionProperty {
 
             if (propertyValue != null) {
                 propertyValue.execute(Collections.singletonMap(BaseUtils.single(propertyValue.interfaces), object),
-                        session, value.getValue(), form);
+                        session, values.get(k), form);
             }
         }
     }

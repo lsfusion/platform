@@ -52,6 +52,6 @@ public abstract class BaseImportActionProperty extends ActionProperty {
             }
             extString = extString + "*." + ext;
         }
-        return FileActionClass.getInstance("Файлы c данными (" + extString + ")", extensions);
+        return FileActionClass.getDefinedInstance(false, "Файлы c данными (" + extString + ")", extensions);
     }
 }

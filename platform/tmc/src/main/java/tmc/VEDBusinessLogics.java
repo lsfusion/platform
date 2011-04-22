@@ -20,7 +20,6 @@ import platform.server.data.expr.FormulaExpr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.query.OrderType;
 import platform.server.data.sql.DataAdapter;
-import platform.server.data.type.ObjectType;
 import platform.server.form.entity.*;
 import platform.server.form.entity.filter.*;
 import platform.server.form.instance.FormInstance;
@@ -3845,7 +3844,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
         @Override
         public DataClass getValueClass() {
-            return FileActionClass.getInstance("Файлы таблиц", "xls");
+            return FileActionClass.getDefinedInstance(false, "Файлы таблиц", "xls");
         }
 
         @Override
@@ -3910,7 +3909,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
         @Override
         public DataClass getValueClass() {
-            return FileActionClass.getInstance("Файлы таблиц", "xls");
+            return FileActionClass.getDefinedInstance(false, "Файлы таблиц", "xls");
         }
     }
 
@@ -3974,7 +3973,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
         @Override
         public DataClass getValueClass() {
-            return FileActionClass.getInstance("Файлы таблиц", "xls");
+            return FileActionClass.getDefinedInstance(false, "Файлы таблиц", "xls");
         }
     }
 
@@ -4051,7 +4050,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
         @Override
         public DataClass getValueClass() {
-            return FileActionClass.getInstance("Файлы таблиц", "xls");
+            return FileActionClass.getDefinedInstance(false, "Файлы таблиц", "xls");
         }
     }
 

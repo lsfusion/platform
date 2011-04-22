@@ -3,9 +3,7 @@ package platform.client.logics.classes;
 import platform.client.form.PropertyEditorComponent;
 import platform.client.form.PropertyRendererComponent;
 import platform.client.form.editor.CustomFileEditor;
-import platform.client.form.editor.DocumentPropertyEditor;
 import platform.client.form.renderer.CustomFileRenderer;
-import platform.client.form.renderer.WordPropertyRenderer;
 import platform.interop.ComponentDesign;
 import platform.interop.Data;
 
@@ -33,7 +31,7 @@ public class ClientCustomFileClass extends ClientFileClass {
 
     @Override
     public PropertyEditorComponent getComponent(Object value, Format format, ComponentDesign design) {
-        return new CustomFileEditor(value, true);
+        return new CustomFileEditor(value, true, false);
     }
 
     @Override

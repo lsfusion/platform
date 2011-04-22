@@ -6,6 +6,8 @@ import platform.interop.KeyStrokes;
 
 import javax.swing.*;
 import java.awt.*;
+import java.io.ByteArrayInputStream;
+import java.io.DataInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.rmi.RemoteException;
@@ -14,11 +16,25 @@ import java.util.prefs.Preferences;
 
 public class CustomFileEditor extends DocumentPropertyEditor {
     boolean allowOpen;
+    boolean multiple;
+    boolean custom;
 
-
-    public CustomFileEditor(Object value, boolean allowOpen) {
+    //custom constructor
+    public CustomFileEditor(Object value, boolean allowOpen, boolean multiple) {
         super(value, true);
         this.allowOpen = allowOpen;
+        this.multiple = multiple;
+        this.custom = true;
+        setMultiSelectionEnabled(multiple);
+    }
+
+    //fixed file format constructor
+    public CustomFileEditor(Object value, boolean allowOpen, boolean multiple, String description, String[] extensions) {
+        super(value, description, extensions);
+        this.allowOpen = allowOpen;
+        this.multiple = multiple;
+        this.custom = false;
+        setMultiSelectionEnabled(multiple);
     }
 
     @Override
@@ -35,24 +51,19 @@ public class CustomFileEditor extends DocumentPropertyEditor {
     //переопределяются те методы, в которых происходят манипуляции с массивом байт
     @Override
     public Object getCellEditorValue() throws RemoteException {
-        try {
-            Preferences preferences = Preferences.userNodeForPackage(this.getClass());
-            preferences.put("LATEST_DIRECTORY", this.getSelectedFile().getAbsolutePath());
-            File file = this.getSelectedFile();
-            String name = file.getName();
-            int index = name.lastIndexOf(".");
-            String extension = name.substring(index + 1);
-            byte[] ext = extension.getBytes();
-            byte[] f = IOUtils.getFileBytes(file);
-            byte[] union = new byte[ext.length + f.length + 1];
-            union[0] = (byte) ext.length;
-            System.arraycopy(ext, 0, union, 1, ext.length);
-            System.arraycopy(f, 0, union, 1 + ext.length, f.length);
+        File[] files = isMultiSelectionEnabled() ? getSelectedFiles() : new File[]{getSelectedFile()};
 
-            return returnValue == JFileChooser.APPROVE_OPTION ? union : null;
+        Preferences preferences = Preferences.userNodeForPackage(this.getClass());
+        preferences.put("LATEST_DIRECTORY", files[0].getAbsolutePath());
+
+        byte result[] = null;
+
+        try {
+            result = ((!multiple) && (!custom)) ? IOUtils.getFileBytes(files[0]) : BaseUtils.filesToBytes(custom, files);
         } catch (IOException e) {
-            return null;
+            throw new RuntimeException(e);
         }
+        return returnValue == JFileChooser.APPROVE_OPTION ? result : null;
     }
 
     @Override
@@ -65,7 +76,6 @@ public class CustomFileEditor extends DocumentPropertyEditor {
             System.arraycopy(union, 1 + ext.length, file, 0, file.length);
 
             BaseUtils.openFile(file, new String(ext));
-
         }
         returnValue = JFileChooser.CANCEL_OPTION;
     }
