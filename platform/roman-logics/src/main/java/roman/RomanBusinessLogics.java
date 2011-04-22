@@ -121,8 +121,17 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     private LP nameSeasonArticle;
 
     private ConcreteCustomClass currency;
+    private ConcreteCustomClass typeExchange;
     private ConcreteCustomClass store;
     private ConcreteCustomClass unitOfMeasure;
+    private LP currencyTypeExchange;
+    private LP nameCurrencyTypeExchange;
+    private LP rateExchange;
+    private LP typeExchangeSTX;
+    private LP nameTypeExchangeSTX;
+    private LP lessCmpDate;
+    private LP nearestPredDate;
+    private LP nearestRateExchange;
     private LP sidDestination;
     private LP destinationSID;
     private LP unitOfMeasureCategory;
@@ -298,6 +307,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     private LP priceImporterFreightSku;
     private LP priceMaxImporterFreightSku;
     private LP priceDocumentSku;
+    private LP priceRateDocumentSku;
     private LP sumDocumentSku;
     private LP inInvoiceShipment;
     private LP tonnageFreight;
@@ -743,6 +753,8 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 
         currency = addConcreteClass("currency", "Валюта", baseClass.named);
 
+        typeExchange = addConcreteClass("typeExchange", "Тип обмена", baseClass.named);
+
         destination = addAbstractClass("destination", "Пункт назначения", baseClass);
 
         store = addConcreteClass("store", "Магазин", destination, baseClass.named);
@@ -856,6 +868,17 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 
     @Override
     protected void initProperties() {
+
+        // rate
+        currencyTypeExchange = addDProp(idGroup, "currencyTypeExchange", "Валюта типа обмена (ИД)", currency, typeExchange);
+        nameCurrencyTypeExchange = addJProp(baseGroup, "nameCurrencyTypeExchange", "Валюта типа обмена (наим.)", name, currencyTypeExchange, 1);
+        rateExchange = addDProp(baseGroup, "rateExchange", "Курс обмена", DoubleClass.instance, typeExchange, currency, DateClass.instance);
+        typeExchangeSTX = addDProp(idGroup, "typeExchangeSTX", "Тип обмена для STX (ИД)", typeExchange);
+        nameTypeExchangeSTX = addJProp(baseGroup, "nameTypeExchangeSTX", "Тип обмена для STX", name, typeExchangeSTX);
+
+        lessCmpDate = addJProp(and(false, true, false), object(DateClass.instance), 3, rateExchange, 1, 2, 3, greater2, 3, 4, is(DateClass.instance), 4);
+        nearestPredDate = addMGProp((AbstractGroup) null, "nearestPredDate", "Ближайшая меньшая дата", lessCmpDate, 1, 2, 4);
+        nearestRateExchange = addJProp("Ближайший курс обмена", rateExchange, 1, 2, nearestPredDate, 1, 2, 3);
 
         nameOrigin = addDProp(baseGroup, "nameOrigin", "Наименование (ориг.)", InsensitiveStringClass.get(50), secondNameClass);
         nameOriginCountry = addDProp(baseGroup, "nameOriginCountry", "Наименование (ориг.)", InsensitiveStringClass.get(50), country);
@@ -1346,6 +1369,8 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         priceDataDocumentItem = addDProp(baseGroup, "priceDataDocumentItem", "Цена по товару", DoubleClass.instance, priceDocument, item);
         priceArticleDocumentSku = addJProp(baseGroup, "priceArticleDocumentItem", "Цена по артикулу", priceDocumentArticle, 1, articleSku, 2);
         priceDocumentSku = addSUProp(baseGroup, "priceDocumentSku", true, "Цена", Union.OVERRIDE, priceArticleDocumentSku, priceDataDocumentItem);
+
+        priceRateDocumentSku = addJProp(baseGroup, "priceRateDocumentArticle", "Цена (конверт.)", multiplyDouble2, priceDocumentSku, 1, 2, addJProp(nearestRateExchange, typeExchangeSTX, currencyDocument, 1, date, 1), 1);
 
         RRPDocumentArticle = addDProp(baseGroup, "RRPDocumentArticle", "Рекомендованная цена", DoubleClass.instance, priceDocument, article);
 
@@ -1949,7 +1974,8 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         tableFactory.include("freight", freight);
         tableFactory.include("freightUnit", freightUnit);
         tableFactory.include("barcodeObject", barcodeObject);
-
+        tableFactory.include("rateExchange", typeExchange, currency, DateClass.instance);
+               
         tableFactory.include("strings", StringClass.get(10));
     }
 
@@ -1977,6 +2003,8 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         addFormEntity(new NomenclatureFormEntity(classifier, "nomenclatureForm", "Номенклатура"));
         classifier.add(category.getClassForm(this));
         classifier.add(currency.getClassForm(this));
+        classifier.add(typeExchange.getClassForm(this));
+        addFormEntity(new RateCurrencyFormEntity(classifier, "rateCurrencyForm", "Курсы валют"));
         classifier.add(importer.getClassForm(this));
         classifier.add(exporter.getClassForm(this));        
         classifier.add(store.getClassForm(this));
@@ -2074,6 +2102,42 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             return design;
         }
     }
+
+    private class RateCurrencyFormEntity extends FormEntity<RomanBusinessLogics> {
+
+        private ObjectEntity objTypeExchange;
+        private ObjectEntity objCurrency;
+        private ObjectEntity objDate;
+
+        private RateCurrencyFormEntity(NavigatorElement parent, String sID, String caption) {
+            super(parent, sID, caption, true);
+
+            objTypeExchange = addSingleGroupObject(typeExchange, "Тип обмена", objectValue, name, nameCurrencyTypeExchange);
+            objTypeExchange.groupTo.initClassView = ClassViewType.PANEL;
+
+            objDate = addSingleGroupObject(DateClass.instance, "Дата", objectValue);
+            objDate.groupTo.setSingleClassView(ClassViewType.PANEL);
+
+            objCurrency = addSingleGroupObject(currency, "Валюта", name);
+            objCurrency.groupTo.initClassView = ClassViewType.GRID;
+
+            addPropertyDraw(rateExchange, objTypeExchange, objCurrency, objDate);
+
+            //addFixedFilter(new CompareFilterEntity(addPropertyObject(currencyTypeExchange, objTypeExchange), Compare.NOT_EQUALS, objCurrency));
+
+        }
+
+        @Override
+        public FormView createDefaultRichDesign() {
+            DefaultFormView design = (DefaultFormView)super.createDefaultRichDesign();
+
+            return design;
+        }
+    }
+
+
+
+
 
     private class PackingListBoxFormEntity extends FormEntity<RomanBusinessLogics> {
 
@@ -2300,6 +2364,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 
             addPropertyDraw(quantityListSku, (box ? objSupplierBox : objInvoice), objItem);
             addPropertyDraw(priceDocumentSku, objInvoice, objItem);
+            addPropertyDraw(priceRateDocumentSku, objInvoice, objItem);
             addPropertyDraw(orderedInvoiceSku, objInvoice, objItem);
             addPropertyDraw(quantityDocumentArticleCompositeColor, objInvoice, objArticle, objColorSupplier);
             addPropertyDraw(quantityDocumentArticleCompositeSize, objInvoice, objArticle, objSizeSupplier);
@@ -3756,7 +3821,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 
         private ColorSizeSupplierFormEntity(NavigatorElement parent, String sID, String caption) {
             super(parent, sID, caption);
-            objSupplier = addSingleGroupObject(supplier, "Поставщик", name, nameBrandSupplierSupplier, nameCurrencySupplier, nameDictionaryComposition);
+            objSupplier = addSingleGroupObject(supplier, "Поставщик", name, nameBrandSupplierSupplier, nameCurrencySupplier, nameDictionaryComposition, nameTypeExchangeSTX);
             addObjectActions(this, objSupplier);
 
             objColor = addSingleGroupObject(colorSupplier, "Цвет", sidColorSupplier, name);
