@@ -1818,7 +1818,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         }
     }
 
-    private final String navigatorTreeFilePath = "conf/" + getName() + "/navigatorTree.data";
+    private final String navigatorTreeFilePath = "conf/navigatorTree.data";
 
     private void reloadNavigatorTree() throws IOException {
         if (new File(navigatorTreeFilePath).exists()) {
@@ -1955,11 +1955,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
     public String getFormSerializationPath(String formSID) {
-        try {
-            return "conf/" + getName() + "/forms/" + formSID;
-        } catch (RemoteException re) {
-            return "conf/forms/" + formSID;
-        }
+        return "conf/forms/" + formSID;
     }
 
     private FormEntity<T> getOverridenForm(String formSID) {
@@ -1972,11 +1968,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
     public String getElementSerializationPath(String elementSID) {
-        try {
-            return "conf/" + getName() + "/elements/" + elementSID;
-        } catch (RemoteException re) {
-            return "conf/elements/" + elementSID;
-        }
+        return "conf/elements/" + elementSID;
     }
 
     private NavigatorElement<T> getOverridenElement(String elementSID) {

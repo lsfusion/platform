@@ -17,6 +17,9 @@ public class RemoteFormProxy<T extends RemoteFormInterface>
         implements RemoteFormInterface {
 
     public static final Map<String, byte[]> cachedRichDesign = new HashMap<String, byte[]>();
+    public static void dropCaches() {
+        cachedRichDesign.clear();
+    }
 
     public RemoteFormProxy(T target) {
         super(target);

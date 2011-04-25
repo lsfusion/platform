@@ -7,6 +7,7 @@ import platform.client.descriptor.FormDescriptor;
 import platform.client.navigator.ClientNavigator;
 import platform.client.navigator.ClientNavigatorElement;
 import platform.client.navigator.NavigatorTreeNode;
+import platform.client.remote.proxy.RemoteFormProxy;
 import platform.client.tree.ClientTreeNode;
 
 import javax.swing.*;
@@ -194,6 +195,10 @@ public class NavigatorDescriptorView extends JPanel {
             if (currentForm != null) {
                 openForm(currentForm.getSID());
             }
+
+            // нужно обязательно сбрасывать кэши, иначе при попытке открыть форму в навигаторе
+            // будет закэширована старая форма и пойдет Exception при применении изменений
+            RemoteFormProxy.dropCaches();
         } catch (IOException e) {
             throw new RuntimeException("Не могу сохранить форму.", e);
         }
