@@ -143,6 +143,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
     LP clusterExpert, nameNativeClusterExpert;
     LP clusterProject, nameNativeClusterProject, nameForeignClusterProject;
     LP clusterVote, nameNativeClusterVote;
+    LP clusterProjectVote, equalsClusterProjectVote;
     LP claimerProject, nameNativeClaimerProject, nameForeignClaimerProject;
     LP emailDocuments;
 
@@ -191,7 +192,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
     LP acceptedForeignVote;
 
     LP acceptedVote;
-    LP succeededVote;
+    LP succeededVote, succeededClusterVote;
     LP doneExpertVoteDateFromDateTo;
     LP quantityDoneExpertDateFromDateTo;
     LP voteSucceededProject;
@@ -281,7 +282,9 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         nameNativeClusterProject = addJProp(baseGroup, "nameNativeClusterProject", "Кластер", nameNative, clusterProject, 1);
         nameForeignClusterProject = addJProp(baseGroup, "nameForeignClusterProject", "Кластер (иностр.)", nameForeign, clusterProject, 1);
 
-        clusterVote = addJProp(idGroup, "clusterVote", "Кластер (ИД)", clusterProject, projectVote, 1);
+        clusterVote = addDCProp(idGroup, "clusterVote", "Кластер (ИД)", true, clusterProject, true, projectVote, 1);
+        clusterProjectVote = addJProp(idGroup, "clusterProjectVote", "Кластер проекта (ИД)", clusterProject, projectVote, 1);
+        equalsClusterProjectVote = addJProp(baseGroup, true, "equalsClusterProjectVote", "Тек. кластер", equals2, clusterVote, 1, clusterProjectVote, 1);
         nameNativeClusterVote = addJProp(baseGroup, "nameNativeClusterVote", "Кластер", nameNative, clusterVote, 1);
 
         claimerProject = addDProp(idGroup, "claimerProject", "Заявитель (ИД)", claimer, project);
@@ -407,6 +410,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
                                 acceptedInClusterVote, 1, acceptedInnovativeVote, 1, acceptedForeignVote, 1);
 
         succeededVote = addJProp(voteResultGroup, "succeededVote", true, "Состоялось", groeq2, quantityDoneVote, 1, limitExperts); // достаточно экспертов
+        succeededClusterVote = addJProp("succeededClusterVote", "Состоялось в тек. кластере", and1, succeededVote, 1, equalsClusterProjectVote, 1);
 
         doneExpertVoteDateFromDateTo = addJProp(and(false, false, false, false), doneExpertVote, 1, 2,
                                                                           addJProp(groeq2, dateExpertVote, 1, 2, 3), 1, 2, 3,
@@ -416,7 +420,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         quantityDoneExpertDateFromDateTo = addSGProp("quantityDoneExpertDateFromDateTo", "Кол-во заседаний",
                                      addJProp(and1, addCProp(IntegerClass.instance, 1), doneExpertVoteDateFromDateTo, 1, 2, 3, 4), 1, 3, 4); // в скольки заседаниях поучавствовал
 
-        voteSucceededProject = addAGProp(idGroup, "voteSucceededProject", true, "Успешное заседание (ИД)", succeededVote, 1, projectVote, 1);
+        voteSucceededProject = addAGProp(idGroup, "voteSucceededProject", true, "Успешное заседание (ИД)", succeededClusterVote, 1, projectVote, 1);
 
         noCurrentVoteProject = addJProp(baseGroup, "noCurrentVoteProject", "Нет текущих заседаний", andNot1, is(project), 1, voteInProgressProject, 1); // нету текущих заседаний
 
@@ -597,7 +601,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
             getPropertyDraw(generateVoteProject).forceViewType = ClassViewType.PANEL;
             getPropertyDraw(generateVoteProject).propertyCaption = addPropertyObject(hideGenerateVoteProject, objProject);
 
-            objVote = addSingleGroupObject(vote, dateStartVote, dateEndVote, openedVote, succeededVote, acceptedVote, quantityDoneVote, quantityInClusterVote, quantityInnovativeVote, quantityForeignVote, delete);
+            objVote = addSingleGroupObject(vote, dateStartVote, dateEndVote, nameNativeClusterVote, equalsClusterProjectVote, openedVote, succeededVote, acceptedVote, quantityDoneVote, quantityInClusterVote, quantityInnovativeVote, quantityForeignVote, delete);
             objVote.groupTo.banClassView.addAll(BaseUtils.toList(ClassViewType.PANEL, ClassViewType.HIDE));
 
             objDocumentTemplate = addSingleGroupObject(documentTemplate, "Шаблон документов", name);
@@ -619,7 +623,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
 
             addFixedFilter(new CompareFilterEntity(addPropertyObject(projectVote, objVote), Compare.EQUALS, objProject));
             addFixedFilter(new CompareFilterEntity(addPropertyObject(projectDocument, objDocument), Compare.EQUALS, objProject));
-            addFixedFilter(new CompareFilterEntity(addPropertyObject(clusterExpert, objExpert), Compare.EQUALS, addPropertyObject(clusterProject, objProject)));
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(clusterExpert, objExpert), Compare.EQUALS, addPropertyObject(clusterVote, objVote)));
 
             RegularFilterGroupEntity expertFilterGroup = new RegularFilterGroupEntity(genID());
             expertFilterGroup.addFilter(new RegularFilterEntity(genID(),
@@ -697,7 +701,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         private VoteFormEntity(NavigatorElement parent, String sID) {
             super(parent, sID, "Реестр заседаний");
 
-            objVote = addSingleGroupObject(vote, nameNativeProjectVote, dateStartVote, dateEndVote, openedVote, succeededVote, quantityDoneVote, emailClosedVote, delete);
+            objVote = addSingleGroupObject(vote, nameNativeProjectVote, nameNativeClusterVote, equalsClusterProjectVote, dateStartVote, dateEndVote, openedVote, succeededVote, quantityDoneVote, emailClosedVote, delete);
 
             objExpert = addSingleGroupObject(expert, userFirstName, userLastName, userLogin, userPassword, email, nameNativeClusterExpert);
 
