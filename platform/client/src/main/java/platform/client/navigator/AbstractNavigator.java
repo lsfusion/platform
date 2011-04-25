@@ -11,7 +11,7 @@ public abstract class AbstractNavigator extends JPanel {
     public final RemoteNavigatorInterface remoteNavigator;
 
     protected final NavigatorTree tree;
-    public static final String BASE_ELEMENT_SID = "BASE_SID";
+    public static final String BASE_ELEMENT_SID = "baseElement";
 
     public AbstractNavigator(RemoteNavigatorInterface iremoteNavigator) {
 
