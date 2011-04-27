@@ -1,4 +1,4 @@
-package skolkovo.gwt.server;
+package skolkovo.gwt.expert.server;
 
 import org.apache.log4j.Logger;
 import platform.base.BaseUtils;

@@ -7,7 +7,7 @@
 
     <servlet>
         <servlet-name>ProjectsService</servlet-name>
-        <servlet-class>skolkovo.gwt.server.ExpertServiceImpl</servlet-class>
+        <servlet-class>skolkovo.gwt.expert.server.ExpertServiceImpl</servlet-class>
         <init-param>
             <description>Сервер, на котором работает сервер приложения.</description>
             <param-name>serverHost</param-name>
@@ -21,7 +21,7 @@
     </servlet>
     <servlet-mapping>
         <servlet-name>ProjectsService</servlet-name>
-        <url-pattern>/skolkovo.gwt.Expert/ProjectsService</url-pattern>
+        <url-pattern>/skolkovo.gwt.expert.Expert/ProjectsService</url-pattern>
     </servlet-mapping>
 
     <!-- Описание ограниченных урлов  -->

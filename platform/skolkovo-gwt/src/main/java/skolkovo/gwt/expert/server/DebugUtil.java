@@ -1,4 +1,4 @@
-package skolkovo.gwt.server;
+package skolkovo.gwt.expert.server;
 
 import java.rmi.RemoteException;
 

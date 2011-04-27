@@ -1,4 +1,4 @@
-package skolkovo.gwt.client;
+package skolkovo.gwt.expert.client;
 
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -8,8 +8,8 @@ import com.google.gwt.i18n.client.LocaleInfo;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.*;
-import skolkovo.gwt.shared.GwtVoteInfo;
-import skolkovo.gwt.shared.MessageException;
+import skolkovo.gwt.expert.shared.GwtVoteInfo;
+import skolkovo.gwt.expert.shared.MessageException;
 
 import java.util.Date;
 

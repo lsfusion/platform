@@ -1,11 +1,11 @@
-package skolkovo.gwt.server;
+package skolkovo.gwt.expert.server;
 
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 import org.apache.log4j.Logger;
 import skolkovo.api.remote.SkolkovoRemoteInterface;
-import skolkovo.gwt.client.ExpertService;
-import skolkovo.gwt.shared.GwtVoteInfo;
-import skolkovo.gwt.shared.MessageException;
+import skolkovo.gwt.expert.client.ExpertService;
+import skolkovo.gwt.expert.shared.GwtVoteInfo;
+import skolkovo.gwt.expert.shared.MessageException;
 
 public class ExpertServiceImpl extends RemoteServiceServlet implements ExpertService {
     protected final static Logger logger = Logger.getLogger(RemoteServiceServlet.class);

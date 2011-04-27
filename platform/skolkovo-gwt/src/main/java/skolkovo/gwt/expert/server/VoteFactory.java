@@ -1,7 +1,7 @@
-package skolkovo.gwt.server;
+package skolkovo.gwt.expert.server;
 
 import skolkovo.VoteInfo;
-import skolkovo.gwt.shared.GwtVoteInfo;
+import skolkovo.gwt.expert.shared.GwtVoteInfo;
 
 import static java.lang.Math.max;
 import static java.lang.Math.min;

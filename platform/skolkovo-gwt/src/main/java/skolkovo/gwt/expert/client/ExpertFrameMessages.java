@@ -1,4 +1,4 @@
-package skolkovo.gwt.client;
+package skolkovo.gwt.expert.client;
 
 import com.google.gwt.i18n.client.Messages;
 

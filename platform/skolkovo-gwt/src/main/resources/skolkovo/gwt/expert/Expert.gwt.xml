@@ -4,9 +4,9 @@
 
     <inherits name='com.google.gwt.user.User'/>
 
-    <entry-point class='skolkovo.gwt.client.ExpertFrame'/>
+    <entry-point class='skolkovo.gwt.expert.client.ExpertFrame'/>
 
-    <servlet path="/ProjectsService" class="skolkovo.gwt.server.ExpertServiceImpl"/>
+    <servlet path="/ProjectsService" class="skolkovo.gwt.expert.server.ExpertServiceImpl"/>
 
     <source path='client'/>
     <source path='shared'/>

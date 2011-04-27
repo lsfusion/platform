@@ -1,7 +1,7 @@
-package skolkovo.gwt.client;
+package skolkovo.gwt.expert.client;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
-import skolkovo.gwt.shared.GwtVoteInfo;
+import skolkovo.gwt.expert.shared.GwtVoteInfo;
 
 public interface ExpertServiceAsync {
     void getVoteInfo(String voteId, AsyncCallback<GwtVoteInfo> async);
