@@ -85,6 +85,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
     private AbstractGroup documentPrintGroup;
     private LP quantityOrder;
     private LP coeffTransArticle;
+    private LP addArticleBarcode;
     private LP weightArticle;
     private LP weightOrderArticle;
     private LP transOrderArticle;
@@ -123,6 +124,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
     private AbstractGroup documentSumGroup;
     private LP sumOrder;
     private AbstractGroup documentPrintRetailGroup;
+    private CreateArticleFormEntity createArticleForm;
     private LP orderMinute;
     private LP sumWithDiscountCouponOrderArticle;
     private LP quantityCommitIncArticle;
@@ -502,6 +504,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
     LP balanceSklFreeQuantity;
     LP articleFreeQuantity;
+    LP balanceFreeQuantity;
     LP obligationSumFrom;
     LP couponFromIssued;
     LP obligationToIssued;
@@ -522,6 +525,9 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
     LP importArticlesRRP;
     LP importArticlesInfo;
     LP actionArticleStore;
+
+    private LP shopFormat;
+    private LP nameShopFormat;
 
     LP articleFormatMin;
     LP articleFormatToSell;
@@ -591,14 +597,16 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         LP min = addSFProp(FormulaExpr.MIN2, DoubleClass.instance, 2);
         LP abs = addSFProp("ABS(prm1)", DoubleClass.instance, 1);
 
+        addArticleBarcode = addJProp(true, "Ввод товара по штрих-коду", addAAProp(article, barcode), 1);
+
         LP groupParent = addDProp("groupParent", "Родительская группа", articleGroup, articleGroup);
         LP groupParentName = addJProp(baseGroup, "Родительская группа", name, groupParent, 1);
 
         articleToGroup = addDProp(idGroup, "articleToGroup", "Группа товаров", articleGroup, article); // принадлежность товара группе
         nameArticleGroupArticle = addJProp(baseGroup, "Группа товаров", name, articleToGroup, 1);
 
-        coeffTransArticle = addDProp("coeffTransArticle", "Коэфф. гр. мест", DoubleClass.instance, article); // принадлежность товара группе
-        weightArticle = addDProp("weightArticle", "Вес товара", DoubleClass.instance, article); // принадлежность товара группе
+        coeffTransArticle = addDProp("coeffTransArticle", "Коэфф. гр. мест", DoubleClass.instance, article);
+        weightArticle = addDProp("weightArticle", "Вес товара", DoubleClass.instance, article);
 
         payWithCard = addAProp(new PayWithCardActionProperty());
         printOrderCheck = addAProp(new PrintOrderCheckActionProperty());
@@ -768,8 +776,8 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         addJProp(documentMoveGroup, "Остаток тов. расх.", articleBalanceSklCommitedQuantity, subjectOutOrder, 1, 2);
 
         // цены
-        LP shopFormat = addDProp("shopFormat", "Формат", format, shop);
-        addJProp(baseGroup, "Формат", name, shopFormat, 1);
+        shopFormat = addDProp("shopFormat", "Формат", format, shop);
+        nameShopFormat = addJProp(baseGroup, "Формат", name, shopFormat, 1);
 
         // новые свойства товара
         fullNameArticle = addDProp(artExtraGroup, "fullNameArticle", "Полное наименование", StringClass.get(100), article);
@@ -872,11 +880,13 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
         balanceFormatFreeQuantity = addSGProp(moveGroup, "Своб. кол-во по форм.", articleFreeQuantity, shopFormat, 1, 2);
 
+        balanceFreeQuantity = addSGProp(moveGroup, "Своб. кол-во по форм.", articleFreeQuantity, 2);
+
         freeIncOrderArticle = addJProp("freeIncOrderArticle", "Своб. кол-во (прих.)", articleFreeQuantity, subjectIncOrder, 1, 2);
 
         // текущая схема
         articleSupplier = addDProp("articleSupplier", "Поставщик товара", supplier, article);
-        addJProp(logisticsGroup, "Поставщик товара", name, articleSupplier, 1);
+        nameArticleSupplier = addJProp(logisticsGroup, "nameArticleSupplier", "Поставщик товара", name, articleSupplier, 1);
         LP shopWarehouse = addDProp("storeWarehouse", "Распред. центр", warehouse, shop); // магазин может числиться не более чем в одном распределяющем центре
         addJProp(logisticsGroup, "Распред. центр", name, shopWarehouse, 1);
         LP articleSupplierPrice = addDProp(logisticsGroup, "articleSupplierPrice", "Цена поставок", DoubleClass.instance, article);
@@ -921,7 +931,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         LP orderSalePrice = addDProp("orderSalePrice", "Цена прод.", DoubleClass.instance, orderDoOut, article);
         LP priceOrderDoArticle = addCUProp(priceOrderDeliveryArticle, orderSalePrice);
         priceOrderArticle = addCUProp(documentSumGroup, "priceOrderArticle", "Цена", priceOrderDoArticle, addMGProp(privateGroup, "priceOrderReturnArticle", "Цена возвр.", addJProp(and1, priceOrderDoArticle, 3, 2, returnDocumentQuantity, 1, 2, 3), 1, 2));
-        LP priceNDSOrderArticle = addJProp(round1, addJProp(backPercent, priceOrderArticle, 1, 2, ndsOrderArticle, 1, 2), 1, 2);
+        LP priceNDSOrderArticle = addJProp(round0, addJProp(backPercent, priceOrderArticle, 1, 2, ndsOrderArticle, 1, 2), 1, 2);
         priceNoNDSOrderArticle = addDUProp("Цена без НДС", priceOrderArticle, priceNDSOrderArticle);
 
         LP priceManfrOrderDeliveryArticle = addDProp("priceManfrOrderDeliveryArticle", "Цена изг.", DoubleClass.instance, orderDelivery, article);
@@ -1031,7 +1041,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         discountSumOrder = addSGProp(documentDiscountGroup, "discountSumOrder", true, "Сумма скидки", discountSumOrderArticle, 1);
         sumWithDiscountOrder = addCUProp(documentDiscountGroup, "sumWithDiscountOrder", true, "Сумма со скидкой", orderSalePayGift, addSGProp(sumWithDiscountOrderArticle, 1));
 
-        sumNDSOrderArticle = addJProp(documentNDSGroup, "sumNDSOrderArticle", "Сумма НДС", round1, addJProp(backPercent, sumWithDiscountOrderArticle, 1, 2, ndsOrderArticle, 1, 2), 1, 2);
+        sumNDSOrderArticle = addJProp(documentNDSGroup, "sumNDSOrderArticle", "Сумма НДС", round0, addJProp(backPercent, sumWithDiscountOrderArticle, 1, 2, ndsOrderArticle, 1, 2), 1, 2);
         sumNoNDSOrderArticle = addDUProp(documentNDSGroup, "sumNoNDSOrderArticle", "Сумма без НДС", sumWithDiscountOrderArticle, sumNDSOrderArticle);
         // док.
         sumNDSOrder = addSGProp(documentNDSGroup, "sumNDSOrder", "Сумма НДС", sumNDSOrderArticle, 1);
@@ -1043,7 +1053,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
         // для бухгалтерии магазинов
         sumRetailOrderArticle = addJProp(documentRetailGroup, "sumRetailOrderArticle", "Сумма розн.", multiplyDouble2, shopPrice, 1, 2, articleQuantity, 1, 2);
-        sumNDSRetailOrderArticle = addJProp(documentRetailGroup, "sumNDSRetailOrderArticle", "Сумма НДС (розн.)", round1, addJProp(backPercent, sumRetailOrderArticle, 1, 2, ndsShopOrderPriceArticle, 1, 2), 1, 2);
+        sumNDSRetailOrderArticle = addJProp(documentRetailGroup, "sumNDSRetailOrderArticle", "Сумма НДС (розн.)", round0, addJProp(backPercent, sumRetailOrderArticle, 1, 2, ndsShopOrderPriceArticle, 1, 2), 1, 2);
         sumWithoutNDSRetailOrderArticle = addJProp(documentRetailGroup, "sumWithoutNDSRetailOrderArticle", "Сумма розн. без НДС", diff, sumRetailOrderArticle, 1, 2, sumNDSRetailOrderArticle, 1, 2);
         sumAddvOrderArticle = addJProp(documentRetailGroup, "sumAddvOrderArticle", "Сумма нацен.", diff, sumWithoutNDSRetailOrderArticle, 1, 2, sumNoNDSOrderArticle, 1, 2);
         addvOrderArticle = addJProp(documentRetailGroup, "addvOrderArticle", "Наценка", round0, addJProp(calcPercent, sumAddvOrderArticle, 1, 2, sumNoNDSOrderArticle, 1, 2), 1, 2);
@@ -1380,6 +1390,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
     LP nameArticleGroupArticle;
 
     LP articleSupplier;
+    LP nameArticleSupplier;
     LP articleStoreSupplier;
     LP articleStorePeriod;
     LP articleStoreMin;
@@ -1532,6 +1543,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         FormEntity tn2V = addFormEntity(new TNFormEntity(print, "tn2_v", "ТН-2 (одн. стр.)", true));
 
         addFormEntity(new ArticleReportFormEntity(print, "articleReport"));
+        createArticleForm = addFormEntity(new CreateArticleFormEntity(null, "createArticleForm", "Ввод нового товара"));
 
         NavigatorElement classifier = new NavigatorElement(baseElement, "classifier", "Справочники");
             addFormEntity(new ArticleInfoFormEntity(classifier, "articleInfoForm"));
@@ -1570,8 +1582,9 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
                 deliveryImportBrowse.caption = "Список документов";
 
         NavigatorElement sale = new NavigatorElement(baseElement, "sale", "Управление продажами");
-            NavigatorElement saleRetailElement = new NavigatorElement(sale, "saleRetailElement", "Управление розничными продажами");
+            NavigatorElement saleRetailElement = new NavigatorElement(sale, "saleRetailElement", "Управление розничными продажами");                
                 saleRetailCashRegisterElement = new NavigatorElement(saleRetailElement, "saleRetailCashRegisterElement", "Касса");
+                    addFormEntity(new ShopArticleFormEntity(saleRetailCashRegisterElement, "shopArticleForm", "Товары в других магазинах"));
                     commitSaleForm = addFormEntity(new CommitSaleCheckRetailFormEntity(saleRetailCashRegisterElement, "commitSaleForm", true, false));
                         addFormEntity(new CommitSaleCheckRetailFormEntity(commitSaleForm, "commitSaleCheckRetailForm", false, false));
                         commitSaleBrowseForm = addFormEntity(new CommitSaleCheckRetailFormEntity(commitSaleForm, "commitSaleBrowseForm", false, true));
@@ -1722,6 +1735,20 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             objBarcode.resetOnApply = true;
 
             addPropertyDraw(reverseBarcode);
+
+            addActionsOnObjectChange(objBarcode,
+                                     addPropertyObject(
+                                             addJProp(true, andNot1,
+                                                      addMFAProp(
+                                                              null,
+                                                              "Ввод нового товара",
+                                                              createArticleForm,
+                                                              new ObjectEntity[]{createArticleForm.objBarcode},
+                                                              true,
+                                                              createArticleForm.addPropertyObject(addArticleBarcode, createArticleForm.objBarcode)
+                                                      ), 1,
+                                                      barcodeToObject, 1
+                                             ), objBarcode));
 
 //            addActionsOnObjectChange(objBarcode, addPropertyObject(barcodeAction, objBarcode));
         }
@@ -2246,6 +2273,39 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             super(parent, sID, toAdd, orderSaleWhole, false);
         }
     }
+
+    public class ShopArticleFormEntity extends FormEntity {
+
+        private ObjectEntity objShop;
+        private ObjectEntity objArticle;
+        private ObjectEntity nameArticle;
+
+        public ShopArticleFormEntity(NavigatorElement parent, String sID, String caption) {
+            super(parent, sID, caption);
+
+            nameArticle = addSingleGroupObject(genID(), StringClass.get(100), "Введите наименование", objectValue);
+            nameArticle.groupTo.setSingleClassView(ClassViewType.PANEL);
+
+            objArticle = addSingleGroupObject(article, barcode, nameArticleGroupArticle, nameBrendArticle, name, nameArticleSupplier, balanceFreeQuantity);
+            objShop = addSingleGroupObject(shop, name, addressSubject, nameShopFormat);
+
+            addPropertyDraw(articleFreeQuantity, objShop, objArticle);
+            addPropertyDraw(currentShopPrice, objShop, objArticle);
+
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(name, objArticle), Compare.START_WITH, nameArticle));
+            addFixedFilter(new NotNullFilterEntity(addPropertyObject(balanceFreeQuantity, objArticle)));
+            addFixedFilter(new NotNullFilterEntity(addPropertyObject(articleFreeQuantity, objShop, objArticle)));
+        }
+
+        @Override
+        public FormView createDefaultRichDesign() {
+            DefaultFormView design = (DefaultFormView)super.createDefaultRichDesign();
+
+           // design.get(getPropertyDraw(addressSubject, objShop)).caption = "Адрес магазина";
+            return design;
+        }
+    }
+
 
     public class ShopMoneyFormEntity extends FormEntity {
         public ShopMoneyFormEntity(NavigatorElement parent, String sID, String caption) {
@@ -3643,6 +3703,33 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
         }
     }
+
+    private class CreateArticleFormEntity extends FormEntity {
+
+        ObjectEntity objBarcode;
+        ObjectEntity objArticle;
+
+        public CreateArticleFormEntity(NavigatorElement parent, String sID, String caption) {
+            super(parent, sID, caption);
+
+            objBarcode = addSingleGroupObject(StringClass.get(13), "Штрих-код", objectValue);
+            objBarcode.groupTo.setSingleClassView(ClassViewType.PANEL);
+
+            objArticle = addSingleGroupObject(article, "Товар", name, articleToGroup, nameArticleGroupArticle);
+            objArticle.groupTo.setSingleClassView(ClassViewType.PANEL);
+
+            //addActionsOnApply(addPropertyObject(addNEArticleCompositeSIDSupplier, objSIDArticleComposite, objSupplier));
+            //addActionsOnApply(addPropertyObject(executeArticleCompositeItemSIDSupplier, objItem, objSIDArticleComposite, objSupplier));
+        }
+
+        @Override
+        public FormView createDefaultRichDesign() {
+            DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign();
+            design.setEnabled(objBarcode, false);
+            return design;
+        }
+    }
+
 
 /*    private class LogClientFormEntity extends FormEntity {
         protected LogClientFormEntity(NavigatorElement parent, int ID) {
