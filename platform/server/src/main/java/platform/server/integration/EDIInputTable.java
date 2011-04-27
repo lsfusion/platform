@@ -26,7 +26,11 @@ public class EDIInputTable implements ImportInputTable {
 
     public EDIInputTable(ByteArrayInputStream inFile) {
         inputSource = new InputSource(new InputStreamReader(inFile));
+        init();
+        read();
     }
+
+    protected void init() {}
 
     protected void read() {
         try {

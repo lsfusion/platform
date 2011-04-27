@@ -9,6 +9,8 @@ import platform.server.integration.SingleSheetImporter;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 
+import static roman.InvoicePricatMergeInputTable.ResultField;
+
 public class SOliverImportInvoiceActionProperty extends ImportBoxInvoiceActionProperty {
     public SOliverImportInvoiceActionProperty(RomanBusinessLogics BL) {
         super(BL, BL.sOliverSupplier);
@@ -16,14 +18,17 @@ public class SOliverImportInvoiceActionProperty extends ImportBoxInvoiceActionPr
 
     @Override
     protected ImportInputTable createTable(ByteArrayInputStream inFile) throws BiffException, IOException {
-        return new SOliverInvoiceEDIInputTable(inFile);
+        SOliverInvoiceEDIInputTable invoiceTable = new SOliverInvoiceEDIInputTable(inFile);
+        return new InvoicePricatMergeInputTable(BL, invoiceTable, ResultField.BARCODE, ResultField.QUANTITY, ResultField.NUMBERSKU,
+                ResultField.INVOICE, ResultField.BOXNUMBER);
     }
 
     @Override
     protected SingleSheetImporter createExporter(ImportInputTable inputTable) {
-        return new SOliverInvoiceImporter(BL, 5, inputTable, barCodeField, unitQuantityField, numberSkuField,
-                invoiceSIDField, boxNumberField, sidField, colorCodeField, colorNameField, sizeField, originalNameField,
-                countryField, unitNetWeightField, compositionField, unitPriceField, RRPField, customCodeField, customCode6Field);
+
+        return new EDIInvoiceImporter(inputTable, barCodeField, sidField, invoiceSIDField, boxNumberField, colorCodeField,
+                colorNameField, sizeField, originalNameField, countryField, unitNetWeightField, compositionField, unitPriceField,
+                RRPField, unitQuantityField, numberSkuField, customCodeField, customCode6Field);
     }
 
     @Override

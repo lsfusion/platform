@@ -9,13 +9,17 @@ import java.io.IOException;
 import java.util.List;
 
 public class PricatEDIInputTable extends EDIInputTable {
-    String imd1 = "";
-    String imd2 = "";
-    String ftx1 = "";
-
     public PricatEDIInputTable(ByteArrayInputStream inFile) {
         super(inFile);
+        ((ScanningHandler) handler).addRow();
+    }
+
+    protected void init() {
         handler = new ScanningHandler("barcode", "article", "colorCode", "color", "size", "originalName", "country", "netWeight", "composition", "price", "rrp") {
+            String imd1 = "";
+            String imd2 = "";
+            String ftx1 = "";
+
             public void startElement(String namespace, String localName, String qName, Attributes atts) throws SAXException {
                 String segmentID = atts.getValue("Id");
 
@@ -90,8 +94,5 @@ public class PricatEDIInputTable extends EDIInputTable {
                 }
             }
         };
-
-        read();
-        ((ScanningHandler) handler).addRow();
     }
 }

@@ -9,8 +9,13 @@ import java.io.IOException;
 import java.util.List;
 
 public class BestsellerCompositionEDIInputTable extends EDIInputTable {
+
     public BestsellerCompositionEDIInputTable(ByteArrayInputStream inFile) {
         super(inFile);
+    }
+
+
+    protected void init() {
         handler = new ScanningHandler("sid", "composition") {
             String ftx1 = "";
 
@@ -40,7 +45,5 @@ public class BestsellerCompositionEDIInputTable extends EDIInputTable {
                 }
             }
         };
-
-        read();
     }
 }

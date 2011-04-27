@@ -45,7 +45,7 @@ public abstract class ImportBoxInvoiceActionProperty extends BaseImportActionPro
         return new ExcelInputTable(inFile);
     }
 
-    protected abstract SingleSheetImporter createExporter(ImportInputTable inputTable);
+    protected abstract SingleSheetImporter createExporter(ImportInputTable inputTable); // todo [dale]: переименовать
 
     private void initFields() {
         invoiceSIDField = new ImportField(BL.sidDocument);

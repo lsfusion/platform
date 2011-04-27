@@ -11,6 +11,9 @@ import java.util.List;
 public class SOliverInvoiceEDIInputTable extends EDIInputTable {
     public SOliverInvoiceEDIInputTable(ByteArrayInputStream inFile) {
         super(inFile);
+    }
+
+    protected void init() {
         handler = new ScanningHandler("barcode", "quantity", "numberSku", "invoiceSID", "boxNumber") {
             String invoiceSID = "";
             String boxNumber = "";
@@ -49,6 +52,5 @@ public class SOliverInvoiceEDIInputTable extends EDIInputTable {
                 }
             }
         };
-        read();
     }
 }

@@ -11,6 +11,9 @@ public class BestsellerInvoiceEDIInputTable extends EDIInputTable {
 
     public BestsellerInvoiceEDIInputTable(ByteArrayInputStream inFile) {
         super(inFile);
+    }
+
+    protected void init() {
         handler = new ScanningHandler("country", "colourCode", "colour", "size", "netWeight", "quantity", "price", "invoiceSID", "sid", "barcode",
                 "boxNumber", "customCode", "customCode6", "composition", "originalName", "numberSku", "rrp") {
             String imd1 = ""
@@ -111,7 +114,5 @@ public class BestsellerInvoiceEDIInputTable extends EDIInputTable {
                 }
             }
         };
-
-        read();
     }
 }
