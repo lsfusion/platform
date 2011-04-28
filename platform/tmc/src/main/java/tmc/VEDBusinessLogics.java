@@ -2283,7 +2283,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         public ShopArticleFormEntity(NavigatorElement parent, String sID, String caption) {
             super(parent, sID, caption);
 
-            nameArticle = addSingleGroupObject(genID(), StringClass.get(100), "Введите наименование", objectValue);
+            nameArticle = addSingleGroupObject(StringClass.get(100), "Поиск по наименованию", objectValue);
             nameArticle.groupTo.setSingleClassView(ClassViewType.PANEL);
 
             objArticle = addSingleGroupObject(article, barcode, nameArticleGroupArticle, nameBrendArticle, name, nameArticleSupplier, balanceFreeQuantity);
@@ -2301,7 +2301,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         public FormView createDefaultRichDesign() {
             DefaultFormView design = (DefaultFormView)super.createDefaultRichDesign();
 
-           // design.get(getPropertyDraw(addressSubject, objShop)).caption = "Адрес магазина";
+            design.get(getPropertyDraw(objectValue, nameArticle)).caption = "Введите первые буквы наименования";
             return design;
         }
     }
