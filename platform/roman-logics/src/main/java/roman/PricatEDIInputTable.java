@@ -16,12 +16,18 @@ public class PricatEDIInputTable extends EDIInputTable {
 
     protected void init() {
         handler = new ScanningHandler("barcode", "article", "colorCode", "color", "size", "originalName", "country", "netWeight", "composition", "price", "rrp") {
+            String docType = null;
             String imd1 = "";
             String imd2 = "";
             String ftx1 = "";
 
             public void startElement(String namespace, String localName, String qName, Attributes atts) throws SAXException {
                 String segmentID = atts.getValue("Id");
+                if (docType == null) {
+                    docType = atts.getValue("DocType");
+                } else if (!docType.equals("PRICAT")) {
+                    return;
+                }
 
                 if (segmentID != null && (segmentID.equals("LIN") || segmentID.equals("UNS"))) {
                     addRow();

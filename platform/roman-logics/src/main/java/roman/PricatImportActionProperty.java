@@ -21,6 +21,8 @@ import java.util.*;
 public class PricatImportActionProperty extends ActionProperty {
     private RomanBusinessLogics BL;
 
+    private final FileActionClass valueClass = FileActionClass.getDefinedInstance(true, "Файл данных (*.edi, *.txt)", "edi txt");
+
     public PricatImportActionProperty(String sID, RomanBusinessLogics BL, ValueClass supplier) {
         super(sID, "Импортировать прайс", new ValueClass[]{supplier});
         this.BL = BL;
@@ -31,6 +33,8 @@ public class PricatImportActionProperty extends ActionProperty {
         Iterator<ClassPropertyInterface> i = interfaces.iterator();
         ClassPropertyInterface supplierInterface = i.next();
         DataObject supplier = keys.get(supplierInterface);
+
+        List<byte[]> fileList = valueClass.getFiles(value.getValue());
 
         ImportField barcodeField = new ImportField(BL.barcodePricat);
         ImportField articleField = new ImportField(BL.articleNumberPricat);
@@ -44,15 +48,15 @@ public class PricatImportActionProperty extends ActionProperty {
         ImportField priceField = new ImportField(BL.pricePricat);
         ImportField rrpField = new ImportField(BL.rrpPricat);
 
-        PricatEDIInputTable inputTable = new PricatEDIInputTable(new ByteArrayInputStream((byte[]) value.getValue()));
-        PricatImporter importer = new PricatImporter(executeForm.form.session, inputTable, supplier, barcodeField, articleField, colorCodeField, colorField,
-                sizeField, originalNameField, countryField, netWeightField, compositionField, priceField, rrpField);
-        try {
-            importer.doImport();
-        } catch (ParseException e) {
-            e.printStackTrace();
-        } catch (java.text.ParseException e) {
-            e.printStackTrace();
+        for (byte[] file : fileList) {
+            PricatEDIInputTable inputTable = new PricatEDIInputTable(new ByteArrayInputStream(file));
+            PricatImporter importer = new PricatImporter(executeForm.form.session, inputTable, supplier, barcodeField, articleField, colorCodeField, colorField,
+                    sizeField, originalNameField, countryField, netWeightField, compositionField, priceField, rrpField);
+            try {
+                importer.doImport();
+            } catch (Exception e) {
+                throw new RuntimeException();
+            }
         }
 
     }
@@ -98,6 +102,6 @@ public class PricatImportActionProperty extends ActionProperty {
 
     @Override
     public DataClass getValueClass() {
-        return FileActionClass.getDefinedInstance(false, "Файл данных (*.edi, *.txt)", "edi txt");
+        return valueClass;
     }
 }
