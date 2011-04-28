@@ -4,7 +4,6 @@ import platform.interop.action.ClientAction;
 import platform.server.classes.DataClass;
 import platform.server.classes.FileActionClass;
 import platform.server.classes.ValueClass;
-import platform.server.data.type.ParseException;
 import platform.server.form.instance.PropertyObjectInterfaceInstance;
 import platform.server.form.instance.remote.RemoteForm;
 import platform.server.integration.*;
@@ -12,7 +11,6 @@ import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
 import platform.server.logics.property.ActionProperty;
 import platform.server.logics.property.ClassPropertyInterface;
-import platform.server.session.DataSession;
 
 import java.io.ByteArrayInputStream;
 import java.sql.SQLException;
@@ -49,54 +47,34 @@ public class PricatImportActionProperty extends ActionProperty {
         ImportField rrpField = new ImportField(BL.rrpPricat);
 
         for (byte[] file : fileList) {
-            PricatEDIInputTable inputTable = new PricatEDIInputTable(new ByteArrayInputStream(file));
-            PricatImporter importer = new PricatImporter(executeForm.form.session, inputTable, supplier, barcodeField, articleField, colorCodeField, colorField,
-                    sizeField, originalNameField, countryField, netWeightField, compositionField, priceField, rrpField);
-            try {
-                importer.doImport();
-            } catch (Exception e) {
-                throw new RuntimeException();
-            }
-        }
 
-    }
-
-    private class PricatImporter extends SingleSheetImporter {
-        ImportField[] fields;
-        DataSession session;
-        DataObject supplier;
-
-        public PricatImporter(DataSession session, ImportInputTable inputTable, DataObject supplier, ImportField... fields) {
-            super(inputTable, fields);
-            this.session = session;
-            this.fields = fields;
-            this.supplier = supplier;
-        }
-
-        public void doImport() throws ParseException, java.text.ParseException, SQLException {
-            ImportTable table = getTable();
             List<ImportProperty<?>> properties = new ArrayList<ImportProperty<?>>();
-            ImportKey<?> pricatKey = new ImportKey(BL.pricat, BL.barcodeToPricat.getMapping(fields[0]));
-            properties.add(new ImportProperty(fields[0], BL.barcodePricat.getMapping(pricatKey)));
-            properties.add(new ImportProperty(fields[1], BL.articleNumberPricat.getMapping(pricatKey)));
-            properties.add(new ImportProperty(fields[2], BL.colorCodePricat.getMapping(pricatKey)));
-            properties.add(new ImportProperty(fields[3], BL.colorNamePricat.getMapping(pricatKey)));
-            properties.add(new ImportProperty(fields[4], BL.sizePricat.getMapping(pricatKey)));
-            properties.add(new ImportProperty(fields[5], BL.originalNamePricat.getMapping(pricatKey)));
-            properties.add(new ImportProperty(fields[6], BL.countryPricat.getMapping(pricatKey)));
-            properties.add(new ImportProperty(fields[7], BL.netWeightPricat.getMapping(pricatKey)));
-            properties.add(new ImportProperty(fields[8], BL.compositionPricat.getMapping(pricatKey)));
-            properties.add(new ImportProperty(fields[9], BL.pricePricat.getMapping(pricatKey)));
-            properties.add(new ImportProperty(fields[10], BL.rrpPricat.getMapping(pricatKey)));
+            ImportKey<?> pricatKey = new ImportKey(BL.pricat, BL.barcodeToPricat.getMapping(barcodeField));
+            properties.add(new ImportProperty(barcodeField, BL.barcodePricat.getMapping(pricatKey)));
+            properties.add(new ImportProperty(articleField, BL.articleNumberPricat.getMapping(pricatKey)));
+            properties.add(new ImportProperty(colorCodeField, BL.colorCodePricat.getMapping(pricatKey)));
+            properties.add(new ImportProperty(colorField, BL.colorNamePricat.getMapping(pricatKey)));
+            properties.add(new ImportProperty(sizeField, BL.sizePricat.getMapping(pricatKey)));
+            properties.add(new ImportProperty(originalNameField, BL.originalNamePricat.getMapping(pricatKey)));
+            properties.add(new ImportProperty(countryField, BL.countryPricat.getMapping(pricatKey)));
+            properties.add(new ImportProperty(netWeightField, BL.netWeightPricat.getMapping(pricatKey)));
+            properties.add(new ImportProperty(compositionField, BL.compositionPricat.getMapping(pricatKey)));
+            properties.add(new ImportProperty(priceField, BL.pricePricat.getMapping(pricatKey)));
+            properties.add(new ImportProperty(rrpField, BL.rrpPricat.getMapping(pricatKey)));
             properties.add(new ImportProperty(supplier, BL.supplierPricat.getMapping(pricatKey)));
 
             ImportKey<?>[] keysArray = {pricatKey};
-            new IntegrationService(session, table, Arrays.asList(keysArray), properties).synchronize(true, true, false);
-        }
 
-        @Override
-        protected boolean isCorrectRow(int rowNum) {
-            return true;
+            try {
+                PricatEDIInputTable inputTable = new PricatEDIInputTable(new ByteArrayInputStream(file));
+
+                ImportTable table = new EDIInvoiceImporter(inputTable, barcodeField, articleField, colorCodeField, colorField,
+                        sizeField, originalNameField, countryField, netWeightField, compositionField, priceField, rrpField).getTable();
+
+                new IntegrationService(executeForm.form.session, table, Arrays.asList(keysArray), properties).synchronize(true, true, false);
+            } catch (Exception e) {
+                throw new RuntimeException();
+            }
         }
     }
 
