@@ -369,10 +369,10 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
 
         nameVoteResultExpertVote = addJProp(voteResultCheckGroup, "nameVoteResultExpertVote", "Результат", name, voteResultExpertVote, 1, 2);
 
-        incrementVote = addJProp(greater2, dateEndVote, 1, addCProp(DateClass.instance, new java.sql.Date(2011, 4, 29)));
-        LP voteActualIncrementExpertVote = addAGProp(baseGroup, "voteActualIncrementExpertVote", true, "Насл. заседание",
-                addJProp(and(false, false), addJProp(greater2, dateEndVote, 1, dateEndVote, 2), 1, 3, doneExpertVote, 2, 1, incrementVote, 1), 1);
-        voteIncrementExpertVote = addXSUProp(baseGroup, "voteIncrementExpertVote", true, "Насл. заседание", voteActualIncrementExpertVote, addJProp(and1, 2, inExpertVote, 1, 2)); // для новой модели какое заседание было актуальным
+        LP voteResultExpertProject = addAGProp(baseGroup, "voteResultExpertProject", "Результ. заседание", voteResultExpertVote, 2, projectVote, 2);
+        LP doneExpertProject = addJProp(baseGroup, "doneExpertProject", "Проголосовал", equals2, voteResultExpertProject, 1, 2, addCProp(voteResult, "voted"));
+        LP votePrevExpertVote = addDCProp(baseGroup, "votePrevExpertVote", "Пред. усп. заседание", true, doneExpertProject, 1, projectVote, 2);
+        voteIncrementExpertVote = addXSUProp(baseGroup, "voteIncrementExpertVote", "Насл. заседание", addJProp(and1, 2, inExpertVote, 1, 2), votePrevExpertVote); // для новой модели какое заседание было актуальным
 
         voteResultIncrementExpertVote = addJProp(idGroup, "voteResultIncrementExpertVote", "Результат насл. (ИД)", voteResultExpertVote, 1, voteIncrementExpertVote, 1, 2);
         dateIncrementExpertVote = addJProp(voteResultCheckGroup, "dateIncrementExpertVote", "Дата рез. (насл.)", dateExpertVote, 1, voteIncrementExpertVote, 1, 2);
@@ -400,10 +400,10 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
                                      addJProp(and1, addCProp(IntegerClass.instance, 1), doneIncrementExpertVote, 1, 2), 2); // сколько экспертов высказалось
 
         quantityRefusedVote = addSGProp(voteResultGroup, "quantityRefusedVote", "Отказалось",
-                                     addJProp(and1, addCProp(IntegerClass.instance, 1), refusedExpertVote, 1, 2), 2); // сколько экспертов высказалось
+                                     addJProp(and1, addCProp(IntegerClass.instance, 1), refusedIncrementExpertVote, 1, 2), 2); // сколько экспертов высказалось
 
         quantityConnectedVote = addSGProp(voteResultGroup, "quantityConnectedVote", "Аффилировано",
-                                     addJProp(and1, addCProp(IntegerClass.instance, 1), connectedExpertVote, 1, 2), 2); // сколько экспертов высказалось
+                                     addJProp(and1, addCProp(IntegerClass.instance, 1), connectedIncrementExpertVote, 1, 2), 2); // сколько экспертов высказалось
 
         quantityInClusterVote = addSGProp(voteResultGroup, "quantityInClusterVote", "Соотв-ие кластеру (голоса)",
                 addJProp(and1, addCProp(IntegerClass.instance, 1), inClusterExpertVote, 1, 2), 2); // сколько экспертов высказалось
@@ -456,10 +456,10 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
                                         voteSucceededProject, 1); // есть открытое заседания и есть состояшееся заседания !!! нужно создать новое заседание
 
         addConstraint(addJProp("Эксперт не соответствует необходимому кластеру", diff2,
-                               clusterExpert, 1, addJProp(and1, clusterVote, 2, inExpertVote, 1, 2), 1, 2), false);
+                               clusterExpert, 1, addJProp(and1, clusterVote, 2, voteIncrementExpertVote, 1, 2), 1, 2), false);
 
         addConstraint(addJProp("Количество экспертов не соответствует требуемому", andNot1, is(vote), 1, addJProp(equals2, requiredQuantity,
-                                                                                                                  addSGProp(addJProp(and1, addCProp(IntegerClass.instance, 1), inExpertVote, 2, 1), 1), 1), 1), false);
+                                                                                                                  addSGProp(addJProp(and1, addCProp(IntegerClass.instance, 1), voteIncrementExpertVote, 2, 1), 1), 1), 1), false);
 
         generateDocumentsProjectDocumentType = addAProp(actionGroup, new GenerateDocumentsActionProperty());
 
