@@ -370,7 +370,8 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
 
         nameVoteResultExpertVote = addJProp(voteResultCheckGroup, "nameVoteResultExpertVote", "Результат", name, voteResultExpertVote, 1, 2);
 
-        LP voteProjectExpert = addAGProp(baseGroup, "voteProjectExpert", "Результ. заседание", voteResultExpertVote, 2, projectVote, 2);
+        incrementVote = addJProp(greater2, dateEndVote, 1, addCProp(DateClass.instance, new java.sql.Date(2011-1900, 4-1, 29)));
+        LP voteProjectExpert = addAGProp(baseGroup, "voteProjectExpert", "Результ. заседание", addJProp(and1, voteResultExpertVote, 1, 2, incrementVote, 2), 2, projectVote, 2);
         LP voteResultProjectExpert = addJProp(baseGroup, "voteResultProjectExpert", "Результ. заседания", voteResultExpertVote, 2, voteProjectExpert, 1, 2);
         LP doneProjectExpert = addJProp(baseGroup, "doneProjectExpert", "Проголосовал", equals2, voteResultProjectExpert, 1, 2, addCProp(voteResult, "voted"));
         doneProject = addSGProp(baseGroup, "doneProject", "Проголосовало", addJProp(and1, addCProp(IntegerClass.instance, 1), doneProjectExpert, 1, 2), 2); // сколько экспертов высказалось
@@ -477,7 +478,14 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
 
         addCUProp("userRole", true, "Роль пользователя", addCProp(StringClass.get(30), "expert", expert));
 
-        statusProject = addIfElseUProp(idGroup, "statusProject", true, "Статус (ИД)",
+        statusProject = addCaseUProp(idGroup, "statusProject", true, "Статус (ИД)",
+                    acceptedProject, 1, addCProp(projectStatus, "accepted", project), 1,
+                    voteRejectedProject, 1, addCProp(projectStatus, "rejected", project), 1,
+                    voteSucceededProject, 1, addCProp(projectStatus, "succeeded", project), 1,
+                    voteInProgressProject, 1, addCProp(projectStatus, "inProgress", project), 1,
+                    needExtraVoteProject, 1, addCProp(projectStatus, "needExtraVote", project), 1,
+                    notEnoughProject, 1, addCProp(projectStatus, "needDocuments", project), 1);
+/*      statusProject = addIfElseUProp(idGroup, "statusProject", true, "Статус (ИД)",
                                   addCProp(projectStatus, "accepted", project),
                                   addIfElseUProp(addCProp(projectStatus, "rejected", project),
                                                  addIfElseUProp(addCProp(projectStatus, "succeeded", project),
@@ -490,7 +498,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
                                                                                voteInProgressProject, 1),
                                                                 voteSucceededProject, 1),
                                                  voteRejectedProject, 1),
-                                  acceptedProject, 1);
+                                  acceptedProject, 1);*/
         nameStatusProject = addJProp(baseGroup, "nameStatusProject", "Статус", name, statusProject, 1);
 
         statusProjectVote = addJProp(idGroup, "statusProjectVote", "Статус проекта (ИД)", statusProject, projectVote, 1);

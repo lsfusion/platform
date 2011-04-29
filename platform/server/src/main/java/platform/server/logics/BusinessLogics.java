@@ -3470,6 +3470,20 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         return addProperty(group, persistent, listProperty);
     }
 
+    protected LP addCaseUProp(AbstractGroup group, String sID, boolean persistent, String caption, Object... params) {
+        List<LI> list = readLI(params);
+        int intNum = ((LMI)list.get(1)).lp.listInterfaces.size(); // берем количество интерфейсов у первого case'а
+
+        CaseUnionProperty caseProp = new CaseUnionProperty(sID, caption, intNum);
+        LP<UnionProperty.Interface> listProperty = new LP<UnionProperty.Interface>(caseProp);
+        List<PropertyMapImplement<?, UnionProperty.Interface>> mapImplements = (List<PropertyMapImplement<?, UnionProperty.Interface>>)(List<?>)mapLI(list, listProperty.listInterfaces);
+        for(int i=0;i<mapImplements.size()/2;i++)
+            caseProp.addCase(mapImplements.get(2*i), mapImplements.get(2*i+1));
+        if(mapImplements.size()%2!=0)
+            caseProp.addCase(new PropertyMapImplement<PropertyInterface, UnionProperty.Interface>(vtrue.property), mapImplements.get(mapImplements.size()-1));
+        return addProperty(group, persistent, listProperty);
+    }
+
     // объединение классовое (непересекающихся) свойств
 
     protected LP addCUProp(LP... props) {
