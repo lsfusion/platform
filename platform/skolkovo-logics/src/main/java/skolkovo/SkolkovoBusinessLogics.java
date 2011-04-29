@@ -51,6 +51,15 @@ import static platform.base.BaseUtils.nvl;
 
 public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogics> implements SkolkovoRemoteInterface {
 
+    private LP incrementVote;
+    private LP voteIncrementExpertVote;
+    private LP voteResultIncrementExpertVote;
+    private LP dateIncrementExpertVote;
+    private LP doneIncrementExpertVote;
+    private LP refusedIncrementExpertVote;
+    private LP connectedIncrementExpertVote;
+    private LP nameVoteResultIncrementExpertVote;
+
     public SkolkovoBusinessLogics(DataAdapter adapter, int exportPort) throws IOException, ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException, FileNotFoundException, JRException {
         super(adapter, exportPort);
     }
@@ -351,17 +360,26 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         // результаты голосования
         voteResultExpertVote = addDProp(idGroup, "voteResultExpertVote", "Результат (ИД)", voteResult, expert, vote);
         dateExpertVote = addDProp(voteResultCheckGroup, "dateExpertVote", "Дата рез.", DateClass.instance, expert, vote);
-
         doneExpertVote = addJProp(baseGroup, "doneExpertVote", "Проголосовал", equals2,
                                   voteResultExpertVote, 1, 2, addCProp(voteResult, "voted"));
-
-        refusedExpertVote = addJProp(baseGroup, "refusedExpertVote", "Проголосовал", equals2,
+        refusedExpertVote = addJProp(baseGroup, "refusedExpertVote", "Отказался", equals2,
                                   voteResultExpertVote, 1, 2, addCProp(voteResult, "refused"));
-
         connectedExpertVote = addJProp(baseGroup, "connectedExpertVote", "Аффилирован", equals2,
                                   voteResultExpertVote, 1, 2, addCProp(voteResult, "connected"));
 
         nameVoteResultExpertVote = addJProp(voteResultCheckGroup, "nameVoteResultExpertVote", "Результат", name, voteResultExpertVote, 1, 2);
+
+        incrementVote = addJProp(greater2, dateEndVote, 1, addCProp(DateClass.instance, new java.sql.Date(2011, 4, 29)));
+        LP voteActualIncrementExpertVote = addAGProp(baseGroup, "voteActualIncrementExpertVote", true, "Насл. заседание",
+                addJProp(and(false, false), addJProp(greater2, dateEndVote, 1, dateEndVote, 2), 1, 3, doneExpertVote, 2, 1, incrementVote, 1), 1);
+        voteIncrementExpertVote = addXSUProp(baseGroup, "voteIncrementExpertVote", true, "Насл. заседание", voteActualIncrementExpertVote, addJProp(and1, 2, inExpertVote, 1, 2)); // для новой модели какое заседание было актуальным
+
+        voteResultIncrementExpertVote = addJProp(idGroup, "voteResultIncrementExpertVote", "Результат насл. (ИД)", voteResultExpertVote, 1, voteIncrementExpertVote, 1, 2);
+        dateIncrementExpertVote = addJProp(voteResultCheckGroup, "dateIncrementExpertVote", "Дата рез. (насл.)", dateExpertVote, 1, voteIncrementExpertVote, 1, 2);
+        doneIncrementExpertVote = addJProp(baseGroup, "doneIncrementExpertVote", "Проголосовал (насл.)", doneExpertVote, 1, voteIncrementExpertVote, 1, 2);
+        refusedIncrementExpertVote = addJProp(baseGroup, "refusedIncrementExpertVote", "Отказался (насл.)", refusedExpertVote, 1, voteIncrementExpertVote, 1, 2);
+        connectedIncrementExpertVote = addJProp(baseGroup, "connectedIncrementExpertVote", "Аффилирован (насл.)", connectedExpertVote, 1, voteIncrementExpertVote, 1, 2);
+        nameVoteResultIncrementExpertVote = addJProp(voteResultCheckGroup, "nameVoteResultIncrementExpertVote", "Результат (насл.)", name, voteResultIncrementExpertVote, 1, 2);
 
         inClusterExpertVote = addDProp(voteResultCheckGroup, "inClusterExpertVote", "Соотв-ие кластеру", LogicalClass.instance, expert, vote);
         innovativeExpertVote = addDProp(voteResultCheckGroup, "innovativeExpertVote", "Инновац.", LogicalClass.instance, expert, vote);
@@ -376,10 +394,10 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         followed(voteResultExpertVote, dateExpertVote);
 
         quantityRepliedVote = addSGProp(voteResultGroup, "quantityRepliedVote", "Ответило",
-                                     addJProp(and1, addCProp(IntegerClass.instance, 1), voteResultExpertVote, 1, 2), 2); // сколько экспертов высказалось
+                                     addJProp(and1, addCProp(IntegerClass.instance, 1), voteResultIncrementExpertVote, 1, 2), 2); // сколько экспертов высказалось
 
         quantityDoneVote = addSGProp(voteResultGroup, "quantityDoneVote", "Проголосовало",
-                                     addJProp(and1, addCProp(IntegerClass.instance, 1), doneExpertVote, 1, 2), 2); // сколько экспертов высказалось
+                                     addJProp(and1, addCProp(IntegerClass.instance, 1), doneIncrementExpertVote, 1, 2), 2); // сколько экспертов высказалось
 
         quantityRefusedVote = addSGProp(voteResultGroup, "quantityRefusedVote", "Отказалось",
                                      addJProp(and1, addCProp(IntegerClass.instance, 1), refusedExpertVote, 1, 2), 2); // сколько экспертов высказалось
@@ -388,13 +406,13 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
                                      addJProp(and1, addCProp(IntegerClass.instance, 1), connectedExpertVote, 1, 2), 2); // сколько экспертов высказалось
 
         quantityInClusterVote = addSGProp(voteResultGroup, "quantityInClusterVote", "Соотв-ие кластеру (голоса)",
-                                     addJProp(and1, addCProp(IntegerClass.instance, 1), inClusterExpertVote, 1, 2), 2); // сколько экспертов высказалось
+                addJProp(and1, addCProp(IntegerClass.instance, 1), inClusterExpertVote, 1, 2), 2); // сколько экспертов высказалось
 
         quantityInnovativeVote = addSGProp(voteResultGroup, "quantityInnovativeVote", "Инновац. (голоса)",
-                                     addJProp(and1, addCProp(IntegerClass.instance, 1), innovativeExpertVote, 1, 2), 2); // сколько экспертов высказалось
+                addJProp(and1, addCProp(IntegerClass.instance, 1), innovativeExpertVote, 1, 2), 2); // сколько экспертов высказалось
 
         quantityForeignVote = addSGProp(voteResultGroup, "quantityForeignVote", "Иностр. специалист (голоса)",
-                                     addJProp(and1, addCProp(IntegerClass.instance, 1), foreignExpertVote, 1, 2), 2); // сколько экспертов высказалось
+                addJProp(and1, addCProp(IntegerClass.instance, 1), foreignExpertVote, 1, 2), 2); // сколько экспертов высказалось
 
         acceptedInClusterVote = addJProp(voteResultGroup, "acceptedInClusterVote", "Соотв-ие кластеру", greater2,
                                           addJProp(multiplyIntegerBy2, quantityInClusterVote, 1), 1,
@@ -496,7 +514,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         percentForeignExpert = addJProp(expertResultGroup, "percentForeignExpert", "Иностр. специалист (%)", percent, quantityForeignExpert, 1, quantityDoneExpert, 1);
 
         datePrevVote = addOProp("prevDateVote", "Пред. засед.", OrderType.PREVIOUS, dateEndVote, true, true, 1, projectVote, 1, date, 1);
-        numberExpertVote = addOProp("numberExpertVote", "Номер", OrderType.SUM, addJProp(and1, addCProp(IntegerClass.instance, 1), inExpertVote, 1, 2), true, true, 1, 2, 1);
+        numberExpertVote = addOProp("numberExpertVote", "Номер", OrderType.SUM, addJProp(and1, addCProp(IntegerClass.instance, 1), voteIncrementExpertVote, 1, 2), true, true, 1, 2, 1);
 
         emailDocuments = addDProp(baseGroup, "emailDocuments", "E-mail для документов", StringClass.get(50));
 
@@ -508,7 +526,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         emailLetterExpertVote.property.askConfirm = true;
         emailLetterExpertVote.setDerivedForcedChange(addCProp(ActionClass.instance, true), inExpertVote, 1, 2);
 
-        allowedEmailLetterExpertVote = addJProp(baseGroup, "Письмо о заседании (e-mail)", "Письмо о заседании", andNot1, emailLetterExpertVote, 1, 2, voteResultExpertVote, 1, 2);
+        allowedEmailLetterExpertVote = addJProp(baseGroup, "Письмо о заседании (e-mail)", "Письмо о заседании", andNot1, emailLetterExpertVote, 1, 2, voteResultIncrementExpertVote, 1, 2);
         allowedEmailLetterExpertVote.property.askConfirm = true;
 
         emailStartVoteEA = addEAProp(vote);
@@ -617,7 +635,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
             getPropertyDraw(postfixDocument).propertyCaption = addPropertyObject(hidePostfixDocument, objDocument);
 
             objExpert = addSingleGroupObject(expert);
-            addPropertyDraw(objExpert, objVote, inExpertVote);
+            addPropertyDraw(objExpert, objVote, inExpertVote, voteIncrementExpertVote);
             addPropertyDraw(objExpert, name, email);
             addPropertyDraw(voteResultGroup, true, objExpert, objVote);
 
@@ -632,6 +650,10 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
                                                                 new NotNullFilterEntity(addPropertyObject(inExpertVote, objExpert, objVote)),
                                                                 "В заседании",
                                                                 KeyStroke.getKeyStroke(KeyEvent.VK_F11, 0)), true);
+            expertFilterGroup.addFilter(new RegularFilterEntity(genID(),
+                                                                new NotNullFilterEntity(addPropertyObject(voteIncrementExpertVote, objExpert, objVote)),
+                                                                "В насл. заседании",
+                                                                KeyStroke.getKeyStroke(KeyEvent.VK_F9, 0)), true);
             addRegularFilterGroup(expertFilterGroup);
 
             projectFilterGroup = new RegularFilterGroupEntity(genID());
@@ -711,7 +733,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
             addPropertyDraw(objExpert, objVote, allowedEmailLetterExpertVote);
             setForceViewType(voteResultCommentGroup, ClassViewType.PANEL);
 
-            addFixedFilter(new NotNullFilterEntity(addPropertyObject(inExpertVote, objExpert, objVote)));
+            addFixedFilter(new NotNullFilterEntity(addPropertyObject(voteIncrementExpertVote, objExpert, objVote)));
             
             RegularFilterGroupEntity voteFilterGroup = new RegularFilterGroupEntity(genID());
             voteFilterGroup.addFilter(new RegularFilterEntity(genID(),
@@ -898,7 +920,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
 
             objExpert = addSingleGroupObject(2, "expert", expert, userLastName, userFirstName);
             addPropertyDraw(numberExpertVote, objExpert, objVote);
-            addFixedFilter(new NotNullFilterEntity(addPropertyObject(inExpertVote, objExpert, objVote)));
+            addFixedFilter(new NotNullFilterEntity(addPropertyObject(voteIncrementExpertVote, objExpert, objVote)));
 
             addAttachEAForm(emailStartVoteEA, this, EmailActionProperty.Format.PDF, objVote, 1);
             addAttachEAForm(emailClosedVoteEA, this, EmailActionProperty.Format.PDF, emailStartHeaderVote, objVote, 1);
