@@ -12,15 +12,15 @@
 	<field name="expert" class="java.lang.Integer"/>
 	<field name="userFirstName" class="java.lang.String"/>
 	<field name="userLastName" class="java.lang.String"/>
-	<field name="dateExpertVote" class="java.util.Date"/>
-	<field name="nameVoteResultExpertVote" class="java.lang.String"/>
-	<field name="inClusterExpertVote" class="java.lang.Boolean"/>
-	<field name="innovativeExpertVote" class="java.lang.Boolean"/>
-	<field name="foreignExpertVote" class="java.lang.Boolean"/>
-	<field name="competentExpertVote" class="java.lang.Integer"/>
-	<field name="completeExpertVote" class="java.lang.Integer"/>
-	<field name="innovativeCommentExpertVote" class="java.lang.String"/>
-	<field name="completeCommentExpertVote" class="java.lang.String"/>
+	<field name="dateIncrementExpertVote" class="java.util.Date"/>
+	<field name="nameVoteResultIncrementExpertVote" class="java.lang.String"/>
+	<field name="inClusterIncrementExpertVote" class="java.lang.Boolean"/>
+	<field name="innovativeIncrementExpertVote" class="java.lang.Boolean"/>
+	<field name="foreignIncrementExpertVote" class="java.lang.Boolean"/>
+	<field name="competentIncrementExpertVote" class="java.lang.Integer"/>
+	<field name="completeIncrementExpertVote" class="java.lang.Integer"/>
+	<field name="innovativeCommentIncrementExpertVote" class="java.lang.String"/>
+	<field name="completeCommentIncrementExpertVote" class="java.lang.String"/>
 	<field name="nameNativeClaimerVote" class="java.lang.String"/>
 	<field name="nameNativeProjectVote" class="java.lang.String"/>
 	<field name="nameNativeClusterVote" class="java.lang.String"/>
@@ -39,7 +39,7 @@
 				<textElement textAlignment="Left">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{completeCommentExpertVote}]]></textFieldExpression>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{completeCommentIncrementExpertVote}]]></textFieldExpression>
 			</textField>
 			<staticText>
 				<reportElement x="183" y="9" width="196" height="20"/>
@@ -83,12 +83,12 @@
 					<rightPen lineWidth="1.0" lineColor="#B3CC82"/>
 				</box>
 				<textElement/>
-				<textFieldExpression class="java.lang.String"><![CDATA[($F{connectedExpertVote}==null?($F{inClusterExpertVote}==null?"НЕТ":"ДА"):"")]]></textFieldExpression>
+				<textFieldExpression class="java.lang.String"><![CDATA[($F{connectedExpertVote}==null?($F{inClusterIncrementExpertVote}==null?"НЕТ":"ДА"):"")]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="169" y="129" width="100" height="20"/>
 				<textElement/>
-				<textFieldExpression class="java.lang.String"><![CDATA[platform.base.BaseUtils.formatRussian($F{dateExpertVote}) + " года"]]></textFieldExpression>
+				<textFieldExpression class="java.lang.String"><![CDATA[platform.base.BaseUtils.formatRussian($F{dateIncrementExpertVote}) + " года"]]></textFieldExpression>
 			</textField>
 			<staticText>
 				<reportElement mode="Opaque" x="39" y="253" width="461" height="34" backcolor="#E6EED5"/>
@@ -113,7 +113,7 @@
 					<rightPen lineWidth="1.0" lineColor="#B3CC82"/>
 				</box>
 				<textElement/>
-				<textFieldExpression class="java.lang.String"><![CDATA[($F{connectedExpertVote}==null?($F{innovativeExpertVote}==null?"НЕТ":"ДА"):"")]]></textFieldExpression>
+				<textFieldExpression class="java.lang.String"><![CDATA[($F{connectedExpertVote}==null?($F{innovativeIncrementExpertVote}==null?"НЕТ":"ДА"):"")]]></textFieldExpression>
 			</textField>
 			<staticText>
 				<reportElement mode="Opaque" x="39" y="287" width="501" height="20" backcolor="#B2CC82"/>
@@ -151,7 +151,7 @@
 					<rightPen lineWidth="1.0" lineColor="#B3CC82"/>
 				</box>
 				<textElement/>
-				<textFieldExpression class="java.lang.String"><![CDATA[($F{connectedExpertVote}==null?($F{foreignExpertVote}==null?"НЕТ":"ДА"):"")]]></textFieldExpression>
+				<textFieldExpression class="java.lang.String"><![CDATA[($F{connectedExpertVote}==null?($F{foreignIncrementExpertVote}==null?"НЕТ":"ДА"):"")]]></textFieldExpression>
 			</textField>
 			<staticText>
 				<reportElement positionType="Float" mode="Opaque" x="39" y="419" width="461" height="20" backcolor="#E6EED5"/>
@@ -175,7 +175,7 @@
 					<rightPen lineWidth="1.0" lineColor="#B3CC82"/>
 				</box>
 				<textElement/>
-				<textFieldExpression class="java.lang.String"><![CDATA[($F{connectedExpertVote}==null?""+$F{competentExpertVote}:"")]]></textFieldExpression>
+				<textFieldExpression class="java.lang.String"><![CDATA[($F{connectedExpertVote}==null?""+$F{competentIncrementExpertVote}:"")]]></textFieldExpression>
 			</textField>
 			<staticText>
 				<reportElement positionType="Float" mode="Opaque" x="39" y="459" width="461" height="20" backcolor="#E6EED5"/>
@@ -199,7 +199,7 @@
 					<rightPen lineWidth="1.0" lineColor="#B3CC82"/>
 				</box>
 				<textElement/>
-				<textFieldExpression class="java.lang.String"><![CDATA[($F{connectedExpertVote}==null?""+$F{completeExpertVote}:"")]]></textFieldExpression>
+				<textFieldExpression class="java.lang.String"><![CDATA[($F{connectedExpertVote}==null?""+$F{completeIncrementExpertVote}:"")]]></textFieldExpression>
 			</textField>
 			<staticText>
 				<reportElement positionType="Float" mode="Opaque" x="39" y="479" width="501" height="20" backcolor="#B3CC82"/>
@@ -279,7 +279,7 @@
 				<textElement textAlignment="Left" verticalAlignment="Top">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{innovativeCommentExpertVote}]]></textFieldExpression>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{innovativeCommentIncrementExpertVote}]]></textFieldExpression>
 			</textField>
 			<break>
 				<reportElement x="0" y="0" width="100" height="1"/>
