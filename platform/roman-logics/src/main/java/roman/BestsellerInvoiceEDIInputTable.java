@@ -14,8 +14,8 @@ public class BestsellerInvoiceEDIInputTable extends EDIInputTable {
     }
 
     protected void init() {
-        handler = new ScanningHandler("country", "colourCode", "colour", "size", "netWeight", "quantity", "price", "invoiceSID", "sid", "barcode",
-                "boxNumber", "customCode", "customCode6", "composition", "originalName", "numberSku", "rrp") {
+        handler = new ScanningHandler(INVOICE, "barcode", "quantity", "numberSku", "invoiceSID", "boxNumber", "country", "sid",
+                /*"colour", "colourCode",*/ "size", "originalName", "netWeight", "price") {
             String imd1 = ""
                     ,
                     imd2 = "";
@@ -30,30 +30,34 @@ public class BestsellerInvoiceEDIInputTable extends EDIInputTable {
             @Override
             public void addRow() {
                 if (row.get("LINtype") != null && !row.get("LINtype").equals("EN")) {
-                        boolean barcodeAgain = false;
-                        for (List<String> listRow : data) {
-                            if (listRow.get(9).equals(barcode)) {
-                                listRow.set(5, Double.toString(Double.parseDouble(listRow.get(5)) + Double.parseDouble(row.get("quantity"))));
-                                barcodeAgain = true;
-                                break;
-                            }
-                        }
-                        if (!barcodeAgain) {
-                            row.put("price", price);
-                            row.put("country", country);
-                            row.put("netWeight", netWeight);
-                            row.put("invoiceSID", invoiceSID);
-                            row.put("sid", sid);
-                            row.put("boxNumber", boxNumber);
-                            row.put("barcode", barcode);
-
-                            super.addRow();
+                    boolean barcodeAgain = false;
+                    for (List<String> listRow : data) {
+                        if (listRow.get(0).equals(barcode)) {
+                            listRow.set(1, Double.toString(Double.parseDouble(listRow.get(1)) + Double.parseDouble(row.get("quantity"))));
+                            barcodeAgain = true;
+                            break;
                         }
                     }
+                    if (!barcodeAgain) {
+                        row.put("price", price);
+                        row.put("country", country);
+                        row.put("netWeight", netWeight);
+                        row.put("invoiceSID", invoiceSID);
+                        row.put("sid", sid);
+                        row.put("boxNumber", boxNumber);
+                        row.put("barcode", barcode);
+
+                        super.addRow();
+                    }
+                }
             }
 
             public void startElement(String namespace, String localName, String qName, Attributes atts) throws SAXException {
                 String segmentID = atts.getValue("Id");
+
+                if (!isProperFile(atts)) {
+                    return;
+                }
 
                 if (segmentID != null && (segmentID.equals("LIN") || segmentID.equals("UNS"))) {
                     addRow();

@@ -15,17 +15,15 @@ public class PricatEDIInputTable extends EDIInputTable {
     }
 
     protected void init() {
-        handler = new ScanningHandler("barcode", "article", "colorCode", "color", "size", "originalName", "country", "netWeight", "composition", "price", "rrp") {
-            String docType = null;
+        handler = new ScanningHandler(PRICAT, "barcode", "article", "customCode", "colorCode", "color", "size", "originalName", "country", "netWeight", "composition", "price", "rrp") {
             String imd1 = "";
             String imd2 = "";
             String ftx1 = "";
 
             public void startElement(String namespace, String localName, String qName, Attributes atts) throws SAXException {
                 String segmentID = atts.getValue("Id");
-                if (docType == null) {
-                    docType = atts.getValue("DocType");
-                } else if (!docType.equals("PRICAT")) {
+
+                if (!isProperFile(atts)) {
                     return;
                 }
 
@@ -40,6 +38,12 @@ public class PricatEDIInputTable extends EDIInputTable {
                             List<String> comp = getComposition();
                             if (comp.get(1).equals("SA")) {
                                 row.put("article", comp.get(0));
+                            } else if (comp.get(1).equals("HS")) {
+                                StringBuilder sb = new StringBuilder(comp.get(0));
+                                for (int i = sb.length(); i < 10; i++) {
+                                    sb.append(0);
+                                }
+                                row.put("customCode", sb.toString());
                             }
                         } else if (segmentID.startsWith("IMD")) {
                             if (segmentID.equals("IMD01")) {

@@ -1,5 +1,6 @@
 package platform.client.form.editor;
 
+import platform.base.BaseUtils;
 import platform.base.IOUtils;
 import platform.client.form.PropertyEditorComponent;
 
@@ -29,7 +30,7 @@ public class FilePropertyEditor extends JFileChooser
             description = "Все файлы";
         }
 
-        setAcceptAllFileFilterUsed(false);
+        setAcceptAllFileFilterUsed(BaseUtils.toList(extensions).contains("*.*"));
         addChoosableFileFilter(new FileNameExtensionFilter(description, extensions));
     }
 

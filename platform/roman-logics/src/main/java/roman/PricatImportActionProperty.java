@@ -19,7 +19,7 @@ import java.util.*;
 public class PricatImportActionProperty extends ActionProperty {
     private RomanBusinessLogics BL;
 
-    private final FileActionClass valueClass = FileActionClass.getDefinedInstance(true, "Файл данных (*.edi, *.txt)", "edi txt");
+    private final FileActionClass valueClass = FileActionClass.getDefinedInstance(true, "Файлы данных (*.edi, *.txt)", "edi txt *.*");
 
     public PricatImportActionProperty(String sID, RomanBusinessLogics BL, ValueClass supplier) {
         super(sID, "Импортировать прайс", new ValueClass[]{supplier});
@@ -36,6 +36,7 @@ public class PricatImportActionProperty extends ActionProperty {
 
         ImportField barcodeField = new ImportField(BL.barcodePricat);
         ImportField articleField = new ImportField(BL.articleNumberPricat);
+        ImportField customCategoryOriginalField = new ImportField(BL.customCategoryOriginalPricat);
         ImportField colorCodeField = new ImportField(BL.colorCodePricat);
         ImportField colorField = new ImportField(BL.colorNamePricat);
         ImportField sizeField = new ImportField(BL.sizePricat);
@@ -52,6 +53,7 @@ public class PricatImportActionProperty extends ActionProperty {
             ImportKey<?> pricatKey = new ImportKey(BL.pricat, BL.barcodeToPricat.getMapping(barcodeField));
             properties.add(new ImportProperty(barcodeField, BL.barcodePricat.getMapping(pricatKey)));
             properties.add(new ImportProperty(articleField, BL.articleNumberPricat.getMapping(pricatKey)));
+            properties.add(new ImportProperty(customCategoryOriginalField, BL.customCategoryOriginalPricat.getMapping(pricatKey)));
             properties.add(new ImportProperty(colorCodeField, BL.colorCodePricat.getMapping(pricatKey)));
             properties.add(new ImportProperty(colorField, BL.colorNamePricat.getMapping(pricatKey)));
             properties.add(new ImportProperty(sizeField, BL.sizePricat.getMapping(pricatKey)));
@@ -68,7 +70,7 @@ public class PricatImportActionProperty extends ActionProperty {
             try {
                 PricatEDIInputTable inputTable = new PricatEDIInputTable(new ByteArrayInputStream(file));
 
-                ImportTable table = new EDIInvoiceImporter(inputTable, barcodeField, articleField, colorCodeField, colorField,
+                ImportTable table = new EDIInvoiceImporter(inputTable, barcodeField, articleField, customCategoryOriginalField, colorCodeField, colorField,
                         sizeField, originalNameField, countryField, netWeightField, compositionField, priceField, rrpField).getTable();
 
                 new IntegrationService(executeForm.form.session, table, Arrays.asList(keysArray), properties).synchronize(true, true, false);

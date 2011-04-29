@@ -14,7 +14,7 @@ public class SOliverInvoiceEDIInputTable extends EDIInputTable {
     }
 
     protected void init() {
-        handler = new ScanningHandler("barcode", "quantity", "numberSku", "invoiceSID", "boxNumber") {
+        handler = new ScanningHandler(INVOICE, "barcode", "quantity", "numberSku", "invoiceSID", "boxNumber", "country", "price") {
             String invoiceSID = "";
             String boxNumber = "";
 
@@ -30,6 +30,10 @@ public class SOliverInvoiceEDIInputTable extends EDIInputTable {
             public void startElement(String namespace, String localName, String qName, Attributes atts) throws SAXException {
                 String segmentID = atts.getValue("Id");
 
+                if (!isProperFile(atts)) {
+                    return;
+                }
+
                 if (segmentID != null && (segmentID.equals("LIN") || segmentID.equals("UNS"))) {
                     addRow();
                 }
@@ -39,12 +43,17 @@ public class SOliverInvoiceEDIInputTable extends EDIInputTable {
                             row.put("numberSku", getTokenValue());
                         } else if (segmentID.equals("LIN03")) {
                             row.put("barcode", getTokenValue());
+                        } else if(segmentID.equals("ALI01")) {
+                            row.put("country", getTokenValue());
                         } else if (segmentID.equals("QTY01")) {
                             List<String> comp = getComposition();
                             row.put("quantity", comp.get(1));
                         } else if (segmentID.equals("BGM02")) {
                             invoiceSID = getTokenValue();
                             boxNumber = getTokenValue();
+                        } else if (segmentID.equals("PRI01")) {
+                            List<String> comp = getComposition();
+                            row.put("price", comp.get(1));
                         }
                     }
                 } catch (IOException e1) {

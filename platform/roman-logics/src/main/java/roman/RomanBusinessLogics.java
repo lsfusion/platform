@@ -708,6 +708,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     ConcreteCustomClass pricat;
     LP barcodePricat;
     LP articleNumberPricat;
+    LP customCategoryOriginalPricat;
     LP colorCodePricat;
     LP colorNamePricat;
     LP sizePricat;
@@ -947,7 +948,6 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         mexxImportArticleInfoInvoice = addAProp(importInvoiceActionGroup, new MexxImportArticleInfoInvoiceActionProperty(this));
         mexxImportColorInvoice = addAProp(importInvoiceActionGroup, new MexxImportColorInvoiceActionProperty(this));
         bestsellerImportInvoice = addAProp(importInvoiceActionGroup, new BestsellerImportInvoiceActionProperty(this));
-        bestsellerImportCompositionInvoice = addAProp(importInvoiceActionGroup, new BestsellerImportCompositionActionProperty(this));
         sOliverImportInvoice = addAProp(importInvoiceActionGroup, new SOliverImportInvoiceActionProperty(this));
 
         customCategory4CustomCategory6 = addDProp(idGroup, "customCategory4CustomCategory6", "Код(4)", customCategory4, customCategory6);
@@ -1292,6 +1292,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         //price and catalog (pricat)
         barcodePricat = addDProp(baseGroup, "barcodePricat", "Штрих-код", StringClass.get(13), pricat);
         articleNumberPricat = addDProp(baseGroup, "articleNumberPricat", "Артикул", StringClass.get(20), pricat);
+        customCategoryOriginalPricat = addDProp(baseGroup, "customCategoryOriginalPricat", "Код ЕС (10)", StringClass.get(10), pricat);
         colorCodePricat = addDProp(baseGroup, "colorCodePricat", "Код цвета", StringClass.get(20), pricat);
         colorNamePricat = addDProp(baseGroup, "colorNamePricat", "Цвет", StringClass.get(50), pricat);
         sizePricat = addDProp(baseGroup, "sizePricat", "Размер", StringClass.get(5), pricat);

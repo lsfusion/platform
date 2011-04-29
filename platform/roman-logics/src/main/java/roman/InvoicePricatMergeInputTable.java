@@ -83,6 +83,7 @@ public class InvoicePricatMergeInputTable implements ImportInputTable {
 
         propertyMap.put(ResultField.BARCODE, BL.barcodePricat);
         propertyMap.put(ResultField.ARTICLE, BL.articleNumberPricat);
+        propertyMap.put(ResultField.CUSTOMCODE, BL.customCategoryOriginalPricat);
         propertyMap.put(ResultField.COLORCODE, BL.colorCodePricat);
         propertyMap.put(ResultField.COLOR, BL.colorNamePricat);
         propertyMap.put(ResultField.SIZE, BL.sizePricat);

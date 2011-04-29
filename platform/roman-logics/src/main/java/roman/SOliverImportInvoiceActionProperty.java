@@ -20,7 +20,7 @@ public class SOliverImportInvoiceActionProperty extends ImportBoxInvoiceActionPr
     protected ImportInputTable createTable(ByteArrayInputStream inFile) throws BiffException, IOException {
         SOliverInvoiceEDIInputTable invoiceTable = new SOliverInvoiceEDIInputTable(inFile);
         return new InvoicePricatMergeInputTable(BL, invoiceTable, ResultField.BARCODE, ResultField.QUANTITY, ResultField.NUMBERSKU,
-                ResultField.INVOICE, ResultField.BOXNUMBER);
+                ResultField.INVOICE, ResultField.BOXNUMBER, ResultField.COUNTRY, ResultField.PRICE);
     }
 
     @Override
@@ -33,7 +33,7 @@ public class SOliverImportInvoiceActionProperty extends ImportBoxInvoiceActionPr
 
     @Override
     public DataClass getValueClass() {
-        return FileActionClass.getDefinedInstance(false, "Файл данных (*.edi, *.txt)", "edi txt");
+        return FileActionClass.getDefinedInstance(false, "Файл данных (*.edi, *.txt)", "edi txt *.*");
     }
 }
 
