@@ -59,6 +59,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
     private LP refusedIncrementExpertVote;
     private LP connectedIncrementExpertVote;
     private LP nameVoteResultIncrementExpertVote;
+    private LP doneProject;
 
     public SkolkovoBusinessLogics(DataAdapter adapter, int exportPort) throws IOException, ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException, FileNotFoundException, JRException {
         super(adapter, exportPort);
@@ -369,9 +370,11 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
 
         nameVoteResultExpertVote = addJProp(voteResultCheckGroup, "nameVoteResultExpertVote", "Результат", name, voteResultExpertVote, 1, 2);
 
-        LP voteResultExpertProject = addAGProp(baseGroup, "voteResultExpertProject", "Результ. заседание", voteResultExpertVote, 2, projectVote, 2);
-        LP doneExpertProject = addJProp(baseGroup, "doneExpertProject", "Проголосовал", equals2, voteResultExpertProject, 1, 2, addCProp(voteResult, "voted"));
-        LP votePrevExpertVote = addDCProp(baseGroup, "votePrevExpertVote", "Пред. усп. заседание", true, doneExpertProject, 1, projectVote, 2);
+        LP voteProjectExpert = addAGProp(baseGroup, "voteProjectExpert", "Результ. заседание", voteResultExpertVote, 2, projectVote, 2);
+        LP voteResultProjectExpert = addJProp(baseGroup, "voteResultProjectExpert", "Результ. заседания", voteResultExpertVote, 2, voteProjectExpert, 1, 2);
+        LP doneProjectExpert = addJProp(baseGroup, "doneProjectExpert", "Проголосовал", equals2, voteResultProjectExpert, 1, 2, addCProp(voteResult, "voted"));
+        doneProject = addSGProp(baseGroup, "doneProject", "Проголосовало", addJProp(and1, addCProp(IntegerClass.instance, 1), doneProjectExpert, 1, 2), 2); // сколько экспертов высказалось
+        LP votePrevExpertVote = addDCProp(baseGroup, "votePrevExpertVote", "Пред. усп. заседание", true, addJProp(and1, voteProjectExpert, 1, 2, doneProjectExpert, 1, 2), projectVote, 2, 1);
         voteIncrementExpertVote = addXSUProp(baseGroup, "voteIncrementExpertVote", "Насл. заседание", addJProp(and1, 2, inExpertVote, 1, 2), votePrevExpertVote); // для новой модели какое заседание было актуальным
 
         voteResultIncrementExpertVote = addJProp(idGroup, "voteResultIncrementExpertVote", "Результат насл. (ИД)", voteResultExpertVote, 1, voteIncrementExpertVote, 1, 2);
