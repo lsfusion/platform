@@ -630,8 +630,8 @@ public class SimplexLayout implements LayoutManager2, ComponentListener {
         //}
 
         if (type == SimplexLayout.MIN) {
-            objFnc.set(targetInfo.R, layoutSize.getHeight());
-            objFnc.set(targetInfo.B, layoutSize.getWidth());
+            objFnc.set(targetInfo.R, -layoutSize.getHeight());
+            objFnc.set(targetInfo.B, -layoutSize.getWidth());
         }
 
         double[] objArr = new double[objFnc.size()];
