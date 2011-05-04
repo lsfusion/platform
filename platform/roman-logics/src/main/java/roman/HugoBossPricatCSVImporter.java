@@ -7,18 +7,12 @@ import platform.server.integration.SingleSheetImporter;
 
 import java.text.ParseException;
 
-/**
- * User: DAle
- * Date: 28.02.11
- * Time: 19:30
- */
+public class HugoBossPricatCSVImporter extends SingleSheetImporter {
+    private static final int LAST_COLUMN = 50;
 
-public class HugoBossInvoiceImporter extends SingleSheetImporter {
-    private static final int LAST_COLUMN = 35;
+    private final static int WEIGHT = 32, CUSTOMNO = 21, EAN = 5;
 
-    private final static int CUSTOM_NUMBER = 15, CUSTOM_NUMBER_6 = 16, EAN = 0;
-
-    public HugoBossInvoiceImporter(ImportInputTable inputTable, Object... fields) {
+    public HugoBossPricatCSVImporter(ImportInputTable inputTable, Object... fields) {
         super(inputTable, fields);
     }
 
@@ -40,14 +34,19 @@ public class HugoBossInvoiceImporter extends SingleSheetImporter {
         value = value.trim();
 
         switch (column) {
-            case CUSTOM_NUMBER:
-                if (value.length() < 10) {
-                    value = value + BaseUtils.replicate('0', 10 - value.length());
-                }
-                return value.substring(0, 10);
+            case WEIGHT:
+                value = value.replace(',', '.');
+                return String.valueOf(Double.parseDouble(value) / 1000);
 
-            case CUSTOM_NUMBER_6:
-                return value.substring(0, 6);
+            case CUSTOMNO:
+                switch (part) {
+                    case 0:
+                        if (value.length() < 10) {
+                            value = value + BaseUtils.replicate('0', 10 - value.length());
+                        }
+                        return value.substring(0, 10); // customs code
+                    case 1: return value.substring(0, 6); // customs code 6
+                }
 
             case EAN:
                 if (value.length() == 14)

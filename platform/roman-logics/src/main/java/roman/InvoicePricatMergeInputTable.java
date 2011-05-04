@@ -56,7 +56,7 @@ public class InvoicePricatMergeInputTable implements ImportInputTable {
             //сливаем таблицу инвойса и данные из прайса
             for (int i = 0; i < invoiceTable.rowsCnt(); i++) {
                 List<String> row = new ArrayList<String>();
-                String barcode = invoiceTable.getCellString(i, barcodeInvoiceIndex).trim();
+                String barcode = transformBarcode(invoiceTable.getCellString(i, barcodeInvoiceIndex).trim());
                 boolean pricatContainsBarcode = pricatData.containsKey(barcode);
 
                 for (ResultField field : ResultField.values()) {
@@ -97,6 +97,13 @@ public class InvoicePricatMergeInputTable implements ImportInputTable {
         return propertyMap;
     }
 
+    private String transformBarcode(String barcode) {
+        if (barcode.length() > 13) {
+            return barcode.substring(barcode.length() - 13);
+        }
+        return barcode;
+    }
+
     private Map<String, Map<ResultField, Object>> getDataFromPricat(List<ResultField> invoiceFields,
                                                                      Map<ResultField, LP<?>> propertyMap) throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
 
@@ -109,7 +116,7 @@ public class InvoicePricatMergeInputTable implements ImportInputTable {
         SingleKeyTableUsage<ResultField> table = new SingleKeyTableUsage<ResultField>(keyType, new ArrayList<ResultField>(), null);
 
         for (int i = 0; i < invoiceTable.rowsCnt(); i++) {
-            String barcodeStr = invoiceTable.getCellString(i, invoiceFields.indexOf(ResultField.BARCODE));
+            String barcodeStr = transformBarcode(invoiceTable.getCellString(i, invoiceFields.indexOf(ResultField.BARCODE)));
             table.insertRecord(sqlSession, new DataObject(barcodeStr), new HashMap<ResultField, ObjectValue>(), true, i == (invoiceTable.rowsCnt() - 1));
         }
 

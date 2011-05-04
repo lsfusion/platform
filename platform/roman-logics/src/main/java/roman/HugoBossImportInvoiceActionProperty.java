@@ -10,6 +10,8 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
+import static roman.InvoicePricatMergeInputTable.ResultField;
+
 /**
  * User: DAle
  * Date: 28.02.11
@@ -24,14 +26,16 @@ public class HugoBossImportInvoiceActionProperty extends ImportBoxInvoiceActionP
 
     @Override
     protected ImportInputTable createTable(ByteArrayInputStream inFile) throws BiffException, IOException {
-        return new CSVInputTable(new InputStreamReader(inFile), 2, ';');
+        ImportInputTable invoiceTable = new CSVInputTable(new InputStreamReader(inFile), 2, ';', false, 1, 1, 11, 17, 18, 19, 20, 21, 21, 22, 25, 26, 27, 28);
+        return new InvoicePricatMergeInputTable(BL, invoiceTable, ResultField.INVOICE, ResultField.BOXNUMBER, ResultField.NUMBERSKU,
+                ResultField.ORIGINALNAME, ResultField.ARTICLE, ResultField.COLORCODE, ResultField.COMPOSITION, ResultField.CUSTOMCODE,
+                ResultField.CUSTOMCODE6, ResultField.COUNTRY, ResultField.BARCODE, ResultField.SIZE, ResultField.QUANTITY, ResultField.PRICE);
     }
 
     @Override
     protected SingleSheetImporter createExporter(ImportInputTable inputTable) {
-        return new HugoBossInvoiceImporter(inputTable, new Object[] {null, new ImportField[] {invoiceSIDField, boxNumberField},
-                11, numberSkuField, null, null, null, unitNetWeightField, null, originalNameField, sidField,
-                colorCodeField, compositionField, new ImportField[] {customCodeField, customCode6Field}, countryField, null,
-                null, barCodeField, sizeField, unitQuantityField, unitPriceField, 36, new ImportField[] {colorNameField, RRPField}});
+        return new HugoBossInvoiceImporter(inputTable, barCodeField, sidField, invoiceSIDField, boxNumberField, colorCodeField,
+                colorNameField, sizeField, originalNameField, countryField, unitNetWeightField, compositionField, unitPriceField,
+                RRPField, unitQuantityField, numberSkuField, customCodeField, customCode6Field);
     }
 }

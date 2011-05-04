@@ -16,13 +16,13 @@ import java.io.ByteArrayInputStream;
 import java.sql.SQLException;
 import java.util.*;
 
-public class PricatImportActionProperty extends ActionProperty {
+public class PricatEDIImportActionProperty extends ActionProperty {
     private RomanBusinessLogics BL;
 
     private final FileActionClass valueClass = FileActionClass.getDefinedInstance(true, "Файлы данных (*.edi, *.txt)", "edi txt *.*");
 
-    public PricatImportActionProperty(String sID, RomanBusinessLogics BL, ValueClass supplier) {
-        super(sID, "Импортировать прайс", new ValueClass[]{supplier});
+    public PricatEDIImportActionProperty(String sID, RomanBusinessLogics BL, ValueClass supplier) {
+        super(sID, "Импортировать прайс (EDI)", new ValueClass[]{supplier});
         this.BL = BL;
     }
 
@@ -47,23 +47,23 @@ public class PricatImportActionProperty extends ActionProperty {
         ImportField priceField = new ImportField(BL.pricePricat);
         ImportField rrpField = new ImportField(BL.rrpPricat);
 
-        for (byte[] file : fileList) {
+        List<ImportProperty<?>> properties = new ArrayList<ImportProperty<?>>();
+        ImportKey<?> pricatKey = new ImportKey(BL.pricat, BL.barcodeToPricat.getMapping(barcodeField));
+        properties.add(new ImportProperty(barcodeField, BL.barcodePricat.getMapping(pricatKey)));
+        properties.add(new ImportProperty(articleField, BL.articleNumberPricat.getMapping(pricatKey)));
+        properties.add(new ImportProperty(customCategoryOriginalField, BL.customCategoryOriginalPricat.getMapping(pricatKey)));
+        properties.add(new ImportProperty(colorCodeField, BL.colorCodePricat.getMapping(pricatKey)));
+        properties.add(new ImportProperty(colorField, BL.colorNamePricat.getMapping(pricatKey)));
+        properties.add(new ImportProperty(sizeField, BL.sizePricat.getMapping(pricatKey)));
+        properties.add(new ImportProperty(originalNameField, BL.originalNamePricat.getMapping(pricatKey)));
+        properties.add(new ImportProperty(countryField, BL.countryPricat.getMapping(pricatKey)));
+        properties.add(new ImportProperty(netWeightField, BL.netWeightPricat.getMapping(pricatKey)));
+        properties.add(new ImportProperty(compositionField, BL.compositionPricat.getMapping(pricatKey)));
+        properties.add(new ImportProperty(priceField, BL.pricePricat.getMapping(pricatKey)));
+        properties.add(new ImportProperty(rrpField, BL.rrpPricat.getMapping(pricatKey)));
+        properties.add(new ImportProperty(supplier, BL.supplierPricat.getMapping(pricatKey)));
 
-            List<ImportProperty<?>> properties = new ArrayList<ImportProperty<?>>();
-            ImportKey<?> pricatKey = new ImportKey(BL.pricat, BL.barcodeToPricat.getMapping(barcodeField));
-            properties.add(new ImportProperty(barcodeField, BL.barcodePricat.getMapping(pricatKey)));
-            properties.add(new ImportProperty(articleField, BL.articleNumberPricat.getMapping(pricatKey)));
-            properties.add(new ImportProperty(customCategoryOriginalField, BL.customCategoryOriginalPricat.getMapping(pricatKey)));
-            properties.add(new ImportProperty(colorCodeField, BL.colorCodePricat.getMapping(pricatKey)));
-            properties.add(new ImportProperty(colorField, BL.colorNamePricat.getMapping(pricatKey)));
-            properties.add(new ImportProperty(sizeField, BL.sizePricat.getMapping(pricatKey)));
-            properties.add(new ImportProperty(originalNameField, BL.originalNamePricat.getMapping(pricatKey)));
-            properties.add(new ImportProperty(countryField, BL.countryPricat.getMapping(pricatKey)));
-            properties.add(new ImportProperty(netWeightField, BL.netWeightPricat.getMapping(pricatKey)));
-            properties.add(new ImportProperty(compositionField, BL.compositionPricat.getMapping(pricatKey)));
-            properties.add(new ImportProperty(priceField, BL.pricePricat.getMapping(pricatKey)));
-            properties.add(new ImportProperty(rrpField, BL.rrpPricat.getMapping(pricatKey)));
-            properties.add(new ImportProperty(supplier, BL.supplierPricat.getMapping(pricatKey)));
+        for (byte[] file : fileList) {
 
             ImportKey<?>[] keysArray = {pricatKey};
 

@@ -678,7 +678,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     private LP mexxImportArticleInfoInvoice;
     private LP mexxImportColorInvoice;
     private LP bestsellerImportInvoice;
-    private LP bestsellerImportCompositionInvoice;
+    private LP hugoBossImportPricat;
     private LP sOliverImportInvoice;
     private AbstractGroup importInvoiceActionGroup;
     private LP printCreatePalletForm;
@@ -1306,7 +1306,8 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         rrpPricat = addDProp(baseGroup, "RRP", "Рекомендованная цена", DoubleClass.instance, pricat);
         supplierPricat = addDProp("supplierPricat", "Поставщик", supplier, pricat);
         barcodeToPricat = addAGProp("barcodeToPricat", "штрих-код", barcodePricat);
-        importPricatSupplier = addIPProp();
+        importPricatSupplier = addProperty(null, new LP<ClassPropertyInterface>(new PricatEDIImportActionProperty(genSID(), this, supplier)));
+        hugoBossImportPricat = addProperty(null, new LP<ClassPropertyInterface>(new HugoBossPricatCSVImportActionProperty(genSID(), this, hugoBossSupplier)));
 
         // кол-во заказа
         quantityDataListSku = addDProp("quantityDataListSku", "Кол-во (первичное)", DoubleClass.instance, list, sku);
@@ -1991,10 +1992,6 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 
     public LP addDEAProp() {
         return addProperty(null, new LP<ClassPropertyInterface>(new DeclarationExportActionProperty("declarationExport", "Экспорт декларанта", this, importer, freight)));
-    }
-
-    public LP addIPProp() {
-        return addProperty(null, new LP<ClassPropertyInterface>(new PricatImportActionProperty(genSID(), this, supplier)));
     }
 
     public InvoiceFromFormEntity invoiceFromFormEntity;
@@ -4108,7 +4105,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 
         public PricatFormEntity(NavigatorElement parent, String sID, String caption) {
             super(parent, sID, caption);
-            objSupplier = addSingleGroupObject(supplier, name, importPricatSupplier);
+            objSupplier = addSingleGroupObject(supplier, name, importPricatSupplier, hugoBossImportPricat);
             objSupplier.groupTo.setSingleClassView(ClassViewType.PANEL);
 
             ObjectEntity objPricat = addSingleGroupObject(pricat);
@@ -4118,6 +4115,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             addFixedFilter(new CompareFilterEntity(addPropertyObject(supplierPricat, objPricat), Compare.EQUALS, objSupplier));
             setReadOnly(objSupplier, true);
             setReadOnly(importPricatSupplier, false, objSupplier.groupTo);
+            setReadOnly(hugoBossImportPricat, false, objSupplier.groupTo);
         }
     }
 

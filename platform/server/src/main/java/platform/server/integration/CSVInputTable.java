@@ -15,6 +15,8 @@ import java.util.List;
 
 public class CSVInputTable implements ImportInputTable {
     private List<List<String>> data = new ArrayList<List<String>>();
+    Object[] columnsToRead;
+    boolean readAll = true;
 
     public CSVInputTable(java.io.Reader reader, int headerLines, int delimiterChar) throws IOException {
         CsvListReader csvReader = new CsvListReader(reader, new CsvPreference('"', delimiterChar, "\n"));
@@ -29,8 +31,14 @@ public class CSVInputTable implements ImportInputTable {
         }
     }
 
+    public CSVInputTable(java.io.Reader reader, int headerLines, int delimiterChar, boolean readAll, Object... columnsToRead) throws IOException {
+        this(reader, headerLines, delimiterChar);
+        this.readAll = readAll;
+        this.columnsToRead = columnsToRead;
+    }
+
     public String getCellString(int row, int column) {
-        return data.get(row).get(column);
+        return data.get(row).get(readAll ? column : (Integer) columnsToRead[column]);
     }
 
     public String getCellString(ImportField field, int row, int column) {
@@ -42,6 +50,6 @@ public class CSVInputTable implements ImportInputTable {
     }
 
     public int columnsCnt() {
-        return data.get(0).size();
+        return readAll ? data.get(0).size() : columnsToRead.length;
     }
 }
