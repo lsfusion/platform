@@ -11,14 +11,18 @@ import java.util.List;
 public class PricatEDIInputTable extends EDIInputTable {
     public PricatEDIInputTable(ByteArrayInputStream inFile) {
         super(inFile);
-        ((ScanningHandler) handler).addRow();
     }
 
     protected void init() {
-        handler = new ScanningHandler(PRICAT, "barcode", "article", "customCode", "colorCode", "color", "size", "originalName", "country", "netWeight", "composition", "price", "rrp") {
+        handler = new ScanningHandler(PRICAT, "barcode", "article", "customCode", "colorCode", "color", "size", "originalName",
+                "country", "netWeight", "composition", "price", "rrp") {
             String imd1 = "";
             String imd2 = "";
             String ftx1 = "";
+
+            public void endDocument() {
+                addRow();
+            }
 
             public void startElement(String namespace, String localName, String qName, Attributes atts) throws SAXException {
                 String segmentID = atts.getValue("Id");

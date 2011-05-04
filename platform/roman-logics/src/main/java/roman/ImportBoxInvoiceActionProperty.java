@@ -74,13 +74,7 @@ public abstract class ImportBoxInvoiceActionProperty extends BaseImportActionPro
 
         initFields();
 
-        ImportTable table;
-        try {
-            ByteArrayInputStream inFile = new ByteArrayInputStream((byte[]) value.getValue());
-            table = createExporter(createTable(inFile)).getTable();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+        List<byte[]> fileList = valueClass.getFiles(value.getValue());
 
         List<ImportProperty<?>> properties = new ArrayList<ImportProperty<?>>();
 
@@ -136,8 +130,18 @@ public abstract class ImportBoxInvoiceActionProperty extends BaseImportActionPro
         properties.add(new ImportProperty(RRPField, BL.RRPDocumentArticle.getMapping(invoiceKey, articleKey)));
         properties.add(new ImportProperty(unitPriceField, BL.priceDocumentArticle.getMapping(invoiceKey, articleKey)));
 
-        ImportKey<?>[] keysArray = {invoiceKey, boxKey, articleKey, itemKey, colorKey, sizeKey, countryKey, customCategoryKey, customCategory6Key};
-        new IntegrationService(session, table, Arrays.asList(keysArray), properties).synchronize(true, true, false);
+        for (byte[] file : fileList) {
+            ImportTable table;
+            try {
+                ByteArrayInputStream inFile = new ByteArrayInputStream(file);
+                table = createExporter(createTable(inFile)).getTable();
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+
+            ImportKey<?>[] keysArray = {invoiceKey, boxKey, articleKey, itemKey, colorKey, sizeKey, countryKey, customCategoryKey, customCategory6Key};
+            new IntegrationService(session, table, Arrays.asList(keysArray), properties).synchronize(true, true, false);
+        }
 
         actions.add(new MessageClientAction("Данные были успешно приняты", "Импорт"));
     }

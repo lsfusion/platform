@@ -19,8 +19,8 @@ import java.util.Iterator;
 
 public abstract class BaseImportActionProperty extends ActionProperty {
     protected final ClassPropertyInterface supplierInterface;
-    protected String extensions;
     protected RomanBusinessLogics BL;
+    protected FileActionClass valueClass;
 
     public BaseImportActionProperty(RomanBusinessLogics BL, String caption, ValueClass supplierClass) {
         this(BL, caption, supplierClass, "xls");
@@ -31,8 +31,17 @@ public abstract class BaseImportActionProperty extends ActionProperty {
 
         Iterator<ClassPropertyInterface> i = interfaces.iterator();
         supplierInterface = i.next();
-        this.extensions = extensions;
         this.BL = BL;
+
+        String[] extArray = extensions.split(" ");
+        String extString = "";
+        for (String ext : extArray) {
+            if (extString.length() > 0) {
+                extString = extString + ", ";
+            }
+            extString = extString + "*." + ext;
+        }
+        valueClass = FileActionClass.getDefinedInstance(true, "Файлы c данными (" + extString + ")", extensions);
     }
 
     @Override
@@ -44,14 +53,6 @@ public abstract class BaseImportActionProperty extends ActionProperty {
 
     @Override
     public DataClass getValueClass() {
-        String[] extArray = extensions.split(" ");
-        String extString = "";
-        for (String ext : extArray) {
-            if (extString.length() > 0) {
-                extString = extString + ", ";
-            }
-            extString = extString + "*." + ext;
-        }
-        return FileActionClass.getDefinedInstance(false, "Файлы c данными (" + extString + ")", extensions);
+        return valueClass;
     }
 }
