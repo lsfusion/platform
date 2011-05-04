@@ -348,10 +348,10 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         inNewExpertVote = addJProp(baseGroup, "inNewExpertVote", "Вкл (нов.)", andNot1, inExpertVote, 1, 2, oldExpertVote, 1, 2);
 
         dateStartVote = addJProp(baseGroup, "dateStartVote", true, "Дата начала", and1, date, 1, is(vote), 1);
-        dateEndVote = addJProp(baseGroup, "dateEndVote", "Дата окончания", addDate2, dateStartVote, 1, requiredPeriod);
-//        aggrDateEndVote = addJProp(baseGroup, "aggrDateEndVote", "Дата окончания (агр.)", addDate2, dateStartVote, 1, requiredPeriod);
-//        dateEndVote = addDProp(baseGroup, "dateEndVote", "Дата окончания", DateClass.instance, vote);
-//        dateEndVote.setDerivedChange(true, aggrDateEndVote, dateStartVote, 1);
+//        dateEndVote = addJProp(baseGroup, "dateEndVote", "Дата окончания", addDate2, dateStartVote, 1, requiredPeriod);
+        aggrDateEndVote = addJProp(baseGroup, "aggrDateEndVote", "Дата окончания (агр.)", addDate2, dateStartVote, 1, requiredPeriod);
+        dateEndVote = addDProp(baseGroup, "dateEndVote", "Дата окончания", DateClass.instance, vote);
+        dateEndVote.setDerivedForcedChange(true, aggrDateEndVote, 1, dateStartVote, 1);
 
         openedVote = addJProp(baseGroup, "openedVote", "Открыто", groeq2, dateEndVote, 1, currentDate);
         closedVote = addJProp(baseGroup, "closedVote", "Закрыто", andNot1, is(vote), 1, openedVote, 1);
@@ -608,7 +608,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
 
         PolicyManager.defaultSecurityPolicy.property.view.deny(userPassword);
 
-        PolicyManager.defaultSecurityPolicy.property.change.deny(dateStartVote, dateEndVote, inExpertVote, voteResultExpertVote, doneExpertVote);
+        PolicyManager.defaultSecurityPolicy.property.change.deny(dateStartVote, dateEndVote, inExpertVote, oldExpertVote, voteResultExpertVote, doneExpertVote);
 
         for (Property property : voteResultGroup.getProperties())
             PolicyManager.defaultSecurityPolicy.property.change.deny(property);
