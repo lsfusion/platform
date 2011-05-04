@@ -4,6 +4,7 @@ import platform.base.OrderedMap;
 import platform.base.identity.IDGenerator;
 import platform.interop.form.layout.AbstractForm;
 import platform.interop.form.layout.DoNotIntersectSimplexConstraint;
+import platform.server.classes.LogicalClass;
 import platform.server.form.entity.*;
 import platform.server.logics.linear.LP;
 import platform.server.logics.property.Property;
@@ -493,6 +494,26 @@ public class FormView implements ServerIdentitySerializable, AbstractForm<Contai
 
     public void setFocusable(PropertyDrawView property, boolean focusable) {
         property.focusable = focusable;
+    }
+
+    public void setLogicalShowTableFirst(Boolean showTableFirst) {
+
+        for (PropertyDrawView propertyView : getProperties()) {
+            // просто охрененная затычка
+            if (propertyView.entity.propertyObject.property.getType() instanceof LogicalClass)
+                setShowTableFirst(propertyView, showTableFirst);
+        }
+    }
+
+    public void setShowTableFirst(Boolean showTableFirst, GroupObjectEntity groupObject) {
+
+        for (PropertyDrawView propertyView : getProperties(groupObject)) {
+            setShowTableFirst(propertyView, showTableFirst);
+        }
+    }
+
+    public void setShowTableFirst(PropertyDrawView property, Boolean showTableFirst) {
+        property.showTableFirst = showTableFirst;
     }
 
 //    public void setReadOnly(AbstractGroup group, boolean readOnly, GroupObjectEntity groupObject) {

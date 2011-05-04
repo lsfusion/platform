@@ -40,7 +40,8 @@ public class PropertyDrawView extends ComponentView {
      *  design.get(propertyDraw).autoHide = true;
      *  </code></pre>
      */
-    public boolean autoHide = false;
+    public boolean autoHide;
+    public boolean showTableFirst;
 
     public Color highlightColor;
 
@@ -175,6 +176,7 @@ public class PropertyDrawView extends ComponentView {
         pool.writeObject(outStream, externalScreenConstraints);
 
         outStream.writeBoolean(autoHide);
+        outStream.writeBoolean(showTableFirst);
 
         pool.writeObject(outStream, highlightColor);
 
@@ -242,6 +244,7 @@ public class PropertyDrawView extends ComponentView {
         externalScreenConstraints = pool.readObject(inStream);
 
         autoHide = inStream.readBoolean();
+        showTableFirst = inStream.readBoolean();
 
         highlightColor = pool.readObject(inStream);
 

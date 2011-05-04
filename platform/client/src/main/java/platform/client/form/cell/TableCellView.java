@@ -49,7 +49,6 @@ public class TableCellView extends JPanel implements CellView {
         label.setBorder(BorderFactory.createEmptyBorder(0, 4, 0, 4));
         label.setText(key.getFullCaption());
         label.setAlignmentX(Component.CENTER_ALIGNMENT);
-        add(label);
 
         key.design.designHeader(label);
 
@@ -102,8 +101,13 @@ public class TableCellView extends JPanel implements CellView {
 
         setToolTip(key.caption);
 
-        add(table);
-
+        if (key.showTableFirst) {
+            add(table);
+            add(label);
+        } else {
+            add(label);
+            add(table);
+        }
     }
 
     public void rightClick() {
