@@ -28,4 +28,6 @@ public interface ClientActionDispatcher {
     public void execute(ApplyClientAction action);
 
     public void execute(OpenFileClientAction action);
+
+    public void execute(AudioClientAction action);
 }

@@ -4,6 +4,7 @@ import net.sf.jasperreports.engine.JRException;
 import platform.base.BaseUtils;
 import platform.interop.ClassViewType;
 import platform.interop.Compare;
+import platform.interop.action.AudioClientAction;
 import platform.interop.action.ClientAction;
 import platform.interop.form.layout.DoNotIntersectSimplexConstraint;
 import platform.server.Settings;
@@ -35,8 +36,7 @@ import platform.server.session.DataSession;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyEvent;
-import java.io.FileNotFoundException;
-import java.io.IOException;
+import java.io.*;
 import java.sql.SQLException;
 import java.util.Iterator;
 import java.util.List;
@@ -3785,7 +3785,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 
             addPropertyDraw(objArticle, sidArticle, nameArticle);
             addPropertyDraw(objComposition, objectValue);
-            addPropertyDraw(objCountry, sidCountry, nameOriginCountry);
+            addPropertyDraw(objCountry, sidCountry, name);
             addPropertyDraw(objCategory, sidCustomCategory10);                            
             addPropertyDraw(quantityImporterFreightArticleCompositionCountryCategory, objImporter, objFreight, objArticle, objComposition, objCountry, objCategory);
             addPropertyDraw(objArticle, nameUnitOfMeasureArticle);
@@ -3831,7 +3831,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             gobjFreightImporter.initClassView = ClassViewType.PANEL;
 
             objFreightBox = addSingleGroupObject(4, "freightBox", freightBox, "Короб", barcode);
-            addPropertyDraw( objImporter, objFreightBox, netWeightImporterFreightUnit, quantityImporterStock);
+            addPropertyDraw(objImporter, objFreightBox, netWeightImporterFreightUnit, quantityImporterStock);
 
             objArticle = addSingleGroupObject(5, "article", article, "Артикул", sidArticle, nameBrandSupplierArticle, nameArticle);
             addPropertyDraw(quantityImporterStockArticle, objImporter, objFreightBox, objArticle);
@@ -4169,7 +4169,18 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
                         objRouteResult = objRouteRB;
             }
 
-            form.seekObject((ObjectInstance)mapObjects.get(routeInterface), objRouteResult);
+            ObjectInstance objectInstance = (ObjectInstance)mapObjects.get(routeInterface);
+            if (!objRouteResult.equals(objectInstance.getObjectValue())) {
+                try {
+                    actions.add(new AudioClientAction(getClass().getResourceAsStream(
+                        objRouteResult.equals(objRouteRB) ? "/audio/rb.wav" : "/audio/rf.wav"
+                    )));
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+
+            form.seekObject(objectInstance, objRouteResult);
         }
     }
 }

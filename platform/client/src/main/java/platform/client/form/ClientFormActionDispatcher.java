@@ -7,6 +7,7 @@ import platform.client.Main;
 import platform.interop.action.*;
 import platform.interop.exceptions.LoginException;
 
+import javax.sound.sampled.*;
 import javax.swing.*;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
@@ -246,6 +247,18 @@ public class ClientFormActionDispatcher implements ClientActionDispatcher {
             if(action.file!=null)
                 BaseUtils.openFile(action.file, action.extension);
         } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void execute(AudioClientAction action) {
+
+        try {
+            Clip clip = AudioSystem.getClip();
+            AudioInputStream inputStream = AudioSystem.getAudioInputStream(new ByteArrayInputStream(action.audio));
+            clip.open(inputStream);
+            clip.start();
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
