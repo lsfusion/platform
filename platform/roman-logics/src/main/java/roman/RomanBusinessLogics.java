@@ -2826,6 +2826,16 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             if (box)
                 addActionsOnObjectChange(objSIDSupplierBox, addPropertyObject(seekSupplierBoxSIDSupplier, objSIDSupplierBox, objSupplier));
 
+            setReadOnly(name, true, objRoute.groupTo);
+            setReadOnly(percentShipmentRouteSku, true, objRoute.groupTo);
+            setReadOnly(itemAttributeGroup, true, objSku.groupTo);
+            setReadOnly(sidArticleSku, true, objSku.groupTo);
+
+            setReadOnly(baseGroup, true, objShipmentDetail.groupTo);
+            setReadOnly(sidSupplierBoxShipmentDetail, false, objShipmentDetail.groupTo);
+            setReadOnly(barcodeSupplierBoxShipmentDetail, false, objShipmentDetail.groupTo);
+            setReadOnly(barcodeStockShipmentDetail, false, objShipmentDetail.groupTo);
+
             setReadOnly(objSupplier, true);
             setReadOnly(objShipment, true);
             if (box)
