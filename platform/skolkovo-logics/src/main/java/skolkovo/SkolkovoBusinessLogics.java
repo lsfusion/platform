@@ -708,7 +708,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
             design.setPanelLabelAbove(voteResultCommentGroup, true);
             design.setConstraintsFillHorizontal(voteResultCommentGroup, 1);
 
-            design.setPreferredSize(voteResultCheckGroup, new Dimension(60, 1));
+            design.setPreferredSize(voteResultCheckGroup, new Dimension(60, -1));
 
             design.get(objVote.groupTo).grid.hideToolbarItems();
 
@@ -775,7 +775,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
             design.setPanelLabelAbove(voteResultCommentGroup, true);
             design.setConstraintsFillHorizontal(voteResultCommentGroup, 0.5);
 
-            design.setPreferredSize(voteResultCheckGroup, new Dimension(60, 1));
+            design.setPreferredSize(voteResultCheckGroup, new Dimension(60, -1));
 
             return design;
         }
@@ -812,7 +812,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
             design.setPanelLabelAbove(voteResultCommentGroup, true);
             design.setConstraintsFillHorizontal(voteResultCommentGroup, 0.5);
 
-            design.setPreferredSize(voteResultCheckGroup, new Dimension(60, 1));
+            design.setPreferredSize(voteResultCheckGroup, new Dimension(60, -1));
 
             return design;
         }

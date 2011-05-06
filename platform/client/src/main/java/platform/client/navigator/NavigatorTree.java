@@ -46,7 +46,7 @@ public class NavigatorTree extends ClientTree {
     }
 
     public void createRootNode() {
-        rootNode = new NavigatorTreeNode(this, new ClientNavigatorElement(Main.generateNewID(), AbstractNavigator.BASE_ELEMENT_SID, "", true));
+        rootNode = new NavigatorTreeNode(this, new ClientNavigatorElement(0, AbstractNavigator.BASE_ELEMENT_SID, "", true));
         model.setRoot(rootNode);
 
         rootNode.add(new ExpandingTreeNode());

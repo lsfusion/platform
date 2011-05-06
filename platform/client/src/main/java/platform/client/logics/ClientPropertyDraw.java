@@ -180,14 +180,14 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     }
 
     public int getMinimumWidth(JComponent comp) {
-        if (minimumSize != null) {
+        if (minimumSize != null && minimumSize.width > -1) {
             return minimumSize.width;
         }
         return baseType.getMinimumWidth(minimumCharWidth, comp.getFontMetrics(design.getFont(comp)));
     }
 
     public int getMinimumHeight(JComponent comp) {
-        if (minimumSize != null) {
+        if (minimumSize != null && minimumSize.height > -1) {
             return minimumSize.height;
         }
         return getPreferredHeight(comp);
@@ -196,20 +196,21 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
     public Dimension getMinimumSize(JComponent comp) {
         if (minimumSize != null) {
-            return minimumSize;
+            return new Dimension(minimumSize.width != -1 ? minimumSize.width : getMinimumWidth(comp),
+                                 minimumSize.height != -1 ? minimumSize.height : getMinimumHeight(comp));
         }
         return new Dimension(getMinimumWidth(comp), getMinimumHeight(comp));
     }
 
     public int getPreferredWidth(JComponent comp) {
-        if (preferredSize != null) {
+        if (preferredSize != null && preferredSize.width > -1) {
             return preferredSize.width;
         }
         return baseType.getPreferredWidth(preferredCharWidth, comp.getFontMetrics(design.getFont(comp)));
     }
 
     public int getPreferredHeight(JComponent comp) {
-        if (preferredSize != null) {
+        if (preferredSize != null && preferredSize.height > -1) {
             return preferredSize.height;
         }
         return baseType.getPreferredHeight(comp.getFontMetrics(design.getFont(comp)));
@@ -217,20 +218,21 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
     public Dimension getPreferredSize(JComponent comp) {
         if (preferredSize != null) {
-            return preferredSize;
+            return new Dimension(preferredSize.width != -1 ? preferredSize.width : getPreferredWidth(comp),
+                                 preferredSize.height != -1 ? preferredSize.height : getPreferredHeight(comp));
         }
         return new Dimension(getPreferredWidth(comp), getPreferredHeight(comp));
     }
 
     public int getMaximumWidth(JComponent comp) {
-        if (maximumSize != null) {
+        if (maximumSize != null && maximumSize.width > -1) {
             return maximumSize.width;
         }
         return baseType.getMaximumWidth(maximumCharWidth, comp.getFontMetrics(design.getFont(comp)));
     }
 
     public int getMaximumHeight(JComponent comp) {
-        if (maximumSize != null) {
+        if (maximumSize != null && maximumSize.width > -1) {
             return maximumSize.height;
         }
         return getPreferredHeight(comp);
@@ -238,7 +240,8 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
     public Dimension getMaximumSize(JComponent comp) {
         if (maximumSize != null) {
-            return maximumSize;
+            return new Dimension(maximumSize.width != -1 ? maximumSize.width : getMaximumWidth(comp),
+                                 maximumSize.height != -1 ? maximumSize.height : getMaximumHeight(comp));
         }
         return new Dimension(getMaximumWidth(comp), getMaximumHeight(comp));
     }
