@@ -66,13 +66,27 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
     ConcreteCustomClass documentTemplateDetail;
     ConcreteCustomClass document;
 
+    ConcreteCustomClass nonRussianSpecialist;
+    ConcreteCustomClass academic;
+    ConcreteCustomClass patent;
+
     ConcreteCustomClass vote;
 
+    StaticCustomClass projectType;
     StaticCustomClass language;
     StaticCustomClass documentType;
+    StaticCustomClass ownerType;
 
     StaticCustomClass voteResult;
     StaticCustomClass projectStatus;
+
+    AbstractGroup projectInformationGroup;
+    AbstractGroup innovationGroup;
+    AbstractGroup executiveSummaryGroup;
+    AbstractGroup sourcesFundingGroup;
+    AbstractGroup equipmentGroup;
+    AbstractGroup projectDocumentsGroup;
+    AbstractGroup projectStatusGroup;
 
     AbstractGroup voteResultGroup;
     AbstractGroup voteResultCheckGroup;
@@ -83,6 +97,28 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
     protected void initGroups() {
 
         idGroup.add(objectValue);
+
+        projectInformationGroup = new AbstractGroup("Информация по проекту");
+        baseGroup.add(projectInformationGroup);
+
+        innovationGroup = new AbstractGroup("Инновация");
+        baseGroup.add(innovationGroup);
+
+        executiveSummaryGroup = new AbstractGroup("Резюме проекта");
+        baseGroup.add(executiveSummaryGroup);
+
+        sourcesFundingGroup = new AbstractGroup("Источники финансирования");
+        baseGroup.add(sourcesFundingGroup);
+
+        equipmentGroup = new AbstractGroup("Оборудование");
+        baseGroup.add(equipmentGroup);
+
+        projectDocumentsGroup = new AbstractGroup("Документы");
+        baseGroup.add(projectDocumentsGroup);
+
+        projectStatusGroup = new AbstractGroup("Текущий статус проекта");
+        baseGroup.add(projectStatusGroup);
+
 
         voteResultGroup = new AbstractGroup("Результаты голосования");
         publicGroup.add(voteResultGroup);
@@ -102,6 +138,20 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
     protected void initClasses() {
 
         multiLanguageNamed = addAbstractClass("multiLanguageNamed", "Многоязычный объект", baseClass);
+
+        projectType = addStaticClass("projectType", "Тип проекта",
+                                     new String[]{"comparable3", "surpasses3", "russianbenchmark3", "certainadvantages3", "significantlyoutperforms3", "nobenchmarks3"},
+                                     new String[]{"сопоставим с существующими российскими аналогами или уступает им", "превосходит российские аналоги, но уступает лучшим зарубежным аналогам",
+                                                  "Является российским аналогом востребованного зарубежного продукта/технологии", "Обладает отдельными преимуществами над лучшими мировыми аналогами, но в целом сопоставим с ними",
+                                                  "Существенно превосходит все существующие мировые аналоги", "Не имеет аналогов, удовлетворяет ранее не удовлетворенную потребность и создает новый рынок"});
+
+        ownerType = addStaticClass("ownerType", "Тип правообладателя",
+                                               new String[]{"employee", "participant", "thirdparty"},
+                                               new String[]{"Работником организации", "Участником организации", "Третьим лицом"});  
+
+        patent = addConcreteClass("patent", "Патент", baseClass);
+        academic = addConcreteClass("academic", "Научные кадры", baseClass);        
+        nonRussianSpecialist = addConcreteClass("nonRussianSpecialist", "Иностранный специалист", baseClass);
 
         project = addConcreteClass("project", "Проект", multiLanguageNamed, transaction);
         expert = addConcreteClass("expert", "Эксперт", customUser);
@@ -255,6 +305,109 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
 
     LP nameDocument;
 
+    LP nameNativeProject;
+    LP nameForeignProject;
+    LP nameNativeManagerProject;
+    LP nameForeignManagerProject;
+    LP nativeProblemProject;
+    LP foreignProblemProject;
+    LP nativeInnovativeProject;
+    LP foreignInnovativeProject;
+    LP projectTypeProject;
+    LP nameProjectTypeProject;
+    LP nativeSubstantiationProjectType;
+    LP foreignSubstantiationProjectType;
+    LP nativeSubstantiationClusterProject;
+    LP foreignSubstantiationClusterProject;
+    LP fileNativeSummaryProject;
+    LP fileForeignSummaryProject;
+    LP fileRoadMapProject;
+    LP fileNativeTechnicalDescriptionProject;
+    LP fileForeignTechnicalDescriptionProject;
+
+    LP isReturnInvestmentsProject;
+    LP nameReturnInvestorProject;
+    LP amountReturnFundsProject;
+    LP isNonReturnInvestmentsProject;
+    LP nameNonReturnInvestorProject;
+    LP amountNonReturnFundsProject;
+    LP isCapitalInvestmentProject;
+    LP isPropertyInvestmentProject;
+    LP isGrantsProject;
+    LP isOtherNonReturnInvestmentsProject;
+    LP commentOtherNonReturnInvestmentsProject;
+    LP isOwnFundsProject;
+    LP amountOwnFundsProject;
+    LP isPlanningSearchSourceProject;
+    LP amountFundsProject;    
+    LP isOtherSoursesProject;
+    LP commentOtherSoursesProject;
+    LP hideNameReturnInvestorProject;
+    LP hideAmountReturnFundsProject;
+    LP hideNameNonReturnInvestorProject;
+    LP hideAmountNonReturnFundsProject;
+    LP hideCommentOtherNonReturnInvestmentsProject;
+    LP hideAmountOwnFundsProject;
+    LP hideAmountFundsProject;
+    LP hideCommentOtherSoursesProject;
+    LP hideIsCapitalInvestmentProject;
+    LP hideIsPropertyInvestmentProject;
+    LP hideIsGrantsProject;
+    LP hideIsOtherNonReturnInvestmentsProject;
+
+    LP isOwnedEquipmentProject;
+    LP isAvailableEquipmentProject;
+    LP isTransferEquipmentProject;
+    LP descriptionTransferEquipmentProject;
+    LP ownerEquipmentProject;
+    LP isPlanningEquipmentProject;
+    LP specificationEquipmentProject;
+    LP isSeekEquipmentProject;
+    LP descriptionEquipmentProject;
+    LP isOtherEquipmentProject;
+    LP commentEquipmentProject;
+    LP hideDescriptionTransferEquipmentProject;
+    LP hideOwnerEquipmentProject;
+    LP hideSpecificationEquipmentProject;
+    LP hideDescriptionEquipmentProject;
+    LP hideCommentEquipmentProject;
+
+    LP projectPatent;
+    LP nativeTypePatent;
+    LP foreignTypePatent;
+    LP nativeNumberPatent;
+    LP foreignNumberPatent;
+    LP priorityDatePatent;
+    LP isOwned;
+    LP ownerPatent;
+    LP ownerTypePatent;
+    LP nameOwnerTypePatent;
+    LP fileIntentionOwnerPatent;
+    LP isValuated;   
+    LP valuatorPatent;
+    LP fileActValuationPatent;
+    LP hideOwnerPatent;
+    LP hideFileIntentionOwnerPatent;
+    LP hideValuatorPatent;
+    LP hideFileActValuationPatent;
+    LP hideNameOwnerTypePatent;
+
+    LP projectAcademic;
+    LP fullNameAcademic;
+    LP institutionAcademic;
+    LP titleAcademic;
+    LP fileDocumentConfirmingAcademic;
+    LP fileDocumentEmploymentAcademic;
+
+    LP projectNonRussianSpecialist;
+    LP fullNameNonRussianSpecialist;
+    LP organizationNonRussianSpecialist;
+    LP titleNonRussianSpecialist;
+    LP fileNativeResumeNonRussianSpecialist;
+    LP fileForeignResumeNonRussianSpecialist;
+    LP filePassportNonRussianSpecialist;
+    LP fileStatementNonRussianSpecialist; 
+
     LP isForeignExpert;
     LP localeExpert;
     LP disableExpert;
@@ -286,18 +439,191 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         clusterExpert = addDProp(idGroup, "clusterExpert", "Кластер (ИД)", cluster, expert);
         nameNativeClusterExpert = addJProp(baseGroup, "nameNativeClusterExpert", "Кластер", nameNative, clusterExpert, 1);
 
+        // project
+        claimerProject = addDProp(idGroup, "claimerProject", "Заявитель (ИД)", claimer, project);
+        nameNativeClaimerProject = addJProp(projectInformationGroup, "nameNativeClaimerProject", "Заявитель", nameNative, claimerProject, 1);
+        nameForeignClaimerProject = addJProp(projectInformationGroup, "nameForeignClaimerProject", "Заявитель (иностр.)", nameForeign, claimerProject, 1);
+
+        nameNativeProject = addJProp(projectInformationGroup, "nameNativeProject", "Название проекта", and1, nameNative, 1, is(project), 1);
+        nameNativeProject.setMinimumWidth(10); nameNativeProject.setPreferredWidth(50);
+        nameForeignProject = addJProp(projectInformationGroup, "nameForeignProject", "Name of the project", and1,  nameForeign, 1, is(project), 1);
+        nameForeignProject.setMinimumWidth(10); nameForeignProject.setPreferredWidth(50);
+
+        nameNativeManagerProject = addDProp(projectInformationGroup, "nameNativeManagerProject", "ФИО руководителя проекта", InsensitiveStringClass.get(2000), project);
+        nameNativeManagerProject.setMinimumWidth(10); nameNativeManagerProject.setPreferredWidth(50);
+        nameForeignManagerProject = addDProp(projectInformationGroup, "nameForeignManagerProject", "Full name project manager", InsensitiveStringClass.get(2000), project);
+        nameForeignManagerProject.setMinimumWidth(10); nameForeignManagerProject.setPreferredWidth(50);
+
+        nativeProblemProject = addDProp(innovationGroup, "nativeProblemProject", "Проблема, на решение которой направлен проект", InsensitiveStringClass.get(2000), project);
+        nativeProblemProject.setMinimumWidth(10); nativeProblemProject.setPreferredWidth(50);
+        foreignProblemProject = addDProp(innovationGroup, "foreignProblemProject", "The problem that the project will solve", InsensitiveStringClass.get(2000), project);
+        foreignProblemProject.setMinimumWidth(10); foreignProblemProject.setPreferredWidth(50);
+
+        nativeInnovativeProject = addDProp(innovationGroup, "nativeInnovativeProject", "Суть инновации", InsensitiveStringClass.get(2000), project);
+        nativeInnovativeProject.setMinimumWidth(10); nativeInnovativeProject.setPreferredWidth(50);
+        foreignInnovativeProject = addDProp(innovationGroup, "foreignInnovativeProject", "Description of the innovation", InsensitiveStringClass.get(2000), project);
+        foreignInnovativeProject.setMinimumWidth(10); foreignInnovativeProject.setPreferredWidth(50);
+
+        projectTypeProject = addDProp(idGroup, "projectTypeProject", "Тип проекта (ИД)", projectType, project);
+        nameProjectTypeProject = addJProp(innovationGroup, "nameProjectTypeProject", "Тип проекта", name, projectTypeProject, 1);
+        nativeSubstantiationProjectType = addDProp(innovationGroup, "nativeSubstantiationProjectType", "Обоснование выбора", InsensitiveStringClass.get(2000), project);
+        nativeSubstantiationProjectType.setMinimumWidth(10); nativeSubstantiationProjectType.setPreferredWidth(50);
+        foreignSubstantiationProjectType = addDProp(innovationGroup, "foreignSubstantiationProjectType", "Description of choice", InsensitiveStringClass.get(2000), project);
+        foreignSubstantiationProjectType.setMinimumWidth(10); foreignSubstantiationProjectType.setPreferredWidth(50);
+
         clusterProject = addDProp(idGroup, "clusterProject", "Кластер (ИД)", cluster, project);
-        nameNativeClusterProject = addJProp(baseGroup, "nameNativeClusterProject", "Кластер", nameNative, clusterProject, 1);
-        nameForeignClusterProject = addJProp(baseGroup, "nameForeignClusterProject", "Кластер (иностр.)", nameForeign, clusterProject, 1);
+        nameNativeClusterProject = addJProp(innovationGroup, "nameNativeClusterProject", "Кластер", nameNative, clusterProject, 1);
+        nameForeignClusterProject = addJProp(innovationGroup, "nameForeignClusterProject", "Кластер (иностр.)", nameForeign, clusterProject, 1);
+        nativeSubstantiationClusterProject = addDProp(innovationGroup, "nativeSubstantiationClusterProject", "Обоснование выбора", InsensitiveStringClass.get(2000), project);
+        nativeSubstantiationClusterProject.setMinimumWidth(10); nativeSubstantiationClusterProject.setPreferredWidth(50);
+        foreignSubstantiationClusterProject = addDProp(innovationGroup, "foreignSubstantiationClusterProject", "Description of choice", InsensitiveStringClass.get(2000), project);
+        foreignSubstantiationClusterProject.setMinimumWidth(10); foreignSubstantiationClusterProject.setPreferredWidth(50);
+
+        fileNativeSummaryProject = addDProp(executiveSummaryGroup, "fileNativeSummaryProject", "Файл резюме проекта", PDFClass.instance, project);
+        fileForeignSummaryProject = addDProp(executiveSummaryGroup, "fileForeignSummaryProject", "Файл резюме проекта (иностр.)", PDFClass.instance, project);
+
+        fileRoadMapProject = addDProp(projectDocumentsGroup, "fileRoadMapProject", "Файл дорожной карты", PDFClass.instance, project);
+        fileNativeTechnicalDescriptionProject = addDProp(projectDocumentsGroup, "fileNativeTechnicalDescriptionProject", "Файл технического описания", PDFClass.instance, project);
+        fileForeignTechnicalDescriptionProject = addDProp(projectDocumentsGroup, "fileForeignTechnicalDescriptionProject", "Файл технического описания (иностр.)", PDFClass.instance, project);
+
+        // источники финансирования
+        isReturnInvestmentsProject = addDProp(sourcesFundingGroup, "isReturnInvestmentsProject", "Средства третьих лиц, привлекаемые на возвратной основе (заемные средства и т.п.)", LogicalClass.instance, project);
+        nameReturnInvestorProject = addDProp(sourcesFundingGroup, "nameReturnInvestorProject", "Третьи лица для возврата средств", InsensitiveStringClass.get(2000), project);
+        nameReturnInvestorProject.setMinimumWidth(10); nameReturnInvestorProject.setPreferredWidth(50);
+        amountReturnFundsProject = addDProp(sourcesFundingGroup, "amountReturnFundsProject", "Объем средств на возвратной основе (тыс. руб.)", DoubleClass.instance, project);
+        hideNameReturnInvestorProject = addHideCaptionProp(privateGroup, "укажите данных лиц и их контактную информацию", nameReturnInvestorProject, isReturnInvestmentsProject);
+        hideAmountReturnFundsProject = addHideCaptionProp(privateGroup, "укажите объем привлекаемых средств (тыс. руб.)", amountReturnFundsProject, isReturnInvestmentsProject);
+
+        isNonReturnInvestmentsProject = addDProp(sourcesFundingGroup, "isNonReturnInvestmentsProject", "Средства третьих лиц, привлекаемые на безвозвратной основе (гранты и т.п.)", LogicalClass.instance, project);
+
+        isCapitalInvestmentProject = addDProp(sourcesFundingGroup, "isCapitalInvestmentProject", "Вклады в уставный капитал", LogicalClass.instance, project);
+        isPropertyInvestmentProject = addDProp(sourcesFundingGroup, "isPropertyInvestmentProject", "Вклады в имущество", LogicalClass.instance, project);
+        isGrantsProject = addDProp(sourcesFundingGroup, "isGrantsProject", "Гранты", LogicalClass.instance, project);
+
+        isOtherNonReturnInvestmentsProject = addDProp(sourcesFundingGroup, "isOtherNonReturnInvestmentsProject", "Иное", LogicalClass.instance, project);
+
+        nameNonReturnInvestorProject = addDProp(sourcesFundingGroup, "nameNonReturnInvestorProject", "Третьи лица для возврата средств", InsensitiveStringClass.get(2000), project);
+        nameNonReturnInvestorProject.setMinimumWidth(10); nameNonReturnInvestorProject.setPreferredWidth(50);
+        amountNonReturnFundsProject = addDProp(sourcesFundingGroup, "amountNonReturnFundsProject", "Объем средств на безвозвратной основе (тыс. руб.)", DoubleClass.instance, project);
+        hideNameNonReturnInvestorProject = addHideCaptionProp(privateGroup, "укажите данных лиц и их контактную информацию", nameReturnInvestorProject, isNonReturnInvestmentsProject);
+        hideAmountNonReturnFundsProject = addHideCaptionProp(privateGroup, "укажите объем привлекаемых средств (тыс. руб.)", amountReturnFundsProject, isNonReturnInvestmentsProject);
+
+        commentOtherNonReturnInvestmentsProject = addDProp(sourcesFundingGroup, "commentOtherNonReturnInvestmentsProject", "Комментарий", InsensitiveStringClass.get(2000), project);
+        commentOtherNonReturnInvestmentsProject.setMinimumWidth(10); commentOtherNonReturnInvestmentsProject.setPreferredWidth(50);
+
+        hideIsCapitalInvestmentProject = addHideCaptionProp(privateGroup, "Укажите", isCapitalInvestmentProject, isNonReturnInvestmentsProject);
+        hideIsPropertyInvestmentProject = addHideCaptionProp(privateGroup, "Укажите", isPropertyInvestmentProject, isNonReturnInvestmentsProject);
+        hideIsGrantsProject = addHideCaptionProp(privateGroup, "Укажите", isGrantsProject, isNonReturnInvestmentsProject);
+        hideIsOtherNonReturnInvestmentsProject = addHideCaptionProp(privateGroup, "Укажите", isOtherNonReturnInvestmentsProject, isNonReturnInvestmentsProject);
+
+        hideCommentOtherNonReturnInvestmentsProject = addHideCaptionProp(privateGroup, "Укажите", commentOtherNonReturnInvestmentsProject, isOtherNonReturnInvestmentsProject);
+
+        isOwnFundsProject = addDProp(sourcesFundingGroup, "isOwnFundsProject", "Собственные средства организации", LogicalClass.instance, project);
+        amountOwnFundsProject = addDProp(sourcesFundingGroup, "amountOwnFundsProject", "Объем собственных средств (тыс. руб.)", DoubleClass.instance, project);
+        hideAmountOwnFundsProject = addHideCaptionProp(privateGroup, "Укажите", amountOwnFundsProject, isOwnFundsProject);
+
+        isPlanningSearchSourceProject = addDProp(sourcesFundingGroup, "isPlanningSearchSourceProject", "Планируется поиск источника финансирования проекта", LogicalClass.instance, project);
+        amountFundsProject = addDProp(sourcesFundingGroup, "amountFundsProject", "Требуемый объем средств (тыс. руб.)", DoubleClass.instance, project);
+        hideAmountFundsProject = addHideCaptionProp(privateGroup, "Укажите", amountFundsProject, isPlanningSearchSourceProject);
+
+        isOtherSoursesProject = addDProp(sourcesFundingGroup, "isOtherSoursesProject", "Иное", LogicalClass.instance, project);
+        commentOtherSoursesProject = addDProp(sourcesFundingGroup, "commentOtherSoursesProject", "Комментарий", InsensitiveStringClass.get(2000), project);
+        commentOtherSoursesProject.setMinimumWidth(10); commentOtherSoursesProject.setPreferredWidth(50);
+        hideCommentOtherSoursesProject = addHideCaptionProp(privateGroup, "Укажите", commentOtherSoursesProject, isOtherSoursesProject);
+
+        // оборудование
+        isOwnedEquipmentProject = addDProp(equipmentGroup, "isOwnedEquipmentProject", "Оборудование имеется в собственности и/или в пользовании Вашей организации", LogicalClass.instance, project);
+
+        isAvailableEquipmentProject = addDProp(equipmentGroup, "isAvailableEquipmentProject", "Оборудование имеется в открытом доступе на рынке, и Ваша организация планирует приобрести его в собственность и/или в пользование", LogicalClass.instance, project);
+
+        isTransferEquipmentProject = addDProp(equipmentGroup, "isTransferEquipmentProject", "Оборудование отсутствует в открытом доступе на рынке, но достигнута договоренность с собственником оборудования о передаче данного оборудования в собственность и/или в пользование для реализации проекта", LogicalClass.instance, project);
+        descriptionTransferEquipmentProject = addDProp(equipmentGroup, "descriptionTransferEquipmentProject", "Опишите данное оборудование", InsensitiveStringClass.get(2000), project);
+        descriptionTransferEquipmentProject.setMinimumWidth(10); descriptionTransferEquipmentProject.setPreferredWidth(50);
+        ownerEquipmentProject = addDProp(equipmentGroup, "ownerEquipmentProject", "Укажите собственника оборудования и его контактную информацию", InsensitiveStringClass.get(2000), project);
+        ownerEquipmentProject.setMinimumWidth(10); ownerEquipmentProject.setPreferredWidth(50);
+        hideDescriptionTransferEquipmentProject = addHideCaptionProp(privateGroup, "Укажите", descriptionTransferEquipmentProject, isTransferEquipmentProject);
+        hideOwnerEquipmentProject = addHideCaptionProp(privateGroup, "Укажите", ownerEquipmentProject, isTransferEquipmentProject);
+
+        isPlanningEquipmentProject = addDProp(equipmentGroup, "isPlanningEquipmentProject", "Ваша организация планирует использовать для реализации проекта оборудование, которое имеется в собственности или в пользовании Фонда «Сколково» (учрежденных им юридических лиц)", LogicalClass.instance, project);
+        specificationEquipmentProject = addDProp(equipmentGroup, "specificationEquipmentProject", "Укажите данное оборудование", InsensitiveStringClass.get(2000), project);
+        specificationEquipmentProject.setMinimumWidth(10); specificationEquipmentProject.setPreferredWidth(50);
+        hideSpecificationEquipmentProject = addHideCaptionProp(privateGroup, "Укажите", specificationEquipmentProject, isPlanningEquipmentProject);
+
+        isSeekEquipmentProject = addDProp(equipmentGroup, "isSeekEquipmentProject", "Оборудование имеется на рынке, но Ваша организация не имеет возможности приобрести его в собственность или в пользование и ищет возможность получить доступ к такому оборудованию", LogicalClass.instance, project);
+        descriptionEquipmentProject = addDProp(equipmentGroup, "descriptionEquipmentProject", "Опишите данное оборудование", InsensitiveStringClass.get(2000), project);
+        descriptionEquipmentProject.setMinimumWidth(10); descriptionEquipmentProject.setPreferredWidth(50);
+        hideDescriptionEquipmentProject = addHideCaptionProp(privateGroup, "Укажите", descriptionEquipmentProject, isSeekEquipmentProject);
+
+        isOtherEquipmentProject = addDProp(equipmentGroup, "isOtherEquipmentProject", "Иное", LogicalClass.instance, project);
+        commentEquipmentProject = addDProp(equipmentGroup, "commentEquipmentProject", "Комментарий", InsensitiveStringClass.get(2000), project);
+        commentEquipmentProject.setMinimumWidth(10); commentEquipmentProject.setPreferredWidth(50);
+        hideCommentEquipmentProject = addHideCaptionProp(privateGroup, "Укажите", commentEquipmentProject, isOtherEquipmentProject);
+
+        // патенты
+        projectPatent = addDProp(idGroup, "projectPatent", "Проект патента", project, patent);
+
+        nativeTypePatent = addDProp(baseGroup, "nativeTypePatent", "Тип заявки/патента", InsensitiveStringClass.get(2000), patent);
+        nativeTypePatent.setMinimumWidth(10); nativeTypePatent.setPreferredWidth(50);
+        foreignTypePatent = addDProp(baseGroup, "foreignTypePatent", "Type of application/patent", InsensitiveStringClass.get(2000), patent);
+        foreignTypePatent.setMinimumWidth(10); foreignTypePatent.setPreferredWidth(50);
+        nativeNumberPatent = addDProp(baseGroup, "nativeNumberPatent", "Номер", InsensitiveStringClass.get(2000), patent);
+        nativeNumberPatent.setMinimumWidth(10); nativeNumberPatent.setPreferredWidth(50);
+        foreignNumberPatent = addDProp(baseGroup, "foreignNumberPatent", "Reference number", InsensitiveStringClass.get(2000), patent);
+        foreignNumberPatent.setMinimumWidth(10); foreignNumberPatent.setPreferredWidth(50);
+        priorityDatePatent = addDProp(baseGroup, "priorityDatePatent", "Дата приоритета", DateClass.instance, patent);
+
+        isOwned = addDProp(baseGroup, "isOwned", "Организация не обладает исключительными правами на указанные результаты интеллектуальной деятельности", LogicalClass.instance, patent);
+        ownerPatent = addDProp(baseGroup, "ownerPatent", "Укажите правообладателя и его контактную информацию", InsensitiveStringClass.get(2000), patent);
+        ownerPatent.setMinimumWidth(10); ownerPatent.setPreferredWidth(50);
+        ownerTypePatent = addDProp(idGroup, "ownerTypePatent", "Кем является правообладатель (ИД)", ownerType, patent);
+        nameOwnerTypePatent = addJProp(baseGroup, "nameOwnerTypePatent", "Кем является правообладатель", name, ownerTypePatent, 1);
+        fileIntentionOwnerPatent = addDProp(baseGroup, "fileIntentionOwnerPatent", "Файл документа о передаче права", PDFClass.instance, patent);
+
+        hideOwnerPatent = addHideCaptionProp(privateGroup, "Укажите", ownerPatent, isOwned);
+        hideNameOwnerTypePatent = addHideCaptionProp(privateGroup, "Укажите", nameOwnerTypePatent, isOwned);
+        hideFileIntentionOwnerPatent = addHideCaptionProp(privateGroup, "Укажите", fileIntentionOwnerPatent, isOwned);
+
+        isValuated = addDProp(baseGroup, "isValuated", "Проводилась ли оценка указанных результатов интеллектальной деятельности", LogicalClass.instance, patent);
+        valuatorPatent = addDProp(baseGroup, "valuatorPatent", "Укажите оценщика и его контактную информацию", InsensitiveStringClass.get(2000), patent);
+        valuatorPatent.setMinimumWidth(10); valuatorPatent.setPreferredWidth(50);
+        fileActValuationPatent = addDProp(baseGroup, "fileActValuationPatent", "Файл акта оценки", PDFClass.instance, patent);
+        hideValuatorPatent = addHideCaptionProp(privateGroup, "Укажите", valuatorPatent, isValuated);
+        hideFileActValuationPatent = addHideCaptionProp(privateGroup, "Укажите", fileActValuationPatent, isValuated);
+
+        // учёные
+        projectAcademic = addDProp(idGroup, "projectAcademic", "Проект ученого", project, academic);
+
+        fullNameAcademic = addDProp(baseGroup, "fullNameAcademic", "ФИО", InsensitiveStringClass.get(2000), academic);
+        fullNameAcademic.setMinimumWidth(10); fullNameAcademic.setPreferredWidth(50);
+        institutionAcademic = addDProp(baseGroup, "institutionAcademic", "Учреждение, в котором данный специалист осуществляет научную и (или) преподавательскую деятельность", InsensitiveStringClass.get(2000), academic);
+        institutionAcademic.setMinimumWidth(10); institutionAcademic.setPreferredWidth(50);
+        titleAcademic = addDProp(baseGroup, "titleAcademic", "Ученая степень, звание, должность и др.", InsensitiveStringClass.get(2000), academic);
+        titleAcademic.setMinimumWidth(10); titleAcademic.setPreferredWidth(50);
+
+        fileDocumentConfirmingAcademic = addDProp(baseGroup, "fileDocumentConfirmingAcademic", "Файл трудового договора", PDFClass.instance, academic);
+        fileDocumentEmploymentAcademic = addDProp(baseGroup, "fileDocumentEmploymentAcademic", "Файл заявления специалиста", PDFClass.instance, academic);
+
+        // иностранные специалисты
+        projectNonRussianSpecialist = addDProp(idGroup, "projectNonRussianSpecialist", "Проект иностранного специалиста", project, nonRussianSpecialist);
+
+        fullNameNonRussianSpecialist = addDProp(baseGroup, "fullNameNonRussianSpecialist", "ФИО", InsensitiveStringClass.get(2000), nonRussianSpecialist);
+        fullNameNonRussianSpecialist.setMinimumWidth(10); fullNameNonRussianSpecialist.setPreferredWidth(50);
+        organizationNonRussianSpecialist = addDProp(baseGroup, "organizationNonRussianSpecialist", "Место работы", InsensitiveStringClass.get(2000), nonRussianSpecialist);
+        organizationNonRussianSpecialist.setMinimumWidth(10); organizationNonRussianSpecialist.setPreferredWidth(50);
+        titleNonRussianSpecialist = addDProp(baseGroup, "titleNonRussianSpecialist", "Должность, если есть - ученая степень, звание и др.", InsensitiveStringClass.get(2000), nonRussianSpecialist);
+        titleNonRussianSpecialist.setMinimumWidth(10); titleNonRussianSpecialist.setPreferredWidth(50);
+
+        fileForeignResumeNonRussianSpecialist = addDProp(baseGroup, "fileForeignResumeNonRussianSpecialist", "File Curriculum Vitae", PDFClass.instance, nonRussianSpecialist);
+        fileNativeResumeNonRussianSpecialist = addDProp(baseGroup, "fileNativeResumeNonRussianSpecialist", "Файл резюме специалиста", PDFClass.instance, nonRussianSpecialist);
+        filePassportNonRussianSpecialist = addDProp(baseGroup, "filePassportNonRussianSpecialist", "Файл паспорта", PDFClass.instance, nonRussianSpecialist);
+        fileStatementNonRussianSpecialist = addDProp(baseGroup, "fileStatementNonRussianSpecialist", "Файл заявления", PDFClass.instance, nonRussianSpecialist);
+
+
 
         clusterVote = addDCProp(idGroup, "clusterVote", "Кластер (ИД)", true, clusterProject, true, projectVote, 1);
         clusterProjectVote = addJProp(idGroup, "clusterProjectVote", "Кластер проекта (ИД)", clusterProject, projectVote, 1);
         equalsClusterProjectVote = addJProp(baseGroup, true, "equalsClusterProjectVote", "Тек. кластер", equals2, clusterVote, 1, clusterProjectVote, 1);
         nameNativeClusterVote = addJProp(baseGroup, "nameNativeClusterVote", "Кластер", nameNative, clusterVote, 1);
-
-        claimerProject = addDProp(idGroup, "claimerProject", "Заявитель (ИД)", claimer, project);
-        nameNativeClaimerProject = addJProp(baseGroup, "nameNativeClaimerProject", "Заявитель", nameNative, claimerProject, 1);
-        nameForeignClaimerProject = addJProp(baseGroup, "nameForeignClaimerProject", "Заявитель (иностр.)", nameForeign, claimerProject, 1);
 
         claimerVote = addJProp(idGroup, "claimerVote", "Заявитель (ИД)", claimerProject, projectVote, 1);
         nameNativeClaimerVote = addJProp(baseGroup, "nameNativeClaimerVote", "Заявитель", nameNative, claimerVote, 1);
@@ -335,9 +661,9 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         quantityProjectLanguageDocumentType = addSGProp("projectLanguageDocumentType", "Кол-во док.", addCProp(IntegerClass.instance, 1, document), projectDocument, 1, languageDocument, 1, typeDocument, 1); // сколько экспертов высказалось
         LP notEnoughProjectLanguageDocumentType = addSUProp(Union.OVERRIDE, addJProp(greater2, quantityProjectLanguageDocumentType, 1, 2, 3, quantityMaxLanguageDocumentType, 2, 3),
                 addJProp(less2, addSUProp(Union.OVERRIDE, addCProp(IntegerClass.instance, 0, project, language, documentType), quantityProjectLanguageDocumentType), 1, 2, 3, quantityMinLanguageDocumentType, 2, 3));
-        notEnoughProject = addMGProp(baseGroup, "notEnoughProject", true, "Недостаточно док.", notEnoughProjectLanguageDocumentType, 1);
+        notEnoughProject = addMGProp(projectStatusGroup, "notEnoughProject", true, "Недостаточно док.", notEnoughProjectLanguageDocumentType, 1);
 
-        autoGenerateProject = addDProp(baseGroup, "autoGenerateProject", "Авт. зас.", LogicalClass.instance, project);
+        autoGenerateProject = addDProp(projectStatusGroup, "autoGenerateProject", "Авт. зас.", LogicalClass.instance, project);
 
         fileDocument = addDProp(baseGroup, "fileDocument", "Файл", PDFClass.instance, document);
         loadFileDocument = addLFAProp(baseGroup, "Загрузить", fileDocument);
@@ -455,12 +781,12 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
 
         voteSucceededProject = addAGProp(idGroup, "voteSucceededProject", true, "Успешное заседание (ИД)", succeededClusterVote, 1, projectVote, 1);
 
-        noCurrentVoteProject = addJProp(baseGroup, "noCurrentVoteProject", "Нет текущих заседаний", andNot1, is(project), 1, voteInProgressProject, 1); // нету текущих заседаний
+        noCurrentVoteProject = addJProp(projectStatusGroup, "noCurrentVoteProject", "Нет текущих заседаний", andNot1, is(project), 1, voteInProgressProject, 1); // нету текущих заседаний
 
         voteValuedProject = addJProp(idGroup, "voteValuedProject", true, "Оцененнное заседание (ИД)", and1, voteSucceededProject, 1, noCurrentVoteProject, 1); // нет открытого заседания и есть состояшееся заседания
 
-        acceptedProject = addJProp(baseGroup, "acceptedProject", "Оценен положительно", acceptedVote, voteValuedProject, 1);
-        voteRejectedProject = addJProp(baseGroup, "rejectedProject", "Оценен отрицательно", andNot1, voteValuedProject, 1, acceptedVote, 1);
+        acceptedProject = addJProp(projectStatusGroup, "acceptedProject", "Оценен положительно", acceptedVote, voteValuedProject, 1);
+        voteRejectedProject = addJProp(projectStatusGroup, "rejectedProject", "Оценен отрицательно", andNot1, voteValuedProject, 1, acceptedVote, 1);
 
         needExtraVoteProject = addJProp("needExtraVoteProject", true, "Треб. заседание", and(true, true, true),
                                         is(project), 1,
@@ -501,7 +827,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
                                                                 voteSucceededProject, 1),
                                                  voteRejectedProject, 1),
                                   acceptedProject, 1);
-        nameStatusProject = addJProp(baseGroup, "nameStatusProject", "Статус", name, statusProject, 1);
+        nameStatusProject = addJProp(projectInformationGroup, "nameStatusProject", "Статус", name, statusProject, 1);
 
         statusProjectVote = addJProp(idGroup, "statusProjectVote", "Статус проекта (ИД)", statusProject, projectVote, 1);
         nameStatusProjectVote = addJProp(baseGroup, "nameStatusProjectVote", "Статус проекта", name, statusProjectVote, 1);
@@ -589,6 +915,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
 
     protected void initNavigators() throws JRException, FileNotFoundException {
         addFormEntity(new ProjectFormEntity(baseElement, "project"));
+        addFormEntity(new ProjectFullFormEntity(baseElement, "projectFull"));
         addFormEntity(new VoteFormEntity(baseElement, "vote"));
         addFormEntity(new ExpertFormEntity(baseElement, "expert"));
         languageDocumentTypeForm = addFormEntity(new LanguageDocumentTypeFormEntity(baseElement, "languageDocumentType"));
@@ -694,9 +1021,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
 
             specContainer.add(docContainer);
             specContainer.add(expertContainer);
-//            design.addIntersection(design.getGroupObjectContainer(objVoteHeader.groupTo),
-//                                   design.getGroupObjectContainer(objDocument.groupTo),
-//                                   DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
+//
 
 //            design.get(objVoteHeader.groupTo).grid.constraints.fillHorizontal = 1.5;
 
@@ -714,6 +1039,97 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
 
             design.addIntersection(design.get(getPropertyDraw(innovativeCommentExpertVote)), design.get(getPropertyDraw(completeCommentExpertVote)), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
 
+            return design;
+        }
+    }
+
+
+    private class ProjectFullFormEntity extends FormEntity<SkolkovoBusinessLogics> {
+
+        private ObjectEntity objProject;
+        private ObjectEntity objPatent;
+        private ObjectEntity objAcademic;
+        private ObjectEntity objNonRussianSpecialist;
+
+        private ProjectFullFormEntity(NavigatorElement parent, String sID) {
+            super(parent, sID, "Все данные по проекту");
+                                    
+            objProject = addSingleGroupObject(project, "Описание проекта", projectInformationGroup, innovationGroup, executiveSummaryGroup, sourcesFundingGroup, equipmentGroup, projectDocumentsGroup, projectStatusGroup);
+
+            getPropertyDraw(nameReturnInvestorProject).propertyCaption = addPropertyObject(hideNameReturnInvestorProject, objProject);
+            getPropertyDraw(amountReturnFundsProject).propertyCaption = addPropertyObject(hideAmountReturnFundsProject, objProject);
+            getPropertyDraw(nameNonReturnInvestorProject).propertyCaption = addPropertyObject(hideNameNonReturnInvestorProject, objProject);
+            getPropertyDraw(amountNonReturnFundsProject).propertyCaption = addPropertyObject(hideAmountNonReturnFundsProject, objProject);
+
+            getPropertyDraw(isCapitalInvestmentProject).propertyCaption = addPropertyObject(hideIsCapitalInvestmentProject, objProject);
+            getPropertyDraw(isPropertyInvestmentProject).propertyCaption = addPropertyObject(hideIsPropertyInvestmentProject, objProject);
+            getPropertyDraw(isGrantsProject).propertyCaption = addPropertyObject(hideIsGrantsProject, objProject);
+            getPropertyDraw(isOtherNonReturnInvestmentsProject).propertyCaption = addPropertyObject(hideIsOtherNonReturnInvestmentsProject, objProject);
+
+            getPropertyDraw(commentOtherNonReturnInvestmentsProject).propertyCaption = addPropertyObject(hideCommentOtherNonReturnInvestmentsProject, objProject);
+            getPropertyDraw(amountOwnFundsProject).propertyCaption = addPropertyObject(hideAmountOwnFundsProject, objProject);
+            getPropertyDraw(amountFundsProject).propertyCaption = addPropertyObject(hideAmountFundsProject, objProject);
+            getPropertyDraw(commentOtherSoursesProject).propertyCaption = addPropertyObject(hideCommentOtherSoursesProject, objProject);
+            
+            getPropertyDraw(descriptionTransferEquipmentProject).propertyCaption = addPropertyObject(hideDescriptionTransferEquipmentProject, objProject);
+            getPropertyDraw(ownerEquipmentProject).propertyCaption = addPropertyObject(hideOwnerEquipmentProject, objProject);
+            getPropertyDraw(specificationEquipmentProject).propertyCaption = addPropertyObject(hideSpecificationEquipmentProject, objProject);
+            getPropertyDraw(descriptionEquipmentProject).propertyCaption = addPropertyObject(hideDescriptionEquipmentProject, objProject);
+            getPropertyDraw(commentEquipmentProject).propertyCaption = addPropertyObject(hideCommentEquipmentProject, objProject);
+
+            objProject.groupTo.setSingleClassView(ClassViewType.PANEL);
+          
+            objPatent = addSingleGroupObject(patent, baseGroup);
+            addObjectActions(this, objPatent);
+
+            getPropertyDraw(ownerPatent).propertyCaption = addPropertyObject(hideOwnerPatent, objPatent);
+            getPropertyDraw(nameOwnerTypePatent).propertyCaption = addPropertyObject(hideNameOwnerTypePatent, objPatent);
+
+            getPropertyDraw(fileIntentionOwnerPatent).propertyCaption = addPropertyObject(hideFileIntentionOwnerPatent, objPatent);
+            getPropertyDraw(valuatorPatent).propertyCaption = addPropertyObject(hideValuatorPatent, objPatent);
+            getPropertyDraw(fileActValuationPatent).propertyCaption = addPropertyObject(hideFileActValuationPatent, objPatent);               
+
+            objAcademic = addSingleGroupObject(academic, baseGroup);
+            addObjectActions(this, objAcademic);
+
+            objNonRussianSpecialist = addSingleGroupObject(nonRussianSpecialist, baseGroup);
+            addObjectActions(this, objNonRussianSpecialist);
+
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(projectPatent, objPatent), Compare.EQUALS, objProject));
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(projectAcademic, objAcademic), Compare.EQUALS, objProject));
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(projectNonRussianSpecialist, objNonRussianSpecialist), Compare.EQUALS, objProject));
+        }
+
+        @Override
+        public FormView createDefaultRichDesign() {
+            DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign();
+
+            design.getGroupPropertyContainer(objProject.groupTo, innovationGroup).constraints.childConstraints = DoNotIntersectSimplexConstraint.TOTHE_BOTTOM;
+            design.getGroupPropertyContainer(objProject.groupTo, executiveSummaryGroup).constraints.childConstraints = DoNotIntersectSimplexConstraint.TOTHE_BOTTOM;
+            design.getGroupPropertyContainer(objProject.groupTo, sourcesFundingGroup).constraints.childConstraints = DoNotIntersectSimplexConstraint.TOTHE_BOTTOM;
+            design.getGroupPropertyContainer(objProject.groupTo, equipmentGroup).constraints.childConstraints = DoNotIntersectSimplexConstraint.TOTHE_BOTTOM;
+            design.getGroupPropertyContainer(objProject.groupTo, projectDocumentsGroup).constraints.childConstraints = DoNotIntersectSimplexConstraint.TOTHE_BOTTOM;
+            design.getGroupPropertyContainer(objProject.groupTo, projectStatusGroup).constraints.childConstraints = DoNotIntersectSimplexConstraint.TOTHE_BOTTOM;
+
+            design.addIntersection(design.getGroupPropertyContainer(objProject.groupTo, innovationGroup),
+                                   design.getGroupPropertyContainer(objProject.groupTo, sourcesFundingGroup), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
+
+            design.addIntersection(design.getGroupPropertyContainer(objProject.groupTo, executiveSummaryGroup),
+                                   design.getGroupPropertyContainer(objProject.groupTo, sourcesFundingGroup), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);                       
+
+            design.addIntersection(design.getGroupPropertyContainer(objProject.groupTo, projectDocumentsGroup),
+                                   design.getGroupPropertyContainer(objProject.groupTo, projectStatusGroup), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
+
+            ContainerView specContainer = design.createContainer();
+            design.getMainContainer().addAfter(specContainer, design.getGroupObjectContainer(objProject.groupTo));
+            specContainer.add(design.getGroupObjectContainer(objProject.groupTo));
+            specContainer.add(design.getGroupObjectContainer(objPatent.groupTo));
+            specContainer.add(design.getGroupObjectContainer(objAcademic.groupTo));
+            specContainer.add(design.getGroupObjectContainer(objNonRussianSpecialist.groupTo));
+            specContainer.tabbedPane = true;
+
+            design.getMainContainer().addBefore(design.getGroupPropertyContainer(objProject.groupTo, projectInformationGroup), specContainer);
+            
             return design;
         }
     }

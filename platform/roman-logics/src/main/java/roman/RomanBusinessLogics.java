@@ -1754,6 +1754,8 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         customCategory10FreightSku.setDerivedForcedChange(addJProp(and1, customCategory10Sku, 2, quantityFreightSku, 1, 2), 1, 2, is(freightChanged), 1);
         sidCustomCategory10FreightSku = addJProp(baseGroup, "sidCustomCategory10FreightSku", "ТН ВЭД", sidCustomCategory10, customCategory10FreightSku, 1, 2);
 
+        addConstraint(addJProp("Для SKU должен быть задан ТН ВЭД", and(true, false), is(freightChanged), 1, customCategory10FreightSku, 1, 2, quantityFreightSku, 1, 2), false);
+
         mainCompositionOriginFreightSku = addDProp(baseGroup, "mainCompositionOriginFreightSku", "Состав", COMPOSITION_CLASS, freight, sku);
         mainCompositionOriginFreightSku.setDerivedForcedChange(addJProp(and1, mainCompositionOriginSku, 2, quantityFreightSku, 1, 2), 1, 2, is(freightChanged), 1);
 
@@ -1766,11 +1768,16 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         mainCompositionFreightSku = addDProp(baseGroup, "mainCompositionFreightSku", "Состав (перевод)", COMPOSITION_CLASS, freight, sku);
         mainCompositionFreightSku.setDerivedForcedChange(addJProp(and1, mainCompositionSku, 2, quantityFreightSku, 1, 2), 1, 2, is(freightChanged), 1);
 
+        addConstraint(addJProp("Для SKU должен быть задан состав", and(true, false), is(freightChanged), 1, mainCompositionFreightSku, 1, 2, quantityFreightSku, 1, 2), false);
+
         additionalCompositionFreightSku = addDProp(baseGroup, "additionalCompositionFreightSku", "Доп. состав (перевод)", COMPOSITION_CLASS, freight, sku);
         additionalCompositionFreightSku.setDerivedForcedChange(addJProp(and1, additionalCompositionSku, 2, quantityFreightSku, 1, 2), 1, 2, is(freightChanged), 1);
 
         countryOfOriginFreightSku = addDProp(idGroup, "countryOfOriginFreightSku", "Страна (ИД)", country, freight, sku);
         countryOfOriginFreightSku.setDerivedForcedChange(addJProp(and1, countryOfOriginSku, 2, quantityFreightSku, 1, 2), 1, 2, is(freightChanged), 1);
+
+        addConstraint(addJProp("Для SKU должна быть задана страна", and(true, false), is(freightChanged), 1, countryOfOriginFreightSku, 1, 2, quantityFreightSku, 1, 2), false);
+
         sidCountryOfOriginFreightSku = addJProp(baseGroup, "sidCountryOfOriginFreightSku", "Код страны", sidCountry, countryOfOriginFreightSku, 1, 2);
         nameCountryOfOriginFreightSku = addJProp(baseGroup, "nameCountryOfOriginFreightSku", "Страна", name, countryOfOriginFreightSku, 1, 2);
         
@@ -1783,6 +1790,8 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 
         netWeightFreightSku = addDProp(baseGroup, "netWeightFreightSku", "Вес нетто", DoubleClass.instance, freight, sku);
         netWeightFreightSku.setDerivedForcedChange(addJProp(and1, netWeightSku, 2, quantityFreightSku, 1, 2), 1, 2, is(freightChanged), 1);
+
+        addConstraint(addJProp("Для SKU должен быть задан вес нетто", and(true, false), is(freightChanged), 1, netWeightFreightSku, 1, 2, quantityFreightSku, 1, 2), false);
 
         netWeightImporterFreightUnitSku = addJProp(baseGroup, "netWeightImporterFreightUnitSku", "Вес нетто", multiplyDouble2, quantityImporterStockSku, 1, 2, 3, addJProp(netWeightFreightSku, freightFreightUnit, 1, 2), 2, 3);
         netWeightImporterFreightUnit = addSGProp(baseGroup, "netWeightImporterFreightUnit", "Вес нетто", netWeightImporterFreightUnitSku, 1, 2);
@@ -2013,8 +2022,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         classifierItem.add(season.getClassForm(this));
         classifierItem.add(country.getClassForm(this));
         classifierItem.add(unitOfMeasure.getClassForm(this));
-
-        //addFormEntity(new ISSPFormEntity(classifier, "iSSPForm", "Промежуточная"));
+                
         addFormEntity(new GlobalParamFormEntity(classifier, "globalParamForm", "Общие параметры"));
         addFormEntity(new ColorSizeSupplierFormEntity(classifier, "сolorSizeSupplierForm", "Поставщики"));
         classifier.add(importer.getClassForm(this));
@@ -2037,9 +2045,9 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         NavigatorElement purchase = new NavigatorElement(baseElement, "purchase", "Управление закупками");
         addFormEntity(new OrderFormEntity(purchase, "orderForm", "Заказы"));
         addFormEntity(new InvoiceFormEntity(purchase, "boxInvoiceForm", "Инвойсы по коробам", true));
-        addFormEntity(new InvoiceFormEntity(purchase, "simpleInvoiceForm", "Инвойсы без коробов", false));
+        //addFormEntity(new InvoiceFormEntity(purchase, "simpleInvoiceForm", "Инвойсы без коробов", false));
         addFormEntity(new ShipmentListFormEntity(purchase, "boxShipmentListForm", "Поставки по коробам", true));
-        addFormEntity(new ShipmentListFormEntity(purchase, "simpleShipmentListForm", "Поставки без коробов", false));
+        //addFormEntity(new ShipmentListFormEntity(purchase, "simpleShipmentListForm", "Поставки без коробов", false));
         addFormEntity(new PricatFormEntity(purchase, "pricatForm", "Прайсы"));
 
         NavigatorElement shipment = new NavigatorElement(baseElement, "shipment", "Управление фрахтами");
@@ -2053,7 +2061,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         FormEntity createFreightBoxFormAdd = addFormEntity(new CreateFreightBoxFormEntity(distribution, "createFreightBoxFormAdd", "Сгенерировать короба", FormType.ADD));
         addFormEntity(new CreateFreightBoxFormEntity(createFreightBoxFormAdd, "createFreightBoxFormList", "Документы генерации коробов", FormType.LIST));
         addFormEntity(new ShipmentSpecFormEntity(distribution, "boxShipmentSpecForm", "Прием товара по коробам", true));
-        addFormEntity(new ShipmentSpecFormEntity(distribution, "simpleShipmentSpecForm", "Прием товара без коробов", false));
+        //addFormEntity(new ShipmentSpecFormEntity(distribution, "simpleShipmentSpecForm", "Прием товара без коробов", false));
         addFormEntity(new FreightShipmentStoreFormEntity(distribution, "freightShipmentStoreForm", "Комплектация фрахта (на складе)"));
         addFormEntity(new BalanceBrandWarehouseFormEntity(distribution, "balanceBrandWarehouseForm", "Остатки на складе (по брендам)"));
         addFormEntity(new BalanceWarehouseFormEntity(distribution, "balanceWarehouseForm", "Остатки на складе"));
@@ -2161,27 +2169,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             return design;
         }
     }
-
-    /*private class ISSPFormEntity extends FormEntity<RomanBusinessLogics> {
-
-        private ObjectEntity objBox;
-        private ObjectEntity objInvoice;
-        private ObjectEntity objSku;
-
-        private ISSPFormEntity(NavigatorElement parent, String sID, String caption) {
-            super(parent, sID, caption);
-
-            objInvoice = addSingleGroupObject(invoice, "Инвойс", date);
-            objBox = addSingleGroupObject(stock, "Короб", barcode);
-            objSku = addSingleGroupObject(sku, "SKU", barcode);
-
-            addPropertyDraw(priceInInvoiceStockSku, objInvoice, objBox, objSku);
-            addPropertyDraw(priceInInvoiceFreightUnitSku, objInvoice, objBox, objSku);
-            addFixedFilter(new NotNullFilterEntity(addPropertyObject(quantityStockSku, objBox, objSku)));
-            addFixedFilter(new NotNullFilterEntity(addPropertyObject(priceInInvoiceStockSku, objInvoice, objBox, objSku)));
-
-        }                
-    } */   
+        
 
     private class PackingListBoxFormEntity extends FormEntity<RomanBusinessLogics> {
 
@@ -2865,7 +2853,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             if (box)
                 design.addIntersection(design.getGroupObjectContainer(objBarcode.groupTo),
                                        design.getGroupObjectContainer(objSIDSupplierBox.groupTo),
-                                       DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
+                                       DoNotIntersectSimplexConstraint.TOTHE_RIGHT);                        
 
             design.addIntersection(design.getGroupObjectContainer(objSupplier.groupTo),
                                    design.getGroupObjectContainer(objShipment.groupTo),
