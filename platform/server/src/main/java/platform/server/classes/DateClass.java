@@ -22,7 +22,7 @@ public class DateClass extends DataClass<Date> {
         DataClass.storeClass(sid, instance);
     }
 
-    protected DateClass() {}
+    protected DateClass() { super("Дата"); }
 
     public String toString() {
         return "Дата";

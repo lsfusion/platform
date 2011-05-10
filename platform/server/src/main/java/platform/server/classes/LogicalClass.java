@@ -18,7 +18,7 @@ public class LogicalClass extends DataClass<Boolean> {
         DataClass.storeClass(sid, instance);
     }
 
-    protected LogicalClass() {}    
+    protected LogicalClass() { super("Логическое значение");}
 
     public String toString() {
         return "Logical";

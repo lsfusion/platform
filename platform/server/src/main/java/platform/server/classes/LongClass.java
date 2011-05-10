@@ -17,7 +17,7 @@ public class LongClass extends IntegralClass<Long> {
         DataClass.storeClass(sid, instance);
     }
 
-    protected LongClass() {}
+    protected LongClass() { super("Длинное целое число"); }
 
     public int getPreferredWidth() { return 65; }
 

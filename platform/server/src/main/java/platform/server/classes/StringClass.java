@@ -21,6 +21,7 @@ public class StringClass extends DataClass<String> {
     public int length;
 
     public StringClass(int length) {
+        super("Строка");
         this.length = length;
     }
 

@@ -16,7 +16,7 @@ public class ByteArrayClass extends DataClass<byte[]> {
         DataClass.storeClass(sid, instance);
     }
 
-    protected ByteArrayClass() {} 
+    protected ByteArrayClass() { super("Массив байт"); }
 
     public String toString() {
         return "Массив байт";

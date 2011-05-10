@@ -23,6 +23,7 @@ public class DateTimeClass extends DataClass<Timestamp> {
     }
 
     protected DateTimeClass() {
+        super("Время");
     }
 
     public String toString() {

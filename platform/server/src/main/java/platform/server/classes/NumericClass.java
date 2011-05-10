@@ -21,6 +21,7 @@ public class NumericClass extends IntegralClass<Double> {
     final byte precision;
 
     private NumericClass(byte length, byte precision) {
+        super("Число с фиксированной запятой");
         this.length = length;
         this.precision = precision;
     }

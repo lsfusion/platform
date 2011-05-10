@@ -14,7 +14,7 @@ public class YearClass extends IntegerClass {
         DataClass.storeClass(sid, instance);
     }
 
-    protected YearClass() {}    
+    protected YearClass() { caption = "Год"; }
 
     @Override
     public Format getReportFormat() {

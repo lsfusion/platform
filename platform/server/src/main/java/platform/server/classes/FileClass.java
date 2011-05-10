@@ -10,6 +10,10 @@ import java.text.Format;
 
 public abstract class FileClass extends DataClass<byte[]> {
 
+    protected FileClass() {
+        super("Файл");
+    }
+
     public Object getDefaultValue() {
         return new byte[0];
     }

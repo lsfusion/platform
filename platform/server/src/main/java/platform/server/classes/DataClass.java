@@ -24,9 +24,19 @@ import java.util.*;
 
 public abstract class DataClass<T> implements StaticClass, Type<T>, AndClassSet, OrClassSet {
     private static Map<String, DataClass> sidToClass = new HashMap<String, DataClass>();
+    protected String caption;
 
     static void storeClass(String sid, DataClass cls) {
         sidToClass.put(sid, cls);
+    }
+
+    protected DataClass(String caption) {
+        this.caption = caption;
+    }
+
+    @Override
+    public String getCaption() {
+        return caption;
     }
 
     public abstract DataClass getCompatible(DataClass compClass);

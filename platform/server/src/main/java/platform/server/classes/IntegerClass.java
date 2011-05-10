@@ -17,7 +17,7 @@ public class IntegerClass extends IntegralClass<Integer> {
         DataClass.storeClass(sid, instance);
     }
 
-    protected IntegerClass() {}    
+    protected IntegerClass() { super("Целое число"); }
 
     public String toString() {
         return "Целое число";

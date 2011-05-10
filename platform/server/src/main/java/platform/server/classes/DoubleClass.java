@@ -15,7 +15,7 @@ public class DoubleClass extends IntegralClass<Double> {
         DataClass.storeClass(sid, instance);
     }
 
-    protected DoubleClass() {}
+    protected DoubleClass() { super("Вещественное число"); }
 
     public String toString() {
         return "Плавающее число";

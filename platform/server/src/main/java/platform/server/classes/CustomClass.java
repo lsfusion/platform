@@ -77,6 +77,11 @@ public abstract class CustomClass extends AbstractNode implements ObjectClass, V
         return null;
     }
 
+    @Override
+    public String getCaption() {
+        return caption;
+    }
+
     public boolean hasChildren() {
         return !children.isEmpty();
     }
