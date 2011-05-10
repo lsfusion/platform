@@ -412,6 +412,8 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
     LP localeExpert;
     LP disableExpert;
 
+    LP addProject, editProject;
+
     protected void initProperties() {
 
         nameNative = addDProp(baseGroup, "nameNative", "Имя", InsensitiveStringClass.get(2000), multiLanguageNamed);
@@ -813,7 +815,14 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
 
         addCUProp("userRole", true, "Роль пользователя", addCProp(StringClass.get(30), "expert", expert));
 
-        statusProject = addIfElseUProp(idGroup, "statusProject", true, "Статус (ИД)",
+        statusProject = addCaseUProp(idGroup, "statusProject", true, "Статус (ИД)",
+                    acceptedProject, 1, addCProp(projectStatus, "accepted", project), 1,
+                    voteRejectedProject, 1, addCProp(projectStatus, "rejected", project), 1,
+                    voteSucceededProject, 1, addCProp(projectStatus, "succeeded", project), 1,
+                    voteInProgressProject, 1, addCProp(projectStatus, "inProgress", project), 1,
+                    needExtraVoteProject, 1, addCProp(projectStatus, "needExtraVote", project), 1,
+                    notEnoughProject, 1, addCProp(projectStatus, "needDocuments", project), 1);
+/*        statusProject = addIfElseUProp(idGroup, "statusProject", true, "Статус (ИД)",
                                   addCProp(projectStatus, "accepted", project),
                                   addIfElseUProp(addCProp(projectStatus, "rejected", project),
                                                  addIfElseUProp(addCProp(projectStatus, "succeeded", project),
@@ -826,7 +835,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
                                                                                voteInProgressProject, 1),
                                                                 voteSucceededProject, 1),
                                                  voteRejectedProject, 1),
-                                  acceptedProject, 1);
+                                  acceptedProject, 1);*/
         nameStatusProject = addJProp(projectInformationGroup, "nameStatusProject", "Статус", name, statusProject, 1);
 
         statusProjectVote = addJProp(idGroup, "statusProjectVote", "Статус проекта (ИД)", statusProject, projectVote, 1);
@@ -914,8 +923,9 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
     FormEntity globalForm;
 
     protected void initNavigators() throws JRException, FileNotFoundException {
+        addFormEntity(new ProjectFullFormEntity(objectElement, "projectFull"));
+
         addFormEntity(new ProjectFormEntity(baseElement, "project"));
-        addFormEntity(new ProjectFullFormEntity(baseElement, "projectFull"));
         addFormEntity(new VoteFormEntity(baseElement, "vote"));
         addFormEntity(new ExpertFormEntity(baseElement, "expert"));
         languageDocumentTypeForm = addFormEntity(new LanguageDocumentTypeFormEntity(baseElement, "languageDocumentType"));
@@ -955,8 +965,11 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         private ProjectFormEntity(NavigatorElement parent, String sID) {
             super(parent, sID, "Реестр проектов");
 
-            objProject = addSingleGroupObject(project, date, nameNative, nameForeign,  nameNativeClusterProject, nameNativeClaimerProject, nameStatusProject, autoGenerateProject, generateVoteProject);
+            objProject = addSingleGroupObject(project, date, nameNative, nameForeign,  nameNativeClusterProject, nameNativeClaimerProject, nameStatusProject, autoGenerateProject, generateVoteProject, editProject);
             addObjectActions(this, objProject);
+
+            addPropertyDraw(addProject).toDraw = objProject.groupTo;
+            getPropertyDraw(addProject).forceViewType = ClassViewType.PANEL;
 
             getPropertyDraw(generateVoteProject).forceViewType = ClassViewType.PANEL;
             getPropertyDraw(generateVoteProject).propertyCaption = addPropertyObject(hideGenerateVoteProject, objProject);
@@ -1005,6 +1018,8 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         @Override
         public FormView createDefaultRichDesign() {
             DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign();
+
+            design.get(getPropertyDraw(addProject)).drawToToolbar = true;
 
             ContainerView specContainer = design.createContainer();
             specContainer.tabbedPane = true;
@@ -1098,6 +1113,9 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
             addFixedFilter(new CompareFilterEntity(addPropertyObject(projectPatent, objPatent), Compare.EQUALS, objProject));
             addFixedFilter(new CompareFilterEntity(addPropertyObject(projectAcademic, objAcademic), Compare.EQUALS, objProject));
             addFixedFilter(new CompareFilterEntity(addPropertyObject(projectNonRussianSpecialist, objNonRussianSpecialist), Compare.EQUALS, objProject));
+
+            addProject = addMFAProp(actionGroup, "Добавить", this, new ObjectEntity[] {}, true, addPropertyObject(getAddObjectAction(project)));
+            editProject = addMFAProp(actionGroup, "Редактировать", this, new ObjectEntity[] {objProject});
         }
 
         @Override
@@ -1129,7 +1147,9 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
             specContainer.tabbedPane = true;
 
             design.getMainContainer().addBefore(design.getGroupPropertyContainer(objProject.groupTo, projectInformationGroup), specContainer);
-            
+
+            design.setShowTableFirstLogical(true);
+
             return design;
         }
     }
