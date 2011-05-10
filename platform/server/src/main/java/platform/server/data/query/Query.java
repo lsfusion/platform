@@ -83,6 +83,10 @@ public class Query<K,V> extends InnerContext<Query<?,?>> implements MapKeysInter
         return mapKeys;
     }
 
+    public boolean isEmpty() {
+        return where.isFalse();
+    }
+
     public Type getKeyType(K key) {
         return mapKeys.get(key).getType(where);
     }

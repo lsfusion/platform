@@ -525,6 +525,7 @@ public class SQLSession extends MutableObject {
 
     // сначала делает InsertSelect, затем UpdateRecords
     public int modifyRecords(ModifyQuery modify) throws SQLException {
+        if (modify.isEmpty()) return 0;
         if (modify.table.isSingle()) {// потому как запросом никак не сделаешь, просто вкинем одну пустую запись
             if (!isRecord(modify.table, new HashMap<KeyField, DataObject>()))
                 insertSelect(modify);

@@ -150,4 +150,8 @@ public class ModifyQuery {
 
         return new SQLExecute("INSERT INTO " + table.getName(syntax) + " (" + (insertString.length()==0?"dumb":insertString) + ") " + getInsertCastSelect(changeCompile, syntax),changeCompile.getQueryParams(env));
     }
+
+    public boolean isEmpty() {
+        return change.isEmpty();
+    }
 }
