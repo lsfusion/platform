@@ -30,9 +30,9 @@ public abstract class ReportLayout {
         textFields.put(reportField, text);
     }
 
-    public void doLayout(int pageWidth) {
+    public int doLayout(int pageWidth) {
 
-        AbstractRowLayout.doLayout(reportFields, pageWidth, true);
+        int rowCount = AbstractRowLayout.doLayout(reportFields, pageWidth, false);
 
         for (ReportDrawField reportField : reportFields) {
 
@@ -47,6 +47,7 @@ public abstract class ReportLayout {
             textFields.get(reportField).setHeight(ROW_HEIGHT);
         }
 
+        return rowCount;
     }
 }
 
@@ -58,11 +59,9 @@ class ReportDetailLayout extends ReportLayout {
     public ReportDetailLayout(JasperDesign design) {
         // убрать из заголовка страницы заголовок detail?
         pageHeadBand = new JRDesignBand();
-        pageHeadBand.setHeight(ROW_HEIGHT);
         design.setPageHeader(pageHeadBand);
 
         detailBand = new JRDesignBand();
-        detailBand.setHeight(ROW_HEIGHT);
         design.setDetail(detailBand);
     }
 
@@ -71,6 +70,16 @@ class ReportDetailLayout extends ReportLayout {
 
         pageHeadBand.addElement(caption);
         detailBand.addElement(text);
+    }
+
+    @Override
+    public int doLayout(int pageWidth) {
+        int rowCount = super.doLayout(pageWidth);
+
+        pageHeadBand.setHeight(rowCount * ROW_HEIGHT);
+        detailBand.setHeight(rowCount * ROW_HEIGHT);
+
+        return rowCount;
     }
 }
 
@@ -85,7 +94,6 @@ class ReportGroupRowLayout extends ReportGroupLayout {
     public ReportGroupRowLayout(JRDesignGroup designGroup) {
 
         groupBand = new JRDesignBand();
-        groupBand.setHeight(ROW_HEIGHT);
         groupBand.setSplitType(SplitTypeEnum.PREVENT);
         designGroup.setGroupHeader(groupBand);
     }
@@ -97,13 +105,14 @@ class ReportGroupRowLayout extends ReportGroupLayout {
         groupBand.addElement(text);
     }
 
-    public void doLayout(int pageWidth) {
+    @Override
+    public int doLayout(int pageWidth) {
 
         int captionWidth = 0;
         for (ReportDrawField reportField : reportFields)
             captionWidth += reportField.getCaptionWidth();
 
-        AbstractRowLayout.doLayout(reportFields, pageWidth - captionWidth, true);
+        int rowCount = AbstractRowLayout.doLayout(reportFields, pageWidth - captionWidth, false);
 
         int left = 0, width = 0;
         for (ReportDrawField reportField : reportFields) {
@@ -122,6 +131,10 @@ class ReportGroupRowLayout extends ReportGroupLayout {
 
             left = width + reportField.left + reportField.width;
         }
+
+        groupBand.setHeight(rowCount * ROW_HEIGHT);
+
+        return rowCount;
     }
 }
 
@@ -133,12 +146,10 @@ class ReportGroupColumnLayout extends ReportGroupLayout {
     public ReportGroupColumnLayout(JRDesignGroup captionGroup, JRDesignGroup textGroup) {
 
         captionGroupBand = new JRDesignBand();
-        captionGroupBand.setHeight(ROW_HEIGHT);
         captionGroupBand.setSplitType(SplitTypeEnum.PREVENT);
         captionGroup.setGroupHeader(captionGroupBand);
 
         textGroupBand = new JRDesignBand();
-        textGroupBand.setHeight(ROW_HEIGHT);
         textGroupBand.setSplitType(SplitTypeEnum.PREVENT);
         textGroup.setGroupHeader(textGroupBand);
     }
@@ -148,6 +159,16 @@ class ReportGroupColumnLayout extends ReportGroupLayout {
 
         captionGroupBand.addElement(caption);
         textGroupBand.addElement(text);
+    }
+
+    @Override
+    public int doLayout(int pageWidth) {
+        int rowCount = super.doLayout(pageWidth);
+
+        captionGroupBand.setHeight(rowCount * ROW_HEIGHT);
+        textGroupBand.setHeight(rowCount * ROW_HEIGHT);
+
+        return rowCount;
     }
 }
 

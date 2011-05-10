@@ -496,7 +496,7 @@ public class FormView implements ServerIdentitySerializable, AbstractForm<Contai
         property.focusable = focusable;
     }
 
-    public void setLogicalShowTableFirst(Boolean showTableFirst) {
+    public void setShowTableFirstLogical(Boolean showTableFirst) {
 
         for (PropertyDrawView propertyView : getProperties()) {
             // просто охрененная затычка

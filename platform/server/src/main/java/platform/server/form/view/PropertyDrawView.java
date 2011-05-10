@@ -95,6 +95,8 @@ public class PropertyDrawView extends ComponentView {
         return entity.propertyObject.property.caption;
     }
 
+    // предполагается, что для свойств, для которых заголовок динамический (например, группы в колонки),
+    // getCaption должно возвращать null
     private String getCaption() {
         return caption != null
                 ? caption
@@ -103,9 +105,14 @@ public class PropertyDrawView extends ComponentView {
                 : null;
     }
 
+    private String getSingleCaption() {
+        String caption = getCaption();
+        return caption == null ? getDefaultCaption() : caption;
+    }
+
     public ReportDrawField getReportDrawField() {
 
-        ReportDrawField reportField = new ReportDrawField(getSID(), getCaption());
+        ReportDrawField reportField = new ReportDrawField(getSID(), getSingleCaption());
 
         Type type = getType();
 

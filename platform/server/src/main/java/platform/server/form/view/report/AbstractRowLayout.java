@@ -31,8 +31,10 @@ public class AbstractRowLayout {
     public static <T extends AbstractRowLayoutElement> int doLayout(List<T> elements, int rowWidth, boolean singleRow) {
 
         int rowNumber;
+        // пробуем сначала отрисовать все в 1 ряд, затем в 2 и т.д.
         for (rowNumber = 1; rowNumber <= elements.size(); rowNumber++) {
 
+            // перебираем все возможные точки разбиения
             Collection<List<T>> combinations = SetBuilder.buildSetCombinations(rowNumber-1, elements);
 
             double bestCoeff = Double.MAX_VALUE;
@@ -53,6 +55,7 @@ public class AbstractRowLayout {
                     currentList.add(element);
                 }
 
+                // в rows складываем элементы, на которые разбили
                 rows.add(currentList);
 
                 boolean correctCombination = true;
@@ -60,6 +63,7 @@ public class AbstractRowLayout {
                 double minCoeff = Double.MAX_VALUE;
                 double maxCoeff = Double.MIN_VALUE;
 
+                // тут есть избыточность, поскольку по одному и тому же ряду пробегаем несколько раз
                 for (List<T> row : rows) {
 
                     double coeff = countRowCoeff(rowWidth, row, singleRow);
@@ -71,6 +75,7 @@ public class AbstractRowLayout {
 
                 if (!correctCombination) continue;
 
+                // выбираем комбинацию с наилучшей разницей коэффициентов
                 double dltCoeff = maxCoeff - minCoeff;
                 if (dltCoeff < bestCoeff) {
                     bestCoeff = dltCoeff;
@@ -88,9 +93,11 @@ public class AbstractRowLayout {
                     for (T element : row) {
 
                         int width = ((Double)(element.getMinimumWidth() + (element.getPreferredWidth() - element.getMinimumWidth()) * coeff)).intValue();
+//                        if (width < 0) width = 0;
                         if (row.indexOf(element)+1 == row.size()) width = rowWidth - left;
 
                         element.setLeft(left);
+                        assert width >= 0;
                         element.setWidth(width);
                         element.setRow(bestRows.indexOf(row));
 
