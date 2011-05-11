@@ -1314,7 +1314,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         quantityDataListSku = addDProp("quantityDataListSku", "Кол-во (первичное)", DoubleClass.instance, list, sku);
         quantityListSku = quantityDataListSku; //addJProp(baseGroup, "quantityListSku", true, "Кол-во", and1, quantityDataListSku, 1, 2, numberListSku, 1, 2);
 
-        quantityDocumentSku = addSGProp(baseGroup, "quantityDocumentSku", "Кол-во в документе", quantityListSku, documentList, 1, 2);
+        quantityDocumentSku = addSGProp(baseGroup, "quantityDocumentSku", true, "Кол-во в документе", quantityListSku, documentList, 1, 2);
         quantityDocumentArticle = addSGProp(baseGroup, "quantityDocumentArticle", "Кол-во артикула в документе", quantityDocumentSku, 1, articleSku, 2);
         quantityDocument = addSGProp(baseGroup, "quantityDocument", "Общее кол-во в документе", quantityDocumentSku, 1);
 
@@ -1456,7 +1456,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         invoicedShipmentSku = addSGProp(baseGroup, "invoicedShipmentSku", true, "Ожид. (пост.)",
                 addJProp(and1, quantityDocumentSku, 1, 2, inInvoiceShipment, 1, 3), 3, 2);
 
-        priceShipmentSku = addMGProp(baseGroup, "priceShipmentSku", "Цена (пост.)",
+        priceShipmentSku = addMGProp(baseGroup, "priceShipmentSku", true, "Цена (пост.)",
                 addJProp(and1, priceDocumentSku, 1, 2, inInvoiceShipment, 1, 3), 3, 2);
 
         invoicedShipment = addSGProp(baseGroup, "invoicedShipment", true, "Всего ожидается (пост.)", invoicedShipmentSku, 1);
@@ -2143,6 +2143,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         private ObjectEntity objTypeExchange;
         private ObjectEntity objCurrency;
         private ObjectEntity objDate;
+        private ObjectEntity objDateRate;
 
         private RateCurrencyFormEntity(NavigatorElement parent, String sID, String caption) {
             super(parent, sID, caption);
@@ -2150,26 +2151,31 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             objTypeExchange = addSingleGroupObject(typeExchange, "Тип обмена", objectValue, name, nameCurrencyTypeExchange);
             objTypeExchange.groupTo.initClassView = ClassViewType.PANEL;
 
-            objDate = addSingleGroupObject(DateClass.instance, "Дата", objectValue);
-            objDate.groupTo.setSingleClassView(ClassViewType.PANEL);
-
             objCurrency = addSingleGroupObject(currency, "Валюта", name);
             objCurrency.groupTo.initClassView = ClassViewType.GRID;
 
+            objDate = addSingleGroupObject(DateClass.instance, "Дата", objectValue);
+            objDate.groupTo.setSingleClassView(ClassViewType.PANEL);
+
             addPropertyDraw(rateExchange, objTypeExchange, objCurrency, objDate);
 
-            //addFixedFilter(new CompareFilterEntity(addPropertyObject(currencyTypeExchange, objTypeExchange), Compare.NOT_EQUALS, objCurrency));
+            objDateRate = addSingleGroupObject(DateClass.instance, "Дата", objectValue);
 
+            addPropertyDraw(rateExchange, objTypeExchange, objCurrency, objDateRate);
+            setReadOnly(rateExchange, true, objDateRate.groupTo);
+            addFixedFilter(new NotNullFilterEntity(addPropertyObject(rateExchange, objTypeExchange, objCurrency, objDateRate)));
         }
 
         @Override
         public FormView createDefaultRichDesign() {
             DefaultFormView design = (DefaultFormView)super.createDefaultRichDesign();
 
+            design.get(objCurrency.groupTo).grid.constraints.fillVertical = 1;
+            design.get(objDateRate.groupTo).grid.constraints.fillVertical = 3;
+
             return design;
         }
     }
-        
 
     private class PackingListBoxFormEntity extends FormEntity<RomanBusinessLogics> {
 
@@ -2542,11 +2548,13 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             objSupplier = addSingleGroupObject(supplier, "Поставщик", name);
             objSupplier.groupTo.setSingleClassView(ClassViewType.PANEL);
 
-            objShipment = addSingleGroupObject((box ? boxShipment : simpleShipment), "Поставка", date, sidDocument, netWeightShipment, grossWeightShipment, quantityPalletShipment, quantityBoxShipment, invoicedShipment, sumShipment);
+            objShipment = addSingleGroupObject((box ? boxShipment : simpleShipment), "Поставка", date, sidDocument, netWeightShipment, grossWeightShipment, quantityPalletShipment, quantityBoxShipment);//, invoicedShipment, sumShipment
             addObjectActions(this, objShipment);
 
             objInvoice = addSingleGroupObject((box ? boxInvoice : simpleInvoice), "Инвойс");
             objInvoice.groupTo.setSingleClassView(ClassViewType.GRID);
+            setReadOnly(objInvoice, true);
+
             addPropertyDraw(inInvoiceShipment, objInvoice, objShipment);
             addPropertyDraw(objInvoice, date, sidDocument, sidDestinationDestinationDocument, nameDestinationDestinationDocument);
 
@@ -2559,6 +2567,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             addFixedFilter(new CompareFilterEntity(addPropertyObject(supplierDocument, objInvoice), Compare.EQUALS, objSupplier));
 
             setReadOnly(objSupplier, true);
+
         }
 
         @Override
@@ -2985,9 +2994,11 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             addPropertyDraw(quantityPalletFreightBetweenDate, objDateFrom, objDateTo);
 
             objShipment = addSingleGroupObject(shipment, "Поставка", date, nameSupplierDocument, sidDocument, sumDocument, nameCurrencyDocument, netWeightShipment, grossWeightShipment, quantityPalletShipment, quantityBoxShipment);
+            setReadOnly(objShipment, true);
 
             objPallet = addSingleGroupObject(pallet, "Паллета", barcode, grossWeightPallet, freightBoxNumberPallet);
             objPallet.groupTo.setSingleClassView(ClassViewType.GRID);
+            setReadOnly(objPallet, true);
 
             addPropertyDraw(equalsPalletFreight, objPallet, objFreight);
 
@@ -2995,9 +3006,13 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             setForceViewType(itemAttributeGroup, ClassViewType.GRID, objSku.groupTo);
             addPropertyDraw(quantityPalletSku, objPallet, objSku);
 
-            objDirectInvoice = addSingleGroupObject(directInvoice, "Инвойс напрямую", date, sidDocument, sumDocument, nameImporterInvoice, sidContractInvoice, nameDestinationDestinationDocument, grossWeightDirectInvoice, palletNumberDirectInvoice);
-            addPropertyDraw(equalsDirectInvoiceFreight, objDirectInvoice, objFreight);
+            setReadOnly(objSku, true);
 
+            objDirectInvoice = addSingleGroupObject(directInvoice, "Инвойс напрямую", date, sidDocument, sumDocument, nameImporterInvoice, sidContractInvoice, nameDestinationDestinationDocument, grossWeightDirectInvoice, palletNumberDirectInvoice);
+            setReadOnly(objDirectInvoice, true);
+
+            addPropertyDraw(equalsDirectInvoiceFreight, objDirectInvoice, objFreight);
+            
             addPropertyDraw(quantityShipmentFreight, objShipment, objFreight);
 
             addFixedFilter(new CompareFilterEntity(addPropertyObject(date, objShipment), Compare.GREATER_EQUALS, objDateFrom));
@@ -3277,6 +3292,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             addObjectActions(this, objSku);
 
             setForceViewType(itemAttributeGroup, ClassViewType.GRID, objSku.groupTo);
+            setReadOnly(objSku, true);
 
             RegularFilterGroupEntity filterGroup = new RegularFilterGroupEntity(genID());
             filterGroup.addFilter(new RegularFilterEntity(genID(),
@@ -3462,6 +3478,16 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 
             setForceViewType(itemAttributeGroup, ClassViewType.GRID, objSku2.groupTo);
 
+            setReadOnly(objSupplier, true);
+            setReadOnly(objBrand, true);
+            setReadOnly(objInvoice, true);
+            setReadOnly(objPallet, true);
+            setReadOnly(objBox, true);
+            setReadOnly(objArticle, true);
+            setReadOnly(objArticle2, true);
+            setReadOnly(objSku, true);
+            setReadOnly(objSku2, true);
+
             addFixedFilter(new CompareFilterEntity(addPropertyObject(supplierBrandSupplier, objBrand), Compare.EQUALS, objSupplier));
             addFixedFilter(new CompareFilterEntity(addPropertyObject(palletFreightBox, objBox), Compare.EQUALS, objPallet));
             addFixedFilter(new CompareFilterEntity(addPropertyObject(brandSupplierArticle, objArticle), Compare.EQUALS, objBrand));
@@ -3510,7 +3536,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         private ObjectEntity objSupplier;
         private ObjectEntity objInvoice;
         private ObjectEntity objBox;
-        private ObjectEntity objArticle;
+        //private ObjectEntity objArticle;
         private ObjectEntity objSku;
         private ObjectEntity objSku2;
 
@@ -3538,6 +3564,12 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             addPropertyDraw(quantitySupplierBoxSku, objBox, objSku2);
 
             setForceViewType(itemAttributeGroup, ClassViewType.GRID, objSku2.groupTo);
+
+            setReadOnly(objSupplier, true);
+            setReadOnly(objInvoice, true);
+            setReadOnly(objBox, true);                        
+            setReadOnly(objSku, true);
+            setReadOnly(objSku2, true);
 
             addFixedFilter(new CompareFilterEntity(addPropertyObject(supplierDocument, objInvoice), Compare.EQUALS, objSupplier));
             addFixedFilter(new CompareFilterEntity(addPropertyObject(boxInvoiceSupplierBox, objBox), Compare.EQUALS, objInvoice));
