@@ -320,10 +320,20 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
     LP nativeSubstantiationClusterProject;
     LP foreignSubstantiationClusterProject;
     LP fileNativeSummaryProject;
+    LP loadFileNativeSummaryProject;
+    LP openFileNativeSummaryProject;
     LP fileForeignSummaryProject;
+    LP loadFileForeignSummaryProject;
+    LP openFileForeignSummaryProject;
     LP fileRoadMapProject;
+    LP loadFileRoadMapProject;
+    LP openFileRoadMapProject;
     LP fileNativeTechnicalDescriptionProject;
+    LP loadFileNativeTechnicalDescriptionProject;
+    LP openFileNativeTechnicalDescriptionProject;
     LP fileForeignTechnicalDescriptionProject;
+    LP loadFileForeignTechnicalDescriptionProject;
+    LP openFileForeignTechnicalDescriptionProject;
 
     LP isReturnInvestmentsProject;
     LP nameReturnInvestorProject;
@@ -383,13 +393,21 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
     LP ownerTypePatent;
     LP nameOwnerTypePatent;
     LP fileIntentionOwnerPatent;
+    LP loadFileIntentionOwnerPatent;
+    LP openFileIntentionOwnerPatent;
     LP isValuated;   
     LP valuatorPatent;
     LP fileActValuationPatent;
+    LP loadFileActValuationPatent;
+    LP openFileActValuationPatent;
     LP hideOwnerPatent;
     LP hideFileIntentionOwnerPatent;
+    LP hideLoadFileIntentionOwnerPatent;
+    LP hideOpenFileIntentionOwnerPatent;
     LP hideValuatorPatent;
     LP hideFileActValuationPatent;
+    LP hideLoadFileActValuationPatent;
+    LP hideOpenFileActValuationPatent;
     LP hideNameOwnerTypePatent;
 
     LP projectAcademic;
@@ -397,16 +415,28 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
     LP institutionAcademic;
     LP titleAcademic;
     LP fileDocumentConfirmingAcademic;
+    LP loadFileDocumentConfirmingAcademic;
+    LP openFileDocumentConfirmingAcademic;
     LP fileDocumentEmploymentAcademic;
+    LP loadFileDocumentEmploymentAcademic;
+    LP openFileDocumentEmploymentAcademic;
 
     LP projectNonRussianSpecialist;
     LP fullNameNonRussianSpecialist;
     LP organizationNonRussianSpecialist;
     LP titleNonRussianSpecialist;
     LP fileNativeResumeNonRussianSpecialist;
+    LP loadFileForeignResumeNonRussianSpecialist;
+    LP openFileForeignResumeNonRussianSpecialist;
     LP fileForeignResumeNonRussianSpecialist;
+    LP loadFileNativeResumeNonRussianSpecialist;
+    LP openFileNativeResumeNonRussianSpecialist;
     LP filePassportNonRussianSpecialist;
-    LP fileStatementNonRussianSpecialist; 
+    LP loadFilePassportNonRussianSpecialist;
+    LP openFilePassportNonRussianSpecialist;
+    LP fileStatementNonRussianSpecialist;
+    LP loadFileStatementNonRussianSpecialist;
+    LP openFileStatementNonRussianSpecialist;
 
     LP isForeignExpert;
     LP localeExpert;
@@ -481,12 +511,13 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         foreignSubstantiationClusterProject = addDProp(innovationGroup, "foreignSubstantiationClusterProject", "Description of choice", InsensitiveStringClass.get(2000), project);
         foreignSubstantiationClusterProject.setMinimumWidth(10); foreignSubstantiationClusterProject.setPreferredWidth(50);
 
-        fileNativeSummaryProject = addDProp(executiveSummaryGroup, "fileNativeSummaryProject", "Файл резюме проекта", PDFClass.instance, project);
-        fileForeignSummaryProject = addDProp(executiveSummaryGroup, "fileForeignSummaryProject", "Файл резюме проекта (иностр.)", PDFClass.instance, project);
+        fileNativeSummaryProject = addDProp("fileNativeSummaryProject", "Файл резюме проекта", PDFClass.instance, project);
+        loadFileNativeSummaryProject = addLFAProp(executiveSummaryGroup, "Загрузить файл резюме проекта", fileNativeSummaryProject);
+        openFileNativeSummaryProject = addOFAProp(executiveSummaryGroup, "Открыть файл резюме проекта", fileNativeSummaryProject);
 
-        fileRoadMapProject = addDProp(projectDocumentsGroup, "fileRoadMapProject", "Файл дорожной карты", PDFClass.instance, project);
-        fileNativeTechnicalDescriptionProject = addDProp(projectDocumentsGroup, "fileNativeTechnicalDescriptionProject", "Файл технического описания", PDFClass.instance, project);
-        fileForeignTechnicalDescriptionProject = addDProp(projectDocumentsGroup, "fileForeignTechnicalDescriptionProject", "Файл технического описания (иностр.)", PDFClass.instance, project);
+        fileForeignSummaryProject = addDProp("fileForeignSummaryProject", "Файл резюме проекта (иностр.)", PDFClass.instance, project);
+        loadFileForeignSummaryProject = addLFAProp(executiveSummaryGroup, "Загрузить файл резюме проекта (иностр.)", fileForeignSummaryProject);
+        openFileForeignSummaryProject = addOFAProp(executiveSummaryGroup, "Открыть файл резюме проекта (иностр.)", fileForeignSummaryProject);
 
         // источники финансирования
         isReturnInvestmentsProject = addDProp(sourcesFundingGroup, "isReturnInvestmentsProject", "Средства третьих лиц, привлекаемые на возвратной основе (заемные средства и т.п.)", LogicalClass.instance, project);
@@ -561,6 +592,19 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         commentEquipmentProject.setMinimumWidth(10); commentEquipmentProject.setPreferredWidth(50);
         hideCommentEquipmentProject = addHideCaptionProp(privateGroup, "Укажите", commentEquipmentProject, isOtherEquipmentProject);
 
+        // документы
+        fileRoadMapProject = addDProp("fileRoadMapProject", "Файл дорожной карты", PDFClass.instance, project);
+        loadFileRoadMapProject = addLFAProp(projectDocumentsGroup, "Загрузить файл дорожной карты", fileRoadMapProject);
+        openFileRoadMapProject = addOFAProp(projectDocumentsGroup, "Открыть файл дорожной карты", fileRoadMapProject);
+
+        fileNativeTechnicalDescriptionProject = addDProp("fileNativeTechnicalDescriptionProject", "Файл технического описания", PDFClass.instance, project);
+        loadFileNativeTechnicalDescriptionProject = addLFAProp(projectDocumentsGroup, "Загрузить файл технического описания", fileNativeTechnicalDescriptionProject);
+        openFileNativeTechnicalDescriptionProject = addOFAProp(projectDocumentsGroup, "Открыть файл технического описания", fileNativeTechnicalDescriptionProject);
+
+        fileForeignTechnicalDescriptionProject = addDProp("fileForeignTechnicalDescriptionProject", "Файл технического описания (иностр.)", PDFClass.instance, project);
+        loadFileForeignTechnicalDescriptionProject = addLFAProp(projectDocumentsGroup, "Загрузить файл технического описания (иностр.)", fileForeignTechnicalDescriptionProject);
+        openFileForeignTechnicalDescriptionProject = addOFAProp(projectDocumentsGroup, "Открыть файл технического описания (иностр.)", fileForeignTechnicalDescriptionProject);
+
         // патенты
         projectPatent = addDProp(idGroup, "projectPatent", "Проект патента", project, patent);
 
@@ -579,18 +623,26 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         ownerPatent.setMinimumWidth(10); ownerPatent.setPreferredWidth(50);
         ownerTypePatent = addDProp(idGroup, "ownerTypePatent", "Кем является правообладатель (ИД)", ownerType, patent);
         nameOwnerTypePatent = addJProp(baseGroup, "nameOwnerTypePatent", "Кем является правообладатель", name, ownerTypePatent, 1);
-        fileIntentionOwnerPatent = addDProp(baseGroup, "fileIntentionOwnerPatent", "Файл документа о передаче права", PDFClass.instance, patent);
+        fileIntentionOwnerPatent = addDProp("fileIntentionOwnerPatent", "Файл документа о передаче права", PDFClass.instance, patent);
+        loadFileIntentionOwnerPatent = addLFAProp(baseGroup, "Загрузить файл документа о передаче права", fileIntentionOwnerPatent);
+        openFileIntentionOwnerPatent = addOFAProp(baseGroup, "Открыть файл документа о передаче права", fileIntentionOwnerPatent);
 
         hideOwnerPatent = addHideCaptionProp(privateGroup, "Укажите", ownerPatent, isOwned);
         hideNameOwnerTypePatent = addHideCaptionProp(privateGroup, "Укажите", nameOwnerTypePatent, isOwned);
         hideFileIntentionOwnerPatent = addHideCaptionProp(privateGroup, "Укажите", fileIntentionOwnerPatent, isOwned);
+        hideLoadFileIntentionOwnerPatent = addHideCaptionProp(privateGroup, "Укажите", loadFileIntentionOwnerPatent, isOwned);
+        hideOpenFileIntentionOwnerPatent = addHideCaptionProp(privateGroup, "Укажите", openFileIntentionOwnerPatent, isOwned);
 
         isValuated = addDProp(baseGroup, "isValuated", "Проводилась ли оценка указанных результатов интеллектальной деятельности", LogicalClass.instance, patent);
         valuatorPatent = addDProp(baseGroup, "valuatorPatent", "Укажите оценщика и его контактную информацию", InsensitiveStringClass.get(2000), patent);
         valuatorPatent.setMinimumWidth(10); valuatorPatent.setPreferredWidth(50);
-        fileActValuationPatent = addDProp(baseGroup, "fileActValuationPatent", "Файл акта оценки", PDFClass.instance, patent);
+        fileActValuationPatent = addDProp("fileActValuationPatent", "Файл акта оценки", PDFClass.instance, patent);
+        loadFileActValuationPatent = addLFAProp(baseGroup, "Загрузить файл акта оценки", fileActValuationPatent);
+        openFileActValuationPatent = addOFAProp(baseGroup, "Открыть файл акта оценки", fileActValuationPatent);
         hideValuatorPatent = addHideCaptionProp(privateGroup, "Укажите", valuatorPatent, isValuated);
         hideFileActValuationPatent = addHideCaptionProp(privateGroup, "Укажите", fileActValuationPatent, isValuated);
+        hideLoadFileActValuationPatent = addHideCaptionProp(privateGroup, "Укажите", loadFileActValuationPatent, isValuated);
+        hideOpenFileActValuationPatent = addHideCaptionProp(privateGroup, "Укажите", openFileActValuationPatent, isValuated);
 
         // учёные
         projectAcademic = addDProp(idGroup, "projectAcademic", "Проект ученого", project, academic);
@@ -602,8 +654,13 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         titleAcademic = addDProp(baseGroup, "titleAcademic", "Ученая степень, звание, должность и др.", InsensitiveStringClass.get(2000), academic);
         titleAcademic.setMinimumWidth(10); titleAcademic.setPreferredWidth(50);
 
-        fileDocumentConfirmingAcademic = addDProp(baseGroup, "fileDocumentConfirmingAcademic", "Файл трудового договора", PDFClass.instance, academic);
-        fileDocumentEmploymentAcademic = addDProp(baseGroup, "fileDocumentEmploymentAcademic", "Файл заявления специалиста", PDFClass.instance, academic);
+        fileDocumentConfirmingAcademic = addDProp("fileDocumentConfirmingAcademic", "Файл трудового договора", PDFClass.instance, academic);
+        loadFileDocumentConfirmingAcademic = addLFAProp(baseGroup, "Загрузить файл трудового договора", fileDocumentConfirmingAcademic);
+        openFileDocumentConfirmingAcademic = addOFAProp(baseGroup, "Открыть файл трудового договора", fileDocumentConfirmingAcademic);
+
+        fileDocumentEmploymentAcademic = addDProp("fileDocumentEmploymentAcademic", "Файл заявления специалиста", PDFClass.instance, academic);
+        loadFileDocumentEmploymentAcademic = addLFAProp(baseGroup, "Загрузить файл заявления", fileDocumentEmploymentAcademic);
+        openFileDocumentEmploymentAcademic = addOFAProp(baseGroup, "Открыть файл заявления", fileDocumentEmploymentAcademic);
 
         // иностранные специалисты
         projectNonRussianSpecialist = addDProp(idGroup, "projectNonRussianSpecialist", "Проект иностранного специалиста", project, nonRussianSpecialist);
@@ -615,11 +672,21 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         titleNonRussianSpecialist = addDProp(baseGroup, "titleNonRussianSpecialist", "Должность, если есть - ученая степень, звание и др.", InsensitiveStringClass.get(2000), nonRussianSpecialist);
         titleNonRussianSpecialist.setMinimumWidth(10); titleNonRussianSpecialist.setPreferredWidth(50);
 
-        fileForeignResumeNonRussianSpecialist = addDProp(baseGroup, "fileForeignResumeNonRussianSpecialist", "File Curriculum Vitae", PDFClass.instance, nonRussianSpecialist);
-        fileNativeResumeNonRussianSpecialist = addDProp(baseGroup, "fileNativeResumeNonRussianSpecialist", "Файл резюме специалиста", PDFClass.instance, nonRussianSpecialist);
-        filePassportNonRussianSpecialist = addDProp(baseGroup, "filePassportNonRussianSpecialist", "Файл паспорта", PDFClass.instance, nonRussianSpecialist);
-        fileStatementNonRussianSpecialist = addDProp(baseGroup, "fileStatementNonRussianSpecialist", "Файл заявления", PDFClass.instance, nonRussianSpecialist);
+        fileForeignResumeNonRussianSpecialist = addDProp("fileForeignResumeNonRussianSpecialist", "File Curriculum Vitae", PDFClass.instance, nonRussianSpecialist);
+        loadFileForeignResumeNonRussianSpecialist = addLFAProp(baseGroup, "Load file Curriculum Vitae", fileForeignResumeNonRussianSpecialist);
+        openFileForeignResumeNonRussianSpecialist = addOFAProp(baseGroup, "Open file Curriculum Vitae", fileForeignResumeNonRussianSpecialist);
 
+        fileNativeResumeNonRussianSpecialist = addDProp("fileNativeResumeNonRussianSpecialist", "Файл резюме специалиста", PDFClass.instance, nonRussianSpecialist);
+        loadFileNativeResumeNonRussianSpecialist = addLFAProp(baseGroup, "Загрузить файл резюме", fileNativeResumeNonRussianSpecialist);
+        openFileNativeResumeNonRussianSpecialist = addOFAProp(baseGroup, "Открыть файл резюме", fileNativeResumeNonRussianSpecialist);
+
+        filePassportNonRussianSpecialist = addDProp("filePassportNonRussianSpecialist", "Файл паспорта", PDFClass.instance, nonRussianSpecialist);
+        loadFilePassportNonRussianSpecialist = addLFAProp(baseGroup, "Загрузить файл паспорта", filePassportNonRussianSpecialist);
+        openFilePassportNonRussianSpecialist = addOFAProp(baseGroup, "Открыть файл паспорта", filePassportNonRussianSpecialist);
+
+        fileStatementNonRussianSpecialist = addDProp("fileStatementNonRussianSpecialist", "Файл заявления", PDFClass.instance, nonRussianSpecialist);
+        loadFileStatementNonRussianSpecialist = addLFAProp(baseGroup, "Загрузить файл заявления", fileStatementNonRussianSpecialist);
+        openFileStatementNonRussianSpecialist = addOFAProp(baseGroup, "Открыть файл заявления", fileStatementNonRussianSpecialist);
 
 
         clusterVote = addDCProp(idGroup, "clusterVote", "Кластер (ИД)", true, clusterProject, true, projectVote, 1);
@@ -1099,10 +1166,12 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
 
             getPropertyDraw(ownerPatent).propertyCaption = addPropertyObject(hideOwnerPatent, objPatent);
             getPropertyDraw(nameOwnerTypePatent).propertyCaption = addPropertyObject(hideNameOwnerTypePatent, objPatent);
+            getPropertyDraw(loadFileIntentionOwnerPatent).propertyCaption = addPropertyObject(hideLoadFileIntentionOwnerPatent, objPatent);
+            getPropertyDraw(openFileIntentionOwnerPatent).propertyCaption = addPropertyObject(hideOpenFileIntentionOwnerPatent, objPatent);
 
-            getPropertyDraw(fileIntentionOwnerPatent).propertyCaption = addPropertyObject(hideFileIntentionOwnerPatent, objPatent);
             getPropertyDraw(valuatorPatent).propertyCaption = addPropertyObject(hideValuatorPatent, objPatent);
-            getPropertyDraw(fileActValuationPatent).propertyCaption = addPropertyObject(hideFileActValuationPatent, objPatent);               
+            getPropertyDraw(loadFileActValuationPatent).propertyCaption = addPropertyObject(hideLoadFileActValuationPatent, objPatent);
+            getPropertyDraw(openFileActValuationPatent).propertyCaption = addPropertyObject(hideOpenFileActValuationPatent, objPatent);
 
             objAcademic = addSingleGroupObject(academic, baseGroup);
             addObjectActions(this, objAcademic);
@@ -1128,12 +1197,12 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
             design.getGroupPropertyContainer(objProject.groupTo, equipmentGroup).constraints.childConstraints = DoNotIntersectSimplexConstraint.TOTHE_BOTTOM;
             design.getGroupPropertyContainer(objProject.groupTo, projectDocumentsGroup).constraints.childConstraints = DoNotIntersectSimplexConstraint.TOTHE_BOTTOM;
             design.getGroupPropertyContainer(objProject.groupTo, projectStatusGroup).constraints.childConstraints = DoNotIntersectSimplexConstraint.TOTHE_BOTTOM;
-
+           
             design.addIntersection(design.getGroupPropertyContainer(objProject.groupTo, innovationGroup),
                                    design.getGroupPropertyContainer(objProject.groupTo, sourcesFundingGroup), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
 
             design.addIntersection(design.getGroupPropertyContainer(objProject.groupTo, executiveSummaryGroup),
-                                   design.getGroupPropertyContainer(objProject.groupTo, sourcesFundingGroup), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);                       
+                                   design.getGroupPropertyContainer(objProject.groupTo, sourcesFundingGroup), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
 
             design.addIntersection(design.getGroupPropertyContainer(objProject.groupTo, projectDocumentsGroup),
                                    design.getGroupPropertyContainer(objProject.groupTo, projectStatusGroup), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
