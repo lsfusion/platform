@@ -995,6 +995,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         addFormEntity(new ProjectFormEntity(baseElement, "project"));
         addFormEntity(new VoteFormEntity(baseElement, "vote"));
         addFormEntity(new ExpertFormEntity(baseElement, "expert"));
+        addFormEntity(new VoteExpertFormEntity(baseElement, "voteExpert"));
         languageDocumentTypeForm = addFormEntity(new LanguageDocumentTypeFormEntity(baseElement, "languageDocumentType"));
         addFormEntity(new DocumentTemplateFormEntity(baseElement, "documentTemplate"));
         globalForm = addFormEntity(new GlobalFormEntity(baseElement, "global"));
@@ -1318,6 +1319,64 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
             design.setConstraintsFillHorizontal(voteResultCommentGroup, 0.5);
 
             design.setPreferredSize(voteResultCheckGroup, new Dimension(60, -1));
+
+            return design;
+        }
+    }
+
+    private class VoteExpertFormEntity extends FormEntity<SkolkovoBusinessLogics> {
+        private ObjectEntity objExpert;
+        private ObjectEntity objVote;
+
+        private VoteExpertFormEntity(NavigatorElement parent, String sID) {
+            super(parent, sID, "Реестр голосований");
+
+            objVote = addSingleGroupObject(vote, nameNativeProjectVote, dateStartVote, dateEndVote, openedVote, succeededVote);
+
+            objExpert = addSingleGroupObject(expert, userFirstName, userLastName, nameNativeClusterExpert, nameLanguageExpert);
+
+            addPropertyDraw(voteResultGroup, true, objExpert, objVote);
+            addPropertyDraw(expertResultGroup, true, objExpert);
+
+            addPropertyDraw(objExpert, objVote, allowedEmailLetterExpertVote);
+            setForceViewType(voteResultCommentGroup, ClassViewType.PANEL);
+
+            GroupObjectEntity gobjVoteExpert = new GroupObjectEntity(genID());
+            gobjVoteExpert.add(objVote);
+            gobjVoteExpert.add(objExpert);
+            addGroup(gobjVoteExpert);
+            gobjVoteExpert.setSingleClassView(ClassViewType.GRID);
+
+            addFixedFilter(new NotNullFilterEntity(addPropertyObject(inNewExpertVote, objExpert, objVote)));
+            
+            RegularFilterGroupEntity filterGroupOpenedVote = new RegularFilterGroupEntity(genID());
+            filterGroupOpenedVote.addFilter(new RegularFilterEntity(genID(),
+                                  new NotNullFilterEntity(addPropertyObject(openedVote, objVote)),
+                                  "Только открытые заседания",
+                                  KeyStroke.getKeyStroke(KeyEvent.VK_F11, 0)));
+            addRegularFilterGroup(filterGroupOpenedVote);
+
+            RegularFilterGroupEntity filterGroupDoneExpertVote = new RegularFilterGroupEntity(genID());
+            filterGroupDoneExpertVote.addFilter(new RegularFilterEntity(genID(),
+                                  new CompareFilterEntity(addPropertyObject(doneExpertVote, objExpert, objVote), Compare.EQUALS, addPropertyObject(vtrue)),
+                                  "Только проголосовавшие",
+                                  KeyStroke.getKeyStroke(KeyEvent.VK_F10, 0)));
+            addRegularFilterGroup(filterGroupDoneExpertVote);
+
+            RegularFilterGroupEntity filterGroupExpertVote = new RegularFilterGroupEntity(genID());
+            filterGroupExpertVote.addFilter(new RegularFilterEntity(genID(),
+                                  new NotFilterEntity(new NotNullFilterEntity(addPropertyObject(voteResultExpertVote, objExpert, objVote))),
+                                  "Только не высказавшиеся",
+                                  KeyStroke.getKeyStroke(KeyEvent.VK_F9, 0)));
+            addRegularFilterGroup(filterGroupExpertVote);
+        }
+
+        @Override
+        public FormView createDefaultRichDesign() {
+            DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign();
+
+            design.setPanelLabelAbove(voteResultCommentGroup, true);
+            design.setConstraintsFillHorizontal(voteResultCommentGroup, 0.5);
 
             return design;
         }
