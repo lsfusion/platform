@@ -35,6 +35,7 @@ import platform.server.serialization.ServerIdentitySerializable;
 import platform.server.serialization.ServerSerializationPool;
 import platform.server.session.*;
 
+import javax.swing.*;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -64,6 +65,20 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
         minimumCharWidth = property.minimumCharWidth;
         maximumCharWidth = property.maximumCharWidth;
         preferredCharWidth = property.preferredCharWidth;
+    }
+
+    private ImageIcon image;
+
+    public ImageIcon getImage() {
+        return image;
+    }
+
+    public void setImage(ImageIcon image) {
+        this.image = image;
+    }
+
+    public void setImage(String name) {
+        this.image = new ImageIcon(Property.class.getResource(name));
     }
 
     public boolean askConfirm = false;
@@ -488,6 +503,8 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
     }
 
     public void proceedDefaultDesign(DefaultFormView view, PropertyDrawEntity<T> entity) {
+        if (image != null)
+            view.get(entity).design.image = image;
     }
 
     public boolean hasChild(Property prop) {

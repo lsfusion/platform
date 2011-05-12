@@ -1,5 +1,6 @@
 package platform.client.form.showtype;
 
+import platform.client.form.queries.ToolbarGridButton;
 import platform.interop.ClassViewType;
 
 import javax.swing.*;
@@ -13,8 +14,6 @@ public abstract class ShowTypeView extends JPanel implements ActionListener {
     JButton gridButton;
     JButton panelButton;
     JButton hideButton;
-
-    final private Dimension buttonSize = new Dimension(18, 18);
 
     public ShowTypeView() {
 
@@ -41,12 +40,12 @@ public abstract class ShowTypeView extends JPanel implements ActionListener {
 
         for (Component c : getComponents()) {
             AbstractButton button = (AbstractButton) c;
-            button.setMinimumSize(buttonSize);
+            button.setMinimumSize(ToolbarGridButton.BUTTON_SIZE);
             button.setMaximumSize(button.getMinimumSize());
             button.addActionListener(this);
             button.setFocusable(false);
         }
-        setPreferredSize(new Dimension((buttonSize.width + 1) * 3, buttonSize.height));
+        setPreferredSize(new Dimension((ToolbarGridButton.BUTTON_SIZE.width + 1) * 3, ToolbarGridButton.BUTTON_SIZE.height));
     }
 
     public void actionPerformed(ActionEvent e) {

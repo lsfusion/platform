@@ -425,6 +425,7 @@ public class GroupObjectController implements GroupObjectLogicsSupplier {
             if (classView == ClassViewType.GRID) {
                 panelToolbar.removeComponent(showType.view);
                 panelToolbar.update(classView);
+                panelToolbar.addComponent(Box.createHorizontalStrut(5), true);
                 panelToolbar.addComponent(showType.view, true);
             } else {
                 for (Map.Entry<ClientRegularFilterGroup, JComponent> entry : panelToolbar.getFilters()) {

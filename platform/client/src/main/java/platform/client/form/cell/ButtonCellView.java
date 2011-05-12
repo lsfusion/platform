@@ -5,6 +5,7 @@ import platform.client.ClientButton;
 import platform.client.SwingUtils;
 import platform.client.form.ClientFormController;
 import platform.client.form.PropertyEditorComponent;
+import platform.client.form.queries.ToolbarGridButton;
 import platform.client.logics.ClientGroupObjectValue;
 import platform.client.logics.ClientPropertyDraw;
 import platform.interop.ClassViewType;
@@ -110,8 +111,8 @@ public class ButtonCellView extends ClientButton implements CellView {
         toToolbar = (type == ClassViewType.GRID);
         setCaption(caption);
         if (toToolbar && key.design.image != null) {
-            setPreferredSize(new Dimension(key.design.image.getIconWidth() + 2, key.design.image.getIconHeight() + 2));
-            setMaximumSize(new Dimension(key.design.image.getIconWidth() + 2, key.design.image.getIconHeight() + 2));
+            setPreferredSize(new Dimension(Math.max(key.design.image.getIconWidth() + 2, ToolbarGridButton.BUTTON_SIZE.width), Math.max(key.design.image.getIconHeight() + 2, ToolbarGridButton.BUTTON_SIZE.height)));
+            setMaximumSize(new Dimension(Math.max(key.design.image.getIconWidth() + 2, ToolbarGridButton.BUTTON_SIZE.width), Math.max(key.design.image.getIconHeight() + 2, ToolbarGridButton.BUTTON_SIZE.height)));
         } else {
             setPreferredSize(null);
             setDefaultSizes();

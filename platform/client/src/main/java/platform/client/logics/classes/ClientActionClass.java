@@ -49,7 +49,7 @@ public class ClientActionClass extends ClientDataClass implements ClientTypeClas
     }
 
     public PropertyRendererComponent getRendererComponent(Format format, String caption, ComponentDesign design) {
-        ActionPropertyRenderer renderer = new ActionPropertyRenderer(caption);
+        ActionPropertyRenderer renderer = new ActionPropertyRenderer();
         design.designComponent(renderer);
         return renderer;
     }

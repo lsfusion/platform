@@ -141,7 +141,7 @@ public abstract class GridTable extends ClientFormTable
             }
         });
 
-        if (form.isDialogMode()) {
+        if (form.isDialogMode() && form.isReadOnlyMode()) {
             addMouseListener(new MouseAdapter() {
                 public void mouseClicked(MouseEvent e) {
                     if (e.getClickCount() > 1) {

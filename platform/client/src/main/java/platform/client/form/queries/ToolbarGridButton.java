@@ -9,16 +9,16 @@ import java.awt.*;
  * Time: 19:37
  */
 
-public abstract class BaseGridButton extends JButton {
-    private final Dimension buttonSize = new Dimension(20, 20);
+public abstract class ToolbarGridButton extends JButton {
+    public final static Dimension BUTTON_SIZE = new Dimension(20, 20);
 
-    public BaseGridButton(String iconPath, String toolTipText) {
+    public ToolbarGridButton(String iconPath, String toolTipText) {
         super();
         setIcon(new ImageIcon(getClass().getResource(iconPath)));
         setAlignmentY(Component.TOP_ALIGNMENT);
-        setMinimumSize(buttonSize);
-        setPreferredSize(buttonSize);
-        setMaximumSize(buttonSize);
+        setMinimumSize(BUTTON_SIZE);
+        setPreferredSize(BUTTON_SIZE);
+        setMaximumSize(BUTTON_SIZE);
         setFocusable(false);
         setToolTipText(toolTipText);
         addListener();

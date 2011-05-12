@@ -12,10 +12,10 @@ public class ActionPropertyRenderer extends JButton
     private static final String defaultCaption = "...";
 
     private final Color defaultBackground = getBackground();
-    private Border defaultBorder;
+    private Border defaultBorder = getBorder();
+    private Icon defaultIcon;
 
-    public ActionPropertyRenderer(String caption) {
-        defaultBorder = getBorder();
+    public ActionPropertyRenderer() {
     }
 
     public JComponent getComponent() {
@@ -23,8 +23,11 @@ public class ActionPropertyRenderer extends JButton
     }
 
     public void setValue(Object value, boolean isSelected, boolean hasFocus) {
+        if (defaultIcon == null && getIcon() != null) defaultIcon = getIcon(); // временно так
+
         setBorder(value == null ? BorderFactory.createEmptyBorder() : defaultBorder);
-        setText(getIcon() != null || value == null ? "" : defaultCaption);
+        setText(defaultIcon != null || value == null ? "" : defaultCaption);
+        setIcon(value == null ? null : defaultIcon);
 
         if (isSelected) {
             if (hasFocus)

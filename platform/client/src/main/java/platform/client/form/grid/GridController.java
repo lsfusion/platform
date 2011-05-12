@@ -97,7 +97,7 @@ public class GridController {
         }
 
         if (key.showGroupChange) {
-            groupObjectController.addToToolbar(new BaseGridButton("/images/groupchange.gif", "Групповая корректировка (Ctrl+F12)") {
+            groupObjectController.addToToolbar(new ToolbarGridButton("/images/groupchange.gif", "Групповая корректировка (Ctrl+F12)") {
                 @Override
                 public void addListener() {
                     addActionListener(table.getActionMap().get(GridTable.GROUP_CORRECTION_ACTION));
@@ -183,7 +183,7 @@ public class GridController {
         groupObjectController.addToToolbar(Box.createHorizontalStrut(5));
 
         if (key.showPrintGroupButton && Main.module.isFull()) { // todo [dale]: Можно ли избавиться от if'ов?
-            groupObjectController.addToToolbar(new BaseGridButton("/images/reportbw.gif", "Распечатать таблицу") {
+            groupObjectController.addToToolbar(new ToolbarGridButton("/images/reportbw.gif", "Распечатать таблицу") {
                 @Override
                 public void addListener() {
                     addActionListener(new ActionListener() {
@@ -200,7 +200,7 @@ public class GridController {
         }
 
         if (key.showPrintGroupXlsButton && Main.module.isFull()) {
-            groupObjectController.addToToolbar(new BaseGridButton("/images/excelbw.jpg", "Экспорт в xls") {
+            groupObjectController.addToToolbar(new ToolbarGridButton("/images/excelbw.jpg", "Экспорт в xls") {
                 @Override
                 public void addListener() {
                     addActionListener(new ActionListener() {

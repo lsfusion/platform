@@ -5,7 +5,7 @@ import javax.swing.border.EtchedBorder;
 import java.awt.*;
 import java.text.NumberFormat;
 
-public abstract class CalculateSumButton extends BaseGridButton {
+public abstract class CalculateSumButton extends ToolbarGridButton {
 
     public CalculateSumButton() {
         super("/images/sum.png", "Посчитать сумму");

@@ -4,7 +4,7 @@ import javax.swing.*;
 import javax.swing.border.EtchedBorder;
 import java.awt.*;
 
-public abstract class CountQuantityButton extends BaseGridButton {
+public abstract class CountQuantityButton extends ToolbarGridButton {
 
     public CountQuantityButton() {
         super("/images/quantity.png", "Количество записей");

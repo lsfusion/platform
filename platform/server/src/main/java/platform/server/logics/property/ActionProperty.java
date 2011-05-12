@@ -6,14 +6,17 @@ import platform.server.classes.DataClass;
 import platform.server.classes.ValueClass;
 import platform.server.data.expr.Expr;
 import platform.server.data.where.WhereBuilder;
+import platform.server.form.entity.PropertyDrawEntity;
 import platform.server.form.instance.PropertyObjectInterfaceInstance;
 import platform.server.form.instance.remote.RemoteForm;
+import platform.server.form.view.DefaultFormView;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
 import platform.server.session.Changes;
 import platform.server.session.DataSession;
 import platform.server.session.Modifier;
 
+import javax.swing.*;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;

@@ -4392,10 +4392,9 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         }
 
         @Override
-        public void proceedDefaultDraw(PropertyDrawEntity<ClassPropertyInterface> entity, FormEntity form) {
-            super.proceedDefaultDraw(entity, form);
-            entity.shouldBeLast = true;
-            entity.forceViewType = ClassViewType.PANEL;
+        public void proceedDefaultDesign(DefaultFormView view, PropertyDrawEntity<ClassPropertyInterface> entity) {
+            super.proceedDefaultDesign(view, entity);
+            view.get(entity).design.image = new ImageIcon(LoadActionProperty.class.getResource("/images/load.png"));
         }
     }
 
@@ -4420,6 +4419,12 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             for (ClassPropertyInterface classInterface : interfaces)
                 objects[i++] = keys.get(classInterface);
             actions.add(new OpenFileClientAction((byte[]) fileProperty.read(form.session.sql, form, form.session.env, objects), BaseUtils.firstWord(getFileClass().getExtensions(), ",")));
+        }
+
+        @Override
+        public void proceedDefaultDesign(DefaultFormView view, PropertyDrawEntity<ClassPropertyInterface> entity) {
+            super.proceedDefaultDesign(view, entity);
+            view.get(entity).design.image = new ImageIcon(OpenActionProperty.class.getResource("/images/open.png"));
         }
     }
 

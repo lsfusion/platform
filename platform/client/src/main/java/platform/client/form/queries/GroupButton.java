@@ -21,7 +21,7 @@ import java.io.IOException;
 import java.util.*;
 import java.util.List;
 
-public abstract class GroupButton extends BaseGridButton {
+public abstract class GroupButton extends ToolbarGridButton {
 
     public GroupDialog dialog;
 
