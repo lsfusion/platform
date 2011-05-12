@@ -23,6 +23,13 @@ import static platform.server.logics.PropertyUtils.readImplements;
  * Time: 15:43
  */
 
+/// Common usage:
+/// LP<?> property - logging property
+/// LP<?> logProperty = addLProp(property);
+/// ...
+/// LogFormEntity logForm = new LogFormEntity("FormSID", "FormCaption", property, logProperty, SomeBusinessLogics.this);
+/// addPropertyDraw(addMFAProp("Caption", logForm, logForm.params), paramObjectEntities);
+
 public class LogFormEntity<T extends BusinessLogics<T>> extends FormEntity<T> {
     public ObjectEntity[] params;
 
