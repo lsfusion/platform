@@ -1335,10 +1335,10 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
 
             objExpert = addSingleGroupObject(expert, userFirstName, userLastName, nameNativeClusterExpert, nameLanguageExpert);
 
-            addPropertyDraw(voteResultGroup, true, objExpert, objVote);
-            addPropertyDraw(expertResultGroup, true, objExpert);
-
             addPropertyDraw(objExpert, objVote, allowedEmailLetterExpertVote);
+
+            addPropertyDraw(voteResultGroup, true, objExpert, objVote);
+            addPropertyDraw(expertResultGroup, true, objExpert);            
             setForceViewType(voteResultCommentGroup, ClassViewType.PANEL);
 
             GroupObjectEntity gobjVoteExpert = new GroupObjectEntity(genID());
@@ -1366,7 +1366,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
             RegularFilterGroupEntity filterGroupExpertVote = new RegularFilterGroupEntity(genID());
             filterGroupExpertVote.addFilter(new RegularFilterEntity(genID(),
                                   new NotFilterEntity(new NotNullFilterEntity(addPropertyObject(voteResultExpertVote, objExpert, objVote))),
-                                  "Только не высказавшиеся",
+                                  "Только не принявшие участие",
                                   KeyStroke.getKeyStroke(KeyEvent.VK_F9, 0)));
             addRegularFilterGroup(filterGroupExpertVote);
         }
