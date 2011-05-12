@@ -26,6 +26,7 @@ import platform.server.logics.NullValue;
 import platform.server.logics.ObjectValue;
 import platform.server.logics.linear.LP;
 import platform.server.logics.property.*;
+import platform.server.logics.property.group.AbstractGroup;
 import platform.server.logics.table.IDTable;
 import platform.server.logics.table.ImplementTable;
 
@@ -102,7 +103,7 @@ public class DataSession extends MutableObject implements SessionChanges, ExprCh
     public final BaseClass baseClass;
     public final CustomClass namedObject;
     public final LP<?> name;
-    public final Set<LP<?>> nameProps;
+    public final AbstractGroup recognizeGroup;
     public final CustomClass transaction;
     public final LP<?> date;
     public final ConcreteCustomClass sessionClass;
@@ -119,14 +120,14 @@ public class DataSession extends MutableObject implements SessionChanges, ExprCh
 
     public DataObject applyObject = null;
 
-    public DataSession(SQLSession sql, final UserController user, final ComputerController computer, IsServerRestartingController isServerRestarting, BaseClass baseClass, CustomClass namedObject, ConcreteCustomClass sessionClass, LP<?> name, Set<LP<?>> nameProps, CustomClass transaction, LP<?> date, LP<?> currentDate, List<DerivedChange<?,?>> notDeterministic) throws SQLException {
+    public DataSession(SQLSession sql, final UserController user, final ComputerController computer, IsServerRestartingController isServerRestarting, BaseClass baseClass, CustomClass namedObject, ConcreteCustomClass sessionClass, LP<?> name, AbstractGroup recognizeGroup, CustomClass transaction, LP<?> date, LP<?> currentDate, List<DerivedChange<?,?>> notDeterministic) throws SQLException {
         this.sql = sql;
         this.isServerRestarting = isServerRestarting;
 
         this.baseClass = baseClass;
         this.namedObject = namedObject;
         this.name = name;
-        this.nameProps = nameProps;
+        this.recognizeGroup = recognizeGroup;
         this.transaction = transaction;
         this.date = date;
         this.notDeterministic = notDeterministic;
@@ -372,12 +373,12 @@ public class DataSession extends MutableObject implements SessionChanges, ExprCh
             int interfaceIndex = 0;
             for(T propertyInterface : property.interfaces) {
                 ValueClass valueClass = classes.interfaces.get(propertyInterface);
-                for (LP<?> nameProp : nameProps) {
+                for (Property nameProp : recognizeGroup.getProperties()) {
                     List<ValueClassWrapper> wrapper = Arrays.asList(new ValueClassWrapper(valueClass));
-                    if (!nameProp.property.getProperties(Arrays.asList(wrapper), true).isEmpty()) {
-                        Expr nameExpr = nameProp.getExpr(modifier, changed.mapKeys.get(propertyInterface));
+                    if (!nameProp.getProperties(Arrays.asList(wrapper), true).isEmpty()) {
+                        Expr nameExpr = nameProp.getExpr(Collections.singletonMap(BaseUtils.single(nameProp.interfaces), changed.mapKeys.get(propertyInterface)), modifier);
                         changed.properties.put("int" + propertyInterface.ID + "_" + propCaptions.get(interfaceIndex).size(), nameExpr);
-                        propCaptions.get(interfaceIndex).add(nameProp.property.caption);
+                        propCaptions.get(interfaceIndex).add(nameProp.caption);
                     }
                 }
                 interfaceIndex++;

@@ -34,6 +34,6 @@ public class DialogFormEntity<T extends BusinessLogics<T>> extends AbstractClass
 
     @Override
     public AbstractClassFormEntity copy() {
-        return new DialogFormEntity(BL, cls, getSID() + "_copy" + copies++, caption);
+        return new DialogFormEntity<T>(BL, cls, getSID() + "_copy" + copies++, caption);
     }
 }

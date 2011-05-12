@@ -656,8 +656,6 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     public final StringClass formSIDValueClass = StringClass.get(50);
     private final StringClass formCaptionValueClass = StringClass.get(250);
 
-    private Set<LP<?>> nameProperties = new HashSet<LP<?>>();
-
     public static int genSystemClassID(int id) {
         return 9999976 - id;
     }
@@ -970,6 +968,10 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         idGroup.createContainer = false;
         publicGroup.add(idGroup);
 
+        recognizeGroup = new AbstractGroup("Идентифицирующие свойства");
+        recognizeGroup.createContainer = false;
+        baseGroup.add(recognizeGroup);
+
         selection = new SelectionPropertySet();
         sessionGroup.add(selection);
 
@@ -1115,9 +1117,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         email = addDProp(baseGroup, "email", "E-mail", StringClass.get(50), emailObject);
         generateLoginPassword = addAProp(actionGroup, new GenerateLoginPasswordActionProperty(this));
 
-        name = addCUProp(baseGroup, "commonName", "Имя", dataName,
+        name = addCUProp(recognizeGroup, "commonName", "Имя", dataName,
                 addJProp(insensitiveString2, userFirstName, 1, userLastName, 1));
-        addToNameProperties(name);
 
         connectionComputer = addDProp("connectionComputer", "Компьютер", computer, connection);
         addJProp(baseGroup, "Компьютер", hostname, connectionComputer, 1);
@@ -1144,8 +1145,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         userRolePolicyOrder = addDProp(baseGroup, "userRolePolicyOrder", "Порядок политики", IntegerClass.instance, userRole, policy);
         userPolicyOrder = addJProp(baseGroup, "userPolicyOrder", "Порядок политики", userRolePolicyOrder, userMainRole, 1, 2);
 
-        barcode = addDProp(baseGroup, "barcode", "Штрих-код", StringClass.get(13), barcodeObject);
-        addToNameProperties(barcode);
+        barcode = addDProp(recognizeGroup, "barcode", "Штрих-код", StringClass.get(13), barcodeObject);
 
         barcode.setFixedCharWidth(13);
         barcodeToObject = addAGProp("barcodeToObject", "Объект", barcode);
@@ -2088,6 +2088,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     public AbstractGroup idGroup;
     public AbstractGroup actionGroup;
     public AbstractGroup sessionGroup;
+    public AbstractGroup recognizeGroup;
 
     protected abstract void initGroups();
 
@@ -2164,7 +2165,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
                         return getRestartController().isPendingRestart();
                     }
                 },
-                baseClass, baseClass.named, session, name, nameProperties, transaction, date, currentDate, notDeterministic);
+                baseClass, baseClass.named, session, name, recognizeGroup, transaction, date, currentDate, notDeterministic);
     }
 
     public List<DerivedChange<?, ?>> notDeterministic = new ArrayList<DerivedChange<?, ?>>();
@@ -4630,10 +4631,6 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         return addAProp(new AddObjectActionProperty(genSID(),
                 (barcode != null) ? barcode.property : null, (barcodePrefix != null) ? barcodePrefix.property : null,
                 quantity, customClass, LP.toPropertyArray(properties), null, null));
-    }
-
-    protected void addToNameProperties(LP<?> property) {
-        nameProperties.add(property);
     }
 
     private Map<String, String> formSets;
