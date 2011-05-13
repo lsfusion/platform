@@ -4686,6 +4686,10 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         return null;
     }
 
+    public byte[] getMainIcon() throws RemoteException {
+        return null;
+    }
+
     public byte[] getLogo() throws RemoteException {
         return null;
     }

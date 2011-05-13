@@ -274,7 +274,16 @@ public class Main {
     }
 
     public static ImageIcon getMainIcon() {
-        return getLogo();
+        byte[] iconData = null;
+        if (remoteLogics != null) {
+            try {
+                iconData = remoteLogics.getMainIcon();
+            } catch (RemoteException e) {
+                e.printStackTrace();
+            }
+        }
+
+        return loadResource(iconData, PLATFORM_CLIENT_LOGO, DEFAULT_SPLASH_PATH);
     }
 
     public static ImageIcon getLogo() {
@@ -290,9 +299,9 @@ public class Main {
         return loadResource(logoData, PLATFORM_CLIENT_LOGO, DEFAULT_SPLASH_PATH);
     }
 
-    private static ImageIcon loadResource(byte[] logoData, String defaultUrlSystemPropName, String defaultResourcePath) {
-        ImageIcon splash = logoData != null ? new ImageIcon(logoData) : null;
-        if (splash == null || splash.getImageLoadStatus() != MediaTracker.COMPLETE) {
+    private static ImageIcon loadResource(byte[] resourceData, String defaultUrlSystemPropName, String defaultResourcePath) {
+        ImageIcon resource = resourceData != null ? new ImageIcon(resourceData) : null;
+        if (resource == null || resource.getImageLoadStatus() != MediaTracker.COMPLETE) {
             String splashUrlString = System.getProperty(defaultUrlSystemPropName);
             URL splashUrl = null;
             if (splashUrlString != null) {
@@ -302,14 +311,14 @@ public class Main {
                 }
             }
             if (splashUrl != null) {
-                splash = new ImageIcon(splashUrl);
+                resource = new ImageIcon(splashUrl);
             }
 
-            if (splash == null || splash.getImageLoadStatus() != MediaTracker.COMPLETE) {
-                splash = new ImageIcon(SplashScreen.class.getResource(defaultResourcePath));
+            if (resource == null || resource.getImageLoadStatus() != MediaTracker.COMPLETE) {
+                resource = new ImageIcon(SplashScreen.class.getResource(defaultResourcePath));
             }
         }
-        return splash;
+        return resource;
     }
 
     public static String getMainTitle() {

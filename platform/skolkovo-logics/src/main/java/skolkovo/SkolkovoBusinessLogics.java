@@ -1504,7 +1504,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         private VoteStartFormEntity(NavigatorElement parent, String sID) {
             super(parent, sID, "Созыв заседания", true);
 
-            objVote = addSingleGroupObject(1, "vote", vote, date, dateProjectVote, nameNativeClaimerVote, datePrevVote);
+            objVote = addSingleGroupObject(1, "vote", vote, date, dateProjectVote, nameNativeClaimerVote, nameNativeProjectVote, datePrevVote);
             objVote.groupTo.initClassView = ClassViewType.PANEL;
 
             objExpert = addSingleGroupObject(2, "expert", expert, userLastName, userFirstName);
@@ -2009,6 +2009,23 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
 
     public String getDisplayName() throws RemoteException {
         return "Skolkovo";
+    }
+
+    @Override
+    public byte[] getMainIcon() throws RemoteException {
+        InputStream in = SkolkovoBusinessLogics.class.getResourceAsStream("/images/sk_icon.jpg");
+        try {
+            try {
+                return IOUtils.readBytesFromStream(in);
+            } finally {
+                if (in != null) {
+                    in.close();
+                }
+            }
+        } catch (IOException e) {
+            logger.error("Не могу прочитать icon-файл.", e);
+            return null;
+        }
     }
 
     @Override
