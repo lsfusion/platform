@@ -12,6 +12,9 @@
 	<parameter name="expert_report" class="net.sf.jasperreports.engine.JasperReport"/>
 	<parameter name="expert_source" class="net.sf.jasperreports.engine.JRDataSource"/>
 	<parameter name="expert_params" class="java.util.Map"/>
+	<parameter name="oldexpert_report" class="net.sf.jasperreports.engine.JasperReport"/>
+	<parameter name="oldexpert_source" class="net.sf.jasperreports.engine.JRDataSource"/>
+	<parameter name="oldexpert_params" class="java.util.Map"/>
 	<field name="vote" class="java.lang.Integer"/>
 	<field name="date" class="java.util.Date"/>
 	<field name="dateProjectVote" class="java.util.Date"/>
@@ -23,7 +26,7 @@
 	<group name="textGroup1">
 		<groupExpression><![CDATA[String.valueOf($F{vote})]]></groupExpression>
 		<groupHeader>
-			<band height="304" splitType="Prevent">
+			<band height="305" splitType="Prevent">
 				<textField isStretchWithOverflow="true">
 					<reportElement stretchType="RelativeToBandHeight" x="34" y="163" width="524" height="78"/>
 					<textElement textAlignment="Justified"/>
@@ -78,9 +81,9 @@
 			</band>
 		</groupHeader>
 		<groupFooter>
-			<band height="96">
+			<band height="86">
 				<textField>
-					<reportElement positionType="Float" x="34" y="12" width="523" height="69"/>
+					<reportElement positionType="Float" x="34" y="8" width="523" height="69"/>
 					<textElement/>
 					<textFieldExpression class="java.lang.String"><![CDATA["3. Направить членам " + ($F{prevDateVote}==null?"":"новой ") + "Экспертной коллегии материалы заявки соискателя (в электронном виде) и Бюллетень оценки.\n" +
 "\n" +
@@ -97,6 +100,14 @@
 				<parametersMapExpression><![CDATA[$P{expert_params}]]></parametersMapExpression>
 				<dataSourceExpression><![CDATA[$P{expert_source}]]></dataSourceExpression>
 				<subreportExpression class="net.sf.jasperreports.engine.JasperReport"><![CDATA[$P{expert_report}]]></subreportExpression>
+			</subreport>
+		</band>
+		<band height="4">
+			<subreport>
+				<reportElement stretchType="RelativeToBandHeight" x="0" y="4" width="0" height="0"/>
+				<parametersMapExpression><![CDATA[$P{oldexpert_params}]]></parametersMapExpression>
+				<dataSourceExpression><![CDATA[$P{oldexpert_source}]]></dataSourceExpression>
+				<subreportExpression class="net.sf.jasperreports.engine.JasperReport"><![CDATA[$P{oldexpert_report}]]></subreportExpression>
 			</subreport>
 		</band>
 	</detail>

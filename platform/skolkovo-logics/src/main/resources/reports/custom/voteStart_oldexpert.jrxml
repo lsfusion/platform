@@ -10,15 +10,15 @@
 		</box>
 	</style>
 	<field name="expert" class="java.lang.Integer"/>
-	<field name="userLastName" class="java.lang.String"/>
-	<field name="userFirstName" class="java.lang.String"/>
-	<field name="numberNewExpertVote" class="java.lang.Integer"/>
+	<field name="userLastName2" class="java.lang.String"/>
+	<field name="userFirstName2" class="java.lang.String"/>
+	<field name="numberOldExpertVote" class="java.lang.Integer"/>
 	<detail>
 		<band height="19">
 			<textField isStretchWithOverflow="true" pattern="#,##0" isBlankWhenNull="true">
 				<reportElement style="DefaultStyle" positionType="Float" stretchType="RelativeToBandHeight" x="45" y="0" width="441" height="18"/>
 				<textElement/>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{numberNewExpertVote}+") "+$F{userLastName}+" "+$F{userFirstName}]]></textFieldExpression>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{numberOldExpertVote}+") "+$F{userLastName2}+" "+$F{userFirstName2}]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>

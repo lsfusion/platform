@@ -215,7 +215,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         }
         int height = baseType.getPreferredHeight(comp.getFontMetrics(design.getFont(comp)));
         if (design.image != null) // предпочитаемую высоту берем исходя из размера иконки
-            height = Math.max(design.image.getIconHeight() + 4, height);
+            height = Math.max(design.image.getIconHeight() + 6, height);
         return height;
     }
 

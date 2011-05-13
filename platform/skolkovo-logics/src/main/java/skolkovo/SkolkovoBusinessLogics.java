@@ -212,7 +212,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
     LP loadFileDocument;
     LP openFileDocument;
 
-    LP inExpertVote, oldExpertVote, inNewExpertVote;
+    LP inExpertVote, oldExpertVote, inNewExpertVote, inOldExpertVote;
     LP dateStartVote, dateEndVote;
     LP aggrDateEndVote;
 
@@ -289,7 +289,8 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
 
     LP datePrevVote;
     LP dateProjectVote;
-    LP numberExpertVote;
+    LP numberNewExpertVote;
+    LP numberOldExpertVote;
 
     LP languageExpert;
     LP nameLanguageExpert;
@@ -747,6 +748,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         inExpertVote = addDProp(baseGroup, "inExpertVote", "Вкл", LogicalClass.instance, expert, vote); // !!! нужно отослать письмо с документами и т.д
         oldExpertVote = addDProp(baseGroup, "oldExpertVote", "Пред.", LogicalClass.instance, expert, vote); // !!! нужно отослать письмо с документами и т.д
         inNewExpertVote = addJProp(baseGroup, "inNewExpertVote", "Вкл (нов.)", andNot1, inExpertVote, 1, 2, oldExpertVote, 1, 2);
+        inOldExpertVote = addJProp(baseGroup, "inOldExpertVote", "Вкл (стар.)", and1, inExpertVote, 1, 2, oldExpertVote, 1, 2);
 
         dateStartVote = addJProp(baseGroup, "dateStartVote", true, "Дата начала", and1, date, 1, is(vote), 1);
 //        dateEndVote = addJProp(baseGroup, "dateEndVote", "Дата окончания", addDate2, dateStartVote, 1, requiredPeriod);
@@ -935,7 +937,8 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         percentForeignExpert = addJProp(expertResultGroup, "percentForeignExpert", "Иностр. специалист (%)", percent, quantityForeignExpert, 1, quantityDoneExpert, 1);
 
         datePrevVote = addOProp("prevDateVote", "Пред. засед.", OrderType.PREVIOUS, dateEndVote, true, true, 1, projectVote, 1, date, 1);
-        numberExpertVote = addOProp("numberExpertVote", "Номер", OrderType.SUM, addJProp(and1, addCProp(IntegerClass.instance, 1), inExpertVote, 1, 2), true, true, 1, 2, 1);
+        numberNewExpertVote = addOProp("numberNewExpertVote", "Номер (нов.)", OrderType.SUM, addJProp(and1, addCProp(IntegerClass.instance, 1), inNewExpertVote, 1, 2), true, true, 1, 2, 1);
+        numberOldExpertVote = addOProp("numberOldExpertVote", "Номер (стар.)", OrderType.SUM, addJProp(and1, addCProp(IntegerClass.instance, 1), inOldExpertVote, 1, 2), true, true, 1, 2, 1);
 
         emailDocuments = addDProp(baseGroup, "emailDocuments", "E-mail для документов", StringClass.get(50));
 
@@ -944,6 +947,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
 
         emailLetterExpertVote = addJProp(baseGroup, true, "emailLetterExpertVote", "Письмо о заседании (e-mail)",
                 emailLetterExpertVoteEA, 1, 2, addJProp(letterExpertSubjectLanguage, languageExpert, 1), 1);
+        emailLetterExpertVote.setImage("/images/email.png");
         emailLetterExpertVote.property.askConfirm = true;
         emailLetterExpertVote.setDerivedForcedChange(addCProp(ActionClass.instance, true), inNewExpertVote, 1, 2);
 
@@ -971,6 +975,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
 
         emailClosedHeaderVote = addJProp(addSFProp("(CAST(prm1 as text))||(CAST(prm2 as text))", StringClass.get(2000), 2), addCProp(StringClass.get(2000), "Результаты заседания - "), nameNativeClaimerVote, 1);
         emailClosedVote = addJProp(baseGroup, true, "emailClosedVote", "Результаты заседания (e-mail)", emailClosedVoteEA, 1, emailClosedHeaderVote, 1);
+        emailClosedVote.setImage("/images/email.png");
         emailClosedVote.property.askConfirm = true;
         emailClosedVote.setDerivedForcedChange(addCProp(ActionClass.instance, true), closedVote, 1);
 
@@ -982,6 +987,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
 
         emailAuthExpert = addJProp(baseGroup, true, "emailAuthExpert", "Аутентификация эксперта (e-mail)",
                 emailAuthExpertEA, 1, addJProp(authExpertSubjectLanguage, languageExpert, 1), 1);
+        emailAuthExpert.setImage("/images/email.png");
         emailAuthExpert.property.askConfirm = true;
 //        emailAuthExpert.setDerivedChange(addCProp(ActionClass.instance, true), userLogin, 1, userPassword, 1);
 
@@ -1340,7 +1346,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
 
             objVote = addSingleGroupObject(vote, nameNativeProjectVote, dateStartVote, dateEndVote, openedVote, succeededVote);
 
-            objExpert = addSingleGroupObject(expert, userFirstName, userLastName, nameNativeClusterExpert, nameLanguageExpert);
+            objExpert = addSingleGroupObject(expert, userFirstName, userLastName, email, nameNativeClusterExpert, nameLanguageExpert);
 
             addPropertyDraw(objExpert, objVote, allowedEmailLetterExpertVote);
 
@@ -1493,6 +1499,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         private ObjectEntity objVote;
 
         private ObjectEntity objExpert;
+        private ObjectEntity objOldExpert;
 
         private VoteStartFormEntity(NavigatorElement parent, String sID) {
             super(parent, sID, "Созыв заседания", true);
@@ -1501,8 +1508,12 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
             objVote.groupTo.initClassView = ClassViewType.PANEL;
 
             objExpert = addSingleGroupObject(2, "expert", expert, userLastName, userFirstName);
-            addPropertyDraw(numberExpertVote, objExpert, objVote);
-            addFixedFilter(new NotNullFilterEntity(addPropertyObject(inExpertVote, objExpert, objVote)));
+            addPropertyDraw(numberNewExpertVote, objExpert, objVote);
+            addFixedFilter(new NotNullFilterEntity(addPropertyObject(inNewExpertVote, objExpert, objVote)));
+
+            objOldExpert = addSingleGroupObject(3, "oldexpert", expert, userLastName, userFirstName);
+            addPropertyDraw(numberOldExpertVote, objOldExpert, objVote);
+            addFixedFilter(new NotNullFilterEntity(addPropertyObject(inOldExpertVote, objOldExpert, objVote)));
 
             addAttachEAForm(emailStartVoteEA, this, EmailActionProperty.Format.PDF, objVote, 1);
             addAttachEAForm(emailClosedVoteEA, this, EmailActionProperty.Format.PDF, emailStartHeaderVote, objVote, 1);
