@@ -3,7 +3,6 @@ package jasperapi;
 import net.sf.jasperreports.engine.JRPrintText;
 import net.sf.jasperreports.engine.export.JRExporterGridCell;
 import net.sf.jasperreports.engine.export.JRHtmlExporter;
-import net.sf.jasperreports.engine.type.LineSpacingEnum;
 import net.sf.jasperreports.engine.type.RunDirectionEnum;
 import net.sf.jasperreports.engine.util.JRStyledText;
 
@@ -146,11 +145,6 @@ public class ReportHTMLExporter extends JRHtmlExporter {
             styleBuffer.append("word-wrap: break-word; ");
         }
 
-        if (text.getLineSpacingValue() != LineSpacingEnum.SINGLE)
-        {
-            styleBuffer.append("line-height: " + text.getLineSpacingFactor() + "; ");
-        }
-
         if (text.getLineBreakOffsets() != null)
         {
             //if we have line breaks saved in the text, set nowrap so that
@@ -166,6 +160,45 @@ public class ReportHTMLExporter extends JRHtmlExporter {
         }
 
         writer.write(">");
+		writer.write("<p style=\"overflow: hidden; ");
+
+		switch (text.getParagraph().getLineSpacing())
+		{
+			case SINGLE:
+			default:
+			{
+				writer.write("line-height: 1.0; ");
+				break;
+			}
+			case ONE_AND_HALF:
+			{
+				writer.write("line-height: 1.5; ");
+				break;
+			}
+			case DOUBLE:
+			{
+				writer.write("line-height: 2.0; ");
+				break;
+			}
+			case PROPORTIONAL:
+			{
+				writer.write("line-height: " + (int)(100 * text.getParagraph().getLineSpacingSize().floatValue()) + "%; ");
+				break;
+			}
+			case AT_LEAST:
+			case FIXED:
+			{
+				writer.write("line-height: " + text.getParagraph().getLineSpacingSize().floatValue() + "px; ");
+				break;
+			}
+		}
+
+		writer.write("text-indent: " + text.getParagraph().getFirstLineIndent().intValue() + "px; ");
+//		writer.write("margin-left: " + text.getParagraph().getLeftIndent().intValue() + "px; ");
+//		writer.write("margin-right: " + text.getParagraph().getRightIndent().intValue() + "px; ");
+//		writer.write("margin-top: " + text.getParagraph().getSpacingBefore().intValue() + "px; ");
+//		writer.write("margin-bottom: " + text.getParagraph().getSpacingAfter().intValue() + "px; ");
+		writer.write("\">");
 
         if (text.getAnchorName() != null)
         {
@@ -188,6 +221,8 @@ public class ReportHTMLExporter extends JRHtmlExporter {
         }
 
         endHyperlink();
+
+		writer.write("</p>");
 
         writeCellEnd(gridCell);
     }
