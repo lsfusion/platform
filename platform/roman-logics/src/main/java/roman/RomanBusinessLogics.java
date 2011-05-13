@@ -70,6 +70,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     private AbstractCustomClass document;
     private AbstractCustomClass priceDocument;
     private AbstractCustomClass subject;
+    LP addressOriginSubject;
     LP addressSubject;
     LP supplierDocument;
     private LP nameSupplierDocument;
@@ -320,8 +321,10 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     private LP routeFreight;
     private LP nameRouteFreight;
     private LP exporterFreight;
+    LP nameOriginExporterFreight;
     LP nameExporterFreight;
-    LP addressExporterFreight;
+    LP addressOriginExporterFreight;
+     LP addressExporterFreight;
     private ConcreteCustomClass stock;
     private ConcreteCustomClass freightBox;
     private LP sidArticleSku;
@@ -587,6 +590,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     private LP quantityDirectFreightSku;
     private LP quantityFreightSku;
     LP quantityImporterFreightArticleCompositionCountryCategory;
+    LP compositionFreightArticleCompositionCountryCategory;
     LP netWeightImporterFreightArticleCompositionCountryCategory;
     LP grossWeightImporterFreightArticleCompositionCountryCategory;
     LP priceImporterFreightArticleCompositionCountryCategory;
@@ -643,6 +647,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     LP isCurrentPallet;
     private LP changePallet;
     LP barcodeActionSeekPallet, barcodeActionSetPallet, barcodeActionSetFreight, barcodeAction3;
+    private LP invoiceOriginFormImporterFreight;
     private LP invoiceFormImporterFreight;
     private LP packingListFormImporterFreight;
     private LP countrySupplierOfOriginArticleSku;
@@ -816,7 +821,9 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         bestsellerSupplier = addConcreteClass("bestsellerSupplier", "Bestseller", supplier);
         sOliverSupplier = addConcreteClass("sOliverSupplier", "s.Oliver", supplier);
 
-        subject = addAbstractClass("subject", "Субъект", baseClass.named);
+        secondNameClass = addAbstractClass("secondNameClass", "Класс со вторым именем", baseClass);
+
+        subject = addAbstractClass("subject", "Субъект", baseClass.named, secondNameClass);
         importer = addConcreteClass("importer", "Импортер", subject);
         exporter = addConcreteClass("exporter", "Экспортер", subject, seller);
 
@@ -836,8 +843,6 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         freightType = addConcreteClass("freightType", "Тип машины", baseClass.named);
 
         pallet = addConcreteClass("pallet", "Паллета", barcodeObject);
-
-        secondNameClass = addAbstractClass("secondNameClass", "Класс со вторым именем", baseClass);
 
         category = addConcreteClass("category", "Номенклатурная группа", secondNameClass, baseClass.named);
 
@@ -910,7 +915,9 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         nameCurrencyContract = addJProp(baseGroup, "nameCurrencyContract", "Валюта", name, currencyContract, 1);
 
         // Subject
+        addressOriginSubject = addDProp(baseGroup, "addressOriginSubject", "Address", StringClass.get(200), subject);
         addressSubject = addDProp(baseGroup, "addressSubject", "Адрес", StringClass.get(200), subject);
+
         contractImporter = addDProp(baseGroup, "contractImporter", "Номер договора", StringClass.get(50), importer);
 
         // CustomCategory
@@ -1703,7 +1710,9 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         nameRouteFreight = addJProp(baseGroup, "nameRouteFreight", "Маршрут", name, routeFreight, 1);
 
         exporterFreight = addDProp(idGroup, "exporterFreight", "Экспортер (ИД)", exporter, freight);
+        nameOriginExporterFreight = addJProp(baseGroup, "nameOriginExporterFreight", "Экспортер", nameOrigin, exporterFreight, 1);
         nameExporterFreight = addJProp(baseGroup, "nameExporterFreight", "Экспортер", name, exporterFreight, 1);
+        addressOriginExporterFreight = addJProp(baseGroup, "addressOriginExporterFreight", "Адрес", addressOriginSubject, exporterFreight, 1);
         addressExporterFreight = addJProp(baseGroup, "addressExporterFreight", "Адрес", addressSubject, exporterFreight, 1);
 
         quantityPalletShipmentBetweenDate = addSGProp(baseGroup, "quantityPalletShipmentBetweenDate", "Кол-во паллет по поставкам за интервал",
@@ -1783,6 +1792,9 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         
         quantityImporterFreightArticleCompositionCountryCategory = addSGProp(baseGroup, "quantityImporterFreightArticleCompositionCountryCategory", "Кол-во",
                 quantityProxyImporterFreightSku, 1, 2, articleSku, 3, mainCompositionOriginFreightSku, 2, 3, countryOfOriginFreightSku, 2, 3, customCategory10FreightSku, 2, 3);
+
+        compositionFreightArticleCompositionCountryCategory = addMGProp(baseGroup, "compositionFreightArticleCompositionCountryCategory", "Состав",
+                mainCompositionFreightSku, 1, articleSku, 2, mainCompositionOriginFreightSku, 1, 2, countryOfOriginFreightSku, 1, 2, customCategory10FreightSku, 1, 2);
 
         netWeightStockSku = addJProp(baseGroup, "netWeightStockSku", "Вес нетто", multiplyDouble2, quantityStockSku, 1, 2, netWeightSku, 2);
         netWeightStockArticle = addSGProp(baseGroup, "netWeightStockArticle", "Вес нетто", netWeightStockSku, 1, articleSku, 2);
@@ -2004,7 +2016,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         return addProperty(null, new LP<ClassPropertyInterface>(new DeclarationExportActionProperty("declarationExport", "Экспорт декларанта", this, importer, freight)));
     }
 
-    public InvoiceFromFormEntity invoiceFromFormEntity;
+    //public InvoiceFromFormEntity invoiceFromFormEntity;
 
     @Override
     protected void initNavigators() throws JRException, FileNotFoundException {
@@ -2035,8 +2047,9 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         createItemForm = addFormEntity(new CreateItemFormEntity(null, "createItemForm", "Ввод товара"));
 
         NavigatorElement printForms = new NavigatorElement(baseElement, "printForms", "Печатные формы");
-        invoiceFromFormEntity = new InvoiceFromFormEntity(printForms, "invoiceFromForm", "Исходящие инвойсы");
-        addFormEntity(invoiceFromFormEntity);
+
+        addFormEntity(new InvoiceFromFormEntity(printForms, "invoiceFromForm", "Исходящие инвойсы", false));
+        addFormEntity(new InvoiceFromFormEntity(printForms, "invoiceFromForm2", "Исходящие инвойсы (перевод)", true));
         addFormEntity(new PackingListFormEntity(printForms, "packingListForm", "Исходящие упаковочные листы"));
         addFormEntity(new PackingListBoxFormEntity(printForms, "packingListBoxForm", "Упаковочные листы коробов"));
         FormEntity createPalletForm = addFormEntity(new CreatePalletFormEntity(printForms, "createPalletForm", "Штрих-коды паллет", FormType.PRINT));
@@ -3670,6 +3683,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             objImporter = addSingleGroupObject(importer, "Импортёр", name, addressSubject);
 
             addPropertyDraw(quantityImporterFreight, objImporter, objFreight);
+            addPropertyDraw(invoiceOriginFormImporterFreight, objImporter, objFreight);
             addPropertyDraw(invoiceFormImporterFreight, objImporter, objFreight);
             addPropertyDraw(packingListFormImporterFreight, objImporter, objFreight);
 
@@ -3773,6 +3787,8 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 
     public class InvoiceFromFormEntity extends FormEntity<RomanBusinessLogics> {
 
+        private boolean translate;
+
         public ObjectEntity objFreight;
         public ObjectEntity objImporter;
         public ObjectEntity objArticle;
@@ -3783,8 +3799,10 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         private GroupObjectEntity gobjFreightImporter;
         private GroupObjectEntity gobjArticleCompositionCountryCategory;
 
-        private InvoiceFromFormEntity(NavigatorElement parent, String sID, String caption) {
+        private InvoiceFromFormEntity(NavigatorElement parent, String sID, String caption, boolean translate) {
             super(parent, sID, caption, true);
+
+            this.translate = translate;
 
             gobjFreightImporter = new GroupObjectEntity(1, "freightImporter");
 
@@ -3795,8 +3813,23 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             gobjFreightImporter.add(objImporter);
             addGroup(gobjFreightImporter);
 
-            addPropertyDraw(objFreight, date, objectClassName, nameExporterFreight, addressExporterFreight, nameCurrencyFreight);
-            addPropertyDraw(objImporter, name, addressSubject, contractImporter);
+            addPropertyDraw(objFreight, date, objectClassName, nameCurrencyFreight);
+
+            if (translate) {
+                addPropertyDraw(objFreight, nameExporterFreight);
+                addPropertyDraw(objFreight, addressExporterFreight);
+                addPropertyDraw(objImporter, name);
+                addPropertyDraw(objImporter, addressSubject);
+            }
+
+            if (!translate) {
+                addPropertyDraw(objFreight, nameOriginExporterFreight);
+                addPropertyDraw(objFreight, addressOriginExporterFreight);
+                addPropertyDraw(objImporter, nameOrigin);
+                addPropertyDraw(objImporter, addressOriginSubject);
+            }
+
+            addPropertyDraw(objImporter, contractImporter);
             addPropertyDraw(objImporter, objFreight, netWeightImporterFreight, grossWeightImporterFreight, sumImporterFreight);
 
             gobjFreightImporter.initClassView = ClassViewType.PANEL;
@@ -3813,12 +3846,33 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             gobjArticleCompositionCountryCategory.add(objCategory);
             addGroup(gobjArticleCompositionCountryCategory);
 
-            addPropertyDraw(objArticle, sidArticle, nameArticle);
-            addPropertyDraw(objComposition, objectValue);
-            addPropertyDraw(objCountry, sidCountry, name);
+            addPropertyDraw(objArticle, sidArticle);
+            if (translate) {
+                addPropertyDraw(objArticle, nameCategoryArticle);
+                addPropertyDraw(compositionFreightArticleCompositionCountryCategory, objFreight, objArticle, objComposition, objCountry, objCategory);
+            }
+
+            if (!translate) {
+                addPropertyDraw(objArticle, nameArticle);
+                addPropertyDraw(objComposition, objectValue);
+            }                      
+
+            addPropertyDraw(objCountry, sidCountry);
+            if (!translate)
+                addPropertyDraw(objCountry, nameOriginCountry);
+
+            if (translate)
+                addPropertyDraw(objCountry, name);
+
             addPropertyDraw(objCategory, sidCustomCategory10);                            
             addPropertyDraw(quantityImporterFreightArticleCompositionCountryCategory, objImporter, objFreight, objArticle, objComposition, objCountry, objCategory);
-            addPropertyDraw(objArticle, nameUnitOfMeasureArticle);
+
+            if (!translate)
+                addPropertyDraw(objArticle, nameOriginUnitOfMeasureArticle);
+
+            if (translate)
+                addPropertyDraw(objArticle, nameUnitOfMeasureArticle);
+
             addPropertyDraw(netWeightImporterFreightArticleCompositionCountryCategory, objImporter, objFreight, objArticle, objComposition, objCountry, objCategory);
             addPropertyDraw(grossWeightImporterFreightArticleCompositionCountryCategory, objImporter, objFreight, objArticle, objComposition, objCountry, objCategory);
             addPropertyDraw(priceImporterFreightArticleCompositionCountryCategory, objImporter, objFreight, objArticle, objComposition, objCountry, objCategory);
@@ -3829,7 +3883,11 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(quantityImporterFreight, objImporter, objFreight)));
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(quantityImporterFreightArticleCompositionCountryCategory, objImporter, objFreight, objArticle, objComposition, objCountry, objCategory)));
 
-            invoiceFormImporterFreight = addFAProp("Инвойс", this, objImporter, objFreight);
+            if (!translate)
+                invoiceOriginFormImporterFreight = addFAProp("Инвойс", this, objImporter, objFreight);
+
+            if (translate)
+                invoiceFormImporterFreight = addFAProp("Инвойс (перевод)", this, objImporter, objFreight);
         }
     }
     private class PackingListFormEntity extends FormEntity<RomanBusinessLogics> {
