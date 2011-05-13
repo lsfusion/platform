@@ -1,15 +1,19 @@
-package skolkovo.gwt.expert.server;
+package skolkovo.gwt.base.server;
 
+import skolkovo.ProfileInfo;
 import skolkovo.VoteInfo;
-import skolkovo.gwt.expert.shared.GwtVoteInfo;
+import skolkovo.gwt.base.shared.GwtProfileInfo;
+import skolkovo.gwt.base.shared.GwtVoteInfo;
 
 import static java.lang.Math.max;
 import static java.lang.Math.min;
 
-public class VoteFactory {
+public class ConvertFactory {
     public static GwtVoteInfo toGwtVoteInfo(VoteInfo voteInfo) {
         GwtVoteInfo gwtVoteInfo = new GwtVoteInfo();
 
+        gwtVoteInfo.voteId = voteInfo.voteId;
+        gwtVoteInfo.linkHash = voteInfo.linkHash;
         gwtVoteInfo.expertName = voteInfo.expertName;
         gwtVoteInfo.projectClaimer = emptyIfNullAndTrim(voteInfo.projectClaimer);
         gwtVoteInfo.projectName = emptyIfNullAndTrim(voteInfo.projectName);
@@ -28,13 +32,24 @@ public class VoteFactory {
         return gwtVoteInfo;
     }
 
-    private static String emptyIfNullAndTrim(String s) {
-        return s == null ? "" : s.trim();
+    public static GwtProfileInfo toGwtProfileInfo(ProfileInfo profileInfo) {
+        GwtProfileInfo gwtProfileInfo = new GwtProfileInfo();
+
+        gwtProfileInfo.expertEmail = profileInfo.expertEmail;
+        gwtProfileInfo.expertName = profileInfo.expertName;
+        gwtProfileInfo.voteInfos = new GwtVoteInfo[profileInfo.voteInfos.length];
+        for (int i = 0; i < profileInfo.voteInfos.length; ++i) {
+            gwtProfileInfo.voteInfos[i] = toGwtVoteInfo(profileInfo.voteInfos[i]);
+        }
+
+        return gwtProfileInfo;
     }
 
     public static VoteInfo toVoteInfo(GwtVoteInfo gwtVoteInfo) {
         VoteInfo voteInfo = new VoteInfo();
 
+        voteInfo.voteId = gwtVoteInfo.voteId;
+        voteInfo.linkHash = gwtVoteInfo.linkHash;
         voteInfo.expertName = gwtVoteInfo.expertName;
         voteInfo.projectClaimer = gwtVoteInfo.projectClaimer;
         voteInfo.projectName = gwtVoteInfo.projectName;
@@ -51,5 +66,9 @@ public class VoteFactory {
         voteInfo.date = gwtVoteInfo.date;
 
         return voteInfo;
+    }
+
+    private static String emptyIfNullAndTrim(String s) {
+        return s == null ? "" : s.trim();
     }
 }

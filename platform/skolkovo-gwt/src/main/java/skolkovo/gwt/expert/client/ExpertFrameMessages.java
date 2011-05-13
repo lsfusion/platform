@@ -1,12 +1,20 @@
 package skolkovo.gwt.expert.client;
 
+import com.google.gwt.core.client.GWT;
 import com.google.gwt.i18n.client.Messages;
 
 public interface ExpertFrameMessages extends Messages {
+    String project();
+
     String lbInCluster(String clusterName);
+
     String title();
 
-    String headerCaption(String projectName, String projectClaimer, String expertName, String date);
+    String claimer();
+
+    String expert();
+
+    String date();
 
     String pleasePrompt();
 
@@ -34,19 +42,21 @@ public interface ExpertFrameMessages extends Messages {
 
     String btnConnected();
 
-    String internalServerErrorMessage();
-
     String incompletePrompt();
 
     String incompleteComment();
 
     String confirmPrompt();
 
-    String yes();
-
-    String no();
-
-    String here();
-
     String footerCaption();
+
+    String pageTitle();
+
+    public static class Instance {
+        private static final ExpertFrameMessages instance = (ExpertFrameMessages) GWT.create(ExpertFrameMessages.class);
+
+        public static ExpertFrameMessages get() {
+            return instance;
+        }
+    }
 }

@@ -1,4 +1,4 @@
-package skolkovo.gwt.expert.shared;
+package skolkovo.gwt.base.shared;
 
 public class MessageException extends Exception {
     public MessageException() {

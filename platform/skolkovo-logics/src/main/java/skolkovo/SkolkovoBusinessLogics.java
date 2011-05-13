@@ -4,6 +4,7 @@ import net.sf.jasperreports.engine.JRException;
 import platform.base.BaseUtils;
 import platform.base.DateConverter;
 import platform.base.IOUtils;
+import platform.base.OrderedMap;
 import platform.interop.ClassViewType;
 import platform.interop.Compare;
 import platform.interop.action.ClientAction;
@@ -13,6 +14,8 @@ import platform.server.auth.PolicyManager;
 import platform.server.auth.User;
 import platform.server.classes.*;
 import platform.server.data.Union;
+import platform.server.data.expr.Expr;
+import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.query.OrderType;
 import platform.server.data.query.Query;
 import platform.server.data.sql.DataAdapter;
@@ -47,6 +50,7 @@ import java.sql.SQLException;
 import java.util.*;
 import java.util.List;
 
+import static java.util.Arrays.asList;
 import static platform.base.BaseUtils.nvl;
 
 public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogics> implements SkolkovoRemoteInterface {
@@ -196,6 +200,8 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
     LP clusterProjectVote, equalsClusterProjectVote;
     LP claimerProject, nameNativeClaimerProject, nameForeignClaimerProject;
     LP emailDocuments;
+
+    LP emailToExpert;
 
     LP claimerVote, nameNativeClaimerVote, nameForeignClaimerVote;
 
@@ -978,6 +984,8 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
                 emailAuthExpertEA, 1, addJProp(authExpertSubjectLanguage, languageExpert, 1), 1);
         emailAuthExpert.property.askConfirm = true;
 //        emailAuthExpert.setDerivedChange(addCProp(ActionClass.instance, true), userLogin, 1, userPassword, 1);
+
+        emailToExpert = addJProp("emailToExpert", "Эксперт по e-mail", addJProp(and1, 1, is(expert), 1), emailToObject, 1);
     }
 
     protected void initTables() {
@@ -1687,6 +1695,132 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         } catch (Exception e) {
             e.printStackTrace();
             throw new RemoteException("Ошибка при записи информации о голосовании", e);
+        }
+    }
+
+    public ProfileInfo getProfileInfo(String expertLogin) throws RemoteException {
+        assert expertLogin != null;
+        try {
+            DataSession session = createSession();
+            try {
+                Integer expertId = (Integer) loginToUser.read(session, new DataObject(expertLogin));
+                if (expertId == null) {
+                    throw new RuntimeException("Не удалось найти пользователя с логином " + expertLogin);
+                }
+                DataObject expertObj = new DataObject(expertId,  expert);
+
+                ProfileInfo profileInfo = new ProfileInfo();
+                profileInfo.expertName = (String) name.read(session, expertObj);
+                profileInfo.expertEmail = (String) email.read(session, expertObj);
+                boolean isForeign = isForeignExpert.read(session, expertObj) != null;
+
+                Map<String, KeyExpr> keys = KeyExpr.getMapKeys(asList("exp", "vote"));
+                Expr expExpr = keys.get("exp");
+                Expr voteExpr = keys.get("vote");
+                Expr projExpr = projectVote.getExpr(session.modifier, voteExpr);
+
+                Query<String, String> q = new Query<String, String>(keys);
+                q.and(inExpertVote.getExpr(session.modifier, expExpr, voteExpr).getWhere());
+                q.and(userLogin.getExpr(session.modifier, expExpr).compare(new DataObject(expertLogin), Compare.EQUALS));
+
+                q.properties.put("projectId", projExpr);
+                q.properties.put("projectName", (isForeign ? nameForeign : nameNative).getExpr(session.modifier, projExpr));
+                q.properties.put("projectClaimer", (isForeign ? nameForeignClaimerProject : nameNativeClaimerProject).getExpr(session.modifier, projExpr));
+                q.properties.put("projectCluster", (isForeign ? nameForeignClusterProject : nameNativeClusterProject).getExpr(session.modifier, projExpr));
+
+                q.properties.put("inCluster", inClusterExpertVote.getExpr(session.modifier, expExpr, voteExpr));
+                q.properties.put("innovative", innovativeExpertVote.getExpr(session.modifier, expExpr, voteExpr));
+                q.properties.put("innovativeComment", innovativeCommentExpertVote.getExpr(session.modifier, expExpr, voteExpr));
+                q.properties.put("foreign", foreignExpertVote.getExpr(session.modifier, expExpr, voteExpr));
+                q.properties.put("competent", competentExpertVote.getExpr(session.modifier, expExpr, voteExpr));
+                q.properties.put("complete", completeExpertVote.getExpr(session.modifier, expExpr, voteExpr));
+                q.properties.put("completeComment", completeCommentExpertVote.getExpr(session.modifier, expExpr, voteExpr));
+                q.properties.put("vResult", voteResultExpertVote.getExpr(session.modifier, expExpr, voteExpr));
+                q.properties.put("voteDone", doneExpertVote.getExpr(session.modifier, expExpr, voteExpr));
+                q.properties.put("date", dateExpertVote.getExpr(session.modifier, expExpr, voteExpr));
+
+                OrderedMap<Map<String, Object>, Map<String, Object>> values = q.execute(session.sql);
+                profileInfo.voteInfos = new VoteInfo[values.size()];
+
+                int i = 0;
+                for (Map.Entry<Map<String, Object>, Map<String, Object>> entry : values.entrySet()) {
+                    Map<String, Object> propValues = entry.getValue();
+
+                    VoteInfo voteInfo = new VoteInfo();
+
+                    int voteId = (Integer)entry.getKey().get("vote");
+                    voteInfo.voteId = voteId;
+                    voteInfo.linkHash = BaseUtils.encode(voteId, expertId);
+                    voteInfo.projectName = (String) propValues.get("projectName");
+                    voteInfo.projectClaimer = (String) propValues.get("projectClaimer");
+                    voteInfo.projectCluster = (String) propValues.get("projectCluster");
+                    voteInfo.inCluster = nvl((Boolean) propValues.get("inCluster"), false);
+                    voteInfo.innovative = nvl((Boolean) propValues.get("innovative"), false);
+                    voteInfo.innovativeComment = (String) propValues.get("innovativeComment");
+                    voteInfo.foreign = nvl((Boolean) propValues.get("foreign"), false);
+                    voteInfo.competent = nvl((Integer) propValues.get("competent"), 1);
+                    voteInfo.complete = nvl((Integer) propValues.get("complete"), 1);
+                    voteInfo.completeComment = (String) propValues.get("completeComment");
+
+                    Integer vResult = (Integer) propValues.get("vResult");
+                    if (vResult != null) {
+                        voteInfo.voteResult = voteResult.getSID(vResult);
+                    }
+
+                    voteInfo.voteDone = nvl((Boolean) propValues.get("voteDone"), false);
+                    voteInfo.date = DateConverter.sqlToDate((java.sql.Date)propValues.get("date"));
+
+                    profileInfo.voteInfos[i++] = voteInfo;
+                }
+
+                return profileInfo;
+            } finally {
+                session.close();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RemoteException("Ошибка при считывании информации о профиле эксперта", e);
+        }
+    }
+
+    public void sentVoteDocuments(String expertLogin, int voteId) throws RemoteException {
+        assert expertLogin != null;
+        try {
+            DataSession session = createSession();
+            try {
+                Integer expertId = (Integer) loginToUser.read(session, new DataObject(expertLogin));
+                if (expertId == null) {
+                    throw new RuntimeException("Не удалось найти пользователя с логином " + expertLogin);
+                }
+
+                allowedEmailLetterExpertVote.execute(true, session, new DataObject(expertId,  expert), new DataObject(voteId, vote));
+            } finally {
+                session.close();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RemoteException("Ошибка при попытке выслать документы.", e);
+        }
+    }
+
+    @Override
+    public void remindPassword(String email) throws RemoteException {
+        assert email != null;
+        try {
+            DataSession session = createSession();
+            try {
+                Integer expertId = (Integer) emailToExpert.read(session, new DataObject(email));
+                if (expertId == null) {
+                    throw new RuntimeException("Не удалось найти пользователя с e-mail: " + email);
+                }
+
+                emailUserPassUser.execute(true, session, new DataObject(expertId,  customUser));
+            } finally {
+                session.close();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RemoteException("Ошибка при попытке выслать напомиание пароля.", e);
         }
     }
 

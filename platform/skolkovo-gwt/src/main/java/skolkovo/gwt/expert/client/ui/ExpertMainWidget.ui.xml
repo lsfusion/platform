@@ -1,0 +1,93 @@
+<ui:UiBinder xmlns:ui='urn:ui:com.google.gwt.uibinder'
+             xmlns:g='urn:import:com.google.gwt.user.client.ui'
+             xmlns:sk='urn:import:skolkovo.gwt.base.client.ui'>
+    <g:VerticalPanel width="100%">
+        <g:cell horizontalAlignment="center">
+            <g:VerticalPanel width="800" styleName="mainPane" spacing="5">
+                <sk:ToolbarPanel showProfileButton="true" />
+
+                <g:HTMLPanel>
+                    <g:Image styleName="floatRight" url="images/logo.jpg" altText="Logo"/>
+                    <hr size="5" color="#000000"/>
+                    <center><h2><span ui:field="titleSpan"/></h2></center>
+                    <table>
+                        <tr>
+                          <td align="left" width="190px"><b><span ui:field="projectLabelSpan" /></b></td><td align="left"><span ui:field="projectSpan"/></td>
+                        </tr>
+                        <tr>
+                          <td align="left"><b><span ui:field="claimerLabelSpan"/></b></td><td align="left"><span ui:field="claimerSpan"/></td>
+                        </tr>
+                        <tr>
+                          <td align="left"><b><span ui:field="expertLabelSpan"/></b></td><td align="left"><span ui:field="expertSpan"/></td>
+                        </tr>
+                        <tr>
+                          <td></td>
+                          <td align="left" style="font-size: 10pt"><i><g:Label ui:field="logoffNotice"/></i></td>
+                          <td align="left" style="font-size: 10pt"><i><g:Anchor href="javascript:;" ui:field="logoffLink" /></i></td>
+                        </tr>
+                        <tr>
+                          <td align="left"><b><span ui:field="dateLabelSpan"/></b></td><td align="left"><span ui:field="dateSpan"/></td>
+                        </tr>
+                    </table>
+                    <g:VerticalPanel width="100%" spacing="3" ui:field="voteButtonsPanel">
+                        <g:cell horizontalAlignment="left">
+                            <g:Anchor href="javascript:;" ui:field="bRefused"/>
+                        </g:cell>
+                        <g:cell horizontalAlignment="left">
+                            <g:Anchor href="javascript:;" ui:field="bConnected"/>
+                        </g:cell>
+                    </g:VerticalPanel>
+                    <span ui:field="voteResultSpan"></span>
+
+                    <g:VerticalPanel ui:field="voteDataPanel">
+                        <g:Label>1.</g:Label>
+                        <g:HorizontalPanel width="100%" styleName="captionedListBox">
+                            <g:cell width="80%"><g:Label width="100%" ui:field="lbInCluster"/></g:cell>
+                            <g:cell width="20%"><g:ListBox width="100%" ui:field="bxInCluster"></g:ListBox></g:cell>
+                        </g:HorizontalPanel>
+
+                        <g:Label>2.</g:Label>
+                        <g:VerticalPanel width="100%">
+                            <g:HorizontalPanel width="100%" styleName="captionedListBox">
+                                <g:cell width="80%"><g:Label width="100%" ui:field="lbInnovative"/></g:cell>
+                                <g:cell width="20%"><g:ListBox width="100%" ui:field="bxInnovative"></g:ListBox></g:cell>
+                            </g:HorizontalPanel>
+                            <g:VerticalPanel width="100%" styleName="captionedTextArea">
+                                <g:Label width="100%" ui:field="lbInnovativeComment"/>
+                                <g:TextArea width="100%" visibleLines="8" ui:field="taInnovativeComment"/>
+                            </g:VerticalPanel>
+                        </g:VerticalPanel>
+
+                        <g:Label>3.</g:Label>
+                        <g:HorizontalPanel width="100%" styleName="captionedListBox">
+                            <g:cell width="80%"><g:Label width="100%" ui:field="lbForeign"/></g:cell>
+                            <g:cell width="20%"><g:ListBox width="100%" ui:field="bxForeign"></g:ListBox></g:cell>
+                        </g:HorizontalPanel>
+
+                        <g:Label>4.</g:Label>
+                        <g:HorizontalPanel width="100%" styleName="captionedListBox">
+                            <g:cell width="80%"><g:Label width="100%" ui:field="lbCompetent"/></g:cell>
+                            <g:cell width="20%"><g:ListBox width="100%" ui:field="bxCompetent"></g:ListBox></g:cell>
+                        </g:HorizontalPanel>
+
+                        <g:Label>5.</g:Label>
+                        <g:VerticalPanel width="100%">
+                            <g:HorizontalPanel width="100%" styleName="captionedListBox">
+                                <g:cell width="80%"><g:Label width="100%" ui:field="lbComplete"/></g:cell>
+                                <g:cell width="20%"><g:ListBox width="100%" ui:field="bxComplete"></g:ListBox></g:cell>
+                            </g:HorizontalPanel>
+                            <g:VerticalPanel width="100%" styleName="captionedTextArea">
+                                <g:Label width="100%" ui:field="lbCompleteComment"/>
+                                <g:TextArea width="100%" visibleLines="8" ui:field="taCompleteComment"/>
+                            </g:VerticalPanel>
+                        </g:VerticalPanel>
+                    </g:VerticalPanel>
+                </g:HTMLPanel>
+                <g:HTMLPanel><span ui:field="footerSpan" /></g:HTMLPanel>
+                <g:cell horizontalAlignment="center">
+                    <g:Button ui:field="bVote"/>
+                </g:cell>
+            </g:VerticalPanel>
+        </g:cell>
+    </g:VerticalPanel>
+</ui:UiBinder>

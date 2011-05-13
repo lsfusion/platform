@@ -1,14 +1,14 @@
 package skolkovo.gwt.expert.server;
 
-import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 import org.apache.log4j.Logger;
-import skolkovo.api.remote.SkolkovoRemoteInterface;
+import skolkovo.gwt.base.server.ConvertFactory;
+import skolkovo.gwt.base.server.SkolkovoRemoteServiceServlet;
+import skolkovo.gwt.base.shared.GwtVoteInfo;
+import skolkovo.gwt.base.shared.MessageException;
 import skolkovo.gwt.expert.client.ExpertService;
-import skolkovo.gwt.expert.shared.GwtVoteInfo;
-import skolkovo.gwt.expert.shared.MessageException;
 
-public class ExpertServiceImpl extends RemoteServiceServlet implements ExpertService {
-    protected final static Logger logger = Logger.getLogger(RemoteServiceServlet.class);
+public class ExpertServiceImpl extends SkolkovoRemoteServiceServlet implements ExpertService {
+    protected final static Logger logger = Logger.getLogger(ExpertServiceImpl.class);
 
     public GwtVoteInfo getVoteInfo(String voteId) throws MessageException {
         try {
@@ -17,7 +17,7 @@ public class ExpertServiceImpl extends RemoteServiceServlet implements ExpertSer
 //                return null;
 //            }
 
-            return VoteFactory.toGwtVoteInfo(getLogics().getVoteInfo(voteId));
+            return ConvertFactory.toGwtVoteInfo(getLogics().getVoteInfo(voteId));
         } catch (Throwable e) {
             logger.error("Ошибка в getVoteInfo: ", e);
             e.printStackTrace();
@@ -29,18 +29,12 @@ public class ExpertServiceImpl extends RemoteServiceServlet implements ExpertSer
         try {
 //            Principal user = getThreadLocalRequest().getUserPrincipal();
 //            if (user != null) {
-            getLogics().setVoteInfo(voteId, VoteFactory.toVoteInfo(voteInfo));
+            getLogics().setVoteInfo(voteId, ConvertFactory.toVoteInfo(voteInfo));
 //            }
         } catch (Throwable e) {
             logger.error("Ошибка в setVoteInfo: ", e);
             e.printStackTrace();
             throw new MessageException(DebugUtil.getInitialCause(e).getMessage());
         }
-    }
-
-    private SkolkovoRemoteInterface getLogics() {
-        String serverHost = getServletConfig().getInitParameter("serverHost");
-        String serverPort = getServletConfig().getInitParameter("serverPort");
-        return SkolkovoLogicsClient.getInstance().getLogics(serverHost, serverPort);
     }
 }

@@ -5,4 +5,5 @@
            connectionURL="jdbc:postgresql://localhost:5432/skolkovo?user=postgres&amp;password=11111"
            userTable="customuser" userNameCol="userlogin" userCredCol="userpassword"
            userRoleTable="customuser" roleNameCol="userrole"/>
+    <Valve className="org.apache.catalina.authenticator.FormAuthenticator" characterEncoding="UTF-8"/>
 </Context>

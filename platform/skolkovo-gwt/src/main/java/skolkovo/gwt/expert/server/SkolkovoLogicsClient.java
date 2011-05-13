@@ -6,6 +6,7 @@ import platform.interop.RemoteLoaderInterface;
 import platform.interop.remote.ServerSocketFactory;
 import skolkovo.api.remote.SkolkovoRemoteInterface;
 
+import javax.servlet.ServletContext;
 import java.io.IOException;
 import java.rmi.Naming;
 import java.rmi.server.RMIFailureHandler;
@@ -46,6 +47,12 @@ public class SkolkovoLogicsClient {
 
             RMISocketFactory.setSocketFactory(socketFactory);
         }
+    }
+
+    public SkolkovoRemoteInterface getLogics(ServletContext context) {
+        String serverHost = context.getInitParameter("serverHost");
+        String serverPort = context.getInitParameter("serverPort");
+        return getLogics(serverHost, serverPort);
     }
 
     public SkolkovoRemoteInterface getLogics(String serverHost, String serverPort) {

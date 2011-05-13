@@ -5,6 +5,8 @@ import java.util.Date;
 
 public class VoteInfo implements Serializable {
     //{{expert info
+    public int voteId;
+    public String linkHash;
     public String expertName;
     //}}
 

@@ -3,8 +3,8 @@ package skolkovo.gwt.expert.client;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.rpc.RemoteService;
 import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
-import skolkovo.gwt.expert.shared.GwtVoteInfo;
-import skolkovo.gwt.expert.shared.MessageException;
+import skolkovo.gwt.base.shared.GwtVoteInfo;
+import skolkovo.gwt.base.shared.MessageException;
 
 @RemoteServiceRelativePath("ProjectsService")
 public interface ExpertService extends RemoteService {
@@ -19,14 +19,6 @@ public interface ExpertService extends RemoteService {
         private static final ExpertServiceAsync instance = (ExpertServiceAsync) GWT.create(ExpertService.class);
 
         public static ExpertServiceAsync getInstance() {
-            return instance;
-        }
-    }
-
-    public static class Messages {
-        private static final ExpertFrameMessages instance = (ExpertFrameMessages) GWT.create(ExpertFrameMessages.class);
-
-        public static ExpertFrameMessages getInstance() {
             return instance;
         }
     }

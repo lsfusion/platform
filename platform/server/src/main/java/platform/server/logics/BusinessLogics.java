@@ -588,7 +588,10 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     public LP<?> loginToUser;
 
     public LP email;
+    public LP emailToObject;
     public LP generateLoginPassword;
+
+    protected LP emailUserPassUser;
 
     private LP connectionUser;
     private LP connectionComputer;
@@ -1115,6 +1118,11 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         inLoginSID = addJProp("inLoginSID", true, "Логину назначена роль", inUserRole, loginToUser, 1, sidToRole, 2);
 
         email = addDProp(baseGroup, "email", "E-mail", StringClass.get(50), emailObject);
+        emailToObject = addAGProp("emailToObject", "Объект по e-mail", email);
+
+        emailUserPassUser = addEAProp("Напоминание пароля (Password reminder)", customUser);
+        addEARecepient(emailUserPassUser, email, 1);
+
         generateLoginPassword = addAProp(actionGroup, new GenerateLoginPasswordActionProperty(this));
 
         name = addCUProp(recognizeGroup, "commonName", "Имя", dataName,
@@ -1260,6 +1268,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         addFormEntity(new AdminFormEntity(adminElement, "adminForm"));
         addFormEntity(new DaysOffFormEntity(adminElement, "daysOffForm"));
         addFormEntity(new DictionariesFormEntity(adminElement, "dictionariesForm"));
+
+        addFormEntity(new RemindUserPassFormEntity(adminElement, "remindPasswordLetter"));
     }
 
     protected SecurityPolicy permitAllPolicy, readOnlyPolicy;
@@ -1281,6 +1291,24 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
     protected void initBaseClassForms() {
         baseClass.named.setClassForm(new NamedObjectClassForm(this, baseClass.named));
+    }
+
+    private class RemindUserPassFormEntity extends FormEntity<T> { // письмо эксперту о логине
+        private ObjectEntity objUser;
+
+        private RemindUserPassFormEntity(NavigatorElement parent, String sID) {
+            super(parent, sID, "Напоминание пароля", true);
+
+            objUser = addSingleGroupObject(1, "customUser", customUser, userLogin, userPassword, name);
+            objUser.groupTo.initClassView = ClassViewType.PANEL;
+
+            addInlineEAForm(emailUserPassUser, this, objUser, 1);
+        }
+
+        @Override
+        public boolean isReadOnly() {
+            return true;
+        }
     }
 
     private class ConnectionsFormEntity extends FormEntity {
@@ -2755,7 +2783,11 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
     protected LP addEAProp(ValueClass... params) {
-        return addEAProp(null, genSID(), "email", null, params);
+        return addEAProp(null, params);
+    }
+
+    protected LP addEAProp(String subject, ValueClass... params) {
+        return addEAProp(null, genSID(), "email", subject, params);
     }
 
     protected LP addEAProp(AbstractGroup group, String sID, String caption, String subject, ValueClass... params) {

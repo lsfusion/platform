@@ -1,4 +1,4 @@
-package skolkovo.gwt.expert.shared;
+package skolkovo.gwt.base.shared;
 
 import com.google.gwt.user.client.rpc.IsSerializable;
 
@@ -6,6 +6,8 @@ import java.util.Date;
 
 public class GwtVoteInfo implements IsSerializable {
     //{{expert info
+    public int voteId;
+    public String linkHash = "";
     public String expertName = "";
     //}}
 
