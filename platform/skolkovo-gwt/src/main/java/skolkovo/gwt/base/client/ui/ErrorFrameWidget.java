@@ -24,6 +24,6 @@ public class ErrorFrameWidget extends Composite {
                          ? caught.getMessage()
                          : baseMessages.internalServerErrorMessage();
 
-        messageSpan.setInnerText(message);
+        messageSpan.setInnerHTML(message);
     }
 }

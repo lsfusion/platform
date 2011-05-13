@@ -4,7 +4,7 @@
         <g:cell horizontalAlignment="center">
             <g:VerticalPanel width="800" styleName="mainPane" spacing="10">
                 <g:HTMLPanel>
-                    <center><h5><span ui:field="messageSpan"/></h5></center>
+                    <h5><span ui:field="messageSpan"/></h5>
                 </g:HTMLPanel>
             </g:VerticalPanel>
         </g:cell>

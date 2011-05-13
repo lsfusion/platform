@@ -1648,7 +1648,6 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
                     voteInfo.projectName = (String) nameForeign.read(session, vo.projectObj);
                     voteInfo.projectClaimer = (String) nameForeignClaimerProject.read(session, vo.projectObj);
                     voteInfo.projectCluster = (String) nameForeignClusterProject.read(session, vo.projectObj);
-
                 }
 
                 voteInfo.inCluster = nvl((Boolean) inClusterExpertVote.read(session, vo.expertObj, vo.voteObj), false);
@@ -1664,7 +1663,9 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
                     voteInfo.voteResult = voteResult.getSID(vResult);
                 }
 
-                voteInfo.voteDone = nvl((Boolean) doneExpertVote.read(session, vo.expertObj, vo.voteObj), false);
+                voteInfo.voteDone = voteInfo.voteResult != null
+                                    || !nvl((Boolean) openedVote.read(session, vo.voteObj), false);
+
                 voteInfo.date = DateConverter.sqlToDate((java.sql.Date)dateExpertVote.read(session, vo.expertObj, vo.voteObj));
 
                 return voteInfo;
@@ -1683,6 +1684,15 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
             DataSession session = createSession();
             try {
                 VoteObjects vo = new VoteObjects(session, voteId);
+                Boolean opVote = (Boolean) openedVote.read(session, vo.voteObj);
+                if (opVote == null || !opVote) {
+                    throw new RuntimeException("Голосование по заседанию с идентификатором " + vo.voteObj.object + " завершено");
+                }
+
+                Integer vResult = (Integer) voteResultExpertVote.read(session, vo.expertObj, vo.voteObj);
+                if (vResult != null) {
+                    throw new RuntimeException("Эксперт уже голосовал по этому заседанию.");
+                }
 
                 dateExpertVote.execute(DateConverter.dateToSql(new Date()), session, vo.expertObj, vo.voteObj);
                 voteResultExpertVote.execute(voteResult.getID(voteInfo.voteResult), session, vo.expertObj, vo.voteObj);
@@ -1747,7 +1757,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
                 q.properties.put("complete", completeExpertVote.getExpr(session.modifier, expExpr, voteExpr));
                 q.properties.put("completeComment", completeCommentExpertVote.getExpr(session.modifier, expExpr, voteExpr));
                 q.properties.put("vResult", voteResultExpertVote.getExpr(session.modifier, expExpr, voteExpr));
-                q.properties.put("voteDone", doneExpertVote.getExpr(session.modifier, expExpr, voteExpr));
+                q.properties.put("openedVote", openedVote.getExpr(session.modifier, voteExpr));
                 q.properties.put("date", dateExpertVote.getExpr(session.modifier, expExpr, voteExpr));
 
                 OrderedMap<Map<String, Object>, Map<String, Object>> values = q.execute(session.sql);
@@ -1778,7 +1788,8 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
                         voteInfo.voteResult = voteResult.getSID(vResult);
                     }
 
-                    voteInfo.voteDone = nvl((Boolean) propValues.get("voteDone"), false);
+                    voteInfo.voteDone = voteInfo.voteResult != null
+                                        || !nvl((Boolean) propValues.get("openedVote"), false);
                     voteInfo.date = DateConverter.sqlToDate((java.sql.Date)propValues.get("date"));
 
                     profileInfo.voteInfos[i++] = voteInfo;
@@ -1863,11 +1874,6 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
             Boolean inVote = (Boolean) inNewExpertVote.read(session, expertObj, voteObj);
             if (inVote == null || !inVote) {
                 throw new RuntimeException("Эксперт с идентификатором " + expertId + " не назначен на заседание с идентификатором " + voteId);
-            }
-
-            Boolean opVote = (Boolean) openedVote.read(session, voteObj);
-            if (opVote == null || !opVote) {
-                throw new RuntimeException("Голосование по заседанию с идентификатором " + voteId + " завершено");
             }
 
             projectObj = new DataObject(projectId, project);

@@ -113,7 +113,7 @@ public abstract class ExpertMainWidget extends Composite {
                                          ? messages.refusedPrompt()
                                          : "connected".equals(vi.voteResult)
                                            ? messages.connectedPrompt()
-                                           : "") + "</b>"
+                                           : messages.voteClosed()) + "</b>"
         );
 
         if (vi.voteDone) {

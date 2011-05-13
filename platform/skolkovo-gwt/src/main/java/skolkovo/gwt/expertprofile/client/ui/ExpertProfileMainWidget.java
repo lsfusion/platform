@@ -134,31 +134,31 @@ public abstract class ExpertProfileMainWidget extends Composite {
         table.addColumn(new NumberColumn<GwtVoteInfo>() {
             @Override
             public Number getValue(GwtVoteInfo vi) {
-                return vi.competent;
+                return !vi.isVoted() ? null : vi.competent;
             }
         }, messages.columnCompetent());
         table.addColumn(new YesNoColumn<GwtVoteInfo>() {
             @Override
             public Boolean getValue(GwtVoteInfo vi) {
-                return vi.inCluster;
+                return !vi.isVoted() ? null : vi.inCluster;
             }
         }, messages.columnInCluster());
         table.addColumn(new YesNoColumn<GwtVoteInfo>() {
             @Override
             public Boolean getValue(GwtVoteInfo vi) {
-                return vi.innovative;
+                return !vi.isVoted() ? null : vi.innovative;
             }
         }, messages.columnInnovative());
         table.addColumn(new NumberColumn<GwtVoteInfo>() {
             @Override
             public Number getValue(GwtVoteInfo vi) {
-                return vi.complete;
+                return !vi.isVoted() ? null : vi.complete;
             }
         }, messages.columnComplete());
         table.addColumn(new YesNoColumn<GwtVoteInfo>() {
             @Override
             public Boolean getValue(GwtVoteInfo vi) {
-                return vi.foreign;
+                return !vi.isVoted() ? null : vi.foreign;
             }
         }, messages.columnForeign());
         table.addColumn(new LinkColumn<GwtVoteInfo>() {

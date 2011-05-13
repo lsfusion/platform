@@ -10,8 +10,10 @@ public abstract class YesNoColumn<T> extends Column<T, Boolean> {
     private static class YesNoCell extends AbstractCell<Boolean> {
         @Override
         public void render(Boolean value, Object key, SafeHtmlBuilder sb) {
-            BaseMessages baseMessages = BaseMessages.Instance.get();
-            sb.append(SafeHtmlUtils.fromString(value != null && value ? baseMessages.yes() : baseMessages.no()));
+            if (value != null) {
+                BaseMessages baseMessages = BaseMessages.Instance.get();
+                sb.append(SafeHtmlUtils.fromString(value != null && value ? baseMessages.yes() : baseMessages.no()));
+            }
         }
     }
 

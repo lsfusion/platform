@@ -19,7 +19,7 @@ public class ConvertFactory {
         gwtVoteInfo.projectName = emptyIfNullAndTrim(voteInfo.projectName);
         gwtVoteInfo.projectCluster = emptyIfNullAndTrim(voteInfo.projectCluster);
         gwtVoteInfo.voteResult = emptyIfNullAndTrim(voteInfo.voteResult);
-        gwtVoteInfo.voteDone = !gwtVoteInfo.voteResult.trim().isEmpty();
+        gwtVoteInfo.voteDone = voteInfo.voteDone;
         gwtVoteInfo.inCluster = voteInfo.inCluster;
         gwtVoteInfo.innovative = voteInfo.innovative;
         gwtVoteInfo.innovativeComment = emptyIfNullAndTrim(voteInfo.innovativeComment);

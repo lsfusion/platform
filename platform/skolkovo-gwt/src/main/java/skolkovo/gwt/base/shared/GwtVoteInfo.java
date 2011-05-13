@@ -33,4 +33,8 @@ public class GwtVoteInfo implements IsSerializable {
 
     public GwtVoteInfo() {
     }
+
+    public boolean isVoted() {
+        return "voted".equals(voteResult);
+    }
 }
