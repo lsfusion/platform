@@ -21,6 +21,7 @@
 	<field name="nameNativeClaimerVote" class="java.lang.String"/>
 	<field name="nameNativeProjectVote" class="java.lang.String"/>
 	<field name="prevDateVote" class="java.util.Date"/>
+	<field name="prevDateStartVote" class="java.util.Date"/>
 	<group name="captionGroup1">
 		<groupExpression><![CDATA[String.valueOf($F{vote})]]></groupExpression>
 	</group>
@@ -37,7 +38,7 @@
 "рассмотрев поданную " + $F{nameNativeClaimerVote} + " заявку на присвоение статуса участника проекта от "
 + platform.base.BaseUtils.formatRussian($F{dateProjectVote}) + " года " + $F{nameNativeProjectVote} + ","+($F{prevDateVote}==null?
 " в соответствии с пунктом 9 Положения о присвоении и утрате статуса участника проекта по созданию и обеспечению функционирования инновационного центра «Сколково» и пунктами 4-7":
-" учитывая, что заседание предыдущей Экспертной коллегии было признано несостоявшимся (протокол заседания Экспертной коллегии по вопросу о соответствии проекта, представленного соискателем, критериям, указанным в подпункте Е пункта 2 Положения о присвоении и утрате статуса участника проекта по созданию и обеспечению функционирования инновационного центра «Сколково», от "+platform.base.BaseUtils.formatRussian($F{prevDateVote})+", в соответствии с пунктом 14")+
+" учитывая, что заседание предыдущей Экспертной коллегии было признано несостоявшимся (протокол заседания Экспертной коллегии по вопросу о соответствии проекта, представленного соискателем, критериям, указанным в подпункте Е пункта 2 Положения о присвоении и утрате статуса участника проекта по созданию и обеспечению функционирования инновационного центра «Сколково», от "+platform.base.BaseUtils.formatRussian($F{prevDateVote})+" года), в соответствии с пунктом 14")+
 " Положения об Экспертных коллегиях Фонда"]]></textFieldExpression>
 				</textField>
 				<staticText>
@@ -142,7 +143,7 @@
 				<textElement verticalAlignment="Top">
 					<paragraph firstLineIndent="20"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA["3. Включить в состав Экспертной коллегии следующих экспертов, направивших заполненные Бюллетени оценки для целей участия в заседании(их) Экспертной(ых) коллегии(ий) от "+(platform.base.BaseUtils.formatRussian($F{dateProjectVote})) + " года, признанном(ых) несостоявшимся(мися), и Бюллетени оценки которых были учтены для целей определения результатов голосования:"]]></textFieldExpression>
+				<textFieldExpression class="java.lang.String"><![CDATA["3. Включить в состав Экспертной коллегии следующих экспертов, направивших заполненные Бюллетени оценки для целей участия в заседании Экспертной коллегии от "+(platform.base.BaseUtils.formatRussian($F{prevDateStartVote})) + " года, признанном несостоявшимся, и Бюллетени оценки которых были учтены для целей определения результатов голосования:"]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>

@@ -2016,7 +2016,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         return addProperty(null, new LP<ClassPropertyInterface>(new DeclarationExportActionProperty("declarationExport", "Экспорт декларанта", this, importer, freight)));
     }
 
-    //public InvoiceFromFormEntity invoiceFromFormEntity;
+    public InvoiceFromFormEntity invoiceFromFormEntity;
 
     @Override
     protected void initNavigators() throws JRException, FileNotFoundException {
@@ -2048,7 +2048,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 
         NavigatorElement printForms = new NavigatorElement(baseElement, "printForms", "Печатные формы");
 
-        addFormEntity(new InvoiceFromFormEntity(printForms, "invoiceFromForm", "Исходящие инвойсы", false));
+        invoiceFromFormEntity = addFormEntity(new InvoiceFromFormEntity(printForms, "invoiceFromForm", "Исходящие инвойсы", false));
         addFormEntity(new InvoiceFromFormEntity(printForms, "invoiceFromForm2", "Исходящие инвойсы (перевод)", true));
         addFormEntity(new PackingListFormEntity(printForms, "packingListForm", "Исходящие упаковочные листы"));
         addFormEntity(new PackingListBoxFormEntity(printForms, "packingListBoxForm", "Упаковочные листы коробов"));
