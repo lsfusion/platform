@@ -1,0 +1,50 @@
+hr {
+    color: black;
+    height: 1pt;
+    background: gray;
+}
+
+td {
+    vertical-align: top;
+}
+
+.numberLabel {
+    font-size: 22pt;
+    font-weight:bolder;
+    color: #555555;
+}
+
+.commentBox {
+    background: none repeat scroll 0 0 #F8FCEB;
+    border: 2pt solid #C9FA15;
+    width: 100%;
+}
+
+.commentLabel {
+    font-size: 12px;
+    width: 100%
+}
+
+.commentTextArea {
+    border: none;
+    background: none repeat scroll 0 0 #F8FCEB;
+    width: 100%
+}
+
+.questionCaption {
+    background: none repeat scroll 0 0 #F4FECC;
+    border: 2pt solid #C9FA15;
+    width: 100%
+}
+
+.questionComboBox {
+    background: none repeat scroll 0 0 #F4FECC;
+    border: none;
+    border: 2pt solid #C9FA15;
+    width: 100%
+}
+
+.logoffNotice {
+    font-size: 10pt;
+    font-style: italic;
+}

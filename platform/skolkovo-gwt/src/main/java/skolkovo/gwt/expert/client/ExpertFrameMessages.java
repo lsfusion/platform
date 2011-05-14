@@ -54,6 +54,8 @@ public interface ExpertFrameMessages extends Messages {
 
     String voteClosed();
 
+    String symbolsLeft();
+
     public static class Instance {
         private static final ExpertFrameMessages instance = (ExpertFrameMessages) GWT.create(ExpertFrameMessages.class);
 

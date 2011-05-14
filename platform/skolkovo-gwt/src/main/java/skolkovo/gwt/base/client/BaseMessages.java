@@ -16,6 +16,12 @@ public interface BaseMessages extends Messages {
 
     String logoffNotice();
 
+    @Key("locale.ru")
+    String localeRu();
+
+    @Key("locale.en")
+    String localeEn();
+
     public static class Instance {
         private static final BaseMessages instance = (BaseMessages) GWT.create(BaseMessages.class);
 

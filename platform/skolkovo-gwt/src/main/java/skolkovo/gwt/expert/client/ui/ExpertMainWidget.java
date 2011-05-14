@@ -4,9 +4,12 @@ import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.SpanElement;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.logical.shared.ValueChangeEvent;
+import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.uibinder.client.UiField;
+import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.ui.*;
 import skolkovo.gwt.base.client.BaseMessages;
 import skolkovo.gwt.base.shared.GwtVoteInfo;
@@ -15,6 +18,9 @@ import skolkovo.gwt.expert.client.ExpertFrameMessages;
 import java.util.Date;
 
 public abstract class ExpertMainWidget extends Composite {
+    private static final int innovativeCommentMaxLength = 1000;
+    private static final int completeCommentMaxLength = 300;
+
     interface ExpertMainWidgetUiBinder extends UiBinder<Widget, ExpertMainWidget> {}
     private static ExpertMainWidgetUiBinder uiBinder = GWT.create(ExpertMainWidgetUiBinder.class);
 
@@ -35,8 +41,6 @@ public abstract class ExpertMainWidget extends Composite {
     Label logoffNotice;
     @UiField
     SpanElement voteResultSpan;
-    @UiField
-    VerticalPanel voteDataPanel;
     @UiField
     public ListBox bxInCluster;
     @UiField
@@ -85,6 +89,16 @@ public abstract class ExpertMainWidget extends Composite {
     SpanElement expertLabelSpan;
     @UiField
     SpanElement dateLabelSpan;
+    @UiField
+    Label lbCompleteCounter;
+    @UiField
+    Label lbCompleteCounterCaption;
+    @UiField
+    Label lbInnovativeCounter;
+    @UiField
+    Label lbInnovativeCounterCaption;
+    @UiField
+    HTMLPanel dataHtmlPanel;
 
     public ExpertMainWidget(GwtVoteInfo vi) {
         initWidget(uiBinder.createAndBindUi(this));
@@ -104,6 +118,12 @@ public abstract class ExpertMainWidget extends Composite {
         logoffLink.setText(baseMessages.here());
         footerSpan.setInnerHTML(messages.footerCaption());
 
+        lbInnovativeCounter.setText("1000");
+        lbInnovativeCounterCaption.setText(messages.symbolsLeft());
+
+        lbCompleteCounter.setText("300");
+        lbCompleteCounterCaption.setText(messages.symbolsLeft());
+
         voteResultSpan.setInnerHTML(!vi.voteDone
                                     ? messages.pleasePrompt()
                                     : "<b>" +
@@ -115,6 +135,8 @@ public abstract class ExpertMainWidget extends Composite {
                                            ? messages.connectedPrompt()
                                            : messages.voteClosed()) + "</b>"
         );
+
+        setupHandlers();
 
         if (vi.voteDone) {
             logoffLink.setVisible(false);
@@ -130,7 +152,7 @@ public abstract class ExpertMainWidget extends Composite {
         addListBoxBooleanItems(bxInnovative, vi.voteDone ? (vi.innovative ? 1 : 2) : 0);
 
         lbInnovativeComment.setText(messages.lbInnovativeComment());
-        taInnovativeComment.setText(vi.innovativeComment);
+        taInnovativeComment.setValue(vi.innovativeComment);
         taInnovativeComment.setEnabled(!vi.voteDone);
 
         lbForeign.setText(messages.lbForeign());
@@ -152,7 +174,7 @@ public abstract class ExpertMainWidget extends Composite {
         bxComplete.setEnabled(!vi.voteDone);
 
         lbCompleteComment.setText(messages.lbCompleteComment());
-        taCompleteComment.setText(vi.completeComment);
+        taCompleteComment.setValue(vi.completeComment);
         taCompleteComment.setEnabled(!vi.voteDone);
 
         bVote.setText(messages.btnVote());
@@ -160,13 +182,31 @@ public abstract class ExpertMainWidget extends Composite {
         bConnected.setText(messages.btnConnected());
 
         if (vi.voteDone) {
-            if (!"voted".equals(vi.voteResult)) {
-                voteDataPanel.setVisible(false);
-            }
             voteButtonsPanel.setVisible(false);
-            footerSpan.setInnerText("");
-            bVote.setVisible(false);
+            Element resultDataRow = dataHtmlPanel.getElementById("resultDataRow");
+            if (resultDataRow != null) {
+                resultDataRow.removeFromParent();
+            }
+
+            if (!"voted".equals(vi.voteResult)) {
+                for (int i = 1; ;++i) {
+                    Element dataRow = dataHtmlPanel.getElementById("dataRow" + i);
+                    if (dataRow == null) break;
+
+                    dataRow.removeFromParent();
+                }
+            }
         }
+    }
+
+    private void setupHandlers() {
+        LimitedTextHandler innovativeLimitedHandler = new LimitedTextHandler(taInnovativeComment, lbInnovativeCounter, innovativeCommentMaxLength);
+        LimitedTextHandler completeLimitedHandler = new LimitedTextHandler(taCompleteComment, lbCompleteCounter, completeCommentMaxLength);
+
+        taInnovativeComment.addValueChangeHandler(innovativeLimitedHandler);
+        taInnovativeComment.addKeyboardListener(innovativeLimitedHandler);
+        taCompleteComment.addValueChangeHandler(completeLimitedHandler);
+        taCompleteComment.addKeyboardListener(completeLimitedHandler);
 
         logoffLink.addClickHandler(new VoteHandler("refused", false));
         bVote.addClickHandler(new VoteHandler("voted", true));
@@ -195,6 +235,50 @@ public abstract class ExpertMainWidget extends Composite {
         @Override
         public void onClick(ClickEvent event) {
             onVoted(voteResult, confirm);
+        }
+    }
+
+    private static class LimitedTextHandler implements ValueChangeHandler<String>, KeyboardListener {
+        private final TextArea taText;
+        private final Label lbCounter;
+        private final int maxLength;
+
+        public LimitedTextHandler(TextArea taText, Label lbCounter, int maxLength) {
+            this.taText = taText;
+            this.lbCounter = lbCounter;
+            this.maxLength = maxLength;
+        }
+
+        @Override
+        public void onValueChange(ValueChangeEvent<String> stringValueChangeEvent) {
+            limitText();
+        }
+
+        @Override
+        public void onKeyDown(Widget sender, char keyCode, int modifiers) {
+            limitText();
+        }
+
+        @Override
+        public void onKeyPress(Widget sender, char keyCode, int modifiers) {
+            limitText();
+        }
+
+        @Override
+        public void onKeyUp(Widget sender, char keyCode, int modifiers) {
+            limitText();
+        }
+
+        private void limitText() {
+            String text = taText.getValue();
+            if (text == null) return;
+            if (text.length() > maxLength) {
+                text = text.substring(0, maxLength);
+                taText.setValue(text);
+                return;
+            }
+
+            lbCounter.setText("" + (maxLength - text.length()));
         }
     }
 }

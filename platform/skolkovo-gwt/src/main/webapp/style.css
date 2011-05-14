@@ -1,42 +1,16 @@
 body {
     background-color: #d3d3d3;
     color: black;
-    font-family: "Cambria", "serif";
-    font-size: 8pt;
     margin: 8px;
 }
 
-.gwt-ListBox {
-    background: none repeat scroll 0 0 #E6EED5;
-    border: 1pt solid #B3CC82;
-}
-
-.gwt-TextArea {
-    border: none;
+* {
+    font-family: "Arial", "serif";
+    font-size: 14px;
 }
 
 .mainPane {
-    background-color: #ffffff;
-}
-
-.captionedListBox {
-    background: none repeat scroll 0 0 #E6EED5;
-    border: 1pt solid #B3CC82;
-    padding: 0 5pt;
-}
-
-.captionedTextArea {
-    background: none repeat scroll 0 0 #CDDDAC;
-    border: 1pt solid #B3CC82;
-    border-top: medium none;
-    padding: 5pt;
-}
-
-.optionPanel {
-    background: none repeat scroll 0 0 #CDDDAC;
-    border: 1pt solid #B3CC82;
-    border-top: medium none;
-    padding: 0 5pt;
+    background-color: white;
 }
 
 .floatRight {
