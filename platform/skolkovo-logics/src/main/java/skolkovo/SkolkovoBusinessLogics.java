@@ -280,6 +280,8 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
     LP statusProject, nameStatusProject;
     LP statusProjectVote, nameStatusProjectVote;
 
+    LP projectSucceededClaimer;
+
     LP quantityTotalExpert;
     LP quantityDoneExpert;
     LP percentDoneExpert;
@@ -916,6 +918,9 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         statusProjectVote = addJProp(idGroup, "statusProjectVote", "Статус проекта (ИД)", statusProject, projectVote, 1);
         nameStatusProjectVote = addJProp(baseGroup, "nameStatusProjectVote", "Статус проекта", name, statusProjectVote, 1);
 
+        projectSucceededClaimer = addAGProp(idGroup, "projectSucceededClaimer", true, "Успешный проект (ИД)", acceptedProject, 1, claimerProject, 1);
+
+
         // статистика по экспертам
         quantityTotalExpert = addSGProp(expertResultGroup, "quantityTotalExpert", "Всего заседаний",
                                      addJProp(and1, addCProp(IntegerClass.instance, 1), inNewExpertVote, 1, 2), 1);
@@ -1020,6 +1025,9 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         addFormEntity(new VoteProtocolFormEntity(print, "voteProtocol"));
         addFormEntity(new ExpertProtocolFormEntity(print, "expertProtocol"));
         addFormEntity(new ExpertAuthFormEntity(print, "expertAuth"));
+        addFormEntity(new ClaimerAcceptedFormEntity(print, "claimerAccepted"));
+        addFormEntity(new ClaimerRejectedFormEntity(print, "claimerRejected"));
+        addFormEntity(new ClaimerStatusFormEntity(print, "claimerStatus"));
     }
 
     protected void initAuthentication() throws ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException {
@@ -1628,6 +1636,46 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
             setReadOnly(false, objDateFrom.groupTo);
         }
     }
+
+     private class ClaimerAcceptedFormEntity extends FormEntity<SkolkovoBusinessLogics> {
+
+        private ObjectEntity objVote;
+
+        private ClaimerAcceptedFormEntity(NavigatorElement parent, String sID) {
+            super(parent, sID, "Решение о соответствии", true);
+
+            objVote = addSingleGroupObject(vote, "Заседание", date, nameNativeProjectVote, dateProjectVote, nameNativeClaimerVote);
+            objVote.groupTo.initClassView = ClassViewType.PANEL;
+
+        }
+    }
+
+    private class ClaimerRejectedFormEntity extends FormEntity<SkolkovoBusinessLogics> {
+
+        private ObjectEntity objVote;
+
+        private ClaimerRejectedFormEntity(NavigatorElement parent, String sID) {
+            super(parent, sID, "Решение о несоответствии", true);
+
+            objVote = addSingleGroupObject(vote, "Заседание", date, nameNativeProjectVote, dateProjectVote, nameNativeClaimerVote);
+            objVote.groupTo.initClassView = ClassViewType.PANEL;
+
+        }
+    }
+
+     private class ClaimerStatusFormEntity extends FormEntity<SkolkovoBusinessLogics> {
+
+        private ObjectEntity objProject;
+
+        private ClaimerStatusFormEntity(NavigatorElement parent, String sID) {
+            super(parent, sID, "Решение о присвоении статуса участника", true);
+
+            objProject = addSingleGroupObject(project, "Проект", date, nameNativeProject, nameNativeClaimerProject);
+            objProject.groupTo.initClassView = ClassViewType.PANEL;
+
+        }
+    }
+    
 
     public VoteInfo getVoteInfo(String voteId) throws RemoteException {
 
