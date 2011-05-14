@@ -204,6 +204,15 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
     LP emailToExpert;
 
     LP claimerVote, nameNativeClaimerVote, nameForeignClaimerVote;
+    LP nameNativeAblateClaimer;
+    LP nameNativeDativusClaimer;
+    LP nameAblateClaimer;
+    LP nameDativusClaimer;
+    LP nameNativeClaimer;
+    LP nameAblateClaimerProject;
+    LP nameDativusClaimerProject;
+    LP nameAblateClaimerVote;
+    LP nameDativusClaimerVote;
 
     LP documentTemplateDocumentTemplateDetail;
 
@@ -461,6 +470,16 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         nameForeign = addDProp(baseGroup, "nameForeign", "Имя (иностр.)", InsensitiveStringClass.get(2000), multiLanguageNamed);
         nameForeign.setMinimumWidth(10); nameForeign.setPreferredWidth(50);
 
+
+        nameNativeDativusClaimer = addDProp(baseGroup, "nameNativeDativusClaimer", "Наименование (кому)", InsensitiveStringClass.get(2000), claimer);
+        nameNativeDativusClaimer.setMinimumWidth(10); nameNativeDativusClaimer.setPreferredWidth(50);
+
+        nameNativeAblateClaimer = addDProp(baseGroup, "nameNativeAblateClaimer", "Наименование (кем)", InsensitiveStringClass.get(2000), claimer);
+        nameNativeAblateClaimer.setMinimumWidth(10); nameNativeAblateClaimer.setPreferredWidth(50);
+
+        nameDativusClaimer = addSUProp("nameDativusClaimer", Union.OVERRIDE, nameNative,  nameNativeDativusClaimer);
+        nameAblateClaimer = addSUProp("nameAblateClaimer", Union.OVERRIDE, nameNative,  nameNativeAblateClaimer);
+
         baseGroup.add(email.property); // сделано, чтобы email был не самой первой колонкой в диалогах
 
         LP percent = addSFProp("(prm1*100/prm2)", DoubleClass.instance, 2);
@@ -485,6 +504,8 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         claimerProject = addDProp(idGroup, "claimerProject", "Заявитель (ИД)", claimer, project);
         nameNativeClaimerProject = addJProp(projectInformationGroup, "nameNativeClaimerProject", "Заявитель", nameNative, claimerProject, 1);
         nameForeignClaimerProject = addJProp(projectInformationGroup, "nameForeignClaimerProject", "Заявитель (иностр.)", nameForeign, claimerProject, 1);
+        nameDativusClaimerProject = addJProp("nameDativusClaimerProject", "Заявитель", nameDativusClaimer, claimerProject, 1);
+        nameAblateClaimerProject = addJProp("nameAblateClaimerProject", "Заявитель", nameAblateClaimer, claimerProject, 1);
 
         nameNativeProject = addJProp(projectInformationGroup, "nameNativeProject", "Название проекта", and1, nameNative, 1, is(project), 1);
         nameNativeProject.setMinimumWidth(10); nameNativeProject.setPreferredWidth(50);
@@ -707,6 +728,8 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         claimerVote = addJProp(idGroup, "claimerVote", "Заявитель (ИД)", claimerProject, projectVote, 1);
         nameNativeClaimerVote = addJProp(baseGroup, "nameNativeClaimerVote", "Заявитель", nameNative, claimerVote, 1);
         nameForeignClaimerVote = addJProp(baseGroup, "nameForeignClaimerVote", "Заявитель (иностр.)", nameForeign, claimerVote, 1);
+        nameDativusClaimerVote = addJProp(baseGroup, "nameDativusClaimerVote", "Заявитель", nameDativusClaimer, claimerVote, 1);
+        nameAblateClaimerVote = addJProp(baseGroup, "nameAblateClaimerVote", "Заявитель", nameAblateClaimer, claimerVote, 1);
 
         documentTemplateDocumentTemplateDetail = addDProp(idGroup, "documentTemplateDocumentTemplateDetail", "Шаблон (ИД)", documentTemplate, documentTemplateDetail);
 
@@ -1519,7 +1542,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         private VoteStartFormEntity(NavigatorElement parent, String sID) {
             super(parent, sID, "Созыв заседания", true);
 
-            objVote = addSingleGroupObject(1, "vote", vote, date, dateProjectVote, nameNativeClaimerVote, nameNativeProjectVote, prevDateStartVote, prevDateVote);
+            objVote = addSingleGroupObject(1, "vote", vote, date, dateProjectVote, nameNativeClaimerVote, nameNativeProjectVote, nameAblateClaimerVote, prevDateStartVote, prevDateVote);
             objVote.groupTo.initClassView = ClassViewType.PANEL;
 
             objExpert = addSingleGroupObject(2, "expert", expert, userLastName, userFirstName);
@@ -1651,7 +1674,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         private ClaimerAcceptedFormEntity(NavigatorElement parent, String sID) {
             super(parent, sID, "Решение о соответствии", true);
 
-            objVote = addSingleGroupObject(vote, "Заседание", date, nameNativeProjectVote, dateProjectVote, nameNativeClaimerVote);
+            objVote = addSingleGroupObject(vote, "Заседание", date, nameNativeProjectVote, dateProjectVote, nameNativeClaimerVote, nameAblateClaimerVote);
             objVote.groupTo.initClassView = ClassViewType.PANEL;
 
         }
@@ -1664,7 +1687,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         private ClaimerRejectedFormEntity(NavigatorElement parent, String sID) {
             super(parent, sID, "Решение о несоответствии", true);
 
-            objVote = addSingleGroupObject(vote, "Заседание", date, nameNativeProjectVote, dateProjectVote, nameNativeClaimerVote);
+            objVote = addSingleGroupObject(vote, "Заседание", date, nameNativeProjectVote, dateProjectVote, nameNativeClaimerVote, nameAblateClaimerVote, nameDativusClaimerVote);
             objVote.groupTo.initClassView = ClassViewType.PANEL;
 
         }
@@ -1677,7 +1700,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         private ClaimerStatusFormEntity(NavigatorElement parent, String sID) {
             super(parent, sID, "Решение о присвоении статуса участника", true);
 
-            objProject = addSingleGroupObject(project, "Проект", date, nameNativeProject, nameNativeClaimerProject);
+            objProject = addSingleGroupObject(project, "Проект", date, nameNativeProject, nameNativeClaimerProject, nameAblateClaimerProject, nameDativusClaimerProject);
             objProject.groupTo.initClassView = ClassViewType.PANEL;
 
         }
