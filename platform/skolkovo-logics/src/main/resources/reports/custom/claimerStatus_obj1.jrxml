@@ -2,7 +2,7 @@
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="obj1" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0">
 	<property name="ireport.zoom" value="1.1000000000000014"/>
 	<property name="ireport.x" value="0"/>
-	<property name="ireport.y" value="46"/>
+	<property name="ireport.y" value="0"/>
 	<style name="DefaultStyle" isDefault="true" vAlign="Middle" fontName="Times New Roman" fontSize="12" pdfFontName="lsf.Times" pdfEncoding="Cp1251" isPdfEmbedded="false"/>
 	<style name="GroupCellStyle0" mode="Opaque" backcolor="#FFFFFF" vAlign="Middle" fontName="Serif" fontSize="10" pdfFontName="lsf.Times" pdfEncoding="Cp1251" isPdfEmbedded="false">
 		<box leftPadding="2" rightPadding="2">
@@ -34,7 +34,7 @@
 			<textField>
 				<reportElement style="DefaultStyle" x="50" y="85" width="166" height="20"/>
 				<textElement textAlignment="Justified"/>
-				<textFieldExpression class="java.lang.String"><![CDATA[" «  »____________ 201_ г."]]></textFieldExpression>
+				<textFieldExpression class="java.lang.String"><![CDATA[" «  »____________ 201_ года."]]></textFieldExpression>
 			</textField>
 			<staticText>
 				<reportElement style="DefaultStyle" x="216" y="97" width="147" height="23"/>
@@ -55,7 +55,7 @@
 				</textElement>
 				<textFieldExpression class="java.lang.String"><![CDATA["Некоммерческая организация Фонд развития Центра разработки и коммерциализации новых технологий, рассмотрев поданную " + $F{nameAblateClaimerProject} + " " +
 "заявку на присвоение статуса участника проекта от " +
-$F{date}+ " (" + $F{nameNativeProject} + ") и документы, представленные соискателем в порядке, предусмотренном пунктом 15 Положения о присвоении и утрате статуса участника проекта по созданию и обеспечению функционирования инновационного центра «Сколково», в соответствии с пунктами 16, 21, 22 указанного Положения"]]></textFieldExpression>
+platform.base.BaseUtils.formatRussian($F{date}) + " года (" + $F{nameNativeProject} + ") и документы, представленные соискателем в порядке, предусмотренном пунктом 15 Положения о присвоении и утрате статуса участника проекта по созданию и обеспечению функционирования инновационного центра «Сколково», в соответствии с пунктами 16, 21, 22 указанного Положения"]]></textFieldExpression>
 			</textField>
 			<staticText>
 				<reportElement style="DefaultStyle" positionType="Float" x="49" y="419" width="207" height="46"/>

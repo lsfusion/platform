@@ -470,7 +470,6 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         nameForeign = addDProp(baseGroup, "nameForeign", "Имя (иностр.)", InsensitiveStringClass.get(2000), multiLanguageNamed);
         nameForeign.setMinimumWidth(10); nameForeign.setPreferredWidth(50);
 
-
         nameNativeDativusClaimer = addDProp(baseGroup, "nameNativeDativusClaimer", "Наименование (кому)", InsensitiveStringClass.get(2000), claimer);
         nameNativeDativusClaimer.setMinimumWidth(10); nameNativeDativusClaimer.setPreferredWidth(50);
 
@@ -1677,7 +1676,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         private ClaimerAcceptedFormEntity(NavigatorElement parent, String sID) {
             super(parent, sID, "Решение о соответствии", true);
 
-            objVote = addSingleGroupObject(vote, "Заседание", date, nameNativeProjectVote, dateProjectVote, nameNativeClaimerVote, nameAblateClaimerVote);
+            objVote = addSingleGroupObject(vote, "Заседание", dateEndVote, nameNativeProjectVote, dateProjectVote, nameNativeClaimerVote, nameAblateClaimerVote);
             objVote.groupTo.initClassView = ClassViewType.PANEL;
 
         }
@@ -1690,7 +1689,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         private ClaimerRejectedFormEntity(NavigatorElement parent, String sID) {
             super(parent, sID, "Решение о несоответствии", true);
 
-            objVote = addSingleGroupObject(vote, "Заседание", date, nameNativeProjectVote, dateProjectVote, nameNativeClaimerVote, nameAblateClaimerVote, nameDativusClaimerVote);
+            objVote = addSingleGroupObject(vote, "Заседание", dateEndVote, nameNativeProjectVote, dateProjectVote, nameNativeClaimerVote, nameAblateClaimerVote, nameDativusClaimerVote);
             objVote.groupTo.initClassView = ClassViewType.PANEL;
 
         }

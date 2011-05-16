@@ -10,7 +10,7 @@
 		</box>
 	</style>
 	<field name="obj1" class="java.lang.Integer"/>
-	<field name="date" class="java.util.Date"/>
+	<field name="dateEndVote" class="java.util.Date"/>
 	<field name="nameNativeProjectVote" class="java.lang.String"/>
 	<field name="dateProjectVote" class="java.util.Date"/>
 	<field name="nameNativeClaimerVote" class="java.lang.String"/>
@@ -20,7 +20,7 @@
 			<textField>
 				<reportElement style="DefaultStyle" x="50" y="85" width="166" height="20"/>
 				<textElement/>
-				<textFieldExpression class="java.lang.String"><![CDATA[" «  »____________ 201_ г."]]></textFieldExpression>
+				<textFieldExpression class="java.lang.String"><![CDATA[platform.base.BaseUtils.formatRussian($F{dateEndVote}) + " года"]]></textFieldExpression>
 			</textField>
 			<staticText>
 				<reportElement style="DefaultStyle" x="50" y="11" width="489" height="48"/>
@@ -55,7 +55,7 @@
 					<paragraph firstLineIndent="20"/>
 				</textElement>
 				<textFieldExpression class="java.lang.String"><![CDATA["Некоммерческая организация Фонд развития Центра разработки и коммерциализации новых технологий, рассмотрев поданную " + $F{nameAblateClaimerVote} + " " +
-"заявку на присвоение статуса участника проекта от " + $F{dateProjectVote} + " (" + $F{nameNativeProjectVote} + "), на основании протокола заседания Экспертной коллегии по вопросу о соответствии проекта, представленного соискателем, критериям, указанным в подпункте Е пункта 2 Положения о присвоении и утрате статуса участника проекта по созданию и обеспечению функционирования инновационного центра «Сколково», от " + $F{date} + ", в соответствии с пунктом 14 указанного Положения"]]></textFieldExpression>
+"заявку на присвоение статуса участника проекта от " + platform.base.BaseUtils.formatRussian($F{dateProjectVote}) + " года (" + $F{nameNativeProjectVote} + "), на основании протокола заседания Экспертной коллегии по вопросу о соответствии проекта, представленного соискателем, критериям, указанным в подпункте Е пункта 2 Положения о присвоении и утрате статуса участника проекта по созданию и обеспечению функционирования инновационного центра «Сколково», от " + platform.base.BaseUtils.formatRussian($F{dateEndVote}) + " года, в соответствии с пунктом 14 указанного Положения"]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
 				<reportElement style="DefaultStyle" positionType="Float" x="50" y="271" width="489" height="20"/>
