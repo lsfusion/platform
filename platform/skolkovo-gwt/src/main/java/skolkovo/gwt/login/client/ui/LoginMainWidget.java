@@ -6,14 +6,13 @@ import com.google.gwt.event.dom.client.*;
 import com.google.gwt.resources.client.CssResource;
 import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.uibinder.client.UiField;
-import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.*;
 import skolkovo.gwt.base.shared.MessageException;
 import skolkovo.gwt.login.client.LoginFrameMessages;
 import skolkovo.gwt.login.client.LoginService;
 
-public class LoginMainWidget  extends Composite {
+public class LoginMainWidget extends Composite {
     interface LoginMainWidgetUiBinder extends UiBinder<Widget, LoginMainWidget> {}
     private static LoginMainWidgetUiBinder uiBinder = GWT.create(LoginMainWidgetUiBinder.class);
 
@@ -96,7 +95,7 @@ public class LoginMainWidget  extends Composite {
                 if (event.getResults().contains(LOGIN_FAILED_STRING)) {
                     showError(messages.loginFailed());
                 } else {
-                    Window.open(Window.Location.getQueryString(), "_self", "");
+                    reload();
                 }
             }
         });
@@ -151,6 +150,10 @@ public class LoginMainWidget  extends Composite {
             }
         });
     }
+
+    private native void reload() /*-{
+        $wnd.location.reload();
+    }-*/;
 
     private void showError(String errorMessage) {
         errorLabel.setStyleName(style.error());
