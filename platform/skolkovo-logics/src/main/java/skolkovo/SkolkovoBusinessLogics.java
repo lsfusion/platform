@@ -477,10 +477,10 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         nameNativeAblateClaimer = addDProp(baseGroup, "nameNativeAblateClaimer", "Наименование (кем)", InsensitiveStringClass.get(2000), claimer);
         nameNativeAblateClaimer.setMinimumWidth(10); nameNativeAblateClaimer.setPreferredWidth(50);
 
-        nameDativusClaimer = addSUProp("nameDativusClaimer", Union.OVERRIDE, nameNative,  nameNativeDativusClaimer);
+        nameDativusClaimer = addSUProp("nameDativusClaimer", "Наименование (кому)", Union.OVERRIDE, nameNative,  nameNativeDativusClaimer);
         nameDativusClaimer.setMinimumWidth(10); nameDativusClaimer.setPreferredWidth(50);
 
-        nameAblateClaimer = addSUProp("nameAblateClaimer", Union.OVERRIDE, nameNative,  nameNativeAblateClaimer);
+        nameAblateClaimer = addSUProp("nameAblateClaimer", "Наименование (кем)", Union.OVERRIDE, nameNative,  nameNativeAblateClaimer);
         nameAblateClaimer.setMinimumWidth(10); nameAblateClaimer.setPreferredWidth(50);
 
         baseGroup.add(email.property); // сделано, чтобы email был не самой первой колонкой в диалогах
