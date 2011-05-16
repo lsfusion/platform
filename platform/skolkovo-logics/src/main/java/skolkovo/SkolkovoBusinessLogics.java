@@ -55,6 +55,9 @@ import static platform.base.BaseUtils.nvl;
 
 public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogics> implements SkolkovoRemoteInterface {
 
+    private LP inExpertVoteDateFromDateTo;
+    private LP quantityInExpertDateFromDateTo;
+
     public SkolkovoBusinessLogics(DataAdapter adapter, int exportPort) throws IOException, ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException, FileNotFoundException, JRException {
         super(adapter, exportPort);
     }
@@ -881,13 +884,13 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         succeededVote = addJProp(voteResultGroup, "succeededVote", true, "Состоялось", groeq2, quantityDoneVote, 1, limitExperts); // достаточно экспертов
         succeededClusterVote = addJProp("succeededClusterVote", "Состоялось в тек. кластере", and1, succeededVote, 1, equalsClusterProjectVote, 1);
 
-        doneExpertVoteDateFromDateTo = addJProp(and(false, false, false, false), doneNewExpertVote, 1, 2,
-                                                                          addJProp(groeq2, dateExpertVote, 1, 2, 3), 1, 2, 3,
-                                                                          addJProp(lsoeq2, dateExpertVote, 1, 2, 3), 1, 2, 4,
-                                                                          is(DateClass.instance), 3,
-                                                                          is(DateClass.instance), 4);
-        quantityDoneExpertDateFromDateTo = addSGProp("quantityDoneExpertDateFromDateTo", "Кол-во заседаний",
-                                     addJProp(and1, addCProp(IntegerClass.instance, 1), doneExpertVoteDateFromDateTo, 1, 2, 3, 4), 1, 3, 4); // в скольки заседаниях поучавствовал
+        LP betweenExpertVoteDateFromDateTo = addJProp(betweenDates, dateExpertVote, 1, 2, 3, 4);
+        doneExpertVoteDateFromDateTo = addJProp(and1, doneNewExpertVote, 1, 2, betweenExpertVoteDateFromDateTo, 1, 2, 3, 4);
+        quantityDoneExpertDateFromDateTo = addSGProp("quantityDoneExpertDateFromDateTo", "Кол-во голосов.",
+                addJProp(and1, addCProp(IntegerClass.instance, 1), doneExpertVoteDateFromDateTo, 1, 2, 3, 4), 1, 3, 4); // в скольки заседаниях поучавствовал
+        inExpertVoteDateFromDateTo = addJProp(and1, inNewExpertVote, 1, 2, betweenExpertVoteDateFromDateTo, 1, 2, 3, 4);
+        quantityInExpertDateFromDateTo = addSGProp("quantityInExpertDateFromDateTo", "Кол-во участ.",
+                                     addJProp(and1, addCProp(IntegerClass.instance, 1), inExpertVoteDateFromDateTo, 1, 2, 3, 4), 1, 3, 4); // в скольки заседаниях поучавствовал
 
         voteSucceededProject = addAGProp(idGroup, "voteSucceededProject", true, "Успешное заседание (ИД)", succeededClusterVote, 1, projectVote, 1);
 
@@ -1641,7 +1644,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
             objExpert = addSingleGroupObject(4, "expert", expert, userFirstName, userLastName, nameNativeClusterExpert);
             objExpert.groupTo.initClassView = ClassViewType.PANEL;
 
-            addPropertyDraw(quantityDoneExpertDateFromDateTo, objExpert, objDateFrom, objDateTo);
+            addPropertyDraw(objExpert, objDateFrom, objDateTo, quantityDoneExpertDateFromDateTo, quantityInExpertDateFromDateTo);
 
             objVoteHeader = addSingleGroupObject(5, "voteHeader", vote);
 
@@ -1662,7 +1665,16 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
             addFixedFilter(new CompareFilterEntity(addPropertyObject(dateExpertVote, objExpert, objVote), Compare.LESS_EQUALS, objDateTo));
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(doneNewExpertVote, objExpert, objVote)));
 
-            addFixedFilter(new NotNullFilterEntity(addPropertyObject(quantityDoneExpertDateFromDateTo, objExpert, objDateFrom, objDateTo)));
+            RegularFilterGroupEntity filterGroupExpertVote = new RegularFilterGroupEntity(genID());
+            filterGroupExpertVote.addFilter(new RegularFilterEntity(genID(),
+                                  new NotNullFilterEntity(addPropertyObject(quantityDoneExpertDateFromDateTo, objExpert, objDateFrom, objDateTo)),
+                                  "Голосовавшие",
+                                  KeyStroke.getKeyStroke(KeyEvent.VK_F9, 0)), true);
+            filterGroupExpertVote.addFilter(new RegularFilterEntity(genID(),
+                                  new NotNullFilterEntity(addPropertyObject(quantityInExpertDateFromDateTo, objExpert, objDateFrom, objDateTo)),
+                                  "Учавствовавшие",
+                                  KeyStroke.getKeyStroke(KeyEvent.VK_F8, 0)));
+            addRegularFilterGroup(filterGroupExpertVote);
 
             setReadOnly(true);
             setReadOnly(false, objDateFrom.groupTo);

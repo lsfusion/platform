@@ -77,6 +77,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     //время жизни неиспользуемого навигатора - 3 часа по умолчанию
     public static final long MAX_FREE_NAVIGATOR_LIFE_TIME = Long.parseLong(System.getProperty("platform.server.navigatorMaxLifeTime", Long.toString(3L * 3600L * 1000L)));
 
+    protected LP betweenDates;
+
     public byte[] findClass(String name) {
 
         InputStream inStream = getClass().getClassLoader().getResourceAsStream(name.replace('.', '/') + ".class");
@@ -1077,7 +1079,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
         date = addDProp(baseGroup, "date", "Дата", DateClass.instance, transaction);
 
-        betweenDate = addJProp("Дата док. между", between, date, 1, object(DateClass.instance), 2, object(DateClass.instance), 3);
+        betweenDates = addJProp("Дата док. между", between, object(DateClass.instance), 1, object(DateClass.instance), 2, object(DateClass.instance), 3);
+        betweenDate = addJProp("Дата док. между", betweenDates, date, 1, 2, 3);
 
         sidCountry = addDProp(baseGroup, "sidCountry", "Код страны", IntegerClass.instance, country);
         generateDatesCountry = addDProp(privateGroup, "generateDatesCountry", "Генерировать выходные", LogicalClass.instance, country);
