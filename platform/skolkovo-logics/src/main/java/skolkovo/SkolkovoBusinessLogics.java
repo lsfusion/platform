@@ -777,7 +777,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         openFileDocument = addOFAProp(baseGroup, "Открыть", fileDocument);
 
         inExpertVote = addDProp(baseGroup, "inExpertVote", "Вкл", LogicalClass.instance, expert, vote); // !!! нужно отослать письмо с документами и т.д
-        oldExpertVote = addDProp(baseGroup, "oldExpertVote", "Пред.", LogicalClass.instance, expert, vote); // !!! нужно отослать письмо с документами и т.д
+        oldExpertVote = addDProp(baseGroup, "oldExpertVote", "Из предыдущего заседания", LogicalClass.instance, expert, vote); // !!! нужно отослать письмо с документами и т.д
         inNewExpertVote = addJProp(baseGroup, "inNewExpertVote", "Вкл (нов.)", andNot1, inExpertVote, 1, 2, oldExpertVote, 1, 2);
         inOldExpertVote = addJProp(baseGroup, "inOldExpertVote", "Вкл (стар.)", and1, inExpertVote, 1, 2, oldExpertVote, 1, 2);
 
@@ -1047,12 +1047,13 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         addFormEntity(new ProjectFullFormEntity(objectElement, "projectFull"));
 
         addFormEntity(new ProjectFormEntity(baseElement, "project"));
-        addFormEntity(new VoteFormEntity(baseElement, "vote"));
+        addFormEntity(new VoteFormEntity(baseElement, "vote", false));
         addFormEntity(new ExpertFormEntity(baseElement, "expert"));
         addFormEntity(new VoteExpertFormEntity(baseElement, "voteExpert"));
         languageDocumentTypeForm = addFormEntity(new LanguageDocumentTypeFormEntity(baseElement, "languageDocumentType"));
         addFormEntity(new DocumentTemplateFormEntity(baseElement, "documentTemplate"));
         globalForm = addFormEntity(new GlobalFormEntity(baseElement, "global"));
+        addFormEntity(new VoteFormEntity(baseElement, "voterestricted", true));
 
         NavigatorElement print = new NavigatorElement(baseElement, "print", "Печатные формы");
         addFormEntity(new VoteStartFormEntity(print, "voteStart"));
@@ -1293,16 +1294,21 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         private ObjectEntity objVote;
         private ObjectEntity objExpert;
 
-        private VoteFormEntity(NavigatorElement parent, String sID) {
-            super(parent, sID, "Реестр заседаний");
+        private VoteFormEntity(NavigatorElement parent, String sID, boolean restricted) {
+            super(parent, sID, "Реестр заседаний" + (restricted ? "(урезанный)": ""));
 
-            objVote = addSingleGroupObject(vote, nameNativeProjectVote, nameNativeClusterVote, equalsClusterProjectVote, dateStartVote, dateEndVote, openedVote, succeededVote, quantityDoneVote, emailClosedVote, delete);
+            objVote = addSingleGroupObject(vote, nameNativeProjectVote, nameNativeClaimerVote, nameNativeClusterVote, equalsClusterProjectVote, dateStartVote, dateEndVote, openedVote, succeededVote, acceptedVote, quantityDoneVote, quantityInClusterVote, quantityInnovativeVote, quantityForeignVote);
+            if (!restricted)
+                addPropertyDraw(objVote, emailClosedVote, delete);
 
-            objExpert = addSingleGroupObject(expert, userFirstName, userLastName, userLogin, userPassword, email, nameNativeClusterExpert);
+            objExpert = addSingleGroupObject(expert);
+            if (!restricted)
+                addPropertyDraw(objExpert, userFirstName, userLastName, userLogin, userPassword, email);
 
             addPropertyDraw(objExpert, objVote, oldExpertVote);
             addPropertyDraw(voteResultGroup, true, objExpert, objVote);
-            addPropertyDraw(objExpert, objVote, allowedEmailLetterExpertVote);
+            if (!restricted)
+                addPropertyDraw(objExpert, objVote, allowedEmailLetterExpertVote);
             setForceViewType(voteResultCommentGroup, ClassViewType.PANEL);
 
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(inExpertVote, objExpert, objVote)));
@@ -1311,7 +1317,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
             voteFilterGroup.addFilter(new RegularFilterEntity(genID(),
                                                                 new NotNullFilterEntity(addPropertyObject(openedVote, objVote)),
                                                                 "Открыто",
-                                                                KeyStroke.getKeyStroke(KeyEvent.VK_F11, 0)), true);
+                                                                KeyStroke.getKeyStroke(KeyEvent.VK_F11, 0)), !restricted);
             voteFilterGroup.addFilter(new RegularFilterEntity(genID(),
                                                                 new NotNullFilterEntity(addPropertyObject(succeededVote, objVote)),
                                                                 "Состоялось",
@@ -1322,6 +1328,10 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
                                                                 KeyStroke.getKeyStroke(KeyEvent.VK_F9, 0)), false);
             addRegularFilterGroup(voteFilterGroup);
 
+            if (restricted) {
+                addFixedFilter(new NotNullFilterEntity(addPropertyObject(voteResultExpertVote, objExpert, objVote)));
+                setReadOnly(true);
+            }
 //            setReadOnly(true, objVote.groupTo);
 //            setReadOnly(true, objExpert.groupTo);
 //            setReadOnly(allowedEmailLetterExpertVote, false);
