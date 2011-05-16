@@ -478,7 +478,10 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         nameNativeAblateClaimer.setMinimumWidth(10); nameNativeAblateClaimer.setPreferredWidth(50);
 
         nameDativusClaimer = addSUProp("nameDativusClaimer", Union.OVERRIDE, nameNative,  nameNativeDativusClaimer);
+        nameDativusClaimer.setMinimumWidth(10); nameDativusClaimer.setPreferredWidth(50);
+
         nameAblateClaimer = addSUProp("nameAblateClaimer", Union.OVERRIDE, nameNative,  nameNativeAblateClaimer);
+        nameAblateClaimer.setMinimumWidth(10); nameAblateClaimer.setPreferredWidth(50);
 
         baseGroup.add(email.property); // сделано, чтобы email был не самой первой колонкой в диалогах
 
@@ -1185,8 +1188,8 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
             objProject = addSingleGroupObject(project, date, nameNative, nameForeign,  nameNativeClusterProject, nameNativeClaimerProject, nameStatusProject, autoGenerateProject, generateVoteProject, editProject);
             addObjectActions(this, objProject);
 
-            addPropertyDraw(addProject).toDraw = objProject.groupTo;
-            getPropertyDraw(addProject).forceViewType = ClassViewType.PANEL;
+//            addPropertyDraw(addProject).toDraw = objProject.groupTo;
+//            getPropertyDraw(addProject).forceViewType = ClassViewType.PANEL;
 
             getPropertyDraw(generateVoteProject).forceViewType = ClassViewType.PANEL;
             getPropertyDraw(generateVoteProject).propertyCaption = addPropertyObject(hideGenerateVoteProject, objProject);
@@ -1236,7 +1239,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         public FormView createDefaultRichDesign() {
             DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign();
 
-            design.get(getPropertyDraw(addProject)).drawToToolbar = true;
+//            design.get(getPropertyDraw(addProject)).drawToToolbar = true;
 
             ContainerView specContainer = design.createContainer();
             specContainer.tabbedPane = true;
