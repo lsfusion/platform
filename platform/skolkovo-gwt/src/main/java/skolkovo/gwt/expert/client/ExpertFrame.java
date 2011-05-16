@@ -1,6 +1,7 @@
 package skolkovo.gwt.expert.client;
 
 import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.ui.HTMLPanel;
 import com.google.gwt.user.client.ui.RootPanel;
 import skolkovo.gwt.base.client.BaseFrame;
 import skolkovo.gwt.base.shared.GwtVoteInfo;
@@ -81,6 +82,9 @@ public class ExpertFrame extends BaseFrame {
                             showErrorPage(null);
                             return;
                         }
+
+                        RootPanel.get().clear();
+                        RootPanel.get().add(new HTMLPanel("Loading..."));
 
                         expertService.setVoteInfo(vi, voteId, new UpdateAsyncCallback());
                     }
