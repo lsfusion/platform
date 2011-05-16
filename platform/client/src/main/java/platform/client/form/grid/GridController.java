@@ -300,6 +300,10 @@ public class GridController {
         return table.requestFocusInWindow();
     }
 
+    public void selectProperty(ClientPropertyDraw propertyDraw) {
+        table.selectProperty(propertyDraw);
+    }
+
     public void quickEditFilter(ClientPropertyDraw propertyDraw) {
         if (filterController != null) {
             filterController.quickEditFilter(propertyDraw);

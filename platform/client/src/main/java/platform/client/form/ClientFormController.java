@@ -290,6 +290,13 @@ public class ClientFormController {
         }
     }
 
+    public void selectProperty(int propertyDrawId) {
+        ClientPropertyDraw propertyDraw = form.getProperty(propertyDrawId);
+        if (propertyDraw != null && controllers.containsKey(propertyDraw.groupObject)) {
+            controllers.get(propertyDraw.groupObject).selectProperty(propertyDraw);
+        }
+    }
+
     public GroupObjectLogicsSupplier getGroupObjectLogicsSupplier(ClientGroupObject group) {
         GroupObjectController groupObjectController = controllers.get(group);
         if (groupObjectController != null) {

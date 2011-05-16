@@ -18,7 +18,6 @@ public class ClientDialog extends ClientModalForm {
     public Object displayValue;
 
     public boolean showQuickFilterOnStartup = true;
-    private boolean activatedFirstTime = true;
 
     private RemoteDialogInterface remoteDialog;
 
@@ -31,10 +30,10 @@ public class ClientDialog extends ClientModalForm {
         setUndecorated(true);
     }
 
-    @Override
-    protected void createListeners() {
+    protected void createListeners0() {
         addWindowListener(new WindowAdapter() {
             public void windowActivated(WindowEvent e) {
+                boolean activatedFirstTime = true;
                 int initialFilterPropertyDrawID = -1;
                 if (showQuickFilterOnStartup) {
                     showQuickFilterOnStartup = false;
@@ -59,6 +58,36 @@ public class ClientDialog extends ClientModalForm {
             }
         });
     }
+
+    @Override
+    protected void createListeners() {
+        addWindowListener(new WindowAdapter() {
+            public void windowActivated(WindowEvent e) {
+                int initialFilterPropertyDrawID = -1;
+                try {
+                    Integer filterPropertyDraw = remoteDialog.getInitFilterPropertyDraw();
+                    if (filterPropertyDraw != null) {
+                        initialFilterPropertyDrawID = filterPropertyDraw;
+                    }
+                } catch (RemoteException ignored) {
+                }
+
+                if (initialFilterPropertyDrawID > 0) {
+                    currentForm.selectProperty(initialFilterPropertyDrawID);
+                }
+
+                if (showQuickFilterOnStartup && initialFilterPropertyDrawID > 0) {
+                    currentForm.quickEditFilter(initialFilterPropertyDrawID);
+                } else {
+                    KeyboardFocusManager.getCurrentKeyboardFocusManager().focusNextComponent(currentForm.getComponent());
+                }
+
+                //чтобы только 1й активации...
+                ClientDialog.this.removeWindowListener(this);
+            }
+        });
+    }
+
 
     protected Boolean readOnly;
     boolean isReadOnlyMode() {

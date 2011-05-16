@@ -400,6 +400,10 @@ public class GroupObjectController implements GroupObjectLogicsSupplier {
         grid.quickEditFilter(propertyDraw);
     }
 
+    public void selectProperty(ClientPropertyDraw propertyDraw) {
+        grid.selectProperty(propertyDraw);
+    }
+
     public boolean hasActiveFilter() {
         return grid.hasActiveFilter();
     }
