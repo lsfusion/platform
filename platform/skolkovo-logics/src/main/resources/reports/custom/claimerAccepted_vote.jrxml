@@ -3,7 +3,7 @@
 	<property name="ireport.zoom" value="1.2100000000000017"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="101"/>
-	<style name="DefaultStyle" isDefault="true" vAlign="Middle" fontName="Times New Roman" fontSize="12" pdfFontName="lsf.Times" pdfEncoding="Cp1251" isPdfEmbedded="false"/>
+	<style name="DefaultStyle" isDefault="true" vAlign="Middle" fontName="Serif" fontSize="12" pdfFontName="lsf.Times" pdfEncoding="Cp1251" isPdfEmbedded="false"/>
 	<style name="GroupCellStyle0" mode="Opaque" backcolor="#FFFFFF" vAlign="Middle" fontName="Serif" fontSize="10" pdfFontName="lsf.Times" pdfEncoding="Cp1251" isPdfEmbedded="false">
 		<box leftPadding="2" rightPadding="2">
 			<pen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
@@ -74,7 +74,7 @@
 			<textField>
 				<reportElement style="DefaultStyle" x="50" y="132" width="489" height="53"/>
 				<textElement textAlignment="Center" verticalAlignment="Top">
-					<font fontName="Times New Roman" isBold="true"/>
+					<font fontName="Serif" isBold="true"/>
 				</textElement>
 				<textFieldExpression class="java.lang.String"><![CDATA["О соответствии проекта, представленного соискателем, критериям, указанным\n" +
 "в подпункте Е пункта 2 Положения о присвоении и утрате статуса участника\n" +

@@ -16,7 +16,7 @@
 	<detail>
 		<band height="16">
 			<textField isStretchWithOverflow="true" pattern="#,##0" isBlankWhenNull="true">
-				<reportElement style="DefaultStyle" positionType="Float" stretchType="RelativeToBandHeight" x="50" y="0" width="441" height="16"/>
+				<reportElement style="DefaultStyle" positionType="Float" stretchType="RelativeToBandHeight" x="50" y="0" width="507" height="16"/>
 				<textElement>
 					<paragraph firstLineIndent="20"/>
 				</textElement>

@@ -1698,7 +1698,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         private ClaimerAcceptedFormEntity(NavigatorElement parent, String sID) {
             super(parent, sID, "Решение о соответствии", true);
 
-            objVote = addSingleGroupObject(vote, "Заседание", dateEndVote, nameNativeProjectVote, dateProjectVote, nameNativeClaimerVote, nameAblateClaimerVote);
+            objVote = addSingleGroupObject(genID(), "vote", vote, "Заседание", dateEndVote, nameNativeProjectVote, dateProjectVote, nameNativeClaimerVote, nameAblateClaimerVote);
             objVote.groupTo.initClassView = ClassViewType.PANEL;
 
         }
@@ -1711,7 +1711,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         private ClaimerRejectedFormEntity(NavigatorElement parent, String sID) {
             super(parent, sID, "Решение о несоответствии", true);
 
-            objVote = addSingleGroupObject(vote, "Заседание", dateEndVote, nameNativeProjectVote, dateProjectVote, nameNativeClaimerVote, nameAblateClaimerVote, nameDativusClaimerVote);
+            objVote = addSingleGroupObject(genID(), "vote", vote, "Заседание", dateEndVote, nameNativeProjectVote, dateProjectVote, nameNativeClaimerVote, nameAblateClaimerVote, nameDativusClaimerVote);
             objVote.groupTo.initClassView = ClassViewType.PANEL;
 
         }
@@ -1724,9 +1724,8 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         private ClaimerStatusFormEntity(NavigatorElement parent, String sID) {
             super(parent, sID, "Решение о присвоении статуса участника", true);
 
-            objProject = addSingleGroupObject(project, "Проект", date, nameNativeProject, nameNativeClaimerProject, nameAblateClaimerProject, nameDativusClaimerProject);
+            objProject = addSingleGroupObject(genID(), "project", project, "Проект", date, nameNativeProject, nameNativeClaimerProject, nameAblateClaimerProject, nameDativusClaimerProject);
             objProject.groupTo.initClassView = ClassViewType.PANEL;
-
         }
     }
     
