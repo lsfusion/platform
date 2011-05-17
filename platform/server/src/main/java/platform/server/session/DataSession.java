@@ -359,7 +359,7 @@ public class DataSession extends MutableObject implements SessionChanges, ExprCh
             Query<T,String> changed = new Query<T,String>(property);
 
             WhereBuilder changedWhere = new WhereBuilder();
-            Expr valueExpr = property.getExpr(changed.mapKeys, modifier, changedWhere);
+            Expr valueExpr = property.getExpr(changed.mapKeys, incrementApply, changedWhere);
             changed.and(valueExpr.getWhere());
             changed.and(changedWhere.toWhere()); // только на измененные смотрим
 
@@ -376,7 +376,7 @@ public class DataSession extends MutableObject implements SessionChanges, ExprCh
                 for (Property nameProp : recognizeGroup.getProperties()) {
                     List<ValueClassWrapper> wrapper = Arrays.asList(new ValueClassWrapper(valueClass));
                     if (!nameProp.getProperties(Arrays.asList(wrapper), true).isEmpty()) {
-                        Expr nameExpr = nameProp.getExpr(Collections.singletonMap(BaseUtils.single(nameProp.interfaces), changed.mapKeys.get(propertyInterface)), modifier);
+                        Expr nameExpr = nameProp.getExpr(Collections.singletonMap(BaseUtils.single(nameProp.interfaces), changed.mapKeys.get(propertyInterface)), incrementApply);
                         changed.properties.put("int" + propertyInterface.ID + "_" + propCaptions.get(interfaceIndex).size(), nameExpr);
                         propCaptions.get(interfaceIndex).add(nameProp.caption);
                     }
