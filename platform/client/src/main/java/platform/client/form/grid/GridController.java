@@ -20,6 +20,7 @@ import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -112,8 +113,8 @@ public class GridController {
                         public void actionPerformed(ActionEvent e) {
                             try {
                                 showPopupMenu(form.countRecords(groupObjectController.getGroupObject().getID()));
-                            } catch (IOException e1) {
-                                e1.printStackTrace();
+                            } catch (IOException ex) {
+                                throw new RuntimeException(ex);
                             }
                         }
                     });
@@ -136,8 +137,8 @@ public class GridController {
                                 } else {
                                     showPopupMenu(caption, null);
                                 }
-                            } catch (IOException e1) {
-                                e1.printStackTrace();
+                            } catch (IOException ex) {
+                                throw new RuntimeException(ex);
                             }
                         }
                     });
@@ -152,25 +153,28 @@ public class GridController {
                         public void actionPerformed(ActionEvent e) {
                             try {
                                 dialog = new GroupButton.GroupDialog(Main.frame, table);
-                            } catch (IOException e1) {
-                                e1.printStackTrace();
+                            } catch (IOException ex) {
+                                throw new RuntimeException(ex);
                             }
                             dialog.addPropertyChangeListener(new PropertyChangeListener() {
                                 public void propertyChange(PropertyChangeEvent evt) {
-                                    Map<Integer, List<byte[]>> groupMap = dialog.getSelectedGroupMap();
-                                    Map<Integer, List<byte[]>> sumMap = dialog.getSelectedSumMap();
-                                    Map<Integer, List<byte[]>> maxMap = dialog.getSelectedMaxMap();
-                                    boolean onlyNotNull = dialog.onlyNotNull();
-
-                                    Map<List<Object>, List<Object>> resultMap = new OrderedMap<List<Object>, List<Object>>();
                                     try {
-                                        if (!groupMap.isEmpty()) {
-                                            resultMap = form.groupData(groupMap, sumMap, maxMap, onlyNotNull);
+                                        Map<Integer, List<byte[]>> sumMap = dialog.getSelectedSumMap();
+                                        Map<Integer, List<byte[]>> maxMap = dialog.getSelectedMaxMap();
+                                        List<Map<Integer, List<byte[]>>> groupLevels = dialog.getSelectedGroupLevels();
+                                        boolean onlyNotNull = dialog.onlyNotNull();
+
+                                        List<Map<List<Object>, List<Object>>> result = new ArrayList<Map<List<Object>, List<Object>>>();
+
+                                        for (Map<Integer, List<byte[]>> level : groupLevels) {
+                                            if (!level.isEmpty()) {
+                                                result.add(form.groupData(level, sumMap, maxMap, onlyNotNull));
+                                            }
                                         }
-                                    } catch (IOException e1) {
-                                        e1.printStackTrace();
+                                        dialog.update(result);
+                                    } catch (IOException ex) {
+                                        throw new RuntimeException(ex);
                                     }
-                                    dialog.update(resultMap);
                                 }
                             });
                             dialog.setVisible(true);

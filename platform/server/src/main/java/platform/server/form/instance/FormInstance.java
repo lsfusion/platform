@@ -494,46 +494,43 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
         Query<Object, Object> query = new Query<Object, Object>(keyExprMap);
         Expr exprQuant = GroupExpr.create(exprMap, new ValueExpr(1, IntegerClass.instance), groupObject.getWhere(mapKeys, this), GroupType.SUM, keyExprMap);
         query.and(exprQuant.getWhere());
+
+        int separator = toSum.size();
         int idIndex = 0;
-        if (!toSum.isEmpty()) {
-            for (PropertyDrawInstance property : toSum.keySet()) {
-                if (property == null) {
-                    query.properties.put("quant", exprQuant);
-                    continue;
-                }
-                for (Map<ObjectInstance, DataObject> columnKeys : toSum.get(property)) {
-                    idIndex++;
-                    Map<ObjectInstance, Expr> keys = new HashMap<ObjectInstance, Expr>(mapKeys);
-                    for (ObjectInstance object : columnKeys.keySet()) {
-                        keys.put(object, columnKeys.get(object).getExpr());
-                    }
-                    Expr expr = GroupExpr.create(exprMap, property.propertyObject.getExpr(keys, this), groupObject.getWhere(mapKeys, this), GroupType.SUM, keyExprMap);
-                    query.properties.put(property.getsID() + idIndex, expr);
-                    if (onlyNotNull) {
-                        query.and(expr.getWhere());
-                    }
-                }
+        for (int i = 0; i < toSum.size() + toMax.size(); i++) {
+            Map<PropertyDrawInstance, List<Map<ObjectInstance, DataObject>>> currentMap;
+            int index;
+            GroupType groupType;
+            if (i < separator) {
+                currentMap = toSum;
+                groupType = GroupType.SUM;
+                index = i;
+            } else {
+                currentMap = toMax;
+                groupType = GroupType.MAX;
+                index = i - separator;
             }
-        }
-        if (!toMax.isEmpty()) {
-            for (PropertyDrawInstance property : toMax.keySet()) {
-                for (Map<ObjectInstance, DataObject> columnKeys : toMax.get(property)) {
-                    idIndex++;
-                    Map<ObjectInstance, Expr> keys = new HashMap<ObjectInstance, Expr>(mapKeys);
-                    for (ObjectInstance object : columnKeys.keySet()) {
-                        keys.put(object, columnKeys.get(object).getExpr());
-                    }
-                    Expr expr = GroupExpr.create(exprMap, property.propertyObject.getExpr(keys, this), groupObject.getWhere(mapKeys, this), GroupType.MAX, keyExprMap);
-                    query.properties.put(property.getsID() + idIndex, expr);
-                    if (onlyNotNull) {
-                        query.and(expr.getWhere());
-                    }
+            PropertyDrawInstance property = (PropertyDrawInstance) currentMap.keySet().toArray()[index];
+            if (property == null) {
+                query.properties.put("quant", exprQuant);
+                continue;
+            }
+            for (Map<ObjectInstance, DataObject> columnKeys : currentMap.get(property)) {
+                idIndex++;
+                Map<ObjectInstance, Expr> keys = new HashMap<ObjectInstance, Expr>(mapKeys);
+                for (ObjectInstance object : columnKeys.keySet()) {
+                    keys.put(object, columnKeys.get(object).getExpr());
+                }
+                Expr expr = GroupExpr.create(exprMap, property.propertyObject.getExpr(keys, this), groupObject.getWhere(mapKeys, this), groupType, keyExprMap);
+                query.properties.put(property.getsID() + idIndex, expr);
+                if (onlyNotNull) {
+                    query.and(expr.getWhere());
                 }
             }
         }
 
         Map<List<Object>, List<Object>> resultMap = new OrderedMap<List<Object>, List<Object>>();
-        OrderedMap<Map<Object, Object>, Map<Object, Object>> result = query.execute(session.sql);
+        OrderedMap<Map<Object, Object>, Map<Object, Object>> result = query.execute(session.sql, session.env);
         for (Map<Object, Object> one : result.keyList()) {
             List<Object> groupList = new ArrayList<Object>();
             List<Object> sumList = new ArrayList<Object>();

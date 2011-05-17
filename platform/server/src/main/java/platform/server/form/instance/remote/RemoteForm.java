@@ -578,41 +578,23 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
     public Map<List<Object>, List<Object>> groupData(Map<Integer, List<byte[]>> groupMap, Map<Integer, List<byte[]>> sumMap,
                                                      Map<Integer, List<byte[]>> maxMap, boolean onlyNotNull) {
         try {
-            Map<PropertyDrawInstance, List<Map<ObjectInstance, DataObject>>> toGroup = new OrderedMap<PropertyDrawInstance, List<Map<ObjectInstance, DataObject>>>();
-            for (Integer id : groupMap.keySet()) {
-                PropertyDrawInstance<?> propertyDraw = form.getPropertyDraw(id);
-                List<Map<ObjectInstance, DataObject>> list = new ArrayList<Map<ObjectInstance, DataObject>>();
-                for (byte[] columnKeys : groupMap.get(id)) {
-                    list.add(deserializeKeys(propertyDraw, columnKeys));
-                }
-                toGroup.put(propertyDraw, list);
-            }
-
-            Map<PropertyDrawInstance, List<Map<ObjectInstance, DataObject>>> toSum = new OrderedMap<PropertyDrawInstance, List<Map<ObjectInstance, DataObject>>>();
-            for (Integer id : sumMap.keySet()) {
-                PropertyDrawInstance<?> propertyDraw = form.getPropertyDraw(id);
-                List<Map<ObjectInstance, DataObject>> list = new ArrayList<Map<ObjectInstance, DataObject>>();
-                if (propertyDraw != null) {
-                    for (byte[] columnKeys : sumMap.get(id)) {
-                        list.add(deserializeKeys(propertyDraw, columnKeys));
+            List<Map<Integer, List<byte[]>>> inMaps = new ArrayList<Map<Integer, List<byte[]>>>(BaseUtils.toList(groupMap, sumMap, maxMap));
+            List<Map<PropertyDrawInstance, List<Map<ObjectInstance, DataObject>>>> outMaps = new ArrayList<Map<PropertyDrawInstance, List<Map<ObjectInstance, DataObject>>>>();
+            for (Map<Integer, List<byte[]>> one : inMaps) {
+                Map<PropertyDrawInstance, List<Map<ObjectInstance, DataObject>>> outMap = new OrderedMap<PropertyDrawInstance, List<Map<ObjectInstance, DataObject>>>();
+                for (Integer id : one.keySet()) {
+                    PropertyDrawInstance<?> propertyDraw = form.getPropertyDraw(id);
+                    List<Map<ObjectInstance, DataObject>> list = new ArrayList<Map<ObjectInstance, DataObject>>();
+                    if (propertyDraw != null) {
+                        for (byte[] columnKeys : one.get(id)) {
+                            list.add(deserializeKeys(propertyDraw, columnKeys));
+                        }
                     }
+                    outMap.put(propertyDraw, list);
                 }
-                toSum.put(propertyDraw, list);
+                outMaps.add(outMap);
             }
-
-            Map<PropertyDrawInstance, List<Map<ObjectInstance, DataObject>>> toMax = new OrderedMap<PropertyDrawInstance, List<Map<ObjectInstance, DataObject>>>();
-            for (Integer id : maxMap.keySet()) {
-                PropertyDrawInstance<?> propertyDraw = form.getPropertyDraw(id);
-                List<Map<ObjectInstance, DataObject>> list = new ArrayList<Map<ObjectInstance, DataObject>>();
-                if (propertyDraw != null) {
-                    for (byte[] columnKeys : maxMap.get(id)) {
-                        list.add(deserializeKeys(propertyDraw, columnKeys));
-                    }
-                }
-                toMax.put(propertyDraw, list);
-            }
-
-            return form.groupData(toGroup, toSum, toMax, onlyNotNull);
+            return form.groupData(outMaps.get(0), outMaps.get(1), outMaps.get(2), onlyNotNull);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

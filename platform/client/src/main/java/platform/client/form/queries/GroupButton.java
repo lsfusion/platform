@@ -1,5 +1,8 @@
 package platform.client.form.queries;
 
+import org.jdesktop.swingx.JXTreeTable;
+import org.jdesktop.swingx.treetable.*;
+import platform.base.BaseUtils;
 import platform.base.OrderedMap;
 import platform.client.descriptor.editor.base.TitledPanel;
 import platform.client.form.grid.GridTable;
@@ -8,15 +11,12 @@ import platform.client.logics.ClientPropertyDraw;
 import platform.client.logics.classes.ClientIntegralClass;
 
 import javax.swing.*;
-import javax.swing.border.EmptyBorder;
-import javax.swing.table.AbstractTableModel;
-import javax.swing.table.JTableHeader;
-import javax.swing.table.TableColumn;
-import javax.swing.table.TableRowSorter;
+import javax.swing.border.LineBorder;
+import javax.swing.event.*;
+import javax.swing.table.*;
+import javax.swing.tree.TreePath;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.KeyEvent;
+import java.awt.event.*;
 import java.io.IOException;
 import java.util.*;
 import java.util.List;
@@ -32,23 +32,31 @@ public abstract class GroupButton extends ToolbarGridButton {
     public abstract void addListener();
 
     public class GroupDialog extends JDialog {
-        GridTable table;
-        GridTableModel tableModel;
-        Map<Integer, List<byte[]>> selectedGroupMap = new OrderedMap<Integer, List<byte[]>>();
-        Map<Integer, List<byte[]>> selectedSumMap = new OrderedMap<Integer, List<byte[]>>();
-        Map<Integer, List<byte[]>> selectedMaxMap = new OrderedMap<Integer, List<byte[]>>();
-        List<JCheckBox> groupChecks = new ArrayList<JCheckBox>();
-        List<JCheckBox> sumChecks = new ArrayList<JCheckBox>();
-        List<JCheckBox> maxChecks = new ArrayList<JCheckBox>();
-        JCheckBox notNullCheck = new JCheckBox("Только заполненные");
-        JLabel recordCountLabel;
-        JScrollPane scroll;
-        final int RECORD_QUANTITY_ID = -1;
+        private GridTable initialTable;
+        private GridTableModel initialTableModel;
+        private List<List<Integer>> selectedGroupLevels = new ArrayList<List<Integer>>();
+        private Map<Integer, List<byte[]>> selectedSumMap = new OrderedMap<Integer, List<byte[]>>();
+        private Map<Integer, List<byte[]>> selectedMaxMap = new OrderedMap<Integer, List<byte[]>>();
+        private List<JCheckBox> groupChecks = new ArrayList<JCheckBox>();
+        private List<JSpinner> groupSpinners = new ArrayList<JSpinner>();
+        private List<JCheckBox> sumChecks = new ArrayList<JCheckBox>();
+        private List<JCheckBox> maxChecks = new ArrayList<JCheckBox>();
+        private JCheckBox notNullCheck = new JCheckBox("Только заполненные");
+        private JLabel recordCountLabel = new JLabel();
+        private JScrollPane treeTableScroll = new JScrollPane();
+        private JPanel expandButtonsPanel = new JPanel();
+        private final int RECORD_QUANTITY_ID = -1;
 
-        public GroupDialog(Frame owner, GridTable table) throws IOException {
+        private ChangeListener spinnerListener = new ChangeListener() {
+            public void stateChanged(ChangeEvent ce) {
+                verifySpinners();
+            }
+        };
+
+        public GroupDialog(Frame owner, GridTable initialTable) throws IOException {
             super(owner, "Группировка", true);
-            this.table = table;
-            this.tableModel = table.getTableModel();
+            this.initialTable = initialTable;
+            initialTableModel = initialTable.getTableModel();
 
             setMinimumSize(new Dimension(670, 300));
             Rectangle bounds = owner.getBounds();
@@ -69,130 +77,205 @@ public abstract class GroupButton extends ToolbarGridButton {
             getRootPane().registerKeyboardAction(escListener, stroke, JComponent.WHEN_IN_FOCUSED_WINDOW);
 
             TitledPanel groupByPanel = new TitledPanel("Группировать по");
-            JScrollPane groupScrollPane = new JScrollPane();
-            groupScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-            JPanel insideGPanel = new JPanel();
-            insideGPanel.setLayout(new BoxLayout(insideGPanel, BoxLayout.Y_AXIS));
-            for (int i = 0; i < tableModel.getColumnCount(); i++) {
-                JCheckBox checkBox = new JCheckBox(tableModel.getColumnName(i).trim());
-                if (i == table.getSelectedColumn()) {
+            JPanel allFieldsPanel = new JPanel();
+            allFieldsPanel.setLayout(new BoxLayout(allFieldsPanel, BoxLayout.Y_AXIS));
+
+            for (int i = 0; i < initialTableModel.getColumnCount(); i++) {
+                final JCheckBox checkBox = new JCheckBox(initialTableModel.getColumnName(i).trim());
+                if (i == initialTable.getSelectedColumn()) {
                     checkBox.setSelected(true);
                 }
+                checkBox.addActionListener(new ActionListener() {
+                    public void actionPerformed(ActionEvent e) {
+                        final JSpinner spinner = groupSpinners.get(groupChecks.indexOf(checkBox));
+                        spinner.setVisible(checkBox.isSelected());
+                        if (checkBox.isSelected()) {
+                            spinner.setValue(getMaxSpinnerValue() + 1);
+                            //ставим фокус на спиннер
+                            ((JSpinner.DefaultEditor) spinner.getEditor()).getTextField().requestFocus();
+                            SwingUtilities.invokeLater(new Runnable() {
+                                public void run() {
+                                    ((JSpinner.DefaultEditor) spinner.getEditor()).getTextField().selectAll();
+                                }
+                            });
+                        }
+                        revalidate();
+                        verifySpinners();
+                    }
+                });
                 groupChecks.add(checkBox);
-                insideGPanel.add(checkBox);
-            }
-            groupScrollPane.setViewportView(insideGPanel);
-            groupScrollPane.setBorder(new EmptyBorder(0,0,0,0));
-            groupByPanel.add(groupScrollPane);
 
-            JPanel groupPanel = new JPanel();
-            groupPanel.setLayout(new BoxLayout(groupPanel, BoxLayout.Y_AXIS));
+                JSpinner spinner = new JSpinner(new SpinnerNumberModel(1, 1, 99, 1));
+                spinner.setMinimumSize(new Dimension(35, 19));
+                spinner.setPreferredSize(new Dimension(35, 19));
+                spinner.setVisible(checkBox.isSelected());
+                spinner.addChangeListener(spinnerListener);
+                groupSpinners.add(spinner);
+
+                JPanel fieldPanel = new JPanel();
+                fieldPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
+                fieldPanel.add(checkBox);
+                fieldPanel.add(spinner);
+                fieldPanel.setPreferredSize(new Dimension(fieldPanel.getPreferredSize().width + spinner.getPreferredSize().width, checkBox.getPreferredSize().height + 3));
+                allFieldsPanel.add(fieldPanel);
+            }
+            groupByPanel.setLayout(new BorderLayout());
+            groupByPanel.add(allFieldsPanel, BorderLayout.NORTH);
+
+            JScrollPane groupScrollPane = new JScrollPane();
+            groupScrollPane.setViewportView(groupByPanel);
+
+            JPanel quantityAndGroupPanel = new JPanel();
+            quantityAndGroupPanel.setLayout(new BoxLayout(quantityAndGroupPanel, BoxLayout.Y_AXIS));
             JCheckBox box = new JCheckBox("Кол-во записей");
             box.setSelected(true);
             sumChecks.add(box);
-            groupPanel.add(box);
+            quantityAndGroupPanel.add(box);
 
             TitledPanel sumPanel = new TitledPanel("Суммировать");
             sumPanel.setLayout(new BoxLayout(sumPanel, BoxLayout.Y_AXIS));
             JScrollPane sumScrollPane = new JScrollPane();
-            sumScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-            JPanel insideSPanel = new JPanel();
-            insideSPanel.setLayout(new BoxLayout(insideSPanel, BoxLayout.Y_AXIS));
-            for (int i = 0; i < tableModel.getColumnCount(); i++) {
-                ClientPropertyDraw property = tableModel.getColumnProperty(i);
-                JCheckBox checkBox = new JCheckBox(tableModel.getColumnName(i).trim());
-                sumChecks.add(checkBox);
-                if (property.baseType instanceof ClientIntegralClass) {
-                    insideSPanel.add(checkBox);
-                }
-            }
-            sumScrollPane.setViewportView(insideSPanel);
-            sumScrollPane.setBorder(new EmptyBorder(0,0,0,0));
-            sumPanel.add(sumScrollPane);
-
-            groupPanel.add(sumPanel);
 
             TitledPanel maxPanel = new TitledPanel("Максимум");
             maxPanel.setLayout(new BoxLayout(maxPanel, BoxLayout.Y_AXIS));
             JScrollPane maxScrollPane = new JScrollPane();
-            maxScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-            JPanel insideMPanel = new JPanel();
-            insideMPanel.setLayout(new BoxLayout(insideMPanel, BoxLayout.Y_AXIS));
-            for (int i = 0; i < tableModel.getColumnCount(); i++) {
-                ClientPropertyDraw property = tableModel.getColumnProperty(i);
-                JCheckBox checkBox = new JCheckBox(tableModel.getColumnName(i).trim());
-                maxChecks.add(checkBox);
+
+            for (int i = 0; i < initialTableModel.getColumnCount(); i++) {
+                ClientPropertyDraw property = initialTableModel.getColumnProperty(i);
+                String propertyCaption = initialTableModel.getColumnName(i).trim();
+                JCheckBox checkBoxSum = new JCheckBox(propertyCaption);
+                sumChecks.add(checkBoxSum);
+                JCheckBox checkBoxMax = new JCheckBox(propertyCaption);
+                maxChecks.add(checkBoxMax);
                 if (property.baseType instanceof ClientIntegralClass) {
-                    insideMPanel.add(checkBox);
+                    sumPanel.add(checkBoxSum);
+                    maxPanel.add(checkBoxMax);
                 }
             }
-            maxScrollPane.setViewportView(insideMPanel);
-            maxScrollPane.setBorder(new EmptyBorder(0,0,0,0));
-            maxPanel.add(maxScrollPane);
 
-            groupPanel.add(maxPanel);
+            sumScrollPane.setViewportView(sumPanel);
+            maxScrollPane.setViewportView(maxPanel);
 
-            JPanel checkNButtonPanel = new JPanel();
-            checkNButtonPanel.setLayout(new BorderLayout());
-            JButton execute = new JButton("Результат");
-            execute.addActionListener(new ActionListener() {
+            JSplitPane groupPanel = new JSplitPane(JSplitPane.VERTICAL_SPLIT, sumScrollPane, maxScrollPane);
+            groupPanel.setContinuousLayout(true);
+            groupPanel.setOneTouchExpandable(true);
+            quantityAndGroupPanel.add(groupPanel);
+
+            JButton resetAllButton = new JButton("Сбросить");
+            resetAllButton.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
-                    buttonPressed();
+                    for (int i = 0; i < groupChecks.size(); i++) {
+                        groupChecks.get(i).setSelected(false);
+                        groupSpinners.get(i).setVisible(false);
+                    }
+                    for (JCheckBox box : sumChecks)
+                        box.setSelected(false);
+                    for (JCheckBox box : maxChecks)
+                        box.setSelected(false);
+                }
+            });
+
+            JButton executeButton = new JButton("Результат");
+            executeButton.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    try {
+                        buttonPressed();
+                    } catch (IOException ioe) {
+                        throw new RuntimeException(ioe);
+                    }
                     if (dialog != null) {
                         dialog.firePropertyChange("buttonPressed", null, null);
                     }
                 }
             });
-            recordCountLabel = new JLabel();
+
+            JPanel resetPanel = new JPanel();
+            resetPanel.add(resetAllButton);
+
             JPanel labelPanel = new JPanel();
             labelPanel.add(recordCountLabel);
-            checkNButtonPanel.add(notNullCheck, BorderLayout.WEST);
-            checkNButtonPanel.add(labelPanel, BorderLayout.CENTER);
-            checkNButtonPanel.add(execute, BorderLayout.EAST);
 
-            JPanel westPanel = new JPanel();
-            westPanel.setLayout(new BoxLayout(westPanel, BoxLayout.X_AXIS));
-            westPanel.add(groupByPanel);
-            westPanel.add(groupPanel);
-            westPanel.add(Box.createRigidArea(new Dimension(5, 5)));
-            add(westPanel, BorderLayout.WEST);
+            JPanel checkNButtonPanel = new JPanel();
+            checkNButtonPanel.add(notNullCheck);
+            checkNButtonPanel.add(executeButton);
 
-            scroll = new JScrollPane();
-            JPanel centerPanel = new JPanel();
-            centerPanel.setLayout(new BorderLayout());
-            centerPanel.add(scroll, BorderLayout.CENTER);
-            centerPanel.add(checkNButtonPanel, BorderLayout.SOUTH);
+            JPanel bottomPanel = new JPanel();
+            bottomPanel.setLayout(new BorderLayout());
+            bottomPanel.add(labelPanel, BorderLayout.CENTER);
+            bottomPanel.add(checkNButtonPanel, BorderLayout.EAST);
+            bottomPanel.add(resetPanel, BorderLayout.WEST);
 
-            add(centerPanel, BorderLayout.CENTER);
+            JSplitPane westPanel = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, groupScrollPane, quantityAndGroupPanel);
+            westPanel.setContinuousLayout(true);
+            westPanel.setOneTouchExpandable(true);
 
-            List<byte[]> list = new ArrayList<byte[]>();
-            int columnIndex = table.getSelectedColumn();
-            if (columnIndex == -1) {
+            JPanel eastPanel = new JPanel();
+            eastPanel.setLayout(new BorderLayout());
+            eastPanel.add(expandButtonsPanel, BorderLayout.NORTH);
+            eastPanel.add(treeTableScroll, BorderLayout.CENTER);
+
+            JSplitPane allPanel = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, westPanel, eastPanel);
+            allPanel.setContinuousLayout(true);
+            allPanel.setOneTouchExpandable(true);
+            add(bottomPanel, BorderLayout.SOUTH);
+            add(allPanel, BorderLayout.CENTER);
+
+            int columnIndex = initialTable.getSelectedColumn();
+            if (columnIndex == -1) {     //для пустых гридов. указываем выбранным по умолчанию первое свойство
                 columnIndex = 0;
                 groupChecks.get(0).setSelected(true);
+                groupSpinners.get(0).setVisible(true);
             }
-            ClientPropertyDraw defaultProperty = tableModel.getColumnProperty(columnIndex);
-            list.add(tableModel.getColumnKey(columnIndex).serialize(defaultProperty));
-            selectedGroupMap.put(defaultProperty.getID(), list);
+            selectedGroupLevels.add(BaseUtils.toList(columnIndex));
             selectedSumMap.put(RECORD_QUANTITY_ID, null);
         }
 
-        private void buttonPressed() {
-            selectedGroupMap = new OrderedMap<Integer, List<byte[]>>();
-            for (int i = 0; i < groupChecks.size(); i++) {
-                if (groupChecks.get(i).isSelected()) {
-                    ClientPropertyDraw property = tableModel.getColumnProperty(i);
-                    List<byte[]> list = selectedGroupMap.get(property.getID());
-                    if (list == null) {
-                        list = new ArrayList<byte[]>();
+        private void verifySpinners() {
+            int maxValue = getMaxSpinnerValue();
+            for (int i = 1; i <= maxValue; i++) {
+                boolean decrease = true;
+                for (JSpinner spinner : groupSpinners) {
+                    if (spinner.isVisible() && (Integer) spinner.getValue() == i) {
+                        decrease = false;
+                        break;
                     }
-                    try {
-                        list.add(tableModel.getColumnKey(i).serialize(property));
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                    selectedGroupMap.put(property.getID(), list);
                 }
+                if (decrease) {
+                    for (JSpinner spinner : groupSpinners) {
+                        if (spinner.isVisible() && (Integer) spinner.getValue() > i) {
+                            spinner.removeChangeListener(spinnerListener);
+                            spinner.setValue(spinner.getPreviousValue());
+                            spinner.addChangeListener(spinnerListener);
+                        }
+                    }
+                    maxValue--;
+                    i--;
+                }
+            }
+        }
+
+        private int getMaxSpinnerValue() {
+            int maxValue = 1;
+            for (JSpinner spinner : groupSpinners) {
+                if (spinner.isVisible() && (Integer) spinner.getValue() > maxValue) {
+                    maxValue = (Integer) spinner.getValue();
+                }
+            }
+            return maxValue;
+        }
+
+        private void buttonPressed() throws IOException {
+            selectedGroupLevels = new ArrayList<List<Integer>>();
+            List<Integer> level = new ArrayList<Integer>();
+            for (int k = 1; k <= getMaxSpinnerValue(); k++) {
+                List<Integer> newLevel = new ArrayList<Integer>(level);
+                for (int i = 0; i < groupChecks.size(); i++) {
+                    if (groupSpinners.get(i).isVisible() && (Integer) groupSpinners.get(i).getValue() == k) {
+                        newLevel.add(i);
+                    }
+                }
+                level = new ArrayList<Integer>(newLevel);
+                selectedGroupLevels.add(newLevel);
             }
 
             selectedSumMap = new OrderedMap<Integer, List<byte[]>>();
@@ -201,16 +284,12 @@ public abstract class GroupButton extends ToolbarGridButton {
             }
             for (int i = 0; i < sumChecks.size() - 1; i++) {
                 if (sumChecks.get(i + 1).isSelected()) {
-                    ClientPropertyDraw property = tableModel.getColumnProperty(i);
+                    ClientPropertyDraw property = initialTableModel.getColumnProperty(i);
                     List<byte[]> list = selectedSumMap.get(property.getID());
                     if (list == null) {
                         list = new ArrayList<byte[]>();
                     }
-                    try {
-                        list.add(tableModel.getColumnKey(i).serialize(property));
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
+                    list.add(initialTableModel.getColumnKey(i).serialize(property));
                     selectedSumMap.put(property.getID(), list);
                 }
             }
@@ -218,23 +297,33 @@ public abstract class GroupButton extends ToolbarGridButton {
             selectedMaxMap = new OrderedMap<Integer, List<byte[]>>();
             for (int i = 0; i < maxChecks.size(); i++) {
                 if (maxChecks.get(i).isSelected()) {
-                    ClientPropertyDraw property = tableModel.getColumnProperty(i);
+                    ClientPropertyDraw property = initialTableModel.getColumnProperty(i);
                     List<byte[]> list = selectedMaxMap.get(property.getID());
                     if (list == null) {
                         list = new ArrayList<byte[]>();
                     }
-                    try {
-                        list.add(tableModel.getColumnKey(i).serialize(property));
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
+                    list.add(initialTableModel.getColumnKey(i).serialize(property));
                     selectedMaxMap.put(property.getID(), list);
                 }
             }
         }
 
-        public Map<Integer, List<byte[]>> getSelectedGroupMap() {
-            return selectedGroupMap;
+        public List<Map<Integer, List<byte[]>>> getSelectedGroupLevels() throws IOException {
+            List<Map<Integer, List<byte[]>>> selectedGroupProperties = new ArrayList<Map<Integer, List<byte[]>>>();
+            for (List<Integer> level : selectedGroupLevels) {
+                Map<Integer, List<byte[]>> groupLevel = new OrderedMap<Integer, List<byte[]>>();
+                for (Integer index : level) {
+                    ClientPropertyDraw property = initialTableModel.getColumnProperty(index);
+                    List<byte[]> list = groupLevel.get(property.getID());
+                    if (list == null) {
+                        list = new ArrayList<byte[]>();
+                    }
+                    list.add(initialTableModel.getColumnKey(index).serialize(property));
+                    groupLevel.put(property.getID(), list);
+                }
+                selectedGroupProperties.add(groupLevel);
+            }
+            return selectedGroupProperties;
         }
 
         public Map<Integer, List<byte[]>> getSelectedSumMap() {
@@ -249,17 +338,21 @@ public abstract class GroupButton extends ToolbarGridButton {
             return notNullCheck.isSelected();
         }
 
-        public void update(Map<List<Object>, List<Object>> values) {
+        public void update(List<Map<List<Object>, List<Object>>> values) {
             List<Integer> minSizes = new ArrayList<Integer>();
             List<Integer> maxSizes = new ArrayList<Integer>();
             List<Integer> prefSizes = new ArrayList<Integer>();
             List<String> names = new ArrayList<String>();
-            for (JCheckBox box : groupChecks) {
-                if (box.isSelected()) {
-                    names.add(tableModel.getColumnName(groupChecks.indexOf(box)).trim());
-                    minSizes.add(tableModel.getColumnProperty(groupChecks.indexOf(box)).getMinimumWidth(table));
-                    maxSizes.add(tableModel.getColumnProperty(groupChecks.indexOf(box)).getMaximumWidth(table));
-                    prefSizes.add(tableModel.getColumnProperty(groupChecks.indexOf(box)).getPreferredWidth(table));
+            for (int i = 1; i <= getMaxSpinnerValue(); i++) {
+                for (JSpinner spinner : groupSpinners) {
+                    if (spinner.isVisible() && (Integer) spinner.getValue() == i) {
+                        int spinnerIndex = groupSpinners.indexOf(spinner);
+                        ClientPropertyDraw property = initialTableModel.getColumnProperty(spinnerIndex);
+                        names.add(initialTableModel.getColumnName(spinnerIndex).trim());
+                        minSizes.add(property.getMinimumWidth(initialTable));
+                        maxSizes.add(property.getMaximumWidth(initialTable));
+                        prefSizes.add(property.getPreferredWidth(initialTable));
+                    }
                 }
             }
             if (sumChecks.get(0).isSelected()) {
@@ -270,24 +363,27 @@ public abstract class GroupButton extends ToolbarGridButton {
             }
             for (int i = 1; i < sumChecks.size(); i++) {
                 if (sumChecks.get(i).isSelected()) {
-                    names.add(tableModel.getColumnName(i - 1).trim() + " [S]");
-                    minSizes.add(tableModel.getColumnProperty(i - 1).getMinimumWidth(table));
-                    maxSizes.add(tableModel.getColumnProperty(i - 1).getMaximumWidth(table));
-                    prefSizes.add(tableModel.getColumnProperty(i - 1).getPreferredWidth(table));
+                    ClientPropertyDraw property = initialTableModel.getColumnProperty(i - 1);
+                    names.add(initialTableModel.getColumnName(i - 1).trim() + " [S]");
+                    minSizes.add(property.getMinimumWidth(initialTable));
+                    maxSizes.add(property.getMaximumWidth(initialTable));
+                    prefSizes.add(property.getPreferredWidth(initialTable));
                 }
             }
 
             for (int i = 0; i < maxChecks.size(); i++) {
                 if (maxChecks.get(i).isSelected()) {
-                    names.add(tableModel.getColumnName(i).trim() + " [M]");
-                    minSizes.add(tableModel.getColumnProperty(i).getMinimumWidth(table));
-                    maxSizes.add(tableModel.getColumnProperty(i).getMaximumWidth(table));
-                    prefSizes.add(tableModel.getColumnProperty(i).getPreferredWidth(table));
+                    ClientPropertyDraw property = initialTableModel.getColumnProperty(i);
+                    names.add(initialTableModel.getColumnName(i).trim() + " [M]");
+                    minSizes.add(property.getMinimumWidth(initialTable));
+                    maxSizes.add(property.getMaximumWidth(initialTable));
+                    prefSizes.add(property.getPreferredWidth(initialTable));
                 }
             }
 
-            CustomModel model = new CustomModel(names, values);
-            JTable table = new JTable(model) {
+            final CustomTreeTableModel treeTableModel = new CustomTreeTableModel(selectedGroupLevels.get(selectedGroupLevels.size() - 1).size(), names, values);
+            JXTreeTable treeTable = new JXTreeTable(treeTableModel) {   //перегружаем методы для обхода бага с горизонтальным скроллбаром у JTable'а
+
                 @Override
                 public boolean getScrollableTracksViewportWidth() {
                     if (autoResizeMode != AUTO_RESIZE_OFF) {
@@ -308,63 +404,255 @@ public abstract class GroupButton extends ToolbarGridButton {
                     return super.getPreferredSize();
                 }
             };
-            table.setCellSelectionEnabled(true);
-            table.setRowSorter(new TableRowSorter(model));
-
-            for (int i = 0; i < model.getColumnCount(); ++i) {
-                TableColumn column = table.getColumnModel().getColumn(i);
-                JTableHeader header = table.getTableHeader();
-                header.setFont(header.getFont().deriveFont(header.getFont().getStyle(), 10));
+            treeTable.setCellSelectionEnabled(true);
+            treeTable.setShowGrid(true);
+            treeTable.setColumnMargin(1);
+            treeTable.setAutoCreateRowSorter(true);
+            treeTable.setTableHeader(new JTableHeader(treeTable.getColumnModel()) {
+                @Override
+                public String getToolTipText(MouseEvent e) {
+                    int index = columnModel.getColumnIndexAtX(e.getPoint().x);
+                    return treeTableModel.getColumnName(index);
+                }
+            });
+            int additionalWidth = 19 * (values.size() - 1);
+            treeTable.getColumnModel().getColumn(0).setMinWidth(55 + additionalWidth);  //ширина колонки с деревом
+            JTableHeader header = treeTable.getTableHeader();
+            header.addMouseListener(treeTableModel.new ColumnListener(treeTable));  //для сортировки
+            header.setFont(header.getFont().deriveFont(header.getFont().getStyle(), 10));
+            for (int i = 0; i < treeTableModel.getColumnCount() - 1; i++) {
+                TableColumn column = treeTable.getColumnModel().getColumn(i + 1);
                 column.setPreferredWidth(prefSizes.get(i));
                 column.setMinWidth(minSizes.get(i));
                 column.setMaxWidth(maxSizes.get(i));
             }
-            scroll.setViewportView(table);
-            recordCountLabel.setText("Всего записей: " + table.getRowCount());
+            treeTableScroll.setViewportView(treeTable);
+
+            createExpandButtons(treeTable);
+            recordCountLabel.setText("Всего записей: " + treeTableModel.getLastLevelRowCount());
         }
 
-        public class CustomModel extends AbstractTableModel {
-            protected Map<List<Object>, List<Object>> values;
-            protected List<String> columnNames;
+        private void createExpandButtons(final JXTreeTable table) {
+            expandButtonsPanel.removeAll();
+            expandButtonsPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
+            final List<JButton> buttons = new ArrayList<JButton>();
+            for (int i = 0; i <= ((CustomTreeTableModel) table.getTreeTableModel()).getLevelCount() - 1; i++) {
+                JButton button = new JButton("" + i);
+                if (i == 0) {
+                    button.setText("-");
+                    button.setToolTipText("Свернуть все");
+                } else {
+                    button.setToolTipText("Развернуть уровень " + i);
+                }
+                buttons.add(button);
+                button.setMargin(new Insets(0,0,0,0));
+                button.setBorder(new LineBorder(Color.BLACK));
+                button.setBackground(Color.WHITE);
+                button.setContentAreaFilled(false);
+                button.setOpaque(true);
+                button.setFocusable(false);
+                Dimension buttonSize = new Dimension(14, 14);
+                button.setFont(button.getFont().deriveFont(button.getFont().getStyle(), 8));
+                button.setMaximumSize(buttonSize);
+                button.setPreferredSize(buttonSize);
+                button.addActionListener(new ActionListener() {
+                    Integer value;
 
-            public CustomModel(List<String> names, Map<List<Object>, List<Object>> values) {
-                this.values = values;
-                columnNames = names;
+                    public void actionPerformed(ActionEvent e) {
+                        JButton source = (JButton) e.getSource();
+                        value = buttons.indexOf(source);
+                        expand(null, (TreeTableNode) table.getTreeTableModel().getRoot());
+                    }
+
+                    private void expand(Object[] parents, TreeTableNode node) {
+                        if (parents == null || (Integer) node.getUserObject() <= value) {
+                            TreePath pathToExpand;
+                            Object[] newParents;
+                            if (parents != null) {
+                                pathToExpand = new TreePath(BaseUtils.add(parents, node));
+                                newParents = BaseUtils.add(parents, node);
+                            } else {
+                                pathToExpand = new TreePath(node);
+                                newParents = new Object[]{node};
+                            }
+                            table.expandPath(pathToExpand);
+                            for (int i = 0; i < node.getChildCount(); i++) {
+                                expand(newParents, node.getChildAt(i));
+                            }
+                        } else {
+                            table.collapsePath(new TreePath(BaseUtils.add(parents, node)));
+                        }
+                    }
+                });
+                expandButtonsPanel.add(button);
+            }
+            expandButtonsPanel.revalidate();
+            expandButtonsPanel.repaint();
+            if (expandButtonsPanel.getComponentCount() != 0) {
+                ((JButton) expandButtonsPanel.getComponents()[expandButtonsPanel.getComponentCount() - 1]).doClick(); //разворачиваем всё дерево
+            }
+        }
+
+        public class CustomTreeTableModel extends DefaultTreeTableModel {
+            List<String> columnNames;
+            List<Map<List<Object>, List<Object>>> sources;
+            Map<DefaultMutableTreeTableNode, List<Object>> values = new HashMap<DefaultMutableTreeTableNode, List<Object>>();
+            int keyColumnsQuantity = 0;
+
+            public CustomTreeTableModel(int keyColumnsQuantity, List<String> columnNames, List<Map<List<Object>, List<Object>>> values) {
+                super();
+                this.columnNames = columnNames;
+                sources = values;
+
+                DefaultMutableTreeTableNode rootNode = new DefaultMutableTreeTableNode("Root", true);
+                this.keyColumnsQuantity = keyColumnsQuantity;
+                if (!values.isEmpty()) {
+                    addNodes(rootNode, 0, null);
+                }
+                root = rootNode;
             }
 
-            public Class getColumnClass(int column) {
-                Object value = null;
-                for (int i = 0; i < getRowCount(); i++) {
-                    value = getValueAt(i, column);
-                    if (value != null) {
+            public int getLevelCount() {
+                int count = 0;
+                for (Map<List<Object>, List<Object>> level : sources) {
+                    if (level.isEmpty()) {
+                        break;
+                    }
+                    count++;
+                }
+                return count;
+            }
+
+            public int getLastLevelRowCount() {
+                int rowCount = 0;
+                for (int i = sources.size() - 1; i >= 0; i--) {
+                    if (!sources.get(i).isEmpty()) {
+                        rowCount += sources.get(i).size();
                         break;
                     }
                 }
-                return value != null ? value.getClass() : String.class;
+                return rowCount;
+            }
+
+            private void addNodes(DefaultMutableTreeTableNode parentNode, int index, List<Object> parentKeys) {
+                Map<List<Object>, List<Object>> map = sources.get(index);
+                for (List<Object> keys : map.keySet()) {
+                    if (parentKeys == null || keys.containsAll(parentKeys)) {
+                        List<Object> row = new ArrayList<Object>();
+                        row.addAll(keys);
+                        for (int i = 0; i < keyColumnsQuantity - keys.size(); i++) {
+                            row.add(null);
+                        }
+                        row.addAll(map.get(keys));
+                        DefaultMutableTreeTableNode node = new DefaultMutableTreeTableNode(index + 1, true);
+                        parentNode.add(node);
+                        values.put(node, row);
+                        if (index < sources.size() - 1) {
+                            addNodes(node, index + 1, keys);
+                        }
+                    }
+                }
+            }
+
+            @Override
+            public Class getColumnClass(int column) {
+                if (column != 0) {
+                    for (DefaultMutableTreeTableNode node : values.keySet()) {
+                        List<Object> valueList = values.get(node);
+                        Object value = valueList.get(column - 1);
+                        if (value != null) {
+                            return value.getClass();
+                        }
+                    }
+                    return String.class;
+                } else {
+                    return TreeTableModel.class;
+                }
             }
 
             public int getColumnCount() {
-                return columnNames.size();
+                return columnNames.size() + 1;
             }
 
-            public int getRowCount() {
-                return values.size();
-            }
-
-            public String getColumnName(int col) {
-                return "<html>" + columnNames.get(col) + "</html>";
-            }
-
-            public Object getValueAt(int row, int column) {
-                Object[] keySet = values.keySet().toArray();
-                int keysQuantity = ((List<Object>) keySet[0]).size();
-                if (column <= keysQuantity - 1) {
-                    Object value = (((List<Object>) keySet[row]).get(column));
-                    return value.getClass().equals(String.class) ? value.toString().trim() : value;
+            public String getColumnName(int index) {
+                if (index == 0) {
+                    return "Дерево";
                 } else {
-                    return ((List<Object>) values.values().toArray()[row]).get(column - keysQuantity);
+                    return "<html>" + columnNames.get(index - 1) + "</html>";
+                }
+            }
+
+            @Override
+            public Object getValueAt(Object node, int column) {
+                if (column == 0) {
+                    return node.toString();
+                } else {
+                    Object value = values.get(node).get(column - 1);
+                    return value != null && value.getClass().equals(String.class) ? value.toString().trim() : value;
+                }
+            }
+
+            protected boolean isSortAscending = true;
+            protected int sortedCol = 0;
+
+            class ColumnListener extends MouseAdapter {
+                protected JXTreeTable table;
+
+                public ColumnListener(JXTreeTable t) {
+                    table = t;
+                }
+
+                public void mouseClicked(MouseEvent e) {
+                    TableColumnModel colModel = table.getColumnModel();
+                    int columnToSort = colModel.getColumnIndexAtX(e.getX());
+
+                    if (sortedCol == columnToSort)
+                        isSortAscending = !isSortAscending;
+                    else {
+                        isSortAscending = true;
+                        sortedCol = columnToSort;
+                    }
+                    if (columnToSort < 1)
+                        return;
+
+                    DefaultMutableTreeTableNode root = (DefaultMutableTreeTableNode) CustomTreeTableModel.this.root;
+                    changeChildrenOrder(root);
+                    table.updateUI();
+                }
+
+                private void changeChildrenOrder(DefaultMutableTreeTableNode node) {
+                    ArrayList<DefaultMutableTreeTableNode> list = Collections.list((Enumeration<DefaultMutableTreeTableNode>) node.children());
+                    Collections.sort(list, new NodeComparator(isSortAscending, sortedCol));
+                    for (DefaultMutableTreeTableNode child : list) {
+                        changeChildrenOrder(child);
+                        node.remove(child);
+                        node.add(child);
+                    }
+                }
+            }
+
+            class NodeComparator implements Comparator {
+                protected boolean isSortAsc;
+                protected int columnIndex;
+
+                public NodeComparator(boolean sortAsc, int columnIndex) {
+                    isSortAsc = sortAsc;
+                    this.columnIndex = columnIndex;
+                }
+
+                public int compare(Object o1, Object o2) {
+                    Comparable object1 = (Comparable) CustomTreeTableModel.this.getValueAt(o1, columnIndex);
+                    Comparable object2 = (Comparable) CustomTreeTableModel.this.getValueAt(o2, columnIndex);
+                    if (object1 == null || object2 == null) {
+                        return 0;
+                    }
+                    int result = object1.compareTo(object2);
+                    if (!isSortAsc)
+                        result = -result;
+                    return result;
                 }
             }
         }
     }
 }
+
