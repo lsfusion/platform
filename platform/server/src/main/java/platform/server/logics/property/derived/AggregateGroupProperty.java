@@ -33,6 +33,7 @@ public class AggregateGroupProperty<T extends PropertyInterface, J extends Prope
     // чисто из-за ограничения конструктора
     public static <T extends PropertyInterface<T>> AggregateGroupProperty<T, ?> create(String sID, String caption, Property<T> property, T aggrInterface, Collection<PropertyMapImplement<?, T>> groupProps) {
         PropertyMapImplement<?, T> and = DerivedProperty.createAnd(property.interfaces, aggrInterface, property.getImplement());
+        and.property.caption = caption + "(аггр.)";
         return create(sID, caption, and, BaseUtils.merge(groupProps, BaseUtils.remove(property.interfaces, aggrInterface)), property, aggrInterface, groupProps);
     }
 
