@@ -17,6 +17,8 @@ class ClientFormContainer extends JPanel implements AutoHideableContainer {
         setOpaque(false);
 
         key.design.designComponent(this);
+
+        setSizes();
     }
 
     @Override
@@ -40,5 +42,19 @@ class ClientFormContainer extends JPanel implements AutoHideableContainer {
             TitledBorder border = BorderFactory.createTitledBorder(title);
             setBorder(border);
         }
+    }
+
+    private void setSizes() {
+        if (key.minimumSize != null)
+            setMinimumSize(getOverridedSize(getMinimumSize(), key.minimumSize));
+        if (key.preferredSize != null)
+            setPreferredSize(getOverridedSize(getPreferredSize(), key.preferredSize));
+        if (key.maximumSize != null)
+            setMaximumSize(getOverridedSize(getMaximumSize(), key.maximumSize));
+    }
+
+    private Dimension getOverridedSize(Dimension base, Dimension override) {
+        return new Dimension(override.width == -1 ? base.width : override.width,
+                             override.height == -1 ? base.height : override.height);
     }
 }

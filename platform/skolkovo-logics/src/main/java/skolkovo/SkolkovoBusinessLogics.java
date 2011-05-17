@@ -1035,6 +1035,15 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
     }
 
     protected void initTables() {
+        tableFactory.include("project", project);
+        tableFactory.include("expert", project);
+        tableFactory.include("cluster", project);
+        tableFactory.include("claimer", project);
+        tableFactory.include("vote", vote);
+        tableFactory.include("patent", patent);
+        tableFactory.include("academic", academic);
+        tableFactory.include("nonRussianSpecialist", nonRussianSpecialist);
+        tableFactory.include("document", document);
     }
 
     protected void initIndexes() {
@@ -1277,6 +1286,8 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
 
             design.addIntersection(design.get(getPropertyDraw(innovativeCommentExpertVote)), design.get(getPropertyDraw(completeCommentExpertVote)), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
 
+            design.get(objProject.groupTo).grid.getContainer().setFixedSize(new Dimension(-1, 200));
+
             return design;
         }
     }
@@ -1349,6 +1360,8 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
 
             design.setPreferredSize(voteResultCheckGroup, new Dimension(60, -1));
 
+            design.get(objVote.groupTo).grid.getContainer().setFixedSize(new Dimension(-1, 400));
+
             return design;
         }
     }
@@ -1385,6 +1398,8 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
             design.setConstraintsFillHorizontal(voteResultCommentGroup, 0.5);
 
             design.setPreferredSize(voteResultCheckGroup, new Dimension(60, -1));
+
+            design.get(objExpert.groupTo).grid.getContainer().setFixedSize(new Dimension(-1, 400));
 
             return design;
         }

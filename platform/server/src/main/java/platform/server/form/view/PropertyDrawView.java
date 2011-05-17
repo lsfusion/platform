@@ -45,10 +45,6 @@ public class PropertyDrawView extends ComponentView {
 
     public Color highlightColor;
 
-    public Dimension minimumSize;
-    public Dimension maximumSize;
-    public Dimension preferredSize;
-
     private int minimumCharWidth;
     private int maximumCharWidth;
     private int preferredCharWidth;
@@ -158,10 +154,6 @@ public class PropertyDrawView extends ComponentView {
                 ? caption
                 : getCaption());
 
-        pool.writeObject(outStream, minimumSize);
-        pool.writeObject(outStream, maximumSize);
-        pool.writeObject(outStream, preferredSize);
-
         outStream.writeInt(getMinimumCharWidth());
         outStream.writeInt(getMaximumCharWidth());
         outStream.writeInt(getPreferredCharWidth());
@@ -226,10 +218,6 @@ public class PropertyDrawView extends ComponentView {
         super.customDeserialize(pool, inStream);
 
         caption = pool.readString(inStream);
-
-        minimumSize = pool.readObject(inStream);
-        maximumSize = pool.readObject(inStream);
-        preferredSize = pool.readObject(inStream);
 
         setMinimumCharWidth(inStream.readInt());
         setMaximumCharWidth(inStream.readInt());

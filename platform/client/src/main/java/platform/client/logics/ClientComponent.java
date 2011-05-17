@@ -13,6 +13,7 @@ import platform.interop.form.layout.DoNotIntersectSimplexConstraint;
 import platform.interop.form.layout.SimplexConstraints;
 
 import javax.swing.*;
+import java.awt.*;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -25,6 +26,11 @@ public abstract class ClientComponent extends ContextIdentityObject implements S
     public ComponentDesign design;
 
     public ClientContainer container;
+
+    public Dimension minimumSize;
+    public Dimension maximumSize;
+    public Dimension preferredSize;
+
     public SimplexConstraints<ClientComponent> constraints;
 
     public SimplexConstraints<ClientComponent> getDefaultConstraints() {
@@ -59,6 +65,11 @@ public abstract class ClientComponent extends ContextIdentityObject implements S
     public void customSerialize(ClientSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
         pool.writeObject(outStream, design);
         pool.serializeObject(outStream, container);
+
+        pool.writeObject(outStream, minimumSize);
+        pool.writeObject(outStream, maximumSize);
+        pool.writeObject(outStream, preferredSize);
+
         pool.writeObject(outStream, constraints);
 
         outStream.writeInt(constraints.intersects.size());
@@ -77,6 +88,10 @@ public abstract class ClientComponent extends ContextIdentityObject implements S
         design = pool.readObject(inStream);
 
         container = pool.deserializeObject(inStream);
+
+        minimumSize = pool.readObject(inStream);
+        maximumSize = pool.readObject(inStream);
+        preferredSize = pool.readObject(inStream);
 
         constraints = pool.readObject(inStream);
 

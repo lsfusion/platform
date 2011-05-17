@@ -59,10 +59,6 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public ClientExternalScreen externalScreen;
     public ExternalScreenConstraints externalScreenConstraints;
 
-    protected Dimension minimumSize;
-    protected Dimension maximumSize;
-    protected Dimension preferredSize;
-
     public int minimumCharWidth;
     public int maximumCharWidth;
     public int preferredCharWidth;
@@ -320,10 +316,6 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
         pool.writeString(outStream, caption);
 
-        pool.writeObject(outStream, minimumSize);
-        pool.writeObject(outStream, maximumSize);
-        pool.writeObject(outStream, preferredSize);
-
         outStream.writeInt(minimumCharWidth);
         outStream.writeInt(maximumCharWidth);
         outStream.writeInt(preferredCharWidth);
@@ -355,10 +347,6 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         super.customDeserialize(pool, inStream);
 
         caption = pool.readString(inStream);
-
-        minimumSize = pool.readObject(inStream);
-        maximumSize = pool.readObject(inStream);
-        preferredSize = pool.readObject(inStream);
 
         minimumCharWidth = inStream.readInt();
         maximumCharWidth = inStream.readInt();
