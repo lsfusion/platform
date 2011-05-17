@@ -20,7 +20,7 @@
 			<staticText>
 				<reportElement style="DefaultStyle" x="50" y="11" width="489" height="48"/>
 				<textElement textAlignment="Center">
-					<font isBold="true"/>
+					<font isBold="true" pdfFontName="lsf.TimesBD"/>
 				</textElement>
 				<text><![CDATA[Некоммерческая организация
 Фонд развития Центра разработки и
@@ -44,7 +44,7 @@
 			<staticText>
 				<reportElement style="DefaultStyle" x="49" y="129" width="490" height="20"/>
 				<textElement textAlignment="Center">
-					<font fontName="Serif" isBold="true"/>
+					<font fontName="Serif" isBold="true" pdfFontName="lsf.TimesBD"/>
 				</textElement>
 				<text><![CDATA[О присвоении статуса участника проекта]]></text>
 			</staticText>

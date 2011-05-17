@@ -37,7 +37,7 @@ public class LoginDialog extends JDialog {
     private JLabel imageLabel;
 
     public LoginDialog(LoginInfo defaultLoginInfo) {
-        imageLabel.setIcon(Main.getMainIcon());
+        imageLabel.setIcon(Main.getLogo());
 
         this.defaultLoginInfo = restoreLoginData(defaultLoginInfo);
         setContentPane(contentPane);

@@ -1360,7 +1360,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
 
             design.setPreferredSize(voteResultCheckGroup, new Dimension(60, -1));
 
-            design.get(objVote.groupTo).grid.getContainer().setFixedSize(new Dimension(-1, 400));
+            design.get(objVote.groupTo).grid.getContainer().setFixedSize(new Dimension(-1, 300));
 
             return design;
         }
@@ -1399,7 +1399,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
 
             design.setPreferredSize(voteResultCheckGroup, new Dimension(60, -1));
 
-            design.get(objExpert.groupTo).grid.getContainer().setFixedSize(new Dimension(-1, 400));
+            design.get(objExpert.groupTo).grid.getContainer().setFixedSize(new Dimension(-1, 300));
 
             return design;
         }

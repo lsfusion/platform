@@ -2,7 +2,7 @@
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="vote" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0">
 	<property name="ireport.zoom" value="1.2100000000000017"/>
 	<property name="ireport.x" value="0"/>
-	<property name="ireport.y" value="101"/>
+	<property name="ireport.y" value="0"/>
 	<style name="DefaultStyle" isDefault="true" vAlign="Middle" fontName="Serif" fontSize="12" pdfFontName="lsf.Times" pdfEncoding="Cp1251" isPdfEmbedded="false"/>
 	<style name="GroupCellStyle0" mode="Opaque" backcolor="#FFFFFF" vAlign="Middle" fontName="Serif" fontSize="10" pdfFontName="lsf.Times" pdfEncoding="Cp1251" isPdfEmbedded="false">
 		<box leftPadding="2" rightPadding="2">
@@ -25,7 +25,7 @@
 			<staticText>
 				<reportElement style="DefaultStyle" x="50" y="11" width="489" height="48"/>
 				<textElement textAlignment="Center">
-					<font isBold="true"/>
+					<font isBold="true" pdfFontName="lsf.TimesBD"/>
 				</textElement>
 				<text><![CDATA[Некоммерческая организация
 Фонд развития Центра разработки и
@@ -74,7 +74,7 @@
 			<textField>
 				<reportElement style="DefaultStyle" x="50" y="132" width="489" height="53"/>
 				<textElement textAlignment="Center" verticalAlignment="Top">
-					<font fontName="Serif" isBold="true"/>
+					<font fontName="Serif" isBold="true" pdfFontName="lsf.TimesBD"/>
 				</textElement>
 				<textFieldExpression class="java.lang.String"><![CDATA["О соответствии проекта, представленного соискателем, критериям, указанным\n" +
 "в подпункте Е пункта 2 Положения о присвоении и утрате статуса участника\n" +

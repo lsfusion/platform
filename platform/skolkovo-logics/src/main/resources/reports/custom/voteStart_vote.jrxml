@@ -45,7 +45,7 @@
 				<staticText>
 					<reportElement x="188" y="11" width="216" height="48"/>
 					<textElement textAlignment="Center">
-						<font isBold="true"/>
+						<font isBold="true" pdfFontName="lsf.TimesBD"/>
 					</textElement>
 					<text><![CDATA[Некоммерческая организация
 Фонд развития Центра разработки и
@@ -66,7 +66,7 @@
 				<textField>
 					<reportElement mode="Transparent" x="110" y="121" width="375" height="42"/>
 					<textElement textAlignment="Center">
-						<font isBold="true"/>
+						<font isBold="true" pdfFontName="lsf.TimesBD"/>
 					</textElement>
 					<textFieldExpression class="java.lang.String"><![CDATA[($F{prevDateVote}==null? "О направлении заявки соискателя \n"+
 "на рассмотрение в Экспертную коллегию \n"+
@@ -131,16 +131,16 @@
 				<subreportExpression class="net.sf.jasperreports.engine.JasperReport"><![CDATA[$P{expert_report}]]></subreportExpression>
 			</subreport>
 		</band>
-		<band height="54">
+		<band height="60">
 			<printWhenExpression><![CDATA[$F{prevDateVote}!=null]]></printWhenExpression>
 			<subreport>
-				<reportElement positionType="Float" stretchType="RelativeToBandHeight" x="0" y="54" width="0" height="0"/>
+				<reportElement positionType="Float" stretchType="RelativeToBandHeight" x="0" y="60" width="0" height="0"/>
 				<parametersMapExpression><![CDATA[$P{oldexpert_params}]]></parametersMapExpression>
 				<dataSourceExpression><![CDATA[$P{oldexpert_source}]]></dataSourceExpression>
 				<subreportExpression class="net.sf.jasperreports.engine.JasperReport"><![CDATA[$P{oldexpert_report}]]></subreportExpression>
 			</subreport>
 			<textField isStretchWithOverflow="true">
-				<reportElement positionType="Float" x="50" y="0" width="489" height="50"/>
+				<reportElement positionType="Float" x="50" y="0" width="489" height="60"/>
 				<textElement verticalAlignment="Top">
 					<paragraph firstLineIndent="20"/>
 				</textElement>
