@@ -17,6 +17,8 @@ import skolkovo.gwt.expert.client.ExpertFrameMessages;
 
 import java.util.Date;
 
+import static skolkovo.gwt.base.shared.Result.*;
+
 public abstract class ExpertMainWidget extends Composite {
     private static final int innovativeCommentMaxLength = 1000;
     private static final int completeCommentMaxLength = 300;
@@ -99,6 +101,10 @@ public abstract class ExpertMainWidget extends Composite {
     Label lbInnovativeCounterCaption;
     @UiField
     HTMLPanel dataHtmlPanel;
+    @UiField
+    Label loadingSpan;
+    @UiField
+    HorizontalPanel loadingPanel;
 
     public ExpertMainWidget(GwtVoteInfo vi) {
         initWidget(uiBinder.createAndBindUi(this));
@@ -117,6 +123,7 @@ public abstract class ExpertMainWidget extends Composite {
         logoffNotice.setText(baseMessages.logoffNotice());
         logoffLink.setText(baseMessages.here());
         footerSpan.setInnerHTML(messages.footerCaption());
+        loadingSpan.setText(baseMessages.loading());
 
         lbInnovativeCounter.setText("1000");
         lbInnovativeCounterCaption.setText(messages.symbolsLeft());
@@ -127,11 +134,11 @@ public abstract class ExpertMainWidget extends Composite {
         voteResultSpan.setInnerHTML(!vi.voteDone
                                     ? messages.pleasePrompt()
                                     : "<b>" +
-                                      ("voted".equals(vi.voteResult)
+                                      (VOTED.equals(vi.voteResult)
                                        ? messages.votedPrompt()
-                                       : "refused".equals(vi.voteResult)
+                                       : REFUSED.equals(vi.voteResult)
                                          ? messages.refusedPrompt()
-                                         : "connected".equals(vi.voteResult)
+                                         : CONNECTED.equals(vi.voteResult)
                                            ? messages.connectedPrompt()
                                            : messages.voteClosed()) + "</b>"
         );
@@ -182,19 +189,23 @@ public abstract class ExpertMainWidget extends Composite {
         bConnected.setText(messages.btnConnected());
 
         if (vi.voteDone) {
-            voteButtonsPanel.setVisible(false);
-            Element resultDataRow = dataHtmlPanel.getElementById("resultDataRow");
-            if (resultDataRow != null) {
-                resultDataRow.removeFromParent();
-            }
+            hideDataRows(!VOTED.equals(vi.voteResult));
+        }
+    }
 
-            if (!"voted".equals(vi.voteResult)) {
-                for (int i = 1; ;++i) {
-                    Element dataRow = dataHtmlPanel.getElementById("dataRow" + i);
-                    if (dataRow == null) break;
+    private void hideDataRows(boolean hidePrompts) {
+        voteButtonsPanel.setVisible(false);
+        Element resultDataRow = dataHtmlPanel.getElementById("resultDataRow");
+        if (resultDataRow != null) {
+            resultDataRow.removeFromParent();
+        }
 
-                    dataRow.removeFromParent();
-                }
+        if (hidePrompts) {
+            for (int i = 1; ;++i) {
+                Element dataRow = dataHtmlPanel.getElementById("dataRow" + i);
+                if (dataRow == null) break;
+
+                dataRow.removeFromParent();
             }
         }
     }
@@ -208,10 +219,10 @@ public abstract class ExpertMainWidget extends Composite {
         taCompleteComment.addValueChangeHandler(completeLimitedHandler);
         taCompleteComment.addKeyboardListener(completeLimitedHandler);
 
-        logoffLink.addClickHandler(new VoteHandler("refused", false));
-        bVote.addClickHandler(new VoteHandler("voted", true));
-        bRefused.addClickHandler(new VoteHandler("refused", true));
-        bConnected.addClickHandler(new VoteHandler("connected", true));
+        logoffLink.addClickHandler(new VoteHandler(REFUSED, false));
+        bVote.addClickHandler(new VoteHandler(VOTED, true));
+        bRefused.addClickHandler(new VoteHandler(REFUSED, true));
+        bConnected.addClickHandler(new VoteHandler(CONNECTED, true));
     }
 
     private void addListBoxBooleanItems(ListBox listBox, int defaultValue) {
@@ -221,7 +232,7 @@ public abstract class ExpertMainWidget extends Composite {
         listBox.setItemSelected(defaultValue, true);
     }
 
-    public abstract void onVoted(String voteResult, boolean confirm);
+    public abstract boolean onVoted(String voteResult, boolean confirm);
 
     private class VoteHandler implements ClickHandler {
         private final String voteResult;
@@ -234,7 +245,11 @@ public abstract class ExpertMainWidget extends Composite {
 
         @Override
         public void onClick(ClickEvent event) {
-            onVoted(voteResult, confirm);
+            if (onVoted(voteResult, confirm)) {
+                voteResultSpan.setInnerText("");;
+                loadingPanel.setVisible(true);
+                hideDataRows(true);
+            }
         }
     }
 

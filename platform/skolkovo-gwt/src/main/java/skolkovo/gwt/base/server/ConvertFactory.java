@@ -28,6 +28,8 @@ public class ConvertFactory {
         gwtVoteInfo.complete = max(1, min(voteInfo.complete, 5));
         gwtVoteInfo.completeComment = emptyIfNullAndTrim(voteInfo.completeComment);
         gwtVoteInfo.date = voteInfo.date;
+        gwtVoteInfo.voteStartDate = voteInfo.voteStartDate;
+        gwtVoteInfo.voteEndDate = voteInfo.voteEndDate;
 
         return gwtVoteInfo;
     }
@@ -64,6 +66,8 @@ public class ConvertFactory {
         voteInfo.complete = max(1, min(gwtVoteInfo.complete, 5));
         voteInfo.completeComment = gwtVoteInfo.completeComment;
         voteInfo.date = gwtVoteInfo.date;
+        voteInfo.voteStartDate = gwtVoteInfo.voteStartDate;
+        voteInfo.voteEndDate = gwtVoteInfo.voteEndDate;
 
         return voteInfo;
     }

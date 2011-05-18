@@ -1,11 +1,9 @@
 package skolkovo.gwt.expertprofile.client;
 
 import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.ui.RootPanel;
 import skolkovo.gwt.base.client.BaseFrame;
 import skolkovo.gwt.base.shared.GwtProfileInfo;
-import skolkovo.gwt.base.shared.GwtVoteInfo;
-import skolkovo.gwt.expertprofile.client.ui.ExpertProfileMainWidget;
+import skolkovo.gwt.expertprofile.client.ui.ExpertProfileMainPanel;
 
 public class ExpertProfileFrame extends BaseFrame {
     private static ExpertProfileMessages messages = ExpertProfileMessages.Instance.get();
@@ -24,13 +22,7 @@ public class ExpertProfileFrame extends BaseFrame {
                     return;
                 }
 
-                RootPanel.get().clear();
-                RootPanel.get().add(new ExpertProfileMainWidget(pi) {
-                    @Override
-                    public void onSend(GwtVoteInfo vi) {
-                        expertProfileService.sentVoteDocuments(vi.voteId, new UpdateAsyncCallback());
-                    }
-                });
+                new ExpertProfileMainPanel(pi).draw();
             }
         });
     }

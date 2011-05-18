@@ -5,9 +5,9 @@
 
     <g:VerticalPanel width="100%">
         <g:cell horizontalAlignment="center">
-            <g:VerticalPanel width="1100" styleName="mainPane" spacing="5">
+            <g:VerticalPanel width="1100" styleName="{style.mainPane}" spacing="5">
                 <g:HTMLPanel ui:field="dataHtmlPanel">
-                    <table border="0" cellspacing="10">
+                    <table border="0" cellspacing="10" width="100%">
                         <tbody>
                             <tr>
                                 <th width="5pt"/>
@@ -18,7 +18,7 @@
                                 <th width="20"/>
                             </tr>
                             <tr>
-                                <td rowspan="2" colspan="2"><g:Image styleName="floatRight" url="images/logo_ballot.jpg" altText="Logo"/></td>
+                                <td rowspan="2" colspan="2"><g:Image styleName="{style.floatRight}" url="images/logo_ballot.png" altText="Logo"/></td>
                                 <td rowspan="20"/>
                                 <td colspan="2">
                                     <sk:ToolbarPanel showProfileButton="true" />
@@ -76,6 +76,15 @@
                                     </g:VerticalPanel>
                                     <br/>
                                     <span ui:field="voteResultSpan"></span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td/>
+                                <td colspan="2">
+                                    <g:HorizontalPanel width="100%" ui:field="loadingPanel" visible="false">
+                                        <g:Label ui:field="loadingSpan">Запрос обрабатывается....</g:Label>
+                                        <g:Image url="images/loading.gif" altText="loading..." />
+                                    </g:HorizontalPanel>
                                 </td>
                             </tr>
                             <tr id="dataRow1">

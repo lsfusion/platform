@@ -1,13 +1,13 @@
 package skolkovo.gwt.expert.client;
 
 import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.ui.HTMLPanel;
-import com.google.gwt.user.client.ui.RootPanel;
 import skolkovo.gwt.base.client.BaseFrame;
 import skolkovo.gwt.base.shared.GwtVoteInfo;
 import skolkovo.gwt.expert.client.ui.ExpertMainWidget;
 
 import java.util.Date;
+
+import static skolkovo.gwt.base.shared.Result.VOTED;
 
 public class ExpertFrame extends BaseFrame {
     private static ExpertFrameMessages messages = ExpertFrameMessages.Instance.get();
@@ -34,34 +34,32 @@ public class ExpertFrame extends BaseFrame {
         }
 
         expertService.getVoteInfo(voteId, new ErrorAsyncCallback<GwtVoteInfo>() {
-            public void onSuccess(GwtVoteInfo vi) {
+            public void onSuccess(final GwtVoteInfo vi) {
                 if (vi == null) {
                     showErrorPage(null);
                     return;
                 }
 
-                RootPanel.get().clear();
-                final GwtVoteInfo vi1 = vi;
-                RootPanel.get().add(new ExpertMainWidget(vi1) {
+                setAsRootPane(new ExpertMainWidget(vi) {
                     @Override
-                    public void onVoted(String voteResult, boolean confirm) {
-                        if ("voted".equals(voteResult) &&
-                            (bxInCluster.getSelectedIndex() == 0 ||
-                             bxInnovative.getSelectedIndex() == 0 ||
-                             bxForeign.getSelectedIndex() == 0)) {
-                            Window.alert(messages.incompletePrompt());
-                            return;
-                        }
+                    public boolean onVoted(String voteResult, boolean confirm) {
+                        if (VOTED.equals(voteResult)) {
+                            if (bxInCluster.getSelectedIndex() == 0 ||
+                                bxInnovative.getSelectedIndex() == 0 ||
+                                bxForeign.getSelectedIndex() == 0) {
+                                Window.alert(messages.incompletePrompt());
+                                return false;
+                            }
 
-                        if ("voted".equals(voteResult) &&
-                            (taInnovativeComment.getText().isEmpty() ||
-                             taCompleteComment.getText().isEmpty())) {
-                            Window.alert(messages.incompleteComment());
-                            return;
+                            if (taInnovativeComment.getText().isEmpty() ||
+                                taCompleteComment.getText().isEmpty()) {
+                                Window.alert(messages.incompleteComment());
+                                return false;
+                            }
                         }
 
                         if (confirm && !Window.confirm(messages.confirmPrompt())) {
-                            return;
+                            return false;
                         }
 
                         GwtVoteInfo vi = new GwtVoteInfo();
@@ -80,13 +78,11 @@ public class ExpertFrame extends BaseFrame {
                         String voteId = getVoteId();
                         if (voteId == null) {
                             showErrorPage(null);
-                            return;
+                            return confirm;
                         }
 
-                        RootPanel.get().clear();
-                        RootPanel.get().add(new HTMLPanel("Loading..."));
-
                         expertService.setVoteInfo(vi, voteId, new UpdateAsyncCallback());
+                        return true;
                     }
                 });
             }

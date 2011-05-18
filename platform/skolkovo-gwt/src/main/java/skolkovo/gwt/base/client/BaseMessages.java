@@ -22,6 +22,8 @@ public interface BaseMessages extends Messages {
     @Key("locale.en")
     String localeEn();
 
+    String loading();
+
     public static class Instance {
         private static final BaseMessages instance = (BaseMessages) GWT.create(BaseMessages.class);
 

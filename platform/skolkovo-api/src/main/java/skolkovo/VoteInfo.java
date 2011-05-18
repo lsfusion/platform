@@ -29,4 +29,6 @@ public class VoteInfo implements Serializable {
     //}}
 
     public Date date;
+    public Date voteStartDate;
+    public Date voteEndDate;
 }

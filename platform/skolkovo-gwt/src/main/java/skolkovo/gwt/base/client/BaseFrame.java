@@ -5,6 +5,7 @@ import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.RootPanel;
+import com.google.gwt.user.client.ui.Widget;
 import skolkovo.gwt.base.client.ui.ErrorFrameWidget;
 
 public class BaseFrame implements EntryPoint {
@@ -36,9 +37,13 @@ public class BaseFrame implements EntryPoint {
     public void onModuleLoad() {
     }
 
-    public static void showErrorPage(Throwable caught) {
+    protected static void setAsRootPane(Widget widget) {
         RootPanel.get().clear();
-        RootPanel.get().add(new ErrorFrameWidget(caught));
+        RootPanel.get().add(widget);
+    }
+
+    public static void showErrorPage(Throwable caught) {
+        setAsRootPane(new ErrorFrameWidget(caught));
     }
 
     public static String getPageUrlPreservingParameters(String pageUrl) {
@@ -70,5 +75,9 @@ public class BaseFrame implements EntryPoint {
         }
 
         return GWT.getHostPageBaseURL() + pageUrl + url.substring(paramBegin);
+    }
+
+    public static String getLogoffUrl() {
+        return getPageUrlPreservingParameters("logoff.html");
     }
 }

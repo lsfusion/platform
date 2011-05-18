@@ -1,17 +1,14 @@
 <ui:UiBinder xmlns:ui='urn:ui:com.google.gwt.uibinder'
              xmlns:g='urn:import:com.google.gwt.user.client.ui'
              xmlns:sk='urn:import:skolkovo.gwt.base.client.ui'>
-    <ui:style type="skolkovo.gwt.login.client.ui.LoginMainWidget.Styles">
-        .error {color:yellow; background:#f08080}
-        .info {color:blue; background:white}
-    </ui:style>
+    <ui:style src="LoginMainWidget.ui.css" type="skolkovo.gwt.login.client.ui.LoginMainWidget.Styles"/>
     <g:VerticalPanel width="100%">
         <g:cell horizontalAlignment="center">
-            <g:VerticalPanel width="800" styleName="mainPane" spacing="5">
+            <g:VerticalPanel width="800" styleName="{style.mainPane}" spacing="5">
                 <sk:ToolbarPanel showProfileButton="false" />
 
                 <g:HTMLPanel>
-                    <g:Image styleName="floatRight" url="images/logo.jpg" altText="Logo"/>
+                    <g:Image styleName="{style.floatRight}" url="images/logo.png" altText="Logo"/>
                     <hr size="5" color="#000000"/>
                     <center><h2><span ui:field="titleSpan"/></h2></center>
 

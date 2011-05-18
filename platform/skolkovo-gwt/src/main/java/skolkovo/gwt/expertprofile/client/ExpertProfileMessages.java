@@ -28,7 +28,7 @@ public interface ExpertProfileMessages extends Messages {
 
     String showUnvoted();
 
-    String columnVoteDone();
+    String columnVoteResult();
 
     String columnSentDocs();
 
@@ -39,6 +39,37 @@ public interface ExpertProfileMessages extends Messages {
     String name();
 
     String email();
+
+    @Key("result.voted")
+    String resultVoted();
+
+    @Key("result.connected")
+    String resultConnected();
+
+    @Key("result.refused")
+    String resultRefused();
+
+    @Key("result.opened")
+    String resultOpened();
+
+    String columnStartDate();
+
+    String columnEndtDate();
+
+    @Key("result.closed")
+    String resultClosed();
+
+    String sentSuccessMessae();
+
+    String sentFailedMessae();
+
+    String sectionExpertDetails();
+
+    String sectionVoteList();
+
+    String sectionVoteDetails();
+
+    String logoff();
 
     public static class Instance {
         private static final ExpertProfileMessages instance = (ExpertProfileMessages) GWT.create(ExpertProfileMessages.class);

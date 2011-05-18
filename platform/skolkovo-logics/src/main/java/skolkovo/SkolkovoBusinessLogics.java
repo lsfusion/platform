@@ -1875,6 +1875,8 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
                 q.properties.put("vResult", voteResultExpertVote.getExpr(session.modifier, expExpr, voteExpr));
                 q.properties.put("openedVote", openedVote.getExpr(session.modifier, voteExpr));
                 q.properties.put("date", dateExpertVote.getExpr(session.modifier, expExpr, voteExpr));
+                q.properties.put("voteStartDate", dateStartVote.getExpr(session.modifier, voteExpr));
+                q.properties.put("voteEndDate", dateEndVote.getExpr(session.modifier, voteExpr));
 
                 OrderedMap<Map<String, Object>, Map<String, Object>> values = q.execute(session.sql);
                 profileInfo.voteInfos = new VoteInfo[values.size()];
@@ -1907,6 +1909,8 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
                     voteInfo.voteDone = voteInfo.voteResult != null
                                         || !nvl((Boolean) propValues.get("openedVote"), false);
                     voteInfo.date = DateConverter.sqlToDate((java.sql.Date)propValues.get("date"));
+                    voteInfo.voteStartDate = DateConverter.sqlToDate((java.sql.Date)propValues.get("voteStartDate"));
+                    voteInfo.voteEndDate = DateConverter.sqlToDate((java.sql.Date)propValues.get("voteEndDate"));
 
                     profileInfo.voteInfos[i++] = voteInfo;
                 }

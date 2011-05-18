@@ -55,6 +55,7 @@ public abstract class ExpertProfileMainWidget extends Composite {
 
     public ExpertProfileMainWidget(GwtProfileInfo pi) {
         this.pi = pi;
+
         createCellTable();
 
         initWidget(uiBinder.createAndBindUi(this));
@@ -90,8 +91,7 @@ public abstract class ExpertProfileMainWidget extends Composite {
 
     private void updateTableData() {
         List<GwtVoteInfo> filteredVotes = new ArrayList<GwtVoteInfo>();
-        for (int i = 0; i < pi.voteInfos.length; ++i) {
-            GwtVoteInfo gwtVoteInfo = pi.voteInfos[i];
+        for (GwtVoteInfo gwtVoteInfo : pi.voteInfos) {
             if (!showUnvoted || !gwtVoteInfo.voteDone) {
                 filteredVotes.add(gwtVoteInfo);
             }
@@ -109,7 +109,7 @@ public abstract class ExpertProfileMainWidget extends Composite {
             public Boolean getValue(GwtVoteInfo vi) {
                 return vi.voteDone;
             }
-        }, messages.columnVoteDone());
+        }, messages.columnVoteResult());
         table.addColumn(new TextColumn<GwtVoteInfo>() {
             @Override
             public String getValue(GwtVoteInfo vi) {

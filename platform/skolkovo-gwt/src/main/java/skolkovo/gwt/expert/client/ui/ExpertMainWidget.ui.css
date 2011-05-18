@@ -1,3 +1,23 @@
+body {
+    background-color: #d3d3d3;
+    color: black;
+    margin: 8px;
+}
+
+* {
+    font-family: "Arial", "serif";
+    font-size: 14px;
+}
+
+.mainPane {
+    background-color: white;
+}
+
+.floatRight {
+    float: right;
+    margin: 4px;
+}
+
 hr {
     color: black;
     height: 1pt;

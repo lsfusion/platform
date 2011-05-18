@@ -8,7 +8,7 @@
                 <sk:ToolbarPanel showProfileButton="false" />
 
                 <g:HTMLPanel>
-                    <g:Image styleName="floatRight" url="images/logo.jpg" altText="Logo"/>
+                    <g:Image styleName="floatRight" url="images/logo.png" altText="Logo"/>
                     <hr size="5" color="#000000"/>
                     <center><h2><span ui:field="titleSpan"/></h2></center>
                     <table>
@@ -27,7 +27,7 @@
 
                     <g:CheckBox ui:field="cbShowUnvoted"/>
                     <c:CellTable width="100%" ui:field="table"/>
-                    <g:Label visible="false" ui:field="lbEmptyList" />
+                    <g:Label width="100%" visible="false" ui:field="lbEmptyList" />
                 </g:HTMLPanel>
             </g:VerticalPanel>
         </g:cell>
