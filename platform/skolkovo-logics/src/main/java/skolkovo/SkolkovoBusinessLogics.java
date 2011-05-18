@@ -224,6 +224,11 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
     LP loadFileDocument;
     LP openFileDocument;
 
+    LP inDefaultDocumentLanguage;
+    LP inDefaultDocumentExpert;
+    LP inDocumentLanguage;
+    LP inDocumentExpert;
+
     LP inExpertVote, oldExpertVote, inNewExpertVote, inOldExpertVote;
     LP dateStartVote, dateEndVote;
     LP aggrDateEndVote;
@@ -311,6 +316,9 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
     LP nameLanguageExpert;
     LP languageDocument;
     LP nameLanguageDocument;
+    LP englishDocument;
+    LP defaultEnglishDocumentType;
+    LP defaultEnglishDocument;
     LP typeDocument;
     LP nameTypeDocument;
     LP postfixDocument;
@@ -749,10 +757,16 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
 
         languageExpert = addDProp(idGroup, "languageExpert", "Язык (ИД)", language, expert);
         nameLanguageExpert = addJProp(baseGroup, "nameLanguageExpert", "Язык", name, languageExpert, 1);
+
         languageDocument = addDProp(idGroup, "languageDocument", "Язык (ИД)", language, documentAbstract);
         nameLanguageDocument = addJProp(baseGroup, "nameLanguageDocument", "Язык", name, languageDocument, 1);
+        englishDocument = addJProp("englishDocument", "Иностр.", equals2, languageDocument, 1, addCProp(language, "english"));
+
+        defaultEnglishDocumentType = addDProp(baseGroup, "defaultEnglishDocumentType", "Англ.", LogicalClass.instance, documentType);
+
         typeDocument = addDProp(idGroup, "typeDocument", "Тип (ИД)", documentType, documentAbstract);
         nameTypeDocument = addJProp(baseGroup, "nameTypeDocument", "Тип", name, typeDocument, 1);
+        defaultEnglishDocument = addJProp("defaultEnglishDocument", "Англ.", defaultEnglishDocumentType, typeDocument, 1);
 
         localeLanguage = addDProp(baseGroup, "localeLanguage", "Locale", StringClass.get(5), language);
         authExpertSubjectLanguage = addDProp(baseGroup, "authExpertSubjectLanguage", "Заголовок аутентификации эксперта", StringClass.get(100), language);
@@ -775,6 +789,16 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         fileDocument = addDProp(baseGroup, "fileDocument", "Файл", PDFClass.instance, document);
         loadFileDocument = addLFAProp(baseGroup, "Загрузить", fileDocument);
         openFileDocument = addOFAProp(baseGroup, "Открыть", fileDocument);
+
+        inDefaultDocumentLanguage = addJProp("inDefaultDocumentLanguage", "Вкл. (по умолчанию)", and(false, false, true),
+                englishDocument, 1, // если документ на английском
+                defaultEnglishDocument, 1, // если для типа документа можно только на английском
+                is(language), 2, // второй параметр - язык
+                addJProp(addMGProp(object(document), projectDocument, 1, typeDocument, 1, postfixDocument, 1, languageDocument, 1), projectDocument, 1, typeDocument, 1, postfixDocument, 1, 2), 1, 2); // нету документа на русском
+        inDefaultDocumentExpert = addJProp("inDefaultDocumentExpert", "Вкл.", inDefaultDocumentLanguage, 1, languageExpert, 2);
+
+        inDocumentLanguage = addJProp("inDocumentLanguage", "Вкл.", equals2, languageDocument, 1, 2);
+        inDocumentExpert = addJProp("inDocumentExpert", "Вкл.", inDocumentLanguage, 1, languageExpert, 2);
 
         inExpertVote = addDProp(baseGroup, "inExpertVote", "Вкл", LogicalClass.instance, expert, vote); // !!! нужно отослать письмо с документами и т.д
         oldExpertVote = addDProp(baseGroup, "oldExpertVote", "Из предыдущего заседания", LogicalClass.instance, expert, vote); // !!! нужно отослать письмо с документами и т.д
@@ -1250,6 +1274,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
                                                                  KeyStroke.getKeyStroke(KeyEvent.VK_F10, 0)));
             addRegularFilterGroup(projectFilterGroup);
 
+            addHintsNoUpdate(statusProject);
             setPageSize(0);
         }
 
@@ -1534,7 +1559,8 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
             objDocument = addSingleGroupObject(8, "document", document, fileDocument);
             addPropertyDraw(nameDocument, objDocument).setSID("docName");
             addFixedFilter(new CompareFilterEntity(addPropertyObject(projectDocument, objDocument), Compare.EQUALS, addPropertyObject(projectVote, objVote)));
-            addFixedFilter(new CompareFilterEntity(addPropertyObject(languageDocument, objDocument), Compare.EQUALS, addPropertyObject(languageExpert, objExpert)));
+            addFixedFilter(new OrFilterEntity(new NotNullFilterEntity(addPropertyObject(inDocumentExpert, objDocument, objExpert)),
+                                              new NotNullFilterEntity(addPropertyObject(inDefaultDocumentExpert, objDocument, objExpert))));
 
             addInlineEAForm(emailLetterExpertVoteEA, this, objExpert, 1, objVote, 2);
         }
