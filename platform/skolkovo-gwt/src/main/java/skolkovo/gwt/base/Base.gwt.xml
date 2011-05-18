@@ -3,6 +3,8 @@
 <module>
 
     <inherits name='com.google.gwt.user.User'/>
+    <inherits name="com.smartgwt.SmartGwt"/>
+    <!--<inherits name="com.smartgwt.tools.SmartGwtTools"/>-->
 
     <entry-point class='skolkovo.gwt.base.client.BaseFrame'/>
 
@@ -20,5 +22,5 @@
          При этом будет работать только в firefox и только с английской локалью
      -->
     <!--<set-property name="user.agent" value="gecko1_8" />-->
-    <!--<set-property name="locale" value="en" />-->
+    <!--<set-property name="locale" value="ru" />-->
 </module>
