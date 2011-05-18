@@ -1053,7 +1053,8 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
     FormEntity globalForm;
 
     protected void initNavigators() throws JRException, FileNotFoundException {
-        addFormEntity(new ProjectFullFormEntity(objectElement, "projectFull"));
+        addFormEntity(new ProjectFullFormEntity(objectElement, "projectFullNative", "Резюме проекта для эксперта", false));
+        addFormEntity(new ProjectFullFormEntity(objectElement, "projectFullForeign", "Resume project for expert", true));
 
         addFormEntity(new ProjectFormEntity(baseElement, "project"));
         addFormEntity(new VoteFormEntity(baseElement, "vote", false));
@@ -1073,6 +1074,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         addFormEntity(new ClaimerAcceptedFormEntity(print, "claimerAccepted"));
         addFormEntity(new ClaimerRejectedFormEntity(print, "claimerRejected"));
         addFormEntity(new ClaimerStatusFormEntity(print, "claimerStatus"));
+        
     }
 
     protected void initAuthentication() throws ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException {
@@ -1091,15 +1093,19 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
 
     private class ProjectFullFormEntity extends FormEntity<SkolkovoBusinessLogics> {
 
+        private boolean foreign;
+
         private ObjectEntity objProject;
         private ObjectEntity objPatent;
         private ObjectEntity objAcademic;
         private ObjectEntity objNonRussianSpecialist;
 
-        private ProjectFullFormEntity(NavigatorElement parent, String sID) {
-            super(parent, sID, "Все данные по проекту");
+        private ProjectFullFormEntity(NavigatorElement parent, String sID, String caption, boolean foreign) {
+            super(parent, sID, caption);
 
-            objProject = addSingleGroupObject(project, "Описание проекта", projectInformationGroup, innovationGroup, executiveSummaryGroup, sourcesFundingGroup, equipmentGroup, projectDocumentsGroup, projectStatusGroup);
+            this.foreign = foreign;
+
+            objProject = addSingleGroupObject(1, "project", project, "Описание проекта", projectInformationGroup, innovationGroup, executiveSummaryGroup, sourcesFundingGroup, equipmentGroup, projectDocumentsGroup, projectStatusGroup);
 
             getPropertyDraw(nameReturnInvestorProject).propertyCaption = addPropertyObject(hideNameReturnInvestorProject, objProject);
             getPropertyDraw(amountReturnFundsProject).propertyCaption = addPropertyObject(hideAmountReturnFundsProject, objProject);
@@ -1124,7 +1130,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
 
             objProject.groupTo.setSingleClassView(ClassViewType.PANEL);
 
-            objPatent = addSingleGroupObject(patent, baseGroup);
+            objPatent = addSingleGroupObject(2, "patent", patent, "Патент", baseGroup);
             addObjectActions(this, objPatent);
 
             getPropertyDraw(ownerPatent).propertyCaption = addPropertyObject(hideOwnerPatent, objPatent);
@@ -1136,10 +1142,10 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
             getPropertyDraw(loadFileActValuationPatent).propertyCaption = addPropertyObject(hideLoadFileActValuationPatent, objPatent);
             getPropertyDraw(openFileActValuationPatent).propertyCaption = addPropertyObject(hideOpenFileActValuationPatent, objPatent);
 
-            objAcademic = addSingleGroupObject(academic, baseGroup);
+            objAcademic = addSingleGroupObject(3, "academic", academic, "Учёный", baseGroup);
             addObjectActions(this, objAcademic);
 
-            objNonRussianSpecialist = addSingleGroupObject(nonRussianSpecialist, baseGroup);
+            objNonRussianSpecialist = addSingleGroupObject(4, "nonRussianSpecialist", nonRussianSpecialist, "Иностранный специалист", baseGroup);
             addObjectActions(this, objNonRussianSpecialist);
 
             addFixedFilter(new CompareFilterEntity(addPropertyObject(projectPatent, objPatent), Compare.EQUALS, objProject));
