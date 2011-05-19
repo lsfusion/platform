@@ -66,14 +66,11 @@
                             <tr>
                                 <td/>
                                 <td colspan="2">
-                                    <g:VerticalPanel width="100%" spacing="3" ui:field="voteButtonsPanel">
-                                        <g:cell horizontalAlignment="left">
-                                            <g:Anchor href="javascript:;" ui:field="bRefused"/>
-                                        </g:cell>
-                                        <g:cell horizontalAlignment="left">
-                                            <g:Anchor href="javascript:;" ui:field="bConnected"/>
-                                        </g:cell>
-                                    </g:VerticalPanel>
+                                    <g:HorizontalPanel ui:field="voteButtonsPanel">
+                                        <g:Button width="250" ui:field="bRefused" styleName="{style.refuse}"/>
+                                        <g:Label width="20" />
+                                        <g:Button width="250" ui:field="bConnected"/>
+                                    </g:HorizontalPanel>
                                     <br/>
                                     <span ui:field="voteResultSpan"></span>
                                 </td>
@@ -143,9 +140,7 @@
                                 <td>
                                     <g:VerticalPanel width="100%">
                                         <g:HTMLPanel><span ui:field="footerSpan" /></g:HTMLPanel>
-                                        <g:cell horizontalAlignment="center">
-                                            <g:Button ui:field="bVote"/>
-                                        </g:cell>
+                                        <g:Button width="250" ui:field="bVote"/>
                                     </g:VerticalPanel>
                                 </td>
                             </tr>

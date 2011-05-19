@@ -28,9 +28,30 @@ td {
     vertical-align: top;
 }
 
+button {
+    border: 1pt solid black;
+    font-size: 12px;
+    font-weight: bold;
+    background: #d7d7d7 url(/images/css/button_gray_bg.png) repeat-x;
+    height: 25px;
+}
+button:hover {
+    background-position: 0 -25px;
+    background-color: white;
+}
+
+button.refuse {
+    border-color: #C9FA15;
+    background: #bcd85f url(/images/css/button_green_bg.png) repeat-x;
+}
+button.refuse:hover {
+    background-position: 0 -25px;
+    background-color: white;
+}
+
 .numberLabel {
     font-size: 22pt;
-    font-weight:bolder;
+    font-weight: bolder;
     color: #555555;
 }
 
@@ -59,7 +80,6 @@ td {
 
 .questionComboBox {
     background: none repeat scroll 0 0 #F4FECC;
-    border: none;
     border: 2pt solid #C9FA15;
     width: 100%
 }

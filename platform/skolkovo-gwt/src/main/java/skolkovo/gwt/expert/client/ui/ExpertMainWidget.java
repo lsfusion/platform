@@ -74,11 +74,11 @@ public abstract class ExpertMainWidget extends Composite {
     @UiField
     Button bVote;
     @UiField
-    Anchor bRefused;
+    Button bRefused;
     @UiField
-    Anchor bConnected;
+    Button bConnected;
     @UiField
-    VerticalPanel voteButtonsPanel;
+    HorizontalPanel voteButtonsPanel;
     @UiField
     SpanElement footerSpan;
     @UiField
