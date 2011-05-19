@@ -16,7 +16,7 @@ import java.text.ParseException;
 public class HugoBossInvoiceImporter extends SingleSheetImporter {
     private static final int LAST_COLUMN = 35;
 
-    private final static int CUSTOM_NUMBER = 15, CUSTOM_NUMBER_6 = 16, EAN = 0;
+    private final static int CUSTOM_NUMBER = 15, CUSTOM_NUMBER_6 = 16, EAN = 0, ARTICLE = 1, COLORCODE = 4, SIZE = 6;
 
     public HugoBossInvoiceImporter(ImportInputTable inputTable, Object... fields) {
         super(inputTable, fields);
@@ -47,13 +47,31 @@ public class HugoBossInvoiceImporter extends SingleSheetImporter {
                 return value.substring(0, 10);
 
             case CUSTOM_NUMBER_6:
-                return value.substring(0, 6);
+                if (value.length() < 6)
+                    return "";
+                else
+                    return value.substring(0, 6);
 
             case EAN:
                 if (value.length() == 14)
                     return value.substring(1);
                 else
                     return value;
+
+            case COLORCODE:
+                if (value.isEmpty())
+                    return "000";
+                else
+                    return value;
+
+            case SIZE:
+                if (value.isEmpty())
+                    return "ONESI";
+                else
+                    return value;
+
+            case ARTICLE:
+                return value.substring(value.length()-8);
 
             default: return value;
         }
