@@ -571,4 +571,23 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteObject i
     public ArrayList<String> getDefaultForms() throws RemoteException {
         return BL.getDefaultForms(user);
     }
+
+    @Override
+    public byte[] getNavigatorTree() throws RemoteException {
+
+        Collection<NavigatorElement> listElements = BL.baseElement.addSubTree(new LinkedList<NavigatorElement>());
+
+        ByteArrayOutputStream outStream = new ByteArrayOutputStream();
+        DataOutputStream dataStream = new DataOutputStream(outStream);
+
+        try {
+            dataStream.writeInt(listElements.size());
+            for (NavigatorElement element : listElements)
+                element.serialize(dataStream);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        return outStream.toByteArray();
+    }
 }

@@ -52,7 +52,7 @@ public class NavigatorTree extends ClientTree {
         rootNode.add(new ExpandingTreeNode());
         expandPath(new TreePath(rootNode));
 
-        rootNode.addSubTreeAction(new ClientTreeAction("Открыть"){
+        rootNode.addSubTreeAction(new ClientTreeAction("Открыть") {
             public void actionPerformed(ClientTreeActionEvent e) {
                 changeCurrentElement();
             }
@@ -85,7 +85,7 @@ public class NavigatorTree extends ClientTree {
         if (node == null) return;
 
         Object nodeObject = node.getUserObject();
-        if (! (nodeObject instanceof ClientNavigatorForm)) return;
+        if (!(nodeObject instanceof ClientNavigatorForm)) return;
 
         try {
             navigator.openForm((ClientNavigatorForm) nodeObject);
@@ -96,13 +96,13 @@ public class NavigatorTree extends ClientTree {
 
     private void addNodeElements(DefaultMutableTreeNode parent) throws IOException {
 
-        DefaultMutableTreeNode firstChild = (DefaultMutableTreeNode)parent.getFirstChild();
+        DefaultMutableTreeNode firstChild = (DefaultMutableTreeNode) parent.getFirstChild();
 
-        if (! (firstChild instanceof ExpandingTreeNode)) return;
+        if (!(firstChild instanceof ExpandingTreeNode)) return;
         parent.removeAllChildren();
 
         Object nodeObject = parent.getUserObject();
-        if (! (nodeObject instanceof ClientNavigatorElement) ) return;
+        if (!(nodeObject instanceof ClientNavigatorElement)) return;
 
         ClientNavigatorElement element = (ClientNavigatorElement) nodeObject;
 

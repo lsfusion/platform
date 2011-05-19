@@ -2,6 +2,7 @@ package platform.server.form.navigator;
 
 import platform.base.BaseUtils;
 import platform.base.identity.IdentityObject;
+import platform.server.form.window.NavigatorWindow;
 import platform.server.logics.BusinessLogics;
 
 import java.io.ByteArrayInputStream;
@@ -15,10 +16,16 @@ public class NavigatorElement<T extends BusinessLogics<T>> extends IdentityObjec
 
     public String caption = "";
 
+    public NavigatorWindow window = null;
+
     public NavigatorElement() {
 
     }
-    public NavigatorElement(String sID, String caption) { this(null, sID, caption); }
+
+    public NavigatorElement(String sID, String caption) {
+        this(null, sID, caption);
+    }
+
     public NavigatorElement(NavigatorElement<T> parent, String sID, String caption) {
         this.sID = sID;
 //        assert elementsSIDs.add(sID); // проверка уникальности sID
@@ -32,10 +39,16 @@ public class NavigatorElement<T extends BusinessLogics<T>> extends IdentityObjec
     }
 
     private NavigatorElement<T> parent;
-    public NavigatorElement<T> getParent() { return parent; }
+
+    public NavigatorElement<T> getParent() {
+        return parent;
+    }
 
     private List<NavigatorElement<T>> children = new ArrayList<NavigatorElement<T>>();
-    Collection<NavigatorElement<T>> getChildren() { return children; }
+
+    Collection<NavigatorElement<T>> getChildren() {
+        return children;
+    }
 
     public Collection<NavigatorElement<T>> getChildren(boolean recursive) {
 
@@ -76,7 +89,7 @@ public class NavigatorElement<T extends BusinessLogics<T>> extends IdentityObjec
 
         if (sID.equals(elementSID)) return this;
 
-        for(NavigatorElement<T> child : children) {
+        for (NavigatorElement<T> child : children) {
             NavigatorElement<T> element = child.getNavigatorElement(elementSID);
             if (element != null) return element;
         }
@@ -87,6 +100,7 @@ public class NavigatorElement<T extends BusinessLogics<T>> extends IdentityObjec
     public byte getTypeID() {
         return 1;
     }
+
     public void serialize(DataOutputStream outStream) throws IOException {
         outStream.writeByte(getTypeID());
 
@@ -94,6 +108,11 @@ public class NavigatorElement<T extends BusinessLogics<T>> extends IdentityObjec
         outStream.writeUTF(getSID());
         outStream.writeUTF(caption);
         outStream.writeBoolean(hasChildren());
+        NavigatorWindow.serialize(outStream, window);
+        outStream.writeInt(children.size());
+        for (NavigatorElement<T> child : children) {
+            outStream.writeUTF(child.getSID());
+        }
     }
 
     public void removeAllChildren() {
@@ -117,5 +136,14 @@ public class NavigatorElement<T extends BusinessLogics<T>> extends IdentityObjec
         String caption = inStream.readUTF();
 
         return new NavigatorElement(sID, caption);
+    }
+
+    public Collection<NavigatorElement> addSubTree(Collection<NavigatorElement> collection) {
+        collection.add(this);
+        for (NavigatorElement<T> child : children) {
+            child.addSubTree(collection);
+        }
+
+        return collection;
     }
 }

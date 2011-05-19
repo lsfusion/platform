@@ -1,6 +1,7 @@
 package platform.client;
 
 import platform.client.form.ClientFormController;
+import platform.client.logics.DeSerializer;
 import platform.client.navigator.ClientNavigator;
 import platform.client.navigator.ClientNavigatorForm;
 import platform.interop.form.RemoteFormInterface;
@@ -15,7 +16,7 @@ import java.util.StringTokenizer;
 public class SimpleMainFrame extends MainFrame {
     public SimpleMainFrame(RemoteNavigatorInterface remoteNavigator, String forms) throws ClassNotFoundException, IOException {
         super(remoteNavigator);
-
+        DeSerializer.deserializeListClientNavigatorElement(remoteNavigator.getNavigatorTree());
         ClientNavigator navigator = new ClientNavigator(remoteNavigator) {
 
             @Override

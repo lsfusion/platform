@@ -42,6 +42,7 @@ import platform.server.form.navigator.*;
 import platform.server.form.view.ContainerView;
 import platform.server.form.view.DefaultFormView;
 import platform.server.form.view.FormView;
+import platform.server.form.window.NavigatorWindow;
 import platform.server.integration.*;
 import platform.server.logics.linear.LP;
 import platform.server.logics.property.*;
@@ -1023,6 +1024,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         }
 
         baseElement = new NavigatorElement<T>("baseElement", "Base Group");
+        baseWindow = new NavigatorWindow(baseElement.getSID() + "Window", "Навигатор", 0, 0, 20, 70);
+        baseElement.window = baseWindow;
     }
 
     void initBaseProperties() {
@@ -2134,6 +2137,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     public NavigatorElement<T> baseElement;
     public NavigatorElement<T> objectElement;
     public NavigatorElement<T> adminElement;
+    public NavigatorWindow baseWindow;
 
     protected abstract void initNavigators() throws JRException, FileNotFoundException;
 

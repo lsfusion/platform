@@ -18,6 +18,8 @@ import platform.client.MainFrame;
 import platform.client.descriptor.view.LogicsDescriptorView;
 import platform.client.navigator.ClientNavigator;
 import platform.client.navigator.ClientNavigatorForm;
+import platform.fullclient.navigator.NavigatorController;
+import platform.fullclient.navigator.NavigatorView;
 import platform.interop.exceptions.LoginException;
 import platform.interop.form.RemoteFormInterface;
 import platform.interop.navigator.RemoteNavigatorInterface;
@@ -35,9 +37,12 @@ public class DockableMainFrame extends MainFrame {
 
 
     private ClientNavigator mainNavigator;
+    public static NavigatorController navigatorController;
 
     public DockableMainFrame(RemoteNavigatorInterface remoteNavigator) throws ClassNotFoundException, IOException {
         super(remoteNavigator);
+
+        navigatorController = new NavigatorController(remoteNavigator);
 
         mainNavigator = new ClientNavigator(remoteNavigator) {
 
@@ -63,7 +68,10 @@ public class DockableMainFrame extends MainFrame {
             }
         };
 
-        initDockStations(mainNavigator);
+        navigatorController.mainNavigator = mainNavigator;
+
+        initDockStations(mainNavigator, navigatorController);
+        navigatorController.update(null, null);
         try {
             if (remoteNavigator.showDefaultForms()) {
                 ArrayList<String> ids = remoteNavigator.getDefaultForms();
@@ -90,6 +98,7 @@ public class DockableMainFrame extends MainFrame {
             public void windowClosing(WindowEvent event) {
                 super.windowClosing(event);
                 try {
+                    control.save("default");
                     DataOutputStream out = new DataOutputStream(new FileOutputStream(new File(baseDir, "layout.data")));
                     view.getForms().write(out);
                     control.getResources().writeStream(out);
@@ -134,7 +143,7 @@ public class DockableMainFrame extends MainFrame {
     }
 
     // важно, что в случае каких-либо Exception'ов при восстановлении форм нужно все игнорировать и открывать расположение "по умолчанию"
-    private void initDockStations(ClientNavigator mainNavigator) {
+    private void initDockStations(ClientNavigator mainNavigator, NavigatorController navigatorController) {
 
         control = new CControl(this);
         view = new ViewManager(control, mainNavigator);
@@ -159,15 +168,30 @@ public class DockableMainFrame extends MainFrame {
 
         add(control.getContentArea(), BorderLayout.CENTER);
         CGrid grid = new CGrid(control);
-        grid.add(0, 0, 1, 2, createDockable("Навигатор", mainNavigator));
-        grid.add(0, 2, 1, 1, createDockable("Связанные формы", mainNavigator.relevantFormNavigator));
-        grid.add(0, 3, 1, 1, createDockable("Классовые формы", mainNavigator.relevantClassNavigator));
-        grid.add(0, 4, 1, 1, createDockable("Лог", Log.getPanel()));
-        grid.add(1, 0, 5, 5, view.getGridArea());
-        grid.add(0, 5, 6, 0.1, createStatusDockable(status));
+        grid.add(0, 70, 20, 29, createDockable("Связанные формы", mainNavigator.relevantFormNavigator), createDockable("Классовые формы", mainNavigator.relevantClassNavigator), createDockable("Лог", Log.getPanel()));
+
+        for (NavigatorView view : navigatorController.getAllViews()) {
+            SingleCDockable dockable = createDockable(view.getCaption(), view);
+            navigatorController.recordDockable(view, dockable);
+            grid.add(view.getDockX(), view.getDockY(), view.getDockWidth(), view.getDockHeight(), dockable);
+        }
+
+        grid.add(20, 20, 80, 79, view.getGridArea());
+        grid.add(0, 99, 100, 1, createStatusDockable(status));
         control.getContentArea().deploy(grid);
-        //control.getFactory()
         setupMenu();
+
+        for (String s : control.layouts()) {
+            if (s.equals("default")) {
+                try {
+                    control.load("default");
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    control.getContentArea().deploy(grid); // иначе покажется пустая форма
+                }
+                break;
+            }
+        }
 
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     }
@@ -314,16 +338,13 @@ public class DockableMainFrame extends MainFrame {
     public SingleCDockable createDockable(String title, JComponent navigator) {
         DefaultSingleCDockable dockable = new DefaultSingleCDockable(title, title, navigator);
         dockable.setCloseable(true);
-        //dockable.setDefaultLocation(CDockable.ExtendedMode.MINIMIZED, CLocation.base().minimalEast());
-        //dockable.setDefaultLocation(CDockable.ExtendedMode.EXTERNALIZED, CLocation.external(0, 0, 300, 300));
         return dockable;
     }
 
     public SingleCDockable createStatusDockable(JComponent navigator) {
-        DefaultSingleCDockable dockable = new DefaultSingleCDockable("Log", "", navigator);
+        DefaultSingleCDockable dockable = new DefaultSingleCDockable("Log", "Лог", navigator);
+
         dockable.setTitleShown(false);
-        dockable.setResizeLockedVertically(true);
-        dockable.setExternalizable(false);
         dockable.setCloseable(false);
         return dockable;
     }

@@ -37,4 +37,6 @@ public interface RemoteNavigatorInterface extends PendingRemote {
     boolean showDefaultForms() throws RemoteException;
 
     ArrayList<String> getDefaultForms() throws RemoteException;
+
+     byte[] getNavigatorTree() throws RemoteException;
 }

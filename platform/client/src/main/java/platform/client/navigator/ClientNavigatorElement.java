@@ -3,14 +3,20 @@ package platform.client.navigator;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.util.*;
 
 public class ClientNavigatorElement {
+    private static Map<String, ClientNavigatorElement> elements = new HashMap<String, ClientNavigatorElement>();
+    private static Map<String, HashSet<ClientNavigatorElement>> parents = new HashMap<String, HashSet<ClientNavigatorElement>>();
 
     public int ID;
     private String caption;
     public String sID;
+    public List<String> childrenSid = new LinkedList<String>();
+
 
     protected boolean hasChildren = false;
+    public ClientNavigatorWindow window;
 
     public boolean hasChildren() {
         return hasChildren;
@@ -39,6 +45,23 @@ public class ClientNavigatorElement {
         sID = inStream.readUTF();
         caption = inStream.readUTF();
         hasChildren = inStream.readBoolean();
+        window = ClientNavigatorWindow.deserialize(inStream);
+        int cnt = inStream.readInt();
+        for (int i = 0; i < cnt; i++) {
+            String childSID = inStream.readUTF();
+            addChild(childSID);
+        }
+        if (window != null) {
+            window.elements.add(this);
+        }
+        elements.put(sID, this);
+    }
+
+    private void addChild(String childSID) {
+        childrenSid.add(childSID);
+        HashSet<ClientNavigatorElement> parentsSet = parents.containsKey(childSID) ? parents.get(childSID) : new HashSet<ClientNavigatorElement>();
+        parentsSet.add(this);
+        parents.put(childSID, parentsSet);
     }
 
     public static ClientNavigatorElement deserialize(DataInputStream inStream) throws IOException {
@@ -75,5 +98,20 @@ public class ClientNavigatorElement {
 
     public String getSID() {
         return sID;
+    }
+
+    public static ClientNavigatorElement get(String sid) {
+        return elements.get(sid);
+    }
+
+    //содержатся ли родители текущей вершины в заданном множестве
+    public boolean containsParent(Set<ClientNavigatorElement> set) {
+        Set<ClientNavigatorElement> parentSet = parents.get(sID);
+        if (parentSet != null) {
+            for (ClientNavigatorElement element : parentSet) {
+                if (set.contains(element)) return true;
+            }
+        }
+        return false;
     }
 }

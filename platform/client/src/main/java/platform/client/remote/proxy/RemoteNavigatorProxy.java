@@ -129,4 +129,9 @@ public class RemoteNavigatorProxy<T extends RemoteNavigatorInterface>
     public ArrayList<String> getDefaultForms() throws RemoteException {
         return target.getDefaultForms();
     }
+
+    @Override
+    public byte[] getNavigatorTree() throws RemoteException {
+        return target.getNavigatorTree();
+    }
 }
