@@ -2165,7 +2165,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
 
     @Override
     public byte[] getMainIcon() throws RemoteException {
-        InputStream in = SkolkovoBusinessLogics.class.getResourceAsStream("/images/sk_icon.jpg");
+        InputStream in = SkolkovoBusinessLogics.class.getResourceAsStream("/images/sk_icon.png");
         try {
             try {
                 return IOUtils.readBytesFromStream(in);
@@ -2182,7 +2182,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
 
     @Override
     public byte[] getLogo() throws RemoteException {
-        InputStream in = SkolkovoBusinessLogics.class.getResourceAsStream("/images/sk_logo.jpg");
+        InputStream in = SkolkovoBusinessLogics.class.getResourceAsStream("/images/sk_logo.png");
         try {
             try {
                 return IOUtils.readBytesFromStream(in);
