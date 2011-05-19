@@ -59,10 +59,6 @@ public class ReportSourceGenerator<T extends BusinessLogics<T>>  {
     }
 
     public Map<String, ReportData> generate() throws SQLException {
-        form.endApply();
-        form.applyFilters();
-        form.applyOrders();
-
         iterateChildReports(hierarchy.getRootNodes(), new ArrayList<GroupObjectInstance>(), null);
         return sources;
     }

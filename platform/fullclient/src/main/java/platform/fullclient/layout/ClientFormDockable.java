@@ -14,7 +14,7 @@ public class ClientFormDockable extends FormDockable {
     private ClientFormController clientForm;
 
     public ClientFormDockable(String formSID, ClientNavigator inavigator, boolean currentSession, MultipleCDockableFactory<FormDockable, ?> factory) throws IOException, ClassNotFoundException {
-        super(formSID, inavigator, currentSession, factory);
+        super(formSID, inavigator, currentSession, factory, true);
     }
 
     public ClientFormDockable(ClientNavigator navigator, RemoteFormInterface remoteForm, MultipleCDockableFactory<FormDockable, ?> factory) throws IOException, ClassNotFoundException, JRException {

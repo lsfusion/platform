@@ -162,27 +162,28 @@ public class EmailActionProperty extends ActionProperty {
                     remoteForm = executeForm.createForm(forms.get(i), formObjects);
                 else
                     remoteForm = BL.createForm(session, forms.get(i), formObjects);
-
-                ReportGenerator report = new ReportGenerator(remoteForm);
-                JasperPrint print = report.createReport(false, types.get(i) == FormStorageType.INLINE, attachmentFiles);
-                String filePath = createReportFile(print, formats.get(i));
-                if (types.get(i) == FormStorageType.INLINE) {
-                    inlineForms.add(filePath);
-                } else {
-                    String attachmentName = null;
-                    LP attachmentProp = attachmentNames.get(i);
-                    if (attachmentProp != null) {
-                        // считаем, что для attachmentProp входы идут ровно также как и у ActionProp - в той же последовательности
-                        int intSize = attachmentProp.listInterfaces.size();
-                        DataObject[] input = new DataObject[intSize];
-                        for (int j = 0; j < intSize; j++)
-                            input[j] = keys.get(((List)interfaces).get(j));
-                        attachmentName = (String)attachmentProp.read(session, input);
+                if(remoteForm!=null) { // если объекты подошли
+                    ReportGenerator report = new ReportGenerator(remoteForm);
+                    JasperPrint print = report.createReport(false, types.get(i) == FormStorageType.INLINE, attachmentFiles);
+                    String filePath = createReportFile(print, formats.get(i));
+                    if (types.get(i) == FormStorageType.INLINE) {
+                        inlineForms.add(filePath);
+                    } else {
+                        String attachmentName = null;
+                        LP attachmentProp = attachmentNames.get(i);
+                        if (attachmentProp != null) {
+                            // считаем, что для attachmentProp входы идут ровно также как и у ActionProp - в той же последовательности
+                            int intSize = attachmentProp.listInterfaces.size();
+                            DataObject[] input = new DataObject[intSize];
+                            for (int j = 0; j < intSize; j++)
+                                input[j] = keys.get(((List)interfaces).get(j));
+                            attachmentName = (String)attachmentProp.read(session, input);
+                        }
+                        if (attachmentName == null)
+                            attachmentName = forms.get(i).caption;
+                        attachmentName = BaseUtils.rtrim(attachmentName.replace('"', '\''));
+                        attachmentForms.add(new EmailSender.AttachmentProperties(filePath, attachmentName, formats.get(i)));
                     }
-                    if (attachmentName == null)
-                        attachmentName = forms.get(i).caption;
-                    attachmentName = BaseUtils.rtrim(attachmentName.replace('"', '\''));
-                    attachmentForms.add(new EmailSender.AttachmentProperties(filePath, attachmentName, formats.get(i)));
                 }
             }
 

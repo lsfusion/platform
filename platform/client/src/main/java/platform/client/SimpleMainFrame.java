@@ -30,7 +30,7 @@ public class SimpleMainFrame extends MainFrame {
         StringTokenizer st = new StringTokenizer(forms, ",");
         while (st.hasMoreTokens()) {
             String formSID = st.nextToken();
-            final ClientFormController form = new ClientFormController(remoteNavigator.createForm(formSID, false), null);
+            final ClientFormController form = new ClientFormController(remoteNavigator.createForm(formSID, false, true), null);
             form.getComponent().setFocusTraversalPolicyProvider(true);
             mainPane.addTab(form.getFullCaption(), form.getComponent());
 

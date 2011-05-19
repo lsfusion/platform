@@ -11,7 +11,7 @@ public interface RemoteNavigatorInterface extends PendingRemote {
 
     String getForms(String formSet) throws RemoteException;
 
-    RemoteFormInterface createForm(String formSID, boolean currentSession) throws RemoteException;
+    RemoteFormInterface createForm(String formSID, boolean currentSession, boolean interactive) throws RemoteException;
     RemoteFormInterface createForm(byte[] formState) throws RemoteException;
     void saveForm(String formSID, byte[] formState) throws RemoteException;
     void saveVisualSetup(byte[] data) throws RemoteException;

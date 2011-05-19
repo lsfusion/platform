@@ -109,11 +109,12 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
 
     public final InstanceFactory instanceFactory;
 
+    // для импорта конструктор, объекты пустые
     public FormInstance(FormEntity<T> entity, T BL, DataSession session, SecurityPolicy securityPolicy, FocusListener<T> focusListener, CustomClassListener classListener, PropertyObjectInterfaceInstance computer) throws SQLException {
-        this(entity, BL, session, securityPolicy, focusListener, classListener, computer, new HashMap<ObjectEntity, DataObject>());
+        this(entity, BL, session, securityPolicy, focusListener, classListener, computer, new HashMap<ObjectEntity, DataObject>(), false);
     }
 
-    public FormInstance(FormEntity<T> entity, T BL, DataSession session, SecurityPolicy securityPolicy, FocusListener<T> focusListener, CustomClassListener classListener, PropertyObjectInterfaceInstance computer, Map<ObjectEntity, ? extends ObjectValue> mapObjects) throws SQLException {
+    public FormInstance(FormEntity<T> entity, T BL, DataSession session, SecurityPolicy securityPolicy, FocusListener<T> focusListener, CustomClassListener classListener, PropertyObjectInterfaceInstance computer, Map<ObjectEntity, ? extends ObjectValue> mapObjects, boolean interactive) throws SQLException {
         this.entity = entity;
         this.BL = BL;
         this.session = session;
@@ -165,7 +166,25 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
         }
 
         addObjectOnTransaction();
+
+        if(!interactive) {
+            endApply();
+            this.mapObjects = mapObjects;
+        }
+        this.interactive = interactive;
     }
+
+    private Map<ObjectEntity, ? extends ObjectValue> mapObjects = null;
+
+    public boolean areObjectsFounded() {
+        assert !interactive;
+        for(Entry<ObjectEntity, ? extends ObjectValue> mapObjectInstance : mapObjects.entrySet())
+            if(!instanceFactory.getInstance(mapObjectInstance.getKey()).getObjectValue().equals(mapObjectInstance.getValue()))
+                return false;
+        return true;
+    }
+
+    private boolean interactive = true;
 
     public List<GroupObjectInstance> groups = new ArrayList<GroupObjectInstance>();
     public List<TreeGroupInstance> treeGroups = new ArrayList<TreeGroupInstance>();
@@ -683,16 +702,12 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
         return result;
     }
 
-    public FormInstance<T> createForm(FormEntity<T> form, Map<ObjectEntity, DataObject> mapObjects) throws SQLException {
-        return createForm(form, mapObjects, false);
-    }
-
-    public FormInstance<T> createForm(FormEntity<T> form, Map<ObjectEntity, DataObject> mapObjects, boolean newSession) throws SQLException {
+    public FormInstance<T> createForm(FormEntity<T> form, Map<ObjectEntity, DataObject> mapObjects, boolean newSession, boolean interactive) throws SQLException {
         DataSession formSession = newSession
                               ? BL.createSession(session.sql, session.user, session.computer)
                               : session;
 
-        return new FormInstance<T>(form, BL, formSession, securityPolicy, getFocusListener(), getClassListener(), instanceFactory.computer, mapObjects);
+        return new FormInstance<T>(form, BL, formSession, securityPolicy, getFocusListener(), getClassListener(), instanceFactory.computer, mapObjects, interactive);
     }
 
     public void forceChangeObject(ObjectInstance object, ObjectValue value) throws SQLException {
@@ -951,6 +966,8 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
     }
 
     public FormChanges endApply() throws SQLException {
+
+        assert interactive;
 
         ApplyTransaction transaction = new ApplyTransaction();
 

@@ -43,7 +43,8 @@ public class DialogInstance<T extends BusinessLogics<T>> extends FormInstance<T>
                           ObjectEntity dialogEntity,
                           ObjectValue dialogValue,
                           PropertyObjectInterfaceInstance computer) throws SQLException {
-        super(entity, BL, session, securityPolicy, tFocusView, classListener, computer, Collections.singletonMap(dialogEntity, dialogValue));
+        super(entity, BL, session, securityPolicy, tFocusView, classListener, computer, Collections.singletonMap(dialogEntity, dialogValue), true);
+        // все равно нашли объекты или нет
 
         dialogObject = instanceFactory.getInstance(dialogEntity);
     }

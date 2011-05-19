@@ -4,6 +4,7 @@ import platform.base.BaseUtils;
 import platform.interop.action.ClientAction;
 import platform.interop.action.ContinueAutoActionsClientAction;
 import platform.interop.action.FormClientAction;
+import platform.interop.action.MessageClientAction;
 import platform.server.classes.ValueClass;
 import platform.server.form.entity.FormEntity;
 import platform.server.form.entity.ObjectEntity;
@@ -65,30 +66,34 @@ public class FormActionProperty extends ActionProperty {
     public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, List<ClientAction> actions, RemoteForm thisRemoteForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapExecuteObjects) {
         try {
             FormInstance thisFormInstance = thisRemoteForm.form;
-            FormInstance newFormInstance = thisFormInstance.createForm(form, BaseUtils.join(mapObjects, keys), newSession);
-            for (Map.Entry<ObjectEntity, ClassPropertyInterface> entry : mapObjects.entrySet()) {
-                newFormInstance.forceChangeObject(newFormInstance.instanceFactory.getInstance(entry.getKey()), keys.get(entry.getValue()));
-            }
-
-            if (form instanceof SelfInstancePostProcessor) {
-                ((SelfInstancePostProcessor) form).postProcessSelfInstance(keys, thisRemoteForm, newFormInstance);
-            }
-
-            RemoteForm newRemoteForm = thisRemoteForm.createForm(newFormInstance);
-
-            for (int i = 0; i < setProperties.length; i++) {
-                PropertyObjectInstance setPropInstance = newFormInstance.instanceFactory.getInstance(setProperties[i]);
-
-                Object readenValue = null;
-                if (getProperties[i] != null) {
-                    PropertyObjectInstance getPropInstance = thisFormInstance.instanceFactory.getInstance(getProperties[i]);
-                    readenValue = getPropInstance.read(thisFormInstance.session.sql, thisFormInstance.session.modifier, thisFormInstance.session.env);
+            FormInstance newFormInstance = thisFormInstance.createForm(form, BaseUtils.join(mapObjects, keys), newSession, !form.isPrintForm);
+            if(form.isPrintForm && !newFormInstance.areObjectsFounded()) {
+                actions.add(new MessageClientAction("Форма не подходит для данных параметров", form.caption));
+            } else {
+               for (Map.Entry<ObjectEntity, ClassPropertyInterface> entry : mapObjects.entrySet()) {
+                    newFormInstance.forceChangeObject(newFormInstance.instanceFactory.getInstance(entry.getKey()), keys.get(entry.getValue()));
                 }
 
-                newFormInstance.changeProperty(setPropInstance, readenValue, newRemoteForm);
-            }
+                if (form instanceof SelfInstancePostProcessor) {
+                    ((SelfInstancePostProcessor) form).postProcessSelfInstance(keys, thisRemoteForm, newFormInstance);
+                }
 
-            actions.add(new FormClientAction(form.isPrintForm, newSession, isModal, newRemoteForm));
+                RemoteForm newRemoteForm = thisRemoteForm.createForm(newFormInstance);
+
+                for (int i = 0; i < setProperties.length; i++) {
+                    PropertyObjectInstance setPropInstance = newFormInstance.instanceFactory.getInstance(setProperties[i]);
+
+                    Object readenValue = null;
+                    if (getProperties[i] != null) {
+                        PropertyObjectInstance getPropInstance = thisFormInstance.instanceFactory.getInstance(getProperties[i]);
+                        readenValue = getPropInstance.read(thisFormInstance.session.sql, thisFormInstance.session.modifier, thisFormInstance.session.env);
+                    }
+
+                    newFormInstance.changeProperty(setPropInstance, readenValue, newRemoteForm);
+                }
+
+                actions.add(new FormClientAction(form.isPrintForm, newSession, isModal, newRemoteForm));
+            }
             actions.add(new ContinueAutoActionsClientAction());
         } catch (SQLException e) {
             throw new RuntimeException(e);

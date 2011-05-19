@@ -447,7 +447,7 @@ public class DataSession extends MutableObject implements SessionChanges, ExprCh
     public void executeDerived(final BusinessLogics<?> BL, List<ClientAction> actions) throws SQLException {
 
         for(ExecuteProperty property : BL.getExecuteDerivedProperties()) {
-            PropertyChange<ClassPropertyInterface> propertyChange = property.derivedChange.getDataChanges(modifier).get(property);
+            PropertyChange<ClassPropertyInterface> propertyChange = property.derivedChange.getDataChanges(incrementApply).get(property);
             if(propertyChange!=null)
                 for (Iterator<Map.Entry<Map<ClassPropertyInterface, DataObject>, Map<String, ObjectValue>>> iterator = propertyChange.getQuery().executeClasses(sql, env, baseClass).entrySet().iterator(); iterator.hasNext();) {
                     Map.Entry<Map<ClassPropertyInterface, DataObject>, Map<String, ObjectValue>> executeRow = iterator.next();

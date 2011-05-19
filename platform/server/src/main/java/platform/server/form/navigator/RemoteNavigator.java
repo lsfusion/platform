@@ -337,14 +337,14 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteObject i
         return BL.getForms(formSet);
     }
 
-    public RemoteFormInterface createForm(String formSID, boolean currentSession) {
-        return createForm(getFormEntity(formSID), currentSession);
+    public RemoteFormInterface createForm(String formSID, boolean currentSession, boolean interactive) {
+        return createForm(getFormEntity(formSID), currentSession, interactive);
     }
 
     private Map<FormEntity, RemoteForm> openForms = new HashMap<FormEntity, RemoteForm>();
     private Map<FormEntity, RemoteForm> invalidatedForms = new HashMap<FormEntity, RemoteForm>();
 
-    public RemoteFormInterface createForm(FormEntity<T> formEntity, boolean currentSession) {
+    public RemoteFormInterface createForm(FormEntity<T> formEntity, boolean currentSession, boolean interactive) {
         RemoteForm remoteForm = invalidatedForms.remove(formEntity);
         if (remoteForm != null) {
             remoteForm.form.fullRefresh();
@@ -367,7 +367,8 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteObject i
                         }
                 }
 
-                FormInstance<T> formInstance = new FormInstance<T>(formEntity, BL, session, securityPolicy, this, this, computer, cacheSeeks);
+                FormInstance<T> formInstance = new FormInstance<T>(formEntity, BL, session, securityPolicy, this, this, computer, cacheSeeks, interactive);
+                // все равно подошли объекты или нет
 
                 remoteForm = new RemoteForm<T, FormInstance<T>>(formInstance, formEntity.getRichDesign(), exportPort, this);
             } catch (Exception e) {
@@ -381,7 +382,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteObject i
 
     public RemoteFormInterface createForm(byte[] formState) throws RemoteException {
         FormEntity newFormEntity = FormEntity.deserialize(BL, formState);
-        return createForm(newFormEntity, false);
+        return createForm(newFormEntity, false, true);
     }
 
     public void saveForm(String formSID, byte[] formState) throws RemoteException {

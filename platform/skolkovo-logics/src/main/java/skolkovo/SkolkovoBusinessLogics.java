@@ -57,6 +57,12 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
 
     private LP inExpertVoteDateFromDateTo;
     private LP quantityInExpertDateFromDateTo;
+    private LP emailClaimerAcceptedHeaderVote;
+    private LP emailClaimerNameVote;
+    private LP emailClaimerRejectedHeaderVote;
+    private LP emailClaimerAcceptedHeaderProject;
+    private LP emailAcceptedProjectEA;
+    private LP emailAcceptedProject;
 
     public SkolkovoBusinessLogics(DataAdapter adapter, int exportPort) throws IOException, ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException, FileNotFoundException, JRException {
         super(adapter, exportPort);
@@ -923,7 +929,6 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         voteValuedProject = addJProp(idGroup, "voteValuedProject", true, "Оцененнное заседание (ИД)", and1, voteSucceededProject, 1, noCurrentVoteProject, 1); // нет открытого заседания и есть состояшееся заседания
 
         acceptedProject = addJProp(projectStatusGroup, "acceptedProject", "Оценен положительно", acceptedVote, voteValuedProject, 1);
-        voteRejectedProject = addJProp(projectStatusGroup, "rejectedProject", "Оценен отрицательно", andNot1, voteValuedProject, 1, acceptedVote, 1);
 
         needExtraVoteProject = addJProp("needExtraVoteProject", true, "Треб. заседание", and(true, true, true),
                                         is(project), 1,
@@ -951,8 +956,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         addCUProp("userRole", true, "Роль пользователя", addCProp(StringClass.get(30), "expert", expert));
 
         statusProject = addCaseUProp(idGroup, "statusProject", true, "Статус (ИД)",
-                    acceptedProject, 1, addCProp(projectStatus, "accepted", project), 1,
-                    voteRejectedProject, 1, addCProp(projectStatus, "rejected", project), 1,
+                    voteValuedProject, 1, addIfElseUProp(addCProp(projectStatus, "accepted", project), addCProp(projectStatus, "rejected", project), acceptedProject, 1), 1,
                     voteSucceededProject, 1, addCProp(projectStatus, "succeeded", project), 1,
                     voteInProgressProject, 1, addCProp(projectStatus, "inProgress", project), 1,
                     needExtraVoteProject, 1, addCProp(projectStatus, "needExtraVote", project), 1,
@@ -1021,7 +1025,9 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         emailStartVoteEA = addEAProp(vote);
         addEARecepient(emailStartVoteEA, emailDocuments);
 
-        emailStartHeaderVote = addJProp("emailStartHeaderVote", "Заголовок созыва заседания", addSFProp("(CAST(prm1 as text))||(CAST(prm2 as text))", StringClass.get(2000), 2), addCProp(StringClass.get(2000), "Созыв заседания - "), nameNativeClaimerVote, 1);
+        emailClaimerNameVote = addJProp(addSFProp("(CAST(prm1 as text))||(CAST(prm2 as text))", StringClass.get(2000), 2), object(StringClass.get(2000)), 2, nameNativeClaimerVote, 1);
+
+        emailStartHeaderVote = addJProp("emailStartHeaderVote", "Заголовок созыва заседания", emailClaimerNameVote, 1, addCProp(StringClass.get(2000), "Созыв заседания - "));
         emailStartVote = addJProp(baseGroup, true, "emailStartVote", "Созыв заседания (e-mail)", emailStartVoteEA, 1, emailStartHeaderVote, 1);
         emailStartVote.property.askConfirm = true;
 //        emailStartVote.setDerivedForcedChange(addCProp(ActionClass.instance, true), openedVote, 1);
@@ -1029,7 +1035,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         emailProtocolVoteEA = addEAProp(vote);
         addEARecepient(emailProtocolVoteEA, emailDocuments);
 
-        emailProtocolHeaderVote = addJProp("emailProtocolHeaderVote", "Заголовок протокола заседания", addSFProp("(CAST(prm1 as text))||(CAST(prm2 as text))", StringClass.get(2000), 2), addCProp(StringClass.get(2000), "Протокол заседания - "), nameNativeClaimerVote, 1);
+        emailProtocolHeaderVote = addJProp("emailProtocolHeaderVote", "Заголовок протокола заседания", emailClaimerNameVote, 1, addCProp(StringClass.get(2000), "Протокол заседания - "));
         emailProtocolVote = addJProp(baseGroup, true, "emailProtocolVote", "Протокол заседания (e-mail)", emailProtocolVoteEA, 1, emailProtocolHeaderVote, 1);
         emailProtocolVote.property.askConfirm = true;
 //        emailProtocolVote.setDerivedForcedChange(addCProp(ActionClass.instance, true), closedVote, 1);
@@ -1037,7 +1043,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         emailClosedVoteEA = addEAProp(vote);
         addEARecepient(emailClosedVoteEA, emailDocuments);
 
-        emailClosedHeaderVote = addJProp(addSFProp("(CAST(prm1 as text))||(CAST(prm2 as text))", StringClass.get(2000), 2), addCProp(StringClass.get(2000), "Результаты заседания - "), nameNativeClaimerVote, 1);
+        emailClosedHeaderVote = addJProp(emailClaimerNameVote, 1, addCProp(StringClass.get(2000), "Результаты заседания - "));
         emailClosedVote = addJProp(baseGroup, true, "emailClosedVote", "Результаты заседания (e-mail)", emailClosedVoteEA, 1, emailClosedHeaderVote, 1);
         emailClosedVote.setImage("/images/email.png");
         emailClosedVote.property.askConfirm = true;
@@ -1054,6 +1060,17 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         emailAuthExpert.setImage("/images/email.png");
         emailAuthExpert.property.askConfirm = true;
 //        emailAuthExpert.setDerivedChange(addCProp(ActionClass.instance, true), userLogin, 1, userPassword, 1);
+
+        emailClaimerAcceptedHeaderVote = addJProp(emailClaimerNameVote, 1, addCProp(StringClass.get(2000), "Решение о соответствии - "));
+        emailClaimerRejectedHeaderVote = addJProp(emailClaimerNameVote, 1, addCProp(StringClass.get(2000), "Решение о несоответствии - "));
+
+        emailAcceptedProjectEA = addEAProp(project);
+        addEARecepient(emailAcceptedProjectEA, emailDocuments);
+        emailClaimerAcceptedHeaderProject = addJProp(addSFProp("(CAST(prm1 as text))||(CAST(prm2 as text))", StringClass.get(2000), 2), addCProp(StringClass.get(2000), "Решение о присвоении статуса участника - "), nameNativeClaimerProject, 1);
+        emailAcceptedProject = addJProp(baseGroup, true, "emailAcceptedProject", "Решение о присвоении статуса участника (e-mail)", emailAcceptedProjectEA, 1, emailClaimerAcceptedHeaderProject, 1);
+        emailAcceptedProject.setImage("/images/email.png");
+        emailAcceptedProject.property.askConfirm = true;
+        emailAcceptedProject.setDerivedForcedChange(addCProp(ActionClass.instance, true), acceptedProject, 1);
 
         emailToExpert = addJProp("emailToExpert", "Эксперт по e-mail", addJProp(and1, 1, is(expert), 1), emailToObject, 1);
     }
@@ -1748,6 +1765,10 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
             objVote = addSingleGroupObject(genID(), "vote", vote, "Заседание", dateEndVote, nameNativeProjectVote, dateProjectVote, nameNativeClaimerVote, nameAblateClaimerVote);
             objVote.groupTo.initClassView = ClassViewType.PANEL;
 
+            addFixedFilter(new NotNullFilterEntity(addPropertyObject(succeededVote, objVote)));
+            addFixedFilter(new NotNullFilterEntity(addPropertyObject(acceptedVote, objVote)));
+
+            addAttachEAForm(emailClosedVoteEA, this, EmailActionProperty.Format.PDF, emailClaimerAcceptedHeaderVote, objVote, 1);
         }
     }
 
@@ -1761,6 +1782,10 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
             objVote = addSingleGroupObject(genID(), "vote", vote, "Заседание", dateEndVote, nameNativeProjectVote, dateProjectVote, nameNativeClaimerVote, nameAblateClaimerVote, nameDativusClaimerVote);
             objVote.groupTo.initClassView = ClassViewType.PANEL;
 
+            addFixedFilter(new NotNullFilterEntity(addPropertyObject(succeededVote, objVote)));
+            addFixedFilter(new NotFilterEntity(new NotNullFilterEntity(addPropertyObject(acceptedVote, objVote))));
+
+            addAttachEAForm(emailClosedVoteEA, this, EmailActionProperty.Format.PDF, emailClaimerRejectedHeaderVote, objVote, 1);
         }
     }
 
@@ -1773,6 +1798,10 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
 
             objProject = addSingleGroupObject(genID(), "project", project, "Проект", date, nameNativeProject, nameNativeClaimerProject, nameAblateClaimerProject, nameDativusClaimerProject);
             objProject.groupTo.initClassView = ClassViewType.PANEL;
+
+            addFixedFilter(new NotNullFilterEntity(addPropertyObject(acceptedProject, objProject)));
+
+            addAttachEAForm(emailAcceptedProjectEA, this, EmailActionProperty.Format.PDF, emailClaimerAcceptedHeaderProject, objProject, 1);
         }
     }
     

@@ -4836,9 +4836,12 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
     */
 
+    // создает форму не интерактивную (не для чтения)
     public RemoteFormInterface createForm(DataSession session, FormEntity formEntity, Map<ObjectEntity, DataObject> mapObjects) {
         try {
-            FormInstance<T> formInstance = new FormInstance<T>(formEntity, (T) this, session, PolicyManager.serverSecurityPolicy, null, null, new DataObject(getServerComputer(), computer), mapObjects);
+            FormInstance<T> formInstance = new FormInstance<T>(formEntity, (T) this, session, PolicyManager.serverSecurityPolicy, null, null, new DataObject(getServerComputer(), computer), mapObjects, false);
+            if(!formInstance.areObjectsFounded())
+                return null;
             return new RemoteForm<T, FormInstance<T>>(formInstance, formEntity.getRichDesign(), exportPort, null);
         } catch (Exception e) {
             throw new RuntimeException(e);

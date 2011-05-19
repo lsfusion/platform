@@ -20,7 +20,7 @@ public class ReportDockable extends FormDockable {
     private Integer groupId = null;
 
     public ReportDockable(String formSID, ClientNavigator navigator, boolean currentSession, MultipleCDockableFactory<FormDockable,?> factory) throws IOException, ClassNotFoundException {
-        super(formSID, navigator, currentSession, factory);
+        super(formSID, navigator, currentSession, factory, false);
     }
 
     public ReportDockable(ClientNavigator navigator, RemoteFormInterface remoteForm, MultipleCDockableFactory<FormDockable,?> factory) throws ClassNotFoundException, IOException {
