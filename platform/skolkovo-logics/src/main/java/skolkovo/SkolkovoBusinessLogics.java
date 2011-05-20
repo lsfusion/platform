@@ -94,6 +94,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
     StaticCustomClass projectStatus;
 
     AbstractGroup projectInformationGroup;
+    AbstractGroup additionalInformationGroup;
     AbstractGroup innovationGroup;
     AbstractGroup executiveSummaryGroup;
     AbstractGroup sourcesFundingGroup;
@@ -105,14 +106,36 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
     AbstractGroup voteResultCheckGroup;
     AbstractGroup voteResultCommentGroup;
 
+    AbstractGroup contactGroup;
+    AbstractGroup documentGroup;
+    AbstractGroup legalDataGroup;
+    AbstractGroup claimerInformationGroup;
+
+
     AbstractGroup expertResultGroup;
 
     protected void initGroups() {
 
         idGroup.add(objectValue);
 
+        contactGroup = new AbstractGroup("Контакты организации");
+        publicGroup.add(contactGroup);
+
+        documentGroup = new AbstractGroup("Юридические документы");
+        publicGroup.add(documentGroup);
+
+        legalDataGroup = new AbstractGroup("Юридические данные");
+        publicGroup.add(legalDataGroup);
+
+        claimerInformationGroup = new AbstractGroup("Информация о заявителе");
+        publicGroup.add(claimerInformationGroup);
+
+
         projectInformationGroup = new AbstractGroup("Информация по проекту");
         baseGroup.add(projectInformationGroup);
+
+        additionalInformationGroup = new AbstractGroup("Доп. информация по проекту");
+        publicGroup.add(projectInformationGroup);
 
         innovationGroup = new AbstractGroup("Инновация");
         baseGroup.add(innovationGroup);
@@ -201,23 +224,33 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
     }
 
     LP nameNative, nameForeign;
-
+    LP firmNameNativeClaimer, firmNameForeignClaimer;
+    LP phoneClaimer;
+    LP addressClaimer;
+    LP siteClaimer;
+    LP emailClaimer;
+    LP statementClaimer, loadStatementClaimer, openStatementClaimer;
+    LP constituentClaimer, loadConstituentClaimer, openConstituentClaimer;
+    LP extractClaimer, loadExtractClaimer, openExtractClaimer;
+    LP OGRNClaimer, INNClaimer;
     LP projectVote, nameNativeProjectVote, nameForeignProjectVote;
     LP clusterExpert, nameNativeClusterExpert;
     LP clusterProject, nameNativeClusterProject, nameForeignClusterProject;
     LP clusterVote, nameNativeClusterVote;
     LP clusterProjectVote, equalsClusterProjectVote;
     LP claimerProject, nameNativeClaimerProject, nameForeignClaimerProject;
+    LP nameNativeJoinClaimerProject;
+    LP nameForeignJoinClaimerProject;
     LP emailDocuments;
 
     LP emailToExpert;
 
-    LP claimerVote, nameNativeClaimerVote, nameForeignClaimerVote;
-    LP nameNativeAblateClaimer;
-    LP nameNativeDativusClaimer;
-    LP nameAblateClaimer;
-    LP nameDativusClaimer;
+    LP nameNativeClaimerVote, nameForeignClaimerVote;
+    LP nameNativeDativusManagerProject, nameDativusManagerProject;
+    LP nameNativeAblateManagerProject, nameAblateManagerProject;
+
     LP nameNativeClaimer;
+    LP nameForeignClaimer;
     LP nameAblateClaimerProject;
     LP nameDativusClaimerProject;
     LP nameAblateClaimerVote;
@@ -478,6 +511,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
     LP localeExpert;
     LP disableExpert;
 
+    LP editClaimer;
     LP addProject, editProject;
 
     protected void initProperties() {
@@ -487,18 +521,6 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         nameForeign = addDProp(baseGroup, "nameForeign", "Имя (иностр.)", InsensitiveStringClass.get(2000), multiLanguageNamed);
         nameForeign.setMinimumWidth(10); nameForeign.setPreferredWidth(50);
 
-        nameNativeDativusClaimer = addDProp(baseGroup, "nameNativeDativusClaimer", "Наименование (кому)", InsensitiveStringClass.get(2000), claimer);
-        nameNativeDativusClaimer.setMinimumWidth(10); nameNativeDativusClaimer.setPreferredWidth(50);
-
-        nameNativeAblateClaimer = addDProp(baseGroup, "nameNativeAblateClaimer", "Наименование (кем)", InsensitiveStringClass.get(2000), claimer);
-        nameNativeAblateClaimer.setMinimumWidth(10); nameNativeAblateClaimer.setPreferredWidth(50);
-
-        nameDativusClaimer = addSUProp("nameDativusClaimer", "Наименование (кому)", Union.OVERRIDE, nameNative,  nameNativeDativusClaimer);
-        nameDativusClaimer.setMinimumWidth(10); nameDativusClaimer.setPreferredWidth(50);
-
-        nameAblateClaimer = addSUProp("nameAblateClaimer", "Наименование (кем)", Union.OVERRIDE, nameNative,  nameNativeAblateClaimer);
-        nameAblateClaimer.setMinimumWidth(10); nameAblateClaimer.setPreferredWidth(50);
-
         baseGroup.add(email.property); // сделано, чтобы email был не самой первой колонкой в диалогах
 
         LP percent = addSFProp("(prm1*100/prm2)", DoubleClass.instance, 2);
@@ -507,6 +529,36 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         requiredPeriod = addDProp(baseGroup, "votePeriod", "Срок заседания", IntegerClass.instance);
         requiredQuantity = addDProp(baseGroup, "voteRequiredQuantity", "Кол-во экспертов", IntegerClass.instance);
         limitExperts = addDProp(baseGroup, "limitExperts", "Кол-во прогол. экспертов", IntegerClass.instance);
+
+        //свойства заявителя
+        nameNativeClaimer = addJProp(claimerInformationGroup, "nameNativeClaimer", "Заявитель", and1, nameNative, 1, is(claimer), 1);
+        nameNativeClaimer.setMinimumWidth(10); nameNativeClaimer.setPreferredWidth(50);
+        nameForeignClaimer = addJProp(claimerInformationGroup, "nameForeignClaimer", "Claimer", and1,  nameForeign, 1, is(claimer), 1);
+        nameForeignClaimer.setMinimumWidth(10); nameForeignClaimer.setPreferredWidth(50);
+        firmNameNativeClaimer = addDProp(claimerInformationGroup, "firmNameNativeClaimer", "Фирменное название", InsensitiveStringClass.get(2000), claimer);
+        firmNameNativeClaimer.setMinimumWidth(10); firmNameNativeClaimer.setPreferredWidth(50);
+        firmNameForeignClaimer = addDProp(claimerInformationGroup, "firmNameForeignClaimer", "Brand name", InsensitiveStringClass.get(2000), claimer);
+        firmNameForeignClaimer.setMinimumWidth(10); firmNameForeignClaimer.setPreferredWidth(50);
+        phoneClaimer = addDProp(contactGroup, "phoneClaimer", "Телефон", StringClass.get(100), claimer);
+        addressClaimer = addDProp(contactGroup, "addressClaimer", "Адрес", StringClass.get(2000), claimer);
+        addressClaimer.setMinimumWidth(10); addressClaimer.setPreferredWidth(50);
+        siteClaimer = addDProp(contactGroup, "siteClaimer", "Сайт", StringClass.get(100), claimer);
+        emailClaimer = addJProp(contactGroup, "emailClaimer", "E-mail", and1, email, 1, is(claimer), 1);
+
+        statementClaimer = addDProp("statementClaimer", "Заявление", PDFClass.instance, claimer);
+        loadStatementClaimer = addLFAProp(documentGroup, "Загрузить заявление", statementClaimer);
+        openStatementClaimer = addOFAProp(documentGroup, "Открыть заявление", statementClaimer);
+
+        constituentClaimer = addDProp("constituentClaimer", "Учредительные документы", PDFClass.instance, claimer);
+        loadConstituentClaimer = addLFAProp(documentGroup, "Загрузить учредительные документы", constituentClaimer);
+        openConstituentClaimer = addOFAProp(documentGroup, "Открыть учредительные документы", constituentClaimer);
+
+        extractClaimer = addDProp("extractClaimer", "Выписка из реестра", PDFClass.instance, claimer);
+        loadExtractClaimer = addLFAProp(documentGroup, "Загрузить выписку из реестра", extractClaimer);
+        openExtractClaimer = addOFAProp(documentGroup, "Открыть Выписку из реестра", extractClaimer);
+
+        OGRNClaimer = addDProp(legalDataGroup, "OGRNClaimer", "ОГРН", StringClass.get(13), claimer);
+        INNClaimer = addDProp(legalDataGroup, "INNClaimer", "ИНН", StringClass.get(12), claimer);
 
         projectVote = addDProp(idGroup, "projectVote", "Проект (ИД)", project, vote);
         setNotNull(projectVote);
@@ -521,20 +573,32 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
 
         // project
         claimerProject = addDProp(idGroup, "claimerProject", "Заявитель (ИД)", claimer, project);
-        nameNativeClaimerProject = addJProp(projectInformationGroup, "nameNativeClaimerProject", "Заявитель", nameNative, claimerProject, 1);
-        nameForeignClaimerProject = addJProp(projectInformationGroup, "nameForeignClaimerProject", "Заявитель (иностр.)", nameForeign, claimerProject, 1);
-        nameDativusClaimerProject = addJProp("nameDativusClaimerProject", "Заявитель", nameDativusClaimer, claimerProject, 1);
-        nameAblateClaimerProject = addJProp("nameAblateClaimerProject", "Заявитель", nameAblateClaimer, claimerProject, 1);
+
+        nameNativeManagerProject = addDProp(projectInformationGroup, "nameNativeManagerProject", "ФИО руководителя проекта", InsensitiveStringClass.get(2000), project);
+        nameNativeManagerProject.setMinimumWidth(10); nameNativeManagerProject.setPreferredWidth(50);
+        nameNativeDativusManagerProject = addDProp(projectInformationGroup, "nameNativeDativusManagerProject", "ФИО руководителя проекта (Кому)", InsensitiveStringClass.get(2000), project);
+        nameNativeDativusManagerProject.setMinimumWidth(10); nameNativeDativusManagerProject.setPreferredWidth(50);
+        nameDativusManagerProject = addSUProp("nameDativusManagerProject", "Заявитель (Кому)", Union.OVERRIDE, nameNativeManagerProject, nameNativeDativusManagerProject);
+        nameDativusManagerProject.setMinimumWidth(10); nameDativusManagerProject.setPreferredWidth(50);
+        nameNativeAblateManagerProject = addDProp(projectInformationGroup, "nameNativeAblateManagerProject", "ФИО руководителя проекта (Кем)", InsensitiveStringClass.get(2000), project);
+        nameNativeAblateManagerProject.setMinimumWidth(10); nameNativeAblateManagerProject.setPreferredWidth(50);
+        nameAblateManagerProject = addSUProp("nameAblateManagerProject", "Заявитель (Кем)", Union.OVERRIDE, nameNativeManagerProject, nameNativeAblateManagerProject);
+        nameAblateManagerProject.setMinimumWidth(10); nameAblateManagerProject.setPreferredWidth(50);
+        nameForeignManagerProject = addDProp(projectInformationGroup, "nameForeignManagerProject", "Full name project manager", InsensitiveStringClass.get(2000), project);
+        nameForeignManagerProject.setMinimumWidth(10); nameForeignManagerProject.setPreferredWidth(50);
+
+        nameNativeJoinClaimerProject = addJProp(projectInformationGroup, "nameNativeJoinClaimerProject", "Заявитель", nameNative, claimerProject, 1);
+        nameNativeClaimerProject = addSUProp("nameNativeClaimerProject", "Заявитель", Union.OVERRIDE, nameNativeManagerProject, nameNativeJoinClaimerProject);
+        nameNativeClaimerProject.setMinimumWidth(10); nameNativeClaimerProject.setPreferredWidth(50);
+        nameForeignJoinClaimerProject = addJProp(projectInformationGroup, "nameForeignJoinClaimerProject", "Claimer", nameForeign, claimerProject, 1);
+        nameForeignClaimerProject = addSUProp("nameForeignClaimerProject", "Claimer", Union.OVERRIDE, nameForeignManagerProject, nameForeignJoinClaimerProject);
+        nameDativusClaimerProject = addSUProp(additionalInformationGroup, "nameDativusClaimerProject", "Заявитель (Кому)", Union.OVERRIDE, nameDativusManagerProject, nameNativeJoinClaimerProject);
+        nameAblateClaimerProject = addSUProp(additionalInformationGroup, "nameAblateClaimerProject", "Заявитель (Кем)", Union.OVERRIDE, nameAblateManagerProject, nameNativeJoinClaimerProject);
 
         nameNativeProject = addJProp(projectInformationGroup, "nameNativeProject", "Название проекта", and1, nameNative, 1, is(project), 1);
         nameNativeProject.setMinimumWidth(10); nameNativeProject.setPreferredWidth(50);
         nameForeignProject = addJProp(projectInformationGroup, "nameForeignProject", "Name of the project", and1,  nameForeign, 1, is(project), 1);
         nameForeignProject.setMinimumWidth(10); nameForeignProject.setPreferredWidth(50);
-
-        nameNativeManagerProject = addDProp(projectInformationGroup, "nameNativeManagerProject", "ФИО руководителя проекта", InsensitiveStringClass.get(2000), project);
-        nameNativeManagerProject.setMinimumWidth(10); nameNativeManagerProject.setPreferredWidth(50);
-        nameForeignManagerProject = addDProp(projectInformationGroup, "nameForeignManagerProject", "Full name project manager", InsensitiveStringClass.get(2000), project);
-        nameForeignManagerProject.setMinimumWidth(10); nameForeignManagerProject.setPreferredWidth(50);
 
         nativeProblemProject = addDProp(innovationGroup, "nativeProblemProject", "Проблема, на решение которой направлен проект", InsensitiveStringClass.get(2000), project);
         nativeProblemProject.setMinimumWidth(10); nativeProblemProject.setPreferredWidth(50);
@@ -744,11 +808,11 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         equalsClusterProjectVote = addJProp(baseGroup, true, "equalsClusterProjectVote", "Тек. кластер", equals2, clusterVote, 1, clusterProjectVote, 1);
         nameNativeClusterVote = addJProp(baseGroup, "nameNativeClusterVote", "Кластер", nameNative, clusterVote, 1);
 
-        claimerVote = addJProp(idGroup, "claimerVote", "Заявитель (ИД)", claimerProject, projectVote, 1);
-        nameNativeClaimerVote = addJProp(baseGroup, "nameNativeClaimerVote", "Заявитель", nameNative, claimerVote, 1);
-        nameForeignClaimerVote = addJProp(baseGroup, "nameForeignClaimerVote", "Заявитель (иностр.)", nameForeign, claimerVote, 1);
-        nameDativusClaimerVote = addJProp(baseGroup, "nameDativusClaimerVote", "Заявитель", nameDativusClaimer, claimerVote, 1);
-        nameAblateClaimerVote = addJProp(baseGroup, "nameAblateClaimerVote", "Заявитель", nameAblateClaimer, claimerVote, 1);
+        nameNativeClaimerVote = addJProp(baseGroup, "nameNativeClaimerVote", "Заявитель", nameNativeClaimerProject, projectVote, 1);
+        nameNativeClaimerVote.setMinimumWidth(10); nameNativeClaimerVote.setPreferredWidth(50);
+        nameForeignClaimerVote = addJProp(baseGroup, "nameForeignClaimerVote", "Заявитель (иностр.)", nameForeignClaimerProject, projectVote, 1);
+        nameDativusClaimerVote = addJProp(baseGroup, "nameDativusClaimerVote", "Заявитель", nameDativusClaimerProject, projectVote, 1);
+        nameAblateClaimerVote = addJProp(baseGroup, "nameAblateClaimerVote", "Заявитель", nameAblateClaimerProject, projectVote, 1);
 
         documentTemplateDocumentTemplateDetail = addDProp(idGroup, "documentTemplateDocumentTemplateDetail", "Шаблон (ИД)", documentTemplate, documentTemplateDetail);
 
@@ -1096,8 +1160,10 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
     protected void initNavigators() throws JRException, FileNotFoundException {
         addFormEntity(new ProjectFullFormEntity(objectElement, "projectFullNative", "Резюме проекта для эксперта", false));
         addFormEntity(new ProjectFullFormEntity(objectElement, "projectFullForeign", "Resume project for expert", true));
+        addFormEntity(new ClaimerFullFormEntity(objectElement, "Claimer"));
 
         addFormEntity(new ProjectFormEntity(baseElement, "project"));
+        addFormEntity(new ClaimerFormEntity(baseElement, "claimer"));
         addFormEntity(new VoteFormEntity(baseElement, "vote", false));
         addFormEntity(new ExpertFormEntity(baseElement, "expert"));
         addFormEntity(new VoteExpertFormEntity(baseElement, "voteExpert"));
@@ -1131,7 +1197,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         User admin = addUser("admin", "fusion");
         admin.addSecurityPolicy(permitAllPolicy);
     }
-
+    //!!!!
     private class ProjectFullFormEntity extends FormEntity<SkolkovoBusinessLogics> {
 
         private boolean foreign;
@@ -1244,7 +1310,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         private ProjectFormEntity(NavigatorElement parent, String sID) {
             super(parent, sID, "Реестр проектов");
 
-            objProject = addSingleGroupObject(project, date, nameNative, nameForeign,  nameNativeClusterProject, nameNativeClaimerProject, nameStatusProject, autoGenerateProject, generateVoteProject, editProject);
+            objProject = addSingleGroupObject(project, date, nameNative, nameForeign,  nameNativeClusterProject, nameNativeJoinClaimerProject, nameStatusProject, autoGenerateProject, generateVoteProject, editProject);
             addObjectActions(this, objProject);
 
 //            addPropertyDraw(addProject).toDraw = objProject.groupTo;
@@ -1272,6 +1338,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
             addPropertyDraw(voteResultGroup, true, objExpert, objVote);
 
             setForceViewType(voteResultCommentGroup, ClassViewType.PANEL);
+
 
             addFixedFilter(new CompareFilterEntity(addPropertyObject(projectVote, objVote), Compare.EQUALS, objProject));
             addFixedFilter(new CompareFilterEntity(addPropertyObject(projectDocument, objDocument), Compare.EQUALS, objProject));
@@ -1526,6 +1593,29 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         }
     }
 
+    private class ClaimerFormEntity extends FormEntity<SkolkovoBusinessLogics> {
+         public ObjectEntity objClaimer;
+
+        private ClaimerFormEntity(NavigatorElement parent, String sID) {
+            super(parent, sID, "Реестр заявителей");
+
+            objClaimer = addSingleGroupObject(claimer, "Заявитель", claimerInformationGroup, contactGroup, documentGroup, legalDataGroup, editClaimer);
+     }
+    }
+
+
+    private class ClaimerFullFormEntity extends FormEntity<SkolkovoBusinessLogics> {
+         public ObjectEntity objClaimer;
+
+        private ClaimerFullFormEntity(NavigatorElement parent, String sID) {
+            super(parent, sID, "Заявители");
+
+            objClaimer = addSingleGroupObject(claimer, "Заявитель", claimerInformationGroup, contactGroup, legalDataGroup);
+            objClaimer.groupTo.setSingleClassView(ClassViewType.PANEL);
+            editClaimer = addMFAProp(actionGroup, "Редактировать", this, new ObjectEntity[] {objClaimer}).setImage("/images/edit.png");
+     }
+    }
+
     private class LanguageDocumentTypeFormEntity extends FormEntity<SkolkovoBusinessLogics> { // письмо эксперту
         private ObjectEntity objLanguage;
         private ObjectEntity objDocumentType;
@@ -1572,6 +1662,10 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
             addPropertyDraw(objExpert, name, isForeignExpert, localeExpert);
             addPropertyDraw(objVote, nameNativeClaimerVote, nameForeignClaimerVote, nameNativeProjectVote, nameForeignProjectVote);
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(inNewExpertVote, objExpert, objVote)));
+
+            //!!!
+            //dateStartVote = addJProp(baseGroup, "dateStartVote", "Дата начала", and1, date, 1, is(vote), 1);
+            //LP isDocumentUnique = addJProp(baseGroup,"isDocumentUnique", "уникальность док-та", and1, languageDocument, is(), objDocument);
 
             objDocument = addSingleGroupObject(8, "document", document, fileDocument);
             addPropertyDraw(nameDocument, objDocument).setSID("docName");

@@ -735,8 +735,8 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         LP diffOutInc = addJProp(diff2, subjectIncOrder, 1, subjectOutOrder, 2);
         LP allowedReturn = addIfElseUProp(diffOutInc, addJProp(diffOutInc, 2, 1), is(orderOut), 1); // потом по идее надо сравнивать что совпадают юрлица
 
-        outerOrderQuantity = addDProp(documentGroup, "outerOrderQuantity", "Кол-во заяв.", DoubleClass.instance, orderDelivery, article);
-        outerCommitedQuantity = addDProp(documentGroup, "outerCommitedQuantityy", "Кол-во принятое", DoubleClass.instance, commitDelivery, article);
+        outerOrderQuantity = addDProp(documentGroup, "extIncOrderQuantity", "Кол-во заяв.", DoubleClass.instance, orderDelivery, article);
+        outerCommitedQuantity = addDProp(documentGroup, "extIncCommitedQuantityy", "Кол-во принятое", DoubleClass.instance, commitDelivery, article);
 //        outerCommitedQuantity.setDerivedChange(outerOrderQuantity, 1, 2, is(commitInc), 1); // пока не будем делать так как идет ручное штрих-кодирование
         LP expiryDate = addDProp(baseGroup, "expiryDate", "Срок годн.", DateClass.instance, commitDelivery, article);
 
