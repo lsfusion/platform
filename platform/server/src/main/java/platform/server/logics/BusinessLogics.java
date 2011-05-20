@@ -1023,7 +1023,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             tableFactory.include("base_" + i, baseClasses);
         }
 
-        baseElement = new NavigatorElement<T>("baseElement", "Base Group");
+        baseElement = new NavigatorElement<T>("baseElement", "Формы");
         baseWindow = new NavigatorWindow(baseElement.getSID() + "Window", "Навигатор", 0, 0, 20, 70);
         baseElement.window = baseWindow;
     }

@@ -3,6 +3,8 @@ package platform.fullclient.navigator;
 import platform.client.navigator.ClientNavigatorElement;
 import platform.client.navigator.ClientNavigatorWindow;
 import platform.client.tree.ClientTree;
+import platform.client.tree.ClientTreeAction;
+import platform.client.tree.ClientTreeActionEvent;
 import platform.client.tree.ClientTreeNode;
 import platform.fullclient.layout.DockableMainFrame;
 
@@ -19,7 +21,7 @@ import java.awt.event.MouseEvent;
 import java.util.*;
 
 public class TreeNavigatorView extends NavigatorView {
-    private DefaultMutableTreeNode root;
+    private ClientTreeNode root;
     private ClientTree tree;
     private TreePath selectedPath;
     public DefaultTreeModel model;
@@ -31,24 +33,13 @@ public class TreeNavigatorView extends NavigatorView {
         model = new DefaultTreeModel(root);
         tree.setModel(model);
         tree.setRootVisible(false);
-        tree.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                selectedPath = tree.getPathForLocation(e.getX(), e.getY());
-                if (selectedPath != null) {
-                    DockableMainFrame.navigatorController.update(window, getSelectedElement());
-                }
-                if (e.getClickCount() == 2) {
-                    DockableMainFrame.navigatorController.openForm(getSelectedElement());
-                }
-            }
-        });
         tree.setToggleClickCount(1);
     }
 
     @Override
     public void refresh(Set<ClientNavigatorElement> newElements) {
         root = new ClientTreeNode("Корень");
+        addRootActions();
         for (ClientNavigatorElement element : newElements) {
             if (!element.containsParent(newElements)) {
                 addElement(root, element, newElements);
@@ -56,6 +47,7 @@ public class TreeNavigatorView extends NavigatorView {
         }
         model = new DefaultTreeModel(root);
         tree.setModelPreservingState(model);
+        tree.expandRow(0);
     }
 
     private void addElement(DefaultMutableTreeNode parent, ClientNavigatorElement element, Set<ClientNavigatorElement> newElements) {
@@ -85,5 +77,22 @@ public class TreeNavigatorView extends NavigatorView {
         }
         DefaultMutableTreeNode node = (DefaultMutableTreeNode) selectedPath.getLastPathComponent();
         return (ClientNavigatorElement) node.getUserObject();
+    }
+
+    private void addRootActions() {
+        root.addSubTreeAction(new ClientTreeAction("Открыть") {
+            public void actionPerformed(ClientTreeActionEvent e) {
+                selectedPath = tree.getSelectionPath();
+                if (selectedPath == null) return;
+                DockableMainFrame.navigatorController.update(window, getSelectedElement());
+                DockableMainFrame.navigatorController.openForm(getSelectedElement());
+            }
+
+            @Override
+            public boolean canBeDefault(TreePath path) {
+                return true;
+            }
+        });
+
     }
 }

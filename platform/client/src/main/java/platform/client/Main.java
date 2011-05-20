@@ -133,6 +133,7 @@ public class Main {
                     // так как он load'ится из временного директория
                     System.setSecurityManager(null);
 
+                    //UIManager.setLookAndFeel("com.jgoodies.looks.plastic.PlasticXPLookAndFeel");
                     UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 
                     String timeout = System.getProperty(PLATFORM_CLIENT_CONNECTION_LOST_TIMEOUT, "7200000");
