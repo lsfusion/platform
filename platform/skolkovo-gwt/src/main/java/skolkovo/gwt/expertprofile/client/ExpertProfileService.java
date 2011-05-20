@@ -3,12 +3,12 @@ package skolkovo.gwt.expertprofile.client;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.rpc.RemoteService;
 import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
-import skolkovo.gwt.base.shared.GwtProfileInfo;
+import skolkovo.api.serialization.ProfileInfo;
 import skolkovo.gwt.base.shared.MessageException;
 
 @RemoteServiceRelativePath("ExpertProfileService")
 public interface ExpertProfileService extends RemoteService {
-    GwtProfileInfo getProfileInfo() throws MessageException;
+    ProfileInfo getProfileInfo() throws MessageException;
     void sentVoteDocuments(int voteId) throws MessageException;
 
     /**

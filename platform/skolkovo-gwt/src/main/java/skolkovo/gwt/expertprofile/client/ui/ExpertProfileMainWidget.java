@@ -9,14 +9,14 @@ import com.google.gwt.uibinder.client.UiField;
 import com.google.gwt.user.cellview.client.CellTable;
 import com.google.gwt.user.cellview.client.TextColumn;
 import com.google.gwt.user.client.ui.*;
+import skolkovo.api.serialization.ProfileInfo;
+import skolkovo.api.serialization.VoteInfo;
 import skolkovo.gwt.base.client.BaseFrame;
 import skolkovo.gwt.base.client.BaseMessages;
 import skolkovo.gwt.base.client.ui.ActionColumn;
 import skolkovo.gwt.base.client.ui.LinkColumn;
 import skolkovo.gwt.base.client.ui.NumberColumn;
 import skolkovo.gwt.base.client.ui.YesNoColumn;
-import skolkovo.gwt.base.shared.GwtProfileInfo;
-import skolkovo.gwt.base.shared.GwtVoteInfo;
 import skolkovo.gwt.expertprofile.client.ExpertProfileMessages;
 
 import java.util.ArrayList;
@@ -29,7 +29,7 @@ public abstract class ExpertProfileMainWidget extends Composite {
     private static BaseMessages baseMessages = BaseMessages.Instance.get();
     private static ExpertProfileMessages messages = ExpertProfileMessages.Instance.get();
 
-    private final GwtProfileInfo pi;
+    private final ProfileInfo pi;
     private boolean showUnvoted;
 
     @UiField
@@ -53,7 +53,7 @@ public abstract class ExpertProfileMainWidget extends Composite {
     @UiField
     Label lbEmptyList;
 
-    public ExpertProfileMainWidget(GwtProfileInfo pi) {
+    public ExpertProfileMainWidget(ProfileInfo pi) {
         this.pi = pi;
 
         createCellTable();
@@ -90,10 +90,10 @@ public abstract class ExpertProfileMainWidget extends Composite {
     }
 
     private void updateTableData() {
-        List<GwtVoteInfo> filteredVotes = new ArrayList<GwtVoteInfo>();
-        for (GwtVoteInfo gwtVoteInfo : pi.voteInfos) {
-            if (!showUnvoted || !gwtVoteInfo.voteDone) {
-                filteredVotes.add(gwtVoteInfo);
+        List<VoteInfo> filteredVotes = new ArrayList<VoteInfo>();
+        for (VoteInfo VoteInfo : pi.voteInfos) {
+            if (!showUnvoted || !VoteInfo.voteDone) {
+                filteredVotes.add(VoteInfo);
             }
         }
         table.setRowCount(filteredVotes.size(), true);
@@ -101,89 +101,89 @@ public abstract class ExpertProfileMainWidget extends Composite {
     }
 
     private void createCellTable() {
-        table = new CellTable<GwtVoteInfo>();
+        table = new CellTable<VoteInfo>();
         table.setWidth("100%");
 
-        table.addColumn(new YesNoColumn<GwtVoteInfo>() {
+        table.addColumn(new YesNoColumn<VoteInfo>() {
             @Override
-            public Boolean getValue(GwtVoteInfo vi) {
+            public Boolean getValue(VoteInfo vi) {
                 return vi.voteDone;
             }
         }, messages.columnVoteResult());
-        table.addColumn(new TextColumn<GwtVoteInfo>() {
+        table.addColumn(new TextColumn<VoteInfo>() {
             @Override
-            public String getValue(GwtVoteInfo vi) {
+            public String getValue(VoteInfo vi) {
                 return vi.projectClaimer;
             }
         }, messages.columnProjectClaimer());
 
-        table.addColumn(new TextColumn<GwtVoteInfo>() {
+        table.addColumn(new TextColumn<VoteInfo>() {
             @Override
-            public String getValue(GwtVoteInfo vi) {
+            public String getValue(VoteInfo vi) {
                 return vi.projectName;
             }
         }, messages.columnProjectName());
 
-        table.addColumn(new TextColumn<GwtVoteInfo>() {
+        table.addColumn(new TextColumn<VoteInfo>() {
             @Override
-            public String getValue(GwtVoteInfo vi) {
+            public String getValue(VoteInfo vi) {
                 return vi.projectCluster;
             }
         }, messages.columnProjectCluster());
 
-        table.addColumn(new NumberColumn<GwtVoteInfo>() {
+        table.addColumn(new NumberColumn<VoteInfo>() {
             @Override
-            public Number getValue(GwtVoteInfo vi) {
+            public Number getValue(VoteInfo vi) {
                 return !vi.isVoted() ? null : vi.competent;
             }
         }, messages.columnCompetent());
-        table.addColumn(new YesNoColumn<GwtVoteInfo>() {
+        table.addColumn(new YesNoColumn<VoteInfo>() {
             @Override
-            public Boolean getValue(GwtVoteInfo vi) {
+            public Boolean getValue(VoteInfo vi) {
                 return !vi.isVoted() ? null : vi.inCluster;
             }
         }, messages.columnInCluster());
-        table.addColumn(new YesNoColumn<GwtVoteInfo>() {
+        table.addColumn(new YesNoColumn<VoteInfo>() {
             @Override
-            public Boolean getValue(GwtVoteInfo vi) {
+            public Boolean getValue(VoteInfo vi) {
                 return !vi.isVoted() ? null : vi.innovative;
             }
         }, messages.columnInnovative());
-        table.addColumn(new NumberColumn<GwtVoteInfo>() {
+        table.addColumn(new NumberColumn<VoteInfo>() {
             @Override
-            public Number getValue(GwtVoteInfo vi) {
+            public Number getValue(VoteInfo vi) {
                 return !vi.isVoted() ? null : vi.complete;
             }
         }, messages.columnComplete());
-        table.addColumn(new YesNoColumn<GwtVoteInfo>() {
+        table.addColumn(new YesNoColumn<VoteInfo>() {
             @Override
-            public Boolean getValue(GwtVoteInfo vi) {
+            public Boolean getValue(VoteInfo vi) {
                 return !vi.isVoted() ? null : vi.foreign;
             }
         }, messages.columnForeign());
-        table.addColumn(new LinkColumn<GwtVoteInfo>() {
+        table.addColumn(new LinkColumn<VoteInfo>() {
             @Override
-            public String getLinkUrl(GwtVoteInfo vi) {
+            public String getLinkUrl(VoteInfo vi) {
                 return BaseFrame.getPageUrlPreservingParameters("expert.html", "voteId", vi.linkHash);
             }
 
             @Override
-            public String getLinkText(GwtVoteInfo vi) {
+            public String getLinkText(VoteInfo vi) {
                 return messages.view();
             }
         }, messages.columnGoToBallot());
-        table.addColumn(new ActionColumn<GwtVoteInfo>(messages.send()) {
+        table.addColumn(new ActionColumn<VoteInfo>(messages.send()) {
             @Override
-            public void execute(GwtVoteInfo vi) {
+            public void execute(VoteInfo vi) {
                 onSend(vi);
             }
 
             @Override
-            public boolean hidden(GwtVoteInfo object) {
+            public boolean hidden(VoteInfo object) {
                 return object.voteDone;
             }
         }, messages.columnSentDocs());
     }
 
-    public abstract void onSend(GwtVoteInfo vi);
+    public abstract void onSend(VoteInfo vi);
 }

@@ -32,7 +32,7 @@ button {
     border: 1pt solid black;
     font-size: 12px;
     font-weight: bold;
-    background: #d7d7d7 url(/images/css/button_gray_bg.png) repeat-x;
+    background: #d7d7d7 url(images/css/button_gray_bg.png) repeat-x;
     height: 25px;
 }
 button:hover {
@@ -42,7 +42,7 @@ button:hover {
 
 button.refuse {
     border-color: #C9FA15;
-    background: #bcd85f url(/images/css/button_green_bg.png) repeat-x;
+    background: #bcd85f url(images/css/button_green_bg.png) repeat-x;
 }
 button.refuse:hover {
     background-position: 0 -25px;

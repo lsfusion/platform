@@ -3,6 +3,7 @@
 <module>
 
     <inherits name='com.google.gwt.user.User'/>
+    <inherits name="skolkovo.api.Serialization"/>
     <inherits name="com.smartgwt.SmartGwt"/>
     <!--<inherits name="com.smartgwt.tools.SmartGwtTools"/>-->
 

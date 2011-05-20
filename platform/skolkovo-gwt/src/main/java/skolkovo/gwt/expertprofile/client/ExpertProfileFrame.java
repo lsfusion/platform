@@ -1,8 +1,8 @@
 package skolkovo.gwt.expertprofile.client;
 
 import com.google.gwt.user.client.Window;
+import skolkovo.api.serialization.ProfileInfo;
 import skolkovo.gwt.base.client.BaseFrame;
-import skolkovo.gwt.base.shared.GwtProfileInfo;
 import skolkovo.gwt.expertprofile.client.ui.ExpertProfileMainPanel;
 
 public class ExpertProfileFrame extends BaseFrame {
@@ -15,8 +15,8 @@ public class ExpertProfileFrame extends BaseFrame {
     }
 
     protected void update() {
-        expertProfileService.getProfileInfo(new ErrorAsyncCallback<GwtProfileInfo>() {
-            public void onSuccess(GwtProfileInfo pi) {
+        expertProfileService.getProfileInfo(new ErrorAsyncCallback<ProfileInfo>() {
+            public void onSuccess(ProfileInfo pi) {
                 if (pi == null) {
                     showErrorPage(null);
                     return;

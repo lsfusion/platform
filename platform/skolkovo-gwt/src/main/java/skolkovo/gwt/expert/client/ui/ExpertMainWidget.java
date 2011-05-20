@@ -11,8 +11,8 @@ import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.uibinder.client.UiField;
 import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.ui.*;
+import skolkovo.api.serialization.VoteInfo;
 import skolkovo.gwt.base.client.BaseMessages;
-import skolkovo.gwt.base.shared.GwtVoteInfo;
 import skolkovo.gwt.expert.client.ExpertFrameMessages;
 
 import java.util.Date;
@@ -106,7 +106,7 @@ public abstract class ExpertMainWidget extends Composite {
     @UiField
     HorizontalPanel loadingPanel;
 
-    public ExpertMainWidget(GwtVoteInfo vi) {
+    public ExpertMainWidget(VoteInfo vi) {
         initWidget(uiBinder.createAndBindUi(this));
 
         Date voteDate = vi.date == null ? new Date() : vi.date;
@@ -246,7 +246,7 @@ public abstract class ExpertMainWidget extends Composite {
         @Override
         public void onClick(ClickEvent event) {
             if (onVoted(voteResult, confirm)) {
-                voteResultSpan.setInnerText("");;
+                voteResultSpan.setInnerText("");
                 loadingPanel.setVisible(true);
                 hideDataRows(true);
             }

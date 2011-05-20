@@ -24,6 +24,8 @@ public interface BaseMessages extends Messages {
 
     String loading();
 
+    String logoff();
+
     public static class Instance {
         private static final BaseMessages instance = (BaseMessages) GWT.create(BaseMessages.class);
 

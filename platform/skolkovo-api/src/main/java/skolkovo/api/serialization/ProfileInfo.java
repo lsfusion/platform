@@ -1,4 +1,4 @@
-package skolkovo;
+package skolkovo.api.serialization;
 
 import java.io.Serializable;
 

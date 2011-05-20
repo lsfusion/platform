@@ -52,7 +52,7 @@ public class EmailSender {
     public EmailSender(String smtpHost, String smtpPort, String fromAddress, String userName, String password, List<String> targets) {
         this(smtpHost, fromAddress, targets);
 
-        if (smtpPort != null) {
+        if (!smtpPort.isEmpty()) {
             mailProps.put("mail.smtp.port", smtpPort);
             mailProps.setProperty("mail.smtp.starttls.enable", "true");
             if (smtpPort.equals("465")) {
@@ -61,7 +61,7 @@ public class EmailSender {
             }
         }
 
-        if (userName != null && password != null) {
+        if (!userName.isEmpty() && !password.isEmpty()) {
             mailProps.setProperty("mail.smtp.auth", "true");
             this.userName = userName;
             this.password = password;

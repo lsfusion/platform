@@ -1090,7 +1090,7 @@ public class BaseUtils {
 
     public static String nullTrim(String string) {
         if (string == null)
-            return null;
+            return "";
         else
             return string.trim();
     }

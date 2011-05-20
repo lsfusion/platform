@@ -38,6 +38,8 @@ import platform.server.logics.property.Property;
 import platform.server.logics.property.group.AbstractGroup;
 import platform.server.session.DataSession;
 import skolkovo.api.remote.SkolkovoRemoteInterface;
+import skolkovo.api.serialization.ProfileInfo;
+import skolkovo.api.serialization.VoteInfo;
 
 import javax.swing.*;
 import java.awt.*;
@@ -50,7 +52,10 @@ import java.sql.SQLException;
 import java.util.*;
 import java.util.List;
 
+import static java.lang.Math.max;
+import static java.lang.Math.min;
 import static java.util.Arrays.asList;
+import static platform.base.BaseUtils.nullTrim;
 import static platform.base.BaseUtils.nvl;
 
 public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogics> implements SkolkovoRemoteInterface {
@@ -1939,7 +1944,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
 
                 voteInfo.date = DateConverter.sqlToDate((java.sql.Date)dateExpertVote.read(session, vo.expertObj, vo.voteObj));
 
-                return voteInfo;
+                return correctVoteInfo(voteInfo);
             } finally {
                 session.close();
             }
@@ -1949,7 +1954,21 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         }
     }
 
+    private VoteInfo correctVoteInfo(VoteInfo vi) {
+        vi.projectClaimer = nullTrim(vi.projectClaimer);
+        vi.projectName = nullTrim(vi.projectName);
+        vi.projectCluster = nullTrim(vi.projectCluster);
+        vi.voteResult = nullTrim(vi.voteResult);
+        vi.innovativeComment = nullTrim(vi.innovativeComment);
+        vi.competent = max(1, min(vi.competent, 5));
+        vi.complete = max(1, min(vi.complete, 5));
+        vi.completeComment = nullTrim(vi.completeComment);
+
+        return vi;
+    }
+
     public void setVoteInfo(String voteId, VoteInfo voteInfo) throws RemoteException {
+        voteInfo = correctVoteInfo(voteInfo);
 
         try {
             DataSession session = createSession();
@@ -2012,7 +2031,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
                 Expr projExpr = projectVote.getExpr(session.modifier, voteExpr);
 
                 Query<String, String> q = new Query<String, String>(keys);
-                q.and(inExpertVote.getExpr(session.modifier, expExpr, voteExpr).getWhere());
+                q.and(inNewExpertVote.getExpr(session.modifier, expExpr, voteExpr).getWhere());
                 q.and(userLogin.getExpr(session.modifier, expExpr).compare(new DataObject(expertLogin), Compare.EQUALS));
 
                 q.properties.put("projectId", projExpr);
@@ -2067,7 +2086,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
                     voteInfo.voteStartDate = DateConverter.sqlToDate((java.sql.Date)propValues.get("voteStartDate"));
                     voteInfo.voteEndDate = DateConverter.sqlToDate((java.sql.Date)propValues.get("voteEndDate"));
 
-                    profileInfo.voteInfos[i++] = voteInfo;
+                    profileInfo.voteInfos[i++] = correctVoteInfo(voteInfo);
                 }
 
                 return profileInfo;

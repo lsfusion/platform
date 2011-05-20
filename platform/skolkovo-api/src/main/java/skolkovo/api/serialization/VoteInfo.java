@@ -1,4 +1,4 @@
-package skolkovo;
+package skolkovo.api.serialization;
 
 import java.io.Serializable;
 import java.util.Date;
@@ -31,4 +31,8 @@ public class VoteInfo implements Serializable {
     public Date date;
     public Date voteStartDate;
     public Date voteEndDate;
+
+    public boolean isVoted() {
+        return "voted".equals(voteResult);
+    }
 }

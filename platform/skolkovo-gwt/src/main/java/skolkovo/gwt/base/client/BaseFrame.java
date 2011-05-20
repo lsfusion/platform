@@ -80,4 +80,8 @@ public class BaseFrame implements EntryPoint {
     public static String getLogoffUrl() {
         return getPageUrlPreservingParameters("logoff.html");
     }
+
+    public static void logoff() {
+        com.google.gwt.user.client.Window.open(BaseFrame.getLogoffUrl(), "_self", null);
+    }
 }

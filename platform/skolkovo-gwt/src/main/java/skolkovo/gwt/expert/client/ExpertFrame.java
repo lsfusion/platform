@@ -1,8 +1,8 @@
 package skolkovo.gwt.expert.client;
 
 import com.google.gwt.user.client.Window;
+import skolkovo.api.serialization.VoteInfo;
 import skolkovo.gwt.base.client.BaseFrame;
-import skolkovo.gwt.base.shared.GwtVoteInfo;
 import skolkovo.gwt.expert.client.ui.ExpertMainWidget;
 
 import java.util.Date;
@@ -33,8 +33,8 @@ public class ExpertFrame extends BaseFrame {
             return;
         }
 
-        expertService.getVoteInfo(voteId, new ErrorAsyncCallback<GwtVoteInfo>() {
-            public void onSuccess(final GwtVoteInfo vi) {
+        expertService.getVoteInfo(voteId, new ErrorAsyncCallback<VoteInfo>() {
+            public void onSuccess(final VoteInfo vi) {
                 if (vi == null) {
                     showErrorPage(null);
                     return;
@@ -62,7 +62,7 @@ public class ExpertFrame extends BaseFrame {
                             return false;
                         }
 
-                        GwtVoteInfo vi = new GwtVoteInfo();
+                        VoteInfo vi = new VoteInfo();
 
                         vi.date = new Date();
                         vi.voteResult = voteResult;

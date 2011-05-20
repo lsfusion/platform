@@ -1,11 +1,10 @@
 package skolkovo.gwt.expertprofile.server;
 
 import org.apache.log4j.Logger;
-import skolkovo.gwt.base.server.ConvertFactory;
+import skolkovo.api.serialization.ProfileInfo;
+import skolkovo.gwt.base.server.DebugUtil;
 import skolkovo.gwt.base.server.SkolkovoRemoteServiceServlet;
-import skolkovo.gwt.base.shared.GwtProfileInfo;
 import skolkovo.gwt.base.shared.MessageException;
-import skolkovo.gwt.expert.server.DebugUtil;
 import skolkovo.gwt.expertprofile.client.ExpertProfileService;
 
 import java.rmi.RemoteException;
@@ -15,14 +14,14 @@ public class ExpertProfileServiceImpl extends SkolkovoRemoteServiceServlet imple
     protected final static Logger logger = Logger.getLogger(ExpertProfileServiceImpl.class);
 
     @Override
-    public GwtProfileInfo getProfileInfo() throws MessageException {
+    public ProfileInfo getProfileInfo() throws MessageException {
         try {
             Principal user = getThreadLocalRequest().getUserPrincipal();
             if (user == null) {
                 return null;
             }
 
-            return ConvertFactory.toGwtProfileInfo(getLogics().getProfileInfo(user.getName()));
+            return skolkovo.getProfileInfo(user.getName());
         } catch (RemoteException e) {
             logger.error("Ошибка в getProfileInfo: ", e);
             e.printStackTrace();
@@ -38,7 +37,7 @@ public class ExpertProfileServiceImpl extends SkolkovoRemoteServiceServlet imple
                 return;
             }
 
-            getLogics().sentVoteDocuments(user.getName(), voteId);
+            skolkovo.sentVoteDocuments(user.getName(), voteId);
         } catch (RemoteException e) {
             logger.error("Ошибка в sentVoteDocuments: ", e);
             e.printStackTrace();

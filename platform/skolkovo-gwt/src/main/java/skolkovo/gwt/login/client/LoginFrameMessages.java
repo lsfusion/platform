@@ -28,6 +28,8 @@ public interface LoginFrameMessages extends Messages {
 
     String remindSuccess();
 
+    String loginError();
+
     public static class Instance {
         private static final LoginFrameMessages instance = (LoginFrameMessages) GWT.create(LoginFrameMessages.class);
 
