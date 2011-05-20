@@ -931,7 +931,7 @@ public class DeclarationExportActionProperty extends ActionProperty {
 
         private void createDBFFiles() throws IOException, xBaseJException {
             tempDecl02 = File.createTempFile("DECL02", ".DBF");
-            dbfDecl02 = new CustomDBF(tempDecl02.getPath(), DBF.FOXPRO_WITH_MEMO, true, "Cp866");
+            dbfDecl02 = new CustomDBF(tempDecl02.getPath(), DBF.DBASEIV, true, "Cp866");
             Util.setxBaseJProperty("ignoreDBFLengthCheck", "true");
             dbfDecl02.addField(new Field[]{
                     G011Decl, G012Decl, G013Decl, GADecl, G542Decl, N07Decl, N_REGDecl, GK_7Decl, G022IDecl, G023IDecl, G081Decl,
@@ -956,7 +956,7 @@ public class DeclarationExportActionProperty extends ActionProperty {
                     G31QUANTDecl, G31EDIZMDecl, G31CODIZMDecl, G31OPERATDecl, G31METODDecl});
 
             tempDobl = File.createTempFile("DOBL", ".DBF");
-            dbfDobl = new CustomDBF(tempDobl.getPath(), DBF.FOXPRO_WITH_MEMO, true, "Cp866");
+            dbfDobl = new CustomDBF(tempDobl.getPath(), DBF.DBASEIV, true, "Cp866");
             dbfDobl.addField(new Field[]{G011Dobl, G012Dobl, G013Dobl, GADobl, G542Dobl, N07Dobl, N_REGDobl, G141Dobl, G142Dobl,
                     G143Dobl, G031Dobl, G032Dobl, G32Dobl, G32_2Dobl, G33Dobl, G33NETARIFDobl, G33INTELLDobl, G312Dobl, G313NDobl,
                     G313TDobl, G315B1Dobl, G317B1Dobl, G317B1CODEDobl, G315BDobl, G317BDobl, G317BCODEDobl, G315ADobl, G317ADobl,
@@ -968,7 +968,7 @@ public class DeclarationExportActionProperty extends ActionProperty {
                     G31DOCDATEDobl, G31DESCRIPDobl, G31TNVEDDobl, G31QUANTDobl, G31EDIZMDobl, G31CODIZMDobl, G31OPERATDobl, G31METODDobl});
 
             tempG313 = File.createTempFile("G131", ".DBF");
-            dbfG313 = new CustomDBF(tempG313.getPath(), DBF.FOXPRO_WITH_MEMO, true, "Cp866");
+            dbfG313 = new CustomDBF(tempG313.getPath(), DBF.DBASEIV, true, "Cp866");
             dbfG313.addField(new Field[]{G32G313, G31_NTG313, G31_MTG313, G31_MODELG313, G31_MARKING313, G31_MARKG313, G31_STANDG313,
                     G31_DATEG313, G31_FIRMAG313, G31_SORTG313, G31_SORTIMG313, G31_KINDG313, G31_DIMENSG313, G31AMODELG313,
                     G31AMARKG313, G31AYEARG313, G31VOLUMEG313, G31VINIDG313, G31BODYIDG313, G31ENGINIDG313, G31CHASSIDG313,
@@ -976,13 +976,13 @@ public class DeclarationExportActionProperty extends ActionProperty {
                     G313IG313, DOP_NOMERG313, NOMER_GTDG313});
 
             tempG44 = File.createTempFile("G44", ".DBF");
-            dbfG44 = new CustomDBF(tempG44.getPath(), DBF.FOXPRO_WITH_MEMO, true, "Cp866");
+            dbfG44 = new CustomDBF(tempG44.getPath(), DBF.DBASEIV, true, "Cp866");
             dbfG44.addField(new Field[]{G32G44, G44IG44, G44KDG44, G44NDG44, G44DDG44, G44NSG44, G44DSG44, G44BEGDATEG44,
                     G44ENDDATEG44, G44CODESTRG44, G44VIDPLATG44, G44CODSROKG44, G44DATEIMPG44, G44SPECIALG44, G44STATUSG44,
                     NOMER_GTDG44, DOP_NOMERG44});
 
             tempG47 = File.createTempFile("G47", ".DBF");
-            dbfG47 = new CustomDBF(tempG47.getPath(), DBF.FOXPRO_WITH_MEMO, true, "Cp866");
+            dbfG47 = new CustomDBF(tempG47.getPath(), DBF.DBASEIV, true, "Cp866");
             dbfG47.addField(new Field[]{G32G47, G47IG47, G471G47, G472G47, G473G47, G4731G47, G474G47, G475G47, G474CODEG47,
                     G47RATEDATG47, G47TYPECODG47, G47CODIZMG47, G47CODVALG47, G47WEIGHG47, G47NUMDAYSG47, G47NUMETAPG47,
                     G47NUMMONTG47, G47LINENUMG47, G47TARRATEG47, PR_OSPLATG47, KOD_SIG47, NOMER_GTDG47, DOP_NOMERG47});
@@ -1039,33 +1039,33 @@ public class DeclarationExportActionProperty extends ActionProperty {
             CharField DOP_NOMERGB = new CharField("DOP_NOMER", 8);
 
             tempG18 = File.createTempFile("G18", ".DBF");
-            dbfG18 = new CustomDBF(tempG18.getPath(), true, "Cp866");
+            dbfG18 = new CustomDBF(tempG18.getPath(), DBF.DBASEIV, true, "Cp866");
             dbfG18.addField(new Field[]{G18IG18, G181AG18, G182G18, G18SIGNG18, NOMER_GTDG18, DOP_NOMERG18});
             dbfG18.close();
 
             tempG20 = File.createTempFile("G20", ".DBF");
-            dbfG20 = new CustomDBF(tempG20.getPath(), true, "Cp866");
+            dbfG20 = new CustomDBF(tempG20.getPath(), DBF.DBASEIV, true, "Cp866");
             dbfG20.addField(new Field[]{G20IG20, G202G20, G205G20, G206G20, NOMER_GTDG20, DOP_NOMERG20});
             dbfG20.close();
 
             tempG21 = File.createTempFile("G21", ".DBF");
-            dbfG21 = new CustomDBF(tempG21.getPath(), true, "Cp866");
+            dbfG21 = new CustomDBF(tempG21.getPath(), DBF.DBASEIV, true, "Cp866");
             dbfG21.addField(new Field[]{G21IG21, G211G21, G212G21, G21SIGNG21, NOMER_GTDG21, DOP_NOMERG21});
             dbfG21.close();
 
             tempG316 = File.createTempFile("G316", ".DBF");
-            dbfG316 = new CustomDBF(tempG316.getPath(), true, "Cp866");
+            dbfG316 = new CustomDBF(tempG316.getPath(), DBF.DBASEIV, true, "Cp866");
             dbfG316.addField(new Field[]{G32G316, G316IG316, G316_NKG316, NOMER_GTDG316, DOP_NOMERG316});
             dbfG316.close();
 
             tempG40 = File.createTempFile("G40", ".DBF");
-            dbfG40 = new CustomDBF(tempG40.getPath(), true, "Cp866");
+            dbfG40 = new CustomDBF(tempG40.getPath(), DBF.DBASEIV, true, "Cp866");
             dbfG40.addField(new Field[]{G32G40, G40IG40, G40NDG40, G40NTG40, G40DATEG40, G40VESNETG40, G40KOLVOG40,
                     G40EDIZMG40, G40CODIZMG40, NOMER_GTDG40, DOP_NOMERG40});
             dbfG40.close();
 
             tempGB = File.createTempFile("GBB", ".DBF");
-            dbfGB = new CustomDBF(tempGB.getPath(), true, "Cp866");
+            dbfGB = new CustomDBF(tempGB.getPath(), DBF.DBASEIV, true, "Cp866");
             dbfGB.addField(new Field[]{GBIGB, GBGB, GB1GB, GB3GB, GB4GB, GB5GB, GB2GB, NOMER_GTDGB, DOP_NOMERGB});
             dbfGB.close();
         }
