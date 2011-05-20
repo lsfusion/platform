@@ -151,7 +151,7 @@
 			<textField>
 				<reportElement style="DefaultStyle" positionType="Float" x="0" y="0" width="200" height="20"/>
 				<textElement verticalAlignment="Top"/>
-				<textFieldExpression class="java.lang.String"><![CDATA["Rechnung / Invoice / Factura"]]></textFieldExpression>
+				<textFieldExpression class="java.lang.String"><![CDATA["Proformarechnung"]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement style="GroupCellStyle1" positionType="Float" x="547" y="102" width="59" height="18"/>

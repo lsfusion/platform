@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="freightImporter" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="555" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0">
-	<property name="ireport.zoom" value="1.0000000000000004"/>
+	<property name="ireport.zoom" value="1.0"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
 	<style name="DefaultStyle" isDefault="true" vAlign="Middle" fontName="Tahoma" fontSize="10" pdfFontName="c:/windows/fonts/tahoma.ttf" pdfEncoding="Cp1251" isPdfEmbedded="false"/>
@@ -45,7 +45,7 @@
 	<pageHeader>
 		<band height="120">
 			<textField isStretchWithOverflow="true" pattern="dd.MM.yy" isBlankWhenNull="true">
-				<reportElement style="DefaultStyle" x="648" y="29" width="154" height="18"/>
+				<reportElement style="DefaultStyle" positionType="Float" x="648" y="29" width="154" height="18"/>
 				<textElement textAlignment="Center" verticalAlignment="Top"/>
 				<textFieldExpression class="java.util.Date"><![CDATA[$F{date}]]></textFieldExpression>
 			</textField>
@@ -114,7 +114,7 @@
 				<textFieldExpression class="java.lang.String"><![CDATA["BESCHREIBUNG"]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
-				<reportElement style="GroupCellStyle1" positionType="Float" x="606" y="102" width="144" height="18"/>
+				<reportElement style="GroupCellStyle1" positionType="Float" x="547" y="102" width="91" height="18"/>
 				<textElement textAlignment="Center" verticalAlignment="Top"/>
 				<textFieldExpression class="java.lang.String"><![CDATA["Ursprungsland"]]></textFieldExpression>
 			</textField>
@@ -129,6 +129,16 @@
 				<textFieldExpression class="java.lang.String"><![CDATA["MENGE"]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
+				<reportElement style="GroupCellStyle1" positionType="Float" x="638" y="102" width="56" height="18"/>
+				<textElement textAlignment="Center" verticalAlignment="Top"/>
+				<textFieldExpression class="java.lang.String"><![CDATA["Netto,kg"]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement style="GroupCellStyle1" positionType="Float" x="694" y="102" width="56" height="18"/>
+				<textElement textAlignment="Center" verticalAlignment="Top"/>
+				<textFieldExpression class="java.lang.String"><![CDATA["Brutto,kg"]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
 				<reportElement style="GroupCellStyle1" positionType="Float" x="750" y="102" width="52" height="18"/>
 				<textElement textAlignment="Center" verticalAlignment="Top"/>
 				<textFieldExpression class="java.lang.String"><![CDATA["BETRAG"]]></textFieldExpression>
@@ -140,38 +150,33 @@
 			</textField>
 			<textField>
 				<reportElement style="GroupCellStyle1" positionType="Float" x="255" y="102" width="169" height="18"/>
-				<textElement verticalAlignment="Top"/>
+				<textElement textAlignment="Center" verticalAlignment="Top"/>
 				<textFieldExpression class="java.lang.String"><![CDATA["Material"]]></textFieldExpression>
 			</textField>
-			<textField>
+			<textField isStretchWithOverflow="true">
 				<reportElement style="GroupCellStyle1" positionType="Float" x="81" y="102" width="89" height="18"/>
 				<textElement textAlignment="Center" verticalAlignment="Top"/>
 				<textFieldExpression class="java.lang.String"><![CDATA["Marke"]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement style="DefaultStyle" positionType="Float" x="0" y="0" width="200" height="20"/>
+				<reportElement style="DefaultStyle" x="0" y="0" width="200" height="20"/>
 				<textElement verticalAlignment="Top"/>
-				<textFieldExpression class="java.lang.String"><![CDATA["Rechnung / Invoice / Factura"]]></textFieldExpression>
+				<textFieldExpression class="java.lang.String"><![CDATA["Anlage zu Rechnung / Annex to Invoice"]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement style="GroupCellStyle1" positionType="Float" x="547" y="102" width="59" height="18"/>
-				<textElement textAlignment="Center" verticalAlignment="Top"/>
-				<textFieldExpression class="java.lang.String"><![CDATA["PREIS"]]></textFieldExpression>
+				<reportElement style="DefaultStyle" positionType="Float" x="538" y="83" width="110" height="19"/>
+				<textElement verticalAlignment="Top"/>
+				<textFieldExpression class="java.lang.String"><![CDATA["Seite"]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement style="DefaultStyle" x="648" y="83" width="77" height="18"/>
+				<reportElement style="DefaultStyle" positionType="Float" x="650" y="83" width="77" height="19"/>
 				<textElement textAlignment="Right" verticalAlignment="Top"/>
 				<textFieldExpression class="java.lang.String"><![CDATA[$V{PAGE_NUMBER} + "/"]]></textFieldExpression>
 			</textField>
 			<textField evaluationTime="Report">
-				<reportElement style="DefaultStyle" x="725" y="83" width="77" height="18"/>
+				<reportElement style="DefaultStyle" positionType="Float" x="727" y="83" width="75" height="19"/>
 				<textElement verticalAlignment="Top"/>
 				<textFieldExpression class="java.lang.Integer"><![CDATA[$V{PAGE_NUMBER}]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement style="DefaultStyle" x="536" y="83" width="112" height="18"/>
-				<textElement verticalAlignment="Top"/>
-				<textFieldExpression class="java.lang.String"><![CDATA["Seite"]]></textFieldExpression>
 			</textField>
 		</band>
 	</pageHeader>
@@ -193,6 +198,16 @@
 				<textFieldExpression class="java.lang.Double"><![CDATA[$F{quantityImporterFreightArticleCompositionCountryCategory}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
+				<reportElement style="GroupCellStyle1" stretchType="RelativeToBandHeight" x="638" y="0" width="56" height="18"/>
+				<textElement textAlignment="Right" verticalAlignment="Top"/>
+				<textFieldExpression class="java.lang.Double"><![CDATA[$F{netWeightImporterFreightArticleCompositionCountryCategory}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
+				<reportElement style="GroupCellStyle1" stretchType="RelativeToBandHeight" x="694" y="0" width="56" height="18"/>
+				<textElement textAlignment="Right" verticalAlignment="Top"/>
+				<textFieldExpression class="java.lang.Double"><![CDATA[$F{grossWeightImporterFreightArticleCompositionCountryCategory}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle1" stretchType="RelativeToBandHeight" x="750" y="0" width="52" height="18"/>
 				<textElement textAlignment="Right" verticalAlignment="Top"/>
 				<textFieldExpression class="java.lang.Double"><![CDATA[$F{sumImporterFreightArticleCompositionCountryCategory}]]></textFieldExpression>
@@ -202,13 +217,13 @@
 				<textElement verticalAlignment="Top"/>
 				<textFieldExpression class="java.lang.String"><![CDATA[$F{objectValueProperty_StringClass_200}]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+			<textField isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle1" stretchType="RelativeToBandHeight" x="170" y="0" width="85" height="18"/>
 				<textElement verticalAlignment="Top"/>
 				<textFieldExpression class="java.lang.String"><![CDATA[$F{nameArticle}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement style="GroupCellStyle1" stretchType="RelativeToBandHeight" x="606" y="0" width="144" height="18"/>
+				<reportElement style="GroupCellStyle1" stretchType="RelativeToBandHeight" x="547" y="0" width="91" height="18"/>
 				<textElement textAlignment="Left" verticalAlignment="Top"/>
 				<textFieldExpression class="java.lang.String"><![CDATA[$F{nameOriginCountry}]]></textFieldExpression>
 			</textField>
@@ -217,21 +232,14 @@
 				<textElement verticalAlignment="Top"/>
 				<textFieldExpression class="java.lang.String"><![CDATA[$F{nameBrandSupplierArticle}]]></textFieldExpression>
 			</textField>
-			<textField pattern="#,##0.###" isBlankWhenNull="true">
-				<reportElement style="GroupCellStyle1" stretchType="RelativeToBandHeight" x="547" y="0" width="59" height="18"/>
-				<textElement textAlignment="Right" verticalAlignment="Top"/>
-				<textFieldExpression class="java.lang.Double"><![CDATA[$F{priceImporterFreightArticleCompositionCountryCategory}]]></textFieldExpression>
-			</textField>
 		</band>
 	</detail>
 	<pageFooter>
 		<band height="72">
-			<textField>
-				<reportElement style="DefaultStyle" positionType="Float" x="0" y="18" width="100" height="18"/>
-				<textElement verticalAlignment="Top">
-					<font isUnderline="false"/>
-				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA["Verkaufer"]]></textFieldExpression>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement style="DefaultStyle" positionType="Float" x="0" y="54" width="170" height="18"/>
+				<textElement verticalAlignment="Top"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{addressOriginExporterFreight}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement style="DefaultStyle" positionType="Float" x="0" y="36" width="170" height="18"/>
@@ -239,16 +247,16 @@
 				<textFieldExpression class="java.lang.String"><![CDATA[$F{nameOriginExporterFreight}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement style="DefaultStyle" positionType="Float" x="0" y="54" width="170" height="18"/>
+				<reportElement style="DefaultStyle" positionType="Float" x="0" y="18" width="100" height="18"/>
 				<textElement verticalAlignment="Top"/>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{addressOriginExporterFreight}]]></textFieldExpression>
+				<textFieldExpression class="java.lang.String"><![CDATA["Verkaufer"]]></textFieldExpression>
 			</textField>
 		</band>
 	</pageFooter>
 	<summary>
 		<band height="50">
 			<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
-				<reportElement style="DefaultStyle" stretchType="RelativeToBandHeight" x="170" y="32" width="85" height="18"/>
+				<reportElement style="DefaultStyle" positionType="Float" stretchType="RelativeToBandHeight" x="170" y="32" width="85" height="18"/>
 				<textElement textAlignment="Right" verticalAlignment="Top"/>
 				<textFieldExpression class="java.lang.Double"><![CDATA[$F{netWeightImporterFreight}]]></textFieldExpression>
 			</textField>
@@ -258,7 +266,7 @@
 				<textFieldExpression class="java.lang.String"><![CDATA["Gewicht kg netto:"]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
-				<reportElement style="DefaultStyle" stretchType="RelativeToBandHeight" x="536" y="32" width="56" height="18"/>
+				<reportElement style="DefaultStyle" positionType="Float" stretchType="RelativeToBandHeight" x="536" y="32" width="56" height="18"/>
 				<textElement textAlignment="Right" verticalAlignment="Top"/>
 				<textFieldExpression class="java.lang.Double"><![CDATA[$F{grossWeightImporterFreight}]]></textFieldExpression>
 			</textField>
@@ -273,17 +281,17 @@
 				<textFieldExpression class="java.lang.String"><![CDATA["Gesamtbetrag:"]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
-				<reportElement style="DefaultStyle" stretchType="RelativeToBandHeight" x="750" y="32" width="52" height="18"/>
+				<reportElement style="DefaultStyle" positionType="Float" stretchType="RelativeToBandHeight" x="750" y="32" width="52" height="18"/>
 				<textElement textAlignment="Right" verticalAlignment="Top"/>
 				<textFieldExpression class="java.lang.Double"><![CDATA[$F{sumImporterFreight}]]></textFieldExpression>
 			</textField>
-			<textField pattern="#,##0.###" isBlankWhenNull="true">
-				<reportElement style="DefaultStyle" stretchType="RelativeToBandHeight" x="491" y="14" width="56" height="18"/>
+			<textField pattern="#,##0.###">
+				<reportElement style="DefaultStyle" positionType="Float" x="491" y="14" width="56" height="18"/>
 				<textElement textAlignment="Right" verticalAlignment="Top"/>
 				<textFieldExpression class="java.lang.Double"><![CDATA[$F{quantityImporterFreight}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement style="DefaultStyle" stretchType="RelativeToBandHeight" x="346" y="14" width="145" height="18"/>
+				<reportElement style="DefaultStyle" positionType="Float" x="346" y="14" width="145" height="18"/>
 				<textElement textAlignment="Center" verticalAlignment="Top"/>
 				<textFieldExpression class="java.lang.String"><![CDATA["Gesamt: st:"]]></textFieldExpression>
 			</textField>
