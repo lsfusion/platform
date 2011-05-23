@@ -1317,7 +1317,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         nameLegalIncContract = addJProp(baseGroup, "nameLegalIncContract", "С кем", name, legalIncContract, 1);
 
         LP legalEntityDoIncOrder = addIfElseUProp(privateGroup, "legalEntityDoIncOrder","Договор", legalEntityIncOrder, legalEntityOutOrder, is(orderDo), 1);
-        LP legalEntityDoOutOrder = addIfElseUProp(privateGroup, "legalEntityDoIncOrder","Договор", legalEntityOutOrder, legalEntityIncOrder, is(orderDo), 1);
+        LP legalEntityDoOutOrder = addIfElseUProp(privateGroup, "legalEntityDoOutOrder","Договор", legalEntityOutOrder, legalEntityIncOrder, is(orderDo), 1);
         contractOrder = addDProp(idGroup, "contractOrder", "Договор (ИД)", contract, orderWhole);
         LP nameContractOrder = addJProp(baseGroup, "nameContractOrder", "Договор", name, contractOrder, 1);
 
@@ -1421,8 +1421,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
                 addJProp(and1, sumWithDiscountCouponOrder, 1, betweenDate, 1, 2, 3), subjectOutOrder, 1, 2, 3);
 
         sumDiscountPayCouponIncBetweenDate = addSGProp(baseGroup, "sumDiscountPayCouponIncBetweenDate", "Приходная сумма скидки за интервал",
-        sumDiscountPayCouponIncBetweenDate = addSGProp(baseGroup, "sumDiscountPayCouponIncBetweenDate", "Приходная сумма скидки за интервал",
-                addJProp(and1, sumDiscountPayCouponOrder, 1, betweenDate, 1, 2, 3), subjectIncOrder, 1, 2, 3));
+                addJProp(and1, sumDiscountPayCouponOrder, 1, betweenDate, 1, 2, 3), subjectIncOrder, 1, 2, 3);
         sumDiscountPayCouponOutBetweenDate = addSGProp(baseGroup, "sumDiscountPayCouponOutBetweenDate", "Расходная сумма скидки за интервал",
                 addJProp(and1, sumDiscountPayCouponOrder, 1, betweenDate, 1, 2, 3), subjectOutOrder, 1, 2, 3);
 
