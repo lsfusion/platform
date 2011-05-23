@@ -67,9 +67,9 @@
                                 <td/>
                                 <td colspan="2">
                                     <g:HorizontalPanel ui:field="voteButtonsPanel">
-                                        <g:Button width="250" ui:field="bRefused" styleName="{style.refuse}"/>
+                                        <g:Button width="280" ui:field="bRefused" styleName="{style.refuse}"/>
                                         <g:Label width="20" />
-                                        <g:Button width="250" ui:field="bConnected"/>
+                                        <g:Button width="280" ui:field="bConnected"/>
                                     </g:HorizontalPanel>
                                     <br/>
                                     <span ui:field="voteResultSpan"></span>
@@ -140,7 +140,7 @@
                                 <td>
                                     <g:VerticalPanel width="100%">
                                         <g:HTMLPanel><span ui:field="footerSpan" /></g:HTMLPanel>
-                                        <g:Button width="250" ui:field="bVote"/>
+                                        <g:Button width="280" ui:field="bVote"/>
                                     </g:VerticalPanel>
                                 </td>
                             </tr>
