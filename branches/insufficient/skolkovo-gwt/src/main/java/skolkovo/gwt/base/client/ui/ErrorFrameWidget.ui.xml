@@ -1,0 +1,12 @@
+<ui:UiBinder xmlns:ui='urn:ui:com.google.gwt.uibinder'
+             xmlns:g='urn:import:com.google.gwt.user.client.ui'>
+    <g:VerticalPanel width="100%">
+        <g:cell horizontalAlignment="center">
+            <g:VerticalPanel width="800" styleName="mainPane" spacing="10">
+                <g:HTMLPanel>
+                    <h5><span ui:field="messageSpan"/></h5>
+                </g:HTMLPanel>
+            </g:VerticalPanel>
+        </g:cell>
+    </g:VerticalPanel>
+</ui:UiBinder>
