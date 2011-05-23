@@ -9,16 +9,10 @@ import javax.activation.DataHandler;
 import javax.activation.DataSource;
 import javax.activation.FileDataSource;
 import javax.mail.*;
-import javax.mail.internet.InternetAddress;
-import javax.mail.internet.MimeBodyPart;
-import javax.mail.internet.MimeMessage;
-import javax.mail.internet.MimeMultipart;
+import javax.mail.internet.*;
 import javax.mail.util.ByteArrayDataSource;
 import java.io.*;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 
 public class EmailSender {
     final static Logger logger = Logger.getLogger(EmailSender.class);
@@ -28,7 +22,7 @@ public class EmailSender {
     Properties mailProps = new Properties();
     String userName;
     String password;
-    List<String> emails = new ArrayList<String>();
+    Map<String,Message.RecipientType> emails = new HashMap<String, Message.RecipientType>();
 
     public static class AttachmentProperties {
         public String fileName;
@@ -42,14 +36,14 @@ public class EmailSender {
         }
     }
 
-    public EmailSender(String smtpHost, String fromAddress, List<String> targets) {
+    public EmailSender(String smtpHost, String fromAddress, Map<String,Message.RecipientType> targets) {
         //mailProps.setProperty("mail.debug", "true");
         mailProps.setProperty("mail.smtp.host", smtpHost);
         mailProps.setProperty("mail.from", fromAddress);
         emails = targets;
     }
 
-    public EmailSender(String smtpHost, String smtpPort, String fromAddress, String userName, String password, List<String> targets) {
+    public EmailSender(String smtpHost, String smtpPort, String fromAddress, String userName, String password, Map<String,Message.RecipientType> targets) {
         this(smtpHost, fromAddress, targets);
 
         if (!smtpPort.isEmpty()) {
@@ -87,12 +81,11 @@ public class EmailSender {
         setRecipients(emails);
     }
 
-    public void setRecipients(List<String> targets) throws MessagingException {
-        InternetAddress dests[] = new InternetAddress[targets.size()];
-        for (int i = 0; i < targets.size(); i++) {
-            dests[i] = new InternetAddress(targets.get(i).trim().toLowerCase());
+
+    public void setRecipients(Map<String,Message.RecipientType> targets) throws MessagingException {
+        for (Map.Entry<String, Message.RecipientType> target : targets.entrySet()) {
+            message.addRecipients(target.getValue(), target.getKey());
         }
-        message.setRecipients(MimeMessage.RecipientType.TO, dests);
     }
 
     public void setText(String text) throws MessagingException, IOException {
@@ -131,10 +124,6 @@ public class EmailSender {
         filePart.setDataHandler(new DataHandler(source));
         filePart.setFileName(attachmentName);
         mp.addBodyPart(filePart);
-    }
-
-    public void sendMail(String subject, List<AttachmentProperties> attachmentForms, Map<ByteArray, String> files) throws MessagingException, IOException {
-        sendMail(subject, new ArrayList<String>(), attachmentForms, files);
     }
 
     private String createInlinePart(List<String> inlineForms) throws IOException {

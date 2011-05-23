@@ -640,6 +640,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     public LP smtpPort;
     public LP emailAccount;
     public LP emailPassword;
+    public LP emailBlindCarbonCopy;
     public LP fromAddress;
     protected LP defaultCountry;
 
@@ -1212,6 +1213,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         smtpPort = addDProp("smtpPort", "SMTP порт", StringClass.get(10));
         emailAccount = addDProp("emailAccount", "Имя аккаунта", StringClass.get(50));
         emailPassword = addDProp("emailPassword", "Пароль", StringClass.get(50));
+        emailBlindCarbonCopy = addDProp("emailBlindCarbonCopy", "Копия (BCC)", StringClass.get(50));
         fromAddress = addDProp("fromAddress", "Адрес отправителя", StringClass.get(50));
         defaultCountry = addDProp("defaultCountry", "Страна по умолчанию", country);
 
@@ -1467,7 +1469,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         private AdminFormEntity(NavigatorElement parent, String sID) {
             super(parent, sID, "Глобальные параметры");
 
-            addPropertyDraw(new LP[]{smtpHost, smtpPort, fromAddress, emailAccount, emailPassword, webHost, defaultCountry, barcodePrefix, restartServerAction, cancelRestartServerAction});
+            addPropertyDraw(new LP[]{smtpHost, smtpPort, fromAddress, emailAccount, emailPassword, emailBlindCarbonCopy, webHost, defaultCountry, barcodePrefix, restartServerAction, cancelRestartServerAction});
         }
     }
 

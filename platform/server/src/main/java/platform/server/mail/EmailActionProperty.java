@@ -32,6 +32,8 @@ import platform.server.logics.property.PropertyMapImplement;
 import platform.server.session.DataSession;
 import platform.server.session.Modifier;
 
+import javax.mail.Message;
+import javax.mail.internet.MimeMessage;
 import java.io.File;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -189,11 +191,11 @@ public class EmailActionProperty extends ActionProperty {
 
             Modifier<?> modifier = executeForm!=null? executeForm.form :session.modifier;
 
-            List<String> recepientEmails = new ArrayList<String>();
+            Map<String, Message.RecipientType> recepientEmails = new HashMap<String, Message.RecipientType>();
             for(PropertyMapImplement<?, ClassPropertyInterface> recepient : recepients) {
                 String recepientEmail = (String) recepient.read(session, keys, modifier);
                 if(recepientEmail!=null)
-                    recepientEmails.add(recepientEmail);
+                    recepientEmails.put(recepientEmail, MimeMessage.RecipientType.TO);
             }
 
             List<ClassPropertyInterface> listInterfaces = (List<ClassPropertyInterface>)interfaces;
@@ -205,6 +207,11 @@ public class EmailActionProperty extends ActionProperty {
             String fromAddress = (String) BL.fromAddress.read(session);
             String userName = (String) BL.emailAccount.read(session);
             String password = (String) BL.emailPassword.read(session);
+            String emailBlindCarbonCopy = (String) BL.emailBlindCarbonCopy.read(session);
+            if (emailBlindCarbonCopy != null && !emailBlindCarbonCopy.isEmpty()) {
+                recepientEmails.put(emailBlindCarbonCopy, MimeMessage.RecipientType.BCC);
+            }
+
             if(smtpHost==null || fromAddress==null) {
                 String errorMessage = "Не задан SMTP хост или адрес отправителя. Письма отосланы не будут.";
                 EmailSender.logger.error(errorMessage);
