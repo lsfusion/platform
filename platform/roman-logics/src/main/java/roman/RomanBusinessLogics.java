@@ -3945,7 +3945,6 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         }
     }
 
-
     public class InvoiceFromFormEntity extends FormEntity<RomanBusinessLogics> {
 
         private boolean translate;
@@ -4182,8 +4181,8 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             gobjFreightImporter.add(objImporter);
             addGroup(gobjFreightImporter);                        
 
-            addPropertyDraw(objFreight, date, objectClassName, nameExporterFreight, addressExporterFreight, nameCurrencyFreight);
-            addPropertyDraw(objImporter, name, addressSubject, contractImporter);
+            addPropertyDraw(objFreight, date, objectClassName, nameOriginExporterFreight, addressOriginExporterFreight, nameCurrencyFreight);
+            addPropertyDraw(objImporter, nameOrigin, addressOriginSubject, contractImporter);
             addPropertyDraw(objImporter, objFreight, quantityImporterFreight, netWeightImporterFreight, grossWeightImporterFreight, sumInOutImporterFreight);
 
             gobjFreightImporter.initClassView = ClassViewType.PANEL;
