@@ -2,6 +2,7 @@ package platform.server.data.query;
 
 import platform.base.AddSet;
 import platform.base.BaseUtils;
+import platform.base.Result;
 import platform.server.caches.IdentityLazy;
 import platform.server.caches.hash.HashContext;
 import platform.server.data.Table;
@@ -113,9 +114,11 @@ public class JoinSet extends AddSet<InnerJoin, JoinSet> implements DNFWheres.Int
     }
 
     // получает подможнство join'ов которое дает keys, пропуская skipJoin. тут же алгоритм по определению достаточных ключей
-    public Set<KeyExpr> insufficientKeys(Set<KeyExpr> keys, InnerJoin skipJoin, JoinSet result) {
+    public Set<KeyExpr> insufficientKeys(Set<KeyExpr> keys, InnerJoin skipJoin, Result<JoinSet> result) {
         Set<KeyExpr> foundedKeys = new HashSet<KeyExpr>();
         Set<KeyExpr> neededKeys = new HashSet<KeyExpr>(keys);
+
+        JoinSet joinSet = new JoinSet();
 
         for(InnerJoin innerJoin : getAllJoins()) {
             if(!(skipJoin!=null && (BaseUtils.hashEquals(skipJoin, innerJoin) || skipJoin.isIn(innerJoin.getJoinFollows())))) {
@@ -130,7 +133,7 @@ public class JoinSet extends AddSet<InnerJoin, JoinSet> implements DNFWheres.Int
                             foundedKeys.add((KeyExpr) joinExpr.getValue());
                     }
                 if(hasNeeded && result!=null) { // интересует, только если есть необходимые ключи
-                    result.and(new JoinSet(innerJoin));
+                    joinSet = joinSet.and(new JoinSet(innerJoin));
                     // добавляем недостающие ключи в neededKeys
                     neededKeys.addAll(BaseUtils.remove(AbstractSourceJoin.enumKeys(BaseUtils.filterNotKeys(joinExprs, insufKeys).values()), foundedKeys));
                 }                    
@@ -139,6 +142,9 @@ public class JoinSet extends AddSet<InnerJoin, JoinSet> implements DNFWheres.Int
             if(neededKeys.isEmpty())
                 break;
         }
+
+        if(result!=null)
+            result.set(joinSet);
 
         return neededKeys;
     }

@@ -4,6 +4,7 @@ import org.apache.log4j.Logger;
 import platform.base.BaseUtils;
 import platform.base.Counter;
 import platform.base.OrderedMap;
+import platform.base.Result;
 import platform.server.Settings;
 import platform.server.caches.OuterContext;
 import platform.server.data.*;
@@ -431,10 +432,10 @@ public class CompiledQuery<K,V> {
                     Set<BaseExpr> insufKeys = groupJoin.insufficientKeys(); // определяем ключи которые надо протолкнуть
                     if(insufKeys.size()>0) { // для скорости
                         Map<BaseExpr, BaseExpr> insufExprs = BaseUtils.filterKeys(groupJoin.group, insufKeys);
-                        JoinSet insufJoins = new JoinSet();
+                        Result<JoinSet> insufJoins = new Result<JoinSet>();
                         if(!innerJoins.insufficientKeys(AbstractSourceJoin.enumKeys(insufExprs.values()), groupJoin, insufJoins).isEmpty()) // ищем в общем контексте join'ы дающие недостающие ключи
                             throw new RuntimeException("not enough keys");
-                        fullWhere = fullWhere.and(GroupExpr.create(insufExprs, getInnerWhere(insufJoins), BaseUtils.toMap(insufExprs.keySet())).getWhere());
+                        fullWhere = fullWhere.and(GroupExpr.create(insufExprs, getInnerWhere(insufJoins.result), BaseUtils.toMap(insufExprs.keySet())).getWhere());
                     }
                 }
 

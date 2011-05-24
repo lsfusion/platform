@@ -1384,15 +1384,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
 
         initDateProperties();
-
-        rateExchange = addDProp(baseGroup, "rateExchange", "Курс обмена", DoubleClass.instance, DateClass.instance);
-        LP lessCmpDate = addJProp(and(false, false), object(DateClass.instance), 2, rateExchange, 1, less2, 1, 2);
-        nearestPredDate = addMGProp((AbstractGroup) null, "nearestPredDate", "Ближайшая меньшая дата", lessCmpDate, 2);
-        nearestRateExchange = addJProp("Ближайший курс обмена", rateExchange, nearestPredDate, 1);
-        rateOrder = addJProp("Курс", nearestRateExchange, date, 1);
     }
-
-    LP rateOrder, rateExchange, nearestPredDate, nearestRateExchange;
 
     void initDateProperties() {
 
@@ -1798,8 +1790,6 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         addFormEntity(new GlobalFormEntity(baseElement, "globalForm"));
         FormEntity deliveryShopImport = addFormEntity(new DeliveryShopLocalFormEntity(baseElement, false, "deliveryShopImport", 0, true));
         deliveryShopImport.caption = "Импорт";
-
-        addFormEntity(new RatesFormEntity());
 
 //        FormEntity logClient = addFormEntity(new LogClientFormEntity(actions, "logClientForm"));
 
@@ -4205,19 +4195,6 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
             DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign();
             design.setEnabled(objBarcode, false);
             return design;
-        }
-    }
-
-    private class RatesFormEntity extends FormEntity {
-
-        private RatesFormEntity() {
-            ObjectEntity objIntervalAdd = addSingleGroupObject(DoubleClass.instance, "Курс", objectValue, rateExchange, nearestPredDate, nearestRateExchange);
-            objIntervalAdd.groupTo.initClassView = ClassViewType.PANEL;
-            objIntervalAdd.groupTo.banClassView.addAll(BaseUtils.toList(ClassViewType.GRID, ClassViewType.HIDE));
-
-            ObjectEntity objInterval = addSingleGroupObject(DoubleClass.instance, "Курс", objectValue, rateExchange, nearestPredDate, nearestRateExchange);
-            objInterval.groupTo.banClassView.addAll(BaseUtils.toList(ClassViewType.PANEL, ClassViewType.HIDE));
-            addFixedFilter(new NotNullFilterEntity(addPropertyObject(rateExchange, objInterval)));
         }
     }
 
