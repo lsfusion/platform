@@ -1508,7 +1508,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         nameOriginCategoryArticleSkuShipmentDetail = addJProp(intraAttributeGroup, "nameOriginCategoryArticleSkuShipmentDetail", "Номенклатурная группа товара", nameOrigin, categoryArticleSkuShipmentDetail, 1);
 
         customCategoryOriginArticleSkuShipmentDetail = addJProp(idGroup, true, "customCategoryOriginArticleSkuShipmentDetail", "ТН ВЭД (ИД)", customCategoryOriginArticleSku, skuShipmentDetail, 1);
-        sidCustomCategoryOriginArticleSkuShipmentDetail = addJProp(intraAttributeGroup, "sidCustomCategoryOriginArticleSkuShipmentDetail", "Код ТН ВЭД", sidCustomCategoryOrigin, customCategoryOriginArticleSkuShipmentDetail, 1);
+        sidCustomCategoryOriginArticleSkuShipmentDetail = addJProp(supplierAttributeGroup, "sidCustomCategoryOriginArticleSkuShipmentDetail", "Код ТН ВЭД (ориг.)", sidCustomCategoryOrigin, customCategoryOriginArticleSkuShipmentDetail, 1);
 
         netWeightArticleSkuShipmentDetail = addJProp(supplierAttributeGroup, true, "netWeightArticleSkuShipmentDetail", "Вес нетто (ориг.)", netWeightArticleSku, skuShipmentDetail, 1);
         netWeightSkuShipmentDetail = addJProp(intraAttributeGroup, true, "netWeightSkuShipmentDetail", "Вес нетто", netWeightSku, skuShipmentDetail, 1);
@@ -2745,9 +2745,9 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 
             objShipmentDetail = addSingleGroupObject((box ? boxShipmentDetail : simpleShipmentDetail),
                     selection, barcodeSkuShipmentDetail, sidArticleShipmentDetail, sidColorSupplierItemShipmentDetail, nameColorSupplierItemShipmentDetail, sidSizeSupplierItemShipmentDetail,
-                    nameBrandSupplierArticleSkuShipmentDetail, originalNameArticleSkuShipmentDetail,
+                    nameBrandSupplierArticleSkuShipmentDetail, sidCustomCategoryOriginArticleSkuShipmentDetail, originalNameArticleSkuShipmentDetail,
                     nameOriginCategoryArticleSkuShipmentDetail, nameOriginUnitOfMeasureArticleSkuShipmentDetail,
-                    netWeightArticleSkuShipmentDetail, sidCustomCategoryOriginArticleSkuShipmentDetail,
+                    netWeightArticleSkuShipmentDetail,
                     nameCountryOfOriginArticleSkuShipmentDetail, mainCompositionOriginArticleSkuShipmentDetail,
                     netWeightSkuShipmentDetail, nameCountryOfOriginSkuShipmentDetail,
                     mainCompositionOriginSkuShipmentDetail, additionalCompositionOriginSkuShipmentDetail,
@@ -2906,6 +2906,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             setReadOnly(sidArticleSku, true, objSku.groupTo);
 
             setReadOnly(baseGroup, true, objShipmentDetail.groupTo);
+            setReadOnly(supplierAttributeGroup, true, objShipmentDetail.groupTo);
             setReadOnly(sidSupplierBoxShipmentDetail, false, objShipmentDetail.groupTo);
             setReadOnly(barcodeSupplierBoxShipmentDetail, false, objShipmentDetail.groupTo);
             setReadOnly(barcodeStockShipmentDetail, false, objShipmentDetail.groupTo);
