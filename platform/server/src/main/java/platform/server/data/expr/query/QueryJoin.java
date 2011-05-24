@@ -18,11 +18,11 @@ import java.util.Set;
 
 public abstract class QueryJoin<K extends BaseExpr,I extends OuterContext<I>> extends TwinsInnerContext<QueryJoin<K,I>> {
 
-    private final I query;
+    protected final I query;
     public final Map<K, BaseExpr> group; // вообще гря не reverseable
 
     // нужны чтобы при merge'е у транслятора хватало ключей/значений
-    private final Set<KeyExpr> keys;
+    protected final Set<KeyExpr> keys;
     private final Set<Value> values;
 
     public Set<KeyExpr> getKeys() {

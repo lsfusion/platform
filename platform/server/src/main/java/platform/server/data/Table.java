@@ -174,9 +174,16 @@ public class Table extends TwinImmutableObject implements MapKeysInterface<KeyFi
     public void enumInnerValues(Set<Value> values) {
     }
 
-    public class Join extends platform.server.data.query.Join<PropertyField> implements InnerJoin, TwinImmutableInterface {
+    public class Join extends platform.server.data.query.Join<PropertyField> implements InnerJoin<KeyField>, TwinImmutableInterface {
 
         public final Map<KeyField, BaseExpr> joins;
+
+        public Map<KeyField, BaseExpr> getJoins() {
+            return joins;
+        }
+        public Set<KeyField> insufficientKeys() {
+            return new HashSet<KeyField>();
+        }
 
         public Join(Map<KeyField, ? extends BaseExpr> joins) {
             this.joins = (Map<KeyField, BaseExpr>) joins;

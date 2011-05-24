@@ -6,7 +6,7 @@ import platform.interop.Compare;
 import platform.server.data.expr.BaseExpr;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
-import platform.server.data.query.JoinSet;
+import platform.server.data.expr.where.MapWhere;
 import platform.server.data.translator.PartialQueryTranslator;
 import platform.server.data.where.Where;
 
@@ -115,17 +115,22 @@ public class KeyEquals extends QuickMap<KeyEqual, Where> {
         throw new RuntimeException("not supported yet");
     }
 
-    public Collection<InnerSelectJoin> getInnerJoins(boolean noJoins) {
-        Collection<InnerSelectJoin> result = new ArrayList<InnerSelectJoin>();
+    public Collection<InnerGroupJoin<? extends GroupJoinSet>> getInnerJoins(boolean noJoins, Set<KeyExpr> keys) {
+        Collection<InnerGroupJoin<? extends GroupJoinSet>> result = new ArrayList<InnerGroupJoin<? extends GroupJoinSet>>();
         for(int i=0;i<size;i++) {
             KeyEqual keyEqual = getKey(i);
             Where where = getValue(i);
 
-            if(noJoins)
-                result.add(new InnerSelectJoin(keyEqual, new JoinSet(), where));
-            else
-                for(Map.Entry<ObjectJoinSet,Where> objectJoin : where.groupObjectJoinSets().compileMeans().entrySet())
+            ObjectJoinSets objectJoinSets = where.groupObjectJoinSets();
+
+            if(noJoins) { // группируем по enoughKeys
+                MapWhere<Set<KeyExpr>> insufWheres = objectJoinSets.compileInsufficient(BaseUtils.removeSet(keys,keyEqual.keyExprs.keySet()), where);
+                for(int j=0;j<insufWheres.size;j++)
+                    result.add(new InnerGroupJoin<InsufficientKeys>(keyEqual, new InsufficientKeys(insufWheres.getKey(j)), insufWheres.getValue(j)));
+            } else { // группируем по means
+                for(Map.Entry<ObjectJoinSet,Where> objectJoin : objectJoinSets.compileMeans().entrySet())
                     result.add(new InnerSelectJoin(keyEqual, objectJoin.getKey().getJoins(), objectJoin.getValue()));
+            }
         }
         return result;
     }

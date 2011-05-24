@@ -7,9 +7,7 @@ import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.KeyType;
 import platform.server.data.query.SourceJoin;
-import platform.server.data.query.innerjoins.InnerSelectJoin;
-import platform.server.data.query.innerjoins.KeyEquals;
-import platform.server.data.query.innerjoins.ObjectJoinSets;
+import platform.server.data.query.innerjoins.*;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.translator.QueryTranslator;
 import platform.server.data.where.classes.ClassExprWhere;
@@ -17,6 +15,7 @@ import platform.server.data.where.classes.MeanClassWheres;
 
 import java.util.Collection;
 import java.util.Map;
+import java.util.Set;
 
 public interface Where extends SourceJoin, OuterContext<Where>, KeyType, CheckWhere {
 
@@ -75,7 +74,8 @@ public interface Where extends SourceJoin, OuterContext<Where>, KeyType, CheckWh
 
     // ДОПОЛНИТЕЛЬНЫЕ ИНТЕРФЕЙСЫ
 
-    Collection<InnerSelectJoin> getInnerJoins(boolean notExclusive, boolean noJoins); // должен быть выполнен pack()
+    Collection<InnerSelectJoin> getInnerJoins(boolean notExclusive);
+    Collection<InnerGroupJoin<? extends GroupJoinSet>> getInnerJoins(boolean notExclusive, boolean noJoins, Set<KeyExpr> keys);
     ObjectJoinSets groupObjectJoinSets(); // protected
     KeyEquals getKeyEquals();
     MeanClassWheres groupMeanClassWheres();

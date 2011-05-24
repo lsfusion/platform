@@ -18,9 +18,7 @@ import platform.server.data.expr.cases.MapCase;
 import platform.server.data.expr.where.EqualsWhere;
 import platform.server.data.query.CompileSource;
 import platform.server.data.query.Query;
-import platform.server.data.query.innerjoins.InnerSelectJoin;
-import platform.server.data.query.innerjoins.KeyEqual;
-import platform.server.data.query.innerjoins.ObjectJoinSets;
+import platform.server.data.query.innerjoins.*;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.translator.QueryTranslator;
 import platform.server.data.type.Type;
@@ -100,7 +98,7 @@ public abstract class GroupExpr extends QueryExpr<BaseExpr,Expr,GroupJoin> {
 
     @IdentityLazy
     public GroupJoin getGroupJoin() {
-        InnerSelectJoin innerJoin = BaseUtils.single(getInnerJoins(query, BaseUtils.reverse(group), getGroupType()));
+        InnerGroupJoin<? extends GroupJoinSet> innerJoin = BaseUtils.single(getInnerJoins(query, BaseUtils.reverse(group), getGroupType()));
         assert innerJoin.keyEqual.isEmpty();
         return new GroupJoin(innerContext.getKeys(), innerContext.getValues(), BaseUtils.single(getExprCases(query, getGroupType())).where,
                 innerJoin.joins, group);
@@ -357,15 +355,15 @@ public abstract class GroupExpr extends QueryExpr<BaseExpr,Expr,GroupJoin> {
     }
 
     // "определяет" разбивать на innerJoins или нет
-    private static Collection<InnerSelectJoin> getInnerJoins(Expr expr, Map<BaseExpr, BaseExpr> outerInner, GroupType type) {
+    private static Collection<InnerGroupJoin<? extends GroupJoinSet>> getInnerJoins(Expr expr, Map<BaseExpr, BaseExpr> outerInner, GroupType type) {
         // если sum (не max) то exclusive
-        return getFullWhere(expr, outerInner).getInnerJoins(type.noExclusive(), !type.splitInnerJoins());
+        return getFullWhere(expr, outerInner).getInnerJoins(type.noExclusive(), !type.splitInnerJoins(), enumKeys(outerInner.values(), expr.getEnum()));
     }
 
     private static Expr createInnerSplit(Map<BaseExpr, BaseExpr> outerInner, Expr expr,GroupType type) {
 
         Expr result = CaseExpr.NULL;
-        for(InnerSelectJoin innerJoin : getInnerJoins(expr, outerInner, type)) {
+        for(InnerGroupJoin innerJoin : getInnerJoins(expr, outerInner, type)) {
             Expr innerResult;
             if(!innerJoin.keyEqual.isEmpty()) { // translatе'им expr
                 QueryTranslator equalTranslator = innerJoin.keyEqual.getTranslator();

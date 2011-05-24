@@ -7,21 +7,23 @@ import platform.server.caches.hash.HashContext;
 import platform.server.data.Value;
 import platform.server.data.expr.*;
 import platform.server.data.query.InnerJoin;
-import platform.server.data.query.JoinSet;
 import platform.server.data.query.SourceJoin;
+import platform.server.data.query.JoinSet;
+import platform.server.data.query.innerjoins.GroupJoinSet;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.where.Where;
 
 import java.util.Map;
 import java.util.Set;
+import java.util.HashSet;
 
-public class GroupJoin extends QueryJoin<BaseExpr, GroupJoin.Query> implements InnerJoin {
+public class GroupJoin extends QueryJoin<BaseExpr, GroupJoin.Query> implements InnerJoin<BaseExpr> {
 
     public static class Query extends AbstractOuterContext<Query> {
         private final Where where;
-        private final JoinSet joins;
+        private final GroupJoinSet<?> joins;
 
-        public Query(Where where, JoinSet joins) {
+        public Query(Where where, GroupJoinSet joins) {
             this.where = where;
             this.joins = joins;
         }
@@ -32,7 +34,7 @@ public class GroupJoin extends QueryJoin<BaseExpr, GroupJoin.Query> implements I
 
         @IdentityLazy
         public int hashOuter(HashContext hashContext) {
-            return where.hashOuter(hashContext) * 31 + joins.hashContext(hashContext);
+            return where.hashOuter(hashContext) * 31 + joins.hashOuter(hashContext);
         }
 
         public Query translateOuter(MapTranslate translator) {
@@ -57,7 +59,7 @@ public class GroupJoin extends QueryJoin<BaseExpr, GroupJoin.Query> implements I
         return new GroupJoin(this, translator);
     }
 
-    public GroupJoin(Set<KeyExpr> keys, Set<Value> values, Where where, JoinSet joins, Map<BaseExpr, BaseExpr> group) {
+    public GroupJoin(Set<KeyExpr> keys, Set<Value> values, Where where, GroupJoinSet joins, Map<BaseExpr, BaseExpr> group) {
         super(keys,values,new Query(where,joins),group);
     }
 
@@ -85,5 +87,20 @@ public class GroupJoin extends QueryJoin<BaseExpr, GroupJoin.Query> implements I
                 return true;
         }
         return false;
+    }
+
+    @IdentityLazy
+    public Set<BaseExpr> insufficientKeys() {
+        Set<KeyExpr> insufficientKeys = query.joins.insufficientKeys(keys); // ключи которые есть
+
+        Set<BaseExpr> result = new HashSet<BaseExpr>();
+        for(BaseExpr groupKey : group.keySet())
+            if(groupKey instanceof KeyExpr && insufficientKeys.contains((KeyExpr)groupKey)) // исключаем висячие ключи
+                result.add(groupKey);
+        return result;
+    }
+
+    public Map<BaseExpr, BaseExpr> getJoins() {
+        return group;
     }
 }

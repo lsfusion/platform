@@ -145,7 +145,7 @@ public class CompiledQuery<K,V> {
             propertyReaders.put(property.getKey(),query.where.isFalse()?NullReader.instance:property.getValue().getReader(query.where));
 
         boolean useFJ = syntax.useFJ();
-        Collection<InnerSelectJoin> queryJoins = query.where.getInnerJoins(useFJ, false);
+        Collection<InnerSelectJoin> queryJoins = query.where.getInnerJoins(useFJ);
 
         unionAll = !(useFJ || queryJoins.size() < 2);
         if (unionAll) {
@@ -284,11 +284,10 @@ public class CompiledQuery<K,V> {
             public abstract String getSource();
         }
 
-        // получает условия следующие из логики inner join'ов SQL
-        private Where getInnerWhere() {
+        private Where getInnerWhere(JoinSet joinSet) {
             Where trueWhere = Where.TRUE;
             Collection<Table.Join> innerTables = new ArrayList<Table.Join>(); Collection<GroupJoin> innerGroups = new ArrayList<GroupJoin>();
-            innerJoins.fillJoins(innerTables, innerGroups);
+            joinSet.fillJoins(innerTables, innerGroups);
             for(Table.Join table : innerTables) // все inner'ы на таблицы заведомо true
                 trueWhere = trueWhere.and(table.getWhere());
             for(GroupJoin group : innerGroups) { // для "верхних" group or всех выражений заведомо true
@@ -299,6 +298,11 @@ public class CompiledQuery<K,V> {
                 trueWhere = trueWhere.and(groupWhere);
             }
             return trueWhere;
+        }
+
+        // получает условия следующие из логики inner join'ов SQL
+        private Where getInnerWhere() {
+            return getInnerWhere(innerJoins);
         }
 
         public String getFrom(Where where,Collection<String> whereSelect) {
@@ -401,13 +405,13 @@ public class CompiledQuery<K,V> {
         private class GroupSelect extends QuerySelect<BaseExpr,Expr,GroupJoin,GroupExpr> {
 
             final Set<KeyExpr> keys;
-            final Map<BaseExpr, BaseExpr> groupExprs; // для push'а внутрь
+            final GroupJoin groupJoin; // для проталкивания внутрь условий нужен
 
             GroupSelect(GroupJoin groupJoin) {
                 super(groupJoin);
                 keys = groupJoin.getKeys();
 
-                groupExprs = groupJoin.group;
+                this.groupJoin = groupJoin;
             }
 
             public String getSource() {
@@ -422,7 +426,17 @@ public class CompiledQuery<K,V> {
 
                 // если pushWhere, то берем
                 if(!inner && Settings.instance.isPushGroupWhere())
-                    fullWhere = fullWhere.and(GroupExpr.create(groupExprs, getInnerWhere(), BaseUtils.toMap(groupExprs.keySet())).getWhere());
+                    fullWhere = fullWhere.and(GroupExpr.create(groupJoin.group, getInnerWhere(), BaseUtils.toMap(groupJoin.group.keySet())).getWhere());
+                else {
+                    Set<BaseExpr> insufKeys = groupJoin.insufficientKeys(); // определяем ключи которые надо протолкнуть
+                    if(insufKeys.size()>0) { // для скорости
+                        Map<BaseExpr, BaseExpr> insufExprs = BaseUtils.filterKeys(groupJoin.group, insufKeys);
+                        JoinSet insufJoins = new JoinSet();
+                        if(!innerJoins.insufficientKeys(AbstractSourceJoin.enumKeys(insufExprs.values()), groupJoin, insufJoins).isEmpty()) // ищем в общем контексте join'ы дающие недостающие ключи
+                            throw new RuntimeException("not enough keys");
+                        fullWhere = fullWhere.and(GroupExpr.create(insufExprs, getInnerWhere(insufJoins), BaseUtils.toMap(insufExprs.keySet())).getWhere());
+                    }
+                }
 
                 Map<Expr,String> fromPropertySelect = new HashMap<Expr, String>();
                 Collection<String> whereSelect = new ArrayList<String>(); // проверить crossJoin

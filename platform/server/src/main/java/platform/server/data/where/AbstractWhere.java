@@ -12,6 +12,8 @@ import platform.server.data.query.AbstractSourceJoin;
 import platform.server.data.query.Query;
 import platform.server.data.query.innerjoins.InnerSelectJoin;
 import platform.server.data.query.innerjoins.KeyEquals;
+import platform.server.data.query.innerjoins.InnerGroupJoin;
+import platform.server.data.query.innerjoins.GroupJoinSet;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.type.Type;
 import platform.server.data.where.classes.ClassExprWhere;
@@ -20,6 +22,7 @@ import platform.server.data.where.classes.MeanClassWheres;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 public abstract class AbstractWhere extends AbstractSourceJoin<Where> implements Where {
 
@@ -175,17 +178,18 @@ public abstract class AbstractWhere extends AbstractSourceJoin<Where> implements
         return new Query<KeyExpr,Object>(BaseUtils.toMap(map.keySet()),this).join(map).getWhere();
     }
 
-    public Collection<InnerSelectJoin> getInnerJoins(boolean notExclusive, boolean noJoins) {
-        if(notExclusive)
-            return getKeyEquals().getInnerJoins(noJoins);
-        else {
-            KeyEquals keyEquals = getKeyEquals();
-            Collection<InnerSelectJoin> innerJoins = keyEquals.getInnerJoins(noJoins); // получаем notExclusive
-            if(innerJoins.size()<=1) // exclusive по определению
-                return innerJoins;
+    public Collection<InnerSelectJoin> getInnerJoins(boolean notExclusive) {
+        return BaseUtils.immutableCast(getInnerJoins(notExclusive, false, null));
+    }
 
-            InnerSelectJoin firstJoin = innerJoins.iterator().next();
-            return BaseUtils.add(keyEquals.getWhere().and(firstJoin.fullWhere.not()).getInnerJoins(false,noJoins),firstJoin); // assert что keyEquals.getWhere тоже самое что this только упрощенное транслятором
+    public Collection<InnerGroupJoin<? extends GroupJoinSet>> getInnerJoins(boolean notExclusive, boolean noJoins, Set<KeyExpr> keys) {
+        KeyEquals keyEquals = getKeyEquals();
+        Collection<InnerGroupJoin<? extends GroupJoinSet>> innerJoins = keyEquals.getInnerJoins(noJoins, keys); // получаем notExclusive
+        if(notExclusive || innerJoins.size()<=1)
+            return innerJoins;
+        else {
+            InnerGroupJoin<? extends GroupJoinSet> firstJoin = innerJoins.iterator().next();
+            return BaseUtils.add(keyEquals.getWhere().and(firstJoin.fullWhere.not()).getInnerJoins(false,noJoins,keys),firstJoin); // assert что keyEquals.getWhere тоже самое что this только упрощенное транслятором
         }
     }
 
