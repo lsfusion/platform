@@ -239,6 +239,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
     LP extractClaimer, loadExtractClaimer, openExtractClaimer;
     LP OGRNClaimer, INNClaimer;
     LP projectVote, nameNativeProjectVote, nameForeignProjectVote;
+    LP documentName, documentNameExpert;
     LP clusterExpert, nameNativeClusterExpert;
     LP clusterProject, nameNativeClusterProject, nameForeignClusterProject;
     LP clusterVote, nameNativeClusterVote;
@@ -576,6 +577,10 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
 
         dateProjectVote = addJProp("dateProjectVote", "Дата проекта", date, projectVote, 1);
 
+        documentName = addDProp("documentName", "Имя для документов", StringClass.get(100), expert);
+        documentName.setMinimumWidth(10); documentName.setPreferredWidth(50);
+        documentNameExpert = addSUProp("documentNameExpert", "Имя для документов", Union.OVERRIDE, name, documentName);
+        documentNameExpert.setMinimumWidth(10); documentNameExpert.setPreferredWidth(50);
         clusterExpert = addDProp(idGroup, "clusterExpert", "Кластер (ИД)", cluster, expert);
         nameNativeClusterExpert = addJProp(baseGroup, "nameNativeClusterExpert", "Кластер", nameNative, clusterExpert, 1);
 
@@ -1348,7 +1353,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
 
             objExpert = addSingleGroupObject(expert);
             addPropertyDraw(objExpert, objVote, inExpertVote, oldExpertVote);
-            addPropertyDraw(objExpert, name, email);
+            addPropertyDraw(objExpert, name, documentNameExpert, email);
             addPropertyDraw(voteResultGroup, true, objExpert, objVote);
 
             setForceViewType(voteResultCommentGroup, ClassViewType.PANEL);
@@ -1443,7 +1448,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
 
             objExpert = addSingleGroupObject(expert);
             if (!restricted)
-                addPropertyDraw(objExpert, userFirstName, userLastName, userLogin, userPassword, email);
+                addPropertyDraw(objExpert, userFirstName, userLastName, documentNameExpert, userLogin, userPassword, email);
 
             addPropertyDraw(objExpert, objVote, oldExpertVote);
             addPropertyDraw(voteResultGroup, true, objExpert, objVote);
@@ -1502,7 +1507,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         private ExpertFormEntity(NavigatorElement parent, String sID) {
             super(parent, sID, "Реестр экспертов");
 
-            objExpert = addSingleGroupObject(expert, selection, userFirstName, userLastName, userLogin, userPassword, email, disableExpert, nameNativeClusterExpert, nameLanguageExpert, expertResultGroup, generateLoginPassword, emailAuthExpert);
+            objExpert = addSingleGroupObject(expert, selection, userFirstName, userLastName, documentNameExpert, userLogin, userPassword, email, disableExpert, nameNativeClusterExpert, nameLanguageExpert, expertResultGroup, generateLoginPassword, emailAuthExpert);
             addObjectActions(this, objExpert);
 
             objVote = addSingleGroupObject(vote, nameNativeProjectVote, dateStartVote, dateEndVote, openedVote, succeededVote, quantityDoneVote);
@@ -1543,7 +1548,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
 
             objVote = addSingleGroupObject(vote, nameNativeProjectVote, dateStartVote, dateEndVote, openedVote, succeededVote);
 
-            objExpert = addSingleGroupObject(expert, userFirstName, userLastName, email, nameNativeClusterExpert, nameLanguageExpert);
+            objExpert = addSingleGroupObject(expert, userFirstName, userLastName, documentNameExpert, email, nameNativeClusterExpert, nameLanguageExpert);
 
             addPropertyDraw(objExpert, objVote, allowedEmailLetterExpertVote);
 
@@ -1673,7 +1678,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
 
             addPropertyDraw(webHost, gobjExpertVote);
             addPropertyDraw(requiredPeriod, gobjExpertVote);
-            addPropertyDraw(objExpert, name, isForeignExpert, localeExpert);
+            addPropertyDraw(objExpert, name, documentNameExpert, isForeignExpert, localeExpert);
             addPropertyDraw(objVote, nameNativeClaimerVote, nameForeignClaimerVote, nameNativeProjectVote, nameForeignProjectVote);
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(inNewExpertVote, objExpert, objVote)));
 
@@ -1707,7 +1712,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         private ExpertAuthFormEntity(NavigatorElement parent, String sID) {
             super(parent, sID, "Аутентификация эксперта", true);
 
-            objExpert = addSingleGroupObject(1, "expert", expert, userLogin, userPassword, name, isForeignExpert);
+            objExpert = addSingleGroupObject(1, "expert", expert, userLogin, userPassword, name, documentNameExpert, isForeignExpert);
             objExpert.groupTo.initClassView = ClassViewType.PANEL;
 
             addInlineEAForm(emailAuthExpertEA, this, objExpert, 1);
@@ -1732,11 +1737,11 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
             objVote = addSingleGroupObject(1, "vote", vote, date, dateProjectVote, nameNativeClaimerVote, nameNativeProjectVote, nameAblateClaimerVote, prevDateStartVote, prevDateVote);
             objVote.groupTo.initClassView = ClassViewType.PANEL;
 
-            objExpert = addSingleGroupObject(2, "expert", expert, userLastName, userFirstName);
+            objExpert = addSingleGroupObject(2, "expert", expert, userLastName, userFirstName, documentNameExpert);
             addPropertyDraw(numberNewExpertVote, objExpert, objVote);
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(inNewExpertVote, objExpert, objVote)));
 
-            objOldExpert = addSingleGroupObject(3, "oldexpert", expert, userLastName, userFirstName);
+            objOldExpert = addSingleGroupObject(3, "oldexpert", expert, userLastName, userFirstName, documentNameExpert);
             addPropertyDraw(numberOldExpertVote, objOldExpert, objVote);
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(inOldExpertVote, objOldExpert, objVote)));
 
@@ -1769,7 +1774,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
 
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(closedVote, objVote)));
 
-            objExpert = addSingleGroupObject(12, "expert", expert, userFirstName, userLastName);
+            objExpert = addSingleGroupObject(12, "expert", expert, userFirstName, userLastName, documentNameExpert);
 
             addPropertyDraw(voteResultGroup, true, objExpert, objVote);
 
@@ -1823,7 +1828,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
             addPropertyDraw(objDateTo, objectValue);
             getPropertyDraw(objectValue, objDateTo).setSID("dateTo");
 
-            objExpert = addSingleGroupObject(4, "expert", expert, userFirstName, userLastName, nameNativeClusterExpert);
+            objExpert = addSingleGroupObject(4, "expert", expert, userFirstName, userLastName, documentNameExpert, nameNativeClusterExpert);
             objExpert.groupTo.initClassView = ClassViewType.PANEL;
 
             addPropertyDraw(objExpert, objDateFrom, objDateTo, quantityDoneExpertDateFromDateTo, quantityInExpertDateFromDateTo);
