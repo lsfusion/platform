@@ -251,15 +251,18 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
     LP emailToExpert;
 
     LP nameNativeClaimerVote, nameForeignClaimerVote;
+    LP nameNativeGenitiveManagerProject, nameGenitiveManagerProject;
     LP nameNativeDativusManagerProject, nameDativusManagerProject;
     LP nameNativeAblateManagerProject, nameAblateManagerProject;
 
     LP nameNativeClaimer;
     LP nameForeignClaimer;
-    LP nameAblateClaimerProject;
+    LP nameGenitiveClaimerProject;
     LP nameDativusClaimerProject;
-    LP nameAblateClaimerVote;
+    LP nameAblateClaimerProject;
+    LP nameGenitiveClaimerVote;
     LP nameDativusClaimerVote;
+    LP nameAblateClaimerVote;
 
     LP documentTemplateDocumentTemplateDetail;
 
@@ -581,6 +584,10 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
 
         nameNativeManagerProject = addDProp(projectInformationGroup, "nameNativeManagerProject", "ФИО руководителя проекта", InsensitiveStringClass.get(2000), project);
         nameNativeManagerProject.setMinimumWidth(10); nameNativeManagerProject.setPreferredWidth(50);
+        nameNativeGenitiveManagerProject = addDProp(projectInformationGroup, "nameNativeGenitiveManagerProject", "ФИО руководителя проекта (Кого)", InsensitiveStringClass.get(2000), project);
+        nameNativeGenitiveManagerProject.setMinimumWidth(10); nameNativeGenitiveManagerProject.setPreferredWidth(50);
+        nameGenitiveManagerProject = addSUProp("nameGenitiveManagerProject", "Заявитель (Кого)", Union.OVERRIDE, nameNativeManagerProject, nameNativeGenitiveManagerProject);
+        nameGenitiveManagerProject.setMinimumWidth(10); nameGenitiveManagerProject.setPreferredWidth(50);
         nameNativeDativusManagerProject = addDProp(projectInformationGroup, "nameNativeDativusManagerProject", "ФИО руководителя проекта (Кому)", InsensitiveStringClass.get(2000), project);
         nameNativeDativusManagerProject.setMinimumWidth(10); nameNativeDativusManagerProject.setPreferredWidth(50);
         nameDativusManagerProject = addSUProp("nameDativusManagerProject", "Заявитель (Кому)", Union.OVERRIDE, nameNativeManagerProject, nameNativeDativusManagerProject);
@@ -597,6 +604,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         nameNativeClaimerProject.setMinimumWidth(10); nameNativeClaimerProject.setPreferredWidth(50);
         nameForeignJoinClaimerProject = addJProp(projectInformationGroup, "nameForeignJoinClaimerProject", "Claimer", nameForeign, claimerProject, 1);
         nameForeignClaimerProject = addSUProp("nameForeignClaimerProject", "Claimer", Union.OVERRIDE, nameForeignManagerProject, nameForeignJoinClaimerProject);
+        nameGenitiveClaimerProject = addSUProp(additionalInformationGroup, "nameGenitiveClaimerProject", "Заявитель (Кого)", Union.OVERRIDE, nameGenitiveManagerProject, nameNativeJoinClaimerProject);
         nameDativusClaimerProject = addSUProp(additionalInformationGroup, "nameDativusClaimerProject", "Заявитель (Кому)", Union.OVERRIDE, nameDativusManagerProject, nameNativeJoinClaimerProject);
         nameAblateClaimerProject = addSUProp(additionalInformationGroup, "nameAblateClaimerProject", "Заявитель (Кем)", Union.OVERRIDE, nameAblateManagerProject, nameNativeJoinClaimerProject);
 
@@ -816,8 +824,9 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         nameNativeClaimerVote = addJProp(baseGroup, "nameNativeClaimerVote", "Заявитель", nameNativeClaimerProject, projectVote, 1);
         nameNativeClaimerVote.setMinimumWidth(10); nameNativeClaimerVote.setPreferredWidth(50);
         nameForeignClaimerVote = addJProp(baseGroup, "nameForeignClaimerVote", "Заявитель (иностр.)", nameForeignClaimerProject, projectVote, 1);
-        nameDativusClaimerVote = addJProp(baseGroup, "nameDativusClaimerVote", "Заявитель", nameDativusClaimerProject, projectVote, 1);
-        nameAblateClaimerVote = addJProp(baseGroup, "nameAblateClaimerVote", "Заявитель", nameAblateClaimerProject, projectVote, 1);
+        nameGenitiveClaimerVote = addJProp(baseGroup, "nameGenitiveClaimerVote", "Заявитель (кого)", nameGenitiveClaimerProject, projectVote, 1);
+        nameDativusClaimerVote = addJProp(baseGroup, "nameDativusClaimerVote", "Заявитель (кому)", nameDativusClaimerProject, projectVote, 1);
+        nameAblateClaimerVote = addJProp(baseGroup, "nameAblateClaimerVote", "Заявитель (кем)", nameAblateClaimerProject, projectVote, 1);
 
         documentTemplateDocumentTemplateDetail = addDProp(idGroup, "documentTemplateDocumentTemplateDetail", "Шаблон (ИД)", documentTemplate, documentTemplateDetail);
 
@@ -1878,7 +1887,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         private ClaimerRejectedFormEntity(NavigatorElement parent, String sID) {
             super(parent, sID, "Решение о несоответствии", true);
 
-            objVote = addSingleGroupObject(genID(), "vote", vote, "Заседание", dateEndVote, nameNativeProjectVote, dateProjectVote, nameNativeClaimerVote, nameAblateClaimerVote, nameDativusClaimerVote);
+            objVote = addSingleGroupObject(genID(), "vote", vote, "Заседание", dateEndVote, nameNativeProjectVote, dateProjectVote, nameNativeClaimerVote, nameAblateClaimerVote, nameDativusClaimerVote, nameGenitiveClaimerVote);
             objVote.groupTo.initClassView = ClassViewType.PANEL;
 
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(succeededVote, objVote)));
@@ -1895,7 +1904,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         private ClaimerStatusFormEntity(NavigatorElement parent, String sID) {
             super(parent, sID, "Решение о присвоении статуса участника", true);
 
-            objProject = addSingleGroupObject(genID(), "project", project, "Проект", date, nameNativeProject, nameNativeClaimerProject, nameAblateClaimerProject, nameDativusClaimerProject);
+            objProject = addSingleGroupObject(genID(), "project", project, "Проект", date, nameNativeProject, nameNativeClaimerProject, nameAblateClaimerProject, nameDativusClaimerProject, nameGenitiveClaimerProject);
             objProject.groupTo.initClassView = ClassViewType.PANEL;
 
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(acceptedProject, objProject)));
