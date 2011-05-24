@@ -55,7 +55,9 @@ import platform.server.logics.table.ImplementTable;
 import platform.server.logics.table.TableFactory;
 import platform.server.mail.EmailActionProperty;
 import platform.server.serialization.ServerSerializationPool;
+import platform.server.session.Changes;
 import platform.server.session.DataSession;
+import platform.server.session.Modifier;
 import platform.server.session.PropertyChange;
 
 import javax.swing.*;
@@ -79,6 +81,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     public static final long MAX_FREE_NAVIGATOR_LIFE_TIME = Long.parseLong(System.getProperty("platform.server.navigatorMaxLifeTime", Long.toString(3L * 3600L * 1000L)));
 
     protected LP betweenDates;
+    private LP<ClassPropertyInterface> recalculateAction;
 
     public byte[] findClass(String name) {
 
@@ -1174,6 +1177,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         restartServerAction = addJProp("Остановить сервер", andNot1, addRestartActionProp(), isServerRestarting);
         cancelRestartServerAction = addJProp("Отменить остановку сервера", and1, addCancelRestartActionProp(), isServerRestarting);
 
+        recalculateAction = addProperty(null, new LP<ClassPropertyInterface>(new RecalculateActionProperty(genSID(), "Перерасчитать агрегации")));
+
         currentUserName = addJProp("Имя тек. польз.", name, currentUser);
 
         reverseBarcode = addSDProp("reverseBarcode", "Реверс", LogicalClass.instance);
@@ -1469,7 +1474,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         private AdminFormEntity(NavigatorElement parent, String sID) {
             super(parent, sID, "Глобальные параметры");
 
-            addPropertyDraw(new LP[]{smtpHost, smtpPort, fromAddress, emailAccount, emailPassword, emailBlindCarbonCopy, webHost, defaultCountry, barcodePrefix, restartServerAction, cancelRestartServerAction});
+            addPropertyDraw(new LP[]{smtpHost, smtpPort, fromAddress, emailAccount, emailPassword, emailBlindCarbonCopy, webHost, defaultCountry, barcodePrefix, restartServerAction, cancelRestartServerAction, recalculateAction});
         }
     }
 
@@ -4608,6 +4613,27 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects) throws SQLException {
             getRestartController().cancelRestart();
             updateRestartProperty();
+        }
+    }
+
+    public class RecalculateActionProperty extends ActionProperty {
+        private RecalculateActionProperty(String sID, String caption) {
+            super(sID, caption, new ValueClass[]{});
+        }
+
+        public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapExecuteObjects) {
+            throw new RuntimeException("should not be");
+        }
+
+        @Override
+        public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, DataSession session, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects, boolean groupLast) throws SQLException {
+            SQLSession sqlSession = session.sql;
+
+            sqlSession.startTransaction();
+            recalculateAggregations(session.sql, getAggregateStoredProperties());
+            sqlSession.commitTransaction();
+
+            actions.add(new MessageClientAction("Перерасчет был успешно завершен", "Перерасчет агрегаций"));
         }
     }
 
