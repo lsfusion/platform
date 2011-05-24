@@ -1604,7 +1604,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         private ClaimerFormEntity(NavigatorElement parent, String sID) {
             super(parent, sID, "Реестр заявителей");
 
-            objClaimer = addSingleGroupObject(claimer, "Заявитель", claimerInformationGroup, contactGroup, documentGroup, legalDataGroup, editClaimer);
+            objClaimer = addSingleGroupObject(claimer, "Заявитель", claimerInformationGroup, contactGroup, legalDataGroup, editClaimer);
      }
     }
 
@@ -1615,7 +1615,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         private ClaimerFullFormEntity(NavigatorElement parent, String sID) {
             super(parent, sID, "Заявители");
 
-            objClaimer = addSingleGroupObject(claimer, "Заявитель", claimerInformationGroup, contactGroup, legalDataGroup);
+            objClaimer = addSingleGroupObject(claimer, "Заявитель", claimerInformationGroup, contactGroup, documentGroup, legalDataGroup);
             objClaimer.groupTo.setSingleClassView(ClassViewType.PANEL);
             editClaimer = addMFAProp(actionGroup, "Редактировать", this, new ObjectEntity[] {objClaimer}).setImage("/images/edit.png");
      }
