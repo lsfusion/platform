@@ -1435,7 +1435,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         private ObjectEntity objExpert;
 
         private VoteFormEntity(NavigatorElement parent, String sID, boolean restricted) {
-            super(parent, sID, "Реестр заседаний" + (restricted ? "(урезанный)": ""));
+            super(parent, sID, "Реестр заседаний");
 
             objVote = addSingleGroupObject(vote, nameNativeProjectVote, nameNativeClaimerVote, nameNativeClusterVote, equalsClusterProjectVote, dateStartVote, dateEndVote, openedVote, succeededVote, acceptedVote, quantityDoneVote, quantityInClusterVote, quantityInnovativeVote, quantityForeignVote);
             if (!restricted)

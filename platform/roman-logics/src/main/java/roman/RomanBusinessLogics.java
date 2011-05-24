@@ -332,6 +332,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     private LP originalNameArticleSku;
     private LP inSupplierBoxShipment;
     private LP quantitySupplierBoxBoxShipmentStockSku;
+    private LP quantitySupplierBoxBoxShipmentSku;
     private LP quantitySimpleShipmentStockSku;
     private LP barcodeAction4;
     LP supplierBoxSIDSupplier;
@@ -1561,6 +1562,9 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         quantitySupplierBoxBoxShipmentStockSku = addSGProp(baseGroup, "quantitySupplierBoxBoxShipmentStockSku", "Кол-во оприход.", quantityShipmentDetail,
                 supplierBoxShipmentDetail, 1, boxShipmentBoxShipmentDetail, 1, stockShipmentDetail, 1, skuShipmentDetail, 1);
 
+        quantitySupplierBoxBoxShipmentSku = addSGProp(baseGroup, "quantitySupplierBoxBoxShipmentSku", "Кол-во оприход.", quantitySupplierBoxBoxShipmentStockSku,
+                1, 2, 4);
+
         quantitySupplierBoxSku = addSGProp(baseGroup, "quantitySupplierBoxSku", "Кол-во оприход.", quantitySupplierBoxBoxShipmentStockSku, 1, 4);
 
         diffListSupplierBoxSku =addJProp(diff2, quantityListSku, 1, 2, quantitySupplierBoxSku, 1, 2);
@@ -2043,7 +2047,8 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         tableFactory.include("freightUnit", freightUnit);
         tableFactory.include("barcodeObject", barcodeObject);
         tableFactory.include("rateExchange", typeExchange, currency, DateClass.instance);
-               
+
+        tableFactory.include("pricat", pricat);
         tableFactory.include("strings", StringClass.get(10));
     }
 
@@ -2120,7 +2125,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         FormEntity createFreightBoxFormAdd = addFormEntity(new CreateFreightBoxFormEntity(distribution, "createFreightBoxFormAdd", "Сгенерировать короба", FormType.ADD));
         addFormEntity(new CreateFreightBoxFormEntity(createFreightBoxFormAdd, "createFreightBoxFormList", "Документы генерации коробов", FormType.LIST));
         addFormEntity(new ShipmentSpecFormEntity(distribution, "boxShipmentSpecForm", "Прием товара по коробам", true));
-        //addFormEntity(new ShipmentSpecFormEntity(distribution, "simpleShipmentSpecForm", "Прием товара без коробов", false));
+        addFormEntity(new ShipmentSpecFormEntity(distribution, "simpleShipmentSpecForm", "Прием товара без коробов", false));
         addFormEntity(new FreightShipmentStoreFormEntity(distribution, "freightShipmentStoreForm", "Комплектация фрахта (на складе)"));
         addFormEntity(new BalanceBrandWarehouseFormEntity(distribution, "balanceBrandWarehouseForm", "Остатки на складе (по брендам)"));
         addFormEntity(new BalanceWarehouseFormEntity(distribution, "balanceWarehouseForm", "Остатки на складе"));
@@ -2778,8 +2783,9 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
             if (box) {
                 FilterEntity inSupplierBox = new NotNullFilterEntity(addPropertyObject(quantityListSku, objSupplierBox, objSku));
                 FilterEntity inSupplierBoxShipmentStock = new NotNullFilterEntity(addPropertyObject(quantitySupplierBoxBoxShipmentRouteSku, objSupplierBox, objShipment, objRoute, objSku));
+                FilterEntity inSupplierBoxShipmentSku = new NotNullFilterEntity(addPropertyObject(quantitySupplierBoxBoxShipmentSku, objSupplierBox, objShipment, objSku));
                 filterGroup.addFilter(new RegularFilterEntity(genID(),
-                                      new OrFilterEntity(inSupplierBox, inSupplierBoxShipmentStock),
+                                      new OrFilterEntity(inSupplierBox, inSupplierBoxShipmentSku),
                                       "В коробе поставщика или оприходовано",
                                       KeyStroke.getKeyStroke(KeyEvent.VK_F11, 0)));
                 filterGroup.addFilter(new RegularFilterEntity(genID(),
