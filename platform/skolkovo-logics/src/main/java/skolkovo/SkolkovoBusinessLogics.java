@@ -239,7 +239,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
     LP extractClaimer, loadExtractClaimer, openExtractClaimer;
     LP OGRNClaimer, INNClaimer;
     LP projectVote, nameNativeProjectVote, nameForeignProjectVote;
-    LP documentName, documentNameExpert;
+    LP dataDocumentNameExpert, documentNameExpert;
     LP clusterExpert, nameNativeClusterExpert;
     LP clusterProject, nameNativeClusterProject, nameForeignClusterProject;
     LP clusterVote, nameNativeClusterVote;
@@ -577,10 +577,9 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
 
         dateProjectVote = addJProp("dateProjectVote", "Дата проекта", date, projectVote, 1);
 
-        documentName = addDProp("documentName", "Имя для документов", StringClass.get(100), expert);
-        documentName.setMinimumWidth(10); documentName.setPreferredWidth(50);
-        documentNameExpert = addSUProp("documentNameExpert", "Имя для документов", Union.OVERRIDE, name, documentName);
-        documentNameExpert.setMinimumWidth(10); documentNameExpert.setPreferredWidth(50);
+        dataDocumentNameExpert = addDProp("dataDocumentNameExpert", "Имя для документов", StringClass.get(70), expert);
+        documentNameExpert = addSUProp("documentNameExpert", "Имя для документов", Union.OVERRIDE, addJProp(and1, addJProp(insensitiveString2, userLastName, 1, userFirstName, 1), 1, is(expert), 1), dataDocumentNameExpert);
+
         clusterExpert = addDProp(idGroup, "clusterExpert", "Кластер (ИД)", cluster, expert);
         nameNativeClusterExpert = addJProp(baseGroup, "nameNativeClusterExpert", "Кластер", nameNative, clusterExpert, 1);
 

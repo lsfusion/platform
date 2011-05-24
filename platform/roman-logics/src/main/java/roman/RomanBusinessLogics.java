@@ -2007,7 +2007,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         createFreightBox = addJProp(true, "Сгенерировать короба", addAAProp(freightBox, barcode, barcodePrefix, true), quantityCreationFreightBox, 1);
         createPallet = addJProp(true, "Сгенерировать паллеты", addAAProp(pallet, barcode, barcodePrefix, true), quantityCreationPallet, 1);
 
-        barcodeActionCheckFreightBox = addJProp(true, "Проверка паллеты",
+        barcodeActionCheckFreightBox = addJProp(true, "Проверка короба для транспортировки",
                                             addJProp(true, and(false, false, true),
                                                            addStopActionProp("Для выбранного маршрута не задан короб для транспортировки", "Поиск по штрих-коду"),
                                                            is(sku), 2,
@@ -2868,8 +2868,6 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
                                                     addJProp(true, addSAProp(null), skuBarcodeObject, 1),
                                                             objBarcode));
 
-            addActionsOnObjectChange(objBarcode, addPropertyObject(barcodeActionCheckFreightBox, objRoute, objBarcode));
-
             addActionsOnObjectChange(objBarcode,
                                      addPropertyObject(
                                              addJProp(true, andNot1,
@@ -2889,6 +2887,8 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
                     addJProp(true, addAProp(new SeekRouteActionProperty()),
                              1, skuBarcodeObject, 2, 3),
                     objShipment, objBarcode, objRoute));
+
+            addActionsOnObjectChange(objBarcode, addPropertyObject(barcodeActionCheckFreightBox, objRoute, objBarcode));
 
             if (box) {
                 addActionsOnObjectChange(objBarcode, addPropertyObject(addBoxShipmentDetailBoxShipmentSupplierBoxRouteBarcode, objShipment, objSupplierBox, objRoute, objBarcode));
@@ -4557,7 +4557,8 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 
             DataObject objRouteResult;
             if (invoiced == null) {
-                objRouteResult = objRouteRF;
+                Double percentRF = (Double)percentShipmentRouteSku.read(session, objShipment, objRouteRF, objSku);
+                objRouteResult = (percentRF != null && percentRF > 1E-9) ? objRouteRF : objRouteRB;
             } else {
 
                 Double invoicedRB = (Double)BaseUtils.nvl(invoicedShipmentRouteSku.read(session, objShipment, objRouteRB, objSku), 0.0);
