@@ -6,6 +6,7 @@ import platform.server.classes.LogicalClass;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.query.GroupType;
 import platform.server.data.where.Where;
+import platform.server.data.where.WhereBuilder;
 import platform.server.session.Changes;
 import platform.server.session.Modifier;
 
@@ -30,9 +31,10 @@ public class MaxGroupProperty<T extends PropertyInterface> extends GroupProperty
         return super.noIncrement() || Settings.instance.isNoIncrementMaxGroupProperty();
     }
 
-    public Expr getChangedExpr(Expr changedExpr, Expr changedPrevExpr, Expr prevExpr, Map<Interface<T>, ? extends Expr> joinImplement, Modifier<? extends Changes> modifier) {
+    public Expr getChangedExpr(Expr changedExpr, Expr changedPrevExpr, Expr prevExpr, Map<Interface<T>, ? extends Expr> joinImplement, Modifier<? extends Changes> modifier, WhereBuilder changedWhere) {
         Where increaseWhere = changedExpr.compare(prevExpr, Compare.GREATER).or(prevExpr.getWhere().not());
         Where decreaseWhere = changedPrevExpr.compare(prevExpr, Compare.EQUALS);
+        if(changedWhere!=null) changedWhere.add(increaseWhere.or(decreaseWhere)); // если хоть один не null
         if(noIncrement()) {
             if(decreaseWhere.means(increaseWhere)) // для оптимизации если calculateNewExpr заведомо не понадобится, лучше использовать инкрементный механизм
                 return changedExpr.ifElse(increaseWhere, prevExpr);

@@ -1003,7 +1003,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
         // с дублированием initRequiredStorePrice, чтобы не делать defaultChanged true
         LP requiredStorePrice = initRequiredStorePrice(priceGroup, "requiredStorePrice", true, "Необх. цена",
-                addJProp(priceGroup, "Посл. цена прихода", priceExtOrderIncArticle, currentCommitIncDoc, 1, 2, 2), object(store));
+                addJProp(priceGroup, "lastPriceIncStoreArticle", true, "Посл. цена прихода", priceExtOrderIncArticle, currentCommitIncDoc, 1, 2, 2), object(store));
         revalueShopPrice.setDerivedForcedChange(requiredStorePrice, revalueShop, 1, 2, documentRevalued, 1, 2);
         returnShopOutPrice.setDerivedForcedChange(currentShopPrice, subjectOutOrder, 1, 2, articleQuantity, 1, 2);
         incomeShopPrice.setDerivedForcedChange(true, initRequiredStorePrice(privateGroup, genSID(), false, "Необх. цена (прих.)", priceExtOrderIncArticle, subjectIncOrder), 1, 2, commitArticleQuantity, 1, 2);

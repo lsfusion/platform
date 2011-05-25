@@ -27,7 +27,8 @@ public class SumGroupProperty<T extends PropertyInterface> extends GroupProperty
         super(sID, caption, interfaces, property);
     }
 
-    public Expr getChangedExpr(Expr changedExpr, Expr changedPrevExpr, Expr prevExpr, Map<Interface<T>, ? extends Expr> joinImplement, Modifier<? extends Changes> modifier) {
+    public Expr getChangedExpr(Expr changedExpr, Expr changedPrevExpr, Expr prevExpr, Map<Interface<T>, ? extends Expr> joinImplement, Modifier<? extends Changes> modifier, WhereBuilder changedWhere) {
+        if(changedWhere!=null) changedWhere.add(changedExpr.getWhere().or(changedPrevExpr.getWhere())); // если хоть один не null
         return changedExpr.sum(changedPrevExpr.scale(-1)).sum(getExpr(joinImplement));
     }
 
