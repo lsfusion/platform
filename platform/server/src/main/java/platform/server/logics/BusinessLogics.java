@@ -82,6 +82,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
     protected LP betweenDates;
     private LP<ClassPropertyInterface> recalculateAction;
+    private LP<ClassPropertyInterface> packAction;
 
     public byte[] findClass(String name) {
 
@@ -1178,6 +1179,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         cancelRestartServerAction = addJProp("Отменить остановку сервера", and1, addCancelRestartActionProp(), isServerRestarting);
 
         recalculateAction = addProperty(null, new LP<ClassPropertyInterface>(new RecalculateActionProperty(genSID(), "Перерасчитать агрегации")));
+        packAction = addProperty(null, new LP<ClassPropertyInterface>(new PackActionProperty(genSID(), "Упаковать таблицы")));
 
         currentUserName = addJProp("Имя тек. польз.", name, currentUser);
 
@@ -1474,7 +1476,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         private AdminFormEntity(NavigatorElement parent, String sID) {
             super(parent, sID, "Глобальные параметры");
 
-            addPropertyDraw(new LP[]{smtpHost, smtpPort, fromAddress, emailAccount, emailPassword, emailBlindCarbonCopy, webHost, defaultCountry, barcodePrefix, restartServerAction, cancelRestartServerAction, recalculateAction});
+            addPropertyDraw(new LP[]{smtpHost, smtpPort, fromAddress, emailAccount, emailPassword, emailBlindCarbonCopy, webHost, defaultCountry, barcodePrefix, restartServerAction, cancelRestartServerAction, recalculateAction, packAction});
         }
     }
 
@@ -2496,11 +2498,9 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             if (!implementTables.containsKey(table))
                 sql.dropTable(table);
 
-        // упакуем таблицы
-        for (ImplementTable table : packTables)
-            sql.packTable(table);
+        packTables(sql, packTables); // упакуем таблицы
 
-        recalculateAggregations(sql, recalculateProperties);
+        recalculateAggregations(sql, recalculateProperties); // перерасчитаем агрегации
 //        recalculateAggregations(sql, getAggregateStoredProperties());
 
         // создадим индексы в базе
@@ -4292,6 +4292,14 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             }
     }
 
+    private void packTables(SQLSession session, Collection<ImplementTable> tables) throws SQLException {
+        for (Table table : tables) {
+            logger.debug("Идет упаковка таблицы (" + table + ")... ");
+            session.packTable(table);
+            logger.debug("Done");
+        }
+    }
+
     public <T extends FormEntity> T addFormEntity(T form) {
         form.richDesign = form.createDefaultRichDesign();
         return form;
@@ -4634,6 +4642,27 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             sqlSession.commitTransaction();
 
             actions.add(new MessageClientAction("Перерасчет был успешно завершен", "Перерасчет агрегаций"));
+        }
+    }
+
+    public class PackActionProperty extends ActionProperty {
+        private PackActionProperty(String sID, String caption) {
+            super(sID, caption, new ValueClass[]{});
+        }
+
+        public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapExecuteObjects) {
+            throw new RuntimeException("should not be");
+        }
+
+        @Override
+        public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, DataSession session, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects, boolean groupLast) throws SQLException {
+            SQLSession sqlSession = session.sql;
+
+            sqlSession.startTransaction();
+            packTables(sqlSession, tableFactory.getImplementTables().values());
+            sqlSession.commitTransaction();
+
+            actions.add(new MessageClientAction("Упаковка таблиц была успешно завершена", "Упаковка таблиц"));
         }
     }
 
