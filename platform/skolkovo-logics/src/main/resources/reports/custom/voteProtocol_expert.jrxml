@@ -4,7 +4,7 @@
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
 	<style name="DefaultStyle" isDefault="true" vAlign="Middle" fontName="Serif" fontSize="10" pdfFontName="lsf.Times" pdfEncoding="Cp1251" isPdfEmbedded="false"/>
-	<style name="GroupCellStyle0" isDefault="false" mode="Opaque" backcolor="#FFFFFF" fill="Solid" vAlign="Middle" fontName="Serif" fontSize="10" pdfFontName="lsf.Times" pdfEncoding="Cp1251" isPdfEmbedded="false">
+	<style name="GroupCellStyle0" mode="Opaque" backcolor="#FFFFFF" fill="Solid" vAlign="Middle" fontName="Serif" fontSize="10" pdfFontName="lsf.Times" pdfEncoding="Cp1251" isPdfEmbedded="false">
 		<box leftPadding="2" rightPadding="2">
 			<pen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
 		</box>
@@ -25,6 +25,7 @@
 	<field name="nameNativeProjectVote" class="java.lang.String"/>
 	<field name="nameNativeClusterVote" class="java.lang.String"/>
 	<field name="connectedExpertVote" class="java.lang.Boolean"/>
+	<field name="documentNameExpert" class="java.lang.String"/>
 	<detail>
 		<band height="524" splitType="Stretch">
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
@@ -66,7 +67,7 @@
 			<textField>
 				<reportElement x="169" y="73" width="312" height="20"/>
 				<textElement/>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{userLastName}+" "+$F{userFirstName}]]></textFieldExpression>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{documentNameExpert}]]></textFieldExpression>
 			</textField>
 			<staticText>
 				<reportElement x="39" y="129" width="90" height="20"/>

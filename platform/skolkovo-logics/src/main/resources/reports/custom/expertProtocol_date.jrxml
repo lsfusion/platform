@@ -4,12 +4,12 @@
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
 	<style name="DefaultStyle" isDefault="true" vAlign="Middle" fontName="Serif" fontSize="10" pdfFontName="lsf.Times" pdfEncoding="Cp1251" isPdfEmbedded="false"/>
-	<style name="GroupCellStyle0" isDefault="false" mode="Opaque" backcolor="#DBDBDB" vAlign="Middle" fontName="Serif" fontSize="10" pdfFontName="lsf.Times" pdfEncoding="Cp1251" isPdfEmbedded="false">
+	<style name="GroupCellStyle0" mode="Opaque" backcolor="#DBDBDB" vAlign="Middle" fontName="Serif" fontSize="10" pdfFontName="lsf.Times" pdfEncoding="Cp1251" isPdfEmbedded="false">
 		<box leftPadding="2" rightPadding="2">
 			<pen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
 		</box>
 	</style>
-	<style name="GroupCellStyle1" isDefault="false" mode="Transparent" backcolor="#FFFFFF" vAlign="Middle" fontName="Serif" fontSize="10" pdfFontName="lsf.Times" pdfEncoding="Cp1251" isPdfEmbedded="false">
+	<style name="GroupCellStyle1" mode="Transparent" backcolor="#FFFFFF" vAlign="Middle" fontName="Serif" fontSize="10" pdfFontName="lsf.Times" pdfEncoding="Cp1251" isPdfEmbedded="false">
 		<pen lineStyle="Solid" lineColor="#FFFFFF"/>
 		<box leftPadding="2" rightPadding="2">
 			<pen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -33,6 +33,7 @@
 	<field name="userFirstName" class="java.lang.String"/>
 	<field name="userLastName" class="java.lang.String"/>
 	<field name="quantityDoneExpertDateFromDateTo" class="java.lang.Integer"/>
+	<field name="documentNameExpert" class="java.lang.String"/>
 	<group name="designGroup1">
 		<groupExpression><![CDATA[String.valueOf($F{obj2})+" "+String.valueOf($F{obj3})]]></groupExpression>
 		<groupHeader>
@@ -57,7 +58,7 @@
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 					<reportElement style="GroupCellStyle1" positionType="Float" stretchType="RelativeToBandHeight" mode="Transparent" x="0" y="10" width="582" height="22"/>
 					<textElement textAlignment="Left"/>
-					<textFieldExpression class="java.lang.String"><![CDATA[$F{userLastName} + " " + $F{userFirstName}]]></textFieldExpression>
+					<textFieldExpression class="java.lang.String"><![CDATA[$F{documentNameExpert}]]></textFieldExpression>
 				</textField>
 			</band>
 		</groupHeader>
