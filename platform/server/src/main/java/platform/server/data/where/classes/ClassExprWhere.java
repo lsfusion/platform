@@ -126,6 +126,7 @@ public class ClassExprWhere extends AbstractClassWhere<VariableClassExpr, ClassE
         return new ClassExprWhere(this, translator.translateVariable(BaseUtils.toMap(keySet())));
     }
 
+    // получает классы для BaseExpr'ов
     public <K> ClassWhere<K> get(Map<K, BaseExpr> map) {
         ClassWhere<K> transWhere = ClassWhere.STATIC(false);
         for(And<VariableClassExpr> andWhere : wheres) {
@@ -143,6 +144,18 @@ public class ClassExprWhere extends AbstractClassWhere<VariableClassExpr, ClassE
                 transWhere = transWhere.or(new ClassWhere<K>(andTrans));
         }
         return transWhere;
+    }
+
+    public AndClassSet getAndClassSet(BaseExpr expr) {
+        AndClassSet result = null;
+        for(And<VariableClassExpr> andWhere : wheres) {
+            AndClassSet classSet = expr.getAndClassSet(andWhere);
+            if(result == null)
+                result = classSet;
+            else
+                result = result.or(classSet);
+        }
+        return result;
     }
 
     public VariableExprSet getExprFollows() {

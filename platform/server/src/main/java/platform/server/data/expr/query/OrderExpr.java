@@ -1,9 +1,6 @@
 package platform.server.data.expr.query;
 
-import platform.base.BaseUtils;
-import platform.base.OrderedMap;
-import platform.base.QuickMap;
-import platform.base.TwinImmutableInterface;
+import platform.base.*;
 import platform.interop.Compare;
 import platform.server.Settings;
 import platform.server.classes.sets.AndClassSet;
@@ -14,6 +11,7 @@ import platform.server.caches.ParamLazy;
 import platform.server.caches.hash.HashContext;
 import platform.server.data.expr.*;
 import platform.server.data.expr.cases.CaseExpr;
+import platform.server.data.expr.cases.ExprCase;
 import platform.server.data.expr.cases.ExprCaseList;
 import platform.server.data.expr.cases.MapCase;
 import platform.server.data.query.*;
@@ -22,6 +20,7 @@ import platform.server.data.translator.PartialQueryTranslator;
 import platform.server.data.translator.QueryTranslator;
 import platform.server.data.type.Type;
 import platform.server.data.where.Where;
+import platform.server.data.where.classes.ClassExprWhere;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -65,7 +64,12 @@ public class OrderExpr extends QueryExpr<KeyExpr, OrderExpr.Query,OrderJoin> imp
 
         @IdentityLazy
         public Where getWhere() {
-            return expr.getWhere().and(Expr.getWhere(orders.keySet())).and(Expr.getWhere(partitions));
+            return expr.getWhere().and(getGroupWhere());
+        }
+
+        @IdentityLazy
+        public Where getGroupWhere() {
+            return Expr.getWhere(orders.keySet()).and(Expr.getWhere(partitions));
         }
 
         @IdentityLazy
@@ -196,6 +200,24 @@ public class OrderExpr extends QueryExpr<KeyExpr, OrderExpr.Query,OrderJoin> imp
 
     @Override
     public AndClassSet getAndClassSet(QuickMap<VariableClassExpr, AndClassSet> and) {
-        return (DataClass)query.getType();
+        Type type = query.getType();
+        if(type instanceof DataClass)
+            return (AndClassSet) type;
+        else {
+            QuickMap<KeyExpr, AndClassSet> keyClasses = new SimpleMap<KeyExpr, AndClassSet>();
+            for(Map.Entry<KeyExpr, BaseExpr> groupEntry : group.entrySet())
+                keyClasses.add(groupEntry.getKey(), groupEntry.getValue().getAndClassSet(and));
+            ClassExprWhere keyWhere = new ClassExprWhere(keyClasses);
+
+            AndClassSet result = null;
+            for(ExprCase exprCase : query.expr.getCases()) {
+                AndClassSet classSet = exprCase.where.and(query.getGroupWhere()).getClassWhere().and(keyWhere).getAndClassSet(exprCase.data);
+                if(result == null)
+                    result = classSet;
+                else
+                    result = result.or(classSet);
+            }
+            return result;
+        }
     }
 }
