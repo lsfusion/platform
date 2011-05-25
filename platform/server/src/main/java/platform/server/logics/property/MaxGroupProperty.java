@@ -34,13 +34,17 @@ public class MaxGroupProperty<T extends PropertyInterface> extends GroupProperty
     public Expr getChangedExpr(Expr changedExpr, Expr changedPrevExpr, Expr prevExpr, Map<Interface<T>, ? extends Expr> joinImplement, Modifier<? extends Changes> modifier, WhereBuilder changedWhere) {
         Where increaseWhere = changedExpr.compare(prevExpr, Compare.GREATER).or(prevExpr.getWhere().not());
         Where decreaseWhere = changedPrevExpr.compare(prevExpr, Compare.EQUALS);
-        if(changedWhere!=null) changedWhere.add(increaseWhere.or(decreaseWhere)); // если хоть один не null
         if(noIncrement()) {
-            if(decreaseWhere.means(increaseWhere)) // для оптимизации если calculateNewExpr заведомо не понадобится, лучше использовать инкрементный механизм
+            if(decreaseWhere.means(increaseWhere)) { // для оптимизации если calculateNewExpr заведомо не понадобится, лучше использовать инкрементный механизм
+                if(increaseWhere!=null) changedWhere.add(increaseWhere);
                 return changedExpr.ifElse(increaseWhere, prevExpr);
-            else
+            } else {
+                if(changedWhere!=null) changedWhere.add(changedExpr.getWhere().or(changedPrevExpr.getWhere()));
                 return calculateNewExpr(joinImplement, modifier);
+            }
+        } else {
+            if(changedWhere!=null) changedWhere.add(increaseWhere.or(decreaseWhere)); // если хоть один не null
+            return changedExpr.ifElse(increaseWhere, calculateNewExpr(joinImplement, modifier).ifElse(decreaseWhere, prevExpr));
         }
-        return changedExpr.ifElse(increaseWhere, calculateNewExpr(joinImplement, modifier).ifElse(decreaseWhere, prevExpr));
     }
 }
