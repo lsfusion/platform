@@ -81,18 +81,18 @@ public class InvoicePricatMergeInputTable implements ImportInputTable {
     private Map<ResultField, LP<?>> createPricatFieldsMap() {
         Map<ResultField, LP<?>> propertyMap = new OrderedMap<ResultField, LP<?>>();
 
-        propertyMap.put(ResultField.BARCODE, BL.barcodePricat);
-        propertyMap.put(ResultField.ARTICLE, BL.articleNumberPricat);
-        propertyMap.put(ResultField.CUSTOMCODE, BL.customCategoryOriginalPricat);
-        propertyMap.put(ResultField.COLORCODE, BL.colorCodePricat);
-        propertyMap.put(ResultField.COLOR, BL.colorNamePricat);
-        propertyMap.put(ResultField.SIZE, BL.sizePricat);
-        propertyMap.put(ResultField.ORIGINALNAME, BL.originalNamePricat);
-        propertyMap.put(ResultField.COUNTRY, BL.countryPricat);
-        propertyMap.put(ResultField.NETWEIGHT, BL.netWeightPricat);
-        propertyMap.put(ResultField.COMPOSITION, BL.compositionPricat);
-        propertyMap.put(ResultField.PRICE, BL.pricePricat);
-        propertyMap.put(ResultField.RRP, BL.rrpPricat);
+        propertyMap.put(ResultField.BARCODE, BL.RomanLM.barcodePricat);
+        propertyMap.put(ResultField.ARTICLE, BL.RomanLM.articleNumberPricat);
+        propertyMap.put(ResultField.CUSTOMCODE, BL.RomanLM.customCategoryOriginalPricat);
+        propertyMap.put(ResultField.COLORCODE, BL.RomanLM.colorCodePricat);
+        propertyMap.put(ResultField.COLOR, BL.RomanLM.colorNamePricat);
+        propertyMap.put(ResultField.SIZE, BL.RomanLM.sizePricat);
+        propertyMap.put(ResultField.ORIGINALNAME, BL.RomanLM.originalNamePricat);
+        propertyMap.put(ResultField.COUNTRY, BL.RomanLM.countryPricat);
+        propertyMap.put(ResultField.NETWEIGHT, BL.RomanLM.netWeightPricat);
+        propertyMap.put(ResultField.COMPOSITION, BL.RomanLM.compositionPricat);
+        propertyMap.put(ResultField.PRICE, BL.RomanLM.pricePricat);
+        propertyMap.put(ResultField.RRP, BL.RomanLM.rrpPricat);
 
         return propertyMap;
     }
@@ -111,7 +111,7 @@ public class InvoicePricatMergeInputTable implements ImportInputTable {
 
         //читаем данные из прайса по импортированным из инвойса штрихкодам
         Result<ValueClass> resultClass = new Result<ValueClass>();
-        BL.barcode.getCommonClasses(resultClass);
+        BL.RomanLM.LM.barcode.getCommonClasses(resultClass);
         Type keyType = resultClass.result.getType();
         SingleKeyTableUsage<ResultField> table = new SingleKeyTableUsage<ResultField>(keyType, new ArrayList<ResultField>(), null);
 
@@ -120,9 +120,9 @@ public class InvoicePricatMergeInputTable implements ImportInputTable {
             table.insertRecord(sqlSession, new DataObject(barcodeStr), new HashMap<ResultField, ObjectValue>(), true, i == (invoiceTable.rowsCnt() - 1));
         }
 
-        Map<PropertyInterface, KeyExpr> mapKeys = (Map<PropertyInterface,KeyExpr>) BL.barcodePricat.getMapKeys();
+        Map<PropertyInterface, KeyExpr> mapKeys = (Map<PropertyInterface,KeyExpr>) BL.RomanLM.barcodePricat.getMapKeys();
         Query<PropertyInterface, ResultField> query = new Query<PropertyInterface, ResultField>(mapKeys);
-        query.and(table.join(BL.barcodePricat.property.getExpr(mapKeys)).getWhere());
+        query.and(table.join(BL.RomanLM.barcodePricat.property.getExpr(mapKeys)).getWhere());
 
         for (ResultField propertyName : propertyMap.keySet()) {
             PropertyImplement propertyImplement = propertyMap.get(propertyName).getMapping(BaseUtils.singleValue(mapKeys));

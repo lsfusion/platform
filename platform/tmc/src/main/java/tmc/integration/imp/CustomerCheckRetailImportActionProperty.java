@@ -5,7 +5,6 @@ import platform.interop.action.ClientAction;
 import platform.server.auth.PolicyManager;
 import platform.server.classes.ValueClass;
 import platform.server.form.entity.ClassFormEntity;
-import platform.server.form.entity.DialogFormEntity;
 import platform.server.form.instance.FormInstance;
 import platform.server.form.instance.PropertyObjectInterfaceInstance;
 import platform.server.form.instance.remote.RemoteForm;
@@ -39,18 +38,18 @@ public class CustomerCheckRetailImportActionProperty extends ActionProperty {
             int recordCount = impFile.getRecordCount();
 
             FormInstance formInstance = new FormInstance(
-                    new ClassFormEntity(BL, BL.customerCheckRetail),
+                    new ClassFormEntity(BL, BL.VEDLM.customerCheckRetail),
                     BL, BL.createSession(), PolicyManager.serverSecurityPolicy, null, null,
-                    new DataObject(executeForm.form.instanceFactory.computer, BL.computer));
+                    new DataObject(executeForm.form.instanceFactory.computer, BL.LM.computer));
 
             for (int i = 0; i < recordCount; i++) {
 
                 impFile.read();
 
-                formInstance.addObject(BL.customerCheckRetail);
-                formInstance.changeProperty(formInstance.getPropertyDraw(BL.barcode), new String(impFile.getField("barcode").getBytes(), "Cp1251"));
-                formInstance.changeProperty(formInstance.getPropertyDraw(BL.name), new String(impFile.getField("name").getBytes(), "Cp1251"));
-                formInstance.changeProperty(formInstance.getPropertyDraw(BL.clientInitialSum), Double.parseDouble(impFile.getField("clientsum").get()));
+                formInstance.addObject(BL.VEDLM.customerCheckRetail);
+                formInstance.changeProperty(formInstance.getPropertyDraw(BL.LM.barcode), new String(impFile.getField("barcode").getBytes(), "Cp1251"));
+                formInstance.changeProperty(formInstance.getPropertyDraw(BL.LM.name), new String(impFile.getField("name").getBytes(), "Cp1251"));
+                formInstance.changeProperty(formInstance.getPropertyDraw(BL.VEDLM.clientInitialSum), Double.parseDouble(impFile.getField("clientsum").get()));
             }
 
             formInstance.applyActionChanges(actions);

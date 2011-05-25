@@ -12,8 +12,8 @@ import platform.server.integration.SingleSheetImporter;
 
 public class TallyWeijlImportInvoiceActionProperty extends ImportBoxInvoiceActionProperty {
 
-    public TallyWeijlImportInvoiceActionProperty(RomanBusinessLogics BL) {
-        super(BL, BL.tallyWeijlSupplier);
+    public TallyWeijlImportInvoiceActionProperty(RomanLogicsModule LM) {
+        super(LM, LM.tallyWeijlSupplier);
     }
 
     @Override

@@ -18,13 +18,13 @@ import java.sql.SQLException;
 import java.util.*;
 
 public class HugoBossPricatCSVImportActionProperty extends ActionProperty {
-    private RomanBusinessLogics BL;
+    private RomanLogicsModule LM;
 
     private final FileActionClass valueClass = FileActionClass.getDefinedInstance(true, "Файлы данных (*.csv)", "csv");
 
-    public HugoBossPricatCSVImportActionProperty(String sID, RomanBusinessLogics BL, ValueClass supplier) {
+    public HugoBossPricatCSVImportActionProperty(String sID, RomanLogicsModule LM, ValueClass supplier) {
         super(sID, "Импортировать прайс (CSV)", new ValueClass[]{supplier});
-        this.BL = BL;
+        this.LM = LM;
     }
 
     @Override
@@ -35,28 +35,28 @@ public class HugoBossPricatCSVImportActionProperty extends ActionProperty {
 
         List<byte[]> fileList = valueClass.getFiles(value.getValue());
 
-        ImportField barcodeField = new ImportField(BL.barcodePricat);
-        ImportField articleField = new ImportField(BL.articleNumberPricat);
-        ImportField colorCodeField = new ImportField(BL.colorCodePricat);
-        ImportField sizeField = new ImportField(BL.sizePricat);
-        ImportField priceField = new ImportField(BL.pricePricat);
-        ImportField compositionField = new ImportField(BL.compositionPricat);
-        ImportField customCategoryOriginalField = new ImportField(BL.customCategoryOriginalPricat);
-        ImportField colorField = new ImportField(BL.colorNamePricat);
-        ImportField netWeightField = new ImportField(BL.netWeightPricat);
+        ImportField barcodeField = new ImportField(LM.barcodePricat);
+        ImportField articleField = new ImportField(LM.articleNumberPricat);
+        ImportField colorCodeField = new ImportField(LM.colorCodePricat);
+        ImportField sizeField = new ImportField(LM.sizePricat);
+        ImportField priceField = new ImportField(LM.pricePricat);
+        ImportField compositionField = new ImportField(LM.compositionPricat);
+        ImportField customCategoryOriginalField = new ImportField(LM.customCategoryOriginalPricat);
+        ImportField colorField = new ImportField(LM.colorNamePricat);
+        ImportField netWeightField = new ImportField(LM.netWeightPricat);
 
         List<ImportProperty<?>> properties = new ArrayList<ImportProperty<?>>();
-        ImportKey<?> pricatKey = new ImportKey(BL.pricat, BL.barcodeToPricat.getMapping(barcodeField));
-        properties.add(new ImportProperty(barcodeField, BL.barcodePricat.getMapping(pricatKey)));
-        properties.add(new ImportProperty(articleField, BL.articleNumberPricat.getMapping(pricatKey)));
-        properties.add(new ImportProperty(colorCodeField, BL.colorCodePricat.getMapping(pricatKey)));
-        properties.add(new ImportProperty(sizeField, BL.sizePricat.getMapping(pricatKey)));
-        properties.add(new ImportProperty(priceField, BL.pricePricat.getMapping(pricatKey)));
-        properties.add(new ImportProperty(compositionField, BL.compositionPricat.getMapping(pricatKey)));
-        properties.add(new ImportProperty(customCategoryOriginalField, BL.customCategoryOriginalPricat.getMapping(pricatKey)));
-        properties.add(new ImportProperty(colorField, BL.colorNamePricat.getMapping(pricatKey)));
-        properties.add(new ImportProperty(netWeightField, BL.netWeightPricat.getMapping(pricatKey)));
-        properties.add(new ImportProperty(supplier, BL.supplierPricat.getMapping(pricatKey)));
+        ImportKey<?> pricatKey = new ImportKey(LM.pricat, LM.barcodeToPricat.getMapping(barcodeField));
+        properties.add(new ImportProperty(barcodeField, LM.barcodePricat.getMapping(pricatKey)));
+        properties.add(new ImportProperty(articleField, LM.articleNumberPricat.getMapping(pricatKey)));
+        properties.add(new ImportProperty(colorCodeField, LM.colorCodePricat.getMapping(pricatKey)));
+        properties.add(new ImportProperty(sizeField, LM.sizePricat.getMapping(pricatKey)));
+        properties.add(new ImportProperty(priceField, LM.pricePricat.getMapping(pricatKey)));
+        properties.add(new ImportProperty(compositionField, LM.compositionPricat.getMapping(pricatKey)));
+        properties.add(new ImportProperty(customCategoryOriginalField, LM.customCategoryOriginalPricat.getMapping(pricatKey)));
+        properties.add(new ImportProperty(colorField, LM.colorNamePricat.getMapping(pricatKey)));
+        properties.add(new ImportProperty(netWeightField, LM.netWeightPricat.getMapping(pricatKey)));
+        properties.add(new ImportProperty(supplier, LM.supplierPricat.getMapping(pricatKey)));
 
         for (byte[] file : fileList) {
             ImportKey<?>[] keysArray = {pricatKey};

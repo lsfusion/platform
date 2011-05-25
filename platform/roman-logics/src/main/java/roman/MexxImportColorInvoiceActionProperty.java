@@ -24,23 +24,23 @@ import java.util.Map;
  */
 
 public class MexxImportColorInvoiceActionProperty extends BaseImportActionProperty {
-    public MexxImportColorInvoiceActionProperty(RomanBusinessLogics BL) {
-        super(BL, "Импортировать цвета", BL.mexxSupplier, "dat");
+    public MexxImportColorInvoiceActionProperty(RomanLogicsModule LM) {
+        super(LM, "Импортировать цвета", LM.mexxSupplier, "dat");
     }
 
     @Override
     public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects) throws SQLException {
-        ImportField colorCodeField = new ImportField(BL.sidColorSupplier);
-        ImportField colorNameField = new ImportField(BL.name);
+        ImportField colorCodeField = new ImportField(LM.sidColorSupplier);
+        ImportField colorNameField = new ImportField(LM.LM.name);
 
         DataObject supplier = keys.get(supplierInterface);
 
         List<ImportProperty<?>> properties = new ArrayList<ImportProperty<?>>();
 
-        ImportKey<?> colorKey = new ImportKey(BL.colorSupplier, BL.colorSIDSupplier.getMapping(colorCodeField, supplier));
-        properties.add(new ImportProperty(colorCodeField, BL.sidColorSupplier.getMapping(colorKey)));
-        properties.add(new ImportProperty(supplier, BL.supplierColorSupplier.getMapping(colorKey)));
-        properties.add(new ImportProperty(colorNameField, BL.name.getMapping(colorKey)));
+        ImportKey<?> colorKey = new ImportKey(LM.colorSupplier, LM.colorSIDSupplier.getMapping(colorCodeField, supplier));
+        properties.add(new ImportProperty(colorCodeField, LM.sidColorSupplier.getMapping(colorKey)));
+        properties.add(new ImportProperty(supplier, LM.supplierColorSupplier.getMapping(colorKey)));
+        properties.add(new ImportProperty(colorNameField, LM.LM.name.getMapping(colorKey)));
 
         try {
             ByteArrayInputStream inFile = new ByteArrayInputStream((byte[]) value.getValue());

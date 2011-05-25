@@ -24,31 +24,31 @@ import java.util.Map;
  */
 
 public class MexxImportArticleInfoInvoiceActionProperty extends BaseImportActionProperty {
-    public MexxImportArticleInfoInvoiceActionProperty(RomanBusinessLogics BL) {
-        super(BL, "Импортировать данные артикулов", BL.mexxSupplier, "dat");
+    public MexxImportArticleInfoInvoiceActionProperty(RomanLogicsModule LM) {
+        super(LM, "Импортировать данные артикулов", LM.mexxSupplier, "dat");
     }
 
     @Override
     public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects) throws SQLException {
-        ImportField sidField = new ImportField(BL.sidArticle);
-        ImportField countryField = new ImportField(BL.name);
-        ImportField compositionField = new ImportField(BL.mainCompositionOriginArticle);
-        ImportField originalNameField = new ImportField(BL.originalNameArticle);
+        ImportField sidField = new ImportField(LM.sidArticle);
+        ImportField countryField = new ImportField(LM.LM.name);
+        ImportField compositionField = new ImportField(LM.mainCompositionOriginArticle);
+        ImportField originalNameField = new ImportField(LM.originalNameArticle);
 
         DataObject supplier = keys.get(supplierInterface);
 
         List<ImportProperty<?>> properties = new ArrayList<ImportProperty<?>>();
 
-        ImportKey<?> articleKey = new ImportKey(BL.articleComposite, BL.articleSIDSupplier.getMapping(sidField, supplier));
-        properties.add(new ImportProperty(sidField, BL.sidArticle.getMapping(articleKey)));
+        ImportKey<?> articleKey = new ImportKey(LM.articleComposite, LM.articleSIDSupplier.getMapping(sidField, supplier));
+        properties.add(new ImportProperty(sidField, LM.sidArticle.getMapping(articleKey)));
 
-        ImportKey<?> countryKey = new ImportKey(BL.countrySupplier, BL.countryNameSupplier.getMapping(countryField, supplier));
-        properties.add(new ImportProperty(countryField, BL.name.getMapping(countryKey)));
-        properties.add(new ImportProperty(supplier, BL.supplierCountrySupplier.getMapping(countryKey)));
-        properties.add(new ImportProperty(countryField, BL.countrySupplierOfOriginArticle.getMapping(articleKey), BL.object(BL.countrySupplier).getMapping(countryKey)));
+        ImportKey<?> countryKey = new ImportKey(LM.countrySupplier, LM.countryNameSupplier.getMapping(countryField, supplier));
+        properties.add(new ImportProperty(countryField, LM.LM.name.getMapping(countryKey)));
+        properties.add(new ImportProperty(supplier, LM.supplierCountrySupplier.getMapping(countryKey)));
+        properties.add(new ImportProperty(countryField, LM.countrySupplierOfOriginArticle.getMapping(articleKey), LM.LM.object(LM.countrySupplier).getMapping(countryKey)));
 
-        properties.add(new ImportProperty(compositionField, BL.mainCompositionOriginArticle.getMapping(articleKey)));
-        properties.add(new ImportProperty(originalNameField, BL.originalNameArticle.getMapping(articleKey)));
+        properties.add(new ImportProperty(compositionField, LM.mainCompositionOriginArticle.getMapping(articleKey)));
+        properties.add(new ImportProperty(originalNameField, LM.originalNameArticle.getMapping(articleKey)));
 
         try {
             ByteArrayInputStream inFile = new ByteArrayInputStream((byte[]) value.getValue());

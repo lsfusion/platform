@@ -9,8 +9,11 @@ import java.io.IOException;
 import static roman.InvoicePricatMergeInputTable.ResultField;
 
 public class BestsellerImportInvoiceActionProperty extends ImportBoxInvoiceActionProperty {
+    private RomanBusinessLogics BL;
+
     public BestsellerImportInvoiceActionProperty(RomanBusinessLogics BL) {
-        super(BL, BL.bestsellerSupplier, "edi txt");
+        super(BL.RomanLM, BL.RomanLM.bestsellerSupplier, "edi txt");
+        this.BL = BL;
     }
 
     @Override

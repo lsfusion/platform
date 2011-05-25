@@ -2,7 +2,6 @@ package roman;
 
 import jxl.read.biff.BiffException;
 import platform.server.integration.CSVInputTable;
-import platform.server.integration.ImportField;
 import platform.server.integration.ImportInputTable;
 import platform.server.integration.SingleSheetImporter;
 
@@ -20,8 +19,11 @@ import static roman.InvoicePricatMergeInputTable.ResultField;
 
 public class HugoBossImportInvoiceActionProperty extends ImportBoxInvoiceActionProperty {
 
+    private final RomanBusinessLogics BL;
+
     public HugoBossImportInvoiceActionProperty(RomanBusinessLogics BL) {
-        super(BL, BL.hugoBossSupplier, "csv");
+        super(BL.RomanLM, BL.RomanLM.hugoBossSupplier, "csv");
+        this.BL = BL;
     }
 
     @Override

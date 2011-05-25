@@ -17,8 +17,8 @@ import java.io.InputStreamReader;
  */
 
 public class MexxImportInvoiceActionProperty extends ImportBoxInvoiceActionProperty {
-    public MexxImportInvoiceActionProperty(RomanBusinessLogics BL) {
-        super(BL, BL.mexxSupplier, "dat");
+    public MexxImportInvoiceActionProperty(RomanLogicsModule LM) {
+        super(LM, LM.mexxSupplier, "dat");
     }
 
     @Override

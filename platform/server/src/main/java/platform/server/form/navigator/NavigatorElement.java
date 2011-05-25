@@ -12,7 +12,7 @@ import java.io.IOException;
 import java.util.*;
 
 public class NavigatorElement<T extends BusinessLogics<T>> extends IdentityObject {
-//    private static Set<String> elementsSIDs = new HashSet<String>();
+    private static Set<String> elementsSIDs = new HashSet<String>();
 
     public String caption = "";
 
@@ -28,7 +28,7 @@ public class NavigatorElement<T extends BusinessLogics<T>> extends IdentityObjec
 
     public NavigatorElement(NavigatorElement<T> parent, String sID, String caption) {
         this.sID = sID;
-//        assert elementsSIDs.add(sID); // проверка уникальности sID
+        assert elementsSIDs.add(sID); // проверка уникальности sID
         setID(BusinessLogics.generateStaticNewID());
         this.caption = caption;
 

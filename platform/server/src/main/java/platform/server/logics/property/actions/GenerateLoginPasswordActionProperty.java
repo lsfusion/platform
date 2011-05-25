@@ -5,9 +5,9 @@ import platform.interop.action.ClientAction;
 import platform.server.classes.ValueClass;
 import platform.server.form.instance.PropertyObjectInterfaceInstance;
 import platform.server.form.instance.remote.RemoteForm;
-import platform.server.logics.BusinessLogics;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
+import platform.server.logics.linear.LP;
 import platform.server.logics.property.ActionProperty;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.Property;
@@ -18,14 +18,18 @@ import java.util.*;
 
 public class GenerateLoginPasswordActionProperty extends ActionProperty {
 
-    BusinessLogics<?> BL;
+    private LP email;
+    private LP userLogin;
+    private LP userPassword;
 
     private final ClassPropertyInterface customUserInterface;
 
-    public GenerateLoginPasswordActionProperty(BusinessLogics<?> BL) {
-        super("generateLoginPassword", "Сгенерировать логин и пароль", new ValueClass[]{BL.customUser});
+    public GenerateLoginPasswordActionProperty(LP email, LP userLogin, LP userPassword, ValueClass customUser) {
+        super("generateLoginPassword", "Сгенерировать логин и пароль", new ValueClass[]{customUser});
 
-        this.BL = BL;
+        this.email = email;
+        this.userLogin = userLogin;
+        this.userPassword = userPassword;
 
         Iterator<ClassPropertyInterface> i = interfaces.iterator();
         customUserInterface = i.next();
@@ -39,7 +43,7 @@ public class GenerateLoginPasswordActionProperty extends ActionProperty {
     public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, DataSession session, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects, boolean groupLast) throws SQLException {
         DataObject userObject = keys.get(customUserInterface);
 
-        String currentEmail = (String) BL.email.read(session, userObject);
+        String currentEmail = (String) email.read(session, userObject);
 
         String login;
         int indexMail;
@@ -54,13 +58,13 @@ public class GenerateLoginPasswordActionProperty extends ActionProperty {
         for(int i=0;i<8;i++)
             password += chars.charAt(rand.nextInt(chars.length()));
 
-        if (BL.userLogin.read(session, userObject) == null)
-            BL.userLogin.execute(login, session, userObject);
-        BL.userPassword.execute(password, session, userObject);
+        if (userLogin.read(session, userObject) == null)
+            userLogin.execute(login, session, userObject);
+        userPassword.execute(password, session, userObject);
     }
 
     @Override
     public Set<Property> getChangeProps() {
-        return BaseUtils.toSet(BL.userLogin.property, BL.userPassword.property);
+        return BaseUtils.toSet(userLogin.property, userPassword.property);
     }
 }

@@ -50,7 +50,7 @@ public class TypeSerializer {
         if (type == Data.EXCEL) return ExcelClass.instance;
         if (type == Data.TEXT) return TextClass.instance;
         if (type == Data.YEAR) return YearClass.instance;
-        if (type == Data.OBJECT) return context.baseClass.findClassID(inStream.readInt());
+        if (type == Data.OBJECT) return context.LM.baseClass.findClassID(inStream.readInt());
         if (type == Data.ACTION) return ActionClass.instance;
         if (type == Data.PDF) return PDFClass.instance;
         if (type == Data.DATETIME) return DateTimeClass.instance;

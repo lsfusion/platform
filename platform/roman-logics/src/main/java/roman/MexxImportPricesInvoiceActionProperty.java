@@ -24,42 +24,42 @@ import java.util.Map;
  */
 
 public class MexxImportPricesInvoiceActionProperty extends BaseImportActionProperty {
-    public MexxImportPricesInvoiceActionProperty(RomanBusinessLogics BL) {
-        super(BL, "Импортировать цены", BL.mexxSupplier, "dat");
+    public MexxImportPricesInvoiceActionProperty(RomanLogicsModule LM) {
+        super(LM, "Импортировать цены", LM.mexxSupplier, "dat");
     }
 
     @Override
     public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects) throws SQLException {
-        ImportField invoiceSIDField = new ImportField(BL.sidDocument);
-        ImportField sidField = new ImportField(BL.sidArticle);
-        ImportField barCodeField = new ImportField(BL.barcode);
-        ImportField customCodeField = new ImportField(BL.sidCustomCategoryOrigin);
-        ImportField customCode6Field = new ImportField(BL.sidCustomCategory6);
-        ImportField unitPriceField = new ImportField(BL.priceDataDocumentItem);
+        ImportField invoiceSIDField = new ImportField(LM.sidDocument);
+        ImportField sidField = new ImportField(LM.sidArticle);
+        ImportField barCodeField = new ImportField(LM.LM.barcode);
+        ImportField customCodeField = new ImportField(LM.sidCustomCategoryOrigin);
+        ImportField customCode6Field = new ImportField(LM.sidCustomCategory6);
+        ImportField unitPriceField = new ImportField(LM.priceDataDocumentItem);
 
         DataObject supplier = keys.get(supplierInterface);
 
         List<ImportProperty<?>> properties = new ArrayList<ImportProperty<?>>();
 
-        ImportKey<?> invoiceKey = new ImportKey(BL.boxInvoice, BL.documentSIDSupplier.getMapping(invoiceSIDField, supplier));
-        properties.add(new ImportProperty(invoiceSIDField, BL.sidDocument.getMapping(invoiceKey)));
+        ImportKey<?> invoiceKey = new ImportKey(LM.boxInvoice, LM.documentSIDSupplier.getMapping(invoiceSIDField, supplier));
+        properties.add(new ImportProperty(invoiceSIDField, LM.sidDocument.getMapping(invoiceKey)));
 
-        ImportKey<?> articleKey = new ImportKey(BL.articleComposite, BL.articleSIDSupplier.getMapping(sidField, supplier));
-        properties.add(new ImportProperty(sidField, BL.sidArticle.getMapping(articleKey)));
+        ImportKey<?> articleKey = new ImportKey(LM.articleComposite, LM.articleSIDSupplier.getMapping(sidField, supplier));
+        properties.add(new ImportProperty(sidField, LM.sidArticle.getMapping(articleKey)));
 
-        ImportKey<?> itemKey = new ImportKey(BL.item, BL.barcodeToObject.getMapping(barCodeField));
-        properties.add(new ImportProperty(barCodeField, BL.barcode.getMapping(itemKey)));
+        ImportKey<?> itemKey = new ImportKey(LM.item, LM.LM.barcodeToObject.getMapping(barCodeField));
+        properties.add(new ImportProperty(barCodeField, LM.LM.barcode.getMapping(itemKey)));
 
-        ImportKey<?> customCategoryKey = new ImportKey(BL.customCategoryOrigin, BL.sidToCustomCategoryOrigin.getMapping(customCodeField));
-        properties.add(new ImportProperty(customCodeField, BL.sidCustomCategoryOrigin.getMapping(customCategoryKey)));
-        properties.add(new ImportProperty(customCodeField, BL.customCategoryOriginArticle.getMapping(articleKey),
-                BL.object(BL.customCategoryOrigin).getMapping(customCategoryKey)));
+        ImportKey<?> customCategoryKey = new ImportKey(LM.customCategoryOrigin, LM.sidToCustomCategoryOrigin.getMapping(customCodeField));
+        properties.add(new ImportProperty(customCodeField, LM.sidCustomCategoryOrigin.getMapping(customCategoryKey)));
+        properties.add(new ImportProperty(customCodeField, LM.customCategoryOriginArticle.getMapping(articleKey),
+                LM.LM.object(LM.customCategoryOrigin).getMapping(customCategoryKey)));
 
-        ImportKey<?> customCategory6Key = new ImportKey(BL.customCategory6, BL.sidToCustomCategory6.getMapping(customCode6Field));
-        properties.add(new ImportProperty(customCode6Field, BL.sidCustomCategory6.getMapping(customCategory6Key)));
+        ImportKey<?> customCategory6Key = new ImportKey(LM.customCategory6, LM.sidToCustomCategory6.getMapping(customCode6Field));
+        properties.add(new ImportProperty(customCode6Field, LM.sidCustomCategory6.getMapping(customCategory6Key)));
 
-        properties.add(new ImportProperty(unitPriceField, BL.priceDataDocumentItem.getMapping(invoiceKey, itemKey)));
-        properties.add(new ImportProperty(unitPriceField, BL.priceDocumentArticle.getMapping(invoiceKey, articleKey)));
+        properties.add(new ImportProperty(unitPriceField, LM.priceDataDocumentItem.getMapping(invoiceKey, itemKey)));
+        properties.add(new ImportProperty(unitPriceField, LM.priceDocumentArticle.getMapping(invoiceKey, articleKey)));
 
         try {
             ByteArrayInputStream inFile = new ByteArrayInputStream((byte[]) value.getValue());

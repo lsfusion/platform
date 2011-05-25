@@ -80,8 +80,8 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteObject i
 
         securityPolicy = this.BL.policyManager.getSecurityPolicy(currentUser);
 
-        user = new DataObject(currentUser.ID, this.BL.customUser);
-        this.computer = new DataObject(computer, this.BL.computer);
+        user = new DataObject(currentUser.ID, this.BL.LM.customUser);
+        this.computer = new DataObject(computer, this.BL.LM.computer);
         this.sql = this.BL.createSQL();
     }
 
@@ -90,7 +90,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteObject i
     public void changeCurrentUser(DataObject user) {
         this.user = user;
 
-        updateEnvironmentProperty(BL.currentUser.property, user);
+        updateEnvironmentProperty(BL.LM.currentUser.property, user);
     }
 
     public void updateEnvironmentProperty(Property property, ObjectValue value) {
@@ -103,7 +103,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteObject i
     public void relogin(String login) throws RemoteException {
         try {
             DataSession session = createSession();
-            Integer userId = (Integer) BL.loginToUser.read(session, new DataObject(login, StringClass.get(30)));
+            Integer userId = (Integer) BL.LM.loginToUser.read(session, new DataObject(login, StringClass.get(30)));
             DataObject user = session.getDataObject(userId, ObjectType.instance);
             changeCurrentUser(user);
             session.close();
@@ -131,7 +131,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteObject i
 
             ObjectOutputStream objectStream = new ObjectOutputStream(outStream);
             Query<Object, String> query = new Query<Object, String>(new HashMap<Object, KeyExpr>());
-            query.properties.put("name", BL.currentUserName.getExpr());
+            query.properties.put("name", BL.LM.currentUserName.getExpr());
             objectStream.writeObject(BaseUtils.nvl((String) query.execute(session.sql, session.env).singleValue().get("name"), "(без имени)").trim());
 
             session.close();
@@ -212,7 +212,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteObject i
             else
                 return currentClass.getRelevantElements(BL, securityPolicy);
         } else {
-            navigatorElements = getElements(BL.baseElement.getNavigatorElement(elementSID));
+            navigatorElements = getElements(BL.LM.baseElement.getNavigatorElement(elementSID));
         }
 
         List<NavigatorElement> resultElements = new ArrayList();
@@ -226,7 +226,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteObject i
 
     List<NavigatorElement> getElements(NavigatorElement element) {
 
-        if (element == null) element = BL.baseElement;
+        if (element == null) element = BL.LM.baseElement;
         return new ArrayList(element.getChildren());
     }
 
@@ -281,13 +281,13 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteObject i
         try {
             DataSession session = createSession();
 
-            Integer formId = (Integer) BL.SIDToNavigatorElement.read(session, new DataObject(sid, BL.formSIDValueClass));
+            Integer formId = (Integer) BL.LM.SIDToNavigatorElement.read(session, new DataObject(sid, BL.LM.formSIDValueClass));
             if (formId == null) {
                 //будем считать, что к SID модифицированных форм будет добавляться что-нибудь через подчёркивание
                 int ind = sid.indexOf('_');
                 if (ind != -1) {
                     sid = sid.substring(0, ind);
-                    formId = (Integer) BL.SIDToNavigatorElement.read(session, new DataObject(sid, BL.formSIDValueClass));
+                    formId = (Integer) BL.LM.SIDToNavigatorElement.read(session, new DataObject(sid, BL.LM.formSIDValueClass));
                 }
 
                 if (formId == null) {
@@ -295,10 +295,10 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteObject i
                 }
             }
 
-            DataObject formObject = new DataObject(formId, BL.navigatorElement);
+            DataObject formObject = new DataObject(formId, BL.LM.navigatorElement);
 
-            int count = 1 + nvl((Integer) BL.connectionFormCount.read(session, getConnection(), formObject), 0);
-            BL.connectionFormCount.execute(count, session, getConnection(), formObject);
+            int count = 1 + nvl((Integer) BL.LM.connectionFormCount.read(session, getConnection(), formObject), 0);
+            BL.LM.connectionFormCount.execute(count, session, getConnection(), formObject);
 
             session.apply(BL);
             session.close();
@@ -312,7 +312,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteObject i
     }
 
     private FormEntity<T> getFormEntity(String formSID) {
-        FormEntity<T> formEntity = (FormEntity<T>) BL.baseElement.getNavigatorElement(formSID);
+        FormEntity<T> formEntity = (FormEntity<T>) BL.LM.baseElement.getNavigatorElement(formSID);
 
         if (formEntity == null) {
             throw new RuntimeException("Форма с заданным идентификатором не найдена");
@@ -326,7 +326,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteObject i
     }
 
     private void setFormEntity(String formSID, FormEntity<T> formEntity) {
-        FormEntity<T> prevEntity = (FormEntity) BL.baseElement.getNavigatorElement(formSID);
+        FormEntity<T> prevEntity = (FormEntity) BL.LM.baseElement.getNavigatorElement(formSID);
         if (prevEntity == null)
             throw new RuntimeException("Форма с заданным идентификатором не найдена");
 
@@ -575,7 +575,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteObject i
     @Override
     public byte[] getNavigatorTree() throws RemoteException {
 
-        Collection<NavigatorElement> listElements = BL.baseElement.addSubTree(new LinkedList<NavigatorElement>());
+        Collection<NavigatorElement> listElements = BL.LM.baseElement.addSubTree(new LinkedList<NavigatorElement>());
 
         ByteArrayOutputStream outStream = new ByteArrayOutputStream();
         DataOutputStream dataStream = new DataOutputStream(outStream);

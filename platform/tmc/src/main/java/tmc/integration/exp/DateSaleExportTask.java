@@ -39,7 +39,7 @@ public class DateSaleExportTask extends AbstractSaleExportTask {
 
     protected void setRemoteFormFilter(FormInstance formInstance) throws ParseException {
 
-        PropertyDrawInstance<?> date = formInstance.getPropertyDraw(BL.date);
+        PropertyDrawInstance<?> date = formInstance.getPropertyDraw(BL.VEDLM.LM.date);
         date.toDraw.addTempFilter(new CompareFilterInstance(date.propertyObject, Compare.EQUALS, new DataObject(DateConverter.dateToSql(getExportDate()), DateClass.instance)));
     }
 

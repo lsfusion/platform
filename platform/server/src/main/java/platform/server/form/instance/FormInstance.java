@@ -72,7 +72,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
     SecurityPolicy securityPolicy;
 
     public CustomClass getCustomClass(int classID) {
-        return BL.baseClass.findClassID(classID);
+        return BL.LM.baseClass.findClassID(classID);
     }
 
     public Modifier<? extends Changes> update(final ExprChanges sessionChanges) {
@@ -990,7 +990,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
                     result.classViews.put(group, group.curClassView);
                 }
 
-                Map<ObjectInstance, DataObject> selectObjects = group.updateKeys(session.sql, session.env, this, BL.baseClass, refresh, result, changedProps, changedClasses);
+                Map<ObjectInstance, DataObject> selectObjects = group.updateKeys(session.sql, session.env, this, BL.LM.baseClass, refresh, result, changedProps, changedClasses);
                 if(selectObjects!=null) // то есть нужно изменять объект
                     updateGroupObject = new GroupObjectValue(group, selectObjects);
 

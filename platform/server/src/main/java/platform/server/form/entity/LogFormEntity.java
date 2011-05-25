@@ -52,7 +52,7 @@ public class LogFormEntity<T extends BusinessLogics<T>> extends FormEntity<T> {
         params = Arrays.copyOf(entities, classes.length);
 
         GroupObjectEntity logGroup = new GroupObjectEntity(classes.length + 1, "logGroup");
-        ObjectEntity objSession = new ObjectEntity(classes.length + 2, "session", BL.session, "Сессия");
+        ObjectEntity objSession = new ObjectEntity(classes.length + 2, "session", BL.LM.session, "Сессия");
         entities[classes.length] = objSession;
         logGroup.add(objSession);
 
@@ -60,16 +60,16 @@ public class LogFormEntity<T extends BusinessLogics<T>> extends FormEntity<T> {
         addGroup(logGroup);
 
         for (ObjectEntity obj : entities) {
-            addPropertyDraw(obj, BL.recognizeGroup);
+            addPropertyDraw(obj, BL.LM.recognizeGroup);
         }
-        addPropertyDraw(objSession, BL.baseGroup);
+        addPropertyDraw(objSession, BL.LM.baseGroup);
 
         addPropertyDraw(logProperty, entities);
 
         Result<ValueClass> value = new Result<ValueClass>();
         property.getCommonClasses(value);
         List<PropertyClassImplement> recognizePropImpls =
-                BL.recognizeGroup.getProperties(Arrays.asList(Arrays.asList(new ValueClassWrapper(value.result))), false);
+                BL.LM.recognizeGroup.getProperties(Arrays.asList(Arrays.asList(new ValueClassWrapper(value.result))), false);
 
         for (PropertyClassImplement impl : recognizePropImpls) {
             int paramCnt = logProperty.property.interfaces.size();

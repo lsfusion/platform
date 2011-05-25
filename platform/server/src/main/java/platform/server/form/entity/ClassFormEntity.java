@@ -11,8 +11,8 @@ public class ClassFormEntity<T extends BusinessLogics<T>> extends AbstractClassF
     protected ClassFormEntity(T BL, CustomClass cls, String sID, String caption) {
         super(BL, cls, sID, caption);
 
-        object = addSingleGroupObject(cls, BL.baseGroup, true);
-        BL.addObjectActions(this, object, true);
+        object = addSingleGroupObject(cls, BL.LM.baseGroup, true);
+        BL.LM.addObjectActions(this, object, true);
 
         clsSID = cls.getSID();
     }

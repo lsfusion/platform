@@ -24,12 +24,12 @@ import java.sql.SQLException;
 import java.util.*;
 
 public class ClassifierTNVEDImportActionProperty extends ActionProperty {
-    private RomanBusinessLogics BL;
+    private RomanLogicsModule LM;
     private String importType;
 
-    public ClassifierTNVEDImportActionProperty(String sID, String caption, RomanBusinessLogics BL, String importType) {
+    public ClassifierTNVEDImportActionProperty(String sID, String caption, RomanLogicsModule LM, String importType) {
         super(sID, caption, new ValueClass[]{});
-        this.BL = BL;
+        this.LM = LM;
         this.importType = importType;
     }
 
@@ -128,15 +128,15 @@ public class ClassifierTNVEDImportActionProperty extends ActionProperty {
         }
 
         private void initFields() {
-            cat4IdField = new ImportField(BL.sidCustomCategory4);
-            cat4NameField = new ImportField(BL.nameCustomCategory);
-            cat6IdField = new ImportField(BL.sidCustomCategory6);
-            cat6NameField = new ImportField(BL.nameCustomCategory);
-            cat9IdField = new ImportField(BL.sidCustomCategory9);
-            cat9NameField = new ImportField(BL.nameCustomCategory);
-            cat10IdField = new ImportField(BL.sidCustomCategory10);
-            cat10NameField = new ImportField(BL.nameCustomCategory);
-            cat10OriginRelationField = new ImportField(BL.relationCustomCategory10CustomCategoryOrigin);
+            cat4IdField = new ImportField(LM.sidCustomCategory4);
+            cat4NameField = new ImportField(LM.nameCustomCategory);
+            cat6IdField = new ImportField(LM.sidCustomCategory6);
+            cat6NameField = new ImportField(LM.nameCustomCategory);
+            cat9IdField = new ImportField(LM.sidCustomCategory9);
+            cat9NameField = new ImportField(LM.nameCustomCategory);
+            cat10IdField = new ImportField(LM.sidCustomCategory10);
+            cat10NameField = new ImportField(LM.nameCustomCategory);
+            cat10OriginRelationField = new ImportField(LM.relationCustomCategory10CustomCategoryOrigin);
         }
 
         public void doImport() throws IOException, xBaseJException, SQLException {
@@ -146,14 +146,14 @@ public class ClassifierTNVEDImportActionProperty extends ActionProperty {
             List<ImportProperty<?>> properties = new ArrayList<ImportProperty<?>>();
 
             if (importType.equals("origin")) {
-                ImportKey<?> categoryOriginKey = new ImportKey(BL.customCategoryOrigin, BL.sidToCustomCategoryOrigin.getMapping(cat10IdField));
-                ImportKey<?> category6Key = new ImportKey(BL.customCategory6, BL.sidToCustomCategory6.getMapping(cat6IdField));
-                ImportKey<?> category10Key = new ImportKey(BL.customCategory10, BL.sidToCustomCategory10.getMapping(cat10IdField));
-                properties.add(new ImportProperty(cat10IdField, BL.sidCustomCategoryOrigin.getMapping(categoryOriginKey)));
-                properties.add(new ImportProperty(cat10NameField, BL.nameCustomCategory.getMapping(categoryOriginKey)));
-                properties.add(new ImportProperty(cat6IdField, BL.customCategory6CustomCategoryOrigin.getMapping(categoryOriginKey), BL.object(BL.customCategory6).getMapping(category6Key)));
-                properties.add(new ImportProperty(cat10IdField, BL.customCategory10CustomCategoryOrigin.getMapping(categoryOriginKey), BL.object(BL.customCategory10).getMapping(category10Key)));
-                properties.add(new ImportProperty(cat10OriginRelationField, BL.relationCustomCategory10CustomCategoryOrigin.getMapping(category10Key, categoryOriginKey)));
+                ImportKey<?> categoryOriginKey = new ImportKey(LM.customCategoryOrigin, LM.sidToCustomCategoryOrigin.getMapping(cat10IdField));
+                ImportKey<?> category6Key = new ImportKey(LM.customCategory6, LM.sidToCustomCategory6.getMapping(cat6IdField));
+                ImportKey<?> category10Key = new ImportKey(LM.customCategory10, LM.sidToCustomCategory10.getMapping(cat10IdField));
+                properties.add(new ImportProperty(cat10IdField, LM.sidCustomCategoryOrigin.getMapping(categoryOriginKey)));
+                properties.add(new ImportProperty(cat10NameField, LM.nameCustomCategory.getMapping(categoryOriginKey)));
+                properties.add(new ImportProperty(cat6IdField, LM.customCategory6CustomCategoryOrigin.getMapping(categoryOriginKey), LM.LM.object(LM.customCategory6).getMapping(category6Key)));
+                properties.add(new ImportProperty(cat10IdField, LM.customCategory10CustomCategoryOrigin.getMapping(categoryOriginKey), LM.LM.object(LM.customCategory10).getMapping(category10Key)));
+                properties.add(new ImportProperty(cat10OriginRelationField, LM.relationCustomCategory10CustomCategoryOrigin.getMapping(category10Key, categoryOriginKey)));
 
                 ImportKey<?>[] keysArray = {category6Key, category10Key, categoryOriginKey};
                 new IntegrationService(session, table, Arrays.asList(keysArray), properties).synchronize(true, true, false);
@@ -161,24 +161,24 @@ public class ClassifierTNVEDImportActionProperty extends ActionProperty {
                 return;
             }
 
-            ImportKey<?> category4Key = new ImportKey(BL.customCategory4, BL.sidToCustomCategory4.getMapping(cat4IdField));
-            properties.add(new ImportProperty(cat4IdField, BL.sidCustomCategory4.getMapping(category4Key)));
-            properties.add(new ImportProperty(cat4NameField, BL.nameCustomCategory.getMapping(category4Key)));
+            ImportKey<?> category4Key = new ImportKey(LM.customCategory4, LM.sidToCustomCategory4.getMapping(cat4IdField));
+            properties.add(new ImportProperty(cat4IdField, LM.sidCustomCategory4.getMapping(category4Key)));
+            properties.add(new ImportProperty(cat4NameField, LM.nameCustomCategory.getMapping(category4Key)));
 
-            ImportKey<?> category6Key = new ImportKey(BL.customCategory6, BL.sidToCustomCategory6.getMapping(cat6IdField));
-            properties.add(new ImportProperty(cat6IdField, BL.sidCustomCategory6.getMapping(category6Key)));
-            properties.add(new ImportProperty(cat6NameField, BL.nameCustomCategory.getMapping(category6Key)));
-            properties.add(new ImportProperty(cat4IdField, BL.customCategory4CustomCategory6.getMapping(category6Key), BL.object(BL.customCategory4).getMapping(category4Key)));
+            ImportKey<?> category6Key = new ImportKey(LM.customCategory6, LM.sidToCustomCategory6.getMapping(cat6IdField));
+            properties.add(new ImportProperty(cat6IdField, LM.sidCustomCategory6.getMapping(category6Key)));
+            properties.add(new ImportProperty(cat6NameField, LM.nameCustomCategory.getMapping(category6Key)));
+            properties.add(new ImportProperty(cat4IdField, LM.customCategory4CustomCategory6.getMapping(category6Key), LM.LM.object(LM.customCategory4).getMapping(category4Key)));
 
-            ImportKey<?> category9Key = new ImportKey(BL.customCategory9, BL.sidToCustomCategory9.getMapping(cat9IdField));
-            properties.add(new ImportProperty(cat9IdField, BL.sidCustomCategory9.getMapping(category9Key)));
-            properties.add(new ImportProperty(cat9NameField, BL.nameCustomCategory.getMapping(category9Key)));
-            properties.add(new ImportProperty(cat6IdField, BL.customCategory6CustomCategory9.getMapping(category9Key), BL.object(BL.customCategory6).getMapping(category6Key)));
+            ImportKey<?> category9Key = new ImportKey(LM.customCategory9, LM.sidToCustomCategory9.getMapping(cat9IdField));
+            properties.add(new ImportProperty(cat9IdField, LM.sidCustomCategory9.getMapping(category9Key)));
+            properties.add(new ImportProperty(cat9NameField, LM.nameCustomCategory.getMapping(category9Key)));
+            properties.add(new ImportProperty(cat6IdField, LM.customCategory6CustomCategory9.getMapping(category9Key), LM.LM.object(LM.customCategory6).getMapping(category6Key)));
 
-            ImportKey<?> category10Key = new ImportKey(BL.customCategory10, BL.sidToCustomCategory10.getMapping(cat10IdField));
-            properties.add(new ImportProperty(cat10IdField, BL.sidCustomCategory10.getMapping(category10Key)));
-            properties.add(new ImportProperty(cat10NameField, BL.nameCustomCategory.getMapping(category10Key)));
-            properties.add(new ImportProperty(cat9IdField, BL.customCategory9CustomCategory10.getMapping(category10Key), BL.object(BL.customCategory9).getMapping(category9Key)));
+            ImportKey<?> category10Key = new ImportKey(LM.customCategory10, LM.sidToCustomCategory10.getMapping(cat10IdField));
+            properties.add(new ImportProperty(cat10IdField, LM.sidCustomCategory10.getMapping(category10Key)));
+            properties.add(new ImportProperty(cat10NameField, LM.nameCustomCategory.getMapping(category10Key)));
+            properties.add(new ImportProperty(cat9IdField, LM.customCategory9CustomCategory10.getMapping(category10Key), LM.LM.object(LM.customCategory9).getMapping(category9Key)));
 
             ImportKey<?>[] keysArray = {category4Key, category6Key, category9Key, category10Key};
             new IntegrationService(session, table, Arrays.asList(keysArray), properties).synchronize(true, true, false);

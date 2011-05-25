@@ -12,12 +12,12 @@ public class DialogFormEntity<T extends BusinessLogics<T>> extends AbstractClass
     protected DialogFormEntity(T BL, CustomClass cls, String sID, String caption) {
         super(BL, cls, sID, caption);
 
-        object = addSingleGroupObject(cls, BL.baseGroup, true);
+        object = addSingleGroupObject(cls, BL.LM.baseGroup, true);
         object.groupTo.setSingleClassView(ClassViewType.GRID);
 
-        BL.addObjectActions(this, object);
+        BL.LM.addObjectActions(this, object);
 
-        PropertyDrawEntity objectValue = getPropertyDraw(BL.objectValue, object);
+        PropertyDrawEntity objectValue = getPropertyDraw(BL.LM.objectValue, object);
         if (objectValue != null)
             objectValue.readOnly = true;
 

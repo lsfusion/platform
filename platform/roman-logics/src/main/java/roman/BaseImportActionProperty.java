@@ -19,19 +19,19 @@ import java.util.Iterator;
 
 public abstract class BaseImportActionProperty extends ActionProperty {
     protected final ClassPropertyInterface supplierInterface;
-    protected RomanBusinessLogics BL;
+    protected RomanLogicsModule LM;
     protected FileActionClass valueClass;
 
-    public BaseImportActionProperty(RomanBusinessLogics BL, String caption, ValueClass supplierClass) {
-        this(BL, caption, supplierClass, "xls");
+    public BaseImportActionProperty(RomanLogicsModule LM, String caption, ValueClass supplierClass) {
+        this(LM, caption, supplierClass, "xls");
     }
 
-    public BaseImportActionProperty(RomanBusinessLogics BL, String caption, ValueClass supplierClass, String extensions) {
-        super(BL.genSID(), caption, new ValueClass[]{supplierClass});
+    public BaseImportActionProperty(RomanLogicsModule LM, String caption, ValueClass supplierClass, String extensions) {
+        super(LM.LM.genSID(), caption, new ValueClass[]{supplierClass});
 
         Iterator<ClassPropertyInterface> i = interfaces.iterator();
         supplierInterface = i.next();
-        this.BL = BL;
+        this.LM = LM;
 
         String[] extArray = extensions.split(" ");
         String extString = "";

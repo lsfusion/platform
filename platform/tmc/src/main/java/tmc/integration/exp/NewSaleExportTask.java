@@ -19,11 +19,11 @@ public class NewSaleExportTask extends AbstractSaleExportTask {
     }
 
     protected void setRemoteFormFilter(FormInstance formInstance) {
-        PropertyDrawInstance<?> exported = formInstance.getPropertyDraw(BL.checkRetailExported);
+        PropertyDrawInstance<?> exported = formInstance.getPropertyDraw(BL.VEDLM.checkRetailExported);
         exported.toDraw.addTempFilter(new NotFilterInstance(new NotNullFilterInstance(exported.propertyObject)));
     }
 
     protected void updateRemoteFormProperties(FormInstance formInstance) throws SQLException {
-        formInstance.changeProperty(formInstance.getPropertyDraw(BL.checkRetailExported), true, null, true);
+        formInstance.changeProperty(formInstance.getPropertyDraw(BL.VEDLM.checkRetailExported), true, null, true);
     }
 }

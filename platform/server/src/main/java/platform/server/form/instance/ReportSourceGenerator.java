@@ -131,7 +131,7 @@ public class ReportSourceGenerator<T extends BusinessLogics<T>>  {
 
             Query<ObjectInstance, Pair<Object, PropertyType>> query = createQuery(groups, parentTable, orders, propTypes);
             SessionTableUsage<ObjectInstance, Pair<Object, PropertyType>> reportTable = new SessionTableUsage<ObjectInstance, Pair<Object, PropertyType>>(
-                    form.session.sql, query, form.BL.baseClass, form.session.env, keyTypes, propTypes);
+                    form.session.sql, query, form.BL.LM.baseClass, form.session.env, keyTypes, propTypes);
 
             try {
                 OrderedMap<Map<ObjectInstance, Object>, Map<Pair<Object, PropertyType>, Object>> resultData = reportTable.read(form.session.sql, form.session.env, orders);

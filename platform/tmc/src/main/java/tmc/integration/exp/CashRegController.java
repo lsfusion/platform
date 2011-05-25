@@ -1,7 +1,10 @@
 package tmc.integration.exp;
 
 import platform.base.BaseUtils;
-import platform.interop.action.*;
+import platform.interop.action.ClientAction;
+import platform.interop.action.ClientResultAction;
+import platform.interop.action.ListClientAction;
+import platform.interop.action.ListClientResultAction;
 import platform.server.classes.DataClass;
 import platform.server.classes.DoubleClass;
 import platform.server.classes.ValueClass;
@@ -16,7 +19,7 @@ import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
 import platform.server.logics.property.ActionProperty;
 import platform.server.logics.property.ClassPropertyInterface;
-import tmc.VEDBusinessLogics;
+import tmc.VEDLogicsModule;
 import tmc.integration.exp.FiscalRegister.*;
 
 import javax.swing.*;
@@ -30,9 +33,9 @@ public class CashRegController {
     private static String CASHREGISTER_CHARSETNAME = "Cp866";
     private static int CASHREGISTER_DELAY = 2000;
 
-    VEDBusinessLogics BL;
+    VEDLogicsModule BL;
 
-    public CashRegController(VEDBusinessLogics BL) {
+    public CashRegController(VEDLogicsModule BL) {
         this.BL = BL;
     }
 
@@ -354,18 +357,18 @@ public class CashRegController {
     public void addCashRegProperties() {
 
 //       пока не поддерживается
-//        BL.addProp(BL.cashRegOperGroup, new SimpleCashRegActionProperty(BL.genSID(), "Аннулировать чек", "/A")); 
-        BL.addProp(BL.cashRegOperGroup, new SimpleCashRegActionProperty(BL.genSID(), "Продолжить печать", "/R"));
-        BL.addProp(BL.cashRegOperGroup, new MessageActionProperty(BL.genSID(), "Запрос наличных", MessageAction.COUNTER));
-        BL.addProp(BL.cashRegOperGroup, new ReportActionProperty(BL.genSID(), "Открыть денеж. ящик", ReportAction.MONEY_BOX));
-        BL.addProp(BL.cashRegAdminGroup, new MessageActionProperty(BL.genSID(), "Номера посл. чека", MessageAction.LAST_DOC_NUM));
-        BL.addProp(BL.cashRegAdminGroup, new IntegerCashRegActionProperty(BL.genSID(), "Внесение денег", MoneyOperationAction.CASH_IN));
-        BL.addProp(BL.cashRegAdminGroup, new IntegerCashRegActionProperty(BL.genSID(), "Изъятие денег", MoneyOperationAction.CASH_OUT));
-        BL.addProp(BL.cashRegAdminGroup, new ReportActionProperty(BL.genSID(), "X-отчет (сменный отчет без гашения)", ReportAction.XREPORT));
-        ReportActionProperty zProp = new ReportActionProperty(BL.genSID(), "Z-отчет (сменный отчет с гашением)", ReportAction.ZREPORT);
+//        LM.addProp(LM.cashRegOperGroup, new SimpleCashRegActionProperty(LM.genSID(), "Аннулировать чек", "/A"));
+        BL.LM.addProp(BL.cashRegOperGroup, new SimpleCashRegActionProperty(BL.LM.genSID(), "Продолжить печать", "/R"));
+        BL.LM.addProp(BL.cashRegOperGroup, new MessageActionProperty(BL.LM.genSID(), "Запрос наличных", MessageAction.COUNTER));
+        BL.LM.addProp(BL.cashRegOperGroup, new ReportActionProperty(BL.LM.genSID(), "Открыть денеж. ящик", ReportAction.MONEY_BOX));
+        BL.LM.addProp(BL.cashRegAdminGroup, new MessageActionProperty(BL.LM.genSID(), "Номера посл. чека", MessageAction.LAST_DOC_NUM));
+        BL.LM.addProp(BL.cashRegAdminGroup, new IntegerCashRegActionProperty(BL.LM.genSID(), "Внесение денег", MoneyOperationAction.CASH_IN));
+        BL.LM.addProp(BL.cashRegAdminGroup, new IntegerCashRegActionProperty(BL.LM.genSID(), "Изъятие денег", MoneyOperationAction.CASH_OUT));
+        BL.LM.addProp(BL.cashRegAdminGroup, new ReportActionProperty(BL.LM.genSID(), "X-отчет (сменный отчет без гашения)", ReportAction.XREPORT));
+        ReportActionProperty zProp = new ReportActionProperty(BL.LM.genSID(), "Z-отчет (сменный отчет с гашением)", ReportAction.ZREPORT);
         zProp.askConfirm = true;
-        BL.addProp(BL.cashRegAdminGroup, zProp);
-        BL.addProp(BL.cashRegAdminGroup, new MessageActionProperty(BL.genSID(), "Запрос серийного номера регистратора", MessageAction.SERIAL_NUM));
+        BL.LM.addProp(BL.cashRegAdminGroup, zProp);
+        BL.LM.addProp(BL.cashRegAdminGroup, new MessageActionProperty(BL.LM.genSID(), "Запрос серийного номера регистратора", MessageAction.SERIAL_NUM));
     }
 
     private class ReportActionProperty extends ActionProperty {
@@ -484,8 +487,8 @@ public class CashRegController {
         @Override
         public DefaultFormView createDefaultRichDesign() {
             DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign();
-            design.setFont(VEDBusinessLogics.FONT_HUGE_BOLD);
-            design.setPanelLabelAbove(BL.baseGroup, true);
+            design.setFont(VEDLogicsModule.FONT_HUGE_BOLD);
+            design.setPanelLabelAbove(BL.LM.baseGroup, true);
 
             design.setKeyStroke(KeyStroke.getKeyStroke(KeyEvent.VK_F5, InputEvent.SHIFT_DOWN_MASK | InputEvent.SHIFT_MASK));
 

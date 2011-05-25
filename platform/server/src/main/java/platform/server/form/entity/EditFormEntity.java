@@ -14,10 +14,10 @@ public class EditFormEntity<T extends BusinessLogics<T>> extends AbstractClassFo
     protected EditFormEntity(T BL, CustomClass cls, String sID, String caption) {
         super(BL, cls, sID, caption);
 
-        object = addSingleGroupObject(cls, BL.baseGroup, true);
+        object = addSingleGroupObject(cls, BL.LM.baseGroup, true);
         object.groupTo.setSingleClassView(ClassViewType.PANEL);
 
-        PropertyDrawEntity objectValue = getPropertyDraw(BL.objectValue, object);
+        PropertyDrawEntity objectValue = getPropertyDraw(BL.LM.objectValue, object);
         if (objectValue != null)
             objectValue.readOnly = true;
 

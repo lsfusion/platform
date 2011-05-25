@@ -202,12 +202,12 @@ public class EmailActionProperty extends ActionProperty {
 
             String subject = (this.subject == null ? (String)keys.get(listInterfaces.get(listInterfaces.size()-1)).getValue() : this.subject);
 
-            String smtpHost = (String) BL.smtpHost.read(session);
-            String smtpPort = (String) BL.smtpPort.read(session);
-            String fromAddress = (String) BL.fromAddress.read(session);
-            String userName = (String) BL.emailAccount.read(session);
-            String password = (String) BL.emailPassword.read(session);
-            String emailBlindCarbonCopy = (String) BL.emailBlindCarbonCopy.read(session);
+            String smtpHost = (String) BL.LM.smtpHost.read(session);
+            String smtpPort = (String) BL.LM.smtpPort.read(session);
+            String fromAddress = (String) BL.LM.fromAddress.read(session);
+            String userName = (String) BL.LM.emailAccount.read(session);
+            String password = (String) BL.LM.emailPassword.read(session);
+            String emailBlindCarbonCopy = (String) BL.LM.emailBlindCarbonCopy.read(session);
             if (emailBlindCarbonCopy != null && !emailBlindCarbonCopy.isEmpty()) {
                 recepientEmails.put(emailBlindCarbonCopy, MimeMessage.RecipientType.BCC);
             }

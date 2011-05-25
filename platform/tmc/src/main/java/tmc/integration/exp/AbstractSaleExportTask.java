@@ -109,27 +109,27 @@ public abstract class AbstractSaleExportTask extends FlagSemaphoreTask {
     private FormData getDataSale(DataSession session, Map<Field, PropertyDrawInstance> map) throws Exception {
 
         // Выгружаем продажи по кассе
-        FormInstance formInstance = new FormInstance(BL.commitSaleBrowseForm, BL, session, PolicyManager.serverSecurityPolicy, null, null, new DataObject(BL.getServerComputer(), BL.computer)); // здесь надо переделать на нормальный компьютер
+        FormInstance formInstance = new FormInstance(BL.VEDLM.commitSaleBrowseForm, BL, session, PolicyManager.serverSecurityPolicy, null, null, new DataObject(BL.getServerComputer(), BL.VEDLM.LM.computer)); // здесь надо переделать на нормальный компьютер
 
         setRemoteFormFilter(formInstance);
 
         // записываем фильтр на этот склад
-        PropertyDrawInstance outStore = formInstance.getPropertyDraw(BL.subjectOutOrder);
+        PropertyDrawInstance outStore = formInstance.getPropertyDraw(BL.VEDLM.subjectOutOrder);
         outStore.toDraw.addTempFilter(new CompareFilterInstance(outStore.propertyObject, Compare.EQUALS, session.getDataObject(store, ObjectType.instance)));        
 
-        PropertyDrawInstance quantity = formInstance.getPropertyDraw(BL.articleQuantity);
+        PropertyDrawInstance quantity = formInstance.getPropertyDraw(BL.VEDLM.articleQuantity);
         quantity.toDraw.addTempFilter(new NotNullFilterInstance(quantity.propertyObject));
 
-        ObjectInstance doc = formInstance.instanceFactory.getInstance(BL.commitSaleBrowseForm.objDoc);
-        ObjectInstance art = formInstance.instanceFactory.getInstance(BL.commitSaleBrowseForm.objArt);
+        ObjectInstance doc = formInstance.instanceFactory.getInstance(BL.VEDLM.commitSaleBrowseForm.objDoc);
+        ObjectInstance art = formInstance.instanceFactory.getInstance(BL.VEDLM.commitSaleBrowseForm.objArt);
 
-        map.put(barField, formInstance.getPropertyDraw(BL.barcode));
-        map.put(nameField, formInstance.getPropertyDraw(BL.name));
-        map.put(cenField, formInstance.getPropertyDraw(BL.priceAllOrderSaleArticle));
-        map.put(kolField, formInstance.getPropertyDraw(BL.articleQuantity));
-        map.put(dateField, formInstance.getPropertyDraw(BL.date));
-        map.put(summField, formInstance.getPropertyDraw(BL.sumWithDiscountObligationOrderArticle));
-        map.put(percentField, formInstance.getPropertyDraw(BL.discountOrderArticle));
+        map.put(barField, formInstance.getPropertyDraw(BL.VEDLM.LM.barcode));
+        map.put(nameField, formInstance.getPropertyDraw(BL.VEDLM.LM.name));
+        map.put(cenField, formInstance.getPropertyDraw(BL.VEDLM.priceAllOrderSaleArticle));
+        map.put(kolField, formInstance.getPropertyDraw(BL.VEDLM.articleQuantity));
+        map.put(dateField, formInstance.getPropertyDraw(BL.VEDLM.LM.date));
+        map.put(summField, formInstance.getPropertyDraw(BL.VEDLM.sumWithDiscountObligationOrderArticle));
+        map.put(percentField, formInstance.getPropertyDraw(BL.VEDLM.discountOrderArticle));
 
         FormData data = formInstance.getFormData(map.values(), BaseUtils.toSet(doc.groupTo, art.groupTo));
 
@@ -141,25 +141,25 @@ public abstract class AbstractSaleExportTask extends FlagSemaphoreTask {
     private FormData getDataCert(DataSession session, Map<Field, PropertyDrawInstance> map) throws Exception {
 
         // Выгружаем продажи по кассе
-        FormInstance formInstance = new FormInstance(BL.saleCheckCertBrowseForm, BL, session, PolicyManager.serverSecurityPolicy, null, null, new DataObject(BL.getServerComputer(), BL.computer)); // здесь надо переделать на нормальный компьютер
+        FormInstance formInstance = new FormInstance(BL.VEDLM.saleCheckCertBrowseForm, BL, session, PolicyManager.serverSecurityPolicy, null, null, new DataObject(BL.getServerComputer(), BL.VEDLM.LM.computer)); // здесь надо переделать на нормальный компьютер
 
         setRemoteFormFilter(formInstance);
 
         // записываем фильтр на этот склад
-        PropertyDrawInstance outStore = formInstance.getPropertyDraw(BL.subjectOutOrder);
+        PropertyDrawInstance outStore = formInstance.getPropertyDraw(BL.VEDLM.subjectOutOrder);
         outStore.toDraw.addTempFilter(new CompareFilterInstance(outStore.propertyObject, Compare.EQUALS, session.getDataObject(store, ObjectType.instance)));        
 
-        PropertyDrawInstance issued = formInstance.getPropertyDraw(BL.issueObligation);
+        PropertyDrawInstance issued = formInstance.getPropertyDraw(BL.VEDLM.issueObligation);
         issued.toDraw.addTempFilter(new NotNullFilterInstance(issued.propertyObject));
 
-        ObjectInstance doc = formInstance.instanceFactory.getInstance(BL.saleCheckCertBrowseForm.objDoc);
-        ObjectInstance obligation = formInstance.instanceFactory.getInstance(BL.saleCheckCertBrowseForm.objObligation);
+        ObjectInstance doc = formInstance.instanceFactory.getInstance(BL.VEDLM.saleCheckCertBrowseForm.objDoc);
+        ObjectInstance obligation = formInstance.instanceFactory.getInstance(BL.VEDLM.saleCheckCertBrowseForm.objObligation);
 
-        map.put(barField, formInstance.getPropertyDraw(BL.barcode));
-        map.put(nameField, formInstance.getPropertyDraw(BL.name));
-        map.put(cenField, formInstance.getPropertyDraw(BL.obligationSum));
-        map.put(dateField, formInstance.getPropertyDraw(BL.date));
-        map.put(summField, formInstance.getPropertyDraw(BL.obligationSum));
+        map.put(barField, formInstance.getPropertyDraw(BL.VEDLM.LM.barcode));
+        map.put(nameField, formInstance.getPropertyDraw(BL.VEDLM.LM.name));
+        map.put(cenField, formInstance.getPropertyDraw(BL.VEDLM.obligationSum));
+        map.put(dateField, formInstance.getPropertyDraw(BL.VEDLM.LM.date));
+        map.put(summField, formInstance.getPropertyDraw(BL.VEDLM.obligationSum));
 
         FormData data = formInstance.getFormData(map.values(), BaseUtils.toSet(doc.groupTo, obligation.groupTo));
 
@@ -171,28 +171,28 @@ public abstract class AbstractSaleExportTask extends FlagSemaphoreTask {
     private FormData getDataReturn(DataSession session, Map<Field, PropertyDrawInstance> map) throws Exception {
 
         // Выгружаем продажи по кассе
-        FormInstance formInstance = new FormInstance(BL.returnSaleCheckRetailBrowse, BL, session, PolicyManager.serverSecurityPolicy, null, null, new DataObject(BL.getServerComputer(), BL.computer)); // здесь надо переделать на нормальный компьютер
+        FormInstance formInstance = new FormInstance(BL.VEDLM.returnSaleCheckRetailBrowse, BL, session, PolicyManager.serverSecurityPolicy, null, null, new DataObject(BL.getServerComputer(), BL.VEDLM.LM.computer)); // здесь надо переделать на нормальный компьютер
 
         setRemoteFormFilter(formInstance);
 
-        PropertyDrawInstance returnQuantity = formInstance.getPropertyDraw(BL.returnInnerQuantity);
+        PropertyDrawInstance returnQuantity = formInstance.getPropertyDraw(BL.VEDLM.returnInnerQuantity);
         returnQuantity.toDraw.addTempFilter(new NotNullFilterInstance(returnQuantity.propertyObject));
 
-        ObjectInstance doc = formInstance.instanceFactory.getInstance(BL.returnSaleCheckRetailBrowse.objDoc);
-        ObjectInstance inner = formInstance.instanceFactory.getInstance(BL.returnSaleCheckRetailBrowse.objInner);
-        ObjectInstance article = formInstance.instanceFactory.getInstance(BL.returnSaleCheckRetailBrowse.objArt);
+        ObjectInstance doc = formInstance.instanceFactory.getInstance(BL.VEDLM.returnSaleCheckRetailBrowse.objDoc);
+        ObjectInstance inner = formInstance.instanceFactory.getInstance(BL.VEDLM.returnSaleCheckRetailBrowse.objInner);
+        ObjectInstance article = formInstance.instanceFactory.getInstance(BL.VEDLM.returnSaleCheckRetailBrowse.objArt);
 
         // записываем фильтр на этот склад
-        PropertyDrawInstance incStore = formInstance.getPropertyDraw(BL.subjectIncOrder, doc.groupTo);
+        PropertyDrawInstance incStore = formInstance.getPropertyDraw(BL.VEDLM.subjectIncOrder, doc.groupTo);
         incStore.toDraw.addTempFilter(new CompareFilterInstance(incStore.propertyObject, Compare.EQUALS, session.getDataObject(store, ObjectType.instance)));
 
-        map.put(barField, formInstance.getPropertyDraw(BL.barcode));
-        map.put(nameField, formInstance.getPropertyDraw(BL.name));
-        map.put(cenField, formInstance.getPropertyDraw(BL.priceAllOrderSaleArticle));
-        map.put(kolField, formInstance.getPropertyDraw(BL.returnInnerQuantity));
-        map.put(dateField, formInstance.getPropertyDraw(BL.date, doc.groupTo));
-        map.put(summField, formInstance.getPropertyDraw(BL.sumWithDiscountOrderArticle));
-        map.put(percentField, formInstance.getPropertyDraw(BL.discountOrderArticle));
+        map.put(barField, formInstance.getPropertyDraw(BL.VEDLM.LM.barcode));
+        map.put(nameField, formInstance.getPropertyDraw(BL.VEDLM.LM.name));
+        map.put(cenField, formInstance.getPropertyDraw(BL.VEDLM.priceAllOrderSaleArticle));
+        map.put(kolField, formInstance.getPropertyDraw(BL.VEDLM.returnInnerQuantity));
+        map.put(dateField, formInstance.getPropertyDraw(BL.VEDLM.LM.date, doc.groupTo));
+        map.put(summField, formInstance.getPropertyDraw(BL.VEDLM.sumWithDiscountOrderArticle));
+        map.put(percentField, formInstance.getPropertyDraw(BL.VEDLM.discountOrderArticle));
 
         FormData result = formInstance.getFormData(map.values(), BaseUtils.toSet(doc.groupTo, inner.groupTo, article.groupTo));
 

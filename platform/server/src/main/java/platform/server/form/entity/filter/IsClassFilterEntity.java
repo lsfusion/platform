@@ -40,7 +40,7 @@ public class IsClassFilterEntity<P extends PropertyInterface> extends PropertyFi
     public void customDeserialize(ServerSerializationPool pool, DataInputStream inStream) throws IOException {
         super.customDeserialize(pool, inStream);
 
-        isClass = pool.context.BL.baseClass.findClassID(inStream.readInt());
+        isClass = pool.context.BL.LM.baseClass.findClassID(inStream.readInt());
     }
 
     @Override

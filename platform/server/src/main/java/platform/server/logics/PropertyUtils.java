@@ -212,7 +212,7 @@ public class PropertyUtils {
                 common[j] = mapInt[j - 1];
                 common[j + lmiLen] = mapInt[j - 1] + intOff;
             }
-            common[0] = BL.addJProp(compare, BaseUtils.add(directLI(lp), shift));
+            common[0] = BL.LM.addJProp(compare, BaseUtils.add(directLI(lp), shift));
             return common;
         }
     }

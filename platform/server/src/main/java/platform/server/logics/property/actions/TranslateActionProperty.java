@@ -8,7 +8,6 @@ import platform.server.classes.ValueClass;
 import platform.server.form.instance.FormInstance;
 import platform.server.form.instance.PropertyObjectInterfaceInstance;
 import platform.server.form.instance.remote.RemoteForm;
-import platform.server.logics.BusinessLogics;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
 import platform.server.logics.linear.LP;
@@ -23,15 +22,14 @@ import java.util.Map;
 import java.util.StringTokenizer;
 
 public class TranslateActionProperty extends ActionProperty {
-    private BusinessLogics<?> BL;
     private LP sourceProperty;
     private LP targetProperty;
+    private LP translationDictionaryTerm;
 
-
-    public TranslateActionProperty(String sID, String caption, BusinessLogics<?> BL, LP sourceProperty, LP targetProperty, ValueClass dictionary) {
+    public TranslateActionProperty(String sID, String caption, LP translationDictionaryTerm, LP sourceProperty, LP targetProperty, ValueClass dictionary) {
         super(sID, caption, getValueClasses(sourceProperty, dictionary));
 
-        this.BL = BL;
+        this.translationDictionaryTerm = translationDictionaryTerm;
         this.sourceProperty = sourceProperty;
         this.targetProperty = targetProperty;
     }
@@ -61,7 +59,7 @@ public class TranslateActionProperty extends ActionProperty {
             while (st.hasMoreTokens()) {
                 String token = st.nextToken();
                 if (!delim.contains(token.subSequence(0, token.length()))) {
-                    String translation = (String) BL.translationDictionaryTerm.read(session, dictionary, new DataObject(token, StringClass.get(50)));
+                    String translation = (String) translationDictionaryTerm.read(session, dictionary, new DataObject(token, StringClass.get(50)));
                     if (translation != null) {
                         token = translation.trim();
                     }

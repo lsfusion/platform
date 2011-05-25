@@ -12,8 +12,11 @@ import java.io.IOException;
 import static roman.InvoicePricatMergeInputTable.ResultField;
 
 public class SOliverImportInvoiceActionProperty extends ImportBoxInvoiceActionProperty {
+    private final RomanBusinessLogics BL;
+
     public SOliverImportInvoiceActionProperty(RomanBusinessLogics BL) {
-        super(BL, BL.sOliverSupplier);
+        super(BL.RomanLM, BL.RomanLM.sOliverSupplier);
+        this.BL = BL;
     }
 
     @Override
