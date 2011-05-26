@@ -4,7 +4,6 @@ import jxl.read.biff.BiffException;
 import platform.interop.action.ClientAction;
 import platform.interop.action.MessageClientAction;
 import platform.server.classes.ValueClass;
-import platform.server.form.instance.FormInstance;
 import platform.server.form.instance.PropertyObjectInterfaceInstance;
 import platform.server.form.instance.remote.RemoteForm;
 import platform.server.integration.*;
@@ -52,13 +51,13 @@ public abstract class ImportBoxInvoiceActionProperty extends BaseImportActionPro
     private void initFields() {
         invoiceSIDField = new ImportField(LM.sidDocument);
         boxNumberField = new ImportField(LM.sidSupplierBox);
-        barCodeField = new ImportField(LM.LM.barcode);
+        barCodeField = new ImportField(LM.baseLM.barcode);
         colorCodeField = new ImportField(LM.sidColorSupplier);
         sidField = new ImportField(LM.sidArticle);
-        colorNameField = new ImportField(LM.LM.name);
+        colorNameField = new ImportField(LM.baseLM.name);
         sizeField = new ImportField(LM.sidSizeSupplier);
         compositionField = new ImportField(LM.mainCompositionOriginArticle);
-        countryField = new ImportField(LM.LM.name);
+        countryField = new ImportField(LM.baseLM.name);
         customCodeField = new ImportField(LM.sidCustomCategoryOrigin);
         customCode6Field = new ImportField(LM.sidCustomCategory6);
         unitPriceField = new ImportField(LM.priceDataDocumentItem);
@@ -83,9 +82,9 @@ public abstract class ImportBoxInvoiceActionProperty extends BaseImportActionPro
         properties.add(new ImportProperty(supplier, LM.supplierDocument.getMapping(invoiceKey)));
 
         ImportKey<?> boxKey = new ImportKey(LM.supplierBox, LM.supplierBoxSIDSupplier.getMapping(boxNumberField, supplier));
-        properties.add(new ImportProperty(invoiceSIDField, LM.boxInvoiceSupplierBox.getMapping(boxKey), LM.LM.object(LM.boxInvoice).getMapping(invoiceKey)));
+        properties.add(new ImportProperty(invoiceSIDField, LM.boxInvoiceSupplierBox.getMapping(boxKey), LM.object(LM.boxInvoice).getMapping(invoiceKey)));
         properties.add(new ImportProperty(boxNumberField, LM.sidSupplierBox.getMapping(boxKey)));
-        properties.add(new ImportProperty(boxNumberField, LM.LM.barcode.getMapping(boxKey)));
+        properties.add(new ImportProperty(boxNumberField, LM.baseLM.barcode.getMapping(boxKey)));
 
         ImportKey<?> articleKey = new ImportKey(LM.articleComposite, LM.articleSIDSupplier.getMapping(sidField, supplier));
         properties.add(new ImportProperty(sidField, LM.sidArticle.getMapping(articleKey)));
@@ -94,20 +93,20 @@ public abstract class ImportBoxInvoiceActionProperty extends BaseImportActionPro
         properties.add(new ImportProperty(unitNetWeightField, LM.netWeightArticle.getMapping(articleKey)));
         properties.add(new ImportProperty(originalNameField, LM.originalNameArticle.getMapping(articleKey)));
 
-        ImportKey<?> itemKey = new ImportKey(LM.item, LM.LM.barcodeToObject.getMapping(barCodeField));
-        properties.add(new ImportProperty(barCodeField, LM.LM.barcode.getMapping(itemKey)));
+        ImportKey<?> itemKey = new ImportKey(LM.item, LM.baseLM.barcodeToObject.getMapping(barCodeField));
+        properties.add(new ImportProperty(barCodeField, LM.baseLM.barcode.getMapping(itemKey)));
         properties.add(new ImportProperty(unitNetWeightField, LM.netWeightDataSku.getMapping(itemKey)));
-        properties.add(new ImportProperty(sidField, LM.articleCompositeItem.getMapping(itemKey), LM.LM.object(LM.articleComposite).getMapping(articleKey)));
+        properties.add(new ImportProperty(sidField, LM.articleCompositeItem.getMapping(itemKey), LM.object(LM.articleComposite).getMapping(articleKey)));
 
         ImportKey<?> countryKey = new ImportKey(LM.countrySupplier, LM.countryNameSupplier.getMapping(countryField, supplier));
-        properties.add(new ImportProperty(countryField, LM.LM.name.getMapping(countryKey)));
+        properties.add(new ImportProperty(countryField, LM.baseLM.name.getMapping(countryKey)));
         properties.add(new ImportProperty(supplier, LM.supplierCountrySupplier.getMapping(countryKey)));
-        properties.add(new ImportProperty(countryField, LM.countrySupplierOfOriginArticle.getMapping(articleKey), LM.LM.object(LM.countrySupplier).getMapping(countryKey)));
+        properties.add(new ImportProperty(countryField, LM.countrySupplierOfOriginArticle.getMapping(articleKey), LM.object(LM.countrySupplier).getMapping(countryKey)));
 
         ImportKey<?> customCategoryKey = new ImportKey(LM.customCategoryOrigin, LM.sidToCustomCategoryOrigin.getMapping(customCodeField));
         properties.add(new ImportProperty(customCodeField, LM.sidCustomCategoryOrigin.getMapping(customCategoryKey)));
         properties.add(new ImportProperty(customCodeField, LM.customCategoryOriginArticle.getMapping(articleKey),
-                LM.LM.object(LM.customCategoryOrigin).getMapping(customCategoryKey)));
+                LM.object(LM.customCategoryOrigin).getMapping(customCategoryKey)));
 
         ImportKey<?> customCategory6Key = new ImportKey(LM.customCategory6, LM.sidToCustomCategory6.getMapping(customCode6Field));
         properties.add(new ImportProperty(customCode6Field, LM.sidCustomCategory6.getMapping(customCategory6Key)));
@@ -115,13 +114,13 @@ public abstract class ImportBoxInvoiceActionProperty extends BaseImportActionPro
         ImportKey<?> colorKey = new ImportKey(LM.colorSupplier, LM.colorSIDSupplier.getMapping(colorCodeField, supplier));
         properties.add(new ImportProperty(colorCodeField, LM.sidColorSupplier.getMapping(colorKey)));
         properties.add(new ImportProperty(supplier, LM.supplierColorSupplier.getMapping(colorKey)));
-        properties.add(new ImportProperty(colorNameField, LM.LM.name.getMapping(colorKey)));
-        properties.add(new ImportProperty(colorCodeField, LM.colorSupplierItem.getMapping(itemKey), LM.LM.object(LM.colorSupplier).getMapping(colorKey)));
+        properties.add(new ImportProperty(colorNameField, LM.baseLM.name.getMapping(colorKey)));
+        properties.add(new ImportProperty(colorCodeField, LM.colorSupplierItem.getMapping(itemKey), LM.object(LM.colorSupplier).getMapping(colorKey)));
 
         ImportKey<?> sizeKey = new ImportKey(LM.sizeSupplier, LM.sizeSIDSupplier.getMapping(sizeField, supplier));
         properties.add(new ImportProperty(sizeField, LM.sidSizeSupplier.getMapping(sizeKey)));
         properties.add(new ImportProperty(supplier, LM.supplierSizeSupplier.getMapping(sizeKey)));
-        properties.add(new ImportProperty(sizeField, LM.sizeSupplierItem.getMapping(itemKey), LM.LM.object(LM.sizeSupplier).getMapping(sizeKey)));
+        properties.add(new ImportProperty(sizeField, LM.sizeSupplierItem.getMapping(itemKey), LM.object(LM.sizeSupplier).getMapping(sizeKey)));
 
         properties.add(new ImportProperty(numberSkuField, LM.numberListArticle.getMapping(boxKey, articleKey)));
         properties.add(new ImportProperty(numberSkuField, LM.numberDataListSku.getMapping(boxKey, itemKey)));

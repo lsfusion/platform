@@ -34,7 +34,7 @@ public class MexxImportArticleInfoInvoiceActionProperty extends BaseImportAction
     @Override
     public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, DataSession session, Modifier<? extends Changes> modifier, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects, boolean groupLast) throws SQLException {
         ImportField sidField = new ImportField(LM.sidArticle);
-        ImportField countryField = new ImportField(LM.LM.name);
+        ImportField countryField = new ImportField(LM.baseLM.name);
         ImportField compositionField = new ImportField(LM.mainCompositionOriginArticle);
         ImportField originalNameField = new ImportField(LM.originalNameArticle);
 
@@ -46,9 +46,9 @@ public class MexxImportArticleInfoInvoiceActionProperty extends BaseImportAction
         properties.add(new ImportProperty(sidField, LM.sidArticle.getMapping(articleKey)));
 
         ImportKey<?> countryKey = new ImportKey(LM.countrySupplier, LM.countryNameSupplier.getMapping(countryField, supplier));
-        properties.add(new ImportProperty(countryField, LM.LM.name.getMapping(countryKey)));
+        properties.add(new ImportProperty(countryField, LM.baseLM.name.getMapping(countryKey)));
         properties.add(new ImportProperty(supplier, LM.supplierCountrySupplier.getMapping(countryKey)));
-        properties.add(new ImportProperty(countryField, LM.countrySupplierOfOriginArticle.getMapping(articleKey), LM.LM.object(LM.countrySupplier).getMapping(countryKey)));
+        properties.add(new ImportProperty(countryField, LM.countrySupplierOfOriginArticle.getMapping(articleKey), LM.object(LM.countrySupplier).getMapping(countryKey)));
 
         properties.add(new ImportProperty(compositionField, LM.mainCompositionOriginArticle.getMapping(articleKey)));
         properties.add(new ImportProperty(originalNameField, LM.originalNameArticle.getMapping(articleKey)));

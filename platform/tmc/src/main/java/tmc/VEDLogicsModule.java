@@ -62,12 +62,11 @@ import java.util.List;
  */
 
 public class VEDLogicsModule extends LogicsModule {
-    public BaseLogicsModule<VEDBusinessLogics> LM;
     private VEDBusinessLogics VEDBL;
     private Logger logger;
 
-    public VEDLogicsModule(BaseLogicsModule<VEDBusinessLogics> LM, VEDBusinessLogics VEDBL, Logger logger) {
-        this.LM = LM;
+    public VEDLogicsModule(BaseLogicsModule<VEDBusinessLogics> baseLM, VEDBusinessLogics VEDBL, Logger logger) {
+        setBaseLogicsModule(baseLM);
         this.VEDBL = VEDBL;
         this.logger = logger;
     }
@@ -391,210 +390,214 @@ public class VEDLogicsModule extends LogicsModule {
 
     @Override
     public void initClasses() {
-        subject = LM.addAbstractClass("subject", "Субъект", LM.baseClass.named);
+        initBaseClassAliases();
 
-        action = LM.addAbstractClass("action", "Акция", LM.baseClass);
-        saleAction = LM.addConcreteClass("saleAction", "Распродажа", action);
-        articleAction = LM.addConcreteClass("articleAction", "Акции по позициям", action);
+        subject = addAbstractClass("subject", "Субъект", baseClass.named);
 
-        contract = LM.addAbstractClass("contract", "Договор", LM.baseClass.named, LM.transaction);
-        contractDelivery = LM.addAbstractClass("contractDelivery", "Договор на закупку", contract);
-        contractSale = LM.addAbstractClass("contractSale", "Договор на продажу", contract);
-        contractSupplier = LM.addConcreteClass("contractSupplier", "Договор с поставщиком", contractDelivery);
-        contractStore = LM.addConcreteClass("contractStore", "Договор между юр. лицами", contractSale, contractDelivery);
-        contractCustomer = LM.addConcreteClass("contractcustomer", "Договор с покупателями", contractSale);
+        action = addAbstractClass("action", "Акция", baseClass);
+        saleAction = addConcreteClass("saleAction", "Распродажа", action);
+        articleAction = addConcreteClass("articleAction", "Акции по позициям", action);
 
-        groupArticleAction = LM.addConcreteClass("groupArticleAction", "Группа акций", LM.baseClass.named);
+        contract = addAbstractClass("contract", "Договор", baseClass.named, baseLM.transaction);
+        contractDelivery = addAbstractClass("contractDelivery", "Договор на закупку", contract);
+        contractSale = addAbstractClass("contractSale", "Договор на продажу", contract);
+        contractSupplier = addConcreteClass("contractSupplier", "Договор с поставщиком", contractDelivery);
+        contractStore = addConcreteClass("contractStore", "Договор между юр. лицами", contractSale, contractDelivery);
+        contractCustomer = addConcreteClass("contractcustomer", "Договор с покупателями", contractSale);
 
-        store = LM.addAbstractClass("store", "Склад", subject);
-        shop = LM.addConcreteClass("shop", "Магазин", store);
-        warehouse = LM.addConcreteClass("warehouse", "Распред. центр", store);
-        article = LM.addConcreteClass("article", "Товар", LM.baseClass.named, LM.barcodeObject);
-        articleGroup = LM.addConcreteClass("articleGroup", "Группа товаров", LM.baseClass.named);
-        specification = LM.addConcreteClass("specification", "Спецификация", LM.baseClass.named);
-        assortment = LM.addConcreteClass("assortment", "Ассортимент", LM.baseClass.named);
-        legalEntity = LM.addAbstractClass("legalEntity", "Юр.лицо", LM.baseClass.named);
-        storeLegalEntity = LM.addConcreteClass("storeLegalEntity", "Юр.лицо складов", legalEntity);
+        groupArticleAction = addConcreteClass("groupArticleAction", "Группа акций", baseClass.named);
 
-        currency = LM.addConcreteClass("currency", "Валюта", LM.baseClass.named);
-        unitOfMeasure = LM.addConcreteClass("unitOfMeasure", "Единица измерения", LM.baseClass.named);
+        store = addAbstractClass("store", "Склад", subject);
+        shop = addConcreteClass("shop", "Магазин", store);
+        warehouse = addConcreteClass("warehouse", "Распред. центр", store);
+        article = addConcreteClass("article", "Товар", baseClass.named, baseLM.barcodeObject);
+        articleGroup = addConcreteClass("articleGroup", "Группа товаров", baseClass.named);
+        specification = addConcreteClass("specification", "Спецификация", baseClass.named);
+        assortment = addConcreteClass("assortment", "Ассортимент", baseClass.named);
+        legalEntity = addAbstractClass("legalEntity", "Юр.лицо", baseClass.named);
+        storeLegalEntity = addConcreteClass("storeLegalEntity", "Юр.лицо складов", legalEntity);
+
+        currency = addConcreteClass("currency", "Валюта", baseClass.named);
+        unitOfMeasure = addConcreteClass("unitOfMeasure", "Единица измерения", baseClass.named);
 
         // новый классы
-        brend = LM.addConcreteClass("brend", "Бренд", LM.baseClass.named);
-        line = LM.addConcreteClass("line", "Линия", LM.baseClass.named);
-        gender = LM.addConcreteClass("gender", "Пол", LM.baseClass.named);
+        brend = addConcreteClass("brend", "Бренд", baseClass.named);
+        line = addConcreteClass("line", "Линия", baseClass.named);
+        gender = addConcreteClass("gender", "Пол", baseClass.named);
 
-        contragent = LM.addAbstractClass("contragent", "Контрагент", subject);
-        contragentWhole = LM.addAbstractClass("contragentWhole", "Оптовый контрагент", contragent, legalEntity);
+        contragent = addAbstractClass("contragent", "Контрагент", subject);
+        contragentWhole = addAbstractClass("contragentWhole", "Оптовый контрагент", contragent, legalEntity);
 
-        supplier = LM.addAbstractClass("supplier", "Поставщик", contragentWhole);
-        localSupplier = LM.addConcreteClass("localSupplier", "Местный поставщик", supplier);
-        importSupplier = LM.addConcreteClass("importSupplier", "Импортный поставщик", supplier);
+        supplier = addAbstractClass("supplier", "Поставщик", contragentWhole);
+        localSupplier = addConcreteClass("localSupplier", "Местный поставщик", supplier);
+        importSupplier = addConcreteClass("importSupplier", "Импортный поставщик", supplier);
 
-        customer = LM.addAbstractClass("customer", "Покупатель", contragent);
-        customerWhole = LM.addConcreteClass("customerWhole", "Оптовый покупатель", customer, contragentWhole);
-        customerInvoiceRetail = LM.addConcreteClass("customerInvoiceRetail", "Покупатель по накладным", customer, legalEntity);
-        customerCheckRetail = LM.addConcreteClass("customerCheckRetail", "Розничный покупатель", customer, LM.barcodeObject);
+        customer = addAbstractClass("customer", "Покупатель", contragent);
+        customerWhole = addConcreteClass("customerWhole", "Оптовый покупатель", customer, contragentWhole);
+        customerInvoiceRetail = addConcreteClass("customerInvoiceRetail", "Покупатель по накладным", customer, legalEntity);
+        customerCheckRetail = addConcreteClass("customerCheckRetail", "Розничный покупатель", customer, baseLM.barcodeObject);
 
-        format = LM.addConcreteClass("format", "Формат", LM.baseClass.named);
+        format = addConcreteClass("format", "Формат", baseClass.named);
 
-        documentShopPrice = LM.addAbstractClass("documentShopPrice", "Изменение цены в магазине", LM.transaction);
-        documentRevalue = LM.addConcreteClass("documentRevalue", "Переоценка в магазине", documentShopPrice);
+        documentShopPrice = addAbstractClass("documentShopPrice", "Изменение цены в магазине", baseLM.transaction);
+        documentRevalue = addConcreteClass("documentRevalue", "Переоценка в магазине", documentShopPrice);
 
-        documentNDS = LM.addConcreteClass("documentNDS", "Изменение НДС", LM.transaction);
+        documentNDS = addConcreteClass("documentNDS", "Изменение НДС", baseLM.transaction);
 
         // заявки на приход, расход
-        order = LM.addAbstractClass("order", "Заявка", LM.transaction);
+        order = addAbstractClass("order", "Заявка", baseLM.transaction);
 
-        orderInc = LM.addAbstractClass("orderInc", "Заявка прихода на склад", order);
-        orderShopInc = LM.addAbstractClass("orderShopInc", "Заявка прихода на магазин", orderInc);
-        orderWarehouseInc = LM.addAbstractClass("orderWarehouseInc", "Заявка прихода на распред. центр", orderInc);
+        orderInc = addAbstractClass("orderInc", "Заявка прихода на склад", order);
+        orderShopInc = addAbstractClass("orderShopInc", "Заявка прихода на магазин", orderInc);
+        orderWarehouseInc = addAbstractClass("orderWarehouseInc", "Заявка прихода на распред. центр", orderInc);
 
-        orderDo = LM.addAbstractClass("orderDo", "Прямая операция", order);
-        orderReturn = LM.addAbstractClass("orderReturn", "Возврат операции", order);
+        orderDo = addAbstractClass("orderDo", "Прямая операция", order);
+        orderReturn = addAbstractClass("orderReturn", "Возврат операции", order);
 
-        orderInner = LM.addAbstractClass("orderInner", "Внутренняя операция", order); // то есть с партиями
-        returnOrderInner = LM.addAbstractClass("returnOrderInner", "Возврат внутренней операции", orderInner, orderReturn);
-        orderDoInner = LM.addAbstractClass("orderDoInner", "Заказ", orderInner, orderDo);
+        orderInner = addAbstractClass("orderInner", "Внутренняя операция", order); // то есть с партиями
+        returnOrderInner = addAbstractClass("returnOrderInner", "Возврат внутренней операции", orderInner, orderReturn);
+        orderDoInner = addAbstractClass("orderDoInner", "Заказ", orderInner, orderDo);
 
-        orderOut = LM.addAbstractClass("orderOut", "Заявка расхода со склада", orderInner);
-        orderStoreOut = LM.addAbstractClass("orderStoreOut", "Заявка расхода со склада", orderOut);
-        orderShopOut = LM.addAbstractClass("orderShopOut", "Заявка расхода с магазина", orderOut);
-        orderWarehouseOut = LM.addAbstractClass("orderWarehouseOut", "Заявка расхода с распред. центра", orderOut);
+        orderOut = addAbstractClass("orderOut", "Заявка расхода со склада", orderInner);
+        orderStoreOut = addAbstractClass("orderStoreOut", "Заявка расхода со склада", orderOut);
+        orderShopOut = addAbstractClass("orderShopOut", "Заявка расхода с магазина", orderOut);
+        orderWarehouseOut = addAbstractClass("orderWarehouseOut", "Заявка расхода с распред. центра", orderOut);
 
-        shipmentDocument = LM.addAbstractClass("shipmentDocument", "Заявка на перевозку", order);
-        shipmentDocumentOut = LM.addAbstractClass("shipmentDocumentOut", "Заявка на перевозку со склада", shipmentDocument, orderOut);
+        shipmentDocument = addAbstractClass("shipmentDocument", "Заявка на перевозку", order);
+        shipmentDocumentOut = addAbstractClass("shipmentDocumentOut", "Заявка на перевозку со склада", shipmentDocument, orderOut);
 
-        commitOut = LM.addAbstractClass("commitOut", "Отгруженная заявка", order);
-        commitInc = LM.addAbstractClass("commitInc", "Принятая заявка", commitOut);
+        commitOut = addAbstractClass("commitOut", "Отгруженная заявка", order);
+        commitInc = addAbstractClass("commitInc", "Принятая заявка", commitOut);
 
-        commitInner = LM.addAbstractClass("commitInner", "Отгруженный заказ", commitOut, orderDoInner);
+        commitInner = addAbstractClass("commitInner", "Отгруженный заказ", commitOut, orderDoInner);
 
-        orderDoOut = LM.addAbstractClass("orderDoOut", "Прямая заявка со склада", orderOut, orderDoInner);
+        orderDoOut = addAbstractClass("orderDoOut", "Прямая заявка со склада", orderOut, orderDoInner);
 
-        orderExtInc = LM.addAbstractClass("orderExtInc", "Заявка внешн. контрагенту", orderInc, orderDo);
-        orderExtIncReturn = LM.addAbstractClass("orderExtIncReturn", "Заявка на возврат внешн. контрагенту", orderOut, returnOrderInner);
-        orderExtOut = LM.addAbstractClass("orderExtOut", "Заявка от внешн. контрагента", orderDoOut);
-        orderExtOutReturn = LM.addAbstractClass("orderExtOutReturn", "Заявка на возврат от внешн. контрагента", orderInc, returnOrderInner);
+        orderExtInc = addAbstractClass("orderExtInc", "Заявка внешн. контрагенту", orderInc, orderDo);
+        orderExtIncReturn = addAbstractClass("orderExtIncReturn", "Заявка на возврат внешн. контрагенту", orderOut, returnOrderInner);
+        orderExtOut = addAbstractClass("orderExtOut", "Заявка от внешн. контрагента", orderDoOut);
+        orderExtOutReturn = addAbstractClass("orderExtOutReturn", "Заявка на возврат от внешн. контрагента", orderInc, returnOrderInner);
 
-        commitDoShopInc = LM.addAbstractClass("commitDoShopInc", "Принятый приход на магазин", documentShopPrice, orderShopInc, commitInc);
-        commitReturnShopOut = LM.addAbstractClass("commitReturnShopOut", "Отгруженный возврат с магазина", orderShopOut, commitOut);
+        commitDoShopInc = addAbstractClass("commitDoShopInc", "Принятый приход на магазин", documentShopPrice, orderShopInc, commitInc);
+        commitReturnShopOut = addAbstractClass("commitReturnShopOut", "Отгруженный возврат с магазина", orderShopOut, commitOut);
 
-        orderWhole = LM.addAbstractClass("orderWhole", "Оптовая операция", order);
+        orderWhole = addAbstractClass("orderWhole", "Оптовая операция", order);
 
         // внутр. и внешние операции
-        orderDelivery = LM.addAbstractClass("orderDelivery", "Закупка", orderExtInc); // всегда прих., создает партию - элементарную единицу учета
-        commitDelivery = LM.addAbstractClass("commitDelivery", "Приход от пост.", orderDelivery, commitInc, shipmentDocument);
+        orderDelivery = addAbstractClass("orderDelivery", "Закупка", orderExtInc); // всегда прих., создает партию - элементарную единицу учета
+        commitDelivery = addAbstractClass("commitDelivery", "Приход от пост.", orderDelivery, commitInc, shipmentDocument);
 
-        orderSale = LM.addAbstractClass("orderSale", "Продажа", orderExtOut);
-        orderSaleReturn = LM.addAbstractClass("orderSaleReturn", "Возврат продажи", orderExtOutReturn);
+        orderSale = addAbstractClass("orderSale", "Продажа", orderExtOut);
+        orderSaleReturn = addAbstractClass("orderSaleReturn", "Возврат продажи", orderExtOutReturn);
 
-        orderExtOutWhole = LM.addAbstractClass("orderExtOutWhole", "Оптовая операция с покупателем", orderWhole);
-        orderInvoiceRetail = LM.addAbstractClass("orderInvoiceRetail", "Розничная операция по накладной", order);
+        orderExtOutWhole = addAbstractClass("orderExtOutWhole", "Оптовая операция с покупателем", orderWhole);
+        orderInvoiceRetail = addAbstractClass("orderInvoiceRetail", "Розничная операция по накладной", order);
 
 
-        transactionInvoiceRetail = LM.addAbstractClass("transactionInvoiceRetail", "Розничная операция с сертификатом по накладной", LM.transaction);
+        transactionInvoiceRetail = addAbstractClass("transactionInvoiceRetail", "Розничная операция с сертификатом по накладной", baseLM.transaction);
 
-        orderRetail = LM.addAbstractClass("orderRetail", "Розничная операция", LM.baseClass);
+        orderRetail = addAbstractClass("orderRetail", "Розничная операция", baseClass);
 
         //orderSaleRetail = addAbstractClass("orderSaleRetail", "Реализация через кассу", order, orderRetail);
-        orderSaleRetail = LM.addAbstractClass("orderSaleRetail", "Реализация через кассу", LM.transaction, orderRetail);
+        orderSaleRetail = addAbstractClass("orderSaleRetail", "Реализация через кассу", baseLM.transaction, orderRetail);
 
-        orderSaleWhole = LM.addConcreteClass("orderSaleWhole", "Оптовый заказ", orderWarehouseOut, orderExtOutWhole, orderSale);
-        invoiceSaleWhole = LM.addConcreteClass("invoiceSaleWhole", "Выписанный оптовый заказ", orderSaleWhole, shipmentDocumentOut);
-        commitSaleWhole = LM.addConcreteClass("commitSaleWhole", "Отгруженный оптовый заказ", invoiceSaleWhole, commitInner);
+        orderSaleWhole = addConcreteClass("orderSaleWhole", "Оптовый заказ", orderWarehouseOut, orderExtOutWhole, orderSale);
+        invoiceSaleWhole = addConcreteClass("invoiceSaleWhole", "Выписанный оптовый заказ", orderSaleWhole, shipmentDocumentOut);
+        commitSaleWhole = addConcreteClass("commitSaleWhole", "Отгруженный оптовый заказ", invoiceSaleWhole, commitInner);
 
-        orderSaleArticleRetail = LM.addAbstractClass("orderSaleArticleRetail", "Розничный заказ товаров", orderShopOut, orderSale);
-        orderSaleInvoiceArticleRetail = LM.addConcreteClass("orderSaleInvoiceArticleRetail", "Розничный заказ товаров по накладной", orderSaleArticleRetail, orderInvoiceRetail);
-        commitSaleInvoiceArticleRetail = LM.addConcreteClass("commitSaleInvoiceArticleRetail", "Отгруженный розничный заказ по накладной", commitInner,
-                LM.addConcreteClass("writtenOutSaleInvoiceArticleRetail", "Выписанный розничный заказ по накладной", orderSaleInvoiceArticleRetail, shipmentDocumentOut));
-        commitSaleCheckArticleRetail = LM.addConcreteClass("commitSaleCheckArticleRetail", "Реализация товаров через кассу", orderSaleArticleRetail, commitInner, orderSaleRetail);
+        orderSaleArticleRetail = addAbstractClass("orderSaleArticleRetail", "Розничный заказ товаров", orderShopOut, orderSale);
+        orderSaleInvoiceArticleRetail = addConcreteClass("orderSaleInvoiceArticleRetail", "Розничный заказ товаров по накладной", orderSaleArticleRetail, orderInvoiceRetail);
+        commitSaleInvoiceArticleRetail = addConcreteClass("commitSaleInvoiceArticleRetail", "Отгруженный розничный заказ по накладной", commitInner,
+                addConcreteClass("writtenOutSaleInvoiceArticleRetail", "Выписанный розничный заказ по накладной", orderSaleInvoiceArticleRetail, shipmentDocumentOut));
+        commitSaleCheckArticleRetail = addConcreteClass("commitSaleCheckArticleRetail", "Реализация товаров через кассу", orderSaleArticleRetail, commitInner, orderSaleRetail);
 
-        saleCert = LM.addConcreteClass("saleCert", "Реализация сертификатов", LM.transaction);
+        saleCert = addConcreteClass("saleCert", "Реализация сертификатов", baseLM.transaction);
 
-        saleInvoiceCert = LM.addConcreteClass("saleInvoiceCert", "Реализация сертификатов по накладной", saleCert, transactionInvoiceRetail);
-        saleCheckCert = LM.addConcreteClass("saleCheckCert", "Реализация сертификатов через кассу", saleCert, orderSaleRetail);
+        saleInvoiceCert = addConcreteClass("saleInvoiceCert", "Реализация сертификатов по накладной", saleCert, transactionInvoiceRetail);
+        saleCheckCert = addConcreteClass("saleCheckCert", "Реализация сертификатов через кассу", saleCert, orderSaleRetail);
 
-        balanceCheck = LM.addConcreteClass("balanceCheck", "Инвентаризация", orderStoreOut, commitOut, orderInner, orderDo);
+        balanceCheck = addConcreteClass("balanceCheck", "Инвентаризация", orderStoreOut, commitOut, orderInner, orderDo);
 
-        orderDistribute = LM.addAbstractClass("orderDistribute", "Внутреннее перемещение", orderOut, orderInc, orderInner);
+        orderDistribute = addAbstractClass("orderDistribute", "Внутреннее перемещение", orderOut, orderInc, orderInner);
 
-        orderDistributeShop = LM.addConcreteClass("orderDistributeShop", "Заказ на внутреннее перемещение на магазин", orderWarehouseOut, orderShopInc, orderDistribute, orderDoOut);
-        commitDistributeShop = LM.addConcreteClass("commitDistributeShop", "Принятое внутреннее перемещение на магазин", commitDoShopInc,
-                LM.addConcreteClass("loadedDistributeShop", "Отгруженное внутреннее перемещение на магазин", commitInner,
-                        LM.addConcreteClass("writtenOutDistributeShop", "Выписанное внутреннее перемещение на магазин", orderDistributeShop, shipmentDocumentOut)));
+        orderDistributeShop = addConcreteClass("orderDistributeShop", "Заказ на внутреннее перемещение на магазин", orderWarehouseOut, orderShopInc, orderDistribute, orderDoOut);
+        commitDistributeShop = addConcreteClass("commitDistributeShop", "Принятое внутреннее перемещение на магазин", commitDoShopInc,
+                addConcreteClass("loadedDistributeShop", "Отгруженное внутреннее перемещение на магазин", commitInner,
+                        addConcreteClass("writtenOutDistributeShop", "Выписанное внутреннее перемещение на магазин", orderDistributeShop, shipmentDocumentOut)));
 
-        orderLocal = LM.addAbstractClass("orderLocal", "Операция с местным поставщиком", order, orderWhole);
+        orderLocal = addAbstractClass("orderLocal", "Операция с местным поставщиком", order, orderWhole);
 
-        orderDeliveryLocal = LM.addAbstractClass("orderDeliveryLocal", "Закупка у местного поставщика", orderDelivery, orderLocal);
-        commitDeliveryLocal = LM.addAbstractClass("commitDeliveryLocal", "Приход от местного поставщика", orderDeliveryLocal, commitDelivery);
+        orderDeliveryLocal = addAbstractClass("orderDeliveryLocal", "Закупка у местного поставщика", orderDelivery, orderLocal);
+        commitDeliveryLocal = addAbstractClass("commitDeliveryLocal", "Приход от местного поставщика", orderDeliveryLocal, commitDelivery);
 
-        orderDeliveryShopLocal = LM.addConcreteClass("orderDeliveryShopLocal", "Закупка у местного поставщика на магазин", orderDeliveryLocal, orderShopInc);
-        commitDeliveryShopLocal = LM.addConcreteClass("commitDeliveryShopLocal", "Приход от местного поставщика на магазин", orderDeliveryShopLocal, commitDeliveryLocal, commitDoShopInc);
+        orderDeliveryShopLocal = addConcreteClass("orderDeliveryShopLocal", "Закупка у местного поставщика на магазин", orderDeliveryLocal, orderShopInc);
+        commitDeliveryShopLocal = addConcreteClass("commitDeliveryShopLocal", "Приход от местного поставщика на магазин", orderDeliveryShopLocal, commitDeliveryLocal, commitDoShopInc);
 
-        orderDeliveryWarehouseLocal = LM.addConcreteClass("orderDeliveryWarehouseLocal", "Закупка у местного поставщика на распред. центр", orderDeliveryLocal, orderWarehouseInc);
-        commitDeliveryWarehouseLocal = LM.addConcreteClass("commitDeliveryWarehouseLocal", "Приход от местного поставщика на распред. центр", orderDeliveryWarehouseLocal, commitDeliveryLocal);
+        orderDeliveryWarehouseLocal = addConcreteClass("orderDeliveryWarehouseLocal", "Закупка у местного поставщика на распред. центр", orderDeliveryLocal, orderWarehouseInc);
+        commitDeliveryWarehouseLocal = addConcreteClass("commitDeliveryWarehouseLocal", "Приход от местного поставщика на распред. центр", orderDeliveryWarehouseLocal, commitDeliveryLocal);
 
-        orderDeliveryImport = LM.addConcreteClass("orderDeliveryImport", "Закупка у импортного поставщика", orderDelivery, orderWarehouseInc);
-        commitDeliveryImport = LM.addConcreteClass("commitDeliveryImport", "Приход от импортного поставщика", orderDeliveryImport, commitDelivery);
+        orderDeliveryImport = addConcreteClass("orderDeliveryImport", "Закупка у импортного поставщика", orderDelivery, orderWarehouseInc);
+        commitDeliveryImport = addConcreteClass("commitDeliveryImport", "Приход от импортного поставщика", orderDeliveryImport, commitDelivery);
 
-        orderReturnDeliveryLocal = LM.addConcreteClass("orderReturnDeliveryLocal", "Заявка на возврат местному поставщику", orderStoreOut, orderLocal, orderExtIncReturn);
-        invoiceReturnDeliveryLocal = LM.addConcreteClass("invoiceReturnDeliveryLocal", "Выписанная заявка на возврат местному поставщику", orderReturnDeliveryLocal, shipmentDocumentOut);
-        commitReturnDeliveryLocal = LM.addConcreteClass("commitReturnDeliveryLocal", "Возврат местному поставщику", invoiceReturnDeliveryLocal, commitOut);
+        orderReturnDeliveryLocal = addConcreteClass("orderReturnDeliveryLocal", "Заявка на возврат местному поставщику", orderStoreOut, orderLocal, orderExtIncReturn);
+        invoiceReturnDeliveryLocal = addConcreteClass("invoiceReturnDeliveryLocal", "Выписанная заявка на возврат местному поставщику", orderReturnDeliveryLocal, shipmentDocumentOut);
+        commitReturnDeliveryLocal = addConcreteClass("commitReturnDeliveryLocal", "Возврат местному поставщику", invoiceReturnDeliveryLocal, commitOut);
 
-        returnSaleInvoice = LM.addAbstractClass("returnSaleInvoice", "Возврат по накладной", commitInc, shipmentDocument, orderSaleReturn);
-        returnSaleWhole = LM.addConcreteClass("returnSaleWhole", "Оптовый возврат", orderWarehouseInc, orderExtOutWhole, returnSaleInvoice);
-        returnSaleInvoiceRetail = LM.addConcreteClass("returnSaleInvoiceRetail", "Возврат розничного заказа по накладной", orderShopInc, orderInvoiceRetail, returnSaleInvoice);
-        returnSaleCheckRetail = LM.addConcreteClass("returnSaleCheckRetail", "Возврат реализации через кассу", orderShopInc, commitInc, orderRetail, orderSaleReturn);
+        returnSaleInvoice = addAbstractClass("returnSaleInvoice", "Возврат по накладной", commitInc, shipmentDocument, orderSaleReturn);
+        returnSaleWhole = addConcreteClass("returnSaleWhole", "Оптовый возврат", orderWarehouseInc, orderExtOutWhole, returnSaleInvoice);
+        returnSaleInvoiceRetail = addConcreteClass("returnSaleInvoiceRetail", "Возврат розничного заказа по накладной", orderShopInc, orderInvoiceRetail, returnSaleInvoice);
+        returnSaleCheckRetail = addConcreteClass("returnSaleCheckRetail", "Возврат реализации через кассу", orderShopInc, commitInc, orderRetail, orderSaleReturn);
 
-        orderDistributeWarehouse = LM.addConcreteClass("orderDistributeWarehouse", "Заказ на возврат внутр. перемещ. на распред. центр", orderShopOut, orderWarehouseInc, returnOrderInner, orderDistribute);
-        LM.addConcreteClass("commitDistributeWarehouse", "Принятый возврат внутр. перемещ. на распред. центр", commitInc,
-                LM.addConcreteClass("loadedDistributeWarehouse", "Отгруженный возвр. внутр. перемещ. на распред. центр", commitReturnShopOut,
-                        LM.addConcreteClass("writtenOutDistributeWarehouse", "Выписанный возврат внутр. перемещ. на распред. центр", orderDistributeWarehouse, shipmentDocumentOut)));
+        orderDistributeWarehouse = addConcreteClass("orderDistributeWarehouse", "Заказ на возврат внутр. перемещ. на распред. центр", orderShopOut, orderWarehouseInc, returnOrderInner, orderDistribute);
+        addConcreteClass("commitDistributeWarehouse", "Принятый возврат внутр. перемещ. на распред. центр", commitInc,
+                addConcreteClass("loadedDistributeWarehouse", "Отгруженный возвр. внутр. перемещ. на распред. центр", commitReturnShopOut,
+                        addConcreteClass("writtenOutDistributeWarehouse", "Выписанный возврат внутр. перемещ. на распред. центр", orderDistributeWarehouse, shipmentDocumentOut)));
 
-        obligation = LM.addAbstractClass("obligation", "Сертификат", LM.baseClass.named, LM.barcodeObject);
-        coupon = LM.addConcreteClass("coupon", "Купон", obligation);
-        giftObligation = LM.addConcreteClass("giftObligation", "Подарочный сертификат", obligation);
+        obligation = addAbstractClass("obligation", "Сертификат", baseClass.named, baseLM.barcodeObject);
+        coupon = addConcreteClass("coupon", "Купон", obligation);
+        giftObligation = addConcreteClass("giftObligation", "Подарочный сертификат", obligation);
 
-        document = LM.addAbstractClass("document", "Документ", LM.baseClass);
-        revalueAct = LM.addConcreteClass("revalueAct", "Акт переоценки", document);
+        document = addAbstractClass("document", "Документ", baseClass);
+        revalueAct = addConcreteClass("revalueAct", "Акт переоценки", document);
     }
 
     @Override
     public void initTables() {
-        LM.tableFactory.include("article", article);
-        LM.tableFactory.include("orders", order);
-        LM.tableFactory.include("store", store);
-        LM.tableFactory.include("localsupplier", localSupplier);
-        LM.tableFactory.include("importsupplier", importSupplier);
-        LM.tableFactory.include("customerwhole", customerWhole);
-        LM.tableFactory.include("customerretail", customerCheckRetail);
-        LM.tableFactory.include("articlestore", article, store);
-        LM.tableFactory.include("articleorder", article, order);
-        LM.tableFactory.include("articleaction", article, action);
-        LM.tableFactory.include("articlespecification", article, specification);
-        LM.tableFactory.include("rates", DateClass.instance);
-        LM.tableFactory.include("intervals", DoubleClass.instance);
-        LM.tableFactory.include("shoprates", DateClass.instance, shop);
+        baseLM.tableFactory.include("article", article);
+        baseLM.tableFactory.include("orders", order);
+        baseLM.tableFactory.include("store", store);
+        baseLM.tableFactory.include("localsupplier", localSupplier);
+        baseLM.tableFactory.include("importsupplier", importSupplier);
+        baseLM.tableFactory.include("customerwhole", customerWhole);
+        baseLM.tableFactory.include("customerretail", customerCheckRetail);
+        baseLM.tableFactory.include("articlestore", article, store);
+        baseLM.tableFactory.include("articleorder", article, order);
+        baseLM.tableFactory.include("articleaction", article, action);
+        baseLM.tableFactory.include("articlespecification", article, specification);
+        baseLM.tableFactory.include("rates", DateClass.instance);
+        baseLM.tableFactory.include("intervals", DoubleClass.instance);
+        baseLM.tableFactory.include("shoprates", DateClass.instance, shop);
 
-        LM.tableFactory.include("obligation", obligation);
-        LM.tableFactory.include("obligationorder", obligation, order);
+        baseLM.tableFactory.include("obligation", obligation);
+        baseLM.tableFactory.include("obligationorder", obligation, order);
     }
 
     @Override
     public void initGroups() {
+        initBaseGroupAliases();
+
         documentGroup = new AbstractGroup("Параметры документа");
         documentGroup.createContainer = false;
-        LM.publicGroup.add(documentGroup);
+        publicGroup.add(documentGroup);
 
         moveGroup = new AbstractGroup("Движение товаров");
-        LM.publicGroup.add(moveGroup);
+        publicGroup.add(moveGroup);
 
         documentMoveGroup = new AbstractGroup("Текущие параметры документа");
         documentGroup.add(documentMoveGroup);
 
         priceGroup = new AbstractGroup("Ценовые параметры");
-        LM.publicGroup.add(priceGroup);
+        publicGroup.add(priceGroup);
 
         documentPriceGroup = new AbstractGroup("Расчеты");
         documentPriceGroup.createContainer = false;
@@ -622,14 +625,14 @@ public class VEDLogicsModule extends LogicsModule {
         documentPriceGroup.add(documentManfrGroup);
 
         logisticsGroup = new AbstractGroup("Логистические параметры");
-        LM.publicGroup.add(logisticsGroup);
+        publicGroup.add(logisticsGroup);
 
         documentLogisticsGroup = new AbstractGroup("Логистические параметры документа");
         documentGroup.add(documentLogisticsGroup);
 
         cashRegGroup = new AbstractGroup("Операции с ФР");
         cashRegGroup.createContainer = false;
-        LM.baseGroup.add(cashRegGroup);
+        baseGroup.add(cashRegGroup);
 
         cashRegOperGroup = new AbstractGroup("Оперативные операции с ФР");
         cashRegGroup.add(cashRegOperGroup);
@@ -638,13 +641,13 @@ public class VEDLogicsModule extends LogicsModule {
         cashRegGroup.add(cashRegAdminGroup);
 
         couponGroup = new AbstractGroup("Параметры купона");
-        LM.publicGroup.add(couponGroup);
+        publicGroup.add(couponGroup);
 
         artExtraGroup = new AbstractGroup("Доп. атрибуты товара");
-        LM.publicGroup.add(artExtraGroup);
+        publicGroup.add(artExtraGroup);
 
         documentPrintGroup = new AbstractGroup("Документы");
-        LM.publicGroup.add(documentPrintGroup);
+        publicGroup.add(documentPrintGroup);
 
         documentPrintRetailGroup = new AbstractGroup("Розничные документы");
         documentPrintGroup.add(documentPrintRetailGroup);
@@ -665,723 +668,723 @@ public class VEDLogicsModule extends LogicsModule {
     @Override
     public void initProperties() {
 
-        removePercent = LM.addSFProp("((prm1*(100-prm2))/100)", DoubleClass.instance, 2);
-        addPercent = LM.addSFProp("((prm1*(100+prm2))/100)", DoubleClass.instance, 2);
-        LP backPercent = LM.addSFProp("prm1*prm2/(100+prm2)", DoubleClass.instance, 2);
-        calcPercent = LM.addSFProp("prm1*100/prm2", DoubleClass.instance, 2);
-        LP diff = LM.addSFProp("prm1-prm2", DoubleClass.instance, 2);
+        removePercent = addSFProp("((prm1*(100-prm2))/100)", DoubleClass.instance, 2);
+        addPercent = addSFProp("((prm1*(100+prm2))/100)", DoubleClass.instance, 2);
+        LP backPercent = addSFProp("prm1*prm2/(100+prm2)", DoubleClass.instance, 2);
+        calcPercent = addSFProp("prm1*100/prm2", DoubleClass.instance, 2);
+        LP diff = addSFProp("prm1-prm2", DoubleClass.instance, 2);
 
-        round1 = LM.addSFProp("(ROUND(CAST((prm1) as NUMERIC(15,3)),-1))", DoubleClass.instance, 1);
-        round0 = LM.addSFProp("(ROUND(CAST((prm1) as NUMERIC(15,3)),0))", DoubleClass.instance, 1);
-        padl = LM.addSFProp("lpad(prm1,12,'0')", StringClass.get(12), 1);
+        round1 = addSFProp("(ROUND(CAST((prm1) as NUMERIC(15,3)),-1))", DoubleClass.instance, 1);
+        round0 = addSFProp("(ROUND(CAST((prm1) as NUMERIC(15,3)),0))", DoubleClass.instance, 1);
+        padl = addSFProp("lpad(prm1,12,'0')", StringClass.get(12), 1);
 
-        LP multiplyDouble2 = LM.addMFProp(DoubleClass.instance, 2);
+        LP multiplyDouble2 = addMFProp(DoubleClass.instance, 2);
 
-        LP onlyPositive = LM.addJProp(LM.and1, 1, LM.positive, 1);
-        LP min = LM.addSFProp(FormulaExpr.MIN2, DoubleClass.instance, 2);
-        LP abs = LM.addSFProp("ABS(prm1)", DoubleClass.instance, 1);
+        LP onlyPositive = addJProp(baseLM.and1, 1, baseLM.positive, 1);
+        LP min = addSFProp(FormulaExpr.MIN2, DoubleClass.instance, 2);
+        LP abs = addSFProp("ABS(prm1)", DoubleClass.instance, 1);
 
-        addArticleBarcode = LM.addJProp(true, "Ввод товара по штрих-коду", LM.addAAProp(article, LM.barcode), 1);
+        addArticleBarcode = addJProp(true, "Ввод товара по штрих-коду", addAAProp(article, baseLM.barcode), 1);
 
-        LP groupParent = LM.addDProp("groupParent", "Родительская группа", articleGroup, articleGroup);
-        LP groupParentName = LM.addJProp(LM.baseGroup, "Родительская группа", LM.name, groupParent, 1);
+        LP groupParent = addDProp("groupParent", "Родительская группа", articleGroup, articleGroup);
+        LP groupParentName = addJProp(baseGroup, "Родительская группа", baseLM.name, groupParent, 1);
 
-        articleToGroup = LM.addDProp(LM.idGroup, "articleToGroup", "Группа товаров", articleGroup, article); // принадлежность товара группе
-        nameArticleGroupArticle = LM.addJProp(LM.baseGroup, "Группа товаров", LM.name, articleToGroup, 1);
+        articleToGroup = addDProp(idGroup, "articleToGroup", "Группа товаров", articleGroup, article); // принадлежность товара группе
+        nameArticleGroupArticle = addJProp(baseGroup, "Группа товаров", baseLM.name, articleToGroup, 1);
 
-        coeffTransArticle = LM.addDProp("coeffTransArticle", "Коэфф. гр. мест", DoubleClass.instance, article);
-        weightArticle = LM.addDProp("weightArticle", "Вес товара", DoubleClass.instance, article);
+        coeffTransArticle = addDProp("coeffTransArticle", "Коэфф. гр. мест", DoubleClass.instance, article);
+        weightArticle = addDProp("weightArticle", "Вес товара", DoubleClass.instance, article);
 
-        payWithCard = LM.addAProp(new PayWithCardActionProperty());
-        printOrderCheck = LM.addAProp(new PrintOrderCheckActionProperty());
-        saleExport = LM.addAProp(new SaleExportActionProperty());
-        importOrder = LM.addAProp(new ImportOrderActionProperty());
-        importArticlesRRP = LM.addAProp(new ImportArticlesRRPActionProperty());
-        importArticlesInfo = LM.addAProp(new ImportArticlesInfoActionProperty());
-        importDocs = LM.addAProp(new ImportDocsActionProperty());
-        downToZero = LM.addAProp(new DownToZeroActionProperty());
+        payWithCard = addAProp(new PayWithCardActionProperty());
+        printOrderCheck = addAProp(new PrintOrderCheckActionProperty());
+        saleExport = addAProp(new SaleExportActionProperty());
+        importOrder = addAProp(new ImportOrderActionProperty());
+        importArticlesRRP = addAProp(new ImportArticlesRRPActionProperty());
+        importArticlesInfo = addAProp(new ImportArticlesInfoActionProperty());
+        importDocs = addAProp(new ImportDocsActionProperty());
+        downToZero = addAProp(new DownToZeroActionProperty());
 
-        computerShop = LM.addDProp("computerShop", "Магазин рабочего места", shop, LM.computer);
-        currentShop = LM.addJProp("Текущий магазин", computerShop, LM.currentComputer);
+        computerShop = addDProp("computerShop", "Магазин рабочего места", shop, baseLM.computer);
+        currentShop = addJProp("Текущий магазин", computerShop, baseLM.currentComputer);
 
-        panelScreenComPort = LM.addDProp(LM.baseGroup, "panelComPort", "COM-порт табло", IntegerClass.instance, LM.computer);
-        cashRegComPort = LM.addDProp(LM.baseGroup, "cashRegComPort", "COM-порт фискального регистратора", IntegerClass.instance, LM.computer);
-        LM.addJProp(LM.baseGroup, "Магазин рабочего места", LM.name, computerShop, 1);
+        panelScreenComPort = addDProp(baseGroup, "panelComPort", "COM-порт табло", IntegerClass.instance, baseLM.computer);
+        cashRegComPort = addDProp(baseGroup, "cashRegComPort", "COM-порт фискального регистратора", IntegerClass.instance, baseLM.computer);
+        addJProp(baseGroup, "Магазин рабочего места", baseLM.name, computerShop, 1);
 
-        LP legalEntitySubject = LM.addCUProp("legalEntitySubject", "Юр. лицо (ИД)", LM.addDProp("legalEntityStore", "Юр. лицо (ИД)", storeLegalEntity, store), LM.object(legalEntity));
-        nameLegalEntitySubject = LM.addJProp(LM.baseGroup, "nameLegalEntitySubject", "Юр. лицо", LM.name, legalEntitySubject, 1);
+        LP legalEntitySubject = addCUProp("legalEntitySubject", "Юр. лицо (ИД)", addDProp("legalEntityStore", "Юр. лицо (ИД)", storeLegalEntity, store), object(legalEntity));
+        nameLegalEntitySubject = addJProp(baseGroup, "nameLegalEntitySubject", "Юр. лицо", baseLM.name, legalEntitySubject, 1);
 
         // новые свойства местного поставщика
-        LP[] propsLegalEntity = LM.addDProp(LM.baseGroup, "LegalEntity", new String[]{"unn", "address", "tel", "bankAddress", "account"},
+        LP[] propsLegalEntity = addDProp(baseGroup, "LegalEntity", new String[]{"unn", "address", "tel", "bankAddress", "account"},
                 new String[]{"УНН", "Адрес", "Контактный телефон", "Адрес банка", "Счёт"}, new ValueClass[]{StringClass.get(20), StringClass.get(100), StringClass.get(20), StringClass.get(100), StringClass.get(30)}, legalEntity);
         unnLegalEntity = propsLegalEntity[0]; addressLegalEntity = propsLegalEntity[1];
-        legalEntityUnn = LM.addAGProp("legalEntityUnn", "Юр. лицо", unnLegalEntity);
-        LP[] propsLegalEntitySubject = LM.addJProp(LM.privateGroup, false, "Subject", propsLegalEntity, legalEntitySubject, 1);
+        legalEntityUnn = addAGProp("legalEntityUnn", "Юр. лицо", unnLegalEntity);
+        LP[] propsLegalEntitySubject = addJProp(privateGroup, false, "Subject", propsLegalEntity, legalEntitySubject, 1);
 
-        addressSubject = LM.addCUProp(LM.addDProp("addressStore", "Адрес", StringClass.get(100), store), propsLegalEntity[1]);
+        addressSubject = addCUProp(addDProp("addressStore", "Адрес", StringClass.get(100), store), propsLegalEntity[1]);
 
-        contragentOrder = LM.addCUProp("contragentOrder", true, "Контрагент", // generics
-                LM.addDProp("localSupplier", "Местный поставщик", localSupplier, orderLocal),
-                LM.addDProp("importSupplier", "Импортный поставщик", importSupplier, orderDeliveryImport),
-                LM.addDProp("wholeCustomer", "Оптовый покупатель", customerWhole, orderExtOutWhole),
-                LM.addDProp("invoiceRetailCustomer", "Розничный покупатель", customerInvoiceRetail, orderInvoiceRetail),
-                LM.addDProp("checkRetailCustomer", "Розничный покупатель", customerCheckRetail, orderSaleRetail));
+        contragentOrder = addCUProp("contragentOrder", true, "Контрагент", // generics
+                addDProp("localSupplier", "Местный поставщик", localSupplier, orderLocal),
+                addDProp("importSupplier", "Импортный поставщик", importSupplier, orderDeliveryImport),
+                addDProp("wholeCustomer", "Оптовый покупатель", customerWhole, orderExtOutWhole),
+                addDProp("invoiceRetailCustomer", "Розничный покупатель", customerInvoiceRetail, orderInvoiceRetail),
+                addDProp("checkRetailCustomer", "Розничный покупатель", customerCheckRetail, orderSaleRetail));
 
-        subjectOutOrder = LM.addCUProp("subjectOutOrder", true, "От кого (ИД)", // generics
-                            LM.addJProp(LM.and1, contragentOrder, 1, LM.is(orderInc), 1),
-                            LM.addDProp("outStore", "Склад (расх.)", store, orderStoreOut),
-                            LM.addDProp("outShop", "Магазин (расх.)", shop, orderShopOut),
-                            LM.addDProp("outWarehouse", "Распред. центр (расх.)", warehouse, orderWarehouseOut),
-                            LM.addDProp("certStore", "Магазин (серт.)", shop, saleCert));
-        subjectIncOrder = LM.addCUProp("subjectIncOrder", true, "Кому (ИД)", LM.addJProp(LM.and1, contragentOrder, 1, LM.is(orderOut), 1), // generics
-                            LM.addJProp(LM.and1, contragentOrder, 1, LM.is(saleCert), 1), // для сертификатов
-                            LM.addDProp("incShop", "Магазин (прих.)", shop, orderShopInc),
-                            LM.addDProp("incWarehouse", "Распред. центр (прих.)", warehouse, orderWarehouseInc));
+        subjectOutOrder = addCUProp("subjectOutOrder", true, "От кого (ИД)", // generics
+                            addJProp(baseLM.and1, contragentOrder, 1, is(orderInc), 1),
+                            addDProp("outStore", "Склад (расх.)", store, orderStoreOut),
+                            addDProp("outShop", "Магазин (расх.)", shop, orderShopOut),
+                            addDProp("outWarehouse", "Распред. центр (расх.)", warehouse, orderWarehouseOut),
+                            addDProp("certStore", "Магазин (серт.)", shop, saleCert));
+        subjectIncOrder = addCUProp("subjectIncOrder", true, "Кому (ИД)", addJProp(baseLM.and1, contragentOrder, 1, is(orderOut), 1), // generics
+                            addJProp(baseLM.and1, contragentOrder, 1, is(saleCert), 1), // для сертификатов
+                            addDProp("incShop", "Магазин (прих.)", shop, orderShopInc),
+                            addDProp("incWarehouse", "Распред. центр (прих.)", warehouse, orderWarehouseInc));
         // имена
-        nameSubjectIncOrder = LM.addJProp(LM.baseGroup, "nameSubjectIncOrder", "Кому", LM.name, subjectIncOrder, 1);
-        nameImplSubjectIncOrder = LM.addJProp(true, "Кому", LM.name, subjectIncOrder, 1);
-        nameSubjectOutOrder = LM.addJProp(LM.baseGroup, "nameSubjectOutOrder", "От кого", LM.name, subjectOutOrder, 1);
+        nameSubjectIncOrder = addJProp(baseGroup, "nameSubjectIncOrder", "Кому", baseLM.name, subjectIncOrder, 1);
+        nameImplSubjectIncOrder = addJProp(true, "Кому", baseLM.name, subjectIncOrder, 1);
+        nameSubjectOutOrder = addJProp(baseGroup, "nameSubjectOutOrder", "От кого", baseLM.name, subjectOutOrder, 1);
 
         nameSubjectIncOrder.setPreferredCharWidth(40); nameSubjectOutOrder.setPreferredCharWidth(40); nameImplSubjectIncOrder.setPreferredCharWidth(40);
 
-        addressSubjectIncOrder = LM.addJProp("addressSubjectIncOrder", "Адрес (кому)", addressSubject, subjectIncOrder, 1);
-        addressSubjectOutOrder = LM.addJProp("addressSubjectOutOrder", "Адрес (от кого)", addressSubject, subjectOutOrder, 1);
+        addressSubjectIncOrder = addJProp("addressSubjectIncOrder", "Адрес (кому)", addressSubject, subjectIncOrder, 1);
+        addressSubjectOutOrder = addJProp("addressSubjectOutOrder", "Адрес (от кого)", addressSubject, subjectOutOrder, 1);
 
-        propsLegalEntityIncOrder = LM.addJProp(LM.privateGroup, false, "IncOrder", propsLegalEntitySubject, subjectIncOrder, 1);
-        propsLegalEntityOutOrder = LM.addJProp(LM.privateGroup, false, "OutOrder", propsLegalEntitySubject, subjectOutOrder, 1);
+        propsLegalEntityIncOrder = addJProp(privateGroup, false, "IncOrder", propsLegalEntitySubject, subjectIncOrder, 1);
+        propsLegalEntityOutOrder = addJProp(privateGroup, false, "OutOrder", propsLegalEntitySubject, subjectOutOrder, 1);
 
-        propsCustomerCheckRetail = LM.addDProp(LM.baseGroup, "", new String[]{"checkRetailCustomerPhone", "checkRetailCustomerBorn", "checkRetailCustomerAddress", "clientInitialSum"},
+        propsCustomerCheckRetail = addDProp(baseGroup, "", new String[]{"checkRetailCustomerPhone", "checkRetailCustomerBorn", "checkRetailCustomerAddress", "clientInitialSum"},
                             new String[]{"Телефон", "Дата рождения", "Адрес", "Начальная сумма"}, new ValueClass[] {StringClass.get(20), DateClass.instance, StringClass.get(40), DoubleClass.instance}, customerCheckRetail);
         bornCustomerCheckRetail = propsCustomerCheckRetail[1]; clientInitialSum = propsCustomerCheckRetail[3];
-        propsCustomerIncOrder = LM.addJProp(LM.baseGroup, false, "IncOrder", propsCustomerCheckRetail, subjectIncOrder, 1); propsCustomerImplIncOrder = LM.addJProp(LM.baseGroup, true, "ImplIncOrder", propsCustomerCheckRetail, subjectIncOrder, 1);
+        propsCustomerIncOrder = addJProp(baseGroup, false, "IncOrder", propsCustomerCheckRetail, subjectIncOrder, 1); propsCustomerImplIncOrder = addJProp(baseGroup, true, "ImplIncOrder", propsCustomerCheckRetail, subjectIncOrder, 1);
 
-        LP legalEntityIncOrder = LM.addJProp("legalEntityIncOrder", "Юр. лицо (кому) (ИД)", legalEntitySubject, subjectIncOrder, 1);
-        LP legalEntityOutOrder = LM.addJProp("legalEntityOutOrder", "Юр. лицо (от кого) (ИД)", legalEntitySubject, subjectOutOrder, 1);
+        LP legalEntityIncOrder = addJProp("legalEntityIncOrder", "Юр. лицо (кому) (ИД)", legalEntitySubject, subjectIncOrder, 1);
+        LP legalEntityOutOrder = addJProp("legalEntityOutOrder", "Юр. лицо (от кого) (ИД)", legalEntitySubject, subjectOutOrder, 1);
 
-        nameLegalEntityIncOrder = LM.addJProp("nameLegalEntityIncOrder", "Юр. лицо (кому)", LM.name, legalEntityIncOrder, 1); propsLegalEntityIncOrder = LM.addJProp(LM.privateGroup, false, "LegalIncOrder", propsLegalEntity, "(кому)", legalEntityIncOrder, 1);
-        nameLegalEntityOutOrder = LM.addJProp("nameLegalEntityOutOrder", "Юр. лицо (от кого)", LM.name, legalEntityOutOrder, 1); propsLegalEntityOutOrder = LM.addJProp(LM.privateGroup, false, "LegalOutOrder", propsLegalEntity, "(от кого)", legalEntityOutOrder, 1);
+        nameLegalEntityIncOrder = addJProp("nameLegalEntityIncOrder", "Юр. лицо (кому)", baseLM.name, legalEntityIncOrder, 1); propsLegalEntityIncOrder = addJProp(privateGroup, false, "LegalIncOrder", propsLegalEntity, "(кому)", legalEntityIncOrder, 1);
+        nameLegalEntityOutOrder = addJProp("nameLegalEntityOutOrder", "Юр. лицо (от кого)", baseLM.name, legalEntityOutOrder, 1); propsLegalEntityOutOrder = addJProp(privateGroup, false, "LegalOutOrder", propsLegalEntity, "(от кого)", legalEntityOutOrder, 1);
 
-        LP diffOutInc = LM.addJProp(LM.diff2, subjectIncOrder, 1, subjectOutOrder, 2);
-        LP allowedReturn = LM.addIfElseUProp(diffOutInc, LM.addJProp(diffOutInc, 2, 1), LM.is(orderOut), 1); // потом по идее надо сравнивать что совпадают юрлица
+        LP diffOutInc = addJProp(baseLM.diff2, subjectIncOrder, 1, subjectOutOrder, 2);
+        LP allowedReturn = addIfElseUProp(diffOutInc, addJProp(diffOutInc, 2, 1), is(orderOut), 1); // потом по идее надо сравнивать что совпадают юрлица
 
-        outerOrderQuantity = LM.addDProp(documentGroup, "extIncOrderQuantity", "Кол-во заяв.", DoubleClass.instance, orderDelivery, article);
-        outerCommitedQuantity = LM.addDProp(documentGroup, "extIncCommitedQuantity", "Кол-во принятое", DoubleClass.instance, commitDelivery, article);
+        outerOrderQuantity = addDProp(documentGroup, "extIncOrderQuantity", "Кол-во заяв.", DoubleClass.instance, orderDelivery, article);
+        outerCommitedQuantity = addDProp(documentGroup, "extIncCommitedQuantity", "Кол-во принятое", DoubleClass.instance, commitDelivery, article);
 //        outerCommitedQuantity.setDerivedChange(outerOrderQuantity, 1, 2, is(commitInc), 1); // пока не будем делать так как идет ручное штрих-кодирование
-        LP expiryDate = LM.addDProp(LM.baseGroup, "expiryDate", "Срок годн.", DateClass.instance, commitDelivery, article);
+        LP expiryDate = addDProp(baseGroup, "expiryDate", "Срок годн.", DateClass.instance, commitDelivery, article);
 
         // для возвратных своего рода generics
-        LP returnOuterQuantity = LM.addDProp("returnDeliveryLocalQuantity", "Кол-во возврата", DoubleClass.instance, orderReturnDeliveryLocal, article, commitDeliveryLocal);
+        LP returnOuterQuantity = addDProp("returnDeliveryLocalQuantity", "Кол-во возврата", DoubleClass.instance, orderReturnDeliveryLocal, article, commitDeliveryLocal);
 
-        returnInnerCommitQuantity = LM.addCUProp(documentGroup, "returnInnerCommitQuantity", "Кол-во возврата", // generics
-                LM.addDProp("returnSaleWholeQuantity", "Кол-во возврата", DoubleClass.instance, returnSaleWhole, article, commitDelivery, commitSaleWhole),
-                LM.addDProp("returnSaleInvoiceRetailQuantity", "Кол-во возврата", DoubleClass.instance, returnSaleInvoiceRetail, article, commitDelivery, commitSaleInvoiceArticleRetail),
-                LM.addDProp("returnSaleCheckRetailQuantity", "Кол-во возврата", DoubleClass.instance, returnSaleCheckRetail, article, commitDelivery, commitSaleCheckArticleRetail),
-                LM.addDProp("returnDistributeShopQuantity", "Кол-во возврата", DoubleClass.instance, orderDistributeWarehouse, article, commitDelivery, commitDistributeShop));
+        returnInnerCommitQuantity = addCUProp(documentGroup, "returnInnerCommitQuantity", "Кол-во возврата", // generics
+                addDProp("returnSaleWholeQuantity", "Кол-во возврата", DoubleClass.instance, returnSaleWhole, article, commitDelivery, commitSaleWhole),
+                addDProp("returnSaleInvoiceRetailQuantity", "Кол-во возврата", DoubleClass.instance, returnSaleInvoiceRetail, article, commitDelivery, commitSaleInvoiceArticleRetail),
+                addDProp("returnSaleCheckRetailQuantity", "Кол-во возврата", DoubleClass.instance, returnSaleCheckRetail, article, commitDelivery, commitSaleCheckArticleRetail),
+                addDProp("returnDistributeShopQuantity", "Кол-во возврата", DoubleClass.instance, orderDistributeWarehouse, article, commitDelivery, commitDistributeShop));
 
-        LP returnSameClasses = LM.addCUProp( // generics - для ограничения что возвращать те же классы операций, повторяет верхнее свойство
-                LM.addCProp(LogicalClass.instance, true, returnSaleWhole, commitSaleWhole),
-                LM.addCProp(LogicalClass.instance, true, returnSaleInvoiceRetail, commitSaleInvoiceArticleRetail),
-                LM.addCProp(LogicalClass.instance, true, returnSaleCheckRetail, commitSaleCheckArticleRetail),
-                LM.addCProp(LogicalClass.instance, true, orderDistributeWarehouse, commitDistributeShop));
+        LP returnSameClasses = addCUProp( // generics - для ограничения что возвращать те же классы операций, повторяет верхнее свойство
+                addCProp(LogicalClass.instance, true, returnSaleWhole, commitSaleWhole),
+                addCProp(LogicalClass.instance, true, returnSaleInvoiceRetail, commitSaleInvoiceArticleRetail),
+                addCProp(LogicalClass.instance, true, returnSaleCheckRetail, commitSaleCheckArticleRetail),
+                addCProp(LogicalClass.instance, true, orderDistributeWarehouse, commitDistributeShop));
 
-        LP orderInnerQuantity = LM.addDProp("outOrderQuantity", "Кол-во", DoubleClass.instance, orderDoInner, article, commitDelivery);
+        LP orderInnerQuantity = addDProp("outOrderQuantity", "Кол-во", DoubleClass.instance, orderDoInner, article, commitDelivery);
 
         // инвентаризация
-        innerBalanceCheck = LM.addDProp(documentGroup, "innerBalanceCheck", "Остаток инв.", DoubleClass.instance, balanceCheck, article, commitDelivery);
-        innerBalanceCheckDB = LM.addDProp("innerBalanceCheckDB", "Остаток (по учету)", DoubleClass.instance, balanceCheck, article, commitDelivery);
+        innerBalanceCheck = addDProp(documentGroup, "innerBalanceCheck", "Остаток инв.", DoubleClass.instance, balanceCheck, article, commitDelivery);
+        innerBalanceCheckDB = addDProp("innerBalanceCheckDB", "Остаток (по учету)", DoubleClass.instance, balanceCheck, article, commitDelivery);
 
-        LP returnDistrCommitQuantity = LM.addSGProp(LM.privateGroup, "returnDistrCommitQuantity", true, "Возвр. кол-во", returnInnerCommitQuantity, 1, 2, 3);
-        innerQuantity = LM.addCUProp(documentGroup, "innerQuantity", true, "Кол-во", returnOuterQuantity, orderInnerQuantity, returnDistrCommitQuantity, LM.addDUProp("balanceCheckQuantity", "Кол-во инв.", innerBalanceCheckDB, innerBalanceCheck));
+        LP returnDistrCommitQuantity = addSGProp(privateGroup, "returnDistrCommitQuantity", true, "Возвр. кол-во", returnInnerCommitQuantity, 1, 2, 3);
+        innerQuantity = addCUProp(documentGroup, "innerQuantity", true, "Кол-во", returnOuterQuantity, orderInnerQuantity, returnDistrCommitQuantity, addDUProp("balanceCheckQuantity", "Кол-во инв.", innerBalanceCheckDB, innerBalanceCheck));
 
-        quantityCommitIncArticle = LM.addCUProp(LM.addJProp(LM.and1, outerCommitedQuantity, 1, 2, LM.equals2, 1, 3), LM.addJProp(LM.and1, innerQuantity, 1, 2, 3, LM.is(commitInc), 1));
-        LP incSklCommitedQuantity = LM.addSGProp(moveGroup, "incSklCommitedQuantity", true, "Кол-во прихода парт. на скл.",
+        quantityCommitIncArticle = addCUProp(addJProp(baseLM.and1, outerCommitedQuantity, 1, 2, baseLM.equals2, 1, 3), addJProp(baseLM.and1, innerQuantity, 1, 2, 3, is(commitInc), 1));
+        LP incSklCommitedQuantity = addSGProp(moveGroup, "incSklCommitedQuantity", true, "Кол-во прихода парт. на скл.",
                 quantityCommitIncArticle, subjectIncOrder, 1, 2, 3);
 
-        quantityCommitOutArticle = LM.addJProp("Кол-во отгр. парт.", LM.and1, innerQuantity, 1, 2, 3, LM.is(commitOut), 1);
-        LP outSklCommitedQuantity = LM.addSGProp(moveGroup, "Кол-во отгр. парт. на скл.", quantityCommitOutArticle, subjectOutOrder, 1, 2, 3);
-        LP outSklQuantity = LM.addSGProp(moveGroup, "Кол-во заяв. парт. на скл.", innerQuantity, subjectOutOrder, 1, 2, 3);
+        quantityCommitOutArticle = addJProp("Кол-во отгр. парт.", baseLM.and1, innerQuantity, 1, 2, 3, is(commitOut), 1);
+        LP outSklCommitedQuantity = addSGProp(moveGroup, "Кол-во отгр. парт. на скл.", quantityCommitOutArticle, subjectOutOrder, 1, 2, 3);
+        LP outSklQuantity = addSGProp(moveGroup, "Кол-во заяв. парт. на скл.", innerQuantity, subjectOutOrder, 1, 2, 3);
 
-        // тут в общем-то должен не LM.and1 идти а разница через формулу и SUProp на 0 для склада (то есть для склада неизвестно это нет, а для контрагента просто неизвестно)
-        balanceSklCommitedQuantity = LM.addJProp(moveGroup, "balanceSklCommitedQuantity", true, "Остаток парт. на скл.", LM.and1, LM.addDUProp(incSklCommitedQuantity, outSklCommitedQuantity), 1, 2, 3, LM.is(store), 1);
-        balanceSklFreeQuantity = LM.addJProp(moveGroup, "balanceSklFreeQuantity", true, "Свободное кол-во на скл.", LM.and1, LM.addDUProp(incSklCommitedQuantity, outSklQuantity), 1, 2, 3, LM.is(store), 1);
-        LM.addConstraint(LM.addJProp("Кол-во резерва должно быть не меньше нуля", LM.greater2, LM.vzero, balanceSklFreeQuantity, 1, 2, 3), false);
+        // тут в общем-то должен не baseLM.and1 идти а разница через формулу и SUProp на 0 для склада (то есть для склада неизвестно это нет, а для контрагента просто неизвестно)
+        balanceSklCommitedQuantity = addJProp(moveGroup, "balanceSklCommitedQuantity", true, "Остаток парт. на скл.", baseLM.and1, addDUProp(incSklCommitedQuantity, outSklCommitedQuantity), 1, 2, 3, is(store), 1);
+        balanceSklFreeQuantity = addJProp(moveGroup, "balanceSklFreeQuantity", true, "Свободное кол-во на скл.", baseLM.and1, addDUProp(incSklCommitedQuantity, outSklQuantity), 1, 2, 3, is(store), 1);
+        addConstraint(addJProp("Кол-во резерва должно быть не меньше нуля", baseLM.greater2, baseLM.vzero, balanceSklFreeQuantity, 1, 2, 3), false);
 
-        articleFreeQuantity = LM.addSGProp(moveGroup, "articleFreeQuantity", true, "Свободное кол-во на скл.", balanceSklFreeQuantity, 1, 2);
+        articleFreeQuantity = addSGProp(moveGroup, "articleFreeQuantity", true, "Свободное кол-во на скл.", balanceSklFreeQuantity, 1, 2);
 
         innerBalanceCheckDB.setDerivedChange(balanceSklCommitedQuantity, subjectOutOrder, 1, 2, 3);
 
-        LM.addJProp(moveGroup, "Остаток парт. прих.", balanceSklCommitedQuantity, subjectIncOrder, 1, 2, 3);
-        LM.addJProp(moveGroup, "Остаток парт. расх.", balanceSklCommitedQuantity, subjectOutOrder, 1, 2, 3);
+        addJProp(moveGroup, "Остаток парт. прих.", balanceSklCommitedQuantity, subjectIncOrder, 1, 2, 3);
+        addJProp(moveGroup, "Остаток парт. расх.", balanceSklCommitedQuantity, subjectOutOrder, 1, 2, 3);
 
-        LP documentOutSklFreeQuantity = LM.addJProp("Дост. парт. расх.", balanceSklFreeQuantity, subjectOutOrder, 1, 2, 3);
+        LP documentOutSklFreeQuantity = addJProp("Дост. парт. расх.", balanceSklFreeQuantity, subjectOutOrder, 1, 2, 3);
 
-        LP returnedInnerQuantity = LM.addSGProp("Кол-во возвр. парт.", returnInnerCommitQuantity, 4, 2, 3);
-        confirmedInnerQuantity = LM.addDUProp("Кол-во подтв. парт.", LM.addJProp(LM.and1, orderInnerQuantity, 1, 2, 3, LM.is(commitOut), 1), returnedInnerQuantity);
-        LM.addConstraint(LM.addJProp("Кол-во возврата должно быть не меньше кол-ва самой операции", LM.greater2, LM.vzero, confirmedInnerQuantity, 1, 2, 3), false);
+        LP returnedInnerQuantity = addSGProp("Кол-во возвр. парт.", returnInnerCommitQuantity, 4, 2, 3);
+        confirmedInnerQuantity = addDUProp("Кол-во подтв. парт.", addJProp(baseLM.and1, orderInnerQuantity, 1, 2, 3, is(commitOut), 1), returnedInnerQuantity);
+        addConstraint(addJProp("Кол-во возврата должно быть не меньше кол-ва самой операции", baseLM.greater2, baseLM.vzero, confirmedInnerQuantity, 1, 2, 3), false);
 
-        LP returnInnerConfirmedFreeQuantity = LM.addJProp(documentGroup, "returnInnerFreeQuantity", "Дост. кол-во по возврату парт.", LM.andNot1,
-                LM.addCUProp(LM.addJProp(LM.and1, LM.addICProp(DoubleClass.instance, orderReturnDeliveryLocal, article, commitDelivery), 1, 2, 3, LM.equals2, 3, 4), // для возврата поставщику - нет ограничений, все равно остаток меньше
-                        LM.addJProp(LM.and1, confirmedInnerQuantity, 4, 2, 3, returnSameClasses, 1, 4)), 1, 2, 3, 4, allowedReturn, 1, 4); // для возврата на склад, diff а не same чтобы можно было реализацию через кассы возвращать без контрагента
-        returnDistrCommitQuantity.setDG(false, returnInnerConfirmedFreeQuantity, 1, 2, 3, 4, LM.date, 4, 4);
+        LP returnInnerConfirmedFreeQuantity = addJProp(documentGroup, "returnInnerFreeQuantity", "Дост. кол-во по возврату парт.", baseLM.andNot1,
+                addCUProp(addJProp(baseLM.and1, addICProp(DoubleClass.instance, orderReturnDeliveryLocal, article, commitDelivery), 1, 2, 3, baseLM.equals2, 3, 4), // для возврата поставщику - нет ограничений, все равно остаток меньше
+                        addJProp(baseLM.and1, confirmedInnerQuantity, 4, 2, 3, returnSameClasses, 1, 4)), 1, 2, 3, 4, allowedReturn, 1, 4); // для возврата на склад, diff а не same чтобы можно было реализацию через кассы возвращать без контрагента
+        returnDistrCommitQuantity.setDG(false, returnInnerConfirmedFreeQuantity, 1, 2, 3, 4, baseLM.date, 4, 4);
 
         // создаем свойства ограничения для расчета себестоимости (являются следствием addConstraint)
-        LP fullFreeOrderArticleDelivery = LM.addCUProp(documentOutSklFreeQuantity, LM.addICProp(DoubleClass.instance, orderExtOutReturn, article, commitDelivery)); // для расхода не со склада нету ограничений
-        documentInnerFreeQuantity = LM.addJProp(documentMoveGroup, "Дост. кол-во по парт.", min, fullFreeOrderArticleDelivery, 1, 2, 3,
-                        LM.addCUProp(LM.addSGProp(returnInnerConfirmedFreeQuantity, 1, 2, 3), LM.addICProp(DoubleClass.instance, orderDo, article, commitDelivery)), 1, 2, 3); // для прямой операции нет ограничений
-        returnInnerFreeQuantity = LM.addJProp(min, fullFreeOrderArticleDelivery, 1, 2, 3, returnInnerConfirmedFreeQuantity, 1, 2, 3, 4);
+        LP fullFreeOrderArticleDelivery = addCUProp(documentOutSklFreeQuantity, addICProp(DoubleClass.instance, orderExtOutReturn, article, commitDelivery)); // для расхода не со склада нету ограничений
+        documentInnerFreeQuantity = addJProp(documentMoveGroup, "Дост. кол-во по парт.", min, fullFreeOrderArticleDelivery, 1, 2, 3,
+                        addCUProp(addSGProp(returnInnerConfirmedFreeQuantity, 1, 2, 3), addICProp(DoubleClass.instance, orderDo, article, commitDelivery)), 1, 2, 3); // для прямой операции нет ограничений
+        returnInnerFreeQuantity = addJProp(min, fullFreeOrderArticleDelivery, 1, 2, 3, returnInnerConfirmedFreeQuantity, 1, 2, 3, 4);
 
         // добавляем свойства по товарам
-        articleInnerQuantity = LM.addDGProp(documentGroup, "articleInnerQuantity", true, "Кол-во", 2, false, innerQuantity, 1, 2, documentInnerFreeQuantity, 1, 2, 3, LM.date, 3, 3);
-        documentFreeQuantity = LM.addSGProp(documentMoveGroup, "Доступ. кол-во", documentInnerFreeQuantity, 1, 2);
+        articleInnerQuantity = addDGProp(documentGroup, "articleInnerQuantity", true, "Кол-во", 2, false, innerQuantity, 1, 2, documentInnerFreeQuantity, 1, 2, 3, baseLM.date, 3, 3);
+        documentFreeQuantity = addSGProp(documentMoveGroup, "Доступ. кол-во", documentInnerFreeQuantity, 1, 2);
 
         // для док. \ товара \ парт. \ док. прод.   - кол-во подтв. парт. если совпадают контрагенты
-        returnInnerQuantity = LM.addDGProp(documentGroup, "returnInnerQuantity", "Кол-во возврата", 2, false, returnInnerCommitQuantity, 1, 2, 4,
-                returnInnerFreeQuantity, 1, 2, 3, 4, LM.date, 3, 3);
-        returnFreeQuantity = LM.addSGProp(documentGroup, "Дост. кол-во к возврату", returnInnerFreeQuantity, 1, 2, 4);
-        LP returnDocumentQuantity = LM.addCUProp("Кол-во возврата", returnOuterQuantity, returnInnerQuantity); // возвратный документ\прямой документ
-        LM.addConstraint(LM.addJProp("При возврате контрагент документа, по которому идет возврат, должен совпадать с контрагентом возврата", LM.and1, allowedReturn, 1, 3, returnDocumentQuantity, 1, 2, 3), false);
+        returnInnerQuantity = addDGProp(documentGroup, "returnInnerQuantity", "Кол-во возврата", 2, false, returnInnerCommitQuantity, 1, 2, 4,
+                returnInnerFreeQuantity, 1, 2, 3, 4, baseLM.date, 3, 3);
+        returnFreeQuantity = addSGProp(documentGroup, "Дост. кол-во к возврату", returnInnerFreeQuantity, 1, 2, 4);
+        LP returnDocumentQuantity = addCUProp("Кол-во возврата", returnOuterQuantity, returnInnerQuantity); // возвратный документ\прямой документ
+        addConstraint(addJProp("При возврате контрагент документа, по которому идет возврат, должен совпадать с контрагентом возврата", baseLM.and1, allowedReturn, 1, 3, returnDocumentQuantity, 1, 2, 3), false);
 
-        sumReturnedQuantity = LM.addSGProp(documentGroup, "Кол-во возврата", returnInnerQuantity, 1, 3);
-        sumReturnedQuantityFree = LM.addSGProp(documentGroup, "Дост. кол-во к возврату", returnFreeQuantity, 1, 3);
+        sumReturnedQuantity = addSGProp(documentGroup, "Кол-во возврата", returnInnerQuantity, 1, 3);
+        sumReturnedQuantityFree = addSGProp(documentGroup, "Дост. кол-во к возврату", returnFreeQuantity, 1, 3);
 
-        LP saleCertGiftObligation = LM.addDProp("saleCertGiftObligation", "Выдать", LogicalClass.instance, saleCert, giftObligation);
+        LP saleCertGiftObligation = addDProp("saleCertGiftObligation", "Выдать", LogicalClass.instance, saleCert, giftObligation);
 
-        articleQuantity = LM.addCUProp("articleQuantity", "Кол-во", outerCommitedQuantity, articleInnerQuantity);
-        articleOrderQuantity = LM.addCUProp("Заяв. кол-во", outerOrderQuantity, articleInnerQuantity);
-        articleDocQuantity = LM.addCUProp("Кол-во док.", LM.addSUProp(Union.OVERRIDE, outerCommitedQuantity, outerOrderQuantity), articleInnerQuantity);
-        LP absQuantity = LM.addSGProp("Всего тов.", LM.addCUProp(LM.addJProp(abs, articleDocQuantity, 1, 2), LM.addJProp(LM.and1, LM.addCProp(DoubleClass.instance, 1), saleCertGiftObligation, 1, 2)), 1);
-        LM.addConstraint(LM.addJProp("Нельзя создавать пустые документы", LM.andNot1, LM.is(order), 1, LM.addJProp(LM.greater2, absQuantity, 1, LM.vzero), 1), false);
+        articleQuantity = addCUProp("articleQuantity", "Кол-во", outerCommitedQuantity, articleInnerQuantity);
+        articleOrderQuantity = addCUProp("Заяв. кол-во", outerOrderQuantity, articleInnerQuantity);
+        articleDocQuantity = addCUProp("Кол-во док.", addSUProp(Union.OVERRIDE, outerCommitedQuantity, outerOrderQuantity), articleInnerQuantity);
+        LP absQuantity = addSGProp("Всего тов.", addCUProp(addJProp(abs, articleDocQuantity, 1, 2), addJProp(baseLM.and1, addCProp(DoubleClass.instance, 1), saleCertGiftObligation, 1, 2)), 1);
+        addConstraint(addJProp("Нельзя создавать пустые документы", baseLM.andNot1, is(order), 1, addJProp(baseLM.greater2, absQuantity, 1, baseLM.vzero), 1), false);
 
         // ожидаемый приход на склад
-        articleFreeOrderQuantity = LM.addSUProp("articleFreeOrderQuantity", true, "Ожидаемое своб. кол-во", Union.SUM, articleFreeQuantity, LM.addSGProp(moveGroup, "Ожидается приход", LM.addJProp(LM.andNot1, articleOrderQuantity, 1, 2, LM.is(commitInc), 1), subjectIncOrder, 1, 2)); // сумма по еще не пришедшим
+        articleFreeOrderQuantity = addSUProp("articleFreeOrderQuantity", true, "Ожидаемое своб. кол-во", Union.SUM, articleFreeQuantity, addSGProp(moveGroup, "Ожидается приход", addJProp(baseLM.andNot1, articleOrderQuantity, 1, 2, is(commitInc), 1), subjectIncOrder, 1, 2)); // сумма по еще не пришедшим
 
-        articleBalanceCheck = LM.addDGProp(documentGroup, "articleBalanceCheck", "Остаток инв.", 2, false, innerBalanceCheck, 1, 2, innerBalanceCheckDB, 1, 2, 3, LM.date, 3, 3);
+        articleBalanceCheck = addDGProp(documentGroup, "articleBalanceCheck", "Остаток инв.", 2, false, innerBalanceCheck, 1, 2, innerBalanceCheckDB, 1, 2, 3, baseLM.date, 3, 3);
 
-        LP articleBalanceSklCommitedQuantity = LM.addSGProp(moveGroup, "articleBalanceSklCommitedQuantity", "Остаток тов. на скл.", balanceSklCommitedQuantity, 1, 2);
-        LM.addJProp(documentMoveGroup, "Остаток тов. прих.", articleBalanceSklCommitedQuantity, subjectIncOrder, 1, 2);
-        LM.addJProp(documentMoveGroup, "Остаток тов. расх.", articleBalanceSklCommitedQuantity, subjectOutOrder, 1, 2);
+        LP articleBalanceSklCommitedQuantity = addSGProp(moveGroup, "articleBalanceSklCommitedQuantity", "Остаток тов. на скл.", balanceSklCommitedQuantity, 1, 2);
+        addJProp(documentMoveGroup, "Остаток тов. прих.", articleBalanceSklCommitedQuantity, subjectIncOrder, 1, 2);
+        addJProp(documentMoveGroup, "Остаток тов. расх.", articleBalanceSklCommitedQuantity, subjectOutOrder, 1, 2);
 
         // цены
-        shopFormat = LM.addDProp("shopFormat", "Формат", format, shop);
-        nameShopFormat = LM.addJProp(LM.baseGroup, "Формат", LM.name, shopFormat, 1);
+        shopFormat = addDProp("shopFormat", "Формат", format, shop);
+        nameShopFormat = addJProp(baseGroup, "Формат", baseLM.name, shopFormat, 1);
 
         // новые свойства товара
-        fullNameArticle = LM.addDProp(artExtraGroup, "fullNameArticle", "Полное наименование", StringClass.get(100), article);
-        gigienaArticle = LM.addDProp(artExtraGroup, "gigienaArticle", "Гигиеническое разрешение", StringClass.get(50), article);
-        spirtArticle = LM.addDProp(artExtraGroup, "spirtArticle", "Содержание спирта", DoubleClass.instance, article);
-        statusArticle = LM.addDProp(artExtraGroup, "statusArticle", "Собственный/несобственный", LogicalClass.instance, article);
+        fullNameArticle = addDProp(artExtraGroup, "fullNameArticle", "Полное наименование", StringClass.get(100), article);
+        gigienaArticle = addDProp(artExtraGroup, "gigienaArticle", "Гигиеническое разрешение", StringClass.get(50), article);
+        spirtArticle = addDProp(artExtraGroup, "spirtArticle", "Содержание спирта", DoubleClass.instance, article);
+        statusArticle = addDProp(artExtraGroup, "statusArticle", "Собственный/несобственный", LogicalClass.instance, article);
 
-        brendArticle = LM.addDProp("brendArticle", "Бренд товара (ИД)", brend, article);
-        nameBrendArticle = LM.addJProp(artExtraGroup, "Бренд товара", LM.name, brendArticle, 1);
+        brendArticle = addDProp("brendArticle", "Бренд товара (ИД)", brend, article);
+        nameBrendArticle = addJProp(artExtraGroup, "Бренд товара", baseLM.name, brendArticle, 1);
 
-        countryArticle = LM.addDProp("countryArticle", "Страна товара", LM.country, article);
-        nameCountryArticle = LM.addJProp(LM.baseGroup, "Страна товара", LM.name, countryArticle, 1);
+        countryArticle = addDProp("countryArticle", "Страна товара", baseLM.country, article);
+        nameCountryArticle = addJProp(baseGroup, "Страна товара", baseLM.name, countryArticle, 1);
 
-        LP articleLine = LM.addDProp("articleLine", "Линия товара", line, article);
-        LM.addJProp(artExtraGroup, "Линия товара", LM.name, articleLine, 1);
+        LP articleLine = addDProp("articleLine", "Линия товара", line, article);
+        addJProp(artExtraGroup, "Линия товара", baseLM.name, articleLine, 1);
 
-        genderArticle = LM.addDProp("genderArticle", "Пол", gender, article);
-        LM.addJProp(artExtraGroup, "Пол", LM.name, genderArticle, 1);
+        genderArticle = addDProp("genderArticle", "Пол", gender, article);
+        addJProp(artExtraGroup, "Пол", baseLM.name, genderArticle, 1);
         //**************************************************************************************************************
-        currentRRP = LM.addDProp(priceGroup, "currentRRP", "RRP", DoubleClass.instance, article);
-        currencyArticle = LM.addDProp("currencyArticle", "Валюта (ИД)", currency, article);
-        nameCurrencyArticle = LM.addJProp(priceGroup, "nameCurrencyArticle", "Валюта", LM.name, currencyArticle, 1);
-        unitOfMeasureArticle = LM.addDProp("unitOfMeasureArticle", "Ед. изм.", unitOfMeasure, article);
-        nameUnitOfMeasureArticle = LM.addJProp(LM.baseGroup, "nameUnitOfMeasureArticle", "Ед. изм.", LM.name, unitOfMeasureArticle, 1);
-        LP currentCurrencyRate = LM.addDProp(LM.baseGroup, "currentCurrencyRate", "Курс", DoubleClass.instance, currency);
-        LP currentFormatDiscount = LM.addDProp(priceGroup, "currentFormatDiscount", "Скидка на формат", DoubleClass.instance, format);
-        LP currentWarehouseDiscount = LM.addDProp(priceGroup, "currentWarehouseDiscount", "Опт. скидка", DoubleClass.instance);
+        currentRRP = addDProp(priceGroup, "currentRRP", "RRP", DoubleClass.instance, article);
+        currencyArticle = addDProp("currencyArticle", "Валюта (ИД)", currency, article);
+        nameCurrencyArticle = addJProp(priceGroup, "nameCurrencyArticle", "Валюта", baseLM.name, currencyArticle, 1);
+        unitOfMeasureArticle = addDProp("unitOfMeasureArticle", "Ед. изм.", unitOfMeasure, article);
+        nameUnitOfMeasureArticle = addJProp(baseGroup, "nameUnitOfMeasureArticle", "Ед. изм.", baseLM.name, unitOfMeasureArticle, 1);
+        LP currentCurrencyRate = addDProp(baseGroup, "currentCurrencyRate", "Курс", DoubleClass.instance, currency);
+        LP currentFormatDiscount = addDProp(priceGroup, "currentFormatDiscount", "Скидка на формат", DoubleClass.instance, format);
+        LP currentWarehouseDiscount = addDProp(priceGroup, "currentWarehouseDiscount", "Опт. скидка", DoubleClass.instance);
 
-        LP addvBrend = LM.addDProp(LM.baseGroup, "addvBrend", "Наценка", DoubleClass.instance, brend);
-        LP addvSetArticle = LM.addDProp(priceGroup, "addvSetArticle", "Наценка по тов.", DoubleClass.instance, article);
-        LP addvBrendArticle = LM.addJProp("addvBrendArticle", "Наценка по бренду", addvBrend, brendArticle, 1);
-        addvArticle = LM.addSUProp(priceGroup, "addvArticle", true, "Дейст. наценка", Union.OVERRIDE, addvBrendArticle, addvSetArticle);
+        LP addvBrend = addDProp(baseGroup, "addvBrend", "Наценка", DoubleClass.instance, brend);
+        LP addvSetArticle = addDProp(priceGroup, "addvSetArticle", "Наценка по тов.", DoubleClass.instance, article);
+        LP addvBrendArticle = addJProp("addvBrendArticle", "Наценка по бренду", addvBrend, brendArticle, 1);
+        addvArticle = addSUProp(priceGroup, "addvArticle", true, "Дейст. наценка", Union.OVERRIDE, addvBrendArticle, addvSetArticle);
 
         // простые акции
-        LP actionFrom = LM.addDProp(LM.baseGroup, "actionFrom", "От", DateClass.instance, action);
-        LP actionTo = LM.addDProp(LM.baseGroup, "actionTo", "До", DateClass.instance, action);
-        LP actionDiscount = LM.addDProp(LM.baseGroup, "actionDiscount", "Скидка", DoubleClass.instance, action);
+        LP actionFrom = addDProp(baseGroup, "actionFrom", "От", DateClass.instance, action);
+        LP actionTo = addDProp(baseGroup, "actionTo", "До", DateClass.instance, action);
+        LP actionDiscount = addDProp(baseGroup, "actionDiscount", "Скидка", DoubleClass.instance, action);
 
-        LP customerCheckRetailDiscount = LM.addDProp(LM.baseGroup, "customerCheckRetailDiscount", "Мин. скидка", DoubleClass.instance, customerCheckRetail);
+        LP customerCheckRetailDiscount = addDProp(baseGroup, "customerCheckRetailDiscount", "Мин. скидка", DoubleClass.instance, customerCheckRetail);
 
-        LP xorActionAll = LM.addDProp(LM.baseGroup, "xorActionAll", "Вкл./искл.", LogicalClass.instance, action);
-        LP xorActionArticleGroup = LM.addDProp(LM.baseGroup, "xorActionArticleGroup", "Вкл./искл.", LogicalClass.instance, action, articleGroup);
-        xorActionArticle = LM.addDProp("xorArticle", "Вкл./искл.", LogicalClass.instance, action, article); // не включаем в группу, предполагается что реактирование через inAction идет
-        inAction = LM.addXorUProp(LM.baseGroup, "inAction", true, "В акции", LM.addJProp(LM.and1, xorActionAll, 1, LM.is(article), 2), LM.addJProp(xorActionArticleGroup, 1, articleToGroup, 2), xorActionArticle);
+        LP xorActionAll = addDProp(baseGroup, "xorActionAll", "Вкл./искл.", LogicalClass.instance, action);
+        LP xorActionArticleGroup = addDProp(baseGroup, "xorActionArticleGroup", "Вкл./искл.", LogicalClass.instance, action, articleGroup);
+        xorActionArticle = addDProp("xorArticle", "Вкл./искл.", LogicalClass.instance, action, article); // не включаем в группу, предполагается что реактирование через inAction идет
+        inAction = addXorUProp(baseGroup, "inAction", true, "В акции", addJProp(baseLM.and1, xorActionAll, 1, is(article), 2), addJProp(xorActionArticleGroup, 1, articleToGroup, 2), xorActionArticle);
 
-        LP isStarted = LM.addJProp(LM.baseGroup, "Началась", LM.and(true, true), LM.is(action), 1,
-                LM.addJProp(LM.less2, LM.currentDate, actionFrom, 1), 1,  // активация акции, если текущая дата в диапазоне акции
-                LM.addJProp(LM.greater2, LM.currentDate, actionTo, 1), 1);
+        LP isStarted = addJProp(baseGroup, "Началась", and(true, true), is(action), 1,
+                addJProp(baseLM.less2, baseLM.currentDate, actionFrom, 1), 1,  // активация акции, если текущая дата в диапазоне акции
+                addJProp(baseLM.greater2, baseLM.currentDate, actionTo, 1), 1);
 
-        exclActionStore = LM.addDProp(LM.baseGroup, "exclActionStore", "Искл.", LogicalClass.instance, action, store);
-        inclActionStore = LM.addJProp("inclActionStore", "Вкл.", LM.andNot1, LM.addCProp(LogicalClass.instance, true, action, store), 1, 2, exclActionStore, 1, 2);
-        actionArticleStore = LM.addAGProp(priceGroup, "actionArticleStore", "Дейст. распродажа", LM.addJProp(LM.and(false, false, false), inAction, 1, 2, isStarted, 1, LM.is(saleAction), 1, inclActionStore, 1, 3), 1);
-        discountArticleStore = LM.addSUProp("discountArticleStore", true, "Тек. скидка", Union.OVERRIDE, LM.addCProp(DoubleClass.instance, 0, article, store), LM.addJProp(priceGroup, "Тек. скидка", actionDiscount, actionArticleStore, 1, 2));
-        LP actionNoExtraDiscount = LM.addDProp(LM.baseGroup, "actionNoExtraDiscount", "Без доп. скидок", LogicalClass.instance, saleAction);
+        exclActionStore = addDProp(baseGroup, "exclActionStore", "Искл.", LogicalClass.instance, action, store);
+        inclActionStore = addJProp("inclActionStore", "Вкл.", baseLM.andNot1, addCProp(LogicalClass.instance, true, action, store), 1, 2, exclActionStore, 1, 2);
+        actionArticleStore = addAGProp(priceGroup, "actionArticleStore", "Дейст. распродажа", addJProp(and(false, false, false), inAction, 1, 2, isStarted, 1, is(saleAction), 1, inclActionStore, 1, 3), 1);
+        discountArticleStore = addSUProp("discountArticleStore", true, "Тек. скидка", Union.OVERRIDE, addCProp(DoubleClass.instance, 0, article, store), addJProp(priceGroup, "Тек. скидка", actionDiscount, actionArticleStore, 1, 2));
+        LP actionNoExtraDiscount = addDProp(baseGroup, "actionNoExtraDiscount", "Без доп. скидок", LogicalClass.instance, saleAction);
 
-        actionOutArticle = LM.addJProp("actionOutArticle", "Дейст. распродажа", actionArticleStore, 2, subjectOutOrder, 1);
+        actionOutArticle = addJProp("actionOutArticle", "Дейст. распродажа", actionArticleStore, 2, subjectOutOrder, 1);
 
-        LP articleActionToGroup = LM.addDProp("articleActionToGroup", "Группа акций", groupArticleAction, articleAction);
-        LM.addJProp(LM.baseGroup, "Группа акций", LM.name, articleActionToGroup, 1);
+        LP articleActionToGroup = addDProp("articleActionToGroup", "Группа акций", groupArticleAction, articleAction);
+        addJProp(baseGroup, "Группа акций", baseLM.name, articleActionToGroup, 1);
 
-        LP articleActionHourFrom = LM.addDProp(LM.baseGroup, "articleActionHourFrom", "Час от", DoubleClass.instance, articleAction);
-        LP articleActionHourTo = LM.addDProp(LM.baseGroup, "articleActionHourTo", "Час до", DoubleClass.instance, articleAction);
-        LP articleActionClientSum = LM.addDProp(LM.baseGroup, "articleActionClientSum", "Нак. сумма от", DoubleClass.instance, articleAction);
-        LP articleActionQuantity = LM.addDProp(LM.baseGroup, "articleActionQuantity", "Кол-во от", DoubleClass.instance, articleAction);
-        LP articleActionBirthDay = LM.addDProp(LM.baseGroup, "articleActionBirthDay", "День рожд.", LogicalClass.instance, articleAction);
-        LP articleActionWithCheck = LM.addDProp(LM.baseGroup, "articleActionWithCheck", "Нак. с тек. чеком", LogicalClass.instance, articleAction);
+        LP articleActionHourFrom = addDProp(baseGroup, "articleActionHourFrom", "Час от", DoubleClass.instance, articleAction);
+        LP articleActionHourTo = addDProp(baseGroup, "articleActionHourTo", "Час до", DoubleClass.instance, articleAction);
+        LP articleActionClientSum = addDProp(baseGroup, "articleActionClientSum", "Нак. сумма от", DoubleClass.instance, articleAction);
+        LP articleActionQuantity = addDProp(baseGroup, "articleActionQuantity", "Кол-во от", DoubleClass.instance, articleAction);
+        LP articleActionBirthDay = addDProp(baseGroup, "articleActionBirthDay", "День рожд.", LogicalClass.instance, articleAction);
+        LP articleActionWithCheck = addDProp(baseGroup, "articleActionWithCheck", "Нак. с тек. чеком", LogicalClass.instance, articleAction);
 
         // продажа облигаций
         //**************************************************************************************************************
         // новые свойства для подарочных сертификатов
-        certToSaled = LM.addDProp(LM.baseGroup, "certToSaled", "Продан заранее", LogicalClass.instance, obligation);
-        LP sverka = LM.addJProp(LM.equals2, 1, LM.addJProp(LM.and1, 1, certToSaled, 1), 2);
-        LP issueCoupon = LM.addDProp("orderSaleCoupon", "Выдать купон", LogicalClass.instance, commitSaleCheckArticleRetail, coupon);
-        issueObligation = LM.addCUProp(documentGroup, "Выдать", sverka, saleCertGiftObligation, issueCoupon);
+        certToSaled = addDProp(baseGroup, "certToSaled", "Продан заранее", LogicalClass.instance, obligation);
+        LP sverka = addJProp(baseLM.equals2, 1, addJProp(baseLM.and1, 1, certToSaled, 1), 2);
+        LP issueCoupon = addDProp("orderSaleCoupon", "Выдать купон", LogicalClass.instance, commitSaleCheckArticleRetail, coupon);
+        issueObligation = addCUProp(documentGroup, "Выдать", sverka, saleCertGiftObligation, issueCoupon);
 
-        obligationIssued = LM.addAGProp("obligationIssued", true, "Выд. документ", issueObligation, 1);
+        obligationIssued = addAGProp("obligationIssued", true, "Выд. документ", issueObligation, 1);
 
-        obligationSum = LM.addDProp(LM.baseGroup, "obligationSum", "Сумма", DoubleClass.instance, obligation);
-        LM.setNotNull(obligationSum);
-        obligationSumFrom = LM.addDProp(LM.baseGroup, "obligationSumFrom", "Сумма покупки", DoubleClass.instance, obligation);
+        obligationSum = addDProp(baseGroup, "obligationSum", "Сумма", DoubleClass.instance, obligation);
+        setNotNull(obligationSum);
+        obligationSumFrom = addDProp(baseGroup, "obligationSumFrom", "Сумма покупки", DoubleClass.instance, obligation);
 
-        LP couponMaxPercent = LM.addDProp(LM.baseGroup, "couponMaxPercent", "Макс. процент по купонам", DoubleClass.instance);
+        LP couponMaxPercent = addDProp(baseGroup, "couponMaxPercent", "Макс. процент по купонам", DoubleClass.instance);
 
-        NDS = LM.addDProp(documentGroup, "NDS", "НДС", DoubleClass.instance, documentNDS, article);
-        LP[] maxNDSProps = LM.addMGProp((AbstractGroup) null, true, new String[]{"currentNDSDate", "currentNDSDoc"}, new String[]{"Дата посл. НДС", "Посл. док. НДС"}, 1,
-                LM.addJProp(LM.and1, LM.date, 1, NDS, 1, 2), 1, 2);
+        NDS = addDProp(documentGroup, "NDS", "НДС", DoubleClass.instance, documentNDS, article);
+        LP[] maxNDSProps = addMGProp((AbstractGroup) null, true, new String[]{"currentNDSDate", "currentNDSDoc"}, new String[]{"Дата посл. НДС", "Посл. док. НДС"}, 1,
+                addJProp(baseLM.and1, baseLM.date, 1, NDS, 1, 2), 1, 2);
         currentNDSDate = maxNDSProps[0];
         currentNDSDoc = maxNDSProps[1];
-        LM.addPersistent(currentNDSDate);
-        LM.addPersistent(currentNDSDoc);
-        currentNDS = LM.addJProp("currentNDS", true, "Тек. НДС", NDS, currentNDSDoc, 1, 1);
+        addPersistent(currentNDSDate);
+        addPersistent(currentNDSDoc);
+        currentNDS = addJProp("currentNDS", true, "Тек. НДС", NDS, currentNDSDoc, 1, 1);
 
-        LP ndsOrderDoArticle = LM.addDCProp("ndsOrderDoArticle", "НДС", currentNDS, 2, articleQuantity, 1, 2, orderDo);
-        LP ndsOrderReturnArticle = LM.addMGProp(LM.privateGroup, "ndsOrderReturnArticle", "НДС возвр.", LM.addJProp(LM.and1, ndsOrderDoArticle, 3, 2, returnDocumentQuantity, 1, 2, 3), 1, 2);
-        ndsOrderArticle = LM.addCUProp(LM.baseGroup, "ndsOrderArticle", "НДС", ndsOrderDoArticle, ndsOrderReturnArticle);
+        LP ndsOrderDoArticle = addDCProp("ndsOrderDoArticle", "НДС", currentNDS, 2, articleQuantity, 1, 2, orderDo);
+        LP ndsOrderReturnArticle = addMGProp(privateGroup, "ndsOrderReturnArticle", "НДС возвр.", addJProp(baseLM.and1, ndsOrderDoArticle, 3, 2, returnDocumentQuantity, 1, 2, 3), 1, 2);
+        ndsOrderArticle = addCUProp(baseGroup, "ndsOrderArticle", "НДС", ndsOrderDoArticle, ndsOrderReturnArticle);
 
-        currentStoreDiscount = LM.addCUProp(priceGroup, "Скидка на складе",
-                LM.addJProp(LM.and1, currentWarehouseDiscount, LM.is(warehouse), 1),
-                LM.addJProp(currentFormatDiscount, shopFormat, 1));    // берётся скидка формата, если её нет - оптовая скидка
+        currentStoreDiscount = addCUProp(priceGroup, "Скидка на складе",
+                addJProp(baseLM.and1, currentWarehouseDiscount, is(warehouse), 1),
+                addJProp(currentFormatDiscount, shopFormat, 1));    // берётся скидка формата, если её нет - оптовая скидка
 
-        balanceFormatFreeQuantity = LM.addSGProp(moveGroup, "Своб. кол-во по форм.", articleFreeQuantity, shopFormat, 1, 2);
+        balanceFormatFreeQuantity = addSGProp(moveGroup, "Своб. кол-во по форм.", articleFreeQuantity, shopFormat, 1, 2);
 
-        balanceFreeQuantity = LM.addSGProp(moveGroup, "Своб. кол-во по форм.", articleFreeQuantity, 2);
+        balanceFreeQuantity = addSGProp(moveGroup, "Своб. кол-во по форм.", articleFreeQuantity, 2);
 
-        freeIncOrderArticle = LM.addJProp("freeIncOrderArticle", "Своб. кол-во (прих.)", articleFreeQuantity, subjectIncOrder, 1, 2);
+        freeIncOrderArticle = addJProp("freeIncOrderArticle", "Своб. кол-во (прих.)", articleFreeQuantity, subjectIncOrder, 1, 2);
 
         // текущая схема
-        articleSupplier = LM.addDProp("articleSupplier", "Поставщик товара", supplier, article);
-        nameArticleSupplier = LM.addJProp(logisticsGroup, "nameArticleSupplier", "Поставщик товара", LM.name, articleSupplier, 1);
-        LP shopWarehouse = LM.addDProp("storeWarehouse", "Распред. центр", warehouse, shop); // магазин может числиться не более чем в одном распределяющем центре
-        LM.addJProp(logisticsGroup, "Распред. центр", LM.name, shopWarehouse, 1);
-        LP articleSupplierPrice = LM.addDProp(logisticsGroup, "articleSupplierPrice", "Цена поставок", DoubleClass.instance, article);
+        articleSupplier = addDProp("articleSupplier", "Поставщик товара", supplier, article);
+        nameArticleSupplier = addJProp(logisticsGroup, "nameArticleSupplier", "Поставщик товара", baseLM.name, articleSupplier, 1);
+        LP shopWarehouse = addDProp("storeWarehouse", "Распред. центр", warehouse, shop); // магазин может числиться не более чем в одном распределяющем центре
+        addJProp(logisticsGroup, "Распред. центр", baseLM.name, shopWarehouse, 1);
+        LP articleSupplierPrice = addDProp(logisticsGroup, "articleSupplierPrice", "Цена поставок", DoubleClass.instance, article);
 
-        LP revalueShop = LM.addDProp("revalueShop", "Магазин", shop, documentRevalue);
-        LM.addJProp(LM.baseGroup, "Магазин", LM.name, revalueShop, 1);
+        LP revalueShop = addDProp("revalueShop", "Магазин", shop, documentRevalue);
+        addJProp(baseGroup, "Магазин", baseLM.name, revalueShop, 1);
 
-        documentRevalued = LM.addDProp(documentGroup, "isRevalued", "Переоц.", LogicalClass.instance, documentRevalue, article);
+        documentRevalued = addDProp(documentGroup, "isRevalued", "Переоц.", LogicalClass.instance, documentRevalue, article);
 
         // ЦЕНЫ
 
-        LP commitArticleQuantity = LM.addJProp(LM.and1, LM.is(commitDoShopInc), 1, articleQuantity, 1, 2);
+        LP commitArticleQuantity = addJProp(baseLM.and1, is(commitDoShopInc), 1, articleQuantity, 1, 2);
 
-        LP[] maxCommitIncProps = LM.addMGProp((AbstractGroup) null, true, new String[]{"currentCommitIncDate", "currentCommitIncDoc"}, new String[]{"Дата посл. прих. в маг.", "Посл. док. прих. в маг."}, 1,
-                LM.addJProp(LM.and1, LM.date, 1, commitArticleQuantity, 1, 2), 1, subjectIncOrder, 1, 2);
-        LP currentCommitIncDate = maxCommitIncProps[0]; LM.addPersistent(currentCommitIncDate);
-        LP currentCommitIncDoc = maxCommitIncProps[1]; LM.addPersistent(currentCommitIncDoc);
+        LP[] maxCommitIncProps = addMGProp((AbstractGroup) null, true, new String[]{"currentCommitIncDate", "currentCommitIncDoc"}, new String[]{"Дата посл. прих. в маг.", "Посл. док. прих. в маг."}, 1,
+                addJProp(baseLM.and1, baseLM.date, 1, commitArticleQuantity, 1, 2), 1, subjectIncOrder, 1, 2);
+        LP currentCommitIncDate = maxCommitIncProps[0]; addPersistent(currentCommitIncDate);
+        LP currentCommitIncDoc = maxCommitIncProps[1]; addPersistent(currentCommitIncDoc);
 
-        LP[] maxRevaluePriceProps = LM.addMGProp((AbstractGroup) null, true, new String[]{"currentRevalueDate", "currentRevalueDoc"}, new String[]{"Дата посл. переоц. в маг.", "Посл. док. переоц. в маг."}, 1,
-                LM.addJProp(LM.and1, LM.date, 1, documentRevalued, 1, 2), 1, revalueShop, 1, 2);
-        LP currentRevalueDate = maxRevaluePriceProps[0]; LM.addPersistent(currentRevalueDate);
-        LP currentRevalueDoc = maxRevaluePriceProps[1]; LM.addPersistent(currentRevalueDoc);
+        LP[] maxRevaluePriceProps = addMGProp((AbstractGroup) null, true, new String[]{"currentRevalueDate", "currentRevalueDoc"}, new String[]{"Дата посл. переоц. в маг.", "Посл. док. переоц. в маг."}, 1,
+                addJProp(baseLM.and1, baseLM.date, 1, documentRevalued, 1, 2), 1, revalueShop, 1, 2);
+        LP currentRevalueDate = maxRevaluePriceProps[0]; addPersistent(currentRevalueDate);
+        LP currentRevalueDoc = maxRevaluePriceProps[1]; addPersistent(currentRevalueDoc);
 
-        LP[] maxShopPriceProps = LM.addMUProp((AbstractGroup) null, new String[]{"currentShopPriceDate", "currentShopPriceDoc"}, new String[]{"Дата посл. цены в маг.", "Посл. док. цены в маг."}, 1,
+        LP[] maxShopPriceProps = addMUProp((AbstractGroup) null, new String[]{"currentShopPriceDate", "currentShopPriceDoc"}, new String[]{"Дата посл. цены в маг.", "Посл. док. цены в маг."}, 1,
                 currentCommitIncDate, currentRevalueDate, currentCommitIncDoc, currentRevalueDoc);
-        currentShopPriceDate = maxShopPriceProps[0]; LM.addPersistent(currentShopPriceDate);
-        currentShopPriceDoc = maxShopPriceProps[1]; LM.addPersistent(currentShopPriceDoc);
+        currentShopPriceDate = maxShopPriceProps[0]; addPersistent(currentShopPriceDate);
+        currentShopPriceDoc = maxShopPriceProps[1]; addPersistent(currentShopPriceDoc);
 
-        LP currentRRPPriceArticle = LM.addJProp(priceGroup, "Необх. цена RRP", multiplyDouble2, currentRRP, 1, LM.addJProp(currentCurrencyRate, currencyArticle, 1), 1);
-        currentRRPPriceStoreArticle = LM.addJProp(LM.and1, currentRRPPriceArticle, 2, LM.is(store), 1);
+        LP currentRRPPriceArticle = addJProp(priceGroup, "Необх. цена RRP", multiplyDouble2, currentRRP, 1, addJProp(currentCurrencyRate, currencyArticle, 1), 1);
+        currentRRPPriceStoreArticle = addJProp(baseLM.and1, currentRRPPriceArticle, 2, is(store), 1);
 
-        LP revalueShopPrice = LM.addDProp("revalueShopPrice", "Цена (прих.)", DoubleClass.instance, documentRevalue, article);
-        LP returnShopOutPrice = LM.addDProp("returnShopOutPrice", "Цена (возвр.)", DoubleClass.instance, commitReturnShopOut, article);
-        LP incomeShopPrice = LM.addDProp("shopPrice", "Цена (прих.)", DoubleClass.instance, commitDoShopInc, article);
-        shopPrice = LM.addCUProp(documentRetailGroup, "priceDocument", "Цена (маг.)", incomeShopPrice, returnShopOutPrice, revalueShopPrice);
+        LP revalueShopPrice = addDProp("revalueShopPrice", "Цена (прих.)", DoubleClass.instance, documentRevalue, article);
+        LP returnShopOutPrice = addDProp("returnShopOutPrice", "Цена (возвр.)", DoubleClass.instance, commitReturnShopOut, article);
+        LP incomeShopPrice = addDProp("shopPrice", "Цена (прих.)", DoubleClass.instance, commitDoShopInc, article);
+        shopPrice = addCUProp(documentRetailGroup, "priceDocument", "Цена (маг.)", incomeShopPrice, returnShopOutPrice, revalueShopPrice);
 
-        currentShopPrice = LM.addJProp(priceGroup, "currentShopPrice", true, "Цена на маг. (тек.)", shopPrice, currentShopPriceDoc, 1, 2, 2);
+        currentShopPrice = addJProp(priceGroup, "currentShopPrice", true, "Цена на маг. (тек.)", shopPrice, currentShopPriceDoc, 1, 2, 2);
 
         // цены в документах
-        LP priceOrderDeliveryArticle = LM.addDCProp("priceOrderDeliveryArticle", "Цена пост. с НДС", true, articleSupplierPrice, 2, articleQuantity, 1, 2, orderDelivery);
-        priceAllOrderDeliveryArticle = LM.addSUProp(documentSumGroup, "priceAllOrderDeliveryArticle", "Цена пост. с НДС", Union.OVERRIDE, LM.addJProp(LM.and1, articleSupplierPrice, 2, LM.is(orderDelivery), 1), priceOrderDeliveryArticle);
-        LP orderSalePrice = LM.addDProp("orderSalePrice", "Цена прод.", DoubleClass.instance, orderDoOut, article);
-        LP priceOrderDoArticle = LM.addCUProp(priceOrderDeliveryArticle, orderSalePrice);
-        priceOrderArticle = LM.addCUProp(documentSumGroup, "priceOrderArticle", "Цена", priceOrderDoArticle, LM.addMGProp(LM.privateGroup, "priceOrderReturnArticle", "Цена возвр.", LM.addJProp(LM.and1, priceOrderDoArticle, 3, 2, returnDocumentQuantity, 1, 2, 3), 1, 2));
-        LP priceNDSOrderArticle = LM.addJProp(round0, LM.addJProp(backPercent, priceOrderArticle, 1, 2, ndsOrderArticle, 1, 2), 1, 2);
-        priceNoNDSOrderArticle = LM.addDUProp("Цена без НДС", priceOrderArticle, priceNDSOrderArticle);
-        LP priceNDSRetailArticle = LM.addJProp(round1, LM.addJProp(backPercent, shopPrice, 1, 2, ndsOrderArticle , 1, 2), 1, 2);
-        priceNoNDSRetailArticle = LM.addDUProp("Цена продажи без НДС", shopPrice, priceNDSRetailArticle);
+        LP priceOrderDeliveryArticle = addDCProp("priceOrderDeliveryArticle", "Цена пост. с НДС", true, articleSupplierPrice, 2, articleQuantity, 1, 2, orderDelivery);
+        priceAllOrderDeliveryArticle = addSUProp(documentSumGroup, "priceAllOrderDeliveryArticle", "Цена пост. с НДС", Union.OVERRIDE, addJProp(baseLM.and1, articleSupplierPrice, 2, is(orderDelivery), 1), priceOrderDeliveryArticle);
+        LP orderSalePrice = addDProp("orderSalePrice", "Цена прод.", DoubleClass.instance, orderDoOut, article);
+        LP priceOrderDoArticle = addCUProp(priceOrderDeliveryArticle, orderSalePrice);
+        priceOrderArticle = addCUProp(documentSumGroup, "priceOrderArticle", "Цена", priceOrderDoArticle, addMGProp(privateGroup, "priceOrderReturnArticle", "Цена возвр.", addJProp(baseLM.and1, priceOrderDoArticle, 3, 2, returnDocumentQuantity, 1, 2, 3), 1, 2));
+        LP priceNDSOrderArticle = addJProp(round0, addJProp(backPercent, priceOrderArticle, 1, 2, ndsOrderArticle, 1, 2), 1, 2);
+        priceNoNDSOrderArticle = addDUProp("Цена без НДС", priceOrderArticle, priceNDSOrderArticle);
+        LP priceNDSRetailArticle = addJProp(round1, addJProp(backPercent, shopPrice, 1, 2, ndsOrderArticle , 1, 2), 1, 2);
+        priceNoNDSRetailArticle = addDUProp("Цена продажи без НДС", shopPrice, priceNDSRetailArticle);
 
-        LP priceManfrOrderDeliveryArticle = LM.addDProp("priceManfrOrderDeliveryArticle", "Цена изг.", DoubleClass.instance, orderDelivery, article);
+        LP priceManfrOrderDeliveryArticle = addDProp("priceManfrOrderDeliveryArticle", "Цена изг.", DoubleClass.instance, orderDelivery, article);
         priceManfrOrderDeliveryArticle.setDerivedForcedChange(true, priceNoNDSOrderArticle, 1, 2, articleQuantity, 1, 2);
-        priceManfrOrderArticle = LM.addCUProp(documentManfrGroup, "priceManfrOrderArticle", "Цена изг.", priceManfrOrderDeliveryArticle, LM.addMGProp(LM.privateGroup, "maxPriceManfrInnerArticle", "Макс. цена закуп.", LM.addJProp(LM.and1, priceManfrOrderDeliveryArticle, 3, 2, innerQuantity, 1, 2, 3), 1, 2));
+        priceManfrOrderArticle = addCUProp(documentManfrGroup, "priceManfrOrderArticle", "Цена изг.", priceManfrOrderDeliveryArticle, addMGProp(privateGroup, "maxPriceManfrInnerArticle", "Макс. цена закуп.", addJProp(baseLM.and1, priceManfrOrderDeliveryArticle, 3, 2, innerQuantity, 1, 2, 3), 1, 2));
 
-        LP priceExtOrderIncArticle = LM.addCUProp(LM.addJProp(LM.and1, priceNoNDSOrderArticle, 1, 2, LM.is(orderDelivery), 1),
-                LM.addMGProp(LM.privateGroup, "maxPriceInnerArticle", "Макс. цена закуп.", LM.addJProp(LM.and1, priceNoNDSOrderArticle, 3, 2, innerQuantity, 1, 2, 3), 1, 2));
+        LP priceExtOrderIncArticle = addCUProp(addJProp(baseLM.and1, priceNoNDSOrderArticle, 1, 2, is(orderDelivery), 1),
+                addMGProp(privateGroup, "maxPriceInnerArticle", "Макс. цена закуп.", addJProp(baseLM.and1, priceNoNDSOrderArticle, 3, 2, innerQuantity, 1, 2, 3), 1, 2));
 
         // с дублированием initRequiredStorePrice, чтобы не делать defaultChanged true
         LP requiredStorePrice = initRequiredStorePrice(priceGroup, "requiredStorePrice", true, "Необх. цена",
-                LM.addJProp(priceGroup, "lastPriceIncStoreArticle", true, "Посл. цена прихода", priceExtOrderIncArticle, currentCommitIncDoc, 1, 2, 2), LM.object(store));
+                addJProp(priceGroup, "lastPriceIncStoreArticle", true, "Посл. цена прихода", priceExtOrderIncArticle, currentCommitIncDoc, 1, 2, 2), object(store));
         revalueShopPrice.setDerivedForcedChange(requiredStorePrice, revalueShop, 1, 2, documentRevalued, 1, 2);
         returnShopOutPrice.setDerivedForcedChange(currentShopPrice, subjectOutOrder, 1, 2, articleQuantity, 1, 2);
-        incomeShopPrice.setDerivedForcedChange(true, initRequiredStorePrice(LM.privateGroup, LM.genSID(), false, "Необх. цена (прих.)", priceExtOrderIncArticle, subjectIncOrder), 1, 2, commitArticleQuantity, 1, 2);
+        incomeShopPrice.setDerivedForcedChange(true, initRequiredStorePrice(privateGroup, genSID(), false, "Необх. цена (прих.)", priceExtOrderIncArticle, subjectIncOrder), 1, 2, commitArticleQuantity, 1, 2);
 
-        LP saleStorePrice = LM.addCUProp(priceGroup, "Цена прод.", LM.addJProp(LM.and1, requiredStorePrice, 1, 2, LM.is(warehouse), 1), currentShopPrice);
+        LP saleStorePrice = addCUProp(priceGroup, "Цена прод.", addJProp(baseLM.and1, requiredStorePrice, 1, 2, is(warehouse), 1), currentShopPrice);
         orderSalePrice.setDerivedForcedChange(saleStorePrice, subjectOutOrder, 1, 2, articleQuantity, 1, 2);
-        priceAllOrderSaleArticle = LM.addSUProp(documentSumGroup, "Цена прод.", Union.OVERRIDE, LM.addJProp(LM.and1, LM.addJProp(saleStorePrice, subjectOutOrder, 1, 2), 1, 2, LM.is(orderDoOut), 1), priceOrderDoArticle);
+        priceAllOrderSaleArticle = addSUProp(documentSumGroup, "Цена прод.", Union.OVERRIDE, addJProp(baseLM.and1, addJProp(saleStorePrice, subjectOutOrder, 1, 2), 1, 2, is(orderDoOut), 1), priceOrderDoArticle);
 
-        LP outOfDatePrice = LM.addJProp(LM.and(false, false), LM.vtrue, articleBalanceSklCommitedQuantity, 1, 2, LM.addJProp(LM.diff2, requiredStorePrice, 1, 2, currentShopPrice, 1, 2), 1, 2);
+        LP outOfDatePrice = addJProp(and(false, false), baseLM.vtrue, articleBalanceSklCommitedQuantity, 1, 2, addJProp(baseLM.diff2, requiredStorePrice, 1, 2, currentShopPrice, 1, 2), 1, 2);
         documentRevalued.setDerivedChange(outOfDatePrice, revalueShop, 1, 2);
 
-        priceStore = LM.addCUProp("priceStore", true, "Склад (цены)", subjectIncOrder, revalueShop);
-        inDocumentPrice = LM.addCUProp("inDocumentPrice", true, "Изм. цены", documentRevalued, commitArticleQuantity);
-        prevPrice = LM.addDCProp(documentRetailGroup, "prevPrice", "Цена пред.", true, currentShopPrice, priceStore, 1, 2, inDocumentPrice, 1, 2);
-        revalBalance = LM.addDCProp(documentRetailGroup, "revalBalance", "Остаток переоц.", true, articleBalanceSklCommitedQuantity, priceStore, 1, 2, inDocumentPrice, 1, 2);
-        isRevalued = LM.addJProp(LM.diff2, shopPrice, 1, 2, prevPrice, 1, 2); // для акта переоценки
-        isNewPrice = LM.addJProp(LM.andNot1, inDocumentPrice, 1, 2, LM.addJProp(LM.equals2, shopPrice, 1, 2, prevPrice, 1, 2), 1, 2); // для ценников
-        ndsShopOrderPriceArticle = LM.addDCProp(documentRetailGroup, "ndsShopOrderPriceArticle", "НДС (маг.)", currentNDS, 2, inDocumentPrice, 1, 2);
+        priceStore = addCUProp("priceStore", true, "Склад (цены)", subjectIncOrder, revalueShop);
+        inDocumentPrice = addCUProp("inDocumentPrice", true, "Изм. цены", documentRevalued, commitArticleQuantity);
+        prevPrice = addDCProp(documentRetailGroup, "prevPrice", "Цена пред.", true, currentShopPrice, priceStore, 1, 2, inDocumentPrice, 1, 2);
+        revalBalance = addDCProp(documentRetailGroup, "revalBalance", "Остаток переоц.", true, articleBalanceSklCommitedQuantity, priceStore, 1, 2, inDocumentPrice, 1, 2);
+        isRevalued = addJProp(baseLM.diff2, shopPrice, 1, 2, prevPrice, 1, 2); // для акта переоценки
+        isNewPrice = addJProp(baseLM.andNot1, inDocumentPrice, 1, 2, addJProp(baseLM.equals2, shopPrice, 1, 2, prevPrice, 1, 2), 1, 2); // для ценников
+        ndsShopOrderPriceArticle = addDCProp(documentRetailGroup, "ndsShopOrderPriceArticle", "НДС (маг.)", currentNDS, 2, inDocumentPrice, 1, 2);
 
-        LP supplierCycle = LM.addDProp(logisticsGroup, "supplierCycle", "Цикл поставок", DoubleClass.instance, supplier);
-        LP shopCycle = LM.addDProp(logisticsGroup, "shopCycle", "Цикл распределения", DoubleClass.instance, shop);
+        LP supplierCycle = addDProp(logisticsGroup, "supplierCycle", "Цикл поставок", DoubleClass.instance, supplier);
+        LP shopCycle = addDProp(logisticsGroup, "shopCycle", "Цикл распределения", DoubleClass.instance, shop);
 
-        LP supplierToWarehouse = LM.addDProp(logisticsGroup, "supplierToWarehouse", "Пост. на распред. центр", LogicalClass.instance, supplier);
+        LP supplierToWarehouse = addDProp(logisticsGroup, "supplierToWarehouse", "Пост. на распред. центр", LogicalClass.instance, supplier);
 
         // абстрактный товар \ склад - поставщик
-        LP articleSuppliedOnWarehouse = LM.addJProp(supplierToWarehouse, articleSupplier, 1);
-        articleStoreSupplier = LM.addSUProp("articleStoreSupplier", true, "Пост. товара на склад", Union.OVERRIDE, LM.addJProp(LM.and1, articleSupplier, 2, LM.is(store), 1),
-                LM.addJProp(LM.and1, shopWarehouse, 1, articleSuppliedOnWarehouse, 2));
+        LP articleSuppliedOnWarehouse = addJProp(supplierToWarehouse, articleSupplier, 1);
+        articleStoreSupplier = addSUProp("articleStoreSupplier", true, "Пост. товара на склад", Union.OVERRIDE, addJProp(baseLM.and1, articleSupplier, 2, is(store), 1),
+                addJProp(baseLM.and1, shopWarehouse, 1, articleSuppliedOnWarehouse, 2));
 
-        LP storeSupplierCycle = LM.addCUProp(LM.addJProp(LM.and1, supplierCycle, 2, LM.is(store), 1), LM.addJProp(LM.and1, shopCycle, 1, LM.is(warehouse), 2));
+        LP storeSupplierCycle = addCUProp(addJProp(baseLM.and1, supplierCycle, 2, is(store), 1), addJProp(baseLM.and1, shopCycle, 1, is(warehouse), 2));
         // цикл распределения, если от распределяющего центра или цикл поставок, если от поставщика
 
-        articleStorePeriod = LM.addJProp("articleStorePeriod", true, "Цикл поставок на склад", storeSupplierCycle, 1, articleStoreSupplier, 1, 2);
+        articleStorePeriod = addJProp("articleStorePeriod", true, "Цикл поставок на склад", storeSupplierCycle, 1, articleStoreSupplier, 1, 2);
 
-        articleFormatToSell = LM.addDProp(logisticsGroup, "articleFormatToSell", "В ассортименте", LogicalClass.instance, assortment, article);
-        articleFormatMin = LM.addDProp(logisticsGroup, "articleFormatMin", "Страх. запас", DoubleClass.instance, format, article);
+        articleFormatToSell = addDProp(logisticsGroup, "articleFormatToSell", "В ассортименте", LogicalClass.instance, assortment, article);
+        articleFormatMin = addDProp(logisticsGroup, "articleFormatMin", "Страх. запас", DoubleClass.instance, format, article);
 
-        LP articleStoreToSell = LM.addCUProp(logisticsGroup, "articleStoreToSell", "В ассортименте", LM.addJProp(articleFormatToSell, shopFormat, 1, 2),
-                LM.addDProp("articleWarehouseToSell", "В ассортименте", LogicalClass.instance, warehouse, article));
+        LP articleStoreToSell = addCUProp(logisticsGroup, "articleStoreToSell", "В ассортименте", addJProp(articleFormatToSell, shopFormat, 1, 2),
+                addDProp("articleWarehouseToSell", "В ассортименте", LogicalClass.instance, warehouse, article));
 
-        articleStoreMin = LM.addJProp("articleStoreMin", true, "Страх. запас", LM.and1, LM.addCUProp(logisticsGroup, "Страх. запас", LM.addJProp(articleFormatMin, shopFormat, 1, 2),
-                LM.addDProp("articleWarehouseMin", "Страх. запас", DoubleClass.instance, warehouse, article)), 1, 2, articleStoreToSell, 1, 2);
-        LP articleStoreForecast = LM.addJProp(LM.and1, LM.addDProp(logisticsGroup, "articleStoreForecast", "Прогноз прод. (в день)", DoubleClass.instance, store, article), 1, 2, articleStoreToSell, 1, 2);
+        articleStoreMin = addJProp("articleStoreMin", true, "Страх. запас", baseLM.and1, addCUProp(logisticsGroup, "Страх. запас", addJProp(articleFormatMin, shopFormat, 1, 2),
+                addDProp("articleWarehouseMin", "Страх. запас", DoubleClass.instance, warehouse, article)), 1, 2, articleStoreToSell, 1, 2);
+        LP articleStoreForecast = addJProp(baseLM.and1, addDProp(logisticsGroup, "articleStoreForecast", "Прогноз прод. (в день)", DoubleClass.instance, store, article), 1, 2, articleStoreToSell, 1, 2);
 
         // MAX((страховой запас+прогноз расхода до следующего цикла поставки)-остаток,0) (по внутренним складам)
-        articleFullStoreDemand = LM.addSUProp("articleFullStoreDemand", true, "Общ. необходимость", Union.SUM, LM.addJProp(multiplyDouble2, addSupplierProperty(articleStoreForecast), 1, 2, articleStorePeriod, 1, 2), addSupplierProperty(articleStoreMin));
-        LP articleStoreRequired = LM.addJProp(onlyPositive, LM.addDUProp(articleFullStoreDemand, addSupplierProperty(articleFreeOrderQuantity)), 1, 2);
+        articleFullStoreDemand = addSUProp("articleFullStoreDemand", true, "Общ. необходимость", Union.SUM, addJProp(multiplyDouble2, addSupplierProperty(articleStoreForecast), 1, 2, articleStorePeriod, 1, 2), addSupplierProperty(articleStoreMin));
+        LP articleStoreRequired = addJProp(onlyPositive, addDUProp(articleFullStoreDemand, addSupplierProperty(articleFreeOrderQuantity)), 1, 2);
 
-        documentLogisticsRequired = LM.addJProp(documentLogisticsGroup, "Необходимо", articleStoreRequired, subjectIncOrder, 1, 2);
-        documentLogisticsSupplied = LM.addJProp(documentLogisticsGroup, "Поставляется", LM.equals2, subjectOutOrder, 1, LM.addJProp(articleStoreSupplier, subjectIncOrder, 1, 2), 1, 2);
-        documentLogisticsRecommended = LM.addJProp(documentLogisticsGroup, "Рекомендовано", min, documentLogisticsRequired, 1, 2, documentFreeQuantity, 1, 2);
+        documentLogisticsRequired = addJProp(documentLogisticsGroup, "Необходимо", articleStoreRequired, subjectIncOrder, 1, 2);
+        documentLogisticsSupplied = addJProp(documentLogisticsGroup, "Поставляется", baseLM.equals2, subjectOutOrder, 1, addJProp(articleStoreSupplier, subjectIncOrder, 1, 2), 1, 2);
+        documentLogisticsRecommended = addJProp(documentLogisticsGroup, "Рекомендовано", min, documentLogisticsRequired, 1, 2, documentFreeQuantity, 1, 2);
 
-        LP orderClientSaleSum = LM.addDProp("orderClientSaleSum", "Нак. сумма", DoubleClass.instance, orderSaleArticleRetail);
-        LP orderClientInitialSum = LM.addDCProp("orderClientInitialSum", "Нак. сумма", clientInitialSum, true, subjectIncOrder, 1);
-        orderClientSum = LM.addSUProp(LM.baseGroup, "Нак. сумма", Union.SUM, LM.addCProp(DoubleClass.instance, 0, orderSaleArticleRetail), orderClientSaleSum, orderClientInitialSum);
-        orderHour = LM.addDCProp(LM.baseGroup, "orderHour", "Час", LM.currentHour, LM.is(orderSale), 1, orderSaleArticleRetail);
-        orderMinute = LM.addDCProp(LM.baseGroup, "orderMinute", "Минута", LM.currentMinute, LM.is(orderSale), 1, orderSaleArticleRetail);
+        LP orderClientSaleSum = addDProp("orderClientSaleSum", "Нак. сумма", DoubleClass.instance, orderSaleArticleRetail);
+        LP orderClientInitialSum = addDCProp("orderClientInitialSum", "Нак. сумма", clientInitialSum, true, subjectIncOrder, 1);
+        orderClientSum = addSUProp(baseGroup, "Нак. сумма", Union.SUM, addCProp(DoubleClass.instance, 0, orderSaleArticleRetail), orderClientSaleSum, orderClientInitialSum);
+        orderHour = addDCProp(baseGroup, "orderHour", "Час", baseLM.currentHour, is(orderSale), 1, orderSaleArticleRetail);
+        orderMinute = addDCProp(baseGroup, "orderMinute", "Минута", baseLM.currentMinute, is(orderSale), 1, orderSaleArticleRetail);
 
-        changeQuantityTime = LM.addTCProp(Time.EPOCH, "changeQuantityTime", "Время выбора", articleInnerQuantity, orderSaleArticleRetail);
-        changeQuantityOrder = LM.addOProp(documentGroup, "Номер", OrderType.SUM, LM.addJProp(LM.and1, LM.addCProp(IntegerClass.instance, 1), articleInnerQuantity, 1, 2), true, true, 1, 1, changeQuantityTime, 1, 2);
+        changeQuantityTime = addTCProp(Time.EPOCH, "changeQuantityTime", "Время выбора", articleInnerQuantity, orderSaleArticleRetail);
+        changeQuantityOrder = addOProp(documentGroup, "Номер", OrderType.SUM, addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), articleInnerQuantity, 1, 2), true, true, 1, 1, changeQuantityTime, 1, 2);
 
-        LP monthDay = LM.addSFProp("EXTRACT(MONTH FROM prm1) * 40 + EXTRACT(DAY FROM prm1)", IntegerClass.instance, 1);
-        orderBirthDay = LM.addDCProp("orderBirthDay", "День рожд.", LM.addJProp(LM.equals2, monthDay, 1, LM.addJProp(monthDay, bornCustomerCheckRetail, 1), 2), true, LM.date, 1, subjectIncOrder, 1);
+        LP monthDay = addSFProp("EXTRACT(MONTH FROM prm1) * 40 + EXTRACT(DAY FROM prm1)", IntegerClass.instance, 1);
+        orderBirthDay = addDCProp("orderBirthDay", "День рожд.", addJProp(baseLM.equals2, monthDay, 1, addJProp(monthDay, bornCustomerCheckRetail, 1), 2), true, baseLM.date, 1, subjectIncOrder, 1);
 
-        sumManfrOrderArticle = LM.addJProp(documentManfrGroup, "sumManfrOrderArticle", "Сумма изг.", multiplyDouble2, articleQuantity, 1, 2, priceManfrOrderArticle, 1, 2);
-        sumManfrOrder = LM.addSGProp(documentManfrGroup, "sumManfrOrder", "Сумма изг.", sumManfrOrderArticle, 1);
+        sumManfrOrderArticle = addJProp(documentManfrGroup, "sumManfrOrderArticle", "Сумма изг.", multiplyDouble2, articleQuantity, 1, 2, priceManfrOrderArticle, 1, 2);
+        sumManfrOrder = addSGProp(documentManfrGroup, "sumManfrOrder", "Сумма изг.", sumManfrOrderArticle, 1);
 
-        sumOrderArticle = LM.addJProp(documentSumGroup, "sumOrderArticle", "Сумма", multiplyDouble2, articleQuantity, 1, 2, priceOrderArticle, 1, 2);
-        sumNoNDSOrderArticleExtInc = LM.addJProp(documentSumGroup, "sumNoNDSOrderArticleExtInc", "Сумма прихода без НДС", multiplyDouble2, innerQuantity, 1, 2, 3,  priceNoNDSOrderArticle, 3, 2);
-        sumNoNDSRetailArticleExtInc = LM.addJProp(documentSumGroup, "sumNoNDSRetailArticleExtInc", "Сумма продажи без НДС", multiplyDouble2, innerQuantity, 1, 2, 3, priceNoNDSRetailArticle, 3, 2);
+        sumOrderArticle = addJProp(documentSumGroup, "sumOrderArticle", "Сумма", multiplyDouble2, articleQuantity, 1, 2, priceOrderArticle, 1, 2);
+        sumNoNDSOrderArticleExtInc = addJProp(documentSumGroup, "sumNoNDSOrderArticleExtInc", "Сумма прихода без НДС", multiplyDouble2, innerQuantity, 1, 2, 3,  priceNoNDSOrderArticle, 3, 2);
+        sumNoNDSRetailArticleExtInc = addJProp(documentSumGroup, "sumNoNDSRetailArticleExtInc", "Сумма продажи без НДС", multiplyDouble2, innerQuantity, 1, 2, 3, priceNoNDSRetailArticle, 3, 2);
 
-        sumOrder = LM.addSGProp(documentSumGroup, "sumOrder", "Сумма", sumOrderArticle, 1);
-        weightOrderArticle = LM.addJProp("weightOrderArticle", "Вес поз.", multiplyDouble2, articleQuantity, 1, 2, weightArticle, 2);
-        transOrderArticle = LM.addJProp("transOrderArticle", "Кол-во гр. мест", multiplyDouble2, articleQuantity, 1, 2, coeffTransArticle, 2);
+        sumOrder = addSGProp(documentSumGroup, "sumOrder", "Сумма", sumOrderArticle, 1);
+        weightOrderArticle = addJProp("weightOrderArticle", "Вес поз.", multiplyDouble2, articleQuantity, 1, 2, weightArticle, 2);
+        transOrderArticle = addJProp("transOrderArticle", "Кол-во гр. мест", multiplyDouble2, articleQuantity, 1, 2, coeffTransArticle, 2);
 
-        LP orderActionClientSum = LM.addSUProp(Union.SUM, LM.addJProp(LM.and1, orderClientSum, 1, LM.is(articleAction), 2), LM.addJProp(LM.and1, LM.addSGProp(sumOrderArticle, 1), 1, articleActionWithCheck, 2));
-        LP articleActionActive = LM.addJProp(LM.and(false, false, false, false, true, true, true, true, true), articleQuantity, 1, 2, LM.is(orderSaleArticleRetail), 1, LM.is(articleAction), 3, inAction, 3, 2, isStarted, 3,
-                LM.addJProp(LM.less2, articleQuantity, 1, 2, articleActionQuantity, 3), 1, 2, 3,
-                LM.addJProp(LM.and(false, true), articleActionBirthDay, 2, LM.is(orderSaleArticleRetail), 1, orderBirthDay, 1), 1, 3,
-                LM.addJProp(LM.less2, orderActionClientSum, 1, 2, articleActionClientSum, 2), 1, 3,
-                LM.addJProp(LM.less2, orderHour, 1, articleActionHourFrom, 2), 1, 3,
-                LM.addJProp(LM.greater2, orderHour, 1, articleActionHourTo, 2), 1, 3);
+        LP orderActionClientSum = addSUProp(Union.SUM, addJProp(baseLM.and1, orderClientSum, 1, is(articleAction), 2), addJProp(baseLM.and1, addSGProp(sumOrderArticle, 1), 1, articleActionWithCheck, 2));
+        LP articleActionActive = addJProp(and(false, false, false, false, true, true, true, true, true), articleQuantity, 1, 2, is(orderSaleArticleRetail), 1, is(articleAction), 3, inAction, 3, 2, isStarted, 3,
+                addJProp(baseLM.less2, articleQuantity, 1, 2, articleActionQuantity, 3), 1, 2, 3,
+                addJProp(and(false, true), articleActionBirthDay, 2, is(orderSaleArticleRetail), 1, orderBirthDay, 1), 1, 3,
+                addJProp(baseLM.less2, orderActionClientSum, 1, 2, articleActionClientSum, 2), 1, 3,
+                addJProp(baseLM.less2, orderHour, 1, articleActionHourFrom, 2), 1, 3,
+                addJProp(baseLM.greater2, orderHour, 1, articleActionHourTo, 2), 1, 3);
 
-        orderNoDiscount = LM.addDProp(LM.baseGroup, "orderNoDiscount", "Без. скидок", LogicalClass.instance, orderSaleArticleRetail);
-        LP orderArticleSaleDiscount = LM.addDCProp("orderArticleSaleDiscount", "Скидка", true, LM.addJProp(LM.and(true, true),
-                LM.addSUProp(Union.MAX,
-                        LM.addSGProp(LM.addMGProp(LM.addJProp(LM.and1, actionDiscount, 3, articleActionActive, 1, 2, 3), 1, 2, articleActionToGroup, 3), 1, 2),
-                        LM.addJProp(LM.and1, LM.addJProp(customerCheckRetailDiscount, subjectIncOrder, 1), 1, LM.is(article), 2)), 1, 2,
-                LM.addJProp(actionNoExtraDiscount, actionOutArticle, 1, 2), 1, 2, orderNoDiscount, 1),
+        orderNoDiscount = addDProp(baseGroup, "orderNoDiscount", "Без. скидок", LogicalClass.instance, orderSaleArticleRetail);
+        LP orderArticleSaleDiscount = addDCProp("orderArticleSaleDiscount", "Скидка", true, addJProp(and(true, true),
+                addSUProp(Union.MAX,
+                        addSGProp(addMGProp(addJProp(baseLM.and1, actionDiscount, 3, articleActionActive, 1, 2, 3), 1, 2, articleActionToGroup, 3), 1, 2),
+                        addJProp(baseLM.and1, addJProp(customerCheckRetailDiscount, subjectIncOrder, 1), 1, is(article), 2)), 1, 2,
+                addJProp(actionNoExtraDiscount, actionOutArticle, 1, 2), 1, 2, orderNoDiscount, 1),
                 true, 1, 2, articleQuantity, 1, 2);
-        LP discountOrderReturnArticle = LM.addMGProp(LM.privateGroup, "discountOrderReturnArticle", "Скидка возвр.", LM.addJProp(LM.and1, orderArticleSaleDiscount, 3, 2, returnDocumentQuantity, 1, 2, 3), 1, 2);
-        discountOrderArticle = LM.addCUProp(LM.baseGroup, "discountOrderArticle", "Скидка", orderArticleSaleDiscount, discountOrderReturnArticle); // возвращаем ту же скидку при возврате
+        LP discountOrderReturnArticle = addMGProp(privateGroup, "discountOrderReturnArticle", "Скидка возвр.", addJProp(baseLM.and1, orderArticleSaleDiscount, 3, 2, returnDocumentQuantity, 1, 2, 3), 1, 2);
+        discountOrderArticle = addCUProp(baseGroup, "discountOrderArticle", "Скидка", orderArticleSaleDiscount, discountOrderReturnArticle); // возвращаем ту же скидку при возврате
 
-        discountSumOrderArticle = LM.addJProp(documentDiscountGroup, "discountSumOrderArticle", "Сумма скидки", round1, LM.addJProp(LM.percent, sumOrderArticle, 1, 2, discountOrderArticle, 1, 2), 1, 2);
-        sumWithDiscountOrderArticle = LM.addDUProp(documentDiscountGroup, "sumWithDiscountOrderArticle", "Сумма со скидкой", sumOrderArticle, discountSumOrderArticle);
+        discountSumOrderArticle = addJProp(documentDiscountGroup, "discountSumOrderArticle", "Сумма скидки", round1, addJProp(baseLM.percent, sumOrderArticle, 1, 2, discountOrderArticle, 1, 2), 1, 2);
+        sumWithDiscountOrderArticle = addDUProp(documentDiscountGroup, "sumWithDiscountOrderArticle", "Сумма со скидкой", sumOrderArticle, discountSumOrderArticle);
 
-        LP orderSalePayGift = LM.addSGProp(LM.addJProp(LM.and(false, false, false), obligationSum, 2, issueObligation, 1, 2, LM.is(order), 1, LM.is(giftObligation), 2), 1);
-        discountSumOrder = LM.addSGProp(documentDiscountGroup, "discountSumOrder", true, "Сумма скидки", discountSumOrderArticle, 1);
-        sumWithDiscountOrder = LM.addCUProp(documentDiscountGroup, "sumWithDiscountOrder", true, "Сумма со скидкой", orderSalePayGift, LM.addSGProp(sumWithDiscountOrderArticle, 1));
+        LP orderSalePayGift = addSGProp(addJProp(and(false, false, false), obligationSum, 2, issueObligation, 1, 2, is(order), 1, is(giftObligation), 2), 1);
+        discountSumOrder = addSGProp(documentDiscountGroup, "discountSumOrder", true, "Сумма скидки", discountSumOrderArticle, 1);
+        sumWithDiscountOrder = addCUProp(documentDiscountGroup, "sumWithDiscountOrder", true, "Сумма со скидкой", orderSalePayGift, addSGProp(sumWithDiscountOrderArticle, 1));
 
-        sumNDSOrderArticle = LM.addJProp(documentNDSGroup, "sumNDSOrderArticle", "Сумма НДС", round0, LM.addJProp(backPercent, sumWithDiscountOrderArticle, 1, 2, ndsOrderArticle, 1, 2), 1, 2);
-        sumNoNDSOrderArticle = LM.addDUProp(documentNDSGroup, "sumNoNDSOrderArticle", "Сумма без НДС", sumWithDiscountOrderArticle, sumNDSOrderArticle);
+        sumNDSOrderArticle = addJProp(documentNDSGroup, "sumNDSOrderArticle", "Сумма НДС", round0, addJProp(backPercent, sumWithDiscountOrderArticle, 1, 2, ndsOrderArticle, 1, 2), 1, 2);
+        sumNoNDSOrderArticle = addDUProp(documentNDSGroup, "sumNoNDSOrderArticle", "Сумма без НДС", sumWithDiscountOrderArticle, sumNDSOrderArticle);
         // док.
-        sumNDSOrder = LM.addSGProp(documentNDSGroup, "sumNDSOrder", "Сумма НДС", sumNDSOrderArticle, 1);
-        sumNoNDSOrder = LM.addDUProp(documentNDSGroup, "sumNoNDSOrder", "Сумма без НДС", sumWithDiscountOrder, sumNDSOrder);
+        sumNDSOrder = addSGProp(documentNDSGroup, "sumNDSOrder", "Сумма НДС", sumNDSOrderArticle, 1);
+        sumNoNDSOrder = addDUProp(documentNDSGroup, "sumNoNDSOrder", "Сумма без НДС", sumWithDiscountOrder, sumNDSOrder);
 
-        quantityOrder = LM.addSGProp("quantityOrder", "Кол-во", articleQuantity, 1);
-        weightOrder = LM.addSGProp("weightOrder", "Общий вес", weightOrderArticle, 1);
-        transOrder = LM.addSGProp("transOrder", "Общее кол-во гр. мест", transOrderArticle, 1);
+        quantityOrder = addSGProp("quantityOrder", "Кол-во", articleQuantity, 1);
+        weightOrder = addSGProp("weightOrder", "Общий вес", weightOrderArticle, 1);
+        transOrder = addSGProp("transOrder", "Общее кол-во гр. мест", transOrderArticle, 1);
 
         // для бухгалтерии магазинов
-        sumRetailOrderArticle = LM.addJProp(documentRetailGroup, "sumRetailOrderArticle", "Сумма розн.", multiplyDouble2, shopPrice, 1, 2, articleQuantity, 1, 2);
-        sumNDSRetailOrderArticle = LM.addJProp(documentRetailGroup, "sumNDSRetailOrderArticle", "Сумма НДС (розн.)", round0, LM.addJProp(backPercent, sumRetailOrderArticle, 1, 2, ndsShopOrderPriceArticle, 1, 2), 1, 2);
-        sumWithoutNDSRetailOrderArticle = LM.addJProp(documentRetailGroup, "sumWithoutNDSRetailOrderArticle", "Сумма розн. без НДС", diff, sumRetailOrderArticle, 1, 2, sumNDSRetailOrderArticle, 1, 2);
-        sumAddvOrderArticle = LM.addJProp(documentRetailGroup, "sumAddvOrderArticle", "Сумма нацен.", diff, sumWithoutNDSRetailOrderArticle, 1, 2, sumNoNDSOrderArticle, 1, 2);
-        addvOrderArticle = LM.addJProp(documentRetailGroup, "addvOrderArticle", "Наценка", round0, LM.addJProp(calcPercent, sumAddvOrderArticle, 1, 2, sumNoNDSOrderArticle, 1, 2), 1, 2);
-        isNegativeAddvOrderArticle = LM.addJProp(LM.less2, addvOrderArticle, 1, 2, LM.vzero);
+        sumRetailOrderArticle = addJProp(documentRetailGroup, "sumRetailOrderArticle", "Сумма розн.", multiplyDouble2, shopPrice, 1, 2, articleQuantity, 1, 2);
+        sumNDSRetailOrderArticle = addJProp(documentRetailGroup, "sumNDSRetailOrderArticle", "Сумма НДС (розн.)", round0, addJProp(backPercent, sumRetailOrderArticle, 1, 2, ndsShopOrderPriceArticle, 1, 2), 1, 2);
+        sumWithoutNDSRetailOrderArticle = addJProp(documentRetailGroup, "sumWithoutNDSRetailOrderArticle", "Сумма розн. без НДС", diff, sumRetailOrderArticle, 1, 2, sumNDSRetailOrderArticle, 1, 2);
+        sumAddvOrderArticle = addJProp(documentRetailGroup, "sumAddvOrderArticle", "Сумма нацен.", diff, sumWithoutNDSRetailOrderArticle, 1, 2, sumNoNDSOrderArticle, 1, 2);
+        addvOrderArticle = addJProp(documentRetailGroup, "addvOrderArticle", "Наценка", round0, addJProp(calcPercent, sumAddvOrderArticle, 1, 2, sumNoNDSOrderArticle, 1, 2), 1, 2);
+        isNegativeAddvOrderArticle = addJProp(baseLM.less2, addvOrderArticle, 1, 2, baseLM.vzero);
 
         // изг.
-        sumAddManfrOrderArticle = LM.addJProp(documentManfrGroup, "sumAddManfrOrderArticle", "Сумма опт. нац.", diff, sumNoNDSOrderArticle, 1, 2, sumManfrOrderArticle, 1, 2);
-        addManfrOrderArticle = LM.addJProp(documentManfrGroup, "addManfrOrderArticle", "Опт. нац.", round0, LM.addJProp(calcPercent, sumAddManfrOrderArticle, 1, 2, sumManfrOrderArticle, 1, 2), 1, 2);
+        sumAddManfrOrderArticle = addJProp(documentManfrGroup, "sumAddManfrOrderArticle", "Сумма опт. нац.", diff, sumNoNDSOrderArticle, 1, 2, sumManfrOrderArticle, 1, 2);
+        addManfrOrderArticle = addJProp(documentManfrGroup, "addManfrOrderArticle", "Опт. нац.", round0, addJProp(calcPercent, sumAddManfrOrderArticle, 1, 2, sumManfrOrderArticle, 1, 2), 1, 2);
 
         // док.
-        sumRetailOrder = LM.addSGProp(documentRetailGroup, "sumRetailOrder", "Сумма розн.", sumRetailOrderArticle, 1);
-        sumNDSRetailOrder = LM.addSGProp(documentRetailGroup, "sumNDSRetailOrder", "Сумма НДС (розн.)", sumNDSRetailOrderArticle, 1);
-        sumWithoutNDSRetailOrder = LM.addDUProp(documentRetailGroup, "sumWithoutNDSRetailOrder", "Сумма розн. без НДС", sumRetailOrder, sumNDSRetailOrder);
-        sumAddvOrder = LM.addJProp(documentRetailGroup, "sumAddvOrder", "Сумма нацен.", diff, sumWithoutNDSRetailOrder, 1, sumNoNDSOrder, 1);
-        addvOrder = LM.addJProp(documentRetailGroup, "addvOrder", "Наценка", round0, LM.addJProp(calcPercent, sumAddvOrder, 1, sumNoNDSOrder, 1), 1);
+        sumRetailOrder = addSGProp(documentRetailGroup, "sumRetailOrder", "Сумма розн.", sumRetailOrderArticle, 1);
+        sumNDSRetailOrder = addSGProp(documentRetailGroup, "sumNDSRetailOrder", "Сумма НДС (розн.)", sumNDSRetailOrderArticle, 1);
+        sumWithoutNDSRetailOrder = addDUProp(documentRetailGroup, "sumWithoutNDSRetailOrder", "Сумма розн. без НДС", sumRetailOrder, sumNDSRetailOrder);
+        sumAddvOrder = addJProp(documentRetailGroup, "sumAddvOrder", "Сумма нацен.", diff, sumWithoutNDSRetailOrder, 1, sumNoNDSOrder, 1);
+        addvOrder = addJProp(documentRetailGroup, "addvOrder", "Наценка", round0, addJProp(calcPercent, sumAddvOrder, 1, sumNoNDSOrder, 1), 1);
 
         // изг.
-        sumAddManfrOrder = LM.addJProp(documentManfrGroup, "sumAddManfrOrder", "Сумма опт. нац.", diff, sumNoNDSOrder, 1, sumManfrOrder, 1);
-        addManfrOrder = LM.addJProp(documentManfrGroup, "addManfrOrder", "Опт. нац.", round0, LM.addJProp(calcPercent, sumAddManfrOrder, 1, sumManfrOrder, 1), 1);
+        sumAddManfrOrder = addJProp(documentManfrGroup, "sumAddManfrOrder", "Сумма опт. нац.", diff, sumNoNDSOrder, 1, sumManfrOrder, 1);
+        addManfrOrder = addJProp(documentManfrGroup, "addManfrOrder", "Опт. нац.", round0, addJProp(calcPercent, sumAddManfrOrder, 1, sumManfrOrder, 1), 1);
 
         // переоценка
-        revalChangeBalance = LM.addJProp("revalChangeBalance", "Остаток (изм.)", LM.and1, revalBalance, 1, 2, LM.addJProp(LM.diff2, shopPrice, 1, 2, prevPrice, 1, 2), 1, 2);
-        sumNewPrevRetailOrderArticle = LM.addJProp("sumNewPrevRetailOrderArticle", "Сумма розн. (нов.)", multiplyDouble2, shopPrice, 1, 2, revalChangeBalance, 1, 2);
-        sumPrevRetailOrderArticle = LM.addJProp("sumPrevRetailOrderArticle", "Сумма розн. (пред.)", multiplyDouble2, prevPrice, 1, 2, revalChangeBalance, 1, 2);
-        sumPriceChangeOrderArticle = LM.addJProp("sumPriceChangeOrderArticle", "Сумма переоц.", diff, sumNewPrevRetailOrderArticle, 1, 2, sumPrevRetailOrderArticle, 1, 2);
-        sumRevalBalance = LM.addSGProp("sumRevalBalance", "Кол-во переоц.", revalChangeBalance, 1);
-        sumNewPrevRetailOrder = LM.addSGProp("sumNewPrevRetailOrder", "Сумма розн. (нов.)", sumNewPrevRetailOrderArticle, 1);
-        sumPrevRetailOrder = LM.addSGProp("sumPrevRetailOrder", "Сумма розн. (пред.)", sumPrevRetailOrderArticle, 1);
-        sumPriceChangeOrder = LM.addJProp("sumPriceChangeOrder", "Сумма переоц.", diff, sumNewPrevRetailOrder, 1, sumPrevRetailOrder, 1);
+        revalChangeBalance = addJProp("revalChangeBalance", "Остаток (изм.)", baseLM.and1, revalBalance, 1, 2, addJProp(baseLM.diff2, shopPrice, 1, 2, prevPrice, 1, 2), 1, 2);
+        sumNewPrevRetailOrderArticle = addJProp("sumNewPrevRetailOrderArticle", "Сумма розн. (нов.)", multiplyDouble2, shopPrice, 1, 2, revalChangeBalance, 1, 2);
+        sumPrevRetailOrderArticle = addJProp("sumPrevRetailOrderArticle", "Сумма розн. (пред.)", multiplyDouble2, prevPrice, 1, 2, revalChangeBalance, 1, 2);
+        sumPriceChangeOrderArticle = addJProp("sumPriceChangeOrderArticle", "Сумма переоц.", diff, sumNewPrevRetailOrderArticle, 1, 2, sumPrevRetailOrderArticle, 1, 2);
+        sumRevalBalance = addSGProp("sumRevalBalance", "Кол-во переоц.", revalChangeBalance, 1);
+        sumNewPrevRetailOrder = addSGProp("sumNewPrevRetailOrder", "Сумма розн. (нов.)", sumNewPrevRetailOrderArticle, 1);
+        sumPrevRetailOrder = addSGProp("sumPrevRetailOrder", "Сумма розн. (пред.)", sumPrevRetailOrderArticle, 1);
+        sumPriceChangeOrder = addJProp("sumPriceChangeOrder", "Сумма переоц.", diff, sumNewPrevRetailOrder, 1, sumPrevRetailOrder, 1);
 
         // для товарного отчета
-/*        documentRevalueAct = LM.addDProp(LM.baseGroup, "documentRevalueAct", "Документ", documentShopPrice, revalueAct);
-        LP revalueActDocument = addAGProp(LM.baseGroup, false, "revalueActDocument", false, "Акт переоценки", revalueAct, documentRevalueAct);
+/*        documentRevalueAct = addDProp(baseGroup, "documentRevalueAct", "Документ", documentShopPrice, revalueAct);
+        LP revalueActDocument = addAGProp(baseGroup, false, "revalueActDocument", false, "Акт переоценки", revalueAct, documentRevalueAct);
         follows(sumPriceChangeOrder, revalueActDocument, 1);
-        follows(LM.is(revalueAct), documentRevalueAct, 1);*/
+        follows(is(revalueAct), documentRevalueAct, 1);*/
 
-        orderSaleUseObligation = LM.addDProp("orderSaleUseObligation", "Использовать", LogicalClass.instance, commitSaleCheckArticleRetail, obligation);
-        LP obligationUseSum = LM.addJProp(LM.and1, obligationSum, 2, orderSaleUseObligation, 1, 2);
+        orderSaleUseObligation = addDProp("orderSaleUseObligation", "Использовать", LogicalClass.instance, commitSaleCheckArticleRetail, obligation);
+        LP obligationUseSum = addJProp(baseLM.and1, obligationSum, 2, orderSaleUseObligation, 1, 2);
 
-        obligationDocument = LM.addAGProp("obligationDocument", "Исп. документ", orderSaleUseObligation, 1);
+        obligationDocument = addAGProp("obligationDocument", "Исп. документ", orderSaleUseObligation, 1);
 
-        LP addDays = LM.addSFProp("prm1+prm2", DateClass.instance, 2);
+        LP addDays = addSFProp("prm1+prm2", DateClass.instance, 2);
 
-        couponStart = LM.addDProp(LM.baseGroup, "couponStart", "Дата начала купонов", DateClass.instance);
-        LP couponExpiry = LM.addDProp(LM.baseGroup, "couponExpiry", "Дата окончания купонов", DateClass.instance);
-        LP certExpiry = LM.addDProp(LM.baseGroup, "certExpiry", "Срок действия серт.", IntegerClass.instance);
+        couponStart = addDProp(baseGroup, "couponStart", "Дата начала купонов", DateClass.instance);
+        LP couponExpiry = addDProp(baseGroup, "couponExpiry", "Дата окончания купонов", DateClass.instance);
+        LP certExpiry = addDProp(baseGroup, "certExpiry", "Срок действия серт.", IntegerClass.instance);
 
-        dateIssued = LM.addJProp("Дата выдачи", LM.date, obligationIssued, 1);
-        couponFromIssued = LM.addDCProp(LM.baseGroup, "couponFromIssued", "Дата начала", couponStart, dateIssued, 1, coupon);
-        LP couponToIssued = LM.addDCProp("couponToIssued", "Дата окончания", couponExpiry, obligationIssued, 1, coupon);
-        LP certToIssued = LM.addDCProp("certToIssued", "Дата окончания", LM.addJProp(addDays, 1, certExpiry), dateIssued, 1, giftObligation);
+        dateIssued = addJProp("Дата выдачи", baseLM.date, obligationIssued, 1);
+        couponFromIssued = addDCProp(baseGroup, "couponFromIssued", "Дата начала", couponStart, dateIssued, 1, coupon);
+        LP couponToIssued = addDCProp("couponToIssued", "Дата окончания", couponExpiry, obligationIssued, 1, coupon);
+        LP certToIssued = addDCProp("certToIssued", "Дата окончания", addJProp(addDays, 1, certExpiry), dateIssued, 1, giftObligation);
 
-        obligationToIssued = LM.addCUProp(LM.baseGroup, "obligationToIssued", "Дата окончания", couponToIssued, certToIssued);
+        obligationToIssued = addCUProp(baseGroup, "obligationToIssued", "Дата окончания", couponToIssued, certToIssued);
 
-        LP orderSaleObligationAllowed = LM.addJProp(LM.and(false, true, true, true), LM.is(commitSaleCheckArticleRetail), 1, obligationIssued, 2,
-                LM.addJProp(LM.less2, sumWithDiscountOrder, 1, obligationSumFrom, 2), 1, 2,
-                LM.addJProp(LM.greater2, LM.date, 1, obligationToIssued, 2), 1, 2,
-                LM.addJProp(LM.less2, LM.date, 1, couponFromIssued, 2), 1, 2);
-        LM.addConstraint(LM.addJProp("Нельзя использовать выбранный сертификат", LM.andNot1, orderSaleUseObligation, 1, 2, orderSaleObligationAllowed, 1, 2), false);
+        LP orderSaleObligationAllowed = addJProp(and(false, true, true, true), is(commitSaleCheckArticleRetail), 1, obligationIssued, 2,
+                addJProp(baseLM.less2, sumWithDiscountOrder, 1, obligationSumFrom, 2), 1, 2,
+                addJProp(baseLM.greater2, baseLM.date, 1, obligationToIssued, 2), 1, 2,
+                addJProp(baseLM.less2, baseLM.date, 1, couponFromIssued, 2), 1, 2);
+        addConstraint(addJProp("Нельзя использовать выбранный сертификат", baseLM.andNot1, orderSaleUseObligation, 1, 2, orderSaleObligationAllowed, 1, 2), false);
 
-        LP orderSaleObligationCanBeUsed = LM.addJProp(LM.andNot1, orderSaleObligationAllowed, 1, 2, obligationDocument, 2);
-        orderSaleObligationCanNotBeUsed = LM.addJProp(LM.and(false, true), LM.is(commitSaleCheckArticleRetail), 1, LM.is(obligation), 2, orderSaleObligationCanBeUsed, 1, 2);
+        LP orderSaleObligationCanBeUsed = addJProp(baseLM.andNot1, orderSaleObligationAllowed, 1, 2, obligationDocument, 2);
+        orderSaleObligationCanNotBeUsed = addJProp(and(false, true), is(commitSaleCheckArticleRetail), 1, is(obligation), 2, orderSaleObligationCanBeUsed, 1, 2);
 
-        LP orderMaxCoupon = LM.addDCProp("orderMaxCoupon", "Макс. процент по купонам", couponMaxPercent, LM.is(orderSaleArticleRetail), 1);
+        LP orderMaxCoupon = addDCProp("orderMaxCoupon", "Макс. процент по купонам", couponMaxPercent, is(orderSaleArticleRetail), 1);
 
         // сумма без сертификатов
-        LP orderSalePayCoupon = LM.addJProp("orderSalePayCoupon", true, "Сумма куп." , min, LM.addSGProp(LM.addJProp(LM.and1, obligationUseSum, 1, 2, LM.is(coupon), 2), 1), 1, LM.addJProp(LM.percent, sumWithDiscountOrder, 1, orderMaxCoupon, 1), 1);
-        LP orderSalePayGiftObligation = LM.addSGProp("orderSalePayGiftObligation", true, "Сумма под. серт.", LM.addJProp(LM.and1, obligationUseSum, 1, 2, LM.is(giftObligation), 2), 1);
-        orderSalePayObligation = LM.addSUProp(documentObligationGroup, "orderSalePayObligation", true, "Сумма серт.", Union.SUM, orderSalePayGiftObligation, orderSalePayCoupon);
-        sumWithDiscountObligationOrder = LM.addJProp(documentObligationGroup, "sumWithDiscountObligationOrder", true, "Сумма к опл.", onlyPositive, LM.addDUProp(sumWithDiscountOrder, orderSalePayObligation), 1);
-        sumWithDiscountObligationOrderArticle = LM.addPGProp(LM.privateGroup, "sumWithDiscountObligationOrderArticle", false, -1, true, "Сумма к опл.", sumWithDiscountOrderArticle, sumWithDiscountObligationOrder, 1);
+        LP orderSalePayCoupon = addJProp("orderSalePayCoupon", true, "Сумма куп." , min, addSGProp(addJProp(baseLM.and1, obligationUseSum, 1, 2, is(coupon), 2), 1), 1, addJProp(baseLM.percent, sumWithDiscountOrder, 1, orderMaxCoupon, 1), 1);
+        LP orderSalePayGiftObligation = addSGProp("orderSalePayGiftObligation", true, "Сумма под. серт.", addJProp(baseLM.and1, obligationUseSum, 1, 2, is(giftObligation), 2), 1);
+        orderSalePayObligation = addSUProp(documentObligationGroup, "orderSalePayObligation", true, "Сумма серт.", Union.SUM, orderSalePayGiftObligation, orderSalePayCoupon);
+        sumWithDiscountObligationOrder = addJProp(documentObligationGroup, "sumWithDiscountObligationOrder", true, "Сумма к опл.", onlyPositive, addDUProp(sumWithDiscountOrder, orderSalePayObligation), 1);
+        sumWithDiscountObligationOrderArticle = addPGProp(privateGroup, "sumWithDiscountObligationOrderArticle", false, -1, true, "Сумма к опл.", sumWithDiscountOrderArticle, sumWithDiscountObligationOrder, 1);
 
         // пока для товарного отчета
-        sumWithDiscountCouponOrder = LM.addJProp(documentObligationGroup, "sumWithDiscountCouponOrder", true, "Сумма без куп.", onlyPositive, LM.addDUProp(sumWithDiscountOrder, orderSalePayCoupon), 1);
-        sumWithDiscountCouponOrderArticle = LM.addPGProp(LM.privateGroup, "sumWithDiscountCouponOrderArticle", false, -1, true, "Сумма без куп.", sumWithDiscountOrderArticle, sumWithDiscountCouponOrder, 1);
-        sumDiscountPayCouponOrder = LM.addSUProp(documentObligationGroup, "sumDiscountPayCouponOrder", true, "Сумма серт.", Union.SUM, discountSumOrder, orderSalePayCoupon);
+        sumWithDiscountCouponOrder = addJProp(documentObligationGroup, "sumWithDiscountCouponOrder", true, "Сумма без куп.", onlyPositive, addDUProp(sumWithDiscountOrder, orderSalePayCoupon), 1);
+        sumWithDiscountCouponOrderArticle = addPGProp(privateGroup, "sumWithDiscountCouponOrderArticle", false, -1, true, "Сумма без куп.", sumWithDiscountOrderArticle, sumWithDiscountCouponOrder, 1);
+        sumDiscountPayCouponOrder = addSUProp(documentObligationGroup, "sumDiscountPayCouponOrder", true, "Сумма серт.", Union.SUM, discountSumOrder, orderSalePayCoupon);
 
-        LP clientSaleSum = LM.addSGProp(sumWithDiscountObligationOrder, subjectIncOrder, 1);
+        LP clientSaleSum = addSGProp(sumWithDiscountObligationOrder, subjectIncOrder, 1);
         orderClientSaleSum.setDerivedChange(clientSaleSum, subjectIncOrder, 1);
-        clientSum = LM.addSUProp(LM.baseGroup, "clientSum", true, "Нак. сумма", Union.SUM, clientSaleSum, clientInitialSum);
-        accumulatedClientSum = LM.addJProp("Накопленная сумма", clientSum, subjectIncOrder, 1);
+        clientSum = addSUProp(baseGroup, "clientSum", true, "Нак. сумма", Union.SUM, clientSaleSum, clientInitialSum);
+        accumulatedClientSum = addJProp("Накопленная сумма", clientSum, subjectIncOrder, 1);
 
-        orderSalePayCash = LM.addDProp(documentPayGroup, "orderSalePayCash", "Наличными", DoubleClass.instance, orderSaleRetail);
-        orderSalePayCard = LM.addDProp(documentPayGroup, "orderSalePayCard", "Карточкой", DoubleClass.instance, orderSaleRetail);
+        orderSalePayCash = addDProp(documentPayGroup, "orderSalePayCash", "Наличными", DoubleClass.instance, orderSaleRetail);
+        orderSalePayCard = addDProp(documentPayGroup, "orderSalePayCard", "Карточкой", DoubleClass.instance, orderSaleRetail);
 
-        impSumCard = LM.addDProp(LM.baseGroup, "inpSumCard", "Безнал. в кассе (ввод)", DoubleClass.instance, DateClass.instance, shop);
-        LP curCard = LM.addJProp(cashRegGroup, true, "Безнал. в кассе (ввод)", impSumCard, LM.currentDate, currentShop);
-        impSumCash = LM.addDProp(LM.baseGroup, "inpSumCash", "Наличных в кассе (ввод)", DoubleClass.instance, DateClass.instance, shop);
-        LP curCash = LM.addJProp(cashRegGroup, true, "Наличных в кассе (ввод)", impSumCash, LM.currentDate, currentShop);
-        impSumBank = LM.addDProp(LM.baseGroup, "inpSumBank", "Отправить в банк", DoubleClass.instance, DateClass.instance, shop);
-        LP curBank = LM.addJProp(cashRegGroup, true, "Отправить в банк (ввод)", impSumBank, LM.currentDate, currentShop);
+        impSumCard = addDProp(baseGroup, "inpSumCard", "Безнал. в кассе (ввод)", DoubleClass.instance, DateClass.instance, shop);
+        LP curCard = addJProp(cashRegGroup, true, "Безнал. в кассе (ввод)", impSumCard, baseLM.currentDate, currentShop);
+        impSumCash = addDProp(baseGroup, "inpSumCash", "Наличных в кассе (ввод)", DoubleClass.instance, DateClass.instance, shop);
+        LP curCash = addJProp(cashRegGroup, true, "Наличных в кассе (ввод)", impSumCash, baseLM.currentDate, currentShop);
+        impSumBank = addDProp(baseGroup, "inpSumBank", "Отправить в банк", DoubleClass.instance, DateClass.instance, shop);
+        LP curBank = addJProp(cashRegGroup, true, "Отправить в банк (ввод)", impSumBank, baseLM.currentDate, currentShop);
 
-        LP allOrderSalePayCard = LM.addSGProp(LM.baseGroup, "Безнал. в кассе", orderSalePayCard, LM.date, 1, subjectOutOrder, 1);
-        LP retailSumOrderRetail = LM.addJProp(LM.and1, sumWithDiscountObligationOrder, 1, LM.is(orderRetail), 1);
-        LP allOrderSalePayCash = LM.addDUProp(cashRegGroup, "Наличных в кассе", LM.addDUProp(LM.addSGProp(retailSumOrderRetail, LM.date, 1, subjectOutOrder, 1), LM.addSGProp(retailSumOrderRetail, LM.date, 1, subjectIncOrder, 1)), allOrderSalePayCard);
+        LP allOrderSalePayCard = addSGProp(baseGroup, "Безнал. в кассе", orderSalePayCard, baseLM.date, 1, subjectOutOrder, 1);
+        LP retailSumOrderRetail = addJProp(baseLM.and1, sumWithDiscountObligationOrder, 1, is(orderRetail), 1);
+        LP allOrderSalePayCash = addDUProp(cashRegGroup, "Наличных в кассе", addDUProp(addSGProp(retailSumOrderRetail, baseLM.date, 1, subjectOutOrder, 1), addSGProp(retailSumOrderRetail, baseLM.date, 1, subjectIncOrder, 1)), allOrderSalePayCard);
 
-        LP allOrderSalePayCardCur = LM.addJProp(cashRegGroup, "allOrderSalePayCardCur", "Безнал. в кассе", allOrderSalePayCard, LM.currentDate, currentShop);
-        LP allOrderSalePayCashCur = LM.addJProp(cashRegGroup, "Наличных в кассе", allOrderSalePayCash, LM.currentDate, currentShop);
+        LP allOrderSalePayCardCur = addJProp(cashRegGroup, "allOrderSalePayCardCur", "Безнал. в кассе", allOrderSalePayCard, baseLM.currentDate, currentShop);
+        LP allOrderSalePayCashCur = addJProp(cashRegGroup, "Наличных в кассе", allOrderSalePayCash, baseLM.currentDate, currentShop);
 
         // сдача/доплата
-        LP orderSalePayAll = LM.addSUProp(Union.SUM, orderSalePayCard, orderSalePayCash);
-        LP orderSaleDiffSum = LM.addJProp(LM.and1, LM.addDUProp(orderSalePayAll, sumWithDiscountObligationOrder), 1, LM.is(orderSaleRetail), 1);
-        LP notEnoughSum = LM.addJProp(LM.negative, orderSaleDiffSum, 1);
-        orderSaleToDo = LM.addJProp(documentPayGroup, "Необходимо", LM.and1, LM.addIfElseUProp(LM.addCProp(StringClass.get(5), "Итого", orderSaleRetail),
-                LM.addCProp(StringClass.get(5), "Сдача", orderSaleRetail), notEnoughSum, 1), 1, orderSaleDiffSum, 1);
-        orderSaleToDoSum = LM.addJProp(documentPayGroup, "Сумма необх.", abs, orderSaleDiffSum, 1);
+        LP orderSalePayAll = addSUProp(Union.SUM, orderSalePayCard, orderSalePayCash);
+        LP orderSaleDiffSum = addJProp(baseLM.and1, addDUProp(orderSalePayAll, sumWithDiscountObligationOrder), 1, is(orderSaleRetail), 1);
+        LP notEnoughSum = addJProp(baseLM.negative, orderSaleDiffSum, 1);
+        orderSaleToDo = addJProp(documentPayGroup, "Необходимо", baseLM.and1, addIfElseUProp(addCProp(StringClass.get(5), "Итого", orderSaleRetail),
+                addCProp(StringClass.get(5), "Сдача", orderSaleRetail), notEnoughSum, 1), 1, orderSaleDiffSum, 1);
+        orderSaleToDoSum = addJProp(documentPayGroup, "Сумма необх.", abs, orderSaleDiffSum, 1);
 
-        LM.addConstraint(LM.addJProp("Сумма наличными меньше сдачи", LM.greater2, orderSalePayCard, 1, sumWithDiscountObligationOrder, 1), false);
-        LM.addConstraint(LM.addJProp("Всё оплачено карточкой", LM.and1, LM.addJProp(LM.equals2, orderSalePayCard, 1, sumWithDiscountObligationOrder, 1), 1, orderSalePayCash, 1), false);
-        LM.addConstraint(LM.addJProp("Введенной суммы не достаточно", LM.and1, notEnoughSum, 1, orderSalePayAll, 1), false); // если ни карточки ни кэша не задали, значит заплатитли без сдачи
+        addConstraint(addJProp("Сумма наличными меньше сдачи", baseLM.greater2, orderSalePayCard, 1, sumWithDiscountObligationOrder, 1), false);
+        addConstraint(addJProp("Всё оплачено карточкой", baseLM.and1, addJProp(baseLM.equals2, orderSalePayCard, 1, sumWithDiscountObligationOrder, 1), 1, orderSalePayCash, 1), false);
+        addConstraint(addJProp("Введенной суммы не достаточно", baseLM.and1, notEnoughSum, 1, orderSalePayAll, 1), false); // если ни карточки ни кэша не задали, значит заплатитли без сдачи
 
-        documentBarcodePrice = LM.addJProp("Цена", priceAllOrderSaleArticle, 1, LM.barcodeToObject, 2);
-        documentBarcodePriceOv = LM.addSUProp("Цена", Union.OVERRIDE, documentBarcodePrice, LM.addJProp(LM.and1, LM.addJProp(obligationSum, LM.barcodeToObject, 1), 2, LM.is(order), 1));
+        documentBarcodePrice = addJProp("Цена", priceAllOrderSaleArticle, 1, baseLM.barcodeToObject, 2);
+        documentBarcodePriceOv = addSUProp("Цена", Union.OVERRIDE, documentBarcodePrice, addJProp(baseLM.and1, addJProp(obligationSum, baseLM.barcodeToObject, 1), 2, is(order), 1));
 
-        barcodeAddClient = LM.addSDProp("Доб. клиента", LogicalClass.instance);
-        barcodeAddClientAction = LM.addJProp(true, "", LM.andNot1, LM.addBAProp(customerCheckRetail, barcodeAddClient), 1, LM.barcodeToObject, 1);
+        barcodeAddClient = addSDProp("Доб. клиента", LogicalClass.instance);
+        barcodeAddClientAction = addJProp(true, "", baseLM.andNot1, addBAProp(customerCheckRetail, barcodeAddClient), 1, baseLM.barcodeToObject, 1);
 
-        barcodeAddCert = LM.addSDProp("Доб. серт.", LogicalClass.instance);
-        barcodeAddCertAction = LM.addJProp(true, "", LM.andNot1, LM.addBAProp(giftObligation, barcodeAddCert), 1, LM.barcodeToObject, 1);
+        barcodeAddCert = addSDProp("Доб. серт.", LogicalClass.instance);
+        barcodeAddCertAction = addJProp(true, "", baseLM.andNot1, addBAProp(giftObligation, barcodeAddCert), 1, baseLM.barcodeToObject, 1);
 
-        barcodeAction2 = LM.addJProp(true, "Ввод штрих-кода 2",
-                LM.addCUProp(
-                        LM.addSCProp(LM.addIfElseUProp(articleQuantity, articleOrderQuantity, LM.is(commitInc), 1)),
-                        LM.addIfElseUProp(orderSaleUseObligation, issueObligation, LM.addJProp(LM.diff2, 1, obligationIssued, 2), 1, 2),
-                        LM.addJProp(LM.equals2, subjectIncOrder, 1, 2),
+        barcodeAction2 = addJProp(true, "Ввод штрих-кода 2",
+                addCUProp(
+                        addSCProp(addIfElseUProp(articleQuantity, articleOrderQuantity, is(commitInc), 1)),
+                        addIfElseUProp(orderSaleUseObligation, issueObligation, addJProp(baseLM.diff2, 1, obligationIssued, 2), 1, 2),
+                        addJProp(baseLM.equals2, subjectIncOrder, 1, 2),
                         xorActionArticle, articleFormatToSell, documentRevalued,
-                        LM.addJProp(LM.and1, LM.changeUser, 2, LM.is(LM.baseClass), 1)
-                ), 1, LM.barcodeToObject, 2);
-        barcodeAction3 = LM.addJProp(true, "Ввод штрих-кода 3",
-                LM.addCUProp(
-                        LM.addJProp(LM.and(false, false), LM.changeUser, 2, LM.is(LM.baseClass), 1, LM.is(LM.baseClass), 3),
-                        LM.addSCProp(returnInnerQuantity)
-                ), 1, LM.barcodeToObject, 3, 2);
+                        addJProp(baseLM.and1, baseLM.changeUser, 2, is(baseClass), 1)
+                ), 1, baseLM.barcodeToObject, 2);
+        barcodeAction3 = addJProp(true, "Ввод штрих-кода 3",
+                addCUProp(
+                        addJProp(and(false, false), baseLM.changeUser, 2, is(baseClass), 1, is(baseClass), 3),
+                        addSCProp(returnInnerQuantity)
+                ), 1, baseLM.barcodeToObject, 3, 2);
 
-        LP xorCouponArticleGroup = LM.addDProp(couponGroup, "xorCouponArticleGroup", "Вкл.", LogicalClass.instance, articleGroup);
-        xorCouponArticle = LM.addDProp(couponGroup, "xorCouponArticle", "Вкл./искл.", LogicalClass.instance, article);
-        inCoupon = LM.addXorUProp(couponGroup, "inCoupon", true, "Выд. купон", xorCouponArticle, LM.addJProp(xorCouponArticleGroup, articleToGroup, 1));
+        LP xorCouponArticleGroup = addDProp(couponGroup, "xorCouponArticleGroup", "Вкл.", LogicalClass.instance, articleGroup);
+        xorCouponArticle = addDProp(couponGroup, "xorCouponArticle", "Вкл./искл.", LogicalClass.instance, article);
+        inCoupon = addXorUProp(couponGroup, "inCoupon", true, "Выд. купон", xorCouponArticle, addJProp(xorCouponArticleGroup, articleToGroup, 1));
 
-        couponIssueSum = LM.addDProp(couponGroup, "couponIssueSum", "Сумма купона", DoubleClass.instance, DoubleClass.instance);
+        couponIssueSum = addDProp(couponGroup, "couponIssueSum", "Сумма купона", DoubleClass.instance, DoubleClass.instance);
 
-        LP couponDocToIssueSum = LM.addDCProp("couponDocToIssueSum", "Сумма купона к выд.", LM.addIfProp(LM.addMGProp(LM.addJProp(LM.and1, couponIssueSum, 3, LM.addJProp(LM.greater2, priceOrderArticle, 1, 2, 3), 1, 2, 3), 1, 2), false, inCoupon, 2), true, 1, 2, articleQuantity, 1, 2, commitSaleCheckArticleRetail); // здесь конечно хорошо было бы orderSaleDocPrice вытащить за скобки, но будет висячий ключ поэтому приходится пока немого извращаться
+        LP couponDocToIssueSum = addDCProp("couponDocToIssueSum", "Сумма купона к выд.", addIfProp(addMGProp(addJProp(baseLM.and1, couponIssueSum, 3, addJProp(baseLM.greater2, priceOrderArticle, 1, 2, 3), 1, 2, 3), 1, 2), false, inCoupon, 2), true, 1, 2, articleQuantity, 1, 2, commitSaleCheckArticleRetail); // здесь конечно хорошо было бы orderSaleDocPrice вытащить за скобки, но будет висячий ключ поэтому приходится пока немого извращаться
 
-        couponToIssueQuantity = LM.addDUProp("К выдаче", LM.addSGProp(articleQuantity, 1, couponDocToIssueSum, 1, 2),
-                LM.addSGProp(LM.addJProp(LM.and1, LM.addCProp(DoubleClass.instance, 1), issueCoupon, 1, 2), 1, obligationSum, 2));
-        couponToIssueConstraint = LM.addJProp("Кол-во выданных купонов не соответствует требуемому", LM.diff2, couponToIssueQuantity, 1, 2, LM.vzero);
-        LM.addConstraint(couponToIssueConstraint, false);
+        couponToIssueQuantity = addDUProp("К выдаче", addSGProp(articleQuantity, 1, couponDocToIssueSum, 1, 2),
+                addSGProp(addJProp(baseLM.and1, addCProp(DoubleClass.instance, 1), issueCoupon, 1, 2), 1, obligationSum, 2));
+        couponToIssueConstraint = addJProp("Кол-во выданных купонов не соответствует требуемому", baseLM.diff2, couponToIssueQuantity, 1, 2, baseLM.vzero);
+        addConstraint(couponToIssueConstraint, false);
 
-        orderUser = LM.addDCProp("orderUser", "Исп-ль заказа", LM.currentUser, true, LM.is(order), 1);
-        orderUserName = LM.addJProp("Исп-ль заказа", LM.name, orderUser, 1);
+        orderUser = addDCProp("orderUser", "Исп-ль заказа", baseLM.currentUser, true, is(order), 1);
+        orderUserName = addJProp("Исп-ль заказа", baseLM.name, orderUser, 1);
         // вспомогательные свойства
-        orderContragentBarcode = LM.addJProp("Штрих-код (кому)", LM.barcode, subjectIncOrder, 1);
-        orderUserBarcode = LM.addJProp("Кассир", LM.barcode, orderUser, 1);
+        orderContragentBarcode = addJProp("Штрих-код (кому)", baseLM.barcode, subjectIncOrder, 1);
+        orderUserBarcode = addJProp("Кассир", baseLM.barcode, orderUser, 1);
 
-        orderComputer = LM.addDCProp("orderComputer", "Компьютер заказа", LM.currentComputer, true, LM.is(order), 1);
-        orderComputerName = LM.addJProp("Компьютер заказа", LM.hostname, orderComputer, 1);
+        orderComputer = addDCProp("orderComputer", "Компьютер заказа", baseLM.currentComputer, true, is(order), 1);
+        orderComputerName = addJProp("Компьютер заказа", baseLM.hostname, orderComputer, 1);
 
 
-        LM.setNotNull(LM.addJProp("Штрих-код покупателя", LM.and1, LM.barcode, 1, LM.is(customerCheckRetail), 1));
-        //setNotNull(LM.addJProp("Штрих-код товара", LM.and1, barcode, 1, LM.is(article), 1));
-        LM.setNotNull(LM.addJProp("Штрих-код сертификата", LM.and1, LM.barcode, 1, LM.is(obligation), 1));
-        //setNotNull(LM.addJProp(andNot1, barcode, 1, LM.is(user), 1));
+        setNotNull(addJProp("Штрих-код покупателя", baseLM.and1, baseLM.barcode, 1, is(customerCheckRetail), 1));
+        //setNotNull(addJProp("Штрих-код товара", baseLM.and1, barcode, 1, is(article), 1));
+        setNotNull(addJProp("Штрих-код сертификата", baseLM.and1, baseLM.barcode, 1, is(obligation), 1));
+        //setNotNull(addJProp(andNot1, baseLM.barcode, 1, is(user), 1));
 
-        checkRetailExported = LM.addDProp("checkRetailExported", "Экспортирован", LogicalClass.instance, orderRetail);
+        checkRetailExported = addDProp("checkRetailExported", "Экспортирован", LogicalClass.instance, orderRetail);
 
         VEDBL.cashRegController = new CashRegController(this); // бред конечно создавать его здесь, но влом создавать getCashRegController()
         VEDBL.cashRegController.addCashRegProperties();
 
-        LP importCustomerCheckRetail = LM.addProp(LM.baseGroup, new CustomerCheckRetailImportActionProperty(VEDBL, LM.genSID()));
+        LP importCustomerCheckRetail = addProp(baseGroup, new CustomerCheckRetailImportActionProperty(VEDBL, genSID()));
 
-        quantityCheckCommitInnerArticle = LM.addSDProp("quantityCheckCommitInnerArticle", "Кол-во свер.", DoubleClass.instance, commitInner, article);
-        barcodeActionCheck = LM.addJProp(true, "Ввод штрих-кода (проверки)",
-                LM.addCUProp(
-                        LM.addSCProp(LM.addIfElseUProp(quantityCheckCommitInnerArticle, articleOrderQuantity, LM.is(commitInner), 1))
-                ), 1, LM.barcodeToObject, 2);
+        quantityCheckCommitInnerArticle = addSDProp("quantityCheckCommitInnerArticle", "Кол-во свер.", DoubleClass.instance, commitInner, article);
+        barcodeActionCheck = addJProp(true, "Ввод штрих-кода (проверки)",
+                addCUProp(
+                        addSCProp(addIfElseUProp(quantityCheckCommitInnerArticle, articleOrderQuantity, is(commitInner), 1))
+                ), 1, baseLM.barcodeToObject, 2);
 
-        quantityDiffCommitArticle = LM.addDUProp(articleOrderQuantity, LM.addCUProp("Кол-во свер.", outerCommitedQuantity, quantityCheckCommitInnerArticle));
+        quantityDiffCommitArticle = addDUProp(articleOrderQuantity, addCUProp("Кол-во свер.", outerCommitedQuantity, quantityCheckCommitInnerArticle));
 
         // для импорта
-        nameToCurrency = LM.addAGProp("nameToCurrency", "Валюта", currency, LM.name);
-        nameToArticleGroup = LM.addAGProp("nameToArticleGroup", "Гр. тов.", articleGroup, LM.name);
-        nameToUnitOfMeasure = LM.addAGProp("nameToUnitOfMeasure", "Ед. изм.", unitOfMeasure, LM.name);
-        nameToBrend = LM.addAGProp("nameToBrend", "Бренд", brend, LM.name);
-        nameToGender = LM.addAGProp("nameToGender", "Пол", gender, LM.name);
+        nameToCurrency = addAGProp("nameToCurrency", "Валюта", currency, baseLM.name);
+        nameToArticleGroup = addAGProp("nameToArticleGroup", "Гр. тов.", articleGroup, baseLM.name);
+        nameToUnitOfMeasure = addAGProp("nameToUnitOfMeasure", "Ед. изм.", unitOfMeasure, baseLM.name);
+        nameToBrend = addAGProp("nameToBrend", "Бренд", brend, baseLM.name);
+        nameToGender = addAGProp("nameToGender", "Пол", gender, baseLM.name);
 
-        dateLastImportShop = LM.addDProp(cashRegGroup, "dateLastImportSh", "Дата прайса", DateClass.instance, shop);
-        dateLastImport = LM.addJProp(cashRegGroup, "dateLastImport", "Дата прайса", dateLastImportShop, currentShop);
+        dateLastImportShop = addDProp(cashRegGroup, "dateLastImportSh", "Дата прайса", DateClass.instance, shop);
+        dateLastImport = addJProp(cashRegGroup, "dateLastImport", "Дата прайса", dateLastImportShop, currentShop);
 
-        padlBarcodeToObject = LM.addJProp(LM.privateGroup, true, "Объект (до 12)", LM.barcodeToObject, padl, 1);
+        padlBarcodeToObject = addJProp(privateGroup, true, "Объект (до 12)", baseLM.barcodeToObject, padl, 1);
 
         // для накладной
-        seriesInvoiceDocument = LM.addDProp(documentShipmentGroup, "seriesInvoiceDocument", "Серия", StringClass.get(4), shipmentDocument);
-        numberInvoiceDocument = LM.addDProp(documentShipmentGroup, "numberInvoiceDocument", "Номер", StringClass.get(15), shipmentDocument);
-        invoiceDocumentNumber = LM.addAGProp("invoiceDocumentNumber", "Документ", numberInvoiceDocument);
+        seriesInvoiceDocument = addDProp(documentShipmentGroup, "seriesInvoiceDocument", "Серия", StringClass.get(4), shipmentDocument);
+        numberInvoiceDocument = addDProp(documentShipmentGroup, "numberInvoiceDocument", "Номер", StringClass.get(15), shipmentDocument);
+        invoiceDocumentNumber = addAGProp("invoiceDocumentNumber", "Документ", numberInvoiceDocument);
 
-        legalOutContract = LM.addGDProp(LM.idGroup, "Contract", "legalOut", "Кого (ИД)", new ValueClass[]{supplier, storeLegalEntity}, new CustomClass[]{contractSupplier, contractSale});
-        nameLegalOutContract = LM.addJProp(LM.baseGroup, "nameLegalOutContract", "Кого", LM.name, legalOutContract, 1);
-        legalIncContract = LM.addGDProp(LM.idGroup, "Contract", "legalInc", "С кем (ИД)", new ValueClass[]{storeLegalEntity, customerWhole}, new CustomClass[]{contractDelivery, contractCustomer});
-        nameLegalIncContract = LM.addJProp(LM.baseGroup, "nameLegalIncContract", "С кем", LM.name, legalIncContract, 1);
+        legalOutContract = addGDProp(idGroup, "Contract", "legalOut", "Кого (ИД)", new ValueClass[]{supplier, storeLegalEntity}, new CustomClass[]{contractSupplier, contractSale});
+        nameLegalOutContract = addJProp(baseGroup, "nameLegalOutContract", "Кого", baseLM.name, legalOutContract, 1);
+        legalIncContract = addGDProp(idGroup, "Contract", "legalInc", "С кем (ИД)", new ValueClass[]{storeLegalEntity, customerWhole}, new CustomClass[]{contractDelivery, contractCustomer});
+        nameLegalIncContract = addJProp(baseGroup, "nameLegalIncContract", "С кем", baseLM.name, legalIncContract, 1);
 
-        LP legalEntityDoIncOrder = LM.addIfElseUProp(LM.privateGroup, "legalEntityDoIncOrder", "Договор", legalEntityIncOrder, legalEntityOutOrder, LM.is(orderDo), 1);
-        LP legalEntityDoOutOrder = LM.addIfElseUProp(LM.privateGroup, "legalEntityDoOutOrder", "Договор", legalEntityOutOrder, legalEntityIncOrder, LM.is(orderDo), 1);
-        contractOrder = LM.addDProp(LM.idGroup, "contractOrder", "Договор (ИД)", contract, orderWhole);
-        LP nameContractOrder = LM.addJProp(LM.baseGroup, "nameContractOrder", "Договор", LM.name, contractOrder, 1);
+        LP legalEntityDoIncOrder = addIfElseUProp(privateGroup, "legalEntityDoIncOrder", "Договор", legalEntityIncOrder, legalEntityOutOrder, is(orderDo), 1);
+        LP legalEntityDoOutOrder = addIfElseUProp(privateGroup, "legalEntityDoOutOrder", "Договор", legalEntityOutOrder, legalEntityIncOrder, is(orderDo), 1);
+        contractOrder = addDProp(idGroup, "contractOrder", "Договор (ИД)", contract, orderWhole);
+        LP nameContractOrder = addJProp(baseGroup, "nameContractOrder", "Договор", baseLM.name, contractOrder, 1);
 
-        LM.addConstraint(LM.addJProp("только между этими юрлицами", LM.diff2, legalEntityDoIncOrder, 1, LM.addJProp(legalIncContract, contractOrder, 1), 1), true);
-        LM.addConstraint(LM.addJProp("только между этими юрлицами", LM.diff2, legalEntityDoOutOrder, 1, LM.addJProp(legalOutContract, contractOrder, 1), 1), true);
+        addConstraint(addJProp("только между этими юрлицами", baseLM.diff2, legalEntityDoIncOrder, 1, addJProp(legalIncContract, contractOrder, 1), 1), true);
+        addConstraint(addJProp("только между этими юрлицами", baseLM.diff2, legalEntityDoOutOrder, 1, addJProp(legalOutContract, contractOrder, 1), 1), true);
 
-        formatAssortment = LM.addDProp("formatAssortment", "Формат ассортимента", format, assortment);
-        nameFormatAssortment = LM.addJProp(LM.baseGroup, "nameFormatAssortment", "Имя формата", LM.name, formatAssortment, 1);
-        contractSpecification = LM.addDProp("contractSpecification", "договор спецификации", contract, specification);
-        nameContractSpecification = LM.addJProp(LM.baseGroup, "nameContractSpecification", "Имя договора", LM.name, contractSpecification, 1);
+        formatAssortment = addDProp("formatAssortment", "Формат ассортимента", format, assortment);
+        nameFormatAssortment = addJProp(baseGroup, "nameFormatAssortment", "Имя формата", baseLM.name, formatAssortment, 1);
+        contractSpecification = addDProp("contractSpecification", "договор спецификации", contract, specification);
+        nameContractSpecification = addJProp(baseGroup, "nameContractSpecification", "Имя договора", baseLM.name, contractSpecification, 1);
 
-        articleToSpecification = LM.addDProp(LM.baseGroup, "articleToSpecification", "Принадлежит спецификации", LogicalClass.instance, article, specification);
-        specificationDateFrom = LM.addDProp("specificationDateFrom", "Дата (С)", DateClass.instance, specification);
-        specificationDateTo = LM.addDProp("specificationDateTo", "Дата (По)", DateClass.instance, specification);
-        assortmentDateFrom = LM.addDProp("assortmentDateFrom", "Дата (С)", DateClass.instance, assortment);
-        assortmentDateTo = LM.addDProp("assortmentDateTo", "Дата (По)", DateClass.instance, assortment);
+        articleToSpecification = addDProp(baseGroup, "articleToSpecification", "Принадлежит спецификации", LogicalClass.instance, article, specification);
+        specificationDateFrom = addDProp("specificationDateFrom", "Дата (С)", DateClass.instance, specification);
+        specificationDateTo = addDProp("specificationDateTo", "Дата (По)", DateClass.instance, specification);
+        assortmentDateFrom = addDProp("assortmentDateFrom", "Дата (С)", DateClass.instance, assortment);
+        assortmentDateTo = addDProp("assortmentDateTo", "Дата (По)", DateClass.instance, assortment);
 
         //!!!
-        articleToDocument = LM.addMGProp(LM.baseGroup, "articleToDocument", "Входит в договор документа", LM.addJProp(LM.and(false, false, false),
+        articleToDocument = addMGProp(baseGroup, "articleToDocument", "Входит в договор документа", addJProp(and(false, false, false),
                 articleToSpecification, 1, 2,
-                LM.addJProp(LM.less2, specificationDateFrom, 1, LM.date, 2), 2, 3,
-                LM.addJProp(LM.greater2, specificationDateTo, 1, LM.date, 2), 2, 3,
-                LM.addJProp(LM.equals2, contractSpecification, 1, contractOrder, 2), 2, 3), 1, 3);
-        LM.addConstraint(LM.addJProp("Можно выбирать товары только согласно договору", LM.andNot1, articleInnerQuantity, 2, 1, LM.addJProp(LM.equals2, LM.vtrue, articleToDocument, 1, 2), 1, 2), true);
-        LM.addConstraint(LM.addJProp("Можно выбирать товары только согласно договору", LM.andNot1, outerOrderQuantity, 2, 1, LM.addJProp(LM.equals2, LM.vtrue, articleToDocument, 1, 2), 1, 2), true);
+                addJProp(baseLM.less2, specificationDateFrom, 1, baseLM.date, 2), 2, 3,
+                addJProp(baseLM.greater2, specificationDateTo, 1, baseLM.date, 2), 2, 3,
+                addJProp(baseLM.equals2, contractSpecification, 1, contractOrder, 2), 2, 3), 1, 3);
+        addConstraint(addJProp("Можно выбирать товары только согласно договору", baseLM.andNot1, articleInnerQuantity, 2, 1, addJProp(baseLM.equals2, baseLM.vtrue, articleToDocument, 1, 2), 1, 2), true);
+        addConstraint(addJProp("Можно выбирать товары только согласно договору", baseLM.andNot1, outerOrderQuantity, 2, 1, addJProp(baseLM.equals2, baseLM.vtrue, articleToDocument, 1, 2), 1, 2), true);
 
-        LP invoiceOrderRetail = LM.addDProp("invoiceOrderRetail", "Счет-фактура", StringClass.get(50), orderSaleInvoiceArticleRetail);
-        LP purposeOrderRetail = LM.addDProp("purposeOrderRetail", "Цель приобретения", StringClass.get(50), orderSaleInvoiceArticleRetail);
-        permissionOrder = LM.addCUProp(documentInvoiceSaleGroup, "permissionOrder", "Основание отпуска", invoiceOrderRetail, nameContractOrder);
-        purposeOrder = LM.addCUProp(documentInvoiceSaleGroup, "purposeOrder", "Цель приобретения", purposeOrderRetail);
+        LP invoiceOrderRetail = addDProp("invoiceOrderRetail", "Счет-фактура", StringClass.get(50), orderSaleInvoiceArticleRetail);
+        LP purposeOrderRetail = addDProp("purposeOrderRetail", "Цель приобретения", StringClass.get(50), orderSaleInvoiceArticleRetail);
+        permissionOrder = addCUProp(documentInvoiceSaleGroup, "permissionOrder", "Основание отпуска", invoiceOrderRetail, nameContractOrder);
+        purposeOrder = addCUProp(documentInvoiceSaleGroup, "purposeOrder", "Цель приобретения", purposeOrderRetail);
 
-        LP[] propsInvoiceDocument = LM.addDProp(documentShipmentOutGroup, "InvoiceDocument",
+        LP[] propsInvoiceDocument = addDProp(documentShipmentOutGroup, "InvoiceDocument",
                         new String[]{"personPermission", "personOut", "personWarrant", "warrantBy", "personInc"},
                         new String[]{"Отпуск разрешил", "Отпуск произвел", "Кому выд. ТМЦ (по дов.)", "По доверенности выд.", "Товар получил"},
                         StringClass.getArray(50,60,60,60,70,60), shipmentDocumentOut);
-        LP[] propsInvoiceTransportDocument = LM.addDProp(documentShipmentTransportGroup, "InvoiceDocument",
+        LP[] propsInvoiceTransportDocument = addDProp(documentShipmentTransportGroup, "InvoiceDocument",
                         new String[]{"personPRR", "typePRR", "codePRR", "timeOut", "timeInc", "timeDelay",
                                 "transport", "transportList", "personTransport", "personDriver", "personRespTransport", "typeTransport", "route", "readdress", "trailer", "garageNumber"},
                         new String[]{"Исполнитель ПРР", "Способ ПРР", "Код ПРР", "Убытие", "Прибытие", "Простой",
@@ -1390,74 +1393,74 @@ public class VEDLogicsModule extends LogicsModule {
 
 
 
-        shopOutName  = LM.addJProp(LM.baseGroup, "Магазин расхода", nameSubjectOutOrder, obligationIssued, 1);
-        shopIncName  = LM.addJProp(LM.baseGroup, "Магазин использования", nameSubjectOutOrder, obligationDocument, 1);
+        shopOutName  = addJProp(baseGroup, "Магазин расхода", nameSubjectOutOrder, obligationIssued, 1);
+        shopIncName  = addJProp(baseGroup, "Магазин использования", nameSubjectOutOrder, obligationDocument, 1);
 
-        clientIncName  = LM.addJProp(LM.baseGroup, "clientIncName", "Клиент", nameSubjectIncOrder, obligationIssued, 1);
-        clientOutName  = LM.addJProp(LM.baseGroup, "clientOutName", "Клиент", nameSubjectIncOrder, obligationDocument, 1);
+        clientIncName  = addJProp(baseGroup, "clientIncName", "Клиент", nameSubjectIncOrder, obligationIssued, 1);
+        clientOutName  = addJProp(baseGroup, "clientOutName", "Клиент", nameSubjectIncOrder, obligationDocument, 1);
 
-        sumWithDiscountObligation = LM.addJProp(LM.baseGroup, "sumWithDiscountObligation", "Сумма со скидкой", sumWithDiscountOrder, obligationDocument, 1);
-        discountSumObligation = LM.addJProp(LM.baseGroup, "discountSumObligation", "Сумма скидки", discountSumOrder, obligationDocument, 1);
+        sumWithDiscountObligation = addJProp(baseGroup, "sumWithDiscountObligation", "Сумма со скидкой", sumWithDiscountOrder, obligationDocument, 1);
+        discountSumObligation = addJProp(baseGroup, "discountSumObligation", "Сумма скидки", discountSumOrder, obligationDocument, 1);
 
-        obligFromIssued = LM.addJProp(LM.baseGroup, "Дата выдачи", LM.date, obligationIssued,1);
-        obligToIssued = LM.addJProp(LM.baseGroup, "Дата использования", LM.date, obligationDocument, 1);
+        obligFromIssued = addJProp(baseGroup, "Дата выдачи", baseLM.date, obligationIssued,1);
+        obligToIssued = addJProp(baseGroup, "Дата использования", baseLM.date, obligationDocument, 1);
 
 
-       articleIncDocumentQuantity = LM.addJProp(LM.baseGroup, "articleIncDocumentQuantity", "Кол-во", articleQuantity, obligationDocument, 1, 2);
-       articleOutDocumentQuantity = LM.addJProp(LM.baseGroup, "articleOutDocumentQuantity", "Кол-во", articleQuantity, obligationIssued, 1, 2);
+       articleIncDocumentQuantity = addJProp(baseGroup, "articleIncDocumentQuantity", "Кол-во", articleQuantity, obligationDocument, 1, 2);
+       articleOutDocumentQuantity = addJProp(baseGroup, "articleOutDocumentQuantity", "Кол-во", articleQuantity, obligationIssued, 1, 2);
 
-       articleIncDocumentPrice = LM.addJProp(LM.baseGroup, "articleIncDocumentPrice", "Цена", orderSalePrice, obligationDocument, 1, 2);
-       articleOutDocumentPrice = LM.addJProp(LM.baseGroup, "articleOutDocumentPrice", "Цена", orderSalePrice, obligationIssued, 1, 2);
+       articleIncDocumentPrice = addJProp(baseGroup, "articleIncDocumentPrice", "Цена", orderSalePrice, obligationDocument, 1, 2);
+       articleOutDocumentPrice = addJProp(baseGroup, "articleOutDocumentPrice", "Цена", orderSalePrice, obligationIssued, 1, 2);
 
         initDateProperties();
     }
 
     void initDateProperties() {
 
-        betweenDate2 = LM.addJProp(LM.between, LM.date, 1, LM.object(DateClass.instance), 2, LM.object(DateClass.instance), 3);
+        betweenDate2 = addJProp(baseLM.between, baseLM.date, 1, object(DateClass.instance), 2, object(DateClass.instance), 3);
 
-        quantitySupplierArticleBetweenDates = LM.addSGProp("quantitySupplierArticleBetweenDates", "Проданное кол-во",
-                LM.addJProp(LM.and(false,false), innerQuantity, 1, 2, 3, LM.is(orderSale), 1, betweenDate2, 1, 4, 5), contragentOrder, 3, 2, 4, 5);
-        sumNoNDSSupplierArticleBetweenDates = LM.addSGProp("sumNoNDSSupplierArticleBetweenDates", "Сумма поставщика без НДС",
-                LM.addJProp(LM.and(false,false), sumNoNDSOrderArticleExtInc, 1, 2, 3, LM.is(orderSale), 1, betweenDate2, 1, 4, 5), contragentOrder, 3, 2, 4, 5);
-        sumNoNDSRetailSupplierArticleBetweenDates = LM.addSGProp("sumNoNDSRetailSupplierArticleBetweenDates", "Сумма продажи без НДС",
-                LM.addJProp(LM.and(false,false), sumNoNDSRetailArticleExtInc, 1, 2, 3, LM.is(orderSale), 1, betweenDate2, 1, 4, 5), contragentOrder, 3, 2, 4, 5);
-        markUpSupplierShopArticleBetweenDates = LM.addDUProp("markUpSupplierShopArticleBetweenDates","Сумма наценки", sumNoNDSRetailSupplierArticleBetweenDates, sumNoNDSSupplierArticleBetweenDates);
+        quantitySupplierArticleBetweenDates = addSGProp("quantitySupplierArticleBetweenDates", "Проданное кол-во",
+                addJProp(and(false,false), innerQuantity, 1, 2, 3, is(orderSale), 1, betweenDate2, 1, 4, 5), contragentOrder, 3, 2, 4, 5);
+        sumNoNDSSupplierArticleBetweenDates = addSGProp("sumNoNDSSupplierArticleBetweenDates", "Сумма поставщика без НДС",
+                addJProp(and(false,false), sumNoNDSOrderArticleExtInc, 1, 2, 3, is(orderSale), 1, betweenDate2, 1, 4, 5), contragentOrder, 3, 2, 4, 5);
+        sumNoNDSRetailSupplierArticleBetweenDates = addSGProp("sumNoNDSRetailSupplierArticleBetweenDates", "Сумма продажи без НДС",
+                addJProp(and(false,false), sumNoNDSRetailArticleExtInc, 1, 2, 3, is(orderSale), 1, betweenDate2, 1, 4, 5), contragentOrder, 3, 2, 4, 5);
+        markUpSupplierShopArticleBetweenDates = addDUProp("markUpSupplierShopArticleBetweenDates","Сумма наценки", sumNoNDSRetailSupplierArticleBetweenDates, sumNoNDSSupplierArticleBetweenDates);
 
-        markUpPercentSupplierShopArticleBetweenDates = LM.addJProp(documentRetailGroup, "markUpPercentSupplierShopArticleBetweenDates", "Наценка", round0, LM.addJProp(calcPercent, markUpSupplierShopArticleBetweenDates, 1, 2, 3, 4, sumNoNDSSupplierArticleBetweenDates, 1, 2, 3, 4), 1, 2, 3, 4);
-
-
-
-        betweenObligationIssuedDateFromDateTo = LM.addJProp(LM.between, dateIssued, 1, LM.object(DateClass.instance), 2, LM.object(DateClass.instance), 3);
-        betweenObligationToIssuedDateFromDateTo = LM.addJProp(LM.between, obligToIssued, 1, LM.object(DateClass.instance), 2, LM.object(DateClass.instance), 3);
+        markUpPercentSupplierShopArticleBetweenDates = addJProp(documentRetailGroup, "markUpPercentSupplierShopArticleBetweenDates", "Наценка", round0, addJProp(calcPercent, markUpSupplierShopArticleBetweenDates, 1, 2, 3, 4, sumNoNDSSupplierArticleBetweenDates, 1, 2, 3, 4), 1, 2, 3, 4);
 
 
 
+        betweenObligationIssuedDateFromDateTo = addJProp(baseLM.between, dateIssued, 1, object(DateClass.instance), 2, object(DateClass.instance), 3);
+        betweenObligationToIssuedDateFromDateTo = addJProp(baseLM.between, obligToIssued, 1, object(DateClass.instance), 2, object(DateClass.instance), 3);
 
-        betweenDate = LM.addJProp(LM.between, LM.date, 1, LM.object(DateClass.instance), 2, LM.object(DateClass.instance), 3);
 
-        sumRetailIncBetweenDate = LM.addSGProp(LM.baseGroup, "sumRetailIncBetweenDate", "Приходная сумма за интервал",
-                LM.addJProp(LM.and1, sumRetailOrder, 1, betweenDate, 1, 2, 3), subjectIncOrder, 1, 2, 3);
-        sumRetailOutBetweenDate = LM.addSGProp(LM.baseGroup, "sumRetailOutBetweenDate", "Расходная сумма за интервал",
-                LM.addJProp(LM.and1, sumRetailOrder, 1, betweenDate, 1, 2, 3), subjectOutOrder, 1, 2, 3);
 
-        sumWithDiscountCouponIncBetweenDate = LM.addSGProp(LM.baseGroup, "sumWithDiscountCouponIncBetweenDate", "Приходная сумма без скидки за интервал",
-                LM.addJProp(LM.and1, sumWithDiscountCouponOrder, 1, betweenDate, 1, 2, 3), subjectIncOrder, 1, 2, 3);
-        sumWithDiscountCouponOutBetweenDate = LM.addSGProp(LM.baseGroup, "sumWithDiscountCouponOutBetweenDate", "Расходная сумма без скидки за интервал",
-                LM.addJProp(LM.and1, sumWithDiscountCouponOrder, 1, betweenDate, 1, 2, 3), subjectOutOrder, 1, 2, 3);
 
-        sumDiscountPayCouponIncBetweenDate = LM.addSGProp(LM.baseGroup, "sumDiscountPayCouponIncBetweenDate", "Приходная сумма скидки за интервал",
-                LM.addJProp(LM.and1, sumDiscountPayCouponOrder, 1, betweenDate, 1, 2, 3), subjectIncOrder, 1, 2, 3);
-        sumDiscountPayCouponOutBetweenDate = LM.addSGProp(LM.baseGroup, "sumDiscountPayCouponOutBetweenDate", "Расходная сумма скидки за интервал",
-                LM.addJProp(LM.and1, sumDiscountPayCouponOrder, 1, betweenDate, 1, 2, 3), subjectOutOrder, 1, 2, 3);
+        betweenDate = addJProp(baseLM.between, baseLM.date, 1, object(DateClass.instance), 2, object(DateClass.instance), 3);
 
-        sumPriceChangeBetweenDate = LM.addSGProp(LM.baseGroup, "sumPriceChangeBetweenDate", "Сумма переоценки за интервал",
-                LM.addJProp(LM.and1, sumPriceChangeOrder, 1, betweenDate, 1, 2, 3), subjectIncOrder, 1, 2, 3);
+        sumRetailIncBetweenDate = addSGProp(baseGroup, "sumRetailIncBetweenDate", "Приходная сумма за интервал",
+                addJProp(baseLM.and1, sumRetailOrder, 1, betweenDate, 1, 2, 3), subjectIncOrder, 1, 2, 3);
+        sumRetailOutBetweenDate = addSGProp(baseGroup, "sumRetailOutBetweenDate", "Расходная сумма за интервал",
+                addJProp(baseLM.and1, sumRetailOrder, 1, betweenDate, 1, 2, 3), subjectOutOrder, 1, 2, 3);
 
-        quantityIncSubjectArticleBetweenDate = LM.addSGProp(LM.baseGroup, "quantityIncSubjectArticleBetweenDate", "Кол-во прих. за интервал",
-                LM.addJProp(LM.and1, quantityCommitIncArticle, 1, 2, 3, betweenDate, 1, 4, 5), subjectIncOrder, 1, 2, 4, 5);
-        quantityOutSubjectArticleBetweenDate = LM.addSGProp(LM.baseGroup, "quantityOutSubjectArticleBetweenDate", "Кол-во расх. за интервал",
-                LM.addJProp(LM.and1, quantityCommitOutArticle, 1, 2, 3, betweenDate, 1, 4, 5), subjectIncOrder, 1, 2, 4, 5);
+        sumWithDiscountCouponIncBetweenDate = addSGProp(baseGroup, "sumWithDiscountCouponIncBetweenDate", "Приходная сумма без скидки за интервал",
+                addJProp(baseLM.and1, sumWithDiscountCouponOrder, 1, betweenDate, 1, 2, 3), subjectIncOrder, 1, 2, 3);
+        sumWithDiscountCouponOutBetweenDate = addSGProp(baseGroup, "sumWithDiscountCouponOutBetweenDate", "Расходная сумма без скидки за интервал",
+                addJProp(baseLM.and1, sumWithDiscountCouponOrder, 1, betweenDate, 1, 2, 3), subjectOutOrder, 1, 2, 3);
+
+        sumDiscountPayCouponIncBetweenDate = addSGProp(baseGroup, "sumDiscountPayCouponIncBetweenDate", "Приходная сумма скидки за интервал",
+                addJProp(baseLM.and1, sumDiscountPayCouponOrder, 1, betweenDate, 1, 2, 3), subjectIncOrder, 1, 2, 3);
+        sumDiscountPayCouponOutBetweenDate = addSGProp(baseGroup, "sumDiscountPayCouponOutBetweenDate", "Расходная сумма скидки за интервал",
+                addJProp(baseLM.and1, sumDiscountPayCouponOrder, 1, betweenDate, 1, 2, 3), subjectOutOrder, 1, 2, 3);
+
+        sumPriceChangeBetweenDate = addSGProp(baseGroup, "sumPriceChangeBetweenDate", "Сумма переоценки за интервал",
+                addJProp(baseLM.and1, sumPriceChangeOrder, 1, betweenDate, 1, 2, 3), subjectIncOrder, 1, 2, 3);
+
+        quantityIncSubjectArticleBetweenDate = addSGProp(baseGroup, "quantityIncSubjectArticleBetweenDate", "Кол-во прих. за интервал",
+                addJProp(baseLM.and1, quantityCommitIncArticle, 1, 2, 3, betweenDate, 1, 4, 5), subjectIncOrder, 1, 2, 4, 5);
+        quantityOutSubjectArticleBetweenDate = addSGProp(baseGroup, "quantityOutSubjectArticleBetweenDate", "Кол-во расх. за интервал",
+                addJProp(baseLM.and1, quantityCommitOutArticle, 1, 2, 3, betweenDate, 1, 4, 5), subjectIncOrder, 1, 2, 4, 5);
     }
 
     LP padlBarcodeToObject;
@@ -1467,14 +1470,14 @@ public class VEDLogicsModule extends LogicsModule {
     LP nameToBrend;
 
     private LP initRequiredStorePrice(AbstractGroup group, String sID, boolean persistent, String caption, LP deliveryPriceStoreArticle, LP storeProp) {
-        LP currentRRPPriceObjectArticle = LM.addJProp(currentRRPPriceStoreArticle, storeProp, 1, 2);
-        LP currentObjectDiscount = LM.addJProp(currentStoreDiscount, storeProp, 1);
-        LP discountPriceObjectArticle = LM.addJProp(discountArticleStore, 2, storeProp, 1);
+        LP currentRRPPriceObjectArticle = addJProp(currentRRPPriceStoreArticle, storeProp, 1, 2);
+        LP currentObjectDiscount = addJProp(currentStoreDiscount, storeProp, 1);
+        LP discountPriceObjectArticle = addJProp(discountArticleStore, 2, storeProp, 1);
 
-        LP addDeliveryObjectArticle = LM.addJProp("Необх. цена с нац.", addPercent, LM.addJProp(addPercent, deliveryPriceStoreArticle, 1, 2, addvArticle, 2), 1, 2, currentNDS, 2);
-        LP currentPriceObjectArticle = LM.addSUProp("Необх. цена", Union.MAX, addDeliveryObjectArticle, currentRRPPriceObjectArticle);
-        LP actionPriceObjectArticle = LM.addJProp("Акц. цена", removePercent, currentPriceObjectArticle, 1, 2, discountPriceObjectArticle, 1, 2);
-        return LM.addJProp(group, sID, persistent, caption, round1, LM.addJProp(removePercent, actionPriceObjectArticle, 1, 2, currentObjectDiscount, 1), 1, 2);
+        LP addDeliveryObjectArticle = addJProp("Необх. цена с нац.", addPercent, addJProp(addPercent, deliveryPriceStoreArticle, 1, 2, addvArticle, 2), 1, 2, currentNDS, 2);
+        LP currentPriceObjectArticle = addSUProp("Необх. цена", Union.MAX, addDeliveryObjectArticle, currentRRPPriceObjectArticle);
+        LP actionPriceObjectArticle = addJProp("Акц. цена", removePercent, currentPriceObjectArticle, 1, 2, discountPriceObjectArticle, 1, 2);
+        return addJProp(group, sID, persistent, caption, round1, addJProp(removePercent, actionPriceObjectArticle, 1, 2, currentObjectDiscount, 1), 1, 2);
     }
 
     LP barcodeActionCheck, quantityCheckCommitInnerArticle, quantityDiffCommitArticle;
@@ -1483,7 +1486,7 @@ public class VEDLogicsModule extends LogicsModule {
     LP impSumBank;
 
     private LP addSupplierProperty(LP property) {
-        return LM.addSUProp(Union.SUM, property, LM.addSGProp(property, articleStoreSupplier, 1, 2, 2));
+        return addSUProp(Union.SUM, property, addSGProp(property, articleStoreSupplier, 1, 2, 2));
     }
 
     LP orderUserName;
@@ -1607,7 +1610,7 @@ public class VEDLogicsModule extends LogicsModule {
 
     @Override
     public void initIndexes() {
-        LM.addIndex(articleInnerQuantity);
+        baseLM.addIndex(articleInnerQuantity);
     }
 
     private NavigatorElement saleRetailCashRegisterElement;
@@ -1623,142 +1626,142 @@ public class VEDLogicsModule extends LogicsModule {
     @Override
     public void initNavigators() throws JRException, FileNotFoundException {
 
-        NavigatorElement print = new NavigatorElement(LM.baseElement, "print", "Печатные формы");
-        FormEntity incomePrice = LM.addFormEntity(new IncomePriceFormEntity(print, "incomePrice"));
-        FormEntity revalueAct = LM.addFormEntity(new RevalueActFormEntity(print, "revalueAct"));
-        FormEntity pricers = LM.addFormEntity(new PricersFormEntity(print, "pricers"));
-        FormEntity stickers = LM.addFormEntity(new StickersFormEntity(print, "stickers"));
-        FormEntity invoice = LM.addFormEntity(new InvoiceFormEntity(print, "invoice", "Счет-фактура", true));
-        FormEntity ttn1Blank = LM.addFormEntity(new TTNFormEntity(print, "ttn1blank", "ТТН-1 бланк (гориз.)", false));
-        FormEntity ttn1BlankV = LM.addFormEntity(new TTNFormEntity(print, "ttn1blank_v", "ТТН-1 бланк", false));
-        FormEntity ttn1Attach = LM.addFormEntity(new TTNFormEntity(print, "ttn1attach", "ТТН-1 приложение (гориз.)", true));
-        FormEntity ttn1AttachV = LM.addFormEntity(new TTNFormEntity(print, "ttn1attach_v", "ТТН-1 приложение", true));
-        FormEntity ttn1SideA = LM.addFormEntity(new TTNFormEntity(print, "ttn1a", "ТТН-1 сторона A (гориз.)", true));
-        FormEntity ttn1SideAV = LM.addFormEntity(new TTNFormEntity(print, "ttn1a_v", "ТТН-1 сторона A", true));
-        FormEntity ttn1SideB = LM.addFormEntity(new TTNFormEntity(print, "ttn1b", "ТТН-1 сторона B (гориз.)", false));
-        FormEntity ttn1SideBV = LM.addFormEntity(new TTNFormEntity(print, "ttn1b_v", "ТТН-1 сторона B", false));
-        FormEntity tn2Blank = LM.addFormEntity(new TNFormEntity(print, "tn2blank", "ТН-2 бланк (гориз.)", false));
-        FormEntity tn2BlankV = LM.addFormEntity(new TNFormEntity(print, "tn2blank_v", "ТН-2 бланк", false));
-        FormEntity tn2Attach = LM.addFormEntity(new TNFormEntity(print, "tn2attach", "ТН-2 приложение (гориз.)", true));
-        FormEntity tn2AttachV = LM.addFormEntity(new TNFormEntity(print, "tn2attach_v", "ТН-2 приложение", true));
-        FormEntity tn2 = LM.addFormEntity(new TNFormEntity(print, "tn2", "ТН-2 (одн. стр.) (гориз.)", true));
-        FormEntity tn2V = LM.addFormEntity(new TNFormEntity(print, "tn2_v", "ТН-2 (одн. стр.)", true));
+        NavigatorElement print = new NavigatorElement(baseLM.baseElement, "print", "Печатные формы");
+        FormEntity incomePrice = addFormEntity(new IncomePriceFormEntity(print, "incomePrice"));
+        FormEntity revalueAct = addFormEntity(new RevalueActFormEntity(print, "revalueAct"));
+        FormEntity pricers = addFormEntity(new PricersFormEntity(print, "pricers"));
+        FormEntity stickers = addFormEntity(new StickersFormEntity(print, "stickers"));
+        FormEntity invoice = addFormEntity(new InvoiceFormEntity(print, "invoice", "Счет-фактура", true));
+        FormEntity ttn1Blank = addFormEntity(new TTNFormEntity(print, "ttn1blank", "ТТН-1 бланк (гориз.)", false));
+        FormEntity ttn1BlankV = addFormEntity(new TTNFormEntity(print, "ttn1blank_v", "ТТН-1 бланк", false));
+        FormEntity ttn1Attach = addFormEntity(new TTNFormEntity(print, "ttn1attach", "ТТН-1 приложение (гориз.)", true));
+        FormEntity ttn1AttachV = addFormEntity(new TTNFormEntity(print, "ttn1attach_v", "ТТН-1 приложение", true));
+        FormEntity ttn1SideA = addFormEntity(new TTNFormEntity(print, "ttn1a", "ТТН-1 сторона A (гориз.)", true));
+        FormEntity ttn1SideAV = addFormEntity(new TTNFormEntity(print, "ttn1a_v", "ТТН-1 сторона A", true));
+        FormEntity ttn1SideB = addFormEntity(new TTNFormEntity(print, "ttn1b", "ТТН-1 сторона B (гориз.)", false));
+        FormEntity ttn1SideBV = addFormEntity(new TTNFormEntity(print, "ttn1b_v", "ТТН-1 сторона B", false));
+        FormEntity tn2Blank = addFormEntity(new TNFormEntity(print, "tn2blank", "ТН-2 бланк (гориз.)", false));
+        FormEntity tn2BlankV = addFormEntity(new TNFormEntity(print, "tn2blank_v", "ТН-2 бланк", false));
+        FormEntity tn2Attach = addFormEntity(new TNFormEntity(print, "tn2attach", "ТН-2 приложение (гориз.)", true));
+        FormEntity tn2AttachV = addFormEntity(new TNFormEntity(print, "tn2attach_v", "ТН-2 приложение", true));
+        FormEntity tn2 = addFormEntity(new TNFormEntity(print, "tn2", "ТН-2 (одн. стр.) (гориз.)", true));
+        FormEntity tn2V = addFormEntity(new TNFormEntity(print, "tn2_v", "ТН-2 (одн. стр.)", true));
 
-        LM.addFormEntity(new ArticleReportFormEntity(print, "articleReport"));
-        createArticleForm = LM.addFormEntity(new CreateArticleFormEntity(null, "createArticleForm", "Ввод нового товара"));
+        addFormEntity(new ArticleReportFormEntity(print, "articleReport"));
+        createArticleForm = addFormEntity(new CreateArticleFormEntity(null, "createArticleForm", "Ввод нового товара"));
 
-        NavigatorElement classifier = new NavigatorElement(LM.baseElement, "classifier", "Справочники");
-            LM.addFormEntity(new ArticleInfoFormEntity(classifier, "articleInfoForm"));
-            LM.addFormEntity(new StoreInfoFormEntity(classifier, "storeInfoForm"));
-            LM.addFormEntity(new DocumentArticleFormEntity(classifier, "DocumentArticleForm"));
-            LM.addFormEntity(new ArticleSupplierFormEntity(classifier, "ArticleSupplierForm"));
-            LM.addFormEntity(new ArticleSpecificationFormEntity(classifier, " ArticleSpecificationForm"));
+        NavigatorElement classifier = new NavigatorElement(baseLM.baseElement, "classifier", "Справочники");
+            addFormEntity(new ArticleInfoFormEntity(classifier, "articleInfoForm"));
+            addFormEntity(new StoreInfoFormEntity(classifier, "storeInfoForm"));
+            addFormEntity(new DocumentArticleFormEntity(classifier, "DocumentArticleForm"));
+            addFormEntity(new ArticleSupplierFormEntity(classifier, "ArticleSupplierForm"));
+            addFormEntity(new ArticleSpecificationFormEntity(classifier, " ArticleSpecificationForm"));
 
 
-        NavigatorElement delivery = new NavigatorElement(LM.baseElement, "delivery", "Управление закупками");
-            LM.addFormEntity(new ContragentWholeArticleFormEntity(delivery, "ContragentWholeArticleForm1", true));
-            LM.addFormEntity(new SpecificationSupplierFormEntity(delivery, "SpecificationSupplierForm"));
+        NavigatorElement delivery = new NavigatorElement(baseLM.baseElement, "delivery", "Управление закупками");
+            addFormEntity(new ContragentWholeArticleFormEntity(delivery, "ContragentWholeArticleForm1", true));
+            addFormEntity(new SpecificationSupplierFormEntity(delivery, "SpecificationSupplierForm"));
             NavigatorElement deliveryLocal = new NavigatorElement(delivery, "deliveryLocal", "Закупки у местных поставщиков");
                 NavigatorElement deliveryShopLocal = new NavigatorElement(deliveryLocal, "deliveryShopLocal", "Закупки на магазин");
-                    FormEntity deliveryCommitShopLocal = LM.addFormEntity(new DeliveryShopLocalFormEntity(deliveryShopLocal, true, "deliveryCommitShopLocal", 1));
+                    FormEntity deliveryCommitShopLocal = addFormEntity(new DeliveryShopLocalFormEntity(deliveryShopLocal, true, "deliveryCommitShopLocal", 1));
                     deliveryCommitShopLocal.caption = "Ввод прихода";
-                    FormEntity deliveryOrderShopLocal = LM.addFormEntity(new DeliveryShopLocalFormEntity(deliveryShopLocal, true, "deliveryOrderShopLocal", 0));
+                    FormEntity deliveryOrderShopLocal = addFormEntity(new DeliveryShopLocalFormEntity(deliveryShopLocal, true, "deliveryOrderShopLocal", 0));
                     deliveryOrderShopLocal.caption = "Ввод заявки";
-                    FormEntity deliveryShopLocalBrowse = LM.addFormEntity(new DeliveryShopLocalFormEntity(deliveryShopLocal, false, "deliveryShopLocalBrowse", 0));
+                    FormEntity deliveryShopLocalBrowse = addFormEntity(new DeliveryShopLocalFormEntity(deliveryShopLocal, false, "deliveryShopLocalBrowse", 0));
                     deliveryShopLocalBrowse.caption = "Список документов";
                 NavigatorElement deliveryWarehouseLocal = new NavigatorElement(deliveryLocal, "deliveryWarehouseLocal", "Закупки на распред. центр");
-                    FormEntity deliveryWarehouseShopLocal = LM.addFormEntity(new DeliveryWarehouseLocalFormEntity(deliveryWarehouseLocal, true, "deliveryWarehouseShopLocal", 1));
+                    FormEntity deliveryWarehouseShopLocal = addFormEntity(new DeliveryWarehouseLocalFormEntity(deliveryWarehouseLocal, true, "deliveryWarehouseShopLocal", 1));
                     deliveryWarehouseShopLocal.caption = "Ввод прихода";
-                    FormEntity deliveryOrderWarehouseLocal = LM.addFormEntity(new DeliveryWarehouseLocalFormEntity(deliveryWarehouseLocal, true, "deliveryOrderWarehouseLocal", 0));
+                    FormEntity deliveryOrderWarehouseLocal = addFormEntity(new DeliveryWarehouseLocalFormEntity(deliveryWarehouseLocal, true, "deliveryOrderWarehouseLocal", 0));
                     deliveryOrderWarehouseLocal.caption = "Ввод заявки";
-                    FormEntity deliveryCommitWarehouseLocal = LM.addFormEntity(new DeliveryWarehouseLocalFormEntity(deliveryWarehouseLocal, false, "deliveryCommitWarehouseLocal", 0));
+                    FormEntity deliveryCommitWarehouseLocal = addFormEntity(new DeliveryWarehouseLocalFormEntity(deliveryWarehouseLocal, false, "deliveryCommitWarehouseLocal", 0));
                     deliveryCommitWarehouseLocal.caption = "Список документов";
                 NavigatorElement returnDeliveryLocal = new NavigatorElement(deliveryLocal, "returnDeliveryLocal", "Возвраты поставщику");
-                    FormEntity returnCommitDeliveryLocal = LM.addFormEntity(new ReturnDeliveryLocalFormEntity(returnDeliveryLocal, true, "returnCommitDeliveryLocal", 1));
+                    FormEntity returnCommitDeliveryLocal = addFormEntity(new ReturnDeliveryLocalFormEntity(returnDeliveryLocal, true, "returnCommitDeliveryLocal", 1));
                     returnCommitDeliveryLocal.caption = "Ввод отгрузки";
-                    FormEntity returnOrderDeliveryLocal = LM.addFormEntity(new ReturnDeliveryLocalFormEntity(returnDeliveryLocal, true, "returnOrderDeliveryLocal", 0));
+                    FormEntity returnOrderDeliveryLocal = addFormEntity(new ReturnDeliveryLocalFormEntity(returnDeliveryLocal, true, "returnOrderDeliveryLocal", 0));
                     returnOrderDeliveryLocal.caption = "Ввод заявки";
-                    FormEntity returnDeliveryLocalBrowse = LM.addFormEntity(new ReturnDeliveryLocalFormEntity(returnDeliveryLocal, false, "returnDeliveryLocalBrowse", 0));
+                    FormEntity returnDeliveryLocalBrowse = addFormEntity(new ReturnDeliveryLocalFormEntity(returnDeliveryLocal, false, "returnDeliveryLocalBrowse", 0));
                     returnDeliveryLocalBrowse.caption = "Список документов";
             NavigatorElement deliveryImport = new NavigatorElement(delivery, "deliveryImport", "Закупки у импортных поставщиков");
-                FormEntity deliveryCommitImport = LM.addFormEntity(new DeliveryImportFormEntity(deliveryImport, true, "deliveryCommitImport", 1));
+                FormEntity deliveryCommitImport = addFormEntity(new DeliveryImportFormEntity(deliveryImport, true, "deliveryCommitImport", 1));
                 deliveryCommitImport.caption = "Ввод прихода";
-                FormEntity deliveryOrderImport = LM.addFormEntity(new DeliveryImportFormEntity(deliveryImport, true, "deliveryOrderImport", 0));
+                FormEntity deliveryOrderImport = addFormEntity(new DeliveryImportFormEntity(deliveryImport, true, "deliveryOrderImport", 0));
                 deliveryOrderImport.caption = "Ввод заявки";
-                FormEntity deliveryImportBrowse = LM.addFormEntity(new DeliveryImportFormEntity(deliveryImport, false, "deliveryImportBrowse", 0));
+                FormEntity deliveryImportBrowse = addFormEntity(new DeliveryImportFormEntity(deliveryImport, false, "deliveryImportBrowse", 0));
                 deliveryImportBrowse.caption = "Список документов";
 
-        NavigatorElement sale = new NavigatorElement(LM.baseElement, "sale", "Управление продажами");
+        NavigatorElement sale = new NavigatorElement(baseLM.baseElement, "sale", "Управление продажами");
             NavigatorElement saleRetailElement = new NavigatorElement(sale, "saleRetailElement", "Управление розничными продажами");
                 saleRetailCashRegisterElement = new NavigatorElement(saleRetailElement, "saleRetailCashRegisterElement", "Касса");
-                    LM.addFormEntity(new ShopArticleFormEntity(saleRetailCashRegisterElement, "shopArticleForm", "Товары в других магазинах"));
-                    commitSaleForm = LM.addFormEntity(new CommitSaleCheckRetailFormEntity(saleRetailCashRegisterElement, "commitSaleForm", true, false));
-                        LM.addFormEntity(new CommitSaleCheckRetailFormEntity(commitSaleForm, "commitSaleCheckRetailForm", false, false));
-                        commitSaleBrowseForm = LM.addFormEntity(new CommitSaleCheckRetailFormEntity(commitSaleForm, "commitSaleBrowseForm", false, true));
-                        LM.addFormEntity(new CommitSaleCheckRetailExcelFormEntity(commitSaleForm, "commitSaleCheckRetailExcelForm", "Выгрузка в Excel"));
-                    saleCheckCertForm = LM.addFormEntity(new SaleCheckCertFormEntity(saleRetailCashRegisterElement, "saleCheckCertForm", true, false));
-                        LM.addFormEntity(new SaleCheckCertFormEntity(saleCheckCertForm, "saleCheckCertForm2", false, false));
-                        saleCheckCertBrowseForm = LM.addFormEntity(new SaleCheckCertFormEntity(saleCheckCertForm, "saleCheckCertBrowseForm", false, true));
-                    returnSaleCheckRetailArticleForm = LM.addFormEntity(new ReturnSaleCheckRetailFormEntity(saleRetailCashRegisterElement, true, "returnSaleCheckRetailArticleForm", false));
-                        LM.addFormEntity(new ReturnSaleCheckRetailFormEntity(returnSaleCheckRetailArticleForm, false, "returnSaleCheckRetailArticleForm2", false));
-                        returnSaleCheckRetailBrowse = LM.addFormEntity(new ReturnSaleCheckRetailFormEntity(returnSaleCheckRetailArticleForm, false, "returnSaleCheckRetailBrowse", true));
-                    cachRegManagementForm = LM.addFormEntity(VEDBL.cashRegController.createCashRegManagementFormEntity(saleRetailCashRegisterElement, "cachRegManagementForm"));
-                    LM.addFormEntity(new ShopMoneyFormEntity(saleRetailCashRegisterElement, "shopMoneyForm", "Данные из касс"));
-                    LM.addFormEntity(new ClientFormEntity(saleRetailCashRegisterElement, "clientForm", "Редактирование клиентов"));
+                    addFormEntity(new ShopArticleFormEntity(saleRetailCashRegisterElement, "shopArticleForm", "Товары в других магазинах"));
+                    commitSaleForm = addFormEntity(new CommitSaleCheckRetailFormEntity(saleRetailCashRegisterElement, "commitSaleForm", true, false));
+                        addFormEntity(new CommitSaleCheckRetailFormEntity(commitSaleForm, "commitSaleCheckRetailForm", false, false));
+                        commitSaleBrowseForm = addFormEntity(new CommitSaleCheckRetailFormEntity(commitSaleForm, "commitSaleBrowseForm", false, true));
+                        addFormEntity(new CommitSaleCheckRetailExcelFormEntity(commitSaleForm, "commitSaleCheckRetailExcelForm", "Выгрузка в Excel"));
+                    saleCheckCertForm = addFormEntity(new SaleCheckCertFormEntity(saleRetailCashRegisterElement, "saleCheckCertForm", true, false));
+                        addFormEntity(new SaleCheckCertFormEntity(saleCheckCertForm, "saleCheckCertForm2", false, false));
+                        saleCheckCertBrowseForm = addFormEntity(new SaleCheckCertFormEntity(saleCheckCertForm, "saleCheckCertBrowseForm", false, true));
+                    returnSaleCheckRetailArticleForm = addFormEntity(new ReturnSaleCheckRetailFormEntity(saleRetailCashRegisterElement, true, "returnSaleCheckRetailArticleForm", false));
+                        addFormEntity(new ReturnSaleCheckRetailFormEntity(returnSaleCheckRetailArticleForm, false, "returnSaleCheckRetailArticleForm2", false));
+                        returnSaleCheckRetailBrowse = addFormEntity(new ReturnSaleCheckRetailFormEntity(returnSaleCheckRetailArticleForm, false, "returnSaleCheckRetailBrowse", true));
+                    cachRegManagementForm = addFormEntity(VEDBL.cashRegController.createCashRegManagementFormEntity(saleRetailCashRegisterElement, "cachRegManagementForm"));
+                    addFormEntity(new ShopMoneyFormEntity(saleRetailCashRegisterElement, "shopMoneyForm", "Данные из касс"));
+                    addFormEntity(new ClientFormEntity(saleRetailCashRegisterElement, "clientForm", "Редактирование клиентов"));
                 NavigatorElement saleRetailInvoice = new NavigatorElement(saleRetailElement, "saleRetailInvoice", "Безналичный расчет");
-                    FormEntity saleRetailInvoiceForm = LM.addFormEntity(new OrderSaleInvoiceRetailFormEntity(saleRetailInvoice, "saleRetailInvoiceForm", true, false));
-                        LM.addFormEntity(new OrderSaleInvoiceRetailFormEntity(saleRetailInvoiceForm, "orderSaleInvoiceRetailForm", false, false));
-                    FormEntity saleInvoiceCert = LM.addFormEntity(new SaleInvoiceCertFormEntity(saleRetailInvoice, "saleInvoiceCert", true, false));
-                        LM.addFormEntity(new SaleInvoiceCertFormEntity(saleInvoiceCert, "saleInvoiceCert2", false, false));
-                    FormEntity returnSaleInvoiceRetailArticle = LM.addFormEntity(new ReturnSaleInvoiceRetailFormEntity(saleRetailInvoice, true, "returnSaleInvoiceRetailArticle", false));
-                        LM.addFormEntity(new ReturnSaleInvoiceRetailFormEntity(returnSaleInvoiceRetailArticle, false, "returnSaleInvoiceRetailArticle2", false));
-                        LM.addFormEntity(new ReturnSaleInvoiceRetailFormEntity(returnSaleInvoiceRetailArticle, false, "returnSaleInvoiceRetailArticle3", true));
+                    FormEntity saleRetailInvoiceForm = addFormEntity(new OrderSaleInvoiceRetailFormEntity(saleRetailInvoice, "saleRetailInvoiceForm", true, false));
+                        addFormEntity(new OrderSaleInvoiceRetailFormEntity(saleRetailInvoiceForm, "orderSaleInvoiceRetailForm", false, false));
+                    FormEntity saleInvoiceCert = addFormEntity(new SaleInvoiceCertFormEntity(saleRetailInvoice, "saleInvoiceCert", true, false));
+                        addFormEntity(new SaleInvoiceCertFormEntity(saleInvoiceCert, "saleInvoiceCert2", false, false));
+                    FormEntity returnSaleInvoiceRetailArticle = addFormEntity(new ReturnSaleInvoiceRetailFormEntity(saleRetailInvoice, true, "returnSaleInvoiceRetailArticle", false));
+                        addFormEntity(new ReturnSaleInvoiceRetailFormEntity(returnSaleInvoiceRetailArticle, false, "returnSaleInvoiceRetailArticle2", false));
+                        addFormEntity(new ReturnSaleInvoiceRetailFormEntity(returnSaleInvoiceRetailArticle, false, "returnSaleInvoiceRetailArticle3", true));
             NavigatorElement saleWhole = new NavigatorElement(sale, "saleWhole", "Управление оптовыми продажами");
-                LM.addFormEntity(new CustomerWholeFormEntity(saleWhole, "customerWholeForm"));
-                LM.addFormEntity(new ContragentWholeArticleFormEntity(saleWhole, "ContragentWholeArticleForm2", false));
-                FormEntity saleWholeForm = LM.addFormEntity(new SaleWholeFormEntity(saleWhole, "saleWholeForm", true));
-                    LM.addFormEntity(new SaleWholeFormEntity(saleWholeForm, "saleWholeForm2", false));
-                FormEntity returnSaleWholeArticle = LM.addFormEntity(new ReturnSaleWholeFormEntity(saleWhole, "returnSaleWholeArticle", true));
-                    LM.addFormEntity(new ReturnSaleWholeFormEntity(returnSaleWholeArticle, "returnSaleWholeArticle2", false));
+                addFormEntity(new CustomerWholeFormEntity(saleWhole, "customerWholeForm"));
+                addFormEntity(new ContragentWholeArticleFormEntity(saleWhole, "ContragentWholeArticleForm2", false));
+                FormEntity saleWholeForm = addFormEntity(new SaleWholeFormEntity(saleWhole, "saleWholeForm", true));
+                    addFormEntity(new SaleWholeFormEntity(saleWholeForm, "saleWholeForm2", false));
+                FormEntity returnSaleWholeArticle = addFormEntity(new ReturnSaleWholeFormEntity(saleWhole, "returnSaleWholeArticle", true));
+                    addFormEntity(new ReturnSaleWholeFormEntity(returnSaleWholeArticle, "returnSaleWholeArticle2", false));
 
-        NavigatorElement distribute = new NavigatorElement(LM.baseElement, "distribute", "Управление распределением");
-            LM.addFormEntity(new StoreLegalEntityFormEntity(distribute, "storeLegalEntityForm"));
-            FormEntity distributeShopForm = LM.addFormEntity(new DistributeShopFormEntity(distribute, "distributeShopForm", true));
-                FormEntity distributeShopBrowseForm = LM.addFormEntity(new DistributeShopFormEntity(distributeShopForm, "distributeShopBrowseForm", false));
-            FormEntity distributeWarehouseForm = LM.addFormEntity(new DistributeWarehouseFormEntity(distribute, "distributeWarehouseForm", true));
-                FormEntity distributeWarehouseBrowseForm = LM.addFormEntity(new DistributeWarehouseFormEntity(distributeWarehouseForm, "distributeWarehouseBrowseForm", false));
+        NavigatorElement distribute = new NavigatorElement(baseLM.baseElement, "distribute", "Управление распределением");
+            addFormEntity(new StoreLegalEntityFormEntity(distribute, "storeLegalEntityForm"));
+            FormEntity distributeShopForm = addFormEntity(new DistributeShopFormEntity(distribute, "distributeShopForm", true));
+                FormEntity distributeShopBrowseForm = addFormEntity(new DistributeShopFormEntity(distributeShopForm, "distributeShopBrowseForm", false));
+            FormEntity distributeWarehouseForm = addFormEntity(new DistributeWarehouseFormEntity(distribute, "distributeWarehouseForm", true));
+                FormEntity distributeWarehouseBrowseForm = addFormEntity(new DistributeWarehouseFormEntity(distributeWarehouseForm, "distributeWarehouseBrowseForm", false));
 
-        NavigatorElement price = new NavigatorElement(LM.baseElement, "price", "Управление ценообразованием");
-            FormEntity documentRevalue = LM.addFormEntity(new DocumentRevalueFormEntity(price, true, "documentRevalue"));
-                LM.addFormEntity(new DocumentRevalueFormEntity(documentRevalue, false, "documentRevalue2"));
+        NavigatorElement price = new NavigatorElement(baseLM.baseElement, "price", "Управление ценообразованием");
+            FormEntity documentRevalue = addFormEntity(new DocumentRevalueFormEntity(price, true, "documentRevalue"));
+                addFormEntity(new DocumentRevalueFormEntity(documentRevalue, false, "documentRevalue2"));
 
-        NavigatorElement toSell = new NavigatorElement(LM.baseElement, "toSell", "Управление ассортиментом");
-            //LM.addFormEntity(new ArticleFormatFormEntity(toSell, "articleFormatForm", true));
-            //LM.addFormEntity(new ArticleFormatFormEntity(toSell, "articleFormatForm2", false));
-            LM.addFormEntity(new AssortmentFormEntity(toSell, "AssortmentFormEntity"));
+        NavigatorElement toSell = new NavigatorElement(baseLM.baseElement, "toSell", "Управление ассортиментом");
+            //addFormEntity(new ArticleFormatFormEntity(toSell, "articleFormatForm", true));
+            //addFormEntity(new ArticleFormatFormEntity(toSell, "articleFormatForm2", false));
+            addFormEntity(new AssortmentFormEntity(toSell, "AssortmentFormEntity"));
 
-        NavigatorElement tax = new NavigatorElement(LM.baseElement, "tax", "Управление налогами");
-            FormEntity nds = LM.addFormEntity(new DocumentNDSFormEntity(tax, true, "nds"));
-                LM.addFormEntity(new DocumentNDSFormEntity(nds, false, "nds2"));
+        NavigatorElement tax = new NavigatorElement(baseLM.baseElement, "tax", "Управление налогами");
+            FormEntity nds = addFormEntity(new DocumentNDSFormEntity(tax, true, "nds"));
+                addFormEntity(new DocumentNDSFormEntity(nds, false, "nds2"));
 
-        NavigatorElement actions = new NavigatorElement(LM.baseElement, "actions", "Управление акциями");
-            FormEntity saleAction = LM.addFormEntity(new ActionFormEntity(actions, "saleAction"));
-            FormEntity couponInterval = LM.addFormEntity(new CouponIntervalFormEntity(actions, "couponInterval"));
-            FormEntity couponArticle = LM.addFormEntity(new CouponArticleFormEntity(actions, "couponArticle"));
-            FormEntity obligationDocument = LM.addFormEntity(new obligationDocumentFormEntity(actions, "obligationDocument"));
+        NavigatorElement actions = new NavigatorElement(baseLM.baseElement, "actions", "Управление акциями");
+            FormEntity saleAction = addFormEntity(new ActionFormEntity(actions, "saleAction"));
+            FormEntity couponInterval = addFormEntity(new CouponIntervalFormEntity(actions, "couponInterval"));
+            FormEntity couponArticle = addFormEntity(new CouponArticleFormEntity(actions, "couponArticle"));
+            FormEntity obligationDocument = addFormEntity(new obligationDocumentFormEntity(actions, "obligationDocument"));
 
-        NavigatorElement balance = new NavigatorElement(LM.baseElement, "balance", "Управление хранением");
-            FormEntity balanceCheck = LM.addFormEntity(new BalanceCheckFormEntity(balance, "balanceCheck", true));
-                LM.addFormEntity(new BalanceCheckFormEntity(balanceCheck, "balanceCheck2", false));
+        NavigatorElement balance = new NavigatorElement(baseLM.baseElement, "balance", "Управление хранением");
+            FormEntity balanceCheck = addFormEntity(new BalanceCheckFormEntity(balance, "balanceCheck", true));
+                addFormEntity(new BalanceCheckFormEntity(balanceCheck, "balanceCheck2", false));
 
-        NavigatorElement store = new NavigatorElement(LM.baseElement, "store", "Сводная информация");
-            LM.addFormEntity(new StoreArticleFormEntity(store, "storeArticleForm"));
+        NavigatorElement store = new NavigatorElement(baseLM.baseElement, "store", "Сводная информация");
+            addFormEntity(new StoreArticleFormEntity(store, "storeArticleForm"));
 
-        LM.addFormEntity(new GlobalFormEntity(LM.baseElement, "globalForm"));
-        FormEntity deliveryShopImport = LM.addFormEntity(new DeliveryShopLocalFormEntity(LM.baseElement, false, "deliveryShopImport", 0, true));
+        addFormEntity(new GlobalFormEntity(baseLM.baseElement, "globalForm"));
+        FormEntity deliveryShopImport = addFormEntity(new DeliveryShopLocalFormEntity(baseLM.baseElement, false, "deliveryShopImport", 0, true));
         deliveryShopImport.caption = "Импорт";
 
-//        FormEntity logClient = LM.addFormEntity(new LogClientFormEntity(actions, "logClientForm"));
+//        FormEntity logClient = addFormEntity(new LogClientFormEntity(actions, "logClientForm"));
 
         commitDoShopInc.addRelevant(incomePrice);
         documentShopPrice.addRelevant(revalueAct);
@@ -1777,7 +1780,7 @@ public class VEDLogicsModule extends LogicsModule {
     private class GlobalFormEntity extends FormEntity {
         protected GlobalFormEntity(NavigatorElement parent, String sID) {
             super(parent, sID, "Глобальные параметры");
-            addPropertyDraw(LM.publicGroup, true);
+            addPropertyDraw(publicGroup, true);
 
         }
     }
@@ -1799,22 +1802,22 @@ public class VEDLogicsModule extends LogicsModule {
             gobjFindClient.banClassView.addAll(BaseUtils.toList(ClassViewType.GRID, ClassViewType.HIDE));
             gobjFindClient.initClassView = ClassViewType.PANEL;
 
-            addPropertyDraw(barcodeClient, LM.objectValue);
-            addPropertyDraw(nameClient, LM.objectValue);
+            addPropertyDraw(barcodeClient, baseLM.objectValue);
+            addPropertyDraw(nameClient, baseLM.objectValue);
 
             ObjectEntity objClient = addSingleGroupObject(customerCheckRetail, "Клиент");
             ObjectEntity objDoc = addSingleGroupObject(commitSaleCheckArticleRetail, "Чек");
 
-            addPropertyDraw(objClient, LM.barcode, LM.name, propsCustomerCheckRetail, clientSum);
-            addPropertyDraw(objDoc, LM.objectValue, LM.date, orderHour, orderMinute, subjectOutOrder, sumWithDiscountObligationOrder);
+            addPropertyDraw(objClient, baseLM.barcode, baseLM.name, propsCustomerCheckRetail, clientSum);
+            addPropertyDraw(objDoc, baseLM.objectValue, baseLM.date, orderHour, orderMinute, subjectOutOrder, sumWithDiscountObligationOrder);
 
-            addFixedFilter(new CompareFilterEntity(addPropertyObject(LM.barcode, objClient), Compare.EQUALS, addPropertyObject(orderContragentBarcode, objDoc)));
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(baseLM.barcode, objClient), Compare.EQUALS, addPropertyObject(orderContragentBarcode, objDoc)));
 
-            //addFixedFilter(new NotNullFilterEntity(addPropertyObject(LM.barcode, objClient)));
+            //addFixedFilter(new NotNullFilterEntity(addPropertyObject(baseLM.barcode, objClient)));
 
             addFixedFilter(new OrFilterEntity(
-                    new CompareFilterEntity(addPropertyObject(LM.barcode, objClient), Compare.EQUALS, barcodeClient),
-                    new CompareFilterEntity(addPropertyObject(LM.name, objClient), Compare.EQUALS, nameClient)));
+                    new CompareFilterEntity(addPropertyObject(baseLM.barcode, objClient), Compare.EQUALS, barcodeClient),
+                    new CompareFilterEntity(addPropertyObject(baseLM.name, objClient), Compare.EQUALS, nameClient)));
         }
 
 
@@ -1840,18 +1843,18 @@ public class VEDLogicsModule extends LogicsModule {
         private BarcodeFormEntity(NavigatorElement parent, String sID, String caption) {
             super(parent, sID, caption);
 
-            objBarcode = addSingleGroupObject(StringClass.get(13), "Штрих-код", LM.baseGroup, true);
+            objBarcode = addSingleGroupObject(StringClass.get(13), "Штрих-код", baseGroup, true);
             objBarcode.groupTo.initClassView = ClassViewType.PANEL;
             objBarcode.groupTo.banClassView.addAll(BaseUtils.toList(ClassViewType.GRID, ClassViewType.HIDE));
 
             objBarcode.resetOnApply = true;
 
-            addPropertyDraw(LM.reverseBarcode);
+            addPropertyDraw(baseLM.reverseBarcode);
 
             addActionsOnObjectChange(objBarcode,
                                      addPropertyObject(
-                                             LM.addJProp(true, LM.andNot1,
-                                                     LM.addMFAProp(
+                                             addJProp(true, baseLM.andNot1,
+                                                     addMFAProp(
                                                              null,
                                                              "Ввод нового товара",
                                                              createArticleForm,
@@ -1859,7 +1862,7 @@ public class VEDLogicsModule extends LogicsModule {
                                                              true,
                                                              createArticleForm.addPropertyObject(addArticleBarcode, createArticleForm.objBarcode)
                                                      ), 1,
-                                                     LM.barcodeToObject, 1
+                                                     baseLM.barcodeToObject, 1
                                              ), objBarcode));
 
 //            addActionsOnObjectChange(objBarcode, addPropertyObject(barcodeAction, objBarcode));
@@ -1873,29 +1876,29 @@ public class VEDLogicsModule extends LogicsModule {
             if (getDefaultFont() != null)
                 design.setFont(getDefaultFont());
 
-            PropertyDrawView barcodeView = design.get(getPropertyDraw(LM.objectValue, objBarcode));
+            PropertyDrawView barcodeView = design.get(getPropertyDraw(baseLM.objectValue, objBarcode));
 
-            design.getPanelContainer(design.get(objBarcode.groupTo)).add(design.get(getPropertyDraw(LM.reverseBarcode)));
+            design.getPanelContainer(design.get(objBarcode.groupTo)).add(design.get(getPropertyDraw(baseLM.reverseBarcode)));
             design.getPanelContainer(design.get(objBarcode.groupTo)).constraints.maxVariables = 0;
-            design.addIntersection(barcodeView, design.get(getPropertyDraw(LM.barcodeObjectName)), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
-            design.addIntersection(barcodeView, design.get(getPropertyDraw(LM.reverseBarcode)), DoNotIntersectSimplexConstraint.TOTHE_BOTTOM);
-            design.addIntersection(design.get(getPropertyDraw(LM.reverseBarcode)), design.get(getPropertyDraw(LM.barcodeObjectName)), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
+            design.addIntersection(barcodeView, design.get(getPropertyDraw(baseLM.barcodeObjectName)), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
+            design.addIntersection(barcodeView, design.get(getPropertyDraw(baseLM.reverseBarcode)), DoNotIntersectSimplexConstraint.TOTHE_BOTTOM);
+            design.addIntersection(design.get(getPropertyDraw(baseLM.reverseBarcode)), design.get(getPropertyDraw(baseLM.barcodeObjectName)), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
             if (getPropertyDraw(documentBarcodePriceOv) != null) {
-                design.addIntersection(design.get(getPropertyDraw(LM.barcodeObjectName)), design.get(getPropertyDraw(documentBarcodePriceOv)), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
+                design.addIntersection(design.get(getPropertyDraw(baseLM.barcodeObjectName)), design.get(getPropertyDraw(documentBarcodePriceOv)), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
             }
 
             design.setFont(barcodeView, FONT_LARGE_BOLD);
-            design.setFont(LM.reverseBarcode, FONT_SMALL_BOLD);
+            design.setFont(baseLM.reverseBarcode, FONT_SMALL_BOLD);
             design.setFont(barcodeAddClient, FONT_SMALL_BOLD);
             design.setFont(barcodeAddCert, FONT_SMALL_BOLD);
-            design.setFont(LM.barcodeObjectName, FONT_LARGE_BOLD);
+            design.setFont(baseLM.barcodeObjectName, FONT_LARGE_BOLD);
             design.setFont(documentBarcodePriceOv, FONT_LARGE_BOLD);
-            design.setBackground(LM.barcodeObjectName, new Color(240, 240, 240));
+            design.setBackground(baseLM.barcodeObjectName, new Color(240, 240, 240));
 
             design.setEditKey(barcodeView, KeyStroke.getKeyStroke(KeyEvent.VK_F4, 0));
-            design.setEditKey(LM.reverseBarcode, KeyStroke.getKeyStroke(KeyEvent.VK_F5, 0));
+            design.setEditKey(baseLM.reverseBarcode, KeyStroke.getKeyStroke(KeyEvent.VK_F5, 0));
 
-            design.setFocusable(LM.reverseBarcode, false);
+            design.setFocusable(baseLM.reverseBarcode, false);
             design.setFocusable(false, objBarcode.groupTo);
             barcodeView.clearText = true;
             return design;
@@ -1912,7 +1915,7 @@ public class VEDLogicsModule extends LogicsModule {
         protected static final boolean noOuters = true;
 
         protected Object[] getDocumentProps() {
-            return new Object[]{LM.baseGroup, true, documentGroup, true};
+            return new Object[]{baseGroup, true, documentGroup, true};
         }
 
         protected boolean isDocumentFocusable() {
@@ -1934,12 +1937,12 @@ public class VEDLogicsModule extends LogicsModule {
             } else {
                 addPropertyDraw(orderUserName, objDoc);
                 if (!isReadOnly())
-                    LM.addObjectActions(this, objDoc);
+                    addObjectActions(this, objDoc);
             }
 
             addActionsOnObjectChange(objBarcode, addPropertyObject(barcodeAction2, objDoc, objBarcode));
-            addActionsOnObjectChange(objBarcode, addPropertyObject(LM.seekBarcodeAction, objBarcode));
-            addActionsOnObjectChange(objBarcode, addPropertyObject(LM.barcodeNotFoundMessage, objBarcode));
+            addActionsOnObjectChange(objBarcode, addPropertyObject(baseLM.seekBarcodeAction, objBarcode));
+            addActionsOnObjectChange(objBarcode, addPropertyObject(baseLM.barcodeNotFoundMessage, objBarcode));
 
             if (hasExternalScreen()) {
                 addPropertyDraw(documentBarcodePriceOv, objDoc, objBarcode).setToDraw(objBarcode.groupTo);
@@ -2031,7 +2034,7 @@ public class VEDLogicsModule extends LogicsModule {
                 }
 
                 if (hasExternalScreen()) {
-                    PropertyDrawEntity barcodeNavigator = getPropertyDraw(LM.barcodeObjectName);
+                    PropertyDrawEntity barcodeNavigator = getPropertyDraw(baseLM.barcodeObjectName);
                     if (barcodeNavigator != null) {
                         design.get(barcodeNavigator).externalScreen = VEDBL.panelScreen;
                         design.get(barcodeNavigator).externalScreenConstraints.order = 1;
@@ -2076,10 +2079,10 @@ public class VEDLogicsModule extends LogicsModule {
                 pageContainer.tabbedPane = true;
             }
 
-            PropertyDrawView objectValueView = design.get(getPropertyDraw(LM.objectValue, objDoc));
+            PropertyDrawView objectValueView = design.get(getPropertyDraw(baseLM.objectValue, objDoc));
             if(objectValueView!=null)
                 objectValueView.caption = "Код";
-            PropertyDrawView objectClassNameView = design.get(getPropertyDraw(LM.objectClassName, objDoc));
+            PropertyDrawView objectClassNameView = design.get(getPropertyDraw(baseLM.objectClassName, objDoc));
             if(objectClassNameView!=null)
                 objectClassNameView.caption = "Статус";
 
@@ -2108,11 +2111,11 @@ public class VEDLogicsModule extends LogicsModule {
         }
 
         protected Object[] getArticleProps() {
-            return new Object[]{LM.baseGroup, true};
+            return new Object[]{baseGroup, true};
         }
 
         protected Object[] getDocumentArticleProps() {
-            return new Object[]{LM.baseGroup, true, documentGroup, true};
+            return new Object[]{baseGroup, true, documentGroup, true};
         }
 
         protected ArticleFormEntity(NavigatorElement parent, String sID, CustomClass documentClass, boolean toAdd, boolean filled) {
@@ -2281,12 +2284,12 @@ public class VEDLogicsModule extends LogicsModule {
 
         @Override
         protected Object[] getDocumentProps() {
-            return new Object[]{LM.baseGroup, true, documentSumGroup, true, documentNDSGroup, true, documentManfrGroup, true, documentRetailGroup, true, importOrder};
+            return new Object[]{baseGroup, true, documentSumGroup, true, documentNDSGroup, true, documentManfrGroup, true, documentRetailGroup, true, importOrder};
         }
 
         @Override
         protected Object[] getArticleProps() {
-            return new Object[]{LM.name, LM.barcode, currentRRP, nameCurrencyArticle};
+            return new Object[]{baseLM.name, baseLM.barcode, currentRRP, nameCurrencyArticle};
         }
 
         @Override
@@ -2305,7 +2308,7 @@ public class VEDLogicsModule extends LogicsModule {
 
             if(impDocs) {
                 addPropertyDraw(downToZero, objDoc);
-                addSingleGroupObject(store, LM.name, importDocs);
+                addSingleGroupObject(store, baseLM.name, importDocs);
             }
         }
     }
@@ -2329,10 +2332,10 @@ public class VEDLogicsModule extends LogicsModule {
         protected ArticleOuterFormEntity(NavigatorElement parent, String sID, CustomClass documentClass, boolean toAdd, CustomClass commitClass, boolean filled, boolean showOuters) {
             super(parent, sID, documentClass, toAdd, filled);
             if (showOuters || !noOuters) {
-                objOuter = addSingleGroupObject(commitClass, LM.baseGroup, true);
-                addPropertyDraw(objOuter, objDoc, LM.baseGroup, true, documentGroup, true);
-                addPropertyDraw(objOuter, objDoc, objArt, LM.baseGroup, true, documentGroup, true);
-                addPropertyDraw(objOuter, objArt, LM.baseGroup, true, priceAllOrderDeliveryArticle);
+                objOuter = addSingleGroupObject(commitClass, baseGroup, true);
+                addPropertyDraw(objOuter, objDoc, baseGroup, true, documentGroup, true);
+                addPropertyDraw(objOuter, objDoc, objArt, baseGroup, true, documentGroup, true);
+                addPropertyDraw(objOuter, objArt, baseGroup, true, priceAllOrderDeliveryArticle);
 
                 NotNullFilterEntity documentFilter = new NotNullFilterEntity(getPropertyObject(innerQuantity));
                 NotNullFilterEntity documentFreeFilter = new NotNullFilterEntity(addPropertyObject(documentInnerFreeQuantity, objDoc, objArt, objOuter));
@@ -2415,16 +2418,16 @@ public class VEDLogicsModule extends LogicsModule {
         public ShopArticleFormEntity(NavigatorElement parent, String sID, String caption) {
             super(parent, sID, caption);
 
-            nameArticle = addSingleGroupObject(StringClass.get(100), "Поиск по наименованию", LM.objectValue);
+            nameArticle = addSingleGroupObject(StringClass.get(100), "Поиск по наименованию", baseLM.objectValue);
             nameArticle.groupTo.setSingleClassView(ClassViewType.PANEL);
 
-            objArticle = addSingleGroupObject(article, LM.barcode, nameArticleGroupArticle, nameBrendArticle, LM.name, nameArticleSupplier, balanceFreeQuantity);
-            objShop = addSingleGroupObject(shop, LM.name, addressSubject, nameShopFormat);
+            objArticle = addSingleGroupObject(article, baseLM.barcode, nameArticleGroupArticle, nameBrendArticle, baseLM.name, nameArticleSupplier, balanceFreeQuantity);
+            objShop = addSingleGroupObject(shop, baseLM.name, addressSubject, nameShopFormat);
 
             addPropertyDraw(articleFreeQuantity, objShop, objArticle);
             addPropertyDraw(currentShopPrice, objShop, objArticle);
 
-            addFixedFilter(new CompareFilterEntity(addPropertyObject(LM.name, objArticle), Compare.START_WITH, nameArticle));
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(baseLM.name, objArticle), Compare.START_WITH, nameArticle));
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(balanceFreeQuantity, objArticle)));
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(articleFreeQuantity, objShop, objArticle)));
         }
@@ -2433,7 +2436,7 @@ public class VEDLogicsModule extends LogicsModule {
         public FormView createDefaultRichDesign() {
             DefaultFormView design = (DefaultFormView)super.createDefaultRichDesign();
 
-            design.get(getPropertyDraw(LM.objectValue, nameArticle)).caption = "Введите первые буквы наименования";
+            design.get(getPropertyDraw(baseLM.objectValue, nameArticle)).caption = "Введите первые буквы наименования";
             return design;
         }
     }
@@ -2443,7 +2446,7 @@ public class VEDLogicsModule extends LogicsModule {
         public ShopMoneyFormEntity(NavigatorElement parent, String sID, String caption) {
             super(parent, sID, caption);
 
-            ObjectEntity objShop = addSingleGroupObject(shop, LM.baseGroup);
+            ObjectEntity objShop = addSingleGroupObject(shop, baseGroup);
 
             GroupObjectEntity gobjDates = new GroupObjectEntity(genID());
             ObjectEntity objDateFrom = new ObjectEntity(genID(), DateClass.instance, "Выгрузить от");
@@ -2455,8 +2458,8 @@ public class VEDLogicsModule extends LogicsModule {
             gobjDates.banClassView.addAll(BaseUtils.toList(ClassViewType.GRID, ClassViewType.HIDE));
             gobjDates.initClassView = ClassViewType.PANEL;
 
-            addPropertyDraw(objDateFrom, LM.objectValue);
-            addPropertyDraw(objDateTo, LM.objectValue);
+            addPropertyDraw(objDateFrom, baseLM.objectValue);
+            addPropertyDraw(objDateTo, baseLM.objectValue);
             addPropertyDraw(saleExport, objShop, objDateFrom, objDateTo);
         }
     }
@@ -2495,7 +2498,7 @@ public class VEDLogicsModule extends LogicsModule {
             super(parent, sID, toAdd, documentClass, true);
 
             if (!toAdd)
-                addPropertyDraw(objDoc, LM.date, LM.objectValue, orderHour, orderMinute);
+                addPropertyDraw(objDoc, baseLM.date, baseLM.objectValue, orderHour, orderMinute);
 
             if (allStores) {
                 addPropertyDraw(objDoc, subjectOutOrder, nameSubjectOutOrder);
@@ -2507,9 +2510,9 @@ public class VEDLogicsModule extends LogicsModule {
 
             // чтобы в порядке нужном
             addPropertyDraw(changeQuantityOrder, objDoc, objArt);
-            addPropertyDraw(LM.barcode, objArt);
+            addPropertyDraw(baseLM.barcode, objArt);
 
-            objArt.groupTo.filterProperty = addPropertyDraw(LM.name, objArt);
+            objArt.groupTo.filterProperty = addPropertyDraw(baseLM.name, objArt);
 
             addPropertyDraw(articleQuantity, objDoc, objArt); // для timeChanges иначе можно было бы articleQuantity
             addPropertyDraw(documentFreeQuantity, objDoc, objArt);
@@ -2532,8 +2535,8 @@ public class VEDLogicsModule extends LogicsModule {
             addActionsOnObjectChange(objBarcode, true,
                                      addPropertyObject(barcodeAddClientAction, objBarcode),
                                      addPropertyObject(barcodeAction2, objDoc, objBarcode),
-                                     addPropertyObject(LM.seekBarcodeAction, objBarcode),
-                                     addPropertyObject(LM.barcodeNotFoundMessage, objBarcode));
+                                     addPropertyObject(baseLM.seekBarcodeAction, objBarcode),
+                                     addPropertyObject(baseLM.barcodeNotFoundMessage, objBarcode));
         }
 
         @Override
@@ -2547,7 +2550,7 @@ public class VEDLogicsModule extends LogicsModule {
             design.getGroupObjectContainer(objDoc.groupTo).title = "Клиент";
             design.getGroupObjectContainer(objDoc.groupTo).design.background = new Color(192, 192, 192);
 
-            design.setEnabled(LM.publicGroup, false, objArt.groupTo);
+            design.setEnabled(publicGroup, false, objArt.groupTo);
             design.setEnabled(articleQuantity, true, objArt.groupTo);
 
             design.get(objArt.groupTo).grid.defaultComponent = true;
@@ -2557,7 +2560,7 @@ public class VEDLogicsModule extends LogicsModule {
 
             if(isSubjectImpl()) {
                 design.getPanelContainer(design.get(objBarcode.groupTo)).add(design.get(getPropertyDraw(barcodeAddClient)));
-                design.addIntersection(design.get(getPropertyDraw(barcodeAddClient)), design.get(getPropertyDraw(LM.barcodeObjectName)), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
+                design.addIntersection(design.get(getPropertyDraw(barcodeAddClient)), design.get(getPropertyDraw(baseLM.barcodeObjectName)), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
             }
             design.setEditKey(barcodeAddClient, KeyStroke.getKeyStroke(KeyEvent.VK_F5, InputEvent.CTRL_DOWN_MASK));
 
@@ -2566,7 +2569,7 @@ public class VEDLogicsModule extends LogicsModule {
             design.get(getPropertyDraw(documentFreeQuantity, objArt)).minimumSize = new Dimension(90, 20);
             design.get(getPropertyDraw(discountOrderArticle, objArt)).minimumSize = new Dimension(20, 20);
             getPropertyDraw(discountSumOrderArticle, objArt).forceViewType = ClassViewType.HIDE;
-            design.get(getPropertyDraw(LM.barcode, objArt)).minimumSize = new Dimension(200, 100);
+            design.get(getPropertyDraw(baseLM.barcode, objArt)).minimumSize = new Dimension(200, 100);
 
             return design;
         }
@@ -2595,8 +2598,8 @@ public class VEDLogicsModule extends LogicsModule {
             objDoc.caption = "Чек";
 
             objObligation = addSingleGroupObject(obligation, "Оплачено купонами/ сертификатами");
-            addPropertyDraw(LM.barcode, objObligation);
-            addPropertyDraw(LM.objectClassName, objObligation);
+            addPropertyDraw(baseLM.barcode, objObligation);
+            addPropertyDraw(baseLM.objectClassName, objObligation);
             addPropertyDraw(obligationSum, objObligation);
             addPropertyDraw(obligationSumFrom, objObligation);
             addPropertyDraw(couponFromIssued, objObligation).forceViewType = ClassViewType.GRID;
@@ -2617,15 +2620,15 @@ public class VEDLogicsModule extends LogicsModule {
 //            addFixedFilter(new NotNullFilterEntity(addPropertyObject(orderSaleObligationCanNotBeUsed, objDoc, objObligation)));
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(orderSaleUseObligation, objDoc, objObligation)));
 
-            objCoupon = addSingleGroupObject(coupon, "Выдано купонов", LM.baseGroup, true);
-            addPropertyDraw(objDoc, objCoupon, LM.baseGroup, true, issueObligation);
+            objCoupon = addSingleGroupObject(coupon, "Выдано купонов", baseGroup, true);
+            addPropertyDraw(objDoc, objCoupon, baseGroup, true, issueObligation);
             objCoupon.groupTo.banClassView.addAll(BaseUtils.toList(ClassViewType.HIDE, ClassViewType.PANEL));
 //            addFixedFilter(new NotFilterEntity(new NotNullFilterEntity(addPropertyObject(obligationDocument, objObligation))));
 //            addFixedFilter(new NotNullFilterEntity(addPropertyObject(orderSaleObligationCanNotBeUsed, objDoc, objObligation)));
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(issueObligation, objDoc, objCoupon)));
 
             if (toAdd) {
-                objIssue = addSingleGroupObject(DoubleClass.instance, "Выдать купоны", LM.baseGroup, true);
+                objIssue = addSingleGroupObject(DoubleClass.instance, "Выдать купоны", baseGroup, true);
                 addPropertyDraw(couponToIssueQuantity, objDoc, objIssue);
                 objIssue.groupTo.banClassView.addAll(BaseUtils.toList(ClassViewType.HIDE, ClassViewType.PANEL));
                 addFixedFilter(new NotNullFilterEntity(addPropertyObject(couponToIssueConstraint, objDoc, objIssue)));
@@ -2689,7 +2692,7 @@ public class VEDLogicsModule extends LogicsModule {
             ObjectView objObligationView = design.get(objObligation);
             objObligationView.classChooser.show = false;
 
-            design.get(getPropertyDraw(LM.objectClassName, objObligation)).maximumSize = new Dimension(50, 50);
+            design.get(getPropertyDraw(baseLM.objectClassName, objObligation)).maximumSize = new Dimension(50, 50);
 
             if (documentFilter != null) {
                 RegularFilterView docFilterView = design.get(articleFilterGroup).get(documentFilter);
@@ -2719,12 +2722,12 @@ public class VEDLogicsModule extends LogicsModule {
                 return VEDBL.cashRegController.getCashRegApplyActions(formInstance, 1,
                         BaseUtils.toSet(art.groupTo),
                         getPropertyDraw(priceAllOrderSaleArticle, objArt), getPropertyDraw(articleQuantity, objArt),
-                        getPropertyDraw(LM.name, objArt), getPropertyDraw(sumWithDiscountOrderArticle, objArt),
-                        getPropertyDraw(sumWithDiscountObligationOrder, objDoc), getPropertyDraw(LM.barcode, objArt),
+                        getPropertyDraw(baseLM.name, objArt), getPropertyDraw(sumWithDiscountOrderArticle, objArt),
+                        getPropertyDraw(sumWithDiscountObligationOrder, objDoc), getPropertyDraw(baseLM.barcode, objArt),
                         getPropertyDraw(orderSalePayCard, objDoc), getPropertyDraw(orderSalePayCash, objDoc),
                         getPropertyDraw(discountOrderArticle), getPropertyDraw(discountSumOrderArticle), getPropertyDraw(orderUserName),
                         getPropertyDraw(nameImplSubjectIncOrder), getPropertyDraw(accumulatedClientSum), getPropertyDraw(discountSumOrder, objDoc),
-                        BaseUtils.toSet(obligation.groupTo),getPropertyDraw(LM.objectClassName, objObligation), getPropertyDraw(obligationSum, objObligation), getPropertyDraw(LM.barcode, objObligation));
+                        BaseUtils.toSet(obligation.groupTo),getPropertyDraw(baseLM.objectClassName, objObligation), getPropertyDraw(obligationSum, objObligation), getPropertyDraw(baseLM.barcode, objObligation));
             } else
                 return super.getClientApply(formInstance);
         }
@@ -2737,8 +2740,8 @@ public class VEDLogicsModule extends LogicsModule {
                 return VEDBL.cashRegController.getPrintOrderAction(formInstance,
                         BaseUtils.toSet(art.groupTo),
                         getPropertyDraw(priceAllOrderSaleArticle, objArt), getPropertyDraw(articleQuantity, objArt),
-                        getPropertyDraw(LM.name, objArt), getPropertyDraw(sumWithDiscountOrderArticle, objArt),
-                        getPropertyDraw(sumWithDiscountObligationOrder, objDoc), getPropertyDraw(LM.barcode, objArt));
+                        getPropertyDraw(baseLM.name, objArt), getPropertyDraw(sumWithDiscountOrderArticle, objArt),
+                        getPropertyDraw(sumWithDiscountObligationOrder, objDoc), getPropertyDraw(baseLM.barcode, objArt));
             } else
                 return new ListClientAction(new ArrayList<ClientAction>());
         }
@@ -2773,8 +2776,8 @@ public class VEDLogicsModule extends LogicsModule {
             gobjDates.banClassView.addAll(BaseUtils.toList(ClassViewType.GRID, ClassViewType.HIDE));
             gobjDates.initClassView = ClassViewType.PANEL;
 
-            addPropertyDraw(dateFrom, LM.objectValue);
-            addPropertyDraw(dateTo, LM.objectValue);
+            addPropertyDraw(dateFrom, baseLM.objectValue);
+            addPropertyDraw(dateTo, baseLM.objectValue);
 
             GroupObjectEntity gobjDocArt = new GroupObjectEntity(genID());
 
@@ -2785,17 +2788,17 @@ public class VEDLogicsModule extends LogicsModule {
             gobjDocArt.add(objArt);
             addGroup(gobjDocArt);
 
-            addPropertyDraw(objArt, LM.barcode, LM.name, nameBrendArticle);
+            addPropertyDraw(objArt, baseLM.barcode, baseLM.name, nameBrendArticle);
             addPropertyDraw(objDoc, objArt, priceAllOrderSaleArticle, articleQuantity);
-            addPropertyDraw(objDoc, LM.objectValue, LM.date, orderHour, orderMinute, orderUserBarcode, orderComputerName, subjectOutOrder, orderContragentBarcode);
+            addPropertyDraw(objDoc, baseLM.objectValue, baseLM.date, orderHour, orderMinute, orderUserBarcode, orderComputerName, subjectOutOrder, orderContragentBarcode);
             addPropertyDraw(objDoc, objArt, discountSumOrderArticle, discountOrderArticle, sumOrderArticle, sumWithDiscountOrderArticle, sumWithDiscountCouponOrderArticle, sumWithDiscountObligationOrderArticle);
 
 
             removePropertyDraw(documentMoveGroup); // нужно, чтобы убрать Доступ. кол-во, которое не может нормально выполнить PostgreSQL
 
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(articleQuantity, objDoc, objArt)));
-            addFixedFilter(new CompareFilterEntity(addPropertyObject(LM.date, objDoc), Compare.GREATER_EQUALS, dateFrom));
-            addFixedFilter(new CompareFilterEntity(addPropertyObject(LM.date, objDoc), Compare.LESS_EQUALS, dateTo));
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(baseLM.date, objDoc), Compare.GREATER_EQUALS, dateFrom));
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(baseLM.date, objDoc), Compare.LESS_EQUALS, dateTo));
         }
 
 
@@ -2812,7 +2815,7 @@ public class VEDLogicsModule extends LogicsModule {
         private OrderSaleInvoiceRetailFormEntity(NavigatorElement parent, String sID, boolean toAdd, boolean allStores) {
             super(parent, sID, orderSaleInvoiceArticleRetail, toAdd, allStores);
 
-            addPropertyDraw(objDoc, LM.objectClassName);
+            addPropertyDraw(objDoc, baseLM.objectClassName);
         }
 
         @Override
@@ -2831,8 +2834,8 @@ public class VEDLogicsModule extends LogicsModule {
             if (!toAdd)
                 addActionsOnObjectChange(objBarcode, true,
                                          addPropertyObject(barcodeActionCheck, objDoc, objBarcode),
-                                         addPropertyObject(LM.seekBarcodeAction, objBarcode),
-                                         addPropertyObject(LM.barcodeNotFoundMessage, objBarcode));
+                                         addPropertyObject(baseLM.seekBarcodeAction, objBarcode),
+                                         addPropertyObject(baseLM.barcodeNotFoundMessage, objBarcode));
         }
 
         @Override
@@ -2879,9 +2882,9 @@ public class VEDLogicsModule extends LogicsModule {
         protected ReturnFormEntity(NavigatorElement parent, String sID, boolean toAdd, CustomClass documentClass, CustomClass commitClass) {
             super(parent, sID, documentClass, toAdd);
 
-            objInner = addSingleGroupObject(commitClass, getReturnCaption(), LM.baseGroup, true);
+            objInner = addSingleGroupObject(commitClass, getReturnCaption(), baseGroup, true);
 
-            addPropertyDraw(objInner, objDoc, LM.baseGroup, true, documentGroup, true);
+            addPropertyDraw(objInner, objDoc, baseGroup, true, documentGroup, true);
 
             NotNullFilterEntity documentFilter = new NotNullFilterEntity(getPropertyObject(sumReturnedQuantity));
             NotNullFilterEntity documentFreeFilter = new NotNullFilterEntity(getPropertyObject(sumReturnedQuantityFree));
@@ -2902,9 +2905,9 @@ public class VEDLogicsModule extends LogicsModule {
             objArt = addSingleGroupObject(article);
 
             addPropertyDraw(changeQuantityOrder, objInner, objArt);
-            addPropertyDraw(LM.barcode, objArt);
-            addPropertyDraw(LM.name, objArt);
-            addPropertyDraw(objInner, objDoc, objArt, LM.baseGroup, true, documentGroup, true);
+            addPropertyDraw(baseLM.barcode, objArt);
+            addPropertyDraw(baseLM.name, objArt);
+            addPropertyDraw(objInner, objDoc, objArt, baseGroup, true, documentGroup, true);
             addPropertyDraw(priceAllOrderSaleArticle, objInner, objArt);
             addPropertyDraw(discountOrderArticle, objInner, objArt);
             addPropertyDraw(sumWithDiscountOrderArticle, objInner, objArt);
@@ -2930,12 +2933,12 @@ public class VEDLogicsModule extends LogicsModule {
             addFixedOrder(addPropertyObject(changeQuantityTime, objInner, objArt), false);
 
             if (!noOuters) {
-                objOuter = addSingleGroupObject(commitDelivery, LM.baseGroup, true);
+                objOuter = addSingleGroupObject(commitDelivery, baseGroup, true);
 
-                addPropertyDraw(objInner, objOuter, objDoc, LM.baseGroup, true, documentGroup, true);
-                addPropertyDraw(objInner, objOuter, objDoc, objArt, LM.baseGroup, true, documentGroup, true);
-                addPropertyDraw(objInner, objOuter, LM.baseGroup, true);
-                addPropertyDraw(objInner, objOuter, objArt, LM.baseGroup, true);
+                addPropertyDraw(objInner, objOuter, objDoc, baseGroup, true, documentGroup, true);
+                addPropertyDraw(objInner, objOuter, objDoc, objArt, baseGroup, true, documentGroup, true);
+                addPropertyDraw(objInner, objOuter, baseGroup, true);
+                addPropertyDraw(objInner, objOuter, objArt, baseGroup, true);
 
                 NotNullFilterEntity documentCommitFilter = new NotNullFilterEntity(getPropertyObject(returnInnerCommitQuantity));
                 NotNullFilterEntity documentCommitFreeFilter = new NotNullFilterEntity(getPropertyObject(returnInnerFreeQuantity));
@@ -2956,8 +2959,8 @@ public class VEDLogicsModule extends LogicsModule {
 
             addActionsOnObjectChange(objBarcode, true,
                                      addPropertyObject(barcodeAction3, objDoc, objInner, objBarcode),
-                                     addPropertyObject(LM.seekBarcodeAction, objBarcode),
-                                     addPropertyObject(LM.barcodeNotFoundMessage, objBarcode));
+                                     addPropertyObject(baseLM.seekBarcodeAction, objBarcode),
+                                     addPropertyObject(baseLM.barcodeNotFoundMessage, objBarcode));
         }
 
         @Override
@@ -2991,7 +2994,7 @@ public class VEDLogicsModule extends LogicsModule {
 
         @Override
         protected Object[] getDocumentProps() {
-            return new Object[]{LM.baseGroup, true, documentGroup, true, sumWithDiscountOrder};
+            return new Object[]{baseGroup, true, documentGroup, true, sumWithDiscountOrder};
         }
 
         protected boolean isSaleForm() {
@@ -3081,7 +3084,7 @@ public class VEDLogicsModule extends LogicsModule {
             if (toAdd) {
                 addPropertyDraw(cashRegOperGroup, true);
             } else {
-                addPropertyDraw(LM.date, objDoc);
+                addPropertyDraw(baseLM.date, objDoc);
                 addPropertyDraw(checkRetailExported, objDoc);
             }
 
@@ -3102,10 +3105,10 @@ public class VEDLogicsModule extends LogicsModule {
             DefaultFormView design = super.createDefaultRichDesign();
 
             design.getGroupObjectContainer(objInner.groupTo).title = "Список чеков";
-            design.get(getPropertyDraw(LM.objectValue, objInner)).caption = "Номер чека";
+            design.get(getPropertyDraw(baseLM.objectValue, objInner)).caption = "Номер чека";
             design.getGroupObjectContainer(objArt.groupTo).title = "Товарные позиции";
 
-            PropertyDrawEntity barcodeNavigator = getPropertyDraw(LM.barcodeObjectName);
+            PropertyDrawEntity barcodeNavigator = getPropertyDraw(baseLM.barcodeObjectName);
             if (barcodeNavigator != null) {
                 design.get(barcodeNavigator).externalScreen = VEDBL.panelScreen;
                 design.get(barcodeNavigator).externalScreenConstraints.order = 1;
@@ -3144,8 +3147,8 @@ public class VEDLogicsModule extends LogicsModule {
                 return VEDBL.cashRegController.getCashRegApplyActions(formInstance, 2,
                         BaseUtils.toSet(inner.groupTo, art.groupTo),
                         getPropertyDraw(priceAllOrderSaleArticle, objArt), getPropertyDraw(returnInnerQuantity, objArt),
-                        getPropertyDraw(LM.name, objArt), getPropertyDraw(sumWithDiscountOrderArticle, objArt),
-                        getPropertyDraw(sumWithDiscountOrder, objDoc), getPropertyDraw(LM.barcode, objArt), null, null,
+                        getPropertyDraw(baseLM.name, objArt), getPropertyDraw(sumWithDiscountOrderArticle, objArt),
+                        getPropertyDraw(sumWithDiscountOrder, objDoc), getPropertyDraw(baseLM.barcode, objArt), null, null,
                         getPropertyDraw(discountOrderArticle), getPropertyDraw(discountSumOrderArticle),
                         getPropertyDraw(orderUserName), null, null, null, null, null, null, null);
             } else
@@ -3166,13 +3169,13 @@ public class VEDLogicsModule extends LogicsModule {
         protected SpecificationSupplierFormEntity(NavigatorElement parent, String sID) {
             super(parent, sID, "Спецификации");
 
-            ObjectEntity objContract = addSingleGroupObject(contract, LM.name, nameLegalOutContract, nameLegalIncContract, LM.date);
-            LM.addObjectActions(this, objContract);
+            ObjectEntity objContract = addSingleGroupObject(contract, baseLM.name, nameLegalOutContract, nameLegalIncContract, baseLM.date);
+            addObjectActions(this, objContract);
 
-            ObjectEntity objSpecification = addSingleGroupObject(specification, LM.name, nameContractSpecification, specificationDateFrom, specificationDateTo);
-            LM.addObjectActions(this, objSpecification);
+            ObjectEntity objSpecification = addSingleGroupObject(specification, baseLM.name, nameContractSpecification, specificationDateFrom, specificationDateTo);
+            addObjectActions(this, objSpecification);
 
-            ObjectEntity objArt = addSingleGroupObject(article, LM.baseGroup, true);
+            ObjectEntity objArt = addSingleGroupObject(article, baseGroup, true);
             addPropertyDraw(articleToSpecification, objArt, objSpecification);
             addPropertyDraw(objArt, priceGroup);
             addPropertyDraw(objArt, logisticsGroup);
@@ -3196,18 +3199,18 @@ public class VEDLogicsModule extends LogicsModule {
         protected SupplierArticleFormEntity(NavigatorElement parent, String sID) {
             super(parent, sID, "Ассортимент поставщиков");
 
-            ObjectEntity objSupplier = addSingleGroupObject(supplier, LM.publicGroup, true);
-            LM.addObjectActions(this, objSupplier);
+            ObjectEntity objSupplier = addSingleGroupObject(supplier, publicGroup, true);
+            addObjectActions(this, objSupplier);
 
-            ObjectEntity objContractSupplier = addSingleGroupObject(contractSupplier, LM.name, LM.date, nameLegalIncContract);
-            LM.addObjectActions(this, objContractSupplier);
+            ObjectEntity objContractSupplier = addSingleGroupObject(contractSupplier, baseLM.name, baseLM.date, nameLegalIncContract);
+            addObjectActions(this, objContractSupplier);
 
             addFixedFilter(new CompareFilterEntity(addPropertyObject(legalOutContract, objContractSupplier), Compare.EQUALS, objSupplier));
 
-            ObjectEntity objArt = addSingleGroupObject(article, LM.baseGroup, true, priceGroup, logisticsGroup);
-            LM.addObjectActions(this, objArt);
+            ObjectEntity objArt = addSingleGroupObject(article, baseGroup, true, priceGroup, logisticsGroup);
+            addObjectActions(this, objArt);
 
-            addPropertyDraw(objSupplier, objArt, LM.publicGroup, true);
+            addPropertyDraw(objSupplier, objArt, publicGroup, true);
 
 
             addFixedFilter(new CompareFilterEntity(addPropertyObject(articleSupplier, objArt), Compare.EQUALS, objSupplier));
@@ -3221,26 +3224,26 @@ public class VEDLogicsModule extends LogicsModule {
 
             if (issupplier) {
                 objContragent = addSingleGroupObject(supplier);
-                objContract = addSingleGroupObject(contractSupplier, LM.name, LM.date, nameLegalOutContract);
+                objContract = addSingleGroupObject(contractSupplier, baseLM.name, baseLM.date, nameLegalOutContract);
             } else {
                objContragent = addSingleGroupObject(customerWhole);
-               objContract = addSingleGroupObject(contractCustomer, LM.name, LM.date, nameLegalIncContract);
+               objContract = addSingleGroupObject(contractCustomer, baseLM.name, baseLM.date, nameLegalIncContract);
             }
-            addPropertyDraw(objContragent, LM.publicGroup, true);
-            LM.addObjectActions(this, objContragent);
-            LM.addObjectActions(this, objContract);
+            addPropertyDraw(objContragent, publicGroup, true);
+            addObjectActions(this, objContragent);
+            addObjectActions(this, objContract);
             addFixedFilter(new OrFilterEntity(new CompareFilterEntity(addPropertyObject(legalOutContract, objContract), Compare.EQUALS, objContragent),
                                                   new CompareFilterEntity(addPropertyObject(legalIncContract, objContract), Compare.EQUALS, objContragent)
                         ));
 
-            objSpecification = addSingleGroupObject(specification, LM.name, specificationDateFrom, specificationDateTo);
-            LM.addObjectActions(this, objSpecification);
-            objArt = addSingleGroupObject(article, LM.baseGroup, true);
+            objSpecification = addSingleGroupObject(specification, baseLM.name, specificationDateFrom, specificationDateTo);
+            addObjectActions(this, objSpecification);
+            objArt = addSingleGroupObject(article, baseGroup, true);
             addPropertyDraw(articleToSpecification, objArt, objSpecification);
-            addPropertyDraw(objContragent, objArt, LM.publicGroup, true);
+            addPropertyDraw(objContragent, objArt, publicGroup, true);
             addPropertyDraw(objArt, priceGroup);
             addPropertyDraw(objArt, logisticsGroup);
-            LM.addObjectActions(this, objArt);
+            addObjectActions(this, objArt);
 
             if(issupplier) {
             RegularFilterGroupEntity filterBalanceGroup2 = new RegularFilterGroupEntity(genID());
@@ -3280,11 +3283,11 @@ public class VEDLogicsModule extends LogicsModule {
         protected StoreLegalEntityFormEntity(NavigatorElement parent, String sID) {
             super(parent, sID, "Юридические лица");
 
-            ObjectEntity objSupplier = addSingleGroupObject(storeLegalEntity, LM.publicGroup, true);
-            LM.addObjectActions(this, objSupplier);
+            ObjectEntity objSupplier = addSingleGroupObject(storeLegalEntity, publicGroup, true);
+            addObjectActions(this, objSupplier);
 
-            ObjectEntity objContractSale = addSingleGroupObject(contractSale, LM.name, LM.date, nameLegalIncContract);
-            LM.addObjectActions(this, objContractSale);
+            ObjectEntity objContractSale = addSingleGroupObject(contractSale, baseLM.name, baseLM.date, nameLegalIncContract);
+            addObjectActions(this, objContractSale);
 
             addFixedFilter(new CompareFilterEntity(addPropertyObject(legalOutContract, objContractSale), Compare.EQUALS, objSupplier));
         }
@@ -3294,11 +3297,11 @@ public class VEDLogicsModule extends LogicsModule {
         protected CustomerWholeFormEntity(NavigatorElement parent, String sID) {
             super(parent, sID, "Оптовые покупатели");
 
-            ObjectEntity objCustomerWhole = addSingleGroupObject(customerWhole, LM.publicGroup, true);
-            LM.addObjectActions(this, objCustomerWhole);
+            ObjectEntity objCustomerWhole = addSingleGroupObject(customerWhole, publicGroup, true);
+            addObjectActions(this, objCustomerWhole);
 
-            ObjectEntity objContractSale = addSingleGroupObject(contractCustomer, LM.name, LM.date, nameLegalOutContract);
-            LM.addObjectActions(this, objContractSale);
+            ObjectEntity objContractSale = addSingleGroupObject(contractCustomer, baseLM.name, baseLM.date, nameLegalOutContract);
+            addObjectActions(this, objContractSale);
 
             addFixedFilter(new CompareFilterEntity(addPropertyObject(legalIncContract, objContractSale), Compare.EQUALS, objCustomerWhole));
         }
@@ -3310,14 +3313,14 @@ public class VEDLogicsModule extends LogicsModule {
         protected StoreArticleFormEntity(NavigatorElement parent, String sID) {
             super(parent, sID, "Остатки по складу");
 
-            ObjectEntity objStore = addSingleGroupObject(store, LM.publicGroup, true);
-            objArt = addSingleGroupObject(article, LM.publicGroup, true);
-            ObjectEntity objOuter = addSingleGroupObject(commitDelivery, LM.publicGroup, true);
+            ObjectEntity objStore = addSingleGroupObject(store, publicGroup, true);
+            objArt = addSingleGroupObject(article, publicGroup, true);
+            ObjectEntity objOuter = addSingleGroupObject(commitDelivery, publicGroup, true);
 
-            addPropertyDraw(objStore, objArt, LM.publicGroup, true);
-            addPropertyDraw(objStore, objOuter, LM.publicGroup, true);
-            addPropertyDraw(objOuter, objArt, LM.baseGroup, true);
-            addPropertyDraw(objStore, objOuter, objArt, LM.publicGroup, true);
+            addPropertyDraw(objStore, objArt, publicGroup, true);
+            addPropertyDraw(objStore, objOuter, publicGroup, true);
+            addPropertyDraw(objOuter, objArt, baseGroup, true);
+            addPropertyDraw(objStore, objOuter, objArt, publicGroup, true);
         }
 
         @Override
@@ -3346,10 +3349,10 @@ public class VEDLogicsModule extends LogicsModule {
                 addGroup(gobjFormatArt);
             }
 
-            LM.addObjectActions(this, objArt);
-            addPropertyDraw(objFormat, LM.publicGroup, true);
-            addPropertyDraw(objArt, LM.baseGroup, true, currentRRP);
-            addPropertyDraw(objFormat, objArt, LM.publicGroup, true);
+            addObjectActions(this, objArt);
+            addPropertyDraw(objFormat, publicGroup, true);
+            addPropertyDraw(objArt, baseGroup, true, currentRRP);
+            addPropertyDraw(objFormat, objArt, publicGroup, true);
 
             addActionsOnObjectChange(objBarcode, addPropertyObject(barcodeAction2, objFormat, objBarcode));
 
@@ -3383,15 +3386,15 @@ public class VEDLogicsModule extends LogicsModule {
             ObjectEntity objFormat, objArt, objAssortment;
 
             objFormat = addSingleGroupObject(format);
-            objAssortment = addSingleGroupObject(assortment, LM.name, nameFormatAssortment, assortmentDateFrom, assortmentDateTo);
+            objAssortment = addSingleGroupObject(assortment, baseLM.name, nameFormatAssortment, assortmentDateFrom, assortmentDateTo);
             objArt = addSingleGroupObject(article);
 
-            LM.addObjectActions(this, objFormat);
-            LM.addObjectActions(this, objArt);
-            LM.addObjectActions(this, objAssortment);
-            addPropertyDraw(objFormat, LM.publicGroup, true);
-            addPropertyDraw(objArt, LM.baseGroup, true, currentRRP);
-            addPropertyDraw(objFormat, objArt, LM.publicGroup, true);
+            addObjectActions(this, objFormat);
+            addObjectActions(this, objArt);
+            addObjectActions(this, objAssortment);
+            addPropertyDraw(objFormat, publicGroup, true);
+            addPropertyDraw(objArt, baseGroup, true, currentRRP);
+            addPropertyDraw(objFormat, objArt, publicGroup, true);
             addPropertyDraw(objAssortment, objArt, articleFormatToSell);
 
             addFixedFilter(new CompareFilterEntity(addPropertyObject(formatAssortment, objAssortment), Compare.EQUALS, objFormat));
@@ -3421,7 +3424,7 @@ public class VEDLogicsModule extends LogicsModule {
 
         @Override
         protected Object[] getArticleProps() {
-            return new Object[]{LM.baseGroup, true, currentNDS};
+            return new Object[]{baseGroup, true, currentNDS};
         }
 
         protected PropertyObjectEntity getCommitedQuantity() {
@@ -3449,15 +3452,15 @@ public class VEDLogicsModule extends LogicsModule {
         protected IncomePriceFormEntity(NavigatorElement parent, String sID) {
             super(parent, sID, "Реестр цен", true);
 
-            ObjectEntity objDoc = addSingleGroupObject(commitDoShopInc, "Документ", LM.date, nameSubjectIncOrder, nameSubjectOutOrder, nameLegalEntityIncOrder, nameLegalEntityOutOrder, numberInvoiceDocument, seriesInvoiceDocument, sumNDSOrder, sumWithDiscountOrder, sumNoNDSOrder, sumNDSRetailOrder, sumAddvOrder, sumRetailOrder, sumAddManfrOrder, sumManfrOrder);
+            ObjectEntity objDoc = addSingleGroupObject(commitDoShopInc, "Документ", baseLM.date, nameSubjectIncOrder, nameSubjectOutOrder, nameLegalEntityIncOrder, nameLegalEntityOutOrder, numberInvoiceDocument, seriesInvoiceDocument, sumNDSOrder, sumWithDiscountOrder, sumNoNDSOrder, sumNDSRetailOrder, sumAddvOrder, sumRetailOrder, sumAddManfrOrder, sumManfrOrder);
             objDoc.groupTo.initClassView = ClassViewType.PANEL;
-            ObjectEntity objArt = addSingleGroupObject(article, LM.name, LM.objectValue, LM.barcode, nameUnitOfMeasureArticle);
+            ObjectEntity objArt = addSingleGroupObject(article, baseLM.name, baseLM.objectValue, baseLM.barcode, nameUnitOfMeasureArticle);
 
             addPropertyDraw(objDoc, objArt, articleQuantity, priceOrderArticle, addvOrderArticle, ndsShopOrderPriceArticle, shopPrice, sumRetailOrderArticle, priceManfrOrderArticle, addManfrOrderArticle, ndsOrderArticle);
 
             addFixedFilter(new NotNullFilterEntity(getPropertyObject(shopPrice)));
 
-            LM.addFAProp(documentPrintRetailGroup, "Реестр цен", this, objDoc);
+            addFAProp(documentPrintRetailGroup, "Реестр цен", this, objDoc);
         }
     }
 
@@ -3466,15 +3469,15 @@ public class VEDLogicsModule extends LogicsModule {
         protected RevalueActFormEntity(NavigatorElement parent, String sID) {
             super(parent, sID, "Акт переоценки", true);
 
-            ObjectEntity objDoc = addSingleGroupObject(documentShopPrice, "Документ", LM.date, sumRevalBalance, sumPrevRetailOrder, sumNewPrevRetailOrder, sumPriceChangeOrder);
+            ObjectEntity objDoc = addSingleGroupObject(documentShopPrice, "Документ", baseLM.date, sumRevalBalance, sumPrevRetailOrder, sumNewPrevRetailOrder, sumPriceChangeOrder);
             objDoc.groupTo.initClassView = ClassViewType.PANEL;
-            ObjectEntity objArt = addSingleGroupObject(article, LM.name, LM.objectValue, LM.barcode);
+            ObjectEntity objArt = addSingleGroupObject(article, baseLM.name, baseLM.objectValue, baseLM.barcode);
 
             addPropertyDraw(objDoc, objArt, revalChangeBalance, prevPrice, sumPrevRetailOrderArticle, shopPrice, sumNewPrevRetailOrderArticle, sumPriceChangeOrderArticle);
 
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(revalChangeBalance, objDoc, objArt)));
 
-            LM.addFAProp(documentPrintRetailGroup, "Акт переоценки", this, objDoc);
+            addFAProp(documentPrintRetailGroup, "Акт переоценки", this, objDoc);
         }
     }
 
@@ -3487,18 +3490,18 @@ public class VEDLogicsModule extends LogicsModule {
         protected PrintSaleFormEntity(NavigatorElement parent, String sID, String caption, boolean inclArticle) {
             super(parent, sID, caption, true);
 
-            objDoc = addSingleGroupObject(getDocClass(), "Документ", LM.date, nameSubjectIncOrder, nameSubjectOutOrder, nameLegalEntityIncOrder, nameLegalEntityOutOrder, addressSubjectIncOrder, addressSubjectOutOrder, sumWithDiscountOrder, sumNDSOrder, sumNoNDSOrder, propsLegalEntityIncOrder, propsLegalEntityOutOrder, quantityOrder);
+            objDoc = addSingleGroupObject(getDocClass(), "Документ", baseLM.date, nameSubjectIncOrder, nameSubjectOutOrder, nameLegalEntityIncOrder, nameLegalEntityOutOrder, addressSubjectIncOrder, addressSubjectOutOrder, sumWithDiscountOrder, sumNDSOrder, sumNoNDSOrder, propsLegalEntityIncOrder, propsLegalEntityOutOrder, quantityOrder);
             objDoc.groupTo.initClassView = ClassViewType.PANEL;
 
             addPropertyDraw(objDoc, getDocGroups());
 
             if(inclArticle) {
-                objArt = addSingleGroupObject(article, LM.name, nameUnitOfMeasureArticle);
+                objArt = addSingleGroupObject(article, baseLM.name, nameUnitOfMeasureArticle);
                 addPropertyDraw(objDoc, objArt, articleQuantity, priceOrderArticle, sumWithDiscountOrderArticle, ndsOrderArticle, sumNDSOrderArticle, sumNoNDSOrderArticle, priceManfrOrderArticle, addManfrOrderArticle);
                 addFixedFilter(new NotNullFilterEntity(getPropertyObject(articleQuantity)));
             }
 
-            LM.addMFAProp(getActionGroup(), caption, this, new ObjectEntity[]{objDoc});
+            addMFAProp(getActionGroup(), caption, this, new ObjectEntity[]{objDoc});
         }
 
         protected ValueClass getDocClass() {
@@ -3574,21 +3577,21 @@ public class VEDLogicsModule extends LogicsModule {
 
             ObjectEntity objShop = addSingleGroupObject(shop);
 
-            ObjectEntity objAction = addSingleGroupObject(action, LM.publicGroup, true);
-            LM.addObjectActions(this, objAction);
+            ObjectEntity objAction = addSingleGroupObject(action, publicGroup, true);
+            addObjectActions(this, objAction);
 
             PropertyDrawEntity exclProp = addPropertyDraw(exclActionStore, objAction, objShop);
             exclProp.addColumnGroupObject(objShop.groupTo);
-            exclProp.setPropertyCaption(addPropertyObject(LM.name, objShop));
+            exclProp.setPropertyCaption(addPropertyObject(baseLM.name, objShop));
 
-            ObjectEntity objArtGroup = addSingleGroupObject(articleGroup, LM.publicGroup, true);
-            ObjectEntity objArt = addSingleGroupObject(article, LM.baseGroup, true, priceGroup);
+            ObjectEntity objArtGroup = addSingleGroupObject(articleGroup, publicGroup, true);
+            ObjectEntity objArt = addSingleGroupObject(article, baseGroup, true, priceGroup);
 
             if (noArticleGroups)
                 objArtGroup.groupTo.initClassView = ClassViewType.HIDE;
 
-            addPropertyDraw(objAction, objArtGroup, LM.publicGroup, true);
-            addPropertyDraw(objAction, objArt, LM.publicGroup, true);
+            addPropertyDraw(objAction, objArtGroup, publicGroup, true);
+            addPropertyDraw(objAction, objArt, publicGroup, true);
 
             RegularFilterGroupEntity filterGroup = new RegularFilterGroupEntity(genID());
             filterGroup.addFilter(new RegularFilterEntity(genID(),
@@ -3610,7 +3613,7 @@ public class VEDLogicsModule extends LogicsModule {
             addRegularFilterGroup(inActionGroup);
 
             addActionsOnObjectChange(objBarcode, addPropertyObject(barcodeAction2, objAction, objBarcode));
-            addActionsOnObjectChange(objBarcode, addPropertyObject(LM.seekBarcodeAction, objBarcode));
+            addActionsOnObjectChange(objBarcode, addPropertyObject(baseLM.seekBarcodeAction, objBarcode));
         }
     }
 
@@ -3619,16 +3622,16 @@ public class VEDLogicsModule extends LogicsModule {
         protected PricersFormEntity(NavigatorElement parent, String sID) {
             super(parent, sID, "Ценники", true);
 
-            ObjectEntity objDoc = addSingleGroupObject(documentShopPrice, "Документ", LM.baseGroup, true);
+            ObjectEntity objDoc = addSingleGroupObject(documentShopPrice, "Документ", baseGroup, true);
             objDoc.groupTo.initClassView = ClassViewType.PANEL;
-            ObjectEntity objArt = addSingleGroupObject(article, LM.baseGroup, true);
+            ObjectEntity objArt = addSingleGroupObject(article, baseGroup, true);
 
             addPropertyDraw(objDoc, objArt, shopPrice);
 
             addFixedFilter(new NotNullFilterEntity(getPropertyObject(shopPrice)));
             addFixedFilter(new NotFilterEntity(new CompareFilterEntity(getPropertyObject(shopPrice), Compare.EQUALS, addPropertyObject(prevPrice, objDoc, objArt))));
 
-            LM.addFAProp(documentPrintRetailGroup, "Ценники", this, objDoc);
+            addFAProp(documentPrintRetailGroup, "Ценники", this, objDoc);
         }
     }
 
@@ -3637,11 +3640,11 @@ public class VEDLogicsModule extends LogicsModule {
         protected StickersFormEntity(NavigatorElement parent, String sID) {
             super(parent, sID, "Стикеры", true);
 
-            ObjectEntity objDoc = addSingleGroupObject(documentShopPrice, "Документ", LM.baseGroup, true);
+            ObjectEntity objDoc = addSingleGroupObject(documentShopPrice, "Документ", baseGroup, true);
             objDoc.groupTo.initClassView = ClassViewType.PANEL;
-            ObjectEntity objArt = addSingleGroupObject(article, LM.baseGroup, true);
+            ObjectEntity objArt = addSingleGroupObject(article, baseGroup, true);
 
-            LM.addFAProp(documentPrintRetailGroup, "Стикеры", this, objDoc);
+            addFAProp(documentPrintRetailGroup, "Стикеры", this, objDoc);
         }
     }
 
@@ -3669,7 +3672,7 @@ public class VEDLogicsModule extends LogicsModule {
             super(parent, sID, documentClass, toAdd);
 
             if (!toAdd)
-                addPropertyDraw(LM.date, objDoc);
+                addPropertyDraw(baseLM.date, objDoc);
 
             if (allStores) {
                 addPropertyDraw(objDoc, subjectOutOrder, nameSubjectOutOrder);
@@ -3680,8 +3683,8 @@ public class VEDLogicsModule extends LogicsModule {
             }
 
             objObligation = addSingleGroupObject(giftObligation);
-            addPropertyDraw(LM.barcode, objObligation);
-            addPropertyDraw(LM.name, objObligation);
+            addPropertyDraw(baseLM.barcode, objObligation);
+            addPropertyDraw(baseLM.name, objObligation);
             addPropertyDraw(obligationSum, objObligation);
             addPropertyDraw(obligationSumFrom, objObligation);
             addPropertyDraw(obligationToIssued, objObligation);
@@ -3704,8 +3707,8 @@ public class VEDLogicsModule extends LogicsModule {
                                      addPropertyObject(barcodeAddCertAction, objBarcode),
                                      addPropertyObject(barcodeAddClientAction, objBarcode),
                                      addPropertyObject(barcodeAction2, objDoc, objBarcode),
-                                     addPropertyObject(LM.seekBarcodeAction, objBarcode),
-                                     addPropertyObject(LM.barcodeNotFoundMessage, objBarcode));
+                                     addPropertyObject(baseLM.seekBarcodeAction, objBarcode),
+                                     addPropertyObject(baseLM.barcodeNotFoundMessage, objBarcode));
         }
 
         @Override
@@ -3715,7 +3718,7 @@ public class VEDLogicsModule extends LogicsModule {
 
             design.getGroupObjectContainer(objDoc.groupTo).title = "Клиент";
             design.getGroupObjectContainer(objDoc.groupTo).design.background = new Color(192, 192, 192);
-            design.setEnabled(LM.publicGroup, false, objObligation.groupTo);
+            design.setEnabled(publicGroup, false, objObligation.groupTo);
             design.setEnabled(obligationSum, true);
 
             design.get(objObligation.groupTo).grid.defaultComponent = true;
@@ -3723,7 +3726,7 @@ public class VEDLogicsModule extends LogicsModule {
             design.setKeyStroke(KeyStroke.getKeyStroke(KeyEvent.VK_F3, InputEvent.SHIFT_DOWN_MASK | InputEvent.SHIFT_MASK));
 
             design.getPanelContainer(design.get(objBarcode.groupTo)).add(design.get(getPropertyDraw(barcodeAddClient)));
-            design.addIntersection(design.get(getPropertyDraw(barcodeAddClient)), design.get(getPropertyDraw(LM.barcodeObjectName)), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
+            design.addIntersection(design.get(getPropertyDraw(barcodeAddClient)), design.get(getPropertyDraw(baseLM.barcodeObjectName)), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
             design.setEditKey(barcodeAddClient, KeyStroke.getKeyStroke(KeyEvent.VK_F5, InputEvent.CTRL_DOWN_MASK));
 
             design.getPanelContainer(design.get(objBarcode.groupTo)).add(design.get(getPropertyDraw(barcodeAddCert)));
@@ -3780,8 +3783,8 @@ public class VEDLogicsModule extends LogicsModule {
                 return VEDBL.cashRegController.getCashRegApplyActions(formInstance, 1,
                         BaseUtils.toSet(obligation.groupTo),
                         getPropertyDraw(obligationSum, objObligation), getPropertyDraw(issueObligation, objObligation),
-                        getPropertyDraw(LM.name, objObligation), getPropertyDraw(obligationSum, objObligation),
-                        getPropertyDraw(sumWithDiscountOrder, objDoc), getPropertyDraw(LM.barcode, objObligation),
+                        getPropertyDraw(baseLM.name, objObligation), getPropertyDraw(obligationSum, objObligation),
+                        getPropertyDraw(sumWithDiscountOrder, objDoc), getPropertyDraw(baseLM.barcode, objObligation),
                         getPropertyDraw(orderSalePayCard, objDoc), getPropertyDraw(orderSalePayCash, objDoc), null, null,
                         getPropertyDraw(orderUserName), getPropertyDraw(nameImplSubjectIncOrder), getPropertyDraw(accumulatedClientSum),
                         null, null, null, null, null);
@@ -3836,11 +3839,11 @@ public class VEDLogicsModule extends LogicsModule {
         protected CouponIntervalFormEntity(NavigatorElement parent, String sID) {
             super(parent, sID, "Интервалы цен по купонам");
 
-            ObjectEntity objIntervalAdd = addSingleGroupObject(DoubleClass.instance, "Цена товара от", LM.objectValue, couponGroup, true);
+            ObjectEntity objIntervalAdd = addSingleGroupObject(DoubleClass.instance, "Цена товара от", baseLM.objectValue, couponGroup, true);
             objIntervalAdd.groupTo.initClassView = ClassViewType.PANEL;
             objIntervalAdd.groupTo.banClassView.addAll(BaseUtils.toList(ClassViewType.GRID, ClassViewType.HIDE));
 
-            ObjectEntity objInterval = addSingleGroupObject(DoubleClass.instance, "Цена товара", LM.objectValue, couponGroup, true);
+            ObjectEntity objInterval = addSingleGroupObject(DoubleClass.instance, "Цена товара", baseLM.objectValue, couponGroup, true);
             objInterval.groupTo.banClassView.addAll(BaseUtils.toList(ClassViewType.PANEL, ClassViewType.HIDE));
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(couponIssueSum, objInterval)));
         }
@@ -3852,8 +3855,8 @@ public class VEDLogicsModule extends LogicsModule {
         protected CouponArticleFormEntity(NavigatorElement parent, String sID) {
             super(parent, sID, "Товары по купонам");
 
-            ObjectEntity objArtGroup = addSingleGroupObject(articleGroup, LM.baseGroup, true, couponGroup, true);
-            objArt = addSingleGroupObject(article, LM.baseGroup, true, couponGroup, true);
+            ObjectEntity objArtGroup = addSingleGroupObject(articleGroup, baseGroup, true, couponGroup, true);
+            objArt = addSingleGroupObject(article, baseGroup, true, couponGroup, true);
 
             if (noArticleGroups)
                 objArtGroup.groupTo.initClassView = ClassViewType.HIDE;
@@ -3896,11 +3899,11 @@ public class VEDLogicsModule extends LogicsModule {
             addGroup(gobjDates);
             gobjDates.banClassView.addAll(BaseUtils.toList(ClassViewType.GRID, ClassViewType.HIDE));
             gobjDates.initClassView = ClassViewType.PANEL;
-            addPropertyDraw(dateFrom, LM.objectValue);
-            addPropertyDraw(dateTo, LM.objectValue);
+            addPropertyDraw(dateFrom, baseLM.objectValue);
+            addPropertyDraw(dateTo, baseLM.objectValue);
 
 
-            ObjectEntity objOblig = addSingleGroupObject(obligation, "Сертификаты", LM.objectValue, LM.name, LM.barcode, LM.objectClassName, certToSaled, obligationSum, obligationSumFrom);
+            ObjectEntity objOblig = addSingleGroupObject(obligation, "Сертификаты", baseLM.objectValue, baseLM.name, baseLM.barcode, baseLM.objectClassName, certToSaled, obligationSum, obligationSumFrom);
 
             addPropertyDraw(obligFromIssued, objOblig);
             addPropertyDraw(obligationIssued, objOblig);
@@ -3913,14 +3916,14 @@ public class VEDLogicsModule extends LogicsModule {
             addPropertyDraw(discountSumObligation, objOblig);
             addPropertyDraw(clientOutName, objOblig);
 
-            LM.addObjectActions(this, objOblig);
+            addObjectActions(this, objOblig);
 
 
-            ObjectEntity objOutArt = addSingleGroupObject(article, "Товары по выданному документу", LM.barcode, LM.name);
+            ObjectEntity objOutArt = addSingleGroupObject(article, "Товары по выданному документу", baseLM.barcode, baseLM.name);
             addPropertyDraw(articleOutDocumentQuantity, objOblig, objOutArt);
             addPropertyDraw(articleOutDocumentPrice, objOblig, objOutArt);
 
-            ObjectEntity objIncArt = addSingleGroupObject(article, "Товары по использованному документу", LM.barcode, LM.name);
+            ObjectEntity objIncArt = addSingleGroupObject(article, "Товары по использованному документу", baseLM.barcode, baseLM.name);
             addPropertyDraw(articleIncDocumentQuantity, objOblig, objIncArt);
             addPropertyDraw(articleIncDocumentPrice, objOblig, objIncArt);
 
@@ -3958,7 +3961,7 @@ public class VEDLogicsModule extends LogicsModule {
         protected ArticleInfoFormEntity(NavigatorElement parent, String sID) {
             super(parent, sID, "Справочник товаров");
 
-            objArt = addSingleGroupObject(article, LM.objectValue, LM.name, LM.barcode, addvArticle, currentRRP, nameCurrencyArticle, nameArticleGroupArticle, fullNameArticle, nameUnitOfMeasureArticle, nameBrendArticle, nameCountryArticle, gigienaArticle, spirtArticle, statusArticle, weightArticle, coeffTransArticle);
+            objArt = addSingleGroupObject(article, baseLM.objectValue, baseLM.name, baseLM.barcode, addvArticle, currentRRP, nameCurrencyArticle, nameArticleGroupArticle, fullNameArticle, nameUnitOfMeasureArticle, nameBrendArticle, nameCountryArticle, gigienaArticle, spirtArticle, statusArticle, weightArticle, coeffTransArticle);
             addPropertyDraw(importArticlesRRP);
             addPropertyDraw(importArticlesInfo);
         }
@@ -3970,7 +3973,7 @@ public class VEDLogicsModule extends LogicsModule {
         protected StoreInfoFormEntity(NavigatorElement parent, String sID) {
             super(parent, sID, "Справочник складов");
 
-            objStore = addSingleGroupObject(store, LM.publicGroup, true, importDocs);
+            objStore = addSingleGroupObject(store, publicGroup, true, importDocs);
         }
     }
 
@@ -3982,9 +3985,9 @@ public class VEDLogicsModule extends LogicsModule {
         protected DocumentArticleFormEntity(NavigatorElement parent, String sID) {
                 super(parent, sID, "Операции с товарами");
 
-                objArt = addSingleGroupObject(article, LM.barcode, LM.name, nameArticleGroupArticle, nameBrendArticle, nameCountryArticle, nameUnitOfMeasureArticle);
+                objArt = addSingleGroupObject(article, baseLM.barcode, baseLM.name, nameArticleGroupArticle, nameBrendArticle, nameCountryArticle, nameUnitOfMeasureArticle);
 
-                objShop = addSingleGroupObject(shop, LM.objectValue, LM.name, shopFormat);
+                objShop = addSingleGroupObject(shop, baseLM.objectValue, baseLM.name, shopFormat);
                 addPropertyDraw(articleFreeQuantity, objShop, objArt);
 
                 GroupObjectEntity gobjDates = new GroupObjectEntity(genID());
@@ -3997,27 +4000,27 @@ public class VEDLogicsModule extends LogicsModule {
                 gobjDates.banClassView.addAll(BaseUtils.toList(ClassViewType.GRID, ClassViewType.HIDE));
                 gobjDates.initClassView = ClassViewType.PANEL;
 
-                addPropertyDraw(dateFrom, LM.objectValue);
-                addPropertyDraw(dateTo, LM.objectValue);
+                addPropertyDraw(dateFrom, baseLM.objectValue);
+                addPropertyDraw(dateTo, baseLM.objectValue);
 
 
-                objDoc = addSingleGroupObject(order, LM.objectValue, LM.objectClassName);
+                objDoc = addSingleGroupObject(order, baseLM.objectValue, baseLM.objectClassName);
                 addPropertyDraw(nameSubjectIncOrder, objDoc).forceViewType = ClassViewType.GRID;
                 addPropertyDraw(priceOrderArticle, objDoc, objArt).forceViewType = ClassViewType.GRID;
 
-                addPropertyDraw(LM.date, objDoc);
+                addPropertyDraw(baseLM.date, objDoc);
 
 
                 addPropertyDraw(articleDocQuantity, objDoc, objArt);
 
-                addFixedFilter(new CompareFilterEntity(addPropertyObject(LM.date, objDoc), Compare.GREATER_EQUALS, dateFrom));
-                addFixedFilter(new CompareFilterEntity(addPropertyObject(LM.date, objDoc), Compare.LESS_EQUALS, dateTo));
+                addFixedFilter(new CompareFilterEntity(addPropertyObject(baseLM.date, objDoc), Compare.GREATER_EQUALS, dateFrom));
+                addFixedFilter(new CompareFilterEntity(addPropertyObject(baseLM.date, objDoc), Compare.LESS_EQUALS, dateTo));
 
                 addFixedFilter(new NotNullFilterEntity(addPropertyObject(articleDocQuantity, objDoc, objArt)));
                 addFixedFilter(new NotNullFilterEntity(addPropertyObject(articleFreeQuantity, objShop, objArt)));
 
-                addFixedFilter(new OrFilterEntity(new CompareFilterEntity(addPropertyObject(nameSubjectOutOrder, objDoc), Compare.EQUALS, addPropertyObject(LM.name, objShop)),
-                                                  new CompareFilterEntity(addPropertyObject(nameSubjectIncOrder, objDoc), Compare.EQUALS, addPropertyObject(LM.name, objShop))
+                addFixedFilter(new OrFilterEntity(new CompareFilterEntity(addPropertyObject(nameSubjectOutOrder, objDoc), Compare.EQUALS, addPropertyObject(baseLM.name, objShop)),
+                                                  new CompareFilterEntity(addPropertyObject(nameSubjectIncOrder, objDoc), Compare.EQUALS, addPropertyObject(baseLM.name, objShop))
                                                                      ));
             }
 
@@ -4026,7 +4029,7 @@ public class VEDLogicsModule extends LogicsModule {
 
             DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign();
 
-            design.defaultOrders.put(design.get(getPropertyDraw(LM.date)), true);
+            design.defaultOrders.put(design.get(getPropertyDraw(baseLM.date)), true);
 
             design.get(objShop.groupTo).grid.constraints.fillVertical = 0.5;
 
@@ -4040,7 +4043,7 @@ public class VEDLogicsModule extends LogicsModule {
            protected ArticleSupplierFormEntity(NavigatorElement parent, String sID) {
                    super(parent, sID, "Справочник поставщиков");
 
-                   objSupplier = addSingleGroupObject(supplier, LM.name, nameLegalEntitySubject, unnLegalEntity, addressLegalEntity);
+                   objSupplier = addSingleGroupObject(supplier, baseLM.name, nameLegalEntitySubject, unnLegalEntity, addressLegalEntity);
 
                    GroupObjectEntity gobjDates = new GroupObjectEntity(genID());
                    ObjectEntity dateFrom = new ObjectEntity(genID(), DateClass.instance, "Дата (с)");
@@ -4051,10 +4054,10 @@ public class VEDLogicsModule extends LogicsModule {
                    addGroup(gobjDates);
                    gobjDates.banClassView.addAll(BaseUtils.toList(ClassViewType.GRID, ClassViewType.HIDE));
                    gobjDates.initClassView = ClassViewType.PANEL;
-                   addPropertyDraw(dateFrom, LM.objectValue);
-                   addPropertyDraw(dateTo, LM.objectValue);
+                   addPropertyDraw(dateFrom, baseLM.objectValue);
+                   addPropertyDraw(dateTo, baseLM.objectValue);
 
-                   objArt = addSingleGroupObject(article, LM.objectValue, LM.name, LM.barcode);
+                   objArt = addSingleGroupObject(article, baseLM.objectValue, baseLM.name, baseLM.barcode);
                    addPropertyDraw(quantitySupplierArticleBetweenDates, objSupplier, objArt, dateFrom, dateTo);
                    addPropertyDraw(sumNoNDSSupplierArticleBetweenDates, objSupplier, objArt, dateFrom, dateTo);
                    addPropertyDraw(sumNoNDSRetailSupplierArticleBetweenDates, objSupplier, objArt, dateFrom, dateTo);
@@ -4073,9 +4076,9 @@ public class VEDLogicsModule extends LogicsModule {
         protected ArticleSpecificationFormEntity(NavigatorElement parent, String sID) {
             super(parent, sID, "Спецификации товаров");
 
-            objArt = addSingleGroupObject(article, LM.objectValue, LM.name, LM.barcode, addvArticle, currentRRP, nameCurrencyArticle, nameArticleGroupArticle, fullNameArticle, nameUnitOfMeasureArticle, nameBrendArticle, nameCountryArticle, gigienaArticle, spirtArticle, statusArticle, weightArticle, coeffTransArticle);
+            objArt = addSingleGroupObject(article, baseLM.objectValue, baseLM.name, baseLM.barcode, addvArticle, currentRRP, nameCurrencyArticle, nameArticleGroupArticle, fullNameArticle, nameUnitOfMeasureArticle, nameBrendArticle, nameCountryArticle, gigienaArticle, spirtArticle, statusArticle, weightArticle, coeffTransArticle);
 
-            objSpecification = addSingleGroupObject(specification, LM.name);
+            objSpecification = addSingleGroupObject(specification, baseLM.name);
 
             addPropertyDraw(articleToSpecification, objArt, objSpecification);
 
@@ -4099,23 +4102,23 @@ public class VEDLogicsModule extends LogicsModule {
             gobjDates.add(objDateFrom);
             gobjDates.add(objDateTo);
             addGroup(gobjDates);
-            addPropertyDraw(objDateFrom, LM.objectValue);
-            addPropertyDraw(objDateTo, LM.objectValue);
+            addPropertyDraw(objDateFrom, baseLM.objectValue);
+            addPropertyDraw(objDateTo, baseLM.objectValue);
 
             gobjDates.initClassView = ClassViewType.PANEL;
 
-            objShop = addSingleGroupObject(shop, LM.name);
+            objShop = addSingleGroupObject(shop, baseLM.name);
             objShop.groupTo.initClassView = ClassViewType.PANEL;
 
-            objOrderInc = addSingleGroupObject(orderInc, nameSubjectOutOrder, LM.date, numberInvoiceDocument, seriesInvoiceDocument, sumRetailOrder, sumWithDiscountCouponOrder, sumDiscountPayCouponOrder, sumPriceChangeOrder);
+            objOrderInc = addSingleGroupObject(orderInc, nameSubjectOutOrder, baseLM.date, numberInvoiceDocument, seriesInvoiceDocument, sumRetailOrder, sumWithDiscountCouponOrder, sumDiscountPayCouponOrder, sumPriceChangeOrder);
 
-            objOrderOut = addSingleGroupObject(orderOut, nameSubjectIncOrder, LM.date, numberInvoiceDocument, seriesInvoiceDocument, sumRetailOrder, sumWithDiscountCouponOrder, sumDiscountPayCouponOrder, sumPriceChangeOrder);
+            objOrderOut = addSingleGroupObject(orderOut, nameSubjectIncOrder, baseLM.date, numberInvoiceDocument, seriesInvoiceDocument, sumRetailOrder, sumWithDiscountCouponOrder, sumDiscountPayCouponOrder, sumPriceChangeOrder);
 
-            addFixedFilter(new CompareFilterEntity(addPropertyObject(LM.date, objOrderInc), Compare.GREATER_EQUALS, objDateFrom));
-            addFixedFilter(new CompareFilterEntity(addPropertyObject(LM.date, objOrderInc), Compare.LESS_EQUALS, objDateTo));
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(baseLM.date, objOrderInc), Compare.GREATER_EQUALS, objDateFrom));
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(baseLM.date, objOrderInc), Compare.LESS_EQUALS, objDateTo));
 
-            addFixedFilter(new CompareFilterEntity(addPropertyObject(LM.date, objOrderOut), Compare.GREATER_EQUALS, objDateFrom));
-            addFixedFilter(new CompareFilterEntity(addPropertyObject(LM.date, objOrderOut), Compare.LESS_EQUALS, objDateTo));
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(baseLM.date, objOrderOut), Compare.GREATER_EQUALS, objDateFrom));
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(baseLM.date, objOrderOut), Compare.LESS_EQUALS, objDateTo));
 
             addFixedFilter(new CompareFilterEntity(addPropertyObject(subjectOutOrder, objOrderOut), Compare.EQUALS, objShop));
             addFixedFilter(new CompareFilterEntity(addPropertyObject(subjectIncOrder, objOrderInc), Compare.EQUALS, objShop));
@@ -4150,10 +4153,10 @@ public class VEDLogicsModule extends LogicsModule {
         public CreateArticleFormEntity(NavigatorElement parent, String sID, String caption) {
             super(parent, sID, caption);
 
-            objBarcode = addSingleGroupObject(StringClass.get(13), "Штрих-код", LM.objectValue);
+            objBarcode = addSingleGroupObject(StringClass.get(13), "Штрих-код", baseLM.objectValue);
             objBarcode.groupTo.setSingleClassView(ClassViewType.PANEL);
 
-            objArticle = addSingleGroupObject(article, "Товар", LM.name, articleToGroup, nameArticleGroupArticle);
+            objArticle = addSingleGroupObject(article, "Товар", baseLM.name, articleToGroup, nameArticleGroupArticle);
             objArticle.groupTo.setSingleClassView(ClassViewType.PANEL);
 
             //addActionsOnApply(addPropertyObject(addNEArticleCompositeSIDSupplier, objSIDArticleComposite, objSupplier));
@@ -4173,8 +4176,8 @@ public class VEDLogicsModule extends LogicsModule {
         protected LogClientFormEntity(NavigatorElement parent, int ID) {
             super(parent, ID, "Изменения клиентов");
 
-            ObjectEntity objClient = addSingleGroupObject(customerCheckRetail, "Клиент", properties, LM.baseGroup, true);
-            ObjectEntity objSession = addSingleGroupObject(session, "Транзакция", properties, LM.baseGroup, true);
+            ObjectEntity objClient = addSingleGroupObject(customerCheckRetail, "Клиент", properties, baseGroup, true);
+            ObjectEntity objSession = addSingleGroupObject(session, "Транзакция", properties, baseGroup, true);
             PropertyDrawEntity drawEntity = addPropertyDraw(logClientInitialSum, objClient, objSession);
             addFixedFilter(new NotNullFilterEntity(drawEntity.propertyObject));
         }
@@ -4183,7 +4186,7 @@ public class VEDLogicsModule extends LogicsModule {
     private class PayWithCardActionProperty extends ActionProperty {
 
         private PayWithCardActionProperty() {
-            super(LM.genSID(), "Опл. карт.", new ValueClass[]{orderSaleRetail});
+            super(genSID(), "Опл. карт.", new ValueClass[]{orderSaleRetail});
 
             askConfirm = true;
         }
@@ -4210,7 +4213,7 @@ public class VEDLogicsModule extends LogicsModule {
     private class PrintOrderCheckActionProperty extends ActionProperty {
 
         private PrintOrderCheckActionProperty() {
-            super(LM.genSID(), "Печать", new ValueClass[]{orderSaleRetail});
+            super(genSID(), "Печать", new ValueClass[]{orderSaleRetail});
         }
 
         public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, DataSession session, Modifier<? extends Changes> modifier, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects, boolean groupLast) throws SQLException {
@@ -4233,7 +4236,7 @@ public class VEDLogicsModule extends LogicsModule {
         private final ClassPropertyInterface dateTo;
 
         public SaleExportActionProperty() {
-            super(LM.genSID(), "Экспорт реализации", new ValueClass[]{shop, DateClass.instance, DateClass.instance});
+            super(genSID(), "Экспорт реализации", new ValueClass[]{shop, DateClass.instance, DateClass.instance});
 
             Iterator<ClassPropertyInterface> i = interfaces.iterator();
             shopInterface = i.next();
@@ -4250,7 +4253,7 @@ public class VEDLogicsModule extends LogicsModule {
                     }
 
                     protected void setRemoteFormFilter(FormInstance formInstance) throws ParseException {
-                        PropertyDrawInstance<?> dateDraw = formInstance.getPropertyDraw(LM.date);
+                        PropertyDrawInstance<?> dateDraw = formInstance.getPropertyDraw(baseLM.date);
                         dateDraw.toDraw.addTempFilter(new CompareFilterInstance(dateDraw.propertyObject, Compare.GREATER_EQUALS, keys.get(dateFrom)));
                         dateDraw.toDraw.addTempFilter(new CompareFilterInstance(dateDraw.propertyObject, Compare.LESS_EQUALS, keys.get(dateTo)));
                     }
@@ -4277,13 +4280,13 @@ public class VEDLogicsModule extends LogicsModule {
         }
 
         protected void addImportObjectNameField(java.util.List<ImportField> fields, java.util.List<ImportProperty<?>> properties, java.util.List<ImportKey<?>> keys, ImportKey importKey, LP nameToObject, LP importProp, ConcreteCustomClass customClass) {
-            addImportObjectCGField(fields, properties, keys, nameToObject, LM.name, importKey, importProp, customClass);
+            addImportObjectCGField(fields, properties, keys, nameToObject, baseLM.name, importKey, importProp, customClass);
         }
 
         protected ImportKey addImportObjectCGField(java.util.List<ImportField> fields, java.util.List<ImportProperty<?>> properties, java.util.List<ImportKey<?>> keys, LP IDToObject, LP objectToID, ImportKey linkKey, LP linkProp, ConcreteCustomClass customClass) {
             ImportField importField = new ImportField(objectToID); fields.add(importField);
             ImportKey<?> importObjectKey = new ImportKey(customClass, IDToObject.getMapping(importField)); keys.add(importObjectKey);
-            properties.add(new ImportProperty(importField, linkProp.getMapping(linkKey), LM.object(customClass).getMapping(importObjectKey)));
+            properties.add(new ImportProperty(importField, linkProp.getMapping(linkKey), object(customClass).getMapping(importObjectKey)));
             properties.add(new ImportProperty(importField, objectToID.getMapping(importObjectKey)));
             return importObjectKey;
         }
@@ -4309,7 +4312,7 @@ public class VEDLogicsModule extends LogicsModule {
         private final ClassPropertyInterface documentInterface;
 
         public ImportOrderActionProperty() {
-            super(LM.genSID(), "Импортировать заявку", new ValueClass[]{orderDelivery});
+            super(genSID(), "Импортировать заявку", new ValueClass[]{orderDelivery});
 
             Iterator<ClassPropertyInterface> i = interfaces.iterator();
             documentInterface = i.next();
@@ -4333,13 +4336,13 @@ public class VEDLogicsModule extends LogicsModule {
 
             ImportField barcodeField = new ImportField(StringClass.get(13)); fields.add(barcodeField);
             ImportKey<?> articleKey = new ImportKey(article, padlBarcodeToObject.getMapping(barcodeField)); importKeys.add(articleKey);
-            properties.add(new ImportProperty(barcodeField, LM.barcode.getMapping(articleKey), padl.getMapping(barcodeField)));
+            properties.add(new ImportProperty(barcodeField, baseLM.barcode.getMapping(articleKey), padl.getMapping(barcodeField)));
 
-            addImportField(fields, properties, articleKey, LM.name);
+            addImportField(fields, properties, articleKey, baseLM.name);
             addImportField(fields, properties, priceOrderArticle, document, articleKey);
             addImportField(fields, properties, articleOrderQuantity, document, articleKey);
             addImportField(fields, properties, ndsOrderArticle, document, articleKey);
-            addImportObjectNameField(fields, properties, importKeys, articleKey, LM.nameToCountry, countryArticle, LM.country);
+            addImportObjectNameField(fields, properties, importKeys, articleKey, baseLM.nameToCountry, countryArticle, baseLM.country);
             addImportObjectNameField(fields, properties, importKeys, articleKey, nameToUnitOfMeasure, unitOfMeasureArticle, unitOfMeasure);
 
             java.util.List<java.util.List<Object>> rows = new ArrayList<java.util.List<Object>>();
@@ -4379,7 +4382,7 @@ public class VEDLogicsModule extends LogicsModule {
     public class ImportArticlesRRPActionProperty extends ImportActionProperty {
 
         public ImportArticlesRRPActionProperty() {
-            super(LM.genSID(), "Импортировать RRP");
+            super(genSID(), "Импортировать RRP");
         }
 
         public void execute(final Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, DataSession session, Modifier<? extends Changes> modifier, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects, boolean groupLast) throws SQLException {
@@ -4396,11 +4399,11 @@ public class VEDLogicsModule extends LogicsModule {
             java.util.List<ImportProperty<?>> properties = new ArrayList<ImportProperty<?>>();
             java.util.List<ImportKey<?>> importKeys = new ArrayList<ImportKey<?>>();
 
-            ImportField barcodeField = new ImportField(LM.barcode); fields.add(barcodeField);
+            ImportField barcodeField = new ImportField(baseLM.barcode); fields.add(barcodeField);
             ImportKey<?> articleKey = new ImportKey(article, padlBarcodeToObject.getMapping(barcodeField)); importKeys.add(articleKey);
-            properties.add(new ImportProperty(barcodeField, LM.barcode.getMapping(articleKey), padl.getMapping(barcodeField)));
+            properties.add(new ImportProperty(barcodeField, baseLM.barcode.getMapping(articleKey), padl.getMapping(barcodeField)));
 
-            addImportField(fields, properties, articleKey, LM.name);
+            addImportField(fields, properties, articleKey, baseLM.name);
             addImportField(fields, properties, articleKey, currentRRP);
             addImportObjectNameField(fields, properties, importKeys, articleKey, nameToCurrency, currencyArticle, currency);
 
@@ -4434,7 +4437,7 @@ public class VEDLogicsModule extends LogicsModule {
     public class ImportArticlesInfoActionProperty extends ImportActionProperty {
 
         public ImportArticlesInfoActionProperty() {
-            super(LM.genSID(), "Импортировать справочн.");
+            super(genSID(), "Импортировать справочн.");
         }
 
         public void execute(final Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, DataSession session, Modifier<? extends Changes> modifier, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects, boolean groupLast) throws SQLException {
@@ -4451,16 +4454,16 @@ public class VEDLogicsModule extends LogicsModule {
             java.util.List<ImportProperty<?>> properties = new ArrayList<ImportProperty<?>>();
             java.util.List<ImportKey<?>> importKeys = new ArrayList<ImportKey<?>>();
 
-            ImportField barcodeField = new ImportField(LM.barcode); fields.add(barcodeField);
+            ImportField barcodeField = new ImportField(baseLM.barcode); fields.add(barcodeField);
             ImportKey<?> articleKey = new ImportKey(article, padlBarcodeToObject.getMapping(barcodeField)); importKeys.add(articleKey);
-            properties.add(new ImportProperty(barcodeField, LM.barcode.getMapping(articleKey), padl.getMapping(barcodeField)));
+            properties.add(new ImportProperty(barcodeField, baseLM.barcode.getMapping(articleKey), padl.getMapping(barcodeField)));
 
-            addImportField(fields, properties, articleKey, LM.name);
+            addImportField(fields, properties, articleKey, baseLM.name);
             addImportObjectNameField(fields, properties, importKeys, articleKey, nameToArticleGroup, articleToGroup, articleGroup);
             addImportField(fields, properties, articleKey, fullNameArticle);
             addImportObjectNameField(fields, properties, importKeys, articleKey, nameToUnitOfMeasure, unitOfMeasureArticle, unitOfMeasure);
             addImportObjectNameField(fields, properties, importKeys, articleKey, nameToBrend, brendArticle, brend);
-            addImportObjectNameField(fields, properties, importKeys, articleKey, LM.nameToCountry, countryArticle, LM.country);
+            addImportObjectNameField(fields, properties, importKeys, articleKey, baseLM.nameToCountry, countryArticle, baseLM.country);
             addImportField(fields, properties, articleKey, gigienaArticle);
             addImportField(fields, properties, articleKey, spirtArticle);
             addImportObjectNameField(fields, properties, importKeys, articleKey, nameToGender, genderArticle, gender);
@@ -4495,7 +4498,7 @@ public class VEDLogicsModule extends LogicsModule {
     public class ImportDocsActionProperty extends ImportActionProperty {
 
         public ImportDocsActionProperty() {
-            super(LM.genSID(), "Импортировать док.", new ValueClass[]{shop});
+            super(genSID(), "Импортировать док.", new ValueClass[]{shop});
         }
 
         public void execute(final Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, DataSession session, Modifier<? extends Changes> modifier, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects, boolean groupLast) throws SQLException {
@@ -4518,19 +4521,19 @@ public class VEDLogicsModule extends LogicsModule {
             ImportField numberField = new ImportField(numberInvoiceDocument); fields.add(numberField);
             ImportKey<?> documentKey = new ImportKey(commitDeliveryShopLocal, invoiceDocumentNumber.getMapping(numberField)); importKeys.add(documentKey);
             properties.add(new ImportProperty(numberField, numberInvoiceDocument.getMapping(documentKey)));
-            addImportField(fields, properties, LM.date, documentKey);
+            addImportField(fields, properties, baseLM.date, documentKey);
 
-            properties.add(new ImportProperty(null, subjectIncOrder.getMapping(documentKey), LM.object(store).getMapping(storeObject)));
+            properties.add(new ImportProperty(null, subjectIncOrder.getMapping(documentKey), object(store).getMapping(storeObject)));
 
             // товар
-            ImportField barcodeField = new ImportField(LM.barcode); fields.add(barcodeField);
+            ImportField barcodeField = new ImportField(baseLM.barcode); fields.add(barcodeField);
             ImportKey<?> articleKey = new ImportKey(article, padlBarcodeToObject.getMapping(barcodeField)); importKeys.add(articleKey);
-            properties.add(new ImportProperty(barcodeField, LM.barcode.getMapping(articleKey), padl.getMapping(barcodeField)));
-            addImportField(fields, properties, LM.name, articleKey);
+            properties.add(new ImportProperty(barcodeField, baseLM.barcode.getMapping(articleKey), padl.getMapping(barcodeField)));
+            addImportField(fields, properties, baseLM.name, articleKey);
 
             // поставщик
             ImportKey<?> supplierKey = addImportObjectCGField(fields, properties, importKeys, legalEntityUnn, unnLegalEntity, documentKey, subjectOutOrder, localSupplier);
-            addImportField(fields, properties, LM.name, supplierKey);
+            addImportField(fields, properties, baseLM.name, supplierKey);
 
             addImportField(fields, properties, outerCommitedQuantity, documentKey, articleKey); // пока не article так как не может протолкнуть класс внутрь
             addImportField(fields, properties, priceManfrOrderArticle, documentKey, articleKey);
@@ -4569,7 +4572,7 @@ public class VEDLogicsModule extends LogicsModule {
     public class DownToZeroActionProperty extends ActionProperty {
 
         public DownToZeroActionProperty() {
-            super(LM.genSID(), "Обнулить остатки", new ValueClass[]{order});
+            super(genSID(), "Обнулить остатки", new ValueClass[]{order});
         }
 
         public void execute(final Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, DataSession session, Modifier<? extends Changes> modifier, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects, boolean groupLast) throws SQLException {

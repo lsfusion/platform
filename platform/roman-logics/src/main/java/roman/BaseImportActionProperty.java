@@ -27,7 +27,7 @@ public abstract class BaseImportActionProperty extends ActionProperty {
     }
 
     public BaseImportActionProperty(RomanLogicsModule LM, String caption, ValueClass supplierClass, String extensions) {
-        super(LM.LM.genSID(), caption, new ValueClass[]{supplierClass});
+        super(LM.baseLM.genSID(), caption, new ValueClass[]{supplierClass});
 
         Iterator<ClassPropertyInterface> i = interfaces.iterator();
         supplierInterface = i.next();

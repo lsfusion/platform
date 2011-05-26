@@ -35,7 +35,7 @@ public class MexxImportPricesInvoiceActionProperty extends BaseImportActionPrope
     public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, DataSession session, Modifier<? extends Changes> modifier, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects, boolean groupLast) throws SQLException {
         ImportField invoiceSIDField = new ImportField(LM.sidDocument);
         ImportField sidField = new ImportField(LM.sidArticle);
-        ImportField barCodeField = new ImportField(LM.LM.barcode);
+        ImportField barCodeField = new ImportField(LM.baseLM.barcode);
         ImportField customCodeField = new ImportField(LM.sidCustomCategoryOrigin);
         ImportField customCode6Field = new ImportField(LM.sidCustomCategory6);
         ImportField unitPriceField = new ImportField(LM.priceDataDocumentItem);
@@ -50,13 +50,13 @@ public class MexxImportPricesInvoiceActionProperty extends BaseImportActionPrope
         ImportKey<?> articleKey = new ImportKey(LM.articleComposite, LM.articleSIDSupplier.getMapping(sidField, supplier));
         properties.add(new ImportProperty(sidField, LM.sidArticle.getMapping(articleKey)));
 
-        ImportKey<?> itemKey = new ImportKey(LM.item, LM.LM.barcodeToObject.getMapping(barCodeField));
-        properties.add(new ImportProperty(barCodeField, LM.LM.barcode.getMapping(itemKey)));
+        ImportKey<?> itemKey = new ImportKey(LM.item, LM.baseLM.barcodeToObject.getMapping(barCodeField));
+        properties.add(new ImportProperty(barCodeField, LM.baseLM.barcode.getMapping(itemKey)));
 
         ImportKey<?> customCategoryKey = new ImportKey(LM.customCategoryOrigin, LM.sidToCustomCategoryOrigin.getMapping(customCodeField));
         properties.add(new ImportProperty(customCodeField, LM.sidCustomCategoryOrigin.getMapping(customCategoryKey)));
         properties.add(new ImportProperty(customCodeField, LM.customCategoryOriginArticle.getMapping(articleKey),
-                LM.LM.object(LM.customCategoryOrigin).getMapping(customCategoryKey)));
+                LM.object(LM.customCategoryOrigin).getMapping(customCategoryKey)));
 
         ImportKey<?> customCategory6Key = new ImportKey(LM.customCategory6, LM.sidToCustomCategory6.getMapping(customCode6Field));
         properties.add(new ImportProperty(customCode6Field, LM.sidCustomCategory6.getMapping(customCategory6Key)));

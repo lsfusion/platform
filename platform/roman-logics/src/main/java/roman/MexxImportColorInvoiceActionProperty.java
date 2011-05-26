@@ -34,7 +34,7 @@ public class MexxImportColorInvoiceActionProperty extends BaseImportActionProper
     @Override
     public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, DataSession session, Modifier<? extends Changes> modifier, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects, boolean groupLast) throws SQLException {
         ImportField colorCodeField = new ImportField(LM.sidColorSupplier);
-        ImportField colorNameField = new ImportField(LM.LM.name);
+        ImportField colorNameField = new ImportField(LM.baseLM.name);
 
         DataObject supplier = keys.get(supplierInterface);
 
@@ -43,7 +43,7 @@ public class MexxImportColorInvoiceActionProperty extends BaseImportActionProper
         ImportKey<?> colorKey = new ImportKey(LM.colorSupplier, LM.colorSIDSupplier.getMapping(colorCodeField, supplier));
         properties.add(new ImportProperty(colorCodeField, LM.sidColorSupplier.getMapping(colorKey)));
         properties.add(new ImportProperty(supplier, LM.supplierColorSupplier.getMapping(colorKey)));
-        properties.add(new ImportProperty(colorNameField, LM.LM.name.getMapping(colorKey)));
+        properties.add(new ImportProperty(colorNameField, LM.baseLM.name.getMapping(colorKey)));
 
         try {
             ByteArrayInputStream inFile = new ByteArrayInputStream((byte[]) value.getValue());

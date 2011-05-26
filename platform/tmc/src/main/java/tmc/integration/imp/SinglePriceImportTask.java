@@ -94,11 +94,11 @@ public class SinglePriceImportTask extends FlagSemaphoreTask {
                 table.insertRecord(session.sql, new DataObject(barcode), properties, true, i == (recordCount - 1));
             }
 
-            Map<PropertyInterface, KeyExpr> mapKeys = (Map<PropertyInterface,KeyExpr>) BL.VEDLM.LM.barcodeToObject.property.getMapKeys();
+            Map<PropertyInterface, KeyExpr> mapKeys = (Map<PropertyInterface,KeyExpr>) BL.VEDLM.baseLM.barcodeToObject.property.getMapKeys();
 
             Query<PropertyInterface, Object> query = new Query<PropertyInterface, Object>(mapKeys);
             query.and(table.join(BaseUtils.singleValue(mapKeys)).getWhere());
-            query.properties.put("value", BL.VEDLM.LM.barcodeToObject.property.getExpr(mapKeys));
+            query.properties.put("value", BL.VEDLM.baseLM.barcodeToObject.property.getExpr(mapKeys));
 
             OrderedMap<Map<PropertyInterface, Object>, Map<Object, Object>> result = query.execute(session.sql, session.env);
 
@@ -110,8 +110,8 @@ public class SinglePriceImportTask extends FlagSemaphoreTask {
 
                     String barcode = (String)BaseUtils.singleValue(row.getKey());
 
-                    Map<PropertyInterface, KeyExpr> mapBarKeys = BL.VEDLM.LM.barcode.property.getMapKeys();
-                    MapDataChanges<PropertyInterface> barcodeChanges = BL.VEDLM.LM.barcode.property.getDataChanges(new PropertyChange(mapBarKeys, new DataObject(barcode).getExpr(),
+                    Map<PropertyInterface, KeyExpr> mapBarKeys = BL.VEDLM.baseLM.barcode.property.getMapKeys();
+                    MapDataChanges<PropertyInterface> barcodeChanges = BL.VEDLM.baseLM.barcode.property.getDataChanges(new PropertyChange(mapBarKeys, new DataObject(barcode).getExpr(),
                             BaseUtils.singleValue(mapBarKeys).compare(article, Compare.EQUALS)),
                             null, session.modifier);
 
@@ -119,12 +119,12 @@ public class SinglePriceImportTask extends FlagSemaphoreTask {
                 }
             }
 
-            Map<PropertyInterface, KeyExpr> mapNameKeys = (Map<PropertyInterface, KeyExpr>) BL.VEDLM.LM.name.property.getMapKeys();
-            Map<PropertyInterface, KeyExpr> mapBarKeys = Collections.singletonMap(BaseUtils.single(BL.VEDLM.LM.barcode.property.interfaces),
+            Map<PropertyInterface, KeyExpr> mapNameKeys = (Map<PropertyInterface, KeyExpr>) BL.VEDLM.baseLM.name.property.getMapKeys();
+            Map<PropertyInterface, KeyExpr> mapBarKeys = Collections.singletonMap(BaseUtils.single(BL.VEDLM.baseLM.barcode.property.interfaces),
                                                                                BaseUtils.singleValue(mapNameKeys));
-            Join<PropertyField> priceImpJoin = table.join(BL.VEDLM.LM.barcode.property.getExpr(mapBarKeys, session.modifier));
+            Join<PropertyField> priceImpJoin = table.join(BL.VEDLM.baseLM.barcode.property.getExpr(mapBarKeys, session.modifier));
 
-            MapDataChanges<PropertyInterface> nameChanges = (MapDataChanges<PropertyInterface>) BL.VEDLM.LM.name.property.getDataChanges(
+            MapDataChanges<PropertyInterface> nameChanges = (MapDataChanges<PropertyInterface>) BL.VEDLM.baseLM.name.property.getDataChanges(
                                                 new PropertyChange(mapNameKeys, priceImpJoin.getExpr(nameField), priceImpJoin.getWhere()),
                                                 null, session.modifier);
 
@@ -133,10 +133,10 @@ public class SinglePriceImportTask extends FlagSemaphoreTask {
 
             // импорт количества
             OrderedMap<PropertyInterface, KeyExpr> mapQuantityKeys = BL.VEDLM.outerCommitedQuantity.getMapKeys();
-            mapBarKeys = Collections.singletonMap(BaseUtils.single(BL.VEDLM.LM.barcode.property.interfaces),
+            mapBarKeys = Collections.singletonMap(BaseUtils.single(BL.VEDLM.baseLM.barcode.property.interfaces),
                                                   mapQuantityKeys.getValue(1));
 
-            priceImpJoin = table.join(BL.VEDLM.LM.barcode.property.getExpr(mapBarKeys, session.modifier));
+            priceImpJoin = table.join(BL.VEDLM.baseLM.barcode.property.getExpr(mapBarKeys, session.modifier));
 
             MapDataChanges<PropertyInterface> quantityChanges = (MapDataChanges<PropertyInterface>) BL.VEDLM.outerCommitedQuantity.property.getDataChanges(
                                                 new PropertyChange(mapQuantityKeys, new DataObject(999999.0).getExpr(),
@@ -146,9 +146,9 @@ public class SinglePriceImportTask extends FlagSemaphoreTask {
             // импорт цены
             OrderedMap<PropertyInterface, KeyExpr> mapPriceKeys = BL.VEDLM.shopPrice.getMapKeys();
 
-            mapBarKeys = Collections.singletonMap(BaseUtils.single(BL.VEDLM.LM.barcode.property.interfaces),
+            mapBarKeys = Collections.singletonMap(BaseUtils.single(BL.VEDLM.baseLM.barcode.property.interfaces),
                                                   mapPriceKeys.getValue(1));
-            priceImpJoin = table.join(BL.VEDLM.LM.barcode.property.getExpr(mapBarKeys, session.modifier));
+            priceImpJoin = table.join(BL.VEDLM.baseLM.barcode.property.getExpr(mapBarKeys, session.modifier));
 
             MapDataChanges<PropertyInterface> priceChanges = (MapDataChanges<PropertyInterface>) BL.VEDLM.shopPrice.property.getDataChanges(
                                                 new PropertyChange(mapPriceKeys, priceImpJoin.getExpr(priceField),
@@ -159,10 +159,10 @@ public class SinglePriceImportTask extends FlagSemaphoreTask {
             ObjectValue saleActionValue = session.getObjectValue(impSaleActionID, ObjectType.instance);
 
             OrderedMap<PropertyInterface, KeyExpr> mapActionKeys = BL.VEDLM.xorActionArticle.getMapKeys();
-            mapBarKeys = Collections.singletonMap(BaseUtils.single(BL.VEDLM.LM.barcode.property.interfaces),
+            mapBarKeys = Collections.singletonMap(BaseUtils.single(BL.VEDLM.baseLM.barcode.property.interfaces),
                                                   mapActionKeys.getValue(1));
 
-            priceImpJoin = table.join(BL.VEDLM.LM.barcode.property.getExpr(mapBarKeys, session.modifier));
+            priceImpJoin = table.join(BL.VEDLM.baseLM.barcode.property.getExpr(mapBarKeys, session.modifier));
 
             MapDataChanges<PropertyInterface> actionChanges = (MapDataChanges<PropertyInterface>) BL.VEDLM.xorActionArticle.property.getDataChanges(
                                                 new PropertyChange(mapActionKeys, priceImpJoin.getExpr(noDiscField),
@@ -204,7 +204,7 @@ public class SinglePriceImportTask extends FlagSemaphoreTask {
 
             try {
                 Object importStore = BL.VEDLM.subjectIncOrder.read(session, (DataObject) docValue);
-                BL.VEDLM.dateLastImportShop.execute(BL.VEDLM.LM.currentDate.read(session), session, session.getDataObject(importStore, ObjectType.instance));
+                BL.VEDLM.dateLastImportShop.execute(BL.VEDLM.baseLM.currentDate.read(session), session, session.getDataObject(importStore, ObjectType.instance));
             } catch (SQLException e) {
             }
 

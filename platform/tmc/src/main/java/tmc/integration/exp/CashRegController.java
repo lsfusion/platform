@@ -36,10 +36,10 @@ public class CashRegController {
     private static String CASHREGISTER_CHARSETNAME = "Cp866";
     private static int CASHREGISTER_DELAY = 2000;
 
-    VEDLogicsModule BL;
+    VEDLogicsModule LM;
 
-    public CashRegController(VEDLogicsModule BL) {
-        this.BL = BL;
+    public CashRegController(VEDLogicsModule LM) {
+        this.LM = LM;
     }
 
     private boolean noBillTxt = false;
@@ -47,7 +47,7 @@ public class CashRegController {
 
     public int getCashRegComPort(FormInstance formInstance) {
         try {
-            Integer result = (Integer) BL.cashRegComPort.read(formInstance.session.sql, formInstance, formInstance.session.env, formInstance.instanceFactory.computer.getDataObject());
+            Integer result = (Integer) LM.cashRegComPort.read(formInstance.session.sql, formInstance, formInstance.session.env, formInstance.instanceFactory.computer.getDataObject());
             if (result == null)
                 return 0;
             else
@@ -361,17 +361,17 @@ public class CashRegController {
 
 //       пока не поддерживается
 //        LM.addProp(LM.cashRegOperGroup, new SimpleCashRegActionProperty(LM.genSID(), "Аннулировать чек", "/A"));
-        BL.LM.addProp(BL.cashRegOperGroup, new SimpleCashRegActionProperty(BL.LM.genSID(), "Продолжить печать", "/R"));
-        BL.LM.addProp(BL.cashRegOperGroup, new MessageActionProperty(BL.LM.genSID(), "Запрос наличных", MessageAction.COUNTER));
-        BL.LM.addProp(BL.cashRegOperGroup, new ReportActionProperty(BL.LM.genSID(), "Открыть денеж. ящик", ReportAction.MONEY_BOX));
-        BL.LM.addProp(BL.cashRegAdminGroup, new MessageActionProperty(BL.LM.genSID(), "Номера посл. чека", MessageAction.LAST_DOC_NUM));
-        BL.LM.addProp(BL.cashRegAdminGroup, new IntegerCashRegActionProperty(BL.LM.genSID(), "Внесение денег", MoneyOperationAction.CASH_IN));
-        BL.LM.addProp(BL.cashRegAdminGroup, new IntegerCashRegActionProperty(BL.LM.genSID(), "Изъятие денег", MoneyOperationAction.CASH_OUT));
-        BL.LM.addProp(BL.cashRegAdminGroup, new ReportActionProperty(BL.LM.genSID(), "X-отчет (сменный отчет без гашения)", ReportAction.XREPORT));
-        ReportActionProperty zProp = new ReportActionProperty(BL.LM.genSID(), "Z-отчет (сменный отчет с гашением)", ReportAction.ZREPORT);
+        LM.addProp(LM.cashRegOperGroup, new SimpleCashRegActionProperty(LM.baseLM.genSID(), "Продолжить печать", "/R"));
+        LM.addProp(LM.cashRegOperGroup, new MessageActionProperty(LM.baseLM.genSID(), "Запрос наличных", MessageAction.COUNTER));
+        LM.addProp(LM.cashRegOperGroup, new ReportActionProperty(LM.baseLM.genSID(), "Открыть денеж. ящик", ReportAction.MONEY_BOX));
+        LM.addProp(LM.cashRegAdminGroup, new MessageActionProperty(LM.baseLM.genSID(), "Номера посл. чека", MessageAction.LAST_DOC_NUM));
+        LM.addProp(LM.cashRegAdminGroup, new IntegerCashRegActionProperty(LM.baseLM.genSID(), "Внесение денег", MoneyOperationAction.CASH_IN));
+        LM.addProp(LM.cashRegAdminGroup, new IntegerCashRegActionProperty(LM.baseLM.genSID(), "Изъятие денег", MoneyOperationAction.CASH_OUT));
+        LM.addProp(LM.cashRegAdminGroup, new ReportActionProperty(LM.baseLM.genSID(), "X-отчет (сменный отчет без гашения)", ReportAction.XREPORT));
+        ReportActionProperty zProp = new ReportActionProperty(LM.baseLM.genSID(), "Z-отчет (сменный отчет с гашением)", ReportAction.ZREPORT);
         zProp.askConfirm = true;
-        BL.LM.addProp(BL.cashRegAdminGroup, zProp);
-        BL.LM.addProp(BL.cashRegAdminGroup, new MessageActionProperty(BL.LM.genSID(), "Запрос серийного номера регистратора", MessageAction.SERIAL_NUM));
+        LM.addProp(LM.cashRegAdminGroup, zProp);
+        LM.addProp(LM.cashRegAdminGroup, new MessageActionProperty(LM.baseLM.genSID(), "Запрос серийного номера регистратора", MessageAction.SERIAL_NUM));
     }
 
     private class ReportActionProperty extends ActionProperty {
@@ -484,14 +484,14 @@ public class CashRegController {
 
         private CashRegManagementFormEntity(NavigatorElement parent, String sID) {
             super(parent, sID, "Операции с ФР");
-            addPropertyDraw(BL.cashRegGroup, true);
+            addPropertyDraw(LM.cashRegGroup, true);
         }
 
         @Override
         public DefaultFormView createDefaultRichDesign() {
             DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign();
             design.setFont(VEDLogicsModule.FONT_HUGE_BOLD);
-            design.setPanelLabelAbove(BL.LM.baseGroup, true);
+            design.setPanelLabelAbove(LM.baseGroup, true);
 
             design.setKeyStroke(KeyStroke.getKeyStroke(KeyEvent.VK_F5, InputEvent.SHIFT_DOWN_MASK | InputEvent.SHIFT_MASK));
 

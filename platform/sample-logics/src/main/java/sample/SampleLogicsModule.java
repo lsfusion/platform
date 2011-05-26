@@ -28,10 +28,9 @@ import java.io.FileNotFoundException;
  */
 
 public class SampleLogicsModule extends LogicsModule {
-    private BaseLogicsModule<SampleBusinessLogics> LM;
 
-    public SampleLogicsModule(BaseLogicsModule<SampleBusinessLogics> LM) {
-        this.LM = LM;
+    public SampleLogicsModule(BaseLogicsModule<SampleBusinessLogics> baseLM) {
+        setBaseLogicsModule(baseLM);
     }
 
     protected AbstractCustomClass document;
@@ -41,18 +40,20 @@ public class SampleLogicsModule extends LogicsModule {
 
     @Override
     public void initClasses() {
-        article = LM.addConcreteClass("article", "Товар", LM.baseClass.named);
-        descriptedArticle = LM.addConcreteClass("descriptedArticle", "Товар с описанием", article);
+        initBaseClassAliases();
 
-        store = LM.addConcreteClass("store", "Склад", LM.baseClass.named);
-        descriptedStore = LM.addConcreteClass("descriptedStore", "Склад с описанием", store);
+        article = addConcreteClass("article", "Товар", baseClass.named);
+        descriptedArticle = addConcreteClass("descriptedArticle", "Товар с описанием", article);
 
-        document = LM.addAbstractClass("document", "Документ", LM.baseClass.named, LM.transaction);
-        incomeDocument = LM.addConcreteClass("incomeDocument", "Приход", document);
-        outcomeDocument = LM.addConcreteClass("outcomeDocument", "Расход", document);
+        store = addConcreteClass("store", "Склад", baseClass.named);
+        descriptedStore = addConcreteClass("descriptedStore", "Склад с описанием", store);
 
-        articleGroup = LM.addConcreteClass("articleGroup", "Группа товаров", LM.baseClass.named);
-        descriptedArticleGroup = LM.addConcreteClass("descriptedArticleGroup", "Группа товаров с описанием", articleGroup);
+        document = addAbstractClass("document", "Документ", baseClass.named, baseLM.transaction);
+        incomeDocument = addConcreteClass("incomeDocument", "Приход", document);
+        outcomeDocument = addConcreteClass("outcomeDocument", "Расход", document);
+
+        articleGroup = addConcreteClass("articleGroup", "Группа товаров", baseLM.baseClass.named);
+        descriptedArticleGroup = addConcreteClass("descriptedArticleGroup", "Группа товаров с описанием", articleGroup);
     }
 
     @Override
@@ -61,6 +62,7 @@ public class SampleLogicsModule extends LogicsModule {
 
     @Override
     public void initGroups() {
+        initBaseGroupAliases();
     }
 
     private LP documentsCount;
@@ -75,35 +77,35 @@ public class SampleLogicsModule extends LogicsModule {
 
     @Override
     public void initProperties() {
-        articleDescription = LM.addDProp(LM.baseGroup, "articleDescription", "Описание", StringClass.get(50), descriptedArticle);
-        articleGroupDescription = LM.addDProp(LM.baseGroup, "articleGroupDescription", "Описание", StringClass.get(50), descriptedArticleGroup);
-        storeDescription = LM.addDProp(LM.baseGroup, "storeDescription", "Описание", StringClass.get(50), descriptedStore);
+        articleDescription = addDProp(baseGroup, "articleDescription", "Описание", StringClass.get(50), descriptedArticle);
+        articleGroupDescription = addDProp(baseGroup, "articleGroupDescription", "Описание", StringClass.get(50), descriptedArticleGroup);
+        storeDescription = addDProp(baseGroup, "storeDescription", "Описание", StringClass.get(50), descriptedStore);
 
-        documentStore = LM.addDProp(LM.baseGroup, "store", "Склад док-та", store, document);
-        quantity = LM.addDProp(LM.baseGroup, "quantity", "Кол-во", DoubleClass.instance, document, article);
+        documentStore = addDProp(baseGroup, "store", "Склад док-та", store, document);
+        quantity = addDProp(baseGroup, "quantity", "Кол-во", DoubleClass.instance, document, article);
 
-        LP storeName = LM.addJProp(LM.baseGroup, "Имя склада", LM.name, documentStore, 1);
+        LP storeName = addJProp(baseGroup, "Имя склада", baseLM.name, documentStore, 1);
 
-        incQuantity = LM.addJProp("Кол-во прихода", LM.and1, quantity, 1, 2, LM.is(incomeDocument), 1);
-        LP outQuantity = LM.addJProp("Кол-во расхода", LM.and1, quantity, 1, 2, LM.is(outcomeDocument), 1);
+        incQuantity = addJProp("Кол-во прихода", baseLM.and1, quantity, 1, 2, is(incomeDocument), 1);
+        LP outQuantity = addJProp("Кол-во расхода", baseLM.and1, quantity, 1, 2, is(outcomeDocument), 1);
 
-        LP incStoreQuantity = LM.addSGProp(LM.baseGroup, "Прих. по скл.", incQuantity, documentStore, 1, 2);
-        LP outStoreQuantity = LM.addSGProp(LM.baseGroup, "Расх. по скл.", outQuantity, documentStore, 1, 2);
+        LP incStoreQuantity = addSGProp(baseGroup, "Прих. по скл.", incQuantity, documentStore, 1, 2);
+        LP outStoreQuantity = addSGProp(baseGroup, "Расх. по скл.", outQuantity, documentStore, 1, 2);
 
-        balanceQuantity = LM.addDUProp(LM.baseGroup, "Ост. по скл.", incStoreQuantity, outStoreQuantity);
+        balanceQuantity = addDUProp(baseGroup, "Ост. по скл.", incStoreQuantity, outStoreQuantity);
 
-        LM.addConstraint(LM.addJProp("Остаток должен быть положительным", LM.greater2, LM.vzero, balanceQuantity, 1, 2), false);
+        addConstraint(addJProp("Остаток должен быть положительным", baseLM.greater2, baseLM.vzero, balanceQuantity, 1, 2), false);
 
-        LM.addJProp(LM.baseGroup, "Ост. по скл. (док.)", balanceQuantity, documentStore, 1, 2);
-        LP vone = LM.addCProp("1", IntegerClass.instance, 1);
-        LP oneProp = LM.addJProp(LM.baseGroup, "Единица", LM.and1, vone, LM.is(document), 1);
-        documentsCount = LM.addSGProp(LM.baseGroup, "Количество документов по складу", oneProp, documentStore, 1);
-        itemsCount = LM.addSGProp(LM.baseGroup, "Количество единиц товара в документах", quantity, documentStore, 1, 2);
+        addJProp(baseGroup, "Ост. по скл. (док.)", balanceQuantity, documentStore, 1, 2);
+        LP vone = addCProp("1", IntegerClass.instance, 1);
+        LP oneProp = addJProp(baseGroup, "Единица", baseLM.and1, vone, is(document), 1);
+        documentsCount = addSGProp(baseGroup, "Количество документов по складу", oneProp, documentStore, 1);
+        itemsCount = addSGProp(baseGroup, "Количество единиц товара в документах", quantity, documentStore, 1, 2);
 
-        inStore = LM.addDProp(LM.baseGroup, "inStore", "В ассорт.", LogicalClass.instance, store, article);
+        inStore = addDProp(baseGroup, "inStore", "В ассорт.", LogicalClass.instance, store, article);
 
-        parentGroup = LM.addDProp(LM.baseGroup, "parentGroup", "Родитель", articleGroup, articleGroup);
-        articleToGroup = LM.addDProp(LM.baseGroup, "articleToGroup", "Группа товаров", articleGroup, article);
+        parentGroup = addDProp(baseGroup, "parentGroup", "Родитель", articleGroup, articleGroup);
+        articleToGroup = addDProp(baseGroup, "articleToGroup", "Группа товаров", articleGroup, article);
     }
 
     @Override
@@ -115,17 +117,17 @@ public class SampleLogicsModule extends LogicsModule {
     @Override
     public void initNavigators() throws JRException, FileNotFoundException {
 
-        NavigatorElement primaryData = new NavigatorElement(LM.baseElement, "primaryData", "Первичные данные");
+        NavigatorElement primaryData = new NavigatorElement(baseLM.baseElement, "primaryData", "Первичные данные");
             FormEntity documentForm = new DocumentFormEntity(primaryData, "documentForm", "Документ");
-            LM.addFormEntity(documentForm);
+            addFormEntity(documentForm);
 
-        NavigatorElement aggregateData = new NavigatorElement(LM.baseElement, "aggregateData", "Сводная информация");
+        NavigatorElement aggregateData = new NavigatorElement(baseLM.baseElement, "aggregateData", "Сводная информация");
             FormEntity storeArticleForm = new StoreArticleFormEntity(aggregateData, "storeArticleForm", "Товары по складам");
             FormEntity systemForm = new SystemFormEntity(aggregateData, "systemForm", "Движение (документ*товар)");
             FormEntity treeStoreArticleForm = new TreeStoreArticleFormEntity(aggregateData, "treeStoreArticleForm", "Товары по складам (дерево)");
-            LM.addFormEntity(storeArticleForm);
-            LM.addFormEntity(systemForm);
-            LM.addFormEntity(treeStoreArticleForm);
+            addFormEntity(storeArticleForm);
+            addFormEntity(systemForm);
+            addFormEntity(treeStoreArticleForm);
 
 //        extIncomeDocument.relevantElements.set(0, extIncDetailForm);
     }
@@ -135,12 +137,12 @@ public class SampleLogicsModule extends LogicsModule {
         public DocumentFormEntity(NavigatorElement parent, String sID, String caption) {
             super(parent, sID, caption);
 
-            ObjectEntity objDoc = addSingleGroupObject(document, "Документ", LM.baseGroup);
-            LM.addObjectActions(this, objDoc);
+            ObjectEntity objDoc = addSingleGroupObject(document, "Документ", baseGroup);
+            addObjectActions(this, objDoc);
 
-            ObjectEntity objArt = addSingleGroupObject(article, "Товар", LM.baseGroup);
+            ObjectEntity objArt = addSingleGroupObject(article, "Товар", baseGroup);
 
-            addPropertyDraw(objDoc, objArt, LM.baseGroup);
+            addPropertyDraw(objDoc, objArt, baseGroup);
 
             RegularFilterGroupEntity filterGroup = new RegularFilterGroupEntity(genID());
             filterGroup.addFilter(new RegularFilterEntity(genID(),
@@ -156,13 +158,13 @@ public class SampleLogicsModule extends LogicsModule {
         public StoreArticleFormEntity(NavigatorElement parent, String sID, String caption) {
             super(parent, sID, caption);
 
-            ObjectEntity objArt = addSingleGroupObject(article, "Товар", LM.baseGroup);
+            ObjectEntity objArt = addSingleGroupObject(article, "Товар", baseGroup);
 //            objArt.groupTo.initClassView = false; //objArt.groupTo.singleViewType = true;
-            ObjectEntity objStore = addSingleGroupObject(store, "Склад", LM.baseGroup);
-            ObjectEntity objDoc = addSingleGroupObject(document, "Документ", LM.baseGroup);
+            ObjectEntity objStore = addSingleGroupObject(store, "Склад", baseGroup);
+            ObjectEntity objDoc = addSingleGroupObject(document, "Документ", baseGroup);
 
-            addPropertyDraw(objStore, objArt, LM.baseGroup);
-            addPropertyDraw(objDoc, objArt, LM.baseGroup);
+            addPropertyDraw(objStore, objArt, baseGroup);
+            addPropertyDraw(objDoc, objArt, baseGroup);
 
             addFixedFilter(new NotNullFilterEntity(getPropertyObject(quantity)));
             addFixedFilter(new NotNullFilterEntity(getPropertyObject(balanceQuantity)));
@@ -175,17 +177,17 @@ public class SampleLogicsModule extends LogicsModule {
         public TreeStoreArticleFormEntity(NavigatorElement parent, String sID, String caption) {
             super(parent, sID, caption);
 
-            ObjectEntity objStore = addSingleGroupObject(store, LM.name, storeDescription);
-            ObjectEntity objArtGroup = addSingleGroupObject(articleGroup, LM.name, articleGroupDescription);
-            ObjectEntity objArt = addSingleGroupObject(article, LM.name, articleDescription);
-            ObjectEntity objDoc = addSingleGroupObject(document, LM.baseGroup);
+            ObjectEntity objStore = addSingleGroupObject(store, baseLM.name, storeDescription);
+            ObjectEntity objArtGroup = addSingleGroupObject(articleGroup, baseLM.name, articleGroupDescription);
+            ObjectEntity objArt = addSingleGroupObject(article, baseLM.name, articleDescription);
+            ObjectEntity objDoc = addSingleGroupObject(document, baseGroup);
 
             objArtGroup.groupTo.setIsParents(addPropertyObject(parentGroup, objArtGroup));
 
             addTreeGroupObject(objStore.groupTo, objArtGroup.groupTo, objArt.groupTo);
 //
-            addPropertyDraw(objStore, objArt, LM.baseGroup);
-            addPropertyDraw(objDoc, objArt, LM.baseGroup);
+            addPropertyDraw(objStore, objArt, baseGroup);
+            addPropertyDraw(objDoc, objArt, baseGroup);
 
 //            addFixedFilter(new NotNullFilterEntity(getPropertyObject(quantity)));
 //            addFixedFilter(new NotNullFilterEntity(getPropertyObject(balanceQuantity)));
@@ -218,10 +220,10 @@ public class SampleLogicsModule extends LogicsModule {
             group.add(objArt);
             addGroup(group);
 
-            addPropertyDraw(objDoc, LM.baseGroup);
-            addPropertyDraw(objArt, LM.baseGroup);
-            addPropertyDraw(objDoc, objArt, LM.baseGroup);
-            addPropertyDraw(LM.is(incomeDocument), objDoc);
+            addPropertyDraw(objDoc, baseGroup);
+            addPropertyDraw(objArt, baseGroup);
+            addPropertyDraw(objDoc, objArt, baseGroup);
+            addPropertyDraw(is(incomeDocument), objDoc);
             addPropertyDraw(incQuantity, objDoc, objArt);
         }
     }

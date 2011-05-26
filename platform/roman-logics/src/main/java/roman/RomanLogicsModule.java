@@ -52,11 +52,10 @@ import java.util.List;
 
 
 public class RomanLogicsModule extends LogicsModule {
-    public final BaseLogicsModule<RomanBusinessLogics> LM;
     private final RomanBusinessLogics BL;
 
-    public RomanLogicsModule(BaseLogicsModule<RomanBusinessLogics> LM, RomanBusinessLogics BL) {
-        this.LM = LM;
+    public RomanLogicsModule(BaseLogicsModule<RomanBusinessLogics> baseLM, RomanBusinessLogics BL) {
+        setBaseLogicsModule(baseLM);
         this.BL = BL;
     }
 
@@ -765,1305 +764,1308 @@ public class RomanLogicsModule extends LogicsModule {
 
     @Override
     public void initClasses() {
-        currency = LM.addConcreteClass("currency", "Валюта", LM.baseClass.named);
+        initBaseClassAliases();
 
-        typeExchange = LM.addConcreteClass("typeExchange", "Тип обмена", LM.baseClass.named);
+        currency = addConcreteClass("currency", "Валюта", baseClass.named);
 
-        destination = LM.addAbstractClass("destination", "Пункт назначения", LM.baseClass);
+        typeExchange = addConcreteClass("typeExchange", "Тип обмена", baseClass.named);
 
-        store = LM.addConcreteClass("store", "Магазин", destination, LM.baseClass.named);
+        destination = addAbstractClass("destination", "Пункт назначения", baseClass);
 
-        sku = LM.addAbstractClass("sku", "SKU", LM.barcodeObject);
+        store = addConcreteClass("store", "Магазин", destination, baseClass.named);
 
-        article = LM.addAbstractClass("article", "Артикул", LM.baseClass);
-        articleComposite = LM.addConcreteClass("articleComposite", "Артикул (составной)", article);
-        articleSingle = LM.addConcreteClass("articleSingle", "Артикул (простой)", sku, article);
+        sku = addAbstractClass("sku", "SKU", baseLM.barcodeObject);
 
-        pricat = LM.addConcreteClass("pricat", "Прайс", LM.baseClass);
+        article = addAbstractClass("article", "Артикул", baseClass);
+        articleComposite = addConcreteClass("articleComposite", "Артикул (составной)", article);
+        articleSingle = addConcreteClass("articleSingle", "Артикул (простой)", sku, article);
 
-        item = LM.addConcreteClass("item", "Товар", sku);
+        pricat = addConcreteClass("pricat", "Прайс", baseClass);
 
-        document = LM.addAbstractClass("document", "Документ", LM.transaction);
-        list = LM.addAbstractClass("list", "Список", LM.baseClass);
+        item = addConcreteClass("item", "Товар", sku);
 
-        contract = LM.addConcreteClass("contract", "Договор", LM.transaction);
+        document = addAbstractClass("document", "Документ", baseLM.transaction);
+        list = addAbstractClass("list", "Список", baseClass);
 
-        priceDocument = LM.addAbstractClass("priceDocument", "Документ с ценами", document);
-        destinationDocument = LM.addAbstractClass("destinationDocument", "Документ в пункт назначения", document);
+        contract = addConcreteClass("contract", "Договор", baseLM.transaction);
 
-        order = LM.addConcreteClass("order", "Заказ", priceDocument, destinationDocument, list);
+        priceDocument = addAbstractClass("priceDocument", "Документ с ценами", document);
+        destinationDocument = addAbstractClass("destinationDocument", "Документ в пункт назначения", document);
 
-        invoice = LM.addAbstractClass("invoice", "Инвойс", priceDocument, destinationDocument);
-        boxInvoice = LM.addConcreteClass("boxInvoice", "Инвойс по коробам", invoice);
+        order = addConcreteClass("order", "Заказ", priceDocument, destinationDocument, list);
 
-        directInvoice = LM.addAbstractClass("directInvoice", "Инвойс (напрямую)", invoice);
-        directBoxInvoice = LM.addConcreteClass("directBoxInvoice", "Инвойс по коробам (напрямую)", boxInvoice, directInvoice);
+        invoice = addAbstractClass("invoice", "Инвойс", priceDocument, destinationDocument);
+        boxInvoice = addConcreteClass("boxInvoice", "Инвойс по коробам", invoice);
 
-        simpleInvoice = LM.addConcreteClass("simpleInvoice", "Инвойс без коробов", invoice, list);
+        directInvoice = addAbstractClass("directInvoice", "Инвойс (напрямую)", invoice);
+        directBoxInvoice = addConcreteClass("directBoxInvoice", "Инвойс по коробам (напрямую)", boxInvoice, directInvoice);
 
-        shipDimension = LM.addConcreteClass("shipDimension", "Разрез поставки", LM.baseClass);
+        simpleInvoice = addConcreteClass("simpleInvoice", "Инвойс без коробов", invoice, list);
 
-        stock = LM.addConcreteClass("stock", "Место хранения", LM.barcodeObject);
+        shipDimension = addConcreteClass("shipDimension", "Разрез поставки", baseClass);
 
-        freightUnit = LM.addAbstractClass("freightUnit", "Машиноместо", LM.baseClass);
+        stock = addConcreteClass("stock", "Место хранения", baseLM.barcodeObject);
 
-        supplierBox = LM.addConcreteClass("supplierBox", "Короб поставщика", list, shipDimension, LM.barcodeObject, freightUnit);
+        freightUnit = addAbstractClass("freightUnit", "Машиноместо", baseClass);
 
-        shipment = LM.addAbstractClass("shipment", "Поставка", document);
-        boxShipment = LM.addConcreteClass("boxShipment", "Поставка по коробам", shipment);
-        simpleShipment = LM.addConcreteClass("simpleShipment", "Поставка без коробов", shipment, shipDimension);
+        supplierBox = addConcreteClass("supplierBox", "Короб поставщика", list, shipDimension, baseLM.barcodeObject, freightUnit);
 
-        shipmentDetail = LM.addAbstractClass("shipmentDetail", "Строка поставки", LM.baseClass);
-        boxShipmentDetail = LM.addConcreteClass("boxShipmentDetail", "Строка поставки по коробам", shipmentDetail);
-        simpleShipmentDetail = LM.addConcreteClass("simpleShipmentDetail", "Строка поставки без коробов", shipmentDetail);
+        shipment = addAbstractClass("shipment", "Поставка", document);
+        boxShipment = addConcreteClass("boxShipment", "Поставка по коробам", shipment);
+        simpleShipment = addConcreteClass("simpleShipment", "Поставка без коробов", shipment, shipDimension);
 
-        seller = LM.addAbstractClass("seller", "Продавец", LM.baseClass);
+        shipmentDetail = addAbstractClass("shipmentDetail", "Строка поставки", baseClass);
+        boxShipmentDetail = addConcreteClass("boxShipmentDetail", "Строка поставки по коробам", shipmentDetail);
+        simpleShipmentDetail = addConcreteClass("simpleShipmentDetail", "Строка поставки без коробов", shipmentDetail);
 
-        supplier = LM.addConcreteClass("supplier", "Поставщик", LM.baseClass.named, seller);
+        seller = addAbstractClass("seller", "Продавец", baseClass);
 
-        jennyferSupplier = LM.addConcreteClass("jennyferSupplier", "Jennyfer", supplier);
-        tallyWeijlSupplier = LM.addConcreteClass("tallyWeijlSupplier", "Tally Weijl", supplier);
-        hugoBossSupplier = LM.addConcreteClass("hugoBossSupplier", "Hugo Boss", supplier);
-        mexxSupplier = LM.addConcreteClass("mexxSupplier", "Mexx", supplier);
-        bestsellerSupplier = LM.addConcreteClass("bestsellerSupplier", "Bestseller", supplier);
-        sOliverSupplier = LM.addConcreteClass("sOliverSupplier", "s.Oliver", supplier);
+        supplier = addConcreteClass("supplier", "Поставщик", baseClass.named, seller);
 
-        secondNameClass = LM.addAbstractClass("secondNameClass", "Класс со вторым именем", LM.baseClass);
+        jennyferSupplier = addConcreteClass("jennyferSupplier", "Jennyfer", supplier);
+        tallyWeijlSupplier = addConcreteClass("tallyWeijlSupplier", "Tally Weijl", supplier);
+        hugoBossSupplier = addConcreteClass("hugoBossSupplier", "Hugo Boss", supplier);
+        mexxSupplier = addConcreteClass("mexxSupplier", "Mexx", supplier);
+        bestsellerSupplier = addConcreteClass("bestsellerSupplier", "Bestseller", supplier);
+        sOliverSupplier = addConcreteClass("sOliverSupplier", "s.Oliver", supplier);
 
-        subject = LM.addAbstractClass("subject", "Субъект", LM.baseClass.named, secondNameClass);
-        importer = LM.addConcreteClass("importer", "Импортер", subject);
-        exporter = LM.addConcreteClass("exporter", "Экспортер", subject, seller);
+        secondNameClass = addAbstractClass("secondNameClass", "Класс со вторым именем", baseClass);
 
-        commonSize = LM.addConcreteClass("commonSize", "Унифицированный размер", LM.baseClass.named);
+        subject = addAbstractClass("subject", "Субъект", baseClass.named, secondNameClass);
+        importer = addConcreteClass("importer", "Импортер", subject);
+        exporter = addConcreteClass("exporter", "Экспортер", subject, seller);
 
-        colorSupplier = LM.addConcreteClass("colorSupplier", "Цвет поставщика", LM.baseClass.named);
-        sizeSupplier = LM.addConcreteClass("sizeSupplier", "Размер поставщика", LM.baseClass);
+        commonSize = addConcreteClass("commonSize", "Унифицированный размер", baseClass.named);
 
-        freightBox = LM.addConcreteClass("freightBox", "Короб для транспортировки", stock, freightUnit);
+        colorSupplier = addConcreteClass("colorSupplier", "Цвет поставщика", baseClass.named);
+        sizeSupplier = addConcreteClass("sizeSupplier", "Размер поставщика", baseClass);
 
-        freight = LM.addConcreteClass("freight", "Фрахт", LM.baseClass.named, LM.transaction);
-        freightComplete = LM.addConcreteClass("freightComplete", "Скомплектованный фрахт", freight);
-        freightPriced = LM.addConcreteClass("freightPriced", "Расцененный фрахт", freightComplete);
-        freightChanged = LM.addConcreteClass("freightChanged", "Обработанный фрахт", freightPriced);
-        freightShipped = LM.addConcreteClass("freightShipped", "Отгруженный фрахт", freightChanged);
+        freightBox = addConcreteClass("freightBox", "Короб для транспортировки", stock, freightUnit);
 
-        freightType = LM.addConcreteClass("freightType", "Тип машины", LM.baseClass.named);
+        freight = addConcreteClass("freight", "Фрахт", baseClass.named, baseLM.transaction);
+        freightComplete = addConcreteClass("freightComplete", "Скомплектованный фрахт", freight);
+        freightPriced = addConcreteClass("freightPriced", "Расцененный фрахт", freightComplete);
+        freightChanged = addConcreteClass("freightChanged", "Обработанный фрахт", freightPriced);
+        freightShipped = addConcreteClass("freightShipped", "Отгруженный фрахт", freightChanged);
 
-        pallet = LM.addConcreteClass("pallet", "Паллета", LM.barcodeObject);
+        freightType = addConcreteClass("freightType", "Тип машины", baseClass.named);
 
-        category = LM.addConcreteClass("category", "Номенклатурная группа", secondNameClass, LM.baseClass.named);
+        pallet = addConcreteClass("pallet", "Паллета", baseLM.barcodeObject);
 
-        customCategory = LM.addAbstractClass("customCategory", "Уровень ТН ВЭД", LM.baseClass);
+        category = addConcreteClass("category", "Номенклатурная группа", secondNameClass, baseClass.named);
 
-        customCategory4 = LM.addConcreteClass("customCategory4", "Первый уровень", customCategory);
-        customCategory6 = LM.addConcreteClass("customCategory6", "Второй уровень", customCategory);
-        customCategory9 = LM.addConcreteClass("customCategory9", "Третий уровень", customCategory);
-        customCategory10 = LM.addConcreteClass("customCategory10", "Четвёртый уровень", customCategory);
+        customCategory = addAbstractClass("customCategory", "Уровень ТН ВЭД", baseClass);
 
-        customCategoryOrigin = LM.addConcreteClass("customCategoryOrigin", "ЕС уровень", customCategory);
+        customCategory4 = addConcreteClass("customCategory4", "Первый уровень", customCategory);
+        customCategory6 = addConcreteClass("customCategory6", "Второй уровень", customCategory);
+        customCategory9 = addConcreteClass("customCategory9", "Третий уровень", customCategory);
+        customCategory10 = addConcreteClass("customCategory10", "Четвёртый уровень", customCategory);
 
-        creationFreightBox = LM.addConcreteClass("creationFreightBox", "Операция создания коробов", LM.transaction);
-        creationPallet = LM.addConcreteClass("creationPallet", "Операция создания паллет", LM.transaction);
+        customCategoryOrigin = addConcreteClass("customCategoryOrigin", "ЕС уровень", customCategory);
 
-        transfer = LM.addConcreteClass("transfer", "Внутреннее перемещение", LM.baseClass);
+        creationFreightBox = addConcreteClass("creationFreightBox", "Операция создания коробов", baseLM.transaction);
+        creationPallet = addConcreteClass("creationPallet", "Операция создания паллет", baseLM.transaction);
 
-        unitOfMeasure = LM.addConcreteClass("unitOfMeasure", "Единица измерения", secondNameClass, LM.baseClass.named);
+        transfer = addConcreteClass("transfer", "Внутреннее перемещение", baseClass);
 
-        brandSupplier = LM.addConcreteClass("brandSupplier", "Бренд поставщика", LM.baseClass.named);
+        unitOfMeasure = addConcreteClass("unitOfMeasure", "Единица измерения", secondNameClass, baseClass.named);
 
-        themeSupplier = LM.addConcreteClass("themeSupplier", "Тема поставщика", LM.baseClass.named);
+        brandSupplier = addConcreteClass("brandSupplier", "Бренд поставщика", baseClass.named);
 
-        countrySupplier = LM.addConcreteClass("countrySupplier", "Страна поставщика", LM.baseClass.named);
+        themeSupplier = addConcreteClass("themeSupplier", "Тема поставщика", baseClass.named);
 
-        season = LM.addConcreteClass("season", "Сезон", LM.baseClass.named);
+        countrySupplier = addConcreteClass("countrySupplier", "Страна поставщика", baseClass.named);
 
-        route = LM.addStaticClass("route", "Маршрут", new String[]{"rb", "rf"}, new String[]{"РБ", "РФ"});
+        season = addConcreteClass("season", "Сезон", baseClass.named);
+
+        route = addStaticClass("route", "Маршрут", new String[]{"rb", "rf"}, new String[]{"РБ", "РФ"});
     }
 
     @Override
     public void initTables() {
-        LM.tableFactory.include("customCategory4", customCategory4);
-        LM.tableFactory.include("customCategory6", customCategory6);
-        LM.tableFactory.include("customCategory9", customCategory9);
-        LM.tableFactory.include("customCategory10", customCategory10);
-        LM.tableFactory.include("customCategoryOrigin", customCategoryOrigin);
-        LM.tableFactory.include("customCategory10Origin", customCategory10, customCategoryOrigin);
-        LM.tableFactory.include("customCategory", customCategory);
+        baseLM.tableFactory.include("customCategory4", customCategory4);
+        baseLM.tableFactory.include("customCategory6", customCategory6);
+        baseLM.tableFactory.include("customCategory9", customCategory9);
+        baseLM.tableFactory.include("customCategory10", customCategory10);
+        baseLM.tableFactory.include("customCategoryOrigin", customCategoryOrigin);
+        baseLM.tableFactory.include("customCategory10Origin", customCategory10, customCategoryOrigin);
+        baseLM.tableFactory.include("customCategory", customCategory);
 
-        LM.tableFactory.include("article", article);
-        LM.tableFactory.include("sku", sku);
-        LM.tableFactory.include("documentArticle", document, article);
-        LM.tableFactory.include("documentSku", document, sku);
-        LM.tableFactory.include("listSku", list, sku);
-        LM.tableFactory.include("listArticle", list, article);
-        LM.tableFactory.include("importerFreightSku", importer, freight, sku);
-        LM.tableFactory.include("freightSku", freight, sku);
-        LM.tableFactory.include("shipmentDetail", shipmentDetail);
-        LM.tableFactory.include("pallet", pallet);
-        LM.tableFactory.include("freight", freight);
-        LM.tableFactory.include("freightUnit", freightUnit);
-        LM.tableFactory.include("barcodeObject", LM.barcodeObject);
-        LM.tableFactory.include("rateExchange", typeExchange, currency, DateClass.instance);
+        baseLM.tableFactory.include("article", article);
+        baseLM.tableFactory.include("sku", sku);
+        baseLM.tableFactory.include("documentArticle", document, article);
+        baseLM.tableFactory.include("documentSku", document, sku);
+        baseLM.tableFactory.include("listSku", list, sku);
+        baseLM.tableFactory.include("listArticle", list, article);
+        baseLM.tableFactory.include("importerFreightSku", importer, freight, sku);
+        baseLM.tableFactory.include("freightSku", freight, sku);
+        baseLM.tableFactory.include("shipmentDetail", shipmentDetail);
+        baseLM.tableFactory.include("pallet", pallet);
+        baseLM.tableFactory.include("freight", freight);
+        baseLM.tableFactory.include("freightUnit", freightUnit);
+        baseLM.tableFactory.include("barcodeObject", baseLM.barcodeObject);
+        baseLM.tableFactory.include("rateExchange", typeExchange, currency, DateClass.instance);
 
-        LM.tableFactory.include("pricat", pricat);
-        LM.tableFactory.include("strings", StringClass.get(10));
+        baseLM.tableFactory.include("pricat", pricat);
+        baseLM.tableFactory.include("strings", StringClass.get(10));
     }
 
     @Override
     public void initGroups() {
+        initBaseGroupAliases();
         Settings.instance.setDisableSumGroupNotZero(true);
 
         skuAttributeGroup = new AbstractGroup("Атрибуты SKU");
-        LM.baseGroup.add(skuAttributeGroup);
+        baseGroup.add(skuAttributeGroup);
 
         itemAttributeGroup = new AbstractGroup("Атрибуты товара");
-        LM.baseGroup.add(itemAttributeGroup);
+        baseGroup.add(itemAttributeGroup);
 
         supplierAttributeGroup = new AbstractGroup ("Атрибуты поставщика");
-        LM.publicGroup.add(supplierAttributeGroup);
+        publicGroup.add(supplierAttributeGroup);
 
         intraAttributeGroup = new AbstractGroup("Внутренние атрибуты");
-        LM.publicGroup.add(intraAttributeGroup);
+        publicGroup.add(intraAttributeGroup);
 
         importInvoiceActionGroup = new AbstractGroup("Импорт инвойсов");
         importInvoiceActionGroup.createContainer = false;
-        LM.actionGroup.add(importInvoiceActionGroup);
+        actionGroup.add(importInvoiceActionGroup);
     }
 
     @Override
     public void initProperties() {
-        LM.idGroup.add(LM.objectValue);
+        idGroup.add(baseLM.objectValue);
 
-        round2 = LM.addSFProp("round(CAST((prm1) as numeric), 2)", DoubleClass.instance, 1);
+        round2 = addSFProp("round(CAST((prm1) as numeric), 2)", DoubleClass.instance, 1);
 
         // rate
-        currencyTypeExchange = LM.addDProp(LM.idGroup, "currencyTypeExchange", "Валюта типа обмена (ИД)", currency, typeExchange);
-        nameCurrencyTypeExchange = LM.addJProp(LM.baseGroup, "nameCurrencyTypeExchange", "Валюта типа обмена (наим.)", LM.name, currencyTypeExchange, 1);
-        rateExchange = LM.addDProp(LM.baseGroup, "rateExchange", "Курс обмена", DoubleClass.instance, typeExchange, currency, DateClass.instance);
-        typeExchangeSTX = LM.addDProp(LM.idGroup, "typeExchangeSTX", "Тип обмена для STX (ИД)", typeExchange);
-        nameTypeExchangeSTX = LM.addJProp(LM.baseGroup, "nameTypeExchangeSTX", "Тип обмена для STX", LM.name, typeExchangeSTX);
+        currencyTypeExchange = addDProp(idGroup, "currencyTypeExchange", "Валюта типа обмена (ИД)", currency, typeExchange);
+        nameCurrencyTypeExchange = addJProp(baseGroup, "nameCurrencyTypeExchange", "Валюта типа обмена (наим.)", baseLM.name, currencyTypeExchange, 1);
+        rateExchange = addDProp(baseGroup, "rateExchange", "Курс обмена", DoubleClass.instance, typeExchange, currency, DateClass.instance);
+        typeExchangeSTX = addDProp(idGroup, "typeExchangeSTX", "Тип обмена для STX (ИД)", typeExchange);
+        nameTypeExchangeSTX = addJProp(baseGroup, "nameTypeExchangeSTX", "Тип обмена для STX", baseLM.name, typeExchangeSTX);
 
-        //lessCmpDate = LM.addJProp(LM.and(false, true, false), LM.object(DateClass.instance), 3, rateExchange, 1, 2, 3, greater2, 3, 4, is(DateClass.instance), 4);
-        lessCmpDate = LM.addJProp(LM.and(false, true, false), LM.object(DateClass.instance), 3, rateExchange, 1, 2, 3, LM.addJProp(LM.greater2, 3, LM.date, 4), 1, 2, 3, 4, LM.is(document), 4);
-        nearestPredDate = LM.addMGProp((AbstractGroup) null, "nearestPredDate", "Ближайшая меньшая дата", lessCmpDate, 1, 2, 4);
-        nearestRateExchange = LM.addJProp("Ближайший курс обмена", rateExchange, 1, 2, nearestPredDate, 1, 2, 3);
+        //lessCmpDate = addJProp(and(false, true, false), object(DateClass.instance), 3, rateExchange, 1, 2, 3, greater2, 3, 4, is(DateClass.instance), 4);
+        lessCmpDate = addJProp(and(false, true, false), object(DateClass.instance), 3, rateExchange, 1, 2, 3, addJProp(baseLM.greater2, 3, baseLM.date, 4), 1, 2, 3, 4, is(document), 4);
+        nearestPredDate = addMGProp((AbstractGroup) null, "nearestPredDate", "Ближайшая меньшая дата", lessCmpDate, 1, 2, 4);
+        nearestRateExchange = addJProp("Ближайший курс обмена", rateExchange, 1, 2, nearestPredDate, 1, 2, 3);
 
-        nameOrigin = LM.addDProp(LM.baseGroup, "nameOrigin", "Наименование (ориг.)", InsensitiveStringClass.get(50), secondNameClass);
-        nameOriginCountry = LM.addDProp(LM.baseGroup, "nameOriginCountry", "Наименование (ориг.)", InsensitiveStringClass.get(50), LM.country);
+        nameOrigin = addDProp(baseGroup, "nameOrigin", "Наименование (ориг.)", InsensitiveStringClass.get(50), secondNameClass);
+        nameOriginCountry = addDProp(baseGroup, "nameOriginCountry", "Наименование (ориг.)", InsensitiveStringClass.get(50), baseLM.country);
 
-        dictionaryComposition = LM.addDProp(LM.idGroup, "dictionaryComposition", "Словарь для составов (ИД)", LM.dictionary);
-        nameDictionaryComposition = LM.addJProp(LM.baseGroup, "nameDictionaryComposition", "Словарь для составов", LM.name, dictionaryComposition);
+        dictionaryComposition = addDProp(idGroup, "dictionaryComposition", "Словарь для составов (ИД)", baseLM.dictionary);
+        nameDictionaryComposition = addJProp(baseGroup, "nameDictionaryComposition", "Словарь для составов", baseLM.name, dictionaryComposition);
 
-        sidDestination = LM.addDProp(LM.baseGroup, "sidDestination", "Код", StringClass.get(50), destination);
+        sidDestination = addDProp(baseGroup, "sidDestination", "Код", StringClass.get(50), destination);
 
-        destinationSID = LM.addAGProp(LM.idGroup, "destinationSID", "Магазин (ИД)", sidDestination);
+        destinationSID = addAGProp(idGroup, "destinationSID", "Магазин (ИД)", sidDestination);
 
-        sidBrandSupplier = LM.addDProp(LM.baseGroup, "sidBrandSupplier", "Код", StringClass.get(50), brandSupplier);
+        sidBrandSupplier = addDProp(baseGroup, "sidBrandSupplier", "Код", StringClass.get(50), brandSupplier);
 
         // Contract
-        sidContract = LM.addDProp(LM.baseGroup, "sidContract", "Номер договора", StringClass.get(50), contract);
+        sidContract = addDProp(baseGroup, "sidContract", "Номер договора", StringClass.get(50), contract);
 
-        importerContract = LM.addDProp(LM.idGroup, "importerContract", "Импортер (ИД)", importer, contract);
-        nameImporterContract = LM.addJProp(LM.baseGroup, "nameImporterContract", "Импортер", LM.name, importerContract, 1);
+        importerContract = addDProp(idGroup, "importerContract", "Импортер (ИД)", importer, contract);
+        nameImporterContract = addJProp(baseGroup, "nameImporterContract", "Импортер", baseLM.name, importerContract, 1);
 
-        sellerContract = LM.addDProp(LM.idGroup, "sellerContract", "Продавец (ИД)", seller, contract);
-        nameSellerContract = LM.addJProp(LM.baseGroup, "nameSellerContract", "Продавец", LM.name, sellerContract, 1);
+        sellerContract = addDProp(idGroup, "sellerContract", "Продавец (ИД)", seller, contract);
+        nameSellerContract = addJProp(baseGroup, "nameSellerContract", "Продавец", baseLM.name, sellerContract, 1);
 
-        currencyContract = LM.addDProp(LM.idGroup, "currencyContract", "Валюта (ИД)", currency, contract);
-        nameCurrencyContract = LM.addJProp(LM.baseGroup, "nameCurrencyContract", "Валюта", LM.name, currencyContract, 1);
+        currencyContract = addDProp(idGroup, "currencyContract", "Валюта (ИД)", currency, contract);
+        nameCurrencyContract = addJProp(baseGroup, "nameCurrencyContract", "Валюта", baseLM.name, currencyContract, 1);
 
         // Subject
-        addressOriginSubject = LM.addDProp(LM.baseGroup, "addressOriginSubject", "Address", StringClass.get(200), subject);
-        addressSubject = LM.addDProp(LM.baseGroup, "addressSubject", "Адрес", StringClass.get(200), subject);
+        addressOriginSubject = addDProp(baseGroup, "addressOriginSubject", "Address", StringClass.get(200), subject);
+        addressSubject = addDProp(baseGroup, "addressSubject", "Адрес", StringClass.get(200), subject);
 
-        contractImporter = LM.addDProp(LM.baseGroup, "contractImporter", "Номер договора", StringClass.get(50), importer);
+        contractImporter = addDProp(baseGroup, "contractImporter", "Номер договора", StringClass.get(50), importer);
 
         // CustomCategory
-        nameCustomCategory = LM.addDProp(LM.baseGroup, "nameCustomCategory", "Наименование", StringClass.get(500), customCategory);
+        nameCustomCategory = addDProp(baseGroup, "nameCustomCategory", "Наименование", StringClass.get(500), customCategory);
         nameCustomCategory.property.preferredCharWidth = 50;
         nameCustomCategory.property.minimumCharWidth = 20;
 
-        sidCustomCategory4 = LM.addDProp(LM.baseGroup, "sidCustomCategory4", "Код(4)", StringClass.get(4), customCategory4);
+        sidCustomCategory4 = addDProp(baseGroup, "sidCustomCategory4", "Код(4)", StringClass.get(4), customCategory4);
         sidCustomCategory4.setFixedCharWidth(4);
 
-        sidCustomCategory6 = LM.addDProp(LM.baseGroup, "sidCustomCategory6", "Код(6)", StringClass.get(6), customCategory6);
+        sidCustomCategory6 = addDProp(baseGroup, "sidCustomCategory6", "Код(6)", StringClass.get(6), customCategory6);
         sidCustomCategory6.setFixedCharWidth(6);
 
-        sidCustomCategory9 = LM.addDProp(LM.baseGroup, "sidCustomCategory9", "Код(9)", StringClass.get(9), customCategory9);
+        sidCustomCategory9 = addDProp(baseGroup, "sidCustomCategory9", "Код(9)", StringClass.get(9), customCategory9);
         sidCustomCategory9.setFixedCharWidth(9);
 
-        sidCustomCategory10 = LM.addDProp(LM.baseGroup, "sidCustomCategory10", "Код(10)", StringClass.get(10), customCategory10);
+        sidCustomCategory10 = addDProp(baseGroup, "sidCustomCategory10", "Код(10)", StringClass.get(10), customCategory10);
         sidCustomCategory10.setFixedCharWidth(10);
 
-        sidCustomCategoryOrigin = LM.addDProp(LM.baseGroup, "sidCustomCategoryOrigin", "Код ЕС(10)", StringClass.get(10), customCategoryOrigin);
+        sidCustomCategoryOrigin = addDProp(baseGroup, "sidCustomCategoryOrigin", "Код ЕС(10)", StringClass.get(10), customCategoryOrigin);
         sidCustomCategoryOrigin.setFixedCharWidth(10);
 
-        sidToCustomCategory4 = LM.addAGProp("sidToCustomCategory4", "Код(4)", sidCustomCategory4);
-        sidToCustomCategory6 = LM.addAGProp("sidToCustomCategory6", "Код(6)", sidCustomCategory6);
-        sidToCustomCategory9 = LM.addAGProp("sidToCustomCategory9", "Код(9)", sidCustomCategory9);
-        sidToCustomCategory10 = LM.addAGProp("sidToCustomCategory10", "Код(10)", sidCustomCategory10);
-        sidToCustomCategoryOrigin = LM.addAGProp("sidToCustomCategoryOrigin", "Код ЕС (10)", sidCustomCategoryOrigin);
+        sidToCustomCategory4 = addAGProp("sidToCustomCategory4", "Код(4)", sidCustomCategory4);
+        sidToCustomCategory6 = addAGProp("sidToCustomCategory6", "Код(6)", sidCustomCategory6);
+        sidToCustomCategory9 = addAGProp("sidToCustomCategory9", "Код(9)", sidCustomCategory9);
+        sidToCustomCategory10 = addAGProp("sidToCustomCategory10", "Код(10)", sidCustomCategory10);
+        sidToCustomCategoryOrigin = addAGProp("sidToCustomCategoryOrigin", "Код ЕС (10)", sidCustomCategoryOrigin);
 
-        importBelTnved = LM.addAProp(new ClassifierTNVEDImportActionProperty(LM.genSID(), "Импортировать (РБ)", this, "belarusian"));
-        importEuTnved = LM.addAProp(new ClassifierTNVEDImportActionProperty(LM.genSID(), "Импортировать (ЕС)", this, "origin"));
-        jennyferImportInvoice = LM.addAProp(importInvoiceActionGroup, new JennyferImportInvoiceActionProperty(this));
-        tallyWeijlImportInvoice = LM.addAProp(importInvoiceActionGroup, new TallyWeijlImportInvoiceActionProperty(this));
-        hugoBossImportInvoice = LM.addAProp(importInvoiceActionGroup, new HugoBossImportInvoiceActionProperty(BL));
-        mexxImportInvoice = LM.addAProp(importInvoiceActionGroup, new MexxImportInvoiceActionProperty(this));
-        mexxImportPricesInvoice = LM.addAProp(importInvoiceActionGroup, new MexxImportPricesInvoiceActionProperty(this));
-        mexxImportArticleInfoInvoice = LM.addAProp(importInvoiceActionGroup, new MexxImportArticleInfoInvoiceActionProperty(this));
-        mexxImportColorInvoice = LM.addAProp(importInvoiceActionGroup, new MexxImportColorInvoiceActionProperty(this));
-        bestsellerImportInvoice = LM.addAProp(importInvoiceActionGroup, new BestsellerImportInvoiceActionProperty(BL));
-        sOliverImportInvoice = LM.addAProp(importInvoiceActionGroup, new SOliverImportInvoiceActionProperty(BL));
+        importBelTnved = addAProp(new ClassifierTNVEDImportActionProperty(genSID(), "Импортировать (РБ)", this, "belarusian"));
+        importEuTnved = addAProp(new ClassifierTNVEDImportActionProperty(genSID(), "Импортировать (ЕС)", this, "origin"));
+        jennyferImportInvoice = addAProp(importInvoiceActionGroup, new JennyferImportInvoiceActionProperty(this));
+        tallyWeijlImportInvoice = addAProp(importInvoiceActionGroup, new TallyWeijlImportInvoiceActionProperty(this));
+        hugoBossImportInvoice = addAProp(importInvoiceActionGroup, new HugoBossImportInvoiceActionProperty(BL));
+        mexxImportInvoice = addAProp(importInvoiceActionGroup, new MexxImportInvoiceActionProperty(this));
+        mexxImportPricesInvoice = addAProp(importInvoiceActionGroup, new MexxImportPricesInvoiceActionProperty(this));
+        mexxImportArticleInfoInvoice = addAProp(importInvoiceActionGroup, new MexxImportArticleInfoInvoiceActionProperty(this));
+        mexxImportColorInvoice = addAProp(importInvoiceActionGroup, new MexxImportColorInvoiceActionProperty(this));
+        bestsellerImportInvoice = addAProp(importInvoiceActionGroup, new BestsellerImportInvoiceActionProperty(BL));
+        sOliverImportInvoice = addAProp(importInvoiceActionGroup, new SOliverImportInvoiceActionProperty(BL));
 
-        customCategory4CustomCategory6 = LM.addDProp(LM.idGroup, "customCategory4CustomCategory6", "Код(4)", customCategory4, customCategory6);
-        customCategory6CustomCategory9 = LM.addDProp(LM.idGroup, "customCategory6CustomCategory9", "Код(6)", customCategory6, customCategory9);
-        customCategory9CustomCategory10 = LM.addDProp(LM.idGroup, "customCategory9CustomCategory10", "Код(9)", customCategory9, customCategory10);
-        customCategory6CustomCategory10 = LM.addJProp(LM.idGroup, "customCategory6CustomCategory10", "Код(6)", customCategory6CustomCategory9, customCategory9CustomCategory10, 1);
-        customCategory4CustomCategory10 = LM.addJProp(LM.idGroup, "customCategory4CustomCategory10", "Код(4)", customCategory4CustomCategory6, customCategory6CustomCategory10, 1);
+        customCategory4CustomCategory6 = addDProp(idGroup, "customCategory4CustomCategory6", "Код(4)", customCategory4, customCategory6);
+        customCategory6CustomCategory9 = addDProp(idGroup, "customCategory6CustomCategory9", "Код(6)", customCategory6, customCategory9);
+        customCategory9CustomCategory10 = addDProp(idGroup, "customCategory9CustomCategory10", "Код(9)", customCategory9, customCategory10);
+        customCategory6CustomCategory10 = addJProp(idGroup, "customCategory6CustomCategory10", "Код(6)", customCategory6CustomCategory9, customCategory9CustomCategory10, 1);
+        customCategory4CustomCategory10 = addJProp(idGroup, "customCategory4CustomCategory10", "Код(4)", customCategory4CustomCategory6, customCategory6CustomCategory10, 1);
 
-        customCategory6CustomCategoryOrigin = LM.addDProp(LM.idGroup, "customCategory6CustomCategoryOrigin", "Код(6)", customCategory6, customCategoryOrigin);
-        customCategory4CustomCategoryOrigin = LM.addJProp(LM.idGroup, "customCategory4CustomCategoryOrigin", "Код(4)", customCategory4CustomCategory6, customCategory6CustomCategoryOrigin, 1);
+        customCategory6CustomCategoryOrigin = addDProp(idGroup, "customCategory6CustomCategoryOrigin", "Код(6)", customCategory6, customCategoryOrigin);
+        customCategory4CustomCategoryOrigin = addJProp(idGroup, "customCategory4CustomCategoryOrigin", "Код(4)", customCategory4CustomCategory6, customCategory6CustomCategoryOrigin, 1);
 
-        customCategory10CustomCategoryOrigin = LM.addDProp(LM.idGroup, "customCategory10CustomCategoryOrigin", "Код по умолчанию(ИД)", customCategory10, customCategoryOrigin);
-        sidCustomCategory10CustomCategoryOrigin = LM.addJProp(LM.baseGroup, "sidCustomCategory10CustomCategoryOrigin", "Код по умолчанию", sidCustomCategory10, customCategory10CustomCategoryOrigin, 1);
+        customCategory10CustomCategoryOrigin = addDProp(idGroup, "customCategory10CustomCategoryOrigin", "Код по умолчанию(ИД)", customCategory10, customCategoryOrigin);
+        sidCustomCategory10CustomCategoryOrigin = addJProp(baseGroup, "sidCustomCategory10CustomCategoryOrigin", "Код по умолчанию", sidCustomCategory10, customCategory10CustomCategoryOrigin, 1);
         sidCustomCategory10CustomCategoryOrigin.property.preferredCharWidth = 10;
         sidCustomCategory10CustomCategoryOrigin.property.minimumCharWidth = 10;
 
-        sidCustomCategory4CustomCategory6 = LM.addJProp(LM.baseGroup, "sidCustomCategory4CustomCategory6", "Код(4)", sidCustomCategory4, customCategory4CustomCategory6, 1);
-        sidCustomCategory6CustomCategory9 = LM.addJProp(LM.baseGroup, "sidCustomCategory6CustomCategory9", "Код(6)", sidCustomCategory6, customCategory6CustomCategory9, 1);
-        sidCustomCategory9CustomCategory10 = LM.addJProp(LM.idGroup, "sidCustomCategory9CustomCategory10", "Код(9)", sidCustomCategory9, customCategory9CustomCategory10, 1);
-        sidCustomCategory6CustomCategoryOrigin = LM.addJProp(LM.idGroup, "sidCustomCategory6CustomCategoryOrigin", "Код(6)", sidCustomCategory6, customCategory6CustomCategoryOrigin, 1);
+        sidCustomCategory4CustomCategory6 = addJProp(baseGroup, "sidCustomCategory4CustomCategory6", "Код(4)", sidCustomCategory4, customCategory4CustomCategory6, 1);
+        sidCustomCategory6CustomCategory9 = addJProp(baseGroup, "sidCustomCategory6CustomCategory9", "Код(6)", sidCustomCategory6, customCategory6CustomCategory9, 1);
+        sidCustomCategory9CustomCategory10 = addJProp(idGroup, "sidCustomCategory9CustomCategory10", "Код(9)", sidCustomCategory9, customCategory9CustomCategory10, 1);
+        sidCustomCategory6CustomCategoryOrigin = addJProp(idGroup, "sidCustomCategory6CustomCategoryOrigin", "Код(6)", sidCustomCategory6, customCategory6CustomCategoryOrigin, 1);
 
-        nameCustomCategory4CustomCategory6 = LM.addJProp(LM.baseGroup, "nameCustomCategory4CustomCategory6", "Наименование(4)", nameCustomCategory, customCategory4CustomCategory6, 1);
-        nameCustomCategory6CustomCategory9 = LM.addJProp(LM.baseGroup, "nameCustomCategory6CustomCategory9", "Наименование(6)", nameCustomCategory, customCategory6CustomCategory9, 1);
-        nameCustomCategory9CustomCategory10 = LM.addJProp(LM.baseGroup, "nameCustomCategory9CustomCategory10", "Наименование(9)", nameCustomCategory, customCategory9CustomCategory10, 1);
-        nameCustomCategory6CustomCategory10 = LM.addJProp(LM.baseGroup, "nameCustomCategory6CustomCategory10", "Наименование(6)", nameCustomCategory, customCategory6CustomCategory10, 1);
-        nameCustomCategory4CustomCategory10 = LM.addJProp(LM.baseGroup, "nameCustomCategory4CustomCategory10", "Наименование(4)", nameCustomCategory, customCategory4CustomCategory10, 1);
+        nameCustomCategory4CustomCategory6 = addJProp(baseGroup, "nameCustomCategory4CustomCategory6", "Наименование(4)", nameCustomCategory, customCategory4CustomCategory6, 1);
+        nameCustomCategory6CustomCategory9 = addJProp(baseGroup, "nameCustomCategory6CustomCategory9", "Наименование(6)", nameCustomCategory, customCategory6CustomCategory9, 1);
+        nameCustomCategory9CustomCategory10 = addJProp(baseGroup, "nameCustomCategory9CustomCategory10", "Наименование(9)", nameCustomCategory, customCategory9CustomCategory10, 1);
+        nameCustomCategory6CustomCategory10 = addJProp(baseGroup, "nameCustomCategory6CustomCategory10", "Наименование(6)", nameCustomCategory, customCategory6CustomCategory10, 1);
+        nameCustomCategory4CustomCategory10 = addJProp(baseGroup, "nameCustomCategory4CustomCategory10", "Наименование(4)", nameCustomCategory, customCategory4CustomCategory10, 1);
 
-        nameCustomCategory6CustomCategoryOrigin = LM.addJProp(LM.baseGroup, "nameCustomCategory6CustomCategoryOrigin", "Наименование(6)", nameCustomCategory, customCategory6CustomCategoryOrigin, 1);
-        nameCustomCategory4CustomCategoryOrigin = LM.addJProp(LM.baseGroup, "nameCustomCategory4CustomCategoryOrigin", "Наименование(4)", nameCustomCategory, customCategory4CustomCategoryOrigin, 1);
+        nameCustomCategory6CustomCategoryOrigin = addJProp(baseGroup, "nameCustomCategory6CustomCategoryOrigin", "Наименование(6)", nameCustomCategory, customCategory6CustomCategoryOrigin, 1);
+        nameCustomCategory4CustomCategoryOrigin = addJProp(baseGroup, "nameCustomCategory4CustomCategoryOrigin", "Наименование(4)", nameCustomCategory, customCategory4CustomCategoryOrigin, 1);
 
-        relationCustomCategory10CustomCategoryOrigin = LM.addDProp(LM.baseGroup, "relationCustomCategory10CustomCategoryOrigin", "Связь ТН ВЭД", LogicalClass.instance, customCategory10, customCategoryOrigin);
+        relationCustomCategory10CustomCategoryOrigin = addDProp(baseGroup, "relationCustomCategory10CustomCategoryOrigin", "Связь ТН ВЭД", LogicalClass.instance, customCategory10, customCategoryOrigin);
 
-//        addConstraint(LM.addJProp("По умолчанию должен быть среди связанных", LM.and(true, false),
+//        addConstraint(addJProp("По умолчанию должен быть среди связанных", and(true, false),
 //                addCProp(LogicalClass.instance, true, customCategoryOrigin), 1,
-//                LM.addJProp(relationCustomCategory10CustomCategoryOrigin, customCategory10CustomCategoryOrigin, 1, 1), 1,
-//                LM.addJProp(LM.is(customCategory10), customCategory10CustomCategoryOrigin, 1), 1), true);
+//                addJProp(relationCustomCategory10CustomCategoryOrigin, customCategory10CustomCategoryOrigin, 1, 1), 1,
+//                addJProp(is(customCategory10), customCategory10CustomCategoryOrigin, 1), 1), true);
 
         // Supplier
-        currencySupplier = LM.addDProp(LM.idGroup, "currencySupplier", "Валюта (ИД)", currency, supplier);
-        nameCurrencySupplier = LM.addJProp(LM.baseGroup, "nameCurrencySupplier", "Валюта", LM.name, currencySupplier, 1);
+        currencySupplier = addDProp(idGroup, "currencySupplier", "Валюта (ИД)", currency, supplier);
+        nameCurrencySupplier = addJProp(baseGroup, "nameCurrencySupplier", "Валюта", baseLM.name, currencySupplier, 1);
 
-        sidColorSupplier = LM.addDProp(LM.baseGroup, "sidColorSupplier", "Код", StringClass.get(50), colorSupplier);
+        sidColorSupplier = addDProp(baseGroup, "sidColorSupplier", "Код", StringClass.get(50), colorSupplier);
 
-        supplierColorSupplier = LM.addDProp(LM.idGroup, "supplierColorSupplier", "Поставщик (ИД)", supplier, colorSupplier);
-        nameSupplierColorSupplier = LM.addJProp(LM.baseGroup, "nameSupplierColorSupplier", "Поставщик", LM.name, supplierColorSupplier, 1);
+        supplierColorSupplier = addDProp(idGroup, "supplierColorSupplier", "Поставщик (ИД)", supplier, colorSupplier);
+        nameSupplierColorSupplier = addJProp(baseGroup, "nameSupplierColorSupplier", "Поставщик", baseLM.name, supplierColorSupplier, 1);
 
-        colorSIDSupplier = LM.addAGProp(LM.idGroup, "colorSIDSupplier", "Цвет поставщика (ИД)", sidColorSupplier, supplierColorSupplier);
+        colorSIDSupplier = addAGProp(idGroup, "colorSIDSupplier", "Цвет поставщика (ИД)", sidColorSupplier, supplierColorSupplier);
 
-        sidSizeSupplier = LM.addDProp(LM.baseGroup, "sidSizeSupplier", "Код", StringClass.get(50), sizeSupplier);
+        sidSizeSupplier = addDProp(baseGroup, "sidSizeSupplier", "Код", StringClass.get(50), sizeSupplier);
 
-        commonSizeSizeSupplier = LM.addDProp(LM.idGroup, "commonSizeSizeSupplier", "Унифицированный размер (ИД)", commonSize, sizeSupplier);
-        nameCommonSizeSizeSupplier = LM.addJProp(LM.baseGroup, "nameCommonSizeSizeSupplier", "Унифицированный размер", LM.name, commonSizeSizeSupplier, 1);
+        commonSizeSizeSupplier = addDProp(idGroup, "commonSizeSizeSupplier", "Унифицированный размер (ИД)", commonSize, sizeSupplier);
+        nameCommonSizeSizeSupplier = addJProp(baseGroup, "nameCommonSizeSizeSupplier", "Унифицированный размер", baseLM.name, commonSizeSizeSupplier, 1);
 
-        supplierSizeSupplier = LM.addDProp(LM.idGroup, "supplierSizeSupplier", "Поставщик (ИД)", supplier, sizeSupplier);
-        nameSupplierSizeSupplier = LM.addJProp(LM.baseGroup, "nameSupplierSizeSupplier", "Поставщик", LM.name, supplierSizeSupplier, 1);
+        supplierSizeSupplier = addDProp(idGroup, "supplierSizeSupplier", "Поставщик (ИД)", supplier, sizeSupplier);
+        nameSupplierSizeSupplier = addJProp(baseGroup, "nameSupplierSizeSupplier", "Поставщик", baseLM.name, supplierSizeSupplier, 1);
 
-        sizeSIDSupplier = LM.addAGProp(LM.idGroup, "sizeSIDSupplier", "Размер поставщика (ИД)", sidSizeSupplier, supplierSizeSupplier);
+        sizeSIDSupplier = addAGProp(idGroup, "sizeSIDSupplier", "Размер поставщика (ИД)", sidSizeSupplier, supplierSizeSupplier);
 
         // Country
-        supplierCountrySupplier = LM.addDProp(LM.idGroup, "supplierCountrySupplier", "Поставщик (ИД)", supplier, countrySupplier);
-        nameSupplierCountrySupplier = LM.addJProp(LM.baseGroup, "nameSupplierCountrySupplier", "Поставщик", LM.name, supplierCountrySupplier, 1);
+        supplierCountrySupplier = addDProp(idGroup, "supplierCountrySupplier", "Поставщик (ИД)", supplier, countrySupplier);
+        nameSupplierCountrySupplier = addJProp(baseGroup, "nameSupplierCountrySupplier", "Поставщик", baseLM.name, supplierCountrySupplier, 1);
 
-        countryCountrySupplier = LM.addDProp(LM.idGroup, "countryCountrySupplier", "Страна (ИД)", LM.country, countrySupplier);
-        nameCountryCountrySupplier = LM.addJProp(LM.baseGroup, "nameCountryCountrySupplier", "Страна", LM.name, countryCountrySupplier, 1);
+        countryCountrySupplier = addDProp(idGroup, "countryCountrySupplier", "Страна (ИД)", baseLM.country, countrySupplier);
+        nameCountryCountrySupplier = addJProp(baseGroup, "nameCountryCountrySupplier", "Страна", baseLM.name, countryCountrySupplier, 1);
 
-        countryNameSupplier = LM.addAGProp(LM.idGroup, "countryNameSupplier", "Страна поставщика", LM.name, supplierCountrySupplier);
+        countryNameSupplier = addAGProp(idGroup, "countryNameSupplier", "Страна поставщика", baseLM.name, supplierCountrySupplier);
 
         // Brand
-        supplierBrandSupplier = LM.addDProp(LM.idGroup, "supplierBrandSupplier", "Поставщик (ИД)", supplier, brandSupplier);
-        nameSupplierBrandSupplier = LM.addJProp(LM.baseGroup, "nameSupplierBrandSupplier", "Поставщик", LM.name, supplierBrandSupplier, 1);
+        supplierBrandSupplier = addDProp(idGroup, "supplierBrandSupplier", "Поставщик (ИД)", supplier, brandSupplier);
+        nameSupplierBrandSupplier = addJProp(baseGroup, "nameSupplierBrandSupplier", "Поставщик", baseLM.name, supplierBrandSupplier, 1);
 
-        brandSIDSupplier = LM.addAGProp(LM.idGroup, "brandSIDSupplier", "Бренд поставщика (ИД)", sidBrandSupplier, supplierBrandSupplier);
+        brandSIDSupplier = addAGProp(idGroup, "brandSIDSupplier", "Бренд поставщика (ИД)", sidBrandSupplier, supplierBrandSupplier);
 
-        brandSupplierSupplier = LM.addDProp(LM.idGroup, "brandSupplierSupplier", "Бренд (ИД)", brandSupplier, supplier);
-        nameBrandSupplierSupplier = LM.addJProp(LM.baseGroup, "nameBrandSupplierSupplier", "Бренд по умолчанию", LM.name, brandSupplierSupplier, 1);
+        brandSupplierSupplier = addDProp(idGroup, "brandSupplierSupplier", "Бренд (ИД)", brandSupplier, supplier);
+        nameBrandSupplierSupplier = addJProp(baseGroup, "nameBrandSupplierSupplier", "Бренд по умолчанию", baseLM.name, brandSupplierSupplier, 1);
 
-        LM.addConstraint(LM.addJProp("Бренд по умолчанию для поставщика должен соответствовать брендам поставщика", LM.diff2, 1, LM.addJProp(supplierBrandSupplier, brandSupplierSupplier, 1), 1), true);
+        addConstraint(addJProp("Бренд по умолчанию для поставщика должен соответствовать брендам поставщика", baseLM.diff2, 1, addJProp(supplierBrandSupplier, brandSupplierSupplier, 1), 1), true);
 
-        supplierThemeSupplier = LM.addDProp(LM.idGroup, "supplierThemeSupplier", "Поставщик (ИД)", supplier, themeSupplier);
+        supplierThemeSupplier = addDProp(idGroup, "supplierThemeSupplier", "Поставщик (ИД)", supplier, themeSupplier);
 
-        supplierDocument = LM.addDProp(LM.idGroup, "supplierDocument", "Поставщик (ИД)", supplier, document);
-        supplierPriceDocument = LM.addJProp(LM.idGroup, "supplierPricedDocument", "Поставщик(ИД)", LM.and1, supplierDocument, 1, LM.is(priceDocument), 1);
-        nameSupplierDocument = LM.addJProp(LM.baseGroup, "nameSupplierDocument", "Поставщик", LM.name, supplierDocument, 1);
+        supplierDocument = addDProp(idGroup, "supplierDocument", "Поставщик (ИД)", supplier, document);
+        supplierPriceDocument = addJProp(idGroup, "supplierPricedDocument", "Поставщик(ИД)", baseLM.and1, supplierDocument, 1, is(priceDocument), 1);
+        nameSupplierDocument = addJProp(baseGroup, "nameSupplierDocument", "Поставщик", baseLM.name, supplierDocument, 1);
 
-        currencyDocument = LM.addDCProp(LM.idGroup, "currencyDocument", "Валюта (ИД)", currencySupplier, supplierPriceDocument, 1);
-        nameCurrencyDocument = LM.addJProp(LM.baseGroup, "nameCurrencyDocument", "Валюта", LM.name, currencyDocument, 1);
+        currencyDocument = addDCProp(idGroup, "currencyDocument", "Валюта (ИД)", currencySupplier, supplierPriceDocument, 1);
+        nameCurrencyDocument = addJProp(baseGroup, "nameCurrencyDocument", "Валюта", baseLM.name, currencyDocument, 1);
 
         // Order
-        destinationDestinationDocument = LM.addDProp(LM.idGroup, "destinationDestinationDocument", "Пункт назначения (ИД)", destination, destinationDocument);
-        nameDestinationDestinationDocument = LM.addJProp(LM.baseGroup, "nameDestinationDestinationDocument", "Пункт назначения (наим.)", LM.name, destinationDestinationDocument, 1);
-        sidDestinationDestinationDocument = LM.addJProp(LM.baseGroup, "sidDestinationDestinationDocument", "Пункт назначения", sidDestination, destinationDestinationDocument, 1);
+        destinationDestinationDocument = addDProp(idGroup, "destinationDestinationDocument", "Пункт назначения (ИД)", destination, destinationDocument);
+        nameDestinationDestinationDocument = addJProp(baseGroup, "nameDestinationDestinationDocument", "Пункт назначения (наим.)", baseLM.name, destinationDestinationDocument, 1);
+        sidDestinationDestinationDocument = addJProp(baseGroup, "sidDestinationDestinationDocument", "Пункт назначения", sidDestination, destinationDestinationDocument, 1);
 
         // Invoice
-        importerInvoice = LM.addDProp(LM.idGroup, "importerDocument", "Импортер (ИД)", importer, invoice);
-        nameImporterInvoice = LM.addJProp(LM.baseGroup, "nameImporterInvoice", "Импортер", LM.name, importerInvoice, 1);
+        importerInvoice = addDProp(idGroup, "importerDocument", "Импортер (ИД)", importer, invoice);
+        nameImporterInvoice = addJProp(baseGroup, "nameImporterInvoice", "Импортер", baseLM.name, importerInvoice, 1);
 
-        contractInvoice = LM.addDProp(LM.idGroup, "contractInvoice", "Договор (ИД)", contract, invoice);
-        sidContractInvoice = LM.addJProp(LM.baseGroup, "sidContractInvoice", "Договор", sidContract, contractInvoice, 1);
+        contractInvoice = addDProp(idGroup, "contractInvoice", "Договор (ИД)", contract, invoice);
+        sidContractInvoice = addJProp(baseGroup, "sidContractInvoice", "Договор", sidContract, contractInvoice, 1);
 
-        LM.addConstraint(LM.addJProp("Импортер договора должен соответствовать импортеру инвойса", LM.diff2,
-                importerInvoice, 1, LM.addJProp(importerContract, contractInvoice, 1), 1), true);
+        addConstraint(addJProp("Импортер договора должен соответствовать импортеру инвойса", baseLM.diff2,
+                importerInvoice, 1, addJProp(importerContract, contractInvoice, 1), 1), true);
 
-        LM.addConstraint(LM.addJProp("Поставщик договора должен соответствовать поставщику инвойса", LM.diff2,
-                supplierDocument, 1, LM.addJProp(sellerContract, contractInvoice, 1), 1), true);
+        addConstraint(addJProp("Поставщик договора должен соответствовать поставщику инвойса", baseLM.diff2,
+                supplierDocument, 1, addJProp(sellerContract, contractInvoice, 1), 1), true);
 
 
         // Shipment
-        quantityPalletShipment = LM.addDProp(LM.baseGroup, "quantityPalletShipment", "Кол-во паллет", IntegerClass.instance, shipment);
-        netWeightShipment = LM.addDProp(LM.baseGroup, "netWeightShipment", "Вес нетто", DoubleClass.instance, shipment);
-        grossWeightShipment = LM.addDProp(LM.baseGroup, "grossWeightShipment", "Вес брутто", DoubleClass.instance, shipment);
+        quantityPalletShipment = addDProp(baseGroup, "quantityPalletShipment", "Кол-во паллет", IntegerClass.instance, shipment);
+        netWeightShipment = addDProp(baseGroup, "netWeightShipment", "Вес нетто", DoubleClass.instance, shipment);
+        grossWeightShipment = addDProp(baseGroup, "grossWeightShipment", "Вес брутто", DoubleClass.instance, shipment);
 
-        grossWeightPallet = LM.addDProp(LM.baseGroup, "grossWeightPallet", "Вес брутто", DoubleClass.instance, pallet);
-        quantityBoxShipment = LM.addDProp(LM.baseGroup, "quantityBoxShipment", "Кол-во коробов", DoubleClass.instance, shipment);
+        grossWeightPallet = addDProp(baseGroup, "grossWeightPallet", "Вес брутто", DoubleClass.instance, pallet);
+        quantityBoxShipment = addDProp(baseGroup, "quantityBoxShipment", "Кол-во коробов", DoubleClass.instance, shipment);
 
         // Item
-        articleCompositeItem = LM.addDProp(LM.idGroup, "articleCompositeItem", "Артикул (ИД)", articleComposite, item);
-        equalsItemArticleComposite = LM.addJProp(LM.baseGroup, "equalsItemArticleComposite", "Вкл.", LM.equals2, articleCompositeItem, 1, 2);
+        articleCompositeItem = addDProp(idGroup, "articleCompositeItem", "Артикул (ИД)", articleComposite, item);
+        equalsItemArticleComposite = addJProp(baseGroup, "equalsItemArticleComposite", "Вкл.", baseLM.equals2, articleCompositeItem, 1, 2);
 
-        articleSku = LM.addCUProp(LM.idGroup, "articleSku", "Артикул (ИД)", LM.object(articleSingle), articleCompositeItem);
+        articleSku = addCUProp(idGroup, "articleSku", "Артикул (ИД)", object(articleSingle), articleCompositeItem);
 
-        addItemBarcode = LM.addJProp(true, "Ввод товара по штрих-коду", LM.addAAProp(item, LM.barcode), 1);
+        addItemBarcode = addJProp(true, "Ввод товара по штрих-коду", addAAProp(item, baseLM.barcode), 1);
 
         // Article
-        sidArticle = LM.addDProp(LM.baseGroup, "sidArticle", "Артикул", StringClass.get(50), article);
-        sidArticleSku = LM.addJProp(LM.baseGroup, "sidArticleSku", "Артикул", sidArticle, articleSku, 1);
+        sidArticle = addDProp(baseGroup, "sidArticle", "Артикул", StringClass.get(50), article);
+        sidArticleSku = addJProp(baseGroup, "sidArticleSku", "Артикул", sidArticle, articleSku, 1);
 
-        originalNameArticle = LM.addDProp(supplierAttributeGroup, "originalNameArticle", "Наименование (ориг.)", InsensitiveStringClass.get(50), article);
-        originalNameArticleSku = LM.addJProp(supplierAttributeGroup, "originalNameArticleSku", "Наименование (ориг.)", originalNameArticle, articleSku, 1);
+        originalNameArticle = addDProp(supplierAttributeGroup, "originalNameArticle", "Наименование (ориг.)", InsensitiveStringClass.get(50), article);
+        originalNameArticleSku = addJProp(supplierAttributeGroup, "originalNameArticleSku", "Наименование (ориг.)", originalNameArticle, articleSku, 1);
 
         //Category
-        categoryArticle = LM.addDProp(LM.idGroup, "categoryArticle", "Номенклатурная группа товара (ИД)", category, article);
-        nameOriginCategoryArticle = LM.addJProp(intraAttributeGroup, "nameOriginCategoryArticle", "Номенклатурная группа товара (ориг.)", nameOrigin, categoryArticle, 1);
-        nameCategoryArticle = LM.addJProp(intraAttributeGroup, "nameCategoryArticle", "Номенклатурная группа товара", LM.name, categoryArticle, 1);
-        categoryArticleSku = LM.addJProp(LM.idGroup, true, "categoryArticleSku", "Номенклатурная группа товара (ИД)", categoryArticle, articleSku, 1);
-        nameCategoryArticleSku = LM.addJProp(intraAttributeGroup, "nameCategoryArticleSku", "Номенклатурная группа товара", LM.name, categoryArticleSku, 1);
-        nameOriginCategoryArticleSku = LM.addJProp(intraAttributeGroup, "nameOriginCategoryArticleSku", "Номенклатурная группа товара", nameOrigin, categoryArticleSku, 1);
+        categoryArticle = addDProp(idGroup, "categoryArticle", "Номенклатурная группа товара (ИД)", category, article);
+        nameOriginCategoryArticle = addJProp(intraAttributeGroup, "nameOriginCategoryArticle", "Номенклатурная группа товара (ориг.)", nameOrigin, categoryArticle, 1);
+        nameCategoryArticle = addJProp(intraAttributeGroup, "nameCategoryArticle", "Номенклатурная группа товара", baseLM.name, categoryArticle, 1);
+        categoryArticleSku = addJProp(idGroup, true, "categoryArticleSku", "Номенклатурная группа товара (ИД)", categoryArticle, articleSku, 1);
+        nameCategoryArticleSku = addJProp(intraAttributeGroup, "nameCategoryArticleSku", "Номенклатурная группа товара", baseLM.name, categoryArticleSku, 1);
+        nameOriginCategoryArticleSku = addJProp(intraAttributeGroup, "nameOriginCategoryArticleSku", "Номенклатурная группа товара", nameOrigin, categoryArticleSku, 1);
 
-        nameArticle = LM.addSUProp(LM.baseGroup, "nameArticle", "Наименование", Union.OVERRIDE, originalNameArticle, nameOriginCategoryArticle);
-        nameArticleSku = LM.addJProp(LM.baseGroup, "nameArticleSku", "Наименование", nameArticle, articleSku, 1);
+        nameArticle = addSUProp(baseGroup, "nameArticle", "Наименование", Union.OVERRIDE, originalNameArticle, nameOriginCategoryArticle);
+        nameArticleSku = addJProp(baseGroup, "nameArticleSku", "Наименование", nameArticle, articleSku, 1);
 
-        customCategoryOriginArticle = LM.addDProp(LM.idGroup, "customCategoryOriginArticle", "ТН ВЭД (ориг.) (ИД)", customCategoryOrigin, article);
-        sidCustomCategoryOriginArticle = LM.addJProp(supplierAttributeGroup, "sidCustomCategoryOriginArticle", "Код ТН ВЭД (ориг.)", sidCustomCategoryOrigin, customCategoryOriginArticle, 1);
-        customCategoryOriginArticleSku = LM.addJProp(LM.idGroup, true, "customCategoryOriginArticleSku", "ТН ВЭД (ориг.) (ИД)", customCategoryOriginArticle, articleSku, 1);
-        sidCustomCategoryOriginArticleSku = LM.addJProp(supplierAttributeGroup, "sidCustomCategoryOriginArticleSku", "Код ТН ВЭД (ориг.)", sidCustomCategoryOrigin, customCategoryOriginArticleSku, 1);
+        customCategoryOriginArticle = addDProp(idGroup, "customCategoryOriginArticle", "ТН ВЭД (ориг.) (ИД)", customCategoryOrigin, article);
+        sidCustomCategoryOriginArticle = addJProp(supplierAttributeGroup, "sidCustomCategoryOriginArticle", "Код ТН ВЭД (ориг.)", sidCustomCategoryOrigin, customCategoryOriginArticle, 1);
+        customCategoryOriginArticleSku = addJProp(idGroup, true, "customCategoryOriginArticleSku", "ТН ВЭД (ориг.) (ИД)", customCategoryOriginArticle, articleSku, 1);
+        sidCustomCategoryOriginArticleSku = addJProp(supplierAttributeGroup, "sidCustomCategoryOriginArticleSku", "Код ТН ВЭД (ориг.)", sidCustomCategoryOrigin, customCategoryOriginArticleSku, 1);
 
-        customCategory10DataSku = LM.addDProp(LM.idGroup, "customCategory10DataSku", "ТН ВЭД (ИД)", customCategory10, sku);
-        customCategory10CustomCategoryOriginArticle = LM.addJProp(LM.idGroup, "customCategory10CustomCategoryOriginArticle", "ТН ВЭД (ИД)", customCategory10CustomCategoryOrigin, customCategoryOriginArticle, 1);
-        customCategory10CustomCategoryOriginArticleSku = LM.addJProp(LM.idGroup, "customCategory10CustomCategoryOriginArticleSku", "ТН ВЭД (ИД)", customCategory10CustomCategoryOriginArticle, articleSku, 1);
-        customCategory10Sku = LM.addSUProp(LM.idGroup, "customCategory10Sku", true, "ТН ВЭД (ИД)", Union.OVERRIDE, customCategory10CustomCategoryOriginArticleSku, customCategory10DataSku);
-        sidCustomCategory10Sku = LM.addJProp(LM.baseGroup, "sidCustomCategory10Sku", "ТН ВЭД", sidCustomCategory10, customCategory10Sku, 1);
-        /*addConstraint(LM.addJProp("Выбранный должен быть среди связанных кодов", andNot1, addCProp(LogicalClass.instance, true, article), 1,
-                   LM.addJProp(relationCustomCategory10CustomCategoryOrigin, customCategory10Article, 1, customCategoryOriginArticle, 1), 1), true);*/
+        customCategory10DataSku = addDProp(idGroup, "customCategory10DataSku", "ТН ВЭД (ИД)", customCategory10, sku);
+        customCategory10CustomCategoryOriginArticle = addJProp(idGroup, "customCategory10CustomCategoryOriginArticle", "ТН ВЭД (ИД)", customCategory10CustomCategoryOrigin, customCategoryOriginArticle, 1);
+        customCategory10CustomCategoryOriginArticleSku = addJProp(idGroup, "customCategory10CustomCategoryOriginArticleSku", "ТН ВЭД (ИД)", customCategory10CustomCategoryOriginArticle, articleSku, 1);
+        customCategory10Sku = addSUProp(idGroup, "customCategory10Sku", true, "ТН ВЭД (ИД)", Union.OVERRIDE, customCategory10CustomCategoryOriginArticleSku, customCategory10DataSku);
+        sidCustomCategory10Sku = addJProp(baseGroup, "sidCustomCategory10Sku", "ТН ВЭД", sidCustomCategory10, customCategory10Sku, 1);
+        /*addConstraint(addJProp("Выбранный должен быть среди связанных кодов", andNot1, addCProp(LogicalClass.instance, true, article), 1,
+                   addJProp(relationCustomCategory10CustomCategoryOrigin, customCategory10Article, 1, customCategoryOriginArticle, 1), 1), true);*/
 
         // unitOfMeasure
-        unitOfMeasureCategory = LM.addDProp(LM.idGroup, "unitOfMeasureCategory", "Единица измерения (ИД)", unitOfMeasure, category);
-        nameUnitOfMeasureCategory = LM.addJProp(LM.baseGroup, "nameUnitOfMeasureCategory", "Единица измерения", LM.name, unitOfMeasureCategory, 1);
-        unitOfMeasureCategoryArticle = LM.addJProp(LM.idGroup, "unitOfMeasureCategoryArticle", "Единица измерения (ИД)", unitOfMeasureCategory, categoryArticle, 1);
-        unitOfMeasureDataArticle = LM.addDProp(LM.idGroup, "unitOfMeasureDataArticle", "Единица измерения (ИД)", unitOfMeasure, article);
-        unitOfMeasureArticle = LM.addSUProp(LM.idGroup, "unitOfMeasureArticle", "Единица измерения", Union.OVERRIDE, unitOfMeasureCategoryArticle, unitOfMeasureDataArticle);
+        unitOfMeasureCategory = addDProp(idGroup, "unitOfMeasureCategory", "Единица измерения (ИД)", unitOfMeasure, category);
+        nameUnitOfMeasureCategory = addJProp(baseGroup, "nameUnitOfMeasureCategory", "Единица измерения", baseLM.name, unitOfMeasureCategory, 1);
+        unitOfMeasureCategoryArticle = addJProp(idGroup, "unitOfMeasureCategoryArticle", "Единица измерения (ИД)", unitOfMeasureCategory, categoryArticle, 1);
+        unitOfMeasureDataArticle = addDProp(idGroup, "unitOfMeasureDataArticle", "Единица измерения (ИД)", unitOfMeasure, article);
+        unitOfMeasureArticle = addSUProp(idGroup, "unitOfMeasureArticle", "Единица измерения", Union.OVERRIDE, unitOfMeasureCategoryArticle, unitOfMeasureDataArticle);
 
-        nameOriginUnitOfMeasureArticle = LM.addJProp(intraAttributeGroup, "nameOriginUnitOfMeasureArticle", "Единица измерения (ориг.)", nameOrigin, unitOfMeasureArticle, 1);
-        nameUnitOfMeasureArticle = LM.addJProp(intraAttributeGroup, "nameUnitOfMeasureArticle", "Единица измерения", LM.name, unitOfMeasureArticle, 1);
-        unitOfMeasureArticleSku = LM.addJProp(LM.idGroup, true, "unitOfMeasureArticleSku", "Ед. изм. товара (ИД)", unitOfMeasureArticle, articleSku, 1);
-        nameUnitOfMeasureArticleSku = LM.addJProp(intraAttributeGroup, "nameUnitOfMeasureArticleSku", "Ед. изм. товара", LM.name, unitOfMeasureArticleSku, 1);
-        nameOriginUnitOfMeasureArticleSku = LM.addJProp(intraAttributeGroup, "nameOriginUnitOfMeasureArticleSku", "Ед. изм. товара", nameOrigin, unitOfMeasureArticleSku, 1);
+        nameOriginUnitOfMeasureArticle = addJProp(intraAttributeGroup, "nameOriginUnitOfMeasureArticle", "Единица измерения (ориг.)", nameOrigin, unitOfMeasureArticle, 1);
+        nameUnitOfMeasureArticle = addJProp(intraAttributeGroup, "nameUnitOfMeasureArticle", "Единица измерения", baseLM.name, unitOfMeasureArticle, 1);
+        unitOfMeasureArticleSku = addJProp(idGroup, true, "unitOfMeasureArticleSku", "Ед. изм. товара (ИД)", unitOfMeasureArticle, articleSku, 1);
+        nameUnitOfMeasureArticleSku = addJProp(intraAttributeGroup, "nameUnitOfMeasureArticleSku", "Ед. изм. товара", baseLM.name, unitOfMeasureArticleSku, 1);
+        nameOriginUnitOfMeasureArticleSku = addJProp(intraAttributeGroup, "nameOriginUnitOfMeasureArticleSku", "Ед. изм. товара", nameOrigin, unitOfMeasureArticleSku, 1);
 
         // Supplier
-        supplierArticle = LM.addDProp(LM.idGroup, "supplierArticle", "Поставщик (ИД)", supplier, article);
-        nameSupplierArticle = LM.addJProp(LM.baseGroup, "nameSupplierArticle", "Поставщик", LM.name, supplierArticle, 1);
+        supplierArticle = addDProp(idGroup, "supplierArticle", "Поставщик (ИД)", supplier, article);
+        nameSupplierArticle = addJProp(baseGroup, "nameSupplierArticle", "Поставщик", baseLM.name, supplierArticle, 1);
 
-        jennyferSupplierArticle = LM.addJProp("jennyferSupplierArticle", "Поставщик Jennyfer (ИД)", LM.and1, supplierArticle, 1, LM.addJProp(LM.is(jennyferSupplier), supplierArticle, 1), 1);
+        jennyferSupplierArticle = addJProp("jennyferSupplierArticle", "Поставщик Jennyfer (ИД)", baseLM.and1, supplierArticle, 1, addJProp(is(jennyferSupplier), supplierArticle, 1), 1);
 
-        brandSupplierDataArticle = LM.addDProp(LM.idGroup, "brandSupplierDataArticle", "Бренд (ИД)", brandSupplier, article);
-        brandSupplierSupplierArticle = LM.addJProp(LM.idGroup, "brandSupplierSupplierArticle", "Бренд (ИД)", brandSupplierSupplier, supplierArticle, 1);
-        brandSupplierArticle = LM.addSUProp(LM.idGroup, "brandSupplierArticle", "Бренд (ИД)", Union.OVERRIDE, brandSupplierSupplierArticle, brandSupplierDataArticle);
-        nameBrandSupplierArticle = LM.addJProp(supplierAttributeGroup, "nameBrandSupplierArticle", "Бренд", LM.name, brandSupplierArticle, 1);
-        sidBrandSupplierArticle = LM.addJProp(supplierAttributeGroup, "sidBrandSupplierArticle", "Бренд (ИД)", sidBrandSupplier, brandSupplierArticle, 1);
+        brandSupplierDataArticle = addDProp(idGroup, "brandSupplierDataArticle", "Бренд (ИД)", brandSupplier, article);
+        brandSupplierSupplierArticle = addJProp(idGroup, "brandSupplierSupplierArticle", "Бренд (ИД)", brandSupplierSupplier, supplierArticle, 1);
+        brandSupplierArticle = addSUProp(idGroup, "brandSupplierArticle", "Бренд (ИД)", Union.OVERRIDE, brandSupplierSupplierArticle, brandSupplierDataArticle);
+        nameBrandSupplierArticle = addJProp(supplierAttributeGroup, "nameBrandSupplierArticle", "Бренд", baseLM.name, brandSupplierArticle, 1);
+        sidBrandSupplierArticle = addJProp(supplierAttributeGroup, "sidBrandSupplierArticle", "Бренд (ИД)", sidBrandSupplier, brandSupplierArticle, 1);
 
-        supplierBrandSupplierArticle = LM.addJProp(LM.idGroup, "supplierBrandSupplierArticle", "Поставщик", supplierBrandSupplier, brandSupplierArticle, 1);
-        LM.addConstraint(LM.addJProp("Поставщик артикула должен соответствовать поставщику бренда артикула", LM.diff2,
-                supplierArticle, 1, LM.addJProp(supplierBrandSupplier, brandSupplierArticle, 1), 1), true);
+        supplierBrandSupplierArticle = addJProp(idGroup, "supplierBrandSupplierArticle", "Поставщик", supplierBrandSupplier, brandSupplierArticle, 1);
+        addConstraint(addJProp("Поставщик артикула должен соответствовать поставщику бренда артикула", baseLM.diff2,
+                supplierArticle, 1, addJProp(supplierBrandSupplier, brandSupplierArticle, 1), 1), true);
 
-        brandSupplierArticleSku = LM.addJProp(LM.idGroup, "brandSupplierArticleSku", "Бренд (ИД)", brandSupplierArticle, articleSku, 1);
-        nameBrandSupplierArticleSku = LM.addJProp(supplierAttributeGroup, "nameBrandSupplierArticleSku", "Бренд", LM.name, brandSupplierArticleSku, 1);
-        sidBrandSupplierArticleSku = LM.addJProp(supplierAttributeGroup, "sidBrandSupplierArticleSku", "Бренд(ИД)", sidBrandSupplier, brandSupplierArticleSku, 1);
+        brandSupplierArticleSku = addJProp(idGroup, "brandSupplierArticleSku", "Бренд (ИД)", brandSupplierArticle, articleSku, 1);
+        nameBrandSupplierArticleSku = addJProp(supplierAttributeGroup, "nameBrandSupplierArticleSku", "Бренд", baseLM.name, brandSupplierArticleSku, 1);
+        sidBrandSupplierArticleSku = addJProp(supplierAttributeGroup, "sidBrandSupplierArticleSku", "Бренд(ИД)", sidBrandSupplier, brandSupplierArticleSku, 1);
 
-        themeSupplierArticle = LM.addDProp(LM.idGroup, "themeSupplierDataArticle", "Тема (ИД)", themeSupplier, article);
-        nameThemeSupplierArticle = LM.addJProp(supplierAttributeGroup, "nameThmeSupplierArticle", "Тема", LM.name, themeSupplierArticle, 1);
+        themeSupplierArticle = addDProp(idGroup, "themeSupplierDataArticle", "Тема (ИД)", themeSupplier, article);
+        nameThemeSupplierArticle = addJProp(supplierAttributeGroup, "nameThmeSupplierArticle", "Тема", baseLM.name, themeSupplierArticle, 1);
 
-        LM.addConstraint(LM.addJProp("Поставщик артикула должен соответствовать поставщику темы артикула", LM.diff2,
-                supplierArticle, 1, LM.addJProp(supplierThemeSupplier, themeSupplierArticle, 1), 1), true);
+        addConstraint(addJProp("Поставщик артикула должен соответствовать поставщику темы артикула", baseLM.diff2,
+                supplierArticle, 1, addJProp(supplierThemeSupplier, themeSupplierArticle, 1), 1), true);
 
-        themeSupplierArticleSku = LM.addJProp(LM.idGroup, "themeSupplierArticleSku", "Тема (ИД)", themeSupplierArticle, articleSku, 1);
-        nameThemeSupplierArticleSku = LM.addJProp(supplierAttributeGroup, "nameThemeSupplierArticleSku", "Тема", LM.name, themeSupplierArticleSku, 1);
+        themeSupplierArticleSku = addJProp(idGroup, "themeSupplierArticleSku", "Тема (ИД)", themeSupplierArticle, articleSku, 1);
+        nameThemeSupplierArticleSku = addJProp(supplierAttributeGroup, "nameThemeSupplierArticleSku", "Тема", baseLM.name, themeSupplierArticleSku, 1);
 
-        seasonArticle = LM.addDProp(LM.idGroup, "seasonArticle", "Сезон (ИД)", season, article);
-        nameSeasonArticle = LM.addJProp(supplierAttributeGroup, "nameSeasonArticle", "Сезон", LM.name, seasonArticle, 1);
+        seasonArticle = addDProp(idGroup, "seasonArticle", "Сезон (ИД)", season, article);
+        nameSeasonArticle = addJProp(supplierAttributeGroup, "nameSeasonArticle", "Сезон", baseLM.name, seasonArticle, 1);
 
-        articleSIDSupplier = LM.addAGProp(LM.idGroup, "articleSIDSupplier", "Артикул (ИД)", sidArticle, supplierArticle);
+        articleSIDSupplier = addAGProp(idGroup, "articleSIDSupplier", "Артикул (ИД)", sidArticle, supplierArticle);
 
-        seekArticleSIDSupplier = LM.addJProp(true, "Поиск артикула", LM.addSAProp(null), articleSIDSupplier, 1, 2);
+        seekArticleSIDSupplier = addJProp(true, "Поиск артикула", addSAProp(null), articleSIDSupplier, 1, 2);
 
-        addArticleSingleSIDSupplier = LM.addJProp(true, "Ввод простого артикула", LM.addAAProp(articleSingle, sidArticle, supplierArticle), 1, 2);
-        addNEArticleSingleSIDSupplier = LM.addJProp(true, "Ввод простого артикула (НС)", LM.andNot1, addArticleSingleSIDSupplier, 1, 2, articleSIDSupplier, 1, 2);
+        addArticleSingleSIDSupplier = addJProp(true, "Ввод простого артикула", addAAProp(articleSingle, sidArticle, supplierArticle), 1, 2);
+        addNEArticleSingleSIDSupplier = addJProp(true, "Ввод простого артикула (НС)", baseLM.andNot1, addArticleSingleSIDSupplier, 1, 2, articleSIDSupplier, 1, 2);
 
-        addArticleCompositeSIDSupplier = LM.addJProp(true, "Ввод составного артикула", LM.addAAProp(articleComposite, sidArticle, supplierArticle), 1, 2);
-        addNEArticleCompositeSIDSupplier = LM.addJProp(true, "Ввод составного артикула (НС)", LM.andNot1, addArticleCompositeSIDSupplier, 1, 2, articleSIDSupplier, 1, 2);
+        addArticleCompositeSIDSupplier = addJProp(true, "Ввод составного артикула", addAAProp(articleComposite, sidArticle, supplierArticle), 1, 2);
+        addNEArticleCompositeSIDSupplier = addJProp(true, "Ввод составного артикула (НС)", baseLM.andNot1, addArticleCompositeSIDSupplier, 1, 2, articleSIDSupplier, 1, 2);
 
-        executeArticleCompositeItemSIDSupplier = LM.addJProp(true, "Замена артикула", LM.addEPAProp(articleCompositeItem), 1, articleSIDSupplier, 2, 3);
+        executeArticleCompositeItemSIDSupplier = addJProp(true, "Замена артикула", addEPAProp(articleCompositeItem), 1, articleSIDSupplier, 2, 3);
 
-        executeChangeFreightClass = LM.addJProp(true, "Изменить класс фрахта", LM.and1, LM.addEPAProp(LM.objectClass), 1, 2, LM.is(freight), 1);
+        executeChangeFreightClass = addJProp(true, "Изменить класс фрахта", baseLM.and1, addEPAProp(baseLM.objectClass), 1, 2, is(freight), 1);
 
-        supplierArticleSku = LM.addJProp(LM.idGroup, "supplierArticleSku", "Поставщик (ИД)", supplierArticle, articleSku, 1);
-        nameSupplierArticleSku = LM.addJProp(LM.baseGroup, "nameSupplierArticleSku", "Поставщик", LM.name, supplierArticleSku, 1);
+        supplierArticleSku = addJProp(idGroup, "supplierArticleSku", "Поставщик (ИД)", supplierArticle, articleSku, 1);
+        nameSupplierArticleSku = addJProp(baseGroup, "nameSupplierArticleSku", "Поставщик", baseLM.name, supplierArticleSku, 1);
 
-        jennyferSupplierArticleSku = LM.addJProp("jennyferSupplierArticleSku", "Поставщик Jennyfer (ИД)", jennyferSupplierArticle, articleSku, 1);
+        jennyferSupplierArticleSku = addJProp("jennyferSupplierArticleSku", "Поставщик Jennyfer (ИД)", jennyferSupplierArticle, articleSku, 1);
 
-        colorSupplierItem = LM.addDProp(LM.idGroup, "colorSupplierItem", "Цвет поставщика (ИД)", colorSupplier, item);
-        sidColorSupplierItem = LM.addJProp(itemAttributeGroup, "sidColorSupplierItem", "Код цвета", sidColorSupplier, colorSupplierItem, 1);
-        nameColorSupplierItem = LM.addJProp(itemAttributeGroup, "nameColorSupplierItem", "Цвет поставщика", LM.name, colorSupplierItem, 1);
+        colorSupplierItem = addDProp(idGroup, "colorSupplierItem", "Цвет поставщика (ИД)", colorSupplier, item);
+        sidColorSupplierItem = addJProp(itemAttributeGroup, "sidColorSupplierItem", "Код цвета", sidColorSupplier, colorSupplierItem, 1);
+        nameColorSupplierItem = addJProp(itemAttributeGroup, "nameColorSupplierItem", "Цвет поставщика", baseLM.name, colorSupplierItem, 1);
 
-        sizeSupplierItem = LM.addDProp(itemAttributeGroup, "sizeSupplierItem", "Размер поставщика (ИД)", sizeSupplier, item);
-        sidSizeSupplierItem = LM.addJProp(itemAttributeGroup, "sidSizeSupplierItem", "Размер поставщика", sidSizeSupplier, sizeSupplierItem, 1);
+        sizeSupplierItem = addDProp(itemAttributeGroup, "sizeSupplierItem", "Размер поставщика (ИД)", sizeSupplier, item);
+        sidSizeSupplierItem = addJProp(itemAttributeGroup, "sidSizeSupplierItem", "Размер поставщика", sidSizeSupplier, sizeSupplierItem, 1);
 
-        LM.addConstraint(LM.addJProp("Поставщик товара должен соответствовать цвету поставщика", LM.diff2,
+        addConstraint(addJProp("Поставщик товара должен соответствовать цвету поставщика", baseLM.diff2,
                 supplierArticleSku, 1,
-                LM.addJProp(supplierColorSupplier, colorSupplierItem, 1), 1), true);
+                addJProp(supplierColorSupplier, colorSupplierItem, 1), 1), true);
 
-        LM.addConstraint(LM.addJProp("Поставщик товара должен соответствовать размеру поставщика", LM.diff2,
+        addConstraint(addJProp("Поставщик товара должен соответствовать размеру поставщика", baseLM.diff2,
                 supplierArticleSku, 1,
-                LM.addJProp(supplierSizeSupplier, sizeSupplierItem, 1), 1), true);
+                addJProp(supplierSizeSupplier, sizeSupplierItem, 1), 1), true);
 
         // Weight
-        netWeightArticle = LM.addDProp(supplierAttributeGroup, "netWeightArticle", "Вес нетто (ориг.)", DoubleClass.instance, article);
-        netWeightArticleSku = LM.addJProp(intraAttributeGroup, "netWeightArticleSku", "Вес нетто (ориг.)", netWeightArticle, articleSku, 1);
-        netWeightArticleSize = LM.addDProp(intraAttributeGroup, "netWeightArticleSize", "Вес нетто размера", DoubleClass.instance, article, sizeSupplier);
+        netWeightArticle = addDProp(supplierAttributeGroup, "netWeightArticle", "Вес нетто (ориг.)", DoubleClass.instance, article);
+        netWeightArticleSku = addJProp(intraAttributeGroup, "netWeightArticleSku", "Вес нетто (ориг.)", netWeightArticle, articleSku, 1);
+        netWeightArticleSize = addDProp(intraAttributeGroup, "netWeightArticleSize", "Вес нетто размера", DoubleClass.instance, article, sizeSupplier);
 
-        netWeightDataSku = LM.addDProp(intraAttributeGroup, "netWeightDataSku", "Вес нетто", DoubleClass.instance, sku);
-        netWeightArticleSizeSku = LM.addJProp(intraAttributeGroup, true, "netWeightArticleSizeSku", "Вес нетто", netWeightArticleSize, articleSku, 1, sizeSupplierItem, 1);
-        netWeightSku = LM.addSUProp(intraAttributeGroup, "netWeightSku", "Вес нетто", Union.OVERRIDE, netWeightArticleSku, netWeightArticleSizeSku);
+        netWeightDataSku = addDProp(intraAttributeGroup, "netWeightDataSku", "Вес нетто", DoubleClass.instance, sku);
+        netWeightArticleSizeSku = addJProp(intraAttributeGroup, true, "netWeightArticleSizeSku", "Вес нетто", netWeightArticleSize, articleSku, 1, sizeSupplierItem, 1);
+        netWeightSku = addSUProp(intraAttributeGroup, "netWeightSku", "Вес нетто", Union.OVERRIDE, netWeightArticleSku, netWeightArticleSizeSku);
 
         // Country
-        countrySupplierOfOriginArticle = LM.addDProp(LM.idGroup, "countrySupplierOfOriginArticle", "Страна происхождения (ИД)", countrySupplier, article);
-        nameCountrySupplierOfOriginArticle = LM.addJProp(supplierAttributeGroup, "nameCountrySupplierOfOriginArticle", "Страна происхождения (ориг.)", LM.name, countrySupplierOfOriginArticle, 1);
+        countrySupplierOfOriginArticle = addDProp(idGroup, "countrySupplierOfOriginArticle", "Страна происхождения (ИД)", countrySupplier, article);
+        nameCountrySupplierOfOriginArticle = addJProp(supplierAttributeGroup, "nameCountrySupplierOfOriginArticle", "Страна происхождения (ориг.)", baseLM.name, countrySupplierOfOriginArticle, 1);
 
-        countrySupplierOfOriginArticleSku = LM.addJProp(LM.idGroup, "countrySupplierOfOriginArticleSku", "Страна происхождения (ИД)", countrySupplierOfOriginArticle, articleSku, 1);
-        nameCountrySupplierOfOriginArticleSku = LM.addJProp(supplierAttributeGroup, "nameCountrySupplierOfOriginArticleSku", "Страна происхождения (ориг.)", LM.name, countrySupplierOfOriginArticleSku, 1);
+        countrySupplierOfOriginArticleSku = addJProp(idGroup, "countrySupplierOfOriginArticleSku", "Страна происхождения (ИД)", countrySupplierOfOriginArticle, articleSku, 1);
+        nameCountrySupplierOfOriginArticleSku = addJProp(supplierAttributeGroup, "nameCountrySupplierOfOriginArticleSku", "Страна происхождения (ориг.)", baseLM.name, countrySupplierOfOriginArticleSku, 1);
 
-        countryOfOriginArticle = LM.addJProp(LM.idGroup, "countryOfOriginArticle", "Страна происхождения (ИД)", countryCountrySupplier, countrySupplierOfOriginArticle, 1);
-        nameCountryOfOriginArticle = LM.addJProp(supplierAttributeGroup, "nameCountryOfOriginArticle", "Страна происхождения", nameOriginCountry, countryOfOriginArticle, 1);
+        countryOfOriginArticle = addJProp(idGroup, "countryOfOriginArticle", "Страна происхождения (ИД)", countryCountrySupplier, countrySupplierOfOriginArticle, 1);
+        nameCountryOfOriginArticle = addJProp(supplierAttributeGroup, "nameCountryOfOriginArticle", "Страна происхождения", nameOriginCountry, countryOfOriginArticle, 1);
 
-        countryOfOriginArticleSku = LM.addJProp(LM.idGroup, "countryOfOriginArticleSku", "Страна происхождения (ИД)", countryOfOriginArticle, articleSku, 1);
-        nameCountryOfOriginArticleSku = LM.addJProp(supplierAttributeGroup, "nameCountryOfOriginArticleSku", "Страна происхождения", nameOriginCountry, countryOfOriginArticleSku, 1);
+        countryOfOriginArticleSku = addJProp(idGroup, "countryOfOriginArticleSku", "Страна происхождения (ИД)", countryOfOriginArticle, articleSku, 1);
+        nameCountryOfOriginArticleSku = addJProp(supplierAttributeGroup, "nameCountryOfOriginArticleSku", "Страна происхождения", nameOriginCountry, countryOfOriginArticleSku, 1);
 
-        countryOfOriginArticleColor = LM.addDProp(LM.idGroup, "countryOfOriginArticleColor", "Страна происхождения (ИД)", LM.country, article, colorSupplier);
-        countryOfOriginArticleColorSku = LM.addJProp(LM.idGroup, true, "countryOfOriginArticleColorSku", "Страна происхождения (ИД)", countryOfOriginArticleColor, articleSku, 1, colorSupplierItem, 1);
+        countryOfOriginArticleColor = addDProp(idGroup, "countryOfOriginArticleColor", "Страна происхождения (ИД)", baseLM.country, article, colorSupplier);
+        countryOfOriginArticleColorSku = addJProp(idGroup, true, "countryOfOriginArticleColorSku", "Страна происхождения (ИД)", countryOfOriginArticleColor, articleSku, 1, colorSupplierItem, 1);
 
-        countryOfOriginDataSku = LM.addDProp(LM.idGroup, "countryOfOriginDataSku", "Страна происхождения (ИД) (первичное)", LM.country, sku);
+        countryOfOriginDataSku = addDProp(idGroup, "countryOfOriginDataSku", "Страна происхождения (ИД) (первичное)", baseLM.country, sku);
 
-        countryOfOriginSku = LM.addSUProp(LM.idGroup, "countryOfOriginSku", true, "Страна происхождения (ИД)", Union.OVERRIDE, countryOfOriginArticleSku, countryOfOriginArticleColorSku);
+        countryOfOriginSku = addSUProp(idGroup, "countryOfOriginSku", true, "Страна происхождения (ИД)", Union.OVERRIDE, countryOfOriginArticleSku, countryOfOriginArticleColorSku);
 
-        nameCountryOfOriginSku = LM.addJProp(intraAttributeGroup, "nameCountryOfOriginSku", "Страна происхождения", nameOriginCountry, countryOfOriginSku, 1);
-        nameCountrySku = LM.addJProp(intraAttributeGroup, "nameCountrySku", "Страна происхождения", LM.name, countryOfOriginSku, 1);
+        nameCountryOfOriginSku = addJProp(intraAttributeGroup, "nameCountryOfOriginSku", "Страна происхождения", nameOriginCountry, countryOfOriginSku, 1);
+        nameCountrySku = addJProp(intraAttributeGroup, "nameCountrySku", "Страна происхождения", baseLM.name, countryOfOriginSku, 1);
 
-        LM.addConstraint(LM.addJProp("Поставщик артикула должен соответствовать поставщику страны артикула", LM.diff2,
-                supplierArticle, 1, LM.addJProp(supplierCountrySupplier, countrySupplierOfOriginArticle, 1), 1), true);
+        addConstraint(addJProp("Поставщик артикула должен соответствовать поставщику страны артикула", baseLM.diff2,
+                supplierArticle, 1, addJProp(supplierCountrySupplier, countrySupplierOfOriginArticle, 1), 1), true);
 
         // Composition
-        mainCompositionOriginArticle = LM.addDProp(supplierAttributeGroup, "mainCompositionOriginArticle", "Состав", COMPOSITION_CLASS, article);
-        additionalCompositionOriginArticle = LM.addDProp(supplierAttributeGroup, "additionalCompositionOriginArticle", "Доп. состав", COMPOSITION_CLASS, article);
+        mainCompositionOriginArticle = addDProp(supplierAttributeGroup, "mainCompositionOriginArticle", "Состав", COMPOSITION_CLASS, article);
+        additionalCompositionOriginArticle = addDProp(supplierAttributeGroup, "additionalCompositionOriginArticle", "Доп. состав", COMPOSITION_CLASS, article);
 
-        mainCompositionOriginArticleSku = LM.addJProp(supplierAttributeGroup, "mainCompositionOriginArticleSku", "Состав", mainCompositionOriginArticle, articleSku, 1);
-        additionalCompositionOriginArticleSku = LM.addJProp(supplierAttributeGroup, "additionalCompositionOriginArticleSku", "Доп. состав", additionalCompositionOriginArticle, articleSku, 1);
+        mainCompositionOriginArticleSku = addJProp(supplierAttributeGroup, "mainCompositionOriginArticleSku", "Состав", mainCompositionOriginArticle, articleSku, 1);
+        additionalCompositionOriginArticleSku = addJProp(supplierAttributeGroup, "additionalCompositionOriginArticleSku", "Доп. состав", additionalCompositionOriginArticle, articleSku, 1);
 
-        mainCompositionOriginArticleColor = LM.addDProp(supplierAttributeGroup, "mainCompositionOriginArticleColor", "Состав", COMPOSITION_CLASS, article, colorSupplier);
-        additionalCompositionOriginArticleColor = LM.addDProp(supplierAttributeGroup, "additionalCompositionOriginArticleColor", "Доп. состав", COMPOSITION_CLASS, article, colorSupplier);
+        mainCompositionOriginArticleColor = addDProp(supplierAttributeGroup, "mainCompositionOriginArticleColor", "Состав", COMPOSITION_CLASS, article, colorSupplier);
+        additionalCompositionOriginArticleColor = addDProp(supplierAttributeGroup, "additionalCompositionOriginArticleColor", "Доп. состав", COMPOSITION_CLASS, article, colorSupplier);
 
-        mainCompositionOriginArticleColorSku = LM.addJProp(supplierAttributeGroup, true, "mainCompositionOriginArticleColorSku", "Состав", mainCompositionOriginArticleColor, articleSku, 1, colorSupplierItem, 1);
-        additionalCompositionOriginArticleColorSku = LM.addJProp(supplierAttributeGroup, true, "additionalCompositionOriginArticleColorSku", "Доп. состав", additionalCompositionOriginArticleColor, articleSku, 1, colorSupplierItem, 1);
+        mainCompositionOriginArticleColorSku = addJProp(supplierAttributeGroup, true, "mainCompositionOriginArticleColorSku", "Состав", mainCompositionOriginArticleColor, articleSku, 1, colorSupplierItem, 1);
+        additionalCompositionOriginArticleColorSku = addJProp(supplierAttributeGroup, true, "additionalCompositionOriginArticleColorSku", "Доп. состав", additionalCompositionOriginArticleColor, articleSku, 1, colorSupplierItem, 1);
 
-        mainCompositionOriginDataSku = LM.addDProp(intraAttributeGroup, "mainCompositionOriginDataSku", "Состав", COMPOSITION_CLASS, sku);
-        additionalCompositionOriginDataSku = LM.addDProp(intraAttributeGroup, "additionalCompositionOriginDataSku", "Доп. состав", COMPOSITION_CLASS, sku);
+        mainCompositionOriginDataSku = addDProp(intraAttributeGroup, "mainCompositionOriginDataSku", "Состав", COMPOSITION_CLASS, sku);
+        additionalCompositionOriginDataSku = addDProp(intraAttributeGroup, "additionalCompositionOriginDataSku", "Доп. состав", COMPOSITION_CLASS, sku);
 
-        mainCompositionOriginSku = LM.addSUProp(intraAttributeGroup, "mainCompositionOriginSku", true, "Состав", Union.OVERRIDE, mainCompositionOriginArticleSku, mainCompositionOriginArticleColorSku);
-        additionalCompositionOriginSku = LM.addSUProp(intraAttributeGroup, "additionalCompositionOriginSku", "Доп. состав", Union.OVERRIDE, additionalCompositionOriginArticleSku, additionalCompositionOriginArticleColorSku);
+        mainCompositionOriginSku = addSUProp(intraAttributeGroup, "mainCompositionOriginSku", true, "Состав", Union.OVERRIDE, mainCompositionOriginArticleSku, mainCompositionOriginArticleColorSku);
+        additionalCompositionOriginSku = addSUProp(intraAttributeGroup, "additionalCompositionOriginSku", "Доп. состав", Union.OVERRIDE, additionalCompositionOriginArticleSku, additionalCompositionOriginArticleColorSku);
 
-        mainCompositionArticle = LM.addDProp(intraAttributeGroup, "mainCompositionArticle", "Состав (перевод)", COMPOSITION_CLASS, article);
-        additionalCompositionArticle = LM.addDProp(intraAttributeGroup, "additionalCompositionArticle", "Доп. состав (перевод)", COMPOSITION_CLASS, article);
+        mainCompositionArticle = addDProp(intraAttributeGroup, "mainCompositionArticle", "Состав (перевод)", COMPOSITION_CLASS, article);
+        additionalCompositionArticle = addDProp(intraAttributeGroup, "additionalCompositionArticle", "Доп. состав (перевод)", COMPOSITION_CLASS, article);
 
-        mainCompositionSku = LM.addDProp(intraAttributeGroup, "mainCompositionSku", "Состав (перевод)", COMPOSITION_CLASS, sku);
-        additionalCompositionSku = LM.addDProp(intraAttributeGroup, "additionalCompositionSku", "Доп. состав (перевод)", COMPOSITION_CLASS, sku);
+        mainCompositionSku = addDProp(intraAttributeGroup, "mainCompositionSku", "Состав (перевод)", COMPOSITION_CLASS, sku);
+        additionalCompositionSku = addDProp(intraAttributeGroup, "additionalCompositionSku", "Доп. состав (перевод)", COMPOSITION_CLASS, sku);
 
-        substring10 = LM.addSFProp("substring(prm1,1,10)", StringClass.get(10), 1);
-        substring10s13 = LM.addJProp(LM.and1, substring10, 1, LM.is(StringClass.get(13)), 1);
+        substring10 = addSFProp("substring(prm1,1,10)", StringClass.get(10), 1);
+        substring10s13 = addJProp(baseLM.and1, substring10, 1, is(StringClass.get(13)), 1);
 
-        barcode10 = LM.addJProp("barcode10", "Штрих-код(10)", substring10, LM.barcode, 1);
-        skuJennyferBarcode10 = LM.addMGProp("skuJennyferBarcode10", "Товар (ИД)", LM.addJProp(LM.and1, LM.object(sku), 1, LM.addJProp(LM.is(jennyferSupplier), supplierArticleSku, 1), 1),
+        barcode10 = addJProp("barcode10", "Штрих-код(10)", substring10, baseLM.barcode, 1);
+        skuJennyferBarcode10 = addMGProp("skuJennyferBarcode10", "Товар (ИД)", addJProp(baseLM.and1, object(sku), 1, addJProp(is(jennyferSupplier), supplierArticleSku, 1), 1),
                 barcode10, 1);
-        skuJennyferBarcode = LM.addJProp("skuJennyferBarcode", "Товар (ИД)", skuJennyferBarcode10, substring10s13, 1);
+        skuJennyferBarcode = addJProp("skuJennyferBarcode", "Товар (ИД)", skuJennyferBarcode10, substring10s13, 1);
 
-        skuBarcodeObject = LM.addSUProp(Union.OVERRIDE, LM.barcodeToObject, skuJennyferBarcode);
+        skuBarcodeObject = addSUProp(Union.OVERRIDE, baseLM.barcodeToObject, skuJennyferBarcode);
 
-        sidDocument = LM.addDProp(LM.baseGroup, "sidDocument", "Код документа", StringClass.get(50), document);
-        documentSIDSupplier = LM.addAGProp(LM.idGroup, "documentSIDSupplier", "Документ поставщика (ИД)", sidDocument, supplierDocument);
+        sidDocument = addDProp(baseGroup, "sidDocument", "Код документа", StringClass.get(50), document);
+        documentSIDSupplier = addAGProp(idGroup, "documentSIDSupplier", "Документ поставщика (ИД)", sidDocument, supplierDocument);
 
         // коробки
-        sidSupplierBox = LM.addDProp(LM.baseGroup, "sidSupplierBox", "Номер короба", StringClass.get(50), supplierBox);
+        sidSupplierBox = addDProp(baseGroup, "sidSupplierBox", "Номер короба", StringClass.get(50), supplierBox);
 
-        boxInvoiceSupplierBox = LM.addDProp(LM.idGroup, "boxInvoiceSupplierBox", "Документ по коробам (ИД)", boxInvoice, supplierBox);
-        LM.setNotNull(boxInvoiceSupplierBox);
+        boxInvoiceSupplierBox = addDProp(idGroup, "boxInvoiceSupplierBox", "Документ по коробам (ИД)", boxInvoice, supplierBox);
+        setNotNull(boxInvoiceSupplierBox);
 
-        sidBoxInvoiceSupplierBox = LM.addJProp(LM.baseGroup, "sidBoxInvoiceSupplierBox", "Документ по коробам", sidDocument, boxInvoiceSupplierBox, 1);
+        sidBoxInvoiceSupplierBox = addJProp(baseGroup, "sidBoxInvoiceSupplierBox", "Документ по коробам", sidDocument, boxInvoiceSupplierBox, 1);
 
-        destinationSupplierBox = LM.addJProp(LM.idGroup, "destinationSupplierBox", "Пункт назначения (ИД)", destinationDestinationDocument, boxInvoiceSupplierBox, 1);
-        nameDestinationSupplierBox = LM.addJProp(LM.baseGroup, "nameDestinationSupplierBox", "Пункт назначения", LM.name, destinationSupplierBox, 1);
+        destinationSupplierBox = addJProp(idGroup, "destinationSupplierBox", "Пункт назначения (ИД)", destinationDestinationDocument, boxInvoiceSupplierBox, 1);
+        nameDestinationSupplierBox = addJProp(baseGroup, "nameDestinationSupplierBox", "Пункт назначения", baseLM.name, destinationSupplierBox, 1);
 
-        supplierSupplierBox = LM.addJProp(LM.idGroup, "supplierSupplierBox", "Поставщик (ИД)", supplierDocument, boxInvoiceSupplierBox, 1);
+        supplierSupplierBox = addJProp(idGroup, "supplierSupplierBox", "Поставщик (ИД)", supplierDocument, boxInvoiceSupplierBox, 1);
 
-        supplierBoxSIDSupplier = LM.addAGProp(LM.idGroup, "supplierBoxSIDSupplier", "Короб поставщика (ИД)", sidSupplierBox, supplierSupplierBox);
+        supplierBoxSIDSupplier = addAGProp(idGroup, "supplierBoxSIDSupplier", "Короб поставщика (ИД)", sidSupplierBox, supplierSupplierBox);
 
-        seekSupplierBoxSIDSupplier = LM.addJProp(true, "Поиск короба поставщика", LM.addSAProp(null), supplierBoxSIDSupplier, 1, 2);
+        seekSupplierBoxSIDSupplier = addJProp(true, "Поиск короба поставщика", addSAProp(null), supplierBoxSIDSupplier, 1, 2);
 
         // заказ по артикулам
-        documentList = LM.addCUProp(LM.idGroup, "documentList", "Документ (ИД)", LM.object(order), LM.object(simpleInvoice), boxInvoiceSupplierBox);
-        supplierList = LM.addJProp(LM.idGroup, "supplierList", "Поставщик (ИД)", supplierDocument, documentList, 1);
+        documentList = addCUProp(idGroup, "documentList", "Документ (ИД)", object(order), object(simpleInvoice), boxInvoiceSupplierBox);
+        supplierList = addJProp(idGroup, "supplierList", "Поставщик (ИД)", supplierDocument, documentList, 1);
 
-        articleSIDList = LM.addJProp(LM.idGroup, "articleSIDList", "Артикул (ИД)", articleSIDSupplier, 1, supplierList, 2);
+        articleSIDList = addJProp(idGroup, "articleSIDList", "Артикул (ИД)", articleSIDSupplier, 1, supplierList, 2);
 
-        numberListArticle = LM.addDProp(LM.baseGroup, "numberListArticle", "Номер", IntegerClass.instance, list, article);
-        numberListSIDArticle = LM.addJProp(numberListArticle, 1, articleSIDList, 2, 1);
+        numberListArticle = addDProp(baseGroup, "numberListArticle", "Номер", IntegerClass.instance, list, article);
+        numberListSIDArticle = addJProp(numberListArticle, 1, articleSIDList, 2, 1);
 
-        numberDataListSku = LM.addDProp(LM.baseGroup, "numberDataListSku", "Номер", IntegerClass.instance, list, sku);
-        numberArticleListSku = LM.addJProp(LM.baseGroup, "numberArticleListSku", "Номер (артикула)", numberListArticle, 1, articleSku, 2);
+        numberDataListSku = addDProp(baseGroup, "numberDataListSku", "Номер", IntegerClass.instance, list, sku);
+        numberArticleListSku = addJProp(baseGroup, "numberArticleListSku", "Номер (артикула)", numberListArticle, 1, articleSku, 2);
 
-        numberListSku = LM.addSUProp("numberListSku", "Номер", Union.OVERRIDE, numberArticleListSku, numberDataListSku);
+        numberListSku = addSUProp("numberListSku", "Номер", Union.OVERRIDE, numberArticleListSku, numberDataListSku);
 
-        numberDocumentArticle = LM.addSGProp(LM.baseGroup, "inDocumentArticle", numberListArticle, documentList, 1, 2);
+        numberDocumentArticle = addSGProp(baseGroup, "inDocumentArticle", numberListArticle, documentList, 1, 2);
 
-        incrementNumberListSID = LM.addJProp(true, "Добавить строку", LM.andNot1,
-                LM.addJProp(true, LM.addIAProp(numberListArticle, 1),
+        incrementNumberListSID = addJProp(true, "Добавить строку", baseLM.andNot1,
+                addJProp(true, addIAProp(numberListArticle, 1),
                         1, articleSIDList, 2, 1), 1, 2,
                 numberListSIDArticle, 1, 2); // если еще не было добавлено такой строки
 
         //price and catalog (pricat)
-        barcodePricat = LM.addDProp(LM.baseGroup, "barcodePricat", "Штрих-код", StringClass.get(13), pricat);
-        articleNumberPricat = LM.addDProp(LM.baseGroup, "articleNumberPricat", "Артикул", StringClass.get(20), pricat);
-        customCategoryOriginalPricat = LM.addDProp(LM.baseGroup, "customCategoryOriginalPricat", "Код ЕС (10)", StringClass.get(10), pricat);
-        colorCodePricat = LM.addDProp(LM.baseGroup, "colorCodePricat", "Код цвета", StringClass.get(20), pricat);
-        colorNamePricat = LM.addDProp(LM.baseGroup, "colorNamePricat", "Цвет", StringClass.get(50), pricat);
-        sizePricat = LM.addDProp(LM.baseGroup, "sizePricat", "Размер", StringClass.get(5), pricat);
-        originalNamePricat = LM.addDProp(LM.baseGroup, "originalNamePricat", "Наименование (ориг.)", StringClass.get(50), pricat);
-        countryPricat = LM.addDProp(LM.baseGroup, "countryPricat", "Страна происхождения", StringClass.get(20), pricat);
-        netWeightPricat = LM.addDProp(LM.baseGroup, "netWeightPricat", "Вес нетто", DoubleClass.instance, pricat);
-        compositionPricat = LM.addDProp(LM.baseGroup, "compositionPricat", "Состав", StringClass.get(50), pricat);
-        pricePricat = LM.addDProp(LM.baseGroup, "pricePricat", "Цена", DoubleClass.instance, pricat);
-        rrpPricat = LM.addDProp(LM.baseGroup, "RRP", "Рекомендованная цена", DoubleClass.instance, pricat);
-        supplierPricat = LM.addDProp("supplierPricat", "Поставщик", supplier, pricat);
-        barcodeToPricat = LM.addAGProp("barcodeToPricat", "штрих-код", barcodePricat);
-        importPricatSupplier = LM.addProperty(null, new LP<ClassPropertyInterface>(new PricatEDIImportActionProperty(LM.genSID(), this, supplier)));
-        hugoBossImportPricat = LM.addProperty(null, new LP<ClassPropertyInterface>(new HugoBossPricatCSVImportActionProperty(LM.genSID(), this, hugoBossSupplier)));
+        barcodePricat = addDProp(baseGroup, "barcodePricat", "Штрих-код", StringClass.get(13), pricat);
+        articleNumberPricat = addDProp(baseGroup, "articleNumberPricat", "Артикул", StringClass.get(20), pricat);
+        customCategoryOriginalPricat = addDProp(baseGroup, "customCategoryOriginalPricat", "Код ЕС (10)", StringClass.get(10), pricat);
+        colorCodePricat = addDProp(baseGroup, "colorCodePricat", "Код цвета", StringClass.get(20), pricat);
+        colorNamePricat = addDProp(baseGroup, "colorNamePricat", "Цвет", StringClass.get(50), pricat);
+        sizePricat = addDProp(baseGroup, "sizePricat", "Размер", StringClass.get(5), pricat);
+        originalNamePricat = addDProp(baseGroup, "originalNamePricat", "Наименование (ориг.)", StringClass.get(50), pricat);
+        countryPricat = addDProp(baseGroup, "countryPricat", "Страна происхождения", StringClass.get(20), pricat);
+        netWeightPricat = addDProp(baseGroup, "netWeightPricat", "Вес нетто", DoubleClass.instance, pricat);
+        compositionPricat = addDProp(baseGroup, "compositionPricat", "Состав", StringClass.get(50), pricat);
+        pricePricat = addDProp(baseGroup, "pricePricat", "Цена", DoubleClass.instance, pricat);
+        rrpPricat = addDProp(baseGroup, "RRP", "Рекомендованная цена", DoubleClass.instance, pricat);
+        supplierPricat = addDProp("supplierPricat", "Поставщик", supplier, pricat);
+        barcodeToPricat = addAGProp("barcodeToPricat", "штрих-код", barcodePricat);
+        importPricatSupplier = addProperty(null, new LP<ClassPropertyInterface>(new PricatEDIImportActionProperty(genSID(), this, supplier)));
+        hugoBossImportPricat = addProperty(null, new LP<ClassPropertyInterface>(new HugoBossPricatCSVImportActionProperty(genSID(), this, hugoBossSupplier)));
 
         // кол-во заказа
-        quantityDataListSku = LM.addDProp("quantityDataListSku", "Кол-во (первичное)", DoubleClass.instance, list, sku);
-        quantityListSku = quantityDataListSku; //LM.addJProp(LM.baseGroup, "quantityListSku", true, "Кол-во", LM.and1, quantityDataListSku, 1, 2, numberListSku, 1, 2);
+        quantityDataListSku = addDProp("quantityDataListSku", "Кол-во (первичное)", DoubleClass.instance, list, sku);
+        quantityListSku = quantityDataListSku; //addJProp(baseGroup, "quantityListSku", true, "Кол-во", baseLM.and1, quantityDataListSku, 1, 2, numberListSku, 1, 2);
 
-        quantityDocumentSku = LM.addSGProp(LM.baseGroup, "quantityDocumentSku", true, "Кол-во в документе", quantityListSku, documentList, 1, 2);
-        quantityDocumentArticle = LM.addSGProp(LM.baseGroup, "quantityDocumentArticle", "Кол-во артикула в документе", quantityDocumentSku, 1, articleSku, 2);
-        quantityDocument = LM.addSGProp(LM.baseGroup, "quantityDocument", "Общее кол-во в документе", quantityDocumentSku, 1);
+        quantityDocumentSku = addSGProp(baseGroup, "quantityDocumentSku", true, "Кол-во в документе", quantityListSku, documentList, 1, 2);
+        quantityDocumentArticle = addSGProp(baseGroup, "quantityDocumentArticle", "Кол-во артикула в документе", quantityDocumentSku, 1, articleSku, 2);
+        quantityDocument = addSGProp(baseGroup, "quantityDocument", "Общее кол-во в документе", quantityDocumentSku, 1);
 
         // связь инвойсов и заказов
-        inOrderInvoice = LM.addDProp(LM.baseGroup, "inOrderInvoice", "Вкл", LogicalClass.instance, order, invoice);
+        inOrderInvoice = addDProp(baseGroup, "inOrderInvoice", "Вкл", LogicalClass.instance, order, invoice);
 
-        LM.addConstraint(LM.addJProp("Магазин инвойса должен совпадать с магазином заказа", LM.and1,
-                LM.addJProp(LM.diff2, destinationDestinationDocument, 1, destinationDestinationDocument, 2), 1, 2,
+        addConstraint(addJProp("Магазин инвойса должен совпадать с магазином заказа", baseLM.and1,
+                addJProp(baseLM.diff2, destinationDestinationDocument, 1, destinationDestinationDocument, 2), 1, 2,
                 inOrderInvoice, 1, 2), true);
 
-        orderedOrderInvoiceSku = LM.addJProp(LM.and1, quantityDocumentSku, 1, 3, inOrderInvoice, 1, 2);
+        orderedOrderInvoiceSku = addJProp(baseLM.and1, quantityDocumentSku, 1, 3, inOrderInvoice, 1, 2);
 
-        orderedInvoiceSku = LM.addSGProp(LM.baseGroup, "orderedInvoiceSku", "Кол-во заказано", orderedOrderInvoiceSku, 2, 3);
-        orderedSimpleInvoiceSku = LM.addJProp(LM.baseGroup, "orderedSimpleInvoiceSku", "Кол-во заказано", LM.and1, orderedInvoiceSku, 1, 2, LM.is(simpleInvoice), 1);
+        orderedInvoiceSku = addSGProp(baseGroup, "orderedInvoiceSku", "Кол-во заказано", orderedOrderInvoiceSku, 2, 3);
+        orderedSimpleInvoiceSku = addJProp(baseGroup, "orderedSimpleInvoiceSku", "Кол-во заказано", baseLM.and1, orderedInvoiceSku, 1, 2, is(simpleInvoice), 1);
         // здесь на самом деле есть ограничение, что supplierBox ссылается именно на invoice
-        orderedSupplierBoxSku = LM.addJProp("orderedSupplierBoxSku", "Кол-во заказано", orderedInvoiceSku, boxInvoiceSupplierBox, 1, 2);
+        orderedSupplierBoxSku = addJProp("orderedSupplierBoxSku", "Кол-во заказано", orderedInvoiceSku, boxInvoiceSupplierBox, 1, 2);
 
 
         // todo : переделать на PGProp, здесь надо derive'ить, иначе могут быть проблемы с расписыванием
         // если включаешь, то начинает тормозить изменение количества в заказах
-//        quantityOrderInvoiceSku = addPGProp(LM.baseGroup, "quantityOrderInvoiceSku", true, 0, "Кол-во по заказу/инвойсу (расч.)",
+//        quantityOrderInvoiceSku = addPGProp(baseGroup, "quantityOrderInvoiceSku", true, 0, "Кол-во по заказу/инвойсу (расч.)",
 //                orderedOrderInvoiceSku,
 //                quantityDocumentSku, 2, 3);
 
-        quantityOrderInvoiceSku = LM.addDProp(LM.baseGroup, "quantityOrderInvoiceSku", "Кол-во по заказу/инвойсу (расч.)", DoubleClass.instance,
+        quantityOrderInvoiceSku = addDProp(baseGroup, "quantityOrderInvoiceSku", "Кол-во по заказу/инвойсу (расч.)", DoubleClass.instance,
                 order, invoice, sku);
 
-        invoicedOrderSku = LM.addSGProp(LM.baseGroup, "invoicedOrderSku", "Выставлено инвойсов", quantityOrderInvoiceSku, 1, 3);
+        invoicedOrderSku = addSGProp(baseGroup, "invoicedOrderSku", "Выставлено инвойсов", quantityOrderInvoiceSku, 1, 3);
 
         // todo : не работает на инвойсе/простом товаре
-        quantityListArticle = LM.addDGProp(LM.baseGroup, "quantityListArticle", "Кол-во",
+        quantityListArticle = addDGProp(baseGroup, "quantityListArticle", "Кол-во",
                 1, false, // кол-во объектов для порядка и ascending/descending
                 quantityListSku, 1, articleSku, 2,
-                LM.addCUProp(LM.addCProp(DoubleClass.instance, Double.MAX_VALUE, list, articleSingle),
-                        LM.addCProp(DoubleClass.instance, Double.MAX_VALUE, order, item),
-                        LM.addJProp(LM.and1, orderedSimpleInvoiceSku, 1, 2, LM.is(item), 2), // если не артикул (простой), то пропорционально заказано
-                        LM.addJProp(LM.and1, orderedSupplierBoxSku, 1, 2, LM.is(item), 2)), 1, 2, // ограничение (максимально-возможное число)
+                addCUProp(addCProp(DoubleClass.instance, Double.MAX_VALUE, list, articleSingle),
+                        addCProp(DoubleClass.instance, Double.MAX_VALUE, order, item),
+                        addJProp(baseLM.and1, orderedSimpleInvoiceSku, 1, 2, is(item), 2), // если не артикул (простой), то пропорционально заказано
+                        addJProp(baseLM.and1, orderedSupplierBoxSku, 1, 2, is(item), 2)), 1, 2, // ограничение (максимально-возможное число)
                 2);
 
-        quantityDocumentArticleCompositeColor = LM.addSGProp(LM.baseGroup, "quantityDocumentArticleCompositeColor", "Кол-во", quantityDocumentSku, 1, articleCompositeItem, 2, colorSupplierItem, 2);
-        quantityDocumentArticleCompositeSize = LM.addSGProp(LM.baseGroup, "quantityDocumentArticleCompositeSize", "Кол-во", quantityDocumentSku, 1, articleCompositeItem, 2, sizeSupplierItem, 2);
+        quantityDocumentArticleCompositeColor = addSGProp(baseGroup, "quantityDocumentArticleCompositeColor", "Кол-во", quantityDocumentSku, 1, articleCompositeItem, 2, colorSupplierItem, 2);
+        quantityDocumentArticleCompositeSize = addSGProp(baseGroup, "quantityDocumentArticleCompositeSize", "Кол-во", quantityDocumentSku, 1, articleCompositeItem, 2, sizeSupplierItem, 2);
 
-        quantityDocumentArticleCompositeColorSize = LM.addDGProp(LM.baseGroup, "quantityDocumentArticleCompositeColorSize", "Кол-во",
+        quantityDocumentArticleCompositeColorSize = addDGProp(baseGroup, "quantityDocumentArticleCompositeColorSize", "Кол-во",
                 1, false,
                 quantityDocumentSku, 1, articleCompositeItem, 2, colorSupplierItem, 2, sizeSupplierItem, 2,
-                LM.addCProp(DoubleClass.instance, Double.MAX_VALUE, document, sku), 1, 2,
+                addCProp(DoubleClass.instance, Double.MAX_VALUE, document, sku), 1, 2,
                 2);
         quantityDocumentArticleCompositeColorSize.property.setFixedCharWidth(2);
 
-        orderedOrderInvoiceArticle = LM.addJProp(LM.and1, quantityListArticle, 1, 3, inOrderInvoice, 1, 2);
+        orderedOrderInvoiceArticle = addJProp(baseLM.and1, quantityListArticle, 1, 3, inOrderInvoice, 1, 2);
 
-        orderedInvoiceArticle = LM.addSGProp(LM.baseGroup, "orderedInvoiceArticle", "Кол-во заказано", orderedOrderInvoiceArticle, 2, 3);
+        orderedInvoiceArticle = addSGProp(baseGroup, "orderedInvoiceArticle", "Кол-во заказано", orderedOrderInvoiceArticle, 2, 3);
         // todo : сделать, чтобы работало автоматическое проставление
 //        quantityListArticle.setDerivedForcedChange(orderedInvoiceArticle, 1, 2, numberListArticle, 1, 2);
 
-        invoicedOrderArticle = LM.addSGProp(LM.baseGroup, "invoicedOrderArticle", "Выставлено инвойсов", invoicedOrderSku, 1, articleSku, 2);
+        invoicedOrderArticle = addSGProp(baseGroup, "invoicedOrderArticle", "Выставлено инвойсов", invoicedOrderSku, 1, articleSku, 2);
 
         // цены
-        priceDocumentArticle = LM.addDProp(LM.baseGroup, "priceDocumentArticle", "Цена", DoubleClass.instance, priceDocument, article);
-        priceDataDocumentItem = LM.addDProp(LM.baseGroup, "priceDataDocumentItem", "Цена по товару", DoubleClass.instance, priceDocument, item);
-        priceArticleDocumentSku = LM.addJProp(LM.baseGroup, "priceArticleDocumentItem", "Цена по артикулу", priceDocumentArticle, 1, articleSku, 2);
-        priceDocumentSku = LM.addSUProp(LM.baseGroup, "priceDocumentSku", true, "Цена", Union.OVERRIDE, priceArticleDocumentSku, priceDataDocumentItem);
+        priceDocumentArticle = addDProp(baseGroup, "priceDocumentArticle", "Цена", DoubleClass.instance, priceDocument, article);
+        priceDataDocumentItem = addDProp(baseGroup, "priceDataDocumentItem", "Цена по товару", DoubleClass.instance, priceDocument, item);
+        priceArticleDocumentSku = addJProp(baseGroup, "priceArticleDocumentItem", "Цена по артикулу", priceDocumentArticle, 1, articleSku, 2);
+        priceDocumentSku = addSUProp(baseGroup, "priceDocumentSku", true, "Цена", Union.OVERRIDE, priceArticleDocumentSku, priceDataDocumentItem);
 
-        priceRateDocumentSku = LM.addJProp(LM.baseGroup, "priceRateDocumentSku", true, "Цена (конверт.)", round2, LM.addJProp(LM.multiplyDouble2, priceDocumentSku, 1, 2, LM.addJProp(nearestRateExchange, typeExchangeSTX, currencyDocument, 1, 1), 1), 1, 2);
+        priceRateDocumentSku = addJProp(baseGroup, "priceRateDocumentSku", true, "Цена (конверт.)", round2, addJProp(baseLM.multiplyDouble2, priceDocumentSku, 1, 2, addJProp(nearestRateExchange, typeExchangeSTX, currencyDocument, 1, 1), 1), 1, 2);
 
-        RRPDocumentArticle = LM.addDProp(LM.baseGroup, "RRPDocumentArticle", "Рекомендованная цена", DoubleClass.instance, priceDocument, article);
+        RRPDocumentArticle = addDProp(baseGroup, "RRPDocumentArticle", "Рекомендованная цена", DoubleClass.instance, priceDocument, article);
 
-        priceSupplierBoxSku = LM.addJProp(LM.baseGroup, "priceSupplierBoxSku", "Цена", priceDocumentSku, boxInvoiceSupplierBox, 1, 2);
+        priceSupplierBoxSku = addJProp(baseGroup, "priceSupplierBoxSku", "Цена", priceDocumentSku, boxInvoiceSupplierBox, 1, 2);
 
-        priceOrderInvoiceArticle = LM.addJProp(LM.and1, priceDocumentArticle, 1, 3, inOrderInvoice, 1, 2);
-        priceOrderedInvoiceArticle = LM.addMGProp(LM.baseGroup, "priceOrderedInvoiceArticle", "Цена в заказе", priceOrderInvoiceArticle, 2, 3);
+        priceOrderInvoiceArticle = addJProp(baseLM.and1, priceDocumentArticle, 1, 3, inOrderInvoice, 1, 2);
+        priceOrderedInvoiceArticle = addMGProp(baseGroup, "priceOrderedInvoiceArticle", "Цена в заказе", priceOrderInvoiceArticle, 2, 3);
         // todo : не работает
         priceDocumentArticle.setDerivedForcedChange(priceOrderedInvoiceArticle, 1, 2, numberDocumentArticle, 1, 2);
 
-        sumSupplierBoxSku = LM.addJProp(LM.baseGroup, "sumSupplierBoxSku", "Сумма", LM.multiplyDouble2, quantityListSku, 1, 2, priceSupplierBoxSku, 1, 2);
-        sumDocumentSku = LM.addJProp(LM.baseGroup, "sumDocumentSku", "Сумма", LM.multiplyDouble2, quantityDocumentSku, 1, 2, priceDocumentSku, 1, 2);
+        sumSupplierBoxSku = addJProp(baseGroup, "sumSupplierBoxSku", "Сумма", baseLM.multiplyDouble2, quantityListSku, 1, 2, priceSupplierBoxSku, 1, 2);
+        sumDocumentSku = addJProp(baseGroup, "sumDocumentSku", "Сумма", baseLM.multiplyDouble2, quantityDocumentSku, 1, 2, priceDocumentSku, 1, 2);
 
-        netWeightDocumentArticle = LM.addJProp(LM.baseGroup, "netWeightDocumentArticle", "Общий вес по артикулу", LM.multiplyDouble2, quantityDocumentArticle, 1, 2, netWeightArticle, 2);
-        netWeightDocumentSku = LM.addJProp(LM.baseGroup, "netWeightDocumentSku", "Общий вес по sku", LM.multiplyDouble2, quantityDocumentSku, 1, 2, netWeightSku, 2);
-        netWeightDocument = LM.addSGProp(LM.baseGroup, "netWeightDocument", "Общий вес", netWeightDocumentSku, 1);
+        netWeightDocumentArticle = addJProp(baseGroup, "netWeightDocumentArticle", "Общий вес по артикулу", baseLM.multiplyDouble2, quantityDocumentArticle, 1, 2, netWeightArticle, 2);
+        netWeightDocumentSku = addJProp(baseGroup, "netWeightDocumentSku", "Общий вес по sku", baseLM.multiplyDouble2, quantityDocumentSku, 1, 2, netWeightSku, 2);
+        netWeightDocument = addSGProp(baseGroup, "netWeightDocument", "Общий вес", netWeightDocumentSku, 1);
 
-        sumDocumentArticle = LM.addSGProp(LM.baseGroup, "sumDocumentArticle", "Сумма", sumDocumentSku, 1, articleSku, 2);
-        sumDocument = LM.addSGProp(LM.baseGroup, "sumDocument", "Сумма документа", sumDocumentSku, 1);
+        sumDocumentArticle = addSGProp(baseGroup, "sumDocumentArticle", "Сумма", sumDocumentSku, 1, articleSku, 2);
+        sumDocument = addSGProp(baseGroup, "sumDocument", "Сумма документа", sumDocumentSku, 1);
 
         // route
-        percentShipmentRoute = LM.addDProp(LM.baseGroup, "percentShipmentRoute", "Процент", DoubleClass.instance, shipment, route);
+        percentShipmentRoute = addDProp(baseGroup, "percentShipmentRoute", "Процент", DoubleClass.instance, shipment, route);
 
-        percentShipmentRouteSku = LM.addJProp(LM.baseGroup, "percentShipmentRouteSku", "Процент", LM.and1, percentShipmentRoute, 1, 2, LM.is(sku), 3);
+        percentShipmentRouteSku = addJProp(baseGroup, "percentShipmentRouteSku", "Процент", baseLM.and1, percentShipmentRoute, 1, 2, is(sku), 3);
 
         // creation
-        quantityCreationFreightBox = LM.addDProp(LM.baseGroup, "quantityCreationFreightBox", "Количество", IntegerClass.instance, creationFreightBox);
-        routeCreationFreightBox = LM.addDProp(LM.idGroup, "routeCreationFreightBox", "Маршрут (ИД)", route, creationFreightBox);
-        nameRouteCreationFreightBox = LM.addJProp(LM.baseGroup, "nameRouteCreationFreightBox", "Маршрут", LM.name, routeCreationFreightBox, 1);
+        quantityCreationFreightBox = addDProp(baseGroup, "quantityCreationFreightBox", "Количество", IntegerClass.instance, creationFreightBox);
+        routeCreationFreightBox = addDProp(idGroup, "routeCreationFreightBox", "Маршрут (ИД)", route, creationFreightBox);
+        nameRouteCreationFreightBox = addJProp(baseGroup, "nameRouteCreationFreightBox", "Маршрут", baseLM.name, routeCreationFreightBox, 1);
 
-        quantityCreationPallet = LM.addDProp(LM.baseGroup, "quantityCreationPallet", "Количество", IntegerClass.instance, creationPallet);
-        routeCreationPallet = LM.addDProp(LM.idGroup, "routeCreationPallet", "Маршрут (ИД)", route, creationPallet);
-        nameRouteCreationPallet = LM.addJProp(LM.baseGroup, "nameRouteCreationPallet", "Маршрут", LM.name, routeCreationPallet, 1);
+        quantityCreationPallet = addDProp(baseGroup, "quantityCreationPallet", "Количество", IntegerClass.instance, creationPallet);
+        routeCreationPallet = addDProp(idGroup, "routeCreationPallet", "Маршрут (ИД)", route, creationPallet);
+        nameRouteCreationPallet = addJProp(baseGroup, "nameRouteCreationPallet", "Маршрут", baseLM.name, routeCreationPallet, 1);
 
         // паллеты
-        creationPalletPallet = LM.addDProp(LM.idGroup, "creationPalletPallet", "Операция (ИД)", creationPallet, pallet);
-        routeCreationPalletPallet = LM.addJProp(LM.idGroup, "routeCreationPalletPallet", true, "Маршрут (ИД)", routeCreationPallet, creationPalletPallet, 1);
-        nameRouteCreationPalletPallet = LM.addJProp(LM.baseGroup, "nameRouteCreationPalletPallet", "Маршрут", LM.name, routeCreationPalletPallet, 1);
+        creationPalletPallet = addDProp(idGroup, "creationPalletPallet", "Операция (ИД)", creationPallet, pallet);
+        routeCreationPalletPallet = addJProp(idGroup, "routeCreationPalletPallet", true, "Маршрут (ИД)", routeCreationPallet, creationPalletPallet, 1);
+        nameRouteCreationPalletPallet = addJProp(baseGroup, "nameRouteCreationPalletPallet", "Маршрут", baseLM.name, routeCreationPalletPallet, 1);
 
-        freightPallet = LM.addDProp(LM.baseGroup, "freightPallet", "Фрахт (ИД)", freight, pallet);
-        equalsPalletFreight = LM.addJProp(LM.baseGroup, "equalsPalletFreight", "Вкл.", LM.equals2, freightPallet, 1, 2);
+        freightPallet = addDProp(baseGroup, "freightPallet", "Фрахт (ИД)", freight, pallet);
+        equalsPalletFreight = addJProp(baseGroup, "equalsPalletFreight", "Вкл.", baseLM.equals2, freightPallet, 1, 2);
 
         // инвойсы напрямую во фрахты
-        freightDirectInvoice = LM.addDProp(LM.baseGroup, "freightDirectInvoice", "Фрахт (ИД)", freight, directInvoice);
-        equalsDirectInvoiceFreight = LM.addJProp(LM.baseGroup, "equalsDirectInvoiceFreight", "Вкл.", LM.equals2, freightDirectInvoice, 1, 2);
+        freightDirectInvoice = addDProp(baseGroup, "freightDirectInvoice", "Фрахт (ИД)", freight, directInvoice);
+        equalsDirectInvoiceFreight = addJProp(baseGroup, "equalsDirectInvoiceFreight", "Вкл.", baseLM.equals2, freightDirectInvoice, 1, 2);
 
-        grossWeightDirectInvoice = LM.addDProp(LM.baseGroup, "grossWeightDirectInvoice", "Вес брутто", DoubleClass.instance, directInvoice);
-        palletNumberDirectInvoice = LM.addDProp(LM.baseGroup, "palletNumberDirectInvoice", "Кол-во паллет", IntegerClass.instance, directInvoice);
+        grossWeightDirectInvoice = addDProp(baseGroup, "grossWeightDirectInvoice", "Вес брутто", DoubleClass.instance, directInvoice);
+        palletNumberDirectInvoice = addDProp(baseGroup, "palletNumberDirectInvoice", "Кол-во паллет", IntegerClass.instance, directInvoice);
 
-        freightShippedDirectInvoice = LM.addJProp(LM.baseGroup, "freightShippedDirectInvoice", LM.is(freightShipped), freightDirectInvoice, 1);
+        freightShippedDirectInvoice = addJProp(baseGroup, "freightShippedDirectInvoice", is(freightShipped), freightDirectInvoice, 1);
 
-        sumDirectInvoicedSku = LM.addSGProp(LM.baseGroup, "sumDirectInvoicedSku", "Сумма по инвойсам напрямую", LM.addJProp(LM.and(false, true), sumDocumentSku, 1, 2, LM.is(directInvoice), 1, freightShippedDirectInvoice, 1), 2);
-        quantityDirectInvoicedSku = LM.addSGProp(LM.baseGroup, "quantityDirectInvoicedSku", "Кол-во по инвойсам напрямую", LM.addJProp(LM.and(false, true), quantityDocumentSku, 1, 2, LM.is(directInvoice), 1, freightShippedDirectInvoice, 1), 2);
-        quantityDocumentBrandSupplier = LM.addSGProp(LM.baseGroup, "quantityDocumentBrandSupplier", "Кол-во по бренду в документе", LM.addJProp(LM.andNot1, quantityDocumentSku, 1, 2, freightShippedDirectInvoice, 1), 1, brandSupplierArticleSku, 2);
+        sumDirectInvoicedSku = addSGProp(baseGroup, "sumDirectInvoicedSku", "Сумма по инвойсам напрямую", addJProp(and(false, true), sumDocumentSku, 1, 2, is(directInvoice), 1, freightShippedDirectInvoice, 1), 2);
+        quantityDirectInvoicedSku = addSGProp(baseGroup, "quantityDirectInvoicedSku", "Кол-во по инвойсам напрямую", addJProp(and(false, true), quantityDocumentSku, 1, 2, is(directInvoice), 1, freightShippedDirectInvoice, 1), 2);
+        quantityDocumentBrandSupplier = addSGProp(baseGroup, "quantityDocumentBrandSupplier", "Кол-во по бренду в документе", addJProp(baseLM.andNot1, quantityDocumentSku, 1, 2, freightShippedDirectInvoice, 1), 1, brandSupplierArticleSku, 2);
 
         // freight box
-        creationFreightBoxFreightBox = LM.addDProp(LM.idGroup, "creationFreightBoxFreightBox", "Операция (ИД)", creationFreightBox, freightBox);
+        creationFreightBoxFreightBox = addDProp(idGroup, "creationFreightBoxFreightBox", "Операция (ИД)", creationFreightBox, freightBox);
 
-        palletFreightBox = LM.addDProp(LM.idGroup, "palletFreightBox", "Паллета (ИД)", pallet, freightBox);
-        barcodePalletFreightBox = LM.addJProp(LM.baseGroup, "barcodePalletFreightBox", "Паллета (штрих-код)", LM.barcode, palletFreightBox, 1);
+        palletFreightBox = addDProp(idGroup, "palletFreightBox", "Паллета (ИД)", pallet, freightBox);
+        barcodePalletFreightBox = addJProp(baseGroup, "barcodePalletFreightBox", "Паллета (штрих-код)", baseLM.barcode, palletFreightBox, 1);
 
-        routeCreationFreightBoxFreightBox = LM.addJProp(LM.idGroup, "routeCreationFreightBoxFreightBox", true, "Маршрут (ИД)", routeCreationFreightBox, creationFreightBoxFreightBox, 1);
-        nameRouteCreationFreightBoxFreightBox = LM.addJProp(LM.baseGroup, "nameRouteCreationFreightBoxFreightBox", "Маршрут", LM.name, routeCreationFreightBoxFreightBox, 1);
+        routeCreationFreightBoxFreightBox = addJProp(idGroup, "routeCreationFreightBoxFreightBox", true, "Маршрут (ИД)", routeCreationFreightBox, creationFreightBoxFreightBox, 1);
+        nameRouteCreationFreightBoxFreightBox = addJProp(baseGroup, "nameRouteCreationFreightBoxFreightBox", "Маршрут", baseLM.name, routeCreationFreightBoxFreightBox, 1);
 
-        freightFreightBox = LM.addJProp(LM.idGroup, "freightFreightBox", "Фрахт короба транспортировки", freightPallet, palletFreightBox, 1);
+        freightFreightBox = addJProp(idGroup, "freightFreightBox", "Фрахт короба транспортировки", freightPallet, palletFreightBox, 1);
 
-        destinationFreightBox = LM.addDProp(LM.idGroup, "destinationFreightBox", "Пункт назначения (ИД)", destination, freightBox);
-        nameDestinationFreightBox = LM.addJProp(LM.baseGroup, "nameDestinationFreightBox", "Пункт назначения", LM.name, destinationFreightBox, 1);
+        destinationFreightBox = addDProp(idGroup, "destinationFreightBox", "Пункт назначения (ИД)", destination, freightBox);
+        nameDestinationFreightBox = addJProp(baseGroup, "nameDestinationFreightBox", "Пункт назначения", baseLM.name, destinationFreightBox, 1);
 
         // поставка на склад
-        inInvoiceShipment = LM.addDProp(LM.baseGroup, "inInvoiceShipment", "Вкл", LogicalClass.instance, invoice, shipment);
+        inInvoiceShipment = addDProp(baseGroup, "inInvoiceShipment", "Вкл", LogicalClass.instance, invoice, shipment);
 
-        inSupplierBoxShipment = LM.addJProp(LM.baseGroup, "inSupplierBoxShipment", "Вкл", inInvoiceShipment, boxInvoiceSupplierBox, 1, 2);
+        inSupplierBoxShipment = addJProp(baseGroup, "inSupplierBoxShipment", "Вкл", inInvoiceShipment, boxInvoiceSupplierBox, 1, 2);
 
-        invoicedShipmentSku = LM.addSGProp(LM.baseGroup, "invoicedShipmentSku", true, "Ожид. (пост.)",
-                LM.addJProp(LM.and1, quantityDocumentSku, 1, 2, inInvoiceShipment, 1, 3), 3, 2);
+        invoicedShipmentSku = addSGProp(baseGroup, "invoicedShipmentSku", true, "Ожид. (пост.)",
+                addJProp(baseLM.and1, quantityDocumentSku, 1, 2, inInvoiceShipment, 1, 3), 3, 2);
 
-        priceShipmentSku = LM.addMGProp(LM.baseGroup, "priceShipmentSku", true, "Цена (пост.)",
-                LM.addJProp(LM.and1, priceDocumentSku, 1, 2, inInvoiceShipment, 1, 3), 3, 2);
+        priceShipmentSku = addMGProp(baseGroup, "priceShipmentSku", true, "Цена (пост.)",
+                addJProp(baseLM.and1, priceDocumentSku, 1, 2, inInvoiceShipment, 1, 3), 3, 2);
 
-        invoicedShipment = LM.addSGProp(LM.baseGroup, "invoicedShipment", true, "Всего ожидается (пост.)", invoicedShipmentSku, 1);
+        invoicedShipment = addSGProp(baseGroup, "invoicedShipment", true, "Всего ожидается (пост.)", invoicedShipmentSku, 1);
 
         //sku shipment detail
-        skuShipmentDetail = LM.addDProp(LM.idGroup, "skuShipmentDetail", "SKU (ИД)", sku, shipmentDetail);
-        barcodeSkuShipmentDetail = LM.addJProp(LM.baseGroup, "barcodeSkuShipmentDetail", "Штрих-код SKU", LM.barcode, skuShipmentDetail, 1);
+        skuShipmentDetail = addDProp(idGroup, "skuShipmentDetail", "SKU (ИД)", sku, shipmentDetail);
+        barcodeSkuShipmentDetail = addJProp(baseGroup, "barcodeSkuShipmentDetail", "Штрих-код SKU", baseLM.barcode, skuShipmentDetail, 1);
 
-        articleShipmentDetail = LM.addJProp(LM.idGroup, "articleShipmentDetail", "Артикул (ИД)", articleSku, skuShipmentDetail, 1);
-        sidArticleShipmentDetail = LM.addJProp(LM.baseGroup, "sidArticleShipmentDetail", "Артикул", sidArticle, articleShipmentDetail, 1);
+        articleShipmentDetail = addJProp(idGroup, "articleShipmentDetail", "Артикул (ИД)", articleSku, skuShipmentDetail, 1);
+        sidArticleShipmentDetail = addJProp(baseGroup, "sidArticleShipmentDetail", "Артикул", sidArticle, articleShipmentDetail, 1);
 
-        colorSupplierItemShipmentDetail = LM.addJProp(LM.idGroup, "colorSupplierItemShipmentDetail", "Цвет поставщика (ИД)", colorSupplierItem, skuShipmentDetail, 1);
-        sidColorSupplierItemShipmentDetail = LM.addJProp(itemAttributeGroup, "sidColorSupplierItemShipmentDetail", "Код цвета", sidColorSupplier, colorSupplierItemShipmentDetail, 1);
-        nameColorSupplierItemShipmentDetail = LM.addJProp(itemAttributeGroup, "nameColorSupplierItemShipmentDetail", "Цвет поставщика", LM.name, colorSupplierItemShipmentDetail, 1);
+        colorSupplierItemShipmentDetail = addJProp(idGroup, "colorSupplierItemShipmentDetail", "Цвет поставщика (ИД)", colorSupplierItem, skuShipmentDetail, 1);
+        sidColorSupplierItemShipmentDetail = addJProp(itemAttributeGroup, "sidColorSupplierItemShipmentDetail", "Код цвета", sidColorSupplier, colorSupplierItemShipmentDetail, 1);
+        nameColorSupplierItemShipmentDetail = addJProp(itemAttributeGroup, "nameColorSupplierItemShipmentDetail", "Цвет поставщика", baseLM.name, colorSupplierItemShipmentDetail, 1);
 
-        sizeSupplierItemShipmentDetail = LM.addJProp(LM.idGroup, "sizeSupplierItemShipmentDetail", "Размер поставщика (ИД)", sizeSupplierItem, skuShipmentDetail, 1);
-        sidSizeSupplierItemShipmentDetail = LM.addJProp(itemAttributeGroup, "sidSizeSupplierItemShipmentDetail", "Размер поставщика", sidSizeSupplier, sizeSupplierItemShipmentDetail, 1);
+        sizeSupplierItemShipmentDetail = addJProp(idGroup, "sizeSupplierItemShipmentDetail", "Размер поставщика (ИД)", sizeSupplierItem, skuShipmentDetail, 1);
+        sidSizeSupplierItemShipmentDetail = addJProp(itemAttributeGroup, "sidSizeSupplierItemShipmentDetail", "Размер поставщика", sidSizeSupplier, sizeSupplierItemShipmentDetail, 1);
 
-        nameBrandSupplierArticleSkuShipmentDetail = LM.addJProp(supplierAttributeGroup, true, "nameBrandSupplierArticleSkuShipmentDetail", "Бренд", nameBrandSupplierArticleSku, skuShipmentDetail, 1);
-        originalNameArticleSkuShipmentDetail = LM.addJProp(supplierAttributeGroup, true, "originalNameArticleSkuShipmentDetail", "Наименование (ориг.)", originalNameArticleSku, skuShipmentDetail, 1);
+        nameBrandSupplierArticleSkuShipmentDetail = addJProp(supplierAttributeGroup, true, "nameBrandSupplierArticleSkuShipmentDetail", "Бренд", nameBrandSupplierArticleSku, skuShipmentDetail, 1);
+        originalNameArticleSkuShipmentDetail = addJProp(supplierAttributeGroup, true, "originalNameArticleSkuShipmentDetail", "Наименование (ориг.)", originalNameArticleSku, skuShipmentDetail, 1);
 
-        categoryArticleSkuShipmentDetail = LM.addJProp(LM.idGroup, true, "categoryArticleSkuShipmentDetail", "Номенклатурная группа товара (ИД)", categoryArticleSku, skuShipmentDetail, 1);
-        nameOriginCategoryArticleSkuShipmentDetail = LM.addJProp(intraAttributeGroup, "nameOriginCategoryArticleSkuShipmentDetail", "Номенклатурная группа товара", nameOrigin, categoryArticleSkuShipmentDetail, 1);
+        categoryArticleSkuShipmentDetail = addJProp(idGroup, true, "categoryArticleSkuShipmentDetail", "Номенклатурная группа товара (ИД)", categoryArticleSku, skuShipmentDetail, 1);
+        nameOriginCategoryArticleSkuShipmentDetail = addJProp(intraAttributeGroup, "nameOriginCategoryArticleSkuShipmentDetail", "Номенклатурная группа товара", nameOrigin, categoryArticleSkuShipmentDetail, 1);
 
-        customCategoryOriginArticleSkuShipmentDetail = LM.addJProp(LM.idGroup, true, "customCategoryOriginArticleSkuShipmentDetail", "ТН ВЭД (ИД)", customCategoryOriginArticleSku, skuShipmentDetail, 1);
-        sidCustomCategoryOriginArticleSkuShipmentDetail = LM.addJProp(supplierAttributeGroup, "sidCustomCategoryOriginArticleSkuShipmentDetail", "Код ТН ВЭД", sidCustomCategoryOrigin, customCategoryOriginArticleSkuShipmentDetail, 1);
+        customCategoryOriginArticleSkuShipmentDetail = addJProp(idGroup, true, "customCategoryOriginArticleSkuShipmentDetail", "ТН ВЭД (ИД)", customCategoryOriginArticleSku, skuShipmentDetail, 1);
+        sidCustomCategoryOriginArticleSkuShipmentDetail = addJProp(supplierAttributeGroup, "sidCustomCategoryOriginArticleSkuShipmentDetail", "Код ТН ВЭД", sidCustomCategoryOrigin, customCategoryOriginArticleSkuShipmentDetail, 1);
 
-        netWeightArticleSkuShipmentDetail = LM.addJProp(supplierAttributeGroup, true, "netWeightArticleSkuShipmentDetail", "Вес нетто (ориг.)", netWeightArticleSku, skuShipmentDetail, 1);
-        netWeightSkuShipmentDetail = LM.addJProp(intraAttributeGroup, true, "netWeightSkuShipmentDetail", "Вес нетто", netWeightSku, skuShipmentDetail, 1);
+        netWeightArticleSkuShipmentDetail = addJProp(supplierAttributeGroup, true, "netWeightArticleSkuShipmentDetail", "Вес нетто (ориг.)", netWeightArticleSku, skuShipmentDetail, 1);
+        netWeightSkuShipmentDetail = addJProp(intraAttributeGroup, true, "netWeightSkuShipmentDetail", "Вес нетто", netWeightSku, skuShipmentDetail, 1);
 
-        countryOfOriginArticleSkuShipmentDetail = LM.addJProp(LM.idGroup, true, "countryOfOriginArticleSkuShipmentDetail", "Страна происхождения (ориг.) (ИД)", countryOfOriginArticleSku, skuShipmentDetail, 1);
-        nameCountryOfOriginArticleSkuShipmentDetail = LM.addJProp(supplierAttributeGroup, "nameCountryOfOriginArticleSkuShipmentDetail", "Страна происхождения", nameOriginCountry, countryOfOriginArticleSkuShipmentDetail, 1);
+        countryOfOriginArticleSkuShipmentDetail = addJProp(idGroup, true, "countryOfOriginArticleSkuShipmentDetail", "Страна происхождения (ориг.) (ИД)", countryOfOriginArticleSku, skuShipmentDetail, 1);
+        nameCountryOfOriginArticleSkuShipmentDetail = addJProp(supplierAttributeGroup, "nameCountryOfOriginArticleSkuShipmentDetail", "Страна происхождения", nameOriginCountry, countryOfOriginArticleSkuShipmentDetail, 1);
 
-        countryOfOriginSkuShipmentDetail = LM.addJProp(LM.idGroup, true, "countryOfOriginSkuShipmentDetail", "Страна происхождения (ИД)", countryOfOriginSku, skuShipmentDetail, 1);
-        nameCountryOfOriginSkuShipmentDetail = LM.addJProp(intraAttributeGroup, "nameCountryOfOriginSkuShipmentDetail", "Страна происхождения", nameOriginCountry, countryOfOriginSkuShipmentDetail, 1);
+        countryOfOriginSkuShipmentDetail = addJProp(idGroup, true, "countryOfOriginSkuShipmentDetail", "Страна происхождения (ИД)", countryOfOriginSku, skuShipmentDetail, 1);
+        nameCountryOfOriginSkuShipmentDetail = addJProp(intraAttributeGroup, "nameCountryOfOriginSkuShipmentDetail", "Страна происхождения", nameOriginCountry, countryOfOriginSkuShipmentDetail, 1);
 
-        mainCompositionOriginArticleSkuShipmentDetail = LM.addJProp(supplierAttributeGroup, true, "mainCompositionOriginArticleSkuShipmentDetail", "Состав", mainCompositionOriginArticleSku, skuShipmentDetail, 1);
-        mainCompositionOriginSkuShipmentDetail = LM.addJProp(intraAttributeGroup, true, "mainCompositionOriginSkuShipmentDetail", "Состав", mainCompositionOriginSku, skuShipmentDetail, 1);
+        mainCompositionOriginArticleSkuShipmentDetail = addJProp(supplierAttributeGroup, true, "mainCompositionOriginArticleSkuShipmentDetail", "Состав", mainCompositionOriginArticleSku, skuShipmentDetail, 1);
+        mainCompositionOriginSkuShipmentDetail = addJProp(intraAttributeGroup, true, "mainCompositionOriginSkuShipmentDetail", "Состав", mainCompositionOriginSku, skuShipmentDetail, 1);
 
-        additionalCompositionOriginSkuShipmentDetail = LM.addJProp(intraAttributeGroup, true, "additionalCompositionOriginSkuShipmentDetail", "Дополнительный состав", additionalCompositionOriginSku, skuShipmentDetail, 1);
+        additionalCompositionOriginSkuShipmentDetail = addJProp(intraAttributeGroup, true, "additionalCompositionOriginSkuShipmentDetail", "Дополнительный состав", additionalCompositionOriginSku, skuShipmentDetail, 1);
 
-        unitOfMeasureArticleSkuShipmentDetail = LM.addJProp(LM.idGroup, true, "unitOfMeasureArticleSkuShipmentDetail", "Ед. изм. товара (ИД)", unitOfMeasureArticleSku, skuShipmentDetail, 1);
-        nameOriginUnitOfMeasureArticleSkuShipmentDetail = LM.addJProp(intraAttributeGroup, "nameOriginUnitOfMeasureArticleSkuShipmentDetail", "Ед. изм. товара", nameOrigin, unitOfMeasureArticleSkuShipmentDetail, 1);
+        unitOfMeasureArticleSkuShipmentDetail = addJProp(idGroup, true, "unitOfMeasureArticleSkuShipmentDetail", "Ед. изм. товара (ИД)", unitOfMeasureArticleSku, skuShipmentDetail, 1);
+        nameOriginUnitOfMeasureArticleSkuShipmentDetail = addJProp(intraAttributeGroup, "nameOriginUnitOfMeasureArticleSkuShipmentDetail", "Ед. изм. товара", nameOrigin, unitOfMeasureArticleSkuShipmentDetail, 1);
 
         // stock shipment detail
-        stockShipmentDetail = LM.addDProp(LM.idGroup, "stockShipmentDetail", "Место хранения (ИД)", stock, shipmentDetail);
-        barcodeStockShipmentDetail = LM.addJProp(LM.baseGroup, "barcodeStockShipmentDetail", "Штрих-код МХ", LM.barcode, stockShipmentDetail, 1);
+        stockShipmentDetail = addDProp(idGroup, "stockShipmentDetail", "Место хранения (ИД)", stock, shipmentDetail);
+        barcodeStockShipmentDetail = addJProp(baseGroup, "barcodeStockShipmentDetail", "Штрих-код МХ", baseLM.barcode, stockShipmentDetail, 1);
 
-        routeFreightBoxShipmentDetail = LM.addJProp(LM.idGroup, "routeFreightBoxShipmentDetail", "Маршрут (ИД)", routeCreationFreightBoxFreightBox, stockShipmentDetail, 1);
-        nameRouteFreightBoxShipmentDetail = LM.addJProp(LM.baseGroup, "nameRouteFreightBoxShipmentDetail", "Маршрут", LM.name, routeFreightBoxShipmentDetail, 1);
+        routeFreightBoxShipmentDetail = addJProp(idGroup, "routeFreightBoxShipmentDetail", "Маршрут (ИД)", routeCreationFreightBoxFreightBox, stockShipmentDetail, 1);
+        nameRouteFreightBoxShipmentDetail = addJProp(baseGroup, "nameRouteFreightBoxShipmentDetail", "Маршрут", baseLM.name, routeFreightBoxShipmentDetail, 1);
 
-        boxShipmentBoxShipmentDetail = LM.addDProp(LM.idGroup, "boxShipmentBoxShipmentDetail", "Поставка (ИД)", boxShipment, boxShipmentDetail);
-        simpleShipmentSimpleShipmentDetail = LM.addDProp(LM.idGroup, "simpleShipmentSimpleShipmentDetail", "Поставка (ИД)", simpleShipment, simpleShipmentDetail);
-        shipmentShipmentDetail = LM.addCUProp(LM.idGroup, "shipmentShipmentDetail", "Поставка (ИД)", boxShipmentBoxShipmentDetail, simpleShipmentSimpleShipmentDetail);
-        sidShipmentShipmentDetail = LM.addJProp(LM.baseGroup, "sidShipmentShipmentDetail", "Поставка", sidDocument, shipmentShipmentDetail, 1);
+        boxShipmentBoxShipmentDetail = addDProp(idGroup, "boxShipmentBoxShipmentDetail", "Поставка (ИД)", boxShipment, boxShipmentDetail);
+        simpleShipmentSimpleShipmentDetail = addDProp(idGroup, "simpleShipmentSimpleShipmentDetail", "Поставка (ИД)", simpleShipment, simpleShipmentDetail);
+        shipmentShipmentDetail = addCUProp(idGroup, "shipmentShipmentDetail", "Поставка (ИД)", boxShipmentBoxShipmentDetail, simpleShipmentSimpleShipmentDetail);
+        sidShipmentShipmentDetail = addJProp(baseGroup, "sidShipmentShipmentDetail", "Поставка", sidDocument, shipmentShipmentDetail, 1);
 
         // supplier box shipmentDetail
-        supplierBoxShipmentDetail = LM.addDProp(LM.idGroup, "supplierBoxShipmentDetail", "Короб поставщика (ИД)", supplierBox, boxShipmentDetail);
-        sidSupplierBoxShipmentDetail = LM.addJProp(LM.baseGroup, "sidSupplierBoxShipmentDetail", "Номер короба поставщика", sidSupplierBox, supplierBoxShipmentDetail, 1);
-        barcodeSupplierBoxShipmentDetail = LM.addJProp(LM.baseGroup, "barcodeSupplierBoxShipmentDetail", "Штрих-код короба поставщика", LM.barcode, supplierBoxShipmentDetail, 1);
+        supplierBoxShipmentDetail = addDProp(idGroup, "supplierBoxShipmentDetail", "Короб поставщика (ИД)", supplierBox, boxShipmentDetail);
+        sidSupplierBoxShipmentDetail = addJProp(baseGroup, "sidSupplierBoxShipmentDetail", "Номер короба поставщика", sidSupplierBox, supplierBoxShipmentDetail, 1);
+        barcodeSupplierBoxShipmentDetail = addJProp(baseGroup, "barcodeSupplierBoxShipmentDetail", "Штрих-код короба поставщика", baseLM.barcode, supplierBoxShipmentDetail, 1);
 
-        quantityShipmentDetail = LM.addDProp(LM.baseGroup, "quantityShipmentDetail", "Кол-во", DoubleClass.instance, shipmentDetail);
+        quantityShipmentDetail = addDProp(baseGroup, "quantityShipmentDetail", "Кол-во", DoubleClass.instance, shipmentDetail);
 
-        userShipmentDetail = LM.addDCProp(LM.idGroup, "userShipmentDetail", "Пользователь (ИД)", LM.currentUser, true, LM.is(shipmentDetail), 1);
-        nameUserShipmentDetail = LM.addJProp(LM.baseGroup, "nameUserShipmentDetail", "Пользователь", LM.name, userShipmentDetail, 1);
+        userShipmentDetail = addDCProp(idGroup, "userShipmentDetail", "Пользователь (ИД)", baseLM.currentUser, true, is(shipmentDetail), 1);
+        nameUserShipmentDetail = addJProp(baseGroup, "nameUserShipmentDetail", "Пользователь", baseLM.name, userShipmentDetail, 1);
 
-        timeShipmentDetail = LM.addTCProp(Time.DATETIME, "timeShipmentDetail", true, "Время ввода", quantityShipmentDetail);
+        timeShipmentDetail = addTCProp(Time.DATETIME, "timeShipmentDetail", true, "Время ввода", quantityShipmentDetail);
 
-        addBoxShipmentDetailBoxShipmentSupplierBoxStockBarcode = LM.addJProp(true, "Добавить строку поставки",
-                LM.addAAProp(boxShipmentDetail, boxShipmentBoxShipmentDetail, supplierBoxShipmentDetail, stockShipmentDetail, skuShipmentDetail, quantityShipmentDetail),
-                1, 2, 3, skuBarcodeObject, 4, LM.addCProp(DoubleClass.instance, 1));
+        addBoxShipmentDetailBoxShipmentSupplierBoxStockBarcode = addJProp(true, "Добавить строку поставки",
+                addAAProp(boxShipmentDetail, boxShipmentBoxShipmentDetail, supplierBoxShipmentDetail, stockShipmentDetail, skuShipmentDetail, quantityShipmentDetail),
+                1, 2, 3, skuBarcodeObject, 4, addCProp(DoubleClass.instance, 1));
 
-        addSimpleShipmentSimpleShipmentDetailStockBarcode = LM.addJProp(true, "Добавить строку поставки",
-                LM.addAAProp(simpleShipmentDetail, simpleShipmentSimpleShipmentDetail, stockShipmentDetail, skuShipmentDetail, quantityShipmentDetail),
-                1, 2, LM.barcodeToObject, 3, LM.addCProp(DoubleClass.instance, 1));
+        addSimpleShipmentSimpleShipmentDetailStockBarcode = addJProp(true, "Добавить строку поставки",
+                addAAProp(simpleShipmentDetail, simpleShipmentSimpleShipmentDetail, stockShipmentDetail, skuShipmentDetail, quantityShipmentDetail),
+                1, 2, baseLM.barcodeToObject, 3, addCProp(DoubleClass.instance, 1));
 
-        quantitySupplierBoxBoxShipmentStockSku = LM.addSGProp(LM.baseGroup, "quantitySupplierBoxBoxShipmentStockSku", "Кол-во оприход.", quantityShipmentDetail,
+        quantitySupplierBoxBoxShipmentStockSku = addSGProp(baseGroup, "quantitySupplierBoxBoxShipmentStockSku", "Кол-во оприход.", quantityShipmentDetail,
                 supplierBoxShipmentDetail, 1, boxShipmentBoxShipmentDetail, 1, stockShipmentDetail, 1, skuShipmentDetail, 1);
 
-        quantitySupplierBoxBoxShipmentSku = LM.addSGProp(LM.baseGroup, "quantitySupplierBoxBoxShipmentSku", "Кол-во оприход.", quantitySupplierBoxBoxShipmentStockSku,
+        quantitySupplierBoxBoxShipmentSku = addSGProp(baseGroup, "quantitySupplierBoxBoxShipmentSku", "Кол-во оприход.", quantitySupplierBoxBoxShipmentStockSku,
                 1, 2, 4);
 
-        quantitySupplierBoxSku = LM.addSGProp(LM.baseGroup, "quantitySupplierBoxSku", "Кол-во оприход.", quantitySupplierBoxBoxShipmentStockSku, 1, 4);
+        quantitySupplierBoxSku = addSGProp(baseGroup, "quantitySupplierBoxSku", "Кол-во оприход.", quantitySupplierBoxBoxShipmentStockSku, 1, 4);
 
-        diffListSupplierBoxSku =LM.addJProp(LM.diff2, quantityListSku, 1, 2, quantitySupplierBoxSku, 1, 2);
+        diffListSupplierBoxSku =addJProp(baseLM.diff2, quantityListSku, 1, 2, quantitySupplierBoxSku, 1, 2);
 
-        quantitySimpleShipmentStockSku = LM.addSGProp(LM.baseGroup, "quantitySimpleShipmentStockSku", "Кол-во оприход.", quantityShipmentDetail,
+        quantitySimpleShipmentStockSku = addSGProp(baseGroup, "quantitySimpleShipmentStockSku", "Кол-во оприход.", quantityShipmentDetail,
                 simpleShipmentSimpleShipmentDetail, 1, stockShipmentDetail, 1, skuShipmentDetail, 1);
 
-        quantityShipDimensionShipmentStockSku = LM.addCUProp(LM.baseGroup, "quantityShipDimensionShipmentStockSku", "Кол-во оприход.",
+        quantityShipDimensionShipmentStockSku = addCUProp(baseGroup, "quantityShipDimensionShipmentStockSku", "Кол-во оприход.",
                 quantitySupplierBoxBoxShipmentStockSku,
-                LM.addJProp(LM.and1, quantitySimpleShipmentStockSku, 2, 3, 4, LM.equals2, 1, 2));
+                addJProp(baseLM.and1, quantitySimpleShipmentStockSku, 2, 3, 4, baseLM.equals2, 1, 2));
 
-        quantityBoxInvoiceBoxShipmentStockSku = LM.addSGProp(LM.baseGroup, "quantityBoxInvoiceBoxShipmentStockSku", "Кол-во оприход.",
+        quantityBoxInvoiceBoxShipmentStockSku = addSGProp(baseGroup, "quantityBoxInvoiceBoxShipmentStockSku", "Кол-во оприход.",
                 quantitySupplierBoxBoxShipmentStockSku,
                 boxInvoiceSupplierBox, 1, 2, 3, 4);
 
-        invoicedSimpleInvoiceSimpleShipmentStockSku = LM.addJProp(LM.and(false, false, false, false), quantityDocumentSku, 1, 4, inInvoiceShipment, 1, 2, LM.is(simpleInvoice), 1, LM.is(simpleShipment), 2, LM.is(stock), 3);
+        invoicedSimpleInvoiceSimpleShipmentStockSku = addJProp(and(false, false, false, false), quantityDocumentSku, 1, 4, inInvoiceShipment, 1, 2, is(simpleInvoice), 1, is(simpleShipment), 2, is(stock), 3);
 
-        quantitySimpleInvoiceSimpleShipmentStockSku = LM.addPGProp(LM.baseGroup, "quantitySimpleInvoiceSimpleShipmentStockSku", true, 0, true, "Кол-во оприход.",
+        quantitySimpleInvoiceSimpleShipmentStockSku = addPGProp(baseGroup, "quantitySimpleInvoiceSimpleShipmentStockSku", true, 0, true, "Кол-во оприход.",
                 invoicedSimpleInvoiceSimpleShipmentStockSku,
                 quantitySimpleShipmentStockSku, 2, 3, 4);
 
-        quantityInvoiceShipmentStockSku = LM.addCUProp(LM.baseGroup, "quantityInvoiceShipmentStockSku", "Кол-во оприход.",
+        quantityInvoiceShipmentStockSku = addCUProp(baseGroup, "quantityInvoiceShipmentStockSku", "Кол-во оприход.",
                 quantityBoxInvoiceBoxShipmentStockSku, quantitySimpleInvoiceSimpleShipmentStockSku);
 
-        quantityInvoiceStockSku = LM.addSGProp(LM.baseGroup, "quantityInvoiceStockSku", true, "Кол-во оприход.", quantityInvoiceShipmentStockSku, 1, 3, 4);
+        quantityInvoiceStockSku = addSGProp(baseGroup, "quantityInvoiceStockSku", true, "Кол-во оприход.", quantityInvoiceShipmentStockSku, 1, 3, 4);
 
-        quantityInvoiceSku = LM.addSGProp(LM.baseGroup, "quantityInvoiceSku", true, "Кол-во оприход.", quantityInvoiceStockSku, 1, 3);
+        quantityInvoiceSku = addSGProp(baseGroup, "quantityInvoiceSku", true, "Кол-во оприход.", quantityInvoiceStockSku, 1, 3);
 
-        diffDocumentInvoiceSku = LM.addJProp(LM.equals2, quantityDocumentSku, 1, 2, quantityInvoiceSku, 1, 2);
+        diffDocumentInvoiceSku = addJProp(baseLM.equals2, quantityDocumentSku, 1, 2, quantityInvoiceSku, 1, 2);
 
-        priceInInvoiceStockSku = LM.addJProp(LM.baseGroup, "priceInInvoiceStockSku", false, "Цена входная", LM.and1,
+        priceInInvoiceStockSku = addJProp(baseGroup, "priceInInvoiceStockSku", false, "Цена входная", baseLM.and1,
                 priceRateDocumentSku, 1, 3, quantityInvoiceStockSku, 1, 2, 3);
 
-        quantityShipDimensionStock = LM.addSGProp(LM.baseGroup, "quantityShipDimensionStock", "Всего оприход.", quantityShipDimensionShipmentStockSku, 1, 3);
+        quantityShipDimensionStock = addSGProp(baseGroup, "quantityShipDimensionStock", "Всего оприход.", quantityShipDimensionShipmentStockSku, 1, 3);
 
-        quantityShipDimensionShipmentSku = LM.addSGProp(LM.baseGroup, "quantityShipDimensionShipmentSku", "Оприход. (короб)", quantityShipDimensionShipmentStockSku, 1, 2, 4);
+        quantityShipDimensionShipmentSku = addSGProp(baseGroup, "quantityShipDimensionShipmentSku", "Оприход. (короб)", quantityShipDimensionShipmentStockSku, 1, 2, 4);
 
-        zeroQuantityListSku = LM.addSUProp(LM.baseGroup, "zeroQuantityListSku", "кол-во", Union.OVERRIDE, LM.addCProp(DoubleClass.instance, 0, list, sku), quantityListSku);
-        zeroQuantityShipDimensionShipmentSku = LM.addSUProp(LM.baseGroup, "zeroQuantityShipDimensionShipmentSku", "кол-во", Union.OVERRIDE, LM.addCProp(DoubleClass.instance, 0, shipDimension, shipment, sku), quantityShipDimensionShipmentSku);
+        zeroQuantityListSku = addSUProp(baseGroup, "zeroQuantityListSku", "кол-во", Union.OVERRIDE, addCProp(DoubleClass.instance, 0, list, sku), quantityListSku);
+        zeroQuantityShipDimensionShipmentSku = addSUProp(baseGroup, "zeroQuantityShipDimensionShipmentSku", "кол-во", Union.OVERRIDE, addCProp(DoubleClass.instance, 0, shipDimension, shipment, sku), quantityShipDimensionShipmentSku);
 
-        diffListShipSku = LM.addJProp(LM.diff2, zeroQuantityListSku, 1, 3, zeroQuantityShipDimensionShipmentSku, 1, 2, 3);
+        diffListShipSku = addJProp(baseLM.diff2, zeroQuantityListSku, 1, 3, zeroQuantityShipDimensionShipmentSku, 1, 2, 3);
 
-        quantityShipmentStockSku = LM.addSGProp(LM.baseGroup, "quantityShipmentStockSku", true, "Кол-во оприход.", quantityShipDimensionShipmentStockSku, 2, 3, 4);
+        quantityShipmentStockSku = addSGProp(baseGroup, "quantityShipmentStockSku", true, "Кол-во оприход.", quantityShipDimensionShipmentStockSku, 2, 3, 4);
 
-        quantityShipmentStock = LM.addSGProp(LM.baseGroup, "quantityShipmentStock", "Всего оприход.", quantityShipmentStockSku, 1, 2);
+        quantityShipmentStock = addSGProp(baseGroup, "quantityShipmentStock", "Всего оприход.", quantityShipmentStockSku, 1, 2);
 
-        quantityShipmentSku = LM.addSGProp(LM.baseGroup, "quantityShipmentSku", "Оприход. (пост.)", quantityShipmentStockSku, 1, 3);
+        quantityShipmentSku = addSGProp(baseGroup, "quantityShipmentSku", "Оприход. (пост.)", quantityShipmentStockSku, 1, 3);
 
-        zeroQuantityShipmentSku = LM.addSUProp(LM.baseGroup, "zeroQuantityShipmentSku", "кол-во", Union.OVERRIDE, LM.addCProp(DoubleClass.instance, 0, shipment, sku), quantityShipmentSku);
-        zeroInvoicedShipmentSku = LM.addSUProp(LM.baseGroup, "zeroInvoicedShipmentSku", "кол-во", Union.OVERRIDE, LM.addCProp(DoubleClass.instance, 0, shipment, sku), invoicedShipmentSku);
-        diffShipmentSku = LM.addJProp(LM.diff2, zeroQuantityShipmentSku, 1, 2, zeroInvoicedShipmentSku, 1, 2);
+        zeroQuantityShipmentSku = addSUProp(baseGroup, "zeroQuantityShipmentSku", "кол-во", Union.OVERRIDE, addCProp(DoubleClass.instance, 0, shipment, sku), quantityShipmentSku);
+        zeroInvoicedShipmentSku = addSUProp(baseGroup, "zeroInvoicedShipmentSku", "кол-во", Union.OVERRIDE, addCProp(DoubleClass.instance, 0, shipment, sku), invoicedShipmentSku);
+        diffShipmentSku = addJProp(baseLM.diff2, zeroQuantityShipmentSku, 1, 2, zeroInvoicedShipmentSku, 1, 2);
 
-        quantityStockSku = LM.addSGProp(LM.baseGroup, "quantityStockSku", true, true, "Оприход. (МХ)", quantityShipmentStockSku, 2, 3);
+        quantityStockSku = addSGProp(baseGroup, "quantityStockSku", true, true, "Оприход. (МХ)", quantityShipmentStockSku, 2, 3);
 
-        quantityStockArticle = LM.addSGProp(LM.baseGroup, "quantityStockArticle", "Кол-во по артикулу", quantityStockSku, 1, articleSku, 2);
+        quantityStockArticle = addSGProp(baseGroup, "quantityStockArticle", "Кол-во по артикулу", quantityStockSku, 1, articleSku, 2);
 
-        freightShippedFreightBox = LM.addJProp(LM.baseGroup, "freightShippedFreightBox", LM.is(freightShipped), freightFreightBox, 1);
+        freightShippedFreightBox = addJProp(baseGroup, "freightShippedFreightBox", is(freightShipped), freightFreightBox, 1);
 
-        sumInInvoiceStockSku = LM.addJProp(LM.baseGroup, "sumInInvoiceStockSku", "Сумма в коробе", LM.multiplyDouble2, LM.addJProp(LM.andNot1, quantityInvoiceStockSku, 1, 2, 3, freightShippedFreightBox, 2), 1, 2, 3, priceInInvoiceStockSku, 1, 2, 3);
+        sumInInvoiceStockSku = addJProp(baseGroup, "sumInInvoiceStockSku", "Сумма в коробе", baseLM.multiplyDouble2, addJProp(baseLM.andNot1, quantityInvoiceStockSku, 1, 2, 3, freightShippedFreightBox, 2), 1, 2, 3, priceInInvoiceStockSku, 1, 2, 3);
 
-        sumStockedSku = LM.addSGProp(LM.baseGroup, "sumStockedSku", "Сумма на приемке", sumInInvoiceStockSku, 3);
-        quantityStockedSku = LM.addSGProp(LM.baseGroup, "quantityStockedSku", "Кол-во на приемке", LM.addJProp(LM.andNot1, quantityStockSku, 1, 2, freightShippedFreightBox, 1), 2);
+        sumStockedSku = addSGProp(baseGroup, "sumStockedSku", "Сумма на приемке", sumInInvoiceStockSku, 3);
+        quantityStockedSku = addSGProp(baseGroup, "quantityStockedSku", "Кол-во на приемке", addJProp(baseLM.andNot1, quantityStockSku, 1, 2, freightShippedFreightBox, 1), 2);
 
-        quantitySku = LM.addSUProp(LM.baseGroup, "quantitySku", "Кол-во", Union.SUM, quantityStockedSku, quantityDirectInvoicedSku);
-        sumSku = LM.addSUProp(LM.baseGroup, "sumSku", "Сумма", Union.SUM, sumStockedSku, sumDirectInvoicedSku);
+        quantitySku = addSUProp(baseGroup, "quantitySku", "Кол-во", Union.SUM, quantityStockedSku, quantityDirectInvoicedSku);
+        sumSku = addSUProp(baseGroup, "sumSku", "Сумма", Union.SUM, sumStockedSku, sumDirectInvoicedSku);
 
-        quantityStockBrandSupplier = LM.addSGProp(LM.baseGroup, "quantityStockBrandSupplier", "Кол-во по бренду",
-                LM.addJProp(LM.andNot1, quantityStockArticle, 1, 2, freightShippedFreightBox, 1), 1, brandSupplierArticle, 2);
+        quantityStockBrandSupplier = addSGProp(baseGroup, "quantityStockBrandSupplier", "Кол-во по бренду",
+                addJProp(baseLM.andNot1, quantityStockArticle, 1, 2, freightShippedFreightBox, 1), 1, brandSupplierArticle, 2);
 
-        quantityPalletSku = LM.addSGProp(LM.baseGroup, "quantityPalletSku", "Оприход. (пал.)", quantityStockSku, palletFreightBox, 1, 2);
+        quantityPalletSku = addSGProp(baseGroup, "quantityPalletSku", "Оприход. (пал.)", quantityStockSku, palletFreightBox, 1, 2);
 
-        quantityPalletBrandSupplier = LM.addSGProp(LM.baseGroup, "quantityPalletBrandSupplier", "Кол-во по бренду", quantityStockBrandSupplier, palletFreightBox, 1, 2);
+        quantityPalletBrandSupplier = addSGProp(baseGroup, "quantityPalletBrandSupplier", "Кол-во по бренду", quantityStockBrandSupplier, palletFreightBox, 1, 2);
 
-        quantityShipmentPallet = LM.addSGProp(LM.baseGroup, "quantityShipmentPallet", "Всего оприход. (паллета)", quantityShipmentStock, 1, palletFreightBox, 2);
+        quantityShipmentPallet = addSGProp(baseGroup, "quantityShipmentPallet", "Всего оприход. (паллета)", quantityShipmentStock, 1, palletFreightBox, 2);
 
-        quantityShipmentFreight = LM.addSGProp(LM.baseGroup, "quantityShipmentFreight", "Всего оприход. (фрахт)", quantityShipmentPallet, 1, freightPallet, 2);
+        quantityShipmentFreight = addSGProp(baseGroup, "quantityShipmentFreight", "Всего оприход. (фрахт)", quantityShipmentPallet, 1, freightPallet, 2);
 
-        quantityShipmentArticle = LM.addSGProp(LM.baseGroup, "quantityShipmentArticle", "Всего оприход. (артикул)", quantityShipmentSku, 1, articleSku, 2);
-        quantityShipmentArticleSize = LM.addSGProp(LM.baseGroup, "quantityShipmentArticleSize", "Всего оприход. (артикул-размер)", quantityShipmentSku, 1, articleSku, 2, sizeSupplierItem, 2);
-        quantityShipmentArticleColor = LM.addSGProp(LM.baseGroup, "quantityShipmentArticleColor", "Всего оприход. (артикул-цвет)", quantityShipmentSku, 1, articleSku, 2, colorSupplierItem, 2);
+        quantityShipmentArticle = addSGProp(baseGroup, "quantityShipmentArticle", "Всего оприход. (артикул)", quantityShipmentSku, 1, articleSku, 2);
+        quantityShipmentArticleSize = addSGProp(baseGroup, "quantityShipmentArticleSize", "Всего оприход. (артикул-размер)", quantityShipmentSku, 1, articleSku, 2, sizeSupplierItem, 2);
+        quantityShipmentArticleColor = addSGProp(baseGroup, "quantityShipmentArticleColor", "Всего оприход. (артикул-цвет)", quantityShipmentSku, 1, articleSku, 2, colorSupplierItem, 2);
 
-        oneShipmentArticle = LM.addJProp(LM.baseGroup, "oneShipmentArticle", "Первый артикул", LM.equals2, quantityShipmentArticle, 1, 2, LM.addCProp(DoubleClass.instance, 1));
-        oneShipmentArticleColor = LM.addJProp(LM.baseGroup, "oneShipmentArticleColor", "Первый артикул-цвет", LM.equals2, quantityShipmentArticleColor, 1, 2, 3, LM.addCProp(DoubleClass.instance, 1));
-        oneShipmentArticleSize = LM.addJProp(LM.baseGroup, "oneShipmentArticleSize", "Первый артикул-размер", LM.equals2, quantityShipmentArticleSize, 1, 2, 3, LM.addCProp(DoubleClass.instance, 1));
+        oneShipmentArticle = addJProp(baseGroup, "oneShipmentArticle", "Первый артикул", baseLM.equals2, quantityShipmentArticle, 1, 2, addCProp(DoubleClass.instance, 1));
+        oneShipmentArticleColor = addJProp(baseGroup, "oneShipmentArticleColor", "Первый артикул-цвет", baseLM.equals2, quantityShipmentArticleColor, 1, 2, 3, addCProp(DoubleClass.instance, 1));
+        oneShipmentArticleSize = addJProp(baseGroup, "oneShipmentArticleSize", "Первый артикул-размер", baseLM.equals2, quantityShipmentArticleSize, 1, 2, 3, addCProp(DoubleClass.instance, 1));
 
-        oneShipmentArticleSku = LM.addJProp(LM.baseGroup, "oneShipmentArticleSku", "Первый артикул", oneShipmentArticle, 1, articleSku, 2);
-        oneShipmentArticleColorSku = LM.addJProp(LM.baseGroup, "oneShipmentArticleColorSku", "Первый артикул-цвет", oneShipmentArticleColor, 1, articleSku, 2, colorSupplierItem, 2);
-        oneShipmentArticleSizeSku = LM.addJProp(LM.baseGroup, "oneShipmentArticleSizeSku", "Первый артикул-размер", oneShipmentArticleSize, 1, articleSku, 2, sizeSupplierItem, 2);
+        oneShipmentArticleSku = addJProp(baseGroup, "oneShipmentArticleSku", "Первый артикул", oneShipmentArticle, 1, articleSku, 2);
+        oneShipmentArticleColorSku = addJProp(baseGroup, "oneShipmentArticleColorSku", "Первый артикул-цвет", oneShipmentArticleColor, 1, articleSku, 2, colorSupplierItem, 2);
+        oneShipmentArticleSizeSku = addJProp(baseGroup, "oneShipmentArticleSizeSku", "Первый артикул-размер", oneShipmentArticleSize, 1, articleSku, 2, sizeSupplierItem, 2);
 
-        oneShipmentSku = LM.addJProp(LM.baseGroup, "oneShipmentSku", "Первый SKU", LM.equals2, quantityShipmentSku, 1, 2, LM.addCProp(DoubleClass.instance, 1));
+        oneShipmentSku = addJProp(baseGroup, "oneShipmentSku", "Первый SKU", baseLM.equals2, quantityShipmentSku, 1, 2, addCProp(DoubleClass.instance, 1));
 
-        oneArticleSkuShipmentDetail = LM.addJProp(LM.baseGroup, "oneArticleSkuShipmentDetail", "Первый артикул", oneShipmentArticleSku, shipmentShipmentDetail, 1, skuShipmentDetail, 1);
-        oneArticleColorShipmentDetail = LM.addJProp(LM.baseGroup, "oneArticleColorShipmentDetail", "Первый артикул-цвет", oneShipmentArticleColorSku, shipmentShipmentDetail, 1, skuShipmentDetail, 1);
-        oneArticleSizeShipmentDetail = LM.addJProp(LM.baseGroup, "oneArticleSizeShipmentDetail", "Первый артикул-размер", oneShipmentArticleSizeSku, shipmentShipmentDetail, 1, skuShipmentDetail, 1);
-        oneSkuShipmentDetail = LM.addJProp(LM.baseGroup, "oneSkuShipmentDetail", "Первый SKU", oneShipmentSku, shipmentShipmentDetail, 1, skuShipmentDetail, 1);
+        oneArticleSkuShipmentDetail = addJProp(baseGroup, "oneArticleSkuShipmentDetail", "Первый артикул", oneShipmentArticleSku, shipmentShipmentDetail, 1, skuShipmentDetail, 1);
+        oneArticleColorShipmentDetail = addJProp(baseGroup, "oneArticleColorShipmentDetail", "Первый артикул-цвет", oneShipmentArticleColorSku, shipmentShipmentDetail, 1, skuShipmentDetail, 1);
+        oneArticleSizeShipmentDetail = addJProp(baseGroup, "oneArticleSizeShipmentDetail", "Первый артикул-размер", oneShipmentArticleSizeSku, shipmentShipmentDetail, 1, skuShipmentDetail, 1);
+        oneSkuShipmentDetail = addJProp(baseGroup, "oneSkuShipmentDetail", "Первый SKU", oneShipmentSku, shipmentShipmentDetail, 1, skuShipmentDetail, 1);
 
         // Transfer
-        stockFromTransfer = LM.addDProp(LM.idGroup, "stockFromTransfer", "Место хранения (с) (ИД)", stock, transfer);
-        barcodeStockFromTransfer = LM.addJProp(LM.baseGroup, "barcodeStockFromTransfer", "Штрих-код МХ (с)", LM.barcode, stockFromTransfer, 1);
+        stockFromTransfer = addDProp(idGroup, "stockFromTransfer", "Место хранения (с) (ИД)", stock, transfer);
+        barcodeStockFromTransfer = addJProp(baseGroup, "barcodeStockFromTransfer", "Штрих-код МХ (с)", baseLM.barcode, stockFromTransfer, 1);
 
-        stockToTransfer = LM.addDProp(LM.idGroup, "stockToTransfer", "Место хранения (на) (ИД)", stock, transfer);
-        barcodeStockToTransfer = LM.addJProp(LM.baseGroup, "barcodeStockToTransfer", "Штрих-код МХ (на)", LM.barcode, stockToTransfer, 1);
+        stockToTransfer = addDProp(idGroup, "stockToTransfer", "Место хранения (на) (ИД)", stock, transfer);
+        barcodeStockToTransfer = addJProp(baseGroup, "barcodeStockToTransfer", "Штрих-код МХ (на)", baseLM.barcode, stockToTransfer, 1);
 
-        quantityTransferSku = LM.addDProp(LM.baseGroup, "quantityTransferStockSku", "Кол-во перемещения", DoubleClass.instance, transfer, sku);
+        quantityTransferSku = addDProp(baseGroup, "quantityTransferStockSku", "Кол-во перемещения", DoubleClass.instance, transfer, sku);
 
-        outcomeTransferStockSku = LM.addSGProp(LM.baseGroup, "outcomeTransferStockSku", "Расход по ВП", quantityTransferSku, stockFromTransfer, 1, 2);
-        incomeTransferStockSku = LM.addSGProp(LM.baseGroup, "incomeTransferStockSku", "Приход по ВП", quantityTransferSku, stockToTransfer, 1, 2);
+        outcomeTransferStockSku = addSGProp(baseGroup, "outcomeTransferStockSku", "Расход по ВП", quantityTransferSku, stockFromTransfer, 1, 2);
+        incomeTransferStockSku = addSGProp(baseGroup, "incomeTransferStockSku", "Приход по ВП", quantityTransferSku, stockToTransfer, 1, 2);
 
-        incomeStockSku = LM.addSUProp(LM.baseGroup, "incomeStockSku", "Приход", Union.SUM, quantityStockSku, incomeTransferStockSku);
+        incomeStockSku = addSUProp(baseGroup, "incomeStockSku", "Приход", Union.SUM, quantityStockSku, incomeTransferStockSku);
         outcomeStockSku = outcomeTransferStockSku;
 
-        balanceStockSku = LM.addDUProp(LM.baseGroup, "balanceStockSku", "Тек. остаток", incomeStockSku, outcomeStockSku);
+        balanceStockSku = addDUProp(baseGroup, "balanceStockSku", "Тек. остаток", incomeStockSku, outcomeStockSku);
 
-        balanceStockFromTransferSku = LM.addJProp(LM.baseGroup, "balanceStockFromTransferSku", "Тек. остаток на МХ (с)", balanceStockSku, stockFromTransfer, 1, 2);
-        balanceStockToTransferSku = LM.addJProp(LM.baseGroup, "balanceStockToTransferSku", "Тек. остаток на МХ (на)", balanceStockSku, stockToTransfer, 1, 2);
+        balanceStockFromTransferSku = addJProp(baseGroup, "balanceStockFromTransferSku", "Тек. остаток на МХ (с)", balanceStockSku, stockFromTransfer, 1, 2);
+        balanceStockToTransferSku = addJProp(baseGroup, "balanceStockToTransferSku", "Тек. остаток на МХ (на)", balanceStockSku, stockToTransfer, 1, 2);
 
         // Расписывание по route'ам количеств в инвойсе
-        quantityShipmentRouteSku = LM.addSGProp(LM.baseGroup, "quantityShipmentRouteSku", "Кол-во оприход.", quantityShipmentStockSku, 1, routeCreationFreightBoxFreightBox, 2, 3);
-        invoicedShipmentRouteSku = LM.addPGProp(LM.baseGroup, "invoicedShipmentRouteSku", false, 0, true, "Кол-во ожид.",
+        quantityShipmentRouteSku = addSGProp(baseGroup, "quantityShipmentRouteSku", "Кол-во оприход.", quantityShipmentStockSku, 1, routeCreationFreightBoxFreightBox, 2, 3);
+        invoicedShipmentRouteSku = addPGProp(baseGroup, "invoicedShipmentRouteSku", false, 0, true, "Кол-во ожид.",
                 percentShipmentRouteSku,
                 invoicedShipmentSku, 1, 3);
 
-        zeroQuantityShipmentRouteSku = LM.addSUProp(LM.baseGroup, "zeroQuantityShipmentRouteSku", "кол-во", Union.OVERRIDE, LM.addCProp(DoubleClass.instance, 0, shipment, route, sku), quantityShipmentRouteSku);
-        zeroInvoicedShipmentRouteSku = LM.addSUProp(LM.baseGroup, "zeroInvoicedShipmentRouteSku", "кол-во", Union.OVERRIDE, LM.addCProp(DoubleClass.instance, 0, shipment, route, sku), invoicedShipmentRouteSku);
+        zeroQuantityShipmentRouteSku = addSUProp(baseGroup, "zeroQuantityShipmentRouteSku", "кол-во", Union.OVERRIDE, addCProp(DoubleClass.instance, 0, shipment, route, sku), quantityShipmentRouteSku);
+        zeroInvoicedShipmentRouteSku = addSUProp(baseGroup, "zeroInvoicedShipmentRouteSku", "кол-во", Union.OVERRIDE, addCProp(DoubleClass.instance, 0, shipment, route, sku), invoicedShipmentRouteSku);
 
-        diffShipmentRouteSku = LM.addJProp(LM.greater2, zeroQuantityShipmentRouteSku, 1, 2, 3, zeroInvoicedShipmentRouteSku, 1, 2, 3);
+        diffShipmentRouteSku = addJProp(baseLM.greater2, zeroQuantityShipmentRouteSku, 1, 2, 3, zeroInvoicedShipmentRouteSku, 1, 2, 3);
 
-        sumShipmentRouteSku = LM.addJProp(LM.baseGroup, "sumShipmentRouteSku", "Сумма", LM.multiplyDouble2, invoicedShipmentRouteSku, 1, 2, 3, priceShipmentSku, 1, 3);
-        sumShipmentRoute = LM.addSGProp(LM.baseGroup, "sumShipmentRoute", "Сумма (ожид.)", sumShipmentRouteSku, 1, 2);
-        sumShipment = LM.addSGProp(LM.baseGroup, "sumShipment", "Сумма (ожид.)", sumShipmentRoute, 1);
+        sumShipmentRouteSku = addJProp(baseGroup, "sumShipmentRouteSku", "Сумма", baseLM.multiplyDouble2, invoicedShipmentRouteSku, 1, 2, 3, priceShipmentSku, 1, 3);
+        sumShipmentRoute = addSGProp(baseGroup, "sumShipmentRoute", "Сумма (ожид.)", sumShipmentRouteSku, 1, 2);
+        sumShipment = addSGProp(baseGroup, "sumShipment", "Сумма (ожид.)", sumShipmentRoute, 1);
 
-        invoicedShipmentRoute = LM.addSGProp(LM.baseGroup, "invoicedShipmentRoute", "Кол-во", invoicedShipmentRouteSku, 1, 2);
+        invoicedShipmentRoute = addSGProp(baseGroup, "invoicedShipmentRoute", "Кол-во", invoicedShipmentRouteSku, 1, 2);
 
-//        notFilledShipmentRouteSku = LM.addJProp(LM.baseGroup, "notFilledShipmentRouteSku", "Не заполнен", LM.greater2, invoicedShipmentRouteSku, 1, 2, 3,
-//                addSUProp(Union.OVERRIDE, LM.addCProp(DoubleClass.instance, 0, shipment, route, sku), quantityShipmentRouteSku), 1, 2, 3);
+//        notFilledShipmentRouteSku = addJProp(baseGroup, "notFilledShipmentRouteSku", "Не заполнен", greater2, invoicedShipmentRouteSku, 1, 2, 3,
+//                addSUProp(Union.OVERRIDE, addCProp(DoubleClass.instance, 0, shipment, route, sku), quantityShipmentRouteSku), 1, 2, 3);
 //
-//        routeToFillShipmentSku = LM.addMGProp(LM.idGroup, "routeToFillShipmentSku", "Маршрут (ИД)",
-//                LM.addJProp(LM.and1, LM.object(route), 2, notFilledShipmentRouteSku, 1, 2, 3), 1, 3);
+//        routeToFillShipmentSku = addMGProp(idGroup, "routeToFillShipmentSku", "Маршрут (ИД)",
+//                addJProp(baseLM.and1, object(route), 2, notFilledShipmentRouteSku, 1, 2, 3), 1, 3);
 //
-//        LP routeToFillShipmentBarcode = LM.addJProp(routeToFillShipmentSku, 1, barcodeToObject, 2);
-//        seekRouteToFillShipmentBarcode = LM.addJProp(actionGroup, true, "seekRouteToFillShipmentSku", "Поиск маршрута", addSAProp(null),
+//        LP routeToFillShipmentBarcode = addJProp(routeToFillShipmentSku, 1, baseLM.barcodeToObject, 2);
+//        seekRouteToFillShipmentBarcode = addJProp(actionGroup, true, "seekRouteToFillShipmentSku", "Поиск маршрута", addSAProp(null),
 //                routeToFillShipmentBarcode, 1, 2);
 
-        LM.addConstraint(LM.addJProp("Магазин короба для транспортировки должен совпадать с магазином короба поставщика", LM.and1,
-                LM.addJProp(LM.diff2, destinationSupplierBox, 1, destinationFreightBox, 2), 1, 2,
+        addConstraint(addJProp("Магазин короба для транспортировки должен совпадать с магазином короба поставщика", baseLM.and1,
+                addJProp(baseLM.diff2, destinationSupplierBox, 1, destinationFreightBox, 2), 1, 2,
                 quantityShipDimensionStock, 1, 2), true);
 
         // Freight
-        tonnageFreightType = LM.addDProp(LM.baseGroup, "tonnageFreightType", "Тоннаж (кг)", DoubleClass.instance, freightType);
-        palletCountFreightType = LM.addDProp(LM.baseGroup, "palletCountFreightType", "Кол-во паллет", IntegerClass.instance, freightType);
-        volumeFreightType = LM.addDProp(LM.baseGroup, "volumeFreightType", "Объем", DoubleClass.instance, freightType);
+        tonnageFreightType = addDProp(baseGroup, "tonnageFreightType", "Тоннаж (кг)", DoubleClass.instance, freightType);
+        palletCountFreightType = addDProp(baseGroup, "palletCountFreightType", "Кол-во паллет", IntegerClass.instance, freightType);
+        volumeFreightType = addDProp(baseGroup, "volumeFreightType", "Объем", DoubleClass.instance, freightType);
 
-        freightTypeFreight = LM.addDProp(LM.idGroup, "freightTypeFreight", "Тип машины (ИД)", freightType, freight);
-        nameFreightTypeFreight = LM.addJProp(LM.baseGroup, "nameFreightTypeFreight", "Тип машины", LM.name, freightTypeFreight, 1);
+        freightTypeFreight = addDProp(idGroup, "freightTypeFreight", "Тип машины (ИД)", freightType, freight);
+        nameFreightTypeFreight = addJProp(baseGroup, "nameFreightTypeFreight", "Тип машины", baseLM.name, freightTypeFreight, 1);
 
-        tonnageFreight = LM.addJProp(LM.baseGroup, "tonnageFreight", "Тоннаж (кг)", tonnageFreightType, freightTypeFreight, 1);
-        palletCountFreight = LM.addJProp(LM.baseGroup, "palletCountFreight", "Кол-во паллет", palletCountFreightType, freightTypeFreight, 1);
-        volumeFreight = LM.addJProp(LM.baseGroup, "volumeFreight", "Объём", volumeFreightType, freightTypeFreight, 1);
+        tonnageFreight = addJProp(baseGroup, "tonnageFreight", "Тоннаж (кг)", tonnageFreightType, freightTypeFreight, 1);
+        palletCountFreight = addJProp(baseGroup, "palletCountFreight", "Кол-во паллет", palletCountFreightType, freightTypeFreight, 1);
+        volumeFreight = addJProp(baseGroup, "volumeFreight", "Объём", volumeFreightType, freightTypeFreight, 1);
 
-        currencyFreight = LM.addDProp(LM.idGroup, "currencyFreight", "Валюта (ИД)", currency, freight);
-        nameCurrencyFreight = LM.addJProp(LM.baseGroup, "nameCurrencyFreight", "Валюта", LM.name, currencyFreight, 1);
-        sumFreightFreight = LM.addDProp(LM.baseGroup, "sumFreightFreight", "Стоимость", DoubleClass.instance, freight);
+        currencyFreight = addDProp(idGroup, "currencyFreight", "Валюта (ИД)", currency, freight);
+        nameCurrencyFreight = addJProp(baseGroup, "nameCurrencyFreight", "Валюта", baseLM.name, currencyFreight, 1);
+        sumFreightFreight = addDProp(baseGroup, "sumFreightFreight", "Стоимость", DoubleClass.instance, freight);
 
-        routeFreight = LM.addDProp(LM.idGroup, "routeFreight", "Маршрут (ИД)", route, freight);
-        nameRouteFreight = LM.addJProp(LM.baseGroup, "nameRouteFreight", "Маршрут", LM.name, routeFreight, 1);
+        routeFreight = addDProp(idGroup, "routeFreight", "Маршрут (ИД)", route, freight);
+        nameRouteFreight = addJProp(baseGroup, "nameRouteFreight", "Маршрут", baseLM.name, routeFreight, 1);
 
-        exporterFreight = LM.addDProp(LM.idGroup, "exporterFreight", "Экспортер (ИД)", exporter, freight);
-        nameOriginExporterFreight = LM.addJProp(LM.baseGroup, "nameOriginExporterFreight", "Экспортер", nameOrigin, exporterFreight, 1);
-        nameExporterFreight = LM.addJProp(LM.baseGroup, "nameExporterFreight", "Экспортер", LM.name, exporterFreight, 1);
-        addressOriginExporterFreight = LM.addJProp(LM.baseGroup, "addressOriginExporterFreight", "Адрес", addressOriginSubject, exporterFreight, 1);
-        addressExporterFreight = LM.addJProp(LM.baseGroup, "addressExporterFreight", "Адрес", addressSubject, exporterFreight, 1);
+        exporterFreight = addDProp(idGroup, "exporterFreight", "Экспортер (ИД)", exporter, freight);
+        nameOriginExporterFreight = addJProp(baseGroup, "nameOriginExporterFreight", "Экспортер", nameOrigin, exporterFreight, 1);
+        nameExporterFreight = addJProp(baseGroup, "nameExporterFreight", "Экспортер", baseLM.name, exporterFreight, 1);
+        addressOriginExporterFreight = addJProp(baseGroup, "addressOriginExporterFreight", "Адрес", addressOriginSubject, exporterFreight, 1);
+        addressExporterFreight = addJProp(baseGroup, "addressExporterFreight", "Адрес", addressSubject, exporterFreight, 1);
 
-        quantityPalletShipmentBetweenDate = LM.addSGProp(LM.baseGroup, "quantityPalletShipmentBetweenDate", "Кол-во паллет по поставкам за интервал",
-                LM.addJProp(LM.and1, quantityPalletShipment, 1, LM.addJProp(LM.between, LM.date, 1, LM.object(DateClass.instance), 2, LM.object(DateClass.instance), 3), 1, 2, 3), 2, 3);
-        quantityPalletFreightBetweenDate = LM.addSGProp(LM.baseGroup, "quantityPalletFreightBetweenDate", "Кол-во паллет по фрахтам за интервал",
-                LM.addJProp(LM.and1, palletCountFreight, 1, LM.addJProp(LM.between, LM.date, 1, LM.object(DateClass.instance), 2, LM.object(DateClass.instance), 3), 1, 2, 3), 2, 3);
+        quantityPalletShipmentBetweenDate = addSGProp(baseGroup, "quantityPalletShipmentBetweenDate", "Кол-во паллет по поставкам за интервал",
+                addJProp(baseLM.and1, quantityPalletShipment, 1, addJProp(baseLM.between, baseLM.date, 1, object(DateClass.instance), 2, object(DateClass.instance), 3), 1, 2, 3), 2, 3);
+        quantityPalletFreightBetweenDate = addSGProp(baseGroup, "quantityPalletFreightBetweenDate", "Кол-во паллет по фрахтам за интервал",
+                addJProp(baseLM.and1, palletCountFreight, 1, addJProp(baseLM.between, baseLM.date, 1, object(DateClass.instance), 2, object(DateClass.instance), 3), 1, 2, 3), 2, 3);
 
-        freightBoxNumberPallet = LM.addSGProp(LM.baseGroup, "freightBoxNumberPallet", "Кол-во коробов", LM.addCProp(IntegerClass.instance, 1, freightBox), palletFreightBox, 1);
+        freightBoxNumberPallet = addSGProp(baseGroup, "freightBoxNumberPallet", "Кол-во коробов", addCProp(IntegerClass.instance, 1, freightBox), palletFreightBox, 1);
 
-        LM.addConstraint(LM.addJProp("Маршрут паллеты должен совпадать с маршрутом фрахта", LM.diff2,
-                routeCreationPalletPallet, 1, LM.addJProp(routeFreight, freightPallet, 1), 1), true);
+        addConstraint(addJProp("Маршрут паллеты должен совпадать с маршрутом фрахта", baseLM.diff2,
+                routeCreationPalletPallet, 1, addJProp(routeFreight, freightPallet, 1), 1), true);
 
-        palletNumberFreight = LM.addSUProp(LM.baseGroup, "palletNumberFreight", "Кол-во присоединённых паллет", Union.SUM,
-                LM.addSGProp(LM.addCProp(IntegerClass.instance, 1, pallet), freightPallet, 1),
-                LM.addSGProp(palletNumberDirectInvoice, freightDirectInvoice, 1));
+        palletNumberFreight = addSUProp(baseGroup, "palletNumberFreight", "Кол-во присоединённых паллет", Union.SUM,
+                addSGProp(addCProp(IntegerClass.instance, 1, pallet), freightPallet, 1),
+                addSGProp(palletNumberDirectInvoice, freightDirectInvoice, 1));
 
-        diffPalletFreight = LM.addJProp(LM.greater2, palletNumberFreight, 1, palletCountFreight, 1);
+        diffPalletFreight = addJProp(baseLM.greater2, palletNumberFreight, 1, palletCountFreight, 1);
         // freight для supplierBox
-        freightSupplierBox = LM.addJProp(LM.baseGroup, "freightSupplierBox", "Фрахт (ИД)", freightDirectInvoice, boxInvoiceSupplierBox, 1);
-        freightFreightUnit = LM.addCUProp(LM.idGroup, "freightFreightUnit", "Фрахт (ИД)", freightFreightBox, freightSupplierBox);
+        freightSupplierBox = addJProp(baseGroup, "freightSupplierBox", "Фрахт (ИД)", freightDirectInvoice, boxInvoiceSupplierBox, 1);
+        freightFreightUnit = addCUProp(idGroup, "freightFreightUnit", "Фрахт (ИД)", freightFreightBox, freightSupplierBox);
 
-        importerSupplierBox = LM.addJProp(LM.baseGroup, "importerSupplierBox", "Импортер (ИД)", importerInvoice, boxInvoiceSupplierBox, 1);
+        importerSupplierBox = addJProp(baseGroup, "importerSupplierBox", "Импортер (ИД)", importerInvoice, boxInvoiceSupplierBox, 1);
 
         // Кол-во для импортеров
         // здесь не соблюдается policy, что входы совпадают с именем
-        quantityInvoiceFreightUnitSku = LM.addCUProp(LM.baseGroup, "quantityInvoiceFreightUnitSku", "Кол-во",
+        quantityInvoiceFreightUnitSku = addCUProp(baseGroup, "quantityInvoiceFreightUnitSku", "Кол-во",
                 quantityInvoiceStockSku,
-                LM.addJProp(LM.and1, quantityListSku, 2, 3, LM.addJProp(LM.equals2, 1, boxInvoiceSupplierBox, 2), 1, 2));
+                addJProp(baseLM.and1, quantityListSku, 2, 3, addJProp(baseLM.equals2, 1, boxInvoiceSupplierBox, 2), 1, 2));
 
-        priceInInvoiceFreightUnitSku = LM.addCUProp(LM.baseGroup, "priceInInvoiceFreightUnitSku", "Цена входная",
+        priceInInvoiceFreightUnitSku = addCUProp(baseGroup, "priceInInvoiceFreightUnitSku", "Цена входная",
                 priceInInvoiceStockSku,
-                LM.addJProp(LM.and1, priceRateDocumentSku, 1, 3, LM.addJProp(LM.equals2, 1, boxInvoiceSupplierBox, 2), 1, 2));
+                addJProp(baseLM.and1, priceRateDocumentSku, 1, 3, addJProp(baseLM.equals2, 1, boxInvoiceSupplierBox, 2), 1, 2));
 
-        quantityImporterStockSku = LM.addSGProp(LM.baseGroup, "quantityImporterStockSku", "Кол-во", quantityInvoiceStockSku, importerInvoice, 1, 2, 3);
-        quantityImporterStockArticle = LM.addSGProp(LM.baseGroup, "quantityImporterStockArticle", "Кол-во", quantityImporterStockSku, 1, 2, articleSku, 3);
-        quantityImporterStock = LM.addSGProp(LM.baseGroup, "quantityImporterStock", "Кол-во", quantityImporterStockSku, 1, 2);
+        quantityImporterStockSku = addSGProp(baseGroup, "quantityImporterStockSku", "Кол-во", quantityInvoiceStockSku, importerInvoice, 1, 2, 3);
+        quantityImporterStockArticle = addSGProp(baseGroup, "quantityImporterStockArticle", "Кол-во", quantityImporterStockSku, 1, 2, articleSku, 3);
+        quantityImporterStock = addSGProp(baseGroup, "quantityImporterStock", "Кол-во", quantityImporterStockSku, 1, 2);
 
-        quantityProxyImporterFreightSku = LM.addSGProp(LM.baseGroup, "quantityProxyImporterFreightSku", true, true, "Кол-во (из приёмки)", quantityImporterStockSku, 1, freightFreightUnit, 2, 3);
-        quantityDirectImporterFreightSku = LM.addSGProp(LM.baseGroup, "quantityDirectImporterFreightSku", true, true, "Кол-во (напрямую)", quantityListSku, importerSupplierBox, 1, freightFreightUnit, 1, 2);
-        quantityImporterFreightSku = LM.addSUProp(LM.baseGroup, "quantityImporterFreightSku", "Кол-во", Union.SUM, quantityProxyImporterFreightSku, quantityDirectImporterFreightSku);
+        quantityProxyImporterFreightSku = addSGProp(baseGroup, "quantityProxyImporterFreightSku", true, true, "Кол-во (из приёмки)", quantityImporterStockSku, 1, freightFreightUnit, 2, 3);
+        quantityDirectImporterFreightSku = addSGProp(baseGroup, "quantityDirectImporterFreightSku", true, true, "Кол-во (напрямую)", quantityListSku, importerSupplierBox, 1, freightFreightUnit, 1, 2);
+        quantityImporterFreightSku = addSUProp(baseGroup, "quantityImporterFreightSku", "Кол-во", Union.SUM, quantityProxyImporterFreightSku, quantityDirectImporterFreightSku);
 
-        quantityFreightArticle = LM.addSGProp(LM.baseGroup, "quantityFreightArticle", "Кол-во", quantityImporterFreightSku, 2, articleSku, 3);
+        quantityFreightArticle = addSGProp(baseGroup, "quantityFreightArticle", "Кол-во", quantityImporterFreightSku, 2, articleSku, 3);
 
-        quantityFreightSku = LM.addSGProp(LM.baseGroup, "quantityFreightSku", true, true, "Кол-во", quantityImporterFreightSku, 2, 3);
-        quantityDirectFreightSku = LM.addSGProp(LM.baseGroup, "quantityDirectFreightSku", true, true, "Кол-во (напрямую)", quantityDirectImporterFreightSku, 2, 3);
+        quantityFreightSku = addSGProp(baseGroup, "quantityFreightSku", true, true, "Кол-во", quantityImporterFreightSku, 2, 3);
+        quantityDirectFreightSku = addSGProp(baseGroup, "quantityDirectFreightSku", true, true, "Кол-во (напрямую)", quantityDirectImporterFreightSku, 2, 3);
 
-        customCategory10FreightSku = LM.addDProp(LM.idGroup, "customCategory10FreightSku", "ТН ВЭД (ИД)", customCategory10, freight, sku);
-        customCategory10FreightSku.setDerivedForcedChange(LM.addJProp(LM.and1, customCategory10Sku, 2, quantityFreightSku, 1, 2), 1, 2, LM.is(freightChanged), 1);
-        sidCustomCategory10FreightSku = LM.addJProp(LM.baseGroup, "sidCustomCategory10FreightSku", "ТН ВЭД", sidCustomCategory10, customCategory10FreightSku, 1, 2);
+        customCategory10FreightSku = addDProp(idGroup, "customCategory10FreightSku", "ТН ВЭД (ИД)", customCategory10, freight, sku);
+        customCategory10FreightSku.setDerivedForcedChange(addJProp(baseLM.and1, customCategory10Sku, 2, quantityFreightSku, 1, 2), 1, 2, is(freightChanged), 1);
+        sidCustomCategory10FreightSku = addJProp(baseGroup, "sidCustomCategory10FreightSku", "ТН ВЭД", sidCustomCategory10, customCategory10FreightSku, 1, 2);
 
-        LM.addConstraint(LM.addJProp("Для SKU должен быть задан ТН ВЭД", LM.and(true, false), LM.is(freightChanged), 1, customCategory10FreightSku, 1, 2, quantityFreightSku, 1, 2), false);
+        addConstraint(addJProp("Для SKU должен быть задан ТН ВЭД", and(true, false), is(freightChanged), 1, customCategory10FreightSku, 1, 2, quantityFreightSku, 1, 2), false);
 
-        customCategory6FreightSku = LM.addJProp(LM.idGroup, "customCategory6FreightSku", "ТН ВЭД", customCategory6CustomCategory10, customCategory10FreightSku, 1, 2);
+        customCategory6FreightSku = addJProp(idGroup, "customCategory6FreightSku", "ТН ВЭД", customCategory6CustomCategory10, customCategory10FreightSku, 1, 2);
 
-        quantityImporterFreightCustomCategory6 = LM.addSGProp(LM.baseGroup, "quantityImporterFreightCustomCategory6", "Кол-во", quantityImporterFreightSku, 1, 2, customCategory6FreightSku, 2, 3);
+        quantityImporterFreightCustomCategory6 = addSGProp(baseGroup, "quantityImporterFreightCustomCategory6", "Кол-во", quantityImporterFreightSku, 1, 2, customCategory6FreightSku, 2, 3);
 
-        mainCompositionOriginFreightSku = LM.addDProp(LM.baseGroup, "mainCompositionOriginFreightSku", "Состав", COMPOSITION_CLASS, freight, sku);
-        mainCompositionOriginFreightSku.setDerivedForcedChange(LM.addJProp(LM.and1, mainCompositionOriginSku, 2, quantityFreightSku, 1, 2), 1, 2, LM.is(freightChanged), 1);
+        mainCompositionOriginFreightSku = addDProp(baseGroup, "mainCompositionOriginFreightSku", "Состав", COMPOSITION_CLASS, freight, sku);
+        mainCompositionOriginFreightSku.setDerivedForcedChange(addJProp(baseLM.and1, mainCompositionOriginSku, 2, quantityFreightSku, 1, 2), 1, 2, is(freightChanged), 1);
 
-        additionalCompositionOriginFreightSku = LM.addDProp(LM.baseGroup, "additionalCompositionOriginFreightSku", "Доп. состав", COMPOSITION_CLASS, freight, sku);
-        additionalCompositionOriginFreightSku.setDerivedForcedChange(LM.addJProp(LM.and1, additionalCompositionOriginSku, 2, quantityFreightSku, 1, 2), 1, 2, LM.is(freightChanged), 1);
+        additionalCompositionOriginFreightSku = addDProp(baseGroup, "additionalCompositionOriginFreightSku", "Доп. состав", COMPOSITION_CLASS, freight, sku);
+        additionalCompositionOriginFreightSku.setDerivedForcedChange(addJProp(baseLM.and1, additionalCompositionOriginSku, 2, quantityFreightSku, 1, 2), 1, 2, is(freightChanged), 1);
 
-        translationMainCompositionSku = LM.addJProp(LM.actionGroup, true, "translationMainCompositionSku", "Перевод состава", LM.addTAProp(mainCompositionOriginSku, mainCompositionSku), dictionaryComposition, 1);
-        translationAdditionalCompositionSku = LM.addJProp(LM.actionGroup, true, "translationAdditionalCompositionSku", "Перевод доп. состава", LM.addTAProp(additionalCompositionOriginSku, additionalCompositionSku), dictionaryComposition, 1);
+        translationMainCompositionSku = addJProp(actionGroup, true, "translationMainCompositionSku", "Перевод состава", addTAProp(mainCompositionOriginSku, mainCompositionSku), dictionaryComposition, 1);
+        translationAdditionalCompositionSku = addJProp(actionGroup, true, "translationAdditionalCompositionSku", "Перевод доп. состава", addTAProp(additionalCompositionOriginSku, additionalCompositionSku), dictionaryComposition, 1);
 
-        mainCompositionFreightSku = LM.addDProp(LM.baseGroup, "mainCompositionFreightSku", "Состав (перевод)", COMPOSITION_CLASS, freight, sku);
-        mainCompositionFreightSku.setDerivedForcedChange(LM.addJProp(LM.and1, mainCompositionSku, 2, quantityFreightSku, 1, 2), 1, 2, LM.is(freightChanged), 1);
+        mainCompositionFreightSku = addDProp(baseGroup, "mainCompositionFreightSku", "Состав (перевод)", COMPOSITION_CLASS, freight, sku);
+        mainCompositionFreightSku.setDerivedForcedChange(addJProp(baseLM.and1, mainCompositionSku, 2, quantityFreightSku, 1, 2), 1, 2, is(freightChanged), 1);
 
-        LM.addConstraint(LM.addJProp("Для SKU должен быть задан состав", LM.and(true, false), LM.is(freightChanged), 1, mainCompositionFreightSku, 1, 2, quantityFreightSku, 1, 2), false);
+        addConstraint(addJProp("Для SKU должен быть задан состав", and(true, false), is(freightChanged), 1, mainCompositionFreightSku, 1, 2, quantityFreightSku, 1, 2), false);
 
-        additionalCompositionFreightSku = LM.addDProp(LM.baseGroup, "additionalCompositionFreightSku", "Доп. состав (перевод)", COMPOSITION_CLASS, freight, sku);
-        additionalCompositionFreightSku.setDerivedForcedChange(LM.addJProp(LM.and1, additionalCompositionSku, 2, quantityFreightSku, 1, 2), 1, 2, LM.is(freightChanged), 1);
+        additionalCompositionFreightSku = addDProp(baseGroup, "additionalCompositionFreightSku", "Доп. состав (перевод)", COMPOSITION_CLASS, freight, sku);
+        additionalCompositionFreightSku.setDerivedForcedChange(addJProp(baseLM.and1, additionalCompositionSku, 2, quantityFreightSku, 1, 2), 1, 2, is(freightChanged), 1);
 
-        countryOfOriginFreightSku = LM.addDProp(LM.idGroup, "countryOfOriginFreightSku", "Страна (ИД)", LM.country, freight, sku);
-        countryOfOriginFreightSku.setDerivedForcedChange(LM.addJProp(LM.and1, countryOfOriginSku, 2, quantityFreightSku, 1, 2), 1, 2, LM.is(freightChanged), 1);
+        countryOfOriginFreightSku = addDProp(idGroup, "countryOfOriginFreightSku", "Страна (ИД)", baseLM.country, freight, sku);
+        countryOfOriginFreightSku.setDerivedForcedChange(addJProp(baseLM.and1, countryOfOriginSku, 2, quantityFreightSku, 1, 2), 1, 2, is(freightChanged), 1);
 
-        LM.addConstraint(LM.addJProp("Для SKU должна быть задана страна", LM.and(true, false), LM.is(freightChanged), 1, countryOfOriginFreightSku, 1, 2, quantityFreightSku, 1, 2), false);
+        addConstraint(addJProp("Для SKU должна быть задана страна", and(true, false), is(freightChanged), 1, countryOfOriginFreightSku, 1, 2, quantityFreightSku, 1, 2), false);
 
-        sidCountryOfOriginFreightSku = LM.addJProp(LM.baseGroup, "sidCountryOfOriginFreightSku", "Код страны", LM.sidCountry, countryOfOriginFreightSku, 1, 2);
-        nameCountryOfOriginFreightSku = LM.addJProp(LM.baseGroup, "nameCountryOfOriginFreightSku", "Страна", LM.name, countryOfOriginFreightSku, 1, 2);
+        sidCountryOfOriginFreightSku = addJProp(baseGroup, "sidCountryOfOriginFreightSku", "Код страны", baseLM.sidCountry, countryOfOriginFreightSku, 1, 2);
+        nameCountryOfOriginFreightSku = addJProp(baseGroup, "nameCountryOfOriginFreightSku", "Страна", baseLM.name, countryOfOriginFreightSku, 1, 2);
 
-        quantityImporterFreightArticleCompositionCountryCategory = LM.addSGProp(LM.baseGroup, "quantityImporterFreightArticleCompositionCountryCategory", "Кол-во",
+        quantityImporterFreightArticleCompositionCountryCategory = addSGProp(baseGroup, "quantityImporterFreightArticleCompositionCountryCategory", "Кол-во",
                 quantityProxyImporterFreightSku, 1, 2, articleSku, 3, mainCompositionOriginFreightSku, 2, 3, countryOfOriginFreightSku, 2, 3, customCategory10FreightSku, 2, 3);
 
-        compositionFreightArticleCompositionCountryCategory = LM.addMGProp(LM.baseGroup, "compositionFreightArticleCompositionCountryCategory", "Состав",
+        compositionFreightArticleCompositionCountryCategory = addMGProp(baseGroup, "compositionFreightArticleCompositionCountryCategory", "Состав",
                 mainCompositionFreightSku, 1, articleSku, 2, mainCompositionOriginFreightSku, 1, 2, countryOfOriginFreightSku, 1, 2, customCategory10FreightSku, 1, 2);
 
-        netWeightStockSku = LM.addJProp(LM.baseGroup, "netWeightStockSku", "Вес нетто", LM.multiplyDouble2, quantityStockSku, 1, 2, netWeightSku, 2);
-        netWeightStockArticle = LM.addSGProp(LM.baseGroup, "netWeightStockArticle", "Вес нетто", netWeightStockSku, 1, articleSku, 2);
-        netWeightStock = LM.addSGProp(LM.baseGroup, "netWeightStock", "Вес нетто короба", netWeightStockSku, 1);
+        netWeightStockSku = addJProp(baseGroup, "netWeightStockSku", "Вес нетто", baseLM.multiplyDouble2, quantityStockSku, 1, 2, netWeightSku, 2);
+        netWeightStockArticle = addSGProp(baseGroup, "netWeightStockArticle", "Вес нетто", netWeightStockSku, 1, articleSku, 2);
+        netWeightStock = addSGProp(baseGroup, "netWeightStock", "Вес нетто короба", netWeightStockSku, 1);
 
-        netWeightFreightSku = LM.addDProp(LM.baseGroup, "netWeightFreightSku", "Вес нетто", DoubleClass.instance, freight, sku);
-        netWeightFreightSku.setDerivedForcedChange(LM.addJProp(LM.and1, netWeightSku, 2, quantityFreightSku, 1, 2), 1, 2, LM.is(freightChanged), 1);
+        netWeightFreightSku = addDProp(baseGroup, "netWeightFreightSku", "Вес нетто", DoubleClass.instance, freight, sku);
+        netWeightFreightSku.setDerivedForcedChange(addJProp(baseLM.and1, netWeightSku, 2, quantityFreightSku, 1, 2), 1, 2, is(freightChanged), 1);
 
-        LM.addConstraint(LM.addJProp("Для SKU должен быть задан вес нетто", LM.and(true, false), LM.is(freightChanged), 1, netWeightFreightSku, 1, 2, quantityFreightSku, 1, 2), false);
+        addConstraint(addJProp("Для SKU должен быть задан вес нетто", and(true, false), is(freightChanged), 1, netWeightFreightSku, 1, 2, quantityFreightSku, 1, 2), false);
 
-        netWeightImporterFreightUnitSku = LM.addJProp(LM.baseGroup, "netWeightImporterFreightUnitSku", "Вес нетто", LM.multiplyDouble2, quantityImporterStockSku, 1, 2, 3, LM.addJProp(netWeightFreightSku, freightFreightUnit, 1, 2), 2, 3);
-        netWeightImporterFreightUnitArticle = LM.addSGProp(LM.baseGroup, "netWeightImporterFreightUnitArticle", "Вес нетто", netWeightImporterFreightUnitSku, 1, 2, articleSku, 3);
+        netWeightImporterFreightUnitSku = addJProp(baseGroup, "netWeightImporterFreightUnitSku", "Вес нетто", baseLM.multiplyDouble2, quantityImporterStockSku, 1, 2, 3, addJProp(netWeightFreightSku, freightFreightUnit, 1, 2), 2, 3);
+        netWeightImporterFreightUnitArticle = addSGProp(baseGroup, "netWeightImporterFreightUnitArticle", "Вес нетто", netWeightImporterFreightUnitSku, 1, 2, articleSku, 3);
 
-        netWeightImporterFreightUnit = LM.addSGProp(LM.baseGroup, "netWeightImporterFreightUnit", "Вес нетто", netWeightImporterFreightUnitSku, 1, 2);
+        netWeightImporterFreightUnit = addSGProp(baseGroup, "netWeightImporterFreightUnit", "Вес нетто", netWeightImporterFreightUnitSku, 1, 2);
 
-        netWeightImporterFreightSku = LM.addJProp(LM.baseGroup, "netWeightImporterFreightSku", "Вес нетто", LM.multiplyDouble2, quantityImporterFreightSku, 1, 2, 3, netWeightFreightSku, 2, 3);
+        netWeightImporterFreightSku = addJProp(baseGroup, "netWeightImporterFreightSku", "Вес нетто", baseLM.multiplyDouble2, quantityImporterFreightSku, 1, 2, 3, netWeightFreightSku, 2, 3);
 
-        netWeightImporterFreightCustomCategory6 = LM.addSGProp(LM.baseGroup, "netWeightImporterFreightCustomCategory6", "Вес нетто", netWeightImporterFreightSku, 1, 2, customCategory6FreightSku, 2, 3);
+        netWeightImporterFreightCustomCategory6 = addSGProp(baseGroup, "netWeightImporterFreightCustomCategory6", "Вес нетто", netWeightImporterFreightSku, 1, 2, customCategory6FreightSku, 2, 3);
 
-        netWeightImporterFreightArticleCompositionCountryCategory = LM.addSGProp(LM.baseGroup, "netWeightImporterFreightArticleCompositionCountryCategory", "Вес нетто",
+        netWeightImporterFreightArticleCompositionCountryCategory = addSGProp(baseGroup, "netWeightImporterFreightArticleCompositionCountryCategory", "Вес нетто",
                 netWeightImporterFreightSku, 1, 2, articleSku, 3, mainCompositionOriginFreightSku, 2, 3, countryOfOriginFreightSku, 2, 3, customCategory10FreightSku, 2, 3);
 
-        netWeightImporterFreight = LM.addSGProp(LM.baseGroup, "netWeightImporterFreight", "Вес нетто", netWeightImporterFreightSku, 1, 2);
-        //netWeightImporterFreightBox = LM.addSGProp(LM.baseGroup, "netWeightImporterFreight", "Вес нетто", netWeightImporterFreightSku, 1, 2);
+        netWeightImporterFreight = addSGProp(baseGroup, "netWeightImporterFreight", "Вес нетто", netWeightImporterFreightSku, 1, 2);
+        //netWeightImporterFreightBox = addSGProp(baseGroup, "netWeightImporterFreight", "Вес нетто", netWeightImporterFreightSku, 1, 2);
 
-        priceImporterFreightSku = LM.addDProp(LM.baseGroup, "priceImporterFreightSku", "Цена входная", DoubleClass.instance, importer, freight, sku);
-        priceMaxImporterFreightSku = LM.addMGProp(LM.baseGroup, "priceMaxImporterFreightSku", false, "Цена входная", priceInInvoiceFreightUnitSku, importerInvoice, 1, freightFreightUnit, 2, 3);
-        priceInImporterFreightSku = LM.addSUProp(LM.baseGroup, "priceInImporterFreightSku", "Цена входная", Union.OVERRIDE, priceMaxImporterFreightSku, priceImporterFreightSku);
+        priceImporterFreightSku = addDProp(baseGroup, "priceImporterFreightSku", "Цена входная", DoubleClass.instance, importer, freight, sku);
+        priceMaxImporterFreightSku = addMGProp(baseGroup, "priceMaxImporterFreightSku", false, "Цена входная", priceInInvoiceFreightUnitSku, importerInvoice, 1, freightFreightUnit, 2, 3);
+        priceInImporterFreightSku = addSUProp(baseGroup, "priceInImporterFreightSku", "Цена входная", Union.OVERRIDE, priceMaxImporterFreightSku, priceImporterFreightSku);
 
-        sumInImporterFreightSku = LM.addJProp(LM.baseGroup, "sumInImporterFreightSku", "Сумма входная", LM.multiplyDouble2, quantityProxyImporterFreightSku, 1, 2, 3, priceInImporterFreightSku, 1, 2, 3);
+        sumInImporterFreightSku = addJProp(baseGroup, "sumInImporterFreightSku", "Сумма входная", baseLM.multiplyDouble2, quantityProxyImporterFreightSku, 1, 2, 3, priceInImporterFreightSku, 1, 2, 3);
 
-        sumFreightImporterFreightSku = LM.addPGProp(LM.baseGroup, "sumFreightImporterFreightSku", false, 2, false, "Сумма фрахта",
+        sumFreightImporterFreightSku = addPGProp(baseGroup, "sumFreightImporterFreightSku", false, 2, false, "Сумма фрахта",
                 netWeightImporterFreightSku,
                 sumFreightFreight, 2);
 
-        LP priceAggrFreightImporterFreightSku = LM.addJProp(LM.divideDouble2, sumFreightImporterFreightSku, 1, 2, 3, quantityImporterFreightSku, 1, 2, 3);
+        LP priceAggrFreightImporterFreightSku = addJProp(baseLM.divideDouble2, sumFreightImporterFreightSku, 1, 2, 3, quantityImporterFreightSku, 1, 2, 3);
 
-//        priceFreightImporterFreightSku = LM.addJProp(LM.baseGroup, "priceFreightImporterFreightSku", "Цена за фрахт", divideDouble2, sumFreightImporterFreightSku, 1, 2, 3, quantityImporterFreightSku, 1, 2, 3);
-        priceFreightImporterFreightSku = LM.addDProp(LM.baseGroup, "priceFreightImporterFreightSku", "Цена за фрахт", DoubleClass.instance, importer, freight, sku);
-        priceFreightImporterFreightSku.setDerivedForcedChange(priceAggrFreightImporterFreightSku, 1, 2, 3, LM.is(freightPriced), 2, sumFreightFreight, 2);
+//        priceFreightImporterFreightSku = addJProp(baseGroup, "priceFreightImporterFreightSku", "Цена за фрахт", divideDouble2, sumFreightImporterFreightSku, 1, 2, 3, quantityImporterFreightSku, 1, 2, 3);
+        priceFreightImporterFreightSku = addDProp(baseGroup, "priceFreightImporterFreightSku", "Цена за фрахт", DoubleClass.instance, importer, freight, sku);
+        priceFreightImporterFreightSku.setDerivedForcedChange(priceAggrFreightImporterFreightSku, 1, 2, 3, is(freightPriced), 2, sumFreightFreight, 2);
 
-        priceExpenseImporterFreightSku = LM.addJProp(LM.baseGroup, "priceExpenseImporterFreightSku", "Цена затр.", LM.sumDouble2, priceInImporterFreightSku, 1, 2, 3, priceFreightImporterFreightSku, 1, 2, 3);
+        priceExpenseImporterFreightSku = addJProp(baseGroup, "priceExpenseImporterFreightSku", "Цена затр.", baseLM.sumDouble2, priceInImporterFreightSku, 1, 2, 3, priceFreightImporterFreightSku, 1, 2, 3);
 
-        markupPercentImporterFreightBrandSupplier = LM.addDProp(LM.baseGroup, "markupPercentImporterFreightBrandSupplier", "Надбавка (%)", DoubleClass.instance, importer, freight, brandSupplier);
-        markupPercentImporterFreightDataSku = LM.addDProp(LM.baseGroup, "markupPercentImporterFreightDataSku", "Надбавка (%)", DoubleClass.instance, importer, freight, sku);
-        markupPercentImporterFreightBrandSupplierSku = LM.addJProp(LM.baseGroup, "markupPercentImporterFreightBrandSupplierSku", true, "Надбавка (%)", markupPercentImporterFreightBrandSupplier, 1, 2, brandSupplierArticleSku, 3);
-        markupPercentImporterFreightSku = LM.addSUProp(LM.baseGroup, "markupPercentImporterFreightSku", true, "Надбавка (%)", Union.OVERRIDE, markupPercentImporterFreightBrandSupplierSku, markupPercentImporterFreightDataSku);
+        markupPercentImporterFreightBrandSupplier = addDProp(baseGroup, "markupPercentImporterFreightBrandSupplier", "Надбавка (%)", DoubleClass.instance, importer, freight, brandSupplier);
+        markupPercentImporterFreightDataSku = addDProp(baseGroup, "markupPercentImporterFreightDataSku", "Надбавка (%)", DoubleClass.instance, importer, freight, sku);
+        markupPercentImporterFreightBrandSupplierSku = addJProp(baseGroup, "markupPercentImporterFreightBrandSupplierSku", true, "Надбавка (%)", markupPercentImporterFreightBrandSupplier, 1, 2, brandSupplierArticleSku, 3);
+        markupPercentImporterFreightSku = addSUProp(baseGroup, "markupPercentImporterFreightSku", true, "Надбавка (%)", Union.OVERRIDE, markupPercentImporterFreightBrandSupplierSku, markupPercentImporterFreightDataSku);
 
         // надбавка на цену без учёта стоимости фрахта
-        markupInImporterFreightSku = LM.addJProp(LM.baseGroup, "markupInImporterFreightSku", "Надбавка", LM.percent2, priceInImporterFreightSku, 1, 2, 3, markupPercentImporterFreightSku, 1, 2, 3);
+        markupInImporterFreightSku = addJProp(baseGroup, "markupInImporterFreightSku", "Надбавка", baseLM.percent2, priceInImporterFreightSku, 1, 2, 3, markupPercentImporterFreightSku, 1, 2, 3);
 
-        priceMarkupInImporterFreightSku = LM.addJProp(LM.baseGroup, "priceMarkupInImporterFreightSku", "Цена выходная", LM.sumDouble2, priceInImporterFreightSku, 1, 2, 3, markupInImporterFreightSku, 1, 2, 3);
+        priceMarkupInImporterFreightSku = addJProp(baseGroup, "priceMarkupInImporterFreightSku", "Цена выходная", baseLM.sumDouble2, priceInImporterFreightSku, 1, 2, 3, markupInImporterFreightSku, 1, 2, 3);
 
-        priceInOutImporterFreightSku = LM.addDProp(LM.baseGroup, "priceInOutImporterFreightSku", "Цена выходная", DoubleClass.instance, importer, freight, sku);
-        priceInOutImporterFreightSku.setDerivedForcedChange(true, LM.addJProp(LM.and1, priceMarkupInImporterFreightSku, 1, 2, 3, quantityImporterFreightSku, 1, 2, 3), 1, 2, 3, LM.is(freightPriced), 2);
+        priceInOutImporterFreightSku = addDProp(baseGroup, "priceInOutImporterFreightSku", "Цена выходная", DoubleClass.instance, importer, freight, sku);
+        priceInOutImporterFreightSku.setDerivedForcedChange(true, addJProp(baseLM.and1, priceMarkupInImporterFreightSku, 1, 2, 3, quantityImporterFreightSku, 1, 2, 3), 1, 2, 3, is(freightPriced), 2);
 
-        priceImporterFreightArticleCompositionCountryCategory = LM.addMGProp(LM.baseGroup, "priceImporterFreightArticleCompositionCountryCategory", "Цена",
+        priceImporterFreightArticleCompositionCountryCategory = addMGProp(baseGroup, "priceImporterFreightArticleCompositionCountryCategory", "Цена",
                 priceInOutImporterFreightSku, 1, 2, articleSku, 3, mainCompositionOriginFreightSku, 2, 3, countryOfOriginFreightSku, 2, 3, customCategory10FreightSku, 2, 3);
 
-        sumImporterFreightSku = LM.addJProp(LM.baseGroup, "sumImporterFreightSku", "Сумма", LM.multiplyDouble2, quantityImporterFreightSku, 1, 2, 3, priceInOutImporterFreightSku, 1, 2, 3);
-        sumImporterFreightCustomCategory6 = LM.addSGProp(LM.baseGroup, "sumImporterFreightCustomCategory6", "Сумма", sumImporterFreightSku, 1, 2, customCategory6FreightSku, 2, 3);
+        sumImporterFreightSku = addJProp(baseGroup, "sumImporterFreightSku", "Сумма", baseLM.multiplyDouble2, quantityImporterFreightSku, 1, 2, 3, priceInOutImporterFreightSku, 1, 2, 3);
+        sumImporterFreightCustomCategory6 = addSGProp(baseGroup, "sumImporterFreightCustomCategory6", "Сумма", sumImporterFreightSku, 1, 2, customCategory6FreightSku, 2, 3);
 
-        sumImporterFreightUnitSku = LM.addJProp(LM.baseGroup, "sumImporterFreightUnitSku", "Сумма", LM.multiplyDouble2, quantityImporterStockSku, 1, 2, 3, LM.addJProp(priceInOutImporterFreightSku, 1, freightFreightUnit, 2, 3), 1, 2, 3);
+        sumImporterFreightUnitSku = addJProp(baseGroup, "sumImporterFreightUnitSku", "Сумма", baseLM.multiplyDouble2, quantityImporterStockSku, 1, 2, 3, addJProp(priceInOutImporterFreightSku, 1, freightFreightUnit, 2, 3), 1, 2, 3);
 
-        sumImporterFreightUnitArticle = LM.addSGProp(LM.baseGroup, "sumImporterFreightUnitArticle", "Сумма", sumImporterFreightUnitSku, 1, 2, articleSku, 3);
+        sumImporterFreightUnitArticle = addSGProp(baseGroup, "sumImporterFreightUnitArticle", "Сумма", sumImporterFreightUnitSku, 1, 2, articleSku, 3);
 
-        sumImporterFreightArticleCompositionCountryCategory = LM.addJProp(LM.baseGroup, "sumImporterFreightArticleCompositionCountryCategory", "Сумма", LM.multiplyDouble2,
+        sumImporterFreightArticleCompositionCountryCategory = addJProp(baseGroup, "sumImporterFreightArticleCompositionCountryCategory", "Сумма", baseLM.multiplyDouble2,
                 quantityImporterFreightArticleCompositionCountryCategory, 1, 2, 3, 4, 5, 6,
                 priceImporterFreightArticleCompositionCountryCategory, 1, 2, 3, 4, 5, 6);
 
-        sumImporterFreight = LM.addSGProp(LM.baseGroup, "sumImporterFreight", "Сумма выходная", sumImporterFreightArticleCompositionCountryCategory, 1, 2);
+        sumImporterFreight = addSGProp(baseGroup, "sumImporterFreight", "Сумма выходная", sumImporterFreightArticleCompositionCountryCategory, 1, 2);
 
-        sumSbivkaImporterFreight = LM.addSGProp(LM.baseGroup, "sumSbivkaImporterFreight", "Сумма выходная", sumImporterFreightSku, 1, 2);
+        sumSbivkaImporterFreight = addSGProp(baseGroup, "sumSbivkaImporterFreight", "Сумма выходная", sumImporterFreightSku, 1, 2);
 
-        sumMarkupInImporterFreightSku = LM.addJProp(LM.baseGroup, "sumMarkupInImporterFreightSku", "Сумма надбавки", LM.multiplyDouble2, quantityProxyImporterFreightSku, 1, 2, 3, markupInImporterFreightSku, 1, 2, 3);
-        sumInOutImporterFreightSku = LM.addJProp(LM.baseGroup, "sumInOutImporterFreightSku", "Сумма выходная", LM.multiplyDouble2, quantityProxyImporterFreightSku, 1, 2, 3, priceInOutImporterFreightSku, 1, 2, 3);
+        sumMarkupInImporterFreightSku = addJProp(baseGroup, "sumMarkupInImporterFreightSku", "Сумма надбавки", baseLM.multiplyDouble2, quantityProxyImporterFreightSku, 1, 2, 3, markupInImporterFreightSku, 1, 2, 3);
+        sumInOutImporterFreightSku = addJProp(baseGroup, "sumInOutImporterFreightSku", "Сумма выходная", baseLM.multiplyDouble2, quantityProxyImporterFreightSku, 1, 2, 3, priceInOutImporterFreightSku, 1, 2, 3);
 
-        sumMarkupInImporterFreight = LM.addSGProp(LM.baseGroup, "sumMarkupInImporterFreight", "Сумма надбавки", sumMarkupInImporterFreightSku, 1, 2);
-        sumInOutImporterFreight = LM.addSGProp(LM.baseGroup, "sumInOutImporterFreight", "Сумма выходная", sumInOutImporterFreightSku, 1, 2);
+        sumMarkupInImporterFreight = addSGProp(baseGroup, "sumMarkupInImporterFreight", "Сумма надбавки", sumMarkupInImporterFreightSku, 1, 2);
+        sumInOutImporterFreight = addSGProp(baseGroup, "sumInOutImporterFreight", "Сумма выходная", sumInOutImporterFreightSku, 1, 2);
 
-        sumMarkupInFreight = LM.addSGProp(LM.baseGroup, "sumMarkupInFreight", "Сумма надбавки", sumMarkupInImporterFreight, 2);
-        sumInOutFreight = LM.addSGProp(LM.baseGroup, "sumInOutFreight", "Сумма выходная", sumInOutImporterFreight, 2);
+        sumMarkupInFreight = addSGProp(baseGroup, "sumMarkupInFreight", "Сумма надбавки", sumMarkupInImporterFreight, 2);
+        sumInOutFreight = addSGProp(baseGroup, "sumInOutFreight", "Сумма выходная", sumInOutImporterFreight, 2);
 
         // надбавка на цену с учётом стоимости фрахта
-        markupImporterFreightSku = LM.addJProp(LM.baseGroup, "markupImporterFreightSku", "Надбавка", LM.percent2, priceExpenseImporterFreightSku, 1, 2, 3, markupPercentImporterFreightSku, 1, 2, 3);
-        sumMarkupImporterFreightSku = LM.addJProp(LM.baseGroup, "sumMarkupImporterFreightSku", "Сумма надбавки", LM.multiplyDouble2, quantityImporterFreightSku, 1, 2, 3, markupImporterFreightSku, 1, 2, 3);
+        markupImporterFreightSku = addJProp(baseGroup, "markupImporterFreightSku", "Надбавка", baseLM.percent2, priceExpenseImporterFreightSku, 1, 2, 3, markupPercentImporterFreightSku, 1, 2, 3);
+        sumMarkupImporterFreightSku = addJProp(baseGroup, "sumMarkupImporterFreightSku", "Сумма надбавки", baseLM.multiplyDouble2, quantityImporterFreightSku, 1, 2, 3, markupImporterFreightSku, 1, 2, 3);
 
-        priceOutImporterFreightSku = LM.addJProp(LM.baseGroup, "priceOutImporterFreightSku", "Цена выходная", LM.sumDouble2, priceExpenseImporterFreightSku, 1, 2, 3, markupImporterFreightSku, 1, 2, 3);
-        sumOutImporterFreightSku = LM.addJProp(LM.baseGroup, "sumOutImporterFreightSku", "Сумма выходная", LM.multiplyDouble2, quantityImporterFreightSku, 1, 2, 3, priceOutImporterFreightSku, 1, 2, 3);
+        priceOutImporterFreightSku = addJProp(baseGroup, "priceOutImporterFreightSku", "Цена выходная", baseLM.sumDouble2, priceExpenseImporterFreightSku, 1, 2, 3, markupImporterFreightSku, 1, 2, 3);
+        sumOutImporterFreightSku = addJProp(baseGroup, "sumOutImporterFreightSku", "Сумма выходная", baseLM.multiplyDouble2, quantityImporterFreightSku, 1, 2, 3, priceOutImporterFreightSku, 1, 2, 3);
 
-        sumInImporterFreight = LM.addSGProp(LM.baseGroup, "sumInImporterFreight", "Сумма входная", sumInImporterFreightSku, 1, 2);
-        sumMarkupImporterFreight = LM.addSGProp(LM.baseGroup, "sumMarkupImporterFreight", "Сумма надбавки", sumMarkupImporterFreightSku, 1, 2);
+        sumInImporterFreight = addSGProp(baseGroup, "sumInImporterFreight", "Сумма входная", sumInImporterFreightSku, 1, 2);
+        sumMarkupImporterFreight = addSGProp(baseGroup, "sumMarkupImporterFreight", "Сумма надбавки", sumMarkupImporterFreightSku, 1, 2);
 
-        sumOutImporterFreight = LM.addSGProp(LM.baseGroup, "sumOutImporterFreight", "Сумма выходная", sumOutImporterFreightSku, 1, 2);
+        sumOutImporterFreight = addSGProp(baseGroup, "sumOutImporterFreight", "Сумма выходная", sumOutImporterFreightSku, 1, 2);
 
-        sumInFreight = LM.addSGProp(LM.baseGroup, "sumInFreight", "Сумма входная", sumInImporterFreight, 2);
-        sumMarkupFreight = LM.addSGProp(LM.baseGroup, "sumMarkupFreight", "Сумма надбавки", sumMarkupImporterFreight, 2);
-        sumOutFreight = LM.addSGProp(LM.baseGroup, "sumOutFreight", "Сумма выходная", sumOutImporterFreight, 2);
+        sumInFreight = addSGProp(baseGroup, "sumInFreight", "Сумма входная", sumInImporterFreight, 2);
+        sumMarkupFreight = addSGProp(baseGroup, "sumMarkupFreight", "Сумма надбавки", sumMarkupImporterFreight, 2);
+        sumOutFreight = addSGProp(baseGroup, "sumOutFreight", "Сумма выходная", sumOutImporterFreight, 2);
 
         // итоги с начала года
-        sumInCurrentYear = LM.addSGProp(LM.baseGroup, "sumInCurrentYear", "Итого вход", LM.addJProp(LM.and1, sumInFreight, 1, LM.addJProp(LM.equals2, LM.addJProp(LM.yearInDate, LM.currentDate), LM.addJProp(LM.yearInDate, LM.date, 1), 1), 1));
-        sumInOutCurrentYear = LM.addSGProp(LM.baseGroup, "sumInOutCurrentYear", "Итого выход", LM.addJProp(LM.and1, sumInOutFreight, 1, LM.addJProp(LM.equals2, LM.addJProp(LM.yearInDate, LM.currentDate), LM.addJProp(LM.yearInDate, LM.date, 1), 1), 1));
-        balanceSumCurrentYear = LM.addDUProp(LM.baseGroup, "balanceSumCurrentYear", "Сальдо", sumInOutCurrentYear, sumInCurrentYear);
+        sumInCurrentYear = addSGProp(baseGroup, "sumInCurrentYear", "Итого вход", addJProp(baseLM.and1, sumInFreight, 1, addJProp(baseLM.equals2, addJProp(baseLM.yearInDate, baseLM.currentDate), addJProp(baseLM.yearInDate, baseLM.date, 1), 1), 1));
+        sumInOutCurrentYear = addSGProp(baseGroup, "sumInOutCurrentYear", "Итого выход", addJProp(baseLM.and1, sumInOutFreight, 1, addJProp(baseLM.equals2, addJProp(baseLM.yearInDate, baseLM.currentDate), addJProp(baseLM.yearInDate, baseLM.date, 1), 1), 1));
+        balanceSumCurrentYear = addDUProp(baseGroup, "balanceSumCurrentYear", "Сальдо", sumInOutCurrentYear, sumInCurrentYear);
 
-        quantityImporterFreightBrandSupplier = LM.addSGProp(LM.baseGroup, "quantityImporterFreightBrandSupplier", "Кол-во позиций", quantityImporterFreightSku, 1, 2, brandSupplierArticleSku, 3);
+        quantityImporterFreightBrandSupplier = addSGProp(baseGroup, "quantityImporterFreightBrandSupplier", "Кол-во позиций", quantityImporterFreightSku, 1, 2, brandSupplierArticleSku, 3);
 
-        quantityImporterFreight = LM.addSGProp(LM.baseGroup, "quantityImporterFreight", "Кол-во позиций", quantityProxyImporterFreightSku, 1, 2);
-        quantitySbivkaImporterFreight = LM.addSGProp(LM.baseGroup, "quantitySbivkaImporterFreight", "Кол-во позиций", quantityImporterFreightSku, 1, 2);
+        quantityImporterFreight = addSGProp(baseGroup, "quantityImporterFreight", "Кол-во позиций", quantityProxyImporterFreightSku, 1, 2);
+        quantitySbivkaImporterFreight = addSGProp(baseGroup, "quantitySbivkaImporterFreight", "Кол-во позиций", quantityImporterFreightSku, 1, 2);
 
         // Текущие палеты/коробки для приема
-        currentPalletRouteUser = LM.addDProp("currentPalletRouteUser", "Тек. паллета (ИД)", pallet, route, LM.user);
+        currentPalletRouteUser = addDProp("currentPalletRouteUser", "Тек. паллета (ИД)", pallet, route, baseLM.user);
 
-        currentPalletRoute = LM.addJProp(true, "currentPalletRoute", "Тек. паллета (ИД)", currentPalletRouteUser, 1, LM.currentUser);
-        barcodeCurrentPalletRoute = LM.addJProp("barcodeCurrentPalletRoute", "Тек. паллета (штрих-код)", LM.barcode, currentPalletRoute, 1);
+        currentPalletRoute = addJProp(true, "currentPalletRoute", "Тек. паллета (ИД)", currentPalletRouteUser, 1, baseLM.currentUser);
+        barcodeCurrentPalletRoute = addJProp("barcodeCurrentPalletRoute", "Тек. паллета (штрих-код)", baseLM.barcode, currentPalletRoute, 1);
 
-        sumNetWeightFreightSku = LM.addJProp(LM.baseGroup, "sumNetWeightFreightSku", "Вес нетто (всего)", LM.multiplyDouble2, quantityFreightSku, 1, 2, netWeightSku, 2);
+        sumNetWeightFreightSku = addJProp(baseGroup, "sumNetWeightFreightSku", "Вес нетто (всего)", baseLM.multiplyDouble2, quantityFreightSku, 1, 2, netWeightSku, 2);
 
-        grossWeightCurrentPalletRoute = LM.addJProp(true, "grossWeightCurrentPalletRoute", "Вес брутто", grossWeightPallet, currentPalletRoute, 1);
-        grossWeightFreight = LM.addSUProp(LM.baseGroup, "freightGrossWeight", "Вес брутто (фрахт)", Union.SUM,
-                LM.addSGProp(grossWeightPallet, freightPallet, 1),
-                LM.addSGProp(grossWeightDirectInvoice, freightDirectInvoice, 1));
+        grossWeightCurrentPalletRoute = addJProp(true, "grossWeightCurrentPalletRoute", "Вес брутто", grossWeightPallet, currentPalletRoute, 1);
+        grossWeightFreight = addSUProp(baseGroup, "freightGrossWeight", "Вес брутто (фрахт)", Union.SUM,
+                addSGProp(grossWeightPallet, freightPallet, 1),
+                addSGProp(grossWeightDirectInvoice, freightDirectInvoice, 1));
 
-        sumGrossWeightFreightSku = LM.addPGProp(LM.baseGroup, "sumGrossWeightFreightSku", false, 1, false, "Вес брутто",
+        sumGrossWeightFreightSku = addPGProp(baseGroup, "sumGrossWeightFreightSku", false, 1, false, "Вес брутто",
                 sumNetWeightFreightSku,
                 grossWeightFreight, 1);
 
-        grossWeightFreightSkuAggr = LM.addJProp(LM.baseGroup, "grossWeightFreightSkuAggr", "Вес брутто", LM.divideDouble2, sumGrossWeightFreightSku, 1, 2, quantityFreightSku, 1, 2);
-        grossWeightFreightSku = LM.addDProp(LM.baseGroup, "grossWeightFreightSku", "Вес брутто", DoubleClass.instance, freight, sku);
-        grossWeightFreightSku.setDerivedForcedChange(LM.addJProp(LM.and1, grossWeightFreightSkuAggr, 1, 2, quantityFreightSku, 1, 2), 1, 2, LM.is(freightChanged), 1);
+        grossWeightFreightSkuAggr = addJProp(baseGroup, "grossWeightFreightSkuAggr", "Вес брутто", baseLM.divideDouble2, sumGrossWeightFreightSku, 1, 2, quantityFreightSku, 1, 2);
+        grossWeightFreightSku = addDProp(baseGroup, "grossWeightFreightSku", "Вес брутто", DoubleClass.instance, freight, sku);
+        grossWeightFreightSku.setDerivedForcedChange(addJProp(baseLM.and1, grossWeightFreightSkuAggr, 1, 2, quantityFreightSku, 1, 2), 1, 2, is(freightChanged), 1);
 
-        grossWeightImporterFreightSku = LM.addJProp(LM.baseGroup, "grossWeightImporterFreightSku", "Вес брутто", LM.multiplyDouble2, quantityImporterFreightSku, 1, 2, 3, grossWeightFreightSku, 2, 3);
+        grossWeightImporterFreightSku = addJProp(baseGroup, "grossWeightImporterFreightSku", "Вес брутто", baseLM.multiplyDouble2, quantityImporterFreightSku, 1, 2, 3, grossWeightFreightSku, 2, 3);
 
-        grossWeightImporterFreightCustomCategory6 = LM.addSGProp(LM.baseGroup, "grossWeightImporterFreightCustomCategory6", "Вес брутто", grossWeightImporterFreightSku, 1, 2, customCategory6FreightSku, 2, 3);
+        grossWeightImporterFreightCustomCategory6 = addSGProp(baseGroup, "grossWeightImporterFreightCustomCategory6", "Вес брутто", grossWeightImporterFreightSku, 1, 2, customCategory6FreightSku, 2, 3);
 
-        grossWeightImporterFreight = LM.addSGProp(LM.baseGroup, "grossWeightImporterFreight", "Вес брутто", grossWeightImporterFreightSku, 1, 2);
-        grossWeightImporterFreightUnitSku = LM.addJProp(LM.baseGroup, "grossWeightImporterFreightUnitSku", "Вес брутто", LM.multiplyDouble2, quantityImporterStockSku, 1, 2, 3, LM.addJProp(grossWeightFreightSku, freightFreightUnit, 2, 3), 1, 2, 3);
-        grossWeightImporterFreightUnitArticle = LM.addSGProp(LM.baseGroup, "grossWeightImporterFreightUnitArticle", "Вес брутто", grossWeightImporterFreightUnitSku, 1, 2, articleSku, 3);
-        grossWeightImporterFreightUnit = LM.addSGProp(LM.baseGroup, "grossWeightImporterFreightUnit", "Вес брутто", grossWeightImporterFreightUnitSku, 1, 2);
+        grossWeightImporterFreight = addSGProp(baseGroup, "grossWeightImporterFreight", "Вес брутто", grossWeightImporterFreightSku, 1, 2);
+        grossWeightImporterFreightUnitSku = addJProp(baseGroup, "grossWeightImporterFreightUnitSku", "Вес брутто", baseLM.multiplyDouble2, quantityImporterStockSku, 1, 2, 3, addJProp(grossWeightFreightSku, freightFreightUnit, 2, 3), 1, 2, 3);
+        grossWeightImporterFreightUnitArticle = addSGProp(baseGroup, "grossWeightImporterFreightUnitArticle", "Вес брутто", grossWeightImporterFreightUnitSku, 1, 2, articleSku, 3);
+        grossWeightImporterFreightUnit = addSGProp(baseGroup, "grossWeightImporterFreightUnit", "Вес брутто", grossWeightImporterFreightUnitSku, 1, 2);
 
-        grossWeightImporterFreightArticleCompositionCountryCategory = LM.addSGProp(LM.baseGroup, "grossWeightImporterFreightArticleCompositionCountryCategory", "Вес брутто",
+        grossWeightImporterFreightArticleCompositionCountryCategory = addSGProp(baseGroup, "grossWeightImporterFreightArticleCompositionCountryCategory", "Вес брутто",
                 grossWeightImporterFreightSku, 1, 2, articleSku, 3, mainCompositionOriginFreightSku, 2, 3, countryOfOriginFreightSku, 2, 3, customCategory10FreightSku, 2, 3);
 
-        currentFreightBoxRouteUser = LM.addDProp("currentFreightBoxRouteUser", "Тек. короб (ИД)", freightBox, route, LM.user);
+        currentFreightBoxRouteUser = addDProp("currentFreightBoxRouteUser", "Тек. короб (ИД)", freightBox, route, baseLM.user);
 
-        currentFreightBoxRoute = LM.addJProp(true, "currentFreightBoxRoute", "Тек. короб (ИД)", currentFreightBoxRouteUser, 1, LM.currentUser);
-        barcodeCurrentFreightBoxRoute = LM.addJProp("barcodeCurrentFreightBoxRoute", "Тек. короб (штрих-код)", LM.barcode, currentFreightBoxRoute, 1);
+        currentFreightBoxRoute = addJProp(true, "currentFreightBoxRoute", "Тек. короб (ИД)", currentFreightBoxRouteUser, 1, baseLM.currentUser);
+        barcodeCurrentFreightBoxRoute = addJProp("barcodeCurrentFreightBoxRoute", "Тек. короб (штрих-код)", baseLM.barcode, currentFreightBoxRoute, 1);
 
-        destinationCurrentFreightBoxRoute = LM.addJProp(true, "destinationCurrentFreightBoxRoute", "Пункт назначения тек. короба (ИД)", destinationFreightBox, currentFreightBoxRoute, 1);
-        nameDestinationCurrentFreightBoxRoute = LM.addJProp("nameDestinationCurrentFreightBoxRoute", "Пункт назначения тек. короба", LM.name, destinationCurrentFreightBoxRoute, 1);
+        destinationCurrentFreightBoxRoute = addJProp(true, "destinationCurrentFreightBoxRoute", "Пункт назначения тек. короба (ИД)", destinationFreightBox, currentFreightBoxRoute, 1);
+        nameDestinationCurrentFreightBoxRoute = addJProp("nameDestinationCurrentFreightBoxRoute", "Пункт назначения тек. короба", baseLM.name, destinationCurrentFreightBoxRoute, 1);
 
-        isCurrentFreightBox = LM.addJProp(LM.equals2, LM.addJProp(true, currentFreightBoxRoute, routeCreationFreightBoxFreightBox, 1), 1, 1);
-        isCurrentPallet = LM.addJProp(LM.equals2, LM.addJProp(true, currentPalletRoute, routeCreationPalletPallet, 1), 1, 1);
-        currentPalletFreightBox = LM.addJProp(currentPalletRoute, routeCreationFreightBoxFreightBox, 1);
-        isCurrentPalletFreightBox = LM.addJProp(LM.equals2, palletFreightBox, 1, currentPalletFreightBox, 1);
-        isStoreFreightBoxSupplierBox = LM.addJProp(LM.equals2, destinationFreightBox, 1, destinationSupplierBox, 2);
+        isCurrentFreightBox = addJProp(baseLM.equals2, addJProp(true, currentFreightBoxRoute, routeCreationFreightBoxFreightBox, 1), 1, 1);
+        isCurrentPallet = addJProp(baseLM.equals2, addJProp(true, currentPalletRoute, routeCreationPalletPallet, 1), 1, 1);
+        currentPalletFreightBox = addJProp(currentPalletRoute, routeCreationFreightBoxFreightBox, 1);
+        isCurrentPalletFreightBox = addJProp(baseLM.equals2, palletFreightBox, 1, currentPalletFreightBox, 1);
+        isStoreFreightBoxSupplierBox = addJProp(baseLM.equals2, destinationFreightBox, 1, destinationSupplierBox, 2);
 
-        barcodeActionSeekPallet = LM.addJProp(true, "Найти палету", isCurrentPallet, LM.barcodeToObject, 1);
-        barcodeActionCheckPallet = LM.addJProp(true, "Проверка паллеты",
-                LM.addJProp(true, LM.and(false, true),
-                        LM.addStopActionProp("Для маршрута выбранного короба не задана паллета", "Поиск по штрих-коду"),
-                        LM.is(freightBox), 1,
-                        currentPalletFreightBox, 1), LM.barcodeToObject, 1);
-        barcodeActionSeekFreightBox = LM.addJProp(true, "Найти короб для транспортировки", isCurrentFreightBox, LM.barcodeToObject, 1);
-        barcodeActionSetPallet = LM.addJProp(true, "Установить паллету", isCurrentPalletFreightBox, LM.barcodeToObject, 1);
-        barcodeActionSetStore = LM.addJProp(true, "Установить магазин", isStoreFreightBoxSupplierBox, LM.barcodeToObject, 1, 2);
+        barcodeActionSeekPallet = addJProp(true, "Найти палету", isCurrentPallet, baseLM.barcodeToObject, 1);
+        barcodeActionCheckPallet = addJProp(true, "Проверка паллеты",
+                addJProp(true, and(false, true),
+                        addStopActionProp("Для маршрута выбранного короба не задана паллета", "Поиск по штрих-коду"),
+                        is(freightBox), 1,
+                        currentPalletFreightBox, 1), baseLM.barcodeToObject, 1);
+        barcodeActionSeekFreightBox = addJProp(true, "Найти короб для транспортировки", isCurrentFreightBox, baseLM.barcodeToObject, 1);
+        barcodeActionSetPallet = addJProp(true, "Установить паллету", isCurrentPalletFreightBox, baseLM.barcodeToObject, 1);
+        barcodeActionSetStore = addJProp(true, "Установить магазин", isStoreFreightBoxSupplierBox, baseLM.barcodeToObject, 1, 2);
 
-        changePallet = LM.addJProp(true, "Изменить паллету", isCurrentPalletFreightBox, currentFreightBoxRoute, 1);
+        changePallet = addJProp(true, "Изменить паллету", isCurrentPalletFreightBox, currentFreightBoxRoute, 1);
 
-        barcodeActionSetFreight = LM.addJProp(true, "Установить фрахт", equalsPalletFreight, LM.barcodeToObject, 1, 2);
+        barcodeActionSetFreight = addJProp(true, "Установить фрахт", equalsPalletFreight, baseLM.barcodeToObject, 1, 2);
 
-        addBoxShipmentDetailBoxShipmentSupplierBoxRouteBarcode = LM.addJProp(true, "Добавить строку поставки",
+        addBoxShipmentDetailBoxShipmentSupplierBoxRouteBarcode = addJProp(true, "Добавить строку поставки",
                 addBoxShipmentDetailBoxShipmentSupplierBoxStockBarcode, 1, 2, currentFreightBoxRoute, 3, 4);
 
-        addSimpleShipmentDetailSimpleShipmentRouteBarcode = LM.addJProp(true, "Добавить строку поставки",
+        addSimpleShipmentDetailSimpleShipmentRouteBarcode = addJProp(true, "Добавить строку поставки",
                 addSimpleShipmentSimpleShipmentDetailStockBarcode, 1, currentFreightBoxRoute, 2, 3);
 
-        quantityRouteSku = LM.addJProp(LM.baseGroup, "quantityRouteSku", "Оприход. (МХ)", quantityStockSku, currentFreightBoxRoute, 1, 2);
+        quantityRouteSku = addJProp(baseGroup, "quantityRouteSku", "Оприход. (МХ)", quantityStockSku, currentFreightBoxRoute, 1, 2);
 
-        quantitySupplierBoxBoxShipmentRouteSku = LM.addJProp(LM.baseGroup, true, "quantitySupplierBoxBoxShipmentRouteSku", "Кол-во оприход.",
+        quantitySupplierBoxBoxShipmentRouteSku = addJProp(baseGroup, true, "quantitySupplierBoxBoxShipmentRouteSku", "Кол-во оприход.",
                 quantitySupplierBoxBoxShipmentStockSku, 1, 2, currentFreightBoxRoute, 3, 4);
-        quantitySimpleShipmentRouteSku = LM.addJProp(LM.baseGroup, true, "quantitySimpleShipmentRouteSku", "Кол-во оприход.",
+        quantitySimpleShipmentRouteSku = addJProp(baseGroup, true, "quantitySimpleShipmentRouteSku", "Кол-во оприход.",
                 quantitySimpleShipmentStockSku, 1, currentFreightBoxRoute, 2, 3);
 
-        createFreightBox = LM.addJProp(true, "Сгенерировать короба", LM.addAAProp(freightBox, LM.barcode, LM.barcodePrefix, true), quantityCreationFreightBox, 1);
-        createPallet = LM.addJProp(true, "Сгенерировать паллеты", LM.addAAProp(pallet, LM.barcode, LM.barcodePrefix, true), quantityCreationPallet, 1);
+        createFreightBox = addJProp(true, "Сгенерировать короба", addAAProp(freightBox, baseLM.barcode, baseLM.barcodePrefix, true), quantityCreationFreightBox, 1);
+        createPallet = addJProp(true, "Сгенерировать паллеты", addAAProp(pallet, baseLM.barcode, baseLM.barcodePrefix, true), quantityCreationPallet, 1);
 
-        barcodeActionCheckFreightBox = LM.addJProp(true, "Проверка короба для транспортировки",
-                LM.addJProp(true, LM.and(false, false, true),
-                        LM.addStopActionProp("Для выбранного маршрута не задан короб для транспортировки", "Поиск по штрих-коду"),
-                        LM.is(sku), 2,
-                        LM.is(route), 1,
-                        currentFreightBoxRoute, 1), 1, LM.barcodeToObject, 2);
-        barcodeAction4 = LM.addJProp(true, "Ввод штрих-кода 4",
-                LM.addCUProp(
-                        LM.addSCProp(LM.addJProp(true, quantitySupplierBoxBoxShipmentStockSku, 1, 2, currentFreightBoxRoute, 3, 4))
-                ), 1, 2, 3, LM.barcodeToObject, 4);
-        barcodeAction3 = LM.addJProp(true, "Ввод штрих-кода 3",
-                LM.addCUProp(
-                        LM.addSCProp(LM.addJProp(true, quantitySimpleShipmentStockSku, 1, currentFreightBoxRoute, 2, 3))
-                ), 1, 2, LM.barcodeToObject, 3);
+        barcodeActionCheckFreightBox = addJProp(true, "Проверка короба для транспортировки",
+                addJProp(true, and(false, false, true),
+                        addStopActionProp("Для выбранного маршрута не задан короб для транспортировки", "Поиск по штрих-коду"),
+                        is(sku), 2,
+                        is(route), 1,
+                        currentFreightBoxRoute, 1), 1, baseLM.barcodeToObject, 2);
+        barcodeAction4 = addJProp(true, "Ввод штрих-кода 4",
+                addCUProp(
+                        addSCProp(addJProp(true, quantitySupplierBoxBoxShipmentStockSku, 1, 2, currentFreightBoxRoute, 3, 4))
+                ), 1, 2, 3, baseLM.barcodeToObject, 4);
+        barcodeAction3 = addJProp(true, "Ввод штрих-кода 3",
+                addCUProp(
+                        addSCProp(addJProp(true, quantitySimpleShipmentStockSku, 1, currentFreightBoxRoute, 2, 3))
+                ), 1, 2, baseLM.barcodeToObject, 3);
     }
 
     public LP addDEAProp() {
-        return LM.addProperty(null, new LP<ClassPropertyInterface>(new DeclarationExportActionProperty("declarationExport", "Экспорт декларанта", BL, importer, freight)));
+        return addProperty(null, new LP<ClassPropertyInterface>(new DeclarationExportActionProperty("declarationExport", "Экспорт декларанта", BL, importer, freight)));
     }
 
     @Override
@@ -2072,75 +2074,75 @@ public class RomanLogicsModule extends LogicsModule {
 
     @Override
     public void initNavigators() throws JRException, FileNotFoundException {
-        NavigatorElement classifier = new NavigatorElement(LM.baseElement, "classifier", "Справочники");
+        NavigatorElement classifier = new NavigatorElement(baseLM.baseElement, "classifier", "Справочники");
         NavigatorElement classifierCurrency = new NavigatorElement(classifier, "classifierCurrency", "Валюты и курсы");
         classifierCurrency.add(currency.getClassForm(BL));
         classifierCurrency.add(typeExchange.getClassForm(BL));
-        LM.addFormEntity(new RateCurrencyFormEntity(classifierCurrency, "rateCurrencyForm", "Курсы валют"));
+        addFormEntity(new RateCurrencyFormEntity(classifierCurrency, "rateCurrencyForm", "Курсы валют"));
 
         NavigatorElement classifierItem = new NavigatorElement(classifier, "classifierItem", "Для описания товаров");
-        LM.addFormEntity(new CustomCategoryFormEntity(classifierItem, "customCategoryForm", "ТН ВЭД (изменения)", false));
-        LM.addFormEntity(new CustomCategoryFormEntity(classifierItem, "customCategoryForm2", "ТН ВЭД (дерево)", true));
+        addFormEntity(new CustomCategoryFormEntity(classifierItem, "customCategoryForm", "ТН ВЭД (изменения)", false));
+        addFormEntity(new CustomCategoryFormEntity(classifierItem, "customCategoryForm2", "ТН ВЭД (дерево)", true));
         classifierItem.add(category.getClassForm(BL));
         classifierItem.add(commonSize.getClassForm(BL));
         classifierItem.add(season.getClassForm(BL));
-        classifierItem.add(LM.country.getClassForm(BL));
+        classifierItem.add(baseLM.country.getClassForm(BL));
         classifierItem.add(unitOfMeasure.getClassForm(BL));
 
-        LM.addFormEntity(new GlobalParamFormEntity(classifier, "globalParamForm", "Общие параметры"));
-        LM.addFormEntity(new ColorSizeSupplierFormEntity(classifier, "сolorSizeSupplierForm", "Поставщики"));
+        addFormEntity(new GlobalParamFormEntity(classifier, "globalParamForm", "Общие параметры"));
+        addFormEntity(new ColorSizeSupplierFormEntity(classifier, "сolorSizeSupplierForm", "Поставщики"));
         classifier.add(importer.getClassForm(BL));
         classifier.add(exporter.getClassForm(BL));
         classifier.add(store.getClassForm(BL));
-        LM.addFormEntity(new ContractFormEntity(classifier, "contractForm", "Договора"));
-        LM.addFormEntity(new NomenclatureFormEntity(classifier, "nomenclatureForm", "Номенклатура"));
+        addFormEntity(new ContractFormEntity(classifier, "contractForm", "Договора"));
+        addFormEntity(new NomenclatureFormEntity(classifier, "nomenclatureForm", "Номенклатура"));
         classifier.add(freightType.getClassForm(BL));
 
-        createItemForm = LM.addFormEntity(new CreateItemFormEntity(null, "createItemForm", "Ввод товара"));
+        createItemForm = addFormEntity(new CreateItemFormEntity(null, "createItemForm", "Ввод товара"));
 
-        NavigatorElement printForms = new NavigatorElement(LM.baseElement, "printForms", "Печатные формы");
+        NavigatorElement printForms = new NavigatorElement(baseLM.baseElement, "printForms", "Печатные формы");
 
-        LM.addFormEntity(new AnnexInvoiceFormEntity(printForms, "annexInvoiceForm", "Приложение к инвойсу", false));
-        invoiceFromFormEntity = LM.addFormEntity(new AnnexInvoiceFormEntity(printForms, "annexInvoiceForm2", "Приложение к инвойсу (перевод)", true));
-        LM.addFormEntity(new InvoiceFromFormEntity(printForms, "invoiceFromForm", "Исходящие инвойсы", false));
-        LM.addFormEntity(new InvoiceFromFormEntity(printForms, "invoiceFromForm2", "Исходящие инвойсы (перевод)", true));
+        addFormEntity(new AnnexInvoiceFormEntity(printForms, "annexInvoiceForm", "Приложение к инвойсу", false));
+        invoiceFromFormEntity = addFormEntity(new AnnexInvoiceFormEntity(printForms, "annexInvoiceForm2", "Приложение к инвойсу (перевод)", true));
+        addFormEntity(new InvoiceFromFormEntity(printForms, "invoiceFromForm", "Исходящие инвойсы", false));
+        addFormEntity(new InvoiceFromFormEntity(printForms, "invoiceFromForm2", "Исходящие инвойсы (перевод)", true));
 
-        LM.addFormEntity(new ProformInvoiceFormEntity(printForms, "proformInvoiceForm", "Исходящие инвойсы-проформы", false));
-        LM.addFormEntity(new ProformInvoiceFormEntity(printForms, "proformInvoiceForm2", "Исходящие инвойсы-проформы (перевод)", true));
+        addFormEntity(new ProformInvoiceFormEntity(printForms, "proformInvoiceForm", "Исходящие инвойсы-проформы", false));
+        addFormEntity(new ProformInvoiceFormEntity(printForms, "proformInvoiceForm2", "Исходящие инвойсы-проформы (перевод)", true));
 
-        LM.addFormEntity(new SbivkaFormEntity(printForms, "sbivkaForm", "Сбивка товаров"));
-        LM.addFormEntity(new PackingListFormEntity(printForms, "packingListForm", "Исходящие упаковочные листы"));
-        LM.addFormEntity(new PackingListBoxFormEntity(printForms, "packingListBoxForm", "Упаковочные листы коробов"));
-        FormEntity createPalletForm = LM.addFormEntity(new CreatePalletFormEntity(printForms, "createPalletForm", "Штрих-коды паллет", FormType.PRINT));
-        FormEntity createFreightBoxForm = LM.addFormEntity(new CreateFreightBoxFormEntity(printForms, "createFreightBoxForm", "Штрих-коды коробов", FormType.PRINT));
+        addFormEntity(new SbivkaFormEntity(printForms, "sbivkaForm", "Сбивка товаров"));
+        addFormEntity(new PackingListFormEntity(printForms, "packingListForm", "Исходящие упаковочные листы"));
+        addFormEntity(new PackingListBoxFormEntity(printForms, "packingListBoxForm", "Упаковочные листы коробов"));
+        FormEntity createPalletForm = addFormEntity(new CreatePalletFormEntity(printForms, "createPalletForm", "Штрих-коды паллет", FormType.PRINT));
+        FormEntity createFreightBoxForm = addFormEntity(new CreateFreightBoxFormEntity(printForms, "createFreightBoxForm", "Штрих-коды коробов", FormType.PRINT));
 
-        NavigatorElement purchase = new NavigatorElement(LM.baseElement, "purchase", "Управление закупками");
-        LM.addFormEntity(new OrderFormEntity(purchase, "orderForm", "Заказы"));
-        LM.addFormEntity(new InvoiceFormEntity(purchase, "boxInvoiceForm", "Инвойсы по коробам", true));
-        //LM.addFormEntity(new InvoiceFormEntity(purchase, "simpleInvoiceForm", "Инвойсы без коробов", false));
-        LM.addFormEntity(new ShipmentListFormEntity(purchase, "boxShipmentListForm", "Поставки по коробам", true));
-        //LM.addFormEntity(new ShipmentListFormEntity(purchase, "simpleShipmentListForm", "Поставки без коробов", false));
-        LM.addFormEntity(new PricatFormEntity(purchase, "pricatForm", "Прайсы"));
+        NavigatorElement purchase = new NavigatorElement(baseLM.baseElement, "purchase", "Управление закупками");
+        addFormEntity(new OrderFormEntity(purchase, "orderForm", "Заказы"));
+        addFormEntity(new InvoiceFormEntity(purchase, "boxInvoiceForm", "Инвойсы по коробам", true));
+        //addFormEntity(new InvoiceFormEntity(purchase, "simpleInvoiceForm", "Инвойсы без коробов", false));
+        addFormEntity(new ShipmentListFormEntity(purchase, "boxShipmentListForm", "Поставки по коробам", true));
+        //addFormEntity(new ShipmentListFormEntity(purchase, "simpleShipmentListForm", "Поставки без коробов", false));
+        addFormEntity(new PricatFormEntity(purchase, "pricatForm", "Прайсы"));
 
-        NavigatorElement shipment = new NavigatorElement(LM.baseElement, "shipment", "Управление фрахтами");
-        LM.addFormEntity(new FreightShipmentFormEntity(shipment, "freightShipmentForm", "Комплектация фрахта"));
-        LM.addFormEntity(new FreightInvoiceFormEntity(shipment, "freightInvoiceForm", "Расценка фрахта"));
-        LM.addFormEntity(new FreightChangeFormEntity(shipment, "freightChangeForm", "Обработка фрахта"));
+        NavigatorElement shipment = new NavigatorElement(baseLM.baseElement, "shipment", "Управление фрахтами");
+        addFormEntity(new FreightShipmentFormEntity(shipment, "freightShipmentForm", "Комплектация фрахта"));
+        addFormEntity(new FreightInvoiceFormEntity(shipment, "freightInvoiceForm", "Расценка фрахта"));
+        addFormEntity(new FreightChangeFormEntity(shipment, "freightChangeForm", "Обработка фрахта"));
 
-        NavigatorElement distribution = new NavigatorElement(LM.baseElement, "distribution", "Управление складом");
-        FormEntity createPalletFormCreate = LM.addFormEntity(new CreatePalletFormEntity(distribution, "createPalletFormAdd", "Сгенерировать паллеты", FormType.ADD));
-        LM.addFormEntity(new CreatePalletFormEntity(createPalletFormCreate, "createPalletFormList", "Документы генерации паллет", FormType.LIST));
-        FormEntity createFreightBoxFormAdd = LM.addFormEntity(new CreateFreightBoxFormEntity(distribution, "createFreightBoxFormAdd", "Сгенерировать короба", FormType.ADD));
-        LM.addFormEntity(new CreateFreightBoxFormEntity(createFreightBoxFormAdd, "createFreightBoxFormList", "Документы генерации коробов", FormType.LIST));
-        LM.addFormEntity(new ShipmentSpecFormEntity(distribution, "boxShipmentSpecForm", "Прием товара по коробам", true));
-        LM.addFormEntity(new ShipmentSpecFormEntity(distribution, "simpleShipmentSpecForm", "Прием товара без коробов", false));
-        LM.addFormEntity(new FreightShipmentStoreFormEntity(distribution, "freightShipmentStoreForm", "Комплектация фрахта (на складе)"));
-        LM.addFormEntity(new BalanceBrandWarehouseFormEntity(distribution, "balanceBrandWarehouseForm", "Остатки на складе (по брендам)"));
-        LM.addFormEntity(new BalanceWarehouseFormEntity(distribution, "balanceWarehouseForm", "Остатки на складе"));
-        LM.addFormEntity(new InvoiceShipmentFormEntity(distribution, "invoiceShipmentForm", "Сравнение по инвойсам"));
+        NavigatorElement distribution = new NavigatorElement(baseLM.baseElement, "distribution", "Управление складом");
+        FormEntity createPalletFormCreate = addFormEntity(new CreatePalletFormEntity(distribution, "createPalletFormAdd", "Сгенерировать паллеты", FormType.ADD));
+        addFormEntity(new CreatePalletFormEntity(createPalletFormCreate, "createPalletFormList", "Документы генерации паллет", FormType.LIST));
+        FormEntity createFreightBoxFormAdd = addFormEntity(new CreateFreightBoxFormEntity(distribution, "createFreightBoxFormAdd", "Сгенерировать короба", FormType.ADD));
+        addFormEntity(new CreateFreightBoxFormEntity(createFreightBoxFormAdd, "createFreightBoxFormList", "Документы генерации коробов", FormType.LIST));
+        addFormEntity(new ShipmentSpecFormEntity(distribution, "boxShipmentSpecForm", "Прием товара по коробам", true));
+        addFormEntity(new ShipmentSpecFormEntity(distribution, "simpleShipmentSpecForm", "Прием товара без коробов", false));
+        addFormEntity(new FreightShipmentStoreFormEntity(distribution, "freightShipmentStoreForm", "Комплектация фрахта (на складе)"));
+        addFormEntity(new BalanceBrandWarehouseFormEntity(distribution, "balanceBrandWarehouseForm", "Остатки на складе (по брендам)"));
+        addFormEntity(new BalanceWarehouseFormEntity(distribution, "balanceWarehouseForm", "Остатки на складе"));
+        addFormEntity(new InvoiceShipmentFormEntity(distribution, "invoiceShipmentForm", "Сравнение по инвойсам"));
 
         // пока не поддерживается из-за того, что пока нет расчета себестоимости для внутреннего перемещения
-//        LM.addFormEntity(new StockTransferFormEntity(distribution, "stockTransferForm", "Внутреннее перемещение"));
+//        addFormEntity(new StockTransferFormEntity(distribution, "stockTransferForm", "Внутреннее перемещение"));
     }
 
     private class BarcodeFormEntity extends FormEntity<RomanBusinessLogics> {
@@ -2154,12 +2156,12 @@ public class RomanLogicsModule extends LogicsModule {
         private BarcodeFormEntity(NavigatorElement parent, String sID, String caption) {
             super(parent, sID, caption);
 
-            objBarcode = addSingleGroupObject(StringClass.get(13), "Штрих-код", LM.objectValue, LM.barcodeObjectName);
+            objBarcode = addSingleGroupObject(StringClass.get(13), "Штрих-код", baseLM.objectValue, baseLM.barcodeObjectName);
             objBarcode.groupTo.setSingleClassView(ClassViewType.PANEL);
 
             objBarcode.resetOnApply = true;
 
-            addPropertyDraw(LM.reverseBarcode);
+            addPropertyDraw(baseLM.reverseBarcode);
         }
 
         @Override
@@ -2170,17 +2172,17 @@ public class RomanLogicsModule extends LogicsModule {
             if (getDefaultFont() != null)
                 design.setFont(getDefaultFont());
 
-            PropertyDrawView barcodeView = design.get(getPropertyDraw(LM.objectValue, objBarcode));
+            PropertyDrawView barcodeView = design.get(getPropertyDraw(baseLM.objectValue, objBarcode));
 
-            design.getPanelContainer(design.get(objBarcode.groupTo)).add(design.get(getPropertyDraw(LM.reverseBarcode)));
+            design.getPanelContainer(design.get(objBarcode.groupTo)).add(design.get(getPropertyDraw(baseLM.reverseBarcode)));
 //            design.getPanelContainer(design.get(objBarcode.groupTo)).constraints.maxVariables = 0;
 
-            design.setBackground(LM.barcodeObjectName, new Color(240, 240, 240));
+            design.setBackground(baseLM.barcodeObjectName, new Color(240, 240, 240));
 
             design.setEditKey(barcodeView, KeyStroke.getKeyStroke(KeyEvent.VK_F4, 0));
-            design.setEditKey(LM.reverseBarcode, KeyStroke.getKeyStroke(KeyEvent.VK_F5, 0));
+            design.setEditKey(baseLM.reverseBarcode, KeyStroke.getKeyStroke(KeyEvent.VK_F5, 0));
 
-            design.setFocusable(LM.reverseBarcode, false);
+            design.setFocusable(baseLM.reverseBarcode, false);
             design.setFocusable(false, objBarcode.groupTo);
 
             return design;
@@ -2214,18 +2216,18 @@ public class RomanLogicsModule extends LogicsModule {
         private RateCurrencyFormEntity(NavigatorElement parent, String sID, String caption) {
             super(parent, sID, caption);
 
-            objTypeExchange = addSingleGroupObject(typeExchange, "Тип обмена", LM.objectValue, LM.name, nameCurrencyTypeExchange);
+            objTypeExchange = addSingleGroupObject(typeExchange, "Тип обмена", baseLM.objectValue, baseLM.name, nameCurrencyTypeExchange);
             objTypeExchange.groupTo.initClassView = ClassViewType.PANEL;
 
-            objCurrency = addSingleGroupObject(currency, "Валюта", LM.name);
+            objCurrency = addSingleGroupObject(currency, "Валюта", baseLM.name);
             objCurrency.groupTo.initClassView = ClassViewType.GRID;
 
-            objDate = addSingleGroupObject(DateClass.instance, "Дата", LM.objectValue);
+            objDate = addSingleGroupObject(DateClass.instance, "Дата", baseLM.objectValue);
             objDate.groupTo.setSingleClassView(ClassViewType.PANEL);
 
             addPropertyDraw(rateExchange, objTypeExchange, objCurrency, objDate);
 
-            objDateRate = addSingleGroupObject(DateClass.instance, "Дата", LM.objectValue);
+            objDateRate = addSingleGroupObject(DateClass.instance, "Дата", baseLM.objectValue);
 
             addPropertyDraw(rateExchange, objTypeExchange, objCurrency, objDateRate);
             setReadOnly(rateExchange, true, objDateRate.groupTo);
@@ -2251,7 +2253,7 @@ public class RomanLogicsModule extends LogicsModule {
         private PackingListBoxFormEntity(NavigatorElement parent, String sID, String caption) {
             super(parent, sID, caption, true);
 
-            objBox = addSingleGroupObject(1, "box", freightBox, "Короб", LM.barcode, netWeightStock);
+            objBox = addSingleGroupObject(1, "box", freightBox, "Короб", baseLM.barcode, netWeightStock);
             objBox.groupTo.initClassView = ClassViewType.PANEL;
 
             objArticle = addSingleGroupObject(2, "article", article, "Артикул", sidArticle, nameBrandSupplierArticle, nameArticle);
@@ -2262,8 +2264,8 @@ public class RomanLogicsModule extends LogicsModule {
 
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(quantityStockArticle, objBox, objArticle)));
 
-            packingListFormFreightBox = LM.addFAProp("Упаковочный лист", this, objBox);
-            packingListFormRoute = LM.addJProp(true, "packingListFormRoute", "Упаковочный лист", packingListFormFreightBox, currentFreightBoxRoute, 1);
+            packingListFormFreightBox = addFAProp("Упаковочный лист", this, objBox);
+            packingListFormRoute = addJProp(true, "packingListFormRoute", "Упаковочный лист", packingListFormFreightBox, currentFreightBoxRoute, 1);
         }
 
         @Override
@@ -2289,20 +2291,20 @@ public class RomanLogicsModule extends LogicsModule {
         private OrderFormEntity(NavigatorElement parent, String sID, String caption) {
             super(parent, sID, caption);
 
-            objSupplier = addSingleGroupObject(supplier, "Поставщик", LM.name, nameCurrencySupplier);
+            objSupplier = addSingleGroupObject(supplier, "Поставщик", baseLM.name, nameCurrencySupplier);
             objSupplier.groupTo.setSingleClassView(ClassViewType.PANEL);
 
-            objOrder = addSingleGroupObject(order, "Заказ", LM.date, sidDocument, nameCurrencyDocument, sumDocument, sidDestinationDestinationDocument, nameDestinationDestinationDocument);
-            LM.addObjectActions(this, objOrder);
+            objOrder = addSingleGroupObject(order, "Заказ", baseLM.date, sidDocument, nameCurrencyDocument, sumDocument, sidDestinationDestinationDocument, nameDestinationDestinationDocument);
+            addObjectActions(this, objOrder);
 
-            objSIDArticleComposite = addSingleGroupObject(StringClass.get(50), "Ввод составного артикула", LM.objectValue);
+            objSIDArticleComposite = addSingleGroupObject(StringClass.get(50), "Ввод составного артикула", baseLM.objectValue);
             objSIDArticleComposite.groupTo.setSingleClassView(ClassViewType.PANEL);
 
             addActionsOnObjectChange(objSIDArticleComposite, addPropertyObject(addNEArticleCompositeSIDSupplier, objSIDArticleComposite, objSupplier));
             addActionsOnObjectChange(objSIDArticleComposite, addPropertyObject(incrementNumberListSID, objOrder, objSIDArticleComposite));
             addActionsOnObjectChange(objSIDArticleComposite, addPropertyObject(seekArticleSIDSupplier, objSIDArticleComposite, objSupplier));
 
-            objSIDArticleSingle = addSingleGroupObject(StringClass.get(50), "Ввод простого артикула", LM.objectValue);
+            objSIDArticleSingle = addSingleGroupObject(StringClass.get(50), "Ввод простого артикула", baseLM.objectValue);
             objSIDArticleSingle.groupTo.setSingleClassView(ClassViewType.PANEL);
 
             addActionsOnObjectChange(objSIDArticleSingle, addPropertyObject(addNEArticleSingleSIDSupplier, objSIDArticleSingle, objSupplier));
@@ -2313,19 +2315,19 @@ public class RomanLogicsModule extends LogicsModule {
             objArticle.groupTo.setSingleClassView(ClassViewType.GRID);
 
             addPropertyDraw(numberListArticle, objOrder, objArticle);
-            addPropertyDraw(objArticle, sidArticle, sidBrandSupplierArticle, nameBrandSupplierArticle, nameSeasonArticle, nameThemeSupplierArticle, originalNameArticle, nameCountrySupplierOfOriginArticle, nameCountryOfOriginArticle, LM.barcode);
+            addPropertyDraw(objArticle, sidArticle, sidBrandSupplierArticle, nameBrandSupplierArticle, nameSeasonArticle, nameThemeSupplierArticle, originalNameArticle, nameCountrySupplierOfOriginArticle, nameCountryOfOriginArticle, baseLM.barcode);
             addPropertyDraw(quantityListArticle, objOrder, objArticle);
             addPropertyDraw(priceDocumentArticle, objOrder, objArticle);
             addPropertyDraw(RRPDocumentArticle, objOrder, objArticle);
             addPropertyDraw(sumDocumentArticle, objOrder, objArticle);
             addPropertyDraw(invoicedOrderArticle, objOrder, objArticle);
-            addPropertyDraw(LM.delete, objArticle);
+            addPropertyDraw(baseLM.delete, objArticle);
 
-            objItem = addSingleGroupObject(item, "Товар", LM.barcode, sidColorSupplierItem, nameColorSupplierItem, sidSizeSupplierItem);
-            LM.addObjectActions(this, objItem);
+            objItem = addSingleGroupObject(item, "Товар", baseLM.barcode, sidColorSupplierItem, nameColorSupplierItem, sidSizeSupplierItem);
+            addObjectActions(this, objItem);
 
-            objSizeSupplier = addSingleGroupObject(sizeSupplier, "Размер", LM.selection, sidSizeSupplier);
-            objColorSupplier = addSingleGroupObject(colorSupplier, "Цвет", LM.selection, sidColorSupplier, LM.name);
+            objSizeSupplier = addSingleGroupObject(sizeSupplier, "Размер", baseLM.selection, sidSizeSupplier);
+            objColorSupplier = addSingleGroupObject(colorSupplier, "Цвет", baseLM.selection, sidColorSupplier, baseLM.name);
 
             PropertyDrawEntity quantityColumn = addPropertyDraw(quantityDocumentArticleCompositeColorSize, objOrder, objArticle, objColorSupplier, objSizeSupplier);
             quantityColumn.columnGroupObjects.add(objSizeSupplier.groupTo);
@@ -2359,12 +2361,12 @@ public class RomanLogicsModule extends LogicsModule {
             DefaultFormView design = (DefaultFormView)super.createDefaultRichDesign();
 
             design.get(getPropertyDraw(sidDocument, objOrder)).caption = "Номер заказа";
-            design.get(getPropertyDraw(LM.date, objOrder)).caption = "Дата заказа";
+            design.get(getPropertyDraw(baseLM.date, objOrder)).caption = "Дата заказа";
 
             design.defaultOrders.put(design.get(getPropertyDraw(numberListArticle)), true);
 
-            design.get(getPropertyDraw(LM.objectValue, objSIDArticleComposite)).editKey = KeyStroke.getKeyStroke(KeyEvent.VK_F9, 0);
-            design.get(getPropertyDraw(LM.objectValue, objSIDArticleSingle)).editKey = KeyStroke.getKeyStroke(KeyEvent.VK_F8, 0);
+            design.get(getPropertyDraw(baseLM.objectValue, objSIDArticleComposite)).editKey = KeyStroke.getKeyStroke(KeyEvent.VK_F9, 0);
+            design.get(getPropertyDraw(baseLM.objectValue, objSIDArticleSingle)).editKey = KeyStroke.getKeyStroke(KeyEvent.VK_F8, 0);
 
             design.get(objOrder.groupTo).grid.constraints.fillVertical = 0.5;
             design.get(objArticle.groupTo).grid.constraints.fillHorizontal = 4;
@@ -2411,31 +2413,31 @@ public class RomanLogicsModule extends LogicsModule {
 
             this.box = box;
 
-            objSupplier = addSingleGroupObject(supplier, "Поставщик", LM.name, nameCurrencySupplier, importInvoiceActionGroup, true);
+            objSupplier = addSingleGroupObject(supplier, "Поставщик", baseLM.name, nameCurrencySupplier, importInvoiceActionGroup, true);
             objSupplier.groupTo.setSingleClassView(ClassViewType.PANEL);
 
-            objInvoice = addSingleGroupObject((box ? boxInvoice : simpleInvoice), "Инвойс", LM.date, LM.objectClassName, sidDocument, nameCurrencyDocument, sumDocument, quantityDocument, netWeightDocument, nameImporterInvoice, sidContractInvoice, sidDestinationDestinationDocument, nameDestinationDestinationDocument);
-            LM.addObjectActions(this, objInvoice);
+            objInvoice = addSingleGroupObject((box ? boxInvoice : simpleInvoice), "Инвойс", baseLM.date, baseLM.objectClassName, sidDocument, nameCurrencyDocument, sumDocument, quantityDocument, netWeightDocument, nameImporterInvoice, sidContractInvoice, sidDestinationDestinationDocument, nameDestinationDestinationDocument);
+            addObjectActions(this, objInvoice);
 
             objOrder = addSingleGroupObject(order, "Заказ");
             objOrder.groupTo.setSingleClassView(ClassViewType.GRID);
             addPropertyDraw(inOrderInvoice, objOrder, objInvoice);
-            addPropertyDraw(objOrder, LM.date, sidDocument, nameCurrencyDocument, sumDocument, sidDestinationDestinationDocument, nameDestinationDestinationDocument);
+            addPropertyDraw(objOrder, baseLM.date, sidDocument, nameCurrencyDocument, sumDocument, sidDestinationDestinationDocument, nameDestinationDestinationDocument);
 
             if (box) {
-                objSupplierBox = addSingleGroupObject(supplierBox, "Короб", sidSupplierBox, LM.barcode);
+                objSupplierBox = addSingleGroupObject(supplierBox, "Короб", sidSupplierBox, baseLM.barcode);
                 objSupplierBox.groupTo.initClassView = ClassViewType.PANEL;
-                LM.addObjectActions(this, objSupplierBox);
+                addObjectActions(this, objSupplierBox);
             }
 
-            objSIDArticleComposite = addSingleGroupObject(StringClass.get(50), "Ввод составного артикула", LM.objectValue);
+            objSIDArticleComposite = addSingleGroupObject(StringClass.get(50), "Ввод составного артикула", baseLM.objectValue);
             objSIDArticleComposite.groupTo.setSingleClassView(ClassViewType.PANEL);
 
             addActionsOnObjectChange(objSIDArticleComposite, addPropertyObject(addNEArticleCompositeSIDSupplier, objSIDArticleComposite, objSupplier));
             addActionsOnObjectChange(objSIDArticleComposite, addPropertyObject(incrementNumberListSID, (box ? objSupplierBox : objInvoice), objSIDArticleComposite));
             addActionsOnObjectChange(objSIDArticleComposite, addPropertyObject(seekArticleSIDSupplier, objSIDArticleComposite, objSupplier));
 
-            objSIDArticleSingle = addSingleGroupObject(StringClass.get(50), "Ввод простого артикула", LM.objectValue);
+            objSIDArticleSingle = addSingleGroupObject(StringClass.get(50), "Ввод простого артикула", baseLM.objectValue);
             objSIDArticleSingle.groupTo.setSingleClassView(ClassViewType.PANEL);
 
             addActionsOnObjectChange(objSIDArticleSingle, addPropertyObject(addNEArticleSingleSIDSupplier, objSIDArticleSingle, objSupplier));
@@ -2447,20 +2449,20 @@ public class RomanLogicsModule extends LogicsModule {
 
             addPropertyDraw(numberListArticle, (box ? objSupplierBox : objInvoice), objArticle);
             addPropertyDraw(objArticle, sidArticle, sidBrandSupplierArticle, nameBrandSupplierArticle, nameSeasonArticle, nameThemeSupplierArticle, originalNameArticle, sidCustomCategoryOriginArticle,
-                    nameCountrySupplierOfOriginArticle, netWeightArticle, mainCompositionOriginArticle, additionalCompositionOriginArticle, LM.barcode);
+                    nameCountrySupplierOfOriginArticle, netWeightArticle, mainCompositionOriginArticle, additionalCompositionOriginArticle, baseLM.barcode);
             addPropertyDraw(quantityListArticle, (box ? objSupplierBox : objInvoice), objArticle);
             addPropertyDraw(priceDocumentArticle, objInvoice, objArticle);
             addPropertyDraw(RRPDocumentArticle, objInvoice, objArticle);
             addPropertyDraw(sumDocumentArticle, objInvoice, objArticle);
             addPropertyDraw(orderedInvoiceArticle, objInvoice, objArticle);
             addPropertyDraw(priceOrderedInvoiceArticle, objInvoice, objArticle);
-            addPropertyDraw(LM.delete, objArticle);
+            addPropertyDraw(baseLM.delete, objArticle);
 
-            objItem = addSingleGroupObject(item, "Товар", LM.barcode, sidColorSupplierItem, nameColorSupplierItem, sidSizeSupplierItem);
-            LM.addObjectActions(this, objItem, objArticle, articleComposite);
+            objItem = addSingleGroupObject(item, "Товар", baseLM.barcode, sidColorSupplierItem, nameColorSupplierItem, sidSizeSupplierItem);
+            addObjectActions(this, objItem, objArticle, articleComposite);
 
-            objSizeSupplier = addSingleGroupObject(sizeSupplier, "Размер", LM.selection, sidSizeSupplier);
-            objColorSupplier = addSingleGroupObject(colorSupplier, "Цвет", LM.selection, sidColorSupplier, LM.name);
+            objSizeSupplier = addSingleGroupObject(sizeSupplier, "Размер", baseLM.selection, sidSizeSupplier);
+            objColorSupplier = addSingleGroupObject(colorSupplier, "Цвет", baseLM.selection, sidColorSupplier, baseLM.name);
 
             PropertyDrawEntity quantityColumn = addPropertyDraw(quantityDocumentArticleCompositeColorSize, objInvoice, objArticle, objColorSupplier, objSizeSupplier);
             quantityColumn.columnGroupObjects.add(objSizeSupplier.groupTo);
@@ -2489,7 +2491,7 @@ public class RomanLogicsModule extends LogicsModule {
             addPropertyDraw(numberListSku, (box ? objSupplierBoxSpec : objInvoice), objSku);
             if (box)
                 addPropertyDraw(sidSupplierBox, objSupplierBoxSpec);
-            addPropertyDraw(new LP[] {LM.barcode, sidArticleSku, sidColorSupplierItem, nameColorSupplierItem, sidSizeSupplierItem,
+            addPropertyDraw(new LP[] {baseLM.barcode, sidArticleSku, sidColorSupplierItem, nameColorSupplierItem, sidSizeSupplierItem,
                                       sidBrandSupplierArticleSku, nameBrandSupplierArticleSku, originalNameArticleSku,
                                       nameCountrySupplierOfOriginArticleSku , nameCountryOfOriginSku, netWeightSku,
                                       mainCompositionOriginSku, additionalCompositionOriginSku}, objSku);
@@ -2519,7 +2521,7 @@ public class RomanLogicsModule extends LogicsModule {
 
             addFixedFilter(new CompareFilterEntity(addPropertyObject(inOrderInvoice, objOrder, objInvoice), Compare.EQUALS, true));
             addPropertyDraw(
-                    LM.addSelectFromListAction(null, "Выбрать заказы", objOrder, new FilterEntity[]{orderSupplierFilter}, inOrderInvoice, true, order, invoice),
+                    addSelectFromListAction(null, "Выбрать заказы", objOrder, new FilterEntity[]{orderSupplierFilter}, inOrderInvoice, true, order, invoice),
                     objOrder.groupTo,
                     objInvoice
             ).forceViewType = ClassViewType.PANEL;
@@ -2546,12 +2548,12 @@ public class RomanLogicsModule extends LogicsModule {
         public FormView createDefaultRichDesign() {
             DefaultFormView design = (DefaultFormView)super.createDefaultRichDesign();
 
-            design.get(getPropertyDraw(LM.objectClassName, objInvoice)).caption = "Тип инвойса";
+            design.get(getPropertyDraw(baseLM.objectClassName, objInvoice)).caption = "Тип инвойса";
             design.get(getPropertyDraw(sidDocument, objInvoice)).caption = "Номер инвойса";
-            design.get(getPropertyDraw(LM.date, objInvoice)).caption = "Дата инвойса";
+            design.get(getPropertyDraw(baseLM.date, objInvoice)).caption = "Дата инвойса";
 
             design.get(getPropertyDraw(sidDocument, objOrder)).caption = "Номер заказа";
-            design.get(getPropertyDraw(LM.date, objOrder)).caption = "Дата заказа";
+            design.get(getPropertyDraw(baseLM.date, objOrder)).caption = "Дата заказа";
 
             design.defaultOrders.put(design.get(getPropertyDraw(numberListArticle)), true);
             design.defaultOrders.put(design.get(getPropertyDraw(numberListSku)), true);
@@ -2560,8 +2562,8 @@ public class RomanLogicsModule extends LogicsModule {
             design.get(objInvoice.groupTo).grid.constraints.fillVertical = 0.7;
             design.get(objItem.groupTo).grid.constraints.fillHorizontal = 1.5;
 
-            design.get(getPropertyDraw(LM.objectValue, objSIDArticleComposite)).editKey = KeyStroke.getKeyStroke(KeyEvent.VK_F9, 0);
-            design.get(getPropertyDraw(LM.objectValue, objSIDArticleSingle)).editKey = KeyStroke.getKeyStroke(KeyEvent.VK_F8, 0);
+            design.get(getPropertyDraw(baseLM.objectValue, objSIDArticleComposite)).editKey = KeyStroke.getKeyStroke(KeyEvent.VK_F9, 0);
+            design.get(getPropertyDraw(baseLM.objectValue, objSIDArticleSingle)).editKey = KeyStroke.getKeyStroke(KeyEvent.VK_F8, 0);
 
             ContainerView specContainer = design.createContainer("Ввод спецификации");
             specContainer.constraints.childConstraints = DoNotIntersectSimplexConstraint.TOTHE_BOTTOM;
@@ -2611,20 +2613,20 @@ public class RomanLogicsModule extends LogicsModule {
 
             this.box = box;
 
-            objSupplier = addSingleGroupObject(supplier, "Поставщик", LM.name);
+            objSupplier = addSingleGroupObject(supplier, "Поставщик", baseLM.name);
             objSupplier.groupTo.setSingleClassView(ClassViewType.PANEL);
 
-            objShipment = addSingleGroupObject((box ? boxShipment : simpleShipment), "Поставка", LM.date, sidDocument, netWeightShipment, grossWeightShipment, quantityPalletShipment, quantityBoxShipment);//, invoicedShipment, sumShipment
-            LM.addObjectActions(this, objShipment);
+            objShipment = addSingleGroupObject((box ? boxShipment : simpleShipment), "Поставка", baseLM.date, sidDocument, netWeightShipment, grossWeightShipment, quantityPalletShipment, quantityBoxShipment);//, invoicedShipment, sumShipment
+            addObjectActions(this, objShipment);
 
             objInvoice = addSingleGroupObject((box ? boxInvoice : simpleInvoice), "Инвойс");
             objInvoice.groupTo.setSingleClassView(ClassViewType.GRID);
             setReadOnly(objInvoice, true);
 
             addPropertyDraw(inInvoiceShipment, objInvoice, objShipment);
-            addPropertyDraw(objInvoice, LM.date, sidDocument, sidDestinationDestinationDocument, nameDestinationDestinationDocument);
+            addPropertyDraw(objInvoice, baseLM.date, sidDocument, sidDestinationDestinationDocument, nameDestinationDestinationDocument);
 
-            objRoute = addSingleGroupObject(route, "Маршрут", LM.name);
+            objRoute = addSingleGroupObject(route, "Маршрут", baseLM.name);
             addPropertyDraw(percentShipmentRoute, objShipment, objRoute);
             addPropertyDraw(invoicedShipmentRoute, objShipment, objRoute);
             addPropertyDraw(sumShipmentRoute, objShipment, objRoute);
@@ -2641,9 +2643,9 @@ public class RomanLogicsModule extends LogicsModule {
             DefaultFormView design = (DefaultFormView)super.createDefaultRichDesign();
 
             design.get(getPropertyDraw(sidDocument, objShipment)).caption = "Номер поставки";
-            design.get(getPropertyDraw(LM.date, objShipment)).caption = "Дата поставки";
+            design.get(getPropertyDraw(baseLM.date, objShipment)).caption = "Дата поставки";
             design.get(getPropertyDraw(sidDocument, objInvoice)).caption = "Номер инвойса";
-            design.get(getPropertyDraw(LM.date, objInvoice)).caption = "Дата инвойса";
+            design.get(getPropertyDraw(baseLM.date, objInvoice)).caption = "Дата инвойса";
 
             design.get(objRoute.groupTo).grid.constraints.fillHorizontal = 0.3;
 
@@ -2674,30 +2676,30 @@ public class RomanLogicsModule extends LogicsModule {
             this.box = box;
 
             if (box) {
-                objSIDSupplierBox = addSingleGroupObject(StringClass.get(50), "Номер короба", LM.objectValue);
+                objSIDSupplierBox = addSingleGroupObject(StringClass.get(50), "Номер короба", baseLM.objectValue);
                 objSIDSupplierBox.groupTo.setSingleClassView(ClassViewType.PANEL);
             }
 
-            objSupplier = addSingleGroupObject(supplier, "Поставщик", LM.name);
+            objSupplier = addSingleGroupObject(supplier, "Поставщик", baseLM.name);
             objSupplier.groupTo.setSingleClassView(ClassViewType.PANEL);
 
-            objShipment = addSingleGroupObject((box ? boxShipment : simpleShipment), "Поставка", LM.date, sidDocument);
+            objShipment = addSingleGroupObject((box ? boxShipment : simpleShipment), "Поставка", baseLM.date, sidDocument);
             objShipment.groupTo.initClassView = ClassViewType.PANEL;
 
             if (box) {
-                objSupplierBox = addSingleGroupObject(supplierBox, "Короб поставщика", sidSupplierBox, LM.barcode, nameDestinationSupplierBox);
+                objSupplierBox = addSingleGroupObject(supplierBox, "Короб поставщика", sidSupplierBox, baseLM.barcode, nameDestinationSupplierBox);
                 objSupplierBox.groupTo.initClassView = ClassViewType.PANEL;
             }
 
-            objRoute = addSingleGroupObject(route, "Маршрут", LM.name, barcodeCurrentPalletRoute, grossWeightCurrentPalletRoute, barcodeCurrentFreightBoxRoute, nameDestinationCurrentFreightBoxRoute);
+            objRoute = addSingleGroupObject(route, "Маршрут", baseLM.name, barcodeCurrentPalletRoute, grossWeightCurrentPalletRoute, barcodeCurrentFreightBoxRoute, nameDestinationCurrentFreightBoxRoute);
             objRoute.groupTo.setSingleClassView(ClassViewType.GRID);
             addPropertyDraw(packingListFormRoute, objRoute);
             addPropertyDraw(changePallet, objRoute);
 
-            nameRoute = addPropertyDraw(LM.name, objRoute);
+            nameRoute = addPropertyDraw(baseLM.name, objRoute);
             nameRoute.forceViewType = ClassViewType.PANEL;
 
-            objSku = addSingleGroupObject(sku, "SKU", LM.barcode, sidArticleSku, sidColorSupplierItem, nameColorSupplierItem, sidSizeSupplierItem,
+            objSku = addSingleGroupObject(sku, "SKU", baseLM.barcode, sidArticleSku, sidColorSupplierItem, nameColorSupplierItem, sidSizeSupplierItem,
                     nameBrandSupplierArticleSku, originalNameArticleSku, nameOriginCategoryArticleSku, nameOriginUnitOfMeasureArticleSku,
                     netWeightArticleSku, sidCustomCategoryOriginArticleSku, nameCountryOfOriginArticleSku, mainCompositionOriginArticleSku,
                     netWeightSku, nameCountryOfOriginSku, mainCompositionOriginSku, additionalCompositionOriginSku);
@@ -2733,7 +2735,7 @@ public class RomanLogicsModule extends LogicsModule {
             }
 
             quantityColumn.columnGroupObjects.add(objRoute.groupTo);
-            quantityColumn.propertyCaption = addPropertyObject(LM.name, objRoute);
+            quantityColumn.propertyCaption = addPropertyObject(baseLM.name, objRoute);
 
             addPropertyDraw(quantityRouteSku, objRoute, objSku);
 
@@ -2746,7 +2748,7 @@ public class RomanLogicsModule extends LogicsModule {
             getPropertyDraw(quantityShipmentRouteSku).setPropertyHighlight(diffShipmentRouteSkuProperty);
 
             objShipmentDetail = addSingleGroupObject((box ? boxShipmentDetail : simpleShipmentDetail),
-                    LM.selection, barcodeSkuShipmentDetail, sidArticleShipmentDetail, sidColorSupplierItemShipmentDetail, nameColorSupplierItemShipmentDetail, sidSizeSupplierItemShipmentDetail,
+                    baseLM.selection, barcodeSkuShipmentDetail, sidArticleShipmentDetail, sidColorSupplierItemShipmentDetail, nameColorSupplierItemShipmentDetail, sidSizeSupplierItemShipmentDetail,
                     nameBrandSupplierArticleSkuShipmentDetail, sidCustomCategoryOriginArticleSkuShipmentDetail, originalNameArticleSkuShipmentDetail,
                     nameOriginCategoryArticleSkuShipmentDetail, nameOriginUnitOfMeasureArticleSkuShipmentDetail,
                     netWeightArticleSkuShipmentDetail,
@@ -2756,7 +2758,7 @@ public class RomanLogicsModule extends LogicsModule {
                     sidShipmentShipmentDetail,
                     sidSupplierBoxShipmentDetail, barcodeSupplierBoxShipmentDetail,
                     barcodeStockShipmentDetail, nameRouteFreightBoxShipmentDetail,
-                    quantityShipmentDetail, nameUserShipmentDetail, timeShipmentDetail, LM.delete);
+                    quantityShipmentDetail, nameUserShipmentDetail, timeShipmentDetail, baseLM.delete);
 
             objShipmentDetail.groupTo.setSingleClassView(ClassViewType.GRID);
 
@@ -2825,7 +2827,7 @@ public class RomanLogicsModule extends LogicsModule {
 
             RegularFilterGroupEntity filterGroup4 = new RegularFilterGroupEntity(genID());
             filterGroup4.addFilter(new RegularFilterEntity(genID(),
-                    new CompareFilterEntity(addPropertyObject(userShipmentDetail, objShipmentDetail), Compare.EQUALS, addPropertyObject(LM.currentUser)),
+                    new CompareFilterEntity(addPropertyObject(userShipmentDetail, objShipmentDetail), Compare.EQUALS, addPropertyObject(baseLM.currentUser)),
                     "Текущего пользователя",
                     KeyStroke.getKeyStroke(KeyEvent.VK_F10, 0)));
             addRegularFilterGroup(filterGroup4);
@@ -2867,13 +2869,13 @@ public class RomanLogicsModule extends LogicsModule {
 //                addActionsOnObjectChange(objBarcode, addPropertyObject(barcodeAction3, objShipment, objRoute, objBarcode));
 
             addActionsOnObjectChange(objBarcode, addPropertyObject(
-                                                    LM.addJProp(true, LM.addSAProp(null), skuBarcodeObject, 1),
+                                                    addJProp(true, addSAProp(null), skuBarcodeObject, 1),
                                                             objBarcode));
 
             addActionsOnObjectChange(objBarcode,
                                      addPropertyObject(
-                                             LM.addJProp(true, LM.andNot1,
-                                                     LM.addMFAProp(
+                                             addJProp(true, baseLM.andNot1,
+                                                     addMFAProp(
                                                              null,
                                                              "Ввод нового товара",
                                                              createItemForm,
@@ -2886,7 +2888,7 @@ public class RomanLogicsModule extends LogicsModule {
                                              objSupplier, objBarcode));
 
             addActionsOnObjectChange(objBarcode, addPropertyObject(
-                    LM.addJProp(true, LM.addAProp(new SeekRouteActionProperty()),
+                    addJProp(true, addAProp(new SeekRouteActionProperty()),
                             1, skuBarcodeObject, 2, 3),
                     objShipment, objBarcode, objRoute));
 
@@ -2902,12 +2904,12 @@ public class RomanLogicsModule extends LogicsModule {
             if (box)
                 addActionsOnObjectChange(objSIDSupplierBox, addPropertyObject(seekSupplierBoxSIDSupplier, objSIDSupplierBox, objSupplier));
 
-            setReadOnly(LM.name, true, objRoute.groupTo);
+            setReadOnly(baseLM.name, true, objRoute.groupTo);
             setReadOnly(percentShipmentRouteSku, true, objRoute.groupTo);
             setReadOnly(itemAttributeGroup, true, objSku.groupTo);
             setReadOnly(sidArticleSku, true, objSku.groupTo);
 
-            setReadOnly(LM.baseGroup, true, objShipmentDetail.groupTo);
+            setReadOnly(baseGroup, true, objShipmentDetail.groupTo);
             setReadOnly(supplierAttributeGroup, true, objShipmentDetail.groupTo);
             setReadOnly(sidSupplierBoxShipmentDetail, false, objShipmentDetail.groupTo);
             setReadOnly(barcodeSupplierBoxShipmentDetail, false, objShipmentDetail.groupTo);
@@ -2923,13 +2925,13 @@ public class RomanLogicsModule extends LogicsModule {
         public DefaultFormView createDefaultRichDesign() {
             DefaultFormView design = super.createDefaultRichDesign();
 
-            design.blockedScreen.put("changePropertyDraw", getPropertyDraw(LM.objectValue, objBarcode).getID() + "");
+            design.blockedScreen.put("changePropertyDraw", getPropertyDraw(baseLM.objectValue, objBarcode).getID() + "");
 
             design.get(getPropertyDraw(sidDocument, objShipment)).caption = "Номер поставки";
-            design.get(getPropertyDraw(LM.date, objShipment)).caption = "Дата поставки";
+            design.get(getPropertyDraw(baseLM.date, objShipment)).caption = "Дата поставки";
 
             if (box)
-                design.setEditKey(design.get(getPropertyDraw(LM.objectValue, objSIDSupplierBox)), KeyStroke.getKeyStroke(KeyEvent.VK_F6, 0));
+                design.setEditKey(design.get(getPropertyDraw(baseLM.objectValue, objSIDSupplierBox)), KeyStroke.getKeyStroke(KeyEvent.VK_F6, 0));
 
             design.get(objRoute.groupTo).grid.hideToolbarItems();
             design.get(objRoute.groupTo).setTableRowsCount(0);
@@ -2976,7 +2978,7 @@ public class RomanLogicsModule extends LogicsModule {
         private FreightShipmentStoreFormEntity(NavigatorElement parent, String sID, String caption) {
             super(parent, sID, caption);
 
-            objFreight = addSingleGroupObject(freight, "Фрахт", LM.objectValue, LM.date, LM.objectClassName, nameRouteFreight, nameFreightTypeFreight, tonnageFreight, grossWeightFreight, volumeFreight, palletCountFreight, palletNumberFreight);
+            objFreight = addSingleGroupObject(freight, "Фрахт", baseLM.objectValue, baseLM.date, baseLM.objectClassName, nameRouteFreight, nameFreightTypeFreight, tonnageFreight, grossWeightFreight, volumeFreight, palletCountFreight, palletNumberFreight);
             objFreight.groupTo.setSingleClassView(ClassViewType.PANEL);
             setReadOnly(objFreight, true);
 
@@ -2984,7 +2986,7 @@ public class RomanLogicsModule extends LogicsModule {
             getPropertyDraw(palletCountFreight).setPropertyHighlight(diffPalletFreightProperty);
             getPropertyDraw(palletNumberFreight).setPropertyHighlight(diffPalletFreightProperty);
 
-            objPallet = addSingleGroupObject(pallet, "Паллета", LM.barcode, grossWeightPallet, freightBoxNumberPallet);
+            objPallet = addSingleGroupObject(pallet, "Паллета", baseLM.barcode, grossWeightPallet, freightBoxNumberPallet);
             objPallet.groupTo.setSingleClassView(ClassViewType.GRID);
             setReadOnly(objPallet, true);
 
@@ -3013,10 +3015,10 @@ public class RomanLogicsModule extends LogicsModule {
          public DefaultFormView createDefaultRichDesign() {
             DefaultFormView design = super.createDefaultRichDesign();
 
-            design.blockedScreen.put("changePropertyDraw", getPropertyDraw(LM.objectValue, objBarcode).getID() + "");
+            design.blockedScreen.put("changePropertyDraw", getPropertyDraw(baseLM.objectValue, objBarcode).getID() + "");
 
-            design.get(getPropertyDraw(LM.date, objFreight)).caption = "Дата отгрузки";
-            design.get(getPropertyDraw(LM.objectClassName, objFreight)).caption = "Статус фрахта";
+            design.get(getPropertyDraw(baseLM.date, objFreight)).caption = "Дата отгрузки";
+            design.get(getPropertyDraw(baseLM.objectClassName, objFreight)).caption = "Статус фрахта";
 
             design.get(objFreight.groupTo).grid.constraints.fillVertical = 1;
             design.get(objPallet.groupTo).grid.constraints.fillVertical = 2;
@@ -3040,8 +3042,8 @@ public class RomanLogicsModule extends LogicsModule {
         private FreightShipmentFormEntity(NavigatorElement parent, String sID, String caption) {
             super(parent, sID, caption);
 
-            objFreight = addSingleGroupObject(freight, "Фрахт", LM.date, LM.objectClassName, nameRouteFreight, nameFreightTypeFreight, tonnageFreight, grossWeightFreight, volumeFreight, palletCountFreight, palletNumberFreight);
-            LM.addObjectActions(this, objFreight);
+            objFreight = addSingleGroupObject(freight, "Фрахт", baseLM.date, baseLM.objectClassName, nameRouteFreight, nameFreightTypeFreight, tonnageFreight, grossWeightFreight, volumeFreight, palletCountFreight, palletNumberFreight);
+            addObjectActions(this, objFreight);
 
             PropertyObjectEntity diffPalletFreightProperty = addPropertyObject(diffPalletFreight, objFreight);
             getPropertyDraw(palletCountFreight).setPropertyHighlight(diffPalletFreightProperty);
@@ -3056,15 +3058,15 @@ public class RomanLogicsModule extends LogicsModule {
             addGroup(gobjDates);
             gobjDates.setSingleClassView(ClassViewType.PANEL);
 
-            addPropertyDraw(objDateFrom, LM.objectValue);
-            addPropertyDraw(objDateTo, LM.objectValue);
+            addPropertyDraw(objDateFrom, baseLM.objectValue);
+            addPropertyDraw(objDateTo, baseLM.objectValue);
             addPropertyDraw(quantityPalletShipmentBetweenDate, objDateFrom, objDateTo);
             addPropertyDraw(quantityPalletFreightBetweenDate, objDateFrom, objDateTo);
 
-            objShipment = addSingleGroupObject(shipment, "Поставка", LM.date, nameSupplierDocument, sidDocument, sumDocument, nameCurrencyDocument, netWeightShipment, grossWeightShipment, quantityPalletShipment, quantityBoxShipment);
+            objShipment = addSingleGroupObject(shipment, "Поставка", baseLM.date, nameSupplierDocument, sidDocument, sumDocument, nameCurrencyDocument, netWeightShipment, grossWeightShipment, quantityPalletShipment, quantityBoxShipment);
             setReadOnly(objShipment, true);
 
-            objPallet = addSingleGroupObject(pallet, "Паллета", LM.barcode, grossWeightPallet, freightBoxNumberPallet);
+            objPallet = addSingleGroupObject(pallet, "Паллета", baseLM.barcode, grossWeightPallet, freightBoxNumberPallet);
             objPallet.groupTo.setSingleClassView(ClassViewType.GRID);
             setReadOnly(objPallet, true);
 
@@ -3076,15 +3078,15 @@ public class RomanLogicsModule extends LogicsModule {
 
             setReadOnly(objSku, true);
 
-            objDirectInvoice = addSingleGroupObject(directInvoice, "Инвойс напрямую", LM.date, sidDocument, sumDocument, nameImporterInvoice, sidContractInvoice, nameDestinationDestinationDocument, grossWeightDirectInvoice, palletNumberDirectInvoice);
+            objDirectInvoice = addSingleGroupObject(directInvoice, "Инвойс напрямую", baseLM.date, sidDocument, sumDocument, nameImporterInvoice, sidContractInvoice, nameDestinationDestinationDocument, grossWeightDirectInvoice, palletNumberDirectInvoice);
             setReadOnly(objDirectInvoice, true);
 
             addPropertyDraw(equalsDirectInvoiceFreight, objDirectInvoice, objFreight);
 
             addPropertyDraw(quantityShipmentFreight, objShipment, objFreight);
 
-            addFixedFilter(new CompareFilterEntity(addPropertyObject(LM.date, objShipment), Compare.GREATER_EQUALS, objDateFrom));
-            addFixedFilter(new CompareFilterEntity(addPropertyObject(LM.date, objShipment), Compare.LESS_EQUALS, objDateTo));
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(baseLM.date, objShipment), Compare.GREATER_EQUALS, objDateFrom));
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(baseLM.date, objShipment), Compare.LESS_EQUALS, objDateTo));
 
             addFixedFilter(new CompareFilterEntity(addPropertyObject(routeCreationPalletPallet, objPallet), Compare.EQUALS, addPropertyObject(routeFreight, objFreight)));
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(quantityPalletSku, objPallet, objSku)));
@@ -3121,11 +3123,11 @@ public class RomanLogicsModule extends LogicsModule {
             DefaultFormView design = (DefaultFormView)super.createDefaultRichDesign();
 
             design.get(getPropertyDraw(sidDocument, objDirectInvoice)).caption = "Номер инвойса";
-            design.get(getPropertyDraw(LM.date, objDirectInvoice)).caption = "Дата инвойса";
+            design.get(getPropertyDraw(baseLM.date, objDirectInvoice)).caption = "Дата инвойса";
             design.get(getPropertyDraw(sidDocument, objShipment)).caption = "Номер поставки";
-            design.get(getPropertyDraw(LM.date, objShipment)).caption = "Дата поставки";
-            design.get(getPropertyDraw(LM.date, objFreight)).caption = "Дата отгрузки";
-            design.get(getPropertyDraw(LM.objectClassName, objFreight)).caption = "Статус фрахта";
+            design.get(getPropertyDraw(baseLM.date, objShipment)).caption = "Дата поставки";
+            design.get(getPropertyDraw(baseLM.date, objFreight)).caption = "Дата отгрузки";
+            design.get(getPropertyDraw(baseLM.objectClassName, objFreight)).caption = "Статус фрахта";
 
             design.get(objDirectInvoice.groupTo).grid.constraints.fillHorizontal = 4;
             design.get(objPallet.groupTo).grid.constraints.fillHorizontal = 3;
@@ -3173,7 +3175,7 @@ public class RomanLogicsModule extends LogicsModule {
             objCreate = addSingleGroupObject(creationFreightBox, "Документ генерации коробов");
 
             if (!type.equals(FormType.ADD))
-                addPropertyDraw(objCreate, LM.objectValue);
+                addPropertyDraw(objCreate, baseLM.objectValue);
 
             addPropertyDraw(objCreate, nameRouteCreationFreightBox, quantityCreationFreightBox);
 
@@ -3189,13 +3191,13 @@ public class RomanLogicsModule extends LogicsModule {
             if (type.equals(FormType.ADD))
                 objCreate.addOnTransaction = true;
 
-            objFreightBox = addSingleGroupObject(freightBox, "Короба для транспортировки", LM.barcode);
+            objFreightBox = addSingleGroupObject(freightBox, "Короба для транспортировки", baseLM.barcode);
             setReadOnly(objFreightBox, true);
 
             addFixedFilter(new CompareFilterEntity(addPropertyObject(creationFreightBoxFreightBox, objFreightBox), Compare.EQUALS, objCreate));
 
             if (type.equals(FormType.PRINT))
-                printCreateFreightBoxForm = LM.addFAProp("Печать штрих-кодов", this, objCreate);
+                printCreateFreightBoxForm = addFAProp("Печать штрих-кодов", this, objCreate);
         }
     }
 
@@ -3209,7 +3211,7 @@ public class RomanLogicsModule extends LogicsModule {
 
             objCreate = addSingleGroupObject(creationPallet, "Документ генерации паллет");
             if (!type.equals(FormType.ADD))
-                addPropertyDraw(objCreate, LM.objectValue);
+                addPropertyDraw(objCreate, baseLM.objectValue);
 
             addPropertyDraw(objCreate, nameRouteCreationPallet, quantityCreationPallet);
 
@@ -3225,13 +3227,13 @@ public class RomanLogicsModule extends LogicsModule {
             if (type.equals(FormType.ADD))
                 objCreate.addOnTransaction = true;
 
-            objPallet = addSingleGroupObject(pallet, "Паллеты для транспортировки", LM.barcode);
+            objPallet = addSingleGroupObject(pallet, "Паллеты для транспортировки", baseLM.barcode);
             setReadOnly(objPallet, true);
 
             addFixedFilter(new CompareFilterEntity(addPropertyObject(creationPalletPallet, objPallet), Compare.EQUALS, objCreate));
 
             if (type.equals(FormType.PRINT))
-                printCreatePalletForm = LM.addFAProp("Печать штрих-кодов", this, objCreate);
+                printCreatePalletForm = addFAProp("Печать штрих-кодов", this, objCreate);
         }
     }
 
@@ -3260,38 +3262,38 @@ public class RomanLogicsModule extends LogicsModule {
 
             objCustomCategory4 = addSingleGroupObject(customCategory4, "Первый уровень", sidCustomCategory4, nameCustomCategory);
             if (!tree)
-                LM.addObjectActions(this, objCustomCategory4);
+                addObjectActions(this, objCustomCategory4);
 
             objCustomCategory6 = addSingleGroupObject(customCategory6, "Второй уровень", sidCustomCategory6, nameCustomCategory);
             if (!tree)
-                LM.addObjectActions(this, objCustomCategory6);
+                addObjectActions(this, objCustomCategory6);
 
             objCustomCategory9 = addSingleGroupObject(customCategory9, "Третий уровень", sidCustomCategory9, nameCustomCategory);
             if (!tree)
-                LM.addObjectActions(this, objCustomCategory9);
+                addObjectActions(this, objCustomCategory9);
 
             objCustomCategory10 = addSingleGroupObject(customCategory10, "Четвёртый уровень", sidCustomCategory10, nameCustomCategory);
-            LM.addObjectActions(this, objCustomCategory10);
+            addObjectActions(this, objCustomCategory10);
 
             objCustomCategory4Origin = addSingleGroupObject(customCategory4, "Первый уровень", sidCustomCategory4, nameCustomCategory);
             if (tree) {
-                addPropertyDraw(LM.dumb1, objCustomCategory4Origin);
-                addPropertyDraw(LM.dumb2, objCustomCategory10, objCustomCategory4Origin);
+                addPropertyDraw(baseLM.dumb1, objCustomCategory4Origin);
+                addPropertyDraw(baseLM.dumb2, objCustomCategory10, objCustomCategory4Origin);
             }
-            LM.addObjectActions(this, objCustomCategory4Origin);
+            addObjectActions(this, objCustomCategory4Origin);
 
             objCustomCategory6Origin = addSingleGroupObject(customCategory6, "Второй уровень", sidCustomCategory6, nameCustomCategory);
             if (tree) {
-                addPropertyDraw(LM.dumb1, objCustomCategory6Origin);
-                addPropertyDraw(LM.dumb2, objCustomCategory10, objCustomCategory6Origin);
+                addPropertyDraw(baseLM.dumb1, objCustomCategory6Origin);
+                addPropertyDraw(baseLM.dumb2, objCustomCategory10, objCustomCategory6Origin);
             }
-            LM.addObjectActions(this, objCustomCategory6Origin);
+            addObjectActions(this, objCustomCategory6Origin);
 
             import1 = addPropertyDraw(importBelTnved);
             import2 = addPropertyDraw(importEuTnved);
 
             objCustomCategoryOrigin = addSingleGroupObject(customCategoryOrigin, "ЕС уровень", sidCustomCategoryOrigin, nameCustomCategory, sidCustomCategory10CustomCategoryOrigin);
-            LM.addObjectActions(this, objCustomCategoryOrigin, objCustomCategory6Origin, customCategory6);
+            addObjectActions(this, objCustomCategoryOrigin, objCustomCategory6Origin, customCategory6);
 
             addPropertyDraw(relationCustomCategory10CustomCategoryOrigin, objCustomCategory10, objCustomCategoryOrigin);
 
@@ -3352,12 +3354,12 @@ public class RomanLogicsModule extends LogicsModule {
         private BalanceWarehouseFormEntity(NavigatorElement parent, String sID, String caption) {
             super(parent, sID, caption);
 
-            objSku = addSingleGroupObject(sku, "SKU", LM.selection, LM.barcode, nameSupplierArticleSku, nameBrandSupplierArticleSku, nameThemeSupplierArticleSku,
+            objSku = addSingleGroupObject(sku, "SKU", baseLM.selection, baseLM.barcode, nameSupplierArticleSku, nameBrandSupplierArticleSku, nameThemeSupplierArticleSku,
                      nameCategoryArticleSku, sidArticleSku, nameArticleSku, sidCustomCategory10Sku,
                      sidColorSupplierItem, nameColorSupplierItem, sidSizeSupplierItem,
                      nameCountrySku, netWeightSku,
                      mainCompositionSku, additionalCompositionSku, quantityDirectInvoicedSku, quantityStockedSku, quantitySku, sumSku);
-            LM.addObjectActions(this, objSku);
+            addObjectActions(this, objSku);
 
             setForceViewType(itemAttributeGroup, ClassViewType.GRID, objSku.groupTo);
             setReadOnly(objSku, true);
@@ -3393,19 +3395,19 @@ public class RomanLogicsModule extends LogicsModule {
         private NomenclatureFormEntity(NavigatorElement parent, String sID, String caption) {
             super(parent, sID, caption);
 
-            objSupplier = addSingleGroupObject(supplier, "Поставщик", LM.name);
+            objSupplier = addSingleGroupObject(supplier, "Поставщик", baseLM.name);
 
-            objCategory = addSingleGroupObject(category, "Номенклатурная группа", LM.name);
+            objCategory = addSingleGroupObject(category, "Номенклатурная группа", baseLM.name);
 
             objArticle = addSingleGroupObject(article, "Артикул", sidArticle, nameSupplierArticle, nameBrandSupplierArticle, nameThemeSupplierArticle, nameCategoryArticle, nameArticle);
-            LM.addObjectActions(this, objArticle);
+            addObjectActions(this, objArticle);
 
-            objSku = addSingleGroupObject(sku, "SKU", LM.selection, LM.barcode, nameSupplierArticleSku, nameBrandSupplierArticleSku, nameThemeSupplierArticleSku,
+            objSku = addSingleGroupObject(sku, "SKU", baseLM.selection, baseLM.barcode, nameSupplierArticleSku, nameBrandSupplierArticleSku, nameThemeSupplierArticleSku,
                      nameCategoryArticleSku, sidArticleSku, nameArticleSku,
                      sidColorSupplierItem, nameColorSupplierItem, sidSizeSupplierItem,
                      nameCountrySku, netWeightSku,
                      mainCompositionSku, additionalCompositionSku);
-            LM.addObjectActions(this, objSku);
+            addObjectActions(this, objSku);
 
             setForceViewType(itemAttributeGroup, ClassViewType.GRID, objSku.groupTo);
 
@@ -3469,10 +3471,10 @@ public class RomanLogicsModule extends LogicsModule {
         private ContractFormEntity(NavigatorElement parent, String sID, String caption) {
             super(parent, sID, caption);
 
-            objSeller = addSingleGroupObject(seller, "Продавец", LM.name, LM.objectClassName);
+            objSeller = addSingleGroupObject(seller, "Продавец", baseLM.name, baseLM.objectClassName);
 
-            objContract = addSingleGroupObject(contract, "Договор", sidContract, LM.date, nameImporterContract, nameCurrencyContract);
-            LM.addObjectActions(this, objContract);
+            objContract = addSingleGroupObject(contract, "Договор", sidContract, baseLM.date, nameImporterContract, nameCurrencyContract);
+            addObjectActions(this, objContract);
 
             addFixedFilter(new CompareFilterEntity(addPropertyObject(sellerContract, objContract), Compare.EQUALS, objSeller));
         }
@@ -3481,7 +3483,7 @@ public class RomanLogicsModule extends LogicsModule {
         public FormView createDefaultRichDesign() {
             DefaultFormView design = (DefaultFormView)super.createDefaultRichDesign();
 
-            design.get(getPropertyDraw(LM.objectClassName, objSeller)).caption = "Тип продавца";
+            design.get(getPropertyDraw(baseLM.objectClassName, objSeller)).caption = "Тип продавца";
             design.get(objSeller.groupTo).grid.constraints.fillVertical = 1;
             design.get(objContract.groupTo).grid.constraints.fillVertical = 3;
 
@@ -3508,20 +3510,20 @@ public class RomanLogicsModule extends LogicsModule {
         private BalanceBrandWarehouseFormEntity(NavigatorElement parent, String sID, String caption) {
             super(parent, sID, caption);
 
-            objSupplier = addSingleGroupObject(supplier, "Поставщик", LM.name);
+            objSupplier = addSingleGroupObject(supplier, "Поставщик", baseLM.name);
 
-            objBrand = addSingleGroupObject(brandSupplier, "Бренд", LM.name);
+            objBrand = addSingleGroupObject(brandSupplier, "Бренд", baseLM.name);
 
             treeSupplierBrand = addTreeGroupObject(objSupplier.groupTo, objBrand.groupTo);
 
-            objPallet = addSingleGroupObject(pallet, "Паллета", LM.barcode);
+            objPallet = addSingleGroupObject(pallet, "Паллета", baseLM.barcode);
             addPropertyDraw(quantityPalletBrandSupplier, objPallet, objBrand);
 
             objInvoice = addSingleGroupObject(directInvoice, "Инвойс (напрямую)", sidDocument);
             addPropertyDraw(quantityDocumentBrandSupplier, objInvoice, objBrand);
-            addPropertyDraw(objInvoice, LM.date);
+            addPropertyDraw(objInvoice, baseLM.date);
 
-            objBox = addSingleGroupObject(freightBox, "Короб", LM.barcode);
+            objBox = addSingleGroupObject(freightBox, "Короб", baseLM.barcode);
             addPropertyDraw(quantityStockBrandSupplier, objBox, objBrand);
 
             objArticle = addSingleGroupObject(article, "Артикул", sidArticle);
@@ -3530,18 +3532,18 @@ public class RomanLogicsModule extends LogicsModule {
 
             objArticle2 = addSingleGroupObject(article, "Артикул", sidArticle);
             addPropertyDraw(quantityDocumentArticle, objInvoice, objArticle2);
-            addPropertyDraw(objArticle2, LM.dumb1, nameArticleSku, nameThemeSupplierArticle, nameCategoryArticleSku);
+            addPropertyDraw(objArticle2, baseLM.dumb1, nameArticleSku, nameThemeSupplierArticle, nameCategoryArticleSku);
 
-            objSku = addSingleGroupObject(sku, "SKU", LM.barcode);
+            objSku = addSingleGroupObject(sku, "SKU", baseLM.barcode);
             addPropertyDraw(quantityStockSku, objBox, objSku);
             addPropertyDraw(objSku, sidColorSupplierItem, nameColorSupplierItem, sidSizeSupplierItem,
                      nameCountrySku, netWeightSku, mainCompositionSku, additionalCompositionSku);
 
             setForceViewType(itemAttributeGroup, ClassViewType.GRID, objSku.groupTo);
 
-            objSku2 = addSingleGroupObject(sku, "SKU", LM.barcode);
+            objSku2 = addSingleGroupObject(sku, "SKU", baseLM.barcode);
             addPropertyDraw(quantityDocumentSku, objInvoice, objSku2);
-            addPropertyDraw(objSku2, LM.dumb1, sidColorSupplierItem, nameColorSupplierItem, sidSizeSupplierItem,
+            addPropertyDraw(objSku2, baseLM.dumb1, sidColorSupplierItem, nameColorSupplierItem, sidSizeSupplierItem,
                      nameCountrySku, netWeightSku, mainCompositionSku, additionalCompositionSku);
 
             setForceViewType(itemAttributeGroup, ClassViewType.GRID, objSku2.groupTo);
@@ -3611,13 +3613,13 @@ public class RomanLogicsModule extends LogicsModule {
         private InvoiceShipmentFormEntity(NavigatorElement parent, String sID, String caption) {
             super(parent, sID, caption);
 
-            objSupplier = addSingleGroupObject(supplier, "Поставщик", LM.name);
+            objSupplier = addSingleGroupObject(supplier, "Поставщик", baseLM.name);
 
-            objInvoice = addSingleGroupObject(invoice, "Инвойс", LM.date, sidDocument, LM.objectClassName);
+            objInvoice = addSingleGroupObject(invoice, "Инвойс", baseLM.date, sidDocument, baseLM.objectClassName);
 
             objBox = addSingleGroupObject(supplierBox, "Короб из инвойса", sidSupplierBox);
 
-            objSku = addSingleGroupObject(sku, "Товар в инвойсе", LM.barcode, sidArticleSku, nameBrandSupplierArticleSku, nameCategoryArticleSku,
+            objSku = addSingleGroupObject(sku, "Товар в инвойсе", baseLM.barcode, sidArticleSku, nameBrandSupplierArticleSku, nameCategoryArticleSku,
                      sidColorSupplierItem, nameColorSupplierItem, sidSizeSupplierItem);
 
             addPropertyDraw(quantityDocumentSku, objInvoice, objSku);
@@ -3625,7 +3627,7 @@ public class RomanLogicsModule extends LogicsModule {
 
             setForceViewType(itemAttributeGroup, ClassViewType.GRID, objSku.groupTo);
 
-            objSku2 = addSingleGroupObject(sku, "Товар в коробе", LM.barcode, sidArticleSku, nameBrandSupplierArticleSku, nameCategoryArticleSku,
+            objSku2 = addSingleGroupObject(sku, "Товар в коробе", baseLM.barcode, sidArticleSku, nameBrandSupplierArticleSku, nameCategoryArticleSku,
                      sidColorSupplierItem, nameColorSupplierItem, sidSizeSupplierItem);
 
             addPropertyDraw(quantityListSku, objBox, objSku2);
@@ -3668,7 +3670,7 @@ public class RomanLogicsModule extends LogicsModule {
         public FormView createDefaultRichDesign() {
             DefaultFormView design = (DefaultFormView)super.createDefaultRichDesign();
 
-            design.get(getPropertyDraw(LM.objectClassName, objInvoice)).caption = "Тип инвойса";
+            design.get(getPropertyDraw(baseLM.objectClassName, objInvoice)).caption = "Тип инвойса";
             design.get(getPropertyDraw(sidDocument, objInvoice)).caption = "Номер инвойса";
 
             design.get(objSupplier.groupTo).grid.constraints.fillVertical = 1;
@@ -3704,7 +3706,7 @@ public class RomanLogicsModule extends LogicsModule {
         private FreightChangeFormEntity(NavigatorElement parent, String sID, String caption, boolean edit) {
             super(parent, sID, caption);
 
-            objFreight = addSingleGroupObject(freight, "Фрахт", LM.date, LM.objectClassName, nameRouteFreight, nameExporterFreight, nameFreightTypeFreight, grossWeightFreight, tonnageFreight, palletCountFreight, volumeFreight, palletNumberFreight);
+            objFreight = addSingleGroupObject(freight, "Фрахт", baseLM.date, baseLM.objectClassName, nameRouteFreight, nameExporterFreight, nameFreightTypeFreight, grossWeightFreight, tonnageFreight, palletCountFreight, volumeFreight, palletNumberFreight);
 
             if (edit) {
                 objFreight.groupTo.setSingleClassView(ClassViewType.PANEL);
@@ -3712,30 +3714,30 @@ public class RomanLogicsModule extends LogicsModule {
             } else {
                 FreightChangeFormEntity editFreightForm = new FreightChangeFormEntity(null, "freightChangeForm_edit", "Обработка фрахта", true);
                 addPropertyDraw(
-                        LM.addJProp("Обработать фрахт", LM.and(false, true),
-                                LM.addMFAProp(null,
+                        addJProp("Обработать фрахт", and(false, true),
+                                addMFAProp(null,
                                         "Обработать фрахт",
                                         editFreightForm,
                                         new ObjectEntity[]{editFreightForm.objFreight},
                                         new PropertyObjectEntity[0],
                                         new PropertyObjectEntity[0],
                                         false), 1,
-                                LM.is(freightPriced), 1,
-                                LM.is(freightChanged), 1),
+                                is(freightPriced), 1,
+                                is(freightChanged), 1),
                         objFreight
                 ).forceViewType = ClassViewType.GRID;
 
                 addPropertyDraw(
-                        LM.addJProp("Отгрузить фрахт", LM.and(false, true),
+                        addJProp("Отгрузить фрахт", and(false, true),
                                 executeChangeFreightClass, 1, 2,
-                                LM.is(freightChanged), 1,
-                                LM.is(freightShipped), 1),
+                                is(freightChanged), 1,
+                                is(freightShipped), 1),
                         objFreight,
                         (DataObject)freightShipped.getClassObject()
                 ).forceViewType = ClassViewType.GRID;
             }
 
-            objImporter = addSingleGroupObject(importer, "Импортёр", LM.name, addressSubject);
+            objImporter = addSingleGroupObject(importer, "Импортёр", baseLM.name, addressSubject);
 
             addPropertyDraw(quantityImporterFreight, objImporter, objFreight);
             addPropertyDraw(invoiceOriginFormImporterFreight, objImporter, objFreight);
@@ -3747,22 +3749,22 @@ public class RomanLogicsModule extends LogicsModule {
             addPropertyDraw(sbivkaFormImporterFreight, objImporter, objFreight);
             addPropertyDraw(packingListFormImporterFreight, objImporter, objFreight);
 
-            objArticle = addSingleGroupObject(article, "Артикул", LM.selection, sidArticle, nameBrandSupplierArticle, originalNameArticle, nameCategoryArticle, nameArticle,
+            objArticle = addSingleGroupObject(article, "Артикул", baseLM.selection, sidArticle, nameBrandSupplierArticle, originalNameArticle, nameCategoryArticle, nameArticle,
                     sidCustomCategoryOriginArticle, nameCountryOfOriginArticle, mainCompositionOriginArticle, additionalCompositionOriginArticle, nameUnitOfMeasureArticle);
 
             addPropertyDraw(quantityFreightArticle, objFreight, objArticle);
 
-            objSku = addSingleGroupObject(sku, "SKU", LM.selection, LM.barcode, sidArticleSku, sidColorSupplierItem, nameColorSupplierItem, sidSizeSupplierItem,
+            objSku = addSingleGroupObject(sku, "SKU", baseLM.selection, baseLM.barcode, sidArticleSku, sidColorSupplierItem, nameColorSupplierItem, sidSizeSupplierItem,
                      nameBrandSupplierArticleSku, nameArticleSku,
                      sidCustomCategoryOriginArticleSku, sidCustomCategory10Sku, nameCountrySku, netWeightSku,
                      mainCompositionOriginSku, translationMainCompositionSku, mainCompositionSku,
                      additionalCompositionOriginSku, translationAdditionalCompositionSku, additionalCompositionSku);
 
             setForceViewType(itemAttributeGroup, ClassViewType.GRID, objSku.groupTo);
-            addPropertyDraw(LM.addGCAProp(LM.actionGroup, "translationAllMainComposition", "Перевод составов", objSku.groupTo, translationMainCompositionSku, LM.actionTrue), objSku).forceViewType = ClassViewType.PANEL;
-            addPropertyDraw(LM.addGCAProp(LM.actionGroup, "translationAllAdditionalComposition", "Перевод доп. составов", objSku.groupTo, translationAdditionalCompositionSku, LM.actionTrue), objSku).forceViewType = ClassViewType.PANEL;
+            addPropertyDraw(addGCAProp(actionGroup, "translationAllMainComposition", "Перевод составов", objSku.groupTo, translationMainCompositionSku, baseLM.actionTrue), objSku).forceViewType = ClassViewType.PANEL;
+            addPropertyDraw(addGCAProp(actionGroup, "translationAllAdditionalComposition", "Перевод доп. составов", objSku.groupTo, translationAdditionalCompositionSku, baseLM.actionTrue), objSku).forceViewType = ClassViewType.PANEL;
 
-            objSkuFreight = addSingleGroupObject(sku, "Позиции фрахта", LM.selection, LM.barcode, sidArticleSku, sidColorSupplierItem, nameColorSupplierItem,
+            objSkuFreight = addSingleGroupObject(sku, "Позиции фрахта", baseLM.selection, baseLM.barcode, sidArticleSku, sidColorSupplierItem, nameColorSupplierItem,
                     sidSizeSupplierItem, nameBrandSupplierArticleSku, nameArticleSku);
 
             setForceViewType(itemAttributeGroup, ClassViewType.GRID, objSkuFreight.groupTo);
@@ -3820,8 +3822,8 @@ public class RomanLogicsModule extends LogicsModule {
         public FormView createDefaultRichDesign() {
             DefaultFormView design = (DefaultFormView)super.createDefaultRichDesign();
 
-            design.get(getPropertyDraw(LM.date, objFreight)).caption = "Дата отгрузки";
-            design.get(getPropertyDraw(LM.objectClassName, objFreight)).caption = "Статус фрахта";
+            design.get(getPropertyDraw(baseLM.date, objFreight)).caption = "Дата отгрузки";
+            design.get(getPropertyDraw(baseLM.objectClassName, objFreight)).caption = "Статус фрахта";
 
             design.get(objFreight.groupTo).grid.constraints.fillHorizontal = 2;
             design.get(objImporter.groupTo).grid.constraints.fillHorizontal = 1;
@@ -3873,12 +3875,12 @@ public class RomanLogicsModule extends LogicsModule {
             gobjFreightImporter.add(objImporter);
             addGroup(gobjFreightImporter);
 
-            addPropertyDraw(objFreight, LM.date, LM.objectClassName, nameCurrencyFreight);
+            addPropertyDraw(objFreight, baseLM.date, baseLM.objectClassName, nameCurrencyFreight);
 
             if (translate) {
                 addPropertyDraw(objFreight, nameExporterFreight);
                 addPropertyDraw(objFreight, addressExporterFreight);
-                addPropertyDraw(objImporter, LM.name);
+                addPropertyDraw(objImporter, baseLM.name);
                 addPropertyDraw(objImporter, addressSubject);
             }
 
@@ -3897,7 +3899,7 @@ public class RomanLogicsModule extends LogicsModule {
             gobjArticleCompositionCountryCategory = new GroupObjectEntity(4, "gobjArticleCompositionCountryCategory");
             objArticle = new ObjectEntity(5, "article", article, "Артикул");
             objComposition = new ObjectEntity(6, "composition", COMPOSITION_CLASS, "Состав");
-            objCountry = new ObjectEntity(7, "country", LM.country, "Страна");
+            objCountry = new ObjectEntity(7, "country", baseLM.country, "Страна");
             objCategory = new ObjectEntity(8, "category", customCategory10, "ТН ВЭД");
 
             gobjArticleCompositionCountryCategory.add(objArticle);
@@ -3916,15 +3918,15 @@ public class RomanLogicsModule extends LogicsModule {
 
             if (!translate) {
                 addPropertyDraw(objArticle, nameArticle);
-                addPropertyDraw(objComposition, LM.objectValue);
+                addPropertyDraw(objComposition, baseLM.objectValue);
             }
 
-            addPropertyDraw(objCountry, LM.sidCountry);
+            addPropertyDraw(objCountry, baseLM.sidCountry);
             if (!translate)
                 addPropertyDraw(objCountry, nameOriginCountry);
 
             if (translate)
-                addPropertyDraw(objCountry, LM.name);
+                addPropertyDraw(objCountry, baseLM.name);
 
             addPropertyDraw(objCategory, sidCustomCategory10);
             addPropertyDraw(quantityImporterFreightArticleCompositionCountryCategory, objImporter, objFreight, objArticle, objComposition, objCountry, objCategory);
@@ -3947,10 +3949,10 @@ public class RomanLogicsModule extends LogicsModule {
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(quantityImporterFreightArticleCompositionCountryCategory, objImporter, objFreight, objArticle, objComposition, objCountry, objCategory)));
 
             if (!translate)
-                annexInvoiceOriginFormImporterFreight = LM.addFAProp("Приложение", this, objImporter, objFreight);
+                annexInvoiceOriginFormImporterFreight = addFAProp("Приложение", this, objImporter, objFreight);
 
             if (translate)
-                annexInvoiceFormImporterFreight = LM.addFAProp("Приложение (перевод)", this, objImporter, objFreight);
+                annexInvoiceFormImporterFreight = addFAProp("Приложение (перевод)", this, objImporter, objFreight);
         }
     }
 
@@ -3982,12 +3984,12 @@ public class RomanLogicsModule extends LogicsModule {
             gobjFreightImporter.add(objImporter);
             addGroup(gobjFreightImporter);
 
-            addPropertyDraw(objFreight, LM.date, LM.objectClassName, nameCurrencyFreight);
+            addPropertyDraw(objFreight, baseLM.date, baseLM.objectClassName, nameCurrencyFreight);
 
             if (translate) {
                 addPropertyDraw(objFreight, nameExporterFreight);
                 addPropertyDraw(objFreight, addressExporterFreight);
-                addPropertyDraw(objImporter, LM.name);
+                addPropertyDraw(objImporter, baseLM.name);
                 addPropertyDraw(objImporter, addressSubject);
             }
 
@@ -4006,7 +4008,7 @@ public class RomanLogicsModule extends LogicsModule {
             gobjArticleCompositionCountryCategory = new GroupObjectEntity(4, "gobjArticleCompositionCountryCategory");
             objArticle = new ObjectEntity(5, "article", article, "Артикул");
             objComposition = new ObjectEntity(6, "composition", COMPOSITION_CLASS, "Состав");
-            objCountry = new ObjectEntity(7, "country", LM.country, "Страна");
+            objCountry = new ObjectEntity(7, "country", baseLM.country, "Страна");
             objCategory = new ObjectEntity(8, "category", customCategory10, "ТН ВЭД");
 
             gobjArticleCompositionCountryCategory.add(objArticle);
@@ -4025,15 +4027,15 @@ public class RomanLogicsModule extends LogicsModule {
 
             if (!translate) {
                 addPropertyDraw(objArticle, nameArticle);
-                addPropertyDraw(objComposition, LM.objectValue);
+                addPropertyDraw(objComposition, baseLM.objectValue);
             }
 
-            addPropertyDraw(objCountry, LM.sidCountry);
+            addPropertyDraw(objCountry, baseLM.sidCountry);
             if (!translate)
                 addPropertyDraw(objCountry, nameOriginCountry);
 
             if (translate)
-                addPropertyDraw(objCountry, LM.name);
+                addPropertyDraw(objCountry, baseLM.name);
 
             addPropertyDraw(objCategory, sidCustomCategory10);
             addPropertyDraw(quantityImporterFreightArticleCompositionCountryCategory, objImporter, objFreight, objArticle, objComposition, objCountry, objCategory);
@@ -4054,10 +4056,10 @@ public class RomanLogicsModule extends LogicsModule {
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(quantityImporterFreightArticleCompositionCountryCategory, objImporter, objFreight, objArticle, objComposition, objCountry, objCategory)));
 
             if (!translate)
-                invoiceOriginFormImporterFreight = LM.addFAProp("Инвойс", this, objImporter, objFreight);
+                invoiceOriginFormImporterFreight = addFAProp("Инвойс", this, objImporter, objFreight);
 
             if (translate)
-                invoiceFormImporterFreight = LM.addFAProp("Инвойс (перевод)", this, objImporter, objFreight);
+                invoiceFormImporterFreight = addFAProp("Инвойс (перевод)", this, objImporter, objFreight);
         }
     }
 
@@ -4089,12 +4091,12 @@ public class RomanLogicsModule extends LogicsModule {
             gobjFreightImporter.add(objImporter);
             addGroup(gobjFreightImporter);
 
-            addPropertyDraw(objFreight, LM.date, LM.objectClassName, nameCurrencyFreight);
+            addPropertyDraw(objFreight, baseLM.date, baseLM.objectClassName, nameCurrencyFreight);
 
             if (translate) {
                 addPropertyDraw(objFreight, nameExporterFreight);
                 addPropertyDraw(objFreight, addressExporterFreight);
-                addPropertyDraw(objImporter, LM.name);
+                addPropertyDraw(objImporter, baseLM.name);
                 addPropertyDraw(objImporter, addressSubject);
             }
 
@@ -4113,7 +4115,7 @@ public class RomanLogicsModule extends LogicsModule {
             gobjArticleCompositionCountryCategory = new GroupObjectEntity(4, "gobjArticleCompositionCountryCategory");
             objArticle = new ObjectEntity(5, "article", article, "Артикул");
             objComposition = new ObjectEntity(6, "composition", COMPOSITION_CLASS, "Состав");
-            objCountry = new ObjectEntity(7, "country", LM.country, "Страна");
+            objCountry = new ObjectEntity(7, "country", baseLM.country, "Страна");
             objCategory = new ObjectEntity(8, "category", customCategory10, "ТН ВЭД");
 
             gobjArticleCompositionCountryCategory.add(objArticle);
@@ -4132,15 +4134,15 @@ public class RomanLogicsModule extends LogicsModule {
 
             if (!translate) {
                 addPropertyDraw(objArticle, nameArticle);
-                addPropertyDraw(objComposition, LM.objectValue);
+                addPropertyDraw(objComposition, baseLM.objectValue);
             }
 
-            addPropertyDraw(objCountry, LM.sidCountry);
+            addPropertyDraw(objCountry, baseLM.sidCountry);
             if (!translate)
                 addPropertyDraw(objCountry, nameOriginCountry);
 
             if (translate)
-                addPropertyDraw(objCountry, LM.name);
+                addPropertyDraw(objCountry, baseLM.name);
 
             addPropertyDraw(objCategory, sidCustomCategory10);
             addPropertyDraw(quantityImporterFreightArticleCompositionCountryCategory, objImporter, objFreight, objArticle, objComposition, objCountry, objCategory);
@@ -4161,10 +4163,10 @@ public class RomanLogicsModule extends LogicsModule {
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(quantityImporterFreightArticleCompositionCountryCategory, objImporter, objFreight, objArticle, objComposition, objCountry, objCategory)));
 
             if (!translate)
-                proformOriginFormImporterFreight = LM.addFAProp("Инвойс-проформа", this, objImporter, objFreight);
+                proformOriginFormImporterFreight = addFAProp("Инвойс-проформа", this, objImporter, objFreight);
 
             if (translate)
-                proformFormImporterFreight = LM.addFAProp("Инвойс-проформа (перевод)", this, objImporter, objFreight);
+                proformFormImporterFreight = addFAProp("Инвойс-проформа (перевод)", this, objImporter, objFreight);
         }
     }
 
@@ -4190,13 +4192,13 @@ public class RomanLogicsModule extends LogicsModule {
             gobjFreightImporter.add(objImporter);
             addGroup(gobjFreightImporter);
 
-            addPropertyDraw(objFreight, LM.date, LM.objectClassName, nameOriginExporterFreight, addressOriginExporterFreight, nameCurrencyFreight);
+            addPropertyDraw(objFreight, baseLM.date, baseLM.objectClassName, nameOriginExporterFreight, addressOriginExporterFreight, nameCurrencyFreight);
             addPropertyDraw(objImporter, nameOrigin, addressOriginSubject, contractImporter);
             addPropertyDraw(objImporter, objFreight, quantityImporterFreight, netWeightImporterFreight, grossWeightImporterFreight, sumInOutImporterFreight);
 
             gobjFreightImporter.initClassView = ClassViewType.PANEL;
 
-            objFreightBox = addSingleGroupObject(4, "freightBox", freightBox, "Короб", LM.barcode);
+            objFreightBox = addSingleGroupObject(4, "freightBox", freightBox, "Короб", baseLM.barcode);
             addPropertyDraw(objImporter, objFreightBox, netWeightImporterFreightUnit, grossWeightImporterFreightUnit, quantityImporterStock);
 
             objArticle = addSingleGroupObject(5, "article", article, "Артикул", sidArticle, nameBrandSupplierArticle, nameArticle);
@@ -4209,7 +4211,7 @@ public class RomanLogicsModule extends LogicsModule {
             addFixedFilter(new CompareFilterEntity(addPropertyObject(freightFreightBox, objFreightBox), Compare.EQUALS, objFreight));
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(quantityImporterStockArticle, objImporter, objFreightBox, objArticle)));
 
-            packingListFormImporterFreight = LM.addFAProp("Упаковочный лист", this, objImporter, objFreight);
+            packingListFormImporterFreight = addFAProp("Упаковочный лист", this, objImporter, objFreight);
         }
 
         @Override
@@ -4242,7 +4244,7 @@ public class RomanLogicsModule extends LogicsModule {
             gobjFreightImporter.add(objImporter);
             addGroup(gobjFreightImporter);
 
-            addPropertyDraw(objFreight, LM.date, nameCurrencyFreight);
+            addPropertyDraw(objFreight, baseLM.date, nameCurrencyFreight);
             addPropertyDraw(objImporter, contractImporter);
             addPropertyDraw(objImporter, objFreight, netWeightImporterFreight, grossWeightImporterFreight, sumSbivkaImporterFreight);
 
@@ -4257,7 +4259,7 @@ public class RomanLogicsModule extends LogicsModule {
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(quantitySbivkaImporterFreight, objImporter, objFreight)));
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(quantityImporterFreightCustomCategory6, objImporter, objFreight, objCategory)));
 
-            sbivkaFormImporterFreight = LM.addFAProp("Сбивка", this, objImporter, objFreight);
+            sbivkaFormImporterFreight = addFAProp("Сбивка", this, objImporter, objFreight);
         }
     }
 
@@ -4274,23 +4276,23 @@ public class RomanLogicsModule extends LogicsModule {
 
         private ColorSizeSupplierFormEntity(NavigatorElement parent, String sID, String caption) {
             super(parent, sID, caption);
-            objSupplier = addSingleGroupObject(supplier, "Поставщик", LM.name, nameBrandSupplierSupplier, nameCurrencySupplier);
-            LM.addObjectActions(this, objSupplier);
+            objSupplier = addSingleGroupObject(supplier, "Поставщик", baseLM.name, nameBrandSupplierSupplier, nameCurrencySupplier);
+            addObjectActions(this, objSupplier);
 
-            objColor = addSingleGroupObject(colorSupplier, "Цвет", sidColorSupplier, LM.name);
-            LM.addObjectActions(this, objColor);
+            objColor = addSingleGroupObject(colorSupplier, "Цвет", sidColorSupplier, baseLM.name);
+            addObjectActions(this, objColor);
 
             objSize = addSingleGroupObject(sizeSupplier, "Размер", sidSizeSupplier, nameCommonSizeSizeSupplier);
-            LM.addObjectActions(this, objSize);
+            addObjectActions(this, objSize);
 
-            objBrand = addSingleGroupObject(brandSupplier, "Бренд", sidBrandSupplier, LM.name);
-            LM.addObjectActions(this, objBrand);
+            objBrand = addSingleGroupObject(brandSupplier, "Бренд", sidBrandSupplier, baseLM.name);
+            addObjectActions(this, objBrand);
 
-            objTheme = addSingleGroupObject(themeSupplier, "Тема", LM.name);
-            LM.addObjectActions(this, objTheme);
+            objTheme = addSingleGroupObject(themeSupplier, "Тема", baseLM.name);
+            addObjectActions(this, objTheme);
 
-            objCountry = addSingleGroupObject(countrySupplier, "Страна", LM.name, nameCountryCountrySupplier);
-            LM.addObjectActions(this, objCountry);
+            objCountry = addSingleGroupObject(countrySupplier, "Страна", baseLM.name, nameCountryCountrySupplier);
+            addObjectActions(this, objCountry);
 
             addFixedFilter(new CompareFilterEntity(addPropertyObject(supplierColorSupplier, objColor), Compare.EQUALS, objSupplier));
             addFixedFilter(new CompareFilterEntity(addPropertyObject(supplierSizeSupplier, objSize), Compare.EQUALS, objSupplier));
@@ -4337,10 +4339,10 @@ public class RomanLogicsModule extends LogicsModule {
         private StockTransferFormEntity(NavigatorElement parent, String sID, String caption) {
             super(parent, sID, caption);
 
-            objTransfer = addSingleGroupObject(transfer, "Внутреннее перемещение", LM.objectValue, barcodeStockFromTransfer, barcodeStockToTransfer);
-            LM.addObjectActions(this, objTransfer);
+            objTransfer = addSingleGroupObject(transfer, "Внутреннее перемещение", baseLM.objectValue, barcodeStockFromTransfer, barcodeStockToTransfer);
+            addObjectActions(this, objTransfer);
 
-            objSku = addSingleGroupObject(sku, "SKU", LM.barcode, sidArticleSku, sidColorSupplierItem, nameColorSupplierItem, sidSizeSupplierItem,
+            objSku = addSingleGroupObject(sku, "SKU", baseLM.barcode, sidArticleSku, sidColorSupplierItem, nameColorSupplierItem, sidSizeSupplierItem,
                     nameCategoryArticleSku, sidCustomCategoryOriginArticleSku,
                     nameCountryOfOriginSku, netWeightSku, mainCompositionOriginSku,
                     additionalCompositionOriginSku);
@@ -4388,7 +4390,7 @@ public class RomanLogicsModule extends LogicsModule {
         private FreightInvoiceFormEntity(NavigatorElement parent, String sID, String caption, boolean edit) {
             super(parent, sID, caption);
 
-            objFreight = addSingleGroupObject(freight, "Фрахт", LM.date, LM.objectClassName, nameRouteFreight, nameFreightTypeFreight, tonnageFreight, palletCountFreight, volumeFreight, nameCurrencyFreight, sumInFreight, sumMarkupInFreight, sumInOutFreight, palletNumberFreight);
+            objFreight = addSingleGroupObject(freight, "Фрахт", baseLM.date, baseLM.objectClassName, nameRouteFreight, nameFreightTypeFreight, tonnageFreight, palletCountFreight, volumeFreight, nameCurrencyFreight, sumInFreight, sumMarkupInFreight, sumInOutFreight, palletNumberFreight);
 
             addPropertyDraw(sumInCurrentYear);
             addPropertyDraw(sumInOutCurrentYear);
@@ -4400,33 +4402,33 @@ public class RomanLogicsModule extends LogicsModule {
             } else {
                 FreightInvoiceFormEntity editFreightForm = new FreightInvoiceFormEntity(null, "freightInvoiceForm_edit", "Расценка фрахта", true);
                 addPropertyDraw(
-                        LM.addJProp("Расценить фрахт", LM.and(false, true),
-                                LM.addMFAProp(null,
+                        addJProp("Расценить фрахт", and(false, true),
+                                addMFAProp(null,
                                         "Расценить фрахт",
                                         editFreightForm,
                                         new ObjectEntity[]{editFreightForm.objFreight},
                                         new PropertyObjectEntity[0],
                                         new PropertyObjectEntity[0],
                                         false), 1,
-                                LM.is(freightComplete), 1,
-                                LM.is(freightPriced), 1),
+                                is(freightComplete), 1,
+                                is(freightPriced), 1),
                         objFreight
                 ).forceViewType = ClassViewType.GRID;
             }
 
-            objImporter = addSingleGroupObject(importer, "Импортер", LM.name);
+            objImporter = addSingleGroupObject(importer, "Импортер", baseLM.name);
 
             addPropertyDraw(quantityImporterFreight, objImporter, objFreight);
             addPropertyDraw(sumInImporterFreight, objImporter, objFreight);
             addPropertyDraw(sumMarkupInImporterFreight, objImporter, objFreight);
             addPropertyDraw(sumInOutImporterFreight, objImporter, objFreight);
 
-            objBrandSupplier = addSingleGroupObject(brandSupplier, "Бренд", LM.name, nameSupplierBrandSupplier);
+            objBrandSupplier = addSingleGroupObject(brandSupplier, "Бренд", baseLM.name, nameSupplierBrandSupplier);
 
             addPropertyDraw(quantityImporterFreightBrandSupplier, objImporter, objFreight, objBrandSupplier);
             addPropertyDraw(markupPercentImporterFreightBrandSupplier, objImporter, objFreight, objBrandSupplier);
 
-            objSku = addSingleGroupObject(sku, "SKU", LM.barcode, sidArticleSku, sidSizeSupplierItem,
+            objSku = addSingleGroupObject(sku, "SKU", baseLM.barcode, sidArticleSku, sidSizeSupplierItem,
                     nameBrandSupplierArticleSku, nameCategoryArticleSku, sidCustomCategoryOriginArticleSku,
                     nameCountrySku, netWeightSku, mainCompositionOriginSku);
 
@@ -4454,8 +4456,8 @@ public class RomanLogicsModule extends LogicsModule {
         public FormView createDefaultRichDesign() {
             DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign();
 
-            design.get(getPropertyDraw(LM.date, objFreight)).caption = "Дата отгрузки";
-            design.get(getPropertyDraw(LM.objectClassName, objFreight)).caption = "Статус фрахта";
+            design.get(getPropertyDraw(baseLM.date, objFreight)).caption = "Дата отгрузки";
+            design.get(getPropertyDraw(baseLM.objectClassName, objFreight)).caption = "Статус фрахта";
 
             ContainerView specContainer = design.createContainer("Итоги по текущему году");
             specContainer.add(design.get(getPropertyDraw(sumInCurrentYear)));
@@ -4482,13 +4484,13 @@ public class RomanLogicsModule extends LogicsModule {
         public CreateItemFormEntity(NavigatorElement parent, String sID, String caption) {
             super(parent, sID, caption);
 
-            objSupplier = addSingleGroupObject(supplier, "Поставщик", LM.name);
+            objSupplier = addSingleGroupObject(supplier, "Поставщик", baseLM.name);
             objSupplier.groupTo.setSingleClassView(ClassViewType.PANEL);
 
-            objBarcode = addSingleGroupObject(StringClass.get(13), "Штрих-код", LM.objectValue);
+            objBarcode = addSingleGroupObject(StringClass.get(13), "Штрих-код", baseLM.objectValue);
             objBarcode.groupTo.setSingleClassView(ClassViewType.PANEL);
 
-            objSIDArticleComposite = addSingleGroupObject(StringClass.get(50), "Артикул", LM.objectValue);
+            objSIDArticleComposite = addSingleGroupObject(StringClass.get(50), "Артикул", baseLM.objectValue);
             objSIDArticleComposite.groupTo.setSingleClassView(ClassViewType.PANEL);
 
             objItem = addSingleGroupObject(item, "Товар", sidColorSupplierItem, nameColorSupplierItem, sidSizeSupplierItem);
@@ -4515,12 +4517,12 @@ public class RomanLogicsModule extends LogicsModule {
 
         public PricatFormEntity(NavigatorElement parent, String sID, String caption) {
             super(parent, sID, caption);
-            objSupplier = addSingleGroupObject(supplier, LM.name, importPricatSupplier, hugoBossImportPricat);
+            objSupplier = addSingleGroupObject(supplier, baseLM.name, importPricatSupplier, hugoBossImportPricat);
             objSupplier.groupTo.setSingleClassView(ClassViewType.PANEL);
 
             ObjectEntity objPricat = addSingleGroupObject(pricat);
-            addPropertyDraw(objPricat, LM.baseGroup);
-            LM.addObjectActions(this, objPricat);
+            addPropertyDraw(objPricat, baseGroup);
+            addObjectActions(this, objPricat);
 
             addFixedFilter(new CompareFilterEntity(addPropertyObject(supplierPricat, objPricat), Compare.EQUALS, objSupplier));
             setReadOnly(objSupplier, true);
@@ -4537,7 +4539,7 @@ public class RomanLogicsModule extends LogicsModule {
 
         // route в интерфейсе нужен только, чтобы найти нужный ObjectInstance (не хочется бегать и искать его по массиву ObjectInstance)
         public SeekRouteActionProperty() {
-            super(LM.genSID(), "Поиск маршрута", new ValueClass[] {shipment, sku, route});
+            super(genSID(), "Поиск маршрута", new ValueClass[] {shipment, sku, route});
 
             Iterator<ClassPropertyInterface> i = interfaces.iterator();
             shipmentInterface = i.next();

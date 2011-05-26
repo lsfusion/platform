@@ -54,10 +54,9 @@ import static platform.base.BaseUtils.nvl;
 
 
 public class SkolkovoLogicsModule extends LogicsModule {
-    private BaseLogicsModule<SkolkovoBusinessLogics> LM;
 
-    public SkolkovoLogicsModule(BaseLogicsModule<SkolkovoBusinessLogics> LM) {
-        this.LM = LM;
+    public SkolkovoLogicsModule(BaseLogicsModule<SkolkovoBusinessLogics> baseLM) {
+        setBaseLogicsModule(baseLM);
     }
 
     private LP inExpertVoteDateFromDateTo;
@@ -117,114 +116,117 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
     @Override
     public void initClasses() {
-        multiLanguageNamed = LM.addAbstractClass("multiLanguageNamed", "Многоязычный объект", LM.baseClass);
+        initBaseClassAliases();
 
-        projectType = LM.addStaticClass("projectType", "Тип проекта",
+        multiLanguageNamed = addAbstractClass("multiLanguageNamed", "Многоязычный объект", baseClass);
+
+        projectType = addStaticClass("projectType", "Тип проекта",
                                      new String[]{"comparable3", "surpasses3", "russianbenchmark3", "certainadvantages3", "significantlyoutperforms3", "nobenchmarks3"},
                                      new String[]{"сопоставим с существующими российскими аналогами или уступает им", "превосходит российские аналоги, но уступает лучшим зарубежным аналогам",
                                                   "Является российским аналогом востребованного зарубежного продукта/технологии", "Обладает отдельными преимуществами над лучшими мировыми аналогами, но в целом сопоставим с ними",
                                                   "Существенно превосходит все существующие мировые аналоги", "Не имеет аналогов, удовлетворяет ранее не удовлетворенную потребность и создает новый рынок"});
 
-        ownerType = LM.addStaticClass("ownerType", "Тип правообладателя",
+        ownerType = addStaticClass("ownerType", "Тип правообладателя",
                                                new String[]{"employee", "participant", "thirdparty"},
                                                new String[]{"Работником организации", "Участником организации", "Третьим лицом"});
 
-        patent = LM.addConcreteClass("patent", "Патент", LM.baseClass);
-        academic = LM.addConcreteClass("academic", "Научные кадры", LM.baseClass);
-        nonRussianSpecialist = LM.addConcreteClass("nonRussianSpecialist", "Иностранный специалист", LM.baseClass);
+        patent = addConcreteClass("patent", "Патент", baseClass);
+        academic = addConcreteClass("academic", "Научные кадры", baseClass);
+        nonRussianSpecialist = addConcreteClass("nonRussianSpecialist", "Иностранный специалист", baseClass);
 
-        project = LM.addConcreteClass("project", "Проект", multiLanguageNamed, LM.transaction);
-        expert = LM.addConcreteClass("expert", "Эксперт", LM.customUser);
-        cluster = LM.addConcreteClass("cluster", "Кластер", multiLanguageNamed);
+        project = addConcreteClass("project", "Проект", multiLanguageNamed, baseLM.transaction);
+        expert = addConcreteClass("expert", "Эксперт", baseLM.customUser);
+        cluster = addConcreteClass("cluster", "Кластер", multiLanguageNamed);
 
-        claimer = LM.addConcreteClass("claimer", "Заявитель", multiLanguageNamed, LM.emailObject);
+        claimer = addConcreteClass("claimer", "Заявитель", multiLanguageNamed, baseLM.emailObject);
         claimer.dialogReadOnly = false;
 
-        documentTemplate = LM.addConcreteClass("documentTemplate", "Шаблон документов", LM.baseClass.named);
+        documentTemplate = addConcreteClass("documentTemplate", "Шаблон документов", baseClass.named);
 
-        documentAbstract = LM.addConcreteClass("documentAbstract", "Документ (абстр.)", LM.baseClass);
+        documentAbstract = addConcreteClass("documentAbstract", "Документ (абстр.)", baseClass);
 
-        documentTemplateDetail = LM.addConcreteClass("documentTemplateDetail", "Документ (прототип)", documentAbstract);
+        documentTemplateDetail = addConcreteClass("documentTemplateDetail", "Документ (прототип)", documentAbstract);
 
-        document = LM.addConcreteClass("document", "Документ", documentAbstract);
+        document = addConcreteClass("document", "Документ", documentAbstract);
 
-        vote = LM.addConcreteClass("vote", "Заседание", LM.baseClass, LM.transaction);
+        vote = addConcreteClass("vote", "Заседание", baseClass, baseLM.transaction);
 
-        language = LM.addStaticClass("language", "Язык",
+        language = addStaticClass("language", "Язык",
                 new String[]{"russian", "english"},
                 new String[]{"Русский", "Английский"});
 
-        voteResult = LM.addStaticClass("voteResult", "Результат заседания",
+        voteResult = addStaticClass("voteResult", "Результат заседания",
                                     new String[]{"refused", "connected", "voted"},
                                     new String[]{"Отказался", "Аффилирован", "Проголосовал"});
 
-        projectStatus = LM.addStaticClass("projectStatus", "Статус проекта",
+        projectStatus = addStaticClass("projectStatus", "Статус проекта",
                                        new String[]{"unknown", "needDocuments", "needExtraVote", "inProgress", "succeeded", "accepted", "rejected"},
                                        new String[]{"Неизвестный статус", "Не соответствуют документы", "Требуется заседание", "Идет заседание", "Достаточно голосов", "Оценен положительно", "Оценен отрицательно"});
 
-        documentType = LM.addStaticClass("documentType", "Тип документа",
+        documentType = addStaticClass("documentType", "Тип документа",
                 new String[]{"application", "resume", "techdesc", "forres"},
                 new String[]{"Анкета", "Резюме", "Техническое описание", "Резюме иностранного специалиста "});
     }
 
     @Override
     public void initTables() {
-        LM.tableFactory.include("project", project);
-        LM.tableFactory.include("expert", project);
-        LM.tableFactory.include("cluster", project);
-        LM.tableFactory.include("claimer", project);
-        LM.tableFactory.include("vote", vote);
-        LM.tableFactory.include("patent", patent);
-        LM.tableFactory.include("academic", academic);
-        LM.tableFactory.include("nonRussianSpecialist", nonRussianSpecialist);
-        LM.tableFactory.include("document", document);
+        baseLM.tableFactory.include("project", project);
+        baseLM.tableFactory.include("expert", project);
+        baseLM.tableFactory.include("cluster", project);
+        baseLM.tableFactory.include("claimer", project);
+        baseLM.tableFactory.include("vote", vote);
+        baseLM.tableFactory.include("patent", patent);
+        baseLM.tableFactory.include("academic", academic);
+        baseLM.tableFactory.include("nonRussianSpecialist", nonRussianSpecialist);
+        baseLM.tableFactory.include("document", document);
     }
 
     @Override
     public void initGroups() {
+        initBaseGroupAliases();
         contactGroup = new AbstractGroup("Контакты организации");
-        LM.publicGroup.add(contactGroup);
+        publicGroup.add(contactGroup);
 
         documentGroup = new AbstractGroup("Юридические документы");
-        LM.publicGroup.add(documentGroup);
+        publicGroup.add(documentGroup);
 
         legalDataGroup = new AbstractGroup("Юридические данные");
-        LM.publicGroup.add(legalDataGroup);
+        publicGroup.add(legalDataGroup);
 
         claimerInformationGroup = new AbstractGroup("Информация о заявителе");
-        LM.publicGroup.add(claimerInformationGroup);
+        publicGroup.add(claimerInformationGroup);
 
 
         projectInformationGroup = new AbstractGroup("Информация по проекту");
-        LM.baseGroup.add(projectInformationGroup);
+        baseGroup.add(projectInformationGroup);
 
         additionalInformationGroup = new AbstractGroup("Доп. информация по проекту");
-        LM.publicGroup.add(projectInformationGroup);
+        publicGroup.add(projectInformationGroup);
 
         innovationGroup = new AbstractGroup("Инновация");
-        LM.baseGroup.add(innovationGroup);
+        baseGroup.add(innovationGroup);
 
         executiveSummaryGroup = new AbstractGroup("Резюме проекта");
-        LM.baseGroup.add(executiveSummaryGroup);
+        baseGroup.add(executiveSummaryGroup);
 
         sourcesFundingGroup = new AbstractGroup("Источники финансирования");
-        LM.baseGroup.add(sourcesFundingGroup);
+        baseGroup.add(sourcesFundingGroup);
 
         equipmentGroup = new AbstractGroup("Оборудование");
-        LM.baseGroup.add(equipmentGroup);
+        baseGroup.add(equipmentGroup);
 
         projectDocumentsGroup = new AbstractGroup("Документы");
-        LM.baseGroup.add(projectDocumentsGroup);
+        baseGroup.add(projectDocumentsGroup);
 
         projectStatusGroup = new AbstractGroup("Текущий статус проекта");
-        LM.baseGroup.add(projectStatusGroup);
+        baseGroup.add(projectStatusGroup);
 
 
         voteResultGroup = new AbstractGroup("Результаты голосования");
-        LM.publicGroup.add(voteResultGroup);
+        publicGroup.add(voteResultGroup);
 
         expertResultGroup = new AbstractGroup("Статистика по экспертам");
-        LM.publicGroup.add(expertResultGroup);
+        publicGroup.add(expertResultGroup);
 
         voteResultCheckGroup = new AbstractGroup("Результаты голосования (выбор)");
         voteResultCheckGroup.createContainer = false;
@@ -533,641 +535,641 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
     @Override
     public void initProperties() {
-        LM.idGroup.add(LM.objectValue);
+        idGroup.add(baseLM.objectValue);
 
-        nameNative = LM.addDProp(LM.recognizeGroup, "nameNative", "Имя", InsensitiveStringClass.get(2000), multiLanguageNamed);
+        nameNative = addDProp(recognizeGroup, "nameNative", "Имя", InsensitiveStringClass.get(2000), multiLanguageNamed);
         nameNative.setMinimumWidth(10); nameNative.setPreferredWidth(50);
-        nameForeign = LM.addDProp(LM.recognizeGroup, "nameForeign", "Имя (иностр.)", InsensitiveStringClass.get(2000), multiLanguageNamed);
+        nameForeign = addDProp(recognizeGroup, "nameForeign", "Имя (иностр.)", InsensitiveStringClass.get(2000), multiLanguageNamed);
         nameForeign.setMinimumWidth(10); nameForeign.setPreferredWidth(50);
 
-        LM.baseGroup.add(LM.email.property); // сделано, чтобы email был не самой первой колонкой в диалогах
+        baseGroup.add(baseLM.email.property); // сделано, чтобы email был не самой первой колонкой в диалогах
 
-        LP percent = LM.addSFProp("(prm1*100/prm2)", DoubleClass.instance, 2);
+        LP percent = addSFProp("(prm1*100/prm2)", DoubleClass.instance, 2);
 
         // глобальные свойства
-        requiredPeriod = LM.addDProp(LM.baseGroup, "votePeriod", "Срок заседания", IntegerClass.instance);
-        requiredQuantity = LM.addDProp(LM.baseGroup, "voteRequiredQuantity", "Кол-во экспертов", IntegerClass.instance);
-        limitExperts = LM.addDProp(LM.baseGroup, "limitExperts", "Кол-во прогол. экспертов", IntegerClass.instance);
+        requiredPeriod = addDProp(baseGroup, "votePeriod", "Срок заседания", IntegerClass.instance);
+        requiredQuantity = addDProp(baseGroup, "voteRequiredQuantity", "Кол-во экспертов", IntegerClass.instance);
+        limitExperts = addDProp(baseGroup, "limitExperts", "Кол-во прогол. экспертов", IntegerClass.instance);
 
         //свойства заявителя
-        nameNativeClaimer = LM.addJProp(claimerInformationGroup, "nameNativeClaimer", "Заявитель", LM.and1, nameNative, 1, LM.is(claimer), 1);
+        nameNativeClaimer = addJProp(claimerInformationGroup, "nameNativeClaimer", "Заявитель", baseLM.and1, nameNative, 1, is(claimer), 1);
         nameNativeClaimer.setMinimumWidth(10); nameNativeClaimer.setPreferredWidth(50);
-        nameForeignClaimer = LM.addJProp(claimerInformationGroup, "nameForeignClaimer", "Claimer", LM.and1,  nameForeign, 1, LM.is(claimer), 1);
+        nameForeignClaimer = addJProp(claimerInformationGroup, "nameForeignClaimer", "Claimer", baseLM.and1,  nameForeign, 1, is(claimer), 1);
         nameForeignClaimer.setMinimumWidth(10); nameForeignClaimer.setPreferredWidth(50);
-        firmNameNativeClaimer = LM.addDProp(claimerInformationGroup, "firmNameNativeClaimer", "Фирменное название", InsensitiveStringClass.get(2000), claimer);
+        firmNameNativeClaimer = addDProp(claimerInformationGroup, "firmNameNativeClaimer", "Фирменное название", InsensitiveStringClass.get(2000), claimer);
         firmNameNativeClaimer.setMinimumWidth(10); firmNameNativeClaimer.setPreferredWidth(50);
-        firmNameForeignClaimer = LM.addDProp(claimerInformationGroup, "firmNameForeignClaimer", "Brand name", InsensitiveStringClass.get(2000), claimer);
+        firmNameForeignClaimer = addDProp(claimerInformationGroup, "firmNameForeignClaimer", "Brand name", InsensitiveStringClass.get(2000), claimer);
         firmNameForeignClaimer.setMinimumWidth(10); firmNameForeignClaimer.setPreferredWidth(50);
-        phoneClaimer = LM.addDProp(contactGroup, "phoneClaimer", "Телефон", StringClass.get(100), claimer);
-        addressClaimer = LM.addDProp(contactGroup, "addressClaimer", "Адрес", StringClass.get(2000), claimer);
+        phoneClaimer = addDProp(contactGroup, "phoneClaimer", "Телефон", StringClass.get(100), claimer);
+        addressClaimer = addDProp(contactGroup, "addressClaimer", "Адрес", StringClass.get(2000), claimer);
         addressClaimer.setMinimumWidth(10); addressClaimer.setPreferredWidth(50);
-        siteClaimer = LM.addDProp(contactGroup, "siteClaimer", "Сайт", StringClass.get(100), claimer);
-        emailClaimer = LM.addJProp(contactGroup, "emailClaimer", "E-mail", LM.and1, LM.email, 1, LM.is(claimer), 1);
+        siteClaimer = addDProp(contactGroup, "siteClaimer", "Сайт", StringClass.get(100), claimer);
+        emailClaimer = addJProp(contactGroup, "emailClaimer", "E-mail", baseLM.and1, baseLM.email, 1, is(claimer), 1);
 
-        statementClaimer = LM.addDProp("statementClaimer", "Заявление", PDFClass.instance, claimer);
-        loadStatementClaimer = LM.addLFAProp(documentGroup, "Загрузить заявление", statementClaimer);
-        openStatementClaimer = LM.addOFAProp(documentGroup, "Открыть заявление", statementClaimer);
+        statementClaimer = addDProp("statementClaimer", "Заявление", PDFClass.instance, claimer);
+        loadStatementClaimer = addLFAProp(documentGroup, "Загрузить заявление", statementClaimer);
+        openStatementClaimer = addOFAProp(documentGroup, "Открыть заявление", statementClaimer);
 
-        constituentClaimer = LM.addDProp("constituentClaimer", "Учредительные документы", PDFClass.instance, claimer);
-        loadConstituentClaimer = LM.addLFAProp(documentGroup, "Загрузить учредительные документы", constituentClaimer);
-        openConstituentClaimer = LM.addOFAProp(documentGroup, "Открыть учредительные документы", constituentClaimer);
+        constituentClaimer = addDProp("constituentClaimer", "Учредительные документы", PDFClass.instance, claimer);
+        loadConstituentClaimer = addLFAProp(documentGroup, "Загрузить учредительные документы", constituentClaimer);
+        openConstituentClaimer = addOFAProp(documentGroup, "Открыть учредительные документы", constituentClaimer);
 
-        extractClaimer = LM.addDProp("extractClaimer", "Выписка из реестра", PDFClass.instance, claimer);
-        loadExtractClaimer = LM.addLFAProp(documentGroup, "Загрузить выписку из реестра", extractClaimer);
-        openExtractClaimer = LM.addOFAProp(documentGroup, "Открыть Выписку из реестра", extractClaimer);
+        extractClaimer = addDProp("extractClaimer", "Выписка из реестра", PDFClass.instance, claimer);
+        loadExtractClaimer = addLFAProp(documentGroup, "Загрузить выписку из реестра", extractClaimer);
+        openExtractClaimer = addOFAProp(documentGroup, "Открыть Выписку из реестра", extractClaimer);
 
-        OGRNClaimer = LM.addDProp(legalDataGroup, "OGRNClaimer", "ОГРН", StringClass.get(13), claimer);
-        INNClaimer = LM.addDProp(legalDataGroup, "INNClaimer", "ИНН", StringClass.get(12), claimer);
+        OGRNClaimer = addDProp(legalDataGroup, "OGRNClaimer", "ОГРН", StringClass.get(13), claimer);
+        INNClaimer = addDProp(legalDataGroup, "INNClaimer", "ИНН", StringClass.get(12), claimer);
 
-        projectVote = LM.addDProp(LM.idGroup, "projectVote", "Проект (ИД)", project, vote);
-        LM.setNotNull(projectVote);
+        projectVote = addDProp(idGroup, "projectVote", "Проект (ИД)", project, vote);
+        setNotNull(projectVote);
 
-        nameNativeProjectVote = LM.addJProp(LM.baseGroup, "nameNativeProjectVote", "Проект", nameNative, projectVote, 1);
-        nameForeignProjectVote = LM.addJProp(LM.baseGroup, "nameForeignProjectVote", "Проект (иностр.)", nameForeign, projectVote, 1);
+        nameNativeProjectVote = addJProp(baseGroup, "nameNativeProjectVote", "Проект", nameNative, projectVote, 1);
+        nameForeignProjectVote = addJProp(baseGroup, "nameForeignProjectVote", "Проект (иностр.)", nameForeign, projectVote, 1);
 
-        dateProjectVote = LM.addJProp("dateProjectVote", "Дата проекта", LM.date, projectVote, 1);
+        dateProjectVote = addJProp("dateProjectVote", "Дата проекта", baseLM.date, projectVote, 1);
 
-        dataDocumentNameExpert = LM.addDProp("dataDocumentNameExpert", "Имя для документов", StringClass.get(70), expert);
-        documentNameExpert = LM.addSUProp("documentNameExpert", "Имя для документов", Union.OVERRIDE, LM.addJProp(LM.and1, LM.addJProp(LM.insensitiveString2, LM.userLastName, 1, LM.userFirstName, 1), 1, LM.is(expert), 1), dataDocumentNameExpert);
+        dataDocumentNameExpert = addDProp("dataDocumentNameExpert", "Имя для документов", StringClass.get(70), expert);
+        documentNameExpert = addSUProp("documentNameExpert", "Имя для документов", Union.OVERRIDE, addJProp(baseLM.and1, addJProp(baseLM.insensitiveString2, baseLM.userLastName, 1, baseLM.userFirstName, 1), 1, is(expert), 1), dataDocumentNameExpert);
 
-        clusterExpert = LM.addDProp(LM.idGroup, "clusterExpert", "Кластер (ИД)", cluster, expert);
-        nameNativeClusterExpert = LM.addJProp(LM.baseGroup, "nameNativeClusterExpert", "Кластер", nameNative, clusterExpert, 1);
+        clusterExpert = addDProp(idGroup, "clusterExpert", "Кластер (ИД)", cluster, expert);
+        nameNativeClusterExpert = addJProp(baseGroup, "nameNativeClusterExpert", "Кластер", nameNative, clusterExpert, 1);
 
         // project
-        claimerProject = LM.addDProp(LM.idGroup, "claimerProject", "Заявитель (ИД)", claimer, project);
+        claimerProject = addDProp(idGroup, "claimerProject", "Заявитель (ИД)", claimer, project);
 
-        nameNativeManagerProject = LM.addDProp(projectInformationGroup, "nameNativeManagerProject", "ФИО руководителя проекта", InsensitiveStringClass.get(2000), project);
+        nameNativeManagerProject = addDProp(projectInformationGroup, "nameNativeManagerProject", "ФИО руководителя проекта", InsensitiveStringClass.get(2000), project);
         nameNativeManagerProject.setMinimumWidth(10); nameNativeManagerProject.setPreferredWidth(50);
-        nameNativeGenitiveManagerProject = LM.addDProp(projectInformationGroup, "nameNativeGenitiveManagerProject", "ФИО руководителя проекта (Кого)", InsensitiveStringClass.get(2000), project);
+        nameNativeGenitiveManagerProject = addDProp(projectInformationGroup, "nameNativeGenitiveManagerProject", "ФИО руководителя проекта (Кого)", InsensitiveStringClass.get(2000), project);
         nameNativeGenitiveManagerProject.setMinimumWidth(10); nameNativeGenitiveManagerProject.setPreferredWidth(50);
-        nameGenitiveManagerProject = LM.addSUProp("nameGenitiveManagerProject", "Заявитель (Кого)", Union.OVERRIDE, nameNativeManagerProject, nameNativeGenitiveManagerProject);
+        nameGenitiveManagerProject = addSUProp("nameGenitiveManagerProject", "Заявитель (Кого)", Union.OVERRIDE, nameNativeManagerProject, nameNativeGenitiveManagerProject);
         nameGenitiveManagerProject.setMinimumWidth(10); nameGenitiveManagerProject.setPreferredWidth(50);
-        nameNativeDativusManagerProject = LM.addDProp(projectInformationGroup, "nameNativeDativusManagerProject", "ФИО руководителя проекта (Кому)", InsensitiveStringClass.get(2000), project);
+        nameNativeDativusManagerProject = addDProp(projectInformationGroup, "nameNativeDativusManagerProject", "ФИО руководителя проекта (Кому)", InsensitiveStringClass.get(2000), project);
         nameNativeDativusManagerProject.setMinimumWidth(10); nameNativeDativusManagerProject.setPreferredWidth(50);
-        nameDativusManagerProject = LM.addSUProp("nameDativusManagerProject", "Заявитель (Кому)", Union.OVERRIDE, nameNativeManagerProject, nameNativeDativusManagerProject);
+        nameDativusManagerProject = addSUProp("nameDativusManagerProject", "Заявитель (Кому)", Union.OVERRIDE, nameNativeManagerProject, nameNativeDativusManagerProject);
         nameDativusManagerProject.setMinimumWidth(10); nameDativusManagerProject.setPreferredWidth(50);
-        nameNativeAblateManagerProject = LM.addDProp(projectInformationGroup, "nameNativeAblateManagerProject", "ФИО руководителя проекта (Кем)", InsensitiveStringClass.get(2000), project);
+        nameNativeAblateManagerProject = addDProp(projectInformationGroup, "nameNativeAblateManagerProject", "ФИО руководителя проекта (Кем)", InsensitiveStringClass.get(2000), project);
         nameNativeAblateManagerProject.setMinimumWidth(10); nameNativeAblateManagerProject.setPreferredWidth(50);
-        nameAblateManagerProject = LM.addSUProp("nameAblateManagerProject", "Заявитель (Кем)", Union.OVERRIDE, nameNativeManagerProject, nameNativeAblateManagerProject);
+        nameAblateManagerProject = addSUProp("nameAblateManagerProject", "Заявитель (Кем)", Union.OVERRIDE, nameNativeManagerProject, nameNativeAblateManagerProject);
         nameAblateManagerProject.setMinimumWidth(10); nameAblateManagerProject.setPreferredWidth(50);
-        nameForeignManagerProject = LM.addDProp(projectInformationGroup, "nameForeignManagerProject", "Full name project manager", InsensitiveStringClass.get(2000), project);
+        nameForeignManagerProject = addDProp(projectInformationGroup, "nameForeignManagerProject", "Full name project manager", InsensitiveStringClass.get(2000), project);
         nameForeignManagerProject.setMinimumWidth(10); nameForeignManagerProject.setPreferredWidth(50);
 
-        nameNativeJoinClaimerProject = LM.addJProp(projectInformationGroup, "nameNativeJoinClaimerProject", "Заявитель", nameNative, claimerProject, 1);
-        nameNativeClaimerProject = LM.addSUProp("nameNativeClaimerProject", "Заявитель", Union.OVERRIDE, nameNativeManagerProject, nameNativeJoinClaimerProject);
+        nameNativeJoinClaimerProject = addJProp(projectInformationGroup, "nameNativeJoinClaimerProject", "Заявитель", nameNative, claimerProject, 1);
+        nameNativeClaimerProject = addSUProp("nameNativeClaimerProject", "Заявитель", Union.OVERRIDE, nameNativeManagerProject, nameNativeJoinClaimerProject);
         nameNativeClaimerProject.setMinimumWidth(10); nameNativeClaimerProject.setPreferredWidth(50);
-        nameForeignJoinClaimerProject = LM.addJProp(projectInformationGroup, "nameForeignJoinClaimerProject", "Claimer", nameForeign, claimerProject, 1);
-        nameForeignClaimerProject = LM.addSUProp("nameForeignClaimerProject", "Claimer", Union.OVERRIDE, nameForeignManagerProject, nameForeignJoinClaimerProject);
-        nameGenitiveClaimerProject = LM.addSUProp(additionalInformationGroup, "nameGenitiveClaimerProject", "Заявитель (Кого)", Union.OVERRIDE, nameGenitiveManagerProject, nameNativeJoinClaimerProject);
-        nameDativusClaimerProject = LM.addSUProp(additionalInformationGroup, "nameDativusClaimerProject", "Заявитель (Кому)", Union.OVERRIDE, nameDativusManagerProject, nameNativeJoinClaimerProject);
-        nameAblateClaimerProject = LM.addSUProp(additionalInformationGroup, "nameAblateClaimerProject", "Заявитель (Кем)", Union.OVERRIDE, nameAblateManagerProject, nameNativeJoinClaimerProject);
+        nameForeignJoinClaimerProject = addJProp(projectInformationGroup, "nameForeignJoinClaimerProject", "Claimer", nameForeign, claimerProject, 1);
+        nameForeignClaimerProject = addSUProp("nameForeignClaimerProject", "Claimer", Union.OVERRIDE, nameForeignManagerProject, nameForeignJoinClaimerProject);
+        nameGenitiveClaimerProject = addSUProp(additionalInformationGroup, "nameGenitiveClaimerProject", "Заявитель (Кого)", Union.OVERRIDE, nameGenitiveManagerProject, nameNativeJoinClaimerProject);
+        nameDativusClaimerProject = addSUProp(additionalInformationGroup, "nameDativusClaimerProject", "Заявитель (Кому)", Union.OVERRIDE, nameDativusManagerProject, nameNativeJoinClaimerProject);
+        nameAblateClaimerProject = addSUProp(additionalInformationGroup, "nameAblateClaimerProject", "Заявитель (Кем)", Union.OVERRIDE, nameAblateManagerProject, nameNativeJoinClaimerProject);
 
-        nameNativeProject = LM.addJProp(projectInformationGroup, "nameNativeProject", "Название проекта", LM.and1, nameNative, 1, LM.is(project), 1);
+        nameNativeProject = addJProp(projectInformationGroup, "nameNativeProject", "Название проекта", baseLM.and1, nameNative, 1, is(project), 1);
         nameNativeProject.setMinimumWidth(10); nameNativeProject.setPreferredWidth(50);
-        nameForeignProject = LM.addJProp(projectInformationGroup, "nameForeignProject", "Name of the project", LM.and1,  nameForeign, 1, LM.is(project), 1);
+        nameForeignProject = addJProp(projectInformationGroup, "nameForeignProject", "Name of the project", baseLM.and1,  nameForeign, 1, is(project), 1);
         nameForeignProject.setMinimumWidth(10); nameForeignProject.setPreferredWidth(50);
 
-        nativeProblemProject = LM.addDProp(innovationGroup, "nativeProblemProject", "Проблема, на решение которой направлен проект", InsensitiveStringClass.get(2000), project);
+        nativeProblemProject = addDProp(innovationGroup, "nativeProblemProject", "Проблема, на решение которой направлен проект", InsensitiveStringClass.get(2000), project);
         nativeProblemProject.setMinimumWidth(10); nativeProblemProject.setPreferredWidth(50);
-        foreignProblemProject = LM.addDProp(innovationGroup, "foreignProblemProject", "The problem that the project will solve", InsensitiveStringClass.get(2000), project);
+        foreignProblemProject = addDProp(innovationGroup, "foreignProblemProject", "The problem that the project will solve", InsensitiveStringClass.get(2000), project);
         foreignProblemProject.setMinimumWidth(10); foreignProblemProject.setPreferredWidth(50);
 
-        nativeInnovativeProject = LM.addDProp(innovationGroup, "nativeInnovativeProject", "Суть инновации", InsensitiveStringClass.get(2000), project);
+        nativeInnovativeProject = addDProp(innovationGroup, "nativeInnovativeProject", "Суть инновации", InsensitiveStringClass.get(2000), project);
         nativeInnovativeProject.setMinimumWidth(10); nativeInnovativeProject.setPreferredWidth(50);
-        foreignInnovativeProject = LM.addDProp(innovationGroup, "foreignInnovativeProject", "Description of the innovation", InsensitiveStringClass.get(2000), project);
+        foreignInnovativeProject = addDProp(innovationGroup, "foreignInnovativeProject", "Description of the innovation", InsensitiveStringClass.get(2000), project);
         foreignInnovativeProject.setMinimumWidth(10); foreignInnovativeProject.setPreferredWidth(50);
 
-        projectTypeProject = LM.addDProp(LM.idGroup, "projectTypeProject", "Тип проекта (ИД)", projectType, project);
-        nameProjectTypeProject = LM.addJProp(innovationGroup, "nameProjectTypeProject", "Тип проекта", LM.name, projectTypeProject, 1);
-        nativeSubstantiationProjectType = LM.addDProp(innovationGroup, "nativeSubstantiationProjectType", "Обоснование выбора", InsensitiveStringClass.get(2000), project);
+        projectTypeProject = addDProp(idGroup, "projectTypeProject", "Тип проекта (ИД)", projectType, project);
+        nameProjectTypeProject = addJProp(innovationGroup, "nameProjectTypeProject", "Тип проекта", baseLM.name, projectTypeProject, 1);
+        nativeSubstantiationProjectType = addDProp(innovationGroup, "nativeSubstantiationProjectType", "Обоснование выбора", InsensitiveStringClass.get(2000), project);
         nativeSubstantiationProjectType.setMinimumWidth(10); nativeSubstantiationProjectType.setPreferredWidth(50);
-        foreignSubstantiationProjectType = LM.addDProp(innovationGroup, "foreignSubstantiationProjectType", "Description of choice", InsensitiveStringClass.get(2000), project);
+        foreignSubstantiationProjectType = addDProp(innovationGroup, "foreignSubstantiationProjectType", "Description of choice", InsensitiveStringClass.get(2000), project);
         foreignSubstantiationProjectType.setMinimumWidth(10); foreignSubstantiationProjectType.setPreferredWidth(50);
 
-        clusterProject = LM.addDProp(LM.idGroup, "clusterProject", "Кластер (ИД)", cluster, project);
-        nameNativeClusterProject = LM.addJProp(innovationGroup, "nameNativeClusterProject", "Кластер", nameNative, clusterProject, 1);
-        nameForeignClusterProject = LM.addJProp(innovationGroup, "nameForeignClusterProject", "Кластер (иностр.)", nameForeign, clusterProject, 1);
-        nativeSubstantiationClusterProject = LM.addDProp(innovationGroup, "nativeSubstantiationClusterProject", "Обоснование выбора", InsensitiveStringClass.get(2000), project);
+        clusterProject = addDProp(idGroup, "clusterProject", "Кластер (ИД)", cluster, project);
+        nameNativeClusterProject = addJProp(innovationGroup, "nameNativeClusterProject", "Кластер", nameNative, clusterProject, 1);
+        nameForeignClusterProject = addJProp(innovationGroup, "nameForeignClusterProject", "Кластер (иностр.)", nameForeign, clusterProject, 1);
+        nativeSubstantiationClusterProject = addDProp(innovationGroup, "nativeSubstantiationClusterProject", "Обоснование выбора", InsensitiveStringClass.get(2000), project);
         nativeSubstantiationClusterProject.setMinimumWidth(10); nativeSubstantiationClusterProject.setPreferredWidth(50);
-        foreignSubstantiationClusterProject = LM.addDProp(innovationGroup, "foreignSubstantiationClusterProject", "Description of choice", InsensitiveStringClass.get(2000), project);
+        foreignSubstantiationClusterProject = addDProp(innovationGroup, "foreignSubstantiationClusterProject", "Description of choice", InsensitiveStringClass.get(2000), project);
         foreignSubstantiationClusterProject.setMinimumWidth(10); foreignSubstantiationClusterProject.setPreferredWidth(50);
 
-        fileNativeSummaryProject = LM.addDProp("fileNativeSummaryProject", "Файл резюме проекта", PDFClass.instance, project);
-        loadFileNativeSummaryProject = LM.addLFAProp(executiveSummaryGroup, "Загрузить файл резюме проекта", fileNativeSummaryProject);
-        openFileNativeSummaryProject = LM.addOFAProp(executiveSummaryGroup, "Открыть файл резюме проекта", fileNativeSummaryProject);
+        fileNativeSummaryProject = addDProp("fileNativeSummaryProject", "Файл резюме проекта", PDFClass.instance, project);
+        loadFileNativeSummaryProject = addLFAProp(executiveSummaryGroup, "Загрузить файл резюме проекта", fileNativeSummaryProject);
+        openFileNativeSummaryProject = addOFAProp(executiveSummaryGroup, "Открыть файл резюме проекта", fileNativeSummaryProject);
 
-        fileForeignSummaryProject = LM.addDProp("fileForeignSummaryProject", "Файл резюме проекта (иностр.)", PDFClass.instance, project);
-        loadFileForeignSummaryProject = LM.addLFAProp(executiveSummaryGroup, "Загрузить файл резюме проекта (иностр.)", fileForeignSummaryProject);
-        openFileForeignSummaryProject = LM.addOFAProp(executiveSummaryGroup, "Открыть файл резюме проекта (иностр.)", fileForeignSummaryProject);
+        fileForeignSummaryProject = addDProp("fileForeignSummaryProject", "Файл резюме проекта (иностр.)", PDFClass.instance, project);
+        loadFileForeignSummaryProject = addLFAProp(executiveSummaryGroup, "Загрузить файл резюме проекта (иностр.)", fileForeignSummaryProject);
+        openFileForeignSummaryProject = addOFAProp(executiveSummaryGroup, "Открыть файл резюме проекта (иностр.)", fileForeignSummaryProject);
 
         // источники финансирования
-        isReturnInvestmentsProject = LM.addDProp(sourcesFundingGroup, "isReturnInvestmentsProject", "Средства третьих лиц, привлекаемые на возвратной основе (заемные средства и т.п.)", LogicalClass.instance, project);
-        nameReturnInvestorProject = LM.addDProp(sourcesFundingGroup, "nameReturnInvestorProject", "Третьи лица для возврата средств", InsensitiveStringClass.get(2000), project);
+        isReturnInvestmentsProject = addDProp(sourcesFundingGroup, "isReturnInvestmentsProject", "Средства третьих лиц, привлекаемые на возвратной основе (заемные средства и т.п.)", LogicalClass.instance, project);
+        nameReturnInvestorProject = addDProp(sourcesFundingGroup, "nameReturnInvestorProject", "Третьи лица для возврата средств", InsensitiveStringClass.get(2000), project);
         nameReturnInvestorProject.setMinimumWidth(10); nameReturnInvestorProject.setPreferredWidth(50);
-        amountReturnFundsProject = LM.addDProp(sourcesFundingGroup, "amountReturnFundsProject", "Объем средств на возвратной основе (тыс. руб.)", DoubleClass.instance, project);
-        hideNameReturnInvestorProject = LM.addHideCaptionProp(LM.privateGroup, "укажите данных лиц и их контактную информацию", nameReturnInvestorProject, isReturnInvestmentsProject);
-        hideAmountReturnFundsProject = LM.addHideCaptionProp(LM.privateGroup, "укажите объем привлекаемых средств (тыс. руб.)", amountReturnFundsProject, isReturnInvestmentsProject);
+        amountReturnFundsProject = addDProp(sourcesFundingGroup, "amountReturnFundsProject", "Объем средств на возвратной основе (тыс. руб.)", DoubleClass.instance, project);
+        hideNameReturnInvestorProject = addHideCaptionProp(privateGroup, "укажите данных лиц и их контактную информацию", nameReturnInvestorProject, isReturnInvestmentsProject);
+        hideAmountReturnFundsProject = addHideCaptionProp(privateGroup, "укажите объем привлекаемых средств (тыс. руб.)", amountReturnFundsProject, isReturnInvestmentsProject);
 
-        isNonReturnInvestmentsProject = LM.addDProp(sourcesFundingGroup, "isNonReturnInvestmentsProject", "Средства третьих лиц, привлекаемые на безвозвратной основе (гранты и т.п.)", LogicalClass.instance, project);
+        isNonReturnInvestmentsProject = addDProp(sourcesFundingGroup, "isNonReturnInvestmentsProject", "Средства третьих лиц, привлекаемые на безвозвратной основе (гранты и т.п.)", LogicalClass.instance, project);
 
-        isCapitalInvestmentProject = LM.addDProp(sourcesFundingGroup, "isCapitalInvestmentProject", "Вклады в уставный капитал", LogicalClass.instance, project);
-        isPropertyInvestmentProject = LM.addDProp(sourcesFundingGroup, "isPropertyInvestmentProject", "Вклады в имущество", LogicalClass.instance, project);
-        isGrantsProject = LM.addDProp(sourcesFundingGroup, "isGrantsProject", "Гранты", LogicalClass.instance, project);
+        isCapitalInvestmentProject = addDProp(sourcesFundingGroup, "isCapitalInvestmentProject", "Вклады в уставный капитал", LogicalClass.instance, project);
+        isPropertyInvestmentProject = addDProp(sourcesFundingGroup, "isPropertyInvestmentProject", "Вклады в имущество", LogicalClass.instance, project);
+        isGrantsProject = addDProp(sourcesFundingGroup, "isGrantsProject", "Гранты", LogicalClass.instance, project);
 
-        isOtherNonReturnInvestmentsProject = LM.addDProp(sourcesFundingGroup, "isOtherNonReturnInvestmentsProject", "Иное", LogicalClass.instance, project);
+        isOtherNonReturnInvestmentsProject = addDProp(sourcesFundingGroup, "isOtherNonReturnInvestmentsProject", "Иное", LogicalClass.instance, project);
 
-        nameNonReturnInvestorProject = LM.addDProp(sourcesFundingGroup, "nameNonReturnInvestorProject", "Третьи лица для возврата средств", InsensitiveStringClass.get(2000), project);
+        nameNonReturnInvestorProject = addDProp(sourcesFundingGroup, "nameNonReturnInvestorProject", "Третьи лица для возврата средств", InsensitiveStringClass.get(2000), project);
         nameNonReturnInvestorProject.setMinimumWidth(10); nameNonReturnInvestorProject.setPreferredWidth(50);
-        amountNonReturnFundsProject = LM.addDProp(sourcesFundingGroup, "amountNonReturnFundsProject", "Объем средств на безвозвратной основе (тыс. руб.)", DoubleClass.instance, project);
-        hideNameNonReturnInvestorProject = LM.addHideCaptionProp(LM.privateGroup, "укажите данных лиц и их контактную информацию", nameReturnInvestorProject, isNonReturnInvestmentsProject);
-        hideAmountNonReturnFundsProject = LM.addHideCaptionProp(LM.privateGroup, "укажите объем привлекаемых средств (тыс. руб.)", amountReturnFundsProject, isNonReturnInvestmentsProject);
+        amountNonReturnFundsProject = addDProp(sourcesFundingGroup, "amountNonReturnFundsProject", "Объем средств на безвозвратной основе (тыс. руб.)", DoubleClass.instance, project);
+        hideNameNonReturnInvestorProject = addHideCaptionProp(privateGroup, "укажите данных лиц и их контактную информацию", nameReturnInvestorProject, isNonReturnInvestmentsProject);
+        hideAmountNonReturnFundsProject = addHideCaptionProp(privateGroup, "укажите объем привлекаемых средств (тыс. руб.)", amountReturnFundsProject, isNonReturnInvestmentsProject);
 
-        commentOtherNonReturnInvestmentsProject = LM.addDProp(sourcesFundingGroup, "commentOtherNonReturnInvestmentsProject", "Комментарий", InsensitiveStringClass.get(2000), project);
+        commentOtherNonReturnInvestmentsProject = addDProp(sourcesFundingGroup, "commentOtherNonReturnInvestmentsProject", "Комментарий", InsensitiveStringClass.get(2000), project);
         commentOtherNonReturnInvestmentsProject.setMinimumWidth(10); commentOtherNonReturnInvestmentsProject.setPreferredWidth(50);
 
-        hideIsCapitalInvestmentProject = LM.addHideCaptionProp(LM.privateGroup, "Укажите", isCapitalInvestmentProject, isNonReturnInvestmentsProject);
-        hideIsPropertyInvestmentProject = LM.addHideCaptionProp(LM.privateGroup, "Укажите", isPropertyInvestmentProject, isNonReturnInvestmentsProject);
-        hideIsGrantsProject = LM.addHideCaptionProp(LM.privateGroup, "Укажите", isGrantsProject, isNonReturnInvestmentsProject);
-        hideIsOtherNonReturnInvestmentsProject = LM.addHideCaptionProp(LM.privateGroup, "Укажите", isOtherNonReturnInvestmentsProject, isNonReturnInvestmentsProject);
+        hideIsCapitalInvestmentProject = addHideCaptionProp(privateGroup, "Укажите", isCapitalInvestmentProject, isNonReturnInvestmentsProject);
+        hideIsPropertyInvestmentProject = addHideCaptionProp(privateGroup, "Укажите", isPropertyInvestmentProject, isNonReturnInvestmentsProject);
+        hideIsGrantsProject = addHideCaptionProp(privateGroup, "Укажите", isGrantsProject, isNonReturnInvestmentsProject);
+        hideIsOtherNonReturnInvestmentsProject = addHideCaptionProp(privateGroup, "Укажите", isOtherNonReturnInvestmentsProject, isNonReturnInvestmentsProject);
 
-        hideCommentOtherNonReturnInvestmentsProject = LM.addHideCaptionProp(LM.privateGroup, "Укажите", commentOtherNonReturnInvestmentsProject, isOtherNonReturnInvestmentsProject);
+        hideCommentOtherNonReturnInvestmentsProject = addHideCaptionProp(privateGroup, "Укажите", commentOtherNonReturnInvestmentsProject, isOtherNonReturnInvestmentsProject);
 
-        isOwnFundsProject = LM.addDProp(sourcesFundingGroup, "isOwnFundsProject", "Собственные средства организации", LogicalClass.instance, project);
-        amountOwnFundsProject = LM.addDProp(sourcesFundingGroup, "amountOwnFundsProject", "Объем собственных средств (тыс. руб.)", DoubleClass.instance, project);
-        hideAmountOwnFundsProject = LM.addHideCaptionProp(LM.privateGroup, "Укажите", amountOwnFundsProject, isOwnFundsProject);
+        isOwnFundsProject = addDProp(sourcesFundingGroup, "isOwnFundsProject", "Собственные средства организации", LogicalClass.instance, project);
+        amountOwnFundsProject = addDProp(sourcesFundingGroup, "amountOwnFundsProject", "Объем собственных средств (тыс. руб.)", DoubleClass.instance, project);
+        hideAmountOwnFundsProject = addHideCaptionProp(privateGroup, "Укажите", amountOwnFundsProject, isOwnFundsProject);
 
-        isPlanningSearchSourceProject = LM.addDProp(sourcesFundingGroup, "isPlanningSearchSourceProject", "Планируется поиск источника финансирования проекта", LogicalClass.instance, project);
-        amountFundsProject = LM.addDProp(sourcesFundingGroup, "amountFundsProject", "Требуемый объем средств (тыс. руб.)", DoubleClass.instance, project);
-        hideAmountFundsProject = LM.addHideCaptionProp(LM.privateGroup, "Укажите", amountFundsProject, isPlanningSearchSourceProject);
+        isPlanningSearchSourceProject = addDProp(sourcesFundingGroup, "isPlanningSearchSourceProject", "Планируется поиск источника финансирования проекта", LogicalClass.instance, project);
+        amountFundsProject = addDProp(sourcesFundingGroup, "amountFundsProject", "Требуемый объем средств (тыс. руб.)", DoubleClass.instance, project);
+        hideAmountFundsProject = addHideCaptionProp(privateGroup, "Укажите", amountFundsProject, isPlanningSearchSourceProject);
 
-        isOtherSoursesProject = LM.addDProp(sourcesFundingGroup, "isOtherSoursesProject", "Иное", LogicalClass.instance, project);
-        commentOtherSoursesProject = LM.addDProp(sourcesFundingGroup, "commentOtherSoursesProject", "Комментарий", InsensitiveStringClass.get(2000), project);
+        isOtherSoursesProject = addDProp(sourcesFundingGroup, "isOtherSoursesProject", "Иное", LogicalClass.instance, project);
+        commentOtherSoursesProject = addDProp(sourcesFundingGroup, "commentOtherSoursesProject", "Комментарий", InsensitiveStringClass.get(2000), project);
         commentOtherSoursesProject.setMinimumWidth(10); commentOtherSoursesProject.setPreferredWidth(50);
-        hideCommentOtherSoursesProject = LM.addHideCaptionProp(LM.privateGroup, "Укажите", commentOtherSoursesProject, isOtherSoursesProject);
+        hideCommentOtherSoursesProject = addHideCaptionProp(privateGroup, "Укажите", commentOtherSoursesProject, isOtherSoursesProject);
 
         // оборудование
-        isOwnedEquipmentProject = LM.addDProp(equipmentGroup, "isOwnedEquipmentProject", "Оборудование имеется в собственности и/или в пользовании Вашей организации", LogicalClass.instance, project);
+        isOwnedEquipmentProject = addDProp(equipmentGroup, "isOwnedEquipmentProject", "Оборудование имеется в собственности и/или в пользовании Вашей организации", LogicalClass.instance, project);
 
-        isAvailableEquipmentProject = LM.addDProp(equipmentGroup, "isAvailableEquipmentProject", "Оборудование имеется в открытом доступе на рынке, и Ваша организация планирует приобрести его в собственность и/или в пользование", LogicalClass.instance, project);
+        isAvailableEquipmentProject = addDProp(equipmentGroup, "isAvailableEquipmentProject", "Оборудование имеется в открытом доступе на рынке, и Ваша организация планирует приобрести его в собственность и/или в пользование", LogicalClass.instance, project);
 
-        isTransferEquipmentProject = LM.addDProp(equipmentGroup, "isTransferEquipmentProject", "Оборудование отсутствует в открытом доступе на рынке, но достигнута договоренность с собственником оборудования о передаче данного оборудования в собственность и/или в пользование для реализации проекта", LogicalClass.instance, project);
-        descriptionTransferEquipmentProject = LM.addDProp(equipmentGroup, "descriptionTransferEquipmentProject", "Опишите данное оборудование", InsensitiveStringClass.get(2000), project);
+        isTransferEquipmentProject = addDProp(equipmentGroup, "isTransferEquipmentProject", "Оборудование отсутствует в открытом доступе на рынке, но достигнута договоренность с собственником оборудования о передаче данного оборудования в собственность и/или в пользование для реализации проекта", LogicalClass.instance, project);
+        descriptionTransferEquipmentProject = addDProp(equipmentGroup, "descriptionTransferEquipmentProject", "Опишите данное оборудование", InsensitiveStringClass.get(2000), project);
         descriptionTransferEquipmentProject.setMinimumWidth(10); descriptionTransferEquipmentProject.setPreferredWidth(50);
-        ownerEquipmentProject = LM.addDProp(equipmentGroup, "ownerEquipmentProject", "Укажите собственника оборудования и его контактную информацию", InsensitiveStringClass.get(2000), project);
+        ownerEquipmentProject = addDProp(equipmentGroup, "ownerEquipmentProject", "Укажите собственника оборудования и его контактную информацию", InsensitiveStringClass.get(2000), project);
         ownerEquipmentProject.setMinimumWidth(10); ownerEquipmentProject.setPreferredWidth(50);
-        hideDescriptionTransferEquipmentProject = LM.addHideCaptionProp(LM.privateGroup, "Укажите", descriptionTransferEquipmentProject, isTransferEquipmentProject);
-        hideOwnerEquipmentProject = LM.addHideCaptionProp(LM.privateGroup, "Укажите", ownerEquipmentProject, isTransferEquipmentProject);
+        hideDescriptionTransferEquipmentProject = addHideCaptionProp(privateGroup, "Укажите", descriptionTransferEquipmentProject, isTransferEquipmentProject);
+        hideOwnerEquipmentProject = addHideCaptionProp(privateGroup, "Укажите", ownerEquipmentProject, isTransferEquipmentProject);
 
-        isPlanningEquipmentProject = LM.addDProp(equipmentGroup, "isPlanningEquipmentProject", "Ваша организация планирует использовать для реализации проекта оборудование, которое имеется в собственности или в пользовании Фонда «Сколково» (учрежденных им юридических лиц)", LogicalClass.instance, project);
-        specificationEquipmentProject = LM.addDProp(equipmentGroup, "specificationEquipmentProject", "Укажите данное оборудование", InsensitiveStringClass.get(2000), project);
+        isPlanningEquipmentProject = addDProp(equipmentGroup, "isPlanningEquipmentProject", "Ваша организация планирует использовать для реализации проекта оборудование, которое имеется в собственности или в пользовании Фонда «Сколково» (учрежденных им юридических лиц)", LogicalClass.instance, project);
+        specificationEquipmentProject = addDProp(equipmentGroup, "specificationEquipmentProject", "Укажите данное оборудование", InsensitiveStringClass.get(2000), project);
         specificationEquipmentProject.setMinimumWidth(10); specificationEquipmentProject.setPreferredWidth(50);
-        hideSpecificationEquipmentProject = LM.addHideCaptionProp(LM.privateGroup, "Укажите", specificationEquipmentProject, isPlanningEquipmentProject);
+        hideSpecificationEquipmentProject = addHideCaptionProp(privateGroup, "Укажите", specificationEquipmentProject, isPlanningEquipmentProject);
 
-        isSeekEquipmentProject = LM.addDProp(equipmentGroup, "isSeekEquipmentProject", "Оборудование имеется на рынке, но Ваша организация не имеет возможности приобрести его в собственность или в пользование и ищет возможность получить доступ к такому оборудованию", LogicalClass.instance, project);
-        descriptionEquipmentProject = LM.addDProp(equipmentGroup, "descriptionEquipmentProject", "Опишите данное оборудование", InsensitiveStringClass.get(2000), project);
+        isSeekEquipmentProject = addDProp(equipmentGroup, "isSeekEquipmentProject", "Оборудование имеется на рынке, но Ваша организация не имеет возможности приобрести его в собственность или в пользование и ищет возможность получить доступ к такому оборудованию", LogicalClass.instance, project);
+        descriptionEquipmentProject = addDProp(equipmentGroup, "descriptionEquipmentProject", "Опишите данное оборудование", InsensitiveStringClass.get(2000), project);
         descriptionEquipmentProject.setMinimumWidth(10); descriptionEquipmentProject.setPreferredWidth(50);
-        hideDescriptionEquipmentProject = LM.addHideCaptionProp(LM.privateGroup, "Укажите", descriptionEquipmentProject, isSeekEquipmentProject);
+        hideDescriptionEquipmentProject = addHideCaptionProp(privateGroup, "Укажите", descriptionEquipmentProject, isSeekEquipmentProject);
 
-        isOtherEquipmentProject = LM.addDProp(equipmentGroup, "isOtherEquipmentProject", "Иное", LogicalClass.instance, project);
-        commentEquipmentProject = LM.addDProp(equipmentGroup, "commentEquipmentProject", "Комментарий", InsensitiveStringClass.get(2000), project);
+        isOtherEquipmentProject = addDProp(equipmentGroup, "isOtherEquipmentProject", "Иное", LogicalClass.instance, project);
+        commentEquipmentProject = addDProp(equipmentGroup, "commentEquipmentProject", "Комментарий", InsensitiveStringClass.get(2000), project);
         commentEquipmentProject.setMinimumWidth(10); commentEquipmentProject.setPreferredWidth(50);
-        hideCommentEquipmentProject = LM.addHideCaptionProp(LM.privateGroup, "Укажите", commentEquipmentProject, isOtherEquipmentProject);
+        hideCommentEquipmentProject = addHideCaptionProp(privateGroup, "Укажите", commentEquipmentProject, isOtherEquipmentProject);
 
         // документы
-        fileRoadMapProject = LM.addDProp("fileRoadMapProject", "Файл дорожной карты", PDFClass.instance, project);
-        loadFileRoadMapProject = LM.addLFAProp(projectDocumentsGroup, "Загрузить файл дорожной карты", fileRoadMapProject);
-        openFileRoadMapProject = LM.addOFAProp(projectDocumentsGroup, "Открыть файл дорожной карты", fileRoadMapProject);
+        fileRoadMapProject = addDProp("fileRoadMapProject", "Файл дорожной карты", PDFClass.instance, project);
+        loadFileRoadMapProject = addLFAProp(projectDocumentsGroup, "Загрузить файл дорожной карты", fileRoadMapProject);
+        openFileRoadMapProject = addOFAProp(projectDocumentsGroup, "Открыть файл дорожной карты", fileRoadMapProject);
 
-        fileNativeTechnicalDescriptionProject = LM.addDProp("fileNativeTechnicalDescriptionProject", "Файл технического описания", PDFClass.instance, project);
-        loadFileNativeTechnicalDescriptionProject = LM.addLFAProp(projectDocumentsGroup, "Загрузить файл технического описания", fileNativeTechnicalDescriptionProject);
-        openFileNativeTechnicalDescriptionProject = LM.addOFAProp(projectDocumentsGroup, "Открыть файл технического описания", fileNativeTechnicalDescriptionProject);
+        fileNativeTechnicalDescriptionProject = addDProp("fileNativeTechnicalDescriptionProject", "Файл технического описания", PDFClass.instance, project);
+        loadFileNativeTechnicalDescriptionProject = addLFAProp(projectDocumentsGroup, "Загрузить файл технического описания", fileNativeTechnicalDescriptionProject);
+        openFileNativeTechnicalDescriptionProject = addOFAProp(projectDocumentsGroup, "Открыть файл технического описания", fileNativeTechnicalDescriptionProject);
 
-        fileForeignTechnicalDescriptionProject = LM.addDProp("fileForeignTechnicalDescriptionProject", "Файл технического описания (иностр.)", PDFClass.instance, project);
-        loadFileForeignTechnicalDescriptionProject = LM.addLFAProp(projectDocumentsGroup, "Загрузить файл технического описания (иностр.)", fileForeignTechnicalDescriptionProject);
-        openFileForeignTechnicalDescriptionProject = LM.addOFAProp(projectDocumentsGroup, "Открыть файл технического описания (иностр.)", fileForeignTechnicalDescriptionProject);
+        fileForeignTechnicalDescriptionProject = addDProp("fileForeignTechnicalDescriptionProject", "Файл технического описания (иностр.)", PDFClass.instance, project);
+        loadFileForeignTechnicalDescriptionProject = addLFAProp(projectDocumentsGroup, "Загрузить файл технического описания (иностр.)", fileForeignTechnicalDescriptionProject);
+        openFileForeignTechnicalDescriptionProject = addOFAProp(projectDocumentsGroup, "Открыть файл технического описания (иностр.)", fileForeignTechnicalDescriptionProject);
 
         // патенты
-        projectPatent = LM.addDProp(LM.idGroup, "projectPatent", "Проект патента", project, patent);
+        projectPatent = addDProp(idGroup, "projectPatent", "Проект патента", project, patent);
 
-        nativeTypePatent = LM.addDProp(LM.baseGroup, "nativeTypePatent", "Тип заявки/патента", InsensitiveStringClass.get(2000), patent);
+        nativeTypePatent = addDProp(baseGroup, "nativeTypePatent", "Тип заявки/патента", InsensitiveStringClass.get(2000), patent);
         nativeTypePatent.setMinimumWidth(10); nativeTypePatent.setPreferredWidth(50);
-        foreignTypePatent = LM.addDProp(LM.baseGroup, "foreignTypePatent", "Type of application/patent", InsensitiveStringClass.get(2000), patent);
+        foreignTypePatent = addDProp(baseGroup, "foreignTypePatent", "Type of application/patent", InsensitiveStringClass.get(2000), patent);
         foreignTypePatent.setMinimumWidth(10); foreignTypePatent.setPreferredWidth(50);
-        nativeNumberPatent = LM.addDProp(LM.baseGroup, "nativeNumberPatent", "Номер", InsensitiveStringClass.get(2000), patent);
+        nativeNumberPatent = addDProp(baseGroup, "nativeNumberPatent", "Номер", InsensitiveStringClass.get(2000), patent);
         nativeNumberPatent.setMinimumWidth(10); nativeNumberPatent.setPreferredWidth(50);
-        foreignNumberPatent = LM.addDProp(LM.baseGroup, "foreignNumberPatent", "Reference number", InsensitiveStringClass.get(2000), patent);
+        foreignNumberPatent = addDProp(baseGroup, "foreignNumberPatent", "Reference number", InsensitiveStringClass.get(2000), patent);
         foreignNumberPatent.setMinimumWidth(10); foreignNumberPatent.setPreferredWidth(50);
-        priorityDatePatent = LM.addDProp(LM.baseGroup, "priorityDatePatent", "Дата приоритета", DateClass.instance, patent);
+        priorityDatePatent = addDProp(baseGroup, "priorityDatePatent", "Дата приоритета", DateClass.instance, patent);
 
-        isOwned = LM.addDProp(LM.baseGroup, "isOwned", "Организация не обладает исключительными правами на указанные результаты интеллектуальной деятельности", LogicalClass.instance, patent);
-        ownerPatent = LM.addDProp(LM.baseGroup, "ownerPatent", "Укажите правообладателя и его контактную информацию", InsensitiveStringClass.get(2000), patent);
+        isOwned = addDProp(baseGroup, "isOwned", "Организация не обладает исключительными правами на указанные результаты интеллектуальной деятельности", LogicalClass.instance, patent);
+        ownerPatent = addDProp(baseGroup, "ownerPatent", "Укажите правообладателя и его контактную информацию", InsensitiveStringClass.get(2000), patent);
         ownerPatent.setMinimumWidth(10); ownerPatent.setPreferredWidth(50);
-        ownerTypePatent = LM.addDProp(LM.idGroup, "ownerTypePatent", "Кем является правообладатель (ИД)", ownerType, patent);
-        nameOwnerTypePatent = LM.addJProp(LM.baseGroup, "nameOwnerTypePatent", "Кем является правообладатель", LM.name, ownerTypePatent, 1);
-        fileIntentionOwnerPatent = LM.addDProp("fileIntentionOwnerPatent", "Файл документа о передаче права", PDFClass.instance, patent);
-        loadFileIntentionOwnerPatent = LM.addLFAProp(LM.baseGroup, "Загрузить файл документа о передаче права", fileIntentionOwnerPatent);
-        openFileIntentionOwnerPatent = LM.addOFAProp(LM.baseGroup, "Открыть файл документа о передаче права", fileIntentionOwnerPatent);
+        ownerTypePatent = addDProp(idGroup, "ownerTypePatent", "Кем является правообладатель (ИД)", ownerType, patent);
+        nameOwnerTypePatent = addJProp(baseGroup, "nameOwnerTypePatent", "Кем является правообладатель", baseLM.name, ownerTypePatent, 1);
+        fileIntentionOwnerPatent = addDProp("fileIntentionOwnerPatent", "Файл документа о передаче права", PDFClass.instance, patent);
+        loadFileIntentionOwnerPatent = addLFAProp(baseGroup, "Загрузить файл документа о передаче права", fileIntentionOwnerPatent);
+        openFileIntentionOwnerPatent = addOFAProp(baseGroup, "Открыть файл документа о передаче права", fileIntentionOwnerPatent);
 
-        hideOwnerPatent = LM.addHideCaptionProp(LM.privateGroup, "Укажите", ownerPatent, isOwned);
-        hideNameOwnerTypePatent = LM.addHideCaptionProp(LM.privateGroup, "Укажите", nameOwnerTypePatent, isOwned);
-        hideFileIntentionOwnerPatent = LM.addHideCaptionProp(LM.privateGroup, "Укажите", fileIntentionOwnerPatent, isOwned);
-        hideLoadFileIntentionOwnerPatent = LM.addHideCaptionProp(LM.privateGroup, "Укажите", loadFileIntentionOwnerPatent, isOwned);
-        hideOpenFileIntentionOwnerPatent = LM.addHideCaptionProp(LM.privateGroup, "Укажите", openFileIntentionOwnerPatent, isOwned);
+        hideOwnerPatent = addHideCaptionProp(privateGroup, "Укажите", ownerPatent, isOwned);
+        hideNameOwnerTypePatent = addHideCaptionProp(privateGroup, "Укажите", nameOwnerTypePatent, isOwned);
+        hideFileIntentionOwnerPatent = addHideCaptionProp(privateGroup, "Укажите", fileIntentionOwnerPatent, isOwned);
+        hideLoadFileIntentionOwnerPatent = addHideCaptionProp(privateGroup, "Укажите", loadFileIntentionOwnerPatent, isOwned);
+        hideOpenFileIntentionOwnerPatent = addHideCaptionProp(privateGroup, "Укажите", openFileIntentionOwnerPatent, isOwned);
 
-        isValuated = LM.addDProp(LM.baseGroup, "isValuated", "Проводилась ли оценка указанных результатов интеллектальной деятельности", LogicalClass.instance, patent);
-        valuatorPatent = LM.addDProp(LM.baseGroup, "valuatorPatent", "Укажите оценщика и его контактную информацию", InsensitiveStringClass.get(2000), patent);
+        isValuated = addDProp(baseGroup, "isValuated", "Проводилась ли оценка указанных результатов интеллектальной деятельности", LogicalClass.instance, patent);
+        valuatorPatent = addDProp(baseGroup, "valuatorPatent", "Укажите оценщика и его контактную информацию", InsensitiveStringClass.get(2000), patent);
         valuatorPatent.setMinimumWidth(10); valuatorPatent.setPreferredWidth(50);
-        fileActValuationPatent = LM.addDProp("fileActValuationPatent", "Файл акта оценки", PDFClass.instance, patent);
-        loadFileActValuationPatent = LM.addLFAProp(LM.baseGroup, "Загрузить файл акта оценки", fileActValuationPatent);
-        openFileActValuationPatent = LM.addOFAProp(LM.baseGroup, "Открыть файл акта оценки", fileActValuationPatent);
-        hideValuatorPatent = LM.addHideCaptionProp(LM.privateGroup, "Укажите", valuatorPatent, isValuated);
-        hideFileActValuationPatent = LM.addHideCaptionProp(LM.privateGroup, "Укажите", fileActValuationPatent, isValuated);
-        hideLoadFileActValuationPatent = LM.addHideCaptionProp(LM.privateGroup, "Укажите", loadFileActValuationPatent, isValuated);
-        hideOpenFileActValuationPatent = LM.addHideCaptionProp(LM.privateGroup, "Укажите", openFileActValuationPatent, isValuated);
+        fileActValuationPatent = addDProp("fileActValuationPatent", "Файл акта оценки", PDFClass.instance, patent);
+        loadFileActValuationPatent = addLFAProp(baseGroup, "Загрузить файл акта оценки", fileActValuationPatent);
+        openFileActValuationPatent = addOFAProp(baseGroup, "Открыть файл акта оценки", fileActValuationPatent);
+        hideValuatorPatent = addHideCaptionProp(privateGroup, "Укажите", valuatorPatent, isValuated);
+        hideFileActValuationPatent = addHideCaptionProp(privateGroup, "Укажите", fileActValuationPatent, isValuated);
+        hideLoadFileActValuationPatent = addHideCaptionProp(privateGroup, "Укажите", loadFileActValuationPatent, isValuated);
+        hideOpenFileActValuationPatent = addHideCaptionProp(privateGroup, "Укажите", openFileActValuationPatent, isValuated);
 
         // учёные
-        projectAcademic = LM.addDProp(LM.idGroup, "projectAcademic", "Проект ученого", project, academic);
+        projectAcademic = addDProp(idGroup, "projectAcademic", "Проект ученого", project, academic);
 
-        fullNameAcademic = LM.addDProp(LM.baseGroup, "fullNameAcademic", "ФИО", InsensitiveStringClass.get(2000), academic);
+        fullNameAcademic = addDProp(baseGroup, "fullNameAcademic", "ФИО", InsensitiveStringClass.get(2000), academic);
         fullNameAcademic.setMinimumWidth(10); fullNameAcademic.setPreferredWidth(50);
-        institutionAcademic = LM.addDProp(LM.baseGroup, "institutionAcademic", "Учреждение, в котором данный специалист осуществляет научную и (или) преподавательскую деятельность", InsensitiveStringClass.get(2000), academic);
+        institutionAcademic = addDProp(baseGroup, "institutionAcademic", "Учреждение, в котором данный специалист осуществляет научную и (или) преподавательскую деятельность", InsensitiveStringClass.get(2000), academic);
         institutionAcademic.setMinimumWidth(10); institutionAcademic.setPreferredWidth(50);
-        titleAcademic = LM.addDProp(LM.baseGroup, "titleAcademic", "Ученая степень, звание, должность и др.", InsensitiveStringClass.get(2000), academic);
+        titleAcademic = addDProp(baseGroup, "titleAcademic", "Ученая степень, звание, должность и др.", InsensitiveStringClass.get(2000), academic);
         titleAcademic.setMinimumWidth(10); titleAcademic.setPreferredWidth(50);
 
-        fileDocumentConfirmingAcademic = LM.addDProp("fileDocumentConfirmingAcademic", "Файл трудового договора", PDFClass.instance, academic);
-        loadFileDocumentConfirmingAcademic = LM.addLFAProp(LM.baseGroup, "Загрузить файл трудового договора", fileDocumentConfirmingAcademic);
-        openFileDocumentConfirmingAcademic = LM.addOFAProp(LM.baseGroup, "Открыть файл трудового договора", fileDocumentConfirmingAcademic);
+        fileDocumentConfirmingAcademic = addDProp("fileDocumentConfirmingAcademic", "Файл трудового договора", PDFClass.instance, academic);
+        loadFileDocumentConfirmingAcademic = addLFAProp(baseGroup, "Загрузить файл трудового договора", fileDocumentConfirmingAcademic);
+        openFileDocumentConfirmingAcademic = addOFAProp(baseGroup, "Открыть файл трудового договора", fileDocumentConfirmingAcademic);
 
-        fileDocumentEmploymentAcademic = LM.addDProp("fileDocumentEmploymentAcademic", "Файл заявления специалиста", PDFClass.instance, academic);
-        loadFileDocumentEmploymentAcademic = LM.addLFAProp(LM.baseGroup, "Загрузить файл заявления", fileDocumentEmploymentAcademic);
-        openFileDocumentEmploymentAcademic = LM.addOFAProp(LM.baseGroup, "Открыть файл заявления", fileDocumentEmploymentAcademic);
+        fileDocumentEmploymentAcademic = addDProp("fileDocumentEmploymentAcademic", "Файл заявления специалиста", PDFClass.instance, academic);
+        loadFileDocumentEmploymentAcademic = addLFAProp(baseGroup, "Загрузить файл заявления", fileDocumentEmploymentAcademic);
+        openFileDocumentEmploymentAcademic = addOFAProp(baseGroup, "Открыть файл заявления", fileDocumentEmploymentAcademic);
 
         // иностранные специалисты
-        projectNonRussianSpecialist = LM.addDProp(LM.idGroup, "projectNonRussianSpecialist", "Проект иностранного специалиста", project, nonRussianSpecialist);
+        projectNonRussianSpecialist = addDProp(idGroup, "projectNonRussianSpecialist", "Проект иностранного специалиста", project, nonRussianSpecialist);
 
-        fullNameNonRussianSpecialist = LM.addDProp(LM.baseGroup, "fullNameNonRussianSpecialist", "ФИО", InsensitiveStringClass.get(2000), nonRussianSpecialist);
+        fullNameNonRussianSpecialist = addDProp(baseGroup, "fullNameNonRussianSpecialist", "ФИО", InsensitiveStringClass.get(2000), nonRussianSpecialist);
         fullNameNonRussianSpecialist.setMinimumWidth(10); fullNameNonRussianSpecialist.setPreferredWidth(50);
-        organizationNonRussianSpecialist = LM.addDProp(LM.baseGroup, "organizationNonRussianSpecialist", "Место работы", InsensitiveStringClass.get(2000), nonRussianSpecialist);
+        organizationNonRussianSpecialist = addDProp(baseGroup, "organizationNonRussianSpecialist", "Место работы", InsensitiveStringClass.get(2000), nonRussianSpecialist);
         organizationNonRussianSpecialist.setMinimumWidth(10); organizationNonRussianSpecialist.setPreferredWidth(50);
-        titleNonRussianSpecialist = LM.addDProp(LM.baseGroup, "titleNonRussianSpecialist", "Должность, если есть - ученая степень, звание и др.", InsensitiveStringClass.get(2000), nonRussianSpecialist);
+        titleNonRussianSpecialist = addDProp(baseGroup, "titleNonRussianSpecialist", "Должность, если есть - ученая степень, звание и др.", InsensitiveStringClass.get(2000), nonRussianSpecialist);
         titleNonRussianSpecialist.setMinimumWidth(10); titleNonRussianSpecialist.setPreferredWidth(50);
 
-        fileForeignResumeNonRussianSpecialist = LM.addDProp("fileForeignResumeNonRussianSpecialist", "File Curriculum Vitae", PDFClass.instance, nonRussianSpecialist);
-        loadFileForeignResumeNonRussianSpecialist = LM.addLFAProp(LM.baseGroup, "Load file Curriculum Vitae", fileForeignResumeNonRussianSpecialist);
-        openFileForeignResumeNonRussianSpecialist = LM.addOFAProp(LM.baseGroup, "Open file Curriculum Vitae", fileForeignResumeNonRussianSpecialist);
+        fileForeignResumeNonRussianSpecialist = addDProp("fileForeignResumeNonRussianSpecialist", "File Curriculum Vitae", PDFClass.instance, nonRussianSpecialist);
+        loadFileForeignResumeNonRussianSpecialist = addLFAProp(baseGroup, "Load file Curriculum Vitae", fileForeignResumeNonRussianSpecialist);
+        openFileForeignResumeNonRussianSpecialist = addOFAProp(baseGroup, "Open file Curriculum Vitae", fileForeignResumeNonRussianSpecialist);
 
-        fileNativeResumeNonRussianSpecialist = LM.addDProp("fileNativeResumeNonRussianSpecialist", "Файл резюме специалиста", PDFClass.instance, nonRussianSpecialist);
-        loadFileNativeResumeNonRussianSpecialist = LM.addLFAProp(LM.baseGroup, "Загрузить файл резюме", fileNativeResumeNonRussianSpecialist);
-        openFileNativeResumeNonRussianSpecialist = LM.addOFAProp(LM.baseGroup, "Открыть файл резюме", fileNativeResumeNonRussianSpecialist);
+        fileNativeResumeNonRussianSpecialist = addDProp("fileNativeResumeNonRussianSpecialist", "Файл резюме специалиста", PDFClass.instance, nonRussianSpecialist);
+        loadFileNativeResumeNonRussianSpecialist = addLFAProp(baseGroup, "Загрузить файл резюме", fileNativeResumeNonRussianSpecialist);
+        openFileNativeResumeNonRussianSpecialist = addOFAProp(baseGroup, "Открыть файл резюме", fileNativeResumeNonRussianSpecialist);
 
-        filePassportNonRussianSpecialist = LM.addDProp("filePassportNonRussianSpecialist", "Файл паспорта", PDFClass.instance, nonRussianSpecialist);
-        loadFilePassportNonRussianSpecialist = LM.addLFAProp(LM.baseGroup, "Загрузить файл паспорта", filePassportNonRussianSpecialist);
-        openFilePassportNonRussianSpecialist = LM.addOFAProp(LM.baseGroup, "Открыть файл паспорта", filePassportNonRussianSpecialist);
+        filePassportNonRussianSpecialist = addDProp("filePassportNonRussianSpecialist", "Файл паспорта", PDFClass.instance, nonRussianSpecialist);
+        loadFilePassportNonRussianSpecialist = addLFAProp(baseGroup, "Загрузить файл паспорта", filePassportNonRussianSpecialist);
+        openFilePassportNonRussianSpecialist = addOFAProp(baseGroup, "Открыть файл паспорта", filePassportNonRussianSpecialist);
 
-        fileStatementNonRussianSpecialist = LM.addDProp("fileStatementNonRussianSpecialist", "Файл заявления", PDFClass.instance, nonRussianSpecialist);
-        loadFileStatementNonRussianSpecialist = LM.addLFAProp(LM.baseGroup, "Загрузить файл заявления", fileStatementNonRussianSpecialist);
-        openFileStatementNonRussianSpecialist = LM.addOFAProp(LM.baseGroup, "Открыть файл заявления", fileStatementNonRussianSpecialist);
+        fileStatementNonRussianSpecialist = addDProp("fileStatementNonRussianSpecialist", "Файл заявления", PDFClass.instance, nonRussianSpecialist);
+        loadFileStatementNonRussianSpecialist = addLFAProp(baseGroup, "Загрузить файл заявления", fileStatementNonRussianSpecialist);
+        openFileStatementNonRussianSpecialist = addOFAProp(baseGroup, "Открыть файл заявления", fileStatementNonRussianSpecialist);
 
 
-        clusterVote = LM.addDCProp(LM.idGroup, "clusterVote", "Кластер (ИД)", true, clusterProject, true, projectVote, 1);
-        clusterProjectVote = LM.addJProp(LM.idGroup, "clusterProjectVote", "Кластер проекта (ИД)", clusterProject, projectVote, 1);
-        equalsClusterProjectVote = LM.addJProp(LM.baseGroup, true, "equalsClusterProjectVote", "Тек. кластер", LM.equals2, clusterVote, 1, clusterProjectVote, 1);
-        nameNativeClusterVote = LM.addJProp(LM.baseGroup, "nameNativeClusterVote", "Кластер", nameNative, clusterVote, 1);
+        clusterVote = addDCProp(idGroup, "clusterVote", "Кластер (ИД)", true, clusterProject, true, projectVote, 1);
+        clusterProjectVote = addJProp(idGroup, "clusterProjectVote", "Кластер проекта (ИД)", clusterProject, projectVote, 1);
+        equalsClusterProjectVote = addJProp(baseGroup, true, "equalsClusterProjectVote", "Тек. кластер", baseLM.equals2, clusterVote, 1, clusterProjectVote, 1);
+        nameNativeClusterVote = addJProp(baseGroup, "nameNativeClusterVote", "Кластер", nameNative, clusterVote, 1);
 
-        nameNativeClaimerVote = LM.addJProp(LM.baseGroup, "nameNativeClaimerVote", "Заявитель", nameNativeClaimerProject, projectVote, 1);
+        nameNativeClaimerVote = addJProp(baseGroup, "nameNativeClaimerVote", "Заявитель", nameNativeClaimerProject, projectVote, 1);
         nameNativeClaimerVote.setMinimumWidth(10); nameNativeClaimerVote.setPreferredWidth(50);
-        nameForeignClaimerVote = LM.addJProp(LM.baseGroup, "nameForeignClaimerVote", "Заявитель (иностр.)", nameForeignClaimerProject, projectVote, 1);
-        nameGenitiveClaimerVote = LM.addJProp(LM.baseGroup, "nameGenitiveClaimerVote", "Заявитель (кого)", nameGenitiveClaimerProject, projectVote, 1);
-        nameDativusClaimerVote = LM.addJProp(LM.baseGroup, "nameDativusClaimerVote", "Заявитель (кому)", nameDativusClaimerProject, projectVote, 1);
-        nameAblateClaimerVote = LM.addJProp(LM.baseGroup, "nameAblateClaimerVote", "Заявитель (кем)", nameAblateClaimerProject, projectVote, 1);
+        nameForeignClaimerVote = addJProp(baseGroup, "nameForeignClaimerVote", "Заявитель (иностр.)", nameForeignClaimerProject, projectVote, 1);
+        nameGenitiveClaimerVote = addJProp(baseGroup, "nameGenitiveClaimerVote", "Заявитель (кого)", nameGenitiveClaimerProject, projectVote, 1);
+        nameDativusClaimerVote = addJProp(baseGroup, "nameDativusClaimerVote", "Заявитель (кому)", nameDativusClaimerProject, projectVote, 1);
+        nameAblateClaimerVote = addJProp(baseGroup, "nameAblateClaimerVote", "Заявитель (кем)", nameAblateClaimerProject, projectVote, 1);
 
-        documentTemplateDocumentTemplateDetail = LM.addDProp(LM.idGroup, "documentTemplateDocumentTemplateDetail", "Шаблон (ИД)", documentTemplate, documentTemplateDetail);
+        documentTemplateDocumentTemplateDetail = addDProp(idGroup, "documentTemplateDocumentTemplateDetail", "Шаблон (ИД)", documentTemplate, documentTemplateDetail);
 
-        projectDocument = LM.addDProp(LM.idGroup, "projectDocument", "Проект (ИД)", project, document);
-        nameNativeProjectDocument = LM.addJProp(LM.baseGroup, "nameNativeProjectDocument", "Проект", nameNative, projectDocument, 1);
+        projectDocument = addDProp(idGroup, "projectDocument", "Проект (ИД)", project, document);
+        nameNativeProjectDocument = addJProp(baseGroup, "nameNativeProjectDocument", "Проект", nameNative, projectDocument, 1);
 
-        quantityMinLanguageDocumentType = LM.addDProp(LM.baseGroup, "quantityMinLanguageDocumentType", "Мин. док.", IntegerClass.instance, language, documentType);
-        quantityMaxLanguageDocumentType = LM.addDProp(LM.baseGroup, "quantityMaxLanguageDocumentType", "Макс. док.", IntegerClass.instance, language, documentType);
-        LP singleLanguageDocumentType = LM.addJProp("Один док.", LM.equals2, quantityMaxLanguageDocumentType, 1, 2, LM.addCProp(IntegerClass.instance, 1));
-        LP multipleLanguageDocumentType = LM.addJProp(LM.andNot1, LM.addCProp(LogicalClass.instance, true, language, documentType), 1, 2, singleLanguageDocumentType, 1, 2);
-        translateLanguageDocumentType = LM.addDProp(LM.baseGroup, "translateLanguageDocumentType", "Перевод", StringClass.get(50), language, documentType);
+        quantityMinLanguageDocumentType = addDProp(baseGroup, "quantityMinLanguageDocumentType", "Мин. док.", IntegerClass.instance, language, documentType);
+        quantityMaxLanguageDocumentType = addDProp(baseGroup, "quantityMaxLanguageDocumentType", "Макс. док.", IntegerClass.instance, language, documentType);
+        LP singleLanguageDocumentType = addJProp("Один док.", baseLM.equals2, quantityMaxLanguageDocumentType, 1, 2, addCProp(IntegerClass.instance, 1));
+        LP multipleLanguageDocumentType = addJProp(baseLM.andNot1, addCProp(LogicalClass.instance, true, language, documentType), 1, 2, singleLanguageDocumentType, 1, 2);
+        translateLanguageDocumentType = addDProp(baseGroup, "translateLanguageDocumentType", "Перевод", StringClass.get(50), language, documentType);
 
-        languageExpert = LM.addDProp(LM.idGroup, "languageExpert", "Язык (ИД)", language, expert);
-        nameLanguageExpert = LM.addJProp(LM.baseGroup, "nameLanguageExpert", "Язык", LM.name, languageExpert, 1);
+        languageExpert = addDProp(idGroup, "languageExpert", "Язык (ИД)", language, expert);
+        nameLanguageExpert = addJProp(baseGroup, "nameLanguageExpert", "Язык", baseLM.name, languageExpert, 1);
 
-        languageDocument = LM.addDProp(LM.idGroup, "languageDocument", "Язык (ИД)", language, documentAbstract);
-        nameLanguageDocument = LM.addJProp(LM.baseGroup, "nameLanguageDocument", "Язык", LM.name, languageDocument, 1);
-        englishDocument = LM.addJProp("englishDocument", "Иностр.", LM.equals2, languageDocument, 1, LM.addCProp(language, "english"));
+        languageDocument = addDProp(idGroup, "languageDocument", "Язык (ИД)", language, documentAbstract);
+        nameLanguageDocument = addJProp(baseGroup, "nameLanguageDocument", "Язык", baseLM.name, languageDocument, 1);
+        englishDocument = addJProp("englishDocument", "Иностр.", baseLM.equals2, languageDocument, 1, addCProp(language, "english"));
 
-        defaultEnglishDocumentType = LM.addDProp(LM.baseGroup, "defaultEnglishDocumentType", "Англ.", LogicalClass.instance, documentType);
+        defaultEnglishDocumentType = addDProp(baseGroup, "defaultEnglishDocumentType", "Англ.", LogicalClass.instance, documentType);
 
-        typeDocument = LM.addDProp(LM.idGroup, "typeDocument", "Тип (ИД)", documentType, documentAbstract);
-        nameTypeDocument = LM.addJProp(LM.baseGroup, "nameTypeDocument", "Тип", LM.name, typeDocument, 1);
-        defaultEnglishDocument = LM.addJProp("defaultEnglishDocument", "Англ.", defaultEnglishDocumentType, typeDocument, 1);
+        typeDocument = addDProp(idGroup, "typeDocument", "Тип (ИД)", documentType, documentAbstract);
+        nameTypeDocument = addJProp(baseGroup, "nameTypeDocument", "Тип", baseLM.name, typeDocument, 1);
+        defaultEnglishDocument = addJProp("defaultEnglishDocument", "Англ.", defaultEnglishDocumentType, typeDocument, 1);
 
-        localeLanguage = LM.addDProp(LM.baseGroup, "localeLanguage", "Locale", StringClass.get(5), language);
-        authExpertSubjectLanguage = LM.addDProp(LM.baseGroup, "authExpertSubjectLanguage", "Заголовок аутентификации эксперта", StringClass.get(100), language);
-        letterExpertSubjectLanguage = LM.addDProp(LM.baseGroup, "letterExpertSubjectLanguage", "Заголовок письма о заседании", StringClass.get(100), language);
+        localeLanguage = addDProp(baseGroup, "localeLanguage", "Locale", StringClass.get(5), language);
+        authExpertSubjectLanguage = addDProp(baseGroup, "authExpertSubjectLanguage", "Заголовок аутентификации эксперта", StringClass.get(100), language);
+        letterExpertSubjectLanguage = addDProp(baseGroup, "letterExpertSubjectLanguage", "Заголовок письма о заседании", StringClass.get(100), language);
 
-        LP multipleDocument = LM.addJProp(multipleLanguageDocumentType, languageDocument, 1, typeDocument, 1);
-        postfixDocument = LM.addJProp(LM.and1, LM.addDProp("postfixDocument", "Доп. описание", StringClass.get(15), document), 1, multipleDocument, 1);
-        hidePostfixDocument = LM.addJProp(LM.and1, LM.addCProp(StringClass.get(40), "Постфикс", document), 1, multipleDocument, 1);
+        LP multipleDocument = addJProp(multipleLanguageDocumentType, languageDocument, 1, typeDocument, 1);
+        postfixDocument = addJProp(baseLM.and1, addDProp("postfixDocument", "Доп. описание", StringClass.get(15), document), 1, multipleDocument, 1);
+        hidePostfixDocument = addJProp(baseLM.and1, addCProp(StringClass.get(40), "Постфикс", document), 1, multipleDocument, 1);
 
-        LP translateNameDocument = LM.addJProp("Перевод", translateLanguageDocumentType, languageDocument, 1, typeDocument, 1);
-        nameDocument = LM.addJProp("nameDocument", "Заголовок", LM.string2, translateNameDocument, 1, LM.addSUProp(Union.OVERRIDE, LM.addCProp(StringClass.get(15), "", document), postfixDocument), 1);
+        LP translateNameDocument = addJProp("Перевод", translateLanguageDocumentType, languageDocument, 1, typeDocument, 1);
+        nameDocument = addJProp("nameDocument", "Заголовок", baseLM.string2, translateNameDocument, 1, addSUProp(Union.OVERRIDE, addCProp(StringClass.get(15), "", document), postfixDocument), 1);
 
-        quantityProjectLanguageDocumentType = LM.addSGProp("projectLanguageDocumentType", "Кол-во док.", LM.addCProp(IntegerClass.instance, 1, document), projectDocument, 1, languageDocument, 1, typeDocument, 1); // сколько экспертов высказалось
-        LP notEnoughProjectLanguageDocumentType = LM.addSUProp(Union.OVERRIDE, LM.addJProp(LM.greater2, quantityProjectLanguageDocumentType, 1, 2, 3, quantityMaxLanguageDocumentType, 2, 3),
-                LM.addJProp(LM.less2, LM.addSUProp(Union.OVERRIDE, LM.addCProp(IntegerClass.instance, 0, project, language, documentType), quantityProjectLanguageDocumentType), 1, 2, 3, quantityMinLanguageDocumentType, 2, 3));
-        notEnoughProject = LM.addMGProp(projectStatusGroup, "notEnoughProject", true, "Недостаточно док.", notEnoughProjectLanguageDocumentType, 1);
+        quantityProjectLanguageDocumentType = addSGProp("projectLanguageDocumentType", "Кол-во док.", addCProp(IntegerClass.instance, 1, document), projectDocument, 1, languageDocument, 1, typeDocument, 1); // сколько экспертов высказалось
+        LP notEnoughProjectLanguageDocumentType = addSUProp(Union.OVERRIDE, addJProp(baseLM.greater2, quantityProjectLanguageDocumentType, 1, 2, 3, quantityMaxLanguageDocumentType, 2, 3),
+                addJProp(baseLM.less2, addSUProp(Union.OVERRIDE, addCProp(IntegerClass.instance, 0, project, language, documentType), quantityProjectLanguageDocumentType), 1, 2, 3, quantityMinLanguageDocumentType, 2, 3));
+        notEnoughProject = addMGProp(projectStatusGroup, "notEnoughProject", true, "Недостаточно док.", notEnoughProjectLanguageDocumentType, 1);
 
-        autoGenerateProject = LM.addDProp(projectStatusGroup, "autoGenerateProject", "Авт. зас.", LogicalClass.instance, project);
+        autoGenerateProject = addDProp(projectStatusGroup, "autoGenerateProject", "Авт. зас.", LogicalClass.instance, project);
 
-        fileDocument = LM.addDProp(LM.baseGroup, "fileDocument", "Файл", PDFClass.instance, document);
-        loadFileDocument = LM.addLFAProp(LM.baseGroup, "Загрузить", fileDocument);
-        openFileDocument = LM.addOFAProp(LM.baseGroup, "Открыть", fileDocument);
+        fileDocument = addDProp(baseGroup, "fileDocument", "Файл", PDFClass.instance, document);
+        loadFileDocument = addLFAProp(baseGroup, "Загрузить", fileDocument);
+        openFileDocument = addOFAProp(baseGroup, "Открыть", fileDocument);
 
-        inDefaultDocumentLanguage = LM.addJProp("inDefaultDocumentLanguage", "Вкл. (по умолчанию)", LM.and(false, false, true),
+        inDefaultDocumentLanguage = addJProp("inDefaultDocumentLanguage", "Вкл. (по умолчанию)", and(false, false, true),
                 englishDocument, 1, // если документ на английском
                 defaultEnglishDocument, 1, // если для типа документа можно только на английском
-                LM.is(language), 2, // второй параметр - язык
-                LM.addJProp(LM.addMGProp(LM.object(document), projectDocument, 1, typeDocument, 1, postfixDocument, 1, languageDocument, 1), projectDocument, 1, typeDocument, 1, postfixDocument, 1, 2), 1, 2); // нету документа на русском
-        inDefaultDocumentExpert = LM.addJProp("inDefaultDocumentExpert", "Вкл.", inDefaultDocumentLanguage, 1, languageExpert, 2);
+                is(language), 2, // второй параметр - язык
+                addJProp(addMGProp(object(document), projectDocument, 1, typeDocument, 1, postfixDocument, 1, languageDocument, 1), projectDocument, 1, typeDocument, 1, postfixDocument, 1, 2), 1, 2); // нету документа на русском
+        inDefaultDocumentExpert = addJProp("inDefaultDocumentExpert", "Вкл.", inDefaultDocumentLanguage, 1, languageExpert, 2);
 
-        inDocumentLanguage = LM.addJProp("inDocumentLanguage", "Вкл.", LM.equals2, languageDocument, 1, 2);
-        inDocumentExpert = LM.addJProp("inDocumentExpert", "Вкл.", inDocumentLanguage, 1, languageExpert, 2);
+        inDocumentLanguage = addJProp("inDocumentLanguage", "Вкл.", baseLM.equals2, languageDocument, 1, 2);
+        inDocumentExpert = addJProp("inDocumentExpert", "Вкл.", inDocumentLanguage, 1, languageExpert, 2);
 
-        inExpertVote = LM.addDProp(LM.baseGroup, "inExpertVote", "Вкл", LogicalClass.instance, expert, vote); // !!! нужно отослать письмо с документами и т.д
-        oldExpertVote = LM.addDProp(LM.baseGroup, "oldExpertVote", "Из предыдущего заседания", LogicalClass.instance, expert, vote); // !!! нужно отослать письмо с документами и т.д
-        inNewExpertVote = LM.addJProp(LM.baseGroup, "inNewExpertVote", "Вкл (нов.)", LM.andNot1, inExpertVote, 1, 2, oldExpertVote, 1, 2);
-        inOldExpertVote = LM.addJProp(LM.baseGroup, "inOldExpertVote", "Вкл (стар.)", LM.and1, inExpertVote, 1, 2, oldExpertVote, 1, 2);
+        inExpertVote = addDProp(baseGroup, "inExpertVote", "Вкл", LogicalClass.instance, expert, vote); // !!! нужно отослать письмо с документами и т.д
+        oldExpertVote = addDProp(baseGroup, "oldExpertVote", "Из предыдущего заседания", LogicalClass.instance, expert, vote); // !!! нужно отослать письмо с документами и т.д
+        inNewExpertVote = addJProp(baseGroup, "inNewExpertVote", "Вкл (нов.)", baseLM.andNot1, inExpertVote, 1, 2, oldExpertVote, 1, 2);
+        inOldExpertVote = addJProp(baseGroup, "inOldExpertVote", "Вкл (стар.)", baseLM.and1, inExpertVote, 1, 2, oldExpertVote, 1, 2);
 
-        dateStartVote = LM.addJProp(LM.baseGroup, "dateStartVote", true, "Дата начала", LM.and1, LM.date, 1, LM.is(vote), 1);
-//        dateEndVote = LM.addJProp(LM.baseGroup, "dateEndVote", "Дата окончания", addDate2, dateStartVote, 1, requiredPeriod);
-        aggrDateEndVote = LM.addJProp(LM.baseGroup, "aggrDateEndVote", "Дата окончания (агр.)", LM.addDate2, dateStartVote, 1, requiredPeriod);
-        dateEndVote = LM.addDProp(LM.baseGroup, "dateEndVote", "Дата окончания", DateClass.instance, vote);
+        dateStartVote = addJProp(baseGroup, "dateStartVote", true, "Дата начала", baseLM.and1, baseLM.date, 1, is(vote), 1);
+//        dateEndVote = addJProp(baseGroup, "dateEndVote", "Дата окончания", addDate2, dateStartVote, 1, requiredPeriod);
+        aggrDateEndVote = addJProp(baseGroup, "aggrDateEndVote", "Дата окончания (агр.)", baseLM.addDate2, dateStartVote, 1, requiredPeriod);
+        dateEndVote = addDProp(baseGroup, "dateEndVote", "Дата окончания", DateClass.instance, vote);
         dateEndVote.setDerivedForcedChange(true, aggrDateEndVote, 1, dateStartVote, 1);
 
-        openedVote = LM.addJProp(LM.baseGroup, "openedVote", "Открыто", LM.groeq2, dateEndVote, 1, LM.currentDate);
-        closedVote = LM.addJProp(LM.baseGroup, "closedVote", "Закрыто", LM.andNot1, LM.is(vote), 1, openedVote, 1);
+        openedVote = addJProp(baseGroup, "openedVote", "Открыто", baseLM.groeq2, dateEndVote, 1, baseLM.currentDate);
+        closedVote = addJProp(baseGroup, "closedVote", "Закрыто", baseLM.andNot1, is(vote), 1, openedVote, 1);
 
-        voteInProgressProject = LM.addAGProp(LM.idGroup, "voteInProgressProject", true, "Тек. заседание (ИД)",
+        voteInProgressProject = addAGProp(idGroup, "voteInProgressProject", true, "Тек. заседание (ИД)",
                 openedVote, 1, projectVote, 1); // активно только одно заседание
 
         // результаты голосования
-        voteResultExpertVote = LM.addDProp(LM.idGroup, "voteResultExpertVote", "Результат (ИД)", voteResult, expert, vote);
-        voteResultNewExpertVote = LM.addJProp(LM.baseGroup, "voteResultNewExpertVote", "Результат (ИД) (новый)", LM.and1,
+        voteResultExpertVote = addDProp(idGroup, "voteResultExpertVote", "Результат (ИД)", voteResult, expert, vote);
+        voteResultNewExpertVote = addJProp(baseGroup, "voteResultNewExpertVote", "Результат (ИД) (новый)", baseLM.and1,
                 voteResultExpertVote, 1, 2, inNewExpertVote, 1, 2);
 
-        dateExpertVote = LM.addDProp(voteResultCheckGroup, "dateExpertVote", "Дата рез.", DateClass.instance, expert, vote);
+        dateExpertVote = addDProp(voteResultCheckGroup, "dateExpertVote", "Дата рез.", DateClass.instance, expert, vote);
 
-        doneExpertVote = LM.addJProp(LM.baseGroup, "doneExpertVote", "Проголосовал", LM.equals2,
-                                  voteResultExpertVote, 1, 2, LM.addCProp(voteResult, "voted"));
-        doneNewExpertVote = LM.addJProp(LM.baseGroup, "doneNewExpertVote", "Проголосовал (новый)", LM.and1,
+        doneExpertVote = addJProp(baseGroup, "doneExpertVote", "Проголосовал", baseLM.equals2,
+                                  voteResultExpertVote, 1, 2, addCProp(voteResult, "voted"));
+        doneNewExpertVote = addJProp(baseGroup, "doneNewExpertVote", "Проголосовал (новый)", baseLM.and1,
                                   doneExpertVote, 1, 2, inNewExpertVote, 1, 2);
-        doneOldExpertVote = LM.addJProp(LM.baseGroup, "doneOldExpertVote", "Проголосовал (старый)", LM.and1,
+        doneOldExpertVote = addJProp(baseGroup, "doneOldExpertVote", "Проголосовал (старый)", baseLM.and1,
                                   doneExpertVote, 1, 2, inOldExpertVote, 1, 2);
 
-        refusedExpertVote = LM.addJProp(LM.baseGroup, "refusedExpertVote", "Проголосовал", LM.equals2,
-                                  voteResultExpertVote, 1, 2, LM.addCProp(voteResult, "refused"));
+        refusedExpertVote = addJProp(baseGroup, "refusedExpertVote", "Проголосовал", baseLM.equals2,
+                                  voteResultExpertVote, 1, 2, addCProp(voteResult, "refused"));
 
-        connectedExpertVote = LM.addJProp(LM.baseGroup, "connectedExpertVote", "Аффилирован", LM.equals2,
-                                  voteResultExpertVote, 1, 2, LM.addCProp(voteResult, "connected"));
+        connectedExpertVote = addJProp(baseGroup, "connectedExpertVote", "Аффилирован", baseLM.equals2,
+                                  voteResultExpertVote, 1, 2, addCProp(voteResult, "connected"));
 
-        nameVoteResultExpertVote = LM.addJProp(voteResultCheckGroup, "nameVoteResultExpertVote", "Результат", LM.name, voteResultExpertVote, 1, 2);
+        nameVoteResultExpertVote = addJProp(voteResultCheckGroup, "nameVoteResultExpertVote", "Результат", baseLM.name, voteResultExpertVote, 1, 2);
 
-        LP incrementVote = LM.addJProp(LM.greater2, dateEndVote, 1, LM.addCProp(DateClass.instance, new java.sql.Date(2011 - 1900, 4 - 1, 29)));
-        inProjectExpert = LM.addMGProp(LM.baseGroup, "inProjectExpert", "Вкл. в заседания", inExpertVote, projectVote, 2, 1);
-        voteProjectExpert = LM.addAGProp(LM.baseGroup, "voteProjectExpert", "Результ. заседание", LM.addJProp(LM.and1, voteResultNewExpertVote, 1, 2, incrementVote, 2), 2, projectVote, 2);
-        voteResultProjectExpert = LM.addJProp(LM.baseGroup, "voteResultProjectExpert", "Результ. заседания", voteResultExpertVote, 2, voteProjectExpert, 1, 2);
-        doneProjectExpert = LM.addJProp(LM.baseGroup, "doneProjectExpert", "Проголосовал", LM.equals2, voteResultProjectExpert, 1, 2, LM.addCProp(voteResult, "voted"));
-        LP doneProject = LM.addSGProp(LM.baseGroup, "doneProject", "Проголосовало", LM.addJProp(LM.and1, LM.addCProp(IntegerClass.instance, 1), doneProjectExpert, 1, 2), 2); // сколько экспертов высказалось
+        LP incrementVote = addJProp(baseLM.greater2, dateEndVote, 1, addCProp(DateClass.instance, new java.sql.Date(2011 - 1900, 4 - 1, 29)));
+        inProjectExpert = addMGProp(baseGroup, "inProjectExpert", "Вкл. в заседания", inExpertVote, projectVote, 2, 1);
+        voteProjectExpert = addAGProp(baseGroup, "voteProjectExpert", "Результ. заседание", addJProp(baseLM.and1, voteResultNewExpertVote, 1, 2, incrementVote, 2), 2, projectVote, 2);
+        voteResultProjectExpert = addJProp(baseGroup, "voteResultProjectExpert", "Результ. заседания", voteResultExpertVote, 2, voteProjectExpert, 1, 2);
+        doneProjectExpert = addJProp(baseGroup, "doneProjectExpert", "Проголосовал", baseLM.equals2, voteResultProjectExpert, 1, 2, addCProp(voteResult, "voted"));
+        LP doneProject = addSGProp(baseGroup, "doneProject", "Проголосовало", addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), doneProjectExpert, 1, 2), 2); // сколько экспертов высказалось
 
-        inClusterExpertVote = LM.addDProp(voteResultCheckGroup, "inClusterExpertVote", "Соотв-ие кластеру", LogicalClass.instance, expert, vote);
-        inClusterNewExpertVote = LM.addJProp(LM.baseGroup, "inClusterNewExpertVote", "Соотв-ие кластеру (новый)", LM.and1,
+        inClusterExpertVote = addDProp(voteResultCheckGroup, "inClusterExpertVote", "Соотв-ие кластеру", LogicalClass.instance, expert, vote);
+        inClusterNewExpertVote = addJProp(baseGroup, "inClusterNewExpertVote", "Соотв-ие кластеру (новый)", baseLM.and1,
                 inClusterExpertVote, 1, 2, inNewExpertVote, 1, 2);
 
-        innovativeExpertVote = LM.addDProp(voteResultCheckGroup, "innovativeExpertVote", "Инновац.", LogicalClass.instance, expert, vote);
-        innovativeNewExpertVote = LM.addJProp(LM.baseGroup, "innovativeNewExpertVote", "Инновац. (новый)", LM.and1,
+        innovativeExpertVote = addDProp(voteResultCheckGroup, "innovativeExpertVote", "Инновац.", LogicalClass.instance, expert, vote);
+        innovativeNewExpertVote = addJProp(baseGroup, "innovativeNewExpertVote", "Инновац. (новый)", baseLM.and1,
                 innovativeExpertVote, 1, 2, inNewExpertVote, 1, 2);
 
-        foreignExpertVote = LM.addDProp(voteResultCheckGroup, "foreignExpertVote", "Иностр. специалист", LogicalClass.instance, expert, vote);
-        foreignNewExpertVote = LM.addJProp(LM.baseGroup, "foreignNewExpertVote", "Иностр. специалист (новый)", LM.and1,
+        foreignExpertVote = addDProp(voteResultCheckGroup, "foreignExpertVote", "Иностр. специалист", LogicalClass.instance, expert, vote);
+        foreignNewExpertVote = addJProp(baseGroup, "foreignNewExpertVote", "Иностр. специалист (новый)", baseLM.and1,
                 foreignExpertVote, 1, 2, inNewExpertVote, 1, 2);
 
-        innovativeCommentExpertVote = LM.addDProp(voteResultCommentGroup, "innovativeCommentExpertVote", "Инновационность (комм.)", TextClass.instance, expert, vote);
-        competentExpertVote = LM.addDProp(voteResultCheckGroup, "competentExpertVote", "Компет.", IntegerClass.instance, expert, vote);
-        completeExpertVote = LM.addDProp(voteResultCheckGroup, "completeExpertVote", "Полнота информ.", IntegerClass.instance, expert, vote);
-        completeCommentExpertVote = LM.addDProp(voteResultCommentGroup, "completeCommentExpertVote", "Полнота информации (комм.)", TextClass.instance, expert, vote);
+        innovativeCommentExpertVote = addDProp(voteResultCommentGroup, "innovativeCommentExpertVote", "Инновационность (комм.)", TextClass.instance, expert, vote);
+        competentExpertVote = addDProp(voteResultCheckGroup, "competentExpertVote", "Компет.", IntegerClass.instance, expert, vote);
+        completeExpertVote = addDProp(voteResultCheckGroup, "completeExpertVote", "Полнота информ.", IntegerClass.instance, expert, vote);
+        completeCommentExpertVote = addDProp(voteResultCommentGroup, "completeCommentExpertVote", "Полнота информации (комм.)", TextClass.instance, expert, vote);
 
-        LM.followed(doneExpertVote, inClusterExpertVote, innovativeExpertVote, foreignExpertVote, innovativeCommentExpertVote, competentExpertVote, completeExpertVote, completeCommentExpertVote);
-        LM.followed(voteResultExpertVote, dateExpertVote);
+        followed(doneExpertVote, inClusterExpertVote, innovativeExpertVote, foreignExpertVote, innovativeCommentExpertVote, competentExpertVote, completeExpertVote, completeCommentExpertVote);
+        followed(voteResultExpertVote, dateExpertVote);
 
-        quantityRepliedVote = LM.addSGProp(voteResultGroup, "quantityRepliedVote", true, "Ответило",
-                LM.addJProp(LM.and1, LM.addCProp(IntegerClass.instance, 1), voteResultExpertVote, 1, 2), 2); // сколько экспертов высказалось
+        quantityRepliedVote = addSGProp(voteResultGroup, "quantityRepliedVote", true, "Ответило",
+                addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), voteResultExpertVote, 1, 2), 2); // сколько экспертов высказалось
 
-        quantityDoneVote = LM.addSGProp(voteResultGroup, "quantityDoneVote", true, "Проголосовало",
-                LM.addJProp(LM.and1, LM.addCProp(IntegerClass.instance, 1), doneExpertVote, 1, 2), 2); // сколько экспертов высказалось
+        quantityDoneVote = addSGProp(voteResultGroup, "quantityDoneVote", true, "Проголосовало",
+                addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), doneExpertVote, 1, 2), 2); // сколько экспертов высказалось
 
-        quantityDoneOldVote = LM.addSGProp(voteResultGroup, "quantityDoneOldVote", true, "Проголосовало (пред.)",
-                LM.addJProp(LM.and1, LM.addCProp(IntegerClass.instance, 1), doneOldExpertVote, 1, 2), 2); // сколько экспертов высказалось
+        quantityDoneOldVote = addSGProp(voteResultGroup, "quantityDoneOldVote", true, "Проголосовало (пред.)",
+                addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), doneOldExpertVote, 1, 2), 2); // сколько экспертов высказалось
 
-        quantityRefusedVote = LM.addSGProp(voteResultGroup, "quantityRefusedVote", true, "Отказалось",
-                LM.addJProp(LM.and1, LM.addCProp(IntegerClass.instance, 1), refusedExpertVote, 1, 2), 2); // сколько экспертов высказалось
+        quantityRefusedVote = addSGProp(voteResultGroup, "quantityRefusedVote", true, "Отказалось",
+                addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), refusedExpertVote, 1, 2), 2); // сколько экспертов высказалось
 
-        quantityConnectedVote = LM.addSGProp(voteResultGroup, "quantityConnectedVote", true, "Аффилировано",
-                LM.addJProp(LM.and1, LM.addCProp(IntegerClass.instance, 1), connectedExpertVote, 1, 2), 2); // сколько экспертов высказалось
+        quantityConnectedVote = addSGProp(voteResultGroup, "quantityConnectedVote", true, "Аффилировано",
+                addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), connectedExpertVote, 1, 2), 2); // сколько экспертов высказалось
 
-        quantityInClusterVote = LM.addSGProp(voteResultGroup, "quantityInClusterVote", true, "Соотв-ие кластеру (голоса)",
-                LM.addJProp(LM.and1, LM.addCProp(IntegerClass.instance, 1), inClusterExpertVote, 1, 2), 2); // сколько экспертов высказалось
+        quantityInClusterVote = addSGProp(voteResultGroup, "quantityInClusterVote", true, "Соотв-ие кластеру (голоса)",
+                addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), inClusterExpertVote, 1, 2), 2); // сколько экспертов высказалось
 
-        quantityInnovativeVote = LM.addSGProp(voteResultGroup, "quantityInnovativeVote", true, "Инновац. (голоса)",
-                LM.addJProp(LM.and1, LM.addCProp(IntegerClass.instance, 1), innovativeExpertVote, 1, 2), 2); // сколько экспертов высказалось
+        quantityInnovativeVote = addSGProp(voteResultGroup, "quantityInnovativeVote", true, "Инновац. (голоса)",
+                addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), innovativeExpertVote, 1, 2), 2); // сколько экспертов высказалось
 
-        quantityForeignVote = LM.addSGProp(voteResultGroup, "quantityForeignVote", true, "Иностр. специалист (голоса)",
-                LM.addJProp(LM.and1, LM.addCProp(IntegerClass.instance, 1), foreignExpertVote, 1, 2), 2); // сколько экспертов высказалось
+        quantityForeignVote = addSGProp(voteResultGroup, "quantityForeignVote", true, "Иностр. специалист (голоса)",
+                addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), foreignExpertVote, 1, 2), 2); // сколько экспертов высказалось
 
-        acceptedInClusterVote = LM.addJProp(voteResultGroup, "acceptedInClusterVote", "Соотв-ие кластеру", LM.greater2,
-                                          LM.addJProp(LM.multiplyIntegerBy2, quantityInClusterVote, 1), 1,
+        acceptedInClusterVote = addJProp(voteResultGroup, "acceptedInClusterVote", "Соотв-ие кластеру", baseLM.greater2,
+                                          addJProp(baseLM.multiplyIntegerBy2, quantityInClusterVote, 1), 1,
                                           quantityDoneVote, 1);
 
-        acceptedInnovativeVote = LM.addJProp(voteResultGroup, "acceptedInnovativeVote", "Инновац.", LM.greater2,
-                                           LM.addJProp(LM.multiplyIntegerBy2, quantityInnovativeVote, 1), 1,
+        acceptedInnovativeVote = addJProp(voteResultGroup, "acceptedInnovativeVote", "Инновац.", baseLM.greater2,
+                                           addJProp(baseLM.multiplyIntegerBy2, quantityInnovativeVote, 1), 1,
                                            quantityDoneVote, 1);
 
-        acceptedForeignVote = LM.addJProp(voteResultGroup, "acceptedForeignVote", "Иностр. специалист", LM.greater2,
-                                        LM.addJProp(LM.multiplyIntegerBy2, quantityForeignVote, 1), 1,
+        acceptedForeignVote = addJProp(voteResultGroup, "acceptedForeignVote", "Иностр. специалист", baseLM.greater2,
+                                        addJProp(baseLM.multiplyIntegerBy2, quantityForeignVote, 1), 1,
                                         quantityDoneVote, 1);
 
-        acceptedVote = LM.addJProp(voteResultGroup, "acceptedVote", true, "Положительно", LM.and(false, false),
+        acceptedVote = addJProp(voteResultGroup, "acceptedVote", true, "Положительно", and(false, false),
                                 acceptedInClusterVote, 1, acceptedInnovativeVote, 1, acceptedForeignVote, 1);
 
-        succeededVote = LM.addJProp(voteResultGroup, "succeededVote", true, "Состоялось", LM.groeq2, quantityDoneVote, 1, limitExperts); // достаточно экспертов
-        succeededClusterVote = LM.addJProp("succeededClusterVote", "Состоялось в тек. кластере", LM.and1, succeededVote, 1, equalsClusterProjectVote, 1);
+        succeededVote = addJProp(voteResultGroup, "succeededVote", true, "Состоялось", baseLM.groeq2, quantityDoneVote, 1, limitExperts); // достаточно экспертов
+        succeededClusterVote = addJProp("succeededClusterVote", "Состоялось в тек. кластере", baseLM.and1, succeededVote, 1, equalsClusterProjectVote, 1);
 
-        LP betweenExpertVoteDateFromDateTo = LM.addJProp(LM.betweenDates, dateExpertVote, 1, 2, 3, 4);
-        doneExpertVoteDateFromDateTo = LM.addJProp(LM.and1, doneNewExpertVote, 1, 2, betweenExpertVoteDateFromDateTo, 1, 2, 3, 4);
-        quantityDoneExpertDateFromDateTo = LM.addSGProp("quantityDoneExpertDateFromDateTo", "Кол-во голосов.",
-                LM.addJProp(LM.and1, LM.addCProp(IntegerClass.instance, 1), doneExpertVoteDateFromDateTo, 1, 2, 3, 4), 1, 3, 4); // в скольки заседаниях поучавствовал
-        inExpertVoteDateFromDateTo = LM.addJProp(LM.and1, inNewExpertVote, 1, 2, betweenExpertVoteDateFromDateTo, 1, 2, 3, 4);
-        quantityInExpertDateFromDateTo = LM.addSGProp("quantityInExpertDateFromDateTo", "Кол-во участ.",
-                LM.addJProp(LM.and1, LM.addCProp(IntegerClass.instance, 1), inExpertVoteDateFromDateTo, 1, 2, 3, 4), 1, 3, 4); // в скольки заседаниях поучавствовал
+        LP betweenExpertVoteDateFromDateTo = addJProp(baseLM.betweenDates, dateExpertVote, 1, 2, 3, 4);
+        doneExpertVoteDateFromDateTo = addJProp(baseLM.and1, doneNewExpertVote, 1, 2, betweenExpertVoteDateFromDateTo, 1, 2, 3, 4);
+        quantityDoneExpertDateFromDateTo = addSGProp("quantityDoneExpertDateFromDateTo", "Кол-во голосов.",
+                addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), doneExpertVoteDateFromDateTo, 1, 2, 3, 4), 1, 3, 4); // в скольки заседаниях поучавствовал
+        inExpertVoteDateFromDateTo = addJProp(baseLM.and1, inNewExpertVote, 1, 2, betweenExpertVoteDateFromDateTo, 1, 2, 3, 4);
+        quantityInExpertDateFromDateTo = addSGProp("quantityInExpertDateFromDateTo", "Кол-во участ.",
+                addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), inExpertVoteDateFromDateTo, 1, 2, 3, 4), 1, 3, 4); // в скольки заседаниях поучавствовал
 
-        voteSucceededProject = LM.addAGProp(LM.idGroup, "voteSucceededProject", true, "Успешное заседание (ИД)", succeededClusterVote, 1, projectVote, 1);
+        voteSucceededProject = addAGProp(idGroup, "voteSucceededProject", true, "Успешное заседание (ИД)", succeededClusterVote, 1, projectVote, 1);
 
-        noCurrentVoteProject = LM.addJProp(projectStatusGroup, "noCurrentVoteProject", "Нет текущих заседаний", LM.andNot1, LM.is(project), 1, voteInProgressProject, 1); // нету текущих заседаний
+        noCurrentVoteProject = addJProp(projectStatusGroup, "noCurrentVoteProject", "Нет текущих заседаний", baseLM.andNot1, is(project), 1, voteInProgressProject, 1); // нету текущих заседаний
 
-        voteValuedProject = LM.addJProp(LM.idGroup, "voteValuedProject", true, "Оцененнное заседание (ИД)", LM.and1, voteSucceededProject, 1, noCurrentVoteProject, 1); // нет открытого заседания и есть состояшееся заседания
+        voteValuedProject = addJProp(idGroup, "voteValuedProject", true, "Оцененнное заседание (ИД)", baseLM.and1, voteSucceededProject, 1, noCurrentVoteProject, 1); // нет открытого заседания и есть состояшееся заседания
 
-        acceptedProject = LM.addJProp(projectStatusGroup, "acceptedProject", "Оценен положительно", acceptedVote, voteValuedProject, 1);
+        acceptedProject = addJProp(projectStatusGroup, "acceptedProject", "Оценен положительно", acceptedVote, voteValuedProject, 1);
 
-        needExtraVoteProject = LM.addJProp("needExtraVoteProject", true, "Треб. заседание", LM.and(true, true, true),
-                                        LM.is(project), 1,
+        needExtraVoteProject = addJProp("needExtraVoteProject", true, "Треб. заседание", and(true, true, true),
+                                        is(project), 1,
                                         notEnoughProject, 1,
                                         voteInProgressProject, 1,
                                         voteSucceededProject, 1); // есть открытое заседания и есть состояшееся заседания !!! нужно создать новое заседание
 
-        LM.addConstraint(LM.addJProp("Эксперт не соответствует необходимому кластеру", LM.diff2,
-                clusterExpert, 1, LM.addJProp(LM.and1, clusterVote, 2, inExpertVote, 1, 2), 1, 2), false);
+        addConstraint(addJProp("Эксперт не соответствует необходимому кластеру", baseLM.diff2,
+                clusterExpert, 1, addJProp(baseLM.and1, clusterVote, 2, inExpertVote, 1, 2), 1, 2), false);
 
-//        LM.addConstraint(LM.addJProp("Количество экспертов не соответствует требуемому", LM.andNot1, LM.is(vote), 1, LM.addJProp(LM.equals2, requiredQuantity,
-//                LM.addSGProp(LM.addJProp(LM.and1, LM.addCProp(IntegerClass.instance, 1), inExpertVote, 2, 1), 1), 1), 1), false);
+//        addConstraint(addJProp("Количество экспертов не соответствует требуемому", baseLM.andNot1, is(vote), 1, addJProp(baseLM.equals2, requiredQuantity,
+//                addSGProp(addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), inExpertVote, 2, 1), 1), 1), 1), false);
 
-        generateDocumentsProjectDocumentType = LM.addAProp(LM.actionGroup, new GenerateDocumentsActionProperty());
+        generateDocumentsProjectDocumentType = addAProp(actionGroup, new GenerateDocumentsActionProperty());
 
-        generateVoteProject = LM.addAProp(LM.actionGroup, new GenerateVoteActionProperty());
-        copyResultsVote = LM.addAProp(LM.actionGroup, new CopyResultsActionProperty());
-        hideGenerateVoteProject = LM.addHideCaptionProp(LM.privateGroup, "Сгенерировать заседание", generateVoteProject, needExtraVoteProject);
-//        generateVoteProject.setDerivedForcedChange(LM.addCProp(ActionClass.instance, true), needExtraVoteProject, 1, autoGenerateProject, 1);
+        generateVoteProject = addAProp(actionGroup, new GenerateVoteActionProperty());
+        copyResultsVote = addAProp(actionGroup, new CopyResultsActionProperty());
+        hideGenerateVoteProject = addHideCaptionProp(privateGroup, "Сгенерировать заседание", generateVoteProject, needExtraVoteProject);
+//        generateVoteProject.setDerivedForcedChange(addCProp(ActionClass.instance, true), needExtraVoteProject, 1, autoGenerateProject, 1);
 
-        LM.generateLoginPassword.setDerivedForcedChange(LM.addCProp(ActionClass.instance, true), LM.is(expert), 1);
+        baseLM.generateLoginPassword.setDerivedForcedChange(addCProp(ActionClass.instance, true), is(expert), 1);
 
-        expertLogin = LM.addAGProp(LM.baseGroup, "expertLogin", "Эксперт (ИД)", LM.userLogin);
-        disableExpert = LM.addDProp(LM.baseGroup, "disableExpert", "Не акт.", LogicalClass.instance, expert);
+        expertLogin = addAGProp(baseGroup, "expertLogin", "Эксперт (ИД)", baseLM.userLogin);
+        disableExpert = addDProp(baseGroup, "disableExpert", "Не акт.", LogicalClass.instance, expert);
 
-        LM.addCUProp("userRole", true, "Роль пользователя", LM.addCProp(StringClass.get(30), "expert", expert));
+        addCUProp("userRole", true, "Роль пользователя", addCProp(StringClass.get(30), "expert", expert));
 
-        statusProject = LM.addCaseUProp(LM.idGroup, "statusProject", true, "Статус (ИД)",
-                voteValuedProject, 1, LM.addIfElseUProp(LM.addCProp(projectStatus, "accepted", project), LM.addCProp(projectStatus, "rejected", project), acceptedProject, 1), 1,
-                voteSucceededProject, 1, LM.addCProp(projectStatus, "succeeded", project), 1,
-                voteInProgressProject, 1, LM.addCProp(projectStatus, "inProgress", project), 1,
-                needExtraVoteProject, 1, LM.addCProp(projectStatus, "needExtraVote", project), 1,
-                notEnoughProject, 1, LM.addCProp(projectStatus, "needDocuments", project), 1);
+        statusProject = addCaseUProp(idGroup, "statusProject", true, "Статус (ИД)",
+                voteValuedProject, 1, addIfElseUProp(addCProp(projectStatus, "accepted", project), addCProp(projectStatus, "rejected", project), acceptedProject, 1), 1,
+                voteSucceededProject, 1, addCProp(projectStatus, "succeeded", project), 1,
+                voteInProgressProject, 1, addCProp(projectStatus, "inProgress", project), 1,
+                needExtraVoteProject, 1, addCProp(projectStatus, "needExtraVote", project), 1,
+                notEnoughProject, 1, addCProp(projectStatus, "needDocuments", project), 1);
 
 
-/*        statusProject = addIfElseUProp(LM.idGroup, "statusProject", true, "Статус (ИД)",
-                                  LM.addCProp(projectStatus, "accepted", project),
-                                  addIfElseUProp(LM.addCProp(projectStatus, "rejected", project),
-                                                 addIfElseUProp(LM.addCProp(projectStatus, "succeeded", project),
-                                                                addIfElseUProp(LM.addCProp(projectStatus, "inProgress", project),
-                                                                               addIfElseUProp(LM.addCProp(projectStatus, "needExtraVote", project),
-                                                                                           addIfElseUProp(LM.addCProp(projectStatus, "needDocuments", project),
-                                                                                                 LM.addCProp(projectStatus, "unknown", project),
+/*        statusProject = addIfElseUProp(idGroup, "statusProject", true, "Статус (ИД)",
+                                  addCProp(projectStatus, "accepted", project),
+                                  addIfElseUProp(addCProp(projectStatus, "rejected", project),
+                                                 addIfElseUProp(addCProp(projectStatus, "succeeded", project),
+                                                                addIfElseUProp(addCProp(projectStatus, "inProgress", project),
+                                                                               addIfElseUProp(addCProp(projectStatus, "needExtraVote", project),
+                                                                                           addIfElseUProp(addCProp(projectStatus, "needDocuments", project),
+                                                                                                 addCProp(projectStatus, "unknown", project),
                                                                                                  notEnoughProject, 1),
                                                                                            needExtraVoteProject, 1),
                                                                                voteInProgressProject, 1),
                                                                 voteSucceededProject, 1),
                                                  voteRejectedProject, 1),
                                   acceptedProject, 1);*/
-        nameStatusProject = LM.addJProp(projectInformationGroup, "nameStatusProject", "Статус", LM.name, statusProject, 1);
+        nameStatusProject = addJProp(projectInformationGroup, "nameStatusProject", "Статус", baseLM.name, statusProject, 1);
 
-        statusProjectVote = LM.addJProp(LM.idGroup, "statusProjectVote", "Статус проекта (ИД)", statusProject, projectVote, 1);
-        nameStatusProjectVote = LM.addJProp(LM.baseGroup, "nameStatusProjectVote", "Статус проекта", LM.name, statusProjectVote, 1);
+        statusProjectVote = addJProp(idGroup, "statusProjectVote", "Статус проекта (ИД)", statusProject, projectVote, 1);
+        nameStatusProjectVote = addJProp(baseGroup, "nameStatusProjectVote", "Статус проекта", baseLM.name, statusProjectVote, 1);
 
-        projectSucceededClaimer = LM.addAGProp(LM.idGroup, "projectSucceededClaimer", true, "Успешный проект (ИД)", acceptedProject, 1, claimerProject, 1);
+        projectSucceededClaimer = addAGProp(idGroup, "projectSucceededClaimer", true, "Успешный проект (ИД)", acceptedProject, 1, claimerProject, 1);
 
 
         // статистика по экспертам
-        quantityTotalExpert = LM.addSGProp(expertResultGroup, "quantityTotalExpert", "Всего заседаний",
-                LM.addJProp(LM.and1, LM.addCProp(IntegerClass.instance, 1), inNewExpertVote, 1, 2), 1);
+        quantityTotalExpert = addSGProp(expertResultGroup, "quantityTotalExpert", "Всего заседаний",
+                addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), inNewExpertVote, 1, 2), 1);
 
-        quantityDoneExpert = LM.addSGProp(expertResultGroup, "quantityDoneExpert", "Проголосовал",
-                LM.addJProp(LM.and1, LM.addCProp(IntegerClass.instance, 1), doneNewExpertVote, 1, 2), 1);
-        percentDoneExpert = LM.addJProp(expertResultGroup, "percentDoneExpert", "Проголосовал (%)", percent, quantityDoneExpert, 1, quantityTotalExpert, 1);
+        quantityDoneExpert = addSGProp(expertResultGroup, "quantityDoneExpert", "Проголосовал",
+                addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), doneNewExpertVote, 1, 2), 1);
+        percentDoneExpert = addJProp(expertResultGroup, "percentDoneExpert", "Проголосовал (%)", percent, quantityDoneExpert, 1, quantityTotalExpert, 1);
 
-        LP quantityInClusterExpert = LM.addSGProp("quantityInClusterExpert", "Соотв-ие кластеру (голоса)",
-                LM.addJProp(LM.and1, LM.addCProp(IntegerClass.instance, 1), inClusterNewExpertVote, 1, 2), 1);
-        percentInClusterExpert = LM.addJProp(expertResultGroup, "percentInClusterExpert", "Соотв-ие кластеру (%)", percent, quantityInClusterExpert, 1, quantityDoneExpert, 1);
+        LP quantityInClusterExpert = addSGProp("quantityInClusterExpert", "Соотв-ие кластеру (голоса)",
+                addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), inClusterNewExpertVote, 1, 2), 1);
+        percentInClusterExpert = addJProp(expertResultGroup, "percentInClusterExpert", "Соотв-ие кластеру (%)", percent, quantityInClusterExpert, 1, quantityDoneExpert, 1);
 
-        LP quantityInnovativeExpert = LM.addSGProp("quantityInnovativeExpert", "Инновац. (голоса)",
-                LM.addJProp(LM.and1, LM.addCProp(IntegerClass.instance, 1), innovativeNewExpertVote, 1, 2), 1);
-        percentInnovativeExpert = LM.addJProp(expertResultGroup, "percentInnovativeExpert", "Инновац. (%)", percent, quantityInnovativeExpert, 1, quantityDoneExpert, 1);
+        LP quantityInnovativeExpert = addSGProp("quantityInnovativeExpert", "Инновац. (голоса)",
+                addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), innovativeNewExpertVote, 1, 2), 1);
+        percentInnovativeExpert = addJProp(expertResultGroup, "percentInnovativeExpert", "Инновац. (%)", percent, quantityInnovativeExpert, 1, quantityDoneExpert, 1);
 
-        LP quantityForeignExpert = LM.addSGProp("quantityForeignExpert", "Иностр. специалист (голоса)",
-                LM.addJProp(LM.and1, LM.addCProp(IntegerClass.instance, 1), foreignNewExpertVote, 1, 2), 1);
-        percentForeignExpert = LM.addJProp(expertResultGroup, "percentForeignExpert", "Иностр. специалист (%)", percent, quantityForeignExpert, 1, quantityDoneExpert, 1);
+        LP quantityForeignExpert = addSGProp("quantityForeignExpert", "Иностр. специалист (голоса)",
+                addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), foreignNewExpertVote, 1, 2), 1);
+        percentForeignExpert = addJProp(expertResultGroup, "percentForeignExpert", "Иностр. специалист (%)", percent, quantityForeignExpert, 1, quantityDoneExpert, 1);
 
-        prevDateStartVote = LM.addOProp("prevDateStartVote", "Пред. засед. (старт)", OrderType.PREVIOUS, dateStartVote, true, true, 1, projectVote, 1, LM.date, 1);
-        prevDateVote = LM.addOProp("prevDateVote", "Пред. засед. (окончание)", OrderType.PREVIOUS, dateEndVote, true, true, 1, projectVote, 1, LM.date, 1);
-        numberNewExpertVote = LM.addOProp("numberNewExpertVote", "Номер (нов.)", OrderType.SUM, LM.addJProp(LM.and1, LM.addCProp(IntegerClass.instance, 1), inNewExpertVote, 1, 2), true, true, 1, 2, 1);
-        numberOldExpertVote = LM.addOProp("numberOldExpertVote", "Номер (стар.)", OrderType.SUM, LM.addJProp(LM.and1, LM.addCProp(IntegerClass.instance, 1), inOldExpertVote, 1, 2), true, true, 1, 2, 1);
+        prevDateStartVote = addOProp("prevDateStartVote", "Пред. засед. (старт)", OrderType.PREVIOUS, dateStartVote, true, true, 1, projectVote, 1, baseLM.date, 1);
+        prevDateVote = addOProp("prevDateVote", "Пред. засед. (окончание)", OrderType.PREVIOUS, dateEndVote, true, true, 1, projectVote, 1, baseLM.date, 1);
+        numberNewExpertVote = addOProp("numberNewExpertVote", "Номер (нов.)", OrderType.SUM, addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), inNewExpertVote, 1, 2), true, true, 1, 2, 1);
+        numberOldExpertVote = addOProp("numberOldExpertVote", "Номер (стар.)", OrderType.SUM, addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), inOldExpertVote, 1, 2), true, true, 1, 2, 1);
 
-        emailDocuments = LM.addDProp(LM.baseGroup, "emailDocuments", "E-mail для документов", StringClass.get(50));
+        emailDocuments = addDProp(baseGroup, "emailDocuments", "E-mail для документов", StringClass.get(50));
 
-        emailLetterExpertVoteEA = LM.addEAProp(expert, vote);
-        LM.addEARecepient(emailLetterExpertVoteEA, LM.email, 1);
+        emailLetterExpertVoteEA = addEAProp(expert, vote);
+        addEARecepient(emailLetterExpertVoteEA, baseLM.email, 1);
 
-        emailLetterExpertVote = LM.addJProp(LM.baseGroup, true, "emailLetterExpertVote", "Письмо о заседании (e-mail)",
-                emailLetterExpertVoteEA, 1, 2, LM.addJProp(letterExpertSubjectLanguage, languageExpert, 1), 1);
+        emailLetterExpertVote = addJProp(baseGroup, true, "emailLetterExpertVote", "Письмо о заседании (e-mail)",
+                emailLetterExpertVoteEA, 1, 2, addJProp(letterExpertSubjectLanguage, languageExpert, 1), 1);
         emailLetterExpertVote.setImage("/images/email.png");
         emailLetterExpertVote.property.askConfirm = true;
-        emailLetterExpertVote.setDerivedForcedChange(LM.addCProp(ActionClass.instance, true), inNewExpertVote, 1, 2);
+        emailLetterExpertVote.setDerivedForcedChange(addCProp(ActionClass.instance, true), inNewExpertVote, 1, 2);
 
-        allowedEmailLetterExpertVote = LM.addJProp(LM.baseGroup, "Письмо о заседании (e-mail)", "Письмо о заседании", LM.andNot1, emailLetterExpertVote, 1, 2, voteResultExpertVote, 1, 2);
+        allowedEmailLetterExpertVote = addJProp(baseGroup, "Письмо о заседании (e-mail)", "Письмо о заседании", baseLM.andNot1, emailLetterExpertVote, 1, 2, voteResultExpertVote, 1, 2);
         allowedEmailLetterExpertVote.property.askConfirm = true;
 
-        emailStartVoteEA = LM.addEAProp(vote);
-        LM.addEARecepient(emailStartVoteEA, emailDocuments);
+        emailStartVoteEA = addEAProp(vote);
+        addEARecepient(emailStartVoteEA, emailDocuments);
 
-        emailClaimerNameVote = LM.addJProp(LM.addSFProp("(CAST(prm1 as text))||(CAST(prm2 as text))", StringClass.get(2000), 2), LM.object(StringClass.get(2000)), 2, nameNativeClaimerVote, 1);
+        emailClaimerNameVote = addJProp(addSFProp("(CAST(prm1 as text))||(CAST(prm2 as text))", StringClass.get(2000), 2), object(StringClass.get(2000)), 2, nameNativeClaimerVote, 1);
 
-        emailStartHeaderVote = LM.addJProp("emailStartHeaderVote", "Заголовок созыва заседания", emailClaimerNameVote, 1, LM.addCProp(StringClass.get(2000), "Созыв заседания - "));
-        emailStartVote = LM.addJProp(LM.baseGroup, true, "emailStartVote", "Созыв заседания (e-mail)", emailStartVoteEA, 1, emailStartHeaderVote, 1);
+        emailStartHeaderVote = addJProp("emailStartHeaderVote", "Заголовок созыва заседания", emailClaimerNameVote, 1, addCProp(StringClass.get(2000), "Созыв заседания - "));
+        emailStartVote = addJProp(baseGroup, true, "emailStartVote", "Созыв заседания (e-mail)", emailStartVoteEA, 1, emailStartHeaderVote, 1);
         emailStartVote.property.askConfirm = true;
-//        emailStartVote.setDerivedForcedChange(LM.addCProp(ActionClass.instance, true), openedVote, 1);
+//        emailStartVote.setDerivedForcedChange(addCProp(ActionClass.instance, true), openedVote, 1);
 
-        emailProtocolVoteEA = LM.addEAProp(vote);
-        LM.addEARecepient(emailProtocolVoteEA, emailDocuments);
+        emailProtocolVoteEA = addEAProp(vote);
+        addEARecepient(emailProtocolVoteEA, emailDocuments);
 
-        emailProtocolHeaderVote = LM.addJProp("emailProtocolHeaderVote", "Заголовок протокола заседания", emailClaimerNameVote, 1, LM.addCProp(StringClass.get(2000), "Протокол заседания - "));
-        emailProtocolVote = LM.addJProp(LM.baseGroup, true, "emailProtocolVote", "Протокол заседания (e-mail)", emailProtocolVoteEA, 1, emailProtocolHeaderVote, 1);
+        emailProtocolHeaderVote = addJProp("emailProtocolHeaderVote", "Заголовок протокола заседания", emailClaimerNameVote, 1, addCProp(StringClass.get(2000), "Протокол заседания - "));
+        emailProtocolVote = addJProp(baseGroup, true, "emailProtocolVote", "Протокол заседания (e-mail)", emailProtocolVoteEA, 1, emailProtocolHeaderVote, 1);
         emailProtocolVote.property.askConfirm = true;
-//        emailProtocolVote.setDerivedForcedChange(LM.addCProp(ActionClass.instance, true), closedVote, 1);
+//        emailProtocolVote.setDerivedForcedChange(addCProp(ActionClass.instance, true), closedVote, 1);
 
-        emailClosedVoteEA = LM.addEAProp(vote);
-        LM.addEARecepient(emailClosedVoteEA, emailDocuments);
+        emailClosedVoteEA = addEAProp(vote);
+        addEARecepient(emailClosedVoteEA, emailDocuments);
 
-        emailClosedHeaderVote = LM.addJProp(emailClaimerNameVote, 1, LM.addCProp(StringClass.get(2000), "Результаты заседания - "));
-        emailClosedVote = LM.addJProp(LM.baseGroup, true, "emailClosedVote", "Результаты заседания (e-mail)", emailClosedVoteEA, 1, emailClosedHeaderVote, 1);
+        emailClosedHeaderVote = addJProp(emailClaimerNameVote, 1, addCProp(StringClass.get(2000), "Результаты заседания - "));
+        emailClosedVote = addJProp(baseGroup, true, "emailClosedVote", "Результаты заседания (e-mail)", emailClosedVoteEA, 1, emailClosedHeaderVote, 1);
         emailClosedVote.setImage("/images/email.png");
         emailClosedVote.property.askConfirm = true;
-        emailClosedVote.setDerivedForcedChange(LM.addCProp(ActionClass.instance, true), closedVote, 1);
+        emailClosedVote.setDerivedForcedChange(addCProp(ActionClass.instance, true), closedVote, 1);
 
-        isForeignExpert = LM.addJProp("isForeignExpert", "Иностр.", LM.equals2, languageExpert, 1, LM.addCProp(language, "english"));
-        localeExpert = LM.addJProp("localeExpert", "Locale", localeLanguage, languageExpert, 1);
+        isForeignExpert = addJProp("isForeignExpert", "Иностр.", baseLM.equals2, languageExpert, 1, addCProp(language, "english"));
+        localeExpert = addJProp("localeExpert", "Locale", localeLanguage, languageExpert, 1);
 
-        emailAuthExpertEA = LM.addEAProp(expert);
-        LM.addEARecepient(emailAuthExpertEA, LM.email, 1);
+        emailAuthExpertEA = addEAProp(expert);
+        addEARecepient(emailAuthExpertEA, baseLM.email, 1);
 
-        emailAuthExpert = LM.addJProp(LM.baseGroup, true, "emailAuthExpert", "Аутентификация эксперта (e-mail)",
-                emailAuthExpertEA, 1, LM.addJProp(authExpertSubjectLanguage, languageExpert, 1), 1);
+        emailAuthExpert = addJProp(baseGroup, true, "emailAuthExpert", "Аутентификация эксперта (e-mail)",
+                emailAuthExpertEA, 1, addJProp(authExpertSubjectLanguage, languageExpert, 1), 1);
         emailAuthExpert.setImage("/images/email.png");
         emailAuthExpert.property.askConfirm = true;
-//        emailAuthExpert.setDerivedChange(LM.addCProp(ActionClass.instance, true), userLogin, 1, userPassword, 1);
+//        emailAuthExpert.setDerivedChange(addCProp(ActionClass.instance, true), userLogin, 1, userPassword, 1);
 
-        emailClaimerAcceptedHeaderVote = LM.addJProp(emailClaimerNameVote, 1, LM.addCProp(StringClass.get(2000), "Решение о соответствии - "));
-        emailClaimerRejectedHeaderVote = LM.addJProp(emailClaimerNameVote, 1, LM.addCProp(StringClass.get(2000), "Решение о несоответствии - "));
+        emailClaimerAcceptedHeaderVote = addJProp(emailClaimerNameVote, 1, addCProp(StringClass.get(2000), "Решение о соответствии - "));
+        emailClaimerRejectedHeaderVote = addJProp(emailClaimerNameVote, 1, addCProp(StringClass.get(2000), "Решение о несоответствии - "));
 
-        emailAcceptedProjectEA = LM.addEAProp(project);
-        LM.addEARecepient(emailAcceptedProjectEA, emailDocuments);
-        emailClaimerAcceptedHeaderProject = LM.addJProp(LM.addSFProp("(CAST(prm1 as text))||(CAST(prm2 as text))", StringClass.get(2000), 2), LM.addCProp(StringClass.get(2000), "Решение о присвоении статуса участника - "), nameNativeClaimerProject, 1);
-        emailAcceptedProject = LM.addJProp(LM.baseGroup, true, "emailAcceptedProject", "Решение о присвоении статуса участника (e-mail)", emailAcceptedProjectEA, 1, emailClaimerAcceptedHeaderProject, 1);
+        emailAcceptedProjectEA = addEAProp(project);
+        addEARecepient(emailAcceptedProjectEA, emailDocuments);
+        emailClaimerAcceptedHeaderProject = addJProp(addSFProp("(CAST(prm1 as text))||(CAST(prm2 as text))", StringClass.get(2000), 2), addCProp(StringClass.get(2000), "Решение о присвоении статуса участника - "), nameNativeClaimerProject, 1);
+        emailAcceptedProject = addJProp(baseGroup, true, "emailAcceptedProject", "Решение о присвоении статуса участника (e-mail)", emailAcceptedProjectEA, 1, emailClaimerAcceptedHeaderProject, 1);
         emailAcceptedProject.setImage("/images/email.png");
         emailAcceptedProject.property.askConfirm = true;
-        emailAcceptedProject.setDerivedForcedChange(LM.addCProp(ActionClass.instance, true), acceptedProject, 1);
+        emailAcceptedProject.setDerivedForcedChange(addCProp(ActionClass.instance, true), acceptedProject, 1);
 
-        emailToExpert = LM.addJProp("emailToExpert", "Эксперт по e-mail", LM.addJProp(LM.and1, 1, LM.is(expert), 1), LM.emailToObject, 1);
+        emailToExpert = addJProp("emailToExpert", "Эксперт по e-mail", addJProp(baseLM.and1, 1, is(expert), 1), baseLM.emailToObject, 1);
     }
 
     @Override
@@ -1180,29 +1182,29 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
     @Override
     public void initNavigators() throws JRException, FileNotFoundException {
-        LM.addFormEntity(new ProjectFullFormEntity(LM.objectElement, "projectFullNative", "Резюме проекта для эксперта", false));
-        LM.addFormEntity(new ProjectFullFormEntity(LM.objectElement, "projectFullForeign", "Resume project for expert", true));
-        LM.addFormEntity(new ClaimerFullFormEntity(LM.objectElement, "Claimer"));
+        addFormEntity(new ProjectFullFormEntity(baseLM.objectElement, "projectFullNative", "Резюме проекта для эксперта", false));
+        addFormEntity(new ProjectFullFormEntity(baseLM.objectElement, "projectFullForeign", "Resume project for expert", true));
+        addFormEntity(new ClaimerFullFormEntity(baseLM.objectElement, "Claimer"));
 
-        LM.addFormEntity(new ProjectFormEntity(LM.baseElement, "project"));
-        LM.addFormEntity(new ClaimerFormEntity(LM.baseElement, "claimer"));
-        LM.addFormEntity(new VoteFormEntity(LM.baseElement, "vote", false));
-        LM.addFormEntity(new ExpertFormEntity(LM.baseElement, "expert"));
-        LM.addFormEntity(new VoteExpertFormEntity(LM.baseElement, "voteExpert"));
-        languageDocumentTypeForm = LM.addFormEntity(new LanguageDocumentTypeFormEntity(LM.baseElement, "languageDocumentType"));
-        LM.addFormEntity(new DocumentTemplateFormEntity(LM.baseElement, "documentTemplate"));
-        globalForm = LM.addFormEntity(new GlobalFormEntity(LM.baseElement, "global"));
-        LM.addFormEntity(new VoteFormEntity(LM.baseElement, "voterestricted", true));
+        addFormEntity(new ProjectFormEntity(baseLM.baseElement, "project"));
+        addFormEntity(new ClaimerFormEntity(baseLM.baseElement, "claimer"));
+        addFormEntity(new VoteFormEntity(baseLM.baseElement, "vote", false));
+        addFormEntity(new ExpertFormEntity(baseLM.baseElement, "expert"));
+        addFormEntity(new VoteExpertFormEntity(baseLM.baseElement, "voteExpert"));
+        languageDocumentTypeForm = addFormEntity(new LanguageDocumentTypeFormEntity(baseLM.baseElement, "languageDocumentType"));
+        addFormEntity(new DocumentTemplateFormEntity(baseLM.baseElement, "documentTemplate"));
+        globalForm = addFormEntity(new GlobalFormEntity(baseLM.baseElement, "global"));
+        addFormEntity(new VoteFormEntity(baseLM.baseElement, "voterestricted", true));
 
-        NavigatorElement print = new NavigatorElement(LM.baseElement, "print", "Печатные формы");
-        LM.addFormEntity(new VoteStartFormEntity(print, "voteStart"));
-        LM.addFormEntity(new ExpertLetterFormEntity(print, "expertLetter"));
-        LM.addFormEntity(new VoteProtocolFormEntity(print, "voteProtocol"));
-        LM.addFormEntity(new ExpertProtocolFormEntity(print, "expertProtocol"));
-        LM.addFormEntity(new ExpertAuthFormEntity(print, "expertAuth"));
-        LM.addFormEntity(new ClaimerAcceptedFormEntity(print, "claimerAccepted"));
-        LM.addFormEntity(new ClaimerRejectedFormEntity(print, "claimerRejected"));
-        LM.addFormEntity(new ClaimerStatusFormEntity(print, "claimerStatus"));
+        NavigatorElement print = new NavigatorElement(baseLM.baseElement, "print", "Печатные формы");
+        addFormEntity(new VoteStartFormEntity(print, "voteStart"));
+        addFormEntity(new ExpertLetterFormEntity(print, "expertLetter"));
+        addFormEntity(new VoteProtocolFormEntity(print, "voteProtocol"));
+        addFormEntity(new ExpertProtocolFormEntity(print, "expertProtocol"));
+        addFormEntity(new ExpertAuthFormEntity(print, "expertAuth"));
+        addFormEntity(new ClaimerAcceptedFormEntity(print, "claimerAccepted"));
+        addFormEntity(new ClaimerRejectedFormEntity(print, "claimerRejected"));
+        addFormEntity(new ClaimerStatusFormEntity(print, "claimerStatus"));
     }
     
     private class ProjectFullFormEntity extends FormEntity<SkolkovoBusinessLogics> {
@@ -1244,8 +1246,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
             objProject.groupTo.setSingleClassView(ClassViewType.PANEL);
 
-            objPatent = addSingleGroupObject(2, "patent", patent, "Патент", LM.baseGroup);
-            LM.addObjectActions(this, objPatent);
+            objPatent = addSingleGroupObject(2, "patent", patent, "Патент", baseGroup);
+            addObjectActions(this, objPatent);
 
             getPropertyDraw(ownerPatent).propertyCaption = addPropertyObject(hideOwnerPatent, objPatent);
             getPropertyDraw(nameOwnerTypePatent).propertyCaption = addPropertyObject(hideNameOwnerTypePatent, objPatent);
@@ -1256,18 +1258,18 @@ public class SkolkovoLogicsModule extends LogicsModule {
             getPropertyDraw(loadFileActValuationPatent).propertyCaption = addPropertyObject(hideLoadFileActValuationPatent, objPatent);
             getPropertyDraw(openFileActValuationPatent).propertyCaption = addPropertyObject(hideOpenFileActValuationPatent, objPatent);
 
-            objAcademic = addSingleGroupObject(3, "academic", academic, "Учёный", LM.baseGroup);
-            LM.addObjectActions(this, objAcademic);
+            objAcademic = addSingleGroupObject(3, "academic", academic, "Учёный", baseGroup);
+            addObjectActions(this, objAcademic);
 
-            objNonRussianSpecialist = addSingleGroupObject(4, "nonRussianSpecialist", nonRussianSpecialist, "Иностранный специалист", LM.baseGroup);
-            LM.addObjectActions(this, objNonRussianSpecialist);
+            objNonRussianSpecialist = addSingleGroupObject(4, "nonRussianSpecialist", nonRussianSpecialist, "Иностранный специалист", baseGroup);
+            addObjectActions(this, objNonRussianSpecialist);
 
             addFixedFilter(new CompareFilterEntity(addPropertyObject(projectPatent, objPatent), Compare.EQUALS, objProject));
             addFixedFilter(new CompareFilterEntity(addPropertyObject(projectAcademic, objAcademic), Compare.EQUALS, objProject));
             addFixedFilter(new CompareFilterEntity(addPropertyObject(projectNonRussianSpecialist, objNonRussianSpecialist), Compare.EQUALS, objProject));
 
-            addProject = LM.addMFAProp(LM.actionGroup, "Добавить", this, new ObjectEntity[]{}, true, addPropertyObject(LM.getAddObjectAction(project)));
-            editProject = LM.addMFAProp(LM.actionGroup, "Редактировать", this, new ObjectEntity[]{objProject}).setImage("/images/edit.png");
+            addProject = addMFAProp(actionGroup, "Добавить", this, new ObjectEntity[]{}, true, addPropertyObject(getAddObjectAction(project)));
+            editProject = addMFAProp(actionGroup, "Редактировать", this, new ObjectEntity[]{objProject}).setImage("/images/edit.png");
         }
 
         @Override
@@ -1317,8 +1319,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
         private ProjectFormEntity(NavigatorElement parent, String sID) {
             super(parent, sID, "Реестр проектов");
 
-            objProject = addSingleGroupObject(project, LM.date, nameNative, nameForeign,  nameNativeClusterProject, nameNativeJoinClaimerProject, nameStatusProject, autoGenerateProject, generateVoteProject, editProject);
-            LM.addObjectActions(this, objProject);
+            objProject = addSingleGroupObject(project, baseLM.date, nameNative, nameForeign,  nameNativeClusterProject, nameNativeJoinClaimerProject, nameStatusProject, autoGenerateProject, generateVoteProject, editProject);
+            addObjectActions(this, objProject);
 
 //            addPropertyDraw(addProject).toDraw = objProject.groupTo;
 //            getPropertyDraw(addProject).forceViewType = ClassViewType.PANEL;
@@ -1326,24 +1328,24 @@ public class SkolkovoLogicsModule extends LogicsModule {
             getPropertyDraw(generateVoteProject).forceViewType = ClassViewType.PANEL;
             getPropertyDraw(generateVoteProject).propertyCaption = addPropertyObject(hideGenerateVoteProject, objProject);
 
-            objVote = addSingleGroupObject(vote, dateStartVote, dateEndVote, nameNativeClusterVote, equalsClusterProjectVote, openedVote, succeededVote, acceptedVote, quantityDoneVote, quantityInClusterVote, quantityInnovativeVote, quantityForeignVote, copyResultsVote, LM.delete);
+            objVote = addSingleGroupObject(vote, dateStartVote, dateEndVote, nameNativeClusterVote, equalsClusterProjectVote, openedVote, succeededVote, acceptedVote, quantityDoneVote, quantityInClusterVote, quantityInnovativeVote, quantityForeignVote, copyResultsVote, baseLM.delete);
             objVote.groupTo.banClassView.addAll(BaseUtils.toList(ClassViewType.PANEL, ClassViewType.HIDE));
 
             getPropertyDraw(copyResultsVote).forceViewType = ClassViewType.PANEL;
 
-            objDocumentTemplate = addSingleGroupObject(documentTemplate, "Шаблон документов", LM.name);
+            objDocumentTemplate = addSingleGroupObject(documentTemplate, "Шаблон документов", baseLM.name);
             objDocumentTemplate.groupTo.setSingleClassView(ClassViewType.PANEL);
             setReadOnly(objDocumentTemplate, true);
             addPropertyDraw(generateDocumentsProjectDocumentType, objProject, objDocumentTemplate);
 
             objDocument = addSingleGroupObject(document, nameTypeDocument, nameLanguageDocument, postfixDocument, loadFileDocument, openFileDocument);
-            LM.addObjectActions(this, objDocument);
+            addObjectActions(this, objDocument);
             getPropertyDraw(postfixDocument).forceViewType = ClassViewType.PANEL;
             getPropertyDraw(postfixDocument).propertyCaption = addPropertyObject(hidePostfixDocument, objDocument);
 
             objExpert = addSingleGroupObject(expert);
             addPropertyDraw(objExpert, objVote, inExpertVote, oldExpertVote);
-            addPropertyDraw(objExpert, LM.name, documentNameExpert, LM.email);
+            addPropertyDraw(objExpert, baseLM.name, documentNameExpert, baseLM.email);
             addPropertyDraw(voteResultGroup, true, objExpert, objVote);
 
             setForceViewType(voteResultCommentGroup, ClassViewType.PANEL);
@@ -1421,7 +1423,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         private GlobalFormEntity(NavigatorElement parent, String sID) {
             super(parent, sID, "Глобальные параметры");
 
-            addPropertyDraw(new LP[]{LM.currentDate, requiredPeriod, requiredQuantity, limitExperts, emailDocuments});
+            addPropertyDraw(new LP[]{baseLM.currentDate, requiredPeriod, requiredQuantity, limitExperts, emailDocuments});
         }
     }
 
@@ -1434,11 +1436,11 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
             objVote = addSingleGroupObject(vote, nameNativeProjectVote, nameNativeClaimerVote, nameNativeClusterVote, equalsClusterProjectVote, dateStartVote, dateEndVote, openedVote, succeededVote, acceptedVote, quantityDoneVote, quantityInClusterVote, quantityInnovativeVote, quantityForeignVote);
             if (!restricted)
-                addPropertyDraw(objVote, emailClosedVote, LM.delete);
+                addPropertyDraw(objVote, emailClosedVote, baseLM.delete);
 
             objExpert = addSingleGroupObject(expert);
             if (!restricted)
-                addPropertyDraw(objExpert, LM.userFirstName, LM.userLastName, documentNameExpert, LM.userLogin, LM.userPassword, LM.email);
+                addPropertyDraw(objExpert, baseLM.userFirstName, baseLM.userLastName, documentNameExpert, baseLM.userLogin, baseLM.userPassword, baseLM.email);
 
             addPropertyDraw(objExpert, objVote, oldExpertVote);
             addPropertyDraw(voteResultGroup, true, objExpert, objVote);
@@ -1497,8 +1499,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
         private ExpertFormEntity(NavigatorElement parent, String sID) {
             super(parent, sID, "Реестр экспертов");
 
-            objExpert = addSingleGroupObject(expert, LM.selection, LM.userFirstName, LM.userLastName, documentNameExpert, LM.userLogin, LM.userPassword, LM.email, disableExpert, nameNativeClusterExpert, nameLanguageExpert, expertResultGroup, LM.generateLoginPassword, emailAuthExpert);
-            LM.addObjectActions(this, objExpert);
+            objExpert = addSingleGroupObject(expert, baseLM.selection, baseLM.userFirstName, baseLM.userLastName, documentNameExpert, baseLM.userLogin, baseLM.userPassword, baseLM.email, disableExpert, nameNativeClusterExpert, nameLanguageExpert, expertResultGroup, baseLM.generateLoginPassword, emailAuthExpert);
+            addObjectActions(this, objExpert);
 
             objVote = addSingleGroupObject(vote, nameNativeProjectVote, dateStartVote, dateEndVote, openedVote, succeededVote, quantityDoneVote);
 
@@ -1538,7 +1540,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
             objVote = addSingleGroupObject(vote, nameNativeProjectVote, dateStartVote, dateEndVote, openedVote, succeededVote);
 
-            objExpert = addSingleGroupObject(expert, LM.userFirstName, LM.userLastName, documentNameExpert, LM.email, nameNativeClusterExpert, nameLanguageExpert);
+            objExpert = addSingleGroupObject(expert, baseLM.userFirstName, baseLM.userLastName, documentNameExpert, baseLM.email, nameNativeClusterExpert, nameLanguageExpert);
 
             addPropertyDraw(objExpert, objVote, allowedEmailLetterExpertVote);
 
@@ -1563,7 +1565,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
             RegularFilterGroupEntity filterGroupDoneExpertVote = new RegularFilterGroupEntity(genID());
             filterGroupDoneExpertVote.addFilter(new RegularFilterEntity(genID(),
-                                  new CompareFilterEntity(addPropertyObject(doneExpertVote, objExpert, objVote), Compare.EQUALS, addPropertyObject(LM.vtrue)),
+                                  new CompareFilterEntity(addPropertyObject(doneExpertVote, objExpert, objVote), Compare.EQUALS, addPropertyObject(baseLM.vtrue)),
                                   "Только проголосовавшие",
                                   KeyStroke.getKeyStroke(KeyEvent.VK_F10, 0)));
             addRegularFilterGroup(filterGroupDoneExpertVote);
@@ -1592,11 +1594,11 @@ public class SkolkovoLogicsModule extends LogicsModule {
         private DocumentTemplateFormEntity(NavigatorElement parent, String sID) {
             super(parent, sID, "Шаблоны документов");
 
-            ObjectEntity objDocumentTemplate = addSingleGroupObject(documentTemplate, "Шаблон", LM.name);
-            LM.addObjectActions(this, objDocumentTemplate);
+            ObjectEntity objDocumentTemplate = addSingleGroupObject(documentTemplate, "Шаблон", baseLM.name);
+            addObjectActions(this, objDocumentTemplate);
 
             ObjectEntity objDocumentTemplateDetail = addSingleGroupObject(documentTemplateDetail, nameTypeDocument, nameLanguageDocument);
-            LM.addObjectActions(this, objDocumentTemplateDetail);
+            addObjectActions(this, objDocumentTemplateDetail);
 
             addFixedFilter(new CompareFilterEntity(addPropertyObject(documentTemplateDocumentTemplateDetail, objDocumentTemplateDetail), Compare.EQUALS, objDocumentTemplate));
         }
@@ -1621,7 +1623,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
             objClaimer = addSingleGroupObject(claimer, "Заявитель", claimerInformationGroup, contactGroup, documentGroup, legalDataGroup);
             objClaimer.groupTo.setSingleClassView(ClassViewType.PANEL);
-            editClaimer = LM.addMFAProp(LM.actionGroup, "Редактировать", this, new ObjectEntity[]{objClaimer}).setImage("/images/edit.png");
+            editClaimer = addMFAProp(actionGroup, "Редактировать", this, new ObjectEntity[]{objClaimer}).setImage("/images/edit.png");
      }
     }
 
@@ -1641,8 +1643,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
             gobjLanguageDocumentType.add(objDocumentType);
             addGroup(gobjLanguageDocumentType);
 
-            addPropertyDraw(objLanguage, LM.name);
-            addPropertyDraw(objDocumentType, LM.name);
+            addPropertyDraw(objLanguage, baseLM.name);
+            addPropertyDraw(objDocumentType, baseLM.name);
             addPropertyDraw(objLanguage, objDocumentType, quantityMinLanguageDocumentType, quantityMaxLanguageDocumentType, translateLanguageDocumentType);
         }
     }
@@ -1666,15 +1668,15 @@ public class SkolkovoLogicsModule extends LogicsModule {
             addGroup(gobjExpertVote);
             gobjExpertVote.initClassView = ClassViewType.PANEL;
 
-            addPropertyDraw(LM.webHost, gobjExpertVote);
+            addPropertyDraw(baseLM.webHost, gobjExpertVote);
             addPropertyDraw(requiredPeriod, gobjExpertVote);
-            addPropertyDraw(objExpert, LM.name, documentNameExpert, isForeignExpert, localeExpert);
+            addPropertyDraw(objExpert, baseLM.name, documentNameExpert, isForeignExpert, localeExpert);
             addPropertyDraw(objVote, nameNativeClaimerVote, nameForeignClaimerVote, nameNativeProjectVote, nameForeignProjectVote);
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(inNewExpertVote, objExpert, objVote)));
 
             //!!!
-            //dateStartVote = LM.addJProp(LM.baseGroup, "dateStartVote", "Дата начала", LM.and1, date, 1, LM.is(vote), 1);
-            //LP isDocumentUnique = LM.addJProp(LM.baseGroup,"isDocumentUnique", "уникальность док-та", LM.and1, languageDocument, LM.is(), objDocument);
+            //dateStartVote = addJProp(baseGroup, "dateStartVote", "Дата начала", baseLM.and1, date, 1, is(vote), 1);
+            //LP isDocumentUnique = addJProp(baseGroup,"isDocumentUnique", "уникальность док-та", baseLM.and1, languageDocument, is(), objDocument);
 
             objDocument = addSingleGroupObject(8, "document", document, fileDocument);
             addPropertyDraw(nameDocument, objDocument).setSID("docName");
@@ -1682,7 +1684,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             addFixedFilter(new OrFilterEntity(new NotNullFilterEntity(addPropertyObject(inDocumentExpert, objDocument, objExpert)),
                                               new NotNullFilterEntity(addPropertyObject(inDefaultDocumentExpert, objDocument, objExpert))));
 
-            LM.addInlineEAForm(emailLetterExpertVoteEA, this, objExpert, 1, objVote, 2);
+            addInlineEAForm(emailLetterExpertVoteEA, this, objExpert, 1, objVote, 2);
         }
 
         @Override
@@ -1702,10 +1704,10 @@ public class SkolkovoLogicsModule extends LogicsModule {
         private ExpertAuthFormEntity(NavigatorElement parent, String sID) {
             super(parent, sID, "Аутентификация эксперта", true);
 
-            objExpert = addSingleGroupObject(1, "expert", expert, LM.userLogin, LM.userPassword, LM.name, documentNameExpert, isForeignExpert);
+            objExpert = addSingleGroupObject(1, "expert", expert, baseLM.userLogin, baseLM.userPassword, baseLM.name, documentNameExpert, isForeignExpert);
             objExpert.groupTo.initClassView = ClassViewType.PANEL;
 
-            LM.addInlineEAForm(emailAuthExpertEA, this, objExpert, 1);
+            addInlineEAForm(emailAuthExpertEA, this, objExpert, 1);
         }
 
         @Override
@@ -1724,19 +1726,19 @@ public class SkolkovoLogicsModule extends LogicsModule {
         private VoteStartFormEntity(NavigatorElement parent, String sID) {
             super(parent, sID, "Созыв заседания", true);
 
-            objVote = addSingleGroupObject(1, "vote", vote, LM.date, dateProjectVote, nameNativeClaimerVote, nameNativeProjectVote, nameAblateClaimerVote, prevDateStartVote, prevDateVote);
+            objVote = addSingleGroupObject(1, "vote", vote, baseLM.date, dateProjectVote, nameNativeClaimerVote, nameNativeProjectVote, nameAblateClaimerVote, prevDateStartVote, prevDateVote);
             objVote.groupTo.initClassView = ClassViewType.PANEL;
 
-            objExpert = addSingleGroupObject(2, "expert", expert, LM.userLastName, LM.userFirstName, documentNameExpert);
+            objExpert = addSingleGroupObject(2, "expert", expert, baseLM.userLastName, baseLM.userFirstName, documentNameExpert);
             addPropertyDraw(numberNewExpertVote, objExpert, objVote);
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(inNewExpertVote, objExpert, objVote)));
 
-            objOldExpert = addSingleGroupObject(3, "oldexpert", expert, LM.userLastName, LM.userFirstName, documentNameExpert);
+            objOldExpert = addSingleGroupObject(3, "oldexpert", expert, baseLM.userLastName, baseLM.userFirstName, documentNameExpert);
             addPropertyDraw(numberOldExpertVote, objOldExpert, objVote);
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(inOldExpertVote, objOldExpert, objVote)));
 
-            LM.addAttachEAForm(emailStartVoteEA, this, EmailActionProperty.Format.PDF, objVote, 1);
-            LM.addAttachEAForm(emailClosedVoteEA, this, EmailActionProperty.Format.PDF, emailStartHeaderVote, objVote, 1);
+            addAttachEAForm(emailStartVoteEA, this, EmailActionProperty.Format.PDF, objVote, 1);
+            addAttachEAForm(emailClosedVoteEA, this, EmailActionProperty.Format.PDF, emailStartHeaderVote, objVote, 1);
         }
 
         @Override
@@ -1759,12 +1761,12 @@ public class SkolkovoLogicsModule extends LogicsModule {
         private VoteProtocolFormEntity(NavigatorElement parent, String sID) {
             super(parent, sID, "Протокол заседания", true);
 
-            objVote = addSingleGroupObject(1, "vote", vote, dateProjectVote, LM.date, dateEndVote, nameNativeProjectVote, nameNativeClaimerVote, nameNativeClusterVote, quantityRepliedVote, quantityDoneVote, quantityRefusedVote, quantityConnectedVote, succeededVote, quantityInClusterVote, acceptedInClusterVote, quantityInnovativeVote, acceptedInnovativeVote, quantityForeignVote, acceptedForeignVote, nameStatusProjectVote, prevDateStartVote, prevDateVote, quantityDoneOldVote);
+            objVote = addSingleGroupObject(1, "vote", vote, dateProjectVote, baseLM.date, dateEndVote, nameNativeProjectVote, nameNativeClaimerVote, nameNativeClusterVote, quantityRepliedVote, quantityDoneVote, quantityRefusedVote, quantityConnectedVote, succeededVote, quantityInClusterVote, acceptedInClusterVote, quantityInnovativeVote, acceptedInnovativeVote, quantityForeignVote, acceptedForeignVote, nameStatusProjectVote, prevDateStartVote, prevDateVote, quantityDoneOldVote);
             objVote.groupTo.initClassView = ClassViewType.PANEL;
 
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(closedVote, objVote)));
 
-            objExpert = addSingleGroupObject(12, "expert", expert, LM.userFirstName, LM.userLastName, documentNameExpert);
+            objExpert = addSingleGroupObject(12, "expert", expert, baseLM.userFirstName, baseLM.userLastName, documentNameExpert);
 
             addPropertyDraw(voteResultGroup, true, objExpert, objVote);
 
@@ -1773,8 +1775,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
             addFixedFilter(new OrFilterEntity(new NotNullFilterEntity(addPropertyObject(doneExpertVote, objExpert, objVote)),
                                               new NotNullFilterEntity(addPropertyObject(connectedExpertVote, objExpert, objVote))));
 
-            LM.addAttachEAForm(emailProtocolVoteEA, this, EmailActionProperty.Format.PDF, objVote, 1);
-            LM.addAttachEAForm(emailClosedVoteEA, this, EmailActionProperty.Format.PDF, emailProtocolHeaderVote, objVote, 1);
+            addAttachEAForm(emailProtocolVoteEA, this, EmailActionProperty.Format.PDF, objVote, 1);
+            addAttachEAForm(emailClosedVoteEA, this, EmailActionProperty.Format.PDF, emailProtocolHeaderVote, objVote, 1);
         }
 
         @Override
@@ -1810,22 +1812,22 @@ public class SkolkovoLogicsModule extends LogicsModule {
             addGroup(gobjDates);
             gobjDates.setSingleClassView(ClassViewType.PANEL);
 
-            addPropertyDraw(objDateFrom, LM.objectValue);
-            getPropertyDraw(LM.objectValue, objDateFrom).setSID("dateFrom");
+            addPropertyDraw(objDateFrom, baseLM.objectValue);
+            getPropertyDraw(baseLM.objectValue, objDateFrom).setSID("dateFrom");
 
             // так делать неправильно в общем случае, поскольку getPropertyDraw ищет по groupObject, а не object
 
-            addPropertyDraw(objDateTo, LM.objectValue);
-            getPropertyDraw(LM.objectValue, objDateTo).setSID("dateTo");
+            addPropertyDraw(objDateTo, baseLM.objectValue);
+            getPropertyDraw(baseLM.objectValue, objDateTo).setSID("dateTo");
 
-            objExpert = addSingleGroupObject(4, "expert", expert, LM.userFirstName, LM.userLastName, documentNameExpert, nameNativeClusterExpert);
+            objExpert = addSingleGroupObject(4, "expert", expert, baseLM.userFirstName, baseLM.userLastName, documentNameExpert, nameNativeClusterExpert);
             objExpert.groupTo.initClassView = ClassViewType.PANEL;
 
             addPropertyDraw(objExpert, objDateFrom, objDateTo, quantityDoneExpertDateFromDateTo, quantityInExpertDateFromDateTo);
 
             objVoteHeader = addSingleGroupObject(5, "voteHeader", vote);
 
-            objVote = addSingleGroupObject(6, "vote", vote, dateProjectVote, LM.date, dateEndVote, nameNativeProjectVote, nameNativeClaimerVote, nameNativeClusterVote);
+            objVote = addSingleGroupObject(6, "vote", vote, dateProjectVote, baseLM.date, dateEndVote, nameNativeProjectVote, nameNativeClaimerVote, nameNativeClusterVote);
 
             addPropertyDraw(nameNativeClaimerVote, objVoteHeader).setSID("nameNativeClaimerVoteHeader");
             addPropertyDraw(nameNativeProjectVote, objVoteHeader);
@@ -1871,7 +1873,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(succeededVote, objVote)));
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(acceptedVote, objVote)));
 
-            LM.addAttachEAForm(emailClosedVoteEA, this, EmailActionProperty.Format.PDF, emailClaimerAcceptedHeaderVote, objVote, 1);
+            addAttachEAForm(emailClosedVoteEA, this, EmailActionProperty.Format.PDF, emailClaimerAcceptedHeaderVote, objVote, 1);
         }
     }
 
@@ -1888,7 +1890,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(succeededVote, objVote)));
             addFixedFilter(new NotFilterEntity(new NotNullFilterEntity(addPropertyObject(acceptedVote, objVote))));
 
-            LM.addAttachEAForm(emailClosedVoteEA, this, EmailActionProperty.Format.PDF, emailClaimerRejectedHeaderVote, objVote, 1);
+            addAttachEAForm(emailClosedVoteEA, this, EmailActionProperty.Format.PDF, emailClaimerRejectedHeaderVote, objVote, 1);
         }
     }
 
@@ -1899,12 +1901,12 @@ public class SkolkovoLogicsModule extends LogicsModule {
         private ClaimerStatusFormEntity(NavigatorElement parent, String sID) {
             super(parent, sID, "Решение о присвоении статуса участника", true);
 
-            objProject = addSingleGroupObject(genID(), "project", project, "Проект", LM.date, nameNativeProject, nameNativeClaimerProject, nameAblateClaimerProject, nameDativusClaimerProject, nameGenitiveClaimerProject);
+            objProject = addSingleGroupObject(genID(), "project", project, "Проект", baseLM.date, nameNativeProject, nameNativeClaimerProject, nameAblateClaimerProject, nameDativusClaimerProject, nameGenitiveClaimerProject);
             objProject.groupTo.initClassView = ClassViewType.PANEL;
 
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(acceptedProject, objProject)));
 
-            LM.addAttachEAForm(emailAcceptedProjectEA, this, EmailActionProperty.Format.PDF, emailClaimerAcceptedHeaderProject, objProject, 1);
+            addAttachEAForm(emailAcceptedProjectEA, this, EmailActionProperty.Format.PDF, emailClaimerAcceptedHeaderProject, objProject, 1);
         }
     }
     
@@ -1914,7 +1916,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         private final ClassPropertyInterface documentTemplateInterface;
 
         public GenerateDocumentsActionProperty() {
-            super(LM.genSID(), "Сгенерировать документы", new ValueClass[]{project, documentTemplate});
+            super(genSID(), "Сгенерировать документы", new ValueClass[]{project, documentTemplate});
 
             Iterator<ClassPropertyInterface> i = interfaces.iterator();
             projectInterface = i.next();
@@ -1944,7 +1946,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         private final ClassPropertyInterface projectInterface;
 
         public GenerateVoteActionProperty() {
-            super(LM.genSID(), "Сгенерировать заседание", new ValueClass[]{project});
+            super(genSID(), "Сгенерировать заседание", new ValueClass[]{project});
 
             Iterator<ClassPropertyInterface> i = interfaces.iterator();
             projectInterface = i.next();
@@ -1959,7 +1961,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             query.properties.put("vote", voteProjectExpert.getExpr(modifier, projectObject.getExpr(), query.mapKeys.get("key")));
 
             Map<DataObject, DataObject> previousResults = new HashMap<DataObject, DataObject>();
-            for (Map.Entry<Map<String, DataObject>, Map<String, ObjectValue>> row : query.executeClasses(session.sql, session.env, LM.baseClass).entrySet()) {
+            for (Map.Entry<Map<String, DataObject>, Map<String, ObjectValue>> row : query.executeClasses(session.sql, session.env, baseClass).entrySet()) {
                 previousResults.put(row.getKey().get("key"), (DataObject) row.getValue().get("vote"));
             }
 
@@ -1974,7 +1976,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             // получаем два списка - один, которые уже назначались на проект, другой - которые нет
             java.util.List<DataObject> expertNew = new ArrayList<DataObject>();
             java.util.List<DataObject> expertVoted = new ArrayList<DataObject>();
-            for (Map.Entry<Map<String, DataObject>, Map<String, ObjectValue>> row : query.executeClasses(session.sql, session.env, LM.baseClass).entrySet()) {
+            for (Map.Entry<Map<String, DataObject>, Map<String, ObjectValue>> row : query.executeClasses(session.sql, session.env, baseClass).entrySet()) {
                 if (row.getValue().get("in").getValue() != null) // эксперт уже голосовал
                     expertVoted.add(row.getKey().get("key"));
                 else
@@ -2029,7 +2031,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         private final ClassPropertyInterface voteInterface;
 
         public CopyResultsActionProperty() {
-            super(LM.genSID(), "Скопировать результаты из предыдущего заседания", new ValueClass[]{vote});
+            super(genSID(), "Скопировать результаты из предыдущего заседания", new ValueClass[]{vote});
 
             Iterator<ClassPropertyInterface> i = interfaces.iterator();
             voteInterface = i.next();
@@ -2052,7 +2054,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             java.sql.Date datePrev = null;
             DataObject votePrevObject = null;
 
-            for (Map.Entry<Map<String, DataObject>, Map<String, ObjectValue>> row : voteQuery.executeClasses(session.sql, session.env, LM.baseClass).entrySet()) {
+            for (Map.Entry<Map<String, DataObject>, Map<String, ObjectValue>> row : voteQuery.executeClasses(session.sql, session.env, baseClass).entrySet()) {
                 java.sql.Date dateCur = (java.sql.Date) row.getValue().get("dateStartVote").getValue();
                 if (dateCur != null && dateCur.getTime() < dateStart.getTime() && (datePrev == null || dateCur.getTime() > datePrev.getTime())) {
                     datePrev = dateCur;
@@ -2067,7 +2069,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 //            query.properties.put("expert", object(expert).getExpr(session.modifier, query.mapKeys.get("key")));
 
             Set<DataObject> experts = new HashSet<DataObject>();
-            for (Map.Entry<Map<String, DataObject>, Map<String, ObjectValue>> row : query.executeClasses(session.sql, session.env, LM.baseClass).entrySet()) {
+            for (Map.Entry<Map<String, DataObject>, Map<String, ObjectValue>> row : query.executeClasses(session.sql, session.env, baseClass).entrySet()) {
                 experts.add(row.getKey().get("key"));
             }
 
