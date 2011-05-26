@@ -8,6 +8,9 @@ import platform.server.integration.*;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
 import platform.server.logics.property.ClassPropertyInterface;
+import platform.server.session.Changes;
+import platform.server.session.DataSession;
+import platform.server.session.Modifier;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStreamReader;
@@ -29,7 +32,7 @@ public class MexxImportArticleInfoInvoiceActionProperty extends BaseImportAction
     }
 
     @Override
-    public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects) throws SQLException {
+    public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, DataSession session, Modifier<? extends Changes> modifier, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects, boolean groupLast) throws SQLException {
         ImportField sidField = new ImportField(LM.sidArticle);
         ImportField countryField = new ImportField(LM.LM.name);
         ImportField compositionField = new ImportField(LM.mainCompositionOriginArticle);
@@ -59,7 +62,7 @@ public class MexxImportArticleInfoInvoiceActionProperty extends BaseImportAction
                     10, countryField, compositionField).getTable();
 
             ImportKey<?>[] keysArray = {articleKey, countryKey};
-            new IntegrationService(executeForm.form.session, table, Arrays.asList(keysArray), properties).synchronize(true, true, false);
+            new IntegrationService(session, table, Arrays.asList(keysArray), properties).synchronize(true, true, false);
 
             actions.add(new MessageClientAction("Данные были успешно приняты", "Импорт"));
         } catch (Exception e) {

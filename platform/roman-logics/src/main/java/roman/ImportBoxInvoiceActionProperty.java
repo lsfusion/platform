@@ -11,7 +11,9 @@ import platform.server.integration.*;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
 import platform.server.logics.property.ClassPropertyInterface;
+import platform.server.session.Changes;
 import platform.server.session.DataSession;
+import platform.server.session.Modifier;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -67,10 +69,8 @@ public abstract class ImportBoxInvoiceActionProperty extends BaseImportActionPro
         RRPField = new ImportField(LM.RRPDocumentArticle);
     }
 
-    public void execute(final Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects) throws SQLException {
+    public void execute(final Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, DataSession session, Modifier<? extends Changes> modifier, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects, boolean groupLast) throws SQLException {
         DataObject supplier = keys.get(supplierInterface);
-        FormInstance remoteForm = executeForm.form;
-        DataSession session = remoteForm.session;
 
         initFields();
 

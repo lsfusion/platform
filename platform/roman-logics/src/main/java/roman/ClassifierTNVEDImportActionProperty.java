@@ -16,7 +16,9 @@ import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
 import platform.server.logics.property.ActionProperty;
 import platform.server.logics.property.ClassPropertyInterface;
+import platform.server.session.Changes;
 import platform.server.session.DataSession;
+import platform.server.session.Modifier;
 
 import java.io.File;
 import java.io.IOException;
@@ -33,8 +35,8 @@ public class ClassifierTNVEDImportActionProperty extends ActionProperty {
         this.importType = importType;
     }
 
-    public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, List<ClientAction> actions,
-                        RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects) {
+    public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, DataSession session, Modifier<? extends Changes> modifier, List<ClientAction> actions,
+                        RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects, boolean groupLast) {
         try {
             TnvedImporter importer = new TnvedImporter(executeForm, value);
             importer.doImport();

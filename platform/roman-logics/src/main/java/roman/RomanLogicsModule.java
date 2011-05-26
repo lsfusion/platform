@@ -30,7 +30,9 @@ import platform.server.logics.linear.LP;
 import platform.server.logics.property.ActionProperty;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.group.AbstractGroup;
+import platform.server.session.Changes;
 import platform.server.session.DataSession;
+import platform.server.session.Modifier;
 
 import javax.swing.*;
 import java.awt.*;
@@ -39,6 +41,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.List;
 
 /**
  * Created by IntelliJ IDEA.
@@ -4543,9 +4546,8 @@ public class RomanLogicsModule extends LogicsModule {
         }
 
         @Override
-        public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, java.util.List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects) throws SQLException {
+        public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, DataSession session, Modifier<? extends Changes> modifier, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects, boolean groupLast) throws SQLException {
             FormInstance<?> form = (FormInstance<?>)executeForm.form;
-            DataSession session = form.session;
 
             DataObject objShipment = keys.get(shipmentInterface);
             DataObject objSku = keys.get(skuInterface);
@@ -4553,19 +4555,19 @@ public class RomanLogicsModule extends LogicsModule {
             DataObject objRouteRB = route.getDataObject("rb");
             DataObject objRouteRF = route.getDataObject("rf");
 
-            Double invoiced = (Double) invoicedShipmentSku.read(session, objShipment, objSku);
+            Double invoiced = (Double) invoicedShipmentSku.read(session, modifier, objShipment, objSku);
 
             DataObject objRouteResult;
             if (invoiced == null) {
-                Double percentRF = (Double)percentShipmentRouteSku.read(session, objShipment, objRouteRF, objSku);
+                Double percentRF = (Double)percentShipmentRouteSku.read(session, modifier, objShipment, objRouteRF, objSku);
                 objRouteResult = (percentRF != null && percentRF > 1E-9) ? objRouteRF : objRouteRB;
             } else {
 
-                Double invoicedRB = (Double) BaseUtils.nvl(invoicedShipmentRouteSku.read(session, objShipment, objRouteRB, objSku), 0.0);
-                Double quantityRB = (Double)BaseUtils.nvl(quantityShipmentRouteSku.read(session, objShipment, objRouteRB, objSku), 0.0);
+                Double invoicedRB = (Double) BaseUtils.nvl(invoicedShipmentRouteSku.read(session, modifier, objShipment, objRouteRB, objSku), 0.0);
+                Double quantityRB = (Double)BaseUtils.nvl(quantityShipmentRouteSku.read(session, modifier, objShipment, objRouteRB, objSku), 0.0);
 
-                Double invoicedRF = (Double)BaseUtils.nvl(invoicedShipmentRouteSku.read(session, objShipment, objRouteRF, objSku), 0.0);
-                Double quantityRF = (Double)BaseUtils.nvl(quantityShipmentRouteSku.read(session, objShipment, objRouteRF, objSku), 0.0);
+                Double invoicedRF = (Double)BaseUtils.nvl(invoicedShipmentRouteSku.read(session, modifier, objShipment, objRouteRF, objSku), 0.0);
+                Double quantityRF = (Double)BaseUtils.nvl(quantityShipmentRouteSku.read(session, modifier, objShipment, objRouteRF, objSku), 0.0);
 
                 if (quantityRB + 1E-9 < invoicedRB) {
                     objRouteResult = objRouteRB;

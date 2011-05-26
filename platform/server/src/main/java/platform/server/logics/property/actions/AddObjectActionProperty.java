@@ -16,7 +16,9 @@ import platform.server.logics.ObjectValue;
 import platform.server.logics.property.ActionProperty;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.Property;
+import platform.server.session.Changes;
 import platform.server.session.DataSession;
+import platform.server.session.Modifier;
 
 import javax.swing.*;
 import java.sql.SQLException;
@@ -77,9 +79,8 @@ public class AddObjectActionProperty extends ActionProperty {
         return "getAddObjectAction(" + valueClass.getSID() + ")";
     }
 
-    public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects) throws SQLException {
+    public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, DataSession session, Modifier<? extends Changes> modifier, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects, boolean groupLast) throws SQLException {
         FormInstance<?> form = (FormInstance<?>) executeForm.form;
-        DataSession session = form.session;
 
         Integer quantityAdd = 1;
         // пока привязываемся к тому, что interfaces будет выдавать все в правильном порядке
@@ -105,7 +106,7 @@ public class AddObjectActionProperty extends ActionProperty {
 
                 String prefix = null;
                 if (barcodePrefix != null)
-                    prefix = (String) barcodePrefix.read(session, form);
+                    prefix = (String) barcodePrefix.read(session, modifier);
                 if (prefix == null) prefix = "";
                 prefix = prefix.trim();
 
@@ -123,7 +124,7 @@ public class AddObjectActionProperty extends ActionProperty {
                 int checkDigit = (evenSum * 3 + oddSum) % 10 == 0 ? 0 : 10 - (evenSum * 3 + oddSum) % 10;
 
                 barcode.execute(Collections.singletonMap(BaseUtils.single(barcode.interfaces), object), session,
-                        barcode12 + checkDigit, form);
+                        barcode12 + checkDigit, modifier);
             }
 
             // меняем все свойства на значения входов
@@ -138,13 +139,13 @@ public class AddObjectActionProperty extends ActionProperty {
                     }
                     Property property = properties.get(i++);
                     property.execute(Collections.singletonMap(BaseUtils.single(property.interfaces), object),
-                            session, keys.get(classInterface).getValue(), form);
+                            session, keys.get(classInterface).getValue(), modifier);
                 }
             }
 
             if (propertyValue != null) {
                 propertyValue.execute(Collections.singletonMap(BaseUtils.single(propertyValue.interfaces), object),
-                        session, values.get(k), form);
+                        session, values.get(k), modifier);
             }
         }
     }

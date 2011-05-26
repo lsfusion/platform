@@ -10,7 +10,9 @@ import platform.server.logics.linear.LP;
 import platform.server.logics.property.ActionProperty;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.PropertyInterface;
+import platform.server.session.Changes;
 import platform.server.session.DataSession;
+import platform.server.session.Modifier;
 
 import java.sql.SQLException;
 import java.util.HashMap;
@@ -62,10 +64,7 @@ public class ExecutePropertiesActionProperty extends ActionProperty {
     }
 
     @Override
-    public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects) throws SQLException {
-        FormInstance<?> form = (FormInstance<?>) executeForm.form;
-        DataSession session = form.session;
-
+    public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, DataSession session, Modifier<? extends Changes> modifier, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects, boolean groupLast) throws SQLException {
         for (int i = 0; i < dataProperties.length; ++i) {
             LP dataProperty = dataProperties[i];
             Map<?, ClassPropertyInterface> mapPropInterfaces = mapInterfaces[i];

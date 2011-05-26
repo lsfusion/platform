@@ -38,7 +38,9 @@ import platform.server.logics.property.derived.*;
 import platform.server.logics.scheduler.Scheduler;
 import platform.server.logics.table.ImplementTable;
 import platform.server.serialization.ServerSerializationPool;
+import platform.server.session.Changes;
 import platform.server.session.DataSession;
+import platform.server.session.Modifier;
 import platform.server.session.PropertyChange;
 
 import java.io.*;
@@ -1379,7 +1381,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             super(sID, caption, new ValueClass[]{});
         }
 
-        public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects) throws SQLException {
+        public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, DataSession session, Modifier<? extends Changes> modifier, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects, boolean groupLast) throws SQLException {
             getRestartController().initRestart();
             updateRestartProperty();
         }
@@ -1390,7 +1392,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             super(sID, caption, new ValueClass[]{});
         }
 
-        public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects) throws SQLException {
+        public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, DataSession session, Modifier<? extends Changes> modifier, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects, boolean groupLast) throws SQLException {
             getRestartController().cancelRestart();
             updateRestartProperty();
         }

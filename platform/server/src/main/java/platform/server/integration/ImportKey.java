@@ -58,7 +58,7 @@ public class ImportKey <P extends PropertyInterface> implements ImportKeyInterfa
     }
 
     Object readValue(DataSession session, ImportTable.Row row) throws SQLException {
-        return getProperty().read(session.sql, mapObjects(row), session.modifier, session.env);
+        return getProperty().read(session, mapObjects(row));
     }
 
     void writeValue(DataSession session, ImportTable.Row row, DataObject obj) throws SQLException {

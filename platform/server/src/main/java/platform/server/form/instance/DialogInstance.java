@@ -58,7 +58,7 @@ public class DialogInstance<T extends BusinessLogics<T>> extends FormInstance<T>
             if (initFilterPropertyDraw != null) {
                 PropertyObjectInstance filterInstance = instanceFactory.getInstance(initFilterPropertyDraw.propertyObject);
                 if (filterInstance != null) {
-                    return filterInstance.read(session.sql, this, session.env);
+                    return read(filterInstance);
                 }
             }
             return getDialogValue();

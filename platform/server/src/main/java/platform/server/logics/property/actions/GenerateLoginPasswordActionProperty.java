@@ -11,7 +11,9 @@ import platform.server.logics.linear.LP;
 import platform.server.logics.property.ActionProperty;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.Property;
+import platform.server.session.Changes;
 import platform.server.session.DataSession;
+import platform.server.session.Modifier;
 
 import java.sql.SQLException;
 import java.util.*;
@@ -35,15 +37,10 @@ public class GenerateLoginPasswordActionProperty extends ActionProperty {
         customUserInterface = i.next();
     }
 
-    public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects) throws SQLException {
-        throw new RuntimeException("no need");
-    }
-
-    @Override
-    public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, DataSession session, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects, boolean groupLast) throws SQLException {
+    public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, DataSession session, Modifier<? extends Changes> modifier, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects, boolean groupLast) throws SQLException {
         DataObject userObject = keys.get(customUserInterface);
 
-        String currentEmail = (String) email.read(session, userObject);
+        String currentEmail = (String) email.read(session, modifier, userObject);
 
         String login;
         int indexMail;
@@ -58,9 +55,9 @@ public class GenerateLoginPasswordActionProperty extends ActionProperty {
         for(int i=0;i<8;i++)
             password += chars.charAt(rand.nextInt(chars.length()));
 
-        if (userLogin.read(session, userObject) == null)
-            userLogin.execute(login, session, userObject);
-        userPassword.execute(password, session, userObject);
+        if (userLogin.read(session, modifier, userObject) == null)
+            userLogin.execute(login, session, modifier, userObject);
+        userPassword.execute(password, session, modifier, userObject);
     }
 
     @Override

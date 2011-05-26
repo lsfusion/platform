@@ -36,7 +36,9 @@ import platform.server.logics.linear.LP;
 import platform.server.logics.property.ActionProperty;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.group.AbstractGroup;
+import platform.server.session.Changes;
 import platform.server.session.DataSession;
+import platform.server.session.Modifier;
 import tmc.integration.exp.AbstractSaleExportTask;
 import tmc.integration.exp.CashRegController;
 import tmc.integration.exp.SaleExportTask;
@@ -51,6 +53,7 @@ import java.io.FileNotFoundException;
 import java.sql.SQLException;
 import java.text.ParseException;
 import java.util.*;
+import java.util.List;
 
 /**
  * User: DAle
@@ -4185,15 +4188,12 @@ public class VEDLogicsModule extends LogicsModule {
             askConfirm = true;
         }
 
-        public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, java.util.List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects) throws SQLException {
+        public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, DataSession session, Modifier<? extends Changes> modifier, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects, boolean groupLast) throws SQLException {
             //To change body of implemented methods use File | Settings | File Templates.
-            FormInstance<?> remoteForm = executeForm.form;
-            DataSession session = remoteForm.session;
-
             DataObject document = BaseUtils.singleValue(keys);
-            if(orderSalePayCash.read(session, document)==null && orderSalePayCard.read(session, document)==null) {
-                orderSalePayCash.execute(null, session, remoteForm, document);
-                orderSalePayCard.execute(sumWithDiscountObligationOrder.read(session.sql, remoteForm, session.env, document), session, remoteForm, document);
+            if(orderSalePayCash.read(session, modifier, document)==null && orderSalePayCard.read(session, modifier, document)==null) {
+                orderSalePayCash.execute(null, session, modifier, document);
+                orderSalePayCard.execute(sumWithDiscountObligationOrder.read(session, modifier, document), session, modifier, document);
 
                 actions.add(new ApplyClientAction());
             } else
@@ -4213,7 +4213,7 @@ public class VEDLogicsModule extends LogicsModule {
             super(LM.genSID(), "Печать", new ValueClass[]{orderSaleRetail});
         }
 
-        public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, java.util.List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects) throws SQLException {
+        public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, DataSession session, Modifier<? extends Changes> modifier, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects, boolean groupLast) throws SQLException {
             //To change body of implemented methods use File | Settings | File Templates.
             FormInstance<VEDBusinessLogics> remoteForm = executeForm.form;
             actions.add(((CommitSaleCheckRetailFormEntity) remoteForm.entity).getPrintOrderAction(remoteForm));
@@ -4241,7 +4241,7 @@ public class VEDLogicsModule extends LogicsModule {
             dateTo = i.next();
         }
 
-        public void execute(final Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, java.util.List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects) throws SQLException {
+        public void execute(final Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, DataSession session, Modifier<? extends Changes> modifier, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects, boolean groupLast) throws SQLException {
             Integer shopID = (Integer) keys.get(shopInterface).object;
             try {
                 new AbstractSaleExportTask(VEDBL, ((SaleExportTask) VEDBL.getScheduler().getTask("saleExport")).getPath(shopID), shopID) {
@@ -4315,10 +4315,8 @@ public class VEDLogicsModule extends LogicsModule {
             documentInterface = i.next();
         }
 
-        public void execute(final Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, java.util.List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects) throws SQLException {
+        public void execute(final Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, DataSession session, Modifier<? extends Changes> modifier, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects, boolean groupLast) throws SQLException {
             DataObject document = keys.get(documentInterface);
-            FormInstance remoteForm = executeForm.form;
-            DataSession session = remoteForm.session;
 
             Sheet sh;
             try {
@@ -4384,10 +4382,7 @@ public class VEDLogicsModule extends LogicsModule {
             super(LM.genSID(), "Импортировать RRP");
         }
 
-        public void execute(final Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, java.util.List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects) throws SQLException {
-            FormInstance remoteForm = executeForm.form;
-            DataSession session = remoteForm.session;
-
+        public void execute(final Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, DataSession session, Modifier<? extends Changes> modifier, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects, boolean groupLast) throws SQLException {
             Sheet sh;
             try {
                 ByteArrayInputStream inFile = new ByteArrayInputStream((byte[]) value.getValue());
@@ -4442,10 +4437,7 @@ public class VEDLogicsModule extends LogicsModule {
             super(LM.genSID(), "Импортировать справочн.");
         }
 
-        public void execute(final Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, java.util.List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects) throws SQLException {
-            FormInstance remoteForm = executeForm.form;
-            DataSession session = remoteForm.session;
-
+        public void execute(final Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, DataSession session, Modifier<? extends Changes> modifier, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects, boolean groupLast) throws SQLException {
             Sheet sh;
             try {
                 ByteArrayInputStream inFile = new ByteArrayInputStream((byte[]) value.getValue());
@@ -4506,10 +4498,7 @@ public class VEDLogicsModule extends LogicsModule {
             super(LM.genSID(), "Импортировать док.", new ValueClass[]{shop});
         }
 
-        public void execute(final Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, java.util.List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects) throws SQLException {
-            FormInstance remoteForm = executeForm.form;
-            DataSession session = remoteForm.session;
-
+        public void execute(final Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, DataSession session, Modifier<? extends Changes> modifier, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects, boolean groupLast) throws SQLException {
             DataObject storeObject = BaseUtils.singleValue(keys);
 
             Sheet sh;
@@ -4583,16 +4572,13 @@ public class VEDLogicsModule extends LogicsModule {
             super(LM.genSID(), "Обнулить остатки", new ValueClass[]{order});
         }
 
-        public void execute(final Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, java.util.List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects) throws SQLException {
-            FormInstance remoteForm = executeForm.form;
-            DataSession session = remoteForm.session;
-
+        public void execute(final Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, DataSession session, Modifier<? extends Changes> modifier, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects, boolean groupLast) throws SQLException {
             DataObject documentObject = BaseUtils.singleValue(keys);
 
             // сколько в документе, сколько на остатках, уменьшаем на разницу
             KeyExpr docKey = new KeyExpr("doc"); KeyExpr articleKey = new KeyExpr("article");
-            Expr newQuantity = articleQuantity.getExpr(remoteForm, documentObject.getExpr(), articleKey).sum(freeIncOrderArticle.getExpr(remoteForm, documentObject.getExpr(), articleKey).scale(-1));
-            session.execute(articleQuantity.getDataChanges(newQuantity, newQuantity.getWhere().and(docKey.compare(documentObject, Compare.EQUALS)), remoteForm, docKey, articleKey), null, null);
+            Expr newQuantity = articleQuantity.getExpr(modifier, documentObject.getExpr(), articleKey).sum(freeIncOrderArticle.getExpr(modifier, documentObject.getExpr(), articleKey).scale(-1));
+            session.execute(articleQuantity.getDataChanges(newQuantity, newQuantity.getWhere().and(docKey.compare(documentObject, Compare.EQUALS)), modifier, docKey, articleKey), null, null);
 
             actions.add(new MessageClientAction("Остатки были успешно обнулены", "Обнуление остатков"));
         }

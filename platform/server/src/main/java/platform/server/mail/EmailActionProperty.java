@@ -29,6 +29,7 @@ import platform.server.logics.property.ActionProperty;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.PropertyInterface;
 import platform.server.logics.property.PropertyMapImplement;
+import platform.server.session.Changes;
 import platform.server.session.DataSession;
 import platform.server.session.Modifier;
 
@@ -109,10 +110,6 @@ public class EmailActionProperty extends ActionProperty {
         attachmentNames.add(attachmentName);
     }
 
-    public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapExecuteObjects) {
-        throw new RuntimeException("should not be");
-    }
-
     private static JRAbstractExporter createExporter(Format format) {
         JRAbstractExporter exporter;
         switch (format) {
@@ -149,8 +146,7 @@ public class EmailActionProperty extends ActionProperty {
         }
     }
 
-    @Override
-    public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, DataSession session, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapExecuteObjects, boolean groupLast) throws SQLException {
+    public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, DataSession session, Modifier<? extends Changes> modifier, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapExecuteObjects, boolean groupLast) throws SQLException {
 
         try {
             if (BL.LM.disableEmail.read(session) != null) {
@@ -184,7 +180,7 @@ public class EmailActionProperty extends ActionProperty {
                             DataObject[] input = new DataObject[intSize];
                             for (int j = 0; j < intSize; j++)
                                 input[j] = keys.get(((List)interfaces).get(j));
-                            attachmentName = (String)attachmentProp.read(session, input);
+                            attachmentName = (String)attachmentProp.read(session, modifier, input);
                         }
                         if (attachmentName == null)
                             attachmentName = forms.get(i).caption;
@@ -193,8 +189,6 @@ public class EmailActionProperty extends ActionProperty {
                     }
                 }
             }
-
-            Modifier<?> modifier = executeForm!=null? executeForm.form :session.modifier;
 
             Map<String, Message.RecipientType> recepientEmails = new HashMap<String, Message.RecipientType>();
             for(PropertyMapImplement<?, ClassPropertyInterface> recepient : recepients) {
@@ -207,12 +201,12 @@ public class EmailActionProperty extends ActionProperty {
 
             String subject = (this.subject == null ? (String)keys.get(listInterfaces.get(listInterfaces.size()-1)).getValue() : this.subject);
 
-            String smtpHost = (String) BL.LM.smtpHost.read(session);
-            String smtpPort = (String) BL.LM.smtpPort.read(session);
-            String fromAddress = (String) BL.LM.fromAddress.read(session);
-            String userName = (String) BL.LM.emailAccount.read(session);
-            String password = (String) BL.LM.emailPassword.read(session);
-            String emailBlindCarbonCopy = (String) BL.LM.emailBlindCarbonCopy.read(session);
+            String smtpHost = (String) BL.LM.smtpHost.read(session, modifier);
+            String smtpPort = (String) BL.LM.smtpPort.read(session, modifier);
+            String fromAddress = (String) BL.LM.fromAddress.read(session, modifier);
+            String userName = (String) BL.LM.emailAccount.read(session, modifier);
+            String password = (String) BL.LM.emailPassword.read(session, modifier);
+            String emailBlindCarbonCopy = (String) BL.LM.emailBlindCarbonCopy.read(session, modifier);
             if (emailBlindCarbonCopy != null && !emailBlindCarbonCopy.isEmpty()) {
                 recepientEmails.put(emailBlindCarbonCopy, MimeMessage.RecipientType.BCC);
             }

@@ -32,7 +32,9 @@ import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.Property;
 import platform.server.logics.property.group.AbstractGroup;
 import platform.server.mail.EmailActionProperty;
+import platform.server.session.Changes;
 import platform.server.session.DataSession;
+import platform.server.session.Modifier;
 
 import javax.swing.*;
 import java.awt.*;
@@ -1919,26 +1921,20 @@ public class SkolkovoLogicsModule extends LogicsModule {
             documentTemplateInterface = i.next();
         }
 
-        @Override
-        public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, java.util.List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects) throws SQLException {
-            throw new RuntimeException("no need");
-        }
-
-        @Override
-        public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, DataSession session, java.util.List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects, boolean groupLast) throws SQLException {
+        public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, DataSession session, Modifier<? extends Changes> modifier, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects, boolean groupLast) throws SQLException {
             DataObject projectObject = keys.get(projectInterface);
             DataObject documentTemplateObject = keys.get(documentTemplateInterface);
 
             Query<String, String> query = new Query<String, String>(Collections.singleton("key"));
-            query.and(documentTemplateDocumentTemplateDetail.getExpr(session.modifier, query.mapKeys.get("key")).compare(documentTemplateObject.getExpr(), Compare.EQUALS));
-            query.properties.put("documentType", typeDocument.getExpr(session.modifier, query.mapKeys.get("key")));
-            query.properties.put("languageDocument", languageDocument.getExpr(session.modifier, query.mapKeys.get("key")));
+            query.and(documentTemplateDocumentTemplateDetail.getExpr(modifier, query.mapKeys.get("key")).compare(documentTemplateObject.getExpr(), Compare.EQUALS));
+            query.properties.put("documentType", typeDocument.getExpr(modifier, query.mapKeys.get("key")));
+            query.properties.put("languageDocument", languageDocument.getExpr(modifier, query.mapKeys.get("key")));
 
             for (Map<String, Object> row : query.execute(session.sql, session.env).values()) {
-                DataObject documentObject = session.addObject(document, session.modifier);
-                projectDocument.execute(projectObject.getValue(), session, documentObject);
-                typeDocument.execute(row.get("documentType"), session, documentObject);
-                languageDocument.execute(row.get("languageDocument"), session, documentObject);
+                DataObject documentObject = session.addObject(document, modifier);
+                projectDocument.execute(projectObject.getValue(), session, modifier, documentObject);
+                typeDocument.execute(row.get("documentType"), session, modifier, documentObject);
+                languageDocument.execute(row.get("languageDocument"), session, modifier, documentObject);
             }
         }
     }
@@ -1954,18 +1950,13 @@ public class SkolkovoLogicsModule extends LogicsModule {
             projectInterface = i.next();
         }
 
-        public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, java.util.List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects) throws SQLException {
-            throw new RuntimeException("no need");
-        }
-
-        @Override
-        public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, DataSession session, java.util.List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects, boolean groupLast) throws SQLException {
+        public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, DataSession session, Modifier<? extends Changes> modifier, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects, boolean groupLast) throws SQLException {
             DataObject projectObject = keys.get(projectInterface);
 
             // считываем всех экспертов, которые уже голосовали по проекту
             Query<String, String> query = new Query<String, String>(Collections.singleton("key"));
-            query.and(doneProjectExpert.getExpr(session.modifier, projectObject.getExpr(), query.mapKeys.get("key")).getWhere());
-            query.properties.put("vote", voteProjectExpert.getExpr(session.modifier, projectObject.getExpr(), query.mapKeys.get("key")));
+            query.and(doneProjectExpert.getExpr(modifier, projectObject.getExpr(), query.mapKeys.get("key")).getWhere());
+            query.properties.put("vote", voteProjectExpert.getExpr(modifier, projectObject.getExpr(), query.mapKeys.get("key")));
 
             Map<DataObject, DataObject> previousResults = new HashMap<DataObject, DataObject>();
             for (Map.Entry<Map<String, DataObject>, Map<String, ObjectValue>> row : query.executeClasses(session.sql, session.env, LM.baseClass).entrySet()) {
@@ -1974,11 +1965,11 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
             // считываем всех неголосовавших экспертов из этого кластера
             query = new Query<String, String>(Collections.singleton("key"));
-            query.and(clusterExpert.getExpr(session.modifier, query.mapKeys.get("key")).compare(clusterProject.getExpr(session.modifier, projectObject.getExpr()), Compare.EQUALS));
-            query.and(disableExpert.getExpr(session.modifier, query.mapKeys.get("key")).getWhere().not());
-            query.and(voteResultProjectExpert.getExpr(session.modifier, projectObject.getExpr(), query.mapKeys.get("key")).getWhere().not());
+            query.and(clusterExpert.getExpr(modifier, query.mapKeys.get("key")).compare(clusterProject.getExpr(modifier, projectObject.getExpr()), Compare.EQUALS));
+            query.and(disableExpert.getExpr(modifier, query.mapKeys.get("key")).getWhere().not());
+            query.and(voteResultProjectExpert.getExpr(modifier, projectObject.getExpr(), query.mapKeys.get("key")).getWhere().not());
 
-            query.properties.put("in", inProjectExpert.getExpr(session.modifier, projectObject.getExpr(), query.mapKeys.get("key")));
+            query.properties.put("in", inProjectExpert.getExpr(modifier, projectObject.getExpr(), query.mapKeys.get("key")));
 
             // получаем два списка - один, которые уже назначались на проект, другой - которые нет
             java.util.List<DataObject> expertNew = new ArrayList<DataObject>();
@@ -1990,7 +1981,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
                     expertNew.add(row.getKey().get("key"));
             }
 
-            Integer required = nvl((Integer) requiredQuantity.read(session), 0) - previousResults.size();
+            Integer required = nvl((Integer) requiredQuantity.read(session, modifier), 0) - previousResults.size();
             if (required > expertVoted.size() + expertNew.size()) {
                 actions.add(new MessageClientAction("Недостаточно экспертов по кластеру", "Генерация заседания"));
                 return;
@@ -1999,20 +1990,20 @@ public class SkolkovoLogicsModule extends LogicsModule {
             // создаем новое заседание
             DataObject voteObject;
             if (executeForm.form == null)
-                voteObject = session.addObject(vote, session.modifier);
+                voteObject = session.addObject(vote, modifier);
             else
                 voteObject = executeForm.form.addObject(vote);
-            projectVote.execute(projectObject.object, session, session.modifier, voteObject);
+            projectVote.execute(projectObject.object, session, modifier, voteObject);
 
             // копируем результаты старых заседаний
             for (Map.Entry<DataObject, DataObject> row : previousResults.entrySet()) {
-                inExpertVote.execute(true, session, row.getKey(), voteObject);
-                oldExpertVote.execute(true, session, row.getKey(), voteObject);
+                inExpertVote.execute(true, session, modifier, row.getKey(), voteObject);
+                oldExpertVote.execute(true, session, modifier, row.getKey(), voteObject);
                 LP[] copyProperties = new LP[] {dateExpertVote, voteResultExpertVote, inClusterExpertVote,
                                                 innovativeExpertVote, foreignExpertVote, innovativeCommentExpertVote,
                                                 competentExpertVote, completeExpertVote, completeCommentExpertVote};
                 for (LP property : copyProperties) {
-                    property.execute(property.read(session, row.getKey(), row.getValue()), session, row.getKey(), voteObject);
+                    property.execute(property.read(session, modifier, row.getKey(), row.getValue()), session, modifier, row.getKey(), voteObject);
                 }
             }
 
@@ -2020,9 +2011,9 @@ public class SkolkovoLogicsModule extends LogicsModule {
             Random rand = new Random();
             while (required > 0) {
                 if (!expertNew.isEmpty())
-                    inExpertVote.execute(true, session, expertNew.remove(rand.nextInt(expertNew.size())), voteObject);
+                    inExpertVote.execute(true, session, modifier, expertNew.remove(rand.nextInt(expertNew.size())), voteObject);
                 else
-                    inExpertVote.execute(true, session, expertVoted.remove(rand.nextInt(expertVoted.size())), voteObject);
+                    inExpertVote.execute(true, session, modifier, expertVoted.remove(rand.nextInt(expertVoted.size())), voteObject);
                 required--;
             }
         }

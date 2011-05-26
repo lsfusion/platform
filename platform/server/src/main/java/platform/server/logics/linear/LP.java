@@ -147,6 +147,10 @@ public class LP<T extends PropertyInterface> {
         return property.read(session, mapValues, modifier, env);
     }
 
+    public Object read(DataSession session, Modifier<? extends Changes> modifier, DataObject... objects) throws SQLException {
+        return read(session.sql, modifier, session.env, objects);
+    }
+
     public Object read(DataSession session, DataObject... objects) throws SQLException {
         return read(session.sql, session.modifier, session.env, objects);
     }

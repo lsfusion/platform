@@ -16,7 +16,9 @@ import platform.server.logics.property.ActionProperty;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.Property;
 import platform.server.logics.property.PropertyInterface;
+import platform.server.session.Changes;
 import platform.server.session.DataSession;
+import platform.server.session.Modifier;
 import platform.server.session.PropertyChange;
 
 import java.sql.SQLException;
@@ -70,9 +72,8 @@ public class GroupChangeActionProperty extends ActionProperty {
         }
     }
 
-    public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects) throws SQLException {
+    public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, DataSession session, Modifier<? extends Changes> modifier, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects, boolean groupLast) throws SQLException {
         FormInstance<?> form = (FormInstance<?>) executeForm.form;
-        DataSession session = form.session;
 
         Map<PropertyInterface, Expr> mainKeys = mainProperty.getMapKeys();
 
@@ -86,7 +87,7 @@ public class GroupChangeActionProperty extends ActionProperty {
             changeWhere = changeWhere.and(
                     groupInstance.getWhere(
                             filterKeys(crossJoin(join(mapMainToThis, mapObjects), mainKeys), groupInstance.objects),
-                            session.modifier));
+                            modifier));
         }
 
         Map<PropertyInterface, Expr> getterKeys = new HashMap<PropertyInterface, Expr>();
@@ -98,12 +99,12 @@ public class GroupChangeActionProperty extends ActionProperty {
             }
         }
 
-        Expr setExpr = getterProperty.getExpr(getterKeys, session.modifier);
+        Expr setExpr = getterProperty.getExpr(getterKeys, modifier);
 
         PropertyChange mainPropertyChange = new PropertyChange(mainKeys, setExpr, changeWhere);
 
         actions.addAll(
-                session.execute(mainProperty, mainPropertyChange, session.modifier, executeForm, join(mapMainToThis, mapObjects))
+                session.execute(mainProperty, mainPropertyChange, modifier, executeForm, join(mapMainToThis, mapObjects))
         );
     }
 }

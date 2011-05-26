@@ -11,6 +11,9 @@ import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
 import platform.server.logics.property.ActionProperty;
 import platform.server.logics.property.ClassPropertyInterface;
+import platform.server.session.Changes;
+import platform.server.session.DataSession;
+import platform.server.session.Modifier;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStreamReader;
@@ -28,7 +31,7 @@ public class HugoBossPricatCSVImportActionProperty extends ActionProperty {
     }
 
     @Override
-    public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects) throws SQLException {
+    public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, DataSession session, Modifier<? extends Changes> modifier, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects, boolean groupLast) throws SQLException {
         Iterator<ClassPropertyInterface> i = interfaces.iterator();
         ClassPropertyInterface supplierInterface = i.next();
         DataObject supplier = keys.get(supplierInterface);
@@ -65,7 +68,7 @@ public class HugoBossPricatCSVImportActionProperty extends ActionProperty {
                 ImportTable table = new HugoBossPricatCSVImporter(inputTable, new Object[] {null, articleField, null, colorCodeField,
                         5, barcodeField, sizeField, priceField, 15, compositionField, 21, customCategoryOriginalField, 28, colorField,
                         32, netWeightField}).getTable();
-                new IntegrationService(executeForm.form.session, table, Arrays.asList(keysArray), properties).synchronize(true, true, false);
+                new IntegrationService(session, table, Arrays.asList(keysArray), properties).synchronize(true, true, false);
             } catch (Exception e) {
                 throw new RuntimeException();
             }

@@ -51,7 +51,7 @@ public class ObjectClassProperty extends ExecuteProperty {
             return super.getEditorType(mapObjects);
     }
 
-    public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, DataSession session, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects, boolean groupLast) throws SQLException {
+    public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, DataSession session, Modifier<? extends Changes> modifier, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects, boolean groupLast) throws SQLException {
         if(mapObjects != null && mapObjects.size()>0 && BaseUtils.singleValue(mapObjects) instanceof ObjectInstance)
             executeForm.form.changeClass((CustomObjectInstance) BaseUtils.singleValue(mapObjects), BaseUtils.singleValue(keys), (Integer)value.getValue());
         else

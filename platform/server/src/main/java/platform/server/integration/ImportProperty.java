@@ -48,7 +48,7 @@ public class ImportProperty <P extends PropertyInterface> {
     Object convertValue(DataSession session, Map<ImportKeyInterface, DataObject> keyValues) throws SQLException {
         Map<P, DataObject> mapping =
                 BaseUtils.join(getConverter().mapping, createMapping(getConverter().mapping.values(), keyValues));
-        return converter.property.read(session.sql, mapping, session.modifier, session.env);
+        return converter.property.read(session, mapping);
     }
 
     void writeValue(DataSession session, Map<ImportKeyInterface, DataObject> keyValues, Object value) throws SQLException {

@@ -55,7 +55,7 @@ public class ObjectValueProperty extends ExecuteProperty {
             return super.getDialogClass(mapValues, mapClasses, mapObjects);
     }
 
-    public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, DataSession session, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects, boolean groupLast) throws SQLException {
+    public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, DataSession session, Modifier<? extends Changes> modifier, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects, boolean groupLast) throws SQLException {
         FormInstance<?> remoteForm = executeForm.form;
         if(mapObjects.size()>0 && BaseUtils.singleValue(mapObjects) instanceof ObjectInstance)
             actions.addAll(remoteForm.changeObject((ObjectInstance)BaseUtils.singleValue(mapObjects), value, executeForm));

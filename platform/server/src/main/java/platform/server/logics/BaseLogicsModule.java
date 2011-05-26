@@ -39,7 +39,9 @@ import platform.server.logics.property.group.AbstractGroup;
 import platform.server.logics.property.group.PropertySet;
 import platform.server.logics.table.TableFactory;
 import platform.server.mail.EmailActionProperty;
+import platform.server.session.Changes;
 import platform.server.session.DataSession;
+import platform.server.session.Modifier;
 
 import javax.swing.*;
 import java.awt.event.KeyEvent;
@@ -2163,13 +2165,12 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
             return FileActionClass.getDefinedInstance(false, fileClass.toString(), fileClass.getExtensions());
         }
 
-        public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects) throws SQLException {
-            FormInstance<?> form = executeForm.form;
+        public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, DataSession session, Modifier<? extends Changes> modifier, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects, boolean groupLast) throws SQLException {
             DataObject[] objects = new DataObject[keys.size()];
             int i = 0; // здесь опять учитываем, что порядок тот же
             for (ClassPropertyInterface classInterface : interfaces)
                 objects[i++] = keys.get(classInterface);
-            fileProperty.execute(value.getValue(), form.session, form, objects);
+            fileProperty.execute(value.getValue(), session, modifier, objects);
         }
 
         @Override
@@ -2193,13 +2194,12 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
             return (FileClass) fileProperty.property.getType();
         }
 
-        public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects) throws SQLException {
-            FormInstance<?> form = executeForm.form;
+        public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, DataSession session, Modifier<? extends Changes> modifier, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects, boolean groupLast) throws SQLException {
             DataObject[] objects = new DataObject[keys.size()];
             int i = 0; // здесь опять учитываем, что порядок тот же
             for (ClassPropertyInterface classInterface : interfaces)
                 objects[i++] = keys.get(classInterface);
-            actions.add(new OpenFileClientAction((byte[]) fileProperty.read(form.session.sql, form, form.session.env, objects), BaseUtils.firstWord(getFileClass().getExtensions(), ",")));
+            actions.add(new OpenFileClientAction((byte[]) fileProperty.read(session, modifier, objects), BaseUtils.firstWord(getFileClass().getExtensions(), ",")));
         }
 
         @Override
@@ -2230,9 +2230,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
             this.params = Arrays.asList(params);
         }
 
-        public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects) throws SQLException {
-            FormInstance<?> form = executeForm.form;
-            DataSession session = form.session;
+        public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, DataSession session, Modifier<? extends Changes> modifier, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects, boolean groupLast) throws SQLException {
 
             // здесь опять учитываем, что порядок тот же
             int i = 0;
@@ -2247,13 +2245,12 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
                 i++;
             }
 
-            Integer maxValue = (Integer) maxProperty.read(session, maxPropertyInput.toArray(new DataObject[0]));
-            ;
+            Integer maxValue = (Integer) maxProperty.read(session, modifier, maxPropertyInput.toArray(new DataObject[0]));
             if (maxValue == null)
                 maxValue = 0;
             maxValue += 1;
 
-            dataProperty.execute(maxValue, session, form, dataPropertyInput);
+            dataProperty.execute(maxValue, session, modifier, dataPropertyInput);
         }
     }
 
@@ -2268,12 +2265,12 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
             return LogicalClass.instance;
         }
 
-        public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects) throws SQLException {
+        public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, DataSession session, Modifier<? extends Changes> modifier, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects, boolean groupLast) throws SQLException {
             DataObject user = BaseUtils.singleValue(keys);
             if (executeForm.form.BL.requiredPassword) {
                 actions.add(new UserReloginClientAction(executeForm.form.BL.getUserName(user).trim()));
             } else {
-                executeForm.form.session.user.changeCurrentUser(user);
+                session.user.changeCurrentUser(user);
                 actions.add(new UserChangedClientAction());
             }
         }
@@ -2284,12 +2281,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
             super(sID, caption, new ValueClass[]{});
         }
 
-        public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapExecuteObjects) {
-            throw new RuntimeException("should not be");
-        }
-
-        @Override
-        public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, DataSession session, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects, boolean groupLast) throws SQLException {
+        public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, DataSession session, Modifier<? extends Changes> modifier, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects, boolean groupLast) throws SQLException {
             SQLSession sqlSession = session.sql;
 
             sqlSession.startTransaction();
@@ -2305,12 +2297,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
             super(sID, caption, new ValueClass[]{});
         }
 
-        public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapExecuteObjects) {
-            throw new RuntimeException("should not be");
-        }
-
-        @Override
-        public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, DataSession session, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects, boolean groupLast) throws SQLException {
+        public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, DataSession session, Modifier<? extends Changes> modifier, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects, boolean groupLast) throws SQLException {
             SQLSession sqlSession = session.sql;
 
             sqlSession.startTransaction();
@@ -2329,7 +2316,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
             this.message = message;
         }
 
-        public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects) throws SQLException {
+        public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, DataSession session, Modifier<? extends Changes> modifier, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects, boolean groupLast) throws SQLException {
             actions.add(new MessageClientAction(message, caption));
         }
     }
@@ -2346,14 +2333,12 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
             this.addProperty = addProperty;
         }
 
-        public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects) throws SQLException {
-            FormInstance<?> remoteForm = executeForm.form;
-            DataSession session = remoteForm.session;
-            if (addProperty.read(session.sql, new HashMap(), remoteForm, session.env) != null) {
+        public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, DataSession session, Modifier<? extends Changes> modifier, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects, boolean groupLast) throws SQLException {
+            if (addProperty.read(session, new HashMap(), modifier) != null) {
                 String barString = (String) BaseUtils.singleValue(keys).object;
                 if (barString.trim().length() != 0) {
-                    addProperty.execute(new HashMap(), session, null, remoteForm);
-                    barcode.execute(barString, session, remoteForm, session.addObject(customClass, remoteForm));
+                    addProperty.execute(new HashMap(), session, null, modifier);
+                    barcode.execute(barString, session, modifier, session.addObject(customClass, modifier));
                 }
             }
         }
@@ -2405,7 +2390,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
             this.property = property;
         }
 
-        public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects) throws SQLException {
+        public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, DataSession session, Modifier<? extends Changes> modifier, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects, boolean groupLast) throws SQLException {
             FormInstance<?> form = executeForm.form;
             Collection<ObjectInstance> objects;
             if (property != null)
@@ -2415,7 +2400,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
             for (Map.Entry<ClassPropertyInterface, DataObject> key : keys.entrySet()) {
                 if (mapObjects.get(key.getKey()) == null) {
                     for (ObjectInstance object : objects) {
-                        ConcreteClass keyClass = form.session.getCurrentClass(key.getValue());
+                        ConcreteClass keyClass = session.getCurrentClass(key.getValue());
                         if (keyClass instanceof ConcreteValueClass && object.getBaseClass().isCompatibleParent((ValueClass) keyClass)) {
                             form.seekObject(object, key.getValue());
                         }

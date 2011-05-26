@@ -268,7 +268,7 @@ public class DataSession extends MutableObject implements SessionChanges, ExprCh
                 Map.Entry<Map<ClassPropertyInterface, DataObject>, Map<String, ObjectValue>> row = iterator.next();
                 UserProperty property = propRow.getKey();
                 Map<ClassPropertyInterface, P> mapInterfaces = mapChanges.map.get(property);
-                property.execute(row.getKey(), row.getValue().get("value"), this, actions, executeForm, mapInterfaces == null ? null : BaseUtils.nullJoin(mapInterfaces, mapObjects), !iterator.hasNext());
+                property.execute(row.getKey(), row.getValue().get("value"), this, (executeForm==null?modifier:executeForm.form), actions, executeForm, mapInterfaces == null ? null : BaseUtils.nullJoin(mapInterfaces, mapObjects), !iterator.hasNext());
             }
         }
         return actions;
@@ -451,7 +451,7 @@ public class DataSession extends MutableObject implements SessionChanges, ExprCh
             if(propertyChange!=null)
                 for (Iterator<Map.Entry<Map<ClassPropertyInterface, DataObject>, Map<String, ObjectValue>>> iterator = propertyChange.getQuery().executeClasses(sql, env, baseClass).entrySet().iterator(); iterator.hasNext();) {
                     Map.Entry<Map<ClassPropertyInterface, DataObject>, Map<String, ObjectValue>> executeRow = iterator.next();
-                    property.execute(executeRow.getKey(), executeRow.getValue().get("value"), this, actions, null, null, !iterator.hasNext());
+                    property.execute(executeRow.getKey(), executeRow.getValue().get("value"), this, incrementApply, actions, null, null, !iterator.hasNext());
                 }
         }
     }

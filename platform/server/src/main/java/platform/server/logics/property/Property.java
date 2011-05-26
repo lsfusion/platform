@@ -377,6 +377,14 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
         return BaseUtils.singleValue(readQuery.execute(session, env)).get(readValue);
     }
 
+    public Object read(DataSession session, Map<T, DataObject> keys) throws SQLException {
+        return read(session.sql, keys, session.modifier, session.env);
+    }
+
+    public Object read(DataSession session, Map<T, DataObject> keys, Modifier<? extends Changes> modifier) throws SQLException {
+        return read(session.sql, keys, modifier, session.env);
+    }
+
     public ObjectValue readClasses(DataSession session, Map<T, DataObject> keys, Modifier<? extends Changes> modifier) throws SQLException {
         return session.getObjectValue(read(session.sql, keys, modifier, session.env), getType());
     }

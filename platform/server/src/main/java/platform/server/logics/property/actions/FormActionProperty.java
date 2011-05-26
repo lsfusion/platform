@@ -17,6 +17,9 @@ import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
 import platform.server.logics.property.ActionProperty;
 import platform.server.logics.property.ClassPropertyInterface;
+import platform.server.session.Changes;
+import platform.server.session.DataSession;
+import platform.server.session.Modifier;
 
 import java.sql.SQLException;
 import java.util.HashMap;
@@ -63,7 +66,7 @@ public class FormActionProperty extends ActionProperty {
         this.form = form;
     }
 
-    public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, List<ClientAction> actions, RemoteForm thisRemoteForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapExecuteObjects) {
+    public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, DataSession session, Modifier<? extends Changes> modifier, List<ClientAction> actions, RemoteForm thisRemoteForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapExecuteObjects, boolean groupLast) {
         try {
             FormInstance thisFormInstance = thisRemoteForm.form;
             FormInstance newFormInstance = thisFormInstance.createForm(form, BaseUtils.join(mapObjects, keys), newSession, !form.isPrintForm);
@@ -86,7 +89,7 @@ public class FormActionProperty extends ActionProperty {
                     Object readenValue = null;
                     if (getProperties[i] != null) {
                         PropertyObjectInstance getPropInstance = thisFormInstance.instanceFactory.getInstance(getProperties[i]);
-                        readenValue = getPropInstance.read(thisFormInstance.session.sql, thisFormInstance.session.modifier, thisFormInstance.session.env);
+                        readenValue = getPropInstance.read(session, modifier);
                     }
 
                     newFormInstance.changeProperty(setPropInstance, readenValue, newRemoteForm);

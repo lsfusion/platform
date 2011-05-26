@@ -1231,6 +1231,10 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
         return new DialogInstance<T>(classForm, BL, session, securityPolicy, getFocusListener(), getClassListener(), classForm.getObject(), value, instanceFactory.computer);
     }
 
+    public Object read(PropertyObjectInstance<?> property) throws SQLException {
+        return property.read(session, this);
+    }
+
     public DialogInstance<T> createObjectEditorDialog(int viewID) throws RemoteException, SQLException {
         PropertyDrawInstance propertyDraw = getPropertyDraw(viewID);
         PropertyObjectInstance<?> changeProperty = getChangePropertyObjectInstance(propertyDraw);
@@ -1239,7 +1243,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
         CustomClass objectClass = changeProperty.getDialogClass();
         AbstractClassFormEntity<T> classForm = changeProperty.getDialogClass().getEditForm(BL);
 
-        Object currentObject = changeProperty.read(session.sql, this, session.env);
+        Object currentObject = read(changeProperty);
         if (currentObject == null && objectClass instanceof ConcreteCustomClass) {
             currentObject = addObject((ConcreteCustomClass)objectClass).object;
         }
@@ -1258,7 +1262,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
         AbstractClassFormEntity<T> formEntity = getDataChangeFormEntity(changeProperty, propertyDraw.toDraw);
 
         ObjectEntity dialogObject = formEntity.getObject();
-        DialogInstance<T> dialog = new DialogInstance<T>(formEntity, BL, session, securityPolicy, getFocusListener(), getClassListener(), dialogObject, changeProperty.read(session.sql, this, session.env), instanceFactory.computer);
+        DialogInstance<T> dialog = new DialogInstance<T>(formEntity, BL, session, securityPolicy, getFocusListener(), getClassListener(), dialogObject, read(changeProperty), instanceFactory.computer);
 
         //если для readOnly свойства возвращалось ObjectValueProperty для изменения объекта,
         //то используем само свойство в качестве фильтра
@@ -1297,7 +1301,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
                 if (action.isInInterface(null)) {
                     List<ClientAction> change
                             = changeProperty(action,
-                                             action.getChangeInstance().read(session.sql, FormInstance.this, session.env) == null ? true : null,
+                                             read(action.getChangeInstance()) == null ? true : null,
                                              form);
                     actionsIt = change.iterator();
                 }

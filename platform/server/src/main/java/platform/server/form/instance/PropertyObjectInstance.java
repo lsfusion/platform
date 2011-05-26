@@ -125,6 +125,10 @@ public class PropertyObjectInstance<P extends PropertyInterface> extends Propert
         return property.read(session, getInterfaceValues(), modifier, env);
     }
 
+    public Object read(DataSession session, Modifier<? extends Changes> modifier) throws SQLException {
+        return read(session.sql, modifier, session.env);
+    }
+
     public List<ClientAction> execute(DataSession session, CompareValue getterValue, Modifier<? extends Changes> modifier, RemoteForm executeForm, GroupObjectInstance groupObject) throws SQLException {
         Map<P, KeyExpr> mapKeys = property.getMapKeys();
 

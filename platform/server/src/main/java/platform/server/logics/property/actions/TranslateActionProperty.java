@@ -13,7 +13,9 @@ import platform.server.logics.ObjectValue;
 import platform.server.logics.linear.LP;
 import platform.server.logics.property.ActionProperty;
 import platform.server.logics.property.ClassPropertyInterface;
+import platform.server.session.Changes;
 import platform.server.session.DataSession;
+import platform.server.session.Modifier;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -41,16 +43,13 @@ public class TranslateActionProperty extends ActionProperty {
         return result.toArray(new ValueClass[result.size()]);
     }
 
-    public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, List<ClientAction> actions,
-                        RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects) throws SQLException {
-        FormInstance<?> form = (FormInstance<?>)executeForm.form;
-        DataSession session = form.session;
-
+    public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, DataSession session, Modifier<? extends Changes> modifier, List<ClientAction> actions,
+                        RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects, boolean groupLast) throws SQLException {
         List<ClassPropertyInterface> interfacesList = new ArrayList<ClassPropertyInterface>(interfaces);
         DataObject dictionary = keys.get(interfacesList.remove(0));
         List<DataObject> inputObjects = BaseUtils.mapList(interfacesList, keys);
 
-        String source = (String) sourceProperty.read(session, inputObjects.toArray(new DataObject[inputObjects.size()]));
+        String source = (String) sourceProperty.read(session, modifier, inputObjects.toArray(new DataObject[inputObjects.size()]));
 
         if (source != null) {
             String delim = ", .:;%#$@/\\|<>=+-_)(*&?^!~{}[]\"1234567890'";
@@ -59,7 +58,7 @@ public class TranslateActionProperty extends ActionProperty {
             while (st.hasMoreTokens()) {
                 String token = st.nextToken();
                 if (!delim.contains(token.subSequence(0, token.length()))) {
-                    String translation = (String) translationDictionaryTerm.read(session, dictionary, new DataObject(token, StringClass.get(50)));
+                    String translation = (String) translationDictionaryTerm.read(session, modifier, dictionary, new DataObject(token, StringClass.get(50)));
                     if (translation != null) {
                         token = translation.trim();
                     }
