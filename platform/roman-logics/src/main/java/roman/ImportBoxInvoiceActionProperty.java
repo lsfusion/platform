@@ -46,7 +46,7 @@ public abstract class ImportBoxInvoiceActionProperty extends BaseImportActionPro
         return new ExcelInputTable(inFile);
     }
 
-    protected abstract SingleSheetImporter createExporter(ImportInputTable inputTable); // todo [dale]: переименовать
+    protected abstract SingleSheetImporter createImporter(ImportInputTable inputTable);
 
     private void initFields() {
         invoiceSIDField = new ImportField(LM.sidDocument);
@@ -133,7 +133,7 @@ public abstract class ImportBoxInvoiceActionProperty extends BaseImportActionPro
             ImportTable table;
             try {
                 ByteArrayInputStream inFile = new ByteArrayInputStream(file);
-                table = createExporter(createTable(inFile)).getTable();
+                table = createImporter(createTable(inFile)).getTable();
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }

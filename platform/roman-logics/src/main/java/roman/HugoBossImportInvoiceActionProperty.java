@@ -35,7 +35,7 @@ public class HugoBossImportInvoiceActionProperty extends ImportBoxInvoiceActionP
     }
 
     @Override
-    protected SingleSheetImporter createExporter(ImportInputTable inputTable) {
+    protected SingleSheetImporter createImporter(ImportInputTable inputTable) {
         return new HugoBossInvoiceImporter(inputTable, barCodeField, sidField, invoiceSIDField, boxNumberField, colorCodeField,
                 colorNameField, sizeField, originalNameField, countryField, unitNetWeightField, compositionField, unitPriceField,
                 RRPField, unitQuantityField, numberSkuField, customCodeField, customCode6Field);

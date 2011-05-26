@@ -358,7 +358,7 @@ public class CashRegController {
     }
 
     public void addCashRegProperties() {
-
+        // todo [dale]: надо бы переделать это на LogicsModule
 //       пока не поддерживается
 //        LM.addProp(LM.cashRegOperGroup, new SimpleCashRegActionProperty(LM.genSID(), "Аннулировать чек", "/A"));
         LM.addProp(LM.cashRegOperGroup, new SimpleCashRegActionProperty(LM.baseLM.genSID(), "Продолжить печать", "/R"));
@@ -491,7 +491,7 @@ public class CashRegController {
         public DefaultFormView createDefaultRichDesign() {
             DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign();
             design.setFont(VEDLogicsModule.FONT_HUGE_BOLD);
-            design.setPanelLabelAbove(LM.baseGroup, true);
+            design.setPanelLabelAbove(LM.baseLM.baseGroup, true);
 
             design.setKeyStroke(KeyStroke.getKeyStroke(KeyEvent.VK_F5, InputEvent.SHIFT_DOWN_MASK | InputEvent.SHIFT_MASK));
 

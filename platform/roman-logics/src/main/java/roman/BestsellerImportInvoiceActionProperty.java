@@ -25,7 +25,7 @@ public class BestsellerImportInvoiceActionProperty extends ImportBoxInvoiceActio
     }
 
     @Override
-    protected SingleSheetImporter createExporter(ImportInputTable inputTable) {
+    protected SingleSheetImporter createImporter(ImportInputTable inputTable) {
         return new EDIInvoiceImporter(inputTable, barCodeField, sidField, invoiceSIDField, boxNumberField, colorCodeField,
                 colorNameField, sizeField, originalNameField, countryField, unitNetWeightField, compositionField, unitPriceField,
                 RRPField, unitQuantityField, numberSkuField, customCodeField, customCode6Field);

@@ -17,7 +17,7 @@ public class JennyferImportInvoiceActionProperty extends ImportBoxInvoiceActionP
     }
 
     @Override
-    protected SingleSheetImporter createExporter(ImportInputTable inputTable) {
+    protected SingleSheetImporter createImporter(ImportInputTable inputTable) {
         return new JennyferInvoiceImporter(inputTable, new Object[] {invoiceSIDField, boxNumberField, new ImportField[] {barCodeField, sidField},
                 colorCodeField, new ImportField[] {colorNameField, sizeField}, null, compositionField, null, null, countryField,
                 new ImportField[] {customCodeField, customCode6Field}, RRPField, unitPriceField, unitQuantityField, null,

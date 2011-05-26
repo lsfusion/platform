@@ -1458,7 +1458,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
     public static int generateStaticNewID() {
-        return BaseLogicsModule.idGenerator.idShift();
+        return BaseLogicsModule.generateStaticNewID();
     }
 
     public int generateNewID() throws RemoteException {

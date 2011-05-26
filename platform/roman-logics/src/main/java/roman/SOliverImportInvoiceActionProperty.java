@@ -27,7 +27,7 @@ public class SOliverImportInvoiceActionProperty extends ImportBoxInvoiceActionPr
     }
 
     @Override
-    protected SingleSheetImporter createExporter(ImportInputTable inputTable) {
+    protected SingleSheetImporter createImporter(ImportInputTable inputTable) {
 
         return new EDIInvoiceImporter(inputTable, barCodeField, sidField, invoiceSIDField, boxNumberField, colorCodeField,
                 colorNameField, sizeField, originalNameField, countryField, unitNetWeightField, compositionField, unitPriceField,

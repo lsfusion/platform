@@ -48,12 +48,13 @@ public abstract class LogicsModule {
 
     public BaseLogicsModule<?> baseLM;
 
+    // aliases для использования внутри иерархии логических модулей
     protected BaseClass baseClass;
 
     protected AbstractGroup rootGroup;
     protected AbstractGroup publicGroup;
     protected AbstractGroup privateGroup;
-    public AbstractGroup baseGroup;
+    protected AbstractGroup baseGroup;
     protected AbstractGroup idGroup;
     protected AbstractGroup actionGroup;
     protected AbstractGroup sessionGroup;
@@ -104,11 +105,11 @@ public abstract class LogicsModule {
         return customClass;
     }
 
-    public CustomClass findCustomClass(String sid) {
+    protected CustomClass findCustomClass(String sid) {
         return baseLM.sidToClass.get(sid);
     }
 
-    public ValueClass findValueClass(String sid) {
+    protected ValueClass findValueClass(String sid) {
         ValueClass valueClass = findCustomClass(sid);
         if (valueClass == null) {
             valueClass = DataClass.findDataClass(sid);
@@ -116,15 +117,15 @@ public abstract class LogicsModule {
         return valueClass;
     }
 
-    public ConcreteCustomClass addConcreteClass(String sID, String caption, CustomClass... parents) {
+    protected ConcreteCustomClass addConcreteClass(String sID, String caption, CustomClass... parents) {
         return addConcreteClass(baseLM.baseGroup, sID, caption, parents);
     }
 
-    public AbstractCustomClass addAbstractClass(String sID, String caption, CustomClass... parents) {
+    protected AbstractCustomClass addAbstractClass(String sID, String caption, CustomClass... parents) {
         return addAbstractClass(baseLM.baseGroup, sID, caption, parents);
     }
 
-    public StaticCustomClass addStaticClass(String sID, String caption, String[] sids, String[] names) {
+    protected StaticCustomClass addStaticClass(String sID, String caption, String[] sids, String[] names) {
         StaticCustomClass customClass = new StaticCustomClass(sID, caption, baseLM.baseClass.sidClass, sids, names);
         storeCustomClass(customClass);
         customClass.dialogReadOnly = true;
@@ -143,29 +144,29 @@ public abstract class LogicsModule {
         return id;
     }
 
-    public LP addDProp(String sID, String caption, ValueClass value, ValueClass... params) {
+    protected LP addDProp(String sID, String caption, ValueClass value, ValueClass... params) {
         return addDProp(null, sID, false, caption, value, params);
     }
 
-    public LP addDProp(AbstractGroup group, String sID, String caption, ValueClass value, ValueClass... params) {
+    protected LP addDProp(AbstractGroup group, String sID, String caption, ValueClass value, ValueClass... params) {
         return addDProp(group, sID, false, caption, value, params);
     }
 
-    public LP[] addDProp(AbstractGroup group, String paramID, String[] sIDs, String[] captions, ValueClass[] values, ValueClass... params) {
+    protected LP[] addDProp(AbstractGroup group, String paramID, String[] sIDs, String[] captions, ValueClass[] values, ValueClass... params) {
         LP[] result = new LP[sIDs.length];
         for (int i = 0; i < sIDs.length; i++)
             result[i] = addDProp(group, sIDs[i] + paramID, captions[i], values[i], params);
         return result;
     }
 
-    public LP addDProp(AbstractGroup group, String sID, boolean persistent, String caption, ValueClass value, ValueClass... params) {
+    protected LP addDProp(AbstractGroup group, String sID, boolean persistent, String caption, ValueClass value, ValueClass... params) {
         StoredDataProperty dataProperty = new StoredDataProperty(sID, caption, params, value);
         LP lp = addProperty(group, persistent, new LP<ClassPropertyInterface>(dataProperty));
         dataProperty.markStored(baseLM.tableFactory);
         return lp;
     }
 
-    public LP addGDProp(AbstractGroup group, String paramID, String sID, String caption, ValueClass[] values, CustomClass[]... params) {
+    protected LP addGDProp(AbstractGroup group, String paramID, String sID, String caption, ValueClass[] values, CustomClass[]... params) {
         CustomClass[][] listParams = new CustomClass[params[0].length][]; //
         for (int i = 0; i < listParams.length; i++) {
             listParams[i] = new CustomClass[params.length];
@@ -195,7 +196,7 @@ public abstract class LogicsModule {
         return result;
     }
 
-    public <D extends PropertyInterface> LP addDCProp(String sID, String caption, LP<D> derivedProp, Object... params) {
+    protected <D extends PropertyInterface> LP addDCProp(String sID, String caption, LP<D> derivedProp, Object... params) {
         return addDCProp(null, sID, caption, derivedProp, params);
     }
 
@@ -203,15 +204,15 @@ public abstract class LogicsModule {
         return addDCProp(null, sID, persistent, caption, false, derivedProp, params);
     }
 
-    public <D extends PropertyInterface> LP addDCProp(AbstractGroup group, String sID, String caption, LP<D> derivedProp, Object... params) {
+    protected <D extends PropertyInterface> LP addDCProp(AbstractGroup group, String sID, String caption, LP<D> derivedProp, Object... params) {
         return addDCProp(group, sID, false, caption, false, derivedProp, params);
     }
 
-    public <D extends PropertyInterface> LP addDCProp(String sID, String caption, boolean forced, LP<D> derivedProp, Object... params) {
+    protected <D extends PropertyInterface> LP addDCProp(String sID, String caption, boolean forced, LP<D> derivedProp, Object... params) {
         return addDCProp(null, sID, caption, forced, derivedProp, params);
     }
 
-    public <D extends PropertyInterface> LP addDCProp(AbstractGroup group, String sID, String caption, boolean forced, LP<D> derivedProp, Object... params) {
+    protected <D extends PropertyInterface> LP addDCProp(AbstractGroup group, String sID, String caption, boolean forced, LP<D> derivedProp, Object... params) {
         return addDCProp(group, sID, false, caption, forced, derivedProp, params);
     }
 
@@ -270,7 +271,7 @@ public abstract class LogicsModule {
         return derDataProp;
     }
 
-    public LP addSDProp(String caption, ValueClass value, ValueClass... params) {
+    protected LP addSDProp(String caption, ValueClass value, ValueClass... params) {
         return addSDProp((AbstractGroup) null, caption, value, params);
     }
 
@@ -278,7 +279,7 @@ public abstract class LogicsModule {
         return addSDProp(group, genSID(), caption, value, params);
     }
 
-    public LP addSDProp(String sID, String caption, ValueClass value, ValueClass... params) {
+    protected LP addSDProp(String sID, String caption, ValueClass value, ValueClass... params) {
         return addSDProp(null, sID, caption, value, params);
     }
 
@@ -294,7 +295,7 @@ public abstract class LogicsModule {
         return addProperty(group, persistent, new LP<ClassPropertyInterface>(new SessionDataProperty(sID, caption, params, value)));
     }
 
-    public LP addFAProp(String caption, FormEntity form, ObjectEntity... params) {
+    protected LP addFAProp(String caption, FormEntity form, ObjectEntity... params) {
         return addFAProp(null, caption, form, params, new PropertyObjectEntity[0], new PropertyObjectEntity[0], false, false);
     }
 
@@ -302,19 +303,19 @@ public abstract class LogicsModule {
         return addFAProp(group, form.caption, form, params);
     }
 
-    public LP addFAProp(AbstractGroup group, String caption, FormEntity form, ObjectEntity... params) {
+    protected LP addFAProp(AbstractGroup group, String caption, FormEntity form, ObjectEntity... params) {
         return addFAProp(group, caption, form, params, new PropertyObjectEntity[0], new PropertyObjectEntity[0], false, false);
     }
 
-    public LP addMFAProp(String caption, FormEntity form, ObjectEntity... params) {
+    protected LP addMFAProp(String caption, FormEntity form, ObjectEntity... params) {
         return addMFAProp(null, caption, form, params, new PropertyObjectEntity[0], new PropertyObjectEntity[0]);
     }
 
-    public LP addMFAProp(AbstractGroup group, String caption, FormEntity form, ObjectEntity[] objectsToSet, PropertyObjectEntity... setProperties) {
+    protected LP addMFAProp(AbstractGroup group, String caption, FormEntity form, ObjectEntity[] objectsToSet, PropertyObjectEntity... setProperties) {
         return addMFAProp(group, caption, form, objectsToSet, false, setProperties);
     }
 
-    public LP addMFAProp(AbstractGroup group, String caption, FormEntity form, ObjectEntity[] objectsToSet, boolean newSession, PropertyObjectEntity... setProperties) {
+    protected LP addMFAProp(AbstractGroup group, String caption, FormEntity form, ObjectEntity[] objectsToSet, boolean newSession, PropertyObjectEntity... setProperties) {
         // во все setProperties просто будут записаны null'ы
         return addMFAProp(group, caption, form, objectsToSet, setProperties, new PropertyObjectEntity[setProperties.length], newSession);
     }
@@ -323,7 +324,7 @@ public abstract class LogicsModule {
         return addMFAProp(group, caption, form, objectsToSet, setProperties, getProperties, true);
     }
 
-    public LP addMFAProp(AbstractGroup group, String caption, FormEntity form, ObjectEntity[] objectsToSet, PropertyObjectEntity[] setProperties, PropertyObjectEntity[] getProperties, boolean newSession) {
+    protected LP addMFAProp(AbstractGroup group, String caption, FormEntity form, ObjectEntity[] objectsToSet, PropertyObjectEntity[] setProperties, PropertyObjectEntity[] getProperties, boolean newSession) {
         return addFAProp(group, caption, form, objectsToSet, setProperties, getProperties, newSession, true);
     }
 
@@ -331,24 +332,24 @@ public abstract class LogicsModule {
         return addProperty(group, new LP<ClassPropertyInterface>(new FormActionProperty(genSID(), caption, form, objectsToSet, setProperties, getProperties, newSession, isModal)));
     }
 
-    public LP addSelectFromListAction(AbstractGroup group, String caption, LP selectionProperty, ValueClass selectionClass, ValueClass... baseClasses) {
+    protected LP addSelectFromListAction(AbstractGroup group, String caption, LP selectionProperty, ValueClass selectionClass, ValueClass... baseClasses) {
         return addSelectFromListAction(group, caption, null, new FilterEntity[0], selectionProperty, selectionClass, baseClasses);
     }
 
-    public LP addSelectFromListAction(AbstractGroup group, String caption, ObjectEntity remapObject, FilterEntity[] remapFilters, LP selectionProperty, ValueClass selectionClass, ValueClass... baseClasses) {
+    protected LP addSelectFromListAction(AbstractGroup group, String caption, ObjectEntity remapObject, FilterEntity[] remapFilters, LP selectionProperty, ValueClass selectionClass, ValueClass... baseClasses) {
         return addSelectFromListAction(group, caption, remapObject, remapFilters, selectionProperty, false, selectionClass, baseClasses);
     }
 
-    public LP addSelectFromListAction(AbstractGroup group, String caption, ObjectEntity remapObject, FilterEntity[] remapFilters, LP selectionProperty, boolean isSelectionClassFirstParam, ValueClass selectionClass, ValueClass... baseClasses) {
+    protected LP addSelectFromListAction(AbstractGroup group, String caption, ObjectEntity remapObject, FilterEntity[] remapFilters, LP selectionProperty, boolean isSelectionClassFirstParam, ValueClass selectionClass, ValueClass... baseClasses) {
         BaseLogicsModule.SelectFromListFormEntity selectFromListForm = baseLM.new SelectFromListFormEntity(remapObject, remapFilters, selectionProperty, isSelectionClassFirstParam, selectionClass, baseClasses);
         return addMFAProp(group, caption, selectFromListForm, selectFromListForm.mainObjects, false);
     }
 
-    public LP addStopActionProp(String caption, String header) {
+    protected LP addStopActionProp(String caption, String header) {
         return addAProp(new StopActionProperty(genSID(), caption, header));
     }
 
-    public LP addEAProp(ValueClass... params) {
+    protected LP addEAProp(ValueClass... params) {
         return addEAProp(null, params);
     }
 
@@ -360,21 +361,21 @@ public abstract class LogicsModule {
         return addProperty(group, new LP<ClassPropertyInterface>(new EmailActionProperty(sID, caption, subject, baseLM.BL, params)));
     }
 
-    public <X extends PropertyInterface> void addEARecepient(LP<ClassPropertyInterface> eaProp, LP<X> emailProp, Integer... params) {
+    protected <X extends PropertyInterface> void addEARecepient(LP<ClassPropertyInterface> eaProp, LP<X> emailProp, Integer... params) {
         Map<X, ClassPropertyInterface> mapInterfaces = new HashMap<X, ClassPropertyInterface>();
         for (int i = 0; i < emailProp.listInterfaces.size(); i++)
             mapInterfaces.put(emailProp.listInterfaces.get(i), eaProp.listInterfaces.get(params[i] - 1));
         ((EmailActionProperty) eaProp.property).addRecepient(new PropertyMapImplement<X, ClassPropertyInterface>(emailProp.property, mapInterfaces));
     }
 
-    public void addInlineEAForm(LP<ClassPropertyInterface> eaProp, FormEntity form, Object... params) {
+    protected void addInlineEAForm(LP<ClassPropertyInterface> eaProp, FormEntity form, Object... params) {
         Map<ObjectEntity, ClassPropertyInterface> mapObjects = new HashMap<ObjectEntity, ClassPropertyInterface>();
         for (int i = 0; i < params.length / 2; i++)
             mapObjects.put((ObjectEntity) params[2 * i], eaProp.listInterfaces.get((Integer) params[2 * i + 1] - 1));
         ((EmailActionProperty) eaProp.property).addInlineForm(form, mapObjects);
     }
 
-    public void addAttachEAForm(LP<ClassPropertyInterface> eaProp, FormEntity form, EmailActionProperty.Format format, Object... params) {
+    protected void addAttachEAForm(LP<ClassPropertyInterface> eaProp, FormEntity form, EmailActionProperty.Format format, Object... params) {
         LP attachmentName = null;
         if (params.length > 0 && params[0] instanceof LP) {
             attachmentName = (LP) params[0];
@@ -386,11 +387,11 @@ public abstract class LogicsModule {
         ((EmailActionProperty) eaProp.property).addAttachmentForm(form, format, mapObjects, attachmentName);
     }
 
-    public LP addTAProp(LP sourceProperty, LP targetProperty) {
+    protected LP addTAProp(LP sourceProperty, LP targetProperty) {
         return addProperty(null, new LP<ClassPropertyInterface>(new TranslateActionProperty(genSID(), "translate", baseLM.translationDictionaryTerm, sourceProperty, targetProperty, baseLM.dictionary)));
     }
 
-    public <P extends PropertyInterface> LP addSCProp(LP<P> lp) {
+    protected <P extends PropertyInterface> LP addSCProp(LP<P> lp) {
         return addSCProp(baseLM.privateGroup, "sys", lp);
     }
 
@@ -399,19 +400,19 @@ public abstract class LogicsModule {
     }
 
     // добавляет свойство с бесконечным значением
-    public LP addICProp(DataClass valueClass, ValueClass... params) {
+    protected LP addICProp(DataClass valueClass, ValueClass... params) {
         return addProperty(baseLM.privateGroup, false, new LP<ClassPropertyInterface>(new InfiniteClassProperty(genSID(), "Беск.", params, valueClass)));
     }
 
-    public LP addCProp(StaticClass valueClass, Object value, ValueClass... params) {
+    protected LP addCProp(StaticClass valueClass, Object value, ValueClass... params) {
         return addCProp("sys", valueClass, value, params);
     }
 
-    public LP addCProp(String caption, StaticClass valueClass, Object value, ValueClass... params) {
+    protected LP addCProp(String caption, StaticClass valueClass, Object value, ValueClass... params) {
         return addCProp(null, false, caption, valueClass, value, params);
     }
 
-    public LP addCProp(AbstractGroup group, boolean persistent, String caption, StaticClass valueClass, Object value, ValueClass... params) {
+    protected LP addCProp(AbstractGroup group, boolean persistent, String caption, StaticClass valueClass, Object value, ValueClass... params) {
         return addCProp(group, persistent, caption, valueClass, value, Arrays.asList(params));
     }
 
@@ -429,11 +430,11 @@ public abstract class LogicsModule {
         return addProperty(null, new LP<PropertyInterface>(new TimeFormulaProperty(genSID(), time)));
     }
 
-    public <P extends PropertyInterface> LP addTCProp(Time time, String sID, String caption, LP<P> changeProp, ValueClass... classes) {
+    protected <P extends PropertyInterface> LP addTCProp(Time time, String sID, String caption, LP<P> changeProp, ValueClass... classes) {
         return addTCProp(null, time, sID, caption, changeProp, classes);
     }
 
-    public <P extends PropertyInterface> LP addTCProp(Time time, String sID, boolean isStored, String caption, LP<P> changeProp, ValueClass... classes) {
+    protected <P extends PropertyInterface> LP addTCProp(Time time, String sID, boolean isStored, String caption, LP<P> changeProp, ValueClass... classes) {
         return addTCProp(null, time, sID, isStored, caption, changeProp, classes);
     }
 
@@ -453,7 +454,7 @@ public abstract class LogicsModule {
         return addProperty(group, false, new LP<ClassPropertyInterface>(timeProperty.property));
     }
 
-    public LP addSFProp(String formula, ConcreteValueClass value, int paramCount) {
+    protected LP addSFProp(String formula, ConcreteValueClass value, int paramCount) {
         return addProperty(null, new LP<StringFormulaProperty.Interface>(new StringFormulaProperty(genSID(), value, formula, paramCount)));
     }
 
@@ -477,7 +478,7 @@ public abstract class LogicsModule {
         return addProperty(null, new LP<StringConcatenateProperty.Interface>(new StringConcatenateProperty(genSID(), "Объед.", intNum, separator, false)));
     }
 
-    public LP addMFProp(ConcreteValueClass value, int paramCount) {
+    protected LP addMFProp(ConcreteValueClass value, int paramCount) {
         return addProperty(null, new LP<StringFormulaProperty.Interface>(new MultiplyFormulaProperty(genSID(), value, paramCount)));
     }
 
@@ -501,55 +502,55 @@ public abstract class LogicsModule {
         return addProperty(null, new LP<ConcatenateProperty.Interface>(new ConcatenateProperty(paramCount)));
     }
 
-    public LP addJProp(LP mainProp, Object... params) {
+    protected LP addJProp(LP mainProp, Object... params) {
         return addJProp(baseLM.privateGroup, "sys", mainProp, params);
     }
 
-    public LP addJProp(String caption, LP mainProp, Object... params) {
+    protected LP addJProp(String caption, LP mainProp, Object... params) {
         return addJProp((AbstractGroup) null, caption, mainProp, params);
     }
 
-    public LP addJProp(String sID, String caption, LP mainProp, Object... params) {
+    protected LP addJProp(String sID, String caption, LP mainProp, Object... params) {
         return addJProp(sID, false, caption, mainProp, params);
     }
 
-    public LP addJProp(String sID, boolean persistent, String caption, LP mainProp, Object... params) {
+    protected LP addJProp(String sID, boolean persistent, String caption, LP mainProp, Object... params) {
         return addJProp(null, sID, persistent, caption, mainProp, params);
     }
 
-    public LP addJProp(AbstractGroup group, String caption, LP mainProp, Object... params) {
+    protected LP addJProp(AbstractGroup group, String caption, LP mainProp, Object... params) {
         return addJProp(group, genSID(), caption, mainProp, params);
     }
 
-    public LP addJProp(boolean implementChange, String caption, LP mainProp, Object... params) {
+    protected LP addJProp(boolean implementChange, String caption, LP mainProp, Object... params) {
         return addJProp((AbstractGroup) null, implementChange, caption, mainProp, params);
     }
 
-    public LP addJProp(boolean implementChange, String sID, String caption, LP mainProp, Object... params) {
+    protected LP addJProp(boolean implementChange, String sID, String caption, LP mainProp, Object... params) {
         return addJProp((AbstractGroup) null, implementChange, sID, caption, mainProp, params);
     }
 
-    public LP addJProp(AbstractGroup group, boolean implementChange, String caption, LP mainProp, Object... params) {
+    protected LP addJProp(AbstractGroup group, boolean implementChange, String caption, LP mainProp, Object... params) {
         return addJProp(group, implementChange, genSID(), caption, mainProp, params);
     }
 
-    public LP addJProp(AbstractGroup group, String sID, String caption, LP mainProp, Object... params) {
+    protected LP addJProp(AbstractGroup group, String sID, String caption, LP mainProp, Object... params) {
         return addJProp(group, mainProp.property instanceof ActionProperty, sID, caption, mainProp, params);
     }
 
-    public LP addJProp(AbstractGroup group, String sID, boolean persistent, String caption, LP mainProp, Object... params) {
+    protected LP addJProp(AbstractGroup group, String sID, boolean persistent, String caption, LP mainProp, Object... params) {
         return addJProp(group, mainProp.property instanceof ActionProperty, sID, persistent, caption, mainProp, params);
     }
 
-    public LP addJProp(boolean implementChange, LP mainProp, Object... params) {
+    protected LP addJProp(boolean implementChange, LP mainProp, Object... params) {
         return addJProp(baseLM.privateGroup, implementChange, genSID(), "sys", mainProp, params);
     }
 
-    public LP addJProp(AbstractGroup group, boolean implementChange, String sID, String caption, LP mainProp, Object... params) {
+    protected LP addJProp(AbstractGroup group, boolean implementChange, String sID, String caption, LP mainProp, Object... params) {
         return addJProp(group, implementChange, sID, false, caption, mainProp, params);
     }
 
-    public LP addJProp(AbstractGroup group, boolean implementChange, String sID, boolean persistent, String caption, LP mainProp, Object... params) {
+    protected LP addJProp(AbstractGroup group, boolean implementChange, String sID, boolean persistent, String caption, LP mainProp, Object... params) {
 
         JoinProperty<?> property = new JoinProperty(sID, caption, getIntNum(params), implementChange);
         property.inheritFixedCharWidth(mainProp.property);
@@ -560,21 +561,21 @@ public abstract class LogicsModule {
         return addProperty(group, persistent, listProperty);
     }
 
-    public LP[] addJProp(AbstractGroup group, boolean implementChange, String paramID, LP[] props, String caption, Object... params) {
+    protected LP[] addJProp(AbstractGroup group, boolean implementChange, String paramID, LP[] props, String caption, Object... params) {
         LP[] result = new LP[props.length];
         for (int i = 0; i < props.length; i++)
             result[i] = addJProp(group, implementChange, props[i].property.sID + paramID, props[i].property.caption + (caption.length() == 0 ? "" : (" " + caption)), props[i], params);
         return result;
     }
 
-    public LP[] addJProp(AbstractGroup group, boolean implementChange, String paramID, LP[] props, Object... params) {
+    protected LP[] addJProp(AbstractGroup group, boolean implementChange, String paramID, LP[] props, Object... params) {
         return addJProp(group, implementChange, paramID, props, "", params);
     }
 
     /**
      * Создаёт свойство для группового изменения, при этом итерация идёт по всем интерфейсам, и мэппинг интерфейсов происходит по порядку
      */
-    public LP addGCAProp(AbstractGroup group, String sID, String caption, GroupObjectEntity groupObject, LP mainProperty, LP getterProperty) {
+    protected LP addGCAProp(AbstractGroup group, String sID, String caption, GroupObjectEntity groupObject, LP mainProperty, LP getterProperty) {
         int groupInts[] = consecutiveInts(mainProperty.listInterfaces.size());
         int getterInts[] = consecutiveInts(getterProperty.listInterfaces.size());
 
@@ -647,11 +648,11 @@ public abstract class LogicsModule {
         return addOProp(genSID(), caption, orderType, sum, ascending, includeLast, partNum, params);
     }
 
-    public <P extends PropertyInterface> LP addOProp(String sID, String caption, OrderType orderType, LP<P> sum, boolean ascending, boolean includeLast, int partNum, Object... params) {
+    protected <P extends PropertyInterface> LP addOProp(String sID, String caption, OrderType orderType, LP<P> sum, boolean ascending, boolean includeLast, int partNum, Object... params) {
         return addOProp((AbstractGroup) null, sID, caption, orderType, sum, ascending, includeLast, partNum, params);
     }
 
-    public <P extends PropertyInterface> LP addOProp(AbstractGroup group, String caption, OrderType orderType, LP<P> sum, boolean ascending, boolean includeLast, int partNum, Object... params) {
+    protected <P extends PropertyInterface> LP addOProp(AbstractGroup group, String caption, OrderType orderType, LP<P> sum, boolean ascending, boolean includeLast, int partNum, Object... params) {
         return addOProp(group, genSID(), caption, orderType, sum, ascending, includeLast, partNum, params);
     }
 
@@ -701,7 +702,7 @@ public abstract class LogicsModule {
         return mapLProp(group, persistent, DerivedProperty.createUGProp(sID, caption, new PropertyImplement<L, PropertyInterfaceImplement<R>>(ungroup.property, groupImplement), orders, restriction.property), restriction);
     }
 
-    public <R extends PropertyInterface, L extends PropertyInterface> LP addPGProp(AbstractGroup group, String sID, boolean persistent, int roundlen, boolean roundfirst, String caption, LP<R> proportion, LP<L> ungroup, Object... params) {
+    protected <R extends PropertyInterface, L extends PropertyInterface> LP addPGProp(AbstractGroup group, String sID, boolean persistent, int roundlen, boolean roundfirst, String caption, LP<R> proportion, LP<L> ungroup, Object... params) {
         List<LI> li = readLI(params);
 
         Map<L, PropertyInterfaceImplement<R>> groupImplement = new HashMap<L, PropertyInterfaceImplement<R>>();
@@ -769,35 +770,35 @@ public abstract class LogicsModule {
       }
     */
 
-    public LP addSGProp(LP groupProp, Object... params) {
+    protected LP addSGProp(LP groupProp, Object... params) {
         return addSGProp(baseLM.privateGroup, "sys", groupProp, params);
     }
 
-    public LP addSGProp(String caption, LP groupProp, Object... params) {
+    protected LP addSGProp(String caption, LP groupProp, Object... params) {
         return addSGProp((AbstractGroup) null, caption, groupProp, params);
     }
 
-    public LP addSGProp(AbstractGroup group, String caption, LP groupProp, Object... params) {
+    protected LP addSGProp(AbstractGroup group, String caption, LP groupProp, Object... params) {
         return addSGProp(group, genSID(), caption, groupProp, params);
     }
 
-    public LP addSGProp(String sID, String caption, LP groupProp, Object... params) {
+    protected LP addSGProp(String sID, String caption, LP groupProp, Object... params) {
         return addSGProp(sID, false, caption, groupProp, params);
     }
 
-    public LP addSGProp(String sID, boolean persistent, String caption, LP groupProp, Object... params) {
+    protected LP addSGProp(String sID, boolean persistent, String caption, LP groupProp, Object... params) {
         return addSGProp(null, sID, persistent, caption, groupProp, params);
     }
 
-    public LP addSGProp(AbstractGroup group, String sID, String caption, LP groupProp, Object... params) {
+    protected LP addSGProp(AbstractGroup group, String sID, String caption, LP groupProp, Object... params) {
         return addSGProp(group, sID, false, caption, groupProp, params);
     }
 
-    public LP addSGProp(AbstractGroup group, String sID, boolean persistent, String caption, LP groupProp, Object... params) {
+    protected LP addSGProp(AbstractGroup group, String sID, boolean persistent, String caption, LP groupProp, Object... params) {
         return addSGProp(group, sID, persistent, false, caption, groupProp, params);
     }
 
-    public <T extends PropertyInterface> LP addSGProp(AbstractGroup group, String sID, boolean persistent, boolean notZero, String caption, LP<T> groupProp, Object... params) {
+    protected <T extends PropertyInterface> LP addSGProp(AbstractGroup group, String sID, boolean persistent, boolean notZero, String caption, LP<T> groupProp, Object... params) {
         return addSGProp(group, sID, persistent, notZero, caption, groupProp, readImplements(groupProp.listInterfaces, params));
     }
 
@@ -817,19 +818,19 @@ public abstract class LogicsModule {
         return result;
     }
 
-    public LP addMGProp(LP groupProp, Object... params) {
+    protected LP addMGProp(LP groupProp, Object... params) {
         return addMGProp(baseLM.privateGroup, genSID(), "sys", groupProp, params);
     }
 
-    public LP addMGProp(String sID, String caption, LP groupProp, Object... params) {
+    protected LP addMGProp(String sID, String caption, LP groupProp, Object... params) {
         return addMGProp(null, sID, caption, groupProp, params);
     }
 
-    public LP addMGProp(AbstractGroup group, String sID, String caption, LP groupProp, Object... params) {
+    protected LP addMGProp(AbstractGroup group, String sID, String caption, LP groupProp, Object... params) {
         return addMGProp(group, sID, false, caption, groupProp, params);
     }
 
-    public LP addMGProp(AbstractGroup group, String sID, boolean persist, String caption, LP groupProp, Object... params) {
+    protected LP addMGProp(AbstractGroup group, String sID, boolean persist, String caption, LP groupProp, Object... params) {
         return addMGProp(group, persist, new String[]{sID}, new String[]{caption}, 0, groupProp, params)[0];
     }
 
@@ -837,7 +838,7 @@ public abstract class LogicsModule {
         return addMGProp(group, false, ids, captions, extra, groupProp, params);
     }
 
-    public <T extends PropertyInterface> LP[] addMGProp(AbstractGroup group, boolean persist, String[] ids, String[] captions, int extra, LP<T> groupProp, Object... params) {
+    protected <T extends PropertyInterface> LP[] addMGProp(AbstractGroup group, boolean persist, String[] ids, String[] captions, int extra, LP<T> groupProp, Object... params) {
         LP[] result = new LP[extra + 1];
 
         Collection<Property> suggestPersist = new ArrayList<Property>();
@@ -893,20 +894,20 @@ public abstract class LogicsModule {
         return mapLGProp(group, persistent, property, listImplements);
     }
 
-//    public static <T extends PropertyInterface<T>> AggregateGroupProperty create(String sID, String caption, Property<T> property, T aggrInterface, Collection<PropertyMapImplement<?, T>> groupProps) {
+//    protected static <T extends PropertyInterface<T>> AggregateGroupProperty create(String sID, String caption, Property<T> property, T aggrInterface, Collection<PropertyMapImplement<?, T>> groupProps) {
 
-    public LP addAGProp(String sID, String caption, LP... props) {
+    protected LP addAGProp(String sID, String caption, LP... props) {
         return addAGProp(null, sID, caption, props);
     }
 
-    public LP addAGProp(AbstractGroup group, String sID, String caption, LP... props) {
+    protected LP addAGProp(AbstractGroup group, String sID, String caption, LP... props) {
         ClassWhere<Integer> classWhere = ClassWhere.<Integer>STATIC(true);
         for (LP<?> prop : props)
             classWhere = classWhere.and(prop.getClassWhere());
         return addAGProp(group, sID, caption, (CustomClass) BaseUtils.singleValue(classWhere.getCommonParent(Collections.singleton(1))), props);
     }
 
-    public LP addAGProp(String sID, String caption, CustomClass customClass, LP... props) {
+    protected LP addAGProp(String sID, String caption, CustomClass customClass, LP... props) {
         return addAGProp(null, sID, caption, customClass, props);
     }
 
@@ -918,19 +919,19 @@ public abstract class LogicsModule {
         return addAGProp(group, checkChange, sID, persistent, caption, is(customClass), 1, getUParams(props, 0));
     }
 
-    public <T extends PropertyInterface<T>> LP addAGProp(String sID, String caption, LP<T> lp, int aggrInterface, Object... props) {
+    protected <T extends PropertyInterface<T>> LP addAGProp(String sID, String caption, LP<T> lp, int aggrInterface, Object... props) {
         return addAGProp(sID, false, caption, lp, aggrInterface, props);
     }
 
-    public <T extends PropertyInterface> LP addAGProp(AbstractGroup group, String sID, String caption, LP<T> lp, int aggrInterface, Object... props) {
+    protected <T extends PropertyInterface> LP addAGProp(AbstractGroup group, String sID, String caption, LP<T> lp, int aggrInterface, Object... props) {
         return addAGProp(group, false, sID, false, caption, lp, aggrInterface, props);
     }
 
-    public <T extends PropertyInterface<T>> LP addAGProp(String sID, boolean persistent, String caption, LP<T> lp, int aggrInterface, Object... props) {
+    protected <T extends PropertyInterface<T>> LP addAGProp(String sID, boolean persistent, String caption, LP<T> lp, int aggrInterface, Object... props) {
         return addAGProp(null, false, sID, persistent, caption, lp, aggrInterface, props);
     }
 
-    public <T extends PropertyInterface<T>> LP addAGProp(AbstractGroup group, String sID, boolean persistent, String caption, LP<T> lp, int aggrInterface, Object... props) {
+    protected <T extends PropertyInterface<T>> LP addAGProp(AbstractGroup group, String sID, boolean persistent, String caption, LP<T> lp, int aggrInterface, Object... props) {
         return addAGProp(group, false, sID, persistent, caption, lp, aggrInterface, props);
     }
 
@@ -956,11 +957,11 @@ public abstract class LogicsModule {
         return addDGProp(group, genSID(), caption, orders, ascending, groupProp, params);
     }
 
-    public <T extends PropertyInterface, P extends PropertyInterface> LP addDGProp(AbstractGroup group, String sID, String caption, int orders, boolean ascending, LP<T> groupProp, Object... params) {
+    protected <T extends PropertyInterface, P extends PropertyInterface> LP addDGProp(AbstractGroup group, String sID, String caption, int orders, boolean ascending, LP<T> groupProp, Object... params) {
         return addDGProp(group, sID, false, caption, orders, ascending, groupProp, params);
     }
 
-    public <T extends PropertyInterface> LP addDGProp(AbstractGroup group, String sID, boolean persistent, String caption, int orders, boolean ascending, LP<T> groupProp, Object... params) {
+    protected <T extends PropertyInterface> LP addDGProp(AbstractGroup group, String sID, boolean persistent, String caption, int orders, boolean ascending, LP<T> groupProp, Object... params) {
         List<PropertyInterfaceImplement<T>> listImplements = readImplements(groupProp.listInterfaces, params);
         int intNum = listImplements.size();
         LP result = addSGProp(group, sID, persistent, false, caption, groupProp, listImplements.subList(0, intNum - orders - 1));
@@ -1028,7 +1029,7 @@ public abstract class LogicsModule {
         return addProperty(group, persistent, listProperty);
     }
 
-    public LP addCaseUProp(AbstractGroup group, String sID, boolean persistent, String caption, Object... params) {
+    protected LP addCaseUProp(AbstractGroup group, String sID, boolean persistent, String caption, Object... params) {
         List<LI> list = readLI(params);
         int intNum = ((LMI)list.get(1)).lp.listInterfaces.size(); // берем количество интерфейсов у первого case'а
 
@@ -1044,62 +1045,62 @@ public abstract class LogicsModule {
 
     // объединение классовое (непересекающихся) свойств
 
-    public LP addCUProp(LP... props) {
+    protected LP addCUProp(LP... props) {
         return addCUProp(baseLM.privateGroup, "sys", props);
     }
 
-    public LP addCUProp(String caption, LP... props) {
+    protected LP addCUProp(String caption, LP... props) {
         return addCUProp((AbstractGroup) null, caption, props);
     }
 
-    public LP addCUProp(AbstractGroup group, String caption, LP... props) {
+    protected LP addCUProp(AbstractGroup group, String caption, LP... props) {
         return addCUProp(group, genSID(), caption, props);
     }
 
-    public LP addCUProp(String sID, String caption, LP... props) {
+    protected LP addCUProp(String sID, String caption, LP... props) {
         return addCUProp(sID, false, caption, props);
     }
 
-    public LP addCUProp(String sID, boolean persistent, String caption, LP... props) {
+    protected LP addCUProp(String sID, boolean persistent, String caption, LP... props) {
         return addCUProp(null, sID, persistent, caption, props);
     }
 
-    public LP addCUProp(AbstractGroup group, String sID, String caption, LP... props) {
+    protected LP addCUProp(AbstractGroup group, String sID, String caption, LP... props) {
         return addCUProp(group, sID, false, caption, props);
     }
 
-    public LP addCUProp(AbstractGroup group, String sID, boolean persistent, String caption, LP... props) {
+    protected LP addCUProp(AbstractGroup group, String sID, boolean persistent, String caption, LP... props) {
         assert baseLM.checkCUProps.add(props);
         return addXSUProp(group, sID, persistent, caption, props);
     }
 
     // разница
 
-    public LP addDUProp(LP prop1, LP prop2) {
+    protected LP addDUProp(LP prop1, LP prop2) {
         return addDUProp(baseLM.privateGroup, "sys", prop1, prop2);
     }
 
-    public LP addDUProp(String caption, LP prop1, LP prop2) {
+    protected LP addDUProp(String caption, LP prop1, LP prop2) {
         return addDUProp((AbstractGroup) null, caption, prop1, prop2);
     }
 
-    public LP addDUProp(AbstractGroup group, String caption, LP prop1, LP prop2) {
+    protected LP addDUProp(AbstractGroup group, String caption, LP prop1, LP prop2) {
         return addDUProp(group, genSID(), caption, prop1, prop2);
     }
 
-    public LP addDUProp(String sID, String caption, LP prop1, LP prop2) {
+    protected LP addDUProp(String sID, String caption, LP prop1, LP prop2) {
         return addDUProp(null, sID, caption, prop1, prop2);
     }
 
-    public LP addDUProp(String sID, boolean persistent, String caption, LP prop1, LP prop2) {
+    protected LP addDUProp(String sID, boolean persistent, String caption, LP prop1, LP prop2) {
         return addDUProp(null, sID, persistent, caption, prop1, prop2);
     }
 
-    public LP addDUProp(AbstractGroup group, String sID, String caption, LP prop1, LP prop2) {
+    protected LP addDUProp(AbstractGroup group, String sID, String caption, LP prop1, LP prop2) {
         return addDUProp(group, sID, false, caption, prop1, prop2);
     }
 
-    public LP addDUProp(AbstractGroup group, String sID, boolean persistent, String caption, LP prop1, LP prop2) {
+    protected LP addDUProp(AbstractGroup group, String sID, boolean persistent, String caption, LP prop1, LP prop2) {
         int intNum = prop1.listInterfaces.size();
         Object[] params = new Object[2 * (2 + intNum)];
         params[0] = 1;
@@ -1145,7 +1146,7 @@ public abstract class LogicsModule {
         return addXorUProp(group, sID, false, caption, prop1, prop2);
     }
 
-    public LP addXorUProp(AbstractGroup group, String sID, boolean persistent, String caption, LP... props) {
+    protected LP addXorUProp(AbstractGroup group, String sID, boolean persistent, String caption, LP... props) {
         return addUProp(group, sID, persistent, caption, Union.XOR, getUParams(props, 0));
 //        int intNum = prop1.listInterfaces.size();
 //        Object[] params = new Object[2 * (1 + intNum)];
@@ -1160,7 +1161,7 @@ public abstract class LogicsModule {
 
     // IF и IF ELSE
 
-    public LP addIfProp(LP prop, boolean not, LP ifProp, Object... params) {
+    protected LP addIfProp(LP prop, boolean not, LP ifProp, Object... params) {
         return addIfProp(baseLM.privateGroup, genSID(), "sys", prop, not, ifProp, params);
     }
 
@@ -1172,7 +1173,7 @@ public abstract class LogicsModule {
         return addJProp(group, sID, persistent, caption, and(not), BaseUtils.add(getUParams(new LP[]{prop}, 0), BaseUtils.add(new LP[]{ifProp}, params)));
     }
 
-    public LP addIfElseUProp(LP prop1, LP prop2, LP ifProp, Object... params) {
+    protected LP addIfElseUProp(LP prop1, LP prop2, LP ifProp, Object... params) {
         return addIfElseUProp(baseLM.privateGroup, "sys", prop1, prop2, ifProp, params);
     }
 
@@ -1180,7 +1181,7 @@ public abstract class LogicsModule {
         return addIfElseUProp(group, genSID(), caption, prop1, prop2, ifProp, params);
     }
 
-    public LP addIfElseUProp(AbstractGroup group, String sID, String caption, LP prop1, LP prop2, LP ifProp, Object... params) {
+    protected LP addIfElseUProp(AbstractGroup group, String sID, String caption, LP prop1, LP prop2, LP ifProp, Object... params) {
         return addIfElseUProp(group, sID, false, caption, prop1, prop2, ifProp, params);
     }
 
@@ -1190,33 +1191,33 @@ public abstract class LogicsModule {
 
     // объединение пересекающихся свойств
 
-    public LP addSUProp(Union unionType, LP... props) {
+    protected LP addSUProp(Union unionType, LP... props) {
         return addSUProp(baseLM.privateGroup, "sys", unionType, props);
     }
 
-    public LP addSUProp(String caption, Union unionType, LP... props) {
+    protected LP addSUProp(String caption, Union unionType, LP... props) {
         return addSUProp((AbstractGroup) null, caption, unionType, props);
     }
 
-    public LP addSUProp(AbstractGroup group, String caption, Union unionType, LP... props) {
+    protected LP addSUProp(AbstractGroup group, String caption, Union unionType, LP... props) {
         return addSUProp(group, genSID(), caption, unionType, props);
     }
 
-    public LP addSUProp(String sID, String caption, Union unionType, LP... props) {
+    protected LP addSUProp(String sID, String caption, Union unionType, LP... props) {
         return addSUProp(sID, false, caption, unionType, props);
     }
 
-    public LP addSUProp(String sID, boolean persistent, String caption, Union unionType, LP... props) {
+    protected LP addSUProp(String sID, boolean persistent, String caption, Union unionType, LP... props) {
         return addSUProp(null, sID, persistent, caption, unionType, props);
     }
 
     // объединяет разные по классам св-ва
 
-    public LP addSUProp(AbstractGroup group, String sID, String caption, Union unionType, LP... props) {
+    protected LP addSUProp(AbstractGroup group, String sID, String caption, Union unionType, LP... props) {
         return addSUProp(group, sID, false, caption, unionType, props);
     }
 
-    public LP addSUProp(AbstractGroup group, String sID, boolean persistent, String caption, Union unionType, LP... props) {
+    protected LP addSUProp(AbstractGroup group, String sID, boolean persistent, String caption, Union unionType, LP... props) {
         assert baseLM.checkSUProps.add(props);
         return addUProp(group, sID, persistent, caption, unionType, getUParams(props, (unionType == Union.SUM ? 1 : 0)));
     }
@@ -1235,7 +1236,7 @@ public abstract class LogicsModule {
         return addUProp(group, sID, persistent, caption, Union.EXCLUSIVE, getUParams(props, 0));
     }
 
-    public LP[] addMUProp(AbstractGroup group, String[] ids, String[] captions, int extra, LP... props) {
+    protected LP[] addMUProp(AbstractGroup group, String[] ids, String[] captions, int extra, LP... props) {
         int propNum = props.length / (1 + extra);
         LP[] maxProps = Arrays.copyOfRange(props, 0, propNum);
 
@@ -1252,19 +1253,19 @@ public abstract class LogicsModule {
         return result;
     }
 
-    public LP addAProp(ActionProperty property) {
+    protected LP addAProp(ActionProperty property) {
         return addAProp(baseLM.actionGroup, property);
     }
 
-    public LP addAProp(AbstractGroup group, ActionProperty property) {
+    protected LP addAProp(AbstractGroup group, ActionProperty property) {
         return addProperty(group, new LP<ClassPropertyInterface>(property));
     }
 
-    public LP addBAProp(ConcreteCustomClass customClass, LP add) {
+    protected LP addBAProp(ConcreteCustomClass customClass, LP add) {
         return addAProp(baseLM.new AddBarcodeActionProperty(customClass, add.property, genSID()));
     }
 
-    public LP addSAProp(LP lp) {
+    protected LP addSAProp(LP lp) {
         return addSAProp(baseLM.privateGroup, "sys", lp);
     }
 
@@ -1283,7 +1284,7 @@ public abstract class LogicsModule {
     /**
      * Добавляет action для запуска свойств с мэппингом по порядку, т.е. на входы и выход каждого свойства мэппятся интерфейсы результирующего по порядку
      */
-    public LP addEPAProp(LP... lps) {
+    protected LP addEPAProp(LP... lps) {
         return addEPAProp(false, lps);
     }
 
@@ -1337,24 +1338,24 @@ public abstract class LogicsModule {
         return addAProp(new ExecutePropertiesActionProperty(genSID(), "sys", writeDefaultValues, lps, mapInterfaces));
     }
 
-    public LP addLFAProp(AbstractGroup group, String caption, LP lp) {
+    protected LP addLFAProp(AbstractGroup group, String caption, LP lp) {
         return addProperty(group, new LP<ClassPropertyInterface>(new BaseLogicsModule.LoadActionProperty(genSID(), caption, lp)));
     }
 
-    public LP addOFAProp(AbstractGroup group, String caption, LP lp) { // обернем сразу в and
+    protected LP addOFAProp(AbstractGroup group, String caption, LP lp) { // обернем сразу в and
         LP<ClassPropertyInterface> openAction = new LP<ClassPropertyInterface>(new BaseLogicsModule.OpenActionProperty(genSID(), caption, lp));
         return addJProp(group, caption, baseLM.and1, getUParams(new LP[]{openAction, lp}, 0));
     }
 
 
     // params - по каким входам группировать
-    public LP addIAProp(LP dataProperty, Integer... params) {
+    protected LP addIAProp(LP dataProperty, Integer... params) {
         return addAProp(new BaseLogicsModule.IncrementActionProperty(genSID(), "sys", dataProperty,
                 addMGProp(dataProperty, params),
                 params));
     }
 
-    public LP addAAProp(CustomClass customClass, LP... properties) {
+    protected LP addAAProp(CustomClass customClass, LP... properties) {
         return addAAProp(customClass, null, null, false, properties);
     }
 
@@ -1369,14 +1370,14 @@ public abstract class LogicsModule {
         return addAProp(new AddObjectActionProperty(genSID(), (CustomClass) cls, propertyValue, dataClass));
     }
 
-    public LP addAAProp(CustomClass customClass, LP barcode, LP barcodePrefix, boolean quantity, LP... properties) {
+    protected LP addAAProp(CustomClass customClass, LP barcode, LP barcodePrefix, boolean quantity, LP... properties) {
         return addAProp(new AddObjectActionProperty(genSID(),
                 (barcode != null) ? barcode.property : null, (barcodePrefix != null) ? barcodePrefix.property : null,
                 quantity, customClass, LP.toPropertyArray(properties), null, null));
     }
 
     @IdentityLazy
-    public LP getAddObjectAction(ValueClass cls) {
+    protected LP getAddObjectAction(ValueClass cls) {
         return addAProp(new AddObjectActionProperty(genSID(), (CustomClass) cls));
     }
 
@@ -1420,7 +1421,7 @@ public abstract class LogicsModule {
      * @param hideProperty критерий
      * @return свойство, которое должно использоваться в качестве propertyCaption для скрываемого свойства
      */
-    public LP addHideCaptionProp(AbstractGroup group, String caption, LP original, LP hideProperty) {
+    protected LP addHideCaptionProp(AbstractGroup group, String caption, LP original, LP hideProperty) {
         LP originalCaption = addCProp(StringClass.get(100), original.property.caption);
         LP result = addJProp(group, caption, baseLM.and1, BaseUtils.add(new Object[]{originalCaption}, directLI(hideProperty)));
         return result;
@@ -1434,7 +1435,7 @@ public abstract class LogicsModule {
         return addProperty(group, new LP(prop));
     }
 
-    public <T extends LP<?>> T addProperty(AbstractGroup group, T lp) {
+    protected <T extends LP<?>> T addProperty(AbstractGroup group, T lp) {
         return addProperty(group, false, lp);
     }
 
@@ -1459,11 +1460,11 @@ public abstract class LogicsModule {
         property.markStored(baseLM.tableFactory);
     }
 
-    public void addPersistent(LP lp) {
+    protected void addPersistent(LP lp) {
         addPersistent((AggregateProperty) lp.property);
     }
 
-    public void addConstraint(LP<?> lp, boolean checkChange) {
+    protected void addConstraint(LP<?> lp, boolean checkChange) {
         lp.property.setConstraint(checkChange);
     }
 
@@ -1475,7 +1476,7 @@ public abstract class LogicsModule {
         addProp(first.property.addFollows(new PropertyMapImplement<L, T>(second.property, mapInterfaces)));
     }
 
-    public void followed(LP first, LP... lps) {
+    protected void followed(LP first, LP... lps) {
         for (LP lp : lps) {
             int[] mapping = new int[lp.listInterfaces.size()];
             for (int i = 0; i < mapping.length; i++) {
@@ -1485,7 +1486,7 @@ public abstract class LogicsModule {
         }
     }
 
-    public void setNotNull(LP property) {
+    protected void setNotNull(LP property) {
 
         ValueClass[] values = property.getMapClasses();
 
@@ -1500,7 +1501,7 @@ public abstract class LogicsModule {
 
     // получает свойство is
     // для множества классов есть CProp
-    public LP is(ValueClass valueClass) {
+    protected LP is(ValueClass valueClass) {
         LP isProp = baseLM.is.get(valueClass);
         if (isProp == null) {
             isProp = addCProp(valueClass.toString() + "(пр.)", LogicalClass.instance, true, valueClass);
@@ -1518,7 +1519,7 @@ public abstract class LogicsModule {
         return objectProp;
     }
 
-    public LP and(boolean... nots) {
+    protected LP and(boolean... nots) {
         return addAFProp(nots);
     }
 
@@ -1531,7 +1532,7 @@ public abstract class LogicsModule {
         return addCProp("dumbProperty" + interfaces, StringClass.get(0), "", params);
     }
 
-    public <T extends FormEntity> T addFormEntity(T form) {
+    protected <T extends FormEntity> T addFormEntity(T form) {
         form.richDesign = form.createDefaultRichDesign();
         return form;
     }
@@ -1540,11 +1541,11 @@ public abstract class LogicsModule {
         addObjectActions(form, object, false);
     }
 
-    public void addObjectActions(FormEntity form, ObjectEntity object, ObjectEntity checkObject) {
+    protected void addObjectActions(FormEntity form, ObjectEntity object, ObjectEntity checkObject) {
         addObjectActions(form, object, checkObject, null);
     }
 
-    public void addObjectActions(FormEntity form, ObjectEntity object, ObjectEntity checkObject, ValueClass checkObjectClass) {
+    protected void addObjectActions(FormEntity form, ObjectEntity object, ObjectEntity checkObject, ValueClass checkObjectClass) {
         addObjectActions(form, object, false, checkObject, checkObjectClass);
     }
 
@@ -1552,7 +1553,7 @@ public abstract class LogicsModule {
         addObjectActions(form, object, actionImport, null, null);
     }
 
-    public void addObjectActions(FormEntity form, ObjectEntity object, boolean actionImport, ObjectEntity checkObject, ValueClass checkObjectClass) {
+    protected void addObjectActions(FormEntity form, ObjectEntity object, boolean actionImport, ObjectEntity checkObject, ValueClass checkObjectClass) {
         form.addPropertyDraw(baseLM.delete, object);
         if (actionImport)
             form.forceDefaultDraw.put(form.addPropertyDraw(getImportObjectAction(object.baseClass)), object.groupTo);

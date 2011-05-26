@@ -50,12 +50,10 @@ import static platform.server.logics.PropertyUtils.readImplements;
  * Time: 17:52
  */
 
-// todo [dale]: отрефакторить нормально по смыслу и использованию все модификаторы доступа
-
 public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule {
     // classes
     public BaseClass baseClass;
-    public Logger logger;
+    Logger logger;
 
     public AbstractCustomClass user;
     public ConcreteCustomClass systemUser;
@@ -73,7 +71,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public ConcreteCustomClass dictionaryEntry;
 
     public AbstractCustomClass transaction, barcodeObject;
-    protected AbstractCustomClass namedUniqueObject;
 
     public AbstractCustomClass emailObject;
 
@@ -259,7 +256,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public List<LP> lproperties = new ArrayList<LP>();
 
     // счетчик идентификаторов
-    static IDGenerator idGenerator = new DefaultIDGenerator(); // todo [dale]: static? package?
+    static private IDGenerator idGenerator = new DefaultIDGenerator();
 
     T BL;
 
@@ -561,6 +558,10 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     @Override
     public void initIndexes() {
         addIndex(barcode);
+    }
+
+    static int generateStaticNewID() {
+        return idGenerator.idShift();
     }
 
     <T extends LP<?>> void registerProperty(T lp) {
@@ -1036,7 +1037,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         }
     }
 
-    public class RecalculateActionProperty extends ActionProperty {
+    private class RecalculateActionProperty extends ActionProperty {
         private RecalculateActionProperty(String sID, String caption) {
             super(sID, caption, new ValueClass[]{});
         }
@@ -1057,7 +1058,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         }
     }
 
-    public class PackActionProperty extends ActionProperty {
+    private class PackActionProperty extends ActionProperty {
         private PackActionProperty(String sID, String caption) {
             super(sID, caption, new ValueClass[]{});
         }
@@ -1316,7 +1317,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         }
     }
 
-    public class DictionariesFormEntity extends FormEntity {
+    private class DictionariesFormEntity extends FormEntity {
 
         public DictionariesFormEntity(NavigatorElement parent, String sID) {
             super(parent, sID, "Словари");
@@ -1352,7 +1353,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         }
     }
 
-    public class NamedObjectClassForm extends ClassFormEntity {
+    private class NamedObjectClassForm extends ClassFormEntity {
         public ObjectEntity objObjectName;
 
 
