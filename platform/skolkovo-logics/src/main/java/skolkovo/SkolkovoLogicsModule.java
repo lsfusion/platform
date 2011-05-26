@@ -2040,14 +2040,14 @@ public class SkolkovoLogicsModule extends LogicsModule {
         }
 
         @Override
-        public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, DataSession session, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects, boolean groupLast) throws SQLException {
+        public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, DataSession session, Modifier<? extends Changes> modifier, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects, boolean groupLast) throws SQLException {
             DataObject voteObject = keys.get(voteInterface);
-            java.sql.Date dateStart = (java.sql.Date) dateStartVote.read(session, voteObject);
+            java.sql.Date dateStart = (java.sql.Date) dateStartVote.read(session, modifier, voteObject);
 
-            DataObject projectObject = new DataObject(projectVote.read(session, voteObject), project);
+            DataObject projectObject = new DataObject(projectVote.read(session, modifier, voteObject), project);
             Query<String, String> voteQuery = new Query<String, String>(Collections.singleton("vote"));
-            voteQuery.and(projectVote.getExpr(session.modifier, voteQuery.mapKeys.get("vote")).compare(projectObject.getExpr(), Compare.EQUALS));
-            voteQuery.properties.put("dateStartVote", dateStartVote.getExpr(session.modifier, voteQuery.mapKeys.get("vote")));
+            voteQuery.and(projectVote.getExpr(modifier, voteQuery.mapKeys.get("vote")).compare(projectObject.getExpr(), Compare.EQUALS));
+            voteQuery.properties.put("dateStartVote", dateStartVote.getExpr(modifier, voteQuery.mapKeys.get("vote")));
 
             java.sql.Date datePrev = null;
             DataObject votePrevObject = null;
@@ -2063,7 +2063,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
             // считываем всех экспертов, которые уже голосовали по проекту
             Query<String, String> query = new Query<String, String>(Collections.singleton("key"));
-            query.and(doneExpertVote.getExpr(session.modifier, query.mapKeys.get("key"), votePrevObject.getExpr()).getWhere());
+            query.and(doneExpertVote.getExpr(modifier, query.mapKeys.get("key"), votePrevObject.getExpr()).getWhere());
 //            query.properties.put("expert", object(expert).getExpr(session.modifier, query.mapKeys.get("key")));
 
             Set<DataObject> experts = new HashSet<DataObject>();
@@ -2073,13 +2073,13 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
             // копируем результаты старых заседаний
             for (DataObject expert : experts) {
-                inExpertVote.execute(true, session, expert, voteObject);
-                oldExpertVote.execute(true, session, expert, voteObject);
+                inExpertVote.execute(true, session, modifier, expert, voteObject);
+                oldExpertVote.execute(true, session, modifier, expert, voteObject);
                 LP[] copyProperties = new LP[] {dateExpertVote, voteResultExpertVote, inClusterExpertVote,
                                                 innovativeExpertVote, foreignExpertVote, innovativeCommentExpertVote,
                                                 competentExpertVote, completeExpertVote, completeCommentExpertVote};
                 for (LP property : copyProperties) {
-                    property.execute(property.read(session, expert, votePrevObject), session, expert, voteObject);
+                    property.execute(property.read(session, modifier, expert, votePrevObject), session, modifier, expert, voteObject);
                 }
             }
         }
