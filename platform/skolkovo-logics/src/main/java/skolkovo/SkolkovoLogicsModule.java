@@ -40,6 +40,7 @@ import java.awt.event.KeyEvent;
 import java.io.FileNotFoundException;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.List;
 
 import static platform.base.BaseUtils.nvl;
 
@@ -344,6 +345,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
     LP generateDocumentsProjectDocumentType;
     LP generateVoteProject, hideGenerateVoteProject;
+    LP copyResultsVote;
 
     LP expertLogin;
 
@@ -1027,12 +1029,13 @@ public class SkolkovoLogicsModule extends LogicsModule {
         LM.addConstraint(LM.addJProp("Эксперт не соответствует необходимому кластеру", LM.diff2,
                 clusterExpert, 1, LM.addJProp(LM.and1, clusterVote, 2, inExpertVote, 1, 2), 1, 2), false);
 
-        LM.addConstraint(LM.addJProp("Количество экспертов не соответствует требуемому", LM.andNot1, LM.is(vote), 1, LM.addJProp(LM.equals2, requiredQuantity,
-                LM.addSGProp(LM.addJProp(LM.and1, LM.addCProp(IntegerClass.instance, 1), inExpertVote, 2, 1), 1), 1), 1), false);
+//        LM.addConstraint(LM.addJProp("Количество экспертов не соответствует требуемому", LM.andNot1, LM.is(vote), 1, LM.addJProp(LM.equals2, requiredQuantity,
+//                LM.addSGProp(LM.addJProp(LM.and1, LM.addCProp(IntegerClass.instance, 1), inExpertVote, 2, 1), 1), 1), 1), false);
 
         generateDocumentsProjectDocumentType = LM.addAProp(LM.actionGroup, new GenerateDocumentsActionProperty());
 
         generateVoteProject = LM.addAProp(LM.actionGroup, new GenerateVoteActionProperty());
+        copyResultsVote = LM.addAProp(LM.actionGroup, new CopyResultsActionProperty());
         hideGenerateVoteProject = LM.addHideCaptionProp(LM.privateGroup, "Сгенерировать заседание", generateVoteProject, needExtraVoteProject);
 //        generateVoteProject.setDerivedForcedChange(LM.addCProp(ActionClass.instance, true), needExtraVoteProject, 1, autoGenerateProject, 1);
 
@@ -1321,8 +1324,10 @@ public class SkolkovoLogicsModule extends LogicsModule {
             getPropertyDraw(generateVoteProject).forceViewType = ClassViewType.PANEL;
             getPropertyDraw(generateVoteProject).propertyCaption = addPropertyObject(hideGenerateVoteProject, objProject);
 
-            objVote = addSingleGroupObject(vote, dateStartVote, dateEndVote, nameNativeClusterVote, equalsClusterProjectVote, openedVote, succeededVote, acceptedVote, quantityDoneVote, quantityInClusterVote, quantityInnovativeVote, quantityForeignVote, LM.delete);
+            objVote = addSingleGroupObject(vote, dateStartVote, dateEndVote, nameNativeClusterVote, equalsClusterProjectVote, openedVote, succeededVote, acceptedVote, quantityDoneVote, quantityInClusterVote, quantityInnovativeVote, quantityForeignVote, copyResultsVote, LM.delete);
             objVote.groupTo.banClassView.addAll(BaseUtils.toList(ClassViewType.PANEL, ClassViewType.HIDE));
+
+            getPropertyDraw(copyResultsVote).forceViewType = ClassViewType.PANEL;
 
             objDocumentTemplate = addSingleGroupObject(documentTemplate, "Шаблон документов", LM.name);
             objDocumentTemplate.groupTo.setSingleClassView(ClassViewType.PANEL);
@@ -2028,4 +2033,64 @@ public class SkolkovoLogicsModule extends LogicsModule {
         }
     }
 
+    public class CopyResultsActionProperty extends ActionProperty {
+
+        private final ClassPropertyInterface voteInterface;
+
+        public CopyResultsActionProperty() {
+            super(LM.genSID(), "Скопировать результаты из предыдущего заседания", new ValueClass[]{vote});
+
+            Iterator<ClassPropertyInterface> i = interfaces.iterator();
+            voteInterface = i.next();
+        }
+
+        public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects) throws SQLException {
+            throw new RuntimeException("no need");
+        }
+
+        @Override
+        public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, DataSession session, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects, boolean groupLast) throws SQLException {
+            DataObject voteObject = keys.get(voteInterface);
+            java.sql.Date dateStart = (java.sql.Date) dateStartVote.read(session, voteObject);
+
+            DataObject projectObject = new DataObject(projectVote.read(session, voteObject), project);
+            Query<String, String> voteQuery = new Query<String, String>(Collections.singleton("vote"));
+            voteQuery.and(projectVote.getExpr(session.modifier, voteQuery.mapKeys.get("vote")).compare(projectObject.getExpr(), Compare.EQUALS));
+            voteQuery.properties.put("dateStartVote", dateStartVote.getExpr(session.modifier, voteQuery.mapKeys.get("vote")));
+
+            java.sql.Date datePrev = null;
+            DataObject votePrevObject = null;
+
+            for (Map.Entry<Map<String, DataObject>, Map<String, ObjectValue>> row : voteQuery.executeClasses(session.sql, session.env, LM.baseClass).entrySet()) {
+                java.sql.Date dateCur = (java.sql.Date) row.getValue().get("dateStartVote").getValue();
+                if (dateCur != null && dateCur.getTime() < dateStart.getTime() && (datePrev == null || dateCur.getTime() > datePrev.getTime())) {
+                    datePrev = dateCur;
+                    votePrevObject = row.getKey().get("vote");
+                }
+            }
+            if (votePrevObject == null) return;
+
+            // считываем всех экспертов, которые уже голосовали по проекту
+            Query<String, String> query = new Query<String, String>(Collections.singleton("key"));
+            query.and(doneExpertVote.getExpr(session.modifier, query.mapKeys.get("key"), votePrevObject.getExpr()).getWhere());
+//            query.properties.put("expert", object(expert).getExpr(session.modifier, query.mapKeys.get("key")));
+
+            Set<DataObject> experts = new HashSet<DataObject>();
+            for (Map.Entry<Map<String, DataObject>, Map<String, ObjectValue>> row : query.executeClasses(session.sql, session.env, LM.baseClass).entrySet()) {
+                experts.add(row.getKey().get("key"));
+            }
+
+            // копируем результаты старых заседаний
+            for (DataObject expert : experts) {
+                inExpertVote.execute(true, session, expert, voteObject);
+                oldExpertVote.execute(true, session, expert, voteObject);
+                LP[] copyProperties = new LP[] {dateExpertVote, voteResultExpertVote, inClusterExpertVote,
+                                                innovativeExpertVote, foreignExpertVote, innovativeCommentExpertVote,
+                                                competentExpertVote, completeExpertVote, completeCommentExpertVote};
+                for (LP property : copyProperties) {
+                    property.execute(property.read(session, expert, votePrevObject), session, expert, voteObject);
+                }
+            }
+        }
+    }
 }

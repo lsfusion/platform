@@ -223,6 +223,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public LP emailPassword;
     public LP emailBlindCarbonCopy;
     public LP fromAddress;
+    public LP disableEmail;
     protected LP defaultCountry;
 
     public LP sidCountry;
@@ -551,6 +552,9 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         emailPassword = addDProp("emailPassword", "Пароль", StringClass.get(50));
         emailBlindCarbonCopy = addDProp("emailBlindCarbonCopy", "Копия (BCC)", StringClass.get(50));
         fromAddress = addDProp("fromAddress", "Адрес отправителя", StringClass.get(50));
+
+        disableEmail = addDProp("disableEmail", "Отключить отсылку почты", LogicalClass.instance);
+
         defaultCountry = addDProp("defaultCountry", "Страна по умолчанию", country);
 
         entryDictionary = addDProp("entryDictionary", "Словарь", dictionary, dictionaryEntry);
@@ -2783,7 +2787,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         private AdminFormEntity(NavigatorElement parent, String sID) {
             super(parent, sID, "Глобальные параметры");
 
-            addPropertyDraw(new LP[]{smtpHost, smtpPort, fromAddress, emailAccount, emailPassword, emailBlindCarbonCopy, webHost, defaultCountry, barcodePrefix, restartServerAction, cancelRestartServerAction, recalculateAction, packAction});
+            addPropertyDraw(new LP[]{smtpHost, smtpPort, fromAddress, emailAccount, emailPassword, emailBlindCarbonCopy, disableEmail, webHost, defaultCountry, barcodePrefix, restartServerAction, cancelRestartServerAction, recalculateAction, packAction});
         }
     }
 

@@ -153,6 +153,11 @@ public class EmailActionProperty extends ActionProperty {
     public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, DataSession session, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapExecuteObjects, boolean groupLast) throws SQLException {
 
         try {
+            if (BL.LM.disableEmail.read(session) != null) {
+                EmailSender.logger.error("Отсылка почты отключена");
+                return;
+            }
+
             List<EmailSender.AttachmentProperties> attachmentForms = new ArrayList<EmailSender.AttachmentProperties>();
             List<String> inlineForms = new ArrayList<String>();
             Map<ByteArray, String> attachmentFiles = new HashMap<ByteArray, String>();
