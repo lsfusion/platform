@@ -160,9 +160,9 @@ public abstract class GridTable extends ClientFormTable
 
         getSelectionModel().addListSelectionListener(new ListSelectionListener() {
             public void valueChanged(ListSelectionEvent e) {
-                if (!e.getValueIsAdjusting()) {
+//                if (!e.getValueIsAdjusting()) {
                     changeCurrentObject();
-                }
+//                }
                 moveToFocusableCellIfNeeded();
             }
         });
