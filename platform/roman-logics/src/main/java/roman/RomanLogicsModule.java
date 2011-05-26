@@ -377,6 +377,7 @@ public class RomanLogicsModule extends LogicsModule {
     private ConcreteCustomClass shipDimension;
     private LP quantityShipDimensionShipmentStockSku;
     private LP quantityShipmentSku;
+    private LP quantityShipment;
     private LP barcodeCurrentPalletRoute;
     private LP barcodeCurrentFreightBoxRoute;
     private LP equalsPalletFreight;
@@ -763,6 +764,7 @@ public class RomanLogicsModule extends LogicsModule {
     public AnnexInvoiceFormEntity invoiceFromFormEntity;
 
     @Override
+    
     public void initClasses() {
         initBaseClassAliases();
 
@@ -1654,6 +1656,8 @@ public class RomanLogicsModule extends LogicsModule {
 
         quantityShipmentSku = addSGProp(baseGroup, "quantityShipmentSku", "Оприход. (пост.)", quantityShipmentStockSku, 1, 3);
 
+        quantityShipment = addSGProp(baseGroup, "quantityShipment", "Оприходовано", quantityShipmentSku, 1);
+        
         zeroQuantityShipmentSku = addSUProp(baseGroup, "zeroQuantityShipmentSku", "кол-во", Union.OVERRIDE, addCProp(DoubleClass.instance, 0, shipment, sku), quantityShipmentSku);
         zeroInvoicedShipmentSku = addSUProp(baseGroup, "zeroInvoicedShipmentSku", "кол-во", Union.OVERRIDE, addCProp(DoubleClass.instance, 0, shipment, sku), invoicedShipmentSku);
         diffShipmentSku = addJProp(baseLM.diff2, zeroQuantityShipmentSku, 1, 2, zeroInvoicedShipmentSku, 1, 2);
@@ -2683,7 +2687,7 @@ public class RomanLogicsModule extends LogicsModule {
             objSupplier = addSingleGroupObject(supplier, "Поставщик", baseLM.name);
             objSupplier.groupTo.setSingleClassView(ClassViewType.PANEL);
 
-            objShipment = addSingleGroupObject((box ? boxShipment : simpleShipment), "Поставка", baseLM.date, sidDocument);
+            objShipment = addSingleGroupObject((box ? boxShipment : simpleShipment), "Поставка", baseLM.date, sidDocument, invoicedShipment, quantityShipment);
             objShipment.groupTo.initClassView = ClassViewType.PANEL;
 
             if (box) {
@@ -3675,17 +3679,27 @@ public class RomanLogicsModule extends LogicsModule {
 
             design.get(objSupplier.groupTo).grid.constraints.fillVertical = 1;
             design.get(objInvoice.groupTo).grid.constraints.fillVertical = 1;
-            design.get(objBox.groupTo).grid.constraints.fillVertical = 1;
-            design.get(objSku.groupTo).grid.constraints.fillVertical = 3;
-            design.get(objSku2.groupTo).grid.constraints.fillVertical = 3;
+            design.get(objSupplier.groupTo).grid.constraints.fillHorizontal = 1;
+            design.get(objInvoice.groupTo).grid.constraints.fillHorizontal = 5;
+            design.get(objSku.groupTo).grid.constraints.fillVertical = 4;
+            design.get(objBox.groupTo).grid.constraints.fillVertical = 4;
+            design.get(objSku2.groupTo).grid.constraints.fillVertical = 4;
+            design.get(objBox.groupTo).grid.constraints.fillHorizontal = 1;
+            design.get(objSku2.groupTo).grid.constraints.fillHorizontal = 5;
 
-            design.addIntersection(design.getGroupObjectContainer(objInvoice.groupTo),
-                                   design.getGroupObjectContainer(objBox.groupTo),
+            design.addIntersection(design.getGroupObjectContainer(objSupplier.groupTo),
+                                   design.getGroupObjectContainer(objInvoice.groupTo),
                                    DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
 
-            design.addIntersection(design.getGroupObjectContainer(objSku.groupTo),
-                                   design.getGroupObjectContainer(objSku2.groupTo),
-                                   DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
+            ContainerView boxContainer = design.createContainer("По коробам");
+            boxContainer.add(design.getGroupObjectContainer(objBox.groupTo));
+            boxContainer.add(design.getGroupObjectContainer(objSku2.groupTo));
+
+            ContainerView specContainer = design.createContainer();
+            design.getMainContainer().addAfter(specContainer, design.getGroupObjectContainer(objSku.groupTo));
+            specContainer.add(design.getGroupObjectContainer(objSku.groupTo));            
+            specContainer.add(boxContainer);
+            specContainer.tabbedPane = true;                        
 
             return design;
         }
@@ -3706,7 +3720,7 @@ public class RomanLogicsModule extends LogicsModule {
         private FreightChangeFormEntity(NavigatorElement parent, String sID, String caption, boolean edit) {
             super(parent, sID, caption);
 
-            objFreight = addSingleGroupObject(freight, "Фрахт", baseLM.date, baseLM.objectClassName, nameRouteFreight, nameExporterFreight, nameFreightTypeFreight, grossWeightFreight, tonnageFreight, palletCountFreight, volumeFreight, palletNumberFreight);
+            objFreight = addSingleGroupObject(freight, "Фрахт", baseLM.date, baseLM.objectClassName, nameRouteFreight, nameExporterFreight, nameFreightTypeFreight, grossWeightFreight, palletNumberFreight);
 
             if (edit) {
                 objFreight.groupTo.setSingleClassView(ClassViewType.PANEL);
@@ -3754,8 +3768,8 @@ public class RomanLogicsModule extends LogicsModule {
 
             addPropertyDraw(quantityFreightArticle, objFreight, objArticle);
 
-            objSku = addSingleGroupObject(sku, "SKU", baseLM.selection, baseLM.barcode, sidArticleSku, sidColorSupplierItem, nameColorSupplierItem, sidSizeSupplierItem,
-                     nameBrandSupplierArticleSku, nameArticleSku,
+            objSku = addSingleGroupObject(sku, "SKU", baseLM.selection, baseLM.barcode, sidArticleSku,
+                     nameBrandSupplierArticleSku, nameArticleSku, nameCategoryArticleSku,
                      sidCustomCategoryOriginArticleSku, sidCustomCategory10Sku, nameCountrySku, netWeightSku,
                      mainCompositionOriginSku, translationMainCompositionSku, mainCompositionSku,
                      additionalCompositionOriginSku, translationAdditionalCompositionSku, additionalCompositionSku);
@@ -3826,7 +3840,7 @@ public class RomanLogicsModule extends LogicsModule {
             design.get(getPropertyDraw(baseLM.objectClassName, objFreight)).caption = "Статус фрахта";
 
             design.get(objFreight.groupTo).grid.constraints.fillHorizontal = 2;
-            design.get(objImporter.groupTo).grid.constraints.fillHorizontal = 1;
+            design.get(objImporter.groupTo).grid.constraints.fillHorizontal = 3;
             design.get(objFreight.groupTo).grid.constraints.fillVertical = 1;
             design.get(objArticle.groupTo).grid.constraints.fillVertical = 4;
             design.get(objSku.groupTo).grid.constraints.fillVertical = 4;
@@ -4390,7 +4404,7 @@ public class RomanLogicsModule extends LogicsModule {
         private FreightInvoiceFormEntity(NavigatorElement parent, String sID, String caption, boolean edit) {
             super(parent, sID, caption);
 
-            objFreight = addSingleGroupObject(freight, "Фрахт", baseLM.date, baseLM.objectClassName, nameRouteFreight, nameFreightTypeFreight, tonnageFreight, palletCountFreight, volumeFreight, nameCurrencyFreight, sumInFreight, sumMarkupInFreight, sumInOutFreight, palletNumberFreight);
+            objFreight = addSingleGroupObject(freight, "Фрахт", baseLM.date, baseLM.objectClassName, nameRouteFreight, nameFreightTypeFreight, nameCurrencyFreight, sumInFreight, sumMarkupInFreight, sumInOutFreight, palletNumberFreight);
 
             addPropertyDraw(sumInCurrentYear);
             addPropertyDraw(sumInOutCurrentYear);
