@@ -766,6 +766,24 @@ public class RomanLogicsModule extends LogicsModule {
     LP barcodeToPricat;
     LP importPricatSupplier;
 
+    private ConcreteCustomClass stamp;
+    private ConcreteCustomClass creationStamp;
+    LP sidStamp;
+    LP dateOfStamp;
+    LP stampShipmentDetail;
+    LP sidStampShipmentDetail;
+    LP hideSidStampShipmentDetail;
+    LP necessaryStampCategory;
+    LP necessaryStampSkuShipmentDetail;
+    LP shipmentDetailStamp;
+    LP quantityCreationStamp;
+    LP firstNumberCreationStamp;
+    LP lastNumberCreationStamp;
+    LP dateOfCreationStamp;
+    LP createStamp;
+    LP creationStampStamp;
+
+
     public AnnexInvoiceFormEntity invoiceFromFormEntity;
 
     @Override
@@ -872,6 +890,7 @@ public class RomanLogicsModule extends LogicsModule {
 
         creationFreightBox = addConcreteClass("creationFreightBox", "Операция создания коробов", baseLM.transaction);
         creationPallet = addConcreteClass("creationPallet", "Операция создания паллет", baseLM.transaction);
+        creationStamp = addConcreteClass("creationStamp", "Операция создания марок", baseLM.transaction);
 
         transfer = addConcreteClass("transfer", "Внутреннее перемещение", baseClass);
 
@@ -886,6 +905,8 @@ public class RomanLogicsModule extends LogicsModule {
         season = addConcreteClass("season", "Сезон", baseClass.named);
 
         route = addStaticClass("route", "Маршрут", new String[]{"rb", "rf"}, new String[]{"РБ", "РФ"});
+
+        stamp = addConcreteClass("stamp", "Таможенная марка", baseClass);
     }
 
     @Override
@@ -1491,6 +1512,12 @@ public class RomanLogicsModule extends LogicsModule {
         routeCreationPallet = addDProp(idGroup, "routeCreationPallet", "Маршрут (ИД)", route, creationPallet);
         nameRouteCreationPallet = addJProp(baseGroup, "nameRouteCreationPallet", "Маршрут", baseLM.name, routeCreationPallet, 1);
 
+        quantityCreationStamp = addDProp(baseGroup, "quantityCreationStamp", "Количество", IntegerClass.instance, creationStamp);
+        firstNumberCreationStamp = addDProp(baseGroup, "firstNumberCreationStamp", "Номер с", IntegerClass.instance, creationStamp);
+        lastNumberCreationStamp = addDProp(baseGroup, "lastNumberCreationStamp", "Номер по", IntegerClass.instance, creationStamp);
+        dateOfCreationStamp = addDProp(baseGroup, "dateOfCreationStamp", "Дата", DateClass.instance, creationStamp);
+        creationStampStamp = addDProp(idGroup, "creationStampStamp", "Операция (ИД)", creationStamp, stamp);
+
         // паллеты
         creationPalletPallet = addDProp(idGroup, "creationPalletPallet", "Операция (ИД)", creationPallet, pallet);
         routeCreationPalletPallet = addJProp(idGroup, "routeCreationPalletPallet", true, "Маршрут (ИД)", routeCreationPallet, creationPalletPallet, 1);
@@ -1715,6 +1742,18 @@ public class RomanLogicsModule extends LogicsModule {
         oneArticleColorShipmentDetail = addJProp(baseGroup, "oneArticleColorShipmentDetail", "Первый артикул-цвет", oneShipmentArticleColorSku, shipmentShipmentDetail, 1, skuShipmentDetail, 1);
         oneArticleSizeShipmentDetail = addJProp(baseGroup, "oneArticleSizeShipmentDetail", "Первый артикул-размер", oneShipmentArticleSizeSku, shipmentShipmentDetail, 1, skuShipmentDetail, 1);
         oneSkuShipmentDetail = addJProp(baseGroup, "oneSkuShipmentDetail", "Первый SKU", oneShipmentSku, shipmentShipmentDetail, 1, skuShipmentDetail, 1);
+
+        // Stamp
+        sidStamp = addDProp(baseGroup, "sidStamp", "Таможенная марка", StringClass.get(100), stamp);
+        dateOfStamp = addDProp(baseGroup, "dateOfStamp", "Дата марки", DateClass.instance, stamp);
+        stampShipmentDetail = addDProp("stampSkuShipmentDetail", "Таможенная марка", stamp, shipmentDetail);
+        necessaryStampCategory = addDProp(baseGroup, "necessaryStampCategory", "Нужна марка",  LogicalClass.instance, category);
+        necessaryStampSkuShipmentDetail = addJProp("necessaryStampSkuShipmentDetail",necessaryStampCategory, categoryArticleSkuShipmentDetail, 1);
+        sidStampShipmentDetail = addJProp(intraAttributeGroup, "sidStampShipmentDetail", "Таможенная марка",  sidStamp, stampShipmentDetail, 1);
+        hideSidStampShipmentDetail = addHideCaptionProp(privateGroup, "Таможенная марка", sidStampShipmentDetail, necessaryStampSkuShipmentDetail);
+        shipmentDetailStamp = addAGProp(idGroup, "shipmentDetailStamp", "Таможенная марка (ИД)", shipmentDetail, stampShipmentDetail);
+
+
 
         // Transfer
         stockFromTransfer = addDProp(idGroup, "stockFromTransfer", "Место хранения (с) (ИД)", stock, transfer);
@@ -2068,6 +2107,7 @@ public class RomanLogicsModule extends LogicsModule {
 
         createFreightBox = addJProp(true, "Сгенерировать короба", addAAProp(freightBox, baseLM.barcode, baseLM.barcodePrefix, true), quantityCreationFreightBox, 1);
         createPallet = addJProp(true, "Сгенерировать паллеты", addAAProp(pallet, baseLM.barcode, baseLM.barcodePrefix, true), quantityCreationPallet, 1);
+        createStamp = addJProp(true, "Сгенерировать марки", addAAProp(stamp, baseLM.barcode, baseLM.barcodePrefix, true), quantityCreationStamp, 1);
 
         barcodeActionCheckFreightBox = addJProp(true, "Проверка короба для транспортировки",
                 addJProp(true, and(false, false, true),
@@ -2155,6 +2195,8 @@ public class RomanLogicsModule extends LogicsModule {
         addFormEntity(new CreatePalletFormEntity(createPalletFormCreate, "createPalletFormList", "Документы генерации паллет", FormType.LIST));
         FormEntity createFreightBoxFormAdd = addFormEntity(new CreateFreightBoxFormEntity(distribution, "createFreightBoxFormAdd", "Сгенерировать короба", FormType.ADD));
         addFormEntity(new CreateFreightBoxFormEntity(createFreightBoxFormAdd, "createFreightBoxFormList", "Документы генерации коробов", FormType.LIST));
+        FormEntity createStampFormAdd = addFormEntity(new CreateStampFormEntity(distribution, "createStampFormAdd", "Сгенерировать марки", FormType.ADD));
+        addFormEntity(new CreateStampFormEntity(createStampFormAdd, "createStampFormList", "Документы генерации марок", FormType.LIST));
         addFormEntity(new ShipmentSpecFormEntity(distribution, "boxShipmentSpecForm", "Прием товара по коробам", true));
         addFormEntity(new ShipmentSpecFormEntity(distribution, "simpleShipmentSpecForm", "Прием товара без коробов", false));
 
@@ -2783,9 +2825,11 @@ public class RomanLogicsModule extends LogicsModule {
                     sidShipmentShipmentDetail,
                     sidSupplierBoxShipmentDetail, barcodeSupplierBoxShipmentDetail,
                     barcodeStockShipmentDetail, nameRouteFreightBoxShipmentDetail,
-                    quantityShipmentDetail, nameUserShipmentDetail, timeShipmentDetail, baseLM.delete);
+                    quantityShipmentDetail, nameUserShipmentDetail, sidStampShipmentDetail, timeShipmentDetail, baseLM.delete);
 
             objShipmentDetail.groupTo.setSingleClassView(ClassViewType.GRID);
+
+            getPropertyDraw(sidStampShipmentDetail).propertyCaption = addPropertyObject(hideSidStampShipmentDetail, objShipmentDetail);
 
             setForceViewType(itemAttributeGroup, ClassViewType.GRID, objShipmentDetail.groupTo);
             setForceViewType(supplierAttributeGroup, ClassViewType.PANEL, objShipmentDetail.groupTo);
@@ -3296,6 +3340,36 @@ public class RomanLogicsModule extends LogicsModule {
         }
     }
 
+       private class CreateStampFormEntity extends FormEntity<RomanBusinessLogics> {
+
+        private ObjectEntity objCreate;
+        private ObjectEntity objStamp;
+
+        private CreateStampFormEntity(NavigatorElement parent, String sID, String caption, FormType type) {
+            super(parent, sID, caption, type.equals(FormType.PRINT));
+
+            objCreate = addSingleGroupObject(creationStamp, "Документ генерации марок");
+            if (!type.equals(FormType.ADD))
+                addPropertyDraw(objCreate, baseLM.objectValue);
+
+            addPropertyDraw(objCreate, quantityCreationStamp, firstNumberCreationStamp,lastNumberCreationStamp);
+
+            if (type.equals(FormType.ADD))
+                addPropertyDraw(createStamp, objCreate);
+
+            if (!type.equals(FormType.LIST))
+                objCreate.groupTo.setSingleClassView(ClassViewType.PANEL);
+
+            if (type.equals(FormType.ADD))
+                objCreate.addOnTransaction = true;
+
+            objStamp = addSingleGroupObject(stamp, "Таможенные марки", sidStamp, dateOfStamp);
+            setReadOnly(objStamp, true);
+
+             addFixedFilter(new CompareFilterEntity(addPropertyObject(creationStampStamp, objStamp), Compare.EQUALS, objCreate));
+
+        }
+    }
     private class CustomCategoryFormEntity extends FormEntity<RomanBusinessLogics> {
 
         private boolean tree = false;
