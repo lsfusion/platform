@@ -1570,9 +1570,11 @@ public class RomanLogicsModule extends LogicsModule {
         //sku shipment detail
         skuShipmentDetail = addDProp(idGroup, "skuShipmentDetail", "SKU (ИД)", sku, shipmentDetail);
         barcodeSkuShipmentDetail = addJProp(baseGroup, "barcodeSkuShipmentDetail", "Штрих-код SKU", baseLM.barcode, skuShipmentDetail, 1);
+        setNotNull(skuShipmentDetail);
 
         articleShipmentDetail = addJProp(idGroup, "articleShipmentDetail", "Артикул (ИД)", articleSku, skuShipmentDetail, 1);
         sidArticleShipmentDetail = addJProp(baseGroup, "sidArticleShipmentDetail", "Артикул", sidArticle, articleShipmentDetail, 1);
+        setNotNull(articleShipmentDetail);
 
         colorSupplierItemShipmentDetail = addJProp(idGroup, "colorSupplierItemShipmentDetail", "Цвет поставщика (ИД)", colorSupplierItem, skuShipmentDetail, 1);
         sidColorSupplierItemShipmentDetail = addJProp(itemAttributeGroup, "sidColorSupplierItemShipmentDetail", "Код цвета", sidColorSupplier, colorSupplierItemShipmentDetail, 1);
@@ -3911,11 +3913,7 @@ public class RomanLogicsModule extends LogicsModule {
             addPropertyDraw(addGCAProp(actionGroup, "translationAllAdditionalComposition", "Перевод доп. составов", objSku.groupTo, translationAdditionalCompositionSku, baseLM.actionTrue), objSku).forceViewType = ClassViewType.PANEL;
 
             setReadOnly(baseGroup, true, objSku.groupTo);
-            setReadOnly(publicGroup, true, objSku.groupTo);
-            setReadOnly(mainCompositionSku, false, objSku.groupTo);
-            setReadOnly(additionalCompositionSku, false, objSku.groupTo);
-            setReadOnly(netWeightSku, false, objSku.groupTo);
-            setReadOnly(nameCountrySku, false, objSku.groupTo);
+            setReadOnly(publicGroup, true, objSku.groupTo);            
             setReadOnly(sidCustomCategory10Sku, false, objSku.groupTo);
 
             objSkuFreight = addSingleGroupObject(sku, "Позиции фрахта", baseLM.selection, baseLM.barcode, sidArticleSku, sidColorSupplierItem, nameColorSupplierItem,
@@ -3993,7 +3991,7 @@ public class RomanLogicsModule extends LogicsModule {
             design.get(objFreight.groupTo).grid.constraints.fillVertical = 1;
             design.get(objArticle.groupTo).grid.constraints.fillVertical = 4;
             design.get(objCategory.groupTo).grid.constraints.fillHorizontal = 1;
-            design.get(objSku.groupTo).grid.constraints.fillHorizontal = 4;
+            design.get(objSku.groupTo).grid.constraints.fillHorizontal = 6;
             design.get(objCategory.groupTo).grid.constraints.fillVertical = 4;
             design.get(objSku.groupTo).grid.constraints.fillVertical = 4;
             design.get(objSkuFreight.groupTo).grid.constraints.fillVertical = 4;
@@ -4608,6 +4606,9 @@ public class RomanLogicsModule extends LogicsModule {
 
             setForceViewType(itemAttributeGroup, ClassViewType.GRID, objSku.groupTo);
 
+            setReadOnly(baseGroup, true, objSku.groupTo);
+            setReadOnly(publicGroup, true, objSku.groupTo);
+            
             addPropertyDraw(quantityImporterFreightSku, objImporter, objFreight, objSku);
             addPropertyDraw(markupPercentImporterFreightSku, objImporter, objFreight, objSku);
             addPropertyDraw(priceInImporterFreightSku, objImporter, objFreight, objSku);
