@@ -381,6 +381,7 @@ public class RomanLogicsModule extends LogicsModule {
     private LP barcodeCurrentPalletRoute;
     private LP barcodeCurrentFreightBoxRoute;
     private LP equalsPalletFreight;
+    private LP equalsPalletFreightBox;
     private ConcreteCustomClass freightType;
     private ConcreteCustomClass creationFreightBox;
     private ConcreteCustomClass creationPallet;
@@ -615,6 +616,7 @@ public class RomanLogicsModule extends LogicsModule {
     private LP quantityProxyFreightSku;
     private LP quantityDirectFreightSku;
     private LP quantityFreightSku;
+    private LP quantityFreightCategory;
     private LP sumImporterFreightSku;
     private LP sumImporterFreightCustomCategory6;
     LP quantityImporterFreightArticleCompositionCountryCategory;
@@ -674,7 +676,7 @@ public class RomanLogicsModule extends LogicsModule {
     LP isCurrentFreightBox, isCurrentPalletFreightBox;
     LP isCurrentPallet;
     private LP changePallet;
-    LP barcodeActionSeekPallet, barcodeActionSetPallet, barcodeActionSetFreight, barcodeAction3;
+    LP barcodeActionSeekPallet, barcodeActionSetPallet, barcodeActionSetPalletFreightBox, barcodeActionSetFreight, barcodeAction3;
     private LP invoiceOriginFormImporterFreight;
     private LP invoiceFormImporterFreight;
     private LP proformOriginFormImporterFreight;
@@ -1149,7 +1151,7 @@ public class RomanLogicsModule extends LogicsModule {
 
         // Article
         sidArticle = addDProp(baseGroup, "sidArticle", "Артикул", StringClass.get(50), article);
-        sidArticleSku = addJProp(baseGroup, "sidArticleSku", "Артикул", sidArticle, articleSku, 1);
+        sidArticleSku = addJProp(supplierAttributeGroup, "sidArticleSku", "Артикул", sidArticle, articleSku, 1);
 
         originalNameArticle = addDProp(supplierAttributeGroup, "originalNameArticle", "Наименование (ориг.)", InsensitiveStringClass.get(50), article);
         originalNameArticleSku = addJProp(supplierAttributeGroup, "originalNameArticleSku", "Наименование (ориг.)", originalNameArticle, articleSku, 1);
@@ -1514,6 +1516,7 @@ public class RomanLogicsModule extends LogicsModule {
         creationFreightBoxFreightBox = addDProp(idGroup, "creationFreightBoxFreightBox", "Операция (ИД)", creationFreightBox, freightBox);
 
         palletFreightBox = addDProp(idGroup, "palletFreightBox", "Паллета (ИД)", pallet, freightBox);
+        equalsPalletFreightBox = addJProp(baseGroup, "equalsPalletFreightBox", "Вкл.", baseLM.equals2, palletFreightBox, 1, 2);
         barcodePalletFreightBox = addJProp(baseGroup, "barcodePalletFreightBox", "Паллета (штрих-код)", baseLM.barcode, palletFreightBox, 1);
 
         routeCreationFreightBoxFreightBox = addJProp(idGroup, "routeCreationFreightBoxFreightBox", true, "Маршрут (ИД)", routeCreationFreightBox, creationFreightBoxFreightBox, 1);
@@ -1799,6 +1802,9 @@ public class RomanLogicsModule extends LogicsModule {
         addConstraint(addJProp("Маршрут паллеты должен совпадать с маршрутом фрахта", baseLM.diff2,
                 routeCreationPalletPallet, 1, addJProp(routeFreight, freightPallet, 1), 1), true);
 
+        addConstraint(addJProp("Маршрут короба должен совпадать с маршрутом паллеты", baseLM.diff2,
+                routeCreationFreightBoxFreightBox, 1, addJProp(routeCreationPalletPallet, palletFreightBox, 1), 1), true);
+
         palletNumberFreight = addSUProp(baseGroup, "palletNumberFreight", "Кол-во присоединённых паллет", Union.SUM,
                 addSGProp(addCProp(IntegerClass.instance, 1, pallet), freightPallet, 1),
                 addSGProp(palletNumberDirectInvoice, freightDirectInvoice, 1));
@@ -1832,6 +1838,8 @@ public class RomanLogicsModule extends LogicsModule {
 
         quantityFreightSku = addSGProp(baseGroup, "quantityFreightSku", true, true, "Кол-во", quantityImporterFreightSku, 2, 3);
         quantityDirectFreightSku = addSGProp(baseGroup, "quantityDirectFreightSku", true, true, "Кол-во (напрямую)", quantityDirectImporterFreightSku, 2, 3);
+
+        quantityFreightCategory = addSGProp(baseGroup, "quantityFreightCategory", true, true, "Кол-во", quantityFreightSku, 1, categoryArticleSku, 2);
 
         customCategory10FreightSku = addDProp(idGroup, "customCategory10FreightSku", "ТН ВЭД (ИД)", customCategory10, freight, sku);
         customCategory10FreightSku.setDerivedForcedChange(addJProp(baseLM.and1, customCategory10Sku, 2, quantityFreightSku, 1, 2), 1, 2, is(freightChanged), 1);
@@ -2040,6 +2048,8 @@ public class RomanLogicsModule extends LogicsModule {
         barcodeActionSetStore = addJProp(true, "Установить магазин", isStoreFreightBoxSupplierBox, baseLM.barcodeToObject, 1, 2);
 
         changePallet = addJProp(true, "Изменить паллету", isCurrentPalletFreightBox, currentFreightBoxRoute, 1);
+
+        barcodeActionSetPalletFreightBox = addJProp(true, "Установить паллету", equalsPalletFreightBox, baseLM.barcodeToObject, 1, 2);
 
         barcodeActionSetFreight = addJProp(true, "Установить фрахт", equalsPalletFreight, baseLM.barcodeToObject, 1, 2);
 
@@ -2721,6 +2731,8 @@ public class RomanLogicsModule extends LogicsModule {
 
             setForceViewType(itemAttributeGroup, ClassViewType.GRID, objSku.groupTo);
             setForceViewType(intraAttributeGroup, ClassViewType.PANEL, objSku.groupTo);
+            getPropertyDraw(nameOriginCategoryArticleSku).forceViewType = ClassViewType.GRID;
+            getPropertyDraw(netWeightArticleSku).forceViewType = ClassViewType.GRID;            
 
             setReadOnly(supplierAttributeGroup, true, objSku.groupTo);
 
@@ -2778,6 +2790,9 @@ public class RomanLogicsModule extends LogicsModule {
             setForceViewType(itemAttributeGroup, ClassViewType.GRID, objShipmentDetail.groupTo);
             setForceViewType(supplierAttributeGroup, ClassViewType.PANEL, objShipmentDetail.groupTo);
             setForceViewType(intraAttributeGroup, ClassViewType.PANEL, objShipmentDetail.groupTo);
+
+            getPropertyDraw(nameOriginCategoryArticleSkuShipmentDetail).forceViewType = ClassViewType.GRID;
+            getPropertyDraw(netWeightArticleSkuShipmentDetail).forceViewType = ClassViewType.GRID;
 
             PropertyObjectEntity oneArticleProperty = addPropertyObject(oneArticleSkuShipmentDetail, objShipmentDetail);
             PropertyObjectEntity oneSkuProperty = addPropertyObject(oneSkuShipmentDetail, objShipmentDetail);
@@ -2872,6 +2887,7 @@ public class RomanLogicsModule extends LogicsModule {
             addActionsOnObjectChange(objBarcode, addPropertyObject(barcodeActionCheckPallet, objBarcode));
             addActionsOnObjectChange(objBarcode, addPropertyObject(barcodeActionSeekFreightBox, objBarcode));
             addActionsOnObjectChange(objBarcode, addPropertyObject(barcodeActionSetPallet, objBarcode));
+
             if (box)
                 addActionsOnObjectChange(objBarcode, addPropertyObject(barcodeActionSetStore, objBarcode, objSupplierBox));
 
@@ -3050,29 +3066,23 @@ public class RomanLogicsModule extends LogicsModule {
         private BoxPalletStoreFormEntity(NavigatorElement parent, String sID, String caption) {
             super(parent, sID, caption);
 
-            objPallet = addSingleGroupObject(pallet, "Паллета", baseLM.barcode, grossWeightPallet, freightBoxNumberPallet);
-            objPallet.groupTo.setSingleClassView(ClassViewType.GRID);
+            objPallet = addSingleGroupObject(pallet, "Паллета", baseLM.barcode, nameRouteCreationPalletPallet, grossWeightPallet, freightBoxNumberPallet);
+            objPallet.groupTo.setSingleClassView(ClassViewType.PANEL);
             setReadOnly(objPallet, true);
 
-            objBox = addSingleGroupObject(freightBox, "Короб для транспортировки", baseLM.barcode, netWeightStock);
+            objBox = addSingleGroupObject(freightBox, "Короб для транспортировки", baseLM.barcode, nameRouteCreationFreightBoxFreightBox, netWeightStock);
             objBox.groupTo.setSingleClassView(ClassViewType.GRID);
             setReadOnly(objBox, true);
 
-            addActionsOnObjectChange(objBarcode, addPropertyObject(barcodeActionSeekPallet, objBarcode));
-            addActionsOnObjectChange(objBarcode, addPropertyObject(barcodeActionCheckPallet, objBarcode));
-            addActionsOnObjectChange(objBarcode, addPropertyObject(barcodeActionSeekFreightBox, objBarcode));
-            addActionsOnObjectChange(objBarcode, addPropertyObject(barcodeActionSetPallet, objBarcode));
-
+            addActionsOnObjectChange(objBarcode, addPropertyObject(baseLM.seekBarcodeAction, objBarcode));                        
+            addActionsOnObjectChange(objBarcode, addPropertyObject(barcodeActionSetPalletFreightBox, objBarcode, objPallet));
             addFixedFilter(new CompareFilterEntity(addPropertyObject(palletFreightBox, objBox), Compare.EQUALS, objPallet));
 
         }
 
         @Override
          public DefaultFormView createDefaultRichDesign() {
-            DefaultFormView design = (DefaultFormView)super.createDefaultRichDesign();
-
-            design.get(objPallet.groupTo).grid.constraints.fillVertical = 1;
-            design.get(objBox.groupTo).grid.constraints.fillVertical = 4;
+            DefaultFormView design = super.createDefaultRichDesign();                        
                         
             return design;
         }
@@ -3755,6 +3765,7 @@ public class RomanLogicsModule extends LogicsModule {
         private ObjectEntity objFreight;
         private ObjectEntity objImporter;
         private ObjectEntity objArticle;
+        private ObjectEntity objCategory;
         private ObjectEntity objSku;
         private ObjectEntity objSkuFreight;
 
@@ -3813,6 +3824,8 @@ public class RomanLogicsModule extends LogicsModule {
 
             addPropertyDraw(quantityFreightArticle, objFreight, objArticle);
 
+            objCategory = addSingleGroupObject(category, "Номенклатурная группа", baseLM.selection, baseLM.name);
+
             objSku = addSingleGroupObject(sku, "SKU", baseLM.selection, baseLM.barcode, sidArticleSku,
                      nameBrandSupplierArticleSku, nameArticleSku, nameCategoryArticleSku,
                      sidCustomCategoryOriginArticleSku, sidCustomCategory10Sku, nameCountrySku, netWeightSku,
@@ -3823,8 +3836,12 @@ public class RomanLogicsModule extends LogicsModule {
             addPropertyDraw(addGCAProp(actionGroup, "translationAllMainComposition", "Перевод составов", objSku.groupTo, translationMainCompositionSku, baseLM.actionTrue), objSku).forceViewType = ClassViewType.PANEL;
             addPropertyDraw(addGCAProp(actionGroup, "translationAllAdditionalComposition", "Перевод доп. составов", objSku.groupTo, translationAdditionalCompositionSku, baseLM.actionTrue), objSku).forceViewType = ClassViewType.PANEL;
 
-            setReadOnly(intraAttributeGroup, true, objSku.groupTo);
-            setReadOnly(supplierAttributeGroup, true, objSku.groupTo);
+            setReadOnly(baseGroup, true, objSku.groupTo);
+            setReadOnly(publicGroup, true, objSku.groupTo);
+            setReadOnly(mainCompositionSku, false, objSku.groupTo);
+            setReadOnly(additionalCompositionSku, false, objSku.groupTo);
+            setReadOnly(netWeightSku, false, objSku.groupTo);
+            setReadOnly(nameCountrySku, false, objSku.groupTo);
             setReadOnly(sidCustomCategory10Sku, false, objSku.groupTo);
 
             objSkuFreight = addSingleGroupObject(sku, "Позиции фрахта", baseLM.selection, baseLM.barcode, sidArticleSku, sidColorSupplierItem, nameColorSupplierItem,
@@ -3848,9 +3865,18 @@ public class RomanLogicsModule extends LogicsModule {
             addPropertyDraw(priceInOutImporterFreightSku, objImporter, objFreight, objSkuFreight);
             addPropertyDraw(sumInOutImporterFreightSku, objImporter, objFreight, objSkuFreight);
 
+            addFixedFilter(new NotNullFilterEntity(addPropertyObject(quantityFreightCategory, objFreight, objCategory)));
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(quantityFreightSku, objFreight, objSku)));
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(quantityImporterFreightSku, objImporter, objFreight, objSkuFreight)));
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(quantityFreightArticle, objFreight, objArticle)));
+
+            RegularFilterGroupEntity filterGroupCategory = new RegularFilterGroupEntity(genID());
+            filterGroupCategory.addFilter(new RegularFilterEntity(genID(),
+                                  new CompareFilterEntity(addPropertyObject(categoryArticleSku, objSku), Compare.EQUALS, objCategory),
+                                  "Только по номенклатурной группе",
+                                  KeyStroke.getKeyStroke(KeyEvent.VK_F7, 0)));
+            filterGroupCategory.defaultFilter = 0;
+            addRegularFilterGroup(filterGroupCategory);
 
             RegularFilterGroupEntity filterGroupCustomCategory10 = new RegularFilterGroupEntity(genID());
             filterGroupCustomCategory10.addFilter(new RegularFilterEntity(genID(),
@@ -3892,6 +3918,9 @@ public class RomanLogicsModule extends LogicsModule {
             design.get(objImporter.groupTo).grid.constraints.fillHorizontal = 3;
             design.get(objFreight.groupTo).grid.constraints.fillVertical = 1;
             design.get(objArticle.groupTo).grid.constraints.fillVertical = 4;
+            design.get(objCategory.groupTo).grid.constraints.fillHorizontal = 1;
+            design.get(objSku.groupTo).grid.constraints.fillHorizontal = 4;
+            design.get(objCategory.groupTo).grid.constraints.fillVertical = 4;
             design.get(objSku.groupTo).grid.constraints.fillVertical = 4;
             design.get(objSkuFreight.groupTo).grid.constraints.fillVertical = 4;
 
@@ -3899,10 +3928,18 @@ public class RomanLogicsModule extends LogicsModule {
                                    design.getGroupObjectContainer(objImporter.groupTo),
                                    DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
 
+             design.addIntersection(design.getGroupObjectContainer(objCategory.groupTo),
+                                   design.getGroupObjectContainer(objSku.groupTo),
+                                   DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
+
+            ContainerView skuContainer = design.createContainer("SKU");
+            skuContainer.add(design.getGroupObjectContainer(objCategory.groupTo));
+            skuContainer.add(design.getGroupObjectContainer(objSku.groupTo));
+
             ContainerView specContainer = design.createContainer();
             design.getMainContainer().addAfter(specContainer, design.getGroupObjectContainer(objArticle.groupTo));
             specContainer.add(design.getGroupObjectContainer(objArticle.groupTo));
-            specContainer.add(design.getGroupObjectContainer(objSku.groupTo));
+            specContainer.add(skuContainer);
             specContainer.add(design.getGroupObjectContainer(objSkuFreight.groupTo));
             specContainer.tabbedPane = true;
 
