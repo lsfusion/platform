@@ -20,7 +20,7 @@
 				<reportElement style="DefaultStyle" positionType="Float" stretchType="RelativeToBandHeight" x="50" y="0" width="504" height="16"/>
 				<textElement>
 					<font size="12"/>
-					<paragraph firstLineIndent="20"/>
+					<paragraph firstLineIndent="40"/>
 				</textElement>
 				<textFieldExpression class="java.lang.String"><![CDATA[$F{numberNewExpertVote}+") "+$F{documentNameExpert}]]></textFieldExpression>
 			</textField>

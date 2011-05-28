@@ -620,9 +620,13 @@ public class SkolkovoLogicsModule extends LogicsModule {
         nameNativeClaimerProject.setMinimumWidth(10); nameNativeClaimerProject.setPreferredWidth(50);
         nameForeignJoinClaimerProject = addJProp(projectInformationGroup, "nameForeignJoinClaimerProject", "Claimer", nameForeign, claimerProject, 1);
         nameForeignClaimerProject = addSUProp("nameForeignClaimerProject", "Claimer", Union.OVERRIDE, nameForeignManagerProject, nameForeignJoinClaimerProject);
+        nameForeignClaimerProject.setMinimumWidth(10); nameForeignClaimerProject.setPreferredWidth(50);
         nameGenitiveClaimerProject = addSUProp(additionalInformationGroup, "nameGenitiveClaimerProject", "Заявитель (Кого)", Union.OVERRIDE, nameGenitiveManagerProject, nameNativeJoinClaimerProject);
+        nameGenitiveClaimerProject.setMinimumWidth(10); nameGenitiveClaimerProject.setPreferredWidth(50);
         nameDativusClaimerProject = addSUProp(additionalInformationGroup, "nameDativusClaimerProject", "Заявитель (Кому)", Union.OVERRIDE, nameDativusManagerProject, nameNativeJoinClaimerProject);
+        nameDativusClaimerProject.setMinimumWidth(10); nameDativusClaimerProject.setPreferredWidth(50);
         nameAblateClaimerProject = addSUProp(additionalInformationGroup, "nameAblateClaimerProject", "Заявитель (Кем)", Union.OVERRIDE, nameAblateManagerProject, nameNativeJoinClaimerProject);
+        nameAblateClaimerProject.setMinimumWidth(10); nameAblateClaimerProject.setPreferredWidth(50);
 
         nameNativeProject = addJProp(projectInformationGroup, "nameNativeProject", "Название проекта", baseLM.and1, nameNative, 1, is(project), 1);
         nameNativeProject.setMinimumWidth(10); nameNativeProject.setPreferredWidth(50);
@@ -1174,6 +1178,9 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
     @Override
     public void initIndexes() {
+        addIndex(inExpertVote);
+        addIndex(projectVote);
+        addIndex(projectDocument);
     }
 
 

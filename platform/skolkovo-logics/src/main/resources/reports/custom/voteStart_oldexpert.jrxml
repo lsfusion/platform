@@ -19,7 +19,7 @@
 			<textField isStretchWithOverflow="true" pattern="#,##0" isBlankWhenNull="true">
 				<reportElement style="DefaultStyle" positionType="Float" stretchType="RelativeToBandHeight" x="50" y="0" width="507" height="16"/>
 				<textElement>
-					<paragraph firstLineIndent="20"/>
+					<paragraph firstLineIndent="40"/>
 				</textElement>
 				<textFieldExpression class="java.lang.String"><![CDATA[$F{numberOldExpertVote}+") "+$F{documentNameExpert2}]]></textFieldExpression>
 			</textField>

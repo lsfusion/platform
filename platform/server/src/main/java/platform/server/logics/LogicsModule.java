@@ -1452,6 +1452,10 @@ public abstract class LogicsModule {
         return lp;
     }
 
+    public void addIndex(LP<?>... lps) {
+        baseLM.addIndex(lps);
+    }
+
     private void addPersistent(AggregateProperty property) {
         assert !baseLM.idSet.contains(property.sID);
         property.stored = true;
