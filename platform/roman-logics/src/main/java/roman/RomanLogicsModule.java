@@ -770,16 +770,17 @@ public class RomanLogicsModule extends LogicsModule {
     private ConcreteCustomClass creationStamp;
     LP sidStamp;
     LP dateOfStamp;
+    LP seriesOfStamp;
     LP stampShipmentDetail;
     LP sidStampShipmentDetail;
     LP hideSidStampShipmentDetail;
     LP necessaryStampCategory;
     LP necessaryStampSkuShipmentDetail;
     LP shipmentDetailStamp;
-    LP quantityCreationStamp;
     LP firstNumberCreationStamp;
     LP lastNumberCreationStamp;
-    LP dateOfCreationStamp;
+    LP dateOfStampCreationStamp;
+    LP seriesOfStampCreationStamp;
     LP createStamp;
     LP creationStampStamp;
 
@@ -906,7 +907,7 @@ public class RomanLogicsModule extends LogicsModule {
 
         route = addStaticClass("route", "Маршрут", new String[]{"rb", "rf"}, new String[]{"РБ", "РФ"});
 
-        stamp = addConcreteClass("stamp", "Таможенная марка", baseClass);
+        stamp = addConcreteClass("stamp", "Контрольная марка", baseClass);
     }
 
     @Override
@@ -1512,10 +1513,10 @@ public class RomanLogicsModule extends LogicsModule {
         routeCreationPallet = addDProp(idGroup, "routeCreationPallet", "Маршрут (ИД)", route, creationPallet);
         nameRouteCreationPallet = addJProp(baseGroup, "nameRouteCreationPallet", "Маршрут", baseLM.name, routeCreationPallet, 1);
 
-        quantityCreationStamp = addDProp(baseGroup, "quantityCreationStamp", "Количество", IntegerClass.instance, creationStamp);
         firstNumberCreationStamp = addDProp(baseGroup, "firstNumberCreationStamp", "Номер с", IntegerClass.instance, creationStamp);
         lastNumberCreationStamp = addDProp(baseGroup, "lastNumberCreationStamp", "Номер по", IntegerClass.instance, creationStamp);
-        dateOfCreationStamp = addDProp(baseGroup, "dateOfCreationStamp", "Дата", DateClass.instance, creationStamp);
+        seriesOfStampCreationStamp = addDProp(baseGroup, "seriesOfStampCreationStamp", "Серия", DateClass.instance, creationStamp);
+        dateOfStampCreationStamp = addDProp(baseGroup, "dateOfStampCreationStamp", "Дата", DateClass.instance, creationStamp);
         creationStampStamp = addDProp(idGroup, "creationStampStamp", "Операция (ИД)", creationStamp, stamp);
 
         // паллеты
@@ -1746,14 +1747,15 @@ public class RomanLogicsModule extends LogicsModule {
         oneSkuShipmentDetail = addJProp(baseGroup, "oneSkuShipmentDetail", "Первый SKU", oneShipmentSku, shipmentShipmentDetail, 1, skuShipmentDetail, 1);
 
         // Stamp
-        sidStamp = addDProp(baseGroup, "sidStamp", "Таможенная марка", StringClass.get(100), stamp);
+        sidStamp = addDProp(baseGroup, "sidStamp", "Контрольная марка", StringClass.get(100), stamp);
+        seriesOfStamp = addDProp(baseGroup, "seriesOfStamp", "Серия марки", StringClass.get(2), stamp);
         dateOfStamp = addDProp(baseGroup, "dateOfStamp", "Дата марки", DateClass.instance, stamp);
-        stampShipmentDetail = addDProp("stampSkuShipmentDetail", "Таможенная марка", stamp, shipmentDetail);
+        stampShipmentDetail = addDProp("stampSkuShipmentDetail", "Контрольная марка", stamp, shipmentDetail);
         necessaryStampCategory = addDProp(baseGroup, "necessaryStampCategory", "Нужна марка",  LogicalClass.instance, category);
         necessaryStampSkuShipmentDetail = addJProp("necessaryStampSkuShipmentDetail",necessaryStampCategory, categoryArticleSkuShipmentDetail, 1);
-        sidStampShipmentDetail = addJProp(intraAttributeGroup, "sidStampShipmentDetail", "Таможенная марка",  sidStamp, stampShipmentDetail, 1);
-        hideSidStampShipmentDetail = addHideCaptionProp(privateGroup, "Таможенная марка", sidStampShipmentDetail, necessaryStampSkuShipmentDetail);
-        shipmentDetailStamp = addAGProp(idGroup, "shipmentDetailStamp", "Таможенная марка (ИД)", shipmentDetail, stampShipmentDetail);
+        sidStampShipmentDetail = addJProp(intraAttributeGroup, "sidStampShipmentDetail", "Контрольная марка",  sidStamp, stampShipmentDetail, 1);
+        hideSidStampShipmentDetail = addHideCaptionProp(privateGroup, "Контрольная марка", sidStampShipmentDetail, necessaryStampSkuShipmentDetail);
+        shipmentDetailStamp = addAGProp(idGroup, "shipmentDetailStamp", "Контрольная марка (ИД)", shipmentDetail, stampShipmentDetail);
 
 
 
@@ -2109,7 +2111,7 @@ public class RomanLogicsModule extends LogicsModule {
 
         createFreightBox = addJProp(true, "Сгенерировать короба", addAAProp(freightBox, baseLM.barcode, baseLM.barcodePrefix, true), quantityCreationFreightBox, 1);
         createPallet = addJProp(true, "Сгенерировать паллеты", addAAProp(pallet, baseLM.barcode, baseLM.barcodePrefix, true), quantityCreationPallet, 1);
-        createStamp = addJProp(true, "Сгенерировать марки", addAAProp(stamp, baseLM.barcode, baseLM.barcodePrefix, true), quantityCreationStamp, 1);
+        createStamp = addJProp(true, "Сгенерировать марки", addAAProp(stamp, baseLM.barcode, baseLM.barcodePrefix, true), firstNumberCreationStamp, 1);
 
         barcodeActionCheckFreightBox = addJProp(true, "Проверка короба для транспортировки",
                 addJProp(true, and(false, false, true),
@@ -3378,7 +3380,7 @@ public class RomanLogicsModule extends LogicsModule {
             if (!type.equals(FormType.ADD))
                 addPropertyDraw(objCreate, baseLM.objectValue);
 
-            addPropertyDraw(objCreate, quantityCreationStamp, firstNumberCreationStamp,lastNumberCreationStamp);
+            addPropertyDraw(objCreate, firstNumberCreationStamp,lastNumberCreationStamp, dateOfStampCreationStamp, seriesOfStampCreationStamp);
 
             if (type.equals(FormType.ADD))
                 addPropertyDraw(createStamp, objCreate);
@@ -3389,7 +3391,7 @@ public class RomanLogicsModule extends LogicsModule {
             if (type.equals(FormType.ADD))
                 objCreate.addOnTransaction = true;
 
-            objStamp = addSingleGroupObject(stamp, "Таможенные марки", sidStamp, dateOfStamp);
+            objStamp = addSingleGroupObject(stamp, "Контрольные марки", sidStamp, dateOfStamp);
             setReadOnly(objStamp, true);
 
              addFixedFilter(new CompareFilterEntity(addPropertyObject(creationStampStamp, objStamp), Compare.EQUALS, objCreate));
