@@ -256,7 +256,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP constituentClaimer, loadConstituentClaimer, openConstituentClaimer;
     LP extractClaimer, loadExtractClaimer, openExtractClaimer;
     LP OGRNClaimer, INNClaimer;
-    LP projectVote, nameNativeProjectVote, nameForeignProjectVote;
+    LP projectVote, claimerVote, nameNativeProjectVote, nameForeignProjectVote;
     LP dataDocumentNameExpert, documentNameExpert;
     LP clusterExpert, nameNativeClusterExpert;
     LP clusterProject, nameNativeClusterProject, nameForeignClusterProject;
@@ -350,6 +350,11 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
     LP emailLetterExpertVoteEA, emailLetterExpertVote;
     LP allowedEmailLetterExpertVote;
+
+    LP emailClaimerFromAddress;
+    LP emailClaimerVoteEA;
+    LP claimerEmailVote;
+
     LP emailStartVoteEA, emailStartHeaderVote, emailStartVote;
     LP emailProtocolVoteEA, emailProtocolHeaderVote, emailProtocolVote;
     LP emailClosedVoteEA, emailClosedHeaderVote, emailClosedVote;
@@ -607,6 +612,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         // project
         claimerProject = addDProp(idGroup, "claimerProject", "Заявитель (ИД)", claimer, project);
+
+        claimerVote = addJProp(idGroup, "claimerVote", "Заявитель (ИД)", claimerProject, projectVote, 1);
 
         nameNativeManagerProject = addDProp(projectInformationGroup, "nameNativeManagerProject", "ФИО руководителя проекта", InsensitiveStringClass.get(2000), project);
         nameNativeManagerProject.setMinimumWidth(10); nameNativeManagerProject.setPreferredWidth(50);
@@ -1134,6 +1141,14 @@ public class SkolkovoLogicsModule extends LogicsModule {
         allowedEmailLetterExpertVote = addJProp(baseGroup, "Письмо о заседании (e-mail)", "Письмо о заседании", baseLM.andNot1, emailLetterExpertVote, 1, 2, voteResultExpertVote, 1, 2);
         allowedEmailLetterExpertVote.property.askConfirm = true;
 
+        emailClaimerFromAddress = addDProp("emailClaimerFromAddress", "Адрес отправителя (для заявителей)", StringClass.get(50));
+        emailClaimerVoteEA = addEAProp(actionGroup, "emailClaimerVoteEA", "Письмо заявителю", "Уведомление", emailClaimerFromAddress, vote);
+
+        claimerEmailVote = addJProp("claimerEmailVote", "E-mail (заявителя)", baseLM.email, claimerVote, 1);
+        addEARecepient(emailClaimerVoteEA, claimerEmailVote, 1);
+
+        emailClaimerVoteEA.setDerivedChange(addCProp(ActionClass.instance, true), openedVote, 1);
+
         emailStartVoteEA = addEAProp(vote);
         addEARecepient(emailStartVoteEA, emailDocuments);
 
@@ -1350,7 +1365,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             getPropertyDraw(generateVoteProject).forceViewType = ClassViewType.PANEL;
             getPropertyDraw(generateVoteProject).propertyCaption = addPropertyObject(hideGenerateVoteProject, objProject);
 
-            objVote = addSingleGroupObject(vote, dateStartVote, dateEndVote, nameNativeClusterVote, equalsClusterProjectVote, openedVote, succeededVote, acceptedVote, quantityDoneVote, quantityInClusterVote, quantityInnovativeVote, quantityForeignVote, copyResultsVote, baseLM.delete);
+            objVote = addSingleGroupObject(vote, dateStartVote, dateEndVote, nameNativeClusterVote, equalsClusterProjectVote, openedVote, succeededVote, acceptedVote, quantityDoneVote, quantityInClusterVote, quantityInnovativeVote, quantityForeignVote, copyResultsVote, emailClaimerVoteEA, baseLM.delete);
             objVote.groupTo.banClassView.addAll(BaseUtils.toList(ClassViewType.PANEL, ClassViewType.HIDE));
 
             getPropertyDraw(copyResultsVote).forceViewType = ClassViewType.PANEL;
@@ -1446,7 +1461,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         private GlobalFormEntity(NavigatorElement parent, String sID) {
             super(parent, sID, "Глобальные параметры");
 
-            addPropertyDraw(new LP[]{baseLM.currentDate, requiredPeriod, requiredQuantity, limitExperts, emailDocuments});
+            addPropertyDraw(new LP[]{baseLM.currentDate, requiredPeriod, requiredQuantity, limitExperts, emailDocuments, emailClaimerFromAddress});
         }
     }
 
@@ -1634,7 +1649,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             super(parent, sID, "Реестр заявителей");
 
             objClaimer = addSingleGroupObject(claimer, "Заявитель", claimerInformationGroup, contactGroup, legalDataGroup, editClaimer);
-     }
+        }
     }
 
 
@@ -1892,6 +1907,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
                                     
             objVote = addSingleGroupObject(1, "vote", vote, "Заседание", prevDateVote);
             objVote.groupTo.initClassView = ClassViewType.PANEL;
+
+            addInlineEAForm(emailClaimerVoteEA, this, objVote, 1);
         }
     }
 

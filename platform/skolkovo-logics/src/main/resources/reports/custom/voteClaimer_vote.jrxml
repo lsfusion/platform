@@ -9,8 +9,7 @@
 			<pen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
 		</box>
 	</style>
-	<field name="prevDateVote" class="java.lang.Integer"/>
-	<field name="field1" class="java.lang.String"/>
+	<field name="prevDateVote" class="java.util.Date"/>
 	<detail>
 		<band height="200">
 			<textField isStretchWithOverflow="true">
@@ -18,7 +17,7 @@
 				<textElement textAlignment="Justified" verticalAlignment="Top">
 					<font size="14"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[($F{prevDateVote}==null? "Ваша заявка прошла формальную проверку и направлена 10 членам Независимой экспертной коллегии для прохождения экспертизы по существу.":"Заседание Независимой экспертной коллегии по Вашей заявке было признано несостоявшимся, по причине отсутствия кворума экспертных оценок. Ваша заявка направлена на повторное заседание.")+ "Срок проведения заседания 10 дней. Вы получите уведомление о результатах в течении 5 дней с момента окончания заседания."]]></textFieldExpression>
+				<textFieldExpression class="java.lang.String"><![CDATA[(($F{prevDateVote}==null)? "Ваша заявка прошла формальную проверку и направлена 10 членам Независимой экспертной коллегии для прохождения экспертизы по существу.":"Заседание Независимой экспертной коллегии по Вашей заявке было признано несостоявшимся, по причине отсутствия кворума экспертных оценок. Ваша заявка направлена на повторное заседание.")+ " Срок проведения заседания 10 дней. Вы получите уведомление о результатах в течении 5 дней с момента окончания заседания."]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement style="DefaultStyle" x="20" y="0" width="160" height="20"/>

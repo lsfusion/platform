@@ -81,6 +81,7 @@ public class EmailActionProperty extends ActionProperty {
         this.BL = BL;
 
         askConfirm = true;
+        setImage("/images/email.png");
     }
 
     private static ValueClass[] getValueClassList(String mailSubject, ValueClass[] classes) {
