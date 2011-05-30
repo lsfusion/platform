@@ -970,8 +970,8 @@ public class RomanLogicsModule extends LogicsModule {
         currencyTypeExchange = addDProp(idGroup, "currencyTypeExchange", "Валюта типа обмена (ИД)", currency, typeExchange);
         nameCurrencyTypeExchange = addJProp(baseGroup, "nameCurrencyTypeExchange", "Валюта типа обмена (наим.)", baseLM.name, currencyTypeExchange, 1);
         rateExchange = addDProp(baseGroup, "rateExchange", "Курс обмена", DoubleClass.instance, typeExchange, currency, DateClass.instance);
-        typeExchangeSTX = addDProp(idGroup, "typeExchangeSTX", "Тип обмена для STX (ИД)", typeExchange);
-        nameTypeExchangeSTX = addJProp(baseGroup, "nameTypeExchangeSTX", "Тип обмена для STX", baseLM.name, typeExchangeSTX);
+        typeExchangeSTX = addDProp(idGroup, "typeExchangeSTX", "Тип обмена валют для STX (ИД)", typeExchange);
+        nameTypeExchangeSTX = addJProp(baseGroup, "nameTypeExchangeSTX", "Тип обмена валют для STX", baseLM.name, typeExchangeSTX);
 
         //lessCmpDate = addJProp(and(false, true, false), object(DateClass.instance), 3, rateExchange, 1, 2, 3, greater2, 3, 4, is(DateClass.instance), 4);
         lessCmpDate = addJProp(and(false, true, false), object(DateClass.instance), 3, rateExchange, 1, 2, 3, addJProp(baseLM.greater2, 3, baseLM.date, 4), 1, 2, 3, 4, is(document), 4);
@@ -2146,7 +2146,8 @@ public class RomanLogicsModule extends LogicsModule {
         NavigatorElement classifierItem = new NavigatorElement(classifier, "classifierItem", "Для описания товаров");
         addFormEntity(new CustomCategoryFormEntity(classifierItem, "customCategoryForm", "ТН ВЭД (изменения)", false));
         addFormEntity(new CustomCategoryFormEntity(classifierItem, "customCategoryForm2", "ТН ВЭД (дерево)", true));
-        classifierItem.add(category.getClassForm(BL));
+        //classifierItem.add(category.getClassForm(BL));
+        FormEntity formEntity = addFormEntity(new CategoryFormEntity(classifierItem, "categoryForm", "Номенклатурные группы"));
         classifierItem.add(commonSize.getClassForm(BL));
         classifierItem.add(season.getClassForm(BL));
         classifierItem.add(baseLM.country.getClassForm(BL));
@@ -2208,6 +2209,7 @@ public class RomanLogicsModule extends LogicsModule {
         addFormEntity(new BalanceWarehouseFormEntity(distribution, "balanceWarehouseForm", "Остатки на складе"));
         addFormEntity(new InvoiceShipmentFormEntity(distribution, "invoiceShipmentForm", "Сравнение по инвойсам"));
 
+        //category.setDialogForm();
         // пока не поддерживается из-за того, что пока нет расчета себестоимости для внутреннего перемещения
 //        addFormEntity(new StockTransferFormEntity(distribution, "stockTransferForm", "Внутреннее перемещение"));
     }
@@ -2255,6 +2257,28 @@ public class RomanLogicsModule extends LogicsModule {
             return design;
         }
     }
+
+    private class CategoryFormEntity extends FormEntity<RomanBusinessLogics> {
+
+        private ObjectEntity objCategory;
+
+        private CategoryFormEntity(NavigatorElement parent, String sID, String caption) {
+            super(parent, sID, caption);
+
+            objCategory = addSingleGroupObject(category, "Номенклатурная группа", baseGroup);
+            objCategory.groupTo.initClassView = ClassViewType.GRID;
+
+        }
+
+        @Override
+        public FormView createDefaultRichDesign() {
+            DefaultFormView design = (DefaultFormView)super.createDefaultRichDesign();
+
+            return design;
+        }
+    }
+
+
 
     private class GlobalParamFormEntity extends FormEntity<RomanBusinessLogics> {
 
@@ -2775,8 +2799,8 @@ public class RomanLogicsModule extends LogicsModule {
 
             setForceViewType(itemAttributeGroup, ClassViewType.GRID, objSku.groupTo);
             setForceViewType(intraAttributeGroup, ClassViewType.PANEL, objSku.groupTo);
-            getPropertyDraw(nameOriginCategoryArticleSku).forceViewType = ClassViewType.GRID;
-            getPropertyDraw(netWeightArticleSku).forceViewType = ClassViewType.GRID;            
+            //getPropertyDraw(nameOriginCategoryArticleSku).forceViewType = ClassViewType.GRID;
+            //getPropertyDraw(netWeightArticleSku).forceViewType = ClassViewType.GRID;            
 
             setReadOnly(supplierAttributeGroup, true, objSku.groupTo);
 
@@ -2837,8 +2861,8 @@ public class RomanLogicsModule extends LogicsModule {
             setForceViewType(supplierAttributeGroup, ClassViewType.PANEL, objShipmentDetail.groupTo);
             setForceViewType(intraAttributeGroup, ClassViewType.PANEL, objShipmentDetail.groupTo);
 
-            getPropertyDraw(nameOriginCategoryArticleSkuShipmentDetail).forceViewType = ClassViewType.GRID;
-            getPropertyDraw(netWeightArticleSkuShipmentDetail).forceViewType = ClassViewType.GRID;
+            //getPropertyDraw(nameOriginCategoryArticleSkuShipmentDetail).forceViewType = ClassViewType.GRID;
+            //getPropertyDraw(netWeightArticleSkuShipmentDetail).forceViewType = ClassViewType.GRID;
 
             PropertyObjectEntity oneArticleProperty = addPropertyObject(oneArticleSkuShipmentDetail, objShipmentDetail);
             PropertyObjectEntity oneSkuProperty = addPropertyObject(oneSkuShipmentDetail, objShipmentDetail);
@@ -3551,6 +3575,7 @@ public class RomanLogicsModule extends LogicsModule {
                                   new CompareFilterEntity(addPropertyObject(supplierArticleSku, objSku), Compare.EQUALS, objSupplier),
                                   "Только текущего поставщика",
                                   KeyStroke.getKeyStroke(KeyEvent.VK_F11, 0)));
+            filterGroupSupplierSku.defaultFilter = 0;
             addRegularFilterGroup(filterGroupSupplierSku);
 
             RegularFilterGroupEntity filterGroupCategorySku = new RegularFilterGroupEntity(genID());
@@ -3558,6 +3583,7 @@ public class RomanLogicsModule extends LogicsModule {
                                   new CompareFilterEntity(addPropertyObject(categoryArticleSku, objSku), Compare.EQUALS, objCategory),
                                   "Только текущей номенклатурной группы",
                                   KeyStroke.getKeyStroke(KeyEvent.VK_F10, 0)));
+            filterGroupCategorySku.defaultFilter = 0;
             addRegularFilterGroup(filterGroupCategorySku);
 
             RegularFilterGroupEntity filterGroupSupplierArticle = new RegularFilterGroupEntity(genID());
@@ -3565,6 +3591,7 @@ public class RomanLogicsModule extends LogicsModule {
                                   new CompareFilterEntity(addPropertyObject(supplierArticle, objArticle), Compare.EQUALS, objSupplier),
                                   "Только текущего поставщика",
                                   KeyStroke.getKeyStroke(KeyEvent.VK_F9, 0)));
+            filterGroupSupplierArticle.defaultFilter = 0;
             addRegularFilterGroup(filterGroupSupplierArticle);
 
             RegularFilterGroupEntity filterGroupCategoryArticle = new RegularFilterGroupEntity(genID());
@@ -3572,6 +3599,7 @@ public class RomanLogicsModule extends LogicsModule {
                                   new CompareFilterEntity(addPropertyObject(categoryArticle, objArticle), Compare.EQUALS, objCategory),
                                   "Только текущей номенклатурной группы",
                                   KeyStroke.getKeyStroke(KeyEvent.VK_F8, 0)));
+            filterGroupCategoryArticle.defaultFilter = 0;
             addRegularFilterGroup(filterGroupCategoryArticle);
         }
 
@@ -4686,6 +4714,39 @@ public class RomanLogicsModule extends LogicsModule {
             return design;
         }
     }
+
+
+    /*private class CreateItemFormEntity extends FormEntity<RomanBusinessLogics> {
+
+        ObjectEntity objSupplier;
+        ObjectEntity objArticle;
+        ObjectEntity objSku;
+
+        public CreateItemFormEntity(NavigatorElement parent, String sID, String caption) {
+            super(parent, sID, caption);
+
+            objSupplier = addSingleGroupObject(supplier, "Поставщик", baseLM.name);
+            objSupplier.groupTo.setSingleClassView(ClassViewType.PANEL);
+
+            objArticle = addSingleGroupObject(article, "Артикул", sidArticle);
+            objArticle.groupTo.setSingleClassView(ClassViewType.PANEL);
+
+            objSku = addSingleGroupObject(item, "Товар", sidColorSupplierItem, nameColorSupplierItem, sidSizeSupplierItem);
+            objItem.groupTo.setSingleClassView(ClassViewType.PANEL);
+
+
+            addActionsOnApply(addPropertyObject(addNEArticleCompositeSIDSupplier, objSIDArticleComposite, objSupplier));
+            addActionsOnApply(addPropertyObject(executeArticleCompositeItemSIDSupplier, objItem, objSIDArticleComposite, objSupplier));
+        }
+
+        @Override
+        public FormView createDefaultRichDesign() {
+            DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign();
+            design.setEnabled(objSupplier, false);
+            design.setEnabled(objBarcode, false);
+            return design;
+        }
+    }*/
 
     public class PricatFormEntity extends FormEntity {
         ObjectEntity objSupplier;
