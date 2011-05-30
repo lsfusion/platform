@@ -1,24 +1,25 @@
 package platform.server.form.entity;
 
 import platform.server.classes.CustomClass;
+import platform.server.logics.BaseLogicsModule;
 import platform.server.logics.BusinessLogics;
 
-public class ClassFormEntity<T extends BusinessLogics<T>> extends AbstractClassFormEntity<T> {
+public class ClassFormEntity<T extends BusinessLogics<T>> extends BaseClassFormEntity<T> {
 
     protected final ObjectEntity object;
     protected final String clsSID;
 
-    protected ClassFormEntity(T BL, CustomClass cls, String sID, String caption) {
-        super(BL, cls, sID, caption);
+    protected ClassFormEntity(BaseLogicsModule<T> LM, CustomClass cls, String sID, String caption) {
+        super(LM, cls, sID, caption);
 
-        object = addSingleGroupObject(cls, BL.LM.baseGroup, true);
-        BL.LM.addObjectActions(this, object, true);
+        object = addSingleGroupObject(cls, LM.baseGroup, true);
+        LM.addObjectActions(this, object, true);
 
         clsSID = cls.getSID();
     }
 
-    public ClassFormEntity(T BL, CustomClass cls) {
-        this(BL, cls, "classForm" + cls.getSID(), cls.caption);
+    public ClassFormEntity(BaseLogicsModule<T> LM, CustomClass cls) {
+        this(LM, cls, "classForm" + cls.getSID(), cls.caption);
     }
 
     public ObjectEntity getObject() {
@@ -27,6 +28,6 @@ public class ClassFormEntity<T extends BusinessLogics<T>> extends AbstractClassF
 
     @Override
     public AbstractClassFormEntity copy() {
-        return new ClassFormEntity(BL, cls, getSID() + "_copy" + copies++, caption);
+        return new ClassFormEntity(LM, cls, getSID() + "_copy" + copies++, caption);
     }
 }

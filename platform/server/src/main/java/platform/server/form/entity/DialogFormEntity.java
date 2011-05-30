@@ -2,30 +2,31 @@ package platform.server.form.entity;
 
 import platform.interop.ClassViewType;
 import platform.server.classes.CustomClass;
+import platform.server.logics.BaseLogicsModule;
 import platform.server.logics.BusinessLogics;
 
-public class DialogFormEntity<T extends BusinessLogics<T>> extends AbstractClassFormEntity<T> {
+public class DialogFormEntity<T extends BusinessLogics<T>> extends BaseClassFormEntity<T> {
 
     protected final ObjectEntity object;
     protected final String clsSID;
 
-    protected DialogFormEntity(T BL, CustomClass cls, String sID, String caption) {
-        super(BL, cls, sID, caption);
+    protected DialogFormEntity(BaseLogicsModule<T> LM, CustomClass cls, String sID, String caption) {
+        super(LM, cls, sID, caption);
 
-        object = addSingleGroupObject(cls, BL.LM.baseGroup, true);
+        object = addSingleGroupObject(cls, LM.baseGroup, true);
         object.groupTo.setSingleClassView(ClassViewType.GRID);
 
-        BL.LM.addObjectActions(this, object);
+        LM.addObjectActions(this, object);
 
-        PropertyDrawEntity objectValue = getPropertyDraw(BL.LM.objectValue, object);
+        PropertyDrawEntity objectValue = getPropertyDraw(LM.objectValue, object);
         if (objectValue != null)
             objectValue.readOnly = true;
 
         clsSID = cls.getSID();
     }
 
-    public DialogFormEntity(T BL, CustomClass cls) {
-        this(BL, cls, "classForm" + cls.getSID() + "_dialog", cls.caption);
+    public DialogFormEntity(BaseLogicsModule<T> LM, CustomClass cls) {
+        this(LM, cls, "classForm" + cls.getSID() + "_dialog", cls.caption);
     }
 
     public ObjectEntity getObject() {
@@ -34,6 +35,6 @@ public class DialogFormEntity<T extends BusinessLogics<T>> extends AbstractClass
 
     @Override
     public AbstractClassFormEntity copy() {
-        return new DialogFormEntity<T>(BL, cls, getSID() + "_copy" + copies++, caption);
+        return new DialogFormEntity<T>(LM, cls, getSID() + "_copy" + copies++, caption);
     }
 }

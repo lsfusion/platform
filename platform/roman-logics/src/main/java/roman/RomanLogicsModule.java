@@ -2141,28 +2141,32 @@ public class RomanLogicsModule extends LogicsModule {
     public void initNavigators() throws JRException, FileNotFoundException {
         NavigatorElement classifier = new NavigatorElement(baseLM.baseElement, "classifier", "Справочники");
         NavigatorElement classifierCurrency = new NavigatorElement(classifier, "classifierCurrency", "Валюты и курсы");
-        classifierCurrency.add(currency.getClassForm(BL));
-        classifierCurrency.add(typeExchange.getClassForm(BL));
+        classifierCurrency.add(currency.getClassForm(baseLM));
+        classifierCurrency.add(typeExchange.getClassForm(baseLM));
         addFormEntity(new RateCurrencyFormEntity(classifierCurrency, "rateCurrencyForm", "Курсы валют"));
 
         NavigatorElement classifierItem = new NavigatorElement(classifier, "classifierItem", "Для описания товаров");
         addFormEntity(new CustomCategoryFormEntity(classifierItem, "customCategoryForm", "ТН ВЭД (изменения)", false));
         addFormEntity(new CustomCategoryFormEntity(classifierItem, "customCategoryForm2", "ТН ВЭД (дерево)", true));
         //classifierItem.add(category.getClassForm(BL));
-        FormEntity formEntity = addFormEntity(new CategoryFormEntity(classifierItem, "categoryForm", "Номенклатурные группы"));
-        classifierItem.add(commonSize.getClassForm(BL));
-        classifierItem.add(season.getClassForm(BL));
-        classifierItem.add(baseLM.country.getClassForm(BL));
-        classifierItem.add(unitOfMeasure.getClassForm(BL));
+
+        AbstractClassFormEntity categoryForm = new CategoryFormEntity("categoryForm", "Номенклатурные группы");
+        classifierItem.add(categoryForm);
+        addFormEntity(categoryForm);
+
+        classifierItem.add(commonSize.getClassForm(baseLM));
+        classifierItem.add(season.getClassForm(baseLM));
+        classifierItem.add(baseLM.country.getClassForm(baseLM));
+        classifierItem.add(unitOfMeasure.getClassForm(baseLM));
 
         addFormEntity(new GlobalParamFormEntity(classifier, "globalParamForm", "Общие параметры"));
         addFormEntity(new ColorSizeSupplierFormEntity(classifier, "сolorSizeSupplierForm", "Поставщики"));
-        classifier.add(importer.getClassForm(BL));
-        classifier.add(exporter.getClassForm(BL));
-        classifier.add(store.getClassForm(BL));
+        classifier.add(importer.getClassForm(baseLM));
+        classifier.add(exporter.getClassForm(baseLM));
+        classifier.add(store.getClassForm(baseLM));
         addFormEntity(new ContractFormEntity(classifier, "contractForm", "Договора"));
         addFormEntity(new NomenclatureFormEntity(classifier, "nomenclatureForm", "Номенклатура"));
-        classifier.add(freightType.getClassForm(BL));
+        classifier.add(freightType.getClassForm(baseLM));
 
         createItemForm = addFormEntity(new CreateItemFormEntity(null, "createItemForm", "Ввод товара"));
 
@@ -2211,7 +2215,7 @@ public class RomanLogicsModule extends LogicsModule {
         addFormEntity(new BalanceWarehouseFormEntity(distribution, "balanceWarehouseForm", "Остатки на складе"));
         addFormEntity(new InvoiceShipmentFormEntity(distribution, "invoiceShipmentForm", "Сравнение по инвойсам"));
 
-        //category.setDialogForm();
+        category.setDialogForm(categoryForm);
         // пока не поддерживается из-за того, что пока нет расчета себестоимости для внутреннего перемещения
 //        addFormEntity(new StockTransferFormEntity(distribution, "stockTransferForm", "Внутреннее перемещение"));
     }
@@ -2260,23 +2264,34 @@ public class RomanLogicsModule extends LogicsModule {
         }
     }
 
-    private class CategoryFormEntity extends FormEntity<RomanBusinessLogics> {
+    private class CategoryFormEntity extends AbstractClassFormEntity<RomanBusinessLogics> {
 
         private ObjectEntity objCategory;
 
-        private CategoryFormEntity(NavigatorElement parent, String sID, String caption) {
-            super(parent, sID, caption);
+        private CategoryFormEntity(String sID, String caption) {
+            super(sID, caption);
 
             objCategory = addSingleGroupObject(category, "Номенклатурная группа", baseGroup);
             objCategory.groupTo.initClassView = ClassViewType.GRID;
-
         }
 
         @Override
         public FormView createDefaultRichDesign() {
             DefaultFormView design = (DefaultFormView)super.createDefaultRichDesign();
 
+            design.defaultOrders.put(design.get(getPropertyDraw(baseLM.name)), true);
+
             return design;
+        }
+
+        @Override
+        public ObjectEntity getObject() {
+            return objCategory;
+        }
+
+        @Override
+        protected AbstractClassFormEntity copy() {
+            return new CategoryFormEntity(getSID() + "_copy" + copies++, caption);
         }
     }
 

@@ -1198,7 +1198,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
 
     public <P extends PropertyInterface> AbstractClassFormEntity<T> getDataChangeFormEntity(PropertyObjectInstance<P> changeProperty, GroupObjectInstance selectionGroupObject) {
         PropertyValueImplement<P> implement = changeProperty.getValueImplement();
-        AbstractClassFormEntity<T> formEntity = changeProperty.getDialogClass().getDialogForm(BL).createCopy();
+        AbstractClassFormEntity<T> formEntity = changeProperty.getDialogClass().getDialogForm(BL.LM).createCopy();
         formEntity.caption = implement.toString();
         for (MaxChangeProperty<?, P> constrainedProperty : BL.getChangeConstrainedProperties(implement.property)) {
             formEntity.addFixedFilter(
@@ -1227,7 +1227,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
     }
 
     public DialogInstance<T> createClassPropertyDialog(int viewID, int value) throws RemoteException, SQLException {
-        AbstractClassFormEntity<T> classForm = getPropertyDraw(viewID).propertyObject.getDialogClass().getDialogForm(BL);
+        AbstractClassFormEntity<T> classForm = getPropertyDraw(viewID).propertyObject.getDialogClass().getDialogForm(BL.LM);
         return new DialogInstance<T>(classForm, BL, session, securityPolicy, getFocusListener(), getClassListener(), classForm.getObject(), value, instanceFactory.computer);
     }
 
@@ -1241,7 +1241,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
         assert changeProperty != null;
 
         CustomClass objectClass = changeProperty.getDialogClass();
-        AbstractClassFormEntity<T> classForm = changeProperty.getDialogClass().getEditForm(BL);
+        AbstractClassFormEntity<T> classForm = changeProperty.getDialogClass().getEditForm(BL.LM);
 
         Object currentObject = read(changeProperty);
         if (currentObject == null && objectClass instanceof ConcreteCustomClass) {

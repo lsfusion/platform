@@ -26,6 +26,7 @@ import platform.server.form.entity.*;
 import platform.server.form.instance.CustomObjectInstance;
 import platform.server.form.instance.ObjectInstance;
 import platform.server.form.navigator.NavigatorElement;
+import platform.server.logics.BaseLogicsModule;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.property.Property;
 import platform.server.logics.property.PropertyClassImplement;
@@ -266,7 +267,7 @@ public abstract class CustomClass extends AbstractNode implements ObjectClass, V
         relevantElements.add(element);        
     }
 
-    public List<NavigatorElement> getRelevantElements(BusinessLogics<?> BL, SecurityPolicy securityPolicy) {
+    public List<NavigatorElement> getRelevantElements(BaseLogicsModule LM, SecurityPolicy securityPolicy) {
         List<CustomClass> upParents = new ArrayList<CustomClass>();
         fillParents(upParents);
 
@@ -276,23 +277,23 @@ public abstract class CustomClass extends AbstractNode implements ObjectClass, V
                 if (securityPolicy.navigator.checkPermission(element))
                     result.add(element);
         for(CustomClass parent : upParents)
-            result.add(parent.getBaseClassForm(BL));
+            result.add(parent.getBaseClassForm(LM));
         return result;
     }
 
-    public FormEntity getClassForm(BusinessLogics<?> BL, SecurityPolicy securityPolicy) {
+    public FormEntity getClassForm(BaseLogicsModule LM, SecurityPolicy securityPolicy) {
         for (NavigatorElement element : relevantElements)
             if (element instanceof FormEntity && securityPolicy.navigator.checkPermission(element))
                 return (FormEntity) element;
-        return getBaseClassForm(BL);
+        return getBaseClassForm(LM);
     }
 
     private FormEntity baseClassForm = null;
-    public FormEntity getBaseClassForm(BusinessLogics<?> BL) {
+    public FormEntity getBaseClassForm(BaseLogicsModule LM) {
         if(baseClassForm==null) {
-            baseClassForm = getClassForm(BL);
+            baseClassForm = getClassForm(LM);
             for(CustomClass child : children)
-                baseClassForm.add(child.getBaseClassForm(BL));
+                baseClassForm.add(child.getBaseClassForm(LM));
         }
         return baseClassForm;
     }
@@ -421,12 +422,12 @@ public abstract class CustomClass extends AbstractNode implements ObjectClass, V
     private abstract class ClassFormHolder {
         private AbstractClassFormEntity form;
 
-        public AbstractClassFormEntity getForm(BusinessLogics BL) {
+        public AbstractClassFormEntity getForm(BaseLogicsModule LM) {
             if (form != null) {
                 return form;
             }
 
-            form = createDefaultForm(BL);
+            form = createDefaultForm(LM);
 
             return form;
         }
@@ -435,35 +436,36 @@ public abstract class CustomClass extends AbstractNode implements ObjectClass, V
             this.form = form;
         }
 
-        protected abstract AbstractClassFormEntity createDefaultForm(BusinessLogics BL);
+        protected abstract AbstractClassFormEntity createDefaultForm(BaseLogicsModule LM);
     }
 
     private ClassFormHolder classFormHolder = new ClassFormHolder() {
         @Override
-        protected AbstractClassFormEntity createDefaultForm(BusinessLogics BL) {
-            return new ClassFormEntity(BL, CustomClass.this);
+        protected AbstractClassFormEntity createDefaultForm(BaseLogicsModule LM) {
+            return new ClassFormEntity(LM, CustomClass.this);
         }
     };
 
     private ClassFormHolder dialogFormHolder = new ClassFormHolder() {
         @Override
-        protected AbstractClassFormEntity createDefaultForm(BusinessLogics BL) {
-            return new DialogFormEntity(BL, CustomClass.this);
+        protected AbstractClassFormEntity createDefaultForm(BaseLogicsModule LM) {
+            return new DialogFormEntity(LM, CustomClass.this);
         }
     };
 
     private ClassFormHolder editFormHolder = new ClassFormHolder() {
         @Override
-        protected AbstractClassFormEntity createDefaultForm(BusinessLogics BL) {
-            return new EditFormEntity(BL, CustomClass.this);
+        protected AbstractClassFormEntity createDefaultForm(BaseLogicsModule LM) {
+            return new EditFormEntity(LM, CustomClass.this);
         }
     };
 
     /**
      * используются для классовых форм в навигаторе
+     * @param LM
      */
-    public AbstractClassFormEntity getClassForm(BusinessLogics BL) {
-        return classFormHolder.getForm(BL);
+    public AbstractClassFormEntity getClassForm(BaseLogicsModule LM) {
+        return classFormHolder.getForm(LM);
     }
 
     public void setClassForm(AbstractClassFormEntity form) {
@@ -472,9 +474,10 @@ public abstract class CustomClass extends AbstractNode implements ObjectClass, V
 
     /**
      * используются при редактировании свойства даного класса из диалога, т.е. фактически для выбора объекта данного класса
+     * @param LM
      */
-    public AbstractClassFormEntity getDialogForm(BusinessLogics BL) {
-        return dialogFormHolder.getForm(BL);
+    public AbstractClassFormEntity getDialogForm(BaseLogicsModule LM) {
+        return dialogFormHolder.getForm(LM);
     }
 
     public void setDialogForm(AbstractClassFormEntity form) {
@@ -483,9 +486,10 @@ public abstract class CustomClass extends AbstractNode implements ObjectClass, V
 
     /**
      * используется для редактирования конкретного объекта данного класса
+     * @param LM
      */
-    public AbstractClassFormEntity getEditForm(BusinessLogics BL) {
-        return editFormHolder.getForm(BL);
+    public AbstractClassFormEntity getEditForm(BaseLogicsModule LM) {
+        return editFormHolder.getForm(LM);
     }
 
     public void setEditForm(AbstractClassFormEntity form) {

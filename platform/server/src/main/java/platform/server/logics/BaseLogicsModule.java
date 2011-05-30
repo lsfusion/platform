@@ -833,7 +833,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
     @Override
     public void initNavigators() {
-        baseClass.named.setClassForm(new NamedObjectClassForm(BL, baseClass.named));
+        baseClass.named.setClassForm(new NamedObjectClassForm(this, baseClass.named));
 
         baseElement = new NavigatorElement("baseElement", "Формы");
         baseWindow = new NavigatorWindow(baseElement.getSID() + "Window", "Навигатор", 0, 0, 20, 70);
@@ -841,7 +841,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
         adminElement = new NavigatorElement(baseElement, "adminElement", "Администрирование");
 
-        objectElement = baseClass.getBaseClassForm(BL);
+        objectElement = baseClass.getBaseClassForm(this);
         adminElement.add(objectElement);
 
         NavigatorElement policyElement = new NavigatorElement(adminElement, "policyElement", "Политика безопасности");
@@ -1358,8 +1358,8 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         public ObjectEntity objObjectName;
 
 
-        public NamedObjectClassForm(BusinessLogics BL, CustomClass cls, String sID, String caption) {
-            super(BL, cls, sID, caption);
+        public NamedObjectClassForm(BaseLogicsModule LM, CustomClass cls, String sID, String caption) {
+            super(LM, cls, sID, caption);
 
             objObjectName = addSingleGroupObject(StringClass.get(50), "Поиск по началу имени", objectValue);
             objObjectName.groupTo.setSingleClassView(ClassViewType.PANEL);
@@ -1371,8 +1371,8 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
             addFixedFilter(new CompareFilterEntity(addPropertyObject(name, object), Compare.START_WITH, objObjectName));
         }
 
-        public NamedObjectClassForm(BusinessLogics BL, CustomClass cls) {
-            this(BL, cls, "namedObjectForm" + cls.getSID(), cls.caption);
+        public NamedObjectClassForm(BaseLogicsModule LM, CustomClass cls) {
+            this(LM, cls, "namedObjectForm" + cls.getSID(), cls.caption);
         }
 
         @Override
@@ -1384,7 +1384,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
         @Override
         public AbstractClassFormEntity copy() {
-            return new NamedObjectClassForm(BL, cls, getSID() + "_copy" + copies++, caption);
+            return new NamedObjectClassForm(LM, cls, getSID() + "_copy" + copies++, caption);
         }
     }
 

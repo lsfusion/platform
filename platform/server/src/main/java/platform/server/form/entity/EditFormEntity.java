@@ -4,20 +4,21 @@ import platform.interop.ClassViewType;
 import platform.server.classes.CustomClass;
 import platform.server.form.view.DefaultFormView;
 import platform.server.form.view.FormView;
+import platform.server.logics.BaseLogicsModule;
 import platform.server.logics.BusinessLogics;
 
-public class EditFormEntity<T extends BusinessLogics<T>> extends AbstractClassFormEntity<T> {
+public class EditFormEntity<T extends BusinessLogics<T>> extends BaseClassFormEntity<T> {
 
     protected final ObjectEntity object;
     protected final String clsSID;
 
-    protected EditFormEntity(T BL, CustomClass cls, String sID, String caption) {
-        super(BL, cls, sID, caption);
+    protected EditFormEntity(BaseLogicsModule<T> LM, CustomClass cls, String sID, String caption) {
+        super(LM, cls, sID, caption);
 
-        object = addSingleGroupObject(cls, BL.LM.baseGroup, true);
+        object = addSingleGroupObject(cls, LM.baseGroup, true);
         object.groupTo.setSingleClassView(ClassViewType.PANEL);
 
-        PropertyDrawEntity objectValue = getPropertyDraw(BL.LM.objectValue, object);
+        PropertyDrawEntity objectValue = getPropertyDraw(LM.objectValue, object);
         if (objectValue != null)
             objectValue.readOnly = true;
 
@@ -33,8 +34,8 @@ public class EditFormEntity<T extends BusinessLogics<T>> extends AbstractClassFo
         return design;
     }
 
-    public EditFormEntity(T BL, CustomClass cls) {
-        this(BL, cls, "objectForm" + cls.getSID(), cls.caption);
+    public EditFormEntity(BaseLogicsModule<T> LM, CustomClass cls) {
+        this(LM, cls, "objectForm" + cls.getSID(), cls.caption);
     }
 
     public ObjectEntity getObject() {
@@ -43,6 +44,6 @@ public class EditFormEntity<T extends BusinessLogics<T>> extends AbstractClassFo
 
     @Override
     public AbstractClassFormEntity copy() {
-        return new EditFormEntity(BL, cls, getSID() + "_copy" + copies++, caption);
+        return new EditFormEntity(LM, cls, getSID() + "_copy" + copies++, caption);
     }
 }

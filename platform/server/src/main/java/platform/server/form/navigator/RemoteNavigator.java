@@ -210,7 +210,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteObject i
             if (currentClass == null)
                 navigatorElements = new ArrayList();
             else
-                return currentClass.getRelevantElements(BL, securityPolicy);
+                return currentClass.getRelevantElements(BL.LM, securityPolicy);
         } else {
             navigatorElements = getElements(BL.LM.baseElement.getNavigatorElement(elementSID));
         }
