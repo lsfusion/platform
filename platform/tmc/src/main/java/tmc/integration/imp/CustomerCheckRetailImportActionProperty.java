@@ -41,7 +41,7 @@ public class CustomerCheckRetailImportActionProperty extends ActionProperty {
             int recordCount = impFile.getRecordCount();
 
             FormInstance formInstance = new FormInstance(
-                    new ClassFormEntity(BL, BL.VEDLM.customerCheckRetail),
+                    new ClassFormEntity(BL.LM, BL.VEDLM.customerCheckRetail),
                     BL, BL.createSession(), PolicyManager.serverSecurityPolicy, null, null,
                     new DataObject(executeForm.form.instanceFactory.computer, BL.LM.computer));
 

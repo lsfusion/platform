@@ -158,7 +158,7 @@
 				<textElement verticalAlignment="Top">
 					<paragraph firstLineIndent="40"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA["3. Включить в состав Экспертной коллегии следующих экспертов, направивших заполненные Бюллетени оценки для целей участия в заседании Экспертной коллегии от "+(platform.base.BaseUtils.formatRussian($F{prevDateStartVote})) + " года, признанном несостоявшимся, и Бюллетени оценки которых были учтены для целей определения результатов голосования:"]]></textFieldExpression>
+				<textFieldExpression class="java.lang.String"><![CDATA["3. Включить в состав Экспертной коллегии следующих экспертов, направивших заполненные Бюллетени оценки для целей участия в заседании Экспертной коллегии от "+(platform.base.BaseUtils.formatRussian($F{prevDateVote})) + " года, признанном несостоявшимся, и Бюллетени оценки которых были учтены для целей определения результатов голосования:"]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>
