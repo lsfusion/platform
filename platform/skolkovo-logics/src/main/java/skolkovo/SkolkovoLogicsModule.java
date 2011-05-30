@@ -1225,6 +1225,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
         addFormEntity(new ClaimerAcceptedFormEntity(print, "claimerAccepted"));
         addFormEntity(new ClaimerRejectedFormEntity(print, "claimerRejected"));
         addFormEntity(new ClaimerStatusFormEntity(print, "claimerStatus"));
+        addFormEntity(new VoteClaimerFormEntity(print, "voteClaimer", "Уведомление о рассмотрении"));
+
     }
     
     private class ProjectFullFormEntity extends FormEntity<SkolkovoBusinessLogics> {
@@ -1881,7 +1883,19 @@ public class SkolkovoLogicsModule extends LogicsModule {
         }
     }
 
-     private class ClaimerAcceptedFormEntity extends FormEntity<SkolkovoBusinessLogics> {
+    private class VoteClaimerFormEntity extends FormEntity<SkolkovoBusinessLogics> {
+
+        private ObjectEntity objVote;
+
+        private VoteClaimerFormEntity(NavigatorElement parent, String sID, String caption) {
+            super(parent, sID, caption, true);
+                                    
+            objVote = addSingleGroupObject(1, "vote", vote, "Заседание", prevDateVote);
+            objVote.groupTo.initClassView = ClassViewType.PANEL;
+        }
+    }
+
+    private class ClaimerAcceptedFormEntity extends FormEntity<SkolkovoBusinessLogics> {
 
         private ObjectEntity objVote;
 
