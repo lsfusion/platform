@@ -3930,7 +3930,7 @@ public class RomanLogicsModule extends LogicsModule {
 
             addPropertyDraw(quantityFreightArticle, objFreight, objArticle);
 
-            objCategory = addSingleGroupObject(category, "Номенклатурная группа", baseLM.selection, baseLM.name);
+            objCategory = addSingleGroupObject(category, "Номенклатурная группа", baseLM.name);
 
             objSku = addSingleGroupObject(sku, "SKU", baseLM.selection, baseLM.barcode, sidArticleSku,
                      nameBrandSupplierArticleSku, nameArticleSku, nameCategoryArticleSku,
@@ -4020,7 +4020,7 @@ public class RomanLogicsModule extends LogicsModule {
             design.get(objImporter.groupTo).grid.constraints.fillHorizontal = 3;
             design.get(objFreight.groupTo).grid.constraints.fillVertical = 1;
             design.get(objArticle.groupTo).grid.constraints.fillVertical = 4;
-            design.get(objCategory.groupTo).grid.constraints.fillHorizontal = 1;
+            design.get(objCategory.groupTo).grid.constraints.fillHorizontal = 0.2;
             design.get(objSku.groupTo).grid.constraints.fillHorizontal = 6;
             design.get(objCategory.groupTo).grid.constraints.fillVertical = 4;
             design.get(objSku.groupTo).grid.constraints.fillVertical = 4;

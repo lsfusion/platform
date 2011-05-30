@@ -1,5 +1,6 @@
 package platform.client.form;
 
+import platform.client.SwingUtils;
 import platform.client.logics.ClientContainer;
 
 import javax.swing.*;
@@ -46,15 +47,10 @@ class ClientFormContainer extends JPanel implements AutoHideableContainer {
 
     private void setSizes() {
         if (key.minimumSize != null)
-            setMinimumSize(getOverridedSize(getMinimumSize(), key.minimumSize));
+            setMinimumSize(SwingUtils.getOverridedSize(getMinimumSize(), key.minimumSize));
         if (key.preferredSize != null)
-            setPreferredSize(getOverridedSize(getPreferredSize(), key.preferredSize));
+            setPreferredSize(SwingUtils.getOverridedSize(getPreferredSize(), key.preferredSize));
         if (key.maximumSize != null)
-            setMaximumSize(getOverridedSize(getMaximumSize(), key.maximumSize));
-    }
-
-    private Dimension getOverridedSize(Dimension base, Dimension override) {
-        return new Dimension(override.width == -1 ? base.width : override.width,
-                             override.height == -1 ? base.height : override.height);
+            setMaximumSize(SwingUtils.getOverridedSize(getMaximumSize(), key.maximumSize));
     }
 }

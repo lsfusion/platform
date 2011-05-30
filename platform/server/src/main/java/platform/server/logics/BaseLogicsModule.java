@@ -839,10 +839,11 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         baseWindow = new NavigatorWindow(baseElement.getSID() + "Window", "Навигатор", 0, 0, 20, 70);
         baseElement.window = baseWindow;
 
-        objectElement = baseClass.getBaseClassForm(BL);
-        baseElement.add(objectElement);
-
         adminElement = new NavigatorElement(baseElement, "adminElement", "Администрирование");
+
+        objectElement = baseClass.getBaseClassForm(BL);
+        adminElement.add(objectElement);
+
         NavigatorElement policyElement = new NavigatorElement(adminElement, "policyElement", "Политика безопасности");
         addFormEntity(new UserPolicyFormEntity(policyElement, "userPolicyForm"));
         addFormEntity(new RolePolicyFormEntity(policyElement, "rolePolicyForm"));

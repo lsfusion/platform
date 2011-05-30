@@ -240,4 +240,8 @@ public class SwingUtils {
         }
     }
 
+    public static Dimension getOverridedSize(Dimension base, Dimension override) {
+        return new Dimension(override.width == -1 ? base.width : override.width,
+                             override.height == -1 ? base.height : override.height);
+    }
 }

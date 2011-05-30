@@ -69,13 +69,15 @@ public class EmailActionProperty extends ActionProperty {
     private final List<PropertyMapImplement<?, ClassPropertyInterface>> recepients = new ArrayList<PropertyMapImplement<?, ClassPropertyInterface>>();
 
     private final String subject;
+    private final LP fromAddress;
 
     private final BusinessLogics<?> BL; // для возможности работы с формами в автоматическом режиме
 
-    public EmailActionProperty(String sID, String caption, String mailSubject, BusinessLogics<?> BL, ValueClass[] classes) {
+    public EmailActionProperty(String sID, String caption, String mailSubject, LP fromAddress, BusinessLogics<?> BL, ValueClass[] classes) {
         super(sID, caption, getValueClassList(mailSubject, classes));
 
         this.subject = mailSubject;
+        this.fromAddress = fromAddress;
         this.BL = BL;
 
         askConfirm = true;
@@ -203,7 +205,7 @@ public class EmailActionProperty extends ActionProperty {
 
             String smtpHost = (String) BL.LM.smtpHost.read(session, modifier);
             String smtpPort = (String) BL.LM.smtpPort.read(session, modifier);
-            String fromAddress = (String) BL.LM.fromAddress.read(session, modifier);
+            String fromAddress = (String) this.fromAddress.read(session, modifier);
             String userName = (String) BL.LM.emailAccount.read(session, modifier);
             String password = (String) BL.LM.emailPassword.read(session, modifier);
             String emailBlindCarbonCopy = (String) BL.LM.emailBlindCarbonCopy.read(session, modifier);

@@ -260,6 +260,18 @@ public abstract class GridTable extends ClientFormTable
             groupObjectController.getGridView().pane.setPreferredSize(new Dimension(getPreferredSize().width, height + 2));
             groupObjectController.getGridView().pane.setMaximumSize(new Dimension(getMaximumSize().width, height + 5));
         }
+
+        if (groupObject.grid.minimumSize != null)
+            groupObjectController.getGridView().pane.setMinimumSize(
+                    SwingUtils.getOverridedSize(groupObjectController.getGridView().pane.getMinimumSize(), groupObject.grid.minimumSize));
+
+        if (groupObject.grid.preferredSize != null)
+            groupObjectController.getGridView().pane.setPreferredSize(
+                    SwingUtils.getOverridedSize(groupObjectController.getGridView().pane.getPreferredSize(), groupObject.grid.preferredSize));
+
+        if (groupObject.grid.maximumSize != null)
+            groupObjectController.getGridView().pane.setMaximumSize(
+                    SwingUtils.getOverridedSize(groupObjectController.getGridView().pane.getMaximumSize(), groupObject.grid.maximumSize));
     }
 
     public void changeCurrentObject() {
