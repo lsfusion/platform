@@ -65,6 +65,9 @@ public class DateTimeClass extends DataClass<Timestamp> {
     public String getDB(SQLSyntax syntax) {
         return syntax.getDateTimeType();
     }
+    public int getSQL(SQLSyntax syntax) {
+        return syntax.getDateTimeSQL();
+    }
 
     public Timestamp read(Object value) {
         if (value == null) return null;

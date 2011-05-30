@@ -61,6 +61,9 @@ public class DateClass extends DataClass<Date> {
     public String getDB(SQLSyntax syntax) {
         return syntax.getDateType();
     }
+    public int getSQL(SQLSyntax syntax) {
+        return syntax.getDateSQL();
+    }
 
     public Date read(Object value) {
         if(value==null) return null;

@@ -40,6 +40,9 @@ public class DoubleClass extends IntegralClass<Double> {
     public String getDB(SQLSyntax syntax) {
         return syntax.getDoubleType();
     }
+    public int getSQL(SQLSyntax syntax) {
+        return syntax.getDoubleSQL();
+    }
 
     public Double read(Object value) {
         if(value==null) return null;

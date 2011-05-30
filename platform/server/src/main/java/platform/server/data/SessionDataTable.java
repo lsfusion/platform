@@ -1,6 +1,7 @@
 package platform.server.data;
 
 import platform.base.BaseUtils;
+import platform.base.Pair;
 import platform.server.caches.AbstractMapValues;
 import platform.server.caches.IdentityLazy;
 import platform.server.caches.ManualLazy;
@@ -16,6 +17,7 @@ import platform.server.data.query.Join;
 import platform.server.data.query.Query;
 import platform.server.data.translator.MapValuesTranslate;
 import platform.server.data.where.Where;
+import platform.server.data.where.classes.ClassWhere;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
 
@@ -125,6 +127,29 @@ public class SessionDataTable implements SessionData<SessionDataTable> {
         return new SessionDataTable(table.addFields(session, BaseUtils.filterNotList(keys, fixedKeyValues.keySet()), BaseUtils.filterNotKeys(keyValues, fixedKeyValues.keySet()), BaseUtils.filterNotKeys(propertyValues, fixedPropValues.keySet())).
               insertRecord(session, BaseUtils.filterNotKeys(keyFields, fixedKeyValues.keySet()), BaseUtils.filterNotKeys(propFields, fixedPropValues.keySet()), update, groupLast, owner),
                 keys, fixedKeyValues, fixedPropValues);
+    }
+
+    // для оптимизации групповых добавлений (batch processing'а)
+    public SessionDataTable(SQLSession session, List<KeyField> keys, Set<PropertyField> properties, Map<Map<KeyField, DataObject>, Map<PropertyField, ObjectValue>> rows, boolean groupLast, Object owner) throws SQLException {
+
+        this.keys = keys;
+        // сначала пробежим по всем проверим с какими field'ами создавать таблицы и заодно propertyClasses узнаем, после этого batch'ем запишем
+        Iterator<Map.Entry<Map<KeyField,DataObject>,Map<PropertyField,ObjectValue>>> it = rows.entrySet().iterator();
+        Map.Entry<Map<KeyField, DataObject>, Map<PropertyField, ObjectValue>> first = it.next();
+        keyValues = new HashMap<KeyField, DataObject>(first.getKey());
+        propertyValues = new HashMap<PropertyField, ObjectValue>(first.getValue());
+
+        while(it.hasNext()) {
+            Map.Entry<Map<KeyField, DataObject>, Map<PropertyField, ObjectValue>> entry = it.next();
+            BaseUtils.removeNotEquals(keyValues, entry.getKey());
+            BaseUtils.removeNotEquals(propertyValues, entry.getValue());
+        }
+
+        // пробежим по всем вырежем equals и создадим classes
+        Map<Map<KeyField, DataObject>, Map<PropertyField, ObjectValue>> tableRows = new HashMap<Map<KeyField,DataObject>, Map<PropertyField,ObjectValue>>();
+        for(Map.Entry<Map<KeyField, DataObject>, Map<PropertyField, ObjectValue>> row : rows.entrySet())
+            tableRows.put(BaseUtils.filterNotKeys(row.getKey(), keyValues.keySet()), BaseUtils.filterNotKeys(row.getValue(), propertyValues.keySet()));
+        table = SessionTable.create(session, BaseUtils.filterNotList(keys, keyValues.keySet()), BaseUtils.removeSet(properties, propertyValues.keySet()), tableRows, groupLast, owner);
     }
 
     // "обновляет" ключи в таблице

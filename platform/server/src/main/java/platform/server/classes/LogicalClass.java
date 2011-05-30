@@ -57,6 +57,9 @@ public class LogicalClass extends DataClass<Boolean> {
     public String getDB(SQLSyntax syntax) {
         return syntax.getBitType();
     }
+    public int getSQL(SQLSyntax syntax) {
+        return syntax.getBitSQL();
+    }
 
     public Boolean read(Object value) {
         if(value!=null) return true;

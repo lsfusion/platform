@@ -34,6 +34,9 @@ public class ConcatenateType implements Type<byte[]> {
     public String getDB(SQLSyntax syntax) {
         return syntax.getBinaryType(getBinaryLength(syntax.isBinaryString()));
     }
+    public int getSQL(SQLSyntax syntax) {
+        return syntax.getBinarySQL();
+    }
 
     public boolean isSafeString(Object value) {
         return false;

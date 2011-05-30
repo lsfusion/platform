@@ -53,6 +53,9 @@ public class NumericClass extends IntegralClass<Double> {
     public String getDB(SQLSyntax syntax) {
         return syntax.getNumericType(length,precision);
     }
+    public int getSQL(SQLSyntax syntax) {
+        return syntax.getNumericSQL();
+    }
 
     public Double read(Object value) {
         if(value==null) return null;

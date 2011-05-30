@@ -46,6 +46,9 @@ public class ActionClass extends DataClass<Object> {
     public String getDB(SQLSyntax syntax) {
         return syntax.getBitType();
     }
+    public int getSQL(SQLSyntax syntax) {
+        return syntax.getBitSQL();
+    }
 
     public boolean isSafeString(Object value) {
         return true;

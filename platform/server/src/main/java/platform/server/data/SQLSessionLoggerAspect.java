@@ -16,6 +16,11 @@ public class SQLSessionLoggerAspect {
         return executeMethodAndLogTime(thisJoinPoint, queryString);
     }
 
+    @Around("execution(int platform.server.data.SQLSession.executeDML(java.lang.String)) && args(queryString, params)")
+    public Object executeDML(ProceedingJoinPoint thisJoinPoint, String queryString) throws Throwable {
+        return executeMethodAndLogTime(thisJoinPoint, queryString);
+    }
+
     @Around("execution(int platform.server.data.SQLSession.executeDML(java.lang.String, java.util.Map)) && args(queryString, params)")
     public Object executeDML(ProceedingJoinPoint thisJoinPoint, String queryString, Map params) throws Throwable {
         return executeMethodAndLogTime(thisJoinPoint, queryString);

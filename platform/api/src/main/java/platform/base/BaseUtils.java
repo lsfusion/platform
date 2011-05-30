@@ -208,6 +208,15 @@ public class BaseUtils {
         return result;
     }
 
+    public static <K, V> void removeNotEquals(Map<K, V> part, Map<K, V> full) {
+        Iterator<Map.Entry<K,V>> it = part.entrySet().iterator();
+        while(it.hasNext()) {
+            Map.Entry<K, V> entry = it.next();
+            if(!full.get(entry.getKey()).equals(entry.getValue()))
+                it.remove();
+        }
+    }
+
     public static <K, V> Map<V, K> reverse(Map<K, V> map) {
         Map<V, K> result = new HashMap<V, K>();
         for (Map.Entry<K, V> entry : map.entrySet()) {

@@ -35,6 +35,9 @@ public class ObjectType implements Type<Integer> {
     public String getDB(SQLSyntax syntax) {
         return syntax.getIntegerType();
     }
+    public int getSQL(SQLSyntax syntax) {
+        return syntax.getIntegerSQL();
+    }
 
     public Integer read(Object value) {
         if(value==null) return null;

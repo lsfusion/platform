@@ -29,6 +29,9 @@ public abstract class FileClass extends DataClass<byte[]> {
     public String getDB(SQLSyntax syntax) {
         return syntax.getByteArrayType();
     }
+    public int getSQL(SQLSyntax syntax) {
+        return syntax.getByteArraySQL();
+    }
 
     public boolean isSafeString(Object value) {
         return false;

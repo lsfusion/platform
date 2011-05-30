@@ -5,6 +5,7 @@ import platform.server.data.AbstractConnectionPool;
 import platform.server.data.type.Type;
 
 import java.sql.SQLException;
+import java.sql.Types;
 
 public abstract class DataAdapter extends AbstractConnectionPool implements SQLSyntax {
     protected final static Logger logger = Logger.getLogger(DataAdapter.class);
@@ -35,37 +36,64 @@ public abstract class DataAdapter extends AbstractConnectionPool implements SQLS
     public String getStringType(int length) {
         return "char(" + length + ")";
     }
+    public int getStringSQL() {
+        return Types.CHAR;
+    }
 
     public String getNumericType(int length, int precision) {
         return "numeric(" + length + "," + precision + ")";
+    }
+    public int getNumericSQL() {
+        return Types.NUMERIC;
     }
 
     public String getIntegerType() {
         return "integer";
     }
+    public int getIntegerSQL() {
+        return Types.INTEGER;
+    }
 
     public String getDateType() {
         return "date";
+    }
+    public int getDateSQL() {
+        return Types.DATE;
     }
 
     public String getDateTimeType() {
         return "timestamp";
     }
+    public int getDateTimeSQL() {
+        return Types.TIMESTAMP;
+    }
 
     public String getLongType() {
         return "long";
+    }
+    public int getLongSQL() {
+        return Types.BIGINT;
     }
 
     public String getDoubleType() {
         return "double precision";
     }
+    public int getDoubleSQL() {
+        return Types.DOUBLE;
+    }
 
     public String getBitType() {
         return "integer";
     }
+    public int getBitSQL() {
+        return Types.BIT;
+    }
 
     public String getTextType() {
         return "text";
+    }
+    public int getTextSQL() {
+        return Types.VARCHAR;
     }
 
     public boolean isBinaryString() {
@@ -75,9 +103,15 @@ public abstract class DataAdapter extends AbstractConnectionPool implements SQLS
     public String getBinaryType(int length) {
         return "binary(" + length + ")";
     }
+    public int getBinarySQL() {
+        return Types.BINARY;
+    }
 
     public String getByteArrayType() {
         return "longvarbinary";
+    }
+    public int getByteArraySQL() {
+        return Types.LONGVARBINARY;
     }
 
     public String getBitString(Boolean value) {

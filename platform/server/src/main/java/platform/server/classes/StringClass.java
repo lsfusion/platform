@@ -61,6 +61,9 @@ public class StringClass extends DataClass<String> {
     public String getDB(SQLSyntax syntax) {
         return syntax.getStringType(length);
     }
+    public int getSQL(SQLSyntax syntax) {
+        return syntax.getStringSQL();
+    }
 
     public boolean isSafeString(Object value) {
         return !value.toString().contains("'") && !value.toString().contains("\\");

@@ -55,7 +55,7 @@ public class IntegrationService {
         session.execute(propertyChanges, null, null);
     }
 
-    private void deleteOldObjects(Map<ImportKey, List<DataObject>> keyValueLists) throws SQLException {
+/*    private void deleteOldObjects(Map<ImportKey, List<DataObject>> keyValueLists) throws SQLException {
         for (final ImportKey<?> key : keys) {
             SessionTableUsage<String, Object> table = new SessionTableUsage<String, Object>(Arrays.asList("key"), new ArrayList<Object>(),
                     new Type.Getter<String>() {
@@ -81,5 +81,5 @@ public class IntegrationService {
                 session.changeClass(new DataObject(keyMap.get("key"), key.getCustomClass()), null);
             }
         }
-    }
+    }*/
 }

@@ -5,11 +5,17 @@ import platform.base.BaseUtils;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.sql.Types;
 
 class OracleDataAdapter extends DataAdapter {
 
+    @Override
     public String getIntegerType() {
         return "NUMBER(5)";
+    }
+    @Override
+    public int getIntegerSQL() {
+        return Types.NUMERIC;
     }
 
     public int updateModel() {

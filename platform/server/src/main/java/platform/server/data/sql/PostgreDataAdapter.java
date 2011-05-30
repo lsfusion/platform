@@ -7,6 +7,7 @@ import platform.server.data.type.Type;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.sql.Types;
 
 
 public class PostgreDataAdapter extends DataAdapter {
@@ -19,8 +20,13 @@ public class PostgreDataAdapter extends DataAdapter {
         super(dataBase, server, userID, password);
     }
 
+    @Override
     public String getLongType() {
         return "int8";
+    }
+    @Override
+    public int getLongSQL() {
+        return Types.BIGINT;
     }
 
     public boolean allowViews() {
@@ -84,6 +90,10 @@ public class PostgreDataAdapter extends DataAdapter {
     public String getByteArrayType() {
         return "bytea";
     }
+    @Override
+    public int getByteArraySQL() {
+        return Types.VARBINARY;
+    }
 
     @Override
     public String getOrderDirection(boolean descending) {
@@ -99,6 +109,10 @@ public class PostgreDataAdapter extends DataAdapter {
     public String getBinaryType(int length) {
 //        return "bit(" + length * 8 + ")";
         return getStringType(length);
+    }
+    @Override
+    public int getBinarySQL() {
+        return getStringSQL();
     }
 
     @Override

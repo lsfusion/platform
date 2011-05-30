@@ -14,6 +14,7 @@ import platform.server.data.type.Reader;
 import platform.server.data.type.Type;
 import platform.server.data.type.TypeObject;
 import platform.server.logics.DataObject;
+import platform.server.logics.NullValue;
 import platform.server.logics.ObjectValue;
 
 import java.lang.ref.WeakReference;
@@ -340,6 +341,24 @@ public class SQLSession extends MutableObject {
         return result;
     }
 
+    private void executeDML(String executeString) throws SQLException {
+        Connection connection = getConnection();
+
+        logger.info(executeString);
+
+        Statement statement = connection.createStatement();
+        try {
+            statement.executeUpdate(executeString);
+        } catch (SQLException e) {
+            logger.info(statement.toString());
+            throw e;
+        } finally {
+            statement.close();
+
+            returnConnection(connection);
+        }
+    }
+
     public <K,V> OrderedMap<Map<K, Object>, Map<V, Object>> executeSelect(String select, Map<String, ParseInterface> paramObjects, Map<K, String> keyNames, Map<K, ? extends Reader> keyReaders, Map<V, String> propertyNames, Map<V, ? extends Reader> propertyReaders) throws SQLException {
         Connection connection = getConnection();
 
@@ -373,6 +392,59 @@ public class SQLSession extends MutableObject {
         }
 
         return execResult;
+    }
+
+    public void insertBatchRecords(Table table, Map<Map<KeyField, DataObject>, Map<PropertyField, ObjectValue>> rows) throws SQLException {
+        Connection connection = getConnection();
+
+        List<PropertyField> properties = new ArrayList<PropertyField>(rows.values().iterator().next().keySet());
+
+        String insertString = "";
+        String valueString = "";
+
+        // пробежим по KeyFields'ам
+        for (KeyField key : table.keys) {
+            insertString = (insertString.length() == 0 ? "" : insertString + ',') + key.name;
+            valueString = (valueString.length() == 0 ? "" : valueString + ',') + "?";
+        }
+
+        // пробежим по Fields'ам
+        for (PropertyField prop : properties) {
+            insertString = (insertString.length() == 0 ? "" : insertString + ',') + prop.name;
+            valueString = (valueString.length() == 0 ? "" : valueString + ',') + "?";
+        }
+
+        if(insertString.length()==0) {
+            assert valueString.length()==0;
+            insertString = "dumb";
+            valueString = "0";
+        }
+
+        PreparedStatement statement = connection.prepareStatement("INSERT INTO " + table.getName(syntax) + " (" + insertString + ") VALUES (" + valueString + ")");
+
+        try {
+            for(Map.Entry<Map<KeyField, DataObject>, Map<PropertyField, ObjectValue>> row : rows.entrySet()) {
+                int p=1;
+                for(KeyField key : table.keys)
+                    new TypeObject(row.getKey().get(key)).writeParam(statement, p++, syntax);
+                for(PropertyField property : properties) {
+                    ObjectValue propValue = row.getValue().get(property);
+                    if(propValue instanceof NullValue)
+                        statement.setNull(p++, property.type.getSQL(syntax));
+                    else
+                        new TypeObject((DataObject) propValue).writeParam(statement, p++, syntax);
+                }
+                statement.addBatch();
+            }
+            statement.executeBatch();
+        } catch (SQLException e) {
+            logger.info(statement.toString());
+            throw e;
+        } finally {
+            statement.close();
+
+            returnConnection(connection);
+        }
     }
 
     private void insertParamRecord(Table table, Map<KeyField, DataObject> keyFields, Map<PropertyField, ObjectValue> propFields) throws SQLException {
@@ -455,7 +527,7 @@ public class SQLSession extends MutableObject {
             valueString = "0";
         }
 
-        execute("INSERT INTO " + table.getName(syntax) + " (" + insertString + ") VALUES (" + valueString + ")");
+        executeDML("INSERT INTO " + table.getName(syntax) + " (" + insertString + ") VALUES (" + valueString + ")");
     }
 
     public boolean isRecord(Table table, Map<KeyField, DataObject> keyFields) throws SQLException {
@@ -512,7 +584,7 @@ public class SQLSession extends MutableObject {
         for (Map.Entry<KeyField, ?> deleteKey : keys.entrySet())
             deleteWhere = (deleteWhere.length() == 0 ? "" : deleteWhere + " AND ") + deleteKey.getKey().name + "=" + deleteKey.getValue();
 
-        execute("DELETE FROM " + table.getName(syntax) + (deleteWhere.length() == 0 ? "" : " WHERE " + deleteWhere));
+        executeDML("DELETE FROM " + table.getName(syntax) + (deleteWhere.length() == 0 ? "" : " WHERE " + deleteWhere));
     }
 
     public int updateRecords(ModifyQuery modify) throws SQLException {

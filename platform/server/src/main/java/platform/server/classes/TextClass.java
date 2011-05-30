@@ -53,6 +53,9 @@ public class TextClass extends DataClass<String> {
     public String getDB(SQLSyntax syntax) {
         return syntax.getTextType();
     }
+    public int getSQL(SQLSyntax syntax) {
+        return syntax.getTextSQL();
+    }
 
     public boolean isSafeString(Object value) {
         return false;

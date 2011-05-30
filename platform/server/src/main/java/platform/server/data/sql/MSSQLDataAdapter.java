@@ -5,6 +5,7 @@ import platform.base.BaseUtils;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.sql.Types;
 
 public class MSSQLDataAdapter extends DataAdapter {
 
@@ -12,8 +13,13 @@ public class MSSQLDataAdapter extends DataAdapter {
         super(iDataBase, iServer, iUserID, iPassword);
     }
 
+    @Override
     public String getLongType() {
         return "bigint";
+    }
+    @Override
+    public int getLongSQL() {
+        return Types.BIGINT;
     }
 
     public int updateModel() {
@@ -92,6 +98,10 @@ public class MSSQLDataAdapter extends DataAdapter {
     @Override
     public String getByteArrayType() {
         return "varbinary";
+    }
+    @Override
+    public int getByteArraySQL() {
+        return Types.VARBINARY;
     }
 
     public String getCommandEnd() {

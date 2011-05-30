@@ -127,7 +127,7 @@ public class SessionRows implements SessionData<SessionRows> {
         assert update || prevValue==null;
 
         if(orRows.size()>MAX_ROWS) // если превысили количество рядов "переходим" в таблицу
-            return createSessionTable(session, keys, orRows, groupLast, owner);
+            return new SessionDataTable(session, keys, properties, orRows, groupLast, owner);
         else
             return new SessionRows(keys, properties, orRows);
     }
@@ -136,22 +136,10 @@ public class SessionRows implements SessionData<SessionRows> {
         Map<Map<KeyField, DataObject>, Map<PropertyField, ObjectValue>> data = BaseUtils.toMap(writeRows, (Map<PropertyField, ObjectValue>) new HashMap<PropertyField, ObjectValue>());
 
         if(writeRows.size()>MAX_ROWS)
-            return createSessionTable(session, keys, data, true, owner);
+            return new SessionDataTable(session, keys, new HashSet<PropertyField>(), data, true, owner);
         else
             return new SessionRows(keys, new HashSet<PropertyField>(), data);
 
-    }
-
-    private static SessionDataTable createSessionTable(SQLSession session, List<KeyField> keys, Map<Map<KeyField, DataObject>, Map<PropertyField, ObjectValue>> rows, boolean groupLast, Object owner) throws SQLException {
-        Iterator<Map.Entry<Map<KeyField, DataObject>, Map<PropertyField, ObjectValue>>> ir = rows.entrySet().iterator();
-        Map.Entry<Map<KeyField, DataObject>, Map<PropertyField, ObjectValue>> first = ir.next();
-        SessionDataTable result = new SessionDataTable(new SessionTable(session, owner), keys, first.getKey(), first.getValue());
-        while(ir.hasNext()) {
-            Map.Entry<Map<KeyField, DataObject>, Map<PropertyField, ObjectValue>> row = ir.next();
-            result = result.insertRecord(session, row.getKey(), row.getValue(), false, groupLast && !ir.hasNext(), owner);
-        }
-
-        return result;
     }
 
     public static SessionData rewrite(SessionData<?> data, SQLSession session, Collection<Map<KeyField, DataObject>> writeRows, Object owner) throws SQLException {
@@ -200,10 +188,10 @@ public class SessionRows implements SessionData<SessionRows> {
             table.drop(session, owner); // выкидываем таблицу
 
             // надо бы batch update сделать, то есть зная уже сколько запискй
-            SessionData sessionRows = new SessionRows(keys, properties);
+            SessionRows sessionRows = new SessionRows(keys, properties);
             for (Iterator<Map.Entry<Map<KeyField, DataObject>, Map<PropertyField, ObjectValue>>> iterator = readRows.entrySet().iterator(); iterator.hasNext();) {
                 Map.Entry<Map<KeyField, DataObject>, Map<PropertyField, ObjectValue>> writeRow = iterator.next();
-                sessionRows = sessionRows.insertRecord(session, BaseUtils.merge(writeRow.getKey(), keyValues), BaseUtils.merge(writeRow.getValue(), propValues), false, !iterator.hasNext(), owner);
+                sessionRows = (SessionRows) sessionRows.insertRecord(session, BaseUtils.merge(writeRow.getKey(), keyValues), BaseUtils.merge(writeRow.getValue(), propValues), false, !iterator.hasNext(), owner);
             }
             return sessionRows;
         }

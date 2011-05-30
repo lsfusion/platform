@@ -20,6 +20,7 @@ public interface Type<T> extends ClassReader<T> {
     }
 
     String getDB(SQLSyntax syntax);
+    int getSQL(SQLSyntax syntax);
 
     boolean isSafeString(Object value);
     boolean isSafeType(Object value);

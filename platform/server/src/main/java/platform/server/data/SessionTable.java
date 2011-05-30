@@ -33,10 +33,20 @@ public class SessionTable extends Table implements MapValues<SessionTable>, Valu
         super(session.createTemporaryTable(keys, properties, owner), keys, properties, classes, propertyClasses);
     }
 
-    public SessionTable(SQLSession session, Object owner) throws SQLException { // создает пустую таблицу с одной записью
-        this(session, new ArrayList<KeyField>(), new HashSet<PropertyField>(), ClassWhere.<KeyField>STATIC(true), new HashMap<PropertyField, ClassWhere<Field>>(), owner);
+    // создает таблицу batch'ем
+    public static SessionTable create(SQLSession session, List<KeyField> keys, Set<PropertyField> properties, Map<Map<KeyField, DataObject>, Map<PropertyField, ObjectValue>> rows, boolean groupLast, Object owner) throws SQLException {
+        // прочитаем классы
+        Pair<ClassWhere<KeyField>, Map<PropertyField, ClassWhere<Field>>> orClasses = new Pair<ClassWhere<KeyField>, Map<PropertyField,ClassWhere<Field>>>(ClassWhere.<KeyField>STATIC(false), BaseUtils.toMap(properties, ClassWhere.<Field>STATIC(false)));
+        for(Map.Entry<Map<KeyField, DataObject>, Map<PropertyField, ObjectValue>> row : rows.entrySet())
+            orClasses = orFieldsClassWheres(orClasses.first, orClasses.second, row.getKey(), row.getValue());
 
-        insertSessionRecord(session, new HashMap<KeyField, DataObject>(), new HashMap<PropertyField, ObjectValue>(), false, false); // можно и true groupLast делать но без разницы все равно обращения не будет
+        SessionTable table = new SessionTable(session, keys, properties, orClasses.first, orClasses.second, owner);
+        session.insertBatchRecords(table, rows);
+
+        if(groupLast)
+            session.vacuumSessionTable(table);
+
+        return table;
     }
 
     public SessionTable(String name, List<KeyField> keys, Set<PropertyField> properties, ClassWhere<KeyField> classes, Map<PropertyField, ClassWhere<Field>> propertyClasses) {

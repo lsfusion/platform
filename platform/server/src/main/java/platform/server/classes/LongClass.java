@@ -44,6 +44,9 @@ public class LongClass extends IntegralClass<Long> {
     public String getDB(SQLSyntax syntax) {
         return syntax.getLongType();
     }
+    public int getSQL(SQLSyntax syntax) {
+        return syntax.getLongSQL();
+    }
 
     public Long read(Object value) {
         if(value==null) return null;

@@ -36,30 +36,41 @@ public interface SQLSyntax {
     int updateModel();
 
     String getStringType(int length);
+    int getStringSQL();
 
     String getNumericType(int length,int precision);
+    int getNumericSQL();
 
     String getIntegerType();
+    int getIntegerSQL();
 
     String getDateType();
+    int getDateSQL();
 
     String getDateTimeType();
+    int getDateTimeSQL();
 
     String getLongType();
+    int getLongSQL();
 
     String getDoubleType();
+    int getDoubleSQL();
 
     String getBitType();
+    int getBitSQL();
 
     String getBitString(Boolean value);
 
     String getTextType();
+    int getTextSQL();
 
     String getBinaryConcatenate();
     boolean isBinaryString();
     String getBinaryType(int length);
+    int getBinarySQL();
 
     String getByteArrayType();
+    int getByteArraySQL();
 
     String getSelect(String from,String exprs,String where,String orderBy,String groupBy, String top);
 
