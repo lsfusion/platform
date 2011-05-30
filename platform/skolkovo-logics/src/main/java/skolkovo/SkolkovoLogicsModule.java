@@ -1,11 +1,18 @@
 package skolkovo;
 
+import jasperapi.ReportGenerator;
+import net.sf.jasperreports.engine.JRAbstractExporter;
 import net.sf.jasperreports.engine.JRException;
+import net.sf.jasperreports.engine.JRExporterParameter;
+import net.sf.jasperreports.engine.JasperPrint;
+import net.sf.jasperreports.engine.export.JRPdfExporter;
 import platform.base.BaseUtils;
+import platform.base.IOUtils;
 import platform.interop.ClassViewType;
 import platform.interop.Compare;
 import platform.interop.action.ClientAction;
 import platform.interop.action.MessageClientAction;
+import platform.interop.form.RemoteFormInterface;
 import platform.interop.form.layout.DoNotIntersectSimplexConstraint;
 import platform.server.classes.*;
 import platform.server.data.Union;
@@ -39,7 +46,9 @@ import platform.server.session.Modifier;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyEvent;
+import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.List;
@@ -348,6 +357,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP authExpertSubjectLanguage, letterExpertSubjectLanguage;
 
     LP generateDocumentsProjectDocumentType;
+    LP includeDocumentsProjectDocumentType;
     LP generateVoteProject, hideGenerateVoteProject;
     LP copyResultsVote;
 
@@ -1041,6 +1051,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 //                addSGProp(addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), inExpertVote, 2, 1), 1), 1), 1), false);
 
         generateDocumentsProjectDocumentType = addAProp(actionGroup, new GenerateDocumentsActionProperty());
+        includeDocumentsProjectDocumentType = addAProp(actionGroup, new IncludeDocumentsActionProperty());
 
         generateVoteProject = addAProp(actionGroup, new GenerateVoteActionProperty());
         copyResultsVote = addAProp(actionGroup, new CopyResultsActionProperty());
@@ -1186,11 +1197,13 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
     FormEntity languageDocumentTypeForm;
     FormEntity globalForm;
+    public ProjectFullFormEntity projectFullNative;
+    public ProjectFullFormEntity projectFullForeign;
 
     @Override
     public void initNavigators() throws JRException, FileNotFoundException {
-        addFormEntity(new ProjectFullFormEntity(baseLM.objectElement, "projectFullNative", "Резюме проекта для эксперта", false));
-        addFormEntity(new ProjectFullFormEntity(baseLM.objectElement, "projectFullForeign", "Resume project for expert", true));
+        projectFullNative = addFormEntity(new ProjectFullFormEntity(baseLM.objectElement, "projectFullNative", "Резюме проекта для эксперта", false));
+        projectFullForeign = addFormEntity(new ProjectFullFormEntity(baseLM.objectElement, "projectFullForeign", "Resume project for expert", true));
         addFormEntity(new ClaimerFullFormEntity(baseLM.objectElement, "Claimer"));
 
         addFormEntity(new ProjectFormEntity(baseLM.baseElement, "project"));
@@ -1344,6 +1357,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             objDocumentTemplate.groupTo.setSingleClassView(ClassViewType.PANEL);
             setReadOnly(objDocumentTemplate, true);
             addPropertyDraw(generateDocumentsProjectDocumentType, objProject, objDocumentTemplate);
+            addPropertyDraw(includeDocumentsProjectDocumentType, objProject, objDocumentTemplate);
 
             objDocument = addSingleGroupObject(document, nameTypeDocument, nameLanguageDocument, postfixDocument, loadFileDocument, openFileDocument);
             addObjectActions(this, objDocument);
@@ -1947,6 +1961,136 @@ public class SkolkovoLogicsModule extends LogicsModule {
             }
         }
     }
+
+public class IncludeDocumentsActionProperty extends ActionProperty {
+
+        private final ClassPropertyInterface projectInterface;
+        private final ClassPropertyInterface documentTemplateInterface;
+
+        public IncludeDocumentsActionProperty() {
+            super(genSID(), "Подключить документы", new ValueClass[]{project, documentTemplate});
+
+            Iterator<ClassPropertyInterface> i = interfaces.iterator();
+            projectInterface = i.next();
+            documentTemplateInterface = i.next();
+        }
+
+
+        public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects) throws SQLException {
+            throw new RuntimeException("no need");
+        }
+
+        @Override
+        public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, DataSession session, Modifier<? extends Changes> modifier, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects, boolean groupLast) throws SQLException {
+
+            try {
+
+                DataObject projectObject = keys.get(projectInterface);
+
+                RemoteFormInterface remoteForm = executeForm.createForm(projectFullNative, Collections.singletonMap(projectFullNative.objProject, projectObject));
+                ReportGenerator report = new ReportGenerator(remoteForm);
+                JasperPrint print = report.createReport(false, false, new HashMap());
+                JRAbstractExporter exporter = new JRPdfExporter();
+                File tempFile = File.createTempFile("lsfReport", ".pdf");
+                exporter.setParameter(JRExporterParameter.OUTPUT_FILE_NAME, tempFile.getAbsolutePath());
+                exporter.setParameter(JRExporterParameter.JASPER_PRINT, print);
+                exporter.exportReport();
+                byte[] fileBytes = IOUtils.getFileBytes(tempFile);
+
+                DataObject documentObject = session.addObject(document, session.modifier);
+                projectDocument.execute(projectObject.getValue(), session, documentObject);
+                typeDocument.execute(documentType.getID("application"), session, documentObject);
+                languageDocument.execute(language.getID("russian"), session, documentObject);
+                fileDocument.execute(fileBytes, session, documentObject);
+
+
+                remoteForm = executeForm.createForm(projectFullForeign, Collections.singletonMap(projectFullForeign.objProject, projectObject));
+                report = new ReportGenerator(remoteForm);
+                print = report.createReport(false, false, new HashMap());
+                exporter = new JRPdfExporter();
+                tempFile = File.createTempFile("lsfReport", ".pdf");
+                exporter.setParameter(JRExporterParameter.OUTPUT_FILE_NAME, tempFile.getAbsolutePath());
+                exporter.setParameter(JRExporterParameter.JASPER_PRINT, print);
+                exporter.exportReport();
+                fileBytes = IOUtils.getFileBytes(tempFile);
+
+                documentObject = session.addObject(document, session.modifier);
+                projectDocument.execute(projectObject.getValue(), session, documentObject);
+                typeDocument.execute(documentType.getID("application"), session, documentObject);
+                languageDocument.execute(language.getID("english"), session, documentObject);
+                fileDocument.execute(fileBytes, session, documentObject);
+
+
+                Object file = fileNativeSummaryProject.read(session, projectObject);
+                if (file != null) {
+                    documentObject = session.addObject(document, session.modifier);
+                    fileDocument.execute(file, session, documentObject);
+                    projectDocument.execute(projectObject.getValue(), session, documentObject);
+                    typeDocument.execute(documentType.getID("resume"), session, documentObject);
+                    languageDocument.execute(language.getID("russian"), session, documentObject);
+                }
+
+                file = fileForeignSummaryProject.read(session, projectObject);
+                if (file != null) {
+                    documentObject = session.addObject(document, session.modifier);
+                    fileDocument.execute(file, session, documentObject);
+                    projectDocument.execute(projectObject.getValue(), session, documentObject);
+                    typeDocument.execute(documentType.getID("resume"), session, documentObject);
+                    languageDocument.execute(language.getID("english"), session, documentObject);
+                }
+
+                Query<String, String> query = new Query<String, String>(Collections.singleton("nonRussianSpecialist"));
+                query.and(projectNonRussianSpecialist.getExpr(session.modifier, query.mapKeys.get("nonRussianSpecialist")).compare(projectObject.getExpr(), Compare.EQUALS));
+                query.properties.put("fullNameNonRussianSpecialist", projectNonRussianSpecialist.getExpr(session.modifier, query.mapKeys.get("nonRussianSpecialist")));
+                query.properties.put("fileForeignResumeNonRussianSpecialist", fileForeignResumeNonRussianSpecialist.getExpr(session.modifier, query.mapKeys.get("nonRussianSpecialist")));
+                for (Map.Entry<Map<String, DataObject>, Map<String, ObjectValue>> row : query.executeClasses(session.sql, session.env, baseClass).entrySet()) {
+                    row.getKey().get("nonRussianSpecialist");
+                    row.getValue().get("fullNameNonRussianSpecialist");
+                    row.getValue().get("fileForeignResumeNonRussianSpecialist");
+                    documentObject = session.addObject(document, session.modifier);
+                    projectDocument.execute(projectObject.getValue(), session, documentObject);
+                    typeDocument.execute(documentType.getID("forres"), session, documentObject);
+                    languageDocument.execute(language.getID("english"), session, documentObject);
+                    fileDocument.execute(row.getValue().get("fileForeignResumeNonRussianSpecialist").getValue(), session, documentObject);
+                }
+
+                file = fileNativeTechnicalDescriptionProject.read(session, projectObject);
+                if (file != null) {
+                    documentObject = session.addObject(document, session.modifier);
+                    projectDocument.execute(projectObject.getValue(), session, documentObject);
+                    typeDocument.execute(documentType.getID("techdesc"), session, documentObject);
+                    languageDocument.execute(language.getID("russian"), session, documentObject);
+                    fileDocument.execute(file, session, documentObject);
+                }
+
+                file = fileForeignTechnicalDescriptionProject.read(session, projectObject);
+                if (file != null) {
+                    documentObject = session.addObject(document, session.modifier);
+                    projectDocument.execute(projectObject.getValue(), session, documentObject);
+                    typeDocument.execute(documentType.getID("techdesc"), session, documentObject);
+                    languageDocument.execute(language.getID("english"), session, documentObject);
+                    fileDocument.execute(file, session, documentObject);
+                }
+
+                file = fileRoadMapProject.read(session, projectObject);
+                if (file != null) {
+                    documentObject = session.addObject(document, session.modifier);
+                    projectDocument.execute(projectObject.getValue(), session, documentObject);
+                    typeDocument.execute(documentType.getID("techdesc"), session, documentObject);
+                    languageDocument.execute(language.getID("russian"), session, documentObject);
+                    fileDocument.execute(file, session, documentObject);
+                }
+
+            } catch (IOException e) {
+                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            } catch (JRException e) {
+                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            } catch (ClassNotFoundException e) {
+                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            }
+        }
+    }
+
 
     public class GenerateVoteActionProperty extends ActionProperty {
 
