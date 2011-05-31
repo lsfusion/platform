@@ -28,10 +28,9 @@ import java.io.FileNotFoundException;
  */
 
 public class BudgetLogicsModule extends LogicsModule {
-    private BaseLogicsModule<BudgetBusinessLogics> baseLM;
 
     public BudgetLogicsModule(BaseLogicsModule<BudgetBusinessLogics> baseLM) {
-        this.baseLM = baseLM;
+        setBaseLogicsModule(baseLM);
     }
 
     AbstractGroup salaryGroup, dateTimeGroup, personGroup, extraGroup, outGroup, inOperationGroup, payerGroup, baseCurGroup;
