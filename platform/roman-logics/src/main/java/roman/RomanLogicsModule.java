@@ -257,6 +257,7 @@ public class RomanLogicsModule extends LogicsModule {
     LP relationCustomCategory10CustomCategoryOrigin;
     private LP customCategory10DataSku;
     private LP customCategory10Sku;
+    private LP customCategory9Sku;
     private LP customCategory6FreightSku;
     private LP sidCustomCategory10Sku;
     private LP customCategory10CustomCategoryOriginArticle;
@@ -872,9 +873,9 @@ public class RomanLogicsModule extends LogicsModule {
 
         freight = addConcreteClass("freight", "Фрахт", baseClass.named, baseLM.transaction);
         freightComplete = addConcreteClass("freightComplete", "Скомплектованный фрахт", freight);
-        freightPriced = addConcreteClass("freightPriced", "Расцененный фрахт", freightComplete);
-        freightChanged = addConcreteClass("freightChanged", "Обработанный фрахт", freightPriced);
-        freightShipped = addConcreteClass("freightShipped", "Отгруженный фрахт", freightChanged);
+        freightChanged = addConcreteClass("freightChanged", "Обработанный фрахт", freightComplete);
+        freightPriced = addConcreteClass("freightPriced", "Расцененный фрахт", freightChanged);
+        freightShipped = addConcreteClass("freightShipped", "Отгруженный фрахт", freightPriced);
 
         freightType = addConcreteClass("freightType", "Тип машины", baseClass.named);
 
@@ -1016,9 +1017,6 @@ public class RomanLogicsModule extends LogicsModule {
         contractImporter = addDProp(baseGroup, "contractImporter", "Номер договора", StringClass.get(50), importer);
 
         // CustomCategory
-        nameCustomCategory = addDProp(baseGroup, "nameCustomCategory", "Наименование", StringClass.get(500), customCategory);
-        nameCustomCategory.property.preferredCharWidth = 50;
-        nameCustomCategory.property.minimumCharWidth = 20;
 
         sidCustomCategory4 = addDProp(baseGroup, "sidCustomCategory4", "Код(4)", StringClass.get(4), customCategory4);
         sidCustomCategory4.setFixedCharWidth(4);
@@ -1029,11 +1027,18 @@ public class RomanLogicsModule extends LogicsModule {
         sidCustomCategory9 = addDProp(baseGroup, "sidCustomCategory9", "Код(9)", StringClass.get(9), customCategory9);
         sidCustomCategory9.setFixedCharWidth(9);
 
+        numberIdCustomCategory10 = addDProp(baseGroup, "numberIdCustomCategory10", "Номер", IntegerClass.instance, customCategory10);
+        numberIdCustomCategoryOrigin = addDProp(baseGroup, "numberIdCustomCategoryOrigin", "Номер", IntegerClass.instance, customCategoryOrigin);
+                
         sidCustomCategory10 = addDProp(baseGroup, "sidCustomCategory10", "Код(10)", StringClass.get(10), customCategory10);
         sidCustomCategory10.setFixedCharWidth(10);
 
         sidCustomCategoryOrigin = addDProp(baseGroup, "sidCustomCategoryOrigin", "Код ЕС(10)", StringClass.get(10), customCategoryOrigin);
         sidCustomCategoryOrigin.setFixedCharWidth(10);
+
+        nameCustomCategory = addDProp(baseGroup, "nameCustomCategory", "Наименование", StringClass.get(500), customCategory);
+        nameCustomCategory.property.preferredCharWidth = 50;
+        nameCustomCategory.property.minimumCharWidth = 20;
 
         sidToCustomCategory4 = addAGProp("sidToCustomCategory4", "Код(4)", sidCustomCategory4);
         sidToCustomCategory6 = addAGProp("sidToCustomCategory6", "Код(6)", sidCustomCategory6);
@@ -1074,15 +1079,12 @@ public class RomanLogicsModule extends LogicsModule {
 
         nameCustomCategory4CustomCategory6 = addJProp(baseGroup, "nameCustomCategory4CustomCategory6", "Наименование(4)", nameCustomCategory, customCategory4CustomCategory6, 1);
         nameCustomCategory6CustomCategory9 = addJProp(baseGroup, "nameCustomCategory6CustomCategory9", "Наименование(6)", nameCustomCategory, customCategory6CustomCategory9, 1);
-        nameCustomCategory9CustomCategory10 = addJProp(baseGroup, "nameCustomCategory9CustomCategory10", "Наименование(9)", nameCustomCategory, customCategory9CustomCategory10, 1);
-        nameCustomCategory6CustomCategory10 = addJProp(baseGroup, "nameCustomCategory6CustomCategory10", "Наименование(6)", nameCustomCategory, customCategory6CustomCategory10, 1);
+        nameCustomCategory9CustomCategory10 = addJProp("nameCustomCategory9CustomCategory10", "Наименование(9)", nameCustomCategory, customCategory9CustomCategory10, 1);
+        nameCustomCategory6CustomCategory10 = addJProp("nameCustomCategory6CustomCategory10", "Наименование(6)", nameCustomCategory, customCategory6CustomCategory10, 1);
         nameCustomCategory4CustomCategory10 = addJProp(baseGroup, "nameCustomCategory4CustomCategory10", "Наименование(4)", nameCustomCategory, customCategory4CustomCategory10, 1);
 
         nameCustomCategory6CustomCategoryOrigin = addJProp(baseGroup, "nameCustomCategory6CustomCategoryOrigin", "Наименование(6)", nameCustomCategory, customCategory6CustomCategoryOrigin, 1);
         nameCustomCategory4CustomCategoryOrigin = addJProp(baseGroup, "nameCustomCategory4CustomCategoryOrigin", "Наименование(4)", nameCustomCategory, customCategory4CustomCategoryOrigin, 1);
-
-        numberIdCustomCategory10 = addDProp(baseGroup, "numberIdCustomCategory10", "Номер", IntegerClass.instance, customCategory10);
-        numberIdCustomCategoryOrigin = addDProp(baseGroup, "numberIdCustomCategoryOrigin", "Номер", IntegerClass.instance, customCategoryOrigin);
 
         relationCustomCategory10CustomCategoryOrigin = addDProp(baseGroup, "relationCustomCategory10CustomCategoryOrigin", "Связь ТН ВЭД", LogicalClass.instance, customCategory10, customCategoryOrigin);
 
@@ -1203,7 +1205,11 @@ public class RomanLogicsModule extends LogicsModule {
         customCategory10CustomCategoryOriginArticle = addJProp(idGroup, "customCategory10CustomCategoryOriginArticle", "ТН ВЭД (ИД)", customCategory10CustomCategoryOrigin, customCategoryOriginArticle, 1);
         customCategory10CustomCategoryOriginArticleSku = addJProp(idGroup, "customCategory10CustomCategoryOriginArticleSku", "ТН ВЭД (ИД)", customCategory10CustomCategoryOriginArticle, articleSku, 1);
         customCategory10Sku = addSUProp(idGroup, "customCategory10Sku", true, "ТН ВЭД (ИД)", Union.OVERRIDE, customCategory10CustomCategoryOriginArticleSku, customCategory10DataSku);
+        customCategory9Sku = addJProp(baseGroup, "customCategory9Sku", "ТН ВЭД", customCategory9CustomCategory10, customCategory10Sku, 1);
         sidCustomCategory10Sku = addJProp(baseGroup, "sidCustomCategory10Sku", "ТН ВЭД", sidCustomCategory10, customCategory10Sku, 1);
+
+        addConstraint(addJProp("Выбранный для товара ТН ВЭД должен иметь верхний элемент", baseLM.andNot1, customCategory10Sku, 1, customCategory9Sku, 1), false);
+
         /*addConstraint(addJProp("Выбранный должен быть среди связанных кодов", andNot1, addCProp(LogicalClass.instance, true, article), 1,
                    addJProp(relationCustomCategory10CustomCategoryOrigin, customCategory10Article, 1, customCategoryOriginArticle, 1), 1), true);*/
 
@@ -1762,8 +1768,6 @@ public class RomanLogicsModule extends LogicsModule {
         hideSidStampShipmentDetail = addHideCaptionProp(privateGroup, "Контрольная марка", sidStampShipmentDetail, necessaryStampSkuShipmentDetail);
         shipmentDetailStamp = addAGProp(idGroup, "shipmentDetailStamp", "Контрольная марка (ИД)", shipmentDetail, stampShipmentDetail);
 
-
-
         // Transfer
         stockFromTransfer = addDProp(idGroup, "stockFromTransfer", "Место хранения (с) (ИД)", stock, transfer);
         barcodeStockFromTransfer = addJProp(baseGroup, "barcodeStockFromTransfer", "Штрих-код МХ (с)", baseLM.barcode, stockFromTransfer, 1);
@@ -2194,15 +2198,15 @@ public class RomanLogicsModule extends LogicsModule {
         NavigatorElement purchase = new NavigatorElement(baseLM.baseElement, "purchase", "Управление закупками");
         addFormEntity(new OrderFormEntity(purchase, "orderForm", "Заказы"));
         addFormEntity(new InvoiceFormEntity(purchase, "boxInvoiceForm", "Инвойсы по коробам", true));
-        //addFormEntity(new InvoiceFormEntity(purchase, "simpleInvoiceForm", "Инвойсы без коробов", false));
+        addFormEntity(new InvoiceFormEntity(purchase, "simpleInvoiceForm", "Инвойсы без коробов", false));
         addFormEntity(new ShipmentListFormEntity(purchase, "boxShipmentListForm", "Поставки по коробам", true));
-        //addFormEntity(new ShipmentListFormEntity(purchase, "simpleShipmentListForm", "Поставки без коробов", false));
+        addFormEntity(new ShipmentListFormEntity(purchase, "simpleShipmentListForm", "Поставки без коробов", false));
         addFormEntity(new PricatFormEntity(purchase, "pricatForm", "Прайсы"));
 
         NavigatorElement shipment = new NavigatorElement(baseLM.baseElement, "shipment", "Управление фрахтами");
-        addFormEntity(new FreightShipmentFormEntity(shipment, "freightShipmentForm", "Комплектация фрахта"));
-        addFormEntity(new FreightInvoiceFormEntity(shipment, "freightInvoiceForm", "Расценка фрахта"));
+        addFormEntity(new FreightShipmentFormEntity(shipment, "freightShipmentForm", "Комплектация фрахта"));        
         addFormEntity(new FreightChangeFormEntity(shipment, "freightChangeForm", "Обработка фрахта"));
+        addFormEntity(new FreightInvoiceFormEntity(shipment, "freightInvoiceForm", "Расценка фрахта"));
 
         NavigatorElement distribution = new NavigatorElement(baseLM.baseElement, "distribution", "Управление складом");
         FormEntity createPalletFormCreate = addFormEntity(new CreatePalletFormEntity(distribution, "createPalletFormAdd", "Сгенерировать паллеты", FormType.ADD));
@@ -3918,18 +3922,9 @@ public class RomanLogicsModule extends LogicsModule {
                                         new PropertyObjectEntity[0],
                                         new PropertyObjectEntity[0],
                                         false), 1,
-                                is(freightPriced), 1,
+                                is(freightComplete), 1,
                                 is(freightChanged), 1),
                         objFreight
-                ).forceViewType = ClassViewType.GRID;
-
-                addPropertyDraw(
-                        addJProp("Отгрузить фрахт", and(false, true),
-                                executeChangeFreightClass, 1, 2,
-                                is(freightChanged), 1,
-                                is(freightShipped), 1),
-                        objFreight,
-                        (DataObject)freightShipped.getClassObject()
                 ).forceViewType = ClassViewType.GRID;
             }
 
@@ -4632,10 +4627,20 @@ public class RomanLogicsModule extends LogicsModule {
                                         new PropertyObjectEntity[0],
                                         new PropertyObjectEntity[0],
                                         false), 1,
-                                is(freightComplete), 1,
+                                is(freightChanged), 1,
                                 is(freightPriced), 1),
                         objFreight
                 ).forceViewType = ClassViewType.GRID;
+
+                addPropertyDraw(
+                        addJProp("Отгрузить фрахт", and(false, true),
+                                executeChangeFreightClass, 1, 2,
+                                is(freightPriced), 1,
+                                is(freightShipped), 1),
+                        objFreight,
+                        (DataObject)freightShipped.getClassObject()
+                ).forceViewType = ClassViewType.GRID;
+
             }
 
             objImporter = addSingleGroupObject(importer, "Импортер", baseLM.name);
