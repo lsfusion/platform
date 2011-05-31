@@ -148,7 +148,7 @@
 					<textElement textAlignment="Justified">
 						<paragraph firstLineIndent="40"/>
 					</textElement>
-					<textFieldExpression class="java.lang.String"><![CDATA[platform.base.BaseUtils.formatRussian($F{date}) + " года"]]></textFieldExpression>
+					<textFieldExpression class="java.lang.String"><![CDATA[platform.base.BaseUtils.formatRussian($F{dateEndVote}) + " года"]]></textFieldExpression>
 				</textField>
 				<staticText>
 					<reportElement x="50" y="10" width="489" height="48"/>
