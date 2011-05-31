@@ -3,7 +3,7 @@
 	<property name="ireport.zoom" value="1.0"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
-	<style name="DefaultStyle" isDefault="true" vAlign="Middle" fontName="Serif" fontSize="12" pdfFontName="lsf.Times" pdfEncoding="Cp1251" isPdfEmbedded="false"/>
+	<style name="DefaultStyle" isDefault="true" vAlign="Middle" fontName="lsf.TimesNewRoman" fontSize="12" pdfEncoding="Cp1251" isPdfEmbedded="false"/>
 	<style name="GroupCellStyle0" mode="Opaque" backcolor="#DFDFDF" vAlign="Middle" fontName="Serif" fontSize="10" pdfFontName="lsf.Times" pdfEncoding="Cp1251" isPdfEmbedded="false">
 		<box leftPadding="2" rightPadding="2">
 			<pen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
@@ -63,7 +63,7 @@
 				<textField isStretchWithOverflow="true">
 					<reportElement mode="Transparent" x="50" y="127" width="489" height="58"/>
 					<textElement textAlignment="Center" verticalAlignment="Top">
-						<font isBold="true" pdfFontName="lsf.TimesBD"/>
+						<font isBold="true"/>
 					</textElement>
 					<textFieldExpression class="java.lang.String"><![CDATA["ПРОТОКОЛ\n" +
 "заседания Экспертной коллегии\n" +
@@ -165,7 +165,7 @@
 			<band height="319" splitType="Immediate">
 				<printWhenExpression><![CDATA[$F{succeededVote}!=null]]></printWhenExpression>
 				<staticText>
-					<reportElement positionType="Float" x="50" y="199" width="351" height="14"/>
+					<reportElement positionType="Float" x="50" y="199" width="489" height="14"/>
 					<textElement>
 						<paragraph firstLineIndent="40"/>
 					</textElement>

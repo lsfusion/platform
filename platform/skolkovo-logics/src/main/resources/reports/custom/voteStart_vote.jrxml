@@ -45,7 +45,7 @@
 				<staticText>
 					<reportElement x="50" y="11" width="489" height="48"/>
 					<textElement textAlignment="Center">
-						<font isBold="true" pdfFontName="lsf.TimesBD"/>
+						<font isBold="true"/>
 					</textElement>
 					<text><![CDATA[Некоммерческая организация
 Фонд развития Центра разработки и
@@ -66,7 +66,7 @@
 				<textField isStretchWithOverflow="true">
 					<reportElement mode="Transparent" x="50" y="119" width="489" height="42"/>
 					<textElement textAlignment="Center">
-						<font isBold="true" pdfFontName="lsf.TimesBD"/>
+						<font isBold="true"/>
 					</textElement>
 					<textFieldExpression class="java.lang.String"><![CDATA[($F{prevDateVote}==null? "О направлении заявки соискателя \n"+
 "на рассмотрение в Экспертную коллегию \n"+
