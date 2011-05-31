@@ -18,12 +18,9 @@ public class DesignStyles {
     private static void setDefaultStyle(JRDesignStyle style) {
         style.setName("DefaultStyle");
 
-        style.setFontName("Serif");
+        style.setFontName("lsf.TimesNewRoman");
         style.setFontSize(10);
         style.setVerticalAlignment(VerticalAlignEnum.MIDDLE);
-        style.setPdfFontName("lsf.Times");
-        style.setPdfEncoding("Cp1251");
-        style.setPdfEmbedded(false);
     }
 
     private static void setCellStyle(JRDesignStyle style) {
