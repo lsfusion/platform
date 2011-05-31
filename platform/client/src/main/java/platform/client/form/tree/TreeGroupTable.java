@@ -278,15 +278,7 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
                 getColumn(i).setModelIndex(i);
             }
 
-            String propCaption = !BaseUtils.isRedundantString(property.toolTip) ? property.toolTip : model.getColumnName(pos);
-            String sid = property.getSID();
-            String tableName = property.tableName != null ? property.tableName : "&lt;none&gt;";
-            String ifaceObjects = BaseUtils.toString(property.interfacesCaptions, ", ");
-            String ifaceClasses = BaseUtils.toString(property.interfacesTypes, ", ");
-            String returnClass = property.returnClass.toString();
-
-            tableColumn.setToolTipText(
-                    String.format(GridTable.toolTipFormat, propCaption, sid, tableName, ifaceObjects, ifaceClasses, returnClass));
+            tableColumn.setToolTipText(property.getTooltipText(model.getColumnName(pos)));
         }
     }
 

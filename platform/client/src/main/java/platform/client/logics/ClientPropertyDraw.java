@@ -489,6 +489,26 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         return "propertyView" + getID();
     }
 
+    public static final String toolTipFormat =
+            "<html><b>%1$s</b><br><hr>" +
+            "<b>sID:</b> %2$s<br>" +
+            "<b>Таблица:</b> %3$s<br>" +
+            "<b>Объекты :</b> %4$s<br>" +
+            "<b>Сигнатура:</b> %6$s <i>%2$s</i> (%5$s)" +
+            "</html>";
+
+    public String getTooltipText(String caption) {
+
+        String propCaption = (!BaseUtils.isRedundantString(toolTip) ? toolTip : caption).trim();
+        String sid = getSID();
+        String tableName = this.tableName != null ? this.tableName : "&lt;none&gt;";
+        String ifaceObjects = BaseUtils.toString(interfacesCaptions, ", ");
+        String ifaceClasses = BaseUtils.toString(interfacesTypes, ", ");
+        String returnClass = this.returnClass.toString();
+
+        return String.format(toolTipFormat, propCaption, sid, tableName, ifaceObjects, ifaceClasses, returnClass);
+    }
+
     public class CaptionReader implements ClientPropertyReader {
         public List<ClientObject> getKeysObjectsList(Set<ClientPropertyReader> panelProperties, Map<ClientGroupObject, ClassViewType> classViews, Map<ClientGroupObject, GroupObjectController> controllers) {
             return ClientPropertyDraw.this.getKeysObjectsList(classViews, controllers);

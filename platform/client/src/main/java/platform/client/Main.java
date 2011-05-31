@@ -104,6 +104,8 @@ public class Main {
             }
         });
 
+        ToolTipManager.sharedInstance().setDismissDelay(Integer.MAX_VALUE);
+
         Thread.setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
             public void uncaughtException(Thread t, Throwable e) {
                 ClientExceptionManager.handle(e);
