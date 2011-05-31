@@ -19,7 +19,7 @@ import java.util.Map;
 
 public class GroupObjectEntity extends IdentityObject implements Instantiable<GroupObjectInstance>, ServerIdentitySerializable {
 
-    public static int PAGE_SIZE_DEFAULT_VALUE = 10;
+    public static int PAGE_SIZE_DEFAULT_VALUE = 50;
 
     private int ID;
 

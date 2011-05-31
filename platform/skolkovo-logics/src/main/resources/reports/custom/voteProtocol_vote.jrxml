@@ -163,6 +163,7 @@
 				</staticText>
 			</band>
 			<band height="319" splitType="Immediate">
+				<printWhenExpression><![CDATA[$F{succeededVote}!=null]]></printWhenExpression>
 				<staticText>
 					<reportElement positionType="Float" x="50" y="199" width="351" height="14"/>
 					<textElement>
