@@ -60,7 +60,7 @@ public class ClassifierTNVEDImportActionProperty extends ActionProperty {
         private File tempFile;
 
         private ImportTable table;
-        private ImportField cat4IdField, cat4NameField, cat6IdField, cat6NameField, cat9IdField, cat9NameField, cat10IdField, cat10NameField, cat10OriginRelationField;
+        private ImportField cat4IdField, cat4NameField, cat6IdField, cat6NameField, cat9IdField, cat9NameField, cat10IdField, cat10NameField, cat10OriginRelationField, numberIdField;
         private Map<String, String> items = new HashMap<String, String>();
         private Map children = new HashMap() {{
             put(4, 6);
@@ -83,6 +83,9 @@ public class ClassifierTNVEDImportActionProperty extends ActionProperty {
 
             List<List<Object>> data = new ArrayList<List<Object>>();
 
+            List<String> last = new ArrayList<String>(9);    //храним последние прочитанные значения уровней с различным количеством дефисов
+            last.addAll(BaseUtils.toList("", "", "", "", "", "", "", "", ""));
+
             int recordCount = file.getRecordCount();
             for (int i = 0; i < recordCount; i++) {
                 file.read();
@@ -100,24 +103,83 @@ public class ClassifierTNVEDImportActionProperty extends ActionProperty {
                 }
 
                 items.put(idField.trim(), nameField);
+                last.set(dashCount(nameField), idField.trim());
+                List<Object> row = new ArrayList<Object>();
+                if (idField.startsWith("6204")) {
+                        System.out.println();
+                    }
                 if (!idField.substring(9).equals(" ") && !idField.equals("··········")) {
-                    List<Object> row = new ArrayList<Object>();
                     row.add(idField);
                     row.add(nameField);
                     row.add(idField.substring(0, 9));
                     row.add(getItem(idField, 9));
-                    row.add(idField.substring(0, 6));
-                    row.add(getItem(idField, 6));
-                    row.add(idField.substring(0, 4));
-                    row.add(getItem(idField, 4));
-                    row.add(true);
-                    data.add(row);
+                    addParents(row, idField);
+                } else if (idField.equals("··········")) {
+                    int dashCount = dashCount(nameField);
+                    String newCode = generateCode(last.get(dashCount - 1));
+                    last.set(dashCount, newCode.substring(0, newCode.lastIndexOf("-")));
+
+                    row.add(newCode);
+                    row.add(nameField);
+                    if (last.get(dashCount).length() == 6) {
+                        row.add(newCode);
+                        row.add(nameField);
+                        addParents(row, newCode);
+                    } else {
+                        addNullParents(row);
+                    }
+                } else {
+                    row.add(idField);
+                    row.add(nameField);
+                    addNullParents(row);
                 }
+
+                row.add(true);
+                row.add((i + 2) * 100);
+                data.add(row);
             }
 
             List<ImportField> fields = BaseUtils.toList(cat10IdField, cat10NameField, cat9IdField, cat9NameField, cat6IdField,
-                    cat6NameField, cat4IdField, cat4NameField, cat10OriginRelationField);
+                    cat6NameField, cat4IdField, cat4NameField, cat10OriginRelationField, numberIdField);
             table = new ImportTable(fields, data);
+        }
+
+        private void addParents(List<Object> row, String code) {
+            row.add(code.substring(0, 6));
+            row.add(getItem(code, 6));
+            row.add(code.substring(0, 4));
+            row.add(getItem(code, 4));
+        }
+
+        private void addNullParents(List<Object> row) {
+            for (int i = 0; i < 6; i++) {
+                row.add(null);
+            }
+        }
+
+        Map<String, Integer> counter = new HashMap<String, Integer>();// родители уровней с точками и порядковай номер этих уровней
+
+        private String generateCode(String code) {
+            Integer number = counter.get(code);
+            if (number == null) {
+                counter.put(code, 1);
+            } else {
+                counter.put(code, number + 1);
+            }
+            String name = code + "-" + counter.get(code);
+
+            if (name.length() <= 10) {
+                return name;
+            } else return name.substring(0, 10);
+        }
+
+        private int dashCount(String name) {//количество дефисов в названии
+            int index = (name.lastIndexOf("- ") + 2) /2;
+            if (index > 8) {
+                return dashCount(name.substring(0, index - 1));
+            } else {
+                return index;
+            }
         }
 
         private String getItem(String id, int size) {
@@ -139,6 +201,11 @@ public class ClassifierTNVEDImportActionProperty extends ActionProperty {
             cat10IdField = new ImportField(LM.sidCustomCategory10);
             cat10NameField = new ImportField(LM.nameCustomCategory);
             cat10OriginRelationField = new ImportField(LM.relationCustomCategory10CustomCategoryOrigin);
+            if (importType.equals("origin")) {
+                numberIdField = new ImportField(LM.numberIdCustomCategoryOrigin);
+            } else {
+                numberIdField = new ImportField(LM.numberIdCustomCategory10);
+            }
         }
 
         public void doImport() throws IOException, xBaseJException, SQLException {
@@ -156,6 +223,7 @@ public class ClassifierTNVEDImportActionProperty extends ActionProperty {
                 properties.add(new ImportProperty(cat6IdField, LM.customCategory6CustomCategoryOrigin.getMapping(categoryOriginKey), LM.object(LM.customCategory6).getMapping(category6Key)));
                 properties.add(new ImportProperty(cat10IdField, LM.customCategory10CustomCategoryOrigin.getMapping(categoryOriginKey), LM.object(LM.customCategory10).getMapping(category10Key)));
                 properties.add(new ImportProperty(cat10OriginRelationField, LM.relationCustomCategory10CustomCategoryOrigin.getMapping(category10Key, categoryOriginKey)));
+                properties.add(new ImportProperty(numberIdField, LM.numberIdCustomCategoryOrigin.getMapping(categoryOriginKey)));
 
                 ImportKey<?>[] keysArray = {category6Key, category10Key, categoryOriginKey};
                 new IntegrationService(session, table, Arrays.asList(keysArray), properties).synchronize(true, true, false);
@@ -181,6 +249,8 @@ public class ClassifierTNVEDImportActionProperty extends ActionProperty {
             properties.add(new ImportProperty(cat10IdField, LM.sidCustomCategory10.getMapping(category10Key)));
             properties.add(new ImportProperty(cat10NameField, LM.nameCustomCategory.getMapping(category10Key)));
             properties.add(new ImportProperty(cat9IdField, LM.customCategory9CustomCategory10.getMapping(category10Key), LM.object(LM.customCategory9).getMapping(category9Key)));
+
+            properties.add(new ImportProperty(numberIdField, LM.numberIdCustomCategory10.getMapping(category10Key)));
 
             ImportKey<?>[] keysArray = {category4Key, category6Key, category9Key, category10Key};
             new IntegrationService(session, table, Arrays.asList(keysArray), properties).synchronize(true, true, false);

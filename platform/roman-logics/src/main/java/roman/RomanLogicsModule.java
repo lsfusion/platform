@@ -223,6 +223,8 @@ public class RomanLogicsModule extends LogicsModule {
     LP sidCustomCategory9;
     LP sidCustomCategory10;
     LP sidCustomCategoryOrigin;
+    LP numberIdCustomCategory10;
+    LP numberIdCustomCategoryOrigin;
 
     LP sidToCustomCategory4;
     LP sidToCustomCategory6;
@@ -1078,6 +1080,9 @@ public class RomanLogicsModule extends LogicsModule {
 
         nameCustomCategory6CustomCategoryOrigin = addJProp(baseGroup, "nameCustomCategory6CustomCategoryOrigin", "Наименование(6)", nameCustomCategory, customCategory6CustomCategoryOrigin, 1);
         nameCustomCategory4CustomCategoryOrigin = addJProp(baseGroup, "nameCustomCategory4CustomCategoryOrigin", "Наименование(4)", nameCustomCategory, customCategory4CustomCategoryOrigin, 1);
+
+        numberIdCustomCategory10 = addDProp(baseGroup, "numberIdCustomCategory10", "Номер", IntegerClass.instance, customCategory10);
+        numberIdCustomCategoryOrigin = addDProp(baseGroup, "numberIdCustomCategoryOrigin", "Номер", IntegerClass.instance, customCategoryOrigin);
 
         relationCustomCategory10CustomCategoryOrigin = addDProp(baseGroup, "relationCustomCategory10CustomCategoryOrigin", "Связь ТН ВЭД", LogicalClass.instance, customCategory10, customCategoryOrigin);
 
