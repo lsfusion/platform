@@ -3,9 +3,9 @@
 	<property name="ireport.zoom" value="1.4641000000000006"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
-	<style name="DefaultStyle" isDefault="true" vAlign="Middle" fontName="Arial" fontSize="10" pdfFontName="lsf.Times" pdfEncoding="Cp1251" isPdfEmbedded="false"/>
-	<style name="BoldStyle" fontName="Arial" fontSize="10" isBold="true" pdfFontName="lsf.TimesBD" pdfEncoding="Cp1251" isPdfEmbedded="false"/>
-	<style name="BoldStyle2" fontName="Arial" fontSize="14" isBold="true" pdfFontName="lsf.TimesBD" pdfEncoding="Cp1251" isPdfEmbedded="false"/>
+	<style name="DefaultStyle" isDefault="true" vAlign="Middle" fontName="lsf.TimesNewRoman" fontSize="10"/>
+	<style name="BoldStyle" fontName="lsf.TimesNewRoman" fontSize="10" isBold="true"/>
+	<style name="BoldStyle2" fontName="lsf.TimesNewRoman" fontSize="14" isBold="true"/>
 	<style name="GroupCellStyle0" mode="Opaque" backcolor="#FFFFFF" vAlign="Middle" fontName="Arial" fontSize="10" pdfFontName="lsf.Times" pdfEncoding="Cp1251" isPdfEmbedded="false">
 		<box leftPadding="2" rightPadding="2">
 			<pen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
