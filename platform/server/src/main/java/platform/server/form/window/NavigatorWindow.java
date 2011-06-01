@@ -2,20 +2,18 @@ package platform.server.form.window;
 
 import platform.base.identity.IdentityObject;
 import platform.server.logics.BusinessLogics;
-import platform.server.serialization.ServerIdentitySerializable;
-import platform.server.serialization.ServerSerializationPool;
 
-import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
-public class NavigatorWindow extends IdentityObject {
+public abstract class NavigatorWindow extends IdentityObject {
 
     public String caption = "";
     private int x;
     private int y;
     private int width;
     private int height;
+    public boolean titleShown = true;
 
     public NavigatorWindow(String sID, String caption, int x, int y, int width, int height) {
         this.sID = sID;
@@ -27,18 +25,26 @@ public class NavigatorWindow extends IdentityObject {
         this.height = height;
     }
 
-    public static void serialize(DataOutputStream outStream, NavigatorWindow window) throws IOException {
-        if (window == null) {
-            outStream.writeInt(-1);
-        } else {
-            outStream.writeInt(window.getID());
-            outStream.writeUTF(window.caption);
-            outStream.writeUTF(window.getSID());
-            outStream.writeInt(window.x);
-            outStream.writeInt(window.y);
-            outStream.writeInt(window.width);
-            outStream.writeInt(window.height);
-        }
+    public void serialize(DataOutputStream outStream) throws IOException {
+        outStream.writeInt(getViewType());
+        outStream.writeInt(getID());
+        outStream.writeUTF(caption);
+        outStream.writeUTF(getSID());
+        outStream.writeInt(x);
+        outStream.writeInt(y);
+        outStream.writeInt(width);
+        outStream.writeInt(height);
+        outStream.writeBoolean(titleShown);
     }
+
+    public void changePosition(int x, int y, int width, int height) {
+        this.x = x;
+        this.y = y;
+        this.width = width;
+        this.height = height;
+    }
+
+
+    public abstract int getViewType();
 
 }

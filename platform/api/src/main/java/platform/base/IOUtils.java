@@ -1,5 +1,10 @@
 package platform.base;
 
+import javax.imageio.ImageIO;
+import javax.swing.*;
+import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.awt.image.RenderedImage;
 import java.io.*;
 
 public class IOUtils {
@@ -48,5 +53,15 @@ public class IOUtils {
         } finally {
             out.close();
         }
+    }
+
+    public static void writeImageIcon(DataOutputStream outStream, ImageIcon image) {
+        try {
+            ObjectOutputStream out = new ObjectOutputStream(outStream);
+            out.writeObject(image);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
     }
 }

@@ -3,12 +3,13 @@ package platform.fullclient.navigator;
 import bibliothek.gui.dock.common.SingleCDockable;
 import platform.client.logics.DeSerializer;
 import platform.client.navigator.*;
+import platform.interop.NavigatorWindowType;
 import platform.interop.navigator.RemoteNavigatorInterface;
 
 import java.io.IOException;
 import java.util.*;
 
-public class NavigatorController {
+public class NavigatorController implements INavigatorController {
     RemoteNavigatorInterface remoteNavigator;
     List<ClientNavigatorElement> elements;
     Map<ClientNavigatorWindow, NavigatorView> views = new HashMap<ClientNavigatorWindow, NavigatorView>();
@@ -29,7 +30,7 @@ public class NavigatorController {
         if (views.containsKey(window)) {
             return views.get(window);
         } else {
-            NavigatorView navigatorView = new TreeNavigatorView(window);
+            NavigatorView navigatorView = window.getView(this);
             views.put(window, navigatorView);
             return navigatorView;
         }

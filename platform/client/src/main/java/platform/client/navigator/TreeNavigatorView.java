@@ -1,23 +1,14 @@
-package platform.fullclient.navigator;
+package platform.client.navigator;
 
-import platform.client.navigator.ClientNavigatorElement;
-import platform.client.navigator.ClientNavigatorWindow;
 import platform.client.tree.ClientTree;
 import platform.client.tree.ClientTreeAction;
 import platform.client.tree.ClientTreeActionEvent;
 import platform.client.tree.ClientTreeNode;
-import platform.fullclient.layout.DockableMainFrame;
 
 import javax.swing.*;
-import javax.swing.event.TreeSelectionEvent;
-import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
-import java.awt.*;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.util.*;
 
 public class TreeNavigatorView extends NavigatorView {
@@ -26,8 +17,8 @@ public class TreeNavigatorView extends NavigatorView {
     private TreePath selectedPath;
     public DefaultTreeModel model;
 
-    public TreeNavigatorView(ClientNavigatorWindow iWindow) {
-        super(iWindow, new ClientTree());
+    public TreeNavigatorView(ClientNavigatorWindow iWindow, INavigatorController controller) {
+        super(iWindow, new ClientTree(), controller);
         tree = (ClientTree) component;
         root = new ClientTreeNode("Корень");
         model = new DefaultTreeModel(root);
@@ -65,7 +56,7 @@ public class TreeNavigatorView extends NavigatorView {
 
 
     private DefaultMutableTreeNode addNode(DefaultMutableTreeNode parent, ClientNavigatorElement element) {
-        DefaultMutableTreeNode node = new ClientTreeNode(element);
+        DefaultMutableTreeNode node = new TreeNavigatorViewNode(element);
         parent.add(node);
         return node;
     }
@@ -84,8 +75,8 @@ public class TreeNavigatorView extends NavigatorView {
             public void actionPerformed(ClientTreeActionEvent e) {
                 selectedPath = tree.getSelectionPath();
                 if (selectedPath == null) return;
-                DockableMainFrame.navigatorController.update(window, getSelectedElement());
-                DockableMainFrame.navigatorController.openForm(getSelectedElement());
+                controller.update(window, getSelectedElement());
+                controller.openForm(getSelectedElement());
             }
 
             @Override
@@ -95,4 +86,19 @@ public class TreeNavigatorView extends NavigatorView {
         });
 
     }
+}
+
+class TreeNavigatorViewNode extends ClientTreeNode {
+    ClientNavigatorElement element;
+
+    public TreeNavigatorViewNode(ClientNavigatorElement element) {
+        super(element);
+        this.element = element;
+    }
+
+    @Override
+    public Icon getIcon() {
+        return element.image;
+    }
+
 }

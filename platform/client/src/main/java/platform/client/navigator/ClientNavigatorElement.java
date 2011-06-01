@@ -1,9 +1,11 @@
 package platform.client.navigator;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
+import javax.imageio.ImageIO;
+import javax.swing.*;
+import java.awt.*;
+import java.io.*;
 import java.util.*;
+import java.util.List;
 
 public class ClientNavigatorElement {
     private static Map<String, ClientNavigatorElement> elements = new HashMap<String, ClientNavigatorElement>();
@@ -13,7 +15,7 @@ public class ClientNavigatorElement {
     private String caption;
     public String sID;
     public List<String> childrenSid = new LinkedList<String>();
-
+    public ImageIcon image;
 
     protected boolean hasChildren = false;
     public ClientNavigatorWindow window;
@@ -51,6 +53,14 @@ public class ClientNavigatorElement {
             String childSID = inStream.readUTF();
             addChild(childSID);
         }
+
+        ObjectInputStream in = new ObjectInputStream(inStream);
+        try {
+            image = (ImageIcon) in.readObject();
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+
         if (window != null) {
             window.elements.add(this);
         }
@@ -80,6 +90,7 @@ public class ClientNavigatorElement {
     public void serialize(DataOutputStream outStream) throws IOException {
         outStream.writeUTF(sID);
         outStream.writeUTF(caption);
+        //outStream.write
     }
 
     @Override

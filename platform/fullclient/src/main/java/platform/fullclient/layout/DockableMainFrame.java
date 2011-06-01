@@ -18,8 +18,8 @@ import platform.client.MainFrame;
 import platform.client.descriptor.view.LogicsDescriptorView;
 import platform.client.navigator.ClientNavigator;
 import platform.client.navigator.ClientNavigatorForm;
+import platform.client.navigator.NavigatorView;
 import platform.fullclient.navigator.NavigatorController;
-import platform.fullclient.navigator.NavigatorView;
 import platform.interop.exceptions.LoginException;
 import platform.interop.form.RemoteFormInterface;
 import platform.interop.navigator.RemoteNavigatorInterface;
@@ -171,7 +171,8 @@ public class DockableMainFrame extends MainFrame {
         grid.add(0, 70, 20, 29, createDockable("Связанные формы", mainNavigator.relevantFormNavigator), createDockable("Классовые формы", mainNavigator.relevantClassNavigator), createDockable("Лог", Log.getPanel()));
 
         for (NavigatorView view : navigatorController.getAllViews()) {
-            SingleCDockable dockable = createDockable(view.getCaption(), view);
+            DefaultSingleCDockable dockable = createDockable(view.getCaption(), view);
+            dockable.setTitleShown(view.isTitleShown());
             navigatorController.recordDockable(view, dockable);
             grid.add(view.getDockX(), view.getDockY(), view.getDockWidth(), view.getDockHeight(), dockable);
         }
@@ -335,7 +336,7 @@ public class DockableMainFrame extends MainFrame {
     }
 
 
-    public SingleCDockable createDockable(String title, JComponent navigator) {
+    public DefaultSingleCDockable createDockable(String title, JComponent navigator) {
         DefaultSingleCDockable dockable = new DefaultSingleCDockable(title, title, navigator);
         dockable.setCloseable(true);
         return dockable;

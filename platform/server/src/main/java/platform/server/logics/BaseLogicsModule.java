@@ -6,6 +6,7 @@ import platform.base.identity.DefaultIDGenerator;
 import platform.base.identity.IDGenerator;
 import platform.interop.ClassViewType;
 import platform.interop.Compare;
+import platform.interop.NavigatorWindowType;
 import platform.interop.action.*;
 import platform.server.caches.IdentityLazy;
 import platform.server.classes.*;
@@ -24,6 +25,8 @@ import platform.server.form.view.ContainerView;
 import platform.server.form.view.DefaultFormView;
 import platform.server.form.view.FormView;
 import platform.server.form.window.NavigatorWindow;
+import platform.server.form.window.ToolBarNavigatorWindow;
+import platform.server.form.window.TreeNavigatorWindow;
 import platform.server.logics.linear.LP;
 import platform.server.logics.property.*;
 import platform.server.logics.property.actions.DeleteObjectActionProperty;
@@ -836,7 +839,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         baseClass.named.setClassForm(new NamedObjectClassForm(this, baseClass.named));
 
         baseElement = new NavigatorElement("baseElement", "Формы");
-        baseWindow = new NavigatorWindow(baseElement.getSID() + "Window", "Навигатор", 0, 0, 20, 70);
+        baseWindow = new TreeNavigatorWindow(baseElement.getSID() + "Window", "Навигатор", 0, 0, 20, 70);
         baseElement.window = baseWindow;
 
         adminElement = new NavigatorElement(baseElement, "adminElement", "Администрирование");

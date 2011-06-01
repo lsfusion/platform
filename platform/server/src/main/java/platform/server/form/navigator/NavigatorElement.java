@@ -1,15 +1,25 @@
 package platform.server.form.navigator;
 
 import platform.base.BaseUtils;
+import platform.base.IOUtils;
 import platform.base.identity.IdentityObject;
+import platform.interop.NavigatorWindowType;
 import platform.server.form.window.NavigatorWindow;
 import platform.server.logics.BusinessLogics;
 
+import javax.imageio.ImageIO;
+import javax.imageio.ImageWriter;
+import javax.imageio.stream.ImageOutputStream;
+import javax.swing.*;
+import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.awt.image.RenderedImage;
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.*;
+import java.util.List;
 
 public class NavigatorElement<T extends BusinessLogics<T>> extends IdentityObject {
     private static Set<String> elementsSIDs = new HashSet<String>();
@@ -17,6 +27,8 @@ public class NavigatorElement<T extends BusinessLogics<T>> extends IdentityObjec
     public String caption = "";
 
     public NavigatorWindow window = null;
+
+    private static ImageIcon image = new ImageIcon(NavigatorElement.class.getResource("/images/open.png"));
 
     public NavigatorElement() {
 
@@ -108,11 +120,16 @@ public class NavigatorElement<T extends BusinessLogics<T>> extends IdentityObjec
         outStream.writeUTF(getSID());
         outStream.writeUTF(caption);
         outStream.writeBoolean(hasChildren());
-        NavigatorWindow.serialize(outStream, window);
+        if (window == null) {
+            outStream.writeInt(NavigatorWindowType.NULL_VIEW);
+        } else {
+            window.serialize(outStream);
+        }
         outStream.writeInt(children.size());
         for (NavigatorElement<T> child : children) {
             outStream.writeUTF(child.getSID());
         }
+        IOUtils.writeImageIcon(outStream, getImage());
     }
 
     public void removeAllChildren() {
@@ -134,7 +151,6 @@ public class NavigatorElement<T extends BusinessLogics<T>> extends IdentityObjec
     public static NavigatorElement<?> deserialize(DataInputStream inStream) throws IOException {
         String sID = inStream.readUTF();
         String caption = inStream.readUTF();
-
         return new NavigatorElement(sID, caption);
     }
 
@@ -145,5 +161,9 @@ public class NavigatorElement<T extends BusinessLogics<T>> extends IdentityObjec
         }
 
         return collection;
+    }
+
+    public ImageIcon getImage() {
+        return image;
     }
 }

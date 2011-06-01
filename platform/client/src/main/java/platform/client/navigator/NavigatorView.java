@@ -1,4 +1,4 @@
-package platform.fullclient.navigator;
+package platform.client.navigator;
 
 import platform.client.navigator.ClientNavigatorElement;
 import platform.client.navigator.ClientNavigatorWindow;
@@ -9,11 +9,13 @@ import java.util.Set;
 public abstract class NavigatorView extends JScrollPane {
     public ClientNavigatorWindow window;
     JComponent component;
+    INavigatorController controller;
 
-    public NavigatorView(ClientNavigatorWindow window, JComponent component) {
+    public NavigatorView(ClientNavigatorWindow window, JComponent component, INavigatorController controller) {
         super(component);
         this.window = window;
         this.component = component;
+        this.controller = controller;
     }
 
     public abstract void refresh(Set<ClientNavigatorElement> newElements);
@@ -38,5 +40,9 @@ public abstract class NavigatorView extends JScrollPane {
 
     public int getDockHeight() {
         return window.height;
+    }
+
+    public boolean isTitleShown() {
+        return window.titleShown;
     }
 }

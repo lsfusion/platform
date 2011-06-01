@@ -38,6 +38,7 @@ import java.util.*;
 
 public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T> implements ServerIdentitySerializable {
     private final static Logger logger = Logger.getLogger(FormEntity.class);
+    private static ImageIcon image = new ImageIcon(NavigatorElement.class.getResource("/images/form.gif"));
 
     public static final String ON_APPLY_EVENT = "onApplyEvent";
     public static final String ON_CLOSE_EVENT = "onCloseEvent";
@@ -804,5 +805,10 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         for (GroupObjectEntity entity : groups) {
             view.get(entity).needVerticalScroll = scroll;
         }
+    }
+
+    @Override
+    public ImageIcon getImage() {
+        return image;
     }
 }

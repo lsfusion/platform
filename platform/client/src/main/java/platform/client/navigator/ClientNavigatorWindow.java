@@ -1,13 +1,14 @@
 package platform.client.navigator;
 
 import platform.base.identity.IdentityObject;
+import platform.interop.NavigatorWindowType;
 
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.*;
 
-public class ClientNavigatorWindow extends IdentityObject implements Serializable {
+public abstract class ClientNavigatorWindow extends IdentityObject implements Serializable {
     public String caption;
     public String sid;
     public List<ClientNavigatorElement> elements = new ArrayList<ClientNavigatorElement>();
@@ -16,41 +17,59 @@ public class ClientNavigatorWindow extends IdentityObject implements Serializabl
     public int y;
     public int width;
     public int height;
+    public int type;
+    public boolean titleShown;
 
-    public ClientNavigatorWindow(int id, String sid, String caption, int x, int y, int width, int height) {
-        super(id);
-        this.sid = sid;
-        this.caption = caption;
-        this.x = x;
-        this.y = y;
-        this.width = width;
-        this.height = height;
+    public ClientNavigatorWindow(DataInputStream inStream) throws IOException {
+        super(inStream.readInt());
+        caption = inStream.readUTF();
+        sid = inStream.readUTF();
+        x = inStream.readInt();
+        y = inStream.readInt();
+        width = inStream.readInt();
+        height = inStream.readInt();
+        titleShown = inStream.readBoolean();
     }
 
 
     public static ClientNavigatorWindow deserialize(DataInputStream inStream) throws IOException {
-        int id = inStream.readInt();
-        if (id == -1) {
-            return null;
-        } else {
-            String caption = inStream.readUTF();
-            String sid = inStream.readUTF();
-            int x = inStream.readInt();
-            int y = inStream.readInt();
-            int width = inStream.readInt();
-            int height = inStream.readInt();
-            if (sidToWindow.containsKey(sid)) {
-                return sidToWindow.get(sid);
+        int type = inStream.readInt();
+        ClientNavigatorWindow result;
+        switch (type) {
+            case NavigatorWindowType.NULL_VIEW: {
+                result = null;
+                break;
+            }
+            case NavigatorWindowType.TREE_VIEW: {
+                result = new ClientTreeNavigatorWindow(inStream);
+                break;
+            }
+            case NavigatorWindowType.TOOLBAR_VIEW: {
+                result = new ClientToolBarNavigatorWindow(inStream);
+                break;
+            }
+            case NavigatorWindowType.MENU_VIEW: {
+                result = new ClientMenuNavigatorWindow(inStream);
+                break;
+            }
+            default:
+                throw new IllegalArgumentException("Illegal view type");
+        }
+        if (result != null) {
+            if (sidToWindow.containsKey(result.getSID())) {
+                result = sidToWindow.get(result.getSID());
             } else {
-                ClientNavigatorWindow clientNavigatorWindow = new ClientNavigatorWindow(id, sid, caption, x, y, width, height);
-                sidToWindow.put(sid, clientNavigatorWindow);
-                return clientNavigatorWindow;
+                sidToWindow.put(result.getSID(), result);
             }
         }
+        return result;
     }
 
     @Override
     public int hashCode() {
         return sid.hashCode();
     }
+
+    public abstract NavigatorView getView(INavigatorController controller);
+
 }
