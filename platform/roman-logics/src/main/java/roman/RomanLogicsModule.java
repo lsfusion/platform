@@ -6,6 +6,7 @@ import platform.interop.ClassViewType;
 import platform.interop.Compare;
 import platform.interop.action.AudioClientAction;
 import platform.interop.action.ClientAction;
+import platform.interop.action.MessageClientAction;
 import platform.interop.form.layout.DoNotIntersectSimplexConstraint;
 import platform.server.Settings;
 import platform.server.classes.*;
@@ -108,6 +109,8 @@ public class RomanLogicsModule extends LogicsModule {
     LP sizeSupplierItem;
     LP sidSizeSupplierItem;
     LP supplierColorSupplier;
+    private LP quantityCreationStamp;
+    private LP dateOfCreationStamp;
     private LP nameSupplierColorSupplier;
     LP supplierSizeSupplier;
     private LP nameSupplierSizeSupplier;
@@ -1524,10 +1527,10 @@ public class RomanLogicsModule extends LogicsModule {
         routeCreationPallet = addDProp(idGroup, "routeCreationPallet", "Маршрут (ИД)", route, creationPallet);
         nameRouteCreationPallet = addJProp(baseGroup, "nameRouteCreationPallet", "Маршрут", baseLM.name, routeCreationPallet, 1);
 
-        firstNumberCreationStamp = addDProp(baseGroup, "firstNumberCreationStamp", "Номер с", IntegerClass.instance, creationStamp);
-        lastNumberCreationStamp = addDProp(baseGroup, "lastNumberCreationStamp", "Номер по", IntegerClass.instance, creationStamp);
-        seriesOfStampCreationStamp = addDProp(baseGroup, "seriesOfStampCreationStamp", "Серия", DateClass.instance, creationStamp);
-        dateOfStampCreationStamp = addDProp(baseGroup, "dateOfStampCreationStamp", "Дата", DateClass.instance, creationStamp);
+        quantityCreationStamp = addDProp(baseGroup, "quantityCreationStamp", "Количество", IntegerClass.instance, creationStamp);
+        firstNumberCreationStamp = addDProp(baseGroup, "firstNumberCreationStamp", "Номер с", StringClass.get(8), creationStamp);
+        lastNumberCreationStamp = addDProp(baseGroup, "lastNumberCreationStamp", "Номер по", StringClass.get(8), creationStamp);
+        dateOfCreationStamp = addDProp(baseGroup, "dateOfCreationStamp", "Дата", DateClass.instance, creationStamp);
         creationStampStamp = addDProp(idGroup, "creationStampStamp", "Операция (ИД)", creationStamp, stamp);
 
         // паллеты
@@ -1762,7 +1765,7 @@ public class RomanLogicsModule extends LogicsModule {
         seriesOfStamp = addDProp(baseGroup, "seriesOfStamp", "Серия марки", StringClass.get(2), stamp);
         dateOfStamp = addDProp(baseGroup, "dateOfStamp", "Дата марки", DateClass.instance, stamp);
         stampShipmentDetail = addDProp("stampSkuShipmentDetail", "Контрольная марка", stamp, shipmentDetail);
-        necessaryStampCategory = addDProp(baseGroup, "necessaryStampCategory", "Нужна марка",  LogicalClass.instance, category);
+        necessaryStampCategory = addDProp(baseGroup, "necessaryStampCategory", "Нужна марка", LogicalClass.instance, category);
         necessaryStampSkuShipmentDetail = addJProp("necessaryStampSkuShipmentDetail",necessaryStampCategory, categoryArticleSkuShipmentDetail, 1);
         sidStampShipmentDetail = addJProp(intraAttributeGroup, "sidStampShipmentDetail", "Контрольная марка",  sidStamp, stampShipmentDetail, 1);
         hideSidStampShipmentDetail = addHideCaptionProp(privateGroup, "Контрольная марка", sidStampShipmentDetail, necessaryStampSkuShipmentDetail);
@@ -2120,7 +2123,8 @@ public class RomanLogicsModule extends LogicsModule {
 
         createFreightBox = addJProp(true, "Сгенерировать короба", addAAProp(freightBox, baseLM.barcode, baseLM.barcodePrefix, true), quantityCreationFreightBox, 1);
         createPallet = addJProp(true, "Сгенерировать паллеты", addAAProp(pallet, baseLM.barcode, baseLM.barcodePrefix, true), quantityCreationPallet, 1);
-        createStamp = addJProp(true, "Сгенерировать марки", addAAProp(stamp, baseLM.barcode, baseLM.barcodePrefix, true), firstNumberCreationStamp, 1);
+        //createStamp = addJProp(true, "Сгенерировать марки", addAAProp(stamp, baseLM.barcode, baseLM.barcodePrefix, true), quantityCreationStamp, 1);
+        createStamp = addAProp(actionGroup, new CreateStampActionProperty());
 
         barcodeActionCheckFreightBox = addJProp(true, "Проверка короба для транспортировки",
                 addJProp(true, and(false, false, true),
@@ -3392,8 +3396,7 @@ public class RomanLogicsModule extends LogicsModule {
         }
     }
 
-       private class CreateStampFormEntity extends FormEntity<RomanBusinessLogics> {
-
+    private class CreateStampFormEntity extends FormEntity<RomanBusinessLogics> {
         private ObjectEntity objCreate;
         private ObjectEntity objStamp;
 
@@ -3404,7 +3407,7 @@ public class RomanLogicsModule extends LogicsModule {
             if (!type.equals(FormType.ADD))
                 addPropertyDraw(objCreate, baseLM.objectValue);
 
-            addPropertyDraw(objCreate, firstNumberCreationStamp,lastNumberCreationStamp, dateOfStampCreationStamp, seriesOfStampCreationStamp);
+            addPropertyDraw(objCreate, firstNumberCreationStamp, lastNumberCreationStamp, dateOfCreationStamp);
 
             if (type.equals(FormType.ADD))
                 addPropertyDraw(createStamp, objCreate);
@@ -3412,13 +3415,16 @@ public class RomanLogicsModule extends LogicsModule {
             if (!type.equals(FormType.LIST))
                 objCreate.groupTo.setSingleClassView(ClassViewType.PANEL);
 
+            if (type.equals(FormType.LIST))
+                addPropertyDraw(objCreate, baseLM.delete);
+
             if (type.equals(FormType.ADD))
                 objCreate.addOnTransaction = true;
 
-            objStamp = addSingleGroupObject(stamp, "Контрольные марки", sidStamp, dateOfStamp);
+            objStamp = addSingleGroupObject(stamp, "Таможенные марки", sidStamp, baseLM.delete);
             setReadOnly(objStamp, true);
 
-             addFixedFilter(new CompareFilterEntity(addPropertyObject(creationStampStamp, objStamp), Compare.EQUALS, objCreate));
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(creationStampStamp, objStamp), Compare.EQUALS, objCreate));
 
         }
     }
@@ -4791,6 +4797,41 @@ public class RomanLogicsModule extends LogicsModule {
             setReadOnly(objSupplier, true);
             setReadOnly(importPricatSupplier, false, objSupplier.groupTo);
             setReadOnly(hugoBossImportPricat, false, objSupplier.groupTo);
+        }
+    }
+
+    public class CreateStampActionProperty extends ActionProperty {
+        private ClassPropertyInterface createStampInterface;
+
+        public CreateStampActionProperty() {
+            super(genSID(), "Сгенерировать марки", new ValueClass[]{creationStamp});
+
+            Iterator<ClassPropertyInterface> i = interfaces.iterator();
+            createStampInterface = i.next();
+        }
+
+        public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, DataSession session, Modifier<? extends Changes> modifier, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects, boolean groupLast) throws SQLException {
+            DataObject objCreateStamp = keys.get(createStampInterface);
+            if ((firstNumberCreationStamp.read(session, objCreateStamp) == null) || (lastNumberCreationStamp.read(session, objCreateStamp) == null)) {
+                actions.add(new MessageClientAction("Необходимо задать диапазон", "Ошибка"));
+                return;
+            }
+
+            Integer start = Integer.parseInt((String) firstNumberCreationStamp.read(session, objCreateStamp));
+            Integer finish = Integer.parseInt((String) lastNumberCreationStamp.read(session, objCreateStamp));
+
+            if ((finish - start) > 3000) {
+                actions.add(new MessageClientAction("Слишком большой диапазон (больше 3000)", "Ошибка"));
+                return;
+            }
+
+
+            for (int i = start; i <= finish; i++) {
+                DataObject stampObject = session.addObject(stamp, session.modifier);
+                creationStampStamp.execute(objCreateStamp.getValue(), session, stampObject);
+                sidStamp.execute(i, session, stampObject);
+                dateOfStamp.execute(dateOfCreationStamp.read(session, objCreateStamp), session, stampObject);
+            }
         }
     }
 
