@@ -50,6 +50,8 @@ public class TableFactory {
 
     public void fillDB(SQLSession sql, BaseClass baseClass) throws SQLException {
 
+        sql.startTransaction();
+
         sql.ensureTable(baseClass.table);
         sql.ensureTable(IDTable.instance);
         sql.ensureTable(StructTable.instance);
@@ -62,5 +64,7 @@ public class TableFactory {
         sql.ensureRecord(DumbTable.instance, Collections.singletonMap(DumbTable.instance.key,new DataObject(1, SystemClass.instance)), new HashMap<PropertyField, ObjectValue>());
 
         sql.ensureTable(EmptyTable.instance);
+
+        sql.commitTransaction();
     }
 }

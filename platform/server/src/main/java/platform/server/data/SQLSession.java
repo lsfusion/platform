@@ -4,6 +4,7 @@ import org.apache.log4j.Logger;
 import platform.base.BaseUtils;
 import platform.base.MutableObject;
 import platform.base.OrderedMap;
+import platform.base.Result;
 import platform.server.data.expr.Expr;
 import platform.server.data.query.Query;
 import platform.server.data.sql.DataAdapter;
@@ -58,7 +59,7 @@ public class SQLSession extends MutableObject {
 
     private void tryCommon() throws SQLException { // пытается вернуться к
         removeUnusedTemporaryTables();
-        if(!inTransaction && sessionTablesMap.isEmpty()) { // вернемся к commonConnection'у
+        if(!inTransaction && getSQLTemporaryPool().isEmpty(sessionTablesMap)) { // вернемся к commonConnection'у
             connectionPool.returnPrivate(this, privateConnection);
             privateConnection = null;
         }
@@ -70,15 +71,31 @@ public class SQLSession extends MutableObject {
         return inTransaction;
     }
 
+    public static void setACID(Connection connection, boolean ACID) throws SQLException {
+        connection.setAutoCommit(!ACID);
+        connection.setReadOnly(!ACID);
+
+        Statement statement = connection.createStatement();
+        try {
+            statement.execute("SET SESSION synchronous_commit TO " + (ACID ? "DEFAULT" : "OFF"));
+            statement.execute("SET SESSION commit_delay TO " + (ACID ? "DEFAULT" : "100000"));
+        } catch (SQLException e) {
+            logger.info(statement.toString());
+            throw e;
+        } finally {
+            statement.close();
+        }
+    }
+
     public void startTransaction() throws SQLException {
         needPrivate();
 
-        privateConnection.setAutoCommit(false);
+        setACID(privateConnection, true);
         inTransaction = true;
     }
 
     private void endTransaction() throws SQLException {
-        privateConnection.setAutoCommit(true);
+        setACID(privateConnection, false);
         inTransaction = false;
 
         tryCommon();
@@ -139,14 +156,14 @@ public class SQLSession extends MutableObject {
             createString = createString + "," + getConstraintDeclare(table, keys);
 
 //        System.out.println("CREATE TABLE "+Table.Name+" ("+CreateString+")");
-        execute("CREATE TABLE " + table + " (" + createString + ")");
+        executeDDL("CREATE TABLE " + table + " (" + createString + ")", false);
         addExtraIndices(table, keys);                
         logger.info(" Done");
     }
 
     public void dropTable(String table) throws SQLException {
         logger.info("Идет удаление таблицы " + table + "... ");
-        execute("DROP TABLE " + table);
+        executeDDL("DROP TABLE " + table, false);
         logger.info(" Done");
     }
 
@@ -163,17 +180,17 @@ public class SQLSession extends MutableObject {
         for (String indexField : fields)
             columns = (columns.length() == 0 ? "" : columns + ",") + indexField;
 
-        execute("CREATE INDEX " + getIndexName(table, fields) + " ON " + table + " (" + columns + ")");
+        executeDDL("CREATE INDEX " + getIndexName(table, fields) + " ON " + table + " (" + columns + ")", false);
         logger.info(" Done");
     }
 
     public void dropIndex(String table, Collection<String> fields) throws SQLException {
         logger.info("Идет удаление индекса " + getIndexName(table, fields) + "... ");
-        execute("DROP INDEX " + getIndexName(table, fields));
+        executeDDL("DROP INDEX " + getIndexName(table, fields), false);
         logger.info(" Done");
     }
 
-    public void addKeyColumns(String table, Map<KeyField, Object> fields, List<KeyField> keys) throws SQLException {
+/*    public void addKeyColumns(String table, Map<KeyField, Object> fields, List<KeyField> keys) throws SQLException {
         if(fields.isEmpty())
             return;
 
@@ -197,24 +214,24 @@ public class SQLSession extends MutableObject {
     public void addTemporaryColumn(String table, PropertyField field) throws SQLException {
         addColumn(table, field);
 //        execute("CREATE INDEX " + "idx_" + table + "_" + field.name + " ON " + table + " (" + field.name + ")"); //COLUMN
-    }
+    }*/
 
     public void addColumn(String table, PropertyField field) throws SQLException {
         logger.info("Идет добавление колонки " + table + "." + field.name + "... ");
-        execute("ALTER TABLE " + table + " ADD " + field.getDeclare(syntax)); //COLUMN
+        executeDDL("ALTER TABLE " + table + " ADD " + field.getDeclare(syntax), false); //COLUMN
         logger.info(" Done");
     }
 
     public void dropColumn(String table, String field) throws SQLException {
         logger.info("Идет удаление колонки " + table + "." + field + "... ");
-        execute("ALTER TABLE " + table + " DROP COLUMN " + field);
+        executeDDL("ALTER TABLE " + table + " DROP COLUMN " + field, false);
         logger.info(" Done");
     }
 
     public void modifyColumn(String table, PropertyField field, Type oldType) throws SQLException {
         logger.info("Идет изменение типа колонки " + table + "." + field.name + "... ");
-        execute("ALTER TABLE " + table + " ALTER COLUMN " + field.name + " TYPE " +
-                field.type.getDB(syntax) + " " + syntax.typeConvertSuffix(oldType, field.type, field.name));
+        executeDDL("ALTER TABLE " + table + " ALTER COLUMN " + field.name + " TYPE " +
+                field.type.getDB(syntax) + " " + syntax.typeConvertSuffix(oldType, field.type, field.name), false);
         logger.info(" Done");
     }
 
@@ -223,52 +240,27 @@ public class SQLSession extends MutableObject {
         String dropWhere = "";
         for (PropertyField property : table.properties)
             dropWhere = (dropWhere.length() == 0 ? "" : dropWhere + " AND ") + property.name + " IS NULL";
-        execute("DELETE FROM " + table.getName(syntax) + (dropWhere.length() == 0 ? "" : " WHERE " + dropWhere));
+        executeDML("DELETE FROM " + table.getName(syntax) + (dropWhere.length() == 0 ? "" : " WHERE " + dropWhere));
         logger.info(" Done");
+    }
+
+    private SQLTemporaryPool temporaryPool = new SQLTemporaryPool();
+    private SQLTemporaryPool getSQLTemporaryPool() { // в зависимости от политики или локальный пул (для сессии) или глобальный пул
+        return temporaryPool;
     }
 
     private final Map<String, WeakReference<Object>> sessionTablesMap = new HashMap<String, WeakReference<Object>>();
     private int sessionCounter = 0;
-    
-    public String createTemporaryTable(List<KeyField> keys, Collection<PropertyField> properties, Object owner) throws SQLException {
+
+    public String getTemporaryTable(List<KeyField> keys, Set<PropertyField> properties, FillTemporaryTable fill, Integer count, Result<Integer> actual, Object owner) throws SQLException {
         needPrivate();
 
         removeUnusedTemporaryTables();
 
-        synchronized(sessionTablesMap) {
-            String name = "t_" + (sessionCounter++);
+        String table = getSQLTemporaryPool().getTable(this, keys, properties, fill, count, actual, sessionTablesMap);
+        sessionTablesMap.put(table, new WeakReference<Object>(owner));
 
-            String createString = "";
-            for (KeyField key : keys)
-                createString = (createString.length() == 0 ? "" : createString + ',') + key.getDeclare(syntax);
-            if (createString.length() == 0)
-                createString = "dumb integer default 0";
-            for (PropertyField prop : properties)
-                createString = (createString.length() == 0 ? "" : createString + ',') + prop.getDeclare(syntax);
-            if (keys.size()>0)
-                createString = createString + "," + getConstraintDeclare(name, keys);
-            execute(syntax.getCreateSessionTable(name, createString));
-
-            sessionTablesMap.put(name, new WeakReference<Object>(owner));
-            return name;
-        }
-    }
-
-    public void vacuumSessionTable(String table) throws SQLException {
-        if(inTransaction)
-            execute("ANALYZE " + table);
-        else
-            execute("VACUUM ANALYZE " + table);
-    }
-
-    public void vacuumTemporaryTables() throws SQLException {
-        synchronized (sessionTablesMap) {
-            removeUnusedTemporaryTables();
-
-            for(String sessionTable : sessionTablesMap.keySet())
-                vacuumSessionTable(sessionTable);
-        }
-
+        return table;
     }
 
     private void removeUnusedTemporaryTables() throws SQLException {
@@ -276,42 +268,70 @@ public class SQLSession extends MutableObject {
             for (Iterator<Map.Entry<String, WeakReference<Object>>> iterator = sessionTablesMap.entrySet().iterator(); iterator.hasNext();) {
                 Map.Entry<String, WeakReference<Object>> entry = iterator.next();
                 if (entry.getValue().get() == null) {
-                    dropTemporaryTableFromDB(entry.getKey());
+//                    dropTemporaryTableFromDB(entry.getKey());
                     iterator.remove();
                 }
             }
         }
     }
 
-    private void dropTemporaryTableFromDB(String tableName) throws SQLException {
-        execute(syntax.getDropSessionTable(tableName));
-    }
-
-    public void dropTemporaryTable(SessionTable table, Object owner) throws SQLException {
+    public void returnTemporaryTable(SessionTable table, Object owner) throws SQLException {
         synchronized (sessionTablesMap) {
             assert sessionTablesMap.containsKey(table.name);
             WeakReference<Object> removed = sessionTablesMap.remove(table.name);
             assert removed.get()==owner;
 
-            dropTemporaryTableFromDB(table.name);
+//            dropTemporaryTableFromDB(table.name);
         }
 
         tryCommon();
     }
 
-    private void execute(String executeString) throws SQLException {
+    // напрямую не используется, только через Pool
+
+    private void dropTemporaryTableFromDB(String tableName) throws SQLException {
+        executeDDL(syntax.getDropSessionTable(tableName), true);
+    }
+
+    public void createTemporaryTable(String name, List<KeyField> keys, Collection<PropertyField> properties) throws SQLException {
+        String createString = "";
+        for (KeyField key : keys)
+            createString = (createString.length() == 0 ? "" : createString + ',') + key.getDeclare(syntax);
+        if (createString.length() == 0)
+            createString = "dumb integer default 0";
+        for (PropertyField prop : properties)
+            createString = (createString.length() == 0 ? "" : createString + ',') + prop.getDeclare(syntax);
+        if (keys.size()>0)
+            createString = createString + "," + getConstraintDeclare(name, keys);
+        executeDDL(syntax.getCreateSessionTable(name, createString), true);
+    }
+
+    public void analyzeSessionTable(String table) throws SQLException {
+//        if(inTransaction)
+        executeDDL("ANALYZE " + table, true);
+//        else
+//            execute("VACUUM ANALYZE " + table);
+    }
+
+    private void executeDDL(String DDL, boolean temporary) throws SQLException {
         Connection connection = getConnection();
 
-        logger.info(executeString);
+        logger.info(DDL);
+
+        if(temporary && !inTransaction) // если temporary таблица то для DDL надо выключать read-only
+            connection.setReadOnly(false);
 
         Statement statement = connection.createStatement();
         try {
-            statement.execute(executeString);
+            statement.execute(DDL);
         } catch (SQLException e) {
             logger.info(statement.toString());
             throw e;
         } finally {
             statement.close();
+
+            if(temporary && !inTransaction)
+                connection.setReadOnly(true);
 
             returnConnection(connection);
         }
@@ -394,7 +414,7 @@ public class SQLSession extends MutableObject {
         return execResult;
     }
 
-    public void insertBatchRecords(Table table, Map<Map<KeyField, DataObject>, Map<PropertyField, ObjectValue>> rows) throws SQLException {
+    public void insertBatchRecords(String table, List<KeyField> keys, Map<Map<KeyField, DataObject>, Map<PropertyField, ObjectValue>> rows) throws SQLException {
         Connection connection = getConnection();
 
         List<PropertyField> properties = new ArrayList<PropertyField>(rows.values().iterator().next().keySet());
@@ -403,7 +423,7 @@ public class SQLSession extends MutableObject {
         String valueString = "";
 
         // пробежим по KeyFields'ам
-        for (KeyField key : table.keys) {
+        for (KeyField key : keys) {
             insertString = (insertString.length() == 0 ? "" : insertString + ',') + key.name;
             valueString = (valueString.length() == 0 ? "" : valueString + ',') + "?";
         }
@@ -420,12 +440,12 @@ public class SQLSession extends MutableObject {
             valueString = "0";
         }
 
-        PreparedStatement statement = connection.prepareStatement("INSERT INTO " + table.getName(syntax) + " (" + insertString + ") VALUES (" + valueString + ")");
+        PreparedStatement statement = connection.prepareStatement("INSERT INTO " + syntax.getSessionTableName(table) + " (" + insertString + ") VALUES (" + valueString + ")");
 
         try {
             for(Map.Entry<Map<KeyField, DataObject>, Map<PropertyField, ObjectValue>> row : rows.entrySet()) {
                 int p=1;
-                for(KeyField key : table.keys)
+                for(KeyField key : keys)
                     new TypeObject(row.getKey().get(key)).writeParam(statement, p++, syntax);
                 for(PropertyField property : properties) {
                     ObjectValue propValue = row.getValue().get(property);
@@ -547,9 +567,8 @@ public class SQLSession extends MutableObject {
             insertRecord(table, keyFields, propFields);
     }
 
-    public void updateInsertRecord(Table table, Map<KeyField, DataObject> keyFields, Map<PropertyField, ObjectValue> propFields) throws SQLException {
-
-        if (isRecord(table, keyFields)) {
+    public boolean insertRecord(Table table, Map<KeyField, DataObject> keyFields, Map<PropertyField, ObjectValue> propFields, boolean update) throws SQLException {
+        if(update && isRecord(table, keyFields)) {
             if(!propFields.isEmpty()) {
                 Query<KeyField, PropertyField> updateQuery = new Query<KeyField, PropertyField>(table);
                 updateQuery.putKeyWhere(keyFields);
@@ -558,9 +577,11 @@ public class SQLSession extends MutableObject {
                 // есть запись нужно Update лупить
                 updateRecords(new ModifyQuery(table, updateQuery));
             }
-        } else
-            // делаем Insert
+            return false;
+        } else {
             insertRecord(table, keyFields, propFields);
+            return true;
+        }
     }
 
     public Object readRecord(Table table, Map<KeyField, DataObject> keyFields, PropertyField field) throws SQLException {
@@ -579,6 +600,11 @@ public class SQLSession extends MutableObject {
             return null;
     }
 
+    public void truncate(String table) throws SQLException {
+//        executeDML("TRUNCATE " + syntax.getSessionTableName(table));
+        executeDML("DELETE FROM " + syntax.getSessionTableName(table));
+    }
+
     public void deleteKeyRecords(Table table, Map<KeyField, ?> keys) throws SQLException {
         String deleteWhere = "";
         for (Map.Entry<KeyField, ?> deleteKey : keys.entrySet())
@@ -593,6 +619,9 @@ public class SQLSession extends MutableObject {
 
     public int insertSelect(ModifyQuery modify) throws SQLException {
         return executeDML(modify.getInsertSelect(syntax));
+    }
+    public int insertSessionSelect(String name, Query<KeyField, PropertyField> query, QueryEnvironment env) throws SQLException {
+        return executeDML(ModifyQuery.getInsertSelect(syntax.getSessionTableName(name), query, env, syntax));
     }
 
     // сначала делает InsertSelect, затем UpdateRecords
@@ -689,9 +718,5 @@ public class SQLSession extends MutableObject {
             for (T expr : order)
                 result.put(names.get(expr), exprs.get(expr));
         return result;
-    }
-
-    public void vacuumSessionTable(SessionTable table) throws SQLException {
-        vacuumSessionTable(table.getName(syntax));
     }
 }

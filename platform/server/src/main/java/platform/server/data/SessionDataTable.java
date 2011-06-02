@@ -1,7 +1,6 @@
 package platform.server.data;
 
 import platform.base.BaseUtils;
-import platform.base.Pair;
 import platform.server.caches.AbstractMapValues;
 import platform.server.caches.IdentityLazy;
 import platform.server.caches.ManualLazy;
@@ -17,7 +16,6 @@ import platform.server.data.query.Join;
 import platform.server.data.query.Query;
 import platform.server.data.translator.MapValuesTranslate;
 import platform.server.data.where.Where;
-import platform.server.data.where.classes.ClassWhere;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
 
@@ -124,7 +122,7 @@ public class SessionDataTable implements SessionData<SessionDataTable> {
         Map<KeyField, DataObject> fixedKeyValues = BaseUtils.mergeEquals(keyFields, keyValues);
         Map<PropertyField, ObjectValue> fixedPropValues = BaseUtils.mergeEquals(propFields, propertyValues);
 
-        return new SessionDataTable(table.addFields(session, BaseUtils.filterNotList(keys, fixedKeyValues.keySet()), BaseUtils.filterNotKeys(keyValues, fixedKeyValues.keySet()), BaseUtils.filterNotKeys(propertyValues, fixedPropValues.keySet())).
+        return new SessionDataTable(table.addFields(session, BaseUtils.filterNotList(keys, fixedKeyValues.keySet()), BaseUtils.filterNotKeys(keyValues, fixedKeyValues.keySet()), BaseUtils.filterNotKeys(propertyValues, fixedPropValues.keySet()), owner).
               insertRecord(session, BaseUtils.filterNotKeys(keyFields, fixedKeyValues.keySet()), BaseUtils.filterNotKeys(propFields, fixedPropValues.keySet()), update, groupLast, owner),
                 keys, fixedKeyValues, fixedPropValues);
     }

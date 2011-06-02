@@ -1064,20 +1064,11 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
                     selectProps.properties.put(propertyReader, propertyReader.getPropertyObjectInstance().getExpr(selectProps.mapKeys, this));
                 }
 
-                OrderedMap<Map<ObjectInstance, Object>, Map<PropertyReaderInstance, Object>> queryResult = selectProps.execute(session.sql, session.env);
+                OrderedMap<Map<ObjectInstance, DataObject>, Map<PropertyReaderInstance, ObjectValue>> queryResult = selectProps.executeClasses(session.sql, session.env, BL.LM.baseClass);
                 for (PropertyReaderInstance propertyReader : propertyList) {
-                    Map<Map<ObjectInstance, DataObject>, Object> propertyValues = new HashMap<Map<ObjectInstance, DataObject>, Object>();
-                    for (Entry<Map<ObjectInstance, Object>, Map<PropertyReaderInstance, Object>> resultRow : queryResult.entrySet()) {
-                        Map<ObjectInstance, Object> keyRow = resultRow.getKey();
-
-                        Map<ObjectInstance, DataObject> row = new HashMap<ObjectInstance, DataObject>();
-                        for (GroupObjectInstance keyGroup : keyGroupObjects) {
-                            row.putAll(keyGroup.findGroupObjectValue(keyRow));
-                        }
-
-                        propertyValues.put(row, resultRow.getValue().get(propertyReader));
-                    }
-
+                    Map<Map<ObjectInstance, DataObject>, ObjectValue> propertyValues = new HashMap<Map<ObjectInstance, DataObject>, ObjectValue>();
+                    for (Entry<Map<ObjectInstance, DataObject>, Map<PropertyReaderInstance, ObjectValue>> resultRow : queryResult.entrySet())
+                        propertyValues.put(resultRow.getKey(), resultRow.getValue().get(propertyReader));
                     result.properties.put(propertyReader, propertyValues);
                 }
             }

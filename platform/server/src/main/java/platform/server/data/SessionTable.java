@@ -29,28 +29,37 @@ import static platform.base.BaseUtils.merge;
 
 public class SessionTable extends Table implements MapValues<SessionTable>, Value {// в явную хранимые ряды
 
-    public SessionTable(SQLSession session, List<KeyField> keys, Set<PropertyField> properties, ClassWhere<KeyField> classes, Map<PropertyField, ClassWhere<Field>> propertyClasses, Object owner) throws SQLException {
-        super(session.createTemporaryTable(keys, properties, owner), keys, properties, classes, propertyClasses);
+    public final int count;
+
+    // просто дебилизм, но с ограничениями конструктора по другому не сделаешь
+    private SessionTable(SQLSession session, List<KeyField> keys, Set<PropertyField> properties, Integer count, FillTemporaryTable fill, Result<Integer> actual, ClassWhere<KeyField> classes, Map<PropertyField, ClassWhere<Field>> propertyClasses, Object owner) throws SQLException {
+        super(session.getTemporaryTable(keys, properties, fill, count, actual, owner), keys, properties, classes, propertyClasses);
+
+        this.count = actual.result;
+    }
+    public SessionTable(SQLSession session, List<KeyField> keys, Set<PropertyField> properties, Integer count, FillTemporaryTable fill, ClassWhere<KeyField> classes, Map<PropertyField, ClassWhere<Field>> propertyClasses, Object owner) throws SQLException {
+        this(session, keys, properties, count, fill, new Result<Integer>(), classes, propertyClasses, owner);
     }
 
     // создает таблицу batch'ем
-    public static SessionTable create(SQLSession session, List<KeyField> keys, Set<PropertyField> properties, Map<Map<KeyField, DataObject>, Map<PropertyField, ObjectValue>> rows, boolean groupLast, Object owner) throws SQLException {
+    public static SessionTable create(final SQLSession session, final List<KeyField> keys, Set<PropertyField> properties, final Map<Map<KeyField, DataObject>, Map<PropertyField, ObjectValue>> rows, boolean groupLast, Object owner) throws SQLException {
         // прочитаем классы
         Pair<ClassWhere<KeyField>, Map<PropertyField, ClassWhere<Field>>> orClasses = new Pair<ClassWhere<KeyField>, Map<PropertyField,ClassWhere<Field>>>(ClassWhere.<KeyField>STATIC(false), BaseUtils.toMap(properties, ClassWhere.<Field>STATIC(false)));
         for(Map.Entry<Map<KeyField, DataObject>, Map<PropertyField, ObjectValue>> row : rows.entrySet())
             orClasses = orFieldsClassWheres(orClasses.first, orClasses.second, row.getKey(), row.getValue());
 
-        SessionTable table = new SessionTable(session, keys, properties, orClasses.first, orClasses.second, owner);
-        session.insertBatchRecords(table, rows);
-
-        if(groupLast)
-            session.vacuumSessionTable(table);
-
-        return table;
+        return new SessionTable(session, keys, properties, rows.size(), new FillTemporaryTable() {
+            public Integer fill(String name) throws SQLException {
+                session.insertBatchRecords(name, keys, rows);
+                return null;
+            }
+        }, orClasses.first, orClasses.second, owner);
     }
 
-    public SessionTable(String name, List<KeyField> keys, Set<PropertyField> properties, ClassWhere<KeyField> classes, Map<PropertyField, ClassWhere<Field>> propertyClasses) {
+    public SessionTable(String name, List<KeyField> keys, Set<PropertyField> properties, Integer count, ClassWhere<KeyField> classes, Map<PropertyField, ClassWhere<Field>> propertyClasses) {
         super(name, keys, properties, classes, propertyClasses);
+
+        this.count = count;
     }
 
     public List<KeyField> getKeys() {
@@ -222,23 +231,27 @@ public class SessionTable extends Table implements MapValues<SessionTable>, Valu
         return new Pair<ClassWhere<KeyField>, Map<PropertyField, ClassWhere<Field>>>(keysClassWhere, propertiesClassWheres);
     }
 
-    public SessionTable insertRecord(SQLSession session, Map<KeyField, DataObject> keyFields, Map<PropertyField, ObjectValue> propFields, boolean update, boolean groupLast, Object owner) throws SQLException {
-
-        insertSessionRecord(session, keyFields, propFields, update, groupLast);
+    public SessionTable insertRecord(final SQLSession session, Map<KeyField, DataObject> keyFields, Map<PropertyField, ObjectValue> propFields, boolean update, boolean groupLast, final Object owner) throws SQLException {
 
         Pair<ClassWhere<KeyField>, Map<PropertyField, ClassWhere<Field>>> orClasses = orFieldsClassWheres(classes, propertyClasses, keyFields, propFields);
-        return new SessionTable(name, keys, properties, orClasses.first, orClasses.second);
-    }
 
-    private void insertSessionRecord(SQLSession session, Map<KeyField, DataObject> keyFields, Map<PropertyField, ObjectValue> propFields, boolean update, boolean groupLast) throws SQLException {
-        if (update) {
-            session.updateInsertRecord(this, keyFields, propFields);
-        } else {
-            session.insertRecord(this, keyFields, propFields);
-        }
+        boolean added = session.insertRecord(this, keyFields, propFields, update);
+        int newCount = count + (added?1:0);
 
-        if(groupLast)
-            session.vacuumSessionTable(this);
+        if(!SQLTemporaryPool.getCountStatistics(newCount).equals(SQLTemporaryPool.getCountStatistics(count)))
+            return new SessionTable(session, keys, properties, newCount, new FillTemporaryTable() {
+                public Integer fill(String name) throws SQLException {
+                    Query<KeyField, PropertyField> moveData = new Query<KeyField, PropertyField>(keys);
+                    platform.server.data.query.Join<PropertyField> prevJoin = join(BaseUtils.filterKeys(moveData.mapKeys, SessionTable.this.keys));
+                    moveData.and(prevJoin.getWhere());
+                    moveData.properties.putAll(prevJoin.getExprs());
+                    session.insertSessionSelect(name, moveData, QueryEnvironment.empty);
+                    session.returnTemporaryTable(SessionTable.this, owner);
+                    return null;
+                }
+            }, orClasses.first, orClasses.second, owner);
+        else
+            return new SessionTable(name, keys, properties, newCount, orClasses.first, orClasses.second);
     }
 
     public void deleteRecords(SQLSession session, Map<KeyField, DataObject> keys) throws SQLException {
@@ -257,25 +270,25 @@ public class SessionTable extends Table implements MapValues<SessionTable>, Valu
         session.updateRecords(new ModifyQuery(this, dropValues));
     }
 
-    public SessionTable addFields(SQLSession session, List<KeyField> keys, Map<KeyField, DataObject> addKeys, Map<PropertyField, ObjectValue> addProps) throws SQLException {
+    public SessionTable addFields(final SQLSession session, final List<KeyField> keys, final Map<KeyField, DataObject> addKeys, final Map<PropertyField, ObjectValue> addProps, final Object owner) throws SQLException {
         if(addKeys.isEmpty() && addProps.isEmpty())
             return this;
 
         Pair<ClassWhere<KeyField>, Map<PropertyField, ClassWhere<Field>>> andClasses = andFieldsClassWheres(classes, propertyClasses, addKeys, addProps);
-        SessionTable newTable = new SessionTable(name, keys, BaseUtils.mergeSet(properties, addProps.keySet()), andClasses.first, andClasses.second);
-
-        session.addKeyColumns(name, DataObject.getMapValues(addKeys), keys);
-        for(Map.Entry<PropertyField, ObjectValue> addProp : addProps.entrySet())
-            session.addTemporaryColumn(getName(session.syntax), addProp.getKey());
-
-        if(!addProps.isEmpty()) { // для assertion'а
-            Query<KeyField, PropertyField> updateProps = new Query<KeyField, PropertyField>(newTable);
-            updateProps.and(newTable.join(updateProps.mapKeys).getWhere());
-            updateProps.properties.putAll(DataObject.getMapExprs(addProps));
-            session.updateRecords(new ModifyQuery(newTable, updateProps));
-        }
-
-        return newTable;
+        return new SessionTable(session, keys, BaseUtils.mergeSet(properties, addProps.keySet()), count, new FillTemporaryTable() {
+            public Integer fill(String name) throws SQLException {
+                // записать в эту таблицу insertSessionSelect из текущей + default поля
+                Query<KeyField, PropertyField> moveData = new Query<KeyField, PropertyField>(keys);
+                platform.server.data.query.Join<PropertyField> prevJoin = join(BaseUtils.filterKeys(moveData.mapKeys, SessionTable.this.keys));
+                moveData.and(prevJoin.getWhere());
+                moveData.putKeyWhere(addKeys);
+                moveData.properties.putAll(prevJoin.getExprs());
+                moveData.properties.putAll(DataObject.getMapExprs(addProps));
+                session.insertSessionSelect(name, moveData, QueryEnvironment.empty);
+                session.returnTemporaryTable(SessionTable.this, owner);
+                return null;
+            }
+        }, andClasses.first, andClasses.second, owner);
     }
 
     private BaseUtils.HashComponents<Value> components = null;
@@ -289,6 +302,6 @@ public class SessionTable extends Table implements MapValues<SessionTable>, Valu
     }
 
     public void drop(SQLSession session, Object owner) throws SQLException {
-        session.dropTemporaryTable(this, owner);
+        session.returnTemporaryTable(this, owner);
     }
 }

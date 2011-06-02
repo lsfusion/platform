@@ -64,7 +64,7 @@ public abstract class AbstractConnectionPool implements ConnectionPool {
     public Connection newConnection() throws SQLException {
         try {
             Connection newConnection = startConnection();
-            newConnection.setAutoCommit(true);
+            SQLSession.setACID(newConnection, false);
             return newConnection;
         } catch (ClassNotFoundException e) {
             throw new RuntimeException(e);

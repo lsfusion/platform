@@ -156,13 +156,13 @@ public class SessionRows implements SessionData<SessionRows> {
     public void drop(SQLSession session, Object owner) {
     }
 
-    public static SessionData write(SQLSession session, List<KeyField> keys, Set<PropertyField> properties, Query<KeyField, PropertyField> query, BaseClass baseClass, QueryEnvironment env, Object owner) throws SQLException {
+    public static SessionData write(final SQLSession session, List<KeyField> keys, Set<PropertyField> properties, Query<KeyField, PropertyField> query, BaseClass baseClass, final QueryEnvironment env, Object owner) throws SQLException {
 
         assert properties.equals(query.properties.keySet());
 
         Map<KeyField, Expr> keyExprValues = new HashMap<KeyField, Expr>();
         Map<PropertyField, Expr> propExprValues = new HashMap<PropertyField, Expr>();
-        query = query.pullValues(keyExprValues, propExprValues);
+        final Query<KeyField, PropertyField> pullQuery = query.pullValues(keyExprValues, propExprValues);
 
         Map<KeyField, DataObject> keyValues = new HashMap<KeyField, DataObject>();
         for(Map.Entry<KeyField, ObjectValue> keyValue : Expr.readValues(session, baseClass, keyExprValues, env).entrySet())
@@ -174,15 +174,18 @@ public class SessionRows implements SessionData<SessionRows> {
 
         // читаем классы не считывая данные
         Map<PropertyField,ClassWhere<Field>> insertClasses = new HashMap<PropertyField, ClassWhere<Field>>();
-        for(PropertyField field : query.properties.keySet())
-            insertClasses.put(field,query.<Field>getClassWhere(Collections.singleton(field)));
+        for(PropertyField field : pullQuery.properties.keySet())
+            insertClasses.put(field,pullQuery.<Field>getClassWhere(Collections.singleton(field)));
 
-        SessionTable table = new SessionTable(session, BaseUtils.filterList(keys, query.mapKeys.keySet()), query.properties.keySet(), query.<KeyField>getClassWhere(new ArrayList<PropertyField>()), insertClasses, owner);
+        SessionTable table = new SessionTable(session, BaseUtils.filterList(keys, pullQuery.mapKeys.keySet()), pullQuery.properties.keySet(), null, new FillTemporaryTable() {
+            public Integer fill(String name) throws SQLException {
+                return session.insertSessionSelect(name, pullQuery, env);
+            }
+        }, pullQuery.<KeyField>getClassWhere(new ArrayList<PropertyField>()), insertClasses, owner);
         // нужно прочитать то что записано
-        if(session.insertSelect(new ModifyQuery(table,query,env)) > MAX_ROWS) {
-            session.vacuumSessionTable(table);
+        if(table.count > MAX_ROWS)
             return new SessionDataTable(table, keys, keyValues, propValues);
-        } else {
+        else {
             OrderedMap<Map<KeyField, DataObject>, Map<PropertyField, ObjectValue>> readRows = table.read(session, baseClass);
 
             table.drop(session, owner); // выкидываем таблицу

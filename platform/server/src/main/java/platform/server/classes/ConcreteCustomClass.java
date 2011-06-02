@@ -73,8 +73,8 @@ public class ConcreteCustomClass extends CustomClass implements ConcreteValueCla
 
     public void saveClassChanges(SQLSession session, DataObject value) throws SQLException {
         ObjectTable classTable = getBaseClass().table;
-        session.updateInsertRecord(classTable, Collections.singletonMap(classTable.key,value),
-                Collections.singletonMap(classTable.objectClass,(ObjectValue)new DataObject(ID, SystemClass.instance)));
+        session.insertRecord(classTable, Collections.singletonMap(classTable.key,value),
+                Collections.singletonMap(classTable.objectClass,(ObjectValue)new DataObject(ID, SystemClass.instance)), true);
     }
 
     public AndClassSet getKeepClass() {

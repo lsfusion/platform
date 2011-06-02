@@ -61,6 +61,7 @@ public class DataSession extends MutableObject implements SessionChanges, ExprCh
         }
     };
     public final SQLSession sql;
+    public final SQLSession idSession;
 
     public void close() throws SQLException {
     }
@@ -120,7 +121,7 @@ public class DataSession extends MutableObject implements SessionChanges, ExprCh
 
     public DataObject applyObject = null;
 
-    public DataSession(SQLSession sql, final UserController user, final ComputerController computer, IsServerRestartingController isServerRestarting, BaseClass baseClass, CustomClass namedObject, ConcreteCustomClass sessionClass, LP<?> name, AbstractGroup recognizeGroup, CustomClass transaction, LP<?> date, LP<?> currentDate, List<DerivedChange<?,?>> notDeterministic) throws SQLException {
+    public DataSession(SQLSession sql, final UserController user, final ComputerController computer, IsServerRestartingController isServerRestarting, BaseClass baseClass, CustomClass namedObject, ConcreteCustomClass sessionClass, LP<?> name, AbstractGroup recognizeGroup, CustomClass transaction, LP<?> date, LP<?> currentDate, List<DerivedChange<?,?>> notDeterministic, SQLSession idSession) throws SQLException {
         this.sql = sql;
         this.isServerRestarting = isServerRestarting;
 
@@ -136,6 +137,8 @@ public class DataSession extends MutableObject implements SessionChanges, ExprCh
 
         this.user = user;
         this.computer = computer;
+
+        this.idSession = idSession;
     }
 
     public void restart(boolean cancel) throws SQLException {
@@ -168,7 +171,7 @@ public class DataSession extends MutableObject implements SessionChanges, ExprCh
     }
 
     public DataObject addObject() throws SQLException {
-        return new DataObject(IDTable.instance.generateID(sql, IDTable.OBJECT),baseClass.unknown);
+        return new DataObject(IDTable.instance.generateID(idSession, IDTable.OBJECT),baseClass.unknown);
     }
 
     public DataObject addObject(ConcreteCustomClass customClass, Modifier<? extends Changes> modifier, boolean fillDefault, boolean groupLast) throws SQLException {

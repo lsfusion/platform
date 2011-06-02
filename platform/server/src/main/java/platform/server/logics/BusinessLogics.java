@@ -99,7 +99,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
     public final static SQLSyntax debugSyntax = new PostgreDataAdapter();
 
-    protected DataAdapter adapter;
+    protected final DataAdapter adapter;
 
     protected ThreadLocal<SQLSession> sqlRef;
 
@@ -676,6 +676,15 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         return sqlRef.get();
     }
 
+    @IdentityLazy
+    public SQLSession getGlobalSql() throws SQLException { // подразумевает synchronized использование
+        try {
+            return createSQL();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     protected void synchronizeForms() {
         ImportField sidField = new ImportField(LM.formSIDValueClass);
         ImportField captionField = new ImportField(LM.formCaptionValueClass);
@@ -963,7 +972,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
                         return getRestartController().isPendingRestart();
                     }
                 },
-                LM.baseClass, LM.baseClass.named, LM.session, LM.name, LM.recognizeGroup, LM.transaction, LM.date, LM.currentDate, notDeterministic);
+                LM.baseClass, LM.baseClass.named, LM.session, LM.name, LM.recognizeGroup, LM.transaction, LM.date, LM.currentDate, notDeterministic, getGlobalSql());
     }
 
     public List<DerivedChange<?, ?>> notDeterministic = new ArrayList<DerivedChange<?, ?>>();
@@ -1248,10 +1257,10 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
                 sql.addIndex(mapIndex.getKey().name, index);
 
         try {
-            sql.updateInsertRecord(StructTable.instance, new HashMap<KeyField, DataObject>(), Collections.singletonMap(StructTable.instance.struct, (ObjectValue) new DataObject((Object) outDBStruct.toByteArray(), ByteArrayClass.instance)));
+            sql.insertRecord(StructTable.instance, new HashMap<KeyField, DataObject>(), Collections.singletonMap(StructTable.instance.struct, (ObjectValue) new DataObject((Object) outDBStruct.toByteArray(), ByteArrayClass.instance)), true);
         } catch (Exception e) {
             Map<PropertyField, ObjectValue> propFields = Collections.singletonMap(StructTable.instance.struct, (ObjectValue) new DataObject((Object) new byte[0], ByteArrayClass.instance));
-            sql.updateInsertRecord(StructTable.instance, new HashMap<KeyField, DataObject>(), propFields);
+            sql.insertRecord(StructTable.instance, new HashMap<KeyField, DataObject>(), propFields, true);
         }
 
         sql.commitTransaction();

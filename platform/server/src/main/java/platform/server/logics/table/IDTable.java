@@ -62,14 +62,12 @@ public class IDTable extends GlobalTable {
 
         assert !dataSession.isInTransaction();
 
-        // читаем
-        Query<KeyField, PropertyField> query = getGenerateQuery(idType);
-
         Integer freeID;
         synchronized (this) {
-            freeID = (Integer) BaseUtils.singleValue(query.execute(dataSession)).get(value);
-            // замещаем
+            dataSession.startTransaction();
+            freeID = (Integer) BaseUtils.singleValue(getGenerateQuery(idType).execute(dataSession)).get(value); // замещаем
             reserveID(dataSession, idType, freeID);
+            dataSession.commitTransaction();
         }
 
         return freeID+1;
