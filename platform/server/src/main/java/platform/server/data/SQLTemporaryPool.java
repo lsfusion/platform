@@ -97,6 +97,6 @@ public class SQLTemporaryPool {
     }
 
     public static Object getCountStatistics(int count) {
-        return 1;
+        return Math.round(Math.log10(count));
     }
 }
