@@ -1,0 +1,117 @@
+package platform.client.logics;
+
+import platform.base.BaseUtils;
+import platform.client.form.GroupObjectController;
+import platform.interop.ClassViewType;
+import platform.interop.form.PropertyReadType;
+
+import java.io.DataInputStream;
+import java.io.IOException;
+import java.util.*;
+
+public class ClientFormChanges {
+
+    public Boolean dataChanged;
+
+    public String message;
+
+    public final Map<ClientGroupObject, ClassViewType> classViews;
+    public final Map<ClientGroupObject, ClientGroupObjectValue> objects;
+
+    // assertion что ObjectInstance из того же GroupObjectInstance
+    public final Map<ClientGroupObject, List<ClientGroupObjectValue>> gridObjects;
+
+    // assertion для ключа GroupObjectInstance что в значении ObjectInstance из верхних GroupObjectInstance TreeGroupInstance'а этого ключа,
+    // так же может быть ObjectInstance из этого ключа если GroupObject - отображается рекурсивно (тогда надо цеплять к этому GroupObjectValue, иначе к верхнему)
+    public Map<ClientGroupObject, List<ClientGroupObjectValue>> parentObjects;
+
+    public final Map<ClientPropertyReader, Map<ClientGroupObjectValue, Object>> properties;
+    public final Set<ClientPropertyReader> panelProperties;
+    public final Set<ClientPropertyDraw> dropProperties;
+
+    public ClientFormChanges(DataInputStream inStream, ClientForm clientForm, Map<ClientGroupObject, GroupObjectController> controllers) throws IOException {
+
+        classViews = new HashMap<ClientGroupObject, ClassViewType>();
+        int count = inStream.readInt();
+        for (int i = 0; i < count; i++) {
+            classViews.put(clientForm.getGroupObject(inStream.readInt()), ClassViewType.values()[inStream.readInt()]);
+        }
+
+        objects = new HashMap<ClientGroupObject, ClientGroupObjectValue>();
+        count = inStream.readInt();
+        for (int i = 0; i < count; i++) {
+            ClientGroupObject clientGroupObject = clientForm.getGroupObject(inStream.readInt());
+            objects.put(clientGroupObject, new ClientGroupObjectValue(inStream, clientGroupObject));
+        }
+
+        gridObjects = readGridObjectsMap(inStream, clientForm, false);
+        parentObjects = readGridObjectsMap(inStream, clientForm, true);
+
+        //DropProperties
+        panelProperties = new HashSet<ClientPropertyReader>();
+        count = inStream.readInt();
+        for (int i = 0; i < count; i++) {
+            panelProperties.add(deserializePropertyReader(clientForm, inStream));
+        }
+
+        properties = new HashMap<ClientPropertyReader, Map<ClientGroupObjectValue, Object>>();
+        count = inStream.readInt();
+        for (int i = 0; i < count; i++) {
+
+            ClientPropertyReader clientPropertyRead = deserializePropertyReader(clientForm, inStream);
+
+            Map<ClientGroupObjectValue, Object> propertyValues = new HashMap<ClientGroupObjectValue, Object>();
+            int mapCount = inStream.readInt();
+            for (int j = 0; j < mapCount; j++) {
+                propertyValues.put(new ClientGroupObjectValue(inStream, clientPropertyRead, panelProperties, classViews, controllers),
+                                   BaseUtils.deserializeObject(inStream));
+            }
+
+            properties.put(clientPropertyRead, propertyValues);
+        }
+
+        //DropProperties
+        dropProperties = new HashSet<ClientPropertyDraw>();
+        count = inStream.readInt();
+        for (int i = 0; i < count; i++) {
+            dropProperties.add(clientForm.getProperty(inStream.readInt()));
+        }
+
+        message = inStream.readUTF();
+        dataChanged = (Boolean) BaseUtils.deserializeObject(inStream);
+    }
+
+    private ClientPropertyReader deserializePropertyReader(ClientForm clientForm, DataInputStream inStream) throws IOException {
+        switch (inStream.readByte()) {
+            case PropertyReadType.DRAW:
+                return clientForm.getProperty(inStream.readInt());
+            case PropertyReadType.CAPTION:
+                return clientForm.getProperty(inStream.readInt()).captionReader;
+            case PropertyReadType.CELL_HIGHLIGHT:
+                return clientForm.getProperty(inStream.readInt()).highlightReader;
+            case PropertyReadType.ROW_HIGHLIGHT:
+                return clientForm.getGroupObject(inStream.readInt());
+            default:
+                throw new IOException();
+        }
+    }
+
+    private Map<ClientGroupObject, List<ClientGroupObjectValue>> readGridObjectsMap(DataInputStream inStream, ClientForm clientForm, boolean parents) throws IOException {
+        Map<ClientGroupObject, List<ClientGroupObjectValue>> gridObjects = new HashMap<ClientGroupObject, List<ClientGroupObjectValue>>();
+        int count = inStream.readInt();
+        for (int i = 0; i < count; i++) {
+            ClientGroupObject clientGroupObject = clientForm.getGroupObject(inStream.readInt());
+
+            List<ClientGroupObjectValue> clientGridObjects = new ArrayList<ClientGroupObjectValue>();
+            int listCount = inStream.readInt();
+            for (int j = 0; j < listCount; j++) {
+                clientGridObjects.add(parents ? inStream.readBoolean() ? new ClientGroupObjectValue() :
+                        new ClientGroupObjectValue(clientGroupObject, inStream) : new ClientGroupObjectValue(inStream, clientGroupObject));
+            }
+
+            gridObjects.put(clientGroupObject, clientGridObjects);
+        }
+
+        return gridObjects;
+    }
+}

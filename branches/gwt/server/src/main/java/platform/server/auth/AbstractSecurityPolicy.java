@@ -1,0 +1,58 @@
+package platform.server.auth;
+
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
+
+public class AbstractSecurityPolicy<T> {
+
+    private Set<T> permitted = new HashSet<T>();
+    private Set<T> denied = new HashSet<T>();
+
+    public boolean replaceMode = false;
+    public boolean defaultPermission = true;
+
+    public void permit(T obj) {
+        denied.remove(obj);
+        permitted.add(obj);
+    }
+
+    public void deny(T obj) {
+        permitted.remove(obj);
+        denied.add(obj);
+    }
+
+    public void permit(T... objs) { for (T obj : objs) permit(obj); }
+    public void deny(T... objs) { for (T obj : objs) deny(obj); }
+
+    public void permit(Collection<? extends T> colObj) {
+        denied.removeAll(colObj);
+        permitted.addAll(colObj);
+    }
+
+    public void deny(Collection<? extends T> colObj) {
+        permitted.removeAll(colObj);
+        denied.addAll(colObj);
+    }
+
+    protected void override(AbstractSecurityPolicy<T> policy) {
+
+        if (policy.replaceMode) {
+            permitted.clear();
+            denied.clear();
+            replaceMode = true;
+        }
+
+        deny(policy.denied);
+        permit(policy.permitted);
+
+        defaultPermission = policy.defaultPermission;
+    }
+
+    public boolean checkPermission(T obj) {
+
+        if (permitted.contains(obj)) return true;
+        if (denied.contains(obj)) return false;
+        return defaultPermission;
+    }
+}
