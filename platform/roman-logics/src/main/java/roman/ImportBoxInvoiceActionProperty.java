@@ -31,8 +31,8 @@ import java.util.Map;
 public abstract class ImportBoxInvoiceActionProperty extends BaseImportActionProperty {
 
     protected ImportField invoiceSIDField, boxNumberField, barCodeField, colorCodeField, sidField,
-    colorNameField, sizeField, compositionField, countryField, customCodeField, customCode6Field,
-    unitPriceField, unitQuantityField, unitNetWeightField, originalNameField, numberSkuField, RRPField;
+            colorNameField, sizeField, compositionField, countryField, customCodeField, customCode6Field,
+            unitPriceField, unitQuantityField, unitNetWeightField, originalNameField, numberSkuField, RRPField;
 
     public ImportBoxInvoiceActionProperty(RomanLogicsModule RomanLM, ValueClass supplierClass) {
         super(RomanLM, "Импортировать инвойс", supplierClass);
@@ -68,6 +68,12 @@ public abstract class ImportBoxInvoiceActionProperty extends BaseImportActionPro
         RRPField = new ImportField(LM.RRPDocumentArticle);
     }
 
+    protected boolean isSimpleInvoice() {
+        return false;
+    }
+
+    ;
+
     public void execute(final Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, DataSession session, Modifier<? extends Changes> modifier, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects, boolean groupLast) throws SQLException {
         DataObject supplier = keys.get(supplierInterface);
 
@@ -77,14 +83,23 @@ public abstract class ImportBoxInvoiceActionProperty extends BaseImportActionPro
 
         List<ImportProperty<?>> properties = new ArrayList<ImportProperty<?>>();
 
-        ImportKey<?> invoiceKey = new ImportKey(LM.boxInvoice, LM.documentSIDSupplier.getMapping(invoiceSIDField, supplier));
+        ImportKey<?> invoiceKey;
+
+        if (!isSimpleInvoice()) {
+            invoiceKey = new ImportKey(LM.boxInvoice, LM.documentSIDSupplier.getMapping(invoiceSIDField, supplier));
+        } else {
+            invoiceKey = new ImportKey(LM.simpleInvoice, LM.documentSIDSupplier.getMapping(invoiceSIDField, supplier));
+        }
         properties.add(new ImportProperty(invoiceSIDField, LM.sidDocument.getMapping(invoiceKey)));
         properties.add(new ImportProperty(supplier, LM.supplierDocument.getMapping(invoiceKey)));
 
-        ImportKey<?> boxKey = new ImportKey(LM.supplierBox, LM.supplierBoxSIDSupplier.getMapping(boxNumberField, supplier));
-        properties.add(new ImportProperty(invoiceSIDField, LM.boxInvoiceSupplierBox.getMapping(boxKey), LM.object(LM.boxInvoice).getMapping(invoiceKey)));
-        properties.add(new ImportProperty(boxNumberField, LM.sidSupplierBox.getMapping(boxKey)));
-        properties.add(new ImportProperty(boxNumberField, LM.baseLM.barcode.getMapping(boxKey)));
+        ImportKey<?> boxKey = null;
+        if (!isSimpleInvoice()) {
+            boxKey = new ImportKey(LM.supplierBox, LM.supplierBoxSIDSupplier.getMapping(boxNumberField, supplier));
+            properties.add(new ImportProperty(invoiceSIDField, LM.boxInvoiceSupplierBox.getMapping(boxKey), LM.object(LM.boxInvoice).getMapping(invoiceKey)));
+            properties.add(new ImportProperty(boxNumberField, LM.sidSupplierBox.getMapping(boxKey)));
+            properties.add(new ImportProperty(boxNumberField, LM.baseLM.barcode.getMapping(boxKey)));
+        }
 
         ImportKey<?> articleKey = new ImportKey(LM.articleComposite, LM.articleSIDSupplier.getMapping(sidField, supplier));
         properties.add(new ImportProperty(sidField, LM.sidArticle.getMapping(articleKey)));
@@ -122,9 +137,16 @@ public abstract class ImportBoxInvoiceActionProperty extends BaseImportActionPro
         properties.add(new ImportProperty(supplier, LM.supplierSizeSupplier.getMapping(sizeKey)));
         properties.add(new ImportProperty(sizeField, LM.sizeSupplierItem.getMapping(itemKey), LM.object(LM.sizeSupplier).getMapping(sizeKey)));
 
-        properties.add(new ImportProperty(numberSkuField, LM.numberListArticle.getMapping(boxKey, articleKey)));
-        properties.add(new ImportProperty(numberSkuField, LM.numberDataListSku.getMapping(boxKey, itemKey)));
-        properties.add(new ImportProperty(unitQuantityField, LM.quantityDataListSku.getMapping(boxKey, itemKey)));
+        if (!isSimpleInvoice()) {
+            properties.add(new ImportProperty(numberSkuField, LM.numberListArticle.getMapping(boxKey, articleKey)));
+            properties.add(new ImportProperty(numberSkuField, LM.numberDataListSku.getMapping(boxKey, itemKey)));
+            properties.add(new ImportProperty(unitQuantityField, LM.quantityDataListSku.getMapping(boxKey, itemKey)));
+        } else {
+            properties.add(new ImportProperty(numberSkuField, LM.numberListArticle.getMapping(invoiceKey, articleKey)));
+            properties.add(new ImportProperty(numberSkuField, LM.numberDataListSku.getMapping(invoiceKey, itemKey)));
+            properties.add(new ImportProperty(unitQuantityField, LM.quantityDataListSku.getMapping(invoiceKey, itemKey)));
+        }
+
         properties.add(new ImportProperty(unitPriceField, LM.priceDataDocumentItem.getMapping(invoiceKey, itemKey)));
         properties.add(new ImportProperty(RRPField, LM.RRPDocumentArticle.getMapping(invoiceKey, articleKey)));
         properties.add(new ImportProperty(unitPriceField, LM.priceDocumentArticle.getMapping(invoiceKey, articleKey)));
@@ -138,7 +160,12 @@ public abstract class ImportBoxInvoiceActionProperty extends BaseImportActionPro
                 throw new RuntimeException(e);
             }
 
-            ImportKey<?>[] keysArray = {invoiceKey, boxKey, articleKey, itemKey, colorKey, sizeKey, countryKey, customCategoryKey, customCategory6Key};
+            ImportKey<?>[] keysArray;
+            if (!isSimpleInvoice()) {
+                keysArray = new ImportKey<?>[]{invoiceKey, boxKey, articleKey, itemKey, colorKey, sizeKey, countryKey, customCategoryKey, customCategory6Key};
+            } else {
+                keysArray = new ImportKey<?>[]{invoiceKey, articleKey, itemKey, colorKey, sizeKey, countryKey, customCategoryKey, customCategory6Key};
+            }
             new IntegrationService(session, table, Arrays.asList(keysArray), properties).synchronize(true, true, false);
         }
 

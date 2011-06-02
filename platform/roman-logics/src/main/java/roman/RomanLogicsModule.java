@@ -314,7 +314,7 @@ public class RomanLogicsModule extends LogicsModule {
     private LP priceOrderedInvoiceArticle;
     ConcreteCustomClass supplierBox;
     ConcreteCustomClass boxInvoice;
-    private ConcreteCustomClass simpleInvoice;
+    public ConcreteCustomClass simpleInvoice;
     LP sidSupplierBox;
     private AbstractCustomClass list;
     LP quantityDataListSku;
@@ -730,7 +730,8 @@ public class RomanLogicsModule extends LogicsModule {
     private LP bestsellerImportInvoice;
     private LP hugoBossImportPricat;
     private LP sOliverImportInvoice;
-    private AbstractGroup importInvoiceActionGroup;
+    private AbstractGroup importBoxInvoiceActionGroup;
+    private AbstractGroup importSimpleInvoiceActionGroup;
     private LP printCreatePalletForm;
     private LP printCreateFreightBoxForm;
     private LP priceSupplierBoxSku;
@@ -962,9 +963,9 @@ public class RomanLogicsModule extends LogicsModule {
         intraAttributeGroup = new AbstractGroup("Внутренние атрибуты");
         publicGroup.add(intraAttributeGroup);
 
-        importInvoiceActionGroup = new AbstractGroup("Импорт инвойсов");
-        importInvoiceActionGroup.createContainer = false;
-        actionGroup.add(importInvoiceActionGroup);
+        importBoxInvoiceActionGroup = new AbstractGroup("Импорт инвойсов");
+        importBoxInvoiceActionGroup.createContainer = false;
+        actionGroup.add(importBoxInvoiceActionGroup);
     }
 
     @Override
@@ -1051,15 +1052,15 @@ public class RomanLogicsModule extends LogicsModule {
 
         importBelTnved = addAProp(new ClassifierTNVEDImportActionProperty(genSID(), "Импортировать (РБ)", this, "belarusian"));
         importEuTnved = addAProp(new ClassifierTNVEDImportActionProperty(genSID(), "Импортировать (ЕС)", this, "origin"));
-        jennyferImportInvoice = addAProp(importInvoiceActionGroup, new JennyferImportInvoiceActionProperty(this));
-        tallyWeijlImportInvoice = addAProp(importInvoiceActionGroup, new TallyWeijlImportInvoiceActionProperty(this));
-        hugoBossImportInvoice = addAProp(importInvoiceActionGroup, new HugoBossImportInvoiceActionProperty(BL));
-        mexxImportInvoice = addAProp(importInvoiceActionGroup, new MexxImportInvoiceActionProperty(this));
-        mexxImportPricesInvoice = addAProp(importInvoiceActionGroup, new MexxImportPricesInvoiceActionProperty(this));
-        mexxImportArticleInfoInvoice = addAProp(importInvoiceActionGroup, new MexxImportArticleInfoInvoiceActionProperty(this));
-        mexxImportColorInvoice = addAProp(importInvoiceActionGroup, new MexxImportColorInvoiceActionProperty(this));
-        bestsellerImportInvoice = addAProp(importInvoiceActionGroup, new BestsellerImportInvoiceActionProperty(BL));
-        sOliverImportInvoice = addAProp(importInvoiceActionGroup, new SOliverImportInvoiceActionProperty(BL));
+        jennyferImportInvoice = addAProp(importBoxInvoiceActionGroup, new JennyferImportInvoiceActionProperty(this));
+        tallyWeijlImportInvoice = addAProp(importBoxInvoiceActionGroup, new TallyWeijlImportInvoiceActionProperty(this));
+        hugoBossImportInvoice = addAProp(importSimpleInvoiceActionGroup, new HugoBossImportInvoiceActionProperty(BL));
+        mexxImportInvoice = addAProp(importBoxInvoiceActionGroup, new MexxImportInvoiceActionProperty(this));
+        mexxImportPricesInvoice = addAProp(importBoxInvoiceActionGroup, new MexxImportPricesInvoiceActionProperty(this));
+        mexxImportArticleInfoInvoice = addAProp(importBoxInvoiceActionGroup, new MexxImportArticleInfoInvoiceActionProperty(this));
+        mexxImportColorInvoice = addAProp(importBoxInvoiceActionGroup, new MexxImportColorInvoiceActionProperty(this));
+        bestsellerImportInvoice = addAProp(importBoxInvoiceActionGroup, new BestsellerImportInvoiceActionProperty(BL));
+        sOliverImportInvoice = addAProp(importSimpleInvoiceActionGroup, new SOliverImportInvoiceActionProperty(BL));
 
         customCategory4CustomCategory6 = addDProp(idGroup, "customCategory4CustomCategory6", "Код(4)", customCategory4, customCategory6);
         customCategory6CustomCategory9 = addDProp(idGroup, "customCategory6CustomCategory9", "Код(6)", customCategory6, customCategory9);
@@ -2533,8 +2534,11 @@ public class RomanLogicsModule extends LogicsModule {
             super(parent, sID, caption);
 
             this.box = box;
+            if (box)
+                objSupplier = addSingleGroupObject(supplier, "Поставщик", baseLM.name, nameCurrencySupplier, importBoxInvoiceActionGroup, true);
+            else
+                objSupplier = addSingleGroupObject(supplier, "Поставщик", baseLM.name, nameCurrencySupplier, importSimpleInvoiceActionGroup, true);
 
-            objSupplier = addSingleGroupObject(supplier, "Поставщик", baseLM.name, nameCurrencySupplier, importInvoiceActionGroup, true);
             objSupplier.groupTo.setSingleClassView(ClassViewType.PANEL);
 
             objInvoice = addSingleGroupObject((box ? boxInvoice : simpleInvoice), "Инвойс", baseLM.date, baseLM.objectClassName, sidDocument, nameCurrencyDocument, sumDocument, quantityDocument, netWeightDocument, nameImporterInvoice, sidContractInvoice, sidDestinationDestinationDocument, nameDestinationDestinationDocument);
@@ -2662,7 +2666,7 @@ public class RomanLogicsModule extends LogicsModule {
             addRegularFilterGroup(filterGroupColor);
 
             setReadOnly(objSupplier, true);
-            setReadOnly(importInvoiceActionGroup, false, objSupplier.groupTo);
+            setReadOnly(importBoxInvoiceActionGroup, false, objSupplier.groupTo);
         }
 
         @Override
@@ -4831,6 +4835,7 @@ public class RomanLogicsModule extends LogicsModule {
                 creationStampStamp.execute(objCreateStamp.getValue(), session, stampObject);
                 sidStamp.execute(i, session, stampObject);
                 dateOfStamp.execute(dateOfCreationStamp.read(session, objCreateStamp), session, stampObject);
+                //seriesOfStamp.execute(seriesOfStamp.read(session, objCreateStamp), session, stampObject);
             }
         }
     }
