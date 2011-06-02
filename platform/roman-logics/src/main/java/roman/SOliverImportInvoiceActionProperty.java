@@ -20,6 +20,11 @@ public class SOliverImportInvoiceActionProperty extends ImportBoxInvoiceActionPr
     }
 
     @Override
+    protected boolean isSimpleInvoice() {
+        return true;
+    };
+
+    @Override
     protected ImportInputTable createTable(ByteArrayInputStream inFile) throws BiffException, IOException {
         SOliverInvoiceEDIInputTable invoiceTable = new SOliverInvoiceEDIInputTable(inFile);
         return new InvoicePricatMergeInputTable(BL, invoiceTable, ResultField.BARCODE, ResultField.QUANTITY, ResultField.NUMBERSKU,
