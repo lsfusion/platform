@@ -11,6 +11,8 @@ import platform.client.form.renderer.IntegerPropertyRenderer;
 import platform.client.logics.ClientGroupObjectValue;
 import platform.client.logics.ClientPropertyDraw;
 import platform.client.Main;
+import platform.gwt.view.classes.GIntegerType;
+import platform.gwt.view.classes.GType;
 import platform.interop.Compare;
 import platform.interop.ComponentDesign;
 import platform.interop.Data;
@@ -111,5 +113,10 @@ public class ClientObjectType implements ClientType, ClientTypeClass {
     @Override
     public Compare getDefaultCompare() {
         return EQUALS;
+    }
+
+    @Override
+    public GType getGwtType() {
+        return GIntegerType.instance;
     }
 }

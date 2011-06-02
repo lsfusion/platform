@@ -1,13 +1,13 @@
 package skolkovo.gwt.expert.client;
 
 import com.google.gwt.user.client.Window;
-import skolkovo.api.serialization.VoteInfo;
-import skolkovo.gwt.base.client.BaseFrame;
+import platform.gwt.base.client.BaseFrame;
+import skolkovo.api.gwt.shared.VoteInfo;
 import skolkovo.gwt.expert.client.ui.ExpertMainWidget;
 
 import java.util.Date;
 
-import static skolkovo.gwt.base.shared.Result.VOTED;
+import static skolkovo.api.gwt.shared.Result.VOTED;
 
 public class ExpertFrame extends BaseFrame {
     private static ExpertFrameMessages messages = ExpertFrameMessages.Instance.get();

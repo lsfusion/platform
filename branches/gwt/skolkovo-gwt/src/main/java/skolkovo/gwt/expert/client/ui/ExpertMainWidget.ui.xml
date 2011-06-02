@@ -1,6 +1,6 @@
 <ui:UiBinder xmlns:ui='urn:ui:com.google.gwt.uibinder'
              xmlns:g='urn:import:com.google.gwt.user.client.ui'
-             xmlns:sk='urn:import:skolkovo.gwt.base.client.ui'>
+             xmlns:pui='urn:import:skolkovo.gwt.expert.client.ui'>
     <ui:style src="ExpertMainWidget.ui.css"/>
 
     <g:VerticalPanel width="100%">
@@ -18,10 +18,10 @@
                                 <th width="20"/>
                             </tr>
                             <tr>
-                                <td rowspan="2" colspan="2"><g:Image styleName="{style.floatRight}" url="images/logo_ballot.png" altText="Logo"/></td>
+                                <td rowspan="2" colspan="2"><g:Image ui:field="imgLogo" styleName="{style.floatRight}" altText="Logo"/></td>
                                 <td rowspan="20"/>
                                 <td colspan="2">
-                                    <sk:ToolbarPanel showProfileButton="true" />
+                                    <pui:BallotToolbar />
                                     <hr/>
                                 </td>
                                 <td rowspan="20"/>

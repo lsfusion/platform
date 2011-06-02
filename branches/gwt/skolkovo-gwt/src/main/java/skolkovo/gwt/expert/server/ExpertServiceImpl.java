@@ -1,13 +1,14 @@
 package skolkovo.gwt.expert.server;
 
 import org.apache.log4j.Logger;
-import skolkovo.api.serialization.VoteInfo;
-import skolkovo.gwt.base.server.DebugUtil;
-import skolkovo.gwt.base.server.SkolkovoRemoteServiceServlet;
-import skolkovo.gwt.base.shared.MessageException;
+import platform.gwt.base.server.DebugUtil;
+import platform.gwt.base.server.LogicsServiceServlet;
+import platform.gwt.base.shared.MessageException;
+import skolkovo.api.gwt.shared.VoteInfo;
+import skolkovo.api.remote.SkolkovoRemoteInterface;
 import skolkovo.gwt.expert.client.ExpertService;
 
-public class ExpertServiceImpl extends SkolkovoRemoteServiceServlet implements ExpertService {
+public class ExpertServiceImpl extends LogicsServiceServlet<SkolkovoRemoteInterface> implements ExpertService {
     protected final static Logger logger = Logger.getLogger(ExpertServiceImpl.class);
 
     public VoteInfo getVoteInfo(String voteId) throws MessageException {
@@ -17,7 +18,7 @@ public class ExpertServiceImpl extends SkolkovoRemoteServiceServlet implements E
 //                return null;
 //            }
 
-            return skolkovo.getVoteInfo(voteId);
+            return logics.getVoteInfo(voteId);
         } catch (Throwable e) {
             logger.error("Ошибка в getVoteInfo: ", e);
             e.printStackTrace();
@@ -29,7 +30,7 @@ public class ExpertServiceImpl extends SkolkovoRemoteServiceServlet implements E
         try {
 //            Principal user = getThreadLocalRequest().getUserPrincipal();
 //            if (user != null) {
-            skolkovo.setVoteInfo(voteId, voteInfo);
+            logics.setVoteInfo(voteId, voteInfo);
 //            }
         } catch (Throwable e) {
             logger.error("Ошибка в setVoteInfo: ", e);

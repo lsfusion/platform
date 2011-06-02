@@ -23,6 +23,8 @@
         <module>roman-logics</module>
         <module>sample-logics</module>
         <module>trushkin-logics</module>
+        <module>gwt-core</module>
+        <module>gwt-api</module>
     </modules>
 
 </project>

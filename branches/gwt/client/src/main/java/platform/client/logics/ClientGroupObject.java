@@ -10,6 +10,7 @@ import platform.client.form.ClientFormController;
 import platform.client.form.GroupObjectController;
 import platform.client.serialization.ClientIdentitySerializable;
 import platform.client.serialization.ClientSerializationPool;
+import platform.gwt.view.GGroupObject;
 import platform.interop.ClassViewType;
 import platform.interop.form.layout.AbstractGroupObject;
 import platform.interop.form.layout.GroupObjectContainerSet;
@@ -211,5 +212,17 @@ public class ClientGroupObject extends IdentityObject implements ClientPropertyR
         return ind == parent.groups.size() - 1
                ? null
                : parent.groups.get(ind + 1);
+    }
+
+    private GGroupObject gwtGroupObject;
+    public GGroupObject getGwtGroupObject() {
+        if (gwtGroupObject == null) {
+            gwtGroupObject = new GGroupObject();
+            gwtGroupObject.ID = ID;
+            for (ClientObject clientObject : objects) {
+                gwtGroupObject.objects.add(clientObject.getGwtObject());
+            }
+        }
+        return gwtGroupObject;
     }
 }

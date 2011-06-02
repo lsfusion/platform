@@ -1134,7 +1134,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         emailLetterExpertVote = addJProp(baseGroup, true, "emailLetterExpertVote", "Письмо о заседании (e-mail)",
                 emailLetterExpertVoteEA, 1, 2, addJProp(letterExpertSubjectLanguage, languageExpert, 1), 1);
-        emailLetterExpertVote.setImage("/images/email.png");
+        emailLetterExpertVote.setImage("email.png");
         emailLetterExpertVote.property.askConfirm = true;
         emailLetterExpertVote.setDerivedForcedChange(addCProp(ActionClass.instance, true), inNewExpertVote, 1, 2);
 
@@ -1172,7 +1172,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         emailClosedHeaderVote = addJProp(emailClaimerNameVote, 1, addCProp(StringClass.get(2000), "Результаты заседания - "));
         emailClosedVote = addJProp(baseGroup, true, "emailClosedVote", "Результаты заседания (e-mail)", emailClosedVoteEA, 1, emailClosedHeaderVote, 1);
-        emailClosedVote.setImage("/images/email.png");
+        emailClosedVote.setImage("email.png");
         emailClosedVote.property.askConfirm = true;
         emailClosedVote.setDerivedForcedChange(addCProp(ActionClass.instance, true), closedVote, 1);
 
@@ -1184,7 +1184,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         emailAuthExpert = addJProp(baseGroup, true, "emailAuthExpert", "Аутентификация эксперта (e-mail)",
                 emailAuthExpertEA, 1, addJProp(authExpertSubjectLanguage, languageExpert, 1), 1);
-        emailAuthExpert.setImage("/images/email.png");
+        emailAuthExpert.setImage("email.png");
         emailAuthExpert.property.askConfirm = true;
 //        emailAuthExpert.setDerivedChange(addCProp(ActionClass.instance, true), userLogin, 1, userPassword, 1);
 
@@ -1195,7 +1195,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         addEARecepient(emailAcceptedProjectEA, emailDocuments);
         emailClaimerAcceptedHeaderProject = addJProp(addSFProp("(CAST(prm1 as text))||(CAST(prm2 as text))", StringClass.get(2000), 2), addCProp(StringClass.get(2000), "Решение о присвоении статуса участника - "), nameNativeClaimerProject, 1);
         emailAcceptedProject = addJProp(baseGroup, true, "emailAcceptedProject", "Решение о присвоении статуса участника (e-mail)", emailAcceptedProjectEA, 1, emailClaimerAcceptedHeaderProject, 1);
-        emailAcceptedProject.setImage("/images/email.png");
+        emailAcceptedProject.setImage("email.png");
         emailAcceptedProject.property.askConfirm = true;
         emailAcceptedProject.setDerivedForcedChange(addCProp(ActionClass.instance, true), acceptedProject, 1);
 
@@ -1306,7 +1306,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             addFixedFilter(new CompareFilterEntity(addPropertyObject(projectNonRussianSpecialist, objNonRussianSpecialist), Compare.EQUALS, objProject));
 
             addProject = addMFAProp(actionGroup, "Добавить", this, new ObjectEntity[]{}, true, addPropertyObject(getAddObjectAction(project)));
-            editProject = addMFAProp(actionGroup, "Редактировать", this, new ObjectEntity[]{objProject}).setImage("/images/edit.png");
+            editProject = addMFAProp(actionGroup, "Редактировать", this, new ObjectEntity[]{objProject}).setImage("edit.png");
         }
 
         @Override
@@ -1661,7 +1661,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
             objClaimer = addSingleGroupObject(claimer, "Заявитель", claimerInformationGroup, contactGroup, documentGroup, legalDataGroup);
             objClaimer.groupTo.setSingleClassView(ClassViewType.PANEL);
-            editClaimer = addMFAProp(actionGroup, "Редактировать", this, new ObjectEntity[]{objClaimer}).setImage("/images/edit.png");
+            editClaimer = addMFAProp(actionGroup, "Редактировать", this, new ObjectEntity[]{objClaimer}).setImage("edit.png");
      }
     }
 

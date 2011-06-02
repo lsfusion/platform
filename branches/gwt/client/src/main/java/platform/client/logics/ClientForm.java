@@ -8,6 +8,7 @@ import platform.base.context.ApplicationContextHolder;
 import platform.client.form.LogicsSupplier;
 import platform.client.serialization.ClientIdentitySerializable;
 import platform.client.serialization.ClientSerializationPool;
+import platform.gwt.view.GForm;
 import platform.interop.form.layout.AbstractForm;
 
 import javax.swing.*;
@@ -349,5 +350,24 @@ public class ClientForm extends IdentityObject implements LogicsSupplier, Client
 
     public OrderedMap<ClientPropertyDraw, Boolean> getDefaultOrders() {
         return defaultOrders;
+    }
+
+    private GForm gwtForm;
+    public GForm getGwtForm() {
+        if (gwtForm == null) {
+            gwtForm = new GForm();
+            gwtForm.caption = caption;
+            gwtForm.mainContainer = mainContainer.getGwtComponent();
+
+            for (ClientGroupObject group : groupObjects) {
+                gwtForm.groupObjects.add(group.getGwtGroupObject());
+            }
+
+            for (ClientPropertyDraw property : propertyDraws) {
+                gwtForm.propertyDraws.add(property.getGwtPropertyDraw());
+            }
+        }
+
+        return gwtForm;
     }
 }

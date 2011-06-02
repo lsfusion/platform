@@ -24,12 +24,12 @@ import com.smartgwt.client.widgets.layout.HLayout;
 import com.smartgwt.client.widgets.layout.SectionStack;
 import com.smartgwt.client.widgets.layout.SectionStackSection;
 import com.smartgwt.client.widgets.layout.VLayout;
-import skolkovo.api.serialization.ProfileInfo;
-import skolkovo.api.serialization.VoteInfo;
-import skolkovo.gwt.base.client.BaseFrame;
-import skolkovo.gwt.base.client.BaseMessages;
-import skolkovo.gwt.base.client.ui.DateCellFormatter;
-import skolkovo.gwt.base.client.ui.ToolStripPanel;
+import platform.gwt.base.client.BaseFrame;
+import platform.gwt.base.client.BaseMessages;
+import platform.gwt.base.client.ui.ToolStripPanel;
+import platform.gwt.ui.DateCellFormatter;
+import skolkovo.api.gwt.shared.ProfileInfo;
+import skolkovo.api.gwt.shared.VoteInfo;
 import skolkovo.gwt.expertprofile.client.ExpertProfileMessages;
 import skolkovo.gwt.expertprofile.client.ExpertProfileService;
 import skolkovo.gwt.expertprofile.client.ExpertProfileServiceAsync;
@@ -37,7 +37,7 @@ import skolkovo.gwt.expertprofile.client.ExpertProfileServiceAsync;
 import java.util.ArrayList;
 import java.util.List;
 
-import static skolkovo.gwt.base.shared.Result.*;
+import static skolkovo.api.gwt.shared.Result.*;
 
 public class ExpertProfileMainPanel extends HLayout {
     private static BaseMessages baseMessages = BaseMessages.Instance.get();
@@ -95,7 +95,7 @@ public class ExpertProfileMainPanel extends HLayout {
         //??
         main.setStyleName("tabSetContainer");
 
-        main.addMember(new ToolStripPanel(messages.title()));
+        main.addMember(new ToolStripPanel("logo_toolbar.png", messages.title()));
 
         SectionStack mainSectionStack = new SectionStack();
         mainSectionStack.setMargin(20);
@@ -154,14 +154,14 @@ public class ExpertProfileMainPanel extends HLayout {
                             expertProfileService.sentVoteDocuments(vi.voteId, new AsyncCallback<Void>() {
                                 @Override
                                 public void onFailure(Throwable caught) {
-                                    SC.warn(messages.sentFailedMessae());
+                                    SC.warn(messages.sentFailedMessage());
                                     btn.enable();
                                     btn.setIcon(null);
                                 }
 
                                 @Override
                                 public void onSuccess(Void result) {
-                                    SC.say(messages.sentSuccessMessae());
+                                    SC.say(messages.sentSuccessMessage());
                                     btn.enable();
                                     btn.setIcon(null);
                                 }

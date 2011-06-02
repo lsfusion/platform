@@ -19,9 +19,9 @@ import com.smartgwt.client.widgets.form.fields.events.KeyPressEvent;
 import com.smartgwt.client.widgets.form.fields.events.KeyPressHandler;
 import com.smartgwt.client.widgets.form.validator.RegExpValidator;
 import com.smartgwt.client.widgets.layout.VLayout;
-import skolkovo.gwt.base.client.ui.CenterLayout;
-import skolkovo.gwt.base.client.ui.ToolStripPanel;
-import skolkovo.gwt.base.shared.MessageException;
+import platform.gwt.base.client.ui.CenterLayout;
+import platform.gwt.base.client.ui.ToolStripPanel;
+import platform.gwt.base.shared.MessageException;
 
 public class LoginFrame extends VLayout implements EntryPoint {
     /**
@@ -130,7 +130,7 @@ public class LoginFrame extends VLayout implements EntryPoint {
 
         CenterLayout main = new CenterLayout(centerComponent);
 
-        addMember(new ToolStripPanel(messages.title(), false));
+        addMember(new ToolStripPanel("logo_toolbar.png", messages.title(), false));
         addMember(main);
 
         draw();

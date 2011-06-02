@@ -59,9 +59,9 @@ public interface ExpertProfileMessages extends Messages {
     @Key("result.closed")
     String resultClosed();
 
-    String sentSuccessMessae();
+    String sentSuccessMessage();
 
-    String sentFailedMessae();
+    String sentFailedMessage();
 
     String sectionExpertDetails();
 

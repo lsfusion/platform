@@ -3,8 +3,8 @@ package skolkovo.gwt.expertprofile.client;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.rpc.RemoteService;
 import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
-import skolkovo.api.serialization.ProfileInfo;
-import skolkovo.gwt.base.shared.MessageException;
+import platform.gwt.base.shared.MessageException;
+import skolkovo.api.gwt.shared.ProfileInfo;
 
 @RemoteServiceRelativePath("ExpertProfileService")
 public interface ExpertProfileService extends RemoteService {

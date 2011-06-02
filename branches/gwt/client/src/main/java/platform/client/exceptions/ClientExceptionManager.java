@@ -58,6 +58,8 @@ public class ClientExceptionManager {
             }
         }
 
+        e.printStackTrace();
+
         OutputStream os = new ByteArrayOutputStream();
         e.printStackTrace(new PrintStream(os));
         String erTrace = os.toString();
@@ -74,8 +76,6 @@ public class ClientExceptionManager {
             }
             Log.printFailedMessage("Произошла ошибка во время выполнения : " + message, erTrace, parentComponent);
         }
-
-        e.printStackTrace();
     }
 
     private static RemoteException getRemoteExceptionCause(Throwable e) {

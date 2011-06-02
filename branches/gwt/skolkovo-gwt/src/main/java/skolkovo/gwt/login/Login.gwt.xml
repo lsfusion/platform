@@ -2,7 +2,8 @@
         "http://google-web-toolkit.googlecode.com/svn/releases/2.0/distro-source/core/src/gwt-module.dtd">
 <module>
     <inherits name='com.google.gwt.user.User'/>
-    <inherits name="skolkovo.gwt.base.Base"/>
+    <inherits name="platform.gwt.base.Base"/>
+    <inherits name="skolkovo.gwt.Resources"/>
 
     <entry-point class='skolkovo.gwt.login.client.LoginFrame'/>
     <servlet path="/LoginService" class="skolkovo.gwt.login.server.LoginServiceImpl"/>

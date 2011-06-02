@@ -17,8 +17,8 @@ import platform.server.logics.DataObject;
 import platform.server.logics.property.Property;
 import platform.server.session.DataSession;
 import skolkovo.api.remote.SkolkovoRemoteInterface;
-import skolkovo.api.serialization.ProfileInfo;
-import skolkovo.api.serialization.VoteInfo;
+import skolkovo.api.gwt.shared.ProfileInfo;
+import skolkovo.api.gwt.shared.VoteInfo;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;

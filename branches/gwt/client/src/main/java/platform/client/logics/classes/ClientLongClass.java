@@ -1,5 +1,7 @@
 package platform.client.logics.classes;
 
+import platform.gwt.view.classes.GLongType;
+import platform.gwt.view.classes.GType;
 import platform.interop.Data;
 
 import java.text.ParseException;
@@ -34,5 +36,10 @@ public class ClientLongClass extends ClientIntegralClass implements ClientTypeCl
     @Override
     public String toString() {
         return "Длинное целое число";
+    }
+
+    @Override
+    public GType getGwtType() {
+        return GLongType.instance;
     }
 }

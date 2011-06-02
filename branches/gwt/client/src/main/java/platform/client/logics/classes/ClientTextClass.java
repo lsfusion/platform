@@ -6,6 +6,8 @@ import platform.client.form.PropertyRendererComponent;
 import platform.client.form.editor.TextPropertyEditor;
 import platform.client.form.renderer.TextPropertyRenderer;
 import platform.client.logics.ClientPropertyDraw;
+import platform.gwt.view.classes.GTextType;
+import platform.gwt.view.classes.GType;
 import platform.interop.ComponentDesign;
 import platform.interop.Data;
 
@@ -72,5 +74,10 @@ public class ClientTextClass extends ClientDataClass implements ClientTypeClass 
     @Override
     public String toString() {
         return "Текст";
+    }
+
+    @Override
+    public GType getGwtType() {
+        return GTextType.instance;
     }
 }

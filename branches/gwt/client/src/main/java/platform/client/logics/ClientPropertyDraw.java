@@ -14,6 +14,7 @@ import platform.client.logics.classes.ClientType;
 import platform.client.logics.classes.ClientTypeSerializer;
 import platform.client.serialization.ClientIdentitySerializable;
 import platform.client.serialization.ClientSerializationPool;
+import platform.gwt.view.GPropertyDraw;
 import platform.interop.ClassViewType;
 import platform.interop.form.RemoteDialogInterface;
 import platform.interop.form.RemoteFormInterface;
@@ -31,6 +32,9 @@ import java.text.Format;
 import java.text.ParseException;
 import java.util.*;
 import java.util.List;
+
+import static platform.base.BaseUtils.isRedundantString;
+import static platform.base.BaseUtils.nullTrim;
 
 @SuppressWarnings({"UnusedDeclaration"})
 public class ClientPropertyDraw extends ClientComponent implements ClientPropertyReader, ClientIdentitySerializable {
@@ -427,7 +431,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
     @Override
     public String toString() {
-        if (!BaseUtils.isRedundantString(caption))
+        if (!isRedundantString(caption))
             return caption + " (" + getID() + ")";
 
         if (descriptor != null && descriptor.getPropertyObject() != null &&
@@ -498,12 +502,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
             "</html>";
 
     public String getTooltipText(String caption) {
-
-        String propCaption = !BaseUtils.isRedundantString(toolTip) ? toolTip : caption;
-        if (propCaption == null)
-            propCaption = "";
-        else
-            propCaption = propCaption.trim();
+        String propCaption = nullTrim(!isRedundantString(toolTip) ? toolTip : caption);
         String sid = getSID();
         String tableName = this.tableName != null ? this.tableName : "&lt;none&gt;";
         String ifaceObjects = BaseUtils.toString(interfacesCaptions, ", ");
@@ -511,6 +510,20 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         String returnClass = this.returnClass.toString();
 
         return String.format(toolTipFormat, propCaption, sid, tableName, ifaceObjects, ifaceClasses, returnClass);
+    }
+
+    private GPropertyDraw gwtPropertyDraw;
+    public GPropertyDraw getGwtPropertyDraw() {
+        if (gwtPropertyDraw == null) {
+            gwtPropertyDraw = new GPropertyDraw();
+            gwtPropertyDraw.ID = ID;
+            gwtPropertyDraw.sID = sID;
+            gwtPropertyDraw.caption = caption;
+            gwtPropertyDraw.groupObject = groupObject == null ? null : groupObject.getGwtGroupObject();
+            gwtPropertyDraw.baseType = baseType.getGwtType();
+            gwtPropertyDraw.iconPath = design.iconPath;
+        }
+        return gwtPropertyDraw;
     }
 
     public class CaptionReader implements ClientPropertyReader {

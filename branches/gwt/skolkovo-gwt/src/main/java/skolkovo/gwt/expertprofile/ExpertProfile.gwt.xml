@@ -3,7 +3,10 @@
 <module>
 
     <inherits name='com.google.gwt.user.User'/>
-    <inherits name="skolkovo.gwt.base.Base"/>
+    <inherits name="platform.gwt.base.Base"/>
+    <inherits name="platform.gwt.UI"/>
+    <inherits name="skolkovo.api.gwt.API"/>
+    <inherits name="skolkovo.gwt.Resources"/>
 
     <entry-point class='skolkovo.gwt.expertprofile.client.ExpertProfileFrame'/>
     <servlet path="/ExpertProfileService" class="skolkovo.gwt.expertprofile.server.ExpertProfileServiceImpl"/>

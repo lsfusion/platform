@@ -5,6 +5,8 @@ import platform.client.form.PropertyEditorComponent;
 import platform.client.form.PropertyRendererComponent;
 import platform.client.form.editor.DatePropertyEditor;
 import platform.client.form.renderer.DatePropertyRenderer;
+import platform.gwt.view.classes.GDateType;
+import platform.gwt.view.classes.GType;
 import platform.interop.ComponentDesign;
 import platform.interop.Data;
 
@@ -64,5 +66,10 @@ public class ClientDateClass extends ClientDataClass implements ClientTypeClass 
     @Override
     public String toString() {
         return "Дата";
+    }
+
+    @Override
+    public GType getGwtType() {
+        return GDateType.instance;
     }
 }

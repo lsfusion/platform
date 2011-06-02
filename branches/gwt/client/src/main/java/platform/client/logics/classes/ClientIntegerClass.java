@@ -2,6 +2,8 @@ package platform.client.logics.classes;
 
 import platform.client.form.PropertyEditorComponent;
 import platform.client.form.editor.IntegerPropertyEditor;
+import platform.gwt.view.classes.GIntegerType;
+import platform.gwt.view.classes.GType;
 import platform.interop.ComponentDesign;
 import platform.interop.Data;
 
@@ -43,5 +45,10 @@ public class ClientIntegerClass extends ClientIntegralClass implements ClientTyp
     @Override
     public String toString() {
         return "Целое число";
+    }
+
+    @Override
+    public GType getGwtType() {
+        return GIntegerType.instance;
     }
 }

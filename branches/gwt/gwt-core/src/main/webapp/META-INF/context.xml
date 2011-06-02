@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Context path="/">
+    <Realm className="org.apache.catalina.realm.JDBCRealm" debug="99"
+           driverName="org.postgresql.Driver"
+           connectionURL="jdbc:postgresql://localhost:5432/budget?user=postgres&amp;password=11111"
+           userTable="customuser" userNameCol="userlogin" userCredCol="userpassword"
+           userRoleTable="customuser" roleNameCol="userrole"/>
+    <Valve className="org.apache.catalina.authenticator.FormAuthenticator" characterEncoding="UTF-8"/>
+</Context>

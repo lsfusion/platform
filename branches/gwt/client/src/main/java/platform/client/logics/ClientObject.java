@@ -7,6 +7,7 @@ import platform.client.logics.classes.ClientTypeSerializer;
 import platform.client.serialization.ClientIdentitySerializable;
 import platform.client.serialization.ClientSerializationPool;
 import platform.base.context.ApplicationContext;
+import platform.gwt.view.GObject;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -63,5 +64,16 @@ public class ClientObject extends IdentityObject implements Serializable, Client
         return !getCaption().equals("Неопределённый объект")
                 ? getCaption() + " (" + getID() + ")"
                 : getCaption();
+    }
+
+    private GObject gwtObject;
+    public GObject getGwtObject() {
+        if (gwtObject == null) {
+            gwtObject = new GObject();
+            gwtObject.ID = ID;
+            gwtObject.caption = getCaption();
+        }
+
+        return gwtObject;
     }
 }

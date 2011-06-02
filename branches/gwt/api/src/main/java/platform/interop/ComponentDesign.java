@@ -20,6 +20,7 @@ public class ComponentDesign extends ContextObject implements Serializable {
     public Color background;
     public Color foreground;
     public ImageIcon image;
+    public String iconPath;
 
     public ComponentDesign() {
     }
@@ -129,5 +130,10 @@ public class ComponentDesign extends ContextObject implements Serializable {
             if ((style & Font.ITALIC) != 0) strStyle += (((style & Font.BOLD) != 0) ? " | " : "") + "Font.ITALIC";
         }
         return strStyle;
+    }
+
+    public void setIconPath(String iconPath) {
+        this.iconPath = iconPath;
+        this.image = new ImageIcon(ComponentDesign.class.getResource("/images/" + iconPath));
     }
 }

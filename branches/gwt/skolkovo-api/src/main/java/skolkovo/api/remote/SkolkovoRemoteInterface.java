@@ -1,8 +1,8 @@
 package skolkovo.api.remote;
 
 import platform.interop.RemoteLogicsInterface;
-import skolkovo.api.serialization.ProfileInfo;
-import skolkovo.api.serialization.VoteInfo;
+import skolkovo.api.gwt.shared.ProfileInfo;
+import skolkovo.api.gwt.shared.VoteInfo;
 
 import java.rmi.RemoteException;
 

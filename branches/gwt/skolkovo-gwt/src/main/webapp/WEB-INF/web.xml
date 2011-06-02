@@ -42,6 +42,17 @@
         <url-pattern>/skolkovo.gwt.login.Login/LoginService</url-pattern>
     </servlet-mapping>
 
+
+    <servlet>
+        <servlet-name>RemoteFormService</servlet-name>
+        <servlet-class>platform.gwt.form.server.RemoteFormServiceImpl</servlet-class>
+    </servlet>
+
+    <servlet-mapping>
+        <servlet-name>RemoteFormService</servlet-name>
+        <url-pattern>/skolkovo.gwt.form.Form/dispatch</url-pattern>
+    </servlet-mapping>
+
     <filter>
         <filter-name>UrlRewriteFilter</filter-name>
         <filter-class>org.tuckey.web.filters.urlrewrite.UrlRewriteFilter</filter-class>
@@ -60,9 +71,9 @@
             <url-pattern>/expertProfile.html</url-pattern>
             <url-pattern>/skolkovo.gwt.expertprofile.ExpertProfile/*</url-pattern>
         </web-resource-collection>
-        <auth-constraint>
-            <role-name>expert</role-name>
-        </auth-constraint>
+        <!--<auth-constraint>-->
+            <!--<role-name>expert</role-name>-->
+        <!--</auth-constraint>-->
     </security-constraint>
 
     <!-- Определение вида аутентификации  -->

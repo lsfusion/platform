@@ -19,9 +19,5 @@
             <groupId>by.luxsoft.platform</groupId>
             <artifactId>skolkovo-api</artifactId>
         </dependency>
-        <dependency>
-            <groupId>by.luxsoft.platform</groupId>
-            <artifactId>server</artifactId>
-        </dependency>
     </dependencies>
 </project>

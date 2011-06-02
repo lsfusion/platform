@@ -9,6 +9,8 @@ import platform.client.form.editor.ActionPropertyEditor;
 import platform.client.form.renderer.ActionPropertyRenderer;
 import platform.client.logics.ClientGroupObjectValue;
 import platform.client.logics.ClientPropertyDraw;
+import platform.gwt.view.classes.GActionType;
+import platform.gwt.view.classes.GType;
 import platform.interop.ComponentDesign;
 import platform.interop.Data;
 
@@ -87,5 +89,10 @@ public class ClientActionClass extends ClientDataClass implements ClientTypeClas
     @Override
     public String toString() {
         return "Класс действия";
+    }
+
+    @Override
+    public GType getGwtType() {
+        return GActionType.instance;
     }
 }
