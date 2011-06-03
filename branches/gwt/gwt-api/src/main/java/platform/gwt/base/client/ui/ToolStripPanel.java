@@ -3,6 +3,7 @@ package platform.gwt.base.client.ui;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.i18n.client.LocaleInfo;
 import com.google.gwt.user.client.Window;
+import com.smartgwt.client.util.Page;
 import com.smartgwt.client.util.SC;
 import com.smartgwt.client.widgets.Canvas;
 import com.smartgwt.client.widgets.ImgButton;
@@ -30,14 +31,17 @@ public class ToolStripPanel extends ToolStrip {
     }
 
     public ToolStripPanel(String logoUrl, String title, boolean showLogoffButton) {
+        Page.setAppImgDir(GWT.getModuleBaseURL() + "images/");
+
         setHeight(33);
         setWidth100();
 
         addSpacer(6);
         ImgButton homeButton = new ImgButton();
         if (logoUrl != null) {
-            homeButton.setSrc(GWT.getModuleBaseURL() + "images/" + logoUrl);
+            homeButton.setSrc(logoUrl);
         }
+
         homeButton.setWidth(24);
         homeButton.setHeight(24);
         homeButton.setShowRollOver(false);
@@ -61,7 +65,7 @@ public class ToolStripPanel extends ToolStrip {
         if (!GWT.isScript()) {
             ToolStripButton devConsoleButton = new ToolStripButton();
             devConsoleButton.setTitle("Developer Console");
-            devConsoleButton.setIcon(GWT.getModuleBaseURL() + "images/bug.png");
+            devConsoleButton.setIcon("bug.png");
             devConsoleButton.addClickHandler(new ClickHandler() {
                 public void onClick(ClickEvent event) {
                     SC.showConsole();
@@ -81,7 +85,7 @@ public class ToolStripPanel extends ToolStrip {
 
             ToolStripButton logoffBtn = new ToolStripButton();
             logoffBtn.setTitle(baseMessages.logoff());
-            logoffBtn.setIcon(GWT.getModuleBaseURL() + "images/door.png");
+            logoffBtn.setIcon("door.png");
             logoffBtn.addClickHandler(new ClickHandler() {
                 @Override
                 public void onClick(ClickEvent event) {
@@ -99,7 +103,6 @@ public class ToolStripPanel extends ToolStrip {
      * <b>Note: для перегрузки</b>
      */
     protected void addButtonsAfterLocaleChooser() {
-        //todo:
     }
 
     private static final String locales[] = {"ru", "en"};

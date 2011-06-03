@@ -1,7 +1,6 @@
 package platform.gwt.form.client;
 
 import com.google.gwt.core.client.EntryPoint;
-import com.google.gwt.core.client.GWT;
 import com.google.gwt.i18n.client.Dictionary;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
@@ -81,13 +80,13 @@ public class FormFrame extends HLayout implements EntryPoint {
         main.setHeight100();
         main.setAutoHeight();
 
-        main.addMember(new ToolStripPanel(form.caption) {
+        main.addMember(new ToolStripPanel("form.png", form.caption) {
             @Override
             protected void addButtonsAfterLocaleChooser() {
                 addSeparator();
 
                 ToolStripButton logoffBtn = new ToolStripButton();
-                logoffBtn.setIcon(GWT.getModuleBaseURL() + "refresh.png");
+                logoffBtn.setIcon("refresh.png");
                 logoffBtn.addClickHandler(new ClickHandler() {
                     @Override
                     public void onClick(ClickEvent event) {
