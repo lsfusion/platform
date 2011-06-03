@@ -12,6 +12,7 @@ public class ComponentEditor extends JTabbedPane implements NodeEditor {
 
     protected JPanel defaultComponentEditor;
     protected ComponentConstraintsEditor constraintsEditor;
+    protected SizesEditor sizesEditor;
     protected ComponentDesignEditor designEditor;
 
     public ComponentEditor(final ClientComponent component) {
@@ -19,10 +20,11 @@ public class ComponentEditor extends JTabbedPane implements NodeEditor {
         defaultComponentEditor = new JPanel();
         defaultComponentEditor.setLayout(new FlowLayout(FlowLayout.LEFT));
         defaultComponentEditor.add(new IncrementCheckBox("Компонент по умолчанию", component, "defaultComponent"));
+        sizesEditor = new SizesEditor(component);
         constraintsEditor = new ComponentConstraintsEditor(component.constraints);
         designEditor = new ComponentDesignEditor("Дизайн компонента", component.design);
 
-        addTab("Отображение", new NorthBoxPanel(defaultComponentEditor, designEditor));
+        addTab("Отображение", new NorthBoxPanel(defaultComponentEditor, sizesEditor, designEditor));
         addTab("Расположение", new NorthBoxPanel(constraintsEditor));
     }
 

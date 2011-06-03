@@ -95,6 +95,7 @@ public class PropertyDrawEditor extends GroupElementEditor {
 
         addTab("Отображение", new NorthBoxPanel(defaultComponent,
                 new TitledPanel(null, new IncrementColorEditor("Цвет подсветки", descriptor, "highlightColor")),
+                new SizesEditor(descriptor.client),
                 new ComponentDesignEditor("Дизайн", descriptor.client.design)));
 
         addTab("Расположение", new NorthBoxPanel(new ComponentConstraintsEditor(descriptor.client.constraints)));
