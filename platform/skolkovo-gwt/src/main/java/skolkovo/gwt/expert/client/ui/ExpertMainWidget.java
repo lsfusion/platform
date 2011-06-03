@@ -20,8 +20,8 @@ import java.util.Date;
 import static skolkovo.gwt.base.shared.Result.*;
 
 public abstract class ExpertMainWidget extends Composite {
-    private static final int innovativeCommentMaxLength = 1000;
-    private static final int completeCommentMaxLength = 300;
+    public static final int innovativeCommentMaxLength = 1000;
+    public static final int completeCommentMaxLength = 300;
 
     interface ExpertMainWidgetUiBinder extends UiBinder<Widget, ExpertMainWidget> {}
     private static ExpertMainWidgetUiBinder uiBinder = GWT.create(ExpertMainWidgetUiBinder.class);
@@ -200,6 +200,12 @@ public abstract class ExpertMainWidget extends Composite {
             resultDataRow.removeFromParent();
         }
 
+        lbCompleteCounter.setVisible(false);
+        lbCompleteCounterCaption.setVisible(false);
+
+        lbInnovativeCounter.setVisible(false);
+        lbInnovativeCounterCaption.setVisible(false);
+
         if (hidePrompts) {
             for (int i = 1; ;++i) {
                 Element dataRow = dataHtmlPanel.getElementById("dataRow" + i);
@@ -266,34 +272,31 @@ public abstract class ExpertMainWidget extends Composite {
 
         @Override
         public void onValueChange(ValueChangeEvent<String> stringValueChangeEvent) {
-            limitText();
+            updateCounter();
         }
 
         @Override
         public void onKeyDown(Widget sender, char keyCode, int modifiers) {
-            limitText();
+            updateCounter();
         }
 
         @Override
         public void onKeyPress(Widget sender, char keyCode, int modifiers) {
-            limitText();
+            updateCounter();
         }
 
         @Override
         public void onKeyUp(Widget sender, char keyCode, int modifiers) {
-            limitText();
+            updateCounter();
         }
 
-        private void limitText() {
+        private void updateCounter() {
             String text = taText.getValue();
-            if (text == null) return;
-            if (text.length() > maxLength) {
-                text = text.substring(0, maxLength);
-                taText.setValue(text);
-                return;
+            if (text == null) {
+                text = "";
             }
 
-            lbCounter.setText("" + (maxLength - text.length()));
+            lbCounter.setText("" + Math.max(0, maxLength - text.length()));
         }
     }
 }
