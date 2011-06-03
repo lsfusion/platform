@@ -28,17 +28,15 @@
                     <descriptors>
                         <descriptor>../server/src/assemble/distribution.xml</descriptor>
                     </descriptors>
-                    <!--<executions>-->
-                    <!--<execution>-->
-                    <!--<phase>install</phase>-->
-                    <!--<goals>-->
-                    <!--<goal>single</goal>-->
-                    <!--</goals>-->
-                    <!--</execution>-->
-                    <!--</executions>-->
                 </configuration>
             </plugin>
         </plugins>
     </build>
 
+    <dependencies>
+        <dependency>
+            <groupId>by.luxsoft.platform</groupId>
+            <artifactId>server</artifactId>
+        </dependency>
+    </dependencies>
 </project>
