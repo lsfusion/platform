@@ -12,6 +12,7 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Vector;
@@ -33,6 +34,7 @@ abstract class QueryConditionView extends JPanel implements ValueLinkListener {
     private final JButton delButton;
     private JComboBox propertyView;
     private JComboBox compareView;
+    private JCheckBox negationView;
 
     public QueryConditionView(ClientPropertyFilter ifilter, GroupObjectLogicsSupplier logicsSupplier) {
         filter = ifilter;
@@ -44,6 +46,10 @@ abstract class QueryConditionView extends JPanel implements ValueLinkListener {
 
         propertyView = new QueryConditionComboBox(sources);
         add(propertyView);
+
+        negationView = new JCheckBox("не");
+        negationView.setPreferredSize(new Dimension(negationView.getPreferredSize().width, PREFERRED_HEIGHT));
+        add(negationView);
 
         compareView = new QueryConditionComboBox(Compare.values());
         add(compareView);
@@ -57,6 +63,13 @@ abstract class QueryConditionView extends JPanel implements ValueLinkListener {
             public void itemSelected(ItemEvent e) {
                 filter.property = (ClientPropertyDraw) e.getItem();
                 filterChanged();
+            }
+        });
+
+        negationView.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                filter.negation = ((JCheckBox) e.getSource()).isSelected();
+                conditionChanged();
             }
         });
 

@@ -15,12 +15,14 @@ public class ClientPropertyFilter {
     public ClientPropertyDraw property;
     public ClientValueLink value;
 
+    public boolean negation;
     public Compare compare;
 
     public void serialize(DataOutputStream outStream) throws IOException {
         outStream.writeByte(FilterType.COMPARE);
 
         outStream.writeInt(property.getID());
+        outStream.writeBoolean(negation);
         compare.serialize(outStream);
         value.serialize(outStream);
     }    
