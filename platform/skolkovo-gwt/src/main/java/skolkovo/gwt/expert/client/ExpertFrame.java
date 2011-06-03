@@ -51,8 +51,8 @@ public class ExpertFrame extends BaseFrame {
                                 return false;
                             }
 
-                            if (taInnovativeComment.getText().isEmpty() ||
-                                taCompleteComment.getText().isEmpty()) {
+                            if (taInnovativeComment.getText().length() < innovativeCommentMaxLength ||
+                                    taCompleteComment.getText().length() < completeCommentMaxLength) {
                                 Window.alert(messages.incompleteComment());
                                 return false;
                             }
