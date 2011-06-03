@@ -23,6 +23,7 @@
         <module>roman-logics</module>
         <module>sample-logics</module>
         <module>trushkin-logics</module>
+        <module>retail-logics</module>
     </modules>
 
 </project>
