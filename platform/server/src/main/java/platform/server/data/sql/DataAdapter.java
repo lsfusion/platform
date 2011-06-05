@@ -86,7 +86,7 @@ public abstract class DataAdapter extends AbstractConnectionPool implements SQLS
         return "integer";
     }
     public int getBitSQL() {
-        return Types.BIT;
+        return Types.INTEGER;
     }
 
     public String getTextType() {
