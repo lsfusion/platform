@@ -56,6 +56,7 @@ public class RomanLogicsModule extends LogicsModule {
     private final RomanBusinessLogics BL;
 
     public RomanLogicsModule(BaseLogicsModule<RomanBusinessLogics> baseLM, RomanBusinessLogics BL) {
+        super("RomanLogicsModule");
         setBaseLogicsModule(baseLM);
         this.BL = BL;
     }
@@ -968,21 +969,11 @@ public class RomanLogicsModule extends LogicsModule {
         initBaseGroupAliases();
         Settings.instance.setDisableSumGroupNotZero(true);
 
-        skuAttributeGroup = new AbstractGroup("Атрибуты SKU");
-        baseGroup.add(skuAttributeGroup);
-
-        itemAttributeGroup = new AbstractGroup("Атрибуты товара");
-        baseGroup.add(itemAttributeGroup);
-
-        supplierAttributeGroup = new AbstractGroup ("Атрибуты поставщика");
-        publicGroup.add(supplierAttributeGroup);
-
-        intraAttributeGroup = new AbstractGroup("Внутренние атрибуты");
-        publicGroup.add(intraAttributeGroup);
-
-        importInvoiceActionGroup = new AbstractGroup("Импорт инвойсов");
-        importInvoiceActionGroup.createContainer = false;
-        actionGroup.add(importInvoiceActionGroup);
+        skuAttributeGroup = addAbstractGroup("skuAttributeGroup", "Атрибуты SKU", baseGroup);
+        itemAttributeGroup = addAbstractGroup("itemAttributeGroup", "Атрибуты товара", baseGroup);
+        supplierAttributeGroup = addAbstractGroup ("supplierAttributeGroup", "Атрибуты поставщика", publicGroup);
+        intraAttributeGroup = addAbstractGroup("intraAttributeGroup", "Внутренние атрибуты", publicGroup);
+        importInvoiceActionGroup = addAbstractGroup("importInvoiceActionGroup","Импорт инвойсов", actionGroup, false);
     }
 
     @Override

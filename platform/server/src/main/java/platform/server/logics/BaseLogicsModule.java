@@ -6,7 +6,6 @@ import platform.base.identity.DefaultIDGenerator;
 import platform.base.identity.IDGenerator;
 import platform.interop.ClassViewType;
 import platform.interop.Compare;
-import platform.interop.NavigatorWindowType;
 import platform.interop.action.*;
 import platform.server.caches.IdentityLazy;
 import platform.server.classes.*;
@@ -25,7 +24,6 @@ import platform.server.form.view.ContainerView;
 import platform.server.form.view.DefaultFormView;
 import platform.server.form.view.FormView;
 import platform.server.form.window.NavigatorWindow;
-import platform.server.form.window.ToolBarNavigatorWindow;
 import platform.server.form.window.TreeNavigatorWindow;
 import platform.server.logics.linear.LP;
 import platform.server.logics.property.*;
@@ -264,6 +262,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     T BL;
 
     public BaseLogicsModule(T BL, Logger logger) {
+        super("BaseLogicsModule");
         setBaseLogicsModule(this);
         this.BL = BL;
         this.logger = logger;
@@ -302,36 +301,14 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
     @Override
     public void initGroups() {
-        rootGroup = new AbstractGroup("Корневая группа");
-        rootGroup.createContainer = false;
-
-        sessionGroup = new AbstractGroup("Сессионные свойства");
-        sessionGroup.createContainer = false;
-        rootGroup.add(sessionGroup);
-
-        publicGroup = new AbstractGroup("Пользовательские свойства");
-        publicGroup.createContainer = false;
-        rootGroup.add(publicGroup);
-
-        actionGroup = new AbstractGroup("Действия");
-        actionGroup.createContainer = false;
-        rootGroup.add(actionGroup);
-
-        privateGroup = new AbstractGroup("Внутренние свойства");
-        privateGroup.createContainer = false;
-        rootGroup.add(privateGroup);
-
-        baseGroup = new AbstractGroup("Атрибуты");
-        baseGroup.createContainer = false;
-        publicGroup.add(baseGroup);
-
-        idGroup = new AbstractGroup("Идентификаторы");
-        idGroup.createContainer = false;
-        publicGroup.add(idGroup);
-
-        recognizeGroup = new AbstractGroup("Идентифицирующие свойства");
-        recognizeGroup.createContainer = false;
-        baseGroup.add(recognizeGroup);
+        rootGroup = addAbstractGroup("rootGroup", "Корневая группа", null, false);
+        sessionGroup = addAbstractGroup("sessionGroup", "Сессионные свойства", rootGroup, false);
+        publicGroup = addAbstractGroup("publicGroup", "Пользовательские свойства", rootGroup, false);
+        actionGroup = addAbstractGroup("actionGroup", "Действия", rootGroup, false);
+        privateGroup = addAbstractGroup("privateGroup", "Внутренние свойства", rootGroup, false);
+        baseGroup = addAbstractGroup("baseGroup", "Атрибуты", publicGroup, false);
+        idGroup = addAbstractGroup("idGroup", "Идентификаторы", publicGroup, false);
+        recognizeGroup = addAbstractGroup("recognizeGroup", "Идентифицирующие свойства", baseGroup, false);
     }
 
     @Override

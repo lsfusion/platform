@@ -29,7 +29,6 @@ import platform.server.form.navigator.NavigatorElement;
 import platform.server.form.view.ContainerView;
 import platform.server.form.view.DefaultFormView;
 import platform.server.form.view.FormView;
-import platform.server.form.window.ToolBarNavigatorWindow;
 import platform.server.logics.BaseLogicsModule;
 import platform.server.logics.DataObject;
 import platform.server.logics.LogicsModule;
@@ -66,6 +65,7 @@ import static platform.base.BaseUtils.nvl;
 public class SkolkovoLogicsModule extends LogicsModule {
 
     public SkolkovoLogicsModule(BaseLogicsModule<SkolkovoBusinessLogics> baseLM) {
+        super("SkolkovLogicsModule");
         setBaseLogicsModule(baseLM);
     }
 
@@ -194,57 +194,37 @@ public class SkolkovoLogicsModule extends LogicsModule {
     @Override
     public void initGroups() {
         initBaseGroupAliases();
-        contactGroup = new AbstractGroup("Контакты организации");
-        publicGroup.add(contactGroup);
+        contactGroup = addAbstractGroup("contactGroup", "Контакты организации", publicGroup);
 
-        documentGroup = new AbstractGroup("Юридические документы");
-        publicGroup.add(documentGroup);
+        documentGroup = addAbstractGroup("documentGroup", "Юридические документы", publicGroup);
 
-        legalDataGroup = new AbstractGroup("Юридические данные");
-        publicGroup.add(legalDataGroup);
+        legalDataGroup = addAbstractGroup("legalDataGroup", "Юридические данные", publicGroup);
 
-        claimerInformationGroup = new AbstractGroup("Информация о заявителе");
-        publicGroup.add(claimerInformationGroup);
+        claimerInformationGroup = addAbstractGroup("claimerInformationGroup", "Информация о заявителе", publicGroup);
 
 
-        projectInformationGroup = new AbstractGroup("Информация по проекту");
-        baseGroup.add(projectInformationGroup);
+        projectInformationGroup = addAbstractGroup("projectInformationGroup", "Информация по проекту", baseGroup);
 
-        additionalInformationGroup = new AbstractGroup("Доп. информация по проекту");
-        publicGroup.add(projectInformationGroup);
+        additionalInformationGroup = addAbstractGroup("additionalInformationGroup", "Доп. информация по проекту", publicGroup);
 
-        innovationGroup = new AbstractGroup("Инновация");
-        baseGroup.add(innovationGroup);
+        innovationGroup = addAbstractGroup("innovationGroup", "Инновация", baseGroup);
 
-        executiveSummaryGroup = new AbstractGroup("Резюме проекта");
-        baseGroup.add(executiveSummaryGroup);
+        executiveSummaryGroup = addAbstractGroup("executiveSummaryGroup", "Резюме проекта", baseGroup);
 
-        sourcesFundingGroup = new AbstractGroup("Источники финансирования");
-        baseGroup.add(sourcesFundingGroup);
+        sourcesFundingGroup = addAbstractGroup("sourcesFundingGroup", "Источники финансирования", baseGroup);
 
-        equipmentGroup = new AbstractGroup("Оборудование");
-        baseGroup.add(equipmentGroup);
+        equipmentGroup = addAbstractGroup("equipmentGroup", "Оборудование", baseGroup);
 
-        projectDocumentsGroup = new AbstractGroup("Документы");
-        baseGroup.add(projectDocumentsGroup);
+        projectDocumentsGroup = addAbstractGroup("projectDocumentsGroup", "Документы", baseGroup);
 
-        projectStatusGroup = new AbstractGroup("Текущий статус проекта");
-        baseGroup.add(projectStatusGroup);
+        projectStatusGroup = addAbstractGroup("projectStatusGroup", "Текущий статус проекта", baseGroup);
 
+        voteResultGroup = addAbstractGroup("voteResultGroup", "Результаты голосования", publicGroup);
 
-        voteResultGroup = new AbstractGroup("Результаты голосования");
-        publicGroup.add(voteResultGroup);
+        expertResultGroup = addAbstractGroup("expertResultGroup", "Статистика по экспертам", publicGroup);
 
-        expertResultGroup = new AbstractGroup("Статистика по экспертам");
-        publicGroup.add(expertResultGroup);
-
-        voteResultCheckGroup = new AbstractGroup("Результаты голосования (выбор)");
-        voteResultCheckGroup.createContainer = false;
-        voteResultGroup.add(voteResultCheckGroup);
-
-        voteResultCommentGroup = new AbstractGroup("Результаты голосования (комментарии)");
-        voteResultCommentGroup.createContainer = false;
-        voteResultGroup.add(voteResultCommentGroup);
+        voteResultCheckGroup = addAbstractGroup("voteResultCheckGroup", "Результаты голосования (выбор)", voteResultGroup, false);
+        voteResultCommentGroup = addAbstractGroup("voteResultCommentGroup", "Результаты голосования (комментарии)", voteResultGroup, false);
     }
 
     LP nameNative, nameForeign;

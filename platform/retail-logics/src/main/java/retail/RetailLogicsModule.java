@@ -18,6 +18,7 @@ public class RetailLogicsModule extends LogicsModule {
     private Logger logger;
 
     public RetailLogicsModule(BaseLogicsModule<RetailBusinessLogics> baseLM, RetailBusinessLogics RetailBL, Logger logger) {
+        super("RetailLogicsModule");
         setBaseLogicsModule(baseLM);
         this.RetailBL = RetailBL;
         this.logger = logger;}

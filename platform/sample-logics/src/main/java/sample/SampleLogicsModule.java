@@ -30,6 +30,7 @@ import java.io.FileNotFoundException;
 public class SampleLogicsModule extends LogicsModule {
 
     public SampleLogicsModule(BaseLogicsModule<SampleBusinessLogics> baseLM) {
+        super("SampleLogicsModule");
         setBaseLogicsModule(baseLM);
     }
 
