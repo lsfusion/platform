@@ -1,5 +1,6 @@
 package platform.server.classes;
 
+import platform.server.caches.IdentityLazy;
 import platform.server.classes.sets.ConcreteCustomClassSet;
 import platform.server.logics.table.ObjectTable;
 import platform.server.logics.linear.LP;
@@ -45,6 +46,7 @@ public class BaseClass extends AbstractCustomClass {
         return findClassID((int)idClass);
     }
 
+    @IdentityLazy
     public ConcreteObjectClass findConcreteClassID(Integer idClass) {
         if(idClass==null) return unknown;
 
