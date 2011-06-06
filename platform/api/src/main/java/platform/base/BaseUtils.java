@@ -1230,6 +1230,13 @@ public class BaseUtils {
             return string.substring(string.length() - length, string.length());
     }
 
+    public static String padl(String string, int length, char character) {
+        if (length > string.length())
+            return replicate(character, length - string.length()) + string;
+        else
+            return string.substring(string.length() - length, string.length());
+    }
+
     public static <K> K last(List<K> list) {
         if (list.size() > 0)
             return list.get(list.size() - 1);

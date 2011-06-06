@@ -111,6 +111,7 @@ public class RomanLogicsModule extends LogicsModule {
     LP sidSizeSupplierItem;
     LP supplierColorSupplier;
     private LP quantityCreationStamp;
+    private LP seriesOfCreationStamp;
     private LP dateOfCreationStamp;
     private LP nameSupplierColorSupplier;
     LP supplierSizeSupplier;
@@ -1561,12 +1562,6 @@ public class RomanLogicsModule extends LogicsModule {
         routeCreationPallet = addDProp(idGroup, "routeCreationPallet", "Маршрут (ИД)", route, creationPallet);
         nameRouteCreationPallet = addJProp(baseGroup, "nameRouteCreationPallet", "Маршрут", baseLM.name, routeCreationPallet, 1);
 
-        quantityCreationStamp = addDProp(baseGroup, "quantityCreationStamp", "Количество", IntegerClass.instance, creationStamp);
-        firstNumberCreationStamp = addDProp(baseGroup, "firstNumberCreationStamp", "Номер с", StringClass.get(8), creationStamp);
-        lastNumberCreationStamp = addDProp(baseGroup, "lastNumberCreationStamp", "Номер по", StringClass.get(8), creationStamp);
-        dateOfCreationStamp = addDProp(baseGroup, "dateOfCreationStamp", "Дата", DateClass.instance, creationStamp);
-        creationStampStamp = addDProp(idGroup, "creationStampStamp", "Операция (ИД)", creationStamp, stamp);
-
         // паллеты
         creationPalletPallet = addDProp(idGroup, "creationPalletPallet", "Операция (ИД)", creationPallet, pallet);
         routeCreationPalletPallet = addJProp(idGroup, "routeCreationPalletPallet", true, "Маршрут (ИД)", routeCreationPallet, creationPalletPallet, 1);
@@ -1795,9 +1790,17 @@ public class RomanLogicsModule extends LogicsModule {
         oneSkuShipmentDetail = addJProp(baseGroup, "oneSkuShipmentDetail", "Первый SKU", oneShipmentSku, shipmentShipmentDetail, 1, skuShipmentDetail, 1);
 
         // Stamp
+        quantityCreationStamp = addDProp(baseGroup, "quantityCreationStamp", "Количество", IntegerClass.instance, creationStamp);
+        seriesOfCreationStamp = addDProp(baseGroup, "seriesOfCreationStamp", "Серия марки", StringClass.get(2), creationStamp);
+        firstNumberCreationStamp = addDProp(baseGroup, "firstNumberCreationStamp", "Номер с", StringClass.get(8), creationStamp);
+        lastNumberCreationStamp = addDProp(baseGroup, "lastNumberCreationStamp", "Номер по", StringClass.get(8), creationStamp);
+        dateOfCreationStamp = addDProp(baseGroup, "dateOfCreationStamp", "Дата", DateClass.instance, creationStamp);
+
+        creationStampStamp = addDProp(idGroup, "creationStampStamp", "Операция (ИД)", creationStamp, stamp);
         sidStamp = addDProp(baseGroup, "sidStamp", "Контрольная марка", StringClass.get(100), stamp);
-        seriesOfStamp = addDProp(baseGroup, "seriesOfStamp", "Серия марки", StringClass.get(2), stamp);
-        dateOfStamp = addDProp(baseGroup, "dateOfStamp", "Дата марки", DateClass.instance, stamp);
+        seriesOfStamp = addJProp(baseGroup, "seriesOfStamp", "Серия марки", seriesOfCreationStamp, creationStampStamp, 1);
+        dateOfStamp = addJProp(baseGroup, "dateOfStamp", "Дата марки", dateOfCreationStamp, creationStampStamp, 1);
+
         stampShipmentDetail = addDProp("stampSkuShipmentDetail", "Контрольная марка", stamp, shipmentDetail);
         necessaryStampCategory = addDProp(baseGroup, "necessaryStampCategory", "Нужна марка", LogicalClass.instance, category);
         necessaryStampSkuShipmentDetail = addJProp("necessaryStampSkuShipmentDetail",necessaryStampCategory, categoryArticleSkuShipmentDetail, 1);
@@ -3439,7 +3442,7 @@ public class RomanLogicsModule extends LogicsModule {
             if (!type.equals(FormType.ADD))
                 addPropertyDraw(objCreate, baseLM.objectValue);
 
-            addPropertyDraw(objCreate, firstNumberCreationStamp, lastNumberCreationStamp, dateOfCreationStamp);
+            addPropertyDraw(objCreate, seriesOfCreationStamp, firstNumberCreationStamp, lastNumberCreationStamp, dateOfCreationStamp);
 
             if (type.equals(FormType.ADD))
                 addPropertyDraw(createStamp, objCreate);
@@ -4937,21 +4940,26 @@ public class RomanLogicsModule extends LogicsModule {
                 return;
             }
 
-            Integer start = Integer.parseInt((String) firstNumberCreationStamp.read(session, objCreateStamp));
-            Integer finish = Integer.parseInt((String) lastNumberCreationStamp.read(session, objCreateStamp));
+            String stringStart = (String) firstNumberCreationStamp.read(session, objCreateStamp);
+            String stringFinish = (String) lastNumberCreationStamp.read(session, objCreateStamp);
+
+            if (stringStart.length() != stringFinish.length()) {
+                actions.add(new MessageClientAction("Количество символов у границ диапазонов должно совпадать", "Ошибка"));
+                return;
+            }
+
+            Integer start = Integer.parseInt(stringStart);
+            Integer finish = Integer.parseInt(stringFinish);
 
             if ((finish - start) > 3000) {
                 actions.add(new MessageClientAction("Слишком большой диапазон (больше 3000)", "Ошибка"));
                 return;
             }
 
-
             for (int i = start; i <= finish; i++) {
                 DataObject stampObject = session.addObject(stamp, session.modifier);
                 creationStampStamp.execute(objCreateStamp.getValue(), session, stampObject);
-                sidStamp.execute(i, session, stampObject);
-                dateOfStamp.execute(dateOfCreationStamp.read(session, objCreateStamp), session, stampObject);
-                //seriesOfStamp.execute(seriesOfStamp.read(session, objCreateStamp), session, stampObject);
+                sidStamp.execute(BaseUtils.padl(((Integer)i).toString(), stringStart.length(), '0'), session, stampObject);
             }
         }
     }
