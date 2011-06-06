@@ -29,6 +29,7 @@ import platform.server.form.navigator.NavigatorElement;
 import platform.server.form.view.ContainerView;
 import platform.server.form.view.DefaultFormView;
 import platform.server.form.view.FormView;
+import platform.server.form.window.ToolBarNavigatorWindow;
 import platform.server.logics.BaseLogicsModule;
 import platform.server.logics.DataObject;
 import platform.server.logics.LogicsModule;
@@ -1217,9 +1218,21 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
     @Override
     public void initNavigators() throws JRException, FileNotFoundException {
+//
+//        ToolBarNavigatorWindow mainToolbar = new ToolBarNavigatorWindow("mainToolbar", "mainToolbar", 0, 0, 90, 20);
+//        mainToolbar.titleShown = false;
+//
+//        ToolBarNavigatorWindow leftToolbar = new ToolBarNavigatorWindow("leftToolbar", "leftToolbar", 0, 0, 20, 90);
+//        leftToolbar.titleShown = false;
+//        leftToolbar.type = ToolBarNavigatorWindow.VERTICAL;
+//
+//        baseLM.baseElement.window = mainToolbar;
+//        baseLM.adminElement.window = leftToolbar;
+//        baseLM.objectElement.window = baseLM.baseWindow;
+//
         projectFullNative = addFormEntity(new ProjectFullFormEntity(baseLM.objectElement, "projectFullNative", "Резюме проекта для эксперта", false));
         projectFullForeign = addFormEntity(new ProjectFullFormEntity(baseLM.objectElement, "projectFullForeign", "Resume project for expert", true));
-        addFormEntity(new ClaimerFullFormEntity(baseLM.objectElement, "Claimer"));
+        addFormEntity(new ClaimerFullFormEntity(baseLM.objectElement, "claimerFull"));
 
         addFormEntity(new ProjectFormEntity(baseLM.baseElement, "project"));
         addFormEntity(new ClaimerFormEntity(baseLM.baseElement, "claimer"));
@@ -1232,6 +1245,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
         addFormEntity(new VoteFormEntity(baseLM.baseElement, "voterestricted", true));
 
         NavigatorElement print = new NavigatorElement(baseLM.baseElement, "print", "Печатные формы");
+//        print.window = leftToolbar;
+//
         addFormEntity(new VoteStartFormEntity(print, "voteStart"));
         addFormEntity(new ExpertLetterFormEntity(print, "expertLetter"));
         addFormEntity(new VoteProtocolFormEntity(print, "voteProtocol"));

@@ -17,6 +17,7 @@
         <plugins>
             <plugin>
                 <artifactId>maven-assembly-plugin</artifactId>
+                <version>2.2-beta-5</version>
                 <configuration>
                     <finalName>fusion</finalName>
                     <appendAssemblyId>true</appendAssemblyId>
