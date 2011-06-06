@@ -482,7 +482,7 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         }
     }
 
-    public boolean[] isCompatibleProperties(int mainID, int[] propertiesIDs) throws RemoteException {
+    public boolean[] getCompatibleProperties(int mainID, int[] propertiesIDs) throws RemoteException {
         Property mainProperty = form.getPropertyDraw(mainID).propertyObject.getChangeInstance().property;
 
         int n = propertiesIDs.length;
