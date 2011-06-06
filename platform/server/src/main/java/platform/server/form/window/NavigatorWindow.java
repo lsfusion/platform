@@ -9,10 +9,10 @@ import java.io.IOException;
 public abstract class NavigatorWindow extends IdentityObject {
 
     public String caption = "";
-    private int x;
-    private int y;
-    private int width;
-    private int height;
+    public int x;
+    public int y;
+    public int width;
+    public int height;
     public boolean titleShown = true;
 
     public NavigatorWindow(String sID, String caption, int x, int y, int width, int height) {

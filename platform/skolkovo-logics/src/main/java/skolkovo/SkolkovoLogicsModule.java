@@ -1218,11 +1218,14 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
     @Override
     public void initNavigators() throws JRException, FileNotFoundException {
-//
-//        ToolBarNavigatorWindow mainToolbar = new ToolBarNavigatorWindow("mainToolbar", "mainToolbar", 0, 0, 90, 20);
+
+//        ToolBarNavigatorWindow mainToolbar = new ToolBarNavigatorWindow("Навигатор", "mainToolbar", 0, 0, 100, 10);
 //        mainToolbar.titleShown = false;
 //
-//        ToolBarNavigatorWindow leftToolbar = new ToolBarNavigatorWindow("leftToolbar", "leftToolbar", 0, 0, 20, 90);
+//        baseLM.baseWindow.y = 10;
+//        baseLM.baseWindow.height -= 10;
+//
+//        ToolBarNavigatorWindow leftToolbar = new ToolBarNavigatorWindow("leftToolbar", "leftToolbar", 0, 10, 20, 60);
 //        leftToolbar.titleShown = false;
 //        leftToolbar.type = ToolBarNavigatorWindow.VERTICAL;
 //
@@ -1663,7 +1666,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         private ClaimerFormEntity(NavigatorElement parent, String sID) {
             super(parent, sID, "Реестр заявителей");
 
-            objClaimer = addSingleGroupObject(claimer, "Заявитель", claimerInformationGroup, contactGroup, legalDataGroup, editClaimer);
+            objClaimer = addSingleGroupObject(claimer, "Заявитель", claimerInformationGroup, contactGroup, editClaimer);
         }
     }
 
