@@ -771,6 +771,8 @@ public class RomanLogicsModule extends LogicsModule {
     private LP substring10s13;
     private LP skuBarcodeObject;
 
+    private LP typeSupplier;
+
     ConcreteCustomClass pricat;
     LP barcodePricat;
     LP articleNumberPricat;
@@ -795,7 +797,9 @@ public class RomanLogicsModule extends LogicsModule {
     LP seriesOfStamp;
     LP stampShipmentDetail;
     LP sidStampShipmentDetail;
+    LP seriesOfStampShipmentDetail;
     LP hideSidStampShipmentDetail;
+    LP hideSeriesOfStampShipmentDetail;
     LP necessaryStampCategory;
     LP necessaryStampSkuShipmentDetail;
     LP shipmentDetailStamp;
@@ -982,6 +986,9 @@ public class RomanLogicsModule extends LogicsModule {
 
         round2 = addSFProp("round(CAST((prm1) as numeric), 2)", DoubleClass.instance, 1);
 
+        //typeSupplier = addDProp(baseGroup, "typeSupplier", "С коробами/без коробов", LogicalClass.instance, supplier);
+        typeSupplier = addCUProp("typeSupplier", addCProp(LogicalClass.instance, true, hugoBossSupplier), addCProp(LogicalClass.instance, true, sOliverSupplier));
+
         // rate
         currencyTypeExchange = addDProp(idGroup, "currencyTypeExchange", "Валюта типа обмена (ИД)", currency, typeExchange);
         nameCurrencyTypeExchange = addJProp(baseGroup, "nameCurrencyTypeExchange", "Валюта типа обмена (наим.)", baseLM.name, currencyTypeExchange, 1);
@@ -1165,6 +1172,7 @@ public class RomanLogicsModule extends LogicsModule {
 
         currencyDocument = addDCProp(idGroup, "currencyDocument", "Валюта (ИД)", currencySupplier, supplierPriceDocument, 1);
         nameCurrencyDocument = addJProp(baseGroup, "nameCurrencyDocument", "Валюта", baseLM.name, currencyDocument, 1);
+        setNotNull(currencyDocument);
 
         // Order
         destinationDestinationDocument = addDProp(idGroup, "destinationDestinationDocument", "Пункт назначения (ИД)", destination, destinationDocument);
@@ -1174,6 +1182,7 @@ public class RomanLogicsModule extends LogicsModule {
         // Invoice
         importerInvoice = addDProp(idGroup, "importerDocument", "Импортер (ИД)", importer, invoice);
         nameImporterInvoice = addJProp(baseGroup, "nameImporterInvoice", "Импортер", baseLM.name, importerInvoice, 1);
+        //setNotNull(importerInvoice);
 
         contractInvoice = addDProp(idGroup, "contractInvoice", "Договор (ИД)", contract, invoice);
         sidContractInvoice = addJProp(baseGroup, "sidContractInvoice", "Договор", sidContract, contractInvoice, 1);
@@ -1183,7 +1192,6 @@ public class RomanLogicsModule extends LogicsModule {
 
         addConstraint(addJProp("Поставщик договора должен соответствовать поставщику инвойса", baseLM.diff2,
                 supplierDocument, 1, addJProp(sellerContract, contractInvoice, 1), 1), true);
-
 
         // Shipment
         quantityPalletShipment = addDProp(baseGroup, "quantityPalletShipment", "Кол-во паллет", IntegerClass.instance, shipment);
@@ -1605,12 +1613,10 @@ public class RomanLogicsModule extends LogicsModule {
         //sku shipment detail
         skuShipmentDetail = addDProp(idGroup, "skuShipmentDetail", "SKU (ИД)", sku, shipmentDetail);
         barcodeSkuShipmentDetail = addJProp(baseGroup, "barcodeSkuShipmentDetail", "Штрих-код SKU", baseLM.barcode, skuShipmentDetail, 1);
-        setNotNull(skuShipmentDetail);
 
         articleShipmentDetail = addJProp(idGroup, "articleShipmentDetail", "Артикул (ИД)", articleSku, skuShipmentDetail, 1);
         sidArticleShipmentDetail = addJProp(baseGroup, "sidArticleShipmentDetail", "Артикул", sidArticle, articleShipmentDetail, 1);
-        setNotNull(articleShipmentDetail);
-
+        
         colorSupplierItemShipmentDetail = addJProp(idGroup, "colorSupplierItemShipmentDetail", "Цвет поставщика (ИД)", colorSupplierItem, skuShipmentDetail, 1);
         sidColorSupplierItemShipmentDetail = addJProp(itemAttributeGroup, "sidColorSupplierItemShipmentDetail", "Код цвета", sidColorSupplier, colorSupplierItemShipmentDetail, 1);
         nameColorSupplierItemShipmentDetail = addJProp(itemAttributeGroup, "nameColorSupplierItemShipmentDetail", "Цвет поставщика", baseLM.name, colorSupplierItemShipmentDetail, 1);
@@ -1794,9 +1800,11 @@ public class RomanLogicsModule extends LogicsModule {
 
         stampShipmentDetail = addDProp("stampSkuShipmentDetail", "Контрольная марка", stamp, shipmentDetail);
         necessaryStampCategory = addDProp(baseGroup, "necessaryStampCategory", "Нужна марка", LogicalClass.instance, category);
-        necessaryStampSkuShipmentDetail = addJProp("necessaryStampSkuShipmentDetail",necessaryStampCategory, categoryArticleSkuShipmentDetail, 1);
+        necessaryStampSkuShipmentDetail = addJProp("necessaryStampSkuShipmentDetail", necessaryStampCategory, categoryArticleSkuShipmentDetail, 1);
         sidStampShipmentDetail = addJProp(intraAttributeGroup, "sidStampShipmentDetail", "Контрольная марка",  sidStamp, stampShipmentDetail, 1);
+        seriesOfStampShipmentDetail = addJProp(intraAttributeGroup, "seriesOfStampShipmentDetail", "Серия контрольной марки",  seriesOfStamp, stampShipmentDetail, 1);
         hideSidStampShipmentDetail = addHideCaptionProp(privateGroup, "Контрольная марка", sidStampShipmentDetail, necessaryStampSkuShipmentDetail);
+        hideSeriesOfStampShipmentDetail = addHideCaptionProp(privateGroup, "Серия контрольной марки", seriesOfStampShipmentDetail, necessaryStampSkuShipmentDetail);
         shipmentDetailStamp = addAGProp(idGroup, "shipmentDetailStamp", "Контрольная марка (ИД)", shipmentDetail, stampShipmentDetail);
 
         // Transfer
@@ -2666,6 +2674,12 @@ public class RomanLogicsModule extends LogicsModule {
 
             setForceViewType(itemAttributeGroup, ClassViewType.GRID, objSku.groupTo);
 
+            if (!box)
+                addFixedFilter(new CompareFilterEntity(addPropertyObject(typeSupplier, objSupplier), Compare.EQUALS, addPropertyObject(baseLM.vtrue)));
+
+            if (box)
+                addFixedFilter(new NotFilterEntity(new CompareFilterEntity(addPropertyObject(typeSupplier, objSupplier), Compare.EQUALS, addPropertyObject(baseLM.vtrue))));
+
             CompareFilterEntity orderSupplierFilter = new CompareFilterEntity(addPropertyObject(supplierDocument, objOrder), Compare.EQUALS, objSupplier);
             addFixedFilter(orderSupplierFilter);
             addFixedFilter(new CompareFilterEntity(addPropertyObject(supplierDocument, objInvoice), Compare.EQUALS, objSupplier));
@@ -2792,6 +2806,12 @@ public class RomanLogicsModule extends LogicsModule {
             addPropertyDraw(percentShipmentRoute, objShipment, objRoute);
             addPropertyDraw(invoicedShipmentRoute, objShipment, objRoute);
             addPropertyDraw(sumShipmentRoute, objShipment, objRoute);
+
+            if (!box)
+                addFixedFilter(new CompareFilterEntity(addPropertyObject(typeSupplier, objSupplier), Compare.EQUALS, addPropertyObject(baseLM.vtrue)));
+
+            if (box)
+                addFixedFilter(new NotFilterEntity(new CompareFilterEntity(addPropertyObject(typeSupplier, objSupplier), Compare.EQUALS, addPropertyObject(baseLM.vtrue))));
 
             addFixedFilter(new CompareFilterEntity(addPropertyObject(supplierDocument, objShipment), Compare.EQUALS, objSupplier));
             addFixedFilter(new CompareFilterEntity(addPropertyObject(supplierDocument, objInvoice), Compare.EQUALS, objSupplier));
@@ -2922,11 +2942,12 @@ public class RomanLogicsModule extends LogicsModule {
                     sidShipmentShipmentDetail,
                     sidSupplierBoxShipmentDetail, barcodeSupplierBoxShipmentDetail,
                     barcodeStockShipmentDetail, nameRouteFreightBoxShipmentDetail,
-                    quantityShipmentDetail, nameUserShipmentDetail, sidStampShipmentDetail, timeShipmentDetail, baseLM.delete);
+                    quantityShipmentDetail, nameUserShipmentDetail, sidStampShipmentDetail, seriesOfStampShipmentDetail, timeShipmentDetail, baseLM.delete);
 
             objShipmentDetail.groupTo.setSingleClassView(ClassViewType.GRID);
 
             getPropertyDraw(sidStampShipmentDetail).propertyCaption = addPropertyObject(hideSidStampShipmentDetail, objShipmentDetail);
+            getPropertyDraw(seriesOfStampShipmentDetail).propertyCaption = addPropertyObject(hideSeriesOfStampShipmentDetail, objShipmentDetail);
 
             setForceViewType(itemAttributeGroup, ClassViewType.GRID, objShipmentDetail.groupTo);
             setForceViewType(supplierAttributeGroup, ClassViewType.PANEL, objShipmentDetail.groupTo);
@@ -2946,6 +2967,12 @@ public class RomanLogicsModule extends LogicsModule {
             getPropertyDraw(nameCountryOfOriginSkuShipmentDetail).setPropertyHighlight(oneArticleColorProperty);
             getPropertyDraw(mainCompositionOriginSkuShipmentDetail).setPropertyHighlight(oneArticleColorProperty);
             getPropertyDraw(additionalCompositionOriginSkuShipmentDetail).setPropertyHighlight(oneArticleColorProperty);
+
+            if (!box)
+                addFixedFilter(new CompareFilterEntity(addPropertyObject(typeSupplier, objSupplier), Compare.EQUALS, addPropertyObject(baseLM.vtrue)));
+
+            if (box)
+                addFixedFilter(new NotFilterEntity(new CompareFilterEntity(addPropertyObject(typeSupplier, objSupplier), Compare.EQUALS, addPropertyObject(baseLM.vtrue))));
 
             addFixedFilter(new CompareFilterEntity(addPropertyObject(supplierDocument, objShipment), Compare.EQUALS, objSupplier));
 
