@@ -4,6 +4,7 @@ import org.apache.log4j.Logger;
 import platform.server.classes.ConcreteCustomClass;
 import platform.server.classes.CustomClass;
 import platform.server.classes.DoubleClass;
+import platform.server.classes.StringClass;
 import platform.server.logics.BaseLogicsModule;
 import platform.server.logics.LogicsModule;
 import platform.server.logics.linear.LP;
@@ -26,12 +27,23 @@ public class RetailLogicsModule extends LogicsModule {
         this.logger = logger;}
 
     private LP round2;
-    private LP quantityShipmentDetail;
+    private LP sidDocument;
     private LP barcodeSku;
     private LP skuShipmentDetail;
-    private LP quantityDocumentBatch;
-    private LP documentShipmentDetail;
+    private LP skuBatch;
+    private LP shopStock;
+    private LP nameShopStock;
+    private LP quantityShipmentBatch;
+    private LP supplierShipmentShipmentDetail;
     private LP outSubjectDocument;
+    private LP inSubjectDocument;
+    private LP inQuantityShipmentBatch;
+    private LP outQuantityShipmentBatch;
+    private LP inQuantityInSubjectBatch;
+    private LP outQuantityOutSubjectBatch;
+    private LP inQuantityStockBatch;
+    private LP outQuantityStockBatch;
+    private LP freeQuantityStockBatch;
 
     // классы Material Management
     CustomClass document;
@@ -42,9 +54,9 @@ public class RetailLogicsModule extends LogicsModule {
     CustomClass deliveryShipment;
     CustomClass distributionShipment;
     CustomClass recievedDistributionShipment;
-    public ConcreteCustomClass consumerShipment;
+    public ConcreteCustomClass customerShipment;
     public ConcreteCustomClass supplierShipment;
-    public ConcreteCustomClass returnConsumerShipment;
+    public ConcreteCustomClass returnCustomerShipment;
     public ConcreteCustomClass returnSupplierShipment;
     public ConcreteCustomClass directDistributionShipment;
     public ConcreteCustomClass returnDistributionShipment;
@@ -56,33 +68,33 @@ public class RetailLogicsModule extends LogicsModule {
     CustomClass inOrder;
     public ConcreteCustomClass supplierOrder;
     public ConcreteCustomClass distributionOrder;
-    public ConcreteCustomClass consumerOrder;
+    public ConcreteCustomClass customerOrder;
 
     CustomClass subject;
     CustomClass store;
-    CustomClass shop;
-    public ConcreteCustomClass department;
+    public ConcreteCustomClass shop;
+    public ConcreteCustomClass stock;
     CustomClass contractor;
     public ConcreteCustomClass supplier;
-    public ConcreteCustomClass consumer;
+    public ConcreteCustomClass customer;
 
     public ConcreteCustomClass sku;
-    public ConcreteCustomClass batch;
+    CustomClass batch;
     public ConcreteCustomClass shipmentDetail;
     public ConcreteCustomClass barcode;
 
     public void initTables(){}
 
     public void initClasses(){
-
+        initBaseClassAliases();
         // Material Management заявки
-        document = addAbstractClass("document", "Документ", baseClass.named);
+        document = addAbstractClass("document", "Документ", baseLM.transaction);
         order = addAbstractClass("order", "Заявка", document);
         inOrder = addAbstractClass("inOrder", "Заявка на приход", order);
-        outOrder = addAbstractClass("outOrder", "Заявка на приход", order);
+        outOrder = addAbstractClass("outOrder", "Заявка на расход", order);
         supplierOrder = addConcreteClass("supplierOrder", "Заявка поставщику", inOrder);
         distributionOrder = addConcreteClass("distributionOrder", "Заявка на перемещение", inOrder, outOrder);
-        consumerOrder = addConcreteClass("consumerOrder", "Заявка на внешний расход", outOrder);
+        customerOrder = addConcreteClass("customerOrder", "Заявка на внешний расход", outOrder);
 
         // Material Management движение
         shipment = addAbstractClass("shipment", "Поставка", document);
@@ -90,10 +102,10 @@ public class RetailLogicsModule extends LogicsModule {
         deliveryShipment = addAbstractClass("deliveryShipment", "Отгрузка внешнему контрагенту", shipment);
         deliveryRecievedShipment = addAbstractClass("deliveryRecievedShipment", "Принятая отгрузка от внешнего контрагента", recievedShipment);
         supplierShipment = addConcreteClass("supplierShipment", "Принятая отгрузка от поставщика", deliveryRecievedShipment);
-        returnConsumerShipment = addConcreteClass("returnConsumerShipment", "Принятый возврат от покупателя", deliveryRecievedShipment);
+        returnCustomerShipment = addConcreteClass("returnCustomerShipment", "Принятый возврат от покупателя", deliveryRecievedShipment);
         distributionShipment = addAbstractClass("distributionShipment", "Внутреннее перемещение отгруженное", shipment);
         recievedDistributionShipment = addAbstractClass("recievedDistributionShipment", "Внутреннее перемещение принятое", distributionShipment);
-        consumerShipment = addConcreteClass("consumerShipment", "Отгрузка покупателю", deliveryShipment);
+        customerShipment = addConcreteClass("customerShipment", "Отгрузка покупателю", deliveryShipment);
         returnSupplierShipment = addConcreteClass("returnSupplierShipment", "Возврат внешнему поставщику", deliveryShipment);
         directDistributionShipment = addConcreteClass("directDistributionShipment", "Внутренне перемещение отгруженное прямое", distributionShipment);
         returnDistributionShipment = addConcreteClass("returnDistributionShipment", "Внутренне перемещение отгруженное возвратное", distributionShipment);
@@ -103,17 +115,17 @@ public class RetailLogicsModule extends LogicsModule {
         // субъекты
         subject = addAbstractClass("subject", "Субъект", baseClass.named);
         store = addAbstractClass("store", "Склад", subject);
-        shop = addAbstractClass("shop", "Магазин", store);
-        department = addConcreteClass("department", "Отдел", shop);
+        shop = addConcreteClass("shop", "Магазин", store);
+        stock = addConcreteClass("department", "Отдел", store);
         contractor = addAbstractClass("contractor", "Контрагент", subject);
         supplier = addConcreteClass("supplier","Поставщик", contractor);
-        consumer = addConcreteClass("consumer","Покупатель", contractor);
+        customer = addConcreteClass("customer","Покупатель", contractor);
 
         // объекты учета
         sku = addConcreteClass("sku", "Товар", baseClass.named);
-        batch = addConcreteClass("batch", "Партия", baseClass.named);
-        shipmentDetail = addConcreteClass("shipmentDetail", "Строка поставки", baseClass);
-        barcode = addConcreteClass("barcode", "Штрих код", baseClass);
+        batch = addAbstractClass("batch", "Партия", baseClass);
+        shipmentDetail = addConcreteClass("shipmentDetail", "Строка поставки", batch);
+        barcode = addConcreteClass("barcode", "Штрих код", baseLM.barcodeObject);
     }
 
     public void initIndexes(){}
@@ -126,14 +138,42 @@ public class RetailLogicsModule extends LogicsModule {
         idGroup.add(baseLM.objectValue);
         round2 = addSFProp("round(CAST((prm1) as numeric), 2)", DoubleClass.instance, 1);
 
-        // outSubjectDocument =addCUProp("outSubjectDocument", true, "От кого (ИД)",
-        //        addDProp(),
-        quantityShipmentDetail = addDProp(baseGroup, "quantityShipmentDetail", "Кол-во", DoubleClass.instance, shipmentDetail);
-        documentShipmentDetail = addDProp(baseGroup, "documentShipmentDetail", "Документ", document, shipmentDetail);
+        sidDocument = addDProp(baseGroup, "sidDocument", "Код документа", StringClass.get(50), document);
+
+        outSubjectDocument =addCUProp("outSubjectDocument", true, "От кого (ИД)",
+                addDProp("supplierSupplierOrder", "Поставщик", supplier, supplierOrder),
+                addDProp("outStockDestributionOrder", "Магазин (рacх.)", stock, distributionOrder),
+                addDProp("outStockCustomerOrder", "Магазин (рacх.)", stock, customerOrder),
+                addDProp("supplierSupplierShipment", "Поставщик", supplier, supplierShipment),
+                addDProp("customerReturnCustomerShipment", "Покупатель", customer, returnCustomerShipment),
+                addDProp("outStockDeliveryShipment", "Магазин (расх.)", stock, deliveryShipment),
+                addDProp("outStockDistributionShipment", "Магазин (расх.)", stock, distributionShipment));
+
+        inSubjectDocument = addCUProp("inSubjectDocument", true, "Кому (ИД)",
+                addDProp("inStockIncOrder", "Магазин (прих.)", stock, inOrder),
+                addDProp("customerCustomerOrder", "Покупатель", customer, customerOrder),
+                addDProp("inStockRecievedShipment", "Магазин (прих.)", stock, recievedShipment),
+                addDProp("inStockDistributionShipment","Магазин (прих.)", stock, distributionShipment),
+                addDProp("supplierReturnSupplierShipment", "Поставщик", supplier, returnSupplierShipment),
+                addDProp("customerCostomerShipment", "Покупатель", customer, customerShipment));
 
 
-        barcodeSku = addDProp(baseGroup, "barcodeSku", "Штрих код", barcode, sku);
-        skuShipmentDetail = addDProp(idGroup, "skuShipmentDetail", "SKU (ИД)", sku, shipmentDetail);
+        barcodeSku = addJProp(baseGroup, true, "barcodeSku", "Штрих код", baseLM.barcode, addDProp("barSku", "Штрих код (ИД)", barcode, sku), 1);
+        skuBatch = addDProp(idGroup, "skuBatch", "SKU (ИД)", sku, batch);
+        shopStock = addDProp("shopStock", "Магазин (ИД)", shop, stock);
+        nameShopStock = addJProp(baseGroup, "nameShopStock", "Магазин", baseLM.name, shopStock, 1);
+
+        supplierShipmentShipmentDetail = addDProp(baseGroup, "supplierShipmentShipmentDetail", "Документ", supplierShipment, shipmentDetail);
+        quantityShipmentBatch = addDProp(baseGroup, "quantityShipmentBatch", "Кол-во", DoubleClass.instance, shipment, batch);
+
+        inQuantityShipmentBatch = addJProp("inQuantityShipmentBatch", "Кол-во прихода", baseLM.and1, quantityShipmentBatch, 1, 2 ,is(recievedShipment), 1);
+        outQuantityShipmentBatch = addJProp("outQuantityShipmentBatch", "Кол-во расхода", baseLM.and1, quantityShipmentBatch, 1, 2 ,is(shipment), 1);
+
+        inQuantityInSubjectBatch = addSGProp("inQuantityInSubjectBatch", "Кол-во прихода по субъекту", inQuantityShipmentBatch, inSubjectDocument, 1, 2);
+        outQuantityOutSubjectBatch = addSGProp("outQuantityOutSubjectBatch", "Кол-во расхода по субъекту", outQuantityShipmentBatch, outSubjectDocument, 1, 2);
+        inQuantityStockBatch = addJProp("inQuantityStockBatch", "Кол-во прихода по складу", baseLM.and1, inQuantityInSubjectBatch, 1, 2, is(stock), 1);
+        outQuantityStockBatch = addJProp("outQuantityStockBatch", "Кол-во расхода по складу", baseLM.and1, outQuantityOutSubjectBatch, 1, 2, is(stock), 1);
+        freeQuantityStockBatch = addDUProp("freeQuantityStockBatch","Остаток", inQuantityStockBatch, outQuantityStockBatch);
     }
 
     public void initNavigators(){}

@@ -22,7 +22,8 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> {
 
     public RetailBusinessLogics(DataAdapter adapter, int exportPort) throws IOException, ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException, FileNotFoundException, JRException {
         super(adapter, exportPort);
-}
+    }
+
     @Override
     protected void createModules() {
         super.createModules();
