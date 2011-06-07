@@ -12,6 +12,7 @@ import bibliothek.gui.dock.facile.menu.SubmenuPiece;
 import bibliothek.gui.dock.support.menu.SeparatingMenuPiece;
 import jasperapi.ReportGenerator;
 import net.sf.jasperreports.engine.JRException;
+import platform.base.DebugUtils;
 import platform.client.Log;
 import platform.client.Main;
 import platform.client.MainFrame;
@@ -25,6 +26,7 @@ import platform.interop.form.RemoteFormInterface;
 import platform.interop.navigator.RemoteNavigatorInterface;
 
 import javax.swing.*;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
@@ -193,8 +195,6 @@ public class DockableMainFrame extends MainFrame {
                 break;
             }
         }
-
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     }
 
 
@@ -224,71 +224,49 @@ public class DockableMainFrame extends MainFrame {
     }
 
     JMenu createFileMenu() {
-        JMenu Menu = new JMenu("Файл");
-        JMenuItem openReport = new JMenuItem("Открыть отчет...");
-        openReport.setToolTipText("Открывает ранее сохраненный отчет");
-        final JFrame MainFrame = this;
-        openReport.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent ae) {
-                FileDialog chooser = new FileDialog(MainFrame, "Отчет");
-                chooser.setFilenameFilter(new FilenameFilter() {
-                    public boolean accept(File directory, String file) {
-                        String filename = file.toUpperCase();
-                        return filename.endsWith(".JRPRINT");
-                    }
-                });
-                chooser.setVisible(true);
 
-                try {
-                    view.openReport(chooser.getFile(), chooser.getDirectory());
-                } catch (JRException e) {
-                    throw new RuntimeException("Ошибка при открытии сохраненного отчета", e);
-                }
-            }
-        });
-        Menu.add(openReport);
-        return Menu;
-    }
+        JMenu menu = new JMenu("Файл");
 
-    JMenu createOptionsMenu() {
-
-        JMenu menu = new JMenu("Настройки");
-
-        final JMenuItem changeUser = new JMenuItem("Изменить пользователя");
+        final JMenuItem changeUser = new JMenuItem("Сменить пользователя");
         changeUser.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent event) {
                 try {
-                    final JTextField login = new JTextField();
-                    final JPasswordField jpf = new JPasswordField();
-                    JOptionPane jop = new JOptionPane(new Object[]{new JLabel("Логин"), login, new JLabel("Пароль"), jpf},
-                            JOptionPane.QUESTION_MESSAGE,
-                            JOptionPane.OK_CANCEL_OPTION);
-                    JDialog dialog = jop.createDialog("Введите логин и пароль");
-                    dialog.addComponentListener(new ComponentAdapter() {
-                        @Override
-                        public void componentShown(ComponentEvent e) {
-                            login.requestFocusInWindow();
-                        }
-                    });
-                    dialog.setVisible(true);
-                    int result = (jop.getValue() != null) ? (Integer) jop.getValue() : JOptionPane.CANCEL_OPTION;
-                    dialog.dispose();
-                    String password = null;
-                    if (result == JOptionPane.OK_OPTION) {
-                        password = new String(jpf.getPassword());
 
-                        boolean check = Main.remoteLogics.checkUser(login.getText(), password);
-                        if (check) {
-                            Main.frame.remoteNavigator.relogin(login.getText());
-                            Main.frame.updateUser();
+                    while (true) {
+                        final JTextField login = new JTextField();
+                        final JPasswordField jpf = new JPasswordField();
+                        JOptionPane jop = new JOptionPane(new Object[]{new JLabel("Логин"), login, new JLabel("Пароль"), jpf},
+                                JOptionPane.QUESTION_MESSAGE,
+                                JOptionPane.OK_CANCEL_OPTION);
+                        JDialog dialog = jop.createDialog(DockableMainFrame.this, "Введите логин и пароль");
+                        dialog.addComponentListener(new ComponentAdapter() {
+                            @Override
+                            public void componentShown(ComponentEvent e) {
+                                login.requestFocusInWindow();
+                            }
+                        });
+                        dialog.setVisible(true);
+                        int result = (jop.getValue() != null) ? (Integer) jop.getValue() : JOptionPane.CANCEL_OPTION;
+                        dialog.dispose();
+                        String password = null;
+                        if (result == JOptionPane.OK_OPTION) {
+                            password = new String(jpf.getPassword());
+
+                            try {
+                                if (Main.remoteLogics.checkUser(login.getText(), password)) {
+                                    Main.frame.remoteNavigator.relogin(login.getText());
+                                    Main.frame.updateUser();
+                                    break;
+                                }
+                            } catch (RemoteException e) {
+                                if (DebugUtils.getInitialCause(e) instanceof LoginException)
+                                    JOptionPane.showMessageDialog(DockableMainFrame.this, DebugUtils.getInitialCause(e).getMessage(), "Смена пользователя", JOptionPane.ERROR_MESSAGE);
+                                else
+                                    throw new RuntimeException(e);
+                            }
                         } else
-                            throw new RuntimeException();
-
+                            break;
                     }
-                } catch (LoginException e) {
-                    throw new RuntimeException(e);
-                } catch (RemoteException e) {
-                    throw new RuntimeException(e);
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 } catch (ClassNotFoundException e) {
@@ -296,9 +274,50 @@ public class DockableMainFrame extends MainFrame {
                 }
             }
         });
+
         menu.add(changeUser);
 
-        final JMenuItem logicsConfigurator = new JMenuItem("Настройка бизнес-логики");
+        menu.addSeparator();
+
+        JMenuItem openReport = new JMenuItem("Открыть отчет");
+        openReport.setToolTipText("Открывает ранее сохраненный отчет");
+
+        openReport.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent ae) {
+                JFileChooser chooser = new JFileChooser();
+                chooser.addChoosableFileFilter(new FileNameExtensionFilter("Отчеты JasperReport", "jrprint"));
+                if (chooser.showOpenDialog(DockableMainFrame.this) == JFileChooser.APPROVE_OPTION) {
+                    try {
+                        view.openReport(chooser.getSelectedFile());
+                    } catch (JRException e) {
+                        throw new RuntimeException("Ошибка при открытии сохраненного отчета", e);
+                    }
+                }
+            }
+        });
+        menu.add(openReport);
+
+        menu.addSeparator();
+
+        final JMenuItem exit = new JMenuItem("Выход");
+        exit.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                WindowEvent wev = new WindowEvent(DockableMainFrame.this, WindowEvent.WINDOW_CLOSING);
+                Toolkit.getDefaultToolkit().getSystemEventQueue().postEvent(wev);
+            }
+        });
+
+        menu.add(exit);
+
+        return menu;
+    }
+
+    JMenu createOptionsMenu() {
+
+        JMenu menu = new JMenu("Настройки");
+
+        final JMenuItem logicsConfigurator = new JMenuItem("Конфигуратор");
         logicsConfigurator.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
@@ -325,14 +344,35 @@ public class DockableMainFrame extends MainFrame {
     }
 
     JMenu createHelpMenu() {
-        JMenu Menu = new JMenu("Справка");
-        final JMenuItem About = new JMenuItem("О программе");
-        About.addActionListener(new ActionListener() {
+        JMenu menu = new JMenu("Справка");
+        final JMenuItem about = new JMenuItem("О программе");
+        about.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
+                JDialog dialog = new JDialog(DockableMainFrame.this);
+                Container contentPane = dialog.getContentPane();
+                contentPane.setLayout(new BoxLayout(contentPane, BoxLayout.Y_AXIS));
+
+                contentPane.add(new JLabel(Main.getLogo()));
+                contentPane.add(new JSeparator(JSeparator.HORIZONTAL));
+
+                String text = Main.getDisplayName();
+                if (text == null)
+                    text = Main.PLATFORM_TITLE;
+                else
+                    text = "<html><b>" + text + "</b> powered by " + Main.PLATFORM_TITLE + "</html>";
+                JLabel labelName = new JLabel(text);
+                labelName.setFont(labelName.getFont().deriveFont(10));
+                contentPane.add(labelName);
+
+                dialog.setTitle(about.getText());
+                dialog.pack();
+                dialog.setResizable(false);
+                dialog.setLocationRelativeTo(DockableMainFrame.this);
+                dialog.setVisible(true);
             }
         });
-        Menu.add(About);
-        return Menu;
+        menu.add(about);
+        return menu;
     }
 
 

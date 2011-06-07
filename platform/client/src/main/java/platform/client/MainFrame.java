@@ -25,7 +25,7 @@ public abstract class MainFrame extends JFrame {
         setIconImage(Main.getMainIcon().getImage());
 
         updateUser();
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 
         try {
             baseDir = new File(System.getProperty("user.home"), ".fusion\\" + Main.remoteLogics.getName());
@@ -48,21 +48,32 @@ public abstract class MainFrame extends JFrame {
 
         addWindowListener(new WindowAdapter() {
             public void windowClosing(WindowEvent event) {
-                baseDir.mkdirs();
 
-                try {
-                    FileWriter fileWr = new FileWriter(new File(baseDir, "dimension.txt"));
-                    fileWr.write(getWidth() + " " + getHeight() + '\n');
+                int confirmed = JOptionPane.showConfirmDialog(MainFrame.this,
+                        "Вы действительно хотите выйти ?", "Подтверждение",
+                        JOptionPane.YES_NO_OPTION);
 
-                    fileWr.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+                if (confirmed == JOptionPane.YES_OPTION) {
 
-                try {
-                    remoteNavigator.close();
-                } catch (RemoteException e) {
-                    e.printStackTrace();
+                    baseDir.mkdirs();
+
+                    try {
+                        FileWriter fileWr = new FileWriter(new File(baseDir, "dimension.txt"));
+                        fileWr.write(getWidth() + " " + getHeight() + '\n');
+
+                        fileWr.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+
+                    try {
+                        remoteNavigator.close();
+                    } catch (RemoteException e) {
+                        e.printStackTrace();
+                    }
+
+                    MainFrame.this.dispose();
+                    System.exit(0);
                 }
             }
         });

@@ -12,6 +12,7 @@ import platform.interop.form.RemoteFormInterface;
 
 import javax.swing.*;
 import java.awt.*;
+import java.io.File;
 import java.io.IOException;
 
 public class ReportDockable extends FormDockable {
@@ -34,10 +35,10 @@ public class ReportDockable extends FormDockable {
     }
 
     // из файла
-    ReportDockable(String fileName,String directory, MultipleCDockableFactory<FormDockable,?> factory) throws JRException {
+    ReportDockable(File file, MultipleCDockableFactory<FormDockable,?> factory) throws JRException {
         super("", factory);
 
-        setActiveComponent(prepareViewer(new JRViewer((JasperPrint) JRLoader.loadObject(directory+fileName))),fileName);
+        setActiveComponent(prepareViewer(new JRViewer((JasperPrint) JRLoader.loadObject(file))), file.getName());
     }
 
     @Override

@@ -2,7 +2,7 @@ package skolkovo.gwt.expertprofile.server;
 
 import org.apache.log4j.Logger;
 import skolkovo.api.serialization.ProfileInfo;
-import skolkovo.gwt.base.server.DebugUtil;
+import platform.base.DebugUtils;
 import skolkovo.gwt.base.server.SkolkovoRemoteServiceServlet;
 import skolkovo.gwt.base.shared.MessageException;
 import skolkovo.gwt.expertprofile.client.ExpertProfileService;
@@ -25,7 +25,7 @@ public class ExpertProfileServiceImpl extends SkolkovoRemoteServiceServlet imple
         } catch (RemoteException e) {
             logger.error("Ошибка в getProfileInfo: ", e);
             e.printStackTrace();
-            throw new MessageException(DebugUtil.getInitialCause(e).getMessage());
+            throw new MessageException(DebugUtils.getInitialCause(e).getMessage());
         }
     }
 
@@ -41,7 +41,7 @@ public class ExpertProfileServiceImpl extends SkolkovoRemoteServiceServlet imple
         } catch (RemoteException e) {
             logger.error("Ошибка в sentVoteDocuments: ", e);
             e.printStackTrace();
-            throw new MessageException(DebugUtil.getInitialCause(e).getMessage());
+            throw new MessageException(DebugUtils.getInitialCause(e).getMessage());
         }
     }
 }
