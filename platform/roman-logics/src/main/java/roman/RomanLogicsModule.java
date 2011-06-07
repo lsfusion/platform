@@ -810,6 +810,7 @@ public class RomanLogicsModule extends LogicsModule {
     LP createStamp;
     LP creationStampStamp;
 
+    private LP declarationExport;
 
     public AnnexInvoiceFormEntity invoiceFromFormEntity;
 
@@ -2188,10 +2189,11 @@ public class RomanLogicsModule extends LogicsModule {
                 addCUProp(
                         addSCProp(addJProp(true, quantitySimpleShipmentStockSku, 1, currentFreightBoxRoute, 2, 3))
                 ), 1, 2, baseLM.barcodeToObject, 3);
+        declarationExport = addDEAProp("declarationExport");
     }
 
-    public LP addDEAProp() {
-        return addProperty(null, new LP<ClassPropertyInterface>(new DeclarationExportActionProperty("declarationExport", "Экспорт декларанта", BL, importer, freight)));
+    public LP addDEAProp(String sID) {
+        return addProperty(null, new LP<ClassPropertyInterface>(new DeclarationExportActionProperty(sID, "Экспорт декларанта", BL, importer, freight)));
     }
 
     @Override
@@ -4005,8 +4007,8 @@ public class RomanLogicsModule extends LogicsModule {
                      additionalCompositionOriginSku, translationAdditionalCompositionSku, additionalCompositionSku);
 
             setForceViewType(itemAttributeGroup, ClassViewType.GRID, objSku.groupTo);
-            addPropertyDraw(addGCAProp(actionGroup, "translationAllMainComposition", "Перевод составов", objSku.groupTo, translationMainCompositionSku, baseLM.actionTrue), objSku).forceViewType = ClassViewType.PANEL;
-            addPropertyDraw(addGCAProp(actionGroup, "translationAllAdditionalComposition", "Перевод доп. составов", objSku.groupTo, translationAdditionalCompositionSku, baseLM.actionTrue), objSku).forceViewType = ClassViewType.PANEL;
+            addPropertyDraw(addGCAProp(actionGroup, "translationAllMainComposition" + (edit ? "_edit" : ""), "Перевод составов", objSku.groupTo, translationMainCompositionSku, baseLM.actionTrue), objSku).forceViewType = ClassViewType.PANEL;
+            addPropertyDraw(addGCAProp(actionGroup, "translationAllAdditionalComposition" + (edit ? "_edit" : ""), "Перевод доп. составов", objSku.groupTo, translationAdditionalCompositionSku, baseLM.actionTrue), objSku).forceViewType = ClassViewType.PANEL;
 
             setReadOnly(baseGroup, true, objSku.groupTo);
             setReadOnly(publicGroup, true, objSku.groupTo);            
@@ -4215,7 +4217,7 @@ public class RomanLogicsModule extends LogicsModule {
 
             addPropertyDraw(sidImporterFreightTypeInvoice, objImporter, objFreight, objTypeInvoice);
             addPropertyDraw(quantityImporterFreightTypeInvoice, objImporter, objFreight, objTypeInvoice);
-            addPropertyDraw(addDEAProp(), objImporter, objFreight);
+            addPropertyDraw(declarationExport, objImporter, objFreight);
 
             addFixedFilter(new CompareFilterEntity(addPropertyObject(typeInvoiceCategoryArticle, objArticle), Compare.EQUALS, objTypeInvoice));
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(quantityImporterFreightTypeInvoice, objImporter, objFreight, objTypeInvoice)));
@@ -4329,7 +4331,7 @@ public class RomanLogicsModule extends LogicsModule {
 
             addPropertyDraw(sidImporterFreightTypeInvoice, objImporter, objFreight, objTypeInvoice);
             addPropertyDraw(quantityImporterFreightTypeInvoice, objImporter, objFreight, objTypeInvoice);
-            addPropertyDraw(addDEAProp(), objImporter, objFreight);
+            addPropertyDraw(declarationExport, objImporter, objFreight);
 
             addFixedFilter(new CompareFilterEntity(addPropertyObject(typeInvoiceCategoryArticle, objArticle), Compare.EQUALS, objTypeInvoice));
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(quantityImporterFreightTypeInvoice, objImporter, objFreight, objTypeInvoice)));
@@ -4437,7 +4439,7 @@ public class RomanLogicsModule extends LogicsModule {
             addPropertyDraw(sumImporterFreightArticleCompositionCountryCategory, objImporter, objFreight, objArticle, objComposition, objCountry, objCategory);
 
             addPropertyDraw(quantityImporterFreight, objImporter, objFreight);
-            addPropertyDraw(addDEAProp(), objImporter, objFreight);
+            addPropertyDraw(declarationExport, objImporter, objFreight);
 
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(quantityImporterFreight, objImporter, objFreight)));
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(quantityImporterFreightArticleCompositionCountryCategory, objImporter, objFreight, objArticle, objComposition, objCountry, objCategory)));
