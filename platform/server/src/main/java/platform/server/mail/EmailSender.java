@@ -165,7 +165,12 @@ public class EmailSender {
 
                 String messageInfo = subject.trim();
                 try {
-                    messageInfo += " получатели : " + BaseUtils.toString(message.getRecipients(MimeMessage.RecipientType.TO), ",");
+                    Address[] addressesTo = message.getRecipients(MimeMessage.RecipientType.TO);
+                    if (addressesTo == null || addressesTo.length == 0) {
+                        logger.error("Не удалось отправить почту " + messageInfo + " : не заданы получатели");
+                        throw new RuntimeException("Ошибка при отсылке почты " + messageInfo + " : не заданы получатели");
+                    }
+                    messageInfo += " получатели : " + BaseUtils.toString(addressesTo, ",");
                 } catch (MessagingException me) {
                     messageInfo += " не удалось получить список получателей " + me.toString();
                 }

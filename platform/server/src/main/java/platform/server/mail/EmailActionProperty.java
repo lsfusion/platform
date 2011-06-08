@@ -210,7 +210,7 @@ public class EmailActionProperty extends ActionProperty {
             String userName = (String) BL.LM.emailAccount.read(session, modifier);
             String password = (String) BL.LM.emailPassword.read(session, modifier);
             String emailBlindCarbonCopy = (String) BL.LM.emailBlindCarbonCopy.read(session, modifier);
-            if (emailBlindCarbonCopy != null && !emailBlindCarbonCopy.isEmpty()) {
+            if (emailBlindCarbonCopy != null && !emailBlindCarbonCopy.isEmpty() && !recepientEmails.containsKey(emailBlindCarbonCopy)) {
                 recepientEmails.put(emailBlindCarbonCopy, MimeMessage.RecipientType.BCC);
             }
 
