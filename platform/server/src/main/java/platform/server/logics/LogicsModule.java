@@ -67,7 +67,7 @@ public abstract class LogicsModule {
     }
 
     protected void addModuleLP(LP<?> lp) {
-     //   assert !moduleProperties.containsKey(lp.property.sID);
+        assert !moduleProperties.containsKey(lp.property.sID);
         moduleProperties.put(lp.property.sID, lp);
     }
 
