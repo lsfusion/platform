@@ -418,7 +418,7 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         try {
             PropertyDrawInstance propertyDraw = form.getPropertyDraw(propertyID);
             Map<ObjectInstance, DataObject> keys = deserializeKeys(propertyDraw, columnKey);
-            actions.addAll(form.changeProperty(propertyDraw, deserializeObject(object), this, all, keys));
+            actions.addAll(form.changeProperty(propertyDraw, keys, deserializeObject(object), this, all));
 
             if (logger.isInfoEnabled()) {
                 logger.info(String.format("changePropertyDraw: [ID: %1$d, SID: %2$s, all?: %3$s] = %4$s", propertyDraw.getID(), propertyDraw.getsID(), all, deserializeObject(object)));
@@ -449,7 +449,7 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
             Map<ObjectInstance, DataObject> mainKeys = deserializeKeys(mainProperty, mainColumnKey);
             Map<ObjectInstance, DataObject> getterKeys = deserializeKeys(getterProperty, getterColumnKey);
             actions.addAll(
-                    form.groupChangeProperty(mainProperty, mainKeys, getterProperty, getterKeys, this)
+                    form.changeProperty(mainProperty, mainKeys, getterProperty, getterKeys, this, true)
             );
 
             if (logger.isInfoEnabled()) {
@@ -482,7 +482,7 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         }
     }
 
-    public boolean[] isCompatibleProperties(int mainID, int[] propertiesIDs) throws RemoteException {
+    public boolean[] getCompatibleProperties(int mainID, int[] propertiesIDs) throws RemoteException {
         Property mainProperty = form.getPropertyDraw(mainID).propertyObject.getChangeInstance().property;
 
         int n = propertiesIDs.length;

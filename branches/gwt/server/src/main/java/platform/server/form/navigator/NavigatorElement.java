@@ -4,6 +4,7 @@ import platform.base.BaseUtils;
 import platform.base.IOUtils;
 import platform.base.identity.IdentityObject;
 import platform.interop.NavigatorWindowType;
+import platform.server.auth.SecurityPolicy;
 import platform.server.form.window.NavigatorWindow;
 import platform.server.logics.BusinessLogics;
 
@@ -113,7 +114,7 @@ public class NavigatorElement<T extends BusinessLogics<T>> extends IdentityObjec
         return 1;
     }
 
-    public void serialize(DataOutputStream outStream) throws IOException {
+    public void serialize(DataOutputStream outStream, Collection<NavigatorElement> elements) throws IOException {
         outStream.writeByte(getTypeID());
 
         outStream.writeInt(getID());
@@ -125,9 +126,16 @@ public class NavigatorElement<T extends BusinessLogics<T>> extends IdentityObjec
         } else {
             window.serialize(outStream);
         }
-        outStream.writeInt(children.size());
+
+        int count = 0;
+        for (NavigatorElement<T> child : children)
+            if (elements.contains(child))
+                count++;
+
+        outStream.writeInt(count);
         for (NavigatorElement<T> child : children) {
-            outStream.writeUTF(child.getSID());
+            if (elements.contains(child))
+                outStream.writeUTF(child.getSID());
         }
         IOUtils.writeImageIcon(outStream, getImage());
     }
@@ -154,10 +162,13 @@ public class NavigatorElement<T extends BusinessLogics<T>> extends IdentityObjec
         return new NavigatorElement(sID, caption);
     }
 
-    public Collection<NavigatorElement> addSubTree(Collection<NavigatorElement> collection) {
+    public Collection<NavigatorElement> addSubTree(SecurityPolicy securityPolicy, Collection<NavigatorElement> collection) {
+        if (!securityPolicy.navigator.checkPermission(this))
+            return collection;
+
         collection.add(this);
         for (NavigatorElement<T> child : children) {
-            child.addSubTree(collection);
+            child.addSubTree(securityPolicy, collection);
         }
 
         return collection;

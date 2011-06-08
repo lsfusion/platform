@@ -2,7 +2,7 @@ package platform.gwt.form.server.handlers;
 
 import net.customware.gwt.dispatch.server.ExecutionContext;
 import net.customware.gwt.dispatch.shared.DispatchException;
-import platform.gwt.base.server.DebugUtil;
+import platform.base.DebugUtils;
 import platform.gwt.base.shared.MessageException;
 import platform.gwt.form.server.FormSessionObject;
 import platform.gwt.form.server.RemoteFormServiceImpl;
@@ -19,13 +19,13 @@ public class GetRemoteChangesHandler extends FormChangesActionHandler<GetRemoteC
         try {
             FormSessionObject form = getSessionFormExceptionally(action.formSessionID);
 
-//            remoteForm.refreshData();
+            form.remoteForm.refreshData();
 
             return getRemoteChanges(form);
         } catch (Throwable e) {
             logger.error("Ошибка в getRemoteChanges: ", e);
             e.printStackTrace();
-            throw new MessageException(DebugUtil.getInitialCause(e).getMessage());
+            throw new MessageException(DebugUtils.getInitialCause(e).getMessage());
         }
     }
 }

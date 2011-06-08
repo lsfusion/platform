@@ -2,13 +2,13 @@ package platform.gwt.form.server.handlers;
 
 import net.customware.gwt.dispatch.server.ExecutionContext;
 import net.customware.gwt.dispatch.shared.DispatchException;
+import platform.base.DebugUtils;
 import platform.client.logics.ClientForm;
 import platform.client.logics.ClientFormChanges;
 import platform.client.serialization.ClientSerializationPool;
-import platform.gwt.base.server.DebugUtil;
 import platform.gwt.base.shared.MessageException;
-import platform.gwt.form.server.RemoteFormServiceImpl;
 import platform.gwt.form.server.FormSessionObject;
+import platform.gwt.form.server.RemoteFormServiceImpl;
 import platform.gwt.form.shared.actions.GetForm;
 import platform.gwt.form.shared.actions.GetFormResult;
 import platform.gwt.view.GForm;
@@ -47,7 +47,7 @@ public class GetFormHandler extends FormServiceActionHandler<GetForm, GetFormRes
         } catch (Throwable e) {
             logger.error("Ошибка в getForm: ", e);
             e.printStackTrace();
-            throw new MessageException(DebugUtil.getInitialCause(e).getMessage());
+            throw new MessageException(DebugUtils.getInitialCause(e).getMessage());
         }
     }
 

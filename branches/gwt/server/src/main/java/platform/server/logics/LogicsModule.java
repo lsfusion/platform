@@ -42,11 +42,52 @@ public abstract class LogicsModule {
     public abstract void initClasses();
     public abstract void initTables();
     public abstract void initGroups();
-    public abstract void initProperties();
+    public abstract void initProperties() throws FileNotFoundException;
     public abstract void initIndexes();
     public abstract void initNavigators() throws JRException, FileNotFoundException;
 
     public BaseLogicsModule<?> baseLM;
+
+    private Map<String, LP<?>> moduleProperties = new HashMap<String, LP<?>>();
+    private Map<String, AbstractGroup> moduleGroups = new HashMap<String, AbstractGroup>();
+    private Map<String, ValueClass> moduleClasses = new HashMap<String, ValueClass>();
+
+    public LogicsModule(String sID) {
+        this.sID = sID;
+    }
+
+    private String sID;
+
+    protected String getSID() {
+        return sID;
+    }
+
+    protected LP<?> getLP(String sID) {
+        return moduleProperties.get(sID);
+    }
+
+    protected void addModuleLP(LP<?> lp) {
+        assert !moduleProperties.containsKey(lp.property.sID);
+        moduleProperties.put(lp.property.sID, lp);
+    }
+
+    protected AbstractGroup getGroup(String sid) {
+        return moduleGroups.get(sid);
+    }
+
+    protected void addModuleGroup(AbstractGroup group) {
+        assert !moduleGroups.containsKey(group.getSID());
+        moduleGroups.put(group.getSID(), group);
+    }
+
+    protected ValueClass getClass(String sid) {
+        return moduleClasses.get(sid);
+    }
+
+    protected void addModuleClass(ValueClass valueClass) {
+        assert !moduleClasses.containsKey(valueClass.getSID());
+        moduleClasses.put(valueClass.getSID(), valueClass);
+    }
 
     // aliases для использования внутри иерархии логических модулей
     protected BaseClass baseClass;
@@ -79,7 +120,25 @@ public abstract class LogicsModule {
         this.baseClass = baseLM.baseClass;
     }
 
+    protected AbstractGroup addAbstractGroup(String sid, String caption) {
+        return addAbstractGroup(sid, caption, null);
+    }
+
+    protected AbstractGroup addAbstractGroup(String sid, String caption, AbstractGroup parent) {
+        return addAbstractGroup(sid, caption, parent, true);
+    }
+
+    protected AbstractGroup addAbstractGroup(String sid, String caption, AbstractGroup parent, boolean toCreateContainer) {
+        AbstractGroup group = new AbstractGroup(sid, caption);
+        if (parent != null) {
+            parent.add(group);
+        }
+        group.createContainer = toCreateContainer;
+        return group;
+    }
+
     protected void storeCustomClass(CustomClass customClass) {
+        addModuleClass(customClass);
         assert !baseLM.sidToClass.containsKey(customClass.getSID());
         baseLM.sidToClass.put(customClass.getSID(), customClass);
     }
@@ -1445,6 +1504,7 @@ public abstract class LogicsModule {
     }
 
     private <T extends LP<?>> T addProperty(AbstractGroup group, boolean persistent, T lp) {
+        addModuleLP(lp);
         baseLM.registerProperty(lp);
         if (group != null) {
             group.add(lp.property);

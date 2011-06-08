@@ -51,11 +51,11 @@ public class ExpertFrame extends BaseFrame {
                                 return false;
                             }
 
-                            if (taInnovativeComment.getText().isEmpty() ||
-                                taCompleteComment.getText().isEmpty()) {
-                                Window.alert(messages.incompleteComment());
-                                return false;
-                            }
+//                            if (taInnovativeComment.getText().length() < innovativeCommentMaxLength ||
+//                                    taCompleteComment.getText().length() < completeCommentMaxLength) {
+//                                Window.alert(messages.incompleteComment());
+//                                return false;
+//                            }
                         }
 
                         if (confirm && !Window.confirm(messages.confirmPrompt())) {

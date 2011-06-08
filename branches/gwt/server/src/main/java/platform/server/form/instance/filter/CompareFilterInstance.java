@@ -25,6 +25,7 @@ import java.util.Set;
 
 public class CompareFilterInstance<P extends PropertyInterface> extends PropertyFilterInstance<P> {
 
+    boolean negate;
     public Compare compare;
     public CompareValue value;
 
@@ -37,6 +38,7 @@ public class CompareFilterInstance<P extends PropertyInterface> extends Property
 
     public CompareFilterInstance(DataInputStream inStream, FormInstance form) throws IOException, SQLException {
         super(inStream,form);
+        negate = inStream.readBoolean();
         compare = Compare.deserialize(inStream);
         value = deserializeCompare(inStream, form, property.getType());
     }
@@ -71,7 +73,8 @@ public class CompareFilterInstance<P extends PropertyInterface> extends Property
     }
 
     public Where getWhere(Map<ObjectInstance, ? extends Expr> mapKeys, Modifier<? extends Changes> modifier) {
-        return property.getExpr(mapKeys, modifier).compare(value.getExpr(mapKeys, modifier), compare);
+        Where where = property.getExpr(mapKeys, modifier).compare(value.getExpr(mapKeys, modifier), compare);
+        return negate ? where.not() : where;
     }
 
     @Override

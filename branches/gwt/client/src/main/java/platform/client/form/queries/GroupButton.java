@@ -1,5 +1,8 @@
 package platform.client.form.queries;
 
+import jxl.CellView;
+import jxl.Workbook;
+import jxl.write.*;
 import org.jdesktop.swingx.JXTreeTable;
 import org.jdesktop.swingx.treetable.*;
 import platform.base.BaseUtils;
@@ -17,7 +20,10 @@ import javax.swing.table.*;
 import javax.swing.tree.TreePath;
 import java.awt.*;
 import java.awt.event.*;
+import java.io.File;
 import java.io.IOException;
+import java.lang.Boolean;
+import java.lang.Number;
 import java.util.*;
 import java.util.List;
 
@@ -44,6 +50,8 @@ public abstract class GroupButton extends ToolbarGridButton {
         private JCheckBox notNullCheck = new JCheckBox("Только заполненные");
         private JLabel recordCountLabel = new JLabel();
         private JScrollPane treeTableScroll = new JScrollPane();
+        private JXTreeTable treeTable;
+        private CustomTreeTableModel treeTableModel;
         private JPanel expandButtonsPanel = new JPanel();
         private final int RECORD_QUANTITY_ID = -1;
 
@@ -209,9 +217,23 @@ public abstract class GroupButton extends ToolbarGridButton {
             westPanel.setContinuousLayout(true);
             westPanel.setOneTouchExpandable(true);
 
+            JPanel topPanel = new JPanel(new BorderLayout());
+            topPanel.add(expandButtonsPanel, BorderLayout.WEST);
+            JButton excelExport = new JButton("Экспорт в Excel");
+            excelExport.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    try {
+                        exportToExcel();
+                    } catch (Exception ex) {
+                        throw new RuntimeException(ex);
+                    }
+                }
+            });
+            topPanel.add(excelExport, BorderLayout.EAST);
+
             JPanel eastPanel = new JPanel();
             eastPanel.setLayout(new BorderLayout());
-            eastPanel.add(expandButtonsPanel, BorderLayout.NORTH);
+            eastPanel.add(topPanel, BorderLayout.NORTH);
             eastPanel.add(treeTableScroll, BorderLayout.CENTER);
 
             JSplitPane allPanel = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, westPanel, eastPanel);
@@ -381,8 +403,8 @@ public abstract class GroupButton extends ToolbarGridButton {
                 }
             }
 
-            final CustomTreeTableModel treeTableModel = new CustomTreeTableModel(selectedGroupLevels.get(selectedGroupLevels.size() - 1).size(), names, values);
-            JXTreeTable treeTable = new JXTreeTable(treeTableModel) {   //перегружаем методы для обхода бага с горизонтальным скроллбаром у JTable'а
+            treeTableModel = new CustomTreeTableModel(selectedGroupLevels.get(selectedGroupLevels.size() - 1).size(), names, values);
+            treeTable = new JXTreeTable(treeTableModel) {   //перегружаем методы для обхода бага с горизонтальным скроллбаром у JTable'а
 
                 @Override
                 public boolean getScrollableTracksViewportWidth() {
@@ -405,9 +427,7 @@ public abstract class GroupButton extends ToolbarGridButton {
                 }
             };
             treeTable.setCellSelectionEnabled(true);
-            treeTable.setShowGrid(true);
-            treeTable.setColumnMargin(1);
-            treeTable.setAutoCreateRowSorter(true);
+            treeTable.setShowGrid(true, true);
             treeTable.setTableHeader(new JTableHeader(treeTable.getColumnModel()) {
                 @Override
                 public String getToolTipText(MouseEvent e) {
@@ -415,10 +435,11 @@ public abstract class GroupButton extends ToolbarGridButton {
                     return treeTableModel.getColumnName(index);
                 }
             });
+            treeTable.getTableHeader().setReorderingAllowed(false);
             int additionalWidth = 19 * (values.size() - 1);
             treeTable.getColumnModel().getColumn(0).setMinWidth(55 + additionalWidth);  //ширина колонки с деревом
             JTableHeader header = treeTable.getTableHeader();
-            header.addMouseListener(treeTableModel.new ColumnListener(treeTable));  //для сортировки
+            header.addMouseListener(treeTableModel.new ColumnListener());  //для сортировки
             header.setFont(header.getFont().deriveFont(header.getFont().getStyle(), 10));
             for (int i = 0; i < treeTableModel.getColumnCount() - 1; i++) {
                 TableColumn column = treeTable.getColumnModel().getColumn(i + 1);
@@ -428,15 +449,15 @@ public abstract class GroupButton extends ToolbarGridButton {
             }
             treeTableScroll.setViewportView(treeTable);
 
-            createExpandButtons(treeTable);
+            createExpandButtons();
             recordCountLabel.setText("Всего записей: " + treeTableModel.getLastLevelRowCount());
         }
 
-        private void createExpandButtons(final JXTreeTable table) {
+        private void createExpandButtons() {
             expandButtonsPanel.removeAll();
             expandButtonsPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
             final List<JButton> buttons = new ArrayList<JButton>();
-            for (int i = 0; i <= ((CustomTreeTableModel) table.getTreeTableModel()).getLevelCount() - 1; i++) {
+            for (int i = 0; i <= treeTableModel.getLevelCount() - 1; i++) {
                 JButton button = new JButton("" + i);
                 if (i == 0) {
                     button.setText("-");
@@ -461,7 +482,7 @@ public abstract class GroupButton extends ToolbarGridButton {
                     public void actionPerformed(ActionEvent e) {
                         JButton source = (JButton) e.getSource();
                         value = buttons.indexOf(source);
-                        expand(null, (TreeTableNode) table.getTreeTableModel().getRoot());
+                        expand(null, treeTableModel.getRoot());
                     }
 
                     private void expand(Object[] parents, TreeTableNode node) {
@@ -475,12 +496,12 @@ public abstract class GroupButton extends ToolbarGridButton {
                                 pathToExpand = new TreePath(node);
                                 newParents = new Object[]{node};
                             }
-                            table.expandPath(pathToExpand);
+                            treeTable.expandPath(pathToExpand);
                             for (int i = 0; i < node.getChildCount(); i++) {
                                 expand(newParents, node.getChildAt(i));
                             }
                         } else {
-                            table.collapsePath(new TreePath(BaseUtils.add(parents, node)));
+                            treeTable.collapsePath(new TreePath(BaseUtils.add(parents, node)));
                         }
                     }
                 });
@@ -496,7 +517,7 @@ public abstract class GroupButton extends ToolbarGridButton {
         public class CustomTreeTableModel extends DefaultTreeTableModel {
             List<String> columnNames;
             List<Map<List<Object>, List<Object>>> sources;
-            Map<DefaultMutableTreeTableNode, List<Object>> values = new HashMap<DefaultMutableTreeTableNode, List<Object>>();
+            Map<DefaultMutableTreeTableNode, List<Object>> values = new OrderedMap<DefaultMutableTreeTableNode, List<Object>>();
             int keyColumnsQuantity = 0;
 
             public CustomTreeTableModel(int keyColumnsQuantity, List<String> columnNames, List<Map<List<Object>, List<Object>>> values) {
@@ -575,11 +596,17 @@ public abstract class GroupButton extends ToolbarGridButton {
             }
 
             public String getColumnName(int index) {
+                String name ;
                 if (index == 0) {
-                    return "Дерево";
+                    name = "Дерево";
                 } else {
-                    return "<html>" + columnNames.get(index - 1) + "</html>";
+                    name = "<html>" + columnNames.get(index - 1);
+                    if (index == sortedCol) {
+                        name += isSortAscending ? " ↑" : " ↓";
+                    }
+                    name += "</html>";
                 }
+                return name;
             }
 
             @Override
@@ -596,14 +623,8 @@ public abstract class GroupButton extends ToolbarGridButton {
             protected int sortedCol = 0;
 
             class ColumnListener extends MouseAdapter {
-                protected JXTreeTable table;
-
-                public ColumnListener(JXTreeTable t) {
-                    table = t;
-                }
-
                 public void mouseClicked(MouseEvent e) {
-                    TableColumnModel colModel = table.getColumnModel();
+                    TableColumnModel colModel = treeTable.getColumnModel();
                     int columnToSort = colModel.getColumnIndexAtX(e.getX());
 
                     if (sortedCol == columnToSort)
@@ -615,9 +636,15 @@ public abstract class GroupButton extends ToolbarGridButton {
                     if (columnToSort < 1)
                         return;
 
+                    for (int i = 0; i < getColumnCount(); i++) {
+                        TableColumn column = colModel.getColumn(i);
+                        column.setHeaderValue(getColumnName(column.getModelIndex()));
+                    }
+                    treeTable.getTableHeader().repaint();
+
                     DefaultMutableTreeTableNode root = (DefaultMutableTreeTableNode) CustomTreeTableModel.this.root;
                     changeChildrenOrder(root);
-                    table.updateUI();
+                    treeTable.updateUI();
                 }
 
                 private void changeChildrenOrder(DefaultMutableTreeTableNode node) {
@@ -652,6 +679,48 @@ public abstract class GroupButton extends ToolbarGridButton {
                     return result;
                 }
             }
+        }
+
+        private void exportToExcel() throws IOException, WriteException {
+            File file = File.createTempFile("tableContents", ".xls");
+            WritableWorkbook workbook = Workbook.createWorkbook(file);
+            WritableSheet sheet = workbook.createSheet("Лист 1", 0);
+
+            for (int i = 0; i < treeTableModel.getColumnCount(); i++) {
+                String columnName = treeTableModel.getColumnName(i);
+                if (i != 0) {
+                    columnName = columnName.substring(columnName.indexOf('>') + 1, columnName.lastIndexOf('<'));
+                    if (columnName.contains("↑") || columnName.contains("↓")) {
+                        columnName = columnName.substring(0, columnName.lastIndexOf(' '));
+                    }
+                    CellView cv = new CellView();
+                    cv.setAutosize(true);
+                    sheet.setColumnView(i, cv);
+                }
+                sheet.addCell(new jxl.write.Label(i, 0, columnName));
+            }
+            int k = 1;
+            for (DefaultMutableTreeTableNode node : treeTableModel.values.keySet()) {
+                List<Object> row = treeTableModel.values.get(node);
+                for (int i = 0; i <= row.size(); i++) {
+                    Object value = treeTableModel.getValueAt(node, i);
+                    if (value instanceof Number) {
+                        sheet.addCell(new jxl.write.Number(i, k, Double.valueOf(value.toString())));
+                    } else if (value instanceof Date) {
+                        sheet.addCell(new DateTime(i, k, (Date) value));
+                    } else if (value instanceof Boolean) {
+                        sheet.addCell(new jxl.write.Boolean(i, k, (Boolean) value));
+                    } else {
+                        sheet.addCell(new jxl.write.Label(i, k, value == null ? "" : value.toString()));
+                    }
+                }
+                k++;
+            }
+            workbook.write();
+            workbook.close();
+
+            Runtime run = Runtime.getRuntime();
+            run.exec("cmd.exe /c start " + file);
         }
     }
 }

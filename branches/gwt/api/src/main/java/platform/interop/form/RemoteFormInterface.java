@@ -50,7 +50,7 @@ public interface RemoteFormInterface extends PendingRemote {
 
     void groupChangePropertyDraw(int mainID, byte[] mainColumnKey, int getterID, byte[] getterColumnKey) throws RemoteException;
 
-    boolean[] isCompatibleProperties(int mainPropertyID, int[] propertiesIDs) throws RemoteException;
+    boolean[] getCompatibleProperties(int mainPropertyID, int[] propertiesIDs) throws RemoteException;
 
     Object getPropertyChangeValue(int propertyID) throws RemoteException;
 

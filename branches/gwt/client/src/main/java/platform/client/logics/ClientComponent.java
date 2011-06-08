@@ -150,6 +150,78 @@ public abstract class ClientComponent extends ContextIdentityObject implements S
         updateDependency(this.constraints, "intersects");
     }
 
+    public String getMinimumWidth() {
+        return String.valueOf(minimumSize != null ? minimumSize.width : 0);
+    }
+
+    public void setMinimumWidth(String minimumWidth) {
+        if (minimumSize == null) {
+            minimumSize = new Dimension();
+        }
+        minimumSize.width = Integer.decode(minimumWidth);
+        updateDependency(this, "minimumWidth");
+    }
+
+    public String getMinimumHeight() {
+        return String.valueOf(minimumSize != null ? minimumSize.height : 0);
+    }
+
+    public void setMinimumHeight(String minimumHeight) {
+        if (minimumSize == null) {
+            minimumSize = new Dimension();
+        }
+        minimumSize.height = Integer.decode(minimumHeight);
+        updateDependency(this, "minimumHeight");
+    }
+
+    public String getMaximumWidth() {
+        return String.valueOf(maximumSize != null ? maximumSize.width : 0);
+    }
+
+    public void setMaximumWidth(String maximumWidth) {
+        if (maximumSize == null) {
+            maximumSize = new Dimension();
+        }
+        maximumSize.width = Integer.decode(maximumWidth);
+        updateDependency(this, "maximumWidth");
+    }
+
+    public String getMaximumHeight() {
+        return String.valueOf(maximumSize != null ? maximumSize.height : 0);
+    }
+
+    public void setMaximumHeight(String maximumHeight) {
+        if (maximumSize == null) {
+            maximumSize = new Dimension();
+        }
+        maximumSize.height = Integer.decode(maximumHeight);
+        updateDependency(this, "maximumHeight");
+    }
+
+    public String getPreferredWidth() {
+        return String.valueOf(preferredSize != null ? preferredSize.width : 0);
+    }
+
+    public void setPreferredWidth(String preferredWidth) {
+        if (preferredSize == null) {
+            preferredSize = new Dimension();
+        }
+        preferredSize.width = Integer.decode(preferredWidth);
+        updateDependency(this, "preferredWidth");
+    }
+
+    public String getPreferredHeight() {
+        return String.valueOf(preferredSize != null ? preferredSize.height : 0);
+    }
+
+    public void setPreferredHeight(String preferredHeight) {
+        if (preferredSize == null) {
+            preferredSize = new Dimension();
+        }
+        preferredSize.height = Integer.decode(preferredHeight);
+        updateDependency(this, "preferredHeight");
+    }
+
     public abstract String getCaption();
 
     public String getCodeConstructor() {

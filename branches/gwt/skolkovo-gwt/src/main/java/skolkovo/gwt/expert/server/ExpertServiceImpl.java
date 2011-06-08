@@ -1,7 +1,7 @@
 package skolkovo.gwt.expert.server;
 
 import org.apache.log4j.Logger;
-import platform.gwt.base.server.DebugUtil;
+import platform.base.DebugUtils;
 import platform.gwt.base.server.LogicsServiceServlet;
 import platform.gwt.base.shared.MessageException;
 import skolkovo.api.gwt.shared.VoteInfo;
@@ -22,7 +22,7 @@ public class ExpertServiceImpl extends LogicsServiceServlet<SkolkovoRemoteInterf
         } catch (Throwable e) {
             logger.error("Ошибка в getVoteInfo: ", e);
             e.printStackTrace();
-            throw new MessageException(DebugUtil.getInitialCause(e).getMessage());
+            throw new MessageException(DebugUtils.getInitialCause(e).getMessage());
         }
     }
 
@@ -35,7 +35,7 @@ public class ExpertServiceImpl extends LogicsServiceServlet<SkolkovoRemoteInterf
         } catch (Throwable e) {
             logger.error("Ошибка в setVoteInfo: ", e);
             e.printStackTrace();
-            throw new MessageException(DebugUtil.getInitialCause(e).getMessage());
+            throw new MessageException(DebugUtils.getInitialCause(e).getMessage());
         }
     }
 }

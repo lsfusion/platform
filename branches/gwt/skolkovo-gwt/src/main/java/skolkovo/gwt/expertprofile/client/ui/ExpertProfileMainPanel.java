@@ -69,7 +69,7 @@ public class ExpertProfileMainPanel extends HLayout {
 
         final DynamicForm expertDetailsForm = new DynamicForm();
         expertDetailsForm.setMargin(5);
-        expertDetailsForm.setColWidths("0");
+        expertDetailsForm.setColWidths("50", "*");
         expertDetailsForm.setTitleOrientation(TitleOrientation.LEFT);
         expertDetailsForm.setFields(lbName, lbNotice, lbEmail);
 
@@ -86,7 +86,7 @@ public class ExpertProfileMainPanel extends HLayout {
             }
         });
         DynamicForm unvotedForm = new DynamicForm();
-        unvotedForm.setColWidths("0");
+        unvotedForm.setColWidths("10", "*");
         unvotedForm.setFields(cbShowUnvoted);
 
         VLayout main = new VLayout();

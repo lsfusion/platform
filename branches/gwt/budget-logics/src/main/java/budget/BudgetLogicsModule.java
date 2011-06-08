@@ -30,6 +30,7 @@ import java.io.FileNotFoundException;
 public class BudgetLogicsModule extends LogicsModule {
 
     public BudgetLogicsModule(BaseLogicsModule<BudgetBusinessLogics> baseLM) {
+        super("BudgetLogicsModule");
         setBaseLogicsModule(baseLM);
     }
 
@@ -97,14 +98,14 @@ public class BudgetLogicsModule extends LogicsModule {
     public void initGroups() {
         initBaseGroupAliases();
 
-        salaryGroup = new AbstractGroup("Параметры запрлаты");
-        dateTimeGroup = new AbstractGroup("Параметры даты и времени");
-        personGroup = new AbstractGroup("Затраты по сотрудникам");
-        extraGroup = new AbstractGroup("Дополнительные затраты");
-        outGroup = new AbstractGroup("Оперативный расход");
-        inOperationGroup = new AbstractGroup("Параметры прихода");
-        payerGroup = new AbstractGroup("Параметры плательщика");
-        baseCurGroup = new AbstractGroup("Сумма в базовой валюте");
+        salaryGroup = addAbstractGroup("salaryGroup", "Параметры запрлаты");
+        dateTimeGroup = addAbstractGroup("dateTimeGroup", "Параметры даты и времени");
+        personGroup = addAbstractGroup("personGroup", "Затраты по сотрудникам");
+        extraGroup = addAbstractGroup("extraGroup", "Дополнительные затраты");
+        outGroup = addAbstractGroup("outGroup", "Оперативный расход");
+        inOperationGroup = addAbstractGroup("inOperationGroup", "Параметры прихода");
+        payerGroup = addAbstractGroup("payerGroup", "Параметры плательщика");
+        baseCurGroup = addAbstractGroup("baseCurGroup", "Сумма в базовой валюте");
     }
 
     LP inSum, outSum, inCur, outCur, outPerson, outYear, outMonth, operationDepartment, personDepartment, reimbursementCurrencyIn, reimbursementPayer, vacationPerson;

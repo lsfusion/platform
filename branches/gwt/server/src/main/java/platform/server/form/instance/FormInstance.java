@@ -30,6 +30,7 @@ import platform.server.form.entity.filter.RegularFilterGroupEntity;
 import platform.server.form.instance.filter.FilterInstance;
 import platform.server.form.instance.filter.RegularFilterGroupInstance;
 import platform.server.form.instance.filter.RegularFilterInstance;
+import platform.server.form.instance.filter.CompareValue;
 import platform.server.form.instance.listener.CustomClassListener;
 import platform.server.form.instance.listener.FocusListener;
 import platform.server.form.instance.remote.RemoteForm;
@@ -258,36 +259,8 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
         return getPropertyDraw(property.property, group);
     }
 
-    public PropertyObjectInstance<?> getChangePropertyObjectInstance(PropertyDrawInstance<?> propertyDraw) throws SQLException {
-        PropertyObjectInstance<?> change = propertyDraw.propertyObject.getChangeInstance();
-
-        boolean isReadOnly = propertyDraw.entity.readOnly;
-
-        // если readOnly свойство лежит в groupObject в виде панели с одним входом, то показываем диалог выбора объекта
-        if ((isReadOnly || !change.getValueImplement().canBeChanged(this))
-            && !(propertyDraw.propertyObject.property instanceof ObjectValueProperty)
-            && propertyDraw.toDraw != null
-            && propertyDraw.toDraw.curClassView == ClassViewType.PANEL
-            && propertyDraw.toDraw.objects.size() == 1
-            && propertyDraw.propertyObject.mapping.values().size() == 1
-            && propertyDraw.propertyObject.mapping.values().iterator().next() == propertyDraw.toDraw.objects.iterator().next()
-            && !propertyDraw.toDraw.objects.iterator().next().entity.addOnTransaction) {
-
-            ObjectInstance singleObject = BaseUtils.single(propertyDraw.toDraw.objects);
-            ObjectValueProperty objectValueProperty = BL.getObjectValueProperty(singleObject.getBaseClass());
-
-            return objectValueProperty.getImplement().mapObjects(
-                    Collections.singletonMap(
-                            BaseUtils.single(objectValueProperty.interfaces),
-                            singleObject));
-        }
-
-        //контролируем возможность изменения свойства здесь
-        return !isReadOnly ? change : null;
-    }
-
     public void serializePropertyEditorType(DataOutputStream outStream, PropertyDrawInstance<?> propertyDraw) throws SQLException, IOException {
-        PropertyObjectInstance<?> change = getChangePropertyObjectInstance(propertyDraw);
+        PropertyObjectInstance<?> change = propertyDraw.getChangeInstance(this, BL);
         if (change != null && securityPolicy.property.change.checkPermission(change.property) && change.getValueImplement().canBeChanged(this)) {
             outStream.writeBoolean(false);
             TypeSerializer.serializeType(outStream, change.getEditorType());
@@ -416,45 +389,37 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
     }
 
     public List<ClientAction> changeProperty(PropertyDrawInstance<?> property, Object value) throws SQLException {
-        return changeProperty(property.propertyObject, value, null);
+        return changeProperty(property, value, null, false);
     }
 
     public List<ClientAction> changeProperty(PropertyDrawInstance<?> property, Object value, RemoteForm executeForm, boolean all) throws SQLException {
-        return changeProperty(property.propertyObject, value, executeForm, all ? property.toDraw : null);
+        return changeProperty(property, new HashMap<ObjectInstance, DataObject>(), value, executeForm, all);
     }
 
-    public List<ClientAction> changeProperty(PropertyDrawInstance<?> property, Object value, RemoteForm executeForm, boolean all, Map<ObjectInstance, DataObject> mapDataValues) throws SQLException {
-        PropertyObjectInstance<?> propertyObject = getChangePropertyObjectInstance(property);
+    public List<ClientAction> changeProperty(PropertyDrawInstance<?> property, Map<ObjectInstance, DataObject> mapDataValues,
+                                             PropertyDrawInstance<?> value, Map<ObjectInstance, DataObject> valueColumnKeys, RemoteForm executeForm, boolean all) throws SQLException {
+        return changeProperty(property, mapDataValues, value.propertyObject.getChangeInstance().getRemappedPropertyObject(valueColumnKeys), executeForm, all);
+    }
 
-        return changeProperty(propertyObject.getRemappedPropertyObject(mapDataValues), value, executeForm, all ? property.toDraw : null);
+    public List<ClientAction> changeProperty(PropertyDrawInstance<?> property, Map<ObjectInstance, DataObject> mapDataValues, Object value, RemoteForm executeForm, boolean all) throws SQLException {
+        PropertyObjectInstance<?> changeInstance = property.getChangeInstance(this, BL);
+        if(changeInstance!=null)
+            return changeProperty(changeInstance.getRemappedPropertyObject(mapDataValues), value, executeForm, all ? property.toDraw : null);
+        else
+            return null;
     }
 
     public List<ClientAction> changeProperty(PropertyObjectInstance<?> property, Object value, RemoteForm executeForm) throws SQLException {
-        return changeProperty(property, value, executeForm, null);
+        return changeProperty(property.getChangeInstance(), value, executeForm, null);
     }
 
     public List<ClientAction> changeProperty(PropertyObjectInstance<?> property, Object value, RemoteForm executeForm, GroupObjectInstance groupObject) throws SQLException {
-        if (securityPolicy.property.change.checkPermission(property.property)) {
+        if (property!=null && securityPolicy.property.change.checkPermission(property.property)) {
             dataChanged = true;
             // изменяем св-во
-            PropertyObjectInstance<?> changeInstance = property.getChangeInstance();
-            return changeInstance.execute(session, session.getObjectValue(value, changeInstance.getType()), this, executeForm, groupObject);
+            return property.execute(session, value instanceof CompareValue? (CompareValue) value : session.getObjectValue(value, property.getType()), this, executeForm, groupObject);
         } else {
             return null;
-        }
-    }
-
-    public Collection<? extends ClientAction> groupChangeProperty(PropertyDrawInstance<?> mainPropertyDraw, Map<ObjectInstance, DataObject> mainColumnKey,
-                                                                  PropertyDrawInstance<?> getterPropertyDraw, Map<ObjectInstance, DataObject> getterColumnKey, RemoteForm executeForm) throws SQLException {
-        Property<? extends PropertyInterface> mainProperty = mainPropertyDraw.propertyObject.property;
-        Property<? extends PropertyInterface> getterProperty = getterPropertyDraw.propertyObject.property;
-
-        if (mainProperty.getType().isCompatible(getterProperty.getType()) && securityPolicy.property.change.checkPermission(mainProperty)) {
-            PropertyObjectInstance<? extends PropertyInterface> mainPropertyInstance = mainPropertyDraw.propertyObject.getRemappedPropertyObject(mainColumnKey).getChangeInstance();
-            PropertyObjectInstance<? extends PropertyInterface> getterPropertyInstance = getterPropertyDraw.propertyObject.getRemappedPropertyObject(getterColumnKey).getChangeInstance();
-            return mainPropertyInstance.execute(session, getterPropertyInstance, this, executeForm, mainPropertyDraw.toDraw);
-        } else {
-            return new ArrayList<ClientAction>();
         }
     }
 
@@ -1228,7 +1193,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
 
     public DialogInstance<T> createObjectEditorDialog(int viewID) throws RemoteException, SQLException {
         PropertyDrawInstance propertyDraw = getPropertyDraw(viewID);
-        PropertyObjectInstance<?> changeProperty = getChangePropertyObjectInstance(propertyDraw);
+        PropertyObjectInstance<?> changeProperty = propertyDraw.getChangeInstance(this, BL);
         assert changeProperty != null;
 
         CustomClass objectClass = changeProperty.getDialogClass();
@@ -1247,7 +1212,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
     public DialogInstance<T> createEditorPropertyDialog(int viewID) throws SQLException {
         PropertyDrawInstance propertyDraw = getPropertyDraw(viewID);
         PropertyObjectInstance property = propertyDraw.propertyObject;
-        PropertyObjectInstance<?> changeProperty = getChangePropertyObjectInstance(propertyDraw);
+        PropertyObjectInstance<?> changeProperty = propertyDraw.getChangeInstance(this, BL);
         assert changeProperty != null;
 
         AbstractClassFormEntity<T> formEntity = getDataChangeFormEntity(changeProperty, propertyDraw.toDraw);

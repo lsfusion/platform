@@ -334,7 +334,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
     }
 
     public String getDisplayName() throws RemoteException {
-        return "Skolkovo";
+        return "Skolkovo Project Support System";
     }
 
     @Override

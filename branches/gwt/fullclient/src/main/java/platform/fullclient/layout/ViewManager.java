@@ -10,6 +10,7 @@ import platform.client.navigator.ClientNavigator;
 import platform.interop.form.RemoteFormInterface;
 
 import javax.swing.*;
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -78,8 +79,8 @@ public class ViewManager {
         openForm(new ReportDockable(navigator, remoteForm, groupId, pageFactory));
     }
 
-    public void openReport(String fileName, String directory) throws JRException {
-        openForm(new ReportDockable(fileName, directory, pageFactory));
+    public void openReport(File file) throws JRException {
+        openForm(new ReportDockable(file, pageFactory));
     }
 
     public void changeCloseAction(FormDockable page) {

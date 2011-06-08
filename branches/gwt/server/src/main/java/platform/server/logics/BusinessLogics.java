@@ -217,7 +217,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             }
 
             return true;
-        } catch (Exception e) {
+        } catch (SQLException e) {
             throw new RuntimeException(e);
         } finally {
             try {

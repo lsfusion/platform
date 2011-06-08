@@ -5,10 +5,16 @@ import platform.interop.ClassViewType;
 import platform.interop.form.PropertyReadType;
 import platform.server.form.entity.PropertyDrawEntity;
 import platform.server.logics.property.PropertyInterface;
+import platform.server.logics.property.ObjectValueProperty;
+import platform.server.logics.BusinessLogics;
+import platform.server.session.Modifier;
+import platform.server.session.Changes;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.Collections;
+import java.sql.SQLException;
 
 // представление св-ва
 public class PropertyDrawInstance<P extends PropertyInterface> extends CellInstance<PropertyDrawEntity> implements PropertyReaderInstance {
@@ -108,5 +114,33 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
             }
             return result;
         }
+    }
+
+    public PropertyObjectInstance<?> getChangeInstance(Modifier<? extends Changes> modifier, BusinessLogics<?> BL) throws SQLException {
+        PropertyObjectInstance<?> change = propertyObject.getChangeInstance();
+
+        boolean isReadOnly = entity.readOnly;
+
+        // если readOnly свойство лежит в groupObject в виде панели с одним входом, то показываем диалог выбора объекта
+        if ((isReadOnly || !change.getValueImplement().canBeChanged(modifier))
+            && !(propertyObject.property instanceof ObjectValueProperty)
+            && toDraw != null
+            && toDraw.curClassView == ClassViewType.PANEL
+            && toDraw.objects.size() == 1
+            && propertyObject.mapping.values().size() == 1
+            && propertyObject.mapping.values().iterator().next() == toDraw.objects.iterator().next()
+            && !toDraw.objects.iterator().next().entity.addOnTransaction) {
+
+            ObjectInstance singleObject = BaseUtils.single(toDraw.objects);
+            ObjectValueProperty objectValueProperty = BL.getObjectValueProperty(singleObject.getBaseClass());
+
+            return objectValueProperty.getImplement().mapObjects(
+                    Collections.singletonMap(
+                            BaseUtils.single(objectValueProperty.interfaces),
+                            singleObject));
+        }
+
+        //контролируем возможность изменения свойства здесь
+        return !isReadOnly ? change : null;
     }
 }

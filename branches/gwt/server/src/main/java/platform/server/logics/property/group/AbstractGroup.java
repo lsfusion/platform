@@ -21,15 +21,18 @@ public class AbstractGroup extends AbstractNode implements ServerIdentitySeriali
     public String caption;
     public boolean createContainer = true;
     private int ID;
+    private String sID;
 
-    public AbstractGroup(int iID, String caption) {
+    public AbstractGroup(String sID, int iID, String caption) {
+        this.sID = sID;
         this.caption = caption;
         this.ID = iID;
     }
 
-    public AbstractGroup(String caption) {
-        this.ID = IDShift();
+    public AbstractGroup(String sID, String caption) {
+        this.sID = sID;
         this.caption = caption;
+        this.ID = IDShift();
     }
 
     private static int currentID = 0;
@@ -113,6 +116,10 @@ public class AbstractGroup extends AbstractNode implements ServerIdentitySeriali
 
     public void setID(int iID) {
         ID = iID;
+    }
+
+    public String getSID() {
+        return sID;
     }
 
     public void customSerialize(ServerSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {

@@ -66,6 +66,7 @@ public class VEDLogicsModule extends LogicsModule {
     private Logger logger;
 
     public VEDLogicsModule(BaseLogicsModule<VEDBusinessLogics> baseLM, VEDBusinessLogics VEDBL, Logger logger) {
+        super("VEDLogicsModule");
         setBaseLogicsModule(baseLM);
         this.VEDBL = VEDBL;
         this.logger = logger;
@@ -586,83 +587,45 @@ public class VEDLogicsModule extends LogicsModule {
     public void initGroups() {
         initBaseGroupAliases();
 
-        documentGroup = new AbstractGroup("Параметры документа");
-        documentGroup.createContainer = false;
-        publicGroup.add(documentGroup);
+        documentGroup = addAbstractGroup("documentGroup", "Параметры документа", publicGroup, false);
 
-        moveGroup = new AbstractGroup("Движение товаров");
-        publicGroup.add(moveGroup);
+        moveGroup = addAbstractGroup("moveGroup", "Движение товаров", publicGroup);
 
-        documentMoveGroup = new AbstractGroup("Текущие параметры документа");
-        documentGroup.add(documentMoveGroup);
+        documentMoveGroup = addAbstractGroup("documentMoveGroup", "Текущие параметры документа", documentGroup);
 
-        priceGroup = new AbstractGroup("Ценовые параметры");
-        publicGroup.add(priceGroup);
+        priceGroup = addAbstractGroup("priceGroup", "Ценовые параметры", publicGroup);
 
-        documentPriceGroup = new AbstractGroup("Расчеты");
-        documentPriceGroup.createContainer = false;
-        documentGroup.add(documentPriceGroup);
+        documentPriceGroup = addAbstractGroup("documentPriceGroup", "Расчеты", documentGroup, false);
 
-        documentSumGroup = new AbstractGroup("Всего");
-        documentPriceGroup.add(documentSumGroup);
+        documentSumGroup = addAbstractGroup("documentSumGroup", "Всего", documentPriceGroup);
 
-        documentDiscountGroup = new AbstractGroup("Скидки");
-        documentPriceGroup.add(documentDiscountGroup);
+        documentDiscountGroup = addAbstractGroup("documentDiscountGroup", "Скидки", documentPriceGroup);
+        documentNDSGroup = addAbstractGroup("documentNDSGroup", "Налоги", documentPriceGroup);
+        documentRetailGroup = addAbstractGroup("documentRetailGroup", "Розн. цены", documentPriceGroup);
+        documentPayGroup = addAbstractGroup("documentPayGroup", "Платежные средства", documentPriceGroup);
+        documentObligationGroup = addAbstractGroup("documentObligationGroup", "Сертификаты", documentPriceGroup);
+        documentManfrGroup = addAbstractGroup("documentManfrGroup", "Цены изготовителя", documentPriceGroup);
 
-        documentNDSGroup = new AbstractGroup("Налоги");
-        documentPriceGroup.add(documentNDSGroup);
+        logisticsGroup = addAbstractGroup("logisticsGroup", "Логистические параметры", publicGroup);
 
-        documentRetailGroup = new AbstractGroup("Розн. цены");
-        documentPriceGroup.add(documentRetailGroup);
+        documentLogisticsGroup = addAbstractGroup("documentLogisticsGroup", "Логистические параметры документа", documentGroup);
 
-        documentPayGroup = new AbstractGroup("Платежные средства");
-        documentPriceGroup.add(documentPayGroup);
+        cashRegGroup = addAbstractGroup("cashRegGroup", "Операции с ФР", baseGroup, false);
 
-        documentObligationGroup = new AbstractGroup("Сертификаты");
-        documentPriceGroup.add(documentObligationGroup);
+        cashRegOperGroup = addAbstractGroup("cashRegOperGroup", "Оперативные операции с ФР", cashRegGroup);
+        cashRegAdminGroup = addAbstractGroup("cashRegAdminGroup", "Административные операции с ФР", cashRegGroup);
 
-        documentManfrGroup = new AbstractGroup("Цены изготовителя");
-        documentPriceGroup.add(documentManfrGroup);
+        couponGroup = addAbstractGroup("couponGroup", "Параметры купона", publicGroup);
 
-        logisticsGroup = new AbstractGroup("Логистические параметры");
-        publicGroup.add(logisticsGroup);
+        artExtraGroup = addAbstractGroup("artExtraGroup", "Доп. атрибуты товара", publicGroup);
 
-        documentLogisticsGroup = new AbstractGroup("Логистические параметры документа");
-        documentGroup.add(documentLogisticsGroup);
+        documentPrintGroup = addAbstractGroup("documentPrintGroup", "Документы", publicGroup);
 
-        cashRegGroup = new AbstractGroup("Операции с ФР");
-        cashRegGroup.createContainer = false;
-        baseGroup.add(cashRegGroup);
-
-        cashRegOperGroup = new AbstractGroup("Оперативные операции с ФР");
-        cashRegGroup.add(cashRegOperGroup);
-
-        cashRegAdminGroup = new AbstractGroup("Административные операции с ФР");
-        cashRegGroup.add(cashRegAdminGroup);
-
-        couponGroup = new AbstractGroup("Параметры купона");
-        publicGroup.add(couponGroup);
-
-        artExtraGroup = new AbstractGroup("Доп. атрибуты товара");
-        publicGroup.add(artExtraGroup);
-
-        documentPrintGroup = new AbstractGroup("Документы");
-        publicGroup.add(documentPrintGroup);
-
-        documentPrintRetailGroup = new AbstractGroup("Розничные документы");
-        documentPrintGroup.add(documentPrintRetailGroup);
-
-        documentInvoiceSaleGroup = new AbstractGroup("Основание");
-        documentPrintGroup.add(documentInvoiceSaleGroup);
-
-        documentShipmentGroup = new AbstractGroup("Накладная");
-        documentPrintGroup.add(documentShipmentGroup);
-
-        documentShipmentOutGroup = new AbstractGroup("Отпуск");
-        documentPrintGroup.add(documentShipmentOutGroup);
-
-        documentShipmentTransportGroup = new AbstractGroup("Транспорт");
-        documentPrintGroup.add(documentShipmentTransportGroup);
+        documentPrintRetailGroup = addAbstractGroup("documentPrintRetailGroup", "Розничные документы", documentPrintGroup);
+        documentInvoiceSaleGroup = addAbstractGroup("documentInvoiceSaleGroup", "Основание", documentPrintGroup);
+        documentShipmentGroup = addAbstractGroup("documentShipmentGroup", "Накладная", documentPrintGroup);
+        documentShipmentOutGroup = addAbstractGroup("documentShipmentOutGroup", "Отпуск", documentPrintGroup);
+        documentShipmentTransportGroup = addAbstractGroup("documentShipmentTransportGroup", "Транспорт", documentPrintGroup);
     }
 
     @Override

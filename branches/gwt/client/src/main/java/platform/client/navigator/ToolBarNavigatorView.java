@@ -37,6 +37,10 @@ public class ToolBarNavigatorView extends NavigatorView {
 
     private void addElement(ClientNavigatorElement element, Set<ClientNavigatorElement> newElements, int allign) {
         JComponent button = addNavigationButton(element, allign);
+        if (window.showSelect && element.equals(getSelectedElement()) && ! (element instanceof ClientNavigatorForm)) {
+            button.setForeground(Color.blue);
+            button.setBorder(BorderFactory.createBevelBorder(BevelBorder.LOWERED));
+        }
         if ((element.window != null) && (!element.window.equals(window))) {
             return;
         }
@@ -45,10 +49,6 @@ public class ToolBarNavigatorView extends NavigatorView {
             if (newElements.contains(childEl)) {
                 addElement(childEl, newElements, allign + 1);
             }
-        }
-        if (window.showSelect && element.equals(getSelectedElement())) {
-            button.setForeground(Color.blue);
-            button.setBorder(BorderFactory.createBevelBorder(BevelBorder.LOWERED));
         }
     }
 

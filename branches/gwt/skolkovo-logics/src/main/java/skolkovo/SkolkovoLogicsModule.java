@@ -65,6 +65,7 @@ import static platform.base.BaseUtils.nvl;
 public class SkolkovoLogicsModule extends LogicsModule {
 
     public SkolkovoLogicsModule(BaseLogicsModule<SkolkovoBusinessLogics> baseLM) {
+        super("SkolkovLogicsModule");
         setBaseLogicsModule(baseLM);
     }
 
@@ -193,57 +194,37 @@ public class SkolkovoLogicsModule extends LogicsModule {
     @Override
     public void initGroups() {
         initBaseGroupAliases();
-        contactGroup = new AbstractGroup("Контакты организации");
-        publicGroup.add(contactGroup);
+        contactGroup = addAbstractGroup("contactGroup", "Контакты организации", publicGroup);
 
-        documentGroup = new AbstractGroup("Юридические документы");
-        publicGroup.add(documentGroup);
+        documentGroup = addAbstractGroup("documentGroup", "Юридические документы", publicGroup);
 
-        legalDataGroup = new AbstractGroup("Юридические данные");
-        publicGroup.add(legalDataGroup);
+        legalDataGroup = addAbstractGroup("legalDataGroup", "Юридические данные", publicGroup);
 
-        claimerInformationGroup = new AbstractGroup("Информация о заявителе");
-        publicGroup.add(claimerInformationGroup);
+        claimerInformationGroup = addAbstractGroup("claimerInformationGroup", "Информация о заявителе", publicGroup);
 
 
-        projectInformationGroup = new AbstractGroup("Информация по проекту");
-        baseGroup.add(projectInformationGroup);
+        projectInformationGroup = addAbstractGroup("projectInformationGroup", "Информация по проекту", baseGroup);
 
-        additionalInformationGroup = new AbstractGroup("Доп. информация по проекту");
-        publicGroup.add(projectInformationGroup);
+        additionalInformationGroup = addAbstractGroup("additionalInformationGroup", "Доп. информация по проекту", publicGroup);
 
-        innovationGroup = new AbstractGroup("Инновация");
-        baseGroup.add(innovationGroup);
+        innovationGroup = addAbstractGroup("innovationGroup", "Инновация", baseGroup);
 
-        executiveSummaryGroup = new AbstractGroup("Резюме проекта");
-        baseGroup.add(executiveSummaryGroup);
+        executiveSummaryGroup = addAbstractGroup("executiveSummaryGroup", "Резюме проекта", baseGroup);
 
-        sourcesFundingGroup = new AbstractGroup("Источники финансирования");
-        baseGroup.add(sourcesFundingGroup);
+        sourcesFundingGroup = addAbstractGroup("sourcesFundingGroup", "Источники финансирования", baseGroup);
 
-        equipmentGroup = new AbstractGroup("Оборудование");
-        baseGroup.add(equipmentGroup);
+        equipmentGroup = addAbstractGroup("equipmentGroup", "Оборудование", baseGroup);
 
-        projectDocumentsGroup = new AbstractGroup("Документы");
-        baseGroup.add(projectDocumentsGroup);
+        projectDocumentsGroup = addAbstractGroup("projectDocumentsGroup", "Документы", baseGroup);
 
-        projectStatusGroup = new AbstractGroup("Текущий статус проекта");
-        baseGroup.add(projectStatusGroup);
+        projectStatusGroup = addAbstractGroup("projectStatusGroup", "Текущий статус проекта", baseGroup);
 
+        voteResultGroup = addAbstractGroup("voteResultGroup", "Результаты голосования", publicGroup);
 
-        voteResultGroup = new AbstractGroup("Результаты голосования");
-        publicGroup.add(voteResultGroup);
+        expertResultGroup = addAbstractGroup("expertResultGroup", "Статистика по экспертам", publicGroup);
 
-        expertResultGroup = new AbstractGroup("Статистика по экспертам");
-        publicGroup.add(expertResultGroup);
-
-        voteResultCheckGroup = new AbstractGroup("Результаты голосования (выбор)");
-        voteResultCheckGroup.createContainer = false;
-        voteResultGroup.add(voteResultCheckGroup);
-
-        voteResultCommentGroup = new AbstractGroup("Результаты голосования (комментарии)");
-        voteResultCommentGroup.createContainer = false;
-        voteResultGroup.add(voteResultCommentGroup);
+        voteResultCheckGroup = addAbstractGroup("voteResultCheckGroup", "Результаты голосования (выбор)", voteResultGroup, false);
+        voteResultCommentGroup = addAbstractGroup("voteResultCommentGroup", "Результаты голосования (комментарии)", voteResultGroup, false);
     }
 
     LP nameNative, nameForeign;
@@ -1147,7 +1128,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         claimerEmailVote = addJProp("claimerEmailVote", "E-mail (заявителя)", baseLM.email, claimerVote, 1);
         addEARecepient(emailClaimerVoteEA, claimerEmailVote, 1);
 
-        emailClaimerVoteEA.setDerivedChange(addCProp(ActionClass.instance, true), openedVote, 1);
+        emailClaimerVoteEA.setDerivedForcedChange(addCProp(ActionClass.instance, true), openedVote, 1);
 
         emailStartVoteEA = addEAProp(vote);
         addEARecepient(emailStartVoteEA, emailDocuments);
@@ -1217,9 +1198,24 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
     @Override
     public void initNavigators() throws JRException, FileNotFoundException {
+
+//        ToolBarNavigatorWindow mainToolbar = new ToolBarNavigatorWindow("Навигатор", "mainToolbar", 0, 0, 100, 10);
+//        mainToolbar.titleShown = false;
+//
+//        baseLM.baseWindow.y = 10;
+//        baseLM.baseWindow.height -= 10;
+//
+//        ToolBarNavigatorWindow leftToolbar = new ToolBarNavigatorWindow("leftToolbar", "leftToolbar", 0, 10, 20, 60);
+//        leftToolbar.titleShown = false;
+//        leftToolbar.type = ToolBarNavigatorWindow.VERTICAL;
+//
+//        baseLM.baseElement.window = mainToolbar;
+//        baseLM.adminElement.window = leftToolbar;
+//        baseLM.objectElement.window = baseLM.baseWindow;
+//
         projectFullNative = addFormEntity(new ProjectFullFormEntity(baseLM.objectElement, "projectFullNative", "Резюме проекта для эксперта", false));
         projectFullForeign = addFormEntity(new ProjectFullFormEntity(baseLM.objectElement, "projectFullForeign", "Resume project for expert", true));
-        addFormEntity(new ClaimerFullFormEntity(baseLM.objectElement, "Claimer"));
+        addFormEntity(new ClaimerFullFormEntity(baseLM.objectElement, "claimerFull"));
 
         addFormEntity(new ProjectFormEntity(baseLM.baseElement, "project"));
         addFormEntity(new ClaimerFormEntity(baseLM.baseElement, "claimer"));
@@ -1232,6 +1228,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
         addFormEntity(new VoteFormEntity(baseLM.baseElement, "voterestricted", true));
 
         NavigatorElement print = new NavigatorElement(baseLM.baseElement, "print", "Печатные формы");
+//        print.window = leftToolbar;
+//
         addFormEntity(new VoteStartFormEntity(print, "voteStart"));
         addFormEntity(new ExpertLetterFormEntity(print, "expertLetter"));
         addFormEntity(new VoteProtocolFormEntity(print, "voteProtocol"));
@@ -1648,7 +1646,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         private ClaimerFormEntity(NavigatorElement parent, String sID) {
             super(parent, sID, "Реестр заявителей");
 
-            objClaimer = addSingleGroupObject(claimer, "Заявитель", claimerInformationGroup, contactGroup, legalDataGroup, editClaimer);
+            objClaimer = addSingleGroupObject(claimer, "Заявитель", claimerInformationGroup, contactGroup, editClaimer);
         }
     }
 

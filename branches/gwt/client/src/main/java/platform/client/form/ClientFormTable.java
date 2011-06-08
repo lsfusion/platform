@@ -66,13 +66,12 @@ public abstract class ClientFormTable extends JTable {
                             } catch (Exception ignored) {
                             }
                             if (value != null) {
-                                JTable table = (JTable) c;
-                                int row = table.getSelectionModel().getLeadSelectionIndex();
-                                int column = table.getColumnModel().getSelectionModel().getLeadSelectionIndex();
+                                int row = getSelectionModel().getLeadSelectionIndex();
+                                int column = getColumnModel().getSelectionModel().getLeadSelectionIndex();
 
                                 Object oValue = convertValueFromString(value, row, column);
                                 if (oValue != null) {
-                                    table.setValueAt(oValue, row, column);
+                                    setValueAt(oValue, row, column);
                                 }
 
                                 return true;

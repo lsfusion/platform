@@ -330,7 +330,7 @@ public class ChangeDialog extends JDialog {
 
             boolean compatible[];
             try {
-                compatible = form.remoteForm.isCompatibleProperties(property.getID(), propertiesIDs);
+                compatible = form.remoteForm.getCompatibleProperties(property.getID(), propertiesIDs);
             } catch (RemoteException e) {
                 logger.error("Ошибка при чтении isCompatible.", e);
                 compatible = new boolean[n];

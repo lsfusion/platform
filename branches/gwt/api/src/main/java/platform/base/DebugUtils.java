@@ -1,8 +1,8 @@
-package platform.gwt.base.server;
+package platform.base;
 
 import java.rmi.RemoteException;
 
-public class DebugUtil {
+public class DebugUtils {
     public static Throwable getInitialCause(Throwable throwable) {
         Throwable result = throwable;
         while (result != null && result.getCause() != null && result instanceof RemoteException) {

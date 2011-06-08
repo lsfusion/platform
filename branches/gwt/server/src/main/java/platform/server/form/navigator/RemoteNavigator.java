@@ -240,7 +240,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteObject i
         try {
             dataStream.writeInt(listElements.size());
             for (NavigatorElement element : listElements)
-                element.serialize(dataStream);
+                element.serialize(dataStream, listElements);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -575,7 +575,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteObject i
     @Override
     public byte[] getNavigatorTree() throws RemoteException {
 
-        Collection<NavigatorElement> listElements = BL.LM.baseElement.addSubTree(new LinkedList<NavigatorElement>());
+        Collection<NavigatorElement> listElements = BL.LM.baseElement.addSubTree(securityPolicy, new LinkedList<NavigatorElement>());
 
         ByteArrayOutputStream outStream = new ByteArrayOutputStream();
         DataOutputStream dataStream = new DataOutputStream(outStream);
@@ -583,7 +583,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteObject i
         try {
             dataStream.writeInt(listElements.size());
             for (NavigatorElement element : listElements)
-                element.serialize(dataStream);
+                element.serialize(dataStream, listElements);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

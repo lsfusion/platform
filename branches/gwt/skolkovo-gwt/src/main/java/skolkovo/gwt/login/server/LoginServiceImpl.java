@@ -1,7 +1,7 @@
 package skolkovo.gwt.login.server;
 
 import org.apache.log4j.Logger;
-import platform.gwt.base.server.DebugUtil;
+import platform.base.DebugUtils;
 import platform.gwt.base.server.LogicsServiceServlet;
 import platform.gwt.base.shared.MessageException;
 import skolkovo.api.remote.SkolkovoRemoteInterface;
@@ -19,7 +19,7 @@ public class LoginServiceImpl extends LogicsServiceServlet<SkolkovoRemoteInterfa
         } catch (RemoteException e) {
             logger.error("Ошибка в getProfileInfo: ", e);
             e.printStackTrace();
-            throw new MessageException(DebugUtil.getInitialCause(e).getMessage());
+            throw new MessageException(DebugUtils.getInitialCause(e).getMessage());
         }
     }
 }

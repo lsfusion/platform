@@ -2,7 +2,7 @@ package platform.gwt.form.server.handlers;
 
 import net.customware.gwt.dispatch.server.ExecutionContext;
 import net.customware.gwt.dispatch.shared.DispatchException;
-import platform.gwt.base.server.DebugUtil;
+import platform.base.DebugUtils;
 import platform.gwt.base.shared.MessageException;
 import platform.gwt.form.server.FormSessionObject;
 import platform.gwt.form.server.RemoteFormServiceImpl;
@@ -10,7 +10,8 @@ import platform.gwt.form.shared.actions.form.ChangeGroupObject;
 import platform.gwt.form.shared.actions.form.FormChangesResult;
 import platform.gwt.view.changes.dto.ObjectDTO;
 
-import java.io.*;
+import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
 
 import static platform.base.BaseUtils.serializeObject;
 
@@ -36,7 +37,7 @@ public class ChangeGroupObjectHandler extends FormChangesActionHandler<ChangeGro
         } catch (Throwable e) {
             logger.error("Ошибка в changeGroupObject: ", e);
             e.printStackTrace();
-            throw new MessageException(DebugUtil.getInitialCause(e).getMessage());
+            throw new MessageException(DebugUtils.getInitialCause(e).getMessage());
         }
     }
 }

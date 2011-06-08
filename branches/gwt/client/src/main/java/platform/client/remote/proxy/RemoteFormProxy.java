@@ -124,10 +124,10 @@ public class RemoteFormProxy<T extends RemoteFormInterface>
         logRemoteMethodEndVoidCall("groupChangePropertyDraw");
     }
 
-    public boolean[] isCompatibleProperties(int mainPropertyID, int[] propertiesIDs) throws RemoteException {
-        logRemoteMethodStartCall("isCompatibleProperties");
-        boolean[] result = target.isCompatibleProperties(mainPropertyID, propertiesIDs);
-        logRemoteMethodEndCall("isCompatibleProperties", result);
+    public boolean[] getCompatibleProperties(int mainPropertyID, int[] propertiesIDs) throws RemoteException {
+        logRemoteMethodStartCall("getCompatibleProperties");
+        boolean[] result = target.getCompatibleProperties(mainPropertyID, propertiesIDs);
+        logRemoteMethodEndCall("getCompatibleProperties", result);
         return result;
     }
 

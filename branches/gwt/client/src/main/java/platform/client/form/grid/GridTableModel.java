@@ -139,7 +139,7 @@ public class GridTableModel extends AbstractTableModel {
     }
 
     public void setValueAt(Object value, int row, int col) {
-        setValueAt(value, row, col, false);
+        throw new RuntimeException("things that should not be");
     }
 
     public void setValueAt(Object value, int row, int col, boolean multyChange) {
