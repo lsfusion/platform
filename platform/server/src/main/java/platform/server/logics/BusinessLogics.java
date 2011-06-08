@@ -48,6 +48,7 @@ import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.List;
 
 
 // @GenericImmutable нельзя так как Spring валится
@@ -685,6 +686,18 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         }
     }
 
+    protected List<List<Object>> getRelations(NavigatorElement<T> element) {
+        List<List<Object>> parentInfo = new ArrayList<List<Object>>();
+        List<NavigatorElement<T>> children = (List<NavigatorElement<T>>) element.getChildren(false);
+        for (NavigatorElement<T> child : children) {
+            parentInfo.add(BaseUtils.toList((Object) child.getSID(), element.getSID()));
+            for (List<Object> info : getRelations(child)) {
+                parentInfo.add(info);
+            }
+        }
+        return parentInfo;
+    }
+
     protected void synchronizeForms() {
         ImportField sidField = new ImportField(LM.formSIDValueClass);
         ImportField captionField = new ImportField(LM.formCaptionValueClass);
@@ -702,10 +715,22 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
         ImportTable table = new ImportTable(Arrays.asList(sidField, captionField), data);
 
+        List<List<Object>> data2 = getRelations(LM.baseElement);
+
+        ImportField parentSidField = new ImportField(LM.formSIDValueClass);
+        ImportKey<?> key2 = new ImportKey(LM.navigatorElement, LM.SIDToNavigatorElement.getMapping(parentSidField));
+        List<ImportProperty<?>> props2 = new ArrayList<ImportProperty<?>>();
+        props2.add(new ImportProperty(parentSidField, LM.parentNavigatorElement.getMapping(key), LM.object(LM.navigatorElement).getMapping(key2)));
+        ImportTable table2 = new ImportTable(Arrays.asList(sidField, parentSidField), data2);
+
         try {
             DataSession session = createSession();
             IntegrationService service = new IntegrationService(session, table, Arrays.asList(key), props);
             service.synchronize(true, true, true);
+
+            service = new IntegrationService(session, table2, Arrays.asList(key, key2), props2);
+            service.synchronize(true, true, true);
+
             session.apply(this);
             session.close();
         } catch (Exception e) {

@@ -41,6 +41,7 @@ import javax.swing.*;
 import java.awt.event.KeyEvent;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.List;
 
 import static platform.server.logics.PropertyUtils.mapImplement;
 import static platform.server.logics.PropertyUtils.readImplements;
@@ -194,6 +195,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public LP navigatorElementCaption;
 
     public LP SIDToNavigatorElement;
+    public LP parentNavigatorElement;
     public LP permissionUserRoleForm;
     public LP permissionUserForm;
     public LP userRoleFormDefaultNumber;
@@ -494,6 +496,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         navigatorElementSID = addDProp(baseGroup, "navigatorElementSID", "Код формы", formSIDValueClass, navigatorElement);
         navigatorElementCaption = addDProp(baseGroup, "navigatorElementCaption", "Название формы", formCaptionValueClass, navigatorElement);
         SIDToNavigatorElement = addAGProp("SIDToNavigatorElement", "Форма", navigatorElementSID);
+        parentNavigatorElement = addDProp("parentNavigatorElement", "Родит. форма", navigatorElement, navigatorElement);
 
         permissionUserRoleForm = addDProp(baseGroup, "permissionUserRoleForm", "Запретить форму", LogicalClass.instance, userRole, navigatorElement);
         permissionUserForm = addJProp(baseGroup, "permissionUserForm", "Запретить форму", permissionUserRoleForm, userMainRole, 1, 2);
@@ -1138,20 +1141,29 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         private ObjectEntity objUserRole;
         private ObjectEntity objPolicy;
         private ObjectEntity objForm;
+        private ObjectEntity objTreeForm;
+        private TreeGroupEntity treeFormObject;
 
         protected RolePolicyFormEntity(NavigatorElement parent, String sID) {
             super(parent, sID, "Роли");
 
             objUserRole = addSingleGroupObject(userRole, baseGroup, true);
             objPolicy = addSingleGroupObject(policy, "Политики безопасности", baseGroup, true);
-            objForm = addSingleGroupObject(navigatorElement, "Формы", baseGroup, true);
+            objForm = addSingleGroupObject(navigatorElement, "Таблица", true);
+            objTreeForm = addSingleGroupObject(navigatorElement, "Дерево", true);
+
+            objTreeForm.groupTo.setIsParents(addPropertyObject(parentNavigatorElement, objTreeForm));
+            treeFormObject = addTreeGroupObject(objTreeForm.groupTo);
 
             addObjectActions(this, objUserRole);
 
+            addPropertyDraw(new LP[]{navigatorElementCaption, navigatorElementSID}, objForm);
+            addPropertyDraw(new LP[]{navigatorElementCaption, navigatorElementSID}, objTreeForm);
             addPropertyDraw(objUserRole, objPolicy, baseGroup, true);
             addPropertyDraw(objUserRole, objForm, permissionUserRoleForm);
+            addPropertyDraw(objUserRole, objTreeForm, permissionUserRoleForm);
             addPropertyDraw(objUserRole, objForm, userRoleFormDefaultNumber);
-
+            addPropertyDraw(objUserRole, objTreeForm, userRoleFormDefaultNumber);
 
             setReadOnly(navigatorElementSID, true);
             setReadOnly(navigatorElementCaption, true);
@@ -1169,9 +1181,14 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
             ContainerView container = design.createContainer();
             container.tabbedPane = true;
 
+            ContainerView formsContainer = design.createContainer("Формы");
+            formsContainer.tabbedPane = true;
+            formsContainer.add(design.getTreeContainer(treeFormObject));
+            formsContainer.add(design.getGroupObjectContainer(objForm.groupTo));
+
             design.getMainContainer().addAfter(container, design.getGroupObjectContainer(objUserRole.groupTo));
             container.add(design.getGroupObjectContainer(objPolicy.groupTo));
-            container.add(design.getGroupObjectContainer(objForm.groupTo));
+            container.add(formsContainer);
 
             return design;
         }
