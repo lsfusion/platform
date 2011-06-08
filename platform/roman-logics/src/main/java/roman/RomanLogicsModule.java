@@ -216,6 +216,7 @@ public class RomanLogicsModule extends LogicsModule {
     ConcreteCustomClass customCategory9;
     ConcreteCustomClass customCategory10;
     ConcreteCustomClass customCategoryOrigin;
+    ConcreteCustomClass subCategory;
 
     private LP typeInvoiceCategory;
     private LP nameTypeInvoiceCategory;
@@ -255,6 +256,20 @@ public class RomanLogicsModule extends LogicsModule {
     LP customCategory4CustomCategoryOrigin;
     LP customCategory10CustomCategoryOrigin;
     LP sidCustomCategory10CustomCategoryOrigin;
+    LP nameSubCategory;
+    LP nameToSubCategory;
+    LP relationCustomCategory10SubCategory;
+    LP minPriceCustomCategory4;
+    LP minPriceCustomCategory6;
+    LP minPriceCustomCategory9;
+    LP minPriceCustomCategory10SubCategory;
+    LP minPriceCustomCategory4CustomCategory10;
+    LP minPriceCustomCategory6CustomCategory10;
+    LP minPriceCustomCategory9CustomCategory10;
+    LP minPriceCustomCategory4Country;
+    LP minPriceCustomCategory6Country;
+    LP minPriceCustomCategory9Country;
+    LP minPriceCustomCategory10SubCategoryCountry;
     private LP sidCustomCategory4CustomCategory6;
     private LP sidCustomCategory6CustomCategory9;
     private LP sidCustomCategory9CustomCategory10;
@@ -719,7 +734,7 @@ public class RomanLogicsModule extends LogicsModule {
     private LP nameOriginCountry;
     private LP sidOrigin2Country;
     private LP sidOrigin3Country;
-    private LP sid3Country;
+    private LP sid3Country;    
     private LP nameCountrySku;
     private LP sumInCurrentYear;
     private LP sumInOutCurrentYear;
@@ -918,6 +933,8 @@ public class RomanLogicsModule extends LogicsModule {
 
         customCategoryOrigin = addConcreteClass("customCategoryOrigin", "ЕС уровень", customCategory);
 
+        subCategory = addConcreteClass("subCategory", "Дополнительное деление", baseClass);
+
         creationFreightBox = addConcreteClass("creationFreightBox", "Операция создания коробов", baseLM.transaction);
         creationPallet = addConcreteClass("creationPallet", "Операция создания паллет", baseLM.transaction);
         creationStamp = addConcreteClass("creationStamp", "Операция создания марок", baseLM.transaction);
@@ -1061,14 +1078,6 @@ public class RomanLogicsModule extends LogicsModule {
         nameCustomCategory.property.preferredCharWidth = 50;
         nameCustomCategory.property.minimumCharWidth = 20;
 
-        //minPriceCustomCategory4 = addDProp("minPriceCustomCategory4", "Минимальная цена ($)", DoubleClass.instance, customCategory4);
-        //minPriceCustomCategory6 = addDProp("minPriceCustomCategory6", "Минимальная цена ($)", DoubleClass.instance, customCategory6);
-        //minPriceCustomCategory9 = addDProp("minPriceCustomCategory9", "Минимальная цена ($)", DoubleClass.instance, customCategory9);
-        //minPriceCustomCategory10 = addDProp("minPriceCustomCategory10", "Минимальная цена ($)", DoubleClass.instance, customCategory10);
-        //minPriceCustomCategory10Country = addDProp("minPriceCustomCategory10", "Минимальная цена ($)", DoubleClass.instance, customCategory10, country);
-        //dutyPercentCustomCategory10 = addDProp("dutyPercentCustomCategory10", "Пошлина (%)", DoubleClass.instance, customCategory10);
-        //dutySumCustomCategory10 = addDProp("dutySumCustomCategory10", "Пошлина (евро)", DoubleClass.instance, customCategory10);
-
         sidToCustomCategory4 = addAGProp("sidToCustomCategory4", "Код(4)", sidCustomCategory4);
         sidToCustomCategory6 = addAGProp("sidToCustomCategory6", "Код(6)", sidCustomCategory6);
         sidToCustomCategory9 = addAGProp("sidToCustomCategory9", "Код(9)", sidCustomCategory9);
@@ -1093,7 +1102,17 @@ public class RomanLogicsModule extends LogicsModule {
         customCategory6CustomCategory10 = addJProp(idGroup, "customCategory6CustomCategory10", "Код(6)", customCategory6CustomCategory9, customCategory9CustomCategory10, 1);
         customCategory4CustomCategory10 = addJProp(idGroup, "customCategory4CustomCategory10", "Код(4)", customCategory4CustomCategory6, customCategory6CustomCategory10, 1);
 
-        //minPriceCustomCategory4CustomCategory6 = addJProp("minPriceCustomCategory4CustomCategory6", "Минимальная цена", minPriceCustomCategory4, customCategory4CustomCategory6, 1);
+        nameSubCategory = addDProp(baseGroup, "nameSubCategory", "Наименование", StringClass.get(200), subCategory);
+        nameToSubCategory = addAGProp("nameToSubCategory", "Наименование", nameSubCategory);
+
+        relationCustomCategory10SubCategory = addDProp(baseGroup, "relationCustomCategory10SubCategory", "Связь ТН ВЭД", LogicalClass.instance, customCategory10, subCategory);
+
+        minPriceCustomCategory10SubCategory = addDProp(baseGroup, "minPriceCustomCategory10SubCategory", "Минимальная цена ($)", DoubleClass.instance, customCategory10, subCategory);
+
+        minPriceCustomCategory10SubCategoryCountry = addDProp("minPriceCustomCategory10SubCategoryCountry", "Минимальная цена для страны ($)", DoubleClass.instance, customCategory10, subCategory, baseLM.country);
+        //dutyPercentCustomCategory10 = addDProp("dutyPercentCustomCategory10", "Пошлина (%)", DoubleClass.instance, customCategory10);
+        //dutySumCustomCategory10 = addDProp("dutySumCustomCategory10", "Пошлина (евро)", DoubleClass.instance, customCategory10);
+
 
         customCategory6CustomCategoryOrigin = addDProp(idGroup, "customCategory6CustomCategoryOrigin", "Код(6)", customCategory6, customCategoryOrigin);
         customCategory4CustomCategoryOrigin = addJProp(idGroup, "customCategory4CustomCategoryOrigin", "Код(4)", customCategory4CustomCategory6, customCategory6CustomCategoryOrigin, 1);

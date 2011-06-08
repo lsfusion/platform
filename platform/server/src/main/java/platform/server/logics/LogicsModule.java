@@ -67,7 +67,7 @@ public abstract class LogicsModule {
     }
 
     protected void addModuleLP(LP<?> lp) {
-        assert !moduleProperties.containsKey(lp.property.sID);
+     //   assert !moduleProperties.containsKey(lp.property.sID);
         moduleProperties.put(lp.property.sID, lp);
     }
 
@@ -1565,7 +1565,7 @@ public abstract class LogicsModule {
         for (int i = 0; i < property.listInterfaces.size(); i++) {
             mapInterfaces.put(property.listInterfaces.get(i), checkProp.listInterfaces.get(i));
         }
-        addProp(checkProp.property.addFollows(new PropertyMapImplement(property.property, mapInterfaces), "Свойство " + property.property.sID + " не задано", PropertyFollows.RESOLVE_FALSE));
+        addProp(checkProp.property.addFollows(new PropertyMapImplement(property.property, mapInterfaces), "Свойство " + property.property.sID + " не задано", PropertyFollows.RESOLVE_TRUE));
     }
 
     // получает свойство is
