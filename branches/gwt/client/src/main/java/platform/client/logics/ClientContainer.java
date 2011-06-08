@@ -204,12 +204,14 @@ public class ClientContainer extends ClientComponent implements ClientIdentitySe
     public GContainer getGwtComponent() {
         if (gwtContainer == null) {
             gwtContainer = new GContainer();
-            gwtContainer.ID = ID;
+
+            initGwtComponent(gwtContainer);
 
             for (ClientComponent child : children) {
                 gwtContainer.children.add(child.getGwtComponent());
             }
         }
+
         return gwtContainer;
     }
 }

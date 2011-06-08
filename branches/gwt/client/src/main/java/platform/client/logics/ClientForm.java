@@ -356,6 +356,7 @@ public class ClientForm extends IdentityObject implements LogicsSupplier, Client
     public GForm getGwtForm() {
         if (gwtForm == null) {
             gwtForm = new GForm();
+            gwtForm.readOnly = readOnly;
             gwtForm.caption = caption;
             gwtForm.mainContainer = mainContainer.getGwtComponent();
 
@@ -365,6 +366,10 @@ public class ClientForm extends IdentityObject implements LogicsSupplier, Client
 
             for (ClientPropertyDraw property : propertyDraws) {
                 gwtForm.propertyDraws.add(property.getGwtPropertyDraw());
+            }
+
+            for (ClientRegularFilterGroup filterGroup : regularFilterGroups) {
+                gwtForm.regularFilterGroups.add(filterGroup.getGwtRegularFilterGroup());
             }
         }
 

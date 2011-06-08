@@ -1,8 +1,11 @@
 package platform.gwt.form.client.ui;
 
-import com.smartgwt.client.widgets.Canvas;
+import com.smartgwt.client.types.Overflow;
+import com.smartgwt.client.types.TileLayoutPolicy;
 import com.smartgwt.client.widgets.form.DynamicForm;
 import com.smartgwt.client.widgets.form.fields.FormItem;
+import com.smartgwt.client.widgets.form.fields.TextAreaItem;
+import com.smartgwt.client.widgets.tile.TileLayout;
 import platform.gwt.form.client.FormFrame;
 import platform.gwt.form.client.utills.GwtUtils;
 import platform.gwt.view.GForm;
@@ -12,11 +15,10 @@ import platform.gwt.view.changes.GGroupObjectValue;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-public class GGroupPanel extends Canvas {
+public class GGroupPanel extends TileLayout {
     private final FormFrame frame;
     private final GForm form;
     private final GGroupObjectController groupController;
-    private DynamicForm propertiesForm;
 
     public ArrayList<GPropertyDraw> properties = new ArrayList<GPropertyDraw>();
     public HashMap<GPropertyDraw, Object> values = new HashMap<GPropertyDraw, Object>();
@@ -26,11 +28,9 @@ public class GGroupPanel extends Canvas {
         form = iform;
         this.groupController = igroupController;
 
-        propertiesForm = new DynamicForm();
-        propertiesForm.setWidth100();
-        propertiesForm.setWrapItemTitles(false);
-
-        addChild(propertiesForm);
+        setHeight(1);
+        setLayoutPolicy(TileLayoutPolicy.FLOW);
+        setOverflow(Overflow.VISIBLE);
     }
 
     public void addProperty(GPropertyDraw property) {
@@ -51,19 +51,37 @@ public class GGroupPanel extends Canvas {
         }
     }
 
+    private int tileCount = 0;
     public void update() {
-        FormItem fields[] = new FormItem[properties.size()];
-        for (int i = 0; i < properties.size(); i++) {
-            GPropertyDraw property = properties.get(i);
-            fields[i] = property.createFormItem();
-            fields[i].setValue(values.get(property));
+        while (tileCount != 0) {
+            removeTile(0);
+            --tileCount;
         }
-        propertiesForm.setFields(fields);
+
+        for (GPropertyDraw property : properties) {
+            FormItem field = property.createFormItem();
+            field.setValue(values.get(property));
+
+            DynamicForm itemForm = new DynamicForm();
+//            itemForm.setColWidths("0", "*");
+            itemForm.setOverflow(Overflow.VISIBLE);
+            itemForm.setWrapItemTitles(false);
+            if (field instanceof TextAreaItem) {
+//                itemForm.setWidth100();
+            }
+
+            itemForm.setFields(field);
+            itemForm.setAutoWidth();
+            itemForm.setAutoHeight();
+
+            addTile(itemForm);
+            tileCount++;
+        }
 
         setVisible(!isEmpty());
     }
 
     public boolean isEmpty() {
-        return properties.size() == 0;
+        return properties.size() == 0 || values.size() == 0;
     }
 }

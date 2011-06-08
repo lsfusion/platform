@@ -17,6 +17,7 @@ public class GTextType extends GDataType {
     @Override
     public FormItem createFormItem(GPropertyDraw property) {
         TextAreaItem textAreaItem = new TextAreaItem();
+        textAreaItem.setWrapTitle(false);
         textAreaItem.setTitleOrientation(TitleOrientation.TOP);
         textAreaItem.setEndRow(true);
         textAreaItem.setStartRow(true);

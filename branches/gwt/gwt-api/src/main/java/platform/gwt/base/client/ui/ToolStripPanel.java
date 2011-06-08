@@ -123,7 +123,6 @@ public class ToolStripPanel extends ToolStrip {
         }
 
         selectItem.setValueMap(valueMap);
-        selectItem.setValues();
         selectItem.setDefaultValue(LocaleInfo.getCurrentLocale().getLocaleName());
 
         selectItem.addChangeHandler(new ChangeHandler() {

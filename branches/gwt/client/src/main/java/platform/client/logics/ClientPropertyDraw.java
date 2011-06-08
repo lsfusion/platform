@@ -514,8 +514,15 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
     private GPropertyDraw gwtPropertyDraw;
     public GPropertyDraw getGwtPropertyDraw() {
+        return getGwtComponent();
+    }
+
+    public GPropertyDraw getGwtComponent() {
         if (gwtPropertyDraw == null) {
             gwtPropertyDraw = new GPropertyDraw();
+
+            initGwtComponent(gwtPropertyDraw);
+
             gwtPropertyDraw.ID = ID;
             gwtPropertyDraw.sID = sID;
             gwtPropertyDraw.caption = caption;

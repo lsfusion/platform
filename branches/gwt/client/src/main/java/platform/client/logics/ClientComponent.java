@@ -177,7 +177,21 @@ public abstract class ClientComponent extends ContextIdentityObject implements S
         return sID.substring(0, i + 1) + name;
     }
 
+    protected void initGwtComponent(GComponent component) {
+        component.ID = ID;
+        component.container = container == null ? null : container.getGwtComponent();
+        component.defaultComponent = defaultComponent;
+        component.keyBindingGroup = keyBindingGroup == null ? null : keyBindingGroup.getGwtGroupObject();
+        component.drawToToolbar = drawToToolbar;
+    }
+
+    private GComponent gwtComponent;
     public GComponent getGwtComponent() {
-        return new GComponent();
+        if (gwtComponent == null) {
+            gwtComponent = new GComponent();
+            initGwtComponent(gwtComponent);
+        }
+
+        return gwtComponent;
     }
 }

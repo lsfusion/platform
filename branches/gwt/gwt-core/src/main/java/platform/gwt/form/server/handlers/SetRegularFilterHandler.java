@@ -6,31 +6,20 @@ import platform.gwt.base.server.DebugUtil;
 import platform.gwt.base.shared.MessageException;
 import platform.gwt.form.server.FormSessionObject;
 import platform.gwt.form.server.RemoteFormServiceImpl;
-import platform.gwt.form.shared.actions.form.ChangeGroupObject;
 import platform.gwt.form.shared.actions.form.FormChangesResult;
-import platform.gwt.view.changes.dto.ObjectDTO;
+import platform.gwt.form.shared.actions.form.SetRegularFilter;
 
-import java.io.*;
-
-import static platform.base.BaseUtils.serializeObject;
-
-public class ChangeGroupObjectHandler extends FormChangesActionHandler<ChangeGroupObject> {
-    public ChangeGroupObjectHandler(RemoteFormServiceImpl servlet) {
+public class SetRegularFilterHandler extends FormChangesActionHandler<SetRegularFilter> {
+    public SetRegularFilterHandler(RemoteFormServiceImpl servlet) {
         super(servlet);
     }
 
     @Override
-    public FormChangesResult execute(ChangeGroupObject action, ExecutionContext context) throws DispatchException {
+    public FormChangesResult execute(SetRegularFilter action, ExecutionContext context) throws DispatchException {
         try {
-            ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
-            DataOutputStream outStream = new DataOutputStream(byteStream);
-            for (ObjectDTO keyValue : action.keyValues) {
-                serializeObject(outStream, keyValue.getValue());
-            }
-
             FormSessionObject form = getSessionFormExceptionally(action.formSessionID);
 
-            form.remoteForm.changeGroupObject(action.groupId, byteStream.toByteArray());
+            form.remoteForm.setRegularFilter(action.groupId, action.filterId);
 
             return getRemoteChanges(form);
         } catch (Throwable e) {

@@ -1,7 +1,10 @@
 package platform.gwt.form.client.ui;
 
+import com.smartgwt.client.types.Autofit;
+import com.smartgwt.client.types.Overflow;
+import com.smartgwt.client.widgets.form.fields.FormItem;
 import com.smartgwt.client.widgets.layout.SectionStackSection;
-import com.smartgwt.client.widgets.layout.VLayout;
+import com.smartgwt.client.widgets.layout.VStack;
 import platform.gwt.form.client.FormFrame;
 import platform.gwt.view.GForm;
 import platform.gwt.view.GGroupObject;
@@ -18,8 +21,9 @@ public class GGroupObjectController {
 
     public GGridTable grid;
     public GGroupPanel panel;
+    public GFilterPanel filterPanel;
 
-    public VLayout view;
+    public VStack view;
     private SectionStackSection groupSection;
 
     public GGroupObjectController(FormFrame iframe, GForm iform, GGroupObject igroupObject) {
@@ -31,13 +35,18 @@ public class GGroupObjectController {
         grid.setCanSort(false);
         grid.setShowHeaderContextMenu(false);
         grid.setShowHeaderMenuButton(false);
-        grid.setHeight(130);
+        grid.setAutoFitData(Autofit.VERTICAL);
+        grid.setAutoFitMaxRecords(10);
+
+        filterPanel = new GFilterPanel();
 
         panel = new GGroupPanel(frame, form, this);
 
-        view = new VLayout();
-        view.setAutoHeight();
+        view = new VStack();
+        view.setHeight(1);
+        view.setOverflow(Overflow.VISIBLE);
         view.addMember(grid);
+        view.addMember(filterPanel);
         view.addMember(panel);
 
         groupSection = new SectionStackSection(groupObject.getCaption());
@@ -92,15 +101,18 @@ public class GGroupObjectController {
         panel.addProperty(property);
     }
 
-    private void update() {
-        panel.update();
-        grid.update();
+    public void addFilterComponent(FormItem item) {
+        filterPanel.addFilterComponent(item);
+    }
 
-        groupSection.setHidden(panel.isEmpty() && grid.isEmpty());
+    private void update() {
+        grid.update();
+        panel.update();
+
+        groupSection.setHidden(panel.isEmpty() && grid.isEmpty() && filterPanel.isEmpty());
     }
 
     public SectionStackSection getSection() {
         return groupSection;
     }
-
 }

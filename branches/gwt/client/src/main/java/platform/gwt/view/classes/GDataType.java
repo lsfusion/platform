@@ -27,6 +27,8 @@ public class GDataType implements GType {
 
     @Override
     public FormItem createFormItem(GPropertyDraw property) {
-        return new TextItem();
+        TextItem textItem = new TextItem();
+        textItem.setAttribute("readOnly", true);
+        return textItem;
     }
 }

@@ -140,6 +140,6 @@ public class GGridTable extends ListGrid {
     }
 
     public boolean isEmpty() {
-        return getTotalRows() == 0;
+        return getTotalRows() == 0 || getFields().length == 0;
     }
 }
