@@ -28,7 +28,6 @@
                 <artifactId>maven-assembly-plugin</artifactId>
                 <configuration>
                     <finalName>server</finalName>
-                    <appendAssemblyId>true</appendAssemblyId>
                     <descriptors>
                         <descriptor>src/assemble/jardistrib.xml</descriptor>
                     </descriptors>

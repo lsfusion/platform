@@ -17,7 +17,6 @@
                 <artifactId>maven-assembly-plugin</artifactId>
                 <configuration>
                     <finalName>fullclient</finalName>
-                    <appendAssemblyId>true</appendAssemblyId>
                     <archive>
                         <manifest>
                             <mainClass>platform.fullclient.FullMain</mainClass>
