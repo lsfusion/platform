@@ -40,12 +40,8 @@ public class ClassifierTNVEDImportActionProperty extends ActionProperty {
         try {
             TnvedImporter importer = new TnvedImporter(executeForm, value);
             importer.doImport();
-        } catch (xBaseJException e1) {
-            e1.printStackTrace();
-        } catch (IOException e1) {
-            e1.printStackTrace();
-        } catch (SQLException e) {
-            e.printStackTrace();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
     }
 

@@ -252,6 +252,7 @@ public class RomanLogicsModule extends LogicsModule {
     LP sidToCustomCategoryOrigin;
     private LP importBelTnved;
     private LP importEuTnved;
+    LP importTnvedCountryMinPrices;
 
     LP customCategory4CustomCategory6;
     LP customCategory6CustomCategory9;
@@ -1115,6 +1116,7 @@ public class RomanLogicsModule extends LogicsModule {
 
         importBelTnved = addAProp(new ClassifierTNVEDImportActionProperty(genSID(), "Импортировать (РБ)", this, "belarusian"));
         importEuTnved = addAProp(new ClassifierTNVEDImportActionProperty(genSID(), "Импортировать (ЕС)", this, "origin"));
+        importTnvedCountryMinPrices = addAProp(new TNVEDMinPricesImportActionProperty(genSID(), "Импортировать мин. цены", this));
         jennyferImportInvoice = addAProp(importInvoiceActionGroup, new JennyferImportInvoiceActionProperty(this));
         tallyWeijlImportInvoice = addAProp(importInvoiceActionGroup, new TallyWeijlImportInvoiceActionProperty(this));
         hugoBossImportInvoice = addAProp(importInvoiceActionGroup, new HugoBossImportInvoiceActionProperty(BL));
@@ -3573,6 +3575,7 @@ public class RomanLogicsModule extends LogicsModule {
 
         private PropertyDrawEntity import1;
         private PropertyDrawEntity import2;
+        private PropertyDrawEntity importMinPrices;
 
         private TreeGroupEntity treeCustomCategory;
         private TreeGroupEntity treeCustomCategoryOrigin;
@@ -3620,6 +3623,7 @@ public class RomanLogicsModule extends LogicsModule {
 
             import1 = addPropertyDraw(importBelTnved);
             import2 = addPropertyDraw(importEuTnved);
+            importMinPrices = addPropertyDraw(importTnvedCountryMinPrices);
 
             objCustomCategoryOrigin = addSingleGroupObject(customCategoryOrigin, "ЕС уровень", sidCustomCategoryOrigin, nameCustomCategory, sidCustomCategory10CustomCategoryOrigin);
             addObjectActions(this, objCustomCategoryOrigin, objCustomCategory6Origin, customCategory6);
@@ -3677,6 +3681,7 @@ public class RomanLogicsModule extends LogicsModule {
                 design.get(objCustomCategoryOrigin.groupTo).grid.constraints.fillHorizontal = 2;
             }
             design.addIntersection(design.get(import1), design.get(import2), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
+            design.addIntersection(design.get(import2), design.get(importMinPrices), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
 
             if (!tree)
             {

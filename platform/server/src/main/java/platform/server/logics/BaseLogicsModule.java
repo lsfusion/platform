@@ -222,7 +222,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
     public LP sidCountry;
     protected LP generateDatesCountry;
-    protected LP sidToCountry;
+    public LP sidToCountry;
     public LP nameToCountry;
     protected LP nameToObject;
     protected LP isDayOffCountryDate;
