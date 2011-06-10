@@ -65,6 +65,7 @@ public class TNVEDMinPricesImportActionProperty extends ActionProperty {
         private ImportField subcategoryNameField = new ImportField(LM.nameSubCategory);
         private ImportField relationField = new ImportField(LM.relationCustomCategory10SubCategory);
         private ImportField countryIdField = new ImportField(LM.baseLM.sidCountry);
+        private ImportField countryNameField = new ImportField(LM.baseLM.name);
         private ImportField minPriceField = new ImportField(LM.minPriceCustomCategory10SubCategory);
 
         public TnvedImporter(RemoteForm executeForm, ObjectValue value) {
@@ -106,6 +107,7 @@ public class TNVEDMinPricesImportActionProperty extends ActionProperty {
             new IntegrationService(session, table, Arrays.asList(keysArray), properties).synchronize(true, true, false);
 
             propertiesCountry.add(new ImportProperty(subcategoryNameField, LM.nameSubCategory.getMapping(subcategoryKey)));
+            propertiesCountry.add(new ImportProperty(countryNameField, LM.baseLM.name.getMapping(countryKey)));
             propertiesCountry.add(new ImportProperty(relationField, LM.relationCustomCategory10SubCategory.getMapping(category10Key, subcategoryKey)));
             propertiesCountry.add(new ImportProperty(minPriceField, LM.minPriceCustomCategory10SubCategoryCountry.getMapping(category10Key, subcategoryKey, countryKey)));
             ImportKey<?>[] keysArrayCountry = {category10Key, subcategoryKey, countryKey};
@@ -129,6 +131,7 @@ public class TNVEDMinPricesImportActionProperty extends ActionProperty {
                 String name = new String(file.getField("NAME").getBytes(), "Cp866");
                 Double minPrice = Double.valueOf(new String(file.getField("G46_MD1").getBytes(), "Cp866"));
                 String countryCode = new String(file.getField("STRANA").getBytes(), "Cp866");
+                String countryName = new String(file.getField("NAME_STRAN").getBytes(), "Cp866");
 
                 if (name.trim().isEmpty()) {
                     name = "Группа по умолчанию";
@@ -141,7 +144,12 @@ public class TNVEDMinPricesImportActionProperty extends ActionProperty {
                     row.add(minPrice);
                     row.add(true);
                     if (!countryCode.equals("***")) {
-                        row.add(Integer.getInteger(countryCode));
+                        if (!countryCode.trim().equals("")) {
+                            row.add(Integer.valueOf(countryCode));
+                        } else {
+                            row.add(null);
+                        }
+                        row.add(countryName);
                         dataCountry.add(row);
                     } else {
                         data.add(row);
@@ -151,7 +159,7 @@ public class TNVEDMinPricesImportActionProperty extends ActionProperty {
             List<ImportField> fields = BaseUtils.toList(category10IdField, subcategoryNameField, minPriceField, relationField);
             table = new ImportTable(fields, data);
 
-            List<ImportField> fieldsCountry = BaseUtils.toList(category10IdField, subcategoryNameField, minPriceField, relationField, countryIdField);
+            List<ImportField> fieldsCountry = BaseUtils.toList(category10IdField, subcategoryNameField, minPriceField, relationField, countryIdField, countryNameField);
             tableCountry = new ImportTable(fieldsCountry, dataCountry);
         }
 
