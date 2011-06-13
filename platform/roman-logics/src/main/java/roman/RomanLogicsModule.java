@@ -370,6 +370,8 @@ public class RomanLogicsModule extends LogicsModule {
     private LP minPriceRateImporterFreightSku;
     private LP diffPriceMinPriceImporterFreightSku;
     private LP greaterPriceMinPriceImporterFreightSku;
+    private LP dutyNetWeightFreightSku;
+    private LP dutyPercentImporterFreightSku;
     private LP minPriceRateCustomCategoryCountryFreightSku;
     private LP priceImporterFreightSku;
     private LP priceMaxImporterFreightSku;
@@ -385,6 +387,8 @@ public class RomanLogicsModule extends LogicsModule {
     private LP sumFreightFreight;
     private LP routeFreight;
     private LP nameRouteFreight;
+    private LP typeDutyFreight;
+    private LP sidTypeDutyFreight;
     private LP exporterFreight;
     LP nameOriginExporterFreight;
     LP nameExporterFreight;
@@ -1940,6 +1944,9 @@ public class RomanLogicsModule extends LogicsModule {
         routeFreight = addDProp(idGroup, "routeFreight", "Маршрут (ИД)", route, freight);
         nameRouteFreight = addJProp(baseGroup, "nameRouteFreight", "Маршрут", baseLM.name, routeFreight, 1);
 
+        typeDutyFreight = addDProp(idGroup, "typeDutyFreight", "Тип пошлины фрахта (ИД)", typeDuty, freight);
+        sidTypeDutyFreight = addJProp(baseGroup, "sidTypeDutyFreight", "Тип пошлины фрахта", sidTypeDuty, typeDutyFreight, 1);
+
         exporterFreight = addDProp(idGroup, "exporterFreight", "Экспортер (ИД)", exporter, freight);
         nameOriginExporterFreight = addJProp(baseGroup, "nameOriginExporterFreight", "Экспортер", nameOrigin, exporterFreight, 1);
         nameExporterFreight = addJProp(baseGroup, "nameExporterFreight", "Экспортер", baseLM.name, exporterFreight, 1);
@@ -2110,6 +2117,11 @@ public class RomanLogicsModule extends LogicsModule {
 
         diffPriceMinPriceImporterFreightSku = addDUProp(baseGroup, "diffPriceMinPriceImporterFreightSku", "Разница цен", minPriceRateImporterFreightSku, priceInOutImporterFreightSku);
         greaterPriceMinPriceImporterFreightSku = addJProp(baseGroup, "greaterPriceMinPriceImporterFreightSku", "Недостаточность цены", baseLM.greater2, diffPriceMinPriceImporterFreightSku, 1, 2, 3, baseLM.vzero);
+
+        dutyNetWeightFreightSku = addJProp(baseGroup, "dutyNetWeightFreightSku", "Пошлина по весу нетто", baseLM.multiplyDouble2, netWeightFreightSku, 1, 2, addJProp(dutySumCustomCategory10TypeDuty, customCategory10Sku, 2, typeDutyFreight, 1), 1, 2);
+
+        dutyPercentImporterFreightSku = addJProp(baseGroup, "dutyPercentImporterFreightSku", "Пошлина по цене", baseLM.percent2, priceInOutImporterFreightSku, 1, 2, 3, addJProp(dutyPercentCustomCategory10TypeDuty, customCategory10Sku, 3, typeDutyFreight, 2), 1, 2, 3);
+        
 
         priceImporterFreightArticleCompositionCountryCategory = addMGProp(baseGroup, "priceImporterFreightArticleCompositionCountryCategory", "Цена",
                 priceInOutImporterFreightSku, 1, 2, articleSku, 3, mainCompositionOriginFreightSku, 2, 3, countryOfOriginFreightSku, 2, 3, customCategory10FreightSku, 2, 3);
@@ -3720,7 +3732,7 @@ public class RomanLogicsModule extends LogicsModule {
             customContainer.add(design.getGroupObjectContainer(objTypeDuty.groupTo));
 
             ContainerView specContainer = design.createContainer();
-            design.getMainContainer().addAfter(specContainer, design.getMainContainer());
+            design.getMainContainer().addBefore(specContainer, design.get(import1));
             specContainer.add(categoryContainer);
             specContainer.add(customContainer);
             specContainer.tabbedPane = true;              
@@ -4102,7 +4114,7 @@ public class RomanLogicsModule extends LogicsModule {
         private FreightChangeFormEntity(NavigatorElement parent, String sID, String caption, boolean edit) {
             super(parent, sID, caption);
 
-            objFreight = addSingleGroupObject(freight, "Фрахт", baseLM.date, baseLM.objectClassName, nameRouteFreight, nameExporterFreight, nameFreightTypeFreight, grossWeightFreight, palletNumberFreight);
+            objFreight = addSingleGroupObject(freight, "Фрахт", baseLM.date, baseLM.objectClassName, nameRouteFreight, sidTypeDutyFreight, nameExporterFreight, nameFreightTypeFreight, grossWeightFreight, palletNumberFreight);
 
             if (edit) {
                 objFreight.groupTo.setSingleClassView(ClassViewType.PANEL);
@@ -4141,10 +4153,8 @@ public class RomanLogicsModule extends LogicsModule {
                      mainCompositionOriginSku, translationMainCompositionSku, mainCompositionSku,
                      additionalCompositionOriginSku, translationAdditionalCompositionSku, additionalCompositionSku);
 
-
             PropertyObjectEntity diffCountRelationCustomCategory10SkuProperty = addPropertyObject(diffCountRelationCustomCategory10Sku, objSku);
             getPropertyDraw(nameSubCategorySku).setPropertyHighlight(diffCountRelationCustomCategory10SkuProperty);
-
 
             setForceViewType(itemAttributeGroup, ClassViewType.GRID, objSku.groupTo);
             addPropertyDraw(addGCAProp(actionGroup, "translationAllMainComposition" + (edit ? "_edit" : ""), "Перевод составов", objSku.groupTo, translationMainCompositionSku, baseLM.actionTrue), objSku).forceViewType = ClassViewType.PANEL;
@@ -4854,7 +4864,7 @@ public class RomanLogicsModule extends LogicsModule {
         private FreightInvoiceFormEntity(NavigatorElement parent, String sID, String caption, boolean edit) {
             super(parent, sID, caption);
 
-            objFreight = addSingleGroupObject(freight, "Фрахт", baseLM.date, baseLM.objectClassName, nameRouteFreight, nameFreightTypeFreight, nameCurrencyFreight, sumInFreight, sumMarkupInFreight, sumInOutFreight, palletNumberFreight);
+            objFreight = addSingleGroupObject(freight, "Фрахт", baseLM.date, baseLM.objectClassName, nameRouteFreight, sidTypeDutyFreight, nameFreightTypeFreight, nameCurrencyFreight, sumInFreight, sumMarkupInFreight, sumInOutFreight, palletNumberFreight);
 
             addPropertyDraw(sumInCurrentYear);
             addPropertyDraw(sumInOutCurrentYear);
@@ -4912,7 +4922,10 @@ public class RomanLogicsModule extends LogicsModule {
             setReadOnly(publicGroup, true, objSku.groupTo);
 
             addPropertyDraw(sidCustomCategory10FreightSku, objFreight, objSku);
-            addPropertyDraw(nameSubCategoryFreightSku, objFreight, objSku);            
+            addPropertyDraw(nameSubCategoryFreightSku, objFreight, objSku);
+            addPropertyDraw(dutyNetWeightFreightSku, objFreight, objSku);
+            addPropertyDraw(dutyPercentImporterFreightSku, objImporter, objFreight, objSku);
+
             addPropertyDraw(quantityImporterFreightSku, objImporter, objFreight, objSku);
             addPropertyDraw(markupPercentImporterFreightSku, objImporter, objFreight, objSku);
             addPropertyDraw(priceInImporterFreightSku, objImporter, objFreight, objSku);
