@@ -32,7 +32,7 @@ public class ToolBarNavigatorView extends NavigatorView {
                 addElement(element, newElements, 0);
             }
         }
-        toolBar.repaint();
+        toolBar.validate();
     }
 
     private void addElement(ClientNavigatorElement element, Set<ClientNavigatorElement> newElements, int allign) {

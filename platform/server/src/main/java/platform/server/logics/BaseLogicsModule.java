@@ -106,7 +106,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     protected LP squareInteger;
     protected LP squareDouble;
     protected LP sqrtDouble2;
-    protected LP divideDouble;
+    public LP divideDouble;
     public LP divideDouble2;
     public LP addDate2;
     public LP string2;
@@ -114,10 +114,13 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     protected LP concat2;
     public LP percent;
     public LP percent2;
+    public LP share2;
     public LP yearInDate;
 
     public LP vtrue, actionTrue, vzero;
     public LP positive, negative;
+
+    public LP round0;
 
     public LP dumb1;
     public LP dumb2;
@@ -371,9 +374,12 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         addDate2 = addSFProp("((prm1)+(prm2))", DateClass.instance, 2);
         percent = addSFProp("((prm1)*(prm2)/100)", DoubleClass.instance, 2);
         percent2 = addSFProp("round(CAST(((prm1)*(prm2)/100) as numeric), 2)", DoubleClass.instance, 2);
+        share2 = addSFProp("round(CAST(((prm1)/(prm2)*100) as numeric), 2)", DoubleClass.instance, 2);
         between = addJProp("Между", and1, groeq2, 1, 2, groeq2, 3, 1);
         vtrue = addCProp("Истина", LogicalClass.instance, true);
         vzero = addCProp("0", DoubleClass.instance, 0);
+
+        round0 = addSFProp("round(CAST(prm1 as numeric), 0)", DoubleClass.instance, 1);
 
         actionTrue = addCProp("ActionTrue", ActionClass.instance, true);
 

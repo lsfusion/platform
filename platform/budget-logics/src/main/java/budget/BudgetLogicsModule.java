@@ -14,6 +14,7 @@ import platform.server.form.entity.filter.CompareFilterEntity;
 import platform.server.form.entity.filter.NotNullFilterEntity;
 import platform.server.form.navigator.NavigatorElement;
 import platform.server.form.view.DefaultFormView;
+import platform.server.form.view.FormView;
 import platform.server.logics.BaseLogicsModule;
 import platform.server.logics.LogicsModule;
 import platform.server.logics.linear.LP;
@@ -37,8 +38,15 @@ public class BudgetLogicsModule extends LogicsModule {
     AbstractGroup salaryGroup, dateTimeGroup, personGroup, extraGroup, outGroup, inOperationGroup, payerGroup, baseCurGroup;
     AbstractCustomClass operation, inAbsOperation, outAbsOperation, absOutPerson, absOutTime, departmentAbs, extraSection, payer, payerAbs;
 
-    ConcreteCustomClass currency, exOperation, section, inOperation, outOperation, extraCost, person, pay, absMonth, mission, misOperation, department, sectionOut, city, extraPersonSection, extraAdmSection, contractor, reimbursement, vacation, incomeCash, incomeNotCash, outcomeCost;
-
+    ConcreteCustomClass currency, exOperation, section, inOperation, outOperation, extraCost, person, pay, absMonth, mission, misOperation, department, sectionOut, city, extraPersonSection, extraAdmSection, contractor, reimbursement, vacation;
+    ConcreteCustomClass incomeCash;
+    ConcreteCustomClass incomeNotCash;
+    ConcreteCustomClass outcomeCost;
+    AbstractCustomClass investor;
+    ConcreteCustomClass employeeInvestor, nonEmployeeInvestor;
+    AbstractCustomClass investment, investmentMoney;
+    ConcreteCustomClass investmentCash, investmentNotCash;
+    ConcreteCustomClass investmentNotMoney;
 
     @Override
     public void initClasses() {
@@ -79,6 +87,19 @@ public class BudgetLogicsModule extends LogicsModule {
         incomeCash = addConcreteClass("incomeCash", "Приход по налу", inAbsOperation, departmentAbs);
         incomeNotCash = addConcreteClass("incomeNotCash", "Приход по безналу", inAbsOperation, departmentAbs);
         outcomeCost = addConcreteClass("outcomeCost", "Расходы на обороты", outAbsOperation, departmentAbs, payerAbs);
+
+        investor = addAbstractClass("investor", "Инвестор", baseClass.named);
+
+        employeeInvestor = addConcreteClass("employeeInvestor", "Инвестор (сотрудник)", person, investor);
+        nonEmployeeInvestor = addConcreteClass("nonEmployeeInvestor", "Внешний инвестор", investor);
+
+        investment = addAbstractClass("investment", "Инвестиция", baseClass);
+
+        investmentMoney = addAbstractClass("investmentMoney", "Инвестиция (деньги)", investment);
+        investmentCash = addConcreteClass("investmentCash", "Инвестиция (нал)", incomeCash, investmentMoney);
+        investmentNotCash = addConcreteClass("investmentNotCash", "Инвестиция (безнал)", incomeNotCash, investmentMoney);
+
+        investmentNotMoney = addConcreteClass("investmentNotMoney", "Инвестиция (немат.)", investment, baseLM.transaction);
     }
 
     @Override
@@ -108,19 +129,39 @@ public class BudgetLogicsModule extends LogicsModule {
         baseCurGroup = addAbstractGroup("baseCurGroup", "Сумма в базовой валюте");
     }
 
-    LP inSum, outSum, inCur, outCur, outPerson, outYear, outMonth, operationDepartment, personDepartment, reimbursementCurrencyIn, reimbursementPayer, vacationPerson;
+    LP inSum, outSum, inCur, outCur, outPerson, outYear, outMonth;
+    LP operationDepartment, nameOperationDepartment;
+    LP personDepartment, reimbursementCurrencyIn, reimbursementPayer, vacationPerson;
     LP balanceQuantity, salaryInMonth, missionOperation, roundSalary, dayInMonthOv, opDep, operationPayer, reimbursementDepartment, depBalanceQuantity;
 
     LP isWorkingMonthForPerson;
 
-    LP personDepartSum, personDepartSumInBC, payMonthTotal, extraMonthTotal, totalOutOper, departmentOutOperInBC, totalMisOper, totalMisOperInBC, monthNum, exchangeRate, nearestPredDate, nearestExchangeRate, nearestExchangeRateOp;
+    LP personDepartSum, personDepartSumInBC, payMonthTotal, extraMonthTotal, totalOutOper, departmentOutOperInBC, totalMisOper, totalMisOperInBC, monthNum, exchangeRate, nearestPredDate, nearestExchangeRate, exchangeBaseRateCurrencyDate, nearestExchangeRateOp;
+    LP exchangeRateCurrencyTransaction;
     LP baseCurrency, baseCurrencyName;
     LP rateDate, userRateDay, dateByMY, rateDay, incomeOutcome;
+
+    LP investorInvestment, nameInvestorInvestment;
+
+    LP sumInvestmentCash, sumInvestmentNotCash, sumInvestmentMoney;
+    LP curInvestmentCash, curInvestmentNotCash, curInvestmentMoney;
+
+    LP sumInvestment, curInvestment, nameCurInvestment;
+
+    LP sumInvestmentNotMoney;
+    LP curInvestmentNotMoney;
+    LP exchangeBaseRateInvestment;
+    LP sumBaseInvestment;
+
+    LP sumInvestmentInvestor;
+    LP investmentTotal;
+    LP shareInvestor;
 
     @Override
     public void initProperties() {
 
-        operationDepartment = addDProp("operDepartment", "Отдел", department, departmentAbs);
+        operationDepartment = addDProp(idGroup, "operDepartment", "Отдел (ИД)", department, departmentAbs);
+        nameOperationDepartment = addJProp(baseGroup, "nameOperationDepartment", "Отдел", baseLM.name, operationDepartment, 1);
         operationPayer = addDProp("operPayer", "Плательщик", payer, payerAbs);
         personDepartment = addDProp("personDepartment", "Отдел", department, person);
 
@@ -188,12 +229,15 @@ public class BudgetLogicsModule extends LogicsModule {
         LP lessCmpDate = addJProp(and(false, true, false), object(DateClass.instance), 3, exchangeRate, 1, 2, 3, baseLM.greater2, 3, 4, is(DateClass.instance), 4);
         nearestPredDate = addMGProp((AbstractGroup) null, "nearestPredDate", "Ближайшая меньшая дата", lessCmpDate, 1, 2, 4);
         nearestExchangeRate = addJProp("Ближайший курс обмена", exchangeRate, 1, 2, nearestPredDate, 1, 2, 3);
+        exchangeBaseRateCurrencyDate = addJProp("Ближайший курс обмена к БВ", nearestExchangeRate, 1, 2, baseCurrency);
 
         // чисто проталкивание ключей внутрь
 
         LP lessCmpDateOp = addJProp(and(false, true, false), object(DateClass.instance), 3, exchangeRate, 1, 2, 3, addJProp(baseLM.greater2, 1, baseLM.date, 2), 3, 4, baseLM.date, 4);
         LP nearestPredDateOp = addMGProp((AbstractGroup) null, "nearestPredDateOp", "Ближайшая меньшая дата операции", lessCmpDateOp, 1, 2, 4);
-        nearestExchangeRateOp = addJProp("Ближайший курс обмена операции", exchangeRate, 1, 2, nearestPredDateOp, 1, 2, 3);
+        nearestExchangeRateOp = addJProp("nearestExchangeRateOp","Ближайший курс обмена операции", exchangeRate, 1, 2, nearestPredDateOp, 1, 2, 3);
+
+        exchangeRateCurrencyTransaction = addJProp("exchangeRateCurrencyTransaction", "Ближайший курс", nearestExchangeRateOp, 1, baseCurrency, 2);
 
         LP lessCmpDateMY = addJProp(and(false, true, false, false), object(DateClass.instance), 3, exchangeRate, 1, 2, 3, addJProp(baseLM.greater2, 1, dateByMY, 2, 3), 3, 4, 5, is(absMonth), 4, is(YearClass.instance), 5);
         LP nearestPredDateMY = addMGProp((AbstractGroup) null, "nearestPredDateMY", "Ближайшая меньшая дата курса месяца/года", lessCmpDateMY, 1, 2, 4, 5);
@@ -329,7 +373,7 @@ public class BudgetLogicsModule extends LogicsModule {
         LP workCoeff = addJProp(calcCoef, hourInMonthOv, 1, 2, 3, addJProp(baseLM.and1, workDays, 2, 3, is(person), 1), 1, 2, 3);
         roundSalary = addJProp(baseGroup, "К оплате", roundMult, workCoeff, 3, 1, 2, curSalary, 1, 2, 3);
 
-        LP paySum = addJProp("Выплачено", multiplyDouble2, payRate, 1, outSum, 1);
+        LP paySum = addJProp("Выплачено", roundMult, payRate, 1, outSum, 1);
         LP payTotal = addSGProp(baseGroup, "Всего заплачено", paySum, outPerson, 1, outMonth, 1, outYear, 1);
 
         //LP extraTotalPerson = addSGProp(addJProp(andNot1, addJProp(and(false,false), curExtra, 3, 4, 2, personDepartment, 1, is(person), 1, is(extraPersonSection), 2), 1, 2, 3, 4, extraAdd, 1, 2, 3, 4), 1, 3, 4);
@@ -386,6 +430,33 @@ public class BudgetLogicsModule extends LogicsModule {
 
         LP misOperValInBC = addJProp("Опер. расход ком. в БВ", multiplyDouble2, misOperVal, 1, outRateBC, 1);
         LP departmentMisOperInBC = addSGProp(baseCurGroup, "Всего по опер. расходу ком. в БВ", misOperValInBC, opDep, 1, transactionMonth, 1, transactionYear, 1);
+
+        investorInvestment = addDProp(idGroup, "investorInvestment", "Инвестор (ИД)", investor, investment);
+        nameInvestorInvestment = addJProp(baseGroup, "nameInvestorInvestment", "Инвестор", baseLM.name, investorInvestment, 1);
+
+        sumInvestmentCash = addJProp("sumInvestmentCash", "Сумма", baseLM.and1, inSum, 1, is(investmentCash), 1);
+        sumInvestmentNotCash = addJProp("sumInvestmentNotCash", "Сумма", baseLM.and1, inSum, 1, is(investmentNotCash), 1);
+
+        curInvestmentCash = addJProp(idGroup, "curInvestmentCash", "Валюта (ИД)", baseLM.and1, inCur, 1, is(investmentCash), 1);
+        curInvestmentNotCash = addJProp(idGroup, "curInvestmentNotCash", "Валюта (ИД)", baseLM.and1, inCur, 1, is(investmentNotCash), 1);
+
+        sumInvestmentMoney = addCUProp("sumInvestmentMoney", "Сумма", sumInvestmentCash, sumInvestmentNotCash);
+        curInvestmentMoney = addCUProp(idGroup, "curInvestmentMoney", "Валюта (ИД)", curInvestmentCash, curInvestmentNotCash);
+
+        sumInvestmentNotMoney = addDProp(baseGroup, "sumInvestmentNotMoney", "Сумма", DoubleClass.instance, investmentNotMoney);
+        curInvestmentNotMoney = addDProp(idGroup, "curInvestmentNotMoney", "Валюта (ИД)", currency, investmentNotMoney);
+
+        sumInvestment = addCUProp("sumInvestment", "Сумма", sumInvestmentMoney, sumInvestmentNotMoney);
+        curInvestment = addCUProp(idGroup, "curInvestment", "Валюта (ИД)", curInvestmentMoney, curInvestmentNotMoney);
+        nameCurInvestment = addJProp(baseGroup, "nameCurInvestment", "Валюта", baseLM.name, curInvestment, 1);
+
+        exchangeBaseRateInvestment = addJProp("exchangeBaseRateInvestment", "Курс", exchangeRateCurrencyTransaction, curInvestment, 1, 1);
+        sumBaseInvestment = addJProp("sumBaseInvestment", "Сумма (БВ)", baseLM.round0, addJProp(multiplyDouble2, sumInvestment, 1, exchangeBaseRateInvestment, 1), 1);
+
+        sumInvestmentInvestor = addSGProp("sumInvestmentInvestor", "Проинвестировано", sumBaseInvestment, investorInvestment, 1);
+        investmentTotal = addSGProp("investmentTotal", "Всего проинвестировано", sumBaseInvestment);
+
+        shareInvestor = addJProp("shareInvestor", "Доля (%)", baseLM.share2, sumInvestmentInvestor, 1, investmentTotal);
     }
 
     @Override
@@ -398,6 +469,7 @@ public class BudgetLogicsModule extends LogicsModule {
     public void initNavigators() throws JRException, FileNotFoundException {
         NavigatorElement primaryData = new NavigatorElement(baseLM.baseElement, "primaryData", "Первичные данные");
         FormEntity incomeForm = addFormEntity(new IncomeFormEntity(primaryData, "incomeForm", "Приход"));
+        FormEntity investmentNotMoney = addFormEntity(new InvestmentFormEntity(primaryData, "investment", "Инвестиции"));
         FormEntity specialRecordForm = addFormEntity(new SpecialRecordFormEntity(primaryData, "specialRecordForm", "Затраты по сотрудникам"));
         FormEntity salaryForm = addFormEntity(new ExtraFormEntity(primaryData, "salaryForm", "Дополнительные затраты"));
         FormEntity recordForm = addFormEntity(new RecordFormEntity(primaryData, "recordForm", "Прочие операции"));
@@ -446,7 +518,13 @@ public class BudgetLogicsModule extends LogicsModule {
             objDepartment.groupTo.banClassView.addAll(BaseUtils.toList(ClassViewType.GRID, ClassViewType.HIDE));
 
             ObjectEntity objIncCash = addSingleGroupObject(incomeCash, baseGroup);
+            addPropertyDraw(objIncCash, nameInvestorInvestment);
+
             objIncNotCash = addSingleGroupObject(incomeNotCash, baseGroup);
+            addPropertyDraw(objIncNotCash, nameInvestorInvestment);
+
+            setForceViewType(nameInvestorInvestment, ClassViewType.GRID);
+
             objOutcome = addSingleGroupObject(outcomeCost, baseGroup);
 
             addPropertyDraw(objIncCash, objIncNotCash, objOutcome, baseGroup);
@@ -466,6 +544,28 @@ public class BudgetLogicsModule extends LogicsModule {
             DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign();
 
             design.addIntersection(design.getGroupObjectContainer(objIncNotCash.groupTo), design.getGroupObjectContainer(objOutcome.groupTo), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
+            return design;
+        }
+    }
+
+    private class InvestmentFormEntity extends FormEntity {
+
+        private InvestmentFormEntity(NavigatorElement parent, String sID, String caption) {
+            super(parent, sID, caption);
+
+            ObjectEntity objInvestment = addSingleGroupObject(investment, baseLM.date, baseLM.objectClassName, nameCurInvestment, sumInvestment, exchangeBaseRateInvestment, sumBaseInvestment, nameInvestorInvestment, nameOperationDepartment);
+            addObjectActions(this, objInvestment);
+
+            ObjectEntity objInvestor = addSingleGroupObject(investor, baseGroup, sumInvestmentInvestor, shareInvestor);
+
+            addPropertyDraw(investmentTotal);
+        }
+
+        @Override
+        public FormView createDefaultRichDesign() {
+            DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign();
+
+            design.defaultOrders.put(design.get(getPropertyDraw(baseLM.date)), true);
             return design;
         }
     }
