@@ -1126,10 +1126,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         // "старое" состояние базы
         DataInputStream inputDB = null;
         byte[] struct = (byte[]) sql.readRecord(StructTable.instance, new HashMap<KeyField, DataObject>(), StructTable.instance.struct);
-        if (struct != null) {
+        if (struct != null)
             inputDB = new DataInputStream(new ByteArrayInputStream(struct));
-            fillIDs();
-        }
 
         sql.startTransaction();
 
@@ -1260,11 +1258,12 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         }
 
         Collection<AggregateProperty> recalculateProperties = new ArrayList<AggregateProperty>();
-        for (Property property : storedProperties) { // добавляем оставшиеся
-            sql.addColumn(property.mapTable.table.name, property.field);
-            if (property instanceof AggregateProperty)
-                recalculateProperties.add((AggregateProperty) property);
-        }
+        if(struct!=null) // если все свойства "новые" то ничего перерасчитывать не надо
+            for (Property property : storedProperties) { // добавляем оставшиеся
+                sql.addColumn(property.mapTable.table.name, property.field);
+                if (property instanceof AggregateProperty)
+                    recalculateProperties.add((AggregateProperty) property);
+            }
 
         // удаляем таблицы старые
         for (String table : prevTables.keySet())
@@ -1272,9 +1271,6 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
                 sql.dropTable(table);
 
         packTables(sql, packTables); // упакуем таблицы
-
-        recalculateAggregations(sql, recalculateProperties); // перерасчитаем агрегации
-//        recalculateAggregations(sql, getAggregateStoredProperties());
 
         // создадим индексы в базе
         for (Map.Entry<ImplementTable, Set<List<String>>> mapIndex : mapIndexes.entrySet())
@@ -1288,10 +1284,12 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             sql.insertRecord(StructTable.instance, new HashMap<KeyField, DataObject>(), propFields, true);
         }
 
-        sql.commitTransaction();
+        fillIDs();
 
-        if (struct == null)
-            fillIDs();
+        recalculateAggregations(sql, recalculateProperties); // перерасчитаем агрегации
+//        recalculateAggregations(sql, getAggregateStoredProperties());
+
+        sql.commitTransaction();
     }
 
     boolean checkPersistent(SQLSession session) throws SQLException {

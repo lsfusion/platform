@@ -330,6 +330,8 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         tableFactory.include("loginSID", StringClass.get(30), StringClass.get(30));
         tableFactory.include("countryDate", country, DateClass.instance);
         tableFactory.include("country", country, DateClass.instance);
+
+        tableFactory.include("session", session);
     }
 
     @Override

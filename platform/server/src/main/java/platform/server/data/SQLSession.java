@@ -59,16 +59,16 @@ public class SQLSession extends MutableObject {
 
     private void tryCommon() throws SQLException { // пытается вернуться к
         removeUnusedTemporaryTables();
-        if(!inTransaction && getSQLTemporaryPool().isEmpty(sessionTablesMap)) { // вернемся к commonConnection'у
+        if(inTransaction == 0 && getSQLTemporaryPool().isEmpty(sessionTablesMap)) { // вернемся к commonConnection'у
             connectionPool.returnPrivate(this, privateConnection);
             privateConnection = null;
         }
     }
 
-    private boolean inTransaction;
+    private int inTransaction = 0; // счетчик для по сути распределенных транзакций
 
     public boolean isInTransaction() {
-        return inTransaction;
+        return inTransaction > 0;
     }
 
     public static void setACID(Connection connection, boolean ACID) throws SQLException {
@@ -90,13 +90,13 @@ public class SQLSession extends MutableObject {
     public void startTransaction() throws SQLException {
         needPrivate();
 
-        setACID(privateConnection, true);
-        inTransaction = true;
+        if(inTransaction++ == 0)
+            setACID(privateConnection, true);
     }
 
     private void endTransaction() throws SQLException {
-        setACID(privateConnection, false);
-        inTransaction = false;
+        if(--inTransaction == 0)
+            setACID(privateConnection, false);
 
         tryCommon();
     }
@@ -316,7 +316,7 @@ public class SQLSession extends MutableObject {
 
         logger.info(DDL);
 
-        if(temporary && !inTransaction) // если temporary таблица то для DDL надо выключать read-only
+        if(temporary && inTransaction == 0) // если temporary таблица то для DDL надо выключать read-only
             connection.setReadOnly(false);
 
         Statement statement = connection.createStatement();
@@ -328,7 +328,7 @@ public class SQLSession extends MutableObject {
         } finally {
             statement.close();
 
-            if(temporary && !inTransaction)
+            if(temporary && inTransaction == 0)
                 connection.setReadOnly(true);
 
             returnConnection(connection);
