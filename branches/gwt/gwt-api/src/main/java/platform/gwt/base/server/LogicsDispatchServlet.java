@@ -5,6 +5,9 @@ import net.customware.gwt.dispatch.server.Dispatch;
 import net.customware.gwt.dispatch.server.InstanceActionHandlerRegistry;
 import net.customware.gwt.dispatch.server.SimpleDispatch;
 import net.customware.gwt.dispatch.server.standard.AbstractStandardDispatchServlet;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 import platform.base.OSUtils;
 import platform.interop.RemoteLogicsInterface;
 import platform.interop.navigator.RemoteNavigatorInterface;
@@ -57,4 +60,10 @@ public abstract class LogicsDispatchServlet<T extends RemoteLogicsInterface> ext
     }
 
     protected abstract void addHandlers(InstanceActionHandlerRegistry registry);
+
+
+    protected Authentication getAuthentication() {
+        SecurityContext securityContext = SecurityContextHolder.getContext();
+        return securityContext.getAuthentication();
+    }
 }

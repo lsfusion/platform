@@ -9,8 +9,13 @@
         String locale = request.getParameter("locale");
         locale = locale == null ? "" : "?locale=" + locale;
 
+        String hostedParams = request.getParameter("gwt.codesvr");
+        hostedParams = hostedParams == null
+                       ? ""
+                       : (locale==null ? "?" : "&") + "gwt.codesvr=" + hostedParams;
+
         session.invalidate();
-        response.sendRedirect("expertProfile.html" + locale);
+        response.sendRedirect("expertProfile.html" + locale + hostedParams);
     %>
   </body>
 </html>

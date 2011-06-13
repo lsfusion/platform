@@ -30,7 +30,8 @@
             <param name="fileNamePattern" value="../logs/gwtlog-%i.log.zip"/>
         </rollingPolicy>
         <triggeringPolicy class="org.apache.log4j.rolling.SizeBasedTriggeringPolicy">
-            <param name="maxFileSize" value="10485760"/> <!-- 10MB -->
+            <!-- 10MB -->
+            <param name="maxFileSize" value="10485760"/>
         </triggeringPolicy>
         <layout class="org.apache.log4j.PatternLayout">
             <param name="ConversionPattern" value="%d{DATE} %5p %t %c{1}:%M:%L - %m%n"/>
@@ -45,7 +46,8 @@
             <param name="fileNamePattern" value="../logs/gwtlog-err-%i.log.zip"/>
         </rollingPolicy>
         <triggeringPolicy class="org.apache.log4j.rolling.SizeBasedTriggeringPolicy">
-            <param name="maxFileSize" value="10485760"/> <!-- 10MB -->
+            <!-- 10MB -->
+            <param name="maxFileSize" value="10485760"/>
         </triggeringPolicy>
         <layout class="org.apache.log4j.PatternLayout">
             <param name="ConversionPattern" value="%d{DATE} %5p %t %c{1}:%M:%L - %m%n"/>
@@ -54,6 +56,12 @@
             <param name="LevelMin" value="WARN"/>
         </filter>
     </appender>
+
+    <category name="org.springframework" additivity="false">
+        <priority value="ERROR"/>
+        <appender-ref ref="stdout"/>
+        <appender-ref ref="stderr"/>
+    </category>
 
     <root>
         <priority value="ERROR"/>

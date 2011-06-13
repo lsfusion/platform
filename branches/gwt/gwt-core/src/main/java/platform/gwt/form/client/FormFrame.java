@@ -96,16 +96,35 @@ public class FormFrame extends HLayout implements EntryPoint {
             protected void addButtonsAfterLocaleChooser() {
                 addSeparator();
 
-                ToolStripButton logoffBtn = new ToolStripButton();
-                logoffBtn.setIcon("refresh.png");
-                logoffBtn.addClickHandler(new ClickHandler() {
+                ToolStripButton refreshBtn = new ToolStripButton("Обновить", "refresh.png");
+                refreshBtn.addClickHandler(new ClickHandler() {
                     @Override
                     public void onClick(ClickEvent event) {
                         refreshData();
                     }
                 });
 
-                addMember(logoffBtn);
+                ToolStripButton applyBtn = new ToolStripButton("Применить", "apply.png");
+                applyBtn.disable();
+                applyBtn.addClickHandler(new ClickHandler() {
+                    @Override
+                    public void onClick(ClickEvent event) {
+                        refreshData();
+                    }
+                });
+
+                ToolStripButton cancelBtn = new ToolStripButton("Отменить", "cancel.png");
+                cancelBtn.disable();
+                cancelBtn.addClickHandler(new ClickHandler() {
+                    @Override
+                    public void onClick(ClickEvent event) {
+                        refreshData();
+                    }
+                });
+
+                addMember(refreshBtn);
+                addMember(applyBtn);
+                addMember(cancelBtn);
             }
         });
 

@@ -1,6 +1,9 @@
 package platform.gwt.base.server;
 
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 import platform.base.OSUtils;
 import platform.interop.RemoteLogicsInterface;
 import platform.interop.navigator.RemoteNavigatorInterface;
@@ -25,5 +28,11 @@ public abstract class LogicsServiceServlet<T extends RemoteLogicsInterface>  ext
         } catch (RemoteException e) {
             throw new ServletException("Ошибка инициализации сервлета: ", e);
         }
+    }
+
+
+    protected Authentication getAuthentication() {
+        SecurityContext securityContext = SecurityContextHolder.getContext();
+        return securityContext.getAuthentication();
     }
 }

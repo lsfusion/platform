@@ -4,7 +4,6 @@ import com.smartgwt.client.types.Overflow;
 import com.smartgwt.client.types.TileLayoutPolicy;
 import com.smartgwt.client.widgets.form.DynamicForm;
 import com.smartgwt.client.widgets.form.fields.FormItem;
-import com.smartgwt.client.widgets.form.fields.TextAreaItem;
 import com.smartgwt.client.widgets.tile.TileLayout;
 import platform.gwt.form.client.FormFrame;
 import platform.gwt.form.client.utills.GwtUtils;
@@ -59,29 +58,29 @@ public class GGroupPanel extends TileLayout {
         }
 
         for (GPropertyDraw property : properties) {
-            FormItem field = property.createFormItem();
-            field.setValue(values.get(property));
+            Object propValue = values.get(property);
+            if (propValue != null) {
+                FormItem field = property.createFormItem();
+                field.setValue(propValue);
 
-            DynamicForm itemForm = new DynamicForm();
-//            itemForm.setColWidths("0", "*");
-            itemForm.setOverflow(Overflow.VISIBLE);
-            itemForm.setWrapItemTitles(false);
-            if (field instanceof TextAreaItem) {
-//                itemForm.setWidth100();
+                DynamicForm itemForm = new DynamicForm();
+                itemForm.setOverflow(Overflow.VISIBLE);
+                itemForm.setWrapItemTitles(false);
+
+                itemForm.setFields(field);
+
+                itemForm.setAutoWidth();
+                itemForm.setAutoHeight();
+
+                addTile(itemForm);
+                tileCount++;
             }
-
-            itemForm.setFields(field);
-            itemForm.setAutoWidth();
-            itemForm.setAutoHeight();
-
-            addTile(itemForm);
-            tileCount++;
         }
 
         setVisible(!isEmpty());
     }
 
     public boolean isEmpty() {
-        return properties.size() == 0 || values.size() == 0;
+        return tileCount == 0;
     }
 }

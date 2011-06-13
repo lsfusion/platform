@@ -175,7 +175,7 @@ public class LoginFrame extends VLayout implements EntryPoint {
             return;
         }
 
-        String loginUrl = GWT.getHostPageBaseURL() + "j_security_check";
+        String loginUrl = GWT.getHostPageBaseURL() + "j_spring_security_check";
 
         String postData = URL.encode("j_username") + "=" + URL.encode(usernameBox.getValueAsString()) +
                           "&" +

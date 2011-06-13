@@ -7,6 +7,10 @@
     <version>1.0-SNAPSHOT</version>
     <name>Base</name>
 
+    <properties>
+        <spring.version>3.0.5.RELEASE</spring.version>
+    </properties>
+
     <repositories>
         <repository>
             <id>lsfusion</id>
@@ -80,7 +84,7 @@
                 <configuration>
                     <workingDirectory>..</workingDirectory>
                     <executable>mvn</executable>
-                    <commandlineArgs>--also-make --projects by.luxsoft.platform:${project.artifactId} compile</commandlineArgs>
+                    <commandlineArgs>-Dgwt.draftCompile=true -Dgwt.style=PRETTY --also-make --projects by.luxsoft.platform:${project.artifactId} compile</commandlineArgs>
                 </configuration>
             </plugin>
        </plugins>
@@ -121,6 +125,31 @@
                 <groupId>org.xBaseJ</groupId>
                 <artifactId>xbasej</artifactId>
                 <version>1.0.1</version>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework.security</groupId>
+                <artifactId>spring-security-web</artifactId>
+                <version>${spring.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework.security</groupId>
+                <artifactId>spring-security-config</artifactId>
+                <version>${spring.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework.security</groupId>
+                <artifactId>spring-security-core</artifactId>
+                <version>${spring.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-webmvc</artifactId>
+                <version>${spring.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-jdbc</artifactId>
+                <version>${spring.version}</version>
             </dependency>
 
             <dependency>
