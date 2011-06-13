@@ -24,7 +24,7 @@
         <module>sample-logics</module>
         <module>trushkin-logics</module>
         <module>retail-logics</module>
-        <module>gwt-core</module>
+        <module>gwt-form</module>
         <module>gwt-api</module>
     </modules>
 

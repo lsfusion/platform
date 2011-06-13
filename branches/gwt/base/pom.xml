@@ -204,7 +204,7 @@
             </dependency>
             <dependency>
                 <groupId>by.luxsoft.platform</groupId>
-                <artifactId>gwt-core</artifactId>
+                <artifactId>gwt-form</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>

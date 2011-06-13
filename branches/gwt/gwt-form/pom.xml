@@ -10,7 +10,7 @@
         <relativePath>../base/pom.xml</relativePath>
     </parent>
 
-    <artifactId>gwt-core</artifactId>
+    <artifactId>gwt-form</artifactId>
     <packaging>jar</packaging>
     <name>GWT Core</name>
 

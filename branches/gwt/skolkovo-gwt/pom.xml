@@ -37,7 +37,7 @@
         </dependency>
         <dependency>
             <groupId>by.luxsoft.platform</groupId>
-            <artifactId>gwt-core</artifactId>
+            <artifactId>gwt-form</artifactId>
         </dependency>
         <dependency>
             <groupId>by.luxsoft.platform</groupId>
