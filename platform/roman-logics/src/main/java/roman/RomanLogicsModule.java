@@ -371,7 +371,9 @@ public class RomanLogicsModule extends LogicsModule {
     private LP diffPriceMinPriceImporterFreightSku;
     private LP greaterPriceMinPriceImporterFreightSku;
     private LP dutyNetWeightFreightSku;
+    private LP dutyNetWeightImporterFreightSku;
     private LP dutyPercentImporterFreightSku;
+    private LP dutyImporterFreightSku;
     private LP minPriceRateCustomCategoryCountryFreightSku;
     private LP priceImporterFreightSku;
     private LP priceMaxImporterFreightSku;
@@ -2119,9 +2121,11 @@ public class RomanLogicsModule extends LogicsModule {
         greaterPriceMinPriceImporterFreightSku = addJProp(baseGroup, "greaterPriceMinPriceImporterFreightSku", "Недостаточность цены", baseLM.greater2, diffPriceMinPriceImporterFreightSku, 1, 2, 3, baseLM.vzero);
 
         dutyNetWeightFreightSku = addJProp(baseGroup, "dutyNetWeightFreightSku", "Пошлина по весу нетто", baseLM.multiplyDouble2, netWeightFreightSku, 1, 2, addJProp(dutySumCustomCategory10TypeDuty, customCategory10Sku, 2, typeDutyFreight, 1), 1, 2);
+        dutyNetWeightImporterFreightSku = addJProp(baseGroup, "dutyNetWeightImpoterFreightSku", "Пошлина по весу нетто", baseLM.and1, dutyNetWeightFreightSku, 2, 3, is(importer), 1);
 
         dutyPercentImporterFreightSku = addJProp(baseGroup, "dutyPercentImporterFreightSku", "Пошлина по цене", baseLM.percent2, priceInOutImporterFreightSku, 1, 2, 3, addJProp(dutyPercentCustomCategory10TypeDuty, customCategory10Sku, 3, typeDutyFreight, 2), 1, 2, 3);
-        
+
+        dutyImporterFreightSku = addSUProp(baseGroup, "dutyImporterFreightSku", "Пошлина", Union.MAX, dutyNetWeightImporterFreightSku, dutyPercentImporterFreightSku);
 
         priceImporterFreightArticleCompositionCountryCategory = addMGProp(baseGroup, "priceImporterFreightArticleCompositionCountryCategory", "Цена",
                 priceInOutImporterFreightSku, 1, 2, articleSku, 3, mainCompositionOriginFreightSku, 2, 3, countryOfOriginFreightSku, 2, 3, customCategory10FreightSku, 2, 3);
@@ -3623,7 +3627,7 @@ public class RomanLogicsModule extends LogicsModule {
 
             objCountry = addSingleGroupObject(baseLM.country, "Страна производства", baseLM.name);
 
-            objTypeDuty = addSingleGroupObject(typeDuty, "Тип таможенного оформления", sidTypeDuty);
+            objTypeDuty = addSingleGroupObject(typeDuty, "Тип таможенного платежа", sidTypeDuty);
             addObjectActions(this, objTypeDuty);
 
             objCustomCategory4Origin = addSingleGroupObject(customCategory4, "Первый уровень", sidCustomCategory4, nameCustomCategory);
@@ -4923,9 +4927,6 @@ public class RomanLogicsModule extends LogicsModule {
 
             addPropertyDraw(sidCustomCategory10FreightSku, objFreight, objSku);
             addPropertyDraw(nameSubCategoryFreightSku, objFreight, objSku);
-            addPropertyDraw(dutyNetWeightFreightSku, objFreight, objSku);
-            addPropertyDraw(dutyPercentImporterFreightSku, objImporter, objFreight, objSku);
-
             addPropertyDraw(quantityImporterFreightSku, objImporter, objFreight, objSku);
             addPropertyDraw(markupPercentImporterFreightSku, objImporter, objFreight, objSku);
             addPropertyDraw(priceInImporterFreightSku, objImporter, objFreight, objSku);
@@ -4933,6 +4934,9 @@ public class RomanLogicsModule extends LogicsModule {
             addPropertyDraw(priceInOutImporterFreightSku, objImporter, objFreight, objSku);
             addPropertyDraw(minPriceRateFreightSku, objFreight, objSku);
             addPropertyDraw(diffPriceMinPriceImporterFreightSku, objImporter, objFreight, objSku);
+            addPropertyDraw(dutyNetWeightFreightSku, objFreight, objSku);
+            addPropertyDraw(dutyPercentImporterFreightSku, objImporter, objFreight, objSku);
+            addPropertyDraw(dutyImporterFreightSku, objImporter, objFreight, objSku);
 
             PropertyObjectEntity greaterPriceMinPriceImporterFreightSkuProperty = addPropertyObject(greaterPriceMinPriceImporterFreightSku, objImporter, objFreight, objSku);
             getPropertyDraw(minPriceRateFreightSku).setPropertyHighlight(greaterPriceMinPriceImporterFreightSkuProperty);
