@@ -111,9 +111,9 @@ public class RemoteFormProxy<T extends RemoteFormInterface>
     }
 
     @PendingRemoteMethod
-    public void changePropertyDraw(int propertyID, byte[] columnKey, byte[] object, boolean all) throws RemoteException {
+    public void changePropertyDraw(int propertyID, byte[] columnKey, byte[] object, boolean all, boolean aggValue) throws RemoteException {
         logRemoteMethodStartCall("changePropertyDraw");
-        target.changePropertyDraw(propertyID, columnKey, object, all);
+        target.changePropertyDraw(propertyID, columnKey, object, all, aggValue);
         logRemoteMethodEndVoidCall("changePropertyDraw");
     }
 
@@ -290,9 +290,9 @@ public class RemoteFormProxy<T extends RemoteFormInterface>
         logRemoteMethodEndVoidCall("moveGroupObject");
     }
 
-    public byte[] getPropertyChangeType(int propertyID) throws RemoteException {
+    public byte[] getPropertyChangeType(int propertyID, boolean aggValue) throws RemoteException {
         logRemoteMethodStartCall("getPropertyChangeType");
-        byte[] result = target.getPropertyChangeType(propertyID);
+        byte[] result = target.getPropertyChangeType(propertyID, aggValue);
         logRemoteMethodEndCall("getPropertyChangeType", result);
         return result;
     }

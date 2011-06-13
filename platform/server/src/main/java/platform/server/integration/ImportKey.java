@@ -61,10 +61,6 @@ public class ImportKey <P extends PropertyInterface> implements ImportKeyInterfa
         return getProperty().read(session, mapObjects(row));
     }
 
-    void writeValue(DataSession session, ImportTable.Row row, DataObject obj) throws SQLException {
-        getProperty().execute(mapObjects(row), session, obj.object, session.modifier);
-    }
-
     public Expr getExpr(Map<ImportField, ? extends Expr> importKeys, Map<ImportKey<?>, SinglePropertyTableUsage<?>> addedKeys, Modifier<? extends Changes> modifier) {
         Map<P, Expr> implementExprs = getImplementExprs(importKeys);
 

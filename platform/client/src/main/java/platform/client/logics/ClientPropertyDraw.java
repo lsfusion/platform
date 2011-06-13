@@ -137,7 +137,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     }
 
     public PropertyEditorComponent getEditorComponent(Component ownerComponent, ClientFormController form, Object value) throws IOException, ClassNotFoundException {
-        ClientType changeType = getPropertyChangeType(form);
+        ClientType changeType = getPropertyChangeType(form, true);
         if (changeType == null) {
             return null;
         }
@@ -157,7 +157,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     }
 
     public PropertyEditorComponent getObjectEditorComponent(Component ownerComponent, ClientFormController form, Object value) throws IOException, ClassNotFoundException {
-        ClientType changeType = getPropertyChangeType(form);
+        ClientType changeType = getPropertyChangeType(form, true);
         return changeType == null
                 ? null
                 : changeType.getObjectEditorComponent(ownerComponent, form, this, value, getFormat(), design);
@@ -284,8 +284,8 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         return sID;
     }
 
-    public ClientType getPropertyChangeType(ClientFormController form) throws IOException {
-        DataInputStream inStream = new DataInputStream(new ByteArrayInputStream(form.remoteForm.getPropertyChangeType(getID())));
+    public ClientType getPropertyChangeType(ClientFormController form, boolean aggValue) throws IOException {
+        DataInputStream inStream = new DataInputStream(new ByteArrayInputStream(form.remoteForm.getPropertyChangeType(getID(), aggValue)));
         if (inStream.readBoolean()) {
             return null;
         }
@@ -296,7 +296,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public Object parseString(ClientFormController form, String s) throws ParseException {
         ClientType changeType;
         try {
-            changeType = getPropertyChangeType(form);
+            changeType = getPropertyChangeType(form, false);
             if (changeType == null) {
                 throw new ParseException("PropertyView не может быть изменено.", 0);
             }

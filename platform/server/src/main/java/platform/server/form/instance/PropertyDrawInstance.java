@@ -116,31 +116,4 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
         }
     }
 
-    public PropertyObjectInstance<?> getChangeInstance(Modifier<? extends Changes> modifier, BusinessLogics<?> BL) throws SQLException {
-        PropertyObjectInstance<?> change = propertyObject.getChangeInstance();
-
-        boolean isReadOnly = entity.readOnly;
-
-        // если readOnly свойство лежит в groupObject в виде панели с одним входом, то показываем диалог выбора объекта
-        if ((isReadOnly || !change.getValueImplement().canBeChanged(modifier))
-            && !(propertyObject.property instanceof ObjectValueProperty)
-            && toDraw != null
-            && toDraw.curClassView == ClassViewType.PANEL
-            && toDraw.objects.size() == 1
-            && propertyObject.mapping.values().size() == 1
-            && propertyObject.mapping.values().iterator().next() == toDraw.objects.iterator().next()
-            && !toDraw.objects.iterator().next().entity.addOnTransaction) {
-
-            ObjectInstance singleObject = BaseUtils.single(toDraw.objects);
-            ObjectValueProperty objectValueProperty = BL.getObjectValueProperty(singleObject.getBaseClass());
-
-            return objectValueProperty.getImplement().mapObjects(
-                    Collections.singletonMap(
-                            BaseUtils.single(objectValueProperty.interfaces),
-                            singleObject));
-        }
-
-        //контролируем возможность изменения свойства здесь
-        return !isReadOnly ? change : null;
-    }
 }

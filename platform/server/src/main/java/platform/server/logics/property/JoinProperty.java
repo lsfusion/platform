@@ -5,6 +5,9 @@ import platform.interop.ClassViewType;
 import platform.interop.Compare;
 import platform.server.classes.CustomClass;
 import platform.server.data.expr.Expr;
+import platform.server.data.expr.KeyExpr;
+import platform.server.data.expr.query.GroupExpr;
+import platform.server.data.expr.query.GroupType;
 import platform.server.data.where.Where;
 import platform.server.data.where.WhereBuilder;
 import platform.server.form.entity.FormEntity;
@@ -88,6 +91,10 @@ public class JoinProperty<T extends PropertyInterface> extends FunctionProperty<
             fillDepends(implementProps,implement.mapping.values());
             return implement.property.getUsedDataChanges(modifier).add(modifier.getUsedChanges(implementProps));
         }
+        if(implement.mapping.size()==1 && !implementChange) {
+            // пока тупо MGProp'им назад
+            return ((PropertyMapImplement<?,Interface>)BaseUtils.singleValue(implement.mapping)).property.getUsedDataChanges(modifier).add(implement.property.getUsedChanges(modifier));
+        }
 
         return super.calculateUsedDataChanges(modifier);
     }
@@ -138,6 +145,16 @@ public class JoinProperty<T extends PropertyInterface> extends FunctionProperty<
                     mapInterfaces.put(interfaceMap.getKey(), (Interface) interfaceMap.getValue());
             return implement.property.getJoinDataChanges(getJoinImplements(change.mapKeys, modifier, null), change.expr, change.where, modifier, changedWhere).map(mapInterfaces);
         }
+        if(implement.mapping.size()==1 && !implementChange) {
+            // пока тупо MGProp'им назад
+            PropertyMapImplement<?, Interface> implementSingle = (PropertyMapImplement<?, Interface>) BaseUtils.singleValue(implement.mapping);
+            KeyExpr keyExpr = new KeyExpr("key");
+            Expr groupExpr = GroupExpr.create(Collections.singletonMap(0, implement.property.getExpr(Collections.singletonMap(BaseUtils.single(implement.property.interfaces), keyExpr), modifier)),
+                            keyExpr, keyExpr.isClass(implementSingle.property.getCommonClasses().value.getUpSet()), GroupType.ANY, Collections.singletonMap(0, change.expr));
+            return implementSingle.mapDataChanges(
+                    new PropertyChange<Interface>(change.mapKeys, groupExpr, change.where), changedWhere, modifier);
+        }
+
 
         return super.calculateDataChanges(change, changedWhere, modifier);
     }

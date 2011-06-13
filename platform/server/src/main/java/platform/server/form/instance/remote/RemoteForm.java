@@ -414,11 +414,11 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
     private List<ClientAction> actions = new ArrayList<ClientAction>();
     private ObjectInstance updateCurrentClass = null;
 
-    public void changePropertyDraw(int propertyID, byte[] columnKey, byte[] object, boolean all) {
+    public void changePropertyDraw(int propertyID, byte[] columnKey, byte[] object, boolean all, boolean aggValue) {
         try {
             PropertyDrawInstance propertyDraw = form.getPropertyDraw(propertyID);
             Map<ObjectInstance, DataObject> keys = deserializeKeys(propertyDraw, columnKey);
-            actions.addAll(form.changeProperty(propertyDraw, keys, deserializeObject(object), this, all));
+            actions.addAll(form.changeProperty(propertyDraw, keys, deserializeObject(object), this, all, aggValue));
 
             if (logger.isInfoEnabled()) {
                 logger.info(String.format("changePropertyDraw: [ID: %1$d, SID: %2$s, all?: %3$s] = %4$s", propertyDraw.getID(), propertyDraw.getsID(), all, deserializeObject(object)));
@@ -449,7 +449,7 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
             Map<ObjectInstance, DataObject> mainKeys = deserializeKeys(mainProperty, mainColumnKey);
             Map<ObjectInstance, DataObject> getterKeys = deserializeKeys(getterProperty, getterColumnKey);
             actions.addAll(
-                    form.changeProperty(mainProperty, mainKeys, getterProperty, getterKeys, this, true)
+                    form.changeProperty(mainProperty, mainKeys, getterProperty, getterKeys, this, true, false)
             );
 
             if (logger.isInfoEnabled()) {
@@ -717,13 +717,13 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         return outStream.toByteArray();
     }
 
-    public byte[] getPropertyChangeType(int propertyID) {
+    public byte[] getPropertyChangeType(int propertyID, boolean aggValue) {
 
         try {
             ByteArrayOutputStream outStream = new ByteArrayOutputStream();
             DataOutputStream dataStream = new DataOutputStream(outStream);
 
-            form.serializePropertyEditorType(dataStream, form.getPropertyDraw(propertyID));
+            form.serializePropertyEditorType(dataStream, form.getPropertyDraw(propertyID), aggValue);
 
             return outStream.toByteArray();
         } catch (Exception e) {

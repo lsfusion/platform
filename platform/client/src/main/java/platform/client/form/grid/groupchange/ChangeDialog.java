@@ -261,7 +261,7 @@ public class ChangeDialog extends JDialog {
                 super(false);
             }
 
-            protected boolean cellValueChanged(Object value) {
+            protected boolean cellValueChanged(Object value, boolean aggValue) {
                 selectedValue = value;
 
                 TableCellEditor editor = getCellEditor(0, 0);
@@ -284,7 +284,7 @@ public class ChangeDialog extends JDialog {
                 return true;
             }
 
-            public ClientPropertyDraw getProperty(int row, int col) {
+            public ClientPropertyDraw getProperty() {
                 return property;
             }
 

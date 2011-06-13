@@ -560,9 +560,9 @@ public class MapCacheAspect {
                 expr = expr.pack(); // пакуем так как в кэш идет
             hashCaches.put(implement, new ExprResult(expr, changedWheres!=null?cacheWheres.toWhere():null));
 
-//            if(expr.getComplexity()>300) {
-//                System.out.println("COMPLEX" + property);
-//            }
+            if(expr.getComplexity()>300) {
+                System.out.println("COMPLEX" + property);
+            }
 
             // проверим
             if(checkInfinite && !(property instanceof FormulaProperty))

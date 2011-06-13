@@ -116,6 +116,12 @@ public class PropertyObjectInstance<P extends PropertyInterface> extends Propert
     public PropertyObjectInstance<?> getChangeInstance() {
         return property.getChangeImplement().mapObjects(mapping);
     }
+    public PropertyObjectInstance<?> getChangeInstance(boolean aggValue) {
+        if(aggValue)
+            return getChangeInstance();
+        else
+            return this;
+    }
 
     public Type getEditorType() {
         return property.getEditorType(mapping);

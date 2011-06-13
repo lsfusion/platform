@@ -41,32 +41,6 @@ public class ImportProperty <P extends PropertyInterface> {
         return implement;
     }
 
-    public PropertyImplement<P, ImportKeyInterface> getConverter() {
-        return converter;
-    }
-
-    Object convertValue(DataSession session, Map<ImportKeyInterface, DataObject> keyValues) throws SQLException {
-        Map<P, DataObject> mapping =
-                BaseUtils.join(getConverter().mapping, createMapping(getConverter().mapping.values(), keyValues));
-        return converter.property.read(session, mapping);
-    }
-
-    void writeValue(DataSession session, Map<ImportKeyInterface, DataObject> keyValues, Object value) throws SQLException {
-        Map<P, DataObject> mapping =
-                BaseUtils.join(getProperty().mapping, createMapping(getProperty().mapping.values(), keyValues));
-        getProperty().property.execute(mapping, session, value, session.modifier);
-    }
-
-    private Map<ImportKeyInterface, DataObject> createMapping(Collection<ImportKeyInterface> interfaces, Map<ImportKeyInterface, DataObject> keyValues) {
-        Map<ImportKeyInterface, DataObject> mapping = new HashMap<ImportKeyInterface, DataObject>(keyValues);
-        for (ImportKeyInterface iface : interfaces) {
-            if (!mapping.containsKey(iface)) {
-                mapping.put(iface, (DataObject) iface);
-            }
-        }
-        return mapping;
-    }
-
     private static <P> Map<P, Expr> getImplementExprs(Map<P, ImportKeyInterface> mapping, Map<ImportKey<?>, SinglePropertyTableUsage<?>> addedKeys, Map<ImportField, Expr> importExprs, Modifier<? extends Changes> modifier) {
         Map<P, Expr> importKeyExprs = new HashMap<P, Expr>();
         for(Map.Entry<P, ImportKeyInterface> entry : mapping.entrySet())

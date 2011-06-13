@@ -35,7 +35,7 @@ public class GroupChangeAction extends AbstractAction {
                 if (getterProperty != null) {
                     form.groupChangePropertyDraw(mainProperty.property, mainProperty.columnKey, getterProperty.property, getterProperty.columnKey);
                 } else {
-                    form.changePropertyDraw(mainProperty.property, mainProperty.columnKey, dlg.getSelectedValue(), true);
+                    form.changePropertyDraw(mainProperty.property, mainProperty.columnKey, dlg.getSelectedValue(), true, true);
                 }
             } catch (IOException ioe) {
                 throw new RuntimeException("Ошибка при групповой корректировке", ioe);

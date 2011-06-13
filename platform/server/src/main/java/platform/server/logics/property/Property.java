@@ -342,6 +342,7 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
         return BaseUtils.toMap(new HashSet<T>(interfaces));
     }
 
+    // assert пока что aggrProps со свойствами с одним входом
     public PropertyMapImplement<?, T> getChangeImplement() {
         return new PropertyMapImplement<T, T>(this, getIdentityInterfaces());
     }
@@ -502,7 +503,7 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
     }
 
     public List<ClientAction> execute(Map<T, DataObject> keys, DataSession session, Object value, Modifier<? extends Changes> modifier) throws SQLException {
-        return getChangeImplement().execute(keys, session, value, modifier);
+        return getImplement().execute(keys, session, value, modifier);
     }
 
     // по умолчанию заполняет свойства

@@ -373,6 +373,19 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
         return null;
     }
 
+    public void writeSelectedValue(String value) {
+        int row = getSelectionModel().getLeadSelectionIndex();
+        int column = getColumnModel().getSelectionModel().getLeadSelectionIndex();
+
+        Object oValue = convertValueFromString(value, row, column);
+        if (oValue != null) {
+            TreePath pathForRow = getPathForRow(row);
+            if (pathForRow != null) {
+                model.changeProperty(oValue, pathForRow.getLastPathComponent(), column, false);
+            }
+        }
+    }
+
     @Override
     public boolean isCellHighlighted(int row, int column) {
         //todo:
@@ -400,9 +413,9 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
             try {
                 return property.parseString(form, value);
             } catch (ParseException ignored) {
+                return null;
             }
         }
-
         return null;
     }
 

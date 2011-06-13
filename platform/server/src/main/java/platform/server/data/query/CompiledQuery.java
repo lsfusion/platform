@@ -795,11 +795,11 @@ public class CompiledQuery<K,V> {
 
         for(Map.Entry<Map<K,Object>,Map<V,Object>> rowMap : result.entrySet()) {
             for(Map.Entry<K,Object> key : rowMap.getKey().entrySet()) {
-                logger.info(key.getKey()+"-"+key.getValue());
+                System.out.println(key.getKey()+"-"+key.getValue());
             }
-            logger.info("---- ");
+            System.out.println("---- ");
             for(Map.Entry<V,Object> property : rowMap.getValue().entrySet()) {
-                logger.info(property.getKey()+"-"+property.getValue());
+                System.out.println(property.getKey()+"-"+property.getValue());
             }
         }
     }

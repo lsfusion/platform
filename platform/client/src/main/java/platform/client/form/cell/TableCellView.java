@@ -56,15 +56,15 @@ public class TableCellView extends JPanel implements CellView {
         //readOnly будет проверяться на уровне сервера и обрезаться возвратом пустого changeType
         table = new CellTable(false) {
 
-            protected boolean cellValueChanged(Object value) {
-                return listener.cellValueChanged(value);
+            protected boolean cellValueChanged(Object value, boolean aggValue) {
+                return listener.cellValueChanged(value, aggValue);
             }
 
             public boolean isDataChanging() {
                 return true;
             }
 
-            public ClientPropertyDraw getProperty(int row, int col) {
+            public ClientPropertyDraw getProperty() {
                 return TableCellView.this.key;
             }
 

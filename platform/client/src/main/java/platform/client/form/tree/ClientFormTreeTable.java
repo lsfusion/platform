@@ -4,6 +4,7 @@ import org.jdesktop.swingx.JXTree;
 import org.jdesktop.swingx.JXTreeTable;
 import org.jdesktop.swingx.treetable.MutableTreeTableNode;
 import org.jdesktop.swingx.treetable.TreeTableModel;
+import platform.client.form.TableTransferHandler;
 import platform.interop.KeyStrokes;
 
 import javax.swing.*;
@@ -18,7 +19,7 @@ import java.awt.event.MouseEvent;
 import java.util.Enumeration;
 import java.util.EventObject;
 
-public abstract class ClientFormTreeTable extends JXTreeTable {
+public abstract class ClientFormTreeTable extends JXTreeTable implements TableTransferHandler.TableInterface {
 
     protected ClientFormTreeTable() {
 
@@ -39,7 +40,12 @@ public abstract class ClientFormTreeTable extends JXTreeTable {
 
         setupActionMap();
 
-        setTransferHandler(new TreeTableTransferHandler(this));
+        setTransferHandler(new TableTransferHandler() {
+            @Override
+            protected TableInterface getTable() {
+                return ClientFormTreeTable.this;
+            }
+        });
     }
 
     private void setupActionMap() {

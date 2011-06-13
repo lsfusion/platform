@@ -55,7 +55,7 @@ public class ButtonCellView extends ClientButton implements CellView {
                     if (editor != null) {
                         editor.getComponent(SwingUtils.computeAbsoluteLocation(ButtonCellView.this), getBounds(), null);
                         if (editor.valueChanged())
-                            listener.cellValueChanged(editor.getCellEditorValue());
+                            listener.cellValueChanged(editor.getCellEditorValue(), true);
                     }
 
                 } catch (Exception e) {
