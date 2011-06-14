@@ -149,7 +149,7 @@ public class LoginFrame extends VLayout implements EntryPoint {
 
         btnRemind.disable();
 
-        LoginService.App.getInstance().remindPassword(emailBox.getValueAsString(), new AsyncCallback<Void>() {
+        StandartLoginAsync.remindPassword(emailBox.getValueAsString(), new AsyncCallback<Void>() {
             @Override
             public void onFailure(Throwable t) {
                 if (t instanceof MessageException) {

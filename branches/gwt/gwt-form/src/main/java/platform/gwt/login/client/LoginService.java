@@ -5,7 +5,7 @@ import com.google.gwt.user.client.rpc.RemoteService;
 import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
 import platform.gwt.base.shared.MessageException;
 
-@RemoteServiceRelativePath("LoginService")
+@RemoteServiceRelativePath("login")
 public interface LoginService extends RemoteService {
     void remindPassword(String email) throws MessageException;
 

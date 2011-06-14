@@ -15,7 +15,7 @@
                        : (locale==null ? "?" : "&") + "gwt.codesvr=" + hostedParams;
 
         session.invalidate();
-        response.sendRedirect("expertProfile.html" + locale + hostedParams);
+        response.sendRedirect("form.html" + locale + hostedParams);
     %>
   </body>
 </html>

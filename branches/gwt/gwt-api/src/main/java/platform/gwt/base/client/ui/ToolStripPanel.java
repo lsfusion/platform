@@ -38,9 +38,11 @@ public class ToolStripPanel extends ToolStrip {
 
         addSpacer(6);
         ImgButton homeButton = new ImgButton();
-        if (logoUrl != null) {
-            homeButton.setSrc(logoUrl);
+
+        if (logoUrl == null) {
+            logoUrl = "logo_toolbar.png";
         }
+        homeButton.setSrc(logoUrl);
 
         homeButton.setWidth(24);
         homeButton.setHeight(24);

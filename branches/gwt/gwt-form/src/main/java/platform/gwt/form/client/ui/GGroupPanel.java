@@ -33,24 +33,32 @@ public class GGroupPanel extends TileLayout {
 
     public void addProperty(GPropertyDraw property) {
         if (!properties.contains(property)) {
+            updated = true;
             int ins = GwtUtils.relativePosition(property, form.propertyDraws, properties);
             properties.add(ins, property);
         }
     }
 
+    private boolean updated = true;
     public void removeProperty(GPropertyDraw property) {
+        updated = true;
         properties.remove(property);
         values.remove(property);
     }
 
     public void setValue(GPropertyDraw property, HashMap<GGroupObjectValue, Object> valueMap) {
         if (valueMap != null && !valueMap.isEmpty()) {
+            updated = true;
             values.put(property, valueMap.values().iterator().next());
         }
     }
 
     private int tileCount = 0;
     public void update() {
+        if (!updated) {
+            return;
+        }
+
         while (tileCount != 0) {
             removeTile(0);
             --tileCount;
@@ -69,6 +77,8 @@ public class GGroupPanel extends TileLayout {
         }
 
         setVisible(!isEmpty());
+
+        updated = true;
     }
 
     public boolean isEmpty() {

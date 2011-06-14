@@ -1,6 +1,7 @@
 package platform.gwt.form.client;
 
 import com.google.gwt.core.client.EntryPoint;
+import com.google.gwt.core.client.GWT;
 import com.google.gwt.i18n.client.Dictionary;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
@@ -14,7 +15,10 @@ import com.smartgwt.client.widgets.form.fields.FormItem;
 import com.smartgwt.client.widgets.form.fields.SelectItem;
 import com.smartgwt.client.widgets.form.fields.events.ChangedEvent;
 import com.smartgwt.client.widgets.form.fields.events.ChangedHandler;
-import com.smartgwt.client.widgets.layout.*;
+import com.smartgwt.client.widgets.layout.HLayout;
+import com.smartgwt.client.widgets.layout.SectionStack;
+import com.smartgwt.client.widgets.layout.SectionStackSection;
+import com.smartgwt.client.widgets.layout.VLayout;
 import com.smartgwt.client.widgets.toolbar.ToolStripButton;
 import net.customware.gwt.dispatch.client.DefaultExceptionHandler;
 import platform.gwt.base.client.ui.ToolStripPanel;
@@ -41,6 +45,13 @@ public class FormFrame extends HLayout implements EntryPoint {
     private VLayout mainPane;
 
     public void onModuleLoad() {
+        GWT.setUncaughtExceptionHandler(new GWT.UncaughtExceptionHandler() {
+            @Override
+            public void onUncaughtException(Throwable t) {
+                GWT.log("sh: ", t);
+            }
+        });
+
         draw();
         dispatcher.execute(new GetForm(getFormSID()), new AsyncCallback<GetFormResult>() {
             @Override
@@ -88,7 +99,7 @@ public class FormFrame extends HLayout implements EntryPoint {
         mainPane.setHeight100();
         mainPane.setAutoHeight();
 
-        mainPane.addMember(new ToolStripPanel("form.png", form.caption) {
+        mainPane.addMember(new ToolStripPanel(form.caption) {
             @Override
             protected void addButtonsAfterLocaleChooser() {
                 addSeparator();

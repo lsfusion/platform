@@ -21,7 +21,7 @@ public class GPropertyDraw extends GComponent {
         return baseType.createCellRenderer(value, this);
     }
 
-    private GPropertyRenderer panelRenderer = null;
+    private transient GPropertyRenderer panelRenderer = null;
     //по умолчанию создаём форму
     public GPropertyRenderer createPanelRenderer() {
         if (panelRenderer == null) {

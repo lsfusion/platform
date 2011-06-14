@@ -7,6 +7,7 @@
     <http auto-config="true" use-expressions="true" entry-point-ref="loginUrlAuthenticationEntryPoint">
         <intercept-url pattern="/expertProfile.html" access="hasRole('expert')"/>
         <intercept-url pattern="/platform.gwt.expertprofile.ExpertProfile/*" access="hasRole('expert')"/>
+        <intercept-url pattern="/form.html" access="hasRole('admin')"/>
         <form-login authentication-failure-url="/loginFailed.txt" default-target-url="/expertProfile.html"/>
     </http>
 

@@ -20,10 +20,18 @@
         <servlet-name>RemoteFormService</servlet-name>
         <servlet-class>platform.gwt.form.server.RemoteFormServiceImpl</servlet-class>
     </servlet>
+    <servlet>
+        <servlet-name>LoginService</servlet-name>
+        <servlet-class>platform.gwt.login.server.LoginServiceImpl</servlet-class>
+    </servlet>
 
     <servlet-mapping>
         <servlet-name>RemoteFormService</servlet-name>
         <url-pattern>/platform.gwt.form.Form/dispatch</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>LoginService</servlet-name>
+        <url-pattern>/platform.gwt.login.Login/login</url-pattern>
     </servlet-mapping>
 
     <!-- Spring configuration -->

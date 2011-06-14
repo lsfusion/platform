@@ -28,6 +28,10 @@
         <servlet-name>LoginService</servlet-name>
         <servlet-class>platform.gwt.login.server.LoginServiceImpl</servlet-class>
     </servlet>
+    <servlet>
+        <servlet-name>RemoteFormService</servlet-name>
+        <servlet-class>platform.gwt.form.server.RemoteFormServiceImpl</servlet-class>
+    </servlet>
 
     <servlet-mapping>
         <servlet-name>ProjectsService</servlet-name>
@@ -39,14 +43,8 @@
     </servlet-mapping>
     <servlet-mapping>
         <servlet-name>LoginService</servlet-name>
-        <url-pattern>/platform.gwt.login.Login/LoginService</url-pattern>
+        <url-pattern>/skolkovo.gwt.login.Login/login</url-pattern>
     </servlet-mapping>
-
-    <servlet>
-        <servlet-name>RemoteFormService</servlet-name>
-        <servlet-class>platform.gwt.form.server.RemoteFormServiceImpl</servlet-class>
-    </servlet>
-
     <servlet-mapping>
         <servlet-name>RemoteFormService</servlet-name>
         <url-pattern>/skolkovo.gwt.form.Form/dispatch</url-pattern>

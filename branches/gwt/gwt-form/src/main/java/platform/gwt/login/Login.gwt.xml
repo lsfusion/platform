@@ -3,10 +3,9 @@
 <module>
     <inherits name='com.google.gwt.user.User'/>
     <inherits name="platform.gwt.base.Base"/>
-    <inherits name="skolkovo.gwt.Resources"/>
+    <inherits name="platform.gwt.Resources"/>
 
     <entry-point class='platform.gwt.login.client.LoginFrame'/>
-    <servlet path="/LoginService" class="platform.gwt.login.server.LoginServiceImpl"/>
 
     <source path='client'/>
     <source path='shared'/>

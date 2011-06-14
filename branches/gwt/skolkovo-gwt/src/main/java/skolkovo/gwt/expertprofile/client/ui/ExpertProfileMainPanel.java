@@ -95,7 +95,7 @@ public class ExpertProfileMainPanel extends HLayout {
         //??
         main.setStyleName("tabSetContainer");
 
-        main.addMember(new ToolStripPanel("logo_toolbar.png", messages.title()));
+        main.addMember(new ToolStripPanel(messages.title()));
 
         SectionStack mainSectionStack = new SectionStack();
         mainSectionStack.setMargin(20);
