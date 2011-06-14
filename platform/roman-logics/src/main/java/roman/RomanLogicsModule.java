@@ -119,7 +119,8 @@ public class RomanLogicsModule extends LogicsModule {
     LP supplierSizeSupplier;
     private LP nameSupplierSizeSupplier;
     private LP sidBrandSupplier;
-    private LP sidTypeDuty;
+    public LP sidTypeDuty;
+    public LP sidToTypeDuty;
     private LP supplierBrandSupplier;
     private LP nameSupplierBrandSupplier;
     private LP brandSupplierSupplier;
@@ -254,6 +255,7 @@ public class RomanLogicsModule extends LogicsModule {
     private LP importBelTnved;
     private LP importEuTnved;
     LP importTnvedCountryMinPrices;
+    LP importTnvedDuty;
 
     LP customCategory4CustomCategory6;
     LP customCategory6CustomCategory9;
@@ -280,8 +282,8 @@ public class RomanLogicsModule extends LogicsModule {
     LP minPriceCustomCategory6Country;
     LP minPriceCustomCategory9Country;
     LP minPriceCustomCategory10SubCategoryCountry;
-    private LP dutyPercentCustomCategory10TypeDuty;
-    private LP dutySumCustomCategory10TypeDuty;
+    public LP dutyPercentCustomCategory10TypeDuty;
+    public LP dutySumCustomCategory10TypeDuty;
     private LP sidCustomCategory4CustomCategory6;
     private LP sidCustomCategory6CustomCategory9;
     private LP sidCustomCategory9CustomCategory10;
@@ -1076,6 +1078,7 @@ public class RomanLogicsModule extends LogicsModule {
         sidBrandSupplier = addDProp(baseGroup, "sidBrandSupplier", "Код", StringClass.get(50), brandSupplier);
 
         sidTypeDuty = addDProp(baseGroup, "sidTypeDuty", "Код", StringClass.get(10), typeDuty);
+        sidToTypeDuty = addAGProp("sidToTypeDuty", "Тип пошлины", sidTypeDuty);
 
         // Contract
         sidContract = addDProp(baseGroup, "sidContract", "Номер договора", StringClass.get(50), contract);
@@ -1124,9 +1127,10 @@ public class RomanLogicsModule extends LogicsModule {
         sidToCustomCategory10 = addAGProp("sidToCustomCategory10", "Код(10)", sidCustomCategory10);
         sidToCustomCategoryOrigin = addAGProp("sidToCustomCategoryOrigin", "Код ЕС (10)", sidCustomCategoryOrigin);
 
-        importBelTnved = addAProp(new ClassifierTNVEDImportActionProperty(genSID(), "Импортировать (РБ)", this, "belarusian"));
-        importEuTnved = addAProp(new ClassifierTNVEDImportActionProperty(genSID(), "Импортировать (ЕС)", this, "origin"));
-        importTnvedCountryMinPrices = addAProp(new TNVEDMinPricesImportActionProperty(genSID(), "Импортировать мин. цены", this));
+        importBelTnved = addAProp(new TNVEDImportActionProperty(genSID(), "Импортировать (РБ)", this, TNVEDImportActionProperty.CLASSIFIER_IMPORT, "belarusian"));
+        importEuTnved = addAProp(new TNVEDImportActionProperty(genSID(), "Импортировать (ЕС)", this, TNVEDImportActionProperty.CLASSIFIER_IMPORT, "origin"));
+        importTnvedCountryMinPrices = addAProp(new TNVEDImportActionProperty(genSID(), "Импортировать мин. цены", this, TNVEDImportActionProperty.MIN_PRICES_IMPORT));
+        importTnvedDuty = addAProp(new TNVEDImportActionProperty(genSID(), "Импортировать платежи", this, TNVEDImportActionProperty.DUTIES_IMPORT));
         jennyferImportInvoice = addAProp(importInvoiceActionGroup, new JennyferImportInvoiceActionProperty(this));
         tallyWeijlImportInvoice = addAProp(importInvoiceActionGroup, new TallyWeijlImportInvoiceActionProperty(this));
         hugoBossImportInvoice = addAProp(importInvoiceActionGroup, new HugoBossImportInvoiceActionProperty(BL));
@@ -3601,6 +3605,7 @@ public class RomanLogicsModule extends LogicsModule {
         private PropertyDrawEntity import1;
         private PropertyDrawEntity import2;
         private PropertyDrawEntity importMinPrices;
+        private PropertyDrawEntity importDuties;
 
         private TreeGroupEntity treeCustomCategory;
         private TreeGroupEntity treeCustomCategoryOrigin;
@@ -3652,6 +3657,7 @@ public class RomanLogicsModule extends LogicsModule {
             import1 = addPropertyDraw(importBelTnved);
             import2 = addPropertyDraw(importEuTnved);
             importMinPrices = addPropertyDraw(importTnvedCountryMinPrices);
+            importDuties = addPropertyDraw(importTnvedDuty);
 
             objCustomCategoryOrigin = addSingleGroupObject(customCategoryOrigin, "ЕС уровень", sidCustomCategoryOrigin, nameCustomCategory, sidCustomCategory10CustomCategoryOrigin);
             addObjectActions(this, objCustomCategoryOrigin, objCustomCategory6Origin, customCategory6);
@@ -3728,6 +3734,7 @@ public class RomanLogicsModule extends LogicsModule {
 
             design.addIntersection(design.get(import1), design.get(import2), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
             design.addIntersection(design.get(import2), design.get(importMinPrices), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
+            design.addIntersection(design.get(importMinPrices), design.get(importDuties), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
 
             design.addIntersection(design.getGroupObjectContainer(objSubCategory.groupTo), design.getGroupObjectContainer(objCountry.groupTo), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
             design.addIntersection(design.getGroupObjectContainer(objCountry.groupTo), design.getGroupObjectContainer(objTypeDuty.groupTo), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
