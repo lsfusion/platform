@@ -1,5 +1,6 @@
 package platform.client;
 
+import platform.client.form.ClientFormLayout;
 import sun.swing.SwingUtilities2;
 
 import javax.swing.*;
@@ -242,6 +243,16 @@ public class SwingUtils {
 
     public static Dimension getOverridedSize(Dimension base, Dimension override) {
         return new Dimension(override.width == -1 ? base.width : override.width,
-                             override.height == -1 ? base.height : override.height);
+                override.height == -1 ? base.height : override.height);
+    }
+
+    public static ClientFormLayout getClientFormlayout(Component comp) {
+        while (comp != null) {
+            if (comp instanceof ClientFormLayout) {
+                return (ClientFormLayout) comp;
+            }
+            comp = comp.getParent();
+        }
+        return null;
     }
 }

@@ -1,10 +1,15 @@
 package platform.client.form.cell;
 
 import platform.base.BaseUtils;
+import platform.client.Main;
+import platform.client.SwingUtils;
 import platform.client.form.ClientFormController;
+import platform.client.form.ClientFormLayout;
 import platform.client.logics.ClientGroupObjectValue;
 import platform.client.logics.ClientPropertyDraw;
 import platform.interop.ClassViewType;
+import platform.interop.event.ValueEvent;
+import platform.interop.event.ValueEventListener;
 
 import javax.swing.*;
 import java.awt.*;
@@ -24,6 +29,7 @@ public class TableCellView extends JPanel implements CellView {
 
     private Object highlight;
     private Color highlightColor;
+    private ValueEventListener valueEventListener;
 
     @Override
     public int hashCode() {
@@ -108,6 +114,26 @@ public class TableCellView extends JPanel implements CellView {
             add(label);
             add(table);
         }
+
+        if (key.eventSID.length() > 0) {
+
+            valueEventListener = new ValueEventListener() {
+                @Override
+                public void actionPerfomed(ValueEvent event) {
+                    ClientFormLayout focusLayout = SwingUtils.getClientFormlayout(KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusOwner());
+                    ClientFormLayout curLayout = SwingUtils.getClientFormlayout(table);
+                    if ((curLayout != null) && (curLayout.equals(focusLayout))) {
+                        setValue((Integer) event.getValue() / 1000.0);
+                    }
+                }
+
+                @Override
+                public String getEventSID() {
+                    return "SCALES";
+                }
+            };
+            Main.eBus.addListener(valueEventListener);
+        }
     }
 
     public void rightClick() {
@@ -141,7 +167,7 @@ public class TableCellView extends JPanel implements CellView {
 
     public void setHighlight(Object highlight, Color highlightColor) {
         if (BaseUtils.nullEquals(this.highlight, highlight) &&
-            BaseUtils.nullEquals(this.highlightColor, highlightColor)) {
+                BaseUtils.nullEquals(this.highlightColor, highlightColor)) {
             return;
         }
 

@@ -6,6 +6,7 @@ import platform.base.*;
 import platform.interop.Compare;
 import platform.interop.RemoteLogicsInterface;
 import platform.interop.action.*;
+import platform.interop.event.IDaemonTask;
 import platform.interop.exceptions.LoginException;
 import platform.interop.form.RemoteFormInterface;
 import platform.interop.form.screen.ExternalScreen;
@@ -1599,5 +1600,9 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
     public void close() throws SQLException {
         getThreadLocalSql().close();
+    }
+
+    public ArrayList<IDaemonTask> getDaemonTasks(int compId) {
+        return new ArrayList<IDaemonTask>();
     }
 }

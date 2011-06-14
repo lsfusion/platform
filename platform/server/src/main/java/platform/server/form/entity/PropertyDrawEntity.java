@@ -36,6 +36,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
 
     public boolean shouldBeLast = false;
     public ClassViewType forceViewType = null;
+    public String eventSID = "";
 
     public PropertyDrawEntity() {
     }

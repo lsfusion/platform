@@ -9,6 +9,7 @@ import org.aspectj.lang.annotation.Aspect;
 import platform.base.BaseUtils;
 import platform.base.IOUtils;
 import platform.base.WeakIdentityHashSet;
+import platform.interop.event.IDaemonTask;
 import platform.interop.form.RemoteFormInterface;
 import platform.interop.navigator.RemoteNavigatorInterface;
 import platform.interop.remote.CallbackMessage;
@@ -589,5 +590,10 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteObject i
         }
 
         return outStream.toByteArray();
+    }
+
+    @Override
+    public ArrayList<IDaemonTask> getDaemonTasks(int compId) throws RemoteException {
+        return  BL.getDaemonTasks(compId);
     }
 }

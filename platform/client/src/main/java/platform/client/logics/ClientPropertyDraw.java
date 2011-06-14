@@ -83,6 +83,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public boolean showTableFirst;
     public boolean clearText;
     public String tableName;
+    public String eventSID;
 
     public ClientPropertyDraw() {
     }
@@ -193,7 +194,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public Dimension getMinimumSize(JComponent comp) {
         if (minimumSize != null) {
             return new Dimension(minimumSize.width != -1 ? minimumSize.width : getMinimumWidth(comp),
-                                 minimumSize.height != -1 ? minimumSize.height : getMinimumHeight(comp));
+                    minimumSize.height != -1 ? minimumSize.height : getMinimumHeight(comp));
         }
         return new Dimension(getMinimumWidth(comp), getMinimumHeight(comp));
     }
@@ -218,7 +219,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public Dimension getPreferredSize(JComponent comp) {
         if (preferredSize != null) {
             return new Dimension(preferredSize.width != -1 ? preferredSize.width : getPreferredWidth(comp),
-                                 preferredSize.height != -1 ? preferredSize.height : getPreferredHeight(comp));
+                    preferredSize.height != -1 ? preferredSize.height : getPreferredHeight(comp));
         }
         return new Dimension(getPreferredWidth(comp), getPreferredHeight(comp));
     }
@@ -240,7 +241,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public Dimension getMaximumSize(JComponent comp) {
         if (maximumSize != null) {
             return new Dimension(maximumSize.width != -1 ? maximumSize.width : getMaximumWidth(comp),
-                                 maximumSize.height != -1 ? maximumSize.height : getMaximumHeight(comp));
+                    maximumSize.height != -1 ? maximumSize.height : getMaximumHeight(comp));
         }
         return new Dimension(getMaximumWidth(comp), getMaximumHeight(comp));
     }
@@ -398,6 +399,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         }
 
         returnClass = ClientTypeSerializer.deserializeClientClass(inStream);
+        eventSID = inStream.readUTF();
     }
 
     public List<ClientObject> getKeysObjectsList(Map<ClientGroupObject, ClassViewType> classViews, Map<ClientGroupObject, GroupObjectController> controllers) {
@@ -491,11 +493,11 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
     public static final String toolTipFormat =
             "<html><b>%1$s</b><br><hr>" +
-            "<b>sID:</b> %2$s<br>" +
-            "<b>Таблица:</b> %3$s<br>" +
-            "<b>Объекты :</b> %4$s<br>" +
-            "<b>Сигнатура:</b> %6$s <i>%2$s</i> (%5$s)" +
-            "</html>";
+                    "<b>sID:</b> %2$s<br>" +
+                    "<b>Таблица:</b> %3$s<br>" +
+                    "<b>Объекты :</b> %4$s<br>" +
+                    "<b>Сигнатура:</b> %6$s <i>%2$s</i> (%5$s)" +
+                    "</html>";
 
     public String getTooltipText(String caption) {
 

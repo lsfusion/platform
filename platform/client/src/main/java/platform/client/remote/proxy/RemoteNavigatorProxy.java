@@ -1,5 +1,6 @@
 package platform.client.remote.proxy;
 
+import platform.interop.event.IDaemonTask;
 import platform.interop.form.RemoteFormInterface;
 import platform.interop.navigator.RemoteNavigatorInterface;
 import platform.interop.remote.ClientCallBackInterface;
@@ -133,5 +134,10 @@ public class RemoteNavigatorProxy<T extends RemoteNavigatorInterface>
     @Override
     public byte[] getNavigatorTree() throws RemoteException {
         return target.getNavigatorTree();
+    }
+
+    @Override
+    public ArrayList<IDaemonTask> getDaemonTasks(int compId) throws RemoteException {
+        return target.getDaemonTasks(compId);
     }
 }
