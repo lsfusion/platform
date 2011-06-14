@@ -144,12 +144,16 @@ public class Table extends TwinImmutableObject implements MapKeysInterface<KeyFi
         return (name.hashCode() * 31 + classes.hashCode()) * 31 + propertyClasses.hashCode();
     }
 
-    public void out(SQLSession session) throws SQLException {
+    public Query<KeyField, PropertyField> getQuery() {
         Query<KeyField,PropertyField> query = new Query<KeyField,PropertyField>(this);
         platform.server.data.query.Join<PropertyField> join = joinAnd(query.mapKeys);
         query.and(join.getWhere());
         query.properties.putAll(join.getExprs());
-        query.outSelect(session);
+        return query;
+    }
+
+    public void out(SQLSession session) throws SQLException {
+        getQuery().outSelect(session);
     }
 
     public platform.server.data.query.Join<PropertyField> join(Map<KeyField, ? extends Expr> joinImplement) {

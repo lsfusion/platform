@@ -2,7 +2,7 @@ package platform.base;
 
 public class Result<R> {
 
-    public R result;
+    public R result = null;
     public void set(R result) {
         this.result = result;
     }

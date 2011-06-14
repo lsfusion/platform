@@ -555,10 +555,19 @@ public abstract class GroupButton extends ToolbarGridButton {
                 return rowCount;
             }
 
+            private boolean containsAll(List<Object> parent, List<Object> child) {
+                for (int i = 0; i < parent.size(); i++) {
+                    if (!parent.get(i).equals(child.get(i))) {
+                        return false;
+                    }
+                }
+                return true;
+            }
+
             private void addNodes(DefaultMutableTreeTableNode parentNode, int index, List<Object> parentKeys) {
                 Map<List<Object>, List<Object>> map = sources.get(index);
                 for (List<Object> keys : map.keySet()) {
-                    if (parentKeys == null || keys.containsAll(parentKeys)) {
+                    if (parentKeys == null || containsAll(parentKeys, keys)) {
                         List<Object> row = new ArrayList<Object>();
                         row.addAll(keys);
                         for (int i = 0; i < keyColumnsQuantity - keys.size(); i++) {

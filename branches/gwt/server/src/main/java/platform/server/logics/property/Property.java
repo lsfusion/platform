@@ -2,6 +2,7 @@ package platform.server.logics.property;
 
 import platform.base.BaseUtils;
 import platform.base.ListPermutations;
+import platform.base.Result;
 import platform.interop.action.ClientAction;
 import platform.server.caches.IdentityLazy;
 import platform.server.classes.*;
@@ -336,13 +337,9 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
         return BaseUtils.toMap(new HashSet<T>(interfaces));
     }
 
-    public PropertyMapImplement<?, T> getChangeImplement() {
+    // assert пока что aggrProps со свойствами с одним входом
+    public PropertyMapImplement<?, T> getChangeImplement(Result<Property> aggProp) {
         return new PropertyMapImplement<T, T>(this, getIdentityInterfaces());
-    }
-
-    // определяет свойство по которому нужно сразу фильтровать при редактировании этого свойства
-    public Property getFilterProperty() {
-        return null;
     }
 
     public boolean checkEquals() {
@@ -496,7 +493,7 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
     }
 
     public List<ClientAction> execute(Map<T, DataObject> keys, DataSession session, Object value, Modifier<? extends Changes> modifier) throws SQLException {
-        return getChangeImplement().execute(keys, session, value, modifier);
+        return getImplement().execute(keys, session, value, modifier);
     }
 
     // по умолчанию заполняет свойства
@@ -507,7 +504,7 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
     public void proceedDefaultDesign(DefaultFormView view, PropertyDrawEntity<T> entity) {
         if (iconPath != null) {
             view.get(entity).design.iconPath = iconPath;
-            view.get(entity).design.image = image;
+            view.get(entity).design.setImage(image);
         }
     }
 

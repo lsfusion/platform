@@ -2,7 +2,6 @@ package platform.client.navigator;
 
 import javax.swing.*;
 import javax.swing.border.BevelBorder;
-import javax.swing.tree.DefaultMutableTreeNode;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -32,7 +31,7 @@ public class ToolBarNavigatorView extends NavigatorView {
                 addElement(element, newElements, 0);
             }
         }
-        toolBar.repaint();
+        toolBar.validate();
     }
 
     private void addElement(ClientNavigatorElement element, Set<ClientNavigatorElement> newElements, int allign) {

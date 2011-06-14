@@ -6,6 +6,7 @@ import platform.base.*;
 import platform.interop.Compare;
 import platform.interop.RemoteLogicsInterface;
 import platform.interop.action.*;
+import platform.interop.event.IDaemonTask;
 import platform.interop.exceptions.LoginException;
 import platform.interop.form.RemoteFormInterface;
 import platform.interop.form.screen.ExternalScreen;
@@ -49,6 +50,7 @@ import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.List;
 
 
 // @GenericImmutable нельзя так как Spring валится
@@ -136,8 +138,10 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
                 throw new LoginException();
             }
 
-            Pair<String, Integer> key = new Pair<String, Integer>(login, computer);
+//            Pair<String, Integer> key = new Pair<String, Integer>(login, computer);
 //            RemoteNavigator navigator = navigators.get(key);
+
+            Pair<String, Integer> key = new Pair<String, Integer>(login, computer);
             RemoteNavigator navigator = null;
 
             if (navigator != null) {
@@ -667,6 +671,18 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         }
     }
 
+    protected List<List<Object>> getRelations(NavigatorElement<T> element) {
+        List<List<Object>> parentInfo = new ArrayList<List<Object>>();
+        List<NavigatorElement<T>> children = (List<NavigatorElement<T>>) element.getChildren(false);
+        for (NavigatorElement<T> child : children) {
+            parentInfo.add(BaseUtils.toList((Object) child.getSID(), element.getSID()));
+            for (List<Object> info : getRelations(child)) {
+                parentInfo.add(info);
+            }
+        }
+        return parentInfo;
+    }
+
     protected void synchronizeForms() {
         ImportField sidField = new ImportField(LM.formSIDValueClass);
         ImportField captionField = new ImportField(LM.formCaptionValueClass);
@@ -684,10 +700,22 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
         ImportTable table = new ImportTable(Arrays.asList(sidField, captionField), data);
 
+        List<List<Object>> data2 = getRelations(LM.baseElement);
+
+        ImportField parentSidField = new ImportField(LM.formSIDValueClass);
+        ImportKey<?> key2 = new ImportKey(LM.navigatorElement, LM.SIDToNavigatorElement.getMapping(parentSidField));
+        List<ImportProperty<?>> props2 = new ArrayList<ImportProperty<?>>();
+        props2.add(new ImportProperty(parentSidField, LM.parentNavigatorElement.getMapping(key), LM.object(LM.navigatorElement).getMapping(key2)));
+        ImportTable table2 = new ImportTable(Arrays.asList(sidField, parentSidField), data2);
+
         try {
             DataSession session = createSession();
             IntegrationService service = new IntegrationService(session, table, Arrays.asList(key), props);
             service.synchronize(true, true, true);
+
+            service = new IntegrationService(session, table2, Arrays.asList(key, key2), props2);
+            service.synchronize(true, true, true);
+
             session.apply(this);
             session.close();
         } catch (Exception e) {
@@ -1083,10 +1111,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         // "старое" состояние базы
         DataInputStream inputDB = null;
         byte[] struct = (byte[]) sql.readRecord(StructTable.instance, new HashMap<KeyField, DataObject>(), StructTable.instance.struct);
-        if (struct != null) {
+        if (struct != null)
             inputDB = new DataInputStream(new ByteArrayInputStream(struct));
-            fillIDs();
-        }
 
         sql.startTransaction();
 
@@ -1217,11 +1243,12 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         }
 
         Collection<AggregateProperty> recalculateProperties = new ArrayList<AggregateProperty>();
-        for (Property property : storedProperties) { // добавляем оставшиеся
-            sql.addColumn(property.mapTable.table.name, property.field);
-            if (property instanceof AggregateProperty)
-                recalculateProperties.add((AggregateProperty) property);
-        }
+        if(struct!=null) // если все свойства "новые" то ничего перерасчитывать не надо
+            for (Property property : storedProperties) { // добавляем оставшиеся
+                sql.addColumn(property.mapTable.table.name, property.field);
+                if (property instanceof AggregateProperty)
+                    recalculateProperties.add((AggregateProperty) property);
+            }
 
         // удаляем таблицы старые
         for (String table : prevTables.keySet())
@@ -1229,9 +1256,6 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
                 sql.dropTable(table);
 
         packTables(sql, packTables); // упакуем таблицы
-
-        recalculateAggregations(sql, recalculateProperties); // перерасчитаем агрегации
-//        recalculateAggregations(sql, getAggregateStoredProperties());
 
         // создадим индексы в базе
         for (Map.Entry<ImplementTable, Set<List<String>>> mapIndex : mapIndexes.entrySet())
@@ -1245,10 +1269,12 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             sql.insertRecord(StructTable.instance, new HashMap<KeyField, DataObject>(), propFields, true);
         }
 
-        sql.commitTransaction();
+        fillIDs();
 
-        if (struct == null)
-            fillIDs();
+        recalculateAggregations(sql, recalculateProperties); // перерасчитаем агрегации
+//        recalculateAggregations(sql, getAggregateStoredProperties());
+
+        sql.commitTransaction();
     }
 
     boolean checkPersistent(SQLSession session) throws SQLException {
@@ -1589,5 +1615,9 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         } finally {
             session.close();
         }
+    }
+
+    public ArrayList<IDaemonTask> getDaemonTasks(int compId) {
+        return new ArrayList<IDaemonTask>();
     }
 }

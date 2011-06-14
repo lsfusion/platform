@@ -2,9 +2,7 @@ package platform.server.integration;
 
 import platform.server.classes.ConcreteCustomClass;
 import platform.server.data.expr.Expr;
-import platform.server.data.expr.ValueExpr;
 import platform.server.data.expr.query.GroupExpr;
-import platform.server.data.expr.query.GroupType;
 import platform.server.data.query.Join;
 import platform.server.data.query.Query;
 import platform.server.data.type.Type;
@@ -59,10 +57,6 @@ public class ImportKey <P extends PropertyInterface> implements ImportKeyInterfa
 
     Object readValue(DataSession session, ImportTable.Row row) throws SQLException {
         return getProperty().read(session, mapObjects(row));
-    }
-
-    void writeValue(DataSession session, ImportTable.Row row, DataObject obj) throws SQLException {
-        getProperty().execute(mapObjects(row), session, obj.object, session.modifier);
     }
 
     public Expr getExpr(Map<ImportField, ? extends Expr> importKeys, Map<ImportKey<?>, SinglePropertyTableUsage<?>> addedKeys, Modifier<? extends Changes> modifier) {

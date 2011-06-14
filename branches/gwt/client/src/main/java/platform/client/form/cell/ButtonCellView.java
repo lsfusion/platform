@@ -55,7 +55,7 @@ public class ButtonCellView extends ClientButton implements CellView {
                     if (editor != null) {
                         editor.getComponent(SwingUtils.computeAbsoluteLocation(ButtonCellView.this), getBounds(), null);
                         if (editor.valueChanged())
-                            listener.cellValueChanged(editor.getCellEditorValue());
+                            listener.cellValueChanged(editor.getCellEditorValue(), true);
                     }
 
                 } catch (Exception e) {
@@ -110,9 +110,9 @@ public class ButtonCellView extends ClientButton implements CellView {
     public void changeViewType(ClassViewType type) {
         toToolbar = (type == ClassViewType.GRID);
         setCaption(caption);
-        if (toToolbar && key.design.image != null) {
-            setPreferredSize(new Dimension(Math.max(key.design.image.getIconWidth() + 2, ToolbarGridButton.BUTTON_SIZE.width), Math.max(key.design.image.getIconHeight() + 2, ToolbarGridButton.BUTTON_SIZE.height)));
-            setMaximumSize(new Dimension(Math.max(key.design.image.getIconWidth() + 2, ToolbarGridButton.BUTTON_SIZE.width), Math.max(key.design.image.getIconHeight() + 2, ToolbarGridButton.BUTTON_SIZE.height)));
+        if (toToolbar && key.design.getImage() != null) {
+            setPreferredSize(new Dimension(Math.max(key.design.getImage().getIconWidth() + 2, ToolbarGridButton.BUTTON_SIZE.width), Math.max(key.design.getImage().getIconHeight() + 2, ToolbarGridButton.BUTTON_SIZE.height)));
+            setMaximumSize(new Dimension(Math.max(key.design.getImage().getIconWidth() + 2, ToolbarGridButton.BUTTON_SIZE.width), Math.max(key.design.getImage().getIconHeight() + 2, ToolbarGridButton.BUTTON_SIZE.height)));
         } else {
             setPreferredSize(null);
             setDefaultSizes();

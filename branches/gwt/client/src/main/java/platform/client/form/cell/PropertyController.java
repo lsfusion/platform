@@ -94,10 +94,10 @@ public class PropertyController implements CellViewListener {
         view.startEditing(e);
     }
 
-    public boolean cellValueChanged(Object ivalue) {
+    public boolean cellValueChanged(Object ivalue, boolean aggValue) {
 
         try {
-            form.changePropertyDraw(getKey(), columnKey, ivalue, false);
+            form.changePropertyDraw(getKey(), columnKey, ivalue, false, aggValue);
         } catch (IOException e) {
             throw new RuntimeException("Ошибка при изменении значения свойства", e);
         }

@@ -1,6 +1,7 @@
 package platform.server.logics.property;
 
 import platform.base.BaseUtils;
+import platform.base.Result;
 import platform.interop.action.ClientAction;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
@@ -61,7 +62,7 @@ public class PropertyMapImplement<P extends PropertyInterface, T extends Propert
     }
 
     public PropertyMapImplement<?, T> mapChangeImplement() {
-        return property.getChangeImplement().map(mapping);
+        return property.getChangeImplement(new Result<Property>()).map(mapping);
     }
 
     public PropertyObjectInstance<P> mapObjects(Map<T, ? extends PropertyObjectInterfaceInstance> mapObjects) {

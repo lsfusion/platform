@@ -32,7 +32,7 @@ public class UserValueLinkView extends ValueLinkView {
         // непосредственно объект для изменения значения свойств
         valueTable = new CellTable(false) {
 
-            protected boolean cellValueChanged(Object value) {
+            protected boolean cellValueChanged(Object value, boolean aggValue) {
 
                 UserValueLinkView.this.setValue(value);
                 if (listener != null)
@@ -45,7 +45,7 @@ public class UserValueLinkView extends ValueLinkView {
                 return false;
             }
 
-            public ClientPropertyDraw getProperty(int row, int col) {
+            public ClientPropertyDraw getProperty() {
                 return property;
             }
 

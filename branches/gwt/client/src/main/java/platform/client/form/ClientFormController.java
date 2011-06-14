@@ -558,13 +558,13 @@ public class ClientFormController {
     }
 
 
-    public void changePropertyDraw(ClientPropertyDraw property, ClientGroupObjectValue columnKey, Object value, boolean all) throws IOException {
+    public void changePropertyDraw(ClientPropertyDraw property, ClientGroupObjectValue columnKey, Object value, boolean all, boolean aggValue) throws IOException {
         // для глобальных свойств пока не может быть отложенных действий
         if (property.getGroupObject() != null) {
             SwingUtils.stopSingleAction(property.getGroupObject().getActionID(), true);
         }
 
-        remoteForm.changePropertyDraw(property.getID(), columnKey.serialize(property), BaseUtils.serializeObject(value), all);
+        remoteForm.changePropertyDraw(property.getID(), columnKey.serialize(property), BaseUtils.serializeObject(value), all, aggValue);
         applyRemoteChanges();
     }
 

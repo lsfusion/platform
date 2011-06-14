@@ -26,7 +26,7 @@ public interface RemoteFormInterface extends PendingRemote {
     String getSID() throws RemoteException;
 
     // синхронная проверка на то можно ли менять свойство
-    byte[] getPropertyChangeType(int propertyID) throws RemoteException;
+    byte[] getPropertyChangeType(int propertyID, boolean aggValue) throws RemoteException;
     boolean canChangeClass(int objectID) throws RemoteException;
 
     boolean hasClientApply() throws RemoteException; // чисто для оптимизации одного RMI вызова
@@ -46,7 +46,7 @@ public interface RemoteFormInterface extends PendingRemote {
 
     void changeGroupObject(int groupID, byte changeType) throws RemoteException;
 
-    void changePropertyDraw(int propertyID, byte[] columnKey, byte[] object, boolean all) throws RemoteException;
+    void changePropertyDraw(int propertyID, byte[] columnKey, byte[] object, boolean all, boolean aggValue) throws RemoteException;
 
     void groupChangePropertyDraw(int mainID, byte[] mainColumnKey, int getterID, byte[] getterColumnKey) throws RemoteException;
 

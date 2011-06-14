@@ -4,12 +4,10 @@ import org.jdesktop.swingx.JXTableHeader;
 import org.jdesktop.swingx.decorator.ColorHighlighter;
 import org.jdesktop.swingx.decorator.HighlightPredicate;
 import org.jdesktop.swingx.table.TableColumnExt;
-import platform.base.BaseUtils;
 import platform.client.form.ClientFormController;
 import platform.client.form.cell.CellTableInterface;
 import platform.client.form.cell.ClientAbstractCellEditor;
 import platform.client.form.cell.ClientAbstractCellRenderer;
-import platform.client.form.grid.GridTable;
 import platform.client.form.sort.MultiLineHeaderRenderer;
 import platform.client.form.sort.TableSortableHeaderManager;
 import platform.client.logics.ClientGroupObject;
@@ -373,6 +371,19 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
         return null;
     }
 
+    public void writeSelectedValue(String value) {
+        int row = getSelectionModel().getLeadSelectionIndex();
+        int column = getColumnModel().getSelectionModel().getLeadSelectionIndex();
+
+        Object oValue = convertValueFromString(value, row, column);
+        if (oValue != null) {
+            TreePath pathForRow = getPathForRow(row);
+            if (pathForRow != null) {
+                model.changeProperty(oValue, pathForRow.getLastPathComponent(), column, false);
+            }
+        }
+    }
+
     @Override
     public boolean isCellHighlighted(int row, int column) {
         //todo:
@@ -400,9 +411,9 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
             try {
                 return property.parseString(form, value);
             } catch (ParseException ignored) {
+                return null;
             }
         }
-
         return null;
     }
 

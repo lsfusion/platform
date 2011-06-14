@@ -9,6 +9,8 @@ import platform.client.logics.classes.ClientObjectClass;
 import platform.client.logics.classes.ClientTypeSerializer;
 import platform.client.rmi.ConnectionLostManager;
 import platform.client.rmi.RMITimeoutSocketFactory;
+import platform.interop.event.EventBus;
+import platform.interop.event.IDaemonTask;
 import platform.interop.RemoteLoaderInterface;
 import platform.interop.RemoteLogicsInterface;
 import platform.interop.ServerInfo;
@@ -31,9 +33,8 @@ import java.rmi.server.RMIClassLoader;
 import java.rmi.server.RMIFailureHandler;
 import java.rmi.server.RMISocketFactory;
 import java.text.DateFormat;
-import java.util.Date;
+import java.util.*;
 import java.util.List;
-import java.util.TimeZone;
 
 import static platform.client.PropertyConstants.*;
 
@@ -56,6 +57,7 @@ public class Main {
     public static RMITimeoutSocketFactory socketFactory;
 
     private static ClientObjectClass baseClass = null;
+    public static EventBus eBus;
 
     public static ClientObjectClass getBaseClass() {
         if (baseClass == null) {
@@ -184,6 +186,15 @@ public class Main {
                     ConnectionLostManager.install(frame);
 
                     frame.setVisible(true);
+
+                    eBus = new EventBus();
+                    ArrayList<IDaemonTask> tasks =  remoteNavigator.getDaemonTasks(Main.computerId);
+                    java.util.Timer timer = new java.util.Timer();
+                    for (IDaemonTask task : tasks) {
+                        task.setEventBus(eBus);
+                        timer.schedule(new DaemonTask(task), task.getDelay(), task.getPeriod());
+                    }
+
                 } catch (Exception e) {
                     closeSplashScreen();
                     logger.error("Ошибка при инициализации приложения", e);
@@ -192,6 +203,20 @@ public class Main {
             }
         }.start();
     }
+
+    static class DaemonTask extends TimerTask{
+        IDaemonTask task;
+
+        public DaemonTask(IDaemonTask task){
+            this.task = task;
+        }
+
+        @Override
+        public void run() {
+            task.run();
+        }
+    }
+
 
     private static void initRMISocketFactory(String timeout) throws IOException {
         RMISocketFactory factory = RMISocketFactory.getSocketFactory();
@@ -265,7 +290,8 @@ public class Main {
     // будет загружать все не кросс-платформенные библиотеки
     private static void loadLibraries() throws IOException {
         SimplexLayout.loadLibraries();
-        ComBridge.loadLibraries();
+        ComBridge.loadJacobLibraries();
+        ComBridge.loadJsscLibraries();
     }
 
     public static int generateNewID() {

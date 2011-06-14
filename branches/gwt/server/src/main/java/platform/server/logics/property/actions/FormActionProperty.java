@@ -92,7 +92,7 @@ public class FormActionProperty extends ActionProperty {
                         readenValue = getPropInstance.read(session, modifier);
                     }
 
-                    newFormInstance.changeProperty(setPropInstance, readenValue, newRemoteForm);
+                    newFormInstance.changeProperty(setPropInstance, readenValue, newRemoteForm, null);
                 }
 
                 actions.add(new FormClientAction(form.isPrintForm, newSession, isModal, newRemoteForm));

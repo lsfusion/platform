@@ -59,16 +59,16 @@ public class SQLSession extends MutableObject {
 
     private void tryCommon() throws SQLException { // пытается вернуться к
         removeUnusedTemporaryTables();
-        if(!inTransaction && getSQLTemporaryPool().isEmpty(sessionTablesMap)) { // вернемся к commonConnection'у
+        if(inTransaction == 0 && getSQLTemporaryPool().isEmpty(sessionTablesMap)) { // вернемся к commonConnection'у
             connectionPool.returnPrivate(this, privateConnection);
             privateConnection = null;
         }
     }
 
-    private boolean inTransaction;
+    private int inTransaction = 0; // счетчик для по сути распределенных транзакций
 
     public boolean isInTransaction() {
-        return inTransaction;
+        return inTransaction > 0;
     }
 
     public static void setACID(Connection connection, boolean ACID) throws SQLException {
@@ -90,13 +90,13 @@ public class SQLSession extends MutableObject {
     public void startTransaction() throws SQLException {
         needPrivate();
 
-        setACID(privateConnection, true);
-        inTransaction = true;
+        if(inTransaction++ == 0)
+            setACID(privateConnection, true);
     }
 
     private void endTransaction() throws SQLException {
-        setACID(privateConnection, false);
-        inTransaction = false;
+        if(--inTransaction == 0)
+            setACID(privateConnection, false);
 
         tryCommon();
     }
@@ -147,13 +147,12 @@ public class SQLSession extends MutableObject {
 
     public void createTable(String table, List<KeyField> keys) throws SQLException {
         logger.info("Идет создание таблицы " + table + "... ");
+        if(keys.size()==0)
+            keys = Collections.singletonList(KeyField.dumb);
         String createString = "";
         for (KeyField key : keys)
             createString = (createString.length() == 0 ? "" : createString + ',') + key.getDeclare(syntax);
-        if (createString.length() == 0)
-            createString = "dumb integer";
-        else
-            createString = createString + "," + getConstraintDeclare(table, keys);
+        createString = createString + "," + getConstraintDeclare(table, keys);
 
 //        System.out.println("CREATE TABLE "+Table.Name+" ("+CreateString+")");
         executeDDL("CREATE TABLE " + table + " (" + createString + ")", false);
@@ -295,14 +294,13 @@ public class SQLSession extends MutableObject {
 
     public void createTemporaryTable(String name, List<KeyField> keys, Collection<PropertyField> properties) throws SQLException {
         String createString = "";
+        if(keys.size()==0)
+            keys = Collections.singletonList(KeyField.dumb);
         for (KeyField key : keys)
             createString = (createString.length() == 0 ? "" : createString + ',') + key.getDeclare(syntax);
-        if (createString.length() == 0)
-            createString = "dumb integer default 0";
         for (PropertyField prop : properties)
             createString = (createString.length() == 0 ? "" : createString + ',') + prop.getDeclare(syntax);
-        if (keys.size()>0)
-            createString = createString + "," + getConstraintDeclare(name, keys);
+        createString = createString + "," + getConstraintDeclare(name, keys);
         executeDDL(syntax.getCreateSessionTable(name, createString), true);
     }
 
@@ -318,7 +316,7 @@ public class SQLSession extends MutableObject {
 
         logger.info(DDL);
 
-        if(temporary && !inTransaction) // если temporary таблица то для DDL надо выключать read-only
+        if(temporary && inTransaction == 0) // если temporary таблица то для DDL надо выключать read-only
             connection.setReadOnly(false);
 
         Statement statement = connection.createStatement();
@@ -330,7 +328,7 @@ public class SQLSession extends MutableObject {
         } finally {
             statement.close();
 
-            if(temporary && !inTransaction)
+            if(temporary && inTransaction == 0)
                 connection.setReadOnly(true);
 
             returnConnection(connection);
@@ -397,7 +395,8 @@ public class SQLSession extends MutableObject {
                     for(Map.Entry<V,String> property : propertyNames.entrySet())
                         rowProperties.put(property.getKey(),
                                 propertyReaders.get(property.getKey()).read(result.getObject(property.getValue())));
-                     execResult.put(rowKeys,rowProperties);
+                    Map<V, Object> prev = execResult.put(rowKeys, rowProperties);
+                    assert prev==null;
                 }
             } finally {
                 result.close();

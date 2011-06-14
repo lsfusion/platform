@@ -404,16 +404,6 @@ public abstract class GridTable extends ClientFormTable
         this.tabVertical = tabVertical;
     }
 
-    public Object convertValueFromString(String value, int row, int column) {
-        Object parsedValue;
-        try {
-            parsedValue = model.getColumnProperty(column).parseString(getForm(), value);
-        } catch (ParseException pe) {
-            return null;
-        }
-        return parsedValue;
-    }
-
     private boolean fitWidth() {
         int minWidth = 0;
         TableColumnModel columnModel = getColumnModel();
@@ -509,19 +499,35 @@ public abstract class GridTable extends ClientFormTable
                  : null;
     }
 
+    public void changePropertyDraw(Object value, int row, int col, boolean multyChange, boolean aggValue) {
+        try {
+            form.changePropertyDraw(model.getColumnProperty(col), model.getColumnKey(col), value, multyChange, aggValue);
+        } catch (IOException ioe) {
+            throw new RuntimeException("Ошибка при изменении значения свойства", ioe);
+        }
+    }
+
+    public void writeSelectedValue(String value) {
+        int row = getSelectionModel().getLeadSelectionIndex();
+        int column = getColumnModel().getSelectionModel().getLeadSelectionIndex();
+
+        Object oValue;
+        try {
+            oValue = model.getColumnProperty(column).parseString(getForm(), value);
+        } catch (ParseException e) {
+            oValue = null;
+        }
+        if (oValue != null)
+            changePropertyDraw(oValue, row, column, false, false);
+    }
+
     @Override
     public void tableChanged(TableModelEvent e) {
         super.tableChanged(e);
         if (e.getType() == TableModelEvent.UPDATE && e.getFirstRow() == e.getLastRow() && e.getColumn() != -1) {
             int row = e.getFirstRow();
             int col = e.getColumn();
-            Object value = model.getValueAt(row, col);
-
-            try {
-                form.changePropertyDraw(model.getColumnProperty(col), model.getColumnKey(col), value, multyChange);
-            } catch (IOException ioe) {
-                throw new RuntimeException("Ошибка при изменении значения свойства", ioe);
-            }
+            changePropertyDraw(model.getValueAt(row, col), row, col, multyChange, true);
         }
     }
 

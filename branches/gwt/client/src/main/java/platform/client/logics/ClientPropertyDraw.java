@@ -87,6 +87,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public boolean showTableFirst;
     public boolean clearText;
     public String tableName;
+    public String eventSID;
 
     public ClientPropertyDraw() {
     }
@@ -141,7 +142,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     }
 
     public PropertyEditorComponent getEditorComponent(Component ownerComponent, ClientFormController form, Object value) throws IOException, ClassNotFoundException {
-        ClientType changeType = getPropertyChangeType(form);
+        ClientType changeType = getPropertyChangeType(form, true);
         if (changeType == null) {
             return null;
         }
@@ -161,7 +162,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     }
 
     public PropertyEditorComponent getObjectEditorComponent(Component ownerComponent, ClientFormController form, Object value) throws IOException, ClassNotFoundException {
-        ClientType changeType = getPropertyChangeType(form);
+        ClientType changeType = getPropertyChangeType(form, true);
         return changeType == null
                 ? null
                 : changeType.getObjectEditorComponent(ownerComponent, form, this, value, getFormat(), design);
@@ -197,7 +198,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public Dimension getMinimumSize(JComponent comp) {
         if (minimumSize != null) {
             return new Dimension(minimumSize.width != -1 ? minimumSize.width : getMinimumWidth(comp),
-                                 minimumSize.height != -1 ? minimumSize.height : getMinimumHeight(comp));
+                    minimumSize.height != -1 ? minimumSize.height : getMinimumHeight(comp));
         }
         return new Dimension(getMinimumWidth(comp), getMinimumHeight(comp));
     }
@@ -214,15 +215,15 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
             return preferredSize.height;
         }
         int height = baseType.getPreferredHeight(comp.getFontMetrics(design.getFont(comp)));
-        if (design.image != null) // предпочитаемую высоту берем исходя из размера иконки
-            height = Math.max(design.image.getIconHeight() + 6, height);
+        if (design.getImage() != null) // предпочитаемую высоту берем исходя из размера иконки
+            height = Math.max(design.getImage().getIconHeight() + 6, height);
         return height;
     }
 
     public Dimension getPreferredSize(JComponent comp) {
         if (preferredSize != null) {
             return new Dimension(preferredSize.width != -1 ? preferredSize.width : getPreferredWidth(comp),
-                                 preferredSize.height != -1 ? preferredSize.height : getPreferredHeight(comp));
+                    preferredSize.height != -1 ? preferredSize.height : getPreferredHeight(comp));
         }
         return new Dimension(getPreferredWidth(comp), getPreferredHeight(comp));
     }
@@ -244,7 +245,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public Dimension getMaximumSize(JComponent comp) {
         if (maximumSize != null) {
             return new Dimension(maximumSize.width != -1 ? maximumSize.width : getMaximumWidth(comp),
-                                 maximumSize.height != -1 ? maximumSize.height : getMaximumHeight(comp));
+                    maximumSize.height != -1 ? maximumSize.height : getMaximumHeight(comp));
         }
         return new Dimension(getMaximumWidth(comp), getMaximumHeight(comp));
     }
@@ -288,8 +289,8 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         return sID;
     }
 
-    public ClientType getPropertyChangeType(ClientFormController form) throws IOException {
-        DataInputStream inStream = new DataInputStream(new ByteArrayInputStream(form.remoteForm.getPropertyChangeType(getID())));
+    public ClientType getPropertyChangeType(ClientFormController form, boolean aggValue) throws IOException {
+        DataInputStream inStream = new DataInputStream(new ByteArrayInputStream(form.remoteForm.getPropertyChangeType(getID(), aggValue)));
         if (inStream.readBoolean()) {
             return null;
         }
@@ -300,7 +301,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public Object parseString(ClientFormController form, String s) throws ParseException {
         ClientType changeType;
         try {
-            changeType = getPropertyChangeType(form);
+            changeType = getPropertyChangeType(form, false);
             if (changeType == null) {
                 throw new ParseException("PropertyView не может быть изменено.", 0);
             }
@@ -402,6 +403,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         }
 
         returnClass = ClientTypeSerializer.deserializeClientClass(inStream);
+        eventSID = inStream.readUTF();
     }
 
     public List<ClientObject> getKeysObjectsList(Map<ClientGroupObject, ClassViewType> classViews, Map<ClientGroupObject, GroupObjectController> controllers) {
@@ -495,11 +497,11 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
     public static final String toolTipFormat =
             "<html><b>%1$s</b><br><hr>" +
-            "<b>sID:</b> %2$s<br>" +
-            "<b>Таблица:</b> %3$s<br>" +
-            "<b>Объекты :</b> %4$s<br>" +
-            "<b>Сигнатура:</b> %6$s <i>%2$s</i> (%5$s)" +
-            "</html>";
+                    "<b>sID:</b> %2$s<br>" +
+                    "<b>Таблица:</b> %3$s<br>" +
+                    "<b>Объекты :</b> %4$s<br>" +
+                    "<b>Сигнатура:</b> %6$s <i>%2$s</i> (%5$s)" +
+                    "</html>";
 
     public String getTooltipText(String caption) {
         String propCaption = nullTrim(!isRedundantString(toolTip) ? toolTip : caption);

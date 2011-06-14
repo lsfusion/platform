@@ -14,7 +14,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.util.EventObject;
 
-public abstract class ClientFormTable extends JTable {
+public abstract class ClientFormTable extends JTable implements TableTransferHandler.TableInterface {
 
     protected ClientFormTable() {
         this(null);
@@ -34,56 +34,10 @@ public abstract class ClientFormTable extends JTable {
 
         setupActionMap();
 
-        setTransferHandler(new TransferHandler() {
-            protected Transferable createTransferable(JComponent c) {
-                if (c instanceof JTable) {
-                    JTable table = (JTable) c;
-                    int row = table.getSelectionModel().getLeadSelectionIndex();
-                    int column = table.getColumnModel().getSelectionModel().getLeadSelectionIndex();
-
-                    if (row < 0 || row >= getRowCount() || column < 0 || column >= getColumnCount()) return null;
-
-                    Object value = table.getValueAt(row, column);
-                    if (value == null) {
-                        return null;
-                    }
-                    if (value instanceof String)
-                        value = BaseUtils.rtrim((String) value);
-                    return new StringSelection(value.toString());
-                }
-
-                return null;
-            }
-
+        setTransferHandler(new TableTransferHandler() {
             @Override
-            public boolean importData(JComponent c, Transferable t) {
-                if (c == ClientFormTable.this) {
-                    for (DataFlavor flavor : t.getTransferDataFlavors()) {
-                        if (String.class.isAssignableFrom(flavor.getRepresentationClass())) {
-                            String value = null;
-                            try {
-                                value = (String) t.getTransferData(flavor);
-                            } catch (Exception ignored) {
-                            }
-                            if (value != null) {
-                                int row = getSelectionModel().getLeadSelectionIndex();
-                                int column = getColumnModel().getSelectionModel().getLeadSelectionIndex();
-
-                                Object oValue = convertValueFromString(value, row, column);
-                                if (oValue != null) {
-                                    setValueAt(oValue, row, column);
-                                }
-
-                                return true;
-                            }
-                        }
-                    }
-                }
-                return false;
-            }
-
-            public int getSourceActions(JComponent c) {
-                return COPY;
+            protected TableInterface getTable() {
+                return ClientFormTable.this;
             }
         });
     }
@@ -118,8 +72,6 @@ public abstract class ClientFormTable extends JTable {
 
         return result;
     }
-
-    public abstract Object convertValueFromString(String value, int row, int column);
 
     public boolean clearText(int row, int column, EventObject e) {
        return false;

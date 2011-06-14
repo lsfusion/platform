@@ -12,7 +12,6 @@ import javax.swing.*;
 import javax.swing.table.AbstractTableModel;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
-import java.text.DateFormat;
 import java.text.ParseException;
 import java.util.*;
 
@@ -63,16 +62,22 @@ public abstract class CellTable extends SingleCellTable
         }
     }
 
-    @Override
-    public Object convertValueFromString(String value, int row, int column) {
-        Object parsedValue;
-        try {
-            parsedValue = getProperty(row, column).parseString(getForm(), value);
-        } catch (ParseException pe) {
-            return null;
-        }
+    public abstract ClientPropertyDraw getProperty();
 
-        return parsedValue;
+    public ClientPropertyDraw getProperty(int row, int column) {
+        return getProperty();
+    }
+
+    public void writeSelectedValue(String value) {
+        Object oValue;
+        try {
+            oValue = getProperty().parseString(getForm(), value);
+        } catch (ParseException pe) {
+            oValue = null;
+        }
+        if (oValue != null) {
+            cellValueChanged(oValue, false);
+        }
     }
 
     public void stopEditing() {
@@ -103,11 +108,11 @@ public abstract class CellTable extends SingleCellTable
 
         public void setValueAt(Object value, int row, int col) {
             if (checkEquals && BaseUtils.nullEquals(value, getValueAt(row, col))) return;
-            cellValueChanged(value);
+            cellValueChanged(value, true);
         }
     }
 
-    protected abstract boolean cellValueChanged(Object value);
+    protected abstract boolean cellValueChanged(Object value, boolean aggValue);
 
     public abstract boolean isDataChanging();
 

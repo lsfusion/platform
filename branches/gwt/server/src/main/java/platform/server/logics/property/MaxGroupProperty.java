@@ -32,7 +32,7 @@ public class MaxGroupProperty<T extends PropertyInterface> extends GroupProperty
     }
 
     public Expr getChangedExpr(Expr changedExpr, Expr changedPrevExpr, Expr prevExpr, Map<Interface<T>, ? extends Expr> joinImplement, Modifier<? extends Changes> modifier, WhereBuilder changedWhere) {
-        Where increaseWhere = changedExpr.compare(prevExpr, Compare.GREATER).or(prevExpr.getWhere().not());
+        Where increaseWhere = changedExpr.compare(prevExpr, Compare.GREATER).or(changedExpr.getWhere().and(prevExpr.getWhere().not()));
         Where decreaseWhere = changedPrevExpr.compare(prevExpr, Compare.EQUALS);
         if(noIncrement()) {
             if(decreaseWhere.means(increaseWhere)) { // для оптимизации если calculateNewExpr заведомо не понадобится, лучше использовать инкрементный механизм

@@ -68,16 +68,20 @@ class GroupTreeTableModel extends DefaultTreeTableModel {
         return node.toString();
     }
 
-    @Override
-    public void setValueAt(Object value, Object node, int column) {
+    public void changeProperty(Object value, Object node, int column, boolean aggValue) {
         ClientPropertyDraw property = getProperty(node, column);
         if (property != null) {
             try {
-                form.changePropertyDraw(property, ((TreeGroupNode) node).key, value, false);
+                form.changePropertyDraw(property, ((TreeGroupNode) node).key, value, false, aggValue);
             } catch (IOException e) {
                 throw new RuntimeException("Ошибка при изменении значения свойства", e);
             }
         }
+    }
+
+    @Override
+    public void setValueAt(Object value, Object node, int column) {
+        changeProperty(value, node, column, true);
     }
 
     @Override

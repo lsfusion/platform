@@ -1,6 +1,7 @@
 package platform.server.form.instance;
 
 import platform.base.BaseUtils;
+import platform.base.Result;
 import platform.interop.Compare;
 import platform.interop.action.ClientAction;
 import platform.server.caches.IdentityLazy;
@@ -113,8 +114,12 @@ public class PropertyObjectInstance<P extends PropertyInterface> extends Propert
     public PropertyValueImplement<P> getValueImplement() {
         return new PropertyValueImplement<P>(property, getInterfaceValues());
     }
-    public PropertyObjectInstance<?> getChangeInstance() {
-        return property.getChangeImplement().mapObjects(mapping);
+
+    public PropertyObjectInstance<?> getChangeInstance(Result<Property> aggProp, boolean aggValue) {
+        if(aggValue)
+            return property.getChangeImplement(aggProp).mapObjects(mapping);
+        else
+            return this;
     }
 
     public Type getEditorType() {

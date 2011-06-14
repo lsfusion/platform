@@ -115,6 +115,9 @@ public abstract class CustomClass extends AbstractNode implements ObjectClass, V
     }
 
     public ConcreteCustomClass findConcreteClassID(int idClass) {
+        CustomClass cls = findClassID(idClass);
+        if (! (cls instanceof ConcreteCustomClass))
+            throw new RuntimeException("В базе данных присутствует объект абстрактного класса (ИД : " + idClass + ")");
         return (ConcreteCustomClass) findClassID(idClass);
     }
 

@@ -41,6 +41,7 @@ import javax.swing.*;
 import java.awt.event.KeyEvent;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.List;
 
 import static platform.server.logics.PropertyUtils.mapImplement;
 import static platform.server.logics.PropertyUtils.readImplements;
@@ -105,7 +106,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     protected LP squareInteger;
     protected LP squareDouble;
     protected LP sqrtDouble2;
-    protected LP divideDouble;
+    public LP divideDouble;
     public LP divideDouble2;
     public LP addDate2;
     public LP string2;
@@ -113,10 +114,13 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     protected LP concat2;
     public LP percent;
     public LP percent2;
+    public LP share2;
     public LP yearInDate;
 
     public LP vtrue, actionTrue, vzero;
     public LP positive, negative;
+
+    public LP round0;
 
     public LP dumb1;
     public LP dumb2;
@@ -194,6 +198,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public LP navigatorElementCaption;
 
     public LP SIDToNavigatorElement;
+    public LP parentNavigatorElement;
     public LP permissionUserRoleForm;
     public LP permissionUserForm;
     public LP userRoleFormDefaultNumber;
@@ -220,7 +225,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
     public LP sidCountry;
     protected LP generateDatesCountry;
-    protected LP sidToCountry;
+    public LP sidToCountry;
     public LP nameToCountry;
     protected LP nameToObject;
     protected LP isDayOffCountryDate;
@@ -325,6 +330,8 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         tableFactory.include("loginSID", StringClass.get(30), StringClass.get(30));
         tableFactory.include("countryDate", country, DateClass.instance);
         tableFactory.include("country", country, DateClass.instance);
+
+        tableFactory.include("session", session);
     }
 
     @Override
@@ -369,9 +376,12 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         addDate2 = addSFProp("((prm1)+(prm2))", DateClass.instance, 2);
         percent = addSFProp("((prm1)*(prm2)/100)", DoubleClass.instance, 2);
         percent2 = addSFProp("round(CAST(((prm1)*(prm2)/100) as numeric), 2)", DoubleClass.instance, 2);
+        share2 = addSFProp("round(CAST(((prm1)/(prm2)*100) as numeric), 2)", DoubleClass.instance, 2);
         between = addJProp("Между", and1, groeq2, 1, 2, groeq2, 3, 1);
         vtrue = addCProp("Истина", LogicalClass.instance, true);
         vzero = addCProp("0", DoubleClass.instance, 0);
+
+        round0 = addSFProp("round(CAST(prm1 as numeric), 0)", DoubleClass.instance, 1);
 
         actionTrue = addCProp("ActionTrue", ActionClass.instance, true);
 
@@ -404,7 +414,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         equalsWorkingDaysQuantity = addJProp(baseGroup, "equalsWorkingDaysQuantity", "Совпадает количество раб. дней", equals2, object(IntegerClass.instance), 1, workingDaysQuantity, 2, 3, 4);
 
         transactionLater = addSUProp("Транзакция позже", Union.OVERRIDE, addJProp("Дата позже", greater2, date, 1, date, 2),
-                addJProp("", and1, addJProp("Дата=дата", equals2, date, 1, date, 2), 1, 2, addJProp("Код транзакции после", greater2, 1, 2), 1, 2));
+                                     addJProp("", and1, addJProp("Дата=дата", equals2, date, 1, date, 2), 1, 2, addJProp("Код транзакции после", greater2, 1, 2), 1, 2));
 
         hostname = addDProp(baseGroup, "hostname", "Имя хоста", InsensitiveStringClass.get(100), computer);
 
@@ -494,6 +504,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         navigatorElementSID = addDProp(baseGroup, "navigatorElementSID", "Код формы", formSIDValueClass, navigatorElement);
         navigatorElementCaption = addDProp(baseGroup, "navigatorElementCaption", "Название формы", formCaptionValueClass, navigatorElement);
         SIDToNavigatorElement = addAGProp("SIDToNavigatorElement", "Форма", navigatorElementSID);
+        parentNavigatorElement = addDProp("parentNavigatorElement", "Родит. форма", navigatorElement, navigatorElement);
 
         permissionUserRoleForm = addDProp(baseGroup, "permissionUserRoleForm", "Запретить форму", LogicalClass.instance, userRole, navigatorElement);
         permissionUserForm = addJProp(baseGroup, "permissionUserForm", "Запретить форму", permissionUserRoleForm, userMainRole, 1, 2);
@@ -925,7 +936,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         @Override
         public void proceedDefaultDesign(DefaultFormView view, PropertyDrawEntity<ClassPropertyInterface> entity) {
             super.proceedDefaultDesign(view, entity);
-
             view.get(entity).design.setIconPath("load.png");
         }
     }
@@ -1139,20 +1149,29 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         private ObjectEntity objUserRole;
         private ObjectEntity objPolicy;
         private ObjectEntity objForm;
+        private ObjectEntity objTreeForm;
+        private TreeGroupEntity treeFormObject;
 
         protected RolePolicyFormEntity(NavigatorElement parent, String sID) {
             super(parent, sID, "Роли");
 
             objUserRole = addSingleGroupObject(userRole, baseGroup, true);
             objPolicy = addSingleGroupObject(policy, "Политики безопасности", baseGroup, true);
-            objForm = addSingleGroupObject(navigatorElement, "Формы", baseGroup, true);
+            objForm = addSingleGroupObject(navigatorElement, "Таблица", true);
+            objTreeForm = addSingleGroupObject(navigatorElement, "Дерево", true);
+
+            objTreeForm.groupTo.setIsParents(addPropertyObject(parentNavigatorElement, objTreeForm));
+            treeFormObject = addTreeGroupObject(objTreeForm.groupTo);
 
             addObjectActions(this, objUserRole);
 
+            addPropertyDraw(new LP[]{navigatorElementCaption, navigatorElementSID}, objForm);
+            addPropertyDraw(new LP[]{navigatorElementCaption, navigatorElementSID}, objTreeForm);
             addPropertyDraw(objUserRole, objPolicy, baseGroup, true);
             addPropertyDraw(objUserRole, objForm, permissionUserRoleForm);
+            addPropertyDraw(objUserRole, objTreeForm, permissionUserRoleForm);
             addPropertyDraw(objUserRole, objForm, userRoleFormDefaultNumber);
-
+            addPropertyDraw(objUserRole, objTreeForm, userRoleFormDefaultNumber);
 
             setReadOnly(navigatorElementSID, true);
             setReadOnly(navigatorElementCaption, true);
@@ -1170,9 +1189,14 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
             ContainerView container = design.createContainer();
             container.tabbedPane = true;
 
+            ContainerView formsContainer = design.createContainer("Формы");
+            formsContainer.tabbedPane = true;
+            formsContainer.add(design.getTreeContainer(treeFormObject));
+            formsContainer.add(design.getGroupObjectContainer(objForm.groupTo));
+
             design.getMainContainer().addAfter(container, design.getGroupObjectContainer(objUserRole.groupTo));
             container.add(design.getGroupObjectContainer(objPolicy.groupTo));
-            container.add(design.getGroupObjectContainer(objForm.groupTo));
+            container.add(formsContainer);
 
             return design;
         }
