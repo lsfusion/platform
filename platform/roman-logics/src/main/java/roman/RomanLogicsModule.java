@@ -1319,7 +1319,8 @@ public class RomanLogicsModule extends LogicsModule {
 
         addConstraint(addJProp("Выбранный для товара ТН ВЭД должен иметь верхний элемент", baseLM.andNot1, customCategory10Sku, 1, customCategory9Sku, 1), false);
 
-        addConstraint(addJProp("Выбранный должен быть среди связанных", baseLM.andNot1, addCProp(LogicalClass.instance, true, sku), 1,
+        addConstraint(addJProp("Выбранный должен быть среди связанных", and(false, true), addCProp(LogicalClass.instance, true, sku), 1,
+                   customCategory10Sku, 1,
                      addJProp(relationCustomCategory10SubCategory, customCategory10Sku, 1, subCategorySku, 1), 1), true);
        /*addConstraint(addJProp("Выбранный должен быть среди связанных кодов", andNot1, addCProp(LogicalClass.instance, true, article), 1,
                    addJProp(relationCustomCategory10CustomCategoryOrigin, customCategory10Article, 1, customCategoryOriginArticle, 1), 1), true);*/
