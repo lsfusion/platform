@@ -22,10 +22,7 @@ import platform.gwt.form.client.ui.GGroupObjectController;
 import platform.gwt.form.client.ui.LoadingWindow;
 import platform.gwt.form.shared.actions.GetForm;
 import platform.gwt.form.shared.actions.GetFormResult;
-import platform.gwt.form.shared.actions.form.ChangeGroupObject;
-import platform.gwt.form.shared.actions.form.FormChangesResult;
-import platform.gwt.form.shared.actions.form.GetRemoteChanges;
-import platform.gwt.form.shared.actions.form.SetRegularFilter;
+import platform.gwt.form.shared.actions.form.*;
 import platform.gwt.view.GForm;
 import platform.gwt.view.GGroupObject;
 import platform.gwt.view.GRegularFilter;
@@ -105,20 +102,18 @@ public class FormFrame extends HLayout implements EntryPoint {
                 });
 
                 ToolStripButton applyBtn = new ToolStripButton("Применить", "apply.png");
-                applyBtn.disable();
                 applyBtn.addClickHandler(new ClickHandler() {
                     @Override
                     public void onClick(ClickEvent event) {
-                        refreshData();
+                        applyChanges();
                     }
                 });
 
                 ToolStripButton cancelBtn = new ToolStripButton("Отменить", "cancel.png");
-                cancelBtn.disable();
                 cancelBtn.addClickHandler(new ClickHandler() {
                     @Override
                     public void onClick(ClickEvent event) {
-                        refreshData();
+                        cancelChanges();
                     }
                 });
 
@@ -204,10 +199,6 @@ public class FormFrame extends HLayout implements EntryPoint {
 //        applyRemoteChanges();
     }
 
-    private void setRemoteRegularFilter(GRegularFilterGroup filterGroup, GRegularFilter filter) {
-        dispatcher.execute(new SetRegularFilter(filterGroup.ID, (filter == null) ? -1 : filter.ID), new FormChangesBlockingCallback());
-    }
-
     private void addFilterComponent(GRegularFilterGroup filterGroup, FormItem item) {
         controllers.get(filterGroup.keyBindingGroup).addFilterComponent(item);
     }
@@ -251,6 +242,18 @@ public class FormFrame extends HLayout implements EntryPoint {
 
     public void changeGroupObject(GGroupObject group, GGroupObjectValue key) {
         dispatcher.execute(new ChangeGroupObject(group.ID, key.getValues(group)), new FormChangesBlockingCallback());
+    }
+
+    private void setRemoteRegularFilter(GRegularFilterGroup filterGroup, GRegularFilter filter) {
+        dispatcher.execute(new SetRegularFilter(filterGroup.ID, (filter == null) ? -1 : filter.ID), new FormChangesBlockingCallback());
+    }
+
+    private void applyChanges() {
+        dispatcher.execute(new ApplyChanges(), new FormChangesBlockingCallback());
+    }
+
+    private void cancelChanges() {
+        dispatcher.execute(new CancelChanges(), new FormChangesBlockingCallback());
     }
 
     private class FormChangesBlockingCallback implements AsyncCallback<FormChangesResult> {

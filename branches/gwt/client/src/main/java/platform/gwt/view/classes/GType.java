@@ -5,6 +5,7 @@ import com.smartgwt.client.widgets.Canvas;
 import com.smartgwt.client.widgets.form.fields.FormItem;
 import com.smartgwt.client.widgets.grid.ListGridField;
 import platform.gwt.view.GPropertyDraw;
+import platform.gwt.view.renderer.GPropertyRenderer;
 
 import java.io.Serializable;
 
@@ -16,4 +17,6 @@ public interface GType extends Serializable {
     Canvas createCellRenderer(Object value, GPropertyDraw property);
 
     FormItem createFormItem(GPropertyDraw property);
+
+    GPropertyRenderer createPanelRenderer(GPropertyDraw property);
 }

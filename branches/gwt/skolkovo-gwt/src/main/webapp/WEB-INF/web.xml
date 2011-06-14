@@ -26,7 +26,7 @@
     </servlet>
     <servlet>
         <servlet-name>LoginService</servlet-name>
-        <servlet-class>skolkovo.gwt.login.server.LoginServiceImpl</servlet-class>
+        <servlet-class>platform.gwt.login.server.LoginServiceImpl</servlet-class>
     </servlet>
 
     <servlet-mapping>
@@ -39,7 +39,7 @@
     </servlet-mapping>
     <servlet-mapping>
         <servlet-name>LoginService</servlet-name>
-        <url-pattern>/skolkovo.gwt.login.Login/LoginService</url-pattern>
+        <url-pattern>/platform.gwt.login.Login/LoginService</url-pattern>
     </servlet-mapping>
 
     <servlet>
@@ -66,7 +66,11 @@
     <!-- Spring security configuration -->
     <context-param>
         <param-name>log4jConfigLocation</param-name>
-        <param-value>/WEB-INF/log4j.xml</param-value>
+        <param-value>/WEB-INF/classes/log4j.xml</param-value>
+    </context-param>
+    <context-param>
+        <param-name>log4jExposeWebAppRoot</param-name>
+        <param-value>false</param-value>
     </context-param>
     <listener>
         <listener-class>org.springframework.web.util.Log4jConfigListener</listener-class>

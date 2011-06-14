@@ -1,4 +1,4 @@
-package skolkovo.gwt.login.client;
+package platform.gwt.login.client;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.rpc.RemoteService;

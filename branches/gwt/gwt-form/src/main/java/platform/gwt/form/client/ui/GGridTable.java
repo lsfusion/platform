@@ -64,7 +64,7 @@ public class GGridTable extends ListGrid {
     @Override
     protected Canvas createRecordComponent(ListGridRecord record, Integer colNum) {
         GPropertyDraw property = properties.get(colNum);
-        Canvas cellRenderer = property.createCellRenderer(record.getAttributeAsObject(property.sID));
+        Canvas cellRenderer = property.createGridCellRenderer(record.getAttributeAsObject(property.sID));
         if (cellRenderer != null) {
             return cellRenderer;
         }

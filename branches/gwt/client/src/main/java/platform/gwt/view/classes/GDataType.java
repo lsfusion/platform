@@ -6,6 +6,8 @@ import com.smartgwt.client.widgets.form.fields.FormItem;
 import com.smartgwt.client.widgets.form.fields.TextItem;
 import com.smartgwt.client.widgets.grid.ListGridField;
 import platform.gwt.view.GPropertyDraw;
+import platform.gwt.view.renderer.FormFieldPropertyRenderer;
+import platform.gwt.view.renderer.GPropertyRenderer;
 
 public class GDataType implements GType {
     @Override
@@ -23,6 +25,16 @@ public class GDataType implements GType {
     @Override
     public Canvas createCellRenderer(Object value, GPropertyDraw property) {
         return null;
+    }
+
+    @Override
+    public GPropertyRenderer createPanelRenderer(GPropertyDraw property) {
+        // по умолчанию рендеринг через DynamicForm
+        FormItem item = createFormItem(property);
+        item.setTitle(property.caption != null ? property.caption : "");
+        item.setName(property.sID);
+
+        return new FormFieldPropertyRenderer(item);
     }
 
     @Override

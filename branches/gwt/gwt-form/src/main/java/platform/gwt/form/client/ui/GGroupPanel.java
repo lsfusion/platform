@@ -2,14 +2,13 @@ package platform.gwt.form.client.ui;
 
 import com.smartgwt.client.types.Overflow;
 import com.smartgwt.client.types.TileLayoutPolicy;
-import com.smartgwt.client.widgets.form.DynamicForm;
-import com.smartgwt.client.widgets.form.fields.FormItem;
 import com.smartgwt.client.widgets.tile.TileLayout;
 import platform.gwt.form.client.FormFrame;
 import platform.gwt.form.client.utills.GwtUtils;
 import platform.gwt.view.GForm;
 import platform.gwt.view.GPropertyDraw;
 import platform.gwt.view.changes.GGroupObjectValue;
+import platform.gwt.view.renderer.GPropertyRenderer;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -60,19 +59,11 @@ public class GGroupPanel extends TileLayout {
         for (GPropertyDraw property : properties) {
             Object propValue = values.get(property);
             if (propValue != null) {
-                FormItem field = property.createFormItem();
-                field.setValue(propValue);
+                GPropertyRenderer renderer = property.createPanelRenderer();
+                renderer.setValue(property, propValue);
 
-                DynamicForm itemForm = new DynamicForm();
-                itemForm.setOverflow(Overflow.VISIBLE);
-                itemForm.setWrapItemTitles(false);
+                addTile(renderer.getComponent());
 
-                itemForm.setFields(field);
-
-                itemForm.setAutoWidth();
-                itemForm.setAutoHeight();
-
-                addTile(itemForm);
                 tileCount++;
             }
         }

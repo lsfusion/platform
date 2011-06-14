@@ -1,11 +1,11 @@
-package skolkovo.gwt.login.server;
+package platform.gwt.login.server;
 
 import org.apache.log4j.Logger;
 import platform.base.DebugUtils;
 import platform.gwt.base.server.LogicsServiceServlet;
 import platform.gwt.base.shared.MessageException;
 import skolkovo.api.remote.SkolkovoRemoteInterface;
-import skolkovo.gwt.login.client.LoginService;
+import platform.gwt.login.client.LoginService;
 
 import java.rmi.RemoteException;
 

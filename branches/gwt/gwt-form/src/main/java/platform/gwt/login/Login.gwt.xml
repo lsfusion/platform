@@ -5,8 +5,8 @@
     <inherits name="platform.gwt.base.Base"/>
     <inherits name="skolkovo.gwt.Resources"/>
 
-    <entry-point class='skolkovo.gwt.login.client.LoginFrame'/>
-    <servlet path="/LoginService" class="skolkovo.gwt.login.server.LoginServiceImpl"/>
+    <entry-point class='platform.gwt.login.client.LoginFrame'/>
+    <servlet path="/LoginService" class="platform.gwt.login.server.LoginServiceImpl"/>
 
     <source path='client'/>
     <source path='shared'/>

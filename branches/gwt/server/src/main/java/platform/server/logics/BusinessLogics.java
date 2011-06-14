@@ -11,6 +11,7 @@ import platform.interop.form.RemoteFormInterface;
 import platform.interop.form.screen.ExternalScreen;
 import platform.interop.form.screen.ExternalScreenParameters;
 import platform.interop.navigator.RemoteNavigatorInterface;
+import platform.interop.remote.Authentication;
 import platform.interop.remote.RemoteObject;
 import platform.server.auth.PolicyManager;
 import platform.server.auth.SecurityPolicy;
@@ -136,7 +137,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             }
 
             Pair<String, Integer> key = new Pair<String, Integer>(login, computer);
-            RemoteNavigator navigator = navigators.get(key);
+//            RemoteNavigator navigator = navigators.get(key);
+            RemoteNavigator navigator = null;
 
             if (navigator != null) {
                 navigator.invalidate();
@@ -200,31 +202,11 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
     public boolean checkUser(String login, String password) {
-        DataSession session;
         try {
-            session = createSession();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-        try {
-            User user = readUser(login, session);
-            if (user == null) {
-                throw new LoginException();
-            }
-            String checkPassword = (String) LM.userPassword.read(session, new DataObject(user.ID, LM.customUser));
-            if (checkPassword != null && !password.trim().equals(checkPassword.trim())) {
-                throw new LoginException();
-            }
-
-            return true;
+            User u = authenticateUser(login, password);
+            return u != null;
         } catch (SQLException e) {
             throw new RuntimeException(e);
-        } finally {
-            try {
-                session.close();
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
         }
     }
 
@@ -1576,5 +1558,36 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
     public void close() throws SQLException {
         getThreadLocalSql().close();
+    }
+
+    public Authentication authenticate(String username, String password) throws RemoteException {
+        try {
+            User u = authenticateUser(username, password);
+            return new Authentication(username, getUserRolesNames(u));
+        } catch (Exception e) {
+            throw new RuntimeException("Ошибка аутентификации:", e);
+        }
+    }
+
+    public List<String> getUserRolesNames(User u) {
+        return null;
+    }
+
+    private User authenticateUser(String login, String password) throws LoginException, SQLException {
+        DataSession session = createSession();
+        try {
+            User user = readUser(login, session);
+            if (user == null) {
+                throw new LoginException();
+            }
+            String checkPassword = (String) LM.userPassword.read(session, new DataObject(user.ID, LM.customUser));
+            if (checkPassword != null && !password.trim().equals(checkPassword.trim())) {
+                throw new LoginException();
+            }
+
+            return user;
+        } finally {
+            session.close();
+        }
     }
 }

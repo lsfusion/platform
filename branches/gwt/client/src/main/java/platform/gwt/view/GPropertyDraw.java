@@ -1,9 +1,9 @@
 package platform.gwt.view;
 
 import com.smartgwt.client.widgets.Canvas;
-import com.smartgwt.client.widgets.form.fields.FormItem;
 import com.smartgwt.client.widgets.grid.ListGridField;
 import platform.gwt.view.classes.GType;
+import platform.gwt.view.renderer.GPropertyRenderer;
 
 public class GPropertyDraw extends GComponent {
     public int ID;
@@ -17,14 +17,16 @@ public class GPropertyDraw extends GComponent {
         return baseType.createGridField(this);
     }
 
-    public Canvas createCellRenderer(Object value) {
+    public Canvas createGridCellRenderer(Object value) {
         return baseType.createCellRenderer(value, this);
     }
 
-    public FormItem createFormItem() {
-        FormItem item = baseType.createFormItem(this);
-        item.setTitle(caption != null ? caption : "");
-        item.setName(sID);
-        return item;
+    private GPropertyRenderer panelRenderer = null;
+    //по умолчанию создаём форму
+    public GPropertyRenderer createPanelRenderer() {
+        if (panelRenderer == null) {
+            panelRenderer = baseType.createPanelRenderer(this);
+        }
+        return panelRenderer;
     }
 }

@@ -20,9 +20,9 @@ import javax.servlet.http.HttpSession;
 import java.rmi.RemoteException;
 
 public abstract class LogicsDispatchServlet<T extends RemoteLogicsInterface> extends AbstractStandardDispatchServlet {
-    public T logics;
-    public RemoteNavigatorInterface navigator;
-    public int computerId;
+    private T logics;
+    private RemoteNavigatorInterface navigator;
+    private int computerId;
     protected Dispatch dispatch;
 
     @Override
@@ -31,7 +31,7 @@ public abstract class LogicsDispatchServlet<T extends RemoteLogicsInterface> ext
         try {
             logics = (T) GwtLogicsProvider.getLogics(getServletContext());
             computerId = logics.getComputer(OSUtils.getLocalHostName());
-            //todo: make it somethign in the future...
+            //todo: make it something in the future...
             navigator = logics.createNavigator("admin", "fusion", computerId);
         } catch (RemoteException e) {
             throw new ServletException("Ошибка инициализации сервлета: ", e);
@@ -45,6 +45,29 @@ public abstract class LogicsDispatchServlet<T extends RemoteLogicsInterface> ext
     @Override
     protected Dispatch getDispatch() {
         return dispatch;
+    }
+
+    public int getComputerId() {
+        return computerId;
+    }
+
+    public T getLogics() {
+        return logics;
+    }
+
+    //todo: add spring security point cut
+    public synchronized RemoteNavigatorInterface getNavigator() {
+        if (navigator == null) {
+            try {
+                Authentication auth = getAuthentication();
+                String somePassword = "some";
+                navigator = logics.createNavigator(auth.getName(), somePassword, getComputerId());
+            } catch (RemoteException e) {
+                throw new RuntimeException("Ошибка при создании навигатора: ", e);
+            }
+        }
+
+        return navigator;
     }
 
     public HttpSession getSession() {

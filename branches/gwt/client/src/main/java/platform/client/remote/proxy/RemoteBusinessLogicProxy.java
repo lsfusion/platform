@@ -4,6 +4,7 @@ import platform.interop.RemoteLogicsInterface;
 import platform.interop.form.screen.ExternalScreen;
 import platform.interop.form.screen.ExternalScreenParameters;
 import platform.interop.navigator.RemoteNavigatorInterface;
+import platform.interop.remote.Authentication;
 
 import java.rmi.RemoteException;
 import java.util.TimeZone;
@@ -108,6 +109,13 @@ public class RemoteBusinessLogicProxy<T extends RemoteLogicsInterface>
         logRemoteMethodStartCall("findClass");
         byte[] result = target.findClass(name);
         logRemoteMethodEndCall("findClass", result);
+        return result;
+    }
+
+    public Authentication authenticate(String username, String password) throws RemoteException {
+        logRemoteMethodStartCall("authenticate");
+        Authentication result = target.authenticate(username, password);
+        logRemoteMethodEndCall("authenticate", result);
         return result;
     }
 }

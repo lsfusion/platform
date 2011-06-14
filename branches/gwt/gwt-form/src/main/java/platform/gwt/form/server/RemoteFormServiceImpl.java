@@ -2,10 +2,7 @@ package platform.gwt.form.server;
 
 import net.customware.gwt.dispatch.server.InstanceActionHandlerRegistry;
 import platform.gwt.base.server.LogicsDispatchServlet;
-import platform.gwt.form.server.handlers.ChangeGroupObjectHandler;
-import platform.gwt.form.server.handlers.GetFormHandler;
-import platform.gwt.form.server.handlers.GetRemoteChangesHandler;
-import platform.gwt.form.server.handlers.SetRegularFilterHandler;
+import platform.gwt.form.server.handlers.*;
 
 public class RemoteFormServiceImpl extends LogicsDispatchServlet {
     @Override
@@ -14,5 +11,7 @@ public class RemoteFormServiceImpl extends LogicsDispatchServlet {
         registry.addHandler(new ChangeGroupObjectHandler(this));
         registry.addHandler(new GetRemoteChangesHandler(this));
         registry.addHandler(new SetRegularFilterHandler(this));
+        registry.addHandler(new ApplyChangesHandler(this));
+        registry.addHandler(new CancelChangesHandler(this));
     }
 }

@@ -30,7 +30,7 @@ public class GetFormHandler extends FormServiceActionHandler<GetForm, GetFormRes
                      : "connectionsForm";
 
         try {
-            RemoteFormInterface remoteForm = servlet.navigator.createForm(sid, false, true);
+            RemoteFormInterface remoteForm = servlet.getNavigator().createForm(sid, false, true);
             ClientForm clientForm = new ClientSerializationPool().deserializeObject(new DataInputStream(new ByteArrayInputStream(remoteForm.getRichDesignByteArray())));
 
             ClientFormChanges clientChanges = new ClientFormChanges(new DataInputStream(new ByteArrayInputStream(remoteForm.getRemoteChanges().form)), clientForm, null);
