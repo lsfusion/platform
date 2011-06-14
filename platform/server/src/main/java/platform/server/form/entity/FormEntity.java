@@ -353,9 +353,13 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         return result;
     }
 
+    public <P extends PropertyInterface> PropertyDrawEntity<P> addPropertyDraw(Property<P> property, Map<P, PropertyObjectInterfaceEntity> mapping) {
+        return addPropertyDraw(null, new PropertyObjectEntity<P>(property, mapping));
+    }
+
     private Map<String, Integer> propertySIDCount = new HashMap<String, Integer>();
 
-    <P extends PropertyInterface> PropertyDrawEntity<P> addPropertyDraw(GroupObjectEntity groupObject, PropertyObjectEntity<P> propertyImplement) {
+    private <P extends PropertyInterface> PropertyDrawEntity<P> addPropertyDraw(GroupObjectEntity groupObject, PropertyObjectEntity<P> propertyImplement) {
         PropertyDrawEntity<P> propertyDraw = new PropertyDrawEntity<P>(genID(), propertyImplement, groupObject);
         if (shouldProceedDefaultDraw()) {
             propertyImplement.property.proceedDefaultDraw(propertyDraw, this);

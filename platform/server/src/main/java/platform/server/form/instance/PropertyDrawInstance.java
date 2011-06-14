@@ -1,20 +1,19 @@
 package platform.server.form.instance;
 
 import platform.base.BaseUtils;
+import platform.base.Result;
 import platform.interop.ClassViewType;
 import platform.interop.form.PropertyReadType;
 import platform.server.form.entity.PropertyDrawEntity;
+import platform.server.logics.property.Property;
 import platform.server.logics.property.PropertyInterface;
 import platform.server.logics.property.ObjectValueProperty;
 import platform.server.logics.BusinessLogics;
-import platform.server.session.Modifier;
-import platform.server.session.Changes;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.Collections;
-import java.sql.SQLException;
 
 // представление св-ва
 public class PropertyDrawInstance<P extends PropertyInterface> extends CellInstance<PropertyDrawEntity> implements PropertyReaderInstance {
@@ -66,6 +65,45 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
             result = BaseUtils.mergeList(GroupObjectInstance.getObjects(toDraw.getUpTreeGroups()), result);
         }
         return result;
+    }
+
+    public PropertyObjectInstance<?> getChangeInstance(BusinessLogics<?> BL) {
+        return getChangeInstance(new Result<Property>(), true, BL);
+    }
+    public PropertyObjectInstance<?> getChangeInstance(Result<Property> aggProp, BusinessLogics<?> BL) {
+        return getChangeInstance(aggProp, true, BL);
+    }
+    public PropertyObjectInstance<?> getChangeInstance(boolean aggValue, BusinessLogics<?> BL) {
+        return getChangeInstance(new Result<Property>(), aggValue, BL);
+    }
+
+    public boolean isReadOnly() {
+        return entity.readOnly && !isSingleSimplePanel();
+    }
+
+    private boolean isSingleSimplePanel() { // дебильновато но временно так
+        return !(propertyObject.property instanceof ObjectValueProperty)
+            && toDraw != null && toDraw.curClassView == ClassViewType.PANEL && toDraw.objects.size() == 1
+            && propertyObject.mapping.values().size() == 1
+            && propertyObject.mapping.values().iterator().next() == toDraw.objects.iterator().next()
+            && !toDraw.objects.iterator().next().entity.addOnTransaction;
+    }
+
+    public PropertyObjectInstance<?> getChangeInstance(Result<Property> aggProp, boolean aggValue, BusinessLogics<?> BL) {
+        PropertyObjectInstance<?> change = propertyObject.getChangeInstance(aggProp, aggValue);
+
+        // если readOnly свойство лежит в groupObject в виде панели с одним входом, то показываем диалог выбора объекта
+        if (entity.readOnly && isSingleSimplePanel()) {
+            ObjectInstance singleObject = BaseUtils.single(toDraw.objects);
+            ObjectValueProperty objectValueProperty = BL.getObjectValueProperty(singleObject.getBaseClass());
+
+            aggProp.set(propertyObject.property);
+            return objectValueProperty.getImplement().mapObjects(
+                    Collections.singletonMap(
+                            BaseUtils.single(objectValueProperty.interfaces),
+                            singleObject));
+        }
+        return change;
     }
 
     public ClassViewType getForceViewType() {

@@ -3,6 +3,7 @@ package platform.server.form.instance;
 import platform.base.BaseUtils;
 import platform.base.EmptyIterator;
 import platform.base.OrderedMap;
+import platform.base.Result;
 import platform.interop.ClassViewType;
 import platform.interop.Scroll;
 import platform.interop.action.ClientAction;
@@ -260,8 +261,8 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
     }
 
     public void serializePropertyEditorType(DataOutputStream outStream, PropertyDrawInstance<?> propertyDraw, boolean aggValue) throws SQLException, IOException {
-        PropertyObjectInstance<?> change =  propertyDraw.propertyObject.getChangeInstance(aggValue);
-        if (!propertyDraw.entity.readOnly && securityPolicy.property.change.checkPermission(change.property) && change.getValueImplement().canBeChanged(this)) {
+        PropertyObjectInstance<?> change =  propertyDraw.getChangeInstance(aggValue, BL);
+        if (!propertyDraw.isReadOnly() && securityPolicy.property.change.checkPermission(change.property) && change.getValueImplement().canBeChanged(this)) {
             outStream.writeBoolean(false);
             TypeSerializer.serializeType(outStream, change.getEditorType());
         } else {
@@ -398,12 +399,12 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
 
     public List<ClientAction> changeProperty(PropertyDrawInstance<?> property, Map<ObjectInstance, DataObject> mapDataValues,
                                              PropertyDrawInstance<?> value, Map<ObjectInstance, DataObject> valueColumnKeys, RemoteForm executeForm, boolean all, boolean aggValue) throws SQLException {
-        return changeProperty(property, mapDataValues, value.propertyObject.getChangeInstance(aggValue).getRemappedPropertyObject(valueColumnKeys), executeForm, all, aggValue);
+        return changeProperty(property, mapDataValues, value.getChangeInstance(aggValue, BL).getRemappedPropertyObject(valueColumnKeys), executeForm, all, aggValue);
     }
 
     public List<ClientAction> changeProperty(PropertyDrawInstance<?> property, Map<ObjectInstance, DataObject> mapDataValues, Object value, RemoteForm executeForm, boolean all, boolean aggValue) throws SQLException {
-        PropertyObjectInstance<?> changeInstance = property.propertyObject.getChangeInstance(aggValue);
-        assert !property.entity.readOnly;
+        PropertyObjectInstance<?> changeInstance = property.getChangeInstance(aggValue, BL);
+        assert !property.isReadOnly();
         if(changeInstance!=null)
             return changeProperty(changeInstance.getRemappedPropertyObject(mapDataValues), value, executeForm, all ? property.toDraw : null);
         else
@@ -1190,7 +1191,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
 
     public DialogInstance<T> createObjectEditorDialog(int viewID) throws RemoteException, SQLException {
         PropertyDrawInstance propertyDraw = getPropertyDraw(viewID);
-        PropertyObjectInstance<?> changeProperty = propertyDraw.propertyObject.getChangeInstance();
+        PropertyObjectInstance<?> changeProperty = propertyDraw.getChangeInstance(BL);
 
         CustomClass objectClass = changeProperty.getDialogClass();
         AbstractClassFormEntity<T> classForm = objectClass.getEditForm(BL.LM);
@@ -1207,25 +1208,21 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
 
     public DialogInstance<T> createEditorPropertyDialog(int viewID) throws SQLException {
         PropertyDrawInstance propertyDraw = getPropertyDraw(viewID);
-        PropertyObjectInstance property = propertyDraw.propertyObject;
-        PropertyObjectInstance<?> changeProperty = propertyDraw.propertyObject.getChangeInstance();
+
+        Result<Property> aggProp = new Result<Property>();
+        PropertyObjectInstance<?> changeProperty = propertyDraw.getChangeInstance(aggProp, BL);
 
         AbstractClassFormEntity<T> formEntity = getDataChangeFormEntity(changeProperty, propertyDraw.toDraw);
 
         ObjectEntity dialogObject = formEntity.getObject();
         DialogInstance<T> dialog = new DialogInstance<T>(formEntity, BL, session, securityPolicy, getFocusListener(), getClassListener(), dialogObject, read(changeProperty), instanceFactory.computer);
 
-        //если для readOnly свойства возвращалось ObjectValueProperty для изменения объекта,
-        //то используем само свойство в качестве фильтра
-        Property filterProperty = changeProperty.property != property.getChangeInstance().property
-                         ? property.property
-                         : property.property.getFilterProperty();
-
+        Property<PropertyInterface> filterProperty = aggProp.result;
         if (filterProperty != null) {
             PropertyDrawEntity filterPropertyDraw = formEntity.getPropertyDraw(filterProperty, dialogObject);
-            if (filterPropertyDraw == null) {
-                filterPropertyDraw = formEntity.addPropertyDraw(new LP(filterProperty), dialogObject);
-            }
+            if (filterPropertyDraw == null)
+                filterPropertyDraw = formEntity.addPropertyDraw(filterProperty,
+                        Collections.singletonMap(BaseUtils.single(filterProperty.interfaces), (PropertyObjectInterfaceEntity) dialogObject));
             dialog.initFilterPropertyDraw = filterPropertyDraw;
         }
 

@@ -2,6 +2,7 @@ package platform.server.logics.property;
 
 import platform.base.BaseUtils;
 import platform.base.ListPermutations;
+import platform.base.Result;
 import platform.interop.action.ClientAction;
 import platform.server.caches.IdentityLazy;
 import platform.server.classes.*;
@@ -343,13 +344,8 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
     }
 
     // assert пока что aggrProps со свойствами с одним входом
-    public PropertyMapImplement<?, T> getChangeImplement() {
+    public PropertyMapImplement<?, T> getChangeImplement(Result<Property> aggProp) {
         return new PropertyMapImplement<T, T>(this, getIdentityInterfaces());
-    }
-
-    // определяет свойство по которому нужно сразу фильтровать при редактировании этого свойства
-    public Property getFilterProperty() {
-        return null;
     }
 
     public boolean checkEquals() {

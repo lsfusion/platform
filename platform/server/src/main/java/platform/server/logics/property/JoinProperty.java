@@ -1,6 +1,7 @@
 package platform.server.logics.property;
 
 import platform.base.BaseUtils;
+import platform.base.Result;
 import platform.interop.ClassViewType;
 import platform.interop.Compare;
 import platform.server.classes.CustomClass;
@@ -160,11 +161,12 @@ public class JoinProperty<T extends PropertyInterface> extends FunctionProperty<
     }
 
     @Override
-    public PropertyMapImplement<?,Interface> getChangeImplement() {
-        if(implement.mapping.size()==1 && !implementChange)
+    public PropertyMapImplement<?,Interface> getChangeImplement(Result<Property> aggProp) {
+        if(implement.mapping.size()==1 && !implementChange) {
+            aggProp.set(implement.property);
             return ((PropertyMapImplement<?,Interface>)BaseUtils.singleValue(implement.mapping)).mapChangeImplement();
-        else
-            return super.getChangeImplement();
+        } else
+            return super.getChangeImplement(aggProp);
     }
 
     public boolean checkEquals() {
@@ -180,11 +182,6 @@ public class JoinProperty<T extends PropertyInterface> extends FunctionProperty<
         }
 
         return implement.property.checkEquals();
-    }
-
-    @Override
-    public Property getFilterProperty() {
-        return implement.property;
     }
 
     @Override

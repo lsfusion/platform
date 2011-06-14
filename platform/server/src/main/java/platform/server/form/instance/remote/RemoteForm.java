@@ -483,12 +483,12 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
     }
 
     public boolean[] getCompatibleProperties(int mainID, int[] propertiesIDs) throws RemoteException {
-        Property mainProperty = form.getPropertyDraw(mainID).propertyObject.getChangeInstance().property;
+        Property mainProperty = form.getPropertyDraw(mainID).getChangeInstance(form.BL).property;
 
         int n = propertiesIDs.length;
         boolean result[] = new boolean[n];
         for (int i = 0; i < n; ++i) {
-            Property property = form.getPropertyDraw(propertiesIDs[i]).propertyObject.getChangeInstance().property;
+            Property property = form.getPropertyDraw(propertiesIDs[i]).getChangeInstance(form.BL).property;
             result[i] = mainProperty.getType().isCompatible( property.getType() );
         }
         return result;
@@ -497,7 +497,7 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
     @Override
     public Object getPropertyChangeValue(int propertyID) throws RemoteException {
         try {
-            return form.getPropertyDraw(propertyID).propertyObject.getChangeInstance().read(form.session.sql, form, form.session.env);
+            return form.getPropertyDraw(propertyID).getChangeInstance(form.BL).read(form.session.sql, form, form.session.env);
         } catch (SQLException e) {
             return null;
         }
