@@ -1,11 +1,12 @@
 package platform.client.navigator;
 
-import javax.imageio.ImageIO;
+import platform.base.IOUtils;
+
 import javax.swing.*;
-import java.awt.*;
-import java.io.*;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
 import java.util.*;
-import java.util.List;
 
 public class ClientNavigatorElement {
     private static Map<String, ClientNavigatorElement> elements = new HashMap<String, ClientNavigatorElement>();
@@ -54,12 +55,7 @@ public class ClientNavigatorElement {
             addChild(childSID);
         }
 
-        ObjectInputStream in = new ObjectInputStream(inStream);
-        try {
-            image = (ImageIcon) in.readObject();
-        } catch (ClassNotFoundException e) {
-            throw new RuntimeException(e);
-        }
+        image = IOUtils.readImageIcon(inStream);
 
         if (window != null) {
             window.elements.add(this);

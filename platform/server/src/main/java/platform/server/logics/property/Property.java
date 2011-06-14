@@ -509,7 +509,7 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
 
     public void proceedDefaultDesign(DefaultFormView view, PropertyDrawEntity<T> entity) {
         if (image != null)
-            view.get(entity).design.image = image;
+            view.get(entity).design.setImage(image);
     }
 
     public boolean hasChild(Property prop) {

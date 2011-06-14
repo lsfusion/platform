@@ -1,10 +1,8 @@
 package platform.base;
 
-import javax.imageio.ImageIO;
+import platform.interop.SerializableImageIconHolder;
+
 import javax.swing.*;
-import java.awt.*;
-import java.awt.image.BufferedImage;
-import java.awt.image.RenderedImage;
 import java.io.*;
 
 public class IOUtils {
@@ -55,13 +53,16 @@ public class IOUtils {
         }
     }
 
-    public static void writeImageIcon(DataOutputStream outStream, ImageIcon image) {
+    public static void writeImageIcon(DataOutputStream outStream, ImageIcon image) throws IOException {
+        new ObjectOutputStream(outStream).writeObject(new SerializableImageIconHolder(image));
+    }
+
+    public static ImageIcon readImageIcon(InputStream inStream) throws IOException {
+        ObjectInputStream in = new ObjectInputStream(inStream);
         try {
-            ObjectOutputStream out = new ObjectOutputStream(outStream);
-            out.writeObject(image);
-        } catch (IOException e) {
+            return ((SerializableImageIconHolder) in.readObject()).getImage();
+        } catch (ClassNotFoundException e) {
             throw new RuntimeException(e);
         }
-
     }
 }

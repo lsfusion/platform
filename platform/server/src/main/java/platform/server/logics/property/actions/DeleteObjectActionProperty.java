@@ -49,7 +49,7 @@ public class DeleteObjectActionProperty extends ActionProperty {
     public void proceedDefaultDesign(DefaultFormView view, PropertyDrawEntity<ClassPropertyInterface> entity) {
         super.proceedDefaultDesign(view, entity);
         view.get(entity).editKey = KeyStrokes.getDeleteActionPropertyKeyStroke();
-        view.get(entity).design.image = new ImageIcon(AddObjectActionProperty.class.getResource("/images/delete.png"));
+        view.get(entity).design.setImage(new ImageIcon(AddObjectActionProperty.class.getResource("/images/delete.png")));
         view.get(entity).showEditKey = false;
     }
 }

@@ -19,9 +19,21 @@ public class ComponentDesign extends ContextObject implements Serializable {
 
     public Color background;
     public Color foreground;
-    public ImageIcon image;
+    public SerializableImageIconHolder imageHolder;
 
     public ComponentDesign() {
+    }
+
+    public ImageIcon getImage() {
+        return imageHolder != null ? imageHolder.getImage() : null;
+    }
+
+    public void setImage(ImageIcon image) {
+        if (imageHolder == null) {
+            imageHolder = new SerializableImageIconHolder(image);
+        } else {
+            imageHolder.setImage(image);
+        }
     }
 
     public ComponentDesign(ApplicationContext context) {
@@ -34,9 +46,9 @@ public class ComponentDesign extends ContextObject implements Serializable {
 
     public void designComponent(JComponent comp) {
         designComponent(comp, null);
-        if (image != null && comp instanceof AbstractButton) {
+        if (getImage() != null && comp instanceof AbstractButton) {
             AbstractButton button = (AbstractButton) comp;
-            button.setIcon(image);
+            button.setIcon(getImage());
         }
     }
 

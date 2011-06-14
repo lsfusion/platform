@@ -414,7 +414,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         equalsWorkingDaysQuantity = addJProp(baseGroup, "equalsWorkingDaysQuantity", "Совпадает количество раб. дней", equals2, object(IntegerClass.instance), 1, workingDaysQuantity, 2, 3, 4);
 
         transactionLater = addSUProp("Транзакция позже", Union.OVERRIDE, addJProp("Дата позже", greater2, date, 1, date, 2),
-                addJProp("", and1, addJProp("Дата=дата", equals2, date, 1, date, 2), 1, 2, addJProp("Код транзакции после", greater2, 1, 2), 1, 2));
+                                     addJProp("", and1, addJProp("Дата=дата", equals2, date, 1, date, 2), 1, 2, addJProp("Код транзакции после", greater2, 1, 2), 1, 2));
 
         hostname = addDProp(baseGroup, "hostname", "Имя хоста", InsensitiveStringClass.get(100), computer);
 
@@ -936,7 +936,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         @Override
         public void proceedDefaultDesign(DefaultFormView view, PropertyDrawEntity<ClassPropertyInterface> entity) {
             super.proceedDefaultDesign(view, entity);
-            view.get(entity).design.image = new ImageIcon(LoadActionProperty.class.getResource("/images/load.png"));
+            view.get(entity).design.setImage(new ImageIcon(LoadActionProperty.class.getResource("/images/load.png")));
         }
     }
 
@@ -966,7 +966,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         @Override
         public void proceedDefaultDesign(DefaultFormView view, PropertyDrawEntity<ClassPropertyInterface> entity) {
             super.proceedDefaultDesign(view, entity);
-            view.get(entity).design.image = new ImageIcon(OpenActionProperty.class.getResource("/images/open.png"));
+            view.get(entity).design.setImage(new ImageIcon(OpenActionProperty.class.getResource("/images/open.png")));
         }
     }
 
