@@ -120,7 +120,14 @@ public class RomanLogicsModule extends LogicsModule {
     private LP nameSupplierSizeSupplier;
     private LP sidBrandSupplier;
     public LP sidTypeDuty;
+    public LP nameTypeDuty;
     public LP sidToTypeDuty;
+    private LP typeDutyDuty;
+    private LP sidTypeDutyDuty;
+    private LP nameTypeDutyDuty;
+    private LP typeDutyNDS;
+    private LP sidTypeDutyNDS;
+    private LP nameTypeDutyNDS;
     private LP supplierBrandSupplier;
     private LP nameSupplierBrandSupplier;
     private LP brandSupplierSupplier;
@@ -271,6 +278,7 @@ public class RomanLogicsModule extends LogicsModule {
     LP relationCustomCategory10SubCategory;
     LP countRelationCustomCategory10;
     LP diffCountRelationCustomCategory10Sku;
+    LP diffCountRelationCustomCategory10FreightSku;
     LP minPriceCustomCategory4;
     LP minPriceCustomCategory6;
     LP minPriceCustomCategory9;
@@ -377,6 +385,8 @@ public class RomanLogicsModule extends LogicsModule {
     private LP dutyNetWeightImporterFreightSku;
     private LP dutyPercentImporterFreightSku;
     private LP dutyImporterFreightSku;
+    private LP NDSPercentFreightSKU;
+    private LP NDSSumImporterFreightSKU;
     private LP minPriceRateCustomCategoryCountryFreightSku;
     private LP priceImporterFreightSku;
     private LP priceMaxImporterFreightSku;
@@ -391,9 +401,7 @@ public class RomanLogicsModule extends LogicsModule {
     private LP nameCurrencyFreight;
     private LP sumFreightFreight;
     private LP routeFreight;
-    private LP nameRouteFreight;
-    private LP typeDutyFreight;
-    private LP sidTypeDutyFreight;
+    private LP nameRouteFreight;    
     private LP exporterFreight;
     LP nameOriginExporterFreight;
     LP nameExporterFreight;
@@ -1080,6 +1088,16 @@ public class RomanLogicsModule extends LogicsModule {
         sidTypeDuty = addDProp(baseGroup, "sidTypeDuty", "Код", StringClass.get(10), typeDuty);
         sidToTypeDuty = addAGProp("sidToTypeDuty", "Тип пошлины", sidTypeDuty);
 
+        nameTypeDuty = addDProp(baseGroup, "nameTypeDuty", "Наименование", StringClass.get(50), typeDuty);
+
+        typeDutyDuty = addDProp(idGroup, "typeDutyDuty", "Для пошлин (ИД)", typeDuty);
+        sidTypeDutyDuty = addJProp(baseGroup, "sidTypeDutyDuty", "Для пошлин (код)", sidTypeDuty, typeDutyDuty);
+        nameTypeDutyDuty = addJProp(baseGroup, "nameTypeDutyDuty", "Для пошлин", nameTypeDuty, typeDutyDuty);
+
+        typeDutyNDS = addDProp(idGroup, "typeDutyNDS", "Для НДС (ИД)", typeDuty);
+        sidTypeDutyNDS = addJProp(baseGroup, "sidTypeDutyNDS", "Для НДС (код)", sidTypeDuty, typeDutyNDS);
+        nameTypeDutyNDS = addJProp(baseGroup, "nameTypeDutyNDS", "Для НДС", nameTypeDuty, typeDutyNDS);
+
         // Contract
         sidContract = addDProp(baseGroup, "sidContract", "Номер договора", StringClass.get(50), contract);
 
@@ -1154,12 +1172,12 @@ public class RomanLogicsModule extends LogicsModule {
 
         relationCustomCategory10SubCategory = addDProp(baseGroup, "relationCustomCategory10SubCategory", "Связь ТН ВЭД", LogicalClass.instance, customCategory10, subCategory);
 
-        countRelationCustomCategory10 = addSGProp(baseGroup, "countRelationCustomCategory10", "Кол-во групп", addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), relationCustomCategory10SubCategory, 1, 2), 1);
+        countRelationCustomCategory10 = addSGProp("countRelationCustomCategory10", "Кол-во групп", addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), relationCustomCategory10SubCategory, 1, 2), 1);
 
         minPriceCustomCategory10SubCategory = addDProp(baseGroup, "minPriceCustomCategory10SubCategory", "Минимальная цена ($)", DoubleClass.instance, customCategory10, subCategory);
         minPriceCustomCategory10SubCategoryCountry = addDProp("minPriceCustomCategory10SubCategoryCountry", "Минимальная цена для страны ($)", DoubleClass.instance, customCategory10, subCategory, baseLM.country);
-        dutyPercentCustomCategory10TypeDuty = addDProp("dutyPercentCustomCategory10TypeDuty", "Пошлина (%)", DoubleClass.instance, customCategory10, typeDuty);
-        dutySumCustomCategory10TypeDuty = addDProp("dutySumCustomCategory10TypeDuty", "Пошлина (евро)", DoubleClass.instance, customCategory10, typeDuty);
+        dutyPercentCustomCategory10TypeDuty = addDProp("dutyPercentCustomCategory10TypeDuty", "в %", DoubleClass.instance, customCategory10, typeDuty);
+        dutySumCustomCategory10TypeDuty = addDProp("dutySumCustomCategory10TypeDuty", "в евро", DoubleClass.instance, customCategory10, typeDuty);
 
         customCategory6CustomCategoryOrigin = addDProp(idGroup, "customCategory6CustomCategoryOrigin", "Код(6)", customCategory6, customCategoryOrigin);
         customCategory4CustomCategoryOrigin = addJProp(idGroup, "customCategory4CustomCategoryOrigin", "Код(4)", customCategory4CustomCategory6, customCategory6CustomCategoryOrigin, 1);
@@ -1313,17 +1331,17 @@ public class RomanLogicsModule extends LogicsModule {
         sidCustomCategory10Sku = addJProp(baseGroup, "sidCustomCategory10Sku", "ТН ВЭД", sidCustomCategory10, customCategory10Sku, 1);
 
         diffCountRelationCustomCategory10Sku = addJProp("diffCountRelationCustomCategory10Sku", baseLM.greater2, addJProp(countRelationCustomCategory10, customCategory10Sku, 1), 1, baseLM.vzero);
+        diffCountRelationCustomCategory10FreightSku = addJProp("diffCountRelationCustomCategory10FreightSku", baseLM.and1, diffCountRelationCustomCategory10Sku, 2, is(freight), 1);
 
         subCategorySku = addDProp(idGroup, "subCategorySku", "Дополнительное деление (ИД)", subCategory, sku);
         nameSubCategorySku = addJProp(baseGroup, "nameSubCategorySku", "Дополнительное деление", nameSubCategory, subCategorySku, 1);
 
         addConstraint(addJProp("Выбранный для товара ТН ВЭД должен иметь верхний элемент", baseLM.andNot1, customCategory10Sku, 1, customCategory9Sku, 1), false);
 
-        addConstraint(addJProp("Выбранный должен быть среди связанных", and(false, true), addCProp(LogicalClass.instance, true, sku), 1,
+        addConstraint(addJProp("Выбранное деление должно быть связано с ТН ВЭД товара", and(false, false, true), addCProp(LogicalClass.instance, true, sku), 1,
                    customCategory10Sku, 1,
-                     addJProp(relationCustomCategory10SubCategory, customCategory10Sku, 1, subCategorySku, 1), 1), true);
-       /*addConstraint(addJProp("Выбранный должен быть среди связанных кодов", andNot1, addCProp(LogicalClass.instance, true, article), 1,
-                   addJProp(relationCustomCategory10CustomCategoryOrigin, customCategory10Article, 1, customCategoryOriginArticle, 1), 1), true);*/
+                   subCategorySku, 1,
+                   addJProp(relationCustomCategory10SubCategory, customCategory10Sku, 1, subCategorySku, 1), 1), true);                
 
         // unitOfMeasure
         unitOfMeasureCategory = addDProp(idGroup, "unitOfMeasureCategory", "Единица измерения (ИД)", unitOfMeasure, category);
@@ -1952,9 +1970,6 @@ public class RomanLogicsModule extends LogicsModule {
         routeFreight = addDProp(idGroup, "routeFreight", "Маршрут (ИД)", route, freight);
         nameRouteFreight = addJProp(baseGroup, "nameRouteFreight", "Маршрут", baseLM.name, routeFreight, 1);
 
-        typeDutyFreight = addDProp(idGroup, "typeDutyFreight", "Тип пошлины фрахта (ИД)", typeDuty, freight);
-        sidTypeDutyFreight = addJProp(baseGroup, "sidTypeDutyFreight", "Тип пошлины фрахта", sidTypeDuty, typeDutyFreight, 1);
-
         exporterFreight = addDProp(idGroup, "exporterFreight", "Экспортер (ИД)", exporter, freight);
         nameOriginExporterFreight = addJProp(baseGroup, "nameOriginExporterFreight", "Экспортер", nameOrigin, exporterFreight, 1);
         nameExporterFreight = addJProp(baseGroup, "nameExporterFreight", "Экспортер", baseLM.name, exporterFreight, 1);
@@ -2020,6 +2035,7 @@ public class RomanLogicsModule extends LogicsModule {
         subCategoryFreightSku = addDProp(idGroup, "subCategoryFreightSku", "Дополнительное деление (ИД)", subCategory, freight, sku);
         subCategoryFreightSku.setDerivedForcedChange(addJProp(baseLM.and1, subCategorySku, 2, quantityFreightSku, 1, 2), 1, 2, is(freightChanged), 1);
         nameSubCategoryFreightSku = addJProp(baseGroup, "nameSubCategoryFreightSku", "Дополнительное деление", nameSubCategory, subCategoryFreightSku, 1, 2);
+        addConstraint(addJProp("Для SKU должно быть задано дополнительное деление", and(true, false, false), is(freightChanged), 1, subCategoryFreightSku, 1, 2, diffCountRelationCustomCategory10FreightSku, 1, 2, quantityFreightSku, 1, 2), false);
 
         customCategory6FreightSku = addJProp(idGroup, "customCategory6FreightSku", "ТН ВЭД", customCategory6CustomCategory10, customCategory10FreightSku, 1, 2);
 
@@ -2126,12 +2142,15 @@ public class RomanLogicsModule extends LogicsModule {
         diffPriceMinPriceImporterFreightSku = addDUProp(baseGroup, "diffPriceMinPriceImporterFreightSku", "Разница цен", minPriceRateImporterFreightSku, priceInOutImporterFreightSku);
         greaterPriceMinPriceImporterFreightSku = addJProp(baseGroup, "greaterPriceMinPriceImporterFreightSku", "Недостаточность цены", baseLM.greater2, diffPriceMinPriceImporterFreightSku, 1, 2, 3, baseLM.vzero);
 
-        dutyNetWeightFreightSku = addJProp(baseGroup, "dutyNetWeightFreightSku", "Пошлина по весу нетто", baseLM.multiplyDouble2, netWeightFreightSku, 1, 2, addJProp(dutySumCustomCategory10TypeDuty, customCategory10Sku, 2, typeDutyFreight, 1), 1, 2);
+        dutyNetWeightFreightSku = addJProp(baseGroup, "dutyNetWeightFreightSku", "Пошлина по весу нетто", baseLM.multiplyDouble2, netWeightFreightSku, 1, 2, addJProp(dutySumCustomCategory10TypeDuty, customCategory10FreightSku, 1, 2, typeDutyDuty), 1, 2);
         dutyNetWeightImporterFreightSku = addJProp(baseGroup, "dutyNetWeightImpoterFreightSku", "Пошлина по весу нетто", baseLM.and1, dutyNetWeightFreightSku, 2, 3, is(importer), 1);
 
-        dutyPercentImporterFreightSku = addJProp(baseGroup, "dutyPercentImporterFreightSku", "Пошлина по цене", baseLM.percent2, priceInOutImporterFreightSku, 1, 2, 3, addJProp(dutyPercentCustomCategory10TypeDuty, customCategory10Sku, 3, typeDutyFreight, 2), 1, 2, 3);
+        dutyPercentImporterFreightSku = addJProp(baseGroup, "dutyPercentImporterFreightSku", "Пошлина по цене", baseLM.percent2, priceInOutImporterFreightSku, 1, 2, 3, addJProp(dutyPercentCustomCategory10TypeDuty, customCategory10FreightSku, 2, 3, typeDutyDuty), 1, 2, 3);
 
         dutyImporterFreightSku = addSUProp(baseGroup, "dutyImporterFreightSku", "Пошлина", Union.MAX, dutyNetWeightImporterFreightSku, dutyPercentImporterFreightSku);
+
+        NDSPercentFreightSKU = addJProp(baseGroup, "NDSPercentFreightSku", "НДС (%)", dutyPercentCustomCategory10TypeDuty, customCategory10FreightSku, 1, 2, typeDutyNDS);
+        NDSSumImporterFreightSKU = addJProp(baseGroup, "NDSSumImporterFreightSku", "НДС (сумма)", baseLM.percent2, priceInOutImporterFreightSku, 1, 2, 3, NDSPercentFreightSKU, 2, 3);
 
         priceImporterFreightArticleCompositionCountryCategory = addMGProp(baseGroup, "priceImporterFreightArticleCompositionCountryCategory", "Цена",
                 priceInOutImporterFreightSku, 1, 2, articleSku, 3, mainCompositionOriginFreightSku, 2, 3, countryOfOriginFreightSku, 2, 3, customCategory10FreightSku, 2, 3);
@@ -2318,6 +2337,10 @@ public class RomanLogicsModule extends LogicsModule {
         classifierItem.add(categoryForm);
         addFormEntity(categoryForm);
 
+        AbstractClassFormEntity customCategory10Form = new CustomCategory10FormEntity("customCategory10Form", "ТН ВЭД");
+        classifierItem.add(customCategory10Form);
+        addFormEntity(customCategory10Form);
+
         classifierItem.add(commonSize.getClassForm(baseLM));
         classifierItem.add(season.getClassForm(baseLM));
         classifierItem.add(baseLM.country.getClassForm(baseLM));
@@ -2382,6 +2405,7 @@ public class RomanLogicsModule extends LogicsModule {
         addFormEntity(new InvoiceShipmentFormEntity(distribution, "invoiceShipmentForm", "Сравнение по инвойсам"));
 
         category.setDialogForm(categoryForm);
+        customCategory10.setDialogForm(customCategory10Form);
         // пока не поддерживается из-за того, что пока нет расчета себестоимости для внутреннего перемещения
 //        addFormEntity(new StockTransferFormEntity(distribution, "stockTransferForm", "Внутреннее перемещение"));
     }
@@ -2461,6 +2485,36 @@ public class RomanLogicsModule extends LogicsModule {
         }
     }
 
+    private class CustomCategory10FormEntity extends AbstractClassFormEntity<RomanBusinessLogics> {
+
+        private ObjectEntity objCustomCategory10;
+
+        private CustomCategory10FormEntity(String sID, String caption) {
+            super(sID, caption);
+
+            objCustomCategory10 = addSingleGroupObject(customCategory10, "ТН ВЭД", sidCustomCategory10, nameCustomCategory, nameCustomCategory4CustomCategory10, numberIdCustomCategory10);
+            objCustomCategory10.groupTo.initClassView = ClassViewType.GRID;
+        }
+
+        @Override
+        public FormView createDefaultRichDesign() {
+            DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign();
+
+            design.defaultOrders.put(design.get(getPropertyDraw(numberIdCustomCategory10)), true);
+
+            return design;
+        }
+
+        @Override
+        public ObjectEntity getObject() {
+            return objCustomCategory10;
+        }
+
+        @Override
+        protected AbstractClassFormEntity copy() {
+            return new CustomCategory10FormEntity(getSID() + "_copy" + copies++, caption);
+        }
+    }
 
     private class GlobalParamFormEntity extends FormEntity<RomanBusinessLogics> {
 
@@ -2471,6 +2525,10 @@ public class RomanLogicsModule extends LogicsModule {
             addPropertyDraw(nameTypeExchangeSTX);
             addPropertyDraw(nameTypeExchangeCustom);
             addPropertyDraw(nameCurrencyCustom);
+            addPropertyDraw(sidTypeDutyDuty);
+            addPropertyDraw(nameTypeDutyDuty);
+            addPropertyDraw(sidTypeDutyNDS);
+            addPropertyDraw(nameTypeDutyNDS);
         }
 
         @Override
@@ -3628,7 +3686,7 @@ public class RomanLogicsModule extends LogicsModule {
             if (!tree)
                 addObjectActions(this, objCustomCategory9);
 
-            objCustomCategory10 = addSingleGroupObject(customCategory10, "Четвёртый уровень", sidCustomCategory10, nameCustomCategory, countRelationCustomCategory10);
+            objCustomCategory10 = addSingleGroupObject(customCategory10, "Четвёртый уровень", sidCustomCategory10, nameCustomCategory);
             addObjectActions(this, objCustomCategory10);
 
             objSubCategory = addSingleGroupObject(subCategory, "Дополнительное деление", nameSubCategory);
@@ -3636,7 +3694,7 @@ public class RomanLogicsModule extends LogicsModule {
 
             objCountry = addSingleGroupObject(baseLM.country, "Страна производства", baseLM.name);
 
-            objTypeDuty = addSingleGroupObject(typeDuty, "Тип таможенного платежа", sidTypeDuty);
+            objTypeDuty = addSingleGroupObject(typeDuty, "Пошлины, НДС, платежи", sidTypeDuty, nameTypeDuty);
             addObjectActions(this, objTypeDuty);
 
             objCustomCategory4Origin = addSingleGroupObject(customCategory4, "Первый уровень", sidCustomCategory4, nameCustomCategory);
@@ -4128,7 +4186,7 @@ public class RomanLogicsModule extends LogicsModule {
         private FreightChangeFormEntity(NavigatorElement parent, String sID, String caption, boolean edit) {
             super(parent, sID, caption);
 
-            objFreight = addSingleGroupObject(freight, "Фрахт", baseLM.date, baseLM.objectClassName, nameRouteFreight, sidTypeDutyFreight, nameExporterFreight, nameFreightTypeFreight, grossWeightFreight, palletNumberFreight);
+            objFreight = addSingleGroupObject(freight, "Фрахт", baseLM.date, baseLM.objectClassName, nameRouteFreight, nameExporterFreight, nameFreightTypeFreight, grossWeightFreight, palletNumberFreight);
 
             if (edit) {
                 objFreight.groupTo.setSingleClassView(ClassViewType.PANEL);
@@ -4800,8 +4858,16 @@ public class RomanLogicsModule extends LogicsModule {
                                    design.getGroupObjectContainer(objCountry.groupTo),
                                    DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
 
-            design.get(objSupplier.groupTo).grid.constraints.fillHorizontal = 5;
-            design.get(objBrand.groupTo).grid.constraints.fillHorizontal = 1;
+            ContainerView specContainer = design.createContainer();
+            design.getMainContainer().addAfter(specContainer, design.getGroupObjectContainer(objColor.groupTo));
+            specContainer.add(design.getGroupObjectContainer(objColor.groupTo));
+            specContainer.add(design.getGroupObjectContainer(objSize.groupTo));
+            specContainer.add(design.getGroupObjectContainer(objTheme.groupTo));
+            specContainer.add(design.getGroupObjectContainer(objCountry.groupTo));
+            specContainer.tabbedPane = true;
+
+            design.get(objSupplier.groupTo).grid.constraints.fillHorizontal = 3;
+            design.get(objBrand.groupTo).grid.constraints.fillHorizontal = 2;
             design.get(objSupplier.groupTo).grid.constraints.fillVertical = 1;
             design.get(objBrand.groupTo).grid.constraints.fillVertical = 1;            
 
@@ -4810,10 +4876,10 @@ public class RomanLogicsModule extends LogicsModule {
             design.get(objTheme.groupTo).grid.constraints.fillVertical = 2;
             design.get(objCountry.groupTo).grid.constraints.fillVertical = 2;
 
-            design.get(objColor.groupTo).grid.constraints.fillHorizontal = 3;
+            /*design.get(objColor.groupTo).grid.constraints.fillHorizontal = 3;
             design.get(objSize.groupTo).grid.constraints.fillHorizontal = 2;
             design.get(objTheme.groupTo).grid.constraints.fillHorizontal = 2;
-            design.get(objCountry.groupTo).grid.constraints.fillHorizontal = 3;
+            design.get(objCountry.groupTo).grid.constraints.fillHorizontal = 3; */
 
             return design;
         }
@@ -4878,7 +4944,7 @@ public class RomanLogicsModule extends LogicsModule {
         private FreightInvoiceFormEntity(NavigatorElement parent, String sID, String caption, boolean edit) {
             super(parent, sID, caption);
 
-            objFreight = addSingleGroupObject(freight, "Фрахт", baseLM.date, baseLM.objectClassName, nameRouteFreight, sidTypeDutyFreight, nameFreightTypeFreight, nameCurrencyFreight, sumInFreight, sumMarkupInFreight, sumInOutFreight, palletNumberFreight);
+            objFreight = addSingleGroupObject(freight, "Фрахт", baseLM.date, baseLM.objectClassName, nameRouteFreight, nameFreightTypeFreight, nameCurrencyFreight, sumInFreight, sumMarkupInFreight, sumInOutFreight, palletNumberFreight);
 
             addPropertyDraw(sumInCurrentYear);
             addPropertyDraw(sumInOutCurrentYear);
@@ -4926,15 +4992,15 @@ public class RomanLogicsModule extends LogicsModule {
             addPropertyDraw(quantityImporterFreightBrandSupplier, objImporter, objFreight, objBrandSupplier);
             addPropertyDraw(markupPercentImporterFreightBrandSupplier, objImporter, objFreight, objBrandSupplier);
 
-            objSku = addSingleGroupObject(sku, "SKU", baseLM.barcode, sidArticleSku, sidSizeSupplierItem,
-                    nameBrandSupplierArticleSku, nameCategoryArticleSku,
-                    nameCountrySku, netWeightSku, mainCompositionOriginSku);
+            objSku = addSingleGroupObject(sku, "SKU", baseLM.barcode, sidArticleSku, nameCategoryArticleSku);
 
             setForceViewType(itemAttributeGroup, ClassViewType.GRID, objSku.groupTo);
 
             setReadOnly(baseGroup, true, objSku.groupTo);
             setReadOnly(publicGroup, true, objSku.groupTo);
 
+            addPropertyDraw(nameCountryOfOriginFreightSku, objFreight, objSku);
+            addPropertyDraw(netWeightFreightSku, objFreight, objSku);
             addPropertyDraw(sidCustomCategory10FreightSku, objFreight, objSku);
             addPropertyDraw(nameSubCategoryFreightSku, objFreight, objSku);
             addPropertyDraw(quantityImporterFreightSku, objImporter, objFreight, objSku);
@@ -4947,6 +5013,8 @@ public class RomanLogicsModule extends LogicsModule {
             addPropertyDraw(dutyNetWeightFreightSku, objFreight, objSku);
             addPropertyDraw(dutyPercentImporterFreightSku, objImporter, objFreight, objSku);
             addPropertyDraw(dutyImporterFreightSku, objImporter, objFreight, objSku);
+            addPropertyDraw(NDSPercentFreightSKU, objFreight, objSku);
+            addPropertyDraw(NDSSumImporterFreightSKU, objImporter, objFreight, objSku);            
 
             PropertyObjectEntity greaterPriceMinPriceImporterFreightSkuProperty = addPropertyObject(greaterPriceMinPriceImporterFreightSku, objImporter, objFreight, objSku);
             getPropertyDraw(minPriceRateFreightSku).setPropertyHighlight(greaterPriceMinPriceImporterFreightSkuProperty);
