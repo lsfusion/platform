@@ -1,19 +1,19 @@
-package platform.server.logics;
+﻿package platform.server.logics;
 
 import net.sf.jasperreports.engine.JRException;
 import org.apache.log4j.Logger;
 import platform.base.*;
 import platform.interop.Compare;
 import platform.interop.RemoteLogicsInterface;
-import platform.interop.action.*;
+import platform.interop.action.ClientAction;
 import platform.interop.event.IDaemonTask;
 import platform.interop.exceptions.LoginException;
 import platform.interop.form.RemoteFormInterface;
 import platform.interop.form.screen.ExternalScreen;
 import platform.interop.form.screen.ExternalScreenParameters;
 import platform.interop.navigator.RemoteNavigatorInterface;
-import platform.interop.remote.Authentication;
 import platform.interop.remote.RemoteObject;
+import platform.interop.remote.UserInfo;
 import platform.server.auth.PolicyManager;
 import platform.server.auth.SecurityPolicy;
 import platform.server.auth.User;
@@ -28,7 +28,8 @@ import platform.server.data.sql.PostgreDataAdapter;
 import platform.server.data.sql.SQLSyntax;
 import platform.server.data.type.Type;
 import platform.server.data.type.TypeSerializer;
-import platform.server.form.entity.*;
+import platform.server.form.entity.FormEntity;
+import platform.server.form.entity.ObjectEntity;
 import platform.server.form.instance.FormInstance;
 import platform.server.form.instance.PropertyObjectInterfaceInstance;
 import platform.server.form.instance.remote.RemoteForm;
@@ -36,7 +37,7 @@ import platform.server.form.navigator.*;
 import platform.server.integration.*;
 import platform.server.logics.linear.LP;
 import platform.server.logics.property.*;
-import platform.server.logics.property.derived.*;
+import platform.server.logics.property.derived.MaxChangeProperty;
 import platform.server.logics.scheduler.Scheduler;
 import platform.server.logics.table.ImplementTable;
 import platform.server.serialization.ServerSerializationPool;
@@ -50,8 +51,8 @@ import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.*;
-import java.util.List;
 
+import static java.util.Arrays.asList;
 
 // @GenericImmutable нельзя так как Spring валится
 
@@ -1586,17 +1587,61 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         getThreadLocalSql().close();
     }
 
-    public Authentication authenticate(String username, String password) throws RemoteException {
+    public UserInfo getUserInfo(String username) throws RemoteException {
         try {
-            User u = authenticateUser(username, password);
-            return new Authentication(username, getUserRolesNames(u));
-        } catch (Exception e) {
-            throw new RuntimeException("Ошибка аутентификации:", e);
+            DataSession session = createSession();
+            try {
+                User user = readUser(username, session);
+                if (user == null) {
+                    throw new LoginException();
+                }
+
+                String password = (String) LM.userPassword.read(session, new DataObject(user.ID, LM.customUser));
+
+                return new UserInfo(username, password, getUserRolesNames(username));
+            } finally {
+                session.close();
+            }
+        } catch (SQLException se) {
+            throw new RuntimeException("Ошибка при чтении данных о пользователе:", se);
         }
     }
 
-    public List<String> getUserRolesNames(User u) {
-        return null;
+    private List<String> getUserRolesNames(String username) {
+        try {
+            DataSession session = createSession();
+            try {
+                Map<String, KeyExpr> keys = KeyExpr.getMapKeys(asList("user", "role"));
+                Expr userExpr = keys.get("user");
+                Expr roleExpr = keys.get("role");
+
+                Query<String, String> q = new Query<String, String>(keys);
+                q.and(LM.inUserRole.getExpr(session.modifier, userExpr, roleExpr).getWhere());
+                q.and(LM.userLogin.getExpr(session.modifier, userExpr).compare(new DataObject(username), Compare.EQUALS));
+
+                q.properties.put("roleName", LM.name.getExpr(session.modifier, roleExpr));
+
+                OrderedMap<Map<String, Object>, Map<String, Object>> values = q.execute(session.sql);
+
+                List<String> roles = new ArrayList<String>();
+                for (Map<String, Object> value : values.values()) {
+                    Object rn = value.get("roleName");
+                    if (rn instanceof String) {
+                        String roleName = ((String) rn).trim();
+                        if (!roleName.isEmpty()) {
+                            roles.add(roleName);
+                        }
+                    }
+                }
+
+                return roles;
+            } finally {
+                session.close();
+            }
+
+        } catch (SQLException e) {
+            throw new RuntimeException("Ошибка при чтении списка ролей.", e);
+        }
     }
 
     private User authenticateUser(String login, String password) throws LoginException, SQLException {

@@ -1,10 +1,10 @@
-package platform.client.remote.proxy;
+﻿package platform.client.remote.proxy;
 
 import platform.interop.RemoteLogicsInterface;
 import platform.interop.form.screen.ExternalScreen;
 import platform.interop.form.screen.ExternalScreenParameters;
 import platform.interop.navigator.RemoteNavigatorInterface;
-import platform.interop.remote.Authentication;
+import platform.interop.remote.UserInfo;
 
 import java.rmi.RemoteException;
 import java.util.TimeZone;
@@ -112,10 +112,10 @@ public class RemoteBusinessLogicProxy<T extends RemoteLogicsInterface>
         return result;
     }
 
-    public Authentication authenticate(String username, String password) throws RemoteException {
-        logRemoteMethodStartCall("authenticate");
-        Authentication result = target.authenticate(username, password);
-        logRemoteMethodEndCall("authenticate", result);
+    public UserInfo getUserInfo(String username) throws RemoteException {
+        logRemoteMethodStartCall("getUserInfo");
+        UserInfo result = target.getUserInfo(username);
+        logRemoteMethodEndCall("getUserInfo", result);
         return result;
     }
 }

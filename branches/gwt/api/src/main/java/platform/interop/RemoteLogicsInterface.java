@@ -1,10 +1,10 @@
-package platform.interop;
+﻿package platform.interop;
 
 import platform.base.serialization.RemoteDescriptorInterface;
 import platform.interop.form.screen.ExternalScreen;
 import platform.interop.form.screen.ExternalScreenParameters;
 import platform.interop.navigator.RemoteNavigatorInterface;
-import platform.interop.remote.Authentication;
+import platform.interop.remote.UserInfo;
 import platform.interop.remote.PendingRemote;
 import platform.interop.remote.PingRemote;
 
@@ -39,5 +39,5 @@ public interface RemoteLogicsInterface extends PendingRemote, PingRemote, Remote
 
     TimeZone getTimeZone() throws RemoteException;
 
-    Authentication authenticate(String username, String password) throws RemoteException;
+    UserInfo getUserInfo(String username) throws RemoteException;
 }
