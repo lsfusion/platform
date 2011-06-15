@@ -1,4 +1,4 @@
-﻿package platform.client.remote.proxy;
+package platform.client.remote.proxy;
 
 import platform.interop.RemoteLogicsInterface;
 import platform.interop.form.screen.ExternalScreen;

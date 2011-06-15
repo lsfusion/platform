@@ -1,4 +1,4 @@
-﻿package platform.interop;
+package platform.interop;
 
 import platform.base.serialization.RemoteDescriptorInterface;
 import platform.interop.form.screen.ExternalScreen;
