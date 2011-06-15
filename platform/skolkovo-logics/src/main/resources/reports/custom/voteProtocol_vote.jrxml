@@ -28,11 +28,15 @@
 	<field name="quantityInClusterVote" class="java.lang.Integer">
 		<fieldDescription><![CDATA[@Z]]></fieldDescription>
 	</field>
-	<field name="acceptedInClusterVote" class="java.lang.Boolean"/>
+	<field name="acceptedInClusterVote" class="java.lang.Boolean">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
 	<field name="quantityInnovativeVote" class="java.lang.Integer">
 		<fieldDescription><![CDATA[@Z]]></fieldDescription>
 	</field>
-	<field name="acceptedInnovativeVote" class="java.lang.Boolean"/>
+	<field name="acceptedInnovativeVote" class="java.lang.Boolean">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
 	<field name="quantityForeignVote" class="java.lang.Integer">
 		<fieldDescription><![CDATA[@Z]]></fieldDescription>
 	</field>
@@ -45,7 +49,15 @@
 	<field name="quantityConnectedVote" class="java.lang.Integer">
 		<fieldDescription><![CDATA[@Z]]></fieldDescription>
 	</field>
-	<field name="quantityDoneOldVote" class="java.lang.Integer"/>
+	<field name="quantityDoneOldVote" class="java.lang.Integer">
+		<fieldDescription><![CDATA[@Z]]></fieldDescription>
+	</field>
+	<field name="quantityDoneNewVote" class="java.lang.Integer">
+		<fieldDescription><![CDATA[@Z]]></fieldDescription>
+	</field>
+	<field name="quantityInVote" class="java.lang.Integer">
+		<fieldDescription><![CDATA[@Z]]></fieldDescription>
+	</field>
 	<group name="captionGroup1">
 		<groupExpression><![CDATA[String.valueOf($F{vote})]]></groupExpression>
 	</group>
@@ -58,7 +70,7 @@
 					<textElement textAlignment="Justified">
 						<paragraph firstLineIndent="40"/>
 					</textElement>
-					<textFieldExpression class="java.lang.String"><![CDATA["для проведения экспертизы заявки " + $F{nameNativeClaimerVote} + " (" + $F{nameNativeProjectVote} + ") по существу было созвано заседание Экспертной коллегии, для чего был определен ее состав в количестве 10 членов и направлены членам Экспертной коллегии материалы заявки соискателя (в электронном виде), а также Бюллетень оценки."]]></textFieldExpression>
+					<textFieldExpression class="java.lang.String"><![CDATA["для проведения экспертизы заявки " + $F{nameNativeClaimerVote} + " (" + $F{nameNativeProjectVote} + ") по существу было созвано заседание Экспертной коллегии, для чего был определен ее состав в количестве " + $F{quantityInVote} + " членов и направлены членам Экспертной коллегии материалы заявки Соискателя (в электронном виде), а также Бюллетень оценки."]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
 					<reportElement mode="Transparent" x="50" y="127" width="489" height="58"/>
@@ -67,7 +79,7 @@
 					</textElement>
 					<textFieldExpression class="java.lang.String"><![CDATA["ПРОТОКОЛ\n" +
 "заседания Экспертной коллегии\n" +
-"по вопросу о соответствии проекта, представленного соискателем,\n" +
+"по вопросу о соответствии проекта, представленного Соискателем,\n" +
 "критериям, указанным в подпункте Е пункта 2 Положения\n" +
 "о присвоении и утрате статуса участника проекта по созданию\n" +
 "и обеспечению функционирования инновационного центра «Сколково»\n"]]></textFieldExpression>
@@ -79,21 +91,21 @@
 					<textElement textAlignment="Justified">
 						<paragraph firstLineIndent="40"/>
 					</textElement>
-					<textFieldExpression class="java.lang.String"><![CDATA["1. В соответствии с пунктами 6-16 Положения об Экспертных коллегиях Фонда и на основании решения Фонда о направлении заявки соискателя на рассмотрение в Экспертную коллегию для проведения экспертизы заявки по существу и о созыве заседания Экспертной коллегии от " + platform.base.BaseUtils.formatRussian($F{date}) + " года;"]]></textFieldExpression>
+					<textFieldExpression class="java.lang.String"><![CDATA["1. В соответствии с пунктами 6-16 Положения об Экспертных коллегиях Фонда и на основании решения Фонда о направлении заявки Соискателя на рассмотрение в Экспертную коллегию для проведения экспертизы заявки по существу и о созыве заседания Экспертной коллегии от " + platform.base.BaseUtils.formatRussian($F{date}) + " года;"]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
 					<reportElement positionType="Float" x="50" y="269" width="489" height="14"/>
 					<textElement textAlignment="Justified">
 						<paragraph firstLineIndent="40"/>
 					</textElement>
-					<textFieldExpression class="java.lang.String"><![CDATA["2. В срок, указанный в пункте 10 Положения об Экспертных коллегиях Фонда, в Фонд направлены " + ($F{quantityDoneVote}+$F{quantityConnectedVote}) + " " + new ChoiceFormat("0#заполненных Бюллетеней|1#заполненный Бюллетень|1<заполненных Бюллетеня|4<заполненных Бюллетеней").format($F{quantityDoneVote}+$F{quantityConnectedVote}) + " оценки."]]></textFieldExpression>
+					<textFieldExpression class="java.lang.String"><![CDATA["2. В срок, указанный в пункте 10 Положения об Экспертных коллегиях Фонда, в Фонд направлены " + ($F{quantityDoneNewVote}+$F{quantityConnectedVote}) + " " + new ChoiceFormat("0#заполненных Бюллетеней|1#заполненный Бюллетень|1<заполненных Бюллетеня|4<заполненных Бюллетеней").format($F{quantityDoneNewVote}+$F{quantityConnectedVote}) + " оценки."]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
 					<reportElement positionType="Float" x="50" y="283" width="489" height="14"/>
 					<textElement textAlignment="Justified">
 						<paragraph firstLineIndent="40"/>
 					</textElement>
-					<textFieldExpression class="java.lang.String"><![CDATA["Из них в " + $F{quantityDoneVote} + " " + new ChoiceFormat("0#Бюллетенях|1#Бюллетене|1<Бюллетенях").format($F{quantityDoneVote}) + " оценки члены Экспертной коллегии указали на то, что они не являются заинтересованными лицами по отношению к соискателю."]]></textFieldExpression>
+					<textFieldExpression class="java.lang.String"><![CDATA["Из них в " + $F{quantityDoneNewVote} + " " + new ChoiceFormat("0#Бюллетенях|1#Бюллетене|1<Бюллетенях").format($F{quantityDoneNewVote}) + " оценки члены Экспертной коллегии указали на то, что они не являются заинтересованными лицами по отношению к Соискателю."]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
 					<reportElement positionType="Float" x="50" y="311" width="489" height="14"/>
@@ -118,7 +130,7 @@
 					<textElement textAlignment="Justified">
 						<paragraph firstLineIndent="40"/>
 					</textElement>
-					<textFieldExpression class="java.lang.String"><![CDATA["1) решения Фонда о направлении заявки соискателя на рассмотрение в Экспертную коллегию для проведения экспертизы заявки по существу и о созыве заседания Экспертной коллегии от " + platform.base.BaseUtils.formatRussian($F{prevDateStartVote}) + " года;"]]></textFieldExpression>
+					<textFieldExpression class="java.lang.String"><![CDATA["1) решения Фонда о направлении заявки Соискателя на рассмотрение в Экспертную коллегию для проведения экспертизы заявки по существу и о созыве заседания Экспертной коллегии от " + platform.base.BaseUtils.formatRussian($F{prevDateStartVote}) + " года;"]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
 					<reportElement positionType="Float" x="50" y="233" width="489" height="14" isRemoveLineWhenBlank="true">
@@ -166,7 +178,7 @@
 				<printWhenExpression><![CDATA[$F{succeededVote}!=null]]></printWhenExpression>
 				<staticText>
 					<reportElement positionType="Float" x="50" y="199" width="489" height="14"/>
-					<textElement>
+					<textElement textAlignment="Justified">
 						<paragraph firstLineIndent="40"/>
 					</textElement>
 					<text><![CDATA[6. Заполненные Бюллетени оценки прилагаются к настоящему протоколу.]]></text>
@@ -184,7 +196,7 @@
 					<textElement textAlignment="Justified">
 						<paragraph firstLineIndent="40"/>
 					</textElement>
-					<textFieldExpression class="java.lang.String"><![CDATA["3. Решение по вопросу о том, соответствует ли проект, представленный соискателем, направлению деятельности, указанному соискателем в заявке:"]]></textFieldExpression>
+					<textFieldExpression class="java.lang.String"><![CDATA["3. Решение по вопросу о том, соответствует ли проект, представленный Соискателем, направлению деятельности, указанному Соискателем в заявке:"]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
 					<reportElement positionType="Float" x="50" y="20" width="489" height="14"/>
@@ -205,14 +217,14 @@
 					<textElement textAlignment="Justified">
 						<paragraph firstLineIndent="40"/>
 					</textElement>
-					<textFieldExpression class="java.lang.String"><![CDATA["Результат: Экспертной коллегией принято решение о " + ($F{acceptedInClusterVote}==null ? "не" : "") + "соответствии проекта, представленного соискателем, данному Критерию."]]></textFieldExpression>
+					<textFieldExpression class="java.lang.String"><![CDATA["Результат: Экспертной коллегией принято решение о " + ($F{acceptedInClusterVote}==null ? "не" : "") + "соответствии проекта, представленного Соискателем, данному Критерию."]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
 					<reportElement positionType="Float" x="50" y="111" width="489" height="14"/>
 					<textElement textAlignment="Justified">
 						<paragraph firstLineIndent="40"/>
 					</textElement>
-					<textFieldExpression class="java.lang.String"><![CDATA["Результат: Экспертной коллегией принято решение о " + ($F{acceptedInnovativeVote}==null ? "не" : "") + "соответствии проекта, представленного соискателем, данному Критерию."]]></textFieldExpression>
+					<textFieldExpression class="java.lang.String"><![CDATA["Результат: Экспертной коллегией принято решение о " + ($F{acceptedInnovativeVote}==null ? "не" : "") + "соответствии проекта, представленного Соискателем, данному Критерию."]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
 					<reportElement positionType="Float" x="50" y="97" width="489" height="14"/>
@@ -226,7 +238,7 @@
 					<textElement textAlignment="Justified">
 						<paragraph firstLineIndent="40"/>
 					</textElement>
-					<textFieldExpression class="java.lang.String"><![CDATA["4. Решение по вопросу о том, предполагает ли проект, представленный соискателем, разработку и (или) коммерциализацию уникальных и (или) обладающих конкурентными преимуществами перед мировыми аналогами продуктов и (или) технологий:"]]></textFieldExpression>
+					<textFieldExpression class="java.lang.String"><![CDATA["4. Решение по вопросу о том, предполагает ли проект, представленный Соискателем, разработку и (или) коммерциализацию уникальных и (или) обладающих конкурентными преимуществами перед мировыми аналогами продуктов и (или) технологий:"]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
 					<reportElement positionType="Float" x="50" y="83" width="489" height="14"/>
@@ -240,14 +252,14 @@
 					<textElement textAlignment="Justified">
 						<paragraph firstLineIndent="40"/>
 					</textElement>
-					<textFieldExpression class="java.lang.String"><![CDATA["5. Решение по вопросу о том, предполагает ли проект, представленный соискателем, участие в проекте иностранного специалиста, который имеет значительный авторитет в инвестиционной и (или) исследовательской среде:"]]></textFieldExpression>
+					<textFieldExpression class="java.lang.String"><![CDATA["5. Решение по вопросу о том, предполагает ли проект, представленный Соискателем, участие в проекте иностранного специалиста, который имеет значительный авторитет в инвестиционной и (или) исследовательской среде:"]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
 					<reportElement positionType="Float" x="50" y="177" width="489" height="14"/>
 					<textElement textAlignment="Justified">
 						<paragraph firstLineIndent="40"/>
 					</textElement>
-					<textFieldExpression class="java.lang.String"><![CDATA["Результат: Экспертной коллегией принято решение о "+ ($F{acceptedForeignVote}==null ? "не" : "") + "соответствии проекта, представленного соискателем, данному Критерию."]]></textFieldExpression>
+					<textFieldExpression class="java.lang.String"><![CDATA["Результат: Экспертной коллегией принято решение о "+ ($F{acceptedForeignVote}==null ? "не" : "") + "соответствии проекта, представленного Соискателем, данному Критерию."]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
 					<reportElement positionType="Float" x="50" y="163" width="489" height="14"/>

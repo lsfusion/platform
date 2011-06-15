@@ -57,7 +57,7 @@
 				</textElement>
 				<textFieldExpression class="java.lang.String"><![CDATA["Некоммерческая организация Фонд развития Центра разработки и коммерциализации новых технологий, рассмотрев поданную " + $F{nameAblateClaimerProject} + " " +
 "заявку на присвоение статуса участника проекта от " +
-platform.base.BaseUtils.formatRussian($F{date}) + " года (" + $F{nameNativeProject} + ") и документы, представленные соискателем в порядке, предусмотренном пунктом 15 Положения о присвоении и утрате статуса участника проекта по созданию и обеспечению функционирования инновационного центра «Сколково», в соответствии с пунктами 16, 21, 22 указанного Положения"]]></textFieldExpression>
+platform.base.BaseUtils.formatRussian($F{date}) + " года (" + $F{nameNativeProject} + ") и документы, представленные Соискателем в порядке, предусмотренном пунктом 15 Положения о присвоении и утрате статуса участника проекта по созданию и обеспечению функционирования инновационного центра «Сколково», в соответствии с пунктами 16, 21, 22 указанного Положения"]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
 				<reportElement style="DefaultStyle" positionType="Float" x="51" y="314" width="489" height="43"/>

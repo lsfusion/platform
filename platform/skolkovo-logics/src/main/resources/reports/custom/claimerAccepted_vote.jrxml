@@ -49,14 +49,14 @@
 					<paragraph firstLineIndent="40"/>
 				</textElement>
 				<textFieldExpression class="java.lang.String"><![CDATA["Некоммерческая организация Фонд развития Центра разработки и коммерциализации новых технологий, рассмотрев поданную " + $F{nameAblateClaimerVote} + " " +
-"заявку на присвоение статуса участника проекта от " + platform.base.BaseUtils.formatRussian($F{dateProjectVote}) + " года (" + $F{nameNativeProjectVote} + "), на основании протокола заседания Экспертной коллегии по вопросу о соответствии проекта, представленного соискателем, критериям, указанным в подпункте Е пункта 2 Положения о присвоении и утрате статуса участника проекта по созданию и обеспечению функционирования инновационного центра «Сколково», от " + platform.base.BaseUtils.formatRussian($F{dateEndVote}) + " года, в соответствии с пунктом 14 указанного Положения"]]></textFieldExpression>
+"заявку на присвоение статуса участника проекта от " + platform.base.BaseUtils.formatRussian($F{dateProjectVote}) + " года (" + $F{nameNativeProjectVote} + "), на основании протокола заседания Экспертной коллегии по вопросу о соответствии проекта, представленного Соискателем, критериям, указанным в подпункте Е пункта 2 Положения о присвоении и утрате статуса участника проекта по созданию и обеспечению функционирования инновационного центра «Сколково», от " + platform.base.BaseUtils.formatRussian($F{dateEndVote}) + " года, в соответствии с пунктом 14 указанного Положения"]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
 				<reportElement style="DefaultStyle" positionType="Float" x="50" y="258" width="489" height="20"/>
 				<textElement textAlignment="Justified" verticalAlignment="Top">
 					<paragraph firstLineIndent="40"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA["признать проект, представленный соискателем, соответствующим критериям, указанным в подпункте Е пункта 2 указанного Положения."]]></textFieldExpression>
+				<textFieldExpression class="java.lang.String"><![CDATA["признать проект, представленный Соискателем, соответствующим критериям, указанным в подпункте Е пункта 2 указанного Положения."]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
 				<reportElement style="DefaultStyle" positionType="Float" x="50" y="248" width="489" height="10"/>
@@ -70,7 +70,7 @@
 				<textElement textAlignment="Center" verticalAlignment="Top">
 					<font fontName="lsf.TimesNewRoman" isBold="true"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA["О соответствии проекта, представленного соискателем, критериям, указанным\n" +
+				<textFieldExpression class="java.lang.String"><![CDATA["О соответствии проекта, представленного Соискателем, критериям, указанным\n" +
 "в подпункте Е пункта 2 Положения о присвоении и утрате статуса участника\n" +
 "проекта по созданию и обеспечению функционирования инновационного центра\n" +
 "«Сколково»"]]></textFieldExpression>
