@@ -2,18 +2,22 @@ package retail;
 
 import net.sf.jasperreports.engine.JRException;
 import org.apache.log4j.Logger;
+import platform.interop.ClassViewType;
 import platform.interop.Compare;
 import platform.server.classes.*;
-import platform.server.form.entity.FormEntity;
-import platform.server.form.entity.ObjectEntity;
-import platform.server.form.entity.filter.CompareFilterEntity;
-import platform.server.form.entity.filter.NotNullFilterEntity;
+import platform.server.form.entity.*;
+import platform.server.form.entity.filter.*;
 import platform.server.form.navigator.NavigatorElement;
 import platform.server.logics.BaseLogicsModule;
+import platform.server.logics.DataObject;
 import platform.server.logics.LogicsModule;
 import platform.server.logics.linear.LP;
 
+import javax.swing.*;
+import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
 import java.io.FileNotFoundException;
+import java.util.logging.Filter;
 
 /**
  * Created by IntelliJ IDEA.
@@ -212,7 +216,7 @@ public class RetailLogicsModule extends LogicsModule {
 
     public void initNavigators() throws JRException, FileNotFoundException {
         NavigatorElement materialManagement = new NavigatorElement(baseLM.baseElement, "materialManagement", "Управление материальными потоками");
-           FormEntity ReceivingSupplierShipment =  addFormEntity(new ReceivingSupplierShipment (materialManagement, "ReceivingSupplierShipment", "Приход от поставщика"));
+           FormEntity ReceivingSupplierShipment =  addFormEntity(new ReceivingSupplierShipment (materialManagement, "ReceivingSupplierShipment", "Приход от поставщика", false, false));
            FormEntity BalanceStockSkuBatch = addFormEntity(new BalanceStockSkuBatch (materialManagement, "BalanceStockSkuBatch", "Остаток по складам-товарам"));
            FormEntity CustomerShipment = addFormEntity(new CustomerShipment (materialManagement, "CustomerShipment", "Отгрузка покупателю"));
            FormEntity DistributionShipment = addFormEntity(new DistributionShipment (materialManagement, "DistributionShipment", "Внутреннее перемещение"));
@@ -220,25 +224,63 @@ public class RetailLogicsModule extends LogicsModule {
 
     private class ReceivingSupplierShipment extends FormEntity<RetailBusinessLogics> {
 
-        public ReceivingSupplierShipment(NavigatorElement parent, String sID, String caption) {
+        private ObjectEntity objSupplierShipment;
+        private ObjectEntity objShipmentDetail;
+
+        private ReceivingSupplierShipment(NavigatorElement parent, String sID, String caption, boolean edit, boolean add) {
             super(parent, sID, caption);
 
-            ObjectEntity objSupplierShipment = addSingleGroupObject(supplierShipment, "Документ поставки");
-            addPropertyDraw(objSupplierShipment, baseGroup,nameInSubjectDocument, nameOutSubjectDocument);
-
-          //  if (type.equals(FormType.ADD))
-          //      addPropertyDraw(objSupplierShipment);
-            addObjectActions(this, objSupplierShipment);
-
-            ObjectEntity objShipmentDetail = addSingleGroupObject(shipmentDetail, "Позиции документа");
+            objSupplierShipment = addSingleGroupObject(supplierShipment, "Документ поставки");
+            addPropertyDraw(objSupplierShipment, baseGroup, nameInSubjectDocument, nameOutSubjectDocument, baseLM.delete);
+            objShipmentDetail = addSingleGroupObject(shipmentDetail, "Позиции документа");
             addPropertyDraw(objShipmentDetail, baseGroup);
             addPropertyDraw(objSupplierShipment, objShipmentDetail, baseGroup);
 
-            addObjectActions(this, objShipmentDetail);
-            //addActionsOnObjectChange(objShipmentDetail,true, addPropertyObject(addShipmentDetailSupplierShipment, objSupplierShipment));
             addFixedFilter(new CompareFilterEntity(addPropertyObject(supplierShipmentBatch, objShipmentDetail),Compare.EQUALS, objSupplierShipment));
             addFixedFilter(new CompareFilterEntity(addPropertyObject(dateBatch, objShipmentDetail),Compare.EQUALS, addPropertyObject(baseLM.date, objSupplierShipment)));
             addFixedFilter(new CompareFilterEntity(addPropertyObject(supplierBatch, objShipmentDetail),Compare.EQUALS, addPropertyObject(outSubjectDocument,objSupplierShipment)));
+
+
+              if (edit) {
+                objSupplierShipment.groupTo.setSingleClassView(ClassViewType.PANEL);
+                addPropertyDraw(objShipmentDetail, baseLM.delete);
+              }
+              else {
+              if (add) {
+                objSupplierShipment.groupTo.setSingleClassView(ClassViewType.PANEL);
+                addPropertyDraw(objShipmentDetail, baseLM.delete);
+                objSupplierShipment.addOnTransaction = true;
+              }
+              else {
+                ReceivingSupplierShipment addSupplierShipment = new ReceivingSupplierShipment(null, "addSupplierShipment", "Добавление документа", false, true);
+                addObjectActions(addSupplierShipment, objShipmentDetail);
+
+                ReceivingSupplierShipment editSupplierShipment = new ReceivingSupplierShipment(null, "editSupplierShipment", "Редактирование документа", true, false);
+                addObjectActions(editSupplierShipment, objShipmentDetail);
+
+                addPropertyDraw(addMFAProp(null,
+                        "Создать документ",
+                        addSupplierShipment,
+                        new ObjectEntity[0],
+                        new PropertyObjectEntity[0],
+                        new PropertyObjectEntity[0],
+                       true), null).forceViewType = ClassViewType.GRID;
+
+                addPropertyDraw(addMFAProp(null,
+                        "Редактировать",
+                        editSupplierShipment,
+                        new ObjectEntity[]{editSupplierShipment.objSupplierShipment},
+                        new PropertyObjectEntity[0],
+                        new PropertyObjectEntity[0],
+                       true), objSupplierShipment).forceViewType = ClassViewType.GRID;
+
+                setReadOnly(baseLM.date, true, objSupplierShipment.groupTo);
+                setReadOnly(nameInSubjectDocument, true, objSupplierShipment.groupTo);
+                setReadOnly(nameOutSubjectDocument, true, objSupplierShipment.groupTo);
+                setReadOnly(sidDocument, true, objSupplierShipment.groupTo);
+                setReadOnly(objShipmentDetail, true);
+              }
+            }
 
         }
     }
