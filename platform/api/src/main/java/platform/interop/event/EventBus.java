@@ -1,9 +1,8 @@
 package platform.interop.event;
 
-import platform.base.WeakLinkedHashSet;
-
 import java.io.Serializable;
-import java.util.*;
+import java.util.Map;
+import java.util.WeakHashMap;
 
 public class EventBus implements Serializable {
 

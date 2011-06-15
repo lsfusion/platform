@@ -525,7 +525,8 @@ public abstract class GridTable extends ClientFormTable
     public void tableChanged(TableModelEvent e) {
         super.tableChanged(e);
         if (e.getType() == TableModelEvent.UPDATE && e.getFirstRow() == e.getLastRow() && e.getColumn() != -1) {
-            int row = e.getFirstRow(); int col = e.getColumn();
+            int row = e.getFirstRow();
+            int col = e.getColumn();
             changePropertyDraw(model.getValueAt(row, col), row, col, multyChange, true);
         }
     }

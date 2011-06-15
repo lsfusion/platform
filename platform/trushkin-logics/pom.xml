@@ -13,12 +13,4 @@
     <artifactId>trushkin-logics</artifactId>
     <packaging>jar</packaging>
     <name>Trushkin Logics</name>
-
-    <dependencies>
-        <dependency>
-            <groupId>by.luxsoft.platform</groupId>
-            <artifactId>server</artifactId>
-        </dependency>
-    </dependencies>
-
 </project>

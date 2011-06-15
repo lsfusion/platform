@@ -24,13 +24,8 @@
 
     <dependencies>
         <dependency>
-            <groupId>by.luxsoft.platform</groupId>
-            <artifactId>server</artifactId>
-        </dependency>
-        <dependency>
             <groupId>org.xBaseJ</groupId>
             <artifactId>xbasej</artifactId>
-            <version>1.0.1</version>
         </dependency>
         <dependency>
             <groupId>net.sf.jacob-project</groupId>

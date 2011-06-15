@@ -10,7 +10,19 @@
     <artifactId>client</artifactId>
     <packaging>jar</packaging>
     <name>Client</name>
+
     <build>
+        <resources>
+            <resource>
+                <directory>src/main/java</directory>
+                <includes>
+                    <include>platform/gwt/**/*.*</include>
+                </includes>
+            </resource>
+            <resource>
+                <directory>src/main/resources</directory>
+            </resource>
+        </resources>
         <plugins>
             <plugin>
                 <artifactId>maven-assembly-plugin</artifactId>
@@ -129,6 +141,15 @@
           <artifactId>jssc</artifactId>
           <version>0.7.1b</version>
         </dependency>
-
+        <dependency>
+            <groupId>com.google.gwt</groupId>
+            <artifactId>gwt-user</artifactId>
+            <version>2.1.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.smartgwt</groupId>
+            <artifactId>smartgwt</artifactId>
+            <version>2.4</version>
+        </dependency>
     </dependencies>
 </project>

@@ -1,13 +1,14 @@
 package platform.client.logics;
 
 import platform.base.BaseUtils;
+import platform.base.context.ApplicationContext;
 import platform.client.descriptor.CustomConstructible;
 import platform.client.descriptor.editor.ComponentEditor;
-import platform.base.context.ApplicationContext;
 import platform.client.descriptor.nodes.ComponentNode;
 import platform.client.descriptor.nodes.ContainerNode;
 import platform.client.serialization.ClientIdentitySerializable;
 import platform.client.serialization.ClientSerializationPool;
+import platform.gwt.view.GContainer;
 import platform.interop.form.layout.AbstractContainer;
 import platform.interop.form.layout.SimplexConstraints;
 
@@ -197,5 +198,20 @@ public class ClientContainer extends ClientComponent implements ClientIdentitySe
         return "design.createContainer(" +
                 (title == null ? null : ("\"" + title + "\""))
                 + ", \"" + description + "\", " + (sID == null ? sID : ("\"" + sID + "\"")) + ")";
+    }
+
+    private GContainer gwtContainer;
+    public GContainer getGwtComponent() {
+        if (gwtContainer == null) {
+            gwtContainer = new GContainer();
+
+            initGwtComponent(gwtContainer);
+
+            for (ClientComponent child : children) {
+                gwtContainer.children.add(child.getGwtComponent());
+            }
+        }
+
+        return gwtContainer;
     }
 }

@@ -2,24 +2,18 @@ package retail;
 
 import net.sf.jasperreports.engine.JRException;
 import org.apache.log4j.Logger;
-import platform.interop.ClassViewType;
 import platform.interop.Compare;
 import platform.server.classes.*;
 import platform.server.form.entity.FormEntity;
-import platform.server.form.entity.FormType;
 import platform.server.form.entity.ObjectEntity;
-import platform.server.form.entity.PropertyDrawEntity;
-import platform.server.form.entity.filter.*;
+import platform.server.form.entity.filter.CompareFilterEntity;
+import platform.server.form.entity.filter.NotNullFilterEntity;
 import platform.server.form.navigator.NavigatorElement;
 import platform.server.logics.BaseLogicsModule;
 import platform.server.logics.LogicsModule;
 import platform.server.logics.linear.LP;
 
-import javax.swing.*;
-import java.awt.event.InputEvent;
-import java.awt.event.KeyEvent;
 import java.io.FileNotFoundException;
-import java.util.logging.Filter;
 
 /**
  * Created by IntelliJ IDEA.

@@ -4,6 +4,7 @@ import platform.base.serialization.RemoteDescriptorInterface;
 import platform.interop.form.screen.ExternalScreen;
 import platform.interop.form.screen.ExternalScreenParameters;
 import platform.interop.navigator.RemoteNavigatorInterface;
+import platform.interop.remote.UserInfo;
 import platform.interop.remote.PendingRemote;
 import platform.interop.remote.PingRemote;
 
@@ -37,4 +38,6 @@ public interface RemoteLogicsInterface extends PendingRemote, PingRemote, Remote
     void ping() throws RemoteException;
 
     TimeZone getTimeZone() throws RemoteException;
+
+    UserInfo getUserInfo(String username) throws RemoteException;
 }

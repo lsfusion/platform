@@ -4,6 +4,8 @@ import platform.client.form.PropertyEditorComponent;
 import platform.client.form.PropertyRendererComponent;
 import platform.client.form.editor.LogicalPropertyEditor;
 import platform.client.form.renderer.LogicalPropertyRenderer;
+import platform.gwt.view.classes.GLogicalType;
+import platform.gwt.view.classes.GType;
 import platform.interop.ComponentDesign;
 import platform.interop.Data;
 
@@ -62,5 +64,10 @@ public class ClientLogicalClass extends ClientDataClass implements ClientTypeCla
     @Override
     public String toString() {
         return "Логический класс";
+    }
+
+    @Override
+    public GType getGwtType() {
+        return GLogicalType.instance;
     }
 }

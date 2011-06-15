@@ -3,7 +3,8 @@
 <module>
 
     <inherits name='com.google.gwt.user.User'/>
-    <inherits name="skolkovo.gwt.base.Base"/>
+    <inherits name="platform.gwt.base.Base"/>
+    <inherits name="skolkovo.api.gwt.API"/>
 
     <entry-point class='skolkovo.gwt.expert.client.ExpertFrame'/>
 

@@ -11,13 +11,13 @@ import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.uibinder.client.UiField;
 import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.ui.*;
-import skolkovo.api.serialization.VoteInfo;
-import skolkovo.gwt.base.client.BaseMessages;
+import skolkovo.api.gwt.shared.VoteInfo;
+import platform.gwt.base.client.BaseMessages;
 import skolkovo.gwt.expert.client.ExpertFrameMessages;
 
 import java.util.Date;
 
-import static skolkovo.gwt.base.shared.Result.*;
+import static skolkovo.api.gwt.shared.Result.*;
 
 public abstract class ExpertMainWidget extends Composite {
     public static final int innovativeCommentMaxLength = 1000;
@@ -105,11 +105,15 @@ public abstract class ExpertMainWidget extends Composite {
     Label loadingSpan;
     @UiField
     HorizontalPanel loadingPanel;
+    @UiField
+    Image imgLogo;
 
     public ExpertMainWidget(VoteInfo vi) {
         initWidget(uiBinder.createAndBindUi(this));
 
         Date voteDate = vi.date == null ? new Date() : vi.date;
+
+        imgLogo.setUrl(GWT.getModuleBaseURL() + "images/logo_ballot.png");
 
         titleSpan.setInnerText(messages.title());
         projectLabelSpan.setInnerText(messages.project());

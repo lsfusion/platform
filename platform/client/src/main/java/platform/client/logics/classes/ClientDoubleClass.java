@@ -2,6 +2,8 @@ package platform.client.logics.classes;
 
 import platform.client.form.PropertyEditorComponent;
 import platform.client.form.editor.DoublePropertyEditor;
+import platform.gwt.view.classes.GDoubleType;
+import platform.gwt.view.classes.GType;
 import platform.interop.ComponentDesign;
 import platform.interop.Data;
 
@@ -59,5 +61,10 @@ public class ClientDoubleClass extends ClientIntegralClass implements ClientType
     @Override
     public String toString() {
         return "Вещественное число";
+    }
+
+    @Override
+    public GType getGwtType() {
+        return GDoubleType.instance;
     }
 }

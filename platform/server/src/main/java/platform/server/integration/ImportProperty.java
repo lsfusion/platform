@@ -1,17 +1,14 @@
 package platform.server.integration;
 
-import platform.base.BaseUtils;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.query.GroupExpr;
 import platform.server.data.expr.query.GroupType;
-import platform.server.logics.DataObject;
 import platform.server.logics.property.PropertyImplement;
 import platform.server.logics.property.PropertyInterface;
 import platform.server.session.*;
 
 import java.sql.SQLException;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 

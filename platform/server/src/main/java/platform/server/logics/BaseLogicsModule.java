@@ -936,7 +936,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         @Override
         public void proceedDefaultDesign(DefaultFormView view, PropertyDrawEntity<ClassPropertyInterface> entity) {
             super.proceedDefaultDesign(view, entity);
-            view.get(entity).design.setImage(new ImageIcon(LoadActionProperty.class.getResource("/images/load.png")));
+            view.get(entity).design.setIconPath("load.png");
         }
     }
 
@@ -966,7 +966,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         @Override
         public void proceedDefaultDesign(DefaultFormView view, PropertyDrawEntity<ClassPropertyInterface> entity) {
             super.proceedDefaultDesign(view, entity);
-            view.get(entity).design.setImage(new ImageIcon(OpenActionProperty.class.getResource("/images/open.png")));
+            view.get(entity).design.setIconPath("open.png");
         }
     }
 

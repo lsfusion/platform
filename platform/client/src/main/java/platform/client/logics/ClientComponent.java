@@ -7,6 +7,7 @@ import platform.client.descriptor.editor.ComponentEditor;
 import platform.client.descriptor.nodes.ComponentNode;
 import platform.client.serialization.ClientIdentitySerializable;
 import platform.client.serialization.ClientSerializationPool;
+import platform.gwt.view.GComponent;
 import platform.interop.ComponentDesign;
 import platform.interop.form.layout.AbstractComponent;
 import platform.interop.form.layout.DoNotIntersectSimplexConstraint;
@@ -246,5 +247,23 @@ public abstract class ClientComponent extends ContextIdentityObject implements S
         name = name.substring(0, 1).toUpperCase() + name.substring(1);
 
         return sID.substring(0, i + 1) + name;
+    }
+
+    protected void initGwtComponent(GComponent component) {
+        component.ID = ID;
+        component.container = container == null ? null : container.getGwtComponent();
+        component.defaultComponent = defaultComponent;
+        component.keyBindingGroup = keyBindingGroup == null ? null : keyBindingGroup.getGwtGroupObject();
+        component.drawToToolbar = drawToToolbar;
+    }
+
+    private GComponent gwtComponent;
+    public GComponent getGwtComponent() {
+        if (gwtComponent == null) {
+            gwtComponent = new GComponent();
+            initGwtComponent(gwtComponent);
+        }
+
+        return gwtComponent;
     }
 }

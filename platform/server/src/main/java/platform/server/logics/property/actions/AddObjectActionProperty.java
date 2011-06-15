@@ -20,10 +20,11 @@ import platform.server.session.Changes;
 import platform.server.session.DataSession;
 import platform.server.session.Modifier;
 
-import javax.swing.*;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 public class AddObjectActionProperty extends ActionProperty {
 
@@ -172,7 +173,7 @@ public class AddObjectActionProperty extends ActionProperty {
     public void proceedDefaultDesign(DefaultFormView view, PropertyDrawEntity<ClassPropertyInterface> entity) {
         super.proceedDefaultDesign(view, entity);
         view.get(entity).editKey = KeyStrokes.getAddActionPropertyKeyStroke();
-        view.get(entity).design.setImage(new ImageIcon(AddObjectActionProperty.class.getResource("/images/add.png")));
+        view.get(entity).design.setIconPath("add.png");
         view.get(entity).showEditKey = false;
         view.get(entity).drawToToolbar = true;
     }

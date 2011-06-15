@@ -69,17 +69,11 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
     }
 
     private ImageIcon image;
+    private String iconPath;
 
-    public ImageIcon getImage() {
-        return image;
-    }
-
-    public void setImage(ImageIcon image) {
-        this.image = image;
-    }
-
-    public void setImage(String name) {
-        this.image = new ImageIcon(Property.class.getResource(name));
+    public void setImage(String iconPath) {
+        this.iconPath = iconPath;
+        this.image = new ImageIcon(Property.class.getResource("/images/" + iconPath));
     }
 
     public boolean askConfirm = false;
@@ -508,8 +502,10 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
     }
 
     public void proceedDefaultDesign(DefaultFormView view, PropertyDrawEntity<T> entity) {
-        if (image != null)
+        if (iconPath != null) {
+            view.get(entity).design.iconPath = iconPath;
             view.get(entity).design.setImage(image);
+        }
     }
 
     public boolean hasChild(Property prop) {

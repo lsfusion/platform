@@ -1,8 +1,8 @@
 package skolkovo.gwt.expertprofile.client;
 
 import com.google.gwt.user.client.Window;
-import skolkovo.api.serialization.ProfileInfo;
-import skolkovo.gwt.base.client.BaseFrame;
+import platform.gwt.base.client.BaseFrame;
+import skolkovo.api.gwt.shared.ProfileInfo;
 import skolkovo.gwt.expertprofile.client.ui.ExpertProfileMainPanel;
 
 public class ExpertProfileFrame extends BaseFrame {

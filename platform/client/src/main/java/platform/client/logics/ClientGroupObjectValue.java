@@ -2,6 +2,8 @@ package platform.client.logics;
 
 import platform.base.OrderedMap;
 import platform.client.form.GroupObjectController;
+import platform.gwt.view.changes.dto.GGroupObjectValueDTO;
+import platform.gwt.view.changes.dto.ObjectDTO;
 import platform.interop.ClassViewType;
 
 import java.io.*;
@@ -90,5 +92,16 @@ public class ClientGroupObjectValue extends OrderedMap<ClientObject, Object>
 
     public boolean contentEquals(ClientGroupObjectValue other) {
         return other != null && other.size() == size() && contains(other);
+    }
+
+    private GGroupObjectValueDTO gwtGroupObjectValue;
+    public GGroupObjectValueDTO getGwtGroupObjectValueDTO() {
+        if (gwtGroupObjectValue == null) {
+            gwtGroupObjectValue = new GGroupObjectValueDTO();
+            for (Map.Entry<ClientObject, Object> keyPart : entrySet()) {
+                gwtGroupObjectValue.put(keyPart.getKey().ID, new ObjectDTO(keyPart.getValue()));
+            }
+        }
+        return gwtGroupObjectValue;
     }
 }

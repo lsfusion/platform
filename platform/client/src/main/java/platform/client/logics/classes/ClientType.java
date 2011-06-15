@@ -6,6 +6,7 @@ import platform.client.form.PropertyRendererComponent;
 import platform.client.form.cell.CellView;
 import platform.client.logics.ClientGroupObjectValue;
 import platform.client.logics.ClientPropertyDraw;
+import platform.gwt.view.classes.GType;
 import platform.interop.Compare;
 import platform.interop.ComponentDesign;
 
@@ -47,4 +48,6 @@ public interface ClientType {
     Compare[] getFilerCompares();
 
     Compare getDefaultCompare();
+
+    GType getGwtType();
 }

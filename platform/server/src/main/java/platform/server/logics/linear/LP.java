@@ -16,7 +16,6 @@ import platform.server.logics.DataObject;
 import platform.server.logics.property.*;
 import platform.server.session.*;
 
-import javax.swing.*;
 import java.sql.SQLException;
 import java.util.*;
 
@@ -224,11 +223,6 @@ public class LP<T extends PropertyInterface> {
     
     public void setPreferredCharWidth(int length) {
         property.preferredCharWidth = length;
-    }
-
-    public LP setImage(ImageIcon image) {
-        property.setImage(image);
-        return this;
     }
 
     public LP setImage(String name) {

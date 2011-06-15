@@ -7,6 +7,8 @@ import platform.client.form.cell.CellView;
 import platform.client.form.cell.TableCellView;
 import platform.client.logics.ClientGroupObjectValue;
 import platform.client.logics.ClientPropertyDraw;
+import platform.gwt.view.classes.GStringType;
+import platform.gwt.view.classes.GType;
 import platform.interop.Compare;
 import platform.interop.ComponentDesign;
 
@@ -125,5 +127,10 @@ public abstract class ClientDataClass extends ClientClass implements ClientType 
     @Override
     public Compare getDefaultCompare() {
         return EQUALS;
+    }
+
+    @Override
+    public GType getGwtType() {
+        return new GStringType();
     }
 }

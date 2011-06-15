@@ -2,6 +2,9 @@ package platform.client.logics;
 
 import platform.base.BaseUtils;
 import platform.client.form.GroupObjectController;
+import platform.gwt.view.changes.dto.GFormChangesDTO;
+import platform.gwt.view.changes.dto.GGroupObjectValueDTO;
+import platform.gwt.view.changes.dto.ObjectDTO;
 import platform.interop.ClassViewType;
 import platform.interop.form.PropertyReadType;
 
@@ -113,5 +116,54 @@ public class ClientFormChanges {
         }
 
         return gridObjects;
+    }
+
+    private GFormChangesDTO gwtFormChanges;
+    public GFormChangesDTO getGwtFormChangesDTO() {
+        if (gwtFormChanges == null) {
+            gwtFormChanges = new GFormChangesDTO();
+
+            for (Map.Entry<ClientGroupObject, ClientGroupObjectValue> e : objects.entrySet()) {
+                gwtFormChanges.objects.put(e.getKey().ID, e.getValue().getGwtGroupObjectValueDTO());
+            }
+
+            for (Map.Entry<ClientGroupObject, List<ClientGroupObjectValue>> entry : gridObjects.entrySet()) {
+                ArrayList<GGroupObjectValueDTO> keys = new ArrayList<GGroupObjectValueDTO>();
+
+                for (ClientGroupObjectValue keyValue : entry.getValue()) {
+                    keys.add(keyValue.getGwtGroupObjectValueDTO());
+                }
+
+                gwtFormChanges.gridObjects.put(entry.getKey().ID, keys);
+            }
+
+            for (Map.Entry<ClientPropertyReader, Map<ClientGroupObjectValue, Object>> entry : properties.entrySet()) {
+                if (!(entry.getKey() instanceof ClientPropertyDraw)) {
+                    continue;
+                }
+                ClientPropertyDraw clientProperty = (ClientPropertyDraw) entry.getKey();
+
+                HashMap<GGroupObjectValueDTO, ObjectDTO> propValues = new HashMap<GGroupObjectValueDTO, ObjectDTO>();
+                for (Map.Entry<ClientGroupObjectValue, Object> clientValues : entry.getValue().entrySet()) {
+                    propValues.put(clientValues.getKey().getGwtGroupObjectValueDTO(), new ObjectDTO(clientValues.getValue()));
+                }
+
+
+                gwtFormChanges.properties.put(clientProperty.ID, propValues);
+            }
+
+            for (ClientPropertyReader dropProperty : dropProperties) {
+                if (dropProperty instanceof ClientPropertyDraw) {
+                    gwtFormChanges.dropProperties.add(((ClientPropertyDraw) dropProperty).ID);
+                }
+            }
+
+            for (ClientPropertyReader panelProperty : panelProperties) {
+                if (panelProperty instanceof ClientPropertyDraw) {
+                    gwtFormChanges.panelProperties.add(((ClientPropertyDraw) panelProperty).ID);
+                }
+            }
+        }
+        return gwtFormChanges;
     }
 }

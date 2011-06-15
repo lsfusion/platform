@@ -80,7 +80,7 @@
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-beans</artifactId>
-            <version>3.0.2.RELEASE</version>
+            <version>3.0.5.RELEASE</version>
         </dependency>
         <dependency>
             <groupId>net.sourceforge.jexcelapi</groupId>

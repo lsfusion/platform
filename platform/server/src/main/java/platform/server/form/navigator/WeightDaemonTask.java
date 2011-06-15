@@ -5,8 +5,6 @@ import jssc.SerialPortException;
 import platform.interop.event.EventBus;
 import platform.interop.event.IDaemonTask;
 
-import java.awt.*;
-import java.awt.event.KeyEvent;
 import java.io.Serializable;
 import java.math.BigInteger;
 
