@@ -1,4 +1,4 @@
-﻿package platform.server.logics;
+package platform.server.logics;
 
 import net.sf.jasperreports.engine.JRException;
 import org.apache.log4j.Logger;
