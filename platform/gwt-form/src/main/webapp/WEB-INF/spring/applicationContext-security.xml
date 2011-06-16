@@ -5,7 +5,7 @@
          xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
                                  http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security-3.0.3.xsd">
     <http auto-config="true" use-expressions="true" entry-point-ref="loginUrlAuthenticationEntryPoint">
-        <intercept-url pattern="/form.html" access="hasAnyRole('expert','admin')"/>
+        <!--<intercept-url pattern="/form.html" access="hasAnyRole('expert','admin')"/>-->
         <form-login authentication-failure-url="/loginFailed.txt" default-target-url="/login.html"/>
     </http>
 
@@ -30,7 +30,7 @@
         <b:property name="authoritiesByUsernameQuery" value="SELECT userlogin, trim(userrole) FROM customuser WHERE userlogin = ?"/>
     </b:bean>
 
-    <b:bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
+    <b:bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
         <b:property name="driverClassName" value="org.postgresql.Driver"/>
         <b:property name="url" value="jdbc:postgresql://localhost:5432/skolkovo"/>
         <b:property name="username" value="postgres"/>

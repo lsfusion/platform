@@ -34,7 +34,7 @@
         <b:property name="authoritiesByUsernameQuery" value="SELECT userlogin, trim(userrole) FROM customuser WHERE userlogin = ?"/>
     </b:bean>
 
-    <b:bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
+    <b:bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
         <b:property name="driverClassName" value="org.postgresql.Driver"/>
         <b:property name="url" value="jdbc:postgresql://localhost:5432/skolkovo"/>
         <b:property name="username" value="postgres"/>
