@@ -7,5 +7,5 @@ public class FilterType {
     public final static byte COMPARE = 2;
     public final static byte ISCLASS = 3;
     public final static byte NOT = 4;
-
+    public final static byte AND = 5;
 }

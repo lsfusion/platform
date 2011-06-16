@@ -1007,15 +1007,6 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         return linkedSet;
     }
 
-    private boolean depends(Property<?> property, Property check) { // пока только для getChangeConstrainedProperties
-        if (property.equals(check))
-            return true;
-        for (Property depend : property.getDepends())
-            if (depends(depend, check))
-                return true;
-        return false;
-    }
-
     @IdentityLazy
     public List<Property> getStoredProperties() {
         List<Property> result = new ArrayList<Property>();
@@ -1072,14 +1063,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         return result;
     }
 
-    public <P extends PropertyInterface> Collection<MaxChangeProperty<?, P>> getChangeConstrainedProperties(Property<P> change) {
-        Collection<MaxChangeProperty<?, P>> result = new ArrayList<MaxChangeProperty<?, P>>();
-        for (Property<?> property : getPropertyList())
-            if (property.isFalse && property.checkChange && depends(property, change))
-                result.add(property.getMaxChangeProperty(change));
-        return result;
-    }
-
+    @IdentityLazy
     public List<Property> getConstrainedProperties() {
         List<Property> result = new ArrayList<Property>();
         for (Property property : getPropertyList()) {
@@ -1089,6 +1073,18 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         }
         return result;
     }
+
+    @IdentityLazy
+    public List<Property> getCheckConstrainedProperties() {
+        List<Property> result = new ArrayList<Property>();
+        for (Property property : getConstrainedProperties()) {
+            if (property.checkChange) {
+                result.add(property);
+            }
+        }
+        return result;
+    }
+
 
     public void fillIDs() throws SQLException, ClassNotFoundException, IllegalAccessException, InstantiationException {
         DataSession session = createSession();

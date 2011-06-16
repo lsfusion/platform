@@ -3,16 +3,10 @@ package platform.server.form.entity.filter;
 import platform.server.form.entity.ObjectEntity;
 import platform.server.form.instance.InstanceFactory;
 import platform.server.form.instance.filter.FilterInstance;
-import platform.server.serialization.ServerSerializationPool;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.util.Set;
+public class AndFilterEntity extends OpFilterEntity<AndFilterEntity> {
 
-public class OrFilterEntity extends OpFilterEntity<OrFilterEntity> {
-
-    public OrFilterEntity(FilterEntity op1, FilterEntity op2) {
+    public AndFilterEntity(FilterEntity op1, FilterEntity op2) {
         super(op1, op2);
     }
 
@@ -22,6 +16,7 @@ public class OrFilterEntity extends OpFilterEntity<OrFilterEntity> {
 
     @Override
     public FilterEntity getRemappedFilter(ObjectEntity oldObject, ObjectEntity newObject, InstanceFactory instanceFactory) {
-        return new OrFilterEntity(op1.getRemappedFilter(oldObject, newObject, instanceFactory), op2.getRemappedFilter(oldObject, newObject, instanceFactory));
+        return new AndFilterEntity(op1.getRemappedFilter(oldObject, newObject, instanceFactory), op2.getRemappedFilter(oldObject, newObject, instanceFactory));
     }
+
 }

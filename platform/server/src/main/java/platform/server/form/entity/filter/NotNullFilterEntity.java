@@ -8,12 +8,15 @@ import platform.server.logics.property.PropertyInterface;
 
 public class NotNullFilterEntity<P extends PropertyInterface> extends PropertyFilterEntity<P> {
 
-    public NotNullFilterEntity() {
-        
+    public boolean checkChange = false;
+
+    public NotNullFilterEntity(PropertyObjectEntity<P> property) {
+        super(property);
     }
-    
-    public NotNullFilterEntity(PropertyObjectEntity<P> iProperty) {
-        super(iProperty);
+
+    public NotNullFilterEntity(PropertyObjectEntity<P> property, boolean checkChange) {
+        super(property);
+        this.checkChange = checkChange;
     }
 
     public FilterInstance getInstance(InstanceFactory instanceFactory) {
@@ -22,6 +25,6 @@ public class NotNullFilterEntity<P extends PropertyInterface> extends PropertyFi
 
     @Override
     public FilterEntity getRemappedFilter(ObjectEntity oldObject, ObjectEntity newObject, InstanceFactory instanceFactory) {
-        return new NotNullFilterEntity<P>(property.getRemappedEntity(oldObject, newObject, instanceFactory));
+        return new NotNullFilterEntity<P>(property.getRemappedEntity(oldObject, newObject, instanceFactory), checkChange);
     }
 }

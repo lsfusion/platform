@@ -29,6 +29,7 @@ import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
 import platform.server.logics.property.derived.DerivedProperty;
 import platform.server.logics.property.derived.MaxChangeProperty;
+import platform.server.logics.property.derived.OnChangeProperty;
 import platform.server.logics.property.group.AbstractNode;
 import platform.server.logics.table.MapKeysTable;
 import platform.server.logics.table.TableFactory;
@@ -394,6 +395,34 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
     @IdentityLazy
     public <P extends PropertyInterface> MaxChangeProperty<T, P> getMaxChangeProperty(Property<P> change) {
         return new MaxChangeProperty<T, P>(this, change);
+    }
+    @IdentityLazy
+    public <P extends PropertyInterface> OnChangeProperty<T, P> getOnChangeProperty(Property<P> change) {
+        return new OnChangeProperty<T, P>(this, change);
+    }
+
+    public static boolean depends(Property<?> property, Property check) { // пока только для getChangeConstrainedProperties
+        if (property.equals(check))
+            return true;
+        for (Property depend : property.getDepends())
+            if (depends(depend, check))
+                return true;
+        return false;
+    }
+
+    public Collection<MaxChangeProperty<?, T>> getMaxChangeProperties(Collection<Property> properties) {
+        Collection<MaxChangeProperty<?, T>> result = new ArrayList<MaxChangeProperty<?, T>>();
+        for (Property<?> property : properties)
+            if (depends(property, this))
+                result.add(property.getMaxChangeProperty(this));
+        return result;
+    }
+    public Collection<OnChangeProperty<?, T>> getOnChangeProperties(Collection<Property> properties) {
+        Collection<OnChangeProperty<?, T>> result = new ArrayList<OnChangeProperty<?, T>>();
+        for (Property<?> property : properties)
+            if (depends(property, this))
+                result.add(property.getOnChangeProperty(this));
+        return result;
     }
 
     public <U extends Changes<U>> U getUsedDataChanges(Modifier<U> modifier) {

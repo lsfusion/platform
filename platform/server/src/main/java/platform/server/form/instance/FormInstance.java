@@ -28,10 +28,7 @@ import platform.server.form.entity.filter.FilterEntity;
 import platform.server.form.entity.filter.NotFilterEntity;
 import platform.server.form.entity.filter.NotNullFilterEntity;
 import platform.server.form.entity.filter.RegularFilterGroupEntity;
-import platform.server.form.instance.filter.FilterInstance;
-import platform.server.form.instance.filter.RegularFilterGroupInstance;
-import platform.server.form.instance.filter.RegularFilterInstance;
-import platform.server.form.instance.filter.CompareValue;
+import platform.server.form.instance.filter.*;
 import platform.server.form.instance.listener.CustomClassListener;
 import platform.server.form.instance.listener.FocusListener;
 import platform.server.form.instance.remote.RemoteForm;
@@ -41,6 +38,7 @@ import platform.server.logics.ObjectValue;
 import platform.server.logics.linear.LP;
 import platform.server.logics.property.*;
 import platform.server.logics.property.derived.MaxChangeProperty;
+import platform.server.logics.property.derived.OnChangeProperty;
 import platform.server.session.*;
 
 import java.io.DataOutputStream;
@@ -333,7 +331,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
         return session.addObject(cls, this);
     }
 
-    private void resolveAddObject(CustomObjectInstance object, ConcreteCustomClass cls, DataObject addObject) throws SQLException {
+    private void resolveAdd(CustomObjectInstance object, ConcreteCustomClass cls, DataObject addObject) throws SQLException {
 
         // резолвим все фильтры
         for (FilterInstance filter : object.groupTo.getSetFilters())
@@ -360,7 +358,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
 
         for (ObjectInstance object : getObjects()) {
             if (object instanceof CustomObjectInstance && cls.isChild(((CustomObjectInstance) object).baseClass)) {
-                resolveAddObject((CustomObjectInstance) object, cls, addObject);
+                resolveAdd((CustomObjectInstance) object, cls, addObject);
             }
         }
 
@@ -373,7 +371,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
         DataObject addObject = createObject(cls);
         if (addObject == null) return addObject;
 
-        resolveAddObject(object, cls, addObject);
+        resolveAdd(object, cls, addObject);
 
         return addObject;
     }
@@ -1152,9 +1150,10 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
 
     public <P extends PropertyInterface> AbstractClassFormEntity<T> getDataChangeFormEntity(PropertyObjectInstance<P> changeProperty, GroupObjectInstance selectionGroupObject) {
         PropertyValueImplement<P> implement = changeProperty.getValueImplement();
+
         AbstractClassFormEntity<T> formEntity = changeProperty.getDialogClass().getDialogForm(BL.LM).createCopy();
         formEntity.caption = implement.toString();
-        for (MaxChangeProperty<?, P> constrainedProperty : BL.getChangeConstrainedProperties(implement.property)) {
+        for (MaxChangeProperty<?, P> constrainedProperty : implement.property.getMaxChangeProperties(BL.getCheckConstrainedProperties())) {
             formEntity.addFixedFilter(
                     new NotFilterEntity(
                             new NotNullFilterEntity<MaxChangeProperty.Interface<P>>(
@@ -1162,6 +1161,9 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
                             )
                     )
             );
+        }
+
+        for(FilterInstance filter : selectionGroupObject.filters) {
         }
 
         ObjectEntity object = formEntity.getObject();
@@ -1175,6 +1177,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
                         break;
                     }
                 }
+                filter.resolveChange(formEntity, implement);
             }
         }
         return formEntity;

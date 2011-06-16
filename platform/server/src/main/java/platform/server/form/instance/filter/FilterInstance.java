@@ -3,9 +3,12 @@ package platform.server.form.instance.filter;
 import platform.interop.FilterType;
 import platform.server.data.expr.Expr;
 import platform.server.data.where.Where;
+import platform.server.form.entity.AbstractClassFormEntity;
 import platform.server.form.instance.*;
 import platform.server.logics.DataObject;
 import platform.server.logics.NullValue;
+import platform.server.logics.property.PropertyInterface;
+import platform.server.logics.property.PropertyValueImplement;
 import platform.server.session.Changes;
 import platform.server.session.DataSession;
 import platform.server.session.Modifier;
@@ -31,6 +34,8 @@ public abstract class FilterInstance implements Updated {
         switch(type) {
             case FilterType.OR:
                 return new OrFilterInstance(inStream, form);
+            case FilterType.AND:
+                return new AndFilterInstance(inStream, form);
             case FilterType.COMPARE:
                 CompareFilterInstance filter = new CompareFilterInstance(inStream, form);
                 if (filter.value instanceof NullValue)
@@ -53,5 +58,7 @@ public abstract class FilterInstance implements Updated {
     public abstract Where getWhere(Map<ObjectInstance, ? extends Expr> mapKeys, Modifier<? extends Changes> modifier);
 
     public void resolveAdd(DataSession session, Modifier<? extends Changes> modifier, CustomObjectInstance object, DataObject addObject) throws SQLException {
+    }
+    public <X extends PropertyInterface> void resolveChange(AbstractClassFormEntity<?> formEntity, PropertyValueImplement<X> implement) {
     }
 }

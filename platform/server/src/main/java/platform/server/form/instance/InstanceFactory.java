@@ -112,7 +112,7 @@ public class InstanceFactory {
     }
 
     public <P extends PropertyInterface> FilterInstance getInstance(NotNullFilterEntity<P> entity) {
-        return new NotNullFilterInstance<P>(getInstance(entity.property));
+        return new NotNullFilterInstance<P>(getInstance(entity.property), entity.checkChange);
     }
 
     public FilterInstance getInstance(NotFilterEntity entity) {
@@ -121,6 +121,10 @@ public class InstanceFactory {
 
     public OrFilterInstance getInstance(OrFilterEntity entity) {
         return new OrFilterInstance(entity.op1.getInstance(this), entity.op2.getInstance(this));
+    }
+
+    public AndFilterInstance getInstance(AndFilterEntity entity) {
+        return new AndFilterInstance(entity.op1.getInstance(this), entity.op2.getInstance(this));
     }
 
     public RegularFilterGroupInstance getInstance(RegularFilterGroupEntity entity) {

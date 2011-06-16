@@ -55,6 +55,8 @@ import java.util.List;
 
 public class RomanLogicsModule extends LogicsModule {
     private final RomanBusinessLogics BL;
+    private LP equalsColorItemSupplier;
+    private LP equalsSizeItemSupplier;
 
     public RomanLogicsModule(BaseLogicsModule<RomanBusinessLogics> baseLM, RomanBusinessLogics BL) {
         super("RomanLogicsModule");
@@ -1416,13 +1418,18 @@ public class RomanLogicsModule extends LogicsModule {
         sizeSupplierItem = addDProp(itemAttributeGroup, "sizeSupplierItem", "Размер поставщика (ИД)", sizeSupplier, item);
         sidSizeSupplierItem = addJProp(itemAttributeGroup, "sidSizeSupplierItem", "Размер поставщика", sidSizeSupplier, sizeSupplierItem, 1);
 
+        LP supplierColorItem = addJProp(supplierColorSupplier, colorSupplierItem, 1);
         addConstraint(addJProp("Поставщик товара должен соответствовать цвету поставщика", baseLM.diff2,
                 supplierArticleSku, 1,
-                addJProp(supplierColorSupplier, colorSupplierItem, 1), 1), true);
+                supplierColorItem, 1), true);
 
+        LP supplierSizeItem = addJProp(supplierSizeSupplier, sizeSupplierItem, 1);
         addConstraint(addJProp("Поставщик товара должен соответствовать размеру поставщика", baseLM.diff2,
                 supplierArticleSku, 1,
-                addJProp(supplierSizeSupplier, sizeSupplierItem, 1), 1), true);
+                supplierSizeItem, 1), true);
+
+        equalsColorItemSupplier = addJProp(baseLM.equals2, supplierColorItem, 1, 2); // временное решение
+        equalsSizeItemSupplier = addJProp(baseLM.equals2, supplierSizeItem, 1, 2); // временное решение
 
         // Weight
         netWeightArticle = addDProp(supplierAttributeGroup, "netWeightArticle", "Вес нетто (ориг.)", DoubleClass.instance, article);
@@ -5159,6 +5166,13 @@ public class RomanLogicsModule extends LogicsModule {
 
             objItem = addSingleGroupObject(item, "Товар", sidColorSupplierItem, nameColorSupplierItem, sidSizeSupplierItem);
             objItem.groupTo.setSingleClassView(ClassViewType.PANEL);
+
+            addFixedFilter(new OrFilterEntity(
+                    new NotFilterEntity(new NotNullFilterEntity(addPropertyObject(colorSupplierItem, objItem))),
+                    new NotNullFilterEntity(addPropertyObject(equalsColorItemSupplier, objItem, objSupplier), true)));
+            addFixedFilter(new OrFilterEntity(
+                    new NotFilterEntity(new NotNullFilterEntity(addPropertyObject(sizeSupplierItem, objItem))),
+                    new NotNullFilterEntity(addPropertyObject(equalsSizeItemSupplier, objItem, objSupplier), true)));
 
 //            objItem.addOnTransaction = true;
 //            addObjectActions(this, objItem);
