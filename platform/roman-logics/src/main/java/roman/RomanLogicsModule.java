@@ -804,6 +804,7 @@ public class RomanLogicsModule extends LogicsModule {
     ConcreteCustomClass mexxSupplier;
     ConcreteCustomClass bestsellerSupplier;
     ConcreteCustomClass sOliverSupplier;
+    ConcreteCustomClass womenSecretSupplier;
     private LP jennyferImportInvoice;
     private LP jennyferImportArticleWeightInvoice;
     private LP tallyWeijlImportInvoice;
@@ -815,6 +816,8 @@ public class RomanLogicsModule extends LogicsModule {
     private LP bestsellerImportInvoice;
     private LP hugoBossImportPricat;
     private LP sOliverImportInvoice;
+    private LP womenSecretImportInvoice;
+
     private AbstractGroup importInvoiceActionGroup;
     private LP printCreatePalletForm;
     private LP printCreateFreightBoxForm;
@@ -953,6 +956,7 @@ public class RomanLogicsModule extends LogicsModule {
         mexxSupplier = addConcreteClass("mexxSupplier", "Mexx", supplier);
         bestsellerSupplier = addConcreteClass("bestsellerSupplier", "Bestseller", supplier);
         sOliverSupplier = addConcreteClass("sOliverSupplier", "s.Oliver", supplier);
+        womenSecretSupplier = addConcreteClass("womenSecretSupplier", "Women'Secret", supplier);
 
         secondNameClass = addAbstractClass("secondNameClass", "Класс со вторым именем", baseClass);
 
@@ -1175,6 +1179,7 @@ public class RomanLogicsModule extends LogicsModule {
         mexxImportColorInvoice = addAProp(importInvoiceActionGroup, new MexxImportColorInvoiceActionProperty(this));
         bestsellerImportInvoice = addAProp(importInvoiceActionGroup, new BestsellerImportInvoiceActionProperty(BL));
         sOliverImportInvoice = addAProp(importInvoiceActionGroup, new SOliverImportInvoiceActionProperty(BL));
+        womenSecretImportInvoice = addAProp(importInvoiceActionGroup, new WomenSecretImportInvoiceActionProperty(this));
 
         customCategory4CustomCategory6 = addDProp(idGroup, "customCategory4CustomCategory6", "Код(4)", customCategory4, customCategory6);
         customCategory6CustomCategory9 = addDProp(idGroup, "customCategory6CustomCategory9", "Код(6)", customCategory6, customCategory9);

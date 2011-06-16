@@ -39,6 +39,10 @@ public class ExcelInputTable implements ImportInputTable {
         sheet = Workbook.getWorkbook(stream).getSheet(sheetNumber);
     }
 
+    public ExcelInputTable(jxl.Sheet sheet) {
+        this.sheet = sheet;
+    }
+
     public String getCellString(int row, int column) {
         return sheet.getCell(column, row).getContents();
     }
