@@ -47,6 +47,7 @@
 	<field name="netWeightImporterFreightTypeInvoice" class="java.lang.Double"/>
 	<field name="sumImporterFreightTypeInvoice" class="java.lang.Double"/>
 	<field name="sidImporterFreightTypeInvoice" class="java.lang.String"/>
+	<field name="commonName3" class="java.lang.String"/>
 	<pageHeader>
 		<band height="120">
 			<textField isStretchWithOverflow="true" pattern="dd.MM.yy" isBlankWhenNull="true">
@@ -220,7 +221,7 @@
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle1" stretchType="RelativeToBandHeight" x="606" y="0" width="144" height="18"/>
 				<textElement textAlignment="Left" verticalAlignment="Top"/>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{commonName2}]]></textFieldExpression>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{commonName3}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle1" stretchType="RelativeToBandHeight" x="81" y="0" width="89" height="18"/>
