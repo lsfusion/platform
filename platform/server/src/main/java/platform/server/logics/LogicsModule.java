@@ -905,19 +905,25 @@ public abstract class LogicsModule {
     protected <T extends PropertyInterface> LP[] addMGProp(AbstractGroup group, boolean persist, String[] ids, String[] captions, int extra, LP<T> groupProp, Object... params) {
         LP[] result = new LP[extra + 1];
 
-        Collection<Property> suggestPersist = new ArrayList<Property>();
+        Collection<Property> overridePersist = new ArrayList<Property>();
 
         List<PropertyInterfaceImplement<T>> listImplements = readImplements(groupProp.listInterfaces, params);
         List<PropertyInterfaceImplement<T>> groupImplements = listImplements.subList(extra, listImplements.size());
         List<PropertyImplement<?, PropertyInterfaceImplement<T>>> mgProps = DerivedProperty.createMGProp(ids, captions, groupProp.property, baseLM.baseClass,
-                listImplements.subList(0, extra), new HashSet<PropertyInterfaceImplement<T>>(groupImplements), suggestPersist);
-
-        if (persist)
-            for (Property property : suggestPersist)
-                addPersistent(addProperty(null, new LP(property)));
+                listImplements.subList(0, extra), new HashSet<PropertyInterfaceImplement<T>>(groupImplements), overridePersist);
 
         for (int i = 0; i < mgProps.size(); i++)
             result[i] = mapLGProp(group, mgProps.get(i), groupImplements);
+
+        if (persist) {
+            if(overridePersist.size() > 0) {
+                for (Property property : overridePersist)
+                    addProperty(null, true, new LP(property));
+            } else
+                for(int i=0; i < result.length; i++)
+                    addPersistent(result[i]);
+        }
+
         return result;
 
         /*
