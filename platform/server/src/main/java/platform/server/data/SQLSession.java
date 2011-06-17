@@ -339,14 +339,30 @@ public class SQLSession extends MutableObject {
         return executeDML(execute.command, execute.params);
     }
 
+    private boolean explainAnalyzeMode = false;
+    private void executeExplain(PreparedStatement statement) throws SQLException {
+        ResultSet result = statement.executeQuery();
+        try {
+            while(result.next()) {
+                System.out.println(result.getObject("QUERY PLAN"));
+            }
+        } finally {
+            result.close();
+        }
+    }
+
     private int executeDML(String command, Map<String, ParseInterface> paramObjects) throws SQLException {
         Connection connection = getConnection();
 
-        PreparedStatement statement = getStatement(command, paramObjects, connection, syntax);
+        PreparedStatement statement = getStatement((explainAnalyzeMode?"EXPLAIN ANALYZE ":"") + command, paramObjects, connection, syntax);
 
         int result;
         try {
-            result = statement.executeUpdate();
+            if(explainAnalyzeMode) {
+                executeExplain(statement);
+                result = 100;
+            } else
+                result = statement.executeUpdate();
         } catch (SQLException e) {
             logger.info(statement.toString());
             throw e;
@@ -382,8 +398,12 @@ public class SQLSession extends MutableObject {
 
         logger.info(select);
 
-        OrderedMap<Map<K,Object>,Map<V,Object>> execResult = new OrderedMap<Map<K, Object>, Map<V, Object>>();
+        if(explainAnalyzeMode) {
+            executeExplain(getStatement("EXPLAIN ANALYZE " + select, paramObjects, connection, syntax));
+        }
+
         PreparedStatement statement = getStatement(select, paramObjects, connection, syntax);
+        OrderedMap<Map<K,Object>,Map<V,Object>> execResult = new OrderedMap<Map<K, Object>, Map<V, Object>>();
         try {
             ResultSet result = statement.executeQuery();
             try {
