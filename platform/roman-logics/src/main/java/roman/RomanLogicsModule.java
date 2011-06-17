@@ -790,10 +790,10 @@ public class RomanLogicsModule extends LogicsModule {
     private LP grossWeightDirectInvoice;
     private LP palletNumberDirectInvoice;
     private LP nameOriginCountry;
-    private LP sidOrigin2Country;
+    public LP sidOrigin2Country;
     private LP sidOrigin3Country;
     private LP sid3Country;
-    private LP sidOrigin2ToCountry;
+    public  LP sidOrigin2ToCountry;
     private LP nameCountrySku;
     private LP sumInCurrentYear;
     private LP sumInOutCurrentYear;
