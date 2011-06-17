@@ -14,6 +14,7 @@ public abstract class NavigatorWindow extends IdentityObject {
     public int width;
     public int height;
     public boolean titleShown = true;
+    public boolean drawRoot = false;
 
     public NavigatorWindow(String sID, String caption, int x, int y, int width, int height) {
         this.sID = sID;
@@ -35,6 +36,7 @@ public abstract class NavigatorWindow extends IdentityObject {
         outStream.writeInt(width);
         outStream.writeInt(height);
         outStream.writeBoolean(titleShown);
+        outStream.writeBoolean(drawRoot);
     }
 
     public void changePosition(int x, int y, int width, int height) {

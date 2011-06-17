@@ -9,14 +9,15 @@ import java.io.IOException;
 import java.util.*;
 
 public class ClientNavigatorElement {
-    private static Map<String, ClientNavigatorElement> elements = new HashMap<String, ClientNavigatorElement>();
     private static Map<String, HashSet<ClientNavigatorElement>> parents = new HashMap<String, HashSet<ClientNavigatorElement>>();
 
     public int ID;
     private String caption;
     public String sID;
     public List<String> childrenSid = new LinkedList<String>();
+    public List<ClientNavigatorElement> childrens = new LinkedList<ClientNavigatorElement>();
     public ImageIcon image;
+    public static ClientNavigatorElement root;
 
     protected boolean hasChildren = false;
     public ClientNavigatorWindow window;
@@ -60,7 +61,9 @@ public class ClientNavigatorElement {
         if (window != null) {
             window.elements.add(this);
         }
-        elements.put(sID, this);
+        if (sID.equals(AbstractNavigator.BASE_ELEMENT_SID)) {
+            root = this;
+        }
     }
 
     private void addChild(String childSID) {
@@ -105,10 +108,6 @@ public class ClientNavigatorElement {
 
     public String getSID() {
         return sID;
-    }
-
-    public static ClientNavigatorElement get(String sid) {
-        return elements.get(sid);
     }
 
     //содержатся ли родители текущей вершины в заданном множестве

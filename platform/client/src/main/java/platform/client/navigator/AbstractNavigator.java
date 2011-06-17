@@ -7,7 +7,6 @@ import javax.swing.*;
 import java.awt.*;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
 
 public abstract class AbstractNavigator extends JPanel {
     public final RemoteNavigatorInterface remoteNavigator;
@@ -31,12 +30,8 @@ public abstract class AbstractNavigator extends JPanel {
 
     public abstract void openForm(ClientNavigatorForm element) throws IOException, ClassNotFoundException;
 
-    protected java.util.List<ClientNavigatorElement> getNodeElements(String elementSID) throws IOException {
-        java.util.List<ClientNavigatorElement> result = new ArrayList<ClientNavigatorElement>();
-        for (String sid : ClientNavigatorElement.get(elementSID).childrenSid) {
-            result.add(ClientNavigatorElement.get(sid));
-        }
-        return result;
+    protected java.util.List<ClientNavigatorElement> getNodeElements(ClientNavigatorElement element) throws IOException {
+        return element.childrens;
     }
 
     public java.util.List<ClientNavigatorElement> getTreeElements() throws IOException {

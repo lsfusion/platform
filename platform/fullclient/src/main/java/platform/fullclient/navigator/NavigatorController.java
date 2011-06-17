@@ -21,6 +21,22 @@ public class NavigatorController implements INavigatorController {
 
         try {
             elements = DeSerializer.deserializeListClientNavigatorElement(remoteNavigator.getNavigatorTree());
+            Map<String, ClientNavigatorElement> elementsMap = new HashMap<String, ClientNavigatorElement>();
+            for (ClientNavigatorElement element : elements) {
+                elementsMap.put(element.getSID(), element);
+            }
+
+            for (ClientNavigatorElement element : elements) {
+                elementsMap.put(element.getSID(), element);
+            }
+
+            for (ClientNavigatorElement element : elements) {
+                for (String s : element.childrenSid) {
+                    ClientNavigatorElement child = elementsMap.get(s);
+                    element.childrens.add(child);
+                }
+            }
+
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -45,17 +61,17 @@ public class NavigatorController implements INavigatorController {
     }
 
     public void update(ClientNavigatorWindow window, ClientNavigatorElement element) {
-        ClientNavigatorElement baseElement = ClientNavigatorElement.get(AbstractNavigator.BASE_ELEMENT_SID);
+        ClientNavigatorElement baseElement = ClientNavigatorElement.root;
         ClientNavigatorWindow baseWindow = baseElement.window;
-        Map<ClientNavigatorWindow, HashSet<ClientNavigatorElement>> result = new HashMap<ClientNavigatorWindow, HashSet<ClientNavigatorElement>>();
+        Map<ClientNavigatorWindow, LinkedHashSet<ClientNavigatorElement>> result = new HashMap<ClientNavigatorWindow, LinkedHashSet<ClientNavigatorElement>>();
 
         for (ClientNavigatorWindow wind : ClientNavigatorWindow.sidToWindow.values()) {
-            result.put(wind, new HashSet<ClientNavigatorElement>());
+            result.put(wind, new LinkedHashSet<ClientNavigatorElement>());
         }
 
         dfsAddElements(baseElement, baseWindow, result);
 
-        for (Map.Entry<ClientNavigatorWindow, HashSet<ClientNavigatorElement>> entry : result.entrySet()) {
+        for (Map.Entry<ClientNavigatorWindow, LinkedHashSet<ClientNavigatorElement>> entry : result.entrySet()) {
             NavigatorView view = getView(entry.getKey());
             view.refresh(entry.getValue());
             SingleCDockable dockable = docks.get(view);
@@ -77,13 +93,16 @@ public class NavigatorController implements INavigatorController {
         }
     }
 
-    private void dfsAddElements(ClientNavigatorElement currentElement, ClientNavigatorWindow currentWindow, Map<ClientNavigatorWindow, HashSet<ClientNavigatorElement>> result) {
-        result.get(currentWindow).add(currentElement);
+    private void dfsAddElements(ClientNavigatorElement currentElement, ClientNavigatorWindow currentWindow, Map<ClientNavigatorWindow, LinkedHashSet<ClientNavigatorElement>> result) {
+        if ((currentElement.window != null) && (currentElement.window.drawRoot)) {
+            result.get(currentElement.window).add(currentElement);
+        } else {
+            result.get(currentWindow).add(currentElement);
+        }
         ClientNavigatorWindow nextWindow = currentElement.window == null ? currentWindow : currentElement.window;
 
-        if ((currentElement.window == null) || currentElement == getView(currentWindow).getSelectedElement() || (currentElement.window == currentWindow)) {
-            for (String sid : currentElement.childrenSid) {
-                ClientNavigatorElement element = ClientNavigatorElement.get(sid);
+        if ((currentElement.window == null) || currentElement == getView(currentWindow).getSelectedElement() || (currentElement.window == currentWindow) || (currentElement.window.drawRoot)) {
+            for (ClientNavigatorElement element : currentElement.childrens) {
                 if (!result.get(nextWindow).contains(element)) {
                     dfsAddElements(element, nextWindow, result);
                 }

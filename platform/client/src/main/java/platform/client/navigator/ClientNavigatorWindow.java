@@ -19,6 +19,7 @@ public abstract class ClientNavigatorWindow extends IdentityObject implements Se
     public int height;
     public int type;
     public boolean titleShown;
+    public boolean drawRoot;
 
     public ClientNavigatorWindow(DataInputStream inStream) throws IOException {
         super(inStream.readInt());
@@ -29,6 +30,7 @@ public abstract class ClientNavigatorWindow extends IdentityObject implements Se
         width = inStream.readInt();
         height = inStream.readInt();
         titleShown = inStream.readBoolean();
+        drawRoot =  inStream.readBoolean();
     }
 
 

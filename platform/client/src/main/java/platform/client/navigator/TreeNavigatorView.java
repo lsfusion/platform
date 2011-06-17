@@ -46,8 +46,7 @@ public class TreeNavigatorView extends NavigatorView {
         if ((element.window != null) && (!element.window.equals(window))) {
             return;
         }
-        for (String child : element.childrenSid) {
-            ClientNavigatorElement childEl = ClientNavigatorElement.get(child);
+        for (ClientNavigatorElement childEl : element.childrens) {
             if (newElements.contains(childEl)) {
                 addElement(node, childEl, newElements);
             }

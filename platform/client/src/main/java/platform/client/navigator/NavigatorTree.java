@@ -108,9 +108,8 @@ public class NavigatorTree extends ClientTree {
 
         if (!element.hasChildren()) return;
 
-        java.util.List<ClientNavigatorElement> elements = navigator.getNodeElements(element.getSID());
 
-        for (ClientNavigatorElement child : elements) {
+        for (ClientNavigatorElement child : element.childrens) {
 
             DefaultMutableTreeNode node;
             node = new NavigatorTreeNode(this, child);
