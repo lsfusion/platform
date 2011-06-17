@@ -1237,12 +1237,11 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         }
 
         Collection<AggregateProperty> recalculateProperties = new ArrayList<AggregateProperty>();
-        if(struct!=null) // если все свойства "новые" то ничего перерасчитывать не надо
-            for (Property property : storedProperties) { // добавляем оставшиеся
-                sql.addColumn(property.mapTable.table.name, property.field);
-                if (property instanceof AggregateProperty)
-                    recalculateProperties.add((AggregateProperty) property);
-            }
+        for (Property property : storedProperties) { // добавляем оставшиеся
+            sql.addColumn(property.mapTable.table.name, property.field);
+            if (struct != null && property instanceof AggregateProperty) // если все свойства "новые" то ничего перерасчитывать не надо
+                recalculateProperties.add((AggregateProperty) property);
+        }
 
         // удаляем таблицы старые
         for (String table : prevTables.keySet())
