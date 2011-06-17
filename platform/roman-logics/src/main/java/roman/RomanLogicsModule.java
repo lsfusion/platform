@@ -792,7 +792,8 @@ public class RomanLogicsModule extends LogicsModule {
     private LP nameOriginCountry;
     private LP sidOrigin2Country;
     private LP sidOrigin3Country;
-    private LP sid3Country;    
+    private LP sid3Country;
+    private LP sidOrigin2ToCountry;
     private LP nameCountrySku;
     private LP sumInCurrentYear;
     private LP sumInOutCurrentYear;
@@ -1094,6 +1095,8 @@ public class RomanLogicsModule extends LogicsModule {
         sidOrigin2Country = addDProp(baseGroup, "sidOrigin2Country", "Код 2 знака (ориг.)", StringClass.get(2), baseLM.country);
         sidOrigin3Country = addDProp(baseGroup, "sidOrigin3Country", "Код 3 знака (ориг.)", StringClass.get(3), baseLM.country);
         sid3Country = addDProp(baseGroup, "sid3Country", "Код 3 знака", StringClass.get(3), baseLM.country);
+
+        sidOrigin2ToCountry = addAGProp("sidOrigin2ToCountry", "Страна", sidOrigin2Country);
 
         dictionaryComposition = addDProp(idGroup, "dictionaryComposition", "Словарь для составов (ИД)", baseLM.dictionary);
         nameDictionaryComposition = addJProp(baseGroup, "nameDictionaryComposition", "Словарь для составов", baseLM.name, dictionaryComposition);
