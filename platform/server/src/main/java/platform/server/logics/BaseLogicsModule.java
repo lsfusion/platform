@@ -157,6 +157,8 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public LP userFirstName;
     public LP userLastName;
     public LP userMainRole;
+    public LP customUserMainRole;
+    public LP customUserSIDMainRole;
     public LP nameUserMainRole;
     public LP userRoleSID;
     public LP userRoleDefaultForms;
@@ -326,12 +328,25 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
             tableFactory.include("base_" + i, baseClasses);
         }
 
+        tableFactory.include("userTable", user);
         tableFactory.include("customUser", customUser);
         tableFactory.include("loginSID", StringClass.get(30), StringClass.get(30));
         tableFactory.include("countryDate", country, DateClass.instance);
         tableFactory.include("country", country, DateClass.instance);
+        tableFactory.include("navigatorElement", navigatorElement);
+        tableFactory.include("transaction", transaction);
+        tableFactory.include("named", baseClass.named);
+        tableFactory.include("barcodeObject", barcodeObject);
+        tableFactory.include("emailObject", emailObject);
+        tableFactory.include("dictionary", dictionary);
+        tableFactory.include("dictionaryEntry", dictionaryEntry);
 
         tableFactory.include("session", session);
+        tableFactory.include("connection", connection);
+        tableFactory.include("computer", connection);
+
+        tableFactory.include("connectionNavigatorElement", connection, navigatorElement);
+        tableFactory.include("userRoleNavigatorElement", userRole, navigatorElement);
     }
 
     @Override
@@ -467,6 +482,8 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         connectionFormCount = addDProp(baseGroup, "connectionFormCount", "Количество открытых форм", IntegerClass.instance, connection, navigatorElement);
 
         userMainRole = addDProp(idGroup, "userMainRole", "Главная роль (ИД)", userRole, user);
+        customUserMainRole = addJProp(idGroup, "customUserMainRole", "Главная роль (ИД)", and1, userMainRole, 1, is(customUser), 1);
+        customUserSIDMainRole = addJProp("customUserSIDMainRole", "Идентификатор главной роли", userRoleSID, customUserMainRole, 1);
         nameUserMainRole = addJProp(baseGroup, "nameUserMainRole", "Главная роль", name, userMainRole, 1);
 
         nameToCountry = addAGProp("nameToCountry", "Страна", country, name);

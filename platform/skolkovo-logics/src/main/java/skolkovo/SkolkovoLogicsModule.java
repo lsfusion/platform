@@ -180,15 +180,18 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
     @Override
     public void initTables() {
+        baseLM.tableFactory.include("multiLanguageNamed", multiLanguageNamed);
         baseLM.tableFactory.include("project", project);
-        baseLM.tableFactory.include("expert", project);
-        baseLM.tableFactory.include("cluster", project);
-        baseLM.tableFactory.include("claimer", project);
+        baseLM.tableFactory.include("expert", expert);
+        baseLM.tableFactory.include("cluster", cluster);
+        baseLM.tableFactory.include("claimer", claimer);
         baseLM.tableFactory.include("vote", vote);
         baseLM.tableFactory.include("patent", patent);
         baseLM.tableFactory.include("academic", academic);
         baseLM.tableFactory.include("nonRussianSpecialist", nonRussianSpecialist);
+        baseLM.tableFactory.include("documentAbstract", documentAbstract);
         baseLM.tableFactory.include("document", document);
+        baseLM.tableFactory.include("expertVote", expert, vote);
     }
 
     @Override
@@ -1059,7 +1062,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         expertLogin = addAGProp(baseGroup, "expertLogin", "Эксперт (ИД)", baseLM.userLogin);
         disableExpert = addDProp(baseGroup, "disableExpert", "Не акт.", LogicalClass.instance, expert);
 
-        addCUProp("userRole", true, "Роль пользователя", addCProp(StringClass.get(30), "expert", expert));
+        LP userRole = addSUProp("userRole", true, "Роль пользователя", Union.OVERRIDE, baseLM.customUserSIDMainRole, addCProp(StringClass.get(30), "expert", expert));
 
         statusProject = addCaseUProp(idGroup, "statusProject", true, "Статус (ИД)",
                 voteValuedProject, 1, addIfElseUProp(addCProp(projectStatus, "accepted", project), addCProp(projectStatus, "rejected", project), acceptedProject, 1), 1,
