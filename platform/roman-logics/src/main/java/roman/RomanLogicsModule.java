@@ -1032,23 +1032,30 @@ public class RomanLogicsModule extends LogicsModule {
         baseLM.tableFactory.include("customCategoryOrigin", customCategoryOrigin);
         baseLM.tableFactory.include("customCategory10Origin", customCategory10, customCategoryOrigin);
         baseLM.tableFactory.include("customCategory", customCategory);
+        baseLM.tableFactory.include("customCategory10STypeDuty", customCategory10, typeDuty);
+        baseLM.tableFactory.include("customCategory10SubCategory", customCategory10, subCategory);
+        baseLM.tableFactory.include("customCategory10SubCategoryCountry", customCategory10, subCategory, baseLM.country);
 
+        baseLM.tableFactory.include("colorSupplier", colorSupplier);
+        baseLM.tableFactory.include("sizeSupplier", sizeSupplier);
+        baseLM.tableFactory.include("country", baseLM.country);
         baseLM.tableFactory.include("article", article);
         baseLM.tableFactory.include("sku", sku);
         baseLM.tableFactory.include("documentArticle", document, article);
         baseLM.tableFactory.include("documentSku", document, sku);
         baseLM.tableFactory.include("listSku", list, sku);
         baseLM.tableFactory.include("listArticle", list, article);
+
+        baseLM.tableFactory.include("importerFreightUnitSku", importer, freightUnit, sku);
         baseLM.tableFactory.include("importerFreightSku", importer, freight, sku);
-        //baseLM.tableFactory.include("importerFreightTypeInvoice", importer, freight, typeInvoice);
         baseLM.tableFactory.include("freightSku", freight, sku);
         baseLM.tableFactory.include("shipmentDetail", shipmentDetail);
         baseLM.tableFactory.include("pallet", pallet);
         baseLM.tableFactory.include("freight", freight);
         baseLM.tableFactory.include("freightUnit", freightUnit);
         baseLM.tableFactory.include("barcodeObject", baseLM.barcodeObject);
-        baseLM.tableFactory.include("rateExchange", typeExchange, currency, DateClass.instance);
 
+        baseLM.tableFactory.include("rateExchange", typeExchange, currency, DateClass.instance);
         baseLM.tableFactory.include("pricat", pricat);
         baseLM.tableFactory.include("strings", StringClass.get(10));
     }
