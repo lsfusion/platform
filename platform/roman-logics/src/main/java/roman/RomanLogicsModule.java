@@ -31,6 +31,7 @@ import platform.server.logics.ObjectValue;
 import platform.server.logics.linear.LP;
 import platform.server.logics.property.ActionProperty;
 import platform.server.logics.property.ClassPropertyInterface;
+import platform.server.logics.property.PropertyFollows;
 import platform.server.logics.property.group.AbstractGroup;
 import platform.server.session.Changes;
 import platform.server.session.DataSession;
@@ -1541,7 +1542,7 @@ public class RomanLogicsModule extends LogicsModule {
         sidSupplierBox = addDProp(baseGroup, "sidSupplierBox", "Номер короба", StringClass.get(50), supplierBox);
 
         boxInvoiceSupplierBox = addDProp(idGroup, "boxInvoiceSupplierBox", "Документ по коробам (ИД)", boxInvoice, supplierBox);
-        setNotNull(boxInvoiceSupplierBox);
+        setNotNull(boxInvoiceSupplierBox, PropertyFollows.RESOLVE_FALSE);
 
         sidBoxInvoiceSupplierBox = addJProp(baseGroup, "sidBoxInvoiceSupplierBox", "Документ по коробам", sidDocument, boxInvoiceSupplierBox, 1);
 
