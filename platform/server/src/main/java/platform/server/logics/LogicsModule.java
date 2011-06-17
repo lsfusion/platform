@@ -40,10 +40,15 @@ import static platform.server.logics.PropertyUtils.*;
 
 public abstract class LogicsModule {
     public abstract void initClasses();
+
     public abstract void initTables();
+
     public abstract void initGroups();
+
     public abstract void initProperties() throws FileNotFoundException;
+
     public abstract void initIndexes();
+
     public abstract void initNavigators() throws JRException, FileNotFoundException;
 
     public BaseLogicsModule<?> baseLM;
@@ -659,7 +664,7 @@ public abstract class LogicsModule {
      * </pre>
      *
      * @param groupObject используется для получения фильтров на набор, для которого будут происходить изменения
-     * @param params сначала идут номера интерфейсов для группировки, затем getterProperty, затем мэппинг интерфейсов getterProperty
+     * @param params      сначала идут номера интерфейсов для группировки, затем getterProperty, затем мэппинг интерфейсов getterProperty
      */
     protected LP addGCAProp(AbstractGroup group, String sID, String caption, GroupObjectEntity groupObject, LP mainProperty, Object... params) {
         assert params.length > 0;
@@ -916,11 +921,11 @@ public abstract class LogicsModule {
             result[i] = mapLGProp(group, mgProps.get(i), groupImplements);
 
         if (persist) {
-            if(overridePersist.size() > 0) {
+            if (overridePersist.size() > 0) {
                 for (Property property : overridePersist)
                     addProperty(null, true, new LP(property));
             } else
-                for(int i=0; i < result.length; i++)
+                for (int i = 0; i < result.length; i++)
                     addPersistent(result[i]);
         }
 
@@ -1101,15 +1106,15 @@ public abstract class LogicsModule {
 
     protected LP addCaseUProp(AbstractGroup group, String sID, boolean persistent, String caption, Object... params) {
         List<LI> list = readLI(params);
-        int intNum = ((LMI)list.get(1)).lp.listInterfaces.size(); // берем количество интерфейсов у первого case'а
+        int intNum = ((LMI) list.get(1)).lp.listInterfaces.size(); // берем количество интерфейсов у первого case'а
 
         CaseUnionProperty caseProp = new CaseUnionProperty(sID, caption, intNum);
         LP<UnionProperty.Interface> listProperty = new LP<UnionProperty.Interface>(caseProp);
-        List<PropertyMapImplement<?, UnionProperty.Interface>> mapImplements = (List<PropertyMapImplement<?, UnionProperty.Interface>>)(List<?>)mapLI(list, listProperty.listInterfaces);
-        for(int i=0;i<mapImplements.size()/2;i++)
-            caseProp.addCase(mapImplements.get(2*i), mapImplements.get(2*i+1));
-        if(mapImplements.size()%2!=0)
-            caseProp.addCase(new PropertyMapImplement<PropertyInterface, UnionProperty.Interface>(baseLM.vtrue.property), mapImplements.get(mapImplements.size()-1));
+        List<PropertyMapImplement<?, UnionProperty.Interface>> mapImplements = (List<PropertyMapImplement<?, UnionProperty.Interface>>) (List<?>) mapLI(list, listProperty.listInterfaces);
+        for (int i = 0; i < mapImplements.size() / 2; i++)
+            caseProp.addCase(mapImplements.get(2 * i), mapImplements.get(2 * i + 1));
+        if (mapImplements.size() % 2 != 0)
+            caseProp.addCase(new PropertyMapImplement<PropertyInterface, UnionProperty.Interface>(baseLM.vtrue.property), mapImplements.get(mapImplements.size() - 1));
         return addProperty(group, persistent, listProperty);
     }
 
@@ -1360,6 +1365,7 @@ public abstract class LogicsModule {
 
     /**
      * Добавляет action для запуска свойств с мэппингом по порядку, т.е. на входы и выход каждого свойства мэппятся интерфейсы результирующего по порядку
+     *
      * @param writeDefaultValues Если == true, то мэппятся только входы, без выхода
      */
     protected LP addEPAProp(boolean writeDefaultValues, LP... lps) {
@@ -1374,14 +1380,14 @@ public abstract class LogicsModule {
 
     /**
      * Добавляет action для запуска других свойств.
-     *
+     * <p/>
      * Мэппиг задаётся перечислением свойств с указанием после каждого номеров интерфейсов результирующего свойства,
      * которые пойдут на входы и выход данных свойств
      * Пример 1: addEPAProp(true, userLogin, 1, inUserRole, 1, 2)
      * Пример 2: addEPAProp(false, userLogin, 1, 3, inUserRole, 1, 2, 4)
      *
      * @param writeDefaultValues использовать ли значения по умолчанию для записи в свойства.
-     * Если значение этого параметра false, то мэпиться должны не только выходы, но и вход, номер интерфейса, который пойдёт на вход, должен быть указан последним
+     *                           Если значение этого параметра false, то мэпиться должны не только выходы, но и вход, номер интерфейса, который пойдёт на вход, должен быть указан последним
      */
     protected LP addEPAProp(boolean writeDefaultValues, Object... params) {
         List<LP> lps = new ArrayList<LP>();
@@ -1429,12 +1435,13 @@ public abstract class LogicsModule {
         return addAAProp(customClass, null, null, false, properties);
     }
 
-    /** Пример использования:
-    fileActPricat = addAAProp(pricat, filePricat.property, FileActionClass.getCustomInstance(true));
-    pricat - добавляемый класс
-    filePricat.property - свойство, которое изменяется
-    FileActionClass.getCustomInstance(true) - класс
-     неявный assertion, что класс свойства должен быть совместим с классом Action
+    /**
+     * Пример использования:
+     * fileActPricat = addAAProp(pricat, filePricat.property, FileActionClass.getCustomInstance(true));
+     * pricat - добавляемый класс
+     * filePricat.property - свойство, которое изменяется
+     * FileActionClass.getCustomInstance(true) - класс
+     * неявный assertion, что класс свойства должен быть совместим с классом Action
      */
     protected LP addAAProp(ValueClass cls, Property propertyValue, DataClass dataClass) {
         return addAProp(new AddObjectActionProperty(genSID(), (CustomClass) cls, propertyValue, dataClass));
@@ -1469,17 +1476,17 @@ public abstract class LogicsModule {
      * <pre>
      * Пример использования:
      *       Скроем свойство policyDescription, если у текущего user'а логин - "Admin"
-     * <p/>
+     *
      *       Вводим свойство критерия:
-     * <p/>
+     *
      *         LP hideUserPolicyDescription = addJProp(diff2, userLogin, 1, addCProp(StringClass.get(30), "Admin"));
-     * <p/>
+     *
      *       Вводим свойство которое будет использовано в качестве propertyCaption для policyDescription:
-     * <p/>
+     *
      *         policyDescriptorCaption = addHideCaptionProp(null, "Policy caption", policyDescription, hideUserPolicyDescription);
-     * <p/>
+     *
      *       Далее в форме указываем соответсвующий propertyCaption:
-     * <p/>
+     *
      *         PropertyDrawEntity descriptionDraw = getPropertyDraw(policyDescription, objPolicy.groupTo);
      *         PropertyDrawEntity descriptorCaptionDraw = addPropertyDraw(policyDescriptorCaption, objUser);
      *         descriptionDraw.setPropertyCaption(descriptorCaptionDraw.propertyObject);
@@ -1562,6 +1569,10 @@ public abstract class LogicsModule {
     }
 
     protected void setNotNull(LP property) {
+        setNotNull(property, PropertyFollows.RESOLVE_TRUE);
+    }
+
+    protected void setNotNull(LP property, int resolve) {
 
         ValueClass[] values = property.getMapClasses();
 
@@ -1571,7 +1582,7 @@ public abstract class LogicsModule {
         for (int i = 0; i < property.listInterfaces.size(); i++) {
             mapInterfaces.put(property.listInterfaces.get(i), checkProp.listInterfaces.get(i));
         }
-        addProp(checkProp.property.addFollows(new PropertyMapImplement(property.property, mapInterfaces), "Свойство " + property.property.sID + " не задано", PropertyFollows.RESOLVE_TRUE));
+        addProp(checkProp.property.addFollows(new PropertyMapImplement(property.property, mapInterfaces), "Свойство " + property.property.sID + " не задано", resolve));
     }
 
     // получает свойство is
