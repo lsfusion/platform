@@ -41,10 +41,7 @@ import platform.server.logics.property.derived.MaxChangeProperty;
 import platform.server.logics.scheduler.Scheduler;
 import platform.server.logics.table.ImplementTable;
 import platform.server.serialization.ServerSerializationPool;
-import platform.server.session.Changes;
-import platform.server.session.DataSession;
-import platform.server.session.Modifier;
-import platform.server.session.PropertyChange;
+import platform.server.session.*;
 
 import java.io.*;
 import java.rmi.NotBoundException;
@@ -672,8 +669,9 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     protected List<List<Object>> getRelations(NavigatorElement<T> element) {
         List<List<Object>> parentInfo = new ArrayList<List<Object>>();
         List<NavigatorElement<T>> children = (List<NavigatorElement<T>>) element.getChildren(false);
+        int counter = 1;
         for (NavigatorElement<T> child : children) {
-            parentInfo.add(BaseUtils.toList((Object) child.getSID(), element.getSID()));
+            parentInfo.add(BaseUtils.toList((Object) child.getSID(), element.getSID(), counter++));
             for (List<Object> info : getRelations(child)) {
                 parentInfo.add(info);
             }
@@ -684,6 +682,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     protected void synchronizeForms() {
         ImportField sidField = new ImportField(LM.formSIDValueClass);
         ImportField captionField = new ImportField(LM.formCaptionValueClass);
+        ImportField numberField = new ImportField(LM.numberNavigatorElement);
 
         ImportKey<?> key = new ImportKey(LM.navigatorElement, LM.SIDToNavigatorElement.getMapping(sidField));
 
@@ -704,7 +703,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         ImportKey<?> key2 = new ImportKey(LM.navigatorElement, LM.SIDToNavigatorElement.getMapping(parentSidField));
         List<ImportProperty<?>> props2 = new ArrayList<ImportProperty<?>>();
         props2.add(new ImportProperty(parentSidField, LM.parentNavigatorElement.getMapping(key), LM.object(LM.navigatorElement).getMapping(key2)));
-        ImportTable table2 = new ImportTable(Arrays.asList(sidField, parentSidField), data2);
+        props2.add(new ImportProperty(numberField, LM.numberNavigatorElement.getMapping(key)));
+        ImportTable table2 = new ImportTable(Arrays.asList(sidField, parentSidField, numberField), data2);
 
         try {
             DataSession session = createSession();

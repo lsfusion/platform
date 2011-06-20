@@ -197,6 +197,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public LP classSID;
     public LP dataName;
     public LP navigatorElementSID;
+    public LP numberNavigatorElement;
     public LP navigatorElementCaption;
 
     public LP SIDToNavigatorElement;
@@ -519,6 +520,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         objectClassName = addJProp(baseGroup, "objectClassName", "Класс объекта", name, objectClass, 1);
 
         navigatorElementSID = addDProp(baseGroup, "navigatorElementSID", "Код формы", formSIDValueClass, navigatorElement);
+        numberNavigatorElement = addDProp(baseGroup, "numberNavigatorElement", "Номер", IntegerClass.instance, navigatorElement);
         navigatorElementCaption = addDProp(baseGroup, "navigatorElementCaption", "Название формы", formCaptionValueClass, navigatorElement);
         SIDToNavigatorElement = addAGProp("SIDToNavigatorElement", "Форма", navigatorElementSID);
         parentNavigatorElement = addDProp("parentNavigatorElement", "Родит. форма", navigatorElement, navigatorElement);
@@ -1182,8 +1184,8 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
             addObjectActions(this, objUserRole);
 
-            addPropertyDraw(new LP[]{navigatorElementCaption, navigatorElementSID}, objForm);
-            addPropertyDraw(new LP[]{navigatorElementCaption, navigatorElementSID}, objTreeForm);
+            addPropertyDraw(new LP[]{navigatorElementCaption, navigatorElementSID, numberNavigatorElement}, objForm);
+            addPropertyDraw(new LP[]{navigatorElementCaption, navigatorElementSID, numberNavigatorElement}, objTreeForm);
             addPropertyDraw(objUserRole, objPolicy, baseGroup, true);
             addPropertyDraw(objUserRole, objForm, permissionUserRoleForm);
             addPropertyDraw(objUserRole, objTreeForm, permissionUserRoleForm);
