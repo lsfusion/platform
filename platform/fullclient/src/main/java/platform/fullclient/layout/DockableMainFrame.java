@@ -145,7 +145,7 @@ public class DockableMainFrame extends MainFrame {
         }
     }
 
-    Map<CDockable, List> dockables = new HashMap<CDockable, List>();
+    Map<CDockable, Rectangle> dockables = new HashMap<CDockable, Rectangle>();
 
     // важно, что в случае каких-либо Exception'ов при восстановлении форм нужно все игнорировать и открывать расположение "по умолчанию"
     private void initDockStations(ClientNavigator mainNavigator, NavigatorController navigatorController) {
@@ -172,19 +172,19 @@ public class DockableMainFrame extends MainFrame {
         }
 
         add(control.getContentArea(), BorderLayout.CENTER);
-        dockables.put(createDockable("relevantForms", "Связанные формы", mainNavigator.relevantFormNavigator), BaseUtils.toList(0, 70, 20, 29));
-        dockables.put(createDockable("relevantClassForms", "Классовые формы", mainNavigator.relevantClassNavigator), BaseUtils.toList(0, 70, 20, 29));
-        dockables.put(createDockable("log", "Лог", Log.getPanel()), BaseUtils.toList(0, 70, 20, 29));
+        dockables.put(createDockable("relevantForms", "Связанные формы", mainNavigator.relevantFormNavigator), new Rectangle(0, 70, 20, 29));
+        dockables.put(createDockable("relevantClassForms", "Классовые формы", mainNavigator.relevantClassNavigator), new Rectangle(0, 70, 20, 29));
+        dockables.put(createDockable("log", "Лог", Log.getPanel()), new Rectangle(0, 70, 20, 29));
 
         for (NavigatorView view : navigatorController.getAllViews()) {
             DefaultSingleCDockable dockable = createDockable(view.getSID(), view.getCaption(), view);
             dockable.setTitleShown(view.isTitleShown());
             navigatorController.recordDockable(view, dockable);
-            dockables.put(dockable, BaseUtils.toList(view.getDockX(), view.getDockY(), view.getDockWidth(), view.getDockHeight()));
+            dockables.put(dockable, new Rectangle(view.getDockX(), view.getDockY(), view.getDockWidth(), view.getDockHeight()));
         }
 
-        dockables.put(view.getGridArea(), BaseUtils.toList(20, 20, 80, 79));
-        dockables.put(createStatusDockable(status), BaseUtils.toList(0, 99, 100, 1));
+        dockables.put(view.getGridArea(), new Rectangle(20, 20, 80, 79));
+        dockables.put(createStatusDockable(status), new Rectangle(0, 99, 100, 1));
 
         CGrid grid = createGrid();
         control.getContentArea().deploy(grid);
@@ -217,9 +217,8 @@ public class DockableMainFrame extends MainFrame {
     private CGrid createGrid() {
         CGrid grid = new CGrid(control);
         for (CDockable dockable : dockables.keySet()) {
-            List numbers = dockables.get(dockable);
-            grid.add(Double.valueOf(numbers.get(0).toString()), Double.valueOf(numbers.get(1).toString()),
-                    Double.valueOf(numbers.get(2).toString()), Double.valueOf(numbers.get(3).toString()), dockable);
+            Rectangle rectangle = dockables.get(dockable);
+            grid.add(rectangle.x, rectangle.y, rectangle.width, rectangle.height, dockable);
         }
         return grid;
     }
