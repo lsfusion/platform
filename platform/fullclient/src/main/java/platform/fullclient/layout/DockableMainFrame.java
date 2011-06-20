@@ -172,12 +172,12 @@ public class DockableMainFrame extends MainFrame {
         }
 
         add(control.getContentArea(), BorderLayout.CENTER);
-        dockables.put(createDockable("Связанные формы", mainNavigator.relevantFormNavigator), BaseUtils.toList(0, 70, 20, 29));
-        dockables.put(createDockable("Классовые формы", mainNavigator.relevantClassNavigator), BaseUtils.toList(0, 70, 20, 29));
-        dockables.put(createDockable("Лог", Log.getPanel()), BaseUtils.toList(0, 70, 20, 29));
+        dockables.put(createDockable("relevantForms", "Связанные формы", mainNavigator.relevantFormNavigator), BaseUtils.toList(0, 70, 20, 29));
+        dockables.put(createDockable("relevantClassForms", "Классовые формы", mainNavigator.relevantClassNavigator), BaseUtils.toList(0, 70, 20, 29));
+        dockables.put(createDockable("log", "Лог", Log.getPanel()), BaseUtils.toList(0, 70, 20, 29));
 
         for (NavigatorView view : navigatorController.getAllViews()) {
-            DefaultSingleCDockable dockable = createDockable(view.getCaption(), view);
+            DefaultSingleCDockable dockable = createDockable(view.getSID(), view.getCaption(), view);
             dockable.setTitleShown(view.isTitleShown());
             navigatorController.recordDockable(view, dockable);
             dockables.put(dockable, BaseUtils.toList(view.getDockX(), view.getDockY(), view.getDockWidth(), view.getDockHeight()));
@@ -402,8 +402,8 @@ public class DockableMainFrame extends MainFrame {
     }
 
 
-    public DefaultSingleCDockable createDockable(String title, JComponent navigator) {
-        DefaultSingleCDockable dockable = new DefaultSingleCDockable(title, title, navigator);
+    public DefaultSingleCDockable createDockable(String id, String title, JComponent navigator) {
+        DefaultSingleCDockable dockable = new DefaultSingleCDockable(id, title, navigator);
         dockable.setCloseable(true);
         return dockable;
     }
