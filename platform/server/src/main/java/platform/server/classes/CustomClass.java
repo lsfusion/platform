@@ -310,8 +310,7 @@ public abstract class CustomClass extends AbstractNode implements ObjectClass, V
         return true;
     }
     public boolean upInSet(CustomClass[] wheres, int numWheres, CustomClass[] proceeded, int numProceeded, CustomClass check) {
-        if(isChild(check))
-            return true;
+        if(isChild(check)) return true;
         for(int i=0;i<numWheres;i++) if(wheres[i]!=null && isChild(wheres[i])) return true;
         for(int i=0;i<numProceeded;i++) if(isChild(proceeded[i])) return true;
 

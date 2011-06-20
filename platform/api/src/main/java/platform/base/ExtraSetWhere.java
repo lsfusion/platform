@@ -57,6 +57,7 @@ public abstract class ExtraSetWhere<T, This extends ExtraSetWhere<T,This>> exten
     protected abstract T add(T addWhere, T[] wheres, int numWheres, T[] proceeded, int numProceeded);
 
     // !!! важно учитывать что wheres - mutable то есть меняется
+    // addCorrect - определяет достаточной ширины wheres или нет
     protected T[] add(T[] wheres, int numWheres, T[] adds, int numAdds, final boolean addCorrect) {
 
         T[] extradd = null; int numExtra = 0;
@@ -70,14 +71,14 @@ public abstract class ExtraSetWhere<T, This extends ExtraSetWhere<T,This>> exten
                     break;
                 }
             if(!contained) { // не содержится
+                for(int j=0;j<numWheres;j++)
+                    if(wheres[j]!=null && containsAll(adds[i],wheres[j]))
+                        wheres[j]=null;
                 T added = add(adds[i], wheres, numWheres, addProceeded, numProceeded);
                 if(added!=null) {
                     if(numExtra==0) extradd = newArray(adds.length);
                     extradd[numExtra++] = added;
                 } else { // не слилось - вырезаем всех кого содержит этот элемен
-                    for(int j=0;j<numWheres;j++)
-                        if(wheres[j]!=null && containsAll(adds[i],wheres[j]))
-                            wheres[j]=null;
                     if(addCorrect) {
                         if(numProceeded==0) addProceeded = newArray(adds.length);
                         addProceeded[numProceeded++] = adds[i];
