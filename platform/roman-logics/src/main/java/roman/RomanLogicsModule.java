@@ -401,6 +401,7 @@ public class RomanLogicsModule extends LogicsModule {
     private LP sumRegistrationFreightSku;
     private LP sumRegistrationImporterFreightSku;
     private LP sumRegistrationImporterFreight;
+    private LP sumCustomImporterFreight;
     private LP minPriceRateCustomCategoryCountryFreightSku;
     private LP priceImporterFreightSku;
     private LP priceMaxImporterFreightSku;
@@ -2212,6 +2213,8 @@ public class RomanLogicsModule extends LogicsModule {
         sumRegistrationFreightSku = addJProp(baseGroup, "sumRegistrationFreightSku", "За оформление", dutyPercentCustomCategory10TypeDuty, customCategory10FreightSku, 1, 2, typeDutyRegistration);
         sumRegistrationImporterFreightSku = addJProp(baseGroup, "sumRegistrationImporterFreightSku", "За оформление", baseLM.and1, sumRegistrationFreightSku, 2, 3, quantityImporterFreightSku, 1, 2, 3);
         sumRegistrationImporterFreight = addMGProp(baseGroup, "sumRegistrationImporterFreight", "За оформление", sumRegistrationImporterFreightSku, 1, 2);
+
+        sumCustomImporterFreight = addSUProp(baseGroup, "sumCustomImporterFreight", "Всего по таможне", Union.SUM, sumDutyImporterFreight, sumNDSImporterFreight, sumRegistrationImporterFreight);
 
         priceImporterFreightArticleCompositionCountryCategory = addMGProp(baseGroup, "priceImporterFreightArticleCompositionCountryCategory", "Цена",
                 priceInOutImporterFreightSku, 1, 2, articleSku, 3, mainCompositionOriginFreightSku, 2, 3, countryOfOriginFreightSku, 2, 3, customCategory10FreightSku, 2, 3);
@@ -5052,6 +5055,7 @@ public class RomanLogicsModule extends LogicsModule {
             addPropertyDraw(sumDutyImporterFreight, objImporter, objFreight);
             addPropertyDraw(sumNDSImporterFreight, objImporter, objFreight);
             addPropertyDraw(sumRegistrationImporterFreight, objImporter, objFreight);
+            addPropertyDraw(sumCustomImporterFreight, objImporter, objFreight);
 
             objBrandSupplier = addSingleGroupObject(brandSupplier, "Бренд", baseLM.name, nameSupplierBrandSupplier);
 
