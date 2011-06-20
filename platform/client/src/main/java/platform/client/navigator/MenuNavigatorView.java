@@ -1,9 +1,5 @@
 package platform.client.navigator;
 
-import platform.client.navigator.ClientNavigatorElement;
-import platform.client.navigator.ClientNavigatorWindow;
-import platform.client.navigator.NavigatorView;
-
 import javax.swing.*;
 import javax.swing.border.BevelBorder;
 import java.awt.event.ActionEvent;
@@ -92,7 +88,7 @@ public class MenuNavigatorView extends NavigatorView {
         @Override
         public void actionPerformed(ActionEvent e) {
             selected = element;
-            controller.update(window, getSelectedElement());
+            controller.update();
             controller.openForm(getSelectedElement());
         }
     }

@@ -74,7 +74,7 @@ public class TreeNavigatorView extends NavigatorView {
             public void actionPerformed(ClientTreeActionEvent e) {
                 selectedPath = tree.getSelectionPath();
                 if (selectedPath == null) return;
-                controller.update(window, getSelectedElement());
+                controller.update();
                 controller.openForm(getSelectedElement());
             }
 

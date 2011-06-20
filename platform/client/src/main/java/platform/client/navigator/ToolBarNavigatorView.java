@@ -31,7 +31,10 @@ public class ToolBarNavigatorView extends NavigatorView {
                 addElement(element, newElements, 0);
             }
         }
-        toolBar.validate();
+
+        revalidate();
+        repaint();
+//        toolBar.revalidate();
     }
 
     private void addElement(ClientNavigatorElement element, Set<ClientNavigatorElement> newElements, int allign) {
@@ -98,7 +101,7 @@ public class ToolBarNavigatorView extends NavigatorView {
         @Override
         public void mouseClicked(MouseEvent e) {
             setSelectedElement(selected);
-            controller.update(window, getSelectedElement());
+            controller.update();
             controller.openForm(getSelectedElement());
         }
     }

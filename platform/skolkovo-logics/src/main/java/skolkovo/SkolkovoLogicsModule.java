@@ -29,6 +29,8 @@ import platform.server.form.navigator.NavigatorElement;
 import platform.server.form.view.ContainerView;
 import platform.server.form.view.DefaultFormView;
 import platform.server.form.view.FormView;
+import platform.server.form.window.ToolBarNavigatorWindow;
+import platform.server.form.window.TreeNavigatorWindow;
 import platform.server.logics.BaseLogicsModule;
 import platform.server.logics.DataObject;
 import platform.server.logics.LogicsModule;
@@ -1062,6 +1064,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         expertLogin = addAGProp(baseGroup, "expertLogin", "Эксперт (ИД)", baseLM.userLogin);
         disableExpert = addDProp(baseGroup, "disableExpert", "Не акт.", LogicalClass.instance, expert);
 
+//        LP userRole = addCUProp("userRole", true, "Роль пользователя", baseLM.customUserSIDMainRole);
         LP userRole = addSUProp("userRole", true, "Роль пользователя", Union.OVERRIDE, baseLM.customUserSIDMainRole, addCProp(StringClass.get(30), "expert", expert));
 
         statusProject = addCaseUProp(idGroup, "statusProject", true, "Статус (ИД)",
@@ -1210,20 +1213,22 @@ public class SkolkovoLogicsModule extends LogicsModule {
     @Override
     public void initNavigators() throws JRException, FileNotFoundException {
 
-//        ToolBarNavigatorWindow mainToolbar = new ToolBarNavigatorWindow("Навигатор", "mainToolbar", 0, 0, 100, 10);
-//        mainToolbar.titleShown = false;
-//
-//        baseLM.baseWindow.y = 10;
-//        baseLM.baseWindow.height -= 10;
-//
-//        ToolBarNavigatorWindow leftToolbar = new ToolBarNavigatorWindow("leftToolbar", "leftToolbar", 0, 10, 20, 60);
-//        leftToolbar.titleShown = false;
-//        leftToolbar.type = ToolBarNavigatorWindow.VERTICAL;
-//
-//        baseLM.baseElement.window = mainToolbar;
-//        baseLM.adminElement.window = leftToolbar;
-//        baseLM.objectElement.window = baseLM.baseWindow;
-//
+        ToolBarNavigatorWindow mainToolbar = new ToolBarNavigatorWindow("mainToolbar", "Навигатор", 0, 0, 100, 10);
+        mainToolbar.titleShown = false;
+
+        baseLM.baseWindow.y = 10;
+        baseLM.baseWindow.height -= 10;
+
+        ToolBarNavigatorWindow leftToolbar = new ToolBarNavigatorWindow("leftToolbar", "Список", 0, 10, 20, 60);
+        leftToolbar.type = ToolBarNavigatorWindow.VERTICAL;
+
+        baseLM.baseElement.window = mainToolbar;
+        baseLM.adminElement.window = leftToolbar;
+
+        TreeNavigatorWindow objectsWindow = new TreeNavigatorWindow("objectsWindow", "Объекты", 0, 10, 20, 60);
+        objectsWindow.drawRoot = true;
+        baseLM.objectElement.window = objectsWindow;
+
         projectFullNative = addFormEntity(new ProjectFullFormEntity(baseLM.objectElement, "projectFullNative", "Резюме проекта для эксперта", false));
         projectFullForeign = addFormEntity(new ProjectFullFormEntity(baseLM.objectElement, "projectFullForeign", "Resume project for expert", true));
         addFormEntity(new ClaimerFullFormEntity(baseLM.objectElement, "claimerFull"));
@@ -1233,14 +1238,11 @@ public class SkolkovoLogicsModule extends LogicsModule {
         addFormEntity(new VoteFormEntity(baseLM.baseElement, "vote", false));
         addFormEntity(new ExpertFormEntity(baseLM.baseElement, "expert"));
         addFormEntity(new VoteExpertFormEntity(baseLM.baseElement, "voteExpert"));
-        languageDocumentTypeForm = addFormEntity(new LanguageDocumentTypeFormEntity(baseLM.baseElement, "languageDocumentType"));
-        addFormEntity(new DocumentTemplateFormEntity(baseLM.baseElement, "documentTemplate"));
-        globalForm = addFormEntity(new GlobalFormEntity(baseLM.baseElement, "global"));
         addFormEntity(new VoteFormEntity(baseLM.baseElement, "voterestricted", true));
 
         NavigatorElement print = new NavigatorElement(baseLM.baseElement, "print", "Печатные формы");
-//        print.window = leftToolbar;
-//
+        print.window = leftToolbar;
+
         addFormEntity(new VoteStartFormEntity(print, "voteStart"));
         addFormEntity(new ExpertLetterFormEntity(print, "expertLetter"));
         addFormEntity(new VoteProtocolFormEntity(print, "voteProtocol"));
@@ -1251,6 +1253,14 @@ public class SkolkovoLogicsModule extends LogicsModule {
         addFormEntity(new ClaimerStatusFormEntity(print, "claimerStatus"));
         addFormEntity(new VoteClaimerFormEntity(print, "voteClaimer", "Уведомление о рассмотрении"));
 
+        NavigatorElement options = new NavigatorElement(baseLM.baseElement, "options", "Настройки");
+        options.window = leftToolbar;
+
+        languageDocumentTypeForm = addFormEntity(new LanguageDocumentTypeFormEntity(options, "languageDocumentType"));
+        addFormEntity(new DocumentTemplateFormEntity(options, "documentTemplate"));
+        globalForm = addFormEntity(new GlobalFormEntity(options, "global"));
+
+        baseLM.baseElement.add(baseLM.adminElement); // перемещаем adminElement в конец
     }
     
     private class ProjectFullFormEntity extends FormEntity<SkolkovoBusinessLogics> {
@@ -1479,7 +1489,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         private ObjectEntity objExpert;
 
         private VoteFormEntity(NavigatorElement parent, String sID, boolean restricted) {
-            super(parent, sID, "Реестр заседаний");
+            super(parent, sID, "Результаты заседаний");
 
             objVote = addSingleGroupObject(vote, nameNativeProjectVote, nameNativeClaimerVote, nameNativeClusterVote, equalsClusterProjectVote, dateStartVote, dateEndVote, openedVote, succeededVote, acceptedVote, quantityDoneVote, quantityInClusterVote, quantityInnovativeVote, quantityForeignVote);
             if (!restricted)

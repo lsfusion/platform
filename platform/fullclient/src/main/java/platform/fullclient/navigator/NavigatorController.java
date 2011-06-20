@@ -3,7 +3,6 @@ package platform.fullclient.navigator;
 import bibliothek.gui.dock.common.SingleCDockable;
 import platform.client.logics.DeSerializer;
 import platform.client.navigator.*;
-import platform.interop.NavigatorWindowType;
 import platform.interop.navigator.RemoteNavigatorInterface;
 
 import java.io.IOException;
@@ -60,16 +59,14 @@ public class NavigatorController implements INavigatorController {
         return result;
     }
 
-    public void update(ClientNavigatorWindow window, ClientNavigatorElement element) {
-        ClientNavigatorElement baseElement = ClientNavigatorElement.root;
-        ClientNavigatorWindow baseWindow = baseElement.window;
+    public void update() {
         Map<ClientNavigatorWindow, LinkedHashSet<ClientNavigatorElement>> result = new HashMap<ClientNavigatorWindow, LinkedHashSet<ClientNavigatorElement>>();
 
         for (ClientNavigatorWindow wind : ClientNavigatorWindow.sidToWindow.values()) {
             result.put(wind, new LinkedHashSet<ClientNavigatorElement>());
         }
 
-        dfsAddElements(baseElement, baseWindow, result);
+        dfsAddElements(ClientNavigatorElement.root, null, result);
 
         for (Map.Entry<ClientNavigatorWindow, LinkedHashSet<ClientNavigatorElement>> entry : result.entrySet()) {
             NavigatorView view = getView(entry.getKey());
@@ -97,11 +94,13 @@ public class NavigatorController implements INavigatorController {
         if ((currentElement.window != null) && (currentElement.window.drawRoot)) {
             result.get(currentElement.window).add(currentElement);
         } else {
-            result.get(currentWindow).add(currentElement);
+            if (currentWindow != null)
+                result.get(currentWindow).add(currentElement);
         }
         ClientNavigatorWindow nextWindow = currentElement.window == null ? currentWindow : currentElement.window;
 
-        if ((currentElement.window == null) || currentElement == getView(currentWindow).getSelectedElement() || (currentElement.window == currentWindow) || (currentElement.window.drawRoot)) {
+        // считаем, что если currentWindow == null, то это baseElement и он всегда выделен, но не рисуется никуда
+        if ((currentElement.window == null) || (currentWindow == null ? true : currentElement == getView(currentWindow).getSelectedElement()) || (currentElement.window == currentWindow) || (currentElement.window.drawRoot)) {
             for (ClientNavigatorElement element : currentElement.childrens) {
                 if (!result.get(nextWindow).contains(element)) {
                     dfsAddElements(element, nextWindow, result);

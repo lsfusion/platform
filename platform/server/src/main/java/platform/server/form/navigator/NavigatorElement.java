@@ -89,7 +89,9 @@ public class NavigatorElement<T extends BusinessLogics<T>> extends IdentityObjec
         from.parent = null;
     }
 
-    public void add(NavigatorElement<T> child) {
+    public void add(NavigatorElement child) {
+        if (children.contains(child))
+            children.remove(child);
         children.add(child);
         child.parent = this;
     }

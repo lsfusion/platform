@@ -73,8 +73,10 @@ public abstract class MainFrame extends JFrame {
                     }
 
                     MainFrame.this.dispose();
-                    System.exit(0);
                 }
+            }
+            public void windowClosed(WindowEvent e) {
+                System.exit(0);
             }
         });
         status = new JPanel(new BorderLayout());

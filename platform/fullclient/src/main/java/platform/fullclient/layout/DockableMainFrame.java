@@ -73,7 +73,7 @@ public class DockableMainFrame extends MainFrame {
         navigatorController.mainNavigator = mainNavigator;
 
         initDockStations(mainNavigator, navigatorController);
-        navigatorController.update(null, null);
+        navigatorController.update();
         try {
             if (remoteNavigator.showDefaultForms()) {
                 ArrayList<String> ids = remoteNavigator.getDefaultForms();
@@ -96,19 +96,20 @@ public class DockableMainFrame extends MainFrame {
             e.printStackTrace();
         }
 
-        addWindowListener(new WindowAdapter() {
-            public void windowClosing(WindowEvent event) {
-                super.windowClosing(event);
-                try {
-                    control.save("default");
-                    DataOutputStream out = new DataOutputStream(new FileOutputStream(new File(baseDir, "layout.data")));
-                    view.getForms().write(out);
-                    control.getResources().writeStream(out);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        });
+        // временно отключаем из-за непредсказуемого поведения при измении окон
+//        addWindowListener(new WindowAdapter() {
+//            public void windowClosing(WindowEvent event) {
+//                super.windowClosing(event);
+//                try {
+//                    control.save("default");
+//                    DataOutputStream out = new DataOutputStream(new FileOutputStream(new File(baseDir, "layout.data")));
+//                    view.getForms().write(out);
+//                    control.getResources().writeStream(out);
+//                } catch (IOException e) {
+//                    e.printStackTrace();
+//                }
+//            }
+//        });
     }
 
     @Override

@@ -2,7 +2,7 @@ package platform.client.navigator;
 
 public interface INavigatorController {
 
-    void update(ClientNavigatorWindow window, ClientNavigatorElement element);
+    void update();
 
     void openForm(ClientNavigatorElement element);
 }
