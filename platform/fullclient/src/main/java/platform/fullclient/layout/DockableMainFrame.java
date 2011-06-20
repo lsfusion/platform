@@ -1,9 +1,7 @@
 package platform.fullclient.layout;
 
-import bibliothek.gui.dock.common.CControl;
-import bibliothek.gui.dock.common.CGrid;
-import bibliothek.gui.dock.common.DefaultSingleCDockable;
-import bibliothek.gui.dock.common.SingleCDockable;
+import bibliothek.gui.dock.common.*;
+import bibliothek.gui.dock.common.intern.CDockable;
 import bibliothek.gui.dock.common.menu.*;
 import bibliothek.gui.dock.common.mode.ExtendedMode;
 import bibliothek.gui.dock.common.theme.ThemeMap;
@@ -12,6 +10,7 @@ import bibliothek.gui.dock.facile.menu.SubmenuPiece;
 import bibliothek.gui.dock.support.menu.SeparatingMenuPiece;
 import jasperapi.ReportGenerator;
 import net.sf.jasperreports.engine.JRException;
+import platform.base.BaseUtils;
 import platform.base.DebugUtils;
 import platform.client.Log;
 import platform.client.Main;
@@ -31,7 +30,8 @@ import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
 import java.rmi.RemoteException;
-import java.util.ArrayList;
+import java.util.*;
+import java.util.List;
 
 public class DockableMainFrame extends MainFrame {
     private CControl control;
@@ -145,6 +145,8 @@ public class DockableMainFrame extends MainFrame {
         }
     }
 
+    Map<CDockable, List> dockables = new HashMap<CDockable, List>();
+
     // важно, что в случае каких-либо Exception'ов при восстановлении форм нужно все игнорировать и открывать расположение "по умолчанию"
     private void initDockStations(ClientNavigator mainNavigator, NavigatorController navigatorController) {
 
@@ -170,18 +172,21 @@ public class DockableMainFrame extends MainFrame {
         }
 
         add(control.getContentArea(), BorderLayout.CENTER);
-        CGrid grid = new CGrid(control);
-        grid.add(0, 70, 20, 29, createDockable("Связанные формы", mainNavigator.relevantFormNavigator), createDockable("Классовые формы", mainNavigator.relevantClassNavigator), createDockable("Лог", Log.getPanel()));
+        dockables.put(createDockable("Связанные формы", mainNavigator.relevantFormNavigator), BaseUtils.toList(0, 70, 20, 29));
+        dockables.put(createDockable("Классовые формы", mainNavigator.relevantClassNavigator), BaseUtils.toList(0, 70, 20, 29));
+        dockables.put(createDockable("Лог", Log.getPanel()), BaseUtils.toList(0, 70, 20, 29));
 
         for (NavigatorView view : navigatorController.getAllViews()) {
             DefaultSingleCDockable dockable = createDockable(view.getCaption(), view);
             dockable.setTitleShown(view.isTitleShown());
             navigatorController.recordDockable(view, dockable);
-            grid.add(view.getDockX(), view.getDockY(), view.getDockWidth(), view.getDockHeight(), dockable);
+            dockables.put(dockable, BaseUtils.toList(view.getDockX(), view.getDockY(), view.getDockWidth(), view.getDockHeight()));
         }
 
-        grid.add(20, 20, 80, 79, view.getGridArea());
-        grid.add(0, 99, 100, 1, createStatusDockable(status));
+        dockables.put(view.getGridArea(), BaseUtils.toList(20, 20, 80, 79));
+        dockables.put(createStatusDockable(status), BaseUtils.toList(0, 99, 100, 1));
+
+        CGrid grid = createGrid();
         control.getContentArea().deploy(grid);
         setupMenu();
 
@@ -202,15 +207,36 @@ public class DockableMainFrame extends MainFrame {
     void setupMenu() {
         JMenuBar menuBar = new JMenuBar();
         menuBar.add(createFileMenu());
-        menuBar.add(createWindowMenu());
         menuBar.add(createViewMenu());
         menuBar.add(createOptionsMenu());
+        menuBar.add(createWindowMenu());
         menuBar.add(createHelpMenu());
         setJMenuBar(menuBar);
     }
 
+    private CGrid createGrid() {
+        CGrid grid = new CGrid(control);
+        for (CDockable dockable : dockables.keySet()) {
+            List numbers = dockables.get(dockable);
+            grid.add(Double.valueOf(numbers.get(0).toString()), Double.valueOf(numbers.get(1).toString()),
+                    Double.valueOf(numbers.get(2).toString()), Double.valueOf(numbers.get(3).toString()), dockable);
+        }
+        return grid;
+    }
+
     private JMenu createWindowMenu() {
         RootMenuPiece dockableMenu = new RootMenuPiece("Окно", false, new SingleCDockableListMenuPiece(control));
+        dockableMenu.add(new SeparatingMenuPiece(new CLayoutChoiceMenuPiece(control, false), true, false, false));
+
+        final JMenuItem reload = new JMenuItem("Расположение по умолчанию");
+        reload.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                control.getContentArea().deploy(createGrid());
+            }
+        });
+        dockableMenu.getMenu().addSeparator();
+        dockableMenu.getMenu().add(reload);
+
         return dockableMenu.getMenu();
     }
 
@@ -219,7 +245,6 @@ public class DockableMainFrame extends MainFrame {
         layout.add(new SubmenuPiece("LookAndFeel", true, new CLookAndFeelMenuPiece(control)));
         layout.add(new SubmenuPiece("Тема", true, new CThemeMenuPiece(control)));
         layout.add(CPreferenceMenuPiece.setup(control));
-        layout.add(new SeparatingMenuPiece(new CLayoutChoiceMenuPiece(control, false), true, false, false));
 
         return layout.getMenu();
     }
