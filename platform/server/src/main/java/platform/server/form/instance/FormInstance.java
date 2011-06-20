@@ -1163,8 +1163,8 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
             );
         }
 
-        for(FilterInstance filter : selectionGroupObject.filters) {
-        }
+//        for(FilterInstance filter : selectionGroupObject.filters) {
+//        }
 
         ObjectEntity object = formEntity.getObject();
         for (FilterEntity filterEntity : entity.fixedFilters) {
