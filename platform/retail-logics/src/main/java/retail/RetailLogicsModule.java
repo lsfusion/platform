@@ -44,17 +44,34 @@ public class RetailLogicsModule extends LogicsModule {
     private LP round2;
     private LP sidDocument;
     private LP skuBarcode;
+    private LP coeffBarcode;
     private LP skuShipmentDetail;
     private LP skuBatch;
     private LP nameSkuBatch;
     private LP nameSkuBarcode;
+    private LP unitOfMeasureSku;
+    private LP shortNameUnitOfMeasure;
+    private LP nameUnitOfMeasureSku;
+    private LP shortNameUnitOfMeasureSku;
+    private LP countrySku;
+    private LP nameCountrySku;
+    private LP grossWeightSku;
+    private LP netWeightSku;
     private LP dateBatch;
     private LP supplierBatch;
     private LP nameSupplierBatch;
+    private LP addressShop;
     private LP shopStock;
     private LP nameShopStock;
     private LP formatShop;
     private LP nameFormatShop;
+    private LP addressLegalEntity;
+    private LP unnLegalEntity;
+    private LP legalEntityUnn;
+    private LP legalAddressShop;
+    private LP unnShop;
+    private LP legalEntityShop;
+    private LP nameLegalEntityShop;
     private LP quantityShipmentBatch;
     private LP supplierShipmentShipmentDetail;
     private LP outSubjectDocument;
@@ -98,6 +115,7 @@ public class RetailLogicsModule extends LogicsModule {
     public ConcreteCustomClass distributionOrder;
     public ConcreteCustomClass customerOrder;
 
+    public ConcreteCustomClass legalEntity;
     CustomClass subject;
     CustomClass store;
     public ConcreteCustomClass shop;
@@ -111,6 +129,7 @@ public class RetailLogicsModule extends LogicsModule {
     CustomClass batch;
     public ConcreteCustomClass shipmentDetail;
     public ConcreteCustomClass barcode;
+    public ConcreteCustomClass unitOfMeasure;
 
     public void initTables() {
     }
@@ -143,6 +162,7 @@ public class RetailLogicsModule extends LogicsModule {
         returnReceivedDistributionShipment = addConcreteClass("returnReceivedDistributionShipment", "Внутренне перемещение принятое возвратное", receivedDistributionShipment);
 
         // субъекты
+        legalEntity = addConcreteClass("legalEntity", "Юр.лицо", baseClass.named);
         subject = addAbstractClass("subject", "Субъект", baseClass.named);
         store = addAbstractClass("store", "Склад", subject);
         shop = addConcreteClass("shop", "Магазин", store);
@@ -156,7 +176,9 @@ public class RetailLogicsModule extends LogicsModule {
         sku = addConcreteClass("sku", "Товар", baseClass.named);
         batch = addAbstractClass("batch", "Партия", baseClass);
         shipmentDetail = addConcreteClass("shipmentDetail", "Строка поставки", batch);
-        barcode = addConcreteClass("barcode", "Штрих код", baseLM.barcodeObject);
+        barcode = addConcreteClass("barcode", "Бар-код", baseLM.barcodeObject);
+        unitOfMeasure = addConcreteClass("unitOfMeasure", "Единица измерения", baseClass.named);
+
     }
 
     public void initIndexes() {
@@ -192,18 +214,35 @@ public class RetailLogicsModule extends LogicsModule {
 
         nameOutSubjectDocument = addJProp("nameOutSubjectDocument", "От кого", baseLM.name, outSubjectDocument, 1);
         nameInSubjectDocument = addJProp("nameInSubjectDocument", "Кому", baseLM.name, inSubjectDocument, 1);
+        coeffBarcode = addDProp("coeffBarcode", "Коэффициент бар-кода", DoubleClass.instance, barcode);
         skuBarcode = addDProp("skuBarcode", "Товар", sku, barcode);
         skuBatch = addDProp("skuBatch", "SKU (ИД)", sku, batch);
+        unitOfMeasureSku = addDProp("unitOfMeasureSku", "Базовая ЕИ (ИД)", unitOfMeasure, sku);
+        shortNameUnitOfMeasure = addDProp(baseGroup, "shortNameUnitOfMeasure", "Краткое наименование ЕИ", StringClass.get(5), unitOfMeasure);
+        nameUnitOfMeasureSku = addJProp("nameUnitOfMeasureSku", "Базовая ЕИ", baseLM.name, unitOfMeasureSku, 1);
+        shortNameUnitOfMeasureSku = addJProp("shortNameUnitOfMeasureSku", "Базовая ЕИ", shortNameUnitOfMeasure, unitOfMeasureSku, 1);
+        countrySku = addDProp("countrySku", "Страна происхождения (ИД)", baseLM.country, sku);
+        nameCountrySku = addJProp("nameCountrySku", "Страна происхождения", baseLM.name, countrySku, 1);
+        grossWeightSku = addDProp("grossWeightSku", "Вес брутто", DoubleClass.instance, sku);
+        netWeightSku = addDProp("netWeightSku", "Вес нетто", DoubleClass.instance, sku);
         supplierShipmentBatch = addDProp("supplierShipmentBatch", "Документ прихода", supplierShipment, batch);
         dateBatch = addJProp("dateBatch", "Дата прихода", baseLM.date, supplierShipmentBatch, 1);
         supplierBatch = addJProp("supplierBatch", "Поставщик (ИД)", outSubjectDocument, supplierShipmentBatch, 1);
         nameSupplierBatch = addJProp("nameSupplierBatch", "Поставщик", baseLM.name, supplierBatch, 1);
         nameSkuBatch = addJProp(baseGroup, "nameSkuBatch", "Товар", baseLM.name, skuBatch, 1);
         nameSkuBarcode = addJProp(baseGroup, "nameSkuBarcode", "Товар", baseLM.name, skuBarcode, 1);
+        addressShop = addDProp("addressShop", "Адрес", StringClass.get(50), shop);
         shopStock = addDProp("shopStock", "Магазин (ИД)", shop, stock);
         nameShopStock = addJProp(baseGroup, "nameShopStock", "Магазин", baseLM.name, shopStock, 1);
         formatShop = addDProp("formatShop", "Формат", format, shop);
         nameFormatShop = addJProp(baseGroup, "nameFormatShop", "Формат", baseLM.name, formatShop, 1);
+        addressLegalEntity = addDProp(baseGroup, "addressLegalEntity", "Адрес (юр.)", StringClass.get(50), legalEntity);
+        unnLegalEntity = addDProp(baseGroup, "unnLegalEntity", "УНН", StringClass.get(9), legalEntity);
+        legalEntityUnn = addAGProp("legalEntityUnn", "Юр. лицо", unnLegalEntity);
+        legalEntityShop = addDProp("legalEntityShop", "Юр.лицо (ИД)", legalEntity, shop);
+        nameLegalEntityShop = addJProp("nameLegalEntityShop", "Юр.лицо", baseLM.name, legalEntityShop, 1);
+        legalAddressShop = addJProp("legalAddressShop", "Адрес (юр.)", addressLegalEntity, legalEntityShop, 1);
+        unnShop = addJProp("unnShop", "УНН", unnLegalEntity, legalEntityShop, 1);
 
         supplierShipmentShipmentDetail = addDProp("supplierShipmentShipmentDetail", "Документ", supplierShipment, shipmentDetail);
         quantityShipmentBatch = addDProp(baseGroup, "quantityShipmentBatch", "Кол-во", DoubleClass.instance, shipment, batch);
@@ -224,11 +263,75 @@ public class RetailLogicsModule extends LogicsModule {
     }
 
     public void initNavigators() throws JRException, FileNotFoundException {
+        NavigatorElement classifier = new NavigatorElement(baseLM.baseElement, "classifier", "Справочники");
+        FormEntity SkuBarcodeForm = addFormEntity(new SkuBarcodeForm(classifier, "SkuBarcodeForm", "Справочник товаров"));
+        FormEntity UnitOfMeasureForm = addFormEntity(new UnitOfMeasureForm(classifier, "UnitOfMeasureForm", "Справочник единиц измерения"));
+        FormEntity SubjectForm = addFormEntity(new SubjectForm(classifier, "SubjectForm", "Справочник мест учета"));
+        FormEntity ContractorForm = addFormEntity(new ContractorForm(classifier, "ContractorForm", "Справочник контрагентов"));
         NavigatorElement materialManagement = new NavigatorElement(baseLM.baseElement, "materialManagement", "Управление материальными потоками");
         FormEntity ReceivingSupplierShipment = addFormEntity(new ReceivingSupplierShipment(materialManagement, "ReceivingSupplierShipment", "Приход от поставщика", false, false));
         FormEntity BalanceStockSkuBatch = addFormEntity(new BalanceStockSkuBatch(materialManagement, "BalanceStockSkuBatch", "Остаток по складам-товарам"));
         FormEntity CustomerShipment = addFormEntity(new CustomerShipment(materialManagement, "CustomerShipment", "Отгрузка покупателю"));
         FormEntity DistributionShipment = addFormEntity(new DistributionShipment(materialManagement, "DistributionShipment", "Внутреннее перемещение"));
+    }
+
+    private class SkuBarcodeForm extends FormEntity<RetailBusinessLogics>{
+        private ObjectEntity objSku;
+        private ObjectEntity objBarcode;
+
+        private SkuBarcodeForm(NavigatorElement parent, String sID, String caption){
+            super(parent, sID, caption);
+
+            objSku = addSingleGroupObject(sku, "Товары");
+            addPropertyDraw(objSku, baseLM.name, shortNameUnitOfMeasureSku, nameCountrySku, grossWeightSku, netWeightSku);
+            addObjectActions(this, objSku);
+            objBarcode = addSingleGroupObject(barcode, "Бар-коды товара");
+            addPropertyDraw(objBarcode, baseLM.barcode, coeffBarcode);
+            addObjectActions(this, objBarcode);
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(skuBarcode, objBarcode), Compare.EQUALS, objSku));
+        }
+    }
+
+    private class  UnitOfMeasureForm extends FormEntity<RetailBusinessLogics>{
+        private ObjectEntity objUnitOfMeasure;
+
+        private UnitOfMeasureForm(NavigatorElement parent, String sID, String caption){
+            super(parent, sID, caption);
+
+            objUnitOfMeasure = addSingleGroupObject(unitOfMeasure, "Единицы измерения");
+            addPropertyDraw(objUnitOfMeasure, baseLM.name, shortNameUnitOfMeasure);
+            addObjectActions(this, objUnitOfMeasure);
+        }
+    }
+
+    private class SubjectForm extends FormEntity<RetailBusinessLogics>{
+        private ObjectEntity objShop;
+        private ObjectEntity objStock;
+
+        private SubjectForm(NavigatorElement parent, String sID, String caption){
+            super(parent, sID, caption);
+
+            objShop = addSingleGroupObject(shop, "Магазины");
+            addPropertyDraw(objShop, baseLM.name, unnShop, addressShop, legalAddressShop, nameLegalEntityShop, nameFormatShop);
+            addObjectActions(this, objShop);
+
+            objStock = addSingleGroupObject(stock, "Отделы");
+            addPropertyDraw(objStock, baseLM.name);
+            addObjectActions(this, objStock);
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(shopStock, objStock), Compare.EQUALS, objShop));
+        }
+    }
+
+    private class ContractorForm extends FormEntity<RetailBusinessLogics>{
+        private ObjectEntity objContractor;
+
+        private ContractorForm(NavigatorElement parent, String sID, String caption){
+            super(parent, sID, caption);
+
+            objContractor = addSingleGroupObject(contractor, "Контрагенты");
+            addPropertyDraw(objContractor, baseLM.name);
+            addObjectActions(this, objContractor);
+        }
     }
 
     private class ReceivingSupplierShipment extends FormEntity<RetailBusinessLogics> {
