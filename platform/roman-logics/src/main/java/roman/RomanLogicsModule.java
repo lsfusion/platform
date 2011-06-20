@@ -1059,6 +1059,10 @@ public class RomanLogicsModule extends LogicsModule {
         baseLM.tableFactory.include("rateExchange", typeExchange, currency, DateClass.instance);
         baseLM.tableFactory.include("pricat", pricat);
         baseLM.tableFactory.include("strings", StringClass.get(10));
+
+        baseLM.tableFactory.include("subCategory", subCategory);
+        baseLM.tableFactory.include("stamp", stamp);
+        baseLM.tableFactory.include("secondNameClass", secondNameClass);
     }
 
     @Override
@@ -2472,6 +2476,9 @@ public class RomanLogicsModule extends LogicsModule {
         customCategory10.setDialogForm(customCategory10Form);
         // пока не поддерживается из-за того, что пока нет расчета себестоимости для внутреннего перемещения
 //        addFormEntity(new StockTransferFormEntity(distribution, "stockTransferForm", "Внутреннее перемещение"));
+
+        baseLM.baseElement.add(printForms);
+        baseLM.baseElement.add(baseLM.adminElement);
     }
 
     private class BarcodeFormEntity extends FormEntity<RomanBusinessLogics> {
