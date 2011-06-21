@@ -18,10 +18,7 @@ import platform.server.classes.*;
 import platform.server.data.Union;
 import platform.server.data.expr.query.OrderType;
 import platform.server.data.query.Query;
-import platform.server.form.entity.FormEntity;
-import platform.server.form.entity.GroupObjectEntity;
-import platform.server.form.entity.GroupObjectHierarchy;
-import platform.server.form.entity.ObjectEntity;
+import platform.server.form.entity.*;
 import platform.server.form.entity.filter.*;
 import platform.server.form.instance.PropertyObjectInterfaceInstance;
 import platform.server.form.instance.remote.RemoteForm;
@@ -1229,8 +1226,10 @@ public class SkolkovoLogicsModule extends LogicsModule {
         baseLM.objectElement.window = objectsWindow;
 
         projectFullNative = addFormEntity(new ProjectFullFormEntity(baseLM.objectElement, "projectFullNative", "Резюме проекта для эксперта", false));
+        project.setEditForm(projectFullNative);
         projectFullForeign = addFormEntity(new ProjectFullFormEntity(baseLM.objectElement, "projectFullForeign", "Resume project for expert", true));
-        addFormEntity(new ClaimerFullFormEntity(baseLM.objectElement, "claimerFull"));
+
+        claimer.setEditForm(addFormEntity(new ClaimerFullFormEntity(baseLM.objectElement, "claimerFull")));
 
         NavigatorElement print = new NavigatorElement(baseLM.baseElement, "print", "Печатные формы");
         print.window = leftToolbar;
@@ -1264,7 +1263,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         baseLM.baseElement.add(baseLM.adminElement); // перемещаем adminElement в конец
     }
     
-    private class ProjectFullFormEntity extends FormEntity<SkolkovoBusinessLogics> {
+    private class ProjectFullFormEntity extends AbstractClassFormEntity<SkolkovoBusinessLogics> {
 
         private boolean foreign;
 
@@ -1362,6 +1361,11 @@ public class SkolkovoLogicsModule extends LogicsModule {
             design.setShowTableFirstLogical(true);
 
             return design;
+        }
+
+        @Override
+        public ObjectEntity getObject() {
+            return objProject;
         }
     }
 
@@ -1681,16 +1685,21 @@ public class SkolkovoLogicsModule extends LogicsModule {
     }
 
 
-    private class ClaimerFullFormEntity extends FormEntity<SkolkovoBusinessLogics> {
+    private class ClaimerFullFormEntity extends AbstractClassFormEntity<SkolkovoBusinessLogics> {
          public ObjectEntity objClaimer;
 
-        private ClaimerFullFormEntity(NavigatorElement parent, String sID) {
+         private ClaimerFullFormEntity(NavigatorElement parent, String sID) {
             super(parent, sID, "Заявители");
 
             objClaimer = addSingleGroupObject(claimer, "Заявитель", claimerInformationGroup, contactGroup, documentGroup, legalDataGroup);
             objClaimer.groupTo.setSingleClassView(ClassViewType.PANEL);
             editClaimer = addMFAProp(actionGroup, "Редактировать", this, new ObjectEntity[]{objClaimer}).setImage("edit.png");
-     }
+         }
+
+        @Override
+        public ObjectEntity getObject() {
+            return objClaimer;
+        }
     }
 
     private class LanguageDocumentTypeFormEntity extends FormEntity<SkolkovoBusinessLogics> { // письмо эксперту

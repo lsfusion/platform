@@ -73,7 +73,11 @@ public class DockableMainFrame extends MainFrame {
         navigatorController.mainNavigator = mainNavigator;
 
         initDockStations(mainNavigator, navigatorController);
+
+        setupMenu();
+
         navigatorController.update();
+
         try {
             if (remoteNavigator.showDefaultForms()) {
                 ArrayList<String> ids = remoteNavigator.getDefaultForms();
@@ -145,7 +149,7 @@ public class DockableMainFrame extends MainFrame {
         }
     }
 
-    Map<CDockable, Rectangle> dockables = new HashMap<CDockable, Rectangle>();
+    LinkedHashMap<CDockable, Rectangle> dockables = new LinkedHashMap<CDockable, Rectangle>();
 
     // важно, что в случае каких-либо Exception'ов при восстановлении форм нужно все игнорировать и открывать расположение "по умолчанию"
     private void initDockStations(ClientNavigator mainNavigator, NavigatorController navigatorController) {
@@ -188,7 +192,6 @@ public class DockableMainFrame extends MainFrame {
 
         CGrid grid = createGrid();
         control.getContentArea().deploy(grid);
-        setupMenu();
 
 //        for (String s : control.layouts()) {
 //            if (s.equals("default")) {
@@ -216,9 +219,9 @@ public class DockableMainFrame extends MainFrame {
 
     private CGrid createGrid() {
         CGrid grid = new CGrid(control);
-        for (CDockable dockable : dockables.keySet()) {
-            Rectangle rectangle = dockables.get(dockable);
-            grid.add(rectangle.x, rectangle.y, rectangle.width, rectangle.height, dockable);
+        for (Map.Entry<CDockable, Rectangle> dockable : dockables.entrySet()) {
+            Rectangle rectangle = dockable.getValue();
+            grid.add(rectangle.x, rectangle.y, rectangle.width, rectangle.height, dockable.getKey());
         }
         return grid;
     }
