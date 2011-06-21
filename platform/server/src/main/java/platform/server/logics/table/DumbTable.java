@@ -10,13 +10,18 @@ public class DumbTable extends GlobalTable {
 
     public static final DumbTable instance = new DumbTable();
 
-    KeyField key;
+    public KeyField key;
 
-    DumbTable() {
+    private DumbTable() {
         super("dumb");
         key = new KeyField("id", SystemClass.instance);
         keys.add(key);
 
         classes = new ClassWhere<KeyField>(key, SystemClass.instance);
+    }
+
+    @Override
+    public int getCount() {
+        throw new RuntimeException("not supported");
     }
 }

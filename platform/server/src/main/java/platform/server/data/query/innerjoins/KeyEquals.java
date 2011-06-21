@@ -6,6 +6,7 @@ import platform.interop.Compare;
 import platform.server.data.expr.BaseExpr;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
+import platform.server.data.expr.query.StatKeys;
 import platform.server.data.expr.where.MapWhere;
 import platform.server.data.translator.PartialQueryTranslator;
 import platform.server.data.where.Where;
@@ -124,9 +125,9 @@ public class KeyEquals extends QuickMap<KeyEqual, Where> {
             ObjectJoinSets objectJoinSets = where.groupObjectJoinSets();
 
             if(noJoins) { // группируем по enoughKeys
-                MapWhere<Set<KeyExpr>> insufWheres = objectJoinSets.compileInsufficient(BaseUtils.removeSet(keys,keyEqual.keyExprs.keySet()), where);
+                MapWhere<StatKeys<KeyExpr>> insufWheres = objectJoinSets.compileStats(BaseUtils.removeSet(keys, keyEqual.keyExprs.keySet()));
                 for(int j=0;j<insufWheres.size;j++)
-                    result.add(new InnerGroupJoin<InsufficientKeys>(keyEqual, new InsufficientKeys(insufWheres.getKey(j)), insufWheres.getValue(j)));
+                    result.add(new InnerGroupJoin<GroupStatKeys>(keyEqual, new GroupStatKeys(insufWheres.getKey(j)), insufWheres.getValue(j)));
             } else { // группируем по means
                 for(Map.Entry<ObjectJoinSet,Where> objectJoin : objectJoinSets.compileMeans().entrySet())
                     result.add(new InnerSelectJoin(keyEqual, objectJoin.getKey().getJoins(), objectJoin.getValue()));

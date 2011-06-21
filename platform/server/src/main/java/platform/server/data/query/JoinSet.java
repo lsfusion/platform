@@ -6,6 +6,8 @@ import platform.base.Result;
 import platform.server.caches.IdentityLazy;
 import platform.server.caches.hash.HashContext;
 import platform.server.data.Table;
+import platform.server.data.expr.query.KeyStat;
+import platform.server.data.expr.query.StatKeys;
 import platform.server.data.query.innerjoins.GroupJoinSet;
 import platform.server.data.expr.VariableExprSet;
 import platform.server.data.expr.KeyExpr;
@@ -92,54 +94,53 @@ public class JoinSet extends AddSet<InnerJoin, JoinSet> implements DNFWheres.Int
         return exprs;
     }
 
+    private void fillJoinFollows(InnerJoin where, Set<InnerJoin> result) {
+        VariableExprSet joinFollows = where.getJoinFollows();
+        for(int i=0;i<joinFollows.size;i++) {
+            VariableClassExpr followExpr = joinFollows.get(i);
+            InnerJoin innerJoin = null;
+            if(followExpr instanceof GroupExpr)
+                innerJoin = ((GroupExpr)followExpr).getGroupJoin();
+            if(followExpr instanceof Table.Join.Expr)
+                innerJoin = ((Table.Join.Expr)followExpr).getJoin();
+            if(innerJoin!=null)
+                result.add(innerJoin);
+        }
+    }
+
     @IdentityLazy
-    public Set<InnerJoin> getAllJoins() {
+    private Set<InnerJoin> getAllJoins(InnerJoin extraJoin) {
         Set<InnerJoin> result = new HashSet<InnerJoin>();
         for (InnerJoin where : wheres) {
             result.add(where);
-
-            VariableExprSet joinFollows = where.getJoinFollows();
-            for(int i=0;i<joinFollows.size;i++) {
-                VariableClassExpr followExpr = joinFollows.get(i);
-                InnerJoin innerJoin = null;
-                if(followExpr instanceof GroupExpr)
-                    innerJoin = ((GroupExpr)followExpr).getGroupJoin();
-                if(followExpr instanceof Table.Join.Expr)
-                    innerJoin = ((Table.Join.Expr)followExpr).getJoin();
-                if(innerJoin!=null)
-                    result.add(innerJoin);
-            }
+            fillJoinFollows(where, result);
         }
+        if(extraJoin!=null)
+            fillJoinFollows(extraJoin, result);
         return result;
     }
 
     // получает подможнство join'ов которое дает keys, пропуская skipJoin. тут же алгоритм по определению достаточных ключей
-    public Set<KeyExpr> insufficientKeys(Set<KeyExpr> keys, InnerJoin skipJoin, Result<JoinSet> result) {
-        Set<KeyExpr> foundedKeys = new HashSet<KeyExpr>();
-        Set<KeyExpr> neededKeys = new HashSet<KeyExpr>(keys);
+    public StatKeys<KeyExpr> getStatKeys(Set<KeyExpr> keys, InnerJoin skipJoin, boolean inner, Result<JoinSet> result) {
+        StatKeys<KeyExpr> neededKeys = new StatKeys<KeyExpr>(keys, KeyStat.INFINITE);
 
         JoinSet joinSet = new JoinSet();
-
-        for(InnerJoin innerJoin : getAllJoins()) {
-            if(!(skipJoin!=null && (BaseUtils.hashEquals(skipJoin, innerJoin) || skipJoin.isIn(innerJoin.getJoinFollows())))) {
+        for(InnerJoin innerJoin : getAllJoins(inner?null:skipJoin)) {
+            if(!(inner && skipJoin!=null && (BaseUtils.hashEquals(skipJoin, innerJoin) || skipJoin.isIn(innerJoin.getJoinFollows())))) {
                 Map<Object, BaseExpr> joinExprs = innerJoin.getJoins();
-                Set<Object> insufKeys = innerJoin.insufficientKeys();
+                StatKeys<Object> statKeys = innerJoin.getStatKeys();
                 
-                boolean hasNeeded = false;
+                boolean improved = false;
                 for(Map.Entry<Object,BaseExpr> joinExpr : joinExprs.entrySet()) // бежим по достаточным ключам
-                    if(joinExpr.getValue() instanceof KeyExpr && !insufKeys.contains(joinExpr.getKey())) {
-                        hasNeeded = neededKeys.remove((KeyExpr)joinExpr.getValue()) || hasNeeded;
-                        if(hasNeeded && result!=null)
-                            foundedKeys.add((KeyExpr) joinExpr.getValue());
-                    }
-                if(hasNeeded && result!=null) { // интересует, только если есть необходимые ключи
+                    if(joinExpr.getValue() instanceof KeyExpr)
+                        improved = neededKeys.add((KeyExpr)joinExpr.getValue(), statKeys.get(joinExpr.getKey())) || improved;
+                if(improved && result!=null) { // интересует, только если есть необходимые ключи
                     joinSet = joinSet.and(new JoinSet(innerJoin));
-                    // добавляем недостающие ключи в neededKeys
-                    neededKeys.addAll(BaseUtils.remove(AbstractSourceJoin.enumKeys(BaseUtils.filterNotKeys(joinExprs, insufKeys).values()), foundedKeys));
-                }                    
+                    neededKeys.addAll(AbstractSourceJoin.enumKeys(joinExprs.values()), KeyStat.INFINITE); // добавляем недостающие ключи в neededKeys как infinite
+                }
             }
 
-            if(neededKeys.isEmpty())
+            if(neededKeys.isMin()) // если все small то останавливаемся ??
                 break;
         }
 
@@ -149,7 +150,7 @@ public class JoinSet extends AddSet<InnerJoin, JoinSet> implements DNFWheres.Int
         return neededKeys;
     }
 
-    public Set<KeyExpr> insufficientKeys(Set<KeyExpr> keys) {
-        return insufficientKeys(keys, null, null);
+    public StatKeys<KeyExpr> getStatKeys(Set<KeyExpr> keys) {
+        return getStatKeys(keys, null, false, null);
     }
 }

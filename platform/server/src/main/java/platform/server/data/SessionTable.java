@@ -41,6 +41,11 @@ public class SessionTable extends Table implements MapValues<SessionTable>, Valu
         this(session, keys, properties, count, fill, new Result<Integer>(), classes, propertyClasses, owner);
     }
 
+    @Override
+    public int getCount() {
+        return count;
+    }
+
     // создает таблицу batch'ем
     public static SessionTable create(final SQLSession session, final List<KeyField> keys, Set<PropertyField> properties, final Map<Map<KeyField, DataObject>, Map<PropertyField, ObjectValue>> rows, boolean groupLast, Object owner) throws SQLException {
         // прочитаем классы
@@ -125,19 +130,23 @@ public class SessionTable extends Table implements MapValues<SessionTable>, Valu
         protected final ClassWhere<KeyField> classes; // по сути условия на null'ы в том числе
         protected final Map<PropertyField, ClassWhere<Field>> propertyClasses;
 
-        private Struct(List<KeyField> keys, Collection<PropertyField> properties, ClassWhere<KeyField> classes, Map<PropertyField, ClassWhere<Field>> propertyClasses) {
+        protected final boolean few;
+
+        private Struct(List<KeyField> keys, Collection<PropertyField> properties, ClassWhere<KeyField> classes, Map<PropertyField, ClassWhere<Field>> propertyClasses, boolean few) {
             this.keys = keys;
             this.properties = properties;
             this.classes = classes;
             this.propertyClasses = propertyClasses;
+
+            this.few = few;
         }
 
         public boolean twins(TwinImmutableInterface o) {
-            return classes.equals(((Struct) o).classes) && keys.equals(((Struct) o).keys) && properties.equals(((Struct) o).properties) && propertyClasses.equals(((Struct) o).propertyClasses);
+            return classes.equals(((Struct) o).classes) && keys.equals(((Struct) o).keys) && properties.equals(((Struct) o).properties) && propertyClasses.equals(((Struct) o).propertyClasses) && few == (((Struct)o).few);
         }
 
         public int immutableHashCode() {
-            return 31 * (31 * (31 * keys.hashCode() + properties.hashCode()) + classes.hashCode()) + propertyClasses.hashCode();
+            return 31 * (31 * (31 * (31 * keys.hashCode() + properties.hashCode()) + classes.hashCode()) + propertyClasses.hashCode()) + (few?1:0);
         }
     }
 
@@ -146,7 +155,7 @@ public class SessionTable extends Table implements MapValues<SessionTable>, Valu
     @ManualLazy
     public GlobalObject getValueClass() {
         if (struct == null) {
-            struct = new Struct(keys, properties, classes, propertyClasses);
+            struct = new Struct(keys, properties, classes, propertyClasses, isFew());
         }
         return struct;
     }

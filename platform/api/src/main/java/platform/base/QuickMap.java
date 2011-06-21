@@ -1,7 +1,9 @@
 package platform.base;
 
+import java.awt.image.Kernel;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
 
 // дублируем QuickSet
 public abstract class QuickMap<K, V> {
@@ -42,6 +44,11 @@ public abstract class QuickMap<K, V> {
     protected QuickMap(K key, V value) {
         this();
         add(key, value);
+    }
+
+    protected QuickMap(Collection<K> keys, V value) {
+        this();
+        addAll(keys, value);
     }
 
     public K getKey(int i) {
@@ -130,6 +137,11 @@ public abstract class QuickMap<K, V> {
         return true;
     }
 
+    public void addAll(Collection<K> keys, V value) {
+        for(K key : keys)
+            add(key, value);
+    }
+
     public boolean containsAll(QuickMap<K, V> set) {
         if (size > set.size) return false; // если больше то содержать не может
 
@@ -200,6 +212,31 @@ public abstract class QuickMap<K, V> {
         for (int i = 0; i < size; i++)
             keys.add(getKey(i));
         return keys;
+    }
+
+    public Iterable<K> keyIt() {
+        return new Iterable<K>() {
+            @Override
+            public Iterator<K> iterator() {
+                return new Iterator<K>() {
+                    int i=0;
+                    @Override
+                    public boolean hasNext() {
+                        return i<size;
+                    }
+
+                    @Override
+                    public K next() {
+                        return getKey(i++);
+                    }
+
+                    @Override
+                    public void remove() {
+                        throw new RuntimeException("not supported");
+                    }
+                };
+            }
+        };
     }
 
     public K getSingleKey() {

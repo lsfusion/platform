@@ -2,9 +2,9 @@ package platform.server.data.query.innerjoins;
 
 import platform.server.classes.BaseClass;
 import platform.server.data.expr.KeyExpr;
+import platform.server.data.expr.query.StatKeys;
 import platform.server.data.expr.where.MapWhere;
 import platform.server.data.query.InnerJoin;
-import platform.server.data.query.JoinSet;
 import platform.server.data.where.DNFWheres;
 import platform.server.data.where.Where;
 import platform.server.Settings;
@@ -61,30 +61,10 @@ public class ObjectJoinSets extends DNFWheres<ObjectJoinSet, Where, ObjectJoinSe
         return result;
     }
 
-    // такая сложная реализация чисто для оптимизации, так как insufficientKeys достаточно редко встречаются
-    public MapWhere<Set<KeyExpr>> compileInsufficient(Set<KeyExpr> keys, Where fullWhere) {
-        MapWhere<Set<KeyExpr>> mapWhere = new MapWhere<Set<KeyExpr>>();
-
-        Collection<Where> fullKeys = new ArrayList<Where>(); // чисто для оптимизации
-        for(int i=0;i<size;i++) {
-            ObjectJoinSet objectJoin = getKey(i);
-            Where where = getValue(i);
-
-            Set<KeyExpr> insufKeys = objectJoin.getJoins().insufficientKeys(keys);
-            if(fullKeys!=null && insufKeys.size() == 0)
-                fullKeys.add(where);
-            else {
-                if(fullKeys!=null) {
-                    for(Where fullKey : fullKeys)
-                        mapWhere.add(new HashSet<KeyExpr>(), fullKey);
-                    fullKeys = null;
-                }
-                mapWhere.add(insufKeys, where);
-            }
-        }
-
-        if(fullKeys!=null)
-            mapWhere.add(new HashSet<KeyExpr>(), fullWhere);
+    public MapWhere<StatKeys<KeyExpr>> compileStats(Set<KeyExpr> keys) {
+        MapWhere<StatKeys<KeyExpr>> mapWhere = new MapWhere<StatKeys<KeyExpr>>();
+        for(int i=0;i<size;i++)
+            mapWhere.add(getKey(i).getJoins().getStatKeys(keys), getValue(i));
         return mapWhere;
     }
 

@@ -1,21 +1,22 @@
 package platform.server.data.expr.query;
 
+import platform.base.BaseUtils;
 import platform.base.TwinImmutableInterface;
 import platform.server.caches.AbstractOuterContext;
 import platform.server.caches.IdentityLazy;
 import platform.server.caches.hash.HashContext;
 import platform.server.data.Value;
 import platform.server.data.expr.*;
+import platform.server.data.query.AbstractSourceJoin;
 import platform.server.data.query.InnerJoin;
 import platform.server.data.query.SourceJoin;
-import platform.server.data.query.JoinSet;
 import platform.server.data.query.innerjoins.GroupJoinSet;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.where.Where;
 
+import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
-import java.util.HashSet;
 
 public class GroupJoin extends QueryJoin<BaseExpr, GroupJoin.Query> implements InnerJoin<BaseExpr> {
 
@@ -90,13 +91,14 @@ public class GroupJoin extends QueryJoin<BaseExpr, GroupJoin.Query> implements I
     }
 
     @IdentityLazy
-    public Set<BaseExpr> insufficientKeys() {
-        Set<KeyExpr> insufficientKeys = query.joins.insufficientKeys(keys); // ключи которые есть
+    public StatKeys<BaseExpr> getStatKeys() {
+        return getStat(query.joins.getStatKeys(keys), BaseUtils.toMap(group.keySet()));
+    }
 
-        Set<BaseExpr> result = new HashSet<BaseExpr>();
-        for(BaseExpr groupKey : group.keySet())
-            if(groupKey instanceof KeyExpr && insufficientKeys.contains((KeyExpr)groupKey)) // исключаем висячие ключи
-                result.add(groupKey);
+    public static <K> StatKeys<K> getStat(StatKeys<KeyExpr> statKeys, Map<K, BaseExpr> exprs) {
+        StatKeys<K> result = new StatKeys<K>();
+        for(Map.Entry<K, BaseExpr> groupKey : exprs.entrySet())
+            result.add(groupKey.getKey(), statKeys.getMaxStat(AbstractSourceJoin.enumKeys(groupKey.getValue())));
         return result;
     }
 

@@ -120,7 +120,7 @@ public class BaseUtils {
     }
 
 
-    public static <BK, K extends BK, V> Map<K, V> filterKeys(Map<BK, V> map, Collection<? extends K> keys) {
+    public static <BK, K extends BK, V> Map<K, V> filterKeys(Map<BK, V> map, Iterable<? extends K> keys) {
         Map<K, V> result = new HashMap<K, V>();
         for (K key : keys) {
             V value = map.get(key);

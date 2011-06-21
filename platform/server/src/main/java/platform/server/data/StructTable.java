@@ -19,4 +19,9 @@ public class StructTable extends GlobalTable {
         
         propertyClasses.put(struct,new ClassWhere<Field>(struct, ByteArrayClass.instance));
     }
+
+    @Override
+    public int getCount() {
+        return 1;
+    }
 }

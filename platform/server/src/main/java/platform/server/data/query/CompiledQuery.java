@@ -426,17 +426,15 @@ public class CompiledQuery<K,V> {
                 Where fullWhere = exprWhere.and(platform.server.data.expr.Expr.getWhere(group));
 
                 // если pushWhere, то берем
-                if(!inner && Settings.instance.isPushGroupWhere())
-                    fullWhere = fullWhere.and(GroupExpr.create(groupJoin.group, getInnerWhere(), BaseUtils.toMap(groupJoin.group.keySet())).getWhere());
-                else {
-                    Set<BaseExpr> insufKeys = groupJoin.insufficientKeys(); // определяем ключи которые надо протолкнуть
-                    if(insufKeys.size()>0) { // для скорости
-                        Map<BaseExpr, BaseExpr> insufExprs = BaseUtils.filterKeys(groupJoin.group, insufKeys);
-                        Result<JoinSet> insufJoins = new Result<JoinSet>();
-                        if(!innerJoins.insufficientKeys(AbstractSourceJoin.enumKeys(insufExprs.values()), groupJoin, insufJoins).isEmpty()) // ищем в общем контексте join'ы дающие недостающие ключи
-                            throw new RuntimeException("not enough keys");
-                        fullWhere = fullWhere.and(GroupExpr.create(insufExprs, getInnerWhere(insufJoins.result), BaseUtils.toMap(insufExprs.keySet())).getWhere());
-                    }
+                StatKeys<BaseExpr> statKeys = groupJoin.getStatKeys(); // определяем ключи которые надо протолкнуть
+                StatKeys<BaseExpr> notMinKeys = statKeys.filterNotMin();
+                if(!notMinKeys.isEmpty()) { // для скорости
+                    Map<BaseExpr, BaseExpr> notMinExprs = BaseUtils.filterKeys(groupJoin.group, notMinKeys.keyIt());
+                    Result<JoinSet> insufJoins = new Result<JoinSet>();
+                    StatKeys<BaseExpr> pushKeys = GroupJoin.getStat(innerJoins.getStatKeys(AbstractSourceJoin.enumKeys(notMinExprs.values()), groupJoin, inner, insufJoins), notMinExprs);
+                    // assert что в pushKeys не осталось INFINITE, то есть только MANY и FEW, а в текущих getStatKeys наоборот только MANY и INFINITE, то есть достаточно проверить что не равно
+                    if(pushKeys.less(notMinKeys))
+                        fullWhere = fullWhere.and(GroupExpr.create(notMinExprs, getInnerWhere(insufJoins.result), BaseUtils.toMap(notMinExprs.keySet())).getWhere());
                 }
 
                 Map<Expr,String> fromPropertySelect = new HashMap<Expr, String>();

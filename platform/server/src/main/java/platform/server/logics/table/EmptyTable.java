@@ -15,4 +15,8 @@ public class EmptyTable extends GlobalTable {
         keys.add(new KeyField("id", SystemClass.instance));
     }
 
+    @Override
+    public int getCount() {
+        throw new RuntimeException("not supported");
+    }
 }

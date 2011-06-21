@@ -1,6 +1,7 @@
 package platform.server.data;
 
 import platform.base.*;
+import platform.server.Settings;
 import platform.server.caches.IdentityLazy;
 import platform.server.caches.ParamLazy;
 import platform.server.caches.TwinLazy;
@@ -11,6 +12,8 @@ import platform.server.classes.sets.AndClassSet;
 import platform.server.data.expr.*;
 import platform.server.data.expr.cases.CaseExpr;
 import platform.server.data.expr.cases.MapCase;
+import platform.server.data.expr.query.KeyStat;
+import platform.server.data.expr.query.StatKeys;
 import platform.server.data.expr.where.MapWhere;
 import platform.server.data.query.*;
 import platform.server.data.query.innerjoins.ObjectJoinSets;
@@ -178,6 +181,14 @@ public class Table extends TwinImmutableObject implements MapKeysInterface<KeyFi
     public void enumInnerValues(Set<Value> values) {
     }
 
+    public int getCount() {
+        return Integer.MAX_VALUE;
+    }
+
+    public boolean isFew() {
+        return getCount() < Settings.instance.getFewCount();
+    }
+
     public class Join extends platform.server.data.query.Join<PropertyField> implements InnerJoin<KeyField>, TwinImmutableInterface {
 
         public final Map<KeyField, BaseExpr> joins;
@@ -185,8 +196,8 @@ public class Table extends TwinImmutableObject implements MapKeysInterface<KeyFi
         public Map<KeyField, BaseExpr> getJoins() {
             return joins;
         }
-        public Set<KeyField> insufficientKeys() {
-            return new HashSet<KeyField>();
+        public StatKeys<KeyField> getStatKeys() {
+            return new StatKeys<KeyField>(joins.keySet(), isFew()? KeyStat.FEW : KeyStat.MANY);
         }
 
         public Join(Map<KeyField, ? extends BaseExpr> joins) {

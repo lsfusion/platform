@@ -6,8 +6,15 @@ public class Settings {
 
     public static Settings instance;
 
-    // обозначает что компилятор будет проталкивать внутрь группирующих подзапросов, общее условие (если оно маленькое и сам группирующий подзапрос в нем не учавствует)
-    private boolean pushGroupWhere = false;
+    // определяет при каком количестве записей таблица будет считаться маленькой и проталкиваться внутрь группирующих / упорядочивающих подзапросов, соответственно 0 - отключено то есть никогда не будет
+    private int fewCount = 100;
+    public int getFewCount() {
+        return fewCount;
+    }
+
+    public void setFewCount(int fewCount) {
+        this.fewCount = fewCount;
+    }
 
     private int innerGroupExprs = 0; // использовать Subquery Expressions
     public int getInnerGroupExprs() {
@@ -64,14 +71,6 @@ public class Settings {
 
     // не использовать инкрементную логику в группирующем свойстве на максимум
     private boolean noIncrementMaxGroupProperty = true;
-
-    public boolean isPushGroupWhere() {
-        return pushGroupWhere;
-    }
-
-    public void setPushGroupWhere(boolean pushGroupWhere) {
-        this.pushGroupWhere = pushGroupWhere;
-    }
 
     public boolean isPushOrderWhere() {
         return pushOrderWhere;
