@@ -97,19 +97,19 @@ public class DockableMainFrame extends MainFrame {
         }
 
         // временно отключаем из-за непредсказуемого поведения при измении окон
-//        addWindowListener(new WindowAdapter() {
-//            public void windowClosing(WindowEvent event) {
-//                super.windowClosing(event);
-//                try {
-//                    control.save("default");
-//                    DataOutputStream out = new DataOutputStream(new FileOutputStream(new File(baseDir, "layout.data")));
-//                    view.getForms().write(out);
-//                    control.getResources().writeStream(out);
-//                } catch (IOException e) {
-//                    e.printStackTrace();
-//                }
-//            }
-//        });
+        addWindowListener(new WindowAdapter() {
+            public void windowClosing(WindowEvent event) {
+                super.windowClosing(event);
+                try {
+                    control.save("default");
+                    DataOutputStream out = new DataOutputStream(new FileOutputStream(new File(baseDir, "layout.data")));
+                    view.getForms().write(out);
+                    control.getResources().writeStream(out);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
     }
 
     @Override
@@ -154,22 +154,22 @@ public class DockableMainFrame extends MainFrame {
         view = new ViewManager(control, mainNavigator);
         control.setTheme(ThemeMap.KEY_ECLIPSE_THEME);
 
-        DataInputStream in = null;
-        try {
-            in = new DataInputStream(new FileInputStream(new File(baseDir, "layout.data")));
-            view.getForms().read(in);
-            control.getResources().readStream(in);
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            if (in != null) {
-                try {
-                    in.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
+//        DataInputStream in = null;
+//        try {
+//            in = new DataInputStream(new FileInputStream(new File(baseDir, "layout.data")));
+//            view.getForms().read(in);
+//            control.getResources().readStream(in);
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        } finally {
+//            if (in != null) {
+//                try {
+//                    in.close();
+//                } catch (IOException e) {
+//                    e.printStackTrace();
+//                }
+//            }
+//        }
 
         add(control.getContentArea(), BorderLayout.CENTER);
         dockables.put(createDockable("relevantForms", "Связанные формы", mainNavigator.relevantFormNavigator), new Rectangle(0, 70, 20, 29));
