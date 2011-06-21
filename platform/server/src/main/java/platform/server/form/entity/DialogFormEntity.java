@@ -7,26 +7,16 @@ import platform.server.logics.BusinessLogics;
 
 public class DialogFormEntity<T extends BusinessLogics<T>> extends BaseClassFormEntity<T> {
 
-    protected final ObjectEntity object;
-    protected final String clsSID;
-
     protected DialogFormEntity(BaseLogicsModule<T> LM, CustomClass cls, String sID, String caption) {
         super(LM, cls, sID, caption);
 
-        object = addSingleGroupObject(cls, LM.baseGroup, true);
         object.groupTo.setSingleClassView(ClassViewType.GRID);
 
         LM.addObjectActions(this, object);
-
-        PropertyDrawEntity objectValue = getPropertyDraw(LM.objectValue, object);
-        if (objectValue != null)
-            objectValue.readOnly = true;
-
-        clsSID = cls.getSID();
     }
 
     public DialogFormEntity(BaseLogicsModule<T> LM, CustomClass cls) {
-        this(LM, cls, "classForm" + cls.getSID() + "_dialog", cls.caption);
+        this(LM, cls, "dialogForm_" + cls.getSID(), cls.caption);
     }
 
     public ObjectEntity getObject() {

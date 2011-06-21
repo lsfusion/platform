@@ -844,7 +844,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
     @Override
     public void initNavigators() {
-        baseClass.named.setClassForm(new NamedObjectClassForm(this, baseClass.named));
+        baseClass.named.setListForm(new NamedListFormEntity(this, baseClass.named));
 
         baseElement = new NavigatorElement("baseElement", "Формы");
         baseWindow = new TreeNavigatorWindow(baseElement.getSID() + "Window", "Навигатор", 0, 0, 20, 70);
@@ -1379,11 +1379,11 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         }
     }
 
-    private class NamedObjectClassForm extends ClassFormEntity {
+    private class NamedListFormEntity extends ListFormEntity {
         public ObjectEntity objObjectName;
 
 
-        public NamedObjectClassForm(BaseLogicsModule LM, CustomClass cls, String sID, String caption) {
+        public NamedListFormEntity(BaseLogicsModule LM, CustomClass cls, String sID, String caption) {
             super(LM, cls, sID, caption);
 
             objObjectName = addSingleGroupObject(StringClass.get(50), "Поиск по началу имени", objectValue);
@@ -1396,8 +1396,8 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
             addFixedFilter(new CompareFilterEntity(addPropertyObject(name, object), Compare.START_WITH, objObjectName));
         }
 
-        public NamedObjectClassForm(BaseLogicsModule LM, CustomClass cls) {
-            this(LM, cls, "namedObjectForm" + cls.getSID(), cls.caption);
+        public NamedListFormEntity(BaseLogicsModule LM, CustomClass cls) {
+            this(LM, cls, "namedListForm_" + cls.getSID(), cls.caption);
         }
 
         @Override

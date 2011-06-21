@@ -6,13 +6,16 @@ import platform.server.logics.BusinessLogics;
 
 public abstract class BaseClassFormEntity <T extends BusinessLogics<T>> extends AbstractClassFormEntity<T> {
 
-    protected final BaseLogicsModule<T> LM;
-    protected final CustomClass cls;
+    protected final ObjectEntity object;
 
     protected BaseClassFormEntity(BaseLogicsModule<T> LM, CustomClass cls, String sID, String caption) {
         super(sID, caption);
-        this.LM = LM;
-        this.cls = cls;
+
+        object = addSingleGroupObject(cls, LM.baseGroup, true);
+
+        PropertyDrawEntity objectValue = getPropertyDraw(LM.objectValue, object);
+        if (objectValue != null)
+            objectValue.readOnly = true;
     }
 
 }

@@ -280,17 +280,10 @@ public abstract class CustomClass implements ObjectClass, ValueClass {
         return result;
     }
 
-    public FormEntity getClassForm(BaseLogicsModule LM, SecurityPolicy securityPolicy) {
-        for (NavigatorElement element : relevantElements)
-            if (element instanceof FormEntity && securityPolicy.navigator.checkPermission(element))
-                return (FormEntity) element;
-        return getBaseClassForm(LM);
-    }
-
     private FormEntity baseClassForm = null;
     public FormEntity getBaseClassForm(BaseLogicsModule LM) {
         if(baseClassForm==null) {
-            baseClassForm = getClassForm(LM);
+            baseClassForm = getListForm(LM);
             for(CustomClass child : children)
                 baseClassForm.add(child.getBaseClassForm(LM));
         }
@@ -421,10 +414,10 @@ public abstract class CustomClass implements ObjectClass, ValueClass {
         protected abstract AbstractClassFormEntity createDefaultForm(BaseLogicsModule LM);
     }
 
-    private ClassFormHolder classFormHolder = new ClassFormHolder() {
+    private ClassFormHolder listFormHolder = new ClassFormHolder() {
         @Override
         protected AbstractClassFormEntity createDefaultForm(BaseLogicsModule LM) {
-            return new ClassFormEntity(LM, CustomClass.this);
+            return new ListFormEntity(LM, CustomClass.this);
         }
     };
 
@@ -446,12 +439,12 @@ public abstract class CustomClass implements ObjectClass, ValueClass {
      * используются для классовых форм в навигаторе
      * @param LM
      */
-    public AbstractClassFormEntity getClassForm(BaseLogicsModule LM) {
-        return classFormHolder.getForm(LM);
+    public AbstractClassFormEntity getListForm(BaseLogicsModule LM) {
+        return listFormHolder.getForm(LM);
     }
 
-    public void setClassForm(AbstractClassFormEntity form) {
-        classFormHolder.setForm(form);
+    public void setListForm(AbstractClassFormEntity form) {
+        listFormHolder.setForm(form);
     }
 
     /**
