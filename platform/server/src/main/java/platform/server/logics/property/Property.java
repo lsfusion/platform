@@ -541,10 +541,6 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
         return prop.equals(this);
     }
 
-    public List<ConcreteCustomClass> getClasses() {
-        return new ArrayList<ConcreteCustomClass>();
-    }
-
     public List<Property> getProperties() {
         return Collections.singletonList((Property) this);
     }

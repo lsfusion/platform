@@ -4,7 +4,6 @@ import platform.server.classes.sets.AndClassSet;
 import platform.server.data.expr.BaseExpr;
 import platform.server.form.entity.ObjectEntity;
 import platform.server.form.instance.ObjectInstance;
-import platform.server.logics.property.group.AbstractGroup;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -12,8 +11,6 @@ import java.io.IOException;
 public interface ValueClass extends RemoteClass {
 
     boolean isCompatibleParent(ValueClass remoteClass);
-
-    AbstractGroup getParent();
 
     AndClassSet getUpSet();
 

@@ -1,7 +1,6 @@
 package platform.server.logics.property.group;
 
 import platform.base.ImmutableObject;
-import platform.server.classes.ConcreteCustomClass;
 import platform.server.logics.property.Property;
 import platform.server.logics.property.PropertyClassImplement;
 import platform.server.logics.property.ValueClassWrapper;
@@ -15,8 +14,6 @@ public abstract class AbstractNode extends ImmutableObject {
     public AbstractGroup getParent() { return parent; }
 
     public abstract boolean hasChild(Property prop);
-
-    public abstract List<ConcreteCustomClass> getClasses();
 
     public abstract List<Property> getProperties();
 

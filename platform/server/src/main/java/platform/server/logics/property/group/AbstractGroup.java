@@ -1,6 +1,5 @@
 package platform.server.logics.property.group;
 
-import platform.server.classes.ConcreteCustomClass;
 import platform.server.logics.linear.LP;
 import platform.server.logics.property.Property;
 import platform.server.logics.property.PropertyClassImplement;
@@ -71,13 +70,6 @@ public class AbstractGroup extends AbstractNode implements ServerIdentitySeriali
         }
     }
 
-
-    public List<ConcreteCustomClass> getClasses() {
-        List<ConcreteCustomClass> result = new ArrayList<ConcreteCustomClass>();
-        for (AbstractNode child : children)
-            result.addAll(child.getClasses());
-        return result;
-    }
 
     public boolean hasChild(Property prop) {
         for (AbstractNode child : children)

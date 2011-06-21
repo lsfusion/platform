@@ -28,16 +28,12 @@ import platform.server.form.instance.ObjectInstance;
 import platform.server.form.navigator.NavigatorElement;
 import platform.server.logics.BaseLogicsModule;
 import platform.server.logics.BusinessLogics;
-import platform.server.logics.property.Property;
-import platform.server.logics.property.PropertyClassImplement;
-import platform.server.logics.property.ValueClassWrapper;
-import platform.server.logics.property.group.AbstractNode;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.*;
 
-public abstract class CustomClass extends AbstractNode implements ObjectClass, ValueClass {
+public abstract class CustomClass implements ObjectClass, ValueClass {
 
     public Type getType() {
         return ObjectType.instance;
@@ -403,22 +399,6 @@ public abstract class CustomClass extends AbstractNode implements ObjectClass, V
     @IdentityLazy
     public ClassActionClass getActionClass(CustomClass defaultClass) {
         return new ClassActionClass(this, defaultClass);        
-    }
-
-    public boolean hasChild(Property prop) {
-        return false;
-    }
-
-    public List<Property> getProperties() {
-        return new ArrayList<Property>();
-    }
-
-    public List<PropertyClassImplement> getProperties(Collection<List<ValueClassWrapper>> classLists, boolean anyInInterface) {
-        return new ArrayList<PropertyClassImplement>();
-    }
-
-    public Property getProperty(String sid) {
-        return null;
     }
 
     private abstract class ClassFormHolder {

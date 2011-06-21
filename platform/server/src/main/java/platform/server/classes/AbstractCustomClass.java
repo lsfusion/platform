@@ -2,9 +2,6 @@ package platform.server.classes;
 
 import platform.server.classes.sets.ConcreteCustomClassSet;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public class AbstractCustomClass extends CustomClass {
 
     public AbstractCustomClass(String sID, String caption, CustomClass... parents) {
@@ -33,7 +30,4 @@ public class AbstractCustomClass extends CustomClass {
         return getSingleClass(children.toArray(new CustomClass[children.size()]));
     }
 
-    public List<ConcreteCustomClass> getClasses() {
-        return new ArrayList<ConcreteCustomClass>();
-    }
 }

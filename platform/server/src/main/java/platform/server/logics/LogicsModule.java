@@ -67,7 +67,7 @@ public abstract class LogicsModule {
         return sID;
     }
 
-    protected LP<?> getLP(String sID) {
+    public LP<?> getLP(String sID) {
         return moduleProperties.get(sID);
     }
 
@@ -76,7 +76,7 @@ public abstract class LogicsModule {
         moduleProperties.put(lp.property.sID, lp);
     }
 
-    protected AbstractGroup getGroup(String sid) {
+    public AbstractGroup getGroup(String sid) {
         return moduleGroups.get(sid);
     }
 
@@ -85,7 +85,7 @@ public abstract class LogicsModule {
         moduleGroups.put(group.getSID(), group);
     }
 
-    protected ValueClass getClass(String sid) {
+    public ValueClass getClass(String sid) {
         return moduleClasses.get(sid);
     }
 
@@ -148,25 +148,11 @@ public abstract class LogicsModule {
         baseLM.sidToClass.put(customClass.getSID(), customClass);
     }
 
-    protected ConcreteCustomClass addConcreteClass(AbstractGroup group, String sID, String caption, CustomClass... parents) {
-        ConcreteCustomClass customClass = new ConcreteCustomClass(sID, caption, parents);
-        group.add(customClass);
-        storeCustomClass(customClass);
-        return customClass;
-    }
-
     protected BaseClass addBaseClass(String sID, String caption) {
         BaseClass baseClass = new BaseClass(sID, caption);
         storeCustomClass(baseClass);
         storeCustomClass(baseClass.named);
         return baseClass;
-    }
-
-    protected AbstractCustomClass addAbstractClass(AbstractGroup group, String sID, String caption, CustomClass... parents) {
-        AbstractCustomClass customClass = new AbstractCustomClass(sID, caption, parents);
-        group.add(customClass);
-        storeCustomClass(customClass);
-        return customClass;
     }
 
     protected CustomClass findCustomClass(String sid) {
@@ -182,11 +168,15 @@ public abstract class LogicsModule {
     }
 
     protected ConcreteCustomClass addConcreteClass(String sID, String caption, CustomClass... parents) {
-        return addConcreteClass(baseLM.baseGroup, sID, caption, parents);
+        ConcreteCustomClass customClass = new ConcreteCustomClass(sID, caption, parents);
+        storeCustomClass(customClass);
+        return customClass;
     }
 
     protected AbstractCustomClass addAbstractClass(String sID, String caption, CustomClass... parents) {
-        return addAbstractClass(baseLM.baseGroup, sID, caption, parents);
+        AbstractCustomClass customClass = new AbstractCustomClass(sID, caption, parents);
+        storeCustomClass(customClass);
+        return customClass;
     }
 
     protected StaticCustomClass addStaticClass(String sID, String caption, String[] sids, String[] names) {

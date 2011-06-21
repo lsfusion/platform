@@ -1,6 +1,5 @@
 package platform.server.logics.property.group;
 
-import platform.server.classes.ConcreteCustomClass;
 import platform.server.classes.ValueClass;
 import platform.server.logics.property.Property;
 import platform.server.logics.property.PropertyClassImplement;
@@ -20,11 +19,6 @@ public abstract class PropertySet extends AbstractNode {
         return getPropertyClass().isInstance(prop);
     }
 
-    @Override
-    public List<ConcreteCustomClass> getClasses() {
-        return new ArrayList<ConcreteCustomClass>();
-    }
-                       
     @Override
     public List<PropertyClassImplement> getProperties(Collection<List<ValueClassWrapper>> classLists, boolean anyInInterface) {
         List<PropertyClassImplement> resultList = new ArrayList<PropertyClassImplement>();
