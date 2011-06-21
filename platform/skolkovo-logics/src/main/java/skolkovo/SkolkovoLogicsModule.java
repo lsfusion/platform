@@ -1225,7 +1225,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         baseLM.baseElement.window = mainToolbar;
         baseLM.adminElement.window = leftToolbar;
 
-        TreeNavigatorWindow objectsWindow = new TreeNavigatorWindow("objectsWindow", "Объекты", 0, 10, 20, 60);
+        TreeNavigatorWindow objectsWindow = new TreeNavigatorWindow("objectsWindow", "Объекты", 0, 30, 20, 40);
         objectsWindow.drawRoot = true;
         baseLM.objectElement.window = objectsWindow;
 
@@ -1489,7 +1489,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         private ObjectEntity objExpert;
 
         private VoteFormEntity(NavigatorElement parent, String sID, boolean restricted) {
-            super(parent, sID, "Результаты заседаний");
+            super(parent, sID, (!restricted) ? "Реестр заседаний" : "Результаты заседаний");
 
             objVote = addSingleGroupObject(vote, nameNativeProjectVote, nameNativeClaimerVote, nameNativeClusterVote, equalsClusterProjectVote, dateStartVote, dateEndVote, openedVote, succeededVote, acceptedVote, quantityDoneVote, quantityInClusterVote, quantityInnovativeVote, quantityForeignVote);
             if (!restricted)

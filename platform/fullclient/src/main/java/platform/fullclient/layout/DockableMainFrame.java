@@ -190,17 +190,17 @@ public class DockableMainFrame extends MainFrame {
         control.getContentArea().deploy(grid);
         setupMenu();
 
-        for (String s : control.layouts()) {
-            if (s.equals("default")) {
-                try {
-                    control.load("default");
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    control.getContentArea().deploy(grid); // иначе покажется пустая форма
-                }
-                break;
-            }
-        }
+//        for (String s : control.layouts()) {
+//            if (s.equals("default")) {
+//                try {
+//                    control.load("default");
+//                } catch (Exception e) {
+//                    e.printStackTrace();
+//                    control.getContentArea().deploy(grid); // иначе покажется пустая форма
+//                }
+//                break;
+//            }
+//        }
     }
 
 
