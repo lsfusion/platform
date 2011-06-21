@@ -49,7 +49,7 @@ public class ViewManager {
     private void openForm(FormDockable page) {
         page.addCDockableStateListener(new CDockableStateAdapter(page));
         page.setLocation(gridArea.getStationLocation());
-        control.add(page);
+        control.addDockable(page);
         changeCloseAction(page);
         page.setVisible(true);
         page.comp.requestFocusInWindow();

@@ -83,17 +83,17 @@
         <dependency>
             <groupId>bibliothek.gui</groupId>
             <artifactId>dockingFramesCore</artifactId>
-            <version>1.1.0_7c</version>
+            <version>1.1.1_p2</version>
         </dependency>
         <dependency>
             <groupId>bibliothek.gui</groupId>
             <artifactId>dockingFramesCommon</artifactId>
-            <version>1.1.0_7c</version>
+            <version>1.1.1_p2</version>
         </dependency>
         <dependency>
             <groupId>bibliothek.gui</groupId>
             <artifactId>paint</artifactId>
-            <version>1.1.0_7c</version>
+            <version>1.1.1_p2</version>
         </dependency>
         <dependency>
             <groupId>org.apache.poi</groupId>

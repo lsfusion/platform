@@ -1215,13 +1215,10 @@ public class SkolkovoLogicsModule extends LogicsModule {
     @Override
     public void initNavigators() throws JRException, FileNotFoundException {
 
-        ToolBarNavigatorWindow mainToolbar = new ToolBarNavigatorWindow("mainToolbar", "Навигатор", 0, 0, 100, 10);
+        ToolBarNavigatorWindow mainToolbar = new ToolBarNavigatorWindow("mainToolbar", "Навигатор", 0, 0, 100, 7);
         mainToolbar.titleShown = false;
 
-        baseLM.baseWindow.y = 10;
-        baseLM.baseWindow.height -= 10;
-
-        ToolBarNavigatorWindow leftToolbar = new ToolBarNavigatorWindow("leftToolbar", "Список", 0, 10, 20, 60);
+        ToolBarNavigatorWindow leftToolbar = new ToolBarNavigatorWindow("leftToolbar", "Список", 0, 7, 20, 60);
         leftToolbar.type = ToolBarNavigatorWindow.VERTICAL;
 
         baseLM.baseElement.window = mainToolbar;
