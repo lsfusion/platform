@@ -2556,10 +2556,6 @@ public class RomanLogicsModule extends LogicsModule {
             return objCategory;
         }
 
-        @Override
-        protected AbstractClassFormEntity copy() {
-            return new CategoryFormEntity(getSID() + "_copy" + copies++, caption);
-        }
     }
 
     private class CustomCategory10FormEntity extends AbstractClassFormEntity<RomanBusinessLogics> {
@@ -2587,10 +2583,6 @@ public class RomanLogicsModule extends LogicsModule {
             return objCustomCategory10;
         }
 
-        @Override
-        protected AbstractClassFormEntity copy() {
-            return new CustomCategory10FormEntity(getSID() + "_copy" + copies++, caption);
-        }
     }
 
     private class GlobalParamFormEntity extends FormEntity<RomanBusinessLogics> {

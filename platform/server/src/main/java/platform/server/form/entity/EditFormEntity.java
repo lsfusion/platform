@@ -42,8 +42,4 @@ public class EditFormEntity<T extends BusinessLogics<T>> extends BaseClassFormEn
         return object;
     }
 
-    @Override
-    public AbstractClassFormEntity copy() {
-        return new EditFormEntity(LM, cls, getSID() + "_copy" + copies++, caption);
-    }
 }

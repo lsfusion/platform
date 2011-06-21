@@ -1407,10 +1407,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
             return design;
         }
 
-        @Override
-        public AbstractClassFormEntity copy() {
-            return new NamedObjectClassForm(LM, cls, getSID() + "_copy" + copies++, caption);
-        }
     }
 
 

@@ -1,12 +1,11 @@
 package platform.server.form.instance.filter;
 
-import platform.server.data.expr.Expr;
-import platform.server.data.where.Where;
+import platform.base.BaseUtils;
 import platform.server.form.entity.AbstractClassFormEntity;
+import platform.server.form.entity.filter.FilterEntity;
 import platform.server.form.instance.CustomObjectInstance;
 import platform.server.form.instance.FormInstance;
 import platform.server.form.instance.GroupObjectInstance;
-import platform.server.form.instance.ObjectInstance;
 import platform.server.logics.DataObject;
 import platform.server.logics.property.Property;
 import platform.server.logics.property.PropertyInterface;
@@ -19,7 +18,6 @@ import java.io.DataInputStream;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Collection;
-import java.util.Map;
 import java.util.Set;
 
 public abstract class OpFilterInstance extends FilterInstance {
@@ -70,9 +68,8 @@ public abstract class OpFilterInstance extends FilterInstance {
         op2.resolveAdd(session, modifier, object, addObject);
     }
     @Override
-    public <X extends PropertyInterface> void resolveChange(AbstractClassFormEntity<?> formEntity, PropertyValueImplement<X> implement) {
-        op1.resolveChange(formEntity, implement);
-        op2.resolveChange(formEntity, implement);
+    public <X extends PropertyInterface> Set<? extends FilterEntity> getResolveChangeFilters(AbstractClassFormEntity<?> formEntity, PropertyValueImplement<X> implement) {
+        return BaseUtils.mergeSet(op1.getResolveChangeFilters(formEntity, implement), op2.getResolveChangeFilters(formEntity, implement));
     }
 
 }

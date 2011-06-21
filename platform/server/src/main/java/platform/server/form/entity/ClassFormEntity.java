@@ -26,8 +26,4 @@ public class ClassFormEntity<T extends BusinessLogics<T>> extends BaseClassFormE
         return object;
     }
 
-    @Override
-    public AbstractClassFormEntity copy() {
-        return new ClassFormEntity(LM, cls, getSID() + "_copy" + copies++, caption);
-    }
 }

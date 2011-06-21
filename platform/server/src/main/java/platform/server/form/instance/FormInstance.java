@@ -28,7 +28,10 @@ import platform.server.form.entity.filter.FilterEntity;
 import platform.server.form.entity.filter.NotFilterEntity;
 import platform.server.form.entity.filter.NotNullFilterEntity;
 import platform.server.form.entity.filter.RegularFilterGroupEntity;
-import platform.server.form.instance.filter.*;
+import platform.server.form.instance.filter.CompareValue;
+import platform.server.form.instance.filter.FilterInstance;
+import platform.server.form.instance.filter.RegularFilterGroupInstance;
+import platform.server.form.instance.filter.RegularFilterInstance;
 import platform.server.form.instance.listener.CustomClassListener;
 import platform.server.form.instance.listener.FocusListener;
 import platform.server.form.instance.remote.RemoteForm;
@@ -38,7 +41,6 @@ import platform.server.logics.ObjectValue;
 import platform.server.logics.linear.LP;
 import platform.server.logics.property.*;
 import platform.server.logics.property.derived.MaxChangeProperty;
-import platform.server.logics.property.derived.OnChangeProperty;
 import platform.server.session.*;
 
 import java.io.DataOutputStream;
@@ -49,6 +51,7 @@ import java.sql.SQLException;
 import java.util.*;
 import java.util.Map.Entry;
 
+import static platform.base.BaseUtils.mergeSet;
 import static platform.interop.ClassViewType.*;
 import static platform.server.form.instance.GroupObjectInstance.*;
 
@@ -115,6 +118,10 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
     }
 
     public FormInstance(FormEntity<T> entity, T BL, DataSession session, SecurityPolicy securityPolicy, FocusListener<T> focusListener, CustomClassListener classListener, PropertyObjectInterfaceInstance computer, Map<ObjectEntity, ? extends ObjectValue> mapObjects, boolean interactive) throws SQLException {
+        this(entity, BL, session, securityPolicy, focusListener, classListener, computer, mapObjects, interactive, null);
+    }
+
+    public FormInstance(FormEntity<T> entity, T BL, DataSession session, SecurityPolicy securityPolicy, FocusListener<T> focusListener, CustomClassListener classListener, PropertyObjectInterfaceInstance computer, Map<ObjectEntity, ? extends ObjectValue> mapObjects, boolean interactive, Set<FilterEntity> additionalFixedFilters) throws SQLException {
         this.entity = entity;
         this.BL = BL;
         this.session = session;
@@ -146,7 +153,10 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
                 properties.add(propertyDrawInstance);
             }
 
-        for (FilterEntity filterEntity : entity.fixedFilters) {
+        Set<FilterEntity> allFixedFilters = additionalFixedFilters == null
+                                            ? entity.fixedFilters
+                                            : mergeSet(entity.fixedFilters, additionalFixedFilters);
+        for (FilterEntity filterEntity : allFixedFilters) {
             FilterInstance filter = filterEntity.getInstance(instanceFactory);
             filter.getApplyObject().fixedFilters.add(filter);
         }
@@ -259,13 +269,20 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
     }
 
     public void serializePropertyEditorType(DataOutputStream outStream, PropertyDrawInstance<?> propertyDraw, boolean aggValue) throws SQLException, IOException {
-        PropertyObjectInstance<?> change =  propertyDraw.getChangeInstance(aggValue, BL);
+        PropertyObjectInstance<?> change = propertyDraw.getChangeInstance(aggValue, BL);
         if (!propertyDraw.isReadOnly() && securityPolicy.property.change.checkPermission(change.property) && change.getValueImplement().canBeChanged(this)) {
             outStream.writeBoolean(false);
             TypeSerializer.serializeType(outStream, change.getEditorType());
         } else {
             outStream.writeBoolean(true);
         }
+    }
+
+    public boolean canBeChanged(PropertyDrawInstance<?> propertyDraw, boolean aggValue) throws SQLException {
+        PropertyObjectInstance<?> change = propertyDraw.getChangeInstance(aggValue, BL);
+        return !propertyDraw.isReadOnly()
+               && securityPolicy.property.change.checkPermission(change.property)
+               && change.getValueImplement().canBeChanged(this);
     }
 
     // ----------------------------------- Навигация ----------------------------------------- //
@@ -1148,39 +1165,36 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
         return result;
     }
 
-    public <P extends PropertyInterface> AbstractClassFormEntity<T> getDataChangeFormEntity(PropertyObjectInstance<P> changeProperty, GroupObjectInstance selectionGroupObject) {
+    public <P extends PropertyInterface> Set<FilterEntity> getEditFixedFilters(AbstractClassFormEntity<T> editForm, PropertyObjectInstance<P> changeProperty, GroupObjectInstance selectionGroupObject) {
+        Set<FilterEntity> fixedFilters = new HashSet<FilterEntity>();
+
         PropertyValueImplement<P> implement = changeProperty.getValueImplement();
 
-        AbstractClassFormEntity<T> formEntity = changeProperty.getDialogClass().getDialogForm(BL.LM).createCopy();
-        formEntity.caption = implement.toString();
         for (MaxChangeProperty<?, P> constrainedProperty : implement.property.getMaxChangeProperties(BL.getCheckConstrainedProperties())) {
-            formEntity.addFixedFilter(
+            fixedFilters.add(
                     new NotFilterEntity(
                             new NotNullFilterEntity<MaxChangeProperty.Interface<P>>(
-                                    constrainedProperty.getPropertyObjectEntity(implement.mapping, formEntity.getObject())
+                                    constrainedProperty.getPropertyObjectEntity(implement.mapping, editForm.getObject())
                             )
                     )
             );
         }
 
-//        for(FilterInstance filter : selectionGroupObject.filters) {
-//        }
-
-        ObjectEntity object = formEntity.getObject();
+        ObjectEntity object = editForm.getObject();
         for (FilterEntity filterEntity : entity.fixedFilters) {
             FilterInstance filter = filterEntity.getInstance(instanceFactory);
             if (filter.getApplyObject() == selectionGroupObject) {
                 for (ObjectEntity filterObject : filterEntity.getObjects()) {
                     //добавляем фильтр только, если есть хотя бы один объект который не будет заменён на константу
                     if (filterObject.baseClass == object.baseClass) {
-                        formEntity.addFixedFilter(filterEntity.getRemappedFilter(filterObject, object, instanceFactory));
+                        fixedFilters.add(filterEntity.getRemappedFilter(filterObject, object, instanceFactory));
                         break;
                     }
                 }
-                filter.resolveChange(formEntity, implement);
+                fixedFilters.addAll(filter.getResolveChangeFilters(editForm, implement));
             }
         }
-        return formEntity;
+        return fixedFilters;
     }
 
     public DialogInstance<T> createClassPropertyDialog(int viewID, int value) throws RemoteException, SQLException {
@@ -1215,10 +1229,11 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
         Result<Property> aggProp = new Result<Property>();
         PropertyObjectInstance<?> changeProperty = propertyDraw.getChangeInstance(aggProp, BL);
 
-        AbstractClassFormEntity<T> formEntity = getDataChangeFormEntity(changeProperty, propertyDraw.toDraw);
+        AbstractClassFormEntity<T> formEntity = changeProperty.getDialogClass().getDialogForm(BL.LM);
+        Set<FilterEntity> additionalFilters = getEditFixedFilters(formEntity, changeProperty, propertyDraw.toDraw);
 
         ObjectEntity dialogObject = formEntity.getObject();
-        DialogInstance<T> dialog = new DialogInstance<T>(formEntity, BL, session, securityPolicy, getFocusListener(), getClassListener(), dialogObject, read(changeProperty), instanceFactory.computer);
+        DialogInstance<T> dialog = new DialogInstance<T>(formEntity, BL, session, securityPolicy, getFocusListener(), getClassListener(), dialogObject, read(changeProperty), instanceFactory.computer, additionalFilters);
 
         Property<PropertyInterface> filterProperty = aggProp.result;
         if (filterProperty != null) {

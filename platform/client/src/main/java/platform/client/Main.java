@@ -58,7 +58,7 @@ public class Main {
     public static RMITimeoutSocketFactory socketFactory;
 
     private static ClientObjectClass baseClass = null;
-    public static EventBus eBus;
+    public static EventBus eBus = new EventBus();
 
     public static ClientObjectClass getBaseClass() {
         if (baseClass == null) {
@@ -188,7 +188,6 @@ public class Main {
 
                     frame.setVisible(true);
 
-                    eBus = new EventBus();
                     ArrayList<IDaemonTask> tasks =  remoteNavigator.getDaemonTasks(Main.computerId);
                     java.util.Timer timer = new java.util.Timer();
                     for (IDaemonTask task : tasks) {

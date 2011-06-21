@@ -6,14 +6,16 @@ import platform.server.data.type.ObjectType;
 import platform.server.form.entity.FormEntity;
 import platform.server.form.entity.ObjectEntity;
 import platform.server.form.entity.PropertyDrawEntity;
+import platform.server.form.entity.filter.FilterEntity;
 import platform.server.form.instance.listener.CustomClassListener;
 import platform.server.form.instance.listener.FocusListener;
 import platform.server.logics.BusinessLogics;
-import platform.server.logics.ObjectValue;
 import platform.server.session.DataSession;
 
 import java.sql.SQLException;
-import java.util.Collections;
+import java.util.Set;
+
+import static java.util.Collections.singletonMap;
 
 public class DialogInstance<T extends BusinessLogics<T>> extends FormInstance<T> {
     private static Logger logger = Logger.getLogger(DialogInstance.class);
@@ -31,7 +33,7 @@ public class DialogInstance<T extends BusinessLogics<T>> extends FormInstance<T>
                           ObjectEntity dialogEntity,
                           Object dialogValue,
                           PropertyObjectInterfaceInstance computer) throws SQLException {
-        this(entity, BL, session, securityPolicy, tFocusView, classListener, dialogEntity, session.getObjectValue(dialogValue, ObjectType.instance), computer);
+        this(entity, BL, session, securityPolicy, tFocusView, classListener, dialogEntity, dialogValue, computer, null);
     }
 
     public DialogInstance(FormEntity<T> entity,
@@ -41,9 +43,20 @@ public class DialogInstance<T extends BusinessLogics<T>> extends FormInstance<T>
                           FocusListener<T> tFocusView,
                           CustomClassListener classListener,
                           ObjectEntity dialogEntity,
-                          ObjectValue dialogValue,
-                          PropertyObjectInterfaceInstance computer) throws SQLException {
-        super(entity, BL, session, securityPolicy, tFocusView, classListener, computer, Collections.singletonMap(dialogEntity, dialogValue), true);
+                          Object dialogValue,
+                          PropertyObjectInterfaceInstance computer,
+                          Set<FilterEntity> additionalFilters) throws SQLException {
+        super(entity,
+              BL,
+              session,
+              securityPolicy,
+              tFocusView,
+              classListener,
+              computer,
+              singletonMap(dialogEntity, session.getObjectValue(dialogValue, ObjectType.instance)),
+              true,
+              additionalFilters
+        );
         // все равно нашли объекты или нет
 
         dialogObject = instanceFactory.getInstance(dialogEntity);
