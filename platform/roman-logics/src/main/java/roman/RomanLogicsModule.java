@@ -24,6 +24,8 @@ import platform.server.form.view.ContainerView;
 import platform.server.form.view.DefaultFormView;
 import platform.server.form.view.FormView;
 import platform.server.form.view.PropertyDrawView;
+import platform.server.form.window.ToolBarNavigatorWindow;
+import platform.server.form.window.TreeNavigatorWindow;
 import platform.server.logics.BaseLogicsModule;
 import platform.server.logics.DataObject;
 import platform.server.logics.LogicsModule;
@@ -971,7 +973,7 @@ public class RomanLogicsModule extends LogicsModule {
         importer = addConcreteClass("importer", "Импортер", subject);
         exporter = addConcreteClass("exporter", "Экспортер", subject, seller);
 
-        commonSize = addConcreteClass("commonSize", "Унифицированный размер", baseClass.named);
+        commonSize = addConcreteClass("commonSize", "Размер", baseClass.named);
 
         colorSupplier = addConcreteClass("colorSupplier", "Цвет поставщика", baseClass.named);
         sizeSupplier = addConcreteClass("sizeSupplier", "Размер поставщика", baseClass);
@@ -2396,42 +2398,51 @@ public class RomanLogicsModule extends LogicsModule {
 
     @Override
     public void initNavigators() throws JRException, FileNotFoundException {
+
+        ToolBarNavigatorWindow mainToolbar = new ToolBarNavigatorWindow("mainToolbar", "Навигатор", 0, 0, 100, 10);
+        mainToolbar.titleShown = false;
+
+        baseLM.baseWindow.y = 10;
+        baseLM.baseWindow.height -= 10;
+
+        ToolBarNavigatorWindow leftToolbar = new ToolBarNavigatorWindow("leftToolbar", "Список", 0, 10, 20, 60);
+        leftToolbar.type = ToolBarNavigatorWindow.VERTICAL;
+
+        baseLM.baseElement.window = mainToolbar;
+        baseLM.adminElement.window = leftToolbar;
+
+        TreeNavigatorWindow objectsWindow = new TreeNavigatorWindow("objectsWindow", "Объекты", 0, 70, 20, 30);
+        objectsWindow.drawRoot = true;
+        baseLM.objectElement.window = objectsWindow;
+
         NavigatorElement classifier = new NavigatorElement(baseLM.baseElement, "classifier", "Справочники");
-        NavigatorElement classifierCurrency = new NavigatorElement(classifier, "classifierCurrency", "Валюты и курсы");
-        classifierCurrency.add(currency.getListForm(baseLM));
-        classifierCurrency.add(typeExchange.getListForm(baseLM));
-        addFormEntity(new RateCurrencyFormEntity(classifierCurrency, "rateCurrencyForm", "Курсы валют"));
-
-        NavigatorElement classifierItem = new NavigatorElement(classifier, "classifierItem", "Для описания товаров");
-        addFormEntity(new CustomCategoryFormEntity(classifierItem, "customCategoryForm", "ТН ВЭД (изменения)", false));
-        addFormEntity(new CustomCategoryFormEntity(classifierItem, "customCategoryForm2", "ТН ВЭД (дерево)", true));
-        category.setDialogForm(addFormEntity(new CategoryFormEntity(classifierItem, "categoryForm", "Номенклатурные группы")));
-        customCategory10.setDialogForm(addFormEntity(new CustomCategory10FormEntity(classifierItem, "customCategory10Form", "ТН ВЭД")));
-        classifierItem.add(commonSize.getListForm(baseLM));
-        classifierItem.add(season.getListForm(baseLM));
-        classifierItem.add(baseLM.country.getListForm(baseLM));
-        classifierItem.add(unitOfMeasure.getListForm(baseLM));
-
-        addFormEntity(new GlobalParamFormEntity(classifier, "globalParamForm", "Общие параметры"));
+        classifier.window = leftToolbar;
+        //NavigatorElement classifierItem = new NavigatorElement(classifier, "classifierItem", "Для описания товаров");
+        addFormEntity(new NomenclatureFormEntity(classifier, "nomenclatureForm", "Номенклатура"));
+        category.setDialogForm(addFormEntity(new CategoryFormEntity(classifier, "categoryForm", "Номенклатурные группы")));
         addFormEntity(new ColorSizeSupplierFormEntity(classifier, "сolorSizeSupplierForm", "Поставщики"));
+        addFormEntity(new CustomCategoryFormEntity(classifier, "customCategoryForm", "ТН ВЭД (изменения)", false));
+        addFormEntity(new CustomCategoryFormEntity(classifier, "customCategoryForm2", "ТН ВЭД (дерево)", true));
+        customCategory10.setDialogForm(addFormEntity(new CustomCategory10FormEntity(classifier, "customCategory10Form", "ТН ВЭД")));
+        classifier.add(baseLM.country.getListForm(baseLM));
+        classifier.add(unitOfMeasure.getListForm(baseLM));
+        classifier.add(commonSize.getListForm(baseLM));
+        classifier.add(season.getListForm(baseLM));                
         classifier.add(importer.getListForm(baseLM));
         classifier.add(exporter.getListForm(baseLM));
-        classifier.add(store.getListForm(baseLM));
         addFormEntity(new ContractFormEntity(classifier, "contractForm", "Договора"));
-        addFormEntity(new NomenclatureFormEntity(classifier, "nomenclatureForm", "Номенклатура"));
-        classifier.add(freightType.getListForm(baseLM));
+        classifier.add(store.getListForm(baseLM));
 
         createItemForm = addFormEntity(new CreateItemFormEntity(null, "createItemForm", "Ввод товара"));
 
         NavigatorElement printForms = new NavigatorElement(baseLM.baseElement, "printForms", "Печатные формы");
-
+        printForms.window = leftToolbar;
         addFormEntity(new AnnexInvoiceFormEntity(printForms, "annexInvoiceForm", "Приложение к инвойсу", false));
         invoiceFromFormEntity = addFormEntity(new AnnexInvoiceFormEntity(printForms, "annexInvoiceForm2", "Приложение к инвойсу (перевод)", true));
         addFormEntity(new InvoiceFromFormEntity(printForms, "invoiceFromForm", "Исходящие инвойсы", false));
         addFormEntity(new InvoiceFromFormEntity(printForms, "invoiceFromForm2", "Исходящие инвойсы (перевод)", true));
         addFormEntity(new ProformInvoiceFormEntity(printForms, "proformInvoiceForm", "Исходящие инвойсы-проформы", false));
         addFormEntity(new ProformInvoiceFormEntity(printForms, "proformInvoiceForm2", "Исходящие инвойсы-проформы (перевод)", true));
-
         addFormEntity(new SbivkaFormEntity(printForms, "sbivkaForm", "Сбивка товаров"));
         addFormEntity(new PackingListFormEntity(printForms, "packingListForm", "Исходящие упаковочные листы", false));
         addFormEntity(new PackingListFormEntity(printForms, "packingListForm2", "Исходящие упаковочные листы (перевод)", true));
@@ -2441,34 +2452,52 @@ public class RomanLogicsModule extends LogicsModule {
         FormEntity createFreightBoxForm = addFormEntity(new CreateFreightBoxFormEntity(printForms, "createFreightBoxForm", "Штрих-коды коробов", FormType.PRINT));
 
         NavigatorElement purchase = new NavigatorElement(baseLM.baseElement, "purchase", "Управление закупками");
+        purchase.window = leftToolbar;
+        addFormEntity(new PricatFormEntity(purchase, "pricatForm", "Прайсы"));
         addFormEntity(new OrderFormEntity(purchase, "orderForm", "Заказы"));
         addFormEntity(new InvoiceFormEntity(purchase, "boxInvoiceForm", "Инвойсы по коробам", true));
         addFormEntity(new InvoiceFormEntity(purchase, "simpleInvoiceForm", "Инвойсы без коробов", false));
         addFormEntity(new ShipmentListFormEntity(purchase, "boxShipmentListForm", "Поставки по коробам", true));
         addFormEntity(new ShipmentListFormEntity(purchase, "simpleShipmentListForm", "Поставки без коробов", false));
-        addFormEntity(new PricatFormEntity(purchase, "pricatForm", "Прайсы"));
+        addFormEntity(new InvoiceShipmentFormEntity(purchase, "invoiceShipmentForm", "Сравнение по инвойсам"));                                                                                                                       
+
+        NavigatorElement distribution = new NavigatorElement(baseLM.baseElement, "distribution", "Управление складом");
+        distribution.window = leftToolbar;
+        NavigatorElement preparation = new NavigatorElement(distribution, "preparation", "Подготовка к приемке");
+        FormEntity createPalletFormCreate = addFormEntity(new CreatePalletFormEntity(preparation, "createPalletFormAdd", "Сгенерировать паллеты", FormType.ADD));
+        addFormEntity(new CreatePalletFormEntity(createPalletFormCreate, "createPalletFormList", "Документы генерации паллет", FormType.LIST));
+        FormEntity createFreightBoxFormAdd = addFormEntity(new CreateFreightBoxFormEntity(preparation, "createFreightBoxFormAdd", "Сгенерировать короба", FormType.ADD));
+        addFormEntity(new CreateFreightBoxFormEntity(createFreightBoxFormAdd, "createFreightBoxFormList", "Документы генерации коробов", FormType.LIST));
+        FormEntity createStampFormAdd = addFormEntity(new CreateStampFormEntity(preparation, "createStampFormAdd", "Сгенерировать марки", FormType.ADD));
+        addFormEntity(new CreateStampFormEntity(createStampFormAdd, "createStampFormList", "Документы генерации марок", FormType.LIST));
+
+        NavigatorElement acceptance = new NavigatorElement(distribution, "acceptance", "Приемка");
+        addFormEntity(new ShipmentSpecFormEntity(acceptance, "boxShipmentSpecForm", "Прием товара по коробам", true));
+        addFormEntity(new ShipmentSpecFormEntity(acceptance, "simpleShipmentSpecForm", "Прием товара без коробов", false));
+
+        NavigatorElement placing = new NavigatorElement(distribution, "placing", "Распределение");
+        addFormEntity(new BoxPalletStoreFormEntity(placing, "boxPalletStoreForm", "Распределение коробов по паллетам"));
+        addFormEntity(new FreightShipmentStoreFormEntity(placing, "freightShipmentStoreForm", "Распределение паллет по фрахтам"));
+
+        NavigatorElement balance = new NavigatorElement(distribution, "balance", "Остатки по товарам");
+        addFormEntity(new BalanceBrandWarehouseFormEntity(balance, "balanceBrandWarehouseForm", "Остатки на складе (по брендам)"));
+        addFormEntity(new BalanceWarehouseFormEntity(balance, "balanceWarehouseForm", "Остатки на складе"));
 
         NavigatorElement shipment = new NavigatorElement(baseLM.baseElement, "shipment", "Управление фрахтами");
+        shipment.window = leftToolbar;
         addFormEntity(new FreightShipmentFormEntity(shipment, "freightShipmentForm", "Комплектация фрахта"));
         addFormEntity(new FreightChangeFormEntity(shipment, "freightChangeForm", "Обработка фрахта"));
         addFormEntity(new FreightInvoiceFormEntity(shipment, "freightInvoiceForm", "Расценка фрахта"));
         addFormEntity(new PrintDocumentFormEntity(shipment, "printDocumentForm", "Печать документов"));
+        shipment.add(freightType.getListForm(baseLM));
 
-        NavigatorElement distribution = new NavigatorElement(baseLM.baseElement, "distribution", "Управление складом");
-        FormEntity createPalletFormCreate = addFormEntity(new CreatePalletFormEntity(distribution, "createPalletFormAdd", "Сгенерировать паллеты", FormType.ADD));
-        addFormEntity(new CreatePalletFormEntity(createPalletFormCreate, "createPalletFormList", "Документы генерации паллет", FormType.LIST));
-        FormEntity createFreightBoxFormAdd = addFormEntity(new CreateFreightBoxFormEntity(distribution, "createFreightBoxFormAdd", "Сгенерировать короба", FormType.ADD));
-        addFormEntity(new CreateFreightBoxFormEntity(createFreightBoxFormAdd, "createFreightBoxFormList", "Документы генерации коробов", FormType.LIST));
-        FormEntity createStampFormAdd = addFormEntity(new CreateStampFormEntity(distribution, "createStampFormAdd", "Сгенерировать марки", FormType.ADD));
-        addFormEntity(new CreateStampFormEntity(createStampFormAdd, "createStampFormList", "Документы генерации марок", FormType.LIST));
-        addFormEntity(new ShipmentSpecFormEntity(distribution, "boxShipmentSpecForm", "Прием товара по коробам", true));
-        addFormEntity(new ShipmentSpecFormEntity(distribution, "simpleShipmentSpecForm", "Прием товара без коробов", false));
-
-        addFormEntity(new BoxPalletStoreFormEntity(distribution, "boxPalletStoreForm", "Расстановка коробов по паллетам"));
-        addFormEntity(new FreightShipmentStoreFormEntity(distribution, "freightShipmentStoreForm", "Комплектация фрахта (на складе)"));
-        addFormEntity(new BalanceBrandWarehouseFormEntity(distribution, "balanceBrandWarehouseForm", "Остатки на складе (по брендам)"));
-        addFormEntity(new BalanceWarehouseFormEntity(distribution, "balanceWarehouseForm", "Остатки на складе"));
-        addFormEntity(new InvoiceShipmentFormEntity(distribution, "invoiceShipmentForm", "Сравнение по инвойсам"));
+        NavigatorElement settings = new NavigatorElement(baseLM.baseElement, "settings", "Настройки");
+        settings.window = leftToolbar;
+        addFormEntity(new GlobalParamFormEntity(settings, "globalParamForm", "Общие параметры"));
+        NavigatorElement classifierCurrency = new NavigatorElement(settings, "classifierCurrency", "Валюты и курсы");
+        classifierCurrency.add(currency.getListForm(baseLM));
+        classifierCurrency.add(typeExchange.getListForm(baseLM));
+        addFormEntity(new RateCurrencyFormEntity(classifierCurrency, "rateCurrencyForm", "Курсы валют"));
 
         // пока не поддерживается из-за того, что пока нет расчета себестоимости для внутреннего перемещения
 //        addFormEntity(new StockTransferFormEntity(distribution, "stockTransferForm", "Внутреннее перемещение"));
