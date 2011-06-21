@@ -1352,6 +1352,8 @@ public class RomanLogicsModule extends LogicsModule {
         nameCategoryArticle = addJProp(intraAttributeGroup, "nameCategoryArticle", "Номенклатурная группа товара", baseLM.name, categoryArticle, 1);
         categoryArticleSku = addJProp(idGroup, true, "categoryArticleSku", "Номенклатурная группа товара (ИД)", categoryArticle, articleSku, 1);
         nameCategoryArticleSku = addJProp(intraAttributeGroup, "nameCategoryArticleSku", "Номенклатурная группа товара", baseLM.name, categoryArticleSku, 1);
+        nameCategoryArticleSku.property.preferredCharWidth = 40;
+        nameCategoryArticleSku.property.minimumCharWidth = 15;
         nameOriginCategoryArticleSku = addJProp(intraAttributeGroup, "nameOriginCategoryArticleSku", "Номенклатурная группа товара", nameOrigin, categoryArticleSku, 1);
 
         typeInvoiceCategoryArticle = addJProp(idGroup, "typeInvoiceCategoryArticle", "Тип инвойса артикула (ИД)", typeInvoiceCategory, categoryArticle, 1);
@@ -1424,6 +1426,8 @@ public class RomanLogicsModule extends LogicsModule {
 
         brandSupplierArticleSku = addJProp(idGroup, "brandSupplierArticleSku", "Бренд (ИД)", brandSupplierArticle, articleSku, 1);
         nameBrandSupplierArticleSku = addJProp(supplierAttributeGroup, "nameBrandSupplierArticleSku", "Бренд", baseLM.name, brandSupplierArticleSku, 1);
+        nameBrandSupplierArticleSku.property.preferredCharWidth = 40;
+        nameBrandSupplierArticleSku.property.minimumCharWidth = 15;
         sidBrandSupplierArticleSku = addJProp(supplierAttributeGroup, "sidBrandSupplierArticleSku", "Бренд(ИД)", sidBrandSupplier, brandSupplierArticleSku, 1);
 
         themeSupplierArticle = addDProp(idGroup, "themeSupplierDataArticle", "Тема (ИД)", themeSupplier, article);
@@ -1508,6 +1512,8 @@ public class RomanLogicsModule extends LogicsModule {
 
         nameCountryOfOriginSku = addJProp(intraAttributeGroup, "nameCountryOfOriginSku", "Страна происхождения", nameOriginCountry, countryOfOriginSku, 1);
         nameCountrySku = addJProp(intraAttributeGroup, "nameCountrySku", "Страна происхождения", baseLM.name, countryOfOriginSku, 1);
+        nameCountrySku.property.preferredCharWidth = 40;
+        nameCountrySku.property.minimumCharWidth = 15;
 
         addConstraint(addJProp("Поставщик артикула должен соответствовать поставщику страны артикула", baseLM.diff2,
                 supplierArticle, 1, addJProp(supplierCountrySupplier, countrySupplierOfOriginArticle, 1), 1), true);
@@ -4330,9 +4336,7 @@ public class RomanLogicsModule extends LogicsModule {
             addPropertyDraw(quantityImporterFreightSku, objImporter, objFreight, objSkuFreight);
             addPropertyDraw(quantityProxyImporterFreightSku, objImporter, objFreight, objSkuFreight);
             addPropertyDraw(quantityDirectImporterFreightSku, objImporter, objFreight, objSkuFreight);
-            addPropertyDraw(priceInOutImporterFreightSku, objImporter, objFreight, objSkuFreight);
-            addPropertyDraw(sumInOutImporterFreightSku, objImporter, objFreight, objSkuFreight);
-
+            
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(quantityFreightCategory, objFreight, objCategory)));
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(quantityFreightSku, objFreight, objSku)));
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(quantityImporterFreightSku, objImporter, objFreight, objSkuFreight)));
@@ -4386,8 +4390,8 @@ public class RomanLogicsModule extends LogicsModule {
             design.get(objImporter.groupTo).grid.constraints.fillHorizontal = 2;
             design.get(objFreight.groupTo).grid.constraints.fillVertical = 1;
             design.get(objArticle.groupTo).grid.constraints.fillVertical = 4;
-            design.get(objCategory.groupTo).grid.constraints.fillHorizontal = 0.2;
-            design.get(objSku.groupTo).grid.constraints.fillHorizontal = 6;
+            design.get(objCategory.groupTo).grid.constraints.fillHorizontal = 0.1;
+            //design.get(objSku.groupTo).grid.constraints.fillHorizontal = 6;
             design.get(objCategory.groupTo).grid.constraints.fillVertical = 4;
             design.get(objSku.groupTo).grid.constraints.fillVertical = 4;
             design.get(objSkuFreight.groupTo).grid.constraints.fillVertical = 4;

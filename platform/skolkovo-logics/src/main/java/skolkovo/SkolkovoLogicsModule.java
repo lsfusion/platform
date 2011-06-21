@@ -291,6 +291,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP requiredPeriod;
     LP requiredQuantity;
     LP limitExperts;
+    LP voteStartFormVote;
+    LP voteProtocolFormVote;
 
     LP dateExpertVote;
     LP voteResultExpertVote, nameVoteResultExpertVote;
@@ -1233,13 +1235,6 @@ public class SkolkovoLogicsModule extends LogicsModule {
         projectFullForeign = addFormEntity(new ProjectFullFormEntity(baseLM.objectElement, "projectFullForeign", "Resume project for expert", true));
         addFormEntity(new ClaimerFullFormEntity(baseLM.objectElement, "claimerFull"));
 
-        addFormEntity(new ProjectFormEntity(baseLM.baseElement, "project"));
-        addFormEntity(new ClaimerFormEntity(baseLM.baseElement, "claimer"));
-        addFormEntity(new VoteFormEntity(baseLM.baseElement, "vote", false));
-        addFormEntity(new ExpertFormEntity(baseLM.baseElement, "expert"));
-        addFormEntity(new VoteExpertFormEntity(baseLM.baseElement, "voteExpert"));
-        addFormEntity(new VoteFormEntity(baseLM.baseElement, "voterestricted", true));
-
         NavigatorElement print = new NavigatorElement(baseLM.baseElement, "print", "Печатные формы");
         print.window = leftToolbar;
 
@@ -1252,6 +1247,15 @@ public class SkolkovoLogicsModule extends LogicsModule {
         addFormEntity(new ClaimerRejectedFormEntity(print, "claimerRejected"));
         addFormEntity(new ClaimerStatusFormEntity(print, "claimerStatus"));
         addFormEntity(new VoteClaimerFormEntity(print, "voteClaimer", "Уведомление о рассмотрении"));
+
+        addFormEntity(new ProjectFormEntity(baseLM.baseElement, "project"));
+        addFormEntity(new ClaimerFormEntity(baseLM.baseElement, "claimer"));
+        addFormEntity(new VoteFormEntity(baseLM.baseElement, "vote", false));
+        addFormEntity(new ExpertFormEntity(baseLM.baseElement, "expert"));
+        addFormEntity(new VoteExpertFormEntity(baseLM.baseElement, "voteExpert"));
+        addFormEntity(new VoteFormEntity(baseLM.baseElement, "voterestricted", true));
+
+        baseLM.baseElement.add(print);
 
         NavigatorElement options = new NavigatorElement(baseLM.baseElement, "options", "Настройки");
         options.window = leftToolbar;
@@ -1504,6 +1508,14 @@ public class SkolkovoLogicsModule extends LogicsModule {
             if (!restricted)
                 addPropertyDraw(objExpert, objVote, allowedEmailLetterExpertVote);
             setForceViewType(voteResultCommentGroup, ClassViewType.PANEL);
+
+            if (!restricted) {
+                addPropertyDraw(objVote, voteStartFormVote);
+                addPropertyDraw(objVote, voteProtocolFormVote);
+                setForceViewType(voteStartFormVote, ClassViewType.PANEL);
+                setForceViewType(voteProtocolFormVote, ClassViewType.PANEL);
+
+            }
 
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(inExpertVote, objExpert, objVote)));
             
@@ -1796,6 +1808,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
             addAttachEAForm(emailStartVoteEA, this, EmailActionProperty.Format.PDF, objVote, 1);
             addAttachEAForm(emailClosedVoteEA, this, EmailActionProperty.Format.PDF, emailStartHeaderVote, objVote, 1);
+
+            voteStartFormVote = addFAProp("Созыв заседания", this, objVote);
         }
 
         @Override
@@ -1834,6 +1848,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
             addAttachEAForm(emailProtocolVoteEA, this, EmailActionProperty.Format.PDF, objVote, 1);
             addAttachEAForm(emailClosedVoteEA, this, EmailActionProperty.Format.PDF, emailProtocolHeaderVote, objVote, 1);
+
+            voteProtocolFormVote = addFAProp("Протокол заседания", this, objVote);
         }
 
         @Override
