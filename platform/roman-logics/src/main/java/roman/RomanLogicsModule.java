@@ -1354,7 +1354,7 @@ public class RomanLogicsModule extends LogicsModule {
         nameCategoryArticle = addJProp(intraAttributeGroup, "nameCategoryArticle", "Номенклатурная группа товара", baseLM.name, categoryArticle, 1);
         categoryArticleSku = addJProp(idGroup, true, "categoryArticleSku", "Номенклатурная группа товара (ИД)", categoryArticle, articleSku, 1);
         nameCategoryArticleSku = addJProp(intraAttributeGroup, "nameCategoryArticleSku", "Номенклатурная группа товара", baseLM.name, categoryArticleSku, 1);
-        nameCategoryArticleSku.property.preferredCharWidth = 40;
+        nameCategoryArticleSku.property.preferredCharWidth = 50;
         nameCategoryArticleSku.property.minimumCharWidth = 15;
         nameOriginCategoryArticleSku = addJProp(intraAttributeGroup, "nameOriginCategoryArticleSku", "Номенклатурная группа товара", nameOrigin, categoryArticleSku, 1);
 
@@ -1366,6 +1366,8 @@ public class RomanLogicsModule extends LogicsModule {
         typeInvoiceFreightArticle = addSUProp(idGroup, "typeInvoiceFreightArticle", "Тип инвойса (ИД)", Union.OVERRIDE, typeInvoiceCategoryFreightArticle, typeInvoiceDataFreightArticle);
         typeInvoiceFreightArticleSku = addJProp(idGroup, true, "typeInvoiceFreightArticleSku", "Тип инвойса (ИД)", typeInvoiceFreightArticle, 1, articleSku, 2);
         nameTypeInvoiceFreightArticleSku = addJProp(baseGroup, "nameTypeInvoiceFreightArticleSku", "Тип инвойса", baseLM.name, typeInvoiceFreightArticleSku, 1, 2);
+        nameTypeInvoiceFreightArticleSku.property.preferredCharWidth = 50;
+        nameTypeInvoiceFreightArticleSku.property.minimumCharWidth = 15;
 
         nameArticle = addSUProp(baseGroup, "nameArticle", "Наименование", Union.OVERRIDE, originalNameArticle, nameOriginCategoryArticle);
         nameArticleSku = addJProp(intraAttributeGroup, "nameArticleSku", "Наименование", nameArticle, articleSku, 1);
@@ -1428,7 +1430,7 @@ public class RomanLogicsModule extends LogicsModule {
 
         brandSupplierArticleSku = addJProp(idGroup, "brandSupplierArticleSku", "Бренд (ИД)", brandSupplierArticle, articleSku, 1);
         nameBrandSupplierArticleSku = addJProp(supplierAttributeGroup, "nameBrandSupplierArticleSku", "Бренд", baseLM.name, brandSupplierArticleSku, 1);
-        nameBrandSupplierArticleSku.property.preferredCharWidth = 40;
+        nameBrandSupplierArticleSku.property.preferredCharWidth = 50;
         nameBrandSupplierArticleSku.property.minimumCharWidth = 15;
         sidBrandSupplierArticleSku = addJProp(supplierAttributeGroup, "sidBrandSupplierArticleSku", "Бренд(ИД)", sidBrandSupplier, brandSupplierArticleSku, 1);
 
@@ -1514,7 +1516,7 @@ public class RomanLogicsModule extends LogicsModule {
 
         nameCountryOfOriginSku = addJProp(intraAttributeGroup, "nameCountryOfOriginSku", "Страна происхождения", nameOriginCountry, countryOfOriginSku, 1);
         nameCountrySku = addJProp(intraAttributeGroup, "nameCountrySku", "Страна происхождения", baseLM.name, countryOfOriginSku, 1);
-        nameCountrySku.property.preferredCharWidth = 40;
+        nameCountrySku.property.preferredCharWidth = 50;
         nameCountrySku.property.minimumCharWidth = 15;
 
         addConstraint(addJProp("Поставщик артикула должен соответствовать поставщику страны артикула", baseLM.diff2,
@@ -2128,6 +2130,8 @@ public class RomanLogicsModule extends LogicsModule {
 
         sidCountryOfOriginFreightSku = addJProp(baseGroup, "sidCountryOfOriginFreightSku", "Код страны", baseLM.sidCountry, countryOfOriginFreightSku, 1, 2);
         nameCountryOfOriginFreightSku = addJProp(baseGroup, "nameCountryOfOriginFreightSku", "Страна", baseLM.name, countryOfOriginFreightSku, 1, 2);
+        nameCountryOfOriginFreightSku.property.preferredCharWidth = 50;
+        nameCountryOfOriginFreightSku.property.minimumCharWidth = 15;
 
         quantityImporterFreightArticleCompositionCountryCategory = addSGProp(baseGroup, "quantityImporterFreightArticleCompositionCountryCategory", "Кол-во",
                 quantityProxyImporterFreightSku, 1, 2, articleSku, 3, mainCompositionOriginFreightSku, 2, 3, countryOfOriginFreightSku, 2, 3, customCategory10FreightSku, 2, 3);
@@ -2399,14 +2403,18 @@ public class RomanLogicsModule extends LogicsModule {
     @Override
     public void initNavigators() throws JRException, FileNotFoundException {
 
-        ToolBarNavigatorWindow mainToolbar = new ToolBarNavigatorWindow("mainToolbar", "Навигатор", 0, 0, 100, 10);
+        ToolBarNavigatorWindow mainToolbar = new ToolBarNavigatorWindow("mainToolbar", "Навигатор", 0, 0, 100, 7);
         mainToolbar.titleShown = false;
 
         baseLM.baseWindow.y = 10;
         baseLM.baseWindow.height -= 10;
 
-        ToolBarNavigatorWindow leftToolbar = new ToolBarNavigatorWindow("leftToolbar", "Список", 0, 10, 20, 60);
-        leftToolbar.type = ToolBarNavigatorWindow.VERTICAL;
+        ToolBarNavigatorWindow generateToolbar = new ToolBarNavigatorWindow("generateToolbar", "Генерация", 20, 7, 80, 6);
+        generateToolbar.titleShown = false;
+        generateToolbar.drawRoot = true;
+
+        ToolBarNavigatorWindow leftToolbar = new ToolBarNavigatorWindow("leftToolbar", "Список", 0, 7, 20, 60);
+        leftToolbar.type = ToolBarNavigatorWindow.VERTICAL;               
 
         baseLM.baseElement.window = mainToolbar;
         baseLM.adminElement.window = leftToolbar;
@@ -2463,13 +2471,19 @@ public class RomanLogicsModule extends LogicsModule {
 
         NavigatorElement distribution = new NavigatorElement(baseLM.baseElement, "distribution", "Управление складом");
         distribution.window = leftToolbar;
+
+        NavigatorElement generation = new NavigatorElement(distribution, "generation", "Генерация");
+        generation.window = generateToolbar;
+
+        FormEntity createPalletFormCreate = addFormEntity(new CreatePalletFormEntity(generation, "createPalletFormAdd", "Сгенерировать паллеты", FormType.ADD));
+        FormEntity createFreightBoxFormAdd = addFormEntity(new CreateFreightBoxFormEntity(generation, "createFreightBoxFormAdd", "Сгенерировать короба", FormType.ADD));
+        FormEntity createStampFormAdd = addFormEntity(new CreateStampFormEntity(generation, "createStampFormAdd", "Сгенерировать марки", FormType.ADD));
+
         NavigatorElement preparation = new NavigatorElement(distribution, "preparation", "Подготовка к приемке");
-        FormEntity createPalletFormCreate = addFormEntity(new CreatePalletFormEntity(preparation, "createPalletFormAdd", "Сгенерировать паллеты", FormType.ADD));
-        addFormEntity(new CreatePalletFormEntity(createPalletFormCreate, "createPalletFormList", "Документы генерации паллет", FormType.LIST));
-        FormEntity createFreightBoxFormAdd = addFormEntity(new CreateFreightBoxFormEntity(preparation, "createFreightBoxFormAdd", "Сгенерировать короба", FormType.ADD));
-        addFormEntity(new CreateFreightBoxFormEntity(createFreightBoxFormAdd, "createFreightBoxFormList", "Документы генерации коробов", FormType.LIST));
-        FormEntity createStampFormAdd = addFormEntity(new CreateStampFormEntity(preparation, "createStampFormAdd", "Сгенерировать марки", FormType.ADD));
-        addFormEntity(new CreateStampFormEntity(createStampFormAdd, "createStampFormList", "Документы генерации марок", FormType.LIST));
+
+        addFormEntity(new CreatePalletFormEntity(preparation, "createPalletFormList", "Паллеты", FormType.LIST));
+        addFormEntity(new CreateFreightBoxFormEntity(preparation, "createFreightBoxFormList", "Короба", FormType.LIST));
+        addFormEntity(new CreateStampFormEntity(preparation, "createStampFormList", "Марки", FormType.LIST));               
 
         NavigatorElement acceptance = new NavigatorElement(distribution, "acceptance", "Приемка");
         addFormEntity(new ShipmentSpecFormEntity(acceptance, "boxShipmentSpecForm", "Прием товара по коробам", true));
@@ -4310,7 +4324,7 @@ public class RomanLogicsModule extends LogicsModule {
             objCategory = addSingleGroupObject(category, "Номенклатурная группа", baseLM.name);
 
             objSku = addSingleGroupObject(sku, "SKU", baseLM.selection, baseLM.barcode, sidArticleSku,
-                     nameBrandSupplierArticleSku, nameArticleSku, nameCategoryArticleSku,
+                     nameBrandSupplierArticleSku, nameCategoryArticleSku,
                      sidCustomCategoryOriginArticleSku, sidCustomCategory10Sku, nameSubCategorySku, nameCountrySku, netWeightSku,
                      mainCompositionOriginSku, translationMainCompositionSku, mainCompositionSku,
                      additionalCompositionOriginSku, translationAdditionalCompositionSku, additionalCompositionSku);
@@ -5108,7 +5122,7 @@ public class RomanLogicsModule extends LogicsModule {
             addPropertyDraw(dutyImporterFreightSku, objImporter, objFreight, objSku);
             addPropertyDraw(NDSPercentFreightSku, objFreight, objSku);
             addPropertyDraw(NDSImporterFreightSku, objImporter, objFreight, objSku);
-            addPropertyDraw(sumRegistrationImporterFreightSku, objImporter, objFreight, objSku);
+            //addPropertyDraw(sumRegistrationImporterFreightSku, objImporter, objFreight, objSku);
 
             PropertyObjectEntity greaterPriceMinPriceImporterFreightSkuProperty = addPropertyObject(greaterPriceMinPriceImporterFreightSku, objImporter, objFreight, objSku);
             getPropertyDraw(minPriceRateFreightSku).setPropertyHighlight(greaterPriceMinPriceImporterFreightSkuProperty);
