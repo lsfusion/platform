@@ -1,7 +1,7 @@
 package platform.fullclient.layout;
 
 import bibliothek.gui.dock.common.*;
-import bibliothek.gui.dock.common.intern.CDockable;
+import bibliothek.gui.dock.common.intern.CSetting;
 import bibliothek.gui.dock.common.menu.*;
 import bibliothek.gui.dock.common.mode.ExtendedMode;
 import bibliothek.gui.dock.common.theme.ThemeMap;
@@ -149,7 +149,7 @@ public class DockableMainFrame extends MainFrame {
         }
     }
 
-    LinkedHashMap<CDockable, Rectangle> dockables = new LinkedHashMap<CDockable, Rectangle>();
+    LinkedHashMap<SingleCDockable, Rectangle> dockables = new LinkedHashMap<SingleCDockable, Rectangle>();
 
     // важно, что в случае каких-либо Exception'ов при восстановлении форм нужно все игнорировать и открывать расположение "по умолчанию"
     private void initDockStations(ClientNavigator mainNavigator, NavigatorController navigatorController) {
@@ -158,22 +158,22 @@ public class DockableMainFrame extends MainFrame {
         view = new ViewManager(control, mainNavigator);
         control.setTheme(ThemeMap.KEY_ECLIPSE_THEME);
 
-//        DataInputStream in = null;
-//        try {
-//            in = new DataInputStream(new FileInputStream(new File(baseDir, "layout.data")));
-//            view.getForms().read(in);
-//            control.getResources().readStream(in);
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        } finally {
-//            if (in != null) {
-//                try {
-//                    in.close();
-//                } catch (IOException e) {
-//                    e.printStackTrace();
-//                }
-//            }
-//        }
+        DataInputStream in = null;
+        try {
+            in = new DataInputStream(new FileInputStream(new File(baseDir, "layout.data")));
+            view.getForms().read(in);
+            control.getResources().readStream(in);
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (in != null) {
+                try {
+                    in.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
 
         add(control.getContentArea(), BorderLayout.CENTER);
         dockables.put(createDockable("relevantForms", "Связанные формы", mainNavigator.relevantFormNavigator), new Rectangle(0, 70, 20, 29));
@@ -193,17 +193,39 @@ public class DockableMainFrame extends MainFrame {
         CGrid grid = createGrid();
         control.getContentArea().deploy(grid);
 
-//        for (String s : control.layouts()) {
-//            if (s.equals("default")) {
-//                try {
-//                    control.load("default");
-//                } catch (Exception e) {
-//                    e.printStackTrace();
-//                    control.getContentArea().deploy(grid); // иначе покажется пустая форма
-//                }
-//                break;
-//            }
-//        }
+        for (String s : control.layouts()) {
+            if (s.equals("default")) {
+                try {
+                    //проверяем, бы ли созданы новые Dockable
+                    boolean hasNewDockables = false;
+                    CSetting setting = (CSetting) control.intern().getSetting(s);
+                    if (setting != null) {
+                        for (SingleCDockable dockable : dockables.keySet()) {
+                            boolean isNewDockable = true;
+                            for (int i = 0; i < setting.getModes().size(); i++) {
+                                if (setting.getModes().getId(i).equals("single " + dockable.getUniqueId())) {
+                                    isNewDockable = false;
+                                    break;
+                                }
+                            }
+                            if (isNewDockable) {
+                                hasNewDockables = true;
+                                break;
+                            }
+                        }
+                    }
+                    //если новые Dockable созданы не были, грузим сохранённое расположение
+                    if (!hasNewDockables) {
+                        control.load("default");
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    control.getContentArea().deploy(grid); // иначе покажется пустая форма
+                }
+                break;
+            }
+
+        }
     }
 
 
@@ -219,7 +241,7 @@ public class DockableMainFrame extends MainFrame {
 
     private CGrid createGrid() {
         CGrid grid = new CGrid(control);
-        for (Map.Entry<CDockable, Rectangle> dockable : dockables.entrySet()) {
+        for (Map.Entry<SingleCDockable, Rectangle> dockable : dockables.entrySet()) {
             Rectangle rectangle = dockable.getValue();
             grid.add(rectangle.x, rectangle.y, rectangle.width, rectangle.height, dockable.getKey());
         }
