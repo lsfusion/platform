@@ -99,7 +99,7 @@ public class ToolBarNavigatorView extends NavigatorView {
         }
 
         @Override
-        public void mouseClicked(MouseEvent e) {
+        public void mouseReleased(MouseEvent e) {
             setSelectedElement(selected);
             controller.update();
             controller.openForm(getSelectedElement());
