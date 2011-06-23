@@ -242,6 +242,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP projectVote, claimerVote, nameNativeProjectVote, nameForeignProjectVote;
     LP dataDocumentNameExpert, documentNameExpert;
     LP clusterExpert, nameNativeClusterExpert;
+    LP primClusterExpert, extraClusterExpert, inClusterExpert;
+    LP clusterInExpertVote;
     LP clusterProject, nameNativeClusterProject, nameForeignClusterProject;
     LP clusterVote, nameNativeClusterVote;
     LP clusterProjectVote, equalsClusterProjectVote;
@@ -597,6 +599,10 @@ public class SkolkovoLogicsModule extends LogicsModule {
         clusterExpert = addDProp(idGroup, "clusterExpert", "Кластер (ИД)", cluster, expert);
         nameNativeClusterExpert = addJProp(baseGroup, "nameNativeClusterExpert", "Кластер", nameNative, clusterExpert, 1);
 
+        primClusterExpert = addJProp("primClusterExpert", "Вкл (осн.)", baseLM.equals2, 1, clusterExpert, 2);
+        extraClusterExpert = addDProp(baseGroup, "extraClusterExpert", "Вкл (доп.)", LogicalClass.instance, cluster, expert);
+        inClusterExpert = addSUProp(baseGroup, "inClusterExpert", true, "Вкл", Union.OVERRIDE, extraClusterExpert, addJProp(baseLM.equals2, 1, clusterExpert, 2));
+
         // project
         claimerProject = addDProp(idGroup, "claimerProject", "Заявитель (ИД)", claimer, project);
 
@@ -845,6 +851,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
         equalsClusterProjectVote = addJProp(baseGroup, true, "equalsClusterProjectVote", "Тек. кластер", baseLM.equals2, clusterVote, 1, clusterProjectVote, 1);
         nameNativeClusterVote = addJProp(baseGroup, "nameNativeClusterVote", "Кластер", nameNative, clusterVote, 1);
 
+        clusterInExpertVote = addJProp("clusterInExpertVote", "Вкл", inClusterExpert, clusterVote, 2, 1);
+
         nameNativeClaimerVote = addJProp(baseGroup, "nameNativeClaimerVote", "Заявитель", nameNativeClaimerProject, projectVote, 1);
         nameNativeClaimerVote.setMinimumWidth(10); nameNativeClaimerVote.setPreferredWidth(50);
         nameForeignClaimerVote = addJProp(baseGroup, "nameForeignClaimerVote", "Заявитель (иностр.)", nameForeignClaimerProject, projectVote, 1);
@@ -1044,8 +1052,10 @@ public class SkolkovoLogicsModule extends LogicsModule {
                                         voteInProgressProject, 1,
                                         voteSucceededProject, 1); // есть открытое заседания и есть состояшееся заседания !!! нужно создать новое заседание
 
-        addConstraint(addJProp("Эксперт не соответствует необходимому кластеру", baseLM.diff2,
-                clusterExpert, 1, addJProp(baseLM.and1, clusterVote, 2, inExpertVote, 1, 2), 1, 2), false);
+        addConstraint(addJProp("Эксперт не соответствует необходимому кластеру", baseLM.andNot1,
+                inExpertVote, 1, 2, clusterInExpertVote, 1, 2), false);
+//        addConstraint(addJProp("Эксперт не соответствует необходимому кластеру", baseLM.diff2,
+//                clusterExpert, 1, addJProp(baseLM.and1, clusterVote, 2, inExpertVote, 1, 2), 1, 2), false);
 
 //        addConstraint(addJProp("Количество экспертов не соответствует требуемому", baseLM.andNot1, is(vote), 1, addJProp(baseLM.equals2, requiredQuantity,
 //                addSGProp(addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), inExpertVote, 2, 1), 1), 1), 1), false);
@@ -1414,7 +1424,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
             addFixedFilter(new CompareFilterEntity(addPropertyObject(projectVote, objVote), Compare.EQUALS, objProject));
             addFixedFilter(new CompareFilterEntity(addPropertyObject(projectDocument, objDocument), Compare.EQUALS, objProject));
-            addFixedFilter(new CompareFilterEntity(addPropertyObject(clusterExpert, objExpert), Compare.EQUALS, addPropertyObject(clusterVote, objVote)));
+            addFixedFilter(new NotNullFilterEntity(addPropertyObject(clusterInExpertVote, objExpert, objVote)));
 
             RegularFilterGroupEntity expertFilterGroup = new RegularFilterGroupEntity(genID());
             expertFilterGroup.addFilter(new RegularFilterEntity(genID(),
@@ -1564,6 +1574,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
     private class ExpertFormEntity extends FormEntity<SkolkovoBusinessLogics> {
         private ObjectEntity objExpert;
         private ObjectEntity objVote;
+        private ObjectEntity objExtraCluster;
 
         private ExpertFormEntity(NavigatorElement parent, String sID) {
             super(parent, sID, "Реестр экспертов");
@@ -1577,8 +1588,19 @@ public class SkolkovoLogicsModule extends LogicsModule {
             addPropertyDraw(objExpert, objVote, allowedEmailLetterExpertVote);
             setForceViewType(voteResultCommentGroup, ClassViewType.PANEL);
 
+            objExtraCluster = addSingleGroupObject(cluster, "Дополнительные кластеры");
+            addPropertyDraw(extraClusterExpert, objExtraCluster, objExpert);
+            addPropertyDraw(objExtraCluster, nameNative, nameForeign);
+
+            RegularFilterGroupEntity inactiveFilterGroup = new RegularFilterGroupEntity(genID());
+            inactiveFilterGroup.addFilter(new RegularFilterEntity(genID(),
+                    new NotFilterEntity(new NotNullFilterEntity(addPropertyObject(disableExpert, objExpert))),
+                    "Только активные"), true);
+            addRegularFilterGroup(inactiveFilterGroup);
+
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(inNewExpertVote, objExpert, objVote)));
 
+            addFixedFilter(new NotFilterEntity(new NotNullFilterEntity(addPropertyObject(primClusterExpert, objExtraCluster, objExpert))));
 //            setReadOnly(true, objVote.groupTo);
 //            setReadOnly(allowedEmailLetterExpertVote, false);
 
@@ -1595,6 +1617,12 @@ public class SkolkovoLogicsModule extends LogicsModule {
             design.setPreferredSize(voteResultCheckGroup, new Dimension(60, -1));
 
             design.get(objExpert.groupTo).grid.getContainer().setFixedSize(new Dimension(-1, 300));
+
+            ContainerView specContainer = design.createContainer();
+            design.getMainContainer().addAfter(specContainer, design.getGroupObjectContainer(objExpert.groupTo));
+            specContainer.add(design.getGroupObjectContainer(objVote.groupTo));
+            specContainer.add(design.getGroupObjectContainer(objExtraCluster.groupTo));
+            specContainer.tabbedPane = true;
 
             return design;
         }
@@ -2189,7 +2217,7 @@ public class IncludeDocumentsActionProperty extends ActionProperty {
 
             // считываем всех неголосовавших экспертов из этого кластера
             query = new Query<String, String>(Collections.singleton("key"));
-            query.and(clusterExpert.getExpr(modifier, query.mapKeys.get("key")).compare(clusterProject.getExpr(modifier, projectObject.getExpr()), Compare.EQUALS));
+            query.and(inClusterExpert.getExpr(modifier, clusterProject.getExpr(modifier, projectObject.getExpr()), query.mapKeys.get("key")).getWhere());
             query.and(disableExpert.getExpr(modifier, query.mapKeys.get("key")).getWhere().not());
             query.and(voteResultProjectExpert.getExpr(modifier, projectObject.getExpr(), query.mapKeys.get("key")).getWhere().not());
 
