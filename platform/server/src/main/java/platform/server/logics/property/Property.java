@@ -290,6 +290,8 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
 
     public PropertyField field;
 
+    public boolean aggProp;
+
     public static class CommonClasses<T extends PropertyInterface> {
         public Map<T, ValueClass> interfaces;
         public ValueClass value;

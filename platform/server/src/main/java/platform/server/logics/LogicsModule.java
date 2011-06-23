@@ -981,6 +981,8 @@ public abstract class LogicsModule {
     }
 
     protected LP addAGProp(AbstractGroup group, boolean checkChange, String sID, boolean persistent, String caption, CustomClass customClass, LP... props) {
+        if(props.length==1)
+            props[0].property.aggProp = true;
         return addAGProp(group, checkChange, sID, persistent, caption, is(customClass), 1, getUParams(props, 0));
     }
 
