@@ -395,9 +395,9 @@ public abstract class CustomClass implements ObjectClass, ValueClass {
     }
 
     private abstract class ClassFormHolder {
-        private AbstractClassFormEntity form;
+        private ClassFormEntity form;
 
-        public AbstractClassFormEntity getForm(BaseLogicsModule LM) {
+        public ClassFormEntity getForm(BaseLogicsModule LM) {
             if (form != null) {
                 return form;
             }
@@ -407,30 +407,30 @@ public abstract class CustomClass implements ObjectClass, ValueClass {
             return form;
         }
 
-        public void setForm(AbstractClassFormEntity form) {
+        public void setForm(ClassFormEntity form) {
             this.form = form;
         }
 
-        protected abstract AbstractClassFormEntity createDefaultForm(BaseLogicsModule LM);
+        protected abstract ClassFormEntity createDefaultForm(BaseLogicsModule LM);
     }
 
     private ClassFormHolder listFormHolder = new ClassFormHolder() {
         @Override
-        protected AbstractClassFormEntity createDefaultForm(BaseLogicsModule LM) {
+        protected ClassFormEntity createDefaultForm(BaseLogicsModule LM) {
             return new ListFormEntity(LM, CustomClass.this);
         }
     };
 
     private ClassFormHolder dialogFormHolder = new ClassFormHolder() {
         @Override
-        protected AbstractClassFormEntity createDefaultForm(BaseLogicsModule LM) {
+        protected ClassFormEntity createDefaultForm(BaseLogicsModule LM) {
             return new DialogFormEntity(LM, CustomClass.this);
         }
     };
 
     private ClassFormHolder editFormHolder = new ClassFormHolder() {
         @Override
-        protected AbstractClassFormEntity createDefaultForm(BaseLogicsModule LM) {
+        protected ClassFormEntity createDefaultForm(BaseLogicsModule LM) {
             return new EditFormEntity(LM, CustomClass.this);
         }
     };
@@ -439,11 +439,11 @@ public abstract class CustomClass implements ObjectClass, ValueClass {
      * используются для классовых форм в навигаторе
      * @param LM
      */
-    public AbstractClassFormEntity getListForm(BaseLogicsModule LM) {
+    public ClassFormEntity getListForm(BaseLogicsModule LM) {
         return listFormHolder.getForm(LM);
     }
 
-    public void setListForm(AbstractClassFormEntity form) {
+    public void setListForm(ClassFormEntity form) {
         listFormHolder.setForm(form);
     }
 
@@ -451,11 +451,11 @@ public abstract class CustomClass implements ObjectClass, ValueClass {
      * используются при редактировании свойства даного класса из диалога, т.е. фактически для выбора объекта данного класса
      * @param LM
      */
-    public AbstractClassFormEntity getDialogForm(BaseLogicsModule LM) {
+    public ClassFormEntity getDialogForm(BaseLogicsModule LM) {
         return dialogFormHolder.getForm(LM);
     }
 
-    public void setDialogForm(AbstractClassFormEntity form) {
+    public void setDialogForm(ClassFormEntity form) {
         dialogFormHolder.setForm(form);
     }
 
@@ -463,11 +463,11 @@ public abstract class CustomClass implements ObjectClass, ValueClass {
      * используется для редактирования конкретного объекта данного класса
      * @param LM
      */
-    public AbstractClassFormEntity getEditForm(BaseLogicsModule LM) {
+    public ClassFormEntity getEditForm(BaseLogicsModule LM) {
         return editFormHolder.getForm(LM);
     }
 
-    public void setEditForm(AbstractClassFormEntity form) {
+    public void setEditForm(ClassFormEntity form) {
         editFormHolder.setForm(form);
     }
 }

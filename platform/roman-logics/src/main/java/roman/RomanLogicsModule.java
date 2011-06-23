@@ -2403,18 +2403,19 @@ public class RomanLogicsModule extends LogicsModule {
     @Override
     public void initNavigators() throws JRException, FileNotFoundException {
 
-        ToolBarNavigatorWindow mainToolbar = new ToolBarNavigatorWindow("mainToolbar", "Навигатор", 0, 0, 100, 7);
+        ToolBarNavigatorWindow mainToolbar = new ToolBarNavigatorWindow(JToolBar.HORIZONTAL, "mainToolbar", "Навигатор", 0, 0, 100, 7);
         mainToolbar.titleShown = false;
 
         baseLM.baseWindow.y = 10;
         baseLM.baseWindow.height -= 10;
 
-        ToolBarNavigatorWindow generateToolbar = new ToolBarNavigatorWindow("generateToolbar", "Генерация", 20, 7, 80, 6);
+        ToolBarNavigatorWindow generateToolbar = new ToolBarNavigatorWindow(JToolBar.HORIZONTAL, "generateToolbar", "Генерация", 20, 7, 80, 2);
         generateToolbar.titleShown = false;
         generateToolbar.drawRoot = true;
+        generateToolbar.verticalTextPosition = SwingConstants.CENTER;
+        generateToolbar.horizontalTextPosition = SwingConstants.TRAILING;
 
-        ToolBarNavigatorWindow leftToolbar = new ToolBarNavigatorWindow("leftToolbar", "Список", 0, 7, 20, 60);
-        leftToolbar.type = ToolBarNavigatorWindow.VERTICAL;               
+        ToolBarNavigatorWindow leftToolbar = new ToolBarNavigatorWindow(JToolBar.VERTICAL, "leftToolbar", "Список", 0, 7, 20, 60);
 
         baseLM.baseElement.window = mainToolbar;
         baseLM.adminElement.window = leftToolbar;
@@ -2564,7 +2565,7 @@ public class RomanLogicsModule extends LogicsModule {
         }
     }
 
-    private class CategoryFormEntity extends AbstractClassFormEntity<RomanBusinessLogics> {
+    private class CategoryFormEntity extends ClassFormEntity<RomanBusinessLogics> {
 
         private ObjectEntity objCategory;
 
@@ -2591,7 +2592,7 @@ public class RomanLogicsModule extends LogicsModule {
 
     }
 
-    private class CustomCategory10FormEntity extends AbstractClassFormEntity<RomanBusinessLogics> {
+    private class CustomCategory10FormEntity extends ClassFormEntity<RomanBusinessLogics> {
 
         private ObjectEntity objCustomCategory10;
 

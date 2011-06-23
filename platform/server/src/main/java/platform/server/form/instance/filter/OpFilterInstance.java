@@ -1,7 +1,7 @@
 package platform.server.form.instance.filter;
 
 import platform.base.BaseUtils;
-import platform.server.form.entity.AbstractClassFormEntity;
+import platform.server.form.entity.ClassFormEntity;
 import platform.server.form.entity.filter.FilterEntity;
 import platform.server.form.instance.CustomObjectInstance;
 import platform.server.form.instance.FormInstance;
@@ -68,7 +68,7 @@ public abstract class OpFilterInstance extends FilterInstance {
         op2.resolveAdd(session, modifier, object, addObject);
     }
     @Override
-    public <X extends PropertyInterface> Set<? extends FilterEntity> getResolveChangeFilters(AbstractClassFormEntity<?> formEntity, PropertyValueImplement<X> implement) {
+    public <X extends PropertyInterface> Set<? extends FilterEntity> getResolveChangeFilters(ClassFormEntity<?> formEntity, PropertyValueImplement<X> implement) {
         return BaseUtils.mergeSet(op1.getResolveChangeFilters(formEntity, implement), op2.getResolveChangeFilters(formEntity, implement));
     }
 

@@ -8,6 +8,7 @@ import java.awt.event.MouseEvent;
 import java.util.Set;
 
 public class ToolBarNavigatorView extends NavigatorView {
+
     public static final int X_ALLIGN = 15;
     public static final int BUTTON_WIDTH = 400;
     private JToolBar toolBar;
@@ -73,10 +74,9 @@ public class ToolBarNavigatorView extends NavigatorView {
         button.setToolTipText(element.toString());
         button.addMouseListener(new NavigatorMouseAdapter(element));
         button.setIcon(element.image);
-        if (window.type == JToolBar.HORIZONTAL) {
-            button.setVerticalTextPosition(SwingConstants.BOTTOM);
-            button.setHorizontalTextPosition(SwingConstants.CENTER);
-        } else {
+        button.setVerticalTextPosition(window.verticalTextPosition);
+        button.setHorizontalTextPosition(window.horizontalTextPosition);
+        if (window.type == JToolBar.VERTICAL) {
             button.setHorizontalAlignment(SwingConstants.LEFT);
             JPanel pane = new JPanel();
             pane.setLayout(new BoxLayout(pane, BoxLayout.X_AXIS));

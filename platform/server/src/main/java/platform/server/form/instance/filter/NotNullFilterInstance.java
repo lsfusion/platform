@@ -2,7 +2,7 @@ package platform.server.form.instance.filter;
 
 import platform.server.data.expr.Expr;
 import platform.server.data.where.Where;
-import platform.server.form.entity.AbstractClassFormEntity;
+import platform.server.form.entity.ClassFormEntity;
 import platform.server.form.entity.filter.FilterEntity;
 import platform.server.form.entity.filter.NotNullFilterEntity;
 import platform.server.form.instance.FormInstance;
@@ -43,7 +43,7 @@ public class NotNullFilterInstance<P extends PropertyInterface> extends Property
         return property.getExpr(mapKeys, modifier).getWhere();
     }
 
-    public <X extends PropertyInterface> Set<? extends FilterEntity> getResolveChangeFilters(AbstractClassFormEntity<?> formEntity, PropertyValueImplement<X> implement) {
+    public <X extends PropertyInterface> Set<? extends FilterEntity> getResolveChangeFilters(ClassFormEntity<?> formEntity, PropertyValueImplement<X> implement) {
         if(checkChange && Property.depends(property.property, implement.property)) {
             PropertyValueImplement<P> filterImplement = property.getValueImplement();
             OnChangeProperty<P, X> onChangeProperty = filterImplement.property.getOnChangeProperty(implement.property);

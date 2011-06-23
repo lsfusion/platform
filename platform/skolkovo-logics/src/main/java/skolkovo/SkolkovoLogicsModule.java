@@ -1212,11 +1212,10 @@ public class SkolkovoLogicsModule extends LogicsModule {
     @Override
     public void initNavigators() throws JRException, FileNotFoundException {
 
-        ToolBarNavigatorWindow mainToolbar = new ToolBarNavigatorWindow("mainToolbar", "Навигатор", 0, 0, 100, 7);
+        ToolBarNavigatorWindow mainToolbar = new ToolBarNavigatorWindow(JToolBar.HORIZONTAL, "mainToolbar", "Навигатор", 0, 0, 100, 7);
         mainToolbar.titleShown = false;
 
-        ToolBarNavigatorWindow leftToolbar = new ToolBarNavigatorWindow("leftToolbar", "Список", 0, 7, 20, 60);
-        leftToolbar.type = ToolBarNavigatorWindow.VERTICAL;
+        ToolBarNavigatorWindow leftToolbar = new ToolBarNavigatorWindow(JToolBar.VERTICAL, "leftToolbar", "Список", 0, 7, 20, 60);
 
         baseLM.baseElement.window = mainToolbar;
         baseLM.adminElement.window = leftToolbar;
@@ -1263,7 +1262,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         baseLM.baseElement.add(baseLM.adminElement); // перемещаем adminElement в конец
     }
     
-    private class ProjectFullFormEntity extends AbstractClassFormEntity<SkolkovoBusinessLogics> {
+    private class ProjectFullFormEntity extends ClassFormEntity<SkolkovoBusinessLogics> {
 
         private boolean foreign;
 
@@ -1685,7 +1684,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
     }
 
 
-    private class ClaimerFullFormEntity extends AbstractClassFormEntity<SkolkovoBusinessLogics> {
+    private class ClaimerFullFormEntity extends ClassFormEntity<SkolkovoBusinessLogics> {
          public ObjectEntity objClaimer;
 
          private ClaimerFullFormEntity(NavigatorElement parent, String sID) {

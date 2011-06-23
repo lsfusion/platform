@@ -1165,7 +1165,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
         return result;
     }
 
-    public <P extends PropertyInterface> Set<FilterEntity> getEditFixedFilters(AbstractClassFormEntity<T> editForm, PropertyObjectInstance<P> changeProperty, GroupObjectInstance selectionGroupObject) {
+    public <P extends PropertyInterface> Set<FilterEntity> getEditFixedFilters(ClassFormEntity<T> editForm, PropertyObjectInstance<P> changeProperty, GroupObjectInstance selectionGroupObject) {
         Set<FilterEntity> fixedFilters = new HashSet<FilterEntity>();
 
         PropertyValueImplement<P> implement = changeProperty.getValueImplement();
@@ -1198,7 +1198,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
     }
 
     public DialogInstance<T> createClassPropertyDialog(int viewID, int value) throws RemoteException, SQLException {
-        AbstractClassFormEntity<T> classForm = getPropertyDraw(viewID).propertyObject.getDialogClass().getDialogForm(BL.LM);
+        ClassFormEntity<T> classForm = getPropertyDraw(viewID).propertyObject.getDialogClass().getDialogForm(BL.LM);
         return new DialogInstance<T>(classForm, BL, session, securityPolicy, getFocusListener(), getClassListener(), classForm.getObject(), value, instanceFactory.computer);
     }
 
@@ -1211,7 +1211,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
         PropertyObjectInstance<?> changeProperty = propertyDraw.getChangeInstance(BL);
 
         CustomClass objectClass = changeProperty.getDialogClass();
-        AbstractClassFormEntity<T> classForm = objectClass.getEditForm(BL.LM);
+        ClassFormEntity<T> classForm = objectClass.getEditForm(BL.LM);
 
         Object currentObject = read(changeProperty);
         if (currentObject == null && objectClass instanceof ConcreteCustomClass) {
@@ -1229,7 +1229,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
         Result<Property> aggProp = new Result<Property>();
         PropertyObjectInstance<?> changeProperty = propertyDraw.getChangeInstance(aggProp, BL);
 
-        AbstractClassFormEntity<T> formEntity = changeProperty.getDialogClass().getDialogForm(BL.LM);
+        ClassFormEntity<T> formEntity = changeProperty.getDialogClass().getDialogForm(BL.LM);
         Set<FilterEntity> additionalFilters = getEditFixedFilters(formEntity, changeProperty, propertyDraw.toDraw);
 
         ObjectEntity dialogObject = formEntity.getObject();

@@ -4,13 +4,18 @@ import java.io.DataInputStream;
 import java.io.IOException;
 
 public class ClientToolBarNavigatorWindow extends ClientNavigatorWindow {
+
     public int type;
     public boolean showSelect;
+    public int verticalTextPosition;
+    public int horizontalTextPosition;
 
     public ClientToolBarNavigatorWindow(DataInputStream inStream) throws IOException {
         super(inStream);
         type = inStream.readInt();
         showSelect = inStream.readBoolean();
+        verticalTextPosition = inStream.readInt();
+        horizontalTextPosition = inStream.readInt();
     }
 
     @Override

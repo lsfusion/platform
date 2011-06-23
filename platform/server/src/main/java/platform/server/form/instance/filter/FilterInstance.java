@@ -3,7 +3,7 @@ package platform.server.form.instance.filter;
 import platform.interop.FilterType;
 import platform.server.data.expr.Expr;
 import platform.server.data.where.Where;
-import platform.server.form.entity.AbstractClassFormEntity;
+import platform.server.form.entity.ClassFormEntity;
 import platform.server.form.entity.filter.FilterEntity;
 import platform.server.form.instance.*;
 import platform.server.logics.DataObject;
@@ -62,7 +62,7 @@ public abstract class FilterInstance implements Updated {
 
     public void resolveAdd(DataSession session, Modifier<? extends Changes> modifier, CustomObjectInstance object, DataObject addObject) throws SQLException {
     }
-    public <X extends PropertyInterface> Set<? extends FilterEntity> getResolveChangeFilters(AbstractClassFormEntity<?> formEntity, PropertyValueImplement<X> implement) {
+    public <X extends PropertyInterface> Set<? extends FilterEntity> getResolveChangeFilters(ClassFormEntity<?> formEntity, PropertyValueImplement<X> implement) {
         return new HashSet<FilterEntity>();
     }
 }

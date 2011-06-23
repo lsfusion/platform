@@ -4,7 +4,7 @@ import platform.server.classes.CustomClass;
 import platform.server.logics.BaseLogicsModule;
 import platform.server.logics.BusinessLogics;
 
-public abstract class BaseClassFormEntity <T extends BusinessLogics<T>> extends AbstractClassFormEntity<T> {
+public abstract class BaseClassFormEntity <T extends BusinessLogics<T>> extends ClassFormEntity<T> {
 
     protected final ObjectEntity object;
 
