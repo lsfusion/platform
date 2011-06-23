@@ -61,8 +61,8 @@ public class ImportFromExcelActionProperty extends ActionProperty {
         // находим используемые свойства
         Map<String, PropertyDrawInstance> definedProperties = new HashMap<String, PropertyDrawInstance>();
         for (PropertyDrawInstance<?> property : ((RemoteForm<?, ?>) executeForm).form.properties)
-            if (definedPropertiesSIDs.contains(property.propertyObject.property.sID)) {
-                definedProperties.put(property.propertyObject.property.sID, property);
+            if (definedPropertiesSIDs.contains(property.propertyObject.property.getSID())) {
+                definedProperties.put(property.propertyObject.property.getSID(), property);
             }
 
         for (int i = 1; i < sh.getRows(); ++i) {

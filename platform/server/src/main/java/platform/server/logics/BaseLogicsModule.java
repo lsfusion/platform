@@ -866,6 +866,11 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         addFormEntity(new RemindUserPassFormEntity(adminElement, "remindPasswordLetter"));
     }
 
+    @Override
+    public String getNamePrefix() {
+        return null;
+    }
+
     protected Map<String, CustomClass> sidToClass = new HashMap<String, CustomClass>();
 
     //////////////////////////////////////////////////////////////////////////////

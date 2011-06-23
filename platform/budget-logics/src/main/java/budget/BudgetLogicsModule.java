@@ -484,6 +484,11 @@ public class BudgetLogicsModule extends LogicsModule {
         FormEntity reimbursement = addFormEntity(new ReimbursementFormEntity(aggregateData, "reimbursement", "Компенсация"));
     }
 
+    @Override
+    public String getNamePrefix() {
+        return null;
+    }
+
     private class RecordFormEntity extends FormEntity {
 
         public RecordFormEntity(NavigatorElement parent, String sID, String caption) {

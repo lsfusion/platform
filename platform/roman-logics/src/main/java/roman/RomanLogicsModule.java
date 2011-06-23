@@ -2521,6 +2521,11 @@ public class RomanLogicsModule extends LogicsModule {
         baseLM.baseElement.add(baseLM.adminElement);
     }
 
+    @Override
+    public String getNamePrefix() {
+        return null;
+    }
+
     private class BarcodeFormEntity extends FormEntity<RomanBusinessLogics> {
 
         ObjectEntity objBarcode;

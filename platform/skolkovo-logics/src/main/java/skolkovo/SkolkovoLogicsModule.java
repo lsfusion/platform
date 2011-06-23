@@ -1271,7 +1271,12 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         baseLM.baseElement.add(baseLM.adminElement); // перемещаем adminElement в конец
     }
-    
+
+    @Override
+    public String getNamePrefix() {
+        return null;
+    }
+
     private class ProjectFullFormEntity extends ClassFormEntity<SkolkovoBusinessLogics> {
 
         private boolean foreign;

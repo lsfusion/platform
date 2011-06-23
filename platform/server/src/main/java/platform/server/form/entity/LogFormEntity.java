@@ -73,7 +73,7 @@ public class LogFormEntity<T extends BusinessLogics<T>> extends FormEntity<T> {
 
         for (PropertyClassImplement impl : recognizePropImpls) {
             int paramCnt = logProperty.property.interfaces.size();
-            JoinProperty<?> jProp = new JoinProperty("LogForm_" + impl.property.sID, impl.property.caption, paramCnt, false);
+            JoinProperty<?> jProp = new JoinProperty("LogForm_" + impl.property.getSID(), impl.property.caption, paramCnt, false);
             jProp.inheritFixedCharWidth(impl.property);
             LP<?> ljProp = new LP<JoinProperty.Interface>(jProp);
 

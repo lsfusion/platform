@@ -108,7 +108,7 @@ public class OnChangeProperty<T extends PropertyInterface,P extends PropertyInte
     }
 
     public OnChangeProperty(Property<T> onChange, Property<P> toChange) {
-        super(onChange.sID+"_ONCH_"+toChange.sID,onChange.caption+" по ("+toChange.caption+")", getInterfaces(onChange, toChange));
+        super(onChange.getSID() +"_ONCH_"+ toChange.getSID(),onChange.caption+" по ("+toChange.caption+")", getInterfaces(onChange, toChange));
         this.onChange = onChange;
         this.toChange = toChange;
     }

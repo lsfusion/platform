@@ -4,24 +4,21 @@ import net.sf.jasperreports.engine.JRException;
 import org.apache.log4j.Logger;
 import platform.interop.ClassViewType;
 import platform.interop.Compare;
-import platform.interop.form.layout.DoNotIntersectSimplexConstraint;
-import platform.server.classes.*;
-import platform.server.form.entity.*;
-import platform.server.form.entity.filter.*;
+import platform.server.classes.ConcreteCustomClass;
+import platform.server.classes.CustomClass;
+import platform.server.classes.DoubleClass;
+import platform.server.classes.StringClass;
+import platform.server.form.entity.FormEntity;
+import platform.server.form.entity.ObjectEntity;
+import platform.server.form.entity.PropertyObjectEntity;
+import platform.server.form.entity.filter.CompareFilterEntity;
+import platform.server.form.entity.filter.NotNullFilterEntity;
 import platform.server.form.navigator.NavigatorElement;
-import platform.server.form.view.DefaultFormView;
-import platform.server.form.view.FormView;
 import platform.server.logics.BaseLogicsModule;
-import platform.server.logics.DataObject;
 import platform.server.logics.LogicsModule;
 import platform.server.logics.linear.LP;
 
-import javax.swing.*;
-import java.awt.*;
-import java.awt.event.InputEvent;
-import java.awt.event.KeyEvent;
 import java.io.FileNotFoundException;
-import java.util.logging.Filter;
 
 /**
  * Created by IntelliJ IDEA.
@@ -273,6 +270,11 @@ public class RetailLogicsModule extends LogicsModule {
         FormEntity BalanceStockSkuBatch = addFormEntity(new BalanceStockSkuBatch(materialManagement, "BalanceStockSkuBatch", "Остаток по складам-товарам"));
         FormEntity CustomerShipment = addFormEntity(new CustomerShipment(materialManagement, "CustomerShipment", "Отгрузка покупателю"));
         FormEntity DistributionShipment = addFormEntity(new DistributionShipment(materialManagement, "DistributionShipment", "Внутреннее перемещение"));
+    }
+
+    @Override
+    public String getNamePrefix() {
+        return null;
     }
 
     private class SkuBarcodeForm extends FormEntity<RetailBusinessLogics>{

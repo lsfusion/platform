@@ -37,7 +37,6 @@ import platform.server.form.navigator.*;
 import platform.server.integration.*;
 import platform.server.logics.linear.LP;
 import platform.server.logics.property.*;
-import platform.server.logics.property.derived.MaxChangeProperty;
 import platform.server.logics.scheduler.Scheduler;
 import platform.server.logics.table.ImplementTable;
 import platform.server.serialization.ServerSerializationPool;
@@ -56,6 +55,10 @@ import static java.util.Arrays.asList;
 public abstract class BusinessLogics<T extends BusinessLogics<T>> extends RemoteObject implements RemoteLogicsInterface {
     protected List<LogicsModule> logicModules = new ArrayList<LogicsModule>();
     final public BaseLogicsModule<T> LM;
+
+    public List<LogicsModule> getLogicModules() {
+        return logicModules;
+    }
 
     protected final static Logger logger = Logger.getLogger(BusinessLogics.class);
     //время жизни неиспользуемого навигатора - 3 часа по умолчанию
@@ -519,7 +522,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
         Set idSet = new HashSet<String>();
         for (Property property : getProperties()) {
-            assert idSet.add(property.sID) : "Same sid " + property.sID;
+            assert idSet.add(property.getSID()) : "Same sid " + property.getSID();
         }
 
         for (LogicsModule module : logicModules) {
@@ -1160,7 +1163,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         // запишем новое состояние таблиц (чтобы потом изменять можно было бы)
         outDB.writeInt(storedProperties.size());
         for (Property<?> property : storedProperties) {
-            outDB.writeUTF(property.sID);
+            outDB.writeUTF(property.getSID());
             outDB.writeUTF(property.mapTable.table.name);
             for (Map.Entry<? extends PropertyInterface, KeyField> mapKey : property.mapTable.mapKeys.entrySet()) {
                 outDB.writeInt(mapKey.getKey().ID);
@@ -1204,7 +1207,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             boolean keep = false;
             for (Iterator<Property> is = storedProperties.iterator(); is.hasNext();) {
                 Property<?> property = is.next();
-                if (property.sID.equals(sID)) {
+                if (property.getSID().equals(sID)) {
                     Map<KeyField, PropertyInterface> foundInterfaces = new HashMap<KeyField, PropertyInterface>();
                     for (PropertyInterface propertyInterface : property.interfaces) {
                         KeyField mapKeyField = mapKeys.get(propertyInterface.ID);
@@ -1289,7 +1292,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         LM.compositeName.getProperty(sID);
 
         for (LP lp : LM.lproperties) {
-            if (lp.property.sID.equals(sID)) {
+            if (lp.property.getSID().equals(sID)) {
                 return lp;
             }
         }
@@ -1444,7 +1447,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
     public void outputPropertyClasses() {
         for (LP lp : LM.lproperties) {
-            logger.debug(lp.property.sID + " : " + lp.property.caption + " - " + lp.getClassWhere());
+            logger.debug(lp.property.getSID() + " : " + lp.property.caption + " - " + lp.getClassWhere());
         }
     }
 

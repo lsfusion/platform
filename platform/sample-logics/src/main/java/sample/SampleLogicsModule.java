@@ -133,6 +133,11 @@ public class SampleLogicsModule extends LogicsModule {
 //        extIncomeDocument.relevantElements.set(0, extIncDetailForm);
     }
 
+    @Override
+    public String getNamePrefix() {
+        return null;
+    }
+
     private class DocumentFormEntity extends FormEntity {
 
         public DocumentFormEntity(NavigatorElement parent, String sID, String caption) {

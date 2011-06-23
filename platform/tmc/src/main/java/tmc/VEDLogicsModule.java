@@ -1731,6 +1731,11 @@ public class VEDLogicsModule extends LogicsModule {
         documentShopPrice.addRelevant(pricers);
     }
 
+    @Override
+    public String getNamePrefix() {
+        return null;
+    }
+
 
     public static Font FONT_SMALL_BOLD = new Font("Tahoma", Font.BOLD, 12);
     public static Font FONT_SMALL_PLAIN = new Font("Tahoma", Font.PLAIN, 12);

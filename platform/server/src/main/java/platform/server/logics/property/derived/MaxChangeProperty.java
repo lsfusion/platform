@@ -84,7 +84,7 @@ public class MaxChangeProperty<T extends PropertyInterface,P extends PropertyInt
     }
 
     public MaxChangeProperty(Property<T> onChange, Property<P> toChange) {
-        super(onChange.sID+"_CH_"+toChange.sID,onChange.caption+" по ("+toChange.caption+")", getInterfaces(toChange));
+        super(onChange.getSID() +"_CH_"+ toChange.getSID(),onChange.caption+" по ("+toChange.caption+")", getInterfaces(toChange));
         this.onChange = onChange;
         this.toChange = toChange;
     }

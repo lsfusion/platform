@@ -48,7 +48,7 @@ import static platform.base.BaseUtils.join;
 
 public abstract class Property<T extends PropertyInterface> extends AbstractNode implements MapKeysInterface<T>, ServerIdentitySerializable {
 
-    public final String sID;
+    private String sID;
 
     public String caption;
     public String toolTip;
@@ -86,7 +86,7 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
     public int ID = 0;
 
     public String getCode() {
-        return sID;
+        return getSID();
     }
 
     public boolean isField() {
@@ -138,7 +138,7 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
     }
 
     public Property(String sID, String caption, List<T> interfaces) {
-        this.sID = sID;
+        this.setSID(sID);
         this.caption = caption;
         this.interfaces = interfaces;
 
@@ -289,8 +289,26 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
     }
 
     public PropertyField field;
-
+    
     public boolean aggProp;
+
+    public String getSID() {
+        return sID;
+    }
+
+    private boolean canChangeSID = true;
+
+    public void setSID(String sID) {
+        if (canChangeSID) {
+            this.sID = sID;
+        } else {
+            throw new RuntimeException("Can't change property SID after initialization");
+        }
+    }
+
+    public void freezeSID() {
+        canChangeSID = false;
+    }
 
     public static class CommonClasses<T extends PropertyInterface> {
         public Map<T, ValueClass> interfaces;
@@ -317,7 +335,7 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
     public void markStored(TableFactory tableFactory) {
         mapTable = tableFactory.getMapTable(getMapClasses());
 
-        PropertyField storedField = new PropertyField(sID, getType());
+        PropertyField storedField = new PropertyField(getSID(), getType());
         mapTable.table.addField(storedField, getClassWhere(storedField));
 
         // именно после так как высчитали, а то сама себя stored'ом считать будет
@@ -573,7 +591,7 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
 
     @Override
     public Property getProperty(String sid) {
-        return this.sID.equals(sid) ? this : null;
+        return this.getSID().equals(sid) ? this : null;
     }
 
 
@@ -588,7 +606,7 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
     }
 
     public void customSerialize(ServerSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
-        outStream.writeUTF(sID);
+        outStream.writeUTF(getSID());
         outStream.writeUTF(caption);
         outStream.writeBoolean(toolTip != null);
         if (toolTip != null)

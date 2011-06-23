@@ -152,7 +152,7 @@ public class ReportDesignGenerator {
 
             String highlightPropertySID = null;
             if (highlightProp != null) {
-                ReportDrawField reportField = new ReportDrawField(highlightProp.property.sID, "");
+                ReportDrawField reportField = new ReportDrawField(highlightProp.property.getSID(), "");
                 highlightProp.property.getType().fillReportDrawField(reportField);
                 addDesignField(design, reportField);
                 highlightPropertySID = reportField.sID;

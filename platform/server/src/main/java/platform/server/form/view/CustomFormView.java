@@ -129,7 +129,7 @@ public class CustomFormView extends FormView {
 
         List<PropertyDrawEntity> props = form.propertyDraws;
         for (PropertyDrawEntity prop : props) {
-            if (lp.property.sID.equals(prop.propertyObject.property.sID) && new HashSet<ObjectEntity>(prop.propertyObject.mapping.values()).equals(set)) {
+            if (lp.property.getSID().equals(prop.propertyObject.property.getSID()) && new HashSet<ObjectEntity>(prop.propertyObject.mapping.values()).equals(set)) {
                 propertyEntity = prop;
                 break;
             }

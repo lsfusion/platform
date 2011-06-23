@@ -365,8 +365,8 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
             propertyImplement.property.proceedDefaultDraw(propertyDraw, this);
         }
 
-        if (propertyImplement.property.sID != null) {
-            String propertyDrawSID = propertyImplement.property.sID;
+        if (propertyImplement.property.getSID() != null) {
+            String propertyDrawSID = propertyImplement.property.getSID();
             Integer cnt = propertySIDCount.get(propertyDrawSID);
             if (cnt == null) {
                 propertySIDCount.put(propertyDrawSID, 1);
