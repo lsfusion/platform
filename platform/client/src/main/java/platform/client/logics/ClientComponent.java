@@ -151,74 +151,74 @@ public abstract class ClientComponent extends ContextIdentityObject implements S
     }
 
     public String getMinimumWidth() {
-        return String.valueOf(minimumSize != null ? minimumSize.width : 0);
+        return String.valueOf(minimumSize != null ? minimumSize.width : -1);
+    }
+
+    private Dimension changeWidth(Dimension dimension, String value) {
+        Dimension newDimension = new Dimension(Integer.decode(value), (dimension == null) ? -1 : dimension.height);
+        if (newDimension.width == -1 && newDimension.height == -1) {
+            return null;
+        } else {
+            return newDimension;
+        }
+    }
+
+    private Dimension changeHeight(Dimension dimension, String value) {
+        Dimension newDimension = new Dimension((dimension == null) ? -1 : dimension.width, Integer.decode(value));
+        if (newDimension.width == -1 && newDimension.height == -1) {
+            return null;
+        } else {
+            return newDimension;
+        }
     }
 
     public void setMinimumWidth(String minimumWidth) {
-        if (minimumSize == null) {
-            minimumSize = new Dimension();
-        }
-        minimumSize.width = Integer.decode(minimumWidth);
+        minimumSize = changeWidth(minimumSize, minimumWidth);
         updateDependency(this, "minimumWidth");
     }
 
     public String getMinimumHeight() {
-        return String.valueOf(minimumSize != null ? minimumSize.height : 0);
+        return String.valueOf(minimumSize != null ? minimumSize.height : -1);
     }
 
     public void setMinimumHeight(String minimumHeight) {
-        if (minimumSize == null) {
-            minimumSize = new Dimension();
-        }
-        minimumSize.height = Integer.decode(minimumHeight);
+        minimumSize = changeHeight(minimumSize, minimumHeight);
         updateDependency(this, "minimumHeight");
     }
 
     public String getMaximumWidth() {
-        return String.valueOf(maximumSize != null ? maximumSize.width : 0);
+        return String.valueOf(maximumSize != null ? maximumSize.width : -1);
     }
 
     public void setMaximumWidth(String maximumWidth) {
-        if (maximumSize == null) {
-            maximumSize = new Dimension();
-        }
-        maximumSize.width = Integer.decode(maximumWidth);
+        maximumSize = changeWidth(maximumSize, maximumWidth);
         updateDependency(this, "maximumWidth");
     }
 
     public String getMaximumHeight() {
-        return String.valueOf(maximumSize != null ? maximumSize.height : 0);
+        return String.valueOf(maximumSize != null ? maximumSize.height : -1);
     }
 
     public void setMaximumHeight(String maximumHeight) {
-        if (maximumSize == null) {
-            maximumSize = new Dimension();
-        }
-        maximumSize.height = Integer.decode(maximumHeight);
+        maximumSize = changeHeight(maximumSize, maximumHeight);
         updateDependency(this, "maximumHeight");
     }
 
     public String getPreferredWidth() {
-        return String.valueOf(preferredSize != null ? preferredSize.width : 0);
+        return String.valueOf(preferredSize != null ? preferredSize.width : -1);
     }
 
     public void setPreferredWidth(String preferredWidth) {
-        if (preferredSize == null) {
-            preferredSize = new Dimension();
-        }
-        preferredSize.width = Integer.decode(preferredWidth);
+        preferredSize = changeWidth(preferredSize, preferredWidth);
         updateDependency(this, "preferredWidth");
     }
 
     public String getPreferredHeight() {
-        return String.valueOf(preferredSize != null ? preferredSize.height : 0);
+        return String.valueOf(preferredSize != null ? preferredSize.height : -1);
     }
 
     public void setPreferredHeight(String preferredHeight) {
-        if (preferredSize == null) {
-            preferredSize = new Dimension();
-        }
-        preferredSize.height = Integer.decode(preferredHeight);
+        preferredSize = changeHeight(preferredSize, preferredHeight);
         updateDependency(this, "preferredHeight");
     }
 
