@@ -1,11 +1,17 @@
 package skolkovo;
 
+//import com.smartgwt.client.docs.Files;
+import com.sun.xml.internal.ws.wsdl.writer.document.Import;
 import jasperapi.ReportGenerator;
 import net.sf.jasperreports.engine.JRAbstractExporter;
 import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JRExporterParameter;
 import net.sf.jasperreports.engine.JasperPrint;
 import net.sf.jasperreports.engine.export.JRPdfExporter;
+import org.jdom.Document;
+import org.jdom.Element;
+import org.jdom.JDOMException;
+import org.jdom.input.SAXBuilder;
 import platform.base.BaseUtils;
 import platform.base.IOUtils;
 import platform.interop.ClassViewType;
@@ -41,14 +47,14 @@ import platform.server.mail.EmailActionProperty;
 import platform.server.session.Changes;
 import platform.server.session.DataSession;
 import platform.server.session.Modifier;
+import skolkovo.actions.ImportProjectsActionProperty;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyEvent;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.sql.SQLException;
+import java.io.*;
+import java.sql.*;
+import java.sql.Date;
 import java.util.*;
 import java.util.List;
 
@@ -76,28 +82,36 @@ public class SkolkovoLogicsModule extends LogicsModule {
     private LP emailClaimerAcceptedHeaderProject;
     private LP emailAcceptedProjectEA;
     private LP emailAcceptedProject;
+    public LP sidProject;
+    public LP sidToProject;
+    public LP nameNativeToClaimer;
+    public LP nameNativeToCluster;
+    public LP nameNativeCluster;
+    private LP nameForeignCluster;
+    public LP dateProject;
+    public LP nativeNumberToPatent;
 
     AbstractCustomClass multiLanguageNamed;
 
-    ConcreteCustomClass project;
+    public ConcreteCustomClass project;
     ConcreteCustomClass expert;
-    ConcreteCustomClass cluster;
-    ConcreteCustomClass claimer;
+    public ConcreteCustomClass cluster;
+    public ConcreteCustomClass claimer;
     ConcreteCustomClass documentTemplate;
     ConcreteCustomClass documentAbstract;
     ConcreteCustomClass documentTemplateDetail;
     ConcreteCustomClass document;
 
-    ConcreteCustomClass nonRussianSpecialist;
-    ConcreteCustomClass academic;
-    ConcreteCustomClass patent;
+    public ConcreteCustomClass nonRussianSpecialist;
+    public ConcreteCustomClass academic;
+    public ConcreteCustomClass patent;
 
     ConcreteCustomClass vote;
 
-    StaticCustomClass projectType;
+    public StaticCustomClass projectType;
     StaticCustomClass language;
     StaticCustomClass documentType;
-    StaticCustomClass ownerType;
+    public StaticCustomClass ownerType;
 
     StaticCustomClass voteResult;
     StaticCustomClass projectStatus;
@@ -229,16 +243,19 @@ public class SkolkovoLogicsModule extends LogicsModule {
         voteResultCommentGroup = addAbstractGroup("voteResultCommentGroup", "Результаты голосования (комментарии)", voteResultGroup, false);
     }
 
-    LP nameNative, nameForeign;
-    LP firmNameNativeClaimer, firmNameForeignClaimer;
-    LP phoneClaimer;
-    LP addressClaimer;
-    LP siteClaimer;
-    LP emailClaimer;
+    public LP nameNative;
+    public LP nameForeign;
+    public LP firmNameNativeClaimer;
+    public LP firmNameForeignClaimer;
+    public LP phoneClaimer;
+    public LP addressClaimer;
+    public LP siteClaimer;
+    public LP emailClaimer;
     LP statementClaimer, loadStatementClaimer, openStatementClaimer;
     LP constituentClaimer, loadConstituentClaimer, openConstituentClaimer;
     LP extractClaimer, loadExtractClaimer, openExtractClaimer;
-    LP OGRNClaimer, INNClaimer;
+    public LP OGRNClaimer;
+    public LP INNClaimer;
     LP projectVote, claimerVote, nameNativeProjectVote, nameForeignProjectVote;
     LP dataDocumentNameExpert, documentNameExpert;
     LP clusterExpert, nameNativeClusterExpert;
@@ -247,7 +264,9 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP clusterProject, nameNativeClusterProject, nameForeignClusterProject;
     LP clusterVote, nameNativeClusterVote;
     LP clusterProjectVote, equalsClusterProjectVote;
-    LP claimerProject, nameNativeClaimerProject, nameForeignClaimerProject;
+    public LP claimerProject;
+    LP nameNativeClaimerProject;
+    LP nameForeignClaimerProject;
     LP nameNativeJoinClaimerProject;
     LP nameForeignJoinClaimerProject;
     LP emailDocuments;
@@ -255,12 +274,15 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP emailToExpert;
 
     LP nameNativeClaimerVote, nameForeignClaimerVote;
-    LP nameNativeGenitiveManagerProject, nameGenitiveManagerProject;
-    LP nameNativeDativusManagerProject, nameDativusManagerProject;
-    LP nameNativeAblateManagerProject, nameAblateManagerProject;
+    public LP nameNativeGenitiveManagerProject;
+    LP nameGenitiveManagerProject;
+    public LP nameNativeDativusManagerProject;
+    LP nameDativusManagerProject;
+    public LP nameNativeAblateManagerProject;
+    LP nameAblateManagerProject;
 
-    LP nameNativeClaimer;
-    LP nameForeignClaimer;
+    public LP nameNativeClaimer;
+    public LP nameForeignClaimer;
     LP nameGenitiveClaimerProject;
     LP nameDativusClaimerProject;
     LP nameAblateClaimerProject;
@@ -352,6 +374,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
     LP generateDocumentsProjectDocumentType;
     LP includeDocumentsProjectDocumentType;
+    LP importProjectsAction;
     LP generateVoteProject, hideGenerateVoteProject;
     LP copyResultsVote;
 
@@ -397,20 +420,20 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
     LP nameDocument;
 
-    LP nameNativeProject;
-    LP nameForeignProject;
-    LP nameNativeManagerProject;
-    LP nameForeignManagerProject;
-    LP nativeProblemProject;
-    LP foreignProblemProject;
-    LP nativeInnovativeProject;
-    LP foreignInnovativeProject;
-    LP projectTypeProject;
+    public LP nameNativeProject;
+    public LP nameForeignProject;
+    public LP nameNativeManagerProject;
+    public LP nameForeignManagerProject;
+    public LP nativeProblemProject;
+    public LP foreignProblemProject;
+    public LP nativeInnovativeProject;
+    public LP foreignInnovativeProject;
+    public LP projectTypeProject;
     LP nameProjectTypeProject;
-    LP nativeSubstantiationProjectType;
-    LP foreignSubstantiationProjectType;
-    LP nativeSubstantiationClusterProject;
-    LP foreignSubstantiationClusterProject;
+    public LP nativeSubstantiationProjectType;
+    public LP foreignSubstantiationProjectType;
+    public LP nativeSubstantiationClusterProject;
+    public LP foreignSubstantiationClusterProject;
     LP fileNativeSummaryProject;
     LP loadFileNativeSummaryProject;
     LP openFileNativeSummaryProject;
@@ -427,23 +450,23 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP loadFileForeignTechnicalDescriptionProject;
     LP openFileForeignTechnicalDescriptionProject;
 
-    LP isReturnInvestmentsProject;
-    LP nameReturnInvestorProject;
-    LP amountReturnFundsProject;
-    LP isNonReturnInvestmentsProject;
-    LP nameNonReturnInvestorProject;
-    LP amountNonReturnFundsProject;
-    LP isCapitalInvestmentProject;
-    LP isPropertyInvestmentProject;
-    LP isGrantsProject;
-    LP isOtherNonReturnInvestmentsProject;
-    LP commentOtherNonReturnInvestmentsProject;
-    LP isOwnFundsProject;
-    LP amountOwnFundsProject;
-    LP isPlanningSearchSourceProject;
-    LP amountFundsProject;
-    LP isOtherSoursesProject;
-    LP commentOtherSoursesProject;
+    public LP isReturnInvestmentsProject;
+    public LP nameReturnInvestorProject;
+    public LP amountReturnFundsProject;
+    public LP isNonReturnInvestmentsProject;
+    public LP nameNonReturnInvestorProject;
+    public LP amountNonReturnFundsProject;
+    public LP isCapitalInvestmentProject;
+    public LP isPropertyInvestmentProject;
+    public LP isGrantsProject;
+    public LP isOtherNonReturnInvestmentsProject;
+    public LP commentOtherNonReturnInvestmentsProject;
+    public LP isOwnFundsProject;
+    public LP amountOwnFundsProject;
+    public LP isPlanningSearchSourceProject;
+    public LP amountFundsProject;
+    public LP isOtherSoursesProject;
+    public LP commentOtherSoursesProject;
     LP hideNameReturnInvestorProject;
     LP hideAmountReturnFundsProject;
     LP hideNameNonReturnInvestorProject;
@@ -457,38 +480,41 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP hideIsGrantsProject;
     LP hideIsOtherNonReturnInvestmentsProject;
 
-    LP isOwnedEquipmentProject;
-    LP isAvailableEquipmentProject;
-    LP isTransferEquipmentProject;
-    LP descriptionTransferEquipmentProject;
-    LP ownerEquipmentProject;
-    LP isPlanningEquipmentProject;
-    LP specificationEquipmentProject;
-    LP isSeekEquipmentProject;
-    LP descriptionEquipmentProject;
-    LP isOtherEquipmentProject;
-    LP commentEquipmentProject;
+    public LP isOwnedEquipmentProject;
+    public LP isAvailableEquipmentProject;
+    public LP isTransferEquipmentProject;
+    public LP descriptionTransferEquipmentProject;
+    public LP ownerEquipmentProject;
+    public LP isPlanningEquipmentProject;
+    public LP specificationEquipmentProject;
+    public LP isSeekEquipmentProject;
+    public LP descriptionEquipmentProject;
+    public LP isOtherEquipmentProject;
+    public LP commentEquipmentProject;
     LP hideDescriptionTransferEquipmentProject;
     LP hideOwnerEquipmentProject;
     LP hideSpecificationEquipmentProject;
     LP hideDescriptionEquipmentProject;
     LP hideCommentEquipmentProject;
 
-    LP projectPatent;
-    LP nativeTypePatent;
-    LP foreignTypePatent;
-    LP nativeNumberPatent;
-    LP foreignNumberPatent;
-    LP priorityDatePatent;
-    LP isOwned;
-    LP ownerPatent;
-    LP ownerTypePatent;
+    public LP projectPatent;
+    public LP nativeTypePatent;
+    public LP foreignTypePatent;
+    public LP nativeNumberPatent;
+    public LP foreignNumberPatent;
+    public LP priorityDatePatent;
+    public LP isOwned;
+    public LP ownerPatent;
+    public LP ownerTypePatent;
+    LP ownerTypeToPatent;
     LP nameOwnerTypePatent;
+    public LP ownerTypeToSID;
+    public LP projectTypeToSID;
     LP fileIntentionOwnerPatent;
     LP loadFileIntentionOwnerPatent;
     LP openFileIntentionOwnerPatent;
-    LP isValuated;
-    LP valuatorPatent;
+    public LP isValuated;
+    public LP valuatorPatent;
     LP fileActValuationPatent;
     LP loadFileActValuationPatent;
     LP openFileActValuationPatent;
@@ -502,10 +528,11 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP hideOpenFileActValuationPatent;
     LP hideNameOwnerTypePatent;
 
-    LP projectAcademic;
-    LP fullNameAcademic;
-    LP institutionAcademic;
-    LP titleAcademic;
+    public LP projectAcademic;
+    public LP fullNameAcademic;
+    public LP fullNameToAcademic;
+    public LP institutionAcademic;
+    public LP titleAcademic;
     LP fileDocumentConfirmingAcademic;
     LP loadFileDocumentConfirmingAcademic;
     LP openFileDocumentConfirmingAcademic;
@@ -513,10 +540,11 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP loadFileDocumentEmploymentAcademic;
     LP openFileDocumentEmploymentAcademic;
 
-    LP projectNonRussianSpecialist;
-    LP fullNameNonRussianSpecialist;
-    LP organizationNonRussianSpecialist;
-    LP titleNonRussianSpecialist;
+    public LP projectNonRussianSpecialist;
+    public LP fullNameNonRussianSpecialist;
+    public LP fullNameToNonRussianSpecialist;
+    public LP organizationNonRussianSpecialist;
+    public LP titleNonRussianSpecialist;
     LP fileNativeResumeNonRussianSpecialist;
     LP loadFileForeignResumeNonRussianSpecialist;
     LP openFileForeignResumeNonRussianSpecialist;
@@ -558,6 +586,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         //свойства заявителя
         nameNativeClaimer = addJProp(claimerInformationGroup, "nameNativeClaimer", "Заявитель", baseLM.and1, nameNative, 1, is(claimer), 1);
         nameNativeClaimer.setMinimumWidth(10); nameNativeClaimer.setPreferredWidth(50);
+        nameNativeToClaimer = addAGProp("nameNativeToClaimer", "Имя заявителя", nameNativeClaimer);
         nameForeignClaimer = addJProp(claimerInformationGroup, "nameForeignClaimer", "Claimer", baseLM.and1,  nameForeign, 1, is(claimer), 1);
         nameForeignClaimer.setMinimumWidth(10); nameForeignClaimer.setPreferredWidth(50);
         firmNameNativeClaimer = addDProp(claimerInformationGroup, "firmNameNativeClaimer", "Фирменное название", InsensitiveStringClass.get(2000), claimer);
@@ -608,6 +637,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         claimerVote = addJProp(idGroup, "claimerVote", "Заявитель (ИД)", claimerProject, projectVote, 1);
 
+        sidProject = addDProp(projectInformationGroup, "sidProject", "Внешний идентификатор проекта", StringClass.get(10), project);
+        sidToProject = addAGProp("sidToProject", "SID проекта", sidProject);
         nameNativeManagerProject = addDProp(projectInformationGroup, "nameNativeManagerProject", "ФИО руководителя проекта", InsensitiveStringClass.get(2000), project);
         nameNativeManagerProject.setMinimumWidth(10); nameNativeManagerProject.setPreferredWidth(50);
         nameNativeGenitiveManagerProject = addDProp(projectInformationGroup, "nameNativeGenitiveManagerProject", "ФИО руководителя проекта (Кого)", InsensitiveStringClass.get(2000), project);
@@ -661,6 +692,9 @@ public class SkolkovoLogicsModule extends LogicsModule {
         foreignSubstantiationProjectType.setMinimumWidth(10); foreignSubstantiationProjectType.setPreferredWidth(50);
 
         clusterProject = addDProp(idGroup, "clusterProject", "Кластер (ИД)", cluster, project);
+        nameNativeCluster = addJProp("nameNativeCluster", "Кластер", baseLM.and1, nameNative, 1, is(cluster), 1);
+        nameNativeToCluster = addAGProp(idGroup, "nameNativeToCluster", "Кластер", nameNativeCluster);
+        nameForeignCluster = addJProp("nameForeignCluster", "Cluster", baseLM.and1,  nameForeign, 1, is(cluster), 1);
         nameNativeClusterProject = addJProp(innovationGroup, "nameNativeClusterProject", "Кластер", nameNative, clusterProject, 1);
         nameForeignClusterProject = addJProp(innovationGroup, "nameForeignClusterProject", "Кластер (иностр.)", nameForeign, clusterProject, 1);
         nativeSubstantiationClusterProject = addDProp(innovationGroup, "nativeSubstantiationClusterProject", "Обоснование выбора", InsensitiveStringClass.get(2000), project);
@@ -771,6 +805,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         foreignTypePatent.setMinimumWidth(10); foreignTypePatent.setPreferredWidth(50);
         nativeNumberPatent = addDProp(baseGroup, "nativeNumberPatent", "Номер", InsensitiveStringClass.get(2000), patent);
         nativeNumberPatent.setMinimumWidth(10); nativeNumberPatent.setPreferredWidth(50);
+        nativeNumberToPatent = addAGProp("nativeNumberToPatent", "номер патента", nativeNumberPatent);
         foreignNumberPatent = addDProp(baseGroup, "foreignNumberPatent", "Reference number", InsensitiveStringClass.get(2000), patent);
         foreignNumberPatent.setMinimumWidth(10); foreignNumberPatent.setPreferredWidth(50);
         priorityDatePatent = addDProp(baseGroup, "priorityDatePatent", "Дата приоритета", DateClass.instance, patent);
@@ -779,7 +814,10 @@ public class SkolkovoLogicsModule extends LogicsModule {
         ownerPatent = addDProp(baseGroup, "ownerPatent", "Укажите правообладателя и его контактную информацию", InsensitiveStringClass.get(2000), patent);
         ownerPatent.setMinimumWidth(10); ownerPatent.setPreferredWidth(50);
         ownerTypePatent = addDProp(idGroup, "ownerTypePatent", "Кем является правообладатель (ИД)", ownerType, patent);
+        ownerTypeToPatent = addAGProp("ownerTypeToPatent", "Кем является правообладатель (ИД)", ownerTypePatent);
         nameOwnerTypePatent = addJProp(baseGroup, "nameOwnerTypePatent", "Кем является правообладатель", baseLM.name, ownerTypePatent, 1);
+        ownerTypeToSID = addAGProp("ownerTypeToSID", "SID типа правообладателя", addJProp(baseLM.and1, baseLM.classSID, 1, is(ownerType), 1));
+        projectTypeToSID = addAGProp("projectTypeToSID", "SID типа проекта", addJProp(baseLM.and1, baseLM.classSID, 1, is(projectType), 1));
         fileIntentionOwnerPatent = addDProp("fileIntentionOwnerPatent", "Файл документа о передаче права", PDFClass.instance, patent);
         loadFileIntentionOwnerPatent = addLFAProp(baseGroup, "Загрузить файл документа о передаче права", fileIntentionOwnerPatent);
         openFileIntentionOwnerPatent = addOFAProp(baseGroup, "Открыть файл документа о передаче права", fileIntentionOwnerPatent);
@@ -806,6 +844,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         fullNameAcademic = addDProp(baseGroup, "fullNameAcademic", "ФИО", InsensitiveStringClass.get(2000), academic);
         fullNameAcademic.setMinimumWidth(10); fullNameAcademic.setPreferredWidth(50);
+        fullNameToAcademic = addAGProp("fullNameToAcademic", "ФИО учёного", fullNameAcademic);
         institutionAcademic = addDProp(baseGroup, "institutionAcademic", "Учреждение, в котором данный специалист осуществляет научную и (или) преподавательскую деятельность", InsensitiveStringClass.get(2000), academic);
         institutionAcademic.setMinimumWidth(10); institutionAcademic.setPreferredWidth(50);
         titleAcademic = addDProp(baseGroup, "titleAcademic", "Ученая степень, звание, должность и др.", InsensitiveStringClass.get(2000), academic);
@@ -824,6 +863,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         fullNameNonRussianSpecialist = addDProp(baseGroup, "fullNameNonRussianSpecialist", "ФИО", InsensitiveStringClass.get(2000), nonRussianSpecialist);
         fullNameNonRussianSpecialist.setMinimumWidth(10); fullNameNonRussianSpecialist.setPreferredWidth(50);
+        fullNameToNonRussianSpecialist = addAGProp("fullNameToNonRussianSpecialist", "ФИО иностранного специалиста", fullNameNonRussianSpecialist);
         organizationNonRussianSpecialist = addDProp(baseGroup, "organizationNonRussianSpecialist", "Место работы", InsensitiveStringClass.get(2000), nonRussianSpecialist);
         organizationNonRussianSpecialist.setMinimumWidth(10); organizationNonRussianSpecialist.setPreferredWidth(50);
         titleNonRussianSpecialist = addDProp(baseGroup, "titleNonRussianSpecialist", "Должность, если есть - ученая степень, звание и др.", InsensitiveStringClass.get(2000), nonRussianSpecialist);
@@ -1062,6 +1102,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         generateDocumentsProjectDocumentType = addAProp(actionGroup, new GenerateDocumentsActionProperty());
         includeDocumentsProjectDocumentType = addAProp(actionGroup, new IncludeDocumentsActionProperty());
+        importProjectsAction = addAProp(actionGroup, new ImportProjectsActionProperty(this));
 
         generateVoteProject = addAProp(actionGroup, new GenerateVoteActionProperty());
         copyResultsVote = addAProp(actionGroup, new CopyResultsActionProperty());
@@ -1100,6 +1141,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
                                   acceptedProject, 1);*/
         nameStatusProject = addJProp(projectInformationGroup, "nameStatusProject", "Статус", baseLM.name, statusProject, 1);
 
+        dateProject = addJProp("dateProject", "Дата проекта", baseLM.and1, baseLM.date, 1, is(project), 1);
         statusProjectVote = addJProp(idGroup, "statusProjectVote", "Статус проекта (ИД)", statusProject, projectVote, 1);
         nameStatusProjectVote = addJProp(baseGroup, "nameStatusProjectVote", "Статус проекта", baseLM.name, statusProjectVote, 1);
 
@@ -1394,6 +1436,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         private ProjectFormEntity(NavigatorElement parent, String sID) {
             super(parent, sID, "Реестр проектов");
 
+
             objProject = addSingleGroupObject(project, baseLM.date, nameNative, nameForeign,  nameNativeClusterProject, nameNativeJoinClaimerProject, nameStatusProject, autoGenerateProject, generateVoteProject, editProject);
             addObjectActions(this, objProject);
 
@@ -1413,6 +1456,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             setReadOnly(objDocumentTemplate, true);
             addPropertyDraw(generateDocumentsProjectDocumentType, objProject, objDocumentTemplate);
             addPropertyDraw(includeDocumentsProjectDocumentType, objProject, objDocumentTemplate);
+            addPropertyDraw(importProjectsAction, objProject, objDocumentTemplate);
 
             objDocument = addSingleGroupObject(document, nameTypeDocument, nameLanguageDocument, postfixDocument, loadFileDocument, openFileDocument);
             addObjectActions(this, objDocument);
@@ -2066,7 +2110,9 @@ public class SkolkovoLogicsModule extends LogicsModule {
         }
     }
 
-public class IncludeDocumentsActionProperty extends ActionProperty {
+
+
+    public class IncludeDocumentsActionProperty extends ActionProperty {
 
         private final ClassPropertyInterface projectInterface;
         private final ClassPropertyInterface documentTemplateInterface;
