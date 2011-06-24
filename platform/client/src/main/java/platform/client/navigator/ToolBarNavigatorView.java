@@ -19,7 +19,7 @@ public class ToolBarNavigatorView extends NavigatorView {
         super(iWindow, new JToolBar("Toolbar", iWindow.type), controller);
         window = iWindow;
         toolBar = (JToolBar) component;
-        toolBar.setFloatable(true);
+        toolBar.setFloatable(false);
         toolBar.setRollover(true);
     }
 
@@ -63,32 +63,37 @@ public class ToolBarNavigatorView extends NavigatorView {
         selected = element;
     }
 
-    protected JComponent addNavigationButton(ClientNavigatorElement element, int allign) {
+    protected JComponent addNavigationButton(ClientNavigatorElement element, final int allign) {
+
         JButton button = new JButton(element.toString()) {
             @Override
             public Insets getInsets() {
-                return new Insets(5, 7, 5, 7);
+                return new Insets(4, 4 + X_ALLIGN * allign, 4, 4);
             }
         };
-        JComponent comp = button;
+
         button.setToolTipText(element.toString());
         button.addMouseListener(new NavigatorMouseAdapter(element));
         button.setIcon(element.image);
         button.setVerticalTextPosition(window.verticalTextPosition);
         button.setHorizontalTextPosition(window.horizontalTextPosition);
-        if (window.type == JToolBar.VERTICAL) {
-            button.setHorizontalAlignment(SwingConstants.LEFT);
-            JPanel pane = new JPanel();
-            pane.setLayout(new BoxLayout(pane, BoxLayout.X_AXIS));
-            pane.add(Box.createHorizontalStrut(X_ALLIGN * allign));
-            pane.add(button);
-            button.setPreferredSize(new Dimension(getMinimumSize().width, getMinimumSize().height));
-            button.setMaximumSize(new Dimension(BUTTON_WIDTH, getMinimumSize().height));
-            pane.setMaximumSize(button.getMaximumSize());
-            comp = pane;
-        }
-        toolBar.add(comp);
-        return comp;
+        button.setVerticalAlignment(window.verticalAlignment);
+        button.setHorizontalAlignment(window.horizontalAlignment);
+
+        // пока неактуально - лучше чтобы она красиво рисовала кнопки, чем отступы слева
+//        if (window.type == JToolBar.VERTICAL) {
+//            JPanel pane = new JPanel();
+//            pane.setLayout(new BoxLayout(pane, BoxLayout.X_AXIS));
+//            pane.add(Box.createHorizontalStrut(X_ALLIGN * allign));
+//            pane.add(button);
+//            button.setRolloverEnabled(true);
+//            button.setPreferredSize(new Dimension(getMinimumSize().width, getMinimumSize().height));
+//            button.setMaximumSize(new Dimension(BUTTON_WIDTH, getMinimumSize().height));
+//            pane.setMaximumSize(button.getMaximumSize());
+//            comp = pane;
+//        }
+        toolBar.add(button);
+        return button;
     }
 
     class NavigatorMouseAdapter extends MouseAdapter {

@@ -1,17 +1,12 @@
 package skolkovo;
 
 //import com.smartgwt.client.docs.Files;
-import com.sun.xml.internal.ws.wsdl.writer.document.Import;
 import jasperapi.ReportGenerator;
 import net.sf.jasperreports.engine.JRAbstractExporter;
 import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JRExporterParameter;
 import net.sf.jasperreports.engine.JasperPrint;
 import net.sf.jasperreports.engine.export.JRPdfExporter;
-import org.jdom.Document;
-import org.jdom.Element;
-import org.jdom.JDOMException;
-import org.jdom.input.SAXBuilder;
 import platform.base.BaseUtils;
 import platform.base.IOUtils;
 import platform.interop.ClassViewType;
@@ -261,7 +256,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP clusterExpert, nameNativeClusterExpert;
     LP primClusterExpert, extraClusterExpert, inClusterExpert;
     LP clusterInExpertVote;
-    LP clusterProject, nameNativeClusterProject, nameForeignClusterProject;
+    public LP clusterProject, nameNativeClusterProject, nameForeignClusterProject;
     LP clusterVote, nameNativeClusterVote;
     LP clusterProjectVote, equalsClusterProjectVote;
     public LP claimerProject;
@@ -1264,15 +1259,18 @@ public class SkolkovoLogicsModule extends LogicsModule {
     @Override
     public void initNavigators() throws JRException, FileNotFoundException {
 
-        ToolBarNavigatorWindow mainToolbar = new ToolBarNavigatorWindow(JToolBar.HORIZONTAL, "mainToolbar", "Навигатор", 0, 0, 100, 7);
+        ToolBarNavigatorWindow mainToolbar = new ToolBarNavigatorWindow(JToolBar.VERTICAL, "mainToolbar", "Навигатор", 0, 0, 7, 100);
         mainToolbar.titleShown = false;
+        mainToolbar.verticalTextPosition = SwingConstants.BOTTOM;
+        mainToolbar.horizontalTextPosition = SwingConstants.CENTER;
+        mainToolbar.horizontalAlignment = SwingConstants.CENTER;
 
-        ToolBarNavigatorWindow leftToolbar = new ToolBarNavigatorWindow(JToolBar.VERTICAL, "leftToolbar", "Список", 0, 7, 20, 60);
+        ToolBarNavigatorWindow leftToolbar = new ToolBarNavigatorWindow(JToolBar.VERTICAL, "leftToolbar", "Список", 7, 0, 13, 60);
 
         baseLM.baseElement.window = mainToolbar;
         baseLM.adminElement.window = leftToolbar;
 
-        TreeNavigatorWindow objectsWindow = new TreeNavigatorWindow("objectsWindow", "Объекты", 0, 30, 20, 40);
+        TreeNavigatorWindow objectsWindow = new TreeNavigatorWindow("objectsWindow", "Объекты", 7, 30, 13, 40);
         objectsWindow.drawRoot = true;
         baseLM.objectElement.window = objectsWindow;
 
