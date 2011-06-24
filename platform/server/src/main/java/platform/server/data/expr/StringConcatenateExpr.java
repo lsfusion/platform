@@ -10,6 +10,7 @@ import platform.server.classes.StringClass;
 import platform.server.data.expr.cases.CaseExpr;
 import platform.server.data.expr.cases.ExprCaseList;
 import platform.server.data.expr.cases.MapCase;
+import platform.server.data.expr.cases.pull.ExprPullCases;
 import platform.server.data.expr.where.MapWhere;
 import platform.server.data.query.CompileSource;
 import platform.server.data.query.ExprEnumerator;
@@ -20,6 +21,7 @@ import platform.server.data.type.Type;
 import platform.server.data.where.Where;
 
 import java.util.List;
+import java.util.Map;
 
 // объединяет
 public class StringConcatenateExpr extends StaticClassExpr {
@@ -34,11 +36,12 @@ public class StringConcatenateExpr extends StaticClassExpr {
         this.caseSensitive = caseSensitive;
     }
 
-    public static Expr create(List<? extends Expr> exprs, String separator, boolean caseSensitive) {
-        ExprCaseList result = new ExprCaseList();
-        for(MapCase<Integer> mapCase : CaseExpr.pullCases(BaseUtils.toMap(exprs)))
-            result.add(mapCase.where, BaseExpr.create(new StringConcatenateExpr(BaseUtils.toList(mapCase.data), separator, caseSensitive)));
-        return result.getExpr();
+    public static Expr create(List<? extends Expr> exprs, final String separator, final boolean caseSensitive) {
+        return new ExprPullCases<Integer>() {
+            protected Expr proceedBase(Map<Integer, BaseExpr> map) {
+                return BaseExpr.create(new StringConcatenateExpr(BaseUtils.toList(map), separator, caseSensitive));
+            }
+        }.proceed(BaseUtils.toMap(exprs));
     }
 
     @IdentityLazy

@@ -40,7 +40,7 @@ public class MaxGroupExpr extends GroupExpr {
     }
 
     private BaseExpr getBaseExpr() {
-        return BaseUtils.single(query.getCases()).data;
+        return query.getBaseCase().data;
     }
 
     protected class NotNull extends GroupExpr.NotNull {

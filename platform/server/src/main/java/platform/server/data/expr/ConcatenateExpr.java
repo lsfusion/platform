@@ -11,6 +11,7 @@ import platform.server.classes.sets.AndClassSet;
 import platform.server.data.expr.cases.CaseExpr;
 import platform.server.data.expr.cases.ExprCaseList;
 import platform.server.data.expr.cases.MapCase;
+import platform.server.data.expr.cases.pull.ExprPullCases;
 import platform.server.data.expr.where.MapWhere;
 import platform.server.data.query.CompileSource;
 import platform.server.data.query.ExprEnumerator;
@@ -24,6 +25,7 @@ import platform.server.data.where.classes.ClassExprWhere;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class ConcatenateExpr extends BaseExpr {
 
@@ -38,10 +40,12 @@ public class ConcatenateExpr extends BaseExpr {
     }
 
     public static Expr create(List<? extends Expr> exprs) {
-        ExprCaseList result = new ExprCaseList();
-        for(MapCase<Integer> mapCase : CaseExpr.pullCases(BaseUtils.toMap(exprs)))
-            result.add(mapCase.where, BaseExpr.create(new ConcatenateExpr(BaseUtils.toList(mapCase.data))));
-        return result.getExpr();
+        return new ExprPullCases<Integer>() {
+            @Override
+            protected Expr proceedBase(Map<Integer, BaseExpr> map) {
+                return BaseExpr.create(new ConcatenateExpr(BaseUtils.toList(map)));
+            }
+        }.proceed(BaseUtils.toMap(exprs));
     }
 
     public VariableExprSet calculateExprFollows() {

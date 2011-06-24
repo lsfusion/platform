@@ -2,7 +2,6 @@ package platform.server.logics.property;
 
 import platform.base.BaseUtils;
 import platform.server.data.expr.Expr;
-import platform.server.data.expr.ValueExpr;
 import platform.server.data.expr.cases.ExprCaseList;
 import platform.server.data.where.Where;
 import platform.server.data.where.WhereBuilder;
@@ -37,7 +36,7 @@ public class CaseUnionProperty extends UnionProperty {
         ExprCaseList exprCases = new ExprCaseList();
         for(Case propCase : cases)
             exprCases.add(propCase.where.mapExpr(joinImplement, modifier, changedWhere).getWhere(), propCase.property.mapExpr(joinImplement, modifier, changedWhere));
-        return exprCases.getExpr();
+        return exprCases.getFinal();
     }
 
     @Override

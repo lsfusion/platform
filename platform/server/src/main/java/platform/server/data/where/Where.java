@@ -17,7 +17,7 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 
-public interface Where extends SourceJoin, OuterContext<Where>, KeyType, CheckWhere {
+public interface Where extends SourceJoin<Where>, OuterContext<Where>, KeyType, CheckWhere {
 
     Where followFalse(Where falseWhere);
     Where followFalse(Where falseWhere, boolean packExprs);

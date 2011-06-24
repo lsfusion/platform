@@ -5,6 +5,7 @@ import platform.base.QuickMap;
 import platform.interop.Compare;
 import platform.server.caches.ManualLazy;
 import platform.server.classes.sets.AndClassSet;
+import platform.server.data.expr.cases.BaseExprCase;
 import platform.server.data.expr.cases.CaseWhereInterface;
 import platform.server.data.expr.cases.ExprCaseList;
 import platform.server.data.expr.where.EqualsWhere;
@@ -74,67 +75,30 @@ public abstract class BaseExpr extends Expr {
 
     public abstract ClassExprWhere getClassWhere(AndClassSet classes);
 
-    public Where compare(final Expr expr, final Compare compare) {
-        if(expr instanceof BaseExpr) {
-            switch(compare) {
-                case EQUALS:
-                    return EqualsWhere.create(this,(BaseExpr)expr);
-                case GREATER:
-                    return GreaterWhere.create(this,(BaseExpr)expr);
-                case GREATER_EQUALS:
-                    return GreaterWhere.create(this,(BaseExpr)expr).or(EqualsWhere.create(this,(BaseExpr)expr));
-                case LESS:
-                    return GreaterWhere.create((BaseExpr)expr,this);
-                case LESS_EQUALS:
-                    return GreaterWhere.create((BaseExpr)expr,this).or(EqualsWhere.create(this,(BaseExpr)expr));
-                case NOT_EQUALS: // оба заданы и не равно
-                    return getWhere().and(expr.getWhere()).and(EqualsWhere.create(this,(BaseExpr)expr).not());
-                case START_WITH:
-                    return LikeWhere.create(this, (BaseExpr)expr, true);
-                case LIKE:
-                    return LikeWhere.create(this, (BaseExpr)expr, false);
-            }
-            throw new RuntimeException("should not be");
-        } else {
-            return expr.getCases().getWhere(new CaseWhereInterface<BaseExpr>() {
-                public Where getWhere(BaseExpr cCase) {
-                    return compare(cCase,compare);
-                }
-/*                @Override
-                public Where getElse() {
-                    if(compare==Compare.EQUALS || compare==Compare.NOT_EQUALS)
-                        return Where.FALSE;
-                    else // если не equals то нас устроит и просто не null
-                        return BaseExpr.this.getWhere();
-                }*/
-            });
+    public Where compareBase(final BaseExpr expr, Compare compareBack) {
+        switch(compareBack) {
+            case EQUALS:
+                return EqualsWhere.create(expr, this);
+            case GREATER:
+                return GreaterWhere.create(expr, this);
+            case GREATER_EQUALS:
+                return GreaterWhere.create(expr, this).or(EqualsWhere.create(expr, this));
+            case LESS:
+                return GreaterWhere.create(this, expr);
+            case LESS_EQUALS:
+                return GreaterWhere.create(this, expr).or(EqualsWhere.create(expr, this));
+            case NOT_EQUALS: // оба заданы и не равно
+                return getWhere().and(expr.getWhere()).and(EqualsWhere.create(expr, this).not());
+            case START_WITH:
+                return LikeWhere.create(expr, this, true);
+            case LIKE:
+                return LikeWhere.create(expr, this, false);
         }
+        throw new RuntimeException("should not be");
     }
-
-/*    public Expr scale(int coeff) {
-        if(coeff==1) return this;
-
-        LinearOperandMap map = new LinearOperandMap();
-        map.add(this,coeff);
-        return map.getExpr();
+    public Where compare(final Expr expr, final Compare compare) {
+        return expr.compareBase(this, compare);
     }
-
-    public Expr sum(BaseExpr expr) {
-        if(getWhere().means(expr.getWhere().not())) // если не пересекаются то возвращаем case
-            return nvl(expr);
-        
-        LinearOperandMap map = new LinearOperandMap();
-        map.add(this,1);
-        map.add(expr,1);
-        return map.getExpr();
-    }
-
-    public Expr sum(Expr expr) {
-        if(expr instanceof BaseExpr)
-            return sum((BaseExpr)expr);
-        else
-            return expr.sum(this);
-    }*/
 
     public boolean hasKey(KeyExpr key) {
         return enumKeys(this).contains(key);
@@ -173,4 +137,8 @@ public abstract class BaseExpr extends Expr {
         return packFollowFalse(pushValues(mapExprs, falseWhere), falseWhere);
     }
 
+    @Override
+    public BaseExprCase getBaseCase() {
+        return new BaseExprCase(this);
+    }
 }

@@ -11,7 +11,9 @@ import platform.server.classes.ValueClass;
 import platform.server.classes.sets.AndClassSet;
 import platform.server.data.expr.*;
 import platform.server.data.expr.cases.CaseExpr;
+import platform.server.data.expr.cases.CaseList;
 import platform.server.data.expr.cases.MapCase;
+import platform.server.data.expr.cases.pull.AddPullCases;
 import platform.server.data.expr.query.KeyStat;
 import platform.server.data.expr.query.StatKeys;
 import platform.server.data.expr.where.MapWhere;
@@ -160,10 +162,14 @@ public class Table extends TwinImmutableObject implements MapKeysInterface<KeyFi
     }
 
     public platform.server.data.query.Join<PropertyField> join(Map<KeyField, ? extends Expr> joinImplement) {
-        JoinCaseList<PropertyField> result = new JoinCaseList<PropertyField>();
-        for(MapCase<KeyField> caseJoin : CaseExpr.pullCases(joinImplement))
-            result.add(new JoinCase<PropertyField>(caseJoin.where,joinAnd(caseJoin.data)));
-        return new CaseJoin<PropertyField>(result, properties);
+        return new AddPullCases<KeyField, platform.server.data.query.Join<PropertyField>>() {
+            protected CaseList<platform.server.data.query.Join<PropertyField>, ?> initAggregator() {
+                return new JoinCaseList<PropertyField>(properties);
+            }
+            protected platform.server.data.query.Join<PropertyField> proceedBase(Map<KeyField, BaseExpr> joinBase) {
+                return joinAnd(joinBase);
+            }
+        }.proceed(joinImplement);
     }
 
     public Join joinAnd(Map<KeyField, ? extends BaseExpr> joinImplement) {

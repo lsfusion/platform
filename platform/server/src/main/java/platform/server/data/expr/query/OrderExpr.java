@@ -1,7 +1,6 @@
 package platform.server.data.expr.query;
 
 import platform.base.*;
-import platform.interop.Compare;
 import platform.server.Settings;
 import platform.server.classes.sets.AndClassSet;
 import platform.server.classes.DataClass;
@@ -14,6 +13,9 @@ import platform.server.data.expr.cases.CaseExpr;
 import platform.server.data.expr.cases.ExprCase;
 import platform.server.data.expr.cases.ExprCaseList;
 import platform.server.data.expr.cases.MapCase;
+import platform.server.data.expr.cases.pull.ExclPullCases;
+import platform.server.data.expr.cases.pull.ExclWherePullCases;
+import platform.server.data.expr.cases.pull.ExprPullCases;
 import platform.server.data.query.*;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.translator.PartialQueryTranslator;
@@ -22,10 +24,7 @@ import platform.server.data.type.Type;
 import platform.server.data.where.Where;
 import platform.server.data.where.classes.ClassExprWhere;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class OrderExpr extends QueryExpr<KeyExpr, OrderExpr.Query,OrderJoin> implements JoinData {
 
@@ -133,10 +132,11 @@ public class OrderExpr extends QueryExpr<KeyExpr, OrderExpr.Query,OrderJoin> imp
 
     @ParamLazy
     public Expr translateQuery(QueryTranslator translator) {
-        ExprCaseList result = new ExprCaseList();
-        for(MapCase<KeyExpr> mapCase : CaseExpr.pullCases(translator.translate(group)))
-            result.add(mapCase.where, createBase(orderType, mapCase.data, query.expr, query.orders, query.partitions));
-        return result.getExpr();
+        return new ExprPullCases<KeyExpr>() {
+            protected Expr proceedBase(Map<KeyExpr, BaseExpr> map) {
+                return createBase(orderType, map, query.expr, query.orders, query.partitions);
+            }
+        }.proceed(translator.translate(group));
     }
 
     @Override
@@ -191,11 +191,12 @@ public class OrderExpr extends QueryExpr<KeyExpr, OrderExpr.Query,OrderJoin> imp
         return BaseExpr.create(new OrderExpr(orderType, restGroup,expr,orders,restPartitions));
     }
 
-    public static Expr create(OrderType orderType, Expr expr, OrderedMap<Expr, Boolean> orders, Set<Expr> partitions, Map<KeyExpr, ? extends Expr> group) {
-        ExprCaseList result = new ExprCaseList();
-        for(MapCase<KeyExpr> mapCase : CaseExpr.pullCases(group))
-            result.add(mapCase.where, createBase(orderType, mapCase.data, expr, orders, partitions));
-        return result.getExpr();
+    public static Expr create(final OrderType orderType, final Expr expr, final OrderedMap<Expr, Boolean> orders, final Set<Expr> partitions, Map<KeyExpr, ? extends Expr> group) {
+        return new ExprPullCases<KeyExpr>() {
+            protected Expr proceedBase(Map<KeyExpr, BaseExpr> map) {
+                return createBase(orderType, map, expr, orders, partitions);
+            }
+        }.proceed(group);
     }
 
     @Override
@@ -207,17 +208,23 @@ public class OrderExpr extends QueryExpr<KeyExpr, OrderExpr.Query,OrderJoin> imp
             QuickMap<KeyExpr, AndClassSet> keyClasses = new SimpleMap<KeyExpr, AndClassSet>();
             for(Map.Entry<KeyExpr, BaseExpr> groupEntry : group.entrySet())
                 keyClasses.add(groupEntry.getKey(), groupEntry.getValue().getAndClassSet(and));
-            ClassExprWhere keyWhere = new ClassExprWhere(keyClasses);
+            final ClassExprWhere keyWhere = new ClassExprWhere(keyClasses);
 
-            AndClassSet result = null;
-            for(ExprCase exprCase : query.expr.getCases()) {
-                AndClassSet classSet = exprCase.where.and(query.getGroupWhere()).getClassWhere().and(keyWhere).getAndClassSet(exprCase.data);
-                if(result == null)
-                    result = classSet;
-                else
-                    result = result.or(classSet);
-            }
-            return result;
+            return new ExclWherePullCases<AndClassSet>() {
+                protected AndClassSet initEmpty() {
+                    return null;
+                }
+                protected AndClassSet proceedBase(Where data, BaseExpr baseExpr) {
+                    return data.getClassWhere().and(keyWhere).getAndClassSet(baseExpr);
+                }
+                protected AndClassSet add(AndClassSet op1, AndClassSet op2) {
+                    if(op1 == null)
+                        return op2;
+                    if(op2 == null)
+                        return op1;
+                    return op1.or(op2);
+                }
+            }.proceed(query.getGroupWhere(), query.expr);
         }
     }
 }

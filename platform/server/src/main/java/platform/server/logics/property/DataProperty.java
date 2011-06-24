@@ -73,7 +73,7 @@ public abstract class DataProperty extends UserProperty {
 
         if(changedWhere !=null) changedWhere.add(cases.getUpWhere());
         cases.add(Where.TRUE,dataExpr);
-        return cases.getExpr();
+        return cases.getFinal();
     }
 
     public ValueClass getValueClass() {

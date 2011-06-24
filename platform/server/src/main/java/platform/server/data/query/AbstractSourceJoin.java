@@ -20,7 +20,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
-abstract public class AbstractSourceJoin<T extends OuterContext<T>> extends AbstractOuterContext<T> implements SourceJoin {
+abstract public class AbstractSourceJoin<T extends SourceJoin<T>> extends AbstractOuterContext<T> implements SourceJoin<T> {
 
     public SourceJoin[] getEnum() {
         return new SourceJoin[]{this};

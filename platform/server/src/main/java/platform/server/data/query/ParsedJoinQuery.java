@@ -10,6 +10,7 @@ import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.cases.CaseExpr;
 import platform.server.data.expr.cases.MapCase;
+import platform.server.data.expr.cases.pull.ExclPullCases;
 import platform.server.data.query.innerjoins.KeyEqual;
 import platform.server.data.sql.SQLSyntax;
 import platform.server.data.translator.MapTranslator;
@@ -81,21 +82,28 @@ class ParsedJoinQuery<K,V> extends Join<V> implements ParsedQuery<K,V> {
         return join;
     }
 
-    // для заданных свойств вытягивает условия на классы для них
+    // для заданных свойств вытягивает условия на классы для них, assertion что K extends B и V extends B
     public <B> ClassWhere<B> getClassWhere(Collection<? extends V> classProps) {
-        Where upWhere = where.not();
+        return (ClassWhere<B>) getClassWhere(where, mapKeys, BaseUtils.filterKeys(properties, classProps));
+    }
 
-        ClassWhere<B> result = new ClassWhere<B>();
-        for(MapCase<? extends V> mapCase : CaseExpr.pullCases(BaseUtils.filterKeys(properties,classProps))) {
-            Where caseWhere = mapCase.where.and(upWhere.not());
-            for(BaseExpr expr : mapCase.data.values()) // все следствия за and'им
-                caseWhere = caseWhere.and(expr.getWhere());
+    private static <B, K extends B, V extends B> ClassWhere<B> getClassWhere(Where where, final Map<K, KeyExpr> mapKeys, Map<V, Expr> mapProps) {
+        return new ExclPullCases<ClassWhere<B>, V, Where>() {
+            protected ClassWhere<B> initEmpty() {
+                return ClassWhere.STATIC(false);
+            }
+            protected ClassWhere<B> proceedBase(Where data, Map<V, BaseExpr> map) {
+                return (ClassWhere<B>)(ClassWhere<?>)getClassWhereBase(data, mapKeys, map);
+            }
+            protected ClassWhere<B> add(ClassWhere<B> op1, ClassWhere<B> op2) {
+                return op1.or(op2);
+            }
+        }.proceed(where, mapProps);
+    }
 
-            result = result.or(caseWhere.getClassWhere().get(BaseUtils.<B, BaseExpr>forceMerge(mapCase.data, mapKeys)));
-
-            upWhere = upWhere.or(mapCase.where);
-        }
-        return result;
+    private static <B, K extends B, V extends B> ClassWhere<B> getClassWhereBase(Where where, Map<K, KeyExpr> mapKeys, Map<V, BaseExpr> mapProps) {
+        return where.and(Expr.getWhere(mapProps.values())).
+                    getClassWhere().get(BaseUtils.<B, BaseExpr>forceMerge(mapProps, mapKeys));
     }
 
     @IdentityLazy

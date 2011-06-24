@@ -1,6 +1,5 @@
 package platform.server.data.expr;
 
-import org.eclipse.core.internal.utils.ObjectMap;
 import platform.base.BaseUtils;
 import platform.interop.Compare;
 import platform.server.caches.IdentityLazy;
@@ -10,6 +9,8 @@ import platform.server.classes.DataClass;
 import platform.server.classes.sets.AndClassSet;
 import platform.server.data.QueryEnvironment;
 import platform.server.data.SQLSession;
+import platform.server.data.expr.cases.BaseExprCase;
+import platform.server.data.expr.cases.Case;
 import platform.server.data.expr.cases.CaseExpr;
 import platform.server.data.expr.cases.ExprCaseList;
 import platform.server.data.query.AbstractSourceJoin;
@@ -68,6 +69,7 @@ abstract public class Expr extends AbstractSourceJoin<Expr> {
 
     public abstract Where isClass(AndClassSet set);
 
+    public abstract Where compareBase(BaseExpr expr, Compare compareBack);
     public abstract Where compare(Expr expr, Compare compare);
 
     public Where compare(DataObject data, Compare compare) {
@@ -98,10 +100,10 @@ abstract public class Expr extends AbstractSourceJoin<Expr> {
     public Expr and(Where where) {
         if(getWhere().means(where))
             return this;
-        return new ExprCaseList(where,this).getExpr();
+        return new ExprCaseList(where,this).getFinal();
     }
     public Expr ifElse(Where where, Expr elseExpr) {
-        return new ExprCaseList(where,this,elseExpr).getExpr();
+        return new ExprCaseList(where,this,elseExpr).getFinal();
     }
     public Expr max(Expr expr) {
         return ifElse(compare(expr, Compare.GREATER).or(expr.getWhere().not()),expr);
@@ -117,7 +119,6 @@ abstract public class Expr extends AbstractSourceJoin<Expr> {
         for(Expr expr : col)
             where = where.and(expr.getWhere());
         return where;
-
     }
 
     public static <K> Where getWhere(Map<K, ? extends Expr> map) {
@@ -151,8 +152,10 @@ abstract public class Expr extends AbstractSourceJoin<Expr> {
         return new Query<Object, K>(new HashMap<Object, KeyExpr>(), mapExprs, Where.TRUE).executeClasses(session, env, baseClass).singleValue();
     }
 
-    public VariableExprSet getExprFollows() {
-        return getCases().getExprFollows();
-    }
+    public abstract VariableExprSet getExprFollows();
+
+    // assert что свойство W and Base, в общем то для GroupExpr'ов (MAX, ANY и т.п надо)
+    public abstract BaseExprCase getBaseCase();
+
 }
 

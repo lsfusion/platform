@@ -62,7 +62,7 @@ public class SessionRows implements SessionData<SessionRows> {
                 ExprCaseList result = new ExprCaseList();
                 for(Map.Entry<Map<KeyField, DataObject>,Map<PropertyField, ObjectValue>> row : rows.entrySet())
                     result.add(CompareWhere.compareValues(joinImplement,row.getKey()),row.getValue().get(property).getExpr());
-                return result.getExpr();
+                return result.getFinal();
             }
 
             public Where getWhere() {

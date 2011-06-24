@@ -9,6 +9,7 @@ import platform.server.classes.ConcreteValueClass;
 import platform.server.data.expr.cases.CaseExpr;
 import platform.server.data.expr.cases.ExprCaseList;
 import platform.server.data.expr.cases.MapCase;
+import platform.server.data.expr.cases.pull.ExprPullCases;
 import platform.server.data.expr.where.MapWhere;
 import platform.server.data.query.CompileSource;
 import platform.server.data.query.ExprEnumerator;
@@ -51,11 +52,12 @@ public class FormulaExpr extends StaticClassExpr {
         return BaseExpr.create(new FormulaExpr(formula, params, value));
     }
 
-    public static Expr create(String formula, ConcreteValueClass value,Map<String,? extends Expr> params) {
-        ExprCaseList result = new ExprCaseList();
-        for(MapCase<String> mapCase : CaseExpr.pullCases(params))
-            result.add(mapCase.where, create(formula, mapCase.data, value));
-        return result.getExpr();
+    public static Expr create(final String formula, final ConcreteValueClass value,Map<String,? extends Expr> params) {
+        return new ExprPullCases<String>() {
+            protected Expr proceedBase(Map<String, BaseExpr> map) {
+                return create(formula, map, value);
+            }
+        }.proceed(params);
     }
 
     public void enumDepends(ExprEnumerator enumerator) {

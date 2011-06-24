@@ -10,15 +10,12 @@ public class CaseJoin<U> extends Join<U> {
 
     private final JoinCaseList<U> cases;
 
-    private final Collection<U> properties;
-
-    public CaseJoin(JoinCaseList<U> cases, Collection<U> properties) {
-        this.properties = properties;
+    public CaseJoin(JoinCaseList<U> cases) {
         this.cases = cases;
     }
 
     public CaseJoin(Where where, Join<U> join) {
-        this(new JoinCaseList<U>(where, join), join.getProperties());
+        this(new JoinCaseList<U>(where, join));
     }
 
     @IdentityLazy
@@ -32,6 +29,6 @@ public class CaseJoin<U> extends Join<U> {
     }
 
     public Collection<U> getProperties() {
-        return properties;
+        return cases.properties;
     }
 }

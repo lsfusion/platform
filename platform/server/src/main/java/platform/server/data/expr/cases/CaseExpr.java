@@ -1,5 +1,6 @@
 package platform.server.data.expr.cases;
 
+import platform.base.BaseUtils;
 import platform.base.TwinImmutableInterface;
 import platform.interop.Compare;
 import platform.server.caches.IdentityLazy;
@@ -11,6 +12,7 @@ import platform.server.classes.sets.AndClassSet;
 import platform.server.data.expr.BaseExpr;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyType;
+import platform.server.data.expr.VariableExprSet;
 import platform.server.data.expr.where.MapWhere;
 import platform.server.data.query.CompileSource;
 import platform.server.data.query.ExprEnumerator;
@@ -32,9 +34,9 @@ public class CaseExpr extends Expr {
     private final ExprCaseList cases;
 
     // этот конструктор нужен для создания CaseExpr'а в результать mapCase'а
-    public CaseExpr(ExprCaseList iCases) {
-        cases = iCases;
-        assert !(cases.size()==1 && cases.get(0).where.isTrue());
+    public CaseExpr(ExprCaseList cases) {
+        this.cases = cases;
+        assert !(this.cases.size()==1 && this.cases.get(0).where.isTrue());
     }
 
     // получает список ExprCase'ов
@@ -73,23 +75,25 @@ public class CaseExpr extends Expr {
     }
 
     public Type getType(KeyType keyType) {
-        assert !cases.isEmpty();
-        Iterator<ExprCase> it = cases.iterator();
-        Type type = it.next().data.getType(keyType);
-        if(type instanceof DataClass) { // для того чтобы выбрать максимальную по длине
-            DataClass dataClass = (DataClass)type;
-            while(it.hasNext()) {
-                dataClass = dataClass.getCompatible((DataClass)it.next().data.getType(keyType));
-                assert dataClass!=null;
+        Type type = null;
+        for(ExprCase exprCase : cases) {
+            Type caseType = exprCase.data.getType(keyType);
+            if(caseType!=null) {
+                if(type==null) {
+                    if(!(caseType instanceof DataClass))
+                        return caseType;
+                    type = caseType;
+                } else
+                    type = ((DataClass)type).getCompatible((DataClass) caseType); // для того чтобы выбрать максимальную по длине
             }
-            return dataClass;
-        } else
-            return type;
+        }
+        return type;
     }
 
     public ClassReader getReader(KeyType keyType) {
-        if(cases.isEmpty()) return NullReader.instance;
-        return getType(keyType);
+        Type type = getType(keyType);
+        if(type==null) return NullReader.instance;
+        return type;
     }
 
     @ParamLazy
@@ -105,13 +109,13 @@ public class CaseExpr extends Expr {
         ExprCaseList translatedCases = new ExprCaseList();
         for(ExprCase exprCase : cases)
             translatedCases.add(exprCase.where.translateQuery(translator),exprCase.data.translateQuery(translator));
-        return translatedCases.getExpr();
+        return translatedCases.getFinal();
     }
 
     public Expr followFalse(Where where, boolean pack) {
         if(where.isFalse() && !pack) return this;
 
-        return new ExprCaseList(where, cases, pack).getExpr();
+        return new ExprCaseList(where, cases, pack).getFinal();
     }
 
     static private <K> void recPullCases(ListIterator<Map.Entry<K, ? extends Expr>> ic, MapCase<K> current, Where currentWhere, MapCaseList<K> result) {
@@ -120,7 +124,7 @@ public class CaseExpr extends Expr {
             return;
 
         if(!ic.hasNext()) {
-            result.add(current.where,new HashMap<K, BaseExpr>(current.data));
+            result.add(current.where,new HashMap<K, Expr>(current.data));
             return;
         }
 
@@ -171,24 +175,36 @@ public class CaseExpr extends Expr {
     // получение Where'ов
 
     public Where calculateWhere() {
-        return cases.getWhere(new CaseWhereInterface<BaseExpr>(){
-            public Where getWhere(BaseExpr cCase) {
+        return cases.getWhere(new CaseWhereInterface<Expr>(){
+            public Where getWhere(Expr cCase) {
                 return cCase.getWhere();
             }
         });
     }
 
     public Where isClass(final AndClassSet set) {
-        return cases.getWhere(new CaseWhereInterface<BaseExpr>(){
-            public Where getWhere(BaseExpr cCase) {
+        return cases.getWhere(new CaseWhereInterface<Expr>(){
+            public Where getWhere(Expr cCase) {
                 return cCase.isClass(set);
             }
         });
     }
 
+    @Override
+    public VariableExprSet getExprFollows() {
+        return cases.getExprFollows();
+    }
+
+    public Where compareBase(final BaseExpr expr, final Compare compareBack) {
+        return cases.getWhere(new CaseWhereInterface<Expr>() {
+            public Where getWhere(Expr cCase) {
+                return cCase.compareBase(expr, compareBack);
+            }
+        });
+    }
     public Where compare(final Expr expr, final Compare compare) {
-        return cases.getWhere(new CaseWhereInterface<BaseExpr>(){
-            public Where getWhere(BaseExpr cCase) {
+        return cases.getWhere(new CaseWhereInterface<Expr>(){
+            public Where getWhere(Expr cCase) {
                 return cCase.compare(expr,compare);
             }
         });
@@ -218,10 +234,16 @@ public class CaseExpr extends Expr {
         ExprCaseList result = new ExprCaseList();
         for(ExprCase exprCase : cases)
             result.add(exprCase.where,exprCase.data.classExpr(baseClass));
-        return result.getExpr();
+        return result.getFinal();
     }
 
     public long calculateComplexity() {
         return cases.getComplexity();
+    }
+
+    @Override
+    public BaseExprCase getBaseCase() {
+        ExprCase singleCase = BaseUtils.single(cases);
+        return singleCase.data.getBaseCase().and(singleCase.where);
     }
 }

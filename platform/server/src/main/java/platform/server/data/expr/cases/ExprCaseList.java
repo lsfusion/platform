@@ -7,7 +7,7 @@ import platform.server.data.expr.Expr;
 import platform.server.data.expr.VariableExprSet;
 import platform.server.data.where.Where;
 
-public class ExprCaseList extends AddCaseList<BaseExpr,ExprCase> {
+public class ExprCaseList extends CaseList<Expr,ExprCase> {
 
     public ExprCaseList() {
     }
@@ -34,25 +34,27 @@ public class ExprCaseList extends AddCaseList<BaseExpr,ExprCase> {
     }
 
     // возвращает CaseExpr
-    public Expr getExpr() {
-        if(size()>0) {
-            ExprCase lastCase = get(size()-1); // в последнем элементе срезаем null'ы с конца
-            lastCase.where = lastCase.where.followFalse(lastCase.data.getWhere().not(), packExprs);
-        }
-        if(size()==1 && get(0).where.isTrue())
-            return get(0).data;
+    public Expr getFinal() {
+        if(size()==0) return Expr.NULL;
+
+        ExprCase lastCase = get(size()-1); // в последнем элементе срезаем null'ы с конца
+        lastCase.where = lastCase.where.followFalse(lastCase.data.getWhere().not(), packExprs);
+
+        if(size()==1 && lastCase.where.isTrue())
+            return lastCase.data;
         return new CaseExpr(this);
     }
 
     private Where nullWhere = Where.FALSE;
 
-    private void add(Where where, BaseExpr expr) {
-        Expr followExpr = expr.followFalse(getUpWhere().or(where.not()), packExprs);
-        if(!(followExpr instanceof BaseExpr)) {// на самом деле если не packExprs либо BaseExpr либо NULL
-            add(where, followExpr);
+    private final boolean mergeCases = false;
+
+    private void addBase(Where where, Expr expr) {
+        expr = expr.followFalse(getUpWhere().or(where.not()), packExprs);
+        if(mergeCases && !(expr instanceof BaseExpr)) {// на самом деле если не packExprs либо BaseExpr либо NULL
+            add(where, expr);
             return;
-        } else
-            expr = (BaseExpr)followExpr;
+        }
 
         where = where.and(nullWhere.not()).followFalse(upWhere, packExprs);
         if(where.isFalse()) return;
@@ -69,13 +71,15 @@ public class ExprCaseList extends AddCaseList<BaseExpr,ExprCase> {
     // добавляет case
     public void add(Where where, Expr expr) {
         // нужно еше насчитать exprNullWhere и захерачить его в общий nullWhere
-        Where exprNullWhere = Where.FALSE;
-        for(ExprCase addCase : expr.getCases()) {
-            add(where.and(addCase.where),addCase.data);
-            exprNullWhere = exprNullWhere.or(addCase.where);
-        }
-
-        nullWhere = nullWhere.or(where.and(exprNullWhere.not()));
+        if(mergeCases) {
+            Where exprNullWhere = Where.FALSE;
+            for(ExprCase addCase : expr.getCases()) {
+                addBase(where.and(addCase.where),addCase.data);
+                exprNullWhere = exprNullWhere.or(addCase.where);
+            }
+            nullWhere = nullWhere.or(where.and(exprNullWhere.not()));
+        } else
+            addBase(where, expr);
     }
 
     // узнает использованный where
@@ -98,6 +102,7 @@ public class ExprCaseList extends AddCaseList<BaseExpr,ExprCase> {
     }
 
     public VariableExprSet getExprFollows() {
+        if(size()==0) return new VariableExprSet();
         VariableExprSet[] follows = new VariableExprSet[size()] ; int num = 0;
         for(ExprCase expr : this)
             follows[num++] = expr.data.getExprFollows();

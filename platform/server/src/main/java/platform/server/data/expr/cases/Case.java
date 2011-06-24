@@ -2,7 +2,7 @@ package platform.server.data.expr.cases;
 
 import platform.server.data.where.Where;
 
-public class Case<D> {
+public abstract class Case<D> {
     public Where where;
     public D data;
 

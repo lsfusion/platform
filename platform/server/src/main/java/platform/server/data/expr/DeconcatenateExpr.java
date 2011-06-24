@@ -10,6 +10,7 @@ import platform.server.classes.ConcatenateClassSet;
 import platform.server.classes.sets.AndClassSet;
 import platform.server.data.expr.cases.ExprCase;
 import platform.server.data.expr.cases.ExprCaseList;
+import platform.server.data.expr.cases.pull.ExprPullCases;
 import platform.server.data.expr.where.MapWhere;
 import platform.server.data.query.CompileSource;
 import platform.server.data.query.ExprEnumerator;
@@ -21,7 +22,9 @@ import platform.server.data.type.Type;
 import platform.server.data.where.Where;
 import platform.server.data.where.classes.ClassExprWhere;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 public class DeconcatenateExpr extends SingleClassExpr {
 
@@ -46,11 +49,12 @@ public class DeconcatenateExpr extends SingleClassExpr {
             return BaseExpr.create(new DeconcatenateExpr(expr, part, baseClass));
     }
 
-    public static Expr create(Expr expr, int part, BaseClass baseClass) {
-        ExprCaseList result = new ExprCaseList();
-        for(ExprCase exprCase : expr.getCases())
-            result.add(exprCase.where, createBase(exprCase.data, part, baseClass));
-        return result.getExpr();
+    public static Expr create(Expr expr, final int part, final BaseClass baseClass) {
+        return new ExprPullCases<Integer>() {
+            protected Expr proceedBase(Map<Integer, BaseExpr> map) {
+                return createBase(map.get(0), part, baseClass);
+            }
+        }.proceed(Collections.singletonMap(0, expr));
     }
 
 
