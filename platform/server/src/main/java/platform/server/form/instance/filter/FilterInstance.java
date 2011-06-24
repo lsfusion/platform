@@ -41,11 +41,14 @@ public abstract class FilterInstance implements Updated {
                 return new AndFilterInstance(inStream, form);
             case FilterType.COMPARE:
                 CompareFilterInstance filter = new CompareFilterInstance(inStream, form);
-                if (!filter.negate) {
-                    return new NotFilterInstance(new NotNullFilterInstance(filter.property));
-                } else {
-                    return new NotNullFilterInstance(filter.property);
-                }
+                if (filter.value instanceof NullValue)
+                    if (!filter.negate) {
+                        return new NotFilterInstance(new NotNullFilterInstance(filter.property));
+                    } else {
+                        return new NotNullFilterInstance(filter.property);
+                    }
+                else
+                    return filter;
             case FilterType.NOTNULL:
                 return new NotNullFilterInstance(inStream, form);
             case FilterType.ISCLASS:

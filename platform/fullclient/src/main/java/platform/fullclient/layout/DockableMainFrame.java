@@ -265,6 +265,7 @@ public class DockableMainFrame extends MainFrame {
         reload.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 control.getContentArea().deploy(createGrid());
+                navigatorController.update();
             }
         });
         dockableMenu.getMenu().addSeparator();
