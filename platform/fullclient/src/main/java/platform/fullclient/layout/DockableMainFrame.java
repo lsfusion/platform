@@ -79,12 +79,16 @@ public class DockableMainFrame extends MainFrame {
         navigatorController.update();
 
         try {
+            ClientFormDockable pageToFocus = null;
             if (remoteNavigator.showDefaultForms()) {
                 ArrayList<String> ids = remoteNavigator.getDefaultForms();
                 view.getForms().getFormsList().clear();
                 ClientFormDockable page = null;
                 for (String id : ids) {
                     page = view.openClient(id.trim(), mainNavigator, false);
+                    if (pageToFocus == null) {
+                        pageToFocus = page;
+                    }
                 }
                 if (page != null) {
                     page.setExtendedMode(ExtendedMode.MAXIMIZED);
@@ -92,10 +96,15 @@ public class DockableMainFrame extends MainFrame {
             } else {
                 ArrayList<String> savedForms = new ArrayList<String>(view.getForms().getFormsList());
                 view.getForms().getFormsList().clear();
+                ClientFormDockable page;
                 for (String id : savedForms) {
-                    view.openClient(id, mainNavigator, false);
+                    page = view.openClient(id, mainNavigator, false);
+                    if (pageToFocus == null) {
+                        pageToFocus = page;
+                    }
                 }
             }
+            pageToFocus.intern().getController().getFocusController().setFocusedDockable(pageToFocus.intern(), null, true, true, true);
         } catch (Exception e) {
             e.printStackTrace();
         }
