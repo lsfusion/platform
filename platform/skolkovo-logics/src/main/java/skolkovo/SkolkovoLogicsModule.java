@@ -565,8 +565,10 @@ public class SkolkovoLogicsModule extends LogicsModule {
         idGroup.add(baseLM.objectValue);
 
         nameNative = addDProp(recognizeGroup, "nameNative", "Имя", InsensitiveStringClass.get(2000), multiLanguageNamed);
+        nameNative.property.aggProp = true;
         nameNative.setMinimumWidth(10); nameNative.setPreferredWidth(50);
         nameForeign = addDProp(recognizeGroup, "nameForeign", "Имя (иностр.)", InsensitiveStringClass.get(2000), multiLanguageNamed);
+        nameForeign.property.aggProp = true;
         nameForeign.setMinimumWidth(10); nameForeign.setPreferredWidth(50);
 
         baseGroup.add(baseLM.email.property); // сделано, чтобы email был не самой первой колонкой в диалогах
@@ -617,7 +619,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         dateProjectVote = addJProp("dateProjectVote", "Дата проекта", baseLM.date, projectVote, 1);
 
-        dataDocumentNameExpert = addDProp("dataDocumentNameExpert", "Имя для документов", StringClass.get(70), expert);
+        dataDocumentNameExpert = addDProp(baseGroup, "dataDocumentNameExpert", "Имя для документов", StringClass.get(70), expert);
         documentNameExpert = addSUProp("documentNameExpert", "Имя для документов", Union.OVERRIDE, addJProp(baseLM.and1, addJProp(baseLM.insensitiveString2, baseLM.userLastName, 1, baseLM.userFirstName, 1), 1, is(expert), 1), dataDocumentNameExpert);
 
         clusterExpert = addDProp(idGroup, "clusterExpert", "Кластер (ИД)", cluster, expert);
@@ -1263,7 +1265,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         mainToolbar.titleShown = false;
         mainToolbar.verticalTextPosition = SwingConstants.BOTTOM;
         mainToolbar.horizontalTextPosition = SwingConstants.CENTER;
-        mainToolbar.horizontalAlignment = SwingConstants.CENTER;
+        mainToolbar.alignmentX = JToolBar.CENTER_ALIGNMENT;
 
         ToolBarNavigatorWindow leftToolbar = new ToolBarNavigatorWindow(JToolBar.VERTICAL, "leftToolbar", "Список", 7, 0, 13, 60);
 

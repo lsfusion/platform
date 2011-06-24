@@ -10,6 +10,10 @@ public class NotNullFilterEntity<P extends PropertyInterface> extends PropertyFi
 
     public boolean checkChange = false;
 
+    // нельзя удалять - используется при сериализации
+    public NotNullFilterEntity() {
+    }
+
     public NotNullFilterEntity(PropertyObjectEntity<P> property) {
         super(property);
     }

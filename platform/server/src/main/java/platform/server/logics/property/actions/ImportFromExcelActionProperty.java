@@ -78,7 +78,7 @@ public class ImportFromExcelActionProperty extends ActionProperty {
                 if (property != null) {
                     try {
                         Type type = property.propertyObject.getType();
-                        form.changeProperty(property, type.parseString(cellValue), true);
+                        form.changeProperty(property, type.parseString(cellValue), false);
                     } catch (ParseException e) {
                         logger.warn("Не конвертировано значение совйства", e);
                     }

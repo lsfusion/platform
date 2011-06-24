@@ -32,7 +32,7 @@ public class NavigatorController implements INavigatorController {
             for (ClientNavigatorElement element : elements) {
                 for (String s : element.childrenSid) {
                     ClientNavigatorElement child = elementsMap.get(s);
-                    element.childrens.add(child);
+                    element.children.add(child);
                 }
             }
 
@@ -101,7 +101,7 @@ public class NavigatorController implements INavigatorController {
 
         // считаем, что если currentWindow == null, то это baseElement и он всегда выделен, но не рисуется никуда
         if ((currentElement.window == null) || (currentWindow == null ? true : currentElement == getView(currentWindow).getSelectedElement()) || (currentElement.window == currentWindow) || (currentElement.window.drawRoot)) {
-            for (ClientNavigatorElement element : currentElement.childrens) {
+            for (ClientNavigatorElement element : currentElement.children) {
                 if (!result.get(nextWindow).contains(element)) {
                     dfsAddElements(element, nextWindow, result);
                 }

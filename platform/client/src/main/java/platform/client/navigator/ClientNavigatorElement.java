@@ -15,7 +15,7 @@ public class ClientNavigatorElement {
     private String caption;
     public String sID;
     public List<String> childrenSid = new LinkedList<String>();
-    public List<ClientNavigatorElement> childrens = new LinkedList<ClientNavigatorElement>();
+    public List<ClientNavigatorElement> children = new LinkedList<ClientNavigatorElement>();
     public ImageIcon image;
     public static ClientNavigatorElement root;
 

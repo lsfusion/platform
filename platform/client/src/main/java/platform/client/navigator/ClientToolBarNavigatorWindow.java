@@ -15,6 +15,9 @@ public class ClientToolBarNavigatorWindow extends ClientNavigatorWindow {
     public int verticalAlignment;
     public int horizontalAlignment;
 
+    public float alignmentY;
+    public float alignmentX;
+
     public ClientToolBarNavigatorWindow(DataInputStream inStream) throws IOException {
         super(inStream);
 
@@ -26,6 +29,9 @@ public class ClientToolBarNavigatorWindow extends ClientNavigatorWindow {
 
         verticalAlignment = inStream.readInt();
         horizontalAlignment = inStream.readInt();
+
+        alignmentY = inStream.readFloat();
+        alignmentX = inStream.readFloat();
     }
 
     @Override

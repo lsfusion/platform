@@ -17,6 +17,9 @@ public class ToolBarNavigatorWindow extends NavigatorWindow {
     public int verticalAlignment = SwingConstants.CENTER;
     public int horizontalAlignment = SwingConstants.CENTER;
 
+    public float alignmentY = JToolBar.TOP_ALIGNMENT;
+    public float alignmentX = JToolBar.LEFT_ALIGNMENT;
+
     public ToolBarNavigatorWindow(int type, String sID, String caption, int x, int y, int width, int height) {
         super(sID, caption, x, y, width, height);
 
@@ -46,5 +49,8 @@ public class ToolBarNavigatorWindow extends NavigatorWindow {
 
         outStream.writeInt(verticalAlignment);
         outStream.writeInt(horizontalAlignment);
+
+        outStream.writeFloat(alignmentY);
+        outStream.writeFloat(alignmentX);
     }
 }

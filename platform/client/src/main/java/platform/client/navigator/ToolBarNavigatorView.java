@@ -47,7 +47,7 @@ public class ToolBarNavigatorView extends NavigatorView {
         if ((element.window != null) && (!element.window.equals(window))) {
             return;
         }
-        for (ClientNavigatorElement childEl: element.childrens) {
+        for (ClientNavigatorElement childEl: element.children) {
             if (newElements.contains(childEl)) {
                 addElement(childEl, newElements, allign + 1);
             }
@@ -79,6 +79,8 @@ public class ToolBarNavigatorView extends NavigatorView {
         button.setHorizontalTextPosition(window.horizontalTextPosition);
         button.setVerticalAlignment(window.verticalAlignment);
         button.setHorizontalAlignment(window.horizontalAlignment);
+        button.setAlignmentY(window.alignmentY);
+        button.setAlignmentX(window.alignmentX);
 
         // пока неактуально - лучше чтобы она красиво рисовала кнопки, чем отступы слева
 //        if (window.type == JToolBar.VERTICAL) {

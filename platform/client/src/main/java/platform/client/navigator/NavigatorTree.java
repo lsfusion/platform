@@ -1,6 +1,5 @@
 package platform.client.navigator;
 
-import platform.client.Main;
 import platform.client.tree.ClientTree;
 import platform.client.tree.ClientTreeAction;
 import platform.client.tree.ClientTreeActionEvent;
@@ -108,8 +107,9 @@ public class NavigatorTree extends ClientTree {
 
         if (!element.hasChildren()) return;
 
+        java.util.List<ClientNavigatorElement> elements = navigator.getNodeElements(element);
 
-        for (ClientNavigatorElement child : element.childrens) {
+        for (ClientNavigatorElement child : elements) {
 
             DefaultMutableTreeNode node;
             node = new NavigatorTreeNode(this, child);

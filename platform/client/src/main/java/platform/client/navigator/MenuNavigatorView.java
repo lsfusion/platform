@@ -29,7 +29,7 @@ public class MenuNavigatorView extends NavigatorView {
 
     private JComponent addElement(JComponent parent, ClientNavigatorElement element, Set<ClientNavigatorElement> newElements, int level) {
         boolean isLeaf = true;
-        for (ClientNavigatorElement childEl: element.childrens) {
+        for (ClientNavigatorElement childEl: element.children) {
             if (newElements.contains(childEl)) {
                 isLeaf = false;
                 break;
@@ -46,7 +46,7 @@ public class MenuNavigatorView extends NavigatorView {
             } else {
                 node = addNode(parent, element);
             }
-            for (ClientNavigatorElement childEl: element.childrens) {
+            for (ClientNavigatorElement childEl: element.children) {
                 if (newElements.contains(childEl)) {
                     addElement(node, childEl, newElements, level + 1);
                 }
