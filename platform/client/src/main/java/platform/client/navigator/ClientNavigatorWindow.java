@@ -13,10 +13,16 @@ public abstract class ClientNavigatorWindow extends IdentityObject implements Se
     public String sid;
     public List<ClientNavigatorElement> elements = new ArrayList<ClientNavigatorElement>();
     public static Map<String, ClientNavigatorWindow> sidToWindow = new HashMap<String, ClientNavigatorWindow>();
+
+    public int position;
+
     public int x;
     public int y;
     public int width;
     public int height;
+
+    public String borderConstraint;
+
     public int type;
     public boolean titleShown;
     public boolean drawRoot;
@@ -25,10 +31,18 @@ public abstract class ClientNavigatorWindow extends IdentityObject implements Se
         super(inStream.readInt());
         caption = inStream.readUTF();
         sid = inStream.readUTF();
-        x = inStream.readInt();
-        y = inStream.readInt();
-        width = inStream.readInt();
-        height = inStream.readInt();
+
+        position = inStream.readInt();
+        if (position == NavigatorWindowType.DOCKING_POSITION) {
+            x = inStream.readInt();
+            y = inStream.readInt();
+            width = inStream.readInt();
+            height = inStream.readInt();
+        }
+        if (position == NavigatorWindowType.BORDER_POSITION) {
+            borderConstraint = inStream.readUTF();
+        }
+
         titleShown = inStream.readBoolean();
         drawRoot =  inStream.readBoolean();
     }

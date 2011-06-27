@@ -2403,24 +2403,24 @@ public class RomanLogicsModule extends LogicsModule {
     @Override
     public void initNavigators() throws JRException, FileNotFoundException {
 
-        ToolBarNavigatorWindow mainToolbar = new ToolBarNavigatorWindow(JToolBar.HORIZONTAL, "mainToolbar", "Навигатор", 0, 0, 100, 7);
+        ToolBarNavigatorWindow mainToolbar = new ToolBarNavigatorWindow(JToolBar.HORIZONTAL, "mainToolbar", "Навигатор", BorderLayout.NORTH);
         mainToolbar.titleShown = false;
 
         baseLM.baseWindow.y = 10;
         baseLM.baseWindow.height -= 10;
 
-        ToolBarNavigatorWindow generateToolbar = new ToolBarNavigatorWindow(JToolBar.HORIZONTAL, "generateToolbar", "Генерация", 20, 7, 80, 2);
+        ToolBarNavigatorWindow generateToolbar = new ToolBarNavigatorWindow(JToolBar.HORIZONTAL, "generateToolbar", "Генерация", 0, 0, 100, 3);
         generateToolbar.titleShown = false;
         generateToolbar.drawRoot = true;
         generateToolbar.verticalTextPosition = SwingConstants.CENTER;
         generateToolbar.horizontalTextPosition = SwingConstants.TRAILING;
 
-        ToolBarNavigatorWindow leftToolbar = new ToolBarNavigatorWindow(JToolBar.VERTICAL, "leftToolbar", "Список", 0, 7, 20, 60);
+        ToolBarNavigatorWindow leftToolbar = new ToolBarNavigatorWindow(JToolBar.VERTICAL, "leftToolbar", "Список", 0, 3, 20, 67);
 
         baseLM.baseElement.window = mainToolbar;
         baseLM.adminElement.window = leftToolbar;
 
-        TreeNavigatorWindow objectsWindow = new TreeNavigatorWindow("objectsWindow", "Объекты", 0, 70, 20, 30);
+        TreeNavigatorWindow objectsWindow = new TreeNavigatorWindow("objectsWindow", "Объекты", 0, 3, 20, 67);
         objectsWindow.drawRoot = true;
         baseLM.objectElement.window = objectsWindow;
 

@@ -1261,18 +1261,18 @@ public class SkolkovoLogicsModule extends LogicsModule {
     @Override
     public void initNavigators() throws JRException, FileNotFoundException {
 
-        ToolBarNavigatorWindow mainToolbar = new ToolBarNavigatorWindow(JToolBar.VERTICAL, "mainToolbar", "Навигатор", 0, 0, 7, 100);
+        ToolBarNavigatorWindow mainToolbar = new ToolBarNavigatorWindow(JToolBar.VERTICAL, "mainToolbar", "Навигатор", BorderLayout.WEST);
         mainToolbar.titleShown = false;
         mainToolbar.verticalTextPosition = SwingConstants.BOTTOM;
         mainToolbar.horizontalTextPosition = SwingConstants.CENTER;
         mainToolbar.alignmentX = JToolBar.CENTER_ALIGNMENT;
 
-        ToolBarNavigatorWindow leftToolbar = new ToolBarNavigatorWindow(JToolBar.VERTICAL, "leftToolbar", "Список", 7, 0, 13, 60);
+        ToolBarNavigatorWindow leftToolbar = new ToolBarNavigatorWindow(JToolBar.VERTICAL, "leftToolbar", "Список", 0, 0, 20, 60);
 
         baseLM.baseElement.window = mainToolbar;
         baseLM.adminElement.window = leftToolbar;
 
-        TreeNavigatorWindow objectsWindow = new TreeNavigatorWindow("objectsWindow", "Объекты", 7, 30, 13, 40);
+        TreeNavigatorWindow objectsWindow = new TreeNavigatorWindow("objectsWindow", "Объекты", 0, 30, 20, 40);
         objectsWindow.drawRoot = true;
         baseLM.objectElement.window = objectsWindow;
 

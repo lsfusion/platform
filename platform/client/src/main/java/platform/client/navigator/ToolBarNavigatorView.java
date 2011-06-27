@@ -21,6 +21,7 @@ public class ToolBarNavigatorView extends NavigatorView {
         toolBar = (JToolBar) component;
         toolBar.setFloatable(false);
         toolBar.setRollover(true);
+        toolBar.setFocusable(false);
     }
 
     @Override
@@ -35,7 +36,9 @@ public class ToolBarNavigatorView extends NavigatorView {
 
         revalidate();
         repaint();
-//        toolBar.revalidate();
+
+        // затычка, иначе Toolbar вверху рисуется неправильного размера (увеличенного)
+        this.setPreferredSize(getPreferredSize());
     }
 
     private void addElement(ClientNavigatorElement element, Set<ClientNavigatorElement> newElements, int allign) {
@@ -81,6 +84,7 @@ public class ToolBarNavigatorView extends NavigatorView {
         button.setHorizontalAlignment(window.horizontalAlignment);
         button.setAlignmentY(window.alignmentY);
         button.setAlignmentX(window.alignmentX);
+        button.setFocusable(false);
 
         // пока неактуально - лучше чтобы она красиво рисовала кнопки, чем отступы слева
 //        if (window.type == JToolBar.VERTICAL) {
@@ -95,6 +99,7 @@ public class ToolBarNavigatorView extends NavigatorView {
 //            comp = pane;
 //        }
         toolBar.add(button);
+//        toolBar.setPreferredSize(new Dimension(toolBar.getPreferredSize().width, button.getPreferredSize().height));
         return button;
     }
 

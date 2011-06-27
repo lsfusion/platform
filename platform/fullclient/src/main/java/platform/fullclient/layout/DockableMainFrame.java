@@ -20,6 +20,7 @@ import platform.client.navigator.ClientNavigator;
 import platform.client.navigator.ClientNavigatorForm;
 import platform.client.navigator.NavigatorView;
 import platform.fullclient.navigator.NavigatorController;
+import platform.interop.NavigatorWindowType;
 import platform.interop.exceptions.LoginException;
 import platform.interop.form.RemoteFormInterface;
 import platform.interop.navigator.RemoteNavigatorInterface;
@@ -104,7 +105,9 @@ public class DockableMainFrame extends MainFrame {
                     }
                 }
             }
-            pageToFocus.intern().getController().getFocusController().setFocusedDockable(pageToFocus.intern(), null, true, true, true);
+            if (pageToFocus != null) {
+                pageToFocus.intern().getController().getFocusController().setFocusedDockable(pageToFocus.intern(), null, true, true, true);
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -184,16 +187,19 @@ public class DockableMainFrame extends MainFrame {
             }
         }
 
-        add(control.getContentArea(), BorderLayout.CENTER);
         dockables.put(createDockable("relevantForms", "Связанные формы", mainNavigator.relevantFormNavigator), new Rectangle(0, 70, 20, 29));
         dockables.put(createDockable("relevantClassForms", "Классовые формы", mainNavigator.relevantClassNavigator), new Rectangle(0, 70, 20, 29));
         dockables.put(createDockable("log", "Лог", Log.getPanel()), new Rectangle(0, 70, 20, 29));
 
         for (NavigatorView view : navigatorController.getAllViews()) {
-            DefaultSingleCDockable dockable = createDockable(view.getSID(), view.getCaption(), view);
-            dockable.setTitleShown(view.isTitleShown());
-            navigatorController.recordDockable(view, dockable);
-            dockables.put(dockable, new Rectangle(view.getDockX(), view.getDockY(), view.getDockWidth(), view.getDockHeight()));
+            if (view.window.position == NavigatorWindowType.DOCKING_POSITION) {
+                DefaultSingleCDockable dockable = createDockable(view.getSID(), view.getCaption(), view);
+                dockable.setTitleShown(view.window.titleShown);
+                navigatorController.recordDockable(view, dockable);
+                dockables.put(dockable, new Rectangle(view.window.x, view.window.y, view.window.width, view.window.height));
+            } else {
+                add(view, view.window.borderConstraint);
+            }
         }
 
         dockables.put(view.getGridArea(), new Rectangle(20, 20, 80, 79));
@@ -201,6 +207,8 @@ public class DockableMainFrame extends MainFrame {
 
         CGrid grid = createGrid();
         control.getContentArea().deploy(grid);
+
+        add(control.getContentArea(), BorderLayout.CENTER);
 
         for (String s : control.layouts()) {
             if (s.equals("default")) {

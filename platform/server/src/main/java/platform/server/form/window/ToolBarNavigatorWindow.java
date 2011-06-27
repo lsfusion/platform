@@ -23,6 +23,16 @@ public class ToolBarNavigatorWindow extends NavigatorWindow {
     public ToolBarNavigatorWindow(int type, String sID, String caption, int x, int y, int width, int height) {
         super(sID, caption, x, y, width, height);
 
+        setType(type);
+    }
+
+    public ToolBarNavigatorWindow(int type, String sID, String caption, String borderConstraint) {
+        super(sID, caption, borderConstraint);
+
+        setType(type);
+    }
+
+    private void setType(int type) {
         this.type = type;
         if (this.type == JToolBar.VERTICAL) {
             verticalTextPosition = SwingConstants.CENTER;

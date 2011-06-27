@@ -30,23 +30,4 @@ public abstract class NavigatorView extends JScrollPane {
 
     public abstract ClientNavigatorElement getSelectedElement();
 
-    public int getDockX() {
-        return window.x;
-    }
-
-    public int getDockY() {
-        return window.y;
-    }
-
-    public int getDockWidth() {
-        return window.width;
-    }
-
-    public int getDockHeight() {
-        return window.height;
-    }
-
-    public boolean isTitleShown() {
-        return window.titleShown;
-    }
 }
