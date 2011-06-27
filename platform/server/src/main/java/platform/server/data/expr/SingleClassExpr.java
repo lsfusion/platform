@@ -6,7 +6,7 @@ import platform.server.classes.ConcreteObjectClass;
 import platform.server.classes.sets.AndClassSet;
 import platform.server.classes.sets.OrClassSet;
 import platform.server.classes.sets.OrObjectClassSet;
-import platform.server.data.expr.where.IsClassWhere;
+import platform.server.data.expr.where.extra.IsClassWhere;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.where.Where;
 

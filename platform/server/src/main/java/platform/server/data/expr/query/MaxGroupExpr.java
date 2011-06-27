@@ -39,14 +39,10 @@ public class MaxGroupExpr extends GroupExpr {
         return new NotNull();
     }
 
-    private BaseExpr getBaseExpr() {
-        return query.getBaseCase().data;
-    }
-
     protected class NotNull extends GroupExpr.NotNull {
 
         protected ClassExprWhere getClassWhere(Where fullWhere) {
-            return fullWhere.getClassWhere().map(BaseUtils.merge(Collections.singletonMap(getBaseExpr(), MaxGroupExpr.this), group));
+            return fullWhere.getClassWhere().map(BaseUtils.merge(Collections.singletonMap(query.getBaseExpr(), MaxGroupExpr.this), group));
         }
     }
 

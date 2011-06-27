@@ -3,7 +3,6 @@ package platform.server.logics.property;
 import platform.server.classes.StaticClass;
 import platform.server.classes.ValueClass;
 import platform.server.data.expr.Expr;
-import platform.server.data.expr.cases.CaseExpr;
 import platform.server.data.where.Where;
 import platform.server.data.where.WhereBuilder;
 import platform.server.session.Changes;

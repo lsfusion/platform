@@ -26,6 +26,8 @@ public class StaticValueExpr extends AbstractValueExpr {
     }
 
     public String getSource(CompileSource compile) {
+        if(compile instanceof ToString)
+            return object + " - " + objectClass; 
         return ((StaticClass)objectClass).getString(object,compile.syntax);
     }
 }

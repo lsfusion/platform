@@ -8,10 +8,8 @@ import platform.server.data.Value;
 import platform.server.data.expr.BaseExpr;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
-import platform.server.data.expr.cases.CaseExpr;
-import platform.server.data.expr.cases.MapCase;
-import platform.server.data.expr.cases.pull.ExclPullCases;
-import platform.server.data.query.innerjoins.KeyEqual;
+import platform.server.data.expr.where.cases.CaseJoin;
+import platform.server.data.expr.where.pull.ExclPullWheres;
 import platform.server.data.sql.SQLSyntax;
 import platform.server.data.translator.MapTranslator;
 import platform.server.data.translator.MapValuesTranslate;
@@ -19,8 +17,6 @@ import platform.server.data.translator.PartialQueryTranslator;
 import platform.server.data.translator.QueryTranslator;
 import platform.server.data.where.Where;
 import platform.server.data.where.classes.ClassWhere;
-import platform.server.logics.DataObject;
-import platform.server.logics.ObjectValue;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -77,7 +73,7 @@ class ParsedJoinQuery<K,V> extends Join<V> implements ParsedQuery<K,V> {
         join = new QueryTranslateJoin<V>(new QueryTranslator(BaseUtils.crossJoin(mapKeys, joinImplement)), join);
 
          // затем закидываем Where что все implement не null
-        join = new CaseJoin<V>(Expr.getWhere(joinImplement), join);
+        join = join.and(Expr.getWhere(joinImplement));
 
         return join;
     }
@@ -88,7 +84,7 @@ class ParsedJoinQuery<K,V> extends Join<V> implements ParsedQuery<K,V> {
     }
 
     private static <B, K extends B, V extends B> ClassWhere<B> getClassWhere(Where where, final Map<K, KeyExpr> mapKeys, Map<V, Expr> mapProps) {
-        return new ExclPullCases<ClassWhere<B>, V, Where>() {
+        return new ExclPullWheres<ClassWhere<B>, V, Where>() {
             protected ClassWhere<B> initEmpty() {
                 return ClassWhere.STATIC(false);
             }

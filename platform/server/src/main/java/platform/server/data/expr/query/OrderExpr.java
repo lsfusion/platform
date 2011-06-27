@@ -9,13 +9,8 @@ import platform.server.caches.IdentityLazy;
 import platform.server.caches.ParamLazy;
 import platform.server.caches.hash.HashContext;
 import platform.server.data.expr.*;
-import platform.server.data.expr.cases.CaseExpr;
-import platform.server.data.expr.cases.ExprCase;
-import platform.server.data.expr.cases.ExprCaseList;
-import platform.server.data.expr.cases.MapCase;
-import platform.server.data.expr.cases.pull.ExclPullCases;
-import platform.server.data.expr.cases.pull.ExclWherePullCases;
-import platform.server.data.expr.cases.pull.ExprPullCases;
+import platform.server.data.expr.where.pull.ExclExprPullWheres;
+import platform.server.data.expr.where.pull.ExprPullWheres;
 import platform.server.data.query.*;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.translator.PartialQueryTranslator;
@@ -132,7 +127,7 @@ public class OrderExpr extends QueryExpr<KeyExpr, OrderExpr.Query,OrderJoin> imp
 
     @ParamLazy
     public Expr translateQuery(QueryTranslator translator) {
-        return new ExprPullCases<KeyExpr>() {
+        return new ExprPullWheres<KeyExpr>() {
             protected Expr proceedBase(Map<KeyExpr, BaseExpr> map) {
                 return createBase(orderType, map, query.expr, query.orders, query.partitions);
             }
@@ -192,7 +187,7 @@ public class OrderExpr extends QueryExpr<KeyExpr, OrderExpr.Query,OrderJoin> imp
     }
 
     public static Expr create(final OrderType orderType, final Expr expr, final OrderedMap<Expr, Boolean> orders, final Set<Expr> partitions, Map<KeyExpr, ? extends Expr> group) {
-        return new ExprPullCases<KeyExpr>() {
+        return new ExprPullWheres<KeyExpr>() {
             protected Expr proceedBase(Map<KeyExpr, BaseExpr> map) {
                 return createBase(orderType, map, expr, orders, partitions);
             }
@@ -210,7 +205,7 @@ public class OrderExpr extends QueryExpr<KeyExpr, OrderExpr.Query,OrderJoin> imp
                 keyClasses.add(groupEntry.getKey(), groupEntry.getValue().getAndClassSet(and));
             final ClassExprWhere keyWhere = new ClassExprWhere(keyClasses);
 
-            return new ExclWherePullCases<AndClassSet>() {
+            return new ExclExprPullWheres<AndClassSet>() {
                 protected AndClassSet initEmpty() {
                     return null;
                 }

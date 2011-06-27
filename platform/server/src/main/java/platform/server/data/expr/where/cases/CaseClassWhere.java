@@ -1,4 +1,4 @@
-package platform.server.data.expr.cases;
+package platform.server.data.expr.where.cases;
 
 import platform.server.data.expr.BaseExpr;
 import platform.server.data.where.classes.ClassExprWhere;

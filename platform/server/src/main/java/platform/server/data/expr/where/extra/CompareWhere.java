@@ -1,4 +1,4 @@
-package platform.server.data.expr.where;
+package platform.server.data.expr.where.extra;
 
 import platform.interop.Compare;
 import platform.server.caches.ManualLazy;
@@ -43,14 +43,14 @@ public abstract class CompareWhere<This extends CompareWhere<This>> extends Bina
     }
 
     public static <K> Where compare(Map<K,? extends Expr> map1,Map<K,? extends Expr> map2) {
-        Where where = Where.TRUE;
+        Where where = TRUE;
         for(Map.Entry<K,? extends Expr> entry : map1.entrySet())
             where = where.and(entry.getValue().compare(map2.get(entry.getKey()), Compare.EQUALS));
         return where;
     }
 
     public static <K> Where compareValues(Map<K,? extends Expr> map,Map<K, DataObject> mapValues) {
-        Where where = Where.TRUE;
+        Where where = TRUE;
         for(Map.Entry<K,? extends Expr> entry : map.entrySet())
             where = where.and(entry.getValue().compare(mapValues.get(entry.getKey()), Compare.EQUALS));
         return where;

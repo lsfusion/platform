@@ -4,7 +4,8 @@ import platform.base.BaseUtils;
 import platform.interop.action.ClientAction;
 import platform.server.classes.ValueClass;
 import platform.server.data.expr.Expr;
-import platform.server.data.expr.cases.ExprCaseList;
+import platform.server.data.expr.where.cases.ExprCaseList;
+import platform.server.data.expr.where.CaseExprInterface;
 import platform.server.data.query.Join;
 import platform.server.data.where.Where;
 import platform.server.data.where.WhereBuilder;
@@ -49,7 +50,7 @@ public abstract class DataProperty extends UserProperty {
 
         Expr dataExpr = getExpr(joinImplement);
 
-        ExprCaseList cases = new ExprCaseList();
+        CaseExprInterface cases = Expr.newCases();
 
         // ручные изменения
         Join<String> changedJoin = session.getDataChange(this, joinImplement);

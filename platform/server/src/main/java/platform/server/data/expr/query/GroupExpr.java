@@ -11,17 +11,13 @@ import platform.server.caches.ParamLazy;
 import platform.server.caches.TwinManualLazy;
 import platform.server.caches.hash.HashContext;
 import platform.server.data.expr.*;
-import platform.server.data.expr.cases.Case;
-import platform.server.data.expr.cases.CaseExpr;
-import platform.server.data.expr.cases.ExprCaseList;
-import platform.server.data.expr.cases.MapCase;
-import platform.server.data.expr.cases.pull.ExclPullCases;
-import platform.server.data.expr.cases.pull.ExclWherePullCases;
-import platform.server.data.expr.cases.pull.ExprPullCases;
-import platform.server.data.expr.where.EqualsWhere;
+import platform.server.data.expr.where.cases.CaseExpr;
+import platform.server.data.expr.where.pull.ExclPullWheres;
+import platform.server.data.expr.where.pull.ExclExprPullWheres;
+import platform.server.data.expr.where.pull.ExprPullWheres;
+import platform.server.data.expr.where.extra.EqualsWhere;
 import platform.server.data.query.CompileSource;
 import platform.server.data.query.Query;
-import platform.server.data.query.SourceJoin;
 import platform.server.data.query.innerjoins.*;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.translator.QueryTranslator;
@@ -104,7 +100,7 @@ public abstract class GroupExpr extends QueryExpr<BaseExpr,Expr,GroupJoin> {
     public GroupJoin getGroupJoin() {
         InnerGroupJoin<? extends GroupJoinSet> innerJoin = BaseUtils.single(getInnerJoins(query, BaseUtils.reverse(group), getGroupType()));
         assert innerJoin.keyEqual.isEmpty();
-        return new GroupJoin(innerContext.getKeys(), innerContext.getValues(), getGroupType().splitExprCases()?query.getBaseCase().where:Where.TRUE,
+        return new GroupJoin(innerContext.getKeys(), innerContext.getValues(), getGroupType().splitExprCases()?query.getBaseWhere():Where.TRUE,
                 innerJoin.joins, group);
     }
 
@@ -215,7 +211,7 @@ public abstract class GroupExpr extends QueryExpr<BaseExpr,Expr,GroupJoin> {
 
     // вытаскивает из outer Case'ы
     public static <K> Expr create(final Map<K, ? extends Expr> group, final Expr expr, final GroupType type, Map<K, ? extends Expr> implement) {
-        return new ExprPullCases<K>() {
+        return new ExprPullWheres<K>() {
             protected Expr proceedBase(Map<K, BaseExpr> map) {
                 return createOuterBase(group, expr, type, map);
             }
@@ -224,7 +220,7 @@ public abstract class GroupExpr extends QueryExpr<BaseExpr,Expr,GroupJoin> {
 
     // если translate или packFollowFalse, на самом деле тоже самое что сверху, но иначе придется кучу generics'ов сделать
     private static Expr createOuterGroupCases(Map<BaseExpr, ? extends Expr> innerOuter, final Expr expr, final GroupType type, final Map<BaseExpr,BaseExpr> outerExprValues) {
-        return new ExprPullCases<BaseExpr>() {
+        return new ExprPullWheres<BaseExpr>() {
             protected Expr proceedBase(Map<BaseExpr, BaseExpr> map) {
                 return createOuterGroupBase(map, expr, type, outerExprValues);
             }
@@ -327,7 +323,7 @@ public abstract class GroupExpr extends QueryExpr<BaseExpr,Expr,GroupJoin> {
     }
 
     private static Expr createInnerCases(Map<BaseExpr, ? extends Expr> outerInner, Expr expr, final GroupType type) {
-        return new ExclPullCases<Expr, BaseExpr, Expr>() {
+        return new ExclPullWheres<Expr, BaseExpr, Expr>() {
             protected Expr initEmpty() {
                 return NULL;
             }
@@ -342,7 +338,7 @@ public abstract class GroupExpr extends QueryExpr<BaseExpr,Expr,GroupJoin> {
 
     private static Expr createInnerExprCases(final Map<BaseExpr, BaseExpr> outerInner, Expr expr, final GroupType type) {
         if (type.splitExprCases()) {
-            return new ExclWherePullCases<Expr>() {
+            return new ExclExprPullWheres<Expr>() {
                 protected Expr initEmpty() {
                     return NULL;
                 }

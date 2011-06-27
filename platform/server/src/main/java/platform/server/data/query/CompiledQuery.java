@@ -10,7 +10,7 @@ import platform.server.caches.OuterContext;
 import platform.server.data.*;
 import platform.server.data.expr.*;
 import platform.server.data.expr.query.*;
-import platform.server.data.expr.where.MapWhere;
+import platform.server.data.where.MapWhere;
 import platform.server.data.query.innerjoins.InnerSelectJoin;
 import platform.server.data.sql.SQLSyntax;
 import platform.server.data.translator.MapTranslate;

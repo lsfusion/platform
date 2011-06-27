@@ -4,7 +4,10 @@ import platform.base.*;
 import platform.server.Settings;
 import platform.server.caches.ManualLazy;
 import platform.server.caches.ParamLazy;
-import platform.server.data.expr.where.*;
+import platform.server.data.expr.where.extra.CompareWhere;
+import platform.server.data.expr.where.extra.EqualsWhere;
+import platform.server.data.expr.where.extra.GreaterWhere;
+import platform.server.data.expr.where.extra.IsClassWhere;
 import platform.server.data.query.JoinData;
 import platform.server.data.query.innerjoins.KeyEquals;
 import platform.server.data.query.innerjoins.ObjectJoinSets;
@@ -486,5 +489,9 @@ public class OrWhere extends FormulaWhere<AndObjectWhere> implements OrObjectWhe
 
     public int hashCoeff() {
         return 5;
+    }
+
+    public boolean isNot() {
+        return false;
     }
 }

@@ -1,4 +1,4 @@
-package platform.server.data.expr.where;
+package platform.server.data.expr.where.extra;
 
 import platform.base.BaseUtils;
 import platform.interop.Compare;
@@ -18,7 +18,7 @@ public class GreaterWhere extends CompareWhere {
 
     public static Where create(BaseExpr operator1, BaseExpr operator2) {
         if(BaseUtils.hashEquals(operator1,operator2))
-            return Where.FALSE;
+            return FALSE;
         return create(new GreaterWhere(operator1, operator2));
     }
 

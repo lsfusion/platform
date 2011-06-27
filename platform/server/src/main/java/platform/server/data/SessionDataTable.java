@@ -10,8 +10,8 @@ import platform.server.caches.hash.HashValues;
 import platform.server.classes.BaseClass;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
-import platform.server.data.expr.where.CompareWhere;
-import platform.server.data.query.CaseJoin;
+import platform.server.data.expr.where.extra.CompareWhere;
+import platform.server.data.expr.where.cases.CaseJoin;
 import platform.server.data.query.Join;
 import platform.server.data.query.Query;
 import platform.server.data.translator.MapValuesTranslate;
@@ -46,7 +46,7 @@ public class SessionDataTable implements SessionData<SessionDataTable> {
     public Join<PropertyField> join(final Map<KeyField, ? extends Expr> joinImplement) {
 
         final Join<PropertyField> tableJoin = table.join(filterKeys(joinImplement, table.keys));
-        return new CaseJoin<PropertyField>(CompareWhere.compareValues(filterKeys(joinImplement, keyValues.keySet()), keyValues), new Join<PropertyField>() {
+        return new Join<PropertyField>() {
             @Override
             public Expr getExpr(PropertyField property) {
                 ObjectValue propertyValue = propertyValues.get(property);
@@ -65,7 +65,7 @@ public class SessionDataTable implements SessionData<SessionDataTable> {
             public Collection<PropertyField> getProperties() {
                 return SessionDataTable.this.getProperties();
             }
-        });
+        }.and(CompareWhere.compareValues(filterKeys(joinImplement, keyValues.keySet()), keyValues));
     }
 
     public List<KeyField> getKeys() {

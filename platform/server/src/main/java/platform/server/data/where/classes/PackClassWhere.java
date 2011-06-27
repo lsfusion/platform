@@ -2,7 +2,7 @@ package platform.server.data.where.classes;
 
 import platform.base.TwinImmutableInterface;
 import platform.server.caches.hash.HashContext;
-import platform.server.data.expr.where.MapWhere;
+import platform.server.data.where.MapWhere;
 import platform.server.data.query.CompileSource;
 import platform.server.data.query.ExprEnumerator;
 import platform.server.data.query.JoinData;

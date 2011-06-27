@@ -7,7 +7,7 @@ import platform.server.data.expr.BaseExpr;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.query.StatKeys;
-import platform.server.data.expr.where.MapWhere;
+import platform.server.data.where.MapWhere;
 import platform.server.data.translator.PartialQueryTranslator;
 import platform.server.data.where.Where;
 

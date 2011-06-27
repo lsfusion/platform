@@ -1,20 +1,20 @@
-package platform.server.data.expr.cases;
+package platform.server.data.expr.where.cases;
 
 import platform.server.data.expr.BaseExpr;
-import platform.server.data.expr.Expr;
+import platform.server.data.expr.where.Case;
 import platform.server.data.where.Where;
 
 import java.util.HashMap;
 import java.util.Map;
 
-public class MapCase<K> extends Case<Map<K, Expr>> {
+public class MapCase<K> extends Case<Map<K, BaseExpr>> {
 
     public MapCase() {
-        super(Where.TRUE,new HashMap<K, Expr>());
+        super(Where.TRUE,new HashMap<K, BaseExpr>());
     }
 
     private Where upWhere = null;
-    public MapCase(Where where, Map<K, Expr> data, Where upWhere) {
+    public MapCase(Where where, Map<K, BaseExpr> data, Where upWhere) {
         super(where, data);
         this.upWhere = upWhere;
     }

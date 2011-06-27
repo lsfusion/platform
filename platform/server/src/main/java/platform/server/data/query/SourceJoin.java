@@ -3,7 +3,7 @@ package platform.server.data.query;
 import platform.server.caches.OuterContext;
 import platform.server.data.Value;
 import platform.server.data.expr.KeyExpr;
-import platform.server.data.expr.where.MapWhere;
+import platform.server.data.where.MapWhere;
 import platform.server.data.where.Where;
 
 import java.util.Set;

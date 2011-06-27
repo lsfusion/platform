@@ -1,22 +1,20 @@
-package platform.server.data.expr.cases;
+package platform.server.data.expr.where.cases;
 
 import platform.base.BaseUtils;
 import platform.server.caches.hash.HashContext;
 import platform.server.data.expr.BaseExpr;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.VariableExprSet;
+import platform.server.data.expr.where.CaseExprInterface;
 import platform.server.data.where.Where;
 
-public class ExprCaseList extends CaseList<Expr,ExprCase> {
+public class ExprCaseList extends CaseList<Expr, BaseExpr, ExprCase> implements CaseExprInterface {
 
     public ExprCaseList() {
     }
     public ExprCaseList(BaseExpr data) {
         add(new ExprCase(Where.TRUE,data));
         upWhere = Where.TRUE;
-    }
-    public ExprCaseList(Where where, Expr data) {
-        add(where, data);
     }
     public ExprCaseList(Where where, Expr exprTrue, Expr exprFalse) {
         add(where,exprTrue);
@@ -47,14 +45,13 @@ public class ExprCaseList extends CaseList<Expr,ExprCase> {
 
     private Where nullWhere = Where.FALSE;
 
-    private final boolean mergeCases = false;
-
-    private void addBase(Where where, Expr expr) {
-        expr = expr.followFalse(getUpWhere().or(where.not()), packExprs);
-        if(mergeCases && !(expr instanceof BaseExpr)) {// на самом деле если не packExprs либо BaseExpr либо NULL
-            add(where, expr);
+    public void add(Where where, BaseExpr expr) {
+        Expr followExpr = expr.followFalse(getUpWhere().or(where.not()), packExprs);
+        if(!(followExpr instanceof BaseExpr)) {// на самом деле если не packExprs либо BaseExpr либо NULL
+            add(where, followExpr);
             return;
         }
+        expr = (BaseExpr)followExpr;
 
         where = where.and(nullWhere.not()).followFalse(upWhere, packExprs);
         if(where.isFalse()) return;
@@ -71,15 +68,12 @@ public class ExprCaseList extends CaseList<Expr,ExprCase> {
     // добавляет case
     public void add(Where where, Expr expr) {
         // нужно еше насчитать exprNullWhere и захерачить его в общий nullWhere
-        if(mergeCases) {
-            Where exprNullWhere = Where.FALSE;
-            for(ExprCase addCase : expr.getCases()) {
-                addBase(where.and(addCase.where),addCase.data);
-                exprNullWhere = exprNullWhere.or(addCase.where);
-            }
-            nullWhere = nullWhere.or(where.and(exprNullWhere.not()));
-        } else
-            addBase(where, expr);
+        Where exprNullWhere = Where.FALSE;
+        for(ExprCase addCase : expr.getCases()) {
+            add(where.and(addCase.where),addCase.data);
+            exprNullWhere = exprNullWhere.or(addCase.where);
+        }
+        nullWhere = nullWhere.or(where.and(exprNullWhere.not()));
     }
 
     // узнает использованный where

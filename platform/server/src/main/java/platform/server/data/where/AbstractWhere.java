@@ -6,8 +6,8 @@ import platform.server.caches.TwinLazy;
 import platform.server.data.expr.BaseExpr;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
-import platform.server.data.expr.where.CompareWhere;
-import platform.server.data.expr.where.EqualsWhere;
+import platform.server.data.expr.where.extra.CompareWhere;
+import platform.server.data.expr.where.extra.EqualsWhere;
 import platform.server.data.query.AbstractSourceJoin;
 import platform.server.data.query.Query;
 import platform.server.data.query.innerjoins.InnerSelectJoin;
@@ -215,5 +215,9 @@ public abstract class AbstractWhere extends AbstractSourceJoin<Where> implements
 
     public Where xor(Where where) {
         return and(where.not()).or(not().and(where));
+    }
+
+    public Where ifElse(Where trueWhere, Where falseWhere) {
+        return and(trueWhere).or(falseWhere.and(not()));
     }
 }

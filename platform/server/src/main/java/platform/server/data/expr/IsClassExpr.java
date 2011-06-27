@@ -7,7 +7,7 @@ import platform.server.caches.hash.HashContext;
 import platform.server.classes.BaseClass;
 import platform.server.classes.StaticCustomClass;
 import platform.server.data.Table;
-import platform.server.data.expr.where.MapWhere;
+import platform.server.data.where.MapWhere;
 import platform.server.data.query.CompileSource;
 import platform.server.data.query.ExprEnumerator;
 import platform.server.data.query.JoinData;

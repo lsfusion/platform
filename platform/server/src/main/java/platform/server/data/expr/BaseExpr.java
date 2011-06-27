@@ -5,13 +5,11 @@ import platform.base.QuickMap;
 import platform.interop.Compare;
 import platform.server.caches.ManualLazy;
 import platform.server.classes.sets.AndClassSet;
-import platform.server.data.expr.cases.BaseExprCase;
-import platform.server.data.expr.cases.CaseWhereInterface;
-import platform.server.data.expr.cases.ExprCaseList;
-import platform.server.data.expr.where.EqualsWhere;
-import platform.server.data.expr.where.GreaterWhere;
-import platform.server.data.expr.where.LikeWhere;
-import platform.server.data.expr.where.MapWhere;
+import platform.server.data.expr.where.cases.ExprCaseList;
+import platform.server.data.expr.where.extra.EqualsWhere;
+import platform.server.data.expr.where.extra.GreaterWhere;
+import platform.server.data.expr.where.extra.LikeWhere;
+import platform.server.data.where.MapWhere;
 import platform.server.data.query.JoinData;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.type.ClassReader;
@@ -137,8 +135,14 @@ public abstract class BaseExpr extends Expr {
         return packFollowFalse(pushValues(mapExprs, falseWhere), falseWhere);
     }
 
-    @Override
-    public BaseExprCase getBaseCase() {
-        return new BaseExprCase(this);
+    public Where getBaseWhere() {
+        return Where.TRUE;
+    }
+    public BaseExpr getBaseExpr() {
+        return this;
+    }
+
+    public int getWhereDepth() {
+        return 1;
     }
 }

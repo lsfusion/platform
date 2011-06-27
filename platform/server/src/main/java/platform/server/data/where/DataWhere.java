@@ -61,4 +61,8 @@ abstract public class DataWhere extends ObjectWhere {
         else
             return where;
     }
+
+    public boolean isNot() {
+        return false;
+    }
 }

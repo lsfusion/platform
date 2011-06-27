@@ -1,4 +1,4 @@
-package platform.server.data.expr.where;
+package platform.server.data.expr.where.extra;
 
 import platform.base.BaseUtils;
 import platform.base.TwinImmutableInterface;
@@ -25,7 +25,7 @@ public class EqualsWhere extends CompareWhere<EqualsWhere> {
 
     public static Where create(BaseExpr operator1, BaseExpr operator2) {
         if(operator1 instanceof ValueExpr && operator2 instanceof ValueExpr)
-            return BaseUtils.hashEquals(operator1,operator2)?Where.TRUE:Where.FALSE;
+            return BaseUtils.hashEquals(operator1,operator2)? TRUE : FALSE;
         if(BaseUtils.hashEquals(operator1,operator2))
             return operator1.getWhere();
         return create(new EqualsWhere(operator1, operator2));

@@ -1,4 +1,4 @@
-package platform.server.data.expr.where;
+package platform.server.data.where;
 
 import platform.base.QuickMap;
 import platform.server.data.where.Where;

@@ -1,12 +1,11 @@
 package platform.server.data.expr;
 
-import platform.server.data.expr.where.MapWhere;
+import platform.server.data.where.MapWhere;
 import platform.server.data.query.JoinData;
 import platform.server.data.translator.TranslateExprLazy;
 import platform.server.data.where.DataWhereSet;
 import platform.server.data.where.Where;
 
-import java.util.HashMap;
 import java.util.Map;
 
 @TranslateExprLazy

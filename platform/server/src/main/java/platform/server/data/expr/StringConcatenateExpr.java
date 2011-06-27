@@ -7,11 +7,8 @@ import platform.server.caches.hash.HashContext;
 import platform.server.classes.ConcreteClass;
 import platform.server.classes.InsensitiveStringClass;
 import platform.server.classes.StringClass;
-import platform.server.data.expr.cases.CaseExpr;
-import platform.server.data.expr.cases.ExprCaseList;
-import platform.server.data.expr.cases.MapCase;
-import platform.server.data.expr.cases.pull.ExprPullCases;
-import platform.server.data.expr.where.MapWhere;
+import platform.server.data.expr.where.pull.ExprPullWheres;
+import platform.server.data.where.MapWhere;
 import platform.server.data.query.CompileSource;
 import platform.server.data.query.ExprEnumerator;
 import platform.server.data.query.JoinData;
@@ -37,7 +34,7 @@ public class StringConcatenateExpr extends StaticClassExpr {
     }
 
     public static Expr create(List<? extends Expr> exprs, final String separator, final boolean caseSensitive) {
-        return new ExprPullCases<Integer>() {
+        return new ExprPullWheres<Integer>() {
             protected Expr proceedBase(Map<Integer, BaseExpr> map) {
                 return BaseExpr.create(new StringConcatenateExpr(BaseUtils.toList(map), separator, caseSensitive));
             }

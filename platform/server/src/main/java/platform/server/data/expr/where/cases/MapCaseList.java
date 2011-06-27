@@ -1,19 +1,19 @@
-package platform.server.data.expr.cases;
+package platform.server.data.expr.where.cases;
 
 import platform.base.BaseUtils;
-import platform.server.data.expr.BaseExpr;
 import platform.server.data.expr.Expr;
+import platform.server.data.expr.BaseExpr;
 import platform.server.data.where.Where;
 
 import java.util.Map;
 
-public class MapCaseList<K> extends CaseList<Map<K, Expr>,MapCase<K>> {
+public class MapCaseList<K> extends CaseList<Map<K, BaseExpr>, Map<K, BaseExpr>,MapCase<K>> {
 
     public MapCaseList() {
     }
 
     // добавляет Case, проверяя все что можно
-    public void add(Where where,Map<K, Expr> map) {
+    public void add(Where where,Map<K, BaseExpr> map) {
 
         where = where.followFalse(upWhere);
         if(!where.isFalse()) {
@@ -27,7 +27,7 @@ public class MapCaseList<K> extends CaseList<Map<K, Expr>,MapCase<K>> {
     }
 
     @Override
-    public Map<K, Expr> getFinal() {
+    public Map<K, BaseExpr> getFinal() {
         throw new RuntimeException("not supported");
     }
 }

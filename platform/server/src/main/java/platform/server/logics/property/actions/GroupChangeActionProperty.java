@@ -2,7 +2,7 @@ package platform.server.logics.property.actions;
 
 import platform.interop.action.ClientAction;
 import platform.server.data.expr.Expr;
-import platform.server.data.expr.where.CompareWhere;
+import platform.server.data.expr.where.extra.CompareWhere;
 import platform.server.data.where.Where;
 import platform.server.form.entity.GroupObjectEntity;
 import platform.server.form.instance.FormInstance;

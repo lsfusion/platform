@@ -11,8 +11,9 @@ import platform.server.caches.hash.HashValues;
 import platform.server.classes.BaseClass;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
-import platform.server.data.expr.cases.ExprCaseList;
-import platform.server.data.expr.where.CompareWhere;
+import platform.server.data.expr.where.cases.ExprCaseList;
+import platform.server.data.expr.where.extra.CompareWhere;
+import platform.server.data.expr.where.CaseExprInterface;
 import platform.server.data.query.Join;
 import platform.server.data.query.Query;
 import platform.server.data.translator.MapValuesTranslate;
@@ -59,10 +60,10 @@ public class SessionRows implements SessionData<SessionRows> {
         return new platform.server.data.query.Join<PropertyField>() {
 
             public Expr getExpr(PropertyField property) {
-                ExprCaseList result = new ExprCaseList();
+                CaseExprInterface cases = Expr.newCases();
                 for(Map.Entry<Map<KeyField, DataObject>,Map<PropertyField, ObjectValue>> row : rows.entrySet())
-                    result.add(CompareWhere.compareValues(joinImplement,row.getKey()),row.getValue().get(property).getExpr());
-                return result.getFinal();
+                    cases.add(CompareWhere.compareValues(joinImplement,row.getKey()),row.getValue().get(property).getExpr());
+                return cases.getFinal();
             }
 
             public Where getWhere() {

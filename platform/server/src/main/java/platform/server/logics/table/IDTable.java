@@ -5,7 +5,7 @@ import platform.server.caches.IdentityLazy;
 import platform.server.classes.SystemClass;
 import platform.server.data.*;
 import platform.server.data.expr.ValueExpr;
-import platform.server.data.expr.where.EqualsWhere;
+import platform.server.data.expr.where.extra.EqualsWhere;
 import platform.server.data.query.Query;
 import platform.server.data.where.classes.ClassWhere;
 import platform.server.logics.DataObject;

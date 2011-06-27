@@ -2,7 +2,7 @@ package platform.server.logics.property;
 
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
-import platform.server.data.expr.where.CompareWhere;
+import platform.server.data.expr.where.extra.CompareWhere;
 import platform.server.logics.DataObject;
 import platform.server.session.Changes;
 import platform.server.session.Modifier;

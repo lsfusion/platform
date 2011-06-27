@@ -1,10 +1,11 @@
-package platform.server.data.expr.cases;
+package platform.server.data.expr.where.cases;
 
 import platform.server.data.where.Where;
+import platform.server.data.expr.where.Case;
 
 import java.util.ArrayList;
 
-public abstract class CaseList<D,C extends Case<D>> extends ArrayList<C> {
+public abstract class CaseList<A, D extends A,C extends Case<D>> extends ArrayList<C> {
 
     protected Where upWhere;
 
@@ -28,6 +29,6 @@ public abstract class CaseList<D,C extends Case<D>> extends ArrayList<C> {
         return result.or(caseInterface.getElse().and(up.not()));
     }
 
-    public abstract void add(Where where, D data);
-    public abstract D getFinal();
+    public abstract void add(Where where, A data);
+    public abstract A getFinal();
 }

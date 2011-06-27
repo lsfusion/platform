@@ -1,4 +1,4 @@
-package platform.server.data.expr.cases;
+package platform.server.data.expr.where.cases;
 
 import platform.base.BaseUtils;
 import platform.base.TwinImmutableInterface;
@@ -13,7 +13,7 @@ import platform.server.data.expr.BaseExpr;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyType;
 import platform.server.data.expr.VariableExprSet;
-import platform.server.data.expr.where.MapWhere;
+import platform.server.data.where.MapWhere;
 import platform.server.data.query.CompileSource;
 import platform.server.data.query.ExprEnumerator;
 import platform.server.data.query.JoinData;
@@ -124,7 +124,7 @@ public class CaseExpr extends Expr {
             return;
 
         if(!ic.hasNext()) {
-            result.add(current.where,new HashMap<K, Expr>(current.data));
+            result.add(current.where,new HashMap<K, BaseExpr>(current.data));
             return;
         }
 
@@ -175,16 +175,16 @@ public class CaseExpr extends Expr {
     // получение Where'ов
 
     public Where calculateWhere() {
-        return cases.getWhere(new CaseWhereInterface<Expr>(){
-            public Where getWhere(Expr cCase) {
+        return cases.getWhere(new CaseWhereInterface<BaseExpr>(){
+            public Where getWhere(BaseExpr cCase) {
                 return cCase.getWhere();
             }
         });
     }
 
     public Where isClass(final AndClassSet set) {
-        return cases.getWhere(new CaseWhereInterface<Expr>(){
-            public Where getWhere(Expr cCase) {
+        return cases.getWhere(new CaseWhereInterface<BaseExpr>(){
+            public Where getWhere(BaseExpr cCase) {
                 return cCase.isClass(set);
             }
         });
@@ -196,15 +196,15 @@ public class CaseExpr extends Expr {
     }
 
     public Where compareBase(final BaseExpr expr, final Compare compareBack) {
-        return cases.getWhere(new CaseWhereInterface<Expr>() {
-            public Where getWhere(Expr cCase) {
+        return cases.getWhere(new CaseWhereInterface<BaseExpr>() {
+            public Where getWhere(BaseExpr cCase) {
                 return cCase.compareBase(expr, compareBack);
             }
         });
     }
     public Where compare(final Expr expr, final Compare compare) {
-        return cases.getWhere(new CaseWhereInterface<Expr>(){
-            public Where getWhere(Expr cCase) {
+        return cases.getWhere(new CaseWhereInterface<BaseExpr>(){
+            public Where getWhere(BaseExpr cCase) {
                 return cCase.compare(expr,compare);
             }
         });
@@ -241,9 +241,14 @@ public class CaseExpr extends Expr {
         return cases.getComplexity();
     }
 
-    @Override
-    public BaseExprCase getBaseCase() {
-        ExprCase singleCase = BaseUtils.single(cases);
-        return singleCase.data.getBaseCase().and(singleCase.where);
+    public Where getBaseWhere() {
+        return BaseUtils.single(cases).where;
+    }
+    public BaseExpr getBaseExpr() {
+        return BaseUtils.single(cases).data;
+    }
+
+    public int getWhereDepth() {
+        throw new RuntimeException("not supported");
     }
 }

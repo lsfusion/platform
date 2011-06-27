@@ -4,7 +4,7 @@ import platform.base.BaseUtils;
 import platform.server.caches.hash.HashValues;
 import platform.server.classes.ValueClass;
 import platform.server.data.expr.Expr;
-import platform.server.data.expr.cases.CaseExpr;
+import platform.server.data.expr.where.cases.CaseExpr;
 import platform.server.data.translator.MapValuesTranslate;
 import platform.server.data.where.WhereBuilder;
 import platform.server.session.Changes;

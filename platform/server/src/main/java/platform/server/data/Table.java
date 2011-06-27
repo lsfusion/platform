@@ -10,13 +10,14 @@ import platform.server.classes.BaseClass;
 import platform.server.classes.ValueClass;
 import platform.server.classes.sets.AndClassSet;
 import platform.server.data.expr.*;
-import platform.server.data.expr.cases.CaseExpr;
-import platform.server.data.expr.cases.CaseList;
-import platform.server.data.expr.cases.MapCase;
-import platform.server.data.expr.cases.pull.AddPullCases;
+import platform.server.data.expr.where.cases.CaseList;
+import platform.server.data.expr.where.cases.JoinCaseList;
+import platform.server.data.expr.where.pull.AddPullWheres;
+import platform.server.data.expr.where.ifs.NullJoin;
+import platform.server.data.expr.where.ifs.IfJoin;
 import platform.server.data.expr.query.KeyStat;
 import platform.server.data.expr.query.StatKeys;
-import platform.server.data.expr.where.MapWhere;
+import platform.server.data.where.MapWhere;
 import platform.server.data.query.*;
 import platform.server.data.query.innerjoins.ObjectJoinSets;
 import platform.server.data.sql.SQLSyntax;
@@ -162,9 +163,15 @@ public class Table extends TwinImmutableObject implements MapKeysInterface<KeyFi
     }
 
     public platform.server.data.query.Join<PropertyField> join(Map<KeyField, ? extends Expr> joinImplement) {
-        return new AddPullCases<KeyField, platform.server.data.query.Join<PropertyField>>() {
-            protected CaseList<platform.server.data.query.Join<PropertyField>, ?> initAggregator() {
+        return new AddPullWheres<KeyField, platform.server.data.query.Join<PropertyField>>() {
+            protected JoinCaseList<PropertyField> initCaseList() {
                 return new JoinCaseList<PropertyField>(properties);
+            }
+            protected platform.server.data.query.Join<PropertyField> initEmpty() {
+                return new NullJoin<PropertyField>(properties);
+            }
+            protected platform.server.data.query.Join<PropertyField> proceedIf(Where ifWhere, platform.server.data.query.Join<PropertyField> resultTrue, platform.server.data.query.Join<PropertyField> resultFalse) {
+                return new IfJoin<PropertyField>(ifWhere, resultTrue, resultFalse);
             }
             protected platform.server.data.query.Join<PropertyField> proceedBase(Map<KeyField, BaseExpr> joinBase) {
                 return joinAnd(joinBase);

@@ -6,11 +6,8 @@ import platform.server.caches.IdentityLazy;
 import platform.server.caches.ParamLazy;
 import platform.server.caches.hash.HashContext;
 import platform.server.classes.ConcreteValueClass;
-import platform.server.data.expr.cases.CaseExpr;
-import platform.server.data.expr.cases.ExprCaseList;
-import platform.server.data.expr.cases.MapCase;
-import platform.server.data.expr.cases.pull.ExprPullCases;
-import platform.server.data.expr.where.MapWhere;
+import platform.server.data.expr.where.pull.ExprPullWheres;
+import platform.server.data.where.MapWhere;
 import platform.server.data.query.CompileSource;
 import platform.server.data.query.ExprEnumerator;
 import platform.server.data.query.JoinData;
@@ -53,7 +50,7 @@ public class FormulaExpr extends StaticClassExpr {
     }
 
     public static Expr create(final String formula, final ConcreteValueClass value,Map<String,? extends Expr> params) {
-        return new ExprPullCases<String>() {
+        return new ExprPullWheres<String>() {
             protected Expr proceedBase(Map<String, BaseExpr> map) {
                 return create(formula, map, value);
             }

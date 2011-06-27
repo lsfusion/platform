@@ -1,4 +1,4 @@
-package platform.server.data.expr.cases.pull;
+package platform.server.data.expr.where.pull;
 
 import platform.server.data.expr.BaseExpr;
 import platform.server.data.expr.Expr;
@@ -7,7 +7,7 @@ import platform.server.data.where.Where;
 import java.util.Collections;
 import java.util.Map;
 
-public abstract class ExclWherePullCases<R> extends ExclPullCases<R, Integer, Where> {
+public abstract class ExclExprPullWheres<R> extends ExclPullWheres<R, Integer, Where> {
 
     @Override
     protected R proceedBase(Where data, Map<Integer, BaseExpr> map) {

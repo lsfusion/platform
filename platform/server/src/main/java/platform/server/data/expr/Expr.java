@@ -9,10 +9,12 @@ import platform.server.classes.DataClass;
 import platform.server.classes.sets.AndClassSet;
 import platform.server.data.QueryEnvironment;
 import platform.server.data.SQLSession;
-import platform.server.data.expr.cases.BaseExprCase;
-import platform.server.data.expr.cases.Case;
-import platform.server.data.expr.cases.CaseExpr;
-import platform.server.data.expr.cases.ExprCaseList;
+import platform.server.data.expr.where.cases.CaseExpr;
+import platform.server.data.expr.where.cases.ExprCaseList;
+import platform.server.data.expr.where.CaseExprInterface;
+import platform.server.data.expr.where.ifs.NullExpr;
+import platform.server.data.expr.where.ifs.IfCases;
+import platform.server.data.expr.where.ifs.IfExpr;
 import platform.server.data.query.AbstractSourceJoin;
 import platform.server.data.query.Query;
 import platform.server.data.translator.PartialQueryTranslator;
@@ -31,7 +33,14 @@ import java.util.*;
 
 abstract public class Expr extends AbstractSourceJoin<Expr> {
 
-    public static final CaseExpr NULL = new CaseExpr(new ExprCaseList());
+    public static final boolean useCases = true;
+    public static final Expr NULL = useCases?new CaseExpr(new ExprCaseList()):NullExpr.instance;
+    public static CaseExprInterface newCases() {
+        if(useCases)
+            return new ExprCaseList();
+        else
+            return new IfCases();
+    }
 
     public abstract Type getType(KeyType keyType);
     @IdentityLazy
@@ -40,6 +49,8 @@ abstract public class Expr extends AbstractSourceJoin<Expr> {
     }   
 
     public abstract ClassReader getReader(KeyType keyType);
+
+    public abstract int getWhereDepth();
 
     // возвращает Where на notNull
     private Where where=null;
@@ -100,10 +111,14 @@ abstract public class Expr extends AbstractSourceJoin<Expr> {
     public Expr and(Where where) {
         if(getWhere().means(where))
             return this;
-        return new ExprCaseList(where,this).getFinal();
+
+        return ifElse(where, Expr.NULL);
     }
     public Expr ifElse(Where where, Expr elseExpr) {
-        return new ExprCaseList(where,this,elseExpr).getFinal();
+        if(Expr.useCases)
+            return new ExprCaseList(where,this,elseExpr).getFinal();
+        else
+            return IfExpr.create(where, this, elseExpr);
     }
     public Expr max(Expr expr) {
         return ifElse(compare(expr, Compare.GREATER).or(expr.getWhere().not()),expr);
@@ -154,8 +169,7 @@ abstract public class Expr extends AbstractSourceJoin<Expr> {
 
     public abstract VariableExprSet getExprFollows();
 
-    // assert что свойство W and Base, в общем то для GroupExpr'ов (MAX, ANY и т.п надо)
-    public abstract BaseExprCase getBaseCase();
-
+    public abstract Where getBaseWhere();
+    public abstract BaseExpr getBaseExpr();
 }
 

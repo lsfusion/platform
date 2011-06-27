@@ -96,4 +96,8 @@ public interface Where extends SourceJoin<Where>, OuterContext<Where>, KeyType, 
     Where map(Map<KeyExpr,? extends Expr> map);
 
     Where getKeepWhere(KeyExpr expr);
+
+    Where ifElse(Where trueWhere, Where falseWhere);
+
+    boolean isNot(); // assert что not().getNotType()==!getNotType()
 }

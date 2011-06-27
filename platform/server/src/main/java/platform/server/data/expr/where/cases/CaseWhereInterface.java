@@ -1,4 +1,4 @@
-package platform.server.data.expr.cases;
+package platform.server.data.expr.where.cases;
 
 import platform.server.data.where.Where;
 

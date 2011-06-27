@@ -4,7 +4,7 @@ import platform.interop.Compare;
 import platform.server.data.expr.BaseExpr;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
-import platform.server.data.expr.cases.CaseExpr;
+import platform.server.data.expr.where.cases.CaseExpr;
 import platform.server.data.expr.query.GroupType;
 import platform.server.data.where.WhereBuilder;
 import platform.server.data.where.Where;

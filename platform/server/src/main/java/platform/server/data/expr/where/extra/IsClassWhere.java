@@ -1,4 +1,4 @@
-package platform.server.data.expr.where;
+package platform.server.data.expr.where.extra;
 
 import platform.base.TwinImmutableInterface;
 import platform.server.caches.IdentityLazy;
@@ -14,13 +14,13 @@ import platform.server.data.expr.SingleClassExpr;
 import platform.server.data.query.CompileSource;
 import platform.server.data.query.ExprEnumerator;
 import platform.server.data.query.JoinData;
-import platform.server.data.query.innerjoins.KeyEquals;
 import platform.server.data.query.innerjoins.ObjectJoinSets;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.translator.QueryTranslator;
 import platform.server.data.where.DataWhere;
 import platform.server.data.where.DataWhereSet;
 import platform.server.data.where.Where;
+import platform.server.data.where.MapWhere;
 import platform.server.data.where.classes.ClassExprWhere;
 
 public class IsClassWhere extends DataWhere {

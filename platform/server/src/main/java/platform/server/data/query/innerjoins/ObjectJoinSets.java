@@ -3,7 +3,7 @@ package platform.server.data.query.innerjoins;
 import platform.server.classes.BaseClass;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.query.StatKeys;
-import platform.server.data.expr.where.MapWhere;
+import platform.server.data.where.MapWhere;
 import platform.server.data.query.InnerJoin;
 import platform.server.data.where.DNFWheres;
 import platform.server.data.where.Where;

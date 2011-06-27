@@ -8,11 +8,8 @@ import platform.server.caches.hash.HashContext;
 import platform.server.classes.BaseClass;
 import platform.server.classes.ConcatenateClassSet;
 import platform.server.classes.sets.AndClassSet;
-import platform.server.data.expr.cases.CaseExpr;
-import platform.server.data.expr.cases.ExprCaseList;
-import platform.server.data.expr.cases.MapCase;
-import platform.server.data.expr.cases.pull.ExprPullCases;
-import platform.server.data.expr.where.MapWhere;
+import platform.server.data.expr.where.pull.ExprPullWheres;
+import platform.server.data.where.MapWhere;
 import platform.server.data.query.CompileSource;
 import platform.server.data.query.ExprEnumerator;
 import platform.server.data.query.JoinData;
@@ -40,7 +37,7 @@ public class ConcatenateExpr extends BaseExpr {
     }
 
     public static Expr create(List<? extends Expr> exprs) {
-        return new ExprPullCases<Integer>() {
+        return new ExprPullWheres<Integer>() {
             @Override
             protected Expr proceedBase(Map<Integer, BaseExpr> map) {
                 return BaseExpr.create(new ConcatenateExpr(BaseUtils.toList(map)));
