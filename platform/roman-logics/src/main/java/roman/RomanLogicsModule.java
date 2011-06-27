@@ -3326,7 +3326,7 @@ public class RomanLogicsModule extends LogicsModule {
             }
 
             addActionsOnObjectChange(objBarcode, addPropertyObject(barcodeActionSeekPallet, objBarcode));
-            addActionsOnObjectChange(objBarcode, addPropertyObject(barcodeActionCheckPallet, objBarcode));
+            //addActionsOnObjectChange(objBarcode, addPropertyObject(barcodeActionCheckPallet, objBarcode));
             addActionsOnObjectChange(objBarcode, addPropertyObject(barcodeActionSeekFreightBox, objBarcode));
             addActionsOnObjectChange(objBarcode, addPropertyObject(barcodeActionSetPallet, objBarcode));
 
@@ -3460,6 +3460,7 @@ public class RomanLogicsModule extends LogicsModule {
             objPallet = addSingleGroupObject(pallet, "Паллета", baseLM.barcode, grossWeightPallet, freightBoxNumberPallet);
             objPallet.groupTo.setSingleClassView(ClassViewType.GRID);
             setReadOnly(objPallet, true);
+            setReadOnly(grossWeightPallet, false);
 
             addActionsOnObjectChange(objBarcode, addPropertyObject(barcodeActionSetFreight, objBarcode, objFreight));
 
@@ -3496,6 +3497,7 @@ public class RomanLogicsModule extends LogicsModule {
             objPallet = addSingleGroupObject(pallet, "Паллета", baseLM.barcode, nameRouteCreationPalletPallet, grossWeightPallet, freightBoxNumberPallet);
             objPallet.groupTo.setSingleClassView(ClassViewType.PANEL);
             setReadOnly(objPallet, true);
+            setReadOnly(grossWeightPallet, false);
 
             objBox = addSingleGroupObject(freightBox, "Короб для транспортировки", baseLM.barcode, nameRouteCreationFreightBoxFreightBox, netWeightStock);
             objBox.groupTo.setSingleClassView(ClassViewType.GRID);
