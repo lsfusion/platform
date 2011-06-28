@@ -1,0 +1,8 @@
+import RomanLogicsModule;
+import BaseLogicsModule;
+
+class supplierAndDocument 'Поставщик и документ' : supplier, document;
+class namedDocument : named, supplierAndDocument;
+
+group NewGroup '\'Новая группа\'';
+group NewGroup2 'new group 2' : baseGroup;
