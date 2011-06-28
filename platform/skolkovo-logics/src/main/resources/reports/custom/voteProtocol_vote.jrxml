@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="vote" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0">
-	<property name="ireport.zoom" value="1.0"/>
+	<property name="ireport.zoom" value="1.4641000000000006"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
 	<style name="DefaultStyle" isDefault="true" vAlign="Middle" fontName="lsf.TimesNewRoman" fontSize="12" pdfEncoding="Cp1251" isPdfEmbedded="false"/>
@@ -86,7 +86,7 @@
 				</textField>
 				<textField isStretchWithOverflow="true">
 					<reportElement positionType="Float" x="50" y="191" width="489" height="14" isRemoveLineWhenBlank="true">
-						<printWhenExpression><![CDATA[$F{quantityDoneOldVote}==null]]></printWhenExpression>
+						<printWhenExpression><![CDATA[$F{quantityDoneOldVote}==0]]></printWhenExpression>
 					</reportElement>
 					<textElement textAlignment="Justified">
 						<paragraph firstLineIndent="40"/>
@@ -116,16 +116,16 @@
 				</textField>
 				<textField isStretchWithOverflow="true">
 					<reportElement positionType="Float" x="50" y="205" width="489" height="14" isRemoveLineWhenBlank="true">
-						<printWhenExpression><![CDATA[$F{quantityDoneOldVote}!=null]]></printWhenExpression>
+						<printWhenExpression><![CDATA[$F{quantityDoneOldVote}!=0]]></printWhenExpression>
 					</reportElement>
 					<textElement textAlignment="Justified">
 						<paragraph firstLineIndent="40"/>
 					</textElement>
 					<textFieldExpression class="java.lang.String"><![CDATA["1. В соответствии с пунктами 6-16 Положения об Экспертных коллегиях Фонда и на основании:"]]></textFieldExpression>
 				</textField>
-				<textField isStretchWithOverflow="true">
+				<textField isStretchWithOverflow="true" isBlankWhenNull="false">
 					<reportElement positionType="Float" x="50" y="219" width="489" height="14" isRemoveLineWhenBlank="true">
-						<printWhenExpression><![CDATA[$F{quantityDoneOldVote}!=null]]></printWhenExpression>
+						<printWhenExpression><![CDATA[$F{quantityDoneOldVote}!=0]]></printWhenExpression>
 					</reportElement>
 					<textElement textAlignment="Justified">
 						<paragraph firstLineIndent="40"/>
@@ -134,16 +134,16 @@
 				</textField>
 				<textField isStretchWithOverflow="true">
 					<reportElement positionType="Float" x="50" y="233" width="489" height="14" isRemoveLineWhenBlank="true">
-						<printWhenExpression><![CDATA[$F{quantityDoneOldVote}!=null]]></printWhenExpression>
+						<printWhenExpression><![CDATA[$F{quantityDoneOldVote}!=0]]></printWhenExpression>
 					</reportElement>
 					<textElement textAlignment="Justified">
 						<paragraph firstLineIndent="40"/>
 					</textElement>
 					<textFieldExpression class="java.lang.String"><![CDATA["2) решения о созыве заседания новой Экспертной коллегии от " + platform.base.BaseUtils.formatRussian($F{date}) + " года"]]></textFieldExpression>
 				</textField>
-				<textField isStretchWithOverflow="true">
+				<textField isStretchWithOverflow="true" isBlankWhenNull="false">
 					<reportElement positionType="Float" x="50" y="297" width="489" height="14" isRemoveLineWhenBlank="true">
-						<printWhenExpression><![CDATA[$F{quantityDoneOldVote}!=null]]></printWhenExpression>
+						<printWhenExpression><![CDATA[$F{quantityDoneOldVote}!=0]]></printWhenExpression>
 					</reportElement>
 					<textElement textAlignment="Justified">
 						<paragraph firstLineIndent="40"/>

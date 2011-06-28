@@ -1301,7 +1301,8 @@ public class RomanLogicsModule extends LogicsModule {
 
         currencyDocument = addDCProp(idGroup, "currencyDocument", "Валюта (ИД)", currencySupplier, supplierPriceDocument, 1);
         nameCurrencyDocument = addJProp(baseGroup, "nameCurrencyDocument", "Валюта", baseLM.name, currencyDocument, 1);
-        setNotNull(currencyDocument);
+        //setNotNull(currencyDocument);
+        addConstraint(addJProp("Для инвойса должна быть задана валюта", baseLM.andNot1, is(invoice), 1, currencyDocument, 1), false);
 
         // Order
         destinationDestinationDocument = addDProp(idGroup, "destinationDestinationDocument", "Пункт назначения (ИД)", destination, destinationDocument);
@@ -1312,6 +1313,7 @@ public class RomanLogicsModule extends LogicsModule {
         importerInvoice = addDProp(idGroup, "importerDocument", "Импортер (ИД)", importer, invoice);
         nameImporterInvoice = addJProp(baseGroup, "nameImporterInvoice", "Импортер", baseLM.name, importerInvoice, 1);
         //setNotNull(importerInvoice);
+        addConstraint(addJProp("Для инвойса должен быть задан импортёр", baseLM.andNot1, is(invoice), 1, importerInvoice, 1), false);
 
         contractInvoice = addDProp(idGroup, "contractInvoice", "Договор (ИД)", contract, invoice);
         sidContractInvoice = addJProp(baseGroup, "sidContractInvoice", "Договор", sidContract, contractInvoice, 1);
@@ -1335,6 +1337,8 @@ public class RomanLogicsModule extends LogicsModule {
         equalsItemArticleComposite = addJProp(baseGroup, "equalsItemArticleComposite", "Вкл.", baseLM.equals2, articleCompositeItem, 1, 2);
 
         articleSku = addCUProp(idGroup, "articleSku", "Артикул (ИД)", object(articleSingle), articleCompositeItem);
+        //setNotNull(articleSku);
+        addConstraint(addJProp("Для товара должен быть задан артикул", baseLM.andNot1, is(sku), 1, articleSku, 1), false);
 
         addItemBarcode = addJProp(true, "Ввод товара по штрих-коду", addAAProp(item, baseLM.barcode), 1);
 
@@ -1414,6 +1418,7 @@ public class RomanLogicsModule extends LogicsModule {
 
         // Supplier
         supplierArticle = addDProp(idGroup, "supplierArticle", "Поставщик (ИД)", supplier, article);
+        setNotNull(supplierArticle);
         nameSupplierArticle = addJProp(baseGroup, "nameSupplierArticle", "Поставщик", baseLM.name, supplierArticle, 1);
 
         jennyferSupplierArticle = addJProp("jennyferSupplierArticle", "Поставщик Jennyfer (ИД)", baseLM.and1, supplierArticle, 1, addJProp(is(jennyferSupplier), supplierArticle, 1), 1);
@@ -1822,6 +1827,7 @@ public class RomanLogicsModule extends LogicsModule {
 
         // supplier box shipmentDetail
         supplierBoxShipmentDetail = addDProp(idGroup, "supplierBoxShipmentDetail", "Короб поставщика (ИД)", supplierBox, boxShipmentDetail);
+        setNotNull(supplierBoxShipmentDetail);
         sidSupplierBoxShipmentDetail = addJProp(baseGroup, "sidSupplierBoxShipmentDetail", "Номер короба поставщика", sidSupplierBox, supplierBoxShipmentDetail, 1);
         barcodeSupplierBoxShipmentDetail = addJProp(baseGroup, "barcodeSupplierBoxShipmentDetail", "Штрих-код короба поставщика", baseLM.barcode, supplierBoxShipmentDetail, 1);
 
@@ -4349,6 +4355,8 @@ public class RomanLogicsModule extends LogicsModule {
             setReadOnly(sidCustomCategory10Sku, false, objSku.groupTo);
             setReadOnly(nameSubCategorySku, false, objSku.groupTo);
             setReadOnly(netWeightSku, false, objSku.groupTo);
+            setReadOnly(mainCompositionSku, false, objSku.groupTo);
+            setReadOnly(additionalCompositionSku, false, objSku.groupTo);
 
             objSkuFreight = addSingleGroupObject(sku, "Позиции фрахта", baseLM.selection, baseLM.barcode, sidArticleSku, sidColorSupplierItem, nameColorSupplierItem,
                     sidSizeSupplierItem, nameBrandSupplierArticleSku, nameArticleSku);

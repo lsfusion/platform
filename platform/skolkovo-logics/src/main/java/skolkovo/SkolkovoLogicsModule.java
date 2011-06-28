@@ -252,6 +252,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
     public LP OGRNClaimer;
     public LP INNClaimer;
     LP projectVote, claimerVote, nameNativeProjectVote, nameForeignProjectVote;
+    LP quantityVoteOfProject;
     LP dataDocumentNameExpert, documentNameExpert;
     LP clusterExpert, nameNativeClusterExpert;
     LP primClusterExpert, extraClusterExpert, inClusterExpert;
@@ -330,6 +331,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP completeCommentExpertVote;
 
     LP quantityInVote;
+    LP quantityInOldVote;
     LP quantityRepliedVote;
     LP quantityDoneVote;
     LP quantityDoneNewVote;
@@ -613,6 +615,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         projectVote = addDProp(idGroup, "projectVote", "Проект (ИД)", project, vote);
         setNotNull(projectVote);
+        quantityVoteOfProject = addSGProp(baseGroup, "quantityVoteOfProject", "Кол-во заседаний",
+                addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), is(vote), 1), projectVote, 1);
 
         nameNativeProjectVote = addJProp(baseGroup, "nameNativeProjectVote", "Проект", nameNative, projectVote, 1);
         nameForeignProjectVote = addJProp(baseGroup, "nameForeignProjectVote", "Проект (иностр.)", nameForeign, projectVote, 1);
@@ -1019,8 +1023,11 @@ public class SkolkovoLogicsModule extends LogicsModule {
         followed(doneExpertVote, inClusterExpertVote, innovativeExpertVote, foreignExpertVote, innovativeCommentExpertVote, competentExpertVote, completeExpertVote, completeCommentExpertVote);
         followed(voteResultExpertVote, dateExpertVote);
 
-        quantityInVote = addSGProp(voteResultGroup, "quantityInVote", true, "Учавствовало",
+        quantityInVote = addSGProp(voteResultGroup, "quantityInVote", true, "Участвовало",
                 addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), inExpertVote, 1, 2), 2); // сколько экспертов учавстовало
+
+        quantityInOldVote = addSGProp(voteResultGroup, "quantityInOldVote", true, "Участвовало",
+                addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), oldExpertVote, 1, 2), 2); // сколько экспертов учавстовало
 
         quantityRepliedVote = addSGProp(voteResultGroup, "quantityRepliedVote", true, "Ответило",
                 addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), voteResultExpertVote, 1, 2), 2); // сколько экспертов высказалось
@@ -1143,6 +1150,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
         nameStatusProjectVote = addJProp(baseGroup, "nameStatusProjectVote", "Статус проекта", baseLM.name, statusProjectVote, 1);
 
         projectSucceededClaimer = addAGProp(idGroup, "projectSucceededClaimer", true, "Успешный проект (ИД)", acceptedProject, 1, claimerProject, 1);
+
+
 
 
         // статистика по экспертам
@@ -1877,7 +1886,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         private VoteStartFormEntity(NavigatorElement parent, String sID) {
             super(parent, sID, "Созыв заседания", true);
 
-            objVote = addSingleGroupObject(1, "vote", vote, baseLM.date, dateProjectVote, nameNativeClaimerVote, nameNativeProjectVote, nameAblateClaimerVote, prevDateStartVote, prevDateVote);
+            objVote = addSingleGroupObject(1, "vote", vote, baseLM.date, dateProjectVote, nameNativeClaimerVote, nameNativeProjectVote, nameAblateClaimerVote, prevDateStartVote, prevDateVote, quantityInVote, quantityInOldVote);
             objVote.groupTo.initClassView = ClassViewType.PANEL;
 
             objExpert = addSingleGroupObject(2, "expert", expert, baseLM.userLastName, baseLM.userFirstName, documentNameExpert);

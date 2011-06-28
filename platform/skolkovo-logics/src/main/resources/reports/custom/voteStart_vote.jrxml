@@ -23,6 +23,8 @@
 	<field name="prevDateVote" class="java.util.Date"/>
 	<field name="prevDateStartVote" class="java.util.Date"/>
 	<field name="nameAblateClaimerVote" class="java.lang.String"/>
+	<field name="quantityInVote" class="java.lang.Integer"/>
+	<field name="quantityInOldVote" class="java.lang.Integer"/>
 	<group name="captionGroup1">
 		<groupExpression><![CDATA[String.valueOf($F{vote})]]></groupExpression>
 	</group>
