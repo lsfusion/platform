@@ -1,6 +1,6 @@
 package platform.server.form.window;
 
-import platform.interop.NavigatorWindowType;
+import platform.interop.AbstractWindowType;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -12,7 +12,7 @@ public class TreeNavigatorWindow extends NavigatorWindow{
 
     @Override
     public int getViewType() {
-        return NavigatorWindowType.TREE_VIEW;
+        return AbstractWindowType.TREE_VIEW;
     }
 
     @Override

@@ -3,18 +3,12 @@ package platform.server.form.navigator;
 import platform.base.BaseUtils;
 import platform.base.IOUtils;
 import platform.base.identity.IdentityObject;
-import platform.interop.NavigatorWindowType;
+import platform.interop.AbstractWindowType;
 import platform.server.auth.SecurityPolicy;
 import platform.server.form.window.NavigatorWindow;
 import platform.server.logics.BusinessLogics;
 
-import javax.imageio.ImageIO;
-import javax.imageio.ImageWriter;
-import javax.imageio.stream.ImageOutputStream;
 import javax.swing.*;
-import java.awt.*;
-import java.awt.image.BufferedImage;
-import java.awt.image.RenderedImage;
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -124,7 +118,7 @@ public class NavigatorElement<T extends BusinessLogics<T>> extends IdentityObjec
         outStream.writeUTF(caption);
         outStream.writeBoolean(hasChildren());
         if (window == null) {
-            outStream.writeInt(NavigatorWindowType.NULL_VIEW);
+            outStream.writeInt(AbstractWindowType.NULL_VIEW);
         } else {
             window.serialize(outStream);
         }

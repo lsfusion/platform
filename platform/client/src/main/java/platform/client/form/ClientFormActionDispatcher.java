@@ -163,7 +163,7 @@ public class ClientFormActionDispatcher implements ClientActionDispatcher {
                 fileText = new DecimalFormat(action.mask).format((Double) (Double.parseDouble(fileText))); 
             }
 
-            JOptionPane.showMessageDialog(null, fileText,
+            JOptionPane.showMessageDialog(form.getComponent(), fileText,
                     action.caption, JOptionPane.INFORMATION_MESSAGE);
 
             return true;
@@ -189,7 +189,7 @@ public class ClientFormActionDispatcher implements ClientActionDispatcher {
             JOptionPane jop = new JOptionPane(jpf,
                     JOptionPane.QUESTION_MESSAGE,
                     JOptionPane.OK_CANCEL_OPTION);
-            JDialog dialog = jop.createDialog("Введите пароль");
+            JDialog dialog = jop.createDialog(form.getComponent(), "Введите пароль");
             dialog.addComponentListener(new ComponentAdapter() {
                 @Override
                 public void componentShown(ComponentEvent e) {
@@ -220,7 +220,7 @@ public class ClientFormActionDispatcher implements ClientActionDispatcher {
 
     public void execute(MessageClientAction action) {
 
-        JOptionPane.showMessageDialog(null, action.message,
+        JOptionPane.showMessageDialog(form.getComponent(), action.message,
                 action.caption, JOptionPane.INFORMATION_MESSAGE);
     }
 

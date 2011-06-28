@@ -553,6 +553,15 @@ public class BaseUtils {
         }
     }
 
+    public static <B, K1 extends B, K2 extends B, V> LinkedHashMap<B, V> mergeLinked(LinkedHashMap<K1, ? extends V> map1, LinkedHashMap<K2, ? extends V> map2) {
+        LinkedHashMap<B, V> result = new LinkedHashMap<B, V>(map1);
+        for (Map.Entry<K2, ? extends V> entry2 : map2.entrySet()) {
+            V prevValue = result.put(entry2.getKey(), entry2.getValue());
+            assert prevValue == null || prevValue.equals(entry2.getValue());
+        }
+        return result;
+    }
+
     public static <B, K1 extends B, K2 extends B, V> Map<B, V> merge(Map<K1, ? extends V> map1, Map<K2, ? extends V> map2) {
         Map<B, V> result = new HashMap<B, V>(map1);
         for (Map.Entry<K2, ? extends V> entry2 : map2.entrySet()) {
@@ -617,7 +626,7 @@ public class BaseUtils {
         return result;
     }
 
-    public static <B, K1 extends B, K2 extends B> List<B> mergeList(List<K1> list1, List<K2> list2) {
+    public static <B, K1 extends B, K2 extends B> List<B> mergeList(List<K1> list1, Collection<K2> list2) {
         List<B> result = new ArrayList<B>(list1);
         result.addAll(list2);
         return result;

@@ -20,14 +20,6 @@ public abstract class NavigatorView extends JScrollPane {
 
     public abstract void refresh(Set<ClientNavigatorElement> newElements);
 
-    public String getSID() {
-        return window.sid;
-    }
-
-    public String getCaption() {
-        return window.caption;
-    }
-
     public abstract ClientNavigatorElement getSelectedElement();
 
 }

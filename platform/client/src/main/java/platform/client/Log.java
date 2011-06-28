@@ -56,7 +56,7 @@ public final class Log {
         if (out.getTopLevelAncestor() != null) {
             out.setTemporaryBackground(Color.green);
         } else {
-            JOptionPane.showMessageDialog(null, message, "LS Fusion", JOptionPane.INFORMATION_MESSAGE);
+            JOptionPane.showMessageDialog(Main.frame, message, Main.getMainTitle(), JOptionPane.INFORMATION_MESSAGE);
         }
     }
 
@@ -145,7 +145,7 @@ public final class Log {
             }
         });
 
-        dialog = new JDialog(Main.frame, "LS Fusion", true);
+        dialog = new JDialog(Main.frame, Main.getMainTitle(), true);
         dialog.setContentPane(optionPane);
         dialog.pack();
 

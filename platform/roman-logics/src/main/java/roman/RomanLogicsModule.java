@@ -2412,8 +2412,8 @@ public class RomanLogicsModule extends LogicsModule {
         ToolBarNavigatorWindow mainToolbar = new ToolBarNavigatorWindow(JToolBar.HORIZONTAL, "mainToolbar", "Навигатор", BorderLayout.NORTH);
         mainToolbar.titleShown = false;
 
-        baseLM.baseWindow.y = 10;
-        baseLM.baseWindow.height -= 10;
+        baseLM.navigatorWindow.y = 10;
+        baseLM.navigatorWindow.height -= 10;
 
         ToolBarNavigatorWindow generateToolbar = new ToolBarNavigatorWindow(JToolBar.HORIZONTAL, "generateToolbar", "Генерация", 0, 0, 100, 3);
         generateToolbar.titleShown = false;

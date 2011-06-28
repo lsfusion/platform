@@ -1,6 +1,6 @@
 package platform.server.form.window;
 
-import platform.interop.NavigatorWindowType;
+import platform.interop.AbstractWindowType;
 
 import javax.swing.*;
 import java.io.DataOutputStream;
@@ -44,7 +44,7 @@ public class ToolBarNavigatorWindow extends NavigatorWindow {
 
     @Override
     public int getViewType() {
-        return NavigatorWindowType.TOOLBAR_VIEW;
+        return AbstractWindowType.TOOLBAR_VIEW;
     }
 
     @Override

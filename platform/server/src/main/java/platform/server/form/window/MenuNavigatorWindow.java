@@ -1,6 +1,6 @@
 package platform.server.form.window;
 
-import platform.interop.NavigatorWindowType;
+import platform.interop.AbstractWindowType;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -15,7 +15,7 @@ public class MenuNavigatorWindow extends NavigatorWindow {
 
     @Override
     public int getViewType() {
-        return NavigatorWindowType.MENU_VIEW;
+        return AbstractWindowType.MENU_VIEW;
     }
 
     @Override

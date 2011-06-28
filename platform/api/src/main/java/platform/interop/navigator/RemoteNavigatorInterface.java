@@ -44,6 +44,7 @@ public interface RemoteNavigatorInterface extends PendingRemote {
     ArrayList<String> getDefaultForms() throws RemoteException;
 
     byte[] getNavigatorTree() throws RemoteException;
+    byte[] getWindows() throws RemoteException;
 
     ArrayList<IDaemonTask> getDaemonTasks(int compId) throws RemoteException;
 }

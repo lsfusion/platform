@@ -593,6 +593,25 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteObject i
     }
 
     @Override
+    public byte[] getWindows() throws RemoteException {
+
+        ByteArrayOutputStream outStream = new ByteArrayOutputStream();
+        DataOutputStream dataStream = new DataOutputStream(outStream);
+
+        try {
+            BL.LM.relevantFormsWindow.serialize(dataStream);
+            BL.LM.relevantClassFormsWindow.serialize(dataStream);
+            BL.LM.logWindow.serialize(dataStream);
+            BL.LM.statusWindow.serialize(dataStream);
+            BL.LM.formsWindow.serialize(dataStream);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        return outStream.toByteArray();
+    }
+
+    @Override
     public ArrayList<IDaemonTask> getDaemonTasks(int compId) throws RemoteException {
         return  BL.getDaemonTasks(compId);
     }

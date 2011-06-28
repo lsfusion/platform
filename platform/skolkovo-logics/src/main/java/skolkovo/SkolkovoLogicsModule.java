@@ -1285,6 +1285,10 @@ public class SkolkovoLogicsModule extends LogicsModule {
         objectsWindow.drawRoot = true;
         baseLM.objectElement.window = objectsWindow;
 
+        baseLM.relevantFormsWindow.visible = false;
+        baseLM.relevantClassFormsWindow.visible = false;
+        baseLM.logWindow.visible = false;
+
         projectFullNative = addFormEntity(new ProjectFullFormEntity(baseLM.objectElement, "projectFullNative", "Резюме проекта для эксперта", false));
         project.setEditForm(projectFullNative);
         projectFullForeign = addFormEntity(new ProjectFullFormEntity(baseLM.objectElement, "projectFullForeign", "Resume project for expert", true));

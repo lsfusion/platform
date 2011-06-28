@@ -23,6 +23,7 @@ import platform.server.form.navigator.NavigatorElement;
 import platform.server.form.view.ContainerView;
 import platform.server.form.view.DefaultFormView;
 import platform.server.form.view.FormView;
+import platform.server.form.window.AbstractWindow;
 import platform.server.form.window.NavigatorWindow;
 import platform.server.form.window.TreeNavigatorWindow;
 import platform.server.logics.linear.LP;
@@ -255,7 +256,12 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public NavigatorElement<T> objectElement;
     public NavigatorElement<T> adminElement;
 
-    public NavigatorWindow baseWindow;
+    public NavigatorWindow navigatorWindow;
+    public AbstractWindow relevantFormsWindow;
+    public AbstractWindow relevantClassFormsWindow;
+    public AbstractWindow logWindow;
+    public AbstractWindow statusWindow;
+    public AbstractWindow formsWindow;
 
     public TableFactory tableFactory;
 
@@ -846,9 +852,16 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public void initNavigators() {
         baseClass.named.setListForm(new NamedListFormEntity(this, baseClass.named));
 
+        navigatorWindow = new TreeNavigatorWindow("navigator", "Навигатор", 0, 0, 20, 70);
+        relevantFormsWindow = new AbstractWindow("relevantForms", "Связанные формы", 0, 70, 20, 29);
+        relevantClassFormsWindow = new AbstractWindow("relevantClassForms", "Классовые формы", 0, 70, 20, 29);
+        logWindow = new AbstractWindow("log", "Лог", 0, 70, 20, 29);
+        statusWindow = new AbstractWindow("status", "Статус", 0, 99, 100, 1);
+        statusWindow.titleShown = false;
+        formsWindow = new AbstractWindow("forms", "Формы", 20, 20, 80, 79);
+
         baseElement = new NavigatorElement("baseElement", "Формы");
-        baseWindow = new TreeNavigatorWindow(baseElement.getSID() + "Window", "Навигатор", 0, 0, 20, 70);
-        baseElement.window = baseWindow;
+        baseElement.window = navigatorWindow;
 
         adminElement = new NavigatorElement(baseElement, "adminElement", "Администрирование");
 

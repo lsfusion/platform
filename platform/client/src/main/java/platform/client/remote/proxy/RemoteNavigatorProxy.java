@@ -137,6 +137,11 @@ public class RemoteNavigatorProxy<T extends RemoteNavigatorInterface>
     }
 
     @Override
+    public byte[] getWindows() throws RemoteException {
+        return target.getWindows();
+    }
+
+    @Override
     public ArrayList<IDaemonTask> getDaemonTasks(int compId) throws RemoteException {
         return target.getDaemonTasks(compId);
     }

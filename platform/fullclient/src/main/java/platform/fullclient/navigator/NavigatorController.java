@@ -11,7 +11,7 @@ import java.util.*;
 public class NavigatorController implements INavigatorController {
     RemoteNavigatorInterface remoteNavigator;
     List<ClientNavigatorElement> elements;
-    Map<ClientNavigatorWindow, NavigatorView> views = new HashMap<ClientNavigatorWindow, NavigatorView>();
+    public LinkedHashMap<ClientNavigatorWindow, NavigatorView> views = new LinkedHashMap<ClientNavigatorWindow, NavigatorView>();
     public ClientNavigator mainNavigator;
     private Map<NavigatorView, SingleCDockable> docks = new HashMap<NavigatorView, SingleCDockable>();
 
@@ -41,22 +41,11 @@ public class NavigatorController implements INavigatorController {
         }
     }
 
-    public NavigatorView getView(ClientNavigatorWindow window) {
-        if (views.containsKey(window)) {
-            return views.get(window);
-        } else {
+    public void initViews() {
+        for (ClientNavigatorWindow window : ClientNavigatorWindow.sidToWindow.values()) {
             NavigatorView navigatorView = window.getView(this);
             views.put(window, navigatorView);
-            return navigatorView;
         }
-    }
-
-    public List<NavigatorView> getAllViews() {
-        List<NavigatorView> result = new ArrayList<NavigatorView>();
-        for (ClientNavigatorWindow window : ClientNavigatorWindow.sidToWindow.values()) {
-            result.add(getView(window));
-        }
-        return result;
     }
 
     public void update() {
@@ -69,7 +58,7 @@ public class NavigatorController implements INavigatorController {
         dfsAddElements(ClientNavigatorElement.root, null, result);
 
         for (Map.Entry<ClientNavigatorWindow, LinkedHashSet<ClientNavigatorElement>> entry : result.entrySet()) {
-            NavigatorView view = getView(entry.getKey());
+            NavigatorView view = views.get(entry.getKey());
             view.refresh(entry.getValue());
             SingleCDockable dockable = docks.get(view);
             if (dockable != null) {
@@ -100,7 +89,7 @@ public class NavigatorController implements INavigatorController {
         ClientNavigatorWindow nextWindow = currentElement.window == null ? currentWindow : currentElement.window;
 
         // считаем, что если currentWindow == null, то это baseElement и он всегда выделен, но не рисуется никуда
-        if ((currentElement.window == null) || (currentWindow == null ? true : currentElement == getView(currentWindow).getSelectedElement()) || (currentElement.window == currentWindow) || (currentElement.window.drawRoot)) {
+        if ((currentElement.window == null) || (currentWindow == null ? true : currentElement == views.get(currentWindow).getSelectedElement()) || (currentElement.window == currentWindow) || (currentElement.window.drawRoot)) {
             for (ClientNavigatorElement element : currentElement.children) {
                 if (!result.get(nextWindow).contains(element)) {
                     dfsAddElements(element, nextWindow, result);

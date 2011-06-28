@@ -16,11 +16,9 @@ import platform.client.Log;
 import platform.client.Main;
 import platform.client.MainFrame;
 import platform.client.descriptor.view.LogicsDescriptorView;
-import platform.client.navigator.ClientNavigator;
-import platform.client.navigator.ClientNavigatorForm;
-import platform.client.navigator.NavigatorView;
+import platform.client.navigator.*;
 import platform.fullclient.navigator.NavigatorController;
-import platform.interop.NavigatorWindowType;
+import platform.interop.AbstractWindowType;
 import platform.interop.exceptions.LoginException;
 import platform.interop.form.RemoteFormInterface;
 import platform.interop.navigator.RemoteNavigatorInterface;
@@ -161,7 +159,30 @@ public class DockableMainFrame extends MainFrame {
         }
     }
 
-    LinkedHashMap<SingleCDockable, Rectangle> dockables = new LinkedHashMap<SingleCDockable, Rectangle>();
+    private LinkedHashMap<ClientAbstractWindow, JComponent> windows = new LinkedHashMap<ClientAbstractWindow, JComponent>();
+    private ClientFormsWindow formsWindow;
+
+    private void initWindows(RemoteNavigatorInterface remoteNavigator) {
+
+        try {
+            DataInputStream inStream = new DataInputStream(new ByteArrayInputStream(remoteNavigator.getWindows()));
+
+            windows.put(new ClientRelevantFormsWindow(inStream), mainNavigator.relevantFormNavigator);
+            windows.put(new ClientRelevantClassFormsWindow(inStream), mainNavigator.relevantClassNavigator);
+            windows.put(new ClientLogWindow(inStream), Log.getPanel());
+            windows.put(new ClientStatusWindow(inStream), status);
+
+            formsWindow = new ClientFormsWindow(inStream);
+        } catch (Exception e) {
+            throw new RuntimeException("Ошибка при считывании информации об окнах", e);
+        }
+    }
+
+    private LinkedHashMap<? extends ClientAbstractWindow,? extends JComponent> getAbstractWindows(NavigatorController navigatorController) {
+        return BaseUtils.mergeLinked(windows, navigatorController.views);
+    }
+
+    LinkedHashMap<SingleCDockable, ClientAbstractWindow> dockables = new LinkedHashMap<SingleCDockable, ClientAbstractWindow>();
 
     // важно, что в случае каких-либо Exception'ов при восстановлении форм нужно все игнорировать и открывать расположение "по умолчанию"
     private void initDockStations(ClientNavigator mainNavigator, NavigatorController navigatorController) {
@@ -187,28 +208,34 @@ public class DockableMainFrame extends MainFrame {
             }
         }
 
-        dockables.put(createDockable("relevantForms", "Связанные формы", mainNavigator.relevantFormNavigator), new Rectangle(0, 70, 20, 29));
-        dockables.put(createDockable("relevantClassForms", "Классовые формы", mainNavigator.relevantClassNavigator), new Rectangle(0, 70, 20, 29));
-        dockables.put(createDockable("log", "Лог", Log.getPanel()), new Rectangle(0, 70, 20, 29));
+        // создаем все окна и их виды
+        initWindows(remoteNavigator);
+        navigatorController.initViews();
 
-        for (NavigatorView view : navigatorController.getAllViews()) {
-            if (view.window.position == NavigatorWindowType.DOCKING_POSITION) {
-                DefaultSingleCDockable dockable = createDockable(view.getSID(), view.getCaption(), view);
-                dockable.setTitleShown(view.window.titleShown);
-                navigatorController.recordDockable(view, dockable);
-                dockables.put(dockable, new Rectangle(view.window.x, view.window.y, view.window.width, view.window.height));
+        LinkedHashMap<? extends ClientAbstractWindow, ? extends JComponent> windows = getAbstractWindows(navigatorController);
+
+        // инициализируем dockables
+        for (Map.Entry<? extends ClientAbstractWindow, ? extends JComponent> entry : windows.entrySet()) {
+            ClientAbstractWindow window = entry.getKey();
+            JComponent component = entry.getValue();
+            if (window.position == AbstractWindowType.DOCKING_POSITION) {
+                SingleCDockable dockable = createDockable(window, entry.getValue());
+                if (component instanceof NavigatorView) // приходится вот так криво делать, поскольку в ClientAbstractWindow мы не можем положить ссылку на dockable, так как он в client, а не fullclient
+                    navigatorController.recordDockable((NavigatorView)component, dockable);
+                dockables.put(dockable, window);
             } else {
-                add(view, view.window.borderConstraint);
+                add(component, window.borderConstraint);
             }
         }
 
-        dockables.put(view.getGridArea(), new Rectangle(20, 20, 80, 79));
-        dockables.put(createStatusDockable(status), new Rectangle(0, 99, 100, 1));
+        dockables.put(view.getGridArea(), formsWindow);
 
         CGrid grid = createGrid();
         control.getContentArea().deploy(grid);
 
         add(control.getContentArea(), BorderLayout.CENTER);
+
+        setDefaultVisible();
 
         for (String s : control.layouts()) {
             if (s.equals("default")) {
@@ -258,11 +285,17 @@ public class DockableMainFrame extends MainFrame {
 
     private CGrid createGrid() {
         CGrid grid = new CGrid(control);
-        for (Map.Entry<SingleCDockable, Rectangle> dockable : dockables.entrySet()) {
-            Rectangle rectangle = dockable.getValue();
-            grid.add(rectangle.x, rectangle.y, rectangle.width, rectangle.height, dockable.getKey());
+        for (Map.Entry<SingleCDockable, ClientAbstractWindow> entry : dockables.entrySet()) {
+            ClientAbstractWindow window = entry.getValue();
+            grid.add(window.x, window.y, window.width, window.height, entry.getKey());
         }
         return grid;
+    }
+
+    private void setDefaultVisible() {
+        for (Map.Entry<SingleCDockable, ClientAbstractWindow> entry : dockables.entrySet()) {
+            entry.getKey().setVisible(entry.getValue().visible);
+        }
     }
 
     private JMenu createWindowMenu() {
@@ -273,6 +306,7 @@ public class DockableMainFrame extends MainFrame {
         reload.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 control.getContentArea().deploy(createGrid());
+                setDefaultVisible();
                 navigatorController.update();
             }
         });
@@ -444,17 +478,11 @@ public class DockableMainFrame extends MainFrame {
     }
 
 
-    public DefaultSingleCDockable createDockable(String id, String title, JComponent navigator) {
-        DefaultSingleCDockable dockable = new DefaultSingleCDockable(id, title, navigator);
+    public DefaultSingleCDockable createDockable(ClientAbstractWindow window, JComponent navigator) {
+        DefaultSingleCDockable dockable = new DefaultSingleCDockable(window.getSID(), window.caption, navigator);
+        dockable.setTitleShown(window.titleShown);
         dockable.setCloseable(true);
         return dockable;
     }
 
-    public SingleCDockable createStatusDockable(JComponent navigator) {
-        DefaultSingleCDockable dockable = new DefaultSingleCDockable("Log", "Лог", navigator);
-
-        dockable.setTitleShown(false);
-        dockable.setCloseable(false);
-        return dockable;
-    }
 }
