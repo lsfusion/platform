@@ -5385,9 +5385,9 @@ public class RomanLogicsModule extends LogicsModule {
                 addRegularFilterGroup(filterGroup);
             }
 
-            addActionsOnClose(addPropertyObject(seekRouteShipmentSkuRoute, objShipment, objSku, objRoute));
+            addActionsOnOk(addPropertyObject(seekRouteShipmentSkuRoute, objShipment, objSku, objRoute));
             if (box)
-                addActionsOnClose(addPropertyObject(addBoxShipmentDetailBoxShipmentSupplierBoxRouteSku, objShipment, objSupplierBox, objRoute, objSku));
+                addActionsOnOk(addPropertyObject(addBoxShipmentDetailBoxShipmentSupplierBoxRouteSku, objShipment, objSupplierBox, objRoute, objSku));
         }
 
         @Override
