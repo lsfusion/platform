@@ -1,5 +1,6 @@
 package platform.client.logics.classes;
 
+import platform.client.Main;
 import platform.client.form.ClientFormController;
 import platform.client.form.PropertyEditorComponent;
 import platform.client.form.PropertyRendererComponent;
@@ -10,8 +11,7 @@ import platform.client.form.editor.ObjectPropertyEditor;
 import platform.client.form.renderer.IntegerPropertyRenderer;
 import platform.client.logics.ClientGroupObjectValue;
 import platform.client.logics.ClientPropertyDraw;
-import platform.client.Main;
-import platform.gwt.view.classes.GIntegerType;
+import platform.gwt.view.classes.GObjectType;
 import platform.gwt.view.classes.GType;
 import platform.interop.Compare;
 import platform.interop.ComponentDesign;
@@ -117,6 +117,6 @@ public class ClientObjectType implements ClientType, ClientTypeClass {
 
     @Override
     public GType getGwtType() {
-        return GIntegerType.instance;
+        return GObjectType.instance;
     }
 }

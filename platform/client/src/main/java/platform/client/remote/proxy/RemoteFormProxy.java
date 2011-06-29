@@ -297,6 +297,13 @@ public class RemoteFormProxy<T extends RemoteFormInterface>
         return result;
     }
 
+    public boolean canBeChanged(int propertyID, boolean aggValue) throws RemoteException {
+        logRemoteMethodStartCall("canBeChanged");
+        boolean result = target.canBeChanged(propertyID, aggValue);
+        logRemoteMethodEndCall("canBeChanged", result);
+        return result;
+    }
+
     @NonFlushRemoteMethod
     private RemoteDialogInterface createDialog(String methodName, Object... args) throws RemoteException {
         List<MethodInvocation> invocations = getImmutableMethodInvocations(RemoteDialogProxy.class);

@@ -1,5 +1,6 @@
 package platform.server.form.view;
 
+import platform.base.Result;
 import platform.interop.form.ReportConstants;
 import platform.interop.form.layout.SimplexConstraints;
 import platform.interop.form.screen.ExternalScreen;
@@ -11,6 +12,7 @@ import platform.server.form.entity.GroupObjectEntity;
 import platform.server.form.entity.PropertyDrawEntity;
 import platform.server.form.entity.PropertyObjectInterfaceEntity;
 import platform.server.form.view.report.ReportDrawField;
+import platform.server.logics.property.Property;
 import platform.server.logics.property.PropertyInterface;
 import platform.server.logics.table.MapKeysTable;
 import platform.server.serialization.SerializationType;
@@ -25,6 +27,7 @@ import java.text.DecimalFormat;
 import java.text.Format;
 import java.text.SimpleDateFormat;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Iterator;
 
 public class PropertyDrawView extends ComponentView {
@@ -81,6 +84,10 @@ public class PropertyDrawView extends ComponentView {
 
     public Type getType() {
         return entity.propertyObject.property.getType();
+    }
+
+    public Type getChangeType() {
+        return entity.propertyObject.property.getChangeImplement(new Result<Property>()).property.getEditorType(new HashMap());
     }
 
     public String getSID() {
@@ -181,6 +188,7 @@ public class PropertyDrawView extends ComponentView {
 
         //entity часть
         TypeSerializer.serializeType(outStream, getType());
+        TypeSerializer.serializeType(outStream, getChangeType());
 
         pool.writeString(outStream, entity.propertyObject.property.getSID());
         pool.writeString(outStream, entity.propertyObject.property.toolTip);

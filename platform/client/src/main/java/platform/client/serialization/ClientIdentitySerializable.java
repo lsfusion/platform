@@ -2,5 +2,8 @@ package platform.client.serialization;
 
 import platform.base.serialization.IdentitySerializable;
 
-public interface ClientIdentitySerializable extends ClientCustomSerializable, IdentitySerializable<ClientSerializationPool> {
+//вообще должно быть так:
+//public interface ClientIdentitySerializable extends ClientCustomSerializable, IdentitySerializable<ClientSerializationPool> {
+//но при компиляции AspectJ выдаёт кучу ошибок cyclic dependency/hierarchy inconsistent
+public interface ClientIdentitySerializable extends IdentitySerializable<ClientSerializationPool> {
 }

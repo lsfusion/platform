@@ -29,7 +29,6 @@
         <dependency>
             <groupId>com.smartgwt</groupId>
             <artifactId>smartgwt</artifactId>
-            <version>2.4</version>
         </dependency>
         <dependency>
             <groupId>by.luxsoft.platform</groupId>

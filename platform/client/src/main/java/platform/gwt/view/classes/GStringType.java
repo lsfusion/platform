@@ -1,10 +1,11 @@
 package platform.gwt.view.classes;
 
-import com.smartgwt.client.types.ListGridFieldType;
-
 public class GStringType extends GDataType {
-    @Override
-    public ListGridFieldType getFieldType() {
-        return ListGridFieldType.TEXT;
+    protected int length = 50;
+
+    public GStringType() {}
+
+    public GStringType(int length) {
+        this.length = length;
     }
 }

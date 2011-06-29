@@ -1,21 +1,16 @@
 package platform.gwt.view.classes;
 
-import com.smartgwt.client.types.ListGridFieldType;
 import com.smartgwt.client.types.TitleOrientation;
 import com.smartgwt.client.widgets.form.fields.FormItem;
 import com.smartgwt.client.widgets.form.fields.TextAreaItem;
 import platform.gwt.view.GPropertyDraw;
+import platform.gwt.view.logics.FormLogicsProvider;
 
 public class GTextType extends GDataType {
     public static GType instance = new GTextType();
 
     @Override
-    public ListGridFieldType getFieldType() {
-        return ListGridFieldType.TEXT;
-    }
-
-    @Override
-    public FormItem createFormItem(GPropertyDraw property) {
+    public FormItem createPanelFormItem(FormLogicsProvider formLogics, GPropertyDraw property) {
         TextAreaItem textAreaItem = new TextAreaItem();
         textAreaItem.setWrapTitle(false);
         textAreaItem.setTitleOrientation(TitleOrientation.TOP);

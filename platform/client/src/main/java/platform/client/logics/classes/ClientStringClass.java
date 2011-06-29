@@ -5,6 +5,8 @@ import platform.client.form.PropertyEditorComponent;
 import platform.client.form.PropertyRendererComponent;
 import platform.client.form.editor.StringPropertyEditor;
 import platform.client.form.renderer.StringPropertyRenderer;
+import platform.gwt.view.classes.GStringType;
+import platform.gwt.view.classes.GType;
 import platform.interop.Compare;
 import platform.interop.ComponentDesign;
 import platform.interop.Data;
@@ -106,5 +108,14 @@ public class ClientStringClass extends ClientDataClass {
     @Override
     public Compare getDefaultCompare() {
         return START_WITH;
+    }
+
+    private GStringType gwtType;
+    @Override
+    public GType getGwtType() {
+        if (gwtType == null) {
+            gwtType = new GStringType(length);
+        }
+        return gwtType;
     }
 }

@@ -731,6 +731,14 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         }
     }
 
+    public boolean canBeChanged(int propertyID, boolean aggValue) {
+        try {
+            return form.canBeChanged(form.getPropertyDraw(propertyID), aggValue);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     public RemoteDialogInterface createClassPropertyDialog(int viewID, int value) throws RemoteException {
         try {
             DialogInstance<T> dialogForm = form.createClassPropertyDialog(viewID, value);

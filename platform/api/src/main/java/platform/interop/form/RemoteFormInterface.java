@@ -27,6 +27,8 @@ public interface RemoteFormInterface extends PendingRemote {
 
     // синхронная проверка на то можно ли менять свойство
     byte[] getPropertyChangeType(int propertyID, boolean aggValue) throws RemoteException;
+    boolean canBeChanged(int propertyID, boolean aggValue) throws RemoteException;
+
     boolean canChangeClass(int objectID) throws RemoteException;
 
     boolean hasClientApply() throws RemoteException; // чисто для оптимизации одного RMI вызова

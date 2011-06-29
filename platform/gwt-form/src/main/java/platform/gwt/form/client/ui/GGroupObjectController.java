@@ -1,11 +1,9 @@
 package platform.gwt.form.client.ui;
 
-import com.smartgwt.client.types.Autofit;
 import com.smartgwt.client.types.Overflow;
 import com.smartgwt.client.widgets.form.fields.FormItem;
 import com.smartgwt.client.widgets.layout.SectionStackSection;
 import com.smartgwt.client.widgets.layout.VStack;
-import platform.gwt.form.client.FormFrame;
 import platform.gwt.view.GForm;
 import platform.gwt.view.GGroupObject;
 import platform.gwt.view.GPropertyDraw;
@@ -15,7 +13,7 @@ import platform.gwt.view.changes.GGroupObjectValue;
 import java.util.ArrayList;
 
 public class GGroupObjectController {
-    private final FormFrame frame;
+    private final GFormController formController;
     private final GForm form;
     public GGroupObject groupObject;
 
@@ -26,23 +24,19 @@ public class GGroupObjectController {
     public VStack view;
     private SectionStackSection groupSection;
 
-    public GGroupObjectController(FormFrame iframe, GForm iform, GGroupObject igroupObject) {
-        this.frame = iframe;
+    public GGroupObjectController(GFormController iformController, GForm iform, GGroupObject igroupObject) {
+        this.formController = iformController;
         this.form = iform;
         this.groupObject = igroupObject;
 
-        grid = new GGridTable(frame, form, this);
-        grid.setCanSort(false);
-        grid.setShowHeaderContextMenu(false);
-        grid.setShowHeaderMenuButton(false);
-        grid.setAutoFitData(Autofit.VERTICAL);
-        grid.setAutoFitMaxRecords(10);
+        grid = new GGridTable(formController, form, this);
 
         filterPanel = new GFilterPanel();
 
-        panel = new GGroupPanel(frame, form, this);
+        panel = new GGroupPanel(formController, form, this);
 
         view = new VStack();
+        view.setWidth100();
         view.setHeight(1);
         view.setOverflow(Overflow.VISIBLE);
         view.addMember(grid);

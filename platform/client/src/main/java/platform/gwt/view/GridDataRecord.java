@@ -1,9 +1,9 @@
-package platform.gwt.form.client.ui;
+package platform.gwt.view;
 
 import com.smartgwt.client.util.JSOHelper;
 import com.smartgwt.client.widgets.grid.ListGridRecord;
-import platform.gwt.view.GPropertyDraw;
 import platform.gwt.view.changes.GGroupObjectValue;
+import platform.gwt.view.utills.GwtUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -16,8 +16,13 @@ public class GridDataRecord extends ListGridRecord {
         this.key = key;
         if (values != null) {
             for (Map.Entry<GPropertyDraw, Object> entry : values.entrySet()) {
+                Object value = entry.getValue();
+                if (value instanceof String) {
+                    value = GwtUtils.rtrim((String) value);
+                }
+
                 //чтобы задавать всё, как простой объект, а не конкретный класс
-                JSOHelper.setAttribute(jsObj, entry.getKey().sID, entry.getValue());
+                JSOHelper.setAttribute(jsObj, entry.getKey().sID, value);
 //                setAttribute(entry.getKey().sID, entry.getValue());
             }
         }

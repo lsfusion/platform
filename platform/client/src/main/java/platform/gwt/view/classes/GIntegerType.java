@@ -4,6 +4,7 @@ import com.smartgwt.client.types.ListGridFieldType;
 import com.smartgwt.client.widgets.form.fields.FormItem;
 import com.smartgwt.client.widgets.form.fields.IntegerItem;
 import platform.gwt.view.GPropertyDraw;
+import platform.gwt.view.logics.FormLogicsProvider;
 
 public class GIntegerType extends GIntegralType {
     public static GType instance = new GIntegerType();
@@ -14,7 +15,7 @@ public class GIntegerType extends GIntegralType {
     }
 
     @Override
-    public FormItem createFormItem(GPropertyDraw property) {
+    public FormItem createPanelFormItem(FormLogicsProvider formLogics, GPropertyDraw property) {
         return new IntegerItem();
     }
 }

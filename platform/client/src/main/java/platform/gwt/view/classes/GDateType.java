@@ -6,6 +6,7 @@ import com.smartgwt.client.widgets.form.fields.FormItem;
 import com.smartgwt.client.widgets.grid.ListGridField;
 import platform.gwt.ui.DateCellFormatter;
 import platform.gwt.view.GPropertyDraw;
+import platform.gwt.view.logics.FormLogicsProvider;
 
 public class GDateType extends GDataType {
     public static GType instance = new GDateType();
@@ -16,14 +17,14 @@ public class GDateType extends GDataType {
     }
 
     @Override
-    public ListGridField createGridField(GPropertyDraw property) {
-        ListGridField propertyField = super.createGridField(property);
+    public ListGridField createGridField(FormLogicsProvider formLogics, GPropertyDraw property) {
+        ListGridField propertyField = super.createGridField(formLogics, property);
         propertyField.setCellFormatter(DateCellFormatter.instance);
         return propertyField;
     }
 
     @Override
-    public FormItem createFormItem(GPropertyDraw property) {
+    public FormItem createPanelFormItem(FormLogicsProvider formLogics, GPropertyDraw property) {
         return new DateItem();
     }
 }

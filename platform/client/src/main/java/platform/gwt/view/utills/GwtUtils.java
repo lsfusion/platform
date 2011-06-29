@@ -1,4 +1,4 @@
-package platform.gwt.form.client.utills;
+package platform.gwt.view.utills;
 
 import java.util.Iterator;
 import java.util.List;
@@ -13,5 +13,11 @@ public class GwtUtils {
             ins++;
         }
         return ins;
+    }
+
+    public static String rtrim(String string) {
+        int len = string.length();
+        while (len > 0 && string.charAt(len - 1) == ' ') len--;
+        return string.substring(0, len);
     }
 }

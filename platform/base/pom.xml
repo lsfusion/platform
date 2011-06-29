@@ -91,7 +91,7 @@
                 <configuration>
                     <workingDirectory>..</workingDirectory>
                     <executable>mvn</executable>
-                    <commandlineArgs>-Dgwt.draftCompile=true -Dgwt.style=PRETTY --also-make --projects by.luxsoft.platform:${project.artifactId} compile</commandlineArgs>
+                    <commandlineArgs>-Dgwt.draftCompile=true -Dgwt.style=PRETTY --also-make --also-make-dependents --projects by.luxsoft.platform:${project.artifactId} compile</commandlineArgs>
                 </configuration>
             </plugin>
        </plugins>
@@ -157,6 +157,11 @@
                 <groupId>org.springframework</groupId>
                 <artifactId>spring-jdbc</artifactId>
                 <version>${spring.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.smartgwt</groupId>
+                <artifactId>smartgwt</artifactId>
+                <version>2.5-SNAPSHOT</version>
             </dependency>
 
             <dependency>

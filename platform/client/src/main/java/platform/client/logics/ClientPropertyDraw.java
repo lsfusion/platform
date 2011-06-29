@@ -43,6 +43,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
     // символьный идентификатор, нужен для обращению к свойствам в печатных формах
     public ClientType baseType;
+    public ClientType changeType;
     public ClientClass[] interfacesTypes;
     public ClientClass returnClass;
 
@@ -379,6 +380,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         highlightColor = pool.readObject(inStream);
 
         baseType = ClientTypeSerializer.deserialize(inStream);
+        changeType = ClientTypeSerializer.deserialize(inStream);
 
         sID = pool.readString(inStream);
 
@@ -530,7 +532,11 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
             gwtPropertyDraw.caption = caption;
             gwtPropertyDraw.groupObject = groupObject == null ? null : groupObject.getGwtGroupObject();
             gwtPropertyDraw.baseType = baseType.getGwtType();
+            gwtPropertyDraw.changeType = changeType.getGwtType();
             gwtPropertyDraw.iconPath = design.iconPath;
+            gwtPropertyDraw.readOnly = readOnly;
+            gwtPropertyDraw.focusable = focusable;
+            gwtPropertyDraw.checkEquals = checkEquals;
         }
         return gwtPropertyDraw;
     }
