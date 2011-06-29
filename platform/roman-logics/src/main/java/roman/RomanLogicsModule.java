@@ -757,6 +757,8 @@ public class RomanLogicsModule extends LogicsModule {
     private LP executeArticleCompositeItemSIDSupplier;
     private LP executeChangeFreightClass;
     private CreateItemFormEntity createItemForm;
+    private FindItemFormEntity findItemForm;
+    private FindItemFormEntity findItemForm2;
     private LP addItemBarcode;
     private LP barcodeActionSeekFreightBox;
     private LP currentPalletFreightBox;
@@ -2396,6 +2398,7 @@ public class RomanLogicsModule extends LogicsModule {
                 ), 1, 2, baseLM.barcodeToObject, 3);
         declarationExport = addDEAProp("declarationExport");
         scalesComPort = addDProp(baseGroup, "scalesComPort", "COM-порт весов", IntegerClass.instance, baseLM.computer);
+
     }
 
     public LP addDEAProp(String sID) {
@@ -2449,6 +2452,8 @@ public class RomanLogicsModule extends LogicsModule {
         classifier.add(store.getListForm(baseLM));
 
         createItemForm = addFormEntity(new CreateItemFormEntity(null, "createItemForm", "Ввод товара"));
+        findItemForm = addFormEntity(new FindItemFormEntity(baseLM.baseElement, "findItemForm", "Поиск товара (с коробами)", true));
+        findItemForm2 = addFormEntity(new FindItemFormEntity(baseLM.baseElement, "findItemForm2", "Поиск товара", false));
 
         NavigatorElement printForms = new NavigatorElement(baseLM.baseElement, "printForms", "Печатные формы");
         printForms.window = leftToolbar;
@@ -3370,6 +3375,14 @@ public class RomanLogicsModule extends LogicsModule {
                     objShipment, objBarcode, objRoute));
 
             addActionsOnObjectChange(objBarcode, addPropertyObject(barcodeActionCheckFreightBox, objRoute, objBarcode));
+
+            if (box) {
+                addPropertyDraw(addMFAProp(null, "Найти товар",
+                                             findItemForm,
+                                             new ObjectEntity[]{findItemForm.objShipment, findItemForm.objBox},
+                                             false),
+                                             objShipment, objSupplierBox).forceViewType = ClassViewType.PANEL;
+            }
 
             if (box) {
                 addActionsOnObjectChange(objBarcode, addPropertyObject(addBoxShipmentDetailBoxShipmentSupplierBoxRouteBarcode, objShipment, objSupplierBox, objRoute, objBarcode));
@@ -5301,6 +5314,67 @@ public class RomanLogicsModule extends LogicsModule {
             DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign();
             design.setEnabled(objSupplier, false);
             design.setEnabled(objBarcode, false);
+            return design;
+        }
+    }
+
+    private class FindItemFormEntity extends FormEntity<RomanBusinessLogics> {
+
+        private boolean box;
+
+        ObjectEntity objShipment;
+        ObjectEntity objBox;
+        ObjectEntity objSku;
+
+        public FindItemFormEntity(NavigatorElement parent, String sID, String caption, boolean box) {
+            super(parent, sID, caption, true);
+
+
+            if (box)
+                objShipment = addSingleGroupObject(boxShipment, "Поставка", baseLM.objectValue, sidDocument, baseLM.date);
+
+            if (!box)
+                objShipment = addSingleGroupObject(simpleShipment, "Поставка", baseLM.objectValue, sidDocument, baseLM.date);
+
+            objShipment.groupTo.setSingleClassView(ClassViewType.PANEL);
+
+            if (box) {
+                objBox = addSingleGroupObject(supplierBox, "Короб", sidSupplierBox, baseLM.barcode);
+                objBox.groupTo.setSingleClassView(ClassViewType.PANEL);
+            }
+
+            objSku = addSingleGroupObject(sku, "Товар", sidArticleSku, baseLM.barcode, sidColorSupplierItem, nameColorSupplierItem, sidSizeSupplierItem);
+            //objSku.groupTo.setSingleClassView(ClassViewType.GRID);
+            setForceViewType(baseGroup, ClassViewType.GRID, objSku.groupTo);
+
+            addFixedFilter(new NotNullFilterEntity(addPropertyObject(quantityShipmentSku, objShipment, objSku)));
+
+            if (box){
+
+                addFixedFilter(new NotNullFilterEntity(addPropertyObject(inSupplierBoxShipment, objBox, objShipment)));
+
+                RegularFilterGroupEntity filterGroup = new RegularFilterGroupEntity(genID());
+                filterGroup.addFilter(new RegularFilterEntity(genID(),
+                    new NotNullFilterEntity(addPropertyObject(quantitySupplierBoxSku, objBox, objSku)),
+                    "В текущем коробе",
+                    KeyStroke.getKeyStroke(KeyEvent.VK_F11, 0)));
+                filterGroup.defaultFilter = 0;
+                addRegularFilterGroup(filterGroup);
+            }
+        }
+
+        @Override
+        public FormView createDefaultRichDesign() {
+            DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign();
+
+            if (box) {
+            design.addIntersection(design.getGroupObjectContainer(objShipment.groupTo),
+                                   design.getGroupObjectContainer(objBox.groupTo),
+                                   DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
+            }
+
+            design.get(objShipment.groupTo).grid.constraints.fillVertical = 1;
+            design.get(objSku.groupTo).grid.constraints.fillVertical = 3;
             return design;
         }
     }
