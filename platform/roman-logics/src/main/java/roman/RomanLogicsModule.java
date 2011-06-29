@@ -1645,7 +1645,6 @@ public class RomanLogicsModule extends LogicsModule {
         // здесь на самом деле есть ограничение, что supplierBox ссылается именно на invoice
         orderedSupplierBoxSku = addJProp("orderedSupplierBoxSku", "Кол-во заказано", orderedInvoiceSku, boxInvoiceSupplierBox, 1, 2);
 
-
         // todo : переделать на PGProp, здесь надо derive'ить, иначе могут быть проблемы с расписыванием
         // если включаешь, то начинает тормозить изменение количества в заказах
 //        quantityOrderInvoiceSku = addPGProp(baseGroup, "quantityOrderInvoiceSku", true, 0, "Кол-во по заказу/инвойсу (расч.)",
@@ -2452,8 +2451,8 @@ public class RomanLogicsModule extends LogicsModule {
         classifier.add(store.getListForm(baseLM));
 
         createItemForm = addFormEntity(new CreateItemFormEntity(null, "createItemForm", "Ввод товара"));
-        findItemForm = addFormEntity(new FindItemFormEntity(baseLM.baseElement, "findItemForm", "Поиск товара (с коробами)", true));
-        findItemForm2 = addFormEntity(new FindItemFormEntity(baseLM.baseElement, "findItemForm2", "Поиск товара", false));
+        findItemForm = addFormEntity(new FindItemFormEntity(null, "findItemForm", "Поиск товара (с коробами)", true));
+        findItemForm2 = addFormEntity(new FindItemFormEntity(null, "findItemForm2", "Поиск товара", false));
 
         NavigatorElement printForms = new NavigatorElement(baseLM.baseElement, "printForms", "Печатные формы");
         printForms.window = leftToolbar;
@@ -3377,14 +3376,6 @@ public class RomanLogicsModule extends LogicsModule {
             addActionsOnObjectChange(objBarcode, addPropertyObject(barcodeActionCheckFreightBox, objRoute, objBarcode));
 
             if (box) {
-                addPropertyDraw(addMFAProp(null, "Найти товар",
-                                             findItemForm,
-                                             new ObjectEntity[]{findItemForm.objShipment, findItemForm.objBox},
-                                             false),
-                                             objShipment, objSupplierBox).forceViewType = ClassViewType.PANEL;
-            }
-
-            if (box) {
                 addActionsOnObjectChange(objBarcode, addPropertyObject(addBoxShipmentDetailBoxShipmentSupplierBoxRouteBarcode, objShipment, objSupplierBox, objRoute, objBarcode));
             } else {
                 addActionsOnObjectChange(objBarcode, addPropertyObject(addSimpleShipmentDetailSimpleShipmentRouteBarcode, objShipment, objRoute, objBarcode));
@@ -3407,8 +3398,23 @@ public class RomanLogicsModule extends LogicsModule {
 
             setReadOnly(objSupplier, true);
             setReadOnly(objShipment, true);
-            if (box)
+
+            if (box) {
                 setReadOnly(objSupplierBox, true);
+                addPropertyDraw(addMFAProp(null, "Найти товар",
+                                             findItemForm,
+                                             new ObjectEntity[]{findItemForm.objShipment, findItemForm.objSupplierBox},
+                                             false),
+                                             objShipment, objSupplierBox).forceViewType = ClassViewType.PANEL;
+            }
+
+           if (!box) {
+                addPropertyDraw(addMFAProp(null, "Найти товар",
+                                             findItemForm2,
+                                             new ObjectEntity[]{findItemForm2.objShipment},
+                                             false),
+                                             objShipment).forceViewType = ClassViewType.PANEL;
+           }
         }
 
         @Override
@@ -5323,12 +5329,13 @@ public class RomanLogicsModule extends LogicsModule {
         private boolean box;
 
         ObjectEntity objShipment;
-        ObjectEntity objBox;
+        ObjectEntity objSupplierBox;
         ObjectEntity objSku;
 
         public FindItemFormEntity(NavigatorElement parent, String sID, String caption, boolean box) {
-            super(parent, sID, caption, true);
+            super(parent, sID, caption);
 
+            this.box = box;
 
             if (box)
                 objShipment = addSingleGroupObject(boxShipment, "Поставка", baseLM.objectValue, sidDocument, baseLM.date);
@@ -5339,23 +5346,23 @@ public class RomanLogicsModule extends LogicsModule {
             objShipment.groupTo.setSingleClassView(ClassViewType.PANEL);
 
             if (box) {
-                objBox = addSingleGroupObject(supplierBox, "Короб", sidSupplierBox, baseLM.barcode);
-                objBox.groupTo.setSingleClassView(ClassViewType.PANEL);
+                objSupplierBox = addSingleGroupObject(supplierBox, "Короб", sidSupplierBox, baseLM.barcode);
+                objSupplierBox.groupTo.setSingleClassView(ClassViewType.PANEL);
             }
 
             objSku = addSingleGroupObject(sku, "Товар", sidArticleSku, baseLM.barcode, sidColorSupplierItem, nameColorSupplierItem, sidSizeSupplierItem);
-            //objSku.groupTo.setSingleClassView(ClassViewType.GRID);
             setForceViewType(baseGroup, ClassViewType.GRID, objSku.groupTo);
+            setReadOnly(objSku, true);
 
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(quantityShipmentSku, objShipment, objSku)));
 
-            if (box){
+            if (box) {
 
-                addFixedFilter(new NotNullFilterEntity(addPropertyObject(inSupplierBoxShipment, objBox, objShipment)));
+                addFixedFilter(new NotNullFilterEntity(addPropertyObject(inSupplierBoxShipment, objSupplierBox, objShipment)));
 
                 RegularFilterGroupEntity filterGroup = new RegularFilterGroupEntity(genID());
                 filterGroup.addFilter(new RegularFilterEntity(genID(),
-                    new NotNullFilterEntity(addPropertyObject(quantitySupplierBoxSku, objBox, objSku)),
+                    new NotNullFilterEntity(addPropertyObject(quantityListSku, objSupplierBox, objSku)),
                     "В текущем коробе",
                     KeyStroke.getKeyStroke(KeyEvent.VK_F11, 0)));
                 filterGroup.defaultFilter = 0;
@@ -5368,13 +5375,17 @@ public class RomanLogicsModule extends LogicsModule {
             DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign();
 
             if (box) {
-            design.addIntersection(design.getGroupObjectContainer(objShipment.groupTo),
-                                   design.getGroupObjectContainer(objBox.groupTo),
-                                   DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
+                design.addIntersection(design.getGroupObjectContainer(objShipment.groupTo),
+                                       design.getGroupObjectContainer(objSupplierBox.groupTo),
+                                       DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
             }
 
             design.get(objShipment.groupTo).grid.constraints.fillVertical = 1;
             design.get(objSku.groupTo).grid.constraints.fillVertical = 3;
+
+            design.setEnabled(objShipment, false);
+            if (box)
+                design.setEnabled(objSupplierBox, false);
             return design;
         }
     }
