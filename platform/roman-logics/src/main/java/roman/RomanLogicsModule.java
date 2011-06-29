@@ -538,8 +538,10 @@ public class RomanLogicsModule extends LogicsModule {
     private LP barcodeSkuShipmentDetail;
     private LP shipmentShipmentDetail;
     private LP addBoxShipmentDetailBoxShipmentSupplierBoxStockSku;
+    private LP addSimpleShipmentDetailSimpleShipmentStockSku;
     private LP addBoxShipmentDetailBoxShipmentSupplierBoxStockBarcode;
     private LP addBoxShipmentDetailBoxShipmentSupplierBoxRouteSku;
+    private LP addSimpleShipmentDetailSimpleShipmentRouteSku;
     private LP addBoxShipmentDetailBoxShipmentSupplierBoxRouteBarcode;
     private LP articleShipmentDetail;
     private LP sidArticleShipmentDetail;
@@ -1850,9 +1852,13 @@ public class RomanLogicsModule extends LogicsModule {
                 addBoxShipmentDetailBoxShipmentSupplierBoxStockSku,
                 1, 2, 3, skuBarcodeObject, 4);
 
-        addSimpleShipmentSimpleShipmentDetailStockBarcode = addJProp(true, "Добавить строку поставки",
+        addSimpleShipmentDetailSimpleShipmentStockSku = addJProp(true, "Добавить строку поставки",
                 addAAProp(simpleShipmentDetail, simpleShipmentSimpleShipmentDetail, stockShipmentDetail, skuShipmentDetail, quantityShipmentDetail),
-                1, 2, baseLM.barcodeToObject, 3, addCProp(DoubleClass.instance, 1));
+                1, 2, 3, addCProp(DoubleClass.instance, 1));
+
+        addSimpleShipmentSimpleShipmentDetailStockBarcode = addJProp(true, "Добавить строку поставки",
+                addSimpleShipmentDetailSimpleShipmentStockSku,
+                1, 2, skuBarcodeObject, 3);
 
         quantitySupplierBoxBoxShipmentStockSku = addSGProp(baseGroup, "quantitySupplierBoxBoxShipmentStockSku", "Кол-во оприход.", quantityShipmentDetail,
                 supplierBoxShipmentDetail, 1, boxShipmentBoxShipmentDetail, 1, stockShipmentDetail, 1, skuShipmentDetail, 1);
@@ -2374,6 +2380,9 @@ public class RomanLogicsModule extends LogicsModule {
 
         addBoxShipmentDetailBoxShipmentSupplierBoxRouteSku = addJProp(true, "Добавить строку поставки",
                 addBoxShipmentDetailBoxShipmentSupplierBoxStockSku, 1, 2, currentFreightBoxRoute, 3, 4);
+
+        addSimpleShipmentDetailSimpleShipmentRouteSku = addJProp(true, "Добавить строку поставки",
+                addSimpleShipmentDetailSimpleShipmentStockSku, 1, currentFreightBoxRoute, 2, 3);
 
         addBoxShipmentDetailBoxShipmentSupplierBoxRouteBarcode = addJProp(true, "Добавить строку поставки",
                 addBoxShipmentDetailBoxShipmentSupplierBoxStockBarcode, 1, 2, currentFreightBoxRoute, 3, 4);
@@ -3145,6 +3154,9 @@ public class RomanLogicsModule extends LogicsModule {
         private ObjectEntity objRoute;
         private ObjectEntity objShipmentDetail;
 
+        private PropertyDrawEntity findItemBox;
+        private PropertyDrawEntity findItemSimple;
+
         private PropertyDrawEntity nameRoute;
 
         private ShipmentSpecFormEntity(NavigatorElement parent, String sID, String caption, boolean box) {
@@ -3413,17 +3425,21 @@ public class RomanLogicsModule extends LogicsModule {
 
             if (box) {
                 setReadOnly(objSupplierBox, true);
-                addPropertyDraw(addMFAProp(null, "Найти товар",
+
+            findItemBox = addPropertyDraw(addMFAProp(null, "Поиск по артикулу",
                         findItemFormBox,
                                              new ObjectEntity[]{findItemFormBox.objShipment, findItemFormBox.objSupplierBox},
                                              false),
-                                             objShipment, objSupplierBox).forceViewType = ClassViewType.PANEL;
+                                             objShipment, objSupplierBox);
+            findItemBox.forceViewType = ClassViewType.PANEL;
             } else {
-                addPropertyDraw(addMFAProp(null, "Найти товар",
+
+            findItemSimple = addPropertyDraw(addMFAProp(null, "Поиск по артикулу",
                         findItemFormSimple,
                                              new ObjectEntity[]{findItemFormSimple.objShipment},
                                              false),
-                                             objShipment).forceViewType = ClassViewType.PANEL;
+                                             objShipment);
+            findItemSimple.forceViewType = ClassViewType.PANEL;
             }
         }
 
@@ -3471,6 +3487,11 @@ public class RomanLogicsModule extends LogicsModule {
             design.getGroupObjectContainer(objRoute.groupTo).constraints.childConstraints = DoNotIntersectSimplexConstraint.TOTHE_RIGHT;
 
             design.setHighlightColor(new Color(255, 128, 128));
+
+            if (box)
+                design.getPanelContainer(design.get(objBarcode.groupTo)).add(design.get(this.findItemBox));
+            else
+                design.getPanelContainer(design.get(objBarcode.groupTo)).add(design.get(this.findItemSimple));
 
             return design;
         }
@@ -5367,7 +5388,8 @@ public class RomanLogicsModule extends LogicsModule {
             setForceViewType(baseGroup, ClassViewType.GRID, objSku.groupTo);
 
             addPropertyDraw(invoicedShipmentSku, objShipment, objSku);
-            addPropertyDraw(quantityListSku, objSupplierBox, objSku);
+            if (box)
+                addPropertyDraw(quantityListSku, objSupplierBox, objSku);
             setReadOnly(objSku, true);
 
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(invoicedShipmentSku, objShipment, objSku)));
@@ -5388,6 +5410,8 @@ public class RomanLogicsModule extends LogicsModule {
             addActionsOnOk(addPropertyObject(seekRouteShipmentSkuRoute, objShipment, objSku, objRoute));
             if (box)
                 addActionsOnOk(addPropertyObject(addBoxShipmentDetailBoxShipmentSupplierBoxRouteSku, objShipment, objSupplierBox, objRoute, objSku));
+            else
+                addActionsOnOk(addPropertyObject(addSimpleShipmentDetailSimpleShipmentRouteSku, objShipment, objRoute, objSku));
         }
 
         @Override
