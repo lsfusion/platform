@@ -668,7 +668,7 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
 
     public void dialogClosed() throws RemoteException {
         try {
-            actions.addAll(form.fireOnClose(this));
+            actions.addAll(form.fireOnOk(this));
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }

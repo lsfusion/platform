@@ -4327,7 +4327,7 @@ public class RomanLogicsModule extends LogicsModule {
 
             if (edit) {
                 objFreight.groupTo.setSingleClassView(ClassViewType.PANEL);
-                addActionsOnClose(addPropertyObject(executeChangeFreightClass, objFreight, (DataObject) freightChanged.getClassObject()));
+                addActionsOnOk(addPropertyObject(executeChangeFreightClass, objFreight, (DataObject) freightChanged.getClassObject()));
             } else {
                 FreightChangeFormEntity editFreightForm = new FreightChangeFormEntity(null, "freightChangeForm_edit", "Обработка фрахта", true);
                 addPropertyDraw(
@@ -5089,7 +5089,7 @@ public class RomanLogicsModule extends LogicsModule {
 
             if (edit) {
                 objFreight.groupTo.setSingleClassView(ClassViewType.PANEL);
-                addActionsOnClose(addPropertyObject(executeChangeFreightClass, objFreight, (DataObject) freightPriced.getClassObject()));
+                addActionsOnOk(addPropertyObject(executeChangeFreightClass, objFreight, (DataObject) freightPriced.getClassObject()));
             } else {
                 FreightInvoiceFormEntity editFreightForm = new FreightInvoiceFormEntity(null, "freightInvoiceForm_edit", "Расценка фрахта", true);
                 addPropertyDraw(

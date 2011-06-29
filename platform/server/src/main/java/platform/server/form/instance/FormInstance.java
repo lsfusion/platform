@@ -1317,8 +1317,8 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
         return fireEvent(form, FormEntity.ON_APPLY_EVENT);
     }
 
-    public List<ClientAction> fireOnClose(RemoteForm form) throws SQLException {
-        return fireEvent(form, FormEntity.ON_CLOSE_EVENT);
+    public List<ClientAction> fireOnOk(RemoteForm form) throws SQLException {
+        return fireEvent(form, FormEntity.ON_OK_EVENT);
     }
 
     public List<ClientAction> fireEvent(RemoteForm form, Object eventObject) throws SQLException {

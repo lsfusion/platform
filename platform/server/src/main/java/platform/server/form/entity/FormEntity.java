@@ -41,7 +41,7 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
     private static ImageIcon image = new ImageIcon(NavigatorElement.class.getResource("/images/form.gif"));
 
     public static final String ON_APPLY_EVENT = "onApplyEvent";
-    public static final String ON_CLOSE_EVENT = "onCloseEvent";
+    public static final String ON_OK_EVENT = "onOkEvent";
 
     public Map<Object, List<PropertyObjectEntity>> eventActions = new HashMap<Object, List<PropertyObjectEntity>>();
 
@@ -629,8 +629,8 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         addActionsOnEvent(ON_APPLY_EVENT, false, actions);
     }
 
-    public void addActionsOnClose(PropertyObjectEntity... actions) {
-        addActionsOnEvent(ON_CLOSE_EVENT, false, actions);
+    public void addActionsOnOk(PropertyObjectEntity... actions) {
+        addActionsOnEvent(ON_OK_EVENT, false, actions);
     }
 
     public void addActionsOnEvent(Object eventObject, boolean drop, PropertyObjectEntity... actions) {
