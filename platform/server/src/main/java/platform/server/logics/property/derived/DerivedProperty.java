@@ -119,8 +119,8 @@ public class DerivedProperty {
         OverrideUnionProperty unionProperty = new OverrideUnionProperty(genID(),"sys",interfaces.size());
         Map<T,UnionProperty.Interface> mapInterfaces = BaseUtils.buildMap(interfaces,unionProperty.interfaces);
 
-        unionProperty.operands.add(first.map(mapInterfaces));
-        unionProperty.operands.add(rest.map(mapInterfaces));
+        unionProperty.addOperand(first.map(mapInterfaces));
+        unionProperty.addOperand(rest.map(mapInterfaces));
 
         return new PropertyMapImplement<UnionProperty.Interface,T>(unionProperty,BaseUtils.reverse(mapInterfaces));
     }

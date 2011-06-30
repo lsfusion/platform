@@ -26,12 +26,25 @@ public class XorUnionProperty extends UnionProperty {
         return operands;
     }
 
-    public Expr calculateExpr(Map<Interface, ? extends Expr> joinImplement, Modifier<? extends Changes> modifier, WhereBuilder changedWhere) {
-
+    @Override
+    protected Expr calculateNewExpr(Map<Interface, ? extends Expr> joinImplement, Modifier<? extends Changes> modifier, WhereBuilder changedWhere) {
         Where xorWhere = Where.FALSE;
         for(PropertyMapImplement<?, Interface> operand : operands)
             xorWhere = xorWhere.xor(operand.mapExpr(joinImplement, modifier, changedWhere).getWhere());
         return ValueExpr.get(xorWhere);
+    }
+
+    @Override
+    protected Expr calculateIncrementExpr(Map<Interface, ? extends Expr> joinImplement, Modifier<? extends Changes> modifier, Expr prevExpr, WhereBuilder changedWhere) {
+        Where resultWhere = prevExpr.getWhere();
+        for(PropertyMapImplement<?, Interface> operand : operands) {
+            WhereBuilder changedOperandWhere = new WhereBuilder();
+            Where newOperandWhere = operand.mapExpr(joinImplement, modifier, changedOperandWhere).getWhere();
+            Where prevOperandWhere = operand.mapExpr(joinImplement).getWhere();
+            resultWhere = resultWhere.xor(newOperandWhere.xor(prevOperandWhere).and(changedOperandWhere.toWhere()));
+            if(changedWhere!=null) changedWhere.add(changedOperandWhere.toWhere());
+        }
+        return ValueExpr.get(resultWhere);
     }
 
     @Override

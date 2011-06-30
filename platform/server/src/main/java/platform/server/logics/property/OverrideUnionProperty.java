@@ -2,6 +2,7 @@ package platform.server.logics.property;
 
 import platform.base.BaseUtils;
 import platform.server.data.expr.Expr;
+import platform.server.data.expr.where.CaseExprInterface;
 import platform.server.data.where.WhereBuilder;
 import platform.server.session.Changes;
 import platform.server.session.MapDataChanges;
@@ -13,29 +14,22 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-public class OverrideUnionProperty extends UnionProperty {
+public class OverrideUnionProperty extends CaseUnionProperty {
 
     public OverrideUnionProperty(String sID, String caption, int intNum) {
         super(sID, caption, intNum);
     }
 
-    public List<PropertyMapImplement<?,Interface>> operands = new ArrayList<PropertyMapImplement<?, Interface>>();
-
-    protected Collection<PropertyMapImplement<?, Interface>> getOperands() {
-        return operands;
+    public void addOperand(PropertyMapImplement<?,Interface> operand) {
+        operands.add(operand);
+        addCase(operand, operand, true);
     }
 
-    public Expr calculateExpr(Map<Interface, ? extends Expr> joinImplement, Modifier<? extends Changes> modifier, WhereBuilder changedWhere) {
+    private List<PropertyMapImplement<?,Interface>> operands = new ArrayList<PropertyMapImplement<?, Interface>>();
 
-        Expr result = null;
-        for(PropertyMapImplement<?, Interface> operand : operands) {
-            Expr operandExpr = operand.mapExpr(joinImplement, modifier, changedWhere);
-            if(result==null)
-                result = operandExpr;
-            else
-                result = operandExpr.nvl(result);
-        }
-        return result;
+    @Override
+    protected Collection<PropertyMapImplement<?, Interface>> getOperands() {
+        return operands;
     }
 
     @Override

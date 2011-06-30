@@ -10,6 +10,7 @@ import platform.server.form.entity.PropertyObjectEntity;
 import platform.server.form.entity.PropertyObjectInterfaceEntity;
 import platform.server.logics.DataObject;
 import platform.server.logics.property.AggregateProperty;
+import platform.server.logics.property.ChangeProperty;
 import platform.server.logics.property.Property;
 import platform.server.logics.property.PropertyInterface;
 import platform.server.session.Changes;
@@ -21,7 +22,7 @@ import java.util.List;
 import java.util.Map;
 
 // определяет не максимум изменения, а для конкретных входов
-public class OnChangeProperty<T extends PropertyInterface,P extends PropertyInterface> extends AggregateProperty<OnChangeProperty.Interface<T, P>> {
+public class OnChangeProperty<T extends PropertyInterface,P extends PropertyInterface> extends ChangeProperty<OnChangeProperty.Interface<T, P>> {
 
     public abstract static class Interface<T extends PropertyInterface, P extends PropertyInterface> extends PropertyInterface<Interface<T, P>> {
 

@@ -9,16 +9,13 @@ import platform.server.data.expr.query.GroupExpr;
 import platform.server.data.expr.query.OrderExpr;
 import platform.server.data.expr.query.OrderType;
 import platform.server.data.where.WhereBuilder;
-import platform.server.logics.property.FunctionProperty;
-import platform.server.logics.property.Property;
-import platform.server.logics.property.PropertyInterface;
-import platform.server.logics.property.PropertyInterfaceImplement;
+import platform.server.logics.property.*;
 import platform.server.session.Changes;
 import platform.server.session.Modifier;
 
 import java.util.*;
 
-public class OrderProperty<T extends PropertyInterface> extends FunctionProperty<OrderProperty.Interface<T>> {
+public class OrderProperty<T extends PropertyInterface> extends SimpleIncrementProperty<OrderProperty.Interface<T>> {
 
     public OrderProperty(String sID, String caption, OrderType orderType, Property<T> property, Collection<PropertyInterfaceImplement<T>> partitions, OrderedMap<PropertyInterfaceImplement<T>, Boolean> orders, boolean includeLast) {
         super(sID, caption, getInterfaces(property));

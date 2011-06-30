@@ -21,7 +21,7 @@ public class MapCaseList<K> extends CaseList<Map<K, BaseExpr>, Map<K, BaseExpr>,
             if(lastCase!=null && BaseUtils.hashEquals(lastCase.data,map)) // заOr'им
                 lastCase.where = lastCase.where.or(where);
             else
-                add(new MapCase<K>(where, map, upWhere));
+                add(new MapCase<K>(where, map));
             upWhere = upWhere.or(where);
         }
     }

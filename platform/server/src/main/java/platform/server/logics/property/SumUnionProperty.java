@@ -21,17 +21,22 @@ public class SumUnionProperty extends UnionProperty {
         return operands.keySet();
     }
 
-    public Expr calculateExpr(Map<Interface, ? extends Expr> joinImplement, Modifier<? extends Changes> modifier, WhereBuilder changedWhere) {
-
-        Expr result = null;
-        for(Map.Entry<PropertyMapImplement<?,Interface>,Integer> operandCoeff : operands.entrySet()) {
-            Expr operandExpr = operandCoeff.getKey().mapExpr(joinImplement, modifier, changedWhere).scale(operandCoeff.getValue());
-            if(result==null)
-                result = operandExpr;
-            else
-                result = result.sum(operandExpr);
-        }
+    protected Expr calculateNewExpr(Map<Interface, ? extends Expr> joinImplement, Modifier<? extends Changes> modifier, WhereBuilder changedWhere) {
+        Expr result = Expr.NULL;
+        for(Map.Entry<PropertyMapImplement<?,Interface>,Integer> operandCoeff : operands.entrySet())
+            result = result.sum(operandCoeff.getKey().mapExpr(joinImplement, modifier, changedWhere).scale(operandCoeff.getValue()));
         return result;
     }
 
+    protected Expr calculateIncrementExpr(Map<Interface, ? extends Expr> joinImplement, Modifier<? extends Changes> modifier, Expr prevExpr, WhereBuilder changedWhere) {
+        Expr result = prevExpr;
+        for(Map.Entry<PropertyMapImplement<?,Interface>,Integer> operandCoeff : operands.entrySet()) {
+            WhereBuilder changedOperandWhere = new WhereBuilder();
+            Expr newOperandExpr = operandCoeff.getKey().mapExpr(joinImplement, modifier, changedOperandWhere);
+            Expr prevOperandExpr = operandCoeff.getKey().mapExpr(joinImplement);
+            result = result.sum(newOperandExpr.sum(prevOperandExpr.scale(-1)).and(changedOperandWhere.toWhere()).scale(operandCoeff.getValue()));
+            if(changedWhere!=null) changedWhere.add(changedOperandWhere.toWhere());
+        }
+        return result;
+    }
 }

@@ -33,7 +33,7 @@ import java.util.*;
 
 abstract public class Expr extends AbstractSourceJoin<Expr> {
 
-    public static final boolean useCases = true;
+    public static final boolean useCases = false;
     public static final Expr NULL = useCases?new CaseExpr(new ExprCaseList()):NullExpr.instance;
     public static CaseExprInterface newCases() {
         if(useCases)

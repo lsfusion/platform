@@ -13,6 +13,21 @@ public class MaxUnionProperty extends UnionProperty {
 
     public Collection<PropertyMapImplement<?,Interface>> operands = new ArrayList<PropertyMapImplement<?, Interface>>();
 
+    @Override
+    protected boolean useSimpleIncrement() {
+        return true;
+    }
+
+    protected Expr calculateNewExpr(Map<Interface, ? extends Expr> joinImplement, Modifier<? extends Changes> modifier, WhereBuilder changedWhere) {
+        throw new RuntimeException("not supported"); // используется simple increment
+    }
+
+    @Override
+    protected Expr calculateIncrementExpr(Map<Interface, ? extends Expr> joinImplement, Modifier<? extends Changes> modifier, Expr prevExpr, WhereBuilder changedWhere) {
+        throw new RuntimeException("not supported"); // используется simple increment
+    }
+
+    @Override
     public Expr calculateExpr(Map<Interface, ? extends Expr> joinImplement, Modifier<? extends Changes> modifier, WhereBuilder changedWhere) {
 
         Expr result = null;

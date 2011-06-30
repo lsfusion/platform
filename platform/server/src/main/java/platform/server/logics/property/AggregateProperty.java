@@ -126,8 +126,4 @@ public abstract class AggregateProperty<T extends PropertyInterface> extends Pro
         query.and(expr.getWhere());
         return query.getClassWhere(Collections.singleton(storedField));
     }
-
-    protected boolean usePreviousStored() {
-        return true;
-    }
 }

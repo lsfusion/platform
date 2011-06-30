@@ -20,7 +20,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class ShiftChangeProperty<P extends PropertyInterface, R extends PropertyInterface> extends AggregateProperty<ShiftChangeProperty.Interface<P>> {
+public class ShiftChangeProperty<P extends PropertyInterface, R extends PropertyInterface> extends ChangeProperty<ShiftChangeProperty.Interface<P>> {
 
     public static class Interface<P> extends PropertyInterface<Interface<P>> {
         P mapInterface;

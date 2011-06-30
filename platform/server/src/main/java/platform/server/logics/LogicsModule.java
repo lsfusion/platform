@@ -1099,7 +1099,7 @@ public abstract class LogicsModule {
                     ((SumUnionProperty) property).operands.put(operand, (Integer) params[offs]);
                     break;
                 case OVERRIDE:
-                    ((OverrideUnionProperty) property).operands.add(operand);
+                    ((OverrideUnionProperty) property).addOperand(operand);
                     break;
                 case XOR:
                     ((XorUnionProperty) property).operands.add(operand);

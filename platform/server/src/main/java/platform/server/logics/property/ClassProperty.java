@@ -56,4 +56,8 @@ public abstract class ClassProperty<S extends StaticClass> extends AggregateProp
         // здесь session может быть null
         return getStaticExpr().and(getIsClassWhere(joinImplement, modifier, changedWhere));
     }
+
+    protected boolean useSimpleIncrement() {
+        return true;
+    }
 }

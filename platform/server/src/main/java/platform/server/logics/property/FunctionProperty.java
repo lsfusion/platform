@@ -1,10 +1,13 @@
 package platform.server.logics.property;
 
+import platform.server.data.expr.Expr;
+import platform.server.data.where.WhereBuilder;
 import platform.server.session.Changes;
 import platform.server.session.Modifier;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 // свойство производное от остальных свойств

@@ -8,14 +8,13 @@ import platform.server.session.Modifier;
 import java.util.List;
 import java.util.Map;
 
-abstract public class FormulaProperty<T extends PropertyInterface> extends NoIncrementProperty<T> {
+public abstract class ComplexIncrementProperty<T extends PropertyInterface> extends FunctionProperty<T> {
 
-    protected FormulaProperty(String sID, String caption, List<T> interfaces) {
+    public ComplexIncrementProperty(String sID, String caption, List<T> interfaces) {
         super(sID, caption, interfaces);
     }
 
-    @Override
-    public boolean check() {
-        return true;
+    protected boolean useSimpleIncrement() {
+        return false;
     }
 }

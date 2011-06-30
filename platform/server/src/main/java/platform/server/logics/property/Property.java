@@ -221,7 +221,7 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
         if (changedExpr == null && isStored()) {
             if (!hasChanges(modifier)) // если нету изменений
                 return mapTable.table.join(join(BaseUtils.reverse(mapTable.mapKeys), joinImplement)).getExpr(field);
-            if (usePreviousStored())
+            if (useSimpleIncrement())
                 changedExpr = calculateExpr(joinImplement, modifier, changedExprWhere);
         }
 
@@ -410,7 +410,7 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
     }
 
     // используется для оптимизации - если Stored то попытать использовать это значение
-    protected abstract boolean usePreviousStored();
+    protected abstract boolean useSimpleIncrement();
 
     @IdentityLazy
     public <P extends PropertyInterface> MaxChangeProperty<T, P> getMaxChangeProperty(Property<P> change) {

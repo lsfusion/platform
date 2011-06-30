@@ -13,13 +13,7 @@ public class MapCase<K> extends Case<Map<K, BaseExpr>> {
         super(Where.TRUE,new HashMap<K, BaseExpr>());
     }
 
-    private Where upWhere = null;
-    public MapCase(Where where, Map<K, BaseExpr> data, Where upWhere) {
+    public MapCase(Where where, Map<K, BaseExpr> data) {
         super(where, data);
-        this.upWhere = upWhere;
-    }
-
-    public Where getExclWhere() {
-        return where.and(upWhere.not());
     }
 }

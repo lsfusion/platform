@@ -33,7 +33,7 @@ public class SumGroupProperty<T extends PropertyInterface> extends GroupProperty
     }
 
     // чисто чтобы быстрее (не себя подставлять)
-    private static class NullProperty<T extends PropertyInterface> extends FunctionProperty<NullProperty.Interface<T>> {
+    private static class NullProperty<T extends PropertyInterface> extends NoIncrementProperty<NullProperty.Interface<T>> {
 
         private static <T extends PropertyInterface> List<Interface<T>> getInterfaces(Property<T> property) {
             List<Interface<T>> interfaces = new ArrayList<Interface<T>>();
@@ -65,7 +65,6 @@ public class SumGroupProperty<T extends PropertyInterface> extends GroupProperty
         protected Expr calculateExpr(Map<Interface<T>, ? extends Expr> joinImplement, Modifier<? extends Changes> modifier, WhereBuilder changedWhere) {
             return CaseExpr.NULL;
         }
-
     }
 
     private NullProperty<Interface<T>> nullProperty;

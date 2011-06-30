@@ -9,6 +9,7 @@ import platform.server.form.entity.PropertyObjectEntity;
 import platform.server.form.entity.PropertyObjectInterfaceEntity;
 import platform.server.logics.DataObject;
 import platform.server.logics.property.AggregateProperty;
+import platform.server.logics.property.ChangeProperty;
 import platform.server.logics.property.Property;
 import platform.server.logics.property.PropertyInterface;
 import platform.server.session.Changes;
@@ -20,7 +21,7 @@ import java.util.List;
 import java.util.Map;
 
 // св-во которое дает максимальное значение при изменении DataProperty для переданных ключей и значения
-public class MaxChangeProperty<T extends PropertyInterface,P extends PropertyInterface> extends AggregateProperty<MaxChangeProperty.Interface<P>> {
+public class MaxChangeProperty<T extends PropertyInterface,P extends PropertyInterface> extends ChangeProperty<MaxChangeProperty.Interface<P>> {
 
     public abstract static class Interface<P extends PropertyInterface> extends PropertyInterface<Interface<P>> {
 

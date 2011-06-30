@@ -10,7 +10,7 @@ import platform.server.session.Modifier;
 
 import java.util.*;
 
-abstract public class GroupProperty<T extends PropertyInterface> extends FunctionProperty<GroupProperty.Interface<T>> {
+abstract public class GroupProperty<T extends PropertyInterface> extends ComplexIncrementProperty<GroupProperty.Interface<T>> {
 
     protected final boolean SIMPLE_SCHEME = true;
 
@@ -69,17 +69,15 @@ abstract public class GroupProperty<T extends PropertyInterface> extends Functio
         return BaseUtils.replace(groupProperty.getMapKeys(), interfaceValues);
     }
 
-    protected boolean noIncrement() {
-        return !isStored();
+    protected Expr calculateNewExpr(Map<Interface<T>, ? extends Expr> joinImplement, Modifier<? extends Changes> modifier) {
+        Map<T, Expr> mapKeys = getGroupKeys(joinImplement);
+        return GroupExpr.create(getGroupImplements(mapKeys, modifier), groupProperty.getExpr(mapKeys, modifier), getGroupType(), joinImplement);
     }
 
-    public Expr calculateExpr(Map<Interface<T>, ? extends Expr> joinImplement, Modifier<? extends Changes> modifier, WhereBuilder changedWhere) {
-
-        if(!hasChanges(modifier) || (changedWhere==null && noIncrement())) return calculateNewExpr(joinImplement, modifier);
-
+    protected Expr calculateIncrementExpr(Map<Interface<T>, ? extends Expr> joinImplement, Modifier<? extends Changes> modifier, Expr prevExpr, WhereBuilder changedWhere) {
         // если нужна инкрементность
         Map<T, Expr> mapKeys = getGroupKeys(joinImplement); // изначально чтобы новые и старые группировочные записи в одном контексте были
-        
+
         // новые группировочные записи
         WhereBuilder changedGroupWhere = new WhereBuilder();
         Expr changedExpr = GroupExpr.create(getGroupImplements(mapKeys, modifier, changedGroupWhere), groupProperty.getExpr(mapKeys, modifier, changedGroupWhere), changedGroupWhere.toWhere(), getGroupType(), joinImplement);
@@ -87,12 +85,19 @@ abstract public class GroupProperty<T extends PropertyInterface> extends Functio
         // старые группировочные записи
         Expr changedPrevExpr = GroupExpr.create(getGroupImplements(mapKeys, defaultModifier), groupProperty.getExpr(mapKeys), changedGroupWhere.toWhere(), getGroupType(), joinImplement);
 
-        return getChangedExpr(changedExpr, changedPrevExpr, getExpr(joinImplement), joinImplement, modifier, changedWhere);
+        return getChangedExpr(changedExpr, changedPrevExpr, prevExpr, joinImplement, modifier, changedWhere);
     }
 
-    protected Expr calculateNewExpr(Map<Interface<T>, ? extends Expr> joinImplement, Modifier<? extends Changes> modifier) {
-        Map<T, Expr> mapKeys = getGroupKeys(joinImplement);
-        return GroupExpr.create(getGroupImplements(mapKeys, modifier), groupProperty.getExpr(mapKeys, modifier), getGroupType(), joinImplement);
+    protected boolean noIncrement() {
+        return !isStored();
+    }
+
+    protected Expr calculateExpr(Map<Interface<T>, ? extends Expr> joinImplement, Modifier<? extends Changes> modifier, WhereBuilder changedWhere) {
+
+        if(!hasChanges(modifier) || (changedWhere==null && noIncrement()))
+            return calculateNewExpr(joinImplement, modifier);
+
+        return calculateIncrementExpr(joinImplement, modifier, getExpr(joinImplement), changedWhere);
     }
 
     protected abstract Expr getChangedExpr(Expr changedExpr, Expr changedPrevExpr, Expr prevExpr, Map<Interface<T>, ? extends Expr> joinImplement, Modifier<? extends Changes> modifier, WhereBuilder changedWhere);
@@ -105,7 +110,7 @@ abstract public class GroupProperty<T extends PropertyInterface> extends Functio
     }
 
     @Override
-    protected boolean usePreviousStored() {
+    protected boolean useSimpleIncrement() {
         return false;
     }
 

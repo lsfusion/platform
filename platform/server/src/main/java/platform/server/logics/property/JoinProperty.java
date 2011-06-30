@@ -23,7 +23,7 @@ import platform.server.session.PropertyChange;
 
 import java.util.*;
 
-public class JoinProperty<T extends PropertyInterface> extends FunctionProperty<JoinProperty.Interface> {
+public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementProperty<JoinProperty.Interface> {
     public PropertyImplement<T, PropertyInterfaceImplement<Interface>> implement;
 
     public static class Interface extends PropertyInterface<Interface> {

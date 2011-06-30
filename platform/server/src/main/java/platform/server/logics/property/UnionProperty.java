@@ -1,11 +1,13 @@
 package platform.server.logics.property;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
+import platform.server.data.expr.Expr;
+import platform.server.data.where.WhereBuilder;
+import platform.server.session.Changes;
+import platform.server.session.Modifier;
 
-abstract public class UnionProperty extends FunctionProperty<UnionProperty.Interface> {
+import java.util.*;
+
+abstract public class UnionProperty extends ComplexIncrementProperty<UnionProperty.Interface> {
 
     public static class Interface extends PropertyInterface {
         public Interface(int ID) {
@@ -29,5 +31,15 @@ abstract public class UnionProperty extends FunctionProperty<UnionProperty.Inter
     @Override
     public void fillDepends(Set<Property> depends, boolean derived) {
         fillDepends(depends,getOperands());
+    }
+
+    protected abstract Expr calculateNewExpr(Map<Interface, ? extends Expr> joinImplement, Modifier<? extends Changes> modifier, WhereBuilder changedWhere);
+    protected abstract Expr calculateIncrementExpr(Map<Interface, ? extends Expr> joinImplement, Modifier<? extends Changes> modifier, Expr prevExpr, WhereBuilder changedWhere);
+
+    @Override
+    protected Expr calculateExpr(Map<Interface, ? extends Expr> joinImplement, Modifier<? extends Changes> modifier, WhereBuilder changedWhere) {
+        if(!hasChanges(modifier) || (changedWhere==null && !isStored())) // непонятно почему, но так быстрее
+            return calculateNewExpr(joinImplement, modifier, changedWhere);
+        return calculateIncrementExpr(joinImplement, modifier, getExpr(joinImplement), changedWhere);
     }
 }

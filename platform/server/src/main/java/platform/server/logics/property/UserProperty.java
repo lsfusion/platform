@@ -69,7 +69,7 @@ public abstract class UserProperty extends Property<ClassPropertyInterface> {
         return new ClassWhere<Field>(result);
     }
 
-    protected boolean usePreviousStored() {
+    protected boolean useSimpleIncrement() {
         return false;
     }
 
