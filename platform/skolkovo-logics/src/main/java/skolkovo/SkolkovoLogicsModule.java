@@ -1126,6 +1126,9 @@ public class SkolkovoLogicsModule extends LogicsModule {
 //        voteInProgressProject, 1, addCProp(projectStatus, "inProgress", project), 1,
 
         statusProject = addCaseUProp(idGroup, "statusProject", true, "Статус (ИД)",
+                voteValuedProject, 1, addIfElseUProp(addCProp(projectStatus, "accepted", project), addCProp(projectStatus, "rejected", project), acceptedProject, 1), 1,
+                voteSucceededProject, 1, addCProp(projectStatus, "succeeded", project), 1,
+                voteInProgressProject, 1, addCProp(projectStatus, "inProgress", project), 1,
                 needExtraVoteProject, 1, addCProp(projectStatus, "needExtraVote", project), 1,
                 notEnoughProject, 1, addCProp(projectStatus, "needDocuments", project), 1);
         nameStatusProject = addJProp(projectInformationGroup, "nameStatusProject", "Статус", baseLM.name, statusProject, 1);
@@ -1435,7 +1438,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             super(parent, sID, "Реестр проектов");
 
 
-            objProject = addSingleGroupObject(project, baseLM.date, nameNative, nameForeign,  nameNativeClusterProject, nameNativeJoinClaimerProject, needExtraVoteProject, autoGenerateProject, generateVoteProject, editProject);
+            objProject = addSingleGroupObject(project, baseLM.date, nameNative, nameForeign,  nameNativeClusterProject, nameNativeJoinClaimerProject, nameStatusProject, autoGenerateProject, generateVoteProject, editProject);
             addObjectActions(this, objProject);
 
 //            addPropertyDraw(addProject).toDraw = objProject.groupTo;
@@ -1487,7 +1490,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
                                                                  KeyStroke.getKeyStroke(KeyEvent.VK_F10, 0)));
             addRegularFilterGroup(projectFilterGroup);
 
-//            addHintsNoUpdate(statusProject);
+            addHintsNoUpdate(statusProject);
             setPageSize(0);
         }
 
