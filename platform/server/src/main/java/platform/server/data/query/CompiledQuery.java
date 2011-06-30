@@ -425,8 +425,19 @@ public class CompiledQuery<K,V> {
                 }
                 Where fullWhere = exprWhere.and(platform.server.data.expr.Expr.getWhere(group));
 
-                // если pushWhere, то берем
                 StatKeys<BaseExpr> statKeys = groupJoin.getStatKeys(); // определяем ключи которые надо протолкнуть
+                // проталкивание по одному ключу
+                for(BaseExpr key : statKeys.keyIt()) {
+                    KeyStat keyStat = statKeys.get(key);
+                    if(!keyStat.isMin()) {
+                        Expr keyExpr = groupJoin.group.get(key);
+                        Result<JoinSet> insufJoins = new Result<JoinSet>();
+                        Set<KeyExpr> neededKeys = AbstractSourceJoin.enumKeys(keyExpr);
+                        if(innerJoins.getStatKeys(neededKeys, groupJoin, inner, insufJoins).getMaxStat(neededKeys).less(keyStat))
+                            fullWhere = fullWhere.and(GroupExpr.create(Collections.singletonMap(0, keyExpr), getInnerWhere(insufJoins.result), Collections.singletonMap(0, key)).getWhere());
+                    }
+                }
+/*              // проталкивание по многим ключам
                 StatKeys<BaseExpr> notMinKeys = statKeys.filterNotMin();
                 if(!notMinKeys.isEmpty()) { // для скорости
                     Map<BaseExpr, BaseExpr> notMinExprs = BaseUtils.filterKeys(groupJoin.group, notMinKeys.keyIt());
@@ -435,7 +446,7 @@ public class CompiledQuery<K,V> {
                     // assert что в pushKeys не осталось INFINITE, то есть только MANY и FEW, а в текущих getStatKeys наоборот только MANY и INFINITE, то есть достаточно проверить что не равно
                     if(pushKeys.less(notMinKeys))
                         fullWhere = fullWhere.and(GroupExpr.create(notMinExprs, getInnerWhere(insufJoins.result), BaseUtils.toMap(notMinExprs.keySet())).getWhere());
-                }
+                }*/
 
                 Map<Expr,String> fromPropertySelect = new HashMap<Expr, String>();
                 Collection<String> whereSelect = new ArrayList<String>(); // проверить crossJoin
