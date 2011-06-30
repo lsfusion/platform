@@ -2432,26 +2432,32 @@ public class RomanLogicsModule extends LogicsModule {
     @Override
     public void initNavigators() throws JRException, FileNotFoundException {
 
-        ToolBarNavigatorWindow mainToolbar = new ToolBarNavigatorWindow(JToolBar.HORIZONTAL, "mainToolbar", "Навигатор", BorderLayout.NORTH);
+        ToolBarNavigatorWindow mainToolbar = new ToolBarNavigatorWindow(JToolBar.HORIZONTAL, "mainToolbar", "Навигатор");
         mainToolbar.titleShown = false;
 
         baseLM.navigatorWindow.y = 10;
         baseLM.navigatorWindow.height -= 10;
 
-        ToolBarNavigatorWindow generateToolbar = new ToolBarNavigatorWindow(JToolBar.HORIZONTAL, "generateToolbar", "Генерация", 0, 0, 100, 3);
+        ToolBarNavigatorWindow generateToolbar = new ToolBarNavigatorWindow(JToolBar.HORIZONTAL, "generateToolbar", "Генерация");
         generateToolbar.titleShown = false;
         generateToolbar.drawRoot = true;
         generateToolbar.verticalTextPosition = SwingConstants.CENTER;
         generateToolbar.horizontalTextPosition = SwingConstants.TRAILING;
 
-        ToolBarNavigatorWindow leftToolbar = new ToolBarNavigatorWindow(JToolBar.VERTICAL, "leftToolbar", "Список", 0, 3, 20, 67);
+        ToolBarNavigatorWindow leftToolbar = new ToolBarNavigatorWindow(JToolBar.VERTICAL, "leftToolbar", "Список");
 
         baseLM.baseElement.window = mainToolbar;
         baseLM.adminElement.window = leftToolbar;
 
-        TreeNavigatorWindow objectsWindow = new TreeNavigatorWindow("objectsWindow", "Объекты", 0, 3, 20, 67);
+        TreeNavigatorWindow objectsWindow = new TreeNavigatorWindow("objectsWindow", "Объекты");
         objectsWindow.drawRoot = true;
         baseLM.objectElement.window = objectsWindow;
+
+        mainToolbar.setDockPosition(0, 0, 100, 6);
+        generateToolbar.setDockPosition(20, 6, 80, 4);
+        leftToolbar.setDockPosition(0, 6, 20, 64);
+        objectsWindow.setDockPosition(0, 6, 20, 64);
+        baseLM.formsWindow.setDockPosition(20, 10, 80, 89);
 
         NavigatorElement classifier = new NavigatorElement(baseLM.baseElement, "classifier", "Справочники");
         classifier.window = leftToolbar;

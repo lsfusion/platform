@@ -18,6 +18,10 @@ public abstract class NavigatorWindow extends AbstractWindow {
         super(sID, caption, borderConstraint);
     }
 
+    public NavigatorWindow(String sID, String caption) {
+        super(sID, caption);
+    }
+
     public void serialize(DataOutputStream outStream) throws IOException {
         outStream.writeInt(getViewType());
         super.serialize(outStream);

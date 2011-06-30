@@ -41,7 +41,7 @@ public class AbstractWindow extends IdentityObject {
         this.borderConstraint = borderConstraint;
     }
 
-    private AbstractWindow(String SID, String caption) {
+    public AbstractWindow(String SID, String caption) {
         this.sID = sID;
         setID(BusinessLogics.generateStaticNewID());
         this.caption = caption;
@@ -67,7 +67,8 @@ public class AbstractWindow extends IdentityObject {
         outStream.writeBoolean(visible);
     }
 
-    public void setPosition(int x, int y, int width, int height) {
+    public void setDockPosition(int x, int y, int width, int height) {
+        this.position = AbstractWindowType.DOCKING_POSITION;
         this.x = x;
         this.y = y;
         this.width = width;

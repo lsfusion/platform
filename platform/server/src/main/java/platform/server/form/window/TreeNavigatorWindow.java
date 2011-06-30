@@ -6,8 +6,13 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 
 public class TreeNavigatorWindow extends NavigatorWindow{
+
     public TreeNavigatorWindow(String sID, String caption, int x, int y, int width, int height) {
         super(sID, caption, x, y, width, height);
+    }
+
+    public TreeNavigatorWindow(String sID, String caption) {
+        super(sID, caption);
     }
 
     @Override

@@ -32,6 +32,12 @@ public class ToolBarNavigatorWindow extends NavigatorWindow {
         setType(type);
     }
 
+    public ToolBarNavigatorWindow(int type, String sID, String caption) {
+        super(sID, caption);
+
+        setType(type);
+    }
+
     private void setType(int type) {
         this.type = type;
         if (this.type == JToolBar.VERTICAL) {
