@@ -1,6 +1,7 @@
 package platform.client.logics;
 
 import platform.base.context.ApplicationContext;
+import platform.client.ClientResourceBundle;
 import platform.client.descriptor.FormDescriptor;
 import platform.client.descriptor.editor.GridEditor;
 import platform.client.serialization.ClientSerializationPool;
@@ -80,7 +81,7 @@ public class ClientGrid extends ClientComponent {
     }
 
     public String getCaption() {
-        return "Таблица";
+        return ClientResourceBundle.getString("logics.grid");
     }
 
     @Override

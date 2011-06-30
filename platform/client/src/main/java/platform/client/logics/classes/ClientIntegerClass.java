@@ -1,5 +1,6 @@
 package platform.client.logics.classes;
 
+import platform.client.ClientResourceBundle;
 import platform.client.form.PropertyEditorComponent;
 import platform.client.form.editor.IntegerPropertyEditor;
 import platform.gwt.view.classes.GIntegerType;
@@ -34,7 +35,7 @@ public class ClientIntegerClass extends ClientIntegralClass implements ClientTyp
         try {
             return Integer.parseInt(s);
         } catch (NumberFormatException nfe) {
-            throw new ParseException(s + "не может быть конвертированно в Integer.", 0);
+            throw new ParseException(s + ClientResourceBundle.getString("logics.classes.can.not.be.converted.to.integer"), 0);
         }
     }
 
@@ -44,7 +45,7 @@ public class ClientIntegerClass extends ClientIntegralClass implements ClientTyp
 
     @Override
     public String toString() {
-        return "Целое число";
+        return ClientResourceBundle.getString("logics.classes.integer");
     }
 
     @Override

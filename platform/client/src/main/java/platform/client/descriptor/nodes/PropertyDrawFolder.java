@@ -1,5 +1,6 @@
 package platform.client.descriptor.nodes;
 
+import platform.client.ClientResourceBundle;
 import platform.client.descriptor.FormDescriptor;
 import platform.client.descriptor.GroupObjectDescriptor;
 import platform.client.descriptor.PropertyDrawDescriptor;
@@ -19,7 +20,7 @@ public class PropertyDrawFolder extends GroupElementFolder<PropertyDrawFolder> i
     }
 
     public PropertyDrawFolder(GroupObjectDescriptor group, FormDescriptor form) {
-        super(group, "Свойства");
+        super(group, ClientResourceBundle.getString("descriptor.properties"));
 
         this.form = form;
 

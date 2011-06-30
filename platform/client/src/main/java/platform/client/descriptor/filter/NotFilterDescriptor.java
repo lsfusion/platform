@@ -1,5 +1,6 @@
 package platform.client.descriptor.filter;
 
+import platform.client.ClientResourceBundle;
 import platform.client.descriptor.GroupObjectDescriptor;
 import platform.client.descriptor.ObjectDescriptor;
 import platform.client.descriptor.nodes.filters.FilterNode;
@@ -35,7 +36,7 @@ public class NotFilterDescriptor extends FilterDescriptor {
 
     @Override
     public String toString() {
-        String result = "НЕ";
+        String result = ClientResourceBundle.getString("descriptor.filter.not");
         if (filter != null) {
             result += "( " + filter.toString() + " )";
         }

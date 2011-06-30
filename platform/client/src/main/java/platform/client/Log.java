@@ -122,7 +122,7 @@ public final class Log {
 
         String opt[];
         if (trace.length() > 0) {
-            opt = new String[]{"OK", "Подробнее"};
+            opt = new String[]{"OK", ClientResourceBundle.getString("client.more")};
         } else {
             opt = new String[]{"OK"};
         }
@@ -137,7 +137,7 @@ public final class Log {
                 Object value = optionPane.getValue();
                 if (dialog.isVisible() && value.equals("OK")) {
                     dialog.dispose();
-                } else if (value.equals("Подробнее")) {
+                } else if (value.equals(ClientResourceBundle.getString("client.more"))) {
                     south.setVisible(!south.isVisible());
                     dialog.pack();
                     optionPane.setValue(JOptionPane.UNINITIALIZED_VALUE);

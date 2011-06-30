@@ -2,6 +2,7 @@ package platform.client.form.editor;
 
 import platform.base.BaseUtils;
 import platform.base.IOUtils;
+import platform.client.ClientResourceBundle;
 import platform.client.form.PropertyEditorComponent;
 
 import javax.swing.*;
@@ -27,7 +28,7 @@ public class FilePropertyEditor extends JFileChooser
         setCurrentDirectory(new File(preferences.get("LATEST_DIRECTORY", "")));
 
         if (description == null || description.isEmpty()) {
-            description = "Все файлы";
+            description = ClientResourceBundle.getString("form.editor.allfiles");
         }
 
         setAcceptAllFileFilterUsed(BaseUtils.toList(extensions).contains("*.*"));
@@ -52,7 +53,7 @@ public class FilePropertyEditor extends JFileChooser
             preferences.put("LATEST_DIRECTORY", this.getSelectedFile().getAbsolutePath());
             return returnValue == JFileChooser.APPROVE_OPTION ? IOUtils.getFileBytes(this.getSelectedFile()) : null;
         } catch (IOException e) {
-            throw new RuntimeException("Не могу прочитать файл: " + this.getSelectedFile());
+            throw new RuntimeException(ClientResourceBundle.getString("form.editor.cant.read.file")+" " + this.getSelectedFile());
         }
     }
 

@@ -4,6 +4,7 @@ import org.jdesktop.swingx.treetable.DefaultTreeTableModel;
 import org.jdesktop.swingx.treetable.MutableTreeTableNode;
 import platform.base.BaseUtils;
 import platform.base.OrderedMap;
+import platform.client.ClientResourceBundle;
 import platform.client.form.ClientFormController;
 import platform.client.logics.ClientGroupObject;
 import platform.client.logics.ClientGroupObjectValue;
@@ -43,7 +44,7 @@ class GroupTreeTableModel extends DefaultTreeTableModel {
     @Override
     public String getColumnName(int column) {
         if (column == 0) {
-            return "Дерево";
+            return ClientResourceBundle.getString("form.tree");
         }
 
         return getColumnProperty(column).getFullCaption();
@@ -74,7 +75,7 @@ class GroupTreeTableModel extends DefaultTreeTableModel {
             try {
                 form.changePropertyDraw(property, ((TreeGroupNode) node).key, value, false, aggValue);
             } catch (IOException e) {
-                throw new RuntimeException("Ошибка при изменении значения свойства", e);
+                throw new RuntimeException(ClientResourceBundle.getString("errors.error.changing.property.value"), e);
             }
         }
     }

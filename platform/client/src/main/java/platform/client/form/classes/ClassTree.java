@@ -1,5 +1,6 @@
 package platform.client.form.classes;
 
+import platform.client.ClientResourceBundle;
 import platform.client.logics.classes.ClientClass;
 import platform.client.logics.classes.ClientObjectClass;
 import platform.client.tree.*;
@@ -50,7 +51,7 @@ public abstract class ClassTree extends ClientTree {
 
         currentClass = rootClass;
         currentNode = new ClientTreeNode(rootClass, true, ClientTreeNode.SUB_TREE,
-                new ClientTreeAction("Открыть"){
+                new ClientTreeAction(ClientResourceBundle.getString("form.classes.open")){
                     public void actionPerformed(ClientTreeActionEvent e){
                         changeCurrentElement();
                     }
@@ -73,7 +74,7 @@ public abstract class ClassTree extends ClientTree {
                 try {
                     addNodeElements((DefaultMutableTreeNode)event.getPath().getLastPathComponent());
                 } catch (IOException e) {
-                    throw new RuntimeException("Ошибка при получении потомков класса", e);
+                    throw new RuntimeException(ClientResourceBundle.getString("errors.error.getting.descendants.of.the.class"), e);
                 }
             }
 

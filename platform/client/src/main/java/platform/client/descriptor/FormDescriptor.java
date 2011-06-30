@@ -6,6 +6,7 @@ import platform.base.context.ContextIdentityObject;
 import platform.base.context.IncrementView;
 import platform.base.serialization.CustomSerializable;
 import platform.base.serialization.RemoteDescriptorInterface;
+import platform.client.ClientResourceBundle;
 import platform.client.Main;
 import platform.client.descriptor.filter.FilterDescriptor;
 import platform.client.descriptor.filter.RegularFilterGroupDescriptor;
@@ -75,7 +76,7 @@ public class FormDescriptor extends ContextIdentityObject implements ClientIdent
 
         initialize();
 
-        setCaption("Новая форма (" + ID + ")");
+        setCaption(ClientResourceBundle.getString("descriptor.newform")+" (" + ID + ")");
         addFormDefaultContainers();
     }
 

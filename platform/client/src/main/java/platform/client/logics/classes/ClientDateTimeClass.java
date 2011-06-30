@@ -1,5 +1,6 @@
 package platform.client.logics.classes;
 
+import platform.client.ClientResourceBundle;
 import platform.client.form.PropertyEditorComponent;
 import platform.client.form.PropertyRendererComponent;
 import platform.client.form.editor.DateTimePropertyEditor;
@@ -49,13 +50,13 @@ public class ClientDateTimeClass extends ClientDataClass implements ClientTypeCl
         try {
             return new SimpleDateFormat().parse(s);
         } catch (Exception e) {
-            throw new ParseException(s + "не может быть конвертированно в Date.", 0);
+            throw new ParseException(s + ClientResourceBundle.getString("logics.classes.can.not.be.converted.to.date"), 0);
         }
     }
 
     @Override
     public String toString() {
-        return "Дата со временем";
+        return ClientResourceBundle.getString("logics.classes.date.with.time");
     }
 
     @Override

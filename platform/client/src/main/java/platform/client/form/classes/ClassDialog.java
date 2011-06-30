@@ -1,5 +1,6 @@
 package platform.client.form.classes;
 
+import platform.client.ClientResourceBundle;
 import platform.client.SwingUtils;
 import platform.client.logics.classes.ClientClass;
 import platform.client.logics.classes.ClientConcreteClass;
@@ -40,14 +41,14 @@ public class ClassDialog extends JDialog {
 
         JPanel buttonContainer = new JPanel(new FlowLayout(FlowLayout.RIGHT));
 
-        JButton okButton = new JButton("OK");
+        JButton okButton = new JButton(ClientResourceBundle.getString("descriptor.editor.okbutton"));
         okButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 okPressed();
             }
         });
 
-        AbstractAction cancelAction = new AbstractAction("Отмена") {
+        AbstractAction cancelAction = new AbstractAction(ClientResourceBundle.getString("descriptor.editor.cancelbutton")) {
             public void actionPerformed(ActionEvent ae) {
                 ClassDialog.this.setVisible(false);
             }

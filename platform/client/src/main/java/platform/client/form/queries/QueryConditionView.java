@@ -1,6 +1,7 @@
 package platform.client.form.queries;
 
 import platform.client.ClientButton;
+import platform.client.ClientResourceBundle;
 import platform.client.form.GroupObjectLogicsSupplier;
 import platform.client.form.ItemAdapter;
 import platform.client.logics.*;
@@ -47,7 +48,7 @@ abstract class QueryConditionView extends JPanel implements ValueLinkListener {
         propertyView = new QueryConditionComboBox(sources);
         add(propertyView);
 
-        negationView = new JCheckBox("не");
+        negationView = new JCheckBox(ClientResourceBundle.getString("form.queries.not"));
         negationView.setPreferredSize(new Dimension(negationView.getPreferredSize().width, PREFERRED_HEIGHT));
         add(negationView);
 

@@ -1,5 +1,6 @@
 package platform.client.descriptor.editor;
 
+import platform.client.ClientResourceBundle;
 import platform.client.descriptor.FormDescriptor;
 import platform.client.descriptor.GroupObjectDescriptor;
 import platform.client.descriptor.TreeGroupDescriptor;
@@ -38,10 +39,10 @@ public class TreeGroupEditor extends JPanel implements NodeEditor {
         });
         groupsEditor.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
 
-        add(new TitledPanel("Группы", groupsEditor));
+        add(new TitledPanel(ClientResourceBundle.getString("descriptor.editor.group.groups"), groupsEditor));
 
         JPanel plainTreeModePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        plainTreeModePanel.add(new IncrementCheckBox("Показывать в виде обычного дерева", treeGroup, "plainTreeMode"));
+        plainTreeModePanel.add(new IncrementCheckBox(ClientResourceBundle.getString("descriptor.editor.group.show.in.plain.tree.mode"), treeGroup, "plainTreeMode"));
         add(plainTreeModePanel);
     }
 

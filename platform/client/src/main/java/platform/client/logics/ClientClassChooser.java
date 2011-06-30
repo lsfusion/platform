@@ -1,5 +1,6 @@
 package platform.client.logics;
 
+import platform.client.ClientResourceBundle;
 import platform.client.descriptor.FormDescriptor;
 import platform.client.descriptor.editor.ComponentEditor;
 import platform.base.context.ApplicationContext;
@@ -51,7 +52,7 @@ public class ClientClassChooser extends ClientComponent {
 
     @Override
     public String getCaption() {
-        return "Дерево классов";
+        return ClientResourceBundle.getString("logics.classtree");
     }
 
     @Override

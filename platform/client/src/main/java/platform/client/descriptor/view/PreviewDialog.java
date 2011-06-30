@@ -1,5 +1,6 @@
 package platform.client.descriptor.view;
 
+import platform.client.ClientResourceBundle;
 import platform.client.descriptor.FormDescriptor;
 import platform.client.form.ClientFormController;
 import platform.client.navigator.ClientNavigator;
@@ -29,7 +30,7 @@ public class PreviewDialog extends JDialog {
 
             add(controller.getComponent(), BorderLayout.CENTER);
         } catch (Exception e) {
-            throw new RuntimeException("Не могу создать форму", e);
+            throw new RuntimeException(ClientResourceBundle.getString("descriptor.view.can.not.create.form"), e);
         }
     }
 }

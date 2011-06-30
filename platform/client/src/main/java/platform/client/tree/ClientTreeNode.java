@@ -2,6 +2,7 @@ package platform.client.tree;
 
 import platform.base.BaseUtils;
 import platform.base.identity.IdentityInterface;
+import platform.client.ClientResourceBundle;
 import platform.client.descriptor.CustomConstructible;
 import platform.client.descriptor.nodes.NodeCreator;
 import platform.client.descriptor.nodes.NullFieldNode;
@@ -111,7 +112,7 @@ public class ClientTreeNode<T, C extends ClientTreeNode> extends DefaultMutableT
     }
 
     public void addInitializeReferenceActions(final Object object, final String field, String[] captions, final Class[] classes) {
-        addNodeAction(new ClientTreeAction("Обнулить") {
+        addNodeAction(new ClientTreeAction(ClientResourceBundle.getString("tree.reset")) {
             public void actionPerformed(ClientTreeActionEvent e) {
                 BaseUtils.invokeSetter(object, field, null);
             }
@@ -119,7 +120,7 @@ public class ClientTreeNode<T, C extends ClientTreeNode> extends DefaultMutableT
 
         for (int i = 0; i < captions.length; i++) {
             final int prm = i;
-            addNodeAction(new ClientTreeAction("Инициализировать как " + captions[i]) {
+            addNodeAction(new ClientTreeAction(ClientResourceBundle.getString("tree.initialize.as")+" " + captions[i]) {
                 public void actionPerformed(ClientTreeActionEvent e) {
                     try {
                         BaseUtils.invokeSetter(object, field, processCreatedObject(classes[prm].newInstance(), object));
@@ -136,7 +137,7 @@ public class ClientTreeNode<T, C extends ClientTreeNode> extends DefaultMutableT
     public void addCollectionReferenceActions(final Object object, final String collectionField, final String[] captions, final Class[] classes) {
         for (int i = 0; i < captions.length; i++) {
             final int prm = i;
-            addNodeAction(new ClientTreeAction("Добавить" + (captions.length > 1 ? " " + captions[i] : "")) {
+            addNodeAction(new ClientTreeAction(ClientResourceBundle.getString("tree.add") + (captions.length > 1 ? " " + captions[i] : "")) {
                 public void actionPerformed(ClientTreeActionEvent e) {
                     try {
                         BaseUtils.invokeAdder(object, collectionField, processCreatedObject(classes[prm].newInstance(), object));
@@ -149,7 +150,7 @@ public class ClientTreeNode<T, C extends ClientTreeNode> extends DefaultMutableT
             });
         }
 
-        addSonAction(new ClientTreeAction("Удалить", KeyEvent.VK_DELETE) {
+        addSonAction(new ClientTreeAction(ClientResourceBundle.getString("tree.delete"), KeyEvent.VK_DELETE) {
             @Override
             public void actionPerformed(ClientTreeActionEvent e) {
                 Object deletedObject = e.getNode().getTypedObject();

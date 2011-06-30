@@ -1,5 +1,6 @@
 package platform.client.form.editor;
 
+import platform.client.ClientResourceBundle;
 import platform.client.SwingUtils;
 import platform.client.form.PropertyEditorComponent;
 import platform.interop.ComponentDesign;
@@ -28,8 +29,8 @@ public class TextPropertyEditor extends JScrollPane implements PropertyEditorCom
 
     private JOptionPane optionPane;
 
-    private String btnString1 = "Сохранить";
-    private String btnString2 = "Отменить";
+    private String btnString1 = ClientResourceBundle.getString("form.editor.save");
+    private String btnString2 = ClientResourceBundle.getString("form.editor.cancel");
     private boolean state;
 
     public TextPropertyEditor(Object value, ComponentDesign design) {
@@ -50,7 +51,7 @@ public class TextPropertyEditor extends JScrollPane implements PropertyEditorCom
         }
 
 
-        String msgString1 = "Текст";
+        String msgString1 = ClientResourceBundle.getString("form.editor.text");
         Object[] array = {msgString1, this};
 
         Object[] options = {btnString1, btnString2};

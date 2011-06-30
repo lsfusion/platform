@@ -1,6 +1,7 @@
 package platform.client.rmi;
 
 import org.jdesktop.jxlayer.JXLayer;
+import platform.client.ClientResourceBundle;
 import platform.client.Main;
 
 import javax.swing.*;
@@ -24,7 +25,7 @@ public class ConnectionLostManager {
     }
 
     public static void forceDisconnect() {
-        connectionLost("Вы были отключены от сервера, т.к. к нему подключился другой клиент с вашим логином.", true);
+        connectionLost(ClientResourceBundle.getString("rmi.connectionlost.because.because.of.another.client.with.your.login"), true);
     }
 
     public static void connectionLost(boolean fatal) {
@@ -77,7 +78,7 @@ public class ConnectionLostManager {
         private final boolean fatal;
 
         public BlockDialog(String message, JFrame owner, boolean fatal) {
-            super(owner, "Соединение потеряно", true);
+            super(owner, ClientResourceBundle.getString("rmi.connectionlost"), true);
 
             this.fatal = fatal;
 
@@ -88,10 +89,10 @@ public class ConnectionLostManager {
                     message != null
                             ? message
                             : fatal
-                            ? "<html>Произошла ошибка при общении с сервером, <br> попробуйте вручную перезапустить приложение.</html>"
-                            : "<html>Соединение с сервером потеряно, <br> вы можете подождать пока оно восстановится <br> или вручную перезапустить приложение.</html>";
+                            ? "<html>"+ClientResourceBundle.getString("rmi.connectionlost.on.communication.with.server")+" <br> "+ClientResourceBundle.getString("rmi.connectionlost.try.to.restart.application.manually")+"</html>"
+                            : "<html>"+ClientResourceBundle.getString("rmi.connectionlost.with.server")+" <br> "+ClientResourceBundle.getString("rmi.connectionlost.you.can.wait.or.restart")+"</html>";
 
-            okBut = new JButton("Закрыть приложение");
+            okBut = new JButton(ClientResourceBundle.getString("rmi.connectionlost.close.application"));
             okBut.addActionListener(this);
 
             JPanel messagePanel = new JPanel();

@@ -4,10 +4,7 @@ import platform.base.BaseUtils;
 import platform.base.OrderedMap;
 import platform.base.identity.DefaultIDGenerator;
 import platform.base.identity.IDGenerator;
-import platform.client.ClientButton;
-import platform.client.Log;
-import platform.client.Main;
-import platform.client.SwingUtils;
+import platform.client.*;
 import platform.client.form.tree.TreeGroupController;
 import platform.client.logics.*;
 import platform.client.logics.classes.ClientObjectClass;
@@ -149,7 +146,7 @@ public class ClientFormController {
                     ClientExternalScreen.invalidate(getID());
                     ClientExternalScreen.repaintAll(getID());
                 } catch (IOException e) {
-                    throw new RuntimeException("Ошибка при активации формы", e);
+                    throw new RuntimeException(ClientResourceBundle.getString("form.error.form.activation"), e);
                 }
             }
         };
@@ -210,7 +207,7 @@ public class ClientFormController {
 
     private void createMultipleFilterComponent(final ClientRegularFilterGroup filterGroup) {
         final JComboBox comboBox = new JComboBox();
-        comboBox.addItem(new ClientRegularFilterWrapped("(Все)"));
+        comboBox.addItem(new ClientRegularFilterWrapped(ClientResourceBundle.getString("form.all")));
         for (ClientRegularFilter filter : filterGroup.filters) {
             comboBox.addItem(new ClientRegularFilterWrapped(filter));
         }
@@ -221,7 +218,7 @@ public class ClientFormController {
                 try {
                     setRegularFilter(filterGroup, ((ClientRegularFilterWrapped) e.getItem()).filter);
                 } catch (IOException ioe) {
-                    throw new RuntimeException("Ошибка при изменении регулярного фильтра", ioe);
+                    throw new RuntimeException(ClientResourceBundle.getString("form.error.changing.regular.filter"), ioe);
                 }
             }
         });
@@ -254,7 +251,7 @@ public class ClientFormController {
             try {
                 setRemoteRegularFilter(filterGroup, singleFilter);
             } catch (IOException e) {
-                throw new RuntimeException("Ошибка при инициализации регулярного фильтра", e);
+                throw new RuntimeException(ClientResourceBundle.getString("form.error.initialization.regular.filter"), e);
             }
         }
 
@@ -271,7 +268,7 @@ public class ClientFormController {
                     if (ie.getStateChange() == ItemEvent.DESELECTED)
                         setRegularFilter(filterGroup, null);
                 } catch (IOException e) {
-                    throw new RuntimeException("Ошибка при изменении регулярного фильтра", e);
+                    throw new RuntimeException(ClientResourceBundle.getString("form.error.changing.regular.filter"), e);
                 }
             }
         });
@@ -427,7 +424,7 @@ public class ClientFormController {
                 ordersInitialized = true;
                 applyOrders(form.defaultOrders);
             } catch (IOException e) {
-                throw new RuntimeException("Не могу проинициализировать порядки по умолчанию");
+                throw new RuntimeException(ClientResourceBundle.getString("form.error.cant.initialize.default.orders"));
             }
         }
     }
@@ -685,7 +682,7 @@ public class ClientFormController {
         try {
             Main.frame.runReport(remoteForm, false);
         } catch (Exception e) {
-            throw new RuntimeException("Ошибка при печати формы", e);
+            throw new RuntimeException(ClientResourceBundle.getString("form.error.printing.form"), e);
         }
     }
 
@@ -698,7 +695,7 @@ public class ClientFormController {
             applyRemoteChanges();
 
         } catch (IOException e) {
-            throw new RuntimeException("Ошибка при обновлении формы", e);
+            throw new RuntimeException(ClientResourceBundle.getString("form.error.refreshing.form"), e);
         }
     }
 
@@ -732,7 +729,7 @@ public class ClientFormController {
                         try {
                             clientResult = ((ClientResultAction) clientApply).dispatchResult(actionDispatcher);
                         } catch (Exception e) {
-                            throw new RuntimeException("Ошибка при применении изменений", e);
+                            throw new RuntimeException(ClientResourceBundle.getString("form.error.applying.changes"), e);
                         }
                         remoteForm.applyClientChanges(clientResult);
 
@@ -746,14 +743,14 @@ public class ClientFormController {
             }
 
         } catch (IOException e) {
-            throw new RuntimeException("Ошибка при применении изменений", e);
+            throw new RuntimeException(ClientResourceBundle.getString("form.error.applying.changes"), e);
         }
     }
 
     boolean cancelChanges() {
         try {
             if (dataChanged) {
-                if (SwingUtils.showConfirmDialog(getComponent(), "Вы действительно хотите отменить сделанные изменения ?", null, JOptionPane.WARNING_MESSAGE, SwingUtils.NO_BUTTON) == JOptionPane.YES_OPTION) {
+                if (SwingUtils.showConfirmDialog(getComponent(), ClientResourceBundle.getString("form.do.you.really.want.to.undo.changes"), null, JOptionPane.WARNING_MESSAGE, SwingUtils.NO_BUTTON) == JOptionPane.YES_OPTION) {
                     remoteForm.cancelChanges();
 
                     applyRemoteChanges();
@@ -761,7 +758,7 @@ public class ClientFormController {
             }
 
         } catch (IOException e) {
-            throw new RuntimeException("Ошибка при отмене изменений", e);
+            throw new RuntimeException(ClientResourceBundle.getString("form.error.undoing.changes"), e);
         }
 
         return true;
@@ -779,7 +776,7 @@ public class ClientFormController {
                 applyChanges(false);
             }
         } catch (IOException e) {
-            throw new RuntimeException("Ошибка при закрытии диалога", e);
+            throw new RuntimeException(ClientResourceBundle.getString("form.error.closing.dialog"), e);
         }
 
         return true;

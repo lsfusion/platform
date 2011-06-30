@@ -197,8 +197,8 @@ public class Main {
 
                 } catch (Exception e) {
                     closeSplashScreen();
-                    logger.error("Ошибка при инициализации приложения", e);
-                    throw new RuntimeException("Ошибка при инициализации приложения", e);
+                    logger.error(ClientResourceBundle.getString("client.error.application.initialization"), e);
+                    throw new RuntimeException(ClientResourceBundle.getString("client.error.application.initialization"), e);
                 }
             }
         }.start();
@@ -262,11 +262,11 @@ public class Main {
                 if (forms == null) {
                     String formSet = System.getProperty("platform.client.formset");
                     if (formSet == null) {
-                        throw new RuntimeException("Не задано свойство : -Dplatform.client.forms=formID1,formID2,... или -Dplatform.client.formset=formsetID");
+                        throw new RuntimeException(ClientResourceBundle.getString("client.property.not.set")+" : -Dplatform.client.forms=formID1,formID2,..."+ ClientResourceBundle.getString("client.or") +"-Dplatform.client.formset=formsetID");
                     }
                     forms = remoteNavigator.getForms(formSet);
                     if (forms == null) {
-                        throw new RuntimeException("На сервере не обнаружено множество форм с идентификатором " + formSet);
+                        throw new RuntimeException(ClientResourceBundle.getString("client.forms.not.found")+" " + formSet);
                     }
                 }
 
@@ -298,7 +298,7 @@ public class Main {
         try {
             return remoteLogics.generateNewID();
         } catch (RemoteException e) {
-            throw new RuntimeException("Ошибка при генерации ID");
+            throw new RuntimeException(ClientResourceBundle.getString("client.error.on.id.generation"));
         }
     }
 

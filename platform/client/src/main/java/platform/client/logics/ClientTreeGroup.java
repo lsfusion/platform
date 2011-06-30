@@ -1,6 +1,7 @@
 package platform.client.logics;
 
 import platform.base.context.ApplicationContext;
+import platform.client.ClientResourceBundle;
 import platform.client.serialization.ClientIdentitySerializable;
 import platform.client.serialization.ClientSerializationPool;
 import platform.interop.form.layout.AbstractTreeGroup;
@@ -42,7 +43,7 @@ public class ClientTreeGroup extends ClientComponent implements ClientIdentitySe
 
     @Override
     public String getCaption() {
-        return "Дерево";
+        return  ClientResourceBundle.getString("form.tree");
     }
 
     @Override

@@ -1,5 +1,6 @@
 package platform.client.descriptor.filter;
 
+import platform.client.ClientResourceBundle;
 import platform.client.descriptor.GroupObjectDescriptor;
 import platform.client.descriptor.ObjectDescriptor;
 import platform.client.descriptor.nodes.filters.FilterNode;
@@ -55,8 +56,8 @@ public class IsClassFilterDescriptor extends PropertyFilterDescriptor {
         if (property != null)
             result += property;
         if (objectClass != null)
-            result += " - класса " + objectClass;
-        if (result.isEmpty()) result = "КЛАСС";
+            result += " - "+ ClientResourceBundle.getString("descriptor.filters.of.class")+" " + objectClass;
+        if (result.isEmpty()) result = ClientResourceBundle.getString("descriptor.filters.class");
         return result;
     }
 

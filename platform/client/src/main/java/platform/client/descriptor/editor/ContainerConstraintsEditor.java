@@ -1,5 +1,6 @@
 package platform.client.descriptor.editor;
 
+import platform.client.ClientResourceBundle;
 import platform.client.descriptor.editor.base.TitledPanel;
 import platform.client.descriptor.increment.editor.IncrementTextEditor;
 import platform.client.logics.ClientComponent;
@@ -22,13 +23,13 @@ public class ContainerConstraintsEditor extends ComponentConstraintsEditor {
 
         JTextField maxVars = new IncrementTextEditor(constraints, "maxVariables");
 
-        TitledPanel doNotIntersect = new TitledPanel("Пересечения", childConstraintsEditor);
+        TitledPanel doNotIntersect = new TitledPanel(ClientResourceBundle.getString("descriptor.editor.intersections"), childConstraintsEditor);
 
-        TitledPanel insetsInside = new TitledPanel("Отступы от границ", insideEditor);
+        TitledPanel insetsInside = new TitledPanel(ClientResourceBundle.getString("descriptor.editor.margins.of.borders"), insideEditor);
 
         TitledPanel maxVarsPanel = new TitledPanel("");
         maxVarsPanel.setLayout(new BoxLayout(maxVarsPanel, BoxLayout.X_AXIS));
-        maxVarsPanel.add(new JLabel("Максимум переменных: "));
+        maxVarsPanel.add(new JLabel((ClientResourceBundle.getString("descriptor.editor.variables.maximum")+": ")));
         maxVarsPanel.add(maxVars);
 
         JPanel panel = new JPanel();

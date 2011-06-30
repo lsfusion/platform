@@ -27,7 +27,7 @@ public class ClientRMIClassLoaderSpi extends RMIClassLoaderSpi {
                 byte[] classBytes = Main.remoteLoader.findClass(name);
                 return defineClass(name, classBytes, 0, classBytes.length);
             } catch (RemoteException remote) {
-                throw new ClassNotFoundException("Ошибка при загрузке класса на клиенте", remote);
+                throw new ClassNotFoundException(ClientResourceBundle.getString("errors.error.loading.class.on.the.client"), remote);
             }
         }
     }

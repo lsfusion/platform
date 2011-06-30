@@ -1,5 +1,6 @@
 package platform.client.logics.classes;
 
+import platform.client.ClientResourceBundle;
 import platform.client.form.ClientFormController;
 import platform.client.form.PropertyEditorComponent;
 import platform.client.form.PropertyRendererComponent;
@@ -73,7 +74,7 @@ public class ClientTextClass extends ClientDataClass implements ClientTypeClass 
 
     @Override
     public String toString() {
-        return "Текст";
+        return ClientResourceBundle.getString("logics.classes.text");
     }
 
     @Override

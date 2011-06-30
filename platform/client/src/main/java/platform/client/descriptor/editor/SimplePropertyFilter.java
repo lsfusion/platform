@@ -1,5 +1,6 @@
 package platform.client.descriptor.editor;
 
+import platform.client.ClientResourceBundle;
 import platform.client.Main;
 import platform.client.descriptor.FormDescriptor;
 import platform.client.descriptor.GroupObjectDescriptor;
@@ -40,7 +41,7 @@ public class SimplePropertyFilter extends JPanel {
     public SimplePropertyFilter(FormDescriptor form, GroupObjectDescriptor descriptor) {
         super(new BorderLayout(5, 5));
         this.form = form;
-        treeModel = new DefaultTreeModel(getNode("Группы"));
+        treeModel = new DefaultTreeModel(getNode(ClientResourceBundle.getString("descriptor.editor.group.groups")));
         tree = new JTree(treeModel);
         groupObjects = form.groupObjects;
         currentElement = groupObjects.indexOf(descriptor);
@@ -53,7 +54,7 @@ public class SimplePropertyFilter extends JPanel {
     public SimplePropertyFilter(List<GroupObjectDescriptor> groupObjects) {
         super(new BorderLayout(5, 5));
         this.groupObjects = groupObjects;
-        treeModel = new DefaultTreeModel(getNode("Группы"));
+        treeModel = new DefaultTreeModel(getNode(ClientResourceBundle.getString("descriptor.editor.group.groups")));
         tree = new JTree(treeModel);
         currentElement = -1;
         initUI();
@@ -70,7 +71,7 @@ public class SimplePropertyFilter extends JPanel {
         tree.setRootVisible(false);
         tree.setShowsRootHandles(true);
         list.getSelectionModel().setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
-        leftPane.add(new TitledPanel("Группы объектов", list), BorderLayout.CENTER);
+        leftPane.add(new TitledPanel(ClientResourceBundle.getString("descriptor.editor.group.objectgroups"), list), BorderLayout.CENTER);
         JPanel radioPanel = new JPanel(new GridLayout(getPanelCount(), 1, 5, 5));
         if (hasDirectPanel()) {
             radioPanel.add(getDirectPanel());
@@ -175,9 +176,9 @@ public class SimplePropertyFilter extends JPanel {
 
     private JPanel getSetPanel() {
         JPanel checkBoxPanel = new JPanel(new GridLayout(3, 1));
-        subSetCheckBox = new JCheckBox("Только указанные группы");
-        emptyCheckBox = new JCheckBox("Отображать пустые");
-        isAnyCheckBox = new JCheckBox("Использовать any");
+        subSetCheckBox = new JCheckBox(ClientResourceBundle.getString("descriptor.editor.group.only.specified.groups"));
+        emptyCheckBox = new JCheckBox(ClientResourceBundle.getString("descriptor.editor.group.show.empty"));
+        isAnyCheckBox = new JCheckBox(ClientResourceBundle.getString("descriptor.editor.group.use.any"));
 
         ActionListener listener = new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -191,15 +192,15 @@ public class SimplePropertyFilter extends JPanel {
         checkBoxPanel.add(emptyCheckBox);
         checkBoxPanel.add(isAnyCheckBox);
 
-        return new TitledPanel("Фильтр выбора", checkBoxPanel);
+        return new TitledPanel(ClientResourceBundle.getString("descriptor.editor.group.choice.filter"), checkBoxPanel);
     }
 
     private JPanel getLogicPanel() {
         JPanel radioPanel = new JPanel(new GridLayout(1, 3));
-        JRadioButton anyButton = new JRadioButton("Хотя бы одна");
+        JRadioButton anyButton = new JRadioButton(ClientResourceBundle.getString("descriptor.editor.group.at.least.one"));
         anyButton.setActionCommand("OR");
         anyButton.setSelected(true);
-        JRadioButton allButton = new JRadioButton("Все группы");
+        JRadioButton allButton = new JRadioButton(ClientResourceBundle.getString("descriptor.editor.group.allgroups"));
         allButton.setActionCommand("AND");
 
         ButtonGroup group = new ButtonGroup();
@@ -222,17 +223,17 @@ public class SimplePropertyFilter extends JPanel {
         radioPanel.add(anyButton);
         radioPanel.add(allButton);
 
-        return new TitledPanel("Логика выбора", radioPanel);
+        return new TitledPanel(ClientResourceBundle.getString("descriptor.editor.group.choice.logic"), radioPanel);
     }
 
     private JPanel getDirectPanel() {
         JPanel radioPanel = new JPanel(new GridLayout(1, 2, 5, 5));
-        JButton upButton = new JButton("Верхние");
+        JButton upButton = new JButton(ClientResourceBundle.getString("descriptor.editor.group.top"));
         upButton.setActionCommand("UP");
         //upButton.setSelected(true);
-        JButton downButton = new JButton("Нижние");
+        JButton downButton = new JButton(ClientResourceBundle.getString("descriptor.editor.group.bottom"));
         downButton.setActionCommand("DOWN");
-        JButton allButton = new JButton("Все");
+        JButton allButton = new JButton(ClientResourceBundle.getString("descriptor.editor.group.all"));
         allButton.setActionCommand("ALL");
 
         ActionListener listener = new ActionListener() {
@@ -255,7 +256,7 @@ public class SimplePropertyFilter extends JPanel {
         radioPanel.add(downButton);
         radioPanel.add(allButton);
 
-        return new TitledPanel("Выделение", radioPanel);
+        return new TitledPanel(ClientResourceBundle.getString("descriptor.editor.selection"), radioPanel);
     }
 
     private void changeSelection(int first, int last) {

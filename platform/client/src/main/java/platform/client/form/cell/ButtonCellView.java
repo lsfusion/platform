@@ -2,6 +2,7 @@ package platform.client.form.cell;
 
 import platform.base.BaseUtils;
 import platform.client.ClientButton;
+import platform.client.ClientResourceBundle;
 import platform.client.SwingUtils;
 import platform.client.form.ClientFormController;
 import platform.client.form.PropertyEditorComponent;
@@ -59,7 +60,7 @@ public class ButtonCellView extends ClientButton implements CellView {
                     }
 
                 } catch (Exception e) {
-                    throw new RuntimeException("Ошибка при выполнении действия", e);
+                    throw new RuntimeException(ClientResourceBundle.getString("errors.error.while.performing.the.action"), e);
                 }
             }
         });

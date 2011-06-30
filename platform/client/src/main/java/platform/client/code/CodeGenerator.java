@@ -1,5 +1,6 @@
 package platform.client.code;
 
+import platform.client.ClientResourceBundle;
 import platform.client.descriptor.*;
 import platform.client.descriptor.editor.base.FlatButton;
 import platform.client.descriptor.filter.*;
@@ -379,7 +380,7 @@ public class CodeGenerator {
         FormDescriptor form;
 
         public CodeFlatButton(FormDescriptor form) {
-            super("Сгенерировать код");
+            super(ClientResourceBundle.getString("code.generate.code"));
             this.form = form;
         }
 

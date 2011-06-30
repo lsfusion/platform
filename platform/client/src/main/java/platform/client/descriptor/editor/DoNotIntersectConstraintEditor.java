@@ -1,5 +1,6 @@
 package platform.client.descriptor.editor;
 
+import platform.client.ClientResourceBundle;
 import platform.interop.form.layout.DoNotIntersectSimplexConstraint;
 
 import javax.swing.*;
@@ -9,10 +10,10 @@ import java.awt.event.ActionListener;
 public class DoNotIntersectConstraintEditor extends JPanel {
     private DoNotIntersectSimplexConstraint constraint;
 
-    private JCheckBox topBox = new JCheckBox("выше");
-    private JCheckBox leftBox = new JCheckBox("левее");
-    private JCheckBox bottomBox = new JCheckBox("ниже");
-    private JCheckBox rightBox = new JCheckBox("правее");
+    private JCheckBox topBox = new JCheckBox(ClientResourceBundle.getString("descriptor.editor.higher"));
+    private JCheckBox leftBox = new JCheckBox(ClientResourceBundle.getString("descriptor.editor.to.the.left"));
+    private JCheckBox bottomBox = new JCheckBox(ClientResourceBundle.getString("descriptor.editor.lower"));
+    private JCheckBox rightBox = new JCheckBox(ClientResourceBundle.getString("descriptor.editor.to.the.right"));
     private ActionListener actionListener = new ActionListener() {
         public void actionPerformed(ActionEvent e) {
             firePropertyChange("intersectChanged", true, false);

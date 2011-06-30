@@ -2,6 +2,7 @@ package platform.client.logics;
 
 import platform.base.OrderedMap;
 import platform.base.context.ApplicationContext;
+import platform.client.ClientResourceBundle;
 import platform.client.serialization.ClientSerializationPool;
 import platform.gwt.view.GRegularFilterGroup;
 import platform.interop.form.layout.SimplexConstraints;
@@ -64,7 +65,7 @@ public class ClientRegularFilterGroup extends ClientComponent {
 
     @Override
     public String getCaption() {
-        return "Фильтр";
+        return ClientResourceBundle.getString("descriptor.filter");
     }
 
     @Override

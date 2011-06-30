@@ -47,17 +47,17 @@ public class ClientCallBackProcessor {
             public void run() {
                 int result = JOptionPane.showConfirmDialog(
                         Main.frame,
-                            "<html>Сервер будет остановлен через 15 минут!.<br/>" +
-                            "Сохраните текущую работу и выйдите из приложения.<br/>" +
-                            "Если вы выполняете работу, которая не может быть прервана, нажмите отмену.</html>",
-                        "Остановка сервера",
+                            "<html>"+ClientResourceBundle.getString("notification.server.will.be.stopped")+"<br/>" +
+                            ClientResourceBundle.getString("notification.save.and.exit")+"<br/>" +
+                            ClientResourceBundle.getString("notification.cancel.if.can.not.break")+"</html>",
+                        ClientResourceBundle.getString("notification.stop.server"),
                         JOptionPane.OK_CANCEL_OPTION,
                         JOptionPane.WARNING_MESSAGE);
                 if (result == JOptionPane.CANCEL_OPTION) {
                     try {
                         remoteClient.denyRestart();
                     } catch (RemoteException e) {
-                        throw new RuntimeException("Ошибка при посыле отказа от остановки сервера.", e);
+                        throw new RuntimeException(ClientResourceBundle.getString("notification.error.cancelling.stopping.server"), e);
                     }
                 }
             }

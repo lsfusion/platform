@@ -1,5 +1,6 @@
 package platform.client.form.grid.groupchange;
 
+import platform.client.ClientResourceBundle;
 import platform.client.Main;
 import platform.client.form.ClientFormController;
 import platform.client.form.grid.GridTable;
@@ -38,7 +39,7 @@ public class GroupChangeAction extends AbstractAction {
                     form.changePropertyDraw(mainProperty.property, mainProperty.columnKey, dlg.getSelectedValue(), true, true);
                 }
             } catch (IOException ioe) {
-                throw new RuntimeException("Ошибка при групповой корректировке", ioe);
+                throw new RuntimeException(ClientResourceBundle.getString("form.grid.group.groupchange.error"), ioe);
             }
         }
     }

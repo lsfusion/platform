@@ -4,6 +4,7 @@ import org.jdesktop.swingx.JXTableHeader;
 import org.jdesktop.swingx.decorator.ColorHighlighter;
 import org.jdesktop.swingx.decorator.HighlightPredicate;
 import org.jdesktop.swingx.table.TableColumnExt;
+import platform.client.ClientResourceBundle;
 import platform.client.form.ClientFormController;
 import platform.client.form.cell.CellTableInterface;
 import platform.client.form.cell.ClientAbstractCellEditor;
@@ -123,7 +124,7 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
                         try {
                             form.expandGroupObject(node.group, node.key);
                         } catch (IOException e) {
-                            throw new RuntimeException("Ошибка при открытии узла дерева.");
+                            throw new RuntimeException(ClientResourceBundle.getString("form.tree.error.opening.treenode"));
                         }
                     }
                 }
@@ -175,7 +176,7 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
             form.changeOrder(columnKey, modiType, new ClientGroupObjectValue());
             tableHeader.resizeAndRepaint();
         } catch (IOException e) {
-            throw new RuntimeException("Ошибка изменении сортировки", e);
+            throw new RuntimeException(ClientResourceBundle.getString("errors.error.changing.sorting"), e);
         }
 
         tableHeader.resizeAndRepaint();
@@ -492,7 +493,7 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
                 try {
                     form.changeGroupObject(group, key);
                 } catch (IOException ioe) {
-                    throw new RuntimeException("Ошибка при выборе узла.", ioe);
+                    throw new RuntimeException(ClientResourceBundle.getString("form.tree.error.selecting.node"), ioe);
                 }
             }
         }

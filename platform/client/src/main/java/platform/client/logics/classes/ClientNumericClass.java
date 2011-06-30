@@ -2,6 +2,7 @@ package platform.client.logics.classes;
 
 import platform.gwt.view.classes.GNumericType;
 import platform.gwt.view.classes.GType;
+import platform.client.ClientResourceBundle;
 import platform.interop.Data;
 
 import java.io.DataInputStream;
@@ -50,7 +51,7 @@ public class ClientNumericClass extends ClientDoubleClass {
 
         @Override
         public String toString() {
-            return "Число";
+            return ClientResourceBundle.getString("logics.classes.number");
         }
     };
 

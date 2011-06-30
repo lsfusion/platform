@@ -1,6 +1,7 @@
 package platform.client.form.grid;
 
 import platform.base.OrderedMap;
+import platform.client.ClientResourceBundle;
 import platform.client.Main;
 import platform.client.form.ClientFormController;
 import platform.client.form.ClientFormLayout;
@@ -84,7 +85,7 @@ public class GridController {
                     try {
                         form.changeFilter(groupObjectController.getGroupObject(), getConditions());
                     } catch (IOException e) {
-                        throw new RuntimeException("Ошибка при применении фильтра", e);
+                        throw new RuntimeException(ClientResourceBundle.getString("errors.error.applying.filter"), e);
                     }
 
                     table.requestFocusInWindow();
@@ -98,7 +99,7 @@ public class GridController {
         }
 
         if (key.showGroupChange) {
-            groupObjectController.addToToolbar(new ToolbarGridButton("/images/groupchange.gif", "Групповая корректировка (Ctrl+F12)") {
+            groupObjectController.addToToolbar(new ToolbarGridButton("/images/groupchange.gif", ClientResourceBundle.getString("form.grid.group.groupchange") +" (Ctrl+F12)") {
                 @Override
                 public void addListener() {
                     addActionListener(table.getActionMap().get(GridTable.GROUP_CORRECTION_ACTION));
@@ -187,7 +188,7 @@ public class GridController {
         groupObjectController.addToToolbar(Box.createHorizontalStrut(5));
 
         if (key.showPrintGroupButton && Main.module.isFull()) { // todo [dale]: Можно ли избавиться от if'ов?
-            groupObjectController.addToToolbar(new ToolbarGridButton("/images/reportbw.gif", "Распечатать таблицу") {
+            groupObjectController.addToToolbar(new ToolbarGridButton("/images/reportbw.gif", ClientResourceBundle.getString("form.grid.print.grid")) {
                 @Override
                 public void addListener() {
                     addActionListener(new ActionListener() {
@@ -204,7 +205,7 @@ public class GridController {
         }
 
         if (key.showPrintGroupXlsButton && Main.module.isFull()) {
-            groupObjectController.addToToolbar(new ToolbarGridButton("/images/excelbw.jpg", "Экспорт в xls") {
+            groupObjectController.addToToolbar(new ToolbarGridButton("/images/excelbw.jpg",  ClientResourceBundle.getString("form.grid.export.to.xls")) {
                 @Override
                 public void addListener() {
                     addActionListener(new ActionListener() {

@@ -1,5 +1,7 @@
 package platform.client.form.queries;
 
+import platform.client.ClientResourceBundle;
+
 import javax.swing.*;
 import javax.swing.border.EtchedBorder;
 import java.awt.*;
@@ -8,7 +10,7 @@ import java.text.NumberFormat;
 public abstract class CalculateSumButton extends ToolbarGridButton {
 
     public CalculateSumButton() {
-        super("/images/sum.png", "Посчитать сумму");
+        super("/images/sum.png", ClientResourceBundle.getString("form.queries.calculate.sum"));
     }
 
     public abstract void addListener();
@@ -21,14 +23,14 @@ public abstract class CalculateSumButton extends ToolbarGridButton {
         menu.setBorder(BorderFactory.createEtchedBorder(EtchedBorder.RAISED, Color.GRAY, Color.LIGHT_GRAY));
 
         if (sum != null) {
-            label = new JLabel("Сумма [" + caption + "]: ");
+            label = new JLabel(ClientResourceBundle.getString("form.queries.sum.result")+" [" + caption + "]: ");
             JTextField field = new JTextField(10);
             field.setHorizontalAlignment(JTextField.RIGHT);
             field.setText(format(sum));
             panel.add(label);
             panel.add(field);
         } else {
-            label = new JLabel("Невозможно посчитать сумму [" + caption + "]");
+            label = new JLabel(ClientResourceBundle.getString("form.queries.unable.to.calculate.sum")+" [" + caption + "]");
             panel.add(label);
         }
 

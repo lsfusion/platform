@@ -1,5 +1,6 @@
 package platform.client.descriptor.nodes.filters;
 
+import platform.client.ClientResourceBundle;
 import platform.client.descriptor.FormDescriptor;
 import platform.client.descriptor.GroupObjectDescriptor;
 import platform.client.descriptor.filter.RegularFilterGroupDescriptor;
@@ -18,7 +19,7 @@ public class RegularFilterGroupFolder extends GroupElementFolder<RegularFilterGr
     }
 
     public RegularFilterGroupFolder(List<GroupObjectDescriptor> groupList, GroupObjectDescriptor group, final FormDescriptor form) {
-        super(group, "Стандартные фильтры");
+        super(group, ClientResourceBundle.getString("descriptor.filter.regular.filters"));
 
         this.form = form;
 

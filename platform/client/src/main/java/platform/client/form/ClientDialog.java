@@ -1,5 +1,6 @@
 package platform.client.form;
 
+import platform.client.ClientResourceBundle;
 import platform.client.SwingUtils;
 import platform.interop.form.RemoteDialogInterface;
 
@@ -129,7 +130,7 @@ public class ClientDialog extends ClientModalForm {
                     dialogValue = remoteDialog.getDialogValue();
                     displayValue = remoteDialog.geCellDisplayValue();
                 } catch (RemoteException e) {
-                    throw new RuntimeException("Ошибка при получении значения диалога", e);
+                    throw new RuntimeException(ClientResourceBundle.getString("errors.error.getting.value.of.dialogue"), e);
                 }
                 ClientDialog.this.setVisible(false);
             }

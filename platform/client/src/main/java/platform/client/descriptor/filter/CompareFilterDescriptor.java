@@ -1,5 +1,6 @@
 package platform.client.descriptor.filter;
 
+import platform.client.ClientResourceBundle;
 import platform.client.descriptor.*;
 import platform.client.descriptor.nodes.filters.CompareFilterNode;
 import platform.client.descriptor.property.PropertyInterfaceDescriptor;
@@ -69,7 +70,7 @@ public class CompareFilterDescriptor extends PropertyFilterDescriptor {
             result += " " + compare;
         if (value != null)
             result += " " + value;
-        if (result.isEmpty()) result = "СРАВНЕНИЕ";
+        if (result.isEmpty()) result = ClientResourceBundle.getString("descriptor.filter.comparison");
         return result;
     }
 

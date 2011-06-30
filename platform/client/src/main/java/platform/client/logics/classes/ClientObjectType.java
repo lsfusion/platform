@@ -1,6 +1,7 @@
 package platform.client.logics.classes;
 
 import platform.client.Main;
+import platform.client.ClientResourceBundle;
 import platform.client.form.ClientFormController;
 import platform.client.form.PropertyEditorComponent;
 import platform.client.form.PropertyRendererComponent;
@@ -89,16 +90,16 @@ public class ClientObjectType implements ClientType, ClientTypeClass {
     }
 
     public Object parseString(String s) throws ParseException {
-        throw new ParseException("ObjectClass не поддерживает конвертацию из строки.", 0);
+        throw new ParseException(ClientResourceBundle.getString("logics.classes.objectclass.doesnt.support.convertation.from.string"), 0);
     }
 
     public String getConformedMessage() {
-        return "Вы действительно хотите редактировать свойство";
+        return ClientResourceBundle.getString("logics.classes.do.you.really.want.to.edit.property");
     }
 
     @Override
     public String toString() {
-        return "Объект";
+        return ClientResourceBundle.getString("logics.object");
     }
 
     public ClientType getDefaultType() {

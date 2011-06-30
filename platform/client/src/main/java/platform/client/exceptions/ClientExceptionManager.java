@@ -2,6 +2,7 @@ package platform.client.exceptions;
 
 import org.apache.log4j.Logger;
 import platform.base.OSUtils;
+import platform.client.ClientResourceBundle;
 import platform.client.Log;
 import platform.client.Main;
 import platform.client.rmi.ConnectionLostManager;
@@ -33,7 +34,7 @@ public class ClientExceptionManager {
         if (remote instanceof ConnectIOException || remote instanceof ConnectException) {
             //при этих RemoteException'ах возможно продолжение работы
             ConnectionLostManager.connectionLost(false);
-            logger.error("Ошибка при общении с сервером: ", e);
+            logger.error(ClientResourceBundle.getString("exceptions.error.on.communication.with.server")+": ", e);
             return;
         }
 
@@ -45,7 +46,7 @@ public class ClientExceptionManager {
             } else {
                 //при остальных RemoteException'ах нужно релогиниться
                 ConnectionLostManager.connectionLost(true);
-                logger.error("Ошибка при общении с сервером: ", e);
+                logger.error(ClientResourceBundle.getString("exceptions.error.on.communication.with.server")+": ", e);
                 return;
             }
         }
@@ -67,14 +68,14 @@ public class ClientExceptionManager {
         if (!(e instanceof ConcurrentModificationException) ||
             !(erTrace.indexOf("bibliothek.gui.dock.themes.basic.action.buttons.ButtonPanel.setForeground") >= 0)) {
             try {
-                String info = "Клиент: " + OSUtils.getLocalHostName() + ",Ошибка: " + message;
+                String info = ClientResourceBundle.getString("exceptions.client")+" " + OSUtils.getLocalHostName() + ClientResourceBundle.getString("exceptions.error") +" " + message;
                 if (!isInternalServerException) {
                     info += lineSeparator + erTrace;
                 }
                 Main.frame.remoteNavigator.clientExceptionLog(info);
             } catch (RemoteException exc) {
             }
-            Log.printFailedMessage("Произошла ошибка во время выполнения : " + message, erTrace, parentComponent);
+            Log.printFailedMessage(ClientResourceBundle.getString("exceptions.error.on.executing")+" : " + message, erTrace, parentComponent);
         }
     }
 

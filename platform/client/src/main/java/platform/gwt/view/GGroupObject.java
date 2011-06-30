@@ -1,5 +1,7 @@
 package platform.gwt.view;
 
+import platform.client.ClientResourceBundle;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
@@ -13,7 +15,7 @@ public class GGroupObject implements Serializable {
 
     public String getCaption() {
         if (objects.isEmpty()) {
-            return "Пустая группа";
+            return ClientResourceBundle.getString("logics.empty.group");
         }
 
         String result = "";

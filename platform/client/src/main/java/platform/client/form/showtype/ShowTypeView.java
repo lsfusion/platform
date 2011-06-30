@@ -1,5 +1,6 @@
 package platform.client.form.showtype;
 
+import platform.client.ClientResourceBundle;
 import platform.client.form.queries.ToolbarGridButton;
 import platform.interop.ClassViewType;
 
@@ -21,17 +22,17 @@ public abstract class ShowTypeView extends JPanel implements ActionListener {
 
         gridButton = new JButton("");
         gridButton.setIcon(new ImageIcon(ShowTypeView.class.getResource("/images/table.png")));
-        gridButton.setToolTipText("Таблица");
+        gridButton.setToolTipText(ClientResourceBundle.getString("form.showtype.grid"));
         gridButton.setActionCommand("grid");
 
         panelButton = new JButton("");
         panelButton.setIcon(new ImageIcon(ShowTypeView.class.getResource("/images/list.png")));
-        panelButton.setToolTipText("Панель");
+        panelButton.setToolTipText(ClientResourceBundle.getString("form.showtype.panel"));
         panelButton.setActionCommand("panel");
 
         hideButton = new JButton("");
         hideButton.setIcon(new ImageIcon(ShowTypeView.class.getResource("/images/close.png")));
-        hideButton.setToolTipText("Скрыть");
+        hideButton.setToolTipText(ClientResourceBundle.getString("form.showtype.hide"));
         hideButton.setActionCommand("hide");
 
         add(gridButton);

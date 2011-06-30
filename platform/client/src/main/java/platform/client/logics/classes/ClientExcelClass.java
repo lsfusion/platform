@@ -1,5 +1,6 @@
 package platform.client.logics.classes;
 
+import platform.client.ClientResourceBundle;
 import platform.client.form.PropertyEditorComponent;
 import platform.client.form.PropertyRendererComponent;
 import platform.client.form.editor.DocumentPropertyEditor;
@@ -31,7 +32,7 @@ public class ClientExcelClass extends ClientFileClass {
 
     @Override
     public PropertyEditorComponent getComponent(Object value, Format format, ComponentDesign design) {
-        return new DocumentPropertyEditor(value, "Документы Excel", "xls", "xlsx");
+        return new DocumentPropertyEditor(value, ClientResourceBundle.getString("logics.classes.excel.documents"), "xls", "xlsx");
     }
 
     @Override
@@ -51,6 +52,6 @@ public class ClientExcelClass extends ClientFileClass {
 
     @Override
     public String toString() {
-        return "Файл Эксель";
+        return ClientResourceBundle.getString("logics.classes.excel.file");
     }
 }

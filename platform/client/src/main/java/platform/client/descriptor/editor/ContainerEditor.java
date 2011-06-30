@@ -1,5 +1,6 @@
 package platform.client.descriptor.editor;
 
+import platform.client.ClientResourceBundle;
 import platform.client.descriptor.editor.base.NorthBoxPanel;
 import platform.client.descriptor.editor.base.NodeEditor;
 import platform.client.descriptor.editor.base.TitledPanel;
@@ -15,17 +16,17 @@ public class ContainerEditor extends JTabbedPane implements NodeEditor {
 
     public ContainerEditor(ClientContainer descriptor) {
 
-        addTab("Общее", new NorthBoxPanel(new TitledPanel("Заголовок", new IncrementTextEditor(descriptor, "title")),
-                new TitledPanel("Описание", new IncrementTextEditor(descriptor, "description")),
-                new TitledPanel("Идентификатор", new IncrementTextEditor(descriptor, "sID"))));
+        addTab(ClientResourceBundle.getString("descriptor.editor.common"), new NorthBoxPanel(new TitledPanel(ClientResourceBundle.getString("descriptor.editor.common.title"), new IncrementTextEditor(descriptor, "title")),
+                new TitledPanel(ClientResourceBundle.getString("descriptor.editor.common.description"), new IncrementTextEditor(descriptor, "description")),
+                new TitledPanel(ClientResourceBundle.getString("descriptor.editor.common.identificator"), new IncrementTextEditor(descriptor, "sID"))));
 
-        addTab("Отображение", new NorthBoxPanel(
-                new TitledPanel(null, new IncrementCheckBox("Панель закладок", descriptor, "tabbedPane")),
-                new TitledPanel(null, new IncrementCheckBox("Компонент по умолчанию", descriptor, "defaultComponent")),
+        addTab(ClientResourceBundle.getString("descriptor.editor.display.display"), new NorthBoxPanel(
+                new TitledPanel(null, new IncrementCheckBox(ClientResourceBundle.getString("descriptor.editor.display.bookmarks"), descriptor, "tabbedPane")),
+                new TitledPanel(null, new IncrementCheckBox(ClientResourceBundle.getString("descriptor.editor.display.default.component"), descriptor, "defaultComponent")),
                 new SizesEditor(descriptor),
-                new ComponentDesignEditor("Дизайн", descriptor.design)));
+                new ComponentDesignEditor(ClientResourceBundle.getString("descriptor.editor.display.design"), descriptor.design)));
         
-        addTab("Расположение", new NorthBoxPanel(new ComponentIntersectsEditor("Взаимное расположение компонентов", descriptor, "intersects"),
+        addTab(ClientResourceBundle.getString("descriptor.editor.arrangement"), new NorthBoxPanel(new ComponentIntersectsEditor(ClientResourceBundle.getString("descriptor.editor.mutual.arrangement.of.the.components"), descriptor, "intersects"),
                 new ContainerConstraintsEditor(descriptor.constraints)));
 
     }

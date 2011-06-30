@@ -1,5 +1,6 @@
 package platform.client.form.cell;
 
+import platform.client.ClientResourceBundle;
 import platform.client.SwingUtils;
 import platform.client.form.PropertyEditorComponent;
 import platform.client.logics.ClientPropertyDraw;
@@ -26,7 +27,7 @@ public class ClientAbstractCellEditor extends AbstractCellEditor
         try {
             return propertyEditor.getCellEditorValue();
         } catch (RemoteException e) {
-            throw new RuntimeException("Ошибка при получении выбранного значения", e);
+            throw new RuntimeException(ClientResourceBundle.getString("errors.error.getting.selected.value"), e);
         }
     }
 
@@ -91,7 +92,7 @@ public class ClientAbstractCellEditor extends AbstractCellEditor
                 propertyEditor = property.getClassComponent(cellTable.getForm(), ivalue);
             }
         } catch (Exception e) {
-            throw new RuntimeException("Ошибка при получении редактируемого значения", e);
+            throw new RuntimeException(ClientResourceBundle.getString("errors.error.getting.editing.value"), e);
         }
 
         Component comp = null;
@@ -100,7 +101,7 @@ public class ClientAbstractCellEditor extends AbstractCellEditor
             try {
                 comp = propertyEditor.getComponent(SwingUtils.computeAbsoluteLocation(table), table.getCellRect(row, column, false), editEvent);
             } catch (Exception e) {
-                throw new RuntimeException("Ошибка при получении редактируемого значения", e);
+                throw new RuntimeException(ClientResourceBundle.getString("errors.error.getting.editing.value"), e);
             }
 
             if (comp == null && propertyEditor.valueChanged()) {

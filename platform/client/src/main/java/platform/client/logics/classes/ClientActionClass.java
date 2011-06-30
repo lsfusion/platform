@@ -1,5 +1,6 @@
 package platform.client.logics.classes;
 
+import platform.client.ClientResourceBundle;
 import platform.client.form.ClientFormController;
 import platform.client.form.PropertyEditorComponent;
 import platform.client.form.PropertyRendererComponent;
@@ -78,17 +79,17 @@ public class ClientActionClass extends ClientDataClass implements ClientTypeClas
     }
 
     public Object parseString(String s) throws ParseException {
-        throw new ParseException("ActionClass не поддерживает конвертацию из строки.", 0);
+        throw new ParseException(ClientResourceBundle.getString("logics.classes.actionclass.doesnt.support.convertation.from.string"), 0);
     }
 
     @Override
     public String getConformedMessage() {
-        return "Вы действительно хотите выполнить действие";
+        return ClientResourceBundle.getString("logics.classes.do.you.really.want.to.take.action");
     }
 
     @Override
     public String toString() {
-        return "Класс действия";
+        return ClientResourceBundle.getString("logics.classes.actionclass");
     }
 
     @Override

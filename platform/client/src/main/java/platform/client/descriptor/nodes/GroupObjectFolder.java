@@ -1,5 +1,6 @@
 package platform.client.descriptor.nodes;
 
+import platform.client.ClientResourceBundle;
 import platform.client.descriptor.FormDescriptor;
 import platform.client.descriptor.GroupObjectDescriptor;
 import platform.client.tree.ClientTree;
@@ -17,7 +18,7 @@ public class GroupObjectFolder extends PlainTextNode<GroupObjectFolder> implemen
     }
 
     public GroupObjectFolder(FormDescriptor form) {
-        super("Группы объектов");
+        super(ClientResourceBundle.getString("descriptor.editor.group.objectgroups"));
 
         this.form = form;
 

@@ -2,6 +2,7 @@ package platform.client.form;
 
 import platform.base.BaseUtils;
 import platform.base.IOUtils;
+import platform.client.ClientResourceBundle;
 import platform.client.Log;
 import platform.client.Main;
 import platform.interop.action.*;
@@ -189,7 +190,7 @@ public class ClientFormActionDispatcher implements ClientActionDispatcher {
             JOptionPane jop = new JOptionPane(jpf,
                     JOptionPane.QUESTION_MESSAGE,
                     JOptionPane.OK_CANCEL_OPTION);
-            JDialog dialog = jop.createDialog(form.getComponent(), "Введите пароль");
+            JDialog dialog = jop.createDialog(form.getComponent(), ClientResourceBundle.getString("form.enter.password"));
             dialog.addComponentListener(new ComponentAdapter() {
                 @Override
                 public void componentShown(ComponentEvent e) {

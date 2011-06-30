@@ -64,19 +64,19 @@ public final class LoginAction {
         while (!(status == OK)) {
             switch (status) {
                 case HOST_NAME_ERROR:
-                    loginDialog.setWarningMsg("Проверьте адрес сервера.");
+                    loginDialog.setWarningMsg(ClientResourceBundle.getString("errors.check.server.address"));
                     break;
                 case CONNECT_ERROR:
-                    loginDialog.setWarningMsg("Ошибка подключения к серверу.");
+                    loginDialog.setWarningMsg(ClientResourceBundle.getString("errors.error.connecting.to.the.server"));
                     break;
                 case SERVER_ERROR:
-                    loginDialog.setWarningMsg("Проверьте имя пользователя и пароль.");
+                    loginDialog.setWarningMsg(ClientResourceBundle.getString("errors.check.login.and.password"));
                     break;
                 case PENDING_RESTART_WARNING:
-                    loginDialog.setWarningMsg("Сервер перезагружается.");
+                    loginDialog.setWarningMsg(ClientResourceBundle.getString("errors.server.reboots"));
                     break;
                 case ERROR:
-                    loginDialog.setWarningMsg("Ошибка подключения.");
+                    loginDialog.setWarningMsg(ClientResourceBundle.getString("errors.error.connecting"));
                     break;
             }
             loginDialog.setAutoLogin(false);

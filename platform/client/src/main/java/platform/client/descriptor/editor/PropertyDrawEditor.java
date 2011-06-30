@@ -1,5 +1,6 @@
 package platform.client.descriptor.editor;
 
+import platform.client.ClientResourceBundle;
 import platform.client.descriptor.FormDescriptor;
 import platform.client.descriptor.GroupObjectDescriptor;
 import platform.client.descriptor.PropertyDrawDescriptor;
@@ -21,11 +22,11 @@ public class PropertyDrawEditor extends GroupElementEditor {
         super(groupObject);
         this.descriptor = descriptor;
 
-        TitledPanel captionPanel = new TitledPanel("Стат. заголовок", new IncrementTextEditor(descriptor, "caption"));
+        TitledPanel captionPanel = new TitledPanel(ClientResourceBundle.getString("descriptor.editor.object.editor.static.title"), new IncrementTextEditor(descriptor, "caption"));
 
-        TitledPanel propertyObjectPanel = new TitledPanel("Реализация", new PropertyObjectEditor(descriptor, "propertyObject", form, groupObject));
+        TitledPanel propertyObjectPanel = new TitledPanel(ClientResourceBundle.getString("descriptor.editor.object.editor.realization"), new PropertyObjectEditor(descriptor, "propertyObject", form, groupObject));
 
-        TitledPanel groupObjectPanel = new TitledPanel("Группа объектов", new JComboBox(new IncrementSingleListSelectionModel(descriptor, "toDraw", true) {
+        TitledPanel groupObjectPanel = new TitledPanel(ClientResourceBundle.getString("descriptor.editor.object.editor.group.object"), new JComboBox(new IncrementSingleListSelectionModel(descriptor, "toDraw", true) {
             public List<?> getSingleList() {
                 PropertyObjectDescriptor propertyObject = descriptor.getPropertyObject();
                 return propertyObject != null
@@ -40,7 +41,7 @@ public class PropertyDrawEditor extends GroupElementEditor {
         }));
 
         // columnGroupObjects из списка mapping'ов (полных) !!! без toDraw
-        TitledPanel columnGroupObjectsPanel = new TitledPanel("Группы в колонки", new IncrementMultipleListEditor(
+        TitledPanel columnGroupObjectsPanel = new TitledPanel(ClientResourceBundle.getString("descriptor.editor.object.editor.group.in.column"), new IncrementMultipleListEditor(
                 new IncrementMultipleListSelectionModel(descriptor, "columnGroupObjects") {
             public List<?> getList() {
                 return descriptor.getUpGroupObjects(form.groupObjects);
@@ -54,34 +55,34 @@ public class PropertyDrawEditor extends GroupElementEditor {
         }));
 
         // propertyCaption из списка columnGroupObjects (+objects без toDraw)
-        TitledPanel propertyCaptionPanel = new TitledPanel("Динам. заголовок", new IncrementDialogEditor(descriptor, "propertyCaption") {
+        TitledPanel propertyCaptionPanel = new TitledPanel(ClientResourceBundle.getString("descriptor.editor.object.editor.dynamic.title"), new IncrementDialogEditor(descriptor, "propertyCaption") {
             protected Object dialogValue(Object currentValue) {
                 return new ListGroupObjectEditor(descriptor.getColumnGroupObjects()).getPropertyObject();
             }
         });
 
-        TitledPanel propertyHighlightPanel = new TitledPanel("Свойство выделения", new IncrementDialogEditor(descriptor, "propertyHighlight") {
+        TitledPanel propertyHighlightPanel = new TitledPanel(ClientResourceBundle.getString("descriptor.editor.object.editor.selection.property"), new IncrementDialogEditor(descriptor, "propertyHighlight") {
             protected Object dialogValue(Object currentValue) {
                 return new ListGroupObjectEditor(descriptor.getColumnGroupObjects()).getPropertyObject();
             }
         });
 
-        TitledPanel shouldBeLastPanel = new TitledPanel(null, new IncrementCheckBox("Должно быть последним", descriptor, "shouldBeLast"));
-        TitledPanel readOnlyPanel = new TitledPanel(null, new IncrementCheckBox("Только для чтения", descriptor, "readOnly"));
-        TitledPanel focusablePanel = new TitledPanel(null, new IncrementTristateCheckBox("Может иметь фокус", descriptor, "focusable"));
+        TitledPanel shouldBeLastPanel = new TitledPanel(null, new IncrementCheckBox(ClientResourceBundle.getString("descriptor.editor.object.editor.should.be.last"), descriptor, "shouldBeLast"));
+        TitledPanel readOnlyPanel = new TitledPanel(null, new IncrementCheckBox(ClientResourceBundle.getString("descriptor.editor.object.editor.read.only"), descriptor, "readOnly"));
+        TitledPanel focusablePanel = new TitledPanel(null, new IncrementTristateCheckBox(ClientResourceBundle.getString("descriptor.editor.object.editor.focusable"), descriptor, "focusable"));
 
-        TitledPanel forceTypePanel = new TitledPanel("Тип просмотра", new JComboBox(new IncrementSingleListSelectionModel(descriptor, "forceViewType") {
+        TitledPanel forceTypePanel = new TitledPanel(ClientResourceBundle.getString("descriptor.editor.object.editor.viewtype"), new JComboBox(new IncrementSingleListSelectionModel(descriptor, "forceViewType") {
             public List<?> getSingleList(){
                 return ClassViewType.typeNameList();
             }
         }));
 
-        TitledPanel editKeyPanel = new TitledPanel("Клавиши редактирования", new IncrementKeyStrokeEditor(descriptor.client, "editKey"));
+        TitledPanel editKeyPanel = new TitledPanel(ClientResourceBundle.getString("descriptor.editor.object.editor.editing.keys"), new IncrementKeyStrokeEditor(descriptor.client, "editKey"));
 
         JPanel defaultComponent = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        defaultComponent.add(new IncrementCheckBox("Компонент по умолчанию", descriptor.client, "defaultComponent"));
+        defaultComponent.add(new IncrementCheckBox(ClientResourceBundle.getString("descriptor.editor.object.editor.default.component"), descriptor.client, "defaultComponent"));
 
-        addTab("Общее", new NorthBoxPanel(captionPanel,
+        addTab(ClientResourceBundle.getString("descriptor.editor.common"), new NorthBoxPanel(captionPanel,
                 propertyObjectPanel,
                 groupObjectPanel,
                 columnGroupObjectsPanel,
@@ -93,18 +94,18 @@ public class PropertyDrawEditor extends GroupElementEditor {
                 forceTypePanel,
                 editKeyPanel));
 
-        addTab("Отображение", new NorthBoxPanel(defaultComponent,
-                new TitledPanel(null, new IncrementColorEditor("Цвет подсветки", descriptor, "highlightColor")),
+        addTab(ClientResourceBundle.getString("descriptor.editor.object.editor.display"), new NorthBoxPanel(defaultComponent,
+                new TitledPanel(null, new IncrementColorEditor(ClientResourceBundle.getString("descriptor.editor.view.illumination.color"), descriptor, "highlightColor")),
                 new SizesEditor(descriptor.client),
-                new ComponentDesignEditor("Дизайн", descriptor.client.design)));
+                new ComponentDesignEditor(ClientResourceBundle.getString("descriptor.editor.view.design"), descriptor.client.design)));
 
-        addTab("Расположение", new NorthBoxPanel(new ComponentConstraintsEditor(descriptor.client.constraints)));
+        addTab(ClientResourceBundle.getString("descriptor.editor.arrangement"), new NorthBoxPanel(new ComponentConstraintsEditor(descriptor.client.constraints)));
     }
 
     @Override
     public boolean validateEditor() {
         if (descriptor.getPropertyObject() == null) {
-            JOptionPane.showMessageDialog(this, "Выберите реализацию!", "Ошибка", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, ClientResourceBundle.getString("descriptor.editor.object.editor.choose.realization"), ClientResourceBundle.getString("descriptor.editor.object.editor.error"), JOptionPane.ERROR_MESSAGE);
             return false;
         }
 

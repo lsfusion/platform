@@ -1,5 +1,6 @@
 package platform.client.form.classes;
 
+import platform.client.ClientResourceBundle;
 import platform.client.form.ClientFormController;
 import platform.client.form.ClientFormLayout;
 import platform.client.logics.ClientObject;
@@ -36,7 +37,7 @@ public class ClassController {
                 try {
                     form.changeGridClass(object, view.getSelectionClass());
                 } catch (IOException e) {
-                    throw new RuntimeException("Ошибка при изменении текущего класса", e);
+                    throw new RuntimeException(ClientResourceBundle.getString("errors.error.changing.current.class"), e);
                 }
             }
         };

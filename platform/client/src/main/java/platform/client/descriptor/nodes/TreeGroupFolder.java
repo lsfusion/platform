@@ -2,6 +2,7 @@ package platform.client.descriptor.nodes;
 
 import platform.base.context.ApplicationContext;
 import platform.base.context.ApplicationContextProvider;
+import platform.client.ClientResourceBundle;
 import platform.client.descriptor.FormDescriptor;
 import platform.client.descriptor.TreeGroupDescriptor;
 import platform.client.tree.ClientTree;
@@ -17,7 +18,7 @@ public class TreeGroupFolder extends PlainTextNode<TreeGroupFolder> implements A
     }
 
     public TreeGroupFolder(FormDescriptor form) {
-        super("Деревья");
+        super(ClientResourceBundle.getString("descriptor.nodes.trees"));
 
         this.form = form;
 

@@ -1,5 +1,7 @@
 package platform.client.logics;
 
+import platform.client.ClientResourceBundle;
+
 import java.io.DataOutputStream;
 import java.io.IOException;
 
@@ -7,7 +9,7 @@ public class ClientPropertyValueLink extends ClientValueLink {
 
     public ClientPropertyDraw property;
 
-    public String toString() { return "Свойство"; }
+    public String toString() { return ClientResourceBundle.getString("logics.property"); }
 
     byte getTypeID() {
         return 2;

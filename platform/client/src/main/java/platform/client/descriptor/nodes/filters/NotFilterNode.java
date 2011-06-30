@@ -1,5 +1,6 @@
 package platform.client.descriptor.nodes.filters;
 
+import platform.client.ClientResourceBundle;
 import platform.client.descriptor.GroupObjectDescriptor;
 import platform.client.descriptor.filter.FilterDescriptor;
 import platform.client.descriptor.filter.NotFilterDescriptor;
@@ -14,7 +15,7 @@ public class NotFilterNode extends FilterNode<NotFilterDescriptor, NotFilterNode
 
         this.descriptor = descriptor;
 
-        addFieldReferenceNode(descriptor, "filter", "Фильтр", group, FilterDescriptor.derivedNames, FilterDescriptor.derivedClasses);
+        addFieldReferenceNode(descriptor, "filter", ClientResourceBundle.getString("descriptor.filter"), group, FilterDescriptor.derivedNames, FilterDescriptor.derivedClasses);
     }
 
     public void newElement(FilterDescriptor filter) {

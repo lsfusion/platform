@@ -1,5 +1,6 @@
 package platform.client.descriptor.filter;
 
+import platform.client.ClientResourceBundle;
 import platform.client.descriptor.GroupObjectDescriptor;
 import platform.client.descriptor.ObjectDescriptor;
 import platform.client.descriptor.nodes.filters.FilterNode;
@@ -23,7 +24,7 @@ public class NotNullFilterDescriptor extends PropertyFilterDescriptor {
 
     @Override
     public String toString() {
-        String result = "ОПРЕДЕЛЕНО";
+        String result = ClientResourceBundle.getString("descriptor.filter.defined");
         if (property != null)
             result += "( " + property + " )";
         return result;

@@ -1,6 +1,7 @@
 package platform.client.logics.classes;
 
 import platform.base.BaseUtils;
+import platform.client.ClientResourceBundle;
 import platform.client.form.PropertyEditorComponent;
 import platform.client.form.PropertyRendererComponent;
 import platform.client.form.editor.StringPropertyEditor;
@@ -61,7 +62,7 @@ public class ClientStringClass extends ClientDataClass {
 
         @Override
         public String toString() {
-            return "Строка";
+            return ClientResourceBundle.getString("logics.classes.string");
         }
     };
     public ClientTypeClass getTypeClass() {
@@ -97,7 +98,7 @@ public class ClientStringClass extends ClientDataClass {
 
     @Override
     public String toString() {
-        return "Строка(" + length + ")";
+        return ClientResourceBundle.getString("logics.classes.string")+"(" + length + ")";
     }
 
     @Override

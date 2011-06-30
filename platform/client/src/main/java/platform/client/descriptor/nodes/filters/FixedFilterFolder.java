@@ -1,5 +1,6 @@
 package platform.client.descriptor.nodes.filters;
 
+import platform.client.ClientResourceBundle;
 import platform.client.descriptor.FormDescriptor;
 import platform.client.descriptor.GroupObjectDescriptor;
 import platform.client.descriptor.filter.FilterDescriptor;
@@ -21,7 +22,7 @@ public class FixedFilterFolder extends GroupElementFolder<FixedFilterFolder> imp
     }
 
     public FixedFilterFolder(List<GroupObjectDescriptor> groupList, GroupObjectDescriptor group, final FormDescriptor form, final Set<FilterDescriptor> fixedFilters) {
-        super(group, "Постоянные фильтры");
+        super(group, ClientResourceBundle.getString("descriptor.filter.fixed.filters"));
 
         this.form = form;
         this.fixedFilters = fixedFilters;

@@ -1,5 +1,6 @@
 package platform.client.descriptor.editor.filters;
 
+import platform.client.ClientResourceBundle;
 import platform.client.descriptor.FormDescriptor;
 import platform.client.descriptor.GroupObjectDescriptor;
 import platform.client.descriptor.editor.PropertyObjectEditor;
@@ -20,7 +21,7 @@ public class CompareFilterEditor extends PropertyFilterEditor {
 
         add(Box.createRigidArea(new Dimension(5, 5)));
 
-        add(new TitledPanel("Операция", new JComboBox(new IncrementSingleListSelectionModel(descriptor, "compare") {
+        add(new TitledPanel(ClientResourceBundle.getString("descriptor.filter.operation"), new JComboBox(new IncrementSingleListSelectionModel(descriptor, "compare") {
             public List<?> getSingleList() {
                 return Arrays.asList(Compare.values());
             }
@@ -28,6 +29,6 @@ public class CompareFilterEditor extends PropertyFilterEditor {
 
         add(Box.createRigidArea(new Dimension(5, 5)));
 
-        add(new TitledPanel("Сравнить с", new PropertyObjectEditor(descriptor, "value", form, group)));
+        add(new TitledPanel(ClientResourceBundle.getString("descriptor.filter.compare.with"), new PropertyObjectEditor(descriptor, "value", form, group)));
     }
 }

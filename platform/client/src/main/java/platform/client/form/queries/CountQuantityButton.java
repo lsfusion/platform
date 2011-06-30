@@ -1,5 +1,7 @@
 package platform.client.form.queries;
 
+import platform.client.ClientResourceBundle;
+
 import javax.swing.*;
 import javax.swing.border.EtchedBorder;
 import java.awt.*;
@@ -7,14 +9,14 @@ import java.awt.*;
 public abstract class CountQuantityButton extends ToolbarGridButton {
 
     public CountQuantityButton() {
-        super("/images/quantity.png", "Количество записей");
+        super("/images/quantity.png", ClientResourceBundle.getString("form.queries.number.of.entries"));
     }
 
     public abstract void addListener();
 
     public void showPopupMenu(int quantity) {
         JPopupMenu menu = new JPopupMenu();
-        JLabel label = new JLabel("Количество записей: " + quantity);
+        JLabel label = new JLabel(ClientResourceBundle.getString("form.queries.number.of.entries")+" " + quantity);
         JPanel panel = new JPanel();
         panel.setBackground(new Color(192, 192, 255));
         menu.setBorder(BorderFactory.createEtchedBorder(EtchedBorder.RAISED, Color.GRAY, Color.LIGHT_GRAY));

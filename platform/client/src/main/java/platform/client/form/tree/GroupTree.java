@@ -2,6 +2,7 @@ package platform.client.form.tree;
 
 import platform.base.BaseUtils;
 import platform.base.OrderedMap;
+import platform.client.ClientResourceBundle;
 import platform.client.form.ClientFormController;
 import platform.client.logics.ClientGroupObject;
 import platform.client.logics.ClientGroupObjectValue;
@@ -60,7 +61,7 @@ public class GroupTree extends ClientTree {
                     try {
                         form.expandGroupObject(node.group, node.key);
                     } catch (IOException e) {
-                        throw new RuntimeException("Ошибка при открытии узла дерева.");
+                        throw new RuntimeException(ClientResourceBundle.getString("form.tree.error.opening.treenode"));
                     }
                     if (hasOnlyExpandningNodeAsChild(node)) {
                         throw new ExpandVetoException(event);
@@ -90,7 +91,7 @@ public class GroupTree extends ClientTree {
                                 currentPath = node.key;
                                 form.changeGroupObject(node.group, node.key);
                             } catch (IOException e) {
-                                throw new RuntimeException("Ошибка при выборе узла.");
+                                throw new RuntimeException(ClientResourceBundle.getString("form.tree.error.selecting.node"));
                             }
                         }
                     }
@@ -303,7 +304,7 @@ public class GroupTree extends ClientTree {
                 try {
                     form.moveGroupObject(group, key, treeGroupNode.group, treeGroupNode.key, index);
                 } catch (IOException e) {
-                    throw new RuntimeException("Ошибка при перемещении узла в дереве.");
+                    throw new RuntimeException(ClientResourceBundle.getString("form.tree.error.moving.node.in.tree"));
                 }
 
                 return true;

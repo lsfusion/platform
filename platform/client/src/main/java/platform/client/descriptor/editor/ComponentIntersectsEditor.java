@@ -1,6 +1,7 @@
 package platform.client.descriptor.editor;
 
 import platform.base.BaseUtils;
+import platform.client.ClientResourceBundle;
 import platform.client.descriptor.editor.base.TitledPanel;
 import platform.client.logics.ClientComponent;
 import platform.client.logics.ClientContainer;
@@ -25,8 +26,8 @@ public class ComponentIntersectsEditor extends TitledPanel implements IncrementV
     private List<SingleIntersectEditor> editors = new ArrayList<SingleIntersectEditor>();
 
     private JPanel intersectsPanel = new JPanel();
-    private JButton addBut = new JButton("Добавить");
-    private JButton removeBut = new JButton("Удалить");
+    private JButton addBut = new JButton(ClientResourceBundle.getString("descriptor.editor.pending.add"));
+    private JButton removeBut = new JButton(ClientResourceBundle.getString("descriptor.editor.pending.delete"));
     private PropertyChangeListener propListener = new PropertyChangeListener() {
         public void propertyChange(PropertyChangeEvent e) {
             updateField();

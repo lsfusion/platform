@@ -2,6 +2,7 @@ package platform.client.logics;
 
 import platform.base.BaseUtils;
 import platform.base.identity.IdentityObject;
+import platform.client.ClientResourceBundle;
 import platform.client.logics.classes.ClientClass;
 import platform.client.logics.classes.ClientTypeSerializer;
 import platform.client.serialization.ClientIdentitySerializable;
@@ -56,12 +57,12 @@ public class ClientObject extends IdentityObject implements Serializable, Client
                 ? caption
                 : !BaseUtils.isRedundantString(baseClass)
                 ? baseClass.toString()
-                : "Неопределённый объект";
+                : ClientResourceBundle.getString("logics.undefined.object");
     }
 
     @Override
     public String toString() {
-        return !getCaption().equals("Неопределённый объект")
+        return !getCaption().equals(ClientResourceBundle.getString("logics.undefined.object"))
                 ? getCaption() + " (" + getID() + ")"
                 : getCaption();
     }

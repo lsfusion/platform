@@ -1,6 +1,7 @@
 package platform.client.form.tree;
 
 import platform.base.BaseUtils;
+import platform.client.ClientResourceBundle;
 import platform.client.form.*;
 import platform.client.form.cell.PropertyController;
 import platform.client.form.panel.PanelController;
@@ -56,7 +57,7 @@ public class TreeGroupController implements GroupObjectLogicsSupplier {
                     try {
                         form.changeFilter(treeGroup, getConditions());
                     } catch (IOException e) {
-                        throw new RuntimeException("Ошибка при применении фильтра", e);
+                        throw new RuntimeException(ClientResourceBundle.getString("errors.error.applying.filter"), e);
                     }
 
                     tree.requestFocusInWindow();

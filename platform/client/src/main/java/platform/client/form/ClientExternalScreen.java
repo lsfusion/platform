@@ -1,5 +1,6 @@
 package platform.client.form;
 
+import platform.client.ClientResourceBundle;
 import platform.client.Main;
 import platform.interop.form.screen.ExternalScreen;
 import platform.interop.form.screen.ExternalScreenComponent;
@@ -23,7 +24,7 @@ public class ClientExternalScreen {
                 screen.initialize();
                 screens.put(screenID, screen);
             } catch (RemoteException e) {
-                throw new RuntimeException("Ошибка при считывании параметров внешнего экрана", e);
+                throw new RuntimeException(ClientResourceBundle.getString("errors.error.reading.parameters.of.the.external.screen"), e);
             }
         }
 
@@ -39,7 +40,7 @@ public class ClientExternalScreen {
             ExternalScreenParameters params = Main.remoteLogics.getExternalScreenParameters(getID(), Main.computerId);
             screen.initialize(params);
         } catch (RemoteException e) {
-            throw new RuntimeException("Ошибка при считывании параметров внешнего экрана", e);
+            throw new RuntimeException(ClientResourceBundle.getString("errors.error.reading.parameters.of.the.external.screen"), e);
         }
     }
 

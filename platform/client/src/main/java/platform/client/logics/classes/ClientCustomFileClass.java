@@ -1,5 +1,6 @@
 package platform.client.logics.classes;
 
+import platform.client.ClientResourceBundle;
 import platform.client.form.PropertyEditorComponent;
 import platform.client.form.PropertyRendererComponent;
 import platform.client.form.editor.CustomFileEditor;
@@ -51,6 +52,6 @@ public class ClientCustomFileClass extends ClientFileClass {
 
     @Override
     public String toString() {
-        return "Произвольный файл";
+        return ClientResourceBundle.getString("logics.classes.custom.file");
     }
 }

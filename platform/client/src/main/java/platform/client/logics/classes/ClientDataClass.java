@@ -1,6 +1,7 @@
 package platform.client.logics.classes;
 
 import platform.base.BaseUtils;
+import platform.client.ClientResourceBundle;
 import platform.client.form.ClientFormController;
 import platform.client.form.PropertyEditorComponent;
 import platform.client.form.cell.CellView;
@@ -99,7 +100,7 @@ public abstract class ClientDataClass extends ClientClass implements ClientType 
     }
 
     public String getConformedMessage() {
-        return "Вы действительно хотите редактировать свойство";
+        return ClientResourceBundle.getString("logics.classes.do.you.really.want.to.edit.property");
     }
 
     public ClientType getType() {

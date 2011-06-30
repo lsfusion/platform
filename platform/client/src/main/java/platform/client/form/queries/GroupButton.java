@@ -7,6 +7,7 @@ import org.jdesktop.swingx.JXTreeTable;
 import org.jdesktop.swingx.treetable.*;
 import platform.base.BaseUtils;
 import platform.base.OrderedMap;
+import platform.client.ClientResourceBundle;
 import platform.client.descriptor.editor.base.TitledPanel;
 import platform.client.form.grid.GridTable;
 import platform.client.form.grid.GridTableModel;
@@ -32,7 +33,7 @@ public abstract class GroupButton extends ToolbarGridButton {
     public GroupDialog dialog;
 
     public GroupButton() {
-        super("/images/group.png", "Группировка");
+        super("/images/group.png", ClientResourceBundle.getString("form.queries.grouping"));
     }
 
     public abstract void addListener();
@@ -47,7 +48,7 @@ public abstract class GroupButton extends ToolbarGridButton {
         private List<JSpinner> groupSpinners = new ArrayList<JSpinner>();
         private List<JCheckBox> sumChecks = new ArrayList<JCheckBox>();
         private List<JCheckBox> maxChecks = new ArrayList<JCheckBox>();
-        private JCheckBox notNullCheck = new JCheckBox("Только заполненные");
+        private JCheckBox notNullCheck = new JCheckBox(ClientResourceBundle.getString("form.queries.only.filled"));
         private JLabel recordCountLabel = new JLabel();
         private JScrollPane treeTableScroll = new JScrollPane();
         private JXTreeTable treeTable;
@@ -62,7 +63,7 @@ public abstract class GroupButton extends ToolbarGridButton {
         };
 
         public GroupDialog(Frame owner, GridTable initialTable) throws IOException {
-            super(owner, "Группировка", true);
+            super(owner, ClientResourceBundle.getString("form.queries.grouping"), true);
             this.initialTable = initialTable;
             initialTableModel = initialTable.getTableModel();
 
@@ -84,7 +85,7 @@ public abstract class GroupButton extends ToolbarGridButton {
             KeyStroke stroke = KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0);
             getRootPane().registerKeyboardAction(escListener, stroke, JComponent.WHEN_IN_FOCUSED_WINDOW);
 
-            TitledPanel groupByPanel = new TitledPanel("Группировать по");
+            TitledPanel groupByPanel = new TitledPanel(ClientResourceBundle.getString("form.queries.groupby"));
             JPanel allFieldsPanel = new JPanel();
             allFieldsPanel.setLayout(new BoxLayout(allFieldsPanel, BoxLayout.Y_AXIS));
 
@@ -135,16 +136,16 @@ public abstract class GroupButton extends ToolbarGridButton {
 
             JPanel quantityAndGroupPanel = new JPanel();
             quantityAndGroupPanel.setLayout(new BoxLayout(quantityAndGroupPanel, BoxLayout.Y_AXIS));
-            JCheckBox box = new JCheckBox("Кол-во записей");
+            JCheckBox box = new JCheckBox(ClientResourceBundle.getString("form.queries.number.of.entries"));
             box.setSelected(true);
             sumChecks.add(box);
             quantityAndGroupPanel.add(box);
 
-            TitledPanel sumPanel = new TitledPanel("Суммировать");
+            TitledPanel sumPanel = new TitledPanel(ClientResourceBundle.getString("form.queries.sum"));
             sumPanel.setLayout(new BoxLayout(sumPanel, BoxLayout.Y_AXIS));
             JScrollPane sumScrollPane = new JScrollPane();
 
-            TitledPanel maxPanel = new TitledPanel("Максимум");
+            TitledPanel maxPanel = new TitledPanel(ClientResourceBundle.getString("form.queries.maximum"));
             maxPanel.setLayout(new BoxLayout(maxPanel, BoxLayout.Y_AXIS));
             JScrollPane maxScrollPane = new JScrollPane();
 
@@ -169,7 +170,7 @@ public abstract class GroupButton extends ToolbarGridButton {
             groupPanel.setOneTouchExpandable(true);
             quantityAndGroupPanel.add(groupPanel);
 
-            JButton resetAllButton = new JButton("Сбросить");
+            JButton resetAllButton = new JButton(ClientResourceBundle.getString("form.queries.reset"));
             resetAllButton.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
                     for (int i = 0; i < groupChecks.size(); i++) {
@@ -183,7 +184,7 @@ public abstract class GroupButton extends ToolbarGridButton {
                 }
             });
 
-            JButton executeButton = new JButton("Результат");
+            JButton executeButton = new JButton(ClientResourceBundle.getString("form.queries.result"));
             executeButton.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
                     try {
@@ -219,7 +220,7 @@ public abstract class GroupButton extends ToolbarGridButton {
 
             JPanel topPanel = new JPanel(new BorderLayout());
             topPanel.add(expandButtonsPanel, BorderLayout.WEST);
-            JButton excelExport = new JButton("Экспорт в Excel");
+            JButton excelExport = new JButton(ClientResourceBundle.getString("form.queries.export.to.excel"));
             excelExport.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
                     try {
@@ -378,7 +379,7 @@ public abstract class GroupButton extends ToolbarGridButton {
                 }
             }
             if (sumChecks.get(0).isSelected()) {
-                names.add("Записей");
+                names.add(ClientResourceBundle.getString("form.queries.nodes"));
                 minSizes.add(56);
                 maxSizes.add(533900);
                 prefSizes.add(56);
@@ -450,7 +451,7 @@ public abstract class GroupButton extends ToolbarGridButton {
             treeTableScroll.setViewportView(treeTable);
 
             createExpandButtons();
-            recordCountLabel.setText("Всего записей: " + treeTableModel.getLastLevelRowCount());
+            recordCountLabel.setText(ClientResourceBundle.getString("form.queries.total.nodes")+" " + treeTableModel.getLastLevelRowCount());
         }
 
         private void createExpandButtons() {
@@ -461,9 +462,9 @@ public abstract class GroupButton extends ToolbarGridButton {
                 JButton button = new JButton("" + i);
                 if (i == 0) {
                     button.setText("-");
-                    button.setToolTipText("Свернуть все");
+                    button.setToolTipText(ClientResourceBundle.getString("form.queries.collapse.all"));
                 } else {
-                    button.setToolTipText("Развернуть уровень " + i);
+                    button.setToolTipText(ClientResourceBundle.getString("form.queries.expand.level")+" " + i);
                 }
                 buttons.add(button);
                 button.setMargin(new Insets(0,0,0,0));
@@ -607,7 +608,7 @@ public abstract class GroupButton extends ToolbarGridButton {
             public String getColumnName(int index) {
                 String name ;
                 if (index == 0) {
-                    name = "Дерево";
+                    name = ClientResourceBundle.getString("form.queries.tree");
                 } else {
                     name = "<html>" + columnNames.get(index - 1);
                     if (index == sortedCol) {
@@ -693,7 +694,7 @@ public abstract class GroupButton extends ToolbarGridButton {
         private void exportToExcel() throws IOException, WriteException {
             File file = File.createTempFile("tableContents", ".xls");
             WritableWorkbook workbook = Workbook.createWorkbook(file);
-            WritableSheet sheet = workbook.createSheet("Лист 1", 0);
+            WritableSheet sheet = workbook.createSheet(ClientResourceBundle.getString("form.queries.list1"), 0);
 
             for (int i = 0; i < treeTableModel.getColumnCount(); i++) {
                 String columnName = treeTableModel.getColumnName(i);

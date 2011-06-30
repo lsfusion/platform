@@ -1,5 +1,6 @@
 package platform.client.descriptor.editor;
 
+import platform.client.ClientResourceBundle;
 import platform.client.descriptor.editor.base.TitledPanel;
 import platform.client.descriptor.increment.editor.IncrementTextEditor;
 import platform.client.logics.ClientComponent;
@@ -16,7 +17,7 @@ public class ComponentConstraintsEditor extends TitledPanel {
     protected TitledPanel directions;
 
     public ComponentConstraintsEditor(SimplexConstraints<ClientComponent> constraints) {
-        super("Ограничения расположения");
+        super(ClientResourceBundle.getString("descriptor.editor.location.limit"));
         this.constraints = constraints;
 
         initialize();
@@ -37,28 +38,28 @@ public class ComponentConstraintsEditor extends TitledPanel {
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
 
 
-        fill = new TitledPanel("Заполнение");
+        fill = new TitledPanel(ClientResourceBundle.getString("descriptor.editor.location.limit.filling"));
         fill.setLayout(new BoxLayout(fill, BoxLayout.X_AXIS));
-        fill.add(new JLabel("по горизонтали: "));
+        fill.add(new JLabel(ClientResourceBundle.getString("descriptor.editor.location.limit.filling.horizontal")+" "));
         fill.add(fillHorizontal);
         fill.add(Box.createRigidArea(new Dimension(5, 5)));
-        fill.add(new JLabel("по вертикали: "));
+        fill.add(new JLabel(ClientResourceBundle.getString("descriptor.editor.location.limit.filling.vertical")+" "));
         fill.add(fillVertical);
 
-        insetsSibling = new TitledPanel("Отступы относительно компонентов", siblingEditor);
+        insetsSibling = new TitledPanel(ClientResourceBundle.getString("descriptor.editor.location.limit.margins.on.the.components"), siblingEditor);
 
-        directions = new TitledPanel("Направление");
+        directions = new TitledPanel(ClientResourceBundle.getString("descriptor.editor.location.limit.directions"));
         directions.setLayout(new BoxLayout(directions, BoxLayout.X_AXIS));
-        directions.add(new JLabel("вверх:"));
+        directions.add(new JLabel(ClientResourceBundle.getString("descriptor.editor.location.limit.directions.up")));
         directions.add(topDirection);
         directions.add(Box.createRigidArea(new Dimension(5, 5)));
-        directions.add(new JLabel("влево:"));
+        directions.add(new JLabel(ClientResourceBundle.getString("descriptor.editor.location.limit.directions.left")));
         directions.add(leftDirection);
         directions.add(Box.createRigidArea(new Dimension(5, 5)));
-        directions.add(new JLabel("вниз:"));
+        directions.add(new JLabel(ClientResourceBundle.getString("descriptor.editor.location.limit.directions.down")));
         directions.add(bottomDirection);
         directions.add(Box.createRigidArea(new Dimension(5, 5)));
-        directions.add(new JLabel("вправо:"));
+        directions.add(new JLabel(ClientResourceBundle.getString("descriptor.editor.location.limit.directions.right")));
         directions.add(rightDirection);
 
         panel.add(fill);
@@ -88,16 +89,16 @@ public class ComponentConstraintsEditor extends TitledPanel {
             rightField = new IncrementTextEditor(constraints, field + "Right");
 
             setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
-            add(new JLabel("сверху:"));
+            add(new JLabel(ClientResourceBundle.getString("descriptor.editor.location.limit.directions.from.above")));
             add(topField);
             add(Box.createRigidArea(new Dimension(5, 5)));
-            add(new JLabel("слева:"));
+            add(new JLabel(ClientResourceBundle.getString("descriptor.editor.location.limit.directions.on.the.right")));
             add(leftField);
             add(Box.createRigidArea(new Dimension(5, 5)));
-            add(new JLabel("снизу:"));
+            add(new JLabel(ClientResourceBundle.getString("descriptor.editor.location.limit.directions.from.below")));
             add(bottomField);
             add(Box.createRigidArea(new Dimension(5, 5)));
-            add(new JLabel("справа:"));
+            add(new JLabel(ClientResourceBundle.getString("descriptor.editor.location.limit.directions.on.the.left")));
             add(rightField);
         }
     }

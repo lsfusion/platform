@@ -1,6 +1,7 @@
 package platform.client.descriptor.increment.editor;
 
 import platform.base.BaseUtils;
+import platform.client.ClientResourceBundle;
 import platform.client.descriptor.editor.KeyInputDialog;
 import platform.base.context.*;
 import platform.client.descriptor.editor.base.FlatButton;
@@ -17,8 +18,8 @@ public class IncrementKeyStrokeEditor extends JPanel implements IncrementView {
     private final String field;
     private KeyStroke key;
     private String keyStrokeText;
-    private JLabel title = new JLabel("Текущее сочетание: ");
-    private JLabel dropLabel = new JLabel("Сбросить");
+    private JLabel title = new JLabel(ClientResourceBundle.getString("descriptor.editor.display.current.shortcut")+": ");
+    private JLabel dropLabel = new JLabel(ClientResourceBundle.getString("descriptor.editor.display.reset"));
 
     private KeyStrokeButton button = new KeyStrokeButton();
 
@@ -35,7 +36,7 @@ public class IncrementKeyStrokeEditor extends JPanel implements IncrementView {
         add(Box.createRigidArea(new Dimension(5, 5)));
         add(dropLabel);
         add(Box.createRigidArea(new Dimension(5, 5)));
-        add(new IncrementCheckBox("Показывать сочетание клавиш", object, "showEditKey"));
+        add(new IncrementCheckBox(ClientResourceBundle.getString("descriptor.editor.display.shortcut.keys"), object, "showEditKey"));
     }
 
     private MouseAdapter adapter = new MouseAdapter(){

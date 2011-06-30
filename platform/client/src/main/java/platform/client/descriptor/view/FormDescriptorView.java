@@ -2,6 +2,7 @@ package platform.client.descriptor.view;
 
 import platform.base.context.IncrementView;
 import platform.base.context.Lookup;
+import platform.client.ClientResourceBundle;
 import platform.client.descriptor.FormDescriptor;
 import platform.client.descriptor.nodes.FormNode;
 import platform.client.descriptor.nodes.PlainTextNode;
@@ -157,7 +158,7 @@ public class FormDescriptorView extends JPanel implements IncrementView, Lookup.
 
     private void addActions(FormNode formNode) {
         formNode.addSubTreeAction(
-                new ClassFilteredAction("Редактировать", EditableTreeNode.class) {
+                new ClassFilteredAction(ClientResourceBundle.getString("descriptor.view.edit"), EditableTreeNode.class) {
                     public void actionPerformed(ClientTreeActionEvent e) {
                         Object editObject = ((ClientTreeNode) tree.getSelectionPath().getLastPathComponent()).getUserObject();
                         form.getContext().setProperty(Lookup.NEW_EDITABLE_OBJECT_PROPERTY, editObject);
@@ -206,7 +207,7 @@ public class FormDescriptorView extends JPanel implements IncrementView, Lookup.
 
                 refreshNode = rootNode;
             } else {
-                refreshNode = new PlainTextNode("Форма не выбрана");
+                refreshNode = new PlainTextNode(ClientResourceBundle.getString("descriptor.view.form.not.selected"));
             }
 
             model = new DefaultTreeModel(refreshNode);

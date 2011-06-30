@@ -1,6 +1,7 @@
 package platform.client.form.grid.groupchange;
 
 import org.apache.log4j.Logger;
+import platform.client.ClientResourceBundle;
 import platform.client.SwingUtils;
 import platform.client.form.ClientFormController;
 import platform.client.form.ItemAdapter;
@@ -48,7 +49,7 @@ public class ChangeDialog extends JDialog {
     private ClientFormController form;
 
     public ChangeDialog(JFrame owner, GridTable gridTable) {
-        super(owner, "Групповая корректировка", true);
+        super(owner, ClientResourceBundle.getString("form.grid.group.groupchange"), true);
 
         this.gridTable = gridTable;
         this.model = gridTable.getModel();
@@ -124,10 +125,10 @@ public class ChangeDialog extends JDialog {
         cbMainProperties = new JComboBox(mainProperties);
         cbMainProperties.setSelectedItem(initialProperty);
 
-        cbValueType = new JComboBox(new String[]{"Значение", "Свойство"});
+        cbValueType = new JComboBox(new String[]{ClientResourceBundle.getString("form.grid.group.groupchange.value"), ClientResourceBundle.getString("form.grid.group.groupchange.property")});
 
-        AbstractAction okAction = new ResultAction("Принять", true);
-        AbstractAction cancelAction = new ResultAction("Отмена", false);
+        AbstractAction okAction = new ResultAction(ClientResourceBundle.getString("form.grid.group.groupchange.take"), true);
+        AbstractAction cancelAction = new ResultAction(ClientResourceBundle.getString("form.grid.group.groupchange.cancel"), false);
 
         JButton okBut = new JButton(okAction);
         okBut.getActionMap().put("applyGroupChange", okAction);
@@ -245,7 +246,7 @@ public class ChangeDialog extends JDialog {
             try {
                 selectedValue = form.remoteForm.getPropertyChangeValue(property.getID());
             } catch (RemoteException e) {
-                logger.error("Ошибка при получении текущего значения свойства.");
+                logger.error(ClientResourceBundle.getString("form.grid.group.groupchange.failed.to.retrieve.property.value"));
                 selectedValue = null;
             }
 
@@ -271,7 +272,7 @@ public class ChangeDialog extends JDialog {
                         try {
                             value = ((ObjectPropertyEditor) propertyEditor).getCellDisplayValue();
                         } catch (RemoteException re) {
-                            throw new RuntimeException("Ошибка при получении отображаемого значения", re);
+                            throw new RuntimeException(ClientResourceBundle.getString("form.grid.group.groupchange.failed.to.obtain.displayed.value"), re);
                         }
                     }
                 }
@@ -332,7 +333,7 @@ public class ChangeDialog extends JDialog {
             try {
                 compatible = form.remoteForm.getCompatibleProperties(property.getID(), propertiesIDs);
             } catch (RemoteException e) {
-                logger.error("Ошибка при чтении isCompatible.", e);
+                logger.error(ClientResourceBundle.getString("form.grid.group.groupchange.error.reading.is.compatible"), e);
                 compatible = new boolean[n];
             }
 

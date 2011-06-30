@@ -1,5 +1,7 @@
 package platform.client.code;
 
+import platform.client.ClientResourceBundle;
+
 import javax.swing.*;
 import java.awt.*;
 
@@ -7,7 +9,7 @@ public class CodeDialog extends JDialog{
     JTextArea textArea;
 
     public CodeDialog(JFrame owner, String text) {
-        super(owner, "Сгенерированный код");
+        super(owner, ClientResourceBundle.getString("code.generated.code"));
         setSize(800, 600);
         setLocationRelativeTo(owner);
 

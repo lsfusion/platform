@@ -44,8 +44,9 @@ public class PingThread extends Thread {
                     long newOut = Main.socketFactory.outSum;
 
                     Main.frame.statusComponent
-                            .setText(" Пинг:" + sum / queue.size() + " мс, отправлено: " + (newOut - oldOut) +
-                                     "байт, получено: " + (newIn - oldIn) + " байт, всего отправлено: " + newOut + " байт, всего получено: " + newIn + " байт");
+                            .setText(" " + ClientResourceBundle.getString("pingthread.ping") + " " + sum / queue.size() + " " + ClientResourceBundle.getString("pingthread.ms.sent") + ": " + (newOut - oldOut) +
+                                    " " + ClientResourceBundle.getString("pingthread.bytes.received") + ": " + (newIn - oldIn) + " " + ClientResourceBundle.getString("pingthread.bytes.total.sent") + ": " + newOut + " " +
+                                    ClientResourceBundle.getString("pingthread.bytes.total.received") + ": " + newIn + " " + ClientResourceBundle.getString("pingthread.bytes"));
                     counter = 0;
                     oldIn = newIn;
                     oldOut = newOut;

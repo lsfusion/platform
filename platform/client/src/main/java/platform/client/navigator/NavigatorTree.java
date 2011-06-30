@@ -1,5 +1,6 @@
 package platform.client.navigator;
 
+import platform.client.ClientResourceBundle;
 import platform.client.tree.ClientTree;
 import platform.client.tree.ClientTreeAction;
 import platform.client.tree.ClientTreeActionEvent;
@@ -34,7 +35,7 @@ public class NavigatorTree extends ClientTree {
                 try {
                     addNodeElements((DefaultMutableTreeNode)event.getPath().getLastPathComponent());
                 } catch (IOException e) {
-                    throw new RuntimeException("Ошибка при получении информации о формах", e);
+                    throw new RuntimeException(ClientResourceBundle.getString("errors.error.getting.info.about.forms"), e);
                 }
             }
 
@@ -51,7 +52,7 @@ public class NavigatorTree extends ClientTree {
         rootNode.add(new ExpandingTreeNode());
         expandPath(new TreePath(rootNode));
 
-        rootNode.addSubTreeAction(new ClientTreeAction("Открыть") {
+        rootNode.addSubTreeAction(new ClientTreeAction(ClientResourceBundle.getString("navigator.open")) {
             public void actionPerformed(ClientTreeActionEvent e) {
                 changeCurrentElement();
             }
@@ -89,7 +90,7 @@ public class NavigatorTree extends ClientTree {
         try {
             navigator.openForm((ClientNavigatorForm) nodeObject);
         } catch (Exception e) {
-            throw new RuntimeException("Ошибка при открытии формы", e);
+            throw new RuntimeException(ClientResourceBundle.getString("errors.error.opening.form"), e);
         }
     }
 

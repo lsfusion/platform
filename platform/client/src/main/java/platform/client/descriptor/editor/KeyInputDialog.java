@@ -1,5 +1,7 @@
 package platform.client.descriptor.editor;
 
+import platform.client.ClientResourceBundle;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
@@ -13,15 +15,15 @@ public class KeyInputDialog extends JDialog implements ActionListener {
         boolean ok;
 
         public KeyInputDialog(JFrame owner){
-            super(owner, "Назначение клавиш", true);
+            super(owner, ClientResourceBundle.getString("descriptor.editor.shortcuts"), true);
             setSize(270, 130);
             setResizable(false);
             addWindowListener(new WindowListener());
             setLocationRelativeTo(owner);
 
-            okBut.setText("OK");
+            okBut.setText(ClientResourceBundle.getString("descriptor.editor.okbutton"));
             okBut.addActionListener(this);
-            cancelBut.setText("Отмена");
+            cancelBut.setText(ClientResourceBundle.getString("descriptor.editor.cancelbutton"));
             cancelBut.addActionListener(this);
             keyText.addKeyListener(new KeyListener(){
                 public void keyPressed(KeyEvent e){
@@ -37,7 +39,7 @@ public class KeyInputDialog extends JDialog implements ActionListener {
             });
 
             JPanel inputPanel = new JPanel();
-            inputPanel.add(new JLabel("Нажмите сочетание клавиш"));
+            inputPanel.add(new JLabel(ClientResourceBundle.getString("descriptor.editor.press.key.combination")));
 
             JPanel buts = new JPanel();
             buts.add(okBut);

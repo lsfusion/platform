@@ -2,6 +2,7 @@ package platform.client.logics;
 
 import platform.base.BaseUtils;
 import platform.base.context.ApplicationContext;
+import platform.client.ClientResourceBundle;
 import platform.client.SwingUtils;
 import platform.client.descriptor.FormDescriptor;
 import platform.client.descriptor.ObjectDescriptor;
@@ -304,12 +305,12 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         try {
             changeType = getPropertyChangeType(form, false);
             if (changeType == null) {
-                throw new ParseException("PropertyView не может быть изменено.", 0);
+                throw new ParseException(ClientResourceBundle.getString("logics.propertyview.can.not.be.changed"), 0);
             }
 
             return changeType.parseString(s);
         } catch (IOException e) {
-            throw new ParseException("Ошибка получения данных о propertyChangeType.", 0);
+            throw new ParseException(ClientResourceBundle.getString("logics.failed.to.retrieve.data.propertychangetype"), 0);
         }
     }
 
@@ -443,7 +444,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
             return descriptor.getPropertyObject().property.caption + " (" + getID() + ")";
         }
 
-        return "Неопределённое свойство";
+        return ClientResourceBundle.getString("logics.undefined.property");
     }
 
     // приходится держать ссылку на Descriptor, чтобы правильно отображать caption в Настройка бизнес-логики
@@ -500,9 +501,9 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public static final String toolTipFormat =
             "<html><b>%1$s</b><br><hr>" +
                     "<b>sID:</b> %2$s<br>" +
-                    "<b>Таблица:</b> %3$s<br>" +
-                    "<b>Объекты :</b> %4$s<br>" +
-                    "<b>Сигнатура:</b> %6$s <i>%2$s</i> (%5$s)" +
+                    "<b>"+ClientResourceBundle.getString("logics.grid")+":</b> %3$s<br>" +
+                    "<b>"+ClientResourceBundle.getString("logics.objects")+" :</b> %4$s<br>" +
+                    "<b>"+ClientResourceBundle.getString("logics.signature")+":</b> %6$s <i>%2$s</i> (%5$s)" +
                     "</html>";
 
     public String getTooltipText(String caption) {

@@ -2,6 +2,7 @@ package platform.client.form;
 
 import platform.base.BaseUtils;
 import platform.base.OrderedMap;
+import platform.client.ClientResourceBundle;
 import platform.client.form.cell.PropertyController;
 import platform.client.form.grid.GridController;
 import platform.client.form.grid.GridView;
@@ -324,7 +325,7 @@ public class GroupObjectController implements GroupObjectLogicsSupplier {
                 try {
                     form.switchClassView(groupObject);
                 } catch (IOException e) {
-                    throw new RuntimeException("Ошибка при изменении вида", e);
+                    throw new RuntimeException(ClientResourceBundle.getString("errors.error.changing.type"), e);
                 }
             }
         });
@@ -381,7 +382,7 @@ public class GroupObjectController implements GroupObjectLogicsSupplier {
         String message = "";
         for (ClientObject object : groupObject.objects) {
             if (object.addOnTransaction) {
-                message += "Создать новый " + object.getCaption() + " ?";
+                message += ClientResourceBundle.getString("form.create.new")+" " + object.getCaption() + " ?";
             }
         }
 

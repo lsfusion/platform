@@ -1,5 +1,6 @@
 package platform.client.logics.classes;
 
+import platform.client.ClientResourceBundle;
 import platform.gwt.view.classes.GLongType;
 import platform.gwt.view.classes.GType;
 import platform.interop.Data;
@@ -29,13 +30,13 @@ public class ClientLongClass extends ClientIntegralClass implements ClientTypeCl
         try {
             return Long.parseLong(s);
         } catch (NumberFormatException nfe) {
-            throw new ParseException(s + "не может быть конвертированно в Long.", 0);
+            throw new ParseException(s + ClientResourceBundle.getString("logics.classes.can.not.be.converted.to.long"), 0);
         }
     }
 
     @Override
     public String toString() {
-        return "Длинное целое число";
+        return ClientResourceBundle.getString("logics.classes.long");
     }
 
     @Override

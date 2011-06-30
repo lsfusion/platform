@@ -1,5 +1,6 @@
 package platform.client.form.showtype;
 
+import platform.client.ClientResourceBundle;
 import platform.client.form.ClientFormController;
 import platform.client.form.GroupObjectLogicsSupplier;
 import platform.client.logics.ClientShowType;
@@ -29,7 +30,7 @@ public abstract class ShowTypeController {
                         form.changeClassView(logicsSupplier.getGroupObject(), newClassView);
                     }
                 } catch (IOException el) {
-                    throw new RuntimeException("Ошибка при переключении вида", el);
+                    throw new RuntimeException(ClientResourceBundle.getString("form.showtype.error.switching.type"), el);
                 }
             }
         };

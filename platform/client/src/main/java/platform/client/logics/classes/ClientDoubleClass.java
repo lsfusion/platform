@@ -1,5 +1,6 @@
 package platform.client.logics.classes;
 
+import platform.client.ClientResourceBundle;
 import platform.client.form.PropertyEditorComponent;
 import platform.client.form.editor.DoublePropertyEditor;
 import platform.gwt.view.classes.GDoubleType;
@@ -50,7 +51,7 @@ public class ClientDoubleClass extends ClientIntegralClass implements ClientType
         try {
             return Double.parseDouble(s);
         } catch (NumberFormatException nfe) {
-            throw new ParseException(s + "не может быть конвертированно в Double.", 0);
+            throw new ParseException(s + ClientResourceBundle.getString("logics.classes.can.not.be.converted.to.double"), 0);
         }
     }
 
@@ -60,7 +61,7 @@ public class ClientDoubleClass extends ClientIntegralClass implements ClientType
 
     @Override
     public String toString() {
-        return "Вещественное число";
+        return ClientResourceBundle.getString("logics.classes.real.number");
     }
 
     @Override

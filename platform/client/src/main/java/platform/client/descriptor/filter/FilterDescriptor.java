@@ -1,6 +1,7 @@
 package platform.client.descriptor.filter;
 
 import platform.base.context.ContextObject;
+import platform.client.ClientResourceBundle;
 import platform.client.descriptor.GroupObjectDescriptor;
 import platform.client.descriptor.ObjectDescriptor;
 import platform.client.descriptor.nodes.NodeCreator;
@@ -26,6 +27,6 @@ public abstract class FilterDescriptor extends ContextObject implements ClientCu
 
     public abstract String getCodeConstructor();
 
-    public static String[] derivedNames = new String[]{"Сравнение", "Определено", "Класс", "Отрицание", "Или"};
+    public static String[] derivedNames = new String[]{ClientResourceBundle.getString("descriptor.filter.comparison.comparison"), ClientResourceBundle.getString("descriptor.filter.defined.defined"), ClientResourceBundle.getString("descriptor.filter.class.class"), ClientResourceBundle.getString("descriptor.filter.negation"), ClientResourceBundle.getString("descriptor.filter.or.or")};
     public static Class[] derivedClasses = new Class[]{CompareFilterDescriptor.class, NotNullFilterDescriptor.class, IsClassFilterDescriptor.class, NotFilterDescriptor.class, OrFilterDescriptor.class};
 }

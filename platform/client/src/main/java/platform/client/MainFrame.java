@@ -50,7 +50,7 @@ public abstract class MainFrame extends JFrame {
             public void windowClosing(WindowEvent event) {
 
                 int confirmed = JOptionPane.showConfirmDialog(MainFrame.this,
-                        "Вы действительно хотите выйти ?", "Подтверждение",
+                        ClientResourceBundle.getString("quit.do.you.really.want.to.quit"), ClientResourceBundle.getString("quit.confirmation"),
                         JOptionPane.YES_NO_OPTION);
 
                 if (confirmed == JOptionPane.YES_OPTION) {

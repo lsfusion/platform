@@ -619,6 +619,9 @@ public class ImportProjectsActionProperty extends ActionProperty {
                 new IntegrationService(session, table, Arrays.asList(keysArray), propertiesNonRussianSpecialist).synchronize(true, true, false);
             }
 
+
+            //actions.add(new MessageClientAction(clientResourceBundle.getString("s1"), "Импорт"));
+
             actions.add(new MessageClientAction("Данные были успешно приняты", "Импорт"));
 
         }

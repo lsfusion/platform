@@ -2,6 +2,7 @@ package platform.client.descriptor.editor;
 
 import platform.base.BaseUtils;
 import platform.base.OrderedMap;
+import platform.client.ClientResourceBundle;
 import platform.client.Main;
 import platform.client.descriptor.FormDescriptor;
 import platform.client.descriptor.GroupObjectDescriptor;
@@ -43,7 +44,7 @@ public class DefaultOrdersEditor extends JPanel implements IncrementView {
         form.addDependency(dataHolder, "defaultOrders", this);
 
         if (group == null) {
-            add(new TitledPanel("Группа", new JComboBox(new IncrementSingleListSelectionModel(dataHolder, "groupObject", true) {
+            add(new TitledPanel(ClientResourceBundle.getString("descriptor.editor.group"), new JComboBox(new IncrementSingleListSelectionModel(dataHolder, "groupObject", true) {
                 public List<?> getSingleList() {
                     return form.groupObjects;
                 }
@@ -54,7 +55,7 @@ public class DefaultOrdersEditor extends JPanel implements IncrementView {
             })));
         }
 
-        JPanel propertiesPanel = new TitledPanel("Свойства для выбора", new JScrollPane(new IncrementMultipleListEditor(
+        JPanel propertiesPanel = new TitledPanel(ClientResourceBundle.getString("descriptor.editor.pending.properties"), new JScrollPane(new IncrementMultipleListEditor(
                 new IncrementMultipleListSelectionModel(dataHolder, "pendingProperties") {
 
             public List<?> getList() {
@@ -68,7 +69,7 @@ public class DefaultOrdersEditor extends JPanel implements IncrementView {
             }
         })));
 
-        JButton addBtn = new JButton(new AbstractAction("Добавить") {
+        JButton addBtn = new JButton(new AbstractAction(ClientResourceBundle.getString("descriptor.editor.pending.add")) {
             public void actionPerformed(ActionEvent e) {
                 dataHolder.addToDefaultOrders(dataHolder.getPendingProperties());
                 dataHolder.clearPendingProperties();
@@ -76,7 +77,7 @@ public class DefaultOrdersEditor extends JPanel implements IncrementView {
         });
         addBtn.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-        JButton delBtn = new JButton(new AbstractAction("Удалить") {
+        JButton delBtn = new JButton(new AbstractAction(ClientResourceBundle.getString("descriptor.editor.pending.delete")) {
             public void actionPerformed(ActionEvent e) {
                 dataHolder.removeFromDefaultOrders(table.getSelectedProperties());
             }
@@ -97,7 +98,7 @@ public class DefaultOrdersEditor extends JPanel implements IncrementView {
         });
         downBtn.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-        JPanel tablePanel = new TitledPanel("Выбранные свойства", new JScrollPane(table = new IncrementDefaultOrdersTable()));
+        JPanel tablePanel = new TitledPanel(ClientResourceBundle.getString("descriptor.editor.chosen.properties"), new JScrollPane(table = new IncrementDefaultOrdersTable()));
         tablePanel.setPreferredSize(new Dimension(300, 200));
 
         JPanel selectPanel = new JPanel();
@@ -135,7 +136,7 @@ public class DefaultOrdersEditor extends JPanel implements IncrementView {
     }
 
     public class IncrementDefaultOrdersTable extends JTable {
-        private final String columnNames[] = new String[]{"Свойство", "По возрастанию"};
+        private final String columnNames[] = new String[]{ClientResourceBundle.getString("descriptor.editor.chosen.properties.property"), ClientResourceBundle.getString("descriptor.editor.chosen.properties.ascending")};
 
         public IncrementDefaultOrdersTable() {
             super();

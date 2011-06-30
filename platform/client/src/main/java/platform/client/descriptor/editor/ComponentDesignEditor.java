@@ -1,5 +1,6 @@
 package platform.client.descriptor.editor;
 
+import platform.client.ClientResourceBundle;
 import platform.client.descriptor.editor.base.NorthBoxPanel;
 import platform.client.descriptor.editor.base.TitledPanel;
 import platform.client.descriptor.increment.editor.IncrementColorEditor;
@@ -16,13 +17,13 @@ public class ComponentDesignEditor extends TitledPanel {
 
         JPanel panel1 = new JPanel();
         panel1.setLayout(new FlowLayout(FlowLayout.LEFT));
-        panel1.add(new IncrementColorEditor("Цвет фона: ", design, "background"));
-        panel1.add(new IncrementColorEditor("Цвет текста: ", design, "foreground"));
+        panel1.add(new IncrementColorEditor(ClientResourceBundle.getString("descriptor.editor.background")+": ", design, "background"));
+        panel1.add(new IncrementColorEditor(ClientResourceBundle.getString("descriptor.editor.foreground")+": ", design, "foreground"));
 
         JPanel panel2 = new JPanel();
         panel2.setLayout(new GridLayout(1, 2, 5, 5));
-        panel2.add(new IncrementFontEditor("Шрифт заголовка: ", design, "headerFont"));
-        panel2.add(new IncrementFontEditor("Шрифт: ", design, "font"));
+        panel2.add(new IncrementFontEditor(ClientResourceBundle.getString("descriptor.editor.header.font")+": ", design, "headerFont"));
+        panel2.add(new IncrementFontEditor(ClientResourceBundle.getString("descriptor.editor.font")+": ", design, "font"));
 
         add(new NorthBoxPanel(panel1, panel2));
     }

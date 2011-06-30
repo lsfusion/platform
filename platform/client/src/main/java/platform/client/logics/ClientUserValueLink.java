@@ -1,6 +1,7 @@
 package platform.client.logics;
 
 import platform.base.BaseUtils;
+import platform.client.ClientResourceBundle;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -9,7 +10,7 @@ public class ClientUserValueLink extends ClientValueLink {
 
     public Object value;
 
-    public String toString() { return "Значение"; }
+    public String toString() { return ClientResourceBundle.getString("logics.value"); }
 
     byte getTypeID() {
         return 0;

@@ -1,5 +1,6 @@
 package platform.client.navigator;
 
+import platform.client.ClientResourceBundle;
 import platform.client.tree.ClientTree;
 import platform.client.tree.ClientTreeAction;
 import platform.client.tree.ClientTreeActionEvent;
@@ -20,7 +21,7 @@ public class TreeNavigatorView extends NavigatorView {
     public TreeNavigatorView(ClientNavigatorWindow iWindow, INavigatorController controller) {
         super(iWindow, new ClientTree(), controller);
         tree = (ClientTree) component;
-        root = new ClientTreeNode("Корень");
+        root = new ClientTreeNode(ClientResourceBundle.getString("navigator.root"));
         model = new DefaultTreeModel(root);
         tree.setModel(model);
         tree.setRootVisible(false);
@@ -29,7 +30,7 @@ public class TreeNavigatorView extends NavigatorView {
 
     @Override
     public void refresh(Set<ClientNavigatorElement> newElements) {
-        root = new ClientTreeNode("Корень");
+        root = new ClientTreeNode(ClientResourceBundle.getString("navigator.root"));
         addRootActions();
         for (ClientNavigatorElement element : newElements) {
             if (!element.containsParent(newElements)) {
@@ -71,7 +72,7 @@ public class TreeNavigatorView extends NavigatorView {
     }
 
     private void addRootActions() {
-        root.addSubTreeAction(new ClientTreeAction("Открыть") {
+        root.addSubTreeAction(new ClientTreeAction(ClientResourceBundle.getString("navigator.open")) {
             public void actionPerformed(ClientTreeActionEvent e) {
                 selectedPath = tree.getSelectionPath();
                 if (selectedPath == null) return;

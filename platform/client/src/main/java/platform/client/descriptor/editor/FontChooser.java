@@ -1,5 +1,7 @@
 package platform.client.descriptor.editor;
 
+import platform.client.ClientResourceBundle;
+
 import javax.swing.*;
 import javax.swing.border.*;
 import java.awt.*;
@@ -22,7 +24,7 @@ public class FontChooser extends JDialog implements ActionListener {
     private Font font, curFont;
 
     public FontChooser(JFrame owner, Font curFont) {
-        super(owner, "Выбор шрифта", true);
+        super(owner, ClientResourceBundle.getString("descriptor.editor.font.selection"), true);
         this.curFont = curFont;
         addWindowListener(new WindowListener());
         setVisible(false);
@@ -38,7 +40,7 @@ public class FontChooser extends JDialog implements ActionListener {
 
         JPanel namePanel = new JPanel();
         namePanel.setLayout(new GridLayout());
-        namePanel.setBorder(new CompoundBorder(new TitledBorder("Шрифт"), new EmptyBorder(0, 0, 0, 0)));
+        namePanel.setBorder(new CompoundBorder(new TitledBorder(ClientResourceBundle.getString("descriptor.editor.font")), new EmptyBorder(0, 0, 0, 0)));
         nameComboBox = new JComboBox(fontName);
         nameComboBox.setSelectedItem("Dialog");
         nameComboBox.addActionListener(this);
@@ -46,7 +48,7 @@ public class FontChooser extends JDialog implements ActionListener {
 
         JPanel sizePanel = new JPanel();
         sizePanel.setLayout(new GridLayout());
-        sizePanel.setBorder(new CompoundBorder(new TitledBorder("Размер"), new EmptyBorder(0, 0, 0, 0)));
+        sizePanel.setBorder(new CompoundBorder(new TitledBorder(ClientResourceBundle.getString("descriptor.editor.font.size")), new EmptyBorder(0, 0, 0, 0)));
         sizeComboBox = new JComboBox(getSizes());
         sizeComboBox.setSelectedItem("12");
         sizeComboBox.addActionListener(this);
@@ -54,7 +56,7 @@ public class FontChooser extends JDialog implements ActionListener {
 
         JPanel widthPanel = new JPanel();
         widthPanel.setLayout(new GridLayout());
-        widthPanel.setBorder(new CompoundBorder(new TitledBorder("Ширина"), new EmptyBorder(0, 0, 0, 0)));
+        widthPanel.setBorder(new CompoundBorder(new TitledBorder(ClientResourceBundle.getString("descriptor.editor.font.width")), new EmptyBorder(0, 0, 0, 0)));
         widthComboBox = new JComboBox(getWidths());
         widthComboBox.addActionListener(this);
         widthPanel.add(widthComboBox);
@@ -66,14 +68,14 @@ public class FontChooser extends JDialog implements ActionListener {
 
         JPanel boxPanel = new JPanel();
         boxPanel.setLayout(new GridLayout(2, 2));
-        boxPanel.setBorder(new CompoundBorder(new TitledBorder("Стиль"), new EmptyBorder(0, 0, 0, 0)));
-        boldBox = new JCheckBox("Полужирный");
+        boxPanel.setBorder(new CompoundBorder(new TitledBorder(ClientResourceBundle.getString("descriptor.editor.font.style")), new EmptyBorder(0, 0, 0, 0)));
+        boldBox = new JCheckBox(ClientResourceBundle.getString("descriptor.editor.font.style.bold"));
         boldBox.addActionListener(this);
-        italicBox = new JCheckBox("Курсив");
+        italicBox = new JCheckBox(ClientResourceBundle.getString("descriptor.editor.font.style.italic"));
         italicBox.addActionListener(this);
-        underlineBox = new JCheckBox("Подчёркнутый");
+        underlineBox = new JCheckBox(ClientResourceBundle.getString("descriptor.editor.font.style.underlined"));
         underlineBox.addActionListener(this);
-        strikeThroughBox = new JCheckBox("Зачёркнутый");
+        strikeThroughBox = new JCheckBox(ClientResourceBundle.getString("descriptor.editor.font.style.strikeout"));
         strikeThroughBox.addActionListener(this);
         boxPanel.add(boldBox);
         boxPanel.add(italicBox);
@@ -82,7 +84,7 @@ public class FontChooser extends JDialog implements ActionListener {
 
         JPanel textPanel = new JPanel();
         textPanel.setLayout(new GridLayout());
-        textPanel.setBorder(new CompoundBorder(new TitledBorder("Просмотр"), new EmptyBorder(0, 0, 0, 0)));
+        textPanel.setBorder(new CompoundBorder(new TitledBorder(ClientResourceBundle.getString("descriptor.editor.font.preview")), new EmptyBorder(0, 0, 0, 0)));
         textPanel.setPreferredSize(new Dimension(getWidth(), 200));
         textField.setEditable(false);
         textField.setHorizontalAlignment(JTextField.CENTER);
@@ -91,9 +93,9 @@ public class FontChooser extends JDialog implements ActionListener {
 
         JPanel butPanel = new JPanel();
         butPanel.setLayout(new GridLayout(1, 2, 5, 5));
-        okButton = new JButton("Ok");
+        okButton = new JButton(ClientResourceBundle.getString("descriptor.editor.okbutton"));
         okButton.addActionListener(this);
-        cancelButton = new JButton("Отмена");
+        cancelButton = new JButton(ClientResourceBundle.getString("descriptor.editor.cancelbutton"));
         cancelButton.addActionListener(this);
         butPanel.add(okButton);
         butPanel.add(cancelButton);

@@ -1,5 +1,6 @@
 package platform.client.descriptor.filter;
 
+import platform.client.ClientResourceBundle;
 import platform.client.descriptor.GroupObjectDescriptor;
 import platform.client.descriptor.ObjectDescriptor;
 import platform.client.descriptor.nodes.filters.FilterNode;
@@ -38,7 +39,7 @@ public class OrFilterDescriptor extends FilterDescriptor {
 
     @Override
     public String toString() {
-        String result = "ИЛИ";
+        String result = ClientResourceBundle.getString("descriptor.filter.or");
         if (op1 != null && op2 != null) {
             result += "( " + op1.toString() + ", " + op2.toString() + " )";
         }

@@ -1,5 +1,6 @@
 package platform.client.descriptor.editor;
 
+import platform.client.ClientResourceBundle;
 import platform.client.descriptor.editor.base.NorthBoxPanel;
 import platform.client.descriptor.editor.base.TitledPanel;
 import platform.client.descriptor.increment.editor.IncrementCheckBox;
@@ -9,19 +10,19 @@ public class GridEditor extends ComponentEditor {
     public GridEditor(ClientGrid component) {
         super(component);
 
-        int index = indexOfTab("Отображение");
+        int index = indexOfTab(ClientResourceBundle.getString("descriptor.editor.display"));
 
         setComponentAt(index, new NorthBoxPanel(defaultComponentEditor, sizesEditor, designEditor,
-                new TitledPanel(null, new IncrementCheckBox("Вертикальная табуляция", component, "tabVertical")),
-                new TitledPanel(null, new IncrementCheckBox("Автоскрытие", component, "autoHide"))
+                new TitledPanel(null, new IncrementCheckBox(ClientResourceBundle.getString("descriptor.editor.vertical.tabulation"), component, "tabVertical")),
+                new TitledPanel(null, new IncrementCheckBox(ClientResourceBundle.getString("descriptor.editor.autohide"), component, "autoHide"))
         ));
 
-        addTab("Панель инструментов", new NorthBoxPanel(new TitledPanel(null, new IncrementCheckBox("Показывать поиск", component, "showFind")),
-                new TitledPanel(null, new IncrementCheckBox("Показывать фильтр", component, "showFilter")),
-                new TitledPanel(null, new IncrementCheckBox("Показывать групповую корректировку", component, "showGroupChange")),
-                new TitledPanel(null, new IncrementCheckBox("Показывать подсчёт количества", component, "showCountQuantity")),
-                new TitledPanel(null, new IncrementCheckBox("Показывать расчёт суммы", component, "showCalculateSum")),
-                new TitledPanel(null, new IncrementCheckBox("Показывать группировку", component, "showGroup"))));
+        addTab(ClientResourceBundle.getString("descriptor.editor.toolbar"), new NorthBoxPanel(new TitledPanel(null, new IncrementCheckBox(ClientResourceBundle.getString("descriptor.editor.toolbar.showfind"), component, "showFind")),
+                new TitledPanel(null, new IncrementCheckBox(ClientResourceBundle.getString("descriptor.editor.toolbar.showfilter"), component, "showFilter")),
+                new TitledPanel(null, new IncrementCheckBox(ClientResourceBundle.getString("descriptor.editor.toolbar.showgroupchange"), component, "showGroupChange")),
+                new TitledPanel(null, new IncrementCheckBox(ClientResourceBundle.getString("descriptor.editor.toolbar.showcountquantity"), component, "showCountQuantity")),
+                new TitledPanel(null, new IncrementCheckBox(ClientResourceBundle.getString("descriptor.editor.toolbar.showcalculatesum"), component, "showCalculateSum")),
+                new TitledPanel(null, new IncrementCheckBox(ClientResourceBundle.getString("descriptor.editor.toolbar.showgroup"), component, "showGroup"))));
 
         //todo: minRowCount
     }

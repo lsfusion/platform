@@ -1,5 +1,6 @@
 package platform.client.form.cell;
 
+import platform.client.ClientResourceBundle;
 import platform.client.form.ClientFormController;
 import platform.client.form.ClientFormLayout;
 import platform.client.logics.ClientGroupObjectValue;
@@ -99,7 +100,7 @@ public class PropertyController implements CellViewListener {
         try {
             form.changePropertyDraw(getKey(), columnKey, ivalue, false, aggValue);
         } catch (IOException e) {
-            throw new RuntimeException("Ошибка при изменении значения свойства", e);
+            throw new RuntimeException(ClientResourceBundle.getString("errors.error.changing.property.value"), e);
         }
 
         return true;

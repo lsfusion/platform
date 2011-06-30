@@ -1,5 +1,6 @@
 package platform.client.logics.classes;
 
+import platform.client.ClientResourceBundle;
 import platform.client.form.PropertyEditorComponent;
 import platform.client.form.PropertyRendererComponent;
 import platform.client.form.editor.DocumentPropertyEditor;
@@ -32,7 +33,7 @@ public class ClientPDFClass extends ClientFileClass {
 
     @Override
     public PropertyEditorComponent getComponent(Object value, Format format, ComponentDesign design) {
-        return new DocumentPropertyEditor(value, "Документы PDF", "pdf");
+        return new DocumentPropertyEditor(value, ClientResourceBundle.getString("logics.classes.pdf"), "pdf");
     }
 
     @Override
@@ -52,6 +53,6 @@ public class ClientPDFClass extends ClientFileClass {
 
     @Override
     public String toString() {
-        return "Файл PDF";
+        return ClientResourceBundle.getString("logics.classes.pdf.file");
     }
 }

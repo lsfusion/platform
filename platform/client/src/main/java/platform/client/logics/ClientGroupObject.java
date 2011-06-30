@@ -6,6 +6,7 @@ import platform.base.context.ApplicationContext;
 import platform.base.identity.DefaultIDGenerator;
 import platform.base.identity.IDGenerator;
 import platform.base.identity.IdentityObject;
+import platform.client.ClientResourceBundle;
 import platform.client.form.ClientFormController;
 import platform.client.form.GroupObjectController;
 import platform.client.serialization.ClientIdentitySerializable;
@@ -104,7 +105,7 @@ public class ClientGroupObject extends IdentityObject implements ClientPropertyR
 
     public String getCaption() {
         if (objects.isEmpty()) {
-            return "Пустая группа";
+            return ClientResourceBundle.getString("logics.empty.group");
         }
 
         String result = "";

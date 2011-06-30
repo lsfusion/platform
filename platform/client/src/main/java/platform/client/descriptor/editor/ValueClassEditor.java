@@ -2,6 +2,7 @@ package platform.client.descriptor.editor;
 
 import platform.base.BaseUtils;
 import platform.base.context.IncrementView;
+import platform.client.ClientResourceBundle;
 import platform.client.Main;
 import platform.client.descriptor.FormDescriptor;
 import platform.client.descriptor.editor.base.FlatButton;
@@ -27,13 +28,13 @@ public class ValueClassEditor extends JPanel {
             this.setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
 
             fieldLength = new JTextField();
-            add(new NamedContainer("Ширина", false, fieldLength));
+            add(new NamedContainer(ClientResourceBundle.getString("descriptor.editor.width"), false, fieldLength));
             fieldLength.setText(Integer.toString(length));
 
             add(Box.createRigidArea(new Dimension(5, 5)));
 
             precisionLength = new JTextField();
-            add(new NamedContainer("После запятой", false, precisionLength));
+            add(new NamedContainer(ClientResourceBundle.getString("descriptor.editor.after.decimal.point"), false, precisionLength));
             precisionLength.setText(Integer.toString(precision));
         }
     }
@@ -65,7 +66,7 @@ public class ValueClassEditor extends JPanel {
             }
         });
 
-        add(new NamedContainer("Тип", false, typeClasses));
+        add(new NamedContainer(ClientResourceBundle.getString("descriptor.editor.type"), false, typeClasses));
 
         add(Box.createRigidArea(new Dimension(5, 5)));
 
@@ -104,7 +105,7 @@ public class ValueClassEditor extends JPanel {
                             );
                         }
                     });
-                    currentComponent = new NamedContainer("Длина", false, fieldLength);
+                    currentComponent = new NamedContainer(ClientResourceBundle.getString("descriptor.editor.length"), false, fieldLength);
                 } else if (typeClass.equals(ClientNumericClass.type)) {
                     currentComponent = new Numeric(((ClientNumericClass) clientClass).length, ((ClientNumericClass) clientClass).precision) {
                         public void actionPerformed(ActionEvent e) {
@@ -112,7 +113,7 @@ public class ValueClassEditor extends JPanel {
                         }
                     };
                 } else if (typeClass.equals(ClientObjectClass.type)) {
-                    currentComponent = new NamedContainer("Класс", false, new FlatButton(clientClass.toString()) {
+                    currentComponent = new NamedContainer(ClientResourceBundle.getString("descriptor.editor.class"), false, new FlatButton(clientClass.toString()) {
                         protected void onClick() {
                             ClientObjectClass selectedClass = ClassDialog.dialogObjectClass(this, baseClass, (ClientObjectClass) clientClass, false);
                             if (selectedClass != null) {

@@ -1,5 +1,6 @@
 package platform.client.descriptor.view;
 
+import platform.client.ClientResourceBundle;
 import platform.client.descriptor.FormDescriptor;
 import platform.client.navigator.*;
 import platform.client.tree.*;
@@ -25,7 +26,7 @@ class VisualSetupNavigator extends AbstractNavigator {
         tree.setCellRenderer(new VisualSetupNavigatorRenderer());
 
         tree.rootNode.addSubTreeAction(
-                new ClientTreeAction("Создать новую форму") {
+                new ClientTreeAction(ClientResourceBundle.getString("descriptor.view.create.new.form")) {
                     @Override
                     public void actionPerformed(ClientTreeActionEvent e) {
                         FormDescriptor newForm = navigatorDescriptorView.createAndOpenNewForm();
@@ -52,10 +53,10 @@ class VisualSetupNavigator extends AbstractNavigator {
                 });
 
         tree.rootNode.addSubTreeAction(
-                new ClientTreeAction("Создать новый элемент") {
+                new ClientTreeAction(ClientResourceBundle.getString("descriptor.view.create.create.new.element")) {
                     @Override
                     public void actionPerformed(ClientTreeActionEvent e) {
-                        String caption = JOptionPane.showInputDialog(null, "Введите название элемента:", "Новый элемент", JOptionPane.QUESTION_MESSAGE);
+                        String caption = JOptionPane.showInputDialog(null, ClientResourceBundle.getString("descriptor.view.create.enter.element.name"), ClientResourceBundle.getString("descriptor.view.create.new.element"), JOptionPane.QUESTION_MESSAGE);
 
                         if (caption != null) {
                             ClientNavigatorElement newElement = navigatorDescriptorView.createNewNavigatorElement(caption);
@@ -73,7 +74,7 @@ class VisualSetupNavigator extends AbstractNavigator {
                 });
 
         tree.rootNode.addSubTreeAction(
-                new ClientTreeAction("Отменить изменения") {
+                new ClientTreeAction(ClientResourceBundle.getString("descriptor.view.cancel.changes")) {
                     @Override
                     public void actionPerformed(ClientTreeActionEvent e) {
                         ClientNavigatorForm navigatorForm = (ClientNavigatorForm) e.getNode().getUserObject();
@@ -96,7 +97,7 @@ class VisualSetupNavigator extends AbstractNavigator {
                 });
 
         tree.rootNode.addSubTreeAction(
-                new ClientTreeAction("Удалить") {
+                new ClientTreeAction(ClientResourceBundle.getString("descriptor.view.delete")) {
                     @Override
                     public void actionPerformed(ClientTreeActionEvent e) {
                         ClientTreeNode child = e.getNode();

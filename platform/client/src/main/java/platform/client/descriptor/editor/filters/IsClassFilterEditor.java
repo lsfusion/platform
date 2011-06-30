@@ -1,5 +1,6 @@
 package platform.client.descriptor.editor.filters;
 
+import platform.client.ClientResourceBundle;
 import platform.client.descriptor.FormDescriptor;
 import platform.client.descriptor.GroupObjectDescriptor;
 import platform.client.descriptor.editor.base.TitledPanel;
@@ -15,7 +16,7 @@ public class IsClassFilterEditor extends PropertyFilterEditor {
     public IsClassFilterEditor(GroupObjectDescriptor group, IsClassFilterDescriptor descriptor, FormDescriptor form) {
         super(group, descriptor, form);
 
-        add(new TitledPanel("Класс", new IncrementDialogEditor(descriptor, "objectClass") {
+        add(new TitledPanel(ClientResourceBundle.getString("descriptor.filters.class"), new IncrementDialogEditor(descriptor, "objectClass") {
             protected Object dialogValue(Object currentValue) {
                 return ClassDialog.dialogObjectClass(this, Main.getBaseClass(), (ClientObjectClass) currentValue, false);
             }

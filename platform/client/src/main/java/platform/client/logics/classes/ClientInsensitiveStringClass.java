@@ -2,6 +2,7 @@ package platform.client.logics.classes;
 
 import platform.gwt.view.classes.GInsensitiveStringType;
 import platform.gwt.view.classes.GType;
+import platform.client.ClientResourceBundle;
 import platform.interop.Data;
 
 import java.io.DataInputStream;
@@ -33,7 +34,7 @@ public class ClientInsensitiveStringClass extends ClientStringClass {
 
         @Override
         public String toString() {
-            return "Строка без регистра";
+            return ClientResourceBundle.getString("logics.classes.unsensitive.string");
         }
     };
     public ClientTypeClass getTypeClass() {
@@ -42,7 +43,7 @@ public class ClientInsensitiveStringClass extends ClientStringClass {
 
     @Override
     public String toString() {
-        return "Строка без регистра(" + length + ")";
+        return ClientResourceBundle.getString("logics.classes.unsensitive.string")+"(" + length + ")";
     }
 
     private GInsensitiveStringType gwtType;

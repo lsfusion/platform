@@ -2,6 +2,7 @@ package platform.client.form.grid;
 
 import platform.base.BaseUtils;
 import platform.base.Pair;
+import platform.client.ClientResourceBundle;
 import platform.client.Main;
 import platform.client.SwingUtils;
 import platform.client.form.ClientFormController;
@@ -128,7 +129,7 @@ public abstract class GridTable extends ClientFormTable
                         form.changePageSize(groupObject, newPageSize);
                         pageSize = newPageSize;
                     } catch (IOException e) {
-                        throw new RuntimeException("Ошибка при изменении размера страницы", e);
+                        throw new RuntimeException(ClientResourceBundle.getString("errors.error.changing.page.size"), e);
                     }
                 }
             }
@@ -168,7 +169,7 @@ public abstract class GridTable extends ClientFormTable
             form.changeOrder(columnKey.first, modiType, columnKey.second);
             tableHeader.resizeAndRepaint();
         } catch (IOException e) {
-            throw new RuntimeException("Ошибка изменении сортировки", e);
+            throw new RuntimeException(ClientResourceBundle.getString("errors.error.changing.sorting"), e);
         }
 
         tableHeader.repaint();
@@ -280,7 +281,7 @@ public abstract class GridTable extends ClientFormTable
                                     form.changeGroupObject(groupObject, getSelectedObject());
                                 }
                             } catch (IOException e) {
-                                throw new RuntimeException("Ошибка при изменении текущего объекта", e);
+                                throw new RuntimeException(ClientResourceBundle.getString("errors.error.changing.current.object"), e);
                             }
                         }
                     }, 50);
@@ -503,7 +504,7 @@ public abstract class GridTable extends ClientFormTable
         try {
             form.changePropertyDraw(model.getColumnProperty(col), model.getColumnKey(col), value, multyChange, aggValue);
         } catch (IOException ioe) {
-            throw new RuntimeException("Ошибка при изменении значения свойства", ioe);
+            throw new RuntimeException(ClientResourceBundle.getString("errors.error.changing.property.value"), ioe);
         }
     }
 
@@ -880,7 +881,7 @@ public abstract class GridTable extends ClientFormTable
             try {
                 form.changeGroupObject(groupObject, direction);
             } catch (IOException ioe) {
-                throw new RuntimeException("Ошибка при переходе на запись", ioe);
+                throw new RuntimeException(ClientResourceBundle.getString("errors.error.moving.to.the.node"), ioe);
             }
         }
     }

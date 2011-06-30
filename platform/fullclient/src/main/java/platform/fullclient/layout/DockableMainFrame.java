@@ -12,6 +12,7 @@ import jasperapi.ReportGenerator;
 import net.sf.jasperreports.engine.JRException;
 import platform.base.BaseUtils;
 import platform.base.DebugUtils;
+import platform.client.ClientResourceBundle;
 import platform.client.Log;
 import platform.client.Main;
 import platform.client.MainFrame;
@@ -30,7 +31,6 @@ import java.awt.event.*;
 import java.io.*;
 import java.rmi.RemoteException;
 import java.util.*;
-import java.util.List;
 
 public class DockableMainFrame extends MainFrame {
     private CControl control;
@@ -299,10 +299,10 @@ public class DockableMainFrame extends MainFrame {
     }
 
     private JMenu createWindowMenu() {
-        RootMenuPiece dockableMenu = new RootMenuPiece("Окно", false, new SingleCDockableListMenuPiece(control));
+        RootMenuPiece dockableMenu = new RootMenuPiece(ClientResourceBundle.getString("layout.menu.window"), false, new SingleCDockableListMenuPiece(control));
         dockableMenu.add(new SeparatingMenuPiece(new CLayoutChoiceMenuPiece(control, false), true, false, false));
 
-        final JMenuItem reload = new JMenuItem("Расположение по умолчанию");
+        final JMenuItem reload = new JMenuItem((ClientResourceBundle.getString("layout.menu.window.default.location")));
         reload.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 control.getContentArea().deploy(createGrid());
@@ -317,9 +317,9 @@ public class DockableMainFrame extends MainFrame {
     }
 
     private JMenu createViewMenu() {
-        RootMenuPiece layout = new RootMenuPiece("Вид", false);
-        layout.add(new SubmenuPiece("LookAndFeel", true, new CLookAndFeelMenuPiece(control)));
-        layout.add(new SubmenuPiece("Тема", true, new CThemeMenuPiece(control)));
+        RootMenuPiece layout = new RootMenuPiece(ClientResourceBundle.getString("layout.menu.view"), false);
+        layout.add(new SubmenuPiece(ClientResourceBundle.getString("layout.menu.view.look.and.feel"), true, new CLookAndFeelMenuPiece(control)));
+        layout.add(new SubmenuPiece(ClientResourceBundle.getString("layout.menu.view.theme"), true, new CThemeMenuPiece(control)));
         layout.add(CPreferenceMenuPiece.setup(control));
 
         return layout.getMenu();
@@ -327,9 +327,8 @@ public class DockableMainFrame extends MainFrame {
 
     JMenu createFileMenu() {
 
-        JMenu menu = new JMenu("Файл");
-
-        final JMenuItem changeUser = new JMenuItem("Сменить пользователя");
+        JMenu menu = new JMenu(ClientResourceBundle.getString("layout.menu.file"));
+        final JMenuItem changeUser = new JMenuItem(ClientResourceBundle.getString("layout.menu.file.change.user"));
         changeUser.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent event) {
                 try {
@@ -337,10 +336,10 @@ public class DockableMainFrame extends MainFrame {
                     while (true) {
                         final JTextField login = new JTextField();
                         final JPasswordField jpf = new JPasswordField();
-                        JOptionPane jop = new JOptionPane(new Object[]{new JLabel("Логин"), login, new JLabel("Пароль"), jpf},
+                        JOptionPane jop = new JOptionPane(new Object[]{new JLabel(ClientResourceBundle.getString("layout.menu.file.login")), login, new JLabel(ClientResourceBundle.getString("layout.menu.file.password")), jpf},
                                 JOptionPane.QUESTION_MESSAGE,
                                 JOptionPane.OK_CANCEL_OPTION);
-                        JDialog dialog = jop.createDialog(DockableMainFrame.this, "Введите логин и пароль");
+                        JDialog dialog = jop.createDialog(DockableMainFrame.this, ClientResourceBundle.getString("layout.menu.file.enter.login.and.password"));
                         dialog.addComponentListener(new ComponentAdapter() {
                             @Override
                             public void componentShown(ComponentEvent e) {
@@ -362,7 +361,7 @@ public class DockableMainFrame extends MainFrame {
                                 }
                             } catch (RemoteException e) {
                                 if (DebugUtils.getInitialCause(e) instanceof LoginException)
-                                    JOptionPane.showMessageDialog(DockableMainFrame.this, DebugUtils.getInitialCause(e).getMessage(), "Смена пользователя", JOptionPane.ERROR_MESSAGE);
+                                    JOptionPane.showMessageDialog(DockableMainFrame.this, DebugUtils.getInitialCause(e).getMessage(), ClientResourceBundle.getString("layout.menu.user.changing"), JOptionPane.ERROR_MESSAGE);
                                 else
                                     throw new RuntimeException(e);
                             }
@@ -381,18 +380,18 @@ public class DockableMainFrame extends MainFrame {
 
         menu.addSeparator();
 
-        JMenuItem openReport = new JMenuItem("Открыть отчет");
-        openReport.setToolTipText("Открывает ранее сохраненный отчет");
+        JMenuItem openReport = new JMenuItem(ClientResourceBundle.getString("layout.menu.file.open.report"));
+        openReport.setToolTipText(ClientResourceBundle.getString("layout.menu.file.opens.previously.saved.report"));
 
         openReport.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent ae) {
                 JFileChooser chooser = new JFileChooser();
-                chooser.addChoosableFileFilter(new FileNameExtensionFilter("Отчеты JasperReport", "jrprint"));
+                chooser.addChoosableFileFilter(new FileNameExtensionFilter(ClientResourceBundle.getString("layout.menu.file.jasperReports.reports"), "jrprint"));
                 if (chooser.showOpenDialog(DockableMainFrame.this) == JFileChooser.APPROVE_OPTION) {
                     try {
                         view.openReport(chooser.getSelectedFile());
                     } catch (JRException e) {
-                        throw new RuntimeException("Ошибка при открытии сохраненного отчета", e);
+                        throw new RuntimeException(ClientResourceBundle.getString("layout.menu.file.error.opening.saved.report"), e);
                     }
                 }
             }
@@ -401,7 +400,7 @@ public class DockableMainFrame extends MainFrame {
 
         menu.addSeparator();
 
-        final JMenuItem exit = new JMenuItem("Выход");
+        final JMenuItem exit = new JMenuItem(ClientResourceBundle.getString("layout.menu.file.exit"));
         exit.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -417,9 +416,9 @@ public class DockableMainFrame extends MainFrame {
 
     JMenu createOptionsMenu() {
 
-        JMenu menu = new JMenu("Настройки");
+        JMenu menu = new JMenu(ClientResourceBundle.getString("layout.menu.options"));
 
-        final JMenuItem logicsConfigurator = new JMenuItem("Конфигуратор");
+        final JMenuItem logicsConfigurator = new JMenuItem(ClientResourceBundle.getString("layout.menu.options.configurator"));
         logicsConfigurator.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
@@ -446,8 +445,8 @@ public class DockableMainFrame extends MainFrame {
     }
 
     JMenu createHelpMenu() {
-        JMenu menu = new JMenu("Справка");
-        final JMenuItem about = new JMenuItem("О программе");
+        JMenu menu = new JMenu(ClientResourceBundle.getString("layout.menu.help"));
+        final JMenuItem about = new JMenuItem(ClientResourceBundle.getString("layout.menu.help.about"));
         about.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 JDialog dialog = new JDialog(DockableMainFrame.this);

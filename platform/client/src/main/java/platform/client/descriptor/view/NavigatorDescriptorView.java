@@ -2,6 +2,7 @@ package platform.client.descriptor.view;
 
 import platform.base.context.IncrementView;
 import platform.base.context.Lookup;
+import platform.client.ClientResourceBundle;
 import platform.client.Main;
 import platform.client.descriptor.FormDescriptor;
 import platform.client.navigator.ClientNavigator;
@@ -82,7 +83,7 @@ public class NavigatorDescriptorView extends JPanel {
 
         formView = new FormDescriptorView();
 
-        previewBtn = new JButton("Предпросмотр формы");
+        previewBtn = new JButton(ClientResourceBundle.getString("descriptor.view.form.preview"));
         previewBtn.setEnabled(false);
         previewBtn.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -92,7 +93,7 @@ public class NavigatorDescriptorView extends JPanel {
             }
         });
 
-        saveBtn = new JButton("Сохранить изменения");
+        saveBtn = new JButton(ClientResourceBundle.getString("descriptor.view.save.changes"));
         saveBtn.setEnabled(false);
         saveBtn.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -100,7 +101,7 @@ public class NavigatorDescriptorView extends JPanel {
             }
         });
 
-        cancelBtn = new JButton("Отменить изменения");
+        cancelBtn = new JButton(ClientResourceBundle.getString("descriptor.view.undo.changes"));
         cancelBtn.setEnabled(false);
         cancelBtn.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -142,7 +143,7 @@ public class NavigatorDescriptorView extends JPanel {
                 openForm(currentForm.getSID());
             }
         } catch (IOException e) {
-            throw new RuntimeException("Не могу открыть форму.", e);
+            throw new RuntimeException(ClientResourceBundle.getString("descriptor.view.can.not.open.form"), e);
         }
 
         hasChangedNodes = false;
@@ -200,7 +201,7 @@ public class NavigatorDescriptorView extends JPanel {
             // будет закэширована старая форма и пойдет Exception при применении изменений
             RemoteFormProxy.dropCaches();
         } catch (IOException e) {
-            throw new RuntimeException("Не могу сохранить форму.", e);
+            throw new RuntimeException(ClientResourceBundle.getString("descriptor.view.can.not.save.form"), e);
         }
 
         hasChangedNodes = false;
@@ -285,7 +286,7 @@ public class NavigatorDescriptorView extends JPanel {
         try {
             openForm(newForm.getSID());
         } catch (IOException e) {
-            throw new RuntimeException("Ошибка при открытии формы.", e);
+            throw new RuntimeException(ClientResourceBundle.getString("errors.error.opening.form"), e);
         }
 
         return newForm;
@@ -313,7 +314,7 @@ public class NavigatorDescriptorView extends JPanel {
                 try {
                     openForm(formSID);
                 } catch (IOException e) {
-                    throw new RuntimeException("Ошибка при отмене формы.", e);
+                    throw new RuntimeException(ClientResourceBundle.getString("descriptor.view.error.cancelling.form"), e);
                 }
             }
         }
