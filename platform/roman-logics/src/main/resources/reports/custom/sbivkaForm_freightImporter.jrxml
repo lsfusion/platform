@@ -22,7 +22,7 @@
 	<field name="netWeightImporterFreight" class="java.lang.Double"/>
 	<field name="grossWeightImporterFreight" class="java.lang.Double"/>
 	<field name="sumSbivkaImporterFreight" class="java.lang.Double"/>
-	<field name="quantitySbivkaImporterFreight" class="java.lang.Double"/>
+	<field name="quantityImporterFreight" class="java.lang.Double"/>
 	<field name="category" class="java.lang.Integer"/>
 	<field name="sidCustomCategory6" class="java.lang.String"/>
 	<field name="nameCustomCategory" class="java.lang.String"/>
@@ -118,7 +118,7 @@
 			<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle0" positionType="Float" x="200" y="0" width="50" height="18"/>
 				<textElement textAlignment="Right"/>
-				<textFieldExpression class="java.lang.Double"><![CDATA[$F{quantitySbivkaImporterFreight}]]></textFieldExpression>
+				<textFieldExpression class="java.lang.Double"><![CDATA[$F{quantityImporterFreight}]]></textFieldExpression>
 			</textField>
 		</band>
 	</summary>
