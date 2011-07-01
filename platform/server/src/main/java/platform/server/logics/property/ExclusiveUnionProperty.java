@@ -1,6 +1,8 @@
 package platform.server.logics.property;
 
 import platform.server.data.expr.Expr;
+import platform.server.data.expr.where.CaseExprInterface;
+import platform.server.data.where.Where;
 import platform.server.data.where.WhereBuilder;
 import platform.server.session.Changes;
 import platform.server.session.MapDataChanges;
@@ -29,14 +31,15 @@ public class ExclusiveUnionProperty extends UnionProperty {
 
     @Override
     protected Expr calculateIncrementExpr(Map<Interface, ? extends Expr> joinImplement, Modifier<? extends Changes> modifier, Expr prevExpr, WhereBuilder changedWhere) {
-        Expr result = prevExpr;
+        CaseExprInterface cases = Expr.newCases();
         for(PropertyMapImplement<?, Interface> operand : operands) {
             WhereBuilder changedOperandWhere = new WhereBuilder();
             Expr newOperandExpr = operand.mapExpr(joinImplement, modifier, changedOperandWhere);
-            result = result.nvl(newOperandExpr.and(changedOperandWhere.toWhere()));
-            if(changedWhere!=null) changedWhere.add(changedOperandWhere.toWhere());
+            cases.add(changedOperandWhere.toWhere(), newOperandExpr);
         }
-        return result;
+        if(changedWhere!=null) changedWhere.add(cases.getUpWhere());
+        cases.add(Where.TRUE, prevExpr);
+        return cases.getFinal();
     }
 
     public ExclusiveUnionProperty(String sID, String caption, int intNum) {

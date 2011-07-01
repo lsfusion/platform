@@ -38,7 +38,7 @@ abstract public class UnionProperty extends ComplexIncrementProperty<UnionProper
 
     @Override
     protected Expr calculateExpr(Map<Interface, ? extends Expr> joinImplement, Modifier<? extends Changes> modifier, WhereBuilder changedWhere) {
-        if(!hasChanges(modifier) || (changedWhere==null && !isStored())) // непонятно почему, но так быстрее
+        if(!hasChanges(modifier) || !isStored())
             return calculateNewExpr(joinImplement, modifier, changedWhere);
         return calculateIncrementExpr(joinImplement, modifier, getExpr(joinImplement), changedWhere);
     }
