@@ -54,9 +54,8 @@ public class CaseUnionProperty extends AbstractCaseUnionProperty {
             WhereBuilder changedExprCase = new WhereBuilder();
             Expr caseExpr = propCase.property.mapExpr(joinImplement, modifier, changedExprCase);
 
-            Where changedCase = changedUpWheres.or(changedExprCase.toWhere());
             if(changedWhere!=null) changedWhere.add(changedWhereCase.toWhere().or(changedExprCase.toWhere()));
-            exprCases.add(caseWhere.and(changedCase), caseExpr);
+            exprCases.add(caseWhere.and(changedUpWheres.or(changedExprCase.toWhere())), caseExpr);
             exprCases.add(caseWhere, prevExpr);
         }
         return exprCases.getFinal();

@@ -61,10 +61,10 @@ public class Settings {
     private boolean restructWhereOnMeans = false;
 
     // будет ли оптимизатор разбивать группирующие выражения, чтобы не было FULL JOIN и UNION ALL
-    private boolean splitMaxGroupInnerJoins = true;
+    private boolean splitMaxGroupInnerJoins = false;
 
     // будет ли оптимизатор разбивать группирующие выражения на максимум, так чтобы в группируемом выражении не было бы Case'ов 
-    private boolean splitGroupMaxExprcases = true;
+    private boolean splitGroupMaxExprcases = false;
 
     // будет ли высчитываться что именно изменилось в группирующих свойствах или же будет считаться что изменилось все
     private boolean calculateGroupDataChanged = false;
