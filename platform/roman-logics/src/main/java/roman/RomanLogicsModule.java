@@ -1528,7 +1528,7 @@ public class RomanLogicsModule extends LogicsModule {
 
         netWeightDataSku = addDProp(intraAttributeGroup, "netWeightDataSku", "Вес нетто", DoubleClass.instance, sku);
         netWeightArticleSizeSku = addJProp(intraAttributeGroup, true, "netWeightArticleSizeSku", "Вес нетто", netWeightArticleSize, articleSku, 1, sizeSupplierItem, 1);
-        netWeightSku = addSUProp(intraAttributeGroup, "netWeightSku", "Вес нетто единицы товара", Union.OVERRIDE, netWeightArticleSku, netWeightArticleSizeSku);
+        netWeightSku = addSUProp(intraAttributeGroup, "netWeightSku", "Вес нетто (ед.)", Union.OVERRIDE, netWeightArticleSku, netWeightArticleSizeSku);
 
         // Country
         countrySupplierOfOriginArticle = addDProp(idGroup, "countrySupplierOfOriginArticle", "Страна происхождения (ИД)", countrySupplier, article);
@@ -1575,7 +1575,10 @@ public class RomanLogicsModule extends LogicsModule {
         additionalCompositionOriginDataSku = addDProp(intraAttributeGroup, "additionalCompositionOriginDataSku", "Доп. состав", COMPOSITION_CLASS, sku);
 
         mainCompositionOriginSku = addSUProp(intraAttributeGroup, "mainCompositionOriginSku", true, "Состав", Union.OVERRIDE, mainCompositionOriginArticleSku, mainCompositionOriginArticleColorSku);
+        mainCompositionOriginSku.setPreferredCharWidth(80);
+
         additionalCompositionOriginSku = addSUProp(intraAttributeGroup, "additionalCompositionOriginSku", "Доп. состав", Union.OVERRIDE, additionalCompositionOriginArticleSku, additionalCompositionOriginArticleColorSku);
+        additionalCompositionOriginSku.setPreferredCharWidth(80);
 
         mainCompositionArticle = addDProp(intraAttributeGroup, "mainCompositionArticle", "Состав (перевод)", COMPOSITION_CLASS, article);
         additionalCompositionArticle = addDProp(intraAttributeGroup, "additionalCompositionArticle", "Доп. состав (перевод)", COMPOSITION_CLASS, article);
@@ -1827,8 +1830,8 @@ public class RomanLogicsModule extends LogicsModule {
         customCategoryOriginArticleSkuShipmentDetail = addJProp(idGroup, true, "customCategoryOriginArticleSkuShipmentDetail", "ТН ВЭД (ИД)", customCategoryOriginArticleSku, skuShipmentDetail, 1);
         sidCustomCategoryOriginArticleSkuShipmentDetail = addJProp(supplierAttributeGroup, "sidCustomCategoryOriginArticleSkuShipmentDetail", "Код ТН ВЭД", sidCustomCategoryOrigin, customCategoryOriginArticleSkuShipmentDetail, 1);
 
-        netWeightArticleSkuShipmentDetail = addJProp(supplierAttributeGroup, true, "netWeightArticleSkuShipmentDetail", "Вес нетто единицы товара (ориг.)", netWeightArticleSku, skuShipmentDetail, 1);
-        netWeightSkuShipmentDetail = addJProp(intraAttributeGroup, true, "netWeightSkuShipmentDetail", "Вес нетто единицы товара", netWeightSku, skuShipmentDetail, 1);
+        netWeightArticleSkuShipmentDetail = addJProp(supplierAttributeGroup, true, "netWeightArticleSkuShipmentDetail", "Вес нетто (ориг.)", netWeightArticleSku, skuShipmentDetail, 1);
+        netWeightSkuShipmentDetail = addJProp(intraAttributeGroup, true, "netWeightSkuShipmentDetail", "Вес нетто (ед.)", netWeightSku, skuShipmentDetail, 1);
 
         countryOfOriginArticleSkuShipmentDetail = addJProp(idGroup, true, "countryOfOriginArticleSkuShipmentDetail", "Страна происхождения (ориг.) (ИД)", countryOfOriginArticleSku, skuShipmentDetail, 1);
         nameCountryOfOriginArticleSkuShipmentDetail = addJProp(supplierAttributeGroup, "nameCountryOfOriginArticleSkuShipmentDetail", "Страна происхождения", nameOriginCountry, countryOfOriginArticleSkuShipmentDetail, 1);
@@ -2195,7 +2198,7 @@ public class RomanLogicsModule extends LogicsModule {
         netWeightStockArticle = addSGProp(baseGroup, "netWeightStockArticle", "Вес нетто", netWeightStockSku, 1, articleSku, 2);
         netWeightStock = addSGProp(baseGroup, "netWeightStock", "Вес нетто короба", netWeightStockSku, 1);
 
-        netWeightFreightSku = addDProp(baseGroup, "netWeightFreightSku", "Вес нетто единицы товара", DoubleClass.instance, freight, sku);
+        netWeightFreightSku = addDProp(baseGroup, "netWeightFreightSku", "Вес нетто (ед.)", DoubleClass.instance, freight, sku);
         netWeightFreightSku.setDerivedForcedChange(true, addJProp(baseLM.and1, netWeightSku, 2, quantityFreightSku, 1, 2), 1, 2, is(freightChanged), 1);
 
         addConstraint(addJProp("Для SKU должен быть задан вес нетто", and(true, false), is(freightChanged), 1, netWeightFreightSku, 1, 2, quantityFreightSku, 1, 2), false);
@@ -3424,7 +3427,7 @@ public class RomanLogicsModule extends LogicsModule {
                 addRegularFilterGroup(filterGroup3);
             }
 
-            addActionsOnObjectChange(objBarcode, addPropertyObject(new LP(new ApplyActionProperty())));
+            addActionsOnObjectChange(objBarcode, addPropertyObject(baseLM.apply));
 
             addActionsOnObjectChange(objBarcode, addPropertyObject(barcodeActionSeekPallet, objBarcode));
             //addActionsOnObjectChange(objBarcode, addPropertyObject(barcodeActionCheckPallet, objBarcode));
@@ -3552,6 +3555,40 @@ public class RomanLogicsModule extends LogicsModule {
             design.get(nameRoute).panelLabelAbove = true;
             design.get(nameRoute).design.font = new Font("Tahoma", Font.BOLD, 48);
             design.getGroupObjectContainer(objRoute.groupTo).constraints.childConstraints = DoNotIntersectSimplexConstraint.TOTHE_RIGHT;
+
+            ContainerView supplierRow1 = design.createContainer();
+            supplierRow1.constraints.childConstraints = DoNotIntersectSimplexConstraint.TOTHE_RIGHT;
+            supplierRow1.add(design.get(getPropertyDraw(originalNameArticleSkuShipmentDetail)));
+            supplierRow1.add(design.get(getPropertyDraw(sidCustomCategoryOriginArticleSkuShipmentDetail)));
+            supplierRow1.add(design.get(getPropertyDraw(nameCountryOfOriginArticleSkuShipmentDetail)));
+
+            ContainerView supplierRow2 = design.createContainer();
+            supplierRow2.constraints.childConstraints = DoNotIntersectSimplexConstraint.TOTHE_RIGHT;
+            supplierRow2.add(design.get(getPropertyDraw(nameBrandSupplierArticleSkuShipmentDetail)));
+            supplierRow2.add(design.get(getPropertyDraw(netWeightArticleSkuShipmentDetail)));
+            supplierRow2.add(design.get(getPropertyDraw(mainCompositionOriginArticleSkuShipmentDetail)));
+
+            ContainerView supplierContainer = design.getGroupPropertyContainer(objShipmentDetail.groupTo, supplierAttributeGroup);
+            supplierContainer.constraints.childConstraints = DoNotIntersectSimplexConstraint.TOTHE_BOTTOM;
+            supplierContainer.add(supplierRow1);
+            supplierContainer.add(supplierRow2);
+
+            ContainerView intraRow1 = design.createContainer();
+            intraRow1.constraints.childConstraints = DoNotIntersectSimplexConstraint.TOTHE_RIGHT;
+            intraRow1.add(design.get(getPropertyDraw(nameCategoryArticleSkuShipmentDetail)));
+            intraRow1.add(design.get(getPropertyDraw(nameUnitOfMeasureArticleSkuShipmentDetail)));
+            intraRow1.add(design.get(getPropertyDraw(netWeightSkuShipmentDetail)));
+            intraRow1.add(design.get(getPropertyDraw(nameCountryOfOriginSkuShipmentDetail)));
+
+            ContainerView intraRow2 = design.createContainer();
+            intraRow2.constraints.childConstraints = DoNotIntersectSimplexConstraint.TOTHE_RIGHT;
+            intraRow2.add(design.get(getPropertyDraw(mainCompositionOriginSkuShipmentDetail)));
+            intraRow2.add(design.get(getPropertyDraw(additionalCompositionOriginSkuShipmentDetail)));
+
+            ContainerView intraContainer = design.getGroupPropertyContainer(objShipmentDetail.groupTo, intraAttributeGroup);
+            intraContainer.constraints.childConstraints = DoNotIntersectSimplexConstraint.TOTHE_BOTTOM;
+            intraContainer.add(intraRow1);
+            intraContainer.add(intraRow2);
 
             design.setHighlightColor(new Color(255, 128, 128));
 

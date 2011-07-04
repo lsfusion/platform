@@ -16,11 +16,11 @@ public class EventBus implements Serializable {
         }
     }
 
-    public void addListener(ValueEventListener listener) {
-        listeners.put(listener, listener.getEventSID());
+    public void addListener(ValueEventListener listener, String eventSID) {
+        listeners.put(listener, eventSID);
     }
 
-    public void enterValue(int value, String SID) {
+    public void enterValue(Object value, String SID) {
         raiseEvent(new ValueEvent(SID, value));
     }
 }

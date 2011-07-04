@@ -12,6 +12,9 @@ import java.util.Set;
 
 public class OrFilterEntity extends OpFilterEntity<OrFilterEntity> {
 
+    public OrFilterEntity() {
+    }
+
     public OrFilterEntity(FilterEntity op1, FilterEntity op2) {
         super(op1, op2);
     }

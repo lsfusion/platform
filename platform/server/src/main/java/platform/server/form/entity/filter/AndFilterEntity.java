@@ -6,6 +6,9 @@ import platform.server.form.instance.filter.FilterInstance;
 
 public class AndFilterEntity extends OpFilterEntity<AndFilterEntity> {
 
+    public AndFilterEntity() {
+    }
+
     public AndFilterEntity(FilterEntity op1, FilterEntity op2) {
         super(op1, op2);
     }

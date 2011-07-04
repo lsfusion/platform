@@ -28,6 +28,7 @@ import platform.server.form.window.NavigatorWindow;
 import platform.server.form.window.TreeNavigatorWindow;
 import platform.server.logics.linear.LP;
 import platform.server.logics.property.*;
+import platform.server.logics.property.actions.ApplyActionProperty;
 import platform.server.logics.property.actions.DeleteObjectActionProperty;
 import platform.server.logics.property.actions.FormActionProperty;
 import platform.server.logics.property.actions.GenerateLoginPasswordActionProperty;
@@ -192,6 +193,8 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public LP onlyNotZero;
 
     public LP delete;
+
+    public LP apply;
 
     public LP objectClass;
     public LP objectClassName;
@@ -418,7 +421,9 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
         yearInDate = addSFProp("(extract(year from prm1))", IntegerClass.instance, 1);
 
-        delete = addAProp(new DeleteObjectActionProperty(genSID(), baseClass));
+        delete = addAProp(new DeleteObjectActionProperty(baseClass));
+
+        apply = addAProp(new ApplyActionProperty());
 
         date = addDProp(baseGroup, "date", "Дата", DateClass.instance, transaction);
 

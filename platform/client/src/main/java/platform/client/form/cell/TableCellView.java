@@ -123,16 +123,11 @@ public class TableCellView extends JPanel implements CellView {
                     ClientFormLayout focusLayout = SwingUtils.getClientFormlayout(KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusOwner());
                     ClientFormLayout curLayout = SwingUtils.getClientFormlayout(table);
                     if ((curLayout != null) && (curLayout.equals(focusLayout))) {
-                        setValue((Integer) event.getValue() / 1000.0);
+                        table.cellValueChanged(event.getValue(), false);
                     }
                 }
-
-                @Override
-                public String getEventSID() {
-                    return "SCALES";
-                }
             };
-            Main.eBus.addListener(valueEventListener);
+            Main.eBus.addListener(valueEventListener, key.eventSID);
         }
     }
 

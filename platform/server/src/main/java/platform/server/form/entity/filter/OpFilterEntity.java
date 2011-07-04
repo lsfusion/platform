@@ -16,6 +16,9 @@ public abstract class OpFilterEntity<This extends OpFilterEntity<This>> extends 
     public FilterEntity op1;
     public FilterEntity op2;
 
+    protected OpFilterEntity() {
+    }
+
     public OpFilterEntity(FilterEntity op1, FilterEntity op2) {
         this.op1 = op1;
         this.op2 = op2;

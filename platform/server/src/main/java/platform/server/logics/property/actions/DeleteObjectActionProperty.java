@@ -26,8 +26,8 @@ import java.util.Map;
 
 public class DeleteObjectActionProperty extends ActionProperty {
 
-    public DeleteObjectActionProperty(String sID, BaseClass baseClass) {
-        super(sID, "Удалить", new ValueClass[]{baseClass});
+    public DeleteObjectActionProperty(BaseClass baseClass) {
+        super("delete", "Удалить", new ValueClass[]{baseClass});
     }
 
     public String getCode() {
