@@ -362,9 +362,7 @@ public class DataSession extends MutableObject implements SessionChanges, ExprCh
             Query<T,String> changed = new Query<T,String>(property);
 
             WhereBuilder changedWhere = new WhereBuilder();
-            Expr valueExpr = property.getExpr(changed.mapKeys, incrementApply, changedWhere);
-            changed.and(valueExpr.getWhere());
-            changed.and(changedWhere.toWhere()); // только на измененные смотрим
+            changed.and(property.getExpr(changed.mapKeys, incrementApply, changedWhere).getWhere().and(changedWhere.toWhere())); // только на измененные смотрим
 
             // сюда надо name'ы вставить
             List<List<String>> propCaptions = new ArrayList<List<String>>();

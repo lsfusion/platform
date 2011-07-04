@@ -12,38 +12,21 @@ import platform.server.session.PropertyChange;
 import java.util.*;
 
 // чисто для оптимизации
-public class ExclusiveUnionProperty extends UnionProperty {
+public class ExclusiveUnionProperty extends ExclusiveCaseUnionProperty {
 
-    public Set<PropertyMapImplement<?,Interface>> operands = new HashSet<PropertyMapImplement<?, Interface>>();
-
-    @Override
-    protected Collection<PropertyMapImplement<?, Interface>> getOperands() {
-        return operands;
-    }
-
-    @Override
-    protected Expr calculateNewExpr(Map<Interface, ? extends Expr> joinImplement, Modifier<? extends Changes> modifier, WhereBuilder changedWhere) {
-        Expr result = Expr.NULL;
-        for(PropertyMapImplement<?, Interface> operand : operands)
-            result = operand.mapExpr(joinImplement, modifier, changedWhere).nvl(result);
-        return result;
-    }
-
-    @Override
-    protected Expr calculateIncrementExpr(Map<Interface, ? extends Expr> joinImplement, Modifier<? extends Changes> modifier, Expr prevExpr, WhereBuilder changedWhere) {
-        CaseExprInterface cases = Expr.newCases();
-        for(PropertyMapImplement<?, Interface> operand : operands) {
-            WhereBuilder changedOperandWhere = new WhereBuilder();
-            Expr newOperandExpr = operand.mapExpr(joinImplement, modifier, changedOperandWhere);
-            cases.add(changedOperandWhere.toWhere(), newOperandExpr);
-        }
-        if(changedWhere!=null) changedWhere.add(cases.getUpWhere());
-        cases.add(Where.TRUE, prevExpr);
-        return cases.getFinal();
+    private Set<PropertyMapImplement<?,Interface>> operands = new HashSet<PropertyMapImplement<?, Interface>>();
+    public void addOperand(PropertyMapImplement<?,Interface> operand) {
+        operands.add(operand);
+        addCase(operand, operand);
     }
 
     public ExclusiveUnionProperty(String sID, String caption, int intNum) {
         super(sID, caption, intNum);
+    }
+
+    @Override
+    protected <U extends Changes<U>> U calculateUsedDataChanges(Modifier<U> modifier) {
+        return modifier.getUsedDataChanges(getDepends());
     }
 
     @Override

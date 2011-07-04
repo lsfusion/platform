@@ -28,11 +28,6 @@ public class OverrideUnionProperty extends CaseUnionProperty {
     private List<PropertyMapImplement<?,Interface>> operands = new ArrayList<PropertyMapImplement<?, Interface>>();
 
     @Override
-    protected Collection<PropertyMapImplement<?, Interface>> getOperands() {
-        return operands;
-    }
-
-    @Override
     protected <U extends Changes<U>> U calculateUsedDataChanges(Modifier<U> modifier) {
         return modifier.getUsedDataChanges(getDepends());
     }

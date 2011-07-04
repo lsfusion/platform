@@ -12,17 +12,8 @@ import platform.server.session.PropertyChange;
 
 import java.util.*;
 
-public class CaseUnionProperty extends UnionProperty {
+public class CaseUnionProperty extends AbstractCaseUnionProperty {
 
-    private class Case {
-        PropertyMapImplement<?, Interface> where;
-        PropertyMapImplement<?, Interface> property;
-
-        private Case(PropertyMapImplement<?, Interface> where, PropertyMapImplement<?, Interface> property) {
-            this.where = where;
-            this.property = property;
-        }
-    }
     private List<Case> cases = new ArrayList<Case>();
     public void addCase(PropertyMapImplement<?, Interface> where, PropertyMapImplement<?, Interface> property) {
         addCase(where, property, false);
@@ -33,6 +24,9 @@ public class CaseUnionProperty extends UnionProperty {
             cases.add(0, propCase);
         else
             cases.add(propCase);
+    }
+    protected Collection<Case> getCases() {
+        return cases;
     }
 
     public CaseUnionProperty(String sID, String caption, int intNum) {
@@ -50,7 +44,7 @@ public class CaseUnionProperty extends UnionProperty {
     protected Expr calculateIncrementExpr(Map<Interface, ? extends Expr> joinImplement, Modifier<? extends Changes> modifier, Expr prevExpr, WhereBuilder changedWhere) {
         // вообще инкрементальность делается следующим образом
         // Wi AND (OR(Cwi) OR CЕi) AND !OR(Wi-1) - Ei или вставлять прмежуточные (но у 1-го подхода - не надо отрезать сзади ничего, changed более релевантен)
-        Where changedUpWheres = Where.FALSE; Where upWheres = Where.FALSE;
+        Where changedUpWheres = Where.FALSE;
         CaseExprInterface exprCases = Expr.newCases();
         for(Case propCase : cases) {
             WhereBuilder changedWhereCase = new WhereBuilder();
@@ -61,50 +55,19 @@ public class CaseUnionProperty extends UnionProperty {
             Expr caseExpr = propCase.property.mapExpr(joinImplement, modifier, changedExprCase);
 
             Where changedCase = changedUpWheres.or(changedExprCase.toWhere());
-            if(!changedCase.isFalse()) {
-                exprCases.add(upWheres, prevExpr); upWheres = Where.FALSE;
-                if(changedWhere!=null) changedWhere.add(changedWhereCase.toWhere().or(changedExprCase.toWhere()));
-                exprCases.add(caseWhere.and(changedCase), caseExpr);
-            }
-            upWheres = upWheres.or(caseWhere);
+            if(changedWhere!=null) changedWhere.add(changedWhereCase.toWhere().or(changedExprCase.toWhere()));
+            exprCases.add(caseWhere.and(changedCase), caseExpr);
+            exprCases.add(caseWhere, prevExpr);
         }
-        exprCases.add(Where.TRUE, prevExpr);
         return exprCases.getFinal();
-    }
-
-    @Override
-    protected Collection<PropertyMapImplement<?, Interface>> getOperands() {
-        return BaseUtils.mergeSet(getWheres(), getProps());
-    }
-
-    private Set<PropertyMapImplement<?, Interface>> getWheres() {
-        Set<PropertyMapImplement<?, Interface>> operands = new HashSet<PropertyMapImplement<?,Interface>>();
-        for(Case propCase : cases)
-            operands.add(propCase.where);
-        return operands;
-    }
-    private Set<PropertyMapImplement<?, Interface>> getProps() {
-        Set<PropertyMapImplement<?, Interface>> operands = new HashSet<PropertyMapImplement<?,Interface>>();
-        for(Case propCase : cases)
-            operands.add(propCase.where);
-        return operands;
-    }
-
-    protected <U extends Changes<U>> U calculateUsedDataChanges(Modifier<U> modifier) {
-        Set<Property> propValues = new HashSet<Property>(); fillDepends(propValues, getProps());
-        Set<Property> propWheres = new HashSet<Property>(); fillDepends(propWheres, getWheres());
-        return modifier.getUsedDataChanges(propValues).add(modifier.getUsedChanges(propValues));
     }
 
     protected MapDataChanges<Interface> calculateDataChanges(PropertyChange<Interface> change, WhereBuilder changedWhere, Modifier<? extends Changes> modifier) {
         MapDataChanges<Interface> result = new MapDataChanges<Interface>();
         for(Case operand : cases) {
             Where caseWhere = operand.where.mapExpr(change.mapKeys, modifier).getWhere();
-
-            WhereBuilder operandWhere = new WhereBuilder();
-            result = result.add(operand.property.mapDataChanges(change.and(caseWhere), operandWhere, modifier));
+            result = result.add(operand.property.mapDataChanges(change.and(caseWhere), changedWhere, modifier));
             change = change.and(caseWhere.not());
-            if(changedWhere!=null) changedWhere.add(operandWhere.toWhere());
         }
         return result;
     }

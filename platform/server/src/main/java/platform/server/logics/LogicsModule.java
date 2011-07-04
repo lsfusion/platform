@@ -1105,7 +1105,7 @@ public abstract class LogicsModule {
                     ((XorUnionProperty) property).operands.add(operand);
                     break;
                 case EXCLUSIVE:
-                    ((ExclusiveUnionProperty) property).operands.add(operand);
+                    ((ExclusiveUnionProperty) property).addOperand(operand);
                     break;
             }
         }
