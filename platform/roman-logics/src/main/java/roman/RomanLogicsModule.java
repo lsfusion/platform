@@ -34,6 +34,7 @@ import platform.server.logics.linear.LP;
 import platform.server.logics.property.ActionProperty;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.PropertyFollows;
+import platform.server.logics.property.actions.ApplyActionProperty;
 import platform.server.logics.property.group.AbstractGroup;
 import platform.server.session.Changes;
 import platform.server.session.DataSession;
@@ -1092,6 +1093,8 @@ public class RomanLogicsModule extends LogicsModule {
         baseLM.tableFactory.include("subCategory", subCategory);
         baseLM.tableFactory.include("stamp", stamp);
         baseLM.tableFactory.include("secondNameClass", secondNameClass);
+
+        baseLM.tableFactory.include("importerFreight", importer, freight);
     }
 
     @Override
@@ -2042,9 +2045,9 @@ public class RomanLogicsModule extends LogicsModule {
 
         diffShipmentRouteSku = addJProp(baseLM.greater2, zeroQuantityShipmentRouteSku, 1, 2, 3, zeroInvoicedShipmentRouteSku, 1, 2, 3);
 
-        sumShipmentRouteSku = addJProp(baseGroup, "sumShipmentRouteSku", "Сумма", baseLM.multiplyDouble2, invoicedShipmentRouteSku, 1, 2, 3, priceShipmentSku, 1, 3);
-        sumShipmentRoute = addSGProp(baseGroup, "sumShipmentRoute", "Сумма (ожид.)", sumShipmentRouteSku, 1, 2);
-        sumShipment = addSGProp(baseGroup, "sumShipment", "Сумма (ожид.)", sumShipmentRoute, 1);
+        sumShipmentRouteSku = addJProp("sumShipmentRouteSku", "Сумма", baseLM.multiplyDouble2, invoicedShipmentRouteSku, 1, 2, 3, priceShipmentSku, 1, 3);
+        sumShipmentRoute = addSGProp("sumShipmentRoute", "Сумма (ожид.)", sumShipmentRouteSku, 1, 2);
+        sumShipment = addSGProp("sumShipment", "Сумма (ожид.)", sumShipmentRoute, 1);
 
         invoicedShipmentRoute = addSGProp(baseGroup, "invoicedShipmentRoute", "Кол-во", invoicedShipmentRouteSku, 1, 2);
 
@@ -2296,7 +2299,7 @@ public class RomanLogicsModule extends LogicsModule {
         priceMarkupInImporterFreightSku = addJProp(baseGroup, "priceMarkupInImporterFreightSku", "Цена выходная", baseLM.sumDouble2, priceInImporterFreightSku, 1, 2, 3, markupInImporterFreightSku, 1, 2, 3);
 
         priceInOutImporterFreightSku = addDProp(baseGroup, "priceInOutImporterFreightSku", "Цена выходная", DoubleClass.instance, importer, freightPriced, sku);
-        priceInOutImporterFreightSku.setDerivedForcedChange(true, addJProp(baseLM.and1, priceMarkupInImporterFreightSku, 1, 2, 3, quantityImporterFreightSku, 1, 2, 3), 1, 2, 3, is(freightPriced), 2);
+        priceInOutImporterFreightSku.setDerivedForcedChange(true, addJProp(baseLM.and1, priceMarkupInImporterFreightSku, 1, 2, 3, quantityImporterFreightSku, 1, 2, 3), 1, 2, 3, is(freightPriced), 2, markupPercentImporterFreightSku, 1, 2, 3);
 
         insuranceImporterFreightSku = addPGProp(baseGroup, "insuranceImporterFreightSku", false, 2, false, "Сумма страховки",
                 priceInOutImporterFreightSku,
@@ -3420,6 +3423,8 @@ public class RomanLogicsModule extends LogicsModule {
                         KeyStroke.getKeyStroke(KeyEvent.VK_F8, 0)));
                 addRegularFilterGroup(filterGroup3);
             }
+
+            addActionsOnObjectChange(objBarcode, addPropertyObject(new LP(new ApplyActionProperty())));
 
             addActionsOnObjectChange(objBarcode, addPropertyObject(barcodeActionSeekPallet, objBarcode));
             //addActionsOnObjectChange(objBarcode, addPropertyObject(barcodeActionCheckPallet, objBarcode));

@@ -658,6 +658,10 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
     }
 
     public void applyChanges() throws RemoteException {
+        applyChanges(actions);
+    }
+
+    public void applyChanges(List<ClientAction> actions) {
         try {
             actions.addAll(form.fireOnApply(this));
             form.applyActionChanges(actions);

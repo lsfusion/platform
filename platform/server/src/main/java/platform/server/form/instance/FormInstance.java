@@ -593,6 +593,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
     public void commitApply(String checkResult, List<ClientAction> actions) throws SQLException {
         if (checkResult != null) {
             actions.add(new ResultClientAction(checkResult, true));
+            actions.add(new StopAutoActionsClientAction());
             session.cleanApply();
             return;
         }
