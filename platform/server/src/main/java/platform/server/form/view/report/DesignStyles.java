@@ -21,15 +21,13 @@ public class DesignStyles {
         style.setFontName("lsf.TimesNewRoman");
         style.setFontSize(10);
         style.setVerticalAlignment(VerticalAlignEnum.MIDDLE);
-    }
 
-    private static void setCellStyle(JRDesignStyle style) {
-        setDefaultStyle(style);
+        // используем getParagraph вместо getLineBox, поскольку JasperReports padding у LineBox вообще никак не уважает
+        style.getParagraph().setLeftIndent(2);
+        style.getParagraph().setRightIndent(2);
 
-        style.setName("CellStyle");
-
-        style.getLineBox().setLeftPadding(2);
-        style.getLineBox().setRightPadding(2);
+//        style.getLineBox().setLeftPadding(2);
+//        style.getLineBox().setRightPadding(2);
 
         style.getLineBox().getPen().setLineColor(Color.black);
         style.getLineBox().getPen().setLineStyle(LineStyleEnum.SOLID);
@@ -37,14 +35,13 @@ public class DesignStyles {
     }
 
     private static void setGroupStyle(JRDesignStyle style, int groupIndex, int groupCount, int minLevel, int maxLevel, int maxTreeLevel) {
-        setCellStyle(style);
+        setDefaultStyle(style);
         style.setName("GroupCellStyle" + groupIndex);
         int colorIndex = groupCount - groupIndex - 1;
         double normalizedIntervalLength = (maxLevel - minLevel) / (double) maxTreeLevel;
         int color = (int) (255 - 64 * (minLevel + colorIndex * normalizedIntervalLength) / maxTreeLevel);
         style.setMode(ModeEnum.OPAQUE);
         style.setBackcolor(new Color(color, color, color));
-
     }
 
     public static JRDesignStyle getDefaultStyle() {
