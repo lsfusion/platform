@@ -1,6 +1,7 @@
 package platform.client.remote.proxy;
 
 import platform.interop.form.RemoteDialogInterface;
+import platform.interop.remote.SelectedObject;
 
 import java.rmi.RemoteException;
 
@@ -12,17 +13,11 @@ public class RemoteDialogProxy<T extends RemoteDialogInterface>
         super(target);
     }
 
-    public Object getDialogValue() throws RemoteException {
-        logRemoteMethodStartCall("getDialogValue");
-        Object result = target.getDialogValue();
-        logRemoteMethodEndCall("getDialogValue", result);
-        return result;
-    }
-
-    public Object geCellDisplayValue() throws RemoteException {
-        logRemoteMethodStartCall("geCellDisplayValue");
-        Object result = target.geCellDisplayValue();
-        logRemoteMethodEndCall("geCellDisplayValue", result);
+    @Override
+    public SelectedObject getSelectedObject() throws RemoteException {
+        logRemoteMethodStartCall("getSelectedObject");
+        SelectedObject result = target.getSelectedObject();
+        logRemoteMethodEndCall("getSelectedObject", result);
         return result;
     }
 

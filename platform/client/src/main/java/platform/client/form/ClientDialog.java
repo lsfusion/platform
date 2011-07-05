@@ -3,6 +3,7 @@ package platform.client.form;
 import platform.client.ClientResourceBundle;
 import platform.client.SwingUtils;
 import platform.interop.form.RemoteDialogInterface;
+import platform.interop.remote.SelectedObject;
 
 import java.awt.*;
 import java.awt.event.WindowAdapter;
@@ -29,35 +30,6 @@ public class ClientDialog extends ClientModalForm {
 
         // делаем, чтобы не выглядел как диалог
         setUndecorated(true);
-    }
-
-    protected void createListeners0() {
-        addWindowListener(new WindowAdapter() {
-            public void windowActivated(WindowEvent e) {
-                boolean activatedFirstTime = true;
-                int initialFilterPropertyDrawID = -1;
-                if (showQuickFilterOnStartup) {
-                    showQuickFilterOnStartup = false;
-                    try {
-                        Integer filterPropertyDraw = remoteDialog.getInitFilterPropertyDraw();
-                        if (filterPropertyDraw != null) {
-                            initialFilterPropertyDrawID = filterPropertyDraw;
-                        }
-                    } catch (RemoteException ignored) {
-                    }
-                }
-
-                if (initialFilterPropertyDrawID > 0) {
-                    currentForm.quickEditFilter(initialFilterPropertyDrawID);
-                } else if (activatedFirstTime) {
-                    KeyboardFocusManager.getCurrentKeyboardFocusManager().focusNextComponent(currentForm.getComponent());
-                }
-
-                if (activatedFirstTime) {
-                    activatedFirstTime = false;
-                }
-            }
-        });
     }
 
     @Override
@@ -127,8 +99,9 @@ public class ClientDialog extends ClientModalForm {
 
                 objectChosen = CHOSEN_VALUE;
                 try {
-                    dialogValue = remoteDialog.getDialogValue();
-                    displayValue = remoteDialog.geCellDisplayValue();
+                    SelectedObject selectedObject = remoteDialog.getSelectedObject();
+                    dialogValue = selectedObject.value;
+                    displayValue = selectedObject.displayValue;
                 } catch (RemoteException e) {
                     throw new RuntimeException(ClientResourceBundle.getString("errors.error.getting.value.of.dialogue"), e);
                 }
