@@ -1,6 +1,7 @@
 package platform.server.form.instance.remote;
 
 import platform.interop.form.RemoteDialogInterface;
+import platform.interop.remote.SelectedObject;
 import platform.server.form.instance.DialogInstance;
 import platform.server.form.instance.listener.RemoteFormListener;
 import platform.server.form.view.FormView;
@@ -14,12 +15,9 @@ public class RemoteDialog<T extends BusinessLogics<T>> extends RemoteForm<T, Dia
         super(form, richDesign, port, remoteFormListener);
     }
 
-    public Object getDialogValue() {
-        return form.getDialogValue();
-    }
-
-    public Object geCellDisplayValue() {
-        return form.getCellDisplayValue();
+    @Override
+    public SelectedObject getSelectedObject() throws RemoteException {
+        return new SelectedObject(form.getDialogValue(), form.getCellDisplayValue());
     }
 
     public Integer getInitFilterPropertyDraw() throws RemoteException {
