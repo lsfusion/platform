@@ -794,6 +794,7 @@ public class RomanLogicsModule extends LogicsModule {
     private LP currentPalletFreightBox;
     private LP barcodeActionCheckPallet;
     private LP barcodeActionCheckFreightBox;
+    private LP barcodeActionCheckChangedFreightBox;
     private LP packingListFormFreightBox;
     private LP packingListFormRoute;
     LP quantitySupplierBoxBoxShipmentRouteSku;
@@ -2479,6 +2480,14 @@ public class RomanLogicsModule extends LogicsModule {
                         is(sku), 2,
                         is(route), 1,
                         currentFreightBoxRoute, 1), 1, baseLM.barcodeToObject, 2);
+
+        barcodeActionCheckChangedFreightBox = addJProp(true, "Проверка короба для транспортировки (скомплектован)",
+                addJProp(true, and(false, false, false),
+                        addStopActionProp("Текущей короб находится в скомплектованном фрахте", "Поиск по штрих-коду"),
+                        is(sku), 2,
+                        is(route), 1,
+                        addJProp(freightFreightBox, currentFreightBoxRoute, 1), 1), 1, baseLM.barcodeToObject, 2);
+
         barcodeAction4 = addJProp(true, "Ввод штрих-кода 4",
                 addCUProp(
                         addSCProp(addJProp(true, quantitySupplierBoxBoxShipmentStockSku, 1, 2, currentFreightBoxRoute, 3, 4))
@@ -3479,6 +3488,7 @@ public class RomanLogicsModule extends LogicsModule {
                     objShipment, objBarcode, objRoute));
 
             addActionsOnObjectChange(objBarcode, addPropertyObject(barcodeActionCheckFreightBox, objRoute, objBarcode));
+            addActionsOnObjectChange(objBarcode, addPropertyObject(barcodeActionCheckChangedFreightBox, objRoute, objBarcode));
 
             if (box) {
                 addActionsOnObjectChange(objBarcode, addPropertyObject(addBoxShipmentDetailBoxShipmentSupplierBoxRouteBarcode, objShipment, objSupplierBox, objRoute, objBarcode));
@@ -3596,10 +3606,16 @@ public class RomanLogicsModule extends LogicsModule {
             intraRow2.add(design.get(getPropertyDraw(mainCompositionOriginSkuShipmentDetail)));
             intraRow2.add(design.get(getPropertyDraw(additionalCompositionOriginSkuShipmentDetail)));
 
+            ContainerView intraRow3 = design.createContainer();
+            intraRow3.constraints.childConstraints = DoNotIntersectSimplexConstraint.TOTHE_RIGHT;
+            intraRow3.add(design.get(getPropertyDraw(sidStampShipmentDetail)));
+            intraRow3.add(design.get(getPropertyDraw(seriesOfStampShipmentDetail)));
+
             ContainerView intraContainer = design.getGroupPropertyContainer(objShipmentDetail.groupTo, intraAttributeGroup);
             intraContainer.constraints.childConstraints = DoNotIntersectSimplexConstraint.TOTHE_BOTTOM;
             intraContainer.add(intraRow1);
             intraContainer.add(intraRow2);
+            intraContainer.add(intraRow3);
 
             design.setHighlightColor(new Color(255, 128, 128));
 
