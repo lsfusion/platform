@@ -498,20 +498,27 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         return resultPropertyDraw;
     }
 
+    public Collection<Property> hintsNoUpdate = new HashSet<Property>();
+
+    public void addHintsNoUpdate(GroupObjectEntity groupObject) {
+        for (PropertyDrawEntity property : getProperties(groupObject)) {
+            addHintsNoUpdate(property.propertyObject.property);
+        }
+    }
+
     public void addHintsNoUpdate(AbstractGroup group) {
         for (Property property : group.getProperties()) {
             addHintsNoUpdate(property);
         }
     }
 
-    public Collection<Property> hintsNoUpdate = new HashSet<Property>();
-
     protected void addHintsNoUpdate(LP<?> prop) {
         addHintsNoUpdate(prop.property);
     }
 
     protected void addHintsNoUpdate(Property prop) {
-        hintsNoUpdate.add(prop);
+        if (!hintsNoUpdate.contains(prop))
+            hintsNoUpdate.add(prop);
     }
 
     public Map<PropertyDrawEntity, GroupObjectEntity> forceDefaultDraw = new HashMap<PropertyDrawEntity, GroupObjectEntity>();
