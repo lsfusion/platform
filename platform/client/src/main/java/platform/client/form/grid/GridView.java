@@ -30,7 +30,16 @@ public abstract class GridView extends JPanel {
 
         gridTable.setTabVertical(tabVertical);
 
-        pane = new JScrollPane(gridTable);
+        pane = new JScrollPane(gridTable) {
+            @Override
+            public void doLayout() {
+                // хак, чтобы не изменялся ряд при изменении размеров таблицы,
+                // а вместо этого она скроллировалась к видимой строчке
+                gridTable.setLayouting(true);
+                super.doLayout();
+                gridTable.setLayouting(false);
+            }
+        };
         int verticalConst = verticalScroll ? ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED : ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER;
         pane.setVerticalScrollBarPolicy(verticalConst);
         pane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);

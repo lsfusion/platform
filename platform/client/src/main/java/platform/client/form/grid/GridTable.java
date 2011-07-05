@@ -23,8 +23,13 @@ import platform.interop.Order;
 import platform.interop.Scroll;
 
 import javax.swing.*;
-import javax.swing.event.*;
-import javax.swing.table.*;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import javax.swing.event.TableModelEvent;
+import javax.swing.table.JTableHeader;
+import javax.swing.table.TableCellEditor;
+import javax.swing.table.TableColumn;
+import javax.swing.table.TableColumnModel;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.IOException;
@@ -33,7 +38,6 @@ import java.util.*;
 import java.util.List;
 
 import static java.lang.Math.max;
-import static java.lang.Math.min;
 
 public abstract class GridTable extends ClientFormTable
         implements CellTableInterface {
@@ -63,6 +67,8 @@ public abstract class GridTable extends ClientFormTable
     private boolean hasFocusableCells;
 
     private boolean isInternalNavigating = false;
+
+    private boolean isLayouting;
 
     private final GroupObjectController groupObjectController;
 
@@ -318,7 +324,7 @@ public abstract class GridTable extends ClientFormTable
             }
             column.setHeaderValue(model.getColumnName(i));
 
-            rowHeight = Math.max(rowHeight, cell.getPreferredHeight(this));
+            rowHeight = max(rowHeight, cell.getPreferredHeight(this));
 
             hasFocusableCells |= cell.focusable == null || cell.focusable;
 
@@ -730,13 +736,6 @@ public abstract class GridTable extends ClientFormTable
     public void configureWheelScrolling(final JScrollPane pane) {
         assert pane.getViewport() == getParent();
         if (groupObject.pageSize != 0) {
-            addMouseWheelListener(new MouseWheelListener() {
-                @Override
-                public void mouseWheelMoved(MouseWheelEvent e) {
-                    selectRow(max(0, min(getRowCount() - 1, getSelectedRow() + e.getWheelRotation())));
-                }
-            });
-
             pane.getVerticalScrollBar().addAdjustmentListener(new AdjustmentListener() {
                 @Override
                 public void adjustmentValueChanged(AdjustmentEvent e) {
@@ -748,15 +747,23 @@ public abstract class GridTable extends ClientFormTable
 
                         if (lastRow < firstRow) return;
 
-                        if (currRow > lastRow) {
-                            selectRow(lastRow);
-                        } else if (currRow < firstRow) {
-                            selectRow(firstRow);
+                        if (isLayouting) {
+                            selectRow(currRow);
+                        } else {
+                            if (currRow > lastRow) {
+                                selectRow(lastRow);
+                            } else if (currRow < firstRow) {
+                                selectRow(firstRow);
+                            }
                         }
                     }
                 }
             });
         }
+    }
+
+    public void setLayouting(boolean isLayouting) {
+        this.isLayouting = isLayouting;
     }
 
     private class GoToCellAction extends AbstractAction {

@@ -256,7 +256,7 @@ public class SimplePropertyFilter extends JPanel {
         radioPanel.add(downButton);
         radioPanel.add(allButton);
 
-        return new TitledPanel(ClientResourceBundle.getString("descriptor.editor.selection"), radioPanel);
+        return new TitledPanel(ClientResourceBundle.getString("descriptor.editor.group.selection"), radioPanel);
     }
 
     private void changeSelection(int first, int last) {

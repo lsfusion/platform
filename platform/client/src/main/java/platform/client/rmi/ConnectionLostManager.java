@@ -1,7 +1,6 @@
 package platform.client.rmi;
 
 import org.jdesktop.jxlayer.JXLayer;
-import platform.client.ClientResourceBundle;
 import platform.client.Main;
 
 import javax.swing.*;
@@ -9,6 +8,8 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.lang.ref.WeakReference;
+
+import static platform.client.ClientResourceBundle.getString;
 
 public class ConnectionLostManager {
 
@@ -25,7 +26,7 @@ public class ConnectionLostManager {
     }
 
     public static void forceDisconnect() {
-        connectionLost(ClientResourceBundle.getString("rmi.connectionlost.because.because.of.another.client.with.your.login"), true);
+        connectionLost(getString("rmi.connectionlost.because.because.of.another.client.with.your.login"), true);
     }
 
     public static void connectionLost(boolean fatal) {
@@ -78,7 +79,7 @@ public class ConnectionLostManager {
         private final boolean fatal;
 
         public BlockDialog(String message, JFrame owner, boolean fatal) {
-            super(owner, ClientResourceBundle.getString("rmi.connectionlost"), true);
+            super(owner, getString("rmi.connectionlost"), true);
 
             this.fatal = fatal;
 
@@ -89,10 +90,10 @@ public class ConnectionLostManager {
                     message != null
                             ? message
                             : fatal
-                            ? "<html>"+ClientResourceBundle.getString("rmi.connectionlost.on.communication.with.server")+" <br> "+ClientResourceBundle.getString("rmi.connectionlost.try.to.restart.application.manually")+"</html>"
-                            : "<html>"+ClientResourceBundle.getString("rmi.connectionlost.with.server")+" <br> "+ClientResourceBundle.getString("rmi.connectionlost.you.can.wait.or.restart")+"</html>";
+                            ? "<html>"+ getString("rmi.connectionlost.on.communication.with.server")+" <br> "+ getString("rmi.connectionlost.try.to.restart.application.manually")+"</html>"
+                            : "<html>"+ getString("rmi.connectionlost.with.server")+" <br> "+ getString("rmi.connectionlost.you.can.wait.or.restart")+"</html>";
 
-            okBut = new JButton(ClientResourceBundle.getString("rmi.connectionlost.close.application"));
+            okBut = new JButton(getString("rmi.connectionlost.close.application"));
             okBut.addActionListener(this);
 
             JPanel messagePanel = new JPanel();

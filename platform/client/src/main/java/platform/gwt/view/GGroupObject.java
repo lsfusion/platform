@@ -1,7 +1,5 @@
 package platform.gwt.view;
 
-import platform.client.ClientResourceBundle;
-
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
@@ -15,7 +13,8 @@ public class GGroupObject implements Serializable {
 
     public String getCaption() {
         if (objects.isEmpty()) {
-            return ClientResourceBundle.getString("logics.empty.group");
+            //todo: локализовать попозже через GWT-шный Messages interface
+            return "Empty group";
         }
 
         String result = "";
