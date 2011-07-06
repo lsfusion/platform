@@ -3,7 +3,12 @@
 	<property name="ireport.zoom" value="1.0"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
-	<style name="DefaultStyle" isDefault="true" vAlign="Middle" fontName="lsf.TimesNewRoman" fontSize="10"/>
+	<style name="DefaultStyle" isDefault="true" vAlign="Middle" fontName="lsf.TimesNewRoman" fontSize="10">
+		<box>
+			<pen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+		</box>
+		<paragraph leftIndent="2" rightIndent="2"/>
+	</style>
 	<parameter name="freightImporterSupplier_report" class="net.sf.jasperreports.engine.JasperReport"/>
 	<parameter name="freightImporterSupplier_source" class="net.sf.jasperreports.engine.JRDataSource"/>
 	<parameter name="freightImporterSupplier_params" class="java.util.Map"/>

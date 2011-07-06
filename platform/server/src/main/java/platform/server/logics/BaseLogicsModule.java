@@ -259,6 +259,8 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public NavigatorElement<T> objectElement;
     public NavigatorElement<T> adminElement;
 
+    public FormEntity<T> dictionaryForm;
+
     public NavigatorWindow navigatorWindow;
     public AbstractWindow relevantFormsWindow;
     public AbstractWindow relevantClassFormsWindow;
@@ -433,6 +435,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         sidCountry = addDProp(baseGroup, "sidCountry", "Код страны", IntegerClass.instance, country);
         generateDatesCountry = addDProp(privateGroup, "generateDatesCountry", "Генерировать выходные", LogicalClass.instance, country);
         sidToCountry = addAGProp("sidToCountry", "Страна", sidCountry);
+        
         isDayOffCountryDate = addDProp(baseGroup, "isDayOffCD", "Выходной", LogicalClass.instance, country, DateClass.instance);
 
         workingDay = addJProp(baseGroup, "workingDay", "Рабочий", andNot1, addCProp(IntegerClass.instance, 1, country, DateClass.instance), 1, 2, isDayOffCountryDate, 1, 2);
@@ -879,7 +882,8 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         addFormEntity(new ConnectionsFormEntity(adminElement, "connectionsForm"));
         addFormEntity(new AdminFormEntity(adminElement, "adminForm"));
         addFormEntity(new DaysOffFormEntity(adminElement, "daysOffForm"));
-        addFormEntity(new DictionariesFormEntity(adminElement, "dictionariesForm"));
+
+        dictionaryForm = addFormEntity(new DictionariesFormEntity(adminElement, "dictionariesForm"));
 
         addFormEntity(new RemindUserPassFormEntity(adminElement, "remindPasswordLetter"));
     }
