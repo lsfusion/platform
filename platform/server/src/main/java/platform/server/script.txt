@@ -6,3 +6,16 @@ class namedDocument : named, supplierAndDocument;
 
 group NewGroup '\'Новая группа\'';
 group NewGroup2 'new group 2' : baseGroup;
+
+typeInvoiceDataFreightArticle2 = typeInvoice (freight, article) in idGroup;
+rateExchange2 = Double (typeExchange, currency, Date);
+nameOrigin2 = InsensitiveString[50] (secondNameClass) in baseGroup;
+quantityPalletShipment2 = Integer (shipment) in baseGroup;
+
+//typeInvoiceCategoryFreightArticle = addJProp(idGroup, "typeInvoiceCategoryFreightArticle", "Тип инвойса (ИД)", baseLM.and1, typeInvoiceCategoryArticle, 2, is(freight), 1);
+//typeInvoiceCategoryFreightArticle(freight, article) = and1(typeInvoiceCategoryArticle(article), isfreight(freight)) in idGroup;
+
+//numberDocumentArticle = addSGProp(baseGroup, "inDocumentArticle", numberListArticle, documentList, 1, 2);
+//numberDocumentArticle = numberListArticle groupby documentList($1, $2) in baseGroup;
+
+

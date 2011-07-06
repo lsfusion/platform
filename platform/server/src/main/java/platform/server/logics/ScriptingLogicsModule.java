@@ -5,18 +5,15 @@ import org.antlr.runtime.ANTLRFileStream;
 import org.antlr.runtime.ANTLRStringStream;
 import org.antlr.runtime.CharStream;
 import org.antlr.runtime.CommonTokenStream;
+import platform.base.BaseUtils;
 import platform.server.LsfLogicsLexer;
 import platform.server.LsfLogicsParser;
-import platform.server.classes.CustomClass;
-import platform.server.classes.ValueClass;
+import platform.server.classes.*;
 import platform.server.logics.property.group.AbstractGroup;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * User: DAle
@@ -31,6 +28,13 @@ public class ScriptingLogicsModule extends LogicsModule {
     private final BusinessLogics<?> BL;
 
     private final Map<String, List<String>> classes = new HashMap<String, List<String>>();
+
+    public enum State {GROUP, CLASS, PROP}
+
+    private Map<String, ValueClass> primitiveTypeAliases = BaseUtils.buildMap(
+            Arrays.<String>asList("Integer", "Double", "Long", "Date", "Boolean"),
+            Arrays.<ValueClass>asList(IntegerClass.instance, DoubleClass.instance, LongClass.instance, DateClass.instance, LogicalClass.instance)
+    );
 
     private ScriptingLogicsModule(String scriptName, BaseLogicsModule<?> baseModule, BusinessLogics<?> BL) {
         super(scriptName);
@@ -74,27 +78,47 @@ public class ScriptingLogicsModule extends LogicsModule {
         return caption.substring(1, captionStr.length()-1);
     }
 
+    private ValueClass getPredefinedClass(String name) {
+        if (primitiveTypeAliases.containsKey(name)) {
+            return primitiveTypeAliases.get(name);
+        } else if (name.startsWith("String[")) {
+            name = name.substring("String[".length(), name.length() - 1);
+            return StringClass.get(Integer.parseInt(name));
+        } else if (name.startsWith("InsensitiveString[")) {
+            name = name.substring("InsensitiveString[".length(), name.length() - 1);
+            return InsensitiveStringClass.get(Integer.parseInt(name));
+        }
+        return null;
+    }
+
+    private ValueClass getClassByName(String name, Set<String> importedModules) {
+            ValueClass valueClass = getPredefinedClass(name);
+            if (valueClass == null) {
+                int dotPosition = name.indexOf('.');
+                if (dotPosition > 0) {
+                    LogicsModule module = getModule(name.substring(0, dotPosition));
+                    valueClass = module.getClass(module.transformNameToSID(name.substring(dotPosition + 1)));
+                } else {
+                    valueClass = getClass(transformNameToSID(name));
+                    if (valueClass == null) {
+                        for (String importModuleName : importedModules) {
+                            LogicsModule module = getModule(importModuleName);
+                            if ((valueClass = module.getClass(module.transformNameToSID(name))) != null) {
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+            return valueClass;
+    }
+
     public void addScriptedClass(String className, String captionStr, boolean isAbstract, List<String> parentNames, Set<String> importedModules) {
         String caption = (captionStr == null ? className : transformCaptionStr(captionStr));
         CustomClass[] parents = new CustomClass[parentNames.size()];
         for (int i = 0; i < parentNames.size(); i++) {
             String parentName = parentNames.get(i);
-            ValueClass valueClass;
-            int dotPosition = parentName.indexOf('.');
-            if (dotPosition > 0) {
-                LogicsModule module = getModule(parentName.substring(0, dotPosition));
-                valueClass = module.getClass(module.transformNameToSID(parentName.substring(dotPosition + 1)));
-            } else {
-                valueClass = getClass(transformNameToSID(parentName));
-                if (valueClass == null) {
-                    for (String importModuleName : importedModules) {
-                        LogicsModule module = getModule(importModuleName);
-                        if ((valueClass = module.getClass(module.transformNameToSID(parentName))) != null) {
-                            break;
-                        }
-                    }
-                }
-            }
+            ValueClass valueClass = getClassByName(parentName, importedModules);
             assert valueClass instanceof CustomClass;
             parents[i] = (CustomClass) valueClass;
         }
@@ -105,42 +129,57 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
     }
 
-    public void addScriptedGroup(String groupName, String captionStr, String parentName, Set<String> importedModules) {
-        String caption = (captionStr == null ? groupName : transformCaptionStr(captionStr));
-
-        if (parentName != null) {
-            AbstractGroup parentGroup;
-            int dotPosition = parentName.indexOf('.');
-            if (dotPosition > 0) {
-                LogicsModule module = getModule(parentName.substring(0, dotPosition));
-                parentGroup = module.getGroup(module.transformNameToSID(parentName.substring(dotPosition + 1)));
-            } else {
-                parentGroup = getGroup(transformNameToSID(parentName));
-                if (parentGroup == null) {
-                    for (String importModuleName : importedModules) {
-                        LogicsModule module = getModule(importModuleName);
-                        if ((parentGroup = module.getGroup(module.transformNameToSID(parentName))) != null) {
-                            break;
-                        }
+    private AbstractGroup getGroupByName(String name, Set<String> importedModules) {
+        AbstractGroup group;
+        int dotPosition = name.indexOf('.');
+        if (dotPosition > 0) {
+            LogicsModule module = getModule(name.substring(0, dotPosition));
+            group = module.getGroup(module.transformNameToSID(name.substring(dotPosition + 1)));
+        } else {
+            group = getGroup(transformNameToSID(name));
+            if (group == null) {
+                for (String importModuleName : importedModules) {
+                    LogicsModule module = getModule(importModuleName);
+                    if ((group = module.getGroup(module.transformNameToSID(name))) != null) {
+                        break;
                     }
                 }
             }
-            addAbstractGroup(groupName, caption, parentGroup);
-        } else {
-            addAbstractGroup(groupName, caption, null);
+        }
+        return group;
+    }
+
+    public void addScriptedGroup(String groupName, String captionStr, String parentName, Set<String> importedModules) {
+        String caption = (captionStr == null ? groupName : transformCaptionStr(captionStr));
+        AbstractGroup parentGroup = (parentName == null ? null : getGroupByName(parentName, importedModules));
+        addAbstractGroup(groupName, caption, parentGroup);
+    }
+
+    public void addScriptedDProp(String propName, String caption, List<String> paramClasses, String returnClass, boolean isPersistent, String parentGroup, Set<String> importedModules) {
+        AbstractGroup group = (parentGroup == null ? privateGroup : getGroupByName(parentGroup, importedModules));
+        ValueClass value = getClassByName(returnClass, importedModules);
+        ValueClass[] params = new ValueClass[paramClasses.size()];
+        for (int i = 0; i < paramClasses.size(); i++) {
+            params[i] = getClassByName(paramClasses.get(i), importedModules);
+        }
+        addDProp(group, propName, isPersistent, caption, value, params);
+    }
+
+    private void parseStep(State state) {
+        try {
+            LsfLogicsLexer lexer = new LsfLogicsLexer(createStream());
+            LsfLogicsParser parser = new LsfLogicsParser(new CommonTokenStream(lexer));
+            parser.self = this;
+            parser.parseState = state;
+            parser.script();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
     }
 
     @Override
     public void initClasses() {
-        try {
-            LsfLogicsLexer lexer = new LsfLogicsLexer(createStream());
-            LsfLogicsParser parser = new LsfLogicsParser(new CommonTokenStream(lexer));
-            parser.self = this;
-            parser.script();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+        parseStep(ScriptingLogicsModule.State.CLASS);
     }
 
     @Override
@@ -150,11 +189,12 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     @Override
     public void initGroups() {
-        //To change body of implemented methods use File | Settings | File Templates.
+        parseStep(ScriptingLogicsModule.State.GROUP);
     }
 
     @Override
     public void initProperties()  {
+        parseStep(ScriptingLogicsModule.State.PROP);
     }
 
     @Override
