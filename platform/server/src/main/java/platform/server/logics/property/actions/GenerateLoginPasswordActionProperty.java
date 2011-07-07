@@ -7,6 +7,7 @@ import platform.server.form.instance.PropertyObjectInterfaceInstance;
 import platform.server.form.instance.remote.RemoteForm;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
+import platform.server.logics.ServerResourceBundle;
 import platform.server.logics.linear.LP;
 import platform.server.logics.property.ActionProperty;
 import platform.server.logics.property.ClassPropertyInterface;
@@ -27,7 +28,7 @@ public class GenerateLoginPasswordActionProperty extends ActionProperty {
     private final ClassPropertyInterface customUserInterface;
 
     public GenerateLoginPasswordActionProperty(LP email, LP userLogin, LP userPassword, ValueClass customUser) {
-        super("generateLoginPassword", "Сгенерировать логин и пароль", new ValueClass[]{customUser});
+        super("generateLoginPassword", ServerResourceBundle.getString("logics.property.actions.generate.login.and.password"), new ValueClass[]{customUser});
 
         this.email = email;
         this.userLogin = userLogin;

@@ -1,6 +1,7 @@
 package platform.server.form.entity.filter;
 
 import platform.base.identity.IdentityObject;
+import platform.server.logics.ServerResourceBundle;
 import platform.server.serialization.ServerIdentitySerializable;
 import platform.server.serialization.ServerSerializationPool;
 
@@ -42,7 +43,7 @@ public class RegularFilterEntity extends IdentityObject implements ServerIdentit
         try {
             key = (KeyStroke) new ObjectInputStream(inStream).readObject();
         } catch (ClassNotFoundException e) {
-            throw new IOException("Не могу десериализовать RegularFilterEntity");
+            throw new IOException(ServerResourceBundle.getString("form.entity.filter.can.not.deserialize.regular.filter.entity"));
         }
 
         showKey = inStream.readBoolean();

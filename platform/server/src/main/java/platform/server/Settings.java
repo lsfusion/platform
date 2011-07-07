@@ -1,10 +1,14 @@
 package platform.server;
 
 import platform.server.data.expr.query.GroupType;
+import platform.server.logics.ServerResourceBundle;
+
+import java.util.Locale;
 
 public class Settings {
 
     public static Settings instance;
+    private String locale;
 
     // определяет при каком количестве записей таблица будет считаться маленькой и проталкиваться внутрь группирующих / упорядочивающих подзапросов, соответственно 0 - отключено то есть никогда не будет
     private int fewCount = 100;
@@ -192,5 +196,10 @@ public class Settings {
 
     public void setUsedChangesCacheLimit(int usedChangesCacheLimit) {
         this.usedChangesCacheLimit = usedChangesCacheLimit;
+    }
+
+    public void setLocale(String locale) {
+        this.locale = locale;
+        ServerResourceBundle.load(locale);
     }
 }

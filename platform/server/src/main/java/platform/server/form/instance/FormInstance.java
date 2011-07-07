@@ -38,6 +38,7 @@ import platform.server.form.instance.remote.RemoteForm;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
+import platform.server.logics.ServerResourceBundle;
 import platform.server.logics.linear.LP;
 import platform.server.logics.property.*;
 import platform.server.logics.property.derived.MaxChangeProperty;
@@ -605,7 +606,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
 
         dataChanged = true; // временно пока applyChanges синхронен, для того чтобы пересылался факт изменения данных
 
-        actions.add(new ResultClientAction("Изменения были удачно записаны...", false));
+        actions.add(new ResultClientAction(ServerResourceBundle.getString("form.instance.changes.saved"), false));
     }
 
     public void cancelChanges() throws SQLException {

@@ -1,8 +1,10 @@
 package platform.server.data.sql;
 
+import com.sun.corba.se.spi.activation.Server;
 import org.apache.log4j.Logger;
 import platform.base.BaseUtils;
 import platform.server.data.type.Type;
+import platform.server.logics.ServerResourceBundle;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -52,7 +54,7 @@ public class PostgreDataAdapter extends DataAdapter {
             // обязательно нужно создавать на основе template0, так как иначе у template1 может быть другая кодировка и ошибка
             connect.createStatement().execute("CREATE DATABASE " + dataBase + " WITH TEMPLATE template0 ENCODING='UTF8' ");
         } catch (SQLException e) {
-            logger.info("Ошибка при создании базы данных : " + e);
+            logger.info(ServerResourceBundle.getString("data.sql.error.creating.database")+" " + e);
         }
         connect.close();
     }

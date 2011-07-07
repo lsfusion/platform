@@ -5,6 +5,7 @@ import platform.interop.ClassViewType;
 import platform.server.classes.ValueClass;
 import platform.server.form.entity.filter.NotNullFilterEntity;
 import platform.server.logics.BusinessLogics;
+import platform.server.logics.ServerResourceBundle;
 import platform.server.logics.linear.LP;
 import platform.server.logics.property.JoinProperty;
 import platform.server.logics.property.Property;
@@ -52,7 +53,7 @@ public class LogFormEntity<T extends BusinessLogics<T>> extends FormEntity<T> {
         params = Arrays.copyOf(entities, classes.length);
 
         GroupObjectEntity logGroup = new GroupObjectEntity(classes.length + 1, "logGroup");
-        ObjectEntity objSession = new ObjectEntity(classes.length + 2, "session", BL.LM.session, "Сессия");
+        ObjectEntity objSession = new ObjectEntity(classes.length + 2, "session", BL.LM.session, ServerResourceBundle.getString("form.entity.session"));
         entities[classes.length] = objSession;
         logGroup.add(objSession);
 

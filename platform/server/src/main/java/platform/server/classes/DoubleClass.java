@@ -3,6 +3,7 @@ package platform.server.classes;
 import platform.interop.Data;
 import platform.server.data.sql.SQLSyntax;
 import platform.server.data.type.ParseException;
+import platform.server.logics.ServerResourceBundle;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -15,10 +16,10 @@ public class DoubleClass extends IntegralClass<Double> {
         DataClass.storeClass(sid, instance);
     }
 
-    protected DoubleClass() { super("Вещественное число"); }
+    protected DoubleClass() { super(ServerResourceBundle.getString("classes.real")); }
 
     public String toString() {
-        return "Плавающее число";
+        return ServerResourceBundle.getString("classes.floating");
     }
 
     public Class getReportJavaClass() {

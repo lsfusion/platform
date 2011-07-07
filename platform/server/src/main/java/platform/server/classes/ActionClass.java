@@ -4,6 +4,7 @@ import platform.interop.Data;
 import platform.server.data.sql.SQLSyntax;
 import platform.server.data.type.ParseException;
 import platform.server.form.view.report.ReportDrawField;
+import platform.server.logics.ServerResourceBundle;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -18,7 +19,7 @@ public class ActionClass extends DataClass<Object> {
         DataClass.storeClass(sid, instance);
     }
 
-    protected ActionClass() { super("Действие"); }
+    protected ActionClass() { super(ServerResourceBundle.getString("classes.action")); }
 
     @Override
     public String toString() {

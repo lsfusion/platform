@@ -34,10 +34,7 @@ import platform.server.form.instance.listener.CustomClassListener;
 import platform.server.form.instance.listener.FocusListener;
 import platform.server.form.instance.remote.RemoteForm;
 import platform.server.form.view.FormView;
-import platform.server.logics.BusinessLogics;
-import platform.server.logics.DataObject;
-import platform.server.logics.NavigatorFilter;
-import platform.server.logics.ObjectValue;
+import platform.server.logics.*;
 import platform.server.logics.property.Property;
 import platform.server.logics.property.PropertyInterface;
 import platform.server.serialization.SerializationType;
@@ -316,7 +313,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteObject i
         FormEntity<T> formEntity = (FormEntity<T>) BL.LM.baseElement.getNavigatorElement(formSID);
 
         if (formEntity == null) {
-            throw new RuntimeException("Форма с заданным идентификатором не найдена");
+            throw new RuntimeException(ServerResourceBundle.getString("form.navigator.form.with.id.not.found"));
         }
 
         if (!securityPolicy.navigator.checkPermission(formEntity)) {
@@ -329,7 +326,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteObject i
     private void setFormEntity(String formSID, FormEntity<T> formEntity) {
         FormEntity<T> prevEntity = (FormEntity) BL.LM.baseElement.getNavigatorElement(formSID);
         if (prevEntity == null)
-            throw new RuntimeException("Форма с заданным идентификатором не найдена");
+            throw new RuntimeException(ServerResourceBundle.getString("form.navigator.form.with.id.not.found"));
 
         prevEntity.getParent().replaceChild(prevEntity, formEntity);
     }
@@ -393,7 +390,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteObject i
         try {
             IOUtils.putFileBytes(new File(BL.getFormSerializationPath(form.getSID())), formState);
         } catch (IOException e) {
-            throw new RuntimeException("Ошибка при сохранении состояния формы на диск", e);
+            throw new RuntimeException(ServerResourceBundle.getString("form.navigator.error.saving.form.state.to.disk"), e);
         }
     }
 
@@ -410,7 +407,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteObject i
                 try {
                     IOUtils.putFileBytes(new File(BL.getElementSerializationPath(element.getSID())), data, previousBytesReaden, elementSize);
                 } catch (IOException e) {
-                    throw new RuntimeException("Ошибка при сохранении состояния элемента на диск", e);
+                    throw new RuntimeException(ServerResourceBundle.getString("form.navigator.error.saving.element.state.to.disk"), e);
                 }
             }
 
@@ -423,14 +420,14 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteObject i
                 try {
                     IOUtils.putFileBytes(new File(BL.getFormSerializationPath(form.getSID())), data, previousBytesReaden, formSize);
                 } catch (IOException e) {
-                    throw new RuntimeException("Ошибка при сохранении состояния формы на диск", e);
+                    throw new RuntimeException(ServerResourceBundle.getString("form.navigator.error.saving.form.state.to.disk"), e);
                 }
             }
 
             BL.mergeNavigatorTree(inStream);
             BL.saveNavigatorTree();
         } catch (IOException e) {
-            throw new RuntimeException("Ошибка при сохранении визуальной настройки", e);
+            throw new RuntimeException(ServerResourceBundle.getString("form.navigator.error.saving.visual.tuning"), e);
         }
     }
 

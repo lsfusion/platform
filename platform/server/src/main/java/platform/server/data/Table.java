@@ -31,6 +31,7 @@ import platform.server.data.where.classes.ClassExprWhere;
 import platform.server.data.where.classes.ClassWhere;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
+import platform.server.logics.ServerResourceBundle;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -134,12 +135,12 @@ public class Table extends TwinImmutableObject implements MapKeysInterface<KeyFi
     protected final Map<PropertyField,ClassWhere<Field>> propertyClasses;
 
     public String outputKeys() {
-        return "Таблица : " + name + ", Ключи : " + classes.getCommonParent(keys).toString();
+        return ServerResourceBundle.getString("data.table")+" : " + name + ", "+ServerResourceBundle.getString("data.keys")+" : " + classes.getCommonParent(keys).toString();
     }
 
     public String outputField(PropertyField field, boolean outputTable) {
         Map<Field,ValueClass> commonParent = propertyClasses.get(field).getCommonParent(BaseUtils.merge(keys, Collections.singleton(field)));
-        return (outputTable?"Таблица : " + name + ", ":"") + "Поле : " + field.toString() + " - " + commonParent.get(field) + ", Ключи : " + BaseUtils.removeKey(commonParent, field);
+        return (outputTable ? ServerResourceBundle.getString("data.table")+" : " + name + ", ":"") + ServerResourceBundle.getString("data.field") +" : " + field.toString() + " - " + commonParent.get(field) + ", "+ServerResourceBundle.getString("data.keys")+" : " + BaseUtils.removeKey(commonParent, field);
     }
 
     public boolean twins(TwinImmutableInterface o) {

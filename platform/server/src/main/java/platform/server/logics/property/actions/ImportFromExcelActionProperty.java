@@ -19,6 +19,7 @@ import platform.server.form.instance.remote.RemoteForm;
 import platform.server.form.view.DefaultFormView;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
+import platform.server.logics.ServerResourceBundle;
 import platform.server.logics.property.ActionProperty;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.session.Changes;
@@ -35,7 +36,7 @@ public class ImportFromExcelActionProperty extends ActionProperty {
     private CustomClass valueClass;
 
     public ImportFromExcelActionProperty(String sID, CustomClass valueClass) {
-        super(sID, "Импортировать (" + valueClass + ")", new ValueClass[]{});
+        super(sID, ServerResourceBundle.getString("logics.property.actions.import") + "(" + valueClass + ")", new ValueClass[]{});
 
         this.valueClass = valueClass;
     }
@@ -48,7 +49,7 @@ public class ImportFromExcelActionProperty extends ActionProperty {
             ByteArrayInputStream inFile = new ByteArrayInputStream((byte[]) value.getValue());
             sh = Workbook.getWorkbook(inFile).getSheet(0);
         } catch (Exception e) {
-            logger.fatal("Не могу прочитать .xsl файл.");
+            logger.fatal(ServerResourceBundle.getString("logics.property.actions.failed.to.read.xls.file"));
             return;
         }
 
@@ -80,7 +81,7 @@ public class ImportFromExcelActionProperty extends ActionProperty {
                         Type type = property.propertyObject.getType();
                         form.changeProperty(property, type.parseString(cellValue), false);
                     } catch (ParseException e) {
-                        logger.warn("Не конвертировано значение совйства", e);
+                        logger.warn(ServerResourceBundle.getString("logics.property.actions.property.value.not.converted"), e);
                     }
                 }
             }
@@ -89,7 +90,7 @@ public class ImportFromExcelActionProperty extends ActionProperty {
 
     @Override
     public DataClass getValueClass() {
-        return FileActionClass.getDefinedInstance(false, "Файлы таблиц", "xls");
+        return FileActionClass.getDefinedInstance(false, ServerResourceBundle.getString("logics.property.actions.table.files"), "xls");
     }
 
     @Override

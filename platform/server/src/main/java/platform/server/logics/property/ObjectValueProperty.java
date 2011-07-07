@@ -18,6 +18,7 @@ import platform.server.form.instance.remote.RemoteForm;
 import platform.server.form.view.DefaultFormView;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
+import platform.server.logics.ServerResourceBundle;
 import platform.server.session.Changes;
 import platform.server.session.DataSession;
 import platform.server.session.Modifier;
@@ -32,7 +33,7 @@ public class ObjectValueProperty extends ExecuteProperty {
     public final ClassPropertyInterface objectInterface;
 
     public ObjectValueProperty(String SID, ValueClass valueClass) {
-        super(SID, "Объект", new ValueClass[]{valueClass});
+        super(SID, ServerResourceBundle.getString("logics.object"), new ValueClass[]{valueClass});
 
         this.typeClass = valueClass;
         objectInterface = BaseUtils.single(interfaces);

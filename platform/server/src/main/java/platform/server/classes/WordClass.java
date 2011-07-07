@@ -2,6 +2,7 @@ package platform.server.classes;
 
 import platform.interop.Data;
 import platform.server.data.type.ParseException;
+import platform.server.logics.ServerResourceBundle;
 
 public class WordClass extends FileClass {
 
@@ -14,7 +15,7 @@ public class WordClass extends FileClass {
     protected WordClass() {}
 
     public String toString() {
-        return "Файл Word";
+        return ServerResourceBundle.getString("classes.word.file");
     }
 
     public DataClass getCompatible(DataClass compClass) {

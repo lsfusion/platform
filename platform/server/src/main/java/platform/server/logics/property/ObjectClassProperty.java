@@ -19,6 +19,7 @@ import platform.server.form.instance.PropertyObjectInterfaceInstance;
 import platform.server.form.instance.remote.RemoteForm;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
+import platform.server.logics.ServerResourceBundle;
 import platform.server.session.Changes;
 import platform.server.session.DataSession;
 import platform.server.session.Modifier;
@@ -33,7 +34,7 @@ public class ObjectClassProperty extends ExecuteProperty {
     private final BaseClass baseClass;
 
     public ObjectClassProperty(String SID, BaseClass baseClass) {
-        super(SID, "Класс объекта", new ValueClass[]{baseClass});
+        super(SID, ServerResourceBundle.getString("classes.object.class"), new ValueClass[]{baseClass});
 
         this.baseClass = baseClass;
     }

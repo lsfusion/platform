@@ -22,6 +22,7 @@ import platform.server.data.type.ParseInterface;
 import platform.server.data.type.Type;
 import platform.server.data.where.CheckWhere;
 import platform.server.data.where.Where;
+import platform.server.logics.ServerResourceBundle;
 
 import java.sql.SQLException;
 import java.util.*;
@@ -685,7 +686,7 @@ public class CompiledQuery<K,V> {
             }
             String joinSource = ""; // заполняем Source
             if(dataAnds.size()==0)
-                throw new RuntimeException("Не должно быть");
+                throw new RuntimeException(ServerResourceBundle.getString("data.query.should.not.be"));
             else
             if(dataAnds.size()==1)
                 joinSource = dataAnds.iterator().next().alias +'.'+joinName;

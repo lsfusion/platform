@@ -10,13 +10,14 @@ import platform.server.form.entity.filter.RegularFilterEntity;
 import platform.server.form.entity.filter.RegularFilterGroupEntity;
 import platform.server.form.view.DefaultFormView;
 import platform.server.form.view.PropertyDrawView;
+import platform.server.logics.ServerResourceBundle;
 
 public class SelectionProperty extends SessionDataProperty {
 
     ValueClass[] classes;
 
     public SelectionProperty(String sID, ValueClass[] classes) {
-        super(sID, "Отметить", classes, LogicalClass.instance);
+        super(sID, ServerResourceBundle.getString("logics.property.select"), classes, LogicalClass.instance);
         this.classes = classes;
     }
 
@@ -46,7 +47,7 @@ public class SelectionProperty extends SessionDataProperty {
         RegularFilterGroupEntity filterGroup = new RegularFilterGroupEntity(form.genID());
         filterGroup.addFilter(new RegularFilterEntity(form.genID(),
                 new NotNullFilterEntity(entity.propertyObject),
-                "Отмеченные",
+                ServerResourceBundle.getString("logics.property.selected"),
                 KeyStrokes.getSelectionFilterKeyStroke()), false);
         form.addRegularFilterGroup(filterGroup);
 

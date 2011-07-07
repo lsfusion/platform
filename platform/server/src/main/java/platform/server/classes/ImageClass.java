@@ -1,6 +1,7 @@
 package platform.server.classes;
 
 import platform.interop.Data;
+import platform.server.logics.ServerResourceBundle;
 
 public class ImageClass extends FileClass {
 
@@ -13,7 +14,7 @@ public class ImageClass extends FileClass {
     protected ImageClass() {}
 
     public String toString() {
-        return "Изображение";
+        return ServerResourceBundle.getString("classes.image");
     }
 
     public DataClass getCompatible(DataClass compClass) {

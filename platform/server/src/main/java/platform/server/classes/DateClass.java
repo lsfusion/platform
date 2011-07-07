@@ -6,6 +6,7 @@ import platform.interop.Data;
 import platform.server.data.sql.SQLSyntax;
 import platform.server.data.type.ParseException;
 import platform.server.form.view.report.ReportDrawField;
+import platform.server.logics.ServerResourceBundle;
 
 import java.sql.Date;
 import java.sql.PreparedStatement;
@@ -22,10 +23,10 @@ public class DateClass extends DataClass<Date> {
         DataClass.storeClass(sid, instance);
     }
 
-    protected DateClass() { super("Дата"); }
+    protected DateClass() { super(ServerResourceBundle.getString("classes.date")); }
 
     public String toString() {
-        return "Дата";
+        return ServerResourceBundle.getString("classes.date");
     }
 
     public int getPreferredWidth() { return 70; }

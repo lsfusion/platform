@@ -3,6 +3,7 @@ package platform.server.classes;
 import platform.interop.Data;
 import platform.server.data.sql.SQLSyntax;
 import platform.server.data.type.ParseException;
+import platform.server.logics.ServerResourceBundle;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -17,10 +18,10 @@ public class IntegerClass extends IntegralClass<Integer> {
         DataClass.storeClass(sid, instance);
     }
 
-    protected IntegerClass() { super("Целое число"); }
+    protected IntegerClass() { super(ServerResourceBundle.getString("classes.integer")); }
 
     public String toString() {
-        return "Целое число";
+        return ServerResourceBundle.getString("classes.integer");
     }
 
     public Class getReportJavaClass() {

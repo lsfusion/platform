@@ -2,6 +2,7 @@ package platform.server.classes;
 
 import platform.interop.Data;
 import platform.server.data.type.ParseException;
+import platform.server.logics.ServerResourceBundle;
 
 public class PDFClass extends FileClass {
 
@@ -14,7 +15,7 @@ public class PDFClass extends FileClass {
     protected PDFClass() {}
 
     public String toString() {
-        return "Файл PDF";
+        return ServerResourceBundle.getString("classes.pdf.file");
     }
 
     public DataClass getCompatible(DataClass compClass) {

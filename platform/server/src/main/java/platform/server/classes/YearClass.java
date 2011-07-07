@@ -1,6 +1,7 @@
 package platform.server.classes;
 
 import platform.interop.Data;
+import platform.server.logics.ServerResourceBundle;
 
 import java.text.DateFormat;
 import java.text.Format;
@@ -14,7 +15,7 @@ public class YearClass extends IntegerClass {
         DataClass.storeClass(sid, instance);
     }
 
-    protected YearClass() { caption = "Год"; }
+    protected YearClass() { caption = ServerResourceBundle.getString("classes.year"); }
 
     @Override
     public Format getReportFormat() {
@@ -23,7 +24,7 @@ public class YearClass extends IntegerClass {
 
     @Override
     public String toString() {
-        return "Год";
+        return ServerResourceBundle.getString("classes.year");
     }
 
     @Override

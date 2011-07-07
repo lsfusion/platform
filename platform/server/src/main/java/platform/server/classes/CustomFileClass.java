@@ -1,6 +1,7 @@
 package platform.server.classes;
 
 import platform.interop.Data;
+import platform.server.logics.ServerResourceBundle;
 
 public class CustomFileClass extends FileClass{
 
@@ -13,7 +14,7 @@ public class CustomFileClass extends FileClass{
     protected CustomFileClass() {}
 
     public String toString() {
-        return "Файл";
+        return ServerResourceBundle.getString("classes.file");
     }
 
     public DataClass getCompatible(DataClass compClass) {

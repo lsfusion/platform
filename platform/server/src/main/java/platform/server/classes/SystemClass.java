@@ -2,6 +2,7 @@ package platform.server.classes;
 
 import platform.server.data.sql.SQLSyntax;
 import platform.server.data.type.ParseException;
+import platform.server.logics.ServerResourceBundle;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -15,10 +16,10 @@ public class SystemClass extends DataClass<Integer> {
         DataClass.storeClass(sid, instance);
     }
 
-    protected SystemClass() { super("Системный"); }
+    protected SystemClass() { super(ServerResourceBundle.getString("classes.system")); }
     
     public String toString() {
-        return "Системный";
+        return ServerResourceBundle.getString("classes.system");
     }
 
     public byte getTypeID() {

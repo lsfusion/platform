@@ -3,6 +3,7 @@ package platform.server.classes;
 import platform.interop.Data;
 import platform.server.data.sql.SQLSyntax;
 import platform.server.data.type.ParseException;
+import platform.server.logics.ServerResourceBundle;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -17,12 +18,12 @@ public class LongClass extends IntegralClass<Long> {
         DataClass.storeClass(sid, instance);
     }
 
-    protected LongClass() { super("Длинное целое число"); }
+    protected LongClass() { super(ServerResourceBundle.getString("classes.long.integer")); }
 
     public int getPreferredWidth() { return 65; }
 
     public String toString() {
-        return "Большое целое число";
+        return ServerResourceBundle.getString("classes.big.integer");
     }
 
     public Class getReportJavaClass() {

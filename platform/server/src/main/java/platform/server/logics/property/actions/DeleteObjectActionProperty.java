@@ -14,6 +14,7 @@ import platform.server.form.instance.remote.RemoteForm;
 import platform.server.form.view.DefaultFormView;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
+import platform.server.logics.ServerResourceBundle;
 import platform.server.logics.property.ActionProperty;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.session.Changes;
@@ -27,7 +28,7 @@ import java.util.Map;
 public class DeleteObjectActionProperty extends ActionProperty {
 
     public DeleteObjectActionProperty(BaseClass baseClass) {
-        super("delete", "Удалить", new ValueClass[]{baseClass});
+        super("delete", ServerResourceBundle.getString("logics.property.actions.delete"), new ValueClass[]{baseClass});
     }
 
     public String getCode() {

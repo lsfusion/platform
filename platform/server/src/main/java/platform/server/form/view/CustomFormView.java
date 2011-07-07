@@ -5,6 +5,7 @@ import platform.interop.form.layout.DoNotIntersectSimplexConstraint;
 import platform.interop.form.layout.SimplexComponentDirections;
 import platform.server.form.entity.*;
 import platform.server.form.entity.filter.RegularFilterGroupEntity;
+import platform.server.logics.ServerResourceBundle;
 import platform.server.logics.linear.LP;
 
 import javax.swing.*;
@@ -182,7 +183,7 @@ public class CustomFormView extends FormView {
 
     public void addIntersection(ComponentView comp1, ComponentView comp2, DoNotIntersectSimplexConstraint cons) {
         if (comp1.container != comp2.container)
-            throw new RuntimeException("Запрещено создавать пересечения для объектов в разных контейнерах");
+            throw new RuntimeException(ServerResourceBundle.getString("form.view.forbidden.to.create.the.intersection.of.objects.in.different.containers"));
         comp1.constraints.intersects.put(comp2, cons);
     }
 

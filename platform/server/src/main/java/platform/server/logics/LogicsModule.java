@@ -477,7 +477,7 @@ public abstract class LogicsModule {
 
     // добавляет свойство с бесконечным значением
     protected LP addICProp(DataClass valueClass, ValueClass... params) {
-        return addProperty(baseLM.privateGroup, false, new LP<ClassPropertyInterface>(new InfiniteClassProperty(genSID(), "Беск.", params, valueClass)));
+        return addProperty(baseLM.privateGroup, false, new LP<ClassPropertyInterface>(new InfiniteClassProperty(genSID(), ServerResourceBundle.getString("logics.infinity"), params, valueClass)));
     }
 
     protected LP addCProp(StaticClass valueClass, Object value, ValueClass... params) {
@@ -539,19 +539,19 @@ public abstract class LogicsModule {
     }
 
     protected <P extends PropertyInterface> LP addSProp(int intNum) {
-        return addProperty(null, new LP<StringConcatenateProperty.Interface>(new StringConcatenateProperty(genSID(), "Объед.", intNum, " ")));
+        return addProperty(null, new LP<StringConcatenateProperty.Interface>(new StringConcatenateProperty(genSID(), ServerResourceBundle.getString("logics.join"), intNum, " ")));
     }
 
     protected <P extends PropertyInterface> LP addSProp(int intNum, String separator) {
-        return addProperty(null, new LP<StringConcatenateProperty.Interface>(new StringConcatenateProperty(genSID(), "Объед.", intNum, separator)));
+        return addProperty(null, new LP<StringConcatenateProperty.Interface>(new StringConcatenateProperty(genSID(), ServerResourceBundle.getString("logics.join"), intNum, separator)));
     }
 
     protected <P extends PropertyInterface> LP addInsensitiveSProp(int intNum) {
-        return addProperty(null, new LP<StringConcatenateProperty.Interface>(new StringConcatenateProperty(genSID(), "Объед.", intNum, " ", false)));
+        return addProperty(null, new LP<StringConcatenateProperty.Interface>(new StringConcatenateProperty(genSID(), ServerResourceBundle.getString("logics.join"), intNum, " ", false)));
     }
 
     protected <P extends PropertyInterface> LP addInsensitiveSProp(int intNum, String separator) {
-        return addProperty(null, new LP<StringConcatenateProperty.Interface>(new StringConcatenateProperty(genSID(), "Объед.", intNum, separator, false)));
+        return addProperty(null, new LP<StringConcatenateProperty.Interface>(new StringConcatenateProperty(genSID(), ServerResourceBundle.getString("logics.join"), intNum, separator, false)));
     }
 
     protected LP addMFProp(ConcreteValueClass value, int paramCount) {
@@ -1217,7 +1217,7 @@ public abstract class LogicsModule {
     }
 
     protected LP addLProp(LP lp, ValueClass... classes) {
-        return addDCProp("LG_" + lp.property.getSID(), "Лог " + lp.property, baseLM.object1, BaseUtils.add(BaseUtils.add(directLI(lp), new Object[]{addJProp(baseLM.equals2, 1, baseLM.currentSession), lp.listInterfaces.size() + 1}), classes));
+        return addDCProp("LG_" + lp.property.getSID(), ServerResourceBundle.getString("logics.log")+" " + lp.property, baseLM.object1, BaseUtils.add(BaseUtils.add(directLI(lp), new Object[]{addJProp(baseLM.equals2, 1, baseLM.currentSession), lp.listInterfaces.size() + 1}), classes));
     }
 
     // XOR
@@ -1594,7 +1594,7 @@ public abstract class LogicsModule {
         for (int i = 0; i < property.listInterfaces.size(); i++) {
             mapInterfaces.put(property.listInterfaces.get(i), checkProp.listInterfaces.get(i));
         }
-        addProp(checkProp.property.addFollows(new PropertyMapImplement(property.property, mapInterfaces), "Свойство " + property.property.getSID() + " не задано", resolve));
+        addProp(checkProp.property.addFollows(new PropertyMapImplement(property.property, mapInterfaces), ServerResourceBundle.getString("logics.property")+" " + property.property.getSID() + " "+ServerResourceBundle.getString("logics.property.not.defined"), resolve));
     }
 
     // получает свойство is
@@ -1602,7 +1602,7 @@ public abstract class LogicsModule {
     protected LP is(ValueClass valueClass) {
         LP isProp = baseLM.is.get(valueClass);
         if (isProp == null) {
-            isProp = addCProp(valueClass.toString() + "(пр.)", LogicalClass.instance, true, valueClass);
+            isProp = addCProp(valueClass.toString() + ServerResourceBundle.getString("logics.pr"), LogicalClass.instance, true, valueClass);
             baseLM.is.put(valueClass, isProp);
         }
         return isProp;

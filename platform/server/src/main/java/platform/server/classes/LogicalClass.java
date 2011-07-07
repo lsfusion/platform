@@ -5,6 +5,7 @@ import platform.interop.Data;
 import platform.server.data.sql.SQLSyntax;
 import platform.server.data.type.ParseException;
 import platform.server.form.view.report.ReportDrawField;
+import platform.server.logics.ServerResourceBundle;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -18,7 +19,7 @@ public class LogicalClass extends DataClass<Boolean> {
         DataClass.storeClass(sid, instance);
     }
 
-    protected LogicalClass() { super("Логическое значение");}
+    protected LogicalClass() { super(ServerResourceBundle.getString("classes.logical"));}
 
     public String toString() {
         return "Logical";

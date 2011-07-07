@@ -17,6 +17,7 @@ import platform.server.data.type.TypeObject;
 import platform.server.logics.DataObject;
 import platform.server.logics.NullValue;
 import platform.server.logics.ObjectValue;
+import platform.server.logics.ServerResourceBundle;
 
 import java.lang.ref.WeakReference;
 import java.sql.*;
@@ -146,8 +147,8 @@ public class SQLSession extends MutableObject {
     }
 
     public void createTable(String table, List<KeyField> keys) throws SQLException {
-        logger.info("Идет создание таблицы " + table + "... ");
-        if(keys.size()==0)
+        logger.info(ServerResourceBundle.getString("data.table.creation") + " " + table + "... ");
+        if (keys.size() == 0)
             keys = Collections.singletonList(KeyField.dumb);
         String createString = "";
         for (KeyField key : keys)
@@ -156,12 +157,12 @@ public class SQLSession extends MutableObject {
 
 //        System.out.println("CREATE TABLE "+Table.Name+" ("+CreateString+")");
         executeDDL("CREATE TABLE " + table + " (" + createString + ")", false);
-        addExtraIndices(table, keys);                
+        addExtraIndices(table, keys);
         logger.info(" Done");
     }
 
     public void dropTable(String table) throws SQLException {
-        logger.info("Идет удаление таблицы " + table + "... ");
+        logger.info(ServerResourceBundle.getString("data.table.deletion") + " " + table + "... ");
         executeDDL("DROP TABLE " + table, false);
         logger.info(" Done");
     }
@@ -174,7 +175,7 @@ public class SQLSession extends MutableObject {
     }
 
     public void addIndex(String table, List<String> fields) throws SQLException {
-        logger.info("Идет создание индекса " + getIndexName(table, fields) + "... ");
+        logger.info(ServerResourceBundle.getString("data.index.creation") + " " + getIndexName(table, fields) + "... ");
         String columns = "";
         for (String indexField : fields)
             columns = (columns.length() == 0 ? "" : columns + ",") + indexField;
@@ -184,7 +185,7 @@ public class SQLSession extends MutableObject {
     }
 
     public void dropIndex(String table, Collection<String> fields) throws SQLException {
-        logger.info("Идет удаление индекса " + getIndexName(table, fields) + "... ");
+        logger.info(ServerResourceBundle.getString("data.index.deletion") + " " + getIndexName(table, fields) + "... ");
         executeDDL("DROP INDEX " + getIndexName(table, fields), false);
         logger.info(" Done");
     }
@@ -216,26 +217,26 @@ public class SQLSession extends MutableObject {
     }*/
 
     public void addColumn(String table, PropertyField field) throws SQLException {
-        logger.info("Идет добавление колонки " + table + "." + field.name + "... ");
+        logger.info(ServerResourceBundle.getString("data.column.adding") + " " + table + "." + field.name + "... ");
         executeDDL("ALTER TABLE " + table + " ADD " + field.getDeclare(syntax), false); //COLUMN
         logger.info(" Done");
     }
 
     public void dropColumn(String table, String field) throws SQLException {
-        logger.info("Идет удаление колонки " + table + "." + field + "... ");
+        logger.info(ServerResourceBundle.getString("data.column.deletion") + " " + table + "." + field + "... ");
         executeDDL("ALTER TABLE " + table + " DROP COLUMN " + field, false);
         logger.info(" Done");
     }
 
     public void modifyColumn(String table, PropertyField field, Type oldType) throws SQLException {
-        logger.info("Идет изменение типа колонки " + table + "." + field.name + "... ");
+        logger.info(ServerResourceBundle.getString("data.column.type.changing") + " " + table + "." + field.name + "... ");
         executeDDL("ALTER TABLE " + table + " ALTER COLUMN " + field.name + " TYPE " +
                 field.type.getDB(syntax) + " " + syntax.typeConvertSuffix(oldType, field.type, field.name), false);
         logger.info(" Done");
     }
 
     public void packTable(Table table) throws SQLException {
-        logger.info("Идет упаковка таблицы " + table + "... ");
+        logger.info(ServerResourceBundle.getString("data.table.packing")+" " + table + "... ");
         String dropWhere = "";
         for (PropertyField property : table.properties)
             dropWhere = (dropWhere.length() == 0 ? "" : dropWhere + " AND ") + property.name + " IS NULL";

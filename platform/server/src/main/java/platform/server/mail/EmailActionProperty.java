@@ -24,6 +24,7 @@ import platform.server.form.instance.remote.RemoteForm;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
+import platform.server.logics.ServerResourceBundle;
 import platform.server.logics.linear.LP;
 import platform.server.logics.property.ActionProperty;
 import platform.server.logics.property.ClassPropertyInterface;
@@ -153,7 +154,7 @@ public class EmailActionProperty extends ActionProperty {
 
         try {
             if (BL.LM.disableEmail.read(session) != null) {
-                EmailSender.logger.error("Отсылка почты отключена");
+                EmailSender.logger.error(ServerResourceBundle.getString("mail.sending.disabled"));
                 return;
             }
 
@@ -215,17 +216,17 @@ public class EmailActionProperty extends ActionProperty {
             }
 
             if(smtpHost==null || fromAddress==null) {
-                String errorMessage = "Не задан SMTP хост или адрес отправителя. Письма отосланы не будут.";
+                String errorMessage = ServerResourceBundle.getString("mail.smtp.host.or.sender.not.specified.letters.will.not.be.sent");
                 EmailSender.logger.error(errorMessage);
-                actions.add(new MessageClientAction(errorMessage, "Отсылка писем"));
+                actions.add(new MessageClientAction(errorMessage, ServerResourceBundle.getString("mail.sending")));
             } else {
                 EmailSender sender = new EmailSender(smtpHost.trim(), BaseUtils.nullTrim(smtpPort), fromAddress.trim(), BaseUtils.nullTrim(userName), BaseUtils.nullTrim(password), recepientEmails);
                 sender.sendMail(subject, inlineForms, attachmentForms, attachmentFiles);
             }
         } catch (Exception e) {
-            String errorMessage = "Не удалось отправить почту : " + e.toString();
+            String errorMessage = ServerResourceBundle.getString("mail.failed.to.send.mail") +" : " + e.toString();
             EmailSender.logger.error(errorMessage);
-            actions.add(new MessageClientAction(errorMessage, "Отсылка писем"));
+            actions.add(new MessageClientAction(errorMessage, ServerResourceBundle.getString("mail.sending")));
             e.printStackTrace();
         }
     }

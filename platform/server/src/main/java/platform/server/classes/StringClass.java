@@ -3,6 +3,7 @@ package platform.server.classes;
 import platform.interop.Data;
 import platform.server.data.sql.SQLSyntax;
 import platform.server.data.type.ParseException;
+import platform.server.logics.ServerResourceBundle;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -15,13 +16,13 @@ import java.util.Collection;
 public class StringClass extends DataClass<String> {
 
     public String toString() {
-        return "Строка "+length;
+        return ServerResourceBundle.getString("classes.string")+" "+length;
     }
 
     public int length;
 
     public StringClass(int length) {
-        super("Строка");
+        super(ServerResourceBundle.getString("classes.string"));
         this.length = length;
     }
 

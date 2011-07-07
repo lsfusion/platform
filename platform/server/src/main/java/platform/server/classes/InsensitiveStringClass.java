@@ -1,6 +1,7 @@
 package platform.server.classes;
 
 import platform.interop.Data;
+import platform.server.logics.ServerResourceBundle;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -8,7 +9,7 @@ import java.util.Collection;
 public class InsensitiveStringClass extends StringClass {
 
     public String toString() {
-        return "Строка (без регистра) " + length;
+        return ServerResourceBundle.getString("classes.insensitive.string")+" " + length;
     }
 
     public InsensitiveStringClass(int length) {

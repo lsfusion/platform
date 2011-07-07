@@ -2,6 +2,7 @@ package platform.server.classes;
 
 import platform.server.caches.IdentityLazy;
 import platform.server.classes.sets.ConcreteCustomClassSet;
+import platform.server.logics.ServerResourceBundle;
 import platform.server.logics.table.ObjectTable;
 import platform.server.logics.linear.LP;
 import platform.server.logics.DataObject;
@@ -31,8 +32,8 @@ public class BaseClass extends AbstractCustomClass {
         super(sID, caption);
         table = new ObjectTable(this);
         unknown = new UnknownClass(this);
-        named = new AbstractCustomClass("named", "Объект с именем", this);
-        sidClass = new AbstractCustomClass("sidClass", "Статичный объект", named);
+        named = new AbstractCustomClass("named", ServerResourceBundle.getString("classes.named.object"), this);
+        sidClass = new AbstractCustomClass("sidClass", ServerResourceBundle.getString("classes.static.object"), named);
     }
 
     @Override
@@ -71,7 +72,7 @@ public class BaseClass extends AbstractCustomClass {
                 sidClasses.add(customClass.getSID());
                 nameClasses.add(customClass.caption);
             }
-        objectClass = new StaticCustomClass("CustomObjectClass", "Класс объекта", sidClass, sidClasses.toArray(new String[sidClasses.size()]), nameClasses.toArray(new String[nameClasses.size()]));
+        objectClass = new StaticCustomClass("CustomObjectClass", ServerResourceBundle.getString("classes.object.class"), sidClass, sidClasses.toArray(new String[sidClasses.size()]), nameClasses.toArray(new String[nameClasses.size()]));
     }
 
     public void fillIDs(DataSession session, LP name, LP classSID) throws SQLException {

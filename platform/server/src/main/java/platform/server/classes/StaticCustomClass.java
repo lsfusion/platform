@@ -2,6 +2,7 @@ package platform.server.classes;
 
 import platform.server.data.expr.StaticValueExpr;
 import platform.server.data.sql.SQLSyntax;
+import platform.server.logics.ServerResourceBundle;
 import platform.server.session.DataSession;
 import platform.server.logics.linear.LP;
 import platform.server.logics.DataObject;
@@ -50,7 +51,7 @@ public class StaticCustomClass extends ConcreteCustomClass implements StaticClas
         for(int i = 0;i<sids.length;i++) {
             String sidObject = sids[i];
             if ((usedClass = usedSIds.put(sidObject, this)) != null)
-                throw new RuntimeException("Одинаковый идентификатор " + sidObject + " у объектов классов " + caption + " и " + usedClass.caption);
+                throw new RuntimeException(ServerResourceBundle.getString("classes.objects.have.the.same.id", sidObject, caption, usedClass.caption));
 
             // ищем класс с таким sID, если не находим создаем
             Query<String, Object> findClass = new Query<String, Object>(Collections.singleton("key"));

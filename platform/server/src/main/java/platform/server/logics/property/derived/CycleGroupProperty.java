@@ -13,6 +13,7 @@ import platform.server.data.expr.query.GroupType;
 import platform.server.data.query.Join;
 import platform.server.data.where.Where;
 import platform.server.data.where.WhereBuilder;
+import platform.server.logics.ServerResourceBundle;
 import platform.server.logics.property.*;
 import platform.server.session.*;
 
@@ -41,7 +42,7 @@ public class CycleGroupProperty<T extends PropertyInterface,P extends PropertyIn
         // I1=I1' AND … In = In' AND G!=G' == false
         Property constraint = DerivedProperty.createPartition(groupProperty.interfaces, DerivedProperty.<T>createStatic(true, LogicalClass.instance),
                 getMapInterfaces().values(), groupProperty.getImplement(), new HashMap<T, JoinProperty.Interface>(), Compare.GREATER);
-        constraint.caption = "Нарушена уникальность свойства (" + groupProperty.caption + ") для объектов :";
+        constraint.caption = ServerResourceBundle.getString("logics.property.derived.violate.property.uniqueness.for.objects", groupProperty.caption);
         constraint.setConstraint(checkChange);
         return constraint;
     }

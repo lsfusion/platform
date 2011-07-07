@@ -9,6 +9,7 @@ import platform.server.data.type.Type;
 import platform.server.logics.DataObject;
 import platform.server.logics.NullValue;
 import platform.server.logics.ObjectValue;
+import platform.server.logics.ServerResourceBundle;
 
 import java.sql.SQLException;
 import java.util.Collection;
@@ -17,7 +18,7 @@ import java.util.Collections;
 public class UnknownClass implements ConcreteObjectClass {
 
     public String toString() {
-        return "Неизвестный";
+        return ServerResourceBundle.getString("classes.unknown");
     }
 
     public final BaseClass baseClass;

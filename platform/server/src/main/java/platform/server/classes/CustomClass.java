@@ -28,6 +28,7 @@ import platform.server.form.instance.ObjectInstance;
 import platform.server.form.navigator.NavigatorElement;
 import platform.server.logics.BaseLogicsModule;
 import platform.server.logics.BusinessLogics;
+import platform.server.logics.ServerResourceBundle;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -113,7 +114,7 @@ public abstract class CustomClass implements ObjectClass, ValueClass {
     public ConcreteCustomClass findConcreteClassID(int idClass) {
         CustomClass cls = findClassID(idClass);
         if (! (cls instanceof ConcreteCustomClass))
-            throw new RuntimeException("В базе данных присутствует объект абстрактного класса (ИД : " + idClass + ")");
+            throw new RuntimeException(ServerResourceBundle.getString("classes.there.is.an.object.of.abstract.class.in.the.database")+" : " + idClass + ")");
         return (ConcreteCustomClass) findClassID(idClass);
     }
 

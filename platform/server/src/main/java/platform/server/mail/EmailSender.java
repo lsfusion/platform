@@ -4,6 +4,7 @@ package platform.server.mail;
 import org.apache.log4j.Logger;
 import platform.base.BaseUtils;
 import platform.base.ByteArray;
+import platform.server.logics.ServerResourceBundle;
 
 import javax.activation.DataHandler;
 import javax.activation.DataSource;
@@ -135,7 +136,7 @@ public class EmailSender {
             }
         }
         if (result.equals("")) {
-            result = "Вам пришли печатные формы";
+            result = ServerResourceBundle.getString("mail.you.have.received.reports");
         }
         return result;
     }
@@ -167,12 +168,12 @@ public class EmailSender {
                 try {
                     Address[] addressesTo = message.getRecipients(MimeMessage.RecipientType.TO);
                     if (addressesTo == null || addressesTo.length == 0) {
-                        logger.error("Не удалось отправить почту " + messageInfo + " : не заданы получатели");
-                        throw new RuntimeException("Ошибка при отсылке почты " + messageInfo + " : не заданы получатели");
+                        logger.error(ServerResourceBundle.getString("mail.failed.to.send.mail")+" " + messageInfo + " : "+ServerResourceBundle.getString("mail.recipient.not.specified"));
+                        throw new RuntimeException(ServerResourceBundle.getString("mail.error.send.mail") + " " + messageInfo + " : "+ServerResourceBundle.getString("mail.recipient.not.specified"));
                     }
-                    messageInfo += " получатели : " + BaseUtils.toString(addressesTo, ",");
+                    messageInfo += " "+ServerResourceBundle.getString("mail.recipients")+" : " + BaseUtils.toString(addressesTo, ",");
                 } catch (MessagingException me) {
-                    messageInfo += " не удалось получить список получателей " + me.toString();
+                    messageInfo += " "+ServerResourceBundle.getString("mail.failed.to.get.list.of.recipients")+" " + me.toString();
                 }
 
                 boolean send = false;
@@ -184,19 +185,19 @@ public class EmailSender {
                         Transport.send(message);
                     } catch (MessagingException e) {
                         if (count < 40) {
-                            logger.info("Неудачная попытка отсылки почты " + messageInfo);
+                            logger.info(ServerResourceBundle.getString("mail.unsuccessful.attempt.to.send.mail") + " " + messageInfo);
                             send = false;
                             try {
                                 Thread.sleep(30000);
                             } catch (InterruptedException e1) {
                             }
                         } else {
-                            logger.error("Не удалось отправить почту " + messageInfo);
-                            throw new RuntimeException("Ошибка при отсылке почты " + messageInfo, e);
+                            logger.error(ServerResourceBundle.getString("mail.failed.to.send.mail") + " " + messageInfo);
+                            throw new RuntimeException(ServerResourceBundle.getString("mail.error.send.mail")+" " + messageInfo, e);
                         }
                     }
                 }
-                logger.info("Успешная отсылка почты" + messageInfo);
+                logger.info(ServerResourceBundle.getString("mail.successful.mail.sending") + messageInfo);
             }
         }.start();
     }

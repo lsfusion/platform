@@ -18,6 +18,7 @@ import platform.server.form.navigator.NavigatorElement;
 import platform.server.form.view.DefaultFormView;
 import platform.server.form.view.FormView;
 import platform.server.logics.BusinessLogics;
+import platform.server.logics.ServerResourceBundle;
 import platform.server.logics.linear.LP;
 import platform.server.logics.property.Property;
 import platform.server.logics.property.PropertyClassImplement;
@@ -677,7 +678,7 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
 
             return form;
         } catch (IOException e) {
-            throw new RuntimeException("Ошибка при десериализации формы на сервере", e);
+            throw new RuntimeException(ServerResourceBundle.getString("form.entity.error.on.deserialization.form.on.the.server"), e);
         }
     }
 

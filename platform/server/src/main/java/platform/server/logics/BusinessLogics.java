@@ -14,6 +14,7 @@ import platform.interop.form.screen.ExternalScreenParameters;
 import platform.interop.navigator.RemoteNavigatorInterface;
 import platform.interop.remote.RemoteObject;
 import platform.interop.remote.UserInfo;
+import platform.server.Utf8ResourceBundle;
 import platform.server.auth.PolicyManager;
 import platform.server.auth.SecurityPolicy;
 import platform.server.auth.User;
@@ -55,7 +56,6 @@ import static java.util.Arrays.asList;
 public abstract class BusinessLogics<T extends BusinessLogics<T>> extends RemoteObject implements RemoteLogicsInterface {
     protected List<LogicsModule> logicModules = new ArrayList<LogicsModule>();
     final public BaseLogicsModule<T> LM;
-
     public List<LogicsModule> getLogicModules() {
         return logicModules;
     }
@@ -73,12 +73,12 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             inStream.read(b);
             return b;
         } catch (IOException e) {
-            throw new RuntimeException("Ошибка при считывании класса на сервере", e);
+            throw new RuntimeException(ServerResourceBundle.getString("logics.error.reading.class.on.the.server"), e);
         } finally {
             try {
                 inStream.close();
             } catch (IOException e) {
-                throw new RuntimeException("Ошибка при считывании класса на сервере", e);
+                throw new RuntimeException(ServerResourceBundle.getString("logics.error.reading.class.on.the.server"), e);
             }
         }
     }
@@ -468,10 +468,10 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     protected SecurityPolicy permitAllPolicy, readOnlyPolicy;
 
     void initBaseAuthentication() throws ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException {
-        permitAllPolicy = addPolicy("Разрешить всё", "Политика разрешает все действия.");
+        permitAllPolicy = addPolicy(ServerResourceBundle.getString("logics.policy.allow.all"), ServerResourceBundle.getString("logics.policy.allows.all.actions"));
         permitAllPolicy.setReplaceMode(true);
 
-        readOnlyPolicy = addPolicy("Запретить редактирование всех свойств", "Режим \"только чтение\". Запрещает редактирование всех свойств на формах.");
+        readOnlyPolicy = addPolicy(ServerResourceBundle.getString("logics.policy.forbid.editing.all.properties"), ServerResourceBundle.getString("logics.policy.read.only.forbids.editing.of.all.properties.on.the.forms"));
         readOnlyPolicy.property.change.defaultPermission = false;
         readOnlyPolicy.cls.edit.add.defaultPermission = false;
         readOnlyPolicy.cls.edit.change.defaultPermission = false;
@@ -1127,10 +1127,10 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         for (List<? extends Property> index : LM.indexes) {
             Iterator<? extends Property> i = index.iterator();
             if (!i.hasNext())
-                throw new RuntimeException("Запрещено создавать пустые индексы");
+                throw new RuntimeException(ServerResourceBundle.getString("logics.policy.forbidden.to.create.empty.indexes"));
             Property baseProperty = i.next();
             if (!baseProperty.isStored())
-                throw new RuntimeException("Запрещено создавать индексы по не постоянным св-вам (" + baseProperty + ")");
+                throw new RuntimeException(ServerResourceBundle.getString("logics.policy.forbidden.to.create.indexes.on.non.regular.properties")+" (" + baseProperty + ")");
             ImplementTable indexTable = baseProperty.mapTable.table;
 
             List<String> tableIndex = new ArrayList<String>();
@@ -1139,9 +1139,9 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             while (i.hasNext()) {
                 Property property = i.next();
                 if (!property.isStored())
-                    throw new RuntimeException("Запрещено создавать индексы по не постоянным св-вам (" + baseProperty + ")");
+                    throw new RuntimeException(ServerResourceBundle.getString("logics.policy.forbidden.to.create.indexes.on.non.regular.properties") + " (" + baseProperty + ")");
                 if (indexTable.findProperty(property.field.name) == null)
-                    throw new RuntimeException("Запрещено создавать индексы по св-вам (" + baseProperty + "," + property + ") в разных таблицах");
+                    throw new RuntimeException(ServerResourceBundle.getString("logics.policy.forbidden.to.create.indexes.on.properties.in.different.tables", baseProperty, property));
                 tableIndex.add(property.field.name);
             }
             mapIndexes.get(indexTable).add(tableIndex);
@@ -1217,7 +1217,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
                         if (!(keep = property.mapTable.table.name.equals(prevTable.name))) { // если в другой таблице
                             sql.addColumn(property.mapTable.table.name, property.field);
                             // делаем запрос на перенос
-                            logger.info("Идет перенос колонки " + property.field + " (" + property.caption + ")" + " из таблицы " + prevTable.name + " в таблицу " + property.mapTable.table.name + "... ");
+
+                            logger.info(ServerResourceBundle.getString("logics.info.property.is.transferred.from.table.to.table", property.field, property.caption, prevTable.name, property.mapTable.table.name));
                             Query<KeyField, PropertyField> moveColumn = new Query<KeyField, PropertyField>(property.mapTable.table);
                             Expr moveExpr = prevTable.joinAnd(BaseUtils.join(BaseUtils.join(foundInterfaces, ((Property<PropertyInterface>) property).mapTable.mapKeys), moveColumn.mapKeys)).getExpr(prevTable.findProperty(sID));
                             moveColumn.properties.put(property.field, moveExpr);
@@ -1346,7 +1347,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             if (property instanceof AggregateProperty) {
                 AggregateProperty dependProperty = (AggregateProperty) property;
                 if (recalculateProperties.contains(dependProperty)) {
-                    logger.debug("Идет перерасчет аггрегированного св-ва (" + dependProperty + ")... ");
+                    logger.debug(ServerResourceBundle.getString("logics.info.recalculation.of.aggregated.property")+" (" + dependProperty + ")... ");
                     dependProperty.recalculateAggregation(session);
                     logger.debug("Done");
                 }
@@ -1355,7 +1356,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
     void packTables(SQLSession session, Collection<ImplementTable> tables) throws SQLException {
         for (Table table : tables) {
-            logger.debug("Идет упаковка таблицы (" + table + ")... ");
+            logger.debug(ServerResourceBundle.getString("logics.info.packing.table")+" (" + table + ")... ");
             session.packTable(table);
             logger.debug("Done");
         }
@@ -1454,7 +1455,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     public void outputPersistent() {
         String result = "";
 
-        result += '\n' + "ПО ТАБЛИЦАМ :" + '\n' + '\n';
+        result += '\n' + ServerResourceBundle.getString("logics.info.by.tables") + '\n' + '\n';
         for (Map.Entry<ImplementTable, Collection<Property>> groupTable : BaseUtils.group(new BaseUtils.Group<ImplementTable, Property>() {
             public ImplementTable group(Property key) {
                 return key.mapTable.table;
@@ -1464,7 +1465,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             for (Property property : groupTable.getValue())
                 result += '\t' + property.outputStored(false) + '\n';
         }
-        result += '\n' + "ПО СВОЙСТВАМ :" + '\n' + '\n';
+        result += '\n' + ServerResourceBundle.getString("logics.info.by.properties") + '\n' + '\n';
         for (Property property : getStoredProperties())
             result += property.outputStored(true) + '\n';
         System.out.println(result);
@@ -1598,7 +1599,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
                 session.close();
             }
         } catch (SQLException se) {
-            throw new RuntimeException("Ошибка при чтении данных о пользователе:", se);
+            throw new RuntimeException(ServerResourceBundle.getString("logics.info.error.reading.user.data"), se);
         }
     }
 
@@ -1635,7 +1636,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             }
 
         } catch (SQLException e) {
-            throw new RuntimeException("Ошибка при чтении списка ролей.", e);
+            throw new RuntimeException(ServerResourceBundle.getString("logics.info.error.reading.list.of.roles"), e);
         }
     }
 

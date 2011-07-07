@@ -10,6 +10,7 @@ import platform.server.form.entity.filter.FilterEntity;
 import platform.server.form.instance.listener.CustomClassListener;
 import platform.server.form.instance.listener.FocusListener;
 import platform.server.logics.BusinessLogics;
+import platform.server.logics.ServerResourceBundle;
 import platform.server.session.DataSession;
 
 import java.sql.SQLException;
@@ -76,7 +77,7 @@ public class DialogInstance<T extends BusinessLogics<T>> extends FormInstance<T>
             }
             return getDialogValue();
         } catch (SQLException e) {
-            logger.error("Ошибка при получения значения свойства для отображения.", e);
+            logger.error(ServerResourceBundle.getString("form.instance.error.getting.property.value.for.display"), e);
             return null;
         }
     }

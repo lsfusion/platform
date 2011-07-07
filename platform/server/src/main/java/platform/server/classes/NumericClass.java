@@ -3,6 +3,7 @@ package platform.server.classes;
 import platform.interop.Data;
 import platform.server.data.sql.SQLSyntax;
 import platform.server.data.type.ParseException;
+import platform.server.logics.ServerResourceBundle;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -14,14 +15,14 @@ import java.util.Collection;
 public class NumericClass extends IntegralClass<Double> {
 
     public String toString() {
-        return "Число "+length+","+precision;
+        return ServerResourceBundle.getString("classes.number")+" "+length+","+precision;
     }
 
     final byte length;
     final byte precision;
 
     private NumericClass(byte length, byte precision) {
-        super("Число с фиксированной запятой");
+        super(ServerResourceBundle.getString("classes.numeric"));
         this.length = length;
         this.precision = precision;
     }

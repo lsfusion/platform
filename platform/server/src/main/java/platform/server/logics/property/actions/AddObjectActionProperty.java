@@ -13,6 +13,7 @@ import platform.server.form.instance.remote.RemoteForm;
 import platform.server.form.view.DefaultFormView;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
+import platform.server.logics.ServerResourceBundle;
 import platform.server.logics.property.ActionProperty;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.Property;
@@ -64,7 +65,7 @@ public class AddObjectActionProperty extends ActionProperty {
     }
 
     public AddObjectActionProperty(String sID, Property barcode, Property barcodePrefix, boolean quantity, CustomClass valueClass, List<Property> properties, Property propertyValue, DataClass dataClass) {
-        super(sID, "Добавить (" + valueClass + ")", getValueClassList(quantity, properties)); // сам класс не передаем, поскольку это свойство "глобальное"
+        super(sID, ServerResourceBundle.getString("logics.add") + "(" + valueClass + ")", getValueClassList(quantity, properties)); // сам класс не передаем, поскольку это свойство "глобальное"
 
         this.barcode = barcode;
         this.barcodePrefix = barcodePrefix;

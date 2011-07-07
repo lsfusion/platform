@@ -15,6 +15,7 @@ import platform.server.form.instance.PropertyObjectInterfaceInstance;
 import platform.server.form.instance.remote.RemoteForm;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
+import platform.server.logics.ServerResourceBundle;
 import platform.server.logics.property.ActionProperty;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.session.Changes;
@@ -71,7 +72,7 @@ public class FormActionProperty extends ActionProperty {
             FormInstance thisFormInstance = thisRemoteForm.form;
             FormInstance newFormInstance = thisFormInstance.createForm(form, BaseUtils.join(mapObjects, keys), newSession, !form.isPrintForm);
             if(form.isPrintForm && !newFormInstance.areObjectsFounded()) {
-                actions.add(new MessageClientAction("Форма не подходит для данных параметров", form.caption));
+                actions.add(new MessageClientAction(ServerResourceBundle.getString("form.navigator.form.do.not.fit.for.specified.parameters"), form.caption));
             } else {
                for (Map.Entry<ObjectEntity, ClassPropertyInterface> entry : mapObjects.entrySet()) {
                     newFormInstance.forceChangeObject(newFormInstance.instanceFactory.getInstance(entry.getKey()), keys.get(entry.getValue()));

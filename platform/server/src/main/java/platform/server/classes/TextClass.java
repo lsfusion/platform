@@ -3,6 +3,7 @@ package platform.server.classes;
 import platform.interop.Data;
 import platform.server.data.sql.SQLSyntax;
 import platform.server.data.type.ParseException;
+import platform.server.logics.ServerResourceBundle;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -16,10 +17,10 @@ public class TextClass extends DataClass<String> {
         DataClass.storeClass(sid, instance);
     }
 
-    protected TextClass() { super("Текст"); }
-    
-    public String toString() {
-        return "Текст";
+    protected TextClass() { super(ServerResourceBundle.getString("classes.text")); }
+
+        public String toString() {
+        return ServerResourceBundle.getString("classes.text");
     }
 
     public int getMinimumWidth() {

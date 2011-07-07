@@ -2,10 +2,11 @@ package platform.server.logics.property;
 
 import platform.server.classes.ValueClass;
 import platform.server.data.SQLSession;
+import platform.server.logics.ServerResourceBundle;
 
 public class CurrentSessionFormulaProperty extends CurrentEnvironmentFormulaProperty {
 
     public CurrentSessionFormulaProperty(String sID, ValueClass paramClass) {
-        super(sID, "Тек. сессия", SQLSession.sessionParam, paramClass);
+        super(sID, ServerResourceBundle.getString("logics.property.current.session"), SQLSession.sessionParam, paramClass);
     }
 }

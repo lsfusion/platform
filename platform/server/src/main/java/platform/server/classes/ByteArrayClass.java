@@ -3,6 +3,7 @@ package platform.server.classes;
 import platform.interop.Data;
 import platform.server.data.sql.SQLSyntax;
 import platform.server.data.type.ParseException;
+import platform.server.logics.ServerResourceBundle;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -16,10 +17,10 @@ public class ByteArrayClass extends DataClass<byte[]> {
         DataClass.storeClass(sid, instance);
     }
 
-    protected ByteArrayClass() { super("Массив байт"); }
+    protected ByteArrayClass() { super(ServerResourceBundle.getString("classes.byte.array")); }
 
     public String toString() {
-        return "Массив байт";
+        return ServerResourceBundle.getString("classes.byte.array");
     }
 
     public DataClass getCompatible(DataClass compClass) {

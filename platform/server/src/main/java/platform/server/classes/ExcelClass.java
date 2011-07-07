@@ -1,6 +1,7 @@
 package platform.server.classes;
 
 import platform.interop.Data;
+import platform.server.logics.ServerResourceBundle;
 
 public class ExcelClass extends FileClass {
 
@@ -13,7 +14,7 @@ public class ExcelClass extends FileClass {
     protected ExcelClass() {}
 
     public String toString() {
-        return "Файл Excel";
+        return ServerResourceBundle.getString("classes.excel.file");
     }
 
     public DataClass getCompatible(DataClass compClass) {

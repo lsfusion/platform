@@ -1,5 +1,7 @@
 package platform.server.logics.scheduler;
 
+import platform.server.logics.ServerResourceBundle;
+
 import java.util.List;
 
 public class Scheduler implements Runnable {
@@ -37,14 +39,14 @@ public class Scheduler implements Runnable {
                 try {
                     task.execute();
                 } catch (Exception e) {
-                    System.out.println("Ошибка выполнении задания " + task.getID() + " : ");
+                    System.out.println(ServerResourceBundle.getString("logics.scheduler.error.task.execution")+" " + task.getID() + " : ");
                     e.printStackTrace();
                 }
 
             try {
                 Thread.sleep(sleepTime);
             } catch (InterruptedException e) {
-                System.out.println("Такого вообще-то не бывает");
+                System.out.println(ServerResourceBundle.getString("logics.scheduler.error.can.not.happen"));
             }
         }
 

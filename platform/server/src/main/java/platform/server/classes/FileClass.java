@@ -2,6 +2,7 @@ package platform.server.classes;
 
 import platform.server.data.sql.SQLSyntax;
 import platform.server.data.type.ParseException;
+import platform.server.logics.ServerResourceBundle;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -11,7 +12,7 @@ import java.text.Format;
 public abstract class FileClass extends DataClass<byte[]> {
 
     protected FileClass() {
-        super("Файл");
+        super(ServerResourceBundle.getString("classes.file"));
     }
 
     public Object getDefaultValue() {

@@ -27,6 +27,7 @@ import platform.server.form.view.DefaultFormView;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
+import platform.server.logics.ServerResourceBundle;
 import platform.server.logics.property.derived.DerivedProperty;
 import platform.server.logics.property.derived.MaxChangeProperty;
 import platform.server.logics.property.derived.OnChangeProperty;
@@ -346,7 +347,7 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
 
     public String outputStored(boolean outputTable) {
         assert isStored() && field!=null;
-        return (this instanceof UserProperty?"Первичное":"Вычисляемое") + " свойство : " + caption+", "+mapTable.table.outputField(field, outputTable);
+        return (this instanceof UserProperty? ServerResourceBundle.getString("logics.property.primary"):ServerResourceBundle.getString("logics.property.calculated")) + " "+ServerResourceBundle.getString("logics.property")+" : " + caption+", "+mapTable.table.outputField(field, outputTable);
     }
 
     public abstract boolean isStored();
@@ -636,7 +637,7 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
     public Set<PropertyFollows<T, ?>> follows = new HashSet<PropertyFollows<T, ?>>();
 
     public <L extends PropertyInterface> Property addFollows(PropertyMapImplement<L, T> implement) {
-        return addFollows(implement, "Нарушено следствие - из (" + this + ") => (" + implement.property + ")", PropertyFollows.RESOLVE_ALL);
+        return addFollows(implement, ServerResourceBundle.getString("logics.property.violated.consequence.from") + "(" + this + ") => (" + implement.property + ")", PropertyFollows.RESOLVE_ALL);
     }
 
     public <L extends PropertyInterface> Property addFollows(PropertyMapImplement<L, T> implement, String caption, int options) {

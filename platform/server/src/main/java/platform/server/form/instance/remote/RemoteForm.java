@@ -30,6 +30,7 @@ import platform.server.form.view.FormView;
 import platform.server.form.view.report.ReportDesignGenerator;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.DataObject;
+import platform.server.logics.ServerResourceBundle;
 import platform.server.logics.property.Property;
 import platform.server.serialization.SerializationType;
 import platform.server.serialization.ServerContext;
@@ -265,7 +266,7 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
             }
             return designs;
         } catch (JRException e) {
-            throw new RuntimeException("Ошибка при создании дизайна", e);
+            throw new RuntimeException(ServerResourceBundle.getString("form.instance.error.creating.design"), e);
         }
     }
 

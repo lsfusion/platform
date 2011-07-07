@@ -1,5 +1,7 @@
 package platform.server.logics.scheduler;
 
+import platform.server.logics.ServerResourceBundle;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
@@ -39,14 +41,14 @@ public abstract class FlagSemaphoreTask {
                 }
 
             } catch (IOException e) {
-                System.out.println("Ошибка при импорте файла : " + e.getMessage());
+                System.out.println(ServerResourceBundle.getString("logics.scheduler.error.importing.file")+" " + e.getMessage());
             } finally {
 
                 if (flagLock != null) {
                     try {
                         flagLock.release();
                     } catch (IOException e) {
-                        System.out.println("Удаление лока на флаг : " + e.getMessage());
+                        System.out.println(ServerResourceBundle.getString("logics.scheduler.deleting.flag.lock")+" " + e.getMessage());
                     }
                 }
 
@@ -54,14 +56,14 @@ public abstract class FlagSemaphoreTask {
                     try {
                         flagAccess.close();
                     } catch (IOException e) {
-                        System.out.println("Закрытие канала чтения флага: " + e.getMessage());
+                        System.out.println(ServerResourceBundle.getString("logics.scheduler.closing.channel.flag.reading")+" " + e.getMessage());
                     }
                 }
             }
 
             if (succeed) {
                 if (!flagFile.delete()) {
-                    System.out.println("Не удалось удалить файл флага");
+                    System.out.println(ServerResourceBundle.getString("logics.scheduler.failed.to.delete.flag.file"));
                 }
             }
         }

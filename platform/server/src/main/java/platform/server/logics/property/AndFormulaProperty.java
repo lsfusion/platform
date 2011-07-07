@@ -3,6 +3,7 @@ package platform.server.logics.property;
 import platform.server.data.expr.Expr;
 import platform.server.data.where.Where;
 import platform.server.data.where.WhereBuilder;
+import platform.server.logics.ServerResourceBundle;
 import platform.server.session.Changes;
 import platform.server.session.Modifier;
 
@@ -47,7 +48,7 @@ public class AndFormulaProperty extends FormulaProperty<AndFormulaProperty.Inter
     }
 
     public AndFormulaProperty(String sID, boolean... nots) {
-        super(sID, "Если", getInterfaces(nots));
+        super(sID, ServerResourceBundle.getString("logics.property.if"), getInterfaces(nots));
         andInterfaces = new ArrayList<AndInterface>();
         ObjectInterface objInterface = null;
         for(Interface propertyInterface : interfaces)
