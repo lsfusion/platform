@@ -24,6 +24,7 @@ import platform.server.form.view.ContainerView;
 import platform.server.form.view.DefaultFormView;
 import platform.server.form.view.FormView;
 import platform.server.form.view.PropertyDrawView;
+import platform.server.form.window.PanelNavigatorWindow;
 import platform.server.form.window.ToolBarNavigatorWindow;
 import platform.server.form.window.TreeNavigatorWindow;
 import platform.server.logics.BaseLogicsModule;
@@ -2541,15 +2542,15 @@ public class RomanLogicsModule extends LogicsModule {
 
         ToolBarNavigatorWindow mainToolbar = new ToolBarNavigatorWindow(JToolBar.HORIZONTAL, "mainToolbar", "Навигатор");
         mainToolbar.titleShown = false;
+        mainToolbar.drawScrollBars = false;
 
         baseLM.navigatorWindow.y = 10;
         baseLM.navigatorWindow.height -= 10;
 
-        ToolBarNavigatorWindow generateToolbar = new ToolBarNavigatorWindow(JToolBar.HORIZONTAL, "generateToolbar", "Генерация");
+        PanelNavigatorWindow generateToolbar = new PanelNavigatorWindow(SwingConstants.HORIZONTAL, "generateToolbar", "Генерация");
         generateToolbar.titleShown = false;
         generateToolbar.drawRoot = true;
-        generateToolbar.verticalTextPosition = SwingConstants.CENTER;
-        generateToolbar.horizontalTextPosition = SwingConstants.TRAILING;
+        generateToolbar.drawScrollBars = false;
 
         ToolBarNavigatorWindow leftToolbar = new ToolBarNavigatorWindow(JToolBar.VERTICAL, "leftToolbar", "Список");
 

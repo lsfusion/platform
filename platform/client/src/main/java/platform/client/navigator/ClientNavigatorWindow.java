@@ -1,11 +1,9 @@
 package platform.client.navigator;
 
-import platform.base.identity.IdentityObject;
 import platform.interop.AbstractWindowType;
 
 import java.io.DataInputStream;
 import java.io.IOException;
-import java.io.Serializable;
 import java.util.*;
 
 public abstract class ClientNavigatorWindow extends ClientAbstractWindow {
@@ -17,11 +15,13 @@ public abstract class ClientNavigatorWindow extends ClientAbstractWindow {
 
     public int type;
     public boolean drawRoot;
+    public boolean drawScrollBars;
 
     public ClientNavigatorWindow(DataInputStream inStream) throws IOException {
         super(inStream);
 
         drawRoot = inStream.readBoolean();
+        drawScrollBars = inStream.readBoolean();
     }
 
 
@@ -43,6 +43,10 @@ public abstract class ClientNavigatorWindow extends ClientAbstractWindow {
             }
             case AbstractWindowType.MENU_VIEW: {
                 result = new ClientMenuNavigatorWindow(inStream);
+                break;
+            }
+            case AbstractWindowType.PANEL_VIEW: {
+                result = new ClientPanelNavigatorWindow(inStream);
                 break;
             }
             default:

@@ -1,7 +1,7 @@
 package platform.client.form.queries;
 
-import platform.client.ClientButton;
 import platform.client.ClientResourceBundle;
+import platform.client.FlatRolloverButton;
 import platform.client.form.GroupObjectLogicsSupplier;
 import platform.client.form.ItemAdapter;
 import platform.client.logics.*;
@@ -111,7 +111,7 @@ abstract class QueryConditionView extends JPanel implements ValueLinkListener {
             }
         });
 
-        delButton = new ClientButton(deleteIcon);
+        delButton = new FlatRolloverButton(deleteIcon);
         delButton.setFocusable(false);
         delButton.setPreferredSize(new Dimension(PREFERRED_HEIGHT, PREFERRED_HEIGHT));
         delButton.addActionListener(new ActionListener() {

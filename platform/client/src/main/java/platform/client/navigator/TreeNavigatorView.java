@@ -20,7 +20,7 @@ public class TreeNavigatorView extends NavigatorView {
 
     public TreeNavigatorView(ClientNavigatorWindow iWindow, INavigatorController controller) {
         super(iWindow, new ClientTree(), controller);
-        tree = (ClientTree) component;
+        tree = (ClientTree) getComponent();
         root = new ClientTreeNode(ClientResourceBundle.getString("navigator.root"));
         model = new DefaultTreeModel(root);
         tree.setModel(model);

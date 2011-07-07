@@ -179,7 +179,11 @@ public class DockableMainFrame extends MainFrame {
     }
 
     private LinkedHashMap<? extends ClientAbstractWindow,? extends JComponent> getAbstractWindows(NavigatorController navigatorController) {
-        return BaseUtils.mergeLinked(windows, navigatorController.views);
+        LinkedHashMap<ClientNavigatorWindow, JComponent> views = new LinkedHashMap<ClientNavigatorWindow, JComponent>();
+        for (ClientNavigatorWindow win : navigatorController.views.keySet()) {
+            views.put(win, navigatorController.views.get(win).getView());
+        }
+        return BaseUtils.mergeLinked(windows, views);
     }
 
     LinkedHashMap<SingleCDockable, ClientAbstractWindow> dockables = new LinkedHashMap<SingleCDockable, ClientAbstractWindow>();
@@ -220,8 +224,7 @@ public class DockableMainFrame extends MainFrame {
             JComponent component = entry.getValue();
             if (window.position == AbstractWindowType.DOCKING_POSITION) {
                 SingleCDockable dockable = createDockable(window, entry.getValue());
-                if (component instanceof NavigatorView) // приходится вот так криво делать, поскольку в ClientAbstractWindow мы не можем положить ссылку на dockable, так как он в client, а не fullclient
-                    navigatorController.recordDockable((NavigatorView)component, dockable);
+                navigatorController.recordDockable(/*(NavigatorView)*/component, dockable);
                 dockables.put(dockable, window);
             } else {
                 add(component, window.borderConstraint);

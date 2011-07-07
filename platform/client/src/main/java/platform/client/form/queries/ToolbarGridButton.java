@@ -1,5 +1,7 @@
 package platform.client.form.queries;
 
+import platform.client.FlatRolloverButton;
+
 import javax.swing.*;
 import java.awt.*;
 
@@ -9,7 +11,7 @@ import java.awt.*;
  * Time: 19:37
  */
 
-public abstract class ToolbarGridButton extends JButton {
+public abstract class ToolbarGridButton extends FlatRolloverButton {
     public final static Dimension BUTTON_SIZE = new Dimension(20, 20);
 
     public ToolbarGridButton(String iconPath, String toolTipText) {

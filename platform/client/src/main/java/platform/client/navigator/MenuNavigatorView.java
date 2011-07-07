@@ -13,7 +13,7 @@ public class MenuNavigatorView extends NavigatorView {
 
     public MenuNavigatorView(ClientMenuNavigatorWindow iWindow, INavigatorController controller) {
         super(iWindow, new JMenuBar(), controller);
-        menuBar = (JMenuBar) component;
+        menuBar = (JMenuBar) getComponent();
         window = iWindow;
     }
 

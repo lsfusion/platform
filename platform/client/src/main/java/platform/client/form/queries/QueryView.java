@@ -1,6 +1,6 @@
 package platform.client.form.queries;
 
-import platform.client.ClientButton;
+import platform.client.FlatRolloverButton;
 import platform.client.form.GroupObjectLogicsSupplier;
 import platform.client.logics.ClientPropertyDraw;
 import platform.client.logics.filter.ClientPropertyFilter;
@@ -47,7 +47,7 @@ public abstract class QueryView extends JPanel {
 
         add(buttons);
 
-        applyButton = new ClientButton("");
+        applyButton = new FlatRolloverButton("");
         applyButton.setFocusable(false);
         applyButton.setMinimumSize(iconButtonDimension);
         applyButton.setPreferredSize(iconButtonDimension);
@@ -65,7 +65,7 @@ public abstract class QueryView extends JPanel {
         Component centerGlue = Box.createHorizontalGlue();
         buttons.add(centerGlue);
 
-        addCondition = new ClientButton("");
+        addCondition = new FlatRolloverButton("");
         addCondition.setFocusable(false);
         addCondition.setMinimumSize(iconButtonDimension);
         addCondition.setPreferredSize(iconButtonDimension);
@@ -81,7 +81,7 @@ public abstract class QueryView extends JPanel {
 
         buttons.add(addCondition);
 
-        collapseButton = new ClientButton();
+        collapseButton = new FlatRolloverButton();
         collapseButton.setFocusable(false);
         collapseButton.setPreferredSize(iconButtonDimension);
         collapseButton.setMaximumSize(iconButtonDimension);

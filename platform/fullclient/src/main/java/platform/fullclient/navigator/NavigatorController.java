@@ -5,6 +5,7 @@ import platform.client.logics.DeSerializer;
 import platform.client.navigator.*;
 import platform.interop.navigator.RemoteNavigatorInterface;
 
+import javax.swing.*;
 import java.io.IOException;
 import java.util.*;
 
@@ -13,7 +14,7 @@ public class NavigatorController implements INavigatorController {
     List<ClientNavigatorElement> elements;
     public LinkedHashMap<ClientNavigatorWindow, NavigatorView> views = new LinkedHashMap<ClientNavigatorWindow, NavigatorView>();
     public ClientNavigator mainNavigator;
-    private Map<NavigatorView, SingleCDockable> docks = new HashMap<NavigatorView, SingleCDockable>();
+    private Map<JComponent, SingleCDockable> docks = new HashMap<JComponent, SingleCDockable>();
 
     public NavigatorController(RemoteNavigatorInterface iremoteNavigator) {
         remoteNavigator = iremoteNavigator;
@@ -60,7 +61,7 @@ public class NavigatorController implements INavigatorController {
         for (Map.Entry<ClientNavigatorWindow, LinkedHashSet<ClientNavigatorElement>> entry : result.entrySet()) {
             NavigatorView view = views.get(entry.getKey());
             view.refresh(entry.getValue());
-            SingleCDockable dockable = docks.get(view);
+            SingleCDockable dockable = docks.get(view.getView());
             if (dockable != null) {
                 dockable.setVisible(entry.getValue().size() != 0);
             }
@@ -98,7 +99,7 @@ public class NavigatorController implements INavigatorController {
         }
     }
 
-    public void recordDockable(NavigatorView view, SingleCDockable dockable) {
+    public void recordDockable(JComponent view, SingleCDockable dockable) {
         docks.put(view, dockable);
     }
 }

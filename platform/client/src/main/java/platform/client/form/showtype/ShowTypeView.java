@@ -1,6 +1,7 @@
 package platform.client.form.showtype;
 
 import platform.client.ClientResourceBundle;
+import platform.client.FlatRolloverButton;
 import platform.client.form.queries.ToolbarGridButton;
 import platform.interop.ClassViewType;
 
@@ -12,25 +13,25 @@ import java.util.List;
 
 public abstract class ShowTypeView extends JPanel implements ActionListener {
 
-    JButton gridButton;
-    JButton panelButton;
-    JButton hideButton;
+    FlatRolloverButton gridButton;
+    FlatRolloverButton panelButton;
+    FlatRolloverButton hideButton;
 
     public ShowTypeView() {
 
         setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
 
-        gridButton = new JButton("");
+        gridButton = new FlatRolloverButton("");
         gridButton.setIcon(new ImageIcon(ShowTypeView.class.getResource("/images/table.png")));
         gridButton.setToolTipText(ClientResourceBundle.getString("form.showtype.grid"));
         gridButton.setActionCommand("grid");
 
-        panelButton = new JButton("");
+        panelButton = new FlatRolloverButton("");
         panelButton.setIcon(new ImageIcon(ShowTypeView.class.getResource("/images/list.png")));
         panelButton.setToolTipText(ClientResourceBundle.getString("form.showtype.panel"));
         panelButton.setActionCommand("panel");
 
-        hideButton = new JButton("");
+        hideButton = new FlatRolloverButton("");
         hideButton.setIcon(new ImageIcon(ShowTypeView.class.getResource("/images/close.png")));
         hideButton.setToolTipText(ClientResourceBundle.getString("form.showtype.hide"));
         hideButton.setActionCommand("hide");

@@ -18,7 +18,7 @@ public class ToolBarNavigatorView extends NavigatorView {
     public ToolBarNavigatorView(ClientToolBarNavigatorWindow iWindow, INavigatorController controller) {
         super(iWindow, new JToolBar("Toolbar", iWindow.type), controller);
         window = iWindow;
-        toolBar = (JToolBar) component;
+        toolBar = (JToolBar) getComponent();
         toolBar.setFloatable(false);
         toolBar.setRollover(true);
         toolBar.setFocusable(false);
@@ -34,11 +34,11 @@ public class ToolBarNavigatorView extends NavigatorView {
             }
         }
 
-        revalidate();
-        repaint();
+        component.revalidate();
+        component.repaint();
 
         // затычка, иначе Toolbar вверху рисуется неправильного размера (увеличенного)
-        this.setPreferredSize(getPreferredSize());
+        component.setPreferredSize(component.getPreferredSize());
     }
 
     private void addElement(ClientNavigatorElement element, Set<ClientNavigatorElement> newElements, int allign) {

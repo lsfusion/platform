@@ -4,20 +4,22 @@ import javax.swing.*;
 import java.awt.*;
 
 public class NorthBoxPanel extends JPanel {
+    JPanel boxPanel = new JPanel();
 
-    public NorthBoxPanel(JComponent component){
+    public NorthBoxPanel(JComponent... components) {
+        boxPanel.setLayout(new BoxLayout(boxPanel, BoxLayout.Y_AXIS));
+        addComponents(components);
         setLayout(new BorderLayout());
-        add(component, BorderLayout.NORTH);
+        add(boxPanel, BorderLayout.NORTH);
     }
 
-    public NorthBoxPanel(JComponent... components){
-        JPanel panel = new JPanel();
-        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-        for(JComponent component : components){
-            panel.add(component);
-            panel.add(Box.createRigidArea(new Dimension(5, 5)));
+    public void addComponents(JComponent... components) {
+        if (getComponents().length == 0) {    //если вдруг где-то вызвали removeAll()
+            add(boxPanel, BorderLayout.NORTH);
         }
-        setLayout(new BorderLayout());
-        add(panel, BorderLayout.NORTH);
+        for (JComponent component : components) {
+            boxPanel.add(component);
+            boxPanel.add(Box.createRigidArea(new Dimension(5, 5)));
+        }
     }
 }
