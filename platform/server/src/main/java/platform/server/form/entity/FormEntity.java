@@ -499,7 +499,13 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         return resultPropertyDraw;
     }
 
-    public Collection<Property> hintsNoUpdate = new HashSet<Property>();
+    public Set<Property> hintsIncrementTable = new HashSet<Property>();
+    public void addHintsIncrementTable(Property... props) {
+        for(Property prop : props)
+            hintsIncrementTable.add(prop);
+    }
+
+    public Set<Property> hintsNoUpdate = new HashSet<Property>();
 
     public void addHintsNoUpdate(GroupObjectEntity groupObject) {
         for (PropertyDrawEntity property : getProperties(groupObject)) {

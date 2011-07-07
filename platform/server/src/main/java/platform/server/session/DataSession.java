@@ -429,7 +429,7 @@ public class DataSession extends MutableObject implements SessionChanges, ExprCh
 
     public void cleanApply() throws SQLException {
         if (incrementApply != null) {
-            incrementApply.dropTemporaryTables();
+            incrementApply.cleanIncrementTables();
             incrementApply = null;
         }
     }

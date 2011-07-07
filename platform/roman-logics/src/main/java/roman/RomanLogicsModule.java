@@ -2369,9 +2369,13 @@ public class RomanLogicsModule extends LogicsModule {
         sumInOutProxyImporterFreightSku = addJProp(baseGroup, "sumInOutProxyImporterFreightSku", "Сумма выходная", baseLM.multiplyDouble2, quantityProxyImporterFreightSku, 1, 2, 3, priceInOutImporterFreightSku, 1, 2, 3);
         sumInOutDirectImporterFreightSku = addJProp(baseGroup, "sumInOutDirectImporterFreightSku", "Сумма выходная", baseLM.multiplyDouble2, quantityDirectImporterFreightSku, 1, 2, 3, priceInOutImporterFreightSku, 1, 2, 3);
 
-        insuranceImporterFreightSku = addPGProp(baseGroup, "insuranceImporterFreightSku", false, 10, false, "Сумма страховки",
-                sumInOutImporterFreightSku,
-                insuranceFreight, 2);
+        sumInOutImporterFreight = addSGProp(baseGroup, "sumInOutImporterFreight", true, "Сумма выходная", sumInOutImporterFreightSku, 1, 2);
+        sumInOutFreight = addSGProp(baseGroup, "sumInOutFreight", true, "Сумма выходная", sumInOutImporterFreight, 2);
+        // временно так пока система сама не научится либо обнаруживать равные свойства, либо решать проблему с инкрементностью по другому
+        insuranceImporterFreightSku = addJProp(addSFProp("ROUND(CAST((prm1*prm2/prm3) as NUMERIC(15,3))," + 10 + ")", DoubleClass.instance, 3), sumInOutImporterFreightSku, 1, 2, 3, insuranceFreight, 2, sumInOutFreight, 2);
+        //addPGProp(baseGroup, "insuranceImporterFreightSku", false, 2, false, "Сумма страховки",
+        //        sumInOutImporterFreightSku,
+        //        insuranceFreight, 2);
 
         priceInsuranceImporterFreightSku = addJProp(baseGroup, "priceInsuranceImporterFreightSku", "Цена за страховку", baseLM.divideDouble2, insuranceImporterFreightSku, 1, 2, 3, quantityImporterFreightSku, 1, 2, 3);
 
@@ -2422,10 +2426,8 @@ public class RomanLogicsModule extends LogicsModule {
         sumMarkupInImporterFreight = addSGProp(baseGroup, "sumMarkupInImporterFreight", true, "Сумма надбавки", sumMarkupInImporterFreightSku, 1, 2);
 
         sumInOutImporterFreightTypeInvoice = addSGProp(baseGroup, "sumInOutImporterFreightTypeInvoice", true, "Сумма выходная", sumInOutProxyImporterFreightSku, 1, 2, typeInvoiceFreightArticleSku, 2, 3);
-        sumInOutImporterFreight = addSGProp(baseGroup, "sumInOutImporterFreight", true, "Сумма выходная", sumInOutImporterFreightSku, 1, 2);
 
         sumMarkupInFreight = addSGProp(baseGroup, "sumMarkupInFreight", true, "Сумма надбавки", sumMarkupInImporterFreight, 2);
-        sumInOutFreight = addSGProp(baseGroup, "sumInOutFreight", true, "Сумма выходная", sumInOutImporterFreight, 2);
 
         // надбавка на цену с учётом стоимости фрахта
         markupImporterFreightSku = addJProp(baseGroup, "markupImporterFreightSku", "Надбавка", baseLM.percent2, priceExpenseImporterFreightSku, 1, 2, 3, markupPercentImporterFreightSku, 1, 2, 3);
@@ -4591,7 +4593,7 @@ public class RomanLogicsModule extends LogicsModule {
             addRegularFilterGroup(filterGroupComposition);
 
             freightChangedFA = addMFAProp(actionGroup, "Обработать", this,
-                    new ObjectEntity[] {objFreight}, true, addPropertyObject(executeChangeFreightClass, objFreight, (DataObject) freightChanged.getClassObject()));
+                    new ObjectEntity[]{objFreight}, true, addPropertyObject(executeChangeFreightClass, objFreight, (DataObject) freightChanged.getClassObject()));
             freightChangedFA.setImage("arrow_right.png");
         }
 
@@ -5208,8 +5210,8 @@ public class RomanLogicsModule extends LogicsModule {
                                    DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
 
             design.addIntersection(design.getGroupObjectContainer(objTheme.groupTo),
-                                   design.getGroupObjectContainer(objCountry.groupTo),
-                                   DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
+                    design.getGroupObjectContainer(objCountry.groupTo),
+                    DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
 
             ContainerView specContainer = design.createContainer();
             design.getMainContainer().addAfter(specContainer, design.getGroupObjectContainer(objColor.groupTo));
@@ -5353,9 +5355,10 @@ public class RomanLogicsModule extends LogicsModule {
                     KeyStroke.getKeyStroke(KeyEvent.VK_F11, 0)));
             addRegularFilterGroup(filterGroup);
 
-            addHintsNoUpdate(objImporter.groupTo);
-            addHintsNoUpdate(dutyImporterFreightSku);
-            addHintsNoUpdate(NDSImporterFreightSku);
+            addHintsIncrementTable(priceInOutImporterFreightSku.property, sumInOutFreight.property, dutyImporterFreightSku.property);
+//            addHintsNoUpdate(objImporter.groupTo);
+//            addHintsNoUpdate(dutyImporterFreightSku);
+//            addHintsNoUpdate(NDSImporterFreightSku);
             //addHintsNoUpdate(sumInImporterFreight);
             //addHintsNoUpdate(sumInImporterFreight);
 

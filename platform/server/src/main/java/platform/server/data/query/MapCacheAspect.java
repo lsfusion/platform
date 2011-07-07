@@ -561,7 +561,7 @@ public class MapCacheAspect {
             hashCaches.put(implement, new ExprResult(expr, changedWheres!=null?cacheWheres.toWhere():null));
 
             if(expr.getComplexity() > 300) {
-                System.out.println("COMPLEX " + property.getSID() + " : " + property);
+                System.out.println("COMPLEX " + property.getSID() + " : " + property + " " + expr.getComplexity());
             }
 
             // проверим

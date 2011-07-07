@@ -402,11 +402,10 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
         return session.getObjectValue(read(session.sql, keys, modifier, session.env), getType());
     }
 
-    public Expr getIncrementExpr(Map<KeyField, ? extends Expr> joinImplement, Modifier<? extends Changes> modifier, WhereBuilder changedWhere) {
-        Map<T, ? extends Expr> joinKeys = join(mapTable.mapKeys, joinImplement);
+    public Expr getIncrementExpr(Map<T, ? extends Expr> joinImplement, Modifier<? extends Changes> modifier, WhereBuilder changedWhere) {
         WhereBuilder incrementWhere = new WhereBuilder();
-        Expr incrementExpr = getExpr(joinKeys, modifier, incrementWhere);
-        changedWhere.add(incrementWhere.toWhere().and(incrementExpr.getWhere().or(getExpr(joinKeys).getWhere()))); // если старые или новые изменились
+        Expr incrementExpr = getExpr(joinImplement, modifier, incrementWhere);
+        changedWhere.add(incrementWhere.toWhere().and(incrementExpr.getWhere().or(getExpr(joinImplement).getWhere()))); // если старые или новые изменились
         return incrementExpr;
     }
 
@@ -623,11 +622,14 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
         //десериализация не нужна, т.к. вместо создания объекта, происходит поиск в BL
     }
 
-    public SinglePropertyTableUsage<T> createChangeTable() {
-        return new SinglePropertyTableUsage<T>(new ArrayList<T>(interfaces), new Type.Getter<T>() {
+    public final Type.Getter<T> interfaceTypeGetter = new Type.Getter<T>() {
             public Type getType(T key) {
                 return getInterfaceType(key);
-            }}, getType());
+            }
+        };
+
+    public SinglePropertyTableUsage<T> createChangeTable() {
+        return new SinglePropertyTableUsage<T>(new ArrayList<T>(interfaces), interfaceTypeGetter, getType());
     }
 
     // дебилизм конечно, но это самый простой обход DistrGroupProperty

@@ -74,7 +74,7 @@ public interface Where extends SourceJoin<Where>, OuterContext<Where>, KeyType, 
 
     // ДОПОЛНИТЕЛЬНЫЕ ИНТЕРФЕЙСЫ
 
-    Collection<InnerSelectJoin> getInnerJoins(boolean notExclusive);
+    Collection<InnerSelectJoin> getInnerJoins(boolean notExclusive, Set<KeyExpr> keys);
     Collection<InnerGroupJoin<? extends GroupJoinSet>> getInnerJoins(boolean notExclusive, boolean noJoins, Set<KeyExpr> keys);
     ObjectJoinSets groupObjectJoinSets(); // protected
     KeyEquals getKeyEquals();

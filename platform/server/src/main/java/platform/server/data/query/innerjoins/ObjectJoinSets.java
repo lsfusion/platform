@@ -28,7 +28,7 @@ public class ObjectJoinSets extends DNFWheres<ObjectJoinSet, Where, ObjectJoinSe
     // компилирует запрос на выполнение группируя means'ы, отдельно means по-любому нельзя так как JoinSelect спрячется за not,
     // который потом может уйти в followFalse, а JoinSelect так и останется в Where торчать и не хватит ключа
     // а так у нас есть гарантия что ключей хватит
-    public Map<ObjectJoinSet, Where> compileMeans() {
+    public Map<ObjectJoinSet, Where> compileMeans(Set<KeyExpr> keys) {
 
         Map<ObjectJoinSet, Where> result = new HashMap<ObjectJoinSet, Where>();
         for(int i=0;i<size;i++) {
@@ -39,7 +39,7 @@ public class ObjectJoinSets extends DNFWheres<ObjectJoinSet, Where, ObjectJoinSe
                 boolean found = false;
                 // ищем кого-нибудь кого он means
                 for(Map.Entry<ObjectJoinSet,Where> resultJoin : result.entrySet())
-                    if(objectJoin.means(resultJoin.getKey(), where.getClassWhere())) {
+                    if(objectJoin.means(resultJoin.getKey(), where.getClassWhere(), keys)) {
                         resultJoin.setValue(resultJoin.getValue().or(where)); //.and(whereJoin.mean.followFalse(resultJoin.mean.not())
                         found = true;
                     }
@@ -47,7 +47,7 @@ public class ObjectJoinSets extends DNFWheres<ObjectJoinSet, Where, ObjectJoinSe
                     // ищем все кто его means и удаляем
                     for(Iterator<Map.Entry<ObjectJoinSet,Where>> it = result.entrySet().iterator();it.hasNext();) {
                         Map.Entry<ObjectJoinSet,Where> resultJoin = it.next();
-                        if(resultJoin.getKey().means(objectJoin, resultJoin.getValue().getClassWhere())) {
+                        if(resultJoin.getKey().means(objectJoin, resultJoin.getValue().getClassWhere(), keys)) {
                             where = where.or(resultJoin.getValue());
                             it.remove();
                         }
@@ -64,7 +64,7 @@ public class ObjectJoinSets extends DNFWheres<ObjectJoinSet, Where, ObjectJoinSe
     public MapWhere<StatKeys<KeyExpr>> compileStats(Set<KeyExpr> keys) {
         MapWhere<StatKeys<KeyExpr>> mapWhere = new MapWhere<StatKeys<KeyExpr>>();
         for(int i=0;i<size;i++)
-            mapWhere.add(getKey(i).getJoins().getStatKeys(keys), getValue(i));
+            mapWhere.add(getKey(i).getStatKeys(keys), getValue(i));
         return mapWhere;
     }
 

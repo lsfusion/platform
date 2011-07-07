@@ -6,6 +6,8 @@ import platform.server.data.Table;
 import platform.server.data.expr.BaseExpr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.VariableExprSet;
+import platform.server.data.expr.query.KeyStat;
+import platform.server.data.expr.query.StatKeys;
 import platform.server.data.query.InnerJoin;
 import platform.server.data.query.JoinSet;
 import platform.server.data.translator.MapTranslate;
@@ -48,23 +50,28 @@ public class ObjectJoinSet implements DNFWheres.Interface<ObjectJoinSet> {
         this.baseClass = baseClass;
     }
 
-    public ObjectJoinSet(KeyExpr key, BaseExpr expr) {
-        joins = new JoinSet();
-        assert !expr.hasKey(key);
-        keyObjects = new HashSet<KeyExpr>();
-        baseClass = null;
+    public StatKeys<KeyExpr> getStatKeys(Set<KeyExpr> keys) {
+        return getJoins().getStatKeys(keys);
     }
 
-    public boolean means(ObjectJoinSet where, ClassExprWhere classWhere) { // classWhere именно this а не параметра
+    public boolean means(ObjectJoinSet where, ClassExprWhere classWhere, Set<KeyExpr> keys) { // classWhere именно this а не параметра
 //      здесь assert что все ключи должны быть
         if(!joins.means(where.joins))
             return false;
 
-        ClassExprWhere keyClasses = ClassExprWhere.TRUE;
-        for(KeyExpr keyObject : where.keyObjects)
-            if(!keyObjects.contains(keyObject))
-                keyClasses = keyClasses.and(new ClassExprWhere(keyObject, where.baseClass.getUpSet()));
-        return classWhere.means(keyClasses);
+        if(!keyObjects.containsAll(where.keyObjects))
+            return false;
+        // нет смысла пока сливать objects'ы с join'ами, потому как для objects может быть фильтр на небольшое подмножество и слившись в общий or СУБД не разберет этот случай
+/*          ClassExprWhere keyClasses = ClassExprWhere.TRUE;
+            for(KeyExpr keyObject : where.keyObjects)
+                if(!keyObjects.contains(keyObject))
+                    keyClasses = keyClasses.and(new ClassExprWhere(keyObject, where.baseClass.getUpSet()));
+            if(!(classWhere.means(keyClasses)))
+                return false;
+        }*/
+
+        // проверим что статистику не уменьшит
+        return getStatKeys(keys).equals(where.getStatKeys(keys));
     }
 
     public ObjectJoinSet(JoinSet joins, Set<KeyExpr> keyObjects, BaseClass baseClass) {

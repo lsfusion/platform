@@ -178,8 +178,8 @@ public abstract class AbstractWhere extends AbstractSourceJoin<Where> implements
         return new Query<KeyExpr,Object>(BaseUtils.toMap(map.keySet()),this).join(map).getWhere();
     }
 
-    public Collection<InnerSelectJoin> getInnerJoins(boolean notExclusive) {
-        return BaseUtils.immutableCast(getInnerJoins(notExclusive, false, null));
+    public Collection<InnerSelectJoin> getInnerJoins(boolean notExclusive, Set<KeyExpr> keys) {
+        return BaseUtils.immutableCast(getInnerJoins(notExclusive, false, keys));
     }
 
     public Collection<InnerGroupJoin<? extends GroupJoinSet>> getInnerJoins(boolean notExclusive, boolean noJoins, Set<KeyExpr> keys) {

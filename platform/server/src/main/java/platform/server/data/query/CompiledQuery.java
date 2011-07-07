@@ -147,7 +147,7 @@ public class CompiledQuery<K,V> {
             propertyReaders.put(property.getKey(),query.where.isFalse()?NullReader.instance:property.getValue().getReader(query.where));
 
         boolean useFJ = syntax.useFJ();
-        Collection<InnerSelectJoin> queryJoins = query.where.getInnerJoins(useFJ);
+        Collection<InnerSelectJoin> queryJoins = query.where.getInnerJoins(useFJ, new HashSet<KeyExpr>(query.mapKeys.values()));
 
         unionAll = !(useFJ || queryJoins.size() < 2);
         if (unionAll) {

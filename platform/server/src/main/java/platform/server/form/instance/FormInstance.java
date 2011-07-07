@@ -22,6 +22,7 @@ import platform.server.data.expr.ValueExpr;
 import platform.server.data.expr.query.GroupExpr;
 import platform.server.data.expr.query.GroupType;
 import platform.server.data.query.Query;
+import platform.server.data.type.Type;
 import platform.server.data.type.TypeSerializer;
 import platform.server.form.entity.*;
 import platform.server.form.entity.filter.FilterEntity;
@@ -63,11 +64,9 @@ import static platform.server.form.instance.GroupObjectInstance.*;
 // так клиента волнуют панели на форме, список гридов в привязке, дизайн и порядок представлений
 // сервера колышет дерево и св-ва предст. с привязкой к объектам
 
-public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier {
+public class FormInstance<T extends BusinessLogics<T>> extends IncrementProps<PropertyInterface> {
 
     public final T BL;
-
-    public DataSession session;
 
     public ExprChanges getSession() {
         return session;
@@ -80,11 +79,38 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
     }
 
     public Modifier<? extends Changes> update(final ExprChanges sessionChanges) {
-        return new NoUpdateModifier(hintsNoUpdate) {
+        return new IncrementProps<Object>(noUpdate) {
+            @Override
             public ExprChanges getSession() {
                 return sessionChanges;
             }
         };
+    }
+
+    List<Property> incrementTableProps = new ArrayList<Property>();
+
+    private void read(final Property property) throws SQLException {
+        PropertyGroup<PropertyInterface> prevGroup = incrementGroups.remove(property);
+        if(prevGroup!=null)
+            tables.remove(prevGroup);
+
+        read(new PropertyGroup<PropertyInterface>() {
+            public List<PropertyInterface> getKeys() {
+                return new ArrayList<PropertyInterface>(property.interfaces);
+            }
+
+            public Type.Getter<PropertyInterface> typeGetter() {
+                return (Type.Getter<PropertyInterface>) property.interfaceTypeGetter;
+            }
+
+            public <PP extends PropertyInterface> Map<PP, PropertyInterface> getPropertyMap(Property<PP> mapProperty) {
+                assert mapProperty == property;
+                Map<PP, PropertyInterface> result = new HashMap<PP, PropertyInterface>();
+                for (PP propertyInterface : mapProperty.interfaces)
+                    result.put(propertyInterface, (PP) propertyInterface);
+                return result;
+            }
+        }, Collections.singleton(property), BL.LM.baseClass);
     }
 
     public Set<Property> getUpdateProperties(ExprChanges sessionChanges) {
@@ -123,9 +149,9 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
     }
 
     public FormInstance(FormEntity<T> entity, T BL, DataSession session, SecurityPolicy securityPolicy, FocusListener<T> focusListener, CustomClassListener classListener, PropertyObjectInterfaceInstance computer, Map<ObjectEntity, ? extends ObjectValue> mapObjects, boolean interactive, Set<FilterEntity> additionalFixedFilters) throws SQLException {
+        super(session);
         this.entity = entity;
         this.BL = BL;
-        this.session = session;
         this.securityPolicy = securityPolicy;
 
         instanceFactory = new InstanceFactory(computer);
@@ -133,7 +159,11 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
         this.weakFocusListener = new WeakReference<FocusListener<T>>(focusListener);
         this.weakClassListener = new WeakReference<CustomClassListener>(classListener);
 
-        hintsNoUpdate = entity.hintsNoUpdate;
+        for(Property property : BL.getPropertyList())
+            if(entity.hintsIncrementTable.contains(property)) // чтобы в лексикографике был список
+                incrementTableProps.add(property);
+
+        noUpdate = entity.hintsNoUpdate;
 
         for (int i = 0; i < entity.groups.size(); i++) {
             GroupObjectInstance groupObject = instanceFactory.getInstance(entity.groups.get(i));
@@ -600,6 +630,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
         }
 
         session.write(BL, actions);
+        cleanIncrementTables();
 
         refreshData();
         addObjectOnTransaction();
@@ -611,6 +642,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
 
     public void cancelChanges() throws SQLException {
         session.restart(true);
+        cleanIncrementTables();
 
         // пробежим по всем объектам
         for (ObjectInstance object : getObjects())
@@ -679,6 +711,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
             }
             group.fillUpdateProperties(result);
         }
+        result.addAll(incrementTableProps);
         return result;
     }
 
@@ -962,6 +995,11 @@ public class FormInstance<T extends BusinessLogics<T>> extends NoUpdateModifier 
             } else {
                 changedProps = new ArrayList<Property>();
             }
+
+            // пробежим пометим incrementProps
+            for(Property property : incrementTableProps) // в changedProps могут быть и cancel'ы и новые изменения
+                if((refresh || changedProps.contains(property)) && property.hasChanges(this)) // поэтому проверим что hasChanges
+                    read(property);
 
             GroupObjectValue updateGroupObject = null; // так как текущий groupObject идет относительно treeGroup, а не group
             for (GroupObjectInstance group : groups) {

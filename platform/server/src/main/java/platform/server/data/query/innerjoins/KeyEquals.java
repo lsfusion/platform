@@ -124,12 +124,13 @@ public class KeyEquals extends QuickMap<KeyEqual, Where> {
 
             ObjectJoinSets objectJoinSets = where.groupObjectJoinSets();
 
+            Set<KeyExpr> joinKeys = BaseUtils.removeSet(keys, keyEqual.keyExprs.keySet());
             if(noJoins) { // группируем по enoughKeys
-                MapWhere<StatKeys<KeyExpr>> insufWheres = objectJoinSets.compileStats(BaseUtils.removeSet(keys, keyEqual.keyExprs.keySet()));
+                MapWhere<StatKeys<KeyExpr>> insufWheres = objectJoinSets.compileStats(joinKeys);
                 for(int j=0;j<insufWheres.size;j++)
                     result.add(new InnerGroupJoin<GroupStatKeys>(keyEqual, new GroupStatKeys(insufWheres.getKey(j)), insufWheres.getValue(j)));
             } else { // группируем по means
-                for(Map.Entry<ObjectJoinSet,Where> objectJoin : objectJoinSets.compileMeans().entrySet())
+                for(Map.Entry<ObjectJoinSet,Where> objectJoin : objectJoinSets.compileMeans(joinKeys).entrySet())
                     result.add(new InnerSelectJoin(keyEqual, objectJoin.getKey().getJoins(), objectJoin.getValue()));
             }
         }
