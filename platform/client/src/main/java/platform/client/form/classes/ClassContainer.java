@@ -1,5 +1,7 @@
 package platform.client.form.classes;
 
+import platform.client.FlatRolloverButton;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -19,7 +21,7 @@ public abstract class ClassContainer extends JPanel {
         pane = new JScrollPane(view);
         add(pane, BorderLayout.CENTER);
 
-        JButton collapseButton = new JButton("<<");
+        JButton collapseButton = new FlatRolloverButton("<<");
         collapseButton.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
@@ -29,7 +31,7 @@ public abstract class ClassContainer extends JPanel {
         collapseButton.setFocusable(false);
         collapseButton.setFont(getFont().deriveFont(Font.BOLD));
 
-        expandButton = new JButton(">");
+        expandButton = new FlatRolloverButton(">");
         expandButton.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
@@ -46,7 +48,7 @@ public abstract class ClassContainer extends JPanel {
 
         add(expandButton, BorderLayout.EAST);
 
-        JButton widthDecButton = new JButton("<");
+        JButton widthDecButton = new FlatRolloverButton("<");
         widthDecButton.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
@@ -57,7 +59,7 @@ public abstract class ClassContainer extends JPanel {
         widthDecButton.setFocusable(false);
         widthDecButton.setFont(getFont().deriveFont(Font.BOLD));
 
-        JButton widthIncButton = new JButton(">");
+        JButton widthIncButton = new FlatRolloverButton(">");
         widthIncButton.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {

@@ -4,6 +4,7 @@ import lpsolve.LpSolve;
 import lpsolve.LpSolveException;
 import org.apache.log4j.Logger;
 import platform.base.OSUtils;
+import platform.client.SwingUtils;
 import platform.client.logics.ClientComponent;
 import platform.client.logics.ClientContainer;
 import platform.interop.form.layout.*;
@@ -369,6 +370,10 @@ public class SimplexLayout implements LayoutManager2, ComponentListener {
         if (type == SimplexLayout.DEFAULT) { // когда parent null - ищем preferredSize
             solver.addConstraintex(1, new double[]{1}, new int[]{targetInfo.R}, LpSolve.EQ, layoutSize.getWidth());
             solver.addConstraintex(1, new double[]{1}, new int[]{targetInfo.B}, LpSolve.EQ, layoutSize.getHeight());
+        } else {
+            Dimension screen = SwingUtils.getUsableDeviceBounds();
+            solver.addConstraintex(1, new double[]{1}, new int[]{targetInfo.R}, LpSolve.LE, screen.getWidth());
+            solver.addConstraintex(1, new double[]{1}, new int[]{targetInfo.B}, LpSolve.LE, screen.getHeight());
         }
 
         for (Component component : components) {
@@ -562,7 +567,8 @@ public class SimplexLayout implements LayoutManager2, ComponentListener {
 
             Dimension max = component.getMaximumSize();
             Dimension pref = component.getPreferredSize();
-            double prefCoeff = 50.0 / pref.width;
+            double prefCoeffWidth = 50.0 / pref.width;
+            double prefCoeffHeight = 50.0 / pref.height;
 
             SimplexComponentInfo info = infos.get(component);
 
@@ -577,17 +583,19 @@ public class SimplexLayout implements LayoutManager2, ComponentListener {
                 // Preferred size
                 if (constraint.fillHorizontal >= 0) {
 
+                    double prefWidth = (pref.width + 1.0) * (type == SimplexLayout.PREFERRED && constraint.fillHorizontal > 1E-6 ? constraint.fillVertical : 1.0);
+
                     solver.addColumn(new double[0]);
                     int var = solver.getNcolumns();
-                    solver.addConstraintex(1, new double[]{1}, new int[]{var}, LpSolve.GE, pref.width + 1.0);
+                    solver.addConstraintex(1, new double[]{1}, new int[]{var}, LpSolve.GE, prefWidth);
                     solver.addConstraintex(3, new double[]{1, -1, 1}, new int[]{var, info.R, info.L}, LpSolve.GE, 0);
-                    objFnc.add(-100.0 - prefCoeff);
+                    objFnc.add(-100.0 - prefCoeffWidth);
 
                     solver.addColumn(new double[0]);
                     var = solver.getNcolumns();
-                    solver.addConstraintex(1, new double[]{1}, new int[]{var}, LpSolve.LE, pref.width + 1.0);
+                    solver.addConstraintex(1, new double[]{1}, new int[]{var}, LpSolve.LE, prefWidth);
                     solver.addConstraintex(3, new double[]{1, -1, 1}, new int[]{var, info.R, info.L}, LpSolve.LE, 0);
-                    objFnc.add(100.0 + prefCoeff);
+                    objFnc.add(100.0 + prefCoeffWidth);
                 }
             }
 
@@ -599,17 +607,19 @@ public class SimplexLayout implements LayoutManager2, ComponentListener {
                 // Preferred size
                 if (constraint.fillVertical >= 0) {
 
+                    double prefHeight = pref.height * (type == SimplexLayout.PREFERRED && constraint.fillVertical > 1E-6 ? constraint.fillVertical : 1.0);
+
                     solver.addColumn(new double[0]);
                     int var = solver.getNcolumns();
-                    solver.addConstraintex(1, new double[]{1}, new int[]{var}, LpSolve.GE, pref.height);
+                    solver.addConstraintex(1, new double[]{1}, new int[]{var}, LpSolve.GE, prefHeight);
                     solver.addConstraintex(3, new double[]{1, -1, 1}, new int[]{var, info.B, info.T}, LpSolve.GE, 0);
-                    objFnc.add(-100.0 - prefCoeff);
+                    objFnc.add(-100.0 - prefCoeffHeight);
 
                     solver.addColumn(new double[0]);
                     var = solver.getNcolumns();
-                    solver.addConstraintex(1, new double[]{1}, new int[]{var}, LpSolve.LE, pref.height);
+                    solver.addConstraintex(1, new double[]{1}, new int[]{var}, LpSolve.LE, prefHeight);
                     solver.addConstraintex(3, new double[]{1, -1, 1}, new int[]{var, info.B, info.T}, LpSolve.LE, 0);
-                    objFnc.add(100.0 + prefCoeff);
+                    objFnc.add(100.0 + prefCoeffHeight);
                 }
             }
 

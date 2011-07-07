@@ -98,7 +98,7 @@ public class LP<T extends PropertyInterface> {
 
     }
 
-    private Map<T, DataObject> getMapValues(DataObject... objects) {
+    public Map<T, DataObject> getMapValues(DataObject... objects) {
         Map<T, DataObject> mapValues = new HashMap<T, DataObject>();
         for(int i=0;i<listInterfaces.size();i++)
             mapValues.put(listInterfaces.get(i),objects[i]);

@@ -171,13 +171,13 @@ public class SwingUtils {
      */
     public static Dimension clipToScreen(Dimension toClip) {
         Dimension screen = getUsableDeviceBounds();
-        return clipDimension(toClip, new Dimension(0, 0), new Dimension(screen.width - 20, screen.height - 20));
+        return clipDimension(toClip, new Dimension(0, 0), new Dimension(screen.width, screen.height));
     }
 
     /**
      * c/p from org.jdesktop.swingx.util.WindowUtils
      */
-    private static Dimension getUsableDeviceBounds() {
+    public static Dimension getUsableDeviceBounds() {
         GraphicsConfiguration gc = GraphicsEnvironment.getLocalGraphicsEnvironment()
                 .getDefaultScreenDevice().getDefaultConfiguration();
 
