@@ -61,6 +61,9 @@ public class RomanLogicsModule extends LogicsModule {
     private final RomanBusinessLogics BL;
     private LP equalsColorItemSupplier;
     private LP equalsSizeItemSupplier;
+    private LP freightCompleteFA;
+    private LP freightChangedFA;
+    private LP freightPricedFA;
 
     public RomanLogicsModule(BaseLogicsModule<RomanBusinessLogics> baseLM, RomanBusinessLogics BL) {
         super("RomanLogicsModule");
@@ -2646,6 +2649,7 @@ public class RomanLogicsModule extends LogicsModule {
         addFormEntity(new FreightShipmentFormEntity(shipment, "freightShipmentForm", "Комплектация фрахта"));
         addFormEntity(new FreightChangeFormEntity(shipment, "freightChangeForm", "Обработка фрахта"));
         addFormEntity(new FreightInvoiceFormEntity(shipment, "freightInvoiceForm", "Расценка фрахта"));
+        addFormEntity(new FreightListFormEntity(shipment, "freightListForm", "Список фрахтов"));
         addFormEntity(new PrintDocumentFormEntity(shipment, "printDocumentForm", "Печать документов"));
         shipment.add(freightType.getListForm(baseLM));
 
@@ -3754,7 +3758,8 @@ public class RomanLogicsModule extends LogicsModule {
             super(parent, sID, caption);
 
             objFreight = addSingleGroupObject(freight, "Фрахт", baseLM.date, baseLM.objectClassName, nameRouteFreight, sumFreightFreight, insuranceFreight, nameExporterFreight, nameFreightTypeFreight, tonnageFreight, grossWeightFreight, volumeFreight, palletCountFreight, palletNumberFreight);
-            addObjectActions(this, objFreight);
+            objFreight.groupTo.setSingleClassView(ClassViewType.PANEL);
+//            addObjectActions(this, objFreight);
 
             PropertyObjectEntity diffPalletFreightProperty = addPropertyObject(diffPalletFreight, objFreight);
             getPropertyDraw(palletCountFreight).setPropertyHighlight(diffPalletFreightProperty);
@@ -3829,6 +3834,9 @@ public class RomanLogicsModule extends LogicsModule {
                     KeyStroke.getKeyStroke(KeyEvent.VK_F8, 0)));
             filterGroupInvoice.defaultFilter = 0;
             addRegularFilterGroup(filterGroupInvoice);
+
+            freightCompleteFA = addMFAProp(actionGroup, "Скомплектовать", this,
+                    new ObjectEntity[] {objFreight}, true, addPropertyObject(executeChangeFreightClass, objFreight, (DataObject) freightComplete.getClassObject()));
         }
 
         @Override
@@ -4520,33 +4528,10 @@ public class RomanLogicsModule extends LogicsModule {
         private RegularFilterGroupEntity filterGroupCountry;
 
         private FreightChangeFormEntity(NavigatorElement parent, String sID, String caption) {
-            this(parent, sID, caption, false);
-        }
-
-        private FreightChangeFormEntity(NavigatorElement parent, String sID, String caption, boolean edit) {
             super(parent, sID, caption);
 
-            objFreight = addSingleGroupObject(freight, "Фрахт", baseLM.date, baseLM.objectClassName, nameRouteFreight, sumFreightFreight, insuranceFreight, nameExporterFreight, nameFreightTypeFreight, grossWeightFreight, palletNumberFreight);
-
-            if (edit) {
-                objFreight.groupTo.setSingleClassView(ClassViewType.PANEL);
-                addActionsOnOk(addPropertyObject(executeChangeFreightClass, objFreight, (DataObject) freightChanged.getClassObject()));
-            } else {
-                FreightChangeFormEntity editFreightForm = new FreightChangeFormEntity(null, "freightChangeForm_edit", "Обработка фрахта", true);
-                addPropertyDraw(
-                        addJProp("Обработать фрахт", and(false, true),
-                                addMFAProp(null,
-                                        "Обработать фрахт",
-                                        editFreightForm,
-                                        new ObjectEntity[]{editFreightForm.objFreight},
-                                        new PropertyObjectEntity[0],
-                                        new PropertyObjectEntity[0],
-                                        false), 1,
-                                is(freightComplete), 1,
-                                is(freightChanged), 1),
-                        objFreight
-                ).forceViewType = ClassViewType.GRID;
-            }
+            objFreight = addSingleGroupObject(freightComplete, "Фрахт", baseLM.date, baseLM.objectClassName, nameRouteFreight, sumFreightFreight, insuranceFreight, nameExporterFreight, nameFreightTypeFreight, grossWeightFreight, palletNumberFreight);
+            objFreight.groupTo.setSingleClassView(ClassViewType.PANEL);
 
             objImporter = addSingleGroupObject(importer, "Импортёр", baseLM.name, addressSubject);
 
@@ -4569,8 +4554,8 @@ public class RomanLogicsModule extends LogicsModule {
             getPropertyDraw(nameSubCategorySku).setPropertyHighlight(diffCountRelationCustomCategory10SkuProperty);
 
             setForceViewType(itemAttributeGroup, ClassViewType.GRID, objSku.groupTo);
-            addPropertyDraw(addGCAProp(actionGroup, "translationAllMainComposition" + (edit ? "_edit" : ""), "Перевод составов", objSku.groupTo, translationMainCompositionSku, baseLM.actionTrue), objSku).forceViewType = ClassViewType.PANEL;
-            addPropertyDraw(addGCAProp(actionGroup, "translationAllAdditionalComposition" + (edit ? "_edit" : ""), "Перевод доп. составов", objSku.groupTo, translationAdditionalCompositionSku, baseLM.actionTrue), objSku).forceViewType = ClassViewType.PANEL;
+            addPropertyDraw(addGCAProp(actionGroup, "translationAllMainComposition", "Перевод составов", objSku.groupTo, translationMainCompositionSku, baseLM.actionTrue), objSku).forceViewType = ClassViewType.PANEL;
+            addPropertyDraw(addGCAProp(actionGroup, "translationAllAdditionalComposition", "Перевод доп. составов", objSku.groupTo, translationAdditionalCompositionSku, baseLM.actionTrue), objSku).forceViewType = ClassViewType.PANEL;
 
             setReadOnly(baseGroup, true, objSku.groupTo);
             setReadOnly(publicGroup, true, objSku.groupTo);
@@ -4640,6 +4625,9 @@ public class RomanLogicsModule extends LogicsModule {
                     "Без состава",
                     KeyStroke.getKeyStroke(KeyEvent.VK_F8, 0)));
             addRegularFilterGroup(filterGroupComposition);
+
+            freightChangedFA = addMFAProp(actionGroup, "Обработать", this,
+                    new ObjectEntity[] {objFreight}, true, addPropertyObject(executeChangeFreightClass, objFreight, (DataObject) freightChanged.getClassObject()));
         }
 
         @Override
@@ -5333,49 +5321,14 @@ public class RomanLogicsModule extends LogicsModule {
         private ObjectEntity objSku;
 
         private FreightInvoiceFormEntity(NavigatorElement parent, String sID, String caption) {
-            this(parent, sID, caption, false);
-        }
-
-        private FreightInvoiceFormEntity(NavigatorElement parent, String sID, String caption, boolean edit) {
             super(parent, sID, caption);
 
-            objFreight = addSingleGroupObject(freight, "Фрахт", baseLM.date, baseLM.objectClassName, nameRouteFreight, sumFreightFreight, insuranceFreight, nameFreightTypeFreight, nameCurrencyFreight, sumInFreight, sumMarkupInFreight, sumInOutFreight, palletNumberFreight);
-            setForceViewType(sumInOutFreight, ClassViewType.GRID);
-            //objFreight.groupTo.initClassView = ClassViewType.GRID;
+            objFreight = addSingleGroupObject(freightChanged, "Фрахт", baseLM.date, baseLM.objectClassName, nameRouteFreight, sumFreightFreight, insuranceFreight, nameFreightTypeFreight, nameCurrencyFreight, sumInFreight, sumMarkupInFreight, sumInOutFreight, palletNumberFreight);
+            objFreight.groupTo.setSingleClassView(ClassViewType.PANEL);
 
             addPropertyDraw(sumInCurrentYear);
             addPropertyDraw(sumInOutCurrentYear);
             addPropertyDraw(balanceSumCurrentYear);
-
-            if (edit) {
-                objFreight.groupTo.setSingleClassView(ClassViewType.PANEL);
-                addActionsOnOk(addPropertyObject(executeChangeFreightClass, objFreight, (DataObject) freightPriced.getClassObject()));
-            } else {
-                FreightInvoiceFormEntity editFreightForm = new FreightInvoiceFormEntity(null, "freightInvoiceForm_edit", "Расценка фрахта", true);
-                addPropertyDraw(
-                        addJProp("Расценить фрахт", and(false, true),
-                                addMFAProp(null,
-                                        "Расценить фрахт",
-                                        editFreightForm,
-                                        new ObjectEntity[]{editFreightForm.objFreight},
-                                        new PropertyObjectEntity[0],
-                                        new PropertyObjectEntity[0],
-                                        false), 1,
-                                is(freightChanged), 1,
-                                is(freightPriced), 1),
-                        objFreight
-                ).forceViewType = ClassViewType.GRID;
-
-                addPropertyDraw(
-                        addJProp("Отгрузить фрахт", and(false, true),
-                                executeChangeFreightClass, 1, 2,
-                                is(freightPriced), 1,
-                                is(freightShipped), 1),
-                        objFreight,
-                        (DataObject)freightShipped.getClassObject()
-                ).forceViewType = ClassViewType.GRID;
-
-            }
 
             objImporter = addSingleGroupObject(importer, "Импортер", baseLM.name);
 
@@ -5440,6 +5393,9 @@ public class RomanLogicsModule extends LogicsModule {
             addHintsNoUpdate(NDSImporterFreightSku);
             //addHintsNoUpdate(sumInImporterFreight);
             //addHintsNoUpdate(sumInImporterFreight);
+
+            freightPricedFA = addMFAProp(actionGroup, "Расценить", this,
+                    new ObjectEntity[] {objFreight}, true, addPropertyObject(executeChangeFreightClass, objFreight, (DataObject) freightPriced.getClassObject()));
         }
 
         @Override
@@ -5466,6 +5422,31 @@ public class RomanLogicsModule extends LogicsModule {
             design.setHighlightColor(new Color(255, 128, 128));
 
             return design;
+        }
+    }
+
+    private class FreightListFormEntity extends FormEntity<RomanBusinessLogics> {
+
+        private ObjectEntity objFreight;
+
+        private FreightListFormEntity(NavigatorElement<RomanBusinessLogics> parent, String sID, String caption) {
+            super(parent, sID, caption);
+
+            objFreight = addSingleGroupObject(freight, "Фрахт", baseLM.date, baseLM.objectClassName, nameRouteFreight, sumFreightFreight, insuranceFreight, nameExporterFreight, nameFreightTypeFreight, tonnageFreight, grossWeightFreight, volumeFreight, palletCountFreight, palletNumberFreight);
+            addObjectActions(this, objFreight);
+
+            addPropertyDraw(freightCompleteFA, objFreight).forceViewType = ClassViewType.PANEL;
+            addPropertyDraw(freightChangedFA, objFreight).forceViewType = ClassViewType.PANEL;
+            addPropertyDraw(freightPricedFA, objFreight).forceViewType = ClassViewType.PANEL;
+
+//            addPropertyDraw(
+//                    addJProp("Отгрузить фрахт", and(false, true),
+//                            executeChangeFreightClass, 1, 2,
+//                            is(freightPriced), 1,
+//                            is(freightShipped), 1),
+//                    objFreight,
+//                    (DataObject)freightShipped.getClassObject()
+//            ).forceViewType = ClassViewType.GRID;
         }
     }
 

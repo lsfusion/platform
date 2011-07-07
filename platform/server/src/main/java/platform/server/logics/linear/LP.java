@@ -187,10 +187,6 @@ public class LP<T extends PropertyInterface> {
         property.maximumCharWidth = charWidth;
     }
 
-    public void setFixedCharWidth(int charWidth) {
-        property.setFixedCharWidth(charWidth);
-    }
-    
     public <U> PropertyImplement<T, U> getMapping(U... mapping) {
         Map<T,U> propertyMapping = new HashMap<T, U>();
         for(int i=0;i<listInterfaces.size();i++)
@@ -221,8 +217,20 @@ public class LP<T extends PropertyInterface> {
     }
     */
     
-    public void setPreferredCharWidth(int length) {
-        property.preferredCharWidth = length;
+    public void setMinimumCharWidth(int charWidth) {
+        property.minimumCharWidth = charWidth;
+    }
+
+    public void setPreferredCharWidth(int charWidth) {
+        property.preferredCharWidth = charWidth;
+    }
+
+    public void setMaximumCharWidth(int charWidth) {
+        property.maximumCharWidth = charWidth;
+    }
+
+    public void setFixedCharWidth(int charWidth) {
+        property.setFixedCharWidth(charWidth);
     }
 
     public LP setImage(String name) {

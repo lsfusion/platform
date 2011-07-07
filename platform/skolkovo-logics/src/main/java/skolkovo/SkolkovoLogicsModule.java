@@ -182,8 +182,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
                                        new String[]{"Неизвестный статус", "Не соответствуют документы", "Требуется заседание", "Идет заседание", "Достаточно голосов", "Оценен положительно", "Оценен отрицательно"});
 
         documentType = addStaticClass("documentType", "Тип документа",
-                new String[]{"application", "resume", "techdesc", "forres"},
-                new String[]{"Анкета", "Резюме", "Техническое описание", "Резюме иностранного специалиста "});
+                new String[]{"application", "resume", "techdesc", "forres", "ipres"},
+                new String[]{"Анкета", "Резюме", "Техническое описание", "Резюме иностранного специалиста", "Заявление IP"});
     }
 
     @Override
@@ -362,6 +362,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP emailClaimerFromAddress;
     LP emailClaimerVoteEA;
     LP claimerEmailVote;
+    LP emailClaimerHeaderVote;
+    LP emailClaimerVote;
 
     LP emailStartVoteEA, emailStartHeaderVote, emailStartVote;
     LP emailProtocolVoteEA, emailProtocolHeaderVote, emailProtocolVote;
@@ -914,6 +916,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         languageExpert = addDProp(idGroup, "languageExpert", "Язык (ИД)", language, expert);
         nameLanguageExpert = addJProp(baseGroup, "nameLanguageExpert", "Язык", baseLM.name, languageExpert, 1);
+        nameLanguageExpert.setFixedCharWidth(10);
 
         languageDocument = addDProp(idGroup, "languageDocument", "Язык (ИД)", language, documentAbstract);
         nameLanguageDocument = addJProp(baseGroup, "nameLanguageDocument", "Язык", baseLM.name, languageDocument, 1);
@@ -1182,12 +1185,16 @@ public class SkolkovoLogicsModule extends LogicsModule {
         allowedEmailLetterExpertVote.property.askConfirm = true;
 
         emailClaimerFromAddress = addDProp("emailClaimerFromAddress", "Адрес отправителя (для заявителей)", StringClass.get(50));
-        emailClaimerVoteEA = addEAProp(actionGroup, "emailClaimerVoteEA", "Письмо заявителю", "Уведомление", emailClaimerFromAddress, vote);
+        emailClaimerVoteEA = addEAProp(vote);
 
         claimerEmailVote = addJProp("claimerEmailVote", "E-mail (заявителя)", baseLM.email, claimerVote, 1);
         addEARecepient(emailClaimerVoteEA, claimerEmailVote, 1);
 
-        emailClaimerVoteEA.setDerivedForcedChange(addCProp(ActionClass.instance, true), openedVote, 1);
+        emailClaimerHeaderVote = addJProp("emailClaimerVote", "Заголовок уведомления заявителю", baseLM.string2, addCProp(StringClass.get(2000), "Уведомление."), nameNativeClaimerVote, 1);
+        emailClaimerVote = addJProp(actionGroup, true, "emailClaimerVote", "Письмо заявителю", emailClaimerVoteEA, 1, emailClaimerHeaderVote, 1);
+        emailClaimerVote.property.askConfirm = true;
+
+        emailClaimerVote.setDerivedForcedChange(addCProp(ActionClass.instance, true), openedVote, 1);
 
         emailStartVoteEA = addEAProp(vote);
         addEARecepient(emailStartVoteEA, emailDocuments);
@@ -1447,7 +1454,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             getPropertyDraw(generateVoteProject).forceViewType = ClassViewType.PANEL;
             getPropertyDraw(generateVoteProject).propertyCaption = addPropertyObject(hideGenerateVoteProject, objProject);
 
-            objVote = addSingleGroupObject(vote, dateStartVote, dateEndVote, nameNativeClusterVote, equalsClusterProjectVote, openedVote, succeededVote, acceptedVote, quantityDoneVote, quantityInClusterVote, quantityInnovativeVote, quantityForeignVote, copyResultsVote, emailClaimerVoteEA, baseLM.delete);
+            objVote = addSingleGroupObject(vote, dateStartVote, dateEndVote, nameNativeClusterVote, equalsClusterProjectVote, openedVote, succeededVote, acceptedVote, quantityDoneVote, quantityInClusterVote, quantityInnovativeVote, quantityForeignVote, copyResultsVote, emailClaimerVote, baseLM.delete);
             objVote.groupTo.banClassView.addAll(BaseUtils.toList(ClassViewType.PANEL, ClassViewType.HIDE));
 
             getPropertyDraw(copyResultsVote).forceViewType = ClassViewType.PANEL;

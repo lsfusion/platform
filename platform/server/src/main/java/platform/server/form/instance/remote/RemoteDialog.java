@@ -17,7 +17,8 @@ public class RemoteDialog<T extends BusinessLogics<T>> extends RemoteForm<T, Dia
 
     @Override
     public SelectedObject getSelectedObject() throws RemoteException {
-        return new SelectedObject(form.getDialogValue(), form.getCellDisplayValue());
+        Object dialogValue = form.getDialogValue();
+        return new SelectedObject(dialogValue, (dialogValue == null) ? null : form.getCellDisplayValue());
     }
 
     public Integer getInitFilterPropertyDraw() throws RemoteException {
