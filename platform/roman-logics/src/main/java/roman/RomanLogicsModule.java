@@ -62,6 +62,7 @@ public class RomanLogicsModule extends LogicsModule {
     private final RomanBusinessLogics BL;
     private LP equalsColorItemSupplier;
     private LP equalsSizeItemSupplier;
+    private LP freightCreateFA;
     private LP freightCompleteFA;
     private LP freightChangedFA;
     private LP freightPricedFA;
@@ -2647,6 +2648,7 @@ public class RomanLogicsModule extends LogicsModule {
 
         NavigatorElement shipment = new NavigatorElement(baseLM.baseElement, "shipment", "Управление фрахтами");
         shipment.window = leftToolbar;
+        addFormEntity(new FreightCreateFormEntity(shipment, "freightCreateForm", "Создание и редактирование фрахтов"));
         addFormEntity(new FreightShipmentFormEntity(shipment, "freightShipmentForm", "Комплектация фрахта"));
         addFormEntity(new FreightChangeFormEntity(shipment, "freightChangeForm", "Обработка фрахта"));
         addFormEntity(new FreightInvoiceFormEntity(shipment, "freightInvoiceForm", "Расценка фрахта"));
@@ -3747,11 +3749,8 @@ public class RomanLogicsModule extends LogicsModule {
 
     private class FreightShipmentFormEntity extends FormEntity<RomanBusinessLogics> {
 
-        private ObjectEntity objShipment;
         private ObjectEntity objFreight;
         private ObjectEntity objPallet;
-        private ObjectEntity objDateFrom;
-        private ObjectEntity objDateTo;
         private ObjectEntity objDirectInvoice;
         private ObjectEntity objSku;
 
@@ -3765,23 +3764,6 @@ public class RomanLogicsModule extends LogicsModule {
             PropertyObjectEntity diffPalletFreightProperty = addPropertyObject(diffPalletFreight, objFreight);
             getPropertyDraw(palletCountFreight).setPropertyHighlight(diffPalletFreightProperty);
             getPropertyDraw(palletNumberFreight).setPropertyHighlight(diffPalletFreightProperty);
-
-            GroupObjectEntity gobjDates = new GroupObjectEntity(genID());
-            objDateFrom = new ObjectEntity(genID(), DateClass.instance, "Дата (с)");
-            objDateTo = new ObjectEntity(genID(), DateClass.instance, "Дата (по)");
-            gobjDates.add(objDateFrom);
-            gobjDates.add(objDateTo);
-
-            addGroup(gobjDates);
-            gobjDates.setSingleClassView(ClassViewType.PANEL);
-
-            addPropertyDraw(objDateFrom, baseLM.objectValue);
-            addPropertyDraw(objDateTo, baseLM.objectValue);
-            addPropertyDraw(quantityPalletShipmentBetweenDate, objDateFrom, objDateTo);
-            addPropertyDraw(quantityPalletFreightBetweenDate, objDateFrom, objDateTo);
-
-            objShipment = addSingleGroupObject(shipment, "Поставка", baseLM.date, nameSupplierDocument, sidDocument, sumDocument, nameCurrencyDocument, netWeightShipment, grossWeightShipment, quantityPalletShipment, quantityBoxShipment);
-            setReadOnly(objShipment, true);
 
             objPallet = addSingleGroupObject(pallet, "Паллета", baseLM.barcode, grossWeightPallet, freightBoxNumberPallet);
             objPallet.groupTo.setSingleClassView(ClassViewType.GRID);
@@ -3801,11 +3783,6 @@ public class RomanLogicsModule extends LogicsModule {
             setReadOnly(palletNumberDirectInvoice, false);
 
             addPropertyDraw(equalsDirectInvoiceFreight, objDirectInvoice, objFreight);
-
-            addPropertyDraw(quantityShipmentFreight, objShipment, objFreight);
-
-            addFixedFilter(new CompareFilterEntity(addPropertyObject(baseLM.date, objShipment), Compare.GREATER_EQUALS, objDateFrom));
-            addFixedFilter(new CompareFilterEntity(addPropertyObject(baseLM.date, objShipment), Compare.LESS_EQUALS, objDateTo));
 
             addFixedFilter(new CompareFilterEntity(addPropertyObject(routeCreationPalletPallet, objPallet), Compare.EQUALS, addPropertyObject(routeFreight, objFreight)));
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(quantityPalletSku, objPallet, objSku)));
@@ -3838,6 +3815,7 @@ public class RomanLogicsModule extends LogicsModule {
 
             freightCompleteFA = addMFAProp(actionGroup, "Скомплектовать", this,
                     new ObjectEntity[] {objFreight}, true, addPropertyObject(executeChangeFreightClass, objFreight, (DataObject) freightComplete.getClassObject()));
+            freightCompleteFA.setImage("arrow_right.png");
         }
 
         @Override
@@ -3846,8 +3824,6 @@ public class RomanLogicsModule extends LogicsModule {
 
             design.get(getPropertyDraw(sidDocument, objDirectInvoice)).caption = "Номер инвойса";
             design.get(getPropertyDraw(baseLM.date, objDirectInvoice)).caption = "Дата инвойса";
-            design.get(getPropertyDraw(sidDocument, objShipment)).caption = "Номер поставки";
-            design.get(getPropertyDraw(baseLM.date, objShipment)).caption = "Дата поставки";
             design.get(getPropertyDraw(baseLM.date, objFreight)).caption = "Дата отгрузки";
             design.get(getPropertyDraw(baseLM.objectClassName, objFreight)).caption = "Статус фрахта";
 
@@ -3865,20 +3841,7 @@ public class RomanLogicsModule extends LogicsModule {
                     design.getGroupObjectContainer(objDirectInvoice.groupTo),
                     DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
 
-            ContainerView shipContainer = design.createContainer("Поставки");
-            shipContainer.add(design.getGroupObjectContainer(objDateFrom.groupTo));
-            shipContainer.add(design.getGroupObjectContainer(objShipment.groupTo));
 
-            ContainerView contContainer = design.createContainer("Комплектация");
-            contContainer.add(design.getGroupObjectContainer(objPallet.groupTo));
-            contContainer.add(design.getGroupObjectContainer(objSku.groupTo));
-            contContainer.add(design.getGroupObjectContainer(objDirectInvoice.groupTo));
-
-            ContainerView specContainer = design.createContainer();
-            design.getMainContainer().addAfter(specContainer, design.getGroupObjectContainer(objFreight.groupTo));
-            specContainer.add(shipContainer);
-            specContainer.add(contContainer);
-            specContainer.tabbedPane = true;
 
             design.setHighlightColor(new Color(128, 255, 128));
 
@@ -4629,6 +4592,7 @@ public class RomanLogicsModule extends LogicsModule {
 
             freightChangedFA = addMFAProp(actionGroup, "Обработать", this,
                     new ObjectEntity[] {objFreight}, true, addPropertyObject(executeChangeFreightClass, objFreight, (DataObject) freightChanged.getClassObject()));
+            freightChangedFA.setImage("arrow_right.png");
         }
 
         @Override
@@ -5397,6 +5361,7 @@ public class RomanLogicsModule extends LogicsModule {
 
             freightPricedFA = addMFAProp(actionGroup, "Расценить", this,
                     new ObjectEntity[] {objFreight}, true, addPropertyObject(executeChangeFreightClass, objFreight, (DataObject) freightPriced.getClassObject()));
+            freightPricedFA.setImage("arrow_right.png");
         }
 
         @Override
@@ -5426,19 +5391,72 @@ public class RomanLogicsModule extends LogicsModule {
         }
     }
 
+    private class FreightCreateFormEntity extends FormEntity<RomanBusinessLogics> {
+
+        private ObjectEntity objFreight;
+
+        private FreightCreateFormEntity(NavigatorElement<RomanBusinessLogics> parent, String sID, String caption) {
+            super(parent, sID, caption);
+
+            objFreight = addSingleGroupObject(freight, "Фрахт", baseLM.date, baseLM.objectClassName, nameRouteFreight, sumFreightFreight, insuranceFreight, nameExporterFreight, nameFreightTypeFreight, tonnageFreight, grossWeightFreight, volumeFreight, palletCountFreight, palletNumberFreight);
+//            addObjectActions(this, objFreight);
+            objFreight.groupTo.setSingleClassView(ClassViewType.PANEL);
+
+            freightCreateFA = addMFAProp(actionGroup, "Редактировать фрахт", this, new ObjectEntity[] {objFreight}, true);
+        }
+
+        @Override
+        public FormView createDefaultRichDesign() {
+            DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign();
+
+            design.get(getPropertyDraw(baseLM.date, objFreight)).caption = "Дата отгрузки";
+            design.get(getPropertyDraw(baseLM.objectClassName, objFreight)).caption = "Статус фрахта";
+
+            return design;
+        }
+    }
+
     private class FreightListFormEntity extends FormEntity<RomanBusinessLogics> {
 
         private ObjectEntity objFreight;
+        private ObjectEntity objDateTo;
+        private ObjectEntity objDateFrom;
+        private ObjectEntity objShipment;
 
         private FreightListFormEntity(NavigatorElement<RomanBusinessLogics> parent, String sID, String caption) {
             super(parent, sID, caption);
 
             objFreight = addSingleGroupObject(freight, "Фрахт", baseLM.date, baseLM.objectClassName, nameRouteFreight, sumFreightFreight, insuranceFreight, nameExporterFreight, nameFreightTypeFreight, tonnageFreight, grossWeightFreight, volumeFreight, palletCountFreight, palletNumberFreight);
-            addObjectActions(this, objFreight);
 
-            addPropertyDraw(freightCompleteFA, objFreight).forceViewType = ClassViewType.PANEL;
-            addPropertyDraw(freightChangedFA, objFreight).forceViewType = ClassViewType.PANEL;
-            addPropertyDraw(freightPricedFA, objFreight).forceViewType = ClassViewType.PANEL;
+            //addFixedFilter(new NotFilterEntity(new CompareFilterEntity(addPropertyObject(is(freightShipped), objFreight), Compare.EQUALS, addPropertyObject(baseLM.vtrue))));
+
+            addPropertyDraw(freightCreateFA, objFreight).forceViewType = ClassViewType.GRID;
+            addPropertyDraw(freightCompleteFA, objFreight).forceViewType = ClassViewType.GRID;
+            addPropertyDraw(freightChangedFA, objFreight).forceViewType = ClassViewType.GRID;
+            addPropertyDraw(freightPricedFA, objFreight).forceViewType = ClassViewType.GRID;
+            addPropertyDraw(baseLM.delete, objFreight).forceViewType = ClassViewType.GRID;
+
+            GroupObjectEntity gobjDates = new GroupObjectEntity(genID());
+            objDateFrom = new ObjectEntity(genID(), DateClass.instance, "Дата (с)");
+            objDateTo = new ObjectEntity(genID(), DateClass.instance, "Дата (по)");
+            gobjDates.add(objDateFrom);
+            gobjDates.add(objDateTo);
+
+            addGroup(gobjDates);
+            gobjDates.setSingleClassView(ClassViewType.PANEL);
+
+            addPropertyDraw(objDateFrom, baseLM.objectValue);
+            addPropertyDraw(objDateTo, baseLM.objectValue);
+            addPropertyDraw(quantityPalletShipmentBetweenDate, objDateFrom, objDateTo);
+            addPropertyDraw(quantityPalletFreightBetweenDate, objDateFrom, objDateTo);
+
+            objShipment = addSingleGroupObject(shipment, "Поставка", baseLM.date, nameSupplierDocument, sidDocument, sumDocument, nameCurrencyDocument, netWeightShipment, grossWeightShipment, quantityPalletShipment, quantityBoxShipment);
+            setReadOnly(objShipment, true);
+
+            addPropertyDraw(quantityShipmentFreight, objShipment, objFreight);
+
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(baseLM.date, objShipment), Compare.GREATER_EQUALS, objDateFrom));
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(baseLM.date, objShipment), Compare.LESS_EQUALS, objDateTo));
 
 //            addPropertyDraw(
 //                    addJProp("Отгрузить фрахт", and(false, true),
@@ -5448,6 +5466,18 @@ public class RomanLogicsModule extends LogicsModule {
 //                    objFreight,
 //                    (DataObject)freightShipped.getClassObject()
 //            ).forceViewType = ClassViewType.GRID;
+        }
+
+        @Override
+        public FormView createDefaultRichDesign() {
+            DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign();
+
+            design.get(getPropertyDraw(baseLM.date, objFreight)).caption = "Дата отгрузки";
+            design.get(getPropertyDraw(baseLM.objectClassName, objFreight)).caption = "Статус фрахта";
+            design.get(getPropertyDraw(sidDocument, objShipment)).caption = "Номер поставки";
+            design.get(getPropertyDraw(baseLM.date, objShipment)).caption = "Дата поставки";
+
+            return design;
         }
     }
 
