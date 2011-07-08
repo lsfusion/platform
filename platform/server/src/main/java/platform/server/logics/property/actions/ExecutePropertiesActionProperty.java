@@ -81,15 +81,18 @@ public class ExecutePropertiesActionProperty extends ActionProperty {
                 execValue = keys.get(mapResults[i]);
             }
 
+            boolean inForm = executeForm != null && dataProperty.property instanceof UserProperty;
+
             DataObject[] execInterfaces = new DataObject[propInterfaces.size()];
             Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> execMapObjects = new HashMap<ClassPropertyInterface, PropertyObjectInterfaceInstance>();
             for (int j = 0; j < propInterfaces.size(); j++) {
                 ClassPropertyInterface execInterface = mapPropInterfaces.get(propInterfaces.get(j));
                 execInterfaces[j] = keys.get(execInterface);
-                execMapObjects.put(execInterface, mapObjects.get(execInterface));
+                if (inForm)
+                    execMapObjects.put(execInterface, mapObjects.get(execInterface));
             }
 
-            if (executeForm != null && dataProperty.property instanceof UserProperty) {
+            if (inForm) {
                 ((UserProperty)dataProperty.property).execute(dataProperty.getMapValues(execInterfaces), execValue, session, modifier, actions, executeForm, execMapObjects, false);
             } else {
                 actions.addAll(dataProperty.execute(execValue.getValue(), session, execInterfaces));
