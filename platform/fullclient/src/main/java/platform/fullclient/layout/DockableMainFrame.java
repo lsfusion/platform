@@ -11,7 +11,7 @@ import bibliothek.gui.dock.support.menu.SeparatingMenuPiece;
 import jasperapi.ReportGenerator;
 import net.sf.jasperreports.engine.JRException;
 import platform.base.BaseUtils;
-import platform.base.DebugUtils;
+import platform.base.ExceptionUtils;
 import platform.client.ClientResourceBundle;
 import platform.client.Log;
 import platform.client.Main;
@@ -363,8 +363,8 @@ public class DockableMainFrame extends MainFrame {
                                     break;
                                 }
                             } catch (RemoteException e) {
-                                if (DebugUtils.getInitialCause(e) instanceof LoginException)
-                                    JOptionPane.showMessageDialog(DockableMainFrame.this, DebugUtils.getInitialCause(e).getMessage(), ClientResourceBundle.getString("layout.menu.user.changing"), JOptionPane.ERROR_MESSAGE);
+                                if (ExceptionUtils.getInitialCause(e) instanceof LoginException)
+                                    JOptionPane.showMessageDialog(DockableMainFrame.this, ExceptionUtils.getInitialCause(e).getMessage(), ClientResourceBundle.getString("layout.menu.user.changing"), JOptionPane.ERROR_MESSAGE);
                                 else
                                     throw new RuntimeException(e);
                             }

@@ -18,8 +18,8 @@ public class RemoteBusinessLogicProxy<T extends RemoteLogicsInterface>
     }
 
     @NonPendingRemoteMethod
-    public RemoteNavigatorInterface createNavigator(String login, String password, int computer) throws RemoteException {
-        RemoteNavigatorInterface remote = target.createNavigator(login, password, computer);
+    public RemoteNavigatorInterface createNavigator(String login, String password, int computer, boolean forceCreateNew) throws RemoteException {
+        RemoteNavigatorInterface remote = target.createNavigator(login, password, computer, forceCreateNew);
         if (remote == null) {
             return null;
         }
@@ -117,5 +117,11 @@ public class RemoteBusinessLogicProxy<T extends RemoteLogicsInterface>
         UserInfo result = target.getUserInfo(username);
         logRemoteMethodEndCall("getUserInfo", result);
         return result;
+    }
+
+    public void remindPassword(String email) throws RemoteException {
+        logRemoteMethodStartCall("remindPassword");
+        target.remindPassword(email);
+        logRemoteMethodEndVoidCall("remindPassword");
     }
 }

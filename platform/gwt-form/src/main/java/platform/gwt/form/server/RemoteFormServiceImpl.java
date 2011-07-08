@@ -3,8 +3,9 @@ package platform.gwt.form.server;
 import net.customware.gwt.dispatch.server.InstanceActionHandlerRegistry;
 import platform.gwt.base.server.LogicsDispatchServlet;
 import platform.gwt.form.server.handlers.*;
+import platform.interop.RemoteLogicsInterface;
 
-public class RemoteFormServiceImpl extends LogicsDispatchServlet {
+public class RemoteFormServiceImpl extends LogicsDispatchServlet<RemoteLogicsInterface> {
     @Override
     protected void addHandlers(InstanceActionHandlerRegistry registry) {
         registry.addHandler(new GetFormHandler(this));

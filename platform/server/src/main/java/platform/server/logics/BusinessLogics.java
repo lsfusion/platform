@@ -14,7 +14,6 @@ import platform.interop.form.screen.ExternalScreenParameters;
 import platform.interop.navigator.RemoteNavigatorInterface;
 import platform.interop.remote.RemoteObject;
 import platform.interop.remote.UserInfo;
-import platform.server.Utf8ResourceBundle;
 import platform.server.auth.PolicyManager;
 import platform.server.auth.SecurityPolicy;
 import platform.server.auth.User;
@@ -41,7 +40,10 @@ import platform.server.logics.property.*;
 import platform.server.logics.scheduler.Scheduler;
 import platform.server.logics.table.ImplementTable;
 import platform.server.serialization.ServerSerializationPool;
-import platform.server.session.*;
+import platform.server.session.Changes;
+import platform.server.session.DataSession;
+import platform.server.session.Modifier;
+import platform.server.session.PropertyChange;
 
 import java.io.*;
 import java.rmi.NotBoundException;
@@ -50,6 +52,7 @@ import java.sql.SQLException;
 import java.util.*;
 
 import static java.util.Arrays.asList;
+import static platform.server.logics.ServerResourceBundle.getString;
 
 // @GenericImmutable нельзя так как Spring валится
 
@@ -73,12 +76,12 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             inStream.read(b);
             return b;
         } catch (IOException e) {
-            throw new RuntimeException(ServerResourceBundle.getString("logics.error.reading.class.on.the.server"), e);
+            throw new RuntimeException(getString("logics.error.reading.class.on.the.server"), e);
         } finally {
             try {
                 inStream.close();
             } catch (IOException e) {
-                throw new RuntimeException(ServerResourceBundle.getString("logics.error.reading.class.on.the.server"), e);
+                throw new RuntimeException(getString("logics.error.reading.class.on.the.server"), e);
             }
         }
     }
@@ -115,7 +118,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
     final Map<Pair<String, Integer>, RemoteNavigator> navigators = new HashMap<Pair<String, Integer>, RemoteNavigator>();
 
-    public RemoteNavigatorInterface createNavigator(String login, String password, int computer) {
+    public RemoteNavigatorInterface createNavigator(String login, String password, int computer, boolean forceCreateNew) {
         if (getRestartController().isPendingRestart()) {
             return null;
         }
@@ -140,7 +143,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             }
 
             Pair<String, Integer> key = new Pair<String, Integer>(login, computer);
-            RemoteNavigator navigator = navigators.get(key);
+            RemoteNavigator navigator = forceCreateNew ? null : navigators.get(key);
 
             if (navigator != null) {
                 navigator.invalidate();
@@ -468,10 +471,10 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     protected SecurityPolicy permitAllPolicy, readOnlyPolicy;
 
     void initBaseAuthentication() throws ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException {
-        permitAllPolicy = addPolicy(ServerResourceBundle.getString("logics.policy.allow.all"), ServerResourceBundle.getString("logics.policy.allows.all.actions"));
+        permitAllPolicy = addPolicy(getString("logics.policy.allow.all"), getString("logics.policy.allows.all.actions"));
         permitAllPolicy.setReplaceMode(true);
 
-        readOnlyPolicy = addPolicy(ServerResourceBundle.getString("logics.policy.forbid.editing.all.properties"), ServerResourceBundle.getString("logics.policy.read.only.forbids.editing.of.all.properties.on.the.forms"));
+        readOnlyPolicy = addPolicy(getString("logics.policy.forbid.editing.all.properties"), getString("logics.policy.read.only.forbids.editing.of.all.properties.on.the.forms"));
         readOnlyPolicy.property.change.defaultPermission = false;
         readOnlyPolicy.cls.edit.add.defaultPermission = false;
         readOnlyPolicy.cls.edit.change.defaultPermission = false;
@@ -1127,10 +1130,10 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         for (List<? extends Property> index : LM.indexes) {
             Iterator<? extends Property> i = index.iterator();
             if (!i.hasNext())
-                throw new RuntimeException(ServerResourceBundle.getString("logics.policy.forbidden.to.create.empty.indexes"));
+                throw new RuntimeException(getString("logics.policy.forbidden.to.create.empty.indexes"));
             Property baseProperty = i.next();
             if (!baseProperty.isStored())
-                throw new RuntimeException(ServerResourceBundle.getString("logics.policy.forbidden.to.create.indexes.on.non.regular.properties")+" (" + baseProperty + ")");
+                throw new RuntimeException(getString("logics.policy.forbidden.to.create.indexes.on.non.regular.properties")+" (" + baseProperty + ")");
             ImplementTable indexTable = baseProperty.mapTable.table;
 
             List<String> tableIndex = new ArrayList<String>();
@@ -1139,9 +1142,9 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             while (i.hasNext()) {
                 Property property = i.next();
                 if (!property.isStored())
-                    throw new RuntimeException(ServerResourceBundle.getString("logics.policy.forbidden.to.create.indexes.on.non.regular.properties") + " (" + baseProperty + ")");
+                    throw new RuntimeException(getString("logics.policy.forbidden.to.create.indexes.on.non.regular.properties") + " (" + baseProperty + ")");
                 if (indexTable.findProperty(property.field.name) == null)
-                    throw new RuntimeException(ServerResourceBundle.getString("logics.policy.forbidden.to.create.indexes.on.properties.in.different.tables", baseProperty, property));
+                    throw new RuntimeException(getString("logics.policy.forbidden.to.create.indexes.on.properties.in.different.tables", baseProperty, property));
                 tableIndex.add(property.field.name);
             }
             mapIndexes.get(indexTable).add(tableIndex);
@@ -1218,7 +1221,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
                             sql.addColumn(property.mapTable.table.name, property.field);
                             // делаем запрос на перенос
 
-                            logger.info(ServerResourceBundle.getString("logics.info.property.is.transferred.from.table.to.table", property.field, property.caption, prevTable.name, property.mapTable.table.name));
+                            logger.info(getString("logics.info.property.is.transferred.from.table.to.table", property.field, property.caption, prevTable.name, property.mapTable.table.name));
                             Query<KeyField, PropertyField> moveColumn = new Query<KeyField, PropertyField>(property.mapTable.table);
                             Expr moveExpr = prevTable.joinAnd(BaseUtils.join(BaseUtils.join(foundInterfaces, ((Property<PropertyInterface>) property).mapTable.mapKeys), moveColumn.mapKeys)).getExpr(prevTable.findProperty(sID));
                             moveColumn.properties.put(property.field, moveExpr);
@@ -1347,7 +1350,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             if (property instanceof AggregateProperty) {
                 AggregateProperty dependProperty = (AggregateProperty) property;
                 if (recalculateProperties.contains(dependProperty)) {
-                    logger.debug(ServerResourceBundle.getString("logics.info.recalculation.of.aggregated.property")+" (" + dependProperty + ")... ");
+                    logger.debug(getString("logics.info.recalculation.of.aggregated.property")+" (" + dependProperty + ")... ");
                     dependProperty.recalculateAggregation(session);
                     logger.debug("Done");
                 }
@@ -1356,7 +1359,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
     void packTables(SQLSession session, Collection<ImplementTable> tables) throws SQLException {
         for (Table table : tables) {
-            logger.debug(ServerResourceBundle.getString("logics.info.packing.table")+" (" + table + ")... ");
+            logger.debug(getString("logics.info.packing.table")+" (" + table + ")... ");
             session.packTable(table);
             logger.debug("Done");
         }
@@ -1455,7 +1458,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     public void outputPersistent() {
         String result = "";
 
-        result += '\n' + ServerResourceBundle.getString("logics.info.by.tables") + '\n' + '\n';
+        result += '\n' + getString("logics.info.by.tables") + '\n' + '\n';
         for (Map.Entry<ImplementTable, Collection<Property>> groupTable : BaseUtils.group(new BaseUtils.Group<ImplementTable, Property>() {
             public ImplementTable group(Property key) {
                 return key.mapTable.table;
@@ -1465,7 +1468,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             for (Property property : groupTable.getValue())
                 result += '\t' + property.outputStored(false) + '\n';
         }
-        result += '\n' + ServerResourceBundle.getString("logics.info.by.properties") + '\n' + '\n';
+        result += '\n' + getString("logics.info.by.properties") + '\n' + '\n';
         for (Property property : getStoredProperties())
             result += property.outputStored(true) + '\n';
         System.out.println(result);
@@ -1593,13 +1596,16 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
                 }
 
                 String password = (String) LM.userPassword.read(session, new DataObject(user.ID, LM.customUser));
+                if (password != null) {
+                    password = password.trim();
+                }
 
                 return new UserInfo(username, password, getUserRolesNames(username));
             } finally {
                 session.close();
             }
         } catch (SQLException se) {
-            throw new RuntimeException(ServerResourceBundle.getString("logics.info.error.reading.user.data"), se);
+            throw new RuntimeException(getString("logics.info.error.reading.user.data"), se);
         }
     }
 
@@ -1615,7 +1621,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
                 q.and(LM.inUserRole.getExpr(session.modifier, userExpr, roleExpr).getWhere());
                 q.and(LM.userLogin.getExpr(session.modifier, userExpr).compare(new DataObject(username), Compare.EQUALS));
 
-                q.properties.put("roleName", LM.name.getExpr(session.modifier, roleExpr));
+                q.properties.put("roleName", LM.userRoleSID.getExpr(session.modifier, roleExpr));
 
                 OrderedMap<Map<String, Object>, Map<String, Object>> values = q.execute(session.sql);
 
@@ -1636,7 +1642,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             }
 
         } catch (SQLException e) {
-            throw new RuntimeException(ServerResourceBundle.getString("logics.info.error.reading.list.of.roles"), e);
+            throw new RuntimeException(getString("logics.info.error.reading.list.of.roles"), e);
         }
     }
 
@@ -1660,5 +1666,10 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
     public ArrayList<IDaemonTask> getDaemonTasks(int compId) {
         return new ArrayList<IDaemonTask>();
+    }
+
+    @Override
+    public void remindPassword(String email) throws RemoteException {
+        throw new UnsupportedOperationException("Напоминание пароля не поддерживается...");
     }
 }

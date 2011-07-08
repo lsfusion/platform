@@ -2,7 +2,7 @@ package platform.gwt.form.server.handlers;
 
 import net.customware.gwt.dispatch.shared.Action;
 import platform.client.logics.ClientFormChanges;
-import platform.gwt.form.server.FormSessionObject;
+import platform.gwt.base.server.FormSessionObject;
 import platform.gwt.form.server.RemoteFormServiceImpl;
 import platform.gwt.form.shared.actions.form.FormChangesResult;
 

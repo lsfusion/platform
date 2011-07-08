@@ -7,6 +7,9 @@
 
     <entry-point class='platform.gwt.login.client.LoginFrame'/>
 
+    <!--  GWT dispatch -->
+    <inherits name='net.customware.gwt.dispatch.Dispatch' />
+
     <source path='client'/>
     <source path='shared'/>
 </module>

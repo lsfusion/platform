@@ -5,6 +5,10 @@
 		  http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
          version="2.5">
 
+    <session-config>
+        <session-timeout>30</session-timeout>
+    </session-config>
+
     <context-param>
         <description>Сервер, на котором работает сервер приложения.</description>
         <param-name>serverHost</param-name>
@@ -17,7 +21,7 @@
     </context-param>
 
     <servlet>
-        <servlet-name>ProjectsService</servlet-name>
+        <servlet-name>ExpertService</servlet-name>
         <servlet-class>skolkovo.gwt.expert.server.ExpertServiceImpl</servlet-class>
     </servlet>
     <servlet>
@@ -34,16 +38,16 @@
     </servlet>
 
     <servlet-mapping>
-        <servlet-name>ProjectsService</servlet-name>
-        <url-pattern>/skolkovo.gwt.expert.Expert/ProjectsService</url-pattern>
+        <servlet-name>ExpertService</servlet-name>
+        <url-pattern>/skolkovo.gwt.expert.Expert/dispatch</url-pattern>
     </servlet-mapping>
     <servlet-mapping>
         <servlet-name>ExpertProfileService</servlet-name>
-        <url-pattern>/skolkovo.gwt.expertprofile.ExpertProfile/ExpertProfileService</url-pattern>
+        <url-pattern>/skolkovo.gwt.expertprofile.ExpertProfile/dispatch</url-pattern>
     </servlet-mapping>
     <servlet-mapping>
         <servlet-name>LoginService</servlet-name>
-        <url-pattern>/skolkovo.gwt.login.Login/login</url-pattern>
+        <url-pattern>/skolkovo.gwt.login.Login/dispatch</url-pattern>
     </servlet-mapping>
     <servlet-mapping>
         <servlet-name>RemoteFormService</servlet-name>
@@ -80,6 +84,10 @@
     </context-param>
     <listener>
         <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
+    </listener>
+
+    <listener>
+        <listener-class>org.springframework.web.context.request.RequestContextListener</listener-class>
     </listener>
 
     <filter>

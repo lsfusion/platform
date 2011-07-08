@@ -12,7 +12,10 @@ import com.smartgwt.client.widgets.form.fields.FormItem;
 import com.smartgwt.client.widgets.form.fields.SelectItem;
 import com.smartgwt.client.widgets.form.fields.events.ChangedEvent;
 import com.smartgwt.client.widgets.form.fields.events.ChangedHandler;
-import com.smartgwt.client.widgets.layout.*;
+import com.smartgwt.client.widgets.layout.HLayout;
+import com.smartgwt.client.widgets.layout.SectionStack;
+import com.smartgwt.client.widgets.layout.SectionStackSection;
+import com.smartgwt.client.widgets.layout.VStack;
 import com.smartgwt.client.widgets.toolbar.ToolStripButton;
 import net.customware.gwt.dispatch.client.DefaultExceptionHandler;
 import net.customware.gwt.dispatch.shared.Action;
@@ -59,7 +62,7 @@ public class GFormController extends HLayout implements FormLogicsProvider {
         creationDispatcher.execute(getFormAction, new AsyncCallback<GetFormResult>() {
             @Override
             public void onFailure(Throwable caught) {
-                GWT.log("sh: ", caught);
+                GWT.log("Ошибка при инициализации формы: ", caught);
                 SC.warn("Ошибка при попытке открыть форму: " + caught.getMessage());
             }
 
@@ -309,7 +312,7 @@ public class GFormController extends HLayout implements FormLogicsProvider {
         public void onFailure(Throwable t) {
 //            wl.destroy();
             GWT.log("Ошибка во время чтения данных с сервера: ", t);
-            SC.warn("Ошибка во время чтения данных с сервера: " + t.getMessage());
+            SC.warn("Ошибка во время чтения данных с сервера: <br/>" + t.getMessage());
         }
 
         @Override
@@ -322,5 +325,4 @@ public class GFormController extends HLayout implements FormLogicsProvider {
         public void afterSuccess() {
         }
     }
-
 }

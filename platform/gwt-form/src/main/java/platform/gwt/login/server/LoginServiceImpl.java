@@ -1,25 +1,13 @@
 package platform.gwt.login.server;
 
-import org.apache.log4j.Logger;
-import platform.base.DebugUtils;
-import platform.gwt.base.server.LogicsServiceServlet;
-import platform.gwt.base.shared.MessageException;
-import skolkovo.api.remote.SkolkovoRemoteInterface;
-import platform.gwt.login.client.LoginService;
+import net.customware.gwt.dispatch.server.InstanceActionHandlerRegistry;
+import platform.gwt.base.server.LogicsDispatchServlet;
+import platform.gwt.login.server.handlers.RemindPasswordHandler;
+import platform.interop.RemoteLogicsInterface;
 
-import java.rmi.RemoteException;
-
-public class LoginServiceImpl extends LogicsServiceServlet<SkolkovoRemoteInterface> implements LoginService {
-    protected final static Logger logger = Logger.getLogger(LoginServiceImpl.class);
-
+public class LoginServiceImpl extends LogicsDispatchServlet<RemoteLogicsInterface> {
     @Override
-    public void remindPassword(String email) throws MessageException {
-        try {
-            logics.remindPassword(email);
-        } catch (RemoteException e) {
-            logger.error("Ошибка в getProfileInfo: ", e);
-            e.printStackTrace();
-            throw new MessageException(DebugUtils.getInitialCause(e).getMessage());
-        }
+    protected void addHandlers(InstanceActionHandlerRegistry registry) {
+        registry.addHandler(new RemindPasswordHandler(this));
     }
 }

@@ -1,4 +1,4 @@
-package platform.gwt.form.server;
+package platform.gwt.base.server;
 
 import platform.client.logics.ClientForm;
 import platform.interop.form.RemoteFormInterface;

@@ -1,12 +1,10 @@
 package platform.gwt.form.server.handlers;
 
 import net.customware.gwt.dispatch.shared.Action;
-import platform.base.DebugUtils;
 import platform.client.logics.ClientForm;
 import platform.client.logics.ClientFormChanges;
 import platform.client.serialization.ClientSerializationPool;
-import platform.gwt.base.shared.MessageException;
-import platform.gwt.form.server.FormSessionObject;
+import platform.gwt.base.server.FormSessionObject;
 import platform.gwt.form.server.RemoteFormServiceImpl;
 import platform.gwt.form.shared.actions.GetFormResult;
 import platform.gwt.view.GForm;
@@ -14,6 +12,7 @@ import platform.interop.form.RemoteFormInterface;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
+import java.io.IOException;
 import java.security.SecureRandom;
 
 public abstract class FormActionHandler<A extends Action<GetFormResult>> extends FormServiceActionHandler<A, GetFormResult> {
@@ -21,26 +20,20 @@ public abstract class FormActionHandler<A extends Action<GetFormResult>> extends
         super(servlet);
     }
 
-    protected GetFormResult createResult(RemoteFormInterface remoteForm) throws MessageException {
-        try {
-            ClientForm clientForm = new ClientSerializationPool().deserializeObject(new DataInputStream(new ByteArrayInputStream(remoteForm.getRichDesignByteArray())));
+    protected GetFormResult createResult(RemoteFormInterface remoteForm) throws IOException {
+        ClientForm clientForm = new ClientSerializationPool().deserializeObject(new DataInputStream(new ByteArrayInputStream(remoteForm.getRichDesignByteArray())));
 
-            ClientFormChanges clientChanges = new ClientFormChanges(new DataInputStream(new ByteArrayInputStream(remoteForm.getRemoteChanges().form)), clientForm, null);
+        ClientFormChanges clientChanges = new ClientFormChanges(new DataInputStream(new ByteArrayInputStream(remoteForm.getRemoteChanges().form)), clientForm, null);
 
-            String formSessionID = generateRandomSID();
+        String formSessionID = generateRandomSID();
 
-            GForm gwtForm = clientForm.getGwtForm();
-            gwtForm.changes = clientChanges.getGwtFormChangesDTO();
-            gwtForm.sessionID = formSessionID;
+        GForm gwtForm = clientForm.getGwtForm();
+        gwtForm.changes = clientChanges.getGwtFormChangesDTO();
+        gwtForm.sessionID = formSessionID;
 
-            getSession().setAttribute(formSessionID, new FormSessionObject(clientForm, remoteForm));
+        getSession().setAttribute(formSessionID, new FormSessionObject(clientForm, remoteForm));
 
-            return new GetFormResult(gwtForm);
-        } catch (Throwable e) {
-            logger.error("Ошибка при создании формы: ", e);
-            e.printStackTrace();
-            throw new MessageException(DebugUtils.getInitialCause(e).getMessage());
-        }
+        return new GetFormResult(gwtForm);
     }
 
     private String generateRandomSID() {
@@ -53,6 +46,7 @@ public abstract class FormActionHandler<A extends Action<GetFormResult>> extends
 
     private static final String randomsymbols = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
     private final static SecureRandom random = new SecureRandom();
+
     private static String randomString(int len) {
         StringBuilder sb = new StringBuilder(len);
         for (int i = 0; i < len; i++) {

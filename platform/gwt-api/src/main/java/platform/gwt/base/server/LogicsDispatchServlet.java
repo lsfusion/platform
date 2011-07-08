@@ -5,10 +5,20 @@ import net.customware.gwt.dispatch.server.Dispatch;
 import net.customware.gwt.dispatch.server.InstanceActionHandlerRegistry;
 import net.customware.gwt.dispatch.server.SimpleDispatch;
 import net.customware.gwt.dispatch.server.standard.AbstractStandardDispatchServlet;
+import net.customware.gwt.dispatch.shared.Action;
+import net.customware.gwt.dispatch.shared.DispatchException;
+import net.customware.gwt.dispatch.shared.Result;
+import org.apache.log4j.Logger;
+import org.springframework.context.ApplicationContext;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
-import platform.base.OSUtils;
+import org.springframework.web.context.WebApplicationContext;
+import platform.base.ExceptionUtils;
+import platform.gwt.base.server.exceptions.RemoteDispatchException;
+import platform.gwt.base.server.spring.BusinessLogicsProvider;
+import platform.gwt.base.server.spring.NavigatorProvider;
+import platform.gwt.base.shared.MessageException;
 import platform.interop.RemoteLogicsInterface;
 import platform.interop.navigator.RemoteNavigatorInterface;
 
@@ -20,21 +30,13 @@ import javax.servlet.http.HttpSession;
 import java.rmi.RemoteException;
 
 public abstract class LogicsDispatchServlet<T extends RemoteLogicsInterface> extends AbstractStandardDispatchServlet {
-    private T logics;
-    private RemoteNavigatorInterface navigator;
-    private int computerId;
+    protected final static Logger logger = Logger.getLogger(LogicsDispatchServlet.class);
+
     protected Dispatch dispatch;
 
     @Override
     public void init(ServletConfig config) throws ServletException {
         super.init(config);
-        try {
-            logics = (T) GwtLogicsProvider.getLogics(getServletContext());
-            computerId = logics.getComputer(OSUtils.getLocalHostName());
-            navigator = logics.createNavigator("admin", "fusion", computerId);
-        } catch (RemoteException e) {
-            throw new ServletException("Ошибка инициализации сервлета: ", e);
-        }
 
         InstanceActionHandlerRegistry registry = new DefaultActionHandlerRegistry();
         addHandlers(registry);
@@ -42,31 +44,56 @@ public abstract class LogicsDispatchServlet<T extends RemoteLogicsInterface> ext
     }
 
     @Override
+    public Result execute(Action<?> action) throws DispatchException {
+        try {
+            return super.execute(action);
+        } catch (RemoteDispatchException e) {
+            String errorMessage;
+            if (!ExceptionUtils.isRecoverableRemoteException(e.getRemote())) {
+                getLogicsProvider().invalidate();
+                errorMessage = "Внутренняя ошибка сервера. Попробуйте перезагрузить страницу.";
+            } else {
+                errorMessage = ExceptionUtils.getInitialCause(e.getRemote()).getMessage();
+            }
+
+            logger.error("Ошибка в LogicsDispatchServlet.execute: ", e);
+            e.printStackTrace();
+            throw new MessageException(errorMessage);
+        } catch (Throwable e) {
+            e.printStackTrace();
+            logger.error("Ошибка в LogicsDispatchServlet.execute: ", e);
+            throw new MessageException("Внутренняя ошибка сервера.");
+        }
+    }
+
+    @Override
     protected Dispatch getDispatch() {
         return dispatch;
     }
 
-    public int getComputerId() {
-        return computerId;
-    }
-
     public T getLogics() {
-        return logics;
+        return getLogicsProvider().getLogics();
     }
 
-    //todo: add spring security point cut
-    public synchronized RemoteNavigatorInterface getNavigator() {
-        if (navigator == null) {
-            try {
-                Authentication auth = getAuthentication();
-                String somePassword = "some";
-                navigator = logics.createNavigator(auth.getName(), somePassword, getComputerId());
-            } catch (RemoteException e) {
-                throw new RuntimeException("Ошибка при создании навигатора: ", e);
-            }
-        }
+    public RemoteNavigatorInterface getNavigator() throws RemoteException {
+        return getNavigatorProvider().getNavigator();
+    }
 
-        return navigator;
+    public BusinessLogicsProvider<T> getLogicsProvider() {
+        return getSpringContext().getBean(BusinessLogicsProvider.class);
+    }
+
+    public NavigatorProvider<T> getNavigatorProvider() {
+        return getSpringContext().getBean(NavigatorProvider.class);
+    }
+
+    //todo: это будет не нужно после интеграции сервлетов в Spring
+    private ApplicationContext getSpringContext() {
+        Object webSpringContext = getServletContext().getAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE);
+        if (!(webSpringContext instanceof ApplicationContext)) {
+            throw new IllegalStateException("Spring web context wasn't found, spring wasn't configured properly!");
+        }
+        return (ApplicationContext) webSpringContext;
     }
 
     public HttpSession getSession() {
@@ -81,11 +108,10 @@ public abstract class LogicsDispatchServlet<T extends RemoteLogicsInterface> ext
         return getThreadLocalResponse();
     }
 
-    protected abstract void addHandlers(InstanceActionHandlerRegistry registry);
-
-
-    protected Authentication getAuthentication() {
+    public Authentication getAuthentication() {
         SecurityContext securityContext = SecurityContextHolder.getContext();
         return securityContext.getAuthentication();
     }
+
+    protected abstract void addHandlers(InstanceActionHandlerRegistry registry);
 }

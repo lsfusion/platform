@@ -5,6 +5,10 @@
 		  http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
          version="2.5">
 
+    <session-config>
+        <session-timeout>30</session-timeout>
+    </session-config>
+
     <context-param>
         <description>Сервер, на котором работает сервер приложения.</description>
         <param-name>serverHost</param-name>
@@ -31,7 +35,7 @@
     </servlet-mapping>
     <servlet-mapping>
         <servlet-name>LoginService</servlet-name>
-        <url-pattern>/platform.gwt.login.Login/login</url-pattern>
+        <url-pattern>/platform.gwt.login.Login/dispatch</url-pattern>
     </servlet-mapping>
 
     <!-- Spring configuration -->
@@ -53,6 +57,10 @@
     </context-param>
     <listener>
         <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
+    </listener>
+
+    <listener>
+        <listener-class>org.springframework.web.context.request.RequestContextListener</listener-class>
     </listener>
 
     <filter>

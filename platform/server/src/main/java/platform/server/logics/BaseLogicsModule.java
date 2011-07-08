@@ -49,6 +49,7 @@ import java.util.logging.LogManager;
 
 import static platform.server.logics.PropertyUtils.mapImplement;
 import static platform.server.logics.PropertyUtils.readImplements;
+import static platform.server.logics.ServerResourceBundle.getString;
 
 /**
  * User: DAle
@@ -291,45 +292,45 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
     @Override
     public void initClasses() {
-        baseClass = addBaseClass("object", ServerResourceBundle.getString("logics.object"));
+        baseClass = addBaseClass("object", getString("logics.object"));
 
-        transaction = addAbstractClass("transaction", ServerResourceBundle.getString("logics.transaction"), baseClass);
-        barcodeObject = addAbstractClass("barcodeObject", ServerResourceBundle.getString("logics.object.barcoded.object"), baseClass);
+        transaction = addAbstractClass("transaction", getString("logics.transaction"), baseClass);
+        barcodeObject = addAbstractClass("barcodeObject", getString("logics.object.barcoded.object"), baseClass);
 
-        emailObject = addAbstractClass("emailObject", ServerResourceBundle.getString("logics.object.with.email"), baseClass);
+        emailObject = addAbstractClass("emailObject", getString("logics.object.with.email"), baseClass);
 
-        user = addAbstractClass("user", ServerResourceBundle.getString("logics.user"), baseClass);
-        customUser = addConcreteClass("customUser", ServerResourceBundle.getString("logics.user.ordinary.user"), user, barcodeObject, emailObject);
-        systemUser = addConcreteClass("systemUser", ServerResourceBundle.getString("logics.user.system.user"), user);
-        computer = addConcreteClass("computer", ServerResourceBundle.getString("logics.workplace"), baseClass);
-        userRole = addConcreteClass("userRole", ServerResourceBundle.getString("logics.role"), baseClass.named);
+        user = addAbstractClass("user", getString("logics.user"), baseClass);
+        customUser = addConcreteClass("customUser", getString("logics.user.ordinary.user"), user, barcodeObject, emailObject);
+        systemUser = addConcreteClass("systemUser", getString("logics.user.system.user"), user);
+        computer = addConcreteClass("computer", getString("logics.workplace"), baseClass);
+        userRole = addConcreteClass("userRole", getString("logics.role"), baseClass.named);
 
-        policy = addConcreteClass("policy", ServerResourceBundle.getString("logics.security.policy"), baseClass.named);
-        session = addConcreteClass("session", ServerResourceBundle.getString("logics.transaction"), baseClass);
+        policy = addConcreteClass("policy", getString("logics.security.policy"), baseClass.named);
+        session = addConcreteClass("session", getString("logics.transaction"), baseClass);
 
-        connection = addConcreteClass("connection", ServerResourceBundle.getString("logics.connection"), baseClass);
-        connectionStatus = addStaticClass("connectionStatus", ServerResourceBundle.getString("logics.connection.status"),
+        connection = addConcreteClass("connection", getString("logics.connection"), baseClass);
+        connectionStatus = addStaticClass("connectionStatus", getString("logics.connection.status"),
                 new String[]{"connectedConnection", "disconnectedConnection"},
-                new String[]{ServerResourceBundle.getString("logics.connection.connected"), ServerResourceBundle.getString("logics.connection.disconnected")});
+                new String[]{getString("logics.connection.connected"), getString("logics.connection.disconnected")});
 
-        country = addConcreteClass("country", ServerResourceBundle.getString("logics.country"), baseClass.named);
+        country = addConcreteClass("country", getString("logics.country"), baseClass.named);
 
-        navigatorElement = addConcreteClass("navigatorElement", ServerResourceBundle.getString("logics.navigator.element"), baseClass);
-        form = addConcreteClass("form", ServerResourceBundle.getString("logics.forms.form"), navigatorElement);
-        dictionary = addConcreteClass("dictionary", ServerResourceBundle.getString("logics.dictionary"), baseClass.named);
-        dictionaryEntry = addConcreteClass("dictionaryEntry", ServerResourceBundle.getString("logics.dictionary.entries"), baseClass);
+        navigatorElement = addConcreteClass("navigatorElement", getString("logics.navigator.element"), baseClass);
+        form = addConcreteClass("form", getString("logics.forms.form"), navigatorElement);
+        dictionary = addConcreteClass("dictionary", getString("logics.dictionary"), baseClass.named);
+        dictionaryEntry = addConcreteClass("dictionaryEntry", getString("logics.dictionary.entries"), baseClass);
     }
 
     @Override
     public void initGroups() {
-        rootGroup = addAbstractGroup("rootGroup", ServerResourceBundle.getString("logics.groups.rootgroup"), null, false);
-        sessionGroup = addAbstractGroup("sessionGroup", ServerResourceBundle.getString("logics.groups.sessiongroup"), rootGroup, false);
-        publicGroup = addAbstractGroup("publicGroup", ServerResourceBundle.getString("logics.groups.publicgroup"), rootGroup, false);
-        actionGroup = addAbstractGroup("actionGroup", ServerResourceBundle.getString("logics.groups.actiongroup"), rootGroup, false);
-        privateGroup = addAbstractGroup("privateGroup", ServerResourceBundle.getString("logics.groups.privategroup"), rootGroup, false);
-        baseGroup = addAbstractGroup("baseGroup", ServerResourceBundle.getString("logics.groups.basegroup"), publicGroup, false);
-        idGroup = addAbstractGroup("idGroup", ServerResourceBundle.getString("logics.groups.idgroup"), publicGroup, false);
-        recognizeGroup = addAbstractGroup("recognizeGroup", ServerResourceBundle.getString("logics.groups.recognizegroup"), baseGroup, false);
+        rootGroup = addAbstractGroup("rootGroup", getString("logics.groups.rootgroup"), null, false);
+        sessionGroup = addAbstractGroup("sessionGroup", getString("logics.groups.sessiongroup"), rootGroup, false);
+        publicGroup = addAbstractGroup("publicGroup", getString("logics.groups.publicgroup"), rootGroup, false);
+        actionGroup = addAbstractGroup("actionGroup", getString("logics.groups.actiongroup"), rootGroup, false);
+        privateGroup = addAbstractGroup("privateGroup", getString("logics.groups.privategroup"), rootGroup, false);
+        baseGroup = addAbstractGroup("baseGroup", getString("logics.groups.basegroup"), publicGroup, false);
+        idGroup = addAbstractGroup("idGroup", getString("logics.groups.idgroup"), publicGroup, false);
+        recognizeGroup = addAbstractGroup("recognizeGroup", getString("logics.groups.recognizegroup"), baseGroup, false);
     }
 
     @Override
@@ -374,8 +375,8 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         compositeName = new CompositeNamePropertySet();
         privateGroup.add(compositeName);
 
-        classSID = addDProp("classSID", ServerResourceBundle.getString("logics.statcode"), StringClass.get(250), baseClass.sidClass);
-        dataName = addDProp("name", ServerResourceBundle.getString("logics.name"), InsensitiveStringClass.get(110), baseClass.named);
+        classSID = addDProp("classSID", getString("logics.statcode"), StringClass.get(250), baseClass.sidClass);
+        dataName = addDProp("name", getString("logics.name"), InsensitiveStringClass.get(110), baseClass.named);
 
         // математические св-ва
         equals2 = addCFProp(Compare.EQUALS);
@@ -406,8 +407,8 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         percent = addSFProp("((prm1)*(prm2)/100)", DoubleClass.instance, 2);
         percent2 = addSFProp("round(CAST(((prm1)*(prm2)/100) as numeric), 2)", DoubleClass.instance, 2);
         share2 = addSFProp("round(CAST(((prm1)/(prm2)*100) as numeric), 2)", DoubleClass.instance, 2);
-        between = addJProp(ServerResourceBundle.getString("logics.between"), and1, groeq2, 1, 2, groeq2, 3, 1);
-        vtrue = addCProp(ServerResourceBundle.getString("logics.true"), LogicalClass.instance, true);
+        between = addJProp(getString("logics.between"), and1, groeq2, 1, 2, groeq2, 3, 1);
+        vtrue = addCProp(getString("logics.true"), LogicalClass.instance, true);
         vzero = addCProp("0", DoubleClass.instance, 0);
 
         round0 = addSFProp("round(CAST(prm1 as numeric), 0)", DoubleClass.instance, 1);
@@ -429,29 +430,29 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
         apply = addAProp(new ApplyActionProperty());
 
-        date = addDProp(baseGroup, "date", ServerResourceBundle.getString("logics.date"), DateClass.instance, transaction);
+        date = addDProp(baseGroup, "date", getString("logics.date"), DateClass.instance, transaction);
 
-        betweenDates = addJProp(ServerResourceBundle.getString("logics.date.of.doc.between"), between, object(DateClass.instance), 1, object(DateClass.instance), 2, object(DateClass.instance), 3);
-        betweenDate = addJProp(ServerResourceBundle.getString("logics.date.of.doc.between"), betweenDates, date, 1, 2, 3);
+        betweenDates = addJProp(getString("logics.date.of.doc.between"), between, object(DateClass.instance), 1, object(DateClass.instance), 2, object(DateClass.instance), 3);
+        betweenDate = addJProp(getString("logics.date.of.doc.between"), betweenDates, date, 1, 2, 3);
 
-        sidCountry = addDProp(baseGroup, "sidCountry", ServerResourceBundle.getString("logics.country.key"), IntegerClass.instance, country);
-        generateDatesCountry = addDProp(privateGroup, "generateDatesCountry", ServerResourceBundle.getString("logics.day.generate.days.off"), LogicalClass.instance, country);
-        sidToCountry = addAGProp("sidToCountry", ServerResourceBundle.getString("logics.country"), sidCountry);
+        sidCountry = addDProp(baseGroup, "sidCountry", getString("logics.country.key"), IntegerClass.instance, country);
+        generateDatesCountry = addDProp(privateGroup, "generateDatesCountry", getString("logics.day.generate.days.off"), LogicalClass.instance, country);
+        sidToCountry = addAGProp("sidToCountry", getString("logics.country"), sidCountry);
         
-        isDayOffCountryDate = addDProp(baseGroup, "isDayOffCD", ServerResourceBundle.getString("logics.day.off"), LogicalClass.instance, country, DateClass.instance);
+        isDayOffCountryDate = addDProp(baseGroup, "isDayOffCD", getString("logics.day.off"), LogicalClass.instance, country, DateClass.instance);
 
         
-        workingDay = addJProp(baseGroup, "workingDay", ServerResourceBundle.getString("logics.day.working"), andNot1, addCProp(IntegerClass.instance, 1, country, DateClass.instance), 1, 2, isDayOffCountryDate, 1, 2);
-        isWorkingDay = addJProp(baseGroup, "isWorkingDay", ServerResourceBundle.getString("logics.day.working"), and(false, false), workingDay, 1, 3, groeq2, 3, 2, is(DateClass.instance), 3);
-        workingDaysQuantity = addOProp(baseGroup, "workingDaysQuantity", ServerResourceBundle.getString("logics.day.working.days"), OrderType.SUM, isWorkingDay, true, true, 1, 2, 1, 3);
-        equalsWorkingDaysQuantity = addJProp(baseGroup, "equalsWorkingDaysQuantity", ServerResourceBundle.getString("logics.day.equals.quantity.of.working.days"), equals2, object(IntegerClass.instance), 1, workingDaysQuantity, 2, 3, 4);
+        workingDay = addJProp(baseGroup, "workingDay", getString("logics.day.working"), andNot1, addCProp(IntegerClass.instance, 1, country, DateClass.instance), 1, 2, isDayOffCountryDate, 1, 2);
+        isWorkingDay = addJProp(baseGroup, "isWorkingDay", getString("logics.day.working"), and(false, false), workingDay, 1, 3, groeq2, 3, 2, is(DateClass.instance), 3);
+        workingDaysQuantity = addOProp(baseGroup, "workingDaysQuantity", getString("logics.day.working.days"), OrderType.SUM, isWorkingDay, true, true, 1, 2, 1, 3);
+        equalsWorkingDaysQuantity = addJProp(baseGroup, "equalsWorkingDaysQuantity", getString("logics.day.equals.quantity.of.working.days"), equals2, object(IntegerClass.instance), 1, workingDaysQuantity, 2, 3, 4);
 
-        transactionLater = addSUProp(ServerResourceBundle.getString("logics.transaction.later"), Union.OVERRIDE, addJProp(ServerResourceBundle.getString("logics.date.later"), greater2, date, 1, date, 2),
-                                     addJProp("", and1, addJProp(ServerResourceBundle.getString("logics.date.equals.date"), equals2, date, 1, date, 2), 1, 2, addJProp(ServerResourceBundle.getString("logics.transaction.code.later"), greater2, 1, 2), 1, 2));
+        transactionLater = addSUProp(getString("logics.transaction.later"), Union.OVERRIDE, addJProp(getString("logics.date.later"), greater2, date, 1, date, 2),
+                                     addJProp("", and1, addJProp(getString("logics.date.equals.date"), equals2, date, 1, date, 2), 1, 2, addJProp(getString("logics.transaction.code.later"), greater2, 1, 2), 1, 2));
 
-        hostname = addDProp(baseGroup, "hostname", ServerResourceBundle.getString("logics.host.name"), InsensitiveStringClass.get(100), computer);
+        hostname = addDProp(baseGroup, "hostname", getString("logics.host.name"), InsensitiveStringClass.get(100), computer);
 
-        currentDate = addDProp(baseGroup, "currentDate", ServerResourceBundle.getString("logics.date.current.date"), DateClass.instance);
+        currentDate = addDProp(baseGroup, "currentDate", getString("logics.date.current.date"), DateClass.instance);
         currentHour = addTProp(Time.HOUR);
         currentMinute = addTProp(Time.MINUTE);
         currentEpoch = addTProp(Time.EPOCH);
@@ -462,125 +463,125 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         isServerRestarting = addProperty(null, new LP<PropertyInterface>(new IsServerRestartingFormulaProperty(genSID())));
         changeUser = addProperty(null, new LP<ClassPropertyInterface>(new ChangeUserActionProperty(genSID(), customUser)));
 
-        userLogin = addDProp(baseGroup, "userLogin", ServerResourceBundle.getString("logics.user.login"), StringClass.get(30), customUser);
-        loginToUser = addAGProp("loginToUser", ServerResourceBundle.getString("logics.user"), userLogin);
-        userPassword = addDProp(baseGroup, "userPassword", ServerResourceBundle.getString("logics.user.password"), StringClass.get(30), customUser);
-        userFirstName = addDProp(baseGroup, "userFirstName", ServerResourceBundle.getString("logics.user.firstname"), StringClass.get(30), customUser);
-        userLastName = addDProp(baseGroup, "userLastName", ServerResourceBundle.getString("logics.user.lastname"), StringClass.get(30), customUser);
+        userLogin = addDProp(baseGroup, "userLogin", getString("logics.user.login"), StringClass.get(30), customUser);
+        loginToUser = addAGProp("loginToUser", getString("logics.user"), userLogin);
+        userPassword = addDProp(baseGroup, "userPassword", getString("logics.user.password"), StringClass.get(30), customUser);
+        userFirstName = addDProp(baseGroup, "userFirstName", getString("logics.user.firstname"), StringClass.get(30), customUser);
+        userLastName = addDProp(baseGroup, "userLastName", getString("logics.user.lastname"), StringClass.get(30), customUser);
 
-        userRoleSID = addDProp(baseGroup, "userRoleSID", ServerResourceBundle.getString("logics.user.identificator"), StringClass.get(30), userRole);
-        sidToRole = addAGProp(idGroup, "sidToRole", ServerResourceBundle.getString("logics.user.role.id"), userRole, userRoleSID);
-        inUserRole = addDProp(baseGroup, "inUserRole", ServerResourceBundle.getString("logics.user.role.in"), LogicalClass.instance, customUser, userRole);
-        userRoleDefaultForms = addDProp(baseGroup, "userRoleDefaultForms", ServerResourceBundle.getString("logics.user.displaying.forms.by.default"), LogicalClass.instance, userRole);
-        inLoginSID = addJProp("inLoginSID", true, ServerResourceBundle.getString("logics.login.has.a.role"), inUserRole, loginToUser, 1, sidToRole, 2);
+        userRoleSID = addDProp(baseGroup, "userRoleSID", getString("logics.user.identificator"), StringClass.get(30), userRole);
+        sidToRole = addAGProp(idGroup, "sidToRole", getString("logics.user.role.id"), userRole, userRoleSID);
+        inUserRole = addDProp(baseGroup, "inUserRole", getString("logics.user.role.in"), LogicalClass.instance, customUser, userRole);
+        userRoleDefaultForms = addDProp(baseGroup, "userRoleDefaultForms", getString("logics.user.displaying.forms.by.default"), LogicalClass.instance, userRole);
+        inLoginSID = addJProp("inLoginSID", true, getString("logics.login.has.a.role"), inUserRole, loginToUser, 1, sidToRole, 2);
 
-        email = addDProp(baseGroup, "email", ServerResourceBundle.getString("logics.email"), StringClass.get(50), emailObject);
-        emailToObject = addAGProp("emailToObject", ServerResourceBundle.getString("logics.email.to.object"), email);
+        email = addDProp(baseGroup, "email", getString("logics.email"), StringClass.get(50), emailObject);
+        emailToObject = addAGProp("emailToObject", getString("logics.email.to.object"), email);
 
-        emailUserPassUser = addEAProp(ServerResourceBundle.getString("logics.user.password.reminder"), customUser);
+        emailUserPassUser = addEAProp(getString("logics.user.password.reminder"), customUser);
         addEARecepient(emailUserPassUser, email, 1);
 
         generateLoginPassword = addAProp(actionGroup, new GenerateLoginPasswordActionProperty(email, userLogin, userPassword, customUser));
 
-        name = addCUProp(recognizeGroup, "commonName", ServerResourceBundle.getString("logics.name"), dataName,
+        name = addCUProp(recognizeGroup, "commonName", getString("logics.name"), dataName,
                 addJProp(insensitiveString2, userFirstName, 1, userLastName, 1));
 
-        connectionComputer = addDProp("connectionComputer", ServerResourceBundle.getString("logics.computer"), computer, connection);
-        addJProp(baseGroup, ServerResourceBundle.getString("logics.computer"), hostname, connectionComputer, 1);
-        connectionUser = addDProp("connectionUser", ServerResourceBundle.getString("logics.user"), customUser, connection);
-        addJProp(baseGroup, ServerResourceBundle.getString("logics.user"), userLogin, connectionUser, 1);
-        connectionCurrentStatus = addDProp("connectionCurrentStatus", ServerResourceBundle.getString("logics.connection.status"), connectionStatus, connection);
-        addJProp(baseGroup, ServerResourceBundle.getString("logics.connection.status"), name, connectionCurrentStatus, 1);
+        connectionComputer = addDProp("connectionComputer", getString("logics.computer"), computer, connection);
+        addJProp(baseGroup, getString("logics.computer"), hostname, connectionComputer, 1);
+        connectionUser = addDProp("connectionUser", getString("logics.user"), customUser, connection);
+        addJProp(baseGroup, getString("logics.user"), userLogin, connectionUser, 1);
+        connectionCurrentStatus = addDProp("connectionCurrentStatus", getString("logics.connection.status"), connectionStatus, connection);
+        addJProp(baseGroup, getString("logics.connection.status"), name, connectionCurrentStatus, 1);
 
-        connectionConnectTime = addDProp(baseGroup, "connectionConnectTime", ServerResourceBundle.getString("logics.connection.connect.time"), DateTimeClass.instance, connection);
-        connectionDisconnectTime = addDProp(baseGroup, "connectionDisconnectTime", ServerResourceBundle.getString("logics.connection.disconnect.time"), DateTimeClass.instance, connection);
+        connectionConnectTime = addDProp(baseGroup, "connectionConnectTime", getString("logics.connection.connect.time"), DateTimeClass.instance, connection);
+        connectionDisconnectTime = addDProp(baseGroup, "connectionDisconnectTime", getString("logics.connection.disconnect.time"), DateTimeClass.instance, connection);
         connectionDisconnectTime.setDerivedForcedChange(currentDateTime,
                 addJProp(equals2, connectionCurrentStatus, 1, addCProp(connectionStatus, "disconnectedConnection")), 1);
 
-        connectionFormCount = addDProp(baseGroup, "connectionFormCount", ServerResourceBundle.getString("logics.forms.number.of.opened.forms"), IntegerClass.instance, connection, navigatorElement);
+        connectionFormCount = addDProp(baseGroup, "connectionFormCount", getString("logics.forms.number.of.opened.forms"), IntegerClass.instance, connection, navigatorElement);
 
-        userMainRole = addDProp(idGroup, "userMainRole", ServerResourceBundle.getString("logics.user.role.main.role.id"), userRole, user);
-        customUserMainRole = addJProp(idGroup, "customUserMainRole", ServerResourceBundle.getString("logics.user.role.main.role.id"), and1, userMainRole, 1, is(customUser), 1);
-        customUserSIDMainRole = addJProp("customUserSIDMainRole", ServerResourceBundle.getString("logics.user.role.main.role.identificator"), userRoleSID, customUserMainRole, 1);
-        nameUserMainRole = addJProp(baseGroup, "nameUserMainRole", ServerResourceBundle.getString("logics.user.role.main.role"), name, userMainRole, 1);
+        userMainRole = addDProp(idGroup, "userMainRole", getString("logics.user.role.main.role.id"), userRole, user);
+        customUserMainRole = addJProp(idGroup, "customUserMainRole", getString("logics.user.role.main.role.id"), and1, userMainRole, 1, is(customUser), 1);
+        customUserSIDMainRole = addJProp("customUserSIDMainRole", getString("logics.user.role.main.role.identificator"), userRoleSID, customUserMainRole, 1);
+        nameUserMainRole = addJProp(baseGroup, "nameUserMainRole", getString("logics.user.role.main.role"), name, userMainRole, 1);
 
-        nameToCountry = addAGProp("nameToCountry", ServerResourceBundle.getString("logics.country"), country, name);
+        nameToCountry = addAGProp("nameToCountry", getString("logics.country"), country, name);
 
-        nameToPolicy = addAGProp("nameToPolicy", ServerResourceBundle.getString("logics.policy"), policy, name);
-        policyDescription = addDProp(baseGroup, "description", ServerResourceBundle.getString("logics.policy.description"), StringClass.get(100), policy);
+        nameToPolicy = addAGProp("nameToPolicy", getString("logics.policy"), policy, name);
+        policyDescription = addDProp(baseGroup, "description", getString("logics.policy.description"), StringClass.get(100), policy);
 
-        userRolePolicyOrder = addDProp(baseGroup, "userRolePolicyOrder", ServerResourceBundle.getString("logics.policy.order"), IntegerClass.instance, userRole, policy);
-        userPolicyOrder = addJProp(baseGroup, "userPolicyOrder", ServerResourceBundle.getString("logics.policy.order"), userRolePolicyOrder, userMainRole, 1, 2);
+        userRolePolicyOrder = addDProp(baseGroup, "userRolePolicyOrder", getString("logics.policy.order"), IntegerClass.instance, userRole, policy);
+        userPolicyOrder = addJProp(baseGroup, "userPolicyOrder", getString("logics.policy.order"), userRolePolicyOrder, userMainRole, 1, 2);
 
-        barcode = addDProp(recognizeGroup, "barcode", ServerResourceBundle.getString("logics.barcode"), StringClass.get(13), barcodeObject);
+        barcode = addDProp(recognizeGroup, "barcode", getString("logics.barcode"), StringClass.get(13), barcodeObject);
 
         barcode.setFixedCharWidth(13);
-        barcodeToObject = addAGProp("barcodeToObject", ServerResourceBundle.getString("logics.object"), barcode);
-        barcodeObjectName = addJProp(baseGroup, "barcodeObjectName", ServerResourceBundle.getString("logics.object"), name, barcodeToObject, 1);
+        barcodeToObject = addAGProp("barcodeToObject", getString("logics.object"), barcode);
+        barcodeObjectName = addJProp(baseGroup, "barcodeObjectName", getString("logics.object"), name, barcodeToObject, 1);
 
-        barcodePrefix = addDProp(baseGroup, "barcodePrefix", ServerResourceBundle.getString("logics.barcode.prefix"), StringClass.get(13));
+        barcodePrefix = addDProp(baseGroup, "barcodePrefix", getString("logics.barcode.prefix"), StringClass.get(13));
 
-        seekBarcodeAction = addJProp(true, ServerResourceBundle.getString("logics.barcode.search"), addSAProp(null), barcodeToObject, 1);
-        barcodeNotFoundMessage = addJProp(true, "", and(false, true), addMAProp(ServerResourceBundle.getString("logics.barcode.not.found"), ServerResourceBundle.getString("logics.error")), is(StringClass.get(13)), 1, barcodeToObject, 1);
+        seekBarcodeAction = addJProp(true, getString("logics.barcode.search"), addSAProp(null), barcodeToObject, 1);
+        barcodeNotFoundMessage = addJProp(true, "", and(false, true), addMAProp(getString("logics.barcode.not.found"), getString("logics.error")), is(StringClass.get(13)), 1, barcodeToObject, 1);
 
-        restartServerAction = addJProp(ServerResourceBundle.getString("logics.server.stop"), andNot1, addRestartActionProp(), isServerRestarting);
-        cancelRestartServerAction = addJProp(ServerResourceBundle.getString("logics.server.cancel.stop"), and1, addCancelRestartActionProp(), isServerRestarting);
+        restartServerAction = addJProp(getString("logics.server.stop"), andNot1, addRestartActionProp(), isServerRestarting);
+        cancelRestartServerAction = addJProp(getString("logics.server.cancel.stop"), and1, addCancelRestartActionProp(), isServerRestarting);
 
-        recalculateAction = addProperty(null, new LP<ClassPropertyInterface>(new RecalculateActionProperty(genSID(), ServerResourceBundle.getString("logics.recalculate.aggregations"))));
-        packAction = addProperty(null, new LP<ClassPropertyInterface>(new PackActionProperty(genSID(), ServerResourceBundle.getString("logics.tables.pack"))));
+        recalculateAction = addProperty(null, new LP<ClassPropertyInterface>(new RecalculateActionProperty(genSID(), getString("logics.recalculate.aggregations"))));
+        packAction = addProperty(null, new LP<ClassPropertyInterface>(new PackActionProperty(genSID(), getString("logics.tables.pack"))));
 
-        currentUserName = addJProp(ServerResourceBundle.getString("logics.user.current.user.name"), name, currentUser);
+        currentUserName = addJProp(getString("logics.user.current.user.name"), name, currentUser);
 
-        reverseBarcode = addSDProp("reverseBarcode", ServerResourceBundle.getString("logics.barcode.reverse"), LogicalClass.instance);
+        reverseBarcode = addSDProp("reverseBarcode", getString("logics.barcode.reverse"), LogicalClass.instance);
 
         objectClass = addProperty(null, new LP<ClassPropertyInterface>(new ObjectClassProperty(genSID(), baseClass)));
-        objectClassName = addJProp(baseGroup, "objectClassName", ServerResourceBundle.getString("logics.object.class"), name, objectClass, 1);
+        objectClassName = addJProp(baseGroup, "objectClassName", getString("logics.object.class"), name, objectClass, 1);
 
-        navigatorElementSID = addDProp(baseGroup, "navigatorElementSID", ServerResourceBundle.getString("logics.forms.code"), formSIDValueClass, navigatorElement);
-        numberNavigatorElement = addDProp(baseGroup, "numberNavigatorElement", ServerResourceBundle.getString("logics.number"), IntegerClass.instance, navigatorElement);
-        navigatorElementCaption = addDProp(baseGroup, "navigatorElementCaption", ServerResourceBundle.getString("logics.forms.name"), formCaptionValueClass, navigatorElement);
-        SIDToNavigatorElement = addAGProp("SIDToNavigatorElement", ServerResourceBundle.getString("logics.forms.form"), navigatorElementSID);
-        parentNavigatorElement = addDProp("parentNavigatorElement", ServerResourceBundle.getString("logics.forms.parent.form"), navigatorElement, navigatorElement);
+        navigatorElementSID = addDProp(baseGroup, "navigatorElementSID", getString("logics.forms.code"), formSIDValueClass, navigatorElement);
+        numberNavigatorElement = addDProp(baseGroup, "numberNavigatorElement", getString("logics.number"), IntegerClass.instance, navigatorElement);
+        navigatorElementCaption = addDProp(baseGroup, "navigatorElementCaption", getString("logics.forms.name"), formCaptionValueClass, navigatorElement);
+        SIDToNavigatorElement = addAGProp("SIDToNavigatorElement", getString("logics.forms.form"), navigatorElementSID);
+        parentNavigatorElement = addDProp("parentNavigatorElement", getString("logics.forms.parent.form"), navigatorElement, navigatorElement);
 
-        permissionUserRoleForm = addDProp(baseGroup, "permissionUserRoleForm", ServerResourceBundle.getString("logics.forms.prohibit.form"), LogicalClass.instance, userRole, navigatorElement);
-        permissionUserForm = addJProp(baseGroup, "permissionUserForm", ServerResourceBundle.getString("logics.forms.prohibit.form"), permissionUserRoleForm, userMainRole, 1, 2);
-        userRoleFormDefaultNumber = addDProp(baseGroup, "userRoleFormDefaultNumber", ServerResourceBundle.getString("logics.forms.prohibit.form"), IntegerClass.instance, userRole, navigatorElement);
-        userFormDefaultNumber = addJProp(baseGroup, "userFormDefaultNumber", ServerResourceBundle.getString("logics.forms.default.number"), userRoleFormDefaultNumber, userMainRole, 1, 2);
-        userDefaultForms = addJProp(baseGroup, "userDefaultForms", ServerResourceBundle.getString("logics.user.displaying.forms.by.default"), userRoleDefaultForms, userMainRole, 1);
+        permissionUserRoleForm = addDProp(baseGroup, "permissionUserRoleForm", getString("logics.forms.prohibit.form"), LogicalClass.instance, userRole, navigatorElement);
+        permissionUserForm = addJProp(baseGroup, "permissionUserForm", getString("logics.forms.prohibit.form"), permissionUserRoleForm, userMainRole, 1, 2);
+        userRoleFormDefaultNumber = addDProp(baseGroup, "userRoleFormDefaultNumber", getString("logics.forms.prohibit.form"), IntegerClass.instance, userRole, navigatorElement);
+        userFormDefaultNumber = addJProp(baseGroup, "userFormDefaultNumber", getString("logics.forms.default.number"), userRoleFormDefaultNumber, userMainRole, 1, 2);
+        userDefaultForms = addJProp(baseGroup, "userDefaultForms", getString("logics.user.displaying.forms.by.default"), userRoleDefaultForms, userMainRole, 1);
 //        permissionUserForm = addDProp(baseGroup, "permissionUserForm", "Запретить форму", LogicalClass.instance, user, navigatorElement);
 
-        selectUserRoles = addSelectFromListAction(null, ServerResourceBundle.getString("logics.user.role.edit.roles"), inUserRole, userRole, customUser);
+        selectUserRoles = addSelectFromListAction(null, getString("logics.user.role.edit.roles"), inUserRole, userRole, customUser);
         //selectRoleForms = addSelectFromListAction(null, "Редактировать формы", permissionUserRoleForm, navigatorElement, userRole);
 
         // заполним сессии
-        LP sessionUser = addDProp("sessionUser", ServerResourceBundle.getString("logics.session.user"), user, session);
+        LP sessionUser = addDProp("sessionUser", getString("logics.session.user"), user, session);
         sessionUser.setDerivedChange(currentUser, true, is(session), 1);
-        addJProp(baseGroup, ServerResourceBundle.getString("logics.session.user"), name, sessionUser, 1);
-        LP sessionDate = addDProp(baseGroup, "sessionDate", ServerResourceBundle.getString("logics.session.date"), DateClass.instance, session);
+        addJProp(baseGroup, getString("logics.session.user"), name, sessionUser, 1);
+        LP sessionDate = addDProp(baseGroup, "sessionDate", getString("logics.session.date"), DateClass.instance, session);
         sessionDate.setDerivedChange(currentDate, true, is(session), 1);
         onlyNotZero = addJProp(andNot1, 1, addJProp(equals2, 1, vzero), 1);
         onlyNotZero.property.isOnlyNotZero = true;
 
-        objectByName = addMGProp(idGroup, "objectByName", ServerResourceBundle.getString("logics.object.name"), object(baseClass.named), name, 1);
-        seekObjectName = addJProp(true, ServerResourceBundle.getString("logics.object.search"), addSAProp(null), objectByName, 1);
+        objectByName = addMGProp(idGroup, "objectByName", getString("logics.object.name"), object(baseClass.named), name, 1);
+        seekObjectName = addJProp(true, getString("logics.object.search"), addSAProp(null), objectByName, 1);
 
-        webHost = addDProp("webHost", ServerResourceBundle.getString("logics.host.webhost"), StringClass.get(50));
+        webHost = addDProp("webHost", getString("logics.host.webhost"), StringClass.get(50));
 
-        smtpHost = addDProp("smtpHost", ServerResourceBundle.getString("logics.host.smtphost"), StringClass.get(50));
-        smtpPort = addDProp("smtpPort", ServerResourceBundle.getString("logics.host.smtpport"), StringClass.get(10));
-        emailAccount = addDProp("emailAccount", ServerResourceBundle.getString("logics.email.accountname"), StringClass.get(50));
-        emailPassword = addDProp("emailPassword", ServerResourceBundle.getString("logics.email.password"), StringClass.get(50));
-        emailBlindCarbonCopy = addDProp("emailBlindCarbonCopy", ServerResourceBundle.getString("logics.email.copy.bcc"), StringClass.get(50));
-        fromAddress = addDProp("fromAddress", ServerResourceBundle.getString("logics.email.sender"), StringClass.get(50));
+        smtpHost = addDProp("smtpHost", getString("logics.host.smtphost"), StringClass.get(50));
+        smtpPort = addDProp("smtpPort", getString("logics.host.smtpport"), StringClass.get(10));
+        emailAccount = addDProp("emailAccount", getString("logics.email.accountname"), StringClass.get(50));
+        emailPassword = addDProp("emailPassword", getString("logics.email.password"), StringClass.get(50));
+        emailBlindCarbonCopy = addDProp("emailBlindCarbonCopy", getString("logics.email.copy.bcc"), StringClass.get(50));
+        fromAddress = addDProp("fromAddress", getString("logics.email.sender"), StringClass.get(50));
 
-        disableEmail = addDProp("disableEmail", ServerResourceBundle.getString("logics.email.disable.email.sending"), LogicalClass.instance);
+        disableEmail = addDProp("disableEmail", getString("logics.email.disable.email.sending"), LogicalClass.instance);
 
-        defaultCountry = addDProp("defaultCountry", ServerResourceBundle.getString("logics.country.default.country"), country);
+        defaultCountry = addDProp("defaultCountry", getString("logics.country.default.country"), country);
 
-        entryDictionary = addDProp("entryDictionary", ServerResourceBundle.getString("logics.dictionary"), dictionary, dictionaryEntry);
-        termDictionary = addDProp(baseGroup, "termDictionary", ServerResourceBundle.getString("logics.dictionary.termin"), StringClass.get(50), dictionaryEntry);
-        translationDictionary = addDProp(baseGroup, "translationDictionary", ServerResourceBundle.getString("logics.dictionary.translation"), StringClass.get(50), dictionaryEntry);
-        translationDictionaryTerm = addCGProp(null, "translationDictionayTerm", ServerResourceBundle.getString("logics.dictionary.translation"), translationDictionary, termDictionary, entryDictionary, 1, termDictionary, 1);
+        entryDictionary = addDProp("entryDictionary", getString("logics.dictionary"), dictionary, dictionaryEntry);
+        termDictionary = addDProp(baseGroup, "termDictionary", getString("logics.dictionary.termin"), StringClass.get(50), dictionaryEntry);
+        translationDictionary = addDProp(baseGroup, "translationDictionary", getString("logics.dictionary.translation"), StringClass.get(50), dictionaryEntry);
+        translationDictionaryTerm = addCGProp(null, "translationDictionayTerm", getString("logics.dictionary.translation"), translationDictionary, termDictionary, entryDictionary, 1, termDictionary, 1);
     }
 
     @Override
@@ -772,7 +773,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
         @IdentityLazy
         private LP getStringConcatanationProperty(int intNum) {
-            return new LP<StringConcatenateProperty.Interface>(new StringConcatenateProperty(genSID(), ServerResourceBundle.getString("logics.join"), intNum, ", "));
+            return new LP<StringConcatenateProperty.Interface>(new StringConcatenateProperty(genSID(), getString("logics.join"), intNum, ", "));
         }
 
         @Override
@@ -791,7 +792,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
             LP stringConcat = getStringConcatanationProperty(intNum);
 
-            JoinProperty<ClassPropertyInterface> joinProperty = new JoinProperty(sid, ServerResourceBundle.getString("logics.compound.name")+" (" + intNum + ")", intNum, false);
+            JoinProperty<ClassPropertyInterface> joinProperty = new JoinProperty(sid, getString("logics.compound.name")+" (" + intNum + ")", intNum, false);
             LP listJoinProperty = new LP<JoinProperty.Interface>(joinProperty);
             joinProperty.implement = mapImplement(stringConcat, readImplements(listJoinProperty.listInterfaces, joinParams));
 
@@ -863,22 +864,22 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public void initNavigators() {
         baseClass.named.setListForm(new NamedListFormEntity(this, baseClass.named));
 
-        navigatorWindow = new TreeNavigatorWindow("navigator", ServerResourceBundle.getString("logics.navigator"), 0, 0, 20, 70);
-        relevantFormsWindow = new AbstractWindow("relevantForms", ServerResourceBundle.getString("logics.forms.relevant.forms"), 0, 70, 20, 29);
-        relevantClassFormsWindow = new AbstractWindow("relevantClassForms", ServerResourceBundle.getString("logics.forms.relevant.class.forms"), 0, 70, 20, 29);
-        logWindow = new AbstractWindow("log", ServerResourceBundle.getString("logics.log"), 0, 70, 20, 29);
-        statusWindow = new AbstractWindow("status", ServerResourceBundle.getString("logics.status"), 0, 99, 100, 1);
+        navigatorWindow = new TreeNavigatorWindow("navigator", getString("logics.navigator"), 0, 0, 20, 70);
+        relevantFormsWindow = new AbstractWindow("relevantForms", getString("logics.forms.relevant.forms"), 0, 70, 20, 29);
+        relevantClassFormsWindow = new AbstractWindow("relevantClassForms", getString("logics.forms.relevant.class.forms"), 0, 70, 20, 29);
+        logWindow = new AbstractWindow("log", getString("logics.log"), 0, 70, 20, 29);
+        statusWindow = new AbstractWindow("status", getString("logics.status"), 0, 99, 100, 1);
         statusWindow.titleShown = false;
-        formsWindow = new AbstractWindow("forms", ServerResourceBundle.getString("logics.forms"), 20, 20, 80, 79);
+        formsWindow = new AbstractWindow("forms", getString("logics.forms"), 20, 20, 80, 79);
 
-        baseElement = new NavigatorElement("baseElement", ServerResourceBundle.getString("logics.forms"));
+        baseElement = new NavigatorElement("baseElement", getString("logics.forms"));
         baseElement.window = navigatorWindow;
-        adminElement = new NavigatorElement(baseElement, "adminElement",  ServerResourceBundle.getString("logics.administration"));
+        adminElement = new NavigatorElement(baseElement, "adminElement",  getString("logics.administration"));
 
         objectElement = baseClass.getBaseClassForm(this);
         adminElement.add(objectElement);
 
-        NavigatorElement policyElement = new NavigatorElement(adminElement, "policyElement", ServerResourceBundle.getString("logics.security.policy"));
+        NavigatorElement policyElement = new NavigatorElement(adminElement, "policyElement", getString("logics.security.policy"));
         addFormEntity(new UserPolicyFormEntity(policyElement, "userPolicyForm"));
         addFormEntity(new RolePolicyFormEntity(policyElement, "rolePolicyForm"));
         addFormEntity(new ConnectionsFormEntity(adminElement, "connectionsForm"));
@@ -1059,7 +1060,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     private static class ChangeUserActionProperty extends ActionProperty {
 
         private ChangeUserActionProperty(String sID, ConcreteValueClass userClass) {
-            super(sID, ServerResourceBundle.getString("logics.user.change.user"), new ValueClass[]{userClass});
+            super(sID, getString("logics.user.change.user"), new ValueClass[]{userClass});
         }
 
         @Override
@@ -1095,7 +1096,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
             BL.recalculateAggregations(session.sql, BL.getAggregateStoredProperties());
             sqlSession.commitTransaction();
 
-            actions.add(new MessageClientAction(ServerResourceBundle.getString("logics.recalculation.was.completed"), ServerResourceBundle.getString("logics.recalculation.aggregations")));
+            actions.add(new MessageClientAction(getString("logics.recalculation.was.completed"), getString("logics.recalculation.aggregations")));
         }
     }
 
@@ -1112,7 +1113,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
             BL.packTables(sqlSession, tableFactory.getImplementTables().values());
             sqlSession.commitTransaction();
 
-            actions.add(new MessageClientAction(ServerResourceBundle.getString("logics.tables.packing.completed"), ServerResourceBundle.getString("logics.tables.packing")));
+            actions.add(new MessageClientAction(getString("logics.tables.packing.completed"), getString("logics.tables.packing")));
         }
     }
 
@@ -1135,7 +1136,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         Property<?> addProperty;
 
         AddBarcodeActionProperty(ConcreteCustomClass customClass, Property addProperty, String sID) {
-            super(sID, ServerResourceBundle.getString("logics.add")+" [" + customClass + "] " + ServerResourceBundle.getString("logics.add.by.barcode"), new ValueClass[]{StringClass.get(13)});
+            super(sID, getString("logics.add")+" [" + customClass + "] " + getString("logics.add.by.barcode"), new ValueClass[]{StringClass.get(13)});
 
             this.customClass = customClass;
             this.addProperty = addProperty;
@@ -1176,7 +1177,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
     private class UserPolicyFormEntity extends FormEntity {
         protected UserPolicyFormEntity(NavigatorElement parent, String sID) {
-            super(parent, sID, ServerResourceBundle.getString("logics.user.users"));
+            super(parent, sID, getString("logics.user.users"));
 
             ObjectEntity objUser = addSingleGroupObject(customUser, selection, baseGroup, true);
             ObjectEntity objRole = addSingleGroupObject(userRole, baseGroup, true);
@@ -1201,12 +1202,12 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         private TreeGroupEntity treeFormObject;
 
         protected RolePolicyFormEntity(NavigatorElement parent, String sID) {
-            super(parent, sID, ServerResourceBundle.getString("logics.user.role.roles"));
+            super(parent, sID, getString("logics.user.role.roles"));
 
             objUserRole = addSingleGroupObject(userRole, baseGroup, true);
-            objPolicy = addSingleGroupObject(policy, ServerResourceBundle.getString("logics.security.policies"), baseGroup, true);
-            objForm = addSingleGroupObject(navigatorElement, ServerResourceBundle.getString("logics.grid"), true);
-            objTreeForm = addSingleGroupObject(navigatorElement, ServerResourceBundle.getString("logics.tree"), true);
+            objPolicy = addSingleGroupObject(policy, getString("logics.security.policies"), baseGroup, true);
+            objForm = addSingleGroupObject(navigatorElement, getString("logics.grid"), true);
+            objTreeForm = addSingleGroupObject(navigatorElement, getString("logics.tree"), true);
 
             objTreeForm.groupTo.setIsParents(addPropertyObject(parentNavigatorElement, objTreeForm));
             treeFormObject = addTreeGroupObject(objTreeForm.groupTo);
@@ -1237,7 +1238,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
             ContainerView container = design.createContainer();
             container.tabbedPane = true;
 
-            ContainerView formsContainer = design.createContainer(ServerResourceBundle.getString("logics.forms"));
+            ContainerView formsContainer = design.createContainer(getString("logics.forms"));
             formsContainer.tabbedPane = true;
             formsContainer.add(design.getTreeContainer(treeFormObject));
             formsContainer.add(design.getGroupObjectContainer(objForm.groupTo));
@@ -1252,10 +1253,10 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
     private class ConnectionsFormEntity extends FormEntity {
         protected ConnectionsFormEntity(NavigatorElement parent, String sID) {
-            super(parent, sID, ServerResourceBundle.getString("logics.connection.server.connections"));
+            super(parent, sID, getString("logics.connection.server.connections"));
 
             ObjectEntity objConnection = addSingleGroupObject(connection, baseGroup, true);
-            ObjectEntity objForm = addSingleGroupObject(navigatorElement, ServerResourceBundle.getString("logics.forms.opened.forms"), baseGroup, true);
+            ObjectEntity objForm = addSingleGroupObject(navigatorElement, getString("logics.forms.opened.forms"), baseGroup, true);
 
 //            setReadOnly(baseGroup, true);
 
@@ -1266,7 +1267,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
             RegularFilterGroupEntity filterGroup = new RegularFilterGroupEntity(genID());
             filterGroup.addFilter(new RegularFilterEntity(genID(),
                     new CompareFilterEntity(addPropertyObject(connectionCurrentStatus, objConnection), Compare.EQUALS, connectionStatus.getDataObject("connectedConnection")),
-                    ServerResourceBundle.getString("logics.connection.active.connections"),
+                    getString("logics.connection.active.connections"),
                     KeyStroke.getKeyStroke(KeyEvent.VK_F8, 0)));
             addRegularFilterGroup(filterGroup);
         }
@@ -1313,13 +1314,13 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
                     new RegularFilterEntity(genID(),
                             new NotFilterEntity(
                                     new CompareFilterEntity(selectionPropertyObject, Compare.EQUALS, true)),
-                            ServerResourceBundle.getString("logics.object.not.selected.objects"),
+                            getString("logics.object.not.selected.objects"),
                             KeyStroke.getKeyStroke(KeyEvent.VK_F9, 0)
                     ), true);
             filterGroup.addFilter(
                     new RegularFilterEntity(genID(),
                             new CompareFilterEntity(selectionPropertyObject, Compare.EQUALS, true),
-                            ServerResourceBundle.getString("logics.object.selected.objects"),
+                            getString("logics.object.selected.objects"),
                             KeyStroke.getKeyStroke(KeyEvent.VK_F10, 0)
                     ));
             addRegularFilterGroup(filterGroup);
@@ -1336,7 +1337,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
     private class AdminFormEntity extends FormEntity {
         private AdminFormEntity(NavigatorElement parent, String sID) {
-            super(parent, sID, ServerResourceBundle.getString("logics.global.parameters"));
+            super(parent, sID, getString("logics.global.parameters"));
 
             addPropertyDraw(new LP[]{smtpHost, smtpPort, fromAddress, emailAccount, emailPassword, emailBlindCarbonCopy, disableEmail, webHost, defaultCountry, barcodePrefix, restartServerAction, cancelRestartServerAction, recalculateAction, packAction});
         }
@@ -1346,14 +1347,14 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         ObjectEntity objDays;
 
         public DaysOffFormEntity(NavigatorElement parent, String sID) {
-            super(parent, sID, ServerResourceBundle.getString("logics.days.off"));
+            super(parent, sID, getString("logics.days.off"));
 
-            ObjectEntity objCountry = addSingleGroupObject(country, ServerResourceBundle.getString("logics.country"));
+            ObjectEntity objCountry = addSingleGroupObject(country, getString("logics.country"));
             objCountry.groupTo.initClassView = ClassViewType.PANEL;
 
-            objDays = addSingleGroupObject(DateClass.instance, ServerResourceBundle.getString("logics.day"));
+            objDays = addSingleGroupObject(DateClass.instance, getString("logics.day"));
 
-            ObjectEntity objNewDate = addSingleGroupObject(DateClass.instance, ServerResourceBundle.getString("logics.date"));
+            ObjectEntity objNewDate = addSingleGroupObject(DateClass.instance, getString("logics.date"));
             objNewDate.groupTo.setSingleClassView(ClassViewType.PANEL);
 
             addPropertyDraw(objCountry, baseGroup);
@@ -1375,11 +1376,11 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     private class DictionariesFormEntity extends FormEntity {
 
         public DictionariesFormEntity(NavigatorElement parent, String sID) {
-            super(parent, sID, ServerResourceBundle.getString("logics.dictionary.dictionaries"));
+            super(parent, sID, getString("logics.dictionary.dictionaries"));
 
-            ObjectEntity objDict = addSingleGroupObject(dictionary, ServerResourceBundle.getString("logics.dictionary"));
+            ObjectEntity objDict = addSingleGroupObject(dictionary, getString("logics.dictionary"));
             objDict.groupTo.initClassView = ClassViewType.PANEL;
-            ObjectEntity objDictEntry = addSingleGroupObject(dictionaryEntry, ServerResourceBundle.getString("logics.dictionary.entries"));
+            ObjectEntity objDictEntry = addSingleGroupObject(dictionaryEntry, getString("logics.dictionary.entries"));
 
             addPropertyDraw(objDict, baseGroup);
             addPropertyDraw(objDictEntry, baseGroup);
@@ -1394,7 +1395,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         private ObjectEntity objUser;
 
         private RemindUserPassFormEntity(NavigatorElement parent, String sID) {
-            super(parent, sID, ServerResourceBundle.getString("logics.user.password.remind"), true);
+            super(parent, sID, getString("logics.user.password.remind"), true);
 
             objUser = addSingleGroupObject(1, "customUser", customUser, userLogin, userPassword, name);
             objUser.groupTo.initClassView = ClassViewType.PANEL;
@@ -1415,7 +1416,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         public NamedListFormEntity(BaseLogicsModule LM, CustomClass cls, String sID, String caption) {
             super(LM, cls, sID, caption);
 
-            objObjectName = addSingleGroupObject(StringClass.get(50), ServerResourceBundle.getString("logics.search.by.name.beginning"), objectValue);
+            objObjectName = addSingleGroupObject(StringClass.get(50), getString("logics.search.by.name.beginning"), objectValue);
             objObjectName.groupTo.setSingleClassView(ClassViewType.PANEL);
 
             //двигаем в начало

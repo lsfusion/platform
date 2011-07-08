@@ -1,9 +1,14 @@
 package skolkovo.gwt.expert.client;
 
 import com.google.gwt.user.client.Window;
+import net.customware.gwt.dispatch.client.DefaultExceptionHandler;
+import net.customware.gwt.dispatch.client.standard.StandardDispatchAsync;
 import platform.gwt.base.client.BaseFrame;
 import skolkovo.api.gwt.shared.VoteInfo;
 import skolkovo.gwt.expert.client.ui.ExpertMainWidget;
+import skolkovo.gwt.expert.shared.actions.GetVoteInfo;
+import skolkovo.gwt.expert.shared.actions.GetVoteInfoResult;
+import skolkovo.gwt.expert.shared.actions.SetVoteInfo;
 
 import java.util.Date;
 
@@ -11,7 +16,7 @@ import static skolkovo.api.gwt.shared.Result.VOTED;
 
 public class ExpertFrame extends BaseFrame {
     private static ExpertFrameMessages messages = ExpertFrameMessages.Instance.get();
-    private static final ExpertServiceAsync expertService = ExpertService.App.getInstance();
+    private final static StandardDispatchAsync expertService = new StandardDispatchAsync(new DefaultExceptionHandler());
 
     public void onModuleLoad() {
         Window.setTitle(messages.pageTitle());
@@ -33,8 +38,9 @@ public class ExpertFrame extends BaseFrame {
             return;
         }
 
-        expertService.getVoteInfo(voteId, new ErrorAsyncCallback<VoteInfo>() {
-            public void onSuccess(final VoteInfo vi) {
+        expertService.execute(new GetVoteInfo(voteId), new ErrorAsyncCallback<GetVoteInfoResult>() {
+            public void onSuccess(final GetVoteInfoResult result) {
+                VoteInfo vi = result.voteInfo;
                 if (vi == null) {
                     showErrorPage(null);
                     return;
@@ -81,7 +87,7 @@ public class ExpertFrame extends BaseFrame {
                             return confirm;
                         }
 
-                        expertService.setVoteInfo(vi, voteId, new UpdateAsyncCallback());
+                        expertService.execute(new SetVoteInfo(vi, voteId), new UpdateAsyncCallback());
                         return true;
                     }
                 });

@@ -24,15 +24,17 @@ import com.smartgwt.client.widgets.layout.HLayout;
 import com.smartgwt.client.widgets.layout.SectionStack;
 import com.smartgwt.client.widgets.layout.SectionStackSection;
 import com.smartgwt.client.widgets.layout.VLayout;
+import net.customware.gwt.dispatch.client.DefaultExceptionHandler;
+import net.customware.gwt.dispatch.client.standard.StandardDispatchAsync;
 import platform.gwt.base.client.BaseFrame;
 import platform.gwt.base.client.BaseMessages;
 import platform.gwt.base.client.ui.ToolStripPanel;
+import platform.gwt.base.shared.actions.VoidResult;
 import platform.gwt.ui.DateCellFormatter;
 import skolkovo.api.gwt.shared.ProfileInfo;
 import skolkovo.api.gwt.shared.VoteInfo;
 import skolkovo.gwt.expertprofile.client.ExpertProfileMessages;
-import skolkovo.gwt.expertprofile.client.ExpertProfileService;
-import skolkovo.gwt.expertprofile.client.ExpertProfileServiceAsync;
+import skolkovo.gwt.expertprofile.shared.actions.SentVoteDocuments;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -42,7 +44,7 @@ import static skolkovo.api.gwt.shared.Result.*;
 public class ExpertProfileMainPanel extends HLayout {
     private static BaseMessages baseMessages = BaseMessages.Instance.get();
     private static ExpertProfileMessages messages = ExpertProfileMessages.Instance.get();
-    private static ExpertProfileServiceAsync expertProfileService = ExpertProfileService.App.getInstance();
+    private final static StandardDispatchAsync expertProfileService = new StandardDispatchAsync(new DefaultExceptionHandler());
 
     private boolean showUnvoted = false;
     private ListGrid grid;
@@ -141,7 +143,7 @@ public class ExpertProfileMainPanel extends HLayout {
         grid = new ListGrid() {
             @Override
             protected Canvas createRecordComponent(final ListGridRecord record, Integer colNum) {
-                final VoteInfo vi = ((ListVoteInfo)record).vi;
+                final VoteInfo vi = ((ListVoteInfo) record).vi;
                 if (!vi.voteDone && "sentDocs".equals(getFieldName(colNum))) {
                     final IButton btn = new IButton(messages.send());
                     btn.setShowDisabledIcon(false);
@@ -151,7 +153,7 @@ public class ExpertProfileMainPanel extends HLayout {
                             btn.disable();
                             btn.setIcon("loading.gif");
 
-                            expertProfileService.sentVoteDocuments(vi.voteId, new AsyncCallback<Void>() {
+                            expertProfileService.execute(new SentVoteDocuments(vi.voteId), new AsyncCallback<VoidResult>() {
                                 @Override
                                 public void onFailure(Throwable caught) {
                                     SC.warn(messages.sentFailedMessage());
@@ -160,7 +162,7 @@ public class ExpertProfileMainPanel extends HLayout {
                                 }
 
                                 @Override
-                                public void onSuccess(Void result) {
+                                public void onSuccess(VoidResult result) {
                                     SC.say(messages.sentSuccessMessage());
                                     btn.enable();
                                     btn.setIcon(null);
@@ -222,6 +224,7 @@ public class ExpertProfileMainPanel extends HLayout {
 
     private static class ListVoteInfo extends ListGridRecord {
         private VoteInfo vi;
+
         public ListVoteInfo(VoteInfo vi) {
             this.vi = vi;
 

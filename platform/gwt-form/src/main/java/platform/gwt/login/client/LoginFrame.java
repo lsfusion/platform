@@ -19,9 +19,13 @@ import com.smartgwt.client.widgets.form.fields.events.KeyPressEvent;
 import com.smartgwt.client.widgets.form.fields.events.KeyPressHandler;
 import com.smartgwt.client.widgets.form.validator.RegExpValidator;
 import com.smartgwt.client.widgets.layout.VLayout;
+import net.customware.gwt.dispatch.client.DefaultExceptionHandler;
+import net.customware.gwt.dispatch.client.standard.StandardDispatchAsync;
 import platform.gwt.base.client.ui.CenterLayout;
 import platform.gwt.base.client.ui.ToolStripPanel;
 import platform.gwt.base.shared.MessageException;
+import platform.gwt.base.shared.actions.VoidResult;
+import platform.gwt.login.shared.actions.RemindPassword;
 
 public class LoginFrame extends VLayout implements EntryPoint {
     /**
@@ -32,6 +36,8 @@ public class LoginFrame extends VLayout implements EntryPoint {
 
     private static LoginFrameMessages messages = LoginFrameMessages.Instance.get();
     private static final String LOGIN_FAILED_STRING = "7698a602e3376d89c2329cf84f9dc779"; //=md5("Login failed!!!");
+
+    private final static StandardDispatchAsync loginService = new StandardDispatchAsync(new DefaultExceptionHandler());
 
     private DynamicForm loginForm;
     private TextItem usernameBox;
@@ -149,7 +155,7 @@ public class LoginFrame extends VLayout implements EntryPoint {
 
         btnRemind.disable();
 
-        StandartLoginAsync.remindPassword(emailBox.getValueAsString(), new AsyncCallback<Void>() {
+        loginService.execute(new RemindPassword(emailBox.getValueAsString()), new AsyncCallback<VoidResult>() {
             @Override
             public void onFailure(Throwable t) {
                 if (t instanceof MessageException) {
@@ -162,7 +168,7 @@ public class LoginFrame extends VLayout implements EntryPoint {
             }
 
             @Override
-            public void onSuccess(Void result) {
+            public void onSuccess(VoidResult result) {
                 showInfo(messages.remindSuccess());
                 toggleRemindForm();
                 btnRemind.enable();

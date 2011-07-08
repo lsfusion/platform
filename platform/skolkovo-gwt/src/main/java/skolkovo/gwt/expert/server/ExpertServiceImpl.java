@@ -1,41 +1,15 @@
 package skolkovo.gwt.expert.server;
 
-import org.apache.log4j.Logger;
-import platform.base.DebugUtils;
-import platform.gwt.base.server.LogicsServiceServlet;
-import platform.gwt.base.shared.MessageException;
-import skolkovo.api.gwt.shared.VoteInfo;
+import net.customware.gwt.dispatch.server.InstanceActionHandlerRegistry;
+import platform.gwt.base.server.LogicsDispatchServlet;
 import skolkovo.api.remote.SkolkovoRemoteInterface;
-import skolkovo.gwt.expert.client.ExpertService;
+import skolkovo.gwt.expert.server.handlers.GetVoteInfoHandler;
+import skolkovo.gwt.expert.server.handlers.SetVoteInfoHandler;
 
-public class ExpertServiceImpl extends LogicsServiceServlet<SkolkovoRemoteInterface> implements ExpertService {
-    protected final static Logger logger = Logger.getLogger(ExpertServiceImpl.class);
-
-    public VoteInfo getVoteInfo(String voteId) throws MessageException {
-        try {
-//            Principal user = getThreadLocalRequest().getUserPrincipal();
-//            if (user == null) {
-//                return null;
-//            }
-
-            return logics.getVoteInfo(voteId);
-        } catch (Throwable e) {
-            logger.error("Ошибка в getVoteInfo: ", e);
-            e.printStackTrace();
-            throw new MessageException(DebugUtils.getInitialCause(e).getMessage());
-        }
-    }
-
-    public void setVoteInfo(VoteInfo voteInfo, String voteId) throws MessageException {
-        try {
-//            Principal user = getThreadLocalRequest().getUserPrincipal();
-//            if (user != null) {
-            logics.setVoteInfo(voteId, voteInfo);
-//            }
-        } catch (Throwable e) {
-            logger.error("Ошибка в setVoteInfo: ", e);
-            e.printStackTrace();
-            throw new MessageException(DebugUtils.getInitialCause(e).getMessage());
-        }
+public class ExpertServiceImpl extends LogicsDispatchServlet<SkolkovoRemoteInterface> {
+    @Override
+    protected void addHandlers(InstanceActionHandlerRegistry registry) {
+        registry.addHandler(new GetVoteInfoHandler(this));
+        registry.addHandler(new SetVoteInfoHandler(this));
     }
 }
