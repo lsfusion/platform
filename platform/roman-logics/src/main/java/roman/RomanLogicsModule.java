@@ -1683,7 +1683,7 @@ public class RomanLogicsModule extends LogicsModule {
         quantityDataListSku = addDProp("quantityDataListSku", "Кол-во (первичное)", DoubleClass.instance, list, sku);
         quantityListSku = quantityDataListSku; //addJProp(baseGroup, "quantityListSku", true, "Кол-во", baseLM.and1, quantityDataListSku, 1, 2, numberListSku, 1, 2);
 
-        quantityDocumentSku = addSGProp(baseGroup, "quantityDocumentSku", true, "Кол-во в документе", quantityListSku, documentList, 1, 2);
+        quantityDocumentSku = addSGProp(baseGroup, "quantityDocumentSku", true, true, "Кол-во в документе", quantityListSku, documentList, 1, 2);
         quantityDocumentArticle = addSGProp(baseGroup, "quantityDocumentArticle", "Кол-во артикула в документе", quantityDocumentSku, 1, articleSku, 2);
         quantityDocument = addSGProp(baseGroup, "quantityDocument", "Общее кол-во в документе", quantityDocumentSku, 1);
 
@@ -2370,7 +2370,7 @@ public class RomanLogicsModule extends LogicsModule {
         sumInOutDirectImporterFreightSku = addJProp(baseGroup, "sumInOutDirectImporterFreightSku", "Сумма выходная", baseLM.multiplyDouble2, quantityDirectImporterFreightSku, 1, 2, 3, priceInOutImporterFreightSku, 1, 2, 3);
 
         sumInOutImporterFreight = addSGProp(baseGroup, "sumInOutImporterFreight", true, "Сумма выходная", sumInOutImporterFreightSku, 1, 2);
-        sumInOutFreight = addSGProp(baseGroup, "sumInOutFreight", true, "Сумма выходная", sumInOutImporterFreight, 2);
+        sumInOutFreight = addSGProp(baseGroup, "sumInOutFreight", true, true, "Сумма выходная", sumInOutImporterFreight, 2);
         // временно так пока система сама не научится либо обнаруживать равные свойства, либо решать проблему с инкрементностью по другому
         insuranceImporterFreightSku = addJProp(addSFProp("ROUND(CAST((prm1*prm2/prm3) as NUMERIC(15,3))," + 10 + ")", DoubleClass.instance, 3), sumInOutImporterFreightSku, 1, 2, 3, insuranceFreight, 2, sumInOutFreight, 2);
         //addPGProp(baseGroup, "insuranceImporterFreightSku", false, 2, false, "Сумма страховки",
