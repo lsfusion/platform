@@ -9,6 +9,7 @@ import platform.base.BaseUtils;
 import platform.server.LsfLogicsLexer;
 import platform.server.LsfLogicsParser;
 import platform.server.classes.*;
+import platform.server.logics.linear.LP;
 import platform.server.logics.property.group.AbstractGroup;
 
 import java.io.FileNotFoundException;
@@ -149,13 +150,33 @@ public class ScriptingLogicsModule extends LogicsModule {
         return group;
     }
 
+    private LP<?> getLPByName(String name, Set<String> importedModules) {
+        LP<?> property;
+        int dotPosition = name.indexOf('.');
+        if (dotPosition > 0) {
+            LogicsModule module = getModule(name.substring(0, dotPosition));
+            property = module.getLP(module.transformNameToSID(name.substring(dotPosition + 1)));
+        } else {
+            property = getLP(transformNameToSID(name));
+            if (property == null) {
+                for (String importModuleName : importedModules) {
+                    LogicsModule module = getModule(importModuleName);
+                    if ((property = module.getLP(module.transformNameToSID(name))) != null) {
+                        break;
+                    }
+                }
+            }
+        }
+        return property;
+    }
+
     public void addScriptedGroup(String groupName, String captionStr, String parentName, Set<String> importedModules) {
         String caption = (captionStr == null ? groupName : transformCaptionStr(captionStr));
         AbstractGroup parentGroup = (parentName == null ? null : getGroupByName(parentName, importedModules));
         addAbstractGroup(groupName, caption, parentGroup);
     }
 
-    public void addScriptedDProp(String propName, String caption, List<String> paramClasses, String returnClass, boolean isPersistent, String parentGroup, Set<String> importedModules) {
+    public void addScriptedDProp(String propName, String caption, String parentGroup, String returnClass, List<String> paramClasses, boolean isPersistent, Set<String> importedModules) {
         AbstractGroup group = (parentGroup == null ? privateGroup : getGroupByName(parentGroup, importedModules));
         ValueClass value = getClassByName(returnClass, importedModules);
         ValueClass[] params = new ValueClass[paramClasses.size()];
@@ -163,6 +184,24 @@ public class ScriptingLogicsModule extends LogicsModule {
             params[i] = getClassByName(paramClasses.get(i), importedModules);
         }
         addDProp(group, propName, isPersistent, caption, value, params);
+    }
+
+    public void addScriptedJProp(String propName, String caption, String parentGroup, String mainPropName, boolean isPersistent, List<String> namedParams, List<String> paramsId, List<List<String>> propParams, Set<String> importedModules) {
+        AbstractGroup group = (parentGroup == null ? privateGroup : getGroupByName(parentGroup, importedModules));
+        LP<?> mainProp = getLPByName(mainPropName, importedModules);
+        List<Object> resultParams = new ArrayList<Object>();
+        for (int i = 0; i < paramsId.size(); i++) {
+            if (propParams.get(i) == null) {
+                resultParams.add(namedParams.indexOf(paramsId.get(i)) + 1);
+            } else {
+                LP<?> paramProp = getLPByName(paramsId.get(i), importedModules);
+                resultParams.add(paramProp);
+                for (String namedParam : propParams.get(i)) {
+                    resultParams.add(namedParams.indexOf(namedParam) + 1);
+                }
+            }
+        }
+        addJProp(group, false, propName, isPersistent, caption, mainProp, resultParams.toArray());
     }
 
     private void parseStep(State state) {

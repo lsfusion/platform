@@ -18,11 +18,13 @@ grammar LsfLogics;
 	public ScriptingLogicsModule.State parseState;
 }
 
+
+
 script	
-	:	importStatement* statement*;
+	:	importDirective* statement*;
 
 
-importStatement
+importDirective
 @init {
 	String name;
 }
@@ -40,21 +42,20 @@ statement
 
 classStatement 
 @init {
-	List<String> classParents = new ArrayList<String>();
+	List<String> classParents;
 	String name; 
 	String captionStr = null;
 }
 @after {
 	if (parseState == ScriptingLogicsModule.State.CLASS) {
-		System.out.print("addScriptedClass(" + name + ", " + (captionStr==null ? "" : captionStr) + ", " + isAbstract + ", " + classParents.toString() + ", " + importModules.toString() + ");\n");
+		System.out.print("addScriptedClass(" + name + ", " + (captionStr==null ? "" : captionStr) + ", " + isAbstract + ", " + classParents + ", " + importModules + ");\n");
 		self.addScriptedClass(name, captionStr, isAbstract, classParents, importModules);
 	}
 }
 	:	isAbstract=classDeclarant className=ID 	{ name = $className.text; }
 			(caption=STRING_LITERAL { captionStr = $caption.text; })?  
-			':'  
-			firstParentName=identificator 	{ classParents.add($firstParentName.text); }
-			(',' parentName=identificator 	{ classParents.add($parentName.text); })*;
+			':'
+			parentList=nonEmptyCompoundIdList { classParents = $parentList.ids; };	  
 
 classDeclarant returns [boolean isAbstract]
 	:	'class' { $isAbstract = false; } |
@@ -70,13 +71,13 @@ groupStatement
 }
 @after {
 	if (parseState == ScriptingLogicsModule.State.GROUP) {
-		System.out.print("addScriptedGroup(" + name + ", " + (captionStr==null ? "" : captionStr) + ", " + (parent == null ? "null" : parent) + ", " + importModules.toString() + ");\n");
+		System.out.print("addScriptedGroup(" + name + ", " + (captionStr==null ? "" : captionStr) + ", " + (parent == null ? "null" : parent) + ", " + importModules + ");\n");
 		self.addScriptedGroup(name, captionStr, parent, importModules);
 	}
 }
 	:	'group' groupName=ID { name = $groupName.text; }
 			(caption=STRING_LITERAL { captionStr = $caption.text; })?  
-			(':' parentName=identificator { parent = $parentName.text; })?;
+			(':' parentName=compoundID { parent = $parentName.text; })?;
 
 
 propertyStatement
@@ -85,9 +86,42 @@ propertyStatement
 	
 
 joinPropertyStatement 
-	:	'j';
+@init {
+	List<String> namedParams = new ArrayList<String>();
+	List<String> paramIds = new ArrayList<String>();
+	List<List<String>> propParams = new ArrayList<List<String>>();
+	String mainProp = null;
+	String groupName = null;
+	boolean isPersistent = false;
+	String name;
+}
+@after {
+	if (parseState == ScriptingLogicsModule.State.PROP) {
+		System.out.print("addScriptedJProp(" + name + ", " + (groupName == null ? "" : groupName) + ", " + mainProp + ", " + isPersistent + ", " + namedParams + ", " + paramIds + ", " + propParams + ", " + importModules + ");\n");
+		self.addScriptedJProp(name, "", groupName, mainProp, isPersistent, namedParams, paramIds, propParams, importModules);
+	}
+}
+	:	propertyName=ID { name = $propertyName.text; }
+		'('
+			paramList=idList { namedParams = $paramList.ids; }
+		')' 
+		'='
+		mainPropName=compoundID { mainProp = $mainPropName.text; }
+		'(' 
+			(firstParam=jpropertyParam { paramIds.add($firstParam.paramID); propParams.add($firstParam.paramNames); }
+			(',' nextParam=jpropertyParam { paramIds.add($nextParam.paramID); propParams.add($nextParam.paramNames);})* )?	
+		')' 
+		settings=propertyCommonSettings { groupName = $settings.group; isPersistent = $settings.isPersistent; }; 
 	
-	
+
+jpropertyParam returns [String paramID, List<String> paramNames]
+	:	singleParam=ID { $paramID = $singleParam.text; } | 	
+		(pID=compoundID { $paramID = $pID.text; }
+		'('
+		paramList=compoundIdList { $paramNames = $paramList.ids; }		
+		')');
+
+
 dataPropertyStatement 
 @init {
 	List<String> paramClassNames = new ArrayList<String>();
@@ -98,21 +132,21 @@ dataPropertyStatement
 }
 @after {
 	if (parseState == ScriptingLogicsModule.State.PROP) {
-		System.out.print("addScriptedDProp(" + name + ", " + returnClass + ", " + paramClassNames + ", " + (groupName == null ? "" : groupName) + ", " + isPersistent + ", " + importModules + ");\n");
-		self.addScriptedDProp(name, "", paramClassNames, returnClass, isPersistent, groupName, importModules);
+		System.out.print("addScriptedDProp(" + name + ", " + (groupName == null ? "" : groupName) + ", " + returnClass + ", " + paramClassNames + ", " + isPersistent + ", " + importModules + ");\n");
+		self.addScriptedDProp(name, "", groupName, returnClass, paramClassNames, isPersistent, importModules);
 	}
 }
 	:	propertyName=ID { name = $propertyName.text; }
 		'='
 		retClass=classId { returnClass = $retClass.text; }
 		'(' 
-			(firstClassName=classId { paramClassNames.add($firstClassName.text); })
-			(',' className=classId { paramClassNames.add($className.text); })*	
+			((firstClassName=classId { paramClassNames.add($firstClassName.text); })
+			(',' className=classId { paramClassNames.add($className.text); })*)?
 		')' 
-		settings=propertyCommonSettings { groupName = $settings.group; isPersistent = $settings.isPersistent; }; 
+		settings=propertyCommonSettings { groupName = $settings.group; isPersistent = $settings.isPersistent; };
 
 propertyCommonSettings returns [String group, boolean isPersistent] 
-	: 	('in' groupName=identificator { $group = $groupName.text; })?
+	: 	('in' groupName=compoundID { $group = $groupName.text; })?
 		('persistent' { $isPersistent = true; })?;
 
 tableStatement 
@@ -121,32 +155,59 @@ tableStatement
 
 indexStatement
 	:	'z';
+
+
+
+idList returns [List<String> ids] 
+@init {
+	ids = new ArrayList<String>();	
+} 
+	: (neIdList=nonEmptyIdList { ids = $neIdList.ids; })?;
+
+compoundIdList returns [List<String> ids] 
+@init {
+	ids = new ArrayList<String>();	
+} 
+	: (neIdList=nonEmptyCompoundIdList { ids = $neIdList.ids; })?;
+
+nonEmptyIdList returns [List<String> ids]
+@init {
+	ids = new ArrayList<String>(); 
+}
+	:	firstId=ID	{ $ids.add($firstId.text); }
+		(',' nextId=ID	{ $ids.add($nextId.text); })*;
+
+nonEmptyCompoundIdList returns [List<String> ids]
+@init {
+	ids = new ArrayList<String>();
+}
+	:	firstId=compoundID	{ $ids.add($firstId.text); }
+		(',' nextId=compoundID	{ $ids.add($nextId.text); })*;
+
 	
-positiveIntLiteral 
-	:	DIGITS;
-	
-intLiteral
-	:	'-'? positiveIntLiteral;		
-
-insensitiveStringClassId 
-	:	'InsensitiveString[' positiveIntLiteral ']';
-
-stringClassId 
-	:	'String[' positiveIntLiteral ']';
-
 classId 
-	:	identificator | PRIMITIVE_TYPE | stringClassId | insensitiveStringClassId;
+	:	compoundID | PRIMITIVE_TYPE;
 
-identificator
+compoundID
 	:	(ID '.')? ID;
+
+intLiteral
+	:	'-'? UINT_LITERAL;		
+
+
+
+/////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////// LEXER //////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////
 	
-fragment NEWLINE     :   '\r'?'\n';
+fragment NEWLINE     :   '\r'?'\n'; 
 fragment SPACE       :   (' '|'\t');
-fragment STR_LITERAL_CHAR	: '\\\'' | ~('\r'|'\n'|'\'');	 
+fragment STR_LITERAL_CHAR	: '\\\'' | ~('\r'|'\n'|'\'');	 // overcomplicated due to bug in ANTLR Works
+fragment DIGITS		:	('0'..'9')+;
 	 
-PRIMITIVE_TYPE  :	'Integer' | 'Double' | 'Long' | 'Boolean' | 'Date';		
+PRIMITIVE_TYPE  :	'Integer' | 'Double' | 'Long' | 'Boolean' | 'Date' | 'String[' DIGITS ']' | 'InsensitiveString[' DIGITS ']';		
 ID          	:	('a'..'z'|'A'..'Z')('a'..'z'|'A'..'Z'|'_'|'0'..'9')*;
 WS		:	(NEWLINE | SPACE) { $channel=HIDDEN; }; 	
 STRING_LITERAL	:	'\'' STR_LITERAL_CHAR* '\'';
 COMMENTS	:	('//' .* '\n') { $channel=HIDDEN; };
-DIGITS		:	('0'..'9')+;
+UINT_LITERAL 	:	DIGITS;	 
