@@ -1526,6 +1526,7 @@ public class RomanLogicsModule extends LogicsModule {
                                                 is(freightComplete), 1,
                                                 is(freightChanged), 1);
         executeChangeFreightChangedClass.property.askConfirm = true;
+        executeChangeFreightChangedClass.setImage("sign_tick.png");
 
         supplierArticleSku = addJProp(idGroup, "supplierArticleSku", "Поставщик (ИД)", supplierArticle, articleSku, 1);
         nameSupplierArticleSku = addJProp(baseGroup, "nameSupplierArticleSku", "Поставщик", baseLM.name, supplierArticleSku, 1);
@@ -5302,6 +5303,8 @@ public class RomanLogicsModule extends LogicsModule {
             objFreight = addSingleGroupObject(freightChanged, "Фрахт", baseLM.date, baseLM.objectClassName, nameRouteFreight, sumFreightFreight, insuranceFreight, nameFreightTypeFreight, nameCurrencyFreight, sumInFreight, sumMarkupInFreight, sumInOutFreight, palletNumberFreight);
             objFreight.groupTo.setSingleClassView(ClassViewType.PANEL);
             setReadOnly(objFreight, true);
+            setReadOnly(sumFreightFreight, false);
+            setReadOnly(insuranceFreight, false);
 
             addPropertyDraw(sumInCurrentYear);
             addPropertyDraw(sumInOutCurrentYear);
