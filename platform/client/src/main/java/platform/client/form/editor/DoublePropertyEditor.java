@@ -13,18 +13,14 @@ public class DoublePropertyEditor extends TextFieldPropertyEditor {
         super(design);
         final DecimalFormat df = (DecimalFormat) format;
 
-        NumberFormatter formatter = new NullNumberFormatter(format) {
+        NumberFormatter formatter = new NullNumberFormatter(format, 0.0) {
             private final char separator = df.getDecimalFormatSymbols().getDecimalSeparator();
 
             public boolean lastTextEndsWithSeparator;
-            public boolean isMinus;
             public int lastZero;
 
             @Override
             public String valueToString(Object value) throws ParseException {
-                if (isMinus) {
-                    return "-";
-                }
                 String result = super.valueToString(value);
                 if (lastTextEndsWithSeparator && result != null && result.indexOf(separator) == -1) {
                     result += separator;
@@ -37,10 +33,6 @@ public class DoublePropertyEditor extends TextFieldPropertyEditor {
 
             @Override
             public Object stringToValue(String text) throws ParseException {
-                isMinus = text.equals("-");
-                if (isMinus) {
-                    return 0.0;
-                }
                 lastZero = 0;
                 if (text != null && text.length() > 0) {
                     text = text.replace(',', separator).replace('.', separator);
@@ -66,10 +58,6 @@ public class DoublePropertyEditor extends TextFieldPropertyEditor {
         if (value != null) {
             setValue(value);
         }
-
-        // выглядит странно, но где-то внутри это позволяет
-        // обойти баг со сбрасыванием выделения в ячейках таблицы из-за форматтера
-        setText(getText());
     }
 
 

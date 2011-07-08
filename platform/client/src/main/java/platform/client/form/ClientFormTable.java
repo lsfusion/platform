@@ -61,12 +61,8 @@ public abstract class ClientFormTable extends JTable implements TableTransferHan
         boolean result = super.editCellAt(row, column, e);
         if (result) {
             final Component editor = getEditorComponent();
-            if (editor instanceof JTextComponent) {
-                JTextComponent textEditor = (JTextComponent) editor;
-                textEditor.selectAll();
-                if (clearText(row, column, e)) {
-                    textEditor.setText("");
-                }
+            if (editor instanceof JTextComponent && clearText(row, column, e)) {
+                ((JTextComponent) editor).setText("");
             }
         }
 

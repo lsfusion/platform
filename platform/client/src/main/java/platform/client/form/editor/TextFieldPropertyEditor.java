@@ -29,8 +29,12 @@ abstract class TextFieldPropertyEditor extends JFormattedTextField implements Pr
             public void mousePressed(MouseEvent e) {
                 //чтобы выделялся текст при активации компонента мышкой
                 if (!selected) {
-                    selectAll();
-                    selected = true;
+                    SwingUtilities.invokeLater(new Runnable() {
+                        public void run() {
+                            selectAll();
+                            selected = true;
+                        }
+                    });
                 }
             }
         });
@@ -39,14 +43,14 @@ abstract class TextFieldPropertyEditor extends JFormattedTextField implements Pr
     public Component getComponent(Point tableLocation, Rectangle cellRectangle, EventObject editEvent) {
         selected = false;
         //для очистки поля ввода перед записью новых данных
-//        if (editEvent instanceof KeyEvent) {
-//            KeyEvent event = (KeyEvent) editEvent;
-//            if (event.getKeyChar() != KeyEvent.CHAR_UNDEFINED &&
-//                event.getKeyChar() != KeyEvent.VK_DELETE &&
-//                event.getKeyChar() != KeyEvent.VK_BACK_SPACE){
-//                setValue(null);
-//            }
-//        }
+        if (editEvent instanceof KeyEvent) {
+            KeyEvent event = (KeyEvent) editEvent;
+            if (event.getKeyChar() != KeyEvent.CHAR_UNDEFINED ||
+                event.getKeyChar() == KeyEvent.VK_DELETE ||
+                event.getKeyChar() == KeyEvent.VK_BACK_SPACE){
+                setValue(null);
+            }
+        }
         return this;
     }
 

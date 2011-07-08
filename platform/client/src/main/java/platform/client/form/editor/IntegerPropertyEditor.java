@@ -13,7 +13,7 @@ public class IntegerPropertyEditor extends TextFieldPropertyEditor {
     public IntegerPropertyEditor(Object value, NumberFormat format, ComponentDesign design, Class<?> valueClass) {
         super(design);
 
-        NumberFormatter formatter = new NullNumberFormatter(format);
+        NumberFormatter formatter = new NullNumberFormatter(format, 0);
         formatter.setValueClass(valueClass);
         formatter.setAllowsInvalid(false);
 
@@ -24,10 +24,6 @@ public class IntegerPropertyEditor extends TextFieldPropertyEditor {
         if (value != null) {
             setValue(value);
         }
-
-        // выглядит странно, но где-то внутри это позволяет
-        // обойти баг со сбрасыванием выделения в ячейках таблицы из-за форматтера 
-        setText(getText());
     }
 
     public Object getCellEditorValue() {
