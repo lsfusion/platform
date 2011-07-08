@@ -8,6 +8,9 @@ import platform.server.form.instance.InstanceFactory;
 import platform.server.form.instance.PropertyObjectInterfaceInstance;
 import platform.server.serialization.ServerIdentitySerializable;
 import platform.server.serialization.ServerSerializationPool;
+import platform.server.session.Changes;
+import platform.server.session.DataSession;
+import platform.server.session.Modifier;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -49,6 +52,11 @@ public class ObjectEntity extends IdentityObject implements PropertyObjectInterf
 
     public void fillObjects(Set<ObjectEntity> objects) {
         objects.add(this);
+    }
+
+    @Override
+    public Object getValue(InstanceFactory factory, DataSession session, Modifier<? extends Changes> modifier) {
+        return factory.getInstance(this).getDataObject().getValue();
     }
 
     public void customSerialize(ServerSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {

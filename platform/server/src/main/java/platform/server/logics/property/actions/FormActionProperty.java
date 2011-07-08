@@ -8,6 +8,7 @@ import platform.interop.action.MessageClientAction;
 import platform.server.classes.ValueClass;
 import platform.server.form.entity.FormEntity;
 import platform.server.form.entity.ObjectEntity;
+import platform.server.form.entity.OrderEntity;
 import platform.server.form.entity.PropertyObjectEntity;
 import platform.server.form.instance.FormInstance;
 import platform.server.form.instance.PropertyObjectInstance;
@@ -33,7 +34,7 @@ public class FormActionProperty extends ActionProperty {
     public final FormEntity form;
     public final Map<ObjectEntity, ClassPropertyInterface> mapObjects;
     private final PropertyObjectEntity[] setProperties;
-    private final PropertyObjectEntity[] getProperties;
+    private final OrderEntity[] getProperties;
     private final boolean newSession;
     private final boolean isModal;
 
@@ -49,7 +50,7 @@ public class FormActionProperty extends ActionProperty {
     //assert getProperties и setProperties одинаковой длины
     //setProperties привязаны к созадаваемой форме
     //getProperties привязаны к форме, содержащей свойство...
-    public FormActionProperty(String sID, String caption, FormEntity form, ObjectEntity[] objectsToSet, PropertyObjectEntity[] setProperties, PropertyObjectEntity[] getProperties, boolean newSession, boolean isModal) {
+    public FormActionProperty(String sID, String caption, FormEntity form, ObjectEntity[] objectsToSet, PropertyObjectEntity[] setProperties, OrderEntity[] getProperties, boolean newSession, boolean isModal) {
         super(sID, caption, getValueClasses(objectsToSet));
 
         assert setProperties.length == getProperties.length;
@@ -85,15 +86,9 @@ public class FormActionProperty extends ActionProperty {
                 RemoteForm newRemoteForm = thisRemoteForm.createForm(newFormInstance);
 
                 for (int i = 0; i < setProperties.length; i++) {
-                    PropertyObjectInstance setPropInstance = newFormInstance.instanceFactory.getInstance(setProperties[i]);
-
-                    Object readenValue = null;
-                    if (getProperties[i] != null) {
-                        PropertyObjectInstance getPropInstance = thisFormInstance.instanceFactory.getInstance(getProperties[i]);
-                        readenValue = getPropInstance.read(session, modifier);
-                    }
-
-                    newFormInstance.changeProperty(setPropInstance, readenValue, newRemoteForm, null);
+                    newFormInstance.changeProperty(newFormInstance.instanceFactory.getInstance(setProperties[i]),
+                                                   getProperties[i] != null ? getProperties[i].getValue(thisFormInstance.instanceFactory, session, modifier) : null,
+                                                   newRemoteForm, null);
                 }
 
                 actions.add(new FormClientAction(form.isPrintForm, newSession, isModal, newRemoteForm));

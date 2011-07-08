@@ -500,8 +500,14 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
     }
 
     public Set<Property> hintsIncrementTable = new HashSet<Property>();
+
+    public void addHintsIncrementTable(LP... props) {
+        for (LP prop : props)
+            hintsIncrementTable.add(prop.property);
+    }
+
     public void addHintsIncrementTable(Property... props) {
-        for(Property prop : props)
+        for (Property prop : props)
             hintsIncrementTable.add(prop);
     }
 

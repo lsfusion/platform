@@ -8,10 +8,14 @@ import platform.server.logics.property.PropertyImplement;
 import platform.server.logics.property.PropertyInterface;
 import platform.server.serialization.ServerCustomSerializable;
 import platform.server.serialization.ServerSerializationPool;
+import platform.server.session.Changes;
+import platform.server.session.DataSession;
+import platform.server.session.Modifier;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.*;
 
 public class PropertyObjectEntity<P extends PropertyInterface> extends PropertyImplement<P, PropertyObjectInterfaceEntity> implements OrderEntity<PropertyObjectInstance>, ServerCustomSerializable {
@@ -56,6 +60,11 @@ public class PropertyObjectEntity<P extends PropertyInterface> extends PropertyI
 
     public void fillObjects(Set<ObjectEntity> objects) {
         objects.addAll(getObjectInstances());
+    }
+
+    @Override
+    public Object getValue(InstanceFactory factory, DataSession session, Modifier<? extends Changes> modifier) throws SQLException {
+        return factory.getInstance(this).read(session, modifier);
     }
 
     public void customSerialize(ServerSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {

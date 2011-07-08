@@ -35,7 +35,6 @@ import platform.server.logics.linear.LP;
 import platform.server.logics.property.ActionProperty;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.PropertyFollows;
-import platform.server.logics.property.actions.ApplyActionProperty;
 import platform.server.logics.property.group.AbstractGroup;
 import platform.server.session.Changes;
 import platform.server.session.DataSession;
@@ -63,6 +62,7 @@ public class RomanLogicsModule extends LogicsModule {
     private LP equalsColorItemSupplier;
     private LP equalsSizeItemSupplier;
     private LP freightCreateFA;
+    private LP freightEditFA;
     private LP freightCompleteFA;
     private LP freightChangedFA;
     private LP freightPricedFA;
@@ -5355,7 +5355,7 @@ public class RomanLogicsModule extends LogicsModule {
                     KeyStroke.getKeyStroke(KeyEvent.VK_F11, 0)));
             addRegularFilterGroup(filterGroup);
 
-            addHintsIncrementTable(priceInOutImporterFreightSku.property, sumInOutFreight.property, dutyImporterFreightSku.property);
+            addHintsIncrementTable(priceInOutImporterFreightSku, sumInOutFreight, dutyImporterFreightSku);
 //            addHintsNoUpdate(objImporter.groupTo);
 //            addHintsNoUpdate(dutyImporterFreightSku);
 //            addHintsNoUpdate(NDSImporterFreightSku);
@@ -5405,7 +5405,10 @@ public class RomanLogicsModule extends LogicsModule {
 //            addObjectActions(this, objFreight);
             objFreight.groupTo.setSingleClassView(ClassViewType.PANEL);
 
-            freightCreateFA = addMFAProp(actionGroup, "Редактировать фрахт", this, new ObjectEntity[] {objFreight}, true);
+            freightCreateFA = addMFAProp(actionGroup, "Создать фрахт", this, new ObjectEntity[] {},
+                    new PropertyObjectEntity[] {addPropertyObject(getAddObjectAction(freight))},
+                    new OrderEntity[] {(DataObject)freight.getClassObject()}, true);
+            freightEditFA = addMFAProp(actionGroup, "Редактировать фрахт", this, new ObjectEntity[] {objFreight}, true);
         }
 
         @Override
@@ -5433,7 +5436,9 @@ public class RomanLogicsModule extends LogicsModule {
 
             //addFixedFilter(new NotFilterEntity(new CompareFilterEntity(addPropertyObject(is(freightShipped), objFreight), Compare.EQUALS, addPropertyObject(baseLM.vtrue))));
 
-            addPropertyDraw(freightCreateFA, objFreight).forceViewType = ClassViewType.GRID;
+            addPropertyDraw(freightCreateFA, objFreight);
+
+            addPropertyDraw(freightEditFA, objFreight).forceViewType = ClassViewType.GRID;
             addPropertyDraw(freightCompleteFA, objFreight).forceViewType = ClassViewType.GRID;
             addPropertyDraw(freightChangedFA, objFreight).forceViewType = ClassViewType.GRID;
             addPropertyDraw(freightPricedFA, objFreight).forceViewType = ClassViewType.GRID;

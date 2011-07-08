@@ -24,10 +24,7 @@ import platform.server.form.instance.ObjectInstance;
 import platform.server.form.instance.PropertyObjectInterfaceInstance;
 import platform.server.integration.*;
 import platform.server.serialization.ServerSerializationPool;
-import platform.server.session.Changes;
-import platform.server.session.Modifier;
-import platform.server.session.SessionChanges;
-import platform.server.session.SinglePropertyTableUsage;
+import platform.server.session.*;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -152,6 +149,11 @@ public class DataObject extends ObjectValue<DataObject> implements PropertyObjec
     }
 
     public void fillObjects(Set<ObjectEntity> objects) {
+    }
+
+    @Override
+    public Object getValue(InstanceFactory factory, DataSession session, Modifier<? extends Changes> modifier) {
+        return getDataObject().getValue();
     }
 
     public boolean twins(TwinImmutableInterface o) {
