@@ -1,5 +1,6 @@
 package roman;
 
+import com.sun.xml.internal.stream.util.ReadOnlyIterator;
 import net.sf.jasperreports.engine.JRException;
 import platform.base.BaseUtils;
 import platform.interop.ClassViewType;
@@ -2335,7 +2336,7 @@ public class RomanLogicsModule extends LogicsModule {
         priceMarkupInImporterFreightSku = addJProp(baseGroup, "priceMarkupInImporterFreightSku", "Цена выходная", baseLM.sumDouble2, priceInImporterFreightSku, 1, 2, 3, markupInImporterFreightSku, 1, 2, 3);
 
         priceInOutImporterFreightSku = addDProp(baseGroup, "priceInOutImporterFreightSku", "Цена выходная", DoubleClass.instance, importer, freightPriced, sku);
-        priceInOutImporterFreightSku.setDerivedChange(true, addJProp(baseLM.and1, priceMarkupInImporterFreightSku, 1, 2, 3, quantityImporterFreightSku, 1, 2, 3), 1, 2, 3, is(freightPriced), 2, markupPercentImporterFreightSku, 1, 2, 3);
+        priceInOutImporterFreightSku.setDerivedForcedChange(true, addJProp(baseLM.and1, priceMarkupInImporterFreightSku, 1, 2, 3, quantityImporterFreightSku, 1, 2, 3), 1, 2, 3, is(freightPriced), 2, markupPercentImporterFreightSku, 1, 2, 3);
 
         priceImporterFreightArticleCompositionCountryCategory = addMGProp(baseGroup, "priceImporterFreightArticleCompositionCountryCategory", "Цена",
                 priceInOutImporterFreightSku, 1, 2, articleSku, 3, mainCompositionOriginFreightSku, 2, 3, countryOfOriginFreightSku, 2, 3, customCategory10FreightSku, 2, 3);
@@ -2650,7 +2651,7 @@ public class RomanLogicsModule extends LogicsModule {
 
         NavigatorElement shipment = new NavigatorElement(baseLM.baseElement, "shipment", "Управление фрахтами");
         shipment.window = leftToolbar;
-        addFormEntity(new FreightCreateFormEntity(shipment, "freightCreateForm", "Создание и редактирование фрахтов"));
+        addFormEntity(new FreightCreateFormEntity(shipment, "freightCreateForm", "Редактирование фрахта"));
         addFormEntity(new FreightShipmentFormEntity(shipment, "freightShipmentForm", "Комплектация фрахта"));
         addFormEntity(new FreightChangeFormEntity(shipment, "freightChangeForm", "Обработка фрахта"));
         addFormEntity(new FreightInvoiceFormEntity(shipment, "freightInvoiceForm", "Расценка фрахта"));
@@ -3761,6 +3762,7 @@ public class RomanLogicsModule extends LogicsModule {
 
             objFreight = addSingleGroupObject(freight, "Фрахт", baseLM.date, baseLM.objectClassName, nameRouteFreight, sumFreightFreight, insuranceFreight, nameExporterFreight, nameFreightTypeFreight, tonnageFreight, grossWeightFreight, volumeFreight, palletCountFreight, palletNumberFreight);
             objFreight.groupTo.setSingleClassView(ClassViewType.PANEL);
+            setReadOnly(objFreight, true);
 //            addObjectActions(this, objFreight);
 
             PropertyObjectEntity diffPalletFreightProperty = addPropertyObject(diffPalletFreight, objFreight);
@@ -4498,6 +4500,7 @@ public class RomanLogicsModule extends LogicsModule {
 
             objFreight = addSingleGroupObject(freightComplete, "Фрахт", baseLM.date, baseLM.objectClassName, nameRouteFreight, sumFreightFreight, insuranceFreight, nameExporterFreight, nameFreightTypeFreight, grossWeightFreight, palletNumberFreight);
             objFreight.groupTo.setSingleClassView(ClassViewType.PANEL);
+            setReadOnly(objFreight, true);
 
             objImporter = addSingleGroupObject(importer, "Импортёр", baseLM.name, addressSubject);
 
@@ -4593,7 +4596,8 @@ public class RomanLogicsModule extends LogicsModule {
             addRegularFilterGroup(filterGroupComposition);
 
             freightChangedFA = addMFAProp(actionGroup, "Обработать", this,
-                    new ObjectEntity[]{objFreight}, true, addPropertyObject(executeChangeFreightClass, objFreight, (DataObject) freightChanged.getClassObject()));
+                    new ObjectEntity[]{objFreight}, true);
+
             freightChangedFA.setImage("arrow_right.png");
         }
 
@@ -5292,6 +5296,7 @@ public class RomanLogicsModule extends LogicsModule {
 
             objFreight = addSingleGroupObject(freightChanged, "Фрахт", baseLM.date, baseLM.objectClassName, nameRouteFreight, sumFreightFreight, insuranceFreight, nameFreightTypeFreight, nameCurrencyFreight, sumInFreight, sumMarkupInFreight, sumInOutFreight, palletNumberFreight);
             objFreight.groupTo.setSingleClassView(ClassViewType.PANEL);
+            setReadOnly(objFreight, true);
 
             addPropertyDraw(sumInCurrentYear);
             addPropertyDraw(sumInOutCurrentYear);
@@ -5433,7 +5438,7 @@ public class RomanLogicsModule extends LogicsModule {
             super(parent, sID, caption);
 
             objFreight = addSingleGroupObject(freight, "Фрахт", baseLM.date, baseLM.objectClassName, nameRouteFreight, sumFreightFreight, insuranceFreight, nameExporterFreight, nameFreightTypeFreight, tonnageFreight, grossWeightFreight, volumeFreight, palletCountFreight, palletNumberFreight);
-
+            setReadOnly(objFreight, true);
             //addFixedFilter(new NotFilterEntity(new CompareFilterEntity(addPropertyObject(is(freightShipped), objFreight), Compare.EQUALS, addPropertyObject(baseLM.vtrue))));
 
             addPropertyDraw(freightCreateFA, objFreight);
