@@ -1,6 +1,5 @@
 package roman;
 
-import com.sun.xml.internal.stream.util.ReadOnlyIterator;
 import net.sf.jasperreports.engine.JRException;
 import platform.base.BaseUtils;
 import platform.interop.ClassViewType;
