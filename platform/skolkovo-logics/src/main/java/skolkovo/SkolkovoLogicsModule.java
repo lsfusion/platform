@@ -2267,6 +2267,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             // считываем всех экспертов, которые уже голосовали по проекту
             Query<String, String> query = new Query<String, String>(Collections.singleton("key"));
             query.and(doneProjectExpert.getExpr(modifier, projectObject.getExpr(), query.mapKeys.get("key")).getWhere());
+            query.and(inClusterExpert.getExpr(modifier, clusterProject.getExpr(modifier, projectObject.getExpr()), query.mapKeys.get("key")).getWhere());
             query.properties.put("vote", voteProjectExpert.getExpr(modifier, projectObject.getExpr(), query.mapKeys.get("key")));
 
             Map<DataObject, DataObject> previousResults = new HashMap<DataObject, DataObject>();
