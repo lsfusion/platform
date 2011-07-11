@@ -277,7 +277,11 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
             }
         }
 
-        throw new RuntimeException("key not found");
+        // из-за работы с вебом, может прийти несинхронный запрос на изменение объекта
+        // и соответственно ключ будет не найден, поэтому возвращаем null, вместо исключения,
+        // чтобы игнорировать этот запрос
+        return null;
+//        throw new RuntimeException("key not found");
     }
 
     public Where getFilterWhere(Map<ObjectInstance, ? extends Expr> mapKeys, Modifier<? extends Changes> modifier) {

@@ -363,14 +363,19 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
 
         try {
             GroupObjectInstance groupObject = form.getGroupObjectInstance(groupID);
-            groupObject.change(form.session, deserializeKeys(groupObject, value));
+            Map<ObjectInstance, DataObject> valueToSet = deserializeKeys(groupObject, value);
+            if (valueToSet == null) {
+                return;
+            }
+
+            groupObject.change(form.session, valueToSet);
 
             updateCurrentClass = groupObject.objects.iterator().next();
 
             if (logger.isInfoEnabled()) {
                 logger.info(String.format("changeGroupObject: [ID: %1$d]", groupObject.getID()));
                 logger.info("   keys: ");
-                for (Map.Entry<ObjectInstance, DataObject> entry : deserializeKeys(groupObject, value).entrySet()) {
+                for (Map.Entry<ObjectInstance, DataObject> entry : valueToSet.entrySet()) {
                     logger.info(String.format("     %1$s == %2$s", entry.getKey(), entry.getValue()));
                 }
             }
@@ -382,7 +387,10 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
     public void expandGroupObject(int groupId, byte[] groupValues) throws RemoteException {
         try {
             GroupObjectInstance group = form.getGroupObjectInstance(groupId);
-            form.expandGroupObject(group, deserializeKeys(group, groupValues));
+            Map<ObjectInstance, DataObject> valueToSet = deserializeKeys(group, groupValues);
+            if (valueToSet != null) {
+                form.expandGroupObject(group, valueToSet);
+            }
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

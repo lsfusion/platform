@@ -5,8 +5,12 @@ import net.customware.gwt.dispatch.client.ExceptionHandler;
 import net.customware.gwt.dispatch.client.standard.StandardDispatchAsync;
 import net.customware.gwt.dispatch.shared.Action;
 import net.customware.gwt.dispatch.shared.Result;
+import platform.gwt.form.shared.actions.form.ChangeGroupObject;
 import platform.gwt.form.shared.actions.form.FormBoundAction;
+import platform.gwt.form.shared.actions.form.FormChangesResult;
 import platform.gwt.view.GForm;
+
+import java.util.LinkedList;
 
 public class FormDispatchAsync extends StandardDispatchAsync {
     private GForm form;
@@ -19,11 +23,60 @@ public class FormDispatchAsync extends StandardDispatchAsync {
         this.form = form;
     }
 
+    private LinkedList<QueuedAction> q = new LinkedList<QueuedAction>();
+    private boolean executing = false;
+
     @Override
     public <A extends Action<R>, R extends Result> void execute(A action, AsyncCallback<R> callback) {
         if (action instanceof FormBoundAction<?> && form != null) {
             ((FormBoundAction) action).formSessionID = form.sessionID;
         }
-        super.execute(action, callback);
+
+        if (q.isEmpty() && !executing) {
+            executeAction(action, callback);
+        } else {
+            queueAction(action, callback);
+        }
+    }
+
+    private <A extends Action<R>, R extends Result> void queueAction(A action, AsyncCallback<R> callback) {
+        q.add(new QueuedAction(action, callback));
+    }
+
+    private <A extends Action<R>, R extends Result> void executeAction(A action, final AsyncCallback<R> callback) {
+        executing = true;
+        super.execute(action, new AsyncCallback<R>() {
+            @Override
+            public void onFailure(Throwable caught) {
+                callback.onFailure(caught);
+                executeNextQueuedAction();
+            }
+
+            @Override
+            public void onSuccess(R result) {
+                callback.onSuccess(result);
+                executeNextQueuedAction();
+            }
+        });
+    }
+
+    private void executeNextQueuedAction() {
+        executing = false;
+
+        if (!q.isEmpty()) {
+            QueuedAction qa = q.poll();
+            executeAction(qa.action, qa.callback);
+        }
+    }
+
+    public void executeChangeGroupObject(final ChangeGroupObject changeGroupObject, final AsyncCallback<FormChangesResult> callback) {
+        if (!q.isEmpty()) {
+            QueuedAction qa = q.getLast();
+            if (qa.action instanceof ChangeGroupObject && ((ChangeGroupObject) qa.action).groupId == changeGroupObject.groupId) {
+                //съедаем последнее изменение текущего объекта, если для этого же GroupObject
+                q.removeLast();
+            }
+        }
+        execute(changeGroupObject, callback);
     }
 }

@@ -259,7 +259,7 @@ public class GFormController extends HLayout implements FormLogicsProvider {
     }
 
     public void changeGroupObject(GGroupObject group, GGroupObjectValue key) {
-        dispatcher.execute(new ChangeGroupObject(group.ID, key.getValues(group)), new FormChangesBlockingCallback());
+        dispatcher.executeChangeGroupObject(new ChangeGroupObject(group.ID, key.getValues(group)), new FormChangesBlockingCallback());
     }
 
     public void changePropertyDraw(GPropertyDraw property, Object value) {
