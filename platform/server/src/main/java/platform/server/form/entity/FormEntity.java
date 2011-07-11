@@ -55,6 +55,7 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
     public OrderedMap<OrderEntity<?>, Boolean> fixedOrders = new OrderedMap<OrderEntity<?>, Boolean>();
 
     public boolean isPrintForm;
+    public boolean showModal = false;
 
     public FormEntity() {
     }
@@ -582,6 +583,7 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         pool.writeString(outStream, caption);
         pool.writeString(outStream, sID);
         outStream.writeBoolean(isPrintForm);
+        outStream.writeBoolean(showModal);
 
         pool.serializeCollection(outStream, groups);
         pool.serializeCollection(outStream, treeGroups);
@@ -611,6 +613,7 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         caption = pool.readString(inStream);
         sID = pool.readString(inStream);
         isPrintForm = inStream.readBoolean();
+        showModal = inStream.readBoolean();
 
         groups = pool.deserializeList(inStream);
         treeGroups = pool.deserializeList(inStream);
@@ -635,6 +638,7 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
     public void serialize(DataOutputStream outStream, Collection<NavigatorElement> elements) throws IOException {
         super.serialize(outStream, elements);
         outStream.writeBoolean(isPrintForm);
+        outStream.writeBoolean(showModal);
     }
 
     public void addActionsOnObjectChange(ObjectEntity object, PropertyObjectEntity... actions) {

@@ -8,6 +8,7 @@ import platform.interop.navigator.RemoteNavigatorInterface;
 import javax.swing.*;
 import java.io.IOException;
 import java.util.*;
+import java.util.List;
 
 public class NavigatorController implements INavigatorController {
     RemoteNavigatorInterface remoteNavigator;
@@ -71,7 +72,12 @@ public class NavigatorController implements INavigatorController {
     public void openForm(ClientNavigatorElement element) {
         if (element instanceof ClientNavigatorForm) {
             try {
-                mainNavigator.openForm((ClientNavigatorForm) element);
+                ClientNavigatorForm form = (ClientNavigatorForm) element;
+                if (form.showModal) {
+                    mainNavigator.openModalForm(form);
+                } else {
+                    mainNavigator.openForm(form);
+                }
             } catch (IOException e) {
                 throw new RuntimeException(e);
             } catch (ClassNotFoundException e) {

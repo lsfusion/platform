@@ -40,6 +40,9 @@ public abstract class ClientNavigator extends AbstractNavigator {
         openRelevantForm(form);
     }
 
+    public void openModalForm(ClientNavigatorForm form) throws ClassNotFoundException, IOException {
+        openRelevantForm(form);
+    }
 
     class RelevantFormNavigator extends AbstractNavigator {
 

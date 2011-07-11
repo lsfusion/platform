@@ -93,6 +93,14 @@ public class ClientModalForm extends JDialog {
         setVisible(false);
     }
 
+    public void showDialog() {
+        setDefaultSize();
+        setLocationRelativeTo(null);
+        setVisible(true);
+        dispose();
+        closed();
+    }
+
     public void closed() {
         if (currentForm != null) {
             currentForm.closed();

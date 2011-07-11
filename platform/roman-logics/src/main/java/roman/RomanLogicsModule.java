@@ -2634,8 +2634,11 @@ public class RomanLogicsModule extends LogicsModule {
         generation.window = generateToolbar;
 
         FormEntity createPalletFormCreate = addFormEntity(new CreatePalletFormEntity(generation, "createPalletFormAdd", "Сгенерировать паллеты", FormType.ADD));
+        createPalletFormCreate.showModal = true;
         FormEntity createFreightBoxFormAdd = addFormEntity(new CreateFreightBoxFormEntity(generation, "createFreightBoxFormAdd", "Сгенерировать короба", FormType.ADD));
+        createFreightBoxFormAdd.showModal = true;
         FormEntity createStampFormAdd = addFormEntity(new CreateStampFormEntity(generation, "createStampFormAdd", "Сгенерировать марки", FormType.ADD));
+        createStampFormAdd.showModal = true;
 
         NavigatorElement preparation = new NavigatorElement(distribution, "preparation", "Подготовка к приемке");
 

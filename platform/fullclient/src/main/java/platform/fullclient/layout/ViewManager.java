@@ -4,8 +4,9 @@ import bibliothek.gui.dock.common.*;
 import bibliothek.gui.dock.common.action.predefined.CCloseAction;
 import bibliothek.gui.dock.common.event.CDockableAdapter;
 import bibliothek.gui.dock.common.intern.CDockable;
-import bibliothek.gui.dock.common.mode.ExtendedMode;
 import net.sf.jasperreports.engine.JRException;
+import platform.client.Main;
+import platform.client.form.ClientModalForm;
 import platform.client.navigator.ClientNavigator;
 import platform.interop.form.RemoteFormInterface;
 
@@ -65,6 +66,10 @@ public class ViewManager {
         ClientFormDockable page = new ClientFormDockable(navigator, remoteForm, pageFactory);
         openForm(page);
         return page;
+    }
+
+    public void openModalForm(String formSID, ClientNavigator navigator, boolean currentSession) throws IOException, ClassNotFoundException {
+        new ClientModalForm(Main.frame, navigator.remoteNavigator.createForm(formSID, currentSession, true), false).showDialog();
     }
 
     public void openReport(String formSID, ClientNavigator navigator, boolean currentSession) throws IOException, ClassNotFoundException {
