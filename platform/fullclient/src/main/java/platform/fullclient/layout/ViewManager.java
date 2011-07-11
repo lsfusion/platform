@@ -6,7 +6,9 @@ import bibliothek.gui.dock.common.event.CDockableAdapter;
 import bibliothek.gui.dock.common.intern.CDockable;
 import net.sf.jasperreports.engine.JRException;
 import platform.client.Main;
+import platform.client.SwingUtils;
 import platform.client.form.ClientModalForm;
+import platform.client.ClientResourceBundle;
 import platform.client.navigator.ClientNavigator;
 import platform.interop.form.RemoteFormInterface;
 
@@ -88,18 +90,18 @@ public class ViewManager {
         openForm(new ReportDockable(file, pageFactory));
     }
 
-    public void changeCloseAction(FormDockable page) {
+    public void changeCloseAction(final FormDockable page) {
         page.setCloseable(false);
         page.setRemoveOnClose(true);
         page.addAction(new CCloseAction(control) {
             @Override
             public void close(CDockable dockable) {
                 if (((FormDockable) dockable).pageChanged()) {
-                    int n = JOptionPane.showConfirmDialog(
+                    int n = SwingUtils.showConfirmDialog(
+                            page.getComponent(),
+                            ClientResourceBundle.getString("form.do.you.really.want.to.close.form"),
                             null,
-                            "Вы действительно хотите закрыть окно, не применив изменения в базу данных?",
-                            "LS Fusion",
-                            JOptionPane.YES_NO_OPTION);
+                            JOptionPane.WARNING_MESSAGE);
                     if (n == JOptionPane.YES_OPTION) {
                         super.close(dockable);
                     }

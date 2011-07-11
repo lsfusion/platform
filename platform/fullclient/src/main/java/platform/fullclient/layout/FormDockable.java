@@ -76,4 +76,8 @@ abstract class FormDockable extends DefaultMultipleCDockable {
     public boolean pageChanged() {
         return false;
     }
+
+    public Component getComponent() {
+        return comp;
+    }
 }

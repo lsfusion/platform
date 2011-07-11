@@ -1,5 +1,6 @@
 package platform.client.form;
 
+import platform.client.ClientResourceBundle;
 import platform.client.SwingUtils;
 import platform.interop.form.RemoteFormInterface;
 
@@ -83,6 +84,16 @@ public class ClientModalForm extends JDialog {
 
             @Override
             boolean closePressed() {
+                if (newSession && dataChanged) {
+                    int n = SwingUtils.showConfirmDialog(
+                            getComponent(),
+                            ClientResourceBundle.getString("form.do.you.really.want.to.close.form"),
+                            null,
+                            JOptionPane.WARNING_MESSAGE);
+                    if (n != JOptionPane.YES_OPTION) {
+                        return false;
+                    }
+                }
                 hideDialog();
                 return true;
             }

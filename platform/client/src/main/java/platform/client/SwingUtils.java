@@ -121,7 +121,11 @@ public class SwingUtils {
     public static final int YES_BUTTON = 0;
     public static final int NO_BUTTON = 1;
 
-    public static int showConfirmDialog(JComponent parentComponent, Object message, String title, int messageType, int initialValue) {
+    public static int showConfirmDialog(Component parentComponent, Object message, String title, int messageType) {
+        return showConfirmDialog(parentComponent, message, title, messageType, 0);
+    }
+
+    public static int showConfirmDialog(Component parentComponent, Object message, String title, int messageType, int initialValue) {
 
         Object[] options = {UIManager.getString("OptionPane.yesButtonText"),
                 UIManager.getString("OptionPane.noButtonText")};
