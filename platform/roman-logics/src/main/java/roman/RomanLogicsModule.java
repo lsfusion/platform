@@ -2594,6 +2594,7 @@ public class RomanLogicsModule extends LogicsModule {
         classifier.add(exporter.getListForm(baseLM));
         addFormEntity(new ContractFormEntity(classifier, "contractForm", "Договора"));
         classifier.add(store.getListForm(baseLM));
+        classifier.add(freightType.getListForm(baseLM));
         classifier.add(baseLM.dictionaryForm);
 
         createItemForm = addFormEntity(new CreateItemFormEntity(null, "createItemForm", "Ввод товара"));
@@ -2660,13 +2661,15 @@ public class RomanLogicsModule extends LogicsModule {
 
         NavigatorElement shipment = new NavigatorElement(baseLM.baseElement, "shipment", "Управление фрахтами");
         shipment.window = leftToolbar;
-        addFormEntity(new FreightCreateFormEntity(shipment, "freightCreateForm", "Редактирование фрахта"));
-        addFormEntity(new FreightShipmentFormEntity(shipment, "freightShipmentForm", "Комплектация фрахта"));
-        addFormEntity(new FreightChangeFormEntity(shipment, "freightChangeForm", "Обработка фрахта"));
-        addFormEntity(new FreightInvoiceFormEntity(shipment, "freightInvoiceForm", "Расценка фрахта"));
+
+        NavigatorElement actionFreight = new NavigatorElement(shipment, "actionFreight", "Действия");
+        addFormEntity(new FreightCreateFormEntity(actionFreight, "freightCreateForm", "Редактирование фрахта"));
+        addFormEntity(new FreightShipmentFormEntity(actionFreight, "freightShipmentForm", "Комплектация фрахта"));
+        addFormEntity(new FreightChangeFormEntity(actionFreight, "freightChangeForm", "Обработка фрахта"));
+        addFormEntity(new FreightInvoiceFormEntity(actionFreight, "freightInvoiceForm", "Расценка фрахта"));
+
         addFormEntity(new FreightListFormEntity(shipment, "freightListForm", "Список фрахтов"));
         addFormEntity(new PrintDocumentFormEntity(shipment, "printDocumentForm", "Печать документов"));
-        shipment.add(freightType.getListForm(baseLM));
 
         NavigatorElement settings = new NavigatorElement(baseLM.baseElement, "settings", "Настройки");
         settings.window = leftToolbar;
@@ -5424,6 +5427,7 @@ public class RomanLogicsModule extends LogicsModule {
                     new PropertyObjectEntity[] {addPropertyObject(getAddObjectAction(freight))},
                     new OrderEntity[] {(DataObject)freight.getClassObject()}, true);
             freightEditFA = addMFAProp(actionGroup, "Редактировать фрахт", this, new ObjectEntity[] {objFreight}, true);
+            freightEditFA.setImage("edit.png");
         }
 
         @Override
