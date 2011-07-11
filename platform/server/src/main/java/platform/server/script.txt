@@ -19,6 +19,8 @@ nameCurrencyTypeExchange2(typeExchange) = name(currencyTypeExchange(typeExchange
 nameTypeExchangeSTX2() = name(typeExchangeSTX()) in baseGroup;
 //equalsItemArticleComposite2(item1, item2) = equals2(articleCompositeItem(item1), item2) in baseGroup;
 numberListSIDArticle2(list, doc) = numberListArticle(list, articleSIDList(doc, list));
+netWeightArticleSizeSku2(item) =  netWeightArticleSize(articleSku(item), sizeSupplierItem(item)) in intraAttributeGroup persistent;
+
 
 
 //numberDocumentArticle = addSGProp(baseGroup, "inDocumentArticle", numberListArticle, documentList, 1, 2);
