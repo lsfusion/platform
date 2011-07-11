@@ -71,7 +71,7 @@ public class ViewManager {
     }
 
     public void openModalForm(String formSID, ClientNavigator navigator, boolean currentSession) throws IOException, ClassNotFoundException {
-        new ClientModalForm(Main.frame, navigator.remoteNavigator.createForm(formSID, currentSession, true), false).showDialog();
+        new ClientModalForm(Main.frame, navigator.remoteNavigator.createForm(formSID, currentSession, true), !currentSession).showDialog();
     }
 
     public void openReport(String formSID, ClientNavigator navigator, boolean currentSession) throws IOException, ClassNotFoundException {
