@@ -100,6 +100,21 @@
         </layout>
     </appender>
 
+    <appender name="scriptlog" class="org.apache.log4j.rolling.RollingFileAppender">
+        <rollingPolicy class="org.apache.log4j.rolling.FixedWindowRollingPolicy">
+            <param name="minIndex" value="1"/>
+            <param name="maxIndex" value="12"/>
+            <param name="activeFileName" value="logs/script.log"/>
+            <param name="fileNamePattern" value="logs/script-%i.log.zip"/>
+        </rollingPolicy>
+        <triggeringPolicy class="org.apache.log4j.rolling.SizeBasedTriggeringPolicy">
+            <param name="maxFileSize" value="100485760"/>
+        </triggeringPolicy>
+        <layout class="org.apache.log4j.PatternLayout">
+            <param name="ConversionPattern" value="%d{DATE} %5p %t %c{1}:%M:%L - %m%n"/>
+        </layout>
+    </appender>
+
     <appender name="hashlog" class="org.apache.log4j.rolling.RollingFileAppender">
         <rollingPolicy class="org.apache.log4j.rolling.FixedWindowRollingPolicy">
             <param name="minIndex" value="1"/>
@@ -117,6 +132,11 @@
 
     <category name="platform.server.logics">
         <priority value="INFO"/>
+    </category>
+
+    <category name="platform.server.logics.ScriptingLogicsModule" additivity="false">
+        <priority value="INFO"/>
+        <appender-ref ref="scriptlog"/>
     </category>
 
     <category name="platform.server.data.SQLSession" additivity="false">

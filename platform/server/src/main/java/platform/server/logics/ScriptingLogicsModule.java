@@ -5,6 +5,7 @@ import org.antlr.runtime.ANTLRFileStream;
 import org.antlr.runtime.ANTLRStringStream;
 import org.antlr.runtime.CharStream;
 import org.antlr.runtime.CommonTokenStream;
+import org.apache.log4j.Logger;
 import platform.base.BaseUtils;
 import platform.server.LsfLogicsLexer;
 import platform.server.LsfLogicsParser;
@@ -23,12 +24,14 @@ import java.util.*;
  */
 
 public class ScriptingLogicsModule extends LogicsModule {
+    private final static Logger scriptLogger = Logger.getLogger(ScriptingLogicsModule.class);
     private String scriptName;
     private String code = null;
     private String filename = null;
     private final BusinessLogics<?> BL;
 
     private final Map<String, List<String>> classes = new HashMap<String, List<String>>();
+    private final Set<String> importedModules = new HashSet<String>();
 
     public enum State {GROUP, CLASS, PROP}
 
@@ -64,6 +67,11 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
     }
 
+    public void addImportedModule(String moduleName) {
+        scriptLogger.info("import " + moduleName + ";");
+        importedModules.add(moduleName);
+    }
+
     protected LogicsModule getModule(String sid) {
         List<LogicsModule> modules = BL.getLogicModules();
         for (LogicsModule module : modules) {
@@ -92,7 +100,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         return null;
     }
 
-    private ValueClass getClassByName(String name, Set<String> importedModules) {
+    private ValueClass getClassByName(String name) {
             ValueClass valueClass = getPredefinedClass(name);
             if (valueClass == null) {
                 int dotPosition = name.indexOf('.');
@@ -114,12 +122,13 @@ public class ScriptingLogicsModule extends LogicsModule {
             return valueClass;
     }
 
-    public void addScriptedClass(String className, String captionStr, boolean isAbstract, List<String> parentNames, Set<String> importedModules) {
+    public void addScriptedClass(String className, String captionStr, boolean isAbstract, List<String> parentNames) {
+        scriptLogger.info("addScriptedClass(" + className + ", " + (captionStr==null ? "" : captionStr) + ", " + isAbstract + ", " + parentNames + ");");
         String caption = (captionStr == null ? className : transformCaptionStr(captionStr));
         CustomClass[] parents = new CustomClass[parentNames.size()];
         for (int i = 0; i < parentNames.size(); i++) {
             String parentName = parentNames.get(i);
-            ValueClass valueClass = getClassByName(parentName, importedModules);
+            ValueClass valueClass = getClassByName(parentName);
             assert valueClass instanceof CustomClass;
             parents[i] = (CustomClass) valueClass;
         }
@@ -130,7 +139,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
     }
 
-    private AbstractGroup getGroupByName(String name, Set<String> importedModules) {
+    private AbstractGroup getGroupByName(String name) {
         AbstractGroup group;
         int dotPosition = name.indexOf('.');
         if (dotPosition > 0) {
@@ -150,7 +159,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         return group;
     }
 
-    private LP<?> getLPByName(String name, Set<String> importedModules) {
+    private LP<?> getLPByName(String name) {
         LP<?> property;
         int dotPosition = name.indexOf('.');
         if (dotPosition > 0) {
@@ -170,31 +179,34 @@ public class ScriptingLogicsModule extends LogicsModule {
         return property;
     }
 
-    public void addScriptedGroup(String groupName, String captionStr, String parentName, Set<String> importedModules) {
+    public void addScriptedGroup(String groupName, String captionStr, String parentName) {
+        scriptLogger.info("addScriptedGroup(" + groupName + ", " + (captionStr==null ? "" : captionStr) + ", " + (parentName == null ? "null" : parentName) + ");");
         String caption = (captionStr == null ? groupName : transformCaptionStr(captionStr));
-        AbstractGroup parentGroup = (parentName == null ? null : getGroupByName(parentName, importedModules));
+        AbstractGroup parentGroup = (parentName == null ? null : getGroupByName(parentName));
         addAbstractGroup(groupName, caption, parentGroup);
     }
 
-    public void addScriptedDProp(String propName, String caption, String parentGroup, String returnClass, List<String> paramClasses, boolean isPersistent, Set<String> importedModules) {
-        AbstractGroup group = (parentGroup == null ? privateGroup : getGroupByName(parentGroup, importedModules));
-        ValueClass value = getClassByName(returnClass, importedModules);
+    public void addScriptedDProp(String propName, String caption, String parentGroup, String returnClass, List<String> paramClasses, boolean isPersistent) {
+        scriptLogger.info("addScriptedDProp(" + propName + ", " + (parentGroup == null ? "" : parentGroup) + ", " + returnClass + ", " + paramClasses + ", " + isPersistent + ");");
+        AbstractGroup group = (parentGroup == null ? privateGroup : getGroupByName(parentGroup));
+        ValueClass value = getClassByName(returnClass);
         ValueClass[] params = new ValueClass[paramClasses.size()];
         for (int i = 0; i < paramClasses.size(); i++) {
-            params[i] = getClassByName(paramClasses.get(i), importedModules);
+            params[i] = getClassByName(paramClasses.get(i));
         }
         addDProp(group, propName, isPersistent, caption, value, params);
     }
 
-    public void addScriptedJProp(String propName, String caption, String parentGroup, String mainPropName, boolean isPersistent, List<String> namedParams, List<String> paramsId, List<List<String>> propParams, Set<String> importedModules) {
-        AbstractGroup group = (parentGroup == null ? privateGroup : getGroupByName(parentGroup, importedModules));
-        LP<?> mainProp = getLPByName(mainPropName, importedModules);
+    public void addScriptedJProp(String propName, String caption, String parentGroup, String mainPropName, boolean isPersistent, List<String> namedParams, List<String> paramsId, List<List<String>> propParams) {
+        scriptLogger.info("addScriptedJProp(" + propName + ", " + (parentGroup == null ? "" : parentGroup) + ", " + mainPropName + ", " + isPersistent + ", " + namedParams + ", " + paramsId + ", " + propParams + ");");
+        AbstractGroup group = (parentGroup == null ? privateGroup : getGroupByName(parentGroup));
+        LP<?> mainProp = getLPByName(mainPropName);
         List<Object> resultParams = new ArrayList<Object>();
         for (int i = 0; i < paramsId.size(); i++) {
             if (propParams.get(i) == null) {
                 resultParams.add(namedParams.indexOf(paramsId.get(i)) + 1);
             } else {
-                LP<?> paramProp = getLPByName(paramsId.get(i), importedModules);
+                LP<?> paramProp = getLPByName(paramsId.get(i));
                 resultParams.add(paramProp);
                 for (String namedParam : propParams.get(i)) {
                     resultParams.add(namedParams.indexOf(namedParam) + 1);

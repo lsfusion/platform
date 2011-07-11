@@ -5,7 +5,6 @@ grammar LsfLogics;
 	import platform.server.logics.ScriptingLogicsModule; 
 	import java.util.Set;
 	import java.util.HashSet;
-	import java.lang.System;
 }
 
 @lexer::header { 
@@ -13,7 +12,6 @@ grammar LsfLogics;
 }
 
 @members { 
-	private Set<String> importModules = new HashSet<String>();
 	public ScriptingLogicsModule self;
 	public ScriptingLogicsModule.State parseState;
 }
@@ -29,11 +27,11 @@ importDirective
 	String name;
 }
 @after {
-	if (parseState == ScriptingLogicsModule.State.GROUP) {
-		System.out.print("import " + name + ";\n");
-	}
+        if (parseState == ScriptingLogicsModule.State.GROUP) {
+        	self.addImportedModule(name);
+        }
 }
-	:	'import' moduleName=ID ';' { name = $moduleName.text; importModules.add(name); };
+	:	'import' moduleName=ID ';' { name = $moduleName.text; };
 
 
 statement
@@ -48,8 +46,7 @@ classStatement
 }
 @after {
 	if (parseState == ScriptingLogicsModule.State.CLASS) {
-		System.out.print("addScriptedClass(" + name + ", " + (captionStr==null ? "" : captionStr) + ", " + isAbstract + ", " + classParents + ", " + importModules + ");\n");
-		self.addScriptedClass(name, captionStr, isAbstract, classParents, importModules);
+		self.addScriptedClass(name, captionStr, isAbstract, classParents);
 	}
 }
 	:	isAbstract=classDeclarant className=ID 	{ name = $className.text; }
@@ -71,8 +68,7 @@ groupStatement
 }
 @after {
 	if (parseState == ScriptingLogicsModule.State.GROUP) {
-		System.out.print("addScriptedGroup(" + name + ", " + (captionStr==null ? "" : captionStr) + ", " + (parent == null ? "null" : parent) + ", " + importModules + ");\n");
-		self.addScriptedGroup(name, captionStr, parent, importModules);
+		self.addScriptedGroup(name, captionStr, parent);
 	}
 }
 	:	'group' groupName=ID { name = $groupName.text; }
@@ -97,8 +93,7 @@ joinPropertyStatement
 }
 @after {
 	if (parseState == ScriptingLogicsModule.State.PROP) {
-		System.out.print("addScriptedJProp(" + name + ", " + (groupName == null ? "" : groupName) + ", " + mainProp + ", " + isPersistent + ", " + namedParams + ", " + paramIds + ", " + propParams + ", " + importModules + ");\n");
-		self.addScriptedJProp(name, "", groupName, mainProp, isPersistent, namedParams, paramIds, propParams, importModules);
+		self.addScriptedJProp(name, "", groupName, mainProp, isPersistent, namedParams, paramIds, propParams);
 	}
 }
 	:	propertyName=ID { name = $propertyName.text; }
@@ -132,8 +127,7 @@ dataPropertyStatement
 }
 @after {
 	if (parseState == ScriptingLogicsModule.State.PROP) {
-		System.out.print("addScriptedDProp(" + name + ", " + (groupName == null ? "" : groupName) + ", " + returnClass + ", " + paramClassNames + ", " + isPersistent + ", " + importModules + ");\n");
-		self.addScriptedDProp(name, "", groupName, returnClass, paramClassNames, isPersistent, importModules);
+		self.addScriptedDProp(name, "", groupName, returnClass, paramClassNames, isPersistent);
 	}
 }
 	:	propertyName=ID { name = $propertyName.text; }
