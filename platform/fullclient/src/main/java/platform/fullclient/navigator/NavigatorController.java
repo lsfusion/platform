@@ -43,7 +43,7 @@ public class NavigatorController implements INavigatorController {
         }
     }
 
-    public void initViews() {
+    public void initViews() { // нет никакой гарантии, что в ходе работы sidToWindow не появятся новые элементы (например, с классовыми или объектными формами)
         for (ClientNavigatorWindow window : ClientNavigatorWindow.sidToWindow.values()) {
             NavigatorView navigatorView = window.getView(this);
             views.put(window, navigatorView);
@@ -61,10 +61,12 @@ public class NavigatorController implements INavigatorController {
 
         for (Map.Entry<ClientNavigatorWindow, LinkedHashSet<ClientNavigatorElement>> entry : result.entrySet()) {
             NavigatorView view = views.get(entry.getKey());
-            view.refresh(entry.getValue());
-            SingleCDockable dockable = docks.get(view.getView());
-            if (dockable != null) {
-                dockable.setVisible(entry.getValue().size() != 0);
+            if (view != null) { // может быть ситуация, когда в sidToWindow есть окно, но во views его нет - при сериализации элементов в классовых и связанных формах
+                view.refresh(entry.getValue());
+                SingleCDockable dockable = docks.get(view.getView());
+                if (dockable != null) {
+                    dockable.setVisible(entry.getValue().size() != 0);
+                }
             }
         }
     }
