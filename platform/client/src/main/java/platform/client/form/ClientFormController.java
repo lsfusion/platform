@@ -451,7 +451,7 @@ public class ClientFormController {
         }
     }
 
-    private void applyRemoteChanges() throws IOException {
+    private boolean applyRemoteChanges() throws IOException {
         RemoteChanges remoteChanges = remoteForm.getRemoteChanges();
         List<ClientAction> remoteActions = remoteChanges.actions;
 
@@ -470,6 +470,12 @@ public class ClientFormController {
             remoteForm.continueAutoActions();
             refreshData();
         }
+
+        for (ClientAction action : remoteActions)
+            if (action instanceof StopAutoActionsClientAction)
+                return false;
+
+        return true;
     }
 
     private void applyFormChanges(ClientFormChanges formChanges) {
@@ -699,7 +705,7 @@ public class ClientFormController {
         }
     }
 
-    void applyChanges(boolean sureApply) {
+    boolean applyChanges(boolean sureApply) {
 
         try {
 
@@ -715,16 +721,17 @@ public class ClientFormController {
 
                     if (!okMessage.isEmpty()) {
                         if (!(SwingUtils.showConfirmDialog(getComponent(), okMessage, null, JOptionPane.QUESTION_MESSAGE, SwingUtils.YES_BUTTON) == JOptionPane.YES_OPTION)) {
-                            return;
+                            return false;
                         }
                     }
                 }
 
                 if (remoteForm.hasClientApply()) {
                     ClientApply clientApply = remoteForm.checkClientChanges();
-                    if (clientApply instanceof CheckFailed) // чтобы не делать лишний RMI вызов
+                    if (clientApply instanceof CheckFailed) { // чтобы не делать лишний RMI вызов
                         Log.printFailedMessage(((CheckFailed) clientApply).message);
-                    else {
+                        return false;
+                    } else {
                         Object clientResult;
                         try {
                             clientResult = ((ClientResultAction) clientApply).dispatchResult(actionDispatcher);
@@ -733,14 +740,15 @@ public class ClientFormController {
                         }
                         remoteForm.applyClientChanges(clientResult);
 
-                        applyRemoteChanges();
+                        return applyRemoteChanges();
                     }
                 } else {
                     remoteForm.applyChanges();
 
-                    applyRemoteChanges();
+                    return applyRemoteChanges();
                 }
-            }
+            } else
+                return true;
 
         } catch (IOException e) {
             throw new RuntimeException(ClientResourceBundle.getString("form.error.applying.changes"), e);
@@ -773,7 +781,7 @@ public class ClientFormController {
             remoteForm.dialogClosed();
 
             if (apply) {
-                applyChanges(false);
+                return applyChanges(false);
             }
         } catch (IOException e) {
             throw new RuntimeException(ClientResourceBundle.getString("form.error.closing.dialog"), e);

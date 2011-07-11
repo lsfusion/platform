@@ -1594,7 +1594,11 @@ public abstract class LogicsModule {
         for (int i = 0; i < property.listInterfaces.size(); i++) {
             mapInterfaces.put(property.listInterfaces.get(i), checkProp.listInterfaces.get(i));
         }
-        addProp(checkProp.property.addFollows(new PropertyMapImplement(property.property, mapInterfaces), ServerResourceBundle.getString("logics.property")+" " + property.property.getSID() + " "+ServerResourceBundle.getString("logics.property.not.defined"), resolve));
+        addProp(
+                checkProp.property.addFollows(
+                        new PropertyMapImplement(property.property, mapInterfaces),
+                        ServerResourceBundle.getString("logics.property") + " " + property.property.caption + " [" + property.property.getSID() + "] " + ServerResourceBundle.getString("logics.property.not.defined"),
+                        resolve));
     }
 
     // получает свойство is
