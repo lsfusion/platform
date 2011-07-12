@@ -15,7 +15,10 @@ public class BlockingTask extends TimerTask {
     public void run() {
         Window window = SwingUtils.getActiveWindow();
         if (window != null) {
-            window.getGraphics().drawImage(blur(blur(getScreen())), 4, 4, null);
+            Graphics gr = window.getGraphics();
+            if (gr != null) {
+                gr.drawImage(blur(blur(getScreen())), 4, 4, null);
+            }
         }
     }
 
