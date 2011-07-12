@@ -1106,6 +1106,19 @@ public class RomanLogicsModule extends LogicsModule {
 
         baseLM.tableFactory.include("importerFreightUnitSku", importer, freightUnit, sku);
         baseLM.tableFactory.include("importerFreightSku", importer, freight, sku);
+
+        baseLM.tableFactory.include("stockSku", stock, sku);
+        baseLM.tableFactory.include("importerFreightUnitArticle", importer, freightUnit, article);
+        baseLM.tableFactory.include("importerFreightBrandSupplier", importer, freight, brandSupplier);
+        baseLM.tableFactory.include("freightArticle", freight, article);
+        baseLM.tableFactory.include("shipmentFreight", shipment, freight);
+        baseLM.tableFactory.include("invoiceShipment", invoice, shipment);
+        baseLM.tableFactory.include("shipmentStockSku", shipment, stock, sku);
+        baseLM.tableFactory.include("invoiceStockSku", invoice, stock, sku);
+        baseLM.tableFactory.include("importerFreightSupplier", importer, freight, supplier);
+        baseLM.tableFactory.include("importerFreightTypeInvoice", importer, freight, typeInvoice);
+        baseLM.tableFactory.include("importerFreightSupplierCustomCategory6", importer, freight, supplier, customCategory6);
+
         baseLM.tableFactory.include("freightSku", freight, sku);
         baseLM.tableFactory.include("shipmentDetail", shipmentDetail);
         baseLM.tableFactory.include("pallet", pallet);
@@ -1426,7 +1439,7 @@ public class RomanLogicsModule extends LogicsModule {
         typeInvoiceCategoryArticle = addJProp(idGroup, "typeInvoiceCategoryArticle", "Тип инвойса артикула (ИД)", typeInvoiceCategory, categoryArticle, 1);
         typeInvoiceCategoryArticleSku = addJProp(idGroup, "typeInvoiceCategoryArticleSku", "Тип инвойса товара (ИД)", typeInvoiceCategory, categoryArticleSku, 1);
 
-        typeInvoiceDataFreightArticle = addDProp(idGroup, "typeDataInvoiceFreightArticle", "Тип инвойса (ИД)", typeInvoice, freight, article);
+        typeInvoiceDataFreightArticle = addDProp(idGroup, "typeInvoiceDataFreightArticle", "Тип инвойса (ИД)", typeInvoice, freight, article);
         typeInvoiceCategoryFreightArticle = addJProp(idGroup, "typeInvoiceCategoryFreightArticle", "Тип инвойса (ИД)", baseLM.and1, typeInvoiceCategoryArticle, 2, is(freight), 1);
         typeInvoiceFreightArticle = addSUProp(idGroup, "typeInvoiceFreightArticle", "Тип инвойса (ИД)", Union.OVERRIDE, typeInvoiceCategoryFreightArticle, typeInvoiceDataFreightArticle);
         typeInvoiceFreightArticleSku = addJProp(idGroup, true, "typeInvoiceFreightArticleSku", "Тип инвойса (ИД)", typeInvoiceFreightArticle, 1, articleSku, 2);
