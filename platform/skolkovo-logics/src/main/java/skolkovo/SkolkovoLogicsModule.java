@@ -1454,10 +1454,10 @@ public class SkolkovoLogicsModule extends LogicsModule {
             getPropertyDraw(generateVoteProject).forceViewType = ClassViewType.PANEL;
             getPropertyDraw(generateVoteProject).propertyCaption = addPropertyObject(hideGenerateVoteProject, objProject);
 
-            objVote = addSingleGroupObject(vote, dateStartVote, dateEndVote, nameNativeClusterVote, equalsClusterProjectVote, openedVote, succeededVote, acceptedVote, quantityDoneVote, quantityInClusterVote, quantityInnovativeVote, quantityForeignVote, copyResultsVote, emailClaimerVote, baseLM.delete);
+            objVote = addSingleGroupObject(vote, dateStartVote, dateEndVote, nameNativeClusterVote, equalsClusterProjectVote, openedVote, succeededVote, acceptedVote, quantityDoneVote, quantityInClusterVote, quantityInnovativeVote, quantityForeignVote, emailClaimerVote, baseLM.delete);
             objVote.groupTo.banClassView.addAll(BaseUtils.toList(ClassViewType.PANEL, ClassViewType.HIDE));
 
-            getPropertyDraw(copyResultsVote).forceViewType = ClassViewType.PANEL;
+//            getPropertyDraw(copyResultsVote).forceViewType = ClassViewType.PANEL;
 
             objDocumentTemplate = addSingleGroupObject(documentTemplate, "Шаблон документов", baseLM.name);
             objDocumentTemplate.groupTo.setSingleClassView(ClassViewType.PANEL);
