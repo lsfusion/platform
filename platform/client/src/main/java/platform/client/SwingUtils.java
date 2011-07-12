@@ -259,4 +259,24 @@ public class SwingUtils {
         }
         return null;
     }
+
+    public static Window getActiveWindow() {
+        return getSelectedWindow(Frame.getFrames());
+    }
+
+    private static Window getSelectedWindow(Window[] windows) {
+        for (Window window : windows) {
+            if (window.isActive()) {
+                return window;
+            } else {
+                Window[] ownedWindows = window.getOwnedWindows();
+                if (ownedWindows != null) {
+                    Window selectedWindow = getSelectedWindow(ownedWindows);
+                    if (selectedWindow != null)
+                        return selectedWindow;
+                }
+            }
+        }
+        return null;
+    }
 }

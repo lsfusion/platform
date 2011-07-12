@@ -2,6 +2,7 @@ package platform.client.remote.proxy;
 
 import org.apache.log4j.Logger;
 import platform.client.Main;
+import platform.client.SwingUtils;
 import platform.client.form.BlockingTask;
 import platform.interop.remote.MethodInvocation;
 import platform.interop.remote.PendingRemote;
@@ -43,8 +44,9 @@ public abstract class RemoteObjectProxy<T extends PendingRemote> implements Pend
             screenBlock |= (blockedScreen != null) && (blockedScreen.containsKey(invocation.name) && invocation.args.length > 0 && invocation.args[0].toString().equals(blockedScreen.get(invocation.name)));
         }
 
-        if (Main.frame != null) {
-            Main.frame.setCursor(Cursor.WAIT_CURSOR);
+        Window window = SwingUtils.getActiveWindow();
+        if (window != null) {
+            window.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         }
 
         TimerTask task = new BlockingTask();
@@ -53,9 +55,9 @@ public abstract class RemoteObjectProxy<T extends PendingRemote> implements Pend
         Object result = target.execute(invocations);
         timer.cancel();
 
-        if (Main.frame != null) {
-            Main.frame.setCursor(Cursor.DEFAULT_CURSOR);
-            Main.frame.repaint();
+        if (window != null) {
+            window.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+            window.repaint();
         }
 
         logRemoteMethodEndCall("execute", result);
@@ -78,8 +80,9 @@ public abstract class RemoteObjectProxy<T extends PendingRemote> implements Pend
             screenBlock |= (blockedScreen != null) && (blockedScreen.containsKey(invocation.name) && invocation.args.length > 0 && invocation.args[0].toString().equals(blockedScreen.get(invocation.name)));
         }
 
-        if (Main.frame != null) {
-            Main.frame.setCursor(Cursor.WAIT_CURSOR);
+        Window window = SwingUtils.getActiveWindow();
+        if (window != null) {
+            window.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         }
 
         TimerTask task = new BlockingTask();
@@ -88,9 +91,9 @@ public abstract class RemoteObjectProxy<T extends PendingRemote> implements Pend
         Object[] result = target.createAndExecute(creator, invocations);
         timer.cancel();
 
-        if (Main.frame != null) {
-            Main.frame.setCursor(Cursor.DEFAULT_CURSOR);
-            Main.frame.repaint();
+        if (window != null) {
+            window.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+            window.repaint();
         }
         logRemoteMethodEndCall("createAndExecute", result);
         return result;

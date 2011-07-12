@@ -2137,11 +2137,14 @@ public class RomanLogicsModule extends LogicsModule {
 
         currencyFreight = addDProp(idGroup, "currencyFreight", "Валюта (ИД)", currency, freight);
         nameCurrencyFreight = addJProp(baseGroup, "nameCurrencyFreight", "Валюта", baseLM.name, currencyFreight, 1);
+        nameCurrencyFreight.setFixedCharWidth(10);
+
         sumFreightFreight = addDProp(baseGroup, "sumFreightFreight", "Стоимость", DoubleClass.instance, freight);
         insuranceFreight = addDProp(baseGroup, "insuranceFreight", "Страховка", DoubleClass.instance, freight);
 
         routeFreight = addDProp(idGroup, "routeFreight", "Маршрут (ИД)", route, freight);
         nameRouteFreight = addJProp(baseGroup, "nameRouteFreight", "Маршрут", baseLM.name, routeFreight, 1);
+        nameRouteFreight.setFixedCharWidth(6);
 
         exporterFreight = addDProp(idGroup, "exporterFreight", "Экспортер (ИД)", exporter, freight);
         setNotNull(exporterFreight);

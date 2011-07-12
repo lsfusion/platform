@@ -46,7 +46,7 @@ public class ClientCallBackProcessor {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 int result = JOptionPane.showConfirmDialog(
-                        Main.frame,
+                        SwingUtils.getActiveWindow(),
                             "<html>"+ClientResourceBundle.getString("notification.server.will.be.stopped")+"<br/>" +
                             ClientResourceBundle.getString("notification.save.and.exit")+"<br/>" +
                             ClientResourceBundle.getString("notification.cancel.if.can.not.break")+"</html>",

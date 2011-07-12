@@ -5,6 +5,7 @@ import platform.base.IOUtils;
 import platform.client.ClientResourceBundle;
 import platform.client.Log;
 import platform.client.Main;
+import platform.client.remote.proxy.RemoteFormProxy;
 import platform.interop.action.*;
 import platform.interop.exceptions.LoginException;
 
@@ -25,13 +26,14 @@ public class ClientFormActionDispatcher implements ClientActionDispatcher {
 
     public void execute(FormClientAction action) {
         try {
+            RemoteFormProxy remoteForm = new RemoteFormProxy(action.remoteForm);
             if (action.isPrintForm) {
-                Main.frame.runReport(action.remoteForm, action.isModal);
+                Main.frame.runReport(remoteForm, action.isModal);
             } else {
                 if (!action.isModal) {
-                    Main.frame.runForm(action.remoteForm);
+                    Main.frame.runForm(remoteForm);
                 } else {
-                    new ClientModalForm(Main.frame, action.remoteForm, action.newSession).showDialog();
+                    new ClientModalForm(Main.frame, remoteForm, action.newSession).showDialog();
                 }
             }
         } catch (Exception e) {

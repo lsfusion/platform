@@ -1,6 +1,7 @@
 package platform.client.form;
 
 import platform.client.Main;
+import platform.client.SwingUtils;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -12,7 +13,10 @@ import java.util.TimerTask;
 public class BlockingTask extends TimerTask {
     @Override
     public void run() {
-        Main.frame.getGraphics().drawImage(blur(blur(getScreen())), 4, 4, null);
+        Window window = SwingUtils.getActiveWindow();
+        if (window != null) {
+            window.getGraphics().drawImage(blur(blur(getScreen())), 4, 4, null);
+        }
     }
 
     public BufferedImage getScreen() {
