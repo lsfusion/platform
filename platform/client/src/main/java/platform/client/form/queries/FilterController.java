@@ -2,6 +2,8 @@ package platform.client.form.queries;
 
 import platform.client.form.GroupObjectLogicsSupplier;
 
+import javax.swing.*;
+
 public abstract class FilterController extends QueryController {
     
     public FilterController(GroupObjectLogicsSupplier logicsSupplier) {
@@ -10,5 +12,13 @@ public abstract class FilterController extends QueryController {
 
     protected QueryView createView() {
         return new FilterView();
+    }
+
+    protected int getDestination() {
+        if (getView().getVisibleConditionsCount() == 0) {
+            return SwingConstants.LEFT;
+        } else {
+            return SwingConstants.BOTTOM;
+        }
     }
 }

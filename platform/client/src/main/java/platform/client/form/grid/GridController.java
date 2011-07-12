@@ -94,14 +94,7 @@ public class GridController {
                     return true;
                 }
                 public void conditionsUpdated() {
-                    QueryView view = filterController.getView();
-                    int destination;
-                    if (view.getVisibleConditionsCount() == 0) {
-                        destination = SwingConstants.LEFT;
-                    } else {
-                        destination = SwingConstants.BOTTOM;
-                    }
-                    groupObjectController.moveComponent(view,  destination);
+                    groupObjectController.moveComponent(getView(), getDestination());
                 }
             };
             groupObjectController.addToToolbar(filterController.getView());

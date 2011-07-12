@@ -63,6 +63,11 @@ public class TreeGroupController implements GroupObjectLogicsSupplier {
                     tree.requestFocusInWindow();
                     return true;
                 }
+
+                @Override
+                public void conditionsUpdated() {
+                    panelToolbar.moveComponent(getView(),  getDestination());
+                }
             };
             addToToolbar(filterController.getView());
             filterController.getView().addActions(tree);
@@ -157,7 +162,7 @@ public class TreeGroupController implements GroupObjectLogicsSupplier {
 
         ArrayList<ClientPropertyDraw> properties = new ArrayList<ClientPropertyDraw>();
         for (ClientPropertyDraw property : getPropertyDraws()) {
-            if (currentGroupObject.equals(property.groupObject)) {
+            if (currentGroupObject != null && currentGroupObject.equals(property.groupObject)) {
                 properties.add(property);
             }
         }
