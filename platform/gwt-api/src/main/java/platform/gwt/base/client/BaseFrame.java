@@ -78,7 +78,7 @@ public class BaseFrame implements EntryPoint {
     }
 
     public static String getLogoffUrl() {
-        return getPageUrlPreservingParameters("logoff.html");
+        return getPageUrlPreservingParameters("logoff.jsp");
     }
 
     public static void logoff() {

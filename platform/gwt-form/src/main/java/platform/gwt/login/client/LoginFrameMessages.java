@@ -30,6 +30,8 @@ public interface LoginFrameMessages extends Messages {
 
     String loginError();
 
+    String loggedInMessage(String userName);
+
     public static class Instance {
         private static final LoginFrameMessages instance = (LoginFrameMessages) GWT.create(LoginFrameMessages.class);
 

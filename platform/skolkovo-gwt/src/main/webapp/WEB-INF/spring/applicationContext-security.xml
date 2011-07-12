@@ -9,7 +9,7 @@
         <intercept-url pattern="/expertProfile.html" access="hasRole('expert')"/>
         <intercept-url pattern="/skolkovo.gwt.expertprofile.ExpertProfile/*" access="hasRole('expert')"/>
         <intercept-url pattern="/skolkovo.gwt.form.Form/*" access="hasRole('admin')"/>
-        <intercept-url pattern="/form.html" access="hasRole('admin')"/>
+        <intercept-url pattern="/form.jsp" access="hasRole('admin')"/>
         <form-login authentication-failure-url="/loginFailed.txt" default-target-url="/expertProfile.html"/>
         <anonymous enabled="false" />
     </http>
@@ -23,7 +23,7 @@
     <b:bean id="loginUrlAuthenticationEntryPoint"
             class="org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint">
         <b:property name="useForward" value="true"/>
-        <b:property name="loginFormUrl" value="/login.html"/>
+        <b:property name="loginFormUrl" value="/login.jsp"/>
     </b:bean>
 
     <authentication-manager>
