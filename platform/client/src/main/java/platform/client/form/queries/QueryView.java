@@ -207,6 +207,9 @@ public abstract class QueryView extends JPanel {
         condContainer.remove(condViews.get(condition));
         condViews.remove(condition);
 
+        if (condViews.isEmpty()) {
+           listener.conditionsUpdated();
+        }
         conditionsChanged();
     }
 
@@ -215,9 +218,13 @@ public abstract class QueryView extends JPanel {
         condContainer.removeAll();
         condViews.clear();
 
+        listener.conditionsUpdated();
         conditionsChanged();
     }
 
+    public int getVisibleConditionsCount() {
+        return condContainer.isVisible() ? condViews.size() : 0;
+    }
 
     void conditionsChanged() {
 
@@ -225,8 +232,7 @@ public abstract class QueryView extends JPanel {
 
         collapseButton.setVisible(condViews.size() > 0);
 
-        getParent().getParent().validate();
-//        validate();
+        revalidate();
     }
 
     // сворачивание/разворачивание отбора
@@ -241,9 +247,11 @@ public abstract class QueryView extends JPanel {
         if (!collapsed) {
             collapseButton.setIcon(collapseIcon);
             condContainer.setVisible(true);
+            listener.conditionsUpdated();
         } else {
             collapseButton.setIcon(expandIcon);
             condContainer.setVisible(false);
+            listener.conditionsUpdated();
         }
     }
 

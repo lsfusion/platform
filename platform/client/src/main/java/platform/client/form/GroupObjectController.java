@@ -409,6 +409,10 @@ public class GroupObjectController implements GroupObjectLogicsSupplier {
         return grid.hasActiveFilter();
     }
 
+    public void moveComponent(Component component, int destination) {
+        panelToolbar.moveComponent(component, destination);
+    }
+
     public void addToToolbar(Component component) {
         panelToolbar.addComponent(component);
     }

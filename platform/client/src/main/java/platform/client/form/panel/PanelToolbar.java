@@ -22,6 +22,7 @@ public class PanelToolbar {
     private JPanel leftContainer;
     private JPanel rightContainer;
     private JPanel mainContainer;
+    private JPanel bottomContainer;
 
     public PanelToolbar(ClientFormController form, ClientFormLayout formLayout) {
         this.form = form;
@@ -39,6 +40,10 @@ public class PanelToolbar {
         rightContainer.setLayout(new BoxLayout(rightContainer, BoxLayout.X_AXIS));
         rightContainer.setAlignmentY(Component.TOP_ALIGNMENT);
 
+        bottomContainer = new JPanel();
+        bottomContainer.setLayout(new BoxLayout(bottomContainer, BoxLayout.X_AXIS));
+        bottomContainer.setAlignmentY(Component.TOP_ALIGNMENT);
+
         JPanel centerContainer = new JPanel();
         centerContainer.setLayout(new BoxLayout(centerContainer, BoxLayout.X_AXIS));
         centerContainer.add(Box.createHorizontalGlue());
@@ -47,6 +52,7 @@ public class PanelToolbar {
         mainContainer = new JPanel(new BorderLayout());
         mainContainer.add(leftContainer, BorderLayout.WEST);
         mainContainer.add(centerContainer, BorderLayout.EAST);
+        mainContainer.add(bottomContainer, BorderLayout.SOUTH);
     }
 
     public JPanel getView() {
@@ -65,9 +71,20 @@ public class PanelToolbar {
         }
     }
 
+    public void moveComponent(Component component, int destination) {
+        if (destination == SwingConstants.LEFT) {
+            bottomContainer.remove(component);
+            leftContainer.add(component, 0);
+        } else if (destination == SwingConstants.BOTTOM) {
+            leftContainer.remove(component);
+            bottomContainer.add(component);
+        }
+    }
+
     public void removeComponent(Component component) {
         leftContainer.remove(component);
         rightContainer.remove(component);
+        bottomContainer.remove(component);
     }
 
     public void addProperty(PropertyController property) {

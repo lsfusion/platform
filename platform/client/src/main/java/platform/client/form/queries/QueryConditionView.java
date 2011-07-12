@@ -13,7 +13,6 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Vector;
@@ -29,6 +28,8 @@ abstract class QueryConditionView extends JPanel implements ValueLinkListener {
 
     private final JComboBox classValueLinkView;
 
+    private JPanel centerPanel;
+
     private ValueLinkView valueView;
     private final Map<ClientValueLink, ValueLinkView> valueViews;
 
@@ -40,20 +41,23 @@ abstract class QueryConditionView extends JPanel implements ValueLinkListener {
     public QueryConditionView(ClientPropertyFilter ifilter, GroupObjectLogicsSupplier logicsSupplier) {
         filter = ifilter;
 
-        setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
+        centerPanel = new JPanel();
+        centerPanel.setLayout(new BoxLayout(centerPanel, BoxLayout.X_AXIS));
+
+        setLayout(new BorderLayout());
 
         Vector<ClientPropertyDraw> sources = new Vector<ClientPropertyDraw>();
         sources.addAll(logicsSupplier.getGroupObjectProperties());
 
         propertyView = new QueryConditionComboBox(sources);
-        add(propertyView);
+        centerPanel.add(propertyView);
 
         negationView = new JCheckBox(ClientResourceBundle.getString("form.queries.not"));
         negationView.setPreferredSize(new Dimension(negationView.getPreferredSize().width, PREFERRED_HEIGHT));
-        add(negationView);
+        centerPanel.add(negationView);
 
         compareView = new QueryConditionComboBox(Compare.values());
-        add(compareView);
+        centerPanel.add(compareView);
 
         if (filter.property != null) {
             setSelectedPropertyDraw(filter.property);
@@ -100,7 +104,7 @@ abstract class QueryConditionView extends JPanel implements ValueLinkListener {
 
         ClientValueLink[] classes = new ClientValueLink[]{userValue, objectValue, propertyValue};
         classValueLinkView = new QueryConditionComboBox(classes);
-        add(classValueLinkView);
+        centerPanel.add(classValueLinkView);
 
         filter.value = (ClientValueLink) classValueLinkView.getSelectedItem();
 
@@ -110,6 +114,8 @@ abstract class QueryConditionView extends JPanel implements ValueLinkListener {
                 filterChanged();
             }
         });
+
+        add(centerPanel, BorderLayout.CENTER);
 
         delButton = new FlatRolloverButton(deleteIcon);
         delButton.setFocusable(false);
@@ -125,19 +131,19 @@ abstract class QueryConditionView extends JPanel implements ValueLinkListener {
 
     void filterChanged() {
         if (valueView != null) {
-            remove(valueView);
+            centerPanel.remove(valueView);
         }
 
         valueView = valueViews.get(filter.value);
 
         if (valueView != null) {
-            add(valueView);
+            centerPanel.add(valueView);
             valueView.propertyChanged(filter.property);
         }
         compareView.setModel(new DefaultComboBoxModel(filter.property.baseType.getFilerCompares()));
         compareView.setSelectedItem(filter.property.baseType.getDefaultCompare());
 
-        add(delButton);
+        add(delButton, BorderLayout.EAST);
 
         validate();
 

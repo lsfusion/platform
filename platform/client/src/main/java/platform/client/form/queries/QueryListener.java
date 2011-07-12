@@ -8,4 +8,5 @@ interface QueryListener {
     public void addConditionPressed(boolean replace);
     public void conditionRemoved(ClientPropertyFilter filter);
     public void allConditionsRemoved();
+    public void conditionsUpdated();
 }

@@ -73,6 +73,8 @@ public class GridController {
                     table.requestFocusInWindow();
                     return true;
                 }
+
+                public void conditionsUpdated() {}
             };
             groupObjectController.addToToolbar(findController.getView());
             findController.getView().addActions(table);
@@ -90,6 +92,16 @@ public class GridController {
 
                     table.requestFocusInWindow();
                     return true;
+                }
+                public void conditionsUpdated() {
+                    QueryView view = filterController.getView();
+                    int destination;
+                    if (view.getVisibleConditionsCount() == 0) {
+                        destination = SwingConstants.LEFT;
+                    } else {
+                        destination = SwingConstants.BOTTOM;
+                    }
+                    groupObjectController.moveComponent(view,  destination);
                 }
             };
             groupObjectController.addToToolbar(filterController.getView());

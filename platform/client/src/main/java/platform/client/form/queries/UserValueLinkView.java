@@ -72,6 +72,11 @@ public class UserValueLinkView extends ValueLinkView {
         return valueTable.requestFocusInWindow();
     }
 
+    @Override
+    public Dimension getMinimumSize() {
+        return new Dimension(30, getPreferredSize().height);
+    }
+
     public void propertyChanged(ClientPropertyDraw iproperty) {
         property = iproperty;
 
