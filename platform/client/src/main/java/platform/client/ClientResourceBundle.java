@@ -12,7 +12,4 @@ public class ClientResourceBundle {
     public static String getString(String key) {
         return clientResourceBundle.getString(key);
     }
-    //public static void load(){
-    //        clientResourceBundle = ResourceBundle.getBundle("LabelsBundle", new Locale("ru"));
-    //}
 }

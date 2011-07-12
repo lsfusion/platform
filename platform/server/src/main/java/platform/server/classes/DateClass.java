@@ -93,14 +93,22 @@ public class DateClass extends DataClass<Date> {
         return "'" + value + "'";
     }
 
+    private static DateFormat getDateFormat() {
+        DateFormat dateFormat = DateFormat.getDateInstance(DateFormat.SHORT);
+        dateFormat.setTimeZone(Calendar.getInstance().getTimeZone());  // todo [dale]: Нужно брать таймзону из бизнес-логики
+        return dateFormat;
+    }
+
     public Date parseString(String s) throws ParseException {
         try {
-            DateFormat dateFormat = DateFormat.getDateInstance(DateFormat.SHORT);
-            dateFormat.setTimeZone(Calendar.getInstance().getTimeZone());  // todo [dale]: Нужно брать таймзону из бизнес-логики
-            return DateConverter.dateToSql(dateFormat.parse(s));
+            return DateConverter.dateToSql(getDateFormat().parse(s));
         } catch (Exception e) {
             throw new ParseException("error parsing date", e);
         }
+    }
+
+    public static String format(Date date) {
+        return getDateFormat().format(date);
     }
 
     public String getSID() {

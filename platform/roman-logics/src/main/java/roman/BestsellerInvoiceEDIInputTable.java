@@ -2,9 +2,11 @@ package roman;
 
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
+import platform.server.classes.DateClass;
 import platform.server.integration.EDIInputTable;
 
 import java.io.*;
+import java.sql.Date;
 import java.util.List;
 
 public class BestsellerInvoiceEDIInputTable extends EDIInputTable {
@@ -15,10 +17,11 @@ public class BestsellerInvoiceEDIInputTable extends EDIInputTable {
 
     protected void init() {
         handler = new ScanningHandler(INVOICE, "barcode", "quantity", "numberSku", "invoiceSID", "boxNumber", "country", "sid",
-                /*"colour", "colourCode",*/ "size", "originalName", "netWeight", "price") {
+                /*"colour", "colourCode",*/ "size", "originalName", "netWeight", "price", "date") {
             String imd1 = ""
                     ,
                     imd2 = "";
+            String date;
             String price = "";
             String country = "";
             String netWeight = "";
@@ -26,6 +29,7 @@ public class BestsellerInvoiceEDIInputTable extends EDIInputTable {
             String sid = "";
             String boxNumber = "";
             String barcode = "";
+
 
             @Override
             public void addRow() {
@@ -39,6 +43,7 @@ public class BestsellerInvoiceEDIInputTable extends EDIInputTable {
                         }
                     }
                     if (!barcodeAgain) {
+                        row.put("date", date);
                         row.put("price", price);
                         row.put("country", country);
                         row.put("netWeight", netWeight);
@@ -83,9 +88,19 @@ public class BestsellerInvoiceEDIInputTable extends EDIInputTable {
                             if (comp.get(0).equals("52")) {
                                 row.put("quantity", comp.get(1));
                             }
+                        } else if (segmentID.equals("DTM01")) {
+                            List<String> comp = getComposition();
+                            String stringDate="";
+                            if (comp.get(0).equals("137"))
+                            {
+                            stringDate = comp.get(1);
+                            Date sDate = new Date(Integer.parseInt(stringDate.substring(0, 4)) - 1900, Integer.parseInt(stringDate.substring(4, 6)) - 1, Integer.parseInt(stringDate.substring(6, 8)));
+                            date = DateClass.format(sDate);
+                            }
                         } else if (segmentID.equals("PRI01")) {
                             List<String> comp = getComposition();
                             price = comp.get(1);
+
                         } else if (segmentID.startsWith("IMD")) {
                             if (segmentID.equals("IMD01")) {
                                 imd1 = getTokenValue();

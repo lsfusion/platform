@@ -1,11 +1,16 @@
 package roman;
 
+import org.apache.commons.beanutils.converters.StringConverter;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
+import platform.base.DateConverter;
+import platform.server.classes.DateClass;
 import platform.server.integration.EDIInputTable;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.sql.Date;
+import java.text.DateFormat;
 import java.util.List;
 
 public class SOliverInvoiceEDIInputTable extends EDIInputTable {
@@ -14,15 +19,17 @@ public class SOliverInvoiceEDIInputTable extends EDIInputTable {
     }
 
     protected void init() {
-        handler = new ScanningHandler(INVOICE, "barcode", "quantity", "numberSku", "invoiceSID", "boxNumber", "country", "price") {
+        handler = new ScanningHandler(INVOICE, "barcode", "quantity", "numberSku", "invoiceSID", "boxNumber", "country", "price", "date") {
             String invoiceSID = "";
             String boxNumber = "";
+            String date;
 
             @Override
             public void addRow() {
                 if (!row.isEmpty()) {
                     row.put("invoiceSID", invoiceSID);
                     row.put("boxNumber", boxNumber);
+                    row.put("date", date);
                     super.addRow();
                 }
             }
@@ -54,7 +61,13 @@ public class SOliverInvoiceEDIInputTable extends EDIInputTable {
                         } else if (segmentID.equals("PRI01")) {
                             List<String> comp = getComposition();
                             row.put("price", comp.get(1));
+                        } else if(segmentID.equals("DTM01")) {
+                            List<String> comp = getComposition();
+                            String stringDate = comp.get(1);
+                            Date sDate = new Date(Integer.parseInt(stringDate.substring(0,4))-1900, Integer.parseInt(stringDate.substring(4,6))-1, Integer.parseInt(stringDate.substring(6,8)));
+                            date = DateClass.format(sDate);
                         }
+
                     }
                 } catch (IOException e1) {
                     e1.printStackTrace();

@@ -21,13 +21,13 @@ public class BestsellerImportInvoiceActionProperty extends ImportBoxInvoiceActio
         BestsellerInvoiceEDIInputTable invoiceTable = new BestsellerInvoiceEDIInputTable(inFile);
         return new InvoicePricatMergeInputTable(BL, invoiceTable, ResultField.BARCODE, ResultField.QUANTITY, ResultField.NUMBERSKU,
                 ResultField.INVOICE, ResultField.BOXNUMBER, ResultField.COUNTRY, ResultField.ARTICLE, /*ResultField.COLOR, ResultField.COLORCODE,*/
-                ResultField.SIZE, ResultField.ORIGINALNAME, ResultField.NETWEIGHT, ResultField.PRICE);
+                ResultField.SIZE, ResultField.ORIGINALNAME, ResultField.NETWEIGHT, ResultField.PRICE, ResultField.DATE);
     }
 
     @Override
     protected SingleSheetImporter createImporter(ImportInputTable inputTable) {
         return new EDIInvoiceImporter(inputTable, barCodeField, sidField, invoiceSIDField, boxNumberField, colorCodeField,
-                colorNameField, sizeField, originalNameField, countryField, unitNetWeightField, compositionField, unitPriceField,
+                colorNameField, sizeField, originalNameField, countryField, unitNetWeightField, compositionField, unitPriceField, dateInvoiceField,
                 RRPField, unitQuantityField, numberSkuField, customCodeField, customCode6Field);
     }
 }

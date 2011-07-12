@@ -30,7 +30,7 @@ import java.util.Map;
 
 public abstract class ImportBoxInvoiceActionProperty extends BaseImportActionProperty {
 
-    protected ImportField invoiceSIDField, boxNumberField, barCodeField, colorCodeField, sidField,
+    protected ImportField invoiceSIDField, dateInvoiceField, boxNumberField, barCodeField, colorCodeField, sidField,
             colorNameField, sizeField, compositionField, countryField, customCodeField, customCode6Field,
             unitPriceField, unitQuantityField, unitNetWeightField, originalNameField, numberSkuField, RRPField;
 
@@ -50,6 +50,7 @@ public abstract class ImportBoxInvoiceActionProperty extends BaseImportActionPro
 
     private void initFields() {
         invoiceSIDField = new ImportField(LM.sidDocument);
+        dateInvoiceField = new ImportField(LM.baseLM.date);
         boxNumberField = new ImportField(LM.sidSupplierBox);
         barCodeField = new ImportField(LM.baseLM.barcode);
         colorCodeField = new ImportField(LM.sidColorSupplier);
@@ -91,6 +92,7 @@ public abstract class ImportBoxInvoiceActionProperty extends BaseImportActionPro
             invoiceKey = new ImportKey(LM.simpleInvoice, LM.documentSIDSupplier.getMapping(invoiceSIDField, supplier));
         }
         properties.add(new ImportProperty(invoiceSIDField, LM.sidDocument.getMapping(invoiceKey)));
+        properties.add(new ImportProperty(dateInvoiceField, LM.baseLM.date.getMapping(invoiceKey)));
         properties.add(new ImportProperty(supplier, LM.supplierDocument.getMapping(invoiceKey)));
 
         ImportKey<?> boxKey = null;

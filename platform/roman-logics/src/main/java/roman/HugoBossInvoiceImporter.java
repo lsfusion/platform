@@ -1,10 +1,12 @@
 package roman;
 
 import platform.base.BaseUtils;
+import platform.server.classes.DateClass;
 import platform.server.integration.ImportField;
 import platform.server.integration.ImportInputTable;
 import platform.server.integration.SingleSheetImporter;
 
+import java.sql.Date;
 import java.text.ParseException;
 
 /**
@@ -14,9 +16,9 @@ import java.text.ParseException;
  */
 
 public class HugoBossInvoiceImporter extends SingleSheetImporter {
-    private static final int LAST_COLUMN = 35;
+    private static final int LAST_COLUMN = 36;
 
-    private final static int CUSTOM_NUMBER = 15, CUSTOM_NUMBER_6 = 16, EAN = 0, ARTICLE = 1, COLORCODE = 4, SIZE = 6;
+    private final static int CUSTOM_NUMBER = 16, CUSTOM_NUMBER_6 = 17, EAN = 0, ARTICLE = 1, COLORCODE = 5, SIZE = 7, DATE = 12;
 
     public HugoBossInvoiceImporter(ImportInputTable inputTable, Object... fields) {
         super(inputTable, fields);
@@ -29,7 +31,7 @@ public class HugoBossInvoiceImporter extends SingleSheetImporter {
 
     @Override
     protected String getCellString(ImportField field, int row, int column) throws ParseException {
-        if (column == LAST_COLUMN + 1) {
+        if ((column >= LAST_COLUMN + 1)) {        //!!!experiment  ||(column==14)||(column==17)
             return "";
         }
         return super.getCellString(field, row, column);
@@ -40,6 +42,13 @@ public class HugoBossInvoiceImporter extends SingleSheetImporter {
         value = value.trim();
 
         switch (column) {
+            case DATE:
+                if (value.length() < 7)
+                    return "";
+                else {
+                    Date sDate = new Date(Integer.parseInt(value.substring(0, 4)) - 1900, Integer.parseInt(value.substring(4, 6)) - 1, Integer.parseInt(value.substring(6, 8)));
+                    return DateClass.format(sDate);
+                }
             case CUSTOM_NUMBER:
                 if (value.length() < 10) {
                     value = value + BaseUtils.replicate('0', 10 - value.length());

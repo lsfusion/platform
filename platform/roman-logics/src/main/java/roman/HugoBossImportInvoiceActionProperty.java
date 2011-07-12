@@ -33,16 +33,16 @@ public class HugoBossImportInvoiceActionProperty extends ImportBoxInvoiceActionP
 
     @Override
     protected ImportInputTable createTable(ByteArrayInputStream inFile) throws BiffException, IOException {
-        ImportInputTable invoiceTable = new CSVInputTable(new InputStreamReader(inFile), 2, ';', false, 1, 1, 11, 17, 18, 19, 20, 21, 21, 22, 25, 26, 27, 28);
-        return new InvoicePricatMergeInputTable(BL, invoiceTable, ResultField.INVOICE, ResultField.BOXNUMBER, ResultField.NUMBERSKU,
+        ImportInputTable invoiceTable = new CSVInputTable(new InputStreamReader(inFile), 2, ';', false, 1, 1, 2, 11, 17, 18, 19, 20, 21, 21, 22, 25, 26, 27, 28);
+        return new InvoicePricatMergeInputTable(BL, invoiceTable, ResultField.INVOICE, ResultField.BOXNUMBER, ResultField.DATE, ResultField.NUMBERSKU,
                 ResultField.ORIGINALNAME, ResultField.ARTICLE, ResultField.COLORCODE, ResultField.COMPOSITION, ResultField.CUSTOMCODE,
                 ResultField.CUSTOMCODE6, ResultField.COUNTRY, ResultField.BARCODE, ResultField.SIZE, ResultField.QUANTITY, ResultField.PRICE);
     }
 
     @Override
     protected SingleSheetImporter createImporter(ImportInputTable inputTable) {
-        return new HugoBossInvoiceImporter(inputTable, barCodeField, sidField, invoiceSIDField, boxNumberField, colorCodeField,
-                colorNameField, sizeField, originalNameField, countryField, unitNetWeightField, compositionField, unitPriceField,
+        return new HugoBossInvoiceImporter(inputTable, barCodeField, sidField, invoiceSIDField, boxNumberField,  colorCodeField,
+                colorNameField, sizeField, originalNameField, countryField, unitNetWeightField, compositionField, unitPriceField, dateInvoiceField,
                 RRPField, unitQuantityField, numberSkuField, customCodeField, customCode6Field);
     }
 }

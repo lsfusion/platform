@@ -40,6 +40,7 @@ public class HugoBossPricatCSVImportActionProperty extends ActionProperty {
 
         ImportField barcodeField = new ImportField(LM.barcodePricat);
         ImportField articleField = new ImportField(LM.articleNumberPricat);
+        ImportField dateInvoiceField = new ImportField(LM.baseLM.date);
         ImportField colorCodeField = new ImportField(LM.colorCodePricat);
         ImportField sizeField = new ImportField(LM.sizePricat);
         ImportField priceField = new ImportField(LM.pricePricat);
@@ -52,6 +53,7 @@ public class HugoBossPricatCSVImportActionProperty extends ActionProperty {
         ImportKey<?> pricatKey = new ImportKey(LM.pricat, LM.barcodeToPricat.getMapping(barcodeField));
         properties.add(new ImportProperty(barcodeField, LM.barcodePricat.getMapping(pricatKey)));
         properties.add(new ImportProperty(articleField, LM.articleNumberPricat.getMapping(pricatKey)));
+        properties.add(new ImportProperty(dateInvoiceField, LM.baseLM.date.getMapping(pricatKey)));
         properties.add(new ImportProperty(colorCodeField, LM.colorCodePricat.getMapping(pricatKey)));
         properties.add(new ImportProperty(sizeField, LM.sizePricat.getMapping(pricatKey)));
         properties.add(new ImportProperty(priceField, LM.pricePricat.getMapping(pricatKey)));
@@ -65,7 +67,7 @@ public class HugoBossPricatCSVImportActionProperty extends ActionProperty {
             ImportKey<?>[] keysArray = {pricatKey};
             try {
                 CSVInputTable inputTable = new CSVInputTable(new InputStreamReader(new ByteArrayInputStream(file)), 2, ';');
-                ImportTable table = new HugoBossPricatCSVImporter(inputTable, new Object[] {null, articleField, null, colorCodeField,
+                ImportTable table = new HugoBossPricatCSVImporter(inputTable, new Object[] {null, articleField, dateInvoiceField, colorCodeField,
                         5, barcodeField, sizeField, priceField, 15, compositionField, 21, customCategoryOriginalField, 28, colorField,
                         32, netWeightField}).getTable();
                 new IntegrationService(session, table, Arrays.asList(keysArray), properties).synchronize(true, true, false);

@@ -24,7 +24,7 @@ public class WomenSecretImportInvoiceActionProperty extends ImportBoxInvoiceActi
         return new WomenSecretInvoiceImporter(inputTable, new Object[] {sidField, null, null, null, compositionField,
                 new ImportField[] {customCodeField, customCode6Field}, null, countryField, unitPriceField, null,
                 null, unitNetWeightField, null, invoiceSIDField, boxNumberField, null, colorCodeField, sizeField, unitQuantityField,
-                null, originalNameField, barCodeField, numberSkuField, new ImportField[] {colorNameField, RRPField}});
+                null, originalNameField, barCodeField, numberSkuField, new ImportField[] {colorNameField, RRPField}, dateInvoiceField});
     }
 
     @Override
