@@ -805,7 +805,7 @@ public class RomanLogicsModule extends LogicsModule {
     private LP nameCountryOfOriginFreightSku;
     private LP equalsItemArticleComposite;
     private LP executeArticleCompositeItemSIDSupplier;
-    private LP executeChangeFreightClass, executeChangeFreightChangedClass;
+    private LP executeChangeFreightClass, executeChangeFreightChangedClass, executeChangeFreightShippedClass;
     private CreateItemFormEntity createItemForm;
     private FindItemFormEntity findItemFormBox;
     private FindItemFormEntity findItemFormSimple;
@@ -1550,6 +1550,13 @@ public class RomanLogicsModule extends LogicsModule {
                                                 is(freightChanged), 1);
         executeChangeFreightChangedClass.property.askConfirm = true;
         executeChangeFreightChangedClass.setImage("sign_tick.png");
+
+        executeChangeFreightShippedClass = addJProp("Пометить как отгруженный", and(false, true),
+                                                addEPAProp(true, executeChangeFreightClass, 1, 2, baseLM.apply), 1, 2,
+                                                is(freightPriced), 1,
+                                                is(freightShipped), 1);
+        executeChangeFreightShippedClass.property.askConfirm = true;
+        executeChangeFreightShippedClass.setImage("sign_tick.png");
 
         supplierArticleSku = addJProp(idGroup, "supplierArticleSku", "Поставщик (ИД)", supplierArticle, articleSku, 1);
         nameSupplierArticleSku = addJProp(baseGroup, "nameSupplierArticleSku", "Поставщик", baseLM.name, supplierArticleSku, 1);
@@ -5490,10 +5497,9 @@ public class RomanLogicsModule extends LogicsModule {
             addPropertyDraw(freightEditFA, objFreight).forceViewType = ClassViewType.GRID;
             addPropertyDraw(freightCompleteFA, objFreight).forceViewType = ClassViewType.GRID;
             addPropertyDraw(freightChangedFA, objFreight).forceViewType = ClassViewType.GRID;
-
             addPropertyDraw(executeChangeFreightChangedClass, objFreight, (DataObject)freightChanged.getClassObject()).forceViewType = ClassViewType.GRID;
-
             addPropertyDraw(freightPricedFA, objFreight).forceViewType = ClassViewType.GRID;
+            addPropertyDraw(executeChangeFreightShippedClass, objFreight, (DataObject)freightShipped.getClassObject()).forceViewType = ClassViewType.GRID;
             addPropertyDraw(baseLM.delete, objFreight).forceViewType = ClassViewType.GRID;
 
             GroupObjectEntity gobjDates = new GroupObjectEntity(genID());
