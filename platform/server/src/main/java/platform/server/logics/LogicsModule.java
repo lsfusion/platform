@@ -692,7 +692,7 @@ public abstract class LogicsModule {
         return addGCAProp(group, name, caption, groupObject, mainProperty, toPrimitive(groupInts), getterProperty, toPrimitive(getterInts));
     }
 
-    private LP addGCAProp(AbstractGroup group, String name, String caption, GroupObjectEntity groupObject, LP mainProperty, int[] groupInts, LP getterProperty, int[] getterInts) {
+    protected LP addGCAProp(AbstractGroup group, String name, String caption, GroupObjectEntity groupObject, LP mainProperty, int[] groupInts, LP getterProperty, int[] getterInts) {
         return addProperty(group, new LP<ClassPropertyInterface>(
                 new GroupChangeActionProperty(name, caption, groupObject,
                         mainProperty, groupInts,

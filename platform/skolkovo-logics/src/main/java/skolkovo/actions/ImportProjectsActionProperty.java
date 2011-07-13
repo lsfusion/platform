@@ -35,7 +35,7 @@ public class ImportProjectsActionProperty extends ActionProperty {
 
     public ImportProjectsActionProperty(SkolkovoLogicsModule LM) {
         //super(gen, caption, classes);
-        super(LM.genSID(), "Импортировать документы", new ValueClass[]{});
+        super(LM.genSID(), "Импортировать проекты", new ValueClass[]{});
         this.LM = LM;
     }
 

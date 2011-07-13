@@ -257,9 +257,9 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP clusterExpert, nameNativeClusterExpert;
     LP primClusterExpert, extraClusterExpert, inClusterExpert;
     LP clusterInExpertVote;
+    LP inProjectCluster, inBackwardProjectCluster, backwardFillCluster;
     public LP clusterProject, nameNativeClusterProject, nameForeignClusterProject;
     LP clusterVote, nameNativeClusterVote;
-    LP clusterProjectVote, equalsClusterProjectVote;
     public LP claimerProject;
     LP nameNativeClaimerProject;
     LP nameForeignClaimerProject;
@@ -346,13 +346,21 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP acceptedForeignVote;
 
     LP acceptedVote;
-    LP succeededVote, succeededClusterVote;
+    LP succeededVote;
+    LP openedSucceededVote;
     LP doneExpertVoteDateFromDateTo;
     LP quantityDoneExpertDateFromDateTo;
-    LP voteSucceededProject;
+    LP voteSucceededProjectCluster;
+    LP voteOpenedSucceededProject;
     LP noCurrentVoteProject;
-    LP voteValuedProject;
+    LP valuedProjectCluster;
+    LP voteValuedProjectCluster;
+    LP acceptedProjectCluster;
+    LP rejectedProjectCluster;
+    LP clusterAcceptedProject;
     LP acceptedProject;
+    LP rejectedProject;
+    LP valuedProject;
     LP voteRejectedProject;
     LP needExtraVoteProject;
 
@@ -395,6 +403,11 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP dateProjectVote;
     LP numberNewExpertVote;
     LP numberOldExpertVote;
+
+    LP numberCluster;
+    LP clusterNumber;
+    LP currentClusterProject;
+    LP nameNativeCurrentClusterProject;
 
     LP languageExpert;
     LP nameLanguageExpert;
@@ -889,13 +902,6 @@ public class SkolkovoLogicsModule extends LogicsModule {
         openFileStatementNonRussianSpecialist = addOFAProp(baseGroup, "Открыть файл заявления", fileStatementNonRussianSpecialist);
 
 
-        clusterVote = addDCProp(idGroup, "clusterVote", "Кластер (ИД)", true, clusterProject, true, projectVote, 1);
-        clusterProjectVote = addJProp(idGroup, "clusterProjectVote", "Кластер проекта (ИД)", clusterProject, projectVote, 1);
-        equalsClusterProjectVote = addJProp(baseGroup, true, "equalsClusterProjectVote", "Тек. кластер", baseLM.equals2, clusterVote, 1, clusterProjectVote, 1);
-        nameNativeClusterVote = addJProp(baseGroup, "nameNativeClusterVote", "Кластер", nameNative, clusterVote, 1);
-
-        clusterInExpertVote = addJProp("clusterInExpertVote", "Вкл", inClusterExpert, clusterVote, 2, 1);
-
         nameNativeClaimerVote = addJProp(baseGroup, "nameNativeClaimerVote", "Заявитель", nameNativeClaimerProject, projectVote, 1);
         nameNativeClaimerVote.setMinimumWidth(10); nameNativeClaimerVote.setPreferredWidth(50);
         nameForeignClaimerVote = addJProp(baseGroup, "nameForeignClaimerVote", "Заявитель (иностр.)", nameForeignClaimerProject, projectVote, 1);
@@ -1075,7 +1081,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
                                 acceptedInClusterVote, 1, acceptedInnovativeVote, 1, acceptedForeignVote, 1);
 
         succeededVote = addJProp(voteResultGroup, "succeededVote", true, "Состоялось", baseLM.groeq2, quantityDoneVote, 1, limitExperts); // достаточно экспертов
-        succeededClusterVote = addJProp("succeededClusterVote", "Состоялось в тек. кластере", baseLM.and1, succeededVote, 1, equalsClusterProjectVote, 1);
+        openedSucceededVote = addJProp("openedSucceededVote", "Открыто и состоялось", baseLM.and1, succeededVote, 1, openedVote, 1);
+//        succeededClusterVote = addJProp("succeededClusterVote", "Состоялось в тек. кластере", baseLM.and1, succeededVote, 1, equalsClusterProjectVote, 1);
 
         LP betweenExpertVoteDateFromDateTo = addJProp(baseLM.betweenDates, dateExpertVote, 1, 2, 3, 4);
         doneExpertVoteDateFromDateTo = addJProp(baseLM.and1, doneNewExpertVote, 1, 2, betweenExpertVoteDateFromDateTo, 1, 2, 3, 4);
@@ -1085,19 +1092,53 @@ public class SkolkovoLogicsModule extends LogicsModule {
         quantityInExpertDateFromDateTo = addSGProp("quantityInExpertDateFromDateTo", "Кол-во участ.",
                 addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), inExpertVoteDateFromDateTo, 1, 2, 3, 4), 1, 3, 4); // в скольки заседаниях поучавствовал
 
-        voteSucceededProject = addAGProp(idGroup, "voteSucceededProject", true, "Успешное заседание (ИД)", succeededClusterVote, 1, projectVote, 1);
+        clusterVote = addDProp(idGroup, "clusterVote", "Кластер (ИД)", cluster, vote);
+        nameNativeClusterVote = addJProp(baseGroup, "nameNativeClusterVote", "Кластер", nameNative, clusterVote, 1);
+
+        clusterInExpertVote = addJProp("clusterInExpertVote", "Вкл", inClusterExpert, clusterVote, 2, 1);
+
+        voteSucceededProjectCluster = addAGProp(idGroup, "voteSucceededProjectCluster", true, "Успешное заседание (ИД)", succeededVote, 1, projectVote, 1, clusterVote, 1);
+        voteOpenedSucceededProject = addAGProp(idGroup, "voteOpenedSucceededProject", true, "Успешное открытое заседание (ИД)", openedSucceededVote, 1, projectVote, 1);
 
         noCurrentVoteProject = addJProp(projectStatusGroup, "noCurrentVoteProject", "Нет текущих заседаний", baseLM.andNot1, is(project), 1, voteInProgressProject, 1); // нету текущих заседаний
 
-        voteValuedProject = addJProp(idGroup, "voteValuedProject", true, "Оцененнное заседание (ИД)", baseLM.and1, voteSucceededProject, 1, noCurrentVoteProject, 1); // нет открытого заседания и есть состояшееся заседания
+        valuedProjectCluster = addJProp(idGroup, "valuedProjectCluster", "Заседание состоялось", closedVote, voteSucceededProjectCluster, 1, 2);
+        voteValuedProjectCluster = addJProp(idGroup, "voteValuedProjectCluster", true, "Оцененное заседание (ИД)", baseLM.and1, voteSucceededProjectCluster, 1, 2, valuedProjectCluster, 1, 2);
+//        voteValuedProject = addJProp(idGroup, "voteValuedProject", true, "Оцененнное заседание (ИД)", baseLM.and1, voteSucceededProject, 1, noCurrentVoteProject, 1); // нет открытого заседания и есть состояшееся заседания
 
-        acceptedProject = addJProp(projectStatusGroup, "acceptedProject", "Оценен положительно", acceptedVote, voteValuedProject, 1);
+        acceptedProjectCluster = addJProp(baseGroup, "acceptedProjectCluster", true, "Оценен положительно", acceptedVote, voteValuedProjectCluster, 1, 2);
+        rejectedProjectCluster = addJProp(baseGroup, "rejectedProjectCluster", true, "Оценен отрицательно", baseLM.andNot1, voteValuedProjectCluster, 1, 2, acceptedProjectCluster, 1, 2);
 
-        needExtraVoteProject = addJProp("needExtraVoteProject", true, "Треб. заседание", and(true, true, true),
+        clusterAcceptedProject = addAGProp(idGroup, "clusterAcceptedProject", true, "Кластер (ИД)", acceptedProjectCluster, 2);
+        acceptedProject = addJProp(baseGroup, "acceptedProject", "Оценен положительно", baseLM.and1, addCProp(LogicalClass.instance, true, project), 1, clusterAcceptedProject, 1);
+
+        inProjectCluster = addDProp(baseGroup, "inProjectCluster", "Вкл", LogicalClass.instance, project, cluster);
+        inBackwardProjectCluster = addJProp("inBackwardProjectCluster", "Вкл (обр.)", baseLM.equals2, clusterProject, 1, 2);
+        backwardFillCluster = addGCAProp(actionGroup, "backwardFillCluster", "Заполнить кластера проектов (обратная совместимость)", null, inProjectCluster, new int[0], inBackwardProjectCluster, new int[0]);
+
+        numberCluster = addDProp(baseGroup, "numberCluster", "Приоритет", IntegerClass.instance, cluster);
+        clusterNumber = addAGProp("clusterName", "Кластер (ИД)", numberCluster);
+
+        currentClusterProject = addJProp("currentClusterProject", true, "Тек. кластер (ИД)", clusterNumber,
+                addMGProp(addJProp(and(false, true), numberCluster, 2, inProjectCluster, 1, 2, rejectedProjectCluster, 1, 2), 1), 1);
+
+//        firstClusterProject = addJProp("firstClusterProject", true, "Первый кластер (ИД)", clusterNumber,
+//                addMGProp(addJProp(and(false, false), numberCluster, 2, inProjectCluster, 1, 2), 1), 1);
+        nameNativeCurrentClusterProject = addJProp(baseGroup, "nameCurrentClusterProject", "Тек. кластер", nameNative, currentClusterProject, 1);
+
+        rejectedProject = addJProp("rejectedProject", "Оценен отрицательно", baseLM.andNot1, addCProp(LogicalClass.instance, true, project), 1, currentClusterProject, 1);
+
+        valuedProject = addSUProp("valuedProject", "Оценен", Union.OVERRIDE, acceptedProject, rejectedProject);
+
+        needExtraVoteProject = addJProp("needExtraVoteProject", true, "Треб. заседание", and(true, true, true, false),
                                         is(project), 1,
                                         notEnoughProject, 1,
                                         voteInProgressProject, 1,
-                                        voteSucceededProject, 1); // есть открытое заседания и есть состояшееся заседания !!! нужно создать новое заседание
+                                        clusterAcceptedProject, 1,
+                                        currentClusterProject, 1); // есть открытое заседания и есть состояшееся заседания !!! нужно создать новое заседание
+
+//        clusterVote.setDerivedForcedChange(false, currentClusterProject, 1, is(vote), 1);
+//        clusterVote = addDCProp(idGroup, "clusterVote", "Кластер (ИД)", true, currentClusterProject, true, projectVote, 1);
 
         addConstraint(addJProp("Эксперт не соответствует необходимому кластеру", baseLM.andNot1,
                 inExpertVote, 1, 2, clusterInExpertVote, 1, 2), false);
@@ -1129,11 +1170,11 @@ public class SkolkovoLogicsModule extends LogicsModule {
 //        voteInProgressProject, 1, addCProp(projectStatus, "inProgress", project), 1,
 
         statusProject = addCaseUProp(idGroup, "statusProject", true, "Статус (ИД)",
-                voteValuedProject, 1, addIfElseUProp(addCProp(projectStatus, "accepted", project), addCProp(projectStatus, "rejected", project), acceptedProject, 1), 1,
-                voteSucceededProject, 1, addCProp(projectStatus, "succeeded", project), 1,
+                acceptedProject, 1, addCProp(projectStatus, "accepted", project), 1,
+                rejectedProject, 1, addCProp(projectStatus, "rejected", project), 1,
+                voteOpenedSucceededProject, 1, addCProp(projectStatus, "succeeded", project), 1,
                 voteInProgressProject, 1, addCProp(projectStatus, "inProgress", project), 1,
-                needExtraVoteProject, 1, addCProp(projectStatus, "needExtraVote", project), 1,
-                notEnoughProject, 1, addCProp(projectStatus, "needDocuments", project), 1);
+                addIfElseUProp(addCProp(projectStatus, "needDocuments", project), addCProp(projectStatus, "needExtraVote", project), notEnoughProject, 1), 1);
         nameStatusProject = addJProp(projectInformationGroup, "nameStatusProject", "Статус", baseLM.name, statusProject, 1);
 
         dateProject = addJProp("dateProject", "Дата проекта", baseLM.and1, baseLM.date, 1, is(project), 1);
@@ -1435,6 +1476,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
     private class ProjectFormEntity extends FormEntity<SkolkovoBusinessLogics> {
         private ObjectEntity objProject;
+        private ObjectEntity objCluster;
         private ObjectEntity objVote;
         private ObjectEntity objDocument;
         private ObjectEntity objExpert;
@@ -1444,17 +1486,20 @@ public class SkolkovoLogicsModule extends LogicsModule {
         private ProjectFormEntity(NavigatorElement parent, String sID) {
             super(parent, sID, "Реестр проектов");
 
-
-            objProject = addSingleGroupObject(project, baseLM.date, nameNative, nameForeign,  nameNativeClusterProject, nameNativeJoinClaimerProject, nameStatusProject, autoGenerateProject, generateVoteProject, editProject);
+            objProject = addSingleGroupObject(project, baseLM.date, nameNative, nameForeign,  nameNativeClusterProject, nameNativeCurrentClusterProject, nameNativeJoinClaimerProject, nameStatusProject, autoGenerateProject, generateVoteProject, editProject);
             addObjectActions(this, objProject);
 
 //            addPropertyDraw(addProject).toDraw = objProject.groupTo;
 //            getPropertyDraw(addProject).forceViewType = ClassViewType.PANEL;
 
+            objCluster = addSingleGroupObject(cluster);
+            addPropertyDraw(inProjectCluster, objProject, objCluster);
+            addPropertyDraw(objCluster, nameNative, nameForeign, numberCluster);
+
             getPropertyDraw(generateVoteProject).forceViewType = ClassViewType.PANEL;
             getPropertyDraw(generateVoteProject).propertyCaption = addPropertyObject(hideGenerateVoteProject, objProject);
 
-            objVote = addSingleGroupObject(vote, dateStartVote, dateEndVote, nameNativeClusterVote, equalsClusterProjectVote, openedVote, succeededVote, acceptedVote, quantityDoneVote, quantityInClusterVote, quantityInnovativeVote, quantityForeignVote, emailClaimerVote, baseLM.delete);
+            objVote = addSingleGroupObject(vote, dateStartVote, dateEndVote, nameNativeClusterVote, openedVote, succeededVote, acceptedVote, quantityDoneVote, quantityInClusterVote, quantityInnovativeVote, quantityForeignVote, emailClaimerVote, baseLM.delete);
             objVote.groupTo.banClassView.addAll(BaseUtils.toList(ClassViewType.PANEL, ClassViewType.HIDE));
 
 //            getPropertyDraw(copyResultsVote).forceViewType = ClassViewType.PANEL;
@@ -1492,19 +1537,24 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
             projectFilterGroup = new RegularFilterGroupEntity(genID());
             projectFilterGroup.addFilter(new RegularFilterEntity(genID(),
-                                                                 new NotNullFilterEntity(addPropertyObject(voteValuedProject, objProject)),
+                                                                 new NotNullFilterEntity(addPropertyObject(valuedProject, objProject)),
                                                                  "Оценен",
                                                                  KeyStroke.getKeyStroke(KeyEvent.VK_F10, 0)));
             addRegularFilterGroup(projectFilterGroup);
 
-            addHintsNoUpdate(statusProject);
+            addHintsIncrementTable(quantityDoneVote, notEnoughProject, acceptedVote, succeededVote, voteSucceededProjectCluster, voteValuedProjectCluster, clusterAcceptedProject, currentClusterProject);
+//            addHintsNoUpdate(statusProject);
             setPageSize(0);
+
+            setReadOnly(true, objCluster.groupTo);
+            setReadOnly(inProjectCluster, false);
         }
 
         @Override
         public FormView createDefaultRichDesign() {
             DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign();
 
+            design.defaultOrders.put(design.get(getPropertyDraw(numberCluster)), true);
 //            design.get(getPropertyDraw(addProject)).drawToToolbar = true;
 
             ContainerView specContainer = design.createContainer();
@@ -1512,14 +1562,18 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
             design.getMainContainer().addAfter(specContainer, design.getGroupObjectContainer(objProject.groupTo));
 
-            ContainerView expertContainer = design.createContainer("Экспертиза по существу");
-            expertContainer.add(design.getGroupObjectContainer(objVote.groupTo));
-            expertContainer.add(design.getGroupObjectContainer(objExpert.groupTo));
+            ContainerView clusterContainer = design.createContainer("Кластеры");
+            clusterContainer.add(design.getGroupObjectContainer(objCluster.groupTo));
 
             ContainerView docContainer = design.createContainer("Документы");
             docContainer.add(design.getGroupObjectContainer(objDocumentTemplate.groupTo));
             docContainer.add(design.getGroupObjectContainer(objDocument.groupTo));
 
+            ContainerView expertContainer = design.createContainer("Экспертиза по существу");
+            expertContainer.add(design.getGroupObjectContainer(objVote.groupTo));
+            expertContainer.add(design.getGroupObjectContainer(objExpert.groupTo));
+
+            specContainer.add(clusterContainer);
             specContainer.add(docContainer);
             specContainer.add(expertContainer);
 //
@@ -1562,7 +1616,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         private VoteFormEntity(NavigatorElement parent, String sID, boolean restricted) {
             super(parent, sID, (!restricted) ? "Реестр заседаний" : "Результаты заседаний");
 
-            objVote = addSingleGroupObject(vote, nameNativeProjectVote, nameNativeClaimerVote, nameNativeClusterVote, equalsClusterProjectVote, dateStartVote, dateEndVote, openedVote, succeededVote, acceptedVote, quantityDoneVote, quantityInClusterVote, quantityInnovativeVote, quantityForeignVote);
+            objVote = addSingleGroupObject(vote, nameNativeProjectVote, nameNativeClaimerVote, nameNativeClusterVote, dateStartVote, dateEndVote, openedVote, succeededVote, acceptedVote, quantityDoneVote, quantityInClusterVote, quantityInnovativeVote, quantityForeignVote);
             if (!restricted)
                 addPropertyDraw(objVote, emailClosedVote, baseLM.delete);
 
@@ -2267,7 +2321,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             // считываем всех экспертов, которые уже голосовали по проекту
             Query<String, String> query = new Query<String, String>(Collections.singleton("key"));
             query.and(doneProjectExpert.getExpr(modifier, projectObject.getExpr(), query.mapKeys.get("key")).getWhere());
-            query.and(inClusterExpert.getExpr(modifier, clusterProject.getExpr(modifier, projectObject.getExpr()), query.mapKeys.get("key")).getWhere());
+            query.and(inClusterExpert.getExpr(modifier, currentClusterProject.getExpr(modifier, projectObject.getExpr()), query.mapKeys.get("key")).getWhere());
             query.properties.put("vote", voteProjectExpert.getExpr(modifier, projectObject.getExpr(), query.mapKeys.get("key")));
 
             Map<DataObject, DataObject> previousResults = new HashMap<DataObject, DataObject>();
@@ -2277,7 +2331,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
             // считываем всех неголосовавших экспертов из этого кластера
             query = new Query<String, String>(Collections.singleton("key"));
-            query.and(inClusterExpert.getExpr(modifier, clusterProject.getExpr(modifier, projectObject.getExpr()), query.mapKeys.get("key")).getWhere());
+            query.and(inClusterExpert.getExpr(modifier, currentClusterProject.getExpr(modifier, projectObject.getExpr()), query.mapKeys.get("key")).getWhere());
             query.and(disableExpert.getExpr(modifier, query.mapKeys.get("key")).getWhere().not());
             query.and(voteResultProjectExpert.getExpr(modifier, projectObject.getExpr(), query.mapKeys.get("key")).getWhere().not());
 
@@ -2306,6 +2360,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             else
                 voteObject = executeForm.form.addObject(vote);
             projectVote.execute(projectObject.object, session, modifier, voteObject);
+            clusterVote.execute(currentClusterProject.read(session, modifier, projectObject), session, modifier, voteObject);
 
             // копируем результаты старых заседаний
             for (Map.Entry<DataObject, DataObject> row : previousResults.entrySet()) {
