@@ -1307,8 +1307,7 @@ public abstract class LogicsModule {
 
     protected LP addSUProp(AbstractGroup group, String name, boolean persistent, boolean notZero, String caption, Union unionType, LP... props) {
         assert baseLM.checkSUProps.add(props);
-        boolean wrapNotZero = persistent && (notZero || !Settings.instance.isDisableSumGroupNotZero());
-        if (wrapNotZero) {
+        if (notZero) {
             LP uProp = addUProp(null, genSID(), false, caption, unionType, getUParams(props, (unionType == Union.SUM ? 1 : 0)));
             return addJProp(group, name, persistent, caption, baseLM.onlyNotZero, directLI(uProp));
         } else {
