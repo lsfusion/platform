@@ -49,7 +49,6 @@ import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.io.*;
 import java.sql.*;
-import java.sql.Date;
 import java.util.*;
 import java.util.List;
 
@@ -400,14 +399,15 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP percentForeignExpert;
 
     LP prevDateStartVote, prevDateVote;
+    LP prevClusterVote, nameNativePrevClusterVote;
     LP dateProjectVote;
     LP numberNewExpertVote;
     LP numberOldExpertVote;
 
     LP numberCluster;
     LP clusterNumber;
-    LP currentClusterProject;
-    LP nameNativeCurrentClusterProject;
+    LP currentClusterProject, firstClusterProject, finalClusterProject;
+    LP nameNativeFinalClusterProject;
 
     LP languageExpert;
     LP nameLanguageExpert;
@@ -1119,12 +1119,14 @@ public class SkolkovoLogicsModule extends LogicsModule {
         numberCluster = addDProp(baseGroup, "numberCluster", "Приоритет", IntegerClass.instance, cluster);
         clusterNumber = addAGProp("clusterName", "Кластер (ИД)", numberCluster);
 
-        currentClusterProject = addJProp("currentClusterProject", true, "Тек. кластер (ИД)", clusterNumber,
+        currentClusterProject = addJProp("currentClusterProject", true, "Рабочий кластер (ИД)", clusterNumber,
                 addMGProp(addJProp(and(false, true), numberCluster, 2, inProjectCluster, 1, 2, rejectedProjectCluster, 1, 2), 1), 1);
 
-//        firstClusterProject = addJProp("firstClusterProject", true, "Первый кластер (ИД)", clusterNumber,
-//                addMGProp(addJProp(and(false, false), numberCluster, 2, inProjectCluster, 1, 2), 1), 1);
-        nameNativeCurrentClusterProject = addJProp(baseGroup, "nameCurrentClusterProject", "Тек. кластер", nameNative, currentClusterProject, 1);
+        firstClusterProject = addJProp("firstClusterProject", true, "Первый кластер (ИД)", clusterNumber,
+                addMGProp(addJProp(and(false), numberCluster, 2, inProjectCluster, 1, 2), 1), 1);
+
+        finalClusterProject = addSUProp("finalClusterProject", "Тек. кластер (ИД)", Union.OVERRIDE, firstClusterProject, currentClusterProject);
+        nameNativeFinalClusterProject = addJProp(baseGroup, "nameNativeFinalClusterProject", "Тек. кластер", nameNative, finalClusterProject, 1);
 
         rejectedProject = addJProp("rejectedProject", "Оценен отрицательно", baseLM.andNot1, addCProp(LogicalClass.instance, true, project), 1, currentClusterProject, 1);
 
@@ -1206,8 +1208,12 @@ public class SkolkovoLogicsModule extends LogicsModule {
                 addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), foreignNewExpertVote, 1, 2), 1);
         percentForeignExpert = addJProp(expertResultGroup, "percentForeignExpert", "Иностр. специалист (%)", percent, quantityForeignExpert, 1, quantityDoneExpert, 1);
 
-        prevDateStartVote = addOProp("prevDateStartVote", "Пред. засед. (старт)", OrderType.PREVIOUS, dateStartVote, true, true, 1, projectVote, 1, baseLM.date, 1);
-        prevDateVote = addOProp("prevDateVote", "Пред. засед. (окончание)", OrderType.PREVIOUS, dateEndVote, true, true, 1, projectVote, 1, baseLM.date, 1);
+        prevDateStartVote = addOProp("prevDateStartVote", "Пред. засед. (старт)", OrderType.PREVIOUS, dateStartVote, true, true, 2, projectVote, 1, clusterVote, 1, baseLM.date, 1);
+        prevDateVote = addOProp("prevDateVote", "Пред. засед. (окончание)", OrderType.PREVIOUS, dateEndVote, true, true, 2, projectVote, 1, clusterVote, 1, baseLM.date, 1);
+
+        prevClusterVote = addOProp(idGroup, "prevDateVote", "Пред. кластер. (ИД)", OrderType.PREVIOUS, clusterVote, true, true, 1, projectVote, 1, baseLM.date, 1);
+        nameNativePrevClusterVote = addJProp("nameNativePrevClusterVote", "Пред. кластер", nameNative, prevClusterVote, 1);
+
         numberNewExpertVote = addOProp("numberNewExpertVote", "Номер (нов.)", OrderType.SUM, addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), inNewExpertVote, 1, 2), true, true, 1, 2, 1);
         numberOldExpertVote = addOProp("numberOldExpertVote", "Номер (стар.)", OrderType.SUM, addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), inOldExpertVote, 1, 2), true, true, 1, 2, 1);
 
@@ -1486,7 +1492,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         private ProjectFormEntity(NavigatorElement parent, String sID) {
             super(parent, sID, "Реестр проектов");
 
-            objProject = addSingleGroupObject(project, baseLM.date, nameNative, nameForeign,  nameNativeClusterProject, nameNativeCurrentClusterProject, nameNativeJoinClaimerProject, nameStatusProject, autoGenerateProject, generateVoteProject, editProject);
+            objProject = addSingleGroupObject(project, baseLM.date, nameNative, nameForeign,  nameNativeClusterProject, nameNativeFinalClusterProject, nameNativeJoinClaimerProject, nameStatusProject, autoGenerateProject, generateVoteProject, editProject);
             addObjectActions(this, objProject);
 
 //            addPropertyDraw(addProject).toDraw = objProject.groupTo;
@@ -2084,7 +2090,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         private VoteClaimerFormEntity(NavigatorElement parent, String sID, String caption) {
             super(parent, sID, caption, true);
                                     
-            objVote = addSingleGroupObject(1, "vote", vote, "Заседание", prevDateVote);
+            objVote = addSingleGroupObject(1, "vote", vote, "Заседание", nameNativeClusterVote, prevDateVote, nameNativePrevClusterVote);
             objVote.groupTo.initClassView = ClassViewType.PANEL;
 
             addInlineEAForm(emailClaimerVoteEA, this, objVote, 1);
