@@ -31,7 +31,7 @@ public class HugoBossInvoiceImporter extends SingleSheetImporter {
 
     @Override
     protected String getCellString(ImportField field, int row, int column) throws ParseException {
-        if ((column >= LAST_COLUMN + 1)) {        //!!!experiment  ||(column==14)||(column==17)
+        if ((column >= LAST_COLUMN + 1)) {
             return "";
         }
         return super.getCellString(field, row, column);

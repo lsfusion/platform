@@ -1,7 +1,10 @@
 package roman;
 
+import platform.server.classes.DateClass;
 import platform.server.integration.ImportInputTable;
 import platform.server.integration.SingleSheetImporter;
+
+import java.sql.Date;
 
 /**
  * User: DAle
@@ -10,7 +13,7 @@ import platform.server.integration.SingleSheetImporter;
  */
 
 public class MexxPricesInvoiceImporter extends SingleSheetImporter {
-    private final static int EAN_CODE = 12, HTS_CODE = 14;
+    private final static int EAN_CODE = 12, HTS_CODE = 14, DATE = 2;
 
     public MexxPricesInvoiceImporter(ImportInputTable inputTable, Object... fields) {
         super(inputTable, fields);
@@ -26,6 +29,9 @@ public class MexxPricesInvoiceImporter extends SingleSheetImporter {
         value = value.trim();
 
         switch (column) {
+            case DATE:
+                 Date sDate = new Date(Integer.parseInt(value.substring(0, 4)) - 1900, Integer.parseInt(value.substring(4, 6)) - 1, Integer.parseInt(value.substring(6, 8)));
+                 return DateClass.format(sDate);
             case HTS_CODE:
                 switch (part) {
                     case 0: return value.substring(0, Math.min(10, value.length()));

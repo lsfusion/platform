@@ -1485,6 +1485,30 @@ public class BaseUtils {
 
         return result;
     }
+
+public static byte[] bytesToBytes(byte[]... files) {
+        ByteArrayOutputStream byteOutStream = new ByteArrayOutputStream();
+        DataOutputStream outStream = new DataOutputStream(byteOutStream);
+
+        byte result[] = null;
+        try {
+            outStream.writeInt(files.length);
+            for (byte[] file : files) {
+
+
+                outStream.writeInt(file.length);
+                outStream.write(file);
+            }
+
+            result = byteOutStream.toByteArray();
+            outStream.close();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        return result;
+    }
+
     
     public static int[] consecutiveInts(int length) {
         int[] result = new int[length];

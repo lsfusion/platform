@@ -35,6 +35,7 @@ public class MexxImportPricesInvoiceActionProperty extends BaseImportActionPrope
     public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, DataSession session, Modifier<? extends Changes> modifier, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects, boolean groupLast) throws SQLException {
         ImportField invoiceSIDField = new ImportField(LM.sidDocument);
         ImportField sidField = new ImportField(LM.sidArticle);
+        ImportField dateInvoiceField = new ImportField(LM.baseLM.date);
         ImportField barCodeField = new ImportField(LM.baseLM.barcode);
         ImportField customCodeField = new ImportField(LM.sidCustomCategoryOrigin);
         ImportField customCode6Field = new ImportField(LM.sidCustomCategory6);
@@ -46,6 +47,7 @@ public class MexxImportPricesInvoiceActionProperty extends BaseImportActionPrope
 
         ImportKey<?> invoiceKey = new ImportKey(LM.boxInvoice, LM.documentSIDSupplier.getMapping(invoiceSIDField, supplier));
         properties.add(new ImportProperty(invoiceSIDField, LM.sidDocument.getMapping(invoiceKey)));
+        properties.add(new ImportProperty(dateInvoiceField, LM.baseLM.date.getMapping(invoiceKey)));
 
         ImportKey<?> articleKey = new ImportKey(LM.articleComposite, LM.articleSIDSupplier.getMapping(sidField, supplier));
         properties.add(new ImportProperty(sidField, LM.sidArticle.getMapping(articleKey)));
@@ -68,7 +70,7 @@ public class MexxImportPricesInvoiceActionProperty extends BaseImportActionPrope
             ByteArrayInputStream inFile = new ByteArrayInputStream((byte[]) value.getValue());
             ImportInputTable inputTable = new CSVInputTable(new InputStreamReader(inFile), 1, '|');
 
-            ImportTable table = new MexxPricesInvoiceImporter(inputTable, null, invoiceSIDField, null, null, null, null, sidField, null, null,
+            ImportTable table = new MexxPricesInvoiceImporter(inputTable, null, invoiceSIDField, dateInvoiceField, null, null, null, sidField, null, null,
                     null, unitPriceField, null, barCodeField, null, new ImportField[] {customCodeField, customCode6Field}).getTable();
 
             ImportKey<?>[] keysArray = {invoiceKey, articleKey, itemKey, customCategoryKey, customCategory6Key};
