@@ -544,12 +544,17 @@ public class MapCacheAspect {
         }
 
         synchronized(hashCaches) {
+            Expr cacheResult = null;
             for(Map.Entry<ExprInterfaceImplement,ExprResult> cache : hashCaches.entrySet()) {
                 MapTranslate translator;
                 if((translator=cache.getKey().mapInner(implement, true))!=null) {
                     logger.info("getExpr - cached "+property);
                     if(changedWheres!=null) changedWheres.add(cache.getValue().where.translateOuter(translator));
-                    return cache.getValue().expr.translateOuter(translator);
+                    cacheResult = cache.getValue().expr.translateOuter(translator);
+                    if(checkCaches)
+                        break;
+                    else
+                        return cacheResult;
                 }
             }
 
@@ -563,6 +568,9 @@ public class MapCacheAspect {
             if(expr.getComplexity() > 300) {
                 System.out.println("COMPLEX " + property.getSID() + " : " + property + " " + expr.getComplexity());
             }
+
+            if(checkCaches && !BaseUtils.hashEquals(expr, cacheResult))
+                expr = expr;
 
             // проверим
             if(checkInfinite && !(property instanceof FormulaProperty))
