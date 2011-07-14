@@ -81,6 +81,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
     public LP nameNativeToClaimer;
     public LP nameNativeToCluster;
     public LP nameNativeCluster;
+    public LP projectCluster;
     private LP nameForeignCluster;
     public LP dateProject;
     public LP nativeNumberToPatent;
@@ -256,7 +257,9 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP clusterExpert, nameNativeClusterExpert;
     LP primClusterExpert, extraClusterExpert, inClusterExpert;
     LP clusterInExpertVote;
-    LP inProjectCluster, inBackwardProjectCluster, backwardFillCluster;
+    public LP inProjectCluster;
+    LP inBackwardProjectCluster;
+    LP backwardFillCluster;
     public LP clusterProject, nameNativeClusterProject, nameForeignClusterProject;
     LP clusterVote, nameNativeClusterVote;
     public LP claimerProject;
@@ -362,6 +365,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP valuedProject;
     LP voteRejectedProject;
     LP needExtraVoteProject;
+    public LP nameNativeCurrentCluster;
+    public LP nameNativeToCurrentCluster;
 
     LP emailLetterExpertVoteEA, emailLetterExpertVote;
     LP allowedEmailLetterExpertVote;
@@ -404,7 +409,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP numberNewExpertVote;
     LP numberOldExpertVote;
 
-    LP numberCluster;
+    public LP numberCluster;
     LP clusterNumber;
     LP currentClusterProject, firstClusterProject, lastClusterProject, finalClusterProject;
     LP lastClusterProjectVote, isLastClusterVote;
@@ -456,6 +461,9 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP fileRoadMapProject;
     LP loadFileRoadMapProject;
     LP openFileRoadMapProject;
+    LP fileResolutionIPProject;
+    LP loadFileResolutionIPProject;
+    LP openFileResolutionIPProject;
     LP fileNativeTechnicalDescriptionProject;
     LP loadFileNativeTechnicalDescriptionProject;
     LP openFileNativeTechnicalDescriptionProject;
@@ -711,6 +719,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
         clusterProject = addDProp(idGroup, "clusterProject", "Кластер (ИД)", cluster, project);
         nameNativeCluster = addJProp("nameNativeCluster", "Кластер", baseLM.and1, nameNative, 1, is(cluster), 1);
         nameNativeToCluster = addAGProp(idGroup, "nameNativeToCluster", "Кластер", nameNativeCluster);
+        nameNativeCurrentCluster = addJProp("nameNativeCurrentCluster", "Тек. кластер", baseLM.and1, nameNative, 1, is(cluster), 1);
+        nameNativeToCurrentCluster = addAGProp(idGroup, "nameNativeToCurrentCluster", "Тек. кластер", nameNativeCurrentCluster);
         nameForeignCluster = addJProp("nameForeignCluster", "Cluster", baseLM.and1,  nameForeign, 1, is(cluster), 1);
         nameNativeClusterProject = addJProp(innovationGroup, "nameNativeClusterProject", "Кластер", nameNative, clusterProject, 1);
         nameForeignClusterProject = addJProp(innovationGroup, "nameForeignClusterProject", "Кластер (иностр.)", nameForeign, clusterProject, 1);
@@ -718,7 +728,6 @@ public class SkolkovoLogicsModule extends LogicsModule {
         nativeSubstantiationClusterProject.setMinimumWidth(10); nativeSubstantiationClusterProject.setPreferredWidth(50);
         foreignSubstantiationClusterProject = addDProp(innovationGroup, "foreignSubstantiationClusterProject", "Description of choice", InsensitiveStringClass.get(2000), project);
         foreignSubstantiationClusterProject.setMinimumWidth(10); foreignSubstantiationClusterProject.setPreferredWidth(50);
-
         fileNativeSummaryProject = addDProp("fileNativeSummaryProject", "Файл резюме проекта", PDFClass.instance, project);
         loadFileNativeSummaryProject = addLFAProp(executiveSummaryGroup, "Загрузить файл резюме проекта", fileNativeSummaryProject);
         openFileNativeSummaryProject = addOFAProp(executiveSummaryGroup, "Открыть файл резюме проекта", fileNativeSummaryProject);
@@ -805,6 +814,10 @@ public class SkolkovoLogicsModule extends LogicsModule {
         loadFileRoadMapProject = addLFAProp(projectDocumentsGroup, "Загрузить файл дорожной карты", fileRoadMapProject);
         openFileRoadMapProject = addOFAProp(projectDocumentsGroup, "Открыть файл дорожной карты", fileRoadMapProject);
 
+        fileResolutionIPProject = addDProp("fileResolutionIPProject", "Заявление IP", PDFClass.instance, project);
+        loadFileResolutionIPProject = addLFAProp(projectDocumentsGroup, "Загрузить файл заявления IP", fileResolutionIPProject);
+        openFileResolutionIPProject = addOFAProp(projectDocumentsGroup, "Открыть файл заявления IP", fileResolutionIPProject);
+
         fileNativeTechnicalDescriptionProject = addDProp("fileNativeTechnicalDescriptionProject", "Файл технического описания", PDFClass.instance, project);
         loadFileNativeTechnicalDescriptionProject = addLFAProp(projectDocumentsGroup, "Загрузить файл технического описания", fileNativeTechnicalDescriptionProject);
         openFileNativeTechnicalDescriptionProject = addOFAProp(projectDocumentsGroup, "Открыть файл технического описания", fileNativeTechnicalDescriptionProject);
@@ -813,6 +826,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         loadFileForeignTechnicalDescriptionProject = addLFAProp(projectDocumentsGroup, "Загрузить файл технического описания (иностр.)", fileForeignTechnicalDescriptionProject);
         openFileForeignTechnicalDescriptionProject = addOFAProp(projectDocumentsGroup, "Открыть файл технического описания (иностр.)", fileForeignTechnicalDescriptionProject);
 
+        projectCluster = addDProp(idGroup, "projectCluster", "Проект кластера", project, cluster);
         // патенты
         projectPatent = addDProp(idGroup, "projectPatent", "Проект патента", project, patent);
 
@@ -2303,6 +2317,15 @@ public class SkolkovoLogicsModule extends LogicsModule {
                     documentObject = session.addObject(document, session.modifier);
                     projectDocument.execute(projectObject.getValue(), session, documentObject);
                     typeDocument.execute(documentType.getID("techdesc"), session, documentObject);
+                    languageDocument.execute(language.getID("russian"), session, documentObject);
+                    fileDocument.execute(file, session, documentObject);
+                }
+
+                file = fileResolutionIPProject.read(session, projectObject);
+                if (file != null) {
+                    documentObject = session.addObject(document, session.modifier);
+                    projectDocument.execute(projectObject.getValue(), session, documentObject);
+                    typeDocument.execute(documentType.getID("ipres"), session, documentObject);
                     languageDocument.execute(language.getID("russian"), session, documentObject);
                     fileDocument.execute(file, session, documentObject);
                 }
