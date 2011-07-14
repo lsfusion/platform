@@ -218,9 +218,13 @@ public class BaseUtils {
     }
 
     public static <K, V> Map<V, K> reverse(Map<K, V> map) {
+        return reverse(map, false);
+    }
+
+    public static <K, V> Map<V, K> reverse(Map<K, V> map, boolean ignoreUnique) {
         Map<V, K> result = new HashMap<V, K>();
         for (Map.Entry<K, V> entry : map.entrySet()) {
-            assert !result.containsKey(entry.getValue());
+            assert ignoreUnique || !result.containsKey(entry.getValue());
             result.put(entry.getValue(), entry.getKey());
         }
         return result;
@@ -235,7 +239,11 @@ public class BaseUtils {
     }
 
     public static <KA, KB, V> Map<KA, KB> crossValues(Map<KA, V> map, Map<KB, V> mapTo) {
-        return join(map, reverse(mapTo));
+        return crossValues(map, mapTo, false);
+    }
+
+    public static <KA, KB, V> Map<KA, KB> crossValues(Map<KA, V> map, Map<KB, V> mapTo, boolean ignoreUnique) {
+        return join(map, reverse(mapTo, ignoreUnique));
     }
 
     public static <KA, KB, V> Map<KA, KB> mapValues(Map<KA, V> map, Map<KB, V> equals) {
@@ -764,6 +772,14 @@ public class BaseUtils {
             if (list.get(i) == from)
                 list.set(i, to);
         }
+    }
+
+    public static ArrayList<Integer> toListFromArray(int[] ints) {
+        ArrayList<Integer> list = new ArrayList();
+        for (int i : ints) {
+            list.add(i);
+        }
+        return list;
     }
 
 
