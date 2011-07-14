@@ -1166,7 +1166,7 @@ public class RomanLogicsModule extends LogicsModule {
         round2 = addSFProp("round(CAST((prm1) as numeric), 2)", DoubleClass.instance, 1);
 
         //typeSupplier = addDProp(baseGroup, "typeSupplier", "С коробами/без коробов", LogicalClass.instance, supplier);
-        typeSupplier = addCUProp("typeSupplier", addCProp(LogicalClass.instance, true, hugoBossSupplier), addCProp(LogicalClass.instance, true, sOliverSupplier));
+        typeSupplier = addCUProp("typeSupplier", addCProp(LogicalClass.instance, true, hugoBossSupplier), addCProp(LogicalClass.instance, true, sOliverSupplier), addCProp(LogicalClass.instance, true, babyPhatSupplier));
 
         // rate
         currencyTypeExchange = addDProp(idGroup, "currencyTypeExchange", "Валюта типа обмена (ИД)", currency, typeExchange);
@@ -1382,6 +1382,9 @@ public class RomanLogicsModule extends LogicsModule {
         supplierDocument = addDProp(idGroup, "supplierDocument", "Поставщик (ИД)", supplier, document);
         supplierPriceDocument = addJProp(idGroup, "supplierPricedDocument", "Поставщик(ИД)", baseLM.and1, supplierDocument, 1, is(priceDocument), 1);
         nameSupplierDocument = addJProp(baseGroup, "nameSupplierDocument", "Поставщик", baseLM.name, supplierDocument, 1);
+
+        //addConstraint(addJProp("Для инвойса по коробам поставщик должен быть с коробами", baseLM.equals2, baseLM.vtrue, addJProp(baseLM.and1, addJProp(typeSupplier, supplierDocument, 1), 1, is(boxInvoice), 1), 1), true);
+        //addConstraint(addJProp("Для инвойса без коробов поставщик должен быть без коробов", baseLM.equals2, baseLM.vtrue, addJProp(baseLM.and1, addJProp(typeSupplier, supplierDocument, 1), 1, is(simpleInvoice), 1), 1), false);
 
         currencyDocument = addDCProp(idGroup, "currencyDocument", "Валюта (ИД)", currencySupplier, supplierPriceDocument, 1);
         nameCurrencyDocument = addJProp(baseGroup, "nameCurrencyDocument", "Валюта", baseLM.name, currencyDocument, 1);
