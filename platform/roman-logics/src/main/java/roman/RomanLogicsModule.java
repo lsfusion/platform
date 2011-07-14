@@ -70,6 +70,7 @@ public class RomanLogicsModule extends LogicsModule {
     private LP freightCompleteFA;
     private LP freightChangedFA;
     private LP freightPricedFA;
+    private LP cloneItem;
 
     public RomanLogicsModule(BaseLogicsModule<RomanBusinessLogics> baseLM, RomanBusinessLogics BL) {
         super("RomanLogicsModule");
@@ -2598,6 +2599,8 @@ public class RomanLogicsModule extends LogicsModule {
                         is(route), 1,
                         addJProp(freightFreightBox, currentFreightBoxRoute, 1), 1), 1, baseLM.barcodeToObject, 2);
 
+        cloneItem = addAProp(new CloneItemActionProperty());
+
         barcodeAction4 = addJProp(true, "Ввод штрих-кода 4",
                 addCUProp(
                         addSCProp(addJProp(true, quantitySupplierBoxBoxShipmentStockSku, 1, 2, currentFreightBoxRoute, 3, 4))
@@ -3150,6 +3153,7 @@ public class RomanLogicsModule extends LogicsModule {
             addPropertyDraw(baseLM.delete, objArticle);
 
             objItem = addSingleGroupObject(item, "Товар", baseLM.barcode, sidColorSupplierItem, nameColorSupplierItem, sidSizeSupplierItem);
+            addPropertyDraw(cloneItem, objItem).forceViewType = ClassViewType.PANEL;
             addObjectActions(this, objItem, objArticle, articleComposite);
 
             objSizeSupplier = addSingleGroupObject(sizeSupplier, "Размер", baseLM.selection, sidSizeSupplier);
@@ -3239,6 +3243,7 @@ public class RomanLogicsModule extends LogicsModule {
             design.get(objSizeSupplier.groupTo).grid.constraints.fillHorizontal = 1;
             design.get(objColorSupplier.groupTo).grid.constraints.fillHorizontal = 2;
 
+            design.get(getPropertyDraw(cloneItem, objItem)).drawToToolbar = true;
             return design;
         }
     }
@@ -5912,6 +5917,26 @@ public class RomanLogicsModule extends LogicsModule {
                 creationStampStamp.execute(objCreateStamp.getValue(), session, stampObject);
                 sidStamp.execute(BaseUtils.padl(((Integer)i).toString(), stringStart.length(), '0'), session, stampObject);
             }
+        }
+    }
+
+    public class CloneItemActionProperty extends ActionProperty {
+        private ClassPropertyInterface itemInterface;
+
+        public CloneItemActionProperty() {
+            super(genSID(), "Копировать", new ValueClass[]{item});
+
+            Iterator<ClassPropertyInterface> i = interfaces.iterator();
+            itemInterface = i.next();
+        }
+
+        @Override
+        public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, DataSession session, Modifier<? extends Changes> modifier, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects, boolean groupLast) throws SQLException {
+            DataObject cloneObject = keys.get(itemInterface);
+            DataObject newObject = executeForm.form.addObject(item);
+
+            for(LP lp : new LP[]{colorSupplierItem, sizeSupplierItem})
+                lp.execute(lp.read(session, modifier, cloneObject), session, modifier, newObject);
         }
     }
 
