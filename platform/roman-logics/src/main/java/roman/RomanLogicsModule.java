@@ -876,6 +876,7 @@ public class RomanLogicsModule extends LogicsModule {
     ConcreteCustomClass bestsellerSupplier;
     ConcreteCustomClass sOliverSupplier;
     ConcreteCustomClass womenSecretSupplier;
+    ConcreteCustomClass babyPhatSupplier;
     private LP jennyferImportInvoice;
     private LP jennyferImportArticleWeightInvoice;
     private LP tallyWeijlImportInvoice;
@@ -1029,6 +1030,7 @@ public class RomanLogicsModule extends LogicsModule {
         bestsellerSupplier = addConcreteClass("bestsellerSupplier", "Bestseller", supplier);
         sOliverSupplier = addConcreteClass("sOliverSupplier", "s.Oliver", supplier);
         womenSecretSupplier = addConcreteClass("womenSecretSupplier", "Women'Secret", supplier);
+        babyPhatSupplier = addConcreteClass("babyPhatSupplier", "Baby Phat", supplier);
 
         secondNameClass = addAbstractClass("secondNameClass", "Класс со вторым именем", baseClass);
 
