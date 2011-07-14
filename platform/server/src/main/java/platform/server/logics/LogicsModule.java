@@ -67,9 +67,11 @@ public abstract class LogicsModule {
 
     public BaseLogicsModule<?> baseLM;
 
-    private Map<String, LP<?>> moduleProperties = new HashMap<String, LP<?>>();
-    private Map<String, AbstractGroup> moduleGroups = new HashMap<String, AbstractGroup>();
-    private Map<String, ValueClass> moduleClasses = new HashMap<String, ValueClass>();
+    private final Map<String, LP<?>> moduleProperties = new HashMap<String, LP<?>>();
+    private final Map<String, AbstractGroup> moduleGroups = new HashMap<String, AbstractGroup>();
+    private final Map<String, ValueClass> moduleClasses = new HashMap<String, ValueClass>();
+
+    private final Map<String, List<String>> propNamedParams = new HashMap<String, List<String>>();
 
     public LogicsModule(String sID) {
         this.sID = sID;
@@ -106,6 +108,15 @@ public abstract class LogicsModule {
     protected void addModuleClass(ValueClass valueClass) {
         assert !moduleClasses.containsKey(valueClass.getSID());
         moduleClasses.put(valueClass.getSID(), valueClass);
+    }
+
+    public List<String> getNamedParams(String propertyName) {
+        return propNamedParams.get(propertyName);
+    }
+
+    protected void addNamedParams(String propertyName, List<String> namedParams) {
+        assert !propNamedParams.containsKey(propertyName);
+        propNamedParams.put(propertyName, namedParams);
     }
 
     // aliases для использования внутри иерархии логических модулей

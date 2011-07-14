@@ -1,6 +1,5 @@
 package platform.server.logics;
 
-import com.sun.corba.se.spi.activation.Server;
 import org.apache.log4j.Logger;
 import platform.base.BaseUtils;
 import platform.base.identity.DefaultIDGenerator;
@@ -44,8 +43,6 @@ import javax.swing.*;
 import java.awt.event.KeyEvent;
 import java.sql.SQLException;
 import java.util.*;
-import java.util.List;
-import java.util.logging.LogManager;
 
 import static platform.server.logics.PropertyUtils.mapImplement;
 import static platform.server.logics.PropertyUtils.readImplements;
@@ -383,7 +380,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         // математические св-ва
         equals2 = addCFProp(Compare.EQUALS);
         object1 = addAFProp();
-        and1 = addAFProp(false);
+        and1 = addAFProp("and1", false);
         andNot1 = addAFProp(true);
         string2 = addSProp(2);
         insensitiveString2 = addInsensitiveSProp(2);

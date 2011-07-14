@@ -8,22 +8,39 @@ group NewGroup '\'Новая группа\'';
 group NewGroup2 'new group 2' : baseGroup;
 
 // DProps
-typeInvoiceDataFreightArticle2 = typeInvoice (freight, article) in idGroup;
-rateExchange2 = Double (typeExchange, currency, Date);
-nameOrigin2 = InsensitiveString[50] (secondNameClass) in baseGroup;
-quantityPalletShipment2 = Integer (shipment) in baseGroup;
-typeExchangeSTX2 =  typeExchange () in idGroup;
+typeInvoiceDataFreightArticle2 = data typeInvoice (freight, article) in idGroup;
+rateExchange2(type, currency, date) = data Double (typeExchange, currency, Date);
+nameOrigin2 = data InsensitiveString[50] (secondNameClass) in baseGroup;
+quantityPalletShipment2 = data Integer (shipment) in baseGroup;
+typeExchangeSTX2 =  data typeExchange () in idGroup;
+somePropertyName = data supplierAndDocument (namedDocument) in NewGroup2;
+mainCompositionFreightSku2(freight, sku) = data String[200] (freight, sku) in baseGroup;
+
 
 // JProps
 nameCurrencyTypeExchange2(typeExchange) = name(currencyTypeExchange(typeExchange)) in baseGroup;
-nameTypeExchangeSTX2() = name(typeExchangeSTX()) in baseGroup;
+nameTypeExchangeSTX2() = name(typeExchangeSTX()) in NewGroup2;
 //equalsItemArticleComposite2(item1, item2) = equals2(articleCompositeItem(item1), item2) in baseGroup;
 numberListSIDArticle2(list, doc) = numberListArticle(list, articleSIDList(doc, list));
-netWeightArticleSizeSku2(item) =  netWeightArticleSize(articleSku(item), sizeSupplierItem(item)) in intraAttributeGroup persistent;
+netWeightArticleSizeSku2(item) = netWeightArticleSize(articleSku(item), sizeSupplierItem(item)) in intraAttributeGroup persistent;
+orderedOrderInvoiceArticle2(order, invoice, param3) = and1(quantityListArticle(order, param3), inOrderInvoice(order, invoice));
+
+nameCurrencyTypeExchange3 = name(currencyTypeExchange($1)) in baseGroup;
+nameTypeExchangeSTX3 = name(typeExchangeSTX()) in baseGroup;
+numberListSIDArticle3 = numberListArticle($1, articleSIDList($2, $1));
+netWeightArticleSizeSku3 = netWeightArticleSize(articleSku($1), sizeSupplierItem($1)) in intraAttributeGroup persistent;
+
+numberDocumentArticle2 = numberListArticle sgroup by documentList($1, $2) in baseGroup;
+orderedInvoiceArticle2(invoice, param3) = orderedOrderInvoiceArticle2 sgroup by invoice, param3 in baseGroup;
+invoicedOrderArticle2 = invoicedOrderSku sgroup by $1, articleSku($2) in baseGroup;
+compositionFreightArticleCompositionCountryCategory2 =
+    mainCompositionFreightSku2 mgroup by
+        freight,
+        articleSku(sku),
+        mainCompositionOriginFreightSku(freight, sku),
+        countryOfOriginFreightSku(freight, sku),
+        customCategory10FreightSku(freight, sku) in baseGroup;
 
 
-
-//numberDocumentArticle = addSGProp(baseGroup, "inDocumentArticle", numberListArticle, documentList, 1, 2);
-//numberDocumentArticle = numberListArticle group by documentList($1, $2) in baseGroup;
 
 

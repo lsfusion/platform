@@ -54,6 +54,7 @@ classStatement
 			':'
 			parentList=nonEmptyCompoundIdList { classParents = $parentList.ids; };	  
 
+
 classDeclarant returns [boolean isAbstract]
 	:	'class' { $isAbstract = false; } |
 		'class' 'abstract' { $isAbstract = true; }; 
@@ -77,8 +78,12 @@ groupStatement
 
 
 propertyStatement
-	:	dataPropertyStatement | joinPropertyStatement;
+	:	dataPropertyStatement | joinPropertyStatement | groupPropertyStatement;
 	
+
+propertyDeclaration returns [String name, List<String> paramNames] 
+	:	propertyName=ID { $name = $propertyName.text; }
+		('(' paramList=idList ')' { $paramNames = $paramList.ids; })? ;
 	
 
 joinPropertyStatement 
@@ -96,30 +101,28 @@ joinPropertyStatement
 		self.addScriptedJProp(name, "", groupName, mainProp, isPersistent, namedParams, paramIds, propParams);
 	}
 }
-	:	propertyName=ID { name = $propertyName.text; }
-		'('
-			paramList=idList { namedParams = $paramList.ids; }
-		')' 
-		'='
+	:	declaration=propertyDeclaration { name = $declaration.name; namedParams = $declaration.paramNames; }
+		'=' 
 		mainPropName=compoundID { mainProp = $mainPropName.text; }
 		'(' 
-			(firstParam=jpropertyParam { paramIds.add($firstParam.paramID); propParams.add($firstParam.paramNames); }
-			(',' nextParam=jpropertyParam { paramIds.add($nextParam.paramID); propParams.add($nextParam.paramNames);})* )?	
+			(firstParam=propertyParam { paramIds.add($firstParam.paramID); propParams.add($firstParam.paramNames); }
+			(',' nextParam=propertyParam { paramIds.add($nextParam.paramID); propParams.add($nextParam.paramNames);})* )?	
 		')' 
 		settings=propertyCommonSettings { groupName = $settings.group; isPersistent = $settings.isPersistent; }; 
 	
 
-jpropertyParam returns [String paramID, List<String> paramNames]
-	:	singleParam=ID { $paramID = $singleParam.text; } | 	
+propertyParam returns [String paramID, List<String> paramNames]
+	:	singleParam=parameter { $paramID = $singleParam.text; } | 	
 		(pID=compoundID { $paramID = $pID.text; }
 		'('
-		paramList=compoundIdList { $paramNames = $paramList.ids; }		
+		paramList=parameterList { $paramNames = $paramList.ids; }		
 		')');
 
 
 dataPropertyStatement 
 @init {
 	List<String> paramClassNames = new ArrayList<String>();
+	List<String> namedParams;
 	String returnClass = null;
 	String groupName = null;
 	boolean isPersistent = false;
@@ -127,17 +130,45 @@ dataPropertyStatement
 }
 @after {
 	if (parseState == ScriptingLogicsModule.State.PROP) {
-		self.addScriptedDProp(name, "", groupName, returnClass, paramClassNames, isPersistent);
+		self.addScriptedDProp(name, "", groupName, returnClass, paramClassNames, isPersistent, namedParams);
 	}
 }
-	:	propertyName=ID { name = $propertyName.text; }
-		'='
+	:	declaration=propertyDeclaration { name = $declaration.name; namedParams = $declaration.paramNames; }
+		'=' 'data'
 		retClass=classId { returnClass = $retClass.text; }
 		'(' 
 			((firstClassName=classId { paramClassNames.add($firstClassName.text); })
 			(',' className=classId { paramClassNames.add($className.text); })*)?
 		')' 
 		settings=propertyCommonSettings { groupName = $settings.group; isPersistent = $settings.isPersistent; };
+
+
+groupPropertyStatement 
+@init {
+	List<String> namedParams = new ArrayList<String>();
+	List<String> paramIds = new ArrayList<String>();
+	List<List<String>> propParams = new ArrayList<List<String>>();
+	String groupProp = null;
+	String groupName = null;
+	boolean isPersistent = false;
+	boolean isSGProp = true; 
+	String name;
+}
+@after {
+	if (parseState == ScriptingLogicsModule.State.PROP) {
+		self.addScriptedGProp(name, "", groupName, groupProp, isPersistent, isSGProp, namedParams, paramIds, propParams);
+	}
+}
+	:	declaration=propertyDeclaration { name = $declaration.name; namedParams = $declaration.paramNames; }
+		'=' 
+		groupPropName=compoundID { groupProp = $groupPropName.text; }
+		(('sgroup') { isSGProp = true; } | 
+		 ('mgroup') { isSGProp = false;}) 
+		'by'
+		(firstParam=propertyParam { paramIds.add($firstParam.paramID); propParams.add($firstParam.paramNames); }
+		(',' nextParam=propertyParam { paramIds.add($nextParam.paramID); propParams.add($nextParam.paramNames);})* )?	
+		settings=propertyCommonSettings { groupName = $settings.group; isPersistent = $settings.isPersistent; }; 
+
 
 propertyCommonSettings returns [String group, boolean isPersistent] 
 	: 	('in' groupName=compoundID { $group = $groupName.text; })?
@@ -151,7 +182,10 @@ indexStatement
 	:	'z';
 
 
+parameter 
+	:	ID | NUMBERED_PARAM;
 
+	
 idList returns [List<String> ids] 
 @init {
 	ids = new ArrayList<String>();	
@@ -177,6 +211,13 @@ nonEmptyCompoundIdList returns [List<String> ids]
 }
 	:	firstId=compoundID	{ $ids.add($firstId.text); }
 		(',' nextId=compoundID	{ $ids.add($nextId.text); })*;
+
+parameterList returns [List<String> ids]
+@init {
+	ids = new ArrayList<String>();
+}
+	:	(firstParam=parameter	 { $ids.add($firstParam.text); }
+		(',' nextParam=parameter { $ids.add($nextParam.text); })* )?;
 
 	
 classId 
@@ -205,3 +246,4 @@ WS		:	(NEWLINE | SPACE) { $channel=HIDDEN; };
 STRING_LITERAL	:	'\'' STR_LITERAL_CHAR* '\'';
 COMMENTS	:	('//' .* '\n') { $channel=HIDDEN; };
 UINT_LITERAL 	:	DIGITS;	 
+NUMBERED_PARAM	:	'$' DIGITS;
