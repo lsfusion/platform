@@ -12,40 +12,26 @@
         <intercept-url pattern="/form.jsp" access="hasRole('admin')"/>
         <form-login authentication-failure-url="/loginFailed.txt" default-target-url="/expertProfile.html"/>
         <anonymous enabled="false" />
+        <logout logout-url="/logoff.jsp" logout-success-url="/login.jsp" />
+        <access-denied-handler error-page="/restricted.jsp" />
     </http>
 
-    <b:bean id="blLogicProvider" class="platform.gwt.base.server.spring.BusinessLogicsProviderImpl"/>
-
-    <b:bean scope="session" id="navigatorProvider" class="platform.gwt.base.server.spring.NavigatorProviderImpl">
-        <b:property name="businessLogicsProvider" ref="blLogicProvider" />
-    </b:bean>
-
-    <b:bean id="loginUrlAuthenticationEntryPoint"
-            class="org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint">
+    <b:bean id="loginUrlAuthenticationEntryPoint" class="org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint">
         <b:property name="useForward" value="true"/>
         <b:property name="loginFormUrl" value="/login.jsp"/>
     </b:bean>
 
     <authentication-manager>
         <authentication-provider user-service-ref="logicsUserService"/>
-
-        <!--<authentication-provider>-->
-            <!--<jdbc-user-service-->
-                    <!--data-source-ref="dataSource"-->
-                    <!--users-by-username-query="SELECT userlogin, trim(userpassword), true FROM customuser WHERE userlogin = ?"-->
-                    <!--authorities-by-username-query="SELECT userlogin, trim(userrole) FROM customuser WHERE userlogin = ?"/>-->
-        <!--</authentication-provider>-->
     </authentication-manager>
 
     <b:bean name="logicsUserService" class="platform.gwt.base.server.spring.GwtLogicsUserDetailsService">
         <b:property name="businessLogicProvider" ref="blLogicProvider" />
     </b:bean>
 
+    <b:bean id="blLogicProvider" class="platform.gwt.base.server.spring.BusinessLogicsProviderImpl"/>
 
-    <b:bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
-        <b:property name="driverClassName" value="org.postgresql.Driver"/>
-        <b:property name="url" value="jdbc:postgresql://localhost:5432/skolkovo"/>
-        <b:property name="username" value="postgres"/>
-        <b:property name="password" value="11111"/>
+    <b:bean scope="session" id="navigatorProvider" class="platform.gwt.base.server.spring.NavigatorProviderImpl">
+        <b:property name="businessLogicsProvider" ref="blLogicProvider" />
     </b:bean>
 </b:beans>

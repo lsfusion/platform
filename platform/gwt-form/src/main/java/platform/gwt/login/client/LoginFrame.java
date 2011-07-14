@@ -36,7 +36,7 @@ public class LoginFrame extends VLayout implements EntryPoint {
      */
     private final static String EMAIL_VALIDATION_REGEX = "^[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$";
 
-    private static LoginFrameMessages messages = LoginFrameMessages.Instance.get();
+    private static final LoginFrameMessages messages = LoginFrameMessages.Instance.get();
     private static final String LOGIN_FAILED_STRING = "7698a602e3376d89c2329cf84f9dc779"; //=md5("Login failed!!!");
 
     private final static StandardDispatchAsync loginService = new StandardDispatchAsync(new DefaultExceptionHandler());

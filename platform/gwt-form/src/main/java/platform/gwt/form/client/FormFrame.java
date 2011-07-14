@@ -15,7 +15,7 @@ public class FormFrame extends HLayout implements EntryPoint {
         GWT.setUncaughtExceptionHandler(new GWT.UncaughtExceptionHandler() {
             @Override
             public void onUncaughtException(Throwable t) {
-                GWT.log("sh: ", t);
+                GWT.log("Необработанная ошибка в GWT: ", t);
             }
         });
 

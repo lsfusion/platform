@@ -17,7 +17,7 @@ public class GTextType extends GDataType {
         textAreaItem.setEndRow(true);
         textAreaItem.setStartRow(true);
         textAreaItem.setColSpan("*");
-        textAreaItem.setWidth("*");
+        textAreaItem.setWidth("300");
         return textAreaItem;
     }
 }
