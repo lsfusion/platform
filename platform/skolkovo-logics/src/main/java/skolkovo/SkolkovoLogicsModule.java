@@ -406,7 +406,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
     LP numberCluster;
     LP clusterNumber;
-    LP currentClusterProject, firstClusterProject, finalClusterProject;
+    LP currentClusterProject, firstClusterProject, lastClusterProject, finalClusterProject;
+    LP lastClusterProjectVote, isLastClusterVote;
     LP nameNativeFinalClusterProject;
 
     LP languageExpert;
@@ -1125,8 +1126,15 @@ public class SkolkovoLogicsModule extends LogicsModule {
         firstClusterProject = addJProp("firstClusterProject", true, "Первый кластер (ИД)", clusterNumber,
                 addMGProp(addJProp(and(false), numberCluster, 2, inProjectCluster, 1, 2), 1), 1);
 
+        lastClusterProject = addJProp("lastClusterProject", true, "Последний кластер (ИД)", clusterNumber,
+                addJProp(baseLM.minusInteger,
+                        addMGProp(addJProp(and(false), addJProp(baseLM.minusInteger, numberCluster, 1), 2, inProjectCluster, 1, 2), 1), 1), 1);
+
         finalClusterProject = addSUProp("finalClusterProject", "Тек. кластер (ИД)", Union.OVERRIDE, firstClusterProject, currentClusterProject);
         nameNativeFinalClusterProject = addJProp(baseGroup, "nameNativeFinalClusterProject", "Тек. кластер", nameNative, finalClusterProject, 1);
+
+        lastClusterProjectVote = addJProp("lastClusterProjectVote", "Посл. кластер (ИД)", lastClusterProject, projectVote, 1);
+        isLastClusterVote = addJProp("isLastClusterVote", "Посл. кластер", baseLM.equals2, lastClusterProjectVote, 1, clusterVote, 1);
 
         rejectedProject = addJProp("rejectedProject", "Оценен отрицательно", baseLM.andNot1, addCProp(LogicalClass.instance, true, project), 1, currentClusterProject, 1);
 
@@ -2121,7 +2129,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         private ClaimerRejectedFormEntity(NavigatorElement parent, String sID) {
             super(parent, sID, "Решение о несоответствии", true);
 
-            objVote = addSingleGroupObject(genID(), "vote", vote, "Заседание", dateEndVote, nameNativeProjectVote, dateProjectVote, nameNativeClaimerVote, nameAblateClaimerVote, nameDativusClaimerVote, nameGenitiveClaimerVote);
+            objVote = addSingleGroupObject(genID(), "vote", vote, "Заседание", dateEndVote, nameNativeProjectVote, dateProjectVote, nameNativeClaimerVote, nameAblateClaimerVote, nameDativusClaimerVote, nameGenitiveClaimerVote, isLastClusterVote);
             objVote.groupTo.initClassView = ClassViewType.PANEL;
 
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(succeededVote, objVote)));

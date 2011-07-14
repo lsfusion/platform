@@ -127,6 +127,8 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
     public LP round0;
 
+    public LP minusInteger;
+
     public LP dumb1;
     public LP dumb2;
 
@@ -412,6 +414,8 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         vzero = addCProp("0", DoubleClass.instance, 0);
 
         round0 = addSFProp("round(CAST(prm1 as numeric), 0)", DoubleClass.instance, 1);
+
+        minusInteger = addSFProp("(-(prm1))", IntegerClass.instance, 1);
 
         actionTrue = addCProp("ActionTrue", ActionClass.instance, true);
 
