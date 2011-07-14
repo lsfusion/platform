@@ -29,7 +29,6 @@ import java.io.FileNotFoundException;
 import java.util.*;
 
 import static platform.base.BaseUtils.consecutiveInts;
-import static platform.base.BaseUtils.toPrimitive;
 import static platform.server.logics.PropertyUtils.*;
 
 /**
@@ -649,13 +648,24 @@ public abstract class LogicsModule {
     }
 
     /**
-     * Создаёт свойство для группового изменения, при этом итерация идёт по всем интерфейсам, и мэппинг интерфейсов происходит по порядку
+     * Создаёт свойство для группового изменения, при этом группировка идёт по всем интерфейсам, и мэппинг интерфейсов происходит по порядку
+     */
+    protected LP addGCAProp(AbstractGroup group, String name, String caption, LP mainProperty, LP getterProperty) {
+        return addGCAProp(group, name, caption, null, mainProperty, getterProperty);
+    }
+
+    /**
+     * Создаёт свойство для группового изменения, при этом группировка идёт по всем интерфейсам, мэппинг интерфейсов происходит по порядку
+     * при этом, если groupObject != null, то результирующее свойство будет принимать на входы в том числе и группирующие интерфейсы.
+     * Это нужно для того, чтобы можно было создать фильтр по ключам этого groupObject'а
+     * <p>
+     * Пример исользования есть в {@link #addGCAProp(platform.server.logics.property.group.AbstractGroup, String, String, platform.server.form.entity.GroupObjectEntity, platform.server.logics.linear.LP, Object...)}
      */
     protected LP addGCAProp(AbstractGroup group, String name, String caption, GroupObjectEntity groupObject, LP mainProperty, LP getterProperty) {
-        int groupInts[] = consecutiveInts(mainProperty.listInterfaces.size());
+        int mainInts[] = consecutiveInts(mainProperty.listInterfaces.size());
         int getterInts[] = consecutiveInts(getterProperty.listInterfaces.size());
 
-        return addGCAProp(group, name, caption, groupObject, mainProperty, groupInts, getterProperty, getterInts);
+        return addGCAProp(group, name, caption, groupObject, mainProperty, mainInts, getterProperty, getterInts, mainInts);
     }
 
     /**
@@ -667,36 +677,60 @@ public abstract class LogicsModule {
      *
      *   Тогда, чтобы установить цену для всех товаров в магазине, равной цене поставки товара, создаём свойство
      *
-     *   addGCAProp(..., ценаПродажиТовара, 2, ценаПоставкиТовара, 1)
+     *   addGCAProp(...,
+     *      ценаПродажиТовара,  // изменяемое свойство
+     *      1, 2,               // номера интерфейсов результирующего свойства на входах изменяемого свойтства
+     *      ценаПоставкиТовара, // изменяющее свойство
+     *      2,                  // номера интерфейсов результирующего свойства на входах изменяющего свойтства
+     *      2                   // номера интерфейсов для группировки
+     *      )
      * </pre>
      *
-     * @param groupObject используется для получения фильтров на набор, для которого будут происходить изменения
-     * @param params      сначала идут номера интерфейсов для группировки, затем getterProperty, затем мэппинг интерфейсов getterProperty
+     * Если groupObject != null, то результирующее свойство будет принимать на входы в том числе и группирующие интерфейсы.
+     * Это нужно для того, чтобы можно было создать фильтр по ключам этого groupObject'а.
+     * Если groupObject == null, то группирующие интерфейсы включены не будут.
+     *
+     * @param groupObject используется для получения фильтров на набор, для которого будут происходить изменения.
+     *
+     * @param params      сначала идут номера интерфейсов для входов главного свойства,
+     *                      затем getterProperty,
+     *                      затем мэппинг интерфейсов getterProperty,
+     *                      затем номера групирующих интерфейсов
      */
     protected LP addGCAProp(AbstractGroup group, String name, String caption, GroupObjectEntity groupObject, LP mainProperty, Object... params) {
         assert params.length > 0;
 
-        List<Integer> groupInts = new ArrayList<Integer>();
-        int i = 0;
-        while (!(params[i] instanceof LP)) {
-            groupInts.add((Integer) params[i++] - 1);
+        int mainIntCnt = mainProperty.listInterfaces.size();
+
+        LP getterProperty = (LP) params[mainIntCnt];
+
+        int getterIntCnt = getterProperty.listInterfaces.size();
+
+        int groupIntCnt = params.length - mainIntCnt - 1 - getterIntCnt;
+
+        int mainInts[] = new int[mainIntCnt];
+        int getterInts[] = new int[getterIntCnt];
+        int groupInts[] = new int[groupIntCnt];
+
+        for (int i = 0; i < mainIntCnt; ++i) {
+            mainInts[i] = (Integer)params[i];
         }
 
-        LP getterProperty = (LP) params[i++];
-
-        List<Integer> getterInts = new ArrayList<Integer>();
-        while (i < params.length) {
-            getterInts.add((Integer) params[i++] - 1);
+        for (int i = 0; i < getterIntCnt; ++i) {
+            getterInts[i] = (Integer)params[mainIntCnt + 1 + i];
         }
 
-        return addGCAProp(group, name, caption, groupObject, mainProperty, toPrimitive(groupInts), getterProperty, toPrimitive(getterInts));
+        for (int i = 0; i < groupIntCnt; ++i) {
+            groupInts[i] = (Integer)params[mainIntCnt + 1 + getterIntCnt];
+        }
+
+        return addGCAProp(group, name, caption, groupObject, mainProperty, mainInts, getterProperty, getterInts, groupInts);
     }
 
-    protected LP addGCAProp(AbstractGroup group, String name, String caption, GroupObjectEntity groupObject, LP mainProperty, int[] groupInts, LP getterProperty, int[] getterInts) {
+    protected LP addGCAProp(AbstractGroup group, String name, String caption, GroupObjectEntity groupObject, LP mainProperty, int[] mainInts, LP getterProperty, int[] getterInts, int[] groupInts) {
         return addProperty(group, new LP<ClassPropertyInterface>(
                 new GroupChangeActionProperty(name, caption, groupObject,
-                        mainProperty, groupInts,
-                        getterProperty, getterInts)));
+                        mainProperty, mainInts, getterProperty, getterInts, groupInts)));
     }
 
     private <T extends PropertyInterface> LP addGProp(AbstractGroup group, String name, boolean persistent, String caption, LP<T> groupProp, List<PropertyInterfaceImplement<T>> listImplements) {

@@ -1114,7 +1114,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         inProjectCluster = addDProp(baseGroup, "inProjectCluster", "Вкл", LogicalClass.instance, project, cluster);
         inBackwardProjectCluster = addJProp("inBackwardProjectCluster", "Вкл (обр.)", baseLM.equals2, clusterProject, 1, 2);
-        backwardFillCluster = addGCAProp(actionGroup, "backwardFillCluster", "Заполнить кластера проектов (обратная совместимость)", null, inProjectCluster, new int[0], inBackwardProjectCluster, new int[0]);
+        backwardFillCluster = addGCAProp(actionGroup, "backwardFillCluster", "Заполнить кластера проектов (обратная совместимость)", inProjectCluster, inBackwardProjectCluster);
 
         numberCluster = addDProp(baseGroup, "numberCluster", "Приоритет", IntegerClass.instance, cluster);
         clusterNumber = addAGProp("clusterName", "Кластер (ИД)", numberCluster);
@@ -1611,7 +1611,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         private GlobalFormEntity(NavigatorElement parent, String sID) {
             super(parent, sID, "Глобальные параметры");
 
-            addPropertyDraw(new LP[]{baseLM.currentDate, requiredPeriod, requiredQuantity, limitExperts, emailDocuments, emailClaimerFromAddress});
+            addPropertyDraw(new LP[]{baseLM.currentDate, requiredPeriod, requiredQuantity, limitExperts, emailDocuments, emailClaimerFromAddress, backwardFillCluster});
         }
     }
 

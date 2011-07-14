@@ -1,6 +1,7 @@
 package platform.server.logics.property.actions;
 
 import platform.interop.action.ClientAction;
+import platform.server.classes.ValueClass;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.where.extra.CompareWhere;
 import platform.server.data.where.Where;
@@ -11,6 +12,7 @@ import platform.server.form.instance.PropertyObjectInterfaceInstance;
 import platform.server.form.instance.remote.RemoteForm;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
+import platform.server.logics.PropertyUtils;
 import platform.server.logics.linear.LP;
 import platform.server.logics.property.ActionProperty;
 import platform.server.logics.property.ClassPropertyInterface;
@@ -25,7 +27,6 @@ import java.sql.SQLException;
 import java.util.*;
 
 import static platform.base.BaseUtils.*;
-import static platform.server.logics.PropertyUtils.getValueClasses;
 
 public class GroupChangeActionProperty extends ActionProperty {
 
@@ -39,37 +40,99 @@ public class GroupChangeActionProperty extends ActionProperty {
     private Map<PropertyInterface, ClassPropertyInterface> mapGetToThis;
 
     private Map<PropertyInterface, ClassPropertyInterface> mapMainToThis;
+    private boolean removeGroupingInterfaces;
+
+    public static ValueClass[] getValueClasses(LP mainLP, int[] mainInts, LP getterLP, int[] getterInts, int[] groupInts, boolean removeGroupingInterfaces) {
+        ValueClass[] fullClasses = PropertyUtils.getValueClasses(false, new LP[]{mainLP, getterLP}, new int[][]{mainInts, getterInts});
+
+        if (!removeGroupingInterfaces) {
+            return fullClasses;
+        }
+
+        HashSet<Integer> groupIntsSet = new HashSet<Integer>(toListFromArray(groupInts));
+        ValueClass[] result = new ValueClass[fullClasses.length - groupIntsSet.size()];
+
+        int ri = 0;
+        for (int i = 0; i < fullClasses.length; ++i) {
+            if (!groupIntsSet.contains(i)) {
+                result[ri++] = fullClasses[i];
+            }
+        }
+
+        assert ri == result.length;
+
+        return result;
+    }
 
     /**
-     * @param mainLP - свойство, куда будем писать
+     * @param mainLP   - свойство, куда будем писать
      * @param getterLP - свойство, из которого будем читать значение
      */
-    public GroupChangeActionProperty(String sID, String caption, GroupObjectEntity filterGroupObject, LP<?> mainLP, int[] groupInts, LP<?> getterLP, int[] getterInts) {
-        super(sID, caption, getValueClasses(false, new LP[]{mainLP, getterLP}, new int[][]{null, getterInts}));
+    public GroupChangeActionProperty(String sID, String caption, GroupObjectEntity filterGroupObject, LP<?> mainLP, int[] mainInts, LP<?> getterLP, int[] getterInts, int[] groupInts) {
+        super(sID, caption, getValueClasses(mainLP, mainInts, getterLP, getterInts, groupInts, filterGroupObject == null));
+
+        TreeSet<Integer> groupIntsSet = new TreeSet<Integer>(toListFromArray(groupInts));
+        Map<PropertyInterface, Integer> mapMainToInd = getNumMapping(mainLP, mainInts);
+        Map<PropertyInterface, Integer> mapGetToInd = getNumMapping(getterLP, getterInts);
+
+        this.removeGroupingInterfaces = filterGroupObject == null;
 
         this.filterGroupObject = filterGroupObject;
         this.mainProperty = mainLP.property;
         this.getterProperty = getterLP.property;
 
         this.mapGetToMain = new HashMap<PropertyInterface, PropertyInterface>();
-        this.mapGetToThis = new HashMap<PropertyInterface, ClassPropertyInterface>();
-        this.mapMainToThis = new HashMap<PropertyInterface, ClassPropertyInterface>();
 
         List<ClassPropertyInterface> listInterfaces = (List<ClassPropertyInterface>) interfaces;
 
-        for (int i = 0; i < getterInts.length; ++i) {
-            int gi = getterInts[i];
-            if (gi < mainLP.listInterfaces.size()) {
-                mapGetToMain.put(getterLP.listInterfaces.get(i), mainLP.listInterfaces.get(gi));
+        this.mapGetToThis = getInterfacesMapping(getterLP, getterInts, groupIntsSet);
+        this.mapMainToThis = getInterfacesMapping(mainLP, mainInts, groupIntsSet);
+        this.mapGetToMain = crossValues(mapGetToInd, mapMainToInd, true);
+
+        if (!removeGroupingInterfaces) {
+            grouping = new HashSet<PropertyInterface>();
+            for (int gi : groupInts) {
+                //Добавляем все интерфейсы главного свойства, которые указывают на группирующие интерфейсы
+                grouping.addAll(filterValues(mapMainToThis, listInterfaces.get(gi)));
             }
-            mapGetToThis.put(getterLP.listInterfaces.get(i), listInterfaces.get(gi));
+        }
+    }
+
+    private Map<PropertyInterface, Integer> getNumMapping(LP<?> property, int[] intNums) {
+        assert property.listInterfaces.size() == intNums.length;
+
+        HashMap<PropertyInterface, Integer> result = new HashMap<PropertyInterface, Integer>();
+        for (int i = 0; i < intNums.length; ++i) {
+            result.put(property.listInterfaces.get(i), intNums[i]);
         }
 
-        this.grouping = new HashSet<PropertyInterface>();
-        for (int mi : groupInts) {
-            grouping.add(mainLP.listInterfaces.get(mi));
-            mapMainToThis.put(mainLP.listInterfaces.get(mi), listInterfaces.get(mi));
+        return result;
+    }
+
+    /**
+     * получает мэппинг интерфейсов property на интерфейсы этого результирующего свойтсва
+     */
+    private Map<PropertyInterface, ClassPropertyInterface> getInterfacesMapping(LP<?> property, int[] ifacesMapping, TreeSet<Integer> groupIntsSet) {
+        List<ClassPropertyInterface> listInterfaces = (List<ClassPropertyInterface>) interfaces;
+
+        HashMap<PropertyInterface, ClassPropertyInterface> result = new HashMap<PropertyInterface, ClassPropertyInterface>();
+        for (int i = 0; i < ifacesMapping.length; ++i) {
+            int pi = ifacesMapping[i];
+
+            if (removeGroupingInterfaces) {
+                if (groupIntsSet.contains(pi)) {
+                    //пропускаем группирующие интерфейсы
+                    continue;
+                }
+                // реальный номер интерфейса меньше на количество группирующих интерфейсов меньше его по номеру
+                // т.к. они пропускаются при создании
+                pi -= groupIntsSet.headSet(pi).size();
+            }
+
+            result.put(property.listInterfaces.get(i), listInterfaces.get(pi));
         }
+
+        return result;
     }
 
     public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, DataSession session, Modifier<? extends Changes> modifier, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects, boolean groupLast) throws SQLException {
@@ -77,16 +140,20 @@ public class GroupChangeActionProperty extends ActionProperty {
 
         Map<PropertyInterface, Expr> mainKeys = mainProperty.getMapKeys();
 
+        Map<PropertyInterface, PropertyObjectInterfaceInstance> mainMapObjects = getMapObjectsForMainProperty(mapObjects);
+
+        //включаем в сравнение на конкретные значения те интерфейсы главноего свойства, которые мэпятся на интерфейсы текущего свойства
         Where changeWhere = CompareWhere.compareValues(
-                filterNotKeys(mainKeys, grouping),
+                removeGroupingInterfaces ? filterKeys(mainKeys, mapMainToThis.keySet()) : filterNotKeys(mainKeys, grouping),
                 join(mapMainToThis, keys)
         );
 
         if (filterGroupObject != null) {
             GroupObjectInstance groupInstance = form.instanceFactory.getInstance(filterGroupObject);
+
             changeWhere = changeWhere.and(
                     groupInstance.getWhere(
-                            filterKeys(crossJoin(join(mapMainToThis, mapObjects), mainKeys), groupInstance.objects),
+                            filterKeys(crossJoin(mainMapObjects, mainKeys), groupInstance.objects),
                             modifier));
         }
 
@@ -104,7 +171,17 @@ public class GroupChangeActionProperty extends ActionProperty {
         PropertyChange mainPropertyChange = new PropertyChange(mainKeys, setExpr, changeWhere);
 
         actions.addAll(
-                session.execute(mainProperty, mainPropertyChange, modifier, executeForm, join(mapMainToThis, mapObjects))
+                session.execute(mainProperty, mainPropertyChange, modifier, executeForm, mainMapObjects)
         );
+    }
+
+    private Map<PropertyInterface, PropertyObjectInterfaceInstance> getMapObjectsForMainProperty(Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects) {
+        Map<PropertyInterface, PropertyObjectInterfaceInstance> execMapObjects = new HashMap<PropertyInterface, PropertyObjectInterfaceInstance>();
+        for (PropertyInterface mainIFace : (List<PropertyInterface>) mainProperty.interfaces) {
+            execMapObjects.put(mainIFace, mapMainToThis.containsKey(mainIFace) ? mapObjects.get(mapMainToThis.get(mainIFace)) : null);
+        }
+
+        return execMapObjects;
+//        return join(mapMainToThis, mapObjects);
     }
 }
