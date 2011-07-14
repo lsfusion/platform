@@ -61,6 +61,8 @@ public class RomanLogicsModule extends LogicsModule {
     private final RomanBusinessLogics BL;
     private LP equalsColorItemSupplier;
     private LP equalsSizeItemSupplier;
+    private LP boxInvoiceAddFA;
+    private LP simpleInvoiceAddFA;
     private LP boxInvoiceEditFA;
     private LP simpleInvoiceEditFA;
     private LP freightCreateFA;
@@ -1560,7 +1562,7 @@ public class RomanLogicsModule extends LogicsModule {
 
         addArticleCompositeSIDSupplier = addJProp(true, "Ввод составного артикула", addAAProp(articleComposite, sidArticle, supplierArticle), 1, 2);
         addNEArticleCompositeSIDSupplier = addJProp(true, "Ввод составного артикула (НС)", baseLM.andNot1, addArticleCompositeSIDSupplier, 1, 2, articleSIDSupplier, 1, 2);
-        addNEArticleCompositeSIDInvoice = addJProp(true, "Ввод составного артикула (НС)", addNEArticleCompositeSIDSupplier, supplierDocument, 1, 2);
+        addNEArticleCompositeSIDInvoice = addJProp(true, "Ввод составного артикула (НС)", addNEArticleCompositeSIDSupplier, 1, supplierDocument, 2);
 
         executeArticleCompositeItemSIDSupplier = addJProp(true, "Замена артикула", addEPAProp(articleCompositeItem), 1, articleSIDSupplier, 2, 3);
 
@@ -2688,8 +2690,11 @@ public class RomanLogicsModule extends LogicsModule {
         addFormEntity(new PricatFormEntity(purchase, "pricatForm", "Прайсы"));
         addFormEntity(new OrderFormEntity(purchase, "orderForm", "Заказы"));
 
-        addFormEntity(new InvoiceEditFormEntity(purchase, "boxInvoiceAddForm", "Создать инвойс по коробам", true, false));
-        addFormEntity(new InvoiceEditFormEntity(purchase, "simpleInvoiceAddForm", "Создать инвойс без коробов", false, false));
+        NavigatorElement purchaseCreate = new NavigatorElement(purchase, "purchaseCreate", "Создать");
+        addFormEntity(new InvoiceEditFormEntity(purchaseCreate, "boxInvoiceAddForm", "Инвойс по коробам", true, false)).showModal = true;;
+        addFormEntity(new InvoiceEditFormEntity(purchaseCreate, "simpleInvoiceAddForm", "Инвойс без коробов", false, false)).showModal = true;
+        purchaseCreate.window = generateToolbar;
+
         addFormEntity(new InvoiceEditFormEntity(purchase, "boxInvoiceEditForm", "Редактировать инвойс по коробам", true, true));
         addFormEntity(new InvoiceEditFormEntity(purchase, "simpleInvoiceEditForm", "Редактировать инвойс без коробов", false, true));
         addFormEntity(new InvoiceFormEntity(purchase, "boxInvoiceForm", "Инвойсы по коробам", true));
@@ -3097,8 +3102,13 @@ public class RomanLogicsModule extends LogicsModule {
             this.box = box;
             this.edit = edit;
 
-            objInvoice = addSingleGroupObject((box ? boxInvoice : simpleInvoice), "Инвойс", baseLM.date, baseLM.objectClassName, sidDocument, nameCurrencyDocument, sumDocument, quantityDocument, netWeightDocument, nameImporterInvoice, sidContractInvoice, sidDestinationDestinationDocument, nameDestinationDestinationDocument);
+            objInvoice = addSingleGroupObject((box ? boxInvoice : simpleInvoice), "Инвойс",  baseLM.date, baseLM.objectClassName, sidDocument, nameCurrencyDocument, sumDocument, quantityDocument, netWeightDocument, nameImporterInvoice, sidContractInvoice, sidDestinationDestinationDocument, nameDestinationDestinationDocument);
             objInvoice.groupTo.setSingleClassView(ClassViewType.PANEL);
+
+            if (!edit) {
+                addPropertyDraw(nameSupplierDocument, objInvoice);
+                objInvoice.addOnTransaction = true;
+            }
 
             if (box) {
                 objSupplierBox = addSingleGroupObject(supplierBox, "Короб", sidSupplierBox, baseLM.barcode);
@@ -3243,16 +3253,20 @@ public class RomanLogicsModule extends LogicsModule {
 
             this.box = box;
             objSupplier = addSingleGroupObject(supplier, "Поставщик", baseLM.name, nameCurrencySupplier, importInvoiceActionGroup, true);
-
             objSupplier.groupTo.setSingleClassView(ClassViewType.PANEL);
 
-            objInvoice = addSingleGroupObject((box ? boxInvoice : simpleInvoice), "Инвойс", baseLM.date, baseLM.objectClassName, sidDocument, nameCurrencyDocument, sumDocument, quantityDocument, netWeightDocument, nameImporterInvoice, sidContractInvoice, sidDestinationDestinationDocument, nameDestinationDestinationDocument);
-            addObjectActions(this, objInvoice);
+            objInvoice = addSingleGroupObject((box ? boxInvoice : simpleInvoice), "Инвойс", baseLM.date, baseLM.objectClassName, sidDocument, nameCurrencyDocument, sumDocument,
+                    quantityDocument, netWeightDocument, nameImporterInvoice, sidContractInvoice, sidDestinationDestinationDocument, nameDestinationDestinationDocument, baseLM.delete);
+            //addObjectActions(this, objInvoice);
 
-            if (box)
+            if (box) {
+                //addPropertyDraw(boxInvoiceAddFA, objInvoice).forceViewType = ClassViewType.PANEL;
                 addPropertyDraw(boxInvoiceEditFA, objInvoice).forceViewType = ClassViewType.GRID;
-            else
+            }
+            else {
+                //addPropertyDraw(simpleInvoiceAddFA, objInvoice).forceViewType = ClassViewType.PANEL;
                 addPropertyDraw(simpleInvoiceEditFA, objInvoice).forceViewType = ClassViewType.GRID;
+            }
 
             objOrder = addSingleGroupObject(order, "Заказ");
             objOrder.groupTo.setSingleClassView(ClassViewType.GRID);
