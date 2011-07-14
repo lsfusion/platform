@@ -16,6 +16,7 @@
 	<field name="nameNativeClaimerVote" class="java.lang.String"/>
 	<field name="nameAblateClaimerVote" class="java.lang.String"/>
 	<field name="nameDativusClaimerVote" class="java.lang.String"/>
+	<field name="isLastClusterVote" class="java.lang.Boolean"/>
 	<detail>
 		<band height="700">
 			<textField>
@@ -56,14 +57,14 @@
 				<textElement textAlignment="Justified" verticalAlignment="Top">
 					<paragraph firstLineIndent="40"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA["1. Признать проект, представленный Соискателем, не соответствующим критериям, указанным в подпункте Е пункта 2 указанного Положения."]]></textFieldExpression>
+				<textFieldExpression class="java.lang.String"><![CDATA[(($F{isLastClusterVote})!=null? "1. ":"")+"Признать проект, представленный Соискателем, не соответствующим критериям, указанным в подпункте Е пункта 2 указанного Положения."]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
-				<reportElement style="DefaultStyle" positionType="Float" x="50" y="308" width="489" height="13"/>
+				<reportElement style="DefaultStyle" positionType="Float" x="50" y="324" width="489" height="5"/>
 				<textElement textAlignment="Justified">
 					<paragraph firstLineIndent="40"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA["2. Отказать " + $F{nameDativusClaimerVote} + " в присвоении статуса участника проекта по созданию и обеспечению функционирования инновационного центра «Сколково»."]]></textFieldExpression>
+				<textFieldExpression class="java.lang.String"><![CDATA[(($F{isLastClusterVote})!=null? "2. Отказать " + $F{nameDativusClaimerVote} + " в присвоении статуса участника проекта по созданию и обеспечению функционирования инновационного центра «Сколково».":"")]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
 				<reportElement style="DefaultStyle" positionType="Float" x="50" y="279" width="489" height="12"/>
@@ -80,8 +81,7 @@
 				<textFieldExpression class="java.lang.String"><![CDATA["О несоответствии проекта, представленного Соискателем, критериям,\n" +
 "указанным в подпункте Е пункта 2 Положения о присвоении и утрате статуса\n" +
 "участника проекта создания и обеспечения функционирования инновационного\n" +
-"центра «Сколково», и об отказе в присвоению Соискателю статуса участника\n" +
-"проекта"]]></textFieldExpression>
+"центра «Сколково»" + (($F{isLastClusterVote})!=null? ", и об отказе в присвоению Соискателю статуса участника проекта":"")]]></textFieldExpression>
 			</textField>
 			<staticText>
 				<reportElement positionType="Float" x="50" y="358" width="247" height="48"/>
