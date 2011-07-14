@@ -1,12 +1,14 @@
 package platform.client.navigator;
 
+import platform.interop.navigator.FormShowType;
+
 import java.io.DataInputStream;
 import java.io.IOException;
 
 public class ClientNavigatorForm extends ClientNavigatorElement {
     
     public boolean isPrintForm;
-    public boolean showModal;
+    public FormShowType showType;
 
     public ClientNavigatorForm() {
 
@@ -19,6 +21,6 @@ public class ClientNavigatorForm extends ClientNavigatorElement {
     public ClientNavigatorForm(DataInputStream inStream) throws IOException {
         super(inStream);
         isPrintForm = inStream.readBoolean();
-        showModal = inStream.readBoolean();
+        showType = FormShowType.valueOf(inStream.readUTF());
     }
 }

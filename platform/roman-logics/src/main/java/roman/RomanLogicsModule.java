@@ -8,6 +8,7 @@ import platform.interop.action.AudioClientAction;
 import platform.interop.action.ClientAction;
 import platform.interop.action.MessageClientAction;
 import platform.interop.form.layout.DoNotIntersectSimplexConstraint;
+import platform.interop.navigator.FormShowType;
 import platform.server.Settings;
 import platform.server.classes.*;
 import platform.server.data.Time;
@@ -918,6 +919,7 @@ public class RomanLogicsModule extends LogicsModule {
     private LP skuBarcodeObject;
 
     private LP typeSupplier;
+    private LP noBarcodeSupplier;
 
     ConcreteCustomClass pricat;
     LP barcodePricat;
@@ -1168,6 +1170,7 @@ public class RomanLogicsModule extends LogicsModule {
 
         //typeSupplier = addDProp(baseGroup, "typeSupplier", "С коробами/без коробов", LogicalClass.instance, supplier);
         typeSupplier = addCUProp("typeSupplier", addCProp(LogicalClass.instance, true, hugoBossSupplier), addCProp(LogicalClass.instance, true, sOliverSupplier), addCProp(LogicalClass.instance, true, babyPhatSupplier));
+        noBarcodeSupplier = addCUProp("noBarcodeSupplier", addCProp(LogicalClass.instance, true, babyPhatSupplier));
 
         // rate
         currencyTypeExchange = addDProp(idGroup, "currencyTypeExchange", "Валюта типа обмена (ИД)", currency, typeExchange);
@@ -2699,12 +2702,12 @@ public class RomanLogicsModule extends LogicsModule {
         addFormEntity(new OrderFormEntity(purchase, "orderForm", "Заказы"));
 
         NavigatorElement purchaseCreate = new NavigatorElement(purchase, "purchaseCreate", "Создать");
-        addFormEntity(new InvoiceEditFormEntity(purchaseCreate, "boxInvoiceAddForm", "Инвойс по коробам", true, false)).showModal = true;;
-        addFormEntity(new InvoiceEditFormEntity(purchaseCreate, "simpleInvoiceAddForm", "Инвойс без коробов", false, false)).showModal = true;
+        addFormEntity(new InvoiceEditFormEntity(purchaseCreate, "boxInvoiceAddForm", "Инвойс по коробам", true, false)).showType = FormShowType.MODAL_FULLSCREEN;
+        addFormEntity(new InvoiceEditFormEntity(purchaseCreate, "simpleInvoiceAddForm", "Инвойс без коробов", false, false)).showType = FormShowType.MODAL_FULLSCREEN;
         purchaseCreate.window = generateToolbar;
 
-        addFormEntity(new InvoiceEditFormEntity(null, "boxInvoiceEditForm", "Редактировать инвойс по коробам", true, true));
-        addFormEntity(new InvoiceEditFormEntity(null, "simpleInvoiceEditForm", "Редактировать инвойс без коробов", false, true));
+        addFormEntity(new InvoiceEditFormEntity(purchase, "boxInvoiceEditForm", "Редактировать инвойс по коробам", true, true));
+        addFormEntity(new InvoiceEditFormEntity(purchase, "simpleInvoiceEditForm", "Редактировать инвойс без коробов", false, true));
         addFormEntity(new InvoiceFormEntity(purchase, "boxInvoiceForm", "Инвойсы по коробам", true));
         addFormEntity(new InvoiceFormEntity(purchase, "simpleInvoiceForm", "Инвойсы без коробов", false));
         addFormEntity(new ShipmentListFormEntity(purchase, "boxShipmentListForm", "Поставки по коробам", true));
@@ -2718,11 +2721,11 @@ public class RomanLogicsModule extends LogicsModule {
         generation.window = generateToolbar;
 
         FormEntity createPalletFormCreate = addFormEntity(new CreatePalletFormEntity(generation, "createPalletFormAdd", "Сгенерировать паллеты", FormType.ADD));
-        createPalletFormCreate.showModal = true;
+        createPalletFormCreate.showType = FormShowType.MODAL;
         FormEntity createFreightBoxFormAdd = addFormEntity(new CreateFreightBoxFormEntity(generation, "createFreightBoxFormAdd", "Сгенерировать короба", FormType.ADD));
-        createFreightBoxFormAdd.showModal = true;
+        createFreightBoxFormAdd.showType = FormShowType.MODAL;
         FormEntity createStampFormAdd = addFormEntity(new CreateStampFormEntity(generation, "createStampFormAdd", "Сгенерировать марки", FormType.ADD));
-        createStampFormAdd.showModal = true;
+        createStampFormAdd.showType = FormShowType.MODAL;
 
         NavigatorElement preparation = new NavigatorElement(distribution, "preparation", "Подготовка к приемке");
 
@@ -3652,6 +3655,12 @@ public class RomanLogicsModule extends LogicsModule {
 //                addActionsOnObjectChange(objBarcode, addPropertyObject(barcodeAction4, objSupplierBox, objShipment, objRoute, objBarcode));
 //            else
 //                addActionsOnObjectChange(objBarcode, addPropertyObject(barcodeAction3, objShipment, objRoute, objBarcode));
+
+//
+//            addActionsOnObjectChange(objBarcode, addPropertyObject(
+//                    addJProp(true, baseLM.and1, addJProp(true, baseLM.equalsObjectBarcode, skuShipmentDetail, 1, 2), 1, 2, noBarcodeSupplier, 3),
+//                    objShipmentDetail, objBarcode, objSupplier
+//            ));
 
             addActionsOnObjectChange(objBarcode, addPropertyObject(
                     addJProp(true, addSAProp(null), skuBarcodeObject, 1),

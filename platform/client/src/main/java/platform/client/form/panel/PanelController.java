@@ -47,10 +47,12 @@ public class PanelController {
             // так как вызывается в addDrawProperty, без проверки было свойство в панели или нет
 
             for (PropertyController controller : properties.remove(property).values()) {
-                if (property.keyBindingGroup != null && property.drawToToolbar) {
-                    GroupObjectLogicsSupplier logicsSupplier = form.getGroupObjectLogicsSupplier(property.keyBindingGroup);
-                    logicsSupplier.removePropertyFromToolbar(controller);
-                    logicsSupplier.updateToolbar();
+                if (property.drawToToolbar) {
+                    GroupObjectLogicsSupplier logicsSupplier = form.getGroupObjectLogicsSupplier(property.getKeyBindingGroup());
+                    if (logicsSupplier != null) {
+                        logicsSupplier.removePropertyFromToolbar(controller);
+                        logicsSupplier.updateToolbar();
+                    }
                 }
                 controller.removeView(formLayout);
             }
@@ -108,8 +110,8 @@ public class PanelController {
                     if (propController == null) {
                         propController = new PropertyController(property, form, columnKey);
                         addGroupObjectActions(propController.getView());
-                        if (property.keyBindingGroup != null && property.drawToToolbar) {
-                            GroupObjectLogicsSupplier logicsSupplier = form.getGroupObjectLogicsSupplier(property.keyBindingGroup);
+                        if (property.drawToToolbar && property.getKeyBindingGroup() != null) {
+                            GroupObjectLogicsSupplier logicsSupplier = form.getGroupObjectLogicsSupplier(property.getKeyBindingGroup());
                             if (logicsSupplier != null) {
                                 logicsSupplier.addPropertyToToolbar(propController);
                                 logicsSupplier.updateToolbar();

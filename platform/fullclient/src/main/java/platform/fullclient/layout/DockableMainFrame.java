@@ -69,7 +69,7 @@ public class DockableMainFrame extends MainFrame {
             }
 
             public void openModalForm(ClientNavigatorForm element) throws IOException, ClassNotFoundException {
-                view.openModalForm(element.getSID(), this, false);
+                view.openModalForm(element.getSID(), this, false, element.showType.isFullScreen());
             }
         };
 

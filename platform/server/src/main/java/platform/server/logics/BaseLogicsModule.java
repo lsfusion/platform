@@ -149,6 +149,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public LP<PropertyInterface> barcode;
     public LP barcodeToObject;
     public LP barcodeObjectName;
+    public LP equalsObjectBarcode;
     public LP barcodePrefix;
     public LP seekBarcodeAction;
     public LP barcodeNotFoundMessage;
@@ -519,6 +520,8 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         barcode.setFixedCharWidth(13);
         barcodeToObject = addAGProp("barcodeToObject", getString("logics.object"), barcode);
         barcodeObjectName = addJProp(baseGroup, "barcodeObjectName", getString("logics.object"), name, barcodeToObject, 1);
+
+        equalsObjectBarcode = addJProp(equals2, barcode, 1, 2);
 
         barcodePrefix = addDProp(baseGroup, "barcodePrefix", getString("logics.barcode.prefix"), StringClass.get(13));
 

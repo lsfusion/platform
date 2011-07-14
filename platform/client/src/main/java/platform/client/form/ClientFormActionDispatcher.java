@@ -33,7 +33,7 @@ public class ClientFormActionDispatcher implements ClientActionDispatcher {
                 if (!action.isModal) {
                     Main.frame.runForm(remoteForm);
                 } else {
-                    new ClientModalForm(Main.frame, remoteForm, action.newSession).showDialog();
+                    new ClientModalForm(Main.frame, remoteForm, action.newSession).showDialog(false);
                 }
             }
         } catch (Exception e) {

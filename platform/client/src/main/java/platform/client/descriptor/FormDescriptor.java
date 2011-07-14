@@ -21,6 +21,7 @@ import platform.client.serialization.ClientIdentitySerializable;
 import platform.client.serialization.ClientSerializationPool;
 import platform.interop.Constants;
 import platform.interop.form.layout.*;
+import platform.interop.navigator.FormShowType;
 
 import java.io.*;
 import java.util.*;
@@ -31,7 +32,7 @@ public class FormDescriptor extends ContextIdentityObject implements ClientIdent
 
     public String caption;
     public boolean isPrintForm;
-    public boolean showModal;
+    public FormShowType showType;
 
     public List<GroupObjectDescriptor> groupObjects = new ArrayList<GroupObjectDescriptor>();
     public List<TreeGroupDescriptor> treeGroups = new ArrayList<TreeGroupDescriptor>();
@@ -215,7 +216,7 @@ public class FormDescriptor extends ContextIdentityObject implements ClientIdent
         pool.writeString(outStream, caption);
         pool.writeString(outStream, sID);
         outStream.writeBoolean(isPrintForm);
-        outStream.writeBoolean(showModal);
+        outStream.writeUTF(showType.name());
 
         pool.serializeCollection(outStream, groupObjects);
         pool.serializeCollection(outStream, treeGroups);
@@ -247,7 +248,7 @@ public class FormDescriptor extends ContextIdentityObject implements ClientIdent
         caption = pool.readString(inStream);
         sID = pool.readString(inStream);
         isPrintForm = inStream.readBoolean();
-        showModal = inStream.readBoolean();
+        showType = FormShowType.valueOf(inStream.readUTF());
 
         groupObjects = pool.deserializeList(inStream);
         treeGroups = pool.deserializeList(inStream);

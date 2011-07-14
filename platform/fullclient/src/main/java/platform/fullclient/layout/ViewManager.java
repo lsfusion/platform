@@ -70,8 +70,8 @@ public class ViewManager {
         return page;
     }
 
-    public void openModalForm(String formSID, ClientNavigator navigator, boolean currentSession) throws IOException, ClassNotFoundException {
-        new ClientModalForm(Main.frame, navigator.remoteNavigator.createForm(formSID, currentSession, true), !currentSession).showDialog();
+    public void openModalForm(String formSID, ClientNavigator navigator, boolean currentSession, boolean showFullScreen) throws IOException, ClassNotFoundException {
+        new ClientModalForm(Main.frame, navigator.remoteNavigator.createForm(formSID, currentSession, true), !currentSession).showDialog(showFullScreen);
     }
 
     public void openReport(String formSID, ClientNavigator navigator, boolean currentSession) throws IOException, ClassNotFoundException {

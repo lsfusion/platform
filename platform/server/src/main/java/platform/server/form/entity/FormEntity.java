@@ -9,6 +9,7 @@ import platform.base.identity.IDGenerator;
 import platform.base.serialization.CustomSerializable;
 import platform.interop.ClassViewType;
 import platform.interop.action.ClientResultAction;
+import platform.interop.navigator.FormShowType;
 import platform.server.classes.ValueClass;
 import platform.server.form.entity.filter.FilterEntity;
 import platform.server.form.entity.filter.RegularFilterEntity;
@@ -55,7 +56,7 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
     public OrderedMap<OrderEntity<?>, Boolean> fixedOrders = new OrderedMap<OrderEntity<?>, Boolean>();
 
     public boolean isPrintForm;
-    public boolean showModal = false;
+    public FormShowType showType = FormShowType.DOCKING;
 
     public FormEntity() {
     }
@@ -583,7 +584,7 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         pool.writeString(outStream, caption);
         pool.writeString(outStream, sID);
         outStream.writeBoolean(isPrintForm);
-        outStream.writeBoolean(showModal);
+        outStream.writeUTF(showType.name());
 
         pool.serializeCollection(outStream, groups);
         pool.serializeCollection(outStream, treeGroups);
@@ -613,7 +614,7 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         caption = pool.readString(inStream);
         sID = pool.readString(inStream);
         isPrintForm = inStream.readBoolean();
-        showModal = inStream.readBoolean();
+        showType = FormShowType.valueOf(inStream.readUTF());
 
         groups = pool.deserializeList(inStream);
         treeGroups = pool.deserializeList(inStream);
@@ -638,7 +639,7 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
     public void serialize(DataOutputStream outStream, Collection<NavigatorElement> elements) throws IOException {
         super.serialize(outStream, elements);
         outStream.writeBoolean(isPrintForm);
-        outStream.writeBoolean(showModal);
+        outStream.writeUTF(showType.name());
     }
 
     public void addActionsOnObjectChange(ObjectEntity object, PropertyObjectEntity... actions) {

@@ -104,8 +104,8 @@ public class ClientModalForm extends JDialog {
         setVisible(false);
     }
 
-    public void showDialog() {
-        setDefaultSize();
+    public void showDialog(boolean showFullScreen) {
+        setDefaultSize(showFullScreen);
         setLocationRelativeTo(null);
         setVisible(true);
         dispose();
@@ -132,12 +132,17 @@ public class ClientModalForm extends JDialog {
             preferredSize.height += 80;
         }
 
-        preferredSize.height += 15; // под отборы
+        preferredSize.height += 35; // под отборы
 
         return preferredSize;
     }
 
-    public void setDefaultSize() {
-        setSize(SwingUtils.clipToScreen(calculatePreferredSize(isUndecorated())));
+    public void setDefaultSize(boolean showFullScreen) {
+        Dimension size;
+        if (showFullScreen)
+            size = new Dimension(10000, 10000);
+        else
+            size =calculatePreferredSize(isUndecorated());
+        setSize(SwingUtils.clipToScreen(size));
     }
 }
