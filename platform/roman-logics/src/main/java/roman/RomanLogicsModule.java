@@ -1383,8 +1383,8 @@ public class RomanLogicsModule extends LogicsModule {
         supplierPriceDocument = addJProp(idGroup, "supplierPricedDocument", "Поставщик(ИД)", baseLM.and1, supplierDocument, 1, is(priceDocument), 1);
         nameSupplierDocument = addJProp(baseGroup, "nameSupplierDocument", "Поставщик", baseLM.name, supplierDocument, 1);
 
-        //addConstraint(addJProp("Для инвойса по коробам поставщик должен быть с коробами", baseLM.equals2, baseLM.vtrue, addJProp(baseLM.and1, addJProp(typeSupplier, supplierDocument, 1), 1, is(boxInvoice), 1), 1), true);
-        //addConstraint(addJProp("Для инвойса без коробов поставщик должен быть без коробов", baseLM.equals2, baseLM.vtrue, addJProp(baseLM.and1, addJProp(typeSupplier, supplierDocument, 1), 1, is(simpleInvoice), 1), 1), false);
+        addConstraint(addJProp("Для инвойса по коробам поставщик должен быть с коробами", baseLM.and1, is(boxInvoice), 1, addJProp(typeSupplier, supplierDocument, 1), 1), true);
+        addConstraint(addJProp("Для инвойса без коробов поставщик должен быть без коробов", baseLM.andNot1, is(simpleInvoice), 1, addJProp(typeSupplier, supplierDocument, 1), 1), true);
 
         currencyDocument = addDCProp(idGroup, "currencyDocument", "Валюта (ИД)", currencySupplier, supplierPriceDocument, 1);
         nameCurrencyDocument = addJProp(baseGroup, "nameCurrencyDocument", "Валюта", baseLM.name, currencyDocument, 1);
