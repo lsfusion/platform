@@ -256,9 +256,6 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP primClusterExpert, extraClusterExpert, inClusterExpert;
     LP clusterInExpertVote;
     public LP inProjectCluster;
-    LP inBackwardProjectCluster;
-    LP backwardFillCluster;
-    public LP clusterProject, nameNativeClusterProject, nameForeignClusterProject;
     LP clusterVote, nameNativeClusterVote;
     public LP claimerProject;
     LP nameNativeClaimerProject;
@@ -409,7 +406,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP clusterNumber;
     LP currentClusterProject, firstClusterProject, lastClusterProject, finalClusterProject;
     LP lastClusterProjectVote, isLastClusterVote;
-    LP nameNativeFinalClusterProject;
+    LP nameNativeFinalClusterProject, nameForeignFinalClusterProject;
 
     LP languageExpert;
     LP nameLanguageExpert;
@@ -712,11 +709,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
         foreignSubstantiationProjectType = addDProp(innovationGroup, "foreignSubstantiationProjectType", "Description of choice", InsensitiveStringClass.get(2000), project);
         foreignSubstantiationProjectType.setMinimumWidth(10); foreignSubstantiationProjectType.setPreferredWidth(50);
 
-        clusterProject = addDProp(idGroup, "clusterProject", "Кластер (ИД)", cluster, project);
         nameNativeCluster = addJProp("nameNativeCluster", "Кластер", baseLM.and1, nameNative, 1, is(cluster), 1);
         nameNativeToCluster = addAGProp(idGroup, "nameNativeToCluster", "Кластер", nameNativeCluster);
-        nameNativeClusterProject = addJProp(innovationGroup, "nameNativeClusterProject", "Кластер", nameNative, clusterProject, 1);
-        nameForeignClusterProject = addJProp(innovationGroup, "nameForeignClusterProject", "Кластер (иностр.)", nameForeign, clusterProject, 1);
         nativeSubstantiationClusterProject = addDProp(innovationGroup, "nativeSubstantiationClusterProject", "Обоснование выбора", InsensitiveStringClass.get(2000), project);
         nativeSubstantiationClusterProject.setMinimumWidth(10); nativeSubstantiationClusterProject.setPreferredWidth(50);
         foreignSubstantiationClusterProject = addDProp(innovationGroup, "foreignSubstantiationClusterProject", "Description of choice", InsensitiveStringClass.get(2000), project);
@@ -1120,8 +1114,6 @@ public class SkolkovoLogicsModule extends LogicsModule {
         acceptedProject = addJProp(baseGroup, "acceptedProject", "Оценен положительно", baseLM.and1, addCProp(LogicalClass.instance, true, project), 1, clusterAcceptedProject, 1);
 
         inProjectCluster = addDProp(baseGroup, "inProjectCluster", "Вкл", LogicalClass.instance, project, cluster);
-        inBackwardProjectCluster = addJProp("inBackwardProjectCluster", "Вкл (обр.)", baseLM.equals2, clusterProject, 1, 2);
-        backwardFillCluster = addGCAProp(actionGroup, "backwardFillCluster", "Заполнить кластера проектов (обратная совместимость)", inProjectCluster, inBackwardProjectCluster);
 
         numberCluster = addDProp(baseGroup, "numberCluster", "Приоритет", IntegerClass.instance, cluster);
         clusterNumber = addAGProp("clusterName", "Кластер (ИД)", numberCluster);
@@ -1137,7 +1129,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
                         addMGProp(addJProp(and(false), addJProp(baseLM.minusInteger, numberCluster, 1), 2, inProjectCluster, 1, 2), 1), 1), 1);
 
         finalClusterProject = addSUProp("finalClusterProject", "Тек. кластер (ИД)", Union.OVERRIDE, firstClusterProject, currentClusterProject);
-        nameNativeFinalClusterProject = addJProp(baseGroup, "nameNativeFinalClusterProject", "Тек. кластер", nameNative, finalClusterProject, 1);
+        nameNativeFinalClusterProject = addJProp(projectInformationGroup, "nameNativeFinalClusterProject", "Тек. кластер", nameNative, finalClusterProject, 1);
+        nameForeignFinalClusterProject = addJProp(projectInformationGroup, "nameForeignFinalClusterProject", "Тек. кластер (иностр.)", nameForeign, finalClusterProject, 1);
 
         lastClusterProjectVote = addJProp("lastClusterProjectVote", "Посл. кластер (ИД)", lastClusterProject, projectVote, 1);
         isLastClusterVote = addJProp("isLastClusterVote", "Посл. кластер", baseLM.equals2, lastClusterProjectVote, 1, clusterVote, 1);
@@ -1506,7 +1499,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         private ProjectFormEntity(NavigatorElement parent, String sID) {
             super(parent, sID, "Реестр проектов");
 
-            objProject = addSingleGroupObject(project, baseLM.date, nameNative, nameForeign,  nameNativeClusterProject, nameNativeFinalClusterProject, nameNativeJoinClaimerProject, nameStatusProject, autoGenerateProject, generateVoteProject, editProject);
+            objProject = addSingleGroupObject(project, baseLM.date, nameNative, nameForeign,  nameNativeFinalClusterProject, nameNativeJoinClaimerProject, nameStatusProject, autoGenerateProject, generateVoteProject, editProject);
             addObjectActions(this, objProject);
 
 //            addPropertyDraw(addProject).toDraw = objProject.groupTo;
@@ -1625,7 +1618,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         private GlobalFormEntity(NavigatorElement parent, String sID) {
             super(parent, sID, "Глобальные параметры");
 
-            addPropertyDraw(new LP[]{baseLM.currentDate, requiredPeriod, requiredQuantity, limitExperts, emailDocuments, emailClaimerFromAddress, backwardFillCluster});
+            addPropertyDraw(new LP[]{baseLM.currentDate, requiredPeriod, requiredQuantity, limitExperts, emailDocuments, emailClaimerFromAddress});
         }
     }
 

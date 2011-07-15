@@ -52,8 +52,7 @@
 	<field name="nameProjectTypeProject" class="java.lang.String"/>
 	<field name="nativeSubstantiationProjectType" class="java.lang.String"/>
 	<field name="foreignSubstantiationProjectType" class="java.lang.String"/>
-	<field name="nameNativeClusterProject" class="java.lang.String"/>
-	<field name="nameForeignClusterProject" class="java.lang.String"/>
+	<field name="nameNativeFinalClusterProject" class="java.lang.String"/>
 	<field name="nativeSubstantiationClusterProject" class="java.lang.String"/>
 	<field name="foreignSubstantiationClusterProject" class="java.lang.String"/>
 	<field name="isReturnInvestmentsProject" class="java.lang.Boolean"/>
@@ -181,7 +180,7 @@
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 					<reportElement style="DefaultStyle" positionType="Float" x="125" y="0" width="418" height="18"/>
 					<textElement textAlignment="Left" verticalAlignment="Top"/>
-					<textFieldExpression class="java.lang.String"><![CDATA[$F{nameNativeClusterProject}]]></textFieldExpression>
+					<textFieldExpression class="java.lang.String"><![CDATA[$F{nameNativeFinalClusterProject}]]></textFieldExpression>
 				</textField>
 			</band>
 			<band height="27" splitType="Immediate">
