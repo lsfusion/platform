@@ -51,7 +51,7 @@ public abstract class RemoteObjectProxy<T extends PendingRemote> implements Pend
 
         TimerTask task = new BlockingTask();
         Timer timer = new Timer();
-        timer.schedule(task, screenBlock ? 0 : 2500);
+        timer.schedule(task, screenBlock ? 0 : 2500, 200);
         Object result = target.execute(invocations);
         timer.cancel();
 
