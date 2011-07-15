@@ -81,8 +81,6 @@ public class SkolkovoLogicsModule extends LogicsModule {
     public LP nameNativeToClaimer;
     public LP nameNativeToCluster;
     public LP nameNativeCluster;
-    public LP projectCluster;
-    private LP nameForeignCluster;
     public LP dateProject;
     public LP nativeNumberToPatent;
 
@@ -365,8 +363,6 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP valuedProject;
     LP voteRejectedProject;
     LP needExtraVoteProject;
-    public LP nameNativeCurrentCluster;
-    public LP nameNativeToCurrentCluster;
 
     LP emailLetterExpertVoteEA, emailLetterExpertVote;
     LP allowedEmailLetterExpertVote;
@@ -719,9 +715,6 @@ public class SkolkovoLogicsModule extends LogicsModule {
         clusterProject = addDProp(idGroup, "clusterProject", "Кластер (ИД)", cluster, project);
         nameNativeCluster = addJProp("nameNativeCluster", "Кластер", baseLM.and1, nameNative, 1, is(cluster), 1);
         nameNativeToCluster = addAGProp(idGroup, "nameNativeToCluster", "Кластер", nameNativeCluster);
-        nameNativeCurrentCluster = addJProp("nameNativeCurrentCluster", "Тек. кластер", baseLM.and1, nameNative, 1, is(cluster), 1);
-        nameNativeToCurrentCluster = addAGProp(idGroup, "nameNativeToCurrentCluster", "Тек. кластер", nameNativeCurrentCluster);
-        nameForeignCluster = addJProp("nameForeignCluster", "Cluster", baseLM.and1,  nameForeign, 1, is(cluster), 1);
         nameNativeClusterProject = addJProp(innovationGroup, "nameNativeClusterProject", "Кластер", nameNative, clusterProject, 1);
         nameForeignClusterProject = addJProp(innovationGroup, "nameForeignClusterProject", "Кластер (иностр.)", nameForeign, clusterProject, 1);
         nativeSubstantiationClusterProject = addDProp(innovationGroup, "nativeSubstantiationClusterProject", "Обоснование выбора", InsensitiveStringClass.get(2000), project);
@@ -826,7 +819,6 @@ public class SkolkovoLogicsModule extends LogicsModule {
         loadFileForeignTechnicalDescriptionProject = addLFAProp(projectDocumentsGroup, "Загрузить файл технического описания (иностр.)", fileForeignTechnicalDescriptionProject);
         openFileForeignTechnicalDescriptionProject = addOFAProp(projectDocumentsGroup, "Открыть файл технического описания (иностр.)", fileForeignTechnicalDescriptionProject);
 
-        projectCluster = addDProp(idGroup, "projectCluster", "Проект кластера", project, cluster);
         // патенты
         projectPatent = addDProp(idGroup, "projectPatent", "Проект патента", project, patent);
 
