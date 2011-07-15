@@ -78,11 +78,11 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
                 if (isForeign == null) {
                     voteInfo.projectName = (String) SkolkovoLM.nameNative.read(session, vo.projectObj);
                     voteInfo.projectClaimer = (String) SkolkovoLM.nameNativeClaimerProject.read(session, vo.projectObj);
-                    voteInfo.projectCluster = (String) SkolkovoLM.nameNativeClusterProject.read(session, vo.projectObj);
+                    voteInfo.projectCluster = (String) SkolkovoLM.nameNativeClusterVote.read(session, vo.voteObj);
                 } else {
                     voteInfo.projectName = (String) SkolkovoLM.nameForeign.read(session, vo.projectObj);
                     voteInfo.projectClaimer = (String) SkolkovoLM.nameForeignClaimerProject.read(session, vo.projectObj);
-                    voteInfo.projectCluster = (String) SkolkovoLM.nameForeignClusterProject.read(session, vo.projectObj);
+                    voteInfo.projectCluster = (String) SkolkovoLM.nameForeignClusterVote.read(session, vo.voteObj);
                 }
 
                 voteInfo.inCluster = nvl((Boolean) SkolkovoLM.inClusterExpertVote.read(session, vo.expertObj, vo.voteObj), false);
@@ -196,7 +196,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
                 q.properties.put("projectId", projExpr);
                 q.properties.put("projectName", (isForeign ? SkolkovoLM.nameForeign : SkolkovoLM.nameNative).getExpr(session.modifier, projExpr));
                 q.properties.put("projectClaimer", (isForeign ? SkolkovoLM.nameForeignClaimerProject : SkolkovoLM.nameNativeClaimerProject).getExpr(session.modifier, projExpr));
-                q.properties.put("projectCluster", (isForeign ? SkolkovoLM.nameForeignClusterProject : SkolkovoLM.nameNativeClusterProject).getExpr(session.modifier, projExpr));
+                q.properties.put("projectCluster", (isForeign ? SkolkovoLM.nameForeignClusterExpert : SkolkovoLM.nameNativeClusterExpert).getExpr(session.modifier, expExpr));
 
                 q.properties.put("inCluster", SkolkovoLM.inClusterExpertVote.getExpr(session.modifier, expExpr, voteExpr));
                 q.properties.put("innovative", SkolkovoLM.innovativeExpertVote.getExpr(session.modifier, expExpr, voteExpr));

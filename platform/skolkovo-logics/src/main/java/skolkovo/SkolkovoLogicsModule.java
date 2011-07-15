@@ -252,11 +252,11 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP projectVote, claimerVote, nameNativeProjectVote, nameForeignProjectVote;
     LP quantityVoteOfProject;
     LP dataDocumentNameExpert, documentNameExpert;
-    LP clusterExpert, nameNativeClusterExpert;
+    LP clusterExpert, nameNativeClusterExpert, nameForeignClusterExpert;
     LP primClusterExpert, extraClusterExpert, inClusterExpert;
     LP clusterInExpertVote;
     public LP inProjectCluster;
-    LP clusterVote, nameNativeClusterVote;
+    LP clusterVote, nameNativeClusterVote, nameForeignClusterVote;
     public LP claimerProject;
     LP nameNativeClaimerProject;
     LP nameForeignClaimerProject;
@@ -645,6 +645,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         clusterExpert = addDProp(idGroup, "clusterExpert", "Кластер (ИД)", cluster, expert);
         nameNativeClusterExpert = addJProp(baseGroup, "nameNativeClusterExpert", "Кластер", nameNative, clusterExpert, 1);
+        nameForeignClusterExpert = addJProp("nameForeignClusterExpert", "Кластер (иностр.)", nameForeign, clusterExpert, 1);
 
         primClusterExpert = addJProp("primClusterExpert", "Вкл (осн.)", baseLM.equals2, 1, clusterExpert, 2);
         extraClusterExpert = addDProp(baseGroup, "extraClusterExpert", "Вкл (доп.)", LogicalClass.instance, cluster, expert);
@@ -1095,6 +1096,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         clusterVote = addDProp(idGroup, "clusterVote", "Кластер (ИД)", cluster, vote);
         nameNativeClusterVote = addJProp(baseGroup, "nameNativeClusterVote", "Кластер", nameNative, clusterVote, 1);
+        nameForeignClusterVote = addJProp("nameForeignClusterVote", "Кластер (иностр.)", nameForeign, clusterVote, 1);
 
         clusterInExpertVote = addJProp("clusterInExpertVote", "Вкл", inClusterExpert, clusterVote, 2, 1);
 
