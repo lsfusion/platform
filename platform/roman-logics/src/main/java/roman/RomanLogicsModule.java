@@ -2706,8 +2706,8 @@ public class RomanLogicsModule extends LogicsModule {
         addFormEntity(new InvoiceEditFormEntity(purchaseCreate, "simpleInvoiceAddForm", "Инвойс без коробов", false, false)).showType = FormShowType.MODAL_FULLSCREEN;
         purchaseCreate.window = generateToolbar;
 
-        addFormEntity(new InvoiceEditFormEntity(purchase, "boxInvoiceEditForm", "Редактировать инвойс по коробам", true, true));
-        addFormEntity(new InvoiceEditFormEntity(purchase, "simpleInvoiceEditForm", "Редактировать инвойс без коробов", false, true));
+        addFormEntity(new InvoiceEditFormEntity(null, "boxInvoiceEditForm", "Редактировать инвойс по коробам", true, true));
+        addFormEntity(new InvoiceEditFormEntity(null, "simpleInvoiceEditForm", "Редактировать инвойс без коробов", false, true));
         addFormEntity(new InvoiceFormEntity(purchase, "boxInvoiceForm", "Инвойсы по коробам", true));
         addFormEntity(new InvoiceFormEntity(purchase, "simpleInvoiceForm", "Инвойсы без коробов", false));
         addFormEntity(new ShipmentListFormEntity(purchase, "boxShipmentListForm", "Поставки по коробам", true));
