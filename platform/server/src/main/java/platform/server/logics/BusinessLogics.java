@@ -1618,7 +1618,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
                 Expr roleExpr = keys.get("role");
 
                 Query<String, String> q = new Query<String, String>(keys);
-                q.and(LM.inUserRole.getExpr(session.modifier, userExpr, roleExpr).getWhere());
+                q.and(LM.inUserMainRole.getExpr(session.modifier, userExpr, roleExpr).getWhere());
                 q.and(LM.userLogin.getExpr(session.modifier, userExpr).compare(new DataObject(username), Compare.EQUALS));
 
                 q.properties.put("roleName", LM.userRoleSID.getExpr(session.modifier, roleExpr));

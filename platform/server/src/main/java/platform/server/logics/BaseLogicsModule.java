@@ -165,6 +165,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public LP customUserMainRole;
     public LP customUserSIDMainRole;
     public LP nameUserMainRole;
+    public LP inUserMainRole;
     public LP userRoleSID;
     public LP userRoleDefaultForms;
     public LP userDefaultForms;
@@ -506,6 +507,9 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         customUserMainRole = addJProp(idGroup, "customUserMainRole", getString("logics.user.role.main.role.id"), and1, userMainRole, 1, is(customUser), 1);
         customUserSIDMainRole = addJProp("customUserSIDMainRole", getString("logics.user.role.main.role.identificator"), userRoleSID, customUserMainRole, 1);
         nameUserMainRole = addJProp(baseGroup, "nameUserMainRole", getString("logics.user.role.main.role"), name, userMainRole, 1);
+
+        inUserMainRole = addSUProp("inUserMainRole", getString("logics.user.role.in"), Union.OVERRIDE,
+                         addJProp(equals2, customUserMainRole, 1, 2), inUserRole);
 
         nameToCountry = addAGProp("nameToCountry", getString("logics.country"), country, name);
 
