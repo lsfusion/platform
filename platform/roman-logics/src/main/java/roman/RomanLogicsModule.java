@@ -1406,7 +1406,7 @@ public class RomanLogicsModule extends LogicsModule {
         currencyDocument = addDCProp(idGroup, "currencyDocument", "Валюта (ИД)", currencySupplier, supplierPriceDocument, 1);
         nameCurrencyDocument = addJProp(baseGroup, "nameCurrencyDocument", "Валюта", baseLM.name, currencyDocument, 1);
         nameCurrencyDocument.property.preferredCharWidth = 50;
-        nameCurrencyDocument.property.minimumCharWidth = 20;
+        nameCurrencyDocument.property.minimumCharWidth = 10;
         //setNotNull(currencyDocument);
         addConstraint(addJProp("Для инвойса должна быть задана валюта", baseLM.andNot1, is(invoice), 1, currencyDocument, 1), false);
 
@@ -1712,6 +1712,8 @@ public class RomanLogicsModule extends LogicsModule {
 
         mainCompositionSku = addDProp(intraAttributeGroup, "mainCompositionSku", "Состав (перевод)", COMPOSITION_CLASS, sku);
         additionalCompositionSku = addDProp(intraAttributeGroup, "additionalCompositionSku", "Доп. состав (перевод)", COMPOSITION_CLASS, sku);
+        additionalCompositionSku.property.preferredCharWidth = 40;
+        additionalCompositionSku.property.minimumCharWidth = 20;
 
         substring10 = addSFProp("substring(prm1,1,10)", StringClass.get(10), 1);
         substring10s13 = addJProp(baseLM.and1, substring10, 1, is(StringClass.get(13)), 1);
@@ -1905,7 +1907,7 @@ public class RomanLogicsModule extends LogicsModule {
 
         sumDirectInvoicedSku = addSGProp(baseGroup, "sumDirectInvoicedSku", "Сумма по инвойсам напрямую", addJProp(and(false, true), sumDocumentSku, 1, 2, is(directInvoice), 1, freightShippedDirectInvoice, 1), 2);
         quantityDirectInvoicedSku = addSGProp(baseGroup, "quantityDirectInvoicedSku", "Кол-во по инвойсам напрямую", addJProp(and(false, true), quantityDocumentSku, 1, 2, is(directInvoice), 1, freightShippedDirectInvoice, 1), 2);
-        quantityDocumentBrandSupplier = addSGProp(baseGroup, "quantityDocumentBrandSupplier", "Кол-во по бренду в документе", addJProp(baseLM.andNot1, quantityDocumentSku, 1, 2, freightShippedDirectInvoice, 1), 1, brandSupplierArticleSku, 2);
+        quantityDocumentBrandSupplier = addSGProp(baseGroup, "quantityDocumentBrandSupplier", "Кол-во по бренду в документе", addJProp(and(false, true), quantityDocumentSku, 1, 2, is(directInvoice), 1, freightShippedDirectInvoice, 1), 1, brandSupplierArticleSku, 2);
         quantityAllDocumentsBrandSupplier = addSGProp(baseGroup, "quantityAllDocumentsBrandSupplier", "Кол-во по бренду в документах", quantityDocumentBrandSupplier, 2);
 
         // freight box
@@ -2222,7 +2224,7 @@ public class RomanLogicsModule extends LogicsModule {
 
         routeFreight = addDProp(idGroup, "routeFreight", "Маршрут (ИД)", route, freight);
         nameRouteFreight = addJProp(baseGroup, "nameRouteFreight", "Маршрут", baseLM.name, routeFreight, 1);
-        nameRouteFreight.setFixedCharWidth(6);
+        nameRouteFreight.setFixedCharWidth(8);
 
         exporterFreight = addDProp(idGroup, "exporterFreight", "Экспортер (ИД)", exporter, freight);
         setNotNull(exporterFreight);
@@ -2304,6 +2306,8 @@ public class RomanLogicsModule extends LogicsModule {
 
         additionalCompositionOriginFreightSku = addDProp(baseGroup, "additionalCompositionOriginFreightSku", "Доп. состав", COMPOSITION_CLASS, freight, sku);
         additionalCompositionOriginFreightSku.setDerivedForcedChange(true, addJProp(baseLM.and1, additionalCompositionOriginSku, 2, quantityFreightSku, 1, 2), 1, 2, is(freightChanged), 1);
+        additionalCompositionOriginFreightSku.property.preferredCharWidth = 40;
+        additionalCompositionOriginFreightSku.property.minimumCharWidth = 20;
 
         translationMainCompositionSku = addJProp(actionGroup, true, "translationMainCompositionSku", "Перевод состава", addTAProp(mainCompositionOriginSku, mainCompositionSku), dictionaryComposition, 1);
         translationAdditionalCompositionSku = addJProp(actionGroup, true, "translationAdditionalCompositionSku", "Перевод доп. состава", addTAProp(additionalCompositionOriginSku, additionalCompositionSku), dictionaryComposition, 1);
@@ -2315,6 +2319,8 @@ public class RomanLogicsModule extends LogicsModule {
 
         additionalCompositionFreightSku = addDProp(baseGroup, "additionalCompositionFreightSku", "Доп. состав (перевод)", COMPOSITION_CLASS, freight, sku);
         additionalCompositionFreightSku.setDerivedForcedChange(true, addJProp(baseLM.and1, additionalCompositionSku, 2, quantityFreightSku, 1, 2), 1, 2, is(freightChanged), 1);
+        additionalCompositionFreightSku.property.preferredCharWidth = 40;
+        additionalCompositionFreightSku.property.minimumCharWidth = 20;
 
         countryOfOriginFreightSku = addDProp(idGroup, "countryOfOriginFreightSku", "Страна (ИД)", baseLM.country, freight, sku);
         countryOfOriginFreightSku.setDerivedForcedChange(true, addJProp(baseLM.and1, countryOfOriginSku, 2, quantityFreightSku, 1, 2), 1, 2, is(freightChanged), 1);
@@ -3004,7 +3010,7 @@ public class RomanLogicsModule extends LogicsModule {
             DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign();
 
             design.get(objStore.groupTo).grid.constraints.fillVertical = 3;
-            design.get(objSupplier.groupTo).grid.constraints.fillVertical = 1;
+            design.get(objSupplier.groupTo).grid.constraints.fillVertical = 2;
 
             return design;
         }
@@ -3473,7 +3479,7 @@ public class RomanLogicsModule extends LogicsModule {
             design.get(getPropertyDraw(sidDocument, objInvoice)).caption = "Номер инвойса";
             design.get(getPropertyDraw(baseLM.date, objInvoice)).caption = "Дата инвойса";
 
-            design.get(objRoute.groupTo).grid.constraints.fillHorizontal = 0.3;
+            design.get(objRoute.groupTo).grid.constraints.fillHorizontal = 0.6;
 
             design.addIntersection(design.getGroupObjectContainer(objInvoice.groupTo),
                     design.getGroupObjectContainer(objRoute.groupTo),
@@ -4512,7 +4518,7 @@ public class RomanLogicsModule extends LogicsModule {
         private BalanceBrandWarehouseFormEntity(NavigatorElement parent, String sID, String caption) {
             super(parent, sID, caption);
 
-            objSupplier = addSingleGroupObject(supplier, "Поставщик", baseLM.name);
+            objSupplier = addSingleGroupObject(supplier, "Поставщик", baseLM.name, baseLM.dumb1, baseLM.dumb1, baseLM.dumb1);
 
             objBrand = addSingleGroupObject(brandSupplier, "Бренд", baseLM.name, quantityBrandSupplier);
 
