@@ -187,16 +187,21 @@ public class IncrementProps<T> extends Modifier<IncrementProps.UsedChanges> {
                                                                   return key.getType();
                                                               }
                                                           });
+        System.out.println("Increment read: START");
 
         // подготавливаем запрос
         Query<T, Property> changesQuery = new Query<T, Property>(propertyGroup.getKeys());
         WhereBuilder changedWhere = new WhereBuilder();
-        for (Property<?> property : properties)
+        for (Property<?> property : properties) {
+            System.out.println(property + " " + property.getSID());
             changesQuery.properties.put(property, genericGetIncrementExpr(propertyGroup, changesQuery.mapKeys, property, this, changedWhere));
+        }
         changesQuery.and(changedWhere.toWhere());
 
         // подготовили - теперь надо сохранить в курсор и записать классы
         changeTable.writeRows(session.sql, changesQuery, baseClass, session.env);
+
+        System.out.println("Increment read: STOP" + properties);
 
         for (Property property : properties)
             incrementGroups.put(property, propertyGroup);

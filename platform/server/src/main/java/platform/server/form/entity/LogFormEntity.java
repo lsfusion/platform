@@ -4,6 +4,7 @@ import platform.base.Result;
 import platform.interop.ClassViewType;
 import platform.server.classes.ValueClass;
 import platform.server.form.entity.filter.NotNullFilterEntity;
+import platform.server.logics.BaseLogicsModule;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.ServerResourceBundle;
 import platform.server.logics.linear.LP;
@@ -34,7 +35,7 @@ import static platform.server.logics.PropertyUtils.readImplements;
 public class LogFormEntity<T extends BusinessLogics<T>> extends FormEntity<T> {
     public ObjectEntity[] params;
 
-    public LogFormEntity(String sID, String caption, LP<?> property, LP<?> logProperty, BusinessLogics<?> BL) {
+    public LogFormEntity(String sID, String caption, LP<?> property, LP<?> logProperty, BaseLogicsModule<?> LM) {
         super(sID, caption);
 
         ValueClass[] classes = getValueClassesList(property);
@@ -53,7 +54,7 @@ public class LogFormEntity<T extends BusinessLogics<T>> extends FormEntity<T> {
         params = Arrays.copyOf(entities, classes.length);
 
         GroupObjectEntity logGroup = new GroupObjectEntity(classes.length + 1, "logGroup");
-        ObjectEntity objSession = new ObjectEntity(classes.length + 2, "session", BL.LM.session, ServerResourceBundle.getString("form.entity.session"));
+        ObjectEntity objSession = new ObjectEntity(classes.length + 2, "session", LM.session, ServerResourceBundle.getString("form.entity.session"));
         entities[classes.length] = objSession;
         logGroup.add(objSession);
 
@@ -61,16 +62,16 @@ public class LogFormEntity<T extends BusinessLogics<T>> extends FormEntity<T> {
         addGroup(logGroup);
 
         for (ObjectEntity obj : entities) {
-            addPropertyDraw(obj, BL.LM.recognizeGroup);
+            addPropertyDraw(obj, LM.recognizeGroup);
         }
-        addPropertyDraw(objSession, BL.LM.baseGroup);
+        addPropertyDraw(objSession, LM.baseGroup);
 
         addPropertyDraw(logProperty, entities);
 
         Result<ValueClass> value = new Result<ValueClass>();
         property.getCommonClasses(value);
         List<PropertyClassImplement> recognizePropImpls =
-                BL.LM.recognizeGroup.getProperties(Arrays.asList(Arrays.asList(new ValueClassWrapper(value.result))), false);
+                LM.recognizeGroup.getProperties(Arrays.asList(Arrays.asList(new ValueClassWrapper(value.result))), false);
 
         for (PropertyClassImplement impl : recognizePropImpls) {
             int paramCnt = logProperty.property.interfaces.size();

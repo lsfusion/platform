@@ -365,7 +365,7 @@ public class SQLSession extends MutableObject {
             } else
                 result = statement.executeUpdate();
         } catch (SQLException e) {
-            logger.info(statement.toString());
+            logger.error(statement.toString());
             throw e;
         } finally {
             statement.close();
