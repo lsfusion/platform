@@ -3,6 +3,7 @@ grammar LsfLogics;
 @header { 
 	package platform.server; 
 	import platform.server.logics.ScriptingLogicsModule; 
+	import platform.server.data.Union;
 	import java.util.Set;
 	import java.util.HashSet;
 }
@@ -78,7 +79,7 @@ groupStatement
 
 
 propertyStatement
-	:	dataPropertyStatement | joinPropertyStatement | groupPropertyStatement;
+	:	dataPropertyStatement | joinPropertyStatement | groupPropertyStatement | unionPropertyStatement;
 	
 
 propertyDeclaration returns [String name, List<String> paramNames] 
@@ -113,11 +114,13 @@ joinPropertyStatement
 
 propertyParam returns [String paramID, List<String> paramNames]
 	:	singleParam=parameter { $paramID = $singleParam.text; } | 	
-		(pID=compoundID { $paramID = $pID.text; }
+		mappedProperty=propertyWithMapping { $paramID = $mappedProperty.propertyName; $paramNames = $mappedProperty.paramNames; };
+
+propertyWithMapping returns [String propertyName, List<String> paramNames] : 
+		(pID=compoundID { $propertyName = $pID.text; }
 		'('
 		paramList=parameterList { $paramNames = $paramList.ids; }		
 		')');
-
 
 dataPropertyStatement 
 @init {
@@ -167,6 +170,30 @@ groupPropertyStatement
 		'by'
 		(firstParam=propertyParam { paramIds.add($firstParam.paramID); propParams.add($firstParam.paramNames); }
 		(',' nextParam=propertyParam { paramIds.add($nextParam.paramID); propParams.add($nextParam.paramNames);})* )?	
+		settings=propertyCommonSettings { groupName = $settings.group; isPersistent = $settings.isPersistent; }; 
+
+
+unionPropertyStatement 
+@init {
+	List<String> namedParams = new ArrayList<String>();
+	List<String> paramIds = new ArrayList<String>();
+	List<List<String>> propParams = new ArrayList<List<String>>();
+	String groupName = null;
+	boolean isPersistent = false;
+	Union type = null;
+	String name;
+}
+@after {
+	if (parseState == ScriptingLogicsModule.State.PROP) { 
+		self.addScriptedUProp(name, "", groupName, isPersistent, type, namedParams, paramIds, propParams);	
+	}
+}
+	:	declaration=propertyDeclaration { name = $declaration.name; namedParams = $declaration.paramNames; }
+		'=' 
+		'union'
+		(('max' {type = Union.MAX;}) | ('sum' {type = Union.SUM;}) | ('override' {type = Union.OVERRIDE;}) | ('xor' { type = Union.XOR;}) | ('exclusive' {type = Union.EXCLUSIVE;}))
+		firstParam=propertyWithMapping { paramIds.add($firstParam.propertyName); propParams.add($firstParam.paramNames); }
+		(',' nextParam=propertyWithMapping { paramIds.add($nextParam.propertyName); propParams.add($nextParam.paramNames);})* 	
 		settings=propertyCommonSettings { groupName = $settings.group; isPersistent = $settings.isPersistent; }; 
 
 

@@ -10,6 +10,7 @@ import platform.base.BaseUtils;
 import platform.server.LsfLogicsLexer;
 import platform.server.LsfLogicsParser;
 import platform.server.classes.*;
+import platform.server.data.Union;
 import platform.server.logics.linear.LP;
 import platform.server.logics.property.group.AbstractGroup;
 
@@ -275,6 +276,29 @@ public class ScriptingLogicsModule extends LogicsModule {
         } else {
             resultProp = addMGProp(group, propName, isPersistent, caption, groupProp, resultParams.toArray());
         }
+        addNamedParams(resultProp.property.getSID(), namedParams);
+    }
+
+    private List<Object> transformSumUnionParams(List<Object> params) {
+        List<Object> newList = new ArrayList<Object>();
+        for (Object obj : params) {
+            if (obj instanceof LP) {
+                newList.add(1);
+            }
+            newList.add(obj);
+        }
+        return newList;
+    }
+
+    public void addScriptedUProp(String propName, String caption, String parentGroup, boolean isPersistent, Union unionType, List<String> namedParams, List<String> paramsId, List<List<String>> propParams) {
+        scriptLogger.info("addScriptedUProp(" + propName + ", " + (parentGroup == null ? "" : parentGroup) + ", " + isPersistent + ", " + unionType + ", " + namedParams + ", " + paramsId + ", " + propParams + ");");
+
+        AbstractGroup group = (parentGroup == null ? privateGroup : getGroupByName(parentGroup));
+        List<Object> resultParams = getParamsPlainList(namedParams, paramsId, propParams);
+        if (unionType == Union.SUM) {
+            resultParams = transformSumUnionParams(resultParams);
+        }
+        LP<?> resultProp = addUProp(group, propName, isPersistent, caption, unionType, resultParams.toArray());
         addNamedParams(resultProp.property.getSID(), namedParams);
     }
 

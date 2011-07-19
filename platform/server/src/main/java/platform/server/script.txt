@@ -25,11 +25,15 @@ numberListSIDArticle2(list, doc) = numberListArticle(list, articleSIDList(doc, l
 netWeightArticleSizeSku2(item) = netWeightArticleSize(articleSku(item), sizeSupplierItem(item)) in intraAttributeGroup persistent;
 orderedOrderInvoiceArticle2(order, invoice, param3) = and1(quantityListArticle(order, param3), inOrderInvoice(order, invoice));
 
+
+// JProps without params
 nameCurrencyTypeExchange3 = name(currencyTypeExchange($1)) in baseGroup;
 nameTypeExchangeSTX3 = name(typeExchangeSTX()) in baseGroup;
 numberListSIDArticle3 = numberListArticle($1, articleSIDList($2, $1));
 netWeightArticleSizeSku3 = netWeightArticleSize(articleSku($1), sizeSupplierItem($1)) in intraAttributeGroup persistent;
 
+
+// GProp
 numberDocumentArticle2 = numberListArticle sgroup by documentList($1, $2) in baseGroup;
 orderedInvoiceArticle2(invoice, param3) = orderedOrderInvoiceArticle2 sgroup by invoice, param3 in baseGroup;
 invoicedOrderArticle2 = invoicedOrderSku sgroup by $1, articleSku($2) in baseGroup;
@@ -41,6 +45,10 @@ compositionFreightArticleCompositionCountryCategory2 =
         countryOfOriginFreightSku(freight, sku),
         customCategory10FreightSku(freight, sku) in baseGroup;
 
+// UProp
+typeInvoiceFreightArticle2(freight, article) = union override typeInvoiceCategoryFreightArticle(freight, article), typeInvoiceDataFreightArticle(freight, article) in idGroup;
+typeInvoiceFreightArticle3 = union override typeInvoiceCategoryFreightArticle($1, $2), typeInvoiceDataFreightArticle($1, $2) in idGroup;
+sumSku2 = union sum sumStockedSku($1), sumDirectInvoicedSku($1) in baseGroup;
 
 
 
