@@ -2040,7 +2040,7 @@ public class RomanLogicsModule extends LogicsModule {
 
         quantitySupplierBoxSku = addSGProp(baseGroup, "quantitySupplierBoxSku", "Кол-во оприход.", quantitySupplierBoxBoxShipmentStockSku, 1, 4);
 
-        diffListSupplierBoxSku = addJProp(baseLM.diff2, quantityListSku, 1, 2, quantitySupplierBoxSku, 1, 2);
+        diffListSupplierBoxSku = addJProp(baseLM.equals2, quantityDataListSku, 1, 2, quantitySupplierBoxSku, 1, 2);
 
         quantitySimpleShipmentStockSku = addSGProp(baseGroup, "quantitySimpleShipmentStockSku", true, "Кол-во оприход.", quantityShipmentDetail,
                 simpleShipmentSimpleShipmentDetail, 1, stockShipmentDetail, 1, skuShipmentDetail, 1);
