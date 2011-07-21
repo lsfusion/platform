@@ -1,5 +1,6 @@
 package platform.client.form.tree;
 
+import com.sun.rowset.internal.Row;
 import org.jdesktop.swingx.JXTableHeader;
 import org.jdesktop.swingx.decorator.ColorHighlighter;
 import org.jdesktop.swingx.decorator.HighlightPredicate;
@@ -361,6 +362,10 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
     @Override
     public boolean isDataChanging() {
         return true;
+    }
+
+    public boolean isPressed(int row, int column) {
+        return false;
     }
 
     @Override

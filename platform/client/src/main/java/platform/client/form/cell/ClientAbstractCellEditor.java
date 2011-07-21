@@ -1,8 +1,12 @@
 package platform.client.form.cell;
 
+import com.sun.xml.internal.bind.v2.model.core.ID;
 import platform.client.ClientResourceBundle;
 import platform.client.SwingUtils;
 import platform.client.form.PropertyEditorComponent;
+import platform.client.form.PropertyRendererComponent;
+import platform.client.form.grid.GridTable;
+import platform.client.form.renderer.ActionPropertyRenderer;
 import platform.client.logics.ClientPropertyDraw;
 import platform.interop.KeyStrokes;
 
@@ -52,7 +56,15 @@ public class ClientAbstractCellEditor extends AbstractCellEditor
         }
 
         if (e instanceof MouseEvent) {
-            return true;
+            if (e.getSource() instanceof GridTable) {
+                GridTable table = (GridTable) e.getSource();
+                int row = table.rowAtPoint(((MouseEvent) e).getPoint());
+                int column = table.columnAtPoint(((MouseEvent) e).getPoint());
+                PropertyRendererComponent renderer = table.getProperty(row, column).getRendererComponent();
+                return !(renderer instanceof ActionPropertyRenderer);
+            } else {
+                return true;
+            }
         }
 
         //noinspection RedundantIfStatement

@@ -8,6 +8,7 @@ import java.awt.*;
 public interface CellTableInterface {
 
     boolean isDataChanging();
+    boolean isPressed(int row, int column);
 
     ClientPropertyDraw getProperty(int row, int col);
     boolean isCellHighlighted(int row, int column);

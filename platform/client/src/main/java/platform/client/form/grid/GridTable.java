@@ -13,6 +13,7 @@ import platform.client.form.cell.ClientAbstractCellEditor;
 import platform.client.form.cell.ClientAbstractCellRenderer;
 import platform.client.form.grid.groupchange.GroupChangeAction;
 import platform.client.form.queries.QueryView;
+import platform.client.form.renderer.ActionPropertyRenderer;
 import platform.client.form.sort.MultiLineHeaderRenderer;
 import platform.client.form.sort.TableSortableHeaderManager;
 import platform.client.logics.ClientGroupObject;
@@ -80,6 +81,11 @@ public abstract class GridTable extends ClientFormTable
     private ClientGroupObject groupObject;
     private TableSortableHeaderManager<Pair<ClientPropertyDraw, ClientGroupObjectValue>> sortableHeaderManager;
 
+    //для вдавливаемости кнопок
+    private int pressedCellRow = -1;
+    private int pressedCellColumn = -1;
+    private int previousSelectedRow = 0;
+
     public GridTable(GroupObjectController igroupObjectController, ClientFormController iform) {
         super(new GridTableModel());
 
@@ -138,6 +144,31 @@ public abstract class GridTable extends ClientFormTable
                         throw new RuntimeException(ClientResourceBundle.getString("errors.error.changing.page.size"), e);
                     }
                 }
+            }
+        });
+
+        addMouseListener(new MouseAdapter() {
+            @Override
+            public void mousePressed(MouseEvent e) {
+                if (getSelectedRow() == previousSelectedRow) {
+                    pressedCellColumn = columnAtPoint(e.getPoint());
+                    pressedCellRow = rowAtPoint(e.getPoint());
+                    repaint();
+                }
+                previousSelectedRow = getSelectedRow();
+            }
+
+            @Override
+            public void mouseReleased(MouseEvent e) {
+                int column = columnAtPoint(e.getPoint());
+                int row = rowAtPoint(e.getPoint());
+                if (pressedCellColumn == column && pressedCellRow == row && getProperty(row, column).getRendererComponent() instanceof ActionPropertyRenderer) {
+                    editCellAt(row, column);
+                }
+                pressedCellRow = -1;
+                pressedCellColumn = -1;
+                previousSelectedRow = getSelectedRow();
+                repaint();
             }
         });
 
@@ -272,6 +303,8 @@ public abstract class GridTable extends ClientFormTable
         if (groupObject.grid.maximumSize != null)
             groupObjectController.getGridView().pane.setMaximumSize(
                     SwingUtils.getOverridedSize(groupObjectController.getGridView().pane.getMaximumSize(), groupObject.grid.maximumSize));
+
+        previousSelectedRow = getSelectedRow();
     }
 
     public void changeCurrentObject() {
@@ -687,6 +720,10 @@ public abstract class GridTable extends ClientFormTable
 
     public boolean isDataChanging() {
         return true;
+    }
+
+    public boolean isPressed(int row, int column) {
+        return pressedCellRow == row && pressedCellColumn == column;
     }
 
     public ClientPropertyDraw getProperty(int row, int col) {

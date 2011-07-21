@@ -285,6 +285,10 @@ public class ChangeDialog extends JDialog {
                 return true;
             }
 
+            public boolean isPressed(int row, int column) {
+                return false;
+            }
+
             public ClientPropertyDraw getProperty() {
                 return property;
             }

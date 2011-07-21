@@ -45,6 +45,10 @@ public class UserValueLinkView extends ValueLinkView {
                 return false;
             }
 
+            public boolean isPressed(int row, int column) {
+                return false;
+            }
+
             public ClientPropertyDraw getProperty() {
                 return property;
             }

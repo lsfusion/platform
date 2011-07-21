@@ -70,6 +70,10 @@ public class TableCellView extends JPanel implements CellView {
                 return true;
             }
 
+            public boolean isPressed(int row, int column) {
+                return false;
+            }
+
             public ClientPropertyDraw getProperty() {
                 return TableCellView.this.key;
             }

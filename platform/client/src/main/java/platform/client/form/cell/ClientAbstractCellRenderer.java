@@ -36,6 +36,9 @@ public class ClientAbstractCellRenderer extends JComponent
         }
 
         JComponent comp = currentComp.getComponent();
+        if (comp instanceof JButton) {
+            ((JButton) comp).setSelected(cellTable.isPressed(row, column));
+        }
 
         if (cellTable.isCellHighlighted(row, column)) {
             Color highlightColor = cellTable.getHighlightColor(row, column);
