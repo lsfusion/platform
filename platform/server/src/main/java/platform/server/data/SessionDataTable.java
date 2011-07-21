@@ -198,4 +198,11 @@ public class SessionDataTable implements SessionData<SessionDataTable> {
         }
         return components;
     }
+
+    @Override
+    public void out(SQLSession session) throws SQLException {
+        System.out.println("Key Values : " + keyValues);
+        System.out.println("Prop Values : " + propertyValues);
+        table.out(session);
+    }
 }

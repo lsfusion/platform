@@ -39,4 +39,5 @@ public interface SessionData<T extends SessionData<T>> extends MapValues<T>, Map
 
     SessionData deleteProperty(SQLSession session, PropertyField property, DataObject object) throws SQLException;
 
+    void out(SQLSession session) throws SQLException;
 }

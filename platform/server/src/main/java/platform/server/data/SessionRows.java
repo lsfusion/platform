@@ -239,4 +239,9 @@ public class SessionRows implements SessionData<SessionRows> {
             components = AbstractMapValues.getComponents(this);
         return components;
     }
+
+    @Override
+    public void out(SQLSession session) throws SQLException {
+        System.out.println("Rows :" + rows);
+    }
 }

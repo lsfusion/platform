@@ -44,7 +44,7 @@ public abstract class AbstractCaseUnionProperty extends UnionProperty {
     protected Set<PropertyMapImplement<?, Interface>> getProps() {
         Set<PropertyMapImplement<?, Interface>> operands = new HashSet<PropertyMapImplement<?,Interface>>();
         for(Case propCase : getCases())
-            operands.add(propCase.where);
+            operands.add(propCase.property);
         return operands;
     }
 
