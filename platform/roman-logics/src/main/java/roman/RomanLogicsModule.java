@@ -5681,20 +5681,19 @@ public class RomanLogicsModule extends LogicsModule {
         private ObjectEntity objShipment;
 
         private PropertyDrawEntity createFreight;
-        private PropertyDrawEntity logFreight;
 
         private FreightListFormEntity(NavigatorElement<RomanBusinessLogics> parent, String sID, String caption) {
             super(parent, sID, caption);
 
-            objFreight = addSingleGroupObject(freight, "Фрахт", baseLM.date, baseLM.objectClassName, nameRouteFreight, nameExporterFreight, nameFreightTypeFreight, tonnageFreight, grossWeightFreight, volumeFreight, palletCountFreight, palletNumberFreight, nameCurrencyFreight, sumFreightFreight, insuranceFreight);
+            LP logFreightFA = addMFAProp("История фрахта", logFreightForm, logFreightForm.params);
+            objFreight = addSingleGroupObject(freight, "Фрахт", baseLM.date, baseLM.objectClassName, logFreightFA, nameRouteFreight, nameExporterFreight, nameFreightTypeFreight, tonnageFreight, grossWeightFreight, volumeFreight, palletCountFreight, palletNumberFreight, nameCurrencyFreight, sumFreightFreight, insuranceFreight);
             objFreight.groupTo.setSingleClassView(ClassViewType.GRID);
             setReadOnly(objFreight, true);
+            setReadOnly(logFreightFA, false);
             //addFixedFilter(new NotFilterEntity(new CompareFilterEntity(addPropertyObject(is(freightShipped), objFreight), Compare.EQUALS, addPropertyObject(baseLM.vtrue))));
 
             createFreight = addPropertyDraw(freightCreateFA, objFreight);
             createFreight.forceViewType = ClassViewType.PANEL;
-            logFreight = addPropertyDraw(addMFAProp("История фрахта", logFreightForm, logFreightForm.params), objFreight);
-            logFreight.forceViewType = ClassViewType.PANEL;
 
             addPropertyDraw(freightEditFA, objFreight).forceViewType = ClassViewType.GRID;
             addPropertyDraw(freightCompleteFA, objFreight).forceViewType = ClassViewType.GRID;

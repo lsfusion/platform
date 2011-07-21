@@ -22,7 +22,7 @@ public class ClientModalForm extends JDialog {
         this.remoteForm = remoteForm;
         this.newSession = newSession;
 
-        setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+        setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
         setLayout(new BorderLayout());
 
         // делаем, чтобы не выглядел как диалог
@@ -39,6 +39,13 @@ public class ClientModalForm extends JDialog {
                 if (activatedFirstTime && currentForm != null) {
                     activatedFirstTime = false;
                     KeyboardFocusManager.getCurrentKeyboardFocusManager().focusNextComponent(currentForm.getComponent());
+                }
+            }
+
+            @Override
+            public void windowClosing(WindowEvent e) {
+                if (currentForm.closePressed()) {
+                    dispose();
                 }
             }
         });
