@@ -1,5 +1,6 @@
 package roman;
 
+import platform.base.BaseUtils;
 import platform.server.classes.DateClass;
 import platform.server.integration.ImportField;
 import platform.server.integration.ImportInputTable;
@@ -10,20 +11,21 @@ import java.text.ParseException;
 
 /**
  * User: DAle
- * Date: 16.06.11
- * Time: 12:56
+ * Date: 25.02.11
+ * Time: 15:51
  */
 
-public class WomenSecretInvoiceImporter extends SingleSheetImporter {
-    private final int LAST_COLUMN = WomenSecretInputTable.resultBarcodeColumn;
+public class SteilmannInvoiceImporter extends SingleSheetImporter {
+    private static final int LAST_COLUMN = AF;
 
-    public WomenSecretInvoiceImporter(ImportInputTable inputTable, Object... fields) {
+    public SteilmannInvoiceImporter(ImportInputTable inputTable, Object... fields) {
         super(inputTable, fields);
     }
 
     @Override
     protected boolean isCorrectRow(int rowNum) {
-        return inputTable.getCellString(rowNum, WomenSecretInputTable.resultBarcodeColumn).trim().matches("^(\\d{13}|\\d{12}|\\d{8})$");
+        return inputTable.getCellString(rowNum, AA).trim().matches("^(\\d{13}|\\d{12}|\\d{8})$");
+//        return true;
     }
 
     @Override
@@ -42,23 +44,26 @@ public class WomenSecretInvoiceImporter extends SingleSheetImporter {
         value = value.trim();
 
         switch (column) {
-            case F:
+            case E:
+                 Date sDate = new Date(Integer.parseInt(value.substring(4, 8)) - 1900, Integer.parseInt(value.substring(2, 4)) - 1, Integer.parseInt(value.substring(0, 2)));
+                 return DateClass.format(sDate);
+
+            //case B: return BaseUtils.replicate('0', Math.max(0, 8 - value.length())) + value;
+
+
+            //case D: if (value.length() == 1) return '0' + value;
+            case P:
                 switch (part) {
                     case 0: return value.substring(0, Math.min(10, value.length())); // customs code
                     case 1: return value.substring(0, Math.min(6, value.length())); // customs code 6
                 }
-
-            case I: return value.replace(',', '.');
-
-            case L:
-                value = value.replace(',', '.');
-                return String.valueOf(Double.parseDouble(value) / 1000);
-
-            case WomenSecretInputTable.lastInvoiceColumn + 3 + D:  // D column of PL table
-                return value.substring(value.lastIndexOf(' ') + 1);
-
+            //case E:
+            //    switch (part) {
+            //        case 0: return value.substring(value.indexOf(' ') + 1, value.lastIndexOf(' ')).trim(); // color
+            //        case 1: return value.substring(value.lastIndexOf(' ') + 1); // size
+            //    }
             default: return value;
         }
     }
-
 }
+

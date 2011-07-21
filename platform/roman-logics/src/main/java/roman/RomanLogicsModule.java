@@ -878,6 +878,7 @@ public class RomanLogicsModule extends LogicsModule {
     private LP freightFreightUnit;
     private LP priceInInvoiceFreightUnitSku;
     ConcreteCustomClass jennyferSupplier;
+    ConcreteCustomClass steilmannSupplier;
     ConcreteCustomClass tallyWeijlSupplier;
     ConcreteCustomClass hugoBossSupplier;
     ConcreteCustomClass mexxSupplier;
@@ -885,6 +886,7 @@ public class RomanLogicsModule extends LogicsModule {
     ConcreteCustomClass sOliverSupplier;
     ConcreteCustomClass womenSecretSupplier;
     ConcreteCustomClass babyPhatSupplier;
+    private LP steilmannImportInvoice;
     private LP jennyferImportInvoice;
     private LP jennyferImportArticleWeightInvoice;
     private LP tallyWeijlImportInvoice;
@@ -916,6 +918,7 @@ public class RomanLogicsModule extends LogicsModule {
     private LP sumSku;
     private LP netWeightDocumentSku;
     private LP barcode10;
+    private LP steilmannSupplierArticle;
     private LP skuJennyferBarcode10;
     private LP jennyferSupplierArticle;
     private LP jennyferSupplierArticleSku;
@@ -1035,6 +1038,7 @@ public class RomanLogicsModule extends LogicsModule {
         supplier = addConcreteClass("supplier", "Поставщик", baseClass.named, seller);
 
         jennyferSupplier = addConcreteClass("jennyferSupplier", "Jennyfer", supplier);
+        steilmannSupplier = addConcreteClass("steilmannSupplier", "Steilmann", supplier);
         tallyWeijlSupplier = addConcreteClass("tallyWeijlSupplier", "Tally Weijl", supplier);
         hugoBossSupplier = addConcreteClass("hugoBossSupplier", "Hugo Boss", supplier);
         mexxSupplier = addConcreteClass("mexxSupplier", "Mexx", supplier);
@@ -1299,6 +1303,7 @@ public class RomanLogicsModule extends LogicsModule {
         importTnvedCountryMinPrices = addAProp(new TNVEDImportActionProperty(genSID(), "Импортировать мин. цены", this, TNVEDImportActionProperty.MIN_PRICES_IMPORT));
         importTnvedDuty = addAProp(new TNVEDImportActionProperty(genSID(), "Импортировать платежи", this, TNVEDImportActionProperty.DUTIES_IMPORT));
         jennyferImportInvoice = addAProp(importInvoiceActionGroup, new JennyferImportInvoiceActionProperty(this));
+        steilmannImportInvoice = addAProp(importInvoiceActionGroup, new SteilmannImportInvoiceActionProperty(BL));
         tallyWeijlImportInvoice = addAProp(importInvoiceActionGroup, new TallyWeijlImportInvoiceActionProperty(this));
         hugoBossImportInvoice = addAProp(importInvoiceActionGroup, new HugoBossImportInvoiceActionProperty(BL));
         mexxImportInvoice = addAProp(new MexxImportInvoiceActionProperty(this));
@@ -1552,6 +1557,8 @@ public class RomanLogicsModule extends LogicsModule {
         nameSupplierArticle = addJProp(baseGroup, "nameSupplierArticle", "Поставщик", baseLM.name, supplierArticle, 1);
 
         jennyferSupplierArticle = addJProp("jennyferSupplierArticle", "Поставщик Jennyfer (ИД)", baseLM.and1, supplierArticle, 1, addJProp(is(jennyferSupplier), supplierArticle, 1), 1);
+        steilmannSupplierArticle = addJProp("steilmannSupplierArticle", "Поставщик Steilmann (ИД)", baseLM.and1, supplierArticle, 1, addJProp(is(steilmannSupplier), supplierArticle, 1), 1);
+
 
         brandSupplierDataArticle = addDProp(idGroup, "brandSupplierDataArticle", "Бренд (ИД)", brandSupplier, article);
         brandSupplierSupplierArticle = addJProp(idGroup, "brandSupplierSupplierArticle", "Бренд (ИД)", brandSupplierSupplier, supplierArticle, 1);

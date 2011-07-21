@@ -29,7 +29,7 @@ public class WomenSecretInputTable implements ImportInputTable {
 
     public final static int lastMainColumn = H;
     public final static int lastInvoiceColumn = M;
-    public final static int resultBarcodeColumn = lastInvoiceColumn + 2 + lastMainColumn;
+    public final static int resultBarcodeColumn = lastInvoiceColumn + 3 + lastMainColumn;
 
     public WomenSecretInputTable(InputStream stream) throws BiffException, IOException {
         Workbook book = Workbook.getWorkbook(stream);
@@ -40,6 +40,7 @@ public class WomenSecretInputTable implements ImportInputTable {
 
 
             String invoiceID = invoiceTable.getCellString(6, E);
+            String invoiceDate = invoiceTable.getCellString(7, E);
 
             Map<String, List<String>> invoiceData = new HashMap<String, List<String>>();
             for (int row = 0; row < invoiceTable.rowsCnt(); row++) {
@@ -65,6 +66,7 @@ public class WomenSecretInputTable implements ImportInputTable {
                         rowData.add(invoiceRow == null ? "" : invoiceRow.get(column));
                     }
                     rowData.add(invoiceID);
+                    rowData.add(invoiceDate);
                     for (int column = 0; column <= lastMainColumn; column++) {
                         rowData.add(mainTable.getCellString(row, column));
                     }

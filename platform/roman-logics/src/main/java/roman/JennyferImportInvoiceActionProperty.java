@@ -21,7 +21,7 @@ public class JennyferImportInvoiceActionProperty extends ImportBoxInvoiceActionP
         return new JennyferInvoiceImporter(inputTable, new Object[] {invoiceSIDField, boxNumberField, new ImportField[] {barCodeField, sidField},
                 colorCodeField, new ImportField[] {colorNameField, sizeField}, null, compositionField, null, null, countryField,
                 new ImportField[] {customCodeField, customCode6Field}, RRPField, unitPriceField, unitQuantityField, null,
-                null, unitNetWeightField, null, numberSkuField, originalNameField, dateInvoiceField});
+                barCodeField, unitNetWeightField, null, numberSkuField, originalNameField, dateInvoiceField});
     }
 }
 
