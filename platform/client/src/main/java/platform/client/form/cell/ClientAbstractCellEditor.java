@@ -1,6 +1,5 @@
 package platform.client.form.cell;
 
-import com.sun.xml.internal.bind.v2.model.core.ID;
 import platform.client.ClientResourceBundle;
 import platform.client.SwingUtils;
 import platform.client.form.PropertyEditorComponent;

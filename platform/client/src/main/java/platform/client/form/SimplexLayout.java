@@ -272,6 +272,8 @@ public class SimplexLayout implements LayoutManager2, ComponentListener {
                 maxw = Math.max(maxw, (int) coords[info.R - 1]);
                 maxh = Math.max(maxh, (int) coords[info.B - 1]);
             }
+        } else {
+            return SwingUtils.getUsableDeviceBounds();
         }
 
         logger.info("End calculatePreferredSize");
@@ -290,6 +292,8 @@ public class SimplexLayout implements LayoutManager2, ComponentListener {
                 maxw = Math.max(maxw, (int) coords[info.R - 1]);
                 maxh = Math.max(maxh, (int) coords[info.B - 1]);
             }
+        } else {
+            return SwingUtils.getUsableDeviceBounds();
         }
         return new Dimension(maxw, maxh);
     }

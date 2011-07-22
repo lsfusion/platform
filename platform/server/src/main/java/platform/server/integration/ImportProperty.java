@@ -9,8 +9,7 @@ import platform.server.logics.property.PropertyInterface;
 import platform.server.session.*;
 
 import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
  * User: DAle
@@ -21,6 +20,7 @@ import java.util.Map;
 public class ImportProperty <P extends PropertyInterface> {
     private PropertyImplement<P, ImportKeyInterface> implement;
     private ImportFieldInterface importField;
+    private GroupType groupType;
 
     private PropertyImplement<P, ImportKeyInterface> converter;
 
@@ -29,9 +29,19 @@ public class ImportProperty <P extends PropertyInterface> {
         this.implement = implement;
     }
 
+    public ImportProperty(ImportFieldInterface importField, PropertyImplement<P, ImportKeyInterface> implement, GroupType groupType) {
+        this(importField, implement);
+        this.groupType = groupType;
+    }
+
     public ImportProperty(ImportFieldInterface importField, PropertyImplement<P, ImportKeyInterface> implement, PropertyImplement<P, ImportKeyInterface> converter) {
         this(importField, implement);
         this.converter = converter;
+    }
+
+    public ImportProperty(ImportFieldInterface importField, PropertyImplement<P, ImportKeyInterface> implement, PropertyImplement<P, ImportKeyInterface> converter, GroupType groupType) {
+        this(importField, implement, converter);
+        this.groupType = groupType;
     }
 
     public PropertyImplement<P, ImportKeyInterface> getProperty() {
@@ -57,6 +67,6 @@ public class ImportProperty <P extends PropertyInterface> {
 
         Map<P, KeyExpr> mapKeys = implement.property.getMapKeys();
         Map<P, Expr> importKeyExprs = getImplementExprs(implement.mapping, addedKeys, importExprs, session.modifier);
-        return implement.property.getDataChanges(new PropertyChange<P>(mapKeys, GroupExpr.create(importKeyExprs, importExpr, GroupType.ANY, mapKeys)), null, session.modifier);
+        return implement.property.getDataChanges(new PropertyChange<P>(mapKeys, GroupExpr.create(importKeyExprs, importExpr, groupType != null ? groupType : GroupType.ANY, mapKeys)), null, session.modifier);
     }
 }

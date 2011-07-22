@@ -4,6 +4,7 @@ import jxl.read.biff.BiffException;
 import platform.interop.action.ClientAction;
 import platform.interop.action.MessageClientAction;
 import platform.server.classes.ValueClass;
+import platform.server.data.expr.query.GroupType;
 import platform.server.form.instance.PropertyObjectInterfaceInstance;
 import platform.server.form.instance.remote.RemoteForm;
 import platform.server.integration.*;
@@ -142,11 +143,11 @@ public abstract class ImportBoxInvoiceActionProperty extends BaseImportActionPro
         if (!isSimpleInvoice()) {
             properties.add(new ImportProperty(numberSkuField, LM.numberListArticle.getMapping(boxKey, articleKey)));
             properties.add(new ImportProperty(numberSkuField, LM.numberDataListSku.getMapping(boxKey, itemKey)));
-            properties.add(new ImportProperty(unitQuantityField, LM.quantityDataListSku.getMapping(boxKey, itemKey)));
+            properties.add(new ImportProperty(unitQuantityField, LM.quantityDataListSku.getMapping(boxKey, itemKey), GroupType.SUM));
         } else {
             properties.add(new ImportProperty(numberSkuField, LM.numberListArticle.getMapping(invoiceKey, articleKey)));
             properties.add(new ImportProperty(numberSkuField, LM.numberDataListSku.getMapping(invoiceKey, itemKey)));
-            properties.add(new ImportProperty(unitQuantityField, LM.quantityDataListSku.getMapping(invoiceKey, itemKey)));
+            properties.add(new ImportProperty(unitQuantityField, LM.quantityDataListSku.getMapping(invoiceKey, itemKey), GroupType.SUM));
         }
 
         properties.add(new ImportProperty(unitPriceField, LM.priceDataDocumentItem.getMapping(invoiceKey, itemKey)));

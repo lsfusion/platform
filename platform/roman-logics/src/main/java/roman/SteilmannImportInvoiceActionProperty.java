@@ -22,7 +22,7 @@ public class SteilmannImportInvoiceActionProperty extends ImportBoxInvoiceAction
 
     @Override
     protected ImportInputTable createTable(ByteArrayInputStream inFile) throws BiffException, IOException {
-        return new CSVInputTable(new InputStreamReader(inFile), 2, ';');
+        return new CSVInputTable(new InputStreamReader(inFile), 1, ';');
     }
 
 
