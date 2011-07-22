@@ -877,6 +877,8 @@ public class RomanLogicsModule extends LogicsModule {
     private LP freightSupplierBox;
     private LP freightFreightUnit;
     private LP priceInInvoiceFreightUnitSku;
+    ConcreteCustomClass boxSupplier;
+    ConcreteCustomClass simpleSupplier;
     ConcreteCustomClass jennyferSupplier;
     ConcreteCustomClass steilmannSupplier;
     ConcreteCustomClass tallyWeijlSupplier;
@@ -1037,15 +1039,18 @@ public class RomanLogicsModule extends LogicsModule {
 
         supplier = addConcreteClass("supplier", "Поставщик", baseClass.named, seller);
 
-        jennyferSupplier = addConcreteClass("jennyferSupplier", "Jennyfer", supplier);
-        steilmannSupplier = addConcreteClass("steilmannSupplier", "Steilmann", supplier);
-        tallyWeijlSupplier = addConcreteClass("tallyWeijlSupplier", "Tally Weijl", supplier);
-        hugoBossSupplier = addConcreteClass("hugoBossSupplier", "Hugo Boss", supplier);
-        mexxSupplier = addConcreteClass("mexxSupplier", "Mexx", supplier);
-        bestsellerSupplier = addConcreteClass("bestsellerSupplier", "Bestseller", supplier);
-        sOliverSupplier = addConcreteClass("sOliverSupplier", "s.Oliver", supplier);
-        womenSecretSupplier = addConcreteClass("womenSecretSupplier", "Women'Secret", supplier);
-        babyPhatSupplier = addConcreteClass("babyPhatSupplier", "Baby Phat", supplier);
+        boxSupplier = addConcreteClass("boxSupplier", "Поставщик по коробам", supplier);
+        simpleSupplier = addConcreteClass("simpleSupplier", "Поставщик без коробов", supplier);
+
+        jennyferSupplier = addConcreteClass("jennyferSupplier", "Jennyfer", boxSupplier);
+        steilmannSupplier = addConcreteClass("steilmannSupplier", "Steilmann", boxSupplier);
+        tallyWeijlSupplier = addConcreteClass("tallyWeijlSupplier", "Tally Weijl", boxSupplier);
+        hugoBossSupplier = addConcreteClass("hugoBossSupplier", "Hugo Boss", simpleSupplier);
+        mexxSupplier = addConcreteClass("mexxSupplier", "Mexx", boxSupplier);
+        bestsellerSupplier = addConcreteClass("bestsellerSupplier", "Bestseller", boxSupplier);
+        sOliverSupplier = addConcreteClass("sOliverSupplier", "s.Oliver", simpleSupplier);
+        womenSecretSupplier = addConcreteClass("womenSecretSupplier", "Women'Secret", boxSupplier);
+        babyPhatSupplier = addConcreteClass("babyPhatSupplier", "Baby Phat", simpleSupplier);
 
         secondNameClass = addAbstractClass("secondNameClass", "Класс со вторым именем", baseClass);
 
@@ -1189,7 +1194,7 @@ public class RomanLogicsModule extends LogicsModule {
         round2 = addSFProp("round(CAST((prm1) as numeric), 2)", DoubleClass.instance, 1);
 
         //typeSupplier = addDProp(baseGroup, "typeSupplier", "С коробами/без коробов", LogicalClass.instance, supplier);
-        typeSupplier = addCUProp("typeSupplier", addCProp(LogicalClass.instance, true, hugoBossSupplier), addCProp(LogicalClass.instance, true, sOliverSupplier), addCProp(LogicalClass.instance, true, babyPhatSupplier));
+        typeSupplier = is(simpleSupplier);
         noBarcodeSupplier = addCUProp("noBarcodeSupplier", addCProp(LogicalClass.instance, true, babyPhatSupplier));
 
         nameClassFreight = addJProp(baseGroup, "nameClassFreight", "Класс фрахта", baseLM.and1, baseLM.objectClassName, 1, is(freight), 1);
@@ -3968,6 +3973,7 @@ public class RomanLogicsModule extends LogicsModule {
 
         private ObjectEntity objBox;
         private ObjectEntity objPallet;
+        private ObjectEntity objSku;
 
         private BoxPalletStoreFormEntity(NavigatorElement parent, String sID, String caption) {
             super(parent, sID, caption);
@@ -3981,10 +3987,29 @@ public class RomanLogicsModule extends LogicsModule {
             objBox.groupTo.setSingleClassView(ClassViewType.GRID);
             setReadOnly(objBox, true);
 
+            addPropertyDraw(equalsPalletFreightBox, objBox, objPallet);
+
+            objSku = addSingleGroupObject(sku, "SKU", sidArticleSku, nameArticleSku, nameBrandSupplierArticleSku, sidColorSupplierItem, nameColorSupplierItem, sidSizeSupplierItem);
+            setForceViewType(itemAttributeGroup, ClassViewType.GRID, objSku.groupTo);
+            addPropertyDraw(quantityStockSku, objBox, objSku);
+
             addActionsOnObjectChange(objBarcode, addPropertyObject(baseLM.seekBarcodeAction, objBarcode));
             addActionsOnObjectChange(objBarcode, addPropertyObject(barcodeActionSetPalletFreightBox, objBarcode, objPallet));
-            addFixedFilter(new CompareFilterEntity(addPropertyObject(palletFreightBox, objBox), Compare.EQUALS, objPallet));
 
+            RegularFilterGroupEntity filterGroup = new RegularFilterGroupEntity(genID());
+            filterGroup.addFilter(new RegularFilterEntity(genID(),
+                    new OrFilterEntity(new CompareFilterEntity(addPropertyObject(palletFreightBox, objBox), Compare.EQUALS, objPallet),
+                            new NotFilterEntity(new NotNullFilterEntity(addPropertyObject(palletFreightBox, objBox)))),
+                    "Не расписанные короба или в текущей паллете",
+                    KeyStroke.getKeyStroke(KeyEvent.VK_F11, 0)));
+            filterGroup.addFilter(new RegularFilterEntity(genID(),
+                    new CompareFilterEntity(addPropertyObject(palletFreightBox, objBox), Compare.EQUALS, objPallet),
+                    "В текущей паллете",
+                    KeyStroke.getKeyStroke(KeyEvent.VK_F10, 0)));
+            filterGroup.defaultFilter = 0;
+            addRegularFilterGroup(filterGroup);
+
+            addFixedFilter(new NotNullFilterEntity(addPropertyObject(quantityStockSku, objBox, objSku)));
         }
 
         @Override
@@ -4020,7 +4045,7 @@ public class RomanLogicsModule extends LogicsModule {
 
             addPropertyDraw(equalsPalletFreight, objPallet, objFreight);
 
-            objSku = addSingleGroupObject(sku, "SKU", sidArticleSku, nameArticleSku, nameBrandSupplierArticleSku, nameColorSupplierItem, sidSizeSupplierItem);
+            objSku = addSingleGroupObject(sku, "SKU", sidArticleSku, nameArticleSku, nameBrandSupplierArticleSku, sidColorSupplierItem, sidSizeSupplierItem);
             setForceViewType(itemAttributeGroup, ClassViewType.GRID, objSku.groupTo);
             addPropertyDraw(quantityPalletSku, objPallet, objSku);
 

@@ -162,7 +162,7 @@ public abstract class GridTable extends ClientFormTable
             public void mouseReleased(MouseEvent e) {
                 int column = columnAtPoint(e.getPoint());
                 int row = rowAtPoint(e.getPoint());
-                if (pressedCellColumn == column && pressedCellRow == row && getProperty(row, column).getRendererComponent() instanceof ActionPropertyRenderer) {
+                if (row != -1 && column != -1 && pressedCellColumn == column && pressedCellRow == row && getProperty(row, column).getRendererComponent() instanceof ActionPropertyRenderer) {
                     editCellAt(row, column);
                 }
                 pressedCellRow = -1;
