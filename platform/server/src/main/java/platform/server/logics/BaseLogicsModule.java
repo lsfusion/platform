@@ -397,7 +397,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         sumDouble2 = addSFProp("((prm1)+(prm2))", DoubleClass.instance, 2);
         subtractDouble2 = addSFProp("((prm1)-(prm2))", DoubleClass.instance, 2);
         deltaDouble2 = addSFProp("abs((prm1)-(prm2))", DoubleClass.instance, 2);
-        multiplyDouble2 = addMFProp(DoubleClass.instance, 2);
+        multiplyDouble2 = addMFProp("multiplyDouble2", DoubleClass.instance, 2);
         multiplyIntegerBy2 = addSFProp("((prm1)*2)", IntegerClass.instance, 1);
         squareInteger = addSFProp("(prm1)*(prm1)", IntegerClass.instance, 1);
         squareDouble = addSFProp("(prm1)*(prm1)", DoubleClass.instance, 1);

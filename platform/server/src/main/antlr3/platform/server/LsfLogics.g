@@ -4,6 +4,7 @@ grammar LsfLogics;
 	package platform.server; 
 	import platform.server.logics.ScriptingLogicsModule; 
 	import platform.server.data.Union;
+	import platform.server.logics.linear.LP;
 	import java.util.Set;
 	import java.util.HashSet;
 }
@@ -32,12 +33,16 @@ importDirective
         	self.addImportedModule(name);
         }
 }
-	:	'import' moduleName=ID ';' { name = $moduleName.text; };
+	:	'IMPORT' moduleName=ID ';' { name = $moduleName.text; };
 
 
 statement
 	:	(classStatement | groupStatement | propertyStatement | tableStatement | indexStatement) ';';
 
+
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////// CLASS STATEMENT /////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 
 classStatement 
 @init {
@@ -57,10 +62,13 @@ classStatement
 
 
 classDeclarant returns [boolean isAbstract]
-	:	'class' { $isAbstract = false; } |
-		'class' 'abstract' { $isAbstract = true; }; 
+	:	'CLASS' { $isAbstract = false; } |
+		'CLASS' 'ABSTRACT' { $isAbstract = true; }; 
 
 
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////// GROUP STATEMENT /////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 
 groupStatement
 @init {
@@ -73,141 +81,162 @@ groupStatement
 		self.addScriptedGroup(name, captionStr, parent);
 	}
 }
-	:	'group' groupName=ID { name = $groupName.text; }
+	:	'GROUP' groupName=ID { name = $groupName.text; }
 			(caption=STRING_LITERAL { captionStr = $caption.text; })?  
 			(':' parentName=compoundID { parent = $parentName.text; })?;
 
+////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////// PROPERTY STATEMENT ////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 
 propertyStatement
-	:	dataPropertyStatement | joinPropertyStatement | groupPropertyStatement | unionPropertyStatement;
-	
+	:	declaration=propertyDeclaration 
+		'=' 
+		propertyDefinition[declaration.name, declaration.paramNames];
 
+	
 propertyDeclaration returns [String name, List<String> paramNames] 
 	:	propertyName=ID { $name = $propertyName.text; }
 		('(' paramList=idList ')' { $paramNames = $paramList.ids; })? ;
 	
 
-joinPropertyStatement 
+propertyDefinition[String name, List<String> namedParams] returns [LP property]
+	:	def=dataPropertyDefinition[name, namedParams] { $property = $def.property; } | 
+		def=joinPropertyDefinition[name, namedParams] { $property = $def.property; } | 
+		def=groupPropertyDefinition[name, namedParams] { $property = $def.property; }| 
+		def=unionPropertyDefinition[name, namedParams] { $property = $def.property; };
+	
+
+joinPropertyDefinition[String name, List<String> namedParams] returns [LP property]
 @init {
-	List<String> namedParams = new ArrayList<String>();
-	List<String> paramIds = new ArrayList<String>();
-	List<List<String>> propParams = new ArrayList<List<String>>();
-	String mainProp = null;
+	List<Object> params = new ArrayList<Object>();
+	List<List<String>> mappings = new ArrayList<List<String>>();
+	Object mainProp = null;
 	String groupName = null;
 	boolean isPersistent = false;
-	String name;
 }
 @after {
 	if (parseState == ScriptingLogicsModule.State.PROP) {
-		self.addScriptedJProp(name, "", groupName, mainProp, isPersistent, namedParams, paramIds, propParams);
+		property = self.addScriptedJProp(name, "", groupName, mainProp, isPersistent, namedParams, params, mappings);
 	}
 }
-	:	declaration=propertyDeclaration { name = $declaration.name; namedParams = $declaration.paramNames; }
-		'=' 
-		mainPropName=compoundID { mainProp = $mainPropName.text; }
+	:	mainPropObj=propertyObject { mainProp = $mainPropObj.property; }
 		'(' 
-			(firstParam=propertyParam { paramIds.add($firstParam.paramID); propParams.add($firstParam.paramNames); }
-			(',' nextParam=propertyParam { paramIds.add($nextParam.paramID); propParams.add($nextParam.paramNames);})* )?	
+			(firstParam=propertyCompositionParam { params.add($firstParam.param); mappings.add($firstParam.paramNames); }
+			(',' nextParam=propertyCompositionParam { params.add($nextParam.param); mappings.add($nextParam.paramNames);})* )?	
 		')' 
-		settings=propertyCommonSettings { groupName = $settings.group; isPersistent = $settings.isPersistent; }; 
+		settings=commonPropertySettings { groupName = $settings.group; isPersistent = $settings.isPersistent; }; 
 	
 
-propertyParam returns [String paramID, List<String> paramNames]
-	:	singleParam=parameter { $paramID = $singleParam.text; } | 	
-		mappedProperty=propertyWithMapping { $paramID = $mappedProperty.propertyName; $paramNames = $mappedProperty.paramNames; };
-
-propertyWithMapping returns [String propertyName, List<String> paramNames] : 
-		(pID=compoundID { $propertyName = $pID.text; }
-		'('
-		paramList=parameterList { $paramNames = $paramList.ids; }		
-		')');
-
-dataPropertyStatement 
+dataPropertyDefinition[String name, List<String> namedParams] returns [LP property]
 @init {
 	List<String> paramClassNames = new ArrayList<String>();
-	List<String> namedParams;
 	String returnClass = null;
 	String groupName = null;
 	boolean isPersistent = false;
-	String name;
 }
 @after {
 	if (parseState == ScriptingLogicsModule.State.PROP) {
-		self.addScriptedDProp(name, "", groupName, returnClass, paramClassNames, isPersistent, namedParams);
+		property = self.addScriptedDProp(name, "", groupName, returnClass, paramClassNames, isPersistent, namedParams);
 	}
 }
-	:	declaration=propertyDeclaration { name = $declaration.name; namedParams = $declaration.paramNames; }
-		'=' 'data'
+	:	'DATA'
 		retClass=classId { returnClass = $retClass.text; }
 		'(' 
 			((firstClassName=classId { paramClassNames.add($firstClassName.text); })
 			(',' className=classId { paramClassNames.add($className.text); })*)?
 		')' 
-		settings=propertyCommonSettings { groupName = $settings.group; isPersistent = $settings.isPersistent; };
+		settings=commonPropertySettings { groupName = $settings.group; isPersistent = $settings.isPersistent; };
 
 
-groupPropertyStatement 
+groupPropertyDefinition[String name, List<String> namedParams] returns [LP property]
 @init {
-	List<String> namedParams = new ArrayList<String>();
-	List<String> paramIds = new ArrayList<String>();
-	List<List<String>> propParams = new ArrayList<List<String>>();
-	String groupProp = null;
+	List<Object> params = new ArrayList<Object>();
+	List<List<String>> mappings = new ArrayList<List<String>>();
+	Object groupProp = null;
 	String groupName = null;
 	boolean isPersistent = false;
 	boolean isSGProp = true; 
-	String name;
 }
 @after {
 	if (parseState == ScriptingLogicsModule.State.PROP) {
-		self.addScriptedGProp(name, "", groupName, groupProp, isPersistent, isSGProp, namedParams, paramIds, propParams);
+		property = self.addScriptedGProp(name, "", groupName, groupProp, isPersistent, isSGProp, namedParams, params, mappings);
 	}
 }
-	:	declaration=propertyDeclaration { name = $declaration.name; namedParams = $declaration.paramNames; }
-		'=' 
-		groupPropName=compoundID { groupProp = $groupPropName.text; }
-		(('sgroup') { isSGProp = true; } | 
-		 ('mgroup') { isSGProp = false;}) 
-		'by'
-		(firstParam=propertyParam { paramIds.add($firstParam.paramID); propParams.add($firstParam.paramNames); }
-		(',' nextParam=propertyParam { paramIds.add($nextParam.paramID); propParams.add($nextParam.paramNames);})* )?	
-		settings=propertyCommonSettings { groupName = $settings.group; isPersistent = $settings.isPersistent; }; 
+	:	(('SGROUP') { isSGProp = true; } | ('MGROUP') { isSGProp = false;}) 
+		groupPropName=propertyObject { groupProp = $groupPropName.text; }
+		'BY'
+		(firstParam=propertyCompositionParam { params.add($firstParam.param); mappings.add($firstParam.paramNames); }
+		(',' nextParam=propertyCompositionParam { params.add($nextParam.param); mappings.add($nextParam.paramNames);})* )?	
+		settings=commonPropertySettings { groupName = $settings.group; isPersistent = $settings.isPersistent; }; 
 
 
-unionPropertyStatement 
+unionPropertyDefinition[String name, List<String> namedParams] returns [LP property]
 @init {
-	List<String> namedParams = new ArrayList<String>();
-	List<String> paramIds = new ArrayList<String>();
-	List<List<String>> propParams = new ArrayList<List<String>>();
+	List<Object> params = new ArrayList<Object>();
+	List<List<String>> mappings = new ArrayList<List<String>>();
 	String groupName = null;
 	boolean isPersistent = false;
 	Union type = null;
-	String name;
 }
 @after {
 	if (parseState == ScriptingLogicsModule.State.PROP) { 
-		self.addScriptedUProp(name, "", groupName, isPersistent, type, namedParams, paramIds, propParams);	
+		property = self.addScriptedUProp(name, "", groupName, isPersistent, type, namedParams, params, mappings);	
 	}
 }
-	:	declaration=propertyDeclaration { name = $declaration.name; namedParams = $declaration.paramNames; }
-		'=' 
-		'union'
-		(('max' {type = Union.MAX;}) | ('sum' {type = Union.SUM;}) | ('override' {type = Union.OVERRIDE;}) | ('xor' { type = Union.XOR;}) | ('exclusive' {type = Union.EXCLUSIVE;}))
-		firstParam=propertyWithMapping { paramIds.add($firstParam.propertyName); propParams.add($firstParam.paramNames); }
-		(',' nextParam=propertyWithMapping { paramIds.add($nextParam.propertyName); propParams.add($nextParam.paramNames);})* 	
-		settings=propertyCommonSettings { groupName = $settings.group; isPersistent = $settings.isPersistent; }; 
+	:	'UNION'
+		(('MAX' {type = Union.MAX;}) | ('SUM' {type = Union.SUM;}) | ('OVERRIDE' {type = Union.OVERRIDE;}) | ('XOR' { type = Union.XOR;}) | ('EXCLUSIVE' {type = Union.EXCLUSIVE;}))
+		firstParam=propertyWithMapping { params.add($firstParam.property); mappings.add($firstParam.paramNames); }
+		(',' nextParam=propertyWithMapping { params.add($nextParam.property); mappings.add($nextParam.paramNames);})* 	
+		settings=commonPropertySettings { groupName = $settings.group; isPersistent = $settings.isPersistent; }; 
 
 
-propertyCommonSettings returns [String group, boolean isPersistent] 
-	: 	('in' groupName=compoundID { $group = $groupName.text; })?
-		('persistent' { $isPersistent = true; })?;
+
+propertyCompositionParam returns [Object param, List<String> paramNames]
+	:	singleParam=parameter { $param = $singleParam.text; } | 	
+		mappedProperty=propertyWithMapping { $param = $mappedProperty.property; $paramNames = $mappedProperty.paramNames; };
+
+
+propertyWithMapping returns [Object property, List<String> paramNames] : 
+		(propertyObj=propertyObject { $property = $propertyObj.property; }
+		'('
+		paramList=parameterList { $paramNames = $paramList.ids; }		
+		')');
+
+
+propertyObject returns [Object property]
+	:	name=compoundID { $property = $name.text; } | 
+		expr=propertyExpression { $property = $expr.property; };
+
+propertyExpression returns [LP property]
+	:	'(' def=propertyDefinition[null, new ArrayList<String>()] ')' { $property = $def.property; };
+
+
+commonPropertySettings returns [String group, boolean isPersistent] 
+	: 	('IN' groupName=compoundID { $group = $groupName.text; })?
+		('PERSISTENT' { $isPersistent = true; })?;
+
+
+
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////// TABLE STATEMENT /////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 
 tableStatement 
 	:	't';
 
 
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////// INDEX STATEMENT /////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+
 indexStatement
 	:	'z';
 
+
+////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////// COMMON /////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 
 parameter 
 	:	ID | NUMBERED_PARAM;

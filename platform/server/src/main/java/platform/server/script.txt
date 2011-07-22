@@ -1,54 +1,58 @@
-import RomanLogicsModule;
-import BaseLogicsModule;
+IMPORT RomanLogicsModule;
+IMPORT BaseLogicsModule;
 
-class supplierAndDocument 'Поставщик и документ' : supplier, document;
-class namedDocument : named, supplierAndDocument;
+CLASS supplierAndDocument 'Поставщик и документ' : supplier, document;
+CLASS namedDocument : named, supplierAndDocument;
 
-group NewGroup '\'Новая группа\'';
-group NewGroup2 'new group 2' : baseGroup;
+GROUP NewGroup '\'Новая группа\'';
+GROUP NewGroup2 'new group 2' : baseGroup;
 
 // DProps
-typeInvoiceDataFreightArticle2 = data typeInvoice (freight, article) in idGroup;
-rateExchange2(type, currency, date) = data Double (typeExchange, currency, Date);
-nameOrigin2 = data InsensitiveString[50] (secondNameClass) in baseGroup;
-quantityPalletShipment2 = data Integer (shipment) in baseGroup;
-typeExchangeSTX2 =  data typeExchange () in idGroup;
-somePropertyName = data supplierAndDocument (namedDocument) in NewGroup2;
-mainCompositionFreightSku2(freight, sku) = data String[200] (freight, sku) in baseGroup;
+typeInvoiceDataFreightArticle2 = DATA typeInvoice (freight, article) IN idGroup;
+rateExchange2(type, currency, date) = DATA Double (typeExchange, currency, Date);
+nameOrigin2 = DATA InsensitiveString[50] (secondNameClass) IN baseGroup;
+quantityPalletShipment2 = DATA Integer (shipment) IN baseGroup;
+typeExchangeSTX2 =  DATA typeExchange () IN idGroup;
+somePropertyName = DATA supplierAndDocument (namedDocument) IN NewGroup2;
+mainCompositionFreightSku2(freight, sku) = DATA String[200] (freight, sku) IN baseGroup;
 
 
 // JProps
-nameCurrencyTypeExchange2(typeExchange) = name(currencyTypeExchange(typeExchange)) in baseGroup;
-nameTypeExchangeSTX2() = name(typeExchangeSTX()) in NewGroup2;
-//equalsItemArticleComposite2(item1, item2) = equals2(articleCompositeItem(item1), item2) in baseGroup;
+nameCurrencyTypeExchange2(typeExchange) = name(currencyTypeExchange(typeExchange)) IN baseGroup;
+nameTypeExchangeSTX2() = name(typeExchangeSTX()) IN NewGroup2;
+//equalsItemArticleComposite2(item1, item2) = equals2(articleCompositeItem(item1), item2) IN baseGroup;
 numberListSIDArticle2(list, doc) = numberListArticle(list, articleSIDList(doc, list));
-netWeightArticleSizeSku2(item) = netWeightArticleSize(articleSku(item), sizeSupplierItem(item)) in intraAttributeGroup persistent;
+netWeightArticleSizeSku2(item) = netWeightArticleSize(articleSku(item), sizeSupplierItem(item)) IN intraAttributeGroup PERSISTENT;
 orderedOrderInvoiceArticle2(order, invoice, param3) = and1(quantityListArticle(order, param3), inOrderInvoice(order, invoice));
 
 
 // JProps without params
-nameCurrencyTypeExchange3 = name(currencyTypeExchange($1)) in baseGroup;
-nameTypeExchangeSTX3 = name(typeExchangeSTX()) in baseGroup;
+nameCurrencyTypeExchange3 = name(currencyTypeExchange($1)) IN baseGroup;
+nameTypeExchangeSTX3 = name(typeExchangeSTX()) IN baseGroup;
 numberListSIDArticle3 = numberListArticle($1, articleSIDList($2, $1));
-netWeightArticleSizeSku3 = netWeightArticleSize(articleSku($1), sizeSupplierItem($1)) in intraAttributeGroup persistent;
+netWeightArticleSizeSku3 = netWeightArticleSize(articleSku($1), sizeSupplierItem($1)) IN intraAttributeGroup PERSISTENT;
 
 
 // GProp
-numberDocumentArticle2 = numberListArticle sgroup by documentList($1, $2) in baseGroup;
-orderedInvoiceArticle2(invoice, param3) = orderedOrderInvoiceArticle2 sgroup by invoice, param3 in baseGroup;
-invoicedOrderArticle2 = invoicedOrderSku sgroup by $1, articleSku($2) in baseGroup;
+numberDocumentArticle2 = SGROUP numberListArticle BY documentList($1, $2) IN baseGroup;
+orderedInvoiceArticle2(invoice, param3) = SGROUP orderedOrderInvoiceArticle2 BY invoice, param3 IN baseGroup;
+invoicedOrderArticle2 = SGROUP invoicedOrderSku BY $1, articleSku($2) IN baseGroup;
 compositionFreightArticleCompositionCountryCategory2 =
-    mainCompositionFreightSku2 mgroup by
+    MGROUP mainCompositionFreightSku2 BY
         freight,
         articleSku(sku),
         mainCompositionOriginFreightSku(freight, sku),
         countryOfOriginFreightSku(freight, sku),
-        customCategory10FreightSku(freight, sku) in baseGroup;
+        customCategory10FreightSku(freight, sku) IN baseGroup;
 
 // UProp
-typeInvoiceFreightArticle2(freight, article) = union override typeInvoiceCategoryFreightArticle(freight, article), typeInvoiceDataFreightArticle(freight, article) in idGroup;
-typeInvoiceFreightArticle3 = union override typeInvoiceCategoryFreightArticle($1, $2), typeInvoiceDataFreightArticle($1, $2) in idGroup;
-sumSku2 = union sum sumStockedSku($1), sumDirectInvoicedSku($1) in baseGroup;
+typeInvoiceFreightArticle2(freight, article) = UNION  OVERRIDE typeInvoiceCategoryFreightArticle(freight, article), typeInvoiceDataFreightArticle(freight, article) IN idGroup;
+typeInvoiceFreightArticle3 = UNION OVERRIDE typeInvoiceCategoryFreightArticle($1, $2), typeInvoiceDataFreightArticle($1, $2) IN idGroup;
+sumSku2 = UNION SUM sumStockedSku($1), sumDirectInvoicedSku($1) IN baseGroup;
 
 
-
+// Nested
+netWeightImporterFreightUnitSku2(freight, unit, sku) = multiplyDouble2 (
+        quantityImporterStockSku(freight, unit, sku),
+        ( netWeightFreightSku(freightFreightUnit($1, $2)) )(unit, sku)
+) IN baseGroup;

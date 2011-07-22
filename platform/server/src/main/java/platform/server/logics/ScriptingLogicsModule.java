@@ -179,6 +179,14 @@ public class ScriptingLogicsModule extends LogicsModule {
         return property;
     }
 
+    private LP<?> getLPByObj(Object obj) {
+        if (obj instanceof LP) {
+            return (LP<?>) obj;
+        } else {
+            return getLPByName((String) obj);
+        }
+    }
+
     private List<String> getNamedParamsList(String propertyName) {
         List<String> paramList;
         int dotPosition = propertyName.indexOf('.');
@@ -199,6 +207,14 @@ public class ScriptingLogicsModule extends LogicsModule {
         return paramList;
     }
 
+    private List<String> getNamedParamsList(Object obj) {
+        if (obj instanceof LP) {
+            return getNamedParams(((LP)obj).property.getSID());
+        } else {
+            return getNamedParamsList((String) obj);
+        }
+    }
+
     public void addScriptedGroup(String groupName, String captionStr, String parentName) {
         scriptLogger.info("addScriptedGroup(" + groupName + ", " + (captionStr==null ? "" : captionStr) + ", " + (parentName == null ? "null" : parentName) + ");");
         String caption = (captionStr == null ? groupName : transformCaptionStr(captionStr));
@@ -206,8 +222,13 @@ public class ScriptingLogicsModule extends LogicsModule {
         addAbstractGroup(groupName, caption, parentGroup);
     }
 
-    public void addScriptedDProp(String propName, String caption, String parentGroup, String returnClass, List<String> paramClasses, boolean isPersistent, List<String> namedParams) {
-        scriptLogger.info("addScriptedDProp(" + propName + ", " + (parentGroup == null ? "" : parentGroup) + ", " + returnClass + ", " + paramClasses + ", " + isPersistent + ", " + (namedParams == null ? "" : namedParams) + ");");
+    private String toLog(Object obj) {
+        return BaseUtils.nullToString(obj);
+    }
+
+    public LP<?> addScriptedDProp(String propName, String caption, String parentGroup, String returnClass, List<String> paramClasses, boolean isPersistent, List<String> namedParams) {
+        scriptLogger.info("addScriptedDProp(" + toLog(propName) + ", " + toLog(parentGroup) + ", " + returnClass + ", " +
+                paramClasses + ", " + isPersistent + ", " + toLog(namedParams) + ");");
 
         AbstractGroup group = (parentGroup == null ? privateGroup : getGroupByName(parentGroup));
         ValueClass value = getClassByName(returnClass);
@@ -215,8 +236,14 @@ public class ScriptingLogicsModule extends LogicsModule {
         for (int i = 0; i < paramClasses.size(); i++) {
             params[i] = getClassByName(paramClasses.get(i));
         }
-        LP<?> prop = addDProp(group, propName, isPersistent, caption, value, params);
+        LP<?> prop;
+        if (propName == null) {
+            prop = addDProp(group, isPersistent, caption, value, params);
+        } else {
+            prop = addDProp(group, propName, isPersistent, caption, value, params);
+        }
         addNamedParams(prop.property.getSID(), namedParams);
+        return prop;
     }
 
     private int getParamIndex(String param, List<String> namedParams) {
@@ -230,53 +257,62 @@ public class ScriptingLogicsModule extends LogicsModule {
         return index;
     }
 
-    public void addScriptedJProp(String propName, String caption, String parentGroup, String mainPropName, boolean isPersistent, List<String> namedParams, List<String> paramsId, List<List<String>> propParams) {
-        scriptLogger.info("addScriptedJProp(" + propName + ", " + (parentGroup == null ? "" : parentGroup) + ", " + mainPropName + ", " + isPersistent + ", " + namedParams + ", " + paramsId + ", " + propParams + ");");
+    public LP<?> addScriptedJProp(String propName, String caption, String parentGroup, Object mainPropObj, boolean isPersistent, List<String> namedParams, List<Object> params, List<List<String>> mappings) {
+        scriptLogger.info("addScriptedJProp(" + toLog(propName) + ", " + toLog(parentGroup) + ", " + mainPropObj + ", " + isPersistent + ", " + toLog(namedParams) + ", " + params + ", " + mappings + ");");
 
         AbstractGroup group = (parentGroup == null ? privateGroup : getGroupByName(parentGroup));
-        LP<?> mainProp = getLPByName(mainPropName);
-        List<Object> resultParams = getParamsPlainList(namedParams, paramsId, propParams);
-        LP<?> prop = addJProp(group, false, propName, isPersistent, caption, mainProp, resultParams.toArray());
+        LP<?> mainProp = getLPByObj(mainPropObj);
+        List<Object> resultParams = getParamsPlainList(namedParams, params, mappings);
+        LP<?> prop;
+        if (propName == null) {
+            prop = addJProp(group, false, isPersistent, caption, mainProp, resultParams.toArray());
+        } else {
+            prop = addJProp(group, false, propName, isPersistent, caption, mainProp, resultParams.toArray());
+        }
         addNamedParams(prop.property.getSID(), namedParams);
+        return prop;
     }
 
-    private List<Object> getParamsPlainList(List<String> namedParams, List<String> paramsId, List<List<String>> propParams) {
+    private List<Object> getParamsPlainList(List<String> namedParams, List<Object> params, List<List<String>> mappings) {
         List<Object> resultParams = new ArrayList<Object>();
-        for (int i = 0; i < paramsId.size(); i++) {
-            String paramStr = paramsId.get(i);
-            if (propParams.get(i) == null) {
+        for (int i = 0; i < params.size(); i++) {
+            if (params.get(i) instanceof LP || mappings.get(i) != null) {
+                LP<?> paramProp = getLPByObj(params.get(i));
+                resultParams.add(paramProp);
+                for (String namedParam : mappings.get(i)) {
+                    int paramIndex = getParamIndex(namedParam, namedParams);
+                    assert paramIndex >= 0;
+                    resultParams.add(paramIndex + 1);
+                }
+            } else {
+                String paramStr = (String) params.get(i);
                 if (namedParams != null) {
                     resultParams.add(namedParams.indexOf(paramStr) + 1);
                 } else {
                     assert paramStr.startsWith("$");
                     resultParams.add(Integer.parseInt(paramStr.substring(1)));
                 }
-            } else {
-                LP<?> paramProp = getLPByName(paramStr);
-                resultParams.add(paramProp);
-                for (String namedParam : propParams.get(i)) {
-                    int paramIndex = getParamIndex(namedParam, namedParams);
-                    assert paramIndex >= 0;
-                    resultParams.add(paramIndex + 1);
-                }
             }
         }
         return resultParams;
     }
 
-    public void addScriptedGProp(String propName, String caption, String parentGroup, String groupPropName, boolean isPersistent, boolean isSGProp, List<String> namedParams, List<String> paramsId, List<List<String>> propParams) {
-        scriptLogger.info("addScriptedGProp(" + propName + ", " + (parentGroup == null ? "" : parentGroup) + ", " + groupPropName + ", " + isPersistent + ", " + isSGProp + ", " + namedParams + ", " + paramsId + ", " + propParams + ");");
+    public LP<?> addScriptedGProp(String propName, String caption, String parentGroup, Object groupPropObj, boolean isPersistent, boolean isSGProp, List<String> namedParams, List<Object> params, List<List<String>> mappings) {
+        scriptLogger.info("addScriptedGProp(" + toLog(propName) + ", " + toLog(parentGroup) + ", " + groupPropObj + ", " + isPersistent + ", " + isSGProp + ", " + toLog(namedParams) + ", " + params + ", " + mappings + ");");
 
         AbstractGroup group = (parentGroup == null ? privateGroup : getGroupByName(parentGroup));
-        LP<?> groupProp = getLPByName(groupPropName);
-        List<Object> resultParams = getParamsPlainList(getNamedParamsList(groupPropName), paramsId, propParams);
+        LP<?> groupProp = getLPByObj(groupPropObj);
+        List<Object> resultParams = getParamsPlainList(getNamedParamsList(groupPropObj), params, mappings);
         LP<?> resultProp;
         if (isSGProp) {
-            resultProp = addSGProp(group, propName, isPersistent, caption, groupProp, resultParams.toArray());
+            resultProp = (propName == null ? addSGProp(group, isPersistent, caption, groupProp, resultParams.toArray()) :
+                                             addSGProp(group, propName, isPersistent, caption, groupProp, resultParams.toArray()));
         } else {
-            resultProp = addMGProp(group, propName, isPersistent, caption, groupProp, resultParams.toArray());
+            resultProp = (propName == null ? addMGProp(group, isPersistent, caption, groupProp, resultParams.toArray()) :
+                                             addMGProp(group, propName, isPersistent, caption, groupProp, resultParams.toArray()));
         }
         addNamedParams(resultProp.property.getSID(), namedParams);
+        return resultProp;
     }
 
     private List<Object> transformSumUnionParams(List<Object> params) {
@@ -290,16 +326,18 @@ public class ScriptingLogicsModule extends LogicsModule {
         return newList;
     }
 
-    public void addScriptedUProp(String propName, String caption, String parentGroup, boolean isPersistent, Union unionType, List<String> namedParams, List<String> paramsId, List<List<String>> propParams) {
-        scriptLogger.info("addScriptedUProp(" + propName + ", " + (parentGroup == null ? "" : parentGroup) + ", " + isPersistent + ", " + unionType + ", " + namedParams + ", " + paramsId + ", " + propParams + ");");
+    public LP<?> addScriptedUProp(String propName, String caption, String parentGroup, boolean isPersistent, Union unionType, List<String> namedParams, List<Object> params, List<List<String>> mappings) {
+        scriptLogger.info("addScriptedUProp(" + toLog(propName) + ", " + toLog(parentGroup) + ", " + isPersistent + ", " + unionType + ", " + toLog(namedParams) + ", " + params + ", " + mappings + ");");
 
         AbstractGroup group = (parentGroup == null ? privateGroup : getGroupByName(parentGroup));
-        List<Object> resultParams = getParamsPlainList(namedParams, paramsId, propParams);
+        List<Object> resultParams = getParamsPlainList(namedParams, params, mappings);
         if (unionType == Union.SUM) {
             resultParams = transformSumUnionParams(resultParams);
         }
-        LP<?> resultProp = addUProp(group, propName, isPersistent, caption, unionType, resultParams.toArray());
+        LP<?> resultProp = (propName == null ? addUProp(group, isPersistent, caption, unionType, resultParams.toArray()) :
+                                               addUProp(group, propName, isPersistent, caption, unionType, resultParams.toArray()));
         addNamedParams(resultProp.property.getSID(), namedParams);
+        return resultProp;
     }
 
     private void parseStep(State state) {

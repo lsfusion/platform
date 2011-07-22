@@ -110,13 +110,13 @@ public abstract class LogicsModule {
         moduleClasses.put(valueClass.getSID(), valueClass);
     }
 
-    public List<String> getNamedParams(String propertyName) {
-        return propNamedParams.get(propertyName);
+    public List<String> getNamedParams(String sID) {
+        return propNamedParams.get(sID);
     }
 
-    protected void addNamedParams(String propertyName, List<String> namedParams) {
-        assert !propNamedParams.containsKey(propertyName);
-        propNamedParams.put(propertyName, namedParams);
+    protected void addNamedParams(String sID, List<String> namedParams) {
+        assert !propNamedParams.containsKey(sID);
+        propNamedParams.put(sID, namedParams);
     }
 
     // aliases для использования внутри иерархии логических модулей
@@ -238,6 +238,10 @@ public abstract class LogicsModule {
         for (int i = 0; i < names.length; i++)
             result[i] = addDProp(group, names[i] + paramID, captions[i], values[i], params);
         return result;
+    }
+
+    protected LP addDProp(AbstractGroup group, boolean persistent, String caption, ValueClass value, ValueClass... params) {
+        return addDProp(group, genSID(), persistent, caption, value, params);
     }
 
     protected LP addDProp(AbstractGroup group, String name, boolean persistent, String caption, ValueClass value, ValueClass... params) {
@@ -564,8 +568,12 @@ public abstract class LogicsModule {
         return addProperty(null, new LP<StringConcatenateProperty.Interface>(new StringConcatenateProperty(genSID(), ServerResourceBundle.getString("logics.join"), intNum, separator, false)));
     }
 
+    protected LP addMFProp(String sID, ConcreteValueClass value, int paramCount) {
+        return addProperty(null, new LP<StringFormulaProperty.Interface>(new MultiplyFormulaProperty(sID, value, paramCount)));
+    }
+
     protected LP addMFProp(ConcreteValueClass value, int paramCount) {
-        return addProperty(null, new LP<StringFormulaProperty.Interface>(new MultiplyFormulaProperty(genSID(), value, paramCount)));
+        return addMFProp(genSID(), value, paramCount);
     }
 
     protected LP addAFProp(boolean... nots) {
@@ -634,6 +642,10 @@ public abstract class LogicsModule {
 
     protected LP addJProp(AbstractGroup group, boolean implementChange, String name, String caption, LP mainProp, Object... params) {
         return addJProp(group, implementChange, name, false, caption, mainProp, params);
+    }
+
+    protected LP addJProp(AbstractGroup group, boolean implementChange, boolean persistent, String caption, LP mainProp, Object... params) {
+        return addJProp(group, implementChange, genSID(), persistent, caption, mainProp, params);
     }
 
     protected LP addJProp(AbstractGroup group, boolean implementChange, String name, boolean persistent, String caption, LP mainProp, Object... params) {
@@ -915,6 +927,10 @@ public abstract class LogicsModule {
         return addSGProp(group, name, false, caption, groupProp, params);
     }
 
+    protected LP addSGProp(AbstractGroup group, boolean persistent, String caption, LP groupProp, Object... params) {
+        return addSGProp(group, genSID(), persistent, caption, groupProp, params);
+    }
+
     protected LP addSGProp(AbstractGroup group, String name, boolean persistent, String caption, LP groupProp, Object... params) {
         return addSGProp(group, name, persistent, false, caption, groupProp, params);
     }
@@ -949,6 +965,10 @@ public abstract class LogicsModule {
 
     protected LP addMGProp(AbstractGroup group, String name, String caption, LP groupProp, Object... params) {
         return addMGProp(group, name, false, caption, groupProp, params);
+    }
+
+    protected LP addMGProp(AbstractGroup group, boolean persist, String caption, LP groupProp, Object... params) {
+        return addMGProp(groupProp, genSID(), persist, caption, groupProp, params);
     }
 
     protected LP addMGProp(AbstractGroup group, String name, boolean persist, String caption, LP groupProp, Object... params) {
@@ -1100,6 +1120,10 @@ public abstract class LogicsModule {
 
     protected LP addUProp(AbstractGroup group, String name, String caption, Union unionType, Object... params) {
         return addUProp(group, name, false, caption, unionType, params);
+    }
+
+    protected LP addUProp(AbstractGroup group, boolean persistent, String caption, Union unionType, Object... params) {
+        return addUProp(group, genSID(), persistent, caption, unionType, params);
     }
 
     protected LP addUProp(AbstractGroup group, String name, boolean persistent, String caption, Union unionType, Object... params) {
