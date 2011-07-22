@@ -565,8 +565,8 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         LP sessionUser = addDProp("sessionUser", getString("logics.session.user"), user, session);
         sessionUser.setDerivedChange(currentUser, true, is(session), 1);
         addJProp(baseGroup, getString("logics.session.user"), name, sessionUser, 1);
-        LP sessionDate = addDProp(baseGroup, "sessionDate", getString("logics.session.date"), DateClass.instance, session);
-        sessionDate.setDerivedChange(currentDate, true, is(session), 1);
+        LP sessionDate = addDProp(baseGroup, "sessionDate", getString("logics.session.date"), DateTimeClass.instance, session);
+        sessionDate.setDerivedChange(currentDateTime, true, is(session), 1);
         onlyNotZero = addJProp(andNot1, 1, addJProp(equals2, 1, vzero), 1);
         onlyNotZero.property.isOnlyNotZero = true;
 

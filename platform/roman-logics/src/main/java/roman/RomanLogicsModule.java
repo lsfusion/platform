@@ -1607,7 +1607,7 @@ public class RomanLogicsModule extends LogicsModule {
 
         addArticleSingleSIDSupplier = addJProp(true, "Ввод простого артикула", addAAProp(articleSingle, sidArticle, supplierArticle), 1, 2);
         addNEArticleSingleSIDSupplier = addJProp(true, "Ввод простого артикула (НС)", baseLM.andNot1, addArticleSingleSIDSupplier, 1, 2, articleSIDSupplier, 1, 2);
-        addNEArticleSingleSIDInvoice = addJProp(true, "Ввод простого артикула (НС)", addNEArticleSingleSIDSupplier, supplierDocument, 1, 2);
+        addNEArticleSingleSIDInvoice = addJProp(true, "Ввод простого артикула (НС)", addNEArticleSingleSIDSupplier, 1, supplierDocument, 2);
 
         addArticleCompositeSIDSupplier = addJProp(true, "Ввод составного артикула", addAAProp(articleComposite, sidArticle, supplierArticle), 1, 2);
         addNEArticleCompositeSIDSupplier = addJProp(true, "Ввод составного артикула (НС)", baseLM.andNot1, addArticleCompositeSIDSupplier, 1, 2, articleSIDSupplier, 1, 2);
@@ -3008,6 +3008,7 @@ public class RomanLogicsModule extends LogicsModule {
             super(parent, sID, caption);
 
             objStore = addSingleGroupObject(store, "Магазин", baseLM.name, sidDestination);
+            addObjectActions(this, objStore);
 
             objStore.groupTo.initClassView = ClassViewType.GRID;
 

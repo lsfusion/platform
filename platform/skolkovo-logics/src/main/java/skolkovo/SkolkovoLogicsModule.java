@@ -137,7 +137,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         multiLanguageNamed = addAbstractClass("multiLanguageNamed", "Многоязычный объект", baseClass);
 
         projectType = addStaticClass("projectType", "Тип проекта",
-                                     new String[]{"comparable3", "surpasses3", "russianbenchmark3", "certainadvantages3", "significantlyoutperforms3", "nobenchmarks3"},
+                                     new String[]{"comparable", "surpasses", "russianbenchmark", "certainadvantages", "significantlyoutperforms", "nobenchmarks"},
                                      new String[]{"сопоставим с существующими российскими аналогами или уступает им", "превосходит российские аналоги, но уступает лучшим зарубежным аналогам",
                                                   "Является российским аналогом востребованного зарубежного продукта/технологии", "Обладает отдельными преимуществами над лучшими мировыми аналогами, но в целом сопоставим с ними",
                                                   "Существенно превосходит все существующие мировые аналоги", "Не имеет аналогов, удовлетворяет ранее не удовлетворенную потребность и создает новый рынок"});
