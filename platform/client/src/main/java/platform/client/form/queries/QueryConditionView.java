@@ -79,7 +79,8 @@ abstract class QueryConditionView extends JPanel implements ValueLinkListener {
         });
 
         compareView.addItemListener(new ItemAdapter() {
-            public void itemSelected(ItemEvent e) {
+            @Override
+            public void itemStateChanged(ItemEvent e) {
                 filter.compare = (Compare) e.getItem();
                 conditionChanged();
             }
@@ -141,6 +142,7 @@ abstract class QueryConditionView extends JPanel implements ValueLinkListener {
             valueView.propertyChanged(filter.property);
         }
         compareView.setModel(new DefaultComboBoxModel(filter.property.baseType.getFilerCompares()));
+        compareView.setSelectedItem(null); //чтобы сработал itemStateChanged при автоматическом выборе '='
         compareView.setSelectedItem(filter.property.baseType.getDefaultCompare());
 
         add(delButton, BorderLayout.EAST);
