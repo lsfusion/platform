@@ -12,7 +12,7 @@ import java.util.*;
 
 public class PanelToolbar {
     private Set<PropertyController> properties = new HashSet<PropertyController>();
-    private Map<ClientRegularFilterGroup, JComponent> filters = new HashMap<ClientRegularFilterGroup, JComponent>();
+    private Map<ClientRegularFilterGroup, JComponent> filters = new LinkedHashMap<ClientRegularFilterGroup, JComponent>();
 
     private final ClientFormController form;
 
