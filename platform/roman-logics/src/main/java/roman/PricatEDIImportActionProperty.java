@@ -71,14 +71,14 @@ public class PricatEDIImportActionProperty extends ActionProperty {
             ImportKey<?>[] keysArray = {pricatKey};
 
             try {
-                PricatEDIInputTable inputTable = new PricatEDIInputTable(new ByteArrayInputStream(file));
+                PricatEDIInputTable inputTable = new PricatEDIInputTable(new ByteArrayInputStream(file), supplier);
 
                 ImportTable table = new EDIInvoiceImporter(inputTable, barcodeField, articleField, customCategoryOriginalField, colorCodeField, colorField,
                         sizeField, originalNameField, countryField, netWeightField, compositionField, priceField, rrpField).getTable();
 
                 new IntegrationService(session, table, Arrays.asList(keysArray), properties).synchronize(true, true, false);
             } catch (Exception e) {
-                throw new RuntimeException();
+                throw new RuntimeException(e);
             }
         }
     }

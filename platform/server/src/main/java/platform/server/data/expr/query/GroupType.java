@@ -14,7 +14,8 @@ public enum GroupType {
             case MAX:
                 return "MAX";
             case ANY:
-                return "ANYVALUE";
+                return "MAX";
+            //    return "ANYVALUE";
             case SUM:
                 return "SUM";
         }

@@ -2,15 +2,17 @@ package roman;
 
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
+import platform.server.classes.ConcreteCustomClass;
 import platform.server.integration.EDIInputTable;
+import platform.server.logics.DataObject;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.List;
 
 public class PricatEDIInputTable extends EDIInputTable {
-    public PricatEDIInputTable(ByteArrayInputStream inFile) {
-        super(inFile);
+    public PricatEDIInputTable(ByteArrayInputStream inFile, DataObject supplier) {
+        super(inFile, supplier);
     }
 
     protected void init() {
@@ -41,7 +43,11 @@ public class PricatEDIInputTable extends EDIInputTable {
                         } else if (segmentID.equals("PIA02")) {
                             List<String> comp = getComposition();
                             if (comp.get(1).equals("SA")) {
-                                row.put("article", comp.get(0));
+                                String article = comp.get(0);
+                                if (supplier !=null && ((ConcreteCustomClass) supplier.objectClass).getSID().equals("sOliverSupplier")) {
+                                    article = new StringBuffer(article).insert(2, '.').insert(6, '.').insert(9, '.').toString();
+                                }
+                                row.put("article", article);
                             } else if (comp.get(1).equals("HS")) {
                                 StringBuilder sb = new StringBuilder(comp.get(0));
                                 for (int i = sb.length(); i < 10; i++) {

@@ -8,6 +8,7 @@ import org.xml.sax.ContentHandler;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
+import platform.server.logics.DataObject;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -19,6 +20,7 @@ import java.util.List;
 import java.util.Map;
 
 public class EDIInputTable implements ImportInputTable {
+    protected DataObject supplier;
     protected List<List<String>> data = new ArrayList<List<String>>();
     protected InputSource inputSource;
     protected EDIReader parser;
@@ -27,6 +29,11 @@ public class EDIInputTable implements ImportInputTable {
     public final String INVOICE = "INVOIC";
 
     public EDIInputTable(ByteArrayInputStream inFile) {
+        this(inFile, null);
+    }
+
+    public EDIInputTable(ByteArrayInputStream inFile, DataObject supplier) {
+        this.supplier = supplier;
         inputSource = new InputSource(new InputStreamReader(inFile));
         init();
         read();
