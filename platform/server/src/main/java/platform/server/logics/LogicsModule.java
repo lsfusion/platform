@@ -545,11 +545,19 @@ public abstract class LogicsModule {
     }
 
     protected LP addSFProp(String formula, ConcreteValueClass value, int paramCount) {
-        return addProperty(null, new LP<StringFormulaProperty.Interface>(new StringFormulaProperty(genSID(), value, formula, paramCount)));
+        return addSFProp(genSID(), formula, value, paramCount);
+    }
+
+    protected LP addSFProp(String name, String formula, ConcreteValueClass value, int paramCount) {
+        return addProperty(null, new LP<StringFormulaProperty.Interface>(new StringFormulaProperty(name, value, formula, paramCount)));
     }
 
     protected LP addCFProp(Compare compare) {
-        return addProperty(null, new LP<CompareFormulaProperty.Interface>(new CompareFormulaProperty(genSID(), compare)));
+        return addCFProp(genSID(), compare);
+    }
+
+    protected LP addCFProp(String name, Compare compare) {
+        return addProperty(null, new LP<CompareFormulaProperty.Interface>(new CompareFormulaProperty(name, compare)));
     }
 
     protected <P extends PropertyInterface> LP addSProp(int intNum) {
@@ -568,8 +576,8 @@ public abstract class LogicsModule {
         return addProperty(null, new LP<StringConcatenateProperty.Interface>(new StringConcatenateProperty(genSID(), ServerResourceBundle.getString("logics.join"), intNum, separator, false)));
     }
 
-    protected LP addMFProp(String sID, ConcreteValueClass value, int paramCount) {
-        return addProperty(null, new LP<StringFormulaProperty.Interface>(new MultiplyFormulaProperty(sID, value, paramCount)));
+    protected LP addMFProp(String name, ConcreteValueClass value, int paramCount) {
+        return addProperty(null, new LP<StringFormulaProperty.Interface>(new MultiplyFormulaProperty(name, value, paramCount)));
     }
 
     protected LP addMFProp(ConcreteValueClass value, int paramCount) {

@@ -1743,7 +1743,7 @@ public class RomanLogicsModule extends LogicsModule {
         additionalCompositionSku.property.preferredCharWidth = 40;
         additionalCompositionSku.property.minimumCharWidth = 20;
 
-        substring10 = addSFProp("substring(prm1,1,10)", StringClass.get(10), 1);
+        substring10 = addSFProp("substring10", "substring(prm1,1,10)", StringClass.get(10), 1);
         substring10s13 = addJProp(baseLM.and1, substring10, 1, is(StringClass.get(13)), 1);
 
         barcode10 = addJProp("barcode10", "Штрих-код(10)", substring10, baseLM.barcode, 1);

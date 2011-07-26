@@ -380,7 +380,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         dataName = addDProp("name", getString("logics.name"), InsensitiveStringClass.get(110), baseClass.named);
 
         // математические св-ва
-        equals2 = addCFProp(Compare.EQUALS);
+        equals2 = addCFProp("equals2", Compare.EQUALS);
         object1 = addAFProp();
         and1 = addAFProp("and1", false);
         andNot1 = addAFProp(true);
@@ -388,7 +388,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         insensitiveString2 = addInsensitiveSProp(2);
         concat2 = addCCProp(2);
         groeq2 = addCFProp(Compare.GREATER_EQUALS);
-        greater2 = addCFProp(Compare.GREATER);
+        greater2 = addCFProp("greater2", Compare.GREATER);
         lsoeq2 = addCFProp(Compare.LESS_EQUALS);
         less2 = addCFProp(Compare.LESS);
         greater22 = addJProp(greater2, concat2, 1, 2, concat2, 3, 4);
@@ -408,7 +408,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         percent = addSFProp("((prm1)*(prm2)/100)", DoubleClass.instance, 2);
         percent2 = addSFProp("round(CAST(((prm1)*(prm2)/100) as numeric), 2)", DoubleClass.instance, 2);
         share2 = addSFProp("round(CAST(((prm1)/(prm2)*100) as numeric), 2)", DoubleClass.instance, 2);
-        between = addJProp(getString("logics.between"), and1, groeq2, 1, 2, groeq2, 3, 1);
+        between = addJProp("between", getString("logics.between"), and1, groeq2, 1, 2, groeq2, 3, 1);
         vtrue = addCProp(getString("logics.true"), LogicalClass.instance, true);
         vzero = addCProp("0", DoubleClass.instance, 0);
 

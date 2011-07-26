@@ -7,6 +7,7 @@ grammar LsfLogics;
 	import platform.server.logics.linear.LP;
 	import java.util.Set;
 	import java.util.HashSet;
+	import java.util.Arrays;
 }
 
 @lexer::header { 
@@ -117,7 +118,7 @@ joinPropertyDefinition[String name, List<String> namedParams] returns [LP proper
 }
 @after {
 	if (parseState == ScriptingLogicsModule.State.PROP) {
-		property = self.addScriptedJProp(name, "", groupName, mainProp, isPersistent, namedParams, params, mappings);
+		$property = self.addScriptedJProp(name, "", groupName, mainProp, isPersistent, namedParams, params, mappings);
 	}
 }
 	:	mainPropObj=propertyObject { mainProp = $mainPropObj.property; }
@@ -137,7 +138,7 @@ dataPropertyDefinition[String name, List<String> namedParams] returns [LP proper
 }
 @after {
 	if (parseState == ScriptingLogicsModule.State.PROP) {
-		property = self.addScriptedDProp(name, "", groupName, returnClass, paramClassNames, isPersistent, namedParams);
+		$property = self.addScriptedDProp(name, "", groupName, returnClass, paramClassNames, isPersistent, namedParams);
 	}
 }
 	:	'DATA'
@@ -160,10 +161,10 @@ groupPropertyDefinition[String name, List<String> namedParams] returns [LP prope
 }
 @after {
 	if (parseState == ScriptingLogicsModule.State.PROP) {
-		property = self.addScriptedGProp(name, "", groupName, groupProp, isPersistent, isSGProp, namedParams, params, mappings);
+		$property = self.addScriptedGProp(name, "", groupName, groupProp, isPersistent, isSGProp, namedParams, params, mappings);
 	}
 }
-	:	(('SGROUP') { isSGProp = true; } | ('MGROUP') { isSGProp = false;}) 
+	:	'GROUP' (('SUM') { isSGProp = true; } | ('MAX') { isSGProp = false; }) 
 		groupPropName=propertyObject { groupProp = $groupPropName.text; }
 		'BY'
 		(firstParam=propertyCompositionParam { params.add($firstParam.param); mappings.add($firstParam.paramNames); }
@@ -181,7 +182,7 @@ unionPropertyDefinition[String name, List<String> namedParams] returns [LP prope
 }
 @after {
 	if (parseState == ScriptingLogicsModule.State.PROP) { 
-		property = self.addScriptedUProp(name, "", groupName, isPersistent, type, namedParams, params, mappings);	
+		$property = self.addScriptedUProp(name, "", groupName, isPersistent, type, namedParams, params, mappings);	
 	}
 }
 	:	'UNION'
@@ -201,15 +202,34 @@ propertyWithMapping returns [Object property, List<String> paramNames] :
 		(propertyObj=propertyObject { $property = $propertyObj.property; }
 		'('
 		paramList=parameterList { $paramNames = $paramList.ids; }		
-		')');
+		')') |
+		constant=literal { $property = $constant.property; $paramNames = new ArrayList<String>(); } |
+		expr=typeExpression { $property = $expr.property; $paramNames = Arrays.asList($expr.param); };
 
 
 propertyObject returns [Object property]
 	:	name=compoundID { $property = $name.text; } | 
 		expr=propertyExpression { $property = $expr.property; };
 
+
 propertyExpression returns [LP property]
-	:	'(' def=propertyDefinition[null, new ArrayList<String>()] ')' { $property = $def.property; };
+	:	'(' def=propertyDefinition[null, new ArrayList<String>()] ')' { $property = $def.property; } |
+		constant=literal { $property = $constant.property; } ;
+
+
+typeExpression returns [LP property, String param] 
+@init {
+	String clsId = null;
+	boolean bIs = false;
+}
+@after {
+	if (parseState == ScriptingLogicsModule.State.PROP) { 
+		$property = self.addScriptedTypeProp(clsId, bIs);
+	}
+}
+	:	paramName=parameter { $param = $paramName.text; }
+		('IS' { bIs = true; } | 'IF')  
+		id=classId { clsId = $id.text; };
 
 
 commonPropertySettings returns [String group, boolean isPersistent] 
@@ -275,12 +295,31 @@ parameterList returns [List<String> ids]
 	:	(firstParam=parameter	 { $ids.add($firstParam.text); }
 		(',' nextParam=parameter { $ids.add($nextParam.text); })* )?;
 
+
+literal returns [LP property]
+@init {
+	ScriptingLogicsModule.ConstType cls = null;
+	String text = null;
+}
+@after {
+	if (parseState == ScriptingLogicsModule.State.PROP) { 
+		$property = self.addConstantProp(cls, text);	
+	}
+}
+	: 	strInt=intLiteral 	{ cls = ScriptingLogicsModule.ConstType.INT; text = $strInt.text; } | 
+		strReal=doubleLiteral { cls = ScriptingLogicsModule.ConstType.REAL; text = $strReal.text; }  |
+		str=STRING_LITERAL { cls = ScriptingLogicsModule.ConstType.STRING; text = $str.text; } | 
+		str=LOGICAL_LITERAL { cls = ScriptingLogicsModule.ConstType.LOGICAL; text = $str.text; };
 	
 classId 
 	:	compoundID | PRIMITIVE_TYPE;
 
 compoundID
 	:	(ID '.')? ID;
+	
+doubleLiteral 
+	:	'-'? POSITIVE_DOUBLE_LITERAL; 
+		
 
 intLiteral
 	:	'-'? UINT_LITERAL;		
@@ -291,15 +330,17 @@ intLiteral
 //////////////////////////////////// LEXER //////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////
 	
-fragment NEWLINE     :   '\r'?'\n'; 
-fragment SPACE       :   (' '|'\t');
+fragment NEWLINE	:   '\r'?'\n'; 
+fragment SPACE		:   (' '|'\t');
 fragment STR_LITERAL_CHAR	: '\\\'' | ~('\r'|'\n'|'\'');	 // overcomplicated due to bug in ANTLR Works
 fragment DIGITS		:	('0'..'9')+;
 	 
-PRIMITIVE_TYPE  :	'Integer' | 'Double' | 'Long' | 'Boolean' | 'Date' | 'String[' DIGITS ']' | 'InsensitiveString[' DIGITS ']';		
+PRIMITIVE_TYPE  :	'INTEGER' | 'DOUBLE' | 'LONG' | 'BOOLEAN' | 'DATE' | 'STRING[' DIGITS ']' | 'ISTRING[' DIGITS ']';		
+LOGICAL_LITERAL :	'TRUE' | 'FALSE';		
 ID          	:	('a'..'z'|'A'..'Z')('a'..'z'|'A'..'Z'|'_'|'0'..'9')*;
 WS		:	(NEWLINE | SPACE) { $channel=HIDDEN; }; 	
 STRING_LITERAL	:	'\'' STR_LITERAL_CHAR* '\'';
 COMMENTS	:	('//' .* '\n') { $channel=HIDDEN; };
-UINT_LITERAL 	:	DIGITS;	 
+UINT_LITERAL 	:	DIGITS;
+POSITIVE_DOUBLE_LITERAL	: 	DIGITS '.' DIGITS;	  
 NUMBERED_PARAM	:	'$' DIGITS;

@@ -34,9 +34,10 @@ public class ScriptingLogicsModule extends LogicsModule {
     private final Set<String> importedModules = new HashSet<String>();
 
     public enum State {GROUP, CLASS, PROP}
+    public enum ConstType { INT, REAL, STRING, LOGICAL };
 
     private Map<String, ValueClass> primitiveTypeAliases = BaseUtils.buildMap(
-            Arrays.<String>asList("Integer", "Double", "Long", "Date", "Boolean"),
+            Arrays.<String>asList("INTEGER", "DOUBLE", "LONG", "DATE", "BOOLEAN"),
             Arrays.<ValueClass>asList(IntegerClass.instance, DoubleClass.instance, LongClass.instance, DateClass.instance, LogicalClass.instance)
     );
 
@@ -90,11 +91,11 @@ public class ScriptingLogicsModule extends LogicsModule {
     private ValueClass getPredefinedClass(String name) {
         if (primitiveTypeAliases.containsKey(name)) {
             return primitiveTypeAliases.get(name);
-        } else if (name.startsWith("String[")) {
-            name = name.substring("String[".length(), name.length() - 1);
+        } else if (name.startsWith("STRING[")) {
+            name = name.substring("STRING[".length(), name.length() - 1);
             return StringClass.get(Integer.parseInt(name));
-        } else if (name.startsWith("InsensitiveString[")) {
-            name = name.substring("InsensitiveString[".length(), name.length() - 1);
+        } else if (name.startsWith("ISTRING[")) {
+            name = name.substring("ISTRING[".length(), name.length() - 1);
             return InsensitiveStringClass.get(Integer.parseInt(name));
         }
         return null;
@@ -338,6 +339,27 @@ public class ScriptingLogicsModule extends LogicsModule {
                                                addUProp(group, propName, isPersistent, caption, unionType, resultParams.toArray()));
         addNamedParams(resultProp.property.getSID(), namedParams);
         return resultProp;
+    }
+
+    public LP<?> addConstantProp(ConstType type, String text) {
+        scriptLogger.info("addConstantProp(" + type + ", " + text + ");");
+
+        switch (type) {
+            case INT: return addCProp(IntegerClass.instance, Integer.parseInt(text));
+            case REAL: return addCProp(DoubleClass.instance, Double.parseDouble(text));
+            case STRING: return addCProp(StringClass.get(text.length()), text);
+            case LOGICAL: return addCProp(LogicalClass.instance, text.equals("TRUE"));
+        }
+        return null;
+    }
+
+    public LP<?> addScriptedTypeProp(String className, boolean bIs) {
+        scriptLogger.info("addTypeProp(" + className + ", " + (bIs ? "IS" : "IF") + ");");
+        if (bIs) {
+            return is(getClassByName(className));
+        } else {
+            return object(getClassByName(className));
+        }
     }
 
     private void parseStep(State state) {
