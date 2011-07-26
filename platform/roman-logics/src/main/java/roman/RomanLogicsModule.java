@@ -473,6 +473,7 @@ public class RomanLogicsModule extends LogicsModule {
     private LP percentShipmentRoute;
     private LP percentShipmentRouteSku;
     private LP invoicedShipmentSku;
+    private LP emptyBarcodeShipment;
     private LP priceShipmentSku;
     private LP invoicedShipment;
     private LP invoicedShipmentRouteSku;
@@ -823,7 +824,7 @@ public class RomanLogicsModule extends LogicsModule {
     private LP executeChangeFreightClass, executeChangeFreightChangedClass, executeChangeFreightShippedClass;
     private CreateItemFormEntity createItemForm;
     private FindItemFormEntity findItemFormBox;
-    private FindItemFormEntity findItemFormSimple;
+    private FindItemFormEntity findItemFormSimple, findItemFormSimpleBarcode;
     private LogFormEntity logFreightForm;
 
     private LP addItemBarcode;
@@ -1962,6 +1963,10 @@ public class RomanLogicsModule extends LogicsModule {
         invoicedShipmentSku = addSGProp(baseGroup, "invoicedShipmentSku", true, "Ожид. (пост.)",
                 addJProp(baseLM.and1, quantityDocumentSku, 1, 2, inInvoiceShipment, 1, 3), 3, 2);
 
+        emptyBarcodeShipment = addSGProp(privateGroup, "emptyBarcodeShipment", true, true, "Кол-во позиций без штрих-кода",
+                addJProp(and(false, true), addCProp(IntegerClass.instance, 1, shipment), 1, invoicedShipmentSku, 1, 2, baseLM.barcode, 2),
+                1);
+
         priceShipmentSku = addMGProp(baseGroup, "priceShipmentSku", true, "Цена (пост.)",
                 addJProp(baseLM.and1, priceDocumentSku, 1, 2, inInvoiceShipment, 1, 3), 3, 2);
 
@@ -2741,8 +2746,9 @@ public class RomanLogicsModule extends LogicsModule {
         classifier.add(baseLM.dictionaryForm);
 
         createItemForm = addFormEntity(new CreateItemFormEntity(null, "createItemForm", "Ввод товара"));
-        findItemFormBox = addFormEntity(new FindItemFormEntity(null, "findItemFormBox", "Поиск товара (с коробами)", true));
-        findItemFormSimple = addFormEntity(new FindItemFormEntity(null, "findItemFormSimple", "Поиск товара", false));
+        findItemFormBox = addFormEntity(new FindItemFormEntity(null, "findItemFormBox", "Поиск товара (с коробами)", true, false));
+        findItemFormSimple = addFormEntity(new FindItemFormEntity(null, "findItemFormSimple", "Поиск товара", false, false));
+        findItemFormSimpleBarcode = addFormEntity(new FindItemFormEntity(null, "findItemFormSimpleBarcode", "Поиск товара (с выбором штрих-кода)", false, true));
 
         NavigatorElement printForms = new NavigatorElement(baseLM.baseElement, "printForms", "Печатные формы");
         printForms.window = leftToolbar;
@@ -2847,7 +2853,8 @@ public class RomanLogicsModule extends LogicsModule {
     }
 
 
-    private class BarcodeFormEntity extends FormEntity<RomanBusinessLogics> {
+    private class
+            BarcodeFormEntity extends FormEntity<RomanBusinessLogics> {
 
         ObjectEntity objBarcode;
 
@@ -2861,7 +2868,7 @@ public class RomanLogicsModule extends LogicsModule {
             objBarcode = addSingleGroupObject(StringClass.get(13), "Штрих-код", baseLM.objectValue, baseLM.barcodeObjectName);
             objBarcode.groupTo.setSingleClassView(ClassViewType.PANEL);
 
-            objBarcode.resetOnApply = true;
+//            objBarcode.resetOnApply = true;
 
             getPropertyDraw(baseLM.objectValue, objBarcode).eventSID = ScannerDaemonTask.SCANNER_SID;
 
@@ -3749,6 +3756,16 @@ public class RomanLogicsModule extends LogicsModule {
             }
 
             addActionsOnObjectChange(objBarcode, addPropertyObject(baseLM.apply));
+
+            if (!box)
+                addActionsOnObjectChange(objBarcode, addPropertyObject(
+                        addJProp(and(true, false),
+                                    addMFAProp(null, "Поиск по артикулу",
+                                    findItemFormSimpleBarcode,
+                                    new ObjectEntity[]{findItemFormSimpleBarcode.objShipment, findItemFormSimpleBarcode.objBarcode},
+                                    false), 1, 2,
+                                    skuBarcodeObject, 2, emptyBarcodeShipment, 1),
+                                objShipment, objBarcode));
 
             addActionsOnObjectChange(objBarcode, addPropertyObject(barcodeActionSeekPallet, objBarcode));
             //addActionsOnObjectChange(objBarcode, addPropertyObject(barcodeActionCheckPallet, objBarcode));
@@ -5924,17 +5941,30 @@ public class RomanLogicsModule extends LogicsModule {
     private class FindItemFormEntity extends FormEntity<RomanBusinessLogics> {
 
         private boolean box;
+        private boolean barcode;
 
+        ObjectEntity objBarcode;
         ObjectEntity objShipment;
         ObjectEntity objSupplierBox;
         ObjectEntity objRoute;
         ObjectEntity objSku;
         ObjectEntity objShipmentDetail;
 
-        public FindItemFormEntity(NavigatorElement parent, String sID, String caption, boolean box) {
+        @Override
+        public boolean isReadOnly() {
+            return true;
+        }
+
+        public FindItemFormEntity(NavigatorElement parent, String sID, String caption, boolean box, boolean barcode) {
             super(parent, sID, caption);
 
             this.box = box;
+            this.barcode = barcode;
+
+            if (barcode) {
+                objBarcode = addSingleGroupObject(StringClass.get(13), "Штрих-код", baseLM.objectValue);
+                objBarcode.groupTo.setSingleClassView(ClassViewType.PANEL);
+            }
 
             if (box)
                 objShipment = addSingleGroupObject(boxShipment, "Поставка", baseLM.objectValue, sidDocument, baseLM.date);
@@ -5962,6 +5992,8 @@ public class RomanLogicsModule extends LogicsModule {
             objShipmentDetail = addSingleGroupObject(box ? boxShipmentDetail : simpleShipmentDetail, "Строка поставки");
 
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(invoicedShipmentSku, objShipment, objSku)));
+            if (barcode)
+                addFixedFilter(new NotFilterEntity(new NotNullFilterEntity(addPropertyObject(baseLM.barcode, objSku))));
 
             if (box) {
 
@@ -5976,11 +6008,15 @@ public class RomanLogicsModule extends LogicsModule {
                 addRegularFilterGroup(filterGroup);
             }
 
-            addActionsOnOk(addPropertyObject(seekRouteShipmentSkuRoute, objShipment, objSku, objRoute));
-            if (box)
-                addActionsOnOk(addPropertyObject(addBoxShipmentDetailBoxShipmentSupplierBoxRouteSku, objShipment, objSupplierBox, objRoute, objSku));
-            else
-                addActionsOnOk(addPropertyObject(addSimpleShipmentDetailSimpleShipmentRouteSku, objShipment, objRoute, objSku));
+            if (barcode) {
+                addActionsOnOk(addPropertyObject(baseLM.equalsObjectBarcode, objSku, objBarcode));
+            } else {
+                addActionsOnOk(addPropertyObject(seekRouteShipmentSkuRoute, objShipment, objSku, objRoute));
+                if (box)
+                    addActionsOnOk(addPropertyObject(addBoxShipmentDetailBoxShipmentSupplierBoxRouteSku, objShipment, objSupplierBox, objRoute, objSku));
+                else
+                    addActionsOnOk(addPropertyObject(addSimpleShipmentDetailSimpleShipmentRouteSku, objShipment, objRoute, objSku));
+            }
         }
 
         @Override
@@ -5997,6 +6033,9 @@ public class RomanLogicsModule extends LogicsModule {
 
             design.get(objShipment.groupTo).grid.constraints.fillVertical = 1;
             design.get(objSku.groupTo).grid.constraints.fillVertical = 3;
+
+            if (barcode)
+                design.setEnabled(objBarcode, false);
 
             design.setEnabled(objShipment, false);
             if (box)

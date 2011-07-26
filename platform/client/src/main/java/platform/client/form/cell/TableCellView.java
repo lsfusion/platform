@@ -123,12 +123,18 @@ public class TableCellView extends JPanel implements CellView {
 
             valueEventListener = new ValueEventListener() {
                 @Override
-                public void actionPerfomed(ValueEvent event) {
-                    ClientFormLayout focusLayout = SwingUtils.getClientFormlayout(KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusOwner());
-                    ClientFormLayout curLayout = SwingUtils.getClientFormlayout(table);
-                    if ((curLayout != null) && (curLayout.equals(focusLayout))) {
-                        table.cellValueChanged(event.getValue(), false);
-                    }
+                public void actionPerfomed(final ValueEvent event) {
+                    // может вызываться не из EventDispatchingThread
+                    SwingUtilities.invokeLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            ClientFormLayout focusLayout = SwingUtils.getClientFormlayout(KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusOwner());
+                            ClientFormLayout curLayout = SwingUtils.getClientFormlayout(table);
+                            if ((curLayout != null) && (curLayout.equals(focusLayout))) {
+                                table.cellValueChanged(event.getValue(), false);
+                            }
+                        }
+                    });
                 }
             };
             Main.eBus.addListener(valueEventListener, key.eventSID);
