@@ -57,6 +57,18 @@ public class PostgreDataAdapter extends DataAdapter {
             logger.info(ServerResourceBundle.getString("data.sql.error.creating.database")+" " + e);
         }
         connect.close();
+
+        connect = startConnection();
+        connect.createStatement().execute("CREATE OR REPLACE FUNCTION getAnyNotNull(ANYELEMENT, ANYELEMENT) RETURNS ANYELEMENT AS \n" +
+                "$$\n" +
+                "    SELECT CASE WHEN $1 = NULL THEN $2 ELSE $1 END;\n" +
+                "$$ LANGUAGE SQL STRICT;\n" +
+                "DROP AGGREGATE IF EXISTS ANYVALUE (anyelement) CASCADE;\n" +
+                "CREATE AGGREGATE ANYVALUE (anyelement) (\n" +
+                "    sfunc = getAnyNotNull,\n" +
+                "    stype = anyelement\n" +
+                ");");
+        connect.close();
     }
 
     public Connection startConnection() throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {

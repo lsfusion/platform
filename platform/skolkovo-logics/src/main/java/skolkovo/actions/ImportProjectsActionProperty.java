@@ -1,5 +1,6 @@
 package skolkovo.actions;
 
+import org.apache.commons.codec.binary.Base64;
 import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.JDOMException;
@@ -45,7 +46,7 @@ public class ImportProjectsActionProperty extends ActionProperty {
                 nameForeignManagerProjectField,
                 nativeProblemProjectField, foreignProblemProjectField, nativeInnovativeProjectField, foreignInnovativeProjectField,
                 projectTypeProjectField,
-                nativeSubstantiationProjectTypeField, foreignSubstantiationProjectTypeField, nativeSubstantiationClusterProjectField, foreignSubstantiationClusterProjectField,
+                nativeSubstantiationProjectTypeField, foreignSubstantiationProjectTypeField, nativeSubstantiationProjectClusterField, foreignSubstantiationProjectClusterField,
                 isOwnedEquipmentProjectField, isAvailableEquipmentProjectField,
                 isTransferEquipmentProjectField, descriptionTransferEquipmentProjectField, ownerEquipmentProjectField,
                 isPlanningEquipmentProjectField, specificationEquipmentProjectField,
@@ -63,16 +64,18 @@ public class ImportProjectsActionProperty extends ActionProperty {
                 nameNativeClaimerField, nameForeignClaimerField,
                 firmNameNativeClaimerField, firmNameForeignClaimerField, phoneClaimerField, addressClaimerField, siteClaimerField,
                 emailClaimerField, OGRNClaimerField, INNClaimerField,
-                //fileStatementClaimerField, fileConstituentClaimerField, fileExtractClaimerField,
-                //fileNativeSummaryProjectField, fileForeignSummaryProjectField, fileRoadMapProjectField, fileResolutionIPProjectField,
+                fileStatementClaimerField, fileConstituentClaimerField, fileExtractClaimerField,
+                fileNativeSummaryProjectField, fileForeignSummaryProjectField,
+                fileRoadMapProjectField,
                 nativeTypePatentField, foreignTypePatentField, nativeNumberPatentField, foreignNumberPatentField,
                 datePatentField, isOwnedPatentField, ownerPatentField, ownerTypePatentField, isValuatedPatentField, valuatorPatentField,
-                //fileIntentionOwnerPatentField, fileActValuationPatentField,
+                fileIntentionOwnerPatentField, fileActValuationPatentField,
                 fullNameAcademicField, institutionAcademicField, titleAcademicField,
-                //fileDocumentConfirmingAcademicField, fileDocumentEmploymentAcademicField,
-                fullNameNonRussianSpecialistField, organizationNonRussianSpecialistField, titleNonRussianSpecialistField
-                //,fileForeignResumeNonRussianSpecialistField, fileNativeResumeNonRussianSpecialistField,
-                // filePassportNonRussianSpecialistField, fileStatementNonRussianSpecialistField
+                fileDocumentConfirmingAcademicField, fileDocumentEmploymentAcademicField,
+                fullNameNonRussianSpecialistField, organizationNonRussianSpecialistField, titleNonRussianSpecialistField,
+                fileForeignResumeNonRussianSpecialistField, fileNativeResumeNonRussianSpecialistField,
+                filePassportNonRussianSpecialistField, fileStatementNonRussianSpecialistField,
+                fileNativeTechnicalDescriptionProjectField, fileForeignTechnicalDescriptionProjectField
                 ;
 
         //protected final ClassPropertyInterface projectInterface;
@@ -101,8 +104,6 @@ public class ImportProjectsActionProperty extends ActionProperty {
             projectTypeProjectField = new ImportField(LM.baseLM.classSID);
             nativeSubstantiationProjectTypeField = new ImportField(LM.nativeSubstantiationProjectType);
             foreignSubstantiationProjectTypeField = new ImportField(LM.foreignSubstantiationProjectType);
-            nativeSubstantiationClusterProjectField = new ImportField(LM.nativeSubstantiationClusterProject);
-            foreignSubstantiationClusterProjectField = new ImportField(LM.foreignSubstantiationClusterProject);
             isOwnedEquipmentProjectField = new ImportField(LM.isOwnedEquipmentProject);
             isAvailableEquipmentProjectField = new ImportField(LM.isAvailableEquipmentProject);
             isTransferEquipmentProjectField = new ImportField(LM.isTransferEquipmentProject);
@@ -137,6 +138,8 @@ public class ImportProjectsActionProperty extends ActionProperty {
             nameNativeClusterField = new ImportField(LM.nameNativeCluster);
             inProjectClusterField =  new ImportField(LM.inProjectCluster);
             numberCurrentClusterField = new ImportField(LM.numberCluster);
+            nativeSubstantiationProjectClusterField = new ImportField(LM.nativeSubstantiationProjectCluster);
+            foreignSubstantiationProjectClusterField = new ImportField(LM.foreignSubstantiationProjectCluster);
 
             nameNativeClaimerField = new ImportField(LM.nameNativeClaimer);
             nameForeignClaimerField = new ImportField(LM.nameForeignClaimer);
@@ -148,15 +151,14 @@ public class ImportProjectsActionProperty extends ActionProperty {
             emailClaimerField = new ImportField(LM.emailClaimer);
             OGRNClaimerField = new ImportField(LM.OGRNClaimer);
             INNClaimerField = new ImportField(LM.INNClaimer);
-            //fileStatementClaimerField = new ImportField(statementClaimer);
-            //fileConstituentClaimerField = new ImportField(constituentClaimer);
-            //fileExtractClaimerField = new ImportField(extractClaimer);
-            //fileNativeSummaryProjectField = new ImportField(fileNativeSummaryProject);
-            //fileForeignSummaryProjectField = new ImportField(fileForeignSummaryProject);
-            //fileRoadMapProjectField = new ImportField(fileRoadMapProject);
-            //fileResolutionIPProjectField = new ImportField(fileResolutionIPProject);
-            //fileNativeTechnicalDescriptionProjectField = new ImportField(fileNativeTechnicalDescriptionProject);
-            //fileForeignTechnicalDescriptionProjectField = new ImportField(fileForeignTechnicalDescriptionProject);
+            fileStatementClaimerField = new ImportField(LM.statementClaimer);
+            fileConstituentClaimerField = new ImportField(LM.constituentClaimer);
+            fileExtractClaimerField = new ImportField(LM.extractClaimer);
+            fileNativeSummaryProjectField = new ImportField(LM.fileNativeSummaryProject);
+            fileForeignSummaryProjectField = new ImportField(LM.fileForeignSummaryProject);
+            fileRoadMapProjectField = new ImportField(LM.fileRoadMapProject);
+            fileNativeTechnicalDescriptionProjectField = new ImportField(LM.fileNativeTechnicalDescriptionProject);
+            fileForeignTechnicalDescriptionProjectField = new ImportField(LM.fileForeignTechnicalDescriptionProject);
 
             nativeTypePatentField = new ImportField(LM.nativeTypePatent);
             foreignTypePatentField = new ImportField(LM.foreignTypePatent);
@@ -168,24 +170,22 @@ public class ImportProjectsActionProperty extends ActionProperty {
             ownerTypePatentField = new ImportField(LM.baseLM.classSID);
             isValuatedPatentField = new ImportField(LM.isValuated);
             valuatorPatentField = new ImportField(LM.valuatorPatent);
-
-            //fileIntentionOwnerPatentField = new ImportField(fileIntentionOwnerPatent);
-            //fileActValuationPatentField = new ImportField(fileActValuationPatent);
+            fileIntentionOwnerPatentField = new ImportField(LM.fileIntentionOwnerPatent);
+            fileActValuationPatentField = new ImportField(LM.fileActValuationPatent);
 
             fullNameAcademicField = new ImportField(LM.fullNameAcademic);
             institutionAcademicField = new ImportField(LM.institutionAcademic);
             titleAcademicField = new ImportField(LM.titleAcademic);
-            //fileDocumentConfirmingAcademicField = new ImportField(fileDocumentConfirmingAcademic);
-            //fileDocumentEmploymentAcademicField = new ImportField(fileDocumentEmploymentAcademic);
-
+            fileDocumentConfirmingAcademicField = new ImportField(LM.fileDocumentConfirmingAcademic);
+            fileDocumentEmploymentAcademicField = new ImportField(LM.fileDocumentEmploymentAcademic);
 
             fullNameNonRussianSpecialistField = new ImportField(LM.fullNameNonRussianSpecialist);
             organizationNonRussianSpecialistField = new ImportField(LM.organizationNonRussianSpecialist);
             titleNonRussianSpecialistField = new ImportField(LM.titleNonRussianSpecialist);
-            //fileForeignResumeNonRussianSpecialistField = new ImportField(fileForeignResumeNonRussianSpecialist);
-            //fileNativeResumeNonRussianSpecialistField = new ImportField(fileNativeResumeNonRussianSpecialist);
-            //filePassportNonRussianSpecialistField = new ImportField(filePassportNonRussianSpecialist);
-            //fileStatementNonRussianSpecialistField = new ImportField(fileStatementNonRussianSpecialist);
+            fileForeignResumeNonRussianSpecialistField = new ImportField(LM.fileForeignResumeNonRussianSpecialist);
+            fileNativeResumeNonRussianSpecialistField = new ImportField(LM.fileNativeResumeNonRussianSpecialist);
+            filePassportNonRussianSpecialistField = new ImportField(LM.filePassportNonRussianSpecialist);
+            fileStatementNonRussianSpecialistField = new ImportField(LM.fileStatementNonRussianSpecialist);
         }
 
         public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects) throws SQLException {
@@ -218,8 +218,6 @@ public class ImportProjectsActionProperty extends ActionProperty {
             properties.add(new ImportProperty(foreignInnovativeProjectField, LM.foreignInnovativeProject.getMapping(projectKey)));
             properties.add(new ImportProperty(nativeSubstantiationProjectTypeField, LM.nativeSubstantiationProjectType.getMapping(projectKey)));
             properties.add(new ImportProperty(foreignSubstantiationProjectTypeField, LM.foreignSubstantiationProjectType.getMapping(projectKey)));
-            properties.add(new ImportProperty(nativeSubstantiationClusterProjectField, LM.nativeSubstantiationClusterProject.getMapping(projectKey)));
-            properties.add(new ImportProperty(foreignSubstantiationClusterProjectField, LM.foreignSubstantiationClusterProject.getMapping(projectKey)));
 
             properties.add(new ImportProperty(isOwnedEquipmentProjectField, LM.isOwnedEquipmentProject.getMapping(projectKey)));
             properties.add(new ImportProperty(isAvailableEquipmentProjectField, LM.isAvailableEquipmentProject.getMapping(projectKey)));
@@ -269,17 +267,14 @@ public class ImportProjectsActionProperty extends ActionProperty {
             properties.add(new ImportProperty(OGRNClaimerField, LM.OGRNClaimer.getMapping(claimerKey)));
             properties.add(new ImportProperty(INNClaimerField, LM.INNClaimer.getMapping(claimerKey)));
 
-            //properties.add(new ImportProperty(fileStatementClaimerField, statementClaimer.getMapping(claimerKey)));
-            //properties.add(new ImportProperty(fileConstituentClaimerField, constituentClaimer.getMapping(claimerKey)));
-            //properties.add(new ImportProperty(fileExtractClaimerField, extractClaimer.getMapping(claimerKey)));
-            //properties.add(new ImportProperty(fileNativeSummaryProjectField, fileNativeSummaryProject.getMapping(projectKey)));
-            //properties.add(new ImportProperty(fileForeignSummaryProjectField, fileForeignSummaryProject.getMapping(projectKey)));
-            //properties.add(new ImportProperty(fileRoadMapProjectField, fileRoadMapProject.getMapping(projectKey)));
-            //properties.add(new ImportProperty(fileResolutionIPProjectField, fileResolutionIPProject.getMapping(projectKey)));
-            //properties.add(new ImportProperty(fileNativeTechnicalDescriptionProjectField, fileNativeTechnicalDescriptionProject.getMapping(projectKey)));
-            //properties.add(new ImportProperty(fileForeignTechnicalDescriptionProjectField, fileForeignTechnicalDescriptionProject.getMapping(projectKey)));
-
-
+            properties.add(new ImportProperty(fileStatementClaimerField, LM.statementClaimer.getMapping(claimerKey)));
+            properties.add(new ImportProperty(fileConstituentClaimerField, LM.constituentClaimer.getMapping(claimerKey)));
+            properties.add(new ImportProperty(fileExtractClaimerField, LM.extractClaimer.getMapping(claimerKey)));
+            properties.add(new ImportProperty(fileNativeSummaryProjectField, LM.fileNativeSummaryProject.getMapping(projectKey)));
+            properties.add(new ImportProperty(fileForeignSummaryProjectField, LM.fileForeignSummaryProject.getMapping(projectKey)));
+            properties.add(new ImportProperty(fileRoadMapProjectField, LM.fileRoadMapProject.getMapping(projectKey)));
+            properties.add(new ImportProperty(fileNativeTechnicalDescriptionProjectField, LM.fileNativeTechnicalDescriptionProject.getMapping(projectKey)));
+            properties.add(new ImportProperty(fileForeignTechnicalDescriptionProjectField, LM.fileForeignTechnicalDescriptionProject.getMapping(projectKey)));
 
             ImportKey<?> patentKey = new ImportKey(LM.patent, LM.nativeNumberToPatent.getMapping(nativeNumberPatentField));
             propertiesPatent.add(new ImportProperty(nativeTypePatentField, LM.nativeTypePatent.getMapping(patentKey)));
@@ -291,12 +286,10 @@ public class ImportProjectsActionProperty extends ActionProperty {
             propertiesPatent.add(new ImportProperty(ownerPatentField, LM.ownerPatent.getMapping(patentKey)));
             propertiesPatent.add(new ImportProperty(isValuatedPatentField, LM.isValuated.getMapping(patentKey)));
             propertiesPatent.add(new ImportProperty(valuatorPatentField, LM.valuatorPatent.getMapping(patentKey)));
-            //propertiesPatent.add(new ImportProperty(fileIntentionOwnerPatentField, fileIntentionOwnerPatent.getMapping(patentKey)));
-            //propertiesPatent.add(new ImportProperty(fileActValuationPatentField, fileActValuationPatent.getMapping(patentKey)));
-
-            ImportKey<?> projectPatentKey = new ImportKey(LM.patent, LM.sidToProject.getMapping(projectIdField));
+            propertiesPatent.add(new ImportProperty(fileIntentionOwnerPatentField, LM.fileIntentionOwnerPatent.getMapping(patentKey)));
+            propertiesPatent.add(new ImportProperty(fileActValuationPatentField, LM.fileActValuationPatent.getMapping(patentKey)));
             propertiesPatent.add(new ImportProperty(projectIdField, LM.projectPatent.getMapping(patentKey),
-                    LM.baseLM.object(LM.project).getMapping(projectPatentKey)));
+                    LM.baseLM.object(LM.project).getMapping(projectKey)));
 
             ImportKey<?> ownerTypePatentKey = new ImportKey(LM.ownerType, LM.ownerTypeToSID.getMapping(ownerTypePatentField));
             propertiesPatent.add(new ImportProperty(ownerTypePatentField, LM.ownerTypePatent.getMapping(patentKey),
@@ -305,30 +298,28 @@ public class ImportProjectsActionProperty extends ActionProperty {
             ImportKey<?> clusterKey = new ImportKey(LM.cluster, LM.nameNativeToCluster.getMapping(nameNativeClusterField));
             propertiesCluster.add(new ImportProperty(inProjectClusterField, LM.inProjectCluster.getMapping(projectKey , clusterKey)));
             propertiesCluster.add(new ImportProperty(nameNativeClusterField, LM.nameNativeCluster.getMapping(clusterKey)));
+            propertiesCluster.add(new ImportProperty(nativeSubstantiationProjectClusterField, LM.nativeSubstantiationProjectCluster.getMapping(projectKey, clusterKey)));
+            propertiesCluster.add(new ImportProperty(foreignSubstantiationProjectClusterField, LM.foreignSubstantiationProjectCluster.getMapping(projectKey, clusterKey)));
 
             ImportKey<?> academicKey = new ImportKey(LM.academic, LM.fullNameToAcademic.getMapping(fullNameAcademicField));
             propertiesAcademic.add(new ImportProperty(fullNameAcademicField, LM.fullNameAcademic.getMapping(academicKey)));
             propertiesAcademic.add(new ImportProperty(institutionAcademicField, LM.institutionAcademic.getMapping(academicKey)));
             propertiesAcademic.add(new ImportProperty(titleAcademicField, LM.titleAcademic.getMapping(academicKey)));
-            //propertiesAcademic.add(new ImportProperty(fileDocumentConfirmingAcademicField, fileDocumentConfirmingAcademic.getMapping(academicKey)));
-            //propertiesAcademic.add(new ImportProperty(fileDocumentEmploymentAcademicField, fileDocumentEmploymentAcademic.getMapping(academicKey)));
-
-            ImportKey<?> projectAcademicKey = new ImportKey(LM.academic, LM.sidToProject.getMapping(projectIdField));
+            propertiesAcademic.add(new ImportProperty(fileDocumentConfirmingAcademicField, LM.fileDocumentConfirmingAcademic.getMapping(academicKey)));
+            propertiesAcademic.add(new ImportProperty(fileDocumentEmploymentAcademicField, LM.fileDocumentEmploymentAcademic.getMapping(academicKey)));
             propertiesAcademic.add(new ImportProperty(projectIdField, LM.projectAcademic.getMapping(academicKey),
-                    LM.baseLM.object(LM.project).getMapping(projectAcademicKey)));
+                    LM.baseLM.object(LM.project).getMapping(projectKey)));
 
             ImportKey<?> nonRussianSpecialistKey = new ImportKey(LM.nonRussianSpecialist, LM.fullNameToNonRussianSpecialist.getMapping(fullNameNonRussianSpecialistField));
             propertiesNonRussianSpecialist.add(new ImportProperty(fullNameNonRussianSpecialistField, LM.fullNameNonRussianSpecialist.getMapping(nonRussianSpecialistKey)));
             propertiesNonRussianSpecialist.add(new ImportProperty(organizationNonRussianSpecialistField, LM.organizationNonRussianSpecialist.getMapping(nonRussianSpecialistKey)));
             propertiesNonRussianSpecialist.add(new ImportProperty(titleNonRussianSpecialistField, LM.titleNonRussianSpecialist.getMapping(nonRussianSpecialistKey)));
-            //propertiesNonRussianSpecialist.add(new ImportProperty(fileForeignResumeNonRussianSpecialistField, fileForeignResumeNonRussianSpecialist.getMapping(nonRussianSpecialistKey)));
-            //propertiesNonRussianSpecialist.add(new ImportProperty(fileNativeResumeNonRussianSpecialistField, fileNativeResumeNonRussianSpecialist.getMapping(nonRussianSpecialistKey)));
-            //propertiesNonRussianSpecialist.add(new ImportProperty(filePassportNonRussianSpecialistField, filePassportNonRussianSpecialist.getMapping(nonRussianSpecialistKey)));
-            //propertiesNonRussianSpecialist.add(new ImportProperty(fileStatementNonRussianSpecialistField, fileStatementNonRussianSpecialist.getMapping(nonRussianSpecialistKey)));
-
-            ImportKey<?> projectNonRussianSpecialistKey = new ImportKey(LM.nonRussianSpecialist, LM.sidToProject.getMapping(projectIdField));
+            propertiesNonRussianSpecialist.add(new ImportProperty(fileForeignResumeNonRussianSpecialistField, LM.fileForeignResumeNonRussianSpecialist.getMapping(nonRussianSpecialistKey)));
+            propertiesNonRussianSpecialist.add(new ImportProperty(fileNativeResumeNonRussianSpecialistField, LM.fileNativeResumeNonRussianSpecialist.getMapping(nonRussianSpecialistKey)));
+            propertiesNonRussianSpecialist.add(new ImportProperty(filePassportNonRussianSpecialistField, LM.filePassportNonRussianSpecialist.getMapping(nonRussianSpecialistKey)));
+            propertiesNonRussianSpecialist.add(new ImportProperty(fileStatementNonRussianSpecialistField, LM.fileStatementNonRussianSpecialist.getMapping(nonRussianSpecialistKey)));
             propertiesNonRussianSpecialist.add(new ImportProperty(projectIdField, LM.projectNonRussianSpecialist.getMapping(nonRussianSpecialistKey),
-                    LM.baseLM.object(LM.project).getMapping(projectNonRussianSpecialistKey)));
+                    LM.baseLM.object(LM.project).getMapping(projectKey)));
 
             List<List<Object>> data = new ArrayList<List<Object>>();
             List<List<Object>> dataCluster = new ArrayList<List<Object>>();
@@ -367,8 +358,6 @@ public class ImportProjectsActionProperty extends ActionProperty {
                         row.add(node.getChildText("foreignInnovativeProject"));
                         row.add(node.getChildText("nativeSubstantiationProjectType"));
                         row.add(node.getChildText("foreignSubstantiationProjectType"));
-                        row.add(node.getChildText("nativeSubstantiationClusterProject"));
-                        row.add(node.getChildText("foreignSubstantiationClusterProject"));
 
                         if (Integer.parseInt(BaseUtils.nvl(node.getChildText("isOwnedEquipmentProject"), "0")) == 1)
                             row.add(true);
@@ -456,41 +445,24 @@ public class ImportProjectsActionProperty extends ActionProperty {
                         ////byte[] fileBytes = IOUtils.readBytesFromStream(file);
                         ////row.add(fileBytes);
 
-                        //byte[] fileBytes = Base64.decodeBase64(node.getChildText("fileStatementClaimerField"));
-                        //row.add(fileBytes);
-                        //fileBytes = Base64.decodeBase64(node.getChildText("fileConstituentClaimerField"));
-                        //row.add(fileBytes);
-                        //fileBytes = Base64.decodeBase64(node.getChildText("fileExtractClaimerField"));
-                        //row.add(fileBytes);
-                        //fileBytes = Base64.decodeBase64(node.getChildText("fileNativeSummaryProject"));
-                        //row.add(fileBytes);
-                        //fileBytes = Base64.decodeBase64(node.getChildText("fileForeignSummaryProject"));
-                        //row.add(fileBytes);
-                        //fileBytes = Base64.decodeBase64(node.getChildText("fileRoadMapProject"));
-                        //row.add(fileBytes);
-                        //fileBytes = Base64.decodeBase64(node.getChildText("fileResolutionIPProject"));
-                        //row.add(fileBytes);
-                        //fileBytes = Base64.decodeBase64(node.getChildText("fileNativeTechnicalDescriptionProject"));
-                        //row.add(fileBytes);
-                        //fileBytes = Base64.decodeBase64(node.getChildText("fileForeignTechnicalDescriptionProject"));
-                        //row.add(fileBytes);
+                        byte[] fileBytes = Base64.decodeBase64(node.getChildText("fileStatementClaimer"));
+                        row.add(fileBytes);
+                        fileBytes = Base64.decodeBase64(node.getChildText("fileConstituentClaimer"));
+                        row.add(fileBytes);
+                        fileBytes = Base64.decodeBase64(node.getChildText("fileExtractClaimer"));
+                        row.add(fileBytes);
+                        fileBytes = Base64.decodeBase64(node.getChildText("fileNativeSummaryProject"));
+                        row.add(fileBytes);
+                        fileBytes = Base64.decodeBase64(node.getChildText("fileForeignSummaryProject"));
+                        row.add(fileBytes);
+                        fileBytes = Base64.decodeBase64(node.getChildText("fileRoadMapProject"));
+                        row.add(fileBytes);
+                        fileBytes = Base64.decodeBase64(node.getChildText("fileNativeTechnicalDescriptionProject"));
+                        row.add(fileBytes);
+                        fileBytes = Base64.decodeBase64(node.getChildText("fileForeignTechnicalDescriptionProject"));
+                        row.add(fileBytes);
 
                         data.add(row);
-
-                        //List listCluster = node.getChildren("cluster");
-                        //for (int z = 0; z < listCluster.size(); z++) {
-                        //    Element nodeCluster = (Element) listCluster.get(z);
-                        //    List<Object> rowCluster = new ArrayList<Object>();
-                        //
-                        //
-                        //    if (Integer.parseInt(BaseUtils.nvl(nodeCluster.getChildText("inProjectCluster"), "0")) == 1)
-                        //        rowCluster.add(true);
-                        //    else rowCluster.add(null);
-                        //    rowCluster.add(nodeCluster.getChildText("nameNativeCurrentCluster"));
-                        //    rowCluster.add(Integer.parseInt(nodeCluster.getChildText("numberCluster")));
-                        //    rowCluster.add(node.getChildText("projectId"));
-                        //    dataCluster.add(rowCluster);
-                        //}
 
                         List listCluster = node.getChildren("cluster");
                         for (int z = 0; z < listCluster.size(); z++) {
@@ -499,8 +471,10 @@ public class ImportProjectsActionProperty extends ActionProperty {
 
                             rowCluster.add(true);
 
-                            rowCluster.add(nodeCluster.getText());
+                            rowCluster.add(nodeCluster.getChildText("nameNativeCluster"));
                             rowCluster.add(node.getChildText("projectId"));
+                            rowCluster.add(nodeCluster.getChildText("nativeSubstantiationClusterProject"));
+                            rowCluster.add(nodeCluster.getChildText("foreignSubstantiationClusterProject"));
                             dataCluster.add(rowCluster);
                         }
 
@@ -527,10 +501,10 @@ public class ImportProjectsActionProperty extends ActionProperty {
                                 rowPatent.add(true);
                             else rowPatent.add(null);
                             rowPatent.add(nodePatent.getChildText("valuatorPatent"));
-                            //byte[] fileBytes = Base64.decodeBase64(node.getChildText("fileIntentionOwnerPatent"));
-                            //row.add(fileBytes);
-                            //fileBytes = Base64.decodeBase64(node.getChildText("fileActValuationPatent"));
-                            //row.add(fileBytes);
+                            fileBytes = Base64.decodeBase64(nodePatent.getChildText("fileIntentionOwnerPatent"));
+                            rowPatent.add(fileBytes);
+                            fileBytes = Base64.decodeBase64(nodePatent.getChildText("fileActValuationPatent"));
+                            rowPatent.add(fileBytes);
 
                             dataPatent.add(rowPatent);
                         }
@@ -543,10 +517,10 @@ public class ImportProjectsActionProperty extends ActionProperty {
                             rowAcademic.add(nodeAcademic.getChildText("fullNameAcademic"));
                             rowAcademic.add(nodeAcademic.getChildText("institutionAcademic"));
                             rowAcademic.add(nodeAcademic.getChildText("titleAcademic"));
-                            //byte[] fileBytes = Base64.decodeBase64(node.getChildText("fileDocumentConfirmingAcademic"));
-                            //row.add(fileBytes);
-                            //fileBytes = Base64.decodeBase64(node.getChildText("fileDocumentEmploymentAcademic"));
-                            //row.add(fileBytes);
+                            fileBytes = Base64.decodeBase64(nodeAcademic.getChildText("fileDocumentConfirmingAcademic"));
+                            rowAcademic.add(fileBytes);
+                            fileBytes = Base64.decodeBase64(nodeAcademic.getChildText("fileDocumentEmploymentAcademic"));
+                            rowAcademic.add(fileBytes);
                             dataAcademic.add(rowAcademic);
                         }
 
@@ -558,14 +532,14 @@ public class ImportProjectsActionProperty extends ActionProperty {
                             rowNonRussianSpecialist.add(nodeNonRussianSpecialist.getChildText("fullNameNonRussianSpecialist"));
                             rowNonRussianSpecialist.add(nodeNonRussianSpecialist.getChildText("organizationNonRussianSpecialist"));
                             rowNonRussianSpecialist.add(nodeNonRussianSpecialist.getChildText("titleNonRussianSpecialist"));
-                            //byte[] fileBytes = Base64.decodeBase64(node.getChildText("fileForeignResumeNonRussianSpecialist"));
-                            //row.add(fileBytes);
-                            //fileBytes = Base64.decodeBase64(node.getChildText("fileNativeResumeNonRussianSpecialist"));
-                            //row.add(fileBytes);
-                            //fileBytes = Base64.decodeBase64(node.getChildText("filePassportNonRussianSpecialist"));
-                            //row.add(fileBytes);
-                            //fileBytes = Base64.decodeBase64(node.getChildText("fileStatementNonRussianSpecialist"));
-                            //row.add(fileBytes);
+                            fileBytes = Base64.decodeBase64(nodeNonRussianSpecialist.getChildText("fileForeignResumeNonRussianSpecialist"));
+                            rowNonRussianSpecialist.add(fileBytes);
+                            fileBytes = Base64.decodeBase64(nodeNonRussianSpecialist.getChildText("fileNativeResumeNonRussianSpecialist"));
+                            rowNonRussianSpecialist.add(fileBytes);
+                            fileBytes = Base64.decodeBase64(nodeNonRussianSpecialist.getChildText("filePassportNonRussianSpecialist"));
+                            rowNonRussianSpecialist.add(fileBytes);
+                            fileBytes = Base64.decodeBase64(nodeNonRussianSpecialist.getChildText("fileStatementNonRussianSpecialist"));
+                            rowNonRussianSpecialist.add(fileBytes);
                             dataNonRussianSpecialist.add(rowNonRussianSpecialist);
                         }
 
@@ -592,7 +566,7 @@ public class ImportProjectsActionProperty extends ActionProperty {
                         nameForeignManagerProjectField,
                         nativeProblemProjectField, foreignProblemProjectField,
                         nativeInnovativeProjectField, foreignInnovativeProjectField,
-                        nativeSubstantiationProjectTypeField, foreignSubstantiationProjectTypeField, nativeSubstantiationClusterProjectField, foreignSubstantiationClusterProjectField,
+                        nativeSubstantiationProjectTypeField, foreignSubstantiationProjectTypeField,// nativeSubstantiationClusterProjectField, foreignSubstantiationClusterProjectField,
                         isOwnedEquipmentProjectField, isAvailableEquipmentProjectField,
                         isTransferEquipmentProjectField, descriptionTransferEquipmentProjectField, ownerEquipmentProjectField,
                         isPlanningEquipmentProjectField, specificationEquipmentProjectField,
@@ -607,10 +581,11 @@ public class ImportProjectsActionProperty extends ActionProperty {
                         projectTypeProjectField,
                         nameNativeClaimerField, nameForeignClaimerField,
                         firmNameNativeClaimerField, firmNameForeignClaimerField, phoneClaimerField, addressClaimerField,
-                        siteClaimerField, emailClaimerField, OGRNClaimerField, INNClaimerField
-                        //, fileStatementClaimerField, fileConstituentClaimerField, fileExtractClaimerField,
-                        // fileNativeSummaryProjectField, fileForeignSummaryProjectField, fileRoadMapProjectField, fileResolutionIPProjectField,
-                        // fileNativeTechnicalDescriptionProjectField, fileForeignTechnicalDescriptionProjectField,
+                        siteClaimerField, emailClaimerField, OGRNClaimerField, INNClaimerField,
+                        fileStatementClaimerField, fileConstituentClaimerField, fileExtractClaimerField,
+                        fileNativeSummaryProjectField, fileForeignSummaryProjectField,
+                        fileRoadMapProjectField,
+                        fileNativeTechnicalDescriptionProjectField, fileForeignTechnicalDescriptionProjectField
                 );
                 ImportTable table = new ImportTable(fields, data);
 
@@ -620,39 +595,39 @@ public class ImportProjectsActionProperty extends ActionProperty {
 
                 List<ImportField> fieldsCurrentCluster = BaseUtils.toList(
 
-                        inProjectClusterField, nameNativeClusterField, projectIdField);
+                        inProjectClusterField, nameNativeClusterField, projectIdField, nativeSubstantiationProjectClusterField, foreignSubstantiationProjectClusterField);
                 table = new ImportTable(fieldsCurrentCluster, dataCluster);
-                keysArray = new ImportKey<?>[]{clusterKey, projectKey };
+                keysArray = new ImportKey<?>[]{clusterKey, projectKey};
                 new IntegrationService(session, table, Arrays.asList(keysArray), propertiesCluster).synchronize(true, true, false);
 
                 List<ImportField> fieldsPatent = BaseUtils.toList(
                         projectIdField,
                         nativeTypePatentField, foreignTypePatentField, nativeNumberPatentField, foreignNumberPatentField,
                         datePatentField, isOwnedPatentField, ownerPatentField, ownerTypePatentField,
-                        isValuatedPatentField, valuatorPatentField
-                        //,fileIntentionOwnerPatentField, fileActValuationPatentField
+                        isValuatedPatentField, valuatorPatentField,
+                        fileIntentionOwnerPatentField, fileActValuationPatentField
                 );
                 table = new ImportTable(fieldsPatent, dataPatent);
-                keysArray = new ImportKey<?>[]{projectPatentKey, patentKey, ownerTypePatentKey};
+                keysArray = new ImportKey<?>[]{projectKey, patentKey, ownerTypePatentKey};
                 new IntegrationService(session, table, Arrays.asList(keysArray), propertiesPatent).synchronize(true, true, false);
 
                 List<ImportField> fieldsAcademic = BaseUtils.toList(
                         projectIdField,
-                        fullNameAcademicField, institutionAcademicField, titleAcademicField
-                        //, fileDocumentConfirmingAcademicField, fileDocumentEmploymentAcademicField
+                        fullNameAcademicField, institutionAcademicField, titleAcademicField,
+                        fileDocumentConfirmingAcademicField, fileDocumentEmploymentAcademicField
                 );
                 table = new ImportTable(fieldsAcademic, dataAcademic);
-                keysArray = new ImportKey<?>[]{projectAcademicKey, academicKey};
+                keysArray = new ImportKey<?>[]{projectKey, academicKey};
                 new IntegrationService(session, table, Arrays.asList(keysArray), propertiesAcademic).synchronize(true, true, false);
 
                 List<ImportField> fieldsNonRussianSpecialist = BaseUtils.toList(
                         projectIdField,
                         fullNameNonRussianSpecialistField, organizationNonRussianSpecialistField, titleNonRussianSpecialistField
-                        //, fileForeignResumeNonRussianSpecialistField, fileNativeResumeNonRussianSpecialistField,
-                        //filePassportNonRussianSpecialistField, fileStatementNonRussianSpecialistField
+                        , fileForeignResumeNonRussianSpecialistField, fileNativeResumeNonRussianSpecialistField,
+                        filePassportNonRussianSpecialistField, fileStatementNonRussianSpecialistField
                 );
                 table = new ImportTable(fieldsNonRussianSpecialist, dataNonRussianSpecialist);
-                keysArray = new ImportKey<?>[]{projectNonRussianSpecialistKey, nonRussianSpecialistKey};
+                keysArray = new ImportKey<?>[]{projectKey, nonRussianSpecialistKey};
                 new IntegrationService(session, table, Arrays.asList(keysArray), propertiesNonRussianSpecialist).synchronize(true, true, false);
             }
 

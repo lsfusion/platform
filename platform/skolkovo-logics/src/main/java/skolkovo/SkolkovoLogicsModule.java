@@ -244,9 +244,12 @@ public class SkolkovoLogicsModule extends LogicsModule {
     public LP addressClaimer;
     public LP siteClaimer;
     public LP emailClaimer;
-    LP statementClaimer, loadStatementClaimer, openStatementClaimer;
-    LP constituentClaimer, loadConstituentClaimer, openConstituentClaimer;
-    LP extractClaimer, loadExtractClaimer, openExtractClaimer;
+    public LP statementClaimer;
+    LP loadStatementClaimer, openStatementClaimer;
+    public LP constituentClaimer;
+    LP loadConstituentClaimer, openConstituentClaimer;
+    public LP extractClaimer;
+    LP loadExtractClaimer, openExtractClaimer;
     public LP OGRNClaimer;
     public LP INNClaimer;
     LP projectVote, claimerVote, nameNativeProjectVote, nameForeignProjectVote;
@@ -443,24 +446,24 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP nameProjectTypeProject;
     public LP nativeSubstantiationProjectType;
     public LP foreignSubstantiationProjectType;
-    public LP nativeSubstantiationClusterProject;
-    public LP foreignSubstantiationClusterProject;
-    LP fileNativeSummaryProject;
+    public LP nativeSubstantiationProjectCluster;
+    public LP foreignSubstantiationProjectCluster;
+    public LP fileNativeSummaryProject;
     LP loadFileNativeSummaryProject;
     LP openFileNativeSummaryProject;
-    LP fileForeignSummaryProject;
+    public LP fileForeignSummaryProject;
     LP loadFileForeignSummaryProject;
     LP openFileForeignSummaryProject;
-    LP fileRoadMapProject;
+    public LP fileRoadMapProject;
     LP loadFileRoadMapProject;
     LP openFileRoadMapProject;
-    LP fileResolutionIPProject;
+    public LP fileResolutionIPProject;
     LP loadFileResolutionIPProject;
     LP openFileResolutionIPProject;
-    LP fileNativeTechnicalDescriptionProject;
-    LP loadFileNativeTechnicalDescriptionProject;
+    public LP fileNativeTechnicalDescriptionProject;
+    public LP loadFileNativeTechnicalDescriptionProject;
     LP openFileNativeTechnicalDescriptionProject;
-    LP fileForeignTechnicalDescriptionProject;
+    public LP fileForeignTechnicalDescriptionProject;
     LP loadFileForeignTechnicalDescriptionProject;
     LP openFileForeignTechnicalDescriptionProject;
 
@@ -524,12 +527,12 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP nameOwnerTypePatent;
     public LP ownerTypeToSID;
     public LP projectTypeToSID;
-    LP fileIntentionOwnerPatent;
+    public LP fileIntentionOwnerPatent;
     LP loadFileIntentionOwnerPatent;
     LP openFileIntentionOwnerPatent;
     public LP isValuated;
     public LP valuatorPatent;
-    LP fileActValuationPatent;
+    public LP fileActValuationPatent;
     LP loadFileActValuationPatent;
     LP openFileActValuationPatent;
     LP hideOwnerPatent;
@@ -547,10 +550,10 @@ public class SkolkovoLogicsModule extends LogicsModule {
     public LP fullNameToAcademic;
     public LP institutionAcademic;
     public LP titleAcademic;
-    LP fileDocumentConfirmingAcademic;
+    public LP fileDocumentConfirmingAcademic;
     LP loadFileDocumentConfirmingAcademic;
     LP openFileDocumentConfirmingAcademic;
-    LP fileDocumentEmploymentAcademic;
+    public LP fileDocumentEmploymentAcademic;
     LP loadFileDocumentEmploymentAcademic;
     LP openFileDocumentEmploymentAcademic;
 
@@ -559,16 +562,16 @@ public class SkolkovoLogicsModule extends LogicsModule {
     public LP fullNameToNonRussianSpecialist;
     public LP organizationNonRussianSpecialist;
     public LP titleNonRussianSpecialist;
-    LP fileNativeResumeNonRussianSpecialist;
+    public LP fileNativeResumeNonRussianSpecialist;
     LP loadFileForeignResumeNonRussianSpecialist;
     LP openFileForeignResumeNonRussianSpecialist;
-    LP fileForeignResumeNonRussianSpecialist;
+    public LP fileForeignResumeNonRussianSpecialist;
     LP loadFileNativeResumeNonRussianSpecialist;
     LP openFileNativeResumeNonRussianSpecialist;
-    LP filePassportNonRussianSpecialist;
+    public LP filePassportNonRussianSpecialist;
     LP loadFilePassportNonRussianSpecialist;
     LP openFilePassportNonRussianSpecialist;
-    LP fileStatementNonRussianSpecialist;
+    public LP fileStatementNonRussianSpecialist;
     LP loadFileStatementNonRussianSpecialist;
     LP openFileStatementNonRussianSpecialist;
 
@@ -712,10 +715,10 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         nameNativeCluster = addJProp("nameNativeCluster", "Кластер", baseLM.and1, nameNative, 1, is(cluster), 1);
         nameNativeToCluster = addAGProp(idGroup, "nameNativeToCluster", "Кластер", nameNativeCluster);
-        nativeSubstantiationClusterProject = addDProp(innovationGroup, "nativeSubstantiationClusterProject", "Обоснование выбора", InsensitiveStringClass.get(2000), project);
-        nativeSubstantiationClusterProject.setMinimumWidth(10); nativeSubstantiationClusterProject.setPreferredWidth(50);
-        foreignSubstantiationClusterProject = addDProp(innovationGroup, "foreignSubstantiationClusterProject", "Description of choice", InsensitiveStringClass.get(2000), project);
-        foreignSubstantiationClusterProject.setMinimumWidth(10); foreignSubstantiationClusterProject.setPreferredWidth(50);
+        nativeSubstantiationProjectCluster = addDProp(baseGroup, "nativeSubstantiationProjectCluster", "Обоснование выбора", InsensitiveStringClass.get(2000), project, cluster);
+        nativeSubstantiationProjectCluster.setMinimumWidth(10); nativeSubstantiationProjectCluster.setPreferredWidth(50);
+        foreignSubstantiationProjectCluster = addDProp(baseGroup, "foreignSubstantiationProjectCluster", "Description of choice", InsensitiveStringClass.get(2000), project, cluster);
+        foreignSubstantiationProjectCluster.setMinimumWidth(10); foreignSubstantiationProjectCluster.setPreferredWidth(50);
         fileNativeSummaryProject = addDProp("fileNativeSummaryProject", "Файл резюме проекта", PDFClass.instance, project);
         loadFileNativeSummaryProject = addLFAProp(executiveSummaryGroup, "Загрузить файл резюме проекта", fileNativeSummaryProject);
         openFileNativeSummaryProject = addOFAProp(executiveSummaryGroup, "Открыть файл резюме проекта", fileNativeSummaryProject);
@@ -1509,7 +1512,9 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
             objCluster = addSingleGroupObject(cluster);
             addPropertyDraw(inProjectCluster, objProject, objCluster);
-            addPropertyDraw(objCluster, nameNative, nameForeign, numberCluster);
+            addPropertyDraw(objCluster, nameNative, nameForeign);
+            addPropertyDraw(new LP[]{nativeSubstantiationProjectCluster, foreignSubstantiationProjectCluster}, objProject, objCluster);
+            addPropertyDraw(numberCluster, objCluster);
 
             getPropertyDraw(generateVoteProject).forceViewType = ClassViewType.PANEL;
             getPropertyDraw(generateVoteProject).propertyCaption = addPropertyObject(hideGenerateVoteProject, objProject);

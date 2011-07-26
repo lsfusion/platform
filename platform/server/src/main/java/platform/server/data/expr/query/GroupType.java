@@ -12,8 +12,9 @@ public enum GroupType {
     public String getString() {
         switch (this) {
             case MAX:
-            case ANY:
                 return "MAX";
+            case ANY:
+                return "ANYVALUE";
             case SUM:
                 return "SUM";
         }
