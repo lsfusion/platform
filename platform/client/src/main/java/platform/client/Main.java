@@ -194,6 +194,7 @@ public class Main {
                         task.setEventBus(eBus);
                         timer.schedule(new DaemonTask(task), task.getDelay(), task.getPeriod());
                     }
+                    // todo : где-то обязательно надо уведомлять DaemonTask о том, что пора сворачиваться, чтобы они освобождали порты
 
                 } catch (Exception e) {
                     closeSplashScreen();

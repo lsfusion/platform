@@ -5,7 +5,7 @@ import java.util.*;
 public class WeakLinkedHashSet<L> implements Iterable<L> {
 
     private int maxIndex = 0;
-    private WeakHashMap<L, Integer> map;
+    private WeakHashMap<L, Integer> map = new WeakHashMap<L, Integer>();
 
     public void add(L item) {
         if(!map.containsKey(item))

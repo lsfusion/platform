@@ -3,8 +3,9 @@ package roman;
 import net.sf.jasperreports.engine.JRException;
 import platform.interop.event.IDaemonTask;
 import platform.server.auth.User;
+import platform.server.daemons.ScannerDaemonTask;
+import platform.server.daemons.WeightDaemonTask;
 import platform.server.data.sql.DataAdapter;
-import platform.server.form.navigator.WeightDaemonTask;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.DataObject;
 import platform.server.session.DataSession;
@@ -38,20 +39,25 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 
     @Override
     public ArrayList<IDaemonTask> getDaemonTasks(int compId) {
-        ArrayList<IDaemonTask> temp = super.getDaemonTasks(compId);
+        ArrayList<IDaemonTask> daemons = super.getDaemonTasks(compId);
 
-        Integer result;
+        Integer scalesComPort, scannerComPort;
         try {
             DataSession session = createSession();
-            result = (Integer) RomanLM.scalesComPort.read(session, new DataObject(compId, LM.computer));
+            scalesComPort = (Integer) RomanLM.scalesComPort.read(session, new DataObject(compId, LM.computer));
+            scannerComPort = (Integer) RomanLM.scannerComPort.read(session, new DataObject(compId, LM.computer));
             session.close();
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
-        if (result != null) {
-            IDaemonTask task = new WeightDaemonTask(result, 1000, 0);
-            temp.add(task);
+        if (scalesComPort != null) {
+            IDaemonTask task = new WeightDaemonTask(scalesComPort, 1000, 0);
+            daemons.add(task);
         }
-        return temp;
+        if (scannerComPort != null) {
+            IDaemonTask task = new ScannerDaemonTask(scannerComPort);
+            daemons.add(task);
+        }
+        return daemons;
     }
 }

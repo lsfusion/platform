@@ -1,4 +1,4 @@
-package platform.server.form.navigator;
+package platform.server.daemons;
 
 import jssc.SerialPort;
 import jssc.SerialPortException;
@@ -40,7 +40,7 @@ public class WeightDaemonTask implements IDaemonTask, Serializable {
             }
             serialPort.closePort();
         } catch (SerialPortException ex) {
-            System.out.println(ex);
+            throw new RuntimeException(ex);
         }
     }
 

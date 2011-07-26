@@ -11,6 +11,8 @@ import platform.interop.form.layout.DoNotIntersectSimplexConstraint;
 import platform.interop.navigator.FormShowType;
 import platform.server.Settings;
 import platform.server.classes.*;
+import platform.server.daemons.ScannerDaemonTask;
+import platform.server.daemons.WeightDaemonTask;
 import platform.server.data.Time;
 import platform.server.data.Union;
 import platform.server.form.entity.*;
@@ -20,7 +22,6 @@ import platform.server.form.instance.ObjectInstance;
 import platform.server.form.instance.PropertyObjectInterfaceInstance;
 import platform.server.form.instance.remote.RemoteForm;
 import platform.server.form.navigator.NavigatorElement;
-import platform.server.form.navigator.WeightDaemonTask;
 import platform.server.form.view.ContainerView;
 import platform.server.form.view.DefaultFormView;
 import platform.server.form.view.FormView;
@@ -36,6 +37,7 @@ import platform.server.logics.linear.LP;
 import platform.server.logics.property.ActionProperty;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.PropertyFollows;
+import platform.server.logics.property.actions.FormActionProperty;
 import platform.server.logics.property.group.AbstractGroup;
 import platform.server.session.Changes;
 import platform.server.session.DataSession;
@@ -974,6 +976,7 @@ public class RomanLogicsModule extends LogicsModule {
     LP createStamp;
     LP creationStampStamp;
     LP scalesComPort;
+    LP scannerComPort;
 
     private LP declarationExport;
 
@@ -2675,7 +2678,7 @@ public class RomanLogicsModule extends LogicsModule {
                 ), 1, 2, baseLM.barcodeToObject, 3);
         declarationExport = addDEAProp("declarationExport");
         scalesComPort = addDProp(baseGroup, "scalesComPort", "COM-порт весов", IntegerClass.instance, baseLM.computer);
-
+        scannerComPort = addDProp(baseGroup, "scannerComPort", "COM-порт сканера", IntegerClass.instance, baseLM.computer);
     }
 
     public LP addDEAProp(String sID) {
@@ -2859,6 +2862,8 @@ public class RomanLogicsModule extends LogicsModule {
             objBarcode.groupTo.setSingleClassView(ClassViewType.PANEL);
 
             objBarcode.resetOnApply = true;
+
+            getPropertyDraw(baseLM.objectValue, objBarcode).eventSID = ScannerDaemonTask.SCANNER_SID;
 
             addPropertyDraw(baseLM.reverseBarcode);
         }
@@ -3819,20 +3824,21 @@ public class RomanLogicsModule extends LogicsModule {
             if (box) {
                 setReadOnly(objSupplierBox, true);
 
-            findItemBox = addPropertyDraw(addMFAProp(null, "Поиск по артикулу",
-                        findItemFormBox,
-                                             new ObjectEntity[]{findItemFormBox.objShipment, findItemFormBox.objSupplierBox},
-                                             false),
-                                             objShipment, objSupplierBox);
-            findItemBox.forceViewType = ClassViewType.PANEL;
+                findItemBox = addPropertyDraw(addMFAProp(null, "Поиск по артикулу",
+                            findItemFormBox,
+                                                 new ObjectEntity[]{findItemFormBox.objShipment, findItemFormBox.objSupplierBox, findItemFormBox.objSku, findItemFormBox.objShipmentDetail},
+                                                 false),
+                                                 objShipment, objSupplierBox, objSku, objShipmentDetail);
+                ((FormActionProperty)findItemBox.propertyObject.property).seekOnOk = true;
+                findItemBox.forceViewType = ClassViewType.PANEL;
             } else {
-
-            findItemSimple = addPropertyDraw(addMFAProp(null, "Поиск по артикулу",
-                        findItemFormSimple,
-                                             new ObjectEntity[]{findItemFormSimple.objShipment},
-                                             false),
-                                             objShipment);
-            findItemSimple.forceViewType = ClassViewType.PANEL;
+                findItemSimple = addPropertyDraw(addMFAProp(null, "Поиск по артикулу",
+                            findItemFormSimple,
+                                                 new ObjectEntity[]{findItemFormSimple.objShipment, findItemFormSimple.objSku, findItemFormSimple.objShipmentDetail},
+                                                 false),
+                                                 objShipment, objSku, objShipmentDetail);
+                ((FormActionProperty)findItemSimple.propertyObject.property).seekOnOk = true;
+                findItemSimple.forceViewType = ClassViewType.PANEL;
             }
         }
 
@@ -5923,6 +5929,7 @@ public class RomanLogicsModule extends LogicsModule {
         ObjectEntity objSupplierBox;
         ObjectEntity objRoute;
         ObjectEntity objSku;
+        ObjectEntity objShipmentDetail;
 
         public FindItemFormEntity(NavigatorElement parent, String sID, String caption, boolean box) {
             super(parent, sID, caption);
@@ -5951,6 +5958,8 @@ public class RomanLogicsModule extends LogicsModule {
             if (box)
                 addPropertyDraw(quantityListSku, objSupplierBox, objSku);
             setReadOnly(objSku, true);
+
+            objShipmentDetail = addSingleGroupObject(box ? boxShipmentDetail : simpleShipmentDetail, "Строка поставки");
 
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(invoicedShipmentSku, objShipment, objSku)));
 

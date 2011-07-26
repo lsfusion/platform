@@ -1,9 +1,6 @@
 package platform.server.form.instance;
 
-import platform.base.BaseUtils;
-import platform.base.EmptyIterator;
-import platform.base.OrderedMap;
-import platform.base.Result;
+import platform.base.*;
 import platform.interop.ClassViewType;
 import platform.interop.Scroll;
 import platform.interop.action.ClientAction;
@@ -35,6 +32,7 @@ import platform.server.form.instance.filter.RegularFilterGroupInstance;
 import platform.server.form.instance.filter.RegularFilterInstance;
 import platform.server.form.instance.listener.CustomClassListener;
 import platform.server.form.instance.listener.FocusListener;
+import platform.server.form.instance.listener.FormEventListener;
 import platform.server.form.instance.remote.RemoteForm;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.DataObject;
@@ -1289,6 +1287,8 @@ public class FormInstance<T extends BusinessLogics<T>> extends IncrementProps<Pr
         return dialog;
     }
 
+    // ---------------------------------------- Events ----------------------------------------
+
     private class AutoActionsRunner {
         private final RemoteForm form;
         private Iterator<PropertyObjectEntity> autoActionsIt;
@@ -1362,11 +1362,22 @@ public class FormInstance<T extends BusinessLogics<T>> extends IncrementProps<Pr
     }
 
     public List<ClientAction> fireEvent(RemoteForm form, Object eventObject) throws SQLException {
+        List<ClientAction> clientActions;
         List<PropertyObjectEntity> actionsOnEvent = entity.getActionsOnEvent(eventObject);
         if (actionsOnEvent != null) {
             autoActionsRunner = new AutoActionsRunner(form, actionsOnEvent);
-            return autoActionsRunner.run();
-        }
-        return new ArrayList<ClientAction>();
+            clientActions = autoActionsRunner.run();
+        } else
+            clientActions = new ArrayList<ClientAction>();
+
+        for (FormEventListener listener : eventListeners)
+            listener.handleEvent(eventObject);
+
+        return clientActions;
+    }
+
+    private final WeakLinkedHashSet<FormEventListener> eventListeners = new WeakLinkedHashSet<FormEventListener>();
+    public void addEventListener(FormEventListener listener) {
+        eventListeners.add(listener);
     }
 }
