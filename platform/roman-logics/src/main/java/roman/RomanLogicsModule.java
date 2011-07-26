@@ -883,6 +883,7 @@ public class RomanLogicsModule extends LogicsModule {
     ConcreteCustomClass steilmannSupplier;
     ConcreteCustomClass tallyWeijlSupplier;
     ConcreteCustomClass hugoBossSupplier;
+    ConcreteCustomClass gerryWeberSupplier;
     ConcreteCustomClass mexxSupplier;
     ConcreteCustomClass bestsellerSupplier;
     ConcreteCustomClass sOliverSupplier;
@@ -893,6 +894,7 @@ public class RomanLogicsModule extends LogicsModule {
     private LP jennyferImportArticleWeightInvoice;
     private LP tallyWeijlImportInvoice;
     private LP hugoBossImportInvoice;
+    private LP gerryWeberImportInvoice;
     public LP mexxImportInvoice;
     public LP mexxImportPricesInvoice;
     public LP mexxImportArticleInfoInvoice;
@@ -900,6 +902,7 @@ public class RomanLogicsModule extends LogicsModule {
     private LP mexxImportDelivery;
     private LP bestsellerImportInvoice;
     private LP hugoBossImportPricat;
+    private LP gerryWeberImportPricat;
     private LP sOliverImportInvoice;
     private LP womenSecretImportInvoice;
 
@@ -1051,7 +1054,8 @@ public class RomanLogicsModule extends LogicsModule {
         sOliverSupplier = addConcreteClass("sOliverSupplier", "s.Oliver", simpleSupplier);
         womenSecretSupplier = addConcreteClass("womenSecretSupplier", "Women'Secret", boxSupplier);
         babyPhatSupplier = addConcreteClass("babyPhatSupplier", "Baby Phat", simpleSupplier);
-
+        gerryWeberSupplier = addConcreteClass("gerryWeberSupplier", "Gerry Weber", supplier);
+             
         secondNameClass = addAbstractClass("secondNameClass", "Класс со вторым именем", baseClass);
 
         subject = addAbstractClass("subject", "Субъект", baseClass.named, secondNameClass);
@@ -1194,7 +1198,7 @@ public class RomanLogicsModule extends LogicsModule {
         round2 = addSFProp("round(CAST((prm1) as numeric), 2)", DoubleClass.instance, 1);
 
         //typeSupplier = addDProp(baseGroup, "typeSupplier", "С коробами/без коробов", LogicalClass.instance, supplier);
-        typeSupplier = is(simpleSupplier);
+        typeSupplier = addCUProp("typeSupplier", addCProp(LogicalClass.instance, true, hugoBossSupplier), addCProp(LogicalClass.instance, true, gerryWeberSupplier), addCProp(LogicalClass.instance, true, sOliverSupplier), addCProp(LogicalClass.instance, true, babyPhatSupplier));
         noBarcodeSupplier = addCUProp("noBarcodeSupplier", addCProp(LogicalClass.instance, true, babyPhatSupplier));
 
         nameClassFreight = addJProp(baseGroup, "nameClassFreight", "Класс фрахта", baseLM.and1, baseLM.objectClassName, 1, is(freight), 1);
@@ -1311,6 +1315,7 @@ public class RomanLogicsModule extends LogicsModule {
         steilmannImportInvoice = addAProp(importInvoiceActionGroup, new SteilmannImportInvoiceActionProperty(BL));
         tallyWeijlImportInvoice = addAProp(importInvoiceActionGroup, new TallyWeijlImportInvoiceActionProperty(this));
         hugoBossImportInvoice = addAProp(importInvoiceActionGroup, new HugoBossImportInvoiceActionProperty(BL));
+        gerryWeberImportInvoice = addAProp(importInvoiceActionGroup, new GerryWeberImportInvoiceActionProperty(BL));
         mexxImportInvoice = addAProp(new MexxImportInvoiceActionProperty(this));
         mexxImportPricesInvoice = addAProp(new MexxImportPricesInvoiceActionProperty(this));
         mexxImportArticleInfoInvoice = addAProp(new MexxImportArticleInfoInvoiceActionProperty(this));
@@ -1805,6 +1810,7 @@ public class RomanLogicsModule extends LogicsModule {
         barcodeToPricat = addAGProp("barcodeToPricat", "штрих-код", barcodePricat);
         importPricatSupplier = addProperty(null, new LP<ClassPropertyInterface>(new PricatEDIImportActionProperty(genSID(), this, supplier)));
         hugoBossImportPricat = addProperty(null, new LP<ClassPropertyInterface>(new HugoBossPricatCSVImportActionProperty(genSID(), this, hugoBossSupplier)));
+        gerryWeberImportPricat = addProperty(null, new LP<ClassPropertyInterface>(new GerryWeberPricatCSVImportActionProperty(genSID(), this, gerryWeberSupplier)));
 
         // кол-во заказа
         quantityDataListSku = addDProp("quantityDataListSku", "Кол-во (первичное)", DoubleClass.instance, list, sku);
@@ -5996,7 +6002,7 @@ public class RomanLogicsModule extends LogicsModule {
 
         public PricatFormEntity(NavigatorElement parent, String sID, String caption) {
             super(parent, sID, caption);
-            objSupplier = addSingleGroupObject(supplier, baseLM.name, importPricatSupplier, hugoBossImportPricat);
+            objSupplier = addSingleGroupObject(supplier, baseLM.name, importPricatSupplier, gerryWeberImportPricat, hugoBossImportPricat);
             objSupplier.groupTo.setSingleClassView(ClassViewType.PANEL);
 
             ObjectEntity objPricat = addSingleGroupObject(pricat);
@@ -6007,6 +6013,7 @@ public class RomanLogicsModule extends LogicsModule {
             setReadOnly(objSupplier, true);
             setReadOnly(importPricatSupplier, false, objSupplier.groupTo);
             setReadOnly(hugoBossImportPricat, false, objSupplier.groupTo);
+            setReadOnly(gerryWeberImportPricat, false, objSupplier.groupTo);
         }
     }
 
