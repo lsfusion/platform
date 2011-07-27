@@ -74,6 +74,8 @@ public class RomanLogicsModule extends LogicsModule {
     private LP freightChangedFA;
     private LP freightPricedFA;
     private LP cloneItem;
+    private LP addItemArticleCompositeColorSizeBarcode;
+    private LP addItemSIDArticleSupplierColorSizeBarcode;
 
     public RomanLogicsModule(BaseLogicsModule<RomanBusinessLogics> baseLM, RomanBusinessLogics BL) {
         super("RomanLogicsModule");
@@ -1669,6 +1671,9 @@ public class RomanLogicsModule extends LogicsModule {
 
         equalsColorItemSupplier = addJProp(baseLM.equals2, supplierColorItem, 1, 2); // временное решение
         equalsSizeItemSupplier = addJProp(baseLM.equals2, supplierSizeItem, 1, 2); // временное решение
+
+        addItemArticleCompositeColorSizeBarcode = addJProp(true, "Ввод товара", addAAProp(item, articleCompositeItem, colorSupplierItem, sizeSupplierItem, baseLM.barcode), 1, 2, 3, 4);
+        addItemSIDArticleSupplierColorSizeBarcode = addJProp(true, "Ввод товара", addItemArticleCompositeColorSizeBarcode, articleSIDSupplier, 1, 2, 3, 4, 5);
 
         // Weight
         netWeightArticle = addDProp(supplierAttributeGroup, "netWeightArticle", "Вес нетто (ориг.)", DoubleClass.instance, article);
@@ -3799,9 +3804,8 @@ public class RomanLogicsModule extends LogicsModule {
                                             "Ввод нового товара",
                                             createItemForm,
                                             new ObjectEntity[]{createItemForm.objSupplier, createItemForm.objBarcode},
-                                            true,
-                                            createItemForm.addPropertyObject(addItemBarcode, createItemForm.objBarcode)
-                                    ), 1, 2,
+                                            false),
+                                    1, 2,
                                     skuBarcodeObject, 2
                             ),
                             objSupplier, objBarcode));
@@ -5898,7 +5902,8 @@ public class RomanLogicsModule extends LogicsModule {
         ObjectEntity objSupplier;
         ObjectEntity objBarcode;
         ObjectEntity objSIDArticleComposite;
-        ObjectEntity objItem;
+        ObjectEntity objColorSupplier;
+        ObjectEntity objSizeSupplier;
 
         public CreateItemFormEntity(NavigatorElement parent, String sID, String caption) {
             super(parent, sID, caption);
@@ -5912,21 +5917,19 @@ public class RomanLogicsModule extends LogicsModule {
             objSIDArticleComposite = addSingleGroupObject(StringClass.get(50), "Артикул", baseLM.objectValue);
             objSIDArticleComposite.groupTo.setSingleClassView(ClassViewType.PANEL);
 
-            objItem = addSingleGroupObject(item, "Товар", sidColorSupplierItem, nameColorSupplierItem, sidSizeSupplierItem);
-            objItem.groupTo.setSingleClassView(ClassViewType.PANEL);
+            objColorSupplier = addSingleGroupObject(colorSupplier, "Цвет поставщика", sidColorSupplier, baseLM.name);
+            objColorSupplier.groupTo.setSingleClassView(ClassViewType.PANEL);
+            setReadOnly(objColorSupplier, true);
 
-            addFixedFilter(new OrFilterEntity(
-                    new NotFilterEntity(new NotNullFilterEntity(addPropertyObject(colorSupplierItem, objItem))),
-                    new NotNullFilterEntity(addPropertyObject(equalsColorItemSupplier, objItem, objSupplier), true)));
-            addFixedFilter(new OrFilterEntity(
-                    new NotFilterEntity(new NotNullFilterEntity(addPropertyObject(sizeSupplierItem, objItem))),
-                    new NotNullFilterEntity(addPropertyObject(equalsSizeItemSupplier, objItem, objSupplier), true)));
+            objSizeSupplier = addSingleGroupObject(sizeSupplier, "Размер поставщика", sidSizeSupplier);
+            objSizeSupplier.groupTo.setSingleClassView(ClassViewType.PANEL);
+            setReadOnly(objSizeSupplier, true);
 
-//            objItem.addOnTransaction = true;
-//            addObjectActions(this, objItem);
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(supplierColorSupplier, objColorSupplier), Compare.EQUALS, objSupplier));
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(supplierSizeSupplier, objSizeSupplier), Compare.EQUALS, objSupplier));
 
-            addActionsOnApply(addPropertyObject(addNEArticleCompositeSIDSupplier, objSIDArticleComposite, objSupplier));
-            addActionsOnApply(addPropertyObject(executeArticleCompositeItemSIDSupplier, objItem, objSIDArticleComposite, objSupplier));
+            addActionsOnOk(addPropertyObject(addNEArticleCompositeSIDSupplier, objSIDArticleComposite, objSupplier));
+            addActionsOnOk(addPropertyObject(addItemSIDArticleSupplierColorSizeBarcode, objSIDArticleComposite, objSupplier, objColorSupplier, objSizeSupplier, objBarcode));
         }
 
         @Override
