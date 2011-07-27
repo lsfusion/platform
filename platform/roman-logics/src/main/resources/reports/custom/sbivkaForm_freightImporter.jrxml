@@ -81,9 +81,14 @@
 					<textFieldExpression class="java.lang.Double"><![CDATA[$F{sumImporterFreightCustomCategory6}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-					<reportElement style="GroupCellStyle2" positionType="Float" stretchType="RelativeToBandHeight" x="0" y="0" width="144" height="18"/>
+					<reportElement style="GroupCellStyle2" positionType="Float" stretchType="RelativeToBandHeight" x="50" y="0" width="94" height="18"/>
 					<textElement textAlignment="Left"/>
-					<textFieldExpression class="java.lang.String"><![CDATA[$F{sidCustomCategory6} + " " + platform.base.BaseUtils.nvl($V{categoryNames},"")]]></textFieldExpression>
+					<textFieldExpression class="java.lang.String"><![CDATA[platform.base.BaseUtils.nvl($V{categoryNames},"")]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement style="GroupCellStyle2" x="0" y="0" width="50" height="18"/>
+					<textElement/>
+					<textFieldExpression class="java.lang.String"><![CDATA[$F{sidCustomCategory6}]]></textFieldExpression>
 				</textField>
 			</band>
 		</groupFooter>
@@ -135,7 +140,7 @@
 	<pageHeader>
 		<band height="18">
 			<textField isStretchWithOverflow="true">
-				<reportElement style="GroupCellStyle2" stretchType="RelativeToBandHeight" x="0" y="0" width="144" height="18"/>
+				<reportElement style="GroupCellStyle2" stretchType="RelativeToBandHeight" x="0" y="0" width="50" height="18"/>
 				<textElement textAlignment="Center"/>
 				<textFieldExpression class="java.lang.String"><![CDATA["ТН ВЭД (6)"]]></textFieldExpression>
 			</textField>
@@ -158,6 +163,11 @@
 				<reportElement style="GroupCellStyle2" stretchType="RelativeToBandHeight" x="144" y="0" width="50" height="18"/>
 				<textElement textAlignment="Center"/>
 				<textFieldExpression class="java.lang.String"><![CDATA["Кол-во"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="GroupCellStyle2" stretchType="RelativeToBandHeight" x="50" y="0" width="94" height="18"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA["Наименование"]]></textFieldExpression>
 			</textField>
 		</band>
 	</pageHeader>
