@@ -143,8 +143,8 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         return groupObject;
     }
 
-    public PropertyEditorComponent getEditorComponent(Component ownerComponent, ClientFormController form, Object value) throws IOException, ClassNotFoundException {
-        ClientType changeType = getPropertyChangeType(form, true);
+    public PropertyEditorComponent getEditorComponent(Component ownerComponent, ClientFormController form, ClientGroupObjectValue key, Object value) throws IOException, ClassNotFoundException {
+        ClientType changeType = getPropertyChangeType(form, key, true);
         if (changeType == null) {
             return null;
         }
@@ -163,8 +163,8 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         return changeType.getEditorComponent(ownerComponent, form, this, value, getFormat(), design);
     }
 
-    public PropertyEditorComponent getObjectEditorComponent(Component ownerComponent, ClientFormController form, Object value) throws IOException, ClassNotFoundException {
-        ClientType changeType = getPropertyChangeType(form, true);
+    public PropertyEditorComponent getObjectEditorComponent(Component ownerComponent, ClientFormController form, ClientGroupObjectValue key, Object value) throws IOException, ClassNotFoundException {
+        ClientType changeType = getPropertyChangeType(form, key, true);
         return changeType == null
                 ? null
                 : changeType.getObjectEditorComponent(ownerComponent, form, this, value, getFormat(), design);
@@ -291,8 +291,8 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         return sID;
     }
 
-    public ClientType getPropertyChangeType(ClientFormController form, boolean aggValue) throws IOException {
-        DataInputStream inStream = new DataInputStream(new ByteArrayInputStream(form.remoteForm.getPropertyChangeType(getID(), aggValue)));
+    public ClientType getPropertyChangeType(ClientFormController form, ClientGroupObjectValue key, boolean aggValue) throws IOException {
+        DataInputStream inStream = new DataInputStream(new ByteArrayInputStream(form.remoteForm.getPropertyChangeType(getID(), key.serialize(this), aggValue)));
         if (inStream.readBoolean()) {
             return null;
         }
@@ -300,10 +300,10 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         return ClientTypeSerializer.deserialize(inStream);
     }
 
-    public Object parseString(ClientFormController form, String s) throws ParseException {
+    public Object parseString(ClientFormController form, ClientGroupObjectValue key, String s) throws ParseException {
         ClientType changeType;
         try {
-            changeType = getPropertyChangeType(form, false);
+            changeType = getPropertyChangeType(form, key, false);
             if (changeType == null) {
                 throw new ParseException(ClientResourceBundle.getString("logics.propertyview.can.not.be.changed"), 0);
             }

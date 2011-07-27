@@ -24,7 +24,7 @@ public class TableCellView extends JPanel implements CellView {
     private final CellTable table;
 
     private final ClientPropertyDraw key;
-    private final ClientGroupObjectValue columnKey; // пока чисто для кэширования
+    private final ClientGroupObjectValue columnKey;
     private final ClientFormController form;
 
     private Object highlight;
@@ -60,7 +60,7 @@ public class TableCellView extends JPanel implements CellView {
 
         //игнорируем key.readOnly, чтобы разрешить редактирование,
         //readOnly будет проверяться на уровне сервера и обрезаться возвратом пустого changeType
-        table = new CellTable(false) {
+        table = new CellTable(false, columnKey) {
 
             protected boolean cellValueChanged(Object value, boolean aggValue) {
                 return listener.cellValueChanged(value, aggValue);

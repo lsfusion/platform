@@ -19,7 +19,7 @@ import java.awt.event.KeyEvent;
 
 public class ButtonCellView extends ClientButton implements CellView {
     private ClientPropertyDraw key;
-    private ClientGroupObjectValue columnKey; // чисто для кэширования
+    private ClientGroupObjectValue columnKey;
     public boolean toToolbar;
     private String caption;
 
@@ -33,7 +33,7 @@ public class ButtonCellView extends ClientButton implements CellView {
         return o instanceof ButtonCellView && ((ButtonCellView) o).key.equals(key) && ((ButtonCellView) o).columnKey.equals(columnKey);
     }
 
-    public ButtonCellView(final ClientPropertyDraw key, ClientGroupObjectValue columnKey, final ClientFormController form) {
+    public ButtonCellView(final ClientPropertyDraw key, final ClientGroupObjectValue columnKey, final ClientFormController form) {
         super(key.getFullCaption());
         this.key = key;
         this.columnKey = columnKey;
@@ -52,7 +52,7 @@ public class ButtonCellView extends ClientButton implements CellView {
 
                 try {
 
-                    PropertyEditorComponent editor = key.getEditorComponent(ButtonCellView.this, form, null);
+                    PropertyEditorComponent editor = key.getEditorComponent(ButtonCellView.this, form, columnKey, null);
                     if (editor != null) {
                         editor.getComponent(SwingUtils.computeAbsoluteLocation(ButtonCellView.this), getBounds(), null);
                         if (editor.valueChanged())

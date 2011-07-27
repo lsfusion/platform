@@ -5,6 +5,7 @@ import platform.client.Main;
 import platform.client.SwingUtils;
 import platform.client.form.ClientFormController;
 import platform.client.form.SingleCellTable;
+import platform.client.logics.ClientGroupObjectValue;
 import platform.client.logics.ClientPropertyDraw;
 import platform.interop.KeyStrokes;
 
@@ -22,10 +23,13 @@ public abstract class CellTable extends SingleCellTable
     private Object value;
     private boolean readOnly;
 
-    public CellTable(boolean readOnly) {
+    ClientGroupObjectValue columnKey;
+
+    public CellTable(boolean readOnly, ClientGroupObjectValue columnKey) {
         super();
 
         this.readOnly = readOnly;
+        this.columnKey = columnKey;
 
         setModel(new PropertyModel());
 
@@ -68,10 +72,14 @@ public abstract class CellTable extends SingleCellTable
         return getProperty();
     }
 
+    public ClientGroupObjectValue getKey(int row, int col) {
+        return columnKey;
+    }
+
     public void writeSelectedValue(String value) {
         Object oValue;
         try {
-            oValue = getProperty().parseString(getForm(), value);
+            oValue = getProperty().parseString(getForm(), columnKey, value);
         } catch (ParseException pe) {
             oValue = null;
         }

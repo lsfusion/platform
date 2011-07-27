@@ -244,6 +244,8 @@ public class DataSession extends MutableObject implements SessionChanges, ExprCh
     }
 
     public <P extends PropertyInterface> List<ClientAction> execute(Property<P> property, PropertyChange<P> change, Modifier<? extends Changes> modifier, RemoteForm executeForm, Map<P, PropertyObjectInterfaceInstance> mapObjects) throws SQLException {
+        if(executeForm!=null) // assert что сама форма modifier и session ее же
+            executeForm.form.fireChange(property, change);
         return execute(property.getDataChanges(change, null, modifier), executeForm, mapObjects);
     }
 

@@ -1,6 +1,5 @@
 package platform.client.form.tree;
 
-import com.sun.rowset.internal.Row;
 import org.jdesktop.swingx.JXTableHeader;
 import org.jdesktop.swingx.decorator.ColorHighlighter;
 import org.jdesktop.swingx.decorator.HighlightPredicate;
@@ -377,6 +376,11 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
         return null;
     }
 
+    public ClientGroupObjectValue getKey(int row, int col) {
+        // todo:
+        throw new RuntimeException("not supported yet");
+    }
+
     public void writeSelectedValue(String value) {
         int row = getSelectionModel().getLeadSelectionIndex();
         int column = getColumnModel().getSelectionModel().getLeadSelectionIndex();
@@ -415,7 +419,7 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
         ClientPropertyDraw property = getProperty(row, column);
         if (property != null) {
             try {
-                return property.parseString(form, value);
+                return property.parseString(form, getKey(row, column), value);
             } catch (ParseException ignored) {
                 return null;
             }

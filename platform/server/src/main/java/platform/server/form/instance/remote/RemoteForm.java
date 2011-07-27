@@ -730,24 +730,18 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         return outStream.toByteArray();
     }
 
-    public byte[] getPropertyChangeType(int propertyID, boolean aggValue) {
+    public byte[] getPropertyChangeType(int propertyID, byte[] columnKey, boolean aggValue) {
 
         try {
             ByteArrayOutputStream outStream = new ByteArrayOutputStream();
             DataOutputStream dataStream = new DataOutputStream(outStream);
 
-            form.serializePropertyEditorType(dataStream, form.getPropertyDraw(propertyID), aggValue);
+            PropertyDrawInstance propertyDraw = form.getPropertyDraw(propertyID);
+            Map<ObjectInstance, DataObject> keys = deserializeKeys(propertyDraw, columnKey);
+            form.serializePropertyEditorType(dataStream, propertyDraw, keys, aggValue);
 
             return outStream.toByteArray();
         } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public boolean canBeChanged(int propertyID, boolean aggValue) {
-        try {
-            return form.canBeChanged(form.getPropertyDraw(propertyID), aggValue);
-        } catch (SQLException e) {
             throw new RuntimeException(e);
         }
     }

@@ -553,7 +553,7 @@ public abstract class GridTable extends ClientFormTable
 
         Object oValue;
         try {
-            oValue = model.getColumnProperty(column).parseString(getForm(), value);
+            oValue = model.getColumnProperty(column).parseString(getForm(), model.getColumnKey(column), value);
         } catch (ParseException e) {
             oValue = null;
         }
@@ -730,6 +730,10 @@ public abstract class GridTable extends ClientFormTable
         return model.getColumnProperty(col);
     }
 
+    public ClientGroupObjectValue getKey(int row, int col) {
+        return model.getColumnKey(col);
+    }
+
     public boolean isCellHighlighted(int row, int column) {
         return model.isCellHighlighted(row, column);
     }
@@ -740,10 +744,7 @@ public abstract class GridTable extends ClientFormTable
 
     public void changeGridOrder(ClientPropertyDraw property, Order modiType) throws IOException {
         int ind = getMinPropertyIndex(property);
-        if (ind == -1) {
-            return;
-        }
-        sortableHeaderManager.changeOrder(new Pair<ClientPropertyDraw, ClientGroupObjectValue>(property, model.getColumnKey(ind)), modiType);
+        sortableHeaderManager.changeOrder(new Pair<ClientPropertyDraw, ClientGroupObjectValue>(property, ind==-1?new ClientGroupObjectValue():model.getColumnKey(ind)), modiType);
     }
 
     public int getMinPropertyIndex(ClientPropertyDraw property) {

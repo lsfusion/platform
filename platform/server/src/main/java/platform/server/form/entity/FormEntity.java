@@ -30,12 +30,17 @@ import platform.server.logics.property.group.AbstractNode;
 import platform.server.serialization.ServerContext;
 import platform.server.serialization.ServerIdentitySerializable;
 import platform.server.serialization.ServerSerializationPool;
+import platform.server.session.Changes;
+import platform.server.session.DataSession;
+import platform.server.session.Modifier;
+import platform.server.session.PropertyChange;
 
 import javax.swing.*;
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.*;
 
 public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T> implements ServerIdentitySerializable {
@@ -682,6 +687,12 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
 
     public String checkClientApply(Object result) {
         return null;
+    }
+
+    public boolean isActionOnChange(Property property) {
+        return false;
+    }
+    public <P extends PropertyInterface> void onChange(Property<P> property, PropertyChange<P> change, DataSession session, Modifier<? extends Changes> modifier) throws SQLException {
     }
 
     public static FormEntity<?> deserialize(BusinessLogics BL, byte[] formState) {

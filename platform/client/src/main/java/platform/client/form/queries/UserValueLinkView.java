@@ -3,6 +3,7 @@ package platform.client.form.queries;
 import platform.client.form.ClientFormController;
 import platform.client.form.GroupObjectLogicsSupplier;
 import platform.client.form.cell.CellTable;
+import platform.client.logics.ClientGroupObjectValue;
 import platform.client.logics.ClientPropertyDraw;
 import platform.client.logics.ClientUserValueLink;
 
@@ -30,7 +31,7 @@ public class UserValueLinkView extends ValueLinkView {
         setBorder(compBorder.getBorder());
 
         // непосредственно объект для изменения значения свойств
-        valueTable = new CellTable(false) {
+        valueTable = new CellTable(false, new ClientGroupObjectValue()) {
 
             protected boolean cellValueChanged(Object value, boolean aggValue) {
 

@@ -297,21 +297,17 @@ public class FormInstance<T extends BusinessLogics<T>> extends IncrementProps<Pr
         return getPropertyDraw(property.property, group);
     }
 
-    public void serializePropertyEditorType(DataOutputStream outStream, PropertyDrawInstance<?> propertyDraw, boolean aggValue) throws SQLException, IOException {
-        PropertyObjectInstance<?> change = propertyDraw.getChangeInstance(aggValue, BL);
-        if (!propertyDraw.isReadOnly() && securityPolicy.property.change.checkPermission(change.property) && change.getValueImplement().canBeChanged(this)) {
+
+
+    public void serializePropertyEditorType(DataOutputStream outStream, PropertyDrawInstance<?> propertyDraw, Map<ObjectInstance, DataObject> keys, boolean aggValue) throws SQLException, IOException {
+        PropertyObjectInstance<?> change = propertyDraw.getChangeInstance(aggValue, BL, keys);
+        if (!propertyDraw.isReadOnly() && securityPolicy.property.change.checkPermission(change.property) &&
+                (entity.isActionOnChange(change.property) || change.getValueImplement().canBeChanged(this))) {
             outStream.writeBoolean(false);
             TypeSerializer.serializeType(outStream, change.getEditorType());
         } else {
             outStream.writeBoolean(true);
         }
-    }
-
-    public boolean canBeChanged(PropertyDrawInstance<?> propertyDraw, boolean aggValue) throws SQLException {
-        PropertyObjectInstance<?> change = propertyDraw.getChangeInstance(aggValue, BL);
-        return !propertyDraw.isReadOnly()
-               && securityPolicy.property.change.checkPermission(change.property)
-               && change.getValueImplement().canBeChanged(this);
     }
 
     // ----------------------------------- Навигация ----------------------------------------- //
@@ -443,16 +439,12 @@ public class FormInstance<T extends BusinessLogics<T>> extends IncrementProps<Pr
 
     public List<ClientAction> changeProperty(PropertyDrawInstance<?> property, Map<ObjectInstance, DataObject> mapDataValues,
                                              PropertyDrawInstance<?> value, Map<ObjectInstance, DataObject> valueColumnKeys, RemoteForm executeForm, boolean all, boolean aggValue) throws SQLException {
-        return changeProperty(property, mapDataValues, value.getChangeInstance(aggValue, BL).getRemappedPropertyObject(valueColumnKeys), executeForm, all, aggValue);
+        return changeProperty(property, mapDataValues, value.getChangeInstance(aggValue, BL, valueColumnKeys), executeForm, all, aggValue);
     }
 
     public List<ClientAction> changeProperty(PropertyDrawInstance<?> property, Map<ObjectInstance, DataObject> mapDataValues, Object value, RemoteForm executeForm, boolean all, boolean aggValue) throws SQLException {
-        PropertyObjectInstance<?> changeInstance = property.getChangeInstance(aggValue, BL);
         assert !property.isReadOnly();
-        if(changeInstance!=null)
-            return changeProperty(changeInstance.getRemappedPropertyObject(mapDataValues), value, executeForm, all ? property.toDraw : null);
-        else
-            return null;
+        return changeProperty(property.getChangeInstance(aggValue, BL, mapDataValues), value, executeForm, all ? property.toDraw : null);
     }
 
     public List<ClientAction> changeProperty(PropertyObjectInstance<?> property, Object value, RemoteForm executeForm, GroupObjectInstance groupObject) throws SQLException {
@@ -1379,5 +1371,9 @@ public class FormInstance<T extends BusinessLogics<T>> extends IncrementProps<Pr
     private final WeakLinkedHashSet<FormEventListener> eventListeners = new WeakLinkedHashSet<FormEventListener>();
     public void addEventListener(FormEventListener listener) {
         eventListeners.add(listener);
+    }
+
+    public <P extends PropertyInterface> void fireChange(Property<P> property, PropertyChange<P> change) throws SQLException {
+        entity.onChange(property, change, session, this);
     }
 }

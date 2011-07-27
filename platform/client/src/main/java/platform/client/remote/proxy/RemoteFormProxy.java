@@ -290,17 +290,10 @@ public class RemoteFormProxy<T extends RemoteFormInterface>
         logRemoteMethodEndVoidCall("moveGroupObject");
     }
 
-    public byte[] getPropertyChangeType(int propertyID, boolean aggValue) throws RemoteException {
+    public byte[] getPropertyChangeType(int propertyID, byte[] columnKey, boolean aggValue) throws RemoteException {
         logRemoteMethodStartCall("getPropertyChangeType");
-        byte[] result = target.getPropertyChangeType(propertyID, aggValue);
+        byte[] result = target.getPropertyChangeType(propertyID, columnKey, aggValue);
         logRemoteMethodEndCall("getPropertyChangeType", result);
-        return result;
-    }
-
-    public boolean canBeChanged(int propertyID, boolean aggValue) throws RemoteException {
-        logRemoteMethodStartCall("canBeChanged");
-        boolean result = target.canBeChanged(propertyID, aggValue);
-        logRemoteMethodEndCall("canBeChanged", result);
         return result;
     }
 

@@ -5,15 +5,13 @@ import platform.base.Result;
 import platform.interop.ClassViewType;
 import platform.interop.form.PropertyReadType;
 import platform.server.form.entity.PropertyDrawEntity;
+import platform.server.logics.DataObject;
 import platform.server.logics.property.Property;
 import platform.server.logics.property.PropertyInterface;
 import platform.server.logics.property.ObjectValueProperty;
 import platform.server.logics.BusinessLogics;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-import java.util.Collections;
+import java.util.*;
 
 // представление св-ва
 public class PropertyDrawInstance<P extends PropertyInterface> extends CellInstance<PropertyDrawEntity> implements PropertyReaderInstance {
@@ -73,8 +71,8 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
     public PropertyObjectInstance<?> getChangeInstance(Result<Property> aggProp, BusinessLogics<?> BL) {
         return getChangeInstance(aggProp, true, BL);
     }
-    public PropertyObjectInstance<?> getChangeInstance(boolean aggValue, BusinessLogics<?> BL) {
-        return getChangeInstance(new Result<Property>(), aggValue, BL);
+    public PropertyObjectInstance<?> getChangeInstance(boolean aggValue, BusinessLogics<?> BL, Map<ObjectInstance, DataObject> mapValues) {
+        return getChangeInstance(new Result<Property>(), aggValue, BL).getRemappedPropertyObject(mapValues);
     }
 
     public boolean isReadOnly() {

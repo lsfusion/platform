@@ -6,6 +6,7 @@ import platform.client.form.PropertyEditorComponent;
 import platform.client.form.PropertyRendererComponent;
 import platform.client.form.grid.GridTable;
 import platform.client.form.renderer.ActionPropertyRenderer;
+import platform.client.logics.ClientGroupObjectValue;
 import platform.client.logics.ClientPropertyDraw;
 import platform.interop.KeyStrokes;
 
@@ -96,9 +97,10 @@ public class ClientAbstractCellEditor extends AbstractCellEditor
 
         try {
             if (cellTable.isDataChanging()) {
+                ClientGroupObjectValue columnKey = cellTable.getKey(row, column);
                 propertyEditor = KeyStrokes.isObjectEditorDialogEvent(editEvent)
-                                 ? property.getObjectEditorComponent(table, cellTable.getForm(), ivalue)
-                                 : property.getEditorComponent(table, cellTable.getForm(), ivalue);
+                                 ? property.getObjectEditorComponent(table, cellTable.getForm(), columnKey, ivalue)
+                                 : property.getEditorComponent(table, cellTable.getForm(), columnKey, ivalue);
             } else {
                 propertyEditor = property.getClassComponent(cellTable.getForm(), ivalue);
             }

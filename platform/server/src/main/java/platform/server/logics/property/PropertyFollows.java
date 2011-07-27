@@ -44,8 +44,7 @@ public class PropertyFollows<T extends PropertyInterface, L extends PropertyInte
 //      в общем то чтобы исключить избыточность надо ровно в одном из resolve'ов оставить новое значение, а в другом старое
         Map<T,KeyExpr> mapKeys = property.getMapKeys();
         implement.mapNotNull(mapKeys, property.getExpr(mapKeys, session.modifier).getWhere().
-                and(property.getExpr(mapKeys).getWhere().not()).
-                and(implement.mapExpr(mapKeys, session.modifier).getWhere().not()), session, BL);
+                and(property.getExpr(mapKeys).getWhere().not()), session, BL);
     }
 
     public void resolveFalse(DataSession session, BusinessLogics<?> BL) throws SQLException {
@@ -54,8 +53,7 @@ public class PropertyFollows<T extends PropertyInterface, L extends PropertyInte
 
 //      f(') and g and !g' : f -> Null
         Map<T,KeyExpr> mapKeys = property.getMapKeys();
-        property.setNull(mapKeys, property.getExpr(mapKeys).getWhere().
-                        and(implement.mapExpr(mapKeys).getWhere()).
+        property.setNull(mapKeys, implement.mapExpr(mapKeys).getWhere().
                         and(implement.mapExpr(mapKeys, session.modifier).getWhere().not()), session, BL);
     }
 

@@ -673,12 +673,22 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
     }
 
     public void setNotNull(Map<T, KeyExpr> mapKeys, Where where, DataSession session, BusinessLogics<?> BL) throws SQLException {
-        Expr defaultExpr = getDefaultExpr(mapKeys);
-        if(defaultExpr!=null)
-            session.execute(getDataChanges(new PropertyChange<T>(mapKeys, defaultExpr, where), null, session.modifier), null, null);
+        proceedNotNull(mapKeys, where.and(getExpr(mapKeys, session.modifier).getWhere().not()), session, BL);
     }
 
     public void setNull(Map<T, KeyExpr> mapKeys, Where where, DataSession session, BusinessLogics<?> BL) throws SQLException {
-        session.execute(getDataChanges(new PropertyChange<T>(mapKeys, CaseExpr.NULL, where), null, session.modifier), null, null);
+        proceedNull(mapKeys, where.and(getExpr(mapKeys, session.modifier).getWhere()), session, BL);
+    }
+
+    // assert что where содержит getWhere().not
+    protected void proceedNotNull(Map<T, KeyExpr> mapKeys, Where where, DataSession session, BusinessLogics<?> BL) throws SQLException {
+        Expr defaultExpr = getDefaultExpr(mapKeys);
+        if(defaultExpr!=null)
+            session.execute(this, new PropertyChange<T>(mapKeys, defaultExpr, where), session.modifier, null, null);
+    }
+
+    // assert что where содержит getWhere()
+    protected void proceedNull(Map<T, KeyExpr> mapKeys, Where where, DataSession session, BusinessLogics<?> BL) throws SQLException {
+        session.execute(this, new PropertyChange<T>(mapKeys, CaseExpr.NULL, where), session.modifier, null, null);
     }
 }

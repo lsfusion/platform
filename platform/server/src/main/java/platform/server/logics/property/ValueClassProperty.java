@@ -37,7 +37,7 @@ public class ValueClassProperty extends ClassProperty<StaticClass> {
     }
 
     @Override
-    public void setNotNull(Map<ClassPropertyInterface, KeyExpr> mapKeys, Where where, DataSession session, BusinessLogics<?> BL) throws SQLException {
+    protected void proceedNotNull(Map<ClassPropertyInterface, KeyExpr> mapKeys, Where where, DataSession session, BusinessLogics<?> BL) throws SQLException {
         for(Map<ClassPropertyInterface, DataObject> row : new Query<ClassPropertyInterface, Object>(mapKeys, where).executeClasses(session.sql, session.env, session.baseClass).keySet())
             for(Map.Entry<ClassPropertyInterface, DataObject> entry : row.entrySet())
                 if(entry.getKey().interfaceClass instanceof ConcreteObjectClass)
@@ -45,7 +45,7 @@ public class ValueClassProperty extends ClassProperty<StaticClass> {
     }
 
     @Override
-    public void setNull(Map<ClassPropertyInterface, KeyExpr> mapKeys, Where where, DataSession session, BusinessLogics<?> BL) throws SQLException {
+    protected void proceedNull(Map<ClassPropertyInterface, KeyExpr> mapKeys, Where where, DataSession session, BusinessLogics<?> BL) throws SQLException {
         for(Map<ClassPropertyInterface, DataObject> row : new Query<ClassPropertyInterface, Object>(mapKeys, where).executeClasses(session.sql, session.env, session.baseClass).keySet())
             for(Map.Entry<ClassPropertyInterface, DataObject> entry : row.entrySet())
                 session.changeClass(entry.getValue(), session.baseClass.unknown);

@@ -259,7 +259,7 @@ public class ChangeDialog extends JDialog {
 
         private class ExactValueTable extends CellTable {
             public ExactValueTable() {
-                super(false);
+                super(false, new ClientGroupObjectValue());
             }
 
             protected boolean cellValueChanged(Object value, boolean aggValue) {
