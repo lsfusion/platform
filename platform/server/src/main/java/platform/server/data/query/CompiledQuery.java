@@ -457,7 +457,7 @@ public class CompiledQuery<K,V> {
                 Map<String, String> keySelect = BaseUtils.join(group,fromPropertySelect);
                 Map<String,String> propertySelect = new HashMap<String, String>();
                 for(Map.Entry<Expr,GroupExpr> expr : exprs.entrySet())
-                    propertySelect.put(queries.get(expr.getKey()),expr.getValue().getGroupType().getString() + "(" + fromPropertySelect.get(expr.getKey()) +")");
+                    propertySelect.put(queries.get(expr.getKey()),expr.getValue().getGroupType().getString(fromPropertySelect.get(expr.getKey()), expr.getKey().getType(fullWhere), syntax));
                 return "(" + syntax.getSelect(fromSelect, SQLSession.stringExpr(keySelect,propertySelect),
                         BaseUtils.toString(whereSelect," AND "),"",BaseUtils.evl(BaseUtils.toString(keySelect.values(),","),"3+2"),"") + ")";
             }

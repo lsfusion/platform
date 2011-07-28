@@ -1,25 +1,34 @@
 package platform.server.data.expr.query;
 
 import platform.server.Settings;
+import platform.server.classes.StringClass;
 import platform.server.data.expr.BaseExpr;
 import platform.server.data.expr.Expr;
+import platform.server.data.sql.SQLSyntax;
+import platform.server.data.type.Type;
 
 import java.util.Map;
 
 public enum GroupType {
     SUM, MAX, ANY;
 
-    public String getString() {
+    public String getString(String expr, Type type, SQLSyntax syntax) {
+        String func = null;
         switch (this) {
             case MAX:
-                return "MAX";
+                func = "MAX";
+                break;
             case ANY:
-                return "MAX";
-            //    return "ANYVALUE";
+//                return "MAX";
+                func = "ANYVALUE";
+                if(type instanceof StringClass)
+                    expr = expr + "::" + type.getDB(syntax);
+                break;
             case SUM:
-                return "SUM";
+                func = "SUM";
+                break;
         }
-        throw new RuntimeException("can not be");
+        return func + "(" + expr + ")";
     }
 
     public Expr add(Expr op1, Expr op2) {
