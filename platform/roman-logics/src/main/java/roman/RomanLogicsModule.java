@@ -2812,6 +2812,9 @@ public class RomanLogicsModule extends LogicsModule {
         classifier.add(freightType.getListForm(baseLM));
         classifier.add(baseLM.dictionaryForm);
 
+        colorSupplier.setDialogForm(new ColorSupplierFormEntity(null, "colorSupplierForm", "Цвет поставщика"));
+        sizeSupplier.setDialogForm(new SizeSupplierFormEntity(null, "sizeSupplierForm", "Размер поставщика"));
+
         createItemForm = addFormEntity(new CreateItemFormEntity(null, "createItemForm", "Ввод товара"));
         findItemFormBox = addFormEntity(new FindItemFormEntity(null, "findItemFormBox", "Поиск товара (с коробами)", true, false));
         findItemFormSimple = addFormEntity(new FindItemFormEntity(null, "findItemFormSimple", "Поиск товара", false, false));
@@ -2975,9 +2978,7 @@ public class RomanLogicsModule extends LogicsModule {
             super(parent, sID, caption);
 
             objCategory = addSingleGroupObject(category, "Номенклатурная группа", baseGroup);
-            objCategory.groupTo.initClassView = ClassViewType.GRID;
             addObjectActions(this, objCategory);
-
         }
 
         @Override
@@ -2994,6 +2995,58 @@ public class RomanLogicsModule extends LogicsModule {
             return objCategory;
         }
 
+    }
+
+    private class ColorSupplierFormEntity extends ClassFormEntity<RomanBusinessLogics> {
+
+        private ObjectEntity objColor;
+
+        public ColorSupplierFormEntity(NavigatorElement parent, String sID, String caption) {
+            super(parent, sID, caption);
+
+            objColor = addSingleGroupObject(colorSupplier, "Цвет поставщика", sidColorSupplier, baseLM.name, nameSupplierColorSupplier);
+            addObjectActions(this, objColor);
+        }
+
+        @Override
+        public FormView createDefaultRichDesign() {
+            DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign();
+
+            design.defaultOrders.put(design.get(getPropertyDraw(sidColorSupplier)), true);
+
+            return design;
+        }
+
+        @Override
+        public ObjectEntity getObject() {
+            return objColor;
+        }
+    }
+
+    private class SizeSupplierFormEntity extends ClassFormEntity<RomanBusinessLogics> {
+
+        private ObjectEntity objSize;
+
+        public SizeSupplierFormEntity(NavigatorElement parent, String sID, String caption) {
+            super(parent, sID, caption);
+
+            objSize = addSingleGroupObject(sizeSupplier, "Размер поставщика", sidSizeSupplier, nameSupplierSizeSupplier);
+            addObjectActions(this, objSize);
+        }
+
+        @Override
+        public FormView createDefaultRichDesign() {
+            DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign();
+
+            design.defaultOrders.put(design.get(getPropertyDraw(sidSizeSupplier)), true);
+
+            return design;
+        }
+
+        @Override
+        public ObjectEntity getObject() {
+            return objSize;
+        }
     }
 
     private class CustomCategory10FormEntity extends ClassFormEntity<RomanBusinessLogics> {
