@@ -1055,11 +1055,19 @@ public abstract class LogicsModule {
         return addAGProp(null, name, caption, props);
     }
 
+    protected LP addAGProp(String name, String caption, boolean noConstraint, LP... props) {
+        return addAGProp(null, name, caption, noConstraint, props);
+    }
+
     protected LP addAGProp(AbstractGroup group, String name, String caption, LP... props) {
+        return addAGProp(group, name, caption, false, props);
+    }
+
+    protected LP addAGProp(AbstractGroup group, String name, String caption, boolean noConstraint, LP... props) {
         ClassWhere<Integer> classWhere = ClassWhere.<Integer>STATIC(true);
         for (LP<?> prop : props)
             classWhere = classWhere.and(prop.getClassWhere());
-        return addAGProp(group, name, caption, (CustomClass) BaseUtils.singleValue(classWhere.getCommonParent(Collections.singleton(1))), props);
+        return addAGProp(group, name, caption, noConstraint, (CustomClass) BaseUtils.singleValue(classWhere.getCommonParent(Collections.singleton(1))), props);
     }
 
     protected LP addAGProp(String name, String caption, CustomClass customClass, LP... props) {
@@ -1067,13 +1075,21 @@ public abstract class LogicsModule {
     }
 
     protected LP addAGProp(AbstractGroup group, String name, String caption, CustomClass customClass, LP... props) {
-        return addAGProp(group, false, name, false, caption, customClass, props);
+        return addAGProp(group, name, caption, false, customClass, props);
+    }
+
+    protected LP addAGProp(AbstractGroup group, String name, String caption, boolean noConstraint, CustomClass customClass, LP... props) {
+        return addAGProp(group, false, name, false, caption, noConstraint, customClass, props);
     }
 
     protected LP addAGProp(AbstractGroup group, boolean checkChange, String name, boolean persistent, String caption, CustomClass customClass, LP... props) {
+        return addAGProp(group, checkChange, name, persistent, caption, false, customClass, props);
+    }
+
+    protected LP addAGProp(AbstractGroup group, boolean checkChange, String name, boolean persistent, String caption, boolean noConstraint, CustomClass customClass, LP... props) {
         if(props.length==1)
             props[0].property.aggProp = true;
-        return addAGProp(group, checkChange, name, persistent, caption, is(customClass), 1, getUParams(props, 0));
+        return addAGProp(group, checkChange, name, persistent, caption, noConstraint, is(customClass), 1, getUParams(props, 0));
     }
 
     protected <T extends PropertyInterface<T>> LP addAGProp(String name, String caption, LP<T> lp, int aggrInterface, Object... props) {
@@ -1093,15 +1109,20 @@ public abstract class LogicsModule {
     }
 
     protected <T extends PropertyInterface<T>> LP addAGProp(AbstractGroup group, boolean checkChange, String name, boolean persistent, String caption, LP<T> lp, int aggrInterface, Object... props) {
+        return addAGProp(group, checkChange, name, persistent, caption, false, lp, aggrInterface, props);
+    }
+
+    protected <T extends PropertyInterface<T>> LP addAGProp(AbstractGroup group, boolean checkChange, String name, boolean persistent, String caption, boolean noConstraint, LP<T> lp, int aggrInterface, Object... props) {
         List<PropertyInterfaceImplement<T>> listImplements = readImplements(lp.listInterfaces, props);
 
-        return addAGProp(group, checkChange, persistent, AggregateGroupProperty.create(name, caption, lp.property, lp.listInterfaces.get(aggrInterface - 1), (List<PropertyMapImplement<?, T>>) (List<?>) listImplements), BaseUtils.mergeList(listImplements, BaseUtils.removeList(lp.listInterfaces, aggrInterface - 1)));
+        return addAGProp(group, checkChange, persistent, noConstraint, AggregateGroupProperty.create(name, caption, lp.property, lp.listInterfaces.get(aggrInterface - 1), (List<PropertyMapImplement<?, T>>) (List<?>) listImplements), BaseUtils.mergeList(listImplements, BaseUtils.removeList(lp.listInterfaces, aggrInterface - 1)));
     }
 
     // чисто для generics
-    private <T extends PropertyInterface<T>, J extends PropertyInterface> LP addAGProp(AbstractGroup group, boolean checkChange, boolean persistent, AggregateGroupProperty<T, J> property, List<PropertyInterfaceImplement<T>> listImplements) {
+    private <T extends PropertyInterface<T>, J extends PropertyInterface> LP addAGProp(AbstractGroup group, boolean checkChange, boolean persistent, boolean noConstraint, AggregateGroupProperty<T, J> property, List<PropertyInterfaceImplement<T>> listImplements) {
         // нужно добавить ограничение на уникальность
-        addProperty(null, new LP(property.getConstrainedProperty(checkChange)));
+        if(!noConstraint)
+            addProperty(null, new LP(property.getConstrainedProperty(checkChange)));
 
         return mapLGProp(group, persistent, property, DerivedProperty.mapImplements(listImplements, property.getMapping()));
     }

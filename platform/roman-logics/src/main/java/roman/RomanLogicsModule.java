@@ -1929,7 +1929,7 @@ public class RomanLogicsModule extends LogicsModule {
                 2);
         quantityListArticleCompositeColorSize.property.setFixedCharWidth(2);
 
-        itemArticleCompositeColorSize = addAGProp("itemArticleCompositeColorSize", "Item", articleCompositeItem, colorSupplierItem, sizeSupplierItem);
+        itemArticleCompositeColorSize = addAGProp("itemArticleCompositeColorSize", "Item", true, articleCompositeItem, colorSupplierItem, sizeSupplierItem);
 
         orderedOrderInvoiceArticle = addJProp(baseLM.and1, quantityListArticle, 1, 3, inOrderInvoice, 1, 2);
 
