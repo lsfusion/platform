@@ -3429,6 +3429,7 @@ public class RomanLogicsModule extends LogicsModule {
 
             objColorSupplier = addSingleGroupObject(colorSupplier, "Цвет", baseLM.selection, sidColorSupplier, baseLM.name);
             addObjectActions(this, objColorSupplier);
+            setReadOnly(sidColorSupplier, true, objColorSupplier.groupTo);
 
             objItem = addSingleGroupObject(item, "Товар", baseLM.barcode, sidColorSupplierItem, nameColorSupplierItem, sidSizeSupplierItem);
 //            addPropertyDraw(cloneItem, objItem).forceViewType = ClassViewType.PANEL;
@@ -3514,7 +3515,7 @@ public class RomanLogicsModule extends LogicsModule {
             }
 
             design.get(getPropertyDraw(baseLM.objectValue, objSIDArticleComposite)).editKey = KeyStroke.getKeyStroke(KeyEvent.VK_F9, 0);
-            design.get(getPropertyDraw(baseLM.objectValue, objSIDColorSupplier)).editKey = KeyStroke.getKeyStroke(KeyEvent.VK_F8, 0);
+            design.get(getPropertyDraw(baseLM.objectValue, objSIDColorSupplier)).editKey = KeyStroke.getKeyStroke(KeyEvent.VK_INSERT, 0);
             /*design.get(getPropertyDraw(baseLM.objectValue, objSIDArticleSingle)).editKey = KeyStroke.getKeyStroke(KeyEvent.VK_F8, 0);
 
             design.addIntersection(design.getGroupObjectContainer(objSIDArticleComposite.groupTo),
@@ -3523,6 +3524,10 @@ public class RomanLogicsModule extends LogicsModule {
 
             design.addIntersection(design.getGroupObjectContainer(objColorSupplier.groupTo),
                     design.getGroupObjectContainer(objItem.groupTo),
+                    DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
+
+            design.addIntersection(design.getGroupObjectContainer(objSIDColorSupplier.groupTo),
+                    design.getGroupObjectContainer(objGroupSizeSupplier.groupTo),
                     DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
 
 //            design.addIntersection(design.getGroupObjectContainer(objSizeSupplier.groupTo),
