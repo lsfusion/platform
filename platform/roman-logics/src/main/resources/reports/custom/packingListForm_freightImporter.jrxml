@@ -92,24 +92,24 @@
 		</groupFooter>
 	</group>
 	<pageHeader>
-		<band height="170">
+		<band height="160">
 			<textField isStretchWithOverflow="true">
-				<reportElement style="GroupCellStyle2" positionType="FixRelativeToBottom" x="0" y="152" width="106" height="18"/>
+				<reportElement style="GroupCellStyle2" positionType="FixRelativeToBottom" x="0" y="142" width="106" height="18"/>
 				<textElement textAlignment="Center" verticalAlignment="Top"/>
 				<textFieldExpression class="java.lang.String"><![CDATA["Art-Nr"]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
-				<reportElement style="GroupCellStyle2" positionType="FixRelativeToBottom" x="106" y="152" width="92" height="18"/>
+				<reportElement style="GroupCellStyle2" positionType="FixRelativeToBottom" x="106" y="142" width="92" height="18"/>
 				<textElement textAlignment="Center" verticalAlignment="Top"/>
 				<textFieldExpression class="java.lang.String"><![CDATA["Marke"]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
-				<reportElement style="GroupCellStyle2" positionType="FixRelativeToBottom" x="198" y="152" width="105" height="18"/>
+				<reportElement style="GroupCellStyle2" positionType="FixRelativeToBottom" x="198" y="142" width="105" height="18"/>
 				<textElement textAlignment="Center" verticalAlignment="Top"/>
 				<textFieldExpression class="java.lang.String"><![CDATA["BESCHREIBUNG"]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
-				<reportElement style="GroupCellStyle2" positionType="FixRelativeToBottom" x="303" y="152" width="62" height="18"/>
+				<reportElement style="GroupCellStyle2" positionType="FixRelativeToBottom" x="303" y="142" width="62" height="18"/>
 				<textElement textAlignment="Center" verticalAlignment="Top"/>
 				<textFieldExpression class="java.lang.String"><![CDATA["MENGE"]]></textFieldExpression>
 			</textField>
@@ -178,17 +178,17 @@
 				<textFieldExpression class="java.lang.String"><![CDATA[$F{sidContractImporterFreight}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement style="GroupCellStyle2" positionType="FixRelativeToBottom" x="365" y="152" width="55" height="18"/>
+				<reportElement style="GroupCellStyle2" positionType="FixRelativeToBottom" x="365" y="142" width="55" height="18"/>
 				<textElement textAlignment="Center" verticalAlignment="Top"/>
 				<textFieldExpression class="java.lang.String"><![CDATA["Netto,kg"]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement style="GroupCellStyle2" positionType="FixRelativeToBottom" x="475" y="152" width="83" height="18"/>
+				<reportElement style="GroupCellStyle2" positionType="FixRelativeToBottom" x="475" y="142" width="83" height="18"/>
 				<textElement textAlignment="Center" verticalAlignment="Top"/>
 				<textFieldExpression class="java.lang.String"><![CDATA["BETRAG"]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement style="GroupCellStyle2" positionType="FixRelativeToBottom" x="420" y="152" width="55" height="18"/>
+				<reportElement style="GroupCellStyle2" positionType="FixRelativeToBottom" x="420" y="142" width="55" height="18"/>
 				<textElement textAlignment="Center" verticalAlignment="Top"/>
 				<textFieldExpression class="java.lang.String"><![CDATA["Brutto,kg"]]></textFieldExpression>
 			</textField>
@@ -306,7 +306,7 @@
 				<textFieldExpression class="java.lang.String"><![CDATA["Postbank Berlin\n" + "Fil./Konto 551268108\n" + "BLZ 10010010"]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement positionType="FixRelativeToBottom" x="0" y="34" width="170" height="18"/>
+				<reportElement positionType="Float" x="0" y="34" width="170" height="18"/>
 				<textElement verticalAlignment="Top"/>
 				<textFieldExpression class="java.lang.String"><![CDATA[$F{addressOriginExporterFreight}]]></textFieldExpression>
 			</textField>
