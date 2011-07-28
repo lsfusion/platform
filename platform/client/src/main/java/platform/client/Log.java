@@ -55,9 +55,9 @@ public final class Log {
         // пока таким образом определим есть ли он на экране
         if (out.getTopLevelAncestor() != null) {
             out.setTemporaryBackground(Color.green);
-        } else {
-            JOptionPane.showMessageDialog(SwingUtils.getActiveWindow(), message, Main.getMainTitle(), JOptionPane.INFORMATION_MESSAGE);
-        }
+        } // else {
+//            JOptionPane.showMessageDialog(SwingUtils.getActiveWindow(), message, Main.getMainTitle(), JOptionPane.INFORMATION_MESSAGE);
+//        }
     }
 
     public static void printFailedMessage(String message) {
