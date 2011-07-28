@@ -11,4 +11,8 @@ public class InnerSelectJoin extends InnerGroupJoin<JoinSet> {
     public InnerSelectJoin(KeyEqual keyEqual, JoinSet joins, Where where) {
         super(keyEqual, joins, where);
     }
+
+    public InnerSelectJoin pack() {
+        return new InnerSelectJoin(keyEqual, joins, where.pack());
+    }
 }

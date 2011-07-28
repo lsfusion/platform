@@ -19,10 +19,7 @@ import platform.server.data.type.Type;
 import platform.server.data.where.classes.ClassExprWhere;
 import platform.server.data.where.classes.MeanClassWheres;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public abstract class AbstractWhere extends AbstractSourceJoin<Where> implements Where {
 
@@ -179,7 +176,15 @@ public abstract class AbstractWhere extends AbstractSourceJoin<Where> implements
     }
 
     public Collection<InnerSelectJoin> getInnerJoins(boolean notExclusive, Set<KeyExpr> keys) {
-        return BaseUtils.immutableCast(getInnerJoins(notExclusive, false, keys));
+        Collection<InnerSelectJoin> innerJoins = BaseUtils.immutableCast(getInnerJoins(notExclusive, false, keys));
+        if(innerJoins.size()==1)
+            return innerJoins;
+        else {
+            Collection<InnerSelectJoin> result = new ArrayList<InnerSelectJoin>();
+            for(InnerSelectJoin innerJoin : innerJoins)
+                result.add(innerJoin.pack());
+            return result;
+        }
     }
 
     public Collection<InnerGroupJoin<? extends GroupJoinSet>> getInnerJoins(boolean notExclusive, boolean noJoins, Set<KeyExpr> keys) {
@@ -189,7 +194,7 @@ public abstract class AbstractWhere extends AbstractSourceJoin<Where> implements
             return innerJoins;
         else {
             InnerGroupJoin<? extends GroupJoinSet> firstJoin = innerJoins.iterator().next();
-            return BaseUtils.add(keyEquals.getWhere().and(firstJoin.fullWhere.not()).getInnerJoins(false,noJoins,keys),firstJoin); // assert что keyEquals.getWhere тоже самое что this только упрощенное транслятором
+            return BaseUtils.add(keyEquals.getWhere().and(firstJoin.fullWhere.not()).getInnerJoins(false, noJoins, keys), firstJoin); // assert что keyEquals.getWhere тоже самое что this только упрощенное транслятором
         }
     }
 
