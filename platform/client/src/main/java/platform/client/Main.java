@@ -143,6 +143,8 @@ public class Main {
 
                     String timeout = System.getProperty(PLATFORM_CLIENT_CONNECTION_LOST_TIMEOUT, "7200000");
 
+                    if (RMISocketFactory.getSocketFactory() != null)
+                        System.out.println(RMISocketFactory.getSocketFactory());
                     initRMISocketFactory(timeout);
 
                     LoginAction loginAction = LoginAction.getDefault();
@@ -220,11 +222,6 @@ public class Main {
 
 
     private static void initRMISocketFactory(String timeout) throws IOException {
-        RMISocketFactory factory = RMISocketFactory.getSocketFactory();
-        if (factory == null) {
-            factory = RMISocketFactory.getDefaultSocketFactory();
-        }
-
         if (socketFactory == null) {
             socketFactory = new RMITimeoutSocketFactory(Integer.valueOf(timeout));
 
