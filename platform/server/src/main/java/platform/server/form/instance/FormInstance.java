@@ -19,6 +19,7 @@ import platform.server.data.expr.ValueExpr;
 import platform.server.data.expr.query.GroupExpr;
 import platform.server.data.expr.query.GroupType;
 import platform.server.data.query.Query;
+import platform.server.data.type.ObjectType;
 import platform.server.data.type.Type;
 import platform.server.data.type.TypeSerializer;
 import platform.server.form.entity.*;
@@ -142,6 +143,10 @@ public class FormInstance<T extends BusinessLogics<T>> extends IncrementProps<Pr
         this(entity, BL, session, securityPolicy, focusListener, classListener, computer, new HashMap<ObjectEntity, DataObject>(), false);
     }
 
+    public FormInstance(FormEntity<T> entity, T BL, DataSession session, SecurityPolicy securityPolicy, FocusListener<T> focusListener, CustomClassListener classListener, PropertyObjectInterfaceInstance computer, boolean interactive) throws SQLException {
+        this(entity, BL, session, securityPolicy, focusListener, classListener, computer, new HashMap<ObjectEntity, DataObject>(), interactive);
+    }
+
     public FormInstance(FormEntity<T> entity, T BL, DataSession session, SecurityPolicy securityPolicy, FocusListener<T> focusListener, CustomClassListener classListener, PropertyObjectInterfaceInstance computer, Map<ObjectEntity, ? extends ObjectValue> mapObjects, boolean interactive) throws SQLException {
         this(entity, BL, session, securityPolicy, focusListener, classListener, computer, mapObjects, interactive, null);
     }
@@ -197,6 +202,18 @@ public class FormInstance<T extends BusinessLogics<T>> extends IncrementProps<Pr
         for (Entry<OrderEntity<?>, Boolean> orderEntity : entity.fixedOrders.entrySet()) {
             OrderInstance orderInstance = orderEntity.getKey().getInstance(instanceFactory);
             orderInstance.getApplyObject().fixedOrders.put(orderInstance, orderEntity.getValue());
+        }
+
+        // в первую очередь ставим на объекты из cache'а
+        if (classListener != null) {
+            for (GroupObjectInstance groupObject : groups) {
+                for (ObjectInstance object : groupObject.objects)
+                    if (object.getBaseClass() instanceof CustomClass) {
+                        Integer objectID = classListener.getObject((CustomClass) object.getBaseClass());
+                        if (objectID != null)
+                            groupObject.addSeek(object, session.getDataObject(objectID, ObjectType.instance), false);
+                    }
+            }
         }
 
         for (Entry<ObjectEntity, ? extends ObjectValue> mapObject : mapObjects.entrySet()) {

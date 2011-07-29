@@ -305,6 +305,11 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteObject i
         }
     }
 
+    @Override
+    public Integer getObject(CustomClass cls) {
+        return getCacheObject(cls);
+    }
+
     public void objectChanged(ConcreteCustomClass cls, int objectID) {
         addCacheObject(cls, objectID);
     }
@@ -355,17 +360,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteObject i
                 else
                     session = createSession();
 
-                Map<ObjectEntity, ObjectValue> cacheSeeks = new HashMap<ObjectEntity, ObjectValue>();
-                for (GroupObjectEntity groupObject : formEntity.groups) {
-                    for (ObjectEntity object : groupObject.objects)
-                        if (object.baseClass instanceof CustomClass) {
-                            Integer objectID = classCache.getObject((CustomClass) object.baseClass);
-                            if (objectID != null)
-                                cacheSeeks.put(object, session.getDataObject(objectID, ObjectType.instance));
-                        }
-                }
-
-                FormInstance<T> formInstance = new FormInstance<T>(formEntity, BL, session, securityPolicy, this, this, computer, cacheSeeks, interactive);
+                FormInstance<T> formInstance = new FormInstance<T>(formEntity, BL, session, securityPolicy, this, this, computer, interactive);
                 // все равно подошли объекты или нет
 
                 remoteForm = new RemoteForm<T, FormInstance<T>>(formInstance, formEntity.getRichDesign(), exportPort, this);
@@ -455,6 +450,10 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteObject i
     }
 
     private ClassCache classCache;
+
+    Integer getCacheObject(CustomClass cls) {
+        return classCache.getObject(cls);
+    }
 
     public void addCacheObject(ConcreteCustomClass cls, int value) {
         classCache.put(cls, value);
