@@ -483,10 +483,12 @@ public class ImportProjectsActionProperty extends ActionProperty {
         for (Map<Object, Object> key : data.keySet()) {
             Map<Object, Object> project = data.get(key);
             if (project.get("id") == null) {
-                if (project.get("email") != null && getEmailRepeatings(data, project.get("email").toString()) == 1) {
-                    String projectId = getProjectId(elements, project.get("email").toString());
+                Object email = project.get("email");
+                if (email != null && getEmailRepeatings(data, elements, email.toString()) == 1) {
+                    String projectId = getProjectId(elements, email.toString());
                     if (projectId != null) {
                         LM.sidProject.execute(projectId, session, session.getDataObject(BaseUtils.singleValue(key), LM.project.getType()));
+                        toLog += "\nprojectId: " + projectId + "\n\temail: " + email.toString().trim() + "\n\t" + project.get("name") + " =? " + getProjectName(elements, email.toString());
                     }
                 }
             }
@@ -502,14 +504,31 @@ public class ImportProjectsActionProperty extends ActionProperty {
         return null;
     }
 
-    public int getEmailRepeatings (OrderedMap<Map<Object, Object>, Map<Object, Object>> data, String email) {
+    public String getProjectName(List<Element> elements, String email) {
+        for (Element element : elements) {
+            if (element.getChildText("emailProject").equals(email.trim())) {
+                return element.getChildText("nameNativeProject");
+            }
+        }
+        return null;
+    }
+
+    public int getEmailRepeatings (OrderedMap<Map<Object, Object>, Map<Object, Object>> data, List<Element> elements, String email) {
         int repeatings = 0;
         for (Map<Object, Object> project : data.values()) {
             if (project.get("email") != null && project.get("email").toString().equals(email)) {
                 repeatings++;
             }
         }
-        return repeatings;
+        if (repeatings == 1) {
+            repeatings = 0;
+            for (Element element : elements) {
+                if (element.getChildText("emailProject").equals(email.trim())) {
+                    repeatings++;
+                }
+            }
+        }
+        return 0;
     }
 
     public void importProject(InputStream inputStream, String projectId, java.sql.Date currentProjectDate) throws SQLException {

@@ -1578,7 +1578,6 @@ public class SkolkovoLogicsModule extends LogicsModule {
             setReadOnly(objDocumentTemplate, true);
             addPropertyDraw(generateDocumentsProjectDocumentType, objProject, objDocumentTemplate);
             addPropertyDraw(includeDocumentsProjectDocumentType, objProject, objDocumentTemplate);
-            addPropertyDraw(importProjectsAction, objProject, objDocumentTemplate);
 
             objDocument = addSingleGroupObject(document, nameTypeDocument, nameLanguageDocument, postfixDocument, loadFileDocument, openFileDocument);
             addObjectActions(this, objDocument);
@@ -1674,7 +1673,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         private GlobalFormEntity(NavigatorElement parent, String sID) {
             super(parent, sID, "Глобальные параметры");
 
-            addPropertyDraw(new LP[]{baseLM.currentDate, requiredPeriod, requiredQuantity, limitExperts, emailDocuments, emailClaimerFromAddress});
+            addPropertyDraw(new LP[]{baseLM.currentDate, requiredPeriod, requiredQuantity, limitExperts, emailDocuments, emailClaimerFromAddress, importProjectsAction});
         }
     }
 
