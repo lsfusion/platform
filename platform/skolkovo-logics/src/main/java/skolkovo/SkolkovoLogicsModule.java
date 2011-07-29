@@ -262,6 +262,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP clusterInExpertVote;
     public LP inProjectCluster;
     LP clusterVote, nameNativeClusterVote, nameForeignClusterVote;
+    LP isPrevVoteVote;
+    LP countPrevVote;
     public LP claimerProject;
     LP nameNativeClaimerProject;
     LP nameForeignClaimerProject;
@@ -1103,6 +1105,12 @@ public class SkolkovoLogicsModule extends LogicsModule {
         clusterVote = addDProp(idGroup, "clusterVote", "Кластер (ИД)", cluster, vote);
         nameNativeClusterVote = addJProp(baseGroup, "nameNativeClusterVote", "Кластер", nameNative, clusterVote, 1);
         nameForeignClusterVote = addJProp("nameForeignClusterVote", "Кластер (иностр.)", nameForeign, clusterVote, 1);
+
+        isPrevVoteVote = addJProp("isPrevVoteVote", "Пред.", and(false, false, false), addJProp(baseLM.equals2, projectVote, 1, projectVote, 2), 1, 2,
+                                                                                addJProp(baseLM.equals2, clusterVote, 1, clusterVote, 2), 1, 2,
+                                                                                addJProp(baseLM.less2, dateStartVote, 1, dateStartVote, 2), 1, 2,
+                                                                                incrementVote, 1);
+        countPrevVote = addSGProp("countPrevVote", "Кол-во пред. заседания", addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1, vote), 2, isPrevVoteVote, 1, 2), 2);
 
         clusterInExpertVote = addJProp("clusterInExpertVote", "Вкл", inClusterExpert, clusterVote, 2, 1);
 
@@ -1994,14 +2002,16 @@ public class SkolkovoLogicsModule extends LogicsModule {
     private class VoteProtocolFormEntity extends FormEntity<SkolkovoBusinessLogics> { // письмо эксперту
 
         private ObjectEntity objVote;
-        
+        private ObjectEntity objPrevVote;
         private ObjectEntity objExpert;
 
         private VoteProtocolFormEntity(NavigatorElement parent, String sID) {
             super(parent, sID, "Протокол заседания", true);
 
-            objVote = addSingleGroupObject(1, "vote", vote, dateProjectVote, baseLM.date, dateEndVote, nameNativeProjectVote, nameNativeClaimerVote, nameNativeClusterVote, quantityInVote, quantityRepliedVote, quantityDoneVote, quantityDoneNewVote, quantityDoneOldVote, quantityRefusedVote, quantityConnectedVote, succeededVote, acceptedVote, quantityInClusterVote, acceptedInClusterVote, quantityInnovativeVote, acceptedInnovativeVote, quantityForeignVote, acceptedForeignVote, nameStatusProjectVote, prevDateStartVote, prevDateVote);
+            objVote = addSingleGroupObject(1, "vote", vote, dateProjectVote, baseLM.date, dateEndVote, nameNativeProjectVote, nameNativeClaimerVote, nameNativeClusterVote, quantityInVote, quantityRepliedVote, quantityDoneVote, quantityDoneNewVote, quantityDoneOldVote, quantityRefusedVote, quantityConnectedVote, succeededVote, acceptedVote, quantityInClusterVote, acceptedInClusterVote, quantityInnovativeVote, acceptedInnovativeVote, quantityForeignVote, acceptedForeignVote, nameStatusProjectVote, prevDateStartVote, prevDateVote, countPrevVote);
             objVote.groupTo.initClassView = ClassViewType.PANEL;
+
+            objPrevVote = addSingleGroupObject(5, "prevVote", vote, dateStartVote);
 
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(closedVote, objVote)));
 
@@ -2011,6 +2021,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
             addPropertyDraw(connectedExpertVote, objExpert, objVote);
 
+            addFixedFilter(new NotNullFilterEntity(addPropertyObject(isPrevVoteVote, objPrevVote, objVote)));
             addFixedFilter(new OrFilterEntity(new NotNullFilterEntity(addPropertyObject(doneExpertVote, objExpert, objVote)),
                                               new NotNullFilterEntity(addPropertyObject(connectedExpertVote, objExpert, objVote))));
 
