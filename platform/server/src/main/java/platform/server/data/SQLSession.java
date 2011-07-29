@@ -686,12 +686,12 @@ public class SQLSession extends MutableObject {
                         num = 0;
                     } else {
                         parsed[num++] = '?';
-                        if (!values[p].isSafeType()) {
-                            String castString = "::" + values[p].getDBType(syntax);
-                            System.arraycopy(castString.toCharArray(), 0, parsed, num, castString.length());
-                            num += castString.length();
-                        }
                         preparedParams.add(values[p]);
+                    }
+                    if (!values[p].isSafeType()) {
+                        String castString = "::" + values[p].getDBType(syntax);
+                        System.arraycopy(castString.toCharArray(), 0, parsed, num, castString.length());
+                        num += castString.length();
                     }
                     charParsed = params[p].length;
                     break;

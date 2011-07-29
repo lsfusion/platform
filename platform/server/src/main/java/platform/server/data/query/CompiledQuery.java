@@ -149,7 +149,7 @@ public class CompiledQuery<K,V> {
         boolean useFJ = syntax.useFJ();
         Collection<InnerSelectJoin> queryJoins = query.where.getInnerJoins(useFJ, new HashSet<KeyExpr>(query.mapKeys.values()));
 
-        unionAll = !(useFJ || queryJoins.size() < 2);
+        unionAll = !useFJ && queryJoins.size() >= 2;
         if (unionAll) {
             Map<V, Type> castTypes = new HashMap<V, Type>();
             for(Map.Entry<V, ClassReader> propertyReader : propertyReaders.entrySet())
@@ -457,7 +457,7 @@ public class CompiledQuery<K,V> {
                 Map<String, String> keySelect = BaseUtils.join(group,fromPropertySelect);
                 Map<String,String> propertySelect = new HashMap<String, String>();
                 for(Map.Entry<Expr,GroupExpr> expr : exprs.entrySet())
-                    propertySelect.put(queries.get(expr.getKey()),expr.getValue().getGroupType().getString(fromPropertySelect.get(expr.getKey()), expr.getKey().getType(fullWhere), syntax));
+                    propertySelect.put(queries.get(expr.getKey()),expr.getValue().getGroupType().getString() + "(" + fromPropertySelect.get(expr.getKey()) + ")");
                 return "(" + syntax.getSelect(fromSelect, SQLSession.stringExpr(keySelect,propertySelect),
                         BaseUtils.toString(whereSelect," AND "),"",BaseUtils.evl(BaseUtils.toString(keySelect.values(),","),"3+2"),"") + ")";
             }

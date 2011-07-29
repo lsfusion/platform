@@ -15,7 +15,7 @@ public abstract class StringParseInterface implements ParseInterface {
     }
 
     public boolean isSafeType() {
-        throw new RuntimeException("not supported");
+        return true;
     }
 
     public String getDBType(SQLSyntax syntax) {

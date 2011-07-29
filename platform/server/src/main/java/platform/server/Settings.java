@@ -202,4 +202,15 @@ public class Settings {
         this.locale = locale;
         ServerResourceBundle.load(locale);
     }
+
+    // максимум сколько свойств вместе будет применяться в базу
+    private int splitIncrementApply = 10;
+
+    public int getSplitIncrementApply() {
+        return splitIncrementApply;
+    }
+
+    public void setSplitIncrementApply(int splitIncrementApply) {
+        this.splitIncrementApply = splitIncrementApply;
+    }
 }

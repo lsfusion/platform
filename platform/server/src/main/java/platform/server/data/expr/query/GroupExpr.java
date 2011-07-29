@@ -465,16 +465,15 @@ public abstract class GroupExpr extends QueryExpr<BaseExpr,Expr,GroupJoin> {
     public String getExprSource(CompileSource source, String prefix) {
 
         Set<Expr> queryExprs = BaseUtils.addSet(group.keySet(), query); // так как может одновременно и SUM и MAX нужен
-        Where fullWhere = Expr.getWhere(queryExprs);
 
         Map<Expr,String> fromPropertySelect = new HashMap<Expr, String>();
         Collection<String> whereSelect = new ArrayList<String>(); // проверить crossJoin
-        String fromSelect = new Query<KeyExpr,Expr>(BaseUtils.toMap(getKeys()),BaseUtils.toMap(queryExprs), fullWhere)
+        String fromSelect = new Query<KeyExpr,Expr>(BaseUtils.toMap(getKeys()),BaseUtils.toMap(queryExprs), Expr.getWhere(queryExprs))
             .compile(source.syntax, prefix).fillSelect(new HashMap<KeyExpr, String>(), fromPropertySelect, whereSelect, source.params);
         for(Map.Entry<BaseExpr,BaseExpr> groupEntry : group.entrySet())
             whereSelect.add(fromPropertySelect.get(groupEntry.getKey())+"="+groupEntry.getValue().getSource(source));
 
-        return "(" + source.syntax.getSelect(fromSelect, getGroupType().getString(fromPropertySelect.get(query), query.getType(fullWhere), source.syntax),
+        return "(" + source.syntax.getSelect(fromSelect, getGroupType().getString() + "(" + fromPropertySelect.get(query) + ")",
                 BaseUtils.toString(whereSelect, " AND "), "", "", "") + ")";
     }
 }

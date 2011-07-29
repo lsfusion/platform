@@ -73,6 +73,11 @@ public class StringClass extends DataClass<String> {
         return "'" + value + "'";
     }
 
+    @Override
+    public boolean isSafeType(Object value) { // при полиморфных функциях странно себя ведет без explicit cast'а
+        return false;
+    }
+
     public String read(Object value) {
         return (String) value;
     }

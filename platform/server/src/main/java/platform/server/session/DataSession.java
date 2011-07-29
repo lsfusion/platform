@@ -4,6 +4,7 @@ import platform.base.BaseUtils;
 import platform.base.MutableObject;
 import platform.base.OrderedMap;
 import platform.interop.action.ClientAction;
+import platform.server.Settings;
 import platform.server.caches.MapValues;
 import platform.server.classes.*;
 import platform.server.data.*;
@@ -473,16 +474,14 @@ public class DataSession extends MutableObject implements SessionChanges, ExprCh
 
             Query<KeyField, PropertyField> modifyQuery = new Query<KeyField, PropertyField>(groupTable.getKey());
             Join<Property> join = changeTable.join(modifyQuery.mapKeys);
-            for (Property property : groupTable.getValue()) {
+            for (Property property : groupTable.getValue())
                 modifyQuery.properties.put(property.field, join.getExpr(property));
-            }
             modifyQuery.and(join.getWhere());
             sql.modifyRecords(new ModifyQuery(groupTable.getKey(), modifyQuery, env));
         }
 
-        for (Map.Entry<DataObject, ConcreteObjectClass> newClass : newClasses.entrySet()) {
+        for (Map.Entry<DataObject, ConcreteObjectClass> newClass : newClasses.entrySet())
             newClass.getValue().saveClassChanges(sql, newClass.getKey());
-        }
 
         cleanApply();
 

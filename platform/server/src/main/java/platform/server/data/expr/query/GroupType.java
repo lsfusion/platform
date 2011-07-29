@@ -12,23 +12,17 @@ import java.util.Map;
 public enum GroupType {
     SUM, MAX, ANY;
 
-    public String getString(String expr, Type type, SQLSyntax syntax) {
-        String func = null;
+    public String getString() {
         switch (this) {
             case MAX:
-                func = "MAX";
-                break;
+                return "MAX";
             case ANY:
 //                return "MAX";
-                func = "ANYVALUE";
-                if(type instanceof StringClass)
-                    expr = expr + "::" + type.getDB(syntax);
-                break;
+                return "ANYVALUE";
             case SUM:
-                func = "SUM";
-                break;
+                return "SUM";
         }
-        return func + "(" + expr + ")";
+        throw new RuntimeException("can not be");
     }
 
     public Expr add(Expr op1, Expr op2) {

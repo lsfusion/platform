@@ -1,6 +1,7 @@
 package platform.server.session;
 
 import platform.base.BaseUtils;
+import platform.server.Settings;
 import platform.server.classes.BaseClass;
 import platform.server.data.Field;
 import platform.server.data.KeyField;
@@ -21,6 +22,7 @@ public class IncrementApply extends IncrementProps<KeyField> {
         super(session);
     }
 
+    // assert что в properties содержатся
     public SessionTableUsage<KeyField, Property> read(final ImplementTable implement, Collection<Property> properties, BaseClass baseClass) throws SQLException {
         if (properties.size() == 1) {
             PropertyGroup<KeyField> changeTable = incrementGroups.get(BaseUtils.single(properties));
@@ -28,6 +30,18 @@ public class IncrementApply extends IncrementProps<KeyField> {
                 return tables.get(changeTable);
             }
         }
+        final int split = Settings.instance.getSplitIncrementApply();
+        if(properties.size() > split) { // если слишком много групп, разделим на несколько read'ов
+            // вообще тут пока используется дополнительный assertion, но пока это не так важно
+            final List<Property> propertyList = new ArrayList<Property>(properties);
+            for(Collection<Property> groupProps : BaseUtils.<Integer, Property>group(new BaseUtils.Group<Integer, Property>() {
+                    public Integer group(Property key) {
+                        return propertyList.indexOf(key) / split;
+                    }
+                }, propertyList).values())
+                read(implement, groupProps, baseClass);
+        }
+
         PropertyGroup<KeyField> groupTable = new PropertyGroup<KeyField>() {
             public List<KeyField> getKeys() {
                 return implement.keys;
