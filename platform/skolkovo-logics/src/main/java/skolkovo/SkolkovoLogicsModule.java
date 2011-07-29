@@ -1466,22 +1466,46 @@ public class SkolkovoLogicsModule extends LogicsModule {
         @Override
         public FormView createDefaultRichDesign() {
             DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign();
-
-            design.getGroupPropertyContainer(objProject.groupTo, innovationGroup).constraints.childConstraints = DoNotIntersectSimplexConstraint.TOTHE_BOTTOM;
-            design.getGroupPropertyContainer(objProject.groupTo, executiveSummaryGroup).constraints.childConstraints = DoNotIntersectSimplexConstraint.TOTHE_BOTTOM;
-            design.getGroupPropertyContainer(objProject.groupTo, sourcesFundingGroup).constraints.childConstraints = DoNotIntersectSimplexConstraint.TOTHE_BOTTOM;
-            design.getGroupPropertyContainer(objProject.groupTo, equipmentGroup).constraints.childConstraints = DoNotIntersectSimplexConstraint.TOTHE_BOTTOM;
-            design.getGroupPropertyContainer(objProject.groupTo, projectDocumentsGroup).constraints.childConstraints = DoNotIntersectSimplexConstraint.TOTHE_BOTTOM;
-            design.getGroupPropertyContainer(objProject.groupTo, projectStatusGroup).constraints.childConstraints = DoNotIntersectSimplexConstraint.TOTHE_BOTTOM;
-
             design.addIntersection(design.getGroupPropertyContainer(objProject.groupTo, innovationGroup),
                                    design.getGroupPropertyContainer(objProject.groupTo, sourcesFundingGroup), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
-
-            design.addIntersection(design.getGroupPropertyContainer(objProject.groupTo, executiveSummaryGroup),
-                                   design.getGroupPropertyContainer(objProject.groupTo, sourcesFundingGroup), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
-
+            design.addIntersection(design.getGroupPropertyContainer(objProject.groupTo, innovationGroup),
+                                   design.getGroupPropertyContainer(objProject.groupTo, equipmentGroup), DoNotIntersectSimplexConstraint.TOTHE_BOTTOM);
+            design.addIntersection(design.getGroupPropertyContainer(objProject.groupTo, equipmentGroup),
+                                   design.getGroupPropertyContainer(objProject.groupTo, projectDocumentsGroup), DoNotIntersectSimplexConstraint.TOTHE_BOTTOM);
+            design.addIntersection(design.getGroupPropertyContainer(objProject.groupTo, projectDocumentsGroup),
+                                   design.getGroupPropertyContainer(objProject.groupTo, executiveSummaryGroup), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
+            design.addIntersection(design.getGroupPropertyContainer(objProject.groupTo, innovationGroup),
+                                   design.getGroupPropertyContainer(objProject.groupTo, executiveSummaryGroup), DoNotIntersectSimplexConstraint.TOTHE_BOTTOM);
+            design.addIntersection(design.getGroupPropertyContainer(objProject.groupTo, projectStatusGroup),
+                                   design.getGroupPropertyContainer(objProject.groupTo, executiveSummaryGroup), DoNotIntersectSimplexConstraint.TOTHE_BOTTOM);
+            design.addIntersection(design.getGroupPropertyContainer(objProject.groupTo, equipmentGroup),
+                                   design.getGroupPropertyContainer(objProject.groupTo, executiveSummaryGroup), DoNotIntersectSimplexConstraint.TOTHE_BOTTOM);
+            design.addIntersection(design.getGroupPropertyContainer(objProject.groupTo, projectStatusGroup),
+                                   design.getGroupPropertyContainer(objProject.groupTo, executiveSummaryGroup), DoNotIntersectSimplexConstraint.TOTHE_BOTTOM);
+            design.addIntersection(design.getGroupPropertyContainer(objProject.groupTo, equipmentGroup),
+                                   design.getGroupPropertyContainer(objProject.groupTo, projectStatusGroup), DoNotIntersectSimplexConstraint.TOTHE_BOTTOM);
             design.addIntersection(design.getGroupPropertyContainer(objProject.groupTo, projectDocumentsGroup),
                                    design.getGroupPropertyContainer(objProject.groupTo, projectStatusGroup), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
+            design.addIntersection(design.getGroupPropertyContainer(objProject.groupTo, sourcesFundingGroup),
+                                   design.getGroupPropertyContainer(objProject.groupTo, executiveSummaryGroup), DoNotIntersectSimplexConstraint.TOTHE_BOTTOM);
+
+
+            design.getGroupPropertyContainer(objProject.groupTo, innovationGroup).constraints.childConstraints = DoNotIntersectSimplexConstraint.TOTHE_BOTTOM;
+            design.getGroupPropertyContainer(objProject.groupTo, executiveSummaryGroup).constraints.childConstraints = DoNotIntersectSimplexConstraint.TOTHE_RIGHTBOTTOM;
+//            design.getGroupPropertyContainer(objProject.groupTo, sourcesFundingGroup).constraints.childConstraints = DoNotIntersectSimplexConstraint.TOTHE_BOTTOM;
+//            design.getGroupPropertyContainer(objProject.groupTo, equipmentGroup).constraints.childConstraints = DoNotIntersectSimplexConstraint.TOTHE_BOTTOM;
+//            design.getGroupPropertyContainer(objProject.groupTo, projectDocumentsGroup).constraints.childConstraints = DoNotIntersectSimplexConstraint.TOTHE_BOTTOM;
+            design.getGroupPropertyContainer(objProject.groupTo, projectStatusGroup).constraints.childConstraints = DoNotIntersectSimplexConstraint.TOTHE_RIGHT;
+//
+//
+//            design.addIntersection(design.getGroupPropertyContainer(objProject.groupTo, innovationGroup),
+//                                   design.getGroupPropertyContainer(objProject.groupTo, sourcesFundingGroup), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
+//
+//            design.addIntersection(design.getGroupPropertyContainer(objProject.groupTo, executiveSummaryGroup),
+//                                   design.getGroupPropertyContainer(objProject.groupTo, sourcesFundingGroup), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
+//
+//            design.addIntersection(design.getGroupPropertyContainer(objProject.groupTo, projectDocumentsGroup),
+//                                   design.getGroupPropertyContainer(objProject.groupTo, projectStatusGroup), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
 
             ContainerView specContainer = design.createContainer();
             design.getMainContainer().addAfter(specContainer, design.getGroupObjectContainer(objProject.groupTo));

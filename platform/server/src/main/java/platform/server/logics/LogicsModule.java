@@ -1710,7 +1710,7 @@ public abstract class LogicsModule {
 
     // получает свойство is
     // для множества классов есть CProp
-    protected LP is(ValueClass valueClass) {
+    public LP is(ValueClass valueClass) {
         LP isProp = baseLM.is.get(valueClass);
         if (isProp == null) {
             isProp = addCProp(valueClass.toString() + ServerResourceBundle.getString("logics.pr"), LogicalClass.instance, true, valueClass);

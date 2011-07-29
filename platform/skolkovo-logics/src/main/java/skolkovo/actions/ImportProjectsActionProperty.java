@@ -20,6 +20,7 @@ import platform.server.form.instance.remote.RemoteForm;
 import platform.server.integration.*;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
+import platform.server.logics.linear.LP;
 import platform.server.logics.property.ActionProperty;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.session.Changes;
@@ -347,7 +348,7 @@ public class ImportProjectsActionProperty extends ActionProperty {
             String http = getHttp();
             Map<String, java.sql.Date> projects = importProjectsFromXML(http);
 
-            if (!onlyMessage) {
+            if (!onlyMessage && ! fillSids) {
                 for (String projectId : projects.keySet()) {
                     URL url = new URL(http + "&show=all&projectId=" + projectId);
                     URLConnection connection = url.openConnection();
@@ -357,7 +358,7 @@ public class ImportProjectsActionProperty extends ActionProperty {
                     importProject(inputStream, projectId, projects.get(projectId));
                 }
             }
-            if (!projects.isEmpty()) {
+            if (projects == null || !projects.isEmpty()) {
                 actions.add(new MessageClientAction("Данные были успешно приняты\n" + toLog, "Импорт"));
             } else {
                 if (responseContents != null) {
@@ -385,13 +386,18 @@ public class ImportProjectsActionProperty extends ActionProperty {
             Document document = builder.build(new ByteArrayInputStream(responseContents));
             responseContents = null;
 
-            Map<Object, KeyExpr> keys = LM.sidProject.getMapKeys();
+            LP isProject = LM.is(LM.project);
+            Map<Object, KeyExpr> keys = isProject.getMapKeys();
             Query<Object, Object> query = new Query<Object, Object>(keys);
             query.properties.put("id", LM.sidProject.getExpr(BaseUtils.singleValue(keys)));
             query.properties.put("email", LM.emailClaimerProject.getExpr(BaseUtils.singleValue(keys)));
             query.properties.put("name", LM.nameNative.getExpr(BaseUtils.singleValue(keys)));
             query.properties.put("date", LM.updateDateProject.getExpr(BaseUtils.singleValue(keys)));
-            query.and(LM.sidProject.property.getExpr(keys).getWhere());
+            if (fillSids) {
+                query.and(isProject.property.getExpr(keys).getWhere());
+            } else {
+                query.and(LM.sidProject.getExpr(BaseUtils.singleValue(keys)).getWhere());
+            }
             result = query.execute(session.sql);
 
             Element rootNode = document.getRootElement();
@@ -404,6 +410,7 @@ public class ImportProjectsActionProperty extends ActionProperty {
 
         if (fillSids) {
             fillSids(result, list);
+            return null;
         }
 
         return makeImportList(result, list);
@@ -447,7 +454,7 @@ public class ImportProjectsActionProperty extends ActionProperty {
                     Date date = (Date) project.get("date");
                     if (project.get("id").toString().trim().equals(projectId)) {
                         if (date == null || date.after(currentProjectDate)) {
-                            toLog += "\nprojectId: " + projectId + "\n\temail: " + project.get("email").toString().trim() + " -> " + element.getChildText("emailProject") + "\n\tname: " + project.get("name").toString().trim() + " -> " + name + "\n\tdate: " + date + " -> " + currentProjectDate;
+                            toLogString(projectId, project.get("email").toString().trim(), element.getChildText("emailProject"), project.get("name").toString().trim(), name, date, currentProjectDate);
                             projectList.put(projectId, currentProjectDate);
                             ignore = true;
                             break;
@@ -458,7 +465,7 @@ public class ImportProjectsActionProperty extends ActionProperty {
                     }
                 }
                 if (!ignore) {
-                    toLog += "\nprojectId: " + projectId + "\n\temail: " + null + " -> " + element.getChildText("emailProject") + "\n\tname: " + null + " -> " + name + "\n\tdate: " + null + " -> " + currentProjectDate;
+                    toLogString(projectId, null, element.getChildText("emailProject"), null, name, null, currentProjectDate);
                     projectList.put(projectId, currentProjectDate);
                 }
             }
@@ -467,13 +474,19 @@ public class ImportProjectsActionProperty extends ActionProperty {
         return projectList;
     }
 
+    public void toLogString(Object projectId, Object oldEmail, Object newEmail, Object oldName, Object newName, Object oldDate, Object newDate) {
+        toLog += "\nprojectId: " + projectId + "\n\temail: " + oldEmail + " -> " + newEmail + "\n\tname: " + oldName +
+                " -> " + newName + "\n\tdate: " + oldDate + " -> " + newDate;
+    }
+
     public void fillSids(OrderedMap<Map<Object, Object>, Map<Object, Object>> data,  List<Element> elements) throws SQLException {
-        for (Map<Object, Object> project : data.values()) {
-            if (project.get("projectId") == null) {
+        for (Map<Object, Object> key : data.keySet()) {
+            Map<Object, Object> project = data.get(key);
+            if (project.get("id") == null) {
                 if (project.get("email") != null && getEmailRepeatings(data, project.get("email").toString()) == 1) {
                     String projectId = getProjectId(elements, project.get("email").toString());
                     if (projectId != null) {
-//                        LM.sidProject.execute(projectId, session, session.getDataObject());
+                        LM.sidProject.execute(projectId, session, session.getDataObject(BaseUtils.singleValue(key), LM.project.getType()));
                     }
                 }
             }
@@ -667,7 +680,11 @@ public class ImportProjectsActionProperty extends ActionProperty {
                     rowPatent.add(nodePatent.getChildText("foreignTypePatent"));
                     rowPatent.add(nodePatent.getChildText("nativeNumberPatent"));
                     rowPatent.add(nodePatent.getChildText("foreignNumberPatent"));
-                    rowPatent.add(new java.sql.Date(new Date(Integer.parseInt(nodePatent.getChildText("yearPatent")) - 1900, Integer.parseInt(nodePatent.getChildText("monthPatent")), Integer.parseInt(nodePatent.getChildText("dayPatent")) - 1).getTime()));
+                    try {
+                        rowPatent.add(new java.sql.Date(new Date(Integer.parseInt(nodePatent.getChildText("yearPatent")) - 1900, Integer.parseInt(nodePatent.getChildText("monthPatent")), Integer.parseInt(nodePatent.getChildText("dayPatent")) - 1).getTime()));
+                    } catch (NumberFormatException e) {
+                        rowPatent.add(null);
+                    }
                     if (Integer.parseInt(BaseUtils.nevl(nodePatent.getChildText("isOwnedPatent"), "0")) == 1)
                         rowPatent.add(true);
                     else rowPatent.add(null);
