@@ -716,6 +716,10 @@ public class BaseUtils {
         return (primary.length() == 0 ? secondary : primary);
     }
 
+    public static String nevl(String primary, String secondary) {
+        return primary == null ? secondary : evl(primary, secondary);
+    }
+
     public static boolean hashEquals(Object obj1, Object obj2) {
         return obj1 == obj2 || (obj1.hashCode() == obj2.hashCode() && obj1.equals(obj2));
     }
