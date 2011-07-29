@@ -66,3 +66,8 @@ typeInvoiceCategoryFreightArticle2(freight, article) = and1(typeInvoiceCategoryA
 testProp = between(date($1), $2 IF DATE, $3 IF DATE);
 substring10s13 = and1(substring10($1), $1 IS STRING[13]);
 
+// Forms
+FORM ContractForm2 'ContractForm2'
+OBJECTS seller, contract
+PROPERTIES name(seller), objectClassName(seller),
+           sidContract(contract), date(contract), nameImporterContract(contract), nameCurrencyContract(contract);

@@ -3,6 +3,7 @@ grammar LsfLogics;
 @header { 
 	package platform.server; 
 	import platform.server.logics.ScriptingLogicsModule; 
+	import platform.server.logics.ScriptingFormEntity;
 	import platform.server.data.Union;
 	import platform.server.logics.linear.LP;
 	import java.util.Set;
@@ -38,7 +39,7 @@ importDirective
 
 
 statement
-	:	(classStatement | groupStatement | propertyStatement | tableStatement | indexStatement) ';';
+	:	(classStatement | groupStatement | propertyStatement | tableStatement | indexStatement | formStatement) ';';
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -86,6 +87,93 @@ groupStatement
 			(caption=STRING_LITERAL { captionStr = $caption.text; })?  
 			(':' parentName=compoundID { parent = $parentName.text; })?;
 
+
+////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////// FORM STATEMENT /////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+
+formStatement
+@init {
+	ScriptingFormEntity form;
+}
+@after {
+	if (parseState == ScriptingLogicsModule.State.NAVIGATOR) {
+		self.addScriptedForm(form);
+	}
+}
+	:	declaration=formDeclaration { form = $declaration.form; }
+		('OBJECTS' list=formGroupObjectsList[form] |
+		'PROPERTIES' list=formPropertiesList[form])*;
+
+	
+formDeclaration returns [ScriptingFormEntity form]
+@init {
+	String name;
+	String caption = null;
+}
+@after {
+	if (parseState == ScriptingLogicsModule.State.NAVIGATOR) {
+		$form = self.createScriptedForm(name, caption);
+	}
+}
+	:	'FORM' 
+		formName=ID { name = $formName.text; }
+		(formCaption=STRING_LITERAL { caption = $formCaption.text; })?;
+
+
+formGroupObjectsList[ScriptingFormEntity form] 
+@init {
+	List<List<String>> names = new ArrayList<List<String>>();
+	List<List<String>> classNames = new ArrayList<List<String>>(); 
+}
+@after {
+	if (parseState == ScriptingLogicsModule.State.NAVIGATOR) {
+		$form.addScriptedGroupObjects(names, classNames);
+	}
+}
+	:	groupElement=formGroupObjectDeclaration { names.add($groupElement.objectNames); classNames.add($groupElement.classIds); } 
+		(',' groupElement=formGroupObjectDeclaration { names.add($groupElement.objectNames); classNames.add($groupElement.classIds); })*;
+
+
+formGroupObjectDeclaration returns [List<String> objectNames, List<String> classIds]
+@init {
+	$objectNames = new ArrayList<String>();
+	$classIds = new ArrayList<String>();
+}
+	:	decl=formSingleGroupObjectDeclaration { $objectNames.add($decl.name); $classIds.add($decl.className); } |
+		('(' 
+		objDecl=formObjectDeclaration { $objectNames.add($objDecl.name); $classIds.add($objDecl.className); }	
+		(',' objDecl=formObjectDeclaration { $objectNames.add($objDecl.name); $classIds.add($objDecl.className); })+	
+		')'); 
+
+formSingleGroupObjectDeclaration returns [String name, String className] 
+	:	foDecl=formObjectDeclaration { $name = $foDecl.name; $className = $foDecl.className; };
+
+formObjectDeclaration returns [String name, String className] 
+	:	(objectName=ID { $name = $objectName.text; } '=')?	
+		id=classId { $className = $id.text; }; 
+	
+formPropertiesList[ScriptingFormEntity form] 
+@init {
+	List<String> properties = new ArrayList<String>();
+	List<List<String>> mapping = new ArrayList<List<String>>();
+}
+@after {
+	if (parseState == ScriptingLogicsModule.State.NAVIGATOR) {
+		$form.addScriptedPropertyDraws(properties, mapping);
+	}
+}
+	:	decl=formPropertyDeclaration { properties.add($decl.name); mapping.add($decl.mapping); }
+		(',' decl=formPropertyDeclaration { properties.add($decl.name); mapping.add($decl.mapping); })*;
+
+
+formPropertyDeclaration returns [String name, List<String> mapping]
+	:	id=compoundID { $name = $id.text; }
+		'(' 
+		objects=idList { $mapping = $objects.ids; } 
+		')';
+
+
 ////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////// PROPERTY STATEMENT ////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
@@ -131,7 +219,7 @@ joinPropertyDefinition[String name, List<String> namedParams] returns [LP proper
 
 dataPropertyDefinition[String name, List<String> namedParams] returns [LP property]
 @init {
-	List<String> paramClassNames = new ArrayList<String>();
+	List<String> paramClassNames;
 	String returnClass = null;
 	String groupName = null;
 	boolean isPersistent = false;
@@ -144,8 +232,7 @@ dataPropertyDefinition[String name, List<String> namedParams] returns [LP proper
 	:	'DATA'
 		retClass=classId { returnClass = $retClass.text; }
 		'(' 
-			((firstClassName=classId { paramClassNames.add($firstClassName.text); })
-			(',' className=classId { paramClassNames.add($className.text); })*)?
+			classIds=classIdList { paramClassNames = $classIds.ids; }
 		')' 
 		settings=commonPropertySettings { groupName = $settings.group; isPersistent = $settings.isPersistent; };
 
@@ -267,6 +354,13 @@ idList returns [List<String> ids]
 	ids = new ArrayList<String>();	
 } 
 	: (neIdList=nonEmptyIdList { ids = $neIdList.ids; })?;
+
+classIdList returns [List<String> ids]
+@init {
+	ids = new ArrayList<String>();
+}
+	:	((firstClassName=classId { ids.add($firstClassName.text); })
+		(',' className=classId { ids.add($className.text); })*)?;
 
 compoundIdList returns [List<String> ids] 
 @init {

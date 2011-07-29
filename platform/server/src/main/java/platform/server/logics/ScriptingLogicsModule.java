@@ -33,8 +33,8 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     private final Set<String> importedModules = new HashSet<String>();
 
-    public enum State {GROUP, CLASS, PROP}
-    public enum ConstType { INT, REAL, STRING, LOGICAL };
+    public enum State {GROUP, CLASS, PROP, NAVIGATOR}
+    public enum ConstType { INT, REAL, STRING, LOGICAL }
 
     private Map<String, ValueClass> primitiveTypeAliases = BaseUtils.buildMap(
             Arrays.<String>asList("INTEGER", "DOUBLE", "LONG", "DATE", "BOOLEAN"),
@@ -101,7 +101,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         return null;
     }
 
-    private ValueClass getClassByName(String name) {
+    public ValueClass getClassByName(String name) {
             ValueClass valueClass = getPredefinedClass(name);
             if (valueClass == null) {
                 int dotPosition = name.indexOf('.');
@@ -160,7 +160,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         return group;
     }
 
-    private LP<?> getLPByName(String name) {
+    public LP<?> getLPByName(String name) {
         LP<?> property;
         int dotPosition = name.indexOf('.');
         if (dotPosition > 0) {
@@ -221,6 +221,16 @@ public class ScriptingLogicsModule extends LogicsModule {
         String caption = (captionStr == null ? groupName : transformCaptionStr(captionStr));
         AbstractGroup parentGroup = (parentName == null ? null : getGroupByName(parentName));
         addAbstractGroup(groupName, caption, parentGroup);
+    }
+
+    public ScriptingFormEntity createScriptedForm(String formName, String caption) {
+        scriptLogger.info("createScriptedForm(" + formName + ", " + caption + ");");
+        return new ScriptingFormEntity(baseLM.baseElement, this, formName, caption);
+    }
+
+    public void addScriptedForm(ScriptingFormEntity form) {
+        scriptLogger.info("addScriptedFrom(" + form+ ");");
+        addFormEntity(form);
     }
 
     private String toLog(Object obj) {
@@ -401,7 +411,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     @Override
     public void initNavigators() throws JRException, FileNotFoundException {
-        //To change body of implemented methods use File | Settings | File Templates.
+        parseStep(ScriptingLogicsModule.State.NAVIGATOR);
     }
 
     @Override
