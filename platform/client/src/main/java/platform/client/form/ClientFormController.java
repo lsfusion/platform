@@ -28,10 +28,8 @@ import java.awt.event.ItemListener;
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
 
 import static platform.interop.Order.*;
 
@@ -430,12 +428,14 @@ public class ClientFormController {
     }
 
     private void applyOrders(OrderedMap<ClientPropertyDraw, Boolean> orders) throws IOException {
-        boolean firstOrder = true;
+        Set<ClientGroupObject> wasOrder = new HashSet<ClientGroupObject>();
         for (Map.Entry<ClientPropertyDraw, Boolean> entry : orders.entrySet()) {
             ClientPropertyDraw property = entry.getKey();
-            GroupObjectLogicsSupplier groupObjectLogicsSupplier = getGroupObjectLogicsSupplier(property.getGroupObject());
+            ClientGroupObject groupObject = property.getGroupObject();
+            GroupObjectLogicsSupplier groupObjectLogicsSupplier = getGroupObjectLogicsSupplier(groupObject);
             if (groupObjectLogicsSupplier != null) {
-                groupObjectLogicsSupplier.changeOrder(property, firstOrder ? REPLACE : ADD);
+                groupObjectLogicsSupplier.changeOrder(property, !wasOrder.contains(groupObject) ? REPLACE : ADD);
+                wasOrder.add(groupObject);
                 if (!entry.getValue()) {
                     groupObjectLogicsSupplier.changeOrder(property, DIR);
                 }

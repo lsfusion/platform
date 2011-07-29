@@ -239,6 +239,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
     public LP nameNative;
     public LP nameForeign;
+    public LP nameNativeShort;
     public LP firmNameNativeClaimer;
     public LP firmNameForeignClaimer;
     public LP phoneClaimer;
@@ -257,7 +258,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP projectVote, claimerVote, nameNativeProjectVote, nameForeignProjectVote;
     LP quantityVoteOfProject;
     LP dataDocumentNameExpert, documentNameExpert;
-    LP clusterExpert, nameNativeClusterExpert, nameForeignClusterExpert;
+    LP clusterExpert, nameNativeClusterExpert, nameForeignClusterExpert, nameNativeShortClusterExpert;
     LP primClusterExpert, extraClusterExpert, inClusterExpert;
     LP clusterInExpertVote;
     public LP inProjectCluster;
@@ -305,6 +306,9 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP inExpertVote, oldExpertVote, inNewExpertVote, inOldExpertVote;
     LP dateStartVote, dateEndVote;
     LP aggrDateEndVote;
+
+    LP weekStartVote, quantityNewExpertWeek;
+    LP quantityNewWeek;
 
     LP openedVote;
     LP closedVote;
@@ -597,6 +601,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
         nameForeign.property.aggProp = true;
         nameForeign.setMinimumWidth(10); nameForeign.setPreferredWidth(50);
 
+        nameNativeShort = addDProp(baseGroup, "nameNativeShort", "Имя (сокр.)", InsensitiveStringClass.get(3), cluster);
+
         baseGroup.add(baseLM.email.property); // сделано, чтобы email был не самой первой колонкой в диалогах
 
         LP percent = addSFProp("(prm1*100/prm2)", DoubleClass.instance, 2);
@@ -653,6 +659,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         clusterExpert = addDProp(idGroup, "clusterExpert", "Кластер (ИД)", cluster, expert);
         nameNativeClusterExpert = addJProp(baseGroup, "nameNativeClusterExpert", "Кластер", nameNative, clusterExpert, 1);
         nameForeignClusterExpert = addJProp("nameForeignClusterExpert", "Кластер (иностр.)", nameForeign, clusterExpert, 1);
+        nameNativeShortClusterExpert = addJProp(baseGroup, "nameNativeShortClusterExpert", "Кластер (сокр.)", nameNativeShort, clusterExpert, 1);
 
         primClusterExpert = addJProp("primClusterExpert", "Вкл (осн.)", baseLM.equals2, 1, clusterExpert, 2);
         extraClusterExpert = addDProp(baseGroup, "extraClusterExpert", "Вкл (доп.)", LogicalClass.instance, cluster, expert);
@@ -986,6 +993,11 @@ public class SkolkovoLogicsModule extends LogicsModule {
         aggrDateEndVote = addJProp(baseGroup, "aggrDateEndVote", "Дата окончания (агр.)", baseLM.addDate2, dateStartVote, 1, requiredPeriod);
         dateEndVote = addDProp(baseGroup, "dateEndVote", "Дата окончания", DateClass.instance, vote);
         dateEndVote.setDerivedForcedChange(true, aggrDateEndVote, 1, dateStartVote, 1);
+
+        weekStartVote = addJProp("weekStartVote", true, "Неделя начала", baseLM.weekInDate, dateStartVote, 1);
+        quantityNewExpertWeek = addSGProp("quantityNewExpertWeek", "Кол-во заседаний", addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), inNewExpertVote, 1, 2), 1, weekStartVote, 2);
+        quantityNewExpertWeek.setFixedCharWidth(2);
+        quantityNewWeek = addSGProp("quantityNewWeek", "Кол-во заседаний", quantityNewExpertWeek, 2);
 
         openedVote = addJProp(baseGroup, "openedVote", "Открыто", baseLM.groeq2, dateEndVote, 1, baseLM.currentDate);
         closedVote = addJProp(baseGroup, "closedVote", "Закрыто", baseLM.andNot1, is(vote), 1, openedVote, 1);
@@ -1378,6 +1390,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         addFormEntity(new ClaimerFormEntity(baseLM.baseElement, "claimer"));
         addFormEntity(new VoteFormEntity(baseLM.baseElement, "vote", false));
         addFormEntity(new ExpertFormEntity(baseLM.baseElement, "expert"));
+        addFormEntity(new ExpertStatsFormEntity(baseLM.baseElement, "expertStats"));
         addFormEntity(new VoteExpertFormEntity(baseLM.baseElement, "voteExpert"));
         addFormEntity(new VoteFormEntity(baseLM.baseElement, "voterestricted", true));
 
@@ -1790,6 +1803,47 @@ public class SkolkovoLogicsModule extends LogicsModule {
             specContainer.add(design.getGroupObjectContainer(objVote.groupTo));
             specContainer.add(design.getGroupObjectContainer(objExtraCluster.groupTo));
             specContainer.tabbedPane = true;
+
+            return design;
+        }
+    }
+
+    private class ExpertStatsFormEntity extends FormEntity<SkolkovoBusinessLogics> {
+
+        private ObjectEntity objExpert;
+        private ObjectEntity objWeek;
+
+        private ExpertStatsFormEntity(NavigatorElement parent, String sID) {
+            super(parent, sID, "Статистика экспертов");
+
+            objWeek = addSingleGroupObject(1, "week", IntegerClass.instance, "Неделя");
+
+            objExpert = addSingleGroupObject(2, "expert", expert, baseLM.selection, disableExpert, nameNativeShortClusterExpert, baseLM.userFirstName, baseLM.userLastName, baseLM.email);
+
+            PropertyDrawEntity quantity = addPropertyDraw(quantityNewExpertWeek, objExpert, objWeek);
+            quantity.columnGroupObjects.add(objWeek.groupTo);
+            quantity.propertyCaption = addPropertyObject(baseLM.objectValue.getLP(IntegerClass.instance), objWeek);
+
+            addPropertyDraw(objExpert, quantityTotalExpert);
+
+            addFixedFilter(new NotNullFilterEntity(addPropertyObject(quantityNewWeek, objWeek)));
+
+            RegularFilterGroupEntity inactiveFilterGroup = new RegularFilterGroupEntity(genID());
+            inactiveFilterGroup.addFilter(new RegularFilterEntity(genID(),
+                    new NotFilterEntity(new NotNullFilterEntity(addPropertyObject(disableExpert, objExpert))),
+                    "Только активные"));
+            addRegularFilterGroup(inactiveFilterGroup);
+
+            setReadOnly(true);
+            setPageSize(0);
+        }
+
+        @Override
+        public FormView createDefaultRichDesign() {
+            DefaultFormView design = (DefaultFormView)super.createDefaultRichDesign();
+
+            design.defaultOrders.put(design.get(getPropertyDraw(nameNativeShortClusterExpert)), true);
+            design.defaultOrders.put(design.get(getPropertyDraw(baseLM.userLastName)), true);
 
             return design;
         }
