@@ -53,7 +53,7 @@ class TreeGroupNode extends DefaultMutableTreeTableNode {
         for (ClientPropertyDraw property : model.properties) {
             Map<ClientGroupObjectValue, Object> propValues = model.values.get(property);
             if (propValues != null && propValues.containsKey(key)) {
-                return BaseUtils.nullToString(propValues.get(key)).trim();
+                return BaseUtils.toCaption(propValues.get(key));
             }
         }
 

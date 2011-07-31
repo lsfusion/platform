@@ -147,7 +147,7 @@ public class PanelController {
                 PropertyController propController = propControllers.get(updateKeys.getKey());
                 // так как может быть autoHide'ута
                 if (propController != null) {
-                    propController.setCaption(BaseUtils.nullToString(updateKeys.getValue()));
+                    propController.setCaption(BaseUtils.toCaption(updateKeys.getValue()));
                 }
             }
         }

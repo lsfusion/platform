@@ -268,7 +268,7 @@ public class GroupTree extends ClientTree {
             for (ClientPropertyDraw property : properties) {
                 Map<ClientGroupObjectValue, Object> propValues = values.get(property);
                 if (propValues != null) {
-                    String value = BaseUtils.nullToString(propValues.get(key)).trim();
+                    String value = BaseUtils.toCaption(propValues.get(key));
                     if (value.length() != 0 && caption.length() != 0) {
                         value = " " + value;
                     }

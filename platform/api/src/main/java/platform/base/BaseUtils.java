@@ -1145,11 +1145,11 @@ public class BaseUtils {
         return string.substring(0, len);
     }
 
-    public static String nullToString(Object name) {
+    public static String toCaption(Object name) {
         if (name == null)
             return "";
         else
-            return name.toString();
+            return name.toString().trim();
     }
 
     public static <K, V> Map<K, V> buildMap(Collection<K> col1, Collection<V> col2) {

@@ -234,7 +234,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     private String toLog(Object obj) {
-        return BaseUtils.nullToString(obj);
+        return BaseUtils.toCaption(obj);
     }
 
     public LP<?> addScriptedDProp(String propName, String caption, String parentGroup, String returnClass, List<String> paramClasses, boolean isPersistent, List<String> namedParams) {

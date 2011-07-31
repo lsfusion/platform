@@ -377,8 +377,13 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
     }
 
     public ClientGroupObjectValue getKey(int row, int col) {
-        // todo:
-        throw new RuntimeException("not supported yet");
+        TreePath pathForRow = getPathForRow(row);
+        if (pathForRow != null) {
+            Object node = pathForRow.getLastPathComponent();
+            if (node instanceof TreeGroupNode)
+                return ((TreeGroupNode) node).key;
+        }
+        return new ClientGroupObjectValue();
     }
 
     public void writeSelectedValue(String value) {
