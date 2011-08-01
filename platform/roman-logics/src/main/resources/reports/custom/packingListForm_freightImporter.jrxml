@@ -289,9 +289,9 @@
 		</band>
 	</detail>
 	<pageFooter>
-		<band height="70" splitType="Stretch">
+		<band height="70">
 			<textField>
-				<reportElement positionType="FixRelativeToBottom" x="183" y="16" width="111" height="54"/>
+				<reportElement x="183" y="16" width="111" height="54"/>
 				<textElement verticalAlignment="Top"/>
 				<textFieldExpression class="java.lang.String"><![CDATA["St. Nr. 37/109/21289\n" + "UST Nr. DE245732311\n" + "Zollnummer DE6203302\n" + "HRB 109205"]]></textFieldExpression>
 			</textField>

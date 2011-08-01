@@ -3493,7 +3493,7 @@ public class RomanLogicsModule extends LogicsModule {
 
             objItem = addSingleGroupObject(item, "Товар", baseLM.barcode, sidColorSupplierItem, nameColorSupplierItem, sidSizeSupplierItem);
 //            addPropertyDraw(cloneItem, objItem).forceViewType = ClassViewType.PANEL;
-//            addObjectActions(this, objItem, objArticle, articleComposite);
+            addObjectActions(this, objItem);
 
             PropertyDrawEntity quantityColumn = addPropertyDraw(quantityListArticleCompositeColorSize, objList, objArticle, objColorSupplier, objSizeSupplier);
             quantityColumn.columnGroupObjects.add(objSizeSupplier.groupTo);
