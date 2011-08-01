@@ -71,3 +71,15 @@ FORM ContractForm2 'ContractForm2'
 OBJECTS seller, contract
 PROPERTIES name(seller), objectClassName(seller),
            sidContract(contract), date(contract), nameImporterContract(contract), nameCurrencyContract(contract);
+
+FORM rateCurrency2 'Обмен валют'
+OBJECTS
+    typeExchange INIT PANEL, currency INIT GRID, exchangeDate=DATE FIXED PANEL, exchangeDateRate=DATE
+PROPERTIES
+//    objectValue(typeExchange), objectValue(exchangeDate), objectValue(exchangeDateRate),
+    name(typeExchange), name(currency), nameCurrencyTypeExchange(typeExchange),
+    rateExchange(typeExchange, currency, exchangeDate),
+    rateExchange(typeExchange, currency, exchangeDateRate)
+FILTERS
+    NOT NULL rateExchange(typeExchange, currency, exchangeDateRate);
+

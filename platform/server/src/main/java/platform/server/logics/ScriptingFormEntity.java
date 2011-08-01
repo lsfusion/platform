@@ -1,10 +1,12 @@
 package platform.server.logics;
 
+import platform.interop.ClassViewType;
 import platform.server.classes.ValueClass;
 import platform.server.form.entity.FormEntity;
 import platform.server.form.entity.GroupObjectEntity;
 import platform.server.form.entity.ObjectEntity;
 import platform.server.form.entity.PropertyObjectInterfaceEntity;
+import platform.server.form.entity.filter.NotNullFilterEntity;
 import platform.server.form.navigator.NavigatorElement;
 import platform.server.logics.linear.LP;
 
@@ -28,7 +30,7 @@ public class ScriptingFormEntity extends FormEntity {
         this.LM = LM;
     }
 
-    public void addScriptedGroupObjects(List<List<String>> names, List<List<String>> classes) {
+    public void addScriptedGroupObjects(List<List<String>> names, List<List<String>> classes, List<ClassViewType> viewTypes, List<Boolean> isInitType) {
         assert names.size() == classes.size();
         for (int i = 0; i < names.size();  i++) {
             List<String> groupObjectNames = names.get(i);
@@ -45,23 +47,54 @@ public class ScriptingFormEntity extends FormEntity {
                 groupObj.add(obj);
                 objectEntities.put(objectName, obj);
             }
+
+            ClassViewType viewType = viewTypes.get(i);
+            if (viewType != null) {
+                if (isInitType.get(i)) {
+                    groupObj.setInitClassView(viewType);
+                } else {
+                    groupObj.setSingleClassView(viewType);
+                }
+            }
             addGroup(groupObj);
         }
+    }
+
+    private class MappedProperty {
+        public LP<?> property;
+        public PropertyObjectInterfaceEntity[] mapping;
+
+        public MappedProperty(LP<?> property, List<PropertyObjectInterfaceEntity> mapping) {
+            this.property = property;
+            this.mapping = mapping.toArray(new PropertyObjectInterfaceEntity[mapping.size()]);
+        }
+    }
+
+    private MappedProperty getPropertyWithMapping(String name, List<String> mapping) {
+        LP<?> property = LM.getLPByName(name);
+        assert property != null;
+        assert property.property.interfaces.size() == mapping.size();
+
+        List<PropertyObjectInterfaceEntity> objects = new ArrayList<PropertyObjectInterfaceEntity>();
+        for (String objectName : mapping) {
+            objects.add(objectEntities.get(objectName));
+        }
+        return new MappedProperty(property, objects);
     }
 
     public void addScriptedPropertyDraws(List<String> properties, List<List<String>> mappings) {
         assert properties.size() == mappings.size();
         for (int i = 0; i < properties.size(); i++) {
-            LP<?> property = LM.getLPByName(properties.get(i));
-            assert property != null;
+            MappedProperty prop = getPropertyWithMapping(properties.get(i), mappings.get(i));
+            addPropertyDraw(prop.property, prop.mapping);
+        }
+    }
 
-            List<String> mappingObjects = mappings.get(i);
-            assert property.property.interfaces.size() == mappingObjects.size();
-            List<PropertyObjectInterfaceEntity> objects = new ArrayList<PropertyObjectInterfaceEntity>();
-            for (String objectName : mappingObjects) {
-                objects.add(objectEntities.get(objectName));
-            }
-            addPropertyDraw(property, objects.toArray(new PropertyObjectInterfaceEntity[mappingObjects.size()]));
+    public void addScriptedFilters(List<String> properties, List<List<String>> mappings) {
+        assert properties.size() == mappings.size();
+        for (int i = 0; i < properties.size(); i++) {
+            MappedProperty prop = getPropertyWithMapping(properties.get(i), mappings.get(i));
+            addFixedFilter(new NotNullFilterEntity(addPropertyObject(prop.property, prop.mapping)));
         }
     }
 }
