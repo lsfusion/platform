@@ -28,10 +28,6 @@ public class GridDataRecord extends ListGridRecord {
         }
     }
 
-    public int getRecordKey() {
-        return -1;
-    }
-
     public static GridDataRecord[] createRecords(ArrayList<GGroupObjectValue> gridKeys, HashMap<GPropertyDraw, HashMap<GGroupObjectValue, Object>> gridProps) {
         HashMap<GGroupObjectValue, HashMap<GPropertyDraw, Object>> values = new HashMap<GGroupObjectValue, HashMap<GPropertyDraw, Object>>();
 

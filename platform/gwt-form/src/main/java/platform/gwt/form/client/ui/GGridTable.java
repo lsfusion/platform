@@ -34,6 +34,7 @@ public class GGridTable extends ListGrid {
     public HashMap<GPropertyDraw, HashMap<GGroupObjectValue, Object>> values = new HashMap<GPropertyDraw, HashMap<GGroupObjectValue, Object>>();
     private GGroupObjectValue currentKey;
     private GGroupObject groupObject;
+    private int currentInd = -1;
 
     public GGridTable(GFormController iformController, GForm iform, GGroupObjectController igroupController) {
         this.formController = iformController;
@@ -72,7 +73,8 @@ public class GGridTable extends ListGrid {
                 if (event.getState()) {
                     GridDataRecord record = (GridDataRecord) event.getSelectedRecord();
                     if (record != null && !currentKey.equals(record.key)) {
-                        currentKey = record.key;
+                        storeScrolling(record);
+
                         formController.changeGroupObject(groupController.groupObject, record.key);
                     }
                 }
@@ -85,6 +87,17 @@ public class GGridTable extends ListGrid {
                 formController.changePropertyDraw(getProperty(event.getColNum()), event.getNewValue());
             }
         });
+    }
+
+    private void storeScrolling(GridDataRecord selectedRecord) {
+        currentKey = selectedRecord.key;
+    }
+
+    private void restoreScrolling() {
+        if (currentInd == -1) {
+            return;
+        }
+        scrollRecordIntoView(currentInd);
     }
 
     private GPropertyDraw getProperty(int colNum) {
@@ -138,7 +151,7 @@ public class GGridTable extends ListGrid {
 
         System.arraycopy(fields, 0, newFields, 0, ins);
         newFields[ins] = newField;
-        System.arraycopy(fields, ins, newFields, ins+1, fields.length - ins);
+        System.arraycopy(fields, ins, newFields, ins + 1, fields.length - ins);
 
         setFields(newFields);
     }
@@ -161,6 +174,7 @@ public class GGridTable extends ListGrid {
 
     private boolean dataUpdated = false;
     private boolean internalSelecting = false;
+
     public void update() {
         if (currentKey == null) {
             GridDataRecord selected = (GridDataRecord) getSelectedRecord();
@@ -174,7 +188,10 @@ public class GGridTable extends ListGrid {
             dataUpdated = false;
         }
 
-        int currentInd = currentKey == null ? -1 : keys.indexOf(currentKey);
+        currentInd = currentKey == null ? -1 : keys.indexOf(currentKey);
+
+        restoreScrolling();
+
         if (currentInd != -1) {
             internalSelecting = true;
             selectSingleRecord(currentInd);
@@ -189,4 +206,9 @@ public class GGridTable extends ListGrid {
     public boolean isEmpty() {
         return getTotalRows() == 0 || getFields().length == 0;
     }
+
+    private native void scrollRecordIntoView(int currentInd) /*-{
+        var self = this.@com.smartgwt.client.widgets.BaseWidget::getOrCreateJsObj()();
+        self.scrollRecordIntoView(currentInd);
+    }-*/;
 }
