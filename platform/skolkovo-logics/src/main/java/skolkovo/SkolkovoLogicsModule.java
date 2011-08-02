@@ -246,6 +246,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
     public LP addressClaimer;
     public LP siteClaimer;
     public LP emailClaimer;
+    public LP emailFirmClaimer;
     public LP emailClaimerProject;
     public LP statementClaimer;
     LP loadStatementClaimer, openStatementClaimer;
@@ -389,7 +390,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
     LP generateDocumentsProjectDocumentType;
     LP includeDocumentsProjectDocumentType;
-    LP importProjectsAction;
+    LP importProjectSidsAction, showProjectsToImportAction, importProjectsAction;
     LP generateVoteProject, hideGenerateVoteProject;
     LP copyResultsVote;
 
@@ -627,6 +628,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         addressClaimer.setMinimumWidth(10); addressClaimer.setPreferredWidth(50);
         siteClaimer = addDProp(contactGroup, "siteClaimer", "Сайт", StringClass.get(100), claimer);
         emailClaimer = addJProp(contactGroup, "emailClaimer", "E-mail", baseLM.and1, baseLM.email, 1, is(claimer), 1);
+        emailFirmClaimer = addDProp(contactGroup, "emailFirmClaimer", "E-mail организации", StringClass.get(50), claimer);
 
         statementClaimer = addDProp("statementClaimer", "Заявление", PDFClass.instance, claimer);
         loadStatementClaimer = addLFAProp(documentGroup, "Загрузить заявление", statementClaimer);
@@ -847,7 +849,6 @@ public class SkolkovoLogicsModule extends LogicsModule {
         ownerPatent = addDProp(baseGroup, "ownerPatent", "Укажите правообладателя и его контактную информацию", InsensitiveStringClass.get(2000), patent);
         ownerPatent.setMinimumWidth(10); ownerPatent.setPreferredWidth(50);
         ownerTypePatent = addDProp(idGroup, "ownerTypePatent", "Кем является правообладатель (ИД)", ownerType, patent);
-        ownerTypeToPatent = addAGProp("ownerTypeToPatent", "Кем является правообладатель (ИД)", ownerTypePatent);
         nameOwnerTypePatent = addJProp(baseGroup, "nameOwnerTypePatent", "Кем является правообладатель", baseLM.name, ownerTypePatent, 1);
         ownerTypeToSID = addAGProp("ownerTypeToSID", "SID типа правообладателя", addJProp(baseLM.and1, baseLM.classSID, 1, is(ownerType), 1));
         projectTypeToSID = addAGProp("projectTypeToSID", "SID типа проекта", addJProp(baseLM.and1, baseLM.classSID, 1, is(projectType), 1));
@@ -1187,7 +1188,9 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         generateDocumentsProjectDocumentType = addAProp(actionGroup, new GenerateDocumentsActionProperty());
         includeDocumentsProjectDocumentType = addAProp(actionGroup, new IncludeDocumentsActionProperty());
-        importProjectsAction = addAProp(actionGroup, new ImportProjectsActionProperty(this, false, false));
+        importProjectSidsAction = addAProp(actionGroup, new ImportProjectsActionProperty("Импортировать идентификаторы проектов", this, false, true));
+        showProjectsToImportAction = addAProp(actionGroup, new ImportProjectsActionProperty("Посмотреть импортируемые проекты", this, true, false));
+        importProjectsAction = addAProp(actionGroup, new ImportProjectsActionProperty("Импортировать проекты", this, false, false));
 
         generateVoteProject = addAProp(actionGroup, new GenerateVoteActionProperty());
         copyResultsVote = addAProp(actionGroup, new CopyResultsActionProperty());
@@ -1215,7 +1218,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         nameStatusProject = addJProp(projectInformationGroup, "nameStatusProject", "Статус", baseLM.name, statusProject, 1);
 
         dateProject = addJProp("dateProject", "Дата проекта", baseLM.and1, baseLM.date, 1, is(project), 1);
-        updateDateProject = addDProp(projectInformationGroup, "updateDateProject", "Дата именения проекта", DateClass.instance, project);
+        updateDateProject = addDProp(projectInformationGroup, "updateDateProject", "Дата изменения проекта", DateTimeClass.instance, project);
         statusProjectVote = addJProp(idGroup, "statusProjectVote", "Статус проекта (ИД)", statusProject, projectVote, 1);
         nameStatusProjectVote = addJProp(baseGroup, "nameStatusProjectVote", "Статус проекта", baseLM.name, statusProjectVote, 1);
 
@@ -1505,20 +1508,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
             design.getGroupPropertyContainer(objProject.groupTo, innovationGroup).constraints.childConstraints = DoNotIntersectSimplexConstraint.TOTHE_BOTTOM;
             design.getGroupPropertyContainer(objProject.groupTo, executiveSummaryGroup).constraints.childConstraints = DoNotIntersectSimplexConstraint.TOTHE_RIGHTBOTTOM;
-//            design.getGroupPropertyContainer(objProject.groupTo, sourcesFundingGroup).constraints.childConstraints = DoNotIntersectSimplexConstraint.TOTHE_BOTTOM;
-//            design.getGroupPropertyContainer(objProject.groupTo, equipmentGroup).constraints.childConstraints = DoNotIntersectSimplexConstraint.TOTHE_BOTTOM;
-//            design.getGroupPropertyContainer(objProject.groupTo, projectDocumentsGroup).constraints.childConstraints = DoNotIntersectSimplexConstraint.TOTHE_BOTTOM;
             design.getGroupPropertyContainer(objProject.groupTo, projectStatusGroup).constraints.childConstraints = DoNotIntersectSimplexConstraint.TOTHE_RIGHT;
-//
-//
-//            design.addIntersection(design.getGroupPropertyContainer(objProject.groupTo, innovationGroup),
-//                                   design.getGroupPropertyContainer(objProject.groupTo, sourcesFundingGroup), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
-//
-//            design.addIntersection(design.getGroupPropertyContainer(objProject.groupTo, executiveSummaryGroup),
-//                                   design.getGroupPropertyContainer(objProject.groupTo, sourcesFundingGroup), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
-//
-//            design.addIntersection(design.getGroupPropertyContainer(objProject.groupTo, projectDocumentsGroup),
-//                                   design.getGroupPropertyContainer(objProject.groupTo, projectStatusGroup), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
 
             ContainerView specContainer = design.createContainer();
             design.getMainContainer().addAfter(specContainer, design.getGroupObjectContainer(objProject.groupTo));
@@ -1673,7 +1663,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         private GlobalFormEntity(NavigatorElement parent, String sID) {
             super(parent, sID, "Глобальные параметры");
 
-            addPropertyDraw(new LP[]{baseLM.currentDate, requiredPeriod, requiredQuantity, limitExperts, emailDocuments, emailClaimerFromAddress, importProjectsAction});
+            addPropertyDraw(new LP[]{baseLM.currentDate, requiredPeriod, requiredQuantity, limitExperts, emailDocuments, emailClaimerFromAddress, importProjectSidsAction, showProjectsToImportAction, importProjectsAction});
         }
     }
 

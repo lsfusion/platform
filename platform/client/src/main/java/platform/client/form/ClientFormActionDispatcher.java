@@ -11,6 +11,7 @@ import platform.interop.exceptions.LoginException;
 
 import javax.sound.sampled.*;
 import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.io.*;
@@ -217,9 +218,24 @@ public class ClientFormActionDispatcher implements ClientActionDispatcher {
     }
 
     public void execute(MessageClientAction action) {
+        if (!action.extended) {
+            JOptionPane.showMessageDialog(form.getComponent(), action.message, action.caption, JOptionPane.INFORMATION_MESSAGE);
+        } else {
+            new ExtendedMessageDialog(form.getComponent(), action.caption, action.message).setVisible(true);
+        }
+    }
 
-        JOptionPane.showMessageDialog(form.getComponent(), action.message,
-                action.caption, JOptionPane.INFORMATION_MESSAGE);
+    public class ExtendedMessageDialog extends JDialog {
+        public ExtendedMessageDialog(Container owner, String title, String message) {
+            super();
+            setTitle(title);
+            setModal(true);
+            JTextArea textArea = new JTextArea(message);
+            textArea.setFont(textArea.getFont().deriveFont((float) 12));
+            add(new JScrollPane(textArea));
+            setMinimumSize(new Dimension(400, 200));
+            setLocationRelativeTo(owner);
+        }
     }
 
     public Object execute(ResultClientAction action) {
