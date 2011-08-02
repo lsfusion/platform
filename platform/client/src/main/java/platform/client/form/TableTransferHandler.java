@@ -11,10 +11,12 @@ public abstract class TableTransferHandler extends TransferHandler {
 
     public interface TableInterface {
         int getRowCount();
+
         int getColumnCount();
 
         void writeSelectedValue(String value); // записать значение в текущую ячейку
     }
+
     protected abstract TableInterface getTable();
 
     // ghgfdffddf
@@ -25,7 +27,8 @@ public abstract class TableTransferHandler extends TransferHandler {
             int row = table.getSelectionModel().getLeadSelectionIndex();
             int column = table.getColumnModel().getSelectionModel().getLeadSelectionIndex();
 
-            if (row < 0 || row >= getTable().getRowCount() || column < 0 || column >= getTable().getColumnCount()) return null;
+            if (row < 0 || row >= getTable().getRowCount() || column < 0 || column >= getTable().getColumnCount())
+                return null;
 
             Object value = table.getValueAt(row, column);
             if (value == null) {
@@ -45,7 +48,7 @@ public abstract class TableTransferHandler extends TransferHandler {
         TableInterface table = getTable();
         if (c == table) {
             for (DataFlavor flavor : t.getTransferDataFlavors()) {
-                if (String.class.isAssignableFrom(flavor.getRepresentationClass())) {
+                if (String.class.isAssignableFrom(flavor.getRepresentationClass()) && flavor.getHumanPresentableName().equals("text/plain")) {
                     String value = null;
                     try {
                         value = (String) t.getTransferData(flavor);
