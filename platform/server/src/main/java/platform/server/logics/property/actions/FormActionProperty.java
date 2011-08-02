@@ -26,10 +26,7 @@ import platform.server.session.DataSession;
 import platform.server.session.Modifier;
 
 import java.sql.SQLException;
-import java.util.EventListener;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 // вообще по хорошему надо бы generiть интерфейсы, но тогда с DataChanges (из-за дебилизма generics в современных языках) будут проблемы
 public class FormActionProperty extends ActionProperty {
@@ -38,7 +35,7 @@ public class FormActionProperty extends ActionProperty {
     public final Map<ObjectEntity, ClassPropertyInterface> mapObjects;
     private final PropertyObjectEntity[] setProperties;
     private final OrderEntity[] getProperties;
-    public boolean seekOnOk = false;
+    public Set<ObjectEntity> seekOnOk = new HashSet<ObjectEntity>();
     private final boolean newSession;
     private final boolean isModal;
 
@@ -95,16 +92,15 @@ public class FormActionProperty extends ActionProperty {
                                                    newRemoteForm, null);
                 }
 
-                if (this.seekOnOk) {
+                if (!seekOnOk.isEmpty()) {
                     newFormInstance.addEventListener(new FormEventListener() {
                         @Override
                         public void handleEvent(Object event) {
                             if (event.equals(FormEntity.ON_OK_EVENT)) {
-                                for (Map.Entry<ObjectEntity, ClassPropertyInterface> entry : mapObjects.entrySet()) {
+                                for (ObjectEntity object : seekOnOk) {
                                     try {
-                                        thisFormInstance.forceChangeObject(
-                                                (ObjectInstance)mapExecuteObjects.get(entry.getValue()),
-                                                newFormInstance.instanceFactory.getInstance(entry.getKey()).getObjectValue());
+                                        thisFormInstance.seekObject(object.baseClass,
+                                                newFormInstance.instanceFactory.getInstance(object).getObjectValue());
                                     } catch (SQLException e) {
                                         throw new RuntimeException(e);
                                     }

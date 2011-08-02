@@ -4120,10 +4120,11 @@ public class RomanLogicsModule extends LogicsModule {
 
                 findItemBox = addPropertyDraw(addMFAProp(null, "Поиск по артикулу",
                             findItemFormBox,
-                                                 new ObjectEntity[]{findItemFormBox.objShipment, findItemFormBox.objSupplierBox, findItemFormBox.objSku, findItemFormBox.objShipmentDetail},
+                                                 new ObjectEntity[]{findItemFormBox.objShipment, findItemFormBox.objSupplierBox},
                                                  false),
                                                  objShipment, objSupplierBox, objSku, objShipmentDetail);
-                ((FormActionProperty)findItemBox.propertyObject.property).seekOnOk = true;
+                ((FormActionProperty)findItemBox.propertyObject.property).seekOnOk.add(findItemFormBox.objSku);
+                ((FormActionProperty)findItemBox.propertyObject.property).seekOnOk.add(findItemFormBox.objShipmentDetail);
                 findItemBox.forceViewType = ClassViewType.PANEL;
             } else {
                 findItemSimple = addPropertyDraw(addMFAProp(null, "Поиск по артикулу",
@@ -4131,7 +4132,8 @@ public class RomanLogicsModule extends LogicsModule {
                                                  new ObjectEntity[]{findItemFormSimple.objShipment, findItemFormSimple.objSku, findItemFormSimple.objShipmentDetail},
                                                  false),
                                                  objShipment, objSku, objShipmentDetail);
-                ((FormActionProperty)findItemSimple.propertyObject.property).seekOnOk = true;
+                ((FormActionProperty)findItemSimple.propertyObject.property).seekOnOk.add(findItemFormSimple.objSku);
+                ((FormActionProperty)findItemSimple.propertyObject.property).seekOnOk.add(findItemFormSimple.objShipmentDetail);
                 findItemSimple.forceViewType = ClassViewType.PANEL;
             }
         }
@@ -6009,6 +6011,7 @@ public class RomanLogicsModule extends LogicsModule {
             freightCreateFA = addMFAProp(actionGroup, "Создать фрахт", this, new ObjectEntity[] {},
                     new PropertyObjectEntity[] {addPropertyObject(getAddObjectAction(freight))},
                     new OrderEntity[] {(DataObject)freight.getClassObject()}, true);
+            ((FormActionProperty)freightCreateFA.property).seekOnOk.add(objFreight);
             freightEditFA = addMFAProp(actionGroup, "Редактировать фрахт", this, new ObjectEntity[] {objFreight}, true);
             freightEditFA.setImage("edit.png");
         }

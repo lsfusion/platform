@@ -13,6 +13,7 @@ import platform.server.caches.ManualLazy;
 import platform.server.classes.ConcreteCustomClass;
 import platform.server.classes.CustomClass;
 import platform.server.classes.IntegerClass;
+import platform.server.classes.ValueClass;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.ValueExpr;
@@ -738,6 +739,15 @@ public class FormInstance<T extends BusinessLogics<T>> extends IncrementProps<Pr
             object.changeValue(session, value);
 
         object.groupTo.addSeek(object, value, false);
+    }
+
+
+    public void seekObject(ValueClass cls, ObjectValue value) throws SQLException {
+
+        for (ObjectInstance object : getObjects()) {
+            if (object.getBaseClass().isCompatibleParent(cls))
+                seekObject(object, value);
+        }
     }
 
     // todo : временная затычка
