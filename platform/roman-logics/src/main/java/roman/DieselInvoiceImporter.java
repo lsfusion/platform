@@ -23,7 +23,8 @@ public class DieselInvoiceImporter extends SingleSheetImporter {
 
     @Override
     protected boolean isCorrectRow(int rowNum) {
-        return inputTable.getCellVal(rowNum, 2).trim().matches("(\\w{1}|\\w{2}|\\w{3})$");
+        //return inputTable.getCellVal(rowNum, 2).trim().matches("(\\w{1}|\\w{2}|\\w{3})$");
+        return inputTable.getCellString(rowNum, 2).trim().matches("(\\w{1}|\\w{2}|\\w{3})$");
     }
 
     @Override
@@ -70,15 +71,15 @@ public class DieselInvoiceImporter extends SingleSheetImporter {
                 List<Object> row = new ArrayList<Object>();
                 for (Map.Entry<ImportField, Pair<Integer, Integer>> entry : fieldPosition.entrySet()) {
                     ImportField field = entry.getKey();
-                    String cellValue = inputTable.getCellVal(field, i, count);
+                    String cellValue = inputTable.getCellString(field, i, count);
                     count++;
                     String transformedValue = transformValue(i, entry.getValue().first, entry.getValue().second, cellValue);
                     row.add(getResultObject(field, transformedValue));
                 }
                 row.remove(16);
                 row.remove(15);
-                row.add(inputTable.getCellVal(i, 15));
-                row.add(inputTable.getCellVal(i, 16));
+                row.add(inputTable.getCellString(i, 15));
+                row.add(inputTable.getCellString(i, 16));
                 data.add(row);
             }
         }

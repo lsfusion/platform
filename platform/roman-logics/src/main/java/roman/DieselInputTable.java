@@ -27,21 +27,21 @@ public class DieselInputTable implements ImportInputTable {
         sheet = Wb.getSheet(0);
         List<String> row;
 
-        for (int i = 2; i < sheet.getRows(); i++) {    //2
+        for (int i = 2; i < sheet.getRows(); i++) {
             row = new ArrayList<String>();
-            row.add(getCellString(i, A));  //invoiceSIDField
-            row.add(getCellString(i, B));  //dateInvoiceField
-            row.add(getCellString(i, C)); //numberSKUField
-            row.add(getCellString(i, Q));  //countryField
-            row.add(getCellString(i, R));  //originalNameField
-            row.add(getCellString(i, U));  //colorCodeField
-            row.add(getCellString(i, Z));  //customCodeField
-            row.add(getCellString(i, Z));  //customCode6Field
-            row.add(getCellString(i, AA)); //compositionField
-            row.add(getCellString(i, AC)); //unitPriceField
-            row.add(getCellString(i, AC)); //RRPField
-            row.add(getCellString(i, AF)); //boxNumberField
-            row.add(getCellString(i, S)); //sidField
+            row.add(sheet.getCell(A, i).getContents());  //invoiceSIDField
+            row.add(sheet.getCell(B, i).getContents());  //dateInvoiceField
+            row.add(sheet.getCell(C, i).getContents());  //numberSKUField
+            row.add(sheet.getCell(Q, i).getContents());  //countryField
+            row.add(sheet.getCell(R, i).getContents());  //originalNameField
+            row.add(sheet.getCell(U, i).getContents());  //colorCodeField
+            row.add(sheet.getCell(Z, i).getContents());  //customCodeField
+            row.add(sheet.getCell(Z, i).getContents());  //customCode6Field
+            row.add(sheet.getCell(AA, i).getContents()); //compositionField
+            row.add(sheet.getCell(AC, i).getContents()); //unitPriceField
+            row.add(sheet.getCell(AC, i).getContents()); //RRPField
+            row.add(sheet.getCell(AF, i).getContents()); //boxNumberField
+            row.add(sheet.getCell(S, i).getContents()); //sidField
             row.add(""); //colorNameField
             row.add(""); //unitNetWeightField
 
@@ -49,12 +49,12 @@ public class DieselInputTable implements ImportInputTable {
                 List<String> tempRow = new ArrayList<String>();
                 for (String str : row)
                     tempRow.add(str);
-                if (getCellString(i, j) != "") {
-                    if (Integer.parseInt(getCellString(i, AH)) != 25)
-                        tempRow.add(getCellString(4, j)); //sizeField //0
+                if (sheet.getCell(j, i).getContents() != "") {
+                    if (Integer.parseInt(sheet.getCell(AH, i).getContents()) != 25)
+                        tempRow.add(sheet.getCell(j, 4).getContents()); //sizeField
                     else
-                        tempRow.add(getCellString(5, j));    //1
-                    tempRow.add(getCellString(i, j)); //unitQuantityField
+                        tempRow.add(sheet.getCell(j, 5).getContents());
+                    tempRow.add(sheet.getCell(j, i).getContents()); //unitQuantityField
                     data.add(tempRow);
                 }
             }
@@ -63,14 +63,6 @@ public class DieselInputTable implements ImportInputTable {
 
     @Override
     public String getCellString(int row, int column) {
-        return sheet.getCell(column, row).getContents();
-    }
-
-    public String getCellVal(int row, int column) {
-        return data.get(row).get(column);
-    }
-
-    public String getCellVal(ImportField field, int row, int column) {
         return data.get(row).get(column);
     }
 
