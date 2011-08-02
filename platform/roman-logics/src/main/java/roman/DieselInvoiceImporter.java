@@ -23,7 +23,6 @@ public class DieselInvoiceImporter extends SingleSheetImporter {
 
     @Override
     protected boolean isCorrectRow(int rowNum) {
-        //return inputTable.getCellVal(rowNum, 2).trim().matches("(\\w{1}|\\w{2}|\\w{3})$");
         return inputTable.getCellString(rowNum, 2).trim().matches("(\\w{1}|\\w{2}|\\w{3})$");
     }
 

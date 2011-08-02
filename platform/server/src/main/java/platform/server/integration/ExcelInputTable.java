@@ -61,16 +61,6 @@ public class ExcelInputTable implements ImportInputTable {
         }
     }
 
-    @Override
-    public String getCellVal(int row, int column) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
-    }
-
-    @Override
-    public String getCellVal(ImportField field, int row, int column) throws ParseException {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
-    }
-
     public int rowsCnt() {
         return sheet.getRows();
     }
