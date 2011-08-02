@@ -2,6 +2,7 @@ package platform.client.form.editor;
 
 import platform.base.BaseUtils;
 import platform.base.IOUtils;
+import platform.client.SwingUtils;
 import platform.interop.KeyStrokes;
 
 import javax.swing.*;
@@ -42,7 +43,7 @@ public class CustomFileEditor extends DocumentPropertyEditor {
         if (allowOpen) {
             return super.getComponent(tableLocation, cellRectangle, editEvent);
         } else {
-            returnValue = this.showOpenDialog(null);
+            returnValue = this.showOpenDialog(SwingUtils.getActiveWindow());
         }
         return null;
     }

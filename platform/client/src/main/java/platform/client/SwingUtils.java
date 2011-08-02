@@ -264,6 +264,14 @@ public class SwingUtils {
         return getSelectedWindow(Frame.getFrames());
     }
 
+    public static Window getActiveVisibleWindow() {
+        Container selectedWindow = getSelectedWindow(Frame.getFrames());
+        while (selectedWindow != null && (!selectedWindow.isVisible())) {
+            selectedWindow = selectedWindow.getParent();
+        }
+        return getWindow(selectedWindow);
+    }
+
     private static Window getSelectedWindow(Window[] windows) {
         for (Window window : windows) {
             if (window.isActive()) {

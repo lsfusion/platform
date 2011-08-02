@@ -15,7 +15,7 @@ public class BlockingTask extends TimerTask {
 
     @Override
     public void run() {
-        Window window = SwingUtils.getActiveWindow();
+        Window window = SwingUtils.getActiveVisibleWindow();
         if (window != null) {
             Graphics gr = window.getGraphics();
             if (gr != null) {
