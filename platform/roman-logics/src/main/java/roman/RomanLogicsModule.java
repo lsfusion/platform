@@ -232,6 +232,8 @@ public class RomanLogicsModule extends LogicsModule {
     private LP destinationDestinationDocument;
     private LP nameDestinationDestinationDocument;
     private LP sidDestinationDestinationDocument;
+    private LP dateDepartureShipment;
+    private LP dateArrivalShipment;
     private LP quantityPalletShipment;
     private LP grossWeightPallet;
     private LP grossWeightCurrentPalletRoute;
@@ -477,6 +479,8 @@ public class RomanLogicsModule extends LogicsModule {
     LP nameExporterFreight;
     LP addressOriginExporterFreight;
     LP addressExporterFreight;
+    private LP inInvoiceFreight;
+    private LP netWeightInvoicedFreight;
     private LP contractImporterFreight;
     private LP sidContractImporterFreight;
     private LP conditionShipmentContractImporterFreight;
@@ -1534,6 +1538,8 @@ public class RomanLogicsModule extends LogicsModule {
                 supplierDocument, 1, addJProp(sellerContract, contractInvoice, 1), 1), true);
 
         // Shipment
+        dateDepartureShipment = addDProp(baseGroup, "dateDepartureShipment", "Дата отгрузки", DateClass.instance, shipment);
+        dateArrivalShipment = addDProp(baseGroup, "dateArrivalShipment", "Дата прихода на STX", DateClass.instance, shipment);
         quantityPalletShipment = addDProp(baseGroup, "quantityPalletShipment", "Кол-во паллет", IntegerClass.instance, shipment);
         netWeightShipment = addDProp(baseGroup, "netWeightShipment", "Вес нетто", DoubleClass.instance, shipment);
         grossWeightShipment = addDProp(baseGroup, "grossWeightShipment", "Вес брутто", DoubleClass.instance, shipment);
@@ -2367,6 +2373,9 @@ public class RomanLogicsModule extends LogicsModule {
         addressOriginExporterFreight = addJProp(baseGroup, "addressOriginExporterFreight", "Адрес", addressOriginSubject, exporterFreight, 1);
         addressExporterFreight = addJProp(baseGroup, "addressExporterFreight", "Адрес", addressSubject, exporterFreight, 1);
 
+        inInvoiceFreight = addDProp(baseGroup, "inInvoiceFreight", "Вкл.", LogicalClass.instance, invoice, freight);
+        netWeightInvoicedFreight = addSGProp(baseGroup, "netWeightInvoicedFreight", "Вес инвойсов", addJProp(baseLM.and1, netWeightDocument, 1, inInvoiceFreight, 1, 2), 2);
+
         dateImporterFreightTypeInvoice = addDProp(baseGroup, "dateImporterFreightTypeInvoice", "Дата инвойса", DateClass.instance, importer, freight, typeInvoice);
         dateShipmentImporterFreightTypeInvoice = addDProp(baseGroup, "dateShipmentImporterFreightTypeInvoice", "Дата поставки", DateClass.instance, importer, freight, typeInvoice);
         contractImporterFreight = addDProp(idGroup, "contractImporterFreight", "Договор (ИД)", contract, importer, freight);
@@ -2377,7 +2386,6 @@ public class RomanLogicsModule extends LogicsModule {
         sidContractImporterFreight = addJProp(baseGroup, "sidContractImporterFreight", "Договор", sidContract, contractImporterFreight, 1, 2);
         conditionShipmentContractImporterFreight = addJProp(baseGroup, "conditionShipmentContractImporterFreight", "Условие поставки", conditionShipmentContract, contractImporterFreight, 1, 2);
         conditionPaymentContractImporterFreight = addJProp(baseGroup, "conditionPaymentContractImporterFreight", "Условие оплаты", conditionPaymentContract, contractImporterFreight, 1, 2);
-
 
         quantityPalletShipmentBetweenDate = addSGProp(baseGroup, "quantityPalletShipmentBetweenDate", "Кол-во паллет по поставкам за интервал",
                 addJProp(baseLM.and1, quantityPalletShipment, 1, addJProp(baseLM.between, baseLM.date, 1, object(DateClass.instance), 2, object(DateClass.instance), 3), 1, 2, 3), 2, 3);
@@ -3732,7 +3740,7 @@ public class RomanLogicsModule extends LogicsModule {
             objSupplier = addSingleGroupObject(supplier, "Поставщик", baseLM.name);
             objSupplier.groupTo.setSingleClassView(ClassViewType.PANEL);
 
-            objShipment = addSingleGroupObject((box ? boxShipment : simpleShipment), "Поставка", baseLM.date, sidDocument, netWeightShipment, grossWeightShipment, quantityPalletShipment, quantityBoxShipment);//, invoicedShipment, sumShipment
+            objShipment = addSingleGroupObject((box ? boxShipment : simpleShipment), "Поставка", baseLM.date, sidDocument, dateDepartureShipment, dateArrivalShipment, netWeightShipment, grossWeightShipment, quantityPalletShipment, quantityBoxShipment);//, invoicedShipment, sumShipment
             addObjectActions(this, objShipment);
 
             objInvoice = addSingleGroupObject((box ? boxInvoice : simpleInvoice), "Инвойс");
@@ -6012,6 +6020,7 @@ public class RomanLogicsModule extends LogicsModule {
         private ObjectEntity objDateTo;
         private ObjectEntity objDateFrom;
         private ObjectEntity objShipment;
+        private ObjectEntity objInvoice;
 
         private PropertyDrawEntity createFreight;
 
@@ -6019,7 +6028,7 @@ public class RomanLogicsModule extends LogicsModule {
             super(parent, sID, caption);
 
             LP logFreightFA = addMFAProp("История фрахта", logFreightForm, logFreightForm.params);
-            objFreight = addSingleGroupObject(freight, "Фрахт", baseLM.date, baseLM.objectClassName, logFreightFA, nameRouteFreight, nameExporterFreight, nameFreightTypeFreight, tonnageFreight, grossWeightFreight, volumeFreight, palletCountFreight, palletNumberFreight, nameCurrencyFreight, sumFreightFreight);
+            objFreight = addSingleGroupObject(freight, "Фрахт", baseLM.date, baseLM.objectClassName, logFreightFA, nameRouteFreight, nameExporterFreight, nameFreightTypeFreight, tonnageFreight, netWeightInvoicedFreight, grossWeightFreight, volumeFreight, palletCountFreight, palletNumberFreight, nameCurrencyFreight, sumFreightFreight);
             objFreight.groupTo.setSingleClassView(ClassViewType.GRID);
             setReadOnly(objFreight, true);
             setReadOnly(logFreightFA, false);
@@ -6052,20 +6061,19 @@ public class RomanLogicsModule extends LogicsModule {
 
             objShipment = addSingleGroupObject(shipment, "Поставка", baseLM.date, nameSupplierDocument, sidDocument, sumDocument, nameCurrencyDocument, netWeightShipment, grossWeightShipment, quantityPalletShipment, quantityBoxShipment);
             setReadOnly(objShipment, true);
-
             addPropertyDraw(quantityShipmentFreight, objShipment, objFreight);
-
             addFixedFilter(new CompareFilterEntity(addPropertyObject(baseLM.date, objShipment), Compare.GREATER_EQUALS, objDateFrom));
             addFixedFilter(new CompareFilterEntity(addPropertyObject(baseLM.date, objShipment), Compare.LESS_EQUALS, objDateTo));
 
-//            addPropertyDraw(
-//                    addJProp("Отгрузить фрахт", and(false, true),
-//                            executeChangeFreightClass, 1, 2,
-//                            is(freightPriced), 1,
-//                            is(freightShipped), 1),
-//                    objFreight,
-//                    (DataObject)freightShipped.getClassObject()
-//            ).forceViewType = ClassViewType.GRID;
+            objInvoice = addSingleGroupObject(invoice, "Инвойс");
+            objInvoice.groupTo.setSingleClassView(ClassViewType.GRID);
+            setReadOnly(objInvoice, true);
+            addPropertyDraw(inInvoiceFreight, objInvoice, objFreight);
+            addPropertyDraw(objInvoice, baseLM.date, nameSupplierDocument, sidDocument, nameDestinationDestinationDocument, sumDocument, nameCurrencyDocument, netWeightDocument, quantityDocument);
+
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(baseLM.date, objInvoice), Compare.GREATER_EQUALS, objDateFrom));
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(baseLM.date, objInvoice), Compare.LESS_EQUALS, objDateTo));
+
         }
 
         @Override
@@ -6076,9 +6084,10 @@ public class RomanLogicsModule extends LogicsModule {
 
             design.get(getPropertyDraw(baseLM.date, objFreight)).caption = "Дата отгрузки";
             design.get(getPropertyDraw(baseLM.objectClassName, objFreight)).caption = "Статус фрахта";
-            design.get(getPropertyDraw(sidDocument, objShipment)).caption = "Номер поставки";
-            design.get(getPropertyDraw(baseLM.date, objShipment)).caption = "Дата поставки";
-
+            design.get(getPropertyDraw(sidDocument, objInvoice)).caption = "Номер инвойса";
+            design.get(getPropertyDraw(baseLM.date, objInvoice)).caption = "Дата инвойса";
+            //design.get(getPropertyDraw(sidDocument, objShipment)).caption = "Номер поставки";
+            //design.get(getPropertyDraw(baseLM.date, objShipment)).caption = "Дата поставки";
             return design;
         }
     }
