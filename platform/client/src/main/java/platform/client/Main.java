@@ -232,7 +232,15 @@ public class Main {
                 }
             });
 
-            RMISocketFactory.setSocketFactory(socketFactory);
+            try {
+                Field field = RMISocketFactory.class.getDeclaredField("factory");
+                field.setAccessible(true);
+                field.set(null, socketFactory);
+            } catch (NoSuchFieldException e) {
+                throw new RuntimeException(e);
+            } catch (IllegalAccessException e) {
+                throw new RuntimeException(e);
+            }
         }
     }
 
