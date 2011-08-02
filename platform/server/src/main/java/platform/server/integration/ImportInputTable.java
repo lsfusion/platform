@@ -11,7 +11,11 @@ import java.text.ParseException;
 public interface ImportInputTable {
     public String getCellString(int row, int column);
     public String getCellString(ImportField field, int row, int column) throws ParseException;
+    public String getCellVal(int row, int column);
+    public String getCellVal(ImportField field, int row, int column) throws ParseException;
 
     public int rowsCnt();
     public int columnsCnt();
+
+
 }

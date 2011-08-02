@@ -134,4 +134,9 @@ public class BestsellerInvoiceEDIInputTable extends EDIInputTable {
             }
         };
     }
+
+    @Override
+    public String getCellVal(int row, int column) {
+        return null;  //To change body of implemented methods use File | Settings | File Templates.
+    }
 }

@@ -18,6 +18,7 @@ import platform.server.session.Modifier;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -31,9 +32,9 @@ import java.util.Map;
 
 public abstract class ImportBoxInvoiceActionProperty extends BaseImportActionProperty {
 
-    protected ImportField invoiceSIDField, dateInvoiceField, boxNumberField, barCodeField, colorCodeField, sidField,
-            colorNameField, sizeField, compositionField, countryField, customCodeField, customCode6Field,
-            unitPriceField, unitQuantityField, unitNetWeightField, originalNameField, numberSkuField, RRPField;
+    protected ImportField invoiceSIDField, dateInvoiceField, boxNumberField, barCodeField, itemSupplierArticleColorSizeField,
+            colorCodeField, sidField, colorNameField, sizeField, compositionField, countryField, customCodeField,
+            customCode6Field, unitPriceField, unitQuantityField, unitNetWeightField, originalNameField, numberSkuField, RRPField;
 
     public ImportBoxInvoiceActionProperty(RomanLogicsModule RomanLM, ValueClass supplierClass) {
         super(RomanLM, "Импортировать инвойс", supplierClass);
@@ -43,7 +44,7 @@ public abstract class ImportBoxInvoiceActionProperty extends BaseImportActionPro
         super(RomanLM, "Импортировать инвойс", supplierClass, extensions);
     }
 
-    protected ImportInputTable createTable(ByteArrayInputStream inFile) throws BiffException, IOException {
+    protected ImportInputTable createTable(ByteArrayInputStream inFile) throws BiffException, IOException, ParseException {
         return new ExcelInputTable(inFile);
     }
 
@@ -54,6 +55,7 @@ public abstract class ImportBoxInvoiceActionProperty extends BaseImportActionPro
         dateInvoiceField = new ImportField(LM.baseLM.date);
         boxNumberField = new ImportField(LM.sidSupplierBox);
         barCodeField = new ImportField(LM.baseLM.barcode);
+        itemSupplierArticleColorSizeField = new ImportField(LM.baseLM.barcode);  //если нет баркода
         colorCodeField = new ImportField(LM.sidColorSupplier);
         sidField = new ImportField(LM.sidArticle);
         colorNameField = new ImportField(LM.baseLM.name);
@@ -74,7 +76,10 @@ public abstract class ImportBoxInvoiceActionProperty extends BaseImportActionPro
         return false;
     }
 
-    ;
+    protected boolean hasBarCode() {
+        return true;
+    }
+
 
     public void execute(final Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, DataSession session, Modifier<? extends Changes> modifier, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects, boolean groupLast) throws SQLException {
         DataObject supplier = keys.get(supplierInterface);
@@ -101,7 +106,11 @@ public abstract class ImportBoxInvoiceActionProperty extends BaseImportActionPro
             boxKey = new ImportKey(LM.supplierBox, LM.supplierBoxSIDSupplier.getMapping(boxNumberField, supplier));
             properties.add(new ImportProperty(invoiceSIDField, LM.boxInvoiceSupplierBox.getMapping(boxKey), LM.object(LM.boxInvoice).getMapping(invoiceKey)));
             properties.add(new ImportProperty(boxNumberField, LM.sidSupplierBox.getMapping(boxKey)));
-            properties.add(new ImportProperty(boxNumberField, LM.baseLM.barcode.getMapping(boxKey)));
+            if (hasBarCode()) {
+                properties.add(new ImportProperty(boxNumberField, LM.baseLM.barcode.getMapping(boxKey)));
+            } else {
+                properties.add(new ImportProperty(boxNumberField, LM.itemSupplierArticleSIDColorSIDSizeSID.getMapping(boxKey, sidField, colorCodeField, sizeField)));
+            }
         }
 
         ImportKey<?> articleKey = new ImportKey(LM.articleComposite, LM.articleSIDSupplier.getMapping(sidField, supplier));
@@ -111,8 +120,14 @@ public abstract class ImportBoxInvoiceActionProperty extends BaseImportActionPro
         properties.add(new ImportProperty(unitNetWeightField, LM.netWeightArticle.getMapping(articleKey)));
         properties.add(new ImportProperty(originalNameField, LM.originalNameArticle.getMapping(articleKey)));
 
-        ImportKey<?> itemKey = new ImportKey(LM.item, LM.baseLM.barcodeToObject.getMapping(barCodeField));
-        properties.add(new ImportProperty(barCodeField, LM.baseLM.barcode.getMapping(itemKey)));
+        ImportKey<?> itemKey = null;
+        if (hasBarCode()) {
+            itemKey = new ImportKey(LM.item, LM.baseLM.barcodeToObject.getMapping(barCodeField));
+            properties.add(new ImportProperty(barCodeField, LM.baseLM.barcode.getMapping(itemKey)));
+        } else {
+            itemKey = new ImportKey(LM.item, LM.itemSupplierArticleSIDColorSIDSizeSID.getMapping(supplier, sidField, colorCodeField, sizeField));
+        }
+
         properties.add(new ImportProperty(unitNetWeightField, LM.netWeightDataSku.getMapping(itemKey)));
         properties.add(new ImportProperty(sidField, LM.articleCompositeItem.getMapping(itemKey), LM.object(LM.articleComposite).getMapping(articleKey)));
 

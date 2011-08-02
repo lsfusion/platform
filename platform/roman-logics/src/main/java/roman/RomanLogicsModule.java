@@ -74,7 +74,7 @@ public class RomanLogicsModule extends LogicsModule {
     private LP addNEColorSupplierSIDInvoice;
     private LP seekColorSIDSupplier;
     private LP seekColorSIDInvoice;
-    private LP itemArticleCompositeColorSize;
+    public LP itemArticleCompositeColorSize;
     private ConcreteCustomClass sizeGroupSupplier;
     private LP supplierSizeGroup;
     private LP groupSizeSupplier;
@@ -106,6 +106,7 @@ public class RomanLogicsModule extends LogicsModule {
     private ConcreteCustomClass pallet;
     LP sidArticle;
     LP articleCompositeItem;
+    public LP itemSupplierArticleSIDColorSIDSizeSID;
     private LP round2;
     private LP articleSku;
     private ConcreteCustomClass order;
@@ -931,6 +932,7 @@ public class RomanLogicsModule extends LogicsModule {
     ConcreteCustomClass boxSupplier;
     ConcreteCustomClass simpleSupplier;
     ConcreteCustomClass jennyferSupplier;
+    ConcreteCustomClass dieselSupplier;
     ConcreteCustomClass steilmannSupplier;
     ConcreteCustomClass tallyWeijlSupplier;
     ConcreteCustomClass hugoBossSupplier;
@@ -941,6 +943,7 @@ public class RomanLogicsModule extends LogicsModule {
     ConcreteCustomClass womenSecretSupplier;
     ConcreteCustomClass babyPhatSupplier;
     private LP steilmannImportInvoice;
+    private LP dieselImportInvoice;
     private LP jennyferImportInvoice;
     private LP jennyferImportArticleWeightInvoice;
     private LP tallyWeijlImportInvoice;
@@ -1098,6 +1101,7 @@ public class RomanLogicsModule extends LogicsModule {
         simpleSupplier = addConcreteClass("simpleSupplier", "Поставщик без коробов", supplier);
 
         jennyferSupplier = addConcreteClass("jennyferSupplier", "Jennyfer", boxSupplier);
+        dieselSupplier = addConcreteClass("dieselSupplier", "Diesel", boxSupplier);
         steilmannSupplier = addConcreteClass("steilmannSupplier", "Steilmann", boxSupplier);
         tallyWeijlSupplier = addConcreteClass("tallyWeijlSupplier", "Tally Weijl", boxSupplier);
         hugoBossSupplier = addConcreteClass("hugoBossSupplier", "Hugo Boss", simpleSupplier);
@@ -1370,6 +1374,7 @@ public class RomanLogicsModule extends LogicsModule {
         importEuTnved = addAProp(new TNVEDImportActionProperty(genSID(), "Импортировать (ЕС)", this, TNVEDImportActionProperty.CLASSIFIER_IMPORT, "origin"));
         importTnvedCountryMinPrices = addAProp(new TNVEDImportActionProperty(genSID(), "Импортировать мин. цены", this, TNVEDImportActionProperty.MIN_PRICES_IMPORT));
         importTnvedDuty = addAProp(new TNVEDImportActionProperty(genSID(), "Импортировать платежи", this, TNVEDImportActionProperty.DUTIES_IMPORT));
+        dieselImportInvoice = addAProp(importInvoiceActionGroup, new DieselImportInvoiceActionProperty(this));
         jennyferImportInvoice = addAProp(importInvoiceActionGroup, new JennyferImportInvoiceActionProperty(this));
         steilmannImportInvoice = addAProp(importInvoiceActionGroup, new SteilmannImportInvoiceActionProperty(BL));
         tallyWeijlImportInvoice = addAProp(importInvoiceActionGroup, new TallyWeijlImportInvoiceActionProperty(this));
@@ -1561,6 +1566,7 @@ public class RomanLogicsModule extends LogicsModule {
         sidArticle = addDProp(baseGroup, "sidArticle", "Артикул", StringClass.get(50), article);
         sidArticleSku = addJProp(supplierAttributeGroup, "sidArticleSku", "Артикул", sidArticle, articleSku, 1);
 
+
         originalNameArticle = addDProp(supplierAttributeGroup, "originalNameArticle", "Наименование (ориг.)", InsensitiveStringClass.get(50), article);
         originalNameArticleSku = addJProp(supplierAttributeGroup, "originalNameArticleSku", "Наименование (ориг.)", originalNameArticle, articleSku, 1);
 
@@ -1686,6 +1692,7 @@ public class RomanLogicsModule extends LogicsModule {
         nameSeasonArticle.property.minimumCharWidth = 15;
 
         articleSIDSupplier = addAGProp(idGroup, "articleSIDSupplier", "Артикул (ИД)", sidArticle, supplierArticle);
+
 
         seekArticleSIDSupplier = addJProp(true, "Поиск артикула", addSAProp(null), articleSIDSupplier, 1, 2);
         seekArticleSIDInvoice = addJProp(true, "Поиск артикула", seekArticleSIDSupplier, 1, supplierDocument, 2);
@@ -1962,6 +1969,9 @@ public class RomanLogicsModule extends LogicsModule {
 //        quantityListArticle.setDerivedForcedChange(orderedInvoiceArticle, 1, 2, numberListArticle, 1, 2);
 
         invoicedOrderArticle = addSGProp(baseGroup, "invoicedOrderArticle", "Выставлено инвойсов", invoicedOrderSku, 1, articleSku, 2);
+
+        itemSupplierArticleSIDColorSIDSizeSID = addJProp("itemSupplierArticleSIDColorSIDSizeSID", "item", itemArticleCompositeColorSize, articleSIDSupplier, 2, 1, colorSIDSupplier, 2, 3, sizeSIDSupplier, 2, 4);
+
 
         // цены
         priceDocumentArticle = addDProp(baseGroup, "priceDocumentArticle", "Цена", DoubleClass.instance, priceDocument, article);

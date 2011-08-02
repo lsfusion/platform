@@ -4,6 +4,7 @@ import org.supercsv.io.CsvListReader;
 import org.supercsv.prefs.CsvPreference;
 
 import java.io.IOException;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -43,6 +44,16 @@ public class CSVInputTable implements ImportInputTable {
 
     public String getCellString(ImportField field, int row, int column) {
         return getCellString(row, column);
+    }
+
+    @Override
+    public String getCellVal(int row, int column) {
+        return null;  //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    @Override
+    public String getCellVal(ImportField field, int row, int column) throws ParseException {
+        return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
     public int rowsCnt() {

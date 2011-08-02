@@ -25,7 +25,6 @@ public class SteilmannInvoiceImporter extends SingleSheetImporter {
     @Override
     protected boolean isCorrectRow(int rowNum) {
         return inputTable.getCellString(rowNum, AA).trim().matches("^(\\d{13}|\\d{12}|\\d{8})$");
-//        return true;
     }
 
     @Override
