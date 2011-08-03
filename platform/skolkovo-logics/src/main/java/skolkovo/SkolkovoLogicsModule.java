@@ -103,6 +103,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
     ConcreteCustomClass vote;
 
     public StaticCustomClass projectType;
+    public StaticCustomClass projectAction;
     StaticCustomClass language;
     StaticCustomClass documentType;
     public StaticCustomClass ownerType;
@@ -142,6 +143,10 @@ public class SkolkovoLogicsModule extends LogicsModule {
                                      new String[]{"сопоставим с существующими российскими аналогами или уступает им", "превосходит российские аналоги, но уступает лучшим зарубежным аналогам",
                                                   "Является российским аналогом востребованного зарубежного продукта/технологии", "Обладает отдельными преимуществами над лучшими мировыми аналогами, но в целом сопоставим с ними",
                                                   "Существенно превосходит все существующие мировые аналоги", "Не имеет аналогов, удовлетворяет ранее не удовлетворенную потребность и создает новый рынок"});
+
+        projectAction = addStaticClass("projectAction", "Текущий статус",
+                                        new String[]{"preliminary", "status"},
+                                        new String[]{"Проект подан на предварительную экспертизу", "Проект подан на статус участника"});
 
         ownerType = addStaticClass("ownerType", "Тип правообладателя",
                                                new String[]{"employee", "participant", "thirdparty"},
@@ -453,6 +458,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
     public LP foreignInnovativeProject;
     public LP projectTypeProject;
     LP nameProjectTypeProject;
+    public LP projectActionProject;
+    LP nameProjectActionProject;
     public LP nativeSubstantiationProjectType;
     public LP foreignSubstantiationProjectType;
     public LP nativeSubstantiationProjectCluster;
@@ -536,6 +543,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP nameOwnerTypePatent;
     public LP ownerTypeToSID;
     public LP projectTypeToSID;
+    public LP projectActionToSID;
     public LP fileIntentionOwnerPatent;
     LP loadFileIntentionOwnerPatent;
     LP openFileIntentionOwnerPatent;
@@ -722,6 +730,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         projectTypeProject = addDProp(idGroup, "projectTypeProject", "Тип проекта (ИД)", projectType, project);
         nameProjectTypeProject = addJProp(innovationGroup, "nameProjectTypeProject", "Тип проекта", baseLM.name, projectTypeProject, 1);
+        projectActionProject = addDProp(idGroup, "projectActionProject", "Текущий статус (ИД)", projectAction, project);
+        nameProjectActionProject = addJProp(projectInformationGroup, "nameProjectActionProject", "Текущий статус", baseLM.name, projectActionProject, 1);
         nativeSubstantiationProjectType = addDProp(innovationGroup, "nativeSubstantiationProjectType", "Обоснование выбора", InsensitiveStringClass.get(2000), project);
         nativeSubstantiationProjectType.setMinimumWidth(10); nativeSubstantiationProjectType.setPreferredWidth(50);
         foreignSubstantiationProjectType = addDProp(innovationGroup, "foreignSubstantiationProjectType", "Description of choice", InsensitiveStringClass.get(2000), project);
@@ -852,6 +862,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         nameOwnerTypePatent = addJProp(baseGroup, "nameOwnerTypePatent", "Кем является правообладатель", baseLM.name, ownerTypePatent, 1);
         ownerTypeToSID = addAGProp("ownerTypeToSID", "SID типа правообладателя", addJProp(baseLM.and1, baseLM.classSID, 1, is(ownerType), 1));
         projectTypeToSID = addAGProp("projectTypeToSID", "SID типа проекта", addJProp(baseLM.and1, baseLM.classSID, 1, is(projectType), 1));
+        projectActionToSID = addAGProp("projectActionToSID", "SID текущего статуса", addJProp(baseLM.and1, baseLM.classSID, 1, is(projectAction), 1));
         fileIntentionOwnerPatent = addDProp("fileIntentionOwnerPatent", "Файл документа о передаче права", PDFClass.instance, patent);
         loadFileIntentionOwnerPatent = addLFAProp(baseGroup, "Загрузить файл документа о передаче права", fileIntentionOwnerPatent);
         openFileIntentionOwnerPatent = addOFAProp(baseGroup, "Открыть файл документа о передаче права", fileIntentionOwnerPatent);

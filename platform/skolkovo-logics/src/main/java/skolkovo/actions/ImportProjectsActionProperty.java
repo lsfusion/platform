@@ -60,7 +60,7 @@ public class ImportProjectsActionProperty extends ActionProperty {
             nameNativeManagerProjectField, nameNativeGenitiveManagerProjectField, nameNativeDativusManagerProjectField, nameNativeAblateManagerProjectField,
             nameForeignManagerProjectField,
             nativeProblemProjectField, foreignProblemProjectField, nativeInnovativeProjectField, foreignInnovativeProjectField,
-            projectTypeProjectField,
+            projectTypeProjectField, projectActionProjectField,
             nativeSubstantiationProjectTypeField, foreignSubstantiationProjectTypeField, nativeSubstantiationProjectClusterField, foreignSubstantiationProjectClusterField,
             isOwnedEquipmentProjectField, isAvailableEquipmentProjectField,
             isTransferEquipmentProjectField, descriptionTransferEquipmentProjectField, ownerEquipmentProjectField,
@@ -92,7 +92,7 @@ public class ImportProjectsActionProperty extends ActionProperty {
             filePassportNonRussianSpecialistField, fileStatementNonRussianSpecialistField,
             fileNativeTechnicalDescriptionProjectField, fileForeignTechnicalDescriptionProjectField;
 
-    ImportKey<?> projectKey, projectTypeProjectKey, claimerKey, patentKey, ownerTypePatentKey, clusterKey, academicKey, nonRussianSpecialistKey;
+    ImportKey<?> projectKey, projectTypeProjectKey, projectActionProjectKey, claimerKey, patentKey, ownerTypePatentKey, clusterKey, academicKey, nonRussianSpecialistKey;
     List<ImportProperty<?>> properties = new ArrayList<ImportProperty<?>>();
     List<ImportProperty<?>> propertiesCluster = new ArrayList<ImportProperty<?>>();
     List<ImportProperty<?>> propertiesPatent = new ArrayList<ImportProperty<?>>();
@@ -114,6 +114,7 @@ public class ImportProjectsActionProperty extends ActionProperty {
         nativeInnovativeProjectField = new ImportField(LM.nativeInnovativeProject);
         foreignInnovativeProjectField = new ImportField(LM.foreignInnovativeProject);
         projectTypeProjectField = new ImportField(LM.baseLM.classSID);
+        projectActionProjectField = new ImportField(LM.baseLM.classSID);
         nativeSubstantiationProjectTypeField = new ImportField(LM.nativeSubstantiationProjectType);
         foreignSubstantiationProjectTypeField = new ImportField(LM.foreignSubstantiationProjectType);
         isOwnedEquipmentProjectField = new ImportField(LM.isOwnedEquipmentProject);
@@ -254,6 +255,10 @@ public class ImportProjectsActionProperty extends ActionProperty {
         properties.add(new ImportProperty(projectTypeProjectField, LM.projectTypeProject.getMapping(projectKey),
                 LM.baseLM.object(LM.projectType).getMapping(projectTypeProjectKey)));
 
+        projectActionProjectKey = new ImportKey(LM.projectAction, LM.projectActionToSID.getMapping(projectActionProjectField));
+        properties.add(new ImportProperty(projectActionProjectField, LM.projectActionProject.getMapping(projectKey),
+                LM.baseLM.object(LM.projectAction).getMapping(projectActionProjectKey)));
+
         claimerKey = new ImportKey(LM.claimer, LM.nameNativeToClaimer.getMapping(nameNativeClaimerField));
         properties.add(new ImportProperty(nameNativeClaimerField, LM.claimerProject.getMapping(projectKey),
                 LM.baseLM.object(LM.claimer).getMapping(claimerKey)));
@@ -375,7 +380,7 @@ public class ImportProjectsActionProperty extends ActionProperty {
         OrderedMap<Map<Object, Object>, Map<Object, Object>> result = null;
         List<Element> elementList = null;
         try {
-            URL url = new URL(host + "&show=projects");
+            URL url = new URL(host + "&show=projects&limit=1000");
             URLConnection connection = url.openConnection();
 
             connection.setDoOutput(false);
@@ -640,6 +645,7 @@ public class ImportProjectsActionProperty extends ActionProperty {
                 row.add(currentProjectDate);
 
                 row.add(node.getChildText("typeProject"));
+                row.add(node.getChildText("actionProject"));
                 row.add(node.getChildText("nameNativeClaimer"));
                 row.add(node.getChildText("nameForeignClaimer"));
 
@@ -778,7 +784,7 @@ public class ImportProjectsActionProperty extends ActionProperty {
                 isOwnFundsProjectField, amountOwnFundsProjectField,
                 isPlanningSearchSourceProjectField, amountFundsProjectField,
                 isOtherSoursesProjectField, commentOtherSoursesProjectField, updateDateProjectField,
-                projectTypeProjectField,
+                projectTypeProjectField, projectActionProjectField,
                 nameNativeClaimerField, nameForeignClaimerField,
                 firmNameNativeClaimerField, firmNameForeignClaimerField, phoneClaimerField, addressClaimerField,
                 siteClaimerField, emailClaimerField, emailFirmClaimerField, OGRNClaimerField, INNClaimerField,
@@ -790,7 +796,7 @@ public class ImportProjectsActionProperty extends ActionProperty {
         ImportTable table = new ImportTable(fields, data);
 
         ImportKey<?>[] keysArray;
-        keysArray = new ImportKey<?>[]{projectKey, projectTypeProjectKey, claimerKey};
+        keysArray = new ImportKey<?>[]{projectKey, projectTypeProjectKey, projectActionProjectKey, claimerKey};
         new IntegrationService(session, table, Arrays.asList(keysArray), properties).synchronize(true, true, false);
 
         List<ImportField> fieldsCurrentCluster = BaseUtils.toList(
