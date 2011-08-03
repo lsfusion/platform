@@ -12,6 +12,7 @@ import java.util.TimerTask;
 
 public class BlockingTask extends TimerTask {
     Image image;
+    private boolean first = true;
 
     @Override
     public void run() {
@@ -23,7 +24,10 @@ public class BlockingTask extends TimerTask {
                 //    image = blur(blur(getScreen(window)));
                     image = darken(getScreen(window));
                 }
-                gr.drawImage(image, 0, 0, null);
+                if (first) {
+                    gr.drawImage(image, 0, 0, null);
+                    first = false;
+                }
                 drawProgressBar(window);
             }
         }
