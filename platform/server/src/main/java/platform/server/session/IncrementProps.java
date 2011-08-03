@@ -136,15 +136,15 @@ public class IncrementProps<T> extends Modifier<IncrementProps.UsedChanges> {
     }
 
     public <P extends PropertyInterface> Expr changed(Property<P> property, Map<P, ? extends Expr> joinImplement, WhereBuilder changedWhere) {
-        if(noUpdate.contains(property)) // если так то ничего не менять
-            return Expr.NULL;
-
         PropertyGroup<T> incrementGroup = incrementGroups.get(property);
         if(incrementGroup!=null) { // если уже все посчитано - просто возвращаем его
             Join<Property> incrementJoin = tables.get(incrementGroup).join(crossJoin(incrementGroup.getPropertyMap(property), joinImplement));
             changedWhere.add(incrementJoin.getWhere());
             return incrementJoin.getExpr(property);
         }
+
+        if(noUpdate.contains(property)) // если так то ничего не менять
+            return Expr.NULL;
 
         return null;
     }
@@ -153,15 +153,18 @@ public class IncrementProps<T> extends Modifier<IncrementProps.UsedChanges> {
         return changes instanceof UsedChanges;
     }
 
-    public UsedChanges used(Property property, UsedChanges usedChanges) {
-        if(usedChanges.hasChanges() && noUpdate.contains(property))
-            return new UsedChanges(property);
-
+    public UsedChanges preUsed(Property property) {
         PropertyGroup<T> incrementGroup = incrementGroups.get(property);
         if(incrementGroup!=null)
             return new UsedChanges(property, tables.get(incrementGroup));
-
-        return usedChanges;
+        return null;
+    }
+    @Override
+    public UsedChanges postUsed(Property property, UsedChanges changes) {
+        if(noUpdate.contains(property) && changes.hasChanges())
+            return new UsedChanges(property);
+        else
+            return changes;
     }
 
     public UsedChanges newChanges() {

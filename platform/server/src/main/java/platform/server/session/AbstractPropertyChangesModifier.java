@@ -91,11 +91,11 @@ public abstract class AbstractPropertyChangesModifier<P extends PropertyInterfac
     protected abstract UC createChanges(T property, PropertyChange<P> change);
     protected abstract PropertyChange<P> getPropertyChange(Property property);
 
-    public UC used(Property property, UC usedChanges) {
+    public UC preUsed(Property property) {
         PropertyChange<P> propertyChange;
         if((propertyChange = getPropertyChange(property))!=null)
-            usedChanges = createChanges((T) property, propertyChange);
-        return usedChanges;
+            return createChanges((T) property, propertyChange);
+        return null;
     }
 
     // переносим DataProperty на выход, нужно на самом деле сделать calculateExpr и if равняется то keyExpr, иначе старое значение но по старому значению будет false

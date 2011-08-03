@@ -13,7 +13,10 @@ import java.util.Map;
 
 public abstract class Modifier<U extends Changes<U>> extends MutableObject {
 
-    public abstract U used(Property property,U usedChanges);
+    public abstract U preUsed(Property property);
+    public U postUsed(Property property, U changes) {
+        return changes;
+    }
     public abstract U newChanges();
 
     protected abstract U newFullChanges();

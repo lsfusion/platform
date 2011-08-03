@@ -187,8 +187,8 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
             return SimpleChanges.EMPTY;
         }
 
-        public SimpleChanges used(Property property, SimpleChanges usedChanges) {
-            return usedChanges;
+        public SimpleChanges preUsed(Property property) {
+            return null;
         }
 
         public <P extends PropertyInterface> Expr changed(Property<P> property, Map<P, ? extends Expr> joinImplement, WhereBuilder changedWhere) {
@@ -274,7 +274,11 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
     protected abstract <U extends Changes<U>> U calculateUsedChanges(Modifier<U> modifier);
 
     public <U extends Changes<U>> U aspectGetUsedChanges(Modifier<U> modifier) {
-        return modifier.used(this, calculateUsedChanges(modifier));
+        U usedChanges = modifier.preUsed(this);
+        if(usedChanges==null) // так сделано чтобы не считать лишний раз calculateUsedChanges
+            return modifier.postUsed(this, calculateUsedChanges(modifier));
+        else
+            return usedChanges;
     }
 
     public <U extends Changes<U>> U getUsedChanges(Modifier<U> modifier) {

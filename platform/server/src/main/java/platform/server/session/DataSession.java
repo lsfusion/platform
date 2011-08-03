@@ -4,7 +4,6 @@ import platform.base.BaseUtils;
 import platform.base.MutableObject;
 import platform.base.OrderedMap;
 import platform.interop.action.ClientAction;
-import platform.server.Settings;
 import platform.server.caches.MapValues;
 import platform.server.classes.*;
 import platform.server.data.*;
@@ -49,8 +48,8 @@ public class DataSession extends MutableObject implements SessionChanges, ExprCh
             return DataSession.this;
         }
 
-        public SimpleChanges used(Property property, SimpleChanges usedChanges) {
-            return usedChanges;
+        public SimpleChanges preUsed(Property property) {
+            return null;
         }
 
         public <P extends PropertyInterface> Expr changed(Property<P> property, Map<P, ? extends Expr> joinImplement, WhereBuilder changedWhere) {

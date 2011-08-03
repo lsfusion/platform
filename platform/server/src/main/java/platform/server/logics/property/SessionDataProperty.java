@@ -104,10 +104,10 @@ public class SessionDataProperty extends DataProperty implements NoValueProperty
             return new UsedChanges(noValueProps);
         }
 
-        public UsedChanges used(Property property, UsedChanges usedChanges) {
+        public UsedChanges preUsed(Property property) {
             if(property instanceof NoValueProperty)
                 return new UsedChanges((NoValueProperty) property);
-            return usedChanges;
+            return null;
         }
 
         public ExprChanges getSession() {
