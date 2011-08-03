@@ -11,7 +11,6 @@ import platform.base.IOUtils;
 import platform.base.OrderedMap;
 import platform.interop.action.ClientAction;
 import platform.interop.action.MessageClientAction;
-import platform.server.classes.FileActionClass;
 import platform.server.classes.ValueClass;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.query.Query;
@@ -26,6 +25,7 @@ import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.session.Changes;
 import platform.server.session.DataSession;
 import platform.server.session.Modifier;
+import skolkovo.SkolkovoBusinessLogics;
 import skolkovo.SkolkovoLogicsModule;
 
 import java.io.*;
@@ -41,6 +41,7 @@ import java.util.Date;
 public class ImportProjectsActionProperty extends ActionProperty {
 
     private SkolkovoLogicsModule LM;
+    private SkolkovoBusinessLogics BL;
     private DataSession session;
     private static Logger logger = Logger.getLogger("import");
     private byte[] responseContents;
@@ -48,9 +49,10 @@ public class ImportProjectsActionProperty extends ActionProperty {
     private boolean onlyMessage;
     private boolean fillSids;
 
-    public ImportProjectsActionProperty(String caption, SkolkovoLogicsModule LM, boolean onlyMessage, boolean fillSids) {
+    public ImportProjectsActionProperty(String caption, SkolkovoLogicsModule LM, SkolkovoBusinessLogics BL, boolean onlyMessage, boolean fillSids) {
         super(LM.genSID(), caption, new ValueClass[]{});
         this.LM = LM;
+        this.BL = BL;
         this.onlyMessage = onlyMessage;
         this.fillSids = fillSids;
     }
@@ -357,15 +359,11 @@ public class ImportProjectsActionProperty extends ActionProperty {
             if (projects == null || !projects.isEmpty()) {
                 if (!onlyMessage) {
                     message = "Данные были успешно приняты\n";
-                    if (!fillSids) {
-                        logger.info(toLog);
-                    }
                 }
                 message += toLog;
             } else {
                 if (responseContents != null) {
                     message = new String(responseContents);
-                    logger.info(toLog);
                 } else {
                     message = "Вся информация актуальна";
                 }
@@ -415,6 +413,7 @@ public class ImportProjectsActionProperty extends ActionProperty {
 
         if (fillSids) {
             fillSids(result, elementList);
+            logger.info("Imported sids:" + toLog);
             return null;
         }
 
@@ -482,6 +481,10 @@ public class ImportProjectsActionProperty extends ActionProperty {
                 }
             }
         }
+
+        if (!onlyMessage) {
+            logger.info("Projects to import:" + toLog);
+        }
         return projectList;
     }
 
@@ -495,7 +498,7 @@ public class ImportProjectsActionProperty extends ActionProperty {
             Map<Object, Object> project = data.get(key);
             if (project.get("id") == null) {
                 Object email = project.get("email");
-                if (email != null && getEmailRepeatings(data, elements, email.toString()) == 1) {
+                if (email != null && getEmailRepeatings(data, elements, email.toString().trim().toLowerCase()) == 1) {
                     String projectId = getProjectId(elements, email.toString());
                     if (projectId != null) {
                         LM.sidProject.execute(projectId, session, session.getDataObject(BaseUtils.singleValue(key), LM.project.getType()));
@@ -528,14 +531,14 @@ public class ImportProjectsActionProperty extends ActionProperty {
     public int getEmailRepeatings(OrderedMap<Map<Object, Object>, Map<Object, Object>> data, List<Element> elements, String email) {
         int repeatings = 0;
         for (Map<Object, Object> project : data.values()) {
-            if (project.get("email") != null && project.get("email").toString().equals(email)) {
+            if (project.get("email") != null && project.get("email").toString().trim().toLowerCase().equals(email)) {
                 repeatings++;
             }
         }
         if (repeatings == 1) {
             repeatings = 0;
             for (Element element : elements) {
-                if (element.getChildText("emailProject").equals(email.trim())) {
+                if (element.getChildText("emailProject").trim().toLowerCase().equals(email)) {
                     repeatings++;
                 }
             }
@@ -565,7 +568,7 @@ public class ImportProjectsActionProperty extends ActionProperty {
                 Element node = (Element) list.get(i);
                 row = new ArrayList<Object>();
                 row.add(new java.sql.Date(new Date(Integer.parseInt(node.getChildText("yearProject")) - 1900, Integer.parseInt(node.getChildText("monthProject")) - 1, Integer.parseInt(node.getChildText("dayProject"))).getTime()));
-                row.add(node.getChildText("projectId"));
+                row.add(projectId);
                 row.add(node.getChildText("nameNativeProject"));
                 row.add(node.getChildText("nameForeignProject"));
                 row.add(node.getChildText("nameNativeManagerProject"));
@@ -686,7 +689,7 @@ public class ImportProjectsActionProperty extends ActionProperty {
                     rowCluster.add(true);
 
                     rowCluster.add(nodeCluster.getChildText("nameNativeCluster"));
-                    rowCluster.add(node.getChildText("projectId"));
+                    rowCluster.add(projectId);
                     rowCluster.add(nodeCluster.getChildText("nativeSubstantiationClusterProject"));
                     rowCluster.add(nodeCluster.getChildText("foreignSubstantiationClusterProject"));
                     dataCluster.add(rowCluster);
@@ -699,7 +702,7 @@ public class ImportProjectsActionProperty extends ActionProperty {
                     Element nodePatent = (Element) listPatent.get(j);
                     List<Object> rowPatent = new ArrayList<Object>();
 
-                    rowPatent.add(node.getChildText("projectId"));
+                    rowPatent.add(projectId);
                     rowPatent.add(nodePatent.getChildText("nativeTypePatent"));
                     rowPatent.add(nodePatent.getChildText("foreignTypePatent"));
                     rowPatent.add(nodePatent.getChildText("nativeNumberPatent"));
@@ -730,7 +733,7 @@ public class ImportProjectsActionProperty extends ActionProperty {
                 for (j = 0; j < listAcademic.size(); j++) {
                     Element nodeAcademic = (Element) listAcademic.get(j);
                     List<Object> rowAcademic = new ArrayList<Object>();
-                    rowAcademic.add(node.getChildText("projectId"));
+                    rowAcademic.add(projectId);
                     rowAcademic.add(nodeAcademic.getChildText("fullNameAcademic"));
                     rowAcademic.add(nodeAcademic.getChildText("institutionAcademic"));
                     rowAcademic.add(nodeAcademic.getChildText("titleAcademic"));
@@ -745,7 +748,7 @@ public class ImportProjectsActionProperty extends ActionProperty {
                 for (j = 0; j < listNonRussianSpecialist.size(); j++) {
                     Element nodeNonRussianSpecialist = (Element) listNonRussianSpecialist.get(j);
                     List<Object> rowNonRussianSpecialist = new ArrayList<Object>();
-                    rowNonRussianSpecialist.add(node.getChildText("projectId"));
+                    rowNonRussianSpecialist.add(projectId);
                     rowNonRussianSpecialist.add(nodeNonRussianSpecialist.getChildText("fullNameNonRussianSpecialist"));
                     rowNonRussianSpecialist.add(nodeNonRussianSpecialist.getChildText("organizationNonRussianSpecialist"));
                     rowNonRussianSpecialist.add(nodeNonRussianSpecialist.getChildText("titleNonRussianSpecialist"));
@@ -761,7 +764,10 @@ public class ImportProjectsActionProperty extends ActionProperty {
                 }
             }
         } catch (JDOMParseException e) {
-            toLog += e.getCause() + " : projectId=" + projectId + " : " + new String(responseContents);
+            String info = "failed to import project " + projectId + ". Reason: " + new String(responseContents);
+//            String info = e.getCause() + " : projectId=" + projectId + " : " + new String(responseContents);
+            toLog += info;
+            logger.info(info);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -835,5 +841,8 @@ public class ImportProjectsActionProperty extends ActionProperty {
         table = new ImportTable(fieldsNonRussianSpecialist, dataNonRussianSpecialist);
         keysArray = new ImportKey<?>[]{projectKey, nonRussianSpecialistKey};
         new IntegrationService(session, table, Arrays.asList(keysArray), propertiesNonRussianSpecialist).synchronize(true, true, false);
+
+        session.apply(BL);
+        logger.info(projectId + " project imported successfully");
     }
 }

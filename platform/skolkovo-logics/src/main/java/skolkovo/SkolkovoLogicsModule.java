@@ -62,10 +62,12 @@ import static platform.base.BaseUtils.nvl;
 
 
 public class SkolkovoLogicsModule extends LogicsModule {
+    private final SkolkovoBusinessLogics BL;
 
-    public SkolkovoLogicsModule(BaseLogicsModule<SkolkovoBusinessLogics> baseLM) {
+    public SkolkovoLogicsModule(BaseLogicsModule<SkolkovoBusinessLogics> baseLM, SkolkovoBusinessLogics BL) {
         super("SkolkovLogicsModule");
         setBaseLogicsModule(baseLM);
+        this.BL = BL;
     }
 
     private LP inExpertVoteDateFromDateTo;
@@ -144,9 +146,9 @@ public class SkolkovoLogicsModule extends LogicsModule {
                                                   "Является российским аналогом востребованного зарубежного продукта/технологии", "Обладает отдельными преимуществами над лучшими мировыми аналогами, но в целом сопоставим с ними",
                                                   "Существенно превосходит все существующие мировые аналоги", "Не имеет аналогов, удовлетворяет ранее не удовлетворенную потребность и создает новый рынок"});
 
-        projectAction = addStaticClass("projectAction", "Текущий статус",
+        projectAction = addStaticClass("projectAction", "Тип заявки",
                                         new String[]{"preliminary", "status"},
-                                        new String[]{"Проект подан на предварительную экспертизу", "Проект подан на статус участника"});
+                                        new String[]{"Предварительная экспертиза", "Статус участника"});
 
         ownerType = addStaticClass("ownerType", "Тип правообладателя",
                                                new String[]{"employee", "participant", "thirdparty"},
@@ -460,6 +462,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP nameProjectTypeProject;
     public LP projectActionProject;
     LP nameProjectActionProject;
+    LP projectActionVote;
+    LP nameProjectActionVote;
     public LP nativeSubstantiationProjectType;
     public LP foreignSubstantiationProjectType;
     public LP nativeSubstantiationProjectCluster;
@@ -730,8 +734,12 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         projectTypeProject = addDProp(idGroup, "projectTypeProject", "Тип проекта (ИД)", projectType, project);
         nameProjectTypeProject = addJProp(innovationGroup, "nameProjectTypeProject", "Тип проекта", baseLM.name, projectTypeProject, 1);
-        projectActionProject = addDProp(idGroup, "projectActionProject", "Текущий статус (ИД)", projectAction, project);
-        nameProjectActionProject = addJProp(projectInformationGroup, "nameProjectActionProject", "Текущий статус", baseLM.name, projectActionProject, 1);
+        projectActionProject = addDProp(idGroup, "projectActionProject", "Тип заявки (ИД)", projectAction, project);
+        nameProjectActionProject = addJProp(projectInformationGroup, "nameProjectActionProject", "Тип заявки", baseLM.name, projectActionProject, 1);
+        nameProjectActionProject.setPreferredCharWidth(20);
+        projectActionVote = addDProp(idGroup, "projectActionVote", "Тип заявки (ИД)", projectAction, vote);
+        nameProjectActionVote = addJProp(baseGroup, "nameProjectActionProject", "Тип заявки", baseLM.name, projectActionVote, 1);
+        nameProjectActionVote.setPreferredCharWidth(20);
         nativeSubstantiationProjectType = addDProp(innovationGroup, "nativeSubstantiationProjectType", "Обоснование выбора", InsensitiveStringClass.get(2000), project);
         nativeSubstantiationProjectType.setMinimumWidth(10); nativeSubstantiationProjectType.setPreferredWidth(50);
         foreignSubstantiationProjectType = addDProp(innovationGroup, "foreignSubstantiationProjectType", "Description of choice", InsensitiveStringClass.get(2000), project);
@@ -1199,9 +1207,9 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         generateDocumentsProjectDocumentType = addAProp(actionGroup, new GenerateDocumentsActionProperty());
         includeDocumentsProjectDocumentType = addAProp(actionGroup, new IncludeDocumentsActionProperty());
-        importProjectSidsAction = addAProp(actionGroup, new ImportProjectsActionProperty("Импортировать идентификаторы проектов", this, false, true));
-        showProjectsToImportAction = addAProp(actionGroup, new ImportProjectsActionProperty("Посмотреть импортируемые проекты", this, true, false));
-        importProjectsAction = addAProp(actionGroup, new ImportProjectsActionProperty("Импортировать проекты", this, false, false));
+        importProjectSidsAction = addAProp(actionGroup, new ImportProjectsActionProperty("Импортировать идентификаторы проектов", this, BL, false, true));
+        showProjectsToImportAction = addAProp(actionGroup, new ImportProjectsActionProperty("Посмотреть импортируемые проекты", this, BL, true, false));
+        importProjectsAction = addAProp(actionGroup, new ImportProjectsActionProperty("Импортировать проекты", this, BL, false, false));
 
         generateVoteProject = addAProp(actionGroup, new GenerateVoteActionProperty());
         copyResultsVote = addAProp(actionGroup, new CopyResultsActionProperty());
@@ -1554,7 +1562,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         private ProjectFormEntity(NavigatorElement parent, String sID) {
             super(parent, sID, "Реестр проектов");
 
-            objProject = addSingleGroupObject(project, baseLM.date, nameNative, nameForeign,  nameNativeFinalClusterProject, nameNativeJoinClaimerProject, nameStatusProject, autoGenerateProject, generateVoteProject, editProject);
+            objProject = addSingleGroupObject(project, baseLM.date, nameNative, nameForeign,  nameNativeFinalClusterProject, nameNativeJoinClaimerProject, nameStatusProject, nameProjectActionProject, autoGenerateProject, generateVoteProject, editProject);
             addObjectActions(this, objProject);
 
 //            addPropertyDraw(addProject).toDraw = objProject.groupTo;
@@ -1569,7 +1577,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             getPropertyDraw(generateVoteProject).forceViewType = ClassViewType.PANEL;
             getPropertyDraw(generateVoteProject).propertyCaption = addPropertyObject(hideGenerateVoteProject, objProject);
 
-            objVote = addSingleGroupObject(vote, dateStartVote, dateEndVote, nameNativeClusterVote, openedVote, succeededVote, acceptedVote, quantityDoneVote, quantityInClusterVote, quantityInnovativeVote, quantityForeignVote, emailClaimerVote, baseLM.delete);
+            objVote = addSingleGroupObject(vote, dateStartVote, dateEndVote, nameNativeClusterVote, nameProjectActionVote, openedVote, succeededVote, acceptedVote, quantityDoneVote, quantityInClusterVote, quantityInnovativeVote, quantityForeignVote, emailClaimerVote, baseLM.delete);
             objVote.groupTo.banClassView.addAll(BaseUtils.toList(ClassViewType.PANEL, ClassViewType.HIDE));
 
 //            getPropertyDraw(copyResultsVote).forceViewType = ClassViewType.PANEL;
@@ -1685,7 +1693,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         private VoteFormEntity(NavigatorElement parent, String sID, boolean restricted) {
             super(parent, sID, (!restricted) ? "Реестр заседаний" : "Результаты заседаний");
 
-            objVote = addSingleGroupObject(vote, nameNativeProjectVote, nameNativeClaimerVote, nameNativeClusterVote, dateStartVote, dateEndVote, openedVote, succeededVote, acceptedVote, quantityDoneVote, quantityInClusterVote, quantityInnovativeVote, quantityForeignVote);
+            objVote = addSingleGroupObject(vote, nameNativeProjectVote, nameNativeClaimerVote, nameProjectActionVote, nameNativeClusterVote, dateStartVote, dateEndVote, openedVote, succeededVote, acceptedVote, quantityDoneVote, quantityInClusterVote, quantityInnovativeVote, quantityForeignVote);
             if (!restricted)
                 addPropertyDraw(objVote, emailClosedVote, baseLM.delete);
 
@@ -2483,6 +2491,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
                 voteObject = executeForm.form.addObject(vote);
             projectVote.execute(projectObject.object, session, modifier, voteObject);
             clusterVote.execute(currentClusterProject.read(session, modifier, projectObject), session, modifier, voteObject);
+            projectActionVote.execute(projectActionProject.read(session, modifier, projectObject), session, modifier, voteObject);
 
             // копируем результаты старых заседаний
             for (Map.Entry<DataObject, DataObject> row : previousResults.entrySet()) {

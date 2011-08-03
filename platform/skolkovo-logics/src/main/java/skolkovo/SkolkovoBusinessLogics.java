@@ -44,7 +44,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
     @Override
     public void createModules() {
         super.createModules();
-        SkolkovoLM = new SkolkovoLogicsModule(LM);
+        SkolkovoLM = new SkolkovoLogicsModule(LM, this);
         addLogicsModule(SkolkovoLM);
     }
 
