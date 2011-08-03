@@ -1234,6 +1234,8 @@ public class RomanLogicsModule extends LogicsModule {
         baseLM.tableFactory.include("secondNameClass", secondNameClass);
 
         baseLM.tableFactory.include("importerFreight", importer, freight);
+
+        baseLM.tableFactory.include("simpleInvoiceSimpleShipmentStockSku", simpleInvoice, simpleShipment, stock, sku);
     }
 
     @Override
