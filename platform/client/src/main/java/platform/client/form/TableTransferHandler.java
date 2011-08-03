@@ -43,12 +43,16 @@ public abstract class TableTransferHandler extends TransferHandler {
         return null;
     }
 
+    private boolean checkFlavor(DataFlavor flavor) {
+        return (flavor.getHumanPresentableName().equals("text/plain") || flavor.getHumanPresentableName().equals("Unicode String"));
+    }
+
     @Override
     public boolean importData(JComponent c, Transferable t) {
         TableInterface table = getTable();
         if (c == table) {
             for (DataFlavor flavor : t.getTransferDataFlavors()) {
-                if (String.class.isAssignableFrom(flavor.getRepresentationClass()) && flavor.getHumanPresentableName().equals("text/plain")) {
+                if (String.class.isAssignableFrom(flavor.getRepresentationClass()) && checkFlavor(flavor)) {
                     String value = null;
                     try {
                         value = (String) t.getTransferData(flavor);
