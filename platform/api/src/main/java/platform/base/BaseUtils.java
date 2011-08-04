@@ -1502,9 +1502,12 @@ public class BaseUtils {
     }
 
     public static byte[] mergeFileAndExtension(byte[] file, byte[] ext) {
-        byte[] extBytes = new byte[ext.length + 1];
-        extBytes[0] = (byte) ext.length;
-        System.arraycopy(ext, 0, extBytes, 1, ext.length);
+        byte[] extBytes = new byte[0];
+        if (ext.length != 0) {
+            extBytes = new byte[ext.length + 1];
+            extBytes[0] = (byte) ext.length;
+            System.arraycopy(ext, 0, extBytes, 1, ext.length);
+        }
         byte[] result = new byte[extBytes.length + file.length];
         System.arraycopy(extBytes, 0, result, 0, extBytes.length);
         System.arraycopy(file, 0, result, extBytes.length, file.length);
