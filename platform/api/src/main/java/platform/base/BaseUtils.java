@@ -1484,14 +1484,9 @@ public class BaseUtils {
                 //int length = fileBytes.length;
 
                 if (custom) {
-                    byte[] extBytes = getFileExtension(file).getBytes();
-                    ext = new byte[extBytes.length + 1];
-                    ext[0] = (byte)extBytes.length;
-                    System.arraycopy(extBytes, 0, ext, 1, extBytes.length);
+                    ext = getFileExtension(file).getBytes();
                 }
-                byte[] union = new byte[ext.length + fileBytes.length];
-                System.arraycopy(ext, 0, union, 0, ext.length);
-                System.arraycopy(fileBytes, 0, union, ext.length, fileBytes.length);
+                byte[] union = mergeFileAndExtension(fileBytes, ext);
 
                 outStream.writeInt(union.length);
                 outStream.write(union);
@@ -1504,6 +1499,29 @@ public class BaseUtils {
         }
 
         return result;
+    }
+
+    public static byte[] mergeFileAndExtension(byte[] file, byte[] ext) {
+        byte[] extBytes = new byte[ext.length + 1];
+        extBytes[0] = (byte) ext.length;
+        System.arraycopy(ext, 0, extBytes, 1, ext.length);
+        byte[] result = new byte[extBytes.length + file.length];
+        System.arraycopy(extBytes, 0, result, 0, extBytes.length);
+        System.arraycopy(file, 0, result, extBytes.length, file.length);
+        return result;
+    }
+
+    public static String getExtension(byte[] array) {
+        byte ext[] = new byte[array[0]];
+        byte file[] = new byte[array.length - array[0] - 1];
+        System.arraycopy(array, 1, ext, 0, ext.length);
+        return new String(ext);
+    }
+
+    public static byte[] getFile(byte[] array) {
+        byte file[] = new byte[array.length - array[0] - 1];
+        System.arraycopy(array, 1 + array[0], file, 0, file.length);
+        return file;
     }
 
 public static byte[] bytesToBytes(byte[]... files) {

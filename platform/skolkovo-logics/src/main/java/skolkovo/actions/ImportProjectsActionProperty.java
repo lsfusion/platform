@@ -2,6 +2,7 @@ package skolkovo.actions;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.log4j.Logger;
+import org.jdom.Attribute;
 import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.input.JDOMParseException;
@@ -48,6 +49,7 @@ public class ImportProjectsActionProperty extends ActionProperty {
     private String toLog = "";
     private boolean onlyMessage;
     private boolean fillSids;
+    private Integer projectsImportLimit;
 
     public ImportProjectsActionProperty(String caption, SkolkovoLogicsModule LM, SkolkovoBusinessLogics BL, boolean onlyMessage, boolean fillSids) {
         super(LM.genSID(), caption, new ValueClass[]{});
@@ -341,6 +343,10 @@ public class ImportProjectsActionProperty extends ActionProperty {
         toLog = "";
 
         initFieldsNProperties();
+        projectsImportLimit = (Integer) LM.projectsImportLimit.read(session);
+        if (projectsImportLimit == null) {
+            projectsImportLimit = 100;
+        }
 
         try {
             String host = getHost();
@@ -354,6 +360,7 @@ public class ImportProjectsActionProperty extends ActionProperty {
                     connection.setDoInput(true);
                     importProject(connection.getInputStream(), projectId, projects.get(projectId));
                 }
+                System.gc();
             }
             String message = "";
             if (projects == null || !projects.isEmpty()) {
@@ -453,6 +460,7 @@ public class ImportProjectsActionProperty extends ActionProperty {
         Map<String, Timestamp> projectList = new LinkedHashMap<String, Timestamp>();
         if (elementList != null) {
             Timestamp currentProjectDate;
+            int counter = 0;
             for (Element element : elementList) {
                 String projectId = element.getChildText("projectId");
                 currentProjectDate = new Timestamp(getUpdateProjectDate(element.getChildText("yearProject"), element.getChildText("monthProject"),
@@ -467,6 +475,7 @@ public class ImportProjectsActionProperty extends ActionProperty {
                             Object email = project.get("email");
                             toLogString(projectId, email == null ? null : email.toString().trim(), element.getChildText("emailProject"), project.get("name").toString().trim(), name, date, currentProjectDate);
                             projectList.put(projectId, currentProjectDate);
+                            counter++;
                             ignore = true;
                             break;
                         } else {
@@ -478,12 +487,16 @@ public class ImportProjectsActionProperty extends ActionProperty {
                 if (!ignore) {
                     toLogString(projectId, null, element.getChildText("emailProject"), null, name, null, currentProjectDate);
                     projectList.put(projectId, currentProjectDate);
+                    counter++;
+                }
+                if (counter == projectsImportLimit) {
+                    break;
                 }
             }
         }
 
         if (!onlyMessage) {
-            logger.info("Projects to import:" + toLog);
+            logger.info("Projects to import (" + projectList.size() + "):" + toLog);
         }
         return projectList;
     }
@@ -498,12 +511,12 @@ public class ImportProjectsActionProperty extends ActionProperty {
             Map<Object, Object> project = data.get(key);
             if (project.get("id") == null) {
                 Object email = project.get("email");
-                if (email != null && getEmailRepeatings(data, elements, email.toString().trim().toLowerCase()) == 1) {
-                    String projectId = getProjectId(elements, email.toString());
+                if (email != null && getEmailRepeatings(data, elements, email.toString().trim()) == 1) {
+                    String projectId = getProjectId(elements, email.toString().trim());
                     if (projectId != null) {
                         LM.sidProject.execute(projectId, session, session.getDataObject(BaseUtils.singleValue(key), LM.project.getType()));
                         toLog += "\nprojectId: " + projectId + "\n\temail: " + email.toString().trim() + "\n\t" +
-                                project.get("name").toString().trim() + " =? " + getProjectName(elements, email.toString());
+                                project.get("name").toString().trim() + " =? " + getProjectName(elements, email.toString().trim().toLowerCase());
                     }
                 }
             }
@@ -512,7 +525,11 @@ public class ImportProjectsActionProperty extends ActionProperty {
 
     public String getProjectId(List<Element> elements, String email) {
         for (Element element : elements) {
-            if (element.getChildText("emailProject").equals(email.trim())) {
+            String formEmail = element.getChildText("emailProject");
+            if (formEmail.trim().toLowerCase().equals(email.toLowerCase())) {
+                if (!formEmail.trim().equals(email)) {
+                    logger.info("case-differing emails: " + email + " : " + formEmail);
+                }
                 return element.getChildText("projectId");
             }
         }
@@ -521,7 +538,7 @@ public class ImportProjectsActionProperty extends ActionProperty {
 
     public String getProjectName(List<Element> elements, String email) {
         for (Element element : elements) {
-            if (element.getChildText("emailProject").equals(email.trim())) {
+            if (element.getChildText("emailProject").trim().toLowerCase().equals(email)) {
                 return element.getChildText("nameNativeProject");
             }
         }
@@ -531,20 +548,33 @@ public class ImportProjectsActionProperty extends ActionProperty {
     public int getEmailRepeatings(OrderedMap<Map<Object, Object>, Map<Object, Object>> data, List<Element> elements, String email) {
         int repeatings = 0;
         for (Map<Object, Object> project : data.values()) {
-            if (project.get("email") != null && project.get("email").toString().trim().toLowerCase().equals(email)) {
+            if (project.get("email") != null && project.get("email").toString().trim().toLowerCase().equals(email.toLowerCase())) {
                 repeatings++;
             }
         }
         if (repeatings == 1) {
             repeatings = 0;
             for (Element element : elements) {
-                if (element.getChildText("emailProject").trim().toLowerCase().equals(email)) {
+                if (element.getChildText("emailProject").trim().toLowerCase().equals(email.toLowerCase())) {
                     repeatings++;
                 }
             }
             return repeatings;
         }
         return 0;
+    }
+
+    public byte[] buildFileByteArray(Element element) {
+        if (element != null) {
+            byte[] file = Base64.decodeBase64(BaseUtils.nevl(element.getText(), null));
+            Attribute extAttr = element.getAttribute("ext");
+            String extension = extAttr != null ? extAttr.getValue() : null;
+            if(extension == null) {
+                extension = "pdf";
+            }
+            return file == null ? null : BaseUtils.mergeFileAndExtension(file, extension.getBytes());
+        }
+        return null;
     }
 
     public void importProject(InputStream inputStream, String projectId, Timestamp currentProjectDate) throws SQLException {
@@ -662,22 +692,14 @@ public class ImportProjectsActionProperty extends ActionProperty {
                 row.add(node.getChildText("OGRNClaimer"));
                 row.add(node.getChildText("INNClaimer"));
 
-                byte[] fileBytes = Base64.decodeBase64(BaseUtils.nevl(node.getChildText("fileStatementClaimer"), null));
-                row.add(fileBytes);
-                fileBytes = Base64.decodeBase64(BaseUtils.nevl(node.getChildText("fileConstituentClaimer"), null));
-                row.add(fileBytes);
-                fileBytes = Base64.decodeBase64(BaseUtils.nevl(node.getChildText("fileExtractClaimer"), null));
-                row.add(fileBytes);
-                fileBytes = Base64.decodeBase64(BaseUtils.nevl(node.getChildText("fileNativeSummaryProject"), null));
-                row.add(fileBytes);
-                fileBytes = Base64.decodeBase64(BaseUtils.nevl(node.getChildText("fileForeignSummaryProject"), null));
-                row.add(fileBytes);
-                fileBytes = Base64.decodeBase64(BaseUtils.nevl(node.getChildText("fileRoadMapProject"), null));
-                row.add(fileBytes);
-                fileBytes = Base64.decodeBase64(BaseUtils.nevl(node.getChildText("fileNativeTechnicalDescriptionProject"), null));
-                row.add(fileBytes);
-                fileBytes = Base64.decodeBase64(BaseUtils.nevl(node.getChildText("fileForeignTechnicalDescriptionProject"), null));
-                row.add(fileBytes);
+                row.add(buildFileByteArray(node.getChild("fileStatementClaimer")));
+                row.add(buildFileByteArray(node.getChild("fileConstituentClaimer")));
+                row.add(buildFileByteArray(node.getChild("fileExtractClaimer")));
+                row.add(buildFileByteArray(node.getChild("fileNativeSummaryProject")));
+                row.add(buildFileByteArray(node.getChild("fileForeignSummaryProject")));
+                row.add(buildFileByteArray(node.getChild("fileRoadMapProject")));
+                row.add(buildFileByteArray(node.getChild("fileNativeTechnicalDescriptionProject")));
+                row.add(buildFileByteArray(node.getChild("fileForeignTechnicalDescriptionProject")));
 
                 data.add(row);
 
@@ -721,10 +743,8 @@ public class ImportProjectsActionProperty extends ActionProperty {
                         rowPatent.add(true);
                     else rowPatent.add(null);
                     rowPatent.add(nodePatent.getChildText("valuatorPatent"));
-                    fileBytes = Base64.decodeBase64(BaseUtils.nevl(nodePatent.getChildText("fileIntentionOwnerPatent"), null));
-                    rowPatent.add(fileBytes);
-                    fileBytes = Base64.decodeBase64(BaseUtils.nevl(nodePatent.getChildText("fileActValuationPatent"), null));
-                    rowPatent.add(fileBytes);
+                    rowPatent.add(buildFileByteArray(node.getChild("fileIntentionOwnerPatent")));
+                    rowPatent.add(buildFileByteArray(node.getChild("fileActValuationPatent")));
 
                     dataPatent.add(rowPatent);
                 }
@@ -737,10 +757,8 @@ public class ImportProjectsActionProperty extends ActionProperty {
                     rowAcademic.add(nodeAcademic.getChildText("fullNameAcademic"));
                     rowAcademic.add(nodeAcademic.getChildText("institutionAcademic"));
                     rowAcademic.add(nodeAcademic.getChildText("titleAcademic"));
-                    fileBytes = Base64.decodeBase64(BaseUtils.nevl(nodeAcademic.getChildText("fileDocumentConfirmingAcademic"), null));
-                    rowAcademic.add(fileBytes);
-                    fileBytes = Base64.decodeBase64(BaseUtils.nevl(nodeAcademic.getChildText("fileDocumentEmploymentAcademic"), null));
-                    rowAcademic.add(fileBytes);
+                    rowAcademic.add(buildFileByteArray(node.getChild("fileDocumentConfirmingAcademic")));
+                    rowAcademic.add(buildFileByteArray(node.getChild("fileDocumentEmploymentAcademic")));
                     dataAcademic.add(rowAcademic);
                 }
 
@@ -752,14 +770,10 @@ public class ImportProjectsActionProperty extends ActionProperty {
                     rowNonRussianSpecialist.add(nodeNonRussianSpecialist.getChildText("fullNameNonRussianSpecialist"));
                     rowNonRussianSpecialist.add(nodeNonRussianSpecialist.getChildText("organizationNonRussianSpecialist"));
                     rowNonRussianSpecialist.add(nodeNonRussianSpecialist.getChildText("titleNonRussianSpecialist"));
-                    rowNonRussianSpecialist.add(fileBytes);
-                    fileBytes = Base64.decodeBase64(BaseUtils.nevl(nodeNonRussianSpecialist.getChildText("fileNativeResumeNonRussianSpecialist"), null));
-                    rowNonRussianSpecialist.add(fileBytes);
-                    fileBytes = Base64.decodeBase64(BaseUtils.nevl(nodeNonRussianSpecialist.getChildText("filePassportNonRussianSpecialist"), null));
-                    rowNonRussianSpecialist.add(fileBytes);
-                    fileBytes = Base64.decodeBase64(BaseUtils.nevl(nodeNonRussianSpecialist.getChildText("fileForeignResumeNonRussianSpecialist"), null));
-                    fileBytes = Base64.decodeBase64(BaseUtils.nevl(nodeNonRussianSpecialist.getChildText("fileStatementNonRussianSpecialist"), null));
-                    rowNonRussianSpecialist.add(fileBytes);
+                    rowNonRussianSpecialist.add(buildFileByteArray(node.getChild("fileNativeResumeNonRussianSpecialist")));
+                    rowNonRussianSpecialist.add(buildFileByteArray(node.getChild("fileForeignResumeNonRussianSpecialist")));
+                    rowNonRussianSpecialist.add(buildFileByteArray(node.getChild("filePassportNonRussianSpecialist")));
+                    rowNonRussianSpecialist.add(buildFileByteArray(node.getChild("fileStatementNonRussianSpecialist")));
                     dataNonRussianSpecialist.add(rowNonRussianSpecialist);
                 }
             }
@@ -835,7 +849,7 @@ public class ImportProjectsActionProperty extends ActionProperty {
         List<ImportField> fieldsNonRussianSpecialist = BaseUtils.toList(
                 projectIdField,
                 fullNameNonRussianSpecialistField, organizationNonRussianSpecialistField, titleNonRussianSpecialistField
-                , fileForeignResumeNonRussianSpecialistField, fileNativeResumeNonRussianSpecialistField,
+                , fileNativeResumeNonRussianSpecialistField, fileForeignResumeNonRussianSpecialistField,
                 filePassportNonRussianSpecialistField, fileStatementNonRussianSpecialistField
         );
         table = new ImportTable(fieldsNonRussianSpecialist, dataNonRussianSpecialist);
@@ -843,6 +857,6 @@ public class ImportProjectsActionProperty extends ActionProperty {
         new IntegrationService(session, table, Arrays.asList(keysArray), propertiesNonRussianSpecialist).synchronize(true, true, false);
 
         session.apply(BL);
-        logger.info(projectId + " project imported successfully");
+        logger.info(projectId + " project was imported successfully");
     }
 }

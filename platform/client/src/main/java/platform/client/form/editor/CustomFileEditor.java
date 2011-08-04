@@ -71,12 +71,7 @@ public class CustomFileEditor extends DocumentPropertyEditor {
     public void openDocument() throws IOException {
         if (value != null) {
             byte[] union = (byte[]) value;
-            byte ext[] = new byte[union[0]];
-            byte file[] = new byte[union.length - union[0] - 1];
-            System.arraycopy(union, 1, ext, 0, ext.length);
-            System.arraycopy(union, 1 + ext.length, file, 0, file.length);
-
-            BaseUtils.openFile(file, new String(ext));
+            BaseUtils.openFile(BaseUtils.getFile(union), BaseUtils.getExtension(union));
         }
         returnValue = JFileChooser.CANCEL_OPTION;
     }

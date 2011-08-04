@@ -1019,7 +1019,12 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
             int i = 0; // здесь опять учитываем, что порядок тот же
             for (ClassPropertyInterface classInterface : interfaces)
                 objects[i++] = keys.get(classInterface);
-            actions.add(new OpenFileClientAction((byte[]) fileProperty.read(session, modifier, objects), BaseUtils.firstWord(getFileClass().getExtensions(), ",")));
+            if (getFileClass() instanceof CustomFileClass) {
+                byte[] fullData = (byte[]) fileProperty.read(session, modifier, objects);
+                actions.add(new OpenFileClientAction(BaseUtils.getFile(fullData), BaseUtils.getExtension(fullData)));
+            } else {
+                actions.add(new OpenFileClientAction((byte[]) fileProperty.read(session, modifier, objects), BaseUtils.firstWord(getFileClass().getExtensions(), ",")));
+            }
         }
 
         @Override
