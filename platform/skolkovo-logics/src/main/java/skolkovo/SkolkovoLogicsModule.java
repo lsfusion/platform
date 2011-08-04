@@ -80,7 +80,6 @@ public class SkolkovoLogicsModule extends LogicsModule {
     private LP emailAcceptedProject;
     public LP sidProject;
     public LP sidToProject;
-    public LP nameNativeToClaimer;
     public LP nameNativeToCluster;
     public LP nameNativeCluster;
     public LP dateProject;
@@ -630,7 +629,6 @@ public class SkolkovoLogicsModule extends LogicsModule {
         //свойства заявителя
         nameNativeClaimer = addJProp(claimerInformationGroup, "nameNativeClaimer", "Заявитель", baseLM.and1, nameNative, 1, is(claimer), 1);
         nameNativeClaimer.setMinimumWidth(10); nameNativeClaimer.setPreferredWidth(50);
-        nameNativeToClaimer = addAGProp("nameNativeToClaimer", "Имя заявителя", nameNativeClaimer);
         nameForeignClaimer = addJProp(claimerInformationGroup, "nameForeignClaimer", "Claimer", baseLM.and1,  nameForeign, 1, is(claimer), 1);
         nameForeignClaimer.setMinimumWidth(10); nameForeignClaimer.setPreferredWidth(50);
         firmNameNativeClaimer = addDProp(claimerInformationGroup, "firmNameNativeClaimer", "Фирменное название", InsensitiveStringClass.get(2000), claimer);

@@ -263,7 +263,7 @@ public class ImportProjectsActionProperty extends ActionProperty {
         properties.add(new ImportProperty(projectActionProjectField, LM.projectActionProject.getMapping(projectKey),
                 LM.baseLM.object(LM.projectAction).getMapping(projectActionProjectKey)));
 
-        claimerKey = new ImportKey(LM.claimer, LM.nameNativeToClaimer.getMapping(nameNativeClaimerField));
+        claimerKey = new ImportKey(LM.claimer, LM.baseLM.emailToObject.getMapping(emailClaimerField));
         properties.add(new ImportProperty(nameNativeClaimerField, LM.claimerProject.getMapping(projectKey),
                 LM.baseLM.object(LM.claimer).getMapping(claimerKey)));
         properties.add(new ImportProperty(nameNativeClaimerField, LM.nameNativeClaimer.getMapping(claimerKey)));
@@ -342,7 +342,6 @@ public class ImportProjectsActionProperty extends ActionProperty {
         this.session = session;
         toLog = "";
 
-        initFieldsNProperties();
         projectsImportLimit = (Integer) LM.projectsImportLimit.read(session);
         if (projectsImportLimit == null) {
             projectsImportLimit = 100;
@@ -353,6 +352,7 @@ public class ImportProjectsActionProperty extends ActionProperty {
             Map<String, Timestamp> projects = importProjectsFromXML(host);
 
             if (!onlyMessage && !fillSids) {
+                initFieldsNProperties();
                 for (String projectId : projects.keySet()) {
                     URL url = new URL(host + "&show=all&projectId=" + projectId);
                     URLConnection connection = url.openConnection();
@@ -856,7 +856,11 @@ public class ImportProjectsActionProperty extends ActionProperty {
         keysArray = new ImportKey<?>[]{projectKey, nonRussianSpecialistKey};
         new IntegrationService(session, table, Arrays.asList(keysArray), propertiesNonRussianSpecialist).synchronize(true, true, false);
 
-        session.apply(BL);
+        String sessionApply = session.apply(BL);
+        if (sessionApply != null) {
+            logger.error(sessionApply);
+            session.restart(true);
+        }
         logger.info(projectId + " project was imported successfully");
     }
 }
