@@ -10,9 +10,10 @@
         <intercept-url pattern="/skolkovo.gwt.expertprofile.ExpertProfile/*" access="hasRole('expert')"/>
         <intercept-url pattern="/skolkovo.gwt.form.Form/*" access="hasRole('admin')"/>
         <intercept-url pattern="/form.jsp" access="hasRole('admin')"/>
-        <form-login authentication-failure-url="/loginFailed.txt" default-target-url="/expertProfile.html"/>
+        <intercept-url pattern="/navigator.jsp" access="hasRole('admin')"/>
+        <form-login authentication-failure-url="/loginFailed.txt" default-target-url="/navigator.jsp"/>
         <anonymous enabled="false" />
-        <logout logout-url="/logoff.jsp" logout-success-url="/login.jsp" />
+        <logout logout-url="/logoff.jsp" logout-success-url="/navigator.jsp" />
         <access-denied-handler error-page="/restricted.jsp" />
     </http>
 

@@ -1,7 +1,6 @@
 package platform.server.form.instance;
 
 import org.apache.log4j.Logger;
-import platform.base.BaseUtils;
 import platform.interop.ClassViewType;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
@@ -9,6 +8,8 @@ import platform.server.logics.ObjectValue;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.*;
+
+import static platform.base.BaseUtils.serializeObject;
 
 // появляется по сути для отделения клиента, именно он возвращается назад клиенту
 public class FormChanges {
@@ -71,13 +72,6 @@ public class FormChanges {
         }
     }
 
-    private void serializeGroupObjectValue(DataOutputStream outStream, GroupObjectInstance groupObject, Map<ObjectInstance,? extends ObjectValue> values) throws IOException {
-        // именно так чтобы гарантировано в том же порядке
-        for (ObjectInstance object : GroupObjectInstance.getObjects(groupObject.getUpTreeGroups())) {
-            BaseUtils.serializeObject(outStream, values.get(object).getValue());
-        }
-    }
-
     public void serialize(DataOutputStream outStream) throws IOException {
 
         outStream.writeInt(classViews.size());
@@ -89,7 +83,7 @@ public class FormChanges {
         outStream.writeInt(objects.size());
         for (Map.Entry<GroupObjectInstance, Map<ObjectInstance, ? extends ObjectValue>> objectValue : objects.entrySet()) {
             outStream.writeInt(objectValue.getKey().getID());
-            serializeGroupObjectValue(outStream, objectValue.getKey(), objectValue.getValue());
+            serializeGroupObjectValue(outStream, objectValue.getValue());
         }
 
         serializeKeyObjectsMap(outStream, gridObjects, false);
@@ -113,12 +107,9 @@ public class FormChanges {
             for (Map.Entry<Map<ObjectInstance, DataObject>, ObjectValue> gridPropertyValue : gridProperty.getValue().entrySet()) {
                 Map<ObjectInstance, DataObject> objectValues = gridPropertyValue.getKey();
 
-                // именно так чтобы гарантировано в том же порядке
-                for (ObjectInstance object : propertyReadInstance.getKeysObjectsList(panelProperties)) {
-                    BaseUtils.serializeObject(outStream, objectValues.get(object).getValue());
-                }
+                serializeGroupObjectValue(outStream, objectValues);
 
-                BaseUtils.serializeObject(outStream, gridPropertyValue.getValue().getValue());
+                serializeObject(outStream, gridPropertyValue.getValue().getValue());
             }
         }
 
@@ -129,7 +120,15 @@ public class FormChanges {
 
         outStream.writeUTF(message);
 
-        BaseUtils.serializeObject(outStream, dataChanged);
+        serializeObject(outStream, dataChanged);
+    }
+
+    private void serializeGroupObjectValue(DataOutputStream outStream, Map<ObjectInstance,? extends ObjectValue> values) throws IOException {
+        outStream.writeInt(values.size());
+        for (Map.Entry<ObjectInstance, ? extends ObjectValue> entry : values.entrySet()) {
+            outStream.writeInt(entry.getKey().getID());
+            serializeObject(outStream, entry.getValue().getValue());
+        }
     }
 
     private void serializeKeyObjectsMap(DataOutputStream outStream, Map<GroupObjectInstance, List<Map<ObjectInstance, DataObject>>> keyObjects, boolean parents) throws IOException {
@@ -147,11 +146,11 @@ public class FormChanges {
                     else {
                         outStream.writeBoolean(false);
                         for (ObjectInstance object : gridObject.getKey().objects) {
-                            BaseUtils.serializeObject(outStream, groupObjectValue.get(object).getValue());
+                            serializeObject(outStream, groupObjectValue.get(object).getValue());
                         }
                     }
                 } else
-                    serializeGroupObjectValue(outStream, gridObject.getKey(), groupObjectValue);
+                    serializeGroupObjectValue(outStream, groupObjectValue);
             }
         }
     }

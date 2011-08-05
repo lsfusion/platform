@@ -6,9 +6,10 @@
                                  http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security-3.0.3.xsd">
     <http auto-config="true" use-expressions="true" entry-point-ref="loginUrlAuthenticationEntryPoint">
         <intercept-url pattern="/form.jsp" access="hasAnyRole('admin')"/>
-        <form-login authentication-failure-url="/loginFailed.txt" default-target-url="/login.jsp"/>
+        <intercept-url pattern="/platform.gwt.form.Form/*" access="hasRole('admin')"/>
+        <form-login authentication-failure-url="/loginFailed.txt" default-target-url="/navigator.jsp"/>
         <anonymous enabled="false" />
-        <logout logout-url="/logoff.jsp" logout-success-url="/login.jsp" />
+        <logout logout-url="/logoff.jsp" logout-success-url="/navigator.jsp" />
         <access-denied-handler error-page="/restricted.jsp" />
     </http>
 

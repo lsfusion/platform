@@ -47,7 +47,6 @@ public class GGridTable extends ListGrid {
         setSelectionType(SelectionStyle.SINGLE);
         setShowAllRecords(true);
         setModalEditing(true);
-        setEmptyMessage("<empty>");
         setShowRollOver(false);
         setShowRecordComponents(true);
         setShowRecordComponentsByCell(true);

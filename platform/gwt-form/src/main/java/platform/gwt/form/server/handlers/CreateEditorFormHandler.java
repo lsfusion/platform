@@ -17,7 +17,7 @@ public class CreateEditorFormHandler extends FormActionHandler<CreateEditorForm>
 
     @Override
     public GetFormResult executeEx(CreateEditorForm action, ExecutionContext context) throws IOException, MessageException {
-        FormSessionObject form = getSessionFormExceptionally(action.formSessionID);
+        FormSessionObject form = getFormSessionObject(action.formSessionID);
 
         //пока пустой columnKey
         RemoteDialogInterface remoteForm = form.remoteForm.createEditorPropertyDialog(action.propertyId);

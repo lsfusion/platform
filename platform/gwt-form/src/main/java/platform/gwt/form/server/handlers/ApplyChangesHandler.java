@@ -16,7 +16,7 @@ public class ApplyChangesHandler extends FormChangesActionHandler<ApplyChanges> 
 
     @Override
     public FormChangesResult executeEx(ApplyChanges action, ExecutionContext context) throws DispatchException, IOException {
-        FormSessionObject form = getSessionFormExceptionally(action.formSessionID);
+        FormSessionObject form = getFormSessionObject(action.formSessionID);
 
         form.remoteForm.applyChanges();
 

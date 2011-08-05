@@ -9,6 +9,10 @@
         <session-timeout>30</session-timeout>
     </session-config>
 
+    <welcome-file-list>
+        <welcome-file>navigator.jsp</welcome-file>
+    </welcome-file-list>
+
     <context-param>
         <description>Сервер, на котором работает сервер приложения.</description>
         <param-name>serverHost</param-name>
@@ -28,6 +32,10 @@
         <servlet-name>LoginService</servlet-name>
         <servlet-class>platform.gwt.login.server.LoginServiceImpl</servlet-class>
     </servlet>
+    <servlet>
+        <servlet-name>NavigatorService</servlet-name>
+        <servlet-class>platform.gwt.navigator.server.NavigatorServiceImpl</servlet-class>
+    </servlet>
 
     <servlet-mapping>
         <servlet-name>RemoteFormService</servlet-name>
@@ -36,6 +44,10 @@
     <servlet-mapping>
         <servlet-name>LoginService</servlet-name>
         <url-pattern>/platform.gwt.login.Login/dispatch</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>NavigatorService</servlet-name>
+        <url-pattern>/platform.gwt.navigator.Navigator/dispatch</url-pattern>
     </servlet-mapping>
 
     <!-- Spring configuration -->

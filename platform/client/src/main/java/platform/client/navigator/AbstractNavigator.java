@@ -1,11 +1,11 @@
 package platform.client.navigator;
 
-import platform.client.logics.DeSerializer;
 import platform.interop.navigator.RemoteNavigatorInterface;
 
 import javax.swing.*;
 import java.awt.*;
 import java.io.IOException;
+import java.util.List;
 
 public abstract class AbstractNavigator extends JPanel {
     public final RemoteNavigatorInterface remoteNavigator;
@@ -29,7 +29,7 @@ public abstract class AbstractNavigator extends JPanel {
 
     public abstract void openForm(ClientNavigatorForm element) throws IOException, ClassNotFoundException;
 
-    protected java.util.List<ClientNavigatorElement> getNodeElements(ClientNavigatorElement element) throws IOException {
+    protected List<ClientNavigatorElement> getNodeElements(ClientNavigatorElement element) throws IOException {
         if (AbstractNavigator.BASE_ELEMENT_SID.equals(element.getSID()))
             return ClientNavigatorElement.root.children;
         else

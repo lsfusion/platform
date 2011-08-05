@@ -13,6 +13,7 @@ import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.ExpandVetoException;
 import javax.swing.tree.TreePath;
 import java.io.IOException;
+import java.util.List;
 
 public class NavigatorTree extends ClientTree {
 
@@ -108,7 +109,7 @@ public class NavigatorTree extends ClientTree {
 
         if (!element.hasChildren()) return;
 
-        java.util.List<ClientNavigatorElement> elements = navigator.getNodeElements(element);
+        List<ClientNavigatorElement> elements = navigator.getNodeElements(element);
 
         for (ClientNavigatorElement child : elements) {
 

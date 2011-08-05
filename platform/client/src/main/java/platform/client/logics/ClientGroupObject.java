@@ -72,9 +72,15 @@ public class ClientGroupObject extends IdentityObject implements ClientPropertyR
     public List<ClientObject> getKeysObjectsList(Map<ClientGroupObject, ClassViewType> classViews, Map<ClientGroupObject, GroupObjectController> controllers) {
         List<ClientGroupObject> result = new ArrayList<ClientGroupObject>();
         ClassViewType newType = classViews.get(this);
-        if ((newType != null ? newType : controllers.get(this).classView) == ClassViewType.GRID) {
+
+        if ((newType != null
+             ? newType
+             : controllers == null
+               ? ClassViewType.GRID
+               : controllers.get(this).classView) == ClassViewType.GRID) {
             result.add(this);
         }
+
         return ClientGroupObject.getObjects(result);
     }
 

@@ -19,7 +19,13 @@ public abstract class FormServiceActionHandler<A extends Action<R>, R extends Re
         return servlet.getSession();
     }
 
-    public FormSessionObject getSessionFormExceptionally(String sessionId) throws RuntimeException {
+    /**
+     * Ищет форму в сессии с name=sessionId
+     *
+     * Если форма не найдена, то выбрасывает RuntimeException
+     * @throws RuntimeException
+     */
+    public FormSessionObject getFormSessionObject(String sessionId) throws RuntimeException {
         Object formObj = getSession().getAttribute(sessionId);
         if (formObj instanceof FormSessionObject) {
             return (FormSessionObject) formObj;

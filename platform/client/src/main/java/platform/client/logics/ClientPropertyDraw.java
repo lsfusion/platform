@@ -292,7 +292,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     }
 
     public ClientType getPropertyChangeType(ClientFormController form, ClientGroupObjectValue key, boolean aggValue) throws IOException {
-        DataInputStream inStream = new DataInputStream(new ByteArrayInputStream(form.remoteForm.getPropertyChangeType(getID(), key.serialize(this), aggValue)));
+        DataInputStream inStream = new DataInputStream(new ByteArrayInputStream(form.remoteForm.getPropertyChangeType(getID(), key.serialize(), aggValue)));
         if (inStream.readBoolean()) {
             return null;
         }

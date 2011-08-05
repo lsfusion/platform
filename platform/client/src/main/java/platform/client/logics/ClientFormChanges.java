@@ -44,7 +44,7 @@ public class ClientFormChanges {
         count = inStream.readInt();
         for (int i = 0; i < count; i++) {
             ClientGroupObject clientGroupObject = clientForm.getGroupObject(inStream.readInt());
-            objects.put(clientGroupObject, new ClientGroupObjectValue(inStream, clientGroupObject));
+            objects.put(clientGroupObject, new ClientGroupObjectValue(inStream, clientForm));
         }
 
         gridObjects = readGridObjectsMap(inStream, clientForm, false);
@@ -66,8 +66,7 @@ public class ClientFormChanges {
             Map<ClientGroupObjectValue, Object> propertyValues = new HashMap<ClientGroupObjectValue, Object>();
             int mapCount = inStream.readInt();
             for (int j = 0; j < mapCount; j++) {
-                propertyValues.put(new ClientGroupObjectValue(inStream, clientPropertyRead, panelProperties, classViews, controllers),
-                                   BaseUtils.deserializeObject(inStream));
+                propertyValues.put(new ClientGroupObjectValue(inStream, clientForm), BaseUtils.deserializeObject(inStream));
             }
 
             properties.put(clientPropertyRead, propertyValues);
@@ -108,8 +107,12 @@ public class ClientFormChanges {
             List<ClientGroupObjectValue> clientGridObjects = new ArrayList<ClientGroupObjectValue>();
             int listCount = inStream.readInt();
             for (int j = 0; j < listCount; j++) {
-                clientGridObjects.add(parents ? inStream.readBoolean() ? new ClientGroupObjectValue() :
-                        new ClientGroupObjectValue(clientGroupObject, inStream) : new ClientGroupObjectValue(inStream, clientGroupObject));
+                clientGridObjects.add(
+                        parents
+                            ? inStream.readBoolean()
+                                ? new ClientGroupObjectValue()
+                                : new ClientGroupObjectValue(inStream, clientForm)
+                            : new ClientGroupObjectValue(inStream, clientForm));
             }
 
             gridObjects.put(clientGroupObject, clientGridObjects);

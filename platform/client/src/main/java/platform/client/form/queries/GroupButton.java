@@ -312,7 +312,7 @@ public abstract class GroupButton extends ToolbarGridButton {
                     if (list == null) {
                         list = new ArrayList<byte[]>();
                     }
-                    list.add(initialTableModel.getColumnKey(i).serialize(property));
+                    list.add(initialTableModel.getColumnKey(i).serialize());
                     selectedSumMap.put(property.getID(), list);
                 }
             }
@@ -325,7 +325,7 @@ public abstract class GroupButton extends ToolbarGridButton {
                     if (list == null) {
                         list = new ArrayList<byte[]>();
                     }
-                    list.add(initialTableModel.getColumnKey(i).serialize(property));
+                    list.add(initialTableModel.getColumnKey(i).serialize());
                     selectedMaxMap.put(property.getID(), list);
                 }
             }
@@ -341,7 +341,7 @@ public abstract class GroupButton extends ToolbarGridButton {
                     if (list == null) {
                         list = new ArrayList<byte[]>();
                     }
-                    list.add(initialTableModel.getColumnKey(index).serialize(property));
+                    list.add(initialTableModel.getColumnKey(index).serialize());
                     groupLevel.put(property.getID(), list);
                 }
                 selectedGroupProperties.add(groupLevel);

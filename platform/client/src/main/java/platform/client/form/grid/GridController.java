@@ -138,7 +138,7 @@ public class GridController {
                                 String caption = property.getCaption() != null ? property.getCaption() : table.getColumnName(table.getSelectedColumn()).trim();
                                 if (property.baseType instanceof ClientIntegralClass) {
                                     ClientGroupObjectValue columnKey = table.getTableModel().getColumnKey(table.getSelectedColumn());
-                                    Object sum = form.calculateSum(property.getID(), columnKey.serialize(property));
+                                    Object sum = form.calculateSum(property.getID(), columnKey.serialize());
                                     showPopupMenu(caption, sum);
                                 } else {
                                     showPopupMenu(caption, null);

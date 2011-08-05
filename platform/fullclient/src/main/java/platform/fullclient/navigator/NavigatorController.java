@@ -21,23 +21,7 @@ public class NavigatorController implements INavigatorController {
         remoteNavigator = iremoteNavigator;
 
         try {
-            elements = DeSerializer.deserializeListClientNavigatorElement(remoteNavigator.getNavigatorTree());
-            Map<String, ClientNavigatorElement> elementsMap = new HashMap<String, ClientNavigatorElement>();
-            for (ClientNavigatorElement element : elements) {
-                elementsMap.put(element.getSID(), element);
-            }
-
-            for (ClientNavigatorElement element : elements) {
-                elementsMap.put(element.getSID(), element);
-            }
-
-            for (ClientNavigatorElement element : elements) {
-                for (String s : element.childrenSid) {
-                    ClientNavigatorElement child = elementsMap.get(s);
-                    element.children.add(child);
-                }
-            }
-
+            elements = DeSerializer.deserializeListClientNavigatorElementWithChildren(remoteNavigator.getNavigatorTree());
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

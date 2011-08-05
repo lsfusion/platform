@@ -8,9 +8,33 @@ import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class DeSerializer {
+
+    public static List<ClientNavigatorElement> deserializeListClientNavigatorElementWithChildren(byte[] state) throws IOException {
+        List<ClientNavigatorElement> elements = deserializeListClientNavigatorElement(state);
+
+        Map<String, ClientNavigatorElement> elementsMap = new HashMap<String, ClientNavigatorElement>();
+        for (ClientNavigatorElement element : elements) {
+            elementsMap.put(element.getSID(), element);
+        }
+
+        for (ClientNavigatorElement element : elements) {
+            elementsMap.put(element.getSID(), element);
+        }
+
+        for (ClientNavigatorElement element : elements) {
+            for (String s : element.childrenSid) {
+                ClientNavigatorElement child = elementsMap.get(s);
+                element.children.add(child);
+            }
+        }
+
+        return elements;
+    }
 
     public static List<ClientNavigatorElement> deserializeListClientNavigatorElement(byte[] state) throws IOException {
 

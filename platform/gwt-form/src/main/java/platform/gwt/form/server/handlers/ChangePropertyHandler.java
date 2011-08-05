@@ -19,7 +19,7 @@ public class ChangePropertyHandler extends FormChangesActionHandler<ChangeProper
 
     @Override
     public FormChangesResult executeEx(ChangeProperty action, ExecutionContext context) throws DispatchException, IOException {
-        FormSessionObject form = getSessionFormExceptionally(action.formSessionID);
+        FormSessionObject form = getFormSessionObject(action.formSessionID);
 
         //пока пустой columnKey
         form.remoteForm.changePropertyDraw(action.propertyId, new ClientGroupObjectValue().serialize(), serializeObject(action.value.getValue()), false, false);

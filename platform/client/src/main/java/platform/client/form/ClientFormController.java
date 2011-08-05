@@ -541,14 +541,14 @@ public class ClientFormController {
             if (group.parent == null) {
                 controllers.get(group).setCurrentGroupObject(objectValue);
             }
-            remoteForm.changeGroupObject(group.getID(), objectValue.serialize(group));
+            remoteForm.changeGroupObject(group.getID(), objectValue.serialize());
 
             applyRemoteChanges();
         }
     }
 
     public void expandGroupObject(ClientGroupObject group, ClientGroupObjectValue objectValue) throws IOException {
-        remoteForm.expandGroupObject(group.getID(), objectValue.serialize(group));
+        remoteForm.expandGroupObject(group.getID(), objectValue.serialize());
 
         applyRemoteChanges();
     }
@@ -567,7 +567,7 @@ public class ClientFormController {
             SwingUtils.stopSingleAction(property.getGroupObject().getActionID(), true);
         }
 
-        remoteForm.changePropertyDraw(property.getID(), columnKey.serialize(property), BaseUtils.serializeObject(value), all, aggValue);
+        remoteForm.changePropertyDraw(property.getID(), columnKey.serialize(), BaseUtils.serializeObject(value), all, aggValue);
         applyRemoteChanges();
     }
 
@@ -578,7 +578,7 @@ public class ClientFormController {
             SwingUtils.stopSingleAction(mainProperty.getGroupObject().getActionID(), true);
         }
 
-        remoteForm.groupChangePropertyDraw(mainProperty.getID(), mainColumnKey.serialize(mainProperty), getterProperty.getID(), getterColumnKey.serialize(getterProperty));
+        remoteForm.groupChangePropertyDraw(mainProperty.getID(), mainColumnKey.serialize(), getterProperty.getID(), getterColumnKey.serialize());
         refreshData();
     }
 
@@ -607,7 +607,7 @@ public class ClientFormController {
     }
 
     public void changeOrder(ClientPropertyDraw property, Order modiType, ClientGroupObjectValue columnKey) throws IOException {
-        remoteForm.changePropertyOrder(property.getID(), modiType.serialize(), columnKey.serialize(property));
+        remoteForm.changePropertyOrder(property.getID(), modiType.serialize(), columnKey.serialize());
         applyRemoteChanges();
     }
 
@@ -815,7 +815,7 @@ public class ClientFormController {
     }
 
     public void moveGroupObject(ClientGroupObject parentGroup, ClientGroupObjectValue parentKey, ClientGroupObject childGroup, ClientGroupObjectValue childKey, int index) throws IOException {
-        remoteForm.moveGroupObject(parentGroup.getID(), parentKey.serialize(parentGroup), childGroup.getID(), childKey.serialize(childGroup), index);
+        remoteForm.moveGroupObject(parentGroup.getID(), parentKey.serialize(), childGroup.getID(), childKey.serialize(), index);
 
         applyRemoteChanges();
     }
