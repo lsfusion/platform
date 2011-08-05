@@ -32,7 +32,7 @@ public class FormDescriptor extends ContextIdentityObject implements ClientIdent
 
     public String caption;
     public boolean isPrintForm;
-    public FormShowType showType;
+    public FormShowType showType = FormShowType.DOCKING;
 
     public List<GroupObjectDescriptor> groupObjects = new ArrayList<GroupObjectDescriptor>();
     public List<TreeGroupDescriptor> treeGroups = new ArrayList<TreeGroupDescriptor>();
