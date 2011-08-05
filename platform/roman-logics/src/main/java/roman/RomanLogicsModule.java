@@ -577,6 +577,7 @@ public class RomanLogicsModule extends LogicsModule {
     private LP quantityShipmentFreight;
     private LP balanceStockSku;
     private LP quantityStockSku;
+    private LP quantityStock;
     private LP quantityStockArticle;
     private LP quantityStockBrandSupplier;
     private LP quantityPalletSku;
@@ -739,7 +740,7 @@ public class RomanLogicsModule extends LogicsModule {
     private LP typeInvoiceDataFreightArticle;
     private LP typeInvoiceCategoryFreightArticle;
     private LP typeInvoiceFreightArticle;
-    private LP typeInvoiceFreightArticleSku;
+    private LP typeInvoiceFreightSku;
     private LP nameTypeInvoiceFreightArticleSku;
     private LP netWeightImporterFreightTypeInvoice;
     private LP grossWeightImporterFreightSku;
@@ -834,7 +835,9 @@ public class RomanLogicsModule extends LogicsModule {
     LP netWeightImporterFreightArticleCompositionCountryCategory;
     LP grossWeightImporterFreightArticleCompositionCountryCategory;
     LP priceImporterFreightArticleCompositionCountryCategory;
+    LP priceInvoiceImporterFreightSku;
     LP sumImporterFreightArticleCompositionCountryCategory;
+    LP sumProxyInvoiceImporterFreightSku;
     private ConcreteCustomClass freightComplete;
     private ConcreteCustomClass freightPriced;
     private ConcreteCustomClass freightChanged;
@@ -898,6 +901,7 @@ public class RomanLogicsModule extends LogicsModule {
     LP barcodeActionSeekPallet, barcodeActionSetPallet, barcodeActionSetPalletFreightBox, barcodeActionSetFreight, barcodeAction3;
     private LP invoiceOriginFormImporterFreight;
     private LP invoiceFormImporterFreight;
+    private LP invoiceExportFormImporterFreight;
     private LP proformOriginFormImporterFreight;
     private LP proformFormImporterFreight;
     private LP annexInvoiceOriginFormImporterFreight;
@@ -1591,8 +1595,8 @@ public class RomanLogicsModule extends LogicsModule {
         typeInvoiceDataFreightArticle = addDProp(idGroup, "typeInvoiceDataFreightArticle", "Тип инвойса (ИД)", typeInvoice, freight, article);
         typeInvoiceCategoryFreightArticle = addJProp(idGroup, "typeInvoiceCategoryFreightArticle", "Тип инвойса (ИД)", baseLM.and1, typeInvoiceCategoryArticle, 2, is(freight), 1);
         typeInvoiceFreightArticle = addSUProp(idGroup, "typeInvoiceFreightArticle", "Тип инвойса (ИД)", Union.OVERRIDE, typeInvoiceCategoryFreightArticle, typeInvoiceDataFreightArticle);
-        typeInvoiceFreightArticleSku = addJProp(idGroup, true, "typeInvoiceFreightArticleSku", "Тип инвойса (ИД)", typeInvoiceFreightArticle, 1, articleSku, 2);
-        nameTypeInvoiceFreightArticleSku = addJProp(baseGroup, "nameTypeInvoiceFreightArticleSku", "Тип инвойса", baseLM.name, typeInvoiceFreightArticleSku, 1, 2);
+        typeInvoiceFreightSku = addJProp(idGroup, true, "typeInvoiceFreightSku", "Тип инвойса (ИД)", typeInvoiceFreightArticle, 1, articleSku, 2);
+        nameTypeInvoiceFreightArticleSku = addJProp(baseGroup, "nameTypeInvoiceFreightArticleSku", "Тип инвойса", baseLM.name, typeInvoiceFreightSku, 1, 2);
         nameTypeInvoiceFreightArticleSku.property.preferredCharWidth = 50;
         nameTypeInvoiceFreightArticleSku.property.minimumCharWidth = 15;
 
@@ -2065,7 +2069,7 @@ public class RomanLogicsModule extends LogicsModule {
 
         inSupplierBoxShipment = addJProp(baseGroup, "inSupplierBoxShipment", "Вкл", inInvoiceShipment, boxInvoiceSupplierBox, 1, 2);
 
-        invoicedShipmentSku = addSGProp(baseGroup, "invoicedShipmentSku", true, "Ожид. (пост.)",
+        invoicedShipmentSku = addSGProp(baseGroup, "invoicedShipmentSku", true, true, "Ожид. (пост.)",
                 addJProp(baseLM.and1, quantityDocumentSku, 1, 2, inInvoiceShipment, 1, 3), 3, 2);
 
         emptyBarcodeShipment = addSGProp(privateGroup, "emptyBarcodeShipment", true, true, "Кол-во позиций без штрих-кода",
@@ -2234,6 +2238,7 @@ public class RomanLogicsModule extends LogicsModule {
         diffShipmentSku = addJProp(baseLM.diff2, zeroQuantityShipmentSku, 1, 2, zeroInvoicedShipmentSku, 1, 2);
 
         quantityStockSku = addSGProp(baseGroup, "quantityStockSku", true, true, "Оприход. в короб для транспортировки", quantityShipmentStockSku, 2, 3);
+        quantityStock = addSGProp(baseGroup, "quantityStock", "Кол-во оприход.", quantityStockSku, 1);
 
         quantityStockArticle = addSGProp(baseGroup, "quantityStockArticle", true, "Кол-во по артикулу", quantityStockSku, 1, articleSku, 2);
 
@@ -2526,7 +2531,7 @@ public class RomanLogicsModule extends LogicsModule {
         netWeightProxyImporterFreightSku = addJProp(baseGroup, "netWeightProxyImporterFreightSku", "Вес нетто", baseLM.multiplyDouble2, quantityProxyImporterFreightSku, 1, 2, 3, netWeightFreightSku, 2, 3);
         netWeightDirectImporterFreightSku = addJProp(baseGroup, "netWeightDirectImporterFreightSku", "Вес нетто", baseLM.multiplyDouble2, quantityDirectImporterFreightSku, 1, 2, 3, netWeightFreightSku, 2, 3);
 
-        netWeightImporterFreightTypeInvoice = addSGProp(baseGroup, "netWeightImporterFreightTypeInvoice", "Вес нетто", netWeightProxyImporterFreightSku, 1, 2, typeInvoiceFreightArticleSku, 2, 3);
+        netWeightImporterFreightTypeInvoice = addSGProp(baseGroup, "netWeightImporterFreightTypeInvoice", "Вес нетто", netWeightProxyImporterFreightSku, 1, 2, typeInvoiceFreightSku, 2, 3);
         netWeightImporterFreightCustomCategory6 = addSGProp(baseGroup, "netWeightImporterFreightCustomCategory6", "Вес нетто", netWeightProxyImporterFreightSku, 1, 2, customCategory6FreightSku, 2, 3);
         netWeightImporterFreightCustomCategory6Category = addSGProp(baseGroup, "netWeightImporterFreightCustomCategory6Category", "Вес нетто", netWeightProxyImporterFreightSku, 1, 2, customCategory6FreightSku, 2, 3, categoryArticleSku, 3);
         netWeightImporterFreightSupplierCustomCategory6Category = addSGProp(baseGroup, "netWeightImporterFreightSupplierCustomCategory6Category", "Вес нетто", netWeightDirectImporterFreightSku, 1, 2, supplierArticleSku, 3, customCategory6FreightSku, 2, 3, categoryArticleSku, 3);
@@ -2543,7 +2548,7 @@ public class RomanLogicsModule extends LogicsModule {
 
         quantityImporterFreight = addSGProp(baseGroup, "quantityImporterFreight", true, "Кол-во позиций", quantityImporterFreightSku, 1, 2);
         quantityProxyImporterFreight = addSGProp(baseGroup, "quantityProxyImporterFreight", true, "Кол-во позиций", quantityProxyImporterFreightSku, 1, 2);
-        quantityImporterFreightTypeInvoice = addSGProp(baseGroup, "quantityImporterFreightTypeInvoice", true, "Кол-во позиций", quantityProxyImporterFreightSku, 1, 2, typeInvoiceFreightArticleSku, 2, 3);
+        quantityImporterFreightTypeInvoice = addSGProp(baseGroup, "quantityImporterFreightTypeInvoice", true, "Кол-во позиций", quantityProxyImporterFreightSku, 1, 2, typeInvoiceFreightSku, 2, 3);
         quantityImporterFreightSupplier = addSGProp(baseGroup, "quantityImporterFreightSupplier", true, "Кол-во позиций", quantityDirectImporterFreightSku, 1, 2, supplierArticleSku, 3);
 
         // Текущие палеты/коробки для приема
@@ -2573,7 +2578,7 @@ public class RomanLogicsModule extends LogicsModule {
         grossWeightProxyImporterFreightSku = addJProp(baseGroup, "grossWeightProxyImporterFreightSku", "Вес брутто", baseLM.multiplyDouble2, quantityProxyImporterFreightSku, 1, 2, 3, grossWeightFreightSku, 2, 3);
         grossWeightDirectImporterFreightSku = addJProp(baseGroup, "grossWeightDirectImporterFreightSku", "Вес брутто", baseLM.multiplyDouble2, quantityDirectImporterFreightSku, 1, 2, 3, grossWeightFreightSku, 2, 3);
 
-        grossWeightImporterFreightTypeInvoice = addSGProp(baseGroup, "grossWeightImporterFreightTypeInvoice", "Вес брутто", grossWeightProxyImporterFreightSku, 1, 2, typeInvoiceFreightArticleSku, 2, 3);
+        grossWeightImporterFreightTypeInvoice = addSGProp(baseGroup, "grossWeightImporterFreightTypeInvoice", "Вес брутто", grossWeightProxyImporterFreightSku, 1, 2, typeInvoiceFreightSku, 2, 3);
         grossWeightImporterFreightCustomCategory6 = addSGProp(baseGroup, "grossWeightImporterFreightCustomCategory6", "Вес брутто", grossWeightProxyImporterFreightSku, 1, 2, customCategory6FreightSku, 2, 3);
         grossWeightImporterFreightCustomCategory6Category = addSGProp(baseGroup, "grossWeightImporterFreightCustomCategory6Category", "Вес брутто", grossWeightProxyImporterFreightSku, 1, 2, customCategory6FreightSku, 2, 3, categoryArticleSku, 3);
         grossWeightImporterFreightSupplierCustomCategory6Category = addSGProp(baseGroup, "grossWeightImporterFreightSupplierCustomCategory6Category", "Вес брутто", grossWeightDirectImporterFreightSku, 1, 2, supplierArticleSku, 3, customCategory6FreightSku, 2, 3, categoryArticleSku, 3);
@@ -2626,6 +2631,9 @@ public class RomanLogicsModule extends LogicsModule {
         priceImporterFreightArticleCompositionCountryCategory = addMGProp(baseGroup, "priceImporterFreightArticleCompositionCountryCategory", "Цена",
                 priceInOutImporterFreightSku, 1, 2, articleSku, 3, mainCompositionOriginFreightSku, 2, 3, countryOfOriginFreightSku, 2, 3, customCategory10FreightSku, 2, 3);
 
+        priceInvoiceImporterFreightSku = addJProp(baseGroup, "priceInvoiceImporterFreightSku", "Цена в инвойсе",
+                priceImporterFreightArticleCompositionCountryCategory, 1, 2, articleSku, 3, mainCompositionOriginFreightSku, 2, 3, countryOfOriginFreightSku, 2, 3, customCategory10FreightSku, 2, 3);
+
         sumImporterFreightSku = addJProp(baseGroup, "sumImporterFreightSku", "Сумма", baseLM.multiplyDouble2, quantityImporterFreightSku, 1, 2, 3, priceInOutImporterFreightSku, 1, 2, 3);
         sumProxyImporterFreightSku = addJProp(baseGroup, "sumProxyImporterFreightSku", "Сумма", baseLM.multiplyDouble2, quantityProxyImporterFreightSku, 1, 2, 3, priceInOutImporterFreightSku, 1, 2, 3);
         sumDirectImporterFreightSku = addJProp(baseGroup, "sumDirectImporterFreightSku", "Сумма", baseLM.multiplyDouble2, quantityDirectImporterFreightSku, 1, 2, 3, priceInOutImporterFreightSku, 1, 2, 3);
@@ -2642,10 +2650,14 @@ public class RomanLogicsModule extends LogicsModule {
                 quantityImporterFreightArticleCompositionCountryCategory, 1, 2, 3, 4, 5, 6,
                 priceImporterFreightArticleCompositionCountryCategory, 1, 2, 3, 4, 5, 6);
 
+        sumProxyInvoiceImporterFreightSku = addJProp(baseGroup, "sumProxyInvoiceImporterFreightSku", "Сумма в инвойсе", baseLM.multiplyDouble2,
+                quantityProxyImporterFreightSku, 1, 2, 3,
+                priceInvoiceImporterFreightSku, 1, 2, 3);
+
         //sumImporterFreight = addSGProp(baseGroup, "sumImporterFreight", true, "Сумма выходная", sumImporterFreightArticleCompositionCountryCategory, 1, 2);
         sumImporterFreight = addSGProp(baseGroup, "sumImporterFreight", true, "Сумма выходная", sumImporterFreightSku, 1, 2);
 
-        sumImporterFreightTypeInvoice = addSGProp(baseGroup, "sumImporterFreightTypeInvoice", "Сумма выходная", sumProxyImporterFreightSku, 1, 2, typeInvoiceFreightArticleSku, 2, 3);
+        sumImporterFreightTypeInvoice = addSGProp(baseGroup, "sumImporterFreightTypeInvoice", "Сумма выходная", sumProxyImporterFreightSku, 1, 2, typeInvoiceFreightSku, 2, 3);
 
         sumSbivkaImporterFreight = addSGProp(baseGroup, "sumSbivkaImporterFreight", "Сумма выходная", sumProxyImporterFreightSku, 1, 2);
         sumImporterFreightSupplier = addSGProp(baseGroup, "sumImporterFreightSupplier", "Сумма выходная", sumDirectImporterFreightSku, 1, 2, supplierArticleSku, 3);
@@ -2714,7 +2726,7 @@ public class RomanLogicsModule extends LogicsModule {
 
         sumMarkupInImporterFreight = addSGProp(baseGroup, "sumMarkupInImporterFreight", true, "Сумма надбавки", sumMarkupInImporterFreightSku, 1, 2);
 
-        sumInOutImporterFreightTypeInvoice = addSGProp(baseGroup, "sumInOutImporterFreightTypeInvoice", true, "Сумма выходная", sumInOutProxyImporterFreightSku, 1, 2, typeInvoiceFreightArticleSku, 2, 3);
+        sumInOutImporterFreightTypeInvoice = addSGProp(baseGroup, "sumInOutImporterFreightTypeInvoice", true, "Сумма выходная", sumInOutProxyImporterFreightSku, 1, 2, typeInvoiceFreightSku, 2, 3);
 
         sumMarkupInFreight = addSGProp(baseGroup, "sumMarkupInFreight", true, "Сумма надбавки", sumMarkupInImporterFreight, 2);
 
@@ -2908,6 +2920,8 @@ public class RomanLogicsModule extends LogicsModule {
         addFormEntity(new PackingListBoxFormEntity(printForms, "packingListBoxForm", "Упаковочные листы коробов"));
         FormEntity createPalletForm = addFormEntity(new CreatePalletFormEntity(printForms, "createPalletForm", "Штрих-коды паллет", FormType.PRINT));
         FormEntity createFreightBoxForm = addFormEntity(new CreateFreightBoxFormEntity(printForms, "createFreightBoxForm", "Штрих-коды коробов", FormType.PRINT));
+
+        addFormEntity(new InvoiceExportFormEntity(printForms, "invoiceExportForm", "Экспорт инвойсов"));
 
         NavigatorElement purchase = new NavigatorElement(baseLM.baseElement, "purchase", "Управление закупками");
         purchase.window = leftToolbar;
@@ -4122,18 +4136,18 @@ public class RomanLogicsModule extends LogicsModule {
 
                 findItemBox = addPropertyDraw(addMFAProp(null, "Поиск по артикулу",
                             findItemFormBox,
-                                                 new ObjectEntity[]{findItemFormBox.objShipment, findItemFormBox.objSupplierBox},
+                                                 new ObjectEntity[]{findItemFormBox.objShipment, findItemFormBox.objSupplierBox, findItemFormBox.objSku},
                                                  false),
-                                                 objShipment, objSupplierBox, objSku, objShipmentDetail);
+                                                 objShipment, objSupplierBox, objSku);
                 ((FormActionProperty)findItemBox.propertyObject.property).seekOnOk.add(findItemFormBox.objSku);
                 ((FormActionProperty)findItemBox.propertyObject.property).seekOnOk.add(findItemFormBox.objShipmentDetail);
                 findItemBox.forceViewType = ClassViewType.PANEL;
             } else {
                 findItemSimple = addPropertyDraw(addMFAProp(null, "Поиск по артикулу",
                             findItemFormSimple,
-                                                 new ObjectEntity[]{findItemFormSimple.objShipment, findItemFormSimple.objSku, findItemFormSimple.objShipmentDetail},
+                                                 new ObjectEntity[]{findItemFormSimple.objShipment, findItemFormSimple.objSku},
                                                  false),
-                                                 objShipment, objSku, objShipmentDetail);
+                                                 objShipment, objSku);
                 ((FormActionProperty)findItemSimple.propertyObject.property).seekOnOk.add(findItemFormSimple.objSku);
                 ((FormActionProperty)findItemSimple.propertyObject.property).seekOnOk.add(findItemFormSimple.objShipmentDetail);
                 findItemSimple.forceViewType = ClassViewType.PANEL;
@@ -4283,6 +4297,7 @@ public class RomanLogicsModule extends LogicsModule {
 
         private ObjectEntity objBox;
         private ObjectEntity objPallet;
+        private ObjectEntity objShipment;
         private ObjectEntity objSku;
 
         private BoxPalletStoreFormEntity(NavigatorElement parent, String sID, String caption) {
@@ -4293,15 +4308,23 @@ public class RomanLogicsModule extends LogicsModule {
             setReadOnly(objPallet, true);
             setReadOnly(grossWeightPallet, false);
 
-            objBox = addSingleGroupObject(freightBox, "Короб для транспортировки", baseLM.barcode, nameRouteCreationFreightBoxFreightBox, netWeightStock);
+            objBox = addSingleGroupObject(freightBox, "Короб для транспортировки", baseLM.barcode, nameRouteCreationFreightBoxFreightBox, quantityStock, netWeightStock);
             objBox.groupTo.setSingleClassView(ClassViewType.GRID);
             setReadOnly(objBox, true);
 
             addPropertyDraw(equalsPalletFreightBox, objBox, objPallet);
 
-            objSku = addSingleGroupObject(sku, "SKU", sidArticleSku, nameArticleSku, nameBrandSupplierArticleSku, sidColorSupplierItem, nameColorSupplierItem, sidSizeSupplierItem);
+            GroupObjectEntity gobjShipmentSku = new GroupObjectEntity(genID());
+            objShipment = new ObjectEntity(genID(), shipment, "Поставка");
+            objSku = new ObjectEntity(genID(), sku, "SKU");
+            gobjShipmentSku.add(objShipment);
+            gobjShipmentSku.add(objSku);
+            addGroup(gobjShipmentSku);
+
+            addPropertyDraw(objShipment, baseLM.date, sidDocument);
+            addPropertyDraw(objSku, sidArticleSku, nameArticleSku, nameBrandSupplierArticleSku, sidColorSupplierItem, nameColorSupplierItem, sidSizeSupplierItem);
             setForceViewType(itemAttributeGroup, ClassViewType.GRID, objSku.groupTo);
-            addPropertyDraw(quantityStockSku, objBox, objSku);
+            addPropertyDraw(quantityShipmentStockSku, objShipment, objBox, objSku);
 
             addActionsOnObjectChange(objBarcode, addPropertyObject(baseLM.seekBarcodeAction, objBarcode));
             addActionsOnObjectChange(objBarcode, addPropertyObject(barcodeActionSetPalletFreightBox, objBarcode, objPallet));
@@ -4319,7 +4342,8 @@ public class RomanLogicsModule extends LogicsModule {
             filterGroup.defaultFilter = 0;
             addRegularFilterGroup(filterGroup);
 
-            addFixedFilter(new NotNullFilterEntity(addPropertyObject(quantityStockSku, objBox, objSku)));
+            addFixedFilter(new NotNullFilterEntity(addPropertyObject(quantityStock, objBox)));
+            addFixedFilter(new NotNullFilterEntity(addPropertyObject(quantityShipmentStockSku, objShipment, objBox, objSku)));
         }
 
         @Override
@@ -5342,6 +5366,58 @@ public class RomanLogicsModule extends LogicsModule {
         }
     }
 
+    public class InvoiceExportFormEntity extends FormEntity<RomanBusinessLogics> {
+
+        public ObjectEntity objFreight;
+        public ObjectEntity objImporter;
+        public ObjectEntity objTypeInvoice;
+        public ObjectEntity objSku;
+
+        private GroupObjectEntity gobjFreightImporterTypeInvoice;
+
+        private InvoiceExportFormEntity(NavigatorElement parent, String sID, String caption) {
+            super(parent, sID, caption, true);
+
+            gobjFreightImporterTypeInvoice = new GroupObjectEntity(1, "freightImporterTypeInvoice");
+
+            objFreight = new ObjectEntity(2, "freight", freightPriced, "Фрахт");
+            objImporter = new ObjectEntity(3, "importer", importer, "Импортер");
+            objTypeInvoice = new ObjectEntity(9, "typeInvoice", typeInvoice, "Тип инвойса");
+
+            gobjFreightImporterTypeInvoice.add(objFreight);
+            gobjFreightImporterTypeInvoice.add(objImporter);
+            gobjFreightImporterTypeInvoice.add(objTypeInvoice);
+            addGroup(gobjFreightImporterTypeInvoice);
+
+            addPropertyDraw(objFreight, baseLM.date, baseLM.objectClassName);
+            addPropertyDraw(objImporter, baseLM.name);
+            addPropertyDraw(objImporter, objFreight, objTypeInvoice, sidImporterFreightTypeInvoice, dateImporterFreightTypeInvoice, dateShipmentImporterFreightTypeInvoice);
+            addPropertyDraw(objTypeInvoice, baseLM.name);
+
+            gobjFreightImporterTypeInvoice.initClassView = ClassViewType.PANEL;
+
+            objSku = addSingleGroupObject(4, "sku", sku, sidArticleSku, originalNameArticleSku, sidColorSupplierItem, sidSizeSupplierItem);
+            addPropertyDraw(objFreight, objSku, mainCompositionFreightSku, nameCountryOfOriginFreightSku);
+            addPropertyDraw(objSku, baseLM.barcode, nameBrandSupplierArticleSku, nameCategoryArticleSku);
+            setForceViewType(itemAttributeGroup, ClassViewType.GRID, objSku.groupTo);
+
+//            getPropertyDraw(sidImporterFreightTypeInvoice).toDraw = objSku.groupTo;
+//            getPropertyDraw(dateImporterFreightTypeInvoice).toDraw = objSku.groupTo;
+
+            addPropertyDraw(quantityProxyImporterFreightSku, objImporter, objFreight, objSku);
+            addPropertyDraw(priceInvoiceImporterFreightSku, objImporter, objFreight, objSku);
+            addPropertyDraw(sumProxyImporterFreightSku, objImporter, objFreight, objSku);
+
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(typeInvoiceFreightSku, objFreight, objSku), Compare.EQUALS, objTypeInvoice));
+            addFixedFilter(new NotNullFilterEntity(addPropertyObject(quantityImporterFreightTypeInvoice, objImporter, objFreight, objTypeInvoice)));
+            addFixedFilter(new NotNullFilterEntity(addPropertyObject(quantityImporterFreightSku, objImporter, objFreight, objSku)));
+
+            invoiceExportFormImporterFreight = addFAProp("Экспорт", this, objImporter, objFreight, objTypeInvoice);
+
+            setReadOnly(true);
+        }
+    }
+
     public class InvoiceFromFormEntity extends FormEntity<RomanBusinessLogics> {
 
         private boolean translate;
@@ -6128,7 +6204,7 @@ public class RomanLogicsModule extends LogicsModule {
 
             objTypeInvoice = addSingleGroupObject(typeInvoice, "Тип инвойса", baseLM.name);
 
-            addPropertyDraw(objImporter, objFreight, sidContractImporterFreight, conditionShipmentContractImporterFreight, conditionPaymentContractImporterFreight);
+            addPropertyDraw(objImporter, objFreight, sidContractImporterFreight); //, conditionShipmentContractImporterFreight, conditionPaymentContractImporterFreight);
 
             addPropertyDraw(quantityImporterFreight, objImporter, objFreight);
             addPropertyDraw(sumInImporterFreight, objImporter, objFreight);
@@ -6145,6 +6221,7 @@ public class RomanLogicsModule extends LogicsModule {
             addPropertyDraw(packingListOriginFormImporterFreight, objImporter, objFreight, objTypeInvoice);
             addPropertyDraw(packingListFormImporterFreight, objImporter, objFreight, objTypeInvoice);
             addPropertyDraw(sbivkaFormImporterFreightSupplier, objImporter, objFreight, objSupplier);
+            addPropertyDraw(invoiceExportFormImporterFreight, objImporter, objFreight, objTypeInvoice);
 
             objSku = addSingleGroupObject(sku, "SKU", baseLM.barcode, sidArticleSku, sidSizeSupplierItem,
                     nameBrandSupplierArticleSku, nameCategoryArticleSku, sidCustomCategory10Sku,
@@ -6163,9 +6240,9 @@ public class RomanLogicsModule extends LogicsModule {
 
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(quantityImporterFreight, objImporter, objFreight)));
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(quantityImporterFreightTypeInvoice, objImporter, objFreight, objTypeInvoice)));
-            addFixedFilter(new NotNullFilterEntity(addPropertyObject(quantityImporterFreightSupplier, objImporter, objFreight, objSupplier)));
+//            addFixedFilter(new NotNullFilterEntity(addPropertyObject(quantityImporterFreightSupplier, objImporter, objFreight, objSupplier)));
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(quantityImporterFreightSku, objImporter, objFreight, objSku)));
-            addFixedFilter(new CompareFilterEntity(addPropertyObject(typeInvoiceFreightArticleSku, objFreight, objSku), Compare.EQUALS, objTypeInvoice));
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(typeInvoiceFreightSku, objFreight, objSku), Compare.EQUALS, objTypeInvoice));
 
         }
 
