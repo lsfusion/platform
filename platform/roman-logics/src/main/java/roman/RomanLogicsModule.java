@@ -5757,7 +5757,7 @@ public class RomanLogicsModule extends LogicsModule {
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(quantityProxyImporterFreight, objImporter, objFreight)));
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(quantityProxyImporterFreightCustomCategory6, objImporter, objFreight, objCustomCategory6)));
 
-            objCategory = addSingleGroupObject(5, "category", category, "Номенклатурная группа", baseLM.name);
+            objCategory = addSingleGroupObject(5, "category", category, "Номенклатурная группа", baseLM.name, nameUnitOfMeasureCategory);
             addPropertyDraw(objImporter, objFreight, objCustomCategory6, objCategory, quantityProxyImporterFreightCustomCategory6Category, netWeightImporterFreightCustomCategory6Category, grossWeightImporterFreightCustomCategory6Category, sumImporterFreightCustomCategory6Category);
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(quantityProxyImporterFreightCustomCategory6Category, objImporter, objFreight, objCustomCategory6, objCategory)));
 
