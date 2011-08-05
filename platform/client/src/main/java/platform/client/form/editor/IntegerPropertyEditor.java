@@ -22,7 +22,11 @@ public class IntegerPropertyEditor extends TextFieldPropertyEditor {
         setFormatterFactory(new DefaultFormatterFactory(formatter));
 
         if (value != null) {
-            setValue(value);
+            try {
+                setText(formatter.valueToString(value));
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
         }
     }
 
