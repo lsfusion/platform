@@ -26,7 +26,7 @@ public abstract class ObjectValue<T extends ObjectValue<T>> extends AbstractMapV
     public abstract boolean isString(SQLSyntax syntax);
 
     public abstract Expr getExpr();
-    public abstract Expr getSystemExpr();
+    public abstract Expr getStaticExpr();
 
     public abstract Object getValue();
 

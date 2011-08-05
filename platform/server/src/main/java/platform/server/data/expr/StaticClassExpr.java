@@ -17,7 +17,7 @@ public abstract class StaticClassExpr extends BaseExpr {
     }
 
     public Expr classExpr(BaseClass baseClass) {
-        return ((ConcreteObjectClass)getStaticClass()).getClassObject().getSystemExpr();
+        return ((ConcreteObjectClass)getStaticClass()).getClassObject().getStaticExpr();
     }
 
     public Where isClass(AndClassSet set) {

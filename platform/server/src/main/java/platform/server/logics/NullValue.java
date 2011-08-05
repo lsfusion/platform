@@ -29,7 +29,7 @@ public class NullValue extends ObjectValue<NullValue> {
     public Expr getExpr() {
         return Expr.NULL;
     }
-    public Expr getSystemExpr() {
+    public Expr getStaticExpr() {
         return Expr.NULL;
     }
 

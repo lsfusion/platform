@@ -70,7 +70,7 @@ public class StaticCustomClass extends ConcreteCustomClass implements StaticClas
     }
 
     public Expr getStaticExpr(Object value) {
-        return new StaticValueExpr(value, this);
+        return new StaticValueExpr(value, this, true);
     }
 
     public DataObject getDataObject(String sID) {

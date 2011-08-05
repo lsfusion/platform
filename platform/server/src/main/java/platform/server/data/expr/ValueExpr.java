@@ -31,12 +31,12 @@ public class ValueExpr extends AbstractValueExpr implements Value {
         super(object, objectClass);
     }
 
-    public static SystemValueExpr TRUE = new SystemValueExpr(true,LogicalClass.instance);
+    public static StaticValueExpr TRUE = new StaticValueExpr(true,LogicalClass.instance);
     public static Expr get(Where where) {
         return TRUE.and(where);
     }
 
-    public static SystemValueExpr COUNT = new SystemValueExpr(1, IntegerClass.instance);
+    public static StaticValueExpr COUNT = new StaticValueExpr(1, IntegerClass.instance);
 
     public ConcreteClass getStaticClass() {
         return objectClass;
