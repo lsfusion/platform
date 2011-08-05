@@ -245,7 +245,8 @@ public class CacheAspect {
     @Around("execution(@platform.server.caches.TwinLazy * *.*(..)) && target(object)")
     // с call'ом есть баги
     public Object callTwinMethod(ProceedingJoinPoint thisJoinPoint, Object object) throws Throwable {
-        return lazyTwinExecute(object, thisJoinPoint, thisJoinPoint.getArgs());
+        return lazyIdentityExecute(object, thisJoinPoint, thisJoinPoint.getArgs());
+//        return lazyTwinExecute(object, thisJoinPoint, thisJoinPoint.getArgs());
     }
 
     public final static SoftHashMap<Object, Object> lazyTwinManualExecute = new SoftHashMap<Object, Object>();
