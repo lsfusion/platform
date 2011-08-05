@@ -553,7 +553,7 @@ public abstract class GridTable extends ClientFormTable
 
         Object oValue;
         try {
-            oValue = model.getColumnProperty(column).parseString(getForm(), model.getColumnKey(column), value);
+            oValue = model.getColumnProperty(column).parseString(getForm(), model.getColumnKey(column), value, isDataChanging());
         } catch (ParseException e) {
             oValue = null;
         }

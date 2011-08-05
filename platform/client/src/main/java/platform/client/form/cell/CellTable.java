@@ -79,7 +79,7 @@ public abstract class CellTable extends SingleCellTable
     public void writeSelectedValue(String value) {
         Object oValue;
         try {
-            oValue = getProperty().parseString(getForm(), columnKey, value);
+            oValue = getProperty().parseString(getForm(), columnKey, value, isDataChanging());
         } catch (ParseException pe) {
             oValue = null;
         }

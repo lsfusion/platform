@@ -300,10 +300,10 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         return ClientTypeSerializer.deserialize(inStream);
     }
 
-    public Object parseString(ClientFormController form, ClientGroupObjectValue key, String s) throws ParseException {
+    public Object parseString(ClientFormController form, ClientGroupObjectValue key, String s, boolean isDataChanging) throws ParseException {
         ClientType changeType;
         try {
-            changeType = getPropertyChangeType(form, key, false);
+            changeType = isDataChanging ? getPropertyChangeType(form, key, false) : baseType;
             if (changeType == null) {
                 throw new ParseException(ClientResourceBundle.getString("logics.propertyview.can.not.be.changed"), 0);
             }
@@ -501,9 +501,9 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public static final String toolTipFormat =
             "<html><b>%1$s</b><br><hr>" +
                     "<b>sID:</b> %2$s<br>" +
-                    "<b>"+ClientResourceBundle.getString("logics.grid")+":</b> %3$s<br>" +
-                    "<b>"+ClientResourceBundle.getString("logics.objects")+" :</b> %4$s<br>" +
-                    "<b>"+ClientResourceBundle.getString("logics.signature")+":</b> %6$s <i>%2$s</i> (%5$s)" +
+                    "<b>" + ClientResourceBundle.getString("logics.grid") + ":</b> %3$s<br>" +
+                    "<b>" + ClientResourceBundle.getString("logics.objects") + " :</b> %4$s<br>" +
+                    "<b>" + ClientResourceBundle.getString("logics.signature") + ":</b> %6$s <i>%2$s</i> (%5$s)" +
                     "</html>";
 
     public String getTooltipText(String caption) {
@@ -518,6 +518,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     }
 
     private GPropertyDraw gwtPropertyDraw;
+
     public GPropertyDraw getGwtPropertyDraw() {
         return getGwtComponent();
     }

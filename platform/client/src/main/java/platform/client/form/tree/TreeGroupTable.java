@@ -424,7 +424,7 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
         ClientPropertyDraw property = getProperty(row, column);
         if (property != null) {
             try {
-                return property.parseString(form, getKey(row, column), value);
+                return property.parseString(form, getKey(row, column), value, isDataChanging());
             } catch (ParseException ignored) {
                 return null;
             }
