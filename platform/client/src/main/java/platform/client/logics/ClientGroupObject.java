@@ -33,7 +33,7 @@ public class ClientGroupObject extends IdentityObject implements ClientPropertyR
     public boolean isRecursive;
     public int pageSize = -1;
     public boolean needVerticalScroll;
-    public int tableRowsCount;
+    public int tableRowsCount = -1;
 
     public List<ClassViewType> banClassView = new ArrayList<ClassViewType>();
 
