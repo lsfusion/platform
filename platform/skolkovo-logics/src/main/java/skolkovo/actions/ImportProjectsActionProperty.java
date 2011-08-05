@@ -206,6 +206,11 @@ public class ImportProjectsActionProperty extends ActionProperty {
         filePassportNonRussianSpecialistField = new ImportField(LM.filePassportNonRussianSpecialist);
         fileStatementNonRussianSpecialistField = new ImportField(LM.fileStatementNonRussianSpecialist);
 
+        properties = new ArrayList<ImportProperty<?>>();
+        propertiesPatent = new ArrayList<ImportProperty<?>>();
+        propertiesCluster = new ArrayList<ImportProperty<?>>();
+        propertiesAcademic = new ArrayList<ImportProperty<?>>();
+        propertiesNonRussianSpecialist = new ArrayList<ImportProperty<?>>();
 
         projectKey = new ImportKey(LM.project, LM.sidToProject.getMapping(projectIdField));
         properties.add(new ImportProperty(dateProjectField, LM.dateProject.getMapping(projectKey)));
