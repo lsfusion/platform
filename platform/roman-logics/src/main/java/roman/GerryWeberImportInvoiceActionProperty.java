@@ -11,12 +11,6 @@ import java.io.InputStreamReader;
 
 import static roman.InvoicePricatMergeInputTable.ResultField;
 
-/**
- * User: DAle
- * Date: 28.02.11
- * Time: 19:26
- */
-
 public class GerryWeberImportInvoiceActionProperty extends ImportBoxInvoiceActionProperty {
 
     private final RomanBusinessLogics BL;
@@ -29,7 +23,7 @@ public class GerryWeberImportInvoiceActionProperty extends ImportBoxInvoiceActio
     @Override
     protected boolean isSimpleInvoice() {
         return true;
-    };
+    }
 
     @Override
     protected ImportInputTable createTable(ByteArrayInputStream inFile) throws BiffException, IOException {
@@ -45,6 +39,6 @@ public class GerryWeberImportInvoiceActionProperty extends ImportBoxInvoiceActio
     protected SingleSheetImporter createImporter(ImportInputTable inputTable) {
         return new GerryWeberInvoiceImporter(inputTable, barCodeField, sidField, invoiceSIDField, boxNumberField,  colorCodeField,
                 colorNameField, sizeField, originalNameField, countryField, unitNetWeightField, compositionField, unitPriceField, dateInvoiceField,
-                RRPField, unitQuantityField, numberSkuField, customCodeField, customCode6Field);
+                RRPField, unitQuantityField, numberSkuField, customCodeField, customCode6Field, null, seasonField, genderField, themeCodeField, themeNameField);
     }
 }

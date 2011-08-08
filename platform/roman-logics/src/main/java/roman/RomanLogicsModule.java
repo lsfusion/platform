@@ -63,6 +63,8 @@ public class RomanLogicsModule extends LogicsModule {
     private final RomanBusinessLogics BL;
     private LP equalsColorItemSupplier;
     private LP equalsSizeItemSupplier;
+    private LP equalsSeasonItemSupplier;
+    private LP equalsThemeItemSupplier;
     private LP boxInvoiceAddFA;
     private LP simpleInvoiceAddFA;
     private LP boxInvoiceEditFA;
@@ -135,9 +137,10 @@ public class RomanLogicsModule extends LogicsModule {
     ConcreteCustomClass commonSize;
     ConcreteCustomClass colorSupplier;
     ConcreteCustomClass sizeSupplier;
+    ConcreteCustomClass genderSupplier;
     private ConcreteCustomClass brandSupplier;
-    private ConcreteCustomClass themeSupplier;
-    private ConcreteCustomClass season;
+    public ConcreteCustomClass themeSupplier;
+    public ConcreteCustomClass season;
     ConcreteCustomClass countrySupplier;
     LP supplierArticle;
     private LP nameSupplierArticle;
@@ -147,15 +150,29 @@ public class RomanLogicsModule extends LogicsModule {
     private LP sumSimpleInvoiceArticle;
     LP colorSupplierItem;
     private LP nameColorSupplierItem;
+    private LP nameThemeSupplierItem;
     LP sizeSupplierItem;
+    LP themeSupplierItem;
+    LP seasonItem;
     LP sidSizeSupplierItem;
     LP supplierColorSupplier;
+    LP genderSupplierArticle;
+    LP genderSupplierItem;
+    LP sidGenderSupplierArticle;
+    LP sidGenderSupplierItem;
+    private LP genderSupplierArticleColor;
+    private LP genderSupplierArticleColorSku;
+    private LP genderSku;
     private LP quantityCreationStamp;
     private LP seriesOfCreationStamp;
     private LP dateOfCreationStamp;
     private LP nameSupplierColorSupplier;
+    private LP nameSupplierSeason;
+    private LP nameSupplierThemeSupplier;
+    private LP nameSupplierGenderSupplier;
     LP supplierSizeSupplier;
     private LP nameSupplierSizeSupplier;
+    LP supplierGenderSupplier;
     private LP sidBrandSupplier;
     public LP sidTypeDuty;
     public LP nameTypeDuty;
@@ -185,13 +202,14 @@ public class RomanLogicsModule extends LogicsModule {
     private LP nameBrandSupplierArticleSkuShipmentDetail;
     private LP supplierArticleSku;
     private LP nameSupplierArticleSku;
-    private LP supplierThemeSupplier;
+    public LP supplierThemeSupplier;
+    public LP supplierSeason;
     private LP themeSupplierArticle;
-    private LP nameThemeSupplierArticle;
-    private LP themeSupplierArticleSku;
+    public LP nameThemeSupplierArticle;
+    public LP themeSupplierArticleSku;
     private LP nameThemeSupplierArticleSku;
-    private LP seasonArticle;
-    private LP nameSeasonArticle;
+    public LP seasonArticle;
+    public LP nameSeasonArticle;
 
     private ConcreteCustomClass currency;
     private ConcreteCustomClass typeExchange;
@@ -245,6 +263,8 @@ public class RomanLogicsModule extends LogicsModule {
     private LP grossWeightShipment;
     LP sidColorSupplier;
     private LP sidColorSupplierItem;
+    private LP sidThemeSupplierItem;
+    public LP sidSeasonItem;
     private LP quantityDocumentSku;
     private LP quantityDocumentBrandSupplier;
     private LP quantityAllDocumentsBrandSupplier;
@@ -386,9 +406,11 @@ public class RomanLogicsModule extends LogicsModule {
     private LP countryOfOriginArticleColor;
     private LP countryOfOriginArticleColorSku;
     private LP countryOfOriginArticleSku;
+    private LP genderSupplierArticleSku;
     private LP countryOfOriginDataSku;
     private LP countryOfOriginSku;
     private LP nameCountryOfOriginSku;
+    private LP nameGenderSupplierSku;
     private LP nameCountrySupplierOfOriginArticle;
     private LP nameCountryOfOriginArticleSku;
     LP articleSIDSupplier;
@@ -852,7 +874,13 @@ public class RomanLogicsModule extends LogicsModule {
     private LP nameCommonSizeSizeSupplier;
     LP colorSIDSupplier;
     LP sidSizeSupplier;
+    LP sidThemeSupplier;
+    LP sidSeason;
+    LP sidGenderSupplier;
     LP sizeSIDSupplier;
+    LP themeSIDSupplier;
+    LP seasonSIDSupplier;
+    LP genderSIDSupplier;
     LP brandSIDSupplier;
     LP countryNameSupplier;
     LP numberDataListSku;
@@ -999,9 +1027,13 @@ public class RomanLogicsModule extends LogicsModule {
     LP barcodePricat;
     LP articleNumberPricat;
     LP customCategoryOriginalPricat;
+    LP themeCodePricat;
+    LP themeNamePricat;
     LP colorCodePricat;
     LP colorNamePricat;
     LP sizePricat;
+    LP seasonPricat;
+    LP genderPricat;
     LP originalNamePricat;
     LP countryPricat;
     LP netWeightPricat;
@@ -1114,7 +1146,7 @@ public class RomanLogicsModule extends LogicsModule {
         sOliverSupplier = addConcreteClass("sOliverSupplier", "s.Oliver", simpleSupplier);
         womenSecretSupplier = addConcreteClass("womenSecretSupplier", "Women'Secret", boxSupplier);
         babyPhatSupplier = addConcreteClass("babyPhatSupplier", "Baby Phat", simpleSupplier);
-        gerryWeberSupplier = addConcreteClass("gerryWeberSupplier", "Gerry Weber", supplier);
+        gerryWeberSupplier = addConcreteClass("gerryWeberSupplier", "Gerry Weber", simpleSupplier);
              
         secondNameClass = addAbstractClass("secondNameClass", "Класс со вторым именем", baseClass);
 
@@ -1126,6 +1158,7 @@ public class RomanLogicsModule extends LogicsModule {
 
         colorSupplier = addConcreteClass("colorSupplier", "Цвет поставщика", baseClass.named);
         sizeSupplier = addConcreteClass("sizeSupplier", "Размер поставщика", baseClass);
+        genderSupplier = addConcreteClass("genderSupplier", "Пол поставщика", baseClass);
         sizeGroupSupplier = addConcreteClass("sizeGroupSupplier", "Размерная сетка", baseClass.named);
 
         freightBox = addConcreteClass("freightBox", "Короб для транспортировки", stock, freightUnit);
@@ -1455,15 +1488,23 @@ public class RomanLogicsModule extends LogicsModule {
         supplierColorSupplier = addDProp(idGroup, "supplierColorSupplier", "Поставщик (ИД)", supplier, colorSupplier);
         nameSupplierColorSupplier = addJProp(baseGroup, "nameSupplierColorSupplier", "Поставщик", baseLM.name, supplierColorSupplier, 1);
 
+
+
         colorSIDSupplier = addAGProp(idGroup, "colorSIDSupplier", "Цвет поставщика (ИД)", sidColorSupplier, supplierColorSupplier);
 
         sidSizeSupplier = addDProp(baseGroup, "sidSizeSupplier", "Код", StringClass.get(50), sizeSupplier);
+        sidThemeSupplier = addDProp(baseGroup, "sidThemeSupplier", "Код", StringClass.get(50), themeSupplier);
+        sidSeason = addDProp(baseGroup, "sidSeason", "Код", StringClass.get(50), season);
+        sidGenderSupplier = addDProp(baseGroup, "sidGenderSupplier", "Код", StringClass.get(10), genderSupplier);
 
         commonSizeSizeSupplier = addDProp(idGroup, "commonSizeSizeSupplier", "Унифицированный размер (ИД)", commonSize, sizeSupplier);
         nameCommonSizeSizeSupplier = addJProp(baseGroup, "nameCommonSizeSizeSupplier", "Унифицированный размер", baseLM.name, commonSizeSizeSupplier, 1);
 
         supplierSizeSupplier = addDProp(idGroup, "supplierSizeSupplier", "Поставщик (ИД)", supplier, sizeSupplier);
         nameSupplierSizeSupplier = addJProp(baseGroup, "nameSupplierSizeSupplier", "Поставщик", baseLM.name, supplierSizeSupplier, 1);
+
+        supplierGenderSupplier = addDProp(idGroup, "supplierGenderSupplier", "Поставщик (ИД)", supplier, genderSupplier);
+        nameSupplierGenderSupplier = addJProp(baseGroup, "nameSupplierGenderSupplier", "Поставщик", baseLM.name, supplierGenderSupplier, 1);
 
         supplierSizeGroup = addDProp(idGroup, "supplierSizeGroup", "Поставщик (ИД)", supplier, sizeGroupSupplier);
         nameSupplierSizeGroup = addJProp(baseGroup, "nameSupplierSizeGroup", "Поставщик", baseLM.name, supplierSizeGroup, 1);
@@ -1478,8 +1519,15 @@ public class RomanLogicsModule extends LogicsModule {
                 supplierSizeSupplier, 1,
                 supplierGroupSizeSupplier, 1), true);
 
+        supplierThemeSupplier = addDProp(idGroup, "supplierThemeSupplier", "Поставщик (ИД)", supplier, themeSupplier);
+        supplierSeason = addDProp(idGroup, "supplierSeason", "Поставщик (ИД)", supplier, season);
+        nameSupplierSeason = addJProp(baseGroup, "nameSupplierSeason", "Поставщик", baseLM.name, supplierSeason, 1);
+        nameSupplierThemeSupplier = addJProp(baseGroup, "nameSupplierThemeSupplier", "Поставщик", baseLM.name, supplierThemeSupplier, 1);
 
         sizeSIDSupplier = addAGProp(idGroup, "sizeSIDSupplier", "Размер поставщика (ИД)", sidSizeSupplier, supplierSizeSupplier);
+        themeSIDSupplier = addAGProp(idGroup, "themeSIDSupplier", "Тема поставщика (ИД)", sidThemeSupplier, supplierThemeSupplier);
+        seasonSIDSupplier = addAGProp(idGroup, "seasonSIDSupplier", "Сезон поставщика (ИД)", sidSeason, supplierSeason);
+        genderSIDSupplier = addAGProp(idGroup, "genderSIDSupplier", "Пол поставщика (ИД)", sidGenderSupplier, supplierGenderSupplier);
 
         // Country
         supplierCountrySupplier = addDProp(idGroup, "supplierCountrySupplier", "Поставщик (ИД)", supplier, countrySupplier);
@@ -1500,8 +1548,6 @@ public class RomanLogicsModule extends LogicsModule {
         nameBrandSupplierSupplier = addJProp(baseGroup, "nameBrandSupplierSupplier", "Бренд по умолчанию", baseLM.name, brandSupplierSupplier, 1);
 
         addConstraint(addJProp("Бренд по умолчанию для поставщика должен соответствовать брендам поставщика", baseLM.diff2, 1, addJProp(supplierBrandSupplier, brandSupplierSupplier, 1), 1), true);
-
-        supplierThemeSupplier = addDProp(idGroup, "supplierThemeSupplier", "Поставщик (ИД)", supplier, themeSupplier);
 
         supplierDocument = addDProp(idGroup, "supplierDocument", "Поставщик (ИД)", supplier, document);
         supplierPriceDocument = addJProp(idGroup, "supplierPricedDocument", "Поставщик(ИД)", baseLM.and1, supplierDocument, 1, is(priceDocument), 1);
@@ -1744,8 +1790,24 @@ public class RomanLogicsModule extends LogicsModule {
         sidColorSupplierItem = addJProp(itemAttributeGroup, "sidColorSupplierItem", "Код цвета", sidColorSupplier, colorSupplierItem, 1);
         nameColorSupplierItem = addJProp(itemAttributeGroup, "nameColorSupplierItem", "Цвет поставщика", baseLM.name, colorSupplierItem, 1);
 
+
         sizeSupplierItem = addDProp(itemAttributeGroup, "sizeSupplierItem", "Размер поставщика (ИД)", sizeSupplier, item);
         sidSizeSupplierItem = addJProp(itemAttributeGroup, "sidSizeSupplierItem", "Размер поставщика", sidSizeSupplier, sizeSupplierItem, 1);
+
+        themeSupplierItem = addDProp(itemAttributeGroup, "themeSupplierItem", "Тема поставщика (ИД)", themeSupplier, item);
+        sidThemeSupplierItem = addJProp(itemAttributeGroup, "sidThemeSupplierItem", " Код темы", sidThemeSupplier, themeSupplierItem, 1);
+
+        seasonItem = addDProp(itemAttributeGroup, "seasonItem", "Сезон поставщика (ИД)", season, item);
+        sidSeasonItem = addJProp(itemAttributeGroup, "sidSeasonItem", "Сезон", sidSeason, seasonItem, 1);
+
+        nameThemeSupplierItem = addJProp(itemAttributeGroup, "nameThemeSupplierItem", "Тема поставщика", baseLM.name, themeSupplierItem, 1);
+
+        genderSupplierArticle = addDProp(itemAttributeGroup, "genderSupplierArticle", "Пол поставщика (ИД)", genderSupplier, article);
+        sidGenderSupplierArticle = addJProp(itemAttributeGroup, "sidGenderSupplierArticle", "Пол поставщика", sidGenderSupplier, genderSupplierArticle, 1);
+
+        genderSupplierItem = addDProp(itemAttributeGroup, "genderSupplierItem", "Пол поставщика (ИД)", genderSupplier, item);
+        sidGenderSupplierItem = addJProp(itemAttributeGroup, "sidGenderSupplierItem", "Пол поставщика", sidGenderSupplier, genderSupplierItem, 1);
+
 
         LP supplierColorItem = addJProp(supplierColorSupplier, colorSupplierItem, 1);
         addConstraint(addJProp("Поставщик товара должен соответствовать цвету поставщика", baseLM.diff2,
@@ -1759,6 +1821,19 @@ public class RomanLogicsModule extends LogicsModule {
 
         equalsColorItemSupplier = addJProp(baseLM.equals2, supplierColorItem, 1, 2); // временное решение
         equalsSizeItemSupplier = addJProp(baseLM.equals2, supplierSizeItem, 1, 2); // временное решение
+
+        LP supplierSeasonItem = addJProp(supplierSeason, seasonItem, 1);
+        addConstraint(addJProp("Поставщик товара должен соответствовать сезону поставщика", baseLM.diff2,
+                supplierArticleSku, 1,
+                supplierSeasonItem, 1), true);
+
+        LP supplierThemeItem = addJProp(supplierThemeSupplier, themeSupplierItem, 1);
+        addConstraint(addJProp("Поставщик товара должен соответствовать теме поставщика", baseLM.diff2,
+                supplierArticleSku, 1,
+                supplierThemeItem, 1), true);
+
+        equalsSeasonItemSupplier = addJProp(baseLM.equals2, supplierSeasonItem, 1, 2); // временное решение
+        equalsThemeItemSupplier = addJProp(baseLM.equals2, supplierThemeItem, 1, 2); // временное решение
 
         addItemArticleCompositeColorSizeBarcode = addJProp(true, "Ввод товара", addAAProp(item, articleCompositeItem, colorSupplierItem, sizeSupplierItem, baseLM.barcode), 1, 2, 3, 4);
         addItemSIDArticleSupplierColorSizeBarcode = addJProp(true, "Ввод товара", addItemArticleCompositeColorSizeBarcode, articleSIDSupplier, 1, 2, 3, 4, 5);
@@ -1789,13 +1864,20 @@ public class RomanLogicsModule extends LogicsModule {
         countryOfOriginArticleSku = addJProp(idGroup, "countryOfOriginArticleSku", "Страна происхождения (ИД)", countryOfOriginArticle, articleSku, 1);
         nameCountryOfOriginArticleSku = addJProp(supplierAttributeGroup, "nameCountryOfOriginArticleSku", "Страна происхождения", nameOriginCountry, countryOfOriginArticleSku, 1);
 
+        genderSupplierArticleSku = addJProp(idGroup, "genderSupplierArticleSku", "Пол (ИД)", genderSupplierArticle, articleSku, 1);
+        genderSupplierArticleColor = addDProp(idGroup, "genderSupplierArticleColor", "Пол (ИД)", genderSupplier, article, colorSupplier);
+        genderSupplierArticleColorSku = addJProp(idGroup, true, "genderSupplierArticleColorSku", "Пол (ИД)", genderSupplierArticleColor, articleSku, 1, colorSupplierItem, 1);
+        genderSku = addSUProp(idGroup, "genderSku", true, "Пол (ИД)", Union.OVERRIDE, genderSupplierArticleSku, genderSupplierArticleColorSku);
+        //nameCountryOfOriginSku = addJProp(intraAttributeGroup, "nameCountryOfOriginSku", "Страна происхождения", nameOriginCountry, countryOfOriginSku, 1);
+        nameGenderSupplierSku = addJProp(intraAttributeGroup, "nameGenderSupplierSKU", "Пол", sidGenderSupplier, genderSku, 1);///
+
+
         countryOfOriginArticleColor = addDProp(idGroup, "countryOfOriginArticleColor", "Страна происхождения (ИД)", baseLM.country, article, colorSupplier);
         countryOfOriginArticleColorSku = addJProp(idGroup, true, "countryOfOriginArticleColorSku", "Страна происхождения (ИД)", countryOfOriginArticleColor, articleSku, 1, colorSupplierItem, 1);
 
         countryOfOriginDataSku = addDProp(idGroup, "countryOfOriginDataSku", "Страна происхождения (ИД) (первичное)", baseLM.country, sku);
 
         countryOfOriginSku = addSUProp(idGroup, "countryOfOriginSku", true, "Страна происхождения (ИД)", Union.OVERRIDE, countryOfOriginArticleSku, countryOfOriginArticleColorSku);
-
         nameCountryOfOriginSku = addJProp(intraAttributeGroup, "nameCountryOfOriginSku", "Страна происхождения", nameOriginCountry, countryOfOriginSku, 1);
         nameCountrySku = addJProp(intraAttributeGroup, "nameCountrySku", "Страна происхождения", baseLM.name, countryOfOriginSku, 1);
         nameCountrySku.property.preferredCharWidth = 50;
@@ -1896,7 +1978,11 @@ public class RomanLogicsModule extends LogicsModule {
         customCategoryOriginalPricat = addDProp(baseGroup, "customCategoryOriginalPricat", "Код ЕС (10)", StringClass.get(10), pricat);
         colorCodePricat = addDProp(baseGroup, "colorCodePricat", "Код цвета", StringClass.get(20), pricat);
         colorNamePricat = addDProp(baseGroup, "colorNamePricat", "Цвет", StringClass.get(50), pricat);
+        themeCodePricat = addDProp(baseGroup, "themeCodePricat", "Код темы", StringClass.get(20), pricat);
+        themeNamePricat = addDProp(baseGroup, "themeNamePricat", "Тема", StringClass.get(50), pricat);
         sizePricat = addDProp(baseGroup, "sizePricat", "Размер", StringClass.get(5), pricat);
+        seasonPricat = addDProp(baseGroup, "seasonPricat", "Сезон", StringClass.get(10), pricat);
+        genderPricat = addDProp(baseGroup, "genderPricat", "Пол", StringClass.get(10), pricat);
         originalNamePricat = addDProp(baseGroup, "originalNamePricat", "Наименование (ориг.)", StringClass.get(50), pricat);
         countryPricat = addDProp(baseGroup, "countryPricat", "Страна происхождения", StringClass.get(20), pricat);
         netWeightPricat = addDProp(baseGroup, "netWeightPricat", "Вес нетто", DoubleClass.instance, pricat);
@@ -2897,6 +2983,9 @@ public class RomanLogicsModule extends LogicsModule {
         articleComposite.setDialogForm(new ArticleCompositeFormEntity(null, "articleCompositeForm", "Артикул (составной)"));
         colorSupplier.setDialogForm(new ColorSupplierFormEntity(null, "colorSupplierForm", "Цвет поставщика"));
         sizeSupplier.setDialogForm(new SizeSupplierFormEntity(null, "sizeSupplierForm", "Размер поставщика"));
+        season.setDialogForm(new SeasonFormEntity(null, "colorSupplierForm", "Сезон поставщика"));
+        themeSupplier.setDialogForm(new ThemeSupplierFormEntity(null, "themeSupplierForm", "Тема поставщика"));
+        genderSupplier.setDialogForm(new GenderSupplierFormEntity(null, "genderSupplierForm", "Пол поставщика"));
 
         createItemForm = addFormEntity(new CreateItemFormEntity(null, "createItemForm", "Ввод товара"));
         editItemForm = addFormEntity(new EditItemFormEntity(null, "editItemForm", "Редактирование товара"));
@@ -3132,6 +3221,84 @@ public class RomanLogicsModule extends LogicsModule {
         @Override
         public ObjectEntity getObject() {
             return objColor;
+        }
+    }
+
+    private class SeasonFormEntity extends ClassFormEntity<RomanBusinessLogics> {
+
+        private ObjectEntity objSeason;
+
+        public SeasonFormEntity(NavigatorElement parent, String sID, String caption) {
+            super(parent, sID, caption);
+
+            objSeason = addSingleGroupObject(season, "Сезон поставщика", sidSeason, nameSupplierSeason);
+            addObjectActions(this, objSeason);
+        }
+
+        @Override
+        public FormView createDefaultRichDesign() {
+            DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign();
+
+            design.defaultOrders.put(design.get(getPropertyDraw(sidSeason)), true);
+
+            return design;
+        }
+
+        @Override
+        public ObjectEntity getObject() {
+            return objSeason;
+        }
+    }
+
+    private class GenderSupplierFormEntity extends ClassFormEntity<RomanBusinessLogics> {
+
+        private ObjectEntity objGender;
+
+        public GenderSupplierFormEntity(NavigatorElement parent, String sID, String caption) {
+            super(parent, sID, caption);
+
+            objGender = addSingleGroupObject(genderSupplier, "Пол поставщика", sidGenderSupplier, nameSupplierGenderSupplier, nameGenderSupplierSku);
+            addObjectActions(this, objGender);
+        }
+
+        @Override
+        public FormView createDefaultRichDesign() {
+            DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign();
+
+            design.defaultOrders.put(design.get(getPropertyDraw(sidGenderSupplier)), true);
+
+            return design;
+        }
+
+        @Override
+        public ObjectEntity getObject() {
+            return objGender;
+        }
+    }
+
+     private class ThemeSupplierFormEntity extends ClassFormEntity<RomanBusinessLogics> {
+
+        private ObjectEntity objTheme;
+
+        public ThemeSupplierFormEntity(NavigatorElement parent, String sID, String caption) {
+            super(parent, sID, caption);
+
+            objTheme = addSingleGroupObject(themeSupplier, "Тема поставщика", sidThemeSupplier, baseLM.name, nameSupplierThemeSupplier);
+            addObjectActions(this, objTheme);
+        }
+
+        @Override
+        public FormView createDefaultRichDesign() {
+            DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign();
+
+            design.defaultOrders.put(design.get(getPropertyDraw(sidThemeSupplier)), true);
+
+            return design;
+        }
+
+        @Override
+        public ObjectEntity getObject() {
+            return objTheme;
         }
     }
 
@@ -3690,8 +3857,7 @@ public class RomanLogicsModule extends LogicsModule {
             */
 
             objSku = addSingleGroupObject(sku, "SKU");
-
-            addPropertyDraw(new LP[]{baseLM.barcode, sidArticleSku, sidColorSupplierItem, nameColorSupplierItem, sidSizeSupplierItem,
+            addPropertyDraw(new LP[]{baseLM.barcode, sidArticleSku, sidSeasonItem, sidGenderSupplierItem, nameGenderSupplierSku, sidThemeSupplierItem, nameThemeSupplierItem, sidColorSupplierItem, nameColorSupplierItem, sidSizeSupplierItem,
                     sidBrandSupplierArticleSku, nameBrandSupplierArticleSku, originalNameArticleSku,
                     nameCountrySupplierOfOriginArticleSku, nameCountryOfOriginSku, netWeightSku,
                     mainCompositionOriginSku, additionalCompositionOriginSku}, objSku);
@@ -6284,6 +6450,9 @@ public class RomanLogicsModule extends LogicsModule {
         ObjectEntity objSIDArticleComposite;
         ObjectEntity objColorSupplier;
         ObjectEntity objSizeSupplier;
+        ObjectEntity objSeason;
+        ObjectEntity objThemeSupplier;
+        ObjectEntity objGenderSupplier;
 
         public CreateItemFormEntity(NavigatorElement parent, String sID, String caption) {
             super(parent, sID, caption);
@@ -6309,9 +6478,24 @@ public class RomanLogicsModule extends LogicsModule {
             objSizeSupplier.groupTo.setSingleClassView(ClassViewType.PANEL);
             setReadOnly(objSizeSupplier, true);
 
+            objSeason = addSingleGroupObject(season, "Сезон поставщика", sidSeason, baseLM.name);
+            objSeason.groupTo.setSingleClassView(ClassViewType.PANEL);
+            setReadOnly(objSeason, true);
+
+            objThemeSupplier = addSingleGroupObject(themeSupplier, "Тема поставщика", sidThemeSupplier, baseLM.name);
+            objThemeSupplier.groupTo.setSingleClassView(ClassViewType.PANEL);
+            setReadOnly(objThemeSupplier, true);
+
+            objGenderSupplier = addSingleGroupObject(genderSupplier, "Пол поставщика", sidGenderSupplier, baseLM.name);
+            objGenderSupplier.groupTo.setSingleClassView(ClassViewType.PANEL);
+            setReadOnly(objGenderSupplier, true);
+
             addFixedFilter(new CompareFilterEntity(addPropertyObject(supplierArticle, objArticleComposite), Compare.EQUALS, objSupplier));
             addFixedFilter(new CompareFilterEntity(addPropertyObject(supplierColorSupplier, objColorSupplier), Compare.EQUALS, objSupplier));
             addFixedFilter(new CompareFilterEntity(addPropertyObject(supplierSizeSupplier, objSizeSupplier), Compare.EQUALS, objSupplier));
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(supplierSeason, objSeason), Compare.EQUALS, objSupplier));
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(supplierThemeSupplier, objThemeSupplier), Compare.EQUALS, objSupplier));
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(supplierGenderSupplier, objGenderSupplier), Compare.EQUALS, objSupplier));
 
 //            addActionsOnOk(addPropertyObject(addNEArticleCompositeSIDSupplier, objSIDArticleComposite, objSupplier));
 //            addActionsOnOk(addPropertyObject(addItemSIDArticleSupplierColorSizeBarcode, objSIDArticleComposite, objSupplier, objColorSupplier, objSizeSupplier, objBarcode));

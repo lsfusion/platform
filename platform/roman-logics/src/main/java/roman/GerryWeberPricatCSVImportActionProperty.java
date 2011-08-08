@@ -48,17 +48,22 @@ public class GerryWeberPricatCSVImportActionProperty extends ActionProperty {
         ImportField customCategoryOriginalField = new ImportField(LM.customCategoryOriginalPricat);
         ImportField compositionField = new ImportField(LM.compositionPricat);
         ImportField priceField = new ImportField(LM.pricePricat);
-
+        ImportField seasonField = new ImportField(LM.seasonPricat);
+        ImportField themeCodeField = new ImportField(LM.themeCodePricat);
+        ImportField themeNameField = new ImportField(LM.themeNamePricat);
 
         List<ImportProperty<?>> properties = new ArrayList<ImportProperty<?>>();
         ImportKey<?> pricatKey = new ImportKey(LM.pricat, LM.barcodeToPricat.getMapping(barcodeField));
         properties.add(new ImportProperty(barcodeField, LM.barcodePricat.getMapping(pricatKey)));
+        properties.add(new ImportProperty(seasonField, LM.seasonPricat.getMapping(pricatKey)));
         properties.add(new ImportProperty(articleField, LM.articleNumberPricat.getMapping(pricatKey)));
         properties.add(new ImportProperty(originalNameField, LM.originalNamePricat.getMapping(pricatKey)));
         properties.add(new ImportProperty(colorCodeField, LM.colorCodePricat.getMapping(pricatKey)));
         properties.add(new ImportProperty(colorField, LM.colorNamePricat.getMapping(pricatKey)));
         properties.add(new ImportProperty(sizeField, LM.sizePricat.getMapping(pricatKey)));
         properties.add(new ImportProperty(customCategoryOriginalField, LM.customCategoryOriginalPricat.getMapping(pricatKey)));
+        properties.add(new ImportProperty(themeCodeField, LM.themeCodePricat.getMapping(pricatKey)));
+        properties.add(new ImportProperty(themeNameField, LM.themeNamePricat.getMapping(pricatKey)));
         properties.add(new ImportProperty(compositionField, LM.compositionPricat.getMapping(pricatKey)));
         properties.add(new ImportProperty(priceField, LM.pricePricat.getMapping(pricatKey)));
         properties.add(new ImportProperty(supplier, LM.supplierPricat.getMapping(pricatKey)));
@@ -69,8 +74,8 @@ public class GerryWeberPricatCSVImportActionProperty extends ActionProperty {
             ImportKey<?>[] keysArray = {pricatKey};
             try {
                 CSVInputTable inputTable = new CSVInputTable(new InputStreamReader(new ByteArrayInputStream(file)), 0, ';');
-                ImportTable table = new GerryWeberPricatCSVImporter(inputTable, new Object[] {null, null, null, articleField, originalNameField, colorCodeField,
-                                        colorField, sizeField, 8, barcodeField, 13, customCategoryOriginalField, 14, compositionField, 16, priceField}).getTable();
+                ImportTable table = new GerryWeberPricatCSVImporter(inputTable, new Object[] {null, null, seasonField, articleField, originalNameField, colorCodeField,
+                                        colorField, sizeField, barcodeField, themeCodeField, themeNameField, 13, customCategoryOriginalField, 14, compositionField, 16, priceField}).getTable();
 
 
 

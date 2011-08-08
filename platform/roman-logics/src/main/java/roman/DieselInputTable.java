@@ -32,9 +32,11 @@ public class DieselInputTable implements ImportInputTable {
             row.add(sheet.getCell(A, i).getContents());  //invoiceSIDField
             row.add(sheet.getCell(B, i).getContents());  //dateInvoiceField
             row.add(sheet.getCell(C, i).getContents());  //numberSKUField
+            row.add(sheet.getCell(D, i).getContents());  //seasonField
             row.add(sheet.getCell(Q, i).getContents());  //countryField
             row.add(sheet.getCell(R, i).getContents());  //originalNameField
             row.add(sheet.getCell(U, i).getContents());  //colorCodeField
+            row.add(sheet.getCell(W, i).getContents());  //genderField
             row.add(sheet.getCell(Z, i).getContents());  //customCodeField
             row.add(sheet.getCell(Z, i).getContents());  //customCode6Field
             row.add(sheet.getCell(AA, i).getContents()); //compositionField
@@ -44,6 +46,8 @@ public class DieselInputTable implements ImportInputTable {
             row.add(sheet.getCell(S, i).getContents()); //sidField
             row.add(""); //colorNameField
             row.add(""); //unitNetWeightField
+            row.add(""); //themeCodeField
+            row.add(""); //themeNameField
 
             for (int j = AI; j <= AX; j++) {
                 List<String> tempRow = new ArrayList<String>();

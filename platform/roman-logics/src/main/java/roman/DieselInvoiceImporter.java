@@ -75,10 +75,10 @@ public class DieselInvoiceImporter extends SingleSheetImporter {
                     String transformedValue = transformValue(i, entry.getValue().first, entry.getValue().second, cellValue);
                     row.add(getResultObject(field, transformedValue));
                 }
-                row.remove(16);
-                row.remove(15);
-                row.add(inputTable.getCellString(i, 15));
-                row.add(inputTable.getCellString(i, 16));
+                row.remove(20);
+                row.remove(19);
+                row.add(inputTable.getCellString(i, 19));
+                row.add(inputTable.getCellString(i, 20));
                 data.add(row);
             }
         }

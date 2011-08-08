@@ -26,10 +26,13 @@ public class TallyWeijlInvoiceImporter extends SingleSheetImporter {
 
     @Override
     protected String getCellString(ImportField field, int row, int column) throws ParseException {
-        if (column == LAST_COLUMN + 1) {
+        if (column <= LAST_COLUMN) {
+            return super.getCellString(field, row, column);
+        } else if (column == LAST_COLUMN + 1) {
             return String.valueOf(currentRow + 1);
+        } else {
+            return "";
         }
-        return super.getCellString(field, row, column);
     }
 
     @Override

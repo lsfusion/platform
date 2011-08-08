@@ -11,7 +11,7 @@ import java.text.ParseException;
 
 
 public class GerryWeberInvoiceImporter extends SingleSheetImporter {
-    private static final int LAST_COLUMN = 33;
+    private static final int LAST_COLUMN = 17;//33
 
     private final static int D = 3, DATE=12, CUSTOM_NUMBER = 27;
 
@@ -24,12 +24,23 @@ public class GerryWeberInvoiceImporter extends SingleSheetImporter {
         return inputTable.getCellString(rowNum, D).trim().matches("^(0\\d{13}|\\d{13}|\\d{12}|\\d{8})$");
     }
 
+    //@Override
+    //protected String getCellString(ImportField field, int row, int column) throws ParseException {
+    //    if ((column >= LAST_COLUMN + 1)) {
+    //        return "";
+    //    }
+    //    return super.getCellString(field, row, column);
+    //}
+
     @Override
     protected String getCellString(ImportField field, int row, int column) throws ParseException {
-        if ((column >= LAST_COLUMN + 1)) {
+        if (column <= LAST_COLUMN) {
+            return super.getCellString(field, row, column);
+        } else if (column == LAST_COLUMN + 1) {
+            return String.valueOf(currentRow + 1);
+        } else {
             return "";
         }
-        return super.getCellString(field, row, column);
     }
 
     @Override
@@ -57,27 +68,6 @@ public class GerryWeberInvoiceImporter extends SingleSheetImporter {
                     case 1: return value.substring(0, 6); // customs code 6
                 }
 
-            //case EAN:
-            //    if (value.length() == 14)
-            //        return value.substring(1);
-            //    else
-            //        return value;
-            //
-            //case COLORCODE:
-            //    if (value.isEmpty())
-            //        return "000";
-            //    else
-            //        return value;
-            //
-            //case SIZE:
-            //    if (value.isEmpty())
-            //        return "ONESI";
-            //    else
-            //        return value;
-            //
-            //case ARTICLE:
-            //     return value.substring(value.length()-8);
-            //
             default: return value;
         }
     }

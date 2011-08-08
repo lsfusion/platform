@@ -17,7 +17,7 @@ public class PricatEDIInputTable extends EDIInputTable {
 
     protected void init() {
         handler = new ScanningHandler(PRICAT, "barcode", "article", "customCode", "colorCode", "color", "size", "originalName",
-                "country", "netWeight", "composition", "price", "rrp") {
+                "country", "netWeight", "composition", "price", "rrp", "season", "gender", "themeCode", "themeName") {
             String imd1 = "";
             String imd2 = "";
             String ftx1 = "";

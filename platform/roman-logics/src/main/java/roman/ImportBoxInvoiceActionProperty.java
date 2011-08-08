@@ -33,7 +33,7 @@ import java.util.Map;
 public abstract class ImportBoxInvoiceActionProperty extends BaseImportActionProperty {
 
     protected ImportField invoiceSIDField, dateInvoiceField, boxNumberField, barCodeField, itemSupplierArticleColorSizeField,
-            colorCodeField, sidField, colorNameField, sizeField, compositionField, countryField, customCodeField,
+            colorCodeField, sidField, colorNameField, sizeField, themeCodeField, themeNameField, seasonField, genderField, compositionField, countryField, customCodeField,
             customCode6Field, unitPriceField, unitQuantityField, unitNetWeightField, originalNameField, numberSkuField, RRPField;
 
     public ImportBoxInvoiceActionProperty(RomanLogicsModule RomanLM, ValueClass supplierClass) {
@@ -60,6 +60,10 @@ public abstract class ImportBoxInvoiceActionProperty extends BaseImportActionPro
         sidField = new ImportField(LM.sidArticle);
         colorNameField = new ImportField(LM.baseLM.name);
         sizeField = new ImportField(LM.sidSizeSupplier);
+        themeCodeField = new ImportField(LM.sidThemeSupplier);
+        themeNameField = new ImportField(LM.nameThemeSupplierArticle);
+        seasonField = new ImportField(LM.nameSeasonArticle);
+        genderField = new ImportField(LM.sidGenderSupplier);
         compositionField = new ImportField(LM.mainCompositionOriginArticle);
         countryField = new ImportField(LM.baseLM.name);
         customCodeField = new ImportField(LM.sidCustomCategoryOrigin);
@@ -119,6 +123,7 @@ public abstract class ImportBoxInvoiceActionProperty extends BaseImportActionPro
         properties.add(new ImportProperty(compositionField, LM.mainCompositionOriginArticle.getMapping(articleKey)));
         properties.add(new ImportProperty(unitNetWeightField, LM.netWeightArticle.getMapping(articleKey)));
         properties.add(new ImportProperty(originalNameField, LM.originalNameArticle.getMapping(articleKey)));
+        //properties.add(new ImportProperty(genderField, LM.genderSupplierArticle.getMapping(articleKey)));
 
         ImportKey<?> itemKey = null;
         if (hasBarCode()) {
@@ -155,6 +160,23 @@ public abstract class ImportBoxInvoiceActionProperty extends BaseImportActionPro
         properties.add(new ImportProperty(supplier, LM.supplierSizeSupplier.getMapping(sizeKey)));
         properties.add(new ImportProperty(sizeField, LM.sizeSupplierItem.getMapping(itemKey), LM.object(LM.sizeSupplier).getMapping(sizeKey)));
 
+        ImportKey<?> themeKey = new ImportKey(LM.themeSupplier, LM.themeSIDSupplier.getMapping(themeCodeField, supplier));
+        properties.add(new ImportProperty(themeCodeField, LM.sidThemeSupplier.getMapping(themeKey)));
+        properties.add(new ImportProperty(supplier, LM.supplierThemeSupplier.getMapping(themeKey)));
+        properties.add(new ImportProperty(themeNameField, LM.baseLM.name.getMapping(themeKey)));
+        properties.add(new ImportProperty(themeCodeField, LM.themeSupplierItem.getMapping(itemKey), LM.object(LM.themeSupplier).getMapping(themeKey)));
+
+        ImportKey<?> seasonKey = new ImportKey(LM.season, LM.seasonSIDSupplier.getMapping(seasonField, supplier));
+        properties.add(new ImportProperty(seasonField, LM.sidSeason.getMapping(seasonKey)));
+        properties.add(new ImportProperty(supplier, LM.supplierSeason.getMapping(seasonKey)));
+        properties.add(new ImportProperty(seasonField, LM.seasonItem.getMapping(itemKey), LM.object(LM.season).getMapping(seasonKey)));
+
+        ImportKey<?> genderKey = new ImportKey(LM.genderSupplier, LM.genderSIDSupplier.getMapping(genderField, supplier));
+        properties.add(new ImportProperty(genderField, LM.sidGenderSupplier.getMapping(genderKey)));
+        properties.add(new ImportProperty(supplier, LM.supplierGenderSupplier.getMapping(genderKey)));
+        properties.add(new ImportProperty(genderField, LM.genderSupplierItem.getMapping(itemKey), LM.object(LM.genderSupplier).getMapping(genderKey)));
+
+
         if (!isSimpleInvoice()) {
             properties.add(new ImportProperty(numberSkuField, LM.numberListArticle.getMapping(boxKey, articleKey)));
             properties.add(new ImportProperty(numberSkuField, LM.numberDataListSku.getMapping(boxKey, itemKey)));
@@ -180,9 +202,9 @@ public abstract class ImportBoxInvoiceActionProperty extends BaseImportActionPro
 
             ImportKey<?>[] keysArray;
             if (!isSimpleInvoice()) {
-                keysArray = new ImportKey<?>[]{invoiceKey, boxKey, articleKey, itemKey, colorKey, sizeKey, countryKey, customCategoryKey, customCategory6Key};
+                keysArray = new ImportKey<?>[]{invoiceKey, boxKey, articleKey, itemKey, colorKey, sizeKey, countryKey, customCategoryKey, customCategory6Key,  themeKey, seasonKey, genderKey};
             } else {
-                keysArray = new ImportKey<?>[]{invoiceKey, articleKey, itemKey, colorKey, sizeKey, countryKey, customCategoryKey, customCategory6Key};
+                keysArray = new ImportKey<?>[]{invoiceKey, articleKey, itemKey, colorKey, sizeKey, countryKey, customCategoryKey, customCategory6Key, themeKey, seasonKey, genderKey};
             }
             new IntegrationService(session, table, Arrays.asList(keysArray), properties).synchronize(true, true, false);
         }

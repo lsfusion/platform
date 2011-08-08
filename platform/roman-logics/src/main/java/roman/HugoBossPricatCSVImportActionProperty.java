@@ -47,6 +47,9 @@ public class HugoBossPricatCSVImportActionProperty extends ActionProperty {
         ImportField customCategoryOriginalField = new ImportField(LM.customCategoryOriginalPricat);
         ImportField colorField = new ImportField(LM.colorNamePricat);
         ImportField netWeightField = new ImportField(LM.netWeightPricat);
+        ImportField genderField = new ImportField(LM.genderPricat);
+        ImportField seasonField = new ImportField(LM.seasonPricat);
+
 
         List<ImportProperty<?>> properties = new ArrayList<ImportProperty<?>>();
         ImportKey<?> pricatKey = new ImportKey(LM.pricat, LM.barcodeToPricat.getMapping(barcodeField));
@@ -59,6 +62,8 @@ public class HugoBossPricatCSVImportActionProperty extends ActionProperty {
         properties.add(new ImportProperty(customCategoryOriginalField, LM.customCategoryOriginalPricat.getMapping(pricatKey)));
         properties.add(new ImportProperty(colorField, LM.colorNamePricat.getMapping(pricatKey)));
         properties.add(new ImportProperty(netWeightField, LM.netWeightPricat.getMapping(pricatKey)));
+        properties.add(new ImportProperty(genderField, LM.genderPricat.getMapping(pricatKey)));
+        properties.add(new ImportProperty(seasonField, LM.seasonPricat.getMapping(pricatKey)));
         properties.add(new ImportProperty(supplier, LM.supplierPricat.getMapping(pricatKey)));
 
         for (byte[] file : fileList) {
@@ -67,7 +72,7 @@ public class HugoBossPricatCSVImportActionProperty extends ActionProperty {
                 CSVInputTable inputTable = new CSVInputTable(new InputStreamReader(new ByteArrayInputStream(file)), 2, ';');
                 ImportTable table = new HugoBossPricatCSVImporter(inputTable, new Object[] {null, articleField, null, colorCodeField,
                         5, barcodeField, sizeField, priceField, 15, compositionField, 21, customCategoryOriginalField, 28, colorField,
-                        32, netWeightField}).getTable();
+                        32, netWeightField, 34, genderField, 49, seasonField}).getTable();
                 new IntegrationService(session, table, Arrays.asList(keysArray), properties).synchronize(true, true, false);
             } catch (Exception e) {
                 throw new RuntimeException();

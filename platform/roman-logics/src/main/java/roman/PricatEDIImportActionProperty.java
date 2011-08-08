@@ -49,6 +49,10 @@ public class PricatEDIImportActionProperty extends ActionProperty {
         ImportField compositionField = new ImportField(LM.compositionPricat);
         ImportField priceField = new ImportField(LM.pricePricat);
         ImportField rrpField = new ImportField(LM.rrpPricat);
+        ImportField seasonField = new ImportField(LM.seasonPricat);
+        ImportField genderField = new ImportField(LM.genderPricat);
+        ImportField themeCodeField = new ImportField(LM.themeCodePricat);
+        ImportField themeNameField = new ImportField(LM.themeNamePricat);
 
         List<ImportProperty<?>> properties = new ArrayList<ImportProperty<?>>();
         ImportKey<?> pricatKey = new ImportKey(LM.pricat, LM.barcodeToPricat.getMapping(barcodeField));
@@ -64,7 +68,13 @@ public class PricatEDIImportActionProperty extends ActionProperty {
         properties.add(new ImportProperty(compositionField, LM.compositionPricat.getMapping(pricatKey)));
         properties.add(new ImportProperty(priceField, LM.pricePricat.getMapping(pricatKey)));
         properties.add(new ImportProperty(rrpField, LM.rrpPricat.getMapping(pricatKey)));
+        properties.add(new ImportProperty(seasonField, LM.seasonPricat.getMapping(pricatKey)));
+        properties.add(new ImportProperty(genderField, LM.genderPricat.getMapping(pricatKey)));
+        properties.add(new ImportProperty(themeCodeField, LM.themeCodePricat.getMapping(pricatKey)));
+        properties.add(new ImportProperty(themeNameField, LM.themeNamePricat.getMapping(pricatKey)));
         properties.add(new ImportProperty(supplier, LM.supplierPricat.getMapping(pricatKey)));
+
+
 
         for (byte[] file : fileList) {
 
@@ -74,7 +84,7 @@ public class PricatEDIImportActionProperty extends ActionProperty {
                 PricatEDIInputTable inputTable = new PricatEDIInputTable(new ByteArrayInputStream(file), supplier);
 
                 ImportTable table = new EDIInvoiceImporter(inputTable, barcodeField, articleField, customCategoryOriginalField, colorCodeField, colorField,
-                        sizeField, originalNameField, countryField, netWeightField, compositionField, priceField, rrpField).getTable();
+                        sizeField, originalNameField, countryField, netWeightField, compositionField, priceField, rrpField, seasonField, genderField, themeCodeField, themeNameField).getTable();
 
                 new IntegrationService(session, table, Arrays.asList(keysArray), properties).synchronize(true, true, false);
             } catch (Exception e) {

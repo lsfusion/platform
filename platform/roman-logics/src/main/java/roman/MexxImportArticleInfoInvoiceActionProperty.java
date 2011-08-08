@@ -37,6 +37,7 @@ public class MexxImportArticleInfoInvoiceActionProperty extends BaseImportAction
         ImportField countryField = new ImportField(LM.baseLM.name);
         ImportField compositionField = new ImportField(LM.mainCompositionOriginArticle);
         ImportField originalNameField = new ImportField(LM.originalNameArticle);
+        ImportField seasonField = new ImportField(LM.sidSeason);
 
         DataObject supplier = keys.get(supplierInterface);
 
@@ -50,6 +51,11 @@ public class MexxImportArticleInfoInvoiceActionProperty extends BaseImportAction
         properties.add(new ImportProperty(supplier, LM.supplierCountrySupplier.getMapping(countryKey)));
         properties.add(new ImportProperty(countryField, LM.countrySupplierOfOriginArticle.getMapping(articleKey), LM.object(LM.countrySupplier).getMapping(countryKey)));
 
+        ImportKey<?> seasonKey = new ImportKey(LM.season, LM.seasonSIDSupplier.getMapping(seasonField, supplier));
+        properties.add(new ImportProperty(seasonField, LM.sidSeason.getMapping(seasonKey)));
+        properties.add(new ImportProperty(supplier, LM.supplierSeason.getMapping(seasonKey)));
+        properties.add(new ImportProperty(seasonField, LM.seasonArticle.getMapping(articleKey), LM.object(LM.season).getMapping(seasonKey)));
+
         properties.add(new ImportProperty(compositionField, LM.mainCompositionOriginArticle.getMapping(articleKey)));
         properties.add(new ImportProperty(originalNameField, LM.originalNameArticle.getMapping(articleKey)));
 
@@ -58,10 +64,10 @@ public class MexxImportArticleInfoInvoiceActionProperty extends BaseImportAction
             // Заголовки тоже читаем, чтобы определить нужный ли файл импортируется
             ImportInputTable inputTable = new CSVInputTable(new InputStreamReader(inFile), 0, '|');
 
-            ImportTable table = new MexxArticleInfoInvoiceImporter(inputTable, null, sidField, originalNameField,
+            ImportTable table = new MexxArticleInfoInvoiceImporter(inputTable, null, sidField, originalNameField, seasonField,
                     10, countryField, compositionField).getTable();
 
-            ImportKey<?>[] keysArray = {articleKey, countryKey};
+            ImportKey<?>[] keysArray = {articleKey, countryKey, seasonKey};
             new IntegrationService(session, table, Arrays.asList(keysArray), properties).synchronize(true, true, false);
 
             actions.add(new MessageClientAction("Данные были успешно приняты", "Импорт"));
