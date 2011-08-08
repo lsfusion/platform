@@ -27,7 +27,7 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> {
     @Override
     protected void createModules() {
         super.createModules();
-        RetailLM = new RetailLogicsModule(LM, this, logger);
+        RetailLM = new RetailLogicsModule(LM, this);
         addLogicsModule(RetailLM);
     }
 

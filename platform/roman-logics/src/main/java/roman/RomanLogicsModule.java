@@ -731,6 +731,10 @@ public class RomanLogicsModule extends LogicsModule {
     private LP sidContractInvoice;
     private LP freightFreightBox;
     private LP importerSupplierBox;
+    private LP routeFreightFreightBox;
+    private LP importerShipmentRoute;
+    private LP nameImporterShipmentRoute;
+    private LP importerShipmentFreightBox;
     private LP quantityImporterStockSku;
     private LP quantityDirectImporterFreightUnitSku;
     private LP quantityImporterSku;
@@ -2527,7 +2531,13 @@ public class RomanLogicsModule extends LogicsModule {
                 priceInInvoiceStockSku,
                 addJProp(baseLM.and1, priceRateDocumentSku, 1, 3, addJProp(baseLM.equals2, 1, boxInvoiceSupplierBox, 2), 1, 2));
 
-        quantityImporterStockSku = addSGProp(baseGroup, "quantityImporterStockSku", true, "Кол-во", quantityInvoiceStockSku, importerInvoice, 1, 2, 3);
+        routeFreightFreightBox = addJProp(idGroup, "routeFreightFreightBox", "Маршрут (ИД)", routeFreight, freightFreightBox, 1);
+        importerShipmentRoute = addDProp("importerShipmentRoute", "Импортер (ИД)", importer, shipment, route);
+        nameImporterShipmentRoute = addJProp("nameImporterShipmentRoute", "Импортер", baseLM.name, importerShipmentRoute, 1, 2);
+        importerShipmentFreightBox = addJProp("importerShipmentFreightBox", "Импортер (ИД)", importerShipmentRoute, 1, routeFreightFreightBox, 2);
+
+        quantityImporterStockSku = addSGProp(baseGroup,"quantityImporterStockSku", true, "Кол-во", quantityShipmentStockSku, importerShipmentFreightBox, 1, 2, 2, 3);
+        // quantityImporterStockSku = addSGProp(baseGroup, "quantityImporterStockSku", true, "Кол-во", quantityInvoiceStockSku, importerInvoice, 1, 2, 3);
         quantityImporterStockArticle = addSGProp(baseGroup, "quantityImporterStockArticle", true, true, "Кол-во", quantityImporterStockSku, 1, 2, articleSku, 3);
 
         quantityImporterStockTypeInvoice = addSGProp(baseGroup, "quantityImporterStockTypeInvoice", "Кол-во", quantityImporterStockArticle, 1, 2, addJProp(typeInvoiceFreightArticle, freightFreightUnit, 2, 3), 1, 2, 3);
@@ -2988,7 +2998,7 @@ public class RomanLogicsModule extends LogicsModule {
         articleComposite.setDialogForm(new ArticleCompositeFormEntity(null, "articleCompositeForm", "Артикул (составной)"));
         colorSupplier.setDialogForm(new ColorSupplierFormEntity(null, "colorSupplierForm", "Цвет поставщика"));
         sizeSupplier.setDialogForm(new SizeSupplierFormEntity(null, "sizeSupplierForm", "Размер поставщика"));
-        season.setDialogForm(new SeasonFormEntity(null, "colorSupplierForm", "Сезон поставщика"));
+        season.setDialogForm(new SeasonFormEntity(null, "seasonForm", "Сезон поставщика"));
         themeSupplier.setDialogForm(new ThemeSupplierFormEntity(null, "themeSupplierForm", "Тема поставщика"));
         genderSupplier.setDialogForm(new GenderSupplierFormEntity(null, "genderSupplierForm", "Пол поставщика"));
 
@@ -3949,6 +3959,7 @@ public class RomanLogicsModule extends LogicsModule {
             addPropertyDraw(objInvoice, baseLM.date, sidDocument, sidDestinationDestinationDocument, nameDestinationDestinationDocument);
 
             objRoute = addSingleGroupObject(route, "Маршрут", baseLM.name);
+            addPropertyDraw(nameImporterShipmentRoute, objShipment, objRoute);
             addPropertyDraw(percentShipmentRoute, objShipment, objRoute);
             addPropertyDraw(invoicedShipmentRoute, objShipment, objRoute);
             addPropertyDraw(sumShipmentRoute, objShipment, objRoute);

@@ -1,24 +1,55 @@
 package retail;
 
 import net.sf.jasperreports.engine.JRException;
-import org.apache.log4j.Logger;
+import platform.base.BaseUtils;
 import platform.interop.ClassViewType;
 import platform.interop.Compare;
-import platform.server.classes.ConcreteCustomClass;
-import platform.server.classes.CustomClass;
-import platform.server.classes.DoubleClass;
-import platform.server.classes.StringClass;
-import platform.server.form.entity.FormEntity;
-import platform.server.form.entity.ObjectEntity;
-import platform.server.form.entity.PropertyObjectEntity;
-import platform.server.form.entity.filter.CompareFilterEntity;
-import platform.server.form.entity.filter.NotNullFilterEntity;
+import platform.interop.action.AudioClientAction;
+import platform.interop.action.ClientAction;
+import platform.interop.action.MessageClientAction;
+import platform.interop.form.layout.DoNotIntersectSimplexConstraint;
+import platform.interop.navigator.FormShowType;
+import platform.server.Settings;
+import platform.server.classes.*;
+import platform.server.daemons.ScannerDaemonTask;
+import platform.server.daemons.WeightDaemonTask;
+import platform.server.data.Time;
+import platform.server.data.Union;
+import platform.server.form.entity.*;
+import platform.server.form.entity.filter.*;
+import platform.server.form.instance.FormInstance;
+import platform.server.form.instance.ObjectInstance;
+import platform.server.form.instance.PropertyObjectInterfaceInstance;
+import platform.server.form.instance.remote.RemoteForm;
 import platform.server.form.navigator.NavigatorElement;
+import platform.server.form.view.ContainerView;
+import platform.server.form.view.DefaultFormView;
+import platform.server.form.view.FormView;
+import platform.server.form.view.PropertyDrawView;
+import platform.server.form.window.PanelNavigatorWindow;
+import platform.server.form.window.ToolBarNavigatorWindow;
+import platform.server.form.window.TreeNavigatorWindow;
 import platform.server.logics.BaseLogicsModule;
+import platform.server.logics.DataObject;
 import platform.server.logics.LogicsModule;
+import platform.server.logics.ObjectValue;
 import platform.server.logics.linear.LP;
+import platform.server.logics.property.*;
+import platform.server.logics.property.actions.FormActionProperty;
+import platform.server.logics.property.group.AbstractGroup;
+import platform.server.session.Changes;
+import platform.server.session.DataSession;
+import platform.server.session.Modifier;
+import platform.server.session.PropertyChange;
 
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.KeyEvent;
 import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.sql.SQLException;
+import java.util.*;
+import java.util.List;
 
 /**
  * Created by IntelliJ IDEA.
@@ -27,20 +58,21 @@ import java.io.FileNotFoundException;
  * Time: 11:52
  * To change this template use File | Settings | File Templates.
  */
-public class RetailLogicsModule extends LogicsModule {
-    private RetailBusinessLogics RetailBL;
-    private Logger logger;
+    public class RetailLogicsModule extends LogicsModule {
+    private final RetailBusinessLogics BL;
 
-    public RetailLogicsModule(BaseLogicsModule<RetailBusinessLogics> baseLM, RetailBusinessLogics RetailBL, Logger logger) {
+    public RetailLogicsModule(BaseLogicsModule<RetailBusinessLogics> baseLM, RetailBusinessLogics BL) {
         super("RetailLogicsModule");
         setBaseLogicsModule(baseLM);
-        this.RetailBL = RetailBL;
-        this.logger = logger;
+        this.BL = BL;
     }
 
     private LP round2;
     private LP sidDocument;
     private LP skuBarcode;
+    private LP barcodeSku;
+    private LP seekBarcodeSku;
+    private LP seekBarcodeSkuDocumentLine;
     private LP coeffBarcode;
     private LP skuShipmentDetail;
     private LP skuBatch;
@@ -69,48 +101,73 @@ public class RetailLogicsModule extends LogicsModule {
     private LP unnShop;
     private LP legalEntityShop;
     private LP nameLegalEntityShop;
-    private LP quantityShipmentBatch;
-    private LP supplierShipmentShipmentDetail;
+    private LP quantityDocumentBatch;
+    private LP quantityDocumentLine;
+    private LP purchaseRecadvPurchaseRecadvLine;
+    private LP purchaseInvoicePurchaseInvoiceLine;
+    private LP inDesadvInvoice;
+    private LP priceDocumentLine;
+    private LP sumDocumentLine;
+    private LP sumDocument;
+    private LP skuDocumentLine;
+    private LP nameSkuDocumentLine;
+    private LP documentDocumentLine;
     private LP outSubjectDocument;
     private LP inSubjectDocument;
-    private LP inQuantityShipmentBatch;
-    private LP outQuantityShipmentBatch;
+    private LP inQuantityDocumentBatch;
+    private LP outQuantityDocumentBatch;
     private LP inQuantityInSubjectBatch;
     private LP outQuantityOutSubjectBatch;
     private LP inQuantityStockBatch;
     private LP outQuantityStockBatch;
     private LP freeQuantityStockBatch;
     private LP freeQuantityStockSku;
-    private LP supplierShipmentBatch;
+    private LP purchaseRecadvBatch;
     private LP addShipmentDetailSupplierShipment;
-    private LP sidDocumentSupplierShipmentBatch;
+    private LP sidDocumentPurchaseRecadvBatch;
     private LP nameOutSubjectDocument;
     private LP nameInSubjectDocument;
+
+    private LP desadvRecadv;
+    private LP sidDesadvRecadv;
+    private LP supplierDesadvRecadv;
+    private LP priceDocumentSku;
+    private LP priceDocumentSkuDocumentLine;
+
+    private LP dateOfInvoice;
+    private LP shippedInvoice;
+    private LP notShippedinvoice;
+    private LP inDesadvInvoiceDocumentLine;
+    private LP priceInDesadvInvoiceDocumentLine;
+    private LP priceInDesadvInvoiceSku;
+    private LP priceInDesadvInvoiceSkuDocumentLine;
+    private LP priceInDesadvInvoiceRecadvSkuDocumentLine;
 
     // классы Material Management
     CustomClass document;
 
-    CustomClass shipment;
-    CustomClass receivedShipment;
-    CustomClass deliveryReceivedShipment;
-    CustomClass deliveryShipment;
-    CustomClass distributionShipment;
-    CustomClass receivedDistributionShipment;
-    public ConcreteCustomClass customerShipment;
-    public ConcreteCustomClass supplierShipment;
-    public ConcreteCustomClass returnCustomerShipment;
-    public ConcreteCustomClass returnSupplierShipment;
-    public ConcreteCustomClass directDistributionShipment;
-    public ConcreteCustomClass returnDistributionShipment;
-    public ConcreteCustomClass directReceivedDistributionShipment;
-    public ConcreteCustomClass returnReceivedDistributionShipment;
+    CustomClass invoice;
+    private ConcreteCustomClass saleInvoice;
+    private ConcreteCustomClass purchaseInvoice;
 
     CustomClass order;
-    CustomClass outOrder;
-    CustomClass inOrder;
-    public ConcreteCustomClass supplierOrder;
-    public ConcreteCustomClass distributionOrder;
-    public ConcreteCustomClass customerOrder;
+    private ConcreteCustomClass saleOrder;
+    private ConcreteCustomClass purchaseOrder;
+
+    CustomClass orderReply;
+    private ConcreteCustomClass saleOrderReply;
+    private ConcreteCustomClass purchaseOrderReply;
+
+    CustomClass desadv;
+    private ConcreteCustomClass saleDesadv;
+    private ConcreteCustomClass purchaseDesadv;
+    private ConcreteCustomClass intraDesadv;
+
+    CustomClass recadv;
+    private ConcreteCustomClass saleRecadv;
+    private ConcreteCustomClass purchaseRecadv;
+    private ConcreteCustomClass intraRecadv;
+
 
     public ConcreteCustomClass legalEntity;
     CustomClass subject;
@@ -124,7 +181,10 @@ public class RetailLogicsModule extends LogicsModule {
 
     public ConcreteCustomClass sku;
     CustomClass batch;
-    public ConcreteCustomClass shipmentDetail;
+    CustomClass documentLine;
+    public ConcreteCustomClass purchaseRecadvLine;
+    public ConcreteCustomClass purchaseInvoiceLine;
+    public ConcreteCustomClass purchaseDesadvLine;
     public ConcreteCustomClass barcode;
     public ConcreteCustomClass unitOfMeasure;
 
@@ -136,27 +196,23 @@ public class RetailLogicsModule extends LogicsModule {
         // Material Management заявки
         document = addAbstractClass("document", "Документ", baseLM.transaction);
         order = addAbstractClass("order", "Заявка", document);
-        inOrder = addAbstractClass("inOrder", "Заявка на приход", order);
-        outOrder = addAbstractClass("outOrder", "Заявка на расход", order);
-        supplierOrder = addConcreteClass("supplierOrder", "Заявка поставщику", inOrder);
-        distributionOrder = addConcreteClass("distributionOrder", "Заявка на перемещение", inOrder, outOrder);
-        customerOrder = addConcreteClass("customerOrder", "Заявка на внешний расход", outOrder);
+        purchaseOrder = addConcreteClass("purchaseOrder", "Заявка на приход", order);
+        saleOrder = addConcreteClass("saleOrder", "Заявка на расход", order);
 
         // Material Management движение
-        shipment = addAbstractClass("shipment", "Поставка", document);
-        receivedShipment = addAbstractClass("receivedShipment", "Принятая поставка", shipment);
-        deliveryShipment = addAbstractClass("deliveryShipment", "Отгрузка внешнему контрагенту", shipment);
-        deliveryReceivedShipment = addAbstractClass("deliveryReceivedShipment", "Принятая отгрузка от внешнего контрагента", receivedShipment);
-        supplierShipment = addConcreteClass("supplierShipment", "Принятая отгрузка от поставщика", deliveryReceivedShipment);
-        returnCustomerShipment = addConcreteClass("returnCustomerShipment", "Принятый возврат от покупателя", deliveryReceivedShipment);
-        distributionShipment = addAbstractClass("distributionShipment", "Внутреннее перемещение отгруженное", shipment);
-        receivedDistributionShipment = addAbstractClass("receivedDistributionShipment", "Внутреннее перемещение принятое", distributionShipment, receivedShipment);
-        customerShipment = addConcreteClass("customerShipment", "Отгрузка покупателю", deliveryShipment);
-        returnSupplierShipment = addConcreteClass("returnSupplierShipment", "Возврат внешнему поставщику", deliveryShipment);
-        directDistributionShipment = addConcreteClass("directDistributionShipment", "Внутреннее перемещение отгруженное прямое", distributionShipment);
-        returnDistributionShipment = addConcreteClass("returnDistributionShipment", "Внутреннее перемещение отгруженное возвратное", distributionShipment);
-        directReceivedDistributionShipment = addConcreteClass("directReceivedDistributionShipment", "Внутренне перемещение принятое прямое", receivedDistributionShipment);
-        returnReceivedDistributionShipment = addConcreteClass("returnReceivedDistributionShipment", "Внутренне перемещение принятое возвратное", receivedDistributionShipment);
+        desadv = addAbstractClass("desadv", "Отгруженный документ", document);
+        saleDesadv = addConcreteClass("saleDesadv", "Отгруженный поставщиком документ", desadv);
+        purchaseDesadv = addConcreteClass("purchaseDesadv", "Отгруженный покупателю документ", desadv);
+        intraDesadv = addConcreteClass("intraDesadv", "Отгруженный документ перемещения", desadv);
+
+        recadv = addAbstractClass("recadv", "Принятый документ", document);
+        saleRecadv = addConcreteClass("saleRecadv", "Принятый покупателем документ", recadv);
+        purchaseRecadv = addConcreteClass("purchaseRecadv", "Принятый документ поставщика", recadv);
+        intraRecadv = addConcreteClass("intraRecadv", "Принятый документ перемещения", recadv, desadv);
+
+        invoice = addAbstractClass("invoice", "Инвойс", document);
+        saleInvoice = addConcreteClass("saleInvoice", "Инвойс на продажу", invoice);
+        purchaseInvoice = addConcreteClass("purchaseInvoice", "Инвойс на покупку", invoice);
 
         // субъекты
         legalEntity = addConcreteClass("legalEntity", "Юр.лицо", baseClass.named);
@@ -172,7 +228,10 @@ public class RetailLogicsModule extends LogicsModule {
         // объекты учета
         sku = addConcreteClass("sku", "Товар", baseClass.named);
         batch = addAbstractClass("batch", "Партия", baseClass);
-        shipmentDetail = addConcreteClass("shipmentDetail", "Строка поставки", batch);
+        documentLine = addAbstractClass("documentLine", "Позиция документа", baseClass);
+        purchaseRecadvLine = addConcreteClass("purchaseRecadvLine", "Строка поставки", batch, documentLine);
+        purchaseInvoiceLine = addConcreteClass("purchaseInvoiceLine", "Строка инвойса", documentLine);
+        purchaseDesadvLine = addConcreteClass("purchaseDesadvLine", "Отгрузка поставщика", documentLine);
         barcode = addConcreteClass("barcode", "Бар-код", baseLM.barcodeObject);
         unitOfMeasure = addConcreteClass("unitOfMeasure", "Единица измерения", baseClass.named);
 
@@ -192,27 +251,35 @@ public class RetailLogicsModule extends LogicsModule {
         sidDocument = addDProp(baseGroup, "sidDocument", "Номер документа", StringClass.get(50), document);
 
         outSubjectDocument = addCUProp("outSubjectDocument", true, "От кого (ИД)",
-                addDProp("supplierSupplierOrder", "Поставщик", supplier, supplierOrder),
-                addDProp("outStockDestributionOrder", "Магазин (рacх.)", stock, distributionOrder),
-                addDProp("outStockCustomerOrder", "Магазин (рacх.)", stock, customerOrder),
-                addDProp("supplierSupplierShipment", "Поставщик", supplier, supplierShipment),
-                addDProp("customerReturnCustomerShipment", "Покупатель", customer, returnCustomerShipment),
-                addDProp("outStockDeliveryShipment", "Магазин (расх.)", stock, deliveryShipment),
-                addDProp("outStockDistributionShipment", "Магазин (расх.)", stock, distributionShipment));
+                addDProp("supplierPurchaseOrder", "Поставщик", supplier, purchaseOrder),
+                addDProp("outStockIntraDesadv", "Магазин (рacх.)", stock, intraDesadv),
+                addDProp("outStockSaleDesadv", "Магазин (рacх.)", stock, saleDesadv),
+                addDProp("supplierPurchaseDesadv", "Поставщик", supplier, purchaseDesadv),
+                addDProp("outStockIntraRecadv", "Магазин (рacх.)", stock, intraRecadv),
+                addDProp("outStockSaleRecadv", "Магазин (рacх.)", stock, saleRecadv),
+                addDProp("supplierPurchaseRecadv", "Поставщик", supplier, purchaseRecadv),
+                addDProp("outStockSaleInvoice", "Магазин (расх.)", stock, saleInvoice),
+                addDProp("supplierPurchaseInvoice", "Поставщик", supplier, purchaseInvoice));
 
         inSubjectDocument = addCUProp("inSubjectDocument", true, "Кому (ИД)",
-                addDProp("inStockIncOrder", "Магазин (прих.)", stock, inOrder),
-                addDProp("customerCustomerOrder", "Покупатель", customer, customerOrder),
-                addDProp("inStockReceivedShipment", "Магазин (прих.)", stock, deliveryReceivedShipment),
-                addDProp("inStockDistributionShipment", "Магазин (прих.)", stock, distributionShipment),
-                addDProp("supplierReturnSupplierShipment", "Поставщик", supplier, returnSupplierShipment),
-                addDProp("customerCostomerShipment", "Покупатель", customer, customerShipment));
+                addDProp("inShopPurchaseOrder", "Магазин (прих.)", shop, purchaseOrder),
+                addDProp("customerSaleOrder", "Покупатель", customer, saleOrder),
+                addDProp("inShopPurchaseDesadv", "Магазин (прих.)", shop, purchaseDesadv),
+                addDProp("inStockIntraDesadv", "Магазин (прих.)", stock, intraDesadv),
+                addDProp("customerSaleDesadv", "Покупатель", customer, saleDesadv),
+                addDProp("inStockPurchaseRecadv", "Магазин (прих.)", stock, purchaseRecadv),
+                addDProp("inStockIntraRecadv", "Магазин (прих.)", stock, intraRecadv),
+                addDProp("customerSaleRecadv", "Покупатель", customer, saleRecadv),
+                addDProp("customerSaleInvoice", "Покупатель", customer, saleInvoice),
+                addDProp("inShopPurchaseInvoice", "Магазин (прих.)", shop, purchaseInvoice));
 
 
         nameOutSubjectDocument = addJProp("nameOutSubjectDocument", "От кого", baseLM.name, outSubjectDocument, 1);
         nameInSubjectDocument = addJProp("nameInSubjectDocument", "Кому", baseLM.name, inSubjectDocument, 1);
         coeffBarcode = addDProp("coeffBarcode", "Коэффициент бар-кода", DoubleClass.instance, barcode);
         skuBarcode = addDProp("skuBarcode", "Товар", sku, barcode);
+        barcodeSku = addAGProp("barcodeSku", "Товар (ИД)", skuBarcode);
+        seekBarcodeSku = addJProp(true, "Поиск товара", addSAProp(null), barcodeSku, 1);
         skuBatch = addDProp("skuBatch", "SKU (ИД)", sku, batch);
         unitOfMeasureSku = addDProp("unitOfMeasureSku", "Базовая ЕИ (ИД)", unitOfMeasure, sku);
         shortNameUnitOfMeasure = addDProp(baseGroup, "shortNameUnitOfMeasure", "Краткое наименование ЕИ", StringClass.get(5), unitOfMeasure);
@@ -222,9 +289,9 @@ public class RetailLogicsModule extends LogicsModule {
         nameCountrySku = addJProp("nameCountrySku", "Страна происхождения", baseLM.name, countrySku, 1);
         grossWeightSku = addDProp("grossWeightSku", "Вес брутто", DoubleClass.instance, sku);
         netWeightSku = addDProp("netWeightSku", "Вес нетто", DoubleClass.instance, sku);
-        supplierShipmentBatch = addDProp("supplierShipmentBatch", "Документ прихода", supplierShipment, batch);
-        dateBatch = addJProp("dateBatch", "Дата прихода", baseLM.date, supplierShipmentBatch, 1);
-        supplierBatch = addJProp("supplierBatch", "Поставщик (ИД)", outSubjectDocument, supplierShipmentBatch, 1);
+        purchaseRecadvBatch = addDProp("purchaseRecadvBatch", "Документ прихода", purchaseRecadv, batch);
+        dateBatch = addJProp("dateBatch", "Дата прихода", baseLM.date, purchaseRecadvBatch, 1);
+        supplierBatch = addJProp("supplierBatch", "Поставщик (ИД)", outSubjectDocument, purchaseRecadvBatch, 1);
         nameSupplierBatch = addJProp("nameSupplierBatch", "Поставщик", baseLM.name, supplierBatch, 1);
         nameSkuBatch = addJProp(baseGroup, "nameSkuBatch", "Товар", baseLM.name, skuBatch, 1);
         nameSkuBarcode = addJProp(baseGroup, "nameSkuBarcode", "Товар", baseLM.name, skuBarcode, 1);
@@ -241,35 +308,102 @@ public class RetailLogicsModule extends LogicsModule {
         legalAddressShop = addJProp("legalAddressShop", "Адрес (юр.)", addressLegalEntity, legalEntityShop, 1);
         unnShop = addJProp("unnShop", "УНН", unnLegalEntity, legalEntityShop, 1);
 
-        supplierShipmentShipmentDetail = addDProp("supplierShipmentShipmentDetail", "Документ", supplierShipment, shipmentDetail);
-        quantityShipmentBatch = addDProp(baseGroup, "quantityShipmentBatch", "Кол-во", DoubleClass.instance, shipment, batch);
+        dateOfInvoice = addDProp("dateOfInvoice", "Дата выставления инвойса", DateClass.instance, invoice);
 
-        inQuantityShipmentBatch = addJProp("inQuantityShipmentBatch", "Кол-во прихода", baseLM.and1, quantityShipmentBatch, 1, 2, is(receivedShipment), 1);
-        outQuantityShipmentBatch = addJProp("outQuantityShipmentBatch", "Кол-во расхода", baseLM.and1, quantityShipmentBatch, 1, 2, is(shipment), 1);
+        purchaseRecadvPurchaseRecadvLine = addDProp("purchaseRecadvPurchaseRecadvLine", "Документ", purchaseRecadv, purchaseRecadvLine);
+        quantityDocumentBatch = addDProp(baseGroup, "quantityDocumentBatch", "Кол-во", DoubleClass.instance, document, batch);
+        quantityDocumentLine = addDProp(baseGroup, "quantityDocumentLine", "Кол-во", DoubleClass.instance, documentLine);
+        skuDocumentLine = addDProp(baseGroup, "skuDocumentLine", "Товар (ИД)", sku, documentLine);
+        nameSkuDocumentLine = addJProp(baseGroup, "nameSkuDocumentLine", "Товар", baseLM.name, skuDocumentLine, 1);
+        documentDocumentLine = addDProp("documentDocumentLine", "Документ", document, documentLine);
 
-        inQuantityInSubjectBatch = addSGProp("inQuantityInSubjectBatch", "Кол-во прихода по субъекту", inQuantityShipmentBatch, inSubjectDocument, 1, 2);
-        outQuantityOutSubjectBatch = addSGProp("outQuantityOutSubjectBatch", "Кол-во расхода по субъекту", outQuantityShipmentBatch, outSubjectDocument, 1, 2);
+        purchaseInvoicePurchaseInvoiceLine = addDProp("purchaseInvoicePurchaseInvoiceLine", "Инвойс", purchaseInvoice, purchaseInvoiceLine);
+        priceDocumentLine = addDProp("priceDocumentLine", "Цена", DoubleClass.instance, documentLine);
+        sumDocumentLine = addJProp("sumDocumentLine", "Сумма", baseLM.multiplyDouble2, quantityDocumentLine, 1, priceDocumentLine, 1);
+        sumDocument = addSGProp("sumDocument", "Сумма по документу", sumDocumentLine, documentDocumentLine, 1);
+
+        desadvRecadv = addDProp("desadvRecadv", "По отгрузке", desadv, recadv);
+        sidDesadvRecadv = addJProp("sidDesadvRecadv", "По отгрузке", sidDocument, desadvRecadv, 1);
+        supplierDesadvRecadv = addJProp("supplierDesadvRecadv", "Поставщик", outSubjectDocument, desadvRecadv, 1);
+
+        inDesadvInvoice = addDProp("inDesadvInvoice", "В поставке", LogicalClass.instance ,desadv, invoice);
+        inDesadvInvoiceDocumentLine = addJProp("inDesadvInvoiceDocumentLine", "В поставке", inDesadvInvoice, 1, documentDocumentLine, 2);
+        priceInDesadvInvoiceDocumentLine = addJProp("priceInDesadvInvoiceDocumentLine", "Цена в инвойсе", baseLM.and1, priceDocumentLine, 2, inDesadvInvoiceDocumentLine, 1, 2);
+        priceInDesadvInvoiceSku = addMGProp("priceInDesadvInvoiceSku", "Цена товара в инвойсе", priceInDesadvInvoiceDocumentLine, skuDocumentLine, 2, 1);
+        priceInDesadvInvoiceSkuDocumentLine = addJProp("priceInDesadvInvoiceSkuDocumentLine", "Цена товара в инвойсе", priceInDesadvInvoiceSku, skuDocumentLine, 2, 1);
+        priceInDesadvInvoiceRecadvSkuDocumentLine = addJProp("priceInDesadvInvoiceRecadvSkuDocumentLine", "Цена товара в инвойсе", priceInDesadvInvoiceSkuDocumentLine, 1, desadvRecadv, 2);
+
+
+        shippedInvoice = addMGProp("shippedInvoice", "Отгруженный инвойс", inDesadvInvoice, 2);
+
+        priceDocumentSku = addMGProp(baseGroup, "priceDocumentSku", "Цена товара", priceDocumentLine, skuDocumentLine, 1, documentDocumentLine, 1);
+        priceDocumentSkuDocumentLine = addJProp("priceDocumentSkuDocumentLine", "Цена товара", priceDocumentSku, skuDocumentLine, 1, documentDocumentLine, 1);
+
+        inQuantityDocumentBatch = addJProp("inQuantityDocumentBatch", "Кол-во прихода", baseLM.and1, quantityDocumentBatch, 1, 2, is(recadv), 1);
+        outQuantityDocumentBatch = addJProp("outQuantityDocumentBatch", "Кол-во расхода", baseLM.and1, quantityDocumentBatch, 1, 2, is(desadv), 1);
+
+        inQuantityInSubjectBatch = addSGProp("inQuantityInSubjectBatch", "Кол-во прихода по субъекту", inQuantityDocumentBatch, inSubjectDocument, 1, 2);
+        outQuantityOutSubjectBatch = addSGProp("outQuantityOutSubjectBatch", "Кол-во расхода по субъекту", outQuantityDocumentBatch, outSubjectDocument, 1, 2);
         inQuantityStockBatch = addJProp("inQuantityStockBatch", "Кол-во прихода по складу", baseLM.and1, inQuantityInSubjectBatch, 1, 2, is(stock), 1);
         outQuantityStockBatch = addJProp("outQuantityStockBatch", "Кол-во расхода по складу", baseLM.and1, outQuantityOutSubjectBatch, 1, 2, is(stock), 1);
         freeQuantityStockBatch = addDUProp("freeQuantityStockBatch", "Остаток", inQuantityStockBatch, outQuantityStockBatch);
         freeQuantityStockSku = addSGProp("freeQuantityStockSku", "Остаток", freeQuantityStockBatch, 1, skuBatch, 2);
 
-
-        addShipmentDetailSupplierShipment = addJProp(true, "Добавить строку поставки", addAAProp(shipmentDetail, supplierShipmentBatch), 1);
-        sidDocumentSupplierShipmentBatch = addJProp("sidDocumentSupplierShipmentBatch", "Документ", sidDocument, supplierShipmentBatch, 1);
+   //     addShipmentDetailSupplierShipment = addJProp(true, "Добавить строку поставки", addAAProp(shipmentDetail, purchaseRecadvBatch), 1);
+        sidDocumentPurchaseRecadvBatch = addJProp("sidDocumentSupplierShipmentBatch", "Документ", sidDocument, purchaseRecadvBatch, 1);
     }
 
     public void initNavigators() throws JRException, FileNotFoundException {
+
+        ToolBarNavigatorWindow mainToolbar = new ToolBarNavigatorWindow(JToolBar.HORIZONTAL, "mainToolbar", "Навигатор");
+        mainToolbar.titleShown = false;
+        baseLM.baseElement.window = mainToolbar;
+
+        baseLM.navigatorWindow.y = 10;
+        baseLM.navigatorWindow.height -= 10;
+
+        ToolBarNavigatorWindow leftToolbar = new ToolBarNavigatorWindow(JToolBar.VERTICAL, "leftToolbar", "Список");
+        leftToolbar.titleShown = false;
+        baseLM.adminElement.window = leftToolbar;
+
+        PanelNavigatorWindow generateToolbar = new PanelNavigatorWindow(SwingConstants.HORIZONTAL, "generateToolbar", "Генерация");
+        generateToolbar.titleShown = false;
+        generateToolbar.drawRoot = true;
+        generateToolbar.drawScrollBars = false;
+
+        mainToolbar.setDockPosition(0, 0, 100, 6);
+        leftToolbar.setDockPosition(0, 6, 20, 64);
+        generateToolbar.setDockPosition(20, 6, 80, 4);
+
+        TreeNavigatorWindow objectsWindow = new TreeNavigatorWindow("objectsWindow", "Объекты");
+        objectsWindow.drawRoot = true;
+        baseLM.objectElement.window = objectsWindow;
+
         NavigatorElement classifier = new NavigatorElement(baseLM.baseElement, "classifier", "Справочники");
+        classifier.window = leftToolbar;
         FormEntity SkuBarcodeForm = addFormEntity(new SkuBarcodeForm(classifier, "SkuBarcodeForm", "Справочник товаров"));
         FormEntity UnitOfMeasureForm = addFormEntity(new UnitOfMeasureForm(classifier, "UnitOfMeasureForm", "Справочник единиц измерения"));
         FormEntity SubjectForm = addFormEntity(new SubjectForm(classifier, "SubjectForm", "Справочник мест учета"));
         FormEntity ContractorForm = addFormEntity(new ContractorForm(classifier, "ContractorForm", "Справочник контрагентов"));
+
+        NavigatorElement purchaseManagement = new NavigatorElement(baseLM.baseElement, "purchaseManagement", "Закупки");
+        purchaseManagement.window = leftToolbar;
+        FormEntity PurchaseInvoiceForm = addFormEntity(new PurchaseInvoiceForm(purchaseManagement, "PurchaseInvoiceForm", "Инвойсы"));
+        FormEntity PurchaseDesadvForm = addFormEntity(new PurchaseDesadvForm(purchaseManagement, "PurchaseDesadvForm", "Отгрузки поставщиков"));
+        FormEntity InDesadvInvoiceForm = addFormEntity(new InDesadvInvoiceForm(purchaseManagement, "InDesadvInvoiceForm", "Отгрузки по инвойсам"));
+
         NavigatorElement materialManagement = new NavigatorElement(baseLM.baseElement, "materialManagement", "Управление материальными потоками");
+        materialManagement.window = leftToolbar;
         FormEntity ReceivingSupplierShipment = addFormEntity(new ReceivingSupplierShipment(materialManagement, "ReceivingSupplierShipment", "Приход от поставщика", false, false));
         FormEntity BalanceStockSkuBatch = addFormEntity(new BalanceStockSkuBatch(materialManagement, "BalanceStockSkuBatch", "Остаток по складам-товарам"));
         FormEntity CustomerShipment = addFormEntity(new CustomerShipment(materialManagement, "CustomerShipment", "Отгрузка покупателю"));
         FormEntity DistributionShipment = addFormEntity(new DistributionShipment(materialManagement, "DistributionShipment", "Внутреннее перемещение"));
+
+    //    NavigatorElement purchaseCreate = new NavigatorElement(baseLM.baseElement, "purchaseCreate", "Создать");
+    //    FormEntity addSupplierShipment = addFormEntity(new ReceivingSupplierShipment(purchaseCreate, "addSupplierShipment", "Добавление документа", false, true));
+    //    purchaseCreate.window = generateToolbar;
+
+        baseLM.baseElement.add(baseLM.adminElement);
     }
 
     @Override
@@ -303,6 +437,7 @@ public class RetailLogicsModule extends LogicsModule {
             objUnitOfMeasure = addSingleGroupObject(unitOfMeasure, "Единицы измерения");
             addPropertyDraw(objUnitOfMeasure, baseLM.name, shortNameUnitOfMeasure);
             addObjectActions(this, objUnitOfMeasure);
+
         }
     }
 
@@ -336,76 +471,174 @@ public class RetailLogicsModule extends LogicsModule {
         }
     }
 
+    private class PurchaseInvoiceForm extends FormEntity<RetailBusinessLogics>{
+        private ObjectEntity objSupplier;
+        private ObjectEntity objPurchaseInvoice;
+        private ObjectEntity objPurchaseInvoiceLine;
+
+        private PurchaseInvoiceForm(NavigatorElement parent, String sID, String caption){
+            super(parent, sID, caption);
+
+            objSupplier = addSingleGroupObject(supplier, "Поставщик", baseLM.name);
+            objSupplier.groupTo.setSingleClassView(ClassViewType.PANEL);
+            setReadOnly(objSupplier, true);
+
+            objPurchaseInvoice = addSingleGroupObject(purchaseInvoice, "Инвойсы");
+            addPropertyDraw(objPurchaseInvoice, baseLM.date, sidDocument, nameOutSubjectDocument, nameInSubjectDocument, sumDocument, dateOfInvoice, shippedInvoice);
+            addObjectActions(this, objPurchaseInvoice);
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(outSubjectDocument, objPurchaseInvoice), Compare.EQUALS, objSupplier));
+
+            objPurchaseInvoiceLine = addSingleGroupObject(purchaseInvoiceLine, "Позиции инвойса");
+            addPropertyDraw(objPurchaseInvoiceLine, nameSkuDocumentLine, priceDocumentLine, quantityDocumentLine, sumDocumentLine);
+            addObjectActions(this, objPurchaseInvoiceLine);
+
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(documentDocumentLine, objPurchaseInvoiceLine), Compare.EQUALS, objPurchaseInvoice));
+
+            addActionsOnObjectChange(objPurchaseInvoiceLine, addPropertyObject(baseLM.apply));
+
+            RegularFilterGroupEntity filterShippedInvoice = new RegularFilterGroupEntity(genID());
+            filterShippedInvoice.addFilter(new RegularFilterEntity(genID(),
+                    new NotFilterEntity(new NotNullFilterEntity(addPropertyObject(shippedInvoice, objPurchaseInvoice))),
+                    "Ожидается к поставке",
+                    KeyStroke.getKeyStroke(KeyEvent.VK_F11, 0)), true);
+            addRegularFilterGroup(filterShippedInvoice);
+       }
+    }
+
+    private class PurchaseDesadvForm extends FormEntity<RetailBusinessLogics>{
+        private ObjectEntity objSupplier;
+        private ObjectEntity objPurchaseDesadv;
+        private ObjectEntity objPurchaseDesadvLine;
+        private ObjectEntity objBarcode;
+
+        private PurchaseDesadvForm(NavigatorElement parent, String sID, String caption){
+            super(parent, sID, caption);
+
+            objSupplier = addSingleGroupObject(supplier, "Поставщик", baseLM.name);
+            objSupplier.groupTo.setSingleClassView(ClassViewType.PANEL);
+            setReadOnly(objSupplier, true);
+
+            objPurchaseDesadv = addSingleGroupObject(purchaseDesadv, "Отгрузка поставщика");
+            addPropertyDraw(objPurchaseDesadv, baseLM.date, nameOutSubjectDocument, nameInSubjectDocument, sidDocument, sumDocument);
+            addObjectActions(this, objPurchaseDesadv);
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(outSubjectDocument, objPurchaseDesadv), Compare.EQUALS, objSupplier));
+
+            objBarcode = addSingleGroupObject(StringClass.get(13), "Штрих-код", baseGroup, true);
+            objBarcode.groupTo.initClassView = ClassViewType.PANEL;
+           // objBarcode.groupTo.banClassView.addAll(BaseUtils.toList(ClassViewType.GRID, ClassViewType.HIDE));
+
+            //objBarcode.resetOnApply = true;
+
+            //addPropertyDraw(baseLM.reverseBarcode);
+
+            objPurchaseDesadvLine = addSingleGroupObject(purchaseDesadvLine, "Позиции отгрузки");
+            addPropertyDraw(objPurchaseDesadvLine, nameSkuDocumentLine, quantityDocumentLine, priceDocumentLine, sumDocumentLine);
+            addObjectActions(this, objPurchaseDesadvLine);
+            addPropertyDraw(objPurchaseDesadv, objPurchaseDesadvLine, priceInDesadvInvoiceSkuDocumentLine);
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(documentDocumentLine, objPurchaseDesadvLine), Compare.EQUALS, objPurchaseDesadv));
+
+            addActionsOnObjectChange(objBarcode, true,
+                        addPropertyObject(baseLM.seekBarcodeAction, objBarcode));
+        }
+    }
+
+    private class InDesadvInvoiceForm extends FormEntity<RetailBusinessLogics>{
+        private ObjectEntity objSupplier;
+        private ObjectEntity objPurchaseDesadv;
+        private ObjectEntity objPurchaseInvoice;
+
+        private InDesadvInvoiceForm(NavigatorElement parent, String sID, String caption){
+            super(parent, sID, caption);
+
+            objSupplier = addSingleGroupObject(supplier, "Поставщик", baseLM.name);
+            objSupplier.groupTo.setSingleClassView(ClassViewType.PANEL);
+            setReadOnly(objSupplier, true);
+
+            objPurchaseDesadv = addSingleGroupObject(purchaseDesadv, "Поставки");
+            addPropertyDraw(objPurchaseDesadv, baseLM.date, sidDocument, nameOutSubjectDocument, nameOutSubjectDocument, sumDocument);
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(outSubjectDocument, objPurchaseDesadv), Compare.EQUALS, objSupplier));
+            setReadOnly(objPurchaseDesadv, true);
+
+            objPurchaseInvoice = addSingleGroupObject(purchaseInvoice, "Инвойсы");
+            addPropertyDraw(objPurchaseInvoice, baseLM.date, sidDocument, nameOutSubjectDocument, nameInSubjectDocument, sumDocument);
+            addPropertyDraw(objPurchaseDesadv, objPurchaseInvoice, inDesadvInvoice);
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(outSubjectDocument, objPurchaseInvoice), Compare.EQUALS, objSupplier));
+            setReadOnly(objPurchaseInvoice, true);
+            setReadOnly(inDesadvInvoice, false);
+        }
+    }
     private class ReceivingSupplierShipment extends FormEntity<RetailBusinessLogics> {
 
-        private ObjectEntity objSupplierShipment;
-        private ObjectEntity objShipmentDetail;
+        private ObjectEntity objPurchaseRecadv;
+        private ObjectEntity objPurchaseRecadvLine;
         private ObjectEntity objBarcode;
+
+        private PropertyDrawEntity createPurchaseRecadv;
+
+        private boolean add, edit;
 
         private ReceivingSupplierShipment(NavigatorElement parent, String sID, String caption, boolean edit, boolean add) {
             super(parent, sID, caption);
 
-            objSupplierShipment = addSingleGroupObject(supplierShipment, "Документ поставки");
-            addPropertyDraw(objSupplierShipment, baseGroup, nameInSubjectDocument, nameOutSubjectDocument, baseLM.delete);
-            objShipmentDetail = addSingleGroupObject(shipmentDetail, "Позиции документа");
-            addPropertyDraw(objShipmentDetail, baseGroup);
-            addPropertyDraw(objSupplierShipment, objShipmentDetail, baseGroup);
+            this.add = add;
+            this.edit = edit;
 
-            addFixedFilter(new CompareFilterEntity(addPropertyObject(supplierShipmentBatch, objShipmentDetail), Compare.EQUALS, objSupplierShipment));
+            objPurchaseRecadv = addSingleGroupObject(purchaseRecadv, "Документ поставки");
+            addPropertyDraw(objPurchaseRecadv, baseGroup, nameOutSubjectDocument, nameInSubjectDocument, desadvRecadv ,baseLM.delete);
+            //addFixedFilter(new CompareFilterEntity(addPropertyObject(supplierDesadvRecadv, objPurchaseRecadv), Compare.EQUALS, addPropertyObject(outSubjectDocument, objPurchaseRecadv)));
+
+            objPurchaseRecadvLine = addSingleGroupObject(purchaseRecadvLine, "Позиции документа");
+            addPropertyDraw(objPurchaseRecadvLine, nameSkuBatch, priceDocumentLine);
+            addPropertyDraw(objPurchaseRecadv, objPurchaseRecadvLine, quantityDocumentBatch);
+
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(purchaseRecadvBatch, objPurchaseRecadvLine), Compare.EQUALS, objPurchaseRecadv));
 
             if (edit) {
-                objSupplierShipment.groupTo.setSingleClassView(ClassViewType.PANEL);
-                addPropertyDraw(objShipmentDetail, baseLM.delete);
-                addObjectActions(this, objShipmentDetail);
+                objPurchaseRecadv.groupTo.setSingleClassView(ClassViewType.PANEL);
+                addObjectActions(this, objPurchaseRecadvLine);
 
             } else {
                 if (add) {
-                    objSupplierShipment.groupTo.setSingleClassView(ClassViewType.PANEL);
-                    addPropertyDraw(objShipmentDetail, baseLM.delete);
-                    objSupplierShipment.addOnTransaction = true;
-                    addObjectActions(this, objShipmentDetail);
+                    objPurchaseRecadv.groupTo.setSingleClassView(ClassViewType.PANEL);
+                    objPurchaseRecadv.addOnTransaction = true;
+                    addObjectActions(this, objPurchaseRecadvLine);
                 } else {
                     ReceivingSupplierShipment addSupplierShipment = new ReceivingSupplierShipment(null, "addSupplierShipment", "Добавление документа", false, true);
 
                     ReceivingSupplierShipment editSupplierShipment = new ReceivingSupplierShipment(null, "editSupplierShipment", "Редактирование документа", true, false);
 
-                    addPropertyDraw(addMFAProp(null,
+                    createPurchaseRecadv = addPropertyDraw(addMFAProp(actionGroup,
                             "Создать документ",
                             addSupplierShipment,
-                            new ObjectEntity[0],
-                            new PropertyObjectEntity[0],
-                            new PropertyObjectEntity[0],
-                            true), null).forceViewType = ClassViewType.GRID;
+                            new ObjectEntity[0] ,
+                            true), objPurchaseRecadv);
+
+                    createPurchaseRecadv.forceViewType = ClassViewType.GRID;
 
                     addPropertyDraw(addMFAProp(null,
                             "Редактировать",
                             editSupplierShipment,
-                            new ObjectEntity[]{editSupplierShipment.objSupplierShipment},
-                            new PropertyObjectEntity[0],
-                            new PropertyObjectEntity[0],
-                            true), objSupplierShipment).forceViewType = ClassViewType.GRID;
+                            new ObjectEntity[]{editSupplierShipment.objPurchaseRecadv},
+                            true), objPurchaseRecadv).forceViewType = ClassViewType.GRID;
 
-                    setReadOnly(baseLM.date, true, objSupplierShipment.groupTo);
-                    setReadOnly(nameInSubjectDocument, true, objSupplierShipment.groupTo);
-                    setReadOnly(nameOutSubjectDocument, true, objSupplierShipment.groupTo);
-                    setReadOnly(sidDocument, true, objSupplierShipment.groupTo);
-                    setReadOnly(objShipmentDetail, true);
+                    setReadOnly(baseLM.date, true, objPurchaseRecadv.groupTo);
+                    setReadOnly(nameInSubjectDocument, true, objPurchaseRecadv.groupTo);
+                    setReadOnly(nameOutSubjectDocument, true, objPurchaseRecadv.groupTo);
+                    setReadOnly(sidDocument, true, objPurchaseRecadv.groupTo);
+                    setReadOnly(objPurchaseRecadvLine, true);
                 }
             }
         }
 
-        //public DefaultFormView createDefaultRichDesign() {
-        //    DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign();
-        //
-        //    design.get(objBarcode.groupTo).grid.hideToolbarItems();
-        //    design.addIntersection(design.getGroupObjectContainer(objShipmentDetail.groupTo),
-        //            design.getGroupObjectContainer(objBarcode.groupTo),
-        //            DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
-        //    design.get(objBarcode.groupTo).grid.constraints.fillHorizontal = 0.2;
-        //
-        //    return design;
-        //
-        //}
+
+        public FormView createDefaultRichDesign() {
+            DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign();
+
+            if (!this.add && !this.edit)
+                design.getMainContainer().addBefore(design.get(createPurchaseRecadv), design.getGroupObjectContainer(objPurchaseRecadv.groupTo));
+
+            return design;
+        }
     }
 
     private class BalanceStockSkuBatch extends FormEntity<RetailBusinessLogics> {
@@ -421,7 +654,7 @@ public class RetailLogicsModule extends LogicsModule {
             addPropertyDraw(objStock, objSku, freeQuantityStockSku);
 
             ObjectEntity objBatch = addSingleGroupObject(batch, "Партия");
-            addPropertyDraw(objBatch, idGroup, nameSkuBatch, nameSupplierBatch, sidDocumentSupplierShipmentBatch, dateBatch);
+            addPropertyDraw(objBatch, idGroup, nameSkuBatch, nameSupplierBatch, dateBatch);
             addPropertyDraw(objStock, objBatch, freeQuantityStockBatch);
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(freeQuantityStockBatch, objStock, objBatch)));
 
@@ -434,16 +667,16 @@ public class RetailLogicsModule extends LogicsModule {
         public CustomerShipment(NavigatorElement parent, String sID, String caption) {
             super(parent, sID, caption);
 
-            ObjectEntity objCustomerShipment = addSingleGroupObject(customerShipment, "Документ");
+            ObjectEntity objCustomerShipment = addSingleGroupObject(saleDesadv, "Документ");
             addPropertyDraw(objCustomerShipment, baseGroup, nameOutSubjectDocument, nameInSubjectDocument);
             addObjectActions(this, objCustomerShipment);
 
             ObjectEntity objBatch = addSingleGroupObject(batch, "Партия");
-            addPropertyDraw(objBatch, baseGroup, supplierShipmentBatch, nameSupplierBatch, dateBatch);
-            addPropertyDraw(objCustomerShipment, objBatch, quantityShipmentBatch);
+            addPropertyDraw(objBatch, baseGroup, purchaseRecadvBatch, nameSupplierBatch, dateBatch);
+            addPropertyDraw(objCustomerShipment, objBatch, quantityDocumentBatch);
 
             setReadOnly(objBatch, true);
-            setReadOnly(quantityShipmentBatch, false);
+            setReadOnly(quantityDocumentBatch, false);
 
         }
     }
@@ -452,13 +685,13 @@ public class RetailLogicsModule extends LogicsModule {
         public DistributionShipment(NavigatorElement parent, String sID, String caption) {
             super(parent, sID, caption);
 
-            ObjectEntity objDistributionShipment = addSingleGroupObject(distributionShipment, "Документ");
+            ObjectEntity objDistributionShipment = addSingleGroupObject(intraRecadv, "Документ");
             addPropertyDraw(objDistributionShipment, baseGroup, nameOutSubjectDocument, nameInSubjectDocument);
             addObjectActions(this, objDistributionShipment);
 
             ObjectEntity objBatch = addSingleGroupObject(batch, "Партия");
-            addPropertyDraw(objBatch, baseGroup, supplierShipmentBatch, nameSupplierBatch, dateBatch);
-            addPropertyDraw(objDistributionShipment, objBatch, quantityShipmentBatch, inQuantityShipmentBatch);
+            addPropertyDraw(objBatch, baseGroup, purchaseRecadvBatch, nameSupplierBatch, dateBatch);
+            addPropertyDraw(objDistributionShipment, objBatch, quantityDocumentBatch, inQuantityDocumentBatch, outQuantityDocumentBatch);
         }
     }
 }
