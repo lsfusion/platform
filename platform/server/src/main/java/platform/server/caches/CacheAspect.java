@@ -263,7 +263,8 @@ public class CacheAspect {
     }
     @Around("execution(@platform.server.caches.TwinManualLazy * *.*(..)) && target(object)")
     public Object callTwinManualMethod(ProceedingJoinPoint thisJoinPoint, Object object) throws Throwable {
-        return lazyTwinManualExecute(object, thisJoinPoint, thisJoinPoint.getArgs());
+        return lazyIdentityExecute(object, thisJoinPoint, thisJoinPoint.getArgs());
+//        return lazyTwinManualExecute(object, thisJoinPoint, thisJoinPoint.getArgs());
     }
     
     @Around("execution(@platform.server.caches.ParamTwinLazy * *.*(..)) && target(object)")
