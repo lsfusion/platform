@@ -107,7 +107,7 @@
 					<textElement verticalAlignment="Top"/>
 					<textFieldExpression class="java.lang.String"><![CDATA["Gesamtbetrag brutto:"]]></textFieldExpression>
 				</textField>
-				<textField isBlankWhenNull="true">
+				<textField pattern="#,##0.###" isBlankWhenNull="true">
 					<reportElement x="726" y="18" width="52" height="18"/>
 					<textElement textAlignment="Right" verticalAlignment="Top"/>
 					<textFieldExpression class="java.lang.Double"><![CDATA[$F{sumImporterFreightTypeInvoice}]]></textFieldExpression>
@@ -217,7 +217,7 @@
 				<textFieldExpression class="java.lang.String"><![CDATA["BESCHREIBUNG"]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
-				<reportElement style="GroupCellStyle1" positionType="FixRelativeToBottom" x="606" y="152" width="91" height="18"/>
+				<reportElement style="GroupCellStyle1" positionType="FixRelativeToBottom" x="606" y="152" width="78" height="18"/>
 				<textElement textAlignment="Center" verticalAlignment="Top"/>
 				<textFieldExpression class="java.lang.String"><![CDATA["Ursprungsland"]]></textFieldExpression>
 			</textField>
@@ -232,7 +232,7 @@
 				<textFieldExpression class="java.lang.String"><![CDATA["MENGE"]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
-				<reportElement style="GroupCellStyle1" positionType="FixRelativeToBottom" x="750" y="152" width="52" height="18"/>
+				<reportElement style="GroupCellStyle1" positionType="FixRelativeToBottom" x="737" y="152" width="65" height="18"/>
 				<textElement textAlignment="Center" verticalAlignment="Top"/>
 				<textFieldExpression class="java.lang.String"><![CDATA["BETRAG"]]></textFieldExpression>
 			</textField>
@@ -282,7 +282,7 @@
 				<textFieldExpression class="java.lang.String"><![CDATA[$F{sidImporterFreightTypeInvoice}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement style="GroupCellStyle1" positionType="FixRelativeToBottom" x="697" y="152" width="53" height="18"/>
+				<reportElement style="GroupCellStyle1" positionType="FixRelativeToBottom" x="684" y="152" width="53" height="18"/>
 				<textElement textAlignment="Justified" verticalAlignment="Top"/>
 				<textFieldExpression class="java.lang.String"><![CDATA["MWSt Satz"]]></textFieldExpression>
 			</textField>
@@ -328,7 +328,7 @@
 				<textFieldExpression class="java.lang.Double"><![CDATA[$F{quantityImporterFreightArticleCompositionCountryCategory}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
-				<reportElement style="GroupCellStyle1" stretchType="RelativeToBandHeight" x="750" y="0" width="37" height="18"/>
+				<reportElement style="GroupCellStyle1" stretchType="RelativeToBandHeight" x="737" y="0" width="50" height="18"/>
 				<box leftPadding="2" rightPadding="2">
 					<rightPen lineWidth="0.0"/>
 				</box>
@@ -346,7 +346,7 @@
 				<textFieldExpression class="java.lang.String"><![CDATA[$F{nameArticle}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement style="GroupCellStyle1" stretchType="RelativeToBandHeight" x="606" y="0" width="91" height="18"/>
+				<reportElement style="GroupCellStyle1" stretchType="RelativeToBandHeight" x="606" y="0" width="78" height="18"/>
 				<textElement textAlignment="Left" verticalAlignment="Top"/>
 				<textFieldExpression class="java.lang.String"><![CDATA[$F{nameOriginCountry}]]></textFieldExpression>
 			</textField>
@@ -364,7 +364,7 @@
 				<textFieldExpression class="java.lang.Double"><![CDATA[$F{priceImporterFreightArticleCompositionCountryCategory}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement style="GroupCellStyle1" stretchType="RelativeToBandHeight" x="697" y="0" width="53" height="18"/>
+				<reportElement style="GroupCellStyle1" stretchType="RelativeToBandHeight" x="684" y="0" width="53" height="18"/>
 				<textElement textAlignment="Right" verticalAlignment="Top"/>
 				<textFieldExpression class="java.lang.String"><![CDATA["0,00 %"]]></textFieldExpression>
 			</textField>

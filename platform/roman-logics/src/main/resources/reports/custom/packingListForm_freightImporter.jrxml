@@ -364,7 +364,7 @@
 				<textElement textAlignment="Right" verticalAlignment="Top"/>
 				<textFieldExpression class="java.lang.String"><![CDATA["Gesamtbetrag brutto:"]]></textFieldExpression>
 			</textField>
-			<textField isBlankWhenNull="true">
+			<textField pattern="#,##0.###" isBlankWhenNull="true">
 				<reportElement x="499" y="24" width="45" height="18"/>
 				<textElement textAlignment="Right" verticalAlignment="Top"/>
 				<textFieldExpression class="java.lang.Double"><![CDATA[$F{sumInOutImporterFreightTypeInvoice}]]></textFieldExpression>
