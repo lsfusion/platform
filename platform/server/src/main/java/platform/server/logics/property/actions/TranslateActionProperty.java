@@ -55,15 +55,20 @@ public class TranslateActionProperty extends ActionProperty {
             String delim = ", .:;%#$@/\\|<>=+-_)(*&?^!~{}[]\"1234567890'";
             StringTokenizer st = new StringTokenizer(source, delim, true);
             String result = "";
-            while (st.hasMoreTokens()) {
-                String token = st.nextToken();
-                if (!delim.contains(token.subSequence(0, token.length()))) {
-                    String translation = (String) translationDictionaryTerm.read(session, modifier, dictionary, new DataObject(token, StringClass.get(50)));
-                    if (translation != null) {
-                        token = translation.trim();
+            String fullLineTranslation = (String) translationDictionaryTerm.read(session, modifier, dictionary, new DataObject(source, StringClass.get(50)));
+            if (fullLineTranslation != null) {
+                result = fullLineTranslation.trim();
+            } else {
+                while (st.hasMoreTokens()) {
+                    String token = st.nextToken();
+                    if (!delim.contains(token.subSequence(0, token.length()))) {
+                        String translation = (String) translationDictionaryTerm.read(session, modifier, dictionary, new DataObject(token, StringClass.get(50)));
+                        if (translation != null) {
+                            token = translation.trim();
+                        }
                     }
+                    result += token;
                 }
-                result += token;
             }
             targetProperty.execute(result, session, inputObjects.toArray(new DataObject[inputObjects.size()]));
         }
