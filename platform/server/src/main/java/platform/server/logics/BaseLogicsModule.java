@@ -246,6 +246,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     protected LP termDictionary;
     protected LP translationDictionary;
     protected LP entryDictionary;
+    protected LP nameEntryDictionary;
     public LP translationDictionaryTerm;
 
     private LP selectRoleForms;
@@ -589,9 +590,10 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         defaultCountry = addDProp("defaultCountry", getString("logics.country.default.country"), country);
 
         entryDictionary = addDProp("entryDictionary", getString("logics.dictionary"), dictionary, dictionaryEntry);
-        termDictionary = addDProp(baseGroup, "termDictionary", getString("logics.dictionary.termin"), StringClass.get(50), dictionaryEntry);
+        termDictionary = addDProp(recognizeGroup, "termDictionary", getString("logics.dictionary.termin"), StringClass.get(50), dictionaryEntry);
         translationDictionary = addDProp(baseGroup, "translationDictionary", getString("logics.dictionary.translation"), StringClass.get(50), dictionaryEntry);
         translationDictionaryTerm = addCGProp(null, "translationDictionayTerm", getString("logics.dictionary.translation"), translationDictionary, termDictionary, entryDictionary, 1, termDictionary, 1);
+        nameEntryDictionary = addJProp(baseGroup, "nameEntryDictionary", getString("logics.dictionary"), name, entryDictionary, 1);
     }
 
     @Override

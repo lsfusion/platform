@@ -41,17 +41,18 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     public ArrayList<IDaemonTask> getDaemonTasks(int compId) {
         ArrayList<IDaemonTask> daemons = super.getDaemonTasks(compId);
 
-        Integer scalesComPort, scannerComPort;
+        Integer scalesComPort, scalesSpeed, scannerComPort;
         try {
             DataSession session = createSession();
             scalesComPort = (Integer) RomanLM.scalesComPort.read(session, new DataObject(compId, LM.computer));
+            scalesSpeed = (Integer) RomanLM.scalesSpeed.read(session, new DataObject(compId, LM.computer));
             scannerComPort = (Integer) RomanLM.scannerComPort.read(session, new DataObject(compId, LM.computer));
             session.close();
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
         if (scalesComPort != null) {
-            IDaemonTask task = new WeightDaemonTask(scalesComPort, 1000, 0);
+            IDaemonTask task = new WeightDaemonTask(scalesComPort, scalesSpeed, 1000, 0);
             daemons.add(task);
         }
         if (scannerComPort != null) {

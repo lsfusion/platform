@@ -7,17 +7,20 @@ import platform.interop.event.IDaemonTask;
 
 import java.io.Serializable;
 import java.math.BigInteger;
+import java.util.Arrays;
 
 public class WeightDaemonTask implements IDaemonTask, Serializable {
     public static final String SCALES_SID = "SCALES";
     private transient EventBus eventBus;
     SerialPort serialPort;
     int prev;
+    int speed;
     int period;
     int delay;
 
-    public WeightDaemonTask(int com, int period, int delay) {
+    public WeightDaemonTask(int com, int speed, int period, int delay) {
         serialPort = new SerialPort("COM" + com);
+        this.speed = speed;
         this.period = period;
         this.delay = delay;
     }
@@ -26,14 +29,17 @@ public class WeightDaemonTask implements IDaemonTask, Serializable {
     public void run() {
         try {
             serialPort.openPort();
-            serialPort.setParams(4800, 8, 1, 0);
+            serialPort.setParams(speed, 8, 1, 0);
             byte[] msg = {0x4A};
             serialPort.writeBytes(msg);
             byte[] buffer = serialPort.readBytes(5);
+            System.out.println(Arrays.toString(buffer));
             if (isWeighted(buffer)) {
                 int newValue = getWeight(buffer);
+                System.out.println(newValue);
                 if ((newValue > 10) && (Math.abs(prev - newValue) > 10)) {
-                    eventBus.enterValue(newValue / 1000.0, SCALES_SID);
+                    double value = newValue / 1000.0;
+                    eventBus.enterValue(value, SCALES_SID);
                     //System.out.println(newValue);
                 }
                 prev = newValue;

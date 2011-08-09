@@ -1085,6 +1085,7 @@ public class RomanLogicsModule extends LogicsModule {
     LP seriesOfStampCreationStamp;
     LP createStamp;
     LP creationStampStamp;
+    LP scalesSpeed;
     LP scalesComPort;
     LP scannerComPort;
 
@@ -2972,6 +2973,7 @@ public class RomanLogicsModule extends LogicsModule {
                 ), 1, 2, baseLM.barcodeToObject, 3);
         declarationExport = addDEAProp("declarationExport");
         scalesComPort = addDProp(baseGroup, "scalesComPort", "COM-порт весов", IntegerClass.instance, baseLM.computer);
+        scalesSpeed = addDProp(baseGroup, "scalesSpeed", "Скорость весов", IntegerClass.instance, baseLM.computer);
         scannerComPort = addDProp(baseGroup, "scannerComPort", "COM-порт сканера", IntegerClass.instance, baseLM.computer);
     }
 
