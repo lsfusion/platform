@@ -139,6 +139,7 @@ public class RomanLogicsModule extends LogicsModule {
     ConcreteCustomClass commonSize;
     ConcreteCustomClass colorSupplier;
     ConcreteCustomClass sizeSupplier;
+    ConcreteCustomClass gender;
     ConcreteCustomClass genderSupplier;
     private ConcreteCustomClass brandSupplier;
     public ConcreteCustomClass themeSupplier;
@@ -408,6 +409,9 @@ public class RomanLogicsModule extends LogicsModule {
     private LP countryOfOriginArticleColor;
     private LP countryOfOriginArticleColorSku;
     private LP countryOfOriginArticleSku;
+
+    private LP genderGenderSupplier;
+    private LP sidGenderGenderSupplier;
     private LP genderSupplierArticleSku;
     private LP countryOfOriginDataSku;
     private LP countryOfOriginSku;
@@ -415,6 +419,11 @@ public class RomanLogicsModule extends LogicsModule {
     private LP nameGenderSupplierSku;
     private LP nameCountrySupplierOfOriginArticle;
     private LP nameCountryOfOriginArticleSku;
+
+    private LP genderOriginArticle;
+    private LP genderDataArticle;
+    private LP genderArticle;
+    private LP genderArticleSku;
     LP articleSIDSupplier;
     private LP seekArticleSIDSupplier;
     private LP seekArticleSIDInvoice;
@@ -666,6 +675,8 @@ public class RomanLogicsModule extends LogicsModule {
     private LP nameCountryOfOriginArticleSkuShipmentDetail;
     private LP countryOfOriginSkuShipmentDetail;
     private LP nameCountryOfOriginSkuShipmentDetail;
+    private LP genderArticleSkuShipmentDetail;
+    private LP sidGenderArticleSkuShipmentDetail;
     private LP mainCompositionOriginArticleSkuShipmentDetail;
     private LP mainCompositionOriginSkuShipmentDetail;
     private LP additionalCompositionOriginSkuShipmentDetail;
@@ -885,6 +896,7 @@ public class RomanLogicsModule extends LogicsModule {
     LP sidSizeSupplier;
     LP sidThemeSupplier;
     LP sidSeason;
+    LP sidGender;
     LP sidGenderSupplier;
     LP sizeSIDSupplier;
     LP themeSIDSupplier;
@@ -1168,6 +1180,7 @@ public class RomanLogicsModule extends LogicsModule {
 
         colorSupplier = addConcreteClass("colorSupplier", "Цвет поставщика", baseClass.named);
         sizeSupplier = addConcreteClass("sizeSupplier", "Размер поставщика", baseClass);
+        gender = addConcreteClass("gender", "Пол", baseClass);
         genderSupplier = addConcreteClass("genderSupplier", "Пол поставщика", baseClass);
         sizeGroupSupplier = addConcreteClass("sizeGroupSupplier", "Размерная сетка", baseClass.named);
 
@@ -1505,6 +1518,7 @@ public class RomanLogicsModule extends LogicsModule {
         sidSizeSupplier = addDProp(baseGroup, "sidSizeSupplier", "Код", StringClass.get(50), sizeSupplier);
         sidThemeSupplier = addDProp(baseGroup, "sidThemeSupplier", "Код", StringClass.get(50), themeSupplier);
         sidSeason = addDProp(baseGroup, "sidSeason", "Код", StringClass.get(50), season);
+        sidGender = addDProp(baseGroup, "sidGender", "Код", StringClass.get(50), gender);
         sidGenderSupplier = addDProp(baseGroup, "sidGenderSupplier", "Код", StringClass.get(10), genderSupplier);
 
         commonSizeSizeSupplier = addDProp(idGroup, "commonSizeSizeSupplier", "Унифицированный размер (ИД)", commonSize, sizeSupplier);
@@ -1593,7 +1607,7 @@ public class RomanLogicsModule extends LogicsModule {
         nameImporterDirectInvoice.property.preferredCharWidth = 50;
         nameImporterDirectInvoice.property.minimumCharWidth = 30;
         //setNotNull(importerDirectInvoice);
-        addConstraint(addJProp("Для инвойса должен быть задан импортёр", baseLM.andNot1, is(invoice), 1, importerDirectInvoice, 1), false);
+        addConstraint(addJProp("Для инвойса должен быть задан импортёр", baseLM.andNot1, is(directInvoice), 1, importerDirectInvoice, 1), false);
 
         contractDirectInvoice = addDProp(idGroup, "contractDirectInvoice", "Договор (ИД)", contract, directInvoice);
         sidContractDirectInvoice = addJProp(baseGroup, "sidContractDirectInvoice", "Договор", sidContract, contractDirectInvoice, 1);
@@ -1812,8 +1826,13 @@ public class RomanLogicsModule extends LogicsModule {
 
         nameThemeSupplierItem = addJProp(itemAttributeGroup, "nameThemeSupplierItem", "Тема поставщика", baseLM.name, themeSupplierItem, 1);
 
+        genderGenderSupplier = addDProp(idGroup, "genderGenderSupplier", "Унифицированный пол", gender, genderSupplier);
+        sidGenderGenderSupplier = addJProp(baseGroup, "sidGenderGenderSupplier", "Пол", sidGender, genderGenderSupplier, 1);
+
         genderSupplierArticle = addDProp(itemAttributeGroup, "genderSupplierArticle", "Пол поставщика (ИД)", genderSupplier, article);
         sidGenderSupplierArticle = addJProp(itemAttributeGroup, "sidGenderSupplierArticle", "Пол поставщика", sidGenderSupplier, genderSupplierArticle, 1);
+
+        genderOriginArticle = addJProp(itemAttributeGroup, "genderOriginArticle", "Пол (ИД)", genderGenderSupplier, genderSupplierArticle, 1);
 
         genderSupplierItem = addDProp(itemAttributeGroup, "genderSupplierItem", "Пол поставщика (ИД)", genderSupplier, item);
         sidGenderSupplierItem = addJProp(itemAttributeGroup, "sidGenderSupplierItem", "Пол поставщика", sidGenderSupplier, genderSupplierItem, 1);
@@ -1877,6 +1896,11 @@ public class RomanLogicsModule extends LogicsModule {
         genderSupplierArticleSku = addJProp(idGroup, "genderSupplierArticleSku", "Пол (ИД)", genderSupplierArticle, articleSku, 1);
         genderSupplierArticleColor = addDProp(idGroup, "genderSupplierArticleColor", "Пол (ИД)", genderSupplier, article, colorSupplier);
         genderSupplierArticleColorSku = addJProp(idGroup, true, "genderSupplierArticleColorSku", "Пол (ИД)", genderSupplierArticleColor, articleSku, 1, colorSupplierItem, 1);
+
+        genderDataArticle = addDProp(idGroup, "genderDataArticle", "Пол (ИД)", gender, article);
+        genderArticle = addSUProp(idGroup, "genderArticle", "Пол (ИД)", Union.OVERRIDE, genderOriginArticle, genderDataArticle);
+        genderArticleSku = addJProp(idGroup, true, "genderArticleSku", "Пол (ИД)", genderArticle, articleSku, 1);
+
         genderSku = addSUProp(idGroup, "genderSku", true, "Пол (ИД)", Union.OVERRIDE, genderSupplierArticleSku, genderSupplierArticleColorSku);
         //nameCountryOfOriginSku = addJProp(intraAttributeGroup, "nameCountryOfOriginSku", "Страна происхождения", nameOriginCountry, countryOfOriginSku, 1);
         nameGenderSupplierSku = addJProp(intraAttributeGroup, "nameGenderSupplierSKU", "Пол", sidGenderSupplier, genderSku, 1);///
@@ -2193,6 +2217,9 @@ public class RomanLogicsModule extends LogicsModule {
 
         nameBrandSupplierArticleSkuShipmentDetail = addJProp(supplierAttributeGroup, true, "nameBrandSupplierArticleSkuShipmentDetail", "Бренд", nameBrandSupplierArticleSku, skuShipmentDetail, 1);
         originalNameArticleSkuShipmentDetail = addJProp(supplierAttributeGroup, true, "originalNameArticleSkuShipmentDetail", "Наименование (ориг.)", originalNameArticleSku, skuShipmentDetail, 1);
+
+        genderArticleSkuShipmentDetail = addJProp(idGroup, true, "genderArticleSkuShipmentDetail", "Пол товара (ИД)", genderArticleSku, skuShipmentDetail, 1);
+        sidGenderArticleSkuShipmentDetail = addJProp(intraAttributeGroup, "sidGenderArticleSkuShipmentDetail", "Пол товара", sidGender, genderArticleSkuShipmentDetail, 1);
 
         categoryArticleSkuShipmentDetail = addJProp(idGroup, true, "categoryArticleSkuShipmentDetail", "Номенклатурная группа товара (ИД)", categoryArticleSku, skuShipmentDetail, 1);
         nameOriginCategoryArticleSkuShipmentDetail = addJProp(intraAttributeGroup, "nameOriginCategoryArticleSkuShipmentDetail", "Номенклатурная группа товара", nameOrigin, categoryArticleSkuShipmentDetail, 1);
@@ -4109,7 +4136,7 @@ public class RomanLogicsModule extends LogicsModule {
             objShipmentDetail = addSingleGroupObject((box ? boxShipmentDetail : simpleShipmentDetail),
                     baseLM.selection, barcodeSkuShipmentDetail, sidArticleShipmentDetail, sidColorSupplierItemShipmentDetail, nameColorSupplierItemShipmentDetail, sidSizeSupplierItemShipmentDetail,
                     nameBrandSupplierArticleSkuShipmentDetail, sidCustomCategoryOriginArticleSkuShipmentDetail, originalNameArticleSkuShipmentDetail,
-                    nameCategoryArticleSkuShipmentDetail, nameUnitOfMeasureArticleSkuShipmentDetail,
+                    nameCategoryArticleSkuShipmentDetail, nameUnitOfMeasureArticleSkuShipmentDetail, sidGenderArticleSkuShipmentDetail,
                     netWeightArticleSkuShipmentDetail,
                     nameCountryOfOriginArticleSkuShipmentDetail, mainCompositionOriginArticleSkuShipmentDetail,
                     netWeightSkuShipmentDetail, nameCountryOfOriginSkuShipmentDetail,
