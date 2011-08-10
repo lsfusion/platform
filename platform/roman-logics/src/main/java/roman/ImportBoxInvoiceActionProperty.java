@@ -62,7 +62,7 @@ public abstract class ImportBoxInvoiceActionProperty extends BaseImportActionPro
         sizeField = new ImportField(LM.sidSizeSupplier);
         themeCodeField = new ImportField(LM.sidThemeSupplier);
         themeNameField = new ImportField(LM.nameThemeSupplierArticle);
-        seasonField = new ImportField(LM.nameSeasonArticle);
+        seasonField = new ImportField(LM.nameSeasonSupplierArticle);
         genderField = new ImportField(LM.sidGenderSupplier);
         compositionField = new ImportField(LM.mainCompositionOriginArticle);
         countryField = new ImportField(LM.baseLM.name);
@@ -147,6 +147,8 @@ public abstract class ImportBoxInvoiceActionProperty extends BaseImportActionPro
 
         ImportKey<?> customCategory6Key = new ImportKey(LM.customCategory6, LM.sidToCustomCategory6.getMapping(customCode6Field));
         properties.add(new ImportProperty(customCode6Field, LM.sidCustomCategory6.getMapping(customCategory6Key)));
+        properties.add(new ImportProperty(customCode6Field, LM.customCategory6Article.getMapping(articleKey),
+                LM.object(LM.customCategory6).getMapping(customCategory6Key)));
 
         ImportKey<?> colorKey = new ImportKey(LM.colorSupplier, LM.colorSIDSupplier.getMapping(colorCodeField, supplier));
         properties.add(new ImportProperty(colorCodeField, LM.sidColorSupplier.getMapping(colorKey)));
@@ -165,10 +167,10 @@ public abstract class ImportBoxInvoiceActionProperty extends BaseImportActionPro
         properties.add(new ImportProperty(themeNameField, LM.baseLM.name.getMapping(themeKey)));
         properties.add(new ImportProperty(themeCodeField, LM.themeSupplierArticle.getMapping(articleKey), LM.object(LM.themeSupplier).getMapping(themeKey)));
 
-        ImportKey<?> seasonKey = new ImportKey(LM.season, LM.seasonSIDSupplier.getMapping(seasonField, supplier));
-        properties.add(new ImportProperty(seasonField, LM.sidSeason.getMapping(seasonKey)));
-        properties.add(new ImportProperty(supplier, LM.supplierSeason.getMapping(seasonKey)));
-        properties.add(new ImportProperty(seasonField, LM.seasonArticle.getMapping(articleKey), LM.object(LM.season).getMapping(seasonKey)));
+        ImportKey<?> seasonKey = new ImportKey(LM.seasonSupplier, LM.seasonSIDSupplier.getMapping(seasonField, supplier));
+        properties.add(new ImportProperty(seasonField, LM.sidSeasonSupplier.getMapping(seasonKey)));
+        properties.add(new ImportProperty(supplier, LM.supplierSeasonSupplier.getMapping(seasonKey)));
+        properties.add(new ImportProperty(seasonField, LM.seasonSupplierArticle.getMapping(articleKey), LM.object(LM.seasonSupplier).getMapping(seasonKey)));
 
         ImportKey<?> genderKey = new ImportKey(LM.genderSupplier, LM.genderSIDSupplier.getMapping(genderField, supplier));
         properties.add(new ImportProperty(genderField, LM.sidGenderSupplier.getMapping(genderKey)));
