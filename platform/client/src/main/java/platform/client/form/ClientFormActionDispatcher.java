@@ -13,8 +13,7 @@ import platform.interop.exceptions.LoginException;
 import javax.sound.sampled.*;
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
+import java.awt.event.*;
 import java.io.*;
 import java.text.DecimalFormat;
 import java.util.prefs.Preferences;
@@ -81,14 +80,21 @@ public class ClientFormActionDispatcher implements ClientActionDispatcher {
             Preferences preferences = Preferences.userNodeForPackage(this.getClass());
             fileChooser.setCurrentDirectory(new File(preferences.get("LATEST_DIRECTORY", "")));
             String path = "";
-            fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
             int result = fileChooser.showSaveDialog(null);
             if (result == JFileChooser.APPROVE_OPTION) {
                 path = fileChooser.getSelectedFile().getAbsolutePath();
+                if (action.files.size() > 1) {
+                    fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+                    for (String file : action.files.keySet()) {
+                        IOUtils.putFileBytes(new File(path + "\\" + file), action.files.get(file));
+                    }
+                } else {
+                    for (String file : action.files.keySet()) {
+                        IOUtils.putFileBytes(new File(path), action.files.get(file));
+                        path = path.substring(0, path.lastIndexOf("\\"));
+                    }
+                }
                 preferences.put("LATEST_DIRECTORY", path);
-            }
-            for (String file : action.files.keySet()) {
-                IOUtils.putFileBytes(new File(path + "\\" + file), action.files.get(file));
             }
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -234,6 +240,13 @@ public class ClientFormActionDispatcher implements ClientActionDispatcher {
             add(new JScrollPane(textArea));
             setMinimumSize(new Dimension(400, 200));
             setLocationRelativeTo(owner);
+            ActionListener escListener = new ActionListener() {
+                public void actionPerformed(ActionEvent actionEvent) {
+                    setVisible(false);
+                }
+            };
+            KeyStroke stroke = KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0);
+            getRootPane().registerKeyboardAction(escListener, stroke, JComponent.WHEN_IN_FOCUSED_WINDOW);
         }
     }
 

@@ -158,6 +158,8 @@ public class ClientFormController {
 
         initializeRegularFilters();
 
+        initializeOrders();
+
         initializeButtons();
 
         applyRemoteChanges();
@@ -419,8 +421,8 @@ public class ClientFormController {
         if (!ordersInitialized) {
             try {
                 // Применяем порядки по умолчанию
-                ordersInitialized = true;
                 applyOrders(form.defaultOrders);
+                ordersInitialized = true;
             } catch (IOException e) {
                 throw new RuntimeException(ClientResourceBundle.getString("form.error.cant.initialize.default.orders"));
             }
@@ -506,8 +508,6 @@ public class ClientFormController {
         for (TreeGroupController treeController : treeControllers.values()) {
             treeController.processFormChanges(formChanges, currentGridObjects);
         }
-
-        initializeOrders();
 
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
@@ -608,7 +608,9 @@ public class ClientFormController {
 
     public void changeOrder(ClientPropertyDraw property, Order modiType, ClientGroupObjectValue columnKey) throws IOException {
         remoteForm.changePropertyOrder(property.getID(), modiType.serialize(), columnKey.serialize());
-        applyRemoteChanges();
+        if (ordersInitialized) {
+            applyRemoteChanges();
+        }
     }
 
     @SuppressWarnings({"UnusedDeclaration"})

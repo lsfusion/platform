@@ -30,8 +30,8 @@ import java.util.*;
 
 public class DeclarationExportActionProperty extends ActionProperty {
     private RomanBusinessLogics BL;
-    private CustomDBF dbfDecl02, dbfDobl, dbfG313, dbfG44, dbfG47;
-    private CustomDBF dbfG18, dbfG20, dbfG21, dbfG316, dbfG40, dbfGB;
+    private DBFExporter.CustomDBF dbfDecl02, dbfDobl, dbfG313, dbfG44, dbfG47;
+    private DBFExporter.CustomDBF dbfG18, dbfG20, dbfG21, dbfG316, dbfG40, dbfGB;
     private File tempDecl02, tempDobl, tempG313, tempG44, tempG47, tempG18, tempG20, tempG21, tempG316, tempG40, tempGB;
 
     public DeclarationExportActionProperty(String sID, String caption, RomanBusinessLogics BL, ValueClass importer, ValueClass freight) {
@@ -86,31 +86,14 @@ public class DeclarationExportActionProperty extends ActionProperty {
         }
     }
 
-    public class CustomDBF extends DBF {
-        public CustomDBF(String DBFName, int format, boolean destroy, String inEncodeType) throws IOException, xBaseJException {
-            super(DBFName, format, destroy, inEncodeType);
-        }
-
-        public CustomDBF(String DBFName, boolean destroy, String inEncodeType) throws IOException, xBaseJException {
-            super(DBFName, destroy, inEncodeType);
-        }
-
-        public File getFFile() {
-            return ffile;
-        }
-    }
-
-    private class DeclarationExporter {
-        DataSession session;
-        Map<ClassPropertyInterface, DataObject> keys;
-
+    private class DeclarationExporter extends DBFExporter{
         DataObject importerDO;
         DataObject freightDO;
         FormData data;
         Map<Field, PropertyDrawInstance> map;
 
         public DeclarationExporter(Map<ClassPropertyInterface, DataObject> keys) throws ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException, IOException, xBaseJException {
-            this.keys = keys;
+            super(keys);
             List<ClassPropertyInterface> interfacesList = new ArrayList<ClassPropertyInterface>(interfaces);
             createDBFFiles();
 
@@ -550,49 +533,6 @@ public class DeclarationExportActionProperty extends ActionProperty {
             putString(NOMER_GTDG47, row.values.get(map.get(NOMER_GTDG47)));
             putString(DOP_NOMERG47, row.values.get(map.get(DOP_NOMERG47)));
             dbfG47.write();
-        }
-
-        private void putString(CharField field, Object value) throws xBaseJException {
-            field.put(BaseUtils.padr(value != null ? (String) value : "", field.getLength()));
-        }
-
-        private void putDouble(NumField field, Object value) throws xBaseJException {
-            if (value != null) {
-                field.put(valueOfField(field, (Double) value).getBytes());
-            }
-        }
-
-        private void putDate(DateField field, Object value) throws xBaseJException {
-            if (value != null) {
-                Calendar calendar = Calendar.getInstance();
-                calendar.setTime(DateConverter.sqlToDate((java.sql.Date) value));
-                field.put(calendar);
-            } else {
-                field.put(BaseUtils.padr("", field.getLength()));
-            }
-        }
-
-        private void putLogical(LogicalField field, Object value) throws xBaseJException {
-            if (value != null) {
-                field.put((Boolean) value);
-            }
-        }
-
-        // метод нужен лишь потому, что xBaseJ не умеет нормально писать в dbf-файлы Double
-        private String valueOfField(NumField fld, Double val) {
-
-            int intlen = fld.getLength() - fld.getDecimalPositionCount() - 1;
-            int declen = fld.getDecimalPositionCount();
-
-            String pattern = "";
-            for (int i = 0; i < intlen - 1; i++) pattern += "#";
-            pattern += "0.";
-            for (int i = 0; i < declen; i++) pattern += "0";
-
-            DecimalFormatSymbols symbols = new DecimalFormatSymbols();
-            symbols.setDecimalSeparator('.');
-            DecimalFormat format = new DecimalFormat(pattern, symbols);
-            return format.format(val);
         }
 
         CharField G011Decl = new CharField("G011", 2);

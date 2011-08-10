@@ -154,7 +154,7 @@ public class RomanLogicsModule extends LogicsModule {
     LP colorSupplierItem;
     private LP nameColorSupplierItem;
     LP sizeSupplierItem;
-    LP sidSizeSupplierItem;
+    public LP sidSizeSupplierItem;
     LP supplierColorSupplier;
     LP genderSupplierArticle;
     LP sidGenderSupplierArticle;
@@ -192,7 +192,7 @@ public class RomanLogicsModule extends LogicsModule {
     private LP brandSupplierSupplierArticle;
     private LP brandSupplierArticleSku;
     private LP sidBrandSupplierArticleSku;
-    private LP nameBrandSupplierArticleSku;
+    public LP nameBrandSupplierArticleSku;
     private LP nameBrandSupplierArticleSkuShipmentDetail;
     private LP supplierArticleSku;
     private LP nameSupplierArticleSku;
@@ -203,7 +203,7 @@ public class RomanLogicsModule extends LogicsModule {
     public LP nameThemeSupplierArticle;
     public LP themeSupplierArticleSku;
     public LP sidThemeSupplierArticleSku;
-    private LP nameThemeSupplierArticleSku;
+    public LP nameThemeSupplierArticleSku;
     public LP seasonSupplierArticle;
     public LP nameSeasonSupplierArticle;
 
@@ -226,7 +226,7 @@ public class RomanLogicsModule extends LogicsModule {
     private LP lessCmpDate;
     private LP nearestPredDate;
     private LP nearestRateExchange;
-    private LP sidImporterFreightTypeInvoice;
+    public LP sidImporterFreightTypeInvoice;
     private LP sidDestination;
     private LP destinationSID;
     private LP unitOfMeasureCategory;
@@ -258,7 +258,7 @@ public class RomanLogicsModule extends LogicsModule {
     private LP netWeightShipment;
     private LP grossWeightShipment;
     LP sidColorSupplier;
-    private LP sidColorSupplierItem;
+    public LP sidColorSupplierItem;
     private LP sidThemeSupplierArticle;
     private LP quantityDocumentSku;
     private LP quantityDocumentBrandSupplier;
@@ -307,7 +307,7 @@ public class RomanLogicsModule extends LogicsModule {
     private LP nameOriginCategoryArticle;
     private LP nameCategoryArticle;
     private LP categoryArticleSku;
-    private LP nameCategoryArticleSku;
+    public LP nameCategoryArticleSku;
     private LP nameOriginCategoryArticleSku;
     private LP typeInvoiceCategoryArticle;
     private LP typeInvoiceCategoryArticleSku;
@@ -416,7 +416,7 @@ public class RomanLogicsModule extends LogicsModule {
     private LP genderDataArticle;
     private LP genderArticle;
     private LP genderArticleSku;
-    private LP sidGenderArticleSku;
+    public LP sidGenderArticleSku;
     LP articleSIDSupplier;
     private LP seekArticleSIDSupplier;
     private LP seekArticleSIDInvoice;
@@ -513,12 +513,12 @@ public class RomanLogicsModule extends LogicsModule {
     private LP dateContractImporterFreight;
     private LP conditionShipmentContractImporterFreight;
     private LP conditionPaymentContractImporterFreight;
-    private LP dateImporterFreightTypeInvoice;
+    public LP dateImporterFreightTypeInvoice;
     private LP dateShipmentImporterFreightTypeInvoice;
     private ConcreteCustomClass stock;
     private ConcreteCustomClass freightBox;
-    private LP sidArticleSku;
-    private LP originalNameArticleSku;
+    public LP sidArticleSku;
+    public LP originalNameArticleSku;
     private LP inSupplierBoxShipment;
     private LP quantityArticle;
     private LP quantitySupplierBoxBoxShipmentStockSku;
@@ -745,7 +745,7 @@ public class RomanLogicsModule extends LogicsModule {
     private LP importerShipmentRoute;
     private LP nameImporterShipmentRoute;
     private LP importerShipmentFreightBox;
-    private LP quantityImporterStockSku;
+    public LP quantityImporterStockSku;
     private LP quantityDirectImporterFreightUnitSku;
     private LP quantityImporterSku;
     private LP quantityImporterStock;
@@ -873,9 +873,9 @@ public class RomanLogicsModule extends LogicsModule {
     LP netWeightImporterFreightArticleCompositionCountryCategory;
     LP grossWeightImporterFreightArticleCompositionCountryCategory;
     LP priceImporterFreightArticleCompositionCountryCategory;
-    LP priceInvoiceImporterFreightSku;
+    public LP priceInvoiceImporterFreightSku;
     LP markupInOutImporterFreightSku;
-    LP sumInvoiceImporterStockSku;
+    public LP sumInvoiceImporterStockSku;
     LP sumImporterFreightArticleCompositionCountryCategory;
     LP sumProxyInvoiceImporterFreightSku;
     private ConcreteCustomClass freightComplete;
@@ -915,12 +915,12 @@ public class RomanLogicsModule extends LogicsModule {
     private LP subCategoryFreightSku;
     private LP nameSubCategoryFreightSku;
     private LP mainCompositionOriginFreightSku;
-    private LP mainCompositionFreightSku;
+    public LP mainCompositionFreightSku;
     private LP additionalCompositionOriginFreightSku;
     private LP additionalCompositionFreightSku;
     private LP countryOfOriginFreightSku;
     private LP sidCountryOfOriginFreightSku;
-    private LP nameCountryOfOriginFreightSku;
+    public LP nameCountryOfOriginFreightSku;
     private LP equalsItemArticleComposite;
     private LP executeArticleCompositeItemSIDSupplier;
     private LP executeChangeFreightClass, executeChangeFreightChangedClass, executeChangeFreightShippedClass;
@@ -1092,8 +1092,10 @@ public class RomanLogicsModule extends LogicsModule {
     LP scannerComPort;
 
     private LP declarationExport;
+    private LP invoiceExportDbf;
 
     public AnnexInvoiceFormEntity invoiceFromFormEntity;
+    public InvoiceExportFormEntity invoiceExportForm;
 
     @Override
 
@@ -2980,6 +2982,7 @@ public class RomanLogicsModule extends LogicsModule {
                         addSCProp(addJProp(true, quantitySimpleShipmentStockSku, 1, currentFreightBoxRoute, 2, 3))
                 ), 1, 2, baseLM.barcodeToObject, 3);
         declarationExport = addDEAProp("declarationExport");
+        invoiceExportDbf = addProperty(null, new LP<ClassPropertyInterface>(new InvoiceExportDbfActionProperty("invoiceExportDbf", "Экспорт в dbf", BL, importer, freight, typeInvoice)));
         scalesComPort = addDProp(baseGroup, "scalesComPort", "COM-порт весов", IntegerClass.instance, baseLM.computer);
         scalesSpeed = addDProp(baseGroup, "scalesSpeed", "Скорость весов", IntegerClass.instance, baseLM.computer);
         scannerComPort = addDProp(baseGroup, "scannerComPort", "COM-порт сканера", IntegerClass.instance, baseLM.computer);
@@ -3075,7 +3078,7 @@ public class RomanLogicsModule extends LogicsModule {
         FormEntity createPalletForm = addFormEntity(new CreatePalletFormEntity(printForms, "createPalletForm", "Штрих-коды паллет", FormType.PRINT));
         FormEntity createFreightBoxForm = addFormEntity(new CreateFreightBoxFormEntity(printForms, "createFreightBoxForm", "Штрих-коды коробов", FormType.PRINT));
 
-        addFormEntity(new InvoiceExportFormEntity(printForms, "invoiceExportForm", "Экспорт инвойсов"));
+        invoiceExportForm = addFormEntity(new InvoiceExportFormEntity(printForms, "invoiceExportForm", "Экспорт инвойсов"));
 
         NavigatorElement purchase = new NavigatorElement(baseLM.baseElement, "purchase", "Управление закупками");
         purchase.window = leftToolbar;
@@ -6572,6 +6575,7 @@ public class RomanLogicsModule extends LogicsModule {
             addPropertyDraw(packingListFormImporterFreight, objImporter, objFreight, objTypeInvoice);
             addPropertyDraw(sbivkaFormImporterFreightSupplier, objImporter, objFreight, objSupplier);
             addPropertyDraw(invoiceExportFormImporterFreight, objImporter, objFreight, objTypeInvoice);
+            addPropertyDraw(invoiceExportDbf, objImporter, objFreight, objTypeInvoice);
 
             objSku = addSingleGroupObject(sku, "SKU", baseLM.barcode, sidArticleSku, sidSizeSupplierItem,
                     nameBrandSupplierArticleSku, nameCategoryArticleSku, sidCustomCategory10Sku,
