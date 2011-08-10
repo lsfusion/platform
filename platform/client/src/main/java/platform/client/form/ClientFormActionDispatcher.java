@@ -5,6 +5,7 @@ import platform.base.IOUtils;
 import platform.client.ClientResourceBundle;
 import platform.client.Log;
 import platform.client.Main;
+import platform.client.SwingUtils;
 import platform.client.remote.proxy.RemoteFormProxy;
 import platform.interop.action.*;
 import platform.interop.exceptions.LoginException;
@@ -227,9 +228,7 @@ public class ClientFormActionDispatcher implements ClientActionDispatcher {
 
     public class ExtendedMessageDialog extends JDialog {
         public ExtendedMessageDialog(Container owner, String title, String message) {
-            super();
-            setTitle(title);
-            setModal(true);
+            super(SwingUtils.getWindow(owner), title, ModalityType.DOCUMENT_MODAL);
             JTextArea textArea = new JTextArea(message);
             textArea.setFont(textArea.getFont().deriveFont((float) 12));
             add(new JScrollPane(textArea));

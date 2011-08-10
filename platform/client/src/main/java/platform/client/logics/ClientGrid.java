@@ -14,14 +14,14 @@ import java.io.IOException;
 
 public class ClientGrid extends ClientComponent {
 
-    public boolean showFind;
-    public boolean showFilter;
-    public boolean showGroupChange;
-    public boolean showCountQuantity;
-    public boolean showCalculateSum;
-    public boolean showGroup;
-    public boolean showPrintGroupButton;
-    public boolean showPrintGroupXlsButton;
+    public boolean showFind = false;
+    public boolean showFilter = true;
+    public boolean showGroupChange = true;
+    public boolean showCountQuantity = true;
+    public boolean showCalculateSum = true;
+    public boolean showGroup = true;
+    public boolean showPrintGroupButton = true;
+    public boolean showPrintGroupXlsButton = true;
 
     public byte minRowCount;
     public boolean tabVertical = false;
