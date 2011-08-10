@@ -2531,7 +2531,7 @@ public class RomanLogicsModule extends LogicsModule {
         addConstraint(addJProp("Продавец по договору должен соответствовать экспортеру исходящего инвойса", baseLM.diff2, exporterFreight, 2, addJProp(sellerContract, contractImporterFreight, 1, 2), 1, 2), true);
 
         sidContractImporterFreight = addJProp(baseGroup, "sidContractImporterFreight", "Договор", sidContract, contractImporterFreight, 1, 2);
-        dateContractImporterFreight = addJProp(baseGroup, "dateContractImporterFreight", "Договор", dateContract, contractImporterFreight, 1, 2);
+        dateContractImporterFreight = addJProp(baseGroup, "dateContractImporterFreight", "Дата договора", dateContract, contractImporterFreight, 1, 2);
         conditionShipmentContractImporterFreight = addJProp(baseGroup, "conditionShipmentContractImporterFreight", "Условие поставки", conditionShipmentContract, contractImporterFreight, 1, 2);
         conditionPaymentContractImporterFreight = addJProp(baseGroup, "conditionPaymentContractImporterFreight", "Условие оплаты", conditionPaymentContract, contractImporterFreight, 1, 2);
 
@@ -3925,7 +3925,7 @@ public class RomanLogicsModule extends LogicsModule {
             addPropertyDraw(new LP[]{baseLM.barcode, sidArticleSku, sidSeasonSupplierArticleSku, sidGenderSupplierArticleSku, sidThemeSupplierArticleSku, nameThemeSupplierArticleSku, sidColorSupplierItem, nameColorSupplierItem, sidSizeSupplierItem,
                     sidBrandSupplierArticleSku, nameBrandSupplierArticleSku, originalNameArticleSku,
                     nameCountrySupplierOfOriginArticleSku, nameCountryOfOriginSku, netWeightSku,
-                    mainCompositionOriginSku, additionalCompositionOriginSku}, objSku);
+                    mainCompositionOriginSku, additionalCompositionOriginSku, baseLM.delete}, objSku);
 
             addPropertyDraw(priceDocumentSku, objInvoice, objSku);
             addPropertyDraw(quantityDocumentSku, objInvoice, objSku);
@@ -5093,7 +5093,7 @@ public class RomanLogicsModule extends LogicsModule {
 
             objSeller = addSingleGroupObject(seller, "Продавец", baseLM.name, baseLM.objectClassName);
 
-            objContract = addSingleGroupObject(contract, "Договор", sidContract, baseLM.date, nameImporterContract, nameCurrencyContract, conditionShipmentContract, conditionPaymentContract);
+            objContract = addSingleGroupObject(contract, "Договор", sidContract, dateContract, baseLM.date, nameImporterContract, nameCurrencyContract, conditionShipmentContract, conditionPaymentContract);
             addObjectActions(this, objContract);
 
             addFixedFilter(new CompareFilterEntity(addPropertyObject(sellerContract, objContract), Compare.EQUALS, objSeller));
@@ -5721,7 +5721,7 @@ public class RomanLogicsModule extends LogicsModule {
             }
 
             addPropertyDraw(objImporter, sidImporter);
-            addPropertyDraw(objImporter, objFreight, sidContractImporterFreight, conditionShipmentContractImporterFreight, conditionPaymentContractImporterFreight);
+            addPropertyDraw(objImporter, objFreight, sidContractImporterFreight, dateContractImporterFreight, conditionShipmentContractImporterFreight, conditionPaymentContractImporterFreight);
             addPropertyDraw(objImporter, objFreight, objTypeInvoice, sidImporterFreightTypeInvoice, dateImporterFreightTypeInvoice, dateShipmentImporterFreightTypeInvoice, quantityImporterFreightTypeInvoice, netWeightImporterFreightTypeInvoice, grossWeightImporterFreightTypeInvoice, sumImporterFreightTypeInvoice);
 
             addPropertyDraw(objTypeInvoice, baseLM.name);
@@ -6014,7 +6014,7 @@ public class RomanLogicsModule extends LogicsModule {
 
             addPropertyDraw(objImporter, sidImporter);
             addPropertyDraw(objImporter, objFreight, objTypeInvoice, sidImporterFreightTypeInvoice, dateImporterFreightTypeInvoice, quantityImporterFreightTypeInvoice, netWeightImporterFreightTypeInvoice, grossWeightImporterFreightTypeInvoice, sumInOutImporterFreightTypeInvoice);
-            addPropertyDraw(objImporter, objFreight, sidContractImporterFreight, conditionShipmentContractImporterFreight);
+            addPropertyDraw(objImporter, objFreight, sidContractImporterFreight, dateContractImporterFreight, conditionShipmentContractImporterFreight);
 
             gobjFreightImporter.initClassView = ClassViewType.PANEL;
 
@@ -6554,7 +6554,7 @@ public class RomanLogicsModule extends LogicsModule {
 
             objTypeInvoice = addSingleGroupObject(typeInvoice, "Тип инвойса", baseLM.name);
 
-            addPropertyDraw(objImporter, objFreight, sidContractImporterFreight); //, conditionShipmentContractImporterFreight, conditionPaymentContractImporterFreight);
+            addPropertyDraw(objImporter, objFreight, sidContractImporterFreight, dateContractImporterFreight); //, conditionShipmentContractImporterFreight, conditionPaymentContractImporterFreight);
 
             addPropertyDraw(quantityImporterFreight, objImporter, objFreight);
             addPropertyDraw(sumInImporterFreight, objImporter, objFreight);

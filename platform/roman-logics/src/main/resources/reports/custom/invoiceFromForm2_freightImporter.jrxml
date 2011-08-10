@@ -57,6 +57,7 @@
 	<field name="conditionPaymentContractImporterFreight" class="java.lang.String"/>
 	<field name="dateShipmentImporterFreightTypeInvoice" class="java.util.Date"/>
 	<field name="sidImporter" class="java.lang.String"/>
+	<field name="dateContractImporterFreight" class="java.util.Date"/>
 	<pageHeader>
 		<band height="170">
 			<textField isStretchWithOverflow="true" pattern="dd.MM.yy" isBlankWhenNull="true">
@@ -80,7 +81,7 @@
 				<textFieldExpression class="java.lang.String"><![CDATA[$F{addressSubject}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement style="DefaultStyle" positionType="Float" x="648" y="66" width="154" height="18"/>
+				<reportElement style="DefaultStyle" positionType="Float" x="648" y="66" width="91" height="18"/>
 				<textElement textAlignment="Center" verticalAlignment="Top"/>
 				<textFieldExpression class="java.lang.String"><![CDATA[$F{sidContractImporterFreight}]]></textFieldExpression>
 			</textField>
@@ -212,6 +213,11 @@
 				<reportElement x="650" y="84" width="152" height="18"/>
 				<textElement textAlignment="Center"/>
 				<textFieldExpression class="java.lang.String"><![CDATA[$F{sidImporter}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="dd.MM.yy" isBlankWhenNull="true">
+				<reportElement style="DefaultStyle" positionType="Float" x="739" y="66" width="63" height="18"/>
+				<textElement textAlignment="Center" verticalAlignment="Top"/>
+				<textFieldExpression class="java.util.Date"><![CDATA[$F{dateContractImporterFreight}]]></textFieldExpression>
 			</textField>
 		</band>
 	</pageHeader>

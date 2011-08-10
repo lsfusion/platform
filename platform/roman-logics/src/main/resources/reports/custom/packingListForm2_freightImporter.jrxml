@@ -64,6 +64,7 @@
 	<field name="dateImporterFreightTypeInvoice" class="java.util.Date"/>
 	<field name="conditionShipmentContractImporterFreight" class="java.lang.String"/>
 	<field name="sidImporter" class="java.lang.String"/>
+	<field name="dateContractImporterFreight" class="java.util.Date"/>
 	<group name="textGroup4">
 		<groupExpression><![CDATA[String.valueOf($F{barcode})]]></groupExpression>
 		<groupFooter>
@@ -173,7 +174,7 @@
 				<textFieldExpression class="java.lang.String"><![CDATA[$F{addressSubject}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement style="DefaultStyle" positionType="Float" x="381" y="54" width="157" height="18"/>
+				<reportElement style="DefaultStyle" positionType="Float" x="381" y="54" width="91" height="18"/>
 				<textElement textAlignment="Center" verticalAlignment="Top"/>
 				<textFieldExpression class="java.lang.String"><![CDATA[$F{sidContractImporterFreight}]]></textFieldExpression>
 			</textField>
@@ -226,6 +227,11 @@
 				<reportElement x="381" y="18" width="157" height="18"/>
 				<textElement textAlignment="Center"/>
 				<textFieldExpression class="java.lang.String"><![CDATA[$F{sidImporterFreightTypeInvoice}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="dd.MM.yy" isBlankWhenNull="true">
+				<reportElement style="DefaultStyle" positionType="Float" x="472" y="54" width="66" height="18"/>
+				<textElement textAlignment="Center" verticalAlignment="Top"/>
+				<textFieldExpression class="java.util.Date"><![CDATA[$F{dateContractImporterFreight}]]></textFieldExpression>
 			</textField>
 		</band>
 	</pageHeader>
