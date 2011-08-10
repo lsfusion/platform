@@ -123,7 +123,6 @@ public abstract class ImportBoxInvoiceActionProperty extends BaseImportActionPro
         properties.add(new ImportProperty(compositionField, LM.mainCompositionOriginArticle.getMapping(articleKey)));
         properties.add(new ImportProperty(unitNetWeightField, LM.netWeightArticle.getMapping(articleKey)));
         properties.add(new ImportProperty(originalNameField, LM.originalNameArticle.getMapping(articleKey)));
-        //properties.add(new ImportProperty(genderField, LM.genderSupplierArticle.getMapping(articleKey)));
 
         ImportKey<?> itemKey = null;
         if (hasBarCode()) {
@@ -164,17 +163,17 @@ public abstract class ImportBoxInvoiceActionProperty extends BaseImportActionPro
         properties.add(new ImportProperty(themeCodeField, LM.sidThemeSupplier.getMapping(themeKey)));
         properties.add(new ImportProperty(supplier, LM.supplierThemeSupplier.getMapping(themeKey)));
         properties.add(new ImportProperty(themeNameField, LM.baseLM.name.getMapping(themeKey)));
-        properties.add(new ImportProperty(themeCodeField, LM.themeSupplierItem.getMapping(itemKey), LM.object(LM.themeSupplier).getMapping(themeKey)));
+        properties.add(new ImportProperty(themeCodeField, LM.themeSupplierArticle.getMapping(articleKey), LM.object(LM.themeSupplier).getMapping(themeKey)));
 
         ImportKey<?> seasonKey = new ImportKey(LM.season, LM.seasonSIDSupplier.getMapping(seasonField, supplier));
         properties.add(new ImportProperty(seasonField, LM.sidSeason.getMapping(seasonKey)));
         properties.add(new ImportProperty(supplier, LM.supplierSeason.getMapping(seasonKey)));
-        properties.add(new ImportProperty(seasonField, LM.seasonItem.getMapping(itemKey), LM.object(LM.season).getMapping(seasonKey)));
+        properties.add(new ImportProperty(seasonField, LM.seasonArticle.getMapping(articleKey), LM.object(LM.season).getMapping(seasonKey)));
 
         ImportKey<?> genderKey = new ImportKey(LM.genderSupplier, LM.genderSIDSupplier.getMapping(genderField, supplier));
         properties.add(new ImportProperty(genderField, LM.sidGenderSupplier.getMapping(genderKey)));
         properties.add(new ImportProperty(supplier, LM.supplierGenderSupplier.getMapping(genderKey)));
-        properties.add(new ImportProperty(genderField, LM.genderSupplierItem.getMapping(itemKey), LM.object(LM.genderSupplier).getMapping(genderKey)));
+        properties.add(new ImportProperty(genderField, LM.genderSupplierArticle.getMapping(articleKey), LM.object(LM.genderSupplier).getMapping(genderKey)));
 
 
         if (!isSimpleInvoice()) {
