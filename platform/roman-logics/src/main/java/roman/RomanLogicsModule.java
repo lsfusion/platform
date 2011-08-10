@@ -893,6 +893,8 @@ public class RomanLogicsModule extends LogicsModule {
     private LP translationMainCompositionSku;
     private LP translationAdditionalCompositionSku;
     private LP translationAllMainComposition;
+    private LP translationMainCompositionFreightSku;
+    private LP translationAdditionalCompositionFreightSku;
     private LP sidShipmentShipmentDetail;
     private LP commonSizeSizeSupplier;
     private LP nameCommonSizeSizeSupplier;
@@ -2225,6 +2227,8 @@ public class RomanLogicsModule extends LogicsModule {
 
         genderArticleSkuShipmentDetail = addJProp(idGroup, true, "genderArticleSkuShipmentDetail", "Пол товара (ИД)", genderArticleSku, skuShipmentDetail, 1);
         sidGenderArticleSkuShipmentDetail = addJProp(intraAttributeGroup, "sidGenderArticleSkuShipmentDetail", "Пол товара", sidGender, genderArticleSkuShipmentDetail, 1);
+        sidGenderArticleSkuShipmentDetail.property.preferredCharWidth = 10;
+        sidGenderArticleSkuShipmentDetail.property.minimumCharWidth = 5;
 
         categoryArticleSkuShipmentDetail = addJProp(idGroup, true, "categoryArticleSkuShipmentDetail", "Номенклатурная группа товара (ИД)", categoryArticleSku, skuShipmentDetail, 1);
         nameOriginCategoryArticleSkuShipmentDetail = addJProp(intraAttributeGroup, "nameOriginCategoryArticleSkuShipmentDetail", "Номенклатурная группа товара", nameOrigin, categoryArticleSkuShipmentDetail, 1);
@@ -2635,6 +2639,9 @@ public class RomanLogicsModule extends LogicsModule {
         additionalCompositionFreightSku.property.preferredCharWidth = 40;
         additionalCompositionFreightSku.property.minimumCharWidth = 20;
 
+        translationMainCompositionFreightSku = addJProp(actionGroup, true, "translationMainCompositionFreightSku", "Перевод состава", addTAProp(mainCompositionOriginFreightSku, mainCompositionFreightSku), dictionaryComposition, 1, 2);
+        translationAdditionalCompositionFreightSku = addJProp(actionGroup, true, "translationAdditionalCompositionFreightSku", "Перевод доп. состава", addTAProp(additionalCompositionOriginFreightSku, additionalCompositionFreightSku), dictionaryComposition, 1, 2);
+
         countryOfOriginFreightSku = addDProp(idGroup, "countryOfOriginFreightSku", "Страна (ИД)", baseLM.country, freight, sku);
         countryOfOriginFreightSku.setDerivedForcedChange(true, addJProp(baseLM.and1, countryOfOriginSku, 2, quantityFreightSku, 1, 2), 1, 2, is(freightChanged), 1);
 
@@ -2777,8 +2784,7 @@ public class RomanLogicsModule extends LogicsModule {
                 priceImporterFreightArticleCompositionCountryCategory, 1, 2, articleSku, 3, mainCompositionOriginFreightSku, 2, 3, countryOfOriginFreightSku, 2, 3, customCategory10FreightSku, 2, 3);
 
         //priceInvoiceImporterFreightSku = addJProp(priceInvoiceImporterFreightSku, 1, freightFreightBox, 2, 3);
-        markupInOutImporterFreightSku = addDUProp(baseGroup, "markupInOutImporterFreightSku", "Надбавка", priceInOutImporterFreightSku, priceInImporterFreightSku);
-
+        markupInOutImporterFreightSku = addDUProp(baseGroup, "markupInOutImporterFreightSku", "Надбавка", priceInvoiceImporterFreightSku, priceInImporterFreightSku);
 
         sumInvoiceImporterStockSku = addJProp(baseGroup, "sumInvoiceImporterStockSku", "Сумма", baseLM.multiplyDouble2, quantityImporterStockSku, 1, 2, 3, addJProp(priceInvoiceImporterFreightSku, 1, freightFreightBox, 2, 3), 1, 2, 3);
 
@@ -4447,6 +4453,7 @@ public class RomanLogicsModule extends LogicsModule {
 
             ContainerView intraRow1 = design.createContainer();
             intraRow1.constraints.childConstraints = DoNotIntersectSimplexConstraint.TOTHE_RIGHT;
+            intraRow1.add(design.get(getPropertyDraw(sidGenderArticleSkuShipmentDetail)));
             intraRow1.add(design.get(getPropertyDraw(nameCategoryArticleSkuShipmentDetail)));
             intraRow1.add(design.get(getPropertyDraw(nameUnitOfMeasureArticleSkuShipmentDetail)));
             intraRow1.add(design.get(getPropertyDraw(netWeightSkuShipmentDetail)));
@@ -5349,7 +5356,7 @@ public class RomanLogicsModule extends LogicsModule {
             objCategory = addSingleGroupObject(category, "Номенклатурная группа", baseLM.name);
 
             objSku = addSingleGroupObject(sku, "SKU", baseLM.selection, baseLM.barcode, sidArticleSku,
-                     nameBrandSupplierArticleSku, nameCategoryArticleSku,
+                     nameBrandSupplierArticleSku, nameCategoryArticleSku, sidGenderArticleSku,
                      sidCustomCategoryOriginArticleSku, sidCustomCategory10Sku, nameSubCategoryDataSku, nameCountrySku, netWeightSku,
                      mainCompositionOriginSku, translationMainCompositionSku, mainCompositionSku,
                      additionalCompositionOriginSku, translationAdditionalCompositionSku, additionalCompositionSku);
@@ -5384,12 +5391,17 @@ public class RomanLogicsModule extends LogicsModule {
             addPropertyDraw(netWeightFreightSku, objFreight, objSkuFreight);
             addPropertyDraw(grossWeightFreightSku, objFreight, objSkuFreight);
             addPropertyDraw(mainCompositionOriginFreightSku, objFreight, objSkuFreight);
+            addPropertyDraw(translationMainCompositionFreightSku, objFreight, objSkuFreight);
             addPropertyDraw(mainCompositionFreightSku, objFreight, objSkuFreight);
             addPropertyDraw(additionalCompositionOriginFreightSku, objFreight, objSkuFreight);
+            addPropertyDraw(translationAdditionalCompositionFreightSku, objFreight, objSkuFreight);
             addPropertyDraw(additionalCompositionFreightSku, objFreight, objSkuFreight);
             addPropertyDraw(quantityImporterFreightSku, objImporter, objFreight, objSkuFreight);
             addPropertyDraw(quantityProxyImporterFreightSku, objImporter, objFreight, objSkuFreight);
             addPropertyDraw(quantityDirectImporterFreightSku, objImporter, objFreight, objSkuFreight);
+
+            addPropertyDraw(addGCAProp(actionGroup, "translationAllFreightMainComposition", "Перевод составов (для фрахта)", objSkuFreight.groupTo, translationMainCompositionFreightSku, baseLM.actionTrue), objFreight, objSkuFreight).forceViewType = ClassViewType.PANEL;
+            addPropertyDraw(addGCAProp(actionGroup, "translationAllFreightAdditionalComposition", "Перевод доп. составов (для фрахта)", objSkuFreight.groupTo, translationAdditionalCompositionFreightSku, baseLM.actionTrue), objFreight, objSkuFreight).forceViewType = ClassViewType.PANEL;
             
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(quantityFreightCategory, objFreight, objCategory)));
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(quantityFreightSku, objFreight, objSku)));
