@@ -361,7 +361,7 @@ public class RomanLogicsModule extends LogicsModule {
     private LP sidCustomCategory4CustomCategory6;
     private LP sidCustomCategory6CustomCategory9;
     private LP sidCustomCategory9CustomCategory10;
-    private LP sidCustomCategory6CustomCategoryOrigin;
+    public LP sidCustomCategory6CustomCategoryOrigin;
     private LP nameCustomCategory4CustomCategory6;
     private LP nameCustomCategory6CustomCategory9;
     private LP nameCustomCategory9CustomCategory10;

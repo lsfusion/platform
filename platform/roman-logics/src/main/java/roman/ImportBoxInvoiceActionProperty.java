@@ -19,10 +19,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * User: DAle
@@ -142,13 +139,14 @@ public abstract class ImportBoxInvoiceActionProperty extends BaseImportActionPro
 
         ImportKey<?> customCategoryKey = new ImportKey(LM.customCategoryOrigin, LM.sidToCustomCategoryOrigin.getMapping(customCodeField));
         properties.add(new ImportProperty(customCodeField, LM.sidCustomCategoryOrigin.getMapping(customCategoryKey)));
+        properties.add(new ImportProperty(customCode6Field, LM.sidCustomCategory6CustomCategoryOrigin.getMapping(customCategoryKey)));
         properties.add(new ImportProperty(customCodeField, LM.customCategoryOriginArticle.getMapping(articleKey),
                 LM.object(LM.customCategoryOrigin).getMapping(customCategoryKey)));
 
         ImportKey<?> customCategory6Key = new ImportKey(LM.customCategory6, LM.sidToCustomCategory6.getMapping(customCode6Field));
         properties.add(new ImportProperty(customCode6Field, LM.sidCustomCategory6.getMapping(customCategory6Key)));
-        properties.add(new ImportProperty(customCode6Field, LM.customCategory6Article.getMapping(articleKey),
-                LM.object(LM.customCategory6).getMapping(customCategory6Key)));
+        //properties.add(new ImportProperty(customCode6Field, LM.customCategory6Article.getMapping(articleKey),
+        //        LM.object(LM.customCategory6).getMapping(customCategory6Key)));
 
         ImportKey<?> colorKey = new ImportKey(LM.colorSupplier, LM.colorSIDSupplier.getMapping(colorCodeField, supplier));
         properties.add(new ImportProperty(colorCodeField, LM.sidColorSupplier.getMapping(colorKey)));
@@ -201,9 +199,23 @@ public abstract class ImportBoxInvoiceActionProperty extends BaseImportActionPro
                 throw new RuntimeException(e);
             }
 
+            Integer index = -1;
+            for (int i = 0; i < table.fields.size(); i++) {
+                if (table.fields.get(i).equals(customCodeField))
+                    index = i;
+            }
+            if (index != -1) {
+                for (List<Object> editingRow : table.data) {
+                    String val = editingRow.get(index).toString();
+                    while (val.length() < 10)
+                        val = val + "0";
+                    editingRow.set(index, val);
+                }
+            }
+
             ImportKey<?>[] keysArray;
             if (!isSimpleInvoice()) {
-                keysArray = new ImportKey<?>[]{invoiceKey, boxKey, articleKey, itemKey, colorKey, sizeKey, countryKey, customCategoryKey, customCategory6Key,  themeKey, seasonKey, genderKey};
+                keysArray = new ImportKey<?>[]{invoiceKey, boxKey, articleKey, itemKey, colorKey, sizeKey, countryKey, customCategoryKey, customCategory6Key, themeKey, seasonKey, genderKey};
             } else {
                 keysArray = new ImportKey<?>[]{invoiceKey, articleKey, itemKey, colorKey, sizeKey, countryKey, customCategoryKey, customCategory6Key, themeKey, seasonKey, genderKey};
             }
