@@ -130,7 +130,7 @@ public class InvoiceExportDbfActionProperty extends ActionProperty {
             map.put(price, formInstance.getPropertyDraw(BL.RomanLM.priceInvoiceImporterFreightSku));
             map.put(sum, formInstance.getPropertyDraw(BL.RomanLM.sumInvoiceImporterStockSku));
 
-            data = formInstance.getFormData(map.values(), BaseUtils.toSet(objFreight.groupTo, objFreightBox.groupTo));
+            data = formInstance.getFormData(map.values(), BaseUtils.toSet(objFreightBox.groupTo));
         }
 
         private void writeData(FormRow row) throws IOException, xBaseJException {
