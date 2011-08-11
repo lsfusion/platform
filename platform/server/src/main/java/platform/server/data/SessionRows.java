@@ -1,6 +1,7 @@
 package platform.server.data;
 
 import platform.base.BaseUtils;
+import platform.base.ImmutableObject;
 import platform.base.OrderedMap;
 import platform.server.caches.AbstractMapValues;
 import platform.server.caches.IdentityLazy;
@@ -25,7 +26,7 @@ import platform.server.logics.ObjectValue;
 import java.sql.SQLException;
 import java.util.*;
 
-public class SessionRows implements SessionData<SessionRows> {
+public class SessionRows extends ImmutableObject implements SessionData<SessionRows> {
 
     public final static int MAX_ROWS = 1;
 

@@ -1,5 +1,6 @@
 package platform.server.classes;
 
+import platform.base.ImmutableObject;
 import platform.base.TwinImmutableInterface;
 import platform.interop.Data;
 import platform.server.auth.SecurityPolicy;
@@ -34,7 +35,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.*;
 
-public abstract class CustomClass implements ObjectClass, ValueClass {
+public abstract class CustomClass extends ImmutableObject implements ObjectClass, ValueClass {
 
     public Type getType() {
         return ObjectType.instance;

@@ -1,6 +1,7 @@
 package platform.server.data;
 
 import platform.base.BaseUtils;
+import platform.base.ImmutableObject;
 import platform.server.caches.AbstractMapValues;
 import platform.server.caches.IdentityLazy;
 import platform.server.caches.ManualLazy;
@@ -24,7 +25,7 @@ import java.util.*;
 
 import static platform.base.BaseUtils.*;
 
-public class SessionDataTable implements SessionData<SessionDataTable> {
+public class SessionDataTable extends ImmutableObject implements SessionData<SessionDataTable> {
     private SessionTable table;
 
     private List<KeyField> keys; // чисто для порядка ключей

@@ -1,5 +1,6 @@
 package platform.server.session;
 
+import platform.base.ImmutableObject;
 import platform.server.data.where.Where;
 import platform.server.data.where.WhereBuilder;
 import platform.server.data.expr.Expr;
@@ -21,7 +22,7 @@ import java.util.Set;
 import java.util.HashSet;
 import java.util.Collections;
 
-public class UpdateExprChanges implements ExprChanges {
+public class UpdateExprChanges extends ImmutableObject implements ExprChanges {
     private final SimpleChanges changes;
 
     public UpdateExprChanges(SimpleChanges changes) {
