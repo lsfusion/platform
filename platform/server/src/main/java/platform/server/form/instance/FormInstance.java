@@ -480,7 +480,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends IncrementProps<Pr
         Expr expr = GroupExpr.create(new HashMap(), new ValueExpr(1, IntegerClass.instance), group.getWhere(group.getMapKeys(), this), GroupType.SUM, new HashMap());
         Query<Object, Object> query = new Query<Object, Object>(new HashMap<Object, KeyExpr>());
         query.properties.put("quant", expr);
-        OrderedMap<Map<Object, Object>, Map<Object, Object>> result = query.execute(session.sql);
+        OrderedMap<Map<Object, Object>, Map<Object, Object>> result = query.execute(session.sql, session.env);
         Integer quantity = (Integer) result.getValue(0).get("quant");
         if (quantity != null) {
             return quantity;
