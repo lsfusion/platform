@@ -1648,7 +1648,6 @@ public class RomanLogicsModule extends LogicsModule {
         sidArticle = addDProp(baseGroup, "sidArticle", "Артикул", StringClass.get(50), article);
         sidArticleSku = addJProp(supplierAttributeGroup, "sidArticleSku", "Артикул", sidArticle, articleSku, 1);
 
-
         originalNameArticle = addDProp(supplierAttributeGroup, "originalNameArticle", "Наименование (ориг.)", InsensitiveStringClass.get(50), article);
         originalNameArticleSku = addJProp(supplierAttributeGroup, "originalNameArticleSku", "Наименование (ориг.)", originalNameArticle, articleSku, 1);
 
@@ -3730,7 +3729,7 @@ public class RomanLogicsModule extends LogicsModule {
             objArticle.groupTo.setSingleClassView(ClassViewType.GRID);
 
             addPropertyDraw(numberListArticle, (box ? objSupplierBox : objInvoice), objArticle);
-            addPropertyDraw(objArticle, sidArticle, sidBrandSupplierArticle, nameBrandSupplierArticle, nameSeasonSupplierArticle, nameThemeSupplierArticle, originalNameArticle, sidCustomCategoryOriginArticle,
+            addPropertyDraw(objArticle, sidArticle, sidBrandSupplierArticle, nameBrandSupplierArticle, nameSeasonSupplierArticle, nameThemeSupplierArticle, nameCategoryArticle, originalNameArticle, sidCustomCategoryOriginArticle,
                     nameCountrySupplierOfOriginArticle, netWeightArticle, mainCompositionOriginArticle, additionalCompositionOriginArticle, baseLM.barcode);
             addPropertyDraw(quantityListArticle, (box ? objSupplierBox : objInvoice), objArticle);
             addPropertyDraw(quantitySimpleInvoiceArticle, objInvoice, objArticle);
@@ -5845,14 +5844,9 @@ public class RomanLogicsModule extends LogicsModule {
             addPropertyDraw(objArticle, nameCategoryArticle);
             addPropertyDraw(compositionFreightArticleCompositionCountryCategory, objFreight, objArticle, objComposition, objCountry, objCategory);
 
-
-
-
-                addPropertyDraw(objCountry, baseLM.name);
-
+            addPropertyDraw(objCountry, baseLM.name);
             addPropertyDraw(objCategory, sidCustomCategory10);
             addPropertyDraw(quantityImporterFreightArticleCompositionCountryCategory, objImporter, objFreight, objArticle, objComposition, objCountry, objCategory);
-
 
             addPropertyDraw(objArticle, nameUnitOfMeasureArticle);
 

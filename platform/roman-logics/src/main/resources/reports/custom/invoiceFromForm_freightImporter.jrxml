@@ -59,7 +59,7 @@
 	<field name="dateShipmentImporterFreightTypeInvoice" class="java.util.Date"/>
 	<field name="sidImporter" class="java.lang.String"/>
 	<field name="dateContractImporterFreight" class="java.util.Date"/>
-	<group name="All">
+	<group name="All" footerPosition="CollateAtBottom">
 		<groupExpression><![CDATA[1]]></groupExpression>
 		<groupFooter>
 			<band height="77">
@@ -361,7 +361,7 @@
 				<textElement verticalAlignment="Top"/>
 				<textFieldExpression class="java.lang.String"><![CDATA[$F{nameBrandSupplierArticle}]]></textFieldExpression>
 			</textField>
-			<textField pattern="#,##0.###" isBlankWhenNull="true">
+			<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle1" stretchType="RelativeToBandHeight" x="547" y="0" width="44" height="18"/>
 				<box leftPadding="2" rightPadding="2">
 					<rightPen lineWidth="0.0"/>
@@ -369,25 +369,27 @@
 				<textElement textAlignment="Right" verticalAlignment="Top"/>
 				<textFieldExpression class="java.lang.Double"><![CDATA[$F{priceImporterFreightArticleCompositionCountryCategory}]]></textFieldExpression>
 			</textField>
-			<textField>
+			<textField isStretchWithOverflow="true">
 				<reportElement style="GroupCellStyle1" stretchType="RelativeToBandHeight" x="684" y="0" width="53" height="18"/>
 				<textElement textAlignment="Right" verticalAlignment="Top"/>
 				<textFieldExpression class="java.lang.String"><![CDATA["0,00 %"]]></textFieldExpression>
 			</textField>
-			<textField isBlankWhenNull="true">
-				<reportElement style="DefaultStyle" stretchType="RelativeToBandHeight" mode="Transparent" x="591" y="0" width="15" height="18"/>
-				<box>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement style="GroupCellStyle1" stretchType="RelativeToBandHeight" mode="Transparent" x="591" y="0" width="15" height="18"/>
+				<box leftPadding="2" rightPadding="2">
 					<topPen lineWidth="0.5"/>
+					<leftPen lineWidth="0.0"/>
 					<bottomPen lineWidth="0.5"/>
 					<rightPen lineWidth="0.5"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Top"/>
 				<textFieldExpression class="java.lang.String"><![CDATA[$F{symbolCurrencyFreight}]]></textFieldExpression>
 			</textField>
-			<textField isBlankWhenNull="true">
-				<reportElement style="DefaultStyle" stretchType="RelativeToBandHeight" mode="Transparent" x="787" y="0" width="15" height="18"/>
-				<box>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement style="GroupCellStyle1" stretchType="RelativeToBandHeight" mode="Transparent" x="787" y="0" width="15" height="18"/>
+				<box leftPadding="2" rightPadding="2">
 					<topPen lineWidth="0.5"/>
+					<leftPen lineWidth="0.0"/>
 					<bottomPen lineWidth="0.5"/>
 					<rightPen lineWidth="0.5"/>
 				</box>
