@@ -199,13 +199,15 @@ public class RomanLogicsModule extends LogicsModule {
     public LP supplierThemeSupplier;
     public LP supplierSeasonSupplier;
     private LP nameSupplierSeasonSupplier;
+    public LP seasonSupplierArticle;
+    public LP sidSeasonSupplierArticle;
+    public LP nameSeasonSupplierArticle;
     public LP themeSupplierArticle;
     public LP nameThemeSupplierArticle;
     public LP themeSupplierArticleSku;
     public LP sidThemeSupplierArticleSku;
     public LP nameThemeSupplierArticleSku;
-    public LP seasonSupplierArticle;
-    public LP nameSeasonSupplierArticle;
+
 
     private ConcreteCustomClass currency;
     private ConcreteCustomClass typeExchange;
@@ -1524,7 +1526,7 @@ public class RomanLogicsModule extends LogicsModule {
 
         sidSizeSupplier = addDProp(baseGroup, "sidSizeSupplier", "Код", StringClass.get(50), sizeSupplier);
         sidThemeSupplier = addDProp(baseGroup, "sidThemeSupplier", "Код", StringClass.get(50), themeSupplier);
-        sidSeasonSupplier = addDProp(baseGroup, "sidSeasonSupplier", "Код", StringClass.get(50), seasonSupplier);
+        sidSeasonSupplier = addDProp(itemAttributeGroup, "sidSeasonSupplier", "Код", StringClass.get(50), seasonSupplier);
         sidGender = addDProp(baseGroup, "sidGender", "Код", StringClass.get(50), gender);
         sidGenderSupplier = addDProp(baseGroup, "sidGenderSupplier", "Код", StringClass.get(10), genderSupplier);
 
@@ -1771,13 +1773,15 @@ public class RomanLogicsModule extends LogicsModule {
         nameThemeSupplierArticleSku.property.minimumCharWidth = 15;
         sidThemeSupplierArticleSku = addJProp(baseGroup, "sidThemeSupplierArticleSku", "Код темы", sidThemeSupplier, themeSupplierArticleSku, 1);
 
-        seasonSupplierArticle = addDProp(idGroup, "seasonSupplierArticle", "Сезон (ИД)", seasonSupplier, article);
-        nameSeasonSupplierArticle = addJProp(supplierAttributeGroup, "nameSeasonArticle", "Сезон", baseLM.name, seasonSupplierArticle, 1);
+        seasonSupplierArticle = addDProp(itemAttributeGroup, "seasonSupplierArticle", "Сезон (ИД)", seasonSupplier, article);
+        nameSeasonSupplierArticle = addJProp(itemAttributeGroup, "nameSeasonSupplierArticle", "Сезон", baseLM.name, seasonSupplierArticle, 1);
         nameSeasonSupplierArticle.property.preferredCharWidth = 30;
         nameSeasonSupplierArticle.property.minimumCharWidth = 15;
+        sidSeasonSupplierArticle = addJProp(itemAttributeGroup, "sidSeasonSupplierArticle", "Сезон поставщика", sidSeasonSupplier, seasonSupplierArticle, 1);
+
 
         seasonSupplierArticleSku = addJProp(idGroup, "seasonArticleSku", "Сезон", seasonSupplierArticle, articleSku, 1);
-        sidSeasonSupplierArticleSku = addJProp(supplierAttributeGroup, "sidSeasonSupplierArticleSku", "Сезон", sidSeasonSupplier, seasonSupplierArticleSku, 1);
+        sidSeasonSupplierArticleSku = addJProp(baseGroup, "sidSeasonSupplierArticleSku", "Сезон", sidSeasonSupplier, seasonSupplierArticleSku, 1);
 
         articleSIDSupplier = addAGProp(idGroup, "articleSIDSupplier", "Артикул (ИД)", sidArticle, supplierArticle);
 
@@ -1834,6 +1838,8 @@ public class RomanLogicsModule extends LogicsModule {
 
         genderSupplierArticle = addDProp(itemAttributeGroup, "genderSupplierArticle", "Пол поставщика (ИД)", genderSupplier, article);
         sidGenderSupplierArticle = addJProp(itemAttributeGroup, "sidGenderSupplierArticle", "Пол поставщика", sidGenderSupplier, genderSupplierArticle, 1);
+
+        genderOriginArticle = addJProp(itemAttributeGroup, "genderOriginArticle", "Пол (ИД)", genderGenderSupplier, genderSupplierArticle, 1);
 
         genderOriginArticle = addJProp(itemAttributeGroup, "genderOriginArticle", "Пол (ИД)", genderGenderSupplier, genderSupplierArticle, 1);
 
