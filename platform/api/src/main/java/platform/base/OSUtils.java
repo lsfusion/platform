@@ -40,7 +40,7 @@ public class OSUtils {
            "Linux".equals(system) ? "ux" : "win";
         libPath += is64Arch() ? "64" : "32";
 
-        return getResourcePath(libPath + '\\' + libName + libExtension, path, cls, false, false); // будем считать, что в library зашифрована вер
+        return getResourcePath(libName + libExtension, path + libPath + '/', cls, false, false); // будем считать, что в library зашифрована вер
     }
 
     public static boolean is64Arch() {
