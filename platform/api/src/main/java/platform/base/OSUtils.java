@@ -36,8 +36,16 @@ public class OSUtils {
         String system = System.getProperty("os.name");
         String libExtension =
            "Linux".equals(system) ? ".so" : ".dll";
+        String libPath =
+           "Linux".equals(system) ? "ux" : "win";
+        libPath += is64Arch() ? "64" : "32";
 
-        return getResourcePath(libName + libExtension, path, cls, false, false); // будем считать, что в library зашифрована вер
+        return getResourcePath(libPath + '\\' + libName + libExtension, path, cls, false, false); // будем считать, что в library зашифрована вер
+    }
+
+    public static boolean is64Arch() {
+        String osArch = System.getProperty("os.arch");
+        return osArch != null && osArch.contains("64");
     }
 
     public static File getLocalClassesDir() {
