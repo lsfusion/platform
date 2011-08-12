@@ -73,6 +73,9 @@ public class InvoiceExportDbfActionProperty extends ActionProperty {
         NumField quant = new NumField("QUANT", 4, 0);
         NumField price = new NumField("PRICE", 8, 2);
         NumField sum = new NumField("SUM", 8, 2);
+        CharField contract = new CharField("CONTRACT", 20);
+        DateField dateCon = new DateField("DATECON");
+        CharField imp = new CharField("IMPORTER", 110);
 
         public InvoiceExporter(Map<ClassPropertyInterface, DataObject> keys) throws IOException, xBaseJException {
             super(keys);
@@ -85,7 +88,7 @@ public class InvoiceExportDbfActionProperty extends ActionProperty {
             dbfInvoice = new CustomDBF(tempDbfInvoice.getPath(), DBF.DBASEIV, true, "Cp866");
             Util.setxBaseJProperty("ignoreDBFLengthCheck", "true");
             dbfInvoice.addField(new Field[]{invN, date, boxN, art, name, color, size, comp, countOrig, countProd, barcode,
-                    brand, gender, theme, season, categ, quant, price, sum});
+                    brand, gender, theme, season, categ, quant, price, sum, contract, dateCon, imp});
         }
 
         public void extractData() throws SQLException, IOException, xBaseJException {
@@ -124,11 +127,15 @@ public class InvoiceExportDbfActionProperty extends ActionProperty {
             map.put(brand, formInstance.getPropertyDraw(BL.RomanLM.nameBrandSupplierArticleSku));
             map.put(gender, formInstance.getPropertyDraw(BL.RomanLM.sidGenderArticleSku));
             map.put(theme, formInstance.getPropertyDraw(BL.RomanLM.nameThemeSupplierArticleSku));
-//            map.put(season, formInstance.getPropertyDraw());
+            map.put(season, formInstance.getPropertyDraw(BL.RomanLM.sidSeasonSupplierArticleSku));
+            //map.put(season, formInstance.getPropertyDraw(BL.RomanLM.seasonSIDSupplier));
             map.put(categ, formInstance.getPropertyDraw(BL.RomanLM.nameCategoryArticleSku));
             map.put(quant, formInstance.getPropertyDraw(BL.RomanLM.quantityImporterStockSku));
             map.put(price, formInstance.getPropertyDraw(BL.RomanLM.priceInvoiceImporterFreightSku));
             map.put(sum, formInstance.getPropertyDraw(BL.RomanLM.sumInvoiceImporterStockSku));
+            map.put(contract, formInstance.getPropertyDraw(BL.RomanLM.sidContractImporterFreight));
+            map.put(dateCon, formInstance.getPropertyDraw(BL.RomanLM.dateContractImporterFreight));
+            map.put(imp, formInstance.getPropertyDraw(BL.LM.name, objImporter.groupTo));
 
             data = formInstance.getFormData(map.values(), BaseUtils.toSet(objFreightBox.groupTo));
         }
@@ -153,6 +160,9 @@ public class InvoiceExportDbfActionProperty extends ActionProperty {
             putDouble(quant, row.values.get(map.get(quant)));
             putDouble(price, row.values.get(map.get(price)));
             putDouble(sum, row.values.get(map.get(sum)));
+            putString(contract, row.values.get(map.get(contract)));
+            putDate(dateCon, row.values.get(map.get(dateCon)));
+            putString(imp, row.values.get(map.get(imp)));
             dbfInvoice.write();
         }
     }

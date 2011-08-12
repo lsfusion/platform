@@ -206,9 +206,12 @@ public abstract class ImportBoxInvoiceActionProperty extends BaseImportActionPro
             }
             if (index != -1) {
                 for (List<Object> editingRow : table.data) {
-                    String val = editingRow.get(index).toString();
-                    while (val.length() < 10)
-                        val = val + "0";
+                    String val = null;
+                    if (editingRow.get(index) != null) {
+                        val = editingRow.get(index).toString();
+                        while (val.length() < 10)
+                            val = val + "0";
+                    }
                     editingRow.set(index, val);
                 }
             }

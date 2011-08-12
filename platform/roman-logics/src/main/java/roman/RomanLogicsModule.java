@@ -500,7 +500,7 @@ public class RomanLogicsModule extends LogicsModule {
     private LP insuranceFreightBrandSupplier;
     private LP insuranceFreightBrandSupplierSku;
     private LP routeFreight;
-    private LP nameRouteFreight;    
+    private LP nameRouteFreight;
     private LP exporterFreight;
     LP nameOriginExporterFreight;
     LP nameExporterFreight;
@@ -508,9 +508,10 @@ public class RomanLogicsModule extends LogicsModule {
     LP addressExporterFreight;
     private LP inInvoiceFreight;
     private LP netWeightInvoicedFreight;
-    private LP contractImporterFreight;
-    private LP sidContractImporterFreight;
-    private LP dateContractImporterFreight;
+    public LP contractImporterFreight;
+    public LP nameContractImporterFreight;
+    public LP sidContractImporterFreight;
+    public LP dateContractImporterFreight;
     private LP conditionShipmentContractImporterFreight;
     private LP conditionPaymentContractImporterFreight;
     public LP dateImporterFreightTypeInvoice;
@@ -734,7 +735,7 @@ public class RomanLogicsModule extends LogicsModule {
     private LP currencyContract;
     private LP nameCurrencyContract;
     private LP contractImporter;
-    private LP sidImporter;
+    public LP sidImporter;
     private LP importerDirectInvoice;
     private LP nameImporterDirectInvoice;
     private LP contractDirectInvoice;
@@ -1768,7 +1769,7 @@ public class RomanLogicsModule extends LogicsModule {
         nameThemeSupplierArticleSku = addJProp(supplierAttributeGroup, "nameThemeSupplierArticleSku", "Тема", baseLM.name, themeSupplierArticleSku, 1);
         nameThemeSupplierArticleSku.property.preferredCharWidth = 30;
         nameThemeSupplierArticleSku.property.minimumCharWidth = 15;
-        sidThemeSupplierArticleSku = addJProp(baseGroup, "sidThemeSupplierArticleSku", "Тема", sidThemeSupplier, themeSupplierArticleSku, 1);
+        sidThemeSupplierArticleSku = addJProp(baseGroup, "sidThemeSupplierArticleSku", "Код темы", sidThemeSupplier, themeSupplierArticleSku, 1);
 
         seasonSupplierArticle = addDProp(idGroup, "seasonSupplierArticle", "Сезон (ИД)", seasonSupplier, article);
         nameSeasonSupplierArticle = addJProp(supplierAttributeGroup, "nameSeasonArticle", "Сезон", baseLM.name, seasonSupplierArticle, 1);
@@ -1776,7 +1777,7 @@ public class RomanLogicsModule extends LogicsModule {
         nameSeasonSupplierArticle.property.minimumCharWidth = 15;
 
         seasonSupplierArticleSku = addJProp(idGroup, "seasonArticleSku", "Сезон", seasonSupplierArticle, articleSku, 1);
-        sidSeasonSupplierArticleSku = addJProp(baseGroup, "sidSeasonArticleSku", "Сезон", sidSeasonSupplier, seasonSupplierArticleSku, 1);
+        sidSeasonSupplierArticleSku = addJProp(supplierAttributeGroup, "sidSeasonSupplierArticleSku", "Сезон", sidSeasonSupplier, seasonSupplierArticleSku, 1);
 
         articleSIDSupplier = addAGProp(idGroup, "articleSIDSupplier", "Артикул (ИД)", sidArticle, supplierArticle);
 
@@ -2527,6 +2528,7 @@ public class RomanLogicsModule extends LogicsModule {
         dateImporterFreightTypeInvoice = addDProp(baseGroup, "dateImporterFreightTypeInvoice", "Дата инвойса", DateClass.instance, importer, freight, typeInvoice);
         dateShipmentImporterFreightTypeInvoice = addDProp(baseGroup, "dateShipmentImporterFreightTypeInvoice", "Дата поставки", DateClass.instance, importer, freight, typeInvoice);
         contractImporterFreight = addDProp(idGroup, "contractImporterFreight", "Договор (ИД)", contract, importer, freight);
+        nameContractImporterFreight = addJProp(baseGroup, "nameContractImporterFreight", "Договор", baseLM.name, contractImporterFreight, 1, 2);
 
         addConstraint(addJProp("Импортер договора должен соответствовать импортеру исходящего инвойса", baseLM.diff2, 1, addJProp(importerContract, contractImporterFreight, 1, 2), 1, 2), true);
         addConstraint(addJProp("Продавец по договору должен соответствовать экспортеру исходящего инвойса", baseLM.diff2, exporterFreight, 2, addJProp(sellerContract, contractImporterFreight, 1, 2), 1, 2), true);
@@ -4972,7 +4974,7 @@ public class RomanLogicsModule extends LogicsModule {
         private BalanceWarehouseFormEntity(NavigatorElement parent, String sID, String caption) {
             super(parent, sID, caption);
 
-            objSku = addSingleGroupObject(sku, "SKU", baseLM.selection, baseLM.barcode, nameSupplierArticleSku, nameBrandSupplierArticleSku, nameThemeSupplierArticleSku,
+            objSku = addSingleGroupObject(sku, "SKU", baseLM.selection, baseLM.barcode, nameSupplierArticleSku, nameBrandSupplierArticleSku, nameThemeSupplierArticleSku, sidSeasonSupplierArticleSku,
                     nameCategoryArticleSku, sidArticleSku, nameArticleSku, sidCustomCategory10Sku,
                     sidColorSupplierItem, nameColorSupplierItem, sidSizeSupplierItem,
                     nameCountrySku, netWeightSku,
@@ -5020,7 +5022,7 @@ public class RomanLogicsModule extends LogicsModule {
             objArticle = addSingleGroupObject(article, "Артикул", sidArticle, nameSupplierArticle, nameBrandSupplierArticle, nameThemeSupplierArticle, nameCategoryArticle, nameArticle);
             addObjectActions(this, objArticle);
 
-            objSku = addSingleGroupObject(sku, "SKU", baseLM.selection, baseLM.barcode, nameSupplierArticleSku, nameBrandSupplierArticleSku, nameThemeSupplierArticleSku,
+            objSku = addSingleGroupObject(sku, "SKU", baseLM.selection, baseLM.barcode, nameSupplierArticleSku, nameBrandSupplierArticleSku, nameThemeSupplierArticleSku, sidSeasonSupplierArticleSku,
                     nameCategoryArticleSku, sidArticleSku, nameArticleSku,
                     sidColorSupplierItem, nameColorSupplierItem, sidSizeSupplierItem,
                     nameCountrySku, netWeightSku,
@@ -5652,7 +5654,7 @@ public class RomanLogicsModule extends LogicsModule {
             addPropertyDraw(objFreightBox, baseLM.barcode);
             addPropertyDraw(objSku, sidArticleSku, originalNameArticleSku, sidColorSupplierItem, sidSizeSupplierItem);
             addPropertyDraw(objFreight, objSku, mainCompositionFreightSku, nameCountryOfOriginFreightSku);
-            addPropertyDraw(objSku, baseLM.barcode, nameBrandSupplierArticleSku, sidGenderArticleSku, nameThemeSupplierArticleSku, nameCategoryArticleSku, nameSupplierArticleSku);
+            addPropertyDraw(objSku, baseLM.barcode, nameBrandSupplierArticleSku, sidGenderArticleSku, nameThemeSupplierArticleSku, sidSeasonSupplierArticleSku, nameCategoryArticleSku, nameSupplierArticleSku);
             //setForceViewType(itemAttributeGroup, ClassViewType.GRID, objSku.groupTo);
 //            getPropertyDraw(sidImporterFreightTypeInvoice).toDraw = objSku.groupTo;
 //            getPropertyDraw(dateImporterFreightTypeInvoice).toDraw = objSku.groupTo;
@@ -6338,7 +6340,7 @@ public class RomanLogicsModule extends LogicsModule {
             addPropertyDraw(markupPercentImporterFreightBrandSupplier, objImporter, objFreight, objBrandSupplier);
             addPropertyDraw(insuranceFreightBrandSupplier, objFreight, objBrandSupplier);
 
-            objSku = addSingleGroupObject(sku, "SKU", baseLM.barcode, sidArticleSku, nameBrandSupplierArticleSku, nameCategoryArticleSku);
+            objSku = addSingleGroupObject(sku, "SKU", baseLM.barcode, sidArticleSku, nameCategoryArticleSku);
 
             setForceViewType(itemAttributeGroup, ClassViewType.GRID, objSku.groupTo);
 
@@ -6353,9 +6355,10 @@ public class RomanLogicsModule extends LogicsModule {
             addPropertyDraw(quantityImporterFreightSku, objImporter, objFreight, objSku);
             addPropertyDraw(markupPercentImporterFreightSku, objImporter, objFreight, objSku);
             addPropertyDraw(priceInImporterFreightSku, objImporter, objFreight, objSku);
-            addPropertyDraw(markupInOutImporterFreightSku, objImporter, objFreight, objSku);
+            addPropertyDraw(markupInImporterFreightSku, objImporter, objFreight, objSku);
             addPropertyDraw(priceInOutImporterFreightSku, objImporter, objFreight, objSku);
             addPropertyDraw(priceInvoiceImporterFreightSku, objImporter, objFreight, objSku);
+            addPropertyDraw(markupInOutImporterFreightSku, objImporter, objFreight, objSku);
             addPropertyDraw(priceFreightImporterFreightSku, objImporter, objFreight, objSku);
             addPropertyDraw(priceInsuranceImporterFreightSku, objImporter, objFreight, objSku);
             addPropertyDraw(priceFullImporterFreightSku, objImporter, objFreight, objSku);
