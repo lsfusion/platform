@@ -1266,6 +1266,9 @@ public class RomanLogicsModule extends LogicsModule {
         baseLM.tableFactory.include("importerFreightUnitSku", importer, freightUnit, sku);
         baseLM.tableFactory.include("importerFreightSku", importer, freight, sku);
 
+        baseLM.tableFactory.include("articleColorSupplier", article, colorSupplier);
+        baseLM.tableFactory.include("articleSizeSupplier", article, sizeSupplier);
+
         baseLM.tableFactory.include("stockSku", stock, sku);
         baseLM.tableFactory.include("stockArticle", stock, article);
         baseLM.tableFactory.include("importerStockSku", importer, stock, sku);
@@ -1280,6 +1283,9 @@ public class RomanLogicsModule extends LogicsModule {
         baseLM.tableFactory.include("importerFreightSupplier", importer, freight, supplier);
         baseLM.tableFactory.include("importerFreightTypeInvoice", importer, freight, typeInvoice);
         baseLM.tableFactory.include("importerFreightSupplierCustomCategory6", importer, freight, supplier, customCategory6);
+
+        baseLM.tableFactory.include("supplierBoxBoxShipmentStockSku", supplierBox, boxShipment, stock, sku);
+        baseLM.tableFactory.include("boxInvoiceBoxShipmentStockSku", boxInvoice, boxShipment, stock, sku);
 
         baseLM.tableFactory.include("palletSku", pallet, sku);
         baseLM.tableFactory.include("palletBrandSupplier", pallet, brandSupplier);
@@ -6346,7 +6352,7 @@ public class RomanLogicsModule extends LogicsModule {
             addPropertyDraw(markupPercentImporterFreightBrandSupplier, objImporter, objFreight, objBrandSupplier);
             addPropertyDraw(insuranceFreightBrandSupplier, objFreight, objBrandSupplier);
 
-            objSku = addSingleGroupObject(sku, "SKU", baseLM.barcode, sidArticleSku, nameCategoryArticleSku);
+            objSku = addSingleGroupObject(sku, "SKU", baseLM.barcode, sidArticleSku, nameBrandSupplierArticleSku, nameCategoryArticleSku);
 
             setForceViewType(itemAttributeGroup, ClassViewType.GRID, objSku.groupTo);
 
