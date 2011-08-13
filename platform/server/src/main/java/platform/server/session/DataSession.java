@@ -141,6 +141,10 @@ public class DataSession extends MutableObject implements SessionChanges, ExprCh
         this.idSession = idSession;
     }
 
+    public DataSession createSession() throws SQLException {
+        return new DataSession(sql, user, computer, isServerRestarting, baseClass, namedObject, sessionClass, name, recognizeGroup, transaction, date, currentDate, notDeterministic, idSession);
+    }
+
     public void restart(boolean cancel) throws SQLException {
 
         // apply

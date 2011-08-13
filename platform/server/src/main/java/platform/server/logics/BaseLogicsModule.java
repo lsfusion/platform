@@ -28,10 +28,7 @@ import platform.server.form.window.NavigatorWindow;
 import platform.server.form.window.TreeNavigatorWindow;
 import platform.server.logics.linear.LP;
 import platform.server.logics.property.*;
-import platform.server.logics.property.actions.ApplyActionProperty;
-import platform.server.logics.property.actions.DeleteObjectActionProperty;
-import platform.server.logics.property.actions.FormActionProperty;
-import platform.server.logics.property.actions.GenerateLoginPasswordActionProperty;
+import platform.server.logics.property.actions.*;
 import platform.server.logics.property.group.AbstractGroup;
 import platform.server.logics.property.group.PropertySet;
 import platform.server.logics.table.TableFactory;
@@ -200,6 +197,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public LP delete;
 
     public LP apply;
+    public LP cancel;
 
     public LP objectClass;
     public LP objectClassName;
@@ -434,7 +432,8 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
         delete = addAProp(new DeleteObjectActionProperty(baseClass));
 
-        apply = addAProp(new ApplyActionProperty());
+        apply = addAProp(new ApplyActionProperty(BL));
+        cancel = addAProp(new CancelActionProperty());
 
         date = addDProp(baseGroup, "date", getString("logics.date"), DateClass.instance, transaction);
 

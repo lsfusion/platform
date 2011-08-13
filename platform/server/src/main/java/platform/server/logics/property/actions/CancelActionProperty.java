@@ -17,21 +17,17 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 
-public class ApplyActionProperty extends ActionProperty {
+public class CancelActionProperty extends ActionProperty {
 
-    BusinessLogics BL;
-
-    public ApplyActionProperty(BusinessLogics BL) {
-        super("applyChanges", "Применить изменения", new ValueClass[] {} );
-
-        this.BL = BL;
+    public CancelActionProperty() {
+        super("cancelChanges", "Отменить изменения", new ValueClass[] {} );
     }
 
     @Override
     public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, DataSession session, Modifier<? extends Changes> modifier, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects, boolean groupLast) throws SQLException {
         if (executeForm != null)
-            executeForm.applyChanges(actions);
+            executeForm.cancelChanges();
         else
-            session.apply(BL);
+            session.restart(true);
     }
 }

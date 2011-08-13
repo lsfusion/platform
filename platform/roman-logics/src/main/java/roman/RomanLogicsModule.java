@@ -926,7 +926,7 @@ public class RomanLogicsModule extends LogicsModule {
     public LP nameCountryOfOriginFreightSku;
     private LP equalsItemArticleComposite;
     private LP executeArticleCompositeItemSIDSupplier;
-    private LP executeChangeFreightClass, executeChangeFreightChangedClass, executeChangeFreightShippedClass;
+    private LP executeChangeFreightClass, executeChangeFreightClassApply, executeChangeFreightChangedClass, executeChangeFreightShippedClass;
     private CreateItemFormEntity createItemForm;
     private EditItemFormEntity editItemForm;
     private FindItemFormEntity findItemFormBox;
@@ -1812,15 +1812,17 @@ public class RomanLogicsModule extends LogicsModule {
 
         executeChangeFreightClass = addJProp(true, "Изменить класс фрахта", baseLM.and1, addEPAProp(baseLM.objectClass), 1, 2, is(freight), 1);
 
+        executeChangeFreightClassApply = addEPAProp(true, executeChangeFreightClass, 1, 2, baseLM.apply, baseLM.cancel);
+
         executeChangeFreightChangedClass = addJProp("Пометить как обработанный", and(false, true),
-                                                addEPAProp(true, executeChangeFreightClass, 1, 2, baseLM.apply), 1, 2,
+                                                executeChangeFreightClassApply, 1, 2,
                                                 is(freightComplete), 1,
                                                 is(freightChanged), 1);
         executeChangeFreightChangedClass.property.askConfirm = true;
         executeChangeFreightChangedClass.setImage("sign_tick.png");
 
         executeChangeFreightShippedClass = addJProp("Пометить как отгруженный", and(false, true),
-                                                addEPAProp(true, executeChangeFreightClass, 1, 2, baseLM.apply), 1, 2,
+                                                executeChangeFreightClassApply, 1, 2,
                                                 is(freightPriced), 1,
                                                 is(freightShipped), 1);
         executeChangeFreightShippedClass.property.askConfirm = true;
@@ -5383,6 +5385,7 @@ public class RomanLogicsModule extends LogicsModule {
             setReadOnly(publicGroup, true, objSku.groupTo);
             setReadOnly(sidCustomCategory10Sku, false, objSku.groupTo);
             setReadOnly(nameSubCategoryDataSku, false, objSku.groupTo);
+            setReadOnly(nameCountrySku, false, objSku.groupTo);
             setReadOnly(netWeightSku, false, objSku.groupTo);
             setReadOnly(mainCompositionOriginSku, false, objSku.groupTo);
             setReadOnly(additionalCompositionOriginSku, false, objSku.groupTo);

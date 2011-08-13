@@ -724,11 +724,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends IncrementProps<Pr
     }
 
     public FormInstance<T> createForm(FormEntity<T> form, Map<ObjectEntity, DataObject> mapObjects, boolean newSession, boolean interactive) throws SQLException {
-        DataSession formSession = newSession
-                              ? BL.createSession(session.sql, session.user, session.computer)
-                              : session;
-
-        return new FormInstance<T>(form, BL, formSession, securityPolicy, getFocusListener(), getClassListener(), instanceFactory.computer, mapObjects, interactive);
+        return new FormInstance<T>(form, BL, newSession ? session.createSession() : session, securityPolicy, getFocusListener(), getClassListener(), instanceFactory.computer, mapObjects, interactive);
     }
 
     public void forceChangeObject(ObjectInstance object, ObjectValue value) throws SQLException {
