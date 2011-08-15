@@ -367,6 +367,9 @@ public class RomanLogicsModule extends LogicsModule {
     private LP nameCustomCategory6CustomCategoryOrigin;
     private LP nameCustomCategory4CustomCategoryOrigin;
     LP relationCustomCategory10CustomCategoryOrigin;
+    private LP customCategory10ArticleColor;
+    private LP sidCustomCategory10ArticleColor;
+    private LP customCategory10ArticleColorSku;
     private LP customCategory10DataSku;
     private LP customCategory10Sku;
     private LP customCategory9Sku;
@@ -398,6 +401,7 @@ public class RomanLogicsModule extends LogicsModule {
     private LP countryOfOriginArticleColor;
     private LP countryOfOriginArticleColorSku;
     private LP countryOfOriginArticleSku;
+    private LP nameCountryArticleColor;
 
     private LP genderGenderSupplier;
     private LP sidGenderGenderSupplier;
@@ -754,6 +758,7 @@ public class RomanLogicsModule extends LogicsModule {
     private LP quantityProxyImporterFreightSku;
     private LP quantityDirectImporterFreightSku;
     private LP quantityImporterFreightSku;
+    private LP quantityFreightArticleColor;
 
     private LP netWeightStockSku;
     private LP netWeightStockArticle;
@@ -808,6 +813,7 @@ public class RomanLogicsModule extends LogicsModule {
     private LP quantityProxyImporterFreight;
     private LP quantityImporterFreightTypeInvoice;
     private LP quantityImporterFreightSupplier;
+    private LP quantityImporterFreightArticle;
     private LP quantityImporterFreightBrandSupplier;
     private LP markupPercentImporterFreightBrandSupplier;
     private LP markupPercentImporterFreightDataSku;
@@ -837,7 +843,10 @@ public class RomanLogicsModule extends LogicsModule {
     private LP sumImporterFreight;
     private LP sumImporterFreightTypeInvoice;
     private LP sumSbivkaImporterFreight;
+    private LP sumInOutImporterFreightArticle;
+    private LP sumInOutImporterFreightBrandSupplier;
     private LP sumImporterFreightSupplier;
+    private LP sumInOutFreightArticle;
     private LP sumInOutFreightBrandSupplier;
     private LP sumInOutFreightBrandSupplierSku;
     private LP sumOutImporterFreight;
@@ -857,6 +866,7 @@ public class RomanLogicsModule extends LogicsModule {
     private LP quantityFreightArticle;
     private LP quantityProxyFreightSku;
     private LP quantityDirectFreightSku;
+    private LP quantityFreightBrandSupplier;
     private LP quantityFreightSku;
     private LP quantityFreightCategory;
     private LP sumImporterFreightSku;
@@ -1682,12 +1692,20 @@ public class RomanLogicsModule extends LogicsModule {
         nameArticle = addSUProp(baseGroup, "nameArticle", "Наименование", Union.OVERRIDE, originalNameArticle, nameOriginCategoryArticle);
         nameArticleSku = addJProp(intraAttributeGroup, "nameArticleSku", "Наименование", nameArticle, articleSku, 1);
 
+        colorSupplierItem = addDProp(idGroup, "colorSupplierItem", "Цвет поставщика (ИД)", colorSupplier, item);
+        sidColorSupplierItem = addJProp(itemAttributeGroup, "sidColorSupplierItem", "Код цвета", sidColorSupplier, colorSupplierItem, 1);
+        nameColorSupplierItem = addJProp(itemAttributeGroup, "nameColorSupplierItem", "Цвет поставщика", baseLM.name, colorSupplierItem, 1);
+
         customCategoryOriginArticle = addDProp(idGroup, "customCategoryOriginArticle", "ТН ВЭД (ориг.) (ИД)", customCategoryOrigin, article);
         sidCustomCategoryOriginArticle = addJProp(supplierAttributeGroup, "sidCustomCategoryOriginArticle", "Код ТН ВЭД (ориг.)", sidCustomCategoryOrigin, customCategoryOriginArticle, 1);
         customCategory6Article = addDProp(idGroup, "customCategory6Article", "ТН ВЭД (6) (ИД)", customCategory6, article);
         sidCustomCategory6Article = addJProp(supplierAttributeGroup, "sidCustomCategory6Article", "Код ТН ВЭД (6)", sidCustomCategory6, customCategory6Article, 1);
         customCategoryOriginArticleSku = addJProp(idGroup, true, "customCategoryOriginArticleSku", "ТН ВЭД (ориг.) (ИД)", customCategoryOriginArticle, articleSku, 1);
         sidCustomCategoryOriginArticleSku = addJProp(supplierAttributeGroup, "sidCustomCategoryOriginArticleSku", "Код ТН ВЭД (ориг.)", sidCustomCategoryOrigin, customCategoryOriginArticleSku, 1);
+
+        customCategory10ArticleColor = addDProp(idGroup, "customCategory10ArticleColor", "ТН ВЭД (ИД)", customCategory10, article, colorSupplier);
+        sidCustomCategory10ArticleColor = addJProp(baseGroup, "sidCustomCategory10ArticleColor", "ТН ВЭД", sidCustomCategory10, customCategory10ArticleColor, 1, 2);
+        customCategory10ArticleColorSku = addJProp(idGroup, true, "customCategory10ArticleColorSku", "ТН ВЭД (ИД)", customCategory10ArticleColor, articleSku, 1, colorSupplierItem, 1);
 
         customCategory10DataSku = addDProp(idGroup, "customCategory10DataSku", "ТН ВЭД (ИД)", customCategory10, sku);
         customCategory10CustomCategoryOriginArticle = addJProp(idGroup, "customCategory10CustomCategoryOriginArticle", "ТН ВЭД (ИД)", customCategory10CustomCategoryOrigin, customCategoryOriginArticle, 1);
@@ -1828,11 +1846,6 @@ public class RomanLogicsModule extends LogicsModule {
 
         jennyferSupplierArticleSku = addJProp("jennyferSupplierArticleSku", "Поставщик Jennyfer (ИД)", jennyferSupplierArticle, articleSku, 1);
 
-        colorSupplierItem = addDProp(idGroup, "colorSupplierItem", "Цвет поставщика (ИД)", colorSupplier, item);
-        sidColorSupplierItem = addJProp(itemAttributeGroup, "sidColorSupplierItem", "Код цвета", sidColorSupplier, colorSupplierItem, 1);
-        nameColorSupplierItem = addJProp(itemAttributeGroup, "nameColorSupplierItem", "Цвет поставщика", baseLM.name, colorSupplierItem, 1);
-
-
         sizeSupplierItem = addDProp(itemAttributeGroup, "sizeSupplierItem", "Размер поставщика (ИД)", sizeSupplier, item);
         sidSizeSupplierItem = addJProp(itemAttributeGroup, "sidSizeSupplierItem", "Размер поставщика", sidSizeSupplier, sizeSupplierItem, 1);
 
@@ -1919,6 +1932,7 @@ public class RomanLogicsModule extends LogicsModule {
 
         countryOfOriginArticleColor = addDProp(idGroup, "countryOfOriginArticleColor", "Страна происхождения (ИД)", baseLM.country, article, colorSupplier);
         countryOfOriginArticleColorSku = addJProp(idGroup, true, "countryOfOriginArticleColorSku", "Страна происхождения (ИД)", countryOfOriginArticleColor, articleSku, 1, colorSupplierItem, 1);
+        nameCountryArticleColor = addJProp(baseGroup, "nameCountryArticleColor", "Страна происхождения", baseLM.name, countryOfOriginArticleColor, 1, 2);
 
         countryOfOriginDataSku = addDProp(idGroup, "countryOfOriginDataSku", "Страна происхождения (ИД) (первичное)", baseLM.country, sku);
 
@@ -2599,7 +2613,10 @@ public class RomanLogicsModule extends LogicsModule {
         quantityDirectImporterFreightSku = addSGProp(baseGroup, "quantityDirectImporterFreightSku", true, true, "Кол-во (напрямую)", quantityListSku, importerSupplierBox, 1, freightFreightUnit, 1, 2);
         quantityImporterFreightSku = addSUProp(baseGroup, "quantityImporterFreightSku", true, true, "Кол-во", Union.SUM, quantityProxyImporterFreightSku, quantityDirectImporterFreightSku);
 
+        quantityFreightArticleColor = addSGProp(baseGroup, "quantityFreightArticleColor", "Кол-во", quantityImporterFreightSku, 2, articleSku, 3, colorSupplierItem, 3);
+
         quantityFreightArticle = addSGProp(baseGroup, "quantityFreightArticle", "Кол-во", quantityImporterFreightSku, 2, articleSku, 3);
+        quantityFreightBrandSupplier = addSGProp(baseGroup, "quantityFreightBrandSupplier", "Кол-во", quantityImporterFreightSku, 2, brandSupplierArticleSku, 3);
 
         quantityFreightSku = addSGProp(baseGroup, "quantityFreightSku", true, true, "Кол-во", quantityImporterFreightSku, 2, 3);
         quantityDirectFreightSku = addSGProp(baseGroup, "quantityDirectFreightSku", true, true, "Кол-во (напрямую)", quantityDirectImporterFreightSku, 2, 3);
@@ -2696,6 +2713,7 @@ public class RomanLogicsModule extends LogicsModule {
         netWeightImporterFreightSupplier = addSGProp(baseGroup, "netWeightImporterFreightSupplier", true, "Вес нетто", netWeightDirectImporterFreightSku, 1, 2, supplierArticleSku, 3);
         //netWeightImporterFreightBox = addSGProp(baseGroup, "netWeightImporterFreight", "Вес нетто", netWeightImporterFreightSku, 1, 2);
 
+        quantityImporterFreightArticle = addSGProp(baseGroup, "quantityImporterFreightArticle", true, "Кол-во позиций", quantityImporterFreightSku, 1, 2, articleSku, 3);
         quantityImporterFreightBrandSupplier = addSGProp(baseGroup, "quantityImporterFreightBrandSupplier", true, "Кол-во позиций", quantityImporterFreightSku, 1, 2, brandSupplierArticleSku, 3);
 
         quantityImporterFreight = addSGProp(baseGroup, "quantityImporterFreight", true, "Кол-во позиций", quantityImporterFreightSku, 1, 2);
@@ -2826,6 +2844,10 @@ public class RomanLogicsModule extends LogicsModule {
         sumInOutDirectImporterFreightSku = addJProp(baseGroup, "sumInOutDirectImporterFreightSku", "Сумма выходная", baseLM.multiplyDouble2, quantityDirectImporterFreightSku, 1, 2, 3, priceInOutImporterFreightSku, 1, 2, 3);
         sumInOutImporterFreightSku = addSUProp(baseGroup, "sumInOutImporterFreightSku", true, "Сумма выходная", Union.SUM, sumInOutProxyImporterFreightSku, sumInOutDirectImporterFreightSku);
 
+        sumInOutImporterFreightArticle = addSGProp(baseGroup, "sumInOutImporterFreightArticle", true, "Сумма по артикулу", sumInOutImporterFreightSku, 1, 2, articleSku, 3);
+        sumInOutImporterFreightBrandSupplier = addSGProp(baseGroup, "sumInOutImporterFreightBrandSupplier", true, "Сумма по бренду", sumInOutImporterFreightSku, 1, 2, brandSupplierArticleSku, 3);
+
+        sumInOutFreightArticle = addSGProp(baseGroup, "sumInOutFreightArticle", true, "Сумма по артикулу", sumInOutImporterFreightSku, 2, articleSku, 3);
         sumInOutFreightBrandSupplier = addSGProp(baseGroup, "sumInOutFreightBrandSupplier", true, "Сумма по бренду", sumInOutImporterFreightSku, 2, brandSupplierArticleSku, 3);
         sumInOutFreightBrandSupplierSku = addJProp(baseGroup, "sumInOutFreightBrandSupplierSku", "Сумма по бренду", sumInOutFreightBrandSupplier, 1, brandSupplierArticleSku, 2);
 
@@ -3145,6 +3167,7 @@ public class RomanLogicsModule extends LogicsModule {
         addFormEntity(new FreightShipmentFormEntity(actionFreight, "freightShipmentForm", "Комплектация фрахта"));
         addFormEntity(new FreightChangeFormEntity(actionFreight, "freightChangeForm", "Обработка фрахта"));
         addFormEntity(new FreightInvoiceFormEntity(actionFreight, "freightInvoiceForm", "Расценка фрахта"));
+        addFormEntity(new FreightContentFormEntity(actionFreight, "freightContentForm", "Содержимое фрахта"));
 
         logFreightForm = new LogFormEntity("logFreightForm", "История фрахта", nameClassFreight, logFreight, baseLM);
 
@@ -4993,11 +5016,11 @@ public class RomanLogicsModule extends LogicsModule {
 
             RegularFilterGroupEntity filterGroup = new RegularFilterGroupEntity(genID());
             filterGroup.addFilter(new RegularFilterEntity(genID(),
-                    new NotNullFilterEntity(addPropertyObject(quantitySku, objSku)),
+                    new CompareFilterEntity(addPropertyObject(quantitySku, objSku), Compare.GREATER, addPropertyObject(baseLM.vzero)),
                     "Ненулевые остатки",
                     KeyStroke.getKeyStroke(KeyEvent.VK_F10, 0)));
             filterGroup.addFilter(new RegularFilterEntity(genID(),
-                    new NotFilterEntity(new NotNullFilterEntity(addPropertyObject(quantitySku, objSku))),
+                    new CompareFilterEntity(addPropertyObject(quantitySku, objSku), Compare.EQUALS,addPropertyObject( baseLM.vzero)),
                     "Нулевые остатки",
                     KeyStroke.getKeyStroke(KeyEvent.VK_F11, 0)));
             filterGroup.defaultFilter = 0;
@@ -5338,6 +5361,7 @@ public class RomanLogicsModule extends LogicsModule {
         private ObjectEntity objArticle;
         private ObjectEntity objCategory;
         private ObjectEntity objSku;
+        private ObjectEntity objColor;
         private ObjectEntity objSkuFreight;
         private RegularFilterGroupEntity filterGroupCategory;
         private RegularFilterGroupEntity filterGroupCustomCategory10;
@@ -5384,6 +5408,15 @@ public class RomanLogicsModule extends LogicsModule {
             setReadOnly(additionalCompositionOriginSku, false, objSku.groupTo);
             setReadOnly(mainCompositionSku, false, objSku.groupTo);
             setReadOnly(additionalCompositionSku, false, objSku.groupTo);
+
+            objColor = addSingleGroupObject(colorSupplier, "Цвет", baseLM.name);
+
+            addPropertyDraw(objArticle, objColor, mainCompositionOriginArticleColor, additionalCompositionOriginArticleColor, nameCountryArticleColor, sidCustomCategory10ArticleColor);
+            addPropertyDraw(quantityFreightArticle, objFreight, objArticle);
+            addPropertyDraw(quantityFreightArticleColor, objFreight, objArticle, objColor);
+
+            addFixedFilter(new NotNullFilterEntity(addPropertyObject(quantityFreightArticleColor, objFreight, objArticle, objColor)));
+
 
             objSkuFreight = addSingleGroupObject(sku, "Позиции фрахта", baseLM.selection, baseLM.barcode, sidArticleSku, sidColorSupplierItem, nameColorSupplierItem,
                     sidSizeSupplierItem, nameBrandSupplierArticleSku, nameArticleSku);
@@ -5452,6 +5485,8 @@ public class RomanLogicsModule extends LogicsModule {
                     KeyStroke.getKeyStroke(KeyEvent.VK_F8, 0)));
             addRegularFilterGroup(filterGroupComposition);
 
+            setPageSize(0);
+
             freightChangedFA = addMFAProp(actionGroup, "Обработать", this,
                     new ObjectEntity[]{objFreight}, true);
             freightChangedFA.setImage("arrow_right.png");
@@ -5479,9 +5514,17 @@ public class RomanLogicsModule extends LogicsModule {
                     design.getGroupObjectContainer(objImporter.groupTo),
                     DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
 
+            design.addIntersection(design.getGroupObjectContainer(objArticle.groupTo),
+                    design.getGroupObjectContainer(objColor.groupTo),
+                    DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
+
             design.addIntersection(design.getGroupObjectContainer(objCategory.groupTo),
                     design.getGroupObjectContainer(objSku.groupTo),
                     DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
+
+            ContainerView articleContainer = design.createContainer("Артикула-цвета");
+            articleContainer.add(design.getGroupObjectContainer(objArticle.groupTo));
+            articleContainer.add(design.getGroupObjectContainer(objColor.groupTo));
 
             ContainerView skuContainer = design.createContainer("SKU");
             skuContainer.add(design.getGroupObjectContainer(objCategory.groupTo));
@@ -5489,7 +5532,7 @@ public class RomanLogicsModule extends LogicsModule {
 
             ContainerView specContainer = design.createContainer();
             design.getMainContainer().addAfter(specContainer, design.getGroupObjectContainer(objArticle.groupTo));
-            specContainer.add(design.getGroupObjectContainer(objArticle.groupTo));
+            specContainer.add(articleContainer);
             specContainer.add(skuContainer);
             specContainer.add(design.getGroupObjectContainer(objSkuFreight.groupTo));
             specContainer.tabbedPane = true;
@@ -6400,6 +6443,8 @@ public class RomanLogicsModule extends LogicsModule {
 //            addHintsNoUpdate(NDSImporterFreightSku);
             //addHintsNoUpdate(sumInImporterFreight);
 
+            setPageSize(0);
+
             freightPricedFA = addMFAProp(actionGroup, "Расценить", this,
                     new ObjectEntity[] {objFreight}, true, addPropertyObject(executeChangeFreightClass, objFreight, (DataObject) freightPriced.getClassObject()));
             freightPricedFA.setImage("arrow_right.png");
@@ -6431,6 +6476,59 @@ public class RomanLogicsModule extends LogicsModule {
             return design;
         }
     }
+
+    private class FreightContentFormEntity extends FormEntity<RomanBusinessLogics> {
+
+        private ObjectEntity objFreight;
+        private ObjectEntity objImporter;
+        private ObjectEntity objBrand;
+        private ObjectEntity objArticle;
+
+        private FreightContentFormEntity(NavigatorElement<RomanBusinessLogics> parent, String sID, String caption) {
+            super(parent, sID, caption);
+
+            objFreight = addSingleGroupObject(freight, "Фрахт", baseLM.date, baseLM.objectClassName, nameRouteFreight, nameExporterFreight, nameFreightTypeFreight, nameCurrencyFreight, sumFreightFreight);
+            objFreight.groupTo.setSingleClassView(ClassViewType.GRID);
+
+            objImporter = addSingleGroupObject(importer, "Фрахт", baseLM.name);
+
+            objBrand = addSingleGroupObject(brandSupplier, "Бренд", baseLM.name);
+
+            addPropertyDraw(objFreight, objBrand, quantityFreightBrandSupplier, sumInOutFreightBrandSupplier);
+            addPropertyDraw(objImporter, objFreight, objBrand, quantityImporterFreightBrandSupplier, sumInOutImporterFreightBrandSupplier);
+
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(quantityImporterFreightBrandSupplier, objImporter, objFreight, objBrand), Compare.GREATER, addPropertyObject(baseLM.vzero)));
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(quantityFreightBrandSupplier, objFreight, objBrand), Compare.GREATER, addPropertyObject(baseLM.vzero)));
+
+            objArticle = addSingleGroupObject(article, "Артикул", sidArticle, nameCategoryArticle);
+
+            addPropertyDraw(objFreight, objArticle, quantityFreightArticle, sumInOutFreightArticle);
+            addPropertyDraw(objImporter, objFreight, objArticle, quantityImporterFreightArticle, sumInOutImporterFreightArticle);
+
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(brandSupplierArticle, objArticle), Compare.EQUALS, objBrand));
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(quantityFreightArticle, objFreight, objArticle), Compare.GREATER, addPropertyObject(baseLM.vzero)));
+
+            //freightContentFA = addMFAProp(actionGroup, "Посмотреть фрахт", this, new ObjectEntity[] {objFreight}, true);
+
+        }
+
+        @Override
+        public FormView createDefaultRichDesign() {
+            DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign();
+
+            design.get(getPropertyDraw(baseLM.date, objFreight)).caption = "Дата отгрузки";
+            design.get(getPropertyDraw(baseLM.objectClassName, objFreight)).caption = "Статус фрахта";
+
+            design.addIntersection(design.getGroupObjectContainer(objFreight.groupTo), design.getGroupObjectContainer(objImporter.groupTo), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
+
+            design.get(objFreight.groupTo).grid.constraints.fillVertical = 1;
+            design.get(objBrand.groupTo).grid.constraints.fillVertical = 1;
+            design.get(objArticle.groupTo).grid.constraints.fillVertical = 2;
+
+            return design;
+        }
+    }
+
 
     private class FreightCreateFormEntity extends FormEntity<RomanBusinessLogics> {
 
