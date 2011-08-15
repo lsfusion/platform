@@ -1849,8 +1849,6 @@ public class RomanLogicsModule extends LogicsModule {
 
         genderOriginArticle = addJProp(itemAttributeGroup, "genderOriginArticle", "Пол (ИД)", genderGenderSupplier, genderSupplierArticle, 1);
 
-        genderOriginArticle = addJProp(itemAttributeGroup, "genderOriginArticle", "Пол (ИД)", genderGenderSupplier, genderSupplierArticle, 1);
-
         //genderSupplierItem = addDProp(itemAttributeGroup, "genderSupplierItem", "Пол поставщика (ИД)", genderSupplier, item);
         //sidGenderSupplierItem = addJProp(itemAttributeGroup, "sidGenderSupplierItem", "Пол поставщика", sidGenderSupplier, genderSupplierItem, 1);
 
