@@ -2,25 +2,17 @@ package platform.server.logics.property.actions;
 
 import platform.base.BaseUtils;
 import platform.base.Result;
-import platform.interop.action.ClientAction;
 import platform.server.classes.StringClass;
 import platform.server.classes.ValueClass;
-import platform.server.form.instance.FormInstance;
-import platform.server.form.instance.PropertyObjectInterfaceInstance;
-import platform.server.form.instance.remote.RemoteForm;
 import platform.server.logics.DataObject;
-import platform.server.logics.ObjectValue;
 import platform.server.logics.linear.LP;
 import platform.server.logics.property.ActionProperty;
 import platform.server.logics.property.ClassPropertyInterface;
-import platform.server.session.Changes;
-import platform.server.session.DataSession;
-import platform.server.session.Modifier;
+import platform.server.logics.property.ExecutionContext;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.StringTokenizer;
 
 public class TranslateActionProperty extends ActionProperty {
@@ -43,26 +35,25 @@ public class TranslateActionProperty extends ActionProperty {
         return result.toArray(new ValueClass[result.size()]);
     }
 
-    public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, DataSession session, Modifier<? extends Changes> modifier, List<ClientAction> actions,
-                        RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects, boolean groupLast) throws SQLException {
+    public void execute(ExecutionContext context) throws SQLException {
         List<ClassPropertyInterface> interfacesList = new ArrayList<ClassPropertyInterface>(interfaces);
-        DataObject dictionary = keys.get(interfacesList.remove(0));
-        List<DataObject> inputObjects = BaseUtils.mapList(interfacesList, keys);
+        DataObject dictionary = context.getKeyValue(interfacesList.remove(0));
+        List<DataObject> inputObjects = BaseUtils.mapList(interfacesList, context.getKeys());
 
-        String source = (String) sourceProperty.read(session, modifier, inputObjects.toArray(new DataObject[inputObjects.size()]));
+        String source = (String) sourceProperty.read(context, inputObjects.toArray(new DataObject[inputObjects.size()]));
 
         if (source != null) {
             String delim = ", .:;%#$@/\\|<>=+-_)(*&?^!~{}[]\"1234567890'";
             StringTokenizer st = new StringTokenizer(source, delim, true);
             String result = "";
-            String fullLineTranslation = (String) translationDictionaryTerm.read(session, modifier, dictionary, new DataObject(source, StringClass.get(50)));
+            String fullLineTranslation = (String) translationDictionaryTerm.read(context, dictionary, new DataObject(source, StringClass.get(50)));
             if (fullLineTranslation != null) {
                 result = fullLineTranslation.trim();
             } else {
                 while (st.hasMoreTokens()) {
                     String token = st.nextToken();
                     if (!delim.contains(token.subSequence(0, token.length()))) {
-                        String translation = (String) translationDictionaryTerm.read(session, modifier, dictionary, new DataObject(token, StringClass.get(50)));
+                        String translation = (String) translationDictionaryTerm.read(context, dictionary, new DataObject(token, StringClass.get(50)));
                         if (translation != null) {
                             token = translation.trim();
                         }
@@ -70,7 +61,7 @@ public class TranslateActionProperty extends ActionProperty {
                     result += token;
                 }
             }
-            targetProperty.execute(result, session, inputObjects.toArray(new DataObject[inputObjects.size()]));
+            targetProperty.execute(result, context, inputObjects.toArray(new DataObject[inputObjects.size()]));
         }
     }
 }

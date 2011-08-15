@@ -146,6 +146,10 @@ public class LP<T extends PropertyInterface> {
         return property.read(session, mapValues, modifier, env);
     }
 
+    public Object read(ExecutionContext context, DataObject... objects) throws SQLException {
+        return read(context.getSession(), context.getModifier(), objects);
+    }
+
     public Object read(DataSession session, Modifier<? extends Changes> modifier, DataObject... objects) throws SQLException {
         return read(session.sql, modifier, session.env, objects);
     }
@@ -157,6 +161,10 @@ public class LP<T extends PropertyInterface> {
     // execute'ы без Form'
     public List<ClientAction> execute(Object value, DataSession session, DataObject... objects) throws SQLException {
         return execute(value, session, session.modifier, objects);
+    }
+
+    public List<ClientAction> execute(Object value, ExecutionContext context, DataObject... objects) throws SQLException {
+        return execute(value, context.getSession(), context.getModifier(), objects);
     }
 
     public List<ClientAction> execute(Object value, DataSession session, Modifier<? extends Changes> modifier, DataObject... objects) throws SQLException {

@@ -22,23 +22,18 @@ import platform.server.form.entity.filter.*;
 import platform.server.form.instance.FormInstance;
 import platform.server.form.instance.ObjectInstance;
 import platform.server.form.instance.PropertyDrawInstance;
-import platform.server.form.instance.PropertyObjectInterfaceInstance;
 import platform.server.form.instance.filter.CompareFilterInstance;
-import platform.server.form.instance.remote.RemoteForm;
 import platform.server.form.navigator.NavigatorElement;
 import platform.server.form.view.*;
 import platform.server.integration.*;
 import platform.server.logics.BaseLogicsModule;
 import platform.server.logics.DataObject;
 import platform.server.logics.LogicsModule;
-import platform.server.logics.ObjectValue;
 import platform.server.logics.linear.LP;
 import platform.server.logics.property.ActionProperty;
 import platform.server.logics.property.ClassPropertyInterface;
+import platform.server.logics.property.ExecutionContext;
 import platform.server.logics.property.group.AbstractGroup;
-import platform.server.session.Changes;
-import platform.server.session.DataSession;
-import platform.server.session.Modifier;
 import tmc.integration.exp.AbstractSaleExportTask;
 import tmc.integration.exp.CashRegController;
 import tmc.integration.exp.SaleExportTask;
@@ -53,7 +48,6 @@ import java.io.FileNotFoundException;
 import java.sql.SQLException;
 import java.text.ParseException;
 import java.util.*;
-import java.util.List;
 
 /**
  * User: DAle
@@ -2700,7 +2694,7 @@ public class VEDLogicsModule extends LogicsModule {
                 return super.getClientApply(formInstance);
         }
 
-        public ClientAction getPrintOrderAction(FormInstance<VEDBusinessLogics> formInstance) {
+        public ClientAction getPrintOrderAction(FormInstance<?> formInstance) {
             if (toAdd) {
 
                 ObjectInstance art = formInstance.instanceFactory.getInstance(objArt);
@@ -4159,16 +4153,16 @@ public class VEDLogicsModule extends LogicsModule {
             askConfirm = true;
         }
 
-        public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, DataSession session, Modifier<? extends Changes> modifier, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects, boolean groupLast) throws SQLException {
+        public void execute(ExecutionContext context) throws SQLException {
             //To change body of implemented methods use File | Settings | File Templates.
-            DataObject document = BaseUtils.singleValue(keys);
-            if(orderSalePayCash.read(session, modifier, document)==null && orderSalePayCard.read(session, modifier, document)==null) {
-                orderSalePayCash.execute(null, session, modifier, document);
-                orderSalePayCard.execute(sumWithDiscountObligationOrder.read(session, modifier, document), session, modifier, document);
+            DataObject document = context.getSingleKeyValue();
+            if(orderSalePayCash.read(context, document)==null && orderSalePayCard.read(context, document)==null) {
+                orderSalePayCash.execute(null, context, document);
+                orderSalePayCard.execute(sumWithDiscountObligationOrder.read(context, document), context, document);
 
-                actions.add(new ApplyClientAction());
+                context.addAction(new ApplyClientAction());
             } else
-                actions.add(new MessageClientAction("Для оплаты карточкой очистите поля сумм : Карточкой и Наличными", "Оплатить карточкой"));
+                context.addAction(new MessageClientAction("Для оплаты карточкой очистите поля сумм : Карточкой и Наличными", "Оплатить карточкой"));
         }
 
         @Override
@@ -4184,10 +4178,10 @@ public class VEDLogicsModule extends LogicsModule {
             super(genSID(), "Печать", new ValueClass[]{orderSaleRetail});
         }
 
-        public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, DataSession session, Modifier<? extends Changes> modifier, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects, boolean groupLast) throws SQLException {
+        public void execute(ExecutionContext context) throws SQLException {
             //To change body of implemented methods use File | Settings | File Templates.
-            FormInstance<VEDBusinessLogics> remoteForm = executeForm.form;
-            actions.add(((CommitSaleCheckRetailFormEntity) remoteForm.entity).getPrintOrderAction(remoteForm));
+            FormInstance<?> remoteForm = context.getFormInstance();
+            context.addAction(((CommitSaleCheckRetailFormEntity) remoteForm.entity).getPrintOrderAction(remoteForm));
         }
 
         @Override
@@ -4212,8 +4206,8 @@ public class VEDLogicsModule extends LogicsModule {
             dateTo = i.next();
         }
 
-        public void execute(final Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, DataSession session, Modifier<? extends Changes> modifier, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects, boolean groupLast) throws SQLException {
-            Integer shopID = (Integer) keys.get(shopInterface).object;
+        public void execute(final ExecutionContext context) throws SQLException {
+            Integer shopID = (Integer) context.getKeyObject(shopInterface);
             try {
                 new AbstractSaleExportTask(VEDBL, ((SaleExportTask) VEDBL.getScheduler().getTask("saleExport")).getPath(shopID), shopID) {
                     protected String getDbfName() {
@@ -4222,8 +4216,8 @@ public class VEDLogicsModule extends LogicsModule {
 
                     protected void setRemoteFormFilter(FormInstance formInstance) throws ParseException {
                         PropertyDrawInstance<?> dateDraw = formInstance.getPropertyDraw(baseLM.date);
-                        dateDraw.toDraw.addTempFilter(new CompareFilterInstance(dateDraw.propertyObject, Compare.GREATER_EQUALS, keys.get(dateFrom)));
-                        dateDraw.toDraw.addTempFilter(new CompareFilterInstance(dateDraw.propertyObject, Compare.LESS_EQUALS, keys.get(dateTo)));
+                        dateDraw.toDraw.addTempFilter(new CompareFilterInstance(dateDraw.propertyObject, Compare.GREATER_EQUALS, context.getKeyValue(dateFrom)));
+                        dateDraw.toDraw.addTempFilter(new CompareFilterInstance(dateDraw.propertyObject, Compare.LESS_EQUALS, context.getKeyValue(dateTo)));
                     }
 
                     protected void updateRemoteFormProperties(FormInstance formInstance) throws SQLException {
@@ -4233,7 +4227,7 @@ public class VEDLogicsModule extends LogicsModule {
                 throw new RuntimeException(e);
             }
 
-            actions.add(new MessageClientAction("Данные были успешно выгружены", "Экспорт"));
+            context.addAction(new MessageClientAction("Данные были успешно выгружены", "Экспорт"));
         }
     }
 
@@ -4286,12 +4280,12 @@ public class VEDLogicsModule extends LogicsModule {
             documentInterface = i.next();
         }
 
-        public void execute(final Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, DataSession session, Modifier<? extends Changes> modifier, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects, boolean groupLast) throws SQLException {
-            DataObject document = keys.get(documentInterface);
+        public void execute(ExecutionContext context) throws SQLException {
+            DataObject document = context.getKeyValue(documentInterface);
 
             Sheet sh;
             try {
-                ByteArrayInputStream inFile = new ByteArrayInputStream((byte[]) value.getValue());
+                ByteArrayInputStream inFile = new ByteArrayInputStream((byte[]) context.getValueObject());
                 sh = Workbook.getWorkbook(inFile).getSheet(0);
             } catch (Exception e) {
                 logger.fatal("Не могу прочитать .xsl файл.");
@@ -4329,9 +4323,9 @@ public class VEDLogicsModule extends LogicsModule {
                 rows.add(row);
             }
 
-            new IntegrationService(session, new ImportTable(fields, rows), importKeys, properties).synchronize(true, true, false);
+            new IntegrationService(context.getSession(), new ImportTable(fields, rows), importKeys, properties).synchronize(true, true, false);
 
-            actions.add(new MessageClientAction("Данные были успешно приняты", "Импорт"));
+            context.addAction(new MessageClientAction("Данные были успешно приняты", "Импорт"));
         }
 
         @Override
@@ -4353,10 +4347,10 @@ public class VEDLogicsModule extends LogicsModule {
             super(genSID(), "Импортировать RRP");
         }
 
-        public void execute(final Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, DataSession session, Modifier<? extends Changes> modifier, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects, boolean groupLast) throws SQLException {
+        public void execute(ExecutionContext context) throws SQLException {
             Sheet sh;
             try {
-                ByteArrayInputStream inFile = new ByteArrayInputStream((byte[]) value.getValue());
+                ByteArrayInputStream inFile = new ByteArrayInputStream((byte[]) context.getValueObject());
                 sh = Workbook.getWorkbook(inFile).getSheet(0);
             } catch (Exception e) {
                 logger.fatal("Не могу прочитать .xsl файл.");
@@ -4391,9 +4385,9 @@ public class VEDLogicsModule extends LogicsModule {
                 rows.add(row);
             }
 
-            new IntegrationService(session, new ImportTable(fields, rows), importKeys, properties).synchronize(true, true, false);
+            new IntegrationService(context.getSession(), new ImportTable(fields, rows), importKeys, properties).synchronize(true, true, false);
 
-            actions.add(new MessageClientAction("Данные были успешно приняты", "Импорт"));
+            context.addAction(new MessageClientAction("Данные были успешно приняты", "Импорт"));
         }
 
         @Override
@@ -4408,10 +4402,10 @@ public class VEDLogicsModule extends LogicsModule {
             super(genSID(), "Импортировать справочн.");
         }
 
-        public void execute(final Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, DataSession session, Modifier<? extends Changes> modifier, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects, boolean groupLast) throws SQLException {
+        public void execute(ExecutionContext context) throws SQLException {
             Sheet sh;
             try {
-                ByteArrayInputStream inFile = new ByteArrayInputStream((byte[]) value.getValue());
+                ByteArrayInputStream inFile = new ByteArrayInputStream((byte[]) context.getValueObject());
                 sh = Workbook.getWorkbook(inFile).getSheet(0);
             } catch (Exception e) {
                 logger.fatal("Не могу прочитать .xls файл.");
@@ -4452,9 +4446,9 @@ public class VEDLogicsModule extends LogicsModule {
                 rows.add(row);
             }
 
-            new IntegrationService(session, new ImportTable(fields, rows), importKeys, properties).synchronize(true, true, false);
+            new IntegrationService(context.getSession(), new ImportTable(fields, rows), importKeys, properties).synchronize(true, true, false);
 
-            actions.add(new MessageClientAction("Данные были успешно приняты", "Импорт"));
+            context.addAction(new MessageClientAction("Данные были успешно приняты", "Импорт"));
         }
 
         @Override
@@ -4469,12 +4463,12 @@ public class VEDLogicsModule extends LogicsModule {
             super(genSID(), "Импортировать док.", new ValueClass[]{shop});
         }
 
-        public void execute(final Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, DataSession session, Modifier<? extends Changes> modifier, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects, boolean groupLast) throws SQLException {
-            DataObject storeObject = BaseUtils.singleValue(keys);
+        public void execute(ExecutionContext context) throws SQLException {
+            DataObject storeObject = context.getSingleKeyValue();
 
             Sheet sh;
             try {
-                ByteArrayInputStream inFile = new ByteArrayInputStream((byte[]) value.getValue());
+                ByteArrayInputStream inFile = new ByteArrayInputStream((byte[]) context.getValueObject());
                 sh = Workbook.getWorkbook(inFile).getSheet(0);
             } catch (Exception e) {
                 logger.fatal("Не могу прочитать .xls файл.");
@@ -4526,9 +4520,9 @@ public class VEDLogicsModule extends LogicsModule {
                 rows.add(row);
             }
 
-            new IntegrationService(session, new ImportTable(fields, rows), importKeys, properties).synchronize(true, true, false);
+            new IntegrationService(context.getSession(), new ImportTable(fields, rows), importKeys, properties).synchronize(true, true, false);
 
-            actions.add(new MessageClientAction("Данные были успешно приняты", "Импорт"));
+            context.addAction(new MessageClientAction("Данные были успешно приняты", "Импорт"));
         }
 
         @Override
@@ -4543,15 +4537,15 @@ public class VEDLogicsModule extends LogicsModule {
             super(genSID(), "Обнулить остатки", new ValueClass[]{order});
         }
 
-        public void execute(final Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, DataSession session, Modifier<? extends Changes> modifier, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects, boolean groupLast) throws SQLException {
-            DataObject documentObject = BaseUtils.singleValue(keys);
+        public void execute(ExecutionContext context) throws SQLException {
+            DataObject documentObject = context.getSingleKeyValue();
 
             // сколько в документе, сколько на остатках, уменьшаем на разницу
             KeyExpr docKey = new KeyExpr("doc"); KeyExpr articleKey = new KeyExpr("article");
-            Expr newQuantity = articleQuantity.getExpr(modifier, documentObject.getExpr(), articleKey).sum(freeIncOrderArticle.getExpr(modifier, documentObject.getExpr(), articleKey).scale(-1));
-            session.execute(articleQuantity.getDataChanges(newQuantity, newQuantity.getWhere().and(docKey.compare(documentObject, Compare.EQUALS)), modifier, docKey, articleKey), null, null);
+            Expr newQuantity = articleQuantity.getExpr(context.getModifier(), documentObject.getExpr(), articleKey).sum(freeIncOrderArticle.getExpr(context.getModifier(), documentObject.getExpr(), articleKey).scale(-1));
+            context.getSession().execute(articleQuantity.getDataChanges(newQuantity, newQuantity.getWhere().and(docKey.compare(documentObject, Compare.EQUALS)), context.getModifier(), docKey, articleKey), null, null);
 
-            actions.add(new MessageClientAction("Остатки были успешно обнулены", "Обнуление остатков"));
+            context.addAction(new MessageClientAction("Остатки были успешно обнулены", "Обнуление остатков"));
         }
     }
 

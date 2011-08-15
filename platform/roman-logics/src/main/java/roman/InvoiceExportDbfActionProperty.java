@@ -9,19 +9,14 @@ import org.xBaseJ.fields.NumField;
 import org.xBaseJ.xBaseJException;
 import platform.base.BaseUtils;
 import platform.base.IOUtils;
-import platform.interop.action.ClientAction;
 import platform.interop.action.ExportFileClientAction;
 import platform.server.auth.PolicyManager;
 import platform.server.classes.ValueClass;
 import platform.server.form.instance.*;
-import platform.server.form.instance.remote.RemoteForm;
 import platform.server.logics.DataObject;
-import platform.server.logics.ObjectValue;
 import platform.server.logics.property.ActionProperty;
 import platform.server.logics.property.ClassPropertyInterface;
-import platform.server.session.Changes;
-import platform.server.session.DataSession;
-import platform.server.session.Modifier;
+import platform.server.logics.property.ExecutionContext;
 
 import java.io.File;
 import java.io.IOException;
@@ -39,11 +34,11 @@ public class InvoiceExportDbfActionProperty extends ActionProperty {
     }
 
     @Override
-    public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, DataSession session, Modifier<? extends Changes> modifier, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects, boolean groupLast) throws SQLException {
+    public void execute(ExecutionContext context) throws SQLException {
         try {
-            InvoiceExporter exporter = new InvoiceExporter(keys);
+            InvoiceExporter exporter = new InvoiceExporter(context.getKeys());
             exporter.extractData();
-            actions.add(new ExportFileClientAction("invoice.dbf", IOUtils.getFileBytes(dbfInvoice.getFFile())));
+            context.addAction(new ExportFileClientAction("invoice.dbf", IOUtils.getFileBytes(dbfInvoice.getFFile())));
             tempDbfInvoice.delete();
         } catch (Exception e) {
             throw new RuntimeException(e);

@@ -38,6 +38,7 @@ import platform.server.serialization.ServerIdentitySerializable;
 import platform.server.serialization.ServerSerializationPool;
 import platform.server.session.*;
 
+import javax.mail.Session;
 import javax.swing.*;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -376,6 +377,10 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
         return read(session.sql, new HashMap(), session.modifier, session.env);
     }
 
+    public Object read(ExecutionContext context) throws SQLException {
+        return read(context.getSession(), context.getModifier());
+    }
+
     public Object read(DataSession session, Modifier<? extends Changes> modifier) throws SQLException {
         return read(session.sql, modifier, session.env);
     }
@@ -396,6 +401,10 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
 
     public Object read(DataSession session, Map<T, DataObject> keys) throws SQLException {
         return read(session.sql, keys, session.modifier, session.env);
+    }
+
+    public Object read(ExecutionContext context, Map<T, DataObject> keys) throws SQLException {
+        return read(context.getSession(), keys, context.getModifier());
     }
 
     public Object read(DataSession session, Map<T, DataObject> keys, Modifier<? extends Changes> modifier) throws SQLException {
@@ -543,6 +552,18 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
     // используется если создаваемый WhereBuilder нужен только если задан changed 
     public static WhereBuilder cascadeWhere(WhereBuilder changed) {
         return changed == null ? null : new WhereBuilder();
+    }
+
+    public List<ClientAction> execute(ExecutionContext context, Object value) throws SQLException {
+        return execute(context.getSession(), value, context.getModifier());
+    }
+
+    public List<ClientAction> execute(DataSession session, Object value, Modifier<? extends Changes> modifier) throws SQLException {
+        return execute(new HashMap(), session, value, modifier);
+    }
+
+    public List<ClientAction> execute(Map<T, DataObject> keys, ExecutionContext context, Object value) throws SQLException {
+        return execute(keys, context.getSession(), value, context.getModifier());
     }
 
     public List<ClientAction> execute(Map<T, DataObject> keys, DataSession session, Object value, Modifier<? extends Changes> modifier) throws SQLException {

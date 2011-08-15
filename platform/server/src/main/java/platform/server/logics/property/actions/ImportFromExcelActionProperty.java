@@ -6,7 +6,6 @@ import jxl.Workbook;
 import org.apache.log4j.Logger;
 import platform.interop.ClassViewType;
 import platform.interop.KeyStrokes;
-import platform.interop.action.ClientAction;
 import platform.server.classes.*;
 import platform.server.data.type.ParseException;
 import platform.server.data.type.Type;
@@ -14,17 +13,12 @@ import platform.server.form.entity.FormEntity;
 import platform.server.form.entity.PropertyDrawEntity;
 import platform.server.form.instance.FormInstance;
 import platform.server.form.instance.PropertyDrawInstance;
-import platform.server.form.instance.PropertyObjectInterfaceInstance;
 import platform.server.form.instance.remote.RemoteForm;
 import platform.server.form.view.DefaultFormView;
-import platform.server.logics.DataObject;
-import platform.server.logics.ObjectValue;
 import platform.server.logics.ServerResourceBundle;
 import platform.server.logics.property.ActionProperty;
 import platform.server.logics.property.ClassPropertyInterface;
-import platform.server.session.Changes;
-import platform.server.session.DataSession;
-import platform.server.session.Modifier;
+import platform.server.logics.property.ExecutionContext;
 
 import java.io.ByteArrayInputStream;
 import java.sql.SQLException;
@@ -41,12 +35,11 @@ public class ImportFromExcelActionProperty extends ActionProperty {
         this.valueClass = valueClass;
     }
 
-    public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, DataSession session, Modifier<? extends Changes> modifier, List<ClientAction> actions,
-                        RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects, boolean groupLast) throws SQLException {
+    public void execute(ExecutionContext context) throws SQLException {
 
         Sheet sh;
         try {
-            ByteArrayInputStream inFile = new ByteArrayInputStream((byte[]) value.getValue());
+            ByteArrayInputStream inFile = new ByteArrayInputStream((byte[]) context.getValueObject());
             sh = Workbook.getWorkbook(inFile).getSheet(0);
         } catch (Exception e) {
             logger.fatal(ServerResourceBundle.getString("logics.property.actions.failed.to.read.xls.file"));
@@ -61,13 +54,13 @@ public class ImportFromExcelActionProperty extends ActionProperty {
 
         // находим используемые свойства
         Map<String, PropertyDrawInstance> definedProperties = new HashMap<String, PropertyDrawInstance>();
-        for (PropertyDrawInstance<?> property : ((RemoteForm<?, ?>) executeForm).form.properties)
+        for (PropertyDrawInstance<?> property : context.getFormInstance().properties)
             if (definedPropertiesSIDs.contains(property.propertyObject.property.getSID())) {
                 definedProperties.put(property.propertyObject.property.getSID(), property);
             }
 
         for (int i = 1; i < sh.getRows(); ++i) {
-            FormInstance<?> form = (FormInstance<?>) executeForm.form;
+            FormInstance<?> form = context.getFormInstance();
             form.addObject((ConcreteCustomClass) valueClass);
 
             for (int j = 0; j < sh.getColumns(); ++j) {

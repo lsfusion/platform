@@ -5,27 +5,19 @@ import org.xBaseJ.Util;
 import org.xBaseJ.fields.*;
 import org.xBaseJ.xBaseJException;
 import platform.base.BaseUtils;
-import platform.base.DateConverter;
 import platform.base.IOUtils;
-import platform.interop.action.ClientAction;
 import platform.interop.action.ExportFileClientAction;
 import platform.server.auth.PolicyManager;
 import platform.server.classes.ValueClass;
 import platform.server.form.instance.*;
-import platform.server.form.instance.remote.RemoteForm;
 import platform.server.logics.DataObject;
-import platform.server.logics.ObjectValue;
 import platform.server.logics.property.ActionProperty;
 import platform.server.logics.property.ClassPropertyInterface;
-import platform.server.session.Changes;
-import platform.server.session.DataSession;
-import platform.server.session.Modifier;
+import platform.server.logics.property.ExecutionContext;
 
 import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
-import java.text.DecimalFormat;
-import java.text.DecimalFormatSymbols;
 import java.util.*;
 
 public class DeclarationExportActionProperty extends ActionProperty {
@@ -39,10 +31,9 @@ public class DeclarationExportActionProperty extends ActionProperty {
         this.BL = BL;
     }
 
-    public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, DataSession session, Modifier<? extends Changes> modifier, List<ClientAction> actions,
-                        RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects, boolean groupLast) {
+    public void execute(ExecutionContext context) {
         try {
-            DeclarationExporter exporter = new DeclarationExporter(keys);
+            DeclarationExporter exporter = new DeclarationExporter(context.getKeys());
             exporter.extractData();
 
             Map<String, byte[]> files = new HashMap<String, byte[]>();
@@ -57,7 +48,7 @@ public class DeclarationExportActionProperty extends ActionProperty {
             files.put("G316.DBF", IOUtils.getFileBytes(dbfG316.getFFile()));
             files.put("G40.DBF", IOUtils.getFileBytes(dbfG40.getFFile()));
             files.put("GB.DBF", IOUtils.getFileBytes(dbfGB.getFFile()));
-            actions.add(new ExportFileClientAction(files));
+            context.addAction(new ExportFileClientAction(files));
 
             tempDecl02.delete();
             tempDobl.delete();

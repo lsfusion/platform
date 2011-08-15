@@ -24,10 +24,6 @@ public abstract class ActionProperty extends ExecuteProperty {
         super(sID, caption, classes);
     }
 
-    // FormInstance в качестве параметра нужен поскольку действие, как правило, приводит к какой-то реакции со стороны формы
-    // RemoteForm нужен потому, что нужно создавать новый объект RMI, а для этого нужен как минимум порт - правда это в дальнейшем нужно переделать
-    public abstract void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, DataSession session, Modifier<? extends Changes> modifier, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects, boolean groupLast) throws SQLException;
-
     protected <U extends Changes<U>> U calculateUsedChanges(Modifier<U> modifier) {
         return ValueClassProperty.getIsClassUsedChanges(interfaces, modifier);
     }

@@ -1,7 +1,6 @@
 package platform.server.logics.property;
 
 import platform.base.BaseUtils;
-import platform.interop.action.ClientAction;
 import platform.server.classes.ConcreteClass;
 import platform.server.classes.CustomClass;
 import platform.server.classes.ValueClass;
@@ -14,17 +13,13 @@ import platform.server.form.instance.CustomObjectInstance;
 import platform.server.form.instance.FormInstance;
 import platform.server.form.instance.ObjectInstance;
 import platform.server.form.instance.PropertyObjectInterfaceInstance;
-import platform.server.form.instance.remote.RemoteForm;
 import platform.server.form.view.DefaultFormView;
 import platform.server.logics.DataObject;
-import platform.server.logics.ObjectValue;
 import platform.server.logics.ServerResourceBundle;
 import platform.server.session.Changes;
-import platform.server.session.DataSession;
 import platform.server.session.Modifier;
 
 import java.sql.SQLException;
-import java.util.List;
 import java.util.Map;
 
 public class ObjectValueProperty extends ExecuteProperty {
@@ -56,10 +51,10 @@ public class ObjectValueProperty extends ExecuteProperty {
             return super.getDialogClass(mapValues, mapClasses, mapObjects);
     }
 
-    public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, DataSession session, Modifier<? extends Changes> modifier, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects, boolean groupLast) throws SQLException {
-        FormInstance<?> remoteForm = executeForm.form;
-        if(mapObjects.size()>0 && BaseUtils.singleValue(mapObjects) instanceof ObjectInstance)
-            actions.addAll(remoteForm.changeObject((ObjectInstance)BaseUtils.singleValue(mapObjects), value, executeForm));
+    public void execute(ExecutionContext context) throws SQLException {
+        FormInstance<?> remoteForm = context.getFormInstance();
+        if(context.getObjectInstanceCount() > 0 && context.getSingleObjectInstance() instanceof ObjectInstance)
+            context.addActions(remoteForm.changeObject((ObjectInstance) context.getSingleObjectInstance(), context.getValue(), context.getRemoteForm()));
     }
 
     protected Expr calculateExpr(Map<ClassPropertyInterface, ? extends Expr> joinImplement, Modifier<? extends Changes> modifier, WhereBuilder changedWhere) {

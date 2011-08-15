@@ -5,7 +5,6 @@ import platform.base.BaseUtils;
 import platform.interop.ClassViewType;
 import platform.interop.Compare;
 import platform.interop.action.AudioClientAction;
-import platform.interop.action.ClientAction;
 import platform.interop.action.MessageClientAction;
 import platform.interop.form.layout.DoNotIntersectSimplexConstraint;
 import platform.interop.navigator.FormShowType;
@@ -19,8 +18,6 @@ import platform.server.form.entity.*;
 import platform.server.form.entity.filter.*;
 import platform.server.form.instance.FormInstance;
 import platform.server.form.instance.ObjectInstance;
-import platform.server.form.instance.PropertyObjectInterfaceInstance;
-import platform.server.form.instance.remote.RemoteForm;
 import platform.server.form.navigator.NavigatorElement;
 import platform.server.form.view.ContainerView;
 import platform.server.form.view.DefaultFormView;
@@ -32,7 +29,6 @@ import platform.server.form.window.TreeNavigatorWindow;
 import platform.server.logics.BaseLogicsModule;
 import platform.server.logics.DataObject;
 import platform.server.logics.LogicsModule;
-import platform.server.logics.ObjectValue;
 import platform.server.logics.linear.LP;
 import platform.server.logics.property.*;
 import platform.server.logics.property.actions.FormActionProperty;
@@ -49,7 +45,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.*;
-import java.util.List;
 
 /**
  * Created by IntelliJ IDEA.
@@ -6871,18 +6866,18 @@ public class RomanLogicsModule extends LogicsModule {
             createStampInterface = i.next();
         }
 
-        public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, DataSession session, Modifier<? extends Changes> modifier, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects, boolean groupLast) throws SQLException {
-            DataObject objCreateStamp = keys.get(createStampInterface);
-            if ((firstNumberCreationStamp.read(session, objCreateStamp) == null) || (lastNumberCreationStamp.read(session, objCreateStamp) == null)) {
-                actions.add(new MessageClientAction("Необходимо задать диапазон", "Ошибка"));
+        public void execute(ExecutionContext context) throws SQLException {
+            DataObject objCreateStamp = context.getKeyValue(createStampInterface);
+            if ((firstNumberCreationStamp.read(context, objCreateStamp) == null) || (lastNumberCreationStamp.read(context, objCreateStamp) == null)) {
+                context.addAction(new MessageClientAction("Необходимо задать диапазон", "Ошибка"));
                 return;
             }
 
-            String stringStart = (String) firstNumberCreationStamp.read(session, objCreateStamp);
-            String stringFinish = (String) lastNumberCreationStamp.read(session, objCreateStamp);
+            String stringStart = (String) firstNumberCreationStamp.read(context, objCreateStamp);
+            String stringFinish = (String) lastNumberCreationStamp.read(context, objCreateStamp);
 
             if (stringStart.length() != stringFinish.length()) {
-                actions.add(new MessageClientAction("Количество символов у границ диапазонов должно совпадать", "Ошибка"));
+                context.addAction(new MessageClientAction("Количество символов у границ диапазонов должно совпадать", "Ошибка"));
                 return;
             }
 
@@ -6890,14 +6885,14 @@ public class RomanLogicsModule extends LogicsModule {
             Integer finish = Integer.parseInt(stringFinish);
 
             if ((finish - start) > 3000) {
-                actions.add(new MessageClientAction("Слишком большой диапазон (больше 3000)", "Ошибка"));
+                context.addAction(new MessageClientAction("Слишком большой диапазон (больше 3000)", "Ошибка"));
                 return;
             }
 
             for (int i = start; i <= finish; i++) {
-                DataObject stampObject = session.addObject(stamp, session.modifier);
-                creationStampStamp.execute(objCreateStamp.getValue(), session, stampObject);
-                sidStamp.execute(BaseUtils.padl(((Integer)i).toString(), stringStart.length(), '0'), session, stampObject);
+                DataObject stampObject = context.addObject(stamp);
+                creationStampStamp.execute(objCreateStamp.getValue(), context, stampObject);
+                sidStamp.execute(BaseUtils.padl(((Integer)i).toString(), stringStart.length(), '0'), context, stampObject);
             }
         }
     }
@@ -6913,12 +6908,12 @@ public class RomanLogicsModule extends LogicsModule {
         }
 
         @Override
-        public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, DataSession session, Modifier<? extends Changes> modifier, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects, boolean groupLast) throws SQLException {
-            DataObject cloneObject = keys.get(itemInterface);
-            DataObject newObject = executeForm.form.addObject(item);
+        public void execute(ExecutionContext context) throws SQLException {
+            DataObject cloneObject = context.getKeyValue(itemInterface);
+            DataObject newObject = context.getFormInstance().addObject(item);
 
             for(LP lp : new LP[]{colorSupplierItem, sizeSupplierItem})
-                lp.execute(lp.read(session, modifier, cloneObject), session, modifier, newObject);
+                lp.execute(lp.read(context, cloneObject), context, newObject);
         }
     }
 
@@ -6939,28 +6934,28 @@ public class RomanLogicsModule extends LogicsModule {
         }
 
         @Override
-        public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, DataSession session, Modifier<? extends Changes> modifier, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects, boolean groupLast) throws SQLException {
-            FormInstance<?> form = (FormInstance<?>) executeForm.form;
+        public void execute(ExecutionContext context) throws SQLException {
+            FormInstance<?> form = (FormInstance<?>) context.getFormInstance();
 
-            DataObject objShipment = keys.get(shipmentInterface);
-            DataObject objSku = keys.get(skuInterface);
+            DataObject objShipment = context.getKeyValue(shipmentInterface);
+            DataObject objSku = context.getKeyValue(skuInterface);
 
             DataObject objRouteRB = route.getDataObject("rb");
             DataObject objRouteRF = route.getDataObject("rf");
 
-            Double invoiced = (Double) invoicedShipmentSku.read(session, modifier, objShipment, objSku);
+            Double invoiced = (Double) invoicedShipmentSku.read(context, objShipment, objSku);
 
             DataObject objRouteResult;
             if (invoiced == null) {
-                Double percentRF = (Double) percentShipmentRouteSku.read(session, modifier, objShipment, objRouteRF, objSku);
+                Double percentRF = (Double) percentShipmentRouteSku.read(context, objShipment, objRouteRF, objSku);
                 objRouteResult = (percentRF != null && percentRF > 1E-9) ? objRouteRF : objRouteRB;
             } else {
 
-                Double invoicedRB = (Double) BaseUtils.nvl(invoicedShipmentRouteSku.read(session, modifier, objShipment, objRouteRB, objSku), 0.0);
-                Double quantityRB = (Double) BaseUtils.nvl(quantityShipmentRouteSku.read(session, modifier, objShipment, objRouteRB, objSku), 0.0);
+                Double invoicedRB = (Double) BaseUtils.nvl(invoicedShipmentRouteSku.read(context, objShipment, objRouteRB, objSku), 0.0);
+                Double quantityRB = (Double) BaseUtils.nvl(quantityShipmentRouteSku.read(context, objShipment, objRouteRB, objSku), 0.0);
 
-                Double invoicedRF = (Double) BaseUtils.nvl(invoicedShipmentRouteSku.read(session, modifier, objShipment, objRouteRF, objSku), 0.0);
-                Double quantityRF = (Double) BaseUtils.nvl(quantityShipmentRouteSku.read(session, modifier, objShipment, objRouteRF, objSku), 0.0);
+                Double invoicedRF = (Double) BaseUtils.nvl(invoicedShipmentRouteSku.read(context, objShipment, objRouteRF, objSku), 0.0);
+                Double quantityRF = (Double) BaseUtils.nvl(quantityShipmentRouteSku.read(context, objShipment, objRouteRF, objSku), 0.0);
 
                 if (quantityRB + 1E-9 < invoicedRB) {
                     objRouteResult = objRouteRB;
@@ -6970,10 +6965,10 @@ public class RomanLogicsModule extends LogicsModule {
                     objRouteResult = objRouteRB;
             }
 
-            ObjectInstance objectInstance = (ObjectInstance) mapObjects.get(routeInterface);
+            ObjectInstance objectInstance = (ObjectInstance) context.getObjectInstance(routeInterface);
             if (!objRouteResult.equals(objectInstance.getObjectValue())) {
                 try {
-                    actions.add(new AudioClientAction(getClass().getResourceAsStream(
+                    context.addAction(new AudioClientAction(getClass().getResourceAsStream(
                             objRouteResult.equals(objRouteRB) ? "/audio/rb.wav" : "/audio/rf.wav"
                     )));
                 } catch (IOException e) {

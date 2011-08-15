@@ -1,18 +1,12 @@
 package platform.server.logics.property;
 
 import platform.base.BaseUtils;
-import platform.interop.action.ClientAction;
 import platform.server.classes.ValueClass;
 import platform.server.data.expr.Expr;
-import platform.server.data.expr.where.cases.ExprCaseList;
 import platform.server.data.expr.where.CaseExprInterface;
 import platform.server.data.query.Join;
 import platform.server.data.where.Where;
 import platform.server.data.where.WhereBuilder;
-import platform.server.form.instance.PropertyObjectInterfaceInstance;
-import platform.server.form.instance.remote.RemoteForm;
-import platform.server.logics.DataObject;
-import platform.server.logics.ObjectValue;
 import platform.server.session.*;
 
 import java.sql.SQLException;
@@ -81,7 +75,7 @@ public abstract class DataProperty extends UserProperty {
         return value;
     }
 
-    public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, DataSession session, Modifier<? extends Changes> modifier, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects, boolean groupLast) throws SQLException {
-        session.changeProperty(this, keys, value, groupLast);
+    public void execute(ExecutionContext context) throws SQLException {
+        context.getSession().changeProperty(this, context.getKeys(), context.getValue(), context.isGroupLast());
     }
 }

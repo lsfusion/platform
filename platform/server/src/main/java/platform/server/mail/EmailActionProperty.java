@@ -12,27 +12,17 @@ import net.sf.jasperreports.engine.export.JRXlsAbstractExporterParameter;
 import net.sf.jasperreports.engine.export.ooxml.JRDocxExporter;
 import platform.base.BaseUtils;
 import platform.base.ByteArray;
-import platform.interop.action.ClientAction;
 import platform.interop.action.MessageClientAction;
 import platform.interop.form.RemoteFormInterface;
 import platform.server.classes.StringClass;
 import platform.server.classes.ValueClass;
 import platform.server.form.entity.FormEntity;
 import platform.server.form.entity.ObjectEntity;
-import platform.server.form.instance.PropertyObjectInterfaceInstance;
-import platform.server.form.instance.remote.RemoteForm;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.DataObject;
-import platform.server.logics.ObjectValue;
 import platform.server.logics.ServerResourceBundle;
 import platform.server.logics.linear.LP;
-import platform.server.logics.property.ActionProperty;
-import platform.server.logics.property.ClassPropertyInterface;
-import platform.server.logics.property.PropertyInterface;
-import platform.server.logics.property.PropertyMapImplement;
-import platform.server.session.Changes;
-import platform.server.session.DataSession;
-import platform.server.session.Modifier;
+import platform.server.logics.property.*;
 
 import javax.mail.Message;
 import javax.mail.internet.MimeMessage;
@@ -150,10 +140,10 @@ public class EmailActionProperty extends ActionProperty {
         }
     }
 
-    public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, DataSession session, Modifier<? extends Changes> modifier, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapExecuteObjects, boolean groupLast) throws SQLException {
+    public void execute(ExecutionContext context) throws SQLException {
 
         try {
-            if (BL.LM.disableEmail.read(session) != null) {
+            if (BL.LM.disableEmail.read(context) != null) {
                 EmailSender.logger.error(ServerResourceBundle.getString("mail.sending.disabled"));
                 return;
             }
@@ -163,12 +153,12 @@ public class EmailActionProperty extends ActionProperty {
             Map<ByteArray, String> attachmentFiles = new HashMap<ByteArray, String>();
 
             for (int i = 0; i < forms.size(); i++) {
-                Map<ObjectEntity, DataObject> formObjects = BaseUtils.join(mapObjects.get(i), keys);
+                Map<ObjectEntity, DataObject> formObjects = BaseUtils.join(mapObjects.get(i), context.getKeys());
                 RemoteFormInterface remoteForm;
-                if(executeForm!=null)
-                    remoteForm = executeForm.createForm(forms.get(i), formObjects);
+                if(context.getRemoteForm() !=null)
+                    remoteForm = context.getRemoteForm().createForm(forms.get(i), formObjects);
                 else
-                    remoteForm = BL.createForm(session, forms.get(i), formObjects);
+                    remoteForm = BL.createForm(context.getSession(), forms.get(i), formObjects);
                 if(remoteForm!=null) { // если объекты подошли
                     ReportGenerator report = new ReportGenerator(remoteForm);
                     JasperPrint print = report.createReport(false, types.get(i) == FormStorageType.INLINE, attachmentFiles);
@@ -183,8 +173,8 @@ public class EmailActionProperty extends ActionProperty {
                             int intSize = attachmentProp.listInterfaces.size();
                             DataObject[] input = new DataObject[intSize];
                             for (int j = 0; j < intSize; j++)
-                                input[j] = keys.get(((List)interfaces).get(j));
-                            attachmentName = (String)attachmentProp.read(session, modifier, input);
+                                input[j] = context.getKeyValue(((List<ClassPropertyInterface>) interfaces).get(j));
+                            attachmentName = (String)attachmentProp.read(context, input);
                         }
                         if (attachmentName == null)
                             attachmentName = forms.get(i).caption;
@@ -196,21 +186,21 @@ public class EmailActionProperty extends ActionProperty {
 
             Map<String, Message.RecipientType> recepientEmails = new HashMap<String, Message.RecipientType>();
             for(PropertyMapImplement<?, ClassPropertyInterface> recepient : recepients) {
-                String recepientEmail = (String) recepient.read(session, keys, modifier);
+                String recepientEmail = (String) recepient.read(context, context.getKeys());
                 if(recepientEmail!=null)
                     recepientEmails.put(recepientEmail, MimeMessage.RecipientType.TO);
             }
 
             List<ClassPropertyInterface> listInterfaces = (List<ClassPropertyInterface>)interfaces;
 
-            String subject = (this.subject == null ? (String)keys.get(listInterfaces.get(listInterfaces.size()-1)).getValue() : this.subject);
+            String subject = (this.subject == null ? (String) context.getKeyValue(listInterfaces.get(listInterfaces.size() - 1)).getValue() : this.subject);
 
-            String smtpHost = (String) BL.LM.smtpHost.read(session, modifier);
-            String smtpPort = (String) BL.LM.smtpPort.read(session, modifier);
-            String fromAddress = (String) this.fromAddress.read(session, modifier);
-            String userName = (String) BL.LM.emailAccount.read(session, modifier);
-            String password = (String) BL.LM.emailPassword.read(session, modifier);
-            String emailBlindCarbonCopy = (String) BL.LM.emailBlindCarbonCopy.read(session, modifier);
+            String smtpHost = (String) BL.LM.smtpHost.read(context);
+            String smtpPort = (String) BL.LM.smtpPort.read(context);
+            String fromAddress = (String) this.fromAddress.read(context);
+            String userName = (String) BL.LM.emailAccount.read(context);
+            String password = (String) BL.LM.emailPassword.read(context);
+            String emailBlindCarbonCopy = (String) BL.LM.emailBlindCarbonCopy.read(context);
             if (emailBlindCarbonCopy != null && !emailBlindCarbonCopy.isEmpty() && !recepientEmails.containsKey(emailBlindCarbonCopy)) {
                 recepientEmails.put(emailBlindCarbonCopy, MimeMessage.RecipientType.BCC);
             }
@@ -218,7 +208,7 @@ public class EmailActionProperty extends ActionProperty {
             if(smtpHost==null || fromAddress==null) {
                 String errorMessage = ServerResourceBundle.getString("mail.smtp.host.or.sender.not.specified.letters.will.not.be.sent");
                 EmailSender.logger.error(errorMessage);
-                actions.add(new MessageClientAction(errorMessage, ServerResourceBundle.getString("mail.sending")));
+                context.addAction(new MessageClientAction(errorMessage, ServerResourceBundle.getString("mail.sending")));
             } else {
                 EmailSender sender = new EmailSender(smtpHost.trim(), BaseUtils.nullTrim(smtpPort), fromAddress.trim(), BaseUtils.nullTrim(userName), BaseUtils.nullTrim(password), recepientEmails);
                 sender.sendMail(subject, inlineForms, attachmentForms, attachmentFiles);
@@ -226,7 +216,7 @@ public class EmailActionProperty extends ActionProperty {
         } catch (Exception e) {
             String errorMessage = ServerResourceBundle.getString("mail.failed.to.send.mail") +" : " + e.toString();
             EmailSender.logger.error(errorMessage);
-            actions.add(new MessageClientAction(errorMessage, ServerResourceBundle.getString("mail.sending")));
+            context.addAction(new MessageClientAction(errorMessage, ServerResourceBundle.getString("mail.sending")));
             e.printStackTrace();
         }
     }

@@ -1,16 +1,9 @@
 package roman;
 
-import platform.interop.action.ClientAction;
 import platform.interop.action.MessageClientAction;
-import platform.server.form.instance.PropertyObjectInterfaceInstance;
-import platform.server.form.instance.remote.RemoteForm;
 import platform.server.integration.*;
 import platform.server.logics.DataObject;
-import platform.server.logics.ObjectValue;
-import platform.server.logics.property.ClassPropertyInterface;
-import platform.server.session.Changes;
-import platform.server.session.DataSession;
-import platform.server.session.Modifier;
+import platform.server.logics.property.ExecutionContext;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStreamReader;
@@ -18,7 +11,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 
 /**
  * User: DAle
@@ -32,7 +24,7 @@ public class MexxImportPricesInvoiceActionProperty extends BaseImportActionPrope
     }
 
     @Override
-    public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, DataSession session, Modifier<? extends Changes> modifier, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects, boolean groupLast) throws SQLException {
+    public void execute(ExecutionContext context) throws SQLException {
         ImportField invoiceSIDField = new ImportField(LM.sidDocument);
         ImportField sidField = new ImportField(LM.sidArticle);
         ImportField dateInvoiceField = new ImportField(LM.baseLM.date);
@@ -41,7 +33,7 @@ public class MexxImportPricesInvoiceActionProperty extends BaseImportActionPrope
         ImportField customCode6Field = new ImportField(LM.sidCustomCategory6);
         ImportField unitPriceField = new ImportField(LM.priceDataDocumentItem);
 
-        DataObject supplier = keys.get(supplierInterface);
+        DataObject supplier = context.getKeyValue(supplierInterface);
 
         List<ImportProperty<?>> properties = new ArrayList<ImportProperty<?>>();
 
@@ -67,16 +59,16 @@ public class MexxImportPricesInvoiceActionProperty extends BaseImportActionPrope
         properties.add(new ImportProperty(unitPriceField, LM.priceDocumentArticle.getMapping(invoiceKey, articleKey)));
 
         try {
-            ByteArrayInputStream inFile = new ByteArrayInputStream((byte[]) value.getValue());
+            ByteArrayInputStream inFile = new ByteArrayInputStream((byte[]) context.getValueObject());
             ImportInputTable inputTable = new CSVInputTable(new InputStreamReader(inFile), 1, '|');
 
             ImportTable table = new MexxPricesInvoiceImporter(inputTable, null, invoiceSIDField, dateInvoiceField, null, null, null, sidField, null, null,
                     null, unitPriceField, null, barCodeField, null, new ImportField[] {customCodeField, customCode6Field}).getTable();
 
             ImportKey<?>[] keysArray = {invoiceKey, articleKey, itemKey, customCategoryKey, customCategory6Key};
-            new IntegrationService(session, table, Arrays.asList(keysArray), properties).synchronize(true, true, false);
+            new IntegrationService(context.getSession(), table, Arrays.asList(keysArray), properties).synchronize(true, true, false);
 
-            actions.add(new MessageClientAction("Данные были успешно приняты", "Импорт"));
+            context.addAction(new MessageClientAction("Данные были успешно приняты", "Импорт"));
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

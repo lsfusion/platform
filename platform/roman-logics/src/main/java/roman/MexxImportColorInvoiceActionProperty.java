@@ -1,16 +1,9 @@
 package roman;
 
-import platform.interop.action.ClientAction;
 import platform.interop.action.MessageClientAction;
-import platform.server.form.instance.PropertyObjectInterfaceInstance;
-import platform.server.form.instance.remote.RemoteForm;
 import platform.server.integration.*;
 import platform.server.logics.DataObject;
-import platform.server.logics.ObjectValue;
-import platform.server.logics.property.ClassPropertyInterface;
-import platform.server.session.Changes;
-import platform.server.session.DataSession;
-import platform.server.session.Modifier;
+import platform.server.logics.property.ExecutionContext;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStreamReader;
@@ -18,7 +11,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 
 /**
  * User: DAle
@@ -32,11 +24,11 @@ public class MexxImportColorInvoiceActionProperty extends BaseImportActionProper
     }
 
     @Override
-    public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, DataSession session, Modifier<? extends Changes> modifier, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects, boolean groupLast) throws SQLException {
+    public void execute(ExecutionContext context) throws SQLException {
         ImportField colorCodeField = new ImportField(LM.sidColorSupplier);
         ImportField colorNameField = new ImportField(LM.baseLM.name);
 
-        DataObject supplier = keys.get(supplierInterface);
+        DataObject supplier = context.getKeyValue(supplierInterface);
 
         List<ImportProperty<?>> properties = new ArrayList<ImportProperty<?>>();
 
@@ -46,7 +38,7 @@ public class MexxImportColorInvoiceActionProperty extends BaseImportActionProper
         properties.add(new ImportProperty(colorNameField, LM.baseLM.name.getMapping(colorKey)));
 
         try {
-            ByteArrayInputStream inFile = new ByteArrayInputStream((byte[]) value.getValue());
+            ByteArrayInputStream inFile = new ByteArrayInputStream((byte[]) context.getValueObject());
             // Заголовки тоже читаем, чтобы определить нужный ли файл импортируется
             ImportInputTable inputTable = new CSVInputTable(new InputStreamReader(inFile), 0, '|');
 
@@ -58,8 +50,8 @@ public class MexxImportColorInvoiceActionProperty extends BaseImportActionProper
                 }
             }.getTable();
 
-            new IntegrationService(session, table, Arrays.asList(colorKey), properties).synchronize(true, true, false);
-            actions.add(new MessageClientAction("Данные были успешно приняты", "Импорт"));
+            new IntegrationService(context.getSession(), table, Arrays.asList(colorKey), properties).synchronize(true, true, false);
+            context.addAction(new MessageClientAction("Данные были успешно приняты", "Импорт"));
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

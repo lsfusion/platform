@@ -1,26 +1,17 @@
 package tmc.integration.imp;
 
 import org.xBaseJ.DBF;
-import platform.interop.action.ClientAction;
 import platform.server.auth.PolicyManager;
 import platform.server.classes.ValueClass;
 import platform.server.form.entity.ListFormEntity;
 import platform.server.form.instance.FormInstance;
-import platform.server.form.instance.PropertyObjectInterfaceInstance;
-import platform.server.form.instance.remote.RemoteForm;
 import platform.server.logics.DataObject;
-import platform.server.logics.ObjectValue;
 import platform.server.logics.property.ActionProperty;
-import platform.server.logics.property.ClassPropertyInterface;
-import platform.server.session.Changes;
-import platform.server.session.DataSession;
-import platform.server.session.Modifier;
+import platform.server.logics.property.ExecutionContext;
 import tmc.VEDBusinessLogics;
 
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.List;
-import java.util.Map;
 
 public class CustomerCheckRetailImportActionProperty extends ActionProperty {
 
@@ -31,7 +22,7 @@ public class CustomerCheckRetailImportActionProperty extends ActionProperty {
         this.BL = BL;
     }
 
-    public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, DataSession session, Modifier<? extends Changes> modifier, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects, boolean groupLast) throws SQLException {
+    public void execute(ExecutionContext context) throws SQLException {
 
         DBF impFile = null;
 
@@ -43,7 +34,7 @@ public class CustomerCheckRetailImportActionProperty extends ActionProperty {
             FormInstance formInstance = new FormInstance(
                     new ListFormEntity(BL.LM, BL.VEDLM.customerCheckRetail),
                     BL, BL.createSession(), PolicyManager.serverSecurityPolicy, null, null,
-                    new DataObject(executeForm.form.instanceFactory.computer, BL.LM.computer));
+                    new DataObject(context.getFormInstance().instanceFactory.computer, BL.LM.computer));
 
             for (int i = 0; i < recordCount; i++) {
 
@@ -55,7 +46,7 @@ public class CustomerCheckRetailImportActionProperty extends ActionProperty {
                 formInstance.changeProperty(formInstance.getPropertyDraw(BL.VEDLM.clientInitialSum), Double.parseDouble(impFile.getField("clientsum").get()), false);
             }
 
-            formInstance.applyActionChanges(actions);
+            formInstance.applyActionChanges(context.getActions());
 
         } catch (Exception e) {
             throw new RuntimeException(e);

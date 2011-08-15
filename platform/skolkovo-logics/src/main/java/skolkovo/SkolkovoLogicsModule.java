@@ -36,12 +36,10 @@ import platform.server.logics.ObjectValue;
 import platform.server.logics.linear.LP;
 import platform.server.logics.property.ActionProperty;
 import platform.server.logics.property.ClassPropertyInterface;
+import platform.server.logics.property.ExecutionContext;
 import platform.server.logics.property.Property;
 import platform.server.logics.property.group.AbstractGroup;
 import platform.server.mail.EmailActionProperty;
-import platform.server.session.Changes;
-import platform.server.session.DataSession;
-import platform.server.session.Modifier;
 import skolkovo.actions.ImportProjectsActionProperty;
 
 import javax.swing.*;
@@ -2275,20 +2273,20 @@ public class SkolkovoLogicsModule extends LogicsModule {
             documentTemplateInterface = i.next();
         }
 
-        public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, DataSession session, Modifier<? extends Changes> modifier, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects, boolean groupLast) throws SQLException {
-            DataObject projectObject = keys.get(projectInterface);
-            DataObject documentTemplateObject = keys.get(documentTemplateInterface);
+        public void execute(ExecutionContext context) throws SQLException {
+            DataObject projectObject = context.getKeyValue(projectInterface);
+            DataObject documentTemplateObject = context.getKeyValue(documentTemplateInterface);
 
             Query<String, String> query = new Query<String, String>(Collections.singleton("key"));
-            query.and(documentTemplateDocumentTemplateDetail.getExpr(modifier, query.mapKeys.get("key")).compare(documentTemplateObject.getExpr(), Compare.EQUALS));
-            query.properties.put("documentType", typeDocument.getExpr(modifier, query.mapKeys.get("key")));
-            query.properties.put("languageDocument", languageDocument.getExpr(modifier, query.mapKeys.get("key")));
+            query.and(documentTemplateDocumentTemplateDetail.getExpr(context.getModifier(), query.mapKeys.get("key")).compare(documentTemplateObject.getExpr(), Compare.EQUALS));
+            query.properties.put("documentType", typeDocument.getExpr(context.getModifier(), query.mapKeys.get("key")));
+            query.properties.put("languageDocument", languageDocument.getExpr(context.getModifier(), query.mapKeys.get("key")));
 
-            for (Map<String, Object> row : query.execute(session.sql, session.env).values()) {
-                DataObject documentObject = session.addObject(document, modifier);
-                projectDocument.execute(projectObject.getValue(), session, modifier, documentObject);
-                typeDocument.execute(row.get("documentType"), session, modifier, documentObject);
-                languageDocument.execute(row.get("languageDocument"), session, modifier, documentObject);
+            for (Map<String, Object> row : query.execute(context.getSession()).values()) {
+                DataObject documentObject = context.addObject(document);
+                projectDocument.execute(projectObject.getValue(), context, documentObject);
+                typeDocument.execute(row.get("documentType"), context, documentObject);
+                languageDocument.execute(row.get("languageDocument"), context, documentObject);
             }
         }
     }
@@ -2314,13 +2312,13 @@ public class SkolkovoLogicsModule extends LogicsModule {
         }
 
         @Override
-        public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, DataSession session, Modifier<? extends Changes> modifier, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects, boolean groupLast) throws SQLException {
+        public void execute(ExecutionContext context) throws SQLException {
 
             try {
 
-                DataObject projectObject = keys.get(projectInterface);
+                DataObject projectObject = context.getKeyValue(projectInterface);
 
-                RemoteFormInterface remoteForm = executeForm.createForm(projectFullNative, Collections.singletonMap(projectFullNative.objProject, projectObject));
+                RemoteFormInterface remoteForm = context.getRemoteForm().createForm(projectFullNative, Collections.singletonMap(projectFullNative.objProject, projectObject));
                 ReportGenerator report = new ReportGenerator(remoteForm);
                 JasperPrint print = report.createReport(false, false, new HashMap());
                 JRAbstractExporter exporter = new JRPdfExporter();
@@ -2330,14 +2328,14 @@ public class SkolkovoLogicsModule extends LogicsModule {
                 exporter.exportReport();
                 byte[] fileBytes = IOUtils.getFileBytes(tempFile);
 
-                DataObject documentObject = session.addObject(document, session.modifier);
-                projectDocument.execute(projectObject.getValue(), session, documentObject);
-                typeDocument.execute(documentType.getID("application"), session, documentObject);
-                languageDocument.execute(language.getID("russian"), session, documentObject);
-                fileDocument.execute(fileBytes, session, documentObject);
+                DataObject documentObject = context.addObject(document);
+                projectDocument.execute(projectObject.getValue(), context, documentObject);
+                typeDocument.execute(documentType.getID("application"), context, documentObject);
+                languageDocument.execute(language.getID("russian"), context, documentObject);
+                fileDocument.execute(fileBytes, context, documentObject);
 
 
-                remoteForm = executeForm.createForm(projectFullForeign, Collections.singletonMap(projectFullForeign.objProject, projectObject));
+                remoteForm = context.getRemoteForm().createForm(projectFullForeign, Collections.singletonMap(projectFullForeign.objProject, projectObject));
                 report = new ReportGenerator(remoteForm);
                 print = report.createReport(false, false, new HashMap());
                 exporter = new JRPdfExporter();
@@ -2347,80 +2345,80 @@ public class SkolkovoLogicsModule extends LogicsModule {
                 exporter.exportReport();
                 fileBytes = IOUtils.getFileBytes(tempFile);
 
-                documentObject = session.addObject(document, session.modifier);
-                projectDocument.execute(projectObject.getValue(), session, documentObject);
-                typeDocument.execute(documentType.getID("application"), session, documentObject);
-                languageDocument.execute(language.getID("english"), session, documentObject);
-                fileDocument.execute(fileBytes, session, documentObject);
+                documentObject = context.addObject(document);
+                projectDocument.execute(projectObject.getValue(), context, documentObject);
+                typeDocument.execute(documentType.getID("application"), context, documentObject);
+                languageDocument.execute(language.getID("english"), context, documentObject);
+                fileDocument.execute(fileBytes, context, documentObject);
 
 
-                Object file = fileNativeSummaryProject.read(session, projectObject);
+                Object file = fileNativeSummaryProject.read(context, projectObject);
                 if (file != null) {
-                    documentObject = session.addObject(document, session.modifier);
-                    fileDocument.execute(file, session, documentObject);
-                    projectDocument.execute(projectObject.getValue(), session, documentObject);
-                    typeDocument.execute(documentType.getID("resume"), session, documentObject);
-                    languageDocument.execute(language.getID("russian"), session, documentObject);
+                    documentObject = context.addObject(document);
+                    fileDocument.execute(file, context, documentObject);
+                    projectDocument.execute(projectObject.getValue(), context, documentObject);
+                    typeDocument.execute(documentType.getID("resume"), context, documentObject);
+                    languageDocument.execute(language.getID("russian"), context, documentObject);
                 }
 
-                file = fileForeignSummaryProject.read(session, projectObject);
+                file = fileForeignSummaryProject.read(context, projectObject);
                 if (file != null) {
-                    documentObject = session.addObject(document, session.modifier);
-                    fileDocument.execute(file, session, documentObject);
-                    projectDocument.execute(projectObject.getValue(), session, documentObject);
-                    typeDocument.execute(documentType.getID("resume"), session, documentObject);
-                    languageDocument.execute(language.getID("english"), session, documentObject);
+                    documentObject = context.addObject(document);
+                    fileDocument.execute(file, context, documentObject);
+                    projectDocument.execute(projectObject.getValue(), context, documentObject);
+                    typeDocument.execute(documentType.getID("resume"), context, documentObject);
+                    languageDocument.execute(language.getID("english"), context, documentObject);
                 }
 
                 Query<String, String> query = new Query<String, String>(Collections.singleton("nonRussianSpecialist"));
-                query.and(projectNonRussianSpecialist.getExpr(session.modifier, query.mapKeys.get("nonRussianSpecialist")).compare(projectObject.getExpr(), Compare.EQUALS));
-                query.properties.put("fullNameNonRussianSpecialist", projectNonRussianSpecialist.getExpr(session.modifier, query.mapKeys.get("nonRussianSpecialist")));
-                query.properties.put("fileForeignResumeNonRussianSpecialist", fileForeignResumeNonRussianSpecialist.getExpr(session.modifier, query.mapKeys.get("nonRussianSpecialist")));
-                for (Map.Entry<Map<String, DataObject>, Map<String, ObjectValue>> row : query.executeClasses(session.sql, session.env, baseClass).entrySet()) {
+                query.and(projectNonRussianSpecialist.getExpr(context.getModifier(), query.mapKeys.get("nonRussianSpecialist")).compare(projectObject.getExpr(), Compare.EQUALS));
+                query.properties.put("fullNameNonRussianSpecialist", projectNonRussianSpecialist.getExpr(context.getModifier(), query.mapKeys.get("nonRussianSpecialist")));
+                query.properties.put("fileForeignResumeNonRussianSpecialist", fileForeignResumeNonRussianSpecialist.getExpr(context.getModifier(), query.mapKeys.get("nonRussianSpecialist")));
+                for (Map.Entry<Map<String, DataObject>, Map<String, ObjectValue>> row : query.executeClasses(context.getSession(), baseClass).entrySet()) {
                     row.getKey().get("nonRussianSpecialist");
                     row.getValue().get("fullNameNonRussianSpecialist");
                     row.getValue().get("fileForeignResumeNonRussianSpecialist");
-                    documentObject = session.addObject(document, session.modifier);
-                    projectDocument.execute(projectObject.getValue(), session, documentObject);
-                    typeDocument.execute(documentType.getID("forres"), session, documentObject);
-                    languageDocument.execute(language.getID("english"), session, documentObject);
-                    fileDocument.execute(row.getValue().get("fileForeignResumeNonRussianSpecialist").getValue(), session, documentObject);
+                    documentObject = context.addObject(document);
+                    projectDocument.execute(projectObject.getValue(), context, documentObject);
+                    typeDocument.execute(documentType.getID("forres"), context, documentObject);
+                    languageDocument.execute(language.getID("english"), context, documentObject);
+                    fileDocument.execute(row.getValue().get("fileForeignResumeNonRussianSpecialist").getValue(), context, documentObject);
                 }
 
-                file = fileNativeTechnicalDescriptionProject.read(session, projectObject);
+                file = fileNativeTechnicalDescriptionProject.read(context, projectObject);
                 if (file != null) {
-                    documentObject = session.addObject(document, session.modifier);
-                    projectDocument.execute(projectObject.getValue(), session, documentObject);
-                    typeDocument.execute(documentType.getID("techdesc"), session, documentObject);
-                    languageDocument.execute(language.getID("russian"), session, documentObject);
-                    fileDocument.execute(file, session, documentObject);
+                    documentObject = context.addObject(document);
+                    projectDocument.execute(projectObject.getValue(), context, documentObject);
+                    typeDocument.execute(documentType.getID("techdesc"), context, documentObject);
+                    languageDocument.execute(language.getID("russian"), context, documentObject);
+                    fileDocument.execute(file, context, documentObject);
                 }
 
-                file = fileForeignTechnicalDescriptionProject.read(session, projectObject);
+                file = fileForeignTechnicalDescriptionProject.read(context, projectObject);
                 if (file != null) {
-                    documentObject = session.addObject(document, session.modifier);
-                    projectDocument.execute(projectObject.getValue(), session, documentObject);
-                    typeDocument.execute(documentType.getID("techdesc"), session, documentObject);
-                    languageDocument.execute(language.getID("english"), session, documentObject);
-                    fileDocument.execute(file, session, documentObject);
+                    documentObject = context.addObject(document);
+                    projectDocument.execute(projectObject.getValue(), context, documentObject);
+                    typeDocument.execute(documentType.getID("techdesc"), context, documentObject);
+                    languageDocument.execute(language.getID("english"), context, documentObject);
+                    fileDocument.execute(file, context, documentObject);
                 }
 
-                file = fileRoadMapProject.read(session, projectObject);
+                file = fileRoadMapProject.read(context, projectObject);
                 if (file != null) {
-                    documentObject = session.addObject(document, session.modifier);
-                    projectDocument.execute(projectObject.getValue(), session, documentObject);
-                    typeDocument.execute(documentType.getID("techdesc"), session, documentObject);
-                    languageDocument.execute(language.getID("russian"), session, documentObject);
-                    fileDocument.execute(file, session, documentObject);
+                    documentObject = context.addObject(document);
+                    projectDocument.execute(projectObject.getValue(), context, documentObject);
+                    typeDocument.execute(documentType.getID("techdesc"), context, documentObject);
+                    languageDocument.execute(language.getID("russian"), context, documentObject);
+                    fileDocument.execute(file, context, documentObject);
                 }
 
-                file = fileResolutionIPProject.read(session, projectObject);
+                file = fileResolutionIPProject.read(context, projectObject);
                 if (file != null) {
-                    documentObject = session.addObject(document, session.modifier);
-                    projectDocument.execute(projectObject.getValue(), session, documentObject);
-                    typeDocument.execute(documentType.getID("ipres"), session, documentObject);
-                    languageDocument.execute(language.getID("russian"), session, documentObject);
-                    fileDocument.execute(file, session, documentObject);
+                    documentObject = context.addObject(document);
+                    projectDocument.execute(projectObject.getValue(), context, documentObject);
+                    typeDocument.execute(documentType.getID("ipres"), context, documentObject);
+                    languageDocument.execute(language.getID("russian"), context, documentObject);
+                    fileDocument.execute(file, context, documentObject);
                 }
 
             } catch (IOException e) {
@@ -2445,63 +2443,59 @@ public class SkolkovoLogicsModule extends LogicsModule {
             projectInterface = i.next();
         }
 
-        public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, DataSession session, Modifier<? extends Changes> modifier, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects, boolean groupLast) throws SQLException {
-            DataObject projectObject = keys.get(projectInterface);
+        public void execute(ExecutionContext context) throws SQLException {
+            DataObject projectObject = context.getKeyValue(projectInterface);
 
             // считываем всех экспертов, которые уже голосовали по проекту
             Query<String, String> query = new Query<String, String>(Collections.singleton("key"));
-            query.and(doneProjectExpert.getExpr(modifier, projectObject.getExpr(), query.mapKeys.get("key")).getWhere());
-            query.and(inClusterExpert.getExpr(modifier, currentClusterProject.getExpr(modifier, projectObject.getExpr()), query.mapKeys.get("key")).getWhere());
-            query.properties.put("vote", voteProjectExpert.getExpr(modifier, projectObject.getExpr(), query.mapKeys.get("key")));
+            query.and(doneProjectExpert.getExpr(context.getModifier(), projectObject.getExpr(), query.mapKeys.get("key")).getWhere());
+            query.and(inClusterExpert.getExpr(context.getModifier(), currentClusterProject.getExpr(context.getModifier(), projectObject.getExpr()), query.mapKeys.get("key")).getWhere());
+            query.properties.put("vote", voteProjectExpert.getExpr(context.getModifier(), projectObject.getExpr(), query.mapKeys.get("key")));
 
             Map<DataObject, DataObject> previousResults = new HashMap<DataObject, DataObject>();
-            for (Map.Entry<Map<String, DataObject>, Map<String, ObjectValue>> row : query.executeClasses(session.sql, session.env, baseClass).entrySet()) {
+            for (Map.Entry<Map<String, DataObject>, Map<String, ObjectValue>> row : query.executeClasses(context.getSession(), baseClass).entrySet()) {
                 previousResults.put(row.getKey().get("key"), (DataObject) row.getValue().get("vote"));
             }
 
             // считываем всех неголосовавших экспертов из этого кластера
             query = new Query<String, String>(Collections.singleton("key"));
-            query.and(inClusterExpert.getExpr(modifier, currentClusterProject.getExpr(modifier, projectObject.getExpr()), query.mapKeys.get("key")).getWhere());
-            query.and(disableExpert.getExpr(modifier, query.mapKeys.get("key")).getWhere().not());
-            query.and(voteResultProjectExpert.getExpr(modifier, projectObject.getExpr(), query.mapKeys.get("key")).getWhere().not());
+            query.and(inClusterExpert.getExpr(context.getModifier(), currentClusterProject.getExpr(context.getModifier(), projectObject.getExpr()), query.mapKeys.get("key")).getWhere());
+            query.and(disableExpert.getExpr(context.getModifier(), query.mapKeys.get("key")).getWhere().not());
+            query.and(voteResultProjectExpert.getExpr(context.getModifier(), projectObject.getExpr(), query.mapKeys.get("key")).getWhere().not());
 
-            query.properties.put("in", inProjectExpert.getExpr(modifier, projectObject.getExpr(), query.mapKeys.get("key")));
+            query.properties.put("in", inProjectExpert.getExpr(context.getModifier(), projectObject.getExpr(), query.mapKeys.get("key")));
 
             // получаем два списка - один, которые уже назначались на проект, другой - которые нет
             java.util.List<DataObject> expertNew = new ArrayList<DataObject>();
             java.util.List<DataObject> expertVoted = new ArrayList<DataObject>();
-            for (Map.Entry<Map<String, DataObject>, Map<String, ObjectValue>> row : query.executeClasses(session.sql, session.env, baseClass).entrySet()) {
+            for (Map.Entry<Map<String, DataObject>, Map<String, ObjectValue>> row : query.executeClasses(context.getSession(), baseClass).entrySet()) {
                 if (row.getValue().get("in").getValue() != null) // эксперт уже голосовал
                     expertVoted.add(row.getKey().get("key"));
                 else
                     expertNew.add(row.getKey().get("key"));
             }
 
-            Integer required = nvl((Integer) requiredQuantity.read(session, modifier), 0) - previousResults.size();
+            Integer required = nvl((Integer) requiredQuantity.read(context), 0) - previousResults.size();
             if (required > expertVoted.size() + expertNew.size()) {
-                actions.add(new MessageClientAction("Недостаточно экспертов по кластеру", "Генерация заседания"));
+                context.addAction(new MessageClientAction("Недостаточно экспертов по кластеру", "Генерация заседания"));
                 return;
             }
 
             // создаем новое заседание
-            DataObject voteObject;
-            if (executeForm.form == null)
-                voteObject = session.addObject(vote, modifier);
-            else
-                voteObject = executeForm.form.addObject(vote);
-            projectVote.execute(projectObject.object, session, modifier, voteObject);
-            clusterVote.execute(currentClusterProject.read(session, modifier, projectObject), session, modifier, voteObject);
-            projectActionVote.execute(projectActionProject.read(session, modifier, projectObject), session, modifier, voteObject);
+            DataObject voteObject = context.addObject(vote);
+            projectVote.execute(projectObject.object, context, voteObject);
+            clusterVote.execute(currentClusterProject.read(context, projectObject), context, voteObject);
+            projectActionVote.execute(projectActionProject.read(context, projectObject), context, voteObject);
 
             // копируем результаты старых заседаний
             for (Map.Entry<DataObject, DataObject> row : previousResults.entrySet()) {
-                inExpertVote.execute(true, session, modifier, row.getKey(), voteObject);
-                oldExpertVote.execute(true, session, modifier, row.getKey(), voteObject);
+                inExpertVote.execute(true, context, row.getKey(), voteObject);
+                oldExpertVote.execute(true, context, row.getKey(), voteObject);
                 LP[] copyProperties = new LP[] {dateExpertVote, voteResultExpertVote, inClusterExpertVote,
                                                 innovativeExpertVote, foreignExpertVote, innovativeCommentExpertVote,
                                                 competentExpertVote, completeExpertVote, completeCommentExpertVote};
                 for (LP property : copyProperties) {
-                    property.execute(property.read(session, modifier, row.getKey(), row.getValue()), session, modifier, row.getKey(), voteObject);
+                    property.execute(property.read(context, row.getKey(), row.getValue()), context, row.getKey(), voteObject);
                 }
             }
 
@@ -2509,9 +2503,9 @@ public class SkolkovoLogicsModule extends LogicsModule {
             Random rand = new Random();
             while (required > 0) {
                 if (!expertNew.isEmpty())
-                    inExpertVote.execute(true, session, modifier, expertNew.remove(rand.nextInt(expertNew.size())), voteObject);
+                    inExpertVote.execute(true, context, expertNew.remove(rand.nextInt(expertNew.size())), voteObject);
                 else
-                    inExpertVote.execute(true, session, modifier, expertVoted.remove(rand.nextInt(expertVoted.size())), voteObject);
+                    inExpertVote.execute(true, context, expertVoted.remove(rand.nextInt(expertVoted.size())), voteObject);
                 required--;
             }
         }
@@ -2538,19 +2532,19 @@ public class SkolkovoLogicsModule extends LogicsModule {
         }
 
         @Override
-        public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, DataSession session, Modifier<? extends Changes> modifier, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects, boolean groupLast) throws SQLException {
-            DataObject voteObject = keys.get(voteInterface);
-            java.sql.Date dateStart = (java.sql.Date) dateStartVote.read(session, modifier, voteObject);
+        public void execute(ExecutionContext context) throws SQLException {
+            DataObject voteObject = context.getKeyValue(voteInterface);
+            java.sql.Date dateStart = (java.sql.Date) dateStartVote.read(context, voteObject);
 
-            DataObject projectObject = new DataObject(projectVote.read(session, modifier, voteObject), project);
+            DataObject projectObject = new DataObject(projectVote.read(context, voteObject), project);
             Query<String, String> voteQuery = new Query<String, String>(Collections.singleton("vote"));
-            voteQuery.and(projectVote.getExpr(modifier, voteQuery.mapKeys.get("vote")).compare(projectObject.getExpr(), Compare.EQUALS));
-            voteQuery.properties.put("dateStartVote", dateStartVote.getExpr(modifier, voteQuery.mapKeys.get("vote")));
+            voteQuery.and(projectVote.getExpr(context.getModifier(), voteQuery.mapKeys.get("vote")).compare(projectObject.getExpr(), Compare.EQUALS));
+            voteQuery.properties.put("dateStartVote", dateStartVote.getExpr(context.getModifier(), voteQuery.mapKeys.get("vote")));
 
             java.sql.Date datePrev = null;
             DataObject votePrevObject = null;
 
-            for (Map.Entry<Map<String, DataObject>, Map<String, ObjectValue>> row : voteQuery.executeClasses(session.sql, session.env, baseClass).entrySet()) {
+            for (Map.Entry<Map<String, DataObject>, Map<String, ObjectValue>> row : voteQuery.executeClasses(context.getSession(), baseClass).entrySet()) {
                 java.sql.Date dateCur = (java.sql.Date) row.getValue().get("dateStartVote").getValue();
                 if (dateCur != null && dateCur.getTime() < dateStart.getTime() && (datePrev == null || dateCur.getTime() > datePrev.getTime())) {
                     datePrev = dateCur;
@@ -2561,23 +2555,23 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
             // считываем всех экспертов, которые уже голосовали по проекту
             Query<String, String> query = new Query<String, String>(Collections.singleton("key"));
-            query.and(doneExpertVote.getExpr(modifier, query.mapKeys.get("key"), votePrevObject.getExpr()).getWhere());
+            query.and(doneExpertVote.getExpr(context.getModifier(), query.mapKeys.get("key"), votePrevObject.getExpr()).getWhere());
 //            query.properties.put("expert", object(expert).getExpr(session.modifier, query.mapKeys.get("key")));
 
             Set<DataObject> experts = new HashSet<DataObject>();
-            for (Map.Entry<Map<String, DataObject>, Map<String, ObjectValue>> row : query.executeClasses(session.sql, session.env, baseClass).entrySet()) {
+            for (Map.Entry<Map<String, DataObject>, Map<String, ObjectValue>> row : query.executeClasses(context.getSession(), baseClass).entrySet()) {
                 experts.add(row.getKey().get("key"));
             }
 
             // копируем результаты старых заседаний
             for (DataObject expert : experts) {
-                inExpertVote.execute(true, session, modifier, expert, voteObject);
-                oldExpertVote.execute(true, session, modifier, expert, voteObject);
+                inExpertVote.execute(true, context, expert, voteObject);
+                oldExpertVote.execute(true, context, expert, voteObject);
                 LP[] copyProperties = new LP[] {dateExpertVote, voteResultExpertVote, inClusterExpertVote,
                                                 innovativeExpertVote, foreignExpertVote, innovativeCommentExpertVote,
                                                 competentExpertVote, completeExpertVote, completeCommentExpertVote};
                 for (LP property : copyProperties) {
-                    property.execute(property.read(session, modifier, expert, votePrevObject), session, modifier, expert, voteObject);
+                    property.execute(property.read(context, expert, votePrevObject), context, expert, voteObject);
                 }
             }
         }

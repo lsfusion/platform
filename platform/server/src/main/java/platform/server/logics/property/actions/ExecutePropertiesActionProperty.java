@@ -1,21 +1,12 @@
 package platform.server.logics.property.actions;
 
-import platform.interop.action.ClientAction;
 import platform.server.classes.ConcreteClass;
 import platform.server.classes.ValueClass;
-import platform.server.form.instance.FormInstance;
 import platform.server.form.instance.PropertyObjectInterfaceInstance;
-import platform.server.form.instance.remote.RemoteForm;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
 import platform.server.logics.linear.LP;
-import platform.server.logics.property.ActionProperty;
-import platform.server.logics.property.ClassPropertyInterface;
-import platform.server.logics.property.PropertyInterface;
-import platform.server.logics.property.UserProperty;
-import platform.server.session.Changes;
-import platform.server.session.DataSession;
-import platform.server.session.Modifier;
+import platform.server.logics.property.*;
 
 import java.sql.SQLException;
 import java.util.HashMap;
@@ -67,7 +58,7 @@ public class ExecutePropertiesActionProperty extends ActionProperty {
     }
 
     @Override
-    public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, DataSession session, Modifier<? extends Changes> modifier, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects, boolean groupLast) throws SQLException {
+    public void execute(ExecutionContext context) throws SQLException {
         for (int i = 0; i < dataProperties.length; ++i) {
             LP dataProperty = dataProperties[i];
             Map<?, ClassPropertyInterface> mapPropInterfaces = mapInterfaces[i];
@@ -78,24 +69,24 @@ public class ExecutePropertiesActionProperty extends ActionProperty {
                 ValueClass valueClass = dataProperty.property.getCommonClasses().value;
                 execValue = ObjectValue.getValue(valueClass.getDefaultValue(), (ConcreteClass)valueClass);
             } else {
-                execValue = keys.get(mapResults[i]);
+                execValue = context.getKeyValue(mapResults[i]);
             }
 
-            boolean inForm = executeForm != null && dataProperty.property instanceof UserProperty;
+            boolean inForm = context.getRemoteForm() != null && dataProperty.property instanceof UserProperty;
 
             DataObject[] execInterfaces = new DataObject[propInterfaces.size()];
             Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> execMapObjects = new HashMap<ClassPropertyInterface, PropertyObjectInterfaceInstance>();
             for (int j = 0; j < propInterfaces.size(); j++) {
                 ClassPropertyInterface execInterface = mapPropInterfaces.get(propInterfaces.get(j));
-                execInterfaces[j] = keys.get(execInterface);
+                execInterfaces[j] = context.getKeyValue(execInterface);
                 if (inForm)
-                    execMapObjects.put(execInterface, mapObjects.get(execInterface));
+                    execMapObjects.put(execInterface, context.getObjectInstance(execInterface));
             }
 
             if (inForm) {
-                ((UserProperty)dataProperty.property).execute(dataProperty.getMapValues(execInterfaces), execValue, session, modifier, actions, executeForm, execMapObjects, false);
+                ((UserProperty)dataProperty.property).execute(new ExecutionContext(dataProperty.getMapValues(execInterfaces), execValue, context.getSession(), context.getModifier(), context.getActions(), context.getRemoteForm(), execMapObjects, false));
             } else {
-                actions.addAll(dataProperty.execute(execValue.getValue(), session, execInterfaces));
+                context.addActions(dataProperty.execute(execValue.getValue(), context.getSession(), execInterfaces));
             }
         }
     }

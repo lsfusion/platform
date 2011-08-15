@@ -45,6 +45,10 @@ public class PropertyMapImplement<P extends PropertyInterface, T extends Propert
         depends.add(property);
     }
 
+    public Object read(ExecutionContext context, Map<T, DataObject> interfaceValues) throws SQLException {
+        return read(context.getSession(), interfaceValues, context.getModifier());
+    }
+
     public Object read(DataSession session, Map<T, DataObject> interfaceValues, Modifier<? extends Changes> modifier) throws SQLException {
         return property.read(session.sql, BaseUtils.join(mapping, interfaceValues), modifier, session.env);
     }

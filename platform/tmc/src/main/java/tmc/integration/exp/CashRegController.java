@@ -12,16 +12,10 @@ import platform.server.form.entity.FormEntity;
 import platform.server.form.entity.PropertyDrawEntity;
 import platform.server.form.instance.*;
 import platform.server.form.instance.filter.NotNullFilterInstance;
-import platform.server.form.instance.remote.RemoteForm;
 import platform.server.form.navigator.NavigatorElement;
 import platform.server.form.view.DefaultFormView;
-import platform.server.logics.DataObject;
-import platform.server.logics.ObjectValue;
 import platform.server.logics.property.ActionProperty;
-import platform.server.logics.property.ClassPropertyInterface;
-import platform.server.session.Changes;
-import platform.server.session.DataSession;
-import platform.server.session.Modifier;
+import platform.server.logics.property.ExecutionContext;
 import tmc.VEDLogicsModule;
 import tmc.integration.exp.FiscalRegister.*;
 
@@ -383,12 +377,12 @@ public class CashRegController {
         }
 
         @Override
-        public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, DataSession session, Modifier<? extends Changes> modifier, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects, boolean groupLast) throws SQLException {
-            int comPort = getCashRegComPort(executeForm.form);
+        public void execute(ExecutionContext context) throws SQLException {
+            int comPort = getCashRegComPort(context.getFormInstance());
             if (comPort == 0) {
                 return;
             }
-            actions.add(new ReportAction(type, comPort));
+            context.addAction(new ReportAction(type, comPort));
         }
     }
 
@@ -401,12 +395,12 @@ public class CashRegController {
         }
 
         @Override
-        public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, DataSession session, Modifier<? extends Changes> modifier, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects, boolean groupLast) throws SQLException {
-            int comPort = getCashRegComPort(executeForm.form);
+        public void execute(ExecutionContext context) throws SQLException {
+            int comPort = getCashRegComPort(context.getFormInstance());
             if (comPort == 0) {
                 return;
             }
-            actions.add(new MessageAction(type, comPort));
+            context.addAction(new MessageAction(type, comPort));
         }
     }
 
@@ -436,7 +430,7 @@ public class CashRegController {
             this.mask = mask;
         }
 
-        public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, DataSession session, Modifier<? extends Changes> modifier, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects, boolean groupLast) throws SQLException {
+        public void execute(ExecutionContext context) throws SQLException {
             //пока отключен, чтобы не вылетал exception
 
             /*
@@ -460,13 +454,13 @@ public class CashRegController {
             this.type = command;
         }
 
-        public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, DataSession session, Modifier<? extends Changes> modifier, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects, boolean groupLast) throws SQLException {
-            if (value.getValue() != null && value.getValue() instanceof Double) {
-                int comPort = getCashRegComPort(executeForm.form);
+        public void execute(ExecutionContext context) throws SQLException {
+            if (context.getValueObject() != null && context.getValueObject() instanceof Double) {
+                int comPort = getCashRegComPort(context.getFormInstance());
                 if (comPort == 0) {
                     return;
                 }
-                actions.add(new MoneyOperationAction(type, comPort, (Double) value.getValue()));
+                context.addAction(new MoneyOperationAction(type, comPort, (Double) context.getValueObject()));
             }
         }
 

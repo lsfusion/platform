@@ -1,16 +1,9 @@
 package roman;
 
-import platform.interop.action.ClientAction;
 import platform.interop.action.MessageClientAction;
-import platform.server.form.instance.PropertyObjectInterfaceInstance;
-import platform.server.form.instance.remote.RemoteForm;
 import platform.server.integration.*;
 import platform.server.logics.DataObject;
-import platform.server.logics.ObjectValue;
-import platform.server.logics.property.ClassPropertyInterface;
-import platform.server.session.Changes;
-import platform.server.session.DataSession;
-import platform.server.session.Modifier;
+import platform.server.logics.property.ExecutionContext;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStreamReader;
@@ -18,7 +11,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 
 /**
  * User: DAle
@@ -32,14 +24,14 @@ public class MexxImportArticleInfoInvoiceActionProperty extends BaseImportAction
     }
 
     @Override
-    public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, DataSession session, Modifier<? extends Changes> modifier, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects, boolean groupLast) throws SQLException {
+    public void execute(ExecutionContext context) throws SQLException {
         ImportField sidField = new ImportField(LM.sidArticle);
         ImportField countryField = new ImportField(LM.baseLM.name);
         ImportField compositionField = new ImportField(LM.mainCompositionOriginArticle);
         ImportField originalNameField = new ImportField(LM.originalNameArticle);
         ImportField seasonField = new ImportField(LM.sidSeasonSupplier);
 
-        DataObject supplier = keys.get(supplierInterface);
+        DataObject supplier = context.getKeyValue(supplierInterface);
 
         List<ImportProperty<?>> properties = new ArrayList<ImportProperty<?>>();
 
@@ -60,7 +52,7 @@ public class MexxImportArticleInfoInvoiceActionProperty extends BaseImportAction
         properties.add(new ImportProperty(originalNameField, LM.originalNameArticle.getMapping(articleKey)));
 
         try {
-            ByteArrayInputStream inFile = new ByteArrayInputStream((byte[]) value.getValue());
+            ByteArrayInputStream inFile = new ByteArrayInputStream((byte[]) context.getValueObject());
             // Заголовки тоже читаем, чтобы определить нужный ли файл импортируется
             ImportInputTable inputTable = new CSVInputTable(new InputStreamReader(inFile), 0, '|');
 
@@ -68,9 +60,9 @@ public class MexxImportArticleInfoInvoiceActionProperty extends BaseImportAction
                     10, countryField, compositionField).getTable();
 
             ImportKey<?>[] keysArray = {articleKey, countryKey, seasonKey};
-            new IntegrationService(session, table, Arrays.asList(keysArray), properties).synchronize(true, true, false);
+            new IntegrationService(context.getSession(), table, Arrays.asList(keysArray), properties).synchronize(true, true, false);
 
-            actions.add(new MessageClientAction("Данные были успешно приняты", "Импорт"));
+            context.addAction(new MessageClientAction("Данные были успешно приняты", "Импорт"));
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

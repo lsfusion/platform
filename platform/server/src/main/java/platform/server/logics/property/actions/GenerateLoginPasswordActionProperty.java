@@ -1,20 +1,14 @@
 package platform.server.logics.property.actions;
 
 import platform.base.BaseUtils;
-import platform.interop.action.ClientAction;
 import platform.server.classes.ValueClass;
-import platform.server.form.instance.PropertyObjectInterfaceInstance;
-import platform.server.form.instance.remote.RemoteForm;
 import platform.server.logics.DataObject;
-import platform.server.logics.ObjectValue;
 import platform.server.logics.ServerResourceBundle;
 import platform.server.logics.linear.LP;
 import platform.server.logics.property.ActionProperty;
 import platform.server.logics.property.ClassPropertyInterface;
+import platform.server.logics.property.ExecutionContext;
 import platform.server.logics.property.Property;
-import platform.server.session.Changes;
-import platform.server.session.DataSession;
-import platform.server.session.Modifier;
 
 import java.sql.SQLException;
 import java.util.*;
@@ -38,10 +32,10 @@ public class GenerateLoginPasswordActionProperty extends ActionProperty {
         customUserInterface = i.next();
     }
 
-    public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, DataSession session, Modifier<? extends Changes> modifier, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects, boolean groupLast) throws SQLException {
-        DataObject userObject = keys.get(customUserInterface);
+    public void execute(ExecutionContext context) throws SQLException {
+        DataObject userObject = context.getKeyValue(customUserInterface);
 
-        String currentEmail = (String) email.read(session, modifier, userObject);
+        String currentEmail = (String) email.read(context, userObject);
 
         String login;
         int indexMail;
@@ -56,9 +50,9 @@ public class GenerateLoginPasswordActionProperty extends ActionProperty {
         for(int i=0;i<8;i++)
             password += chars.charAt(rand.nextInt(chars.length()));
 
-        if (userLogin.read(session, modifier, userObject) == null)
-            userLogin.execute(login, session, modifier, userObject);
-        userPassword.execute(password, session, modifier, userObject);
+        if (userLogin.read(context, userObject) == null)
+            userLogin.execute(login, context, userObject);
+        userPassword.execute(password, context, userObject);
     }
 
     @Override

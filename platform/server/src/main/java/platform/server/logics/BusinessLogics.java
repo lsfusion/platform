@@ -5,7 +5,6 @@ import org.apache.log4j.Logger;
 import platform.base.*;
 import platform.interop.Compare;
 import platform.interop.RemoteLogicsInterface;
-import platform.interop.action.ClientAction;
 import platform.interop.event.IDaemonTask;
 import platform.interop.exceptions.LoginException;
 import platform.interop.form.RemoteFormInterface;
@@ -31,7 +30,6 @@ import platform.server.data.type.TypeSerializer;
 import platform.server.form.entity.FormEntity;
 import platform.server.form.entity.ObjectEntity;
 import platform.server.form.instance.FormInstance;
-import platform.server.form.instance.PropertyObjectInterfaceInstance;
 import platform.server.form.instance.remote.RemoteForm;
 import platform.server.form.navigator.*;
 import platform.server.integration.*;
@@ -40,9 +38,7 @@ import platform.server.logics.property.*;
 import platform.server.logics.scheduler.Scheduler;
 import platform.server.logics.table.ImplementTable;
 import platform.server.serialization.ServerSerializationPool;
-import platform.server.session.Changes;
 import platform.server.session.DataSession;
-import platform.server.session.Modifier;
 import platform.server.session.PropertyChange;
 
 import java.io.*;
@@ -1398,7 +1394,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             super(sID, caption, new ValueClass[]{});
         }
 
-        public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, DataSession session, Modifier<? extends Changes> modifier, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects, boolean groupLast) throws SQLException {
+        public void execute(ExecutionContext context) throws SQLException {
             getRestartController().initRestart();
             updateRestartProperty();
         }
@@ -1409,7 +1405,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             super(sID, caption, new ValueClass[]{});
         }
 
-        public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, DataSession session, Modifier<? extends Changes> modifier, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects, boolean groupLast) throws SQLException {
+        public void execute(ExecutionContext context) throws SQLException {
             getRestartController().cancelRestart();
             updateRestartProperty();
         }

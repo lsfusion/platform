@@ -1,21 +1,10 @@
 package platform.server.logics.property.actions;
 
-import platform.interop.action.ClientAction;
 import platform.server.classes.ValueClass;
-import platform.server.form.instance.PropertyObjectInterfaceInstance;
-import platform.server.form.instance.remote.RemoteForm;
-import platform.server.logics.BusinessLogics;
-import platform.server.logics.DataObject;
-import platform.server.logics.ObjectValue;
 import platform.server.logics.property.ActionProperty;
-import platform.server.logics.property.ClassPropertyInterface;
-import platform.server.session.Changes;
-import platform.server.session.DataSession;
-import platform.server.session.Modifier;
+import platform.server.logics.property.ExecutionContext;
 
 import java.sql.SQLException;
-import java.util.List;
-import java.util.Map;
 
 public class CancelActionProperty extends ActionProperty {
 
@@ -24,10 +13,7 @@ public class CancelActionProperty extends ActionProperty {
     }
 
     @Override
-    public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, DataSession session, Modifier<? extends Changes> modifier, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects, boolean groupLast) throws SQLException {
-        if (executeForm != null)
-            executeForm.cancelChanges();
-        else
-            session.restart(true);
+    public void execute(ExecutionContext context) throws SQLException {
+        context.cancelChanges();
     }
 }

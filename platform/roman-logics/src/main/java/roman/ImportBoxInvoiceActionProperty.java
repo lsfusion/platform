@@ -1,19 +1,12 @@
 package roman;
 
 import jxl.read.biff.BiffException;
-import platform.interop.action.ClientAction;
 import platform.interop.action.MessageClientAction;
 import platform.server.classes.ValueClass;
 import platform.server.data.expr.query.GroupType;
-import platform.server.form.instance.PropertyObjectInterfaceInstance;
-import platform.server.form.instance.remote.RemoteForm;
 import platform.server.integration.*;
 import platform.server.logics.DataObject;
-import platform.server.logics.ObjectValue;
-import platform.server.logics.property.ClassPropertyInterface;
-import platform.server.session.Changes;
-import platform.server.session.DataSession;
-import platform.server.session.Modifier;
+import platform.server.logics.property.ExecutionContext;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -82,12 +75,12 @@ public abstract class ImportBoxInvoiceActionProperty extends BaseImportActionPro
     }
 
 
-    public void execute(final Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, DataSession session, Modifier<? extends Changes> modifier, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects, boolean groupLast) throws SQLException {
-        DataObject supplier = keys.get(supplierInterface);
+    public void execute(ExecutionContext context) throws SQLException {
+        DataObject supplier = context.getKeyValue(supplierInterface);
 
         initFields();
 
-        List<byte[]> fileList = valueClass.getFiles(value.getValue());
+        List<byte[]> fileList = valueClass.getFiles(context.getValueObject());
 
         List<ImportProperty<?>> properties = new ArrayList<ImportProperty<?>>();
 
@@ -222,9 +215,9 @@ public abstract class ImportBoxInvoiceActionProperty extends BaseImportActionPro
             } else {
                 keysArray = new ImportKey<?>[]{invoiceKey, articleKey, itemKey, colorKey, sizeKey, countryKey, customCategoryKey, customCategory6Key, themeKey, seasonKey, genderKey};
             }
-            new IntegrationService(session, table, Arrays.asList(keysArray), properties).synchronize(true, true, false);
+            new IntegrationService(context.getSession(), table, Arrays.asList(keysArray), properties).synchronize(true, true, false);
         }
 
-        actions.add(new MessageClientAction("Данные были успешно приняты", "Импорт"));
+        context.addAction(new MessageClientAction("Данные были успешно приняты", "Импорт"));
     }
 }

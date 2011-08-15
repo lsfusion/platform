@@ -1,6 +1,5 @@
 package platform.server.logics.property.actions;
 
-import platform.interop.action.ClientAction;
 import platform.server.classes.ValueClass;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.where.extra.CompareWhere;
@@ -9,18 +8,9 @@ import platform.server.form.entity.GroupObjectEntity;
 import platform.server.form.instance.FormInstance;
 import platform.server.form.instance.GroupObjectInstance;
 import platform.server.form.instance.PropertyObjectInterfaceInstance;
-import platform.server.form.instance.remote.RemoteForm;
-import platform.server.logics.DataObject;
-import platform.server.logics.ObjectValue;
 import platform.server.logics.PropertyUtils;
 import platform.server.logics.linear.LP;
-import platform.server.logics.property.ActionProperty;
-import platform.server.logics.property.ClassPropertyInterface;
-import platform.server.logics.property.Property;
-import platform.server.logics.property.PropertyInterface;
-import platform.server.session.Changes;
-import platform.server.session.DataSession;
-import platform.server.session.Modifier;
+import platform.server.logics.property.*;
 import platform.server.session.PropertyChange;
 
 import java.sql.SQLException;
@@ -135,17 +125,17 @@ public class GroupChangeActionProperty extends ActionProperty {
         return result;
     }
 
-    public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, DataSession session, Modifier<? extends Changes> modifier, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects, boolean groupLast) throws SQLException {
-        FormInstance<?> form = (FormInstance<?>) executeForm.form;
+    public void execute(ExecutionContext context) throws SQLException {
+        FormInstance<?> form = (FormInstance<?>) context.getFormInstance();
 
         Map<PropertyInterface, Expr> mainKeys = mainProperty.getMapKeys();
 
-        Map<PropertyInterface, PropertyObjectInterfaceInstance> mainMapObjects = getMapObjectsForMainProperty(mapObjects);
+        Map<PropertyInterface, PropertyObjectInterfaceInstance> mainMapObjects = getMapObjectsForMainProperty(context.getObjectInstances());
 
         //включаем в сравнение на конкретные значения те интерфейсы главноего свойства, которые мэпятся на интерфейсы текущего свойства
         Where changeWhere = CompareWhere.compareValues(
                 removeGroupingInterfaces ? filterKeys(mainKeys, mapMainToThis.keySet()) : filterNotKeys(mainKeys, grouping),
-                join(mapMainToThis, keys)
+                join(mapMainToThis, context.getKeys())
         );
 
         if (filterGroupObject != null) {
@@ -154,7 +144,7 @@ public class GroupChangeActionProperty extends ActionProperty {
             changeWhere = changeWhere.and(
                     groupInstance.getWhere(
                             filterKeys(crossJoin(mainMapObjects, mainKeys), groupInstance.objects),
-                            modifier));
+                            context.getModifier()));
         }
 
         Map<PropertyInterface, Expr> getterKeys = new HashMap<PropertyInterface, Expr>();
@@ -162,16 +152,16 @@ public class GroupChangeActionProperty extends ActionProperty {
             if (mapGetToMain.containsKey(getIFace)) {
                 getterKeys.put(getIFace, mainKeys.get(mapGetToMain.get(getIFace)));
             } else {
-                getterKeys.put(getIFace, keys.get(mapGetToThis.get(getIFace)).getExpr());
+                getterKeys.put(getIFace, context.getKeyValue(mapGetToThis.get(getIFace)).getExpr());
             }
         }
 
-        Expr setExpr = getterProperty.getExpr(getterKeys, modifier);
+        Expr setExpr = getterProperty.getExpr(getterKeys, context.getModifier());
 
         PropertyChange mainPropertyChange = new PropertyChange(mainKeys, setExpr, changeWhere);
 
-        actions.addAll(
-                session.execute(mainProperty, mainPropertyChange, modifier, executeForm, mainMapObjects)
+        context.addActions(
+                context.getSession().execute(mainProperty, mainPropertyChange, context.getModifier(), context.getRemoteForm(), mainMapObjects)
         );
     }
 

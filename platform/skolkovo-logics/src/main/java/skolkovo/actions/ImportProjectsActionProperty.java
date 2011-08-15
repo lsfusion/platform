@@ -23,9 +23,8 @@ import platform.server.logics.ObjectValue;
 import platform.server.logics.linear.LP;
 import platform.server.logics.property.ActionProperty;
 import platform.server.logics.property.ClassPropertyInterface;
-import platform.server.session.Changes;
+import platform.server.logics.property.ExecutionContext;
 import platform.server.session.DataSession;
-import platform.server.session.Modifier;
 import skolkovo.SkolkovoBusinessLogics;
 import skolkovo.SkolkovoLogicsModule;
 
@@ -343,11 +342,11 @@ public class ImportProjectsActionProperty extends ActionProperty {
     }
 
     @Override
-    public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, DataSession session, Modifier<? extends Changes> modifier, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects, boolean groupLast) throws SQLException {
-        this.session = session;
+    public void execute(ExecutionContext context) throws SQLException {
+        this.session = context.getSession();
         toLog = "";
 
-        projectsImportLimit = (Integer) LM.projectsImportLimit.read(session);
+        projectsImportLimit = (Integer) LM.projectsImportLimit.read(context);
         if (projectsImportLimit == null) {
             projectsImportLimit = 100;
         }
@@ -380,7 +379,7 @@ public class ImportProjectsActionProperty extends ActionProperty {
                     message = "Вся информация актуальна";
                 }
             }
-            actions.add(new MessageClientAction(message, "Импорт", true));
+            context.addAction(new MessageClientAction(message, "Импорт", true));
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

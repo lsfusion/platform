@@ -1,21 +1,10 @@
 package roman;
 
-import platform.interop.action.ClientAction;
 import platform.server.classes.DataClass;
 import platform.server.classes.FileActionClass;
 import platform.server.classes.ValueClass;
-import platform.server.form.instance.PropertyObjectInterfaceInstance;
-import platform.server.form.instance.remote.RemoteForm;
-import platform.server.logics.DataObject;
-import platform.server.logics.ObjectValue;
 import platform.server.logics.property.ActionProperty;
-import platform.server.logics.property.ClassPropertyInterface;
-import platform.server.session.Changes;
-import platform.server.session.DataSession;
-import platform.server.session.Modifier;
-
-import java.util.List;
-import java.util.Map;
+import platform.server.logics.property.ExecutionContext;
 
 public class TNVEDImportActionProperty extends ActionProperty {
     public static final int CLASSIFIER_IMPORT = 1;
@@ -37,19 +26,18 @@ public class TNVEDImportActionProperty extends ActionProperty {
         this(sID, caption, LM, importType, "");
     }
 
-    public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, DataSession session, Modifier<? extends Changes> modifier, List<ClientAction> actions,
-                        RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects, boolean groupLast) {
+    public void execute(ExecutionContext context) {
         try {
             TNVEDImporter importer = null;
             switch (importType) {
                 case CLASSIFIER_IMPORT:
-                    importer = new TNVEDClassifierImporter(executeForm, value, LM, classifierType);
+                    importer = new TNVEDClassifierImporter(context.getRemoteForm(), context.getValue(), LM, classifierType);
                     break;
                 case MIN_PRICES_IMPORT:
-                    importer = new TNVEDMinPricesImporter(executeForm, value, LM);
+                    importer = new TNVEDMinPricesImporter(context.getRemoteForm(), context.getValue(), LM);
                     break;
                 case DUTIES_IMPORT:
-                    importer = new TNVEDDutiesImporter(executeForm, value, LM);
+                    importer = new TNVEDDutiesImporter(context.getRemoteForm(), context.getValue(), LM);
                     break;
             }
             importer.doImport();

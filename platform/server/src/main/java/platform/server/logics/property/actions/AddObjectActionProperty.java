@@ -3,29 +3,22 @@ package platform.server.logics.property.actions;
 import platform.base.BaseUtils;
 import platform.interop.ClassViewType;
 import platform.interop.KeyStrokes;
-import platform.interop.action.ClientAction;
 import platform.server.classes.*;
 import platform.server.form.entity.FormEntity;
 import platform.server.form.entity.PropertyDrawEntity;
 import platform.server.form.instance.FormInstance;
-import platform.server.form.instance.PropertyObjectInterfaceInstance;
-import platform.server.form.instance.remote.RemoteForm;
 import platform.server.form.view.DefaultFormView;
 import platform.server.logics.DataObject;
-import platform.server.logics.ObjectValue;
 import platform.server.logics.ServerResourceBundle;
 import platform.server.logics.property.ActionProperty;
 import platform.server.logics.property.ClassPropertyInterface;
+import platform.server.logics.property.ExecutionContext;
 import platform.server.logics.property.Property;
-import platform.server.session.Changes;
-import platform.server.session.DataSession;
-import platform.server.session.Modifier;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 public class AddObjectActionProperty extends ActionProperty {
 
@@ -81,26 +74,26 @@ public class AddObjectActionProperty extends ActionProperty {
         return "getAddObjectAction(" + valueClass.getSID() + ")";
     }
 
-    public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, DataSession session, Modifier<? extends Changes> modifier, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects, boolean groupLast) throws SQLException {
-        FormInstance<?> form = (FormInstance<?>) executeForm.form;
+    public void execute(ExecutionContext context) throws SQLException {
+        FormInstance<?> form = context.getFormInstance();
 
         Integer quantityAdd = 1;
         // пока привязываемся к тому, что interfaces будет выдавать все в правильном порядке
         if (quantity) {
-            quantityAdd = (Integer) keys.get(interfaces.iterator().next()).getValue();
+            quantityAdd = (Integer) context.getKeyObject(interfaces.iterator().next());
         }
 
         ArrayList<byte[]> values = null;
         if (dataClass instanceof FileActionClass) {
             FileActionClass clazz = (FileActionClass) dataClass;
-            values = clazz.getFiles(value.getValue());
+            values = clazz.getFiles(context.getValueObject());
             quantityAdd = values.size();
         }
 
         for (int k = 0; k < quantityAdd; k++) {
             DataObject object;
             if (valueClass.hasChildren())
-                object = form.addObject((ConcreteCustomClass) form.getCustomClass((Integer) value.getValue()));
+                object = form.addObject((ConcreteCustomClass) form.getCustomClass((Integer) context.getValueObject()));
             else
                 object = form.addObject((ConcreteCustomClass) valueClass);
 
@@ -108,7 +101,7 @@ public class AddObjectActionProperty extends ActionProperty {
 
                 String prefix = null;
                 if (barcodePrefix != null)
-                    prefix = (String) barcodePrefix.read(session, modifier);
+                    prefix = (String) barcodePrefix.read(context);
                 if (prefix == null) prefix = "";
                 prefix = prefix.trim();
 
@@ -125,8 +118,7 @@ public class AddObjectActionProperty extends ActionProperty {
                 }
                 int checkDigit = (evenSum * 3 + oddSum) % 10 == 0 ? 0 : 10 - (evenSum * 3 + oddSum) % 10;
 
-                barcode.execute(Collections.singletonMap(BaseUtils.single(barcode.interfaces), object), session,
-                        barcode12 + checkDigit, modifier);
+                barcode.execute(Collections.singletonMap(BaseUtils.single(barcode.interfaces), object), context, barcode12 + checkDigit);
             }
 
             // меняем все свойства на значения входов
@@ -140,14 +132,12 @@ public class AddObjectActionProperty extends ActionProperty {
                         continue;
                     }
                     Property property = properties.get(i++);
-                    property.execute(Collections.singletonMap(BaseUtils.single(property.interfaces), object),
-                            session, keys.get(classInterface).getValue(), modifier);
+                    property.execute(Collections.singletonMap(BaseUtils.single(property.interfaces), object), context, context.getKeyObject(classInterface));
                 }
             }
 
             if (propertyValue != null) {
-                propertyValue.execute(Collections.singletonMap(BaseUtils.single(propertyValue.interfaces), object),
-                        session, values.get(k), modifier);
+                propertyValue.execute(Collections.singletonMap(BaseUtils.single(propertyValue.interfaces), object), context, values.get(k));
             }
         }
     }

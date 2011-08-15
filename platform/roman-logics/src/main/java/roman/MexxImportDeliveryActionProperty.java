@@ -1,25 +1,14 @@
 package roman;
 
-import jxl.read.biff.BiffException;
 import platform.base.BaseUtils;
-import platform.base.IOUtils;
-import platform.interop.action.ClientAction;
 import platform.interop.action.MessageClientAction;
-import platform.server.form.instance.PropertyObjectInterfaceInstance;
-import platform.server.form.instance.remote.RemoteForm;
-import platform.server.integration.*;
 import platform.server.logics.DataObject;
-import platform.server.logics.ObjectValue;
-import platform.server.logics.property.ClassPropertyInterface;
-import platform.server.session.Changes;
-import platform.server.session.DataSession;
-import platform.server.session.Modifier;
+import platform.server.logics.property.ExecutionContext;
 
 import java.io.*;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
 import java.util.zip.ZipInputStream;
 
 public class MexxImportDeliveryActionProperty extends BaseImportActionProperty {
@@ -30,12 +19,12 @@ public class MexxImportDeliveryActionProperty extends BaseImportActionProperty {
 
 
     @Override
-    public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, DataSession session, Modifier<? extends Changes> modifier, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects, boolean groupLast) throws SQLException {
+    public void execute(ExecutionContext context) throws SQLException {
         try {
 
-            DataObject supplier = BaseUtils.singleValue(keys);
+            DataObject supplier = context.getSingleKeyValue();
 
-            List<byte[]> fileList = valueClass.getFiles(value.getValue());
+            List<byte[]> fileList = valueClass.getFiles(context.getValueObject());
             for (byte[] file : fileList) {
 
                 ByteArrayInputStream stream = new ByteArrayInputStream(file);
@@ -70,12 +59,12 @@ public class MexxImportDeliveryActionProperty extends BaseImportActionProperty {
 
                 }
 
-                LM.mexxImportInvoice.execute(outputListInOrder[0], session, supplier);
-                LM.mexxImportArticleInfoInvoice.execute(outputListInOrder[1], session, supplier);
-                LM.mexxImportColorInvoice.execute(outputListInOrder[2], session, supplier);
-                LM.mexxImportPricesInvoice.execute(outputListInOrder[3], session, supplier);
+                LM.mexxImportInvoice.execute(outputListInOrder[0], context, supplier);
+                LM.mexxImportArticleInfoInvoice.execute(outputListInOrder[1], context, supplier);
+                LM.mexxImportColorInvoice.execute(outputListInOrder[2], context, supplier);
+                LM.mexxImportPricesInvoice.execute(outputListInOrder[3], context, supplier);
             }
-            actions.add(new MessageClientAction("Данные были успешно приняты", "Импорт"));
+            context.addAction(new MessageClientAction("Данные были успешно приняты", "Импорт"));
         } catch (IOException e) {
             e.printStackTrace();
         } catch (Exception

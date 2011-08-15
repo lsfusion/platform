@@ -21,6 +21,7 @@ import platform.server.data.where.Where;
 import platform.server.data.where.classes.ClassWhere;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
+import platform.server.session.DataSession;
 
 import java.sql.SQLException;
 import java.util.*;
@@ -177,6 +178,10 @@ public class Query<K,V> extends InnerContext<Query<?,?>> implements MapKeysInter
         return execute(session, QueryEnvironment.empty);
     }
 
+    public OrderedMap<Map<K, Object>, Map<V, Object>> execute(DataSession session) throws SQLException {
+        return execute(session.sql, session.env);
+    }
+
     public OrderedMap<Map<K, Object>, Map<V, Object>> execute(SQLSession session, QueryEnvironment env) throws SQLException {
         return execute(session,new OrderedMap<V, Boolean>(),0, env);
     }
@@ -187,6 +192,10 @@ public class Query<K,V> extends InnerContext<Query<?,?>> implements MapKeysInter
 
     public OrderedMap<Map<K, DataObject>, Map<V, ObjectValue>> executeClasses(SQLSession session, BaseClass baseClass) throws SQLException {
         return executeClasses(session, new OrderedMap<V, Boolean>(), 0, baseClass, QueryEnvironment.empty);
+    }
+
+    public OrderedMap<Map<K, DataObject>, Map<V, ObjectValue>> executeClasses(DataSession session, BaseClass baseClass) throws SQLException {
+        return executeClasses(session.sql, session.env, baseClass);
     }
 
     public OrderedMap<Map<K, DataObject>, Map<V, ObjectValue>> executeClasses(SQLSession session, QueryEnvironment env, BaseClass baseClass) throws SQLException {
