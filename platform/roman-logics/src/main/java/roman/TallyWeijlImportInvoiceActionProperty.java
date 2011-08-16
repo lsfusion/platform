@@ -23,6 +23,6 @@ public class TallyWeijlImportInvoiceActionProperty extends ImportBoxInvoiceActio
                 compositionField, countryField, boxNumberField, new ImportField[] {customCodeField, customCode6Field},
                 barCodeField, null, sizeField, colorCodeField, sidField, new ImportField[] {originalNameField, colorNameField},
                 null, null, seasonField, null, RRPField, null, unitNetWeightField, null, null, null, null, null,
-                unitPriceField, unitQuantityField, null, numberSkuField, themeCodeField, themeNameField, genderField});
+                unitPriceField, unitQuantityField, numberSkuField, themeCodeField, themeNameField, genderField});
     }
 }
