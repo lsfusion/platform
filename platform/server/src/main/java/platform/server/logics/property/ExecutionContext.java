@@ -47,7 +47,7 @@ public class ExecutionContext {
     }
 
     public Object getKeyObject(ClassPropertyInterface key) {
-        return keys.get(key);
+        return keys.get(key).object;
     }
 
     public DataObject getSingleKeyValue() {
