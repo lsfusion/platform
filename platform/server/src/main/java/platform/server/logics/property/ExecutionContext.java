@@ -93,7 +93,7 @@ public class ExecutionContext {
     }
 
     public void addActions(List<ClientAction> actions) {
-        actions.addAll(actions);
+        this.actions.addAll(actions);
     }
 
     public RemoteForm getRemoteForm() {
