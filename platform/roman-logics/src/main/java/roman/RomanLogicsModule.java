@@ -3162,12 +3162,12 @@ public class RomanLogicsModule extends LogicsModule {
         NavigatorElement shipment = new NavigatorElement(baseLM.baseElement, "shipment", "Управление фрахтами");
         shipment.window = leftToolbar;
 
+        addFormEntity(new FreightContentFormEntity(shipment, "freightContentForm", "Содержимое фрахта"));
         NavigatorElement actionFreight = new NavigatorElement(shipment, "actionFreight", "Действия");
         addFormEntity(new FreightCreateFormEntity(actionFreight, "freightCreateForm", "Редактирование фрахта"));
         addFormEntity(new FreightShipmentFormEntity(actionFreight, "freightShipmentForm", "Комплектация фрахта"));
         addFormEntity(new FreightChangeFormEntity(actionFreight, "freightChangeForm", "Обработка фрахта"));
         addFormEntity(new FreightInvoiceFormEntity(actionFreight, "freightInvoiceForm", "Расценка фрахта"));
-        addFormEntity(new FreightContentFormEntity(actionFreight, "freightContentForm", "Содержимое фрахта"));
 
         logFreightForm = new LogFormEntity("logFreightForm", "История фрахта", nameClassFreight, logFreight, baseLM);
 
@@ -5383,6 +5383,14 @@ public class RomanLogicsModule extends LogicsModule {
 
             addPropertyDraw(quantityFreightArticle, objFreight, objArticle);
 
+            /*objColor = addSingleGroupObject(colorSupplier, "Цвет", baseLM.name);
+
+            addPropertyDraw(objArticle, objColor, mainCompositionOriginArticleColor, additionalCompositionOriginArticleColor, nameCountryArticleColor, sidCustomCategory10ArticleColor);
+            addPropertyDraw(quantityFreightArticle, objFreight, objArticle);
+            addPropertyDraw(quantityFreightArticleColor, objFreight, objArticle, objColor);
+
+            addFixedFilter(new NotNullFilterEntity(addPropertyObject(quantityFreightArticleColor, objFreight, objArticle, objColor)));*/
+
             objCategory = addSingleGroupObject(category, "Номенклатурная группа", baseLM.name);
 
             objSku = addSingleGroupObject(sku, "SKU", baseLM.selection, baseLM.barcode, sidArticleSku,
@@ -5408,15 +5416,6 @@ public class RomanLogicsModule extends LogicsModule {
             setReadOnly(additionalCompositionOriginSku, false, objSku.groupTo);
             setReadOnly(mainCompositionSku, false, objSku.groupTo);
             setReadOnly(additionalCompositionSku, false, objSku.groupTo);
-
-            objColor = addSingleGroupObject(colorSupplier, "Цвет", baseLM.name);
-
-            addPropertyDraw(objArticle, objColor, mainCompositionOriginArticleColor, additionalCompositionOriginArticleColor, nameCountryArticleColor, sidCustomCategory10ArticleColor);
-            addPropertyDraw(quantityFreightArticle, objFreight, objArticle);
-            addPropertyDraw(quantityFreightArticleColor, objFreight, objArticle, objColor);
-
-            addFixedFilter(new NotNullFilterEntity(addPropertyObject(quantityFreightArticleColor, objFreight, objArticle, objColor)));
-
 
             objSkuFreight = addSingleGroupObject(sku, "Позиции фрахта", baseLM.selection, baseLM.barcode, sidArticleSku, sidColorSupplierItem, nameColorSupplierItem,
                     sidSizeSupplierItem, nameBrandSupplierArticleSku, nameArticleSku);
@@ -5509,22 +5508,21 @@ public class RomanLogicsModule extends LogicsModule {
             design.get(objSku.groupTo).grid.constraints.fillVertical = 4;
             design.get(objSkuFreight.groupTo).grid.constraints.fillVertical = 4;
 
-
             design.addIntersection(design.getGroupObjectContainer(objFreight.groupTo),
                     design.getGroupObjectContainer(objImporter.groupTo),
                     DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
 
-            design.addIntersection(design.getGroupObjectContainer(objArticle.groupTo),
+            /*design.addIntersection(design.getGroupObjectContainer(objArticle.groupTo),
                     design.getGroupObjectContainer(objColor.groupTo),
-                    DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
+                    DoNotIntersectSimplexConstraint.TOTHE_RIGHT);*/
 
             design.addIntersection(design.getGroupObjectContainer(objCategory.groupTo),
                     design.getGroupObjectContainer(objSku.groupTo),
                     DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
 
-            ContainerView articleContainer = design.createContainer("Артикула-цвета");
+            /*ContainerView articleContainer = design.createContainer("Артикула-цвета");
             articleContainer.add(design.getGroupObjectContainer(objArticle.groupTo));
-            articleContainer.add(design.getGroupObjectContainer(objColor.groupTo));
+            articleContainer.add(design.getGroupObjectContainer(objColor.groupTo)); */
 
             ContainerView skuContainer = design.createContainer("SKU");
             skuContainer.add(design.getGroupObjectContainer(objCategory.groupTo));
@@ -5532,7 +5530,7 @@ public class RomanLogicsModule extends LogicsModule {
 
             ContainerView specContainer = design.createContainer();
             design.getMainContainer().addAfter(specContainer, design.getGroupObjectContainer(objArticle.groupTo));
-            specContainer.add(articleContainer);
+            specContainer.add(design.getGroupObjectContainer(objArticle.groupTo));
             specContainer.add(skuContainer);
             specContainer.add(design.getGroupObjectContainer(objSkuFreight.groupTo));
             specContainer.tabbedPane = true;
@@ -6490,7 +6488,7 @@ public class RomanLogicsModule extends LogicsModule {
             objFreight = addSingleGroupObject(freight, "Фрахт", baseLM.date, baseLM.objectClassName, nameRouteFreight, nameExporterFreight, nameFreightTypeFreight, nameCurrencyFreight, sumFreightFreight);
             objFreight.groupTo.setSingleClassView(ClassViewType.GRID);
 
-            objImporter = addSingleGroupObject(importer, "Фрахт", baseLM.name);
+            objImporter = addSingleGroupObject(importer, "Импортер", baseLM.name);
 
             objBrand = addSingleGroupObject(brandSupplier, "Бренд", baseLM.name);
 
@@ -6520,6 +6518,9 @@ public class RomanLogicsModule extends LogicsModule {
             design.get(getPropertyDraw(baseLM.objectClassName, objFreight)).caption = "Статус фрахта";
 
             design.addIntersection(design.getGroupObjectContainer(objFreight.groupTo), design.getGroupObjectContainer(objImporter.groupTo), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
+
+            design.get(objFreight.groupTo).grid.constraints.fillHorizontal = 2;
+            design.get(objImporter.groupTo).grid.constraints.fillHorizontal = 1;
 
             design.get(objFreight.groupTo).grid.constraints.fillVertical = 1;
             design.get(objBrand.groupTo).grid.constraints.fillVertical = 1;
