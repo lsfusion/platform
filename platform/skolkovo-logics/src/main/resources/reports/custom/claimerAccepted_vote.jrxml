@@ -2,7 +2,7 @@
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="vote" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0">
 	<property name="ireport.zoom" value="1.2100000000000017"/>
 	<property name="ireport.x" value="0"/>
-	<property name="ireport.y" value="0"/>
+	<property name="ireport.y" value="207"/>
 	<style name="DefaultStyle" isDefault="true" vAlign="Middle" fontName="lsf.TimesNewRoman" fontSize="12" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false"/>
 	<style name="GroupCellStyle0" mode="Opaque" backcolor="#FFFFFF" vAlign="Middle" fontName="Serif" fontSize="10" pdfFontName="lsf.Times" pdfEncoding="Cp1251" isPdfEmbedded="false">
 		<box leftPadding="2" rightPadding="2">
@@ -76,16 +76,14 @@
 "«Сколково»"]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement positionType="Float" x="435" y="302" width="104" height="48"/>
+				<reportElement positionType="Float" x="50" y="301" width="247" height="16"/>
 				<textElement verticalAlignment="Bottom"/>
-				<text><![CDATA[Д.Ю. Колосов]]></text>
+				<text><![CDATA[Ответственный секретарь Совета]]></text>
 			</staticText>
 			<staticText>
-				<reportElement positionType="Float" x="50" y="302" width="247" height="48"/>
+				<reportElement positionType="Float" x="435" y="301" width="104" height="16"/>
 				<textElement verticalAlignment="Bottom"/>
-				<text><![CDATA[Вице-Президент
-Руководитель Аппарата Президента
-и Советов Фонда]]></text>
+				<text><![CDATA[Д.В. Дудина]]></text>
 			</staticText>
 		</band>
 	</detail>

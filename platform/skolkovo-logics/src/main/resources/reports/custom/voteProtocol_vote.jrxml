@@ -2,7 +2,7 @@
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="vote" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0">
 	<property name="ireport.zoom" value="1.4641000000000006"/>
 	<property name="ireport.x" value="0"/>
-	<property name="ireport.y" value="252"/>
+	<property name="ireport.y" value="545"/>
 	<style name="DefaultStyle" isDefault="true" vAlign="Middle" fontName="lsf.TimesNewRoman" fontSize="12" pdfEncoding="Cp1251" isPdfEmbedded="false"/>
 	<style name="GroupCellStyle0" mode="Opaque" backcolor="#DFDFDF" vAlign="Middle" fontName="Serif" fontSize="10" pdfFontName="lsf.Times" pdfEncoding="Cp1251" isPdfEmbedded="false">
 		<box leftPadding="2" rightPadding="2">
@@ -177,20 +177,8 @@
 					<textFieldExpression class="java.lang.String"><![CDATA["Также в соответствии с пунктом 14 Положения об Экспертных коллегиях Фонда для определения результатов голосования учтены " + ($F{quantityDoneOldVote}) + " " + new ChoiceFormat("0#заполненных Бюллетеней|1#заполненный Бюллетень|1<заполненных Бюллетеня|4<заполненных Бюллетеней").format($F{quantityDoneOldVote}) + " оценки, направленные для целей участия в заседании Экспертной коллегии от " + platform.base.BaseUtils.formatRussian($F{prevDateStartVote}) + " года, признанном несостоявшимся."]]></textFieldExpression>
 				</textField>
 			</band>
-			<band height="324" splitType="Immediate">
+			<band height="293" splitType="Immediate">
 				<printWhenExpression><![CDATA[$F{succeededVote}!=null]]></printWhenExpression>
-				<staticText>
-					<reportElement positionType="Float" x="436" y="225" width="104" height="48"/>
-					<textElement verticalAlignment="Bottom"/>
-					<text><![CDATA[Д.Ю. Колосов]]></text>
-				</staticText>
-				<staticText>
-					<reportElement positionType="Float" x="50" y="225" width="247" height="48"/>
-					<textElement verticalAlignment="Bottom"/>
-					<text><![CDATA[Вице-Президент
-Руководитель Аппарата Президента
-и Советов Фонда]]></text>
-				</staticText>
 				<textField isStretchWithOverflow="true">
 					<reportElement positionType="Float" x="50" y="150" width="489" height="14"/>
 					<textElement textAlignment="Justified">
@@ -276,7 +264,7 @@
 					<textFieldExpression class="java.lang.String"><![CDATA["3. Решение по вопросу о том, соответствует ли проект, представленный Соискателем, направлению деятельности, указанному Соискателем в заявке:"]]></textFieldExpression>
 				</textField>
 				<staticText>
-					<reportElement style="DefaultStyle" positionType="Float" x="50" y="284" width="247" height="36"/>
+					<reportElement style="DefaultStyle" positionType="Float" x="50" y="257" width="247" height="36"/>
 					<textElement/>
 					<text><![CDATA[Ответственный секретарь Аппарата Президента
 и Советов Фонда
@@ -289,6 +277,16 @@
 						<paragraph firstLineIndent="40"/>
 					</textElement>
 					<text><![CDATA[6. Заполненные Бюллетени оценки прилагаются к настоящему протоколу.]]></text>
+				</staticText>
+				<staticText>
+					<reportElement positionType="Float" mode="Opaque" x="50" y="231" width="247" height="16"/>
+					<textElement verticalAlignment="Bottom"/>
+					<text><![CDATA[Ответственный секретарь Совета]]></text>
+				</staticText>
+				<staticText>
+					<reportElement positionType="Float" mode="Opaque" x="435" y="231" width="104" height="16"/>
+					<textElement verticalAlignment="Bottom"/>
+					<text><![CDATA[Д.В. Дудина]]></text>
 				</staticText>
 			</band>
 		</groupHeader>

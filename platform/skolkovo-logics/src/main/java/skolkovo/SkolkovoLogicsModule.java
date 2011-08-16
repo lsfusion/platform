@@ -84,6 +84,12 @@ public class SkolkovoLogicsModule extends LogicsModule {
     public LP updateDateProject;
     public LP nativeNumberToPatent;
 
+    private LP emailNoticeRejectedVoteEA;
+    private LP emailNoticeRejectedVote;
+
+    private LP emailNoticeAcceptedStatusVoteEA;
+    private LP emailNoticeAcceptedStatusVote;
+
     AbstractCustomClass multiLanguageNamed;
 
     public ConcreteCustomClass project;
@@ -361,7 +367,10 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
     LP acceptedVote;
     LP succeededVote;
-    LP openedSucceededVote;
+    LP openedSucceededVote, closedSucceededVote;
+    LP closedAcceptedVote;
+    LP closedRejectedVote;
+    LP closedAcceptedStatusVote;
     LP doneExpertVoteDateFromDateTo;
     LP quantityDoneExpertDateFromDateTo;
     LP voteSucceededProjectCluster;
@@ -415,6 +424,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
     LP prevDateStartVote, prevDateVote;
     LP prevClusterVote, nameNativePrevClusterVote;
+    LP nextClusterVote, nameNativeNextClusterVote;
     LP dateProjectVote;
     LP numberNewExpertVote;
     LP numberOldExpertVote;
@@ -462,6 +472,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP nameProjectActionProject;
     LP projectActionVote;
     LP nameProjectActionVote;
+    LP isStatusVote;
     public LP nativeSubstantiationProjectType;
     public LP foreignSubstantiationProjectType;
     public LP nativeSubstantiationProjectCluster;
@@ -732,14 +743,20 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         projectTypeProject = addDProp(idGroup, "projectTypeProject", "Тип проекта (ИД)", projectType, project);
         nameProjectTypeProject = addJProp(innovationGroup, "nameProjectTypeProject", "Тип проекта", baseLM.name, projectTypeProject, 1);
+
         projectActionProject = addDProp(idGroup, "projectActionProject", "Тип заявки (ИД)", projectAction, project);
         nameProjectActionProject = addJProp(projectInformationGroup, "nameProjectActionProject", "Тип заявки", baseLM.name, projectActionProject, 1);
         nameProjectActionProject.setPreferredCharWidth(20);
+
         projectActionVote = addDProp(idGroup, "projectActionVote", "Тип заявки (ИД)", projectAction, vote);
-        nameProjectActionVote = addJProp(baseGroup, "nameProjectActionProject", "Тип заявки", baseLM.name, projectActionVote, 1);
+        nameProjectActionVote = addJProp(baseGroup, "nameProjectActionVote", "Тип заявки", baseLM.name, projectActionVote, 1);
         nameProjectActionVote.setPreferredCharWidth(20);
+
+        isStatusVote = addJProp("isStatusVote", "На статус участника", baseLM.equals2, projectActionVote, 1, addCProp(projectAction, "status", vote), 1);
+
         nativeSubstantiationProjectType = addDProp(innovationGroup, "nativeSubstantiationProjectType", "Обоснование выбора", InsensitiveStringClass.get(2000), project);
         nativeSubstantiationProjectType.setMinimumWidth(10); nativeSubstantiationProjectType.setPreferredWidth(50);
+
         foreignSubstantiationProjectType = addDProp(innovationGroup, "foreignSubstantiationProjectType", "Description of choice", InsensitiveStringClass.get(2000), project);
         foreignSubstantiationProjectType.setMinimumWidth(10); foreignSubstantiationProjectType.setPreferredWidth(50);
 
@@ -1122,6 +1139,12 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         succeededVote = addJProp(voteResultGroup, "succeededVote", true, "Состоялось", baseLM.groeq2, quantityDoneVote, 1, limitExperts); // достаточно экспертов
         openedSucceededVote = addJProp("openedSucceededVote", "Открыто и состоялось", baseLM.and1, succeededVote, 1, openedVote, 1);
+        closedSucceededVote = addJProp("closedSucceededVote", "Закрыто и состоялось", baseLM.andNot1, succeededVote, 1, openedVote, 1);
+
+        closedAcceptedVote = addJProp("closedAcceptedVote", "Закрыто и положительно", baseLM.and1, closedSucceededVote, 1, acceptedVote, 1);
+        closedRejectedVote = addJProp("closedRejectedVote", "Закрыто и отрицательно", baseLM.andNot1, closedSucceededVote, 1, acceptedVote, 1);
+
+        closedAcceptedStatusVote = addJProp("closedAcceptedStatusVote", "Закрыто и положительно (статус участника)", baseLM.and1, closedAcceptedVote, 1, isStatusVote, 1);
 //        succeededClusterVote = addJProp("succeededClusterVote", "Состоялось в тек. кластере", baseLM.and1, succeededVote, 1, equalsClusterProjectVote, 1);
 
         LP betweenExpertVoteDateFromDateTo = addJProp(baseLM.betweenDates, dateExpertVote, 1, 2, 3, 4);
@@ -1270,6 +1293,9 @@ public class SkolkovoLogicsModule extends LogicsModule {
         prevClusterVote = addOProp(idGroup, "prevClusterVote", "Пред. кластер. (ИД)", OrderType.PREVIOUS, clusterVote, true, true, 1, projectVote, 1, baseLM.date, 1);
         nameNativePrevClusterVote = addJProp("nameNativePrevClusterVote", "Пред. кластер", nameNative, prevClusterVote, 1);
 
+        nextClusterVote = addOProp(idGroup, "nextClusterVote", "След. кластер. (ИД)", OrderType.PREVIOUS, clusterVote, false, true, 1, projectVote, 1, baseLM.date, 1);
+        nameNativeNextClusterVote = addJProp("nameNativeNextClusterVote", "След. кластер", nameNative, nextClusterVote, 1);
+
         numberNewExpertVote = addOProp("numberNewExpertVote", "Номер (нов.)", OrderType.SUM, addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), inNewExpertVote, 1, 2), true, true, 1, 2, 1);
         numberOldExpertVote = addOProp("numberOldExpertVote", "Номер (стар.)", OrderType.SUM, addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), inOldExpertVote, 1, 2), true, true, 1, 2, 1);
 
@@ -1298,6 +1324,18 @@ public class SkolkovoLogicsModule extends LogicsModule {
         emailClaimerVote.property.askConfirm = true;
 
         emailClaimerVote.setDerivedForcedChange(addCProp(ActionClass.instance, true), openedVote, 1);
+
+        emailNoticeRejectedVoteEA = addEAProp("Уведомление", vote);
+        addEARecepient(emailNoticeRejectedVoteEA, claimerEmailVote, 1);
+
+        emailNoticeRejectedVote = addJProp(actionGroup, true, "emailNoticeRejectedVote", "Письмо о несоответствии", baseLM.and1, emailNoticeRejectedVoteEA, 1, closedRejectedVote, 1);
+        emailNoticeRejectedVote.property.askConfirm = true;
+
+        emailNoticeAcceptedStatusVoteEA = addEAProp("Уведомление", vote);
+        addEARecepient(emailNoticeAcceptedStatusVoteEA, claimerEmailVote, 1);
+
+        emailNoticeAcceptedStatusVote = addJProp(actionGroup, true, "emailNoticeAcceptedStatusVote", "Письмо о соответствии (статус участника)", baseLM.and1, emailNoticeAcceptedStatusVoteEA, 1, closedAcceptedStatusVote, 1);
+        emailNoticeAcceptedStatusVote.property.askConfirm = true;
 
         emailStartVoteEA = addEAProp(vote);
         addEARecepient(emailStartVoteEA, emailDocuments);
@@ -1405,6 +1443,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
         addFormEntity(new ClaimerRejectedFormEntity(print, "claimerRejected"));
         addFormEntity(new ClaimerStatusFormEntity(print, "claimerStatus"));
         addFormEntity(new VoteClaimerFormEntity(print, "voteClaimer", "Уведомление о рассмотрении"));
+        addFormEntity(new NoticeRejectedFormEntity(print, "noticeRejected", "Уведомление о несоответствии"));
+        addFormEntity(new NoticeAcceptedStatusFormEntity(print, "noticeAcceptedStatus", "Уведомление о соответствии (статус участника)"));
 
         addFormEntity(new ProjectFormEntity(baseLM.baseElement, "project"));
         addFormEntity(new ClaimerFormEntity(baseLM.baseElement, "claimer"));
@@ -1560,7 +1600,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
         private ProjectFormEntity(NavigatorElement parent, String sID) {
             super(parent, sID, "Реестр проектов");
 
-            objProject = addSingleGroupObject(project, baseLM.date, nameNative, nameForeign,  nameNativeFinalClusterProject, nameNativeJoinClaimerProject, nameStatusProject, nameProjectActionProject, autoGenerateProject, generateVoteProject, editProject);
+            objProject = addSingleGroupObject(project, baseLM.date, nameNative, nameForeign,  nameNativeFinalClusterProject, nameNativeJoinClaimerProject,
+                    nameStatusProject, nameProjectActionProject, autoGenerateProject, generateVoteProject, editProject);
             addObjectActions(this, objProject);
 
 //            addPropertyDraw(addProject).toDraw = objProject.groupTo;
@@ -1575,7 +1616,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             getPropertyDraw(generateVoteProject).forceViewType = ClassViewType.PANEL;
             getPropertyDraw(generateVoteProject).propertyCaption = addPropertyObject(hideGenerateVoteProject, objProject);
 
-            objVote = addSingleGroupObject(vote, dateStartVote, dateEndVote, nameNativeClusterVote, nameProjectActionVote, openedVote, succeededVote, acceptedVote, quantityDoneVote, quantityInClusterVote, quantityInnovativeVote, quantityForeignVote, emailClaimerVote, baseLM.delete);
+            objVote = addSingleGroupObject(vote, dateStartVote, dateEndVote, nameNativeClusterVote, nameProjectActionVote, openedVote, succeededVote, acceptedVote, quantityDoneVote, quantityInClusterVote, quantityInnovativeVote, quantityForeignVote, emailClaimerVote, emailNoticeRejectedVote, emailNoticeAcceptedStatusVote, baseLM.delete);
             objVote.groupTo.banClassView.addAll(BaseUtils.toList(ClassViewType.PANEL, ClassViewType.HIDE));
 
 //            getPropertyDraw(copyResultsVote).forceViewType = ClassViewType.PANEL;
@@ -2092,7 +2133,9 @@ public class SkolkovoLogicsModule extends LogicsModule {
         private VoteProtocolFormEntity(NavigatorElement parent, String sID) {
             super(parent, sID, "Протокол заседания", true);
 
-            objVote = addSingleGroupObject(1, "vote", vote, dateProjectVote, baseLM.date, dateEndVote, nameNativeProjectVote, nameNativeClaimerVote, nameNativeClusterVote, quantityInVote, quantityRepliedVote, quantityDoneVote, quantityDoneNewVote, quantityDoneOldVote, quantityRefusedVote, quantityConnectedVote, succeededVote, acceptedVote, quantityInClusterVote, acceptedInClusterVote, quantityInnovativeVote, acceptedInnovativeVote, quantityForeignVote, acceptedForeignVote, nameStatusProjectVote, prevDateStartVote, prevDateVote, countPrevVote);
+            objVote = addSingleGroupObject(1, "vote", vote, dateProjectVote, baseLM.date, dateEndVote, nameNativeProjectVote, nameNativeClaimerVote, nameNativeClusterVote,
+                    quantityInVote, quantityRepliedVote, quantityDoneVote, quantityDoneNewVote, quantityDoneOldVote, quantityRefusedVote, quantityConnectedVote, succeededVote, acceptedVote,
+                    quantityInClusterVote, acceptedInClusterVote, quantityInnovativeVote, acceptedInnovativeVote, quantityForeignVote, acceptedForeignVote, nameStatusProjectVote, prevDateStartVote, prevDateVote, countPrevVote);
             objVote.groupTo.initClassView = ClassViewType.PANEL;
 
             objPrevVote = addSingleGroupObject(5, "prevVote", vote, dateStartVote);
@@ -2207,6 +2250,39 @@ public class SkolkovoLogicsModule extends LogicsModule {
             objVote.groupTo.initClassView = ClassViewType.PANEL;
 
             addInlineEAForm(emailClaimerVoteEA, this, objVote, 1);
+        }
+    }
+
+    private class NoticeRejectedFormEntity extends FormEntity<SkolkovoBusinessLogics> {
+
+        private ObjectEntity objVote;
+
+        private NoticeRejectedFormEntity(NavigatorElement parent, String sID, String caption) {
+            super(parent, sID, caption, true);
+
+            objVote = addSingleGroupObject(1, "vote", vote, "Заседание", nameNativeClusterVote, prevDateVote, nameNativePrevClusterVote, nameNativeNextClusterVote, isLastClusterVote,
+                    quantityDoneVote, quantityInClusterVote, acceptedInClusterVote, quantityInnovativeVote, acceptedInnovativeVote, quantityForeignVote, acceptedForeignVote);
+            objVote.groupTo.initClassView = ClassViewType.PANEL;
+
+            addFixedFilter(new NotNullFilterEntity(addPropertyObject(closedRejectedVote, objVote)));
+
+            addInlineEAForm(emailNoticeRejectedVoteEA, this, objVote, 1);
+        }
+    }
+
+    private class NoticeAcceptedStatusFormEntity extends FormEntity<SkolkovoBusinessLogics> {
+
+        private ObjectEntity objVote;
+
+        private NoticeAcceptedStatusFormEntity(NavigatorElement parent, String sID, String caption) {
+            super(parent, sID, caption, true);
+
+            objVote = addSingleGroupObject(1, "vote", vote, "Заседание", nameNativeProjectVote);
+            objVote.groupTo.initClassView = ClassViewType.PANEL;
+
+            addFixedFilter(new NotNullFilterEntity(addPropertyObject(closedAcceptedStatusVote, objVote)));
+
+            addInlineEAForm(emailNoticeAcceptedStatusVoteEA, this, objVote, 1);
         }
     }
 

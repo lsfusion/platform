@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="vote" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0">
+	<property name="ireport.zoom" value="1.0"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<style name="DefaultStyle" isDefault="true" vAlign="Middle" fontName="lsf.TimesNewRoman" fontSize="10">
+		<box>
+			<pen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+			<topPen lineWidth="0.0"/>
+			<leftPen lineWidth="0.0"/>
+			<bottomPen lineWidth="0.0"/>
+			<rightPen lineWidth="0.0"/>
+		</box>
+		<paragraph leftIndent="2" rightIndent="2"/>
+	</style>
+	<style name="GroupCellStyle0" mode="Opaque" backcolor="#FFFFFF" vAlign="Middle" fontName="lsf.TimesNewRoman" fontSize="10">
+		<box>
+			<pen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+		</box>
+		<paragraph leftIndent="2" rightIndent="2"/>
+	</style>
+	<field name="vote" class="java.lang.Integer"/>
+	<field name="nameNativeClusterVote" class="java.lang.String"/>
+	<field name="prevDateVote" class="java.util.Date"/>
+	<field name="nameNativePrevClusterVote" class="java.lang.String"/>
+	<field name="nameNativeNextClusterVote" class="java.lang.String"/>
+	<field name="quantityDoneVote" class="java.lang.Integer"/>
+	<field name="quantityInClusterVote" class="java.lang.Integer"/>
+	<field name="acceptedInClusterVote" class="java.lang.Boolean"/>
+	<field name="quantityInnovativeVote" class="java.lang.Integer"/>
+	<field name="acceptedInnovativeVote" class="java.lang.Boolean"/>
+	<field name="quantityForeignVote" class="java.lang.Integer"/>
+	<field name="acceptedForeignVote" class="java.lang.Boolean"/>
+	<field name="isLastClusterVote" class="java.lang.Boolean"/>
+	<detail>
+		<band height="419">
+			<textField isStretchWithOverflow="true">
+				<reportElement style="DefaultStyle" positionType="Float" x="20" y="31" width="509" height="20"/>
+				<textElement textAlignment="Justified" verticalAlignment="Top">
+					<font size="14"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Ваш проект был направлен на экспертизу по существу 10 независимым экспертам по кластеру " + $F{nameNativeClusterVote} + ". К сожалению, эксперты оценили проект отрицательно (проект не соответствует установленным критериям*):"]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement style="DefaultStyle" positionType="Float" x="20" y="385" width="320" height="20"/>
+				<textElement verticalAlignment="Top">
+					<font size="14"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["С уважением,\n" + "Команда поддержки проектов Сколково"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement style="DefaultStyle" x="20" y="0" width="160" height="20"/>
+				<textElement verticalAlignment="Top">
+					<font size="14"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Уважаемый заявитель!"]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement style="DefaultStyle" positionType="Float" x="20" y="211" width="509" height="20"/>
+				<textElement textAlignment="Justified">
+					<font size="14"/>
+					<paragraph firstLineIndent="40"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Результат: Экспертной коллегией принято решение о " + ($F{acceptedInnovativeVote}==null ? "не" : "") + "соответствии проекта, представленного Соискателем, данному Критерию."]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement style="DefaultStyle" positionType="Float" x="20" y="61" width="509" height="20"/>
+				<textElement textAlignment="Justified">
+					<font size="14"/>
+					<paragraph firstLineIndent="40"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["1. Решение по вопросу о том, соответствует ли проект, представленный Соискателем, направлению деятельности, указанному Соискателем в заявке:"]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement style="DefaultStyle" positionType="Float" x="20" y="241" width="509" height="20"/>
+				<textElement textAlignment="Justified">
+					<font size="14"/>
+					<paragraph firstLineIndent="40"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["3. Решение по вопросу о том, предполагает ли проект, представленный Соискателем, участие в проекте иностранного специалиста, который имеет значительный авторитет в инвестиционной и (или) исследовательской среде:"]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement style="DefaultStyle" positionType="Float" x="20" y="191" width="509" height="20"/>
+				<textElement textAlignment="Justified">
+					<font size="14"/>
+					<paragraph firstLineIndent="40"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["НЕТ - "+($F{quantityDoneVote}-$F{quantityInnovativeVote})+" "+new ChoiceFormat("0#голосов|1#голос|1<голоса|4<голосов").format($F{quantityDoneVote}-$F{quantityInnovativeVote})+"."]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement style="DefaultStyle" positionType="Float" x="20" y="261" width="509" height="20"/>
+				<textElement textAlignment="Justified">
+					<font size="14"/>
+					<paragraph firstLineIndent="40"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["ДА - "+$F{quantityForeignVote}+" "+new ChoiceFormat("0#голосов|1#голос|1<голоса|4<голосов").format($F{quantityForeignVote})+"."]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement style="DefaultStyle" positionType="Float" x="20" y="101" width="509" height="20"/>
+				<textElement textAlignment="Justified">
+					<font size="14"/>
+					<paragraph firstLineIndent="40"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["НЕТ - "+($F{quantityDoneVote}-$F{quantityInClusterVote})+" "+new ChoiceFormat("0#голосов|1#голос|1<голоса|4<голосов").format($F{quantityDoneVote}-$F{quantityInClusterVote})+"."]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement style="DefaultStyle" positionType="Float" x="20" y="81" width="509" height="20"/>
+				<textElement textAlignment="Justified">
+					<font size="14"/>
+					<paragraph firstLineIndent="40"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["ДА - "+$F{quantityInClusterVote}+" "+new ChoiceFormat("0#голосов|1#голос|1<голоса|4<голосов").format($F{quantityInClusterVote})+"."]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement style="DefaultStyle" positionType="Float" x="20" y="301" width="509" height="20"/>
+				<textElement textAlignment="Justified">
+					<font size="14"/>
+					<paragraph firstLineIndent="40"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Результат: Экспертной коллегией принято решение о "+ ($F{acceptedForeignVote}==null ? "не" : "") + "соответствии проекта, представленного Соискателем, данному Критерию."]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement style="DefaultStyle" positionType="Float" x="20" y="171" width="509" height="20"/>
+				<textElement textAlignment="Justified">
+					<font size="14"/>
+					<paragraph firstLineIndent="40"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["ДА - "+$F{quantityInnovativeVote}+" "+new ChoiceFormat("0#голосов|1#голос|1<голоса|4<голосов").format($F{quantityInnovativeVote})+"."]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement style="DefaultStyle" positionType="Float" x="20" y="281" width="509" height="20"/>
+				<textElement textAlignment="Justified">
+					<font size="14"/>
+					<paragraph firstLineIndent="40"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["НЕТ - "+($F{quantityDoneVote}-$F{quantityForeignVote})+" "+new ChoiceFormat("0#голосов|1#голос|1<голоса|4<голосов").format($F{quantityDoneVote}-$F{quantityForeignVote})+"."]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement style="DefaultStyle" positionType="Float" x="20" y="121" width="509" height="20"/>
+				<textElement textAlignment="Justified">
+					<font size="14"/>
+					<paragraph firstLineIndent="40"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Результат: Экспертной коллегией принято решение о " + ($F{acceptedInClusterVote}==null ? "не" : "") + "соответствии проекта, представленного Соискателем, данному Критерию."]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement style="DefaultStyle" positionType="Float" x="20" y="151" width="509" height="20"/>
+				<textElement textAlignment="Justified">
+					<font size="14"/>
+					<paragraph firstLineIndent="40"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["2. Решение по вопросу о том, предполагает ли проект, представленный Соискателем, разработку и (или) коммерциализацию уникальных и (или) обладающих конкурентными преимуществами перед мировыми аналогами продуктов и (или) технологий:"]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement style="DefaultStyle" positionType="Float" x="20" y="331" width="509" height="20"/>
+				<textElement verticalAlignment="Top">
+					<font size="14"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[($F{isLastClusterVote} == null ? "Ваша заявка будет направлена на рассмотрение экспертами кластера " + $F{nameNativeNextClusterVote} + "." : "Мы вынуждены отклонить Вашу заявку.")]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement style="DefaultStyle" positionType="Float" x="20" y="351" width="509" height="20"/>
+				<textElement verticalAlignment="Top">
+					<font size="10"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["* критериям, указанным в подпункте Е пункта 2 Положения о присвоении и утрате статуса участника проекта по созданию и обеспечению функционирования инновационного центра «Сколково»"]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+</jasperReport>
