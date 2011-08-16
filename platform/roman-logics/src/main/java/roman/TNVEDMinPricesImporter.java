@@ -83,12 +83,8 @@ public class TNVEDMinPricesImporter extends TNVEDImporter {
                 row.add(name);
                 row.add(minPrice);
                 row.add(true);
-                if (!countryCode.equals("**")) {
-                    if (!countryCode.trim().equals("")) {
-                        row.add(countryCode);
-                    } else {
-                        row.add(null);
-                    }
+                if (!countryCode.equals("**") && !countryCode.trim().isEmpty()) {
+                    row.add(countryCode);
                     row.add(countryName);
                     dataCountry.add(row);
                 } else {
