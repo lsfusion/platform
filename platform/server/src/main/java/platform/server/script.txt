@@ -45,26 +45,28 @@ compositionFreightArticleCompositionCountryCategory2 =
         countryOfOriginFreightSku(freight, sku),
         customCategory10FreightSku(freight, sku) IN baseGroup;
 
+
 // UProp
-typeInvoiceFreightArticle2(freight, article) = UNION  OVERRIDE typeInvoiceCategoryFreightArticle(freight, article), typeInvoiceDataFreightArticle(freight, article) IN idGroup;
-typeInvoiceFreightArticle3 = UNION OVERRIDE typeInvoiceCategoryFreightArticle($1, $2), typeInvoiceDataFreightArticle($1, $2) IN idGroup;
-sumSku2 = UNION SUM sumStockedSku($1), sumDirectInvoicedSku($1) IN baseGroup;
+typeInvoiceFreightArticle2(freight, article) = UNION  OVERRIDE (typeInvoiceCategoryFreightArticle(freight, article), typeInvoiceDataFreightArticle(freight, article)) IN idGroup;
+typeInvoiceFreightArticle3 = UNION OVERRIDE (typeInvoiceCategoryFreightArticle($1, $2), typeInvoiceDataFreightArticle($1, $2)) IN idGroup;
+sumSku2 = UNION SUM (sumStockedSku($1), sumDirectInvoicedSku($1)) IN baseGroup;
 
 
 // Nested
 netWeightImporterFreightUnitSku2(freight, unit, sku) = multiplyDouble2 (
         quantityImporterStockSku(freight, unit, sku),
-        ( netWeightFreightSku(freightFreightUnit($1, $2)) )(unit, sku)
+        netWeightFreightSku(freightFreightUnit(unit, sku))
 ) IN baseGroup;
 
+
 // Constants
-diffCountRelationCustomCate0gory10Sku2(sku) = greater2( (countRelationCustomCategory10(customCategory10Sku($1)))(sku), 1.0);
+diffCountRelationCustomCategory10Sku2(sku) = greater2(countRelationCustomCategory10(customCategory10Sku(sku)), 1.0);
 oneShipmentSku2(shipment, sku) = equals2(quantityShipmentSku(shipment, sku), 1.0);
 
 // IS, IF
-typeInvoiceCategoryFreightArticle2(freight, article) = and1(typeInvoiceCategoryArticle(article), freight IS RomanLogicsModule.freight) IN idGroup;
-testProp = between(date($1), $2 IF DATE, $3 IF DATE);
-substring10s13 = and1(substring10($1), $1 IS STRING[13]);
+//typeInvoiceCategoryFreightArticle2(freight, article) = and1(typeInvoiceCategoryArticle(article), freight IS RomanLogicsModule.freight) IN idGroup;
+//testProp = between(date($1), $2 IF DATE, $3 IF DATE);
+//substring10s13 = and1(substring10($1), $1 IS STRING[13]);
 
 // Forms
 FORM ContractForm2 'ContractForm2'

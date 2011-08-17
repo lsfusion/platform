@@ -225,6 +225,10 @@ public abstract class LogicsModule {
         return id;
     }
 
+    protected LP addDProp(String caption, ValueClass value, ValueClass... params) {
+        return addDProp(genSID(), caption, value, params);
+    }
+
     protected LP addDProp(String name, String caption, ValueClass value, ValueClass... params) {
         return addDProp(null, name, false, caption, value, params);
     }
@@ -238,10 +242,6 @@ public abstract class LogicsModule {
         for (int i = 0; i < names.length; i++)
             result[i] = addDProp(group, names[i] + paramID, captions[i], values[i], params);
         return result;
-    }
-
-    protected LP addDProp(AbstractGroup group, boolean persistent, String caption, ValueClass value, ValueClass... params) {
-        return addDProp(group, genSID(), persistent, caption, value, params);
     }
 
     protected LP addDProp(AbstractGroup group, String name, boolean persistent, String caption, ValueClass value, ValueClass... params) {
@@ -496,6 +496,14 @@ public abstract class LogicsModule {
 
     protected LP addCProp(StaticClass valueClass, Object value, ValueClass... params) {
         return addCProp("sys", valueClass, value, params);
+    }
+
+    protected LP addCProp(StaticClass valueClass, Object value, String name) {
+        if (name == null) {
+            return addCProp(valueClass, value);
+        } else {
+            return addCProp(null, name, false, "", valueClass, value);
+        }
     }
 
     protected LP addCProp(String caption, StaticClass valueClass, Object value, ValueClass... params) {
@@ -964,7 +972,11 @@ public abstract class LogicsModule {
     }
 
     protected LP addMGProp(LP groupProp, Object... params) {
-        return addMGProp(baseLM.privateGroup, genSID(), "sys", groupProp, params);
+        return addMGProp("sys", groupProp, params);
+    }
+
+    protected LP addMGProp(String caption, LP groupProp, Object... params) {
+        return addMGProp(baseLM.privateGroup, genSID(), caption, groupProp, params);
     }
 
     protected LP addMGProp(String name, String caption, LP groupProp, Object... params) {
@@ -1151,8 +1163,8 @@ public abstract class LogicsModule {
         return addUProp(group, name, false, caption, unionType, params);
     }
 
-    protected LP addUProp(AbstractGroup group, boolean persistent, String caption, Union unionType, Object... params) {
-        return addUProp(group, genSID(), persistent, caption, unionType, params);
+    protected LP addUProp(AbstractGroup group, String caption, Union unionType, Object... params) {
+        return addUProp(group, genSID(), false, caption, unionType, params);
     }
 
     protected LP addUProp(AbstractGroup group, String name, boolean persistent, String caption, Union unionType, Object... params) {
@@ -1632,17 +1644,22 @@ public abstract class LogicsModule {
         return addProperty(group, false, lp);
     }
 
+    protected void addPropertyToGroup(Property<?> property, AbstractGroup group) {
+        if (group != null) {
+            group.add(property);
+        } else {
+            baseLM.privateGroup.add(property);
+        }
+    }
+
     private <T extends LP<?>> T addProperty(AbstractGroup group, boolean persistent, T lp) {
         lp.property.setSID(transformNameToSID(lp.property.getSID()));
         lp.property.freezeSID();
 
         addModuleLP(lp);
         baseLM.registerProperty(lp);
-        if (group != null) {
-            group.add(lp.property);
-        } else {
-            baseLM.privateGroup.add(lp.property);
-        }
+        addPropertyToGroup(lp.property, group);
+
         if (persistent) {
             addPersistent(lp);
         }

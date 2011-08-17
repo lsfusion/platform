@@ -1,6 +1,5 @@
 package platform.server.logics.property.group;
 
-import platform.server.logics.linear.LP;
 import platform.server.logics.property.Property;
 import platform.server.logics.property.PropertyClassImplement;
 import platform.server.logics.property.ValueClassWrapper;
@@ -10,9 +9,7 @@ import platform.server.serialization.ServerSerializationPool;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
 public class AbstractGroup extends AbstractNode implements ServerIdentitySerializable {
 
@@ -39,7 +36,7 @@ public class AbstractGroup extends AbstractNode implements ServerIdentitySeriali
         return currentID++;
     }
 
-    List<AbstractNode> children = new ArrayList<AbstractNode>();
+    Set<AbstractNode> children = new LinkedHashSet<AbstractNode>();
     public void add(AbstractNode prop) {
         if (prop.getParent() != null)
             prop.getParent().remove(prop);
@@ -51,25 +48,6 @@ public class AbstractGroup extends AbstractNode implements ServerIdentitySeriali
         children.remove(prop);
         prop.parent = null;
     }
-
-    protected void setChildOrder(LP<?> child, LP<?> childRel, boolean before) {
-        setChildOrder(child.property, childRel.property, before);
-    }
-
-    protected void setChildOrder(Property child, Property childRel, boolean before) {
-
-        int indProp = children.indexOf(child);
-        int indPropRel = children.indexOf(childRel);
-
-        if (before) {
-            if (indPropRel < indProp) {
-                for (int i = indProp; i >= indPropRel + 1; i--)
-                    children.set(i, children.get(i - 1));
-                children.set(indPropRel, child);
-            }
-        }
-    }
-
 
     public boolean hasChild(Property prop) {
         for (AbstractNode child : children)

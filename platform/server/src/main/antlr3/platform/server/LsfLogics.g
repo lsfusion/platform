@@ -7,6 +7,7 @@ grammar LsfLogics;
 	import platform.server.data.Union;
 	import platform.server.logics.linear.LP;
 	import platform.interop.ClassViewType;
+	import java.util.Collections;
 	import java.util.Set;
 	import java.util.HashSet;
 	import java.util.Arrays;
@@ -213,147 +214,173 @@ formFilterDeclaration returns [String name, List<String> mapping]
 propertyStatement
 	:	declaration=propertyDeclaration 
 		'=' 
-		propertyDefinition[declaration.name, declaration.paramNames];
+		expr=propertyExpression[declaration.name, declaration.paramNames, declaration.paramNames]
+		settings=commonPropertySettings[$expr.property]; 
 
 	
 propertyDeclaration returns [String name, List<String> paramNames] 
-	:	propertyName=ID { $name = $propertyName.text; }
+	:	propName=ID { $name = $propName.text; }
 		('(' paramList=idList ')' { $paramNames = $paramList.ids; })? ;
-	
 
-propertyDefinition[String name, List<String> namedParams] returns [LP property]
-	:	def=dataPropertyDefinition[name, namedParams] { $property = $def.property; } | 
-		def=joinPropertyDefinition[name, namedParams] { $property = $def.property; } | 
-		def=groupPropertyDefinition[name, namedParams] { $property = $def.property; }| 
-		def=unionPropertyDefinition[name, namedParams] { $property = $def.property; };
 	
+propertyExpression[String name, List<String> namedParams, List<String> context] returns [LP property, List<Integer> usedParams]
+	:	
+		propertyExpr=contextDependentPE[name, namedParams, context] { $property = $propertyExpr.property; $usedParams = $propertyExpr.usedParams; } |
+		propertyExprI=contextIndependentPE[name, namedParams] { $property = $propertyExprI.property; $usedParams = new ArrayList<Integer>(); }			
+	;
 
-joinPropertyDefinition[String name, List<String> namedParams] returns [LP property]
+contextDependentPE[String name, List<String> namedParams, List<String> context] returns [LP property, List<Integer> usedParams]
+	:	joinDef=joinPropertyDefinition[name, namedParams, context] { $property = $joinDef.property; $usedParams = $joinDef.usedParams; } | 
+		unionDef=unionPropertyDefinition[name, namedParams, context] { $property = $unionDef.property; $usedParams = $unionDef.usedParams; } |
+		constDef=literal[name] { $property = $constDef.property; $usedParams = new ArrayList<Integer>(); } 	
+	;
+	
+contextIndependentPE[String name, List<String> namedParams] returns [LP property]
+	: 	dataDef=dataPropertyDefinition[name, namedParams] { $property = $dataDef.property; } | 
+		groupDef=groupPropertyDefinition[name, namedParams] { $property = $groupDef.property; }  
+//		typedef=typeExpression[name, namedParams, context]
+	;	
+
+joinPropertyDefinition[String name, List<String> namedParams, List<String> context] returns [LP property, List<Integer> usedParams] 
 @init {
-	List<Object> params = new ArrayList<Object>();
-	List<List<String>> mappings = new ArrayList<List<String>>();
-	Object mainProp = null;
-	String groupName = null;
-	boolean isPersistent = false;
+	List<LP<?>> paramProps = new ArrayList<LP<?>>();
+	List<List<Integer>> usedSubParams = new ArrayList<List<Integer>>();
+	LP mainProp = null;
 }
 @after {
 	if (parseState == ScriptingLogicsModule.State.PROP) {
-		$property = self.addScriptedJProp(name, "", groupName, mainProp, isPersistent, namedParams, params, mappings);
+		ScriptingLogicsModule.LPWithParams result = self.addScriptedJProp(name, "", mainProp, namedParams, paramProps, usedSubParams);
+		$property = result.property;
+		$usedParams = result.usedParams;
 	}
 }
 	:	mainPropObj=propertyObject { mainProp = $mainPropObj.property; }
 		'(' 
-			(firstParam=propertyCompositionParam { params.add($firstParam.param); mappings.add($firstParam.paramNames); }
-			(',' nextParam=propertyCompositionParam { params.add($nextParam.param); mappings.add($nextParam.paramNames);})* )?	
-		')' 
-		settings=commonPropertySettings { groupName = $settings.group; isPersistent = $settings.isPersistent; }; 
-	
+			(firstParam=propertyParam[context] { paramProps.add($firstParam.property); usedSubParams.add($firstParam.usedParams); }
+			(',' nextParam=propertyParam[context] { paramProps.add($nextParam.property); usedSubParams.add($nextParam.usedParams);})* )?	
+		')'; 
 
+
+
+
+groupPropertyDefinition[String name, List<String> namedParams] returns [LP property, List<Integer> usedParams]
+@init {
+	List<LP<?>> paramProps = new ArrayList<LP<?>>();
+	List<List<Integer>> usedParams = new ArrayList<List<Integer>>();
+	LP<?> groupProp = null;
+	String groupPropName;
+	boolean isSGProp = true; 
+	List<String> groupContext = null;
+}
+@after {
+	if (parseState == ScriptingLogicsModule.State.PROP) {
+		$property = self.addScriptedGProp(name, "", groupProp, isSGProp, namedParams, paramProps, usedParams);
+	}
+}
+	:	'GROUP' (('SUM') { isSGProp = true; } | ('MAX') { isSGProp = false; }) 
+		prop=propertyObject { groupProp = $prop.property; groupPropName = $prop.propName; }
+		'BY'
+		{ 
+			if (groupPropName != null && parseState == ScriptingLogicsModule.State.PROP) 
+				groupContext = self.getNamedParamsList(groupPropName); 
+		}
+		(firstParam=propertyParam[groupContext] { paramProps.add($firstParam.property); usedParams.add($firstParam.usedParams); }
+		(',' nextParam=propertyParam[groupContext] { paramProps.add($nextParam.property); usedParams.add($nextParam.usedParams);})* )	
+		;
+		
+		
 dataPropertyDefinition[String name, List<String> namedParams] returns [LP property]
 @init {
 	List<String> paramClassNames;
 	String returnClass = null;
-	String groupName = null;
-	boolean isPersistent = false;
 }
 @after {
 	if (parseState == ScriptingLogicsModule.State.PROP) {
-		$property = self.addScriptedDProp(name, "", groupName, returnClass, paramClassNames, isPersistent, namedParams);
+		$property = self.addScriptedDProp(name, "", returnClass, paramClassNames, namedParams);
 	}
 }
 	:	'DATA'
 		retClass=classId { returnClass = $retClass.text; }
 		'(' 
 			classIds=classIdList { paramClassNames = $classIds.ids; }
-		')' 
-		settings=commonPropertySettings { groupName = $settings.group; isPersistent = $settings.isPersistent; };
+		')'; 
 
 
-groupPropertyDefinition[String name, List<String> namedParams] returns [LP property]
+
+
+unionPropertyDefinition[String name, List<String> namedParams, List<String> context] returns [LP property, List<Integer> usedParams]
 @init {
-	List<Object> params = new ArrayList<Object>();
-	List<List<String>> mappings = new ArrayList<List<String>>();
-	Object groupProp = null;
-	String groupName = null;
-	boolean isPersistent = false;
-	boolean isSGProp = true; 
-}
-@after {
-	if (parseState == ScriptingLogicsModule.State.PROP) {
-		$property = self.addScriptedGProp(name, "", groupName, groupProp, isPersistent, isSGProp, namedParams, params, mappings);
-	}
-}
-	:	'GROUP' (('SUM') { isSGProp = true; } | ('MAX') { isSGProp = false; }) 
-		groupPropName=propertyObject { groupProp = $groupPropName.text; }
-		'BY'
-		(firstParam=propertyCompositionParam { params.add($firstParam.param); mappings.add($firstParam.paramNames); }
-		(',' nextParam=propertyCompositionParam { params.add($nextParam.param); mappings.add($nextParam.paramNames);})* )?	
-		settings=commonPropertySettings { groupName = $settings.group; isPersistent = $settings.isPersistent; }; 
-
-
-unionPropertyDefinition[String name, List<String> namedParams] returns [LP property]
-@init {
-	List<Object> params = new ArrayList<Object>();
-	List<List<String>> mappings = new ArrayList<List<String>>();
-	String groupName = null;
-	boolean isPersistent = false;
+	List<LP<?>> paramProps = new ArrayList<LP<?>>();
+	List<List<Integer>> usedParams = new ArrayList<List<Integer>>();
 	Union type = null;
 }
 @after {
 	if (parseState == ScriptingLogicsModule.State.PROP) { 
-		$property = self.addScriptedUProp(name, "", groupName, isPersistent, type, namedParams, params, mappings);	
+		$property = self.addScriptedUProp(name, "", type, namedParams, paramProps, usedParams);	
 	}
 }
 	:	'UNION'
 		(('MAX' {type = Union.MAX;}) | ('SUM' {type = Union.SUM;}) | ('OVERRIDE' {type = Union.OVERRIDE;}) | ('XOR' { type = Union.XOR;}) | ('EXCLUSIVE' {type = Union.EXCLUSIVE;}))
-		firstParam=propertyWithMapping { params.add($firstParam.property); mappings.add($firstParam.paramNames); }
-		(',' nextParam=propertyWithMapping { params.add($nextParam.property); mappings.add($nextParam.paramNames);})* 	
-		settings=commonPropertySettings { groupName = $settings.group; isPersistent = $settings.isPersistent; }; 
-
-
-
-propertyCompositionParam returns [Object param, List<String> paramNames]
-	:	singleParam=parameter { $param = $singleParam.text; } | 	
-		mappedProperty=propertyWithMapping { $param = $mappedProperty.property; $paramNames = $mappedProperty.paramNames; };
-
-
-propertyWithMapping returns [Object property, List<String> paramNames] : 
-		(propertyObj=propertyObject { $property = $propertyObj.property; }
 		'('
-		paramList=parameterList { $paramNames = $paramList.ids; }		
-		')') |
-		constant=literal { $property = $constant.property; $paramNames = new ArrayList<String>(); } |
-		expr=typeExpression { $property = $expr.property; $paramNames = Arrays.asList($expr.param); };
+		firstParam=contextDependentPE[null, null, context] { paramProps.add($firstParam.property); usedParams.add($firstParam.usedParams); }
+		(',' nextParam=contextDependentPE[null, null, context] { paramProps.add($nextParam.property); usedParams.add($nextParam.usedParams);})* 
+		')';	
 
 
-propertyObject returns [Object property]
-	:	name=compoundID { $property = $name.text; } | 
-		expr=propertyExpression { $property = $expr.property; };
+
+//propertyCompositionParam returns [Object param, List<String> paramNames]
+//	:	singleParam=parameter { $param = $singleParam.text; } | 	
+//		mappedProperty=propertyWithMapping { $param = $mappedProperty.property; $paramNames = $mappedProperty.paramNames; };
 
 
-propertyExpression returns [LP property]
-	:	'(' def=propertyDefinition[null, new ArrayList<String>()] ')' { $property = $def.property; } |
-		constant=literal { $property = $constant.property; } ;
+//propertyWithMapping returns [Object property, List<String> paramNames] : 
+//		(propertyObj=propertyObject { $property = $propertyObj.property; }
+//		'('
+//		paramList=parameterList { $paramNames = $paramList.ids; }		
+//		')') |
+//		constant=literal { $property = $constant.property; $paramNames = new ArrayList<String>(); } |
+//		expr=typeExpression { $property = $expr.property; $paramNames = Arrays.asList($expr.param); };
 
 
-typeExpression returns [LP property, String param] 
+propertyParam[List<String> context] returns [LP property, List<Integer> usedParams]
+	:	(name=parameter { $usedParams = Collections.singletonList(self.getParamIndex($name.text, $context)); }) | 
+		(expr=contextDependentPE[null, null, context] { $property = $expr.property; $usedParams = $expr.usedParams; }) //|
+//		('(' expr=contextIndependentPE[null, null] ')' '(' ')')
+	;
+
+
+//typeExpression[String name, List<String> namedParams, List<String> context] returns [LP property, Integer param] 
+//@init {
+//	String clsId = null;
+//	boolean bIs = false;
+//}
+//@after {
+//	if (parseState == ScriptingLogicsModule.State.PROP) { 
+//		$property = self.addScriptedTypeProp(name, clsId, bIs, namedParams);
+//	}
+//}
+//	:	paramName=parameter { $param = $paramName.text; }
+//		('IS' { bIs = true; } | 'IF')  
+//		id=classId { clsId = $id.text; };
+
+
+propertyObject returns [LP property, String propName]
+	:	name=compoundID	{ $property = self.getLPByName($name.text); $propName = $name.text; } |
+		'(' expr=propertyExpression[null, null, null] ')' { $property = $expr.property; };	
+
+
+commonPropertySettings[LP property] 
 @init {
-	String clsId = null;
-	boolean bIs = false;
+	String groupName = null;
+	boolean isPersistent = false;	
 }
 @after {
 	if (parseState == ScriptingLogicsModule.State.PROP) { 
-		$property = self.addScriptedTypeProp(clsId, bIs);
+		self.addSettingsToProperty(property, groupName, isPersistent);	
 	}
-}
-	:	paramName=parameter { $param = $paramName.text; }
-		('IS' { bIs = true; } | 'IF')  
-		id=classId { clsId = $id.text; };
-
-
-commonPropertySettings returns [String group, boolean isPersistent] 
-	: 	('IN' groupName=compoundID { $group = $groupName.text; })?
-		('PERSISTENT' { $isPersistent = true; })?;
+} 
+	: 	('IN' name=compoundID { groupName = $name.text; })?
+		('PERSISTENT' { isPersistent = true; })?;
 
 
 
@@ -422,20 +449,20 @@ parameterList returns [List<String> ids]
 		(',' nextParam=parameter { $ids.add($nextParam.text); })* )?;
 
 
-literal returns [LP property]
+literal[String name] returns [LP property]
 @init {
 	ScriptingLogicsModule.ConstType cls = null;
 	String text = null;
 }
 @after {
 	if (parseState == ScriptingLogicsModule.State.PROP) { 
-		$property = self.addConstantProp(cls, text);	
+		$property = self.addConstantProp(name, cls, text);	
 	}
 }
-	: 	strInt=intLiteral 	{ cls = ScriptingLogicsModule.ConstType.INT; text = $strInt.text; } | 
-		strReal=doubleLiteral { cls = ScriptingLogicsModule.ConstType.REAL; text = $strReal.text; }  |
-		str=STRING_LITERAL { cls = ScriptingLogicsModule.ConstType.STRING; text = $str.text; } | 
-		str=LOGICAL_LITERAL { cls = ScriptingLogicsModule.ConstType.LOGICAL; text = $str.text; };
+	: 	strInt=intLiteral	{ cls = ScriptingLogicsModule.ConstType.INT; text = $strInt.text; } | 
+		strReal=doubleLiteral	{ cls = ScriptingLogicsModule.ConstType.REAL; text = $strReal.text; } |
+		str=STRING_LITERAL	{ cls = ScriptingLogicsModule.ConstType.STRING; text = $str.text; } | 
+		str=LOGICAL_LITERAL	{ cls = ScriptingLogicsModule.ConstType.LOGICAL; text = $str.text; };
 	
 classId 
 	:	compoundID | PRIMITIVE_TYPE;
