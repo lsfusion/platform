@@ -934,7 +934,7 @@ public class RomanLogicsModule extends LogicsModule {
     private LP executeChangeFreightClass, executeChangeFreightClassApply, executeChangeFreightChangedClass, executeChangeFreightShippedClass;
     private CreateItemFormEntity createItemForm;
     private EditItemFormEntity editItemForm;
-    private FindItemFormEntity findItemFormBox;
+    private FindItemFormEntity findItemFormBox, findItemFormBoxBarcode;
     private FindItemFormEntity findItemFormSimple, findItemFormSimpleBarcode;
     private LogFormEntity logFreightForm;
 
@@ -3088,6 +3088,7 @@ public class RomanLogicsModule extends LogicsModule {
         editItemForm = addFormEntity(new EditItemFormEntity(null, "editItemForm", "Редактирование товара"));
         findItemFormBox = addFormEntity(new FindItemFormEntity(null, "findItemFormBox", "Поиск товара (с коробами)", true, false));
         findItemFormSimple = addFormEntity(new FindItemFormEntity(null, "findItemFormSimple", "Поиск товара", false, false));
+        findItemFormBoxBarcode = addFormEntity(new FindItemFormEntity(null, "findItemFormBoxBarcode", "Поиск товара (с коробами и выбором штрих-кода)", true, true));
         findItemFormSimpleBarcode = addFormEntity(new FindItemFormEntity(null, "findItemFormSimpleBarcode", "Поиск товара (с выбором штрих-кода)", false, true));
 
         NavigatorElement printForms = new NavigatorElement(baseLM.baseElement, "printForms", "Печатные формы");
@@ -4317,7 +4318,16 @@ public class RomanLogicsModule extends LogicsModule {
 
             addActionsOnObjectChange(objBarcode, addPropertyObject(baseLM.apply));
 
-            if (!box)
+            if (box)
+                addActionsOnObjectChange(objBarcode, addPropertyObject(
+                        addJProp(and(true, false),
+                                    addMFAProp(null, "Поиск по артикулу",
+                                    findItemFormBoxBarcode,
+                                    new ObjectEntity[]{findItemFormBoxBarcode.objShipment, findItemFormBoxBarcode.objBarcode, findItemFormBoxBarcode.objSupplierBox},
+                                    false), 1, 2, 3,
+                                    skuBarcodeObject, 2, emptyBarcodeShipment, 1),
+                                objShipment, objBarcode, objSupplierBox));
+            else
                 addActionsOnObjectChange(objBarcode, addPropertyObject(
                         addJProp(and(true, false),
                                     addMFAProp(null, "Поиск по артикулу",
