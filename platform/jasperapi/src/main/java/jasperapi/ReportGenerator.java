@@ -213,38 +213,37 @@ public class ReportGenerator {
         return objects;
     }
 
-    // Пока что добавляет только свойства с группами в колонках
     private void transformDesigns(boolean ignorePagination) {
         for (JasperDesign design : designs.values()) {
-            transformDesign(design);
+            transformDesign(design, ignorePagination);
             design.setIgnorePagination(ignorePagination);
         }
     }
 
-    private void transformDesign(JasperDesign design) {
-        transformBand(design, design.getPageHeader());
-        transformBand(design, design.getPageFooter());
+    private void transformDesign(JasperDesign design, boolean ignorePagination) {
+        transformBand(design, design.getPageHeader(), ignorePagination);
+        transformBand(design, design.getPageFooter(), ignorePagination);
 
-        transformSection(design, design.getDetailSection());
+        transformSection(design, design.getDetailSection(), ignorePagination);
         for (JRGroup group : design.getGroups()) {
-            transformSection(design, group.getGroupHeaderSection());
-            transformSection(design, group.getGroupFooterSection());
+            transformSection(design, group.getGroupHeaderSection(), ignorePagination);
+            transformSection(design, group.getGroupFooterSection(), ignorePagination);
         }
     }
 
-    private void transformSection(JasperDesign design, JRSection section) {
+    private void transformSection(JasperDesign design, JRSection section, boolean ignorePagination) {
         if (section instanceof JRDesignSection) {
             JRDesignSection designSection = (JRDesignSection) section;
             List bands = designSection.getBandsList();
             for (Object band : bands) {
                 if (band instanceof JRBand) {
-                    transformBand(design, (JRBand) band);
+                    transformBand(design, (JRBand) band, ignorePagination);
                 }
             }
         }
     }
 
-    private void transformBand(JasperDesign design, JRBand band) {
+    private void transformBand(JasperDesign design, JRBand band, boolean ignorePagination) {
         if (band instanceof JRDesignBand) {
             JRDesignBand designBand = (JRDesignBand) band;
             List<JRDesignElement> toDelete = new ArrayList<JRDesignElement>();
@@ -254,6 +253,8 @@ public class ReportGenerator {
                 if (element instanceof JRDesignTextField) {
                     JRDesignTextField textField = (JRDesignTextField) element;
                     transformTextField(design, textField, toAdd, toDelete);
+                } else if (ignorePagination && element instanceof JRDesignBreak) {
+                    toDelete.add((JRDesignBreak) element);
                 }
             }
             for (JRDesignElement element : toDelete) {

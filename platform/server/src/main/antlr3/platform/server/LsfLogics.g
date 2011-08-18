@@ -307,7 +307,6 @@ dataPropertyDefinition[String name, List<String> namedParams] returns [LP proper
 
 
 
-
 unionPropertyDefinition[String name, List<String> namedParams, List<String> context] returns [LP property, List<Integer> usedParams]
 @init {
 	List<LP<?>> paramProps = new ArrayList<LP<?>>();
@@ -326,20 +325,6 @@ unionPropertyDefinition[String name, List<String> namedParams, List<String> cont
 		(',' nextParam=contextDependentPE[null, null, context] { paramProps.add($nextParam.property); usedParams.add($nextParam.usedParams);})* 
 		')';	
 
-
-
-//propertyCompositionParam returns [Object param, List<String> paramNames]
-//	:	singleParam=parameter { $param = $singleParam.text; } | 	
-//		mappedProperty=propertyWithMapping { $param = $mappedProperty.property; $paramNames = $mappedProperty.paramNames; };
-
-
-//propertyWithMapping returns [Object property, List<String> paramNames] : 
-//		(propertyObj=propertyObject { $property = $propertyObj.property; }
-//		'('
-//		paramList=parameterList { $paramNames = $paramList.ids; }		
-//		')') |
-//		constant=literal { $property = $constant.property; $paramNames = new ArrayList<String>(); } |
-//		expr=typeExpression { $property = $expr.property; $paramNames = Arrays.asList($expr.param); };
 
 
 propertyParam[List<String> context] returns [LP property, List<Integer> usedParams]
