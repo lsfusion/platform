@@ -70,15 +70,16 @@ public class ImportProjectsActionProperty extends ActionProperty {
             isPlanningEquipmentProjectField, specificationEquipmentProjectField,
             isSeekEquipmentProjectField, descriptionEquipmentProjectField,
             isOtherEquipmentProjectField, commentEquipmentProjectField,
+            fillNativeProjectField, fillForeignProjectField,
 
-    isReturnInvestmentsProjectField, nameReturnInvestorProjectField, amountReturnFundsProjectField,
+            isReturnInvestmentsProjectField, nameReturnInvestorProjectField, amountReturnFundsProjectField,
             isNonReturnInvestmentsProjectField, isCapitalInvestmentProjectField, isPropertyInvestmentProjectField, isGrantsProjectField, isOtherNonReturnInvestmentsProjectField,
             nameNonReturnInvestorProjectField, amountNonReturnFundsProjectField, commentOtherNonReturnInvestmentsProjectField,
             isOwnFundsProjectField, amountOwnFundsProjectField,
             isPlanningSearchSourceProjectField, amountFundsProjectField,
             isOtherSoursesProjectField, commentOtherSoursesProjectField, updateDateProjectField,
 
-    nameNativeClusterField, inProjectClusterField, numberCurrentClusterField,
+            nameNativeClusterField, inProjectClusterField, numberCurrentClusterField,
             nameNativeClaimerField, nameForeignClaimerField,
             firmNameNativeClaimerField, firmNameForeignClaimerField, phoneClaimerField, addressClaimerField, siteClaimerField,
             emailClaimerField, emailFirmClaimerField, OGRNClaimerField, INNClaimerField,
@@ -97,8 +98,15 @@ public class ImportProjectsActionProperty extends ActionProperty {
 
     ImportKey<?> projectKey, projectTypeProjectKey, projectActionProjectKey, claimerKey, patentKey, ownerTypePatentKey, clusterKey, academicKey, nonRussianSpecialistKey;
     List<ImportProperty<?>> properties = new ArrayList<ImportProperty<?>>();
+    ImportProperty<?> propertyDate;
+    List<ImportProperty<?>> propertiesNative = new ArrayList<ImportProperty<?>>();
+    List<ImportProperty<?>> propertiesForeign = new ArrayList<ImportProperty<?>>();
     List<ImportProperty<?>> propertiesCluster = new ArrayList<ImportProperty<?>>();
+    List<ImportProperty<?>> propertiesClusterNative = new ArrayList<ImportProperty<?>>();
+    List<ImportProperty<?>> propertiesClusterForeign = new ArrayList<ImportProperty<?>>();
     List<ImportProperty<?>> propertiesPatent = new ArrayList<ImportProperty<?>>();
+    List<ImportProperty<?>> propertiesPatentNative = new ArrayList<ImportProperty<?>>();
+    List<ImportProperty<?>> propertiesPatentForeign = new ArrayList<ImportProperty<?>>();
     List<ImportProperty<?>> propertiesAcademic = new ArrayList<ImportProperty<?>>();
     List<ImportProperty<?>> propertiesNonRussianSpecialist = new ArrayList<ImportProperty<?>>();
 
@@ -150,6 +158,8 @@ public class ImportProjectsActionProperty extends ActionProperty {
         amountFundsProjectField = new ImportField(LM.amountFundsProject);
         isOtherSoursesProjectField = new ImportField(LM.isOtherSoursesProject);
         commentOtherSoursesProjectField = new ImportField(LM.commentOtherSoursesProject);
+        fillNativeProjectField = new ImportField(LM.fillNativeProject);
+        fillForeignProjectField = new ImportField(LM.fillForeignProject);
         updateDateProjectField = new ImportField(LM.updateDateProject);
 
         nameNativeClusterField = new ImportField(LM.nameNativeCluster);
@@ -206,28 +216,19 @@ public class ImportProjectsActionProperty extends ActionProperty {
         fileStatementNonRussianSpecialistField = new ImportField(LM.fileStatementNonRussianSpecialist);
 
         properties = new ArrayList<ImportProperty<?>>();
+        propertiesNative = new ArrayList<ImportProperty<?>>();
+        propertiesForeign = new ArrayList<ImportProperty<?>>();
         propertiesPatent = new ArrayList<ImportProperty<?>>();
+        propertiesPatentNative = new ArrayList<ImportProperty<?>>();
+        propertiesPatentForeign = new ArrayList<ImportProperty<?>>();
         propertiesCluster = new ArrayList<ImportProperty<?>>();
+        propertiesClusterNative = new ArrayList<ImportProperty<?>>();
+        propertiesClusterForeign = new ArrayList<ImportProperty<?>>();
         propertiesAcademic = new ArrayList<ImportProperty<?>>();
         propertiesNonRussianSpecialist = new ArrayList<ImportProperty<?>>();
 
         projectKey = new ImportKey(LM.project, LM.sidToProject.getMapping(projectIdField));
-        properties.add(new ImportProperty(dateProjectField, LM.dateProject.getMapping(projectKey)));
         properties.add(new ImportProperty(projectIdField, LM.sidProject.getMapping(projectKey)));
-        properties.add(new ImportProperty(nameNativeProjectField, LM.nameNativeProject.getMapping(projectKey)));
-        properties.add(new ImportProperty(nameForeignProjectField, LM.nameForeignProject.getMapping(projectKey)));
-        properties.add(new ImportProperty(nameNativeManagerProjectField, LM.nameNativeManagerProject.getMapping(projectKey)));
-        properties.add(new ImportProperty(nameNativeGenitiveManagerProjectField, LM.nameNativeGenitiveManagerProject.getMapping(projectKey)));
-        properties.add(new ImportProperty(nameNativeDativusManagerProjectField, LM.nameNativeDativusManagerProject.getMapping(projectKey)));
-        properties.add(new ImportProperty(nameNativeAblateManagerProjectField, LM.nameNativeAblateManagerProject.getMapping(projectKey)));
-        properties.add(new ImportProperty(nameForeignManagerProjectField, LM.nameForeignManagerProject.getMapping(projectKey)));
-        properties.add(new ImportProperty(nativeProblemProjectField, LM.nativeProblemProject.getMapping(projectKey)));
-        properties.add(new ImportProperty(foreignProblemProjectField, LM.foreignProblemProject.getMapping(projectKey)));
-        properties.add(new ImportProperty(nativeInnovativeProjectField, LM.nativeInnovativeProject.getMapping(projectKey)));
-        properties.add(new ImportProperty(foreignInnovativeProjectField, LM.foreignInnovativeProject.getMapping(projectKey)));
-        properties.add(new ImportProperty(nativeSubstantiationProjectTypeField, LM.nativeSubstantiationProjectType.getMapping(projectKey)));
-        properties.add(new ImportProperty(foreignSubstantiationProjectTypeField, LM.foreignSubstantiationProjectType.getMapping(projectKey)));
-
         properties.add(new ImportProperty(isOwnedEquipmentProjectField, LM.isOwnedEquipmentProject.getMapping(projectKey)));
         properties.add(new ImportProperty(isAvailableEquipmentProjectField, LM.isAvailableEquipmentProject.getMapping(projectKey)));
         properties.add(new ImportProperty(isTransferEquipmentProjectField, LM.isTransferEquipmentProject.getMapping(projectKey)));
@@ -239,6 +240,8 @@ public class ImportProjectsActionProperty extends ActionProperty {
         properties.add(new ImportProperty(descriptionEquipmentProjectField, LM.descriptionEquipmentProject.getMapping(projectKey)));
         properties.add(new ImportProperty(isOtherEquipmentProjectField, LM.isOtherEquipmentProject.getMapping(projectKey)));
         properties.add(new ImportProperty(commentEquipmentProjectField, LM.commentEquipmentProject.getMapping(projectKey)));
+        properties.add(new ImportProperty(fillNativeProjectField, LM.fillNativeProject.getMapping(projectKey)));
+        properties.add(new ImportProperty(fillForeignProjectField, LM.fillForeignProject.getMapping(projectKey)));
 
         properties.add(new ImportProperty(isReturnInvestmentsProjectField, LM.isReturnInvestmentsProject.getMapping(projectKey)));
         properties.add(new ImportProperty(nameReturnInvestorProjectField, LM.nameReturnInvestorProject.getMapping(projectKey)));
@@ -268,12 +271,6 @@ public class ImportProjectsActionProperty extends ActionProperty {
                 LM.baseLM.object(LM.projectAction).getMapping(projectActionProjectKey)));
 
         claimerKey = new ImportKey(LM.claimer, LM.baseLM.emailToObject.getMapping(emailClaimerField));
-        properties.add(new ImportProperty(nameNativeClaimerField, LM.claimerProject.getMapping(projectKey),
-                LM.baseLM.object(LM.claimer).getMapping(claimerKey)));
-        properties.add(new ImportProperty(nameNativeClaimerField, LM.nameNativeClaimer.getMapping(claimerKey)));
-        properties.add(new ImportProperty(nameForeignClaimerField, LM.nameForeignClaimer.getMapping(claimerKey)));
-        properties.add(new ImportProperty(firmNameNativeClaimerField, LM.firmNameNativeClaimer.getMapping(claimerKey)));
-        properties.add(new ImportProperty(firmNameForeignClaimerField, LM.firmNameForeignClaimer.getMapping(claimerKey)));
         properties.add(new ImportProperty(phoneClaimerField, LM.phoneClaimer.getMapping(claimerKey)));
         properties.add(new ImportProperty(addressClaimerField, LM.addressClaimer.getMapping(claimerKey)));
         properties.add(new ImportProperty(siteClaimerField, LM.siteClaimer.getMapping(claimerKey)));
@@ -285,17 +282,42 @@ public class ImportProjectsActionProperty extends ActionProperty {
         properties.add(new ImportProperty(fileStatementClaimerField, LM.statementClaimer.getMapping(claimerKey)));
         properties.add(new ImportProperty(fileConstituentClaimerField, LM.constituentClaimer.getMapping(claimerKey)));
         properties.add(new ImportProperty(fileExtractClaimerField, LM.extractClaimer.getMapping(claimerKey)));
-        properties.add(new ImportProperty(fileNativeSummaryProjectField, LM.fileNativeSummaryProject.getMapping(projectKey)));
-        properties.add(new ImportProperty(fileForeignSummaryProjectField, LM.fileForeignSummaryProject.getMapping(projectKey)));
         properties.add(new ImportProperty(fileRoadMapProjectField, LM.fileRoadMapProject.getMapping(projectKey)));
-        properties.add(new ImportProperty(fileNativeTechnicalDescriptionProjectField, LM.fileNativeTechnicalDescriptionProject.getMapping(projectKey)));
-        properties.add(new ImportProperty(fileForeignTechnicalDescriptionProjectField, LM.fileForeignTechnicalDescriptionProject.getMapping(projectKey)));
+
+        propertyDate = new ImportProperty(dateProjectField, LM.dateProject.getMapping(projectKey));
+
+        propertiesNative.add(new ImportProperty(nameNativeProjectField, LM.nameNativeProject.getMapping(projectKey)));
+        propertiesNative.add(new ImportProperty(nameNativeManagerProjectField, LM.nameNativeManagerProject.getMapping(projectKey)));
+        propertiesNative.add(new ImportProperty(nameNativeGenitiveManagerProjectField, LM.nameNativeGenitiveManagerProject.getMapping(projectKey)));
+        propertiesNative.add(new ImportProperty(nameNativeDativusManagerProjectField, LM.nameNativeDativusManagerProject.getMapping(projectKey)));
+        propertiesNative.add(new ImportProperty(nameNativeAblateManagerProjectField, LM.nameNativeAblateManagerProject.getMapping(projectKey)));
+        propertiesNative.add(new ImportProperty(nativeProblemProjectField, LM.nativeProblemProject.getMapping(projectKey)));
+        propertiesNative.add(new ImportProperty(nativeInnovativeProjectField, LM.nativeInnovativeProject.getMapping(projectKey)));
+        propertiesNative.add(new ImportProperty(nativeSubstantiationProjectTypeField, LM.nativeSubstantiationProjectType.getMapping(projectKey)));
+
+        propertiesNative.add(new ImportProperty(nameNativeClaimerField, LM.claimerProject.getMapping(projectKey),
+                LM.baseLM.object(LM.claimer).getMapping(claimerKey)));
+        propertiesNative.add(new ImportProperty(nameNativeClaimerField, LM.nameNativeClaimer.getMapping(claimerKey)));
+        propertiesNative.add(new ImportProperty(firmNameNativeClaimerField, LM.firmNameNativeClaimer.getMapping(claimerKey)));
+        propertiesNative.add(new ImportProperty(fileNativeSummaryProjectField, LM.fileNativeSummaryProject.getMapping(projectKey)));
+        propertiesNative.add(new ImportProperty(fileNativeTechnicalDescriptionProjectField, LM.fileNativeTechnicalDescriptionProject.getMapping(projectKey)));
+
+        propertiesForeign.add(new ImportProperty(nameForeignProjectField, LM.nameForeignProject.getMapping(projectKey)));
+        propertiesForeign.add(new ImportProperty(nameForeignManagerProjectField, LM.nameForeignManagerProject.getMapping(projectKey)));
+        propertiesForeign.add(new ImportProperty(foreignProblemProjectField, LM.foreignProblemProject.getMapping(projectKey)));
+        propertiesForeign.add(new ImportProperty(foreignInnovativeProjectField, LM.foreignInnovativeProject.getMapping(projectKey)));
+        propertiesForeign.add(new ImportProperty(foreignSubstantiationProjectTypeField, LM.foreignSubstantiationProjectType.getMapping(projectKey)));
+
+        propertiesForeign.add(new ImportProperty(nameForeignClaimerField, LM.claimerProject.getMapping(projectKey),
+                LM.baseLM.object(LM.claimer).getMapping(claimerKey)));
+        propertiesForeign.add(new ImportProperty(nameForeignClaimerField, LM.claimerProject.getMapping(projectKey),
+                LM.baseLM.object(LM.claimer).getMapping(claimerKey)));
+        propertiesForeign.add(new ImportProperty(firmNameForeignClaimerField, LM.firmNameForeignClaimer.getMapping(claimerKey)));
+        propertiesForeign.add(new ImportProperty(fileForeignSummaryProjectField, LM.fileForeignSummaryProject.getMapping(projectKey)));
+        propertiesForeign.add(new ImportProperty(fileForeignTechnicalDescriptionProjectField, LM.fileForeignTechnicalDescriptionProject.getMapping(projectKey)));
 
         patentKey = new ImportKey(LM.patent, LM.nativeNumberToPatent.getMapping(nativeNumberPatentField));
-        propertiesPatent.add(new ImportProperty(nativeTypePatentField, LM.nativeTypePatent.getMapping(patentKey)));
-        propertiesPatent.add(new ImportProperty(foreignTypePatentField, LM.foreignTypePatent.getMapping(patentKey)));
         propertiesPatent.add(new ImportProperty(nativeNumberPatentField, LM.nativeNumberPatent.getMapping(patentKey)));
-        propertiesPatent.add(new ImportProperty(foreignNumberPatentField, LM.foreignNumberPatent.getMapping(patentKey)));
         propertiesPatent.add(new ImportProperty(datePatentField, LM.priorityDatePatent.getMapping(patentKey)));
         propertiesPatent.add(new ImportProperty(isOwnedPatentField, LM.isOwned.getMapping(patentKey)));
         propertiesPatent.add(new ImportProperty(ownerPatentField, LM.ownerPatent.getMapping(patentKey)));
@@ -310,11 +332,16 @@ public class ImportProjectsActionProperty extends ActionProperty {
         propertiesPatent.add(new ImportProperty(ownerTypePatentField, LM.ownerTypePatent.getMapping(patentKey),
                 LM.baseLM.object(LM.ownerType).getMapping(ownerTypePatentKey)));
 
+        propertiesPatentNative.add(new ImportProperty(nativeTypePatentField, LM.nativeTypePatent.getMapping(patentKey)));
+        propertiesPatentForeign.add(new ImportProperty(foreignTypePatentField, LM.foreignTypePatent.getMapping(patentKey)));
+        propertiesPatentForeign.add(new ImportProperty(foreignNumberPatentField, LM.foreignNumberPatent.getMapping(patentKey)));
+
         clusterKey = new ImportKey(LM.cluster, LM.nameNativeToCluster.getMapping(nameNativeClusterField));
         propertiesCluster.add(new ImportProperty(inProjectClusterField, LM.inProjectCluster.getMapping(projectKey, clusterKey)));
         propertiesCluster.add(new ImportProperty(nameNativeClusterField, LM.nameNativeCluster.getMapping(clusterKey)));
-        propertiesCluster.add(new ImportProperty(nativeSubstantiationProjectClusterField, LM.nativeSubstantiationProjectCluster.getMapping(projectKey, clusterKey)));
-        propertiesCluster.add(new ImportProperty(foreignSubstantiationProjectClusterField, LM.foreignSubstantiationProjectCluster.getMapping(projectKey, clusterKey)));
+
+        propertiesClusterNative.add(new ImportProperty(nativeSubstantiationProjectClusterField, LM.nativeSubstantiationProjectCluster.getMapping(projectKey, clusterKey)));
+        propertiesClusterForeign.add(new ImportProperty(foreignSubstantiationProjectClusterField, LM.foreignSubstantiationProjectCluster.getMapping(projectKey, clusterKey)));
 
         academicKey = new ImportKey(LM.academic, LM.fullNameToAcademic.getMapping(fullNameAcademicField));
         propertiesAcademic.add(new ImportProperty(fullNameAcademicField, LM.fullNameAcademic.getMapping(academicKey)));
@@ -396,6 +423,20 @@ public class ImportProjectsActionProperty extends ActionProperty {
             connection.setDoInput(true);
 
             responseContents = IOUtils.readBytesFromStream(connection.getInputStream());
+
+            //File file = new File("C://test.xml");
+            //InputStream is = new FileInputStream(file);
+            //long length = file.length();
+            //byte[] bytes = new byte[(int) length];
+            //int offset = 0;
+            //int numRead = 0;
+            //while (offset < bytes.length && (numRead = is.read(bytes, offset, bytes.length - offset)) >= 0) {
+            //    offset += numRead;
+            //}
+            //is.close();
+
+            //responseContents = bytes;
+
             SAXBuilder builder = new SAXBuilder();
             Document document = builder.build(new ByteArrayInputStream(responseContents));
             responseContents = null;
@@ -453,9 +494,18 @@ public class ImportProjectsActionProperty extends ActionProperty {
         calendar.set(Calendar.YEAR, Integer.valueOf(year));
         calendar.set(Calendar.MONTH, Integer.valueOf(month) - 1);
         calendar.set(Calendar.DAY_OF_MONTH, Integer.valueOf(day));
-        calendar.set(Calendar.HOUR_OF_DAY, Integer.valueOf(hour));
-        calendar.set(Calendar.MINUTE, Integer.valueOf(minute));
-        calendar.set(Calendar.SECOND, Integer.valueOf(second));
+        if (hour != null)
+            calendar.set(Calendar.HOUR_OF_DAY, Integer.valueOf(hour));
+        else
+            calendar.set(Calendar.HOUR_OF_DAY, 0);
+        if (minute != null)
+            calendar.set(Calendar.MINUTE, Integer.valueOf(minute));
+        else
+            calendar.set(Calendar.MINUTE, 0);
+        if (second != null)
+            calendar.set(Calendar.SECOND, Integer.valueOf(second));
+        else
+            calendar.set(Calendar.SECOND, 0);
         calendar.set(Calendar.MILLISECOND, 0);
         return calendar.getTime();
     }
@@ -573,7 +623,7 @@ public class ImportProjectsActionProperty extends ActionProperty {
             byte[] file = Base64.decodeBase64(BaseUtils.nevl(element.getText(), null));
             Attribute extAttr = element.getAttribute("ext");
             String extension = extAttr != null ? extAttr.getValue() : null;
-            if(extension == null) {
+            if (extension == null) {
                 extension = "pdf";
             }
             return file == null ? null : BaseUtils.mergeFileAndExtension(file, extension.getBytes());
@@ -593,6 +643,20 @@ public class ImportProjectsActionProperty extends ActionProperty {
 
         try {
             responseContents = IOUtils.readBytesFromStream(inputStream);
+
+            //File file = new File("C://test.xml");
+            //InputStream is = new FileInputStream(file);
+            //long length = file.length();
+            //byte[] bytes = new byte[(int) length];
+            //int offset = 0;
+            //int numRead = 0;
+            //while (offset < bytes.length && (numRead = is.read(bytes, offset, bytes.length - offset)) >= 0) {
+            //    offset += numRead;
+            //}
+            //is.close();
+
+            //responseContents = bytes;
+
             Document document = builder.build(new ByteArrayInputStream(responseContents));
             responseContents = null;
             Element rootNode = document.getRootElement();
@@ -601,93 +665,53 @@ public class ImportProjectsActionProperty extends ActionProperty {
             for (int i = 0; i < list.size(); i++) {
                 Element node = (Element) list.get(i);
                 row = new ArrayList<Object>();
-                row.add(new java.sql.Date(new Date(Integer.parseInt(node.getChildText("yearProject")) - 1900, Integer.parseInt(node.getChildText("monthProject")) - 1, Integer.parseInt(node.getChildText("dayProject"))).getTime()));
-                row.add(projectId);
-                row.add(node.getChildText("nameNativeProject"));
-                row.add(node.getChildText("nameForeignProject"));
-                row.add(node.getChildText("nameNativeManagerProject"));
-                row.add(node.getChildText("nameNativeGenitiveManagerProject"));
-                row.add(node.getChildText("nameNativeDativusManagerProject"));
-                row.add(node.getChildText("nameNativeAblateManagerProject"));
-                row.add(node.getChildText("nameForeignManagerProject"));
-                row.add(node.getChildText("nativeProblemProject"));
-                row.add(node.getChildText("foreignProblemProject"));
-                row.add(node.getChildText("nativeInnovativeProject"));
-                row.add(node.getChildText("foreignInnovativeProject"));
-                row.add(node.getChildText("nativeSubstantiationProjectType"));
-                row.add(node.getChildText("foreignSubstantiationProjectType"));
+                String lng = BaseUtils.nevl(node.getChildText("languageProject"), "rus").toString();
+                if ("unknown".equals(lng)) {
+                    lng = "both";
+                }
+                boolean fillNative = ("rus".equals(lng)) || "both".equals(lng);
+                boolean fillForeign = ("eng".equals(lng)) || "both".equals(lng);
+                boolean fillDate = (!"1970".equals(node.getChildText("yearProject")));
 
-                if (Integer.parseInt(BaseUtils.nevl(node.getChildText("isOwnedEquipmentProject"), "0")) == 1)
-                    row.add(true);
-                else row.add(null);
-                if (Integer.parseInt(BaseUtils.nevl(node.getChildText("isAvailableEquipmentProject"), "0")) == 1)
-                    row.add(true);
-                else row.add(null);
-                if (Integer.parseInt(BaseUtils.nevl(node.getChildText("isTransferEquipmentProject"), "0")) == 1)
-                    row.add(true);
-                else row.add(null);
+                if (fillNative) row.add(true);
+                else row.add(null); //fillNativeProject
+                if (fillForeign) row.add(true);
+                else row.add(null); //fillForeignProject
+
+                row.add(projectId);
+                row.add(BaseUtils.nullZero(node.getChildText("isOwnedEquipmentProject")));
+                row.add(BaseUtils.nullZero(node.getChildText("isAvailableEquipmentProject")));
+                row.add(BaseUtils.nullZero(node.getChildText("isTransferEquipmentProject")));
                 row.add(node.getChildText("descriptionTransferEquipmentProject"));
                 row.add(node.getChildText("ownerEquipmentProject"));
-                if (Integer.parseInt(BaseUtils.nevl(node.getChildText("isPlanningEquipmentProject"), "0")) == 1)
-                    row.add(true);
-                else row.add(null);
+                row.add(BaseUtils.nullZero(node.getChildText("isPlanningEquipmentProject")));
                 row.add(node.getChildText("specificationEquipmentProject"));
-                if (Integer.parseInt(BaseUtils.nevl(node.getChildText("isSeekEquipmentProject"), "0")) == 1)
-                    row.add(true);
-                else row.add(null);
+                row.add(BaseUtils.nullZero(node.getChildText("isSeekEquipmentProject")));
                 row.add(node.getChildText("descriptionEquipmentProject"));
-                if (Integer.parseInt(BaseUtils.nevl(node.getChildText("isOtherEquipmentProject"), "0")) == 1)
-                    row.add(true);
-                else row.add(null);
+                row.add(BaseUtils.nullZero(node.getChildText("isOtherEquipmentProject")));
                 row.add(node.getChildText("commentEquipmentProject"));
-
-                if (Integer.parseInt(BaseUtils.nevl(node.getChildText("isReturnInvestmentsProject"), "0")) == 1)
-                    row.add(true);
-                else row.add(null);
+                row.add(BaseUtils.nullZero(node.getChildText("isReturnInvestmentsProject")));
                 row.add(node.getChildText("nameReturnInvestorProject"));
                 row.add(node.getChildText("amountReturnFundsProject"));
-
-                if (Integer.parseInt(BaseUtils.nevl(node.getChildText("isNonReturnInvestmentsProject"), "0")) == 1)
-                    row.add(true);
-                else row.add(null);
+                row.add(BaseUtils.nullZero(node.getChildText("isNonReturnInvestmentsProject")));
                 row.add(node.getChildText("nameNonReturnInvestorProject"));
-                row.add(("amountNonReturnFundsProject"));
+                row.add(node.getChildText("amountNonReturnFundsProject"));
                 row.add(node.getChildText("commentOtherNonReturnInvestmentsProject"));
 
-                if (Integer.parseInt(BaseUtils.nevl(node.getChildText("isCapitalInvestmentProject"), "0")) == 1)
-                    row.add(true);
-                else row.add(null);
-                if (Integer.parseInt(BaseUtils.nevl(node.getChildText("isPropertyInvestmentProject"), "0")) == 1)
-                    row.add(true);
-                else row.add(null);
-                if (Integer.parseInt(BaseUtils.nevl(node.getChildText("isGrantsProject"), "0")) == 1)
-                    row.add(true);
-                else row.add(null);
-                if (Integer.parseInt(BaseUtils.nevl(node.getChildText("isOtherNonReturnInvestmentsProject"), "0")) == 1)
-                    row.add(true);
-                else row.add(null);
-
-                if (Integer.parseInt(BaseUtils.nevl(node.getChildText("isOwnFundsProject"), "0")) == 1)
-                    row.add(true);
-                else row.add(null);
+                row.add(BaseUtils.nullZero(node.getChildText("isCapitalInvestmentProject")));
+                row.add(BaseUtils.nullZero(node.getChildText("isPropertyInvestmentProject")));
+                row.add(BaseUtils.nullZero(node.getChildText("isGrantsProject")));
+                row.add(BaseUtils.nullZero(node.getChildText("isOtherNonReturnInvestmentsProject")));
+                row.add(BaseUtils.nullZero(node.getChildText("isOwnFundsProject")));
                 row.add(node.getChildText("amountOwnFundsProject"));
-                if (Integer.parseInt(BaseUtils.nevl(node.getChildText("isPlanningSearchSourceProject"), "0")) == 1)
-                    row.add(true);
-                else row.add(null);
+                row.add(BaseUtils.nullZero(node.getChildText("isPlanningSearchSourceProject")));
                 row.add(node.getChildText("amountFundsProject"));
-                if (Integer.parseInt(BaseUtils.nevl(node.getChildText("isOtherSoursesProject"), "0")) == 1)
-                    row.add(true);
-                else row.add(null);
+                row.add(BaseUtils.nullZero(node.getChildText("isOtherSoursesProject")));
                 row.add(node.getChildText("commentOtherSoursesProject"));
                 row.add(currentProjectDate);
 
                 row.add(node.getChildText("typeProject"));
                 row.add(node.getChildText("actionProject"));
-                row.add(node.getChildText("nameNativeClaimer"));
-                row.add(node.getChildText("nameForeignClaimer"));
-
-                row.add(node.getChildText("firmNameNativeClaimer"));
-                row.add(node.getChildText("firmNameForeignClaimer"));
                 row.add(node.getChildText("phoneClaimer"));
                 row.add(node.getChildText("addressClaimer"));
                 row.add(node.getChildText("siteClaimer"));
@@ -699,62 +723,83 @@ public class ImportProjectsActionProperty extends ActionProperty {
                 row.add(buildFileByteArray(node.getChild("fileStatementClaimer")));
                 row.add(buildFileByteArray(node.getChild("fileConstituentClaimer")));
                 row.add(buildFileByteArray(node.getChild("fileExtractClaimer")));
-                row.add(buildFileByteArray(node.getChild("fileNativeSummaryProject")));
-                row.add(buildFileByteArray(node.getChild("fileForeignSummaryProject")));
                 row.add(buildFileByteArray(node.getChild("fileRoadMapProject")));
-                row.add(buildFileByteArray(node.getChild("fileNativeTechnicalDescriptionProject")));
-                row.add(buildFileByteArray(node.getChild("fileForeignTechnicalDescriptionProject")));
+                if (fillDate) {
+                    row.add(new java.sql.Date(Integer.parseInt(node.getChildText("yearProject")) - 1900, Integer.parseInt(node.getChildText("monthProject")) - 1, Integer.parseInt(node.getChildText("dayProject"))));
+                }
+                if (fillNative) {
+                    row.add(node.getChildText("nameNativeProject"));
+                    row.add(node.getChildText("nameNativeManagerProject"));
+                    row.add(node.getChildText("nameNativeGenitiveManagerProject"));
+                    row.add(node.getChildText("nameNativeDativusManagerProject"));
+                    row.add(node.getChildText("nameNativeAblateManagerProject"));
+                    row.add(node.getChildText("nativeProblemProject"));
+                    row.add(node.getChildText("nativeInnovativeProject"));
+                    row.add(node.getChildText("nativeSubstantiationProjectType"));
+                    row.add(node.getChildText("nameNativeClaimer"));
+                    row.add(node.getChildText("firmNameNativeClaimer"));
+                    row.add(buildFileByteArray(node.getChild("fileNativeSummaryProject")));
+                    row.add(buildFileByteArray(node.getChild("fileNativeTechnicalDescriptionProject")));
+                }
 
+                if (fillForeign) {
+                    row.add(node.getChildText("nameForeignProject"));
+                    row.add(node.getChildText("nameForeignManagerProject"));
+                    row.add(node.getChildText("foreignProblemProject"));
+                    row.add(node.getChildText("foreignInnovativeProject"));
+                    row.add(node.getChildText("foreignSubstantiationProjectType"));
+                    row.add(node.getChildText("nameForeignClaimer"));
+                    row.add(node.getChildText("firmNameForeignClaimer"));
+                    row.add(buildFileByteArray(node.getChild("fileForeignSummaryProject")));
+                    row.add(buildFileByteArray(node.getChild("fileForeignTechnicalDescriptionProject")));
+                }
                 data.add(row);
 
                 List listCluster = node.getChildren("cluster");
                 for (int z = 0; z < listCluster.size(); z++) {
                     Element nodeCluster = (Element) listCluster.get(z);
                     List<Object> rowCluster = new ArrayList<Object>();
-
                     rowCluster.add(true);
-
                     rowCluster.add(nodeCluster.getChildText("nameNativeCluster"));
                     rowCluster.add(projectId);
-                    rowCluster.add(nodeCluster.getChildText("nativeSubstantiationClusterProject"));
-                    rowCluster.add(nodeCluster.getChildText("foreignSubstantiationClusterProject"));
+                    if (fillNative)
+                        rowCluster.add(nodeCluster.getChildText("nativeSubstantiationClusterProject"));
+                    if (fillForeign)
+                        rowCluster.add(nodeCluster.getChildText("foreignSubstantiationClusterProject"));
                     dataCluster.add(rowCluster);
                 }
 
-                int j;
-
                 List listPatent = node.getChildren("patent");
-                for (j = 0; j < listPatent.size(); j++) {
+                for (int j = 0; j < listPatent.size(); j++) {
                     Element nodePatent = (Element) listPatent.get(j);
                     List<Object> rowPatent = new ArrayList<Object>();
 
                     rowPatent.add(projectId);
-                    rowPatent.add(nodePatent.getChildText("nativeTypePatent"));
-                    rowPatent.add(nodePatent.getChildText("foreignTypePatent"));
                     rowPatent.add(nodePatent.getChildText("nativeNumberPatent"));
-                    rowPatent.add(nodePatent.getChildText("foreignNumberPatent"));
                     try {
                         rowPatent.add(new java.sql.Date(new Date(Integer.parseInt(nodePatent.getChildText("yearPatent")) - 1900, Integer.parseInt(nodePatent.getChildText("monthPatent")), Integer.parseInt(nodePatent.getChildText("dayPatent")) - 1).getTime()));
                     } catch (NumberFormatException e) {
                         rowPatent.add(null);
                     }
-                    if (Integer.parseInt(BaseUtils.nevl(nodePatent.getChildText("isOwnedPatent"), "0")) == 1)
-                        rowPatent.add(true);
-                    else rowPatent.add(null);
+                    rowPatent.add(BaseUtils.nullZero(node.getChildText("isOwnedPatent")));
                     rowPatent.add(nodePatent.getChildText("ownerPatent"));
                     rowPatent.add(nodePatent.getChildText("ownerTypePatent"));
-                    if (Integer.parseInt(BaseUtils.nevl(nodePatent.getChildText("isValuatedPatent"), "0")) == 1)
-                        rowPatent.add(true);
-                    else rowPatent.add(null);
+                    rowPatent.add(BaseUtils.nullZero(node.getChildText("isValuatedPatent")));
                     rowPatent.add(nodePatent.getChildText("valuatorPatent"));
                     rowPatent.add(buildFileByteArray(node.getChild("fileIntentionOwnerPatent")));
                     rowPatent.add(buildFileByteArray(node.getChild("fileActValuationPatent")));
-
+                    if (fillNative) {
+                        rowPatent.add(nodePatent.getChildText("nativeTypePatent"));
+                    }
+                    if (fillForeign) {
+                        rowPatent.add(nodePatent.getChildText("foreignTypePatent"));
+                        rowPatent.add(nodePatent.getChildText("foreignNumberPatent"));
+                    }
                     dataPatent.add(rowPatent);
                 }
 
                 List listAcademic = node.getChildren("academic");
-                for (j = 0; j < listAcademic.size(); j++) {
+                for (int j = 0; j < listAcademic.size(); j++) {
                     Element nodeAcademic = (Element) listAcademic.get(j);
                     List<Object> rowAcademic = new ArrayList<Object>();
                     rowAcademic.add(projectId);
@@ -767,7 +812,7 @@ public class ImportProjectsActionProperty extends ActionProperty {
                 }
 
                 List listNonRussianSpecialist = node.getChildren("nonRussianSpecialist");
-                for (j = 0; j < listNonRussianSpecialist.size(); j++) {
+                for (int j = 0; j < listNonRussianSpecialist.size(); j++) {
                     Element nodeNonRussianSpecialist = (Element) listNonRussianSpecialist.get(j);
                     List<Object> rowNonRussianSpecialist = new ArrayList<Object>();
                     rowNonRussianSpecialist.add(projectId);
@@ -780,6 +825,85 @@ public class ImportProjectsActionProperty extends ActionProperty {
                     rowNonRussianSpecialist.add(buildFileByteArray(node.getChild("fileStatementNonRussianSpecialist")));
                     dataNonRussianSpecialist.add(rowNonRussianSpecialist);
                 }
+
+                List<ImportField> fieldsNative = BaseUtils.toList(
+                        nameNativeProjectField, nameNativeManagerProjectField, nameNativeGenitiveManagerProjectField,
+                        nameNativeDativusManagerProjectField, nameNativeAblateManagerProjectField, nativeProblemProjectField,
+                        nativeInnovativeProjectField, nativeSubstantiationProjectTypeField, nameNativeClaimerField,
+                        firmNameNativeClaimerField, fileNativeSummaryProjectField, fileNativeTechnicalDescriptionProjectField);
+                List<ImportField> fieldsForeign = BaseUtils.toList(
+                        nameForeignProjectField, nameForeignManagerProjectField, foreignProblemProjectField,
+                        foreignInnovativeProjectField, foreignSubstantiationProjectTypeField, nameForeignClaimerField,
+                        firmNameForeignClaimerField, fileForeignSummaryProjectField, fileForeignTechnicalDescriptionProjectField);
+                List<ImportField> fieldsBoth = BaseUtils.toList(
+                        fillNativeProjectField, fillForeignProjectField, projectIdField,
+                        isOwnedEquipmentProjectField, isAvailableEquipmentProjectField, isTransferEquipmentProjectField,
+                        descriptionTransferEquipmentProjectField, ownerEquipmentProjectField, isPlanningEquipmentProjectField,
+                        specificationEquipmentProjectField, isSeekEquipmentProjectField, descriptionEquipmentProjectField,
+                        isOtherEquipmentProjectField, commentEquipmentProjectField, isReturnInvestmentsProjectField,
+                        nameReturnInvestorProjectField, amountReturnFundsProjectField, isNonReturnInvestmentsProjectField,
+                        nameNonReturnInvestorProjectField, amountNonReturnFundsProjectField, commentOtherNonReturnInvestmentsProjectField,
+                        isCapitalInvestmentProjectField, isPropertyInvestmentProjectField, isGrantsProjectField,
+                        isOtherNonReturnInvestmentsProjectField, isOwnFundsProjectField, amountOwnFundsProjectField,
+                        isPlanningSearchSourceProjectField, amountFundsProjectField, isOtherSoursesProjectField,
+                        commentOtherSoursesProjectField, updateDateProjectField, projectTypeProjectField,
+                        projectActionProjectField, phoneClaimerField, addressClaimerField,
+                        siteClaimerField, emailClaimerField, emailFirmClaimerField,
+                        OGRNClaimerField, INNClaimerField, fileStatementClaimerField,
+                        fileConstituentClaimerField, fileExtractClaimerField, fileRoadMapProjectField);
+                if (fillDate) {
+                    properties.add(propertyDate);
+                    fieldsBoth.add(dateProjectField);
+                }
+                ImportKey<?>[] keysArray = new ImportKey<?>[]{projectKey, projectTypeProjectKey, projectActionProjectKey, claimerKey};
+                importMultilanguageData(
+                        fieldsBoth, fieldsNative, fieldsForeign,
+                        properties, propertiesNative, propertiesForeign,
+                        data, keysArray, lng);
+
+                List<ImportField> fieldsCurrentClusterBoth = BaseUtils.toList(
+                        inProjectClusterField, nameNativeClusterField, projectIdField);
+                List<ImportField> fieldsCurrentClusterNative = BaseUtils.toList(
+                        nativeSubstantiationProjectClusterField);
+                List<ImportField> fieldsCurrentClusterForeign = BaseUtils.toList(
+                        foreignSubstantiationProjectClusterField);
+                keysArray = new ImportKey<?>[]{clusterKey, projectKey};
+                importMultilanguageData(
+                        fieldsCurrentClusterBoth, fieldsCurrentClusterNative, fieldsCurrentClusterForeign,
+                        propertiesCluster, propertiesClusterNative, propertiesClusterForeign,
+                        dataCluster, keysArray, lng);
+
+                List<ImportField> fieldsPatentBoth = BaseUtils.toList(
+                        projectIdField, nativeNumberPatentField, datePatentField,
+                        isOwnedPatentField, ownerPatentField, ownerTypePatentField,
+                        isValuatedPatentField, valuatorPatentField, fileIntentionOwnerPatentField,
+                        fileActValuationPatentField);
+                List<ImportField> fieldsPatentNative = BaseUtils.toList(nativeTypePatentField);
+                List<ImportField> fieldsPatentForeign = BaseUtils.toList(foreignTypePatentField, foreignNumberPatentField);
+                keysArray = new ImportKey<?>[]{projectKey, patentKey, ownerTypePatentKey};
+                importMultilanguageData(
+                        fieldsPatentBoth, fieldsPatentNative, fieldsPatentForeign,
+                        propertiesPatent, propertiesPatentNative, propertiesPatentForeign,
+                        dataPatent, keysArray, lng);
+
+                List<ImportField> fieldsAcademic = BaseUtils.toList(
+                        projectIdField,
+                        fullNameAcademicField, institutionAcademicField, titleAcademicField,
+                        fileDocumentConfirmingAcademicField, fileDocumentEmploymentAcademicField
+                );
+                ImportTable table = new ImportTable(fieldsAcademic, dataAcademic);
+                keysArray = new ImportKey<?>[]{projectKey, academicKey};
+                new IntegrationService(session, table, Arrays.asList(keysArray), propertiesAcademic).synchronize(true, true, false);
+
+                List<ImportField> fieldsNonRussianSpecialist = BaseUtils.toList(
+                        projectIdField,
+                        fullNameNonRussianSpecialistField, organizationNonRussianSpecialistField, titleNonRussianSpecialistField
+                        , fileNativeResumeNonRussianSpecialistField, fileForeignResumeNonRussianSpecialistField,
+                        filePassportNonRussianSpecialistField, fileStatementNonRussianSpecialistField
+                );
+                table = new ImportTable(fieldsNonRussianSpecialist, dataNonRussianSpecialist);
+                keysArray = new ImportKey<?>[]{projectKey, nonRussianSpecialistKey};
+                new IntegrationService(session, table, Arrays.asList(keysArray), propertiesNonRussianSpecialist).synchronize(true, true, false);
             }
         } catch (JDOMParseException e) {
             String info = "failed to import project " + projectId + ". Reason: " + new String(responseContents);
@@ -790,81 +914,35 @@ public class ImportProjectsActionProperty extends ActionProperty {
             throw new RuntimeException(e);
         }
 
-        List<ImportField> fields = BaseUtils.toList(
-                dateProjectField, projectIdField, nameNativeProjectField, nameForeignProjectField,
-                nameNativeManagerProjectField, nameNativeGenitiveManagerProjectField, nameNativeDativusManagerProjectField, nameNativeAblateManagerProjectField,
-                nameForeignManagerProjectField,
-                nativeProblemProjectField, foreignProblemProjectField,
-                nativeInnovativeProjectField, foreignInnovativeProjectField,
-                nativeSubstantiationProjectTypeField, foreignSubstantiationProjectTypeField,
-                isOwnedEquipmentProjectField, isAvailableEquipmentProjectField,
-                isTransferEquipmentProjectField, descriptionTransferEquipmentProjectField, ownerEquipmentProjectField,
-                isPlanningEquipmentProjectField, specificationEquipmentProjectField,
-                isSeekEquipmentProjectField, descriptionEquipmentProjectField,
-                isOtherEquipmentProjectField, commentEquipmentProjectField,
-                isReturnInvestmentsProjectField, nameReturnInvestorProjectField, amountReturnFundsProjectField,
-                isNonReturnInvestmentsProjectField, nameNonReturnInvestorProjectField, amountNonReturnFundsProjectField, commentOtherNonReturnInvestmentsProjectField,
-                isCapitalInvestmentProjectField, isPropertyInvestmentProjectField, isGrantsProjectField, isOtherNonReturnInvestmentsProjectField,
-                isOwnFundsProjectField, amountOwnFundsProjectField,
-                isPlanningSearchSourceProjectField, amountFundsProjectField,
-                isOtherSoursesProjectField, commentOtherSoursesProjectField, updateDateProjectField,
-                projectTypeProjectField, projectActionProjectField,
-                nameNativeClaimerField, nameForeignClaimerField,
-                firmNameNativeClaimerField, firmNameForeignClaimerField, phoneClaimerField, addressClaimerField,
-                siteClaimerField, emailClaimerField, emailFirmClaimerField, OGRNClaimerField, INNClaimerField,
-                fileStatementClaimerField, fileConstituentClaimerField, fileExtractClaimerField,
-                fileNativeSummaryProjectField, fileForeignSummaryProjectField,
-                fileRoadMapProjectField,
-                fileNativeTechnicalDescriptionProjectField, fileForeignTechnicalDescriptionProjectField
-        );
-        ImportTable table = new ImportTable(fields, data);
-
-        ImportKey<?>[] keysArray;
-        keysArray = new ImportKey<?>[]{projectKey, projectTypeProjectKey, projectActionProjectKey, claimerKey};
-        new IntegrationService(session, table, Arrays.asList(keysArray), properties).synchronize(true, true, false);
-
-        List<ImportField> fieldsCurrentCluster = BaseUtils.toList(
-
-                inProjectClusterField, nameNativeClusterField, projectIdField, nativeSubstantiationProjectClusterField, foreignSubstantiationProjectClusterField);
-        table = new ImportTable(fieldsCurrentCluster, dataCluster);
-        keysArray = new ImportKey<?>[]{clusterKey, projectKey};
-        new IntegrationService(session, table, Arrays.asList(keysArray), propertiesCluster).synchronize(true, true, false);
-
-        List<ImportField> fieldsPatent = BaseUtils.toList(
-                projectIdField,
-                nativeTypePatentField, foreignTypePatentField, nativeNumberPatentField, foreignNumberPatentField,
-                datePatentField, isOwnedPatentField, ownerPatentField, ownerTypePatentField,
-                isValuatedPatentField, valuatorPatentField,
-                fileIntentionOwnerPatentField, fileActValuationPatentField
-        );
-        table = new ImportTable(fieldsPatent, dataPatent);
-        keysArray = new ImportKey<?>[]{projectKey, patentKey, ownerTypePatentKey};
-        new IntegrationService(session, table, Arrays.asList(keysArray), propertiesPatent).synchronize(true, true, false);
-
-        List<ImportField> fieldsAcademic = BaseUtils.toList(
-                projectIdField,
-                fullNameAcademicField, institutionAcademicField, titleAcademicField,
-                fileDocumentConfirmingAcademicField, fileDocumentEmploymentAcademicField
-        );
-        table = new ImportTable(fieldsAcademic, dataAcademic);
-        keysArray = new ImportKey<?>[]{projectKey, academicKey};
-        new IntegrationService(session, table, Arrays.asList(keysArray), propertiesAcademic).synchronize(true, true, false);
-
-        List<ImportField> fieldsNonRussianSpecialist = BaseUtils.toList(
-                projectIdField,
-                fullNameNonRussianSpecialistField, organizationNonRussianSpecialistField, titleNonRussianSpecialistField
-                , fileNativeResumeNonRussianSpecialistField, fileForeignResumeNonRussianSpecialistField,
-                filePassportNonRussianSpecialistField, fileStatementNonRussianSpecialistField
-        );
-        table = new ImportTable(fieldsNonRussianSpecialist, dataNonRussianSpecialist);
-        keysArray = new ImportKey<?>[]{projectKey, nonRussianSpecialistKey};
-        new IntegrationService(session, table, Arrays.asList(keysArray), propertiesNonRussianSpecialist).synchronize(true, true, false);
-
         String sessionApply = session.apply(BL);
         if (sessionApply != null) {
             logger.error(sessionApply);
             session.restart(true);
         }
         logger.info(projectId + " project was imported successfully");
+    }
+
+    private void importMultilanguageData(
+            List<ImportField> fieldsBoth, List<ImportField> fieldsNative, List<ImportField> fieldsForeign,
+            List<ImportProperty<?>> properties, List<ImportProperty<?>> propertiesNative, List<ImportProperty<?>> propertiesForeign,
+            List<List<Object>> data, ImportKey<?>[] keysArray, String lng) throws SQLException {
+
+        ImportTable table;
+        List<ImportProperty<?>> propertiesMerged;
+        if ("eng".equals(lng)) {
+            table = new ImportTable(BaseUtils.mergeList(fieldsBoth, fieldsForeign), data);
+            propertiesMerged = BaseUtils.mergeList(properties, propertiesForeign);
+        } else if ("both".equals(lng)) {
+            table = new ImportTable(BaseUtils.mergeList(BaseUtils.mergeList(fieldsBoth, fieldsNative), fieldsForeign), data);
+            propertiesMerged = BaseUtils.mergeList(BaseUtils.mergeList(properties, propertiesNative), propertiesForeign);
+        } else {
+            table = new ImportTable(BaseUtils.mergeList(fieldsBoth, fieldsNative), data);
+            propertiesMerged = BaseUtils.mergeList(properties, propertiesNative);
+        }
+        try {
+            new IntegrationService(session, table, Arrays.asList(keysArray), propertiesMerged).synchronize(true, true, false);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 }

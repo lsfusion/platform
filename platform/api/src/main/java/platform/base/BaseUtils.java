@@ -786,6 +786,15 @@ public class BaseUtils {
         return list;
     }
 
+    public static Object nullZero(String str) {
+        return nullBoolean((Integer.parseInt(BaseUtils.nevl(str, "0")) == 1));
+    }
+
+    public static Object nullBoolean(Boolean b) {
+        if (b) return true;
+        else return null;
+    }
+
 
     public static abstract class Group<G, K> {
         public abstract G group(K key);

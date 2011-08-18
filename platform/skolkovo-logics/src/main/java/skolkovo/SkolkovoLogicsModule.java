@@ -513,6 +513,9 @@ public class SkolkovoLogicsModule extends LogicsModule {
     public LP amountFundsProject;
     public LP isOtherSoursesProject;
     public LP commentOtherSoursesProject;
+    public LP fillNativeProject;
+    public LP fillForeignProject;
+
     LP hideNameReturnInvestorProject;
     LP hideAmountReturnFundsProject;
     LP hideNameNonReturnInvestorProject;
@@ -1264,8 +1267,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         projectSucceededClaimer = addAGProp(idGroup, "projectSucceededClaimer", true, "Успешный проект (ИД)", acceptedProject, 1, claimerProject, 1);
 
-
-
+       fillNativeProject = addDProp(projectInformationGroup, "fillNativeProject", "Анкета на русском", LogicalClass.instance, project);
+       fillForeignProject = addDProp(projectInformationGroup, "fillForeignProject", "Анкета на английском", LogicalClass.instance, project);
 
         // статистика по экспертам
         quantityTotalExpert = addSGProp(expertResultGroup, "quantityTotalExpert", "Всего заседаний",
