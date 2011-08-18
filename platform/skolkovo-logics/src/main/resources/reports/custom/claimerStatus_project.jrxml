@@ -2,7 +2,7 @@
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="project" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0">
 	<property name="ireport.zoom" value="1.1000000000000014"/>
 	<property name="ireport.x" value="0"/>
-	<property name="ireport.y" value="217"/>
+	<property name="ireport.y" value="0"/>
 	<style name="DefaultStyle" isDefault="true" vAlign="Middle" fontName="lsf.TimesNewRoman" fontSize="12" pdfFontName="lsf.Times" pdfEncoding="Cp1251" isPdfEmbedded="false"/>
 	<style name="GroupCellStyle0" mode="Opaque" backcolor="#FFFFFF" vAlign="Middle" fontName="Serif" fontSize="10" pdfFontName="lsf.Times" pdfEncoding="Cp1251" isPdfEmbedded="false">
 		<box leftPadding="2" rightPadding="2">
@@ -88,14 +88,16 @@ platform.base.BaseUtils.formatRussian($F{date}) + " года (" + $F{nameNativeP
 				<textFieldExpression class="java.lang.String"><![CDATA["1. Присвоить " + $F{nameDativusClaimerProject} + " статус участника проекта по созданию и обеспечению функционирования инновационного центра «Сколково»."]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement positionType="Float" x="50" y="380" width="247" height="16"/>
+				<reportElement positionType="Float" x="50" y="374" width="247" height="48"/>
 				<textElement verticalAlignment="Bottom"/>
-				<text><![CDATA[Ответственный секретарь Совета]]></text>
+				<text><![CDATA[Вице-Президент
+Руководитель Аппарата Президента
+и Советов Фонда]]></text>
 			</staticText>
 			<staticText>
-				<reportElement positionType="Float" x="435" y="380" width="104" height="16"/>
+				<reportElement positionType="Float" x="435" y="374" width="104" height="48"/>
 				<textElement verticalAlignment="Bottom"/>
-				<text><![CDATA[Д.В. Дудина]]></text>
+				<text><![CDATA[Д.Ю. Колосов]]></text>
 			</staticText>
 		</band>
 	</detail>

@@ -23,7 +23,7 @@
 	<field name="nameNativeClusterVote" class="java.lang.String"/>
 	<field name="prevDateVote" class="java.util.Date"/>
 	<field name="nameNativePrevClusterVote" class="java.lang.String"/>
-	<field name="nameNativeNextClusterVote" class="java.lang.String"/>
+	<field name="nameNativeFinalClusterProjectVote" class="java.lang.String"/>
 	<field name="quantityDoneVote" class="java.lang.Integer"/>
 	<field name="quantityInClusterVote" class="java.lang.Integer"/>
 	<field name="acceptedInClusterVote" class="java.lang.Boolean"/>
@@ -156,7 +156,7 @@
 				<textElement verticalAlignment="Top">
 					<font size="14"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[($F{isLastClusterVote} == null ? "Ваша заявка будет направлена на рассмотрение экспертами кластера " + $F{nameNativeNextClusterVote} + "." : "Мы вынуждены отклонить Вашу заявку.")]]></textFieldExpression>
+				<textFieldExpression class="java.lang.String"><![CDATA[($F{isLastClusterVote} == null ? "Ваша заявка будет направлена на рассмотрение экспертами кластера " + $F{nameNativeFinalClusterProjectVote} + "." : "Мы вынуждены отклонить Вашу заявку.")]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
 				<reportElement style="DefaultStyle" positionType="Float" x="20" y="351" width="509" height="20"/>

@@ -435,7 +435,11 @@ public abstract class LogicsModule {
     }
 
     protected LP addEAProp(ValueClass... params) {
-        return addEAProp(null, params);
+        return addEAProp((String)null, params);
+    }
+
+    protected LP addEAProp(LP fromAddress, ValueClass... params) {
+        return addEAProp(null, fromAddress, params);
     }
 
     protected LP addEAProp(String subject, ValueClass... params) {
@@ -1542,8 +1546,16 @@ public abstract class LogicsModule {
         return addAProp(new ExecutePropertiesActionProperty(genSID(), "sys", writeDefaultValues, lps, mapInterfaces));
     }
 
+    protected LP addLFAProp(LP lp) {
+        return addLFAProp(null, "lfa", lp);
+    }
+
     protected LP addLFAProp(AbstractGroup group, String caption, LP lp) {
         return addProperty(group, new LP<ClassPropertyInterface>(new BaseLogicsModule.LoadActionProperty(genSID(), caption, lp)));
+    }
+
+    protected LP addOFAProp(LP lp) {
+        return addOFAProp(null, "ofa", lp);
     }
 
     protected LP addOFAProp(AbstractGroup group, String caption, LP lp) { // обернем сразу в and
