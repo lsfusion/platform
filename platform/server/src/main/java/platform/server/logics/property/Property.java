@@ -74,6 +74,11 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
     private ImageIcon image;
     private String iconPath;
 
+    public void inheritImage(Property property) {
+        image = property.image;
+        iconPath = property.iconPath;
+    }
+
     public void setImage(String iconPath) {
         this.iconPath = iconPath;
         this.image = new ImageIcon(Property.class.getResource("/images/" + iconPath));

@@ -1338,7 +1338,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         addEARecepient(emailClaimerVoteEA, claimerEmailVote, 1);
 
         emailClaimerHeaderVote = addJProp("emailClaimerHeaderVote", "Заголовок уведомления заявителю", baseLM.string2, addCProp(StringClass.get(2000), "Уведомление."), nameNativeClaimerVote, 1);
-        emailClaimerVote = addJProp(actionGroup, true, "emailClaimerVote", "Письмо заявителю", emailClaimerVoteEA, 1, emailClaimerHeaderVote, 1);
+        emailClaimerVote = addJProp(actionGroup, true, "emailClaimerVote", "Письмо о рассмотрении", emailClaimerVoteEA, 1, emailClaimerHeaderVote, 1);
         emailClaimerVote.property.askConfirm = true;
 
         emailClaimerVote.setDerivedForcedChange(addCProp(ActionClass.instance, true), openedVote, 1);

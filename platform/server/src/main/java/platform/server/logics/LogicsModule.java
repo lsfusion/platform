@@ -672,6 +672,7 @@ public abstract class LogicsModule {
 
         JoinProperty<?> property = new JoinProperty(name, caption, getIntNum(params), implementChange);
         property.inheritFixedCharWidth(mainProp.property);
+        property.inheritImage(mainProp.property);
 
         LP listProperty = new LP<JoinProperty.Interface>(property);
         property.implement = mapImplement(mainProp, readImplements(listProperty.listInterfaces, params));
