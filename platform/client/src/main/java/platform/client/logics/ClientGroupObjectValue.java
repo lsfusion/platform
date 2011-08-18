@@ -5,11 +5,13 @@ import platform.gwt.view.changes.dto.GGroupObjectValueDTO;
 import platform.gwt.view.changes.dto.ObjectDTO;
 
 import java.io.*;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.Map;
 
 import static platform.base.BaseUtils.*;
 
-public class ClientGroupObjectValue extends OrderedMap<ClientObject, Object>
+public class ClientGroupObjectValue extends HashMap<ClientObject, Object>
         implements Serializable {
     public ClientGroupObjectValue(ClientGroupObjectValue... clones) {
         super();
@@ -68,5 +70,10 @@ public class ClientGroupObjectValue extends OrderedMap<ClientObject, Object>
             }
         }
         return gwtGroupObjectValue;
+    }
+
+    public void removeAll(Collection<ClientObject> keys) {
+        for(ClientObject key : keys)
+            remove(key);
     }
 }
