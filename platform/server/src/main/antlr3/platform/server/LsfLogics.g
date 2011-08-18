@@ -328,10 +328,12 @@ unionPropertyDefinition[String name, List<String> namedParams, List<String> cont
 
 
 propertyParam[List<String> context] returns [LP property, List<Integer> usedParams]
-	:	(name=parameter { $usedParams = Collections.singletonList(self.getParamIndex($name.text, $context)); }) | 
-		(expr=contextDependentPE[null, null, context] { $property = $expr.property; $usedParams = $expr.usedParams; }) //|
-//		('(' expr=contextIndependentPE[null, null] ')' '(' ')')
-	;
+	:	(name=parameter { 
+			if (parseState == ScriptingLogicsModule.State.PROP) 
+				$usedParams = Collections.singletonList(self.getParamIndex($name.text, $context)); 
+		 }) 
+		| 
+		(expr=contextDependentPE[null, null, context] { $property = $expr.property; $usedParams = $expr.usedParams; });
 
 
 //typeExpression[String name, List<String> namedParams, List<String> context] returns [LP property, Integer param] 

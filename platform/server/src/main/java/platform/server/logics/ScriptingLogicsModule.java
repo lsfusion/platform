@@ -263,6 +263,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         if (index < 0 && param.startsWith("$")) {
             index = Integer.parseInt(param.substring(1)) - 1;
         }
+        assert index >= 0;
         return index;
     }
 
@@ -333,7 +334,9 @@ public class ScriptingLogicsModule extends LogicsModule {
                     resultParams.add(localParamIndex + 1);
                 }
             } else {
-                resultParams.add(allUsedParams.indexOf(usedParams.get(i).get(0)) + 1);
+                int localParamIndex = allUsedParams.indexOf(usedParams.get(i).get(0));
+                assert localParamIndex >= 0;
+                resultParams.add(localParamIndex + 1);
             }
         }
         return resultParams;
