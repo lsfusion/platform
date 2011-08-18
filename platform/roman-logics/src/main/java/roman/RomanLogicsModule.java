@@ -7070,8 +7070,10 @@ public class RomanLogicsModule extends LogicsModule {
                     objRouteResult = objRouteRB;
                 } else if (quantityRF + 1E-9 < invoicedRF) {
                     objRouteResult = objRouteRF;
-                } else
-                    objRouteResult = objRouteRB;
+                } else {
+                    Double percentRB = (Double) percentShipmentRouteSku.read(context, objShipment, objRouteRB, objSku);
+                    objRouteResult = (percentRB != null && percentRB > 1E-9) ? objRouteRB : objRouteRF;
+                }
             }
 
             ObjectInstance objectInstance = (ObjectInstance) context.getObjectInstance(routeInterface);
