@@ -124,7 +124,7 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
                         try {
                             form.expandGroupObject(node.group, node.key);
                         } catch (IOException e) {
-                            throw new RuntimeException(ClientResourceBundle.getString("form.tree.error.opening.treenode"));
+                            throw new RuntimeException(ClientResourceBundle.getString("form.tree.error.opening.treenode"), e);
                         }
                     }
                 }

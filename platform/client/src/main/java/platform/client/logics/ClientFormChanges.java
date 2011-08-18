@@ -47,8 +47,8 @@ public class ClientFormChanges {
             objects.put(clientGroupObject, new ClientGroupObjectValue(inStream, clientForm));
         }
 
-        gridObjects = readGridObjectsMap(inStream, clientForm, false);
-        parentObjects = readGridObjectsMap(inStream, clientForm, true);
+        gridObjects = readGridObjectsMap(inStream, clientForm);
+        parentObjects = readGridObjectsMap(inStream, clientForm);
 
         //DropProperties
         panelProperties = new HashSet<ClientPropertyReader>();
@@ -98,7 +98,7 @@ public class ClientFormChanges {
         }
     }
 
-    private Map<ClientGroupObject, List<ClientGroupObjectValue>> readGridObjectsMap(DataInputStream inStream, ClientForm clientForm, boolean parents) throws IOException {
+    private Map<ClientGroupObject, List<ClientGroupObjectValue>> readGridObjectsMap(DataInputStream inStream, ClientForm clientForm) throws IOException {
         Map<ClientGroupObject, List<ClientGroupObjectValue>> gridObjects = new HashMap<ClientGroupObject, List<ClientGroupObjectValue>>();
         int count = inStream.readInt();
         for (int i = 0; i < count; i++) {
@@ -107,12 +107,7 @@ public class ClientFormChanges {
             List<ClientGroupObjectValue> clientGridObjects = new ArrayList<ClientGroupObjectValue>();
             int listCount = inStream.readInt();
             for (int j = 0; j < listCount; j++) {
-                clientGridObjects.add(
-                        parents
-                            ? inStream.readBoolean()
-                                ? new ClientGroupObjectValue()
-                                : new ClientGroupObjectValue(inStream, clientForm)
-                            : new ClientGroupObjectValue(inStream, clientForm));
+                clientGridObjects.add(new ClientGroupObjectValue(inStream, clientForm));
             }
 
             gridObjects.put(clientGroupObject, clientGridObjects);

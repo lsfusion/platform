@@ -1,6 +1,5 @@
 package platform.client.logics;
 
-import platform.base.OrderedMap;
 import platform.gwt.view.changes.dto.GGroupObjectValueDTO;
 import platform.gwt.view.changes.dto.ObjectDTO;
 

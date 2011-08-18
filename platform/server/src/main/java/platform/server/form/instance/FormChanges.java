@@ -86,8 +86,8 @@ public class FormChanges {
             serializeGroupObjectValue(outStream, objectValue.getValue());
         }
 
-        serializeKeyObjectsMap(outStream, gridObjects, false);
-        serializeKeyObjectsMap(outStream, parentObjects, true);
+        serializeKeyObjectsMap(outStream, gridObjects);
+        serializeKeyObjectsMap(outStream, parentObjects);
 
         outStream.writeInt(panelProperties.size());
         for (PropertyReaderInstance propertyReader : panelProperties) {
@@ -131,7 +131,7 @@ public class FormChanges {
         }
     }
 
-    private void serializeKeyObjectsMap(DataOutputStream outStream, Map<GroupObjectInstance, List<Map<ObjectInstance, DataObject>>> keyObjects, boolean parents) throws IOException {
+    private void serializeKeyObjectsMap(DataOutputStream outStream, Map<GroupObjectInstance, List<Map<ObjectInstance, DataObject>>> keyObjects) throws IOException {
         outStream.writeInt(keyObjects.size());
         for (Map.Entry<GroupObjectInstance, List<Map<ObjectInstance, DataObject>>> gridObject : keyObjects.entrySet()) {
 
@@ -139,18 +139,7 @@ public class FormChanges {
 
             outStream.writeInt(gridObject.getValue().size());
             for (Map<ObjectInstance, DataObject> groupObjectValue : gridObject.getValue()) {
-                // именно так чтобы гарантировано в том же порядке
-                if(parents) {
-                    if(groupObjectValue.isEmpty())
-                        outStream.writeBoolean(true);
-                    else {
-                        outStream.writeBoolean(false);
-                        for (ObjectInstance object : gridObject.getKey().objects) {
-                            serializeObject(outStream, groupObjectValue.get(object).getValue());
-                        }
-                    }
-                } else
-                    serializeGroupObjectValue(outStream, groupObjectValue);
+                serializeGroupObjectValue(outStream, groupObjectValue);
             }
         }
     }
