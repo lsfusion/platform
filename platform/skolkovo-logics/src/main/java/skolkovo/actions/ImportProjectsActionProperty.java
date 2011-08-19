@@ -385,11 +385,12 @@ public class ImportProjectsActionProperty extends ActionProperty {
             if (!onlyMessage && !fillSids) {
                 initFieldsNProperties();
                 for (String projectId : projects.keySet()) {
-                    URL url = new URL(host + "&show=all&projectId=" + projectId);
+                    URL url = new URL(host + "&show=all&projectId=" + "20330");
                     URLConnection connection = url.openConnection();
                     connection.setDoOutput(false);
                     connection.setDoInput(true);
-                    importProject(connection.getInputStream(), projectId, projects.get(projectId));
+                    importProject(connection.getInputStream(), "20330", projects.get(projectId));
+                    break;
                 }
                 System.gc();
             }
@@ -826,6 +827,11 @@ public class ImportProjectsActionProperty extends ActionProperty {
                     dataNonRussianSpecialist.add(rowNonRussianSpecialist);
                 }
 
+                // поскольку нам нужно менять properties
+                List<ImportProperty<?>> properties = new ArrayList<ImportProperty<?>>(this.properties);
+                List<ImportProperty<?>> propertiesNative = new ArrayList<ImportProperty<?>>(this.propertiesNative);
+                List<ImportProperty<?>> propertiesForeign = new ArrayList<ImportProperty<?>>(this.propertiesForeign);
+
                 List<ImportField> fieldsNative = BaseUtils.toList(
                         nameNativeProjectField, nameNativeManagerProjectField, nameNativeGenitiveManagerProjectField,
                         nameNativeDativusManagerProjectField, nameNativeAblateManagerProjectField, nativeProblemProjectField,
@@ -851,10 +857,12 @@ public class ImportProjectsActionProperty extends ActionProperty {
                         siteClaimerField, emailClaimerField, emailFirmClaimerField,
                         OGRNClaimerField, INNClaimerField, fileStatementClaimerField,
                         fileConstituentClaimerField, fileExtractClaimerField, fileRoadMapProjectField);
+
                 if (fillDate) {
                     properties.add(propertyDate);
                     fieldsBoth.add(dateProjectField);
                 }
+
                 ImportKey<?>[] keysArray = new ImportKey<?>[]{projectKey, projectTypeProjectKey, projectActionProjectKey, claimerKey};
                 importMultilanguageData(
                         fieldsBoth, fieldsNative, fieldsForeign,
