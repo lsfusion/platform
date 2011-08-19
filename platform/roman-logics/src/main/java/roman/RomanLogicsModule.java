@@ -117,6 +117,7 @@ public class RomanLogicsModule extends LogicsModule {
     private ConcreteCustomClass freight;
     private StaticCustomClass route;
     private AbstractCustomClass seller;
+    private AbstractCustomClass buyer;
     private ConcreteCustomClass supplier;
     private ConcreteCustomClass contract;
     private AbstractCustomClass document;
@@ -729,18 +730,20 @@ public class RomanLogicsModule extends LogicsModule {
     private LP dateContract;
     private LP conditionShipmentContract;
     private LP conditionPaymentContract;
-    private LP importerContract;
-    private LP nameImporterContract;
+    private LP buyerContract;
+    private LP nameBuyerContract;
     private LP sellerContract;
     private LP nameSellerContract;
     private LP currencyContract;
     private LP nameCurrencyContract;
     private LP contractImporter;
     public LP sidImporter;
+    private LP exporterInvoice, exporterProxyInvoice;
+    private LP nameExporterInvoice;
     private LP importerDirectInvoice;
     private LP nameImporterDirectInvoice;
-    private LP contractDirectInvoice;
-    private LP sidContractDirectInvoice;
+    private LP contractInvoice;
+    private LP sidContractInvoice;
     private LP freightFreightBox;
     private LP importerSupplierBox;
     private LP routeFreightFreightBox;
@@ -1165,6 +1168,7 @@ public class RomanLogicsModule extends LogicsModule {
         simpleShipmentDetail = addConcreteClass("simpleShipmentDetail", "Строка поставки без коробов", shipmentDetail);
 
         seller = addAbstractClass("seller", "Продавец", baseClass);
+        buyer = addAbstractClass("buyer", "Покупатель", baseClass);
 
         supplier = addConcreteClass("supplier", "Поставщик", baseClass.named, seller);
 
@@ -1186,8 +1190,8 @@ public class RomanLogicsModule extends LogicsModule {
         secondNameClass = addAbstractClass("secondNameClass", "Класс со вторым именем", baseClass);
 
         subject = addAbstractClass("subject", "Субъект", baseClass.named, secondNameClass);
-        importer = addConcreteClass("importer", "Импортер", subject);
-        exporter = addConcreteClass("exporter", "Экспортер", subject, seller);
+        importer = addConcreteClass("importer", "Импортер", subject, buyer);
+        exporter = addConcreteClass("exporter", "Экспортер", subject, seller, buyer);
 
         commonSize = addConcreteClass("commonSize", "Размер", baseClass.named);
 
@@ -1407,8 +1411,8 @@ public class RomanLogicsModule extends LogicsModule {
         conditionShipmentContract = addDProp(baseGroup, "conditionShipmentContract", "Условие поставки", StringClass.get(200), contract);
         conditionPaymentContract = addDProp(baseGroup, "conditionPaymentContract", "Условие оплаты", StringClass.get(200), contract);
 
-        importerContract = addDProp(idGroup, "importerContract", "Импортер (ИД)", importer, contract);
-        nameImporterContract = addJProp(baseGroup, "nameImporterContract", "Импортер", baseLM.name, importerContract, 1);
+        buyerContract = addDProp(idGroup, "buyerContract", "Покупатель (ИД)", buyer, contract);
+        nameBuyerContract = addJProp(baseGroup, "nameBuyerContract", "Покупатель", baseLM.name, buyerContract, 1);
 
         sellerContract = addDProp(idGroup, "sellerContract", "Продавец (ИД)", seller, contract);
         nameSellerContract = addJProp(baseGroup, "nameSellerContract", "Продавец", baseLM.name, sellerContract, 1);
@@ -1622,21 +1626,32 @@ public class RomanLogicsModule extends LogicsModule {
                    addJProp(relationStoreSupplier, destinationDestinationDocument, 1, supplierDocument, 1), 1), true);
 
         // Invoice
-        importerDirectInvoice = addDProp(idGroup, "importerDocument", "Импортер (ИД)", importer, directInvoice);
+        exporterInvoice = addDProp(idGroup, "exporterInvoice", "Экспортер (ИД)", exporter, invoice);
+        nameExporterInvoice = addJProp(baseGroup, "nameExporterInvoice", "Экспортер", baseLM.name, exporterInvoice, 1);
+        nameExporterInvoice.property.preferredCharWidth = 50;
+
+        exporterProxyInvoice = addJProp(idGroup, "exporterProxyInvoice", "Экспортер (ИД)", baseLM.andNot1, exporterInvoice, 1, is(directInvoice), 1);
+
+        addConstraint(addJProp("Для инвойса должен быть задан импортёр", baseLM.andNot1, is(invoice), 1, exporterInvoice, 1), false);
+
+        importerDirectInvoice = addDProp(idGroup, "importerDirectInvoice", "Импортер (ИД)", importer, directInvoice);
         nameImporterDirectInvoice = addJProp(baseGroup, "nameImporterDirectInvoice", "Импортер", baseLM.name, importerDirectInvoice, 1);
         nameImporterDirectInvoice.property.preferredCharWidth = 50;
         nameImporterDirectInvoice.property.minimumCharWidth = 30;
         //setNotNull(importerDirectInvoice);
         addConstraint(addJProp("Для инвойса должен быть задан импортёр", baseLM.andNot1, is(directInvoice), 1, importerDirectInvoice, 1), false);
 
-        contractDirectInvoice = addDProp(idGroup, "contractDirectInvoice", "Договор (ИД)", contract, directInvoice);
-        sidContractDirectInvoice = addJProp(baseGroup, "sidContractDirectInvoice", "Договор", sidContract, contractDirectInvoice, 1);
+        contractInvoice = addDProp(idGroup, "contractInvoice", "Договор (ИД)", contract, invoice);
+        sidContractInvoice = addJProp(baseGroup, "sidContractInvoice", "Договор", sidContract, contractInvoice, 1);
+
+        addConstraint(addJProp("Экспортер договора должен соответствовать экспортеру инвойса", baseLM.diff2,
+                exporterProxyInvoice, 1, addJProp(buyerContract, contractInvoice, 1), 1), true);
 
         addConstraint(addJProp("Импортер договора должен соответствовать импортеру инвойса", baseLM.diff2,
-                importerDirectInvoice, 1, addJProp(importerContract, contractDirectInvoice, 1), 1), true);
+                importerDirectInvoice, 1, addJProp(buyerContract, contractInvoice, 1), 1), true);
 
         addConstraint(addJProp("Поставщик договора должен соответствовать поставщику инвойса", baseLM.diff2,
-                supplierDocument, 1, addJProp(sellerContract, contractDirectInvoice, 1), 1), true);
+                supplierDocument, 1, addJProp(sellerContract, contractInvoice, 1), 1), true);
 
         // Shipment
         dateDepartureShipment = addDProp(baseGroup, "dateDepartureShipment", "Дата отгрузки", DateClass.instance, shipment);
@@ -2551,7 +2566,7 @@ public class RomanLogicsModule extends LogicsModule {
         contractImporterFreight = addDProp(idGroup, "contractImporterFreight", "Договор (ИД)", contract, importer, freight);
         nameContractImporterFreight = addJProp(baseGroup, "nameContractImporterFreight", "Договор", baseLM.name, contractImporterFreight, 1, 2);
 
-        addConstraint(addJProp("Импортер договора должен соответствовать импортеру исходящего инвойса", baseLM.diff2, 1, addJProp(importerContract, contractImporterFreight, 1, 2), 1, 2), true);
+        addConstraint(addJProp("Импортер договора должен соответствовать импортеру исходящего инвойса", baseLM.diff2, 1, addJProp(buyerContract, contractImporterFreight, 1, 2), 1, 2), true);
         addConstraint(addJProp("Продавец по договору должен соответствовать экспортеру исходящего инвойса", baseLM.diff2, exporterFreight, 2, addJProp(sellerContract, contractImporterFreight, 1, 2), 1, 2), true);
 
         sidContractImporterFreight = addJProp(baseGroup, "sidContractImporterFreight", "Договор", sidContract, contractImporterFreight, 1, 2);
@@ -3732,7 +3747,7 @@ public class RomanLogicsModule extends LogicsModule {
                 objInvoice.addOnTransaction = true;
             }
 
-            addPropertyDraw(objInvoice, baseLM.date, baseLM.objectClassName, sidDocument, nameCurrencyDocument, sumDocument, quantityDocument, netWeightDocument, nameImporterDirectInvoice, sidContractDirectInvoice, sidDestinationDestinationDocument, nameDestinationDestinationDocument);
+            addPropertyDraw(objInvoice, baseLM.date, baseLM.objectClassName, sidDocument, nameCurrencyDocument, sumDocument, quantityDocument, netWeightDocument, nameExporterInvoice, nameImporterDirectInvoice, sidContractInvoice, sidDestinationDestinationDocument, nameDestinationDestinationDocument);
             objInvoice.groupTo.setSingleClassView(ClassViewType.PANEL);
 
             ObjectEntity objList;
@@ -3936,7 +3951,7 @@ public class RomanLogicsModule extends LogicsModule {
             objSupplier.groupTo.setSingleClassView(ClassViewType.PANEL);
 
             objInvoice = addSingleGroupObject((box ? boxInvoice : simpleInvoice), "Инвойс", baseLM.date, baseLM.objectClassName, sidDocument, nameCurrencyDocument, sumDocument,
-                    quantityDocument, netWeightDocument, nameImporterDirectInvoice, sidContractDirectInvoice, sidDestinationDestinationDocument, nameDestinationDestinationDocument, baseLM.delete);
+                    quantityDocument, netWeightDocument, nameExporterInvoice, nameImporterDirectInvoice, sidContractInvoice, sidDestinationDestinationDocument, nameDestinationDestinationDocument, baseLM.delete);
             //addObjectActions(this, objInvoice);
 
             if (box) {
@@ -4662,7 +4677,7 @@ public class RomanLogicsModule extends LogicsModule {
 
             setReadOnly(objSku, true);
 
-            objDirectInvoice = addSingleGroupObject(directInvoice, "Инвойс напрямую", baseLM.date, sidDocument, sumDocument, nameImporterDirectInvoice, sidContractDirectInvoice, nameDestinationDestinationDocument, grossWeightDirectInvoice, palletNumberDirectInvoice);
+            objDirectInvoice = addSingleGroupObject(directInvoice, "Инвойс напрямую", baseLM.date, sidDocument, sumDocument, nameImporterDirectInvoice, sidContractInvoice, nameDestinationDestinationDocument, grossWeightDirectInvoice, palletNumberDirectInvoice);
             setReadOnly(objDirectInvoice, true);
             setReadOnly(grossWeightDirectInvoice, false);
             setReadOnly(palletNumberDirectInvoice, false);
@@ -5137,7 +5152,7 @@ public class RomanLogicsModule extends LogicsModule {
 
             objSeller = addSingleGroupObject(seller, "Продавец", baseLM.name, baseLM.objectClassName);
 
-            objContract = addSingleGroupObject(contract, "Договор", sidContract, dateContract, baseLM.date, nameImporterContract, nameCurrencyContract, conditionShipmentContract, conditionPaymentContract);
+            objContract = addSingleGroupObject(contract, "Договор", sidContract, dateContract, baseLM.date, nameBuyerContract, nameCurrencyContract, conditionShipmentContract, conditionPaymentContract);
             addObjectActions(this, objContract);
 
             addFixedFilter(new CompareFilterEntity(addPropertyObject(sellerContract, objContract), Compare.EQUALS, objSeller));
