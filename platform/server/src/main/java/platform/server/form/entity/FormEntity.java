@@ -455,6 +455,10 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         return getPropertyDraw(lp.property);
     }
 
+    public PropertyDrawEntity<?> getPropertyDraw(LP<?> lp, int index) {
+        return getPropertyDraw(lp.property, index);
+    }
+
     protected PropertyObjectEntity getPropertyObject(LP<?> lp, ObjectEntity object) {
         return getPropertyDraw(lp, object).propertyObject;
     }
@@ -488,15 +492,22 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
     }
 
     protected PropertyDrawEntity getPropertyDraw(Property property) {
+        return getPropertyDraw(property, 0);
+    }
 
-        PropertyDrawEntity resultPropertyDraw = null;
+    protected PropertyDrawEntity getPropertyDraw(Property property, int index) {
+
+        int cnt = 0;
         for (PropertyDrawEntity<?> propertyDraw : propertyDraws) {
             if (propertyDraw.propertyObject.property == property) {
-                resultPropertyDraw = propertyDraw;
+                if (cnt == index)
+                    return propertyDraw;
+                else
+                    cnt++;
             }
         }
 
-        return resultPropertyDraw;
+        return null;
     }
 
     public PropertyDrawEntity getPropertyDraw(AbstractNode group, ObjectEntity object) {

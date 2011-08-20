@@ -1679,6 +1679,7 @@ public class RomanLogicsModule extends LogicsModule {
 
         // Article
         sidArticle = addDProp(baseGroup, "sidArticle", "Артикул", StringClass.get(50), article);
+        sidArticle.setMinimumCharWidth(15);
         sidArticleSku = addJProp(supplierAttributeGroup, "sidArticleSku", "Артикул", sidArticle, articleSku, 1);
 
         originalNameArticle = addDProp(supplierAttributeGroup, "originalNameArticle", "Наименование (ориг.)", InsensitiveStringClass.get(50), article);
@@ -1778,7 +1779,7 @@ public class RomanLogicsModule extends LogicsModule {
         brandSupplierDataArticle = addDProp(idGroup, "brandSupplierDataArticle", "Бренд (ИД)", brandSupplier, article);
         brandSupplierSupplierArticle = addJProp(idGroup, "brandSupplierSupplierArticle", "Бренд (ИД)", brandSupplierSupplier, supplierArticle, 1);
         brandSupplierArticle = addSUProp(idGroup, "brandSupplierArticle", "Бренд (ИД)", Union.OVERRIDE, brandSupplierSupplierArticle, brandSupplierDataArticle);
-        nameBrandSupplierArticle = addJProp(supplierAttributeGroup, "nameBrandSupplierArticle", "Бренд", baseLM.name, brandSupplierArticle, 1);
+        nameBrandSupplierArticle = addJProp(baseGroup, "nameBrandSupplierArticle", "Бренд", baseLM.name, brandSupplierArticle, 1);
         nameBrandSupplierArticle.property.preferredCharWidth = 30;
         nameBrandSupplierArticle.property.minimumCharWidth = 15;
         sidBrandSupplierArticle = addJProp(supplierAttributeGroup, "sidBrandSupplierArticle", "Бренд (ИД)", sidBrandSupplier, brandSupplierArticle, 1);
@@ -1789,7 +1790,7 @@ public class RomanLogicsModule extends LogicsModule {
         addConstraint(addJProp("Поставщик артикула должен соответствовать поставщику бренда артикула", baseLM.diff2,
                 supplierArticle, 1, addJProp(supplierBrandSupplier, brandSupplierArticle, 1), 1), true);
 
-        brandSupplierArticleSku = addJProp(idGroup, "brandSupplierArticleSku", "Бренд (ИД)", brandSupplierArticle, articleSku, 1);
+        brandSupplierArticleSku = addJProp(idGroup, true, "brandSupplierArticleSku", "Бренд (ИД)", brandSupplierArticle, articleSku, 1);
         nameBrandSupplierArticleSku = addJProp(supplierAttributeGroup, "nameBrandSupplierArticleSku", "Бренд", baseLM.name, brandSupplierArticleSku, 1);
         nameBrandSupplierArticleSku.property.preferredCharWidth = 30;
         nameBrandSupplierArticleSku.property.minimumCharWidth = 15;
@@ -2298,6 +2299,7 @@ public class RomanLogicsModule extends LogicsModule {
 
         routeFreightBoxShipmentDetail = addJProp(idGroup, "routeFreightBoxShipmentDetail", "Маршрут (ИД)", routeCreationFreightBoxFreightBox, stockShipmentDetail, 1);
         nameRouteFreightBoxShipmentDetail = addJProp(baseGroup, "nameRouteFreightBoxShipmentDetail", "Маршрут", baseLM.name, routeFreightBoxShipmentDetail, 1);
+        nameRouteFreightBoxShipmentDetail.setFixedCharWidth(3);
 
         boxShipmentBoxShipmentDetail = addDProp(idGroup, "boxShipmentBoxShipmentDetail", "Поставка (ИД)", boxShipment, boxShipmentDetail);
         simpleShipmentSimpleShipmentDetail = addDProp(idGroup, "simpleShipmentSimpleShipmentDetail", "Поставка (ИД)", simpleShipment, simpleShipmentDetail);
@@ -4208,7 +4210,7 @@ public class RomanLogicsModule extends LogicsModule {
             getPropertyDraw(quantityShipmentRouteSku).setPropertyHighlight(diffShipmentRouteSkuProperty);
 
             objShipmentDetail = addSingleGroupObject((box ? boxShipmentDetail : simpleShipmentDetail),
-                    baseLM.selection, barcodeSkuShipmentDetail, sidArticleShipmentDetail, sidColorSupplierItemShipmentDetail, nameColorSupplierItemShipmentDetail, sidSizeSupplierItemShipmentDetail,
+                    baseLM.selection, barcodeSkuShipmentDetail, nameBrandSupplierArticleSkuShipmentDetail, sidArticleShipmentDetail, sidColorSupplierItemShipmentDetail, nameColorSupplierItemShipmentDetail, sidSizeSupplierItemShipmentDetail,
                     nameBrandSupplierArticleSkuShipmentDetail, sidCustomCategoryOriginArticleSkuShipmentDetail, originalNameArticleSkuShipmentDetail,
                     nameCategoryArticleSkuShipmentDetail, nameUnitOfMeasureArticleSkuShipmentDetail, sidGenderArticleSkuShipmentDetail,
                     netWeightArticleSkuShipmentDetail,
@@ -4232,6 +4234,8 @@ public class RomanLogicsModule extends LogicsModule {
             setForceViewType(itemAttributeGroup, ClassViewType.GRID, objShipmentDetail.groupTo);
             setForceViewType(supplierAttributeGroup, ClassViewType.PANEL, objShipmentDetail.groupTo);
             setForceViewType(intraAttributeGroup, ClassViewType.PANEL, objShipmentDetail.groupTo);
+
+            getPropertyDraw(nameBrandSupplierArticleSkuShipmentDetail, 0).forceViewType = ClassViewType.GRID;
 
             //getPropertyDraw(nameOriginCategoryArticleSkuShipmentDetail).forceViewType = ClassViewType.GRID;
             //getPropertyDraw(netWeightArticleSkuShipmentDetail).forceViewType = ClassViewType.GRID;
@@ -4510,7 +4514,7 @@ public class RomanLogicsModule extends LogicsModule {
 
             ContainerView supplierRow2 = design.createContainer();
             supplierRow2.constraints.childConstraints = DoNotIntersectSimplexConstraint.TOTHE_RIGHT;
-            supplierRow2.add(design.get(getPropertyDraw(nameBrandSupplierArticleSkuShipmentDetail)));
+            supplierRow2.add(design.get(getPropertyDraw(nameBrandSupplierArticleSkuShipmentDetail, 1)));
             supplierRow2.add(design.get(getPropertyDraw(netWeightArticleSkuShipmentDetail)));
             supplierRow2.add(design.get(getPropertyDraw(mainCompositionOriginArticleSkuShipmentDetail)));
 
@@ -6925,19 +6929,23 @@ public class RomanLogicsModule extends LogicsModule {
             objShipmentDetail = addSingleGroupObject(box ? boxShipmentDetail : simpleShipmentDetail, "Строка поставки");
 
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(invoicedShipmentSku, objShipment, objSku)));
-            if (barcode)
-                addFixedFilter(new NotFilterEntity(new NotNullFilterEntity(addPropertyObject(baseLM.barcode, objSku))));
+            if (barcode) {
+                RegularFilterGroupEntity filterGroup = new RegularFilterGroupEntity(genID());
+                filterGroup.addFilter(new RegularFilterEntity(genID(),
+                    new NotFilterEntity(new NotNullFilterEntity(addPropertyObject(baseLM.barcode, objSku))),
+                    "Без штрих-кода",
+                    KeyStroke.getKeyStroke(KeyEvent.VK_F10, 0)));
+                filterGroup.defaultFilter = 0;
+                addRegularFilterGroup(filterGroup);
+            }
 
             if (box) {
-
-//                addFixedFilter(new NotNullFilterEntity(addPropertyObject(inSupplierBoxShipment, objSupplierBox, objShipment)));
-
                 RegularFilterGroupEntity filterGroup = new RegularFilterGroupEntity(genID());
                 filterGroup.addFilter(new RegularFilterEntity(genID(),
                     new NotNullFilterEntity(addPropertyObject(quantityListSku, objSupplierBox, objSku)),
                     "В текущем коробе",
                     KeyStroke.getKeyStroke(KeyEvent.VK_F11, 0)));
-                filterGroup.defaultFilter = 0;
+//                filterGroup.defaultFilter = 0;
                 addRegularFilterGroup(filterGroup);
             }
 
