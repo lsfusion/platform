@@ -13,6 +13,7 @@ import platform.server.data.where.Where;
 import platform.server.data.where.classes.ClassWhere;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.DataObject;
+import platform.server.logics.ObjectValue;
 import platform.server.logics.property.*;
 import platform.server.session.*;
 
@@ -156,6 +157,23 @@ public class LP<T extends PropertyInterface> {
 
     public Object read(DataSession session, DataObject... objects) throws SQLException {
         return read(session.sql, session.modifier, session.env, objects);
+    }
+
+    public ObjectValue readClasses(DataSession session, Modifier<? extends Changes> modifier, QueryEnvironment env, DataObject... objects) throws SQLException {
+        Map<T, DataObject> mapValues = getMapValues(objects);
+        return property.readClasses(session, mapValues, modifier, env);
+    }
+
+    public ObjectValue readClasses(ExecutionContext context, DataObject... objects) throws SQLException {
+        return readClasses(context.getSession(), context.getModifier(), objects);
+    }
+
+    public ObjectValue readClasses(DataSession session, Modifier<? extends Changes> modifier, DataObject... objects) throws SQLException {
+        return readClasses(session, modifier, session.env, objects);
+    }
+
+    public ObjectValue readClasses(DataSession session, DataObject... objects) throws SQLException {
+        return readClasses(session, session.modifier, session.env, objects);
     }
 
     // execute'ы без Form'

@@ -3,12 +3,15 @@ package platform.server.logics.property;
 import platform.base.BaseUtils;
 import platform.interop.action.ClientAction;
 import platform.server.classes.ConcreteCustomClass;
+import platform.server.form.entity.ObjectEntity;
 import platform.server.form.instance.FormInstance;
+import platform.server.form.instance.ObjectInstance;
 import platform.server.form.instance.PropertyObjectInterfaceInstance;
 import platform.server.form.instance.remote.RemoteForm;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
+import platform.server.logics.linear.LP;
 import platform.server.session.Changes;
 import platform.server.session.DataSession;
 import platform.server.session.Modifier;
@@ -44,6 +47,10 @@ public class ExecutionContext {
 
     public DataObject getKeyValue(ClassPropertyInterface key) {
         return keys.get(key);
+    }
+
+    public DataObject getKeyValue(Property property, int index) {
+        return getKeyValue(((List<ClassPropertyInterface>)property.interfaces).get(index));
     }
 
     public Object getKeyObject(ClassPropertyInterface key) {
@@ -110,6 +117,10 @@ public class ExecutionContext {
 
     public int getObjectInstanceCount() {
         return mapObjects.size();
+    }
+
+    public ObjectInstance getObjectInstance(ObjectEntity object) {
+        return getFormInstance().instanceFactory.getInstance(object);
     }
 
     public PropertyObjectInterfaceInstance getObjectInstance(ClassPropertyInterface cls) {

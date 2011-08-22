@@ -65,6 +65,11 @@ public class NullValue extends ObjectValue<NullValue> {
         return this;
     }
 
+    @Override
+    public boolean isNull() {
+        return true;
+    }
+
     public Collection<ObjectInstance> getObjectInstances() {
         return new ArrayList<ObjectInstance>();
     }

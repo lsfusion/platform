@@ -20,6 +20,10 @@ import java.util.Map;
 
 public abstract class ActionProperty extends ExecuteProperty {
 
+    public ActionProperty(String sID, ValueClass... classes) {
+        this(sID, "sysAction", classes);
+    }
+
     public ActionProperty(String sID, String caption, ValueClass[] classes) {
         super(sID, caption, classes);
     }

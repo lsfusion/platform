@@ -65,4 +65,6 @@ public abstract class ObjectValue<T extends ObjectValue<T>> extends AbstractMapV
     public abstract Where order(Expr expr, boolean desc, Where orderWhere);
 
     public abstract ObjectValue refresh(SessionChanges session) throws SQLException;
+
+    public abstract boolean isNull();
 }
