@@ -90,8 +90,8 @@
 					<textElement textAlignment="Left"/>
 					<textFieldExpression class="java.lang.String"><![CDATA[platform.base.BaseUtils.nvl($V{categoryNames},"")]]></textFieldExpression>
 				</textField>
-				<textField>
-					<reportElement style="GroupCellStyle2" x="0" y="0" width="50" height="18"/>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+					<reportElement style="GroupCellStyle2" positionType="Float" stretchType="RelativeToBandHeight" x="0" y="0" width="50" height="18"/>
 					<textElement/>
 					<textFieldExpression class="java.lang.String"><![CDATA[$F{sidCustomCategory6}]]></textFieldExpression>
 				</textField>

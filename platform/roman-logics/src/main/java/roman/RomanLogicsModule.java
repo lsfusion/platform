@@ -369,6 +369,8 @@ public class RomanLogicsModule extends LogicsModule {
     private LP nameCustomCategory6CustomCategoryOrigin;
     private LP nameCustomCategory4CustomCategoryOrigin;
     LP relationCustomCategory10CustomCategoryOrigin;
+    private LP customCategory10CategoryGenderComposition;
+    private LP sidCustomCategory10CategoryGenderComposition;
     private LP customCategory10ArticleColor;
     private LP sidCustomCategory10ArticleColor;
     private LP customCategory10ArticleColorSku;
@@ -451,6 +453,7 @@ public class RomanLogicsModule extends LogicsModule {
     LP sidSupplierBox;
     private AbstractCustomClass list;
     LP quantityDataListSku;
+    LP quantityDataList;
     LP boxInvoiceSupplierBox;
     private LP sidBoxInvoiceSupplierBox;
     private LP supplierSupplierBox;
@@ -719,9 +722,11 @@ public class RomanLogicsModule extends LogicsModule {
     private LP quantityInvoiceSku;
     private LP diffDocumentInvoiceSku;
     private LP quantitySupplierBoxSku;
+    private LP quantitySupplierBox;
     private LP zeroQuantityListSku;
     private LP zeroQuantityShipDimensionShipmentSku;
     private LP diffListSupplierBoxSku;
+    private LP diffListSupplierBox;
     private LP zeroQuantityShipmentSku;
     private LP zeroInvoicedShipmentSku;
     private LP diffShipmentSku;
@@ -735,6 +740,9 @@ public class RomanLogicsModule extends LogicsModule {
     private LP nameBuyerContract;
     private LP sellerContract;
     private LP nameSellerContract;
+    private LP subjectContract;
+    private LP nameSubjectContract;
+
     private LP currencyContract;
     private LP nameCurrencyContract;
     private LP contractImporter;
@@ -1312,6 +1320,8 @@ public class RomanLogicsModule extends LogicsModule {
         baseLM.tableFactory.include("freightUnit", freightUnit);
         baseLM.tableFactory.include("barcodeObject", baseLM.barcodeObject);
 
+        baseLM.tableFactory.include("categoryGenderComposition", category, gender, COMPOSITION_CLASS);
+
         baseLM.tableFactory.include("rateExchange", typeExchange, currency, DateClass.instance);
         baseLM.tableFactory.include("pricat", pricat);
         baseLM.tableFactory.include("strings", StringClass.get(10));
@@ -1417,6 +1427,9 @@ public class RomanLogicsModule extends LogicsModule {
 
         buyerContract = addDProp(idGroup, "buyerContract", "Покупатель (ИД)", buyer, contract);
         nameBuyerContract = addJProp(baseGroup, "nameBuyerContract", "Покупатель", baseLM.name, buyerContract, 1);
+
+        subjectContract = addDProp(idGroup, "subjectContract", "Покупатель (ИД)", subject, contract);
+        nameSubjectContract = addJProp(baseGroup, "nameSubjectContract", "Покупатель", baseLM.name, subjectContract, 1);
 
         sellerContract = addDProp(idGroup, "sellerContract", "Продавец (ИД)", seller, contract);
         nameSellerContract = addJProp(baseGroup, "nameSellerContract", "Продавец", baseLM.name, sellerContract, 1);
@@ -1636,7 +1649,7 @@ public class RomanLogicsModule extends LogicsModule {
 
         exporterProxyInvoice = addJProp(idGroup, "exporterProxyInvoice", "Экспортер (ИД)", baseLM.andNot1, exporterInvoice, 1, is(directInvoice), 1);
 
-        addConstraint(addJProp("Для инвойса должен быть задан импортёр", baseLM.andNot1, is(invoice), 1, exporterInvoice, 1), false);
+        addConstraint(addJProp("Для инвойса должен быть задан экспортёр", baseLM.andNot1, is(invoice), 1, exporterInvoice, 1), false);
 
         importerDirectInvoice = addDProp(idGroup, "importerDirectInvoice", "Импортер (ИД)", importer, directInvoice);
         nameImporterDirectInvoice = addJProp(baseGroup, "nameImporterDirectInvoice", "Импортер", baseLM.name, importerDirectInvoice, 1);
@@ -1722,6 +1735,9 @@ public class RomanLogicsModule extends LogicsModule {
         sidCustomCategory6Article = addJProp(supplierAttributeGroup, "sidCustomCategory6Article", "Код ТН ВЭД (6)", sidCustomCategory6, customCategory6Article, 1);
         customCategoryOriginArticleSku = addJProp(idGroup, true, "customCategoryOriginArticleSku", "ТН ВЭД (ориг.) (ИД)", customCategoryOriginArticle, articleSku, 1);
         sidCustomCategoryOriginArticleSku = addJProp(supplierAttributeGroup, "sidCustomCategoryOriginArticleSku", "Код ТН ВЭД (ориг.)", sidCustomCategoryOrigin, customCategoryOriginArticleSku, 1);
+
+        customCategory10CategoryGenderComposition = addDProp(idGroup, "customCategory10CategoryGenderComposition", "ТН ВЭД (ИД)", customCategory10, category, gender, COMPOSITION_CLASS);
+        sidCustomCategory10CategoryGenderComposition = addJProp(baseGroup, "sidCustomCategory10CategoryGenderComposition", "ТН ВЭД", sidCustomCategory10, customCategory10CategoryGenderComposition, 1, 2, 3);
 
         customCategory10ArticleColor = addDProp(idGroup, "customCategory10ArticleColor", "ТН ВЭД (ИД)", customCategory10, article, colorSupplier);
         sidCustomCategory10ArticleColor = addJProp(baseGroup, "sidCustomCategory10ArticleColor", "ТН ВЭД", sidCustomCategory10, customCategory10ArticleColor, 1, 2);
@@ -2077,6 +2093,7 @@ public class RomanLogicsModule extends LogicsModule {
         // кол-во заказа
         quantityDataListSku = addDProp("quantityDataListSku", "Кол-во (первичное)", DoubleClass.instance, list, sku);
         quantityListSku = quantityDataListSku; //addJProp(baseGroup, "quantityListSku", true, "Кол-во", baseLM.and1, quantityDataListSku, 1, 2, numberListSku, 1, 2);
+        quantityDataList = addSGProp(baseGroup, "quantityDataList", "Кол-во", quantityDataListSku, 1);
 
         quantitySimpleInvoiceArticle = addDProp(baseGroup, "quantitySimpleInvoiceArticle", "Кол-во", IntegerClass.instance, simpleInvoice, articleComposite);
         quantitySimpleInvoice = addSGProp(baseGroup, "quantitySimpleInvoice", true, true, "Кол-во в документе", quantityListSku, documentList, 1, 2);
@@ -2346,7 +2363,11 @@ public class RomanLogicsModule extends LogicsModule {
 
         quantitySupplierBoxSku = addSGProp(baseGroup, "quantitySupplierBoxSku", "Кол-во оприход.", quantitySupplierBoxBoxShipmentStockSku, 1, 4);
 
+        quantitySupplierBox = addSGProp(baseGroup, "quantitySupplierBox", "Кол-во оприход.(короб)", quantitySupplierBoxSku, 1);
+
         diffListSupplierBoxSku = addJProp(baseLM.equals2, quantityDataListSku, 1, 2, quantitySupplierBoxSku, 1, 2);
+
+        diffListSupplierBox = addJProp(baseLM.less2, quantityDataList, 1, quantitySupplierBox, 1);
 
         quantitySimpleShipmentStockSku = addSGProp(baseGroup, "quantitySimpleShipmentStockSku", true, "Кол-во оприход.", quantityShipmentDetail,
                 simpleShipmentSimpleShipmentDetail, 1, stockShipmentDetail, 1, skuShipmentDetail, 1);
@@ -4146,7 +4167,7 @@ public class RomanLogicsModule extends LogicsModule {
             objShipment.groupTo.initClassView = ClassViewType.PANEL;
 
             if (box) {
-                objSupplierBox = addSingleGroupObject(supplierBox, "Короб поставщика", sidSupplierBox, baseLM.barcode, nameDestinationSupplierBox);
+                objSupplierBox = addSingleGroupObject(supplierBox, "Короб поставщика", sidSupplierBox, baseLM.barcode, nameDestinationSupplierBox, quantityDataList, quantitySupplierBox);
                 objSupplierBox.groupTo.initClassView = ClassViewType.PANEL;
             }
 
@@ -4187,6 +4208,10 @@ public class RomanLogicsModule extends LogicsModule {
                 addPropertyDraw(quantityListSku, objSupplierBox, objSku);
                 addPropertyDraw(quantityShipDimensionShipmentSku, objSupplierBox, objShipment, objSku);
                 quantityColumn = addPropertyDraw(quantitySupplierBoxBoxShipmentRouteSku, objSupplierBox, objShipment, objRoute, objSku);
+
+                PropertyObjectEntity diffListSupplierBoxProperty = addPropertyObject(diffListSupplierBox, objSupplierBox);
+                getPropertyDraw(quantityDataList).setPropertyHighlight(diffListSupplierBoxProperty);
+                getPropertyDraw(quantitySupplierBox).setPropertyHighlight(diffListSupplierBoxProperty);
 
                 PropertyObjectEntity diffListShipSkuProperty = addPropertyObject(diffListShipSku, objSupplierBox, objShipment, objSku);
                 getPropertyDraw(quantityDataListSku).setPropertyHighlight(diffListShipSkuProperty);
@@ -5341,7 +5366,7 @@ public class RomanLogicsModule extends LogicsModule {
             addFixedFilter(new CompareFilterEntity(addPropertyObject(boxInvoiceSupplierBox, objBox), Compare.EQUALS, objInvoice));
 
             addFixedFilter(new OrFilterEntity(new NotNullFilterEntity(addPropertyObject(quantityDocumentSku, objInvoice, objSku)),
-                    new NotNullFilterEntity(addPropertyObject(quantityInvoiceSku, objInvoice, objSku))));
+                    new CompareFilterEntity(addPropertyObject(quantityInvoiceSku, objInvoice, objSku), Compare.GREATER, addPropertyObject(baseLM.vzero))));
 
             addFixedFilter(new OrFilterEntity(new NotNullFilterEntity(addPropertyObject(quantityListSku, objBox, objSku2)),
                     new NotNullFilterEntity(addPropertyObject(quantitySupplierBoxSku, objBox, objSku2))));
@@ -5403,6 +5428,9 @@ public class RomanLogicsModule extends LogicsModule {
         private ObjectEntity objImporter;
         private ObjectEntity objArticle;
         private ObjectEntity objCategory;
+        private ObjectEntity objGender;
+        private ObjectEntity objComposition;
+
         private ObjectEntity objSku;
         private ObjectEntity objColor;
         private ObjectEntity objSkuFreight;
@@ -5435,6 +5463,18 @@ public class RomanLogicsModule extends LogicsModule {
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(quantityFreightArticleColor, objFreight, objArticle, objColor)));*/
 
             objCategory = addSingleGroupObject(category, "Номенклатурная группа", baseLM.name);
+
+            /*GroupObjectEntity gobjGenderCategoryComposition = new GroupObjectEntity(genID());
+            //objCategory = new ObjectEntity(genID(), category, "Номенклатурная группа");
+            objGender = new ObjectEntity(genID(), gender, "Пол");
+            objComposition = new ObjectEntity(genID(), COMPOSITION_CLASS, "Состав");
+
+            gobjGenderCategoryComposition.add(objCategory);
+            gobjGenderCategoryComposition.add(objGender);
+            gobjGenderCategoryComposition.add(objComposition);
+            addGroup(gobjGenderCategoryComposition);
+
+            addPropertyDraw(objGender, sidGender); */
 
             objSku = addSingleGroupObject(sku, "SKU", baseLM.selection, baseLM.barcode, sidArticleSku,
                      nameBrandSupplierArticleSku, nameCategoryArticleSku, sidGenderArticleSku,
