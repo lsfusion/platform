@@ -127,6 +127,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
     AbstractGroup equipmentGroup;
     AbstractGroup projectDocumentsGroup;
     AbstractGroup projectStatusGroup;
+    AbstractGroup projectOptionsGroup;
 
     AbstractGroup voteResultGroup;
     AbstractGroup voteResultCheckGroup;
@@ -241,6 +242,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
         projectDocumentsGroup = addAbstractGroup("projectDocumentsGroup", "Документы", baseGroup);
 
         projectStatusGroup = addAbstractGroup("projectStatusGroup", "Текущий статус проекта", baseGroup);
+
+        projectOptionsGroup = addAbstractGroup("projectOptionsGroup", "Параметры проекта", baseGroup);
 
         voteResultGroup = addAbstractGroup("voteResultGroup", "Результаты голосования", publicGroup);
 
@@ -486,7 +489,12 @@ public class SkolkovoLogicsModule extends LogicsModule {
     public LP foreignSubstantiationProjectType;
     public LP nativeSubstantiationProjectCluster;
     public LP foreignSubstantiationProjectCluster;
+    public LP isOtherClusterProject;
+    public LP nativeSubstantiationOtherClusterProject;
+    LP hideNativeSubstantiationOtherClusterProject;
+    public LP foreignSubstantiationOtherClusterProject;
     public LP fileNativeSummaryProject;
+    LP hideForeignSubstantiationOtherClusterProject;
     LP loadFileNativeSummaryProject;
     LP openFileNativeSummaryProject;
     public LP fileForeignSummaryProject;
@@ -710,15 +718,15 @@ public class SkolkovoLogicsModule extends LogicsModule {
         sidToProject = addAGProp("sidToProject", "SID проекта", sidProject);
         nameNativeManagerProject = addDProp(projectInformationGroup, "nameNativeManagerProject", "ФИО руководителя проекта", InsensitiveStringClass.get(2000), project);
         nameNativeManagerProject.setMinimumWidth(10); nameNativeManagerProject.setPreferredWidth(50);
-        nameNativeGenitiveManagerProject = addDProp(projectInformationGroup, "nameNativeGenitiveManagerProject", "ФИО руководителя проекта (Кого)", InsensitiveStringClass.get(2000), project);
+        nameNativeGenitiveManagerProject = addDProp(projectOptionsGroup, "nameNativeGenitiveManagerProject", "ФИО руководителя проекта (Кого)", InsensitiveStringClass.get(2000), project);
         nameNativeGenitiveManagerProject.setMinimumWidth(10); nameNativeGenitiveManagerProject.setPreferredWidth(50);
         nameGenitiveManagerProject = addSUProp("nameGenitiveManagerProject", "Заявитель (Кого)", Union.OVERRIDE, nameNativeManagerProject, nameNativeGenitiveManagerProject);
         nameGenitiveManagerProject.setMinimumWidth(10); nameGenitiveManagerProject.setPreferredWidth(50);
-        nameNativeDativusManagerProject = addDProp(projectInformationGroup, "nameNativeDativusManagerProject", "ФИО руководителя проекта (Кому)", InsensitiveStringClass.get(2000), project);
+        nameNativeDativusManagerProject = addDProp(projectOptionsGroup, "nameNativeDativusManagerProject", "ФИО руководителя проекта (Кому)", InsensitiveStringClass.get(2000), project);
         nameNativeDativusManagerProject.setMinimumWidth(10); nameNativeDativusManagerProject.setPreferredWidth(50);
         nameDativusManagerProject = addSUProp("nameDativusManagerProject", "Заявитель (Кому)", Union.OVERRIDE, nameNativeManagerProject, nameNativeDativusManagerProject);
         nameDativusManagerProject.setMinimumWidth(10); nameDativusManagerProject.setPreferredWidth(50);
-        nameNativeAblateManagerProject = addDProp(projectInformationGroup, "nameNativeAblateManagerProject", "ФИО руководителя проекта (Кем)", InsensitiveStringClass.get(2000), project);
+        nameNativeAblateManagerProject = addDProp(projectOptionsGroup, "nameNativeAblateManagerProject", "ФИО руководителя проекта (Кем)", InsensitiveStringClass.get(2000), project);
         nameNativeAblateManagerProject.setMinimumWidth(10); nameNativeAblateManagerProject.setPreferredWidth(50);
         nameAblateManagerProject = addSUProp("nameAblateManagerProject", "Заявитель (Кем)", Union.OVERRIDE, nameNativeManagerProject, nameNativeAblateManagerProject);
         nameAblateManagerProject.setMinimumWidth(10); nameAblateManagerProject.setPreferredWidth(50);
@@ -779,6 +787,13 @@ public class SkolkovoLogicsModule extends LogicsModule {
         nativeSubstantiationProjectCluster.setMinimumWidth(10); nativeSubstantiationProjectCluster.setPreferredWidth(50);
         foreignSubstantiationProjectCluster = addDProp(baseGroup, "foreignSubstantiationProjectCluster", "Description of choice", InsensitiveStringClass.get(2000), project, cluster);
         foreignSubstantiationProjectCluster.setMinimumWidth(10); foreignSubstantiationProjectCluster.setPreferredWidth(50);
+        isOtherClusterProject = addDProp(projectOptionsGroup, "isOtherClusterProject", "Иной кластер", LogicalClass.instance, project);
+        nativeSubstantiationOtherClusterProject = addDProp(projectOptionsGroup, "nativeSubstantiationOtherClusterProject", "Обоснование выбора", InsensitiveStringClass.get(2000), project);
+        nativeSubstantiationOtherClusterProject.setMinimumWidth(10); nativeSubstantiationOtherClusterProject.setPreferredWidth(50);
+        hideNativeSubstantiationOtherClusterProject = addHideCaptionProp(privateGroup, "Укажите",  nativeSubstantiationOtherClusterProject, isOtherClusterProject);
+        foreignSubstantiationOtherClusterProject = addDProp(projectOptionsGroup, "foreignSubstantiationOtherClusterProject", "Description of choice", InsensitiveStringClass.get(2000), project);
+        foreignSubstantiationOtherClusterProject.setMinimumWidth(10); foreignSubstantiationOtherClusterProject.setPreferredWidth(50);
+        hideForeignSubstantiationOtherClusterProject = addHideCaptionProp(privateGroup, "Укажите",  foreignSubstantiationOtherClusterProject, isOtherClusterProject);
         fileNativeSummaryProject = addDProp("fileNativeSummaryProject", "Файл резюме проекта", CustomFileClass.instance, project);
         loadFileNativeSummaryProject = addLFAProp(executiveSummaryGroup, "Загрузить файл резюме проекта", fileNativeSummaryProject);
         openFileNativeSummaryProject = addOFAProp(executiveSummaryGroup, "Открыть файл резюме проекта", fileNativeSummaryProject);
@@ -1282,8 +1297,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         projectSucceededClaimer = addAGProp(idGroup, "projectSucceededClaimer", true, "Успешный проект (ИД)", acceptedProject, 1, claimerProject, 1);
 
-       fillNativeProject = addDProp(projectInformationGroup, "fillNativeProject", "Анкета на русском", LogicalClass.instance, project);
-       fillForeignProject = addDProp(projectInformationGroup, "fillForeignProject", "Анкета на английском", LogicalClass.instance, project);
+       fillNativeProject = addDProp(projectOptionsGroup, "fillNativeProject", "Анкета на русском", LogicalClass.instance, project);
+       fillForeignProject = addDProp(projectOptionsGroup, "fillForeignProject", "Анкета на английском", LogicalClass.instance, project);
 
         // статистика по экспертам
         quantityTotalExpert = addSGProp(expertResultGroup, "quantityTotalExpert", "Всего заседаний",
@@ -1501,6 +1516,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         private boolean foreign;
 
+        private ObjectEntity objOptionsProject;
         private ObjectEntity objProject;
         private ObjectEntity objPatent;
         private ObjectEntity objAcademic;
@@ -1511,7 +1527,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
             this.foreign = foreign;
 
-            objProject = addSingleGroupObject(1, "project", project, "Описание проекта", projectInformationGroup, innovationGroup, executiveSummaryGroup, sourcesFundingGroup, equipmentGroup, projectDocumentsGroup, projectStatusGroup);
+            objProject = addSingleGroupObject(1, "project", project, "Описание проекта", projectInformationGroup, innovationGroup, executiveSummaryGroup, sourcesFundingGroup, equipmentGroup, projectDocumentsGroup);
 
             getPropertyDraw(nameReturnInvestorProject).propertyCaption = addPropertyObject(hideNameReturnInvestorProject, objProject);
             getPropertyDraw(amountReturnFundsProject).propertyCaption = addPropertyObject(hideAmountReturnFundsProject, objProject);
@@ -1535,6 +1551,12 @@ public class SkolkovoLogicsModule extends LogicsModule {
             getPropertyDraw(commentEquipmentProject).propertyCaption = addPropertyObject(hideCommentEquipmentProject, objProject);
 
             objProject.groupTo.setSingleClassView(ClassViewType.PANEL);
+
+            objOptionsProject =  addSingleGroupObject(1, "optionsProject", project, "Параметры", projectOptionsGroup, projectStatusGroup);
+            objOptionsProject.groupTo.setSingleClassView(ClassViewType.PANEL);
+
+            getPropertyDraw(nativeSubstantiationOtherClusterProject).propertyCaption = addPropertyObject(hideNativeSubstantiationOtherClusterProject, objOptionsProject);
+            getPropertyDraw(foreignSubstantiationOtherClusterProject).propertyCaption = addPropertyObject(hideForeignSubstantiationOtherClusterProject, objOptionsProject);
 
             objPatent = addSingleGroupObject(2, "patent", patent, "Патент", baseGroup);
             addObjectActions(this, objPatent);
@@ -1575,27 +1597,32 @@ public class SkolkovoLogicsModule extends LogicsModule {
                                    design.getGroupPropertyContainer(objProject.groupTo, executiveSummaryGroup), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
             design.addIntersection(design.getGroupPropertyContainer(objProject.groupTo, innovationGroup),
                                    design.getGroupPropertyContainer(objProject.groupTo, executiveSummaryGroup), DoNotIntersectSimplexConstraint.TOTHE_BOTTOM);
-            design.addIntersection(design.getGroupPropertyContainer(objProject.groupTo, projectStatusGroup),
-                                   design.getGroupPropertyContainer(objProject.groupTo, executiveSummaryGroup), DoNotIntersectSimplexConstraint.TOTHE_BOTTOM);
+            //design.addIntersection(design.getGroupPropertyContainer(objProject.groupTo, projectStatusGroup),
+            //                       design.getGroupPropertyContainer(objProject.groupTo, executiveSummaryGroup), DoNotIntersectSimplexConstraint.TOTHE_BOTTOM);
             design.addIntersection(design.getGroupPropertyContainer(objProject.groupTo, equipmentGroup),
                                    design.getGroupPropertyContainer(objProject.groupTo, executiveSummaryGroup), DoNotIntersectSimplexConstraint.TOTHE_BOTTOM);
-            design.addIntersection(design.getGroupPropertyContainer(objProject.groupTo, projectStatusGroup),
-                                   design.getGroupPropertyContainer(objProject.groupTo, executiveSummaryGroup), DoNotIntersectSimplexConstraint.TOTHE_BOTTOM);
+            //design.addIntersection(design.getGroupPropertyContainer(objProject.groupTo, projectStatusGroup),
+            //                       design.getGroupPropertyContainer(objProject.groupTo, executiveSummaryGroup), DoNotIntersectSimplexConstraint.TOTHE_BOTTOM);
             design.addIntersection(design.getGroupPropertyContainer(objProject.groupTo, equipmentGroup),
-                                   design.getGroupPropertyContainer(objProject.groupTo, projectStatusGroup), DoNotIntersectSimplexConstraint.TOTHE_BOTTOM);
+                                   design.getGroupPropertyContainer(objProject.groupTo, executiveSummaryGroup), DoNotIntersectSimplexConstraint.TOTHE_BOTTOM);
             design.addIntersection(design.getGroupPropertyContainer(objProject.groupTo, projectDocumentsGroup),
-                                   design.getGroupPropertyContainer(objProject.groupTo, projectStatusGroup), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
+                                   design.getGroupPropertyContainer(objProject.groupTo, executiveSummaryGroup), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
             design.addIntersection(design.getGroupPropertyContainer(objProject.groupTo, sourcesFundingGroup),
                                    design.getGroupPropertyContainer(objProject.groupTo, executiveSummaryGroup), DoNotIntersectSimplexConstraint.TOTHE_BOTTOM);
 
 
             design.getGroupPropertyContainer(objProject.groupTo, innovationGroup).constraints.childConstraints = DoNotIntersectSimplexConstraint.TOTHE_BOTTOM;
             design.getGroupPropertyContainer(objProject.groupTo, executiveSummaryGroup).constraints.childConstraints = DoNotIntersectSimplexConstraint.TOTHE_RIGHTBOTTOM;
-            design.getGroupPropertyContainer(objProject.groupTo, projectStatusGroup).constraints.childConstraints = DoNotIntersectSimplexConstraint.TOTHE_RIGHT;
+            design.getGroupPropertyContainer(objOptionsProject.groupTo, projectStatusGroup).constraints.childConstraints = DoNotIntersectSimplexConstraint.TOTHE_RIGHTBOTTOM;
+            design.getGroupPropertyContainer(objOptionsProject.groupTo, projectOptionsGroup).constraints.childConstraints = DoNotIntersectSimplexConstraint.TOTHE_RIGHTBOTTOM;
+
+            design.addIntersection(design.getGroupPropertyContainer(objOptionsProject.groupTo, projectOptionsGroup),
+                                   design.getGroupPropertyContainer(objOptionsProject.groupTo, projectStatusGroup), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
 
             ContainerView specContainer = design.createContainer();
             design.getMainContainer().addAfter(specContainer, design.getGroupObjectContainer(objProject.groupTo));
             specContainer.add(design.getGroupObjectContainer(objProject.groupTo));
+            specContainer.add(design.getGroupObjectContainer(objOptionsProject.groupTo));
             specContainer.add(design.getGroupObjectContainer(objPatent.groupTo));
             specContainer.add(design.getGroupObjectContainer(objAcademic.groupTo));
             specContainer.add(design.getGroupObjectContainer(objNonRussianSpecialist.groupTo));
