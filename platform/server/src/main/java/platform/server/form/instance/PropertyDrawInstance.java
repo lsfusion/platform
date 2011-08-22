@@ -84,7 +84,7 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
             && toDraw != null && toDraw.curClassView == ClassViewType.PANEL && toDraw.objects.size() == 1
             && propertyObject.mapping.values().size() == 1
             && propertyObject.mapping.values().iterator().next() == toDraw.objects.iterator().next()
-            && !toDraw.objects.iterator().next().entity.addOnTransaction;
+            && toDraw.objects.iterator().next().entity.addOnEvent.isEmpty();
     }
 
     public PropertyObjectInstance<?> getChangeInstance(Result<Property> aggProp, boolean aggValue, BusinessLogics<?> BL) {

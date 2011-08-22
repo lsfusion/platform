@@ -4,6 +4,7 @@ import net.sf.jasperreports.engine.JRException;
 import platform.base.BaseUtils;
 import platform.interop.ClassViewType;
 import platform.interop.Compare;
+import platform.interop.FormEventType;
 import platform.interop.action.AudioClientAction;
 import platform.interop.action.MessageClientAction;
 import platform.interop.form.layout.DoNotIntersectSimplexConstraint;
@@ -3785,9 +3786,9 @@ public class RomanLogicsModule extends LogicsModule {
             this.edit = edit;
 
             objInvoice = addSingleGroupObject((box ? boxInvoice : simpleInvoice), "Инвойс");
-             if (!edit) {
+            if (!edit) {
                 addPropertyDraw(nameSupplierDocument, objInvoice);
-                objInvoice.addOnTransaction = true;
+                objInvoice.setAddOnEvent(FormEventType.INIT);
             }
 
             addPropertyDraw(objInvoice, baseLM.date, baseLM.objectClassName, sidDocument, nameCurrencyDocument, sumDocument, quantityDocument, netWeightDocument, nameExporterInvoice, nameImporterDirectInvoice, sidContractInvoice, sidDestinationDestinationDocument, nameDestinationDestinationDocument);
@@ -4818,7 +4819,7 @@ public class RomanLogicsModule extends LogicsModule {
                 objCreate.groupTo.setSingleClassView(ClassViewType.PANEL);
 
             if (type.equals(FormType.ADD))
-                objCreate.addOnTransaction = true;
+                objCreate.setAddOnTransaction();
 
             objFreightBox = addSingleGroupObject(freightBox, "Короба для транспортировки", baseLM.barcode);
             setReadOnly(objFreightBox, true);
@@ -4854,7 +4855,7 @@ public class RomanLogicsModule extends LogicsModule {
                 objCreate.groupTo.setSingleClassView(ClassViewType.PANEL);
 
             if (type.equals(FormType.ADD))
-                objCreate.addOnTransaction = true;
+                objCreate.setAddOnTransaction();
 
             objPallet = addSingleGroupObject(pallet, "Паллеты для транспортировки", baseLM.barcode);
             setReadOnly(objPallet, true);
@@ -4889,7 +4890,7 @@ public class RomanLogicsModule extends LogicsModule {
                 addPropertyDraw(objCreate, baseLM.delete);
 
             if (type.equals(FormType.ADD))
-                objCreate.addOnTransaction = true;
+                objCreate.setAddOnTransaction();
 
             objStamp = addSingleGroupObject(stamp, "Таможенные марки", sidStamp, baseLM.delete);
             setReadOnly(objStamp, true);

@@ -75,8 +75,18 @@ public class ClientDialog extends ClientModalForm {
         return new ClientFormController(remoteDialog, null) {
 
             @Override
-            public boolean isDialogMode() {
+            public boolean isModal() {
                 return true;
+            }
+
+            @Override
+            public boolean isDialog() {
+                return true;
+            }
+
+            @Override
+            public boolean isNewSession() {
+                return false;
             }
 
             @Override
@@ -95,7 +105,7 @@ public class ClientDialog extends ClientModalForm {
             }
 
             @Override
-            public void okPressed() {
+            public boolean okPressed() {
 
                 objectChosen = CHOSEN_VALUE;
                 try {
@@ -106,6 +116,8 @@ public class ClientDialog extends ClientModalForm {
                     throw new RuntimeException(ClientResourceBundle.getString("errors.error.getting.value.of.dialogue"), e);
                 }
                 ClientDialog.this.setVisible(false);
+
+                return true;
             }
 
             @Override

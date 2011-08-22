@@ -1,5 +1,6 @@
 package platform.server.form.instance;
 
+import platform.interop.FormEventType;
 import platform.server.classes.ConcreteClass;
 import platform.server.classes.ConcreteCustomClass;
 import platform.server.classes.ConcreteObjectClass;
@@ -7,6 +8,7 @@ import platform.server.classes.CustomClass;
 import platform.server.classes.sets.AndClassSet;
 import platform.server.data.type.ObjectType;
 import platform.server.data.type.Type;
+import platform.server.form.entity.FormEntity;
 import platform.server.form.entity.ObjectEntity;
 import platform.server.form.instance.listener.CustomClassListener;
 import platform.server.logics.DataObject;
@@ -36,8 +38,8 @@ public class CustomObjectInstance extends ObjectInstance {
         this.weakClassListener = new WeakReference<CustomClassListener>(classListener);
     }
 
-    public boolean isAddOnTransaction() {
-        return entity.addOnTransaction;
+    public boolean isAddOnEvent(FormEventType event) {
+        return entity.addOnEvent.contains(event);
     }
 
     public CustomObjectInstance(ObjectEntity entity, CustomClass baseClass) {

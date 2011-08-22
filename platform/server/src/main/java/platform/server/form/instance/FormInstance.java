@@ -2,6 +2,7 @@ package platform.server.form.instance;
 
 import platform.base.*;
 import platform.interop.ClassViewType;
+import platform.interop.FormEventType;
 import platform.interop.Scroll;
 import platform.interop.action.ClientAction;
 import platform.interop.action.ContinueAutoActionsClientAction;
@@ -222,7 +223,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends IncrementProps<Pr
             instance.groupTo.addSeek(instance, mapObject.getValue(), false);
         }
 
-        addObjectOnTransaction();
+        addObjectOnTransaction(FormEventType.INIT);
 
         if(!interactive) {
             endApply();
@@ -608,11 +609,11 @@ public class FormInstance<T extends BusinessLogics<T>> extends IncrementProps<Pr
         dataChanged = session.hasChanges();
     }
 
-    void addObjectOnTransaction() throws SQLException {
+    void addObjectOnTransaction(FormEventType event) throws SQLException {
         for (ObjectInstance object : getObjects()) {
             if (object instanceof CustomObjectInstance) {
                 CustomObjectInstance customObject = (CustomObjectInstance) object;
-                if (customObject.isAddOnTransaction()) {
+                if (customObject.isAddOnEvent(event)) {
                     addObject(customObject, (ConcreteCustomClass) customObject.gridClass);
                 }
             }
@@ -641,7 +642,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends IncrementProps<Pr
         cleanIncrementTables();
 
         refreshData();
-        addObjectOnTransaction();
+        addObjectOnTransaction(FormEventType.APPLY);
 
         dataChanged = true; // временно пока applyChanges синхронен, для того чтобы пересылался факт изменения данных
 
@@ -656,7 +657,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends IncrementProps<Pr
         for (ObjectInstance object : getObjects())
             if (object instanceof CustomObjectInstance)
                 ((CustomObjectInstance) object).updateCurrentClass(session);
-        addObjectOnTransaction();
+        addObjectOnTransaction(FormEventType.CANCEL);
 
         dataChanged = true;
     }
@@ -1369,11 +1370,11 @@ public class FormInstance<T extends BusinessLogics<T>> extends IncrementProps<Pr
     }
 
     public List<ClientAction> fireOnApply(RemoteForm form) throws SQLException {
-        return fireEvent(form, FormEntity.ON_APPLY_EVENT);
+        return fireEvent(form, FormEventType.APPLY);
     }
 
     public List<ClientAction> fireOnOk(RemoteForm form) throws SQLException {
-        return fireEvent(form, FormEntity.ON_OK_EVENT);
+        return fireEvent(form, FormEventType.OK);
     }
 
     public List<ClientAction> fireEvent(RemoteForm form, Object eventObject) throws SQLException {

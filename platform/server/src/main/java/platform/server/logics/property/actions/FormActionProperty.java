@@ -1,6 +1,7 @@
 package platform.server.logics.property.actions;
 
 import platform.base.BaseUtils;
+import platform.interop.FormEventType;
 import platform.interop.action.ContinueAutoActionsClientAction;
 import platform.interop.action.FormClientAction;
 import platform.interop.action.MessageClientAction;
@@ -89,7 +90,7 @@ public class FormActionProperty extends ActionProperty {
                     newFormInstance.addEventListener(new FormEventListener() {
                         @Override
                         public void handleEvent(Object event) {
-                            if (event.equals(FormEntity.ON_OK_EVENT)) {
+                            if (event.equals(FormEventType.OK)) {
                                 for (ObjectEntity object : seekOnOk) {
                                     try {
                                         thisFormInstance.seekObject(object.baseClass,

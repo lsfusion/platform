@@ -67,8 +67,18 @@ public class ClientModalForm extends JDialog {
     protected ClientFormController createFormController() throws IOException, ClassNotFoundException {
         return new ClientFormController(remoteForm, null) {
             @Override
-            public boolean isDialogMode() {
+            public boolean isModal() {
                 return true;
+            }
+
+            @Override
+            public boolean isDialog() {
+                return false;
+            }
+
+            @Override
+            public boolean isNewSession() {
+                return newSession;
             }
 
             @Override
@@ -77,10 +87,12 @@ public class ClientModalForm extends JDialog {
             }
 
             @Override
-            public void okPressed() {
-                if (okPressed(newSession)) {
+            public boolean okPressed() {
+                if (super.okPressed()) {
                     hideDialog();
-                }
+                    return true;
+                } else
+                    return false;
             }
 
             @Override

@@ -2,6 +2,7 @@ package platform.server.form.entity;
 
 import platform.base.BaseUtils;
 import platform.base.identity.IdentityObject;
+import platform.interop.FormEventType;
 import platform.server.classes.ValueClass;
 import platform.server.data.type.TypeSerializer;
 import platform.server.form.instance.InstanceFactory;
@@ -15,6 +16,7 @@ import platform.server.session.Modifier;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.Set;
 
 public class ObjectEntity extends IdentityObject implements PropertyObjectInterfaceEntity, ServerIdentitySerializable {
@@ -26,7 +28,17 @@ public class ObjectEntity extends IdentityObject implements PropertyObjectInterf
         return !BaseUtils.isRedundantString(caption)?caption:baseClass.toString();
     }
 
-    public boolean addOnTransaction = false;
+    public Set<FormEventType> addOnEvent = new HashSet<FormEventType>();
+
+    public void setAddOnTransaction() {
+        setAddOnEvent(FormEventType.INIT, FormEventType.APPLY, FormEventType.CANCEL);
+    }
+
+    public void setAddOnEvent(FormEventType... events) {
+        for (FormEventType event : events)
+            addOnEvent.add(event);
+    }
+
     public boolean resetOnApply = false;
 
     public ValueClass baseClass;

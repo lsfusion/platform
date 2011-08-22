@@ -182,7 +182,7 @@ public abstract class DataClass<T> implements StaticClass, Type<T>, AndClassSet,
     }
 
     public ObjectInstance newInstance(ObjectEntity entity) {
-        assert !entity.addOnTransaction;
+        assert entity.addOnEvent.isEmpty();
         return new DataObjectInstance(entity, this);
     }
 

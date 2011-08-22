@@ -5,9 +5,7 @@ import platform.server.form.entity.ObjectEntity;
 import platform.server.serialization.ServerIdentitySerializable;
 import platform.server.serialization.ServerSerializationPool;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
+import java.io.*;
 
 public class ObjectView implements ServerIdentitySerializable {
 
@@ -60,7 +58,7 @@ public class ObjectView implements ServerIdentitySerializable {
         pool.serializeObject(outStream, groupObject, serializationType);
         pool.writeString(outStream, entity.caption);
 
-        outStream.writeBoolean(entity.addOnTransaction);
+        pool.writeObject(outStream, entity.addOnEvent);
 
         entity.baseClass.serialize(outStream);
         pool.serializeObject(outStream, classChooser, serializationType);

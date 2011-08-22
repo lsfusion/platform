@@ -59,8 +59,16 @@ public class ClientFormController {
 
     public final Map<ClientGroupObject, List<ClientGroupObjectValue>> currentGridObjects = new HashMap<ClientGroupObject, List<ClientGroupObjectValue>>();
 
-    public boolean isDialogMode() {
+    public boolean isDialog() {
         return false;
+    }
+
+    public boolean isModal() {
+        return false;
+    }
+
+    public boolean isNewSession() {
+        return true;
     }
 
     public boolean isReadOnlyMode() {
@@ -341,12 +349,14 @@ public class ClientFormController {
         KeyStroke xlsKeyStroke = KeyStrokes.getXlsKeyStroke();
         KeyStroke nullKeyStroke = KeyStrokes.getNullKeyStroke();
         KeyStroke refreshKeyStroke = KeyStrokes.getRefreshKeyStroke();
-        KeyStroke applyKeyStroke = KeyStrokes.getApplyKeyStroke(isDialogMode() && isReadOnlyMode());
-        KeyStroke cancelKeyStroke = KeyStrokes.getCancelKeyStroke();
+        KeyStroke okKeyStroke = KeyStrokes.getApplyKeyStroke(true);
+        KeyStroke closeKeyStroke = KeyStrokes.getCancelKeyStroke(true);
+        KeyStroke applyKeyStroke = KeyStrokes.getApplyKeyStroke(false);
+        KeyStroke cancelKeyStroke = KeyStrokes.getCancelKeyStroke(!isModal());
 
         // Добавляем стандартные кнопки
 
-        if (Main.module.isFull() && !isDialogMode()) {
+        if (Main.module.isFull() && !isDialog()) {
             addClientFunction(form.getPrintFunction(), printKeyStroke, new AbstractAction() {
                 public void actionPerformed(ActionEvent ae) {
                     print();
@@ -366,7 +376,14 @@ public class ClientFormController {
             }
         });
 
-        if (!isDialogMode()) {
+        if (isDialog())
+            addClientFunction(form.getNullFunction(), nullKeyStroke, new AbstractAction() {
+                public void actionPerformed(ActionEvent ae) {
+                    nullPressed();
+                }
+            });
+
+        if (isNewSession()) {
             buttonApply = addClientFunction(form.getApplyFunction(), applyKeyStroke, new AbstractAction() {
                 public void actionPerformed(ActionEvent ae) {
                     applyChanges(false);
@@ -380,20 +397,16 @@ public class ClientFormController {
                 }
             });
             buttonCancel.setEnabled(false);
-        } else {
-            addClientFunction(form.getNullFunction(), nullKeyStroke, new AbstractAction() {
-                public void actionPerformed(ActionEvent ae) {
-                    nullPressed();
-                }
-            });
+        }
 
-            addClientFunction(form.getOkFunction(), applyKeyStroke, new AbstractAction() {
+        if (isModal()) {
+            addClientFunction(form.getOkFunction(), okKeyStroke, new AbstractAction() {
                 public void actionPerformed(ActionEvent ae) {
                     okPressed();
                 }
             });
 
-            addClientFunction(form.getCloseFunction(), cancelKeyStroke, new AbstractAction() {
+            addClientFunction(form.getCloseFunction(), closeKeyStroke, new AbstractAction() {
                 public void actionPerformed(ActionEvent ae) {
                     closePressed();
                 }
@@ -774,15 +787,11 @@ public class ClientFormController {
         return true;
     }
 
-    public void okPressed() {
-        applyChanges(false);
-    }
-
-    public boolean okPressed(boolean apply) {
+    public boolean okPressed() {
         try {
             remoteForm.dialogClosed();
 
-            if (apply) {
+            if (isNewSession()) {
                 return applyChanges(false);
             }
         } catch (IOException e) {

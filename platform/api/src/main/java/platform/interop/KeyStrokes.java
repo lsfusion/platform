@@ -54,12 +54,12 @@ public class KeyStrokes {
         return KeyStroke.getKeyStroke(KeyEvent.VK_R, InputEvent.ALT_DOWN_MASK);
     }
 
-    public static KeyStroke getApplyKeyStroke(boolean isReadOnlyDialog) {
-        return KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, isReadOnlyDialog ? 0 : InputEvent.ALT_DOWN_MASK);
+    public static KeyStroke getApplyKeyStroke(boolean single) {
+        return KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, single ? 0 : InputEvent.ALT_DOWN_MASK);
     }
 
-    public static KeyStroke getCancelKeyStroke() {
-        return getEscape();
+    public static KeyStroke getCancelKeyStroke(boolean single) {
+        return KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, single ? 0 : InputEvent.ALT_DOWN_MASK);
     }
 
     public static KeyStroke getFilterKeyStroke(int modifier) {

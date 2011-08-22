@@ -8,6 +8,7 @@ import platform.base.identity.DefaultIDGenerator;
 import platform.base.identity.IDGenerator;
 import platform.base.serialization.CustomSerializable;
 import platform.interop.ClassViewType;
+import platform.interop.FormEventType;
 import platform.interop.action.ClientResultAction;
 import platform.interop.navigator.FormShowType;
 import platform.server.classes.ValueClass;
@@ -46,9 +47,6 @@ import java.util.*;
 public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T> implements ServerIdentitySerializable {
     private final static Logger logger = Logger.getLogger(FormEntity.class);
     private static ImageIcon image = new ImageIcon(NavigatorElement.class.getResource("/images/form.gif"));
-
-    public static final String ON_APPLY_EVENT = "onApplyEvent";
-    public static final String ON_OK_EVENT = "onOkEvent";
 
     public Map<Object, List<PropertyObjectEntity>> eventActions = new HashMap<Object, List<PropertyObjectEntity>>();
 
@@ -676,11 +674,11 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
     }
 
     public void addActionsOnApply(PropertyObjectEntity... actions) {
-        addActionsOnEvent(ON_APPLY_EVENT, false, actions);
+        addActionsOnEvent(FormEventType.APPLY, false, actions);
     }
 
     public void addActionsOnOk(PropertyObjectEntity... actions) {
-        addActionsOnEvent(ON_OK_EVENT, false, actions);
+        addActionsOnEvent(FormEventType.OK, false, actions);
     }
 
     public void addActionsOnEvent(Object eventObject, boolean drop, PropertyObjectEntity... actions) {

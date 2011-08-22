@@ -11,6 +11,7 @@ import platform.client.form.panel.PanelToolbar;
 import platform.client.form.showtype.ShowTypeController;
 import platform.client.logics.*;
 import platform.interop.ClassViewType;
+import platform.interop.FormEventType;
 import platform.interop.KeyStrokes;
 import platform.interop.Order;
 
@@ -381,7 +382,7 @@ public class GroupObjectController implements GroupObjectLogicsSupplier {
 
         String message = "";
         for (ClientObject object : groupObject.objects) {
-            if (object.addOnTransaction) {
+            if (object.addOnEvent.contains(FormEventType.APPLY) || object.addOnEvent.contains(FormEventType.OK)) {
                 message += ClientResourceBundle.getString("form.create.new")+" " + object.getCaption() + " ?";
             }
         }

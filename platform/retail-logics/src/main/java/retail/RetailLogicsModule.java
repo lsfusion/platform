@@ -1,55 +1,24 @@
 package retail;
 
 import net.sf.jasperreports.engine.JRException;
-import platform.base.BaseUtils;
 import platform.interop.ClassViewType;
 import platform.interop.Compare;
-import platform.interop.action.AudioClientAction;
-import platform.interop.action.ClientAction;
-import platform.interop.action.MessageClientAction;
-import platform.interop.form.layout.DoNotIntersectSimplexConstraint;
-import platform.interop.navigator.FormShowType;
-import platform.server.Settings;
 import platform.server.classes.*;
-import platform.server.daemons.ScannerDaemonTask;
-import platform.server.daemons.WeightDaemonTask;
-import platform.server.data.Time;
-import platform.server.data.Union;
 import platform.server.form.entity.*;
 import platform.server.form.entity.filter.*;
-import platform.server.form.instance.FormInstance;
-import platform.server.form.instance.ObjectInstance;
-import platform.server.form.instance.PropertyObjectInterfaceInstance;
-import platform.server.form.instance.remote.RemoteForm;
 import platform.server.form.navigator.NavigatorElement;
-import platform.server.form.view.ContainerView;
 import platform.server.form.view.DefaultFormView;
 import platform.server.form.view.FormView;
-import platform.server.form.view.PropertyDrawView;
 import platform.server.form.window.PanelNavigatorWindow;
 import platform.server.form.window.ToolBarNavigatorWindow;
 import platform.server.form.window.TreeNavigatorWindow;
 import platform.server.logics.BaseLogicsModule;
-import platform.server.logics.DataObject;
 import platform.server.logics.LogicsModule;
-import platform.server.logics.ObjectValue;
 import platform.server.logics.linear.LP;
-import platform.server.logics.property.*;
-import platform.server.logics.property.actions.FormActionProperty;
-import platform.server.logics.property.group.AbstractGroup;
-import platform.server.session.Changes;
-import platform.server.session.DataSession;
-import platform.server.session.Modifier;
-import platform.server.session.PropertyChange;
 
 import javax.swing.*;
-import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.sql.SQLException;
-import java.util.*;
-import java.util.List;
 
 /**
  * Created by IntelliJ IDEA.
@@ -600,7 +569,7 @@ import java.util.List;
             } else {
                 if (add) {
                     objPurchaseRecadv.groupTo.setSingleClassView(ClassViewType.PANEL);
-                    objPurchaseRecadv.addOnTransaction = true;
+                    objPurchaseRecadv.setAddOnTransaction();
                     addObjectActions(this, objPurchaseRecadvLine);
                 } else {
                     ReceivingSupplierShipment addSupplierShipment = new ReceivingSupplierShipment(null, "addSupplierShipment", "Добавление документа", false, true);

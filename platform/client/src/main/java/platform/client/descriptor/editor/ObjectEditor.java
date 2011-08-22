@@ -23,7 +23,7 @@ public class ObjectEditor extends JPanel implements NodeEditor {
         add(new TitledPanel(ClientResourceBundle.getString("descriptor.editor.object.editor.title"), new IncrementTextEditor(object, "caption")));
         add(Box.createRigidArea(new Dimension(5, 5)));
 
-        add(new TitledPanel(null, new IncrementCheckBox(ClientResourceBundle.getString("descriptor.editor.object.editor.add.new.object.on.transaction"), object, "addOnTransaction")));
+        add(new TitledPanel(null, new IncrementCheckBox(ClientResourceBundle.getString("descriptor.editor.object.editor.add.new.object.on.transaction"), object, "addOnEvent")));
         add(Box.createRigidArea(new Dimension(5, 5)));
         add(new TitledPanel(null, new IncrementCheckBox(ClientResourceBundle.getString("descriptor.editor.object.editor.show.class.tree"), object.client.classChooser, "show")));
         add(Box.createRigidArea(new Dimension(5, 5)));

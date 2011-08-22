@@ -5,12 +5,13 @@ import platform.client.logics.ClientObject;
 import platform.client.logics.classes.ClientClass;
 import platform.client.serialization.ClientIdentitySerializable;
 import platform.client.serialization.ClientSerializationPool;
+import platform.interop.FormEventType;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.List;
-import java.util.Map;
+import java.util.Set;
 
 public class ObjectDescriptor extends ContextIdentityObject implements PropertyObjectInterfaceDescriptor, ClientIdentitySerializable, CustomConstructible {
 
@@ -61,13 +62,13 @@ public class ObjectDescriptor extends ContextIdentityObject implements PropertyO
         return client.baseClass;
     }
 
-    public void setAddOnTransaction(boolean addOnTransaction) {
-        client.addOnTransaction = addOnTransaction;
-        updateDependency(this, "addOnTransaction");
+    public void setAddOnTransaction(Set<FormEventType> addOnEvent) {
+        client.addOnEvent = addOnEvent;
+        updateDependency(this, "addOnEvent");
     }
 
-    public boolean getAddOnTransaction() {
-        return client.addOnTransaction;
+    public Set<FormEventType> getAddOnTransaction() {
+        return client.addOnEvent;
     }
 
     public String getInstanceCode(){

@@ -1895,7 +1895,7 @@ public class VEDLogicsModule extends LogicsModule {
             if (toAdd) {
                 objDoc.groupTo.initClassView = ClassViewType.PANEL;
                 objDoc.groupTo.banClassView.addAll(BaseUtils.toList(ClassViewType.GRID, ClassViewType.HIDE));
-                objDoc.addOnTransaction = true;
+                objDoc.setAddOnTransaction();
             } else {
                 addPropertyDraw(orderUserName, objDoc);
                 if (!isReadOnly())
