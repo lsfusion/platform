@@ -411,7 +411,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
     LP generateDocumentsProjectDocumentType;
     LP includeDocumentsProjectDocumentType;
-    LP importProjectSidsAction, showProjectsToImportAction, importProjectsAction;
+    LP importProjectSidsAction, showProjectsToImportAction, showProjectsReplaceToImportAction, importProjectsAction;
     LP generateVoteProject, hideGenerateVoteProject;
     LP copyResultsVote;
 
@@ -1245,9 +1245,10 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         generateDocumentsProjectDocumentType = addAProp(actionGroup, new GenerateDocumentsActionProperty());
         includeDocumentsProjectDocumentType = addAProp(actionGroup, new IncludeDocumentsActionProperty());
-        importProjectSidsAction = addAProp(actionGroup, new ImportProjectsActionProperty("Импортировать идентификаторы проектов", this, BL, false, true));
-        showProjectsToImportAction = addAProp(actionGroup, new ImportProjectsActionProperty("Посмотреть импортируемые проекты", this, BL, true, false));
-        importProjectsAction = addAProp(actionGroup, new ImportProjectsActionProperty("Импортировать проекты", this, BL, false, false));
+        importProjectSidsAction = addAProp(actionGroup, new ImportProjectsActionProperty("Импортировать идентификаторы проектов", this, BL, false, false, true));
+        showProjectsToImportAction = addAProp(actionGroup, new ImportProjectsActionProperty("Посмотреть импортируемые проекты", this, BL, true, false, false));
+        showProjectsReplaceToImportAction = addAProp(actionGroup, new ImportProjectsActionProperty("Посмотреть замещаемые проекты", this, BL, true, true, false));
+        importProjectsAction = addAProp(actionGroup, new ImportProjectsActionProperty("Импортировать проекты", this, BL, false, false, false));
 
         generateVoteProject = addAProp(actionGroup, new GenerateVoteActionProperty());
         copyResultsVote = addAProp(actionGroup, new CopyResultsActionProperty());
@@ -1746,7 +1747,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         private GlobalFormEntity(NavigatorElement parent, String sID) {
             super(parent, sID, "Глобальные параметры");
 
-            addPropertyDraw(new LP[]{baseLM.currentDate, requiredPeriod, requiredQuantity, limitExperts, emailDocuments, emailClaimerFromAddress, projectsImportLimit, importProjectSidsAction, showProjectsToImportAction, importProjectsAction});
+            addPropertyDraw(new LP[]{baseLM.currentDate, requiredPeriod, requiredQuantity, limitExperts, emailDocuments, emailClaimerFromAddress, projectsImportLimit, importProjectSidsAction, showProjectsToImportAction, showProjectsReplaceToImportAction, importProjectsAction});
         }
     }
 

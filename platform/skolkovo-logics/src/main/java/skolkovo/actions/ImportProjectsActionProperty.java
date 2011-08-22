@@ -47,14 +47,16 @@ public class ImportProjectsActionProperty extends ActionProperty {
     private byte[] responseContents;
     private String toLog = "";
     private boolean onlyMessage;
+    private boolean onlyReplace;
     private boolean fillSids;
     private Integer projectsImportLimit;
 
-    public ImportProjectsActionProperty(String caption, SkolkovoLogicsModule LM, SkolkovoBusinessLogics BL, boolean onlyMessage, boolean fillSids) {
+    public ImportProjectsActionProperty(String caption, SkolkovoLogicsModule LM, SkolkovoBusinessLogics BL, boolean onlyMessage, boolean onlyReplace, boolean fillSids) {
         super(LM.genSID(), caption, new ValueClass[]{});
         this.LM = LM;
         this.BL = BL;
         this.onlyMessage = onlyMessage;
+        this.onlyReplace = onlyReplace;
         this.fillSids = fillSids;
     }
 
@@ -457,12 +459,19 @@ public class ImportProjectsActionProperty extends ActionProperty {
             result = query.execute(session.sql);
 
             Element rootNode = document.getRootElement();
-            elementList = rootNode.getChildren("project");
+            elementList = new ArrayList<Element>(rootNode.getChildren("project"));
         } catch (JDOMParseException e) {
             logger.error(e.getCause() + " : " + new String(responseContents));
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+
+        Collections.sort(elementList, new Comparator<Element>() {
+            @Override
+            public int compare(Element o1, Element o2) {
+                return o1.getChildText("emailProject").compareTo(o2.getChildText("emailProject"));
+            }
+        });
 
         if (fillSids) {
             fillSids(result, elementList);
@@ -539,7 +548,7 @@ public class ImportProjectsActionProperty extends ActionProperty {
                         }
                     }
                 }
-                if (!ignore) {
+                if (!ignore && !onlyReplace) {
                     toLogString(projectId, null, element.getChildText("emailProject"), null, name, null, currentProjectDate);
                     projectList.put(projectId, currentProjectDate);
                     counter++;
