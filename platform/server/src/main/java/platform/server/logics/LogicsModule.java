@@ -757,15 +757,15 @@ public abstract class LogicsModule {
         int groupInts[] = new int[groupIntCnt];
 
         for (int i = 0; i < mainIntCnt; ++i) {
-            mainInts[i] = (Integer)params[i];
+            mainInts[i] = (Integer)params[i] - 1;
         }
 
         for (int i = 0; i < getterIntCnt; ++i) {
-            getterInts[i] = (Integer)params[mainIntCnt + 1 + i];
+            getterInts[i] = (Integer)params[mainIntCnt + 1 + i] - 1;
         }
 
         for (int i = 0; i < groupIntCnt; ++i) {
-            groupInts[i] = (Integer)params[mainIntCnt + 1 + getterIntCnt];
+            groupInts[i] = (Integer)params[mainIntCnt + 1 + getterIntCnt] - 1;
         }
 
         return addGCAProp(group, name, caption, groupObject, mainProperty, mainInts, getterProperty, getterInts, groupInts);

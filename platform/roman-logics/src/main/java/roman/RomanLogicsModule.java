@@ -2387,9 +2387,9 @@ public class RomanLogicsModule extends LogicsModule {
                 quantitySupplierBoxBoxShipmentStockSku,
                 boxInvoiceSupplierBox, 1, 2, 3, 4);
 
-        invoicedSimpleInvoiceSimpleShipmentStockSku = addJProp("invoicedSimpleInvoiceSimpleShipmentStockSku", "Кол-во оприх.", and(false, false, false, false), quantityDocumentSku, 1, 4, inInvoiceShipment, 1, 2, is(simpleInvoice), 1, is(simpleShipment), 2, is(stock), 3);
+        invoicedSimpleInvoiceSimpleShipmentStockSku = addJProp("invoicedSimpleInvoiceSimpleShipmentStockSku", true, "Кол-во оприх.", and(false, false, false, false), quantityDocumentSku, 1, 4, inInvoiceShipment, 1, 2, is(simpleInvoice), 1, is(simpleShipment), 2, is(stock), 3);
         invoicedSimpleInvoiceSimpleShipmentStockArticleComposite = addJProp("invoicedSimpleInvoiceSimpleShipmentStockArticleComposite", "Кол-во оприх.", and(false, false, false), quantitySimpleInvoiceArticle, 1, 4, inInvoiceShipment, 1, 2, is(simpleShipment), 2, is(stock), 3);
-        invoicedSimpleInvoiceSimpleShipmentStockItem = addJProp("invoicedSimpleInvoiceSimpleShipmentStockItem", "Кол-во оприх.", invoicedSimpleInvoiceSimpleShipmentStockArticleComposite, 1, 2, 3, articleCompositeItem, 4);
+        invoicedSimpleInvoiceSimpleShipmentStockItem = addJProp("invoicedSimpleInvoiceSimpleShipmentStockItem", true, "Кол-во оприх.", invoicedSimpleInvoiceSimpleShipmentStockArticleComposite, 1, 2, 3, articleCompositeItem, 4);
 
         quantitySkuSimpleInvoiceSimpleShipmentStockSku = addPGProp(baseGroup, "quantityDataSimpleInvoiceSimpleShipmentStockSku", true, 0, true, "Кол-во оприход.",
                 invoicedSimpleInvoiceSimpleShipmentStockSku,
@@ -3827,7 +3827,6 @@ public class RomanLogicsModule extends LogicsModule {
             addPropertyDraw(sumSimpleInvoiceArticle, objInvoice, objArticle);
             addPropertyDraw(orderedInvoiceArticle, objInvoice, objArticle);
             addPropertyDraw(priceOrderedInvoiceArticle, objInvoice, objArticle);
-            addPropertyDraw(baseLM.delete, objArticle);
 
 //            getPropertyDraw(sizeGroupSupplierArticle).forceViewType = ClassViewType.PANEL;
 
@@ -3839,19 +3838,18 @@ public class RomanLogicsModule extends LogicsModule {
 
             objSizeSupplier = addSingleGroupObject(sizeSupplier, "Размер"); // baseLM.selection, sidSizeSupplier
             addPropertyDraw(orderSizeSupplier, objSizeSupplier).forceViewType = ClassViewType.HIDE;
-//            addObjectActions(this, objSizeSupplier);
 
             objColorSupplier = addSingleGroupObject(colorSupplier, "Цвет", baseLM.selection, sidColorSupplier, baseLM.name);
-            //addObjectActions(this, objColorSupplier);
             setReadOnly(sidColorSupplier, true, objColorSupplier.groupTo);
 
             objItem = addSingleGroupObject(item, "Товар", baseLM.barcode, sidColorSupplierItem, nameColorSupplierItem, sidSizeSupplierItem);
-//            addPropertyDraw(cloneItem, objItem).forceViewType = ClassViewType.PANEL;
-            addObjectActions(this, objItem);
 
             PropertyDrawEntity quantityColumn = addPropertyDraw(quantityListArticleCompositeColorSize, objList, objArticle, objColorSupplier, objSizeSupplier);
             quantityColumn.columnGroupObjects.add(objSizeSupplier.groupTo);
             quantityColumn.propertyCaption = addPropertyObject(sidSizeSupplier, objSizeSupplier);
+
+            addPropertyDraw(addGCAProp(actionGroup, "nullInvoiceListArticleCompositeColor", "Сбросить", objSizeSupplier.groupTo, quantityListArticleCompositeColorSize, 1, 2, 3, 4, baseLM.vzero, 4),
+                    objList, objArticle, objColorSupplier, objSizeSupplier);
 
             addPropertyDraw(quantityListSku, (box ? objSupplierBox : objInvoice), objItem);
             addPropertyDraw(priceDocumentSku, objInvoice, objItem);
