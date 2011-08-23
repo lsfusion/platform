@@ -387,12 +387,11 @@ public class ImportProjectsActionProperty extends ActionProperty {
             if (!onlyMessage && !fillSids) {
                 initFieldsNProperties();
                 for (String projectId : projects.keySet()) {
-                    URL url = new URL(host + "&show=all&projectId=" + "20330");
+                    URL url = new URL(host + "&show=all&projectId=" + projectId);
                     URLConnection connection = url.openConnection();
                     connection.setDoOutput(false);
                     connection.setDoInput(true);
-                    importProject(connection.getInputStream(), "20330", projects.get(projectId));
-                    break;
+                    importProject(connection.getInputStream(), projectId, projects.get(projectId));
                 }
                 System.gc();
             }
