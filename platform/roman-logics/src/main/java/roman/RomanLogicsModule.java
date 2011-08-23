@@ -61,6 +61,7 @@ public class RomanLogicsModule extends LogicsModule {
     private LP equalsThemeItemSupplier;
     private LP boxInvoiceAddFA;
     private LP simpleInvoiceAddFA;
+    private LP orderEditFA;
     private LP boxInvoiceEditFA;
     private LP simpleInvoiceEditFA;
     private LP freightCreateFA;
@@ -153,6 +154,8 @@ public class RomanLogicsModule extends LogicsModule {
     private LP nameColorSupplierItem;
     LP sizeSupplierItem;
     public LP sidSizeSupplierItem;
+    public LP commonSizeItem;
+    public LP nameCommonSizeItem;
     LP supplierColorSupplier;
     LP genderSupplierArticle;
     LP sidGenderSupplierArticle;
@@ -616,6 +619,8 @@ public class RomanLogicsModule extends LogicsModule {
     private LP quantityShipmentStock;
     private LP quantityShipmentPallet;
     private LP quantityShipmentFreight;
+    private LP importerShipmentFreight;
+    private LP nameImporterShipmentFreight;
     private LP balanceStockSku;
     private LP quantityStockSku;
     private LP quantityStock;
@@ -1902,6 +1907,9 @@ public class RomanLogicsModule extends LogicsModule {
         sizeSupplierItem = addDProp(itemAttributeGroup, "sizeSupplierItem", "Размер поставщика (ИД)", sizeSupplier, item);
         sidSizeSupplierItem = addJProp(itemAttributeGroup, "sidSizeSupplierItem", "Размер поставщика", sidSizeSupplier, sizeSupplierItem, 1);
 
+        commonSizeItem = addJProp(idGroup, "commonSizeItem", "Размер (ИД)", commonSizeSizeSupplier, sizeSupplierItem, 1);
+        nameCommonSizeItem = addJProp("nameCommonSizeItem", "Размер", baseLM.name, commonSizeItem, 1);
+
         genderGenderSupplier = addDProp(idGroup, "genderGenderSupplier", "Унифицированный пол", gender, genderSupplier);
         sidGenderGenderSupplier = addJProp(baseGroup, "sidGenderGenderSupplier", "Пол", sidGender, genderGenderSupplier, 1);
 
@@ -2430,7 +2438,7 @@ public class RomanLogicsModule extends LogicsModule {
 
         quantityInvoiceStockSku = addSGProp(baseGroup, "quantityInvoiceStockSku", true, "Кол-во оприход.", quantityInvoiceShipmentStockSku, 1, 3, 4);
 
-        quantityInvoiceSku = addSGProp(baseGroup, "quantityInvoiceSku", true, "Кол-во оприход.", quantityInvoiceStockSku, 1, 3);
+        quantityInvoiceSku = addSGProp(baseGroup, "quantityInvoiceSku", true, true, "Кол-во оприход.", quantityInvoiceStockSku, 1, 3);
 
         diffDocumentInvoiceSku = addJProp(baseLM.equals2, quantityDocumentSku, 1, 2, quantityInvoiceSku, 1, 2);
 
@@ -2493,7 +2501,7 @@ public class RomanLogicsModule extends LogicsModule {
 
         quantityShipmentPallet = addSGProp(baseGroup, "quantityShipmentPallet", "Всего оприход. (паллета)", quantityShipmentStock, 1, palletFreightBox, 2);
 
-        quantityShipmentFreight = addSGProp(baseGroup, "quantityShipmentFreight", true, "Всего оприход. (фрахт)", quantityShipmentPallet, 1, freightPallet, 2);
+        quantityShipmentFreight = addSGProp(baseGroup, "quantityShipmentFreight", true, true, "Всего оприход. (фрахт)", quantityShipmentPallet, 1, freightPallet, 2);
 
         quantityShipmentArticle = addSGProp(baseGroup, "quantityShipmentArticle", "Всего оприход. (артикул)", quantityShipmentSku, 1, articleSku, 2);
         quantityShipmentArticleSize = addSGProp(baseGroup, "quantityShipmentArticleSize", "Всего оприход. (артикул-размер)", quantityShipmentSku, 1, articleSku, 2, sizeSupplierItem, 2);
@@ -2678,6 +2686,9 @@ public class RomanLogicsModule extends LogicsModule {
         importerShipmentRoute = addDProp("importerShipmentRoute", "Импортер (ИД)", importer, shipment, route);
         nameImporterShipmentRoute = addJProp("nameImporterShipmentRoute", "Импортер", baseLM.name, importerShipmentRoute, 1, 2);
         importerShipmentFreightBox = addJProp("importerShipmentFreightBox", "Импортер (ИД)", importerShipmentRoute, 1, routeFreightFreightBox, 2);
+
+        importerShipmentFreight = addJProp(idGroup, true, "importerShipmentFreight", "Импортёр (ИД)", importerShipmentRoute, 1, routeFreight, 2);
+        nameImporterShipmentFreight = addJProp(baseGroup, "nameImporterShipmentFreight", "Импортёр", baseLM.name, importerShipmentFreight, 1, 2);
 
         quantityImporterStockSku = addSGProp(baseGroup, "quantityImporterStockSku", true, "Кол-во", quantityShipmentStockSku, importerShipmentFreightBox, 1, 2, 2, 3);
         // quantityImporterStockSku = addSGProp(baseGroup, "quantityImporterStockSku", true, "Кол-во", quantityInvoiceStockSku, importerInvoice, 1, 2, 3);
@@ -3197,12 +3208,16 @@ public class RomanLogicsModule extends LogicsModule {
         NavigatorElement purchase = new NavigatorElement(baseLM.baseElement, "purchase", "Управление закупками");
         purchase.window = leftToolbar;
         addFormEntity(new PricatFormEntity(purchase, "pricatForm", "Прикаты"));
-        addFormEntity(new OrderFormEntity(purchase, "orderForm", "Заказы"));
+
 
         NavigatorElement purchaseCreate = new NavigatorElement(purchase, "purchaseCreate", "Создать");
+        addFormEntity(new OrderEditFormEntity(purchaseCreate, "orderAddForm", "Заказ", false)).showType = FormShowType.MODAL_FULLSCREEN;
         addFormEntity(new InvoiceEditFormEntity(purchaseCreate, "boxInvoiceAddForm", "Инвойс по коробам", true, false)).showType = FormShowType.MODAL_FULLSCREEN;
         addFormEntity(new InvoiceEditFormEntity(purchaseCreate, "simpleInvoiceAddForm", "Инвойс без коробов", false, false)).showType = FormShowType.MODAL_FULLSCREEN;
         purchaseCreate.window = generateToolbar;
+
+        addFormEntity(new OrderEditFormEntity(null, "orderEditForm", "Редактировать заказ", true));
+        addFormEntity(new OrderFormEntity(purchase, "orderForm", "Заказы"));
 
         addFormEntity(new InvoiceEditFormEntity(null, "boxInvoiceEditForm", "Редактировать инвойс по коробам", true, true));
         addFormEntity(new InvoiceEditFormEntity(null, "simpleInvoiceEditForm", "Редактировать инвойс без коробов", false, true));
@@ -3671,15 +3686,159 @@ public class RomanLogicsModule extends LogicsModule {
         }
     }
 
-    private class OrderFormEntity extends FormEntity<RomanBusinessLogics> {
-        private ObjectEntity objSupplier;
+
+    private class OrderEditFormEntity extends FormEntity<RomanBusinessLogics> {
+
+        private boolean edit;
+
         private ObjectEntity objOrder;
         private ObjectEntity objSIDArticleComposite;
-        private ObjectEntity objSIDArticleSingle;
+        private ObjectEntity objSIDColorSupplier;
+        private ObjectEntity objGroupSizeSupplier;
         private ObjectEntity objArticle;
         private ObjectEntity objItem;
         private ObjectEntity objSizeSupplier;
         private ObjectEntity objColorSupplier;
+        //private ObjectEntity objSku;
+
+        private OrderEditFormEntity(NavigatorElement parent, String sID, String caption, boolean edit) {
+            super(parent, sID, caption);
+
+            this.edit = edit;
+
+            objOrder = addSingleGroupObject(order, "Заказ");
+            if (!edit) {
+                addPropertyDraw(nameSupplierDocument, objOrder);
+                objOrder.setAddOnEvent(FormEventType.INIT);
+            }
+
+            addPropertyDraw(objOrder, baseLM.date, sidDocument, nameCurrencyDocument, sumDocument, quantityDocument, netWeightDocument);
+            objOrder.groupTo.setSingleClassView(ClassViewType.PANEL);
+
+            objSIDArticleComposite = addSingleGroupObject(StringClass.get(50), "Ввод составного артикула", baseLM.objectValue);
+            objSIDArticleComposite.groupTo.setSingleClassView(ClassViewType.PANEL);
+
+            objArticle = addSingleGroupObject(articleComposite, "Артикул");
+            objArticle.groupTo.setSingleClassView(ClassViewType.GRID);
+
+            addPropertyDraw(numberListArticle, objOrder, objArticle);
+            addPropertyDraw(objArticle, nameSizeGroupSupplierArticle, sidArticle, nameBrandSupplierArticle, nameSeasonSupplierArticle, nameThemeSupplierArticle,
+                    nameCategoryArticle, originalNameArticle, sidCustomCategoryOriginArticle,
+                    nameCountrySupplierOfOriginArticle, netWeightArticle, mainCompositionOriginArticle, baseLM.barcode);
+            addPropertyDraw(quantityListArticle, objOrder, objArticle);
+            addPropertyDraw(priceDocumentArticle, objOrder, objArticle);
+            addPropertyDraw(RRPDocumentArticle, objOrder, objArticle);
+            addPropertyDraw(sumDocumentArticle, objOrder, objArticle);
+            addPropertyDraw(invoicedOrderArticle, objOrder, objArticle);
+            //addPropertyDraw(priceOrderedInvoiceArticle, objInvoice, objArticle);
+
+            objSIDColorSupplier = addSingleGroupObject(StringClass.get(50), "Ввод цвета", baseLM.objectValue);
+            objSIDColorSupplier.groupTo.setSingleClassView(ClassViewType.PANEL);
+
+            addActionsOnObjectChange(objSIDColorSupplier, addPropertyObject(addNEColorSupplierSIDInvoice, objSIDColorSupplier, objOrder));
+            addActionsOnObjectChange(objSIDColorSupplier, addPropertyObject(seekColorSIDInvoice, objSIDColorSupplier, objOrder));
+
+            objSizeSupplier = addSingleGroupObject(sizeSupplier, "Размер"); // baseLM.selection, sidSizeSupplier
+            addPropertyDraw(orderSizeSupplier, objSizeSupplier).forceViewType = ClassViewType.HIDE;
+
+            objColorSupplier = addSingleGroupObject(colorSupplier, "Цвет", baseLM.selection, sidColorSupplier, baseLM.name);
+            setReadOnly(sidColorSupplier, true, objColorSupplier.groupTo);
+
+            objItem = addSingleGroupObject(item, "Товар", baseLM.barcode, sidColorSupplierItem, nameColorSupplierItem, sidSizeSupplierItem);
+
+            PropertyDrawEntity quantityColumn = addPropertyDraw(quantityListArticleCompositeColorSize, objOrder, objArticle, objColorSupplier, objSizeSupplier);
+            quantityColumn.columnGroupObjects.add(objSizeSupplier.groupTo);
+            quantityColumn.propertyCaption = addPropertyObject(sidSizeSupplier, objSizeSupplier);
+
+            addPropertyDraw(addGCAProp(actionGroup, "nullInvoiceListArticleCompositeColor", "Сбросить", objSizeSupplier.groupTo, quantityListArticleCompositeColorSize, 1, 2, 3, 4, baseLM.vzero, 4),
+                    objOrder, objArticle, objColorSupplier, objSizeSupplier);
+
+            addPropertyDraw(quantityListSku, objOrder, objItem);
+            addPropertyDraw(priceDocumentSku, objOrder, objItem);
+            addPropertyDraw(priceRateDocumentSku, objOrder, objItem);
+            addPropertyDraw(invoicedOrderSku, objOrder, objItem);
+            addPropertyDraw(quantityListArticleCompositeColor, objOrder, objArticle, objColorSupplier);
+
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(supplierArticle, objArticle), Compare.EQUALS, addPropertyObject(supplierDocument, objOrder)));
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(supplierColorSupplier, objColorSupplier), Compare.EQUALS, addPropertyObject(supplierDocument, objOrder)));
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(supplierSizeSupplier, objSizeSupplier), Compare.EQUALS, addPropertyObject(supplierDocument, objOrder)));
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(articleCompositeItem, objItem), Compare.EQUALS, objArticle));
+            addFixedFilter(new NotNullFilterEntity(addPropertyObject(numberListArticle, objOrder, objArticle)));
+
+//            addFixedFilter(new CompareFilterEntity(addPropertyObject(supplierSizeGroup, objGroupSizeSupplier), Compare.EQUALS, addPropertyObject(supplierDocument, objInvoice)));
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(groupSizeSupplier, objSizeSupplier), Compare.EQUALS, addPropertyObject(sizeGroupSupplierArticle, objArticle)));
+
+            RegularFilterGroupEntity filterGroupColor = new RegularFilterGroupEntity(genID());
+            filterGroupColor.addFilter(new RegularFilterEntity(genID(), new OrFilterEntity(
+                    new NotNullFilterEntity(addPropertyObject(quantityListArticleCompositeColor, objOrder, objArticle, objColorSupplier)),
+                    new CompareFilterEntity(addPropertyObject(sidColorSupplier, objColorSupplier), Compare.EQUALS, objSIDColorSupplier)),
+                    "В заказе",
+                    KeyStroke.getKeyStroke(KeyEvent.VK_F11, 0)), true);
+            addRegularFilterGroup(filterGroupColor);
+
+            RegularFilterGroupEntity filterItemOrder = new RegularFilterGroupEntity(genID());
+            filterItemOrder.addFilter(new RegularFilterEntity(genID(),
+                    new NotNullFilterEntity(addPropertyObject(quantityListSku, objOrder, objItem)),
+                    "В заказе",
+                    KeyStroke.getKeyStroke(KeyEvent.VK_F11, 0)), true);
+            addRegularFilterGroup(filterItemOrder);
+
+            if(edit) {
+               orderEditFA = addMFAProp(actionGroup, "Редактировать заказ", this, new ObjectEntity[] {objOrder}, true);
+               orderEditFA.setImage("edit.png");
+            }
+
+            addActionsOnObjectChange(objSIDArticleComposite, addPropertyObject(addAProp(new AddNewArticleActionProperty(objArticle)), objSIDArticleComposite, objOrder));
+            addActionsOnObjectChange(objSIDArticleComposite, addPropertyObject(incrementNumberListSID, objOrder, objSIDArticleComposite));
+            addActionsOnObjectChange(objSIDArticleComposite, addPropertyObject(seekArticleSIDInvoice, objSIDArticleComposite, objOrder));
+        }
+
+        @Override
+        public FormView createDefaultRichDesign() {
+            DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign();
+
+            design.get(getPropertyDraw(sidDocument, objOrder)).caption = "Номер заказа";
+            design.get(getPropertyDraw(baseLM.date, objOrder)).caption = "Дата заказа";
+
+            design.defaultOrders.put(design.get(getPropertyDraw(numberListArticle)), true);
+            design.defaultOrders.put(design.get(getPropertyDraw(orderSizeSupplier)), true);
+
+            design.get(objOrder.groupTo).grid.constraints.fillVertical = 0.2;
+
+            design.get(getPropertyDraw(baseLM.objectValue, objSIDArticleComposite)).editKey = KeyStroke.getKeyStroke(KeyEvent.VK_F9, 0);
+            design.get(getPropertyDraw(baseLM.objectValue, objSIDColorSupplier)).editKey = KeyStroke.getKeyStroke(KeyEvent.VK_INSERT, 0);
+
+            design.addIntersection(design.getGroupObjectContainer(objColorSupplier.groupTo),
+                    design.getGroupObjectContainer(objItem.groupTo),
+                    DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
+
+            design.get(objItem.groupTo).grid.constraints.fillHorizontal = 2;
+//            design.get(objSizeSupplier.groupTo).grid.constraints.fillHorizontal = 1;
+            design.get(objColorSupplier.groupTo).grid.constraints.fillHorizontal = 3;
+
+//            design.get(getPropertyDraw(cloneItem, objItem)).drawToToolbar = true;
+            return design;
+        }
+
+        @Override
+        public boolean isActionOnChange(Property property) {
+            return property.equals(quantityListArticleCompositeColorSize.property);
+        }
+        @Override
+        public <P extends PropertyInterface> void onChange(Property<P> property, PropertyChange<P> change, DataSession session, Modifier<? extends Changes> modifier) throws SQLException {
+            if(property.equals(quantityListArticleCompositeColorSize.property)) { // если изменяем quantityListArticle
+                // смотрим изменения
+                itemArticleCompositeColorSize.property.setNotNull(
+                        BaseUtils.join(BaseUtils.buildMap(itemArticleCompositeColorSize.listInterfaces, quantityListArticleCompositeColorSize.listInterfaces.subList(1, 4)), change.mapKeys),
+                        change.expr.getWhere().and(change.where), session, BL);
+            }
+        }
+    }
+
+    private class OrderFormEntity extends FormEntity<RomanBusinessLogics> {
+        private ObjectEntity objSupplier;
+        private ObjectEntity objOrder;
+        private ObjectEntity objInvoice;
 
         private OrderFormEntity(NavigatorElement parent, String sID, String caption) {
             super(parent, sID, caption);
@@ -3690,61 +3849,13 @@ public class RomanLogicsModule extends LogicsModule {
             objOrder = addSingleGroupObject(order, "Заказ", baseLM.date, sidDocument, nameCurrencyDocument, sumDocument, sidDestinationDestinationDocument, nameDestinationDestinationDocument);
             addObjectActions(this, objOrder);
 
-            objSIDArticleComposite = addSingleGroupObject(StringClass.get(50), "Ввод составного артикула", baseLM.objectValue);
-            objSIDArticleComposite.groupTo.setSingleClassView(ClassViewType.PANEL);
-
-            addActionsOnObjectChange(objSIDArticleComposite, addPropertyObject(addNEArticleCompositeSIDSupplier, objSIDArticleComposite, objSupplier));
-            addActionsOnObjectChange(objSIDArticleComposite, addPropertyObject(incrementNumberListSID, objOrder, objSIDArticleComposite));
-            addActionsOnObjectChange(objSIDArticleComposite, addPropertyObject(seekArticleSIDSupplier, objSIDArticleComposite, objSupplier));
-
-            objSIDArticleSingle = addSingleGroupObject(StringClass.get(50), "Ввод простого артикула", baseLM.objectValue);
-            objSIDArticleSingle.groupTo.setSingleClassView(ClassViewType.PANEL);
-
-            addActionsOnObjectChange(objSIDArticleSingle, addPropertyObject(addNEArticleSingleSIDSupplier, objSIDArticleSingle, objSupplier));
-            addActionsOnObjectChange(objSIDArticleSingle, addPropertyObject(incrementNumberListSID, objOrder, objSIDArticleSingle));
-            addActionsOnObjectChange(objSIDArticleSingle, addPropertyObject(seekArticleSIDSupplier, objSIDArticleSingle, objSupplier));
-
-            objArticle = addSingleGroupObject(article, "Артикул");
-            objArticle.groupTo.setSingleClassView(ClassViewType.GRID);
-
-            addPropertyDraw(numberListArticle, objOrder, objArticle);
-            addPropertyDraw(objArticle, sidArticle, sidBrandSupplierArticle, nameBrandSupplierArticle, nameSeasonSupplierArticle, nameThemeSupplierArticle, originalNameArticle, nameCountrySupplierOfOriginArticle, nameCountryOfOriginArticle, baseLM.barcode);
-            addPropertyDraw(quantityListArticle, objOrder, objArticle);
-            addPropertyDraw(priceDocumentArticle, objOrder, objArticle);
-            addPropertyDraw(RRPDocumentArticle, objOrder, objArticle);
-            addPropertyDraw(sumDocumentArticle, objOrder, objArticle);
-            addPropertyDraw(invoicedOrderArticle, objOrder, objArticle);
-            addPropertyDraw(baseLM.delete, objArticle);
-
-            objItem = addSingleGroupObject(item, "Товар", baseLM.barcode, sidColorSupplierItem, nameColorSupplierItem, sidSizeSupplierItem);
-            addObjectActions(this, objItem);
-
-            objSizeSupplier = addSingleGroupObject(sizeSupplier, "Размер", baseLM.selection, sidSizeSupplier);
-            objColorSupplier = addSingleGroupObject(colorSupplier, "Цвет", baseLM.selection, sidColorSupplier, baseLM.name);
-
-            PropertyDrawEntity quantityColumn = addPropertyDraw(quantityListArticleCompositeColorSize, objOrder, objArticle, objColorSupplier, objSizeSupplier);
-            quantityColumn.columnGroupObjects.add(objSizeSupplier.groupTo);
-            quantityColumn.propertyCaption = addPropertyObject(sidSizeSupplier, objSizeSupplier);
-
-            addPropertyDraw(quantityListSku, objOrder, objItem);
-            addPropertyDraw(priceDocumentSku, objOrder, objItem);
-            addPropertyDraw(invoicedOrderSku, objOrder, objItem);
-            addPropertyDraw(quantityListArticleCompositeColor, objOrder, objArticle, objColorSupplier);
-            addPropertyDraw(quantityListArticleCompositeSize, objOrder, objArticle, objSizeSupplier);
-
             addFixedFilter(new CompareFilterEntity(addPropertyObject(supplierDocument, objOrder), Compare.EQUALS, objSupplier));
-            addFixedFilter(new CompareFilterEntity(addPropertyObject(supplierArticle, objArticle), Compare.EQUALS, objSupplier));
-            addFixedFilter(new CompareFilterEntity(addPropertyObject(supplierColorSupplier, objColorSupplier), Compare.EQUALS, objSupplier));
-            addFixedFilter(new CompareFilterEntity(addPropertyObject(supplierSizeSupplier, objSizeSupplier), Compare.EQUALS, objSupplier));
-            addFixedFilter(new CompareFilterEntity(addPropertyObject(articleCompositeItem, objItem), Compare.EQUALS, objArticle));
-            addFixedFilter(new NotNullFilterEntity(addPropertyObject(numberListArticle, objOrder, objArticle)));
+            addPropertyDraw(orderEditFA, objOrder).forceViewType = ClassViewType.GRID;
 
-            RegularFilterGroupEntity filterGroup = new RegularFilterGroupEntity(genID());
-            filterGroup.addFilter(new RegularFilterEntity(genID(),
-                    new NotNullFilterEntity(addPropertyObject(quantityListArticleCompositeColor, objOrder, objArticle, objColorSupplier)),
-                    "Заказано",
-                    KeyStroke.getKeyStroke(KeyEvent.VK_F11, 0)));
-            addRegularFilterGroup(filterGroup);
+            objInvoice = addSingleGroupObject(invoice, "Инвойс", baseLM.date, sidDocument, sumDocument);
+
+            addPropertyDraw(objOrder, objInvoice, inOrderInvoice);
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(supplierDocument, objInvoice), Compare.EQUALS, objSupplier));
 
             setReadOnly(objSupplier, true);
         }
@@ -3756,30 +3867,7 @@ public class RomanLogicsModule extends LogicsModule {
             design.get(getPropertyDraw(sidDocument, objOrder)).caption = "Номер заказа";
             design.get(getPropertyDraw(baseLM.date, objOrder)).caption = "Дата заказа";
 
-            design.defaultOrders.put(design.get(getPropertyDraw(numberListArticle)), true);
-
-            design.get(getPropertyDraw(baseLM.objectValue, objSIDArticleComposite)).editKey = KeyStroke.getKeyStroke(KeyEvent.VK_F9, 0);
-            design.get(getPropertyDraw(baseLM.objectValue, objSIDArticleSingle)).editKey = KeyStroke.getKeyStroke(KeyEvent.VK_F8, 0);
-
-            design.get(objOrder.groupTo).grid.constraints.fillVertical = 0.5;
-            design.get(objArticle.groupTo).grid.constraints.fillHorizontal = 4;
-            design.get(objItem.groupTo).grid.constraints.fillHorizontal = 3;
-
-            design.addIntersection(design.getGroupObjectContainer(objSIDArticleComposite.groupTo),
-                    design.getGroupObjectContainer(objSIDArticleSingle.groupTo),
-                    DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
-
-            design.addIntersection(design.getGroupObjectContainer(objArticle.groupTo),
-                    design.getGroupObjectContainer(objSizeSupplier.groupTo),
-                    DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
-
-            design.addIntersection(design.getGroupObjectContainer(objItem.groupTo),
-                    design.getGroupObjectContainer(objSizeSupplier.groupTo),
-                    DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
-
-            design.addIntersection(design.getGroupObjectContainer(objItem.groupTo),
-                    design.getGroupObjectContainer(objColorSupplier.groupTo),
-                    DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
+            //design.defaultOrders.put(design.get(getPropertyDraw(numberListArticle)), true);
 
             return design;
         }
@@ -3844,7 +3932,7 @@ public class RomanLogicsModule extends LogicsModule {
 
             addPropertyDraw(numberListArticle, (box ? objSupplierBox : objInvoice), objArticle);
             addPropertyDraw(objArticle, nameSizeGroupSupplierArticle, sidArticle, nameBrandSupplierArticle, nameSeasonSupplierArticle, nameThemeSupplierArticle, nameCategoryArticle, originalNameArticle, sidCustomCategoryOriginArticle,
-                    nameCountrySupplierOfOriginArticle, netWeightArticle, mainCompositionOriginArticle, additionalCompositionOriginArticle, baseLM.barcode);
+                    nameCountrySupplierOfOriginArticle, netWeightArticle, mainCompositionOriginArticle, baseLM.barcode);
             addPropertyDraw(quantityListArticle, (box ? objSupplierBox : objInvoice), objArticle);
             addPropertyDraw(quantitySimpleInvoiceArticle, objInvoice, objArticle);
             addPropertyDraw(priceDocumentArticle, objInvoice, objArticle);
@@ -4728,11 +4816,8 @@ public class RomanLogicsModule extends LogicsModule {
         private ObjectEntity objFreight;
         private ObjectEntity objPallet;
         private ObjectEntity objShipment;
-        private ObjectEntity objRoute;
         private ObjectEntity objDirectInvoice;
         private ObjectEntity objSku;
-
-        private GroupObjectEntity gobjShipmentRoute;
 
         private FreightShipmentFormEntity(NavigatorElement parent, String sID, String caption) {
             super(parent, sID, caption);
@@ -4746,15 +4831,10 @@ public class RomanLogicsModule extends LogicsModule {
             getPropertyDraw(palletCountFreight).setPropertyHighlight(diffPalletFreightProperty);
             getPropertyDraw(palletNumberFreight).setPropertyHighlight(diffPalletFreightProperty);
 
-            gobjShipmentRoute = new GroupObjectEntity(genID());
-            objShipment = new ObjectEntity(genID(), shipment, "Поставка");
-            objRoute = new ObjectEntity(genID(), route, "Маршрут");
-            gobjShipmentRoute.add(objShipment);
-            gobjShipmentRoute.add(objRoute);
-            addGroup(gobjShipmentRoute);
+            objShipment = addSingleGroupObject(shipment, "Поставка", baseLM.date, sidDocument, nameSupplierDocument);
 
             addPropertyDraw(objShipment, baseLM.date, sidDocument, nameSupplierDocument);
-            addPropertyDraw(objShipment, objRoute, nameImporterShipmentRoute);
+            addPropertyDraw(objShipment, objFreight, nameImporterShipmentFreight);
 
             objPallet = addSingleGroupObject(pallet, "Паллета", baseLM.barcode, grossWeightPallet, freightBoxNumberPallet);
             objPallet.groupTo.setSingleClassView(ClassViewType.GRID);
@@ -4774,7 +4854,6 @@ public class RomanLogicsModule extends LogicsModule {
 
             addPropertyDraw(equalsDirectInvoiceFreight, objDirectInvoice, objFreight);
 
-            addFixedFilter(new CompareFilterEntity(addPropertyObject(routeFreight, objFreight), Compare.EQUALS, objRoute));
             addFixedFilter(new CompareFilterEntity(addPropertyObject(routeCreationPalletPallet, objPallet), Compare.EQUALS, addPropertyObject(routeFreight, objFreight)));
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(quantityShipmentFreight, objShipment, objFreight)));
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(quantityPalletSku, objPallet, objSku)));
@@ -4819,11 +4898,11 @@ public class RomanLogicsModule extends LogicsModule {
             design.get(getPropertyDraw(baseLM.date, objFreight)).caption = "Дата отгрузки";
             design.get(getPropertyDraw(baseLM.objectClassName, objFreight)).caption = "Статус фрахта";
 
-            design.get(gobjShipmentRoute).grid.constraints.fillVertical = 1;
+            design.get(objShipment.groupTo).grid.constraints.fillVertical = 1;
             design.get(objPallet.groupTo).grid.constraints.fillVertical = 1;
             design.get(objSku.groupTo).grid.constraints.fillVertical = 2;
 
-            design.addIntersection(design.getGroupObjectContainer(gobjShipmentRoute),
+            design.addIntersection(design.getGroupObjectContainer(objShipment.groupTo),
                     design.getGroupObjectContainer(objDirectInvoice.groupTo),
                     DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
 
@@ -5417,7 +5496,7 @@ public class RomanLogicsModule extends LogicsModule {
             addFixedFilter(new CompareFilterEntity(addPropertyObject(boxInvoiceSupplierBox, objBox), Compare.EQUALS, objInvoice));
 
             addFixedFilter(new OrFilterEntity(new NotNullFilterEntity(addPropertyObject(quantityDocumentSku, objInvoice, objSku)),
-                    new CompareFilterEntity(addPropertyObject(quantityInvoiceSku, objInvoice, objSku), Compare.GREATER, addPropertyObject(baseLM.vzero))));
+                    new NotNullFilterEntity(addPropertyObject(quantityInvoiceSku, objInvoice, objSku))));
 
             addFixedFilter(new OrFilterEntity(new NotNullFilterEntity(addPropertyObject(quantityListSku, objBox, objSku2)),
                     new NotNullFilterEntity(addPropertyObject(quantitySupplierBoxSku, objBox, objSku2))));
