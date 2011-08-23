@@ -82,6 +82,7 @@ public class ImportProjectsActionProperty extends ActionProperty {
             isOtherSoursesProjectField, commentOtherSoursesProjectField, updateDateProjectField,
 
             nameNativeClusterField, inProjectClusterField, numberCurrentClusterField,
+            isOtherClusterProjectField, nativeSubstantiationOtherClusterProjectField, foreignSubstantiationOtherClusterProjectField,
             nameNativeClaimerField, nameForeignClaimerField,
             firmNameNativeClaimerField, firmNameForeignClaimerField, phoneClaimerField, addressClaimerField, siteClaimerField,
             emailClaimerField, emailFirmClaimerField, OGRNClaimerField, INNClaimerField,
@@ -101,6 +102,9 @@ public class ImportProjectsActionProperty extends ActionProperty {
     ImportKey<?> projectKey, projectTypeProjectKey, projectActionProjectKey, claimerKey, patentKey, ownerTypePatentKey, clusterKey, academicKey, nonRussianSpecialistKey;
     List<ImportProperty<?>> properties = new ArrayList<ImportProperty<?>>();
     ImportProperty<?> propertyDate;
+    ImportProperty<?> propertyOtherCluster;
+    ImportProperty<?> propertyOtherClusterNative;
+    ImportProperty<?> propertyOtherClusterForeign;
     List<ImportProperty<?>> propertiesNative = new ArrayList<ImportProperty<?>>();
     List<ImportProperty<?>> propertiesForeign = new ArrayList<ImportProperty<?>>();
     List<ImportProperty<?>> propertiesCluster = new ArrayList<ImportProperty<?>>();
@@ -130,6 +134,9 @@ public class ImportProjectsActionProperty extends ActionProperty {
         projectActionProjectField = new ImportField(LM.baseLM.classSID);
         nativeSubstantiationProjectTypeField = new ImportField(LM.nativeSubstantiationProjectType);
         foreignSubstantiationProjectTypeField = new ImportField(LM.foreignSubstantiationProjectType);
+        isOtherClusterProjectField = new ImportField(LM.isOtherClusterProject);
+        nativeSubstantiationOtherClusterProjectField = new ImportField(LM.nativeSubstantiationOtherClusterProject);
+        foreignSubstantiationOtherClusterProjectField = new ImportField(LM.foreignSubstantiationOtherClusterProject);
         isOwnedEquipmentProjectField = new ImportField(LM.isOwnedEquipmentProject);
         isAvailableEquipmentProjectField = new ImportField(LM.isAvailableEquipmentProject);
         isTransferEquipmentProjectField = new ImportField(LM.isTransferEquipmentProject);
@@ -344,6 +351,10 @@ public class ImportProjectsActionProperty extends ActionProperty {
 
         propertiesClusterNative.add(new ImportProperty(nativeSubstantiationProjectClusterField, LM.nativeSubstantiationProjectCluster.getMapping(projectKey, clusterKey)));
         propertiesClusterForeign.add(new ImportProperty(foreignSubstantiationProjectClusterField, LM.foreignSubstantiationProjectCluster.getMapping(projectKey, clusterKey)));
+
+        propertyOtherCluster = new ImportProperty(isOtherClusterProjectField, LM.isOtherClusterProject.getMapping(projectKey));
+        propertyOtherClusterNative = new ImportProperty(nativeSubstantiationOtherClusterProjectField, LM.nativeSubstantiationOtherClusterProject.getMapping(projectKey));
+        propertyOtherClusterForeign = new ImportProperty(foreignSubstantiationOtherClusterProjectField, LM.foreignSubstantiationOtherClusterProject.getMapping(projectKey));
 
         academicKey = new ImportKey(LM.academic, LM.fullNameToAcademic.getMapping(fullNameAcademicField));
         propertiesAcademic.add(new ImportProperty(fullNameAcademicField, LM.fullNameAcademic.getMapping(academicKey)));
@@ -679,6 +690,7 @@ public class ImportProjectsActionProperty extends ActionProperty {
                 boolean fillNative = ("rus".equals(lng)) || "both".equals(lng);
                 boolean fillForeign = ("eng".equals(lng)) || "both".equals(lng);
                 boolean fillDate = (!"1970".equals(node.getChildText("yearProject")));
+                boolean fillOtherCluster = false;
 
                 if ("unknown".equals(lng)) {
                     if ((!"".equals(node.getChildText("nameNativeManagerProject"))) && (!node.getChildText("nameNativeManagerProject").equals(null))) {
@@ -746,6 +758,32 @@ public class ImportProjectsActionProperty extends ActionProperty {
                 if (fillDate) {
                     row.add(new java.sql.Date(Integer.parseInt(node.getChildText("yearProject")) - 1900, Integer.parseInt(node.getChildText("monthProject")) - 1, Integer.parseInt(node.getChildText("dayProject"))));
                 }
+
+
+                List listCluster = node.getChildren("cluster");
+                for (int z = 0; z < listCluster.size(); z++) {
+                    Element nodeCluster = (Element) listCluster.get(z);
+                    List<Object> rowCluster = new ArrayList<Object>();
+                    rowCluster.add(true);
+                    fillOtherCluster = ("Нажмите здесь, если не относится".equals(nodeCluster.getChildText("nameNativeCluster")));
+                    rowCluster.add(nodeCluster.getChildText("nameNativeCluster"));
+                    rowCluster.add(projectId);
+
+                    if (!fillOtherCluster) {
+                        if (fillNative)
+                            rowCluster.add(nodeCluster.getChildText("nativeSubstantiationClusterProject"));
+                        if (fillForeign)
+                            rowCluster.add(nodeCluster.getChildText("foreignSubstantiationClusterProject"));
+                    } else {
+                        row.add(true);
+                        if (fillNative)
+                            row.add(nodeCluster.getChildText("nativeSubstantiationClusterProject"));
+                        if (fillForeign)
+                            row.add(nodeCluster.getChildText("foreignSubstantiationClusterProject"));
+                    }
+                    dataCluster.add(rowCluster);
+                }
+
                 if (fillNative) {
                     row.add(node.getChildText("nameNativeProject"));
                     row.add(node.getChildText("nameNativeManagerProject"));
@@ -773,20 +811,6 @@ public class ImportProjectsActionProperty extends ActionProperty {
                     row.add(buildFileByteArray(node.getChild("fileForeignTechnicalDescriptionProject")));
                 }
                 data.add(row);
-
-                List listCluster = node.getChildren("cluster");
-                for (int z = 0; z < listCluster.size(); z++) {
-                    Element nodeCluster = (Element) listCluster.get(z);
-                    List<Object> rowCluster = new ArrayList<Object>();
-                    rowCluster.add(true);
-                    rowCluster.add(nodeCluster.getChildText("nameNativeCluster"));
-                    rowCluster.add(projectId);
-                    if (fillNative)
-                        rowCluster.add(nodeCluster.getChildText("nativeSubstantiationClusterProject"));
-                    if (fillForeign)
-                        rowCluster.add(nodeCluster.getChildText("foreignSubstantiationClusterProject"));
-                    dataCluster.add(rowCluster);
-                }
 
                 List listPatent = node.getChildren("patent");
                 for (int j = 0; j < listPatent.size(); j++) {
@@ -880,24 +904,38 @@ public class ImportProjectsActionProperty extends ActionProperty {
                     properties.add(propertyDate);
                     fieldsBoth.add(dateProjectField);
                 }
-
+                if (fillOtherCluster) {
+                    properties.add(propertyOtherCluster);
+                    fieldsBoth.add(isOtherClusterProjectField);
+                    if (fillNative) {
+                        properties.add(propertyOtherClusterNative);
+                        fieldsBoth.add(nativeSubstantiationOtherClusterProjectField);
+                    }
+                    if (fillForeign) {
+                        properties.add(propertyOtherClusterForeign);
+                        fieldsBoth.add(foreignSubstantiationOtherClusterProjectField);
+                    }
+                }
                 ImportKey<?>[] keysArray = new ImportKey<?>[]{projectKey, projectTypeProjectKey, projectActionProjectKey, claimerKey};
                 importMultilanguageData(
                         fieldsBoth, fieldsNative, fieldsForeign,
                         properties, propertiesNative, propertiesForeign,
                         data, keysArray, lng);
 
-                List<ImportField> fieldsCurrentClusterBoth = BaseUtils.toList(
-                        inProjectClusterField, nameNativeClusterField, projectIdField);
-                List<ImportField> fieldsCurrentClusterNative = BaseUtils.toList(
-                        nativeSubstantiationProjectClusterField);
-                List<ImportField> fieldsCurrentClusterForeign = BaseUtils.toList(
-                        foreignSubstantiationProjectClusterField);
-                keysArray = new ImportKey<?>[]{clusterKey, projectKey};
-                importMultilanguageData(
-                        fieldsCurrentClusterBoth, fieldsCurrentClusterNative, fieldsCurrentClusterForeign,
-                        propertiesCluster, propertiesClusterNative, propertiesClusterForeign,
-                        dataCluster, keysArray, lng);
+                if (!fillOtherCluster) {
+                    List<ImportField> fieldsCurrentClusterBoth = BaseUtils.toList(
+                            inProjectClusterField, nameNativeClusterField, projectIdField);
+                    List<ImportField> fieldsCurrentClusterNative = BaseUtils.toList(
+                            nativeSubstantiationProjectClusterField);
+                    List<ImportField> fieldsCurrentClusterForeign = BaseUtils.toList(
+                            foreignSubstantiationProjectClusterField);
+
+                    keysArray = new ImportKey<?>[]{clusterKey, projectKey};
+                    importMultilanguageData(
+                            fieldsCurrentClusterBoth, fieldsCurrentClusterNative, fieldsCurrentClusterForeign,
+                            propertiesCluster, propertiesClusterNative, propertiesClusterForeign,
+                            dataCluster, keysArray, lng);
+                }
 
                 List<ImportField> fieldsPatentBoth = BaseUtils.toList(
                         projectIdField, nativeNumberPatentField, datePatentField,
