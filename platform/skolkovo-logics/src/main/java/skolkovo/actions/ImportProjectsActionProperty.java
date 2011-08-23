@@ -676,12 +676,22 @@ public class ImportProjectsActionProperty extends ActionProperty {
                 Element node = (Element) list.get(i);
                 row = new ArrayList<Object>();
                 String lng = BaseUtils.nevl(node.getChildText("languageProject"), "rus").toString();
-                if ("unknown".equals(lng)) {
-                    lng = "both";
-                }
+
                 boolean fillNative = ("rus".equals(lng)) || "both".equals(lng);
                 boolean fillForeign = ("eng".equals(lng)) || "both".equals(lng);
                 boolean fillDate = (!"1970".equals(node.getChildText("yearProject")));
+
+                if ("unknown".equals(lng)) {
+                    if ((!"".equals(node.getChildText("nameNativeManagerProject"))) && (!node.getChildText("nameNativeManagerProject").equals(null))) {
+                        fillNative = true;
+                        lng = "rus";
+                    }
+                    if ((!"".equals(node.getChildText("nameForeignManagerProject"))) && (!node.getChildText("nameForeignManagerProject").equals(null))) {
+                        fillForeign = true;
+                        lng = "eng";
+                    }
+                    if ((fillNative) && (fillForeign)) lng = "both";
+                }
 
                 if (fillNative) row.add(true);
                 else row.add(null); //fillNativeProject
