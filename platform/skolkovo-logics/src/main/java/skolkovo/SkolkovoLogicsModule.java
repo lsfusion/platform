@@ -420,6 +420,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
     LP expertLogin;
 
+    LP projectStatusProject,  nameProjectStatusProject;;
     LP statusProject, nameStatusProject;
     LP statusProjectVote, nameStatusProjectVote;
 
@@ -465,6 +466,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP quantityProjectLanguageDocumentType;
     LP translateLanguageDocumentType;
     LP notEnoughProject;
+    LP isActiveProject;
     LP autoGenerateProject;
 
     LP nameDocument;
@@ -1031,6 +1033,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         notEnoughProject = addMGProp(projectStatusGroup, "notEnoughProject", true, "Недостаточно док.", notEnoughProjectLanguageDocumentType, 1);
 
         autoGenerateProject = addDProp(projectStatusGroup, "autoGenerateProject", "Авт. зас.", LogicalClass.instance, project);
+        isActiveProject = addDProp(projectStatusGroup, "isActiveProject", "Активный", LogicalClass.instance, project);
 
         fileDocument = addDProp(baseGroup, "fileDocument", "Файл", PDFClass.instance, document);
         loadFileDocument = addLFAProp(baseGroup, "Загрузить", fileDocument);
@@ -1288,7 +1291,9 @@ public class SkolkovoLogicsModule extends LogicsModule {
                 voteOpenedSucceededProject, 1, addCProp(projectStatus, "succeeded", project), 1,
                 voteInProgressProject, 1, addCProp(projectStatus, "inProgress", project), 1,
                 addIfElseUProp(addCProp(projectStatus, "needDocuments", project), addCProp(projectStatus, "needExtraVote", project), notEnoughProject, 1), 1);
-        nameStatusProject = addJProp(projectInformationGroup, "nameStatusProject", "Статус", baseLM.name, statusProject, 1);
+
+        projectStatusProject = addSUProp(projectInformationGroup, "ProjectStatusProject", "Статус", Union.OVERRIDE, statusProject, addDProp("Статус", projectStatus, project));
+        nameStatusProject = addJProp(projectInformationGroup, "nameStatusProject", "Статус", baseLM.name, projectStatusProject, 1);
 
         dateProject = addJProp("dateProject", "Дата проекта", baseLM.and1, baseLM.date, 1, is(project), 1);
         updateDateProject = addDProp(projectInformationGroup, "updateDateProject", "Дата изменения проекта", DateTimeClass.instance, project);
@@ -1649,12 +1654,13 @@ public class SkolkovoLogicsModule extends LogicsModule {
         private ObjectEntity objExpert;
         private ObjectEntity objDocumentTemplate;
         private RegularFilterGroupEntity projectFilterGroup;
+        private RegularFilterGroupEntity activeProjectFilterGroup;
 
         private ProjectFormEntity(NavigatorElement parent, String sID) {
             super(parent, sID, "Реестр проектов");
 
             objProject = addSingleGroupObject(project, baseLM.date, nameNative, nameForeign,  nameNativeFinalClusterProject, nameNativeJoinClaimerProject,
-                    nameStatusProject, nameProjectActionProject, autoGenerateProject, generateVoteProject, editProject);
+                    nameStatusProject, nameProjectActionProject, autoGenerateProject, isActiveProject, generateVoteProject, editProject);
             addObjectActions(this, objProject);
 
 //            addPropertyDraw(addProject).toDraw = objProject.groupTo;
@@ -1710,6 +1716,13 @@ public class SkolkovoLogicsModule extends LogicsModule {
                                                                  "Оценен",
                                                                  KeyStroke.getKeyStroke(KeyEvent.VK_F10, 0)));
             addRegularFilterGroup(projectFilterGroup);
+
+            activeProjectFilterGroup = new RegularFilterGroupEntity(genID());
+            activeProjectFilterGroup.addFilter(new RegularFilterEntity(genID(),
+                                                                 new NotNullFilterEntity(addPropertyObject(isActiveProject, objProject)),
+                                                                 "Активный",
+                                                                 KeyStroke.getKeyStroke(KeyEvent.VK_F9, 0)), true);
+            addRegularFilterGroup(activeProjectFilterGroup);
 
             addHintsIncrementTable(quantityDoneVote, notEnoughProject, acceptedVote, succeededVote, voteSucceededProjectCluster, voteValuedProjectCluster, clusterAcceptedProject, currentClusterProject);
 //            addHintsNoUpdate(statusProject);
