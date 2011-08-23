@@ -115,6 +115,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public LP yearInDate;
 
     public LP vtrue, actionTrue, vzero;
+    public LP vnull;
     public LP positive, negative;
 
     public LP round0;
@@ -408,6 +409,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         between = addJProp("between", getString("logics.between"), and1, groeq2, 1, 2, groeq2, 3, 1);
         vtrue = addCProp(getString("logics.true"), LogicalClass.instance, true);
         vzero = addCProp("0", DoubleClass.instance, 0);
+        vnull = addProperty(privateGroup, new LP<PropertyInterface>(new NullValueProperty()));
 
         round0 = addSFProp("round(CAST(prm1 as numeric), 0)", DoubleClass.instance, 1);
 

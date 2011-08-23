@@ -1878,7 +1878,7 @@ public class RomanLogicsModule extends LogicsModule {
 
         executeChangeFreightClass = addJProp(true, "Изменить класс фрахта", baseLM.and1, addEPAProp(baseLM.objectClass), 1, 2, is(freight), 1);
 
-        executeChangeFreightClassApply = addEPAProp(true, executeChangeFreightClass, 1, 2, baseLM.apply, baseLM.cancel);
+        executeChangeFreightClassApply = addEPAProp(EPA_DEFAULT, executeChangeFreightClass, 1, 2, baseLM.apply, baseLM.cancel);
 
         executeChangeFreightChangedClass = addJProp("Пометить как обработанный", and(false, true),
                                                 executeChangeFreightClassApply, 1, 2,
@@ -3801,6 +3801,8 @@ public class RomanLogicsModule extends LogicsModule {
         private ObjectEntity objItem;
         private ObjectEntity objSizeSupplier;
         private ObjectEntity objColorSupplier;
+        private PropertyDrawEntity nullArticleColor;
+        private PropertyDrawEntity nullArticle;
         //private ObjectEntity objSku;
 
         private InvoiceEditFormEntity(NavigatorElement parent, String sID, String caption, boolean box, boolean edit) {
@@ -3872,8 +3874,13 @@ public class RomanLogicsModule extends LogicsModule {
             quantityColumn.columnGroupObjects.add(objSizeSupplier.groupTo);
             quantityColumn.propertyCaption = addPropertyObject(sidSizeSupplier, objSizeSupplier);
 
-            addPropertyDraw(addGCAProp(actionGroup, "nullInvoiceListArticleCompositeColor", "Сбросить", objSizeSupplier.groupTo, quantityListArticleCompositeColorSize, 1, 2, 3, 4, baseLM.vzero, 4),
-                    objList, objArticle, objColorSupplier, objSizeSupplier);
+            nullArticle = addPropertyDraw(addEPAProp("nullListArticle", "Сбросить", EPA_NULL,
+                    quantityListArticle,
+                    numberListArticle),
+                    objList, objArticle);
+
+            nullArticleColor = addPropertyDraw(addGCAProp(actionGroup, "nullInvoiceListArticleCompositeColor", "Сбросить", objSizeSupplier.groupTo, quantityListArticleCompositeColorSize, 1, 2, 3, 4, baseLM.vnull, 4),
+                                                objList, objArticle, objColorSupplier, objSizeSupplier);
 
             addPropertyDraw(quantityListSku, (box ? objSupplierBox : objInvoice), objItem);
             addPropertyDraw(priceDocumentSku, objInvoice, objItem);
@@ -3975,6 +3982,8 @@ public class RomanLogicsModule extends LogicsModule {
 //            design.get(objSizeSupplier.groupTo).grid.constraints.fillHorizontal = 1;
             design.get(objColorSupplier.groupTo).grid.constraints.fillHorizontal = 3;
 
+            design.get(nullArticle).design.setIconPath("delete.png");
+            design.get(nullArticleColor).design.setIconPath("delete.png");
 //            design.get(getPropertyDraw(cloneItem, objItem)).drawToToolbar = true;
             return design;
         }

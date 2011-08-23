@@ -383,7 +383,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends IncrementProps<Pr
     // -------------------------------------- Изменение данных ----------------------------------- //
 
     // пометка что изменились данные
-    private boolean dataChanged = true;
+    public boolean dataChanged = true;
 
     private DataObject createObject(ConcreteCustomClass cls) throws SQLException {
 

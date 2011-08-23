@@ -28,7 +28,7 @@ public class ExecutionContext {
     private final List<ClientAction> actions;
     private final RemoteForm form;
     private final Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects;
-    private final boolean groupLast;
+    private final boolean groupLast; // обозначает, что изменение последнее, чтобы форма начинала определять, что изменилось
 
     public ExecutionContext(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, DataSession session, Modifier<? extends Changes> modifier, List<ClientAction> actions, RemoteForm form, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects, boolean groupLast) {
         this.keys = keys;

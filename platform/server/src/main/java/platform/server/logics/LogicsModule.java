@@ -1493,22 +1493,31 @@ public abstract class LogicsModule {
      * Добавляет action для запуска свойств с мэппингом по порядку, т.е. на входы и выход каждого свойства мэппятся интерфейсы результирующего по порядку
      */
     protected LP addEPAProp(LP... lps) {
-        return addEPAProp(false, lps);
+        return addEPAProp(EPA_INTERFACE, lps);
     }
+
+    public final static int EPA_INTERFACE = 0; // значение идет доп. интерфейсом
+    public final static int EPA_DEFAULT = 1; // писать из getDefaultValue
+    public final static int EPA_NULL = 2; // писать null
 
     /**
      * Добавляет action для запуска свойств с мэппингом по порядку, т.е. на входы и выход каждого свойства мэппятся интерфейсы результирующего по порядку
      *
-     * @param writeDefaultValues Если == true, то мэппятся только входы, без выхода
+     * @param writeType Если != INTERFACE, то мэппятся только входы, без выхода
      */
-    protected LP addEPAProp(boolean writeDefaultValues, LP... lps) {
+
+    protected LP addEPAProp(int writeType, LP... lps) {
+        return addEPAProp(genSID(), "sysEPA", writeType, lps);
+    }
+
+    protected LP addEPAProp(String sID, String caption, int writeType, LP... lps) {
         int[][] mapInterfaces = new int[lps.length][];
         for (int i = 0; i < lps.length; ++i) {
             LP lp = lps[i];
-            mapInterfaces[i] = consecutiveInts(lp.listInterfaces.size() + (writeDefaultValues ? 0 : 1));
+            mapInterfaces[i] = consecutiveInts(lp.listInterfaces.size() + (writeType == EPA_INTERFACE ? 1 : 0));
         }
 
-        return addEPAProp(writeDefaultValues, lps, mapInterfaces);
+        return addEPAProp(sID, caption, writeType, lps, mapInterfaces);
     }
 
     /**
@@ -1519,10 +1528,10 @@ public abstract class LogicsModule {
      * Пример 1: addEPAProp(true, userLogin, 1, inUserRole, 1, 2)
      * Пример 2: addEPAProp(false, userLogin, 1, 3, inUserRole, 1, 2, 4)
      *
-     * @param writeDefaultValues использовать ли значения по умолчанию для записи в свойства.
+     * @param writeType использовать ли значения по умолчанию для записи в свойства.
      *                           Если значение этого параметра false, то мэпиться должны не только выходы, но и вход, номер интерфейса, который пойдёт на вход, должен быть указан последним
      */
-    protected LP addEPAProp(boolean writeDefaultValues, Object... params) {
+    protected LP addEPAProp(int writeType, Object... params) {
         List<LP> lps = new ArrayList<LP>();
         List<int[]> mapInterfaces = new ArrayList<int[]>();
 
@@ -1532,7 +1541,7 @@ public abstract class LogicsModule {
 
             LP lp = (LP) params[pi++];
 
-            int[] propMapInterfaces = new int[lp.listInterfaces.size() + (writeDefaultValues ? 0 : 1)];
+            int[] propMapInterfaces = new int[lp.listInterfaces.size() + (writeType == LogicsModule.EPA_INTERFACE ? 1 : 0)];
             for (int j = 0; j < propMapInterfaces.length; ++j) {
                 propMapInterfaces[j] = (Integer) params[pi++] - 1;
             }
@@ -1540,11 +1549,11 @@ public abstract class LogicsModule {
             lps.add(lp);
             mapInterfaces.add(propMapInterfaces);
         }
-        return addEPAProp(writeDefaultValues, lps.toArray(new LP[lps.size()]), mapInterfaces.toArray(new int[mapInterfaces.size()][]));
+        return addEPAProp(genSID(), "sysEPA", writeType, lps.toArray(new LP[lps.size()]), mapInterfaces.toArray(new int[mapInterfaces.size()][]));
     }
 
-    private LP addEPAProp(boolean writeDefaultValues, LP[] lps, int[][] mapInterfaces) {
-        return addAProp(new ExecutePropertiesActionProperty(genSID(), "sys", writeDefaultValues, lps, mapInterfaces));
+    private LP addEPAProp(String sID, String caption, int writeType, LP[] lps, int[][] mapInterfaces) {
+        return addAProp(new ExecutePropertiesActionProperty(sID, caption, writeType, lps, mapInterfaces));
     }
 
     protected LP addLFAProp(LP lp) {

@@ -19,6 +19,10 @@ public class PropertyUtils {
         Map<Integer, ValueClass> mapClasses = new HashMap<Integer, ValueClass>();
         for (int i = 0; i < dataProperties.length; ++i) {
             LP dataProperty = dataProperties[i];
+
+            if (!mapReturns && dataProperty.listInterfaces.size() == 0) // специально для vnull сделано
+                continue;
+
             int[] mapPropInterfaces = mapInterfaces[i];
             if (mapPropInterfaces == null) {
                 mapPropInterfaces = BaseUtils.consecutiveInts(dataProperty.listInterfaces.size() + (mapReturns ? 1 : 0));
