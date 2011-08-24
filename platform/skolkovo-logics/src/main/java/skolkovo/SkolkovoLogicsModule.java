@@ -426,8 +426,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP expertLogin;
 
     LP projectStatusProject, nameProjectStatusProject;
-    ;
-    LP statusProject, nameStatusProject;
+
+    LP statusProject, nameStatusProject, statusDataProject;
     LP statusProjectVote, nameStatusProjectVote;
 
     LP projectSucceededClaimer;
@@ -1370,7 +1370,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
                 voteInProgressProject, 1, addCProp(projectStatus, "inProgress", project), 1,
                 addIfElseUProp(addCProp(projectStatus, "needDocuments", project), addCProp(projectStatus, "needExtraVote", project), notEnoughProject, 1), 1);
 
-        projectStatusProject = addSUProp(projectInformationGroup, "ProjectStatusProject", "Статус", Union.OVERRIDE, statusProject, addDProp("Статус", projectStatus, project));
+        statusDataProject = addDProp("Статус", projectStatus, project);
+        projectStatusProject = addSUProp(projectInformationGroup, "ProjectStatusProject", "Статус", Union.OVERRIDE, statusProject, statusDataProject);
         nameStatusProject = addJProp(projectInformationGroup, "nameStatusProject", "Статус", baseLM.name, projectStatusProject, 1);
 
         dateProject = addJProp("dateProject", "Дата проекта", baseLM.and1, baseLM.date, 1, is(project), 1);
@@ -1741,6 +1742,9 @@ public class SkolkovoLogicsModule extends LogicsModule {
             getPropertyDraw(nativeSubstantiationOtherClusterProject).propertyCaption = addPropertyObject(hideNativeSubstantiationOtherClusterProject, objProject);
             getPropertyDraw(foreignSubstantiationOtherClusterProject).propertyCaption = addPropertyObject(hideForeignSubstantiationOtherClusterProject, objProject);
             addObjectActions(this, objProject);
+
+            PropertyObjectEntity dataProperty = addPropertyObject(statusDataProject, objProject);
+            getPropertyDraw(nameStatusProject).setPropertyHighlight(dataProperty);
 
 //            addPropertyDraw(addProject).toDraw = objProject.groupTo;
 //            getPropertyDraw(addProject).forceViewType = ClassViewType.PANEL;
