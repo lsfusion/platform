@@ -291,6 +291,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
     LP emailToExpert;
 
+    LP nameNativeJoinClaimerVote, nameForeignJoinClaimerVote;
     LP nameNativeClaimerVote, nameForeignClaimerVote;
     public LP nameNativeGenitiveManagerProject;
     LP nameGenitiveManagerProject;
@@ -487,6 +488,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP nameProjectActionVote;
     LP isStatusVote;
     LP isPreliminaryVote;
+    LP isStatusProject;
+    LP isPreliminaryProject;
     public LP nativeSubstantiationProjectType;
     public LP foreignSubstantiationProjectType;
     public LP nativeSubstantiationProjectCluster;
@@ -735,17 +738,25 @@ public class SkolkovoLogicsModule extends LogicsModule {
         nameForeignManagerProject = addDProp(projectInformationGroup, "nameForeignManagerProject", "Full name project manager", InsensitiveStringClass.get(2000), project);
         nameForeignManagerProject.setMinimumWidth(10); nameForeignManagerProject.setPreferredWidth(50);
 
-        nameNativeJoinClaimerProject = addJProp(projectInformationGroup, "nameNativeJoinClaimerProject", "Заявитель", nameNative, claimerProject, 1);
-        nameNativeClaimerProject = addSUProp("nameNativeClaimerProject", "Заявитель", Union.OVERRIDE, nameNativeManagerProject, nameNativeJoinClaimerProject);
+        projectActionProject = addDProp(idGroup, "projectActionProject", "Тип заявки (ИД)", projectAction, project);
+        nameProjectActionProject = addJProp(projectInformationGroup, "nameProjectActionProject", "Тип заявки", baseLM.name, projectActionProject, 1);
+        nameProjectActionProject.setPreferredCharWidth(20);
+
+        isStatusProject = addJProp("isStatusProject", "На статус участника", baseLM.equals2, projectActionProject, 1, addCProp(projectAction, "status", project), 1);
+        isPreliminaryProject = addJProp("isPreliminaryProject", "На предварительную экспертизу", baseLM.equals2, projectActionProject, 1, addCProp(projectAction, "preliminary", project), 1);
+
+        nameNativeJoinClaimerProject = addJProp(baseGroup, "nameNativeJoinClaimerProject", "Заявитель", nameNative, claimerProject, 1);
+        nameForeignJoinClaimerProject = addJProp(baseGroup, "nameForeignJoinClaimerProject", "Claimer", nameForeign, claimerProject, 1);
+
+        nameNativeClaimerProject = addIfElseUProp(projectInformationGroup, "nameNativeClaimerProject", "Заявитель", nameNativeManagerProject, nameNativeJoinClaimerProject, isPreliminaryProject, 1);
         nameNativeClaimerProject.setMinimumWidth(10); nameNativeClaimerProject.setPreferredWidth(50);
-        nameForeignJoinClaimerProject = addJProp(projectInformationGroup, "nameForeignJoinClaimerProject", "Claimer", nameForeign, claimerProject, 1);
-        nameForeignClaimerProject = addSUProp("nameForeignClaimerProject", "Claimer", Union.OVERRIDE, nameForeignManagerProject, nameForeignJoinClaimerProject);
+        nameForeignClaimerProject = addIfElseUProp(projectInformationGroup, "nameForeignClaimerProject", "Claimer", nameForeignManagerProject, nameForeignJoinClaimerProject, isPreliminaryProject, 1);
         nameForeignClaimerProject.setMinimumWidth(10); nameForeignClaimerProject.setPreferredWidth(50);
-        nameGenitiveClaimerProject = addSUProp(additionalInformationGroup, "nameGenitiveClaimerProject", "Заявитель (Кого)", Union.OVERRIDE, nameGenitiveManagerProject, nameNativeJoinClaimerProject);
+        nameGenitiveClaimerProject = addIfElseUProp(baseGroup, "nameGenitiveClaimerProject", "Заявитель (кого)", nameGenitiveManagerProject, nameNativeJoinClaimerProject, isPreliminaryProject, 1);
         nameGenitiveClaimerProject.setMinimumWidth(10); nameGenitiveClaimerProject.setPreferredWidth(50);
-        nameDativusClaimerProject = addSUProp(additionalInformationGroup, "nameDativusClaimerProject", "Заявитель (Кому)", Union.OVERRIDE, nameDativusManagerProject, nameNativeJoinClaimerProject);
+        nameDativusClaimerProject = addIfElseUProp(baseGroup, "nameDativusClaimerProject", "Заявитель (кому)", nameDativusManagerProject, nameNativeJoinClaimerProject, isPreliminaryProject, 1);
         nameDativusClaimerProject.setMinimumWidth(10); nameDativusClaimerProject.setPreferredWidth(50);
-        nameAblateClaimerProject = addSUProp(additionalInformationGroup, "nameAblateClaimerProject", "Заявитель (Кем)", Union.OVERRIDE, nameAblateManagerProject, nameNativeJoinClaimerProject);
+        nameAblateClaimerProject = addIfElseUProp(baseGroup, "nameAblateClaimerProject", "Заявитель (кем)", nameAblateManagerProject, nameNativeJoinClaimerProject, isPreliminaryProject, 1);
         nameAblateClaimerProject.setMinimumWidth(10); nameAblateClaimerProject.setPreferredWidth(50);
 
         nameNativeProject = addJProp(projectInformationGroup, "nameNativeProject", "Название проекта", baseLM.and1, nameNative, 1, is(project), 1);
@@ -765,10 +776,6 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         projectTypeProject = addDProp(idGroup, "projectTypeProject", "Тип проекта (ИД)", projectType, project);
         nameProjectTypeProject = addJProp(innovationGroup, "nameProjectTypeProject", "Тип проекта", baseLM.name, projectTypeProject, 1);
-
-        projectActionProject = addDProp(idGroup, "projectActionProject", "Тип заявки (ИД)", projectAction, project);
-        nameProjectActionProject = addJProp(projectInformationGroup, "nameProjectActionProject", "Тип заявки", baseLM.name, projectActionProject, 1);
-        nameProjectActionProject.setPreferredCharWidth(20);
 
         projectActionVote = addDProp(idGroup, "projectActionVote", "Тип заявки (ИД)", projectAction, vote);
         nameProjectActionVote = addJProp(baseGroup, "nameProjectActionVote", "Тип заявки", baseLM.name, projectActionVote, 1);
@@ -983,13 +990,19 @@ public class SkolkovoLogicsModule extends LogicsModule {
         loadFileStatementNonRussianSpecialist = addLFAProp(baseGroup, "Загрузить файл заявления", fileStatementNonRussianSpecialist);
         openFileStatementNonRussianSpecialist = addOFAProp(baseGroup, "Открыть файл заявления", fileStatementNonRussianSpecialist);
 
+        nameNativeJoinClaimerVote = addJProp(baseGroup, "nameNativeJoinClaimerVote", nameNative, claimerVote, 1);
+        nameForeignJoinClaimerVote = addJProp(baseGroup, "nameForeignJoinClaimerVote",  nameForeign, claimerVote, 1);
 
-        nameNativeClaimerVote = addJProp(baseGroup, "nameNativeClaimerVote", "Заявитель", nameNativeClaimerProject, projectVote, 1);
+        nameNativeClaimerVote = addIfElseUProp(baseGroup, "nameNativeClaimerVote", "Заявитель", addJProp(nameNativeManagerProject, projectVote, 1), nameNativeJoinClaimerVote, isPreliminaryVote, 1);
         nameNativeClaimerVote.setMinimumWidth(10); nameNativeClaimerVote.setPreferredWidth(50);
-        nameForeignClaimerVote = addJProp(baseGroup, "nameForeignClaimerVote", "Заявитель (иностр.)", nameForeignClaimerProject, projectVote, 1);
-        nameGenitiveClaimerVote = addJProp(baseGroup, "nameGenitiveClaimerVote", "Заявитель (кого)", nameGenitiveClaimerProject, projectVote, 1);
-        nameDativusClaimerVote = addJProp(baseGroup, "nameDativusClaimerVote", "Заявитель (кому)", nameDativusClaimerProject, projectVote, 1);
-        nameAblateClaimerVote = addJProp(baseGroup, "nameAblateClaimerVote", "Заявитель (кем)", nameAblateClaimerProject, projectVote, 1);
+        nameForeignClaimerVote = addIfElseUProp(baseGroup, "nameForeignClaimerVote", "Заявитель (иностр.)", addJProp(nameForeignManagerProject, projectVote, 1), nameForeignJoinClaimerVote, isPreliminaryVote, 1);
+        nameForeignClaimerVote.setMinimumWidth(10); nameForeignClaimerVote.setPreferredWidth(50);
+        nameGenitiveClaimerVote = addIfElseUProp(baseGroup, "nameGenitiveClaimerVote", "Заявитель (кого)", addJProp(nameGenitiveManagerProject, projectVote, 1), nameNativeJoinClaimerVote, isPreliminaryVote, 1);
+        nameGenitiveClaimerVote.setMinimumWidth(10); nameGenitiveClaimerVote.setPreferredWidth(50);
+        nameDativusClaimerVote = addIfElseUProp(baseGroup, "nameDativusClaimerVote", "Заявитель (кому)", addJProp(nameDativusManagerProject, projectVote, 1), nameNativeJoinClaimerVote, isPreliminaryVote, 1);
+        nameDativusClaimerVote.setMinimumWidth(10); nameDativusClaimerVote.setPreferredWidth(50);
+        nameAblateClaimerVote = addIfElseUProp(baseGroup, "nameAblateClaimerVote", "Заявитель (кем)", addJProp(nameAblateManagerProject, projectVote, 1), nameNativeJoinClaimerVote, isPreliminaryVote, 1);
+        nameAblateClaimerVote.setMinimumWidth(10); nameAblateClaimerVote.setPreferredWidth(50);
 
         documentTemplateDocumentTemplateDetail = addDProp(idGroup, "documentTemplateDocumentTemplateDetail", "Шаблон (ИД)", documentTemplate, documentTemplateDetail);
 
@@ -1659,7 +1672,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         private ProjectFormEntity(NavigatorElement parent, String sID) {
             super(parent, sID, "Реестр проектов");
 
-            objProject = addSingleGroupObject(project, baseLM.date, nameNative, nameForeign,  nameNativeFinalClusterProject, nameNativeJoinClaimerProject,
+            objProject = addSingleGroupObject(project, baseLM.date, nameNative, nameForeign,  nameNativeFinalClusterProject, nameNativeClaimerProject,
                     nameStatusProject, nameProjectActionProject, autoGenerateProject, inactiveProject, generateVoteProject, editProject);
             addObjectActions(this, objProject);
 
