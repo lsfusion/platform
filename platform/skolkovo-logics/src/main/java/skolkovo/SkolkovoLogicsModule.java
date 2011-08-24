@@ -1842,8 +1842,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
             specContainer.add(clusterContainer);
             specContainer.add(docContainer);
             specContainer.add(expertContainer);
-//
 
+            design.setHighlightColor(new Color(223, 255, 223));
 //            design.get(objVoteHeader.groupTo).grid.constraints.fillHorizontal = 1.5;
 
             design.getPanelContainer(objVote.groupTo).add(design.get(getPropertyDraw(generateVoteProject)));
