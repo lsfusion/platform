@@ -466,7 +466,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP quantityProjectLanguageDocumentType;
     LP translateLanguageDocumentType;
     LP notEnoughProject;
-    LP isActiveProject;
+    LP inactiveProject;
     LP autoGenerateProject;
 
     LP nameDocument;
@@ -1033,7 +1033,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         notEnoughProject = addMGProp(projectStatusGroup, "notEnoughProject", true, "Недостаточно док.", notEnoughProjectLanguageDocumentType, 1);
 
         autoGenerateProject = addDProp(projectStatusGroup, "autoGenerateProject", "Авт. зас.", LogicalClass.instance, project);
-        isActiveProject = addDProp(projectStatusGroup, "isActiveProject", "Активный", LogicalClass.instance, project);
+        inactiveProject = addDProp(projectStatusGroup, "inactiveProject", "Не акт.", LogicalClass.instance, project);
 
         fileDocument = addDProp(baseGroup, "fileDocument", "Файл", PDFClass.instance, document);
         loadFileDocument = addLFAProp(baseGroup, "Загрузить", fileDocument);
@@ -1660,7 +1660,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             super(parent, sID, "Реестр проектов");
 
             objProject = addSingleGroupObject(project, baseLM.date, nameNative, nameForeign,  nameNativeFinalClusterProject, nameNativeJoinClaimerProject,
-                    nameStatusProject, nameProjectActionProject, autoGenerateProject, isActiveProject, generateVoteProject, editProject);
+                    nameStatusProject, nameProjectActionProject, autoGenerateProject, inactiveProject, generateVoteProject, editProject);
             addObjectActions(this, objProject);
 
 //            addPropertyDraw(addProject).toDraw = objProject.groupTo;
@@ -1719,7 +1719,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
             activeProjectFilterGroup = new RegularFilterGroupEntity(genID());
             activeProjectFilterGroup.addFilter(new RegularFilterEntity(genID(),
-                                                                 new NotNullFilterEntity(addPropertyObject(isActiveProject, objProject)),
+                                                                 new NotFilterEntity(new NotNullFilterEntity(addPropertyObject(inactiveProject, objProject))),
                                                                  "Активный",
                                                                  KeyStroke.getKeyStroke(KeyEvent.VK_F9, 0)), true);
             addRegularFilterGroup(activeProjectFilterGroup);
