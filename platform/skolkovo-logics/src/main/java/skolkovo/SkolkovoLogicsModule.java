@@ -1373,7 +1373,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
                 addIfElseUProp(addCProp(projectStatus, "needDocuments", project), addCProp(projectStatus, "needExtraVote", project), notEnoughProject, 1), 1);
 
         statusDataProject = addDProp("Статус", projectStatus, project);
-        projectStatusProject = addSUProp(projectInformationGroup, "ProjectStatusProject", "Статус", Union.OVERRIDE, statusProject, statusDataProject);
+        projectStatusProject = addSUProp(idGroup, "ProjectStatusProject", "Статус", Union.OVERRIDE, statusProject, statusDataProject);
         nameStatusProject = addJProp(projectInformationGroup, "nameStatusProject", "Статус", baseLM.name, projectStatusProject, 1);
 
         dateJoinProject = addJProp(baseLM.and1, baseLM.date, 1, is(project), 1);

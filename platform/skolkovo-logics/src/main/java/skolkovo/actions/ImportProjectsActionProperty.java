@@ -293,7 +293,7 @@ public class ImportProjectsActionProperty extends ActionProperty {
         properties.add(new ImportProperty(fileExtractClaimerField, LM.extractClaimer.getMapping(claimerKey)));
         properties.add(new ImportProperty(fileRoadMapProjectField, LM.fileRoadMapProject.getMapping(projectKey)));
 
-        propertyDate = new ImportProperty(dateProjectField, LM.dateProject.getMapping(projectKey));
+        propertyDate = new ImportProperty(dateProjectField, LM.dateJoinProject.getMapping(projectKey));
 
         propertiesNative.add(new ImportProperty(nameNativeProjectField, LM.nameNativeProject.getMapping(projectKey)));
         propertiesNative.add(new ImportProperty(nameNativeManagerProjectField, LM.nameNativeManagerProject.getMapping(projectKey)));
@@ -955,7 +955,7 @@ public class ImportProjectsActionProperty extends ActionProperty {
                 );
                 ImportTable table = new ImportTable(fieldsAcademic, dataAcademic);
                 keysArray = new ImportKey<?>[]{projectKey, academicKey};
-                new IntegrationService(session, table, Arrays.asList(keysArray), propertiesAcademic).synchronize(true, true, false);
+                new IntegrationService(session, table, Arrays.asList(keysArray), propertiesAcademic).synchronize(true, true, false, true);
 
                 List<ImportField> fieldsNonRussianSpecialist = BaseUtils.toList(
                         projectIdField,
@@ -965,7 +965,7 @@ public class ImportProjectsActionProperty extends ActionProperty {
                 );
                 table = new ImportTable(fieldsNonRussianSpecialist, dataNonRussianSpecialist);
                 keysArray = new ImportKey<?>[]{projectKey, nonRussianSpecialistKey};
-                new IntegrationService(session, table, Arrays.asList(keysArray), propertiesNonRussianSpecialist).synchronize(true, true, false);
+                new IntegrationService(session, table, Arrays.asList(keysArray), propertiesNonRussianSpecialist).synchronize(true, true, false, true);
             }
         } catch (JDOMParseException e) {
             String info = "failed to import project " + projectId + ". Reason: " + new String(responseContents);
@@ -1001,7 +1001,7 @@ public class ImportProjectsActionProperty extends ActionProperty {
         }
 
         try {
-            new IntegrationService(session, new ImportTable(fieldsMerged, data), Arrays.asList(keysArray), propertiesMerged).synchronize(true, true, false);
+            new IntegrationService(session, new ImportTable(fieldsMerged, data), Arrays.asList(keysArray), propertiesMerged).synchronize(true, true, false, true);
         } catch (SQLException e) {
             e.printStackTrace();
         }

@@ -2,8 +2,10 @@ package platform.server.integration;
 
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
+import platform.server.data.expr.ValueExpr;
 import platform.server.data.expr.query.GroupExpr;
 import platform.server.data.expr.query.GroupType;
+import platform.server.data.where.Where;
 import platform.server.logics.property.PropertyImplement;
 import platform.server.logics.property.PropertyInterface;
 import platform.server.session.*;
@@ -55,7 +57,7 @@ public class ImportProperty <P extends PropertyInterface> {
         return importKeyExprs;
     }
 
-    public MapDataChanges<P> synchronize(DataSession session, SingleKeyTableUsage<ImportField> importTable, Map<ImportKey<?>, SinglePropertyTableUsage<?>> addedKeys) throws SQLException {
+    public MapDataChanges<P> synchronize(DataSession session, SingleKeyTableUsage<ImportField> importTable, Map<ImportKey<?>, SinglePropertyTableUsage<?>> addedKeys, boolean replaceNull) throws SQLException {
 
         Map<ImportField,Expr> importExprs = importTable.join(importTable.getMapKeys()).getExprs();
 
@@ -67,6 +69,15 @@ public class ImportProperty <P extends PropertyInterface> {
 
         Map<P, KeyExpr> mapKeys = implement.property.getMapKeys();
         Map<P, Expr> importKeyExprs = getImplementExprs(implement.mapping, addedKeys, importExprs, session.modifier);
-        return implement.property.getDataChanges(new PropertyChange<P>(mapKeys, GroupExpr.create(importKeyExprs, importExpr, groupType != null ? groupType : GroupType.ANY, mapKeys)), null, session.modifier);
+
+        Expr changeExpr = GroupExpr.create(importKeyExprs, importExpr, groupType != null ? groupType : GroupType.ANY, mapKeys);
+
+        PropertyChange<P> propertyChange;
+        if (replaceNull)
+            propertyChange = new PropertyChange<P>(mapKeys, changeExpr, GroupExpr.create(importKeyExprs, Where.TRUE, mapKeys).getWhere());
+        else
+            propertyChange = new PropertyChange<P>(mapKeys, changeExpr);
+
+        return implement.property.getDataChanges(propertyChange, null, session.modifier);
     }
 }
