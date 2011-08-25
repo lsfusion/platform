@@ -921,6 +921,12 @@ public class RomanLogicsModule extends LogicsModule {
     private LP sumImporterFreightCustomCategory6Category;
     private LP sumImporterFreightSupplierCustomCategory6;
     private LP sumImporterFreightSupplierCustomCategory6Category;
+
+    private LP quantityFreightCategoryGenderCompositionTypeFabric;
+    private LP customCategory10CategoryGenderCompositionTypeFabric;
+    private LP sidCustomCategory10CategoryGenderCompositionTypeFabric;
+    private LP customCategory10CategoryGenderCompositionTypeFabricSku;
+
     LP quantityImporterFreightArticleCompositionCountryCategory;
     LP compositionFreightArticleCompositionCountryCategory;
     LP netWeightImporterFreightArticleCompositionCountryCategory;
@@ -1353,6 +1359,8 @@ public class RomanLogicsModule extends LogicsModule {
         baseLM.tableFactory.include("barcodeObject", baseLM.barcodeObject);
 
         baseLM.tableFactory.include("categoryGenderComposition", category, gender, COMPOSITION_CLASS);
+        baseLM.tableFactory.include("categoryGenderCompositionTypeFabric", category, gender, COMPOSITION_CLASS, typeFabric);
+        baseLM.tableFactory.include("freightCategoryGenderCompositionTypeFabric", freight, category, gender, COMPOSITION_CLASS, typeFabric);
 
         baseLM.tableFactory.include("rateExchange", typeExchange, currency, DateClass.instance);
         baseLM.tableFactory.include("pricat", pricat);
@@ -1764,44 +1772,6 @@ public class RomanLogicsModule extends LogicsModule {
         sidColorSupplierItem = addJProp(itemAttributeGroup, "sidColorSupplierItem", "Код цвета", sidColorSupplier, colorSupplierItem, 1);
         nameColorSupplierItem = addJProp(itemAttributeGroup, "nameColorSupplierItem", "Цвет поставщика", baseLM.name, colorSupplierItem, 1);
 
-        customCategoryOriginArticle = addDProp(idGroup, "customCategoryOriginArticle", "ТН ВЭД (ориг.) (ИД)", customCategoryOrigin, article);
-        sidCustomCategoryOriginArticle = addJProp(supplierAttributeGroup, "sidCustomCategoryOriginArticle", "Код ТН ВЭД (ориг.)", sidCustomCategoryOrigin, customCategoryOriginArticle, 1);
-        customCategory6Article = addDProp(idGroup, "customCategory6Article", "ТН ВЭД (6) (ИД)", customCategory6, article);
-        sidCustomCategory6Article = addJProp(supplierAttributeGroup, "sidCustomCategory6Article", "Код ТН ВЭД (6)", sidCustomCategory6, customCategory6Article, 1);
-        customCategoryOriginArticleSku = addJProp(idGroup, true, "customCategoryOriginArticleSku", "ТН ВЭД (ориг.) (ИД)", customCategoryOriginArticle, articleSku, 1);
-        sidCustomCategoryOriginArticleSku = addJProp(supplierAttributeGroup, "sidCustomCategoryOriginArticleSku", "Код ТН ВЭД (ориг.)", sidCustomCategoryOrigin, customCategoryOriginArticleSku, 1);
-
-        customCategory10CategoryGenderComposition = addDProp(idGroup, "customCategory10CategoryGenderComposition", "ТН ВЭД (ИД)", customCategory10, category, gender, COMPOSITION_CLASS);
-        sidCustomCategory10CategoryGenderComposition = addJProp(baseGroup, "sidCustomCategory10CategoryGenderComposition", "ТН ВЭД", sidCustomCategory10, customCategory10CategoryGenderComposition, 1, 2, 3);
-
-        customCategory10ArticleColor = addDProp(idGroup, "customCategory10ArticleColor", "ТН ВЭД (ИД)", customCategory10, article, colorSupplier);
-        sidCustomCategory10ArticleColor = addJProp(baseGroup, "sidCustomCategory10ArticleColor", "ТН ВЭД", sidCustomCategory10, customCategory10ArticleColor, 1, 2);
-        customCategory10ArticleColorSku = addJProp(idGroup, true, "customCategory10ArticleColorSku", "ТН ВЭД (ИД)", customCategory10ArticleColor, articleSku, 1, colorSupplierItem, 1);
-
-        customCategory10DataSku = addDProp(idGroup, "customCategory10DataSku", "ТН ВЭД (ИД)", customCategory10, sku);
-        customCategory10CustomCategoryOriginArticle = addJProp(idGroup, "customCategory10CustomCategoryOriginArticle", "ТН ВЭД (ИД)", customCategory10CustomCategoryOrigin, customCategoryOriginArticle, 1);
-        customCategory10CustomCategoryOriginArticleSku = addJProp(idGroup, "customCategory10CustomCategoryOriginArticleSku", "ТН ВЭД (ИД)", customCategory10CustomCategoryOriginArticle, articleSku, 1);
-        customCategory10Sku = addSUProp(idGroup, "customCategory10Sku", true, "ТН ВЭД (ИД)", Union.OVERRIDE, customCategory10CustomCategoryOriginArticleSku, customCategory10DataSku);
-        customCategory9Sku = addJProp(baseGroup, "customCategory9Sku", "ТН ВЭД", customCategory9CustomCategory10, customCategory10Sku, 1);
-        sidCustomCategory10Sku = addJProp(baseGroup, "sidCustomCategory10Sku", "ТН ВЭД", sidCustomCategory10, customCategory10Sku, 1);
-
-        diffCountRelationCustomCategory10Sku = addJProp("diffCountRelationCustomCategory10Sku", baseLM.greater2, addJProp(countRelationCustomCategory10, customCategory10Sku, 1), 1, addCProp("1", DoubleClass.instance, 1));
-        diffCountRelationCustomCategory10FreightSku = addJProp("diffCountRelationCustomCategory10FreightSku", baseLM.and1, diffCountRelationCustomCategory10Sku, 2, is(freight), 1);
-
-        subCategoryDataSku = addDProp(idGroup, "subCategoryDataSku", "Дополнительное деление (ИД)", subCategory, sku);
-        nameSubCategoryDataSku = addJProp(baseGroup, "nameSubCategoryDataSku", "Дополнительное деление", nameSubCategory, subCategoryDataSku, 1);
-        subCategoryCustomCategory10Sku = addJProp(idGroup, "subCategoryCustomCategory10Sku", "Дополнительное деление (ИД)", subCategoryCustomCategory10, customCategory10Sku, 1);
-
-        subCategorySku = addSUProp(idGroup, "subCategorySku", "Дополнительное деление (ИД)", Union.OVERRIDE, subCategoryCustomCategory10Sku, subCategoryDataSku);
-        nameSubCategorySku = addJProp(baseGroup, "nameSubCategorySku", "Дополнительное деление", nameSubCategory, subCategorySku, 1);
-
-        addConstraint(addJProp("Выбранный для товара ТН ВЭД должен иметь верхний элемент", baseLM.andNot1, customCategory10Sku, 1, customCategory9Sku, 1), false);
-
-        addConstraint(addJProp("Категория минимальных предельных цен запрещена для выбранного кода ТНВЭД", and(false, false, true), addCProp(LogicalClass.instance, true, sku), 1,
-                   customCategory10Sku, 1,
-                   subCategoryDataSku, 1,
-                   addJProp(relationCustomCategory10SubCategory, customCategory10Sku, 1, subCategorySku, 1), 1), true);
-
        /*addConstraint(addJProp("Выбранный должен быть среди связанных кодов", andNot1, addCProp(LogicalClass.instance, true, article), 1,
                    addJProp(relationCustomCategory10CustomCategoryOrigin, customCategory10Article, 1, customCategoryOriginArticle, 1), 1), true);*/
 
@@ -1874,7 +1844,6 @@ public class RomanLogicsModule extends LogicsModule {
         nameSeasonSupplierArticle.property.preferredCharWidth = 30;
         nameSeasonSupplierArticle.property.minimumCharWidth = 15;
         sidSeasonSupplierArticle = addJProp(itemAttributeGroup, "sidSeasonSupplierArticle", "Сезон поставщика", sidSeasonSupplier, seasonSupplierArticle, 1);
-
 
         seasonSupplierArticleSku = addJProp(idGroup, "seasonArticleSku", "Сезон", seasonSupplierArticle, articleSku, 1);
         sidSeasonSupplierArticleSku = addJProp(baseGroup, "sidSeasonSupplierArticleSku", "Сезон", sidSeasonSupplier, seasonSupplierArticleSku, 1);
@@ -2064,6 +2033,50 @@ public class RomanLogicsModule extends LogicsModule {
         additionalCompositionSku = addDProp(intraAttributeGroup, "additionalCompositionSku", "Доп. состав (перевод)", COMPOSITION_CLASS, sku);
         additionalCompositionSku.property.preferredCharWidth = 40;
         additionalCompositionSku.property.minimumCharWidth = 20;
+
+        customCategoryOriginArticle = addDProp(idGroup, "customCategoryOriginArticle", "ТН ВЭД (ориг.) (ИД)", customCategoryOrigin, article);
+        sidCustomCategoryOriginArticle = addJProp(supplierAttributeGroup, "sidCustomCategoryOriginArticle", "Код ТН ВЭД (ориг.)", sidCustomCategoryOrigin, customCategoryOriginArticle, 1);
+        customCategory6Article = addDProp(idGroup, "customCategory6Article", "ТН ВЭД (6) (ИД)", customCategory6, article);
+        sidCustomCategory6Article = addJProp(supplierAttributeGroup, "sidCustomCategory6Article", "Код ТН ВЭД (6)", sidCustomCategory6, customCategory6Article, 1);
+        customCategoryOriginArticleSku = addJProp(idGroup, true, "customCategoryOriginArticleSku", "ТН ВЭД (ориг.) (ИД)", customCategoryOriginArticle, articleSku, 1);
+        sidCustomCategoryOriginArticleSku = addJProp(supplierAttributeGroup, "sidCustomCategoryOriginArticleSku", "Код ТН ВЭД (ориг.)", sidCustomCategoryOrigin, customCategoryOriginArticleSku, 1);
+
+        //customCategory10CategoryGenderComposition = addDProp(idGroup, "customCategory10CategoryGenderComposition", "ТН ВЭД (ИД)", customCategory10, category, gender, COMPOSITION_CLASS);
+        //sidCustomCategory10CategoryGenderComposition = addJProp(baseGroup, "sidCustomCategory10CategoryGenderComposition", "ТН ВЭД", sidCustomCategory10, customCategory10CategoryGenderComposition, 1, 2, 3);
+
+        customCategory10ArticleColor = addDProp(idGroup, "customCategory10ArticleColor", "ТН ВЭД (ИД)", customCategory10, article, colorSupplier);
+        sidCustomCategory10ArticleColor = addJProp(baseGroup, "sidCustomCategory10ArticleColor", "ТН ВЭД", sidCustomCategory10, customCategory10ArticleColor, 1, 2);
+        customCategory10ArticleColorSku = addJProp(idGroup, true, "customCategory10ArticleColorSku", "ТН ВЭД (ИД)", customCategory10ArticleColor, articleSku, 1, colorSupplierItem, 1);
+
+        customCategory10CategoryGenderCompositionTypeFabric = addDProp(idGroup, "customCategory10FreightCategoryGenderCompositionTypeFabric", "ТН ВЭД (ИД)", customCategory10, category, gender, COMPOSITION_CLASS, typeFabric);
+        sidCustomCategory10CategoryGenderCompositionTypeFabric = addJProp(baseGroup, "sidCustomCategory10CategoryGenderCompositionTypeFabric", "ТН ВЭД", sidCustomCategory10, customCategory10CategoryGenderCompositionTypeFabric, 1, 2, 3, 4);
+
+        customCategory10CategoryGenderCompositionTypeFabricSku = addJProp(idGroup, "customCategory10CategoryGenderCompositionTypeFabricSku", "ТН ВЭД (ИД)", customCategory10CategoryGenderCompositionTypeFabric,
+                                categoryArticleSku, 1, genderArticleSku, 1, mainCompositionOriginSku, 1, typeFabricArticleSku, 1);
+
+        customCategory10DataSku = addDProp(idGroup, "customCategory10DataSku", "ТН ВЭД (ИД)", customCategory10, sku);
+        customCategory10CustomCategoryOriginArticle = addJProp(idGroup, "customCategory10CustomCategoryOriginArticle", "ТН ВЭД (ИД)", customCategory10CustomCategoryOrigin, customCategoryOriginArticle, 1);
+        customCategory10CustomCategoryOriginArticleSku = addJProp(idGroup, "customCategory10CustomCategoryOriginArticleSku", "ТН ВЭД (ИД)", customCategory10CustomCategoryOriginArticle, articleSku, 1);
+        customCategory10Sku = addSUProp(idGroup, "customCategory10Sku", true, "ТН ВЭД (ИД)", Union.OVERRIDE, customCategory10CustomCategoryOriginArticleSku, customCategory10CategoryGenderCompositionTypeFabricSku, customCategory10DataSku);
+        customCategory9Sku = addJProp(baseGroup, "customCategory9Sku", "ТН ВЭД", customCategory9CustomCategory10, customCategory10Sku, 1);
+        sidCustomCategory10Sku = addJProp(baseGroup, "sidCustomCategory10Sku", "ТН ВЭД", sidCustomCategory10, customCategory10Sku, 1);
+
+        diffCountRelationCustomCategory10Sku = addJProp("diffCountRelationCustomCategory10Sku", baseLM.greater2, addJProp(countRelationCustomCategory10, customCategory10Sku, 1), 1, addCProp("1", DoubleClass.instance, 1));
+        diffCountRelationCustomCategory10FreightSku = addJProp("diffCountRelationCustomCategory10FreightSku", baseLM.and1, diffCountRelationCustomCategory10Sku, 2, is(freight), 1);
+
+        subCategoryDataSku = addDProp(idGroup, "subCategoryDataSku", "Дополнительное деление (ИД)", subCategory, sku);
+        nameSubCategoryDataSku = addJProp(baseGroup, "nameSubCategoryDataSku", "Дополнительное деление", nameSubCategory, subCategoryDataSku, 1);
+        subCategoryCustomCategory10Sku = addJProp(idGroup, "subCategoryCustomCategory10Sku", "Дополнительное деление (ИД)", subCategoryCustomCategory10, customCategory10Sku, 1);
+
+        subCategorySku = addSUProp(idGroup, "subCategorySku", "Дополнительное деление (ИД)", Union.OVERRIDE, subCategoryCustomCategory10Sku, subCategoryDataSku);
+        nameSubCategorySku = addJProp(baseGroup, "nameSubCategorySku", "Дополнительное деление", nameSubCategory, subCategorySku, 1);
+
+        addConstraint(addJProp("Выбранный для товара ТН ВЭД должен иметь верхний элемент", baseLM.andNot1, customCategory10Sku, 1, customCategory9Sku, 1), false);
+
+        addConstraint(addJProp("Категория минимальных предельных цен запрещена для выбранного кода ТНВЭД", and(false, false, true), addCProp(LogicalClass.instance, true, sku), 1,
+                   customCategory10Sku, 1,
+                   subCategoryDataSku, 1,
+                   addJProp(relationCustomCategory10SubCategory, customCategory10Sku, 1, subCategorySku, 1), 1), true);
 
         substring10 = addSFProp("substring10", "substring(prm1,1,10)", StringClass.get(10), 1);
         substring10s13 = addJProp(baseLM.and1, substring10, 1, is(StringClass.get(13)), 1);
@@ -2750,6 +2763,8 @@ public class RomanLogicsModule extends LogicsModule {
         quantityDirectFreightSku = addSGProp(baseGroup, "quantityDirectFreightSku", true, true, "Кол-во (напрямую)", quantityDirectImporterFreightSku, 2, 3);
 
         quantityFreightCategory = addSGProp(baseGroup, "quantityFreightCategory", true, true, "Кол-во", quantityFreightSku, 1, categoryArticleSku, 2);
+
+        quantityFreightCategoryGenderCompositionTypeFabric = addSGProp(baseGroup, "quantityFreightCategoryGenderCompositionTypeFabric", "Кол-во", quantityFreightSku, 1, categoryArticleSku, 2, genderArticleSku, 2, mainCompositionOriginSku, 2, typeFabricArticleSku, 2);
 
         customCategory10FreightSku = addDProp(idGroup, "customCategory10FreightSku", "ТН ВЭД (ИД)", customCategory10, freight, sku);
         customCategory10FreightSku.setDerivedForcedChange(true, addJProp(baseLM.and1, customCategory10Sku, 2, quantityFreightSku, 1, 2), 1, 2, is(freightChanged), 1);
@@ -5631,12 +5646,14 @@ public class RomanLogicsModule extends LogicsModule {
         private ObjectEntity objImporter;
         private ObjectEntity objArticle;
         private ObjectEntity objCategory;
+        private ObjectEntity objCategory2;
         private ObjectEntity objGender;
         private ObjectEntity objComposition;
-
+        private ObjectEntity objTypeFabric;
         private ObjectEntity objSku;
-        private ObjectEntity objColor;
         private ObjectEntity objSkuFreight;
+        GroupObjectEntity gobjCategoryGenderCompositionTypeFabric;
+
         private RegularFilterGroupEntity filterGroupCategory;
         private RegularFilterGroupEntity filterGroupCustomCategory10;
         private RegularFilterGroupEntity filterGroupCountry;
@@ -5657,27 +5674,26 @@ public class RomanLogicsModule extends LogicsModule {
 
             addPropertyDraw(quantityFreightArticle, objFreight, objArticle);
 
-            /*objColor = addSingleGroupObject(colorSupplier, "Цвет", baseLM.name);
-
-            addPropertyDraw(objArticle, objColor, mainCompositionOriginArticleColor, additionalCompositionOriginArticleColor, nameCountryArticleColor, sidCustomCategory10ArticleColor);
-            addPropertyDraw(quantityFreightArticle, objFreight, objArticle);
-            addPropertyDraw(quantityFreightArticleColor, objFreight, objArticle, objColor);
-
-            addFixedFilter(new NotNullFilterEntity(addPropertyObject(quantityFreightArticleColor, objFreight, objArticle, objColor)));*/
-
-            objCategory = addSingleGroupObject(category, "Номенклатурная группа", baseLM.name);
-
-            /*GroupObjectEntity gobjGenderCategoryComposition = new GroupObjectEntity(genID());
-            //objCategory = new ObjectEntity(genID(), category, "Номенклатурная группа");
+            gobjCategoryGenderCompositionTypeFabric = new GroupObjectEntity(genID(), "Группировка");
+            objCategory2 = new ObjectEntity(genID(), category, "Номенклатурная группа");
             objGender = new ObjectEntity(genID(), gender, "Пол");
             objComposition = new ObjectEntity(genID(), COMPOSITION_CLASS, "Состав");
+            objTypeFabric = new ObjectEntity(genID(), typeFabric, "Тип одежды");
 
-            gobjGenderCategoryComposition.add(objCategory);
-            gobjGenderCategoryComposition.add(objGender);
-            gobjGenderCategoryComposition.add(objComposition);
-            addGroup(gobjGenderCategoryComposition);
+            gobjCategoryGenderCompositionTypeFabric.add(objCategory2);
+            gobjCategoryGenderCompositionTypeFabric.add(objGender);
+            gobjCategoryGenderCompositionTypeFabric.add(objComposition);
+            gobjCategoryGenderCompositionTypeFabric.add(objTypeFabric);
+            addGroup(gobjCategoryGenderCompositionTypeFabric);
 
-            addPropertyDraw(objGender, sidGender); */
+            addPropertyDraw(objCategory2, baseLM.name);
+            addPropertyDraw(objGender, sidGender);
+            addPropertyDraw(objComposition, baseLM.objectValue);
+            addPropertyDraw(objTypeFabric, baseLM.name);
+            addPropertyDraw(sidCustomCategory10CategoryGenderCompositionTypeFabric, objCategory2, objGender, objComposition, objTypeFabric);
+            addPropertyDraw(quantityFreightCategoryGenderCompositionTypeFabric, objFreight, objCategory2, objGender, objComposition, objTypeFabric);
+
+            objCategory = addSingleGroupObject(category, "Номенклатурная группа", baseLM.name);
 
             objSku = addSingleGroupObject(sku, "SKU", baseLM.selection, baseLM.barcode, sidArticleSku,
                      nameBrandSupplierArticleSku, nameCategoryArticleSku, sidGenderArticleSku, nameTypeFabricArticleSku,
@@ -5728,6 +5744,7 @@ public class RomanLogicsModule extends LogicsModule {
             addPropertyDraw(addGCAProp(actionGroup, "translationAllFreightMainComposition", "Перевод составов (для фрахта)", objSkuFreight.groupTo, translationMainCompositionFreightSku, baseLM.actionTrue), objFreight, objSkuFreight).forceViewType = ClassViewType.PANEL;
             addPropertyDraw(addGCAProp(actionGroup, "translationAllFreightAdditionalComposition", "Перевод доп. составов (для фрахта)", objSkuFreight.groupTo, translationAdditionalCompositionFreightSku, baseLM.actionTrue), objFreight, objSkuFreight).forceViewType = ClassViewType.PANEL;
             
+            addFixedFilter(new NotNullFilterEntity(addPropertyObject(quantityFreightCategoryGenderCompositionTypeFabric, objFreight, objCategory2, objGender, objComposition, objTypeFabric)));
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(quantityFreightCategory, objFreight, objCategory)));
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(quantityFreightSku, objFreight, objSku)));
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(quantityImporterFreight, objImporter, objFreight)));
@@ -5787,6 +5804,7 @@ public class RomanLogicsModule extends LogicsModule {
             design.get(objFreight.groupTo).grid.constraints.fillHorizontal = 3;
             design.get(objImporter.groupTo).grid.constraints.fillHorizontal = 2;
             design.get(objFreight.groupTo).grid.constraints.fillVertical = 1;
+            design.get(gobjCategoryGenderCompositionTypeFabric).grid.constraints.fillVertical = 4;
             design.get(objArticle.groupTo).grid.constraints.fillVertical = 4;
             design.get(objCategory.groupTo).grid.constraints.fillHorizontal = 0.1;
             //design.get(objSku.groupTo).grid.constraints.fillHorizontal = 6;
@@ -5817,6 +5835,7 @@ public class RomanLogicsModule extends LogicsModule {
             ContainerView specContainer = design.createContainer();
             design.getMainContainer().addAfter(specContainer, design.getGroupObjectContainer(objArticle.groupTo));
             specContainer.add(design.getGroupObjectContainer(objArticle.groupTo));
+            specContainer.add(design.getGroupObjectContainer(gobjCategoryGenderCompositionTypeFabric));
             specContainer.add(skuContainer);
             specContainer.add(design.getGroupObjectContainer(objSkuFreight.groupTo));
             specContainer.tabbedPane = true;
