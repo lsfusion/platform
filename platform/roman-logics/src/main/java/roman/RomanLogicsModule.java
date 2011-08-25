@@ -1600,6 +1600,7 @@ public class RomanLogicsModule extends LogicsModule {
         sidThemeSupplier = addDProp(baseGroup, "sidThemeSupplier", "Код", StringClass.get(50), themeSupplier);
         sidSeasonSupplier = addDProp(itemAttributeGroup, "sidSeasonSupplier", "Код", StringClass.get(50), seasonSupplier);
         sidGender = addDProp(baseGroup, "sidGender", "Код", StringClass.get(50), gender);
+        sidGender.setFixedCharWidth(2);
         sidGenderSupplier = addDProp(baseGroup, "sidGenderSupplier", "Код", StringClass.get(10), genderSupplier);
 
         commonSizeSizeSupplier = addDProp(idGroup, "commonSizeSizeSupplier", "Унифицированный размер (ИД)", commonSize, sizeSupplier);
@@ -5710,6 +5711,8 @@ public class RomanLogicsModule extends LogicsModule {
 
             setReadOnly(baseGroup, true, objSku.groupTo);
             setReadOnly(publicGroup, true, objSku.groupTo);
+            setReadOnly(sidGenderArticleSku, false, objSku.groupTo);
+            setReadOnly(nameTypeFabricArticleSku, false, objSku.groupTo);
             setReadOnly(sidCustomCategory10Sku, false, objSku.groupTo);
             setReadOnly(nameSubCategoryDataSku, false, objSku.groupTo);
             setReadOnly(nameCountrySku, false, objSku.groupTo);
