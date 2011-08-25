@@ -319,8 +319,7 @@ public class ImportProjectsActionProperty extends ActionProperty {
 
         propertiesForeign.add(new ImportProperty(nameForeignClaimerField, LM.claimerProject.getMapping(projectKey),
                 LM.baseLM.object(LM.claimer).getMapping(claimerKey)));
-        propertiesForeign.add(new ImportProperty(nameForeignClaimerField, LM.claimerProject.getMapping(projectKey),
-                LM.baseLM.object(LM.claimer).getMapping(claimerKey)));
+        propertiesForeign.add(new ImportProperty(nameForeignClaimerField, LM.nameForeignClaimer.getMapping(claimerKey)));
         propertiesForeign.add(new ImportProperty(firmNameForeignClaimerField, LM.firmNameForeignClaimer.getMapping(claimerKey)));
         propertiesForeign.add(new ImportProperty(fileForeignSummaryProjectField, LM.fileForeignSummaryProject.getMapping(projectKey)));
         propertiesForeign.add(new ImportProperty(fileForeignTechnicalDescriptionProjectField, LM.fileForeignTechnicalDescriptionProject.getMapping(projectKey)));
@@ -403,8 +402,8 @@ public class ImportProjectsActionProperty extends ActionProperty {
                     connection.setDoOutput(false);
                     connection.setDoInput(true);
                     importProject(connection.getInputStream(), projectId, projects.get(projectId));
+                    System.gc();
                 }
-                System.gc();
             }
             String message = "";
             if (projects == null || !projects.isEmpty()) {
@@ -779,7 +778,7 @@ public class ImportProjectsActionProperty extends ActionProperty {
                     }
                 }
 
-                row.add(fillOtherCluster);
+                row.add(BaseUtils.nullBoolean(fillOtherCluster));
                 if (fillNative)
                     row.add(otherClusterNativeSubstantiation);
                 if (fillForeign)
