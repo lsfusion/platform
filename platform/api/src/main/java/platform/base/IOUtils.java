@@ -53,6 +53,26 @@ public class IOUtils {
         }
     }
 
+    public static String readStreamToString(InputStream inStream) throws Exception {
+        StringBuilder strBuf = new StringBuilder();
+
+        int numBytes = 0;
+        byte ba[] = new byte[1024];
+
+        try {
+            while (numBytes != -1) {
+                numBytes = inStream.read(ba);
+                if (numBytes != -1) {
+                    strBuf.append(new String(ba, 0, numBytes));
+                }
+            }
+        } finally {
+            inStream.close();
+        }
+
+        return strBuf.toString();
+    }
+
     public static void writeImageIcon(DataOutputStream outStream, ImageIcon image) throws IOException {
         new ObjectOutputStream(outStream).writeObject(new SerializableImageIconHolder(image));
     }
