@@ -849,8 +849,8 @@ public class ImportProjectsActionProperty extends ActionProperty {
                     rowAcademic.add(nodeAcademic.getChildText("fullNameAcademic"));
                     rowAcademic.add(nodeAcademic.getChildText("institutionAcademic"));
                     rowAcademic.add(nodeAcademic.getChildText("titleAcademic"));
-                    rowAcademic.add(buildFileByteArray(node.getChild("fileDocumentConfirmingAcademic")));
-                    rowAcademic.add(buildFileByteArray(node.getChild("fileDocumentEmploymentAcademic")));
+                    rowAcademic.add(buildFileByteArray(nodeAcademic.getChild("fileDocumentConfirmingAcademic")));
+                    rowAcademic.add(buildFileByteArray(nodeAcademic.getChild("fileDocumentEmploymentAcademic")));
                     dataAcademic.add(rowAcademic);
                 }
 
@@ -862,10 +862,10 @@ public class ImportProjectsActionProperty extends ActionProperty {
                     rowNonRussianSpecialist.add(nodeNonRussianSpecialist.getChildText("fullNameNonRussianSpecialist"));
                     rowNonRussianSpecialist.add(nodeNonRussianSpecialist.getChildText("organizationNonRussianSpecialist"));
                     rowNonRussianSpecialist.add(nodeNonRussianSpecialist.getChildText("titleNonRussianSpecialist"));
-                    rowNonRussianSpecialist.add(buildFileByteArray(node.getChild("fileNativeResumeNonRussianSpecialist")));
-                    rowNonRussianSpecialist.add(buildFileByteArray(node.getChild("fileForeignResumeNonRussianSpecialist")));
-                    rowNonRussianSpecialist.add(buildFileByteArray(node.getChild("filePassportNonRussianSpecialist")));
-                    rowNonRussianSpecialist.add(buildFileByteArray(node.getChild("fileStatementNonRussianSpecialist")));
+                    rowNonRussianSpecialist.add(buildFileByteArray(nodeNonRussianSpecialist.getChild("fileNativeResumeNonRussianSpecialist")));
+                    rowNonRussianSpecialist.add(buildFileByteArray(nodeNonRussianSpecialist.getChild("fileForeignResumeNonRussianSpecialist")));
+                    rowNonRussianSpecialist.add(buildFileByteArray(nodeNonRussianSpecialist.getChild("filePassportNonRussianSpecialist")));
+                    rowNonRussianSpecialist.add(buildFileByteArray(nodeNonRussianSpecialist.getChild("fileStatementNonRussianSpecialist")));
                     dataNonRussianSpecialist.add(rowNonRussianSpecialist);
                 }
 
