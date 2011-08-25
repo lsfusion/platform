@@ -172,7 +172,7 @@ public abstract class GridTable extends ClientFormTable
             }
         });
 
-        if (form.isDialog() && form.isReadOnlyMode()) {
+        if (form.isModal() && form.isReadOnlyMode()) {
             addMouseListener(new MouseAdapter() {
                 public void mouseClicked(MouseEvent e) {
                     if (e.getClickCount() > 1) {
@@ -503,7 +503,7 @@ public abstract class GridTable extends ClientFormTable
 
     @Override
     protected boolean processKeyBinding(KeyStroke ks, KeyEvent e, int condition, boolean pressed) {
-        boolean isReadOnlyDialog = form.isDialog() && form.isReadOnlyMode();
+        boolean isReadOnlyDialog = form.isModal() && form.isReadOnlyMode();
         if (isReadOnlyDialog && ks.equals(KeyStrokes.getApplyKeyStroke(isReadOnlyDialog))) {
             return false;
         }

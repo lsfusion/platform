@@ -349,7 +349,7 @@ public class ClientFormController {
         KeyStroke xlsKeyStroke = KeyStrokes.getXlsKeyStroke();
         KeyStroke nullKeyStroke = KeyStrokes.getNullKeyStroke();
         KeyStroke refreshKeyStroke = KeyStrokes.getRefreshKeyStroke();
-        KeyStroke okKeyStroke = KeyStrokes.getApplyKeyStroke(true);
+        KeyStroke okKeyStroke = KeyStrokes.getApplyKeyStroke(isModal() && isReadOnlyMode());
         KeyStroke closeKeyStroke = KeyStrokes.getCancelKeyStroke(true);
         KeyStroke applyKeyStroke = KeyStrokes.getApplyKeyStroke(false);
         KeyStroke cancelKeyStroke = KeyStrokes.getCancelKeyStroke(!isModal());
