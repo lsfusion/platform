@@ -85,7 +85,7 @@ public class CompressedBlockOutputStream extends FilterOutputStream {
                                        int level, int strategy) throws IOException {
         super(os);
         this.inBuf = new byte[size];
-        this.outBuf = new byte[size + 64];
+        this.outBuf = new byte[size + 65536];
         this.deflater = new Deflater(level);
         this.deflater.setStrategy(strategy);
     }
