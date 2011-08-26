@@ -1600,7 +1600,7 @@ public class RomanLogicsModule extends LogicsModule {
         sidThemeSupplier = addDProp(baseGroup, "sidThemeSupplier", "Код", StringClass.get(50), themeSupplier);
         sidSeasonSupplier = addDProp(itemAttributeGroup, "sidSeasonSupplier", "Код", StringClass.get(50), seasonSupplier);
         sidGender = addDProp(baseGroup, "sidGender", "Код", StringClass.get(50), gender);
-        sidGender.setFixedCharWidth(2);
+        sidGender.setPreferredCharWidth(2);
         sidGenderSupplier = addDProp(baseGroup, "sidGenderSupplier", "Код", StringClass.get(10), genderSupplier);
 
         commonSizeSizeSupplier = addDProp(idGroup, "commonSizeSizeSupplier", "Унифицированный размер (ИД)", commonSize, sizeSupplier);
