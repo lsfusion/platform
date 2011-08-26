@@ -756,26 +756,49 @@ public class ImportProjectsActionProperty extends ActionProperty {
                     row.add(new java.sql.Date(Integer.parseInt(node.getChildText("yearProject")) - 1900, Integer.parseInt(node.getChildText("monthProject")) - 1, Integer.parseInt(node.getChildText("dayProject"))));
                 }
 
+                LP isCluster = LM.is(LM.cluster);
+                Map<Object, KeyExpr> keys = isCluster.getMapKeys();
+                Query<Object, Object> query = new Query<Object, Object>(keys);
+                query.properties.put("name", LM.nameNative.getExpr(BaseUtils.singleValue(keys)));
+                query.and(isCluster.property.getExpr(keys).getWhere());
+                OrderedMap<Map<Object, Object>, Map<Object, Object>> result = query.execute(session.sql);
+
                 boolean fillOtherCluster = false;
                 Object otherClusterNativeSubstantiation = null, otherClusterForeignSubstantiation = null;
 
                 List<Element> listCluster = node.getChildren("cluster");
+                Map<String, ClusterInfo> clusterInfoList = new HashMap<String, ClusterInfo>();
+
+                for (Map<Object, Object> values : result.values()) {
+                    String nextItem = values.get("name").toString().trim();
+                    clusterInfoList.put(nextItem, new ClusterInfo(nextItem));
+                }
+
                 for (Element nodeCluster : listCluster) {
-                    if ("Нажмите здесь, если не относится".equals(nodeCluster.getChildText("nameNativeCluster"))) {
+                    String nameCluster = nodeCluster.getChildText("nameNativeCluster");
+                    if ("Нажмите здесь, если не относится".equals(nameCluster)) {
                         fillOtherCluster = true;
                         otherClusterNativeSubstantiation = nodeCluster.getChildText("nativeSubstantiationClusterProject");
                         otherClusterForeignSubstantiation = nodeCluster.getChildText("foreignSubstantiationClusterProject");
                     } else {
-                        List<Object> rowCluster = new ArrayList<Object>();
-                        rowCluster.add(true);
-                        rowCluster.add(nodeCluster.getChildText("nameNativeCluster"));
-                        rowCluster.add(projectId);
-                        if (fillNative)
-                            rowCluster.add(nodeCluster.getChildText("nativeSubstantiationClusterProject"));
-                        if (fillForeign)
-                            rowCluster.add(nodeCluster.getChildText("foreignSubstantiationClusterProject"));
-                        dataCluster.add(rowCluster);
+                        if (clusterInfoList.containsKey(nameCluster)) {
+                            clusterInfoList.put(nameCluster, new ClusterInfo(projectId, true, nameCluster,
+                                    nodeCluster.getChildText("nativeSubstantiationClusterProject"),
+                                    nodeCluster.getChildText("foreignSubstantiationClusterProject")));
+                        }
                     }
+                }
+
+                for (ClusterInfo nodeCluster : clusterInfoList.values()) {
+                    List<Object> rowCluster = new ArrayList<Object>();
+                    rowCluster.add(nodeCluster.projectID);
+                    rowCluster.add(nodeCluster.inProjectCluster);
+                    rowCluster.add(nodeCluster.nameNativeCluster);
+                    if (fillNative)
+                        rowCluster.add(nodeCluster.nativeSubstantiationProjectCluster);
+                    if (fillForeign)
+                        rowCluster.add(nodeCluster.nativeSubstantiationProjectCluster);
+                    dataCluster.add(rowCluster);
                 }
 
                 row.add(BaseUtils.nullBoolean(fillOtherCluster));
@@ -923,7 +946,7 @@ public class ImportProjectsActionProperty extends ActionProperty {
                         data, keysArray, fillNative, fillForeign);
 
                 List<ImportField> fieldsCurrentClusterBoth = BaseUtils.toList(
-                        inProjectClusterField, nameNativeClusterField, projectIdField);
+                        projectIdField, inProjectClusterField, nameNativeClusterField);
                 List<ImportField> fieldsCurrentClusterNative = BaseUtils.toList(
                         nativeSubstantiationProjectClusterField);
                 List<ImportField> fieldsCurrentClusterForeign = BaseUtils.toList(
@@ -1005,5 +1028,27 @@ public class ImportProjectsActionProperty extends ActionProperty {
         } catch (SQLException e) {
             e.printStackTrace();
         }
+    }
+
+    public class ClusterInfo {
+        public String projectID;
+        public Object inProjectCluster;
+        public String nameNativeCluster;
+        public String nativeSubstantiationProjectCluster;
+        public String foreignSubstantiationProjectCluster;
+
+        public ClusterInfo(String nameNativeCluster) {
+            this(null, null, nameNativeCluster, null, null);
+        }
+
+        public ClusterInfo(String projectID, Object inProjectCluster, String nameNativeCluster,
+                           String nativeSubstantiationProjectCluster, String foreignSubstantiationProjectCluster) {
+            this.projectID = projectID;
+            this.inProjectCluster = inProjectCluster;
+            this.nameNativeCluster = nameNativeCluster;
+            this.nativeSubstantiationProjectCluster = nativeSubstantiationProjectCluster;
+            this.foreignSubstantiationProjectCluster = foreignSubstantiationProjectCluster;
+        }
+
     }
 }
