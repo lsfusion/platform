@@ -1001,10 +1001,12 @@ public class ImportProjectsActionProperty extends ActionProperty {
 
         String sessionApply = session.apply(BL);
         if (sessionApply != null) {
-            logger.error(sessionApply);
+            String info = "failed to import project " + projectId + ". Constraint: " + sessionApply;
+            toLog += info;
+            logger.error(info);
             session.restart(true);
-        }
-        logger.info(projectId + " project was imported successfully");
+        } else
+            logger.info(projectId + " project was imported successfully");
     }
 
     private void importMultilanguageData(
