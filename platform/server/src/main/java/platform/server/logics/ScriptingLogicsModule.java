@@ -12,6 +12,8 @@ import platform.server.LsfLogicsParser;
 import platform.server.classes.*;
 import platform.server.data.Union;
 import platform.server.logics.linear.LP;
+import platform.server.logics.property.ClassPropertyInterface;
+import platform.server.logics.property.StoredDataProperty;
 import platform.server.logics.property.group.AbstractGroup;
 
 import java.io.FileNotFoundException;
@@ -237,22 +239,20 @@ public class ScriptingLogicsModule extends LogicsModule {
         return BaseUtils.toCaption(obj);
     }
 
-    public LP<?> addScriptedDProp(String propName, String caption, String returnClass, List<String> paramClasses, List<String> namedParams) {
-        scriptLogger.info("addScriptedDProp(" + toLog(propName) + ", " + returnClass + ", " + paramClasses + ", " + toLog(namedParams) + ");");
+    public LP<?> addScriptedDProp(String caption, String returnClass, List<String> paramClasses, boolean innerProp) {
+        scriptLogger.info("addScriptedDProp(" + returnClass + ", " + paramClasses + ", " + innerProp + ");");
 
         ValueClass value = getClassByName(returnClass);
         ValueClass[] params = new ValueClass[paramClasses.size()];
         for (int i = 0; i < paramClasses.size(); i++) {
             params[i] = getClassByName(paramClasses.get(i));
         }
-        LP<?> prop;
-        if (propName == null) {
-            prop = addDProp(caption, value, params);
+        if (innerProp) {
+            return addDProp(caption, value, params);
         } else {
-            prop = addDProp(propName, caption, value, params);
+            StoredDataProperty dataProperty = new StoredDataProperty(genSID(), caption, params, value);
+            return addProperty(null, new LP<ClassPropertyInterface>(dataProperty));
         }
-        addNamedParams(prop.property.getSID(), namedParams);
-        return prop;
     }
 
     public static int getParamIndex(String param, List<String> namedParams) {
@@ -286,30 +286,60 @@ public class ScriptingLogicsModule extends LogicsModule {
         return true;
     }
 
-    public void addSettingsToProperty(LP<?> property, String groupName, boolean isPersistent) {
+    public void addSettingsToProperty(LP<?> property, String name, List<String> namedParams, String groupName, boolean isPersistent, boolean isData) {
+        scriptLogger.info("addSettingsToProperty(" + property.property.getSID() + ", " + name + ", " + namedParams + ", " + groupName + ", " + isPersistent + ");");
+        changePropertyName(property, name);
         AbstractGroup group = (groupName == null ? null : getGroupByName(groupName));
         addPropertyToGroup(property.property, group);
-
+        if (isData) {
+            property.property.markStored(baseLM.tableFactory);
+        }
         if (isPersistent) {
             addPersistent(property);
         }
+        addNamedParams(property.property.getSID(), namedParams);
     }
 
-    public LPWithParams addScriptedJProp(String propName, String caption, LP<?> mainProp, List<String> namedParams, List<LP<?>> paramProps, List<List<Integer>> usedParams) {
+    private <T extends LP<?>> void changePropertyName(T lp, String name) {
+        removeModuleLP(lp);
+        lp.property.setSID(transformNameToSID(name));
+        lp.property.freezeSID();
+        addModuleLP(lp);
+    }
+
+    public LPWithParams addScriptedJProp(String caption, LP<?> mainProp, List<LP<?>> paramProps, List<List<Integer>> usedParams) {
         List<Object> resultParams = getParamsPlainList(paramProps, usedParams);
         LP<?> prop;
         if (isTrivialParamList(resultParams)) {
             prop = mainProp;
         } else {
-            scriptLogger.info("addScriptedJProp(" + toLog(propName) + ", " + mainProp + ", " + toLog(namedParams) + ", " + resultParams + ");");
-            if (propName == null) {
-                prop = addJProp(caption, mainProp, resultParams.toArray());
-            } else {
-                prop = addJProp(propName, caption, mainProp, resultParams.toArray());
-            }
-            addNamedParams(prop.property.getSID(), namedParams);
+            scriptLogger.info("addScriptedJProp(" + mainProp.property.getSID() + ", " + resultParams + ");");
+            prop = addJProp(caption, mainProp, resultParams.toArray());
         }
         return new LPWithParams(prop, mergeLists(usedParams));
+    }
+
+    private LP<?> getOperatorProp(String op) {
+        if (op.equals("==")) {
+            return baseLM.equals2;
+        } else if (op.equals("!=")) {
+            return baseLM.diff2;
+        } else if (op.equals(">")) {
+            return baseLM.greater2;
+        } else if (op.equals("<")) {
+            return baseLM.less2;
+        } else if (op.equals(">=")) {
+            return baseLM.groeq2;
+        } else if (op.equals("<=")) {
+            return baseLM.lsoeq2;
+        }
+        assert false;
+        return null;
+    }
+
+    public LPWithParams addScriptedEqualityProp(String caption, String op, LP<?> leftProp, List<Integer> lUsedParams,
+                                                                           LP<?> rightProp, List<Integer> rUsedParams) {
+        return addScriptedJProp(caption, getOperatorProp(op), Arrays.asList(leftProp, rightProp), Arrays.asList(lUsedParams, rUsedParams));
     }
 
     private List<Integer> mergeLists(List<List<Integer>> lists) {
@@ -342,19 +372,16 @@ public class ScriptingLogicsModule extends LogicsModule {
         return resultParams;
     }
 
-    public LP<?> addScriptedGProp(String propName, String caption, LP<?> groupProp, boolean isSGProp, List<String> namedParams, List<LP<?>> paramProps, List<List<Integer>> usedParams) {
-        scriptLogger.info("addScriptedGProp(" + toLog(propName) + ", " + groupProp + ", " + isSGProp + ", " + toLog(namedParams) + ", " + paramProps + ", " + usedParams + ");");
+    public LP<?> addScriptedGProp(String caption, LP<?> groupProp, boolean isSGProp, List<LP<?>> paramProps, List<List<Integer>> usedParams) {
+        scriptLogger.info("addScriptedGProp(" + groupProp.property.getSID() + ", " + isSGProp + ", " + paramProps + ", " + usedParams + ");");
 
         List<Object> resultParams = getParamsPlainList(paramProps, usedParams);
         LP<?> resultProp;
         if (isSGProp) {
-            resultProp = (propName == null ? addSGProp(caption, groupProp, resultParams.toArray()) :
-                                             addSGProp(propName, caption, groupProp, resultParams.toArray()));
+            resultProp = addSGProp(caption, groupProp, resultParams.toArray());
         } else {
-            resultProp = (propName == null ? addMGProp(caption, groupProp, resultParams.toArray()) :
-                                             addMGProp(propName, caption, groupProp, resultParams.toArray()));
+            resultProp = addMGProp(caption, groupProp, resultParams.toArray());
         }
-        addNamedParams(resultProp.property.getSID(), namedParams);
         return resultProp;
     }
 
@@ -369,27 +396,24 @@ public class ScriptingLogicsModule extends LogicsModule {
         return newList;
     }
 
-    public LP<?> addScriptedUProp(String propName, String caption, Union unionType, List<String> namedParams, List<LP<?>> paramProps, List<List<Integer>> usedParams) {
-        scriptLogger.info("addScriptedUProp(" + toLog(propName) + ", " + unionType + ", " + toLog(namedParams) + ", " + paramProps + ", " + usedParams + ");");
+    public LP<?> addScriptedUProp(String caption, Union unionType, List<LP<?>> paramProps, List<List<Integer>> usedParams) {
+        scriptLogger.info("addScriptedUProp(" + unionType + ", " + paramProps + ", " + usedParams + ");");
 
         List<Object> resultParams = getParamsPlainList(paramProps, usedParams);
         if (unionType == Union.SUM) {
             resultParams = transformSumUnionParams(resultParams);
         }
-        LP<?> resultProp = (propName == null ? addUProp(null, caption, unionType, resultParams.toArray()) :
-                                               addUProp(null, propName, caption, unionType, resultParams.toArray()));
-        addNamedParams(resultProp.property.getSID(), namedParams);
-        return resultProp;
+        return addUProp(null, caption, unionType, resultParams.toArray());
     }
 
-    public LP<?> addConstantProp(String name, ConstType type, String text) {
+    public LP<?> addConstantProp(ConstType type, String text) {
         scriptLogger.info("addConstantProp(" + type + ", " + text + ");");
 
         switch (type) {
-            case INT: return addCProp(IntegerClass.instance, Integer.parseInt(text), name);
-            case REAL: return addCProp(DoubleClass.instance, Double.parseDouble(text), name);
-            case STRING: return addCProp(StringClass.get(text.length()), text, name);
-            case LOGICAL: return addCProp(LogicalClass.instance, text.equals("TRUE"), name);
+            case INT: return addCProp(IntegerClass.instance, Integer.parseInt(text));
+            case REAL: return addCProp(DoubleClass.instance, Double.parseDouble(text));
+            case STRING: return addCProp(StringClass.get(text.length()), text);
+            case LOGICAL: return addCProp(LogicalClass.instance, text.equals("TRUE"));
         }
         return null;
     }
@@ -410,6 +434,9 @@ public class ScriptingLogicsModule extends LogicsModule {
             parser.self = this;
             parser.parseState = state;
             parser.script();
+//            arithLexer lexer = new arithLexer(createStream());
+//            arithParser parser = new arithParser(new CommonTokenStream(lexer));
+//            parser.program();
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

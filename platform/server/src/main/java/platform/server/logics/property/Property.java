@@ -5,13 +5,16 @@ import platform.base.ListPermutations;
 import platform.base.Result;
 import platform.interop.action.ClientAction;
 import platform.server.caches.IdentityLazy;
-import platform.server.classes.*;
+import platform.server.classes.ConcreteClass;
+import platform.server.classes.CustomClass;
+import platform.server.classes.DataClass;
+import platform.server.classes.ValueClass;
 import platform.server.classes.sets.AndClassSet;
 import platform.server.data.*;
 import platform.server.data.expr.*;
-import platform.server.data.expr.where.cases.CaseExpr;
 import platform.server.data.expr.query.GroupExpr;
 import platform.server.data.expr.query.GroupType;
+import platform.server.data.expr.where.cases.CaseExpr;
 import platform.server.data.expr.where.extra.CompareWhere;
 import platform.server.data.query.MapKeysInterface;
 import platform.server.data.query.Query;
@@ -38,7 +41,6 @@ import platform.server.serialization.ServerIdentitySerializable;
 import platform.server.serialization.ServerSerializationPool;
 import platform.server.session.*;
 
-import javax.mail.Session;
 import javax.swing.*;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -313,11 +315,11 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
         if (canChangeSID) {
             this.sID = sID;
         } else {
-            throw new RuntimeException("Can't change property SID after initialization");
+            throw new RuntimeException(String.format("Can't change property SID [%s] after freezing", sID));
         }
     }
 
-    public void freezeSID() {
+    public void freezeSID() {     // todo [dale]: Отрефакторить установку SID
         canChangeSID = false;
     }
 

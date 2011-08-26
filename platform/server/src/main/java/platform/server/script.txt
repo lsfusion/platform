@@ -20,7 +20,7 @@ mainCompositionFreightSku2(freight, sku) = DATA STRING[200] (freight, sku) IN ba
 // JProps
 nameCurrencyTypeExchange2(typeExchange) = name(currencyTypeExchange(typeExchange)) IN baseGroup;
 nameTypeExchangeSTX2() = name(typeExchangeSTX()) IN NewGroup2;
-//equalsItemArticleComposite2(item1, item2) = equals2(articleCompositeItem(item1), item2) IN baseGroup;
+equalsItemArticleComposite2(item1, item2) = (articleCompositeItem(item1) == item2) IN baseGroup;
 numberListSIDArticle2(list, doc) = numberListArticle(list, articleSIDList(doc, list));
 netWeightArticleSizeSku2(item) = netWeightArticleSize(articleSku(item), sizeSupplierItem(item)) IN intraAttributeGroup PERSISTENT;
 orderedOrderInvoiceArticle2(order, invoice, param3) = and1(quantityListArticle(order, param3), inOrderInvoice(order, invoice));
@@ -57,12 +57,12 @@ netWeightImporterFreightUnitSku2(freight, unit, sku) = multiplyDouble2 (
         quantityImporterStockSku(freight, unit, sku),
         netWeightFreightSku(freightFreightUnit(unit, sku))
 ) IN baseGroup;
-invoicedShipmentSku2 = GROUP SUM (and1(quantityDocumentSku($1, $2), inInvoiceShipment($1, $3))) BY $3, $2 IN baseGroup PERSISTENT;
+invoicedShipmentSku2 = GROUP SUM [and1(quantityDocumentSku($1, $2), inInvoiceShipment($1, $3))] BY $3, $2 IN baseGroup PERSISTENT;
 
 
 // Constants
-diffCountRelationCustomCategory10Sku2(sku) = greater2(countRelationCustomCategory10(customCategory10Sku(sku)), 1.0);
-oneShipmentSku2(shipment, sku) = equals2(quantityShipmentSku(shipment, sku), 1.0);
+diffCountRelationCustomCategory10Sku2(sku) = countRelationCustomCategory10(customCategory10Sku(sku)) > 1.0;
+oneShipmentSku2(shipment, sku) = quantityShipmentSku(shipment, sku) == 1.0;
 
 // IS, IF
 //typeInvoiceCategoryFreightArticle2(freight, article) = and1(typeInvoiceCategoryArticle(article), freight IS RomanLogicsModule.freight) IN idGroup;
@@ -73,7 +73,7 @@ oneShipmentSku2(shipment, sku) = equals2(quantityShipmentSku(shipment, sku), 1.0
 FORM ContractForm2 'ContractForm2'
 OBJECTS seller, contract
 PROPERTIES name(seller), objectClassName(seller),
-           sidContract(contract), date(contract), nameImporterContract(contract), nameCurrencyContract(contract);
+           sidContract(contract), dateContract(contract), nameBuyerContract(contract), nameCurrencyContract(contract);
 
 FORM rateCurrency2 'Обмен валют'
 OBJECTS

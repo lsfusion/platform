@@ -92,6 +92,10 @@ public abstract class LogicsModule {
         moduleProperties.put(lp.property.getSID(), lp);
     }
 
+    protected void removeModuleLP(LP<?> lp) {
+        moduleProperties.remove(lp.property.getSID());
+    }
+
     public AbstractGroup getGroup(String sid) {
         return moduleGroups.get(sid);
     }
@@ -500,14 +504,6 @@ public abstract class LogicsModule {
 
     protected LP addCProp(StaticClass valueClass, Object value, ValueClass... params) {
         return addCProp("sys", valueClass, value, params);
-    }
-
-    protected LP addCProp(StaticClass valueClass, Object value, String name) {
-        if (name == null) {
-            return addCProp(valueClass, value);
-        } else {
-            return addCProp(null, name, false, "", valueClass, value);
-        }
     }
 
     protected LP addCProp(String caption, StaticClass valueClass, Object value, ValueClass... params) {
@@ -1676,8 +1672,9 @@ public abstract class LogicsModule {
 
     private <T extends LP<?>> T addProperty(AbstractGroup group, boolean persistent, T lp) {
         lp.property.setSID(transformNameToSID(lp.property.getSID()));
-        lp.property.freezeSID();
-
+        if (group != null && group != baseLM.privateGroup || persistent) {
+            lp.property.freezeSID();
+        }
         addModuleLP(lp);
         baseLM.registerProperty(lp);
         addPropertyToGroup(lp.property, group);
