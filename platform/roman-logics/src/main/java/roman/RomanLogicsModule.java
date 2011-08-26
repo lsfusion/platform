@@ -5648,6 +5648,7 @@ public class RomanLogicsModule extends LogicsModule {
         private ObjectEntity objArticle;
         private ObjectEntity objCategory;
         private ObjectEntity objCategory2;
+        private ObjectEntity objCategory3;
         private ObjectEntity objGender;
         private ObjectEntity objComposition;
         private ObjectEntity objTypeFabric;
@@ -5675,24 +5676,29 @@ public class RomanLogicsModule extends LogicsModule {
 
             addPropertyDraw(quantityFreightArticle, objFreight, objArticle);
 
+
+            objCategory2 = addSingleGroupObject(category, "Номенклатурная группа", baseLM.name);
+
             gobjCategoryGenderCompositionTypeFabric = new GroupObjectEntity(genID(), "Группировка");
-            objCategory2 = new ObjectEntity(genID(), category, "Номенклатурная группа");
+            //objCategory2 = new ObjectEntity(genID(), category, "Номенклатурная группа");
             objGender = new ObjectEntity(genID(), gender, "Пол");
             objComposition = new ObjectEntity(genID(), COMPOSITION_CLASS, "Состав");
             objTypeFabric = new ObjectEntity(genID(), typeFabric, "Тип одежды");
 
-            gobjCategoryGenderCompositionTypeFabric.add(objCategory2);
+            //gobjCategoryGenderCompositionTypeFabric.add(objCategory2);
             gobjCategoryGenderCompositionTypeFabric.add(objGender);
             gobjCategoryGenderCompositionTypeFabric.add(objComposition);
             gobjCategoryGenderCompositionTypeFabric.add(objTypeFabric);
             addGroup(gobjCategoryGenderCompositionTypeFabric);
 
-            addPropertyDraw(objCategory2, baseLM.name);
+            //addPropertyDraw(objCategory2, baseLM.name);
             addPropertyDraw(objGender, sidGender);
             addPropertyDraw(objComposition, baseLM.objectValue);
             addPropertyDraw(objTypeFabric, baseLM.name);
             addPropertyDraw(sidCustomCategory10CategoryGenderCompositionTypeFabric, objCategory2, objGender, objComposition, objTypeFabric);
             addPropertyDraw(quantityFreightCategoryGenderCompositionTypeFabric, objFreight, objCategory2, objGender, objComposition, objTypeFabric);
+
+            //addFixedFilter(new CompareFilterEntity(objCategory2, Compare.EQUALS, objCategory3));
 
             objCategory = addSingleGroupObject(category, "Номенклатурная группа", baseLM.name);
 
@@ -5749,6 +5755,7 @@ public class RomanLogicsModule extends LogicsModule {
             
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(quantityFreightCategoryGenderCompositionTypeFabric, objFreight, objCategory2, objGender, objComposition, objTypeFabric)));
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(quantityFreightCategory, objFreight, objCategory)));
+            addFixedFilter(new NotNullFilterEntity(addPropertyObject(quantityFreightCategory, objFreight, objCategory2)));
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(quantityFreightSku, objFreight, objSku)));
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(quantityImporterFreight, objImporter, objFreight)));
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(quantityImporterFreightSku, objImporter, objFreight, objSkuFreight)));
@@ -5835,10 +5842,14 @@ public class RomanLogicsModule extends LogicsModule {
             skuContainer.add(design.getGroupObjectContainer(objCategory.groupTo));
             skuContainer.add(design.getGroupObjectContainer(objSku.groupTo));
 
+            ContainerView categoryContainer = design.createContainer("Группы");
+            categoryContainer.add(design.getGroupObjectContainer(objCategory2.groupTo));
+            categoryContainer.add(design.getGroupObjectContainer(gobjCategoryGenderCompositionTypeFabric));
+
             ContainerView specContainer = design.createContainer();
             design.getMainContainer().addAfter(specContainer, design.getGroupObjectContainer(objArticle.groupTo));
             specContainer.add(design.getGroupObjectContainer(objArticle.groupTo));
-            specContainer.add(design.getGroupObjectContainer(gobjCategoryGenderCompositionTypeFabric));
+            specContainer.add(categoryContainer);
             specContainer.add(skuContainer);
             specContainer.add(design.getGroupObjectContainer(objSkuFreight.groupTo));
             specContainer.tabbedPane = true;
