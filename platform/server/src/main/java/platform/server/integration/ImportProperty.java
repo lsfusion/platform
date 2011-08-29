@@ -1,5 +1,6 @@
 package platform.server.integration;
 
+import platform.interop.Compare;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.ValueExpr;
@@ -57,8 +58,7 @@ public class ImportProperty <P extends PropertyInterface> {
         return importKeyExprs;
     }
 
-    public MapDataChanges<P> synchronize(DataSession session, SingleKeyTableUsage<ImportField> importTable, Map<ImportKey<?>, SinglePropertyTableUsage<?>> addedKeys, boolean replaceNull) throws SQLException {
-
+    public MapDataChanges<P> synchronize(DataSession session, SingleKeyTableUsage<ImportField> importTable, Map<ImportKey<?>, SinglePropertyTableUsage<?>> addedKeys, boolean replaceNull, boolean replaceEqual) throws SQLException {
         Map<ImportField,Expr> importExprs = importTable.join(importTable.getMapKeys()).getExprs();
 
         Expr importExpr;
@@ -72,12 +72,16 @@ public class ImportProperty <P extends PropertyInterface> {
 
         Expr changeExpr = GroupExpr.create(importKeyExprs, importExpr, groupType != null ? groupType : GroupType.ANY, mapKeys);
 
-        PropertyChange<P> propertyChange;
+        Where changeWhere;
         if (replaceNull)
-            propertyChange = new PropertyChange<P>(mapKeys, changeExpr, GroupExpr.create(importKeyExprs, Where.TRUE, mapKeys).getWhere());
+            changeWhere = GroupExpr.create(importKeyExprs, Where.TRUE, mapKeys).getWhere();
         else
-            propertyChange = new PropertyChange<P>(mapKeys, changeExpr);
+            changeWhere = changeExpr.getWhere();
 
-        return implement.property.getDataChanges(propertyChange, null, session.modifier);
+        if (!replaceEqual) {
+            changeWhere = changeWhere.and(implement.property.getExpr(mapKeys).compare(changeExpr, Compare.EQUALS).not());
+        }
+
+        return implement.property.getDataChanges(new PropertyChange<P>(mapKeys, changeExpr, changeWhere), null, session.modifier);
     }
 }

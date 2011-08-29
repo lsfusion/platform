@@ -36,7 +36,10 @@ public class IntegrationService {
     }
 
     public void synchronize(boolean addNew, boolean updateExisting, boolean deleteOld, boolean replaceNull) throws SQLException {
+        synchronize(addNew, updateExisting, deleteOld, replaceNull, true);
+    }
 
+    public void synchronize(boolean addNew, boolean updateExisting, boolean deleteOld, boolean replaceNull, boolean replaceEqual) throws SQLException {
         SingleKeyTableUsage<ImportField> importTable = new SingleKeyTableUsage<ImportField>(IntegerClass.instance, table.fields, ImportField.typeGetter);
 
         int counter = 0;
@@ -55,7 +58,7 @@ public class IntegrationService {
 
         MapDataChanges<PropertyInterface> propertyChanges = new MapDataChanges<PropertyInterface>();
         for (ImportProperty<?> property : properties)
-            propertyChanges = propertyChanges.add((MapDataChanges<PropertyInterface>) property.synchronize(session, importTable, addedKeys, replaceNull));
+            propertyChanges = propertyChanges.add((MapDataChanges<PropertyInterface>) property.synchronize(session, importTable, addedKeys, replaceNull, replaceEqual));
         session.execute(propertyChanges, null, null);
     }
 
