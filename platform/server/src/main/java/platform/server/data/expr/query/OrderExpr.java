@@ -11,7 +11,9 @@ import platform.server.caches.hash.HashContext;
 import platform.server.data.expr.*;
 import platform.server.data.expr.where.pull.ExclExprPullWheres;
 import platform.server.data.expr.where.pull.ExprPullWheres;
+import platform.server.data.expr.where.pull.StatPullWheres;
 import platform.server.data.query.*;
+import platform.server.data.query.stat.KeyStat;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.translator.PartialQueryTranslator;
 import platform.server.data.translator.QueryTranslator;
@@ -23,42 +25,49 @@ import java.util.*;
 
 public class OrderExpr extends QueryExpr<KeyExpr, OrderExpr.Query,OrderJoin> implements JoinData {
 
-    public final OrderType orderType;
-
     public static class Query extends AbstractOuterContext<Query> {
-        public Expr expr;
+        public List<Expr> exprs;
         public OrderedMap<Expr, Boolean> orders;
         public Set<Expr> partitions;
+        public final OrderType orderType;
 
-        public Query(Expr expr, OrderedMap<Expr, Boolean> orders, Set<Expr> partitions) {
-            this.expr = expr;
+        public Query(List<Expr> exprs, OrderedMap<Expr, Boolean> orders, Set<Expr> partitions, OrderType orderType) {
+            this.exprs = exprs;
             this.orders = orders;
             this.partitions = partitions;
+            this.orderType = orderType;
         }
 
         @ParamLazy
         public Query translateOuter(MapTranslate translator) {
-            return new Query(expr.translateOuter(translator),translator.translate(orders),translator.translate(partitions));
+            return new Query(translator.translate(exprs),translator.translate(orders),translator.translate(partitions), orderType);
         }
 
         public boolean twins(TwinImmutableInterface o) {
-            return expr.equals(((Query) o).expr) && orders.equals(((Query) o).orders) && partitions.equals(((Query) o).partitions);
+            return exprs.equals(((Query) o).exprs) && orders.equals(((Query) o).orders) && partitions.equals(((Query) o).partitions) && orderType.equals(((Query)o).orderType);
         }
 
         @IdentityLazy
         public int hashOuter(HashContext hashContext) {
             int hash = 0;
+            for(Expr expr : exprs)
+                hash = hash * 31 + expr.hashOuter(hashContext);
+            hash = hash * 31;
             for(Map.Entry<Expr,Boolean> order : orders.entrySet())
                 hash = hash * 31 + order.getKey().hashOuter(hashContext) ^ order.getValue().hashCode();
             hash = hash * 31;
             for(Expr partition : partitions)
                 hash += partition.hashOuter(hashContext);
-            return hash * 31 + expr.hashOuter(hashContext);
+            return 31 * hash + orderType.hashCode();
         }
 
         @IdentityLazy
         public Where getWhere() {
-            return expr.getWhere().and(getGroupWhere());
+            return Expr.getWhere(exprs).and(getGroupWhere());
+        }
+
+        public Stat getTypeStat() {
+            return exprs.get(0).getTypeStat(getWhere());
         }
 
         @IdentityLazy
@@ -68,45 +77,43 @@ public class OrderExpr extends QueryExpr<KeyExpr, OrderExpr.Query,OrderJoin> imp
 
         @IdentityLazy
         public Type getType() {
-            return expr.getType(getWhere());
+            return exprs.get(0).getType(getWhere());
         }
 
         @Override
         public String toString() {
-            return "INNER(" + expr + "," + orders + "," + partitions + ")";
+            return "INNER(" + exprs + "," + orders + "," + partitions + "," + orderType + ")";
         }
 
         public SourceJoin[] getEnum() { // !!! Включим ValueExpr.TRUE потому как в OrderSelect.getSource - при проталкивании partition'а может создать TRUE
-            return AbstractSourceJoin.merge(partitions,AbstractSourceJoin.merge(orders.keySet(), expr, ValueExpr.TRUE));
+            return AbstractSourceJoin.merge(partitions,AbstractSourceJoin.merge(BaseUtils.merge(orders.keySet(), exprs), ValueExpr.TRUE));
         }
 
         @IdentityLazy
         public Query pack() { // пока так
-            return new Query(expr.pack(), orders, partitions);
+            return new Query(Expr.pack(exprs), orders, partitions, orderType);
         }
     }
 
-    private OrderExpr(OrderType orderType, Map<KeyExpr,BaseExpr> group, Expr expr, OrderedMap<Expr, Boolean> orders, Set<Expr> partitions) {
-        this(orderType, new Query(expr, orders, partitions),group);
+    private OrderExpr(OrderType orderType, Map<KeyExpr,BaseExpr> group, List<Expr> exprs, OrderedMap<Expr, Boolean> orders, Set<Expr> partitions) {
+        this(new Query(exprs, orders, partitions, orderType),group);
     }
 
     // трансляция
     private OrderExpr(OrderExpr orderExpr, MapTranslate translator) {
         super(orderExpr, translator);
-        orderType = orderExpr.orderType;
     }
 
     public OrderExpr translateOuter(MapTranslate translator) {
         return new OrderExpr(this,translator);
     }
 
-    private OrderExpr(OrderType orderType, Query query, Map<KeyExpr, BaseExpr> group) {
+    private OrderExpr(Query query, Map<KeyExpr, BaseExpr> group) {
         super(query, group);
-        this.orderType = orderType;
     }
 
     protected OrderExpr createThis(Query query, Map<KeyExpr, BaseExpr> group) {
-        return new OrderExpr(orderType, query, group);
+        return new OrderExpr(query, group);
     }
 
     public Type getType(KeyType keyType) {
@@ -129,7 +136,7 @@ public class OrderExpr extends QueryExpr<KeyExpr, OrderExpr.Query,OrderJoin> imp
     public Expr translateQuery(QueryTranslator translator) {
         return new ExprPullWheres<KeyExpr>() {
             protected Expr proceedBase(Map<KeyExpr, BaseExpr> map) {
-                return createBase(orderType, map, query.expr, query.orders, query.partitions);
+                return createBase(query.orderType, map, query.exprs, query.orders, query.partitions);
             }
         }.proceed(translator.translate(group));
     }
@@ -137,11 +144,6 @@ public class OrderExpr extends QueryExpr<KeyExpr, OrderExpr.Query,OrderJoin> imp
     @Override
     public String toString() {
         return "ORDER(" + query + "," + group + ")";
-    }
-
-    @Override
-    public OrderJoin getGroupJoin() {
-        return new OrderJoin(innerContext.getKeys(), innerContext.getValues(),query.getWhere(), Settings.instance.isPushOrderWhere() ?query.partitions:new HashSet<Expr>(),group);
     }
 
     // проталкивает внутрь partition'а Where
@@ -161,12 +163,12 @@ public class OrderExpr extends QueryExpr<KeyExpr, OrderExpr.Query,OrderJoin> imp
         Map<KeyExpr, Expr> packedGroup = packPushFollowFalse(group, falseWhere);
         Query packedQuery = query.pack();
         if(!(BaseUtils.hashEquals(packedQuery, query) && BaseUtils.hashEquals(packedGroup,group)))
-            return create(orderType, packedQuery.expr, packedQuery.orders, packedQuery.partitions, packedGroup);
+            return create(query.orderType, packedQuery.exprs, packedQuery.orders, packedQuery.partitions, packedGroup);
         else
             return this;
     }
 
-    protected static Expr createBase(OrderType orderType, Map<KeyExpr, BaseExpr> group, Expr expr, OrderedMap<Expr, Boolean> orders, Set<Expr> partitions) {
+    protected static Expr createBase(OrderType orderType, Map<KeyExpr, BaseExpr> group, List<Expr> exprs, OrderedMap<Expr, Boolean> orders, Set<Expr> partitions) {
         // проверим если в group есть ключи которые ссылаются на ValueExpr и они есть в partition'е - убираем их из partition'а
         Map<KeyExpr,BaseExpr> restGroup = new HashMap<KeyExpr, BaseExpr>();
         Set<Expr> restPartitions = new HashSet<Expr>(partitions);
@@ -178,18 +180,18 @@ public class OrderExpr extends QueryExpr<KeyExpr, OrderExpr.Query,OrderJoin> imp
                 restGroup.put(groupKey.getKey(), groupKey.getValue());
         if(translate.size()>0) {
             QueryTranslator translator = new PartialQueryTranslator(translate);
-            expr = expr.translateQuery(translator);
+            exprs = translator.translate(exprs);
             orders = translator.translate(orders);
             restPartitions = translator.translate(restPartitions);
         }
 
-        return BaseExpr.create(new OrderExpr(orderType, restGroup,expr,orders,restPartitions));
+        return BaseExpr.create(new OrderExpr(orderType, restGroup, exprs, orders, restPartitions));
     }
 
-    public static Expr create(final OrderType orderType, final Expr expr, final OrderedMap<Expr, Boolean> orders, final Set<Expr> partitions, Map<KeyExpr, ? extends Expr> group) {
+    public static Expr create(final OrderType orderType, final List<Expr> exprs, final OrderedMap<Expr, Boolean> orders, final Set<Expr> partitions, Map<KeyExpr, ? extends Expr> group) {
         return new ExprPullWheres<KeyExpr>() {
             protected Expr proceedBase(Map<KeyExpr, BaseExpr> map) {
-                return createBase(orderType, map, expr, orders, partitions);
+                return createBase(orderType, map, exprs, orders, partitions);
             }
         }.proceed(group);
     }
@@ -219,7 +221,30 @@ public class OrderExpr extends QueryExpr<KeyExpr, OrderExpr.Query,OrderJoin> imp
                         return op1;
                     return op1.or(op2);
                 }
-            }.proceed(query.getGroupWhere(), query.expr);
+            }.proceed(query.getWhere(), query.exprs.get(0));
         }
+    }
+
+    @IdentityLazy
+    public OrderJoin getInnerJoin() {
+        return new OrderJoin(innerContext.getKeys(), innerContext.getValues(),query.getWhere(), Settings.instance.isPushOrderWhere() ?query.partitions:new HashSet<Expr>(),group);
+    }
+
+    @IdentityLazy
+    public Stat getStatValue(KeyStat keyStat) {
+        // assert что expr учавствует в where
+        if(query.orderType.isSelect())
+            return new StatPullWheres().proceed(query.getWhere(), query.exprs.get(0));
+        return null;
+    }
+
+    public Stat getTypeStat(KeyStat keyStat) {
+        return query.getTypeStat();
+    }
+
+    public boolean isOr() {
+        if(!query.orderType.canBeNull())
+            return true;
+        return super.isOr();
     }
 }

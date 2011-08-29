@@ -2,6 +2,8 @@ package platform.server.classes;
 
 import platform.server.classes.sets.*;
 import platform.server.data.SQLSession;
+import platform.server.data.expr.query.Stat;
+import platform.server.data.query.stat.KeyStat;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
 import platform.server.logics.table.ObjectTable;
@@ -9,7 +11,7 @@ import platform.server.logics.table.ObjectTable;
 import java.sql.SQLException;
 import java.util.Collections;
 
-public class ConcreteCustomClass extends CustomClass implements ConcreteValueClass,ConcreteObjectClass {
+public abstract class ConcreteCustomClass extends CustomClass implements ConcreteValueClass,ConcreteObjectClass, ObjectValueClassSet {
 
     public ConcreteCustomClass(String sID, String caption, CustomClass... parents) {
         super(sID, caption, parents);
@@ -80,4 +82,7 @@ public class ConcreteCustomClass extends CustomClass implements ConcreteValueCla
         return getBaseClass().getUpSet();
     }
 
+    public Stat getStat() {
+        return new Stat(getCount());
+    }
 }

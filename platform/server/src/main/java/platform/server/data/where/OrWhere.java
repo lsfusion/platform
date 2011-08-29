@@ -9,8 +9,8 @@ import platform.server.data.expr.where.extra.EqualsWhere;
 import platform.server.data.expr.where.extra.GreaterWhere;
 import platform.server.data.expr.where.extra.IsClassWhere;
 import platform.server.data.query.JoinData;
+import platform.server.data.query.innerjoins.GroupJoinsWheres;
 import platform.server.data.query.innerjoins.KeyEquals;
-import platform.server.data.query.innerjoins.ObjectJoinSets;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.translator.QueryTranslator;
 import platform.server.data.where.classes.ClassExprWhere;
@@ -468,10 +468,10 @@ public class OrWhere extends FormulaWhere<AndObjectWhere> implements OrObjectWhe
 
     // ДОПОЛНИТЕЛЬНЫЕ ИНТЕРФЕЙСЫ
 
-    public ObjectJoinSets groupObjectJoinSets() {
-        ObjectJoinSets result = new ObjectJoinSets();
+    public GroupJoinsWheres groupJoinsWheres() {
+        GroupJoinsWheres result = new GroupJoinsWheres();
         for(Where where : wheres)
-            result.or(where.groupObjectJoinSets());
+            result.or(where.groupJoinsWheres());
         return result;
     }
     public KeyEquals calculateKeyEquals() {

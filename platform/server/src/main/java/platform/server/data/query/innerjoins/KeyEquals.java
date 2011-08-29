@@ -6,8 +6,7 @@ import platform.interop.Compare;
 import platform.server.data.expr.BaseExpr;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
-import platform.server.data.expr.query.StatKeys;
-import platform.server.data.where.MapWhere;
+import platform.server.data.query.stat.WhereJoins;
 import platform.server.data.translator.PartialQueryTranslator;
 import platform.server.data.where.Where;
 
@@ -26,7 +25,7 @@ public class KeyEquals extends QuickMap<KeyEqual, Where> {
         super(new KeyEqual(key, expr), expr.getWhere());
     }
 
-    protected Where addValue(Where prevValue, Where newValue) {
+    protected Where addValue(KeyEqual key, Where prevValue, Where newValue) {
         return prevValue.or(newValue);
     }
 
@@ -116,32 +115,34 @@ public class KeyEquals extends QuickMap<KeyEqual, Where> {
         throw new RuntimeException("not supported yet");
     }
 
-    public Collection<InnerGroupJoin<? extends GroupJoinSet>> getInnerJoins(boolean noJoins, Set<KeyExpr> keys) {
-        Collection<InnerGroupJoin<? extends GroupJoinSet>> result = new ArrayList<InnerGroupJoin<? extends GroupJoinSet>>();
+    private Collection<GroupJoinsWhere> getWhereJoins() {
+        Collection<GroupJoinsWhere> result = new ArrayList<GroupJoinsWhere>();
         for(int i=0;i<size;i++) {
             KeyEqual keyEqual = getKey(i);
             Where where = getValue(i);
 
-            ObjectJoinSets objectJoinSets = where.groupObjectJoinSets();
-
-            Set<KeyExpr> joinKeys = BaseUtils.removeSet(keys, keyEqual.keyExprs.keySet());
-            if(noJoins) { // группируем по enoughKeys
-                MapWhere<StatKeys<KeyExpr>> insufWheres = objectJoinSets.compileStats(joinKeys);
-                for(int j=0;j<insufWheres.size;j++)
-                    result.add(new InnerGroupJoin<GroupStatKeys>(keyEqual, new GroupStatKeys(insufWheres.getKey(j)), insufWheres.getValue(j)));
-            } else { // группируем по means
-                for(Map.Entry<ObjectJoinSet,Where> objectJoin : objectJoinSets.compileMeans(joinKeys).entrySet())
-                    result.add(new InnerSelectJoin(keyEqual, objectJoin.getKey().getJoins(), objectJoin.getValue()));
-            }
+            GroupJoinsWheres groupJoinsWheres = where.groupJoinsWheres();
+            for(Map.Entry<WhereJoins, GroupJoinsWheres.Value> objectJoin : groupJoinsWheres.compileMeans().entrySet())
+                result.add(new GroupJoinsWhere(keyEqual, objectJoin.getKey(), objectJoin.getValue().upWheres, objectJoin.getValue().where));
         }
         return result;
     }
 
     // получает Where с учетом трансляций
-    public Where getWhere() {
+    private Where getWhere() {
         Where where = Where.FALSE;
         for(int i=0;i<size;i++)
            where = where.or(getValue(i).and(getKey(i).getWhere()));
         return where;
+    }
+
+    public Collection<GroupJoinsWhere> getWhereJoins(boolean notExclusive) {
+        Collection<GroupJoinsWhere> whereJoins = getWhereJoins();
+        if(notExclusive || whereJoins.size()<=1)
+            return whereJoins;
+        else {
+            GroupJoinsWhere firstJoin = whereJoins.iterator().next();
+            return BaseUtils.add(getWhere().and(firstJoin.getFullWhere().not()).getWhereJoins(false), firstJoin); // assert что keyEquals.getWhere тоже самое что this только упрощенное транслятором
+        }
     }
 }

@@ -4,6 +4,7 @@ import platform.server.classes.BaseClass;
 import platform.server.classes.ConcreteClass;
 import platform.server.classes.sets.AndClassSet;
 import platform.server.data.SQLSession;
+import platform.server.data.expr.query.Stat;
 import platform.server.data.sql.SQLSyntax;
 import platform.server.form.view.report.ReportDrawField;
 import platform.server.logics.DataObject;

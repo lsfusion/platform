@@ -2,44 +2,40 @@ package platform.server.data.query.innerjoins;
 
 import platform.server.caches.hash.HashContext;
 import platform.server.caches.AbstractOuterContext;
-import platform.server.data.expr.query.StatKeys;
+import platform.server.data.expr.BaseExpr;
+import platform.server.data.query.stat.KeyStat;
+import platform.server.data.query.stat.StatKeys;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.query.SourceJoin;
-import platform.server.data.expr.KeyExpr;
 import platform.base.TwinImmutableInterface;
 
 import java.util.Set;
 
-public class GroupStatKeys extends AbstractOuterContext<GroupStatKeys> implements GroupJoinSet<GroupStatKeys> {
+public class GroupStatKeys<K extends BaseExpr> extends AbstractOuterContext<GroupStatKeys<K>> implements StatInterface<GroupStatKeys<K>> {
 
-    private final StatKeys<KeyExpr> keys;
-    public GroupStatKeys(StatKeys<KeyExpr> keys) {
-        this.keys = keys;
+    private final StatKeys<K> groups;
+    public GroupStatKeys(StatKeys<K> groups) {
+        this.groups = groups;
     }
 
     public int hashOuter(HashContext hashContext) {
-        int hash = 0;
-        for(int i=0;i<keys.size;i++)
-            hash += hashContext.keys.hash(keys.getKey(i)) ^ keys.getValue(i).hashCode();
-        return hash;
+        return StatKeys.hashOuter(groups, hashContext);
     }
 
     public boolean twins(TwinImmutableInterface o) {
-        return keys.equals(((GroupStatKeys) o).keys);
+        return groups.equals(((GroupStatKeys) o).groups);
     }
 
-    public GroupStatKeys translateOuter(MapTranslate translator) {
-        StatKeys<KeyExpr> transKeys = new StatKeys<KeyExpr>();
-        for(int i=0;i<keys.size;i++)
-            transKeys.add(translator.translate(keys.getKey(i)), keys.getValue(i));
-        return new GroupStatKeys(transKeys);
+    public GroupStatKeys<K> translateOuter(MapTranslate translator) {
+        return new GroupStatKeys<K>(StatKeys.translateOuter(groups, translator));
     }
 
     public SourceJoin[] getEnum() {
         throw new RuntimeException("not supported");
     }
 
-    public StatKeys<KeyExpr> getStatKeys(Set<KeyExpr> enough) {
-        return keys;
+    @Override
+    public <K extends BaseExpr> StatKeys<K> getStatKeys(Set<K> groups, KeyStat keyStat) {
+        return (StatKeys<K>) this.groups; //assert что совпадают с enough
     }
 }

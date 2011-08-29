@@ -77,7 +77,7 @@ public class IncrementProps<T> extends Modifier<IncrementProps.UsedChanges> {
             increment = changes.increment;
             noUpdate = changes.noUpdate;
         }
-        public UsedChanges addChanges(Changes changes) {
+        public UsedChanges calculateAddChanges(Changes changes) {
             return new UsedChanges(this, changes);
         }
 
@@ -86,7 +86,7 @@ public class IncrementProps<T> extends Modifier<IncrementProps.UsedChanges> {
             increment = BaseUtils.merge(changes.increment, merge.increment);
             noUpdate = BaseUtils.mergeSet(changes.noUpdate, merge.noUpdate);
         }
-        public UsedChanges add(UsedChanges changes) {
+        public UsedChanges calculateAdd(UsedChanges changes) {
             return new UsedChanges(this, changes);
         }
 

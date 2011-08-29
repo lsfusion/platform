@@ -27,6 +27,13 @@ public abstract class AbstractMapTranslator extends TwinImmutableObject implemen
         return transMap;
     }
 
+    public <K> Map<KeyExpr,K> translateMapKeys(Map<KeyExpr, K> map) {
+        Map<KeyExpr, K> transMap = new HashMap<KeyExpr, K>();
+        for(Map.Entry<KeyExpr,K> entry : map.entrySet())
+            transMap.put(entry.getKey().translateOuter(this),entry.getValue());
+        return transMap;
+    }
+
     // для кэша classWhere на самом деле надо
     public <K> Map<K, VariableClassExpr> translateVariable(Map<K, ? extends VariableClassExpr> map) {
         Map<K,VariableClassExpr> transMap = new HashMap<K, VariableClassExpr>();

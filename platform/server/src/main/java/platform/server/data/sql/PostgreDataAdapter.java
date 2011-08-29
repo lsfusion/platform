@@ -3,9 +3,13 @@ package platform.server.data.sql;
 import com.sun.corba.se.spi.activation.Server;
 import org.apache.log4j.Logger;
 import platform.base.BaseUtils;
+import platform.base.IOUtils;
 import platform.server.data.type.Type;
+import platform.server.logics.BusinessLogics;
 import platform.server.logics.ServerResourceBundle;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -18,7 +22,7 @@ public class PostgreDataAdapter extends DataAdapter {
     public PostgreDataAdapter() {
     }
 
-    public PostgreDataAdapter(String dataBase, String server, String userID, String password) throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
+    public PostgreDataAdapter(String dataBase, String server, String userID, String password) throws Exception, SQLException, InstantiationException, IllegalAccessException {
         super(dataBase, server, userID, password);
     }
 
@@ -43,7 +47,7 @@ public class PostgreDataAdapter extends DataAdapter {
         return "org.postgresql.Driver";
     }
 
-    public void ensureDB() throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
+    public void ensureDB() throws Exception, SQLException, InstantiationException, IllegalAccessException {
 
         Connection connect = DriverManager.getConnection("jdbc:postgresql://" + server + "/postgres?user=" + userID + "&password=" + password);
 /*        try {
@@ -68,6 +72,7 @@ public class PostgreDataAdapter extends DataAdapter {
                 "    sfunc = getAnyNotNull,\n" +
                 "    stype = anyelement\n" +
                 ");");
+        connect.createStatement().execute(IOUtils.readStreamToString(BusinessLogics.class.getResourceAsStream("/sqlaggr/aggf.sc")));
         connect.close();
     }
 

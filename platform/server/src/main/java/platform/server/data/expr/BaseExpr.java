@@ -5,10 +5,15 @@ import platform.base.QuickMap;
 import platform.interop.Compare;
 import platform.server.caches.ManualLazy;
 import platform.server.classes.sets.AndClassSet;
+import platform.server.data.expr.query.Stat;
 import platform.server.data.expr.where.cases.ExprCaseList;
 import platform.server.data.expr.where.extra.EqualsWhere;
 import platform.server.data.expr.where.extra.GreaterWhere;
 import platform.server.data.expr.where.extra.LikeWhere;
+import platform.server.data.query.stat.BaseJoin;
+import platform.server.data.query.stat.InnerBaseJoin;
+import platform.server.data.query.stat.KeyStat;
+import platform.server.data.where.DataWhereSet;
 import platform.server.data.where.MapWhere;
 import platform.server.data.query.JoinData;
 import platform.server.data.translator.MapTranslate;
@@ -17,8 +22,7 @@ import platform.server.data.where.CheckWhere;
 import platform.server.data.where.Where;
 import platform.server.data.where.classes.ClassExprWhere;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 
 public abstract class BaseExpr extends Expr {
@@ -35,12 +39,12 @@ public abstract class BaseExpr extends Expr {
         return new ExprCaseList(this);
     }
 
-    protected abstract VariableExprSet calculateExprFollows();
-    private VariableExprSet exprFollows = null;
+    private InnerExprSet exprFollows = null;
     @ManualLazy
-    public VariableExprSet getExprFollows() {
+    public InnerExprSet getExprFollows(boolean includeThis, boolean recursive) {
+        assert includeThis || recursive; // также предполагается что InnerExpr includeThis отработал
         if(exprFollows==null)
-            exprFollows = calculateExprFollows();
+            exprFollows = getBaseJoin().getExprFollows(recursive);
         return exprFollows;
     }
 
@@ -138,11 +142,31 @@ public abstract class BaseExpr extends Expr {
     public Where getBaseWhere() {
         return Where.TRUE;
     }
-    public BaseExpr getBaseExpr() {
-        return this;
-    }
 
     public int getWhereDepth() {
         return 1;
+    }
+
+    public abstract Stat getStatValue(KeyStat keyStat);
+    public abstract InnerBaseJoin<?> getBaseJoin();
+
+    public abstract void fillFollowSet(DataWhereSet fillSet);
+
+    public abstract Stat getTypeStat(KeyStat keyStat);
+
+    public Stat getTypeStat(Where fullWhere) {
+        return getTypeStat((KeyStat) fullWhere);
+    }
+
+    public Set<BaseExpr> getBaseExprs() {
+        return Collections.singleton(this);
+    }
+
+    public boolean isOr() {
+/*        boolean result = false;
+        for(BaseExpr baseExpr : getBaseJoin().getJoins().values())
+            result = result || baseExpr.isOr();
+        return result;*/
+        return false;
     }
 }

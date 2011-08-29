@@ -19,9 +19,9 @@ public abstract class DataAdapter extends AbstractConnectionPool implements SQLS
     protected DataAdapter() {
     }
 
-    abstract void ensureDB() throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException;
+    abstract void ensureDB() throws Exception, SQLException, InstantiationException, IllegalAccessException;
 
-    protected DataAdapter(String dataBase, String server, String userID, String password) throws ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException {
+    protected DataAdapter(String dataBase, String server, String userID, String password) throws Exception, SQLException, IllegalAccessException, InstantiationException {
 
         Class.forName(getClassName());
 

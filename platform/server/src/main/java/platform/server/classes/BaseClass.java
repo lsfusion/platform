@@ -1,7 +1,14 @@
 package platform.server.classes;
 
+import org.eclipse.jdt.core.dom.rewrite.ITrackedNodePosition;
+import platform.base.BaseUtils;
 import platform.server.caches.IdentityLazy;
 import platform.server.classes.sets.ConcreteCustomClassSet;
+import platform.server.data.Table;
+import platform.server.data.expr.Expr;
+import platform.server.data.expr.SingleClassExpr;
+import platform.server.data.expr.query.GroupExpr;
+import platform.server.data.expr.query.GroupType;
 import platform.server.logics.ServerResourceBundle;
 import platform.server.logics.table.ObjectTable;
 import platform.server.logics.linear.LP;
@@ -119,6 +126,26 @@ public class BaseClass extends AbstractCustomClass {
             }
     }
 
+    public void updateClassStat(SQLSession session) throws SQLException {
+        Query<Integer, Integer> classes = new Query<Integer, Integer>(Collections.singleton(0));
+
+        KeyExpr countKeyExpr = new KeyExpr("count");
+        Expr countExpr = GroupExpr.create(Collections.singletonMap(0, countKeyExpr.classExpr(this)),
+                new ValueExpr(1, IntegerClass.instance), countKeyExpr.isClass(this.getUpSet()), GroupType.SUM, classes.mapKeys);
+
+        classes.properties.put(0, countExpr);
+        classes.and(classes.mapKeys.get(0).isClass(objectClass));
+
+        OrderedMap<Map<Integer, Object>, Map<Integer, Object>> classStats = classes.execute(session);
+        for(Map.Entry<Map<Integer, Object>, Map<Integer, Object>> classStat : classStats.entrySet()) {
+            CustomClass customClass = findClassID((int) (Integer) classStat.getKey().get(0));
+            if(customClass instanceof CustomObjectClass) {
+                Integer count = BaseUtils.nvl((Integer) classStat.getValue().get(0), 0);
+                ((CustomObjectClass)customClass).stat = count==0?1:count;
+            }
+        }
+    }
+
     public Integer getClassID(Integer value, SQLSession session) throws SQLException {
         Query<Object,String> query = new Query<Object,String>(new HashMap<Object, KeyExpr>());
         Join<PropertyField> joinTable = table.joinAnd(Collections.singletonMap(table.key,new ValueExpr(value,getConcrete())));
@@ -131,5 +158,14 @@ public class BaseClass extends AbstractCustomClass {
             assert (result.size()==1);
             return (Integer) result.singleValue().get("classid");
         }
+    }
+
+    public Table.Join.Expr getJoinExpr(SingleClassExpr expr) {
+        return (Table.Join.Expr) table.joinAnd(
+                Collections.singletonMap(table.key, expr)).getExpr(table.objectClass);
+    }
+
+    public int getCount() {
+        return getUpSet().getCount();
     }
 }

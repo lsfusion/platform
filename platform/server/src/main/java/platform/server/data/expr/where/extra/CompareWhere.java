@@ -4,6 +4,7 @@ import platform.interop.Compare;
 import platform.server.caches.ManualLazy;
 import platform.server.data.expr.BaseExpr;
 import platform.server.data.expr.Expr;
+import platform.server.data.query.CompileSource;
 import platform.server.data.where.OrObjectWhere;
 import platform.server.data.where.OrWhere;
 import platform.server.data.where.Where;
@@ -54,5 +55,18 @@ public abstract class CompareWhere<This extends CompareWhere<This>> extends Bina
         for(Map.Entry<K,? extends Expr> entry : map.entrySet())
             where = where.and(entry.getValue().compare(mapValues.get(entry.getKey()), Compare.EQUALS));
         return where;
+    }
+
+    protected String getNotSource(CompileSource compile) {
+        String op1Source = operator1.getSource(compile);
+        String result = operator1.getWhere().isTrue() || operator1.isOr()?"":op1Source + " IS NULL";
+        String op2Source = operator2.getSource(compile);
+        if(!(operator2.getWhere().isTrue() || operator2.isOr()))
+            result = (result.length()==0?"":result+" OR ") + op2Source + " IS NULL";
+        String compare = "NOT " + op1Source + getCompareSource(compile) + op2Source;
+        if(result.length()==0)
+            return compare;
+        else
+            return "(" + result + " OR " + compare + ")";
     }
 }

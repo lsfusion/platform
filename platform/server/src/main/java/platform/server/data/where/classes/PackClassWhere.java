@@ -2,11 +2,11 @@ package platform.server.data.where.classes;
 
 import platform.base.TwinImmutableInterface;
 import platform.server.caches.hash.HashContext;
+import platform.server.data.query.innerjoins.GroupJoinsWheres;
 import platform.server.data.where.MapWhere;
 import platform.server.data.query.CompileSource;
 import platform.server.data.query.ExprEnumerator;
 import platform.server.data.query.JoinData;
-import platform.server.data.query.innerjoins.ObjectJoinSets;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.translator.QueryTranslator;
 import platform.server.data.where.DataWhere;
@@ -64,7 +64,7 @@ public class PackClassWhere extends DataWhere {
         throw new RuntimeException("Not supported");
     }
 
-    public ObjectJoinSets groupObjectJoinSets() {
+    public GroupJoinsWheres groupJoinsWheres() {
         throw new RuntimeException("Not supported");
     }
     public ClassExprWhere calculateClassWhere() {

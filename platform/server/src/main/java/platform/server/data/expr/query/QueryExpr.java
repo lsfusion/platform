@@ -8,20 +8,14 @@ import platform.server.caches.OuterContext;
 import platform.server.caches.TwinsInnerContext;
 import platform.server.caches.hash.HashContext;
 import platform.server.data.Value;
-import platform.server.data.expr.BaseExpr;
-import platform.server.data.expr.InnerExpr;
-import platform.server.data.expr.KeyExpr;
-import platform.server.data.expr.VariableExprSet;
+import platform.server.data.expr.*;
 import platform.server.data.query.ExprEnumerator;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.translator.MapValuesTranslate;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
-public abstract class QueryExpr<K extends BaseExpr,I extends OuterContext<I>,J extends QueryJoin> extends InnerExpr {
+public abstract class QueryExpr<K extends BaseExpr,I extends OuterContext<I>,J extends QueryJoin<?, ?>> extends InnerExpr {
 
     public I query;
     Map<K, BaseExpr> group; // вообще гря не reverseable
@@ -139,22 +133,12 @@ public abstract class QueryExpr<K extends BaseExpr,I extends OuterContext<I>,J e
         values.addAll(innerContext.getValues());
     }
 
-    public VariableExprSet getJoinFollows() {
-        return InnerExpr.getExprFollows(group);
-    }
-
     public boolean twins(TwinImmutableInterface obj) {
         QueryExpr<K,I,J> groupExpr = (QueryExpr)obj;
 
-        assert hashCode()==groupExpr.hashCode();
+//        assert hashCode()==groupExpr.hashCode(); из-за singletonmap'а рушится
 
         return innerContext.equals(groupExpr.innerContext);
-    }
-
-    public abstract J getGroupJoin();
-
-    public J getFJGroup() {
-        return getGroupJoin();
     }
 
     protected static <I extends OuterContext<I>,K extends BaseExpr> Set<KeyExpr> getKeys(I expr, Map<K, BaseExpr> group) {
@@ -164,4 +148,6 @@ public abstract class QueryExpr<K extends BaseExpr,I extends OuterContext<I>,J e
     public long calculateComplexity() {
         return (getComplexity(Arrays.asList(query.getEnum())) + getComplexity(group.keySet())) * 1 + getComplexity(group.values());
     }
+
+    public abstract J getInnerJoin();
 }

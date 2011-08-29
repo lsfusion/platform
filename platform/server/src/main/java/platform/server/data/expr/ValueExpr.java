@@ -25,10 +25,14 @@ import java.util.Map;
 import java.util.Set;
 
 
-public class ValueExpr extends AbstractValueExpr implements Value {
+public class ValueExpr extends StaticExpr<ConcreteClass> implements Value {
+
+    public final Object object;
 
     public ValueExpr(Object object, ConcreteClass objectClass) {
-        super(object, objectClass);
+        super(objectClass);
+
+        this.object = object;
     }
 
     public static StaticValueExpr TRUE = new StaticValueExpr(true,LogicalClass.instance);
@@ -85,10 +89,6 @@ public class ValueExpr extends AbstractValueExpr implements Value {
         return translator.translate(this);
     }
 
-    public VariableExprSet calculateExprFollows() {
-        return new VariableExprSet();
-    }
-
     @Override
     public void enumInnerValues(Set<Value> values) {
         values.add(this);
@@ -130,6 +130,11 @@ public class ValueExpr extends AbstractValueExpr implements Value {
         return objectClass;
     }
 
+    @Override
+    public String toString() {
+        return object + " - " + objectClass;
+    }
+
     private DataObject dataObject;
     @ManualLazy
     public DataObject getDataObject() { // по сути множественное наследование, поэтому ManualLazy
@@ -138,7 +143,6 @@ public class ValueExpr extends AbstractValueExpr implements Value {
         return dataObject;
     }
     public ValueExpr(DataObject dataObject) {
-        super(dataObject.object, dataObject.objectClass);
-        this.dataObject = dataObject;
+        this(dataObject.object, dataObject.objectClass);
     }
 }

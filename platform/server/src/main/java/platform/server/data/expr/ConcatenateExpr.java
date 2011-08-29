@@ -8,7 +8,12 @@ import platform.server.caches.hash.HashContext;
 import platform.server.classes.BaseClass;
 import platform.server.classes.ConcatenateClassSet;
 import platform.server.classes.sets.AndClassSet;
+import platform.server.data.expr.query.Stat;
 import platform.server.data.expr.where.pull.ExprPullWheres;
+import platform.server.data.query.stat.CalculateJoin;
+import platform.server.data.query.stat.InnerBaseJoin;
+import platform.server.data.query.stat.KeyStat;
+import platform.server.data.where.DataWhereSet;
 import platform.server.data.where.MapWhere;
 import platform.server.data.query.CompileSource;
 import platform.server.data.query.ExprEnumerator;
@@ -43,10 +48,6 @@ public class ConcatenateExpr extends BaseExpr {
                 return BaseExpr.create(new ConcatenateExpr(BaseUtils.toList(map)));
             }
         }.proceed(BaseUtils.toMap(exprs));
-    }
-
-    public VariableExprSet calculateExprFollows() {
-        return new VariableExprSet(exprs);
     }
 
     public ConcatenateExpr translateOuter(MapTranslate translator) {
@@ -116,7 +117,13 @@ public class ConcatenateExpr extends BaseExpr {
             types[i] = exprs.get(i).getType(keyType);
         return new ConcatenateType(types);
     }
-    
+
+    public Stat getTypeStat(KeyStat keyStat) {
+        Stat result = Stat.ONE;
+        for (BaseExpr expr : exprs) result = result.mult(expr.getTypeStat(keyStat));
+        return result;
+    }
+
     public String getSource(CompileSource compile) {
         List<String> sources = new ArrayList<String>();
         for(BaseExpr expr : exprs)
@@ -130,5 +137,17 @@ public class ConcatenateExpr extends BaseExpr {
 
     public long calculateComplexity() {
         return getComplexity(exprs) + 1;
+    }
+
+    @Override
+    public Stat getStatValue(KeyStat keyStat) {
+        return FormulaExpr.getStatValue(this, keyStat);
+    }
+
+    public InnerBaseJoin<?> getBaseJoin() {
+        return new CalculateJoin<Integer>(BaseUtils.toMap(exprs));
+    }
+
+    public void fillFollowSet(DataWhereSet fillSet) {
     }
 }

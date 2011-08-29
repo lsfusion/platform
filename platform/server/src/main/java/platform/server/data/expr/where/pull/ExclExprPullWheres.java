@@ -9,7 +9,6 @@ import java.util.Map;
 
 public abstract class ExclExprPullWheres<R> extends ExclPullWheres<R, Integer, Where> {
 
-    @Override
     protected R proceedBase(Where data, Map<Integer, BaseExpr> map) {
         return proceedBase(data, map.get(0));
     }

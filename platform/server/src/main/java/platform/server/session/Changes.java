@@ -80,12 +80,26 @@ public abstract class Changes<U extends Changes<U>> extends AbstractMapValues<U>
 
         newClasses = BaseUtils.nvl(changes.newClasses, merge.newClasses);
     }
-    public abstract U addChanges(Changes changes);
+    public U addChanges(Changes changes) { // оборачиваем для оптимизации
+        if(!changes.hasChanges())
+            return (U) this;
+        if(!hasChanges() && getClass()==changes.getClass())
+            return (U) changes;
+        return calculateAddChanges(changes);
+    }
+    protected abstract U calculateAddChanges(Changes changes);
 
     protected Changes(U changes, U merge) {
         this(changes, merge, true);
     }
-    public abstract U add(U changes);
+    public U add(U changes) {
+        if(!changes.hasChanges())
+            return (U) this;
+        if(!hasChanges())
+            return (U) changes;
+        return calculateAdd(changes);
+    }
+    protected abstract U calculateAdd(U changes);
 
     @IdentityLazy
     public int hashValues(HashValues hashValues) {

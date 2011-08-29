@@ -2,6 +2,7 @@ package platform.server.classes;
 
 import net.sf.jasperreports.engine.JRAlignment;
 import platform.interop.Data;
+import platform.server.data.expr.query.Stat;
 import platform.server.data.sql.SQLSyntax;
 import platform.server.data.type.ParseException;
 import platform.server.form.view.report.ReportDrawField;
@@ -111,5 +112,9 @@ public class LogicalClass extends DataClass<Boolean> {
 
     public String getSID() {
         return sid;
+    }
+
+    public Stat getTypeStat() {
+        return Stat.ONE;
     }
 }

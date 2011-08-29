@@ -2,6 +2,7 @@ package platform.server.data.query;
 
 import platform.server.data.Table;
 import platform.server.data.Value;
+import platform.server.data.expr.IsClassExpr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.KeyType;
 import platform.server.data.expr.query.GroupExpr;
@@ -30,4 +31,5 @@ public abstract class CompileSource {
     public abstract String getSource(Table.Join.IsIn where);
     public abstract String getSource(GroupExpr groupExpr);
     public abstract String getSource(OrderExpr orderExpr);
+    public abstract String getSource(IsClassExpr classExpr);
 }

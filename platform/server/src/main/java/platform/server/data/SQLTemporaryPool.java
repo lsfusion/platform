@@ -2,6 +2,7 @@ package platform.server.data;
 
 import platform.base.BaseUtils;
 import platform.base.Result;
+import platform.server.data.expr.query.Stat;
 
 import java.lang.ref.WeakReference;
 import java.sql.SQLException;
@@ -34,7 +35,7 @@ public class SQLTemporaryPool {
                     Integer actual = data.fill(matchTable); // заполняем
                     assert (actual!=null)==(count==null);
                     if(count==null) {
-                        Object actualStatistics = getCountStatistics(actual);
+                        Object actualStatistics = getDBStatistics(actual);
                         Map<String, Object> structStatistics = statistics.get(fieldStruct);
                         if(!actualStatistics.equals(structStatistics.get(matchTable))) {
                             session.analyzeSessionTable(matchTable);
@@ -57,7 +58,7 @@ public class SQLTemporaryPool {
                     structStatistics = new HashMap<String, Object>();
                     statistics.put(fieldStruct, structStatistics);
                 }
-                structStatistics.put(table, getCountStatistics(actual));
+                structStatistics.put(table, getDBStatistics(actual));
                 resultActual.set(actual);
             }
 
@@ -81,7 +82,7 @@ public class SQLTemporaryPool {
             if(count==null)
                 this.statistics = null;
             else
-                this.statistics = getCountStatistics(count);
+                this.statistics = getDBStatistics(count);
         }
 
         @Override
@@ -96,7 +97,7 @@ public class SQLTemporaryPool {
         }
     }
 
-    public static Object getCountStatistics(int count) {
-        return Math.round(Math.log10(count));
+    public static Object getDBStatistics(int count) {
+        return new Stat(count);
     }
 }

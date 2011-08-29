@@ -4,7 +4,7 @@ import platform.base.BaseUtils;
 import platform.server.caches.hash.HashContext;
 import platform.server.data.expr.BaseExpr;
 import platform.server.data.expr.Expr;
-import platform.server.data.expr.VariableExprSet;
+import platform.server.data.expr.InnerExprSet;
 import platform.server.data.expr.where.CaseExprInterface;
 import platform.server.data.where.Where;
 
@@ -93,13 +93,5 @@ public class ExprCaseList extends CaseList<Expr, BaseExpr, ExprCase> implements 
         for(ExprCase exprCase : this)
             complexity += exprCase.getComplexity();
         return complexity;
-    }
-
-    public VariableExprSet getExprFollows() {
-        if(size()==0) return new VariableExprSet();
-        VariableExprSet[] follows = new VariableExprSet[size()] ; int num = 0;
-        for(ExprCase expr : this)
-            follows[num++] = expr.data.getExprFollows();
-        return new VariableExprSet(follows);
     }
 }

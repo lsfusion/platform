@@ -6,7 +6,11 @@ import platform.server.caches.IdentityLazy;
 import platform.server.caches.ParamLazy;
 import platform.server.caches.hash.HashContext;
 import platform.server.classes.ConcreteValueClass;
+import platform.server.data.expr.query.Stat;
 import platform.server.data.expr.where.pull.ExprPullWheres;
+import platform.server.data.query.stat.CalculateJoin;
+import platform.server.data.query.stat.InnerBaseJoin;
+import platform.server.data.query.stat.KeyStat;
 import platform.server.data.where.MapWhere;
 import platform.server.data.query.CompileSource;
 import platform.server.data.query.ExprEnumerator;
@@ -76,6 +80,9 @@ public class FormulaExpr extends StaticClassExpr {
     public Type getType(KeyType keyType) {
         return valueClass.getType();
     }
+    public Stat getTypeStat(KeyStat keyStat) {
+        return valueClass.getTypeStat();
+    }
 
     @ParamLazy
     public Expr translateQuery(QueryTranslator translator) {
@@ -101,10 +108,6 @@ public class FormulaExpr extends StaticClassExpr {
         return getWhere(params);
     }
 
-    public VariableExprSet calculateExprFollows() {
-        return InnerExpr.getExprFollows(params);
-    }
-
     public boolean twins(TwinImmutableInterface o) {
         return formula.equals(((FormulaExpr) o).formula) && params.equals(((FormulaExpr) o).params) && valueClass.equals(((FormulaExpr) o).valueClass);
     }
@@ -123,6 +126,18 @@ public class FormulaExpr extends StaticClassExpr {
 
     public long calculateComplexity() {
         return getComplexity(params.values());
+    }
+
+    // для мн-вого наследования
+    public static Stat getStatValue(BaseExpr expr, KeyStat keyStat) {
+        return expr.getTypeStat(keyStat);
+    }
+
+    public Stat getStatValue(KeyStat keyStat) {
+        return getStatValue(this, keyStat);
+    }
+    public InnerBaseJoin<?> getBaseJoin() {
+        return new CalculateJoin<String>(params);
     }
 }
 

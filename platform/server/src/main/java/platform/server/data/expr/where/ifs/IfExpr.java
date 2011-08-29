@@ -1,9 +1,7 @@
 package platform.server.data.expr.where.ifs;
 
-import platform.server.data.expr.Expr;
-import platform.server.data.expr.KeyType;
-import platform.server.data.expr.BaseExpr;
-import platform.server.data.expr.VariableExprSet;
+import platform.server.data.expr.*;
+import platform.server.data.expr.query.Stat;
 import platform.server.data.expr.where.cases.ExprCaseList;
 import platform.server.data.where.Where;
 import platform.server.data.where.MapWhere;
@@ -22,6 +20,8 @@ import platform.server.caches.ManualLazy;
 import platform.base.BaseUtils;
 import platform.base.TwinImmutableInterface;
 import platform.interop.Compare;
+
+import java.util.Set;
 
 public class IfExpr extends Expr {
 
@@ -129,6 +129,9 @@ public class IfExpr extends Expr {
         else
             return ((DataClass)trueType).getCompatible((DataClass)falseType);
     }
+    public Stat getTypeStat(Where fullWhere) {
+        return trueExpr.getTypeStat(fullWhere.and(ifWhere));
+    }
 
     public boolean twins(TwinImmutableInterface o) { // порядок высот / общий
         return ifWhere.equals(((IfExpr)o).ifWhere) && trueExpr.equals(((IfExpr)o).trueExpr) && falseExpr.equals(((IfExpr)o).falseExpr);
@@ -140,10 +143,6 @@ public class IfExpr extends Expr {
 
     public Where getBaseWhere() {
         return ifWhere;
-    }
-
-    public BaseExpr getBaseExpr() {
-        return (BaseExpr) trueExpr;
     }
 
     public ClassReader getReader(KeyType keyType) {
@@ -178,10 +177,6 @@ public class IfExpr extends Expr {
         return IfExpr.create(ifWhere.translateQuery(translator), trueExpr.translateQuery(translator), falseExpr.translateQuery(translator));
     }
 
-    public VariableExprSet getExprFollows() {
-        return new VariableExprSet(new VariableExprSet[]{trueExpr.getExprFollows(), falseExpr.getExprFollows()});
-    }
-
     protected long calculateComplexity() {
         return ifWhere.getComplexity() + trueExpr.getComplexity() + falseExpr.getComplexity();
     }
@@ -207,5 +202,9 @@ public class IfExpr extends Expr {
         ifWhere.enumerate(enumerator);
         trueExpr.enumerate(enumerator);
         falseExpr.enumerate(enumerator);
+    }
+
+    public Set<BaseExpr> getBaseExprs() {
+        return BaseUtils.mergeSet(trueExpr.getBaseExprs(), falseExpr.getBaseExprs());
     }
 }

@@ -6,6 +6,9 @@ import platform.server.caches.IdentityLazy;
 import platform.server.data.expr.BaseExpr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.where.extra.EqualsWhere;
+import platform.server.data.query.ExprEqualsJoin;
+import platform.server.data.query.stat.WhereJoin;
+import platform.server.data.query.stat.WhereJoins;
 import platform.server.data.translator.PartialQueryTranslator;
 import platform.server.data.translator.QueryTranslator;
 import platform.server.data.where.DNFWheres;
@@ -69,10 +72,6 @@ public class KeyEqual extends TwinImmutableObject implements DNFWheres.Interface
         return keyExprs.hashCode();
     }
 
-    public static boolean isKeyEqual(BaseExpr operator1, BaseExpr operator2) {
-        return operator1 instanceof KeyExpr && !operator2.hasKey((KeyExpr) operator1);
-    }
-
     public static KeyEqual getKeyEqual(BaseExpr operator1, BaseExpr operator2) {
         if(operator1 instanceof KeyExpr && !operator2.hasKey((KeyExpr) operator1))
             return new KeyEqual((KeyExpr) operator1, operator2);
@@ -81,4 +80,10 @@ public class KeyEqual extends TwinImmutableObject implements DNFWheres.Interface
         return new KeyEqual();
     }
 
+    public WhereJoins getWhereJoins() {
+        WhereJoin[] wheres = new WhereJoin[keyExprs.size()]; int iw = 0;
+        for(Map.Entry<KeyExpr, BaseExpr> keyExpr : keyExprs.entrySet())
+            wheres[iw++] = new ExprEqualsJoin(keyExpr.getKey(), keyExpr.getValue());
+        return new WhereJoins(wheres);
+    }
 }

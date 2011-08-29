@@ -11,7 +11,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 // таблица в которой лежат объекты
-public class ObjectTable extends GlobalTable {
+public class ObjectTable extends DataTable {
 
     public KeyField key;
     public PropertyField objectClass;

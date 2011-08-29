@@ -1,6 +1,7 @@
 package platform.server.classes;
 
 import platform.interop.Data;
+import platform.server.data.expr.query.Stat;
 import platform.server.data.sql.SQLSyntax;
 import platform.server.data.type.ParseException;
 import platform.server.logics.ServerResourceBundle;
@@ -81,5 +82,9 @@ public class LongClass extends IntegralClass<Long> {
     @Override
     public Object getInfiniteValue() {
         return Long.MAX_VALUE / 2;
+    }
+
+    public Stat getTypeStat() {
+        return new Stat(Long.MAX_VALUE);
     }
 }

@@ -1,5 +1,6 @@
 package platform.server.classes;
 
+import platform.server.data.expr.query.Stat;
 import platform.server.data.sql.SQLSyntax;
 import platform.server.data.type.ParseException;
 import platform.server.logics.ServerResourceBundle;
@@ -76,5 +77,9 @@ public class SystemClass extends DataClass<Integer> {
 
     public String getSID() {
         return sid;
+    }
+
+    public Stat getTypeStat() {
+        return new Stat(100);
     }
 }

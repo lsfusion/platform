@@ -2,12 +2,11 @@ package platform.server.data.query;
 
 import platform.base.ArrayInstancer;
 import platform.base.BaseUtils;
-import platform.base.TwinImmutableInterface;
 import platform.server.caches.AbstractOuterContext;
 import platform.server.caches.ManualLazy;
-import platform.server.caches.OuterContext;
 import platform.server.data.Table;
 import platform.server.data.Value;
+import platform.server.data.expr.IsClassExpr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.KeyType;
 import platform.server.data.expr.query.GroupExpr;
@@ -54,6 +53,10 @@ abstract public class AbstractSourceJoin<T extends SourceJoin<T>> extends Abstra
 
         public String getSource(OrderExpr orderExpr) {
             return orderExpr.toString();
+        }
+
+        public String getSource(IsClassExpr classExpr) {
+            return "class(" + classExpr.expr.getSource(this) + ")";
         }
     }
 

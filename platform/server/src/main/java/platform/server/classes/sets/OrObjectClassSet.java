@@ -2,6 +2,8 @@ package platform.server.classes.sets;
 
 import platform.base.BaseUtils;
 import platform.server.classes.*;
+import platform.server.data.expr.query.Stat;
+import platform.server.data.query.stat.KeyStat;
 import platform.server.data.type.ObjectType;
 import platform.server.data.type.Type;
 
@@ -136,6 +138,19 @@ public class OrObjectClassSet implements OrClassSet, AndClassSet {
 
     public Type getType() {
         return ObjectType.instance;
+    }
+    public Stat getTypeStat() {
+        if(up.isEmpty() && set.isEmpty()) {
+            if(unknown)
+                return Stat.MAX;
+            else
+                throw new RuntimeException("should not be");
+        } else {
+            if(up.isEmpty())
+                return set.get(0).getTypeStat();
+            else
+                return up.getTypeStat();
+        }
     }
 
     public static AndClassSet or(ObjectClassSet set1, AndClassSet set2) {

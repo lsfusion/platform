@@ -10,6 +10,8 @@ import platform.server.caches.hash.HashContext;
 import platform.server.caches.hash.HashValues;
 import platform.server.classes.ConcreteClass;
 import platform.server.data.expr.Expr;
+import platform.server.data.expr.query.Stat;
+import platform.server.data.query.stat.StatKeys;
 import platform.server.data.query.CompileSource;
 import platform.server.data.query.Query;
 import platform.server.data.sql.SQLSyntax;
@@ -31,6 +33,14 @@ public class SessionTable extends Table implements MapValues<SessionTable>, Valu
 
     public final int count;
 
+    public StatKeys<KeyField> getStatKeys() {
+        return getStatKeys(this, count);
+    }
+
+    public Map<PropertyField, Stat> getStatProps() {
+        return getStatProps(this, count);
+    }
+
     // просто дебилизм, но с ограничениями конструктора по другому не сделаешь
     private SessionTable(SQLSession session, List<KeyField> keys, Set<PropertyField> properties, Integer count, FillTemporaryTable fill, Result<Integer> actual, ClassWhere<KeyField> classes, Map<PropertyField, ClassWhere<Field>> propertyClasses, Object owner) throws SQLException {
         super(session.getTemporaryTable(keys, properties, fill, count, actual, owner), keys, properties, classes, propertyClasses);
@@ -39,11 +49,6 @@ public class SessionTable extends Table implements MapValues<SessionTable>, Valu
     }
     public SessionTable(SQLSession session, List<KeyField> keys, Set<PropertyField> properties, Integer count, FillTemporaryTable fill, ClassWhere<KeyField> classes, Map<PropertyField, ClassWhere<Field>> propertyClasses, Object owner) throws SQLException {
         this(session, keys, properties, count, fill, new Result<Integer>(), classes, propertyClasses, owner);
-    }
-
-    @Override
-    public int getCount() {
-        return count;
     }
 
     // создает таблицу batch'ем
@@ -130,23 +135,25 @@ public class SessionTable extends Table implements MapValues<SessionTable>, Valu
         protected final ClassWhere<KeyField> classes; // по сути условия на null'ы в том числе
         protected final Map<PropertyField, ClassWhere<Field>> propertyClasses;
 
-        protected final boolean few;
+        protected final StatKeys<KeyField> statKeys;
+        protected final Map<PropertyField, Stat> statProps;
 
-        private Struct(List<KeyField> keys, Collection<PropertyField> properties, ClassWhere<KeyField> classes, Map<PropertyField, ClassWhere<Field>> propertyClasses, boolean few) {
+        private Struct(List<KeyField> keys, Collection<PropertyField> properties, ClassWhere<KeyField> classes, Map<PropertyField, ClassWhere<Field>> propertyClasses, StatKeys<KeyField> statKeys, Map<PropertyField, Stat> statProps) {
             this.keys = keys;
             this.properties = properties;
             this.classes = classes;
             this.propertyClasses = propertyClasses;
 
-            this.few = few;
+            this.statKeys = statKeys;
+            this.statProps = statProps;
         }
 
         public boolean twins(TwinImmutableInterface o) {
-            return classes.equals(((Struct) o).classes) && keys.equals(((Struct) o).keys) && properties.equals(((Struct) o).properties) && propertyClasses.equals(((Struct) o).propertyClasses) && few == (((Struct)o).few);
+            return classes.equals(((Struct) o).classes) && keys.equals(((Struct) o).keys) && properties.equals(((Struct) o).properties) && propertyClasses.equals(((Struct) o).propertyClasses) && statKeys.equals(((Struct)o).statKeys) && statProps.equals(((Struct)o).statProps);
         }
 
         public int immutableHashCode() {
-            return 31 * (31 * (31 * (31 * keys.hashCode() + properties.hashCode()) + classes.hashCode()) + propertyClasses.hashCode()) + (few?1:0);
+            return 31 * (31 * (31 * (31 * (31 * keys.hashCode() + properties.hashCode()) + classes.hashCode()) + propertyClasses.hashCode()) + statKeys.hashCode()) + statProps.hashCode();
         }
     }
 
@@ -155,7 +162,7 @@ public class SessionTable extends Table implements MapValues<SessionTable>, Valu
     @ManualLazy
     public GlobalObject getValueClass() {
         if (struct == null) {
-            struct = new Struct(keys, properties, classes, propertyClasses, isFew());
+            struct = new Struct(keys, properties, classes, propertyClasses, getStatKeys(), getStatProps());
         }
         return struct;
     }
@@ -247,7 +254,7 @@ public class SessionTable extends Table implements MapValues<SessionTable>, Valu
         boolean added = session.insertRecord(this, keyFields, propFields, update);
         int newCount = count + (added?1:0);
 
-        if(!SQLTemporaryPool.getCountStatistics(newCount).equals(SQLTemporaryPool.getCountStatistics(count)))
+        if(!SQLTemporaryPool.getDBStatistics(newCount).equals(SQLTemporaryPool.getDBStatistics(count)))
             return new SessionTable(session, keys, properties, newCount, new FillTemporaryTable() {
                 public Integer fill(String name) throws SQLException {
                     Query<KeyField, PropertyField> moveData = new Query<KeyField, PropertyField>(keys);

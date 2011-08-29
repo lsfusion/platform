@@ -4,6 +4,7 @@ import platform.server.classes.sets.AndClassSet;
 import platform.server.classes.sets.ObjectClassSet;
 import platform.server.classes.sets.OrObjectClassSet;
 import platform.server.data.SQLSession;
+import platform.server.data.expr.query.Stat;
 import platform.server.data.type.ObjectType;
 import platform.server.data.type.Type;
 import platform.server.logics.DataObject;
@@ -54,6 +55,10 @@ public class UnknownClass implements ConcreteObjectClass {
 
     public Type getType() {
         return ObjectType.instance;
+    }
+
+    public Stat getTypeStat() {
+        return Stat.MAX;
     }
 
     public String getWhereString(String source) {

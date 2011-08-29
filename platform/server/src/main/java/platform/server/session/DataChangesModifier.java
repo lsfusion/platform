@@ -38,14 +38,14 @@ public class DataChangesModifier extends AbstractPropertyChangesModifier<ClassPr
         private UsedChanges(UsedChanges changes, Changes merge) {
             super(changes, merge);
         }
-        public UsedChanges addChanges(Changes changes) {
+        public UsedChanges calculateAddChanges(Changes changes) {
             return new UsedChanges(this, changes);
         }
 
         private UsedChanges(UsedChanges changes, UsedChanges merge) {
             super(changes, merge);
         }
-        public UsedChanges add(UsedChanges changes) {
+        public UsedChanges calculateAdd(UsedChanges changes) {
             return new UsedChanges(this, changes);
         }
     }

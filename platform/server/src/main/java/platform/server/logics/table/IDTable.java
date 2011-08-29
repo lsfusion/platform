@@ -5,6 +5,8 @@ import platform.server.caches.IdentityLazy;
 import platform.server.classes.SystemClass;
 import platform.server.data.*;
 import platform.server.data.expr.ValueExpr;
+import platform.server.data.expr.query.Stat;
+import platform.server.data.query.stat.StatKeys;
 import platform.server.data.expr.where.extra.EqualsWhere;
 import platform.server.data.query.Query;
 import platform.server.data.where.classes.ClassWhere;
@@ -84,5 +86,13 @@ public class IDTable extends GlobalTable {
         updateQuery.putKeyWhere(Collections.singletonMap(key, new DataObject(idType, SystemClass.instance)));
         updateQuery.properties.put(value,new ValueExpr(ID+1, SystemClass.instance));
         return updateQuery;
+    }
+
+    public StatKeys<KeyField> getStatKeys() {
+        return getStatKeys(this, getCounters().size());
+    }
+
+    public Map<PropertyField, Stat> getStatProps() {
+        throw new RuntimeException("not supported");
     }
 }

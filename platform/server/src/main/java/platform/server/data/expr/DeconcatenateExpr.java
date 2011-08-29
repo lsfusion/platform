@@ -8,7 +8,12 @@ import platform.server.caches.hash.HashContext;
 import platform.server.classes.BaseClass;
 import platform.server.classes.ConcatenateClassSet;
 import platform.server.classes.sets.AndClassSet;
+import platform.server.data.expr.query.Stat;
 import platform.server.data.expr.where.pull.ExprPullWheres;
+import platform.server.data.query.stat.CalculateJoin;
+import platform.server.data.query.stat.InnerBaseJoin;
+import platform.server.data.query.stat.KeyStat;
+import platform.server.data.where.DataWhereSet;
 import platform.server.data.where.MapWhere;
 import platform.server.data.query.CompileSource;
 import platform.server.data.query.ExprEnumerator;
@@ -60,10 +65,6 @@ public class DeconcatenateExpr extends SingleClassExpr {
         return new DeconcatenateExpr(expr.translateOuter(translator), part, baseClass);
     }
 
-    public VariableExprSet calculateExprFollows() {
-        return expr.getExprFollows();
-    }
-
     public void fillAndJoinWheres(MapWhere<JoinData> joins, Where andWhere) {
         expr.fillJoinWheres(joins, andWhere);
     }
@@ -71,7 +72,11 @@ public class DeconcatenateExpr extends SingleClassExpr {
     public Type getType(KeyType keyType) {
         return ((ConcatenateType)expr.getType(keyType)).get(part);
     }
-    
+
+    public Stat getTypeStat(KeyStat keyStat) {
+        return expr.getTypeStat(keyStat);
+    }
+
     public AndClassSet getAndClassSet(QuickMap<VariableClassExpr, AndClassSet> and) {
         return ((ConcatenateClassSet)expr.getAndClassSet(and)).get(part);
     }
@@ -119,5 +124,16 @@ public class DeconcatenateExpr extends SingleClassExpr {
 
     public long calculateComplexity() {
         return expr.getComplexity()+1;
+    }
+
+    public Stat getStatValue(KeyStat keyStat) {
+        return FormulaExpr.getStatValue(this, keyStat);
+    }
+
+    public InnerBaseJoin<?> getBaseJoin() {
+        return new CalculateJoin<Integer>(Collections.singletonMap(0, expr));
+    }
+
+    public void fillFollowSet(DataWhereSet fillSet) {
     }
 }

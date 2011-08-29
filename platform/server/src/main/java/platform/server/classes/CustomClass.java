@@ -11,11 +11,14 @@ import platform.server.classes.sets.ConcreteCustomClassSet;
 import platform.server.classes.sets.CustomClassSet;
 import platform.server.classes.sets.UpClassSet;
 import platform.server.data.expr.*;
+import platform.server.data.expr.query.Stat;
+import platform.server.data.query.innerjoins.GroupJoinsWheres;
+import platform.server.data.query.stat.InnerBaseJoin;
+import platform.server.data.query.stat.KeyStat;
 import platform.server.data.where.MapWhere;
 import platform.server.data.query.CompileSource;
 import platform.server.data.query.ExprEnumerator;
 import platform.server.data.query.JoinData;
-import platform.server.data.query.innerjoins.ObjectJoinSets;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.translator.QueryTranslator;
 import platform.server.data.type.ObjectType;
@@ -39,6 +42,9 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
 
     public Type getType() {
         return ObjectType.instance;
+    }
+    public Stat getTypeStat() {
+        return new Stat(getBaseClass().getCount());
     }
 
     public Boolean dialogReadOnly;
@@ -333,10 +339,6 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
             throw new RuntimeException("not supported");
         }
 
-        protected VariableExprSet calculateExprFollows() {
-            return new VariableExprSet(this);
-        }
-
         private class NotNull extends NotNullExpr.NotNull {
 
             protected DataWhereSet calculateFollows() {
@@ -347,8 +349,8 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
                 return new ClassExprWhere(ClassExpr.this, valueClass.getUpSet());
             }
 
-            public ObjectJoinSets groupObjectJoinSets() {
-                return new ObjectJoinSets(this);
+            public GroupJoinsWheres groupJoinsWheres() {
+                return new GroupJoinsWheres(this);
             }
         }
 
@@ -365,7 +367,7 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
         }
 
         public boolean twins(TwinImmutableInterface obj) {
-            return valueClass.equals(((ClassExpr)obj).valueClass);
+            return valueClass.equals(((ClassExpr) obj).valueClass);
         }
 
         public int hashOuter(HashContext hashContext) {
@@ -383,6 +385,16 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
 
         public long calculateComplexity() {
             return 1;
+        }
+
+        public Stat getStatValue(KeyStat keyStat) {
+            throw new RuntimeException("not supported");
+        }
+        public InnerBaseJoin<?> getBaseJoin() {
+            throw new RuntimeException("not supported");
+        }
+        public Stat getTypeStat(KeyStat keyStat) {
+            throw new RuntimeException("not supported");
         }
     }
 

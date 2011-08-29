@@ -9,7 +9,7 @@ import platform.server.data.type.Type;
 
 import java.util.Map;
 
-public enum GroupType {
+public enum GroupType implements AggrType {
     SUM, MAX, ANY;
 
     public String getString() {
@@ -38,15 +38,7 @@ public enum GroupType {
     }
 
     public GroupExpr createExpr(Map<BaseExpr, BaseExpr> group, Expr expr) {
-        switch (this) {
-            case MAX:
-                return new MaxGroupExpr(group, expr);
-            case SUM:
-                return new SumGroupExpr(group, expr);
-            case ANY:
-                return new AnyGroupExpr(group, expr);
-        }
-        throw new RuntimeException("can not be");
+        return new GroupExpr(group, expr, this);
     }
 
     public boolean splitExprCases() {
@@ -59,5 +51,13 @@ public enum GroupType {
 
     public boolean noExclusive() {
         return (this==MAX || this==ANY);
+    }
+
+    public boolean isSelect() {
+        return this==MAX || this==ANY;
+    }
+
+    public boolean canBeNull() {
+        return false;
     }
 }

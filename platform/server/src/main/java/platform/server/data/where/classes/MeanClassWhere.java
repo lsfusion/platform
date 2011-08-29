@@ -40,10 +40,6 @@ public class MeanClassWhere implements DNFWheres.Interface<MeanClassWhere> {
         return new MeanClassWhere(classWhere.and(where.classWhere), BaseUtils.override(equals,where.equals)); // даже если совпадают ничего страшного, все равно зафиксировано в InnerJoins - Where
     }
 
-    public boolean isFalse() {
-        return false;
-    }
-
     public MeanClassWhere translate(MapTranslate translator) {
         Map<VariableClassExpr,VariableClassExpr> transEquals = new HashMap<VariableClassExpr, VariableClassExpr>();
         for(Map.Entry<VariableClassExpr,VariableClassExpr> equal : equals.entrySet())

@@ -9,10 +9,8 @@ import platform.server.caches.hash.HashContext;
 import platform.server.classes.BaseClass;
 import platform.server.classes.DataClass;
 import platform.server.classes.sets.AndClassSet;
-import platform.server.data.expr.BaseExpr;
-import platform.server.data.expr.Expr;
-import platform.server.data.expr.KeyType;
-import platform.server.data.expr.VariableExprSet;
+import platform.server.data.expr.*;
+import platform.server.data.expr.query.Stat;
 import platform.server.data.where.MapWhere;
 import platform.server.data.query.CompileSource;
 import platform.server.data.query.ExprEnumerator;
@@ -88,6 +86,15 @@ public class CaseExpr extends Expr {
             }
         }
         return type;
+    }
+    public Stat getTypeStat(Where fullWhere) {
+        Stat stat = null;
+        for(ExprCase exprCase : cases) {
+            Stat caseStat = exprCase.data.getTypeStat(fullWhere.and(exprCase.where));
+            if(caseStat!=null)
+                return caseStat;
+        }
+        return stat;
     }
 
     public ClassReader getReader(KeyType keyType) {
@@ -190,11 +197,6 @@ public class CaseExpr extends Expr {
         });
     }
 
-    @Override
-    public VariableExprSet getExprFollows() {
-        return cases.getExprFollows();
-    }
-
     public Where compareBase(final BaseExpr expr, final Compare compareBack) {
         return cases.getWhere(new CaseWhereInterface<BaseExpr>() {
             public Where getWhere(BaseExpr cCase) {
@@ -244,11 +246,15 @@ public class CaseExpr extends Expr {
     public Where getBaseWhere() {
         return BaseUtils.single(cases).where;
     }
-    public BaseExpr getBaseExpr() {
-        return BaseUtils.single(cases).data;
-    }
 
     public int getWhereDepth() {
         throw new RuntimeException("not supported");
+    }
+
+    public Set<BaseExpr> getBaseExprs() {
+        Set<BaseExpr> result = new HashSet<BaseExpr>();
+        for(ExprCase exprCase : cases)
+            result.add(exprCase.data);
+        return result;
     }
 }

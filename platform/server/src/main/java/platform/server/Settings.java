@@ -10,16 +10,6 @@ public class Settings {
     public static Settings instance;
     private String locale;
 
-    // определяет при каком количестве записей таблица будет считаться маленькой и проталкиваться внутрь группирующих / упорядочивающих подзапросов, соответственно 0 - отключено то есть никогда не будет
-    private int fewCount = 100;
-    public int getFewCount() {
-        return fewCount;
-    }
-
-    public void setFewCount(int fewCount) {
-        this.fewCount = fewCount;
-    }
-
     private int innerGroupExprs = 0; // использовать Subquery Expressions
     public int getInnerGroupExprs() {
         return innerGroupExprs;
@@ -67,6 +57,12 @@ public class Settings {
     // будет ли оптимизатор разбивать группирующие выражения, чтобы не было FULL JOIN и UNION ALL
     private boolean splitMaxGroupInnerJoins = false;
 
+    // будет ли оптимизатор разбивать inner join'ы по статистике
+    private boolean splitGroupStatInnerJoins = false;
+
+    // будет ли компилятор вместо UNION (когда OR'ов слишком много) использовать FULL JOIN
+    boolean useFJInsteadOfUnion = true;
+
     // будет ли оптимизатор разбивать группирующие выражения на максимум, так чтобы в группируемом выражении не было бы Case'ов 
     private boolean splitGroupMaxExprcases = false;
 
@@ -86,6 +82,22 @@ public class Settings {
 
     public void setSplitMaxGroupInnerJoins(boolean splitMaxGroupInnerJoins) {
         this.splitMaxGroupInnerJoins = splitMaxGroupInnerJoins;
+    }
+
+    public boolean isSplitGroupStatInnerJoins() {
+        return splitGroupStatInnerJoins;
+    }
+
+    public void setSplitGroupStatInnerJoins(boolean splitGroupStatInnerJoins) {
+        this.splitGroupStatInnerJoins = splitGroupStatInnerJoins;
+    }
+
+    public boolean isUseFJInsteadOfUnion() {
+        return useFJInsteadOfUnion;
+    }
+
+    public void setUseFJInsteadOfUnion(boolean useFJInsteadOfUnion) {
+        this.useFJInsteadOfUnion = useFJInsteadOfUnion;
     }
 
     public void setPushOrderWhere(boolean pushOrderWhere) {
@@ -212,5 +224,15 @@ public class Settings {
 
     public void setSplitIncrementApply(int splitIncrementApply) {
         this.splitIncrementApply = splitIncrementApply;
+    }
+
+    private int statDegree = 32;
+
+    public int getStatDegree() {
+        return statDegree;
+    }
+
+    public void setStatDegree(int statDegree) {
+        this.statDegree = statDegree;
     }
 }

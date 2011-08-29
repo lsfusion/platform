@@ -6,6 +6,8 @@ import platform.server.data.expr.BaseExpr;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.KeyType;
+import platform.server.data.query.stat.KeyStat;
+import platform.server.data.query.stat.StatKeys;
 import platform.server.data.query.SourceJoin;
 import platform.server.data.query.innerjoins.*;
 import platform.server.data.translator.MapTranslate;
@@ -17,7 +19,7 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 
-public interface Where extends SourceJoin<Where>, OuterContext<Where>, KeyType, CheckWhere {
+public interface Where extends SourceJoin<Where>, OuterContext<Where>, KeyType, KeyStat, CheckWhere {
 
     Where followFalse(Where falseWhere);
     Where followFalse(Where falseWhere, boolean packExprs);
@@ -74,11 +76,11 @@ public interface Where extends SourceJoin<Where>, OuterContext<Where>, KeyType, 
 
     // ДОПОЛНИТЕЛЬНЫЕ ИНТЕРФЕЙСЫ
 
-    Collection<InnerSelectJoin> getInnerJoins(boolean notExclusive, Set<KeyExpr> keys);
-    Collection<InnerGroupJoin<? extends GroupJoinSet>> getInnerJoins(boolean notExclusive, boolean noJoins, Set<KeyExpr> keys);
-    ObjectJoinSets groupObjectJoinSets(); // protected
+    Collection<GroupJoinsWhere> getWhereJoins(boolean notExclusive);
+    GroupJoinsWheres groupJoinsWheres(); // protected
     KeyEquals getKeyEquals();
     MeanClassWheres groupMeanClassWheres();
+    <K extends BaseExpr> StatKeys<K> getStatKeys(Set<K> keys);
 
     abstract public ClassExprWhere getClassWhere();
 

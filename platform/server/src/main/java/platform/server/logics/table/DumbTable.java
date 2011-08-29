@@ -2,9 +2,13 @@ package platform.server.logics.table;
 
 import platform.server.classes.SystemClass;
 import platform.server.data.KeyField;
-import platform.server.data.Table;
 import platform.server.data.GlobalTable;
+import platform.server.data.PropertyField;
+import platform.server.data.expr.query.Stat;
+import platform.server.data.query.stat.StatKeys;
 import platform.server.data.where.classes.ClassWhere;
+
+import java.util.Map;
 
 public class DumbTable extends GlobalTable {
 
@@ -20,8 +24,11 @@ public class DumbTable extends GlobalTable {
         classes = new ClassWhere<KeyField>(key, SystemClass.instance);
     }
 
-    @Override
-    public int getCount() {
+    public StatKeys<KeyField> getStatKeys() {
+        throw new RuntimeException("not supported");
+    }
+
+    public Map<PropertyField, Stat> getStatProps() {
         throw new RuntimeException("not supported");
     }
 }

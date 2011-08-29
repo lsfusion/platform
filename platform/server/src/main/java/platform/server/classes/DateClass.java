@@ -3,6 +3,7 @@ package platform.server.classes;
 import net.sf.jasperreports.engine.JRAlignment;
 import platform.base.DateConverter;
 import platform.interop.Data;
+import platform.server.data.expr.query.Stat;
 import platform.server.data.sql.SQLSyntax;
 import platform.server.data.type.ParseException;
 import platform.server.form.view.report.ReportDrawField;
@@ -118,5 +119,9 @@ public class DateClass extends DataClass<Date> {
     @Override
     public Object getInfiniteValue() {
         return new Date(Long.MAX_VALUE);
+    }
+
+    public Stat getTypeStat() {
+        return new Stat(Long.MAX_VALUE);
     }
 }

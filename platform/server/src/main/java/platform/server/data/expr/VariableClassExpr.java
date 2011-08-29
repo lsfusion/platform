@@ -22,6 +22,4 @@ public abstract class VariableClassExpr extends SingleClassExpr {
         assert added;
         return true;
     }
-
-    public abstract void fillFollowSet(DataWhereSet fillSet);
 }

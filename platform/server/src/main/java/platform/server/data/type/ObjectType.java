@@ -120,4 +120,5 @@ public class ObjectType implements Type<Integer> {
     public AndClassSet getBaseClassSet(BaseClass baseClass) {
         return baseClass.getUpSet();
     }
+
 }

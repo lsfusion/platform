@@ -2,7 +2,7 @@ package platform.base;
 
 public class SimpleMap<K,V> extends QuickMap<K,V> {
 
-    protected V addValue(V prevValue, V newValue) {
+    protected V addValue(K key, V prevValue, V newValue) {
         return newValue;
     }
 

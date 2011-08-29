@@ -1,27 +1,10 @@
 package platform.server.data.query;
 
-import platform.server.caches.hash.HashContext;
-import platform.server.data.KeyField;
-import platform.server.data.expr.VariableExprSet;
-import platform.server.data.expr.BaseExpr;
-import platform.server.data.expr.KeyExpr;
-import platform.server.data.expr.query.KeyStat;
-import platform.server.data.expr.query.StatKeys;
-import platform.server.data.translator.MapTranslate;
+import platform.server.data.expr.InnerExpr;
+import platform.server.data.query.stat.InnerBaseJoin;
+import platform.server.data.query.stat.WhereJoin;
 
-import java.util.Collection;
-import java.util.Set;
-import java.util.Map;
+public interface InnerJoin<K> extends WhereJoin<K>, InnerBaseJoin<K> {
 
-public interface InnerJoin<J> {
-    VariableExprSet getJoinFollows();
-
-    int hashOuter(HashContext hashContext);
-
-    InnerJoin translateOuter(MapTranslate translator);
-
-    boolean isIn(VariableExprSet set);
-
-    StatKeys<J> getStatKeys();
-    Map<J, BaseExpr> getJoins();
+    InnerExpr getInnerExpr(WhereJoin join);
 }

@@ -3,6 +3,7 @@ package platform.server.data.expr;
 import platform.base.TwinImmutableInterface;
 import platform.server.caches.hash.HashContext;
 import platform.server.classes.ConcreteClass;
+import platform.server.classes.DataClass;
 import platform.server.data.Time;
 import platform.server.data.where.MapWhere;
 import platform.server.data.query.CompileSource;
@@ -13,35 +14,17 @@ import platform.server.data.translator.QueryTranslator;
 import platform.server.data.type.Type;
 import platform.server.data.where.Where;
 
-public class TimeExpr extends StaticClassExpr {
+public class TimeExpr extends StaticExpr<DataClass> {
 
     private final Time time;
 
     public TimeExpr(Time time) {
+        super(time.getConcreteValueClass());
         this.time = time;
-    }
-
-    public ConcreteClass getStaticClass() {
-        return time.getConcreteValueClass();
-    }
-
-    public VariableExprSet calculateExprFollows() {
-        return new VariableExprSet();
     }
 
     public BaseExpr translateOuter(MapTranslate translator) {
         return this;
-    }
-
-    public void fillAndJoinWheres(MapWhere<JoinData> joins, Where andWhere) {
-    }
-
-    public Type getType(KeyType keyType) {
-        return getStaticClass().getType();
-    }
-
-    public Where calculateWhere() {
-        return Where.TRUE;
     }
 
     public Expr translateQuery(QueryTranslator translator) {
@@ -53,17 +36,10 @@ public class TimeExpr extends StaticClassExpr {
     }
 
     public int hashOuter(HashContext hashContext) {
-        return 6543;
+        return 6543 + time.hashCode();
     }
 
     public String getSource(CompileSource compile) {
         return time.getSource(compile);
-    }
-
-    public void enumDepends(ExprEnumerator enumerator) {
-    }
-
-    public long calculateComplexity() {
-        return 1;
     }
 }

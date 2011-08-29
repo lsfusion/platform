@@ -2,7 +2,7 @@ package platform.base;
 
 public abstract class AddSet<T,This extends AddSet<T,This>> extends TwinImmutableObject {
 
-    public final T[] wheres;
+    protected final T[] wheres;
 
     protected AddSet() {
         wheres = newArray(0);
@@ -22,11 +22,11 @@ public abstract class AddSet<T,This extends AddSet<T,This>> extends TwinImmutabl
         return newArray;
     }
 
-    public boolean isFalse() {
+    protected boolean isFalse() {
         return wheres.length == 0;
     }
 
-    public boolean isTrue() {
+    protected boolean isTrue() {
         return false;
     }
 

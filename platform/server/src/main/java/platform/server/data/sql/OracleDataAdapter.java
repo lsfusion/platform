@@ -26,7 +26,7 @@ class OracleDataAdapter extends DataAdapter {
         return true;
     }
 
-    OracleDataAdapter(String iDataBase, String iServer, String iUserID, String iPassword) throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
+    OracleDataAdapter(String iDataBase, String iServer, String iUserID, String iPassword) throws Exception, SQLException, InstantiationException, IllegalAccessException {
         super(iDataBase, iServer, iUserID, iPassword);
     }
 

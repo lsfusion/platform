@@ -19,7 +19,7 @@ public class SimpleChanges extends Changes<SimpleChanges> {
     public SimpleChanges(SimpleChanges changes, Changes merge) {
         super(changes, merge, true);
     }
-    public SimpleChanges addChanges(Changes changes) {
+    public SimpleChanges calculateAddChanges(Changes changes) {
         return new SimpleChanges(this, changes);
     }
 
@@ -34,7 +34,7 @@ public class SimpleChanges extends Changes<SimpleChanges> {
     public SimpleChanges(SimpleChanges changes, SimpleChanges merge) {
         super(changes, merge);
     }
-    public SimpleChanges add(SimpleChanges changes) {
+    public SimpleChanges calculateAdd(SimpleChanges changes) {
         return new SimpleChanges(this, changes);
     }
 

@@ -3,10 +3,8 @@ package platform.server.data.where.classes;
 import platform.base.BaseUtils;
 import platform.base.QuickMap;
 import platform.server.classes.sets.AndClassSet;
-import platform.server.data.expr.BaseExpr;
-import platform.server.data.expr.KeyExpr;
-import platform.server.data.expr.VariableClassExpr;
-import platform.server.data.expr.VariableExprSet;
+import platform.server.data.expr.*;
+import platform.server.data.expr.query.Stat;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.type.Type;
 import platform.server.data.where.*;
@@ -19,6 +17,17 @@ public class ClassExprWhere extends AbstractClassWhere<VariableClassExpr, ClassE
         Type type = wheres[0].get(keyExpr).getType();
         assert checkType(keyExpr,type);
         return type;
+    }
+
+    public Stat getKeyStat(KeyExpr keyExpr) {
+        AndClassSet classSet = wheres[0].get(keyExpr);
+        if(classSet==null) {
+            if(keyExpr instanceof PullExpr)
+                return new Stat(100000);
+            else
+                throw new RuntimeException("no classes");
+        } else
+            return classSet.getTypeStat();
     }
 
     public Where getKeepWhere(KeyExpr keyExpr) {
@@ -158,15 +167,15 @@ public class ClassExprWhere extends AbstractClassWhere<VariableClassExpr, ClassE
         return result;
     }
 
-    public VariableExprSet getExprFollows() {
-        VariableExprSet[] follows = new VariableExprSet[wheres.length] ; int num = 0;
+    public InnerExprSet getExprFollows() {
+        InnerExprSet[] follows = new InnerExprSet[wheres.length] ; int num = 0;
         for(And<VariableClassExpr> where : wheres) {
-            VariableExprSet result = new VariableExprSet();
+            InnerExprSet result = new InnerExprSet();
             for(int i=0;i<where.size;i++)
-                result.addAll(where.getKey(i).getExprFollows());
+                result.addAll(where.getKey(i).getExprFollows(true, true));
             follows[num++] = result;
         }
-        return new VariableExprSet(follows);
+        return new InnerExprSet(follows);
     }
 
     public ClassExprWhere map(Map<BaseExpr, BaseExpr> map) {

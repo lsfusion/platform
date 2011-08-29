@@ -8,7 +8,7 @@ import java.sql.SQLException;
 
 class MySQLDataAdapter extends DataAdapter {
 
-    MySQLDataAdapter(String iDataBase, String iServer, String iUserID, String iPassword) throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
+    MySQLDataAdapter(String iDataBase, String iServer, String iUserID, String iPassword) throws Exception, SQLException, InstantiationException, IllegalAccessException {
         super(iDataBase, iServer, iUserID, iPassword);
     }
 

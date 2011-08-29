@@ -7,7 +7,11 @@ import platform.server.caches.hash.HashContext;
 import platform.server.classes.ConcreteClass;
 import platform.server.classes.InsensitiveStringClass;
 import platform.server.classes.StringClass;
+import platform.server.data.expr.query.Stat;
 import platform.server.data.expr.where.pull.ExprPullWheres;
+import platform.server.data.query.stat.CalculateJoin;
+import platform.server.data.query.stat.InnerBaseJoin;
+import platform.server.data.query.stat.KeyStat;
 import platform.server.data.where.MapWhere;
 import platform.server.data.query.CompileSource;
 import platform.server.data.query.ExprEnumerator;
@@ -46,10 +50,6 @@ public class StringConcatenateExpr extends StaticClassExpr {
         return getType(getWhere());
     }
 
-    protected VariableExprSet calculateExprFollows() {
-        return new VariableExprSet(exprs);
-    }
-
     public BaseExpr translateOuter(MapTranslate translator) {
         return new StringConcatenateExpr(translator.translateDirect(exprs), separator, caseSensitive);
     }
@@ -64,6 +64,12 @@ public class StringConcatenateExpr extends StaticClassExpr {
         for(BaseExpr expr : exprs)
             length += expr.getType(keyType).getBinaryLength(true);
         return caseSensitive ? StringClass.get(length) : InsensitiveStringClass.get(length);
+    }
+    public Stat getTypeStat(KeyStat keyStat) {
+        Stat result = Stat.ONE;
+        for(BaseExpr expr : exprs)
+            result = result.mult(expr.getTypeStat(keyStat));
+        return result;
     }
 
     public Where calculateWhere() {
@@ -104,5 +110,12 @@ public class StringConcatenateExpr extends StaticClassExpr {
 
     public long calculateComplexity() {
         return getComplexity(exprs);
+    }
+
+    public Stat getStatValue(KeyStat keyStat) {
+        return FormulaExpr.getStatValue(this, keyStat);
+    }
+    public InnerBaseJoin<?> getBaseJoin() {
+        return new CalculateJoin<Integer>(BaseUtils.toMap(exprs));
     }
 }

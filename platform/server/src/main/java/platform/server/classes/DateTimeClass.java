@@ -2,6 +2,7 @@ package platform.server.classes;
 
 import net.sf.jasperreports.engine.JRAlignment;
 import platform.interop.Data;
+import platform.server.data.expr.query.Stat;
 import platform.server.data.sql.SQLSyntax;
 import platform.server.data.type.ParseException;
 import platform.server.form.view.report.ReportDrawField;
@@ -107,5 +108,9 @@ public class DateTimeClass extends DataClass<Timestamp> {
 
     public String getSID() {
         return sid;
+    }
+
+    public Stat getTypeStat() {
+        return new Stat(Long.MAX_VALUE);
     }
 }

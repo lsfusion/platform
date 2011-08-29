@@ -6,7 +6,7 @@ import platform.server.data.query.CompileSource;
 public enum Time {
     EPOCH, HOUR, MINUTE, DATETIME;
 
-    public ConcreteValueClass getConcreteValueClass() {
+    public DataClass getConcreteValueClass() {
         switch (this) {
             case HOUR:
                 return IntegerClass.instance;

@@ -1,17 +1,31 @@
 package platform.server.data.expr.query;
 
+import platform.base.BaseUtils;
 import platform.server.data.sql.SQLSyntax;
 
-public enum OrderType {
-    SUM, PREVIOUS;
+import java.util.List;
 
-    public String getSource(SQLSyntax syntax) {
+public enum OrderType implements AggrType {
+    SUM, DISTR_CUM_PROPORTION, DISTR_RESTRICT, DISTR_RESTRICT_OVER, PREVIOUS;
+
+    public String getFunc(SQLSyntax syntax) {
         switch(this) {
-            case SUM:
-                return "SUM";
             case PREVIOUS:
                 return "lag";
+            default:
+                return toString();
         }
-        throw new RuntimeException();
+    }
+
+    public String getSource(SQLSyntax syntax, List<String> sources) {
+        return getFunc(syntax) + "(" + BaseUtils.toString(sources, ",") + ")";
+    }
+
+    public boolean isSelect() {
+        return this==PREVIOUS;
+    }
+
+    public boolean canBeNull() { // может возвращать null если само выражение не null
+        return this==PREVIOUS;
     }
 }

@@ -1,6 +1,7 @@
 package platform.server.classes;
 
 import platform.server.data.expr.StaticValueExpr;
+import platform.server.data.expr.query.Stat;
 import platform.server.data.sql.SQLSyntax;
 import platform.server.logics.ServerResourceBundle;
 import platform.server.session.DataSession;
@@ -80,4 +81,7 @@ public class StaticCustomClass extends ConcreteCustomClass implements StaticClas
         return getDataObject((String)value).getString(syntax);
     }
 
+    public int getCount() {
+        return sids.length;
+    }
 }

@@ -1,5 +1,6 @@
 package platform.server.logics;
 
+import com.sun.servicetag.SystemEnvironment;
 import net.sf.jasperreports.engine.JRException;
 import org.apache.log4j.Logger;
 import platform.base.*;
@@ -37,10 +38,12 @@ import platform.server.logics.linear.LP;
 import platform.server.logics.property.*;
 import platform.server.logics.scheduler.Scheduler;
 import platform.server.logics.table.ImplementTable;
+import platform.server.logics.table.MapKeysTable;
 import platform.server.serialization.ServerSerializationPool;
 import platform.server.session.DataSession;
 import platform.server.session.PropertyChange;
 
+import javax.mail.Session;
 import java.io.*;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
@@ -521,7 +524,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
         Set idSet = new HashSet<String>();
         for (Property property : getProperties()) {
-            assert idSet.add(property.getSID()) : "Same sid " + property.getSID();
+//            assert idSet.add(property.getSID()) : "Same sid " + property.getSID();
         }
 
         for (LogicsModule module : logicModules) {
@@ -1097,6 +1100,10 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         session.close();
     }
 
+    public void updateClassStat(SQLSession session) throws SQLException {
+        LM.baseClass.updateClassStat(session);
+    }
+
     public void synchronizeDB() throws SQLException, IOException, ClassNotFoundException, IllegalAccessException, InstantiationException {
 
         SQLSession sql = getThreadLocalSql();
@@ -1171,9 +1178,9 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         }
 
         // если не совпали sID или идентификаторы из базы удаляем сразу
-        Map<String, Table> prevTables = new HashMap<String, Table>();
+        Map<String, SerializedTable> prevTables = new HashMap<String, SerializedTable>();
         for (int i = inputDB == null ? 0 : inputDB.readInt(); i > 0; i--) {
-            Table prevTable = new Table(inputDB, LM.baseClass);
+            SerializedTable prevTable = new SerializedTable(inputDB, LM.baseClass);
             prevTables.put(prevTable.name, prevTable);
 
             for (int j = inputDB.readInt(); j > 0; j--) {
@@ -1198,7 +1205,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         int prevStoredNum = inputDB == null ? 0 : inputDB.readInt();
         for (int i = 0; i < prevStoredNum; i++) {
             String sID = inputDB.readUTF();
-            Table prevTable = prevTables.get(inputDB.readUTF());
+            SerializedTable prevTable = prevTables.get(inputDB.readUTF());
             Map<Integer, KeyField> mapKeys = new HashMap<Integer, KeyField>();
             for (int j = 0; j < prevTable.keys.size(); j++)
                 mapKeys.put(inputDB.readInt(), prevTable.findKey(inputDB.readUTF()));
@@ -1218,11 +1225,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
                             // делаем запрос на перенос
 
                             logger.info(getString("logics.info.property.is.transferred.from.table.to.table", property.field, property.caption, prevTable.name, property.mapTable.table.name));
-                            Query<KeyField, PropertyField> moveColumn = new Query<KeyField, PropertyField>(property.mapTable.table);
-                            Expr moveExpr = prevTable.joinAnd(BaseUtils.join(BaseUtils.join(foundInterfaces, ((Property<PropertyInterface>) property).mapTable.mapKeys), moveColumn.mapKeys)).getExpr(prevTable.findProperty(sID));
-                            moveColumn.properties.put(property.field, moveExpr);
-                            moveColumn.and(moveExpr.getWhere());
-                            sql.modifyRecords(new ModifyQuery(property.mapTable.table, moveColumn));
+                            property.mapTable.table.moveColumn(sql, property.field, prevTable,
+                                    BaseUtils.join(foundInterfaces, (Map<PropertyInterface, KeyField>) property.mapTable.mapKeys), prevTable.findProperty(sID));
                             logger.info("Done");
                         } else // надо проверить что тип не изменился
                             if (!prevTable.findProperty(sID).type.equals(property.field.type))
@@ -1253,6 +1257,9 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
         packTables(sql, packTables); // упакуем таблицы
 
+        for(ImplementTable implementTable : implementTables.values()) // пересчитаем статистику
+            implementTable.updateStat(sql);
+
         // создадим индексы в базе
         for (Map.Entry<ImplementTable, Set<List<String>>> mapIndex : mapIndexes.entrySet())
             for (List<String> index : mapIndex.getValue())
@@ -1266,6 +1273,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         }
 
         fillIDs();
+
+        updateClassStat(sql);
 
         recalculateAggregations(sql, recalculateProperties); // перерасчитаем агрегации
 //        recalculateAggregations(sql, getAggregateStoredProperties());
@@ -1347,7 +1356,9 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
                 AggregateProperty dependProperty = (AggregateProperty) property;
                 if (recalculateProperties.contains(dependProperty)) {
                     logger.debug(getString("logics.info.recalculation.of.aggregated.property")+" (" + dependProperty + ")... ");
+                    System.out.println("STARTED" + dependProperty);
                     dependProperty.recalculateAggregation(session);
+                    System.out.println("ENDED");
                     logger.debug("Done");
                 }
             }

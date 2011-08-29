@@ -1,24 +1,25 @@
 package platform.server.data.expr;
 
+import platform.base.QuickMap;
 import platform.base.TwinImmutableInterface;
 import platform.server.caches.ParamLazy;
 import platform.server.caches.TwinLazy;
 import platform.server.caches.hash.HashContext;
 import platform.server.classes.BaseClass;
+import platform.server.classes.ConcreteObjectClass;
 import platform.server.classes.StaticCustomClass;
+import platform.server.classes.sets.AndClassSet;
 import platform.server.data.Table;
-import platform.server.data.where.MapWhere;
-import platform.server.data.query.CompileSource;
-import platform.server.data.query.ExprEnumerator;
-import platform.server.data.query.JoinData;
+import platform.server.data.expr.query.Stat;
+import platform.server.data.query.*;
+import platform.server.data.query.stat.KeyStat;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.translator.QueryTranslator;
 import platform.server.data.type.Type;
 import platform.server.data.where.Where;
+import platform.server.data.where.classes.ClassExprWhere;
 
-import java.util.Collections;
-
-public class IsClassExpr extends StaticClassExpr {
+public class IsClassExpr extends InnerExpr implements StaticClassExprInterface {
 
     public final SingleClassExpr expr;
     final BaseClass baseClass;
@@ -31,23 +32,19 @@ public class IsClassExpr extends StaticClassExpr {
 
     @TwinLazy
     public Table.Join.Expr getJoinExpr() {
-        return (Table.Join.Expr) baseClass.table.joinAnd(
-                Collections.singletonMap(baseClass.table.key, expr)).getExpr(baseClass.table.objectClass);
+        return baseClass.getJoinExpr(expr);
     }
 
-    public VariableExprSet calculateExprFollows() {
-        VariableExprSet result = new VariableExprSet(expr.getExprFollows());
-        result.add(getJoinExpr());
-        return result;
-    }
-
-    public void fillAndJoinWheres(MapWhere<JoinData> joins, Where andWhere) {
+    /*    public void fillAndJoinWheres(MapWhere<JoinData> joins, Where andWhere) {
         joins.add(getJoinExpr(),andWhere);
         expr.fillJoinWheres(joins,andWhere);
-    }
+    }*/
 
     public Type getType(KeyType keyType) {
         return getStaticClass().getType();
+    }
+    public Stat getTypeStat(KeyStat keyStat) {
+        return getStaticClass().getTypeStat();
     }
 
     public StaticCustomClass getStaticClass() {
@@ -63,7 +60,7 @@ public class IsClassExpr extends StaticClassExpr {
         return expr.packFollowFalse(where).classExpr(baseClass);
     }
     @ParamLazy
-    public StaticClassExpr translateOuter(MapTranslate translator) {
+    public IsClassExpr translateOuter(MapTranslate translator) {
         return new IsClassExpr(expr.translateOuter(translator),baseClass);
     }
 
@@ -76,10 +73,7 @@ public class IsClassExpr extends StaticClassExpr {
     }
 
     public String getSource(CompileSource compile) {
-        if(compile instanceof ToString)
-            return "class("+expr.getSource(compile)+")";
-
-        return getJoinExpr().getSource(compile);
+        return compile.getSource(this);
     }
 
     public void enumDepends(ExprEnumerator enumerator) {
@@ -93,4 +87,38 @@ public class IsClassExpr extends StaticClassExpr {
     public long calculateComplexity() {
         return expr.getComplexity() + 1;
     }
+
+    public Stat getStatValue(KeyStat keyStat) {
+        return new Stat(getStaticClass().getCount());
+    }
+    public InnerJoin<?> getInnerJoin() {
+        return getJoinExpr().getInnerJoin();
+    }
+
+    // множественное наследование StaticClassExpr
+    @Override
+    public ClassExprWhere getClassWhere(AndClassSet classes) {
+        return StaticClassExpr.getClassWhere(this, classes);
+    }
+
+    @Override
+    public Expr classExpr(BaseClass baseClass) {
+        return StaticClassExpr.classExpr(this, baseClass);
+    }
+
+    @Override
+    public Where isClass(AndClassSet set) {
+        return StaticClassExpr.isClass(this, set);
+    }
+
+    @Override
+    public AndClassSet getAndClassSet(QuickMap<VariableClassExpr, AndClassSet> and) {
+        return StaticClassExpr.getAndClassSet(this, and);
+    }
+
+    @Override
+    public boolean addAndClassSet(QuickMap<VariableClassExpr, AndClassSet> and, AndClassSet add) {
+        return StaticClassExpr.addAndClassSet(this, add);
+    }
+
 }

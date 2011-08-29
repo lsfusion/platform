@@ -2,6 +2,7 @@ package platform.server.classes.sets;
 
 import platform.base.ExtraSetWhere;
 import platform.server.classes.*;
+import platform.server.data.expr.query.Stat;
 import platform.server.data.type.ObjectType;
 import platform.server.data.type.Type;
 
@@ -9,7 +10,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 // выше вершин
-public class UpClassSet extends ExtraSetWhere<CustomClass,UpClassSet> implements ObjectClassSet {
+public class UpClassSet extends ExtraSetWhere<CustomClass,UpClassSet> implements ObjectValueClassSet {
 
     private UpClassSet(CustomClass[] classes) {
         super(classes);
@@ -108,16 +109,28 @@ public class UpClassSet extends ExtraSetWhere<CustomClass,UpClassSet> implements
         return AbstractCustomClass.getSingleClass(wheres);
     }
 
-    private String getChildString(String source) {
-        String childString = "";
+    private Set<ConcreteCustomClass> getConcreteChildren() {
         Set<ConcreteCustomClass> children = new HashSet<ConcreteCustomClass>();
         for(CustomClass node : wheres)
             node.fillConcreteChilds(children);
+        return children;
+    }
+
+    private String getChildString(String source) {
+        String childString = "";
+        Set<ConcreteCustomClass> children = getConcreteChildren();
         for(ConcreteCustomClass child : children)
             childString = (childString.length()==0?"":childString+",") + child.ID;
         if(children.size()>0)
             childString = source + " IN (" + childString + ")";
         return childString;
+    }
+
+    public int getCount() {
+        int stat = 0;
+        for(ConcreteCustomClass child : getConcreteChildren())
+            stat += child.getCount();
+        return stat;
     }
 
     public String getWhereString(String source) {
@@ -130,6 +143,10 @@ public class UpClassSet extends ExtraSetWhere<CustomClass,UpClassSet> implements
 
     public Type getType() {
         return ObjectType.instance;
+    }
+
+    public Stat getTypeStat() {
+        return wheres[0].getTypeStat();
     }
 
     // чисто для getCommonParent

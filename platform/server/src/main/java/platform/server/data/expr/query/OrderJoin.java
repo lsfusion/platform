@@ -8,7 +8,10 @@ import platform.server.data.Value;
 import platform.server.data.expr.BaseExpr;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
+import platform.server.data.query.InnerJoin;
 import platform.server.data.query.SourceJoin;
+import platform.server.data.query.stat.KeyStat;
+import platform.server.data.query.stat.StatKeys;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.where.Where;
 
@@ -57,5 +60,26 @@ public class OrderJoin extends QueryJoin<KeyExpr, OrderJoin.Query> {
 
     protected QueryJoin<KeyExpr, Query> createThis(Set<KeyExpr> keys, Set<Value> values, Query query, Map<KeyExpr, BaseExpr> group) {
         return new OrderJoin(keys, values, query, group);
+    }
+
+    private OrderJoin(OrderJoin orderJoin, MapTranslate translator) {
+        super(orderJoin, translator);
+    }
+
+    public InnerJoin translateOuter(MapTranslate translator) {
+        return new OrderJoin(this, translator);
+    }
+
+    @Override
+    public StatKeys<KeyExpr> getStatKeys(KeyStat keyStat) {
+        return query.where.getStatKeys(keys);
+    }
+
+    public Where getWhere() {
+        return query.where;
+    }
+
+    public Set<Expr> getPartitions() {
+        return query.partitions;
     }
 }

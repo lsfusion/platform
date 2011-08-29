@@ -4,17 +4,15 @@ import platform.base.TwinImmutableInterface;
 import platform.server.caches.IdentityLazy;
 import platform.server.caches.ParamLazy;
 import platform.server.caches.hash.HashContext;
-import platform.server.classes.DataClass;
-import platform.server.classes.UnknownClass;
+import platform.server.classes.BaseClass;
+import platform.server.classes.ObjectValueClassSet;
 import platform.server.classes.sets.AndClassSet;
 import platform.server.classes.sets.ObjectClassSet;
 import platform.server.data.expr.IsClassExpr;
-import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.SingleClassExpr;
-import platform.server.data.query.CompileSource;
-import platform.server.data.query.ExprEnumerator;
-import platform.server.data.query.JoinData;
-import platform.server.data.query.innerjoins.ObjectJoinSets;
+import platform.server.data.expr.query.Stat;
+import platform.server.data.query.*;
+import platform.server.data.query.innerjoins.GroupJoinsWheres;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.translator.QueryTranslator;
 import platform.server.data.where.DataWhere;
@@ -76,20 +74,21 @@ public class IsClassWhere extends DataWhere {
     }
 
     protected DataWhereSet calculateFollows() {
-        return new DataWhereSet(expr.getExprFollows());
+        return new DataWhereSet(expr.getExprFollows(true, true));
     }
 
-    public static boolean isObjectValueClass(AndClassSet set) {
-        return !(set instanceof UnknownClass || set instanceof DataClass);
-    }
-
-//    public KeyEquals calculateKeyEquals() {
+    //    public KeyEquals calculateKeyEquals() {
 //        return expr.getWhere().getKeyEquals().and(new KeyEquals(this));
 //    }
-    public ObjectJoinSets groupObjectJoinSets() {
-        if(expr instanceof KeyExpr && isObjectValueClass(classes))
-            return new ObjectJoinSets((KeyExpr)expr, ((ObjectClassSet)classes).getBaseClass() ,this);
-        return expr.getWhere().groupObjectJoinSets().and(new ObjectJoinSets(this));
+
+    private static Stat getClassStat(ObjectValueClassSet classes) { // "модифицируем" статистику classExpr'а чтобы правильно расчитывала кол-во объектов
+        BaseClass baseClass = classes.getBaseClass();
+        return new Stat((double) (classes.getCount() * baseClass.objectClass.getCount()) / (double) baseClass.getCount());
+    }
+    public GroupJoinsWheres groupJoinsWheres() {
+        if(classes instanceof ObjectValueClassSet)
+            return new GroupJoinsWheres(new ExprJoin(classExpr, getClassStat((ObjectValueClassSet)classes)), this);
+        return expr.getWhere().groupJoinsWheres().and(new GroupJoinsWheres(this));
     }
     public ClassExprWhere calculateClassWhere() {
         return expr.getClassWhere(classes).and(expr.getWhere().getClassWhere());

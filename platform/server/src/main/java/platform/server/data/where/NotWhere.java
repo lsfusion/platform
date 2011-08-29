@@ -2,11 +2,10 @@ package platform.server.data.where;
 
 import platform.base.TwinImmutableInterface;
 import platform.server.caches.hash.HashContext;
-import platform.server.data.where.MapWhere;
+import platform.server.data.query.innerjoins.GroupJoinsWheres;
 import platform.server.data.query.CompileSource;
 import platform.server.data.query.ExprEnumerator;
 import platform.server.data.query.JoinData;
-import platform.server.data.query.innerjoins.ObjectJoinSets;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.translator.QueryTranslator;
 import platform.server.data.where.classes.ClassExprWhere;
@@ -65,8 +64,8 @@ public class NotWhere extends ObjectWhere {
         where.fillDataJoinWheres(joins, andWhere);
     }
 
-    public ObjectJoinSets groupObjectJoinSets() {
-        return new ObjectJoinSets(this);
+    public GroupJoinsWheres groupJoinsWheres() {
+        return new GroupJoinsWheres(this);
     }
 
     public MeanClassWheres calculateMeanClassWheres() {

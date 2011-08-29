@@ -15,7 +15,7 @@ public class Pair<Class1, Class2> {
         return new Pair<Class1, Class2>(first, second);
     }
 
-    public String toString() { return first.toString(); }
+    public String toString() { return "(" + first.toString() + "," + second.toString() + ")"; }
 
     @Override
     public boolean equals(Object o) {

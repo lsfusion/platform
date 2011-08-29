@@ -1,6 +1,7 @@
 package platform.server.classes;
 
 import platform.interop.Data;
+import platform.server.data.expr.query.Stat;
 import platform.server.data.sql.SQLSyntax;
 import platform.server.data.type.ParseException;
 import platform.server.logics.ServerResourceBundle;
@@ -83,5 +84,9 @@ public class IntegerClass extends IntegralClass<Integer> {
     @Override
     public Object getInfiniteValue() {
         return Integer.MAX_VALUE / 2;
+    }
+
+    public Stat getTypeStat() {
+        return new Stat(Integer.MAX_VALUE);
     }
 }

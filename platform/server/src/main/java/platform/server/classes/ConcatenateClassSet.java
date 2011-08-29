@@ -3,6 +3,7 @@ package platform.server.classes;
 import platform.base.BaseUtils;
 import platform.server.classes.sets.AndClassSet;
 import platform.server.classes.sets.OrClassSet;
+import platform.server.data.expr.query.Stat;
 import platform.server.data.type.ConcatenateType;
 import platform.server.data.type.Type;
 
@@ -72,6 +73,11 @@ public class ConcatenateClassSet implements ConcreteClass  {
         for(int i=0;i<classes.length;i++)
             types[i] = classes[i].getType();
         return new ConcatenateType(types);
+    }
+    public Stat getTypeStat() {
+        Stat result = Stat.ONE;
+        for (AndClassSet aClass : classes) result = result.mult(aClass.getTypeStat());
+        return result;
     }
 
     public boolean inSet(AndClassSet set) {

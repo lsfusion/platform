@@ -1,25 +1,29 @@
 package platform.server.data;
 
 import platform.base.*;
-import platform.server.Settings;
+import platform.interop.Data;
 import platform.server.caches.IdentityLazy;
 import platform.server.caches.ParamLazy;
 import platform.server.caches.TwinLazy;
 import platform.server.caches.hash.HashContext;
 import platform.server.classes.BaseClass;
+import platform.server.classes.DataClass;
 import platform.server.classes.ValueClass;
 import platform.server.classes.sets.AndClassSet;
 import platform.server.data.expr.*;
-import platform.server.data.expr.where.cases.CaseList;
+import platform.server.data.expr.query.DistinctKeys;
+import platform.server.data.expr.query.QueryJoin;
+import platform.server.data.expr.query.Stat;
+import platform.server.data.query.stat.KeyStat;
+import platform.server.data.query.stat.StatKeys;
 import platform.server.data.expr.where.cases.JoinCaseList;
 import platform.server.data.expr.where.pull.AddPullWheres;
 import platform.server.data.expr.where.ifs.NullJoin;
 import platform.server.data.expr.where.ifs.IfJoin;
-import platform.server.data.expr.query.KeyStat;
-import platform.server.data.expr.query.StatKeys;
+import platform.server.data.query.stat.WhereJoin;
 import platform.server.data.where.MapWhere;
 import platform.server.data.query.*;
-import platform.server.data.query.innerjoins.ObjectJoinSets;
+import platform.server.data.query.innerjoins.GroupJoinsWheres;
 import platform.server.data.sql.SQLSyntax;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.translator.QueryTranslator;
@@ -39,10 +43,38 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.*;
 
-public class Table extends TwinImmutableObject implements MapKeysInterface<KeyField> {
+public abstract class Table extends TwinImmutableObject implements MapKeysInterface<KeyField> {
     public final String name;
     public final List<KeyField> keys; // List потому как в таком порядке индексы будут строиться
     public final Set<PropertyField> properties;
+
+    public abstract StatKeys<KeyField> getStatKeys();
+    public abstract Map<PropertyField, Stat> getStatProps();
+
+    private static Stat getFieldStat(Field field, Stat defStat) {
+        if(field.type instanceof DataClass)
+            return defStat.min(((DataClass)field.type).getTypeStat());
+        else
+            return defStat;
+    }
+
+    protected static StatKeys<KeyField> getStatKeys(Table table, int count) { // для мн-го наследования
+        Stat stat = new Stat(count);
+
+        DistinctKeys<KeyField> distinctKeys = new DistinctKeys<KeyField>() ;
+        for(KeyField key : table.keys)
+            distinctKeys.add(key, getFieldStat(key, stat));
+        return new StatKeys<KeyField>(distinctKeys.getMax().min(stat), distinctKeys);
+    }
+
+    protected static Map<PropertyField, Stat> getStatProps(Table table, int count) { // для мн-го наследования
+        Stat stat = new Stat(count);
+
+        Map<PropertyField, Stat> result = new HashMap<PropertyField, Stat>();
+        for(PropertyField prop : table.properties)
+            result.put(prop, getFieldStat(prop, stat));
+        return result;
+    }
 
     public boolean isSingle() {
         return keys.size()==0;
@@ -52,11 +84,11 @@ public class Table extends TwinImmutableObject implements MapKeysInterface<KeyFi
         return KeyExpr.getMapKeys(keys);
     }
 
-    public Table(String name) {
+    protected Table(String name) {
         this(name, new ArrayList<KeyField>(), new HashSet<PropertyField>(), new ClassWhere<KeyField>(), new HashMap<PropertyField, ClassWhere<Field>>());
     }
 
-    public Table(String name, List<KeyField> keys, Set<PropertyField> properties,ClassWhere<KeyField> classes,Map<PropertyField, ClassWhere<Field>> propertyClasses) {
+    protected Table(String name, List<KeyField> keys, Set<PropertyField> properties,ClassWhere<KeyField> classes,Map<PropertyField, ClassWhere<Field>> propertyClasses) {
         this.name = name;
         this.keys = keys;
         this.properties = properties;
@@ -144,7 +176,7 @@ public class Table extends TwinImmutableObject implements MapKeysInterface<KeyFi
     }
 
     public boolean twins(TwinImmutableInterface o) {
-        return name.equals(((Table)o).name) && classes.equals(((Table)o).classes) && propertyClasses.equals(((Table)o).propertyClasses);
+        return name.equals(((Table)o).name) && classes.equals(((Table)o).classes) && propertyClasses.equals(((Table) o).propertyClasses);
     }
 
     public int immutableHashCode() {
@@ -195,14 +227,6 @@ public class Table extends TwinImmutableObject implements MapKeysInterface<KeyFi
     public void enumInnerValues(Set<Value> values) {
     }
 
-    public int getCount() {
-        return Integer.MAX_VALUE;
-    }
-
-    public boolean isFew() {
-        return getCount() < Settings.instance.getFewCount();
-    }
-
     public class Join extends platform.server.data.query.Join<PropertyField> implements InnerJoin<KeyField>, TwinImmutableInterface {
 
         public final Map<KeyField, BaseExpr> joins;
@@ -210,8 +234,8 @@ public class Table extends TwinImmutableObject implements MapKeysInterface<KeyFi
         public Map<KeyField, BaseExpr> getJoins() {
             return joins;
         }
-        public StatKeys<KeyField> getStatKeys() {
-            return new StatKeys<KeyField>(joins.keySet(), isFew()? KeyStat.FEW : KeyStat.MANY);
+        public StatKeys<KeyField> getStatKeys(KeyStat keyStat) {
+            return Table.this.getStatKeys();
         }
 
         public Join(Map<KeyField, ? extends BaseExpr> joins) {
@@ -224,8 +248,16 @@ public class Table extends TwinImmutableObject implements MapKeysInterface<KeyFi
             return platform.server.data.expr.Expr.getWhere(joins);
         }
 
-        public VariableExprSet getJoinFollows() {
-            return InnerExpr.getExprFollows(joins);
+        public InnerExprSet getExprFollows(boolean recursive) {
+            return InnerExpr.getExprFollows(this, recursive);
+        }
+
+        public InnerJoins getInnerJoins() {
+            return InnerExpr.getInnerJoins(this);
+        }
+
+        public InnerJoins getJoinFollows(Result<Map<InnerJoin, Where>> upWheres) {
+            return InnerExpr.getFollowJoins(this, upWheres);
         }
 
         @TwinLazy
@@ -317,13 +349,8 @@ public class Table extends TwinImmutableObject implements MapKeysInterface<KeyFi
             return Table.this;
         }
 
-        public boolean isIn(VariableExprSet set) {
-            for(int i=0;i<set.size;i++) {
-                VariableClassExpr expr = set.get(i);
-                if(expr instanceof Expr && BaseUtils.hashEquals(this,((Expr)expr).getJoin()))
-                    return true;
-            }
-            return false;
+        public InnerExpr getInnerExpr(WhereJoin join) {
+            return QueryJoin.getInnerExpr(this, join);
         }
 
         private long getComplexity() {
@@ -374,7 +401,7 @@ public class Table extends TwinImmutableObject implements MapKeysInterface<KeyFi
             }
 
             protected DataWhereSet calculateFollows() {
-                return new DataWhereSet(getJoinFollows());
+                return new DataWhereSet(getExprFollows(true));
             }
 
             public platform.server.data.expr.Expr getFJExpr() {
@@ -385,8 +412,8 @@ public class Table extends TwinImmutableObject implements MapKeysInterface<KeyFi
                 return exprFJ + " IS NOT NULL";
             }
 
-            public ObjectJoinSets groupObjectJoinSets() {
-                return new ObjectJoinSets(Join.this,this);
+            public GroupJoinsWheres groupJoinsWheres() {
+                return new GroupJoinsWheres(Join.this, this);
             }
             public ClassExprWhere calculateClassWhere() {
                 return classes.map(joins).and(getJoinsWhere().getClassWhere());
@@ -441,20 +468,15 @@ public class Table extends TwinImmutableObject implements MapKeysInterface<KeyFi
                 enumerator.fill(joins);
             }
 
-            public Join getJoin() {
-                return Join.this;
-            }
-
-            public InnerJoin getFJGroup() {
-                return Join.this;
-            }
-
             public String toString() {
                 return Join.this.toString() + "." + property;
             }
 
             public Type getType(KeyType keyType) {
                 return property.type;
+            }
+            public Stat getTypeStat(KeyStat keyStat) {
+                return propertyClasses.get(property).getTypeStat(property);
             }
 
             // возвращает Where без следствий
@@ -463,7 +485,7 @@ public class Table extends TwinImmutableObject implements MapKeysInterface<KeyFi
             }
 
             public boolean twins(TwinImmutableInterface o) {
-                return Join.this.equals(((Expr) o).getJoin()) && property.equals(((Expr) o).property);
+                return Join.this.equals(((Expr) o).getInnerJoin()) && property.equals(((Expr) o).property);
             }
 
             @IdentityLazy
@@ -475,15 +497,7 @@ public class Table extends TwinImmutableObject implements MapKeysInterface<KeyFi
                 return compile.getSource(this);
             }
 
-            public VariableExprSet getJoinFollows() {
-                return Join.this.getJoinFollows();
-            }
-
             public class NotNull extends InnerExpr.NotNull {
-
-                public ObjectJoinSets groupObjectJoinSets() {
-                    return new ObjectJoinSets(Join.this,this);
-                }
 
                 @Override
                 public Where packFollowFalse(Where falseWhere) {
@@ -510,6 +524,14 @@ public class Table extends TwinImmutableObject implements MapKeysInterface<KeyFi
 
             public long calculateComplexity() {
                 return Join.this.getComplexity();
+            }
+
+            public Table.Join getInnerJoin() {
+                return Join.this;
+            }
+
+            public Stat getStatValue(KeyStat keyStat) {
+                return getStatProps().get(property);
             }
         }
 

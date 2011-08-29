@@ -1,6 +1,5 @@
 package platform.base;
 
-import java.awt.image.Kernel;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
@@ -14,7 +13,7 @@ public abstract class QuickMap<K, V> {
 
     protected int[] indexes; // номера в таблице
 
-    protected abstract V addValue(V prevValue, V newValue);
+    protected abstract V addValue(K key, V prevValue, V newValue);
 
     protected abstract boolean containsAll(V who, V what);
 
@@ -113,7 +112,7 @@ public abstract class QuickMap<K, V> {
         while (table[i] != null) {
             if (htable[i] == hash && table[i].equals(key)) {
                 if (add) {
-                    value = addValue((V) vtable[i], (V) value);
+                    value = addValue((K) key, (V) vtable[i], (V) value);
                     if (value == null)
                         return false;
                 }

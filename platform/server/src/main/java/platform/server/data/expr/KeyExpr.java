@@ -2,6 +2,10 @@ package platform.server.data.expr;
 
 import platform.base.TwinImmutableInterface;
 import platform.server.caches.hash.HashContext;
+import platform.server.data.expr.query.Stat;
+import platform.server.data.query.stat.InnerBaseJoin;
+import platform.server.data.query.stat.KeyStat;
+import platform.server.data.query.stat.StatKeys;
 import platform.server.data.where.MapWhere;
 import platform.server.data.query.CompileSource;
 import platform.server.data.query.ExprEnumerator;
@@ -14,9 +18,10 @@ import platform.server.data.where.Where;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 
-public class KeyExpr extends VariableClassExpr {
+public class KeyExpr extends VariableClassExpr implements InnerBaseJoin<Object> {
 
     public static <T> Map<T, KeyExpr> getMapKeys(Collection<T> objects) {
         Map<T,KeyExpr> result = new HashMap<T, KeyExpr>();
@@ -49,6 +54,9 @@ public class KeyExpr extends VariableClassExpr {
     public Type getType(KeyType keyType) {
         return keyType.getKeyType(this);
     }
+    public Stat getTypeStat(KeyStat keyStat) {
+        return keyStat.getKeyStat(this);
+    }
 
     // возвращает Where без следствий
     public Where calculateWhere() {
@@ -61,10 +69,6 @@ public class KeyExpr extends VariableClassExpr {
 
     public KeyExpr translateOuter(MapTranslate translator) {
         return translator.translate(this);
-    }
-
-    public VariableExprSet calculateExprFollows() {
-        return new VariableExprSet(this);
     }
 
     @Override
@@ -85,5 +89,25 @@ public class KeyExpr extends VariableClassExpr {
 
     public long calculateComplexity() {
         return 1;
+    }
+
+    public Stat getStatValue(KeyStat keyStat) {
+        return FormulaExpr.getStatValue(this, keyStat);
+    }
+
+    public StatKeys<Object> getStatKeys(KeyStat keyStat) {
+        return new StatKeys<Object>(new HashSet<Object>(), keyStat.getKeyStat(this));
+    }
+
+    public InnerBaseJoin<?> getBaseJoin() {
+        return this;
+    }
+
+    public Map<Object, BaseExpr> getJoins() {
+        return new HashMap<Object, BaseExpr>();
+    }
+
+    public InnerExprSet getExprFollows(boolean recursive) {
+        return InnerExpr.getExprFollows(this, recursive);
     }
 }

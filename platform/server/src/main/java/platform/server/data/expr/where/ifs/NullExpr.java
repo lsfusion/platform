@@ -1,9 +1,7 @@
 package platform.server.data.expr.where.ifs;
 
-import platform.server.data.expr.Expr;
-import platform.server.data.expr.KeyType;
-import platform.server.data.expr.BaseExpr;
-import platform.server.data.expr.VariableExprSet;
+import platform.server.data.expr.*;
+import platform.server.data.expr.query.Stat;
 import platform.server.data.expr.where.cases.ExprCaseList;
 import platform.server.data.type.Type;
 import platform.server.data.type.ClassReader;
@@ -22,6 +20,9 @@ import platform.server.caches.hash.HashContext;
 import platform.interop.Compare;
 import platform.base.TwinImmutableInterface;
 
+import java.util.HashSet;
+import java.util.Set;
+
 public class NullExpr extends Expr {
 
     private NullExpr() {
@@ -29,6 +30,9 @@ public class NullExpr extends Expr {
     public final static NullExpr instance = new NullExpr();
 
     public Type getType(KeyType keyType) {
+        return null;
+    }
+    public Stat getTypeStat(Where fullWhere) {
         return null;
     }
 
@@ -72,10 +76,6 @@ public class NullExpr extends Expr {
         return this;
     }
 
-    public VariableExprSet getExprFollows() {
-        return new VariableExprSet();
-    }
-
     protected long calculateComplexity() {
         return 1;
     }
@@ -106,7 +106,7 @@ public class NullExpr extends Expr {
         throw new RuntimeException("not supported");
     }
 
-    public BaseExpr getBaseExpr() {
-        throw new RuntimeException("not supported");
+    public Set<BaseExpr> getBaseExprs() {
+        return new HashSet<BaseExpr>();
     }
 }

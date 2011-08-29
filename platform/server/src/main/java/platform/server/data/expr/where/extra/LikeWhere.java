@@ -44,6 +44,6 @@ public class LikeWhere extends BinaryWhere<LikeWhere> {
     }
 
     public static Where create(BaseExpr operator1, BaseExpr operator2, boolean isStartWith) {
-        return create(new LikeWhere(operator1, operator2, isStartWith));
+        return create(operator1, operator2, new LikeWhere(operator1, operator2, isStartWith));
     }
 }

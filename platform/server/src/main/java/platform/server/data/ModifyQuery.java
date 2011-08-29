@@ -118,7 +118,7 @@ public class ModifyQuery {
     }
 
     private static String getInsertCastSelect(CompiledQuery<KeyField, PropertyField> changeCompile, SQLSyntax syntax) {
-        if(changeCompile.unionAll && syntax.nullUnionTrouble()) {
+        if(changeCompile.union && syntax.nullUnionTrouble()) {
             String alias = "castalias";
             String exprs = "";
             boolean casted = false;

@@ -57,7 +57,7 @@ public class SessionDataProperty extends DataProperty implements NoValueProperty
             super(changes, merge, true);
             properties = changes.properties;
         }
-        public UsedChanges addChanges(Changes changes) {
+        public UsedChanges calculateAddChanges(Changes changes) {
             return new UsedChanges(this, changes);
         }
 
@@ -65,7 +65,7 @@ public class SessionDataProperty extends DataProperty implements NoValueProperty
             super(changes, merge);
             properties = BaseUtils.mergeSet(changes.properties, merge.properties);
         }
-        public UsedChanges add(UsedChanges changes) {
+        public UsedChanges calculateAdd(UsedChanges changes) {
             return new UsedChanges(this, changes);
         }
 

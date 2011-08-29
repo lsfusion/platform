@@ -1,25 +1,69 @@
 package platform.server.data.expr.query;
 
 import platform.base.BaseUtils;
+import platform.base.Result;
 import platform.server.caches.IdentityLazy;
 import platform.server.caches.InnerHashContext;
 import platform.server.caches.OuterContext;
 import platform.server.caches.TwinsInnerContext;
 import platform.server.caches.hash.HashContext;
 import platform.server.data.Value;
-import platform.server.data.expr.BaseExpr;
-import platform.server.data.expr.KeyExpr;
+import platform.server.data.expr.*;
+import platform.server.data.query.InnerJoin;
+import platform.server.data.query.InnerJoins;
+import platform.server.data.query.stat.WhereJoin;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.translator.MapValuesTranslate;
+import platform.server.data.where.Where;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-public abstract class QueryJoin<K extends BaseExpr,I extends OuterContext<I>> extends TwinsInnerContext<QueryJoin<K,I>> {
+public abstract class QueryJoin<K extends BaseExpr,I extends OuterContext<I>> extends TwinsInnerContext<QueryJoin<K,I>> implements InnerJoin<K> {
 
     protected final I query;
     public final Map<K, BaseExpr> group; // вообще гря не reverseable
+
+    public InnerExprSet getExprFollows(boolean recursive) {
+        return InnerExpr.getExprFollows(this, recursive);
+    }
+
+    public InnerJoins getInnerJoins() {
+        return InnerExpr.getInnerJoins(this);
+    }
+
+    public InnerJoins getJoinFollows(Result<Map<InnerJoin, Where>> upWheres) {
+        return InnerExpr.getFollowJoins(this, upWheres);
+    }
+
+    @IdentityLazy
+    public int hashOuter(final HashContext hashContext) {
+        return new QueryInnerHashContext() {
+            protected int hashOuterExpr(BaseExpr outerExpr) {
+                return outerExpr.hashOuter(hashContext);
+            }
+        }.hashInner(hashContext.values);
+    }
+
+    public InnerExpr getInnerExpr(WhereJoin join) {
+        return QueryJoin.getInnerExpr(this, join);
+    }
+
+    public Map<K, BaseExpr> getJoins() {
+        return group;
+    }
+
+    // множественное наследование
+    public static InnerExpr getInnerExpr(InnerJoin<?> join, WhereJoin whereJoin) {
+        InnerExprSet set = whereJoin.getExprFollows(true);
+        for(int i=0;i<set.size;i++) {
+            InnerExpr expr = set.get(i);
+            if(BaseUtils.hashEquals(join,expr.getInnerJoin()))
+                return expr;
+        }
+        return null;
+    }
 
     // нужны чтобы при merge'е у транслятора хватало ключей/значений
     protected final Set<KeyExpr> keys;

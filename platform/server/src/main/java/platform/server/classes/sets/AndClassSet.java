@@ -1,5 +1,6 @@
 package platform.server.classes.sets;
 
+import platform.server.data.expr.query.Stat;
 import platform.server.data.type.Type;
 
 // по сути на Or
@@ -19,4 +20,5 @@ public interface AndClassSet {
     OrClassSet getOr();
 
     Type getType();
+    Stat getTypeStat();
 }

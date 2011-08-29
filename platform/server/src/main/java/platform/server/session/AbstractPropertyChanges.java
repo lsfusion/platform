@@ -52,7 +52,7 @@ public abstract class AbstractPropertyChanges<P extends PropertyInterface, T ext
         assert check();
     }
 
-    protected PropertyChange<P> addValue(PropertyChange<P> prevValue, PropertyChange<P> newValue) {
+    protected PropertyChange<P> addValue(T key, PropertyChange<P> prevValue, PropertyChange<P> newValue) {
         return prevValue.add(newValue);
     }
 

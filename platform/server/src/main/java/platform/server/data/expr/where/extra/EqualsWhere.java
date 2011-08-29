@@ -6,7 +6,10 @@ import platform.interop.Compare;
 import platform.server.caches.IdentityLazy;
 import platform.server.caches.hash.HashContext;
 import platform.server.data.expr.*;
+import platform.server.data.expr.query.Stat;
 import platform.server.data.query.CompileSource;
+import platform.server.data.query.ExprJoin;
+import platform.server.data.query.innerjoins.GroupJoinsWheres;
 import platform.server.data.query.innerjoins.KeyEquals;
 import platform.server.data.where.EqualMap;
 import platform.server.data.where.Where;
@@ -28,7 +31,7 @@ public class EqualsWhere extends CompareWhere<EqualsWhere> {
             return BaseUtils.hashEquals(operator1,operator2)? TRUE : FALSE;
         if(BaseUtils.hashEquals(operator1,operator2))
             return operator1.getWhere();
-        return create(new EqualsWhere(operator1, operator2));
+        return create(operator1, operator2, new EqualsWhere(operator1, operator2));
     }
 
     public EqualsWhere(KeyExpr operator1, BaseExpr operator2) {
@@ -37,20 +40,6 @@ public class EqualsWhere extends CompareWhere<EqualsWhere> {
 
     protected String getCompareSource(CompileSource compile) {
         return "=";
-    }
-
-    @Override
-    protected String getNotSource(CompileSource compile) {
-        String op1Source = operator1.getSource(compile);
-        String result = operator1.getWhere().isTrue()?"":op1Source + " IS NULL";
-        String op2Source = operator2.getSource(compile);
-        if(!operator2.getWhere().isTrue())
-            result = (result.length()==0?"":result+" OR ") + op2Source + " IS NULL";
-        String compare = "NOT " + op1Source + "=" + op2Source;
-        if(result.length()==0)
-            return compare;
-        else
-            return "(" + result + " OR " + compare + ")";
     }
 
     @Override
@@ -82,6 +71,15 @@ public class EqualsWhere extends CompareWhere<EqualsWhere> {
     }
 
     @Override
+    public GroupJoinsWheres groupJoinsWheres() {
+        if(operator1.isValue() && !operator2.isOr())
+            return new GroupJoinsWheres(new ExprJoin(operator2, Stat.ONE), this);
+        if(operator2.isValue() && !operator1.isOr())
+            return new GroupJoinsWheres(new ExprJoin(operator1, Stat.ONE), this);
+        return super.groupJoinsWheres();    //To change body of overridden methods use File | Settings | File Templates.
+    }
+
+    @Override
     public MeanClassWhere getMeanClassWhere() {
         Map<VariableClassExpr,VariableClassExpr> equals = new HashMap<VariableClassExpr, VariableClassExpr>();
         ClassExprWhere classWhere = getOperandWhere().getClassWhere();
@@ -109,5 +107,4 @@ public class EqualsWhere extends CompareWhere<EqualsWhere> {
             return meanWhere.classWhere;
         }
     }
-
 }

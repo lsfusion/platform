@@ -1,5 +1,6 @@
 package platform.server.classes;
 
+import platform.server.data.expr.query.Stat;
 import platform.server.data.sql.SQLSyntax;
 import platform.server.data.type.ParseException;
 import platform.server.logics.ServerResourceBundle;
@@ -59,5 +60,9 @@ public abstract class FileClass extends DataClass<byte[]> {
 
     public Object parseString(String s) throws ParseException {
         throw new RuntimeException("not supported");
+    }
+
+    public Stat getTypeStat() {
+        return Stat.ALOT;
     }
 }

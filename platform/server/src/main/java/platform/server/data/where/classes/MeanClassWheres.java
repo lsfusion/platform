@@ -13,15 +13,20 @@ import java.util.Map;
 
 public class MeanClassWheres extends DNFWheres<MeanClassWhere, CheckWhere, MeanClassWheres> {
 
-    protected CheckWhere andValue(CheckWhere prevValue, CheckWhere newValue) {
+    protected CheckWhere andValue(MeanClassWhere key, CheckWhere prevValue, CheckWhere newValue) {
         return prevValue.andCheck(newValue);
     }
-    protected CheckWhere addValue(CheckWhere prevValue, CheckWhere newValue) {
+    protected CheckWhere addValue(MeanClassWhere key, CheckWhere prevValue, CheckWhere newValue) {
         return prevValue.orCheck(newValue);
     }
 
     protected MeanClassWheres createThis() {
         return new MeanClassWheres();
+    }
+
+    @Override
+    protected boolean valueIsFalse(CheckWhere value) {
+        return value.isFalse();
     }
 
     ClassExprWhere classWhere;

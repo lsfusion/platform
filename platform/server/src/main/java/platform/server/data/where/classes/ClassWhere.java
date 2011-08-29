@@ -3,7 +3,9 @@ package platform.server.data.where.classes;
 import platform.server.classes.ValueClass;
 import platform.server.classes.sets.AndClassSet;
 import platform.server.data.expr.BaseExpr;
+import platform.server.data.expr.query.Stat;
 
+import java.awt.event.KeyListener;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Collection;
@@ -93,6 +95,10 @@ public class ClassWhere<K> extends AbstractClassWhere<K, ClassWhere<K>> {
 
     public <V> ClassWhere(ClassWhere<V> classes, Map<V, K> map) {
         super(classes, map);
+    }
+
+    public Stat getTypeStat(K key) {
+        return wheres[0].get(key).getTypeStat();
     }
 }
 

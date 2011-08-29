@@ -88,7 +88,7 @@ public abstract class LogicsModule {
     }
 
     protected void addModuleLP(LP<?> lp) {
-        assert !moduleProperties.containsKey(lp.property.getSID());
+//        assert !moduleProperties.containsKey(lp.property.getSID());
         moduleProperties.put(lp.property.getSID(), lp);
     }
 
@@ -199,7 +199,7 @@ public abstract class LogicsModule {
     }
 
     protected ConcreteCustomClass addConcreteClass(String name, String caption, CustomClass... parents) {
-        ConcreteCustomClass customClass = new ConcreteCustomClass(transformNameToSID(name), caption, parents);
+        ConcreteCustomClass customClass = new CustomObjectClass(transformNameToSID(name), caption, parents);
         storeCustomClass(customClass);
         return customClass;
     }

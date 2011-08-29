@@ -1,12 +1,16 @@
 package platform.server.logics.table;
 
+import platform.base.BaseUtils;
 import platform.server.classes.ValueClass;
 import platform.server.data.*;
+import platform.server.data.expr.Expr;
+import platform.server.data.query.Query;
 import platform.server.data.where.classes.ClassWhere;
 
+import java.sql.SQLException;
 import java.util.*;
 
-public class ImplementTable extends GlobalTable {
+public class ImplementTable extends DataTable {
     public Map<KeyField, ValueClass> mapFields = new HashMap<KeyField, ValueClass>();
 
     public ImplementTable(String name, ValueClass... implementClasses) {
@@ -20,6 +24,14 @@ public class ImplementTable extends GlobalTable {
         parents = new ArrayList<ImplementTable>();
 
         classes = classes.or(new ClassWhere<KeyField>(mapFields,true));
+    }
+
+    public void moveColumn(SQLSession sql, PropertyField field, SerializedTable prevTable, Map<KeyField, KeyField> mapFields, PropertyField prevField) throws SQLException {
+        Query<KeyField, PropertyField> moveColumn = new Query<KeyField, PropertyField>(this);
+        Expr moveExpr = prevTable.joinAnd(BaseUtils.join(mapFields, moveColumn.mapKeys)).getExpr(prevField);
+        moveColumn.properties.put(field, moveExpr);
+        moveColumn.and(moveExpr.getWhere());
+        sql.modifyRecords(new ModifyQuery(this, moveColumn));
     }
 
     public void addField(PropertyField field,ClassWhere<Field> classes) {

@@ -19,7 +19,7 @@ public class GreaterWhere extends CompareWhere {
     public static Where create(BaseExpr operator1, BaseExpr operator2) {
         if(BaseUtils.hashEquals(operator1,operator2))
             return FALSE;
-        return create(new GreaterWhere(operator1, operator2));
+        return create(operator1, operator2, new GreaterWhere(operator1, operator2));
     }
 
     @IdentityLazy
@@ -37,19 +37,5 @@ public class GreaterWhere extends CompareWhere {
 
     protected String getCompareSource(CompileSource compile) {
         return ">";
-    }
-
-    @Override
-    protected String getNotSource(CompileSource compile) {
-        String op1Source = operator1.getSource(compile);
-        String result = operator1.getWhere().isTrue()?"":op1Source + " IS NULL";
-        String op2Source = operator2.getSource(compile);
-        if(!operator2.getWhere().isTrue())
-            result = (result.length()==0?"":result+" OR ") + op2Source + " IS NULL";
-        String compare = "NOT " + op1Source + ">" + op2Source;
-        if(result.length()==0)
-            return compare;
-        else
-            return "(" + result + " OR " + compare + ")";
     }
 }

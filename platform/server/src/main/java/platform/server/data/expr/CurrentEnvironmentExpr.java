@@ -3,11 +3,15 @@ package platform.server.data.expr;
 import platform.base.TwinImmutableInterface;
 import platform.server.caches.hash.HashContext;
 import platform.server.classes.ValueClass;
+import platform.server.data.expr.query.Stat;
+import platform.server.data.query.innerjoins.GroupJoinsWheres;
+import platform.server.data.query.stat.InnerBaseJoin;
+import platform.server.data.query.stat.KeyStat;
+import platform.server.data.query.stat.ValueJoin;
 import platform.server.data.where.MapWhere;
 import platform.server.data.query.CompileSource;
 import platform.server.data.query.ExprEnumerator;
 import platform.server.data.query.JoinData;
-import platform.server.data.query.innerjoins.ObjectJoinSets;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.translator.QueryTranslator;
 import platform.server.data.type.Type;
@@ -25,10 +29,6 @@ public class CurrentEnvironmentExpr extends NotNullExpr {
         this.paramClass = paramClass;
     }
 
-    protected VariableExprSet calculateExprFollows() {
-        return new VariableExprSet();
-    }
-
     public void fillFollowSet(DataWhereSet fillSet) {
     }
 
@@ -41,6 +41,9 @@ public class CurrentEnvironmentExpr extends NotNullExpr {
 
     public Type getType(KeyType keyType) {
         return paramClass.getType();
+    }
+    public Stat getTypeStat(KeyStat keyStat) {
+        return paramClass.getTypeStat();
     }
 
     public Expr translateQuery(QueryTranslator translator) {
@@ -75,8 +78,8 @@ public class CurrentEnvironmentExpr extends NotNullExpr {
             return new ClassExprWhere(CurrentEnvironmentExpr.this, paramClass.getUpSet());
         }
 
-        public ObjectJoinSets groupObjectJoinSets() {
-            return new ObjectJoinSets(this);
+        public GroupJoinsWheres groupJoinsWheres() {
+            return new GroupJoinsWheres(this);
         }
     }
 
@@ -84,4 +87,10 @@ public class CurrentEnvironmentExpr extends NotNullExpr {
         return new NotNull();
     }
 
+    public Stat getStatValue(KeyStat keyStat) {
+        return Stat.ONE;
+    }
+    public InnerBaseJoin<?> getBaseJoin() {
+        return ValueJoin.instance;
+    }
 }

@@ -1,17 +1,17 @@
 package platform.server.data.query;
 
 import platform.server.data.expr.Expr;
-import platform.server.data.query.innerjoins.InnerSelectJoin;
+import platform.server.data.query.innerjoins.GroupJoinsWhere;
 
 import java.util.HashMap;
 import java.util.Map;
 
 public class AndJoinQuery {
 
-    public final InnerSelectJoin innerSelect;
+    public final GroupJoinsWhere innerSelect;
     public final String alias;
 
-    AndJoinQuery(InnerSelectJoin innerSelect, String alias) {
+    AndJoinQuery(GroupJoinsWhere innerSelect, String alias) {
         this.innerSelect = innerSelect;
         this.alias = alias;
     }

@@ -6,9 +6,14 @@ import platform.server.caches.IdentityLazy;
 import platform.server.caches.ManualLazy;
 import platform.server.classes.BaseClass;
 import platform.server.classes.DataClass;
+import platform.server.classes.IntegerClass;
 import platform.server.classes.sets.AndClassSet;
+import platform.server.data.KeyField;
 import platform.server.data.QueryEnvironment;
 import platform.server.data.SQLSession;
+import platform.server.data.expr.query.GroupExpr;
+import platform.server.data.expr.query.GroupType;
+import platform.server.data.expr.query.Stat;
 import platform.server.data.expr.where.cases.CaseExpr;
 import platform.server.data.expr.where.cases.ExprCaseList;
 import platform.server.data.expr.where.CaseExprInterface;
@@ -74,6 +79,12 @@ abstract public class Expr extends AbstractSourceJoin<Expr> {
         if(packed==null)
             packed = followFalse(Where.FALSE, true);
         return packed;
+    }
+    public static List<Expr> pack(List<Expr> exprs) {
+        List<Expr> result = new ArrayList<Expr>();
+        for(Expr expr : exprs)
+            result.add(expr);
+        return result;
     }
 
     public abstract Expr classExpr(BaseClass baseClass);
@@ -167,9 +178,10 @@ abstract public class Expr extends AbstractSourceJoin<Expr> {
         return new Query<Object, K>(new HashMap<Object, KeyExpr>(), mapExprs, Where.TRUE).executeClasses(session, env, baseClass).singleValue();
     }
 
-    public abstract VariableExprSet getExprFollows();
-
     public abstract Where getBaseWhere();
-    public abstract BaseExpr getBaseExpr();
+
+    public abstract Stat getTypeStat(Where fullWhere);
+
+    public abstract Set<BaseExpr> getBaseExprs();
 }
 

@@ -39,7 +39,7 @@ public abstract class AbstractClassWhere<K, This extends AbstractClassWhere<K, T
             return true;
         }
 
-        protected AndClassSet addValue(AndClassSet prevValue, AndClassSet newValue) {
+        protected AndClassSet addValue(K key, AndClassSet prevValue, AndClassSet newValue) {
             AndClassSet andValue = prevValue.and(newValue);
             if(andValue.isEmpty())
                 return null;
@@ -207,7 +207,7 @@ public abstract class AbstractClassWhere<K, This extends AbstractClassWhere<K, T
         Or() { }
         Or(Or<K> set) { super(set); }
 
-        protected OrClassSet addValue(OrClassSet prevValue, OrClassSet newValue) {
+        protected OrClassSet addValue(K key, OrClassSet prevValue, OrClassSet newValue) {
             return prevValue.or(newValue);
         }
 

@@ -1,6 +1,7 @@
 package platform.server.classes;
 
 import platform.interop.Data;
+import platform.server.data.expr.query.Stat;
 import platform.server.data.sql.SQLSyntax;
 import platform.server.data.type.ParseException;
 import platform.server.logics.ServerResourceBundle;
@@ -77,5 +78,9 @@ public class ByteArrayClass extends DataClass<byte[]> {
 
     public String getSID() {
         return sid;
+    }
+
+    public Stat getTypeStat() {
+        return Stat.ALOT;
     }
 }

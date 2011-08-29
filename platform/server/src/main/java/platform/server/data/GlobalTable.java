@@ -6,8 +6,4 @@ public abstract class GlobalTable extends Table {
         super(name);
     }
 
-    @Override
-    public int getCount() {
-        return Integer.MAX_VALUE;
-    }
 }
