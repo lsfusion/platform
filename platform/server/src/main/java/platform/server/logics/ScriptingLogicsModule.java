@@ -342,6 +342,43 @@ public class ScriptingLogicsModule extends LogicsModule {
         return addScriptedJProp(caption, getOperatorProp(op), Arrays.asList(leftProp, rightProp), Arrays.asList(lUsedParams, rUsedParams));
     }
 
+    public LPWithParams addScriptedAdditiveProp(String caption, List<String> operands, List<LP<?>> properties, List<List<Integer>> usedParams) {
+        assert properties.size() == usedParams.size();
+        assert operands.size() + 1 == properties.size();
+
+        LPWithParams curLP = new LPWithParams(properties.get(0), usedParams.get(0));
+        for (int i = 1; i < properties.size(); i++) {
+            String op = operands.get(i-1);
+            if (op.equals("+")) {
+                curLP = addScriptedJProp(caption, baseLM.sumDouble2, Arrays.asList(curLP.property, properties.get(i)), Arrays.asList(curLP.usedParams, usedParams.get(i)));
+            } else {
+                curLP = addScriptedJProp(caption, baseLM.subtractDouble2, Arrays.asList(curLP.property, properties.get(i)), Arrays.asList(curLP.usedParams, usedParams.get(i)));
+            }
+        }
+        return curLP;
+    }
+
+
+    public LPWithParams addScriptedMultiplicativeProp(String caption, List<String> operands, List<LP<?>> properties, List<List<Integer>> usedParams) {
+        assert properties.size() == usedParams.size();
+        assert operands.size() + 1 == properties.size();
+
+        LPWithParams curLP = new LPWithParams(properties.get(0), usedParams.get(0));
+        for (int i = 1; i < properties.size(); i++) {
+            String op = operands.get(i-1);
+            if (op.equals("*")) {
+                curLP = addScriptedJProp(caption, baseLM.multiplyDouble2, Arrays.asList(curLP.property, properties.get(i)), Arrays.asList(curLP.usedParams, usedParams.get(i)));
+            } else {
+                curLP = addScriptedJProp(caption, baseLM.divideDouble2, Arrays.asList(curLP.property, properties.get(i)), Arrays.asList(curLP.usedParams, usedParams.get(i)));
+            }
+        }
+        return curLP;
+    }
+
+    public LP<?> addScriptedUnaryMinusProp(String caption, LP<?> prop, List<Integer> usedParams) {
+        return addScriptedJProp(caption, baseLM.minusDouble, Arrays.<LP<?>>asList(prop), Arrays.asList(usedParams)).property;
+    }
+
     private List<Integer> mergeLists(List<List<Integer>> lists) {
         Set<Integer> s = new TreeSet<Integer>();
         for (List<Integer> list : lists) {

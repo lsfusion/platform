@@ -121,6 +121,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public LP round0;
 
     public LP minusInteger;
+    public LP minusDouble;
 
     public LP dumb1;
     public LP dumb2;
@@ -393,8 +394,8 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         greater22 = addJProp(greater2, concat2, 1, 2, concat2, 3, 4);
         less22 = addJProp(less2, concat2, 1, 2, concat2, 3, 4);
         diff2 = addCFProp(Compare.NOT_EQUALS);
-        sumDouble2 = addSFProp("((prm1)+(prm2))", DoubleClass.instance, 2);
-        subtractDouble2 = addSFProp("((prm1)-(prm2))", DoubleClass.instance, 2);
+        sumDouble2 = addSFProp("sumDouble2", "((prm1)+(prm2))", DoubleClass.instance, 2);
+        subtractDouble2 = addSFProp("subtractDouble2", "((prm1)-(prm2))", DoubleClass.instance, 2);
         deltaDouble2 = addSFProp("abs((prm1)-(prm2))", DoubleClass.instance, 2);
         multiplyDouble2 = addMFProp("multiplyDouble2", DoubleClass.instance, 2);
         multiplyIntegerBy2 = addSFProp("((prm1)*2)", IntegerClass.instance, 1);
@@ -402,7 +403,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         squareDouble = addSFProp("(prm1)*(prm1)", DoubleClass.instance, 1);
         sqrtDouble2 = addSFProp("round(sqrt(prm1),2)", DoubleClass.instance, 1);
         divideDouble = addSFProp("((prm1)/(prm2))", DoubleClass.instance, 2);
-        divideDouble2 = addSFProp("round(CAST((CAST((prm1) as numeric)/(prm2)) as numeric),2)", DoubleClass.instance, 2);
+        divideDouble2 = addSFProp("divideDouble2", "round(CAST((CAST((prm1) as numeric)/(prm2)) as numeric),2)", DoubleClass.instance, 2);
         addDate2 = addSFProp("((prm1)+(prm2))", DateClass.instance, 2);
         percent = addSFProp("((prm1)*(prm2)/100)", DoubleClass.instance, 2);
         percent2 = addSFProp("round(CAST(((prm1)*(prm2)/100) as numeric), 2)", DoubleClass.instance, 2);
@@ -415,6 +416,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         round0 = addSFProp("round(CAST(prm1 as numeric), 0)", DoubleClass.instance, 1);
 
         minusInteger = addSFProp("(-(prm1))", IntegerClass.instance, 1);
+        minusDouble = addSFProp("(-(prm1))", DoubleClass.instance, 1);
 
         actionTrue = addCProp("ActionTrue", ActionClass.instance, true);
 

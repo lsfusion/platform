@@ -247,17 +247,65 @@ equalityPE[List<String> context] returns [LP property, List<Integer> usedParams]
 		$usedParams = lUsedParams;
 	}
 }
-	:	lhs=multiplicativePE[context] { leftProp = $lhs.property; lUsedParams = $lhs.usedParams; }
+	:	lhs=additivePE[context] { leftProp = $lhs.property; lUsedParams = $lhs.usedParams; }
 		(operand=COMP_OPERAND { op = $operand.text; }
-		rhs=multiplicativePE[context] { rightProp = $rhs.property; rUsedParams = $rhs.usedParams; })?;
+		rhs=additivePE[context] { rightProp = $rhs.property; rUsedParams = $rhs.usedParams; })?;
 
 
+additivePE[List<String> context] returns [LP property, List<Integer> usedParams]
+@init {
+	List<LP<?>> props = new ArrayList<LP<?>>();
+	List<List<Integer>> allUsedParams = new ArrayList<List<Integer>>();
+	List<String> ops = new ArrayList<String>();
+}
+@after {
+	if (parseState == ScriptingLogicsModule.State.PROP) {
+		ScriptingLogicsModule.LPWithParams result = 
+			self.addScriptedAdditiveProp("", ops, props, allUsedParams);				
+		$property = result.property;
+		$usedParams = result.usedParams;
+	}
+}
+	:	firstExpr=multiplicativePE[context] { props.add($firstExpr.property); allUsedParams.add($firstExpr.usedParams); }
+		(operand=ADD_OPERAND { ops.add($operand.text); }
+		nextExpr=multiplicativePE[context] { props.add($nextExpr.property); allUsedParams.add($nextExpr.usedParams); })*;
+		
+	
 multiplicativePE[List<String> context] returns [LP property, List<Integer> usedParams]
+@init {
+	List<LP<?>> props = new ArrayList<LP<?>>();
+	List<List<Integer>> allUsedParams = new ArrayList<List<Integer>>();
+	List<String> ops = new ArrayList<String>();
+}
+@after {
+	if (parseState == ScriptingLogicsModule.State.PROP) {
+		ScriptingLogicsModule.LPWithParams result = 
+			self.addScriptedMultiplicativeProp("", ops, props, allUsedParams);				
+		$property = result.property;
+		$usedParams = result.usedParams;
+	}
+}
+	:	firstExpr=simplePE[context] { props.add($firstExpr.property); allUsedParams.add($firstExpr.usedParams); }
+		(operand=MULT_OPERAND { ops.add($operand.text); }
+		nextExpr=simplePE[context] { props.add($nextExpr.property); allUsedParams.add($nextExpr.usedParams); })*;
+	
+		 
+	 
+unaryMinusPE[List<String> context] returns [LP property, List<Integer> usedParams] 	
+@after {
+	if (parseState == ScriptingLogicsModule.State.PROP) { 
+		$property = self.addScriptedUnaryMinusProp("", $property, $usedParams);
+	}
+}
+	: '-' expr=simplePE[context] { $property = $expr.property; $usedParams = $expr.usedParams; };		 
+	
+		 
+simplePE[List<String> context] returns [LP property, List<Integer> usedParams]
 	:
 	'(' expr=propertyExpression[context] ')' { $property = $expr.property; $usedParams = $expr.usedParams; } |
-	primitive=expressionPrimitive[context] { $property = $primitive.property; $usedParams = $primitive.usedParams; }
-	//'-' multiplicativePE
-	;
+	primitive=expressionPrimitive[context] { $property = $primitive.property; $usedParams = $primitive.usedParams; } |
+	uexpr=unaryMinusPE[context] { $property = $uexpr.property; $usedParams = $uexpr.usedParams; };
+	
 
 expressionPrimitive[List<String> context] returns [LP property, List<Integer> usedParams]
 	:	(paramName=parameter {
@@ -368,16 +416,6 @@ unionPropertyDefinition[List<String> context] returns [LP property, List<Integer
 		firstParam=propertyExpression[context] { paramProps.add($firstParam.property); usedParams.add($firstParam.usedParams); }
 		(',' nextParam=propertyExpression[context] { paramProps.add($nextParam.property); usedParams.add($nextParam.usedParams);})*
 		')';
-
-
-
-//propertyParam[List<String> context] returns [LP property, List<Integer> usedParams]
-//	:	(name=parameter {
-//			if (parseState == ScriptingLogicsModule.State.PROP)
-//				$usedParams = Collections.singletonList(self.getParamIndex($name.text, $context));
-//		 })
-//		|
-//		(expr=contextDependentPD[context] { $property = $expr.property; $usedParams = $expr.usedParams; });
 
 
 //typeExpression[String name, List<String> namedParams, List<String> context] returns [LP property, Integer param]
@@ -502,11 +540,11 @@ compoundID
 	:	(ID '.')? ID;
 	
 doubleLiteral 
-	:	'-'? POSITIVE_DOUBLE_LITERAL; 
+	:	POSITIVE_DOUBLE_LITERAL; 
 		
 
 intLiteral
-	:	'-'? UINT_LITERAL;		
+	:	UINT_LITERAL;		
 
 
 
@@ -529,3 +567,5 @@ UINT_LITERAL 	:	DIGITS;
 POSITIVE_DOUBLE_LITERAL	: 	DIGITS '.' DIGITS;	  
 NUMBERED_PARAM	:	'$' DIGITS;
 COMP_OPERAND	:	('==') | ('!=') | ('<') | ('>') | ('<=') | ('>=');
+ADD_OPERAND	:	('+') | ('-');
+MULT_OPERAND	:	('*') | ('/');
