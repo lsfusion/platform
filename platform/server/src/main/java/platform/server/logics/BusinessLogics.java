@@ -1376,6 +1376,10 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         return LM.addProperty(null, new LP<ClassPropertyInterface>(new CancelRestartActionProperty(LM.genSID(), "")));
     }
 
+    protected LP addGarbageCollectorActionProp() {
+        return LM.addProperty(null, new LP<ClassPropertyInterface>(new GarbageCollectorActionProperty(LM.genSID(), getString("logics.garbage.collector"))));
+    }
+
     public void updateEnvironmentProperty(Property property, ObjectValue value) {
         synchronized (navigators) {
             for (RemoteNavigator remoteNavigator : navigators.values()) {
@@ -1408,6 +1412,17 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         public void execute(ExecutionContext context) throws SQLException {
             getRestartController().cancelRestart();
             updateRestartProperty();
+        }
+    }
+
+    public class GarbageCollectorActionProperty extends ActionProperty {
+        private GarbageCollectorActionProperty(String sid, String caption) {
+            super(sid, caption, new ValueClass[]{});
+        }
+
+        public void execute(ExecutionContext context) {
+            System.runFinalization();
+            System.gc();
         }
     }
 

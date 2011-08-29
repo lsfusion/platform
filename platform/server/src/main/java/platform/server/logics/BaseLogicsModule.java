@@ -150,6 +150,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public LP seekBarcodeAction;
     public LP barcodeNotFoundMessage;
     public LP restartServerAction;
+    public LP runGarbageCollector;
     public LP cancelRestartServerAction;
     public LP reverseBarcode;
 
@@ -534,6 +535,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         barcodeNotFoundMessage = addJProp(true, "", and(false, true), addMAProp(getString("logics.barcode.not.found"), getString("logics.error")), is(StringClass.get(13)), 1, barcodeToObject, 1);
 
         restartServerAction = addJProp(getString("logics.server.stop"), andNot1, addRestartActionProp(), isServerRestarting);
+        runGarbageCollector = addGarbageCollectorActionProp();
         cancelRestartServerAction = addJProp(getString("logics.server.cancel.stop"), and1, addCancelRestartActionProp(), isServerRestarting);
 
         recalculateAction = addProperty(null, new LP<ClassPropertyInterface>(new RecalculateActionProperty(genSID(), getString("logics.recalculate.aggregations"))));
@@ -936,6 +938,10 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     protected LP addCancelRestartActionProp() {
         return BL.addCancelRestartActionProp();
 //        return addProperty(null, new LP<ClassPropertyInterface>(new CancelRestartActionProperty(genSID(), "")));
+    }
+
+    protected LP addGarbageCollectorActionProp() {
+        return BL.addGarbageCollectorActionProp();
     }
 
     public static class SeekActionProperty extends ActionProperty {
@@ -1352,7 +1358,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         private AdminFormEntity(NavigatorElement parent, String sID) {
             super(parent, sID, getString("logics.global.parameters"));
 
-            addPropertyDraw(new LP[]{smtpHost, smtpPort, fromAddress, emailAccount, emailPassword, emailBlindCarbonCopy, disableEmail, webHost, defaultCountry, barcodePrefix, restartServerAction, cancelRestartServerAction, recalculateAction, packAction});
+            addPropertyDraw(new LP[]{smtpHost, smtpPort, fromAddress, emailAccount, emailPassword, emailBlindCarbonCopy, disableEmail, webHost, defaultCountry, barcodePrefix, restartServerAction, cancelRestartServerAction, recalculateAction, packAction, runGarbageCollector});
         }
     }
 
