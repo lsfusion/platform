@@ -283,7 +283,7 @@ public class ImportProjectsActionProperty extends ActionProperty {
                 LM.baseLM.object(LM.projectAction).getMapping(projectActionProjectKey)));
 
         claimerKey = new ImportKey(LM.claimer, LM.baseLM.emailToObject.getMapping(emailClaimerField));
-        properties.add(new ImportProperty(emailClaimerField, LM.emailClaimer.getMapping(claimerKey)));
+        properties.add(new ImportProperty(emailClaimerField, LM.baseLM.email.getMapping(claimerKey)));
 
         propertiesFullClaimer = new ArrayList<ImportProperty<?>>();
         propertiesFullClaimer.add(new ImportProperty(phoneClaimerField, LM.phoneClaimer.getMapping(claimerKey)));
@@ -748,12 +748,12 @@ public class ImportProjectsActionProperty extends ActionProperty {
                 row.add(node.getChildText("typeProject"));
                 row.add(node.getChildText("actionProject"));
 
-                row.add(node.getChildText("emailClaimer"));
+                row.add(node.getChildText("emailProject"));
                 if (fillClaimer) {
                     row.add(node.getChildText("phoneClaimer"));
                     row.add(node.getChildText("addressClaimer"));
                     row.add(node.getChildText("siteClaimer"));
-                    row.add(node.getChildText("emailProject"));
+                    row.add(node.getChildText("emailClaimer"));
                     row.add(node.getChildText("OGRNClaimer"));
                     row.add(node.getChildText("INNClaimer"));
                     row.add(buildFileByteArray(node.getChild("fileStatementClaimer")));

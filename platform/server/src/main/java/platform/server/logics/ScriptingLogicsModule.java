@@ -248,7 +248,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             params[i] = getClassByName(paramClasses.get(i));
         }
         if (innerProp) {
-            return addDProp(caption, value, params);
+            return addDProp(genSID(), caption, value, params);
         } else {
             StoredDataProperty dataProperty = new StoredDataProperty(genSID(), caption, params, value);
             return addProperty(null, new LP<ClassPropertyInterface>(dataProperty));

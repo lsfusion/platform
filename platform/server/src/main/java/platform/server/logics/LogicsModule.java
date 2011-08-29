@@ -229,10 +229,6 @@ public abstract class LogicsModule {
         return id;
     }
 
-    protected LP addDProp(String caption, ValueClass value, ValueClass... params) {
-        return addDProp(genSID(), caption, value, params);
-    }
-
     protected LP addDProp(String name, String caption, ValueClass value, ValueClass... params) {
         return addDProp(null, name, false, caption, value, params);
     }

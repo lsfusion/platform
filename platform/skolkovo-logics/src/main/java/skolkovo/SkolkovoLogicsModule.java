@@ -102,6 +102,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
     ConcreteCustomClass expert;
     public ConcreteCustomClass cluster;
     public ConcreteCustomClass claimer;
+    public ConcreteCustomClass claimerExpert;
     ConcreteCustomClass documentTemplate;
     ConcreteCustomClass documentAbstract;
     ConcreteCustomClass documentTemplateDetail;
@@ -175,6 +176,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         claimer = addConcreteClass("claimer", "Заявитель", multiLanguageNamed, baseLM.emailObject);
         claimer.dialogReadOnly = false;
+
+        claimerExpert = addConcreteClass("claimerExpert", "Заявитель/эксперт", claimer, expert);
 
         documentTemplate = addConcreteClass("documentTemplate", "Шаблон документов", baseClass.named);
 
@@ -1372,12 +1375,12 @@ public class SkolkovoLogicsModule extends LogicsModule {
                 voteInProgressProject, 1, addCProp(projectStatus, "inProgress", project), 1,
                 addIfElseUProp(addCProp(projectStatus, "needDocuments", project), addCProp(projectStatus, "needExtraVote", project), notEnoughProject, 1), 1);
 
-        statusDataProject = addDProp("Статус", projectStatus, project);
+        statusDataProject = addDProp("statusDataProject", "Статус", projectStatus, project);
         projectStatusProject = addSUProp(idGroup, "ProjectStatusProject", "Статус", Union.OVERRIDE, statusProject, statusDataProject);
         nameStatusProject = addJProp(projectInformationGroup, "nameStatusProject", "Статус", baseLM.name, projectStatusProject, 1);
 
         dateJoinProject = addJProp(baseLM.and1, baseLM.date, 1, is(project), 1);
-        dateDataProject = addDProp("Дата", DateClass.instance, project);
+        dateDataProject = addDProp("dateDataProject", "Дата", DateClass.instance, project);
         //dateProject = addJProp("dateProject", "Дата проекта", baseLM.and1, baseLM.date, 1, is(project), 1);
         dateProject = addSUProp("dateProject", "Дата проекта", Union.OVERRIDE, dateJoinProject, dateDataProject);
         updateDateProject = addDProp(projectInformationGroup, "updateDateProject", "Дата изменения проекта", DateTimeClass.instance, project);
