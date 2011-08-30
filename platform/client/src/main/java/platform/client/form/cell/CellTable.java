@@ -77,6 +77,9 @@ public abstract class CellTable extends SingleCellTable
     }
 
     public void writeSelectedValue(String value) {
+        if (isReadOnly())
+            return;
+
         Object oValue;
         try {
             oValue = getProperty().parseString(getForm(), columnKey, value, isDataChanging());
@@ -86,6 +89,10 @@ public abstract class CellTable extends SingleCellTable
         if (oValue != null) {
             cellValueChanged(oValue, false);
         }
+    }
+
+    public boolean isReadOnly() {
+        return getForm().isReadOnlyMode() && isDataChanging();
     }
 
     public void stopEditing() {

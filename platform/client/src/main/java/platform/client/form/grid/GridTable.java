@@ -548,6 +548,9 @@ public abstract class GridTable extends ClientFormTable
     }
 
     public void writeSelectedValue(String value) {
+        if (isReadOnly())
+            return;
+
         int row = getSelectionModel().getLeadSelectionIndex();
         int column = getColumnModel().getSelectionModel().getLeadSelectionIndex();
 
@@ -559,6 +562,10 @@ public abstract class GridTable extends ClientFormTable
         }
         if (oValue != null)
             changePropertyDraw(oValue, row, column, false, false);
+    }
+
+    public boolean isReadOnly() {
+        return form.isReadOnlyMode() && isDataChanging();
     }
 
     @Override

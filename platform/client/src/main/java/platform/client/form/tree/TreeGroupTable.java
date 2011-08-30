@@ -387,6 +387,9 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
     }
 
     public void writeSelectedValue(String value) {
+        if (isReadOnly())
+            return;
+
         int row = getSelectionModel().getLeadSelectionIndex();
         int column = getColumnModel().getSelectionModel().getLeadSelectionIndex();
 
@@ -397,6 +400,10 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
                 model.changeProperty(oValue, pathForRow.getLastPathComponent(), column, false);
             }
         }
+    }
+
+    public boolean isReadOnly() {
+        return form.isReadOnlyMode() && isDataChanging();
     }
 
     @Override

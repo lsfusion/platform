@@ -15,6 +15,8 @@ public abstract class TableTransferHandler extends TransferHandler {
         int getColumnCount();
 
         void writeSelectedValue(String value); // записать значение в текущую ячейку
+
+        boolean isReadOnly();
     }
 
     protected abstract TableInterface getTable();
