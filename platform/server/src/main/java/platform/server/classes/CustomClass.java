@@ -44,7 +44,7 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
         return ObjectType.instance;
     }
     public Stat getTypeStat() {
-        return new Stat(getBaseClass().getCount());
+        return Stat.ALOT;
     }
 
     public Boolean dialogReadOnly;

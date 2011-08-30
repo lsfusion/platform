@@ -4,12 +4,12 @@ import platform.server.Settings;
 
 public class Stat {
 
-    public final static Stat MAX = new Stat(1000000000);
+    public final static Stat MAX = new Stat(1000000, true);
     public final static Stat ONE = new Stat(1);
     public final static Stat MIN = new Stat(-1000, true);
     private final int deg;
 
-    public final static Stat ALOT = new Stat(10000000);
+    public final static Stat ALOT = new Stat(10000, true);
 
     public String toString() {
         return "(" + deg + ")";

@@ -21,8 +21,8 @@ public class TallyWeijlImportInvoiceActionProperty extends ImportBoxInvoiceActio
         return new TallyWeijlInvoiceImporter(inputTable, new Object[] {null, null, invoiceSIDField,
                 dateInvoiceField, null, null, null, null,
                 compositionField, countryField, boxNumberField, new ImportField[] {customCodeField, customCode6Field},
-                barCodeField, null, sizeField, colorCodeField, sidField, new ImportField[] {originalNameField, colorNameField},
-                null, null, seasonField, null, RRPField, null, unitNetWeightField, null, null, null, null, null,
+                barCodeField, null, sizeField, null, sidField, new ImportField[] {originalNameField, colorNameField},
+                null, colorCodeField, seasonField, null, RRPField, null, unitNetWeightField, null, null, null, null, null,
                 unitPriceField, unitQuantityField, numberSkuField, themeCodeField, themeNameField, genderField});
     }
 }
