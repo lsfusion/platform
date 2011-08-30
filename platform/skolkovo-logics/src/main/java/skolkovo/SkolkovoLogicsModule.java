@@ -132,6 +132,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
     AbstractGroup projectDocumentsGroup;
     AbstractGroup projectStatusGroup;
     AbstractGroup projectOptionsGroup;
+    AbstractGroup projectTranslationsGroup;
     AbstractGroup projectOtherClusterGroup;
 
     AbstractGroup voteResultGroup;
@@ -251,6 +252,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
         projectStatusGroup = addAbstractGroup("projectStatusGroup", "Текущий статус проекта", baseGroup);
 
         projectOptionsGroup = addAbstractGroup("projectOptionsGroup", "Параметры проекта", baseGroup);
+
+        projectTranslationsGroup = addAbstractGroup("projectTranslationsGroup", "Переведено", baseGroup);
 
         projectOtherClusterGroup = addAbstractGroup("projectOtherClusterGroup", "Иной кластер", baseGroup);
 
@@ -546,6 +549,12 @@ public class SkolkovoLogicsModule extends LogicsModule {
     public LP amountFundsProject;
     public LP isOtherSoursesProject;
     public LP commentOtherSoursesProject;
+    public LP needsToBeTranslatedToRussianProject;
+    public LP needsToBeTranslatedToEnglishProject;
+    public LP translatedToRussianProject;
+    public LP hideTranslatedToRussianProject;
+    public LP translatedToEnglishProject;
+    public LP hideTranslatedToEnglishProject;
     public LP fillNativeProject;
     public LP fillForeignProject;
 
@@ -647,6 +656,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
     LP editClaimer;
     LP addProject, editProject;
+    LP translateToRussianProject, translateToEnglishProject;
 
     @Override
     public void initProperties() {
@@ -771,13 +781,13 @@ public class SkolkovoLogicsModule extends LogicsModule {
         isStatusProject = addJProp("isStatusProject", "На статус участника", baseLM.equals2, projectActionProject, 1, addCProp(projectAction, "status", project), 1);
         isPreliminaryProject = addJProp("isPreliminaryProject", "На предварительную экспертизу", baseLM.equals2, projectActionProject, 1, addCProp(projectAction, "preliminary", project), 1);
 
-        nameNativeJoinClaimerProject = addJProp(baseGroup, "nameNativeJoinClaimerProject", "Заявитель", nameNative, claimerProject, 1);
-        nameForeignJoinClaimerProject = addJProp(baseGroup, "nameForeignJoinClaimerProject", "Claimer", nameForeign, claimerProject, 1);
+        nameNativeJoinClaimerProject = addJProp(projectInformationGroup, "nameNativeJoinClaimerProject", "Заявитель", nameNative, claimerProject, 1);
+        nameForeignJoinClaimerProject = addJProp(projectInformationGroup, "nameForeignJoinClaimerProject", "Claimer", nameForeign, claimerProject, 1);
 
-        nameNativeClaimerProject = addIfElseUProp(projectInformationGroup, "nameNativeClaimerProject", "Заявитель", nameNativeManagerProject, nameNativeJoinClaimerProject, isPreliminaryProject, 1);
+        nameNativeClaimerProject = addIfElseUProp(baseGroup, "nameNativeClaimerProject", "Заявитель", nameNativeManagerProject, nameNativeJoinClaimerProject, isPreliminaryProject, 1);
         nameNativeClaimerProject.setMinimumWidth(10);
         nameNativeClaimerProject.setPreferredWidth(50);
-        nameForeignClaimerProject = addIfElseUProp(projectInformationGroup, "nameForeignClaimerProject", "Claimer", nameForeignManagerProject, nameForeignJoinClaimerProject, isPreliminaryProject, 1);
+        nameForeignClaimerProject = addIfElseUProp(baseGroup, "nameForeignClaimerProject", "Claimer", nameForeignManagerProject, nameForeignJoinClaimerProject, isPreliminaryProject, 1);
         nameForeignClaimerProject.setMinimumWidth(10);
         nameForeignClaimerProject.setPreferredWidth(50);
         nameGenitiveClaimerProject = addIfElseUProp(baseGroup, "nameGenitiveClaimerProject", "Заявитель (кого)", nameGenitiveManagerProject, nameNativeJoinClaimerProject, isPreliminaryProject, 1);
@@ -792,10 +802,10 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         nameNativeProject = addJProp(projectInformationGroup, "nameNativeProject", "Название проекта ", baseLM.and1, nameNative, 1, is(project), 1);
         nameNativeProject.setMinimumWidth(10);
-        nameNativeProject.setPreferredWidth(150);
+        nameNativeProject.setPreferredWidth(120);
         nameForeignProject = addJProp(projectInformationGroup, "nameForeignProject", "Name of the project", baseLM.and1, nameForeign, 1, is(project), 1);
         nameForeignProject.setMinimumWidth(10);
-        nameForeignProject.setPreferredWidth(150);
+        nameForeignProject.setPreferredWidth(120);
 
         nativeProblemProject = addDProp(innovationGroup, "nativeProblemProject", "Проблема, на решение которой направлен проект", InsensitiveStringClass.get(2000), project);
         nativeProblemProject.setMinimumWidth(10);
@@ -1393,6 +1403,15 @@ public class SkolkovoLogicsModule extends LogicsModule {
         fillNativeProject = addDProp(projectOptionsGroup, "fillNativeProject", "Анкета на русском", LogicalClass.instance, project);
         fillForeignProject = addDProp(projectOptionsGroup, "fillForeignProject", "Анкета на английском", LogicalClass.instance, project);
 
+        translatedToRussianProject = addDProp(projectTranslationsGroup, "translatedToRussianProject", "Переведено на русский", LogicalClass.instance, project);
+        translatedToEnglishProject = addDProp(projectTranslationsGroup, "translatedToEnglishProject", "Переведено на английский", LogicalClass.instance, project);
+
+        needsToBeTranslatedToRussianProject = addJProp(and(true, true), addCProp(LogicalClass.instance, true, project), 1, fillNativeProject, 1, translatedToRussianProject, 1);
+        needsToBeTranslatedToEnglishProject = addJProp(and(true, true), addCProp(LogicalClass.instance, true, project), 1, fillForeignProject, 1, translatedToEnglishProject, 1);
+
+        hideTranslatedToRussianProject = addHideCaptionProp(privateGroup, "Переведено", translatedToRussianProject, fillForeignProject);
+        hideTranslatedToEnglishProject = addHideCaptionProp(privateGroup, "Переведено", translatedToEnglishProject, fillNativeProject);
+
         // статистика по экспертам
         quantityTotalExpert = addSGProp(expertResultGroup, "quantityTotalExpert", "Всего заседаний",
                 addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), inNewExpertVote, 1, 2), 1);
@@ -1535,6 +1554,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
     FormEntity globalForm;
     public ProjectFullFormEntity projectFullNative;
     public ProjectFullFormEntity projectFullForeign;
+    public ProjectFullFormEntity projectFullBoth;
 
     @Override
     public void initNavigators() throws JRException, FileNotFoundException {
@@ -1558,9 +1578,12 @@ public class SkolkovoLogicsModule extends LogicsModule {
         baseLM.relevantClassFormsWindow.visible = false;
         baseLM.logWindow.visible = false;
 
-        projectFullNative = addFormEntity(new ProjectFullFormEntity(baseLM.objectElement, "projectFullNative", "Резюме проекта для эксперта", false));
+        //if()
+        projectFullNative = addFormEntity(new ProjectFullFormEntity(baseLM.objectElement, "projectFullNative", "Резюме проекта для эксперта", "rus"));
         project.setEditForm(projectFullNative);
-        projectFullForeign = addFormEntity(new ProjectFullFormEntity(baseLM.objectElement, "projectFullForeign", "Resume project for expert", true));
+        projectFullBoth = addFormEntity(new ProjectFullFormEntity(baseLM.objectElement, "projectFullBoth", "Резюме проекта для эксперта", "both"));
+        projectFullForeign = addFormEntity(new ProjectFullFormEntity(baseLM.objectElement, "projectFullForeign", "Resume project for expert", "eng"));
+
 
         claimer.setEditForm(addFormEntity(new ClaimerFullFormEntity(baseLM.objectElement, "claimerFull")));
 
@@ -1607,7 +1630,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
     private class ProjectFullFormEntity extends ClassFormEntity<SkolkovoBusinessLogics> {
 
-        private boolean foreign;
+        private String lng;
 
         private ObjectEntity objOptionsProject;
         private ObjectEntity objProject;
@@ -1615,10 +1638,10 @@ public class SkolkovoLogicsModule extends LogicsModule {
         private ObjectEntity objAcademic;
         private ObjectEntity objNonRussianSpecialist;
 
-        private ProjectFullFormEntity(NavigatorElement parent, String sID, String caption, boolean foreign) {
+        private ProjectFullFormEntity(NavigatorElement parent, String sID, String caption, String lng) {
             super(parent, sID, caption);
 
-            this.foreign = foreign;
+            this.lng = lng;
 
             objProject = addSingleGroupObject(1, "project", project, "Описание проекта", projectInformationGroup, innovationGroup, executiveSummaryGroup, sourcesFundingGroup, equipmentGroup, projectDocumentsGroup);
 
@@ -1642,15 +1665,21 @@ public class SkolkovoLogicsModule extends LogicsModule {
             getPropertyDraw(specificationEquipmentProject).propertyCaption = addPropertyObject(hideSpecificationEquipmentProject, objProject);
             getPropertyDraw(descriptionEquipmentProject).propertyCaption = addPropertyObject(hideDescriptionEquipmentProject, objProject);
             getPropertyDraw(commentEquipmentProject).propertyCaption = addPropertyObject(hideCommentEquipmentProject, objProject);
-
             objProject.groupTo.setSingleClassView(ClassViewType.PANEL);
+
+            if (!("both".equals(lng)))
+                addPropertyDraw(objProject, translatedToRussianProject, translatedToEnglishProject);
+            if ("eng".equals(lng)) {
+                getPropertyDraw(translatedToRussianProject).propertyCaption = addPropertyObject(hideTranslatedToRussianProject, objProject);
+            }
+            if ("rus".equals(lng)) {
+                getPropertyDraw(translatedToEnglishProject).propertyCaption = addPropertyObject(hideTranslatedToEnglishProject, objProject);
+            }
 
             objOptionsProject = addSingleGroupObject(1, "optionsProject", project, "Параметры", projectOptionsGroup, projectStatusGroup);
             objOptionsProject.groupTo.setSingleClassView(ClassViewType.PANEL);
 
             objPatent = addSingleGroupObject(2, "patent", patent, "Патент", baseGroup);
-            addObjectActions(this, objPatent);
-
             getPropertyDraw(ownerPatent).propertyCaption = addPropertyObject(hideOwnerPatent, objPatent);
             getPropertyDraw(nameOwnerTypePatent).propertyCaption = addPropertyObject(hideNameOwnerTypePatent, objPatent);
             getPropertyDraw(loadFileIntentionOwnerPatent).propertyCaption = addPropertyObject(hideLoadFileIntentionOwnerPatent, objPatent);
@@ -1660,23 +1689,35 @@ public class SkolkovoLogicsModule extends LogicsModule {
             getPropertyDraw(loadFileActValuationPatent).propertyCaption = addPropertyObject(hideLoadFileActValuationPatent, objPatent);
             getPropertyDraw(openFileActValuationPatent).propertyCaption = addPropertyObject(hideOpenFileActValuationPatent, objPatent);
 
+            addObjectActions(this, objPatent);
+
             objAcademic = addSingleGroupObject(3, "academic", academic, "Учёный", baseGroup);
             addObjectActions(this, objAcademic);
-
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(projectAcademic, objAcademic), Compare.EQUALS, objProject));
             objNonRussianSpecialist = addSingleGroupObject(4, "nonRussianSpecialist", nonRussianSpecialist, "Иностранный специалист", baseGroup);
             addObjectActions(this, objNonRussianSpecialist);
-
-            addFixedFilter(new CompareFilterEntity(addPropertyObject(projectPatent, objPatent), Compare.EQUALS, objProject));
-            addFixedFilter(new CompareFilterEntity(addPropertyObject(projectAcademic, objAcademic), Compare.EQUALS, objProject));
             addFixedFilter(new CompareFilterEntity(addPropertyObject(projectNonRussianSpecialist, objNonRussianSpecialist), Compare.EQUALS, objProject));
 
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(projectPatent, objPatent), Compare.EQUALS, objProject));
             addProject = addMFAProp(actionGroup, "Добавить", this, new ObjectEntity[]{}, true, addPropertyObject(getAddObjectAction(project)));
-            editProject = addMFAProp(actionGroup, "Редактировать", this, new ObjectEntity[]{objProject}).setImage("edit.png");
+
+            if (lng.equals("both"))
+                editProject = addMFAProp(actionGroup, "Редактировать", this, new ObjectEntity[]{objProject}).setImage("edit.png");
+            if (lng.equals("rus"))
+                translateToRussianProject = addJProp(actionGroup, true, "Перевести на русский", baseLM.and1,
+                        addMFAProp(actionGroup, "Требуется перевод на русский", this, new ObjectEntity[]{objProject}), 1,
+                        needsToBeTranslatedToRussianProject, 1).setImage("edit.png");
+            if (lng.equals("eng"))
+                translateToEnglishProject = addJProp(actionGroup, true, "Перевести на английский", baseLM.and1,
+                        addMFAProp(actionGroup, "Требуется перевод на английский", this, new ObjectEntity[]{objProject}), 1,
+                        needsToBeTranslatedToEnglishProject, 1).setImage("edit.png");
+
         }
 
         @Override
         public FormView createDefaultRichDesign() {
             DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign();
+
             design.addIntersection(design.getGroupPropertyContainer(objProject.groupTo, innovationGroup),
                     design.getGroupPropertyContainer(objProject.groupTo, sourcesFundingGroup), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
             design.addIntersection(design.getGroupPropertyContainer(objProject.groupTo, innovationGroup),
@@ -1687,24 +1728,25 @@ public class SkolkovoLogicsModule extends LogicsModule {
                     design.getGroupPropertyContainer(objProject.groupTo, executiveSummaryGroup), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
             design.addIntersection(design.getGroupPropertyContainer(objProject.groupTo, innovationGroup),
                     design.getGroupPropertyContainer(objProject.groupTo, executiveSummaryGroup), DoNotIntersectSimplexConstraint.TOTHE_BOTTOM);
-            //design.addIntersection(design.getGroupPropertyContainer(objProject.groupTo, projectStatusGroup),
-            //                       design.getGroupPropertyContainer(objProject.groupTo, executiveSummaryGroup), DoNotIntersectSimplexConstraint.TOTHE_BOTTOM);
             design.addIntersection(design.getGroupPropertyContainer(objProject.groupTo, equipmentGroup),
                     design.getGroupPropertyContainer(objProject.groupTo, executiveSummaryGroup), DoNotIntersectSimplexConstraint.TOTHE_BOTTOM);
-            //design.addIntersection(design.getGroupPropertyContainer(objProject.groupTo, projectStatusGroup),
-            //                       design.getGroupPropertyContainer(objProject.groupTo, executiveSummaryGroup), DoNotIntersectSimplexConstraint.TOTHE_BOTTOM);
             design.addIntersection(design.getGroupPropertyContainer(objProject.groupTo, equipmentGroup),
                     design.getGroupPropertyContainer(objProject.groupTo, executiveSummaryGroup), DoNotIntersectSimplexConstraint.TOTHE_BOTTOM);
             design.addIntersection(design.getGroupPropertyContainer(objProject.groupTo, projectDocumentsGroup),
                     design.getGroupPropertyContainer(objProject.groupTo, executiveSummaryGroup), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
             design.addIntersection(design.getGroupPropertyContainer(objProject.groupTo, sourcesFundingGroup),
                     design.getGroupPropertyContainer(objProject.groupTo, executiveSummaryGroup), DoNotIntersectSimplexConstraint.TOTHE_BOTTOM);
-
+            if (!"both".equals(lng))
+                design.addIntersection(design.getGroupPropertyContainer(objProject.groupTo, projectInformationGroup),
+                        design.getGroupPropertyContainer(objProject.groupTo, projectTranslationsGroup), DoNotIntersectSimplexConstraint.TOTHE_RIGHTBOTTOM);
 
             design.getGroupPropertyContainer(objProject.groupTo, innovationGroup).constraints.childConstraints = DoNotIntersectSimplexConstraint.TOTHE_BOTTOM;
             design.getGroupPropertyContainer(objProject.groupTo, executiveSummaryGroup).constraints.childConstraints = DoNotIntersectSimplexConstraint.TOTHE_RIGHTBOTTOM;
             design.getGroupPropertyContainer(objOptionsProject.groupTo, projectStatusGroup).constraints.childConstraints = DoNotIntersectSimplexConstraint.TOTHE_RIGHTBOTTOM;
             design.getGroupPropertyContainer(objOptionsProject.groupTo, projectOptionsGroup).constraints.childConstraints = DoNotIntersectSimplexConstraint.TOTHE_RIGHTBOTTOM;
+
+            if (!"both".equals(lng))
+                design.getGroupPropertyContainer(objProject.groupTo, projectTranslationsGroup).constraints.childConstraints = DoNotIntersectSimplexConstraint.TOTHE_BOTTOM;
 
             design.addIntersection(design.getGroupPropertyContainer(objOptionsProject.groupTo, projectOptionsGroup),
                     design.getGroupPropertyContainer(objOptionsProject.groupTo, projectStatusGroup), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
@@ -1720,8 +1762,44 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
             design.getMainContainer().addBefore(design.getGroupPropertyContainer(objProject.groupTo, projectInformationGroup), specContainer);
 
+            if (!("both".equals(lng)))
+                design.getMainContainer().addAfter(design.getGroupPropertyContainer(objProject.groupTo, projectTranslationsGroup), specContainer);
+
             design.setShowTableFirstLogical(true);
 
+            PropertyObjectEntity sidProjectProperty = addPropertyObject(sidProject, objProject);
+            if ("rus".equals(lng)) {
+                getPropertyDraw(nameNativeManagerProject).setPropertyHighlight(sidProjectProperty);
+                getPropertyDraw(nameNativeJoinClaimerProject).setPropertyHighlight(sidProjectProperty);
+                getPropertyDraw(nameNativeProject).setPropertyHighlight(sidProjectProperty);
+                getPropertyDraw(nameNativeFinalClusterProject).setPropertyHighlight(sidProjectProperty);
+                getPropertyDraw(nativeProblemProject).setPropertyHighlight(sidProjectProperty);
+                getPropertyDraw(nativeInnovativeProject).setPropertyHighlight(sidProjectProperty);
+                getPropertyDraw(nativeSubstantiationProjectType).setPropertyHighlight(sidProjectProperty);
+                getPropertyDraw(loadFileNativeTechnicalDescriptionProject).setPropertyHighlight(sidProjectProperty);
+                getPropertyDraw(openFileNativeTechnicalDescriptionProject).setPropertyHighlight(sidProjectProperty);
+                getPropertyDraw(loadFileNativeSummaryProject).setPropertyHighlight(sidProjectProperty);
+                getPropertyDraw(openFileNativeSummaryProject).setPropertyHighlight(sidProjectProperty);
+                getPropertyDraw(nativeNumberPatent).setPropertyHighlight(sidProjectProperty);
+                getPropertyDraw(nativeTypePatent).setPropertyHighlight(sidProjectProperty);
+            }
+
+            if ("eng".equals(lng)) {
+                getPropertyDraw(nameForeignManagerProject).setPropertyHighlight(sidProjectProperty);
+                getPropertyDraw(nameForeignJoinClaimerProject).setPropertyHighlight(sidProjectProperty);
+                getPropertyDraw(nameForeignProject).setPropertyHighlight(sidProjectProperty);
+                getPropertyDraw(nameForeignFinalClusterProject).setPropertyHighlight(sidProjectProperty);
+                getPropertyDraw(foreignProblemProject).setPropertyHighlight(sidProjectProperty);
+                getPropertyDraw(foreignInnovativeProject).setPropertyHighlight(sidProjectProperty);
+                getPropertyDraw(foreignSubstantiationProjectType).setPropertyHighlight(sidProjectProperty);
+                getPropertyDraw(loadFileForeignTechnicalDescriptionProject).setPropertyHighlight(sidProjectProperty);
+                getPropertyDraw(openFileForeignTechnicalDescriptionProject).setPropertyHighlight(sidProjectProperty);
+                getPropertyDraw(loadFileForeignSummaryProject).setPropertyHighlight(sidProjectProperty);
+                getPropertyDraw(openFileForeignSummaryProject).setPropertyHighlight(sidProjectProperty);
+                getPropertyDraw(foreignNumberPatent).setPropertyHighlight(sidProjectProperty);
+                getPropertyDraw(foreignTypePatent).setPropertyHighlight(sidProjectProperty);
+            }
+            design.setHighlightColor(new Color(255, 250, 205));
             return design;
         }
 
@@ -1750,13 +1828,12 @@ public class SkolkovoLogicsModule extends LogicsModule {
             getPropertyDraw(isOtherClusterProject).propertyCaption = addPropertyObject(hideIsOtherClusterProject, objProject);
             getPropertyDraw(nativeSubstantiationOtherClusterProject).propertyCaption = addPropertyObject(hideNativeSubstantiationOtherClusterProject, objProject);
             getPropertyDraw(foreignSubstantiationOtherClusterProject).propertyCaption = addPropertyObject(hideForeignSubstantiationOtherClusterProject, objProject);
-            addPropertyDraw(objProject, nameNativeProject, nameForeignProject);
+            addPropertyDraw(objProject, nameNativeProject, nameForeignProject, translateToRussianProject, translateToEnglishProject);
             setForceViewType(nameNativeProject, ClassViewType.PANEL);
             setForceViewType(nameForeignProject, ClassViewType.PANEL);
+            setForceViewType(translateToRussianProject, ClassViewType.PANEL);
+            setForceViewType(translateToEnglishProject, ClassViewType.PANEL);
 
-            //PropertyDrawEntity panelforName = new PropertyDrawEntity (1, objProject, nameNative, nameForeign);
-            //getPropertyDraw(nameNative).forceViewType = ClassViewType.PANEL;
-            //setForceViewType(addPropertyDraw(objProject, nameNative, nameForeign), ClassViewType.PANEL);
             addObjectActions(this, objProject);
 
             PropertyObjectEntity statusProperty = addPropertyObject(statusDataProject, objProject);
