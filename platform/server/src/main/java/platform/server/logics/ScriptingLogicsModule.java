@@ -319,7 +319,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         return new LPWithParams(prop, mergeLists(usedParams));
     }
 
-    private LP<?> getOperatorProp(String op) {
+    private LP<?> getRelationProp(String op) {
         if (op.equals("==")) {
             return baseLM.equals2;
         } else if (op.equals("!=")) {
@@ -337,10 +337,30 @@ public class ScriptingLogicsModule extends LogicsModule {
         return null;
     }
 
+    private LP<?> getArithProp(String op) {
+        if (op.equals("+")) {
+            return baseLM.sumDouble2;
+        } else if (op.equals("-")) {
+            return baseLM.subtractDouble2;
+        } else if (op.equals("*")) {
+            return baseLM.multiplyDouble2;
+        } else if (op.equals("/")) {
+            return baseLM.divideDouble2;
+        }
+        assert false;
+        return null;
+    }
+
     public LPWithParams addScriptedEqualityProp(String caption, String op, LP<?> leftProp, List<Integer> lUsedParams,
                                                                            LP<?> rightProp, List<Integer> rUsedParams) {
-        return addScriptedJProp(caption, getOperatorProp(op), Arrays.asList(leftProp, rightProp), Arrays.asList(lUsedParams, rUsedParams));
+        return addScriptedJProp(caption, getRelationProp(op), Arrays.asList(leftProp, rightProp), Arrays.asList(lUsedParams, rUsedParams));
     }
+
+    public LPWithParams addScriptedRelationalProp(String caption, String op, LP<?> leftProp, List<Integer> lUsedParams,
+                                                                             LP<?> rightProp, List<Integer> rUsedParams) {
+        return addScriptedJProp(caption, getRelationProp(op), Arrays.asList(leftProp, rightProp), Arrays.asList(lUsedParams, rUsedParams));
+    }
+
 
     public LPWithParams addScriptedAdditiveProp(String caption, List<String> operands, List<LP<?>> properties, List<List<Integer>> usedParams) {
         assert properties.size() == usedParams.size();
@@ -349,11 +369,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         LPWithParams curLP = new LPWithParams(properties.get(0), usedParams.get(0));
         for (int i = 1; i < properties.size(); i++) {
             String op = operands.get(i-1);
-            if (op.equals("+")) {
-                curLP = addScriptedJProp(caption, baseLM.sumDouble2, Arrays.asList(curLP.property, properties.get(i)), Arrays.asList(curLP.usedParams, usedParams.get(i)));
-            } else {
-                curLP = addScriptedJProp(caption, baseLM.subtractDouble2, Arrays.asList(curLP.property, properties.get(i)), Arrays.asList(curLP.usedParams, usedParams.get(i)));
-            }
+            curLP = addScriptedJProp(caption, getArithProp(op), Arrays.asList(curLP.property, properties.get(i)), Arrays.asList(curLP.usedParams, usedParams.get(i)));
         }
         return curLP;
     }
@@ -366,11 +382,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         LPWithParams curLP = new LPWithParams(properties.get(0), usedParams.get(0));
         for (int i = 1; i < properties.size(); i++) {
             String op = operands.get(i-1);
-            if (op.equals("*")) {
-                curLP = addScriptedJProp(caption, baseLM.multiplyDouble2, Arrays.asList(curLP.property, properties.get(i)), Arrays.asList(curLP.usedParams, usedParams.get(i)));
-            } else {
-                curLP = addScriptedJProp(caption, baseLM.divideDouble2, Arrays.asList(curLP.property, properties.get(i)), Arrays.asList(curLP.usedParams, usedParams.get(i)));
-            }
+            curLP = addScriptedJProp(caption, getArithProp(op), Arrays.asList(curLP.property, properties.get(i)), Arrays.asList(curLP.usedParams, usedParams.get(i)));
         }
         return curLP;
     }
@@ -462,6 +474,10 @@ public class ScriptingLogicsModule extends LogicsModule {
         } else {
             return object(getClassByName(className));
         }
+    }
+
+    public LP<?> addScriptedTypeExprProp(LP<?> mainProp, LP<?> property, List<Integer> usedParams) {
+        return addScriptedJProp("", mainProp, Arrays.<LP<?>>asList(property), Arrays.asList(usedParams)).property;
     }
 
     private void parseStep(State state) {

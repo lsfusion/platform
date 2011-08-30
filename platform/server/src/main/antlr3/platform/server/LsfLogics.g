@@ -247,9 +247,41 @@ equalityPE[List<String> context] returns [LP property, List<Integer> usedParams]
 		$usedParams = lUsedParams;
 	}
 }
+	:	lhs=relationalPE[context] { leftProp = $lhs.property; lUsedParams = $lhs.usedParams; }
+		(operand=EQ_OPERAND { op = $operand.text; }
+		rhs=relationalPE[context] { rightProp = $rhs.property; rUsedParams = $rhs.usedParams; })?;
+
+
+relationalPE[List<String> context] returns [LP property, List<Integer> usedParams]
+@init {
+	LP<?> leftProp = null;
+	LP<?> rightProp = null;
+	LP<?> mainProp = null;
+	List<Integer> lUsedParams = null, rUsedParams = null;
+	String op = null;
+}
+@after {
+	if (parseState == ScriptingLogicsModule.State.PROP)
+	{
+		if (op != null) {
+			ScriptingLogicsModule.LPWithParams result =
+				self.addScriptedRelationalProp("", op, leftProp, lUsedParams, rightProp, rUsedParams);
+			$property = result.property;
+			$usedParams = result.usedParams;
+		} else if (mainProp != null) {
+			$property = self.addScriptedTypeExprProp(mainProp, leftProp, lUsedParams);
+			$usedParams = lUsedParams;
+		} else {
+			$property = leftProp;
+			$usedParams = lUsedParams;
+		}
+	}	
+}
 	:	lhs=additivePE[context] { leftProp = $lhs.property; lUsedParams = $lhs.usedParams; }
-		(operand=COMP_OPERAND { op = $operand.text; }
-		rhs=additivePE[context] { rightProp = $rhs.property; rUsedParams = $rhs.usedParams; })?;
+	
+		((operand=REL_OPERAND { op = $operand.text; }
+		rhs=additivePE[context] { rightProp = $rhs.property; rUsedParams = $rhs.usedParams; }) |
+		def=typePropertyDefinition { mainProp = $def.property; })?;
 
 
 additivePE[List<String> context] returns [LP property, List<Integer> usedParams]
@@ -291,6 +323,13 @@ multiplicativePE[List<String> context] returns [LP property, List<Integer> usedP
 	
 		 
 	 
+simplePE[List<String> context] returns [LP property, List<Integer> usedParams]
+	:
+	'(' expr=propertyExpression[context] ')' { $property = $expr.property; $usedParams = $expr.usedParams; } |
+	primitive=expressionPrimitive[context] { $property = $primitive.property; $usedParams = $primitive.usedParams; } |
+	uexpr=unaryMinusPE[context] { $property = $uexpr.property; $usedParams = $uexpr.usedParams; };
+
+	
 unaryMinusPE[List<String> context] returns [LP property, List<Integer> usedParams] 	
 @after {
 	if (parseState == ScriptingLogicsModule.State.PROP) { 
@@ -298,13 +337,6 @@ unaryMinusPE[List<String> context] returns [LP property, List<Integer> usedParam
 	}
 }
 	: '-' expr=simplePE[context] { $property = $expr.property; $usedParams = $expr.usedParams; };		 
-	
-		 
-simplePE[List<String> context] returns [LP property, List<Integer> usedParams]
-	:
-	'(' expr=propertyExpression[context] ')' { $property = $expr.property; $usedParams = $expr.usedParams; } |
-	primitive=expressionPrimitive[context] { $property = $primitive.property; $usedParams = $primitive.usedParams; } |
-	uexpr=unaryMinusPE[context] { $property = $uexpr.property; $usedParams = $uexpr.usedParams; };
 	
 
 expressionPrimitive[List<String> context] returns [LP property, List<Integer> usedParams]
@@ -329,8 +361,8 @@ contextDependentPD[List<String> context] returns [LP property, List<Integer> use
 
 contextIndependentPD[boolean innerPD] returns [LP property, boolean isData]
 	: 	dataDef=dataPropertyDefinition[innerPD] { $property = $dataDef.property; $isData = true; } |
-		groupDef=groupPropertyDefinition { $property = $groupDef.property; $isData = false; }
-//		typedef=typeExpression[name, namedParams, context]
+		groupDef=groupPropertyDefinition { $property = $groupDef.property; $isData = false; } |
+		typeDef=typePropertyDefinition { $property = $typeDef.property; $isData = false; }
 	;
 
 joinPropertyDefinition[List<String> context] returns [LP property, List<Integer> usedParams]
@@ -418,19 +450,19 @@ unionPropertyDefinition[List<String> context] returns [LP property, List<Integer
 		')';
 
 
-//typeExpression[String name, List<String> namedParams, List<String> context] returns [LP property, Integer param]
-//@init {
-//	String clsId = null;
-//	boolean bIs = false;
-//}
-//@after {
-//	if (parseState == ScriptingLogicsModule.State.PROP) {
-//		$property = self.addScriptedTypeProp(name, clsId, bIs, namedParams);
-//	}
-//}
-//	:	paramName=parameter { $param = $paramName.text; }
-//		('IS' { bIs = true; } | 'IF')
-//		id=classId { clsId = $id.text; };
+typePropertyDefinition returns [LP property] 
+@init {
+	String clsId = null;
+	boolean bIs = false;
+}
+@after {
+	if (parseState == ScriptingLogicsModule.State.PROP) {
+		$property = self.addScriptedTypeProp(clsId, bIs);
+	}	
+}
+	:	('IS' { bIs = true; } | 'IF')
+		id=classId { clsId = $id.text; };
+		
 
 
 propertyObject returns [LP property, String propName]
@@ -566,6 +598,7 @@ COMMENTS	:	('//' .* '\n') { $channel=HIDDEN; };
 UINT_LITERAL 	:	DIGITS;
 POSITIVE_DOUBLE_LITERAL	: 	DIGITS '.' DIGITS;	  
 NUMBERED_PARAM	:	'$' DIGITS;
-COMP_OPERAND	:	('==') | ('!=') | ('<') | ('>') | ('<=') | ('>=');
+EQ_OPERAND	:	('==') | ('!='); 
+REL_OPERAND	: 	('<') | ('>') | ('<=') | ('>=');
 ADD_OPERAND	:	('+') | ('-');
 MULT_OPERAND	:	('*') | ('/');
