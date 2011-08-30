@@ -121,4 +121,9 @@ public class ObjectType implements Type<Integer> {
         return baseClass.getUpSet();
     }
 
+    @Override
+    public boolean calculateStat() {
+        return true;
+    }
+
 }

@@ -49,4 +49,6 @@ public interface Type<T> extends ClassReader<T> {
     Object parseString(String s) throws ParseException;
     
     AndClassSet getBaseClassSet(BaseClass baseClass);
+
+    boolean calculateStat();
 }

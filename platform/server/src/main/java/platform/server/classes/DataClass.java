@@ -233,4 +233,9 @@ public abstract class DataClass<T> implements StaticClass, Type<T>, AndClassSet,
     public Object getInfiniteValue() {
         throw new RuntimeException("not supported");
     }
+
+    @Override
+    public boolean calculateStat() {
+        return true;
+    }
 }

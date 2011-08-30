@@ -172,6 +172,11 @@ public class ConcatenateType implements Type<byte[]> {
         return new ConcatenateClassSet(classSets);
     }
 
+    @Override
+    public boolean calculateStat() {
+        return true;
+    }
+
     public Iterable<List<AndClassSet>> getUniversal(BaseClass baseClass, int part, AndClassSet fix) {
         List<List<AndClassSet>> classSets = new ArrayList<List<AndClassSet>>();
         for(int i=0;i<types.length;i++)

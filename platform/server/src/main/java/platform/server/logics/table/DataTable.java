@@ -58,8 +58,9 @@ public abstract class DataTable extends GlobalTable {
         }
 
         for(PropertyField prop : properties) {
-            query.properties.put(prop, GroupExpr.create(new HashMap<Object, KeyExpr>(), one,
-                    GroupExpr.create(Collections.singletonMap(0, join.getExpr(prop)), Where.TRUE, Collections.singletonMap(0, new KeyExpr("count"))).getWhere(), GroupType.SUM, new HashMap<Object, Expr>()));
+            if (prop.type.calculateStat())
+                query.properties.put(prop, GroupExpr.create(new HashMap<Object, KeyExpr>(), one,
+                        GroupExpr.create(Collections.singletonMap(0, join.getExpr(prop)), Where.TRUE, Collections.singletonMap(0, new KeyExpr("count"))).getWhere(), GroupType.SUM, new HashMap<Object, Expr>()));
         }
 
         query.properties.put(0, GroupExpr.create(new HashMap<Object, Expr>(), one, inWhere, GroupType.SUM, new HashMap<Object, Expr>()));
@@ -67,13 +68,19 @@ public abstract class DataTable extends GlobalTable {
 
         Map<Object, Object> result = BaseUtils.singleValue(query.execute(session));
 
+        Integer rowCount = BaseUtils.nvl((Integer)result.get(0), 0);
+
         DistinctKeys<KeyField> distinctKeys = new DistinctKeys<KeyField>();
         for(KeyField key : keys)
             distinctKeys.add(key, new Stat(BaseUtils.nvl((Integer) result.get(key), 0)));
-        statKeys = new StatKeys<KeyField>(new Stat(BaseUtils.nvl((Integer)result.get(0), 0)), distinctKeys);
+        statKeys = new StatKeys<KeyField>(new Stat(rowCount), distinctKeys);
 
         statProps = new HashMap<PropertyField, Stat>();
-        for(PropertyField prop : properties)
-            statProps.put(prop, new Stat(BaseUtils.nvl((Integer)result.get(prop), 0)));
+        for(PropertyField prop : properties) {
+            if (prop.type.calculateStat())
+                statProps.put(prop, new Stat(BaseUtils.nvl((Integer)result.get(prop), 0)));
+            else
+                statProps.put(prop, new Stat(rowCount));
+        }
     }
 }
