@@ -1395,6 +1395,7 @@ public class RomanLogicsModule extends LogicsModule {
     @Override
     public void initProperties() {
         idGroup.add(baseLM.objectValue);
+        baseLM.delete.property.askConfirm = true;
 
         round2 = addSFProp("round(CAST((prm1) as numeric), 2)", DoubleClass.instance, 1);
 

@@ -439,20 +439,24 @@ public abstract class LogicsModule {
     }
 
     protected LP addEAProp(LP fromAddress, ValueClass... params) {
-        return addEAProp(null, fromAddress, params);
+        return addEAProp(null, fromAddress, baseLM.emailBlindCarbonCopy, params);
     }
 
     protected LP addEAProp(String subject, ValueClass... params) {
-        return addEAProp(subject, baseLM.fromAddress, params);
+        return addEAProp(subject, baseLM.fromAddress, baseLM.emailBlindCarbonCopy, params);
 
     }
 
-    protected LP addEAProp(String subject, LP fromAddress, ValueClass... params) {
-        return addEAProp(null, genSID(), "email", subject, fromAddress, params);
+    protected LP addEAProp(LP fromAddress, LP emailBlindCarbonCopy, ValueClass... params) {
+        return addEAProp(null, fromAddress, emailBlindCarbonCopy, params);
     }
 
-    protected LP addEAProp(AbstractGroup group, String name, String caption, String subject, LP fromAddress, ValueClass... params) {
-        return addProperty(group, new LP<ClassPropertyInterface>(new EmailActionProperty(name, caption, subject, fromAddress, baseLM.BL, params)));
+    protected LP addEAProp(String subject, LP fromAddress, LP emailBlindCarbonCopy, ValueClass... params) {
+        return addEAProp(null, genSID(), "email", subject, fromAddress, emailBlindCarbonCopy, params);
+    }
+
+    protected LP addEAProp(AbstractGroup group, String name, String caption, String subject, LP fromAddress, LP emailBlindCarbonCopy, ValueClass... params) {
+        return addProperty(group, new LP<ClassPropertyInterface>(new EmailActionProperty(name, caption, subject, fromAddress, emailBlindCarbonCopy, baseLM.BL, params)));
     }
 
     protected <X extends PropertyInterface> void addEARecepient(LP<ClassPropertyInterface> eaProp, LP<X> emailProp, Integer... params) {

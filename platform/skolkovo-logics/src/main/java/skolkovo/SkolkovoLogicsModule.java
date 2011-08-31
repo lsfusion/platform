@@ -1400,11 +1400,10 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         statusProject = addCaseUProp(idGroup, "statusProject", true, "Статус (ИД)",
                 acceptedProject, 1, addCProp(projectStatus, "accepted", project), 1,
-                needTranslationProject, 1, addCProp(projectStatus, "needTranslation", project), 1,
                 rejectedProject, 1, addCProp(projectStatus, "rejected", project), 1,
                 voteOpenedSucceededProject, 1, addCProp(projectStatus, "succeeded", project), 1,
                 voteInProgressProject, 1, addCProp(projectStatus, "inProgress", project), 1,
-
+                needTranslationProject, 1, addCProp(projectStatus, "needTranslation", project), 1,
                 addIfElseUProp(addCProp(projectStatus, "needDocuments", project), addCProp(projectStatus, "needExtraVote", project), notEnoughProject, 1), 1);
 
         statusDataProject = addDProp("statusDataProject", "Статус", projectStatus, project);
@@ -1471,7 +1470,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         allowedEmailLetterExpertVote.property.askConfirm = true;
 
         emailClaimerFromAddress = addDProp("emailClaimerFromAddress", "Адрес отправителя (для заявителей)", StringClass.get(50));
-        emailClaimerVoteEA = addEAProp(emailClaimerFromAddress, vote);
+        emailClaimerVoteEA = addEAProp(emailClaimerFromAddress, emailClaimerFromAddress, vote);
 
         claimerEmailVote = addJProp("claimerEmailVote", "E-mail (заявителя)", baseLM.email, claimerVote, 1);
         addEARecepient(emailClaimerVoteEA, claimerEmailVote, 1);
@@ -1482,22 +1481,22 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         emailClaimerVote.setDerivedForcedChange(addCProp(ActionClass.instance, true), openedVote, 1);
 
-        emailNoticeRejectedVoteEA = addEAProp("Уведомление", emailClaimerFromAddress, vote);
+        emailNoticeRejectedVoteEA = addEAProp(emailClaimerFromAddress, emailClaimerFromAddress, vote);
         addEARecepient(emailNoticeRejectedVoteEA, claimerEmailVote, 1);
 
-        emailNoticeRejectedVote = addJProp(actionGroup, true, "emailNoticeRejectedVote", "Письмо о несоответствии", baseLM.and1, emailNoticeRejectedVoteEA, 1, closedRejectedVote, 1);
+        emailNoticeRejectedVote = addJProp(actionGroup, true, "emailNoticeRejectedVote", "Письмо о несоответствии", baseLM.and1, addJProp(emailNoticeRejectedVoteEA, 1, emailClaimerHeaderVote, 1), 1, closedRejectedVote, 1);
         emailNoticeRejectedVote.property.askConfirm = true;
 
-        emailNoticeAcceptedStatusVoteEA = addEAProp("Уведомление", emailClaimerFromAddress, vote);
+        emailNoticeAcceptedStatusVoteEA = addEAProp(emailClaimerFromAddress, emailClaimerFromAddress, vote);
         addEARecepient(emailNoticeAcceptedStatusVoteEA, claimerEmailVote, 1);
 
-        emailNoticeAcceptedStatusVote = addJProp(actionGroup, true, "emailNoticeAcceptedStatusVote", "Письмо о соответствии (статус участника)", baseLM.and1, emailNoticeAcceptedStatusVoteEA, 1, closedAcceptedStatusVote, 1);
+        emailNoticeAcceptedStatusVote = addJProp(actionGroup, true, "emailNoticeAcceptedStatusVote", "Письмо о соответствии (статус участника)", baseLM.and1, addJProp(emailNoticeAcceptedStatusVoteEA, 1, emailClaimerHeaderVote, 1), 1, closedAcceptedStatusVote, 1);
         emailNoticeAcceptedStatusVote.property.askConfirm = true;
 
-        emailNoticeAcceptedPreliminaryVoteEA = addEAProp("Уведомление", emailClaimerFromAddress, vote);
+        emailNoticeAcceptedPreliminaryVoteEA = addEAProp(emailClaimerFromAddress, emailClaimerFromAddress, vote);
         addEARecepient(emailNoticeAcceptedPreliminaryVoteEA, claimerEmailVote, 1);
 
-        emailNoticeAcceptedPreliminaryVote = addJProp(actionGroup, true, "emailNoticeAcceptedPreliminaryVote", "Письмо о соответствии (предварительная экспертиза)", and(false, false), emailNoticeAcceptedPreliminaryVoteEA, 1, closedAcceptedPreliminaryVote, 1, fileDecisionVote, 1);
+        emailNoticeAcceptedPreliminaryVote = addJProp(actionGroup, true, "emailNoticeAcceptedPreliminaryVote", "Письмо о соответствии (предварительная экспертиза)", and(false, false), addJProp(emailNoticeAcceptedPreliminaryVoteEA, 1, emailClaimerHeaderVote, 1), 1, closedAcceptedPreliminaryVote, 1, fileDecisionVote, 1);
         emailNoticeAcceptedPreliminaryVote.property.askConfirm = true;
 
         emailStartVoteEA = addEAProp(vote);
@@ -1677,8 +1676,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
             getPropertyDraw(commentEquipmentProject).propertyCaption = addPropertyObject(hideCommentEquipmentProject, objProject);
             objProject.groupTo.setSingleClassView(ClassViewType.PANEL);
 
-            if (!("both".equals(lng)))
-                addPropertyDraw(objProject, translatedToRussianProject, translatedToEnglishProject);
+            addPropertyDraw(objProject, translatedToRussianProject, translatedToEnglishProject);
+
             if ("eng".equals(lng)) {
                 getPropertyDraw(translatedToRussianProject).propertyCaption = addPropertyObject(hideTranslatedToRussianProject, objProject);
             }
@@ -1746,9 +1745,10 @@ public class SkolkovoLogicsModule extends LogicsModule {
                     design.getGroupPropertyContainer(objProject.groupTo, executiveSummaryGroup), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
             design.addIntersection(design.getGroupPropertyContainer(objProject.groupTo, sourcesFundingGroup),
                     design.getGroupPropertyContainer(objProject.groupTo, executiveSummaryGroup), DoNotIntersectSimplexConstraint.TOTHE_BOTTOM);
+
             if (!"both".equals(lng))
                 design.addIntersection(design.getGroupPropertyContainer(objProject.groupTo, projectInformationGroup),
-                        design.getGroupPropertyContainer(objProject.groupTo, projectTranslationsGroup), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
+                        design.getGroupPropertyContainer(objProject.groupTo, projectTranslationsGroup), DoNotIntersectSimplexConstraint.TOTHE_BOTTOM);
 
             design.getGroupPropertyContainer(objProject.groupTo, innovationGroup).constraints.childConstraints = DoNotIntersectSimplexConstraint.TOTHE_BOTTOM;
             design.getGroupPropertyContainer(objProject.groupTo, executiveSummaryGroup).constraints.childConstraints = DoNotIntersectSimplexConstraint.TOTHE_RIGHTBOTTOM;

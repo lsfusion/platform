@@ -61,14 +61,16 @@ public class EmailActionProperty extends ActionProperty {
 
     private final String subject;
     private final LP fromAddress;
+    private final LP emailBlindCarbonCopy;
 
     private final BusinessLogics<?> BL; // для возможности работы с формами в автоматическом режиме
 
-    public EmailActionProperty(String sID, String caption, String mailSubject, LP fromAddress, BusinessLogics<?> BL, ValueClass[] classes) {
+    public EmailActionProperty(String sID, String caption, String mailSubject, LP fromAddress, LP emailBlindCarbonCopy, BusinessLogics<?> BL, ValueClass[] classes) {
         super(sID, caption, getValueClassList(mailSubject, classes));
 
         this.subject = mailSubject;
         this.fromAddress = fromAddress;
+        this.emailBlindCarbonCopy = emailBlindCarbonCopy;
         this.BL = BL;
 
         askConfirm = true;
@@ -187,8 +189,8 @@ public class EmailActionProperty extends ActionProperty {
             Map<String, Message.RecipientType> recepientEmails = new HashMap<String, Message.RecipientType>();
             for(PropertyMapImplement<?, ClassPropertyInterface> recepient : recepients) {
                 String recepientEmail = (String) recepient.read(context, context.getKeys());
-                if(recepientEmail!=null)
-                    recepientEmails.put(recepientEmail, MimeMessage.RecipientType.TO);
+                if(recepientEmail != null)
+                    recepientEmails.put(recepientEmail.trim(), MimeMessage.RecipientType.TO);
             }
 
             List<ClassPropertyInterface> listInterfaces = (List<ClassPropertyInterface>)interfaces;
@@ -200,9 +202,9 @@ public class EmailActionProperty extends ActionProperty {
             String fromAddress = (String) this.fromAddress.read(context);
             String userName = (String) BL.LM.emailAccount.read(context);
             String password = (String) BL.LM.emailPassword.read(context);
-            String emailBlindCarbonCopy = (String) BL.LM.emailBlindCarbonCopy.read(context);
+            String emailBlindCarbonCopy = (String) this.emailBlindCarbonCopy.read(context);
             if (emailBlindCarbonCopy != null && !emailBlindCarbonCopy.isEmpty() && !recepientEmails.containsKey(emailBlindCarbonCopy)) {
-                recepientEmails.put(emailBlindCarbonCopy, MimeMessage.RecipientType.BCC);
+                recepientEmails.put(emailBlindCarbonCopy.trim(), MimeMessage.RecipientType.BCC);
             }
 
             if(smtpHost==null || fromAddress==null) {
