@@ -251,11 +251,11 @@ public class SessionTable extends Table implements MapValues<SessionTable>, Valu
 
         Pair<ClassWhere<KeyField>, Map<PropertyField, ClassWhere<Field>>> orClasses = orFieldsClassWheres(classes, propertyClasses, keyFields, propFields);
 
-        boolean added = session.insertRecord(this, keyFields, propFields, update);
-        int newCount = count + (added?1:0);
+        int newCount = count + (update && session.isRecord(this, keyFields)?0:1);
 
+        SessionTable result;
         if(!SQLTemporaryPool.getDBStatistics(newCount).equals(SQLTemporaryPool.getDBStatistics(count)))
-            return new SessionTable(session, keys, properties, newCount, new FillTemporaryTable() {
+            result = new SessionTable(session, keys, properties, newCount, new FillTemporaryTable() {
                 public Integer fill(String name) throws SQLException {
                     Query<KeyField, PropertyField> moveData = new Query<KeyField, PropertyField>(keys);
                     platform.server.data.query.Join<PropertyField> prevJoin = join(BaseUtils.filterKeys(moveData.mapKeys, SessionTable.this.keys));
@@ -267,7 +267,10 @@ public class SessionTable extends Table implements MapValues<SessionTable>, Valu
                 }
             }, orClasses.first, orClasses.second, owner);
         else
-            return new SessionTable(name, keys, properties, newCount, orClasses.first, orClasses.second);
+            result = new SessionTable(name, keys, properties, newCount, orClasses.first, orClasses.second);
+
+        session.insertRecord(result, keyFields, propFields, update);
+        return result;
     }
 
     public void deleteRecords(SQLSession session, Map<KeyField, DataObject> keys) throws SQLException {
