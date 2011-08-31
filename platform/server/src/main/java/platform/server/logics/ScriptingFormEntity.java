@@ -39,12 +39,15 @@ public class ScriptingFormEntity extends FormEntity {
             GroupObjectEntity groupObj = new GroupObjectEntity(genID());
             for (int j = 0; j < groupObjectNames.size(); j++) {
                 String objectName = groupObjectNames.get(j);
+                String objectSID = objectName;
                 ValueClass cls = LM.getClassByName(groupClassIds.get(j));
-                if (objectName == null) {
-                    objectName = cls.getSID();
+                if (objectSID == null) {
+                    objectSID = cls.getSID();
+                    objectName = groupClassIds.get(j);
                 }
-                ObjectEntity obj = new ObjectEntity(genID(), objectName, cls, objectName);
+                ObjectEntity obj = new ObjectEntity(genID(), objectSID, cls, objectName);
                 groupObj.add(obj);
+                assert !objectEntities.containsKey(objectName);
                 objectEntities.put(objectName, obj);
             }
 

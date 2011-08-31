@@ -278,10 +278,12 @@ relationalPE[List<String> context] returns [LP property, List<Integer> usedParam
 	}	
 }
 	:	lhs=additivePE[context] { leftProp = $lhs.property; lUsedParams = $lhs.usedParams; }
-	
-		((operand=REL_OPERAND { op = $operand.text; }
-		rhs=additivePE[context] { rightProp = $rhs.property; rUsedParams = $rhs.usedParams; }) |
-		def=typePropertyDefinition { mainProp = $def.property; })?;
+		(
+			(operand=REL_OPERAND { op = $operand.text; }
+			rhs=additivePE[context] { rightProp = $rhs.property; rUsedParams = $rhs.usedParams; }) |
+			
+			def=typePropertyDefinition { mainProp = $def.property; }
+		)?;
 
 
 additivePE[List<String> context] returns [LP property, List<Integer> usedParams]
@@ -299,7 +301,7 @@ additivePE[List<String> context] returns [LP property, List<Integer> usedParams]
 	}
 }
 	:	firstExpr=multiplicativePE[context] { props.add($firstExpr.property); allUsedParams.add($firstExpr.usedParams); }
-		(operand=ADD_OPERAND { ops.add($operand.text); }
+		( (operand=PLUS | operand=MINUS) { ops.add($operand.text); }
 		nextExpr=multiplicativePE[context] { props.add($nextExpr.property); allUsedParams.add($nextExpr.usedParams); })*;
 		
 	
@@ -336,7 +338,7 @@ unaryMinusPE[List<String> context] returns [LP property, List<Integer> usedParam
 		$property = self.addScriptedUnaryMinusProp("", $property, $usedParams);
 	}
 }
-	: '-' expr=simplePE[context] { $property = $expr.property; $usedParams = $expr.usedParams; };		 
+	: MINUS expr=simplePE[context] { $property = $expr.property; $usedParams = $expr.usedParams; };		 
 	
 
 expressionPrimitive[List<String> context] returns [LP property, List<Integer> usedParams]
@@ -600,5 +602,6 @@ POSITIVE_DOUBLE_LITERAL	: 	DIGITS '.' DIGITS;
 NUMBERED_PARAM	:	'$' DIGITS;
 EQ_OPERAND	:	('==') | ('!='); 
 REL_OPERAND	: 	('<') | ('>') | ('<=') | ('>=');
-ADD_OPERAND	:	('+') | ('-');
+MINUS		:	'-';
+PLUS		:	'+';
 MULT_OPERAND	:	('*') | ('/');
