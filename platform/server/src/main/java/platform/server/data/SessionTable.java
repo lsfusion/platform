@@ -251,7 +251,8 @@ public class SessionTable extends Table implements MapValues<SessionTable>, Valu
 
         Pair<ClassWhere<KeyField>, Map<PropertyField, ClassWhere<Field>>> orClasses = orFieldsClassWheres(classes, propertyClasses, keyFields, propFields);
 
-        int newCount = count + (update && session.isRecord(this, keyFields)?0:1);
+        update = update && session.isRecord(this, keyFields);
+        int newCount = count + (update?0:1);
 
         SessionTable result;
         if(!SQLTemporaryPool.getDBStatistics(newCount).equals(SQLTemporaryPool.getDBStatistics(count)))
@@ -269,7 +270,10 @@ public class SessionTable extends Table implements MapValues<SessionTable>, Valu
         else
             result = new SessionTable(name, keys, properties, newCount, orClasses.first, orClasses.second);
 
-        session.insertRecord(result, keyFields, propFields, update);
+        if(update)
+            session.updateRecords(result, keyFields, propFields);
+        else
+            session.insertRecord(result, keyFields, propFields);
         return result;
     }
 

@@ -587,16 +587,20 @@ public class SQLSession extends MutableObject {
             insertRecord(table, keyFields, propFields);
     }
 
+    public void updateRecords(Table table, Map<KeyField, DataObject> keyFields, Map<PropertyField, ObjectValue> propFields) throws SQLException {
+        if(!propFields.isEmpty()) {
+            Query<KeyField, PropertyField> updateQuery = new Query<KeyField, PropertyField>(table);
+            updateQuery.putKeyWhere(keyFields);
+            updateQuery.properties.putAll(ObjectValue.getMapExprs(propFields));
+
+            // есть запись нужно Update лупить
+            updateRecords(new ModifyQuery(table, updateQuery));
+        }
+    }
+
     public boolean insertRecord(Table table, Map<KeyField, DataObject> keyFields, Map<PropertyField, ObjectValue> propFields, boolean update) throws SQLException {
         if(update && isRecord(table, keyFields)) {
-            if(!propFields.isEmpty()) {
-                Query<KeyField, PropertyField> updateQuery = new Query<KeyField, PropertyField>(table);
-                updateQuery.putKeyWhere(keyFields);
-                updateQuery.properties.putAll(ObjectValue.getMapExprs(propFields));
-
-                // есть запись нужно Update лупить
-                updateRecords(new ModifyQuery(table, updateQuery));
-            }
+            updateRecords(table, keyFields, propFields);
             return false;
         } else {
             insertRecord(table, keyFields, propFields);
