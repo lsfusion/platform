@@ -44,6 +44,7 @@ import platform.server.mail.EmailActionProperty;
 import skolkovo.actions.ImportProjectsActionProperty;
 
 import javax.swing.*;
+import javax.swing.text.ComponentView;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.io.*;
@@ -132,6 +133,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
     AbstractGroup projectDocumentsGroup;
     AbstractGroup projectStatusGroup;
     AbstractGroup projectOptionsGroup;
+    AbstractGroup translateActionGroup;
     AbstractGroup projectTranslationsGroup;
     AbstractGroup projectOtherClusterGroup;
 
@@ -199,8 +201,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
                 new String[]{"Отказался", "Аффилирован", "Проголосовал"});
 
         projectStatus = addStaticClass("projectStatus", "Статус проекта",
-                new String[]{"unknown", "needDocuments", "needExtraVote", "inProgress", "succeeded", "accepted", "rejected"},
-                new String[]{"Неизвестный статус", "Не соответствуют документы", "Требуется заседание", "Идет заседание", "Достаточно голосов", "Оценен положительно", "Оценен отрицательно"});
+                new String[]{"unknown", "needTranslation", "needDocuments", "needExtraVote", "inProgress", "succeeded", "accepted", "rejected"},
+                new String[]{"Неизвестный статус", "Требуется перевод", "Не соответствуют документы", "Требуется заседание", "Идет заседание", "Достаточно голосов", "Оценен положительно", "Оценен отрицательно"});
 
         documentType = addStaticClass("documentType", "Тип документа",
                 new String[]{"application", "resume", "techdesc", "forres", "ipres", "roadmap"},
@@ -252,6 +254,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
         projectStatusGroup = addAbstractGroup("projectStatusGroup", "Текущий статус проекта", baseGroup);
 
         projectOptionsGroup = addAbstractGroup("projectOptionsGroup", "Параметры проекта", baseGroup);
+
+        translateActionGroup = addAbstractGroup("translateActionGroup", "Перевод", baseGroup);
 
         projectTranslationsGroup = addAbstractGroup("projectTranslationsGroup", "Переведено", baseGroup);
 
@@ -657,6 +661,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP editClaimer;
     LP addProject, editProject;
     LP translateToRussianProject, translateToEnglishProject;
+    LP needTranslationProject;
 
     @Override
     public void initProperties() {
@@ -1378,11 +1383,28 @@ public class SkolkovoLogicsModule extends LogicsModule {
 //        voteSucceededProject, 1, addCProp(projectStatus, "succeeded", project), 1,
 //        voteInProgressProject, 1, addCProp(projectStatus, "inProgress", project), 1,
 
+        fillNativeProject = addDProp(projectOptionsGroup, "fillNativeProject", "Анкета на русском", LogicalClass.instance, project);
+        fillForeignProject = addDProp(projectOptionsGroup, "fillForeignProject", "Анкета на английском", LogicalClass.instance, project);
+
+        translatedToRussianProject = addDProp(projectTranslationsGroup, "translatedToRussianProject", "Переведено на русский", LogicalClass.instance, project);
+        translatedToEnglishProject = addDProp(projectTranslationsGroup, "translatedToEnglishProject", "Переведено на английский", LogicalClass.instance, project);
+
+        needsToBeTranslatedToRussianProject = addJProp(and(true, true), addCProp(LogicalClass.instance, true, project), 1, fillNativeProject, 1, translatedToRussianProject, 1);
+        needsToBeTranslatedToEnglishProject = addJProp(and(true, true), addCProp(LogicalClass.instance, true, project), 1, fillForeignProject, 1, translatedToEnglishProject, 1);
+
+        hideTranslatedToRussianProject = addHideCaptionProp(privateGroup, "Переведено", translatedToRussianProject, fillForeignProject);
+        hideTranslatedToEnglishProject = addHideCaptionProp(privateGroup, "Переведено", translatedToEnglishProject, fillNativeProject);
+
+        needTranslationProject = addSUProp("needTranslationProject", Union.OVERRIDE, needsToBeTranslatedToRussianProject, needsToBeTranslatedToEnglishProject);
+
+
         statusProject = addCaseUProp(idGroup, "statusProject", true, "Статус (ИД)",
                 acceptedProject, 1, addCProp(projectStatus, "accepted", project), 1,
+                needTranslationProject, 1, addCProp(projectStatus, "needTranslation", project), 1,
                 rejectedProject, 1, addCProp(projectStatus, "rejected", project), 1,
                 voteOpenedSucceededProject, 1, addCProp(projectStatus, "succeeded", project), 1,
                 voteInProgressProject, 1, addCProp(projectStatus, "inProgress", project), 1,
+
                 addIfElseUProp(addCProp(projectStatus, "needDocuments", project), addCProp(projectStatus, "needExtraVote", project), notEnoughProject, 1), 1);
 
         statusDataProject = addDProp("statusDataProject", "Статус", projectStatus, project);
@@ -1400,17 +1422,6 @@ public class SkolkovoLogicsModule extends LogicsModule {
 //        сейчас в сколково реально есть заявители с двумя успешными проектами
 //        projectSucceededClaimer = addAGProp(idGroup, "projectSucceededClaimer", true, "Успешный проект (ИД)", acceptedProject, 1, claimerProject, 1);
 
-        fillNativeProject = addDProp(projectOptionsGroup, "fillNativeProject", "Анкета на русском", LogicalClass.instance, project);
-        fillForeignProject = addDProp(projectOptionsGroup, "fillForeignProject", "Анкета на английском", LogicalClass.instance, project);
-
-        translatedToRussianProject = addDProp(projectTranslationsGroup, "translatedToRussianProject", "Переведено на русский", LogicalClass.instance, project);
-        translatedToEnglishProject = addDProp(projectTranslationsGroup, "translatedToEnglishProject", "Переведено на английский", LogicalClass.instance, project);
-
-        needsToBeTranslatedToRussianProject = addJProp(and(true, true), addCProp(LogicalClass.instance, true, project), 1, fillNativeProject, 1, translatedToRussianProject, 1);
-        needsToBeTranslatedToEnglishProject = addJProp(and(true, true), addCProp(LogicalClass.instance, true, project), 1, fillForeignProject, 1, translatedToEnglishProject, 1);
-
-        hideTranslatedToRussianProject = addHideCaptionProp(privateGroup, "Переведено", translatedToRussianProject, fillForeignProject);
-        hideTranslatedToEnglishProject = addHideCaptionProp(privateGroup, "Переведено", translatedToEnglishProject, fillNativeProject);
 
         // статистика по экспертам
         quantityTotalExpert = addSGProp(expertResultGroup, "quantityTotalExpert", "Всего заседаний",
@@ -1578,7 +1589,6 @@ public class SkolkovoLogicsModule extends LogicsModule {
         baseLM.relevantClassFormsWindow.visible = false;
         baseLM.logWindow.visible = false;
 
-        //if()
         projectFullNative = addFormEntity(new ProjectFullFormEntity(baseLM.objectElement, "projectFullNative", "Резюме проекта для эксперта", "rus"));
         project.setEditForm(projectFullNative);
         projectFullBoth = addFormEntity(new ProjectFullFormEntity(baseLM.objectElement, "projectFullBoth", "Резюме проекта для эксперта", "both"));
@@ -1704,12 +1714,12 @@ public class SkolkovoLogicsModule extends LogicsModule {
             if (lng.equals("both"))
                 editProject = addMFAProp(actionGroup, "Редактировать", this, new ObjectEntity[]{objProject}).setImage("edit.png");
             if (lng.equals("rus"))
-                translateToRussianProject = addJProp(actionGroup, true, "Перевести на русский", baseLM.and1,
-                        addMFAProp(actionGroup, "Требуется перевод на русский", this, new ObjectEntity[]{objProject}), 1,
+                translateToRussianProject = addJProp(translateActionGroup, true, "Перевести на русский", baseLM.and1,
+                        addMFAProp("Требуется перевод на русский", this, new ObjectEntity[]{objProject}), 1,
                         needsToBeTranslatedToRussianProject, 1).setImage("edit.png");
             if (lng.equals("eng"))
-                translateToEnglishProject = addJProp(actionGroup, true, "Перевести на английский", baseLM.and1,
-                        addMFAProp(actionGroup, "Требуется перевод на английский", this, new ObjectEntity[]{objProject}), 1,
+                translateToEnglishProject = addJProp(translateActionGroup, true, "Перевести на английский", baseLM.and1,
+                        addMFAProp("Требуется перевод на английский", this, new ObjectEntity[]{objProject}), 1,
                         needsToBeTranslatedToEnglishProject, 1).setImage("edit.png");
 
         }
@@ -1738,7 +1748,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
                     design.getGroupPropertyContainer(objProject.groupTo, executiveSummaryGroup), DoNotIntersectSimplexConstraint.TOTHE_BOTTOM);
             if (!"both".equals(lng))
                 design.addIntersection(design.getGroupPropertyContainer(objProject.groupTo, projectInformationGroup),
-                        design.getGroupPropertyContainer(objProject.groupTo, projectTranslationsGroup), DoNotIntersectSimplexConstraint.TOTHE_RIGHTBOTTOM);
+                        design.getGroupPropertyContainer(objProject.groupTo, projectTranslationsGroup), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
 
             design.getGroupPropertyContainer(objProject.groupTo, innovationGroup).constraints.childConstraints = DoNotIntersectSimplexConstraint.TOTHE_BOTTOM;
             design.getGroupPropertyContainer(objProject.groupTo, executiveSummaryGroup).constraints.childConstraints = DoNotIntersectSimplexConstraint.TOTHE_RIGHTBOTTOM;
@@ -1918,6 +1928,11 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
             design.defaultOrders.put(design.get(getPropertyDraw(numberCluster)), true);
 //            design.get(getPropertyDraw(addProject)).drawToToolbar = true;
+
+            design.addIntersection(design.getGroupPropertyContainer(objProject.groupTo, projectInformationGroup),
+                                   design.getGroupPropertyContainer(objProject.groupTo, translateActionGroup),
+                                   DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
+
 
             ContainerView specContainer = design.createContainer();
             specContainer.tabbedPane = true;
