@@ -780,7 +780,7 @@ public class ImportProjectsActionProperty extends ActionProperty {
 
                 for (Map<Object, Object> values : result.values()) {
                     String nextItem = values.get("name").toString().trim();
-                    clusterInfoList.put(nextItem, new ClusterInfo(nextItem));
+                    clusterInfoList.put(nextItem, new ClusterInfo(projectId, nextItem));
                 }
 
                 for (Element nodeCluster : listCluster) {
@@ -1070,8 +1070,8 @@ public class ImportProjectsActionProperty extends ActionProperty {
         public String nativeSubstantiationProjectCluster;
         public String foreignSubstantiationProjectCluster;
 
-        public ClusterInfo(String nameNativeCluster) {
-            this(null, null, nameNativeCluster, null, null);
+        public ClusterInfo(String projectID, String nameNativeCluster) {
+            this(projectID, null, nameNativeCluster, null, null);
         }
 
         public ClusterInfo(String projectID, Object inProjectCluster, String nameNativeCluster,
