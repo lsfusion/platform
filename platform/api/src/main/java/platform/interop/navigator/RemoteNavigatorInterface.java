@@ -1,5 +1,6 @@
 package platform.interop.navigator;
 
+import platform.interop.RemoteContextInterface;
 import platform.interop.event.IDaemonTask;
 import platform.interop.form.RemoteFormInterface;
 import platform.interop.remote.ClientCallBackInterface;
@@ -8,7 +9,7 @@ import platform.interop.remote.PendingRemote;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 
-public interface RemoteNavigatorInterface extends PendingRemote {
+public interface RemoteNavigatorInterface extends PendingRemote, RemoteContextInterface {
 
     String getForms(String formSet) throws RemoteException;
 

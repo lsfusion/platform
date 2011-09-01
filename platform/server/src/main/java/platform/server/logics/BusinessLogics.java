@@ -3,6 +3,8 @@ package platform.server.logics;
 import com.sun.servicetag.SystemEnvironment;
 import net.sf.jasperreports.engine.JRException;
 import org.apache.log4j.Logger;
+import org.aspectj.lang.annotation.Aspect;
+import org.aspectj.lang.annotation.Before;
 import platform.base.*;
 import platform.interop.Compare;
 import platform.interop.RemoteLogicsInterface;
@@ -14,6 +16,7 @@ import platform.interop.form.screen.ExternalScreenParameters;
 import platform.interop.navigator.RemoteNavigatorInterface;
 import platform.interop.remote.RemoteObject;
 import platform.interop.remote.UserInfo;
+import platform.server.Context;
 import platform.server.auth.PolicyManager;
 import platform.server.auth.SecurityPolicy;
 import platform.server.auth.User;
@@ -55,7 +58,7 @@ import static platform.server.logics.ServerResourceBundle.getString;
 
 // @GenericImmutable нельзя так как Spring валится
 
-public abstract class BusinessLogics<T extends BusinessLogics<T>> extends RemoteObject implements RemoteLogicsInterface {
+public abstract class BusinessLogics<T extends BusinessLogics<T>> extends RemoteObject implements RemoteLogicsInterface, Context {
     protected List<LogicsModule> logicModules = new ArrayList<LogicsModule>();
     final public BaseLogicsModule<T> LM;
     public List<LogicsModule> getLogicModules() {
@@ -111,6 +114,41 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
     public SQLSyntax getAdapter() {
         return adapter;
+    }
+
+    public static String getCurrentActionMessage() {
+        return Context.context.get().getActionMessage();
+    }
+
+    public static void setCurrentActionMessage(String message) {
+        Context.context.get().setActionMessage(message);
+    }
+
+    public static void pushCurrentActionMessage(String segment) {
+        Context.context.get().pushActionMessage(segment);
+    }
+
+    public static String popCurrentActionMessage() {
+        return Context.context.get().popActionMessage();
+    }
+
+    public static class MessageStack extends Stack<String> {
+        public void set(String message) {
+            clear();
+            push(message);
+        }
+
+        public String pop() {
+            return isEmpty() ? null : pop();
+        }
+
+        public String getMessage() {
+            String result = "";
+            for (Object segment : toArray()) {
+                result += segment.toString() + " : ";
+            }
+            return result.substring(0, result.length() - 3);
+        }
     }
 
     public final static boolean activateCaches = true;
@@ -1453,6 +1491,36 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             return formSets.get(formSet);
         else
             return null;
+    }
+
+    @Aspect
+    private static class RemoteLogicsContextHoldingAspect {
+        @Before("execution(* platform.interop.RemoteLogicsInterface.*(..)) && target(remoteLogics)")
+        public void beforeCall(BusinessLogics remoteLogics) {
+            Context.context.set(remoteLogics);
+        }
+    }
+
+    public String getRemoteActionMessage() {
+        return getCurrentActionMessage();
+    }
+
+    public BusinessLogics.MessageStack actionMessageStack = new BusinessLogics.MessageStack();
+
+    public String getActionMessage() {
+        return actionMessageStack.getMessage();
+    }
+
+    public void setActionMessage(String message) {
+        actionMessageStack.set(message);
+    }
+
+    public void pushActionMessage(String segment) {
+        actionMessageStack.push(segment);
+    }
+
+    public String popActionMessage() {
+        return actionMessageStack.pop();
     }
 
     public String getName() throws RemoteException {

@@ -6,6 +6,7 @@ import org.apache.log4j.Logger;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
+import org.aspectj.lang.annotation.Before;
 import platform.base.BaseUtils;
 import platform.base.IOUtils;
 import platform.base.WeakIdentityHashSet;
@@ -15,6 +16,7 @@ import platform.interop.navigator.RemoteNavigatorInterface;
 import platform.interop.remote.CallbackMessage;
 import platform.interop.remote.ClientCallBackInterface;
 import platform.interop.remote.RemoteObject;
+import platform.server.Context;
 import platform.server.auth.SecurityPolicy;
 import platform.server.auth.User;
 import platform.server.classes.ConcreteCustomClass;
@@ -50,10 +52,11 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 
 import static platform.base.BaseUtils.nvl;
+import static platform.server.logics.BusinessLogics.getCurrentActionMessage;
 
 // приходится везде BusinessLogics Generics'ом гонять потому как при инстанцировании формы нужен конкретный класс
 
-public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteObject implements RemoteNavigatorInterface, FocusListener<T>, CustomClassListener, RemoteFormListener {
+public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteObject implements RemoteNavigatorInterface, FocusListener<T>, CustomClassListener, RemoteFormListener, Context {
     protected final static Logger logger = Logger.getLogger(RemoteNavigator.class);
 
     T BL;
@@ -147,6 +150,36 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteObject i
             remoteNavigator.updateLastUsedTime();
             return thisJoinPoint.proceed();
         }
+    }
+
+    @Aspect
+    private static class RemoteNavigatorContextHoldingAspect {
+        @Before("execution(* platform.interop.navigator.RemoteNavigatorInterface.*(..)) && target(remoteNavigator)")
+        public void beforeCall(RemoteNavigator remoteNavigator) {
+            Context.context.set(remoteNavigator);
+        }
+    }
+
+    public String getRemoteActionMessage() {
+        return getCurrentActionMessage();
+    }
+
+    public BusinessLogics.MessageStack actionMessageStack = new BusinessLogics.MessageStack();
+
+    public String getActionMessage() {
+        return actionMessageStack.getMessage();
+    }
+
+    public void setActionMessage(String message) {
+        actionMessageStack.set(message);
+    }
+
+    public void pushActionMessage(String segment) {
+        actionMessageStack.push(segment);
+    }
+
+    public String popActionMessage() {
+        return actionMessageStack.pop();
     }
 
     private long lastUsedTime;

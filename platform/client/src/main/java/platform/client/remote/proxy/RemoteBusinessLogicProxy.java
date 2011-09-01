@@ -124,4 +124,8 @@ public class RemoteBusinessLogicProxy<T extends RemoteLogicsInterface>
         target.remindPassword(email);
         logRemoteMethodEndVoidCall("remindPassword");
     }
+
+    public String getRemoteActionMessage() throws RemoteException {
+        return target.getRemoteActionMessage();
+    }
 }

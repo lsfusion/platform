@@ -145,4 +145,8 @@ public class RemoteNavigatorProxy<T extends RemoteNavigatorInterface>
     public ArrayList<IDaemonTask> getDaemonTasks(int compId) throws RemoteException {
         return target.getDaemonTasks(compId);
     }
+
+    public String getRemoteActionMessage() throws RemoteException {
+        return target.getRemoteActionMessage();
+    }
 }

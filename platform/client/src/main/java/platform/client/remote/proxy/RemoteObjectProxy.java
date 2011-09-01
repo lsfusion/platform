@@ -49,7 +49,7 @@ public abstract class RemoteObjectProxy<T extends PendingRemote> implements Pend
             window.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         }
 
-        TimerTask task = new BlockingTask();
+        TimerTask task = new BlockingTask(target, 1000);
         Timer timer = new Timer();
         timer.schedule(task, screenBlock ? 0 : 2500, 200);
         Object result;
@@ -89,7 +89,7 @@ public abstract class RemoteObjectProxy<T extends PendingRemote> implements Pend
             window.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         }
 
-        TimerTask task = new BlockingTask();
+        TimerTask task = new BlockingTask(target, 1000);
         Timer timer = new Timer();
         timer.schedule(task, screenBlock ? 0 : 2500, 200);
         Object[] result;

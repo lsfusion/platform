@@ -1,5 +1,7 @@
 package platform.client.remote.proxy;
 
+import platform.client.SwingUtils;
+import platform.client.form.BlockingTask;
 import platform.interop.ClassViewType;
 import platform.interop.action.ClientApply;
 import platform.interop.form.RemoteChanges;
@@ -8,9 +10,7 @@ import platform.interop.form.RemoteFormInterface;
 import platform.interop.remote.MethodInvocation;
 
 import java.rmi.RemoteException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class RemoteFormProxy<T extends RemoteFormInterface>
         extends RemoteObjectProxy<T>
@@ -331,5 +331,9 @@ public class RemoteFormProxy<T extends RemoteFormInterface>
     @NonPendingRemoteMethod
     public RemoteDialogInterface createObjectEditorDialog(int viewID) throws RemoteException {
         return createDialog("createObjectEditorDialog", viewID);
+    }
+
+    public String getRemoteActionMessage() throws RemoteException {
+        return target.getRemoteActionMessage();
     }
 }

@@ -1,6 +1,7 @@
 package platform.interop.form;
 
 import platform.interop.ClassViewType;
+import platform.interop.RemoteContextInterface;
 import platform.interop.action.ClientApply;
 import platform.interop.remote.PendingRemote;
 
@@ -8,7 +9,7 @@ import java.rmi.RemoteException;
 import java.util.List;
 import java.util.Map;
 
-public interface RemoteFormInterface extends PendingRemote {
+public interface RemoteFormInterface extends PendingRemote, RemoteContextInterface {
 
     // операции с ответом
     byte[] getRichDesignByteArray() throws RemoteException;

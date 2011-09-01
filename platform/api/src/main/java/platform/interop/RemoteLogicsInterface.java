@@ -11,7 +11,7 @@ import platform.interop.remote.PingRemote;
 import java.rmi.RemoteException;
 import java.util.TimeZone;
 
-public interface RemoteLogicsInterface extends PendingRemote, PingRemote, RemoteDescriptorInterface {
+public interface RemoteLogicsInterface extends PendingRemote, PingRemote, RemoteDescriptorInterface, RemoteContextInterface {
 
     String getName() throws RemoteException;
 
