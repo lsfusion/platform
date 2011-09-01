@@ -145,8 +145,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
     AbstractGroup legalDataGroup;
     AbstractGroup claimerInformationGroup;
 
-
     AbstractGroup expertResultGroup;
+    AbstractGroup importGroup;
 
     @Override
     public void initClasses() {
@@ -263,6 +263,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
         voteResultGroup = addAbstractGroup("voteResultGroup", "Результаты голосования", publicGroup);
 
         expertResultGroup = addAbstractGroup("expertResultGroup", "Статистика по экспертам", publicGroup);
+
+        importGroup = addAbstractGroup("importProjectsGroup", "Импорт", actionGroup);
 
         voteResultCheckGroup = addAbstractGroup("voteResultCheckGroup", "Результаты голосования (выбор)", voteResultGroup, false);
         voteResultCommentGroup = addAbstractGroup("voteResultCommentGroup", "Результаты голосования (комментарии)", voteResultGroup, false);
@@ -1369,10 +1371,10 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         generateDocumentsProjectDocumentType = addAProp(actionGroup, new GenerateDocumentsActionProperty());
         includeDocumentsProjectDocumentType = addAProp(actionGroup, new IncludeDocumentsActionProperty());
-        importProjectSidsAction = addAProp(actionGroup, new ImportProjectsActionProperty("Импортировать идентификаторы проектов", this, BL, false, false, true));
-        showProjectsToImportAction = addAProp(actionGroup, new ImportProjectsActionProperty("Посмотреть импортируемые проекты", this, BL, true, false, false));
-        showProjectsReplaceToImportAction = addAProp(actionGroup, new ImportProjectsActionProperty("Посмотреть замещаемые проекты", this, BL, true, true, false));
-        importProjectsAction = addAProp(actionGroup, new ImportProjectsActionProperty("Импортировать проекты", this, BL, false, false, false));
+        importProjectSidsAction = addAProp(importGroup, new ImportProjectsActionProperty("Импортировать идентификаторы проектов", this, BL, false, false, true));
+        showProjectsToImportAction = addAProp(importGroup, new ImportProjectsActionProperty("Посмотреть импортируемые проекты", this, BL, true, false, false));
+        showProjectsReplaceToImportAction = addAProp(importGroup, new ImportProjectsActionProperty("Посмотреть замещаемые проекты", this, BL, true, true, false));
+        importProjectsAction = addAProp(importGroup, new ImportProjectsActionProperty("Импортировать проекты", this, BL, false, false, false));
 
         generateVoteProject = addAProp(actionGroup, new GenerateVoteActionProperty());
         copyResultsVote = addAProp(actionGroup, new CopyResultsActionProperty());
@@ -1877,6 +1879,9 @@ public class SkolkovoLogicsModule extends LogicsModule {
             setForceViewType(translateToEnglishProject, ClassViewType.PANEL);
             setForceViewType(loadFileResolutionIPProject, ClassViewType.PANEL);
 
+            addPropertyDraw(importProjectsAction).toDraw = objProject.groupTo;
+            setForceViewType(importProjectsAction, ClassViewType.PANEL);
+
             hideTranslateToRussianProject = addHideCaptionProp(privateGroup, "Перевести", translateToRussianProject, needsToBeTranslatedToRussianProject);
             getPropertyDraw(translateToRussianProject).propertyCaption = addPropertyObject(hideTranslateToRussianProject, objProject);
 
@@ -1885,7 +1890,6 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
             hideLoadFileResolutionIPProject = addHideCaptionProp(privateGroup, "Перевести", loadFileResolutionIPProject, addJProp(baseLM.andNot1, addCProp(LogicalClass.instance, true, project), 1, openFileResolutionIPProject, 1));
             getPropertyDraw(loadFileResolutionIPProject).propertyCaption = addPropertyObject(hideLoadFileResolutionIPProject, objProject);
-
 
             addObjectActions(this, objProject);
 
@@ -1969,6 +1973,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         public FormView createDefaultRichDesign() {
             DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign();
 
+            design.defaultOrders.put(design.get(getPropertyDraw(dateProject, objProject)), true);
             design.defaultOrders.put(design.get(getPropertyDraw(numberCluster)), true);
 //            design.get(getPropertyDraw(addProject)).drawToToolbar = true;
 
@@ -1976,15 +1981,19 @@ public class SkolkovoLogicsModule extends LogicsModule {
                     design.getGroupPropertyContainer(objProject.groupTo, translateActionGroup),
                     DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
 
+            design.get(getPropertyDraw(importProjectsAction)).drawToToolbar = true;
+//            design.getPanelContainer(objProject.groupTo).add(design.getGroupPropertyContainer((GroupObjectEntity)null, importGroup));
 
             ContainerView specContainer = design.createContainer();
             specContainer.tabbedPane = true;
 
             design.getMainContainer().addAfter(specContainer, design.getGroupObjectContainer(objProject.groupTo));
 
-            ContainerView clusterContainer = design.createContainer("Кластеры");
-            clusterContainer.add(design.getGroupObjectContainer(objCluster.groupTo));
-            clusterContainer.add(design.getGroupPropertyContainer(objProject.groupTo, projectOtherClusterGroup));
+            ContainerView infoContainer = design.createContainer("Информация");
+            infoContainer.add(design.getGroupPropertyContainer(objProject.groupTo, projectInformationGroup));
+            infoContainer.add(design.getGroupPropertyContainer(objProject.groupTo, translateActionGroup));
+            infoContainer.add(design.getGroupObjectContainer(objCluster.groupTo));
+            infoContainer.add(design.getGroupPropertyContainer(objProject.groupTo, projectOtherClusterGroup));
 
             ContainerView docContainer = design.createContainer("Документы");
             docContainer.add(design.getGroupObjectContainer(objDocumentTemplate.groupTo));
@@ -1995,7 +2004,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             expertContainer.add(design.getGroupObjectContainer(objVote.groupTo));
             expertContainer.add(design.getGroupObjectContainer(objExpert.groupTo));
 
-            specContainer.add(clusterContainer);
+            specContainer.add(infoContainer);
             specContainer.add(docContainer);
             specContainer.add(expertContainer);
 
