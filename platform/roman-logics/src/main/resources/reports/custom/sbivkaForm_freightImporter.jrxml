@@ -65,7 +65,7 @@
 		<groupExpression><![CDATA[String.valueOf($F{customCategory6})]]></groupExpression>
 		<groupFooter>
 			<band height="18">
-				<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
+				<textField isStretchWithOverflow="true" pattern="#,##0" isBlankWhenNull="true">
 					<reportElement style="GroupCellStyle2" positionType="Float" stretchType="RelativeToBandHeight" x="187" y="0" width="50" height="18"/>
 					<textElement textAlignment="Right"/>
 					<textFieldExpression class="java.lang.Double"><![CDATA[$F{quantityProxyImporterFreightCustomCategory6}]]></textFieldExpression>
@@ -80,7 +80,7 @@
 					<textElement textAlignment="Right"/>
 					<textFieldExpression class="java.lang.Double"><![CDATA[$F{grossWeightImporterFreightCustomCategory6}]]></textFieldExpression>
 				</textField>
-				<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
+				<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
 					<reportElement style="GroupCellStyle2" positionType="Float" stretchType="RelativeToBandHeight" x="357" y="0" width="100" height="18"/>
 					<textElement textAlignment="Right"/>
 					<textFieldExpression class="java.lang.Double"><![CDATA[$F{sumImporterFreightCustomCategory6}]]></textFieldExpression>
@@ -201,12 +201,12 @@
 				<textElement textAlignment="Right"/>
 				<textFieldExpression class="java.lang.Double"><![CDATA[$F{grossWeightImporterFreight}]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
+			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle2" positionType="Float" stretchType="RelativeToBandHeight" x="357" y="9" width="100" height="18"/>
 				<textElement textAlignment="Right"/>
 				<textFieldExpression class="java.lang.Double"><![CDATA[$F{sumSbivkaImporterFreight}]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
+			<textField isStretchWithOverflow="true" pattern="#,##0" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle2" positionType="Float" stretchType="RelativeToBandHeight" x="187" y="9" width="50" height="18"/>
 				<textElement textAlignment="Right"/>
 				<textFieldExpression class="java.lang.Double"><![CDATA[$F{quantityProxyImporterFreight}]]></textFieldExpression>

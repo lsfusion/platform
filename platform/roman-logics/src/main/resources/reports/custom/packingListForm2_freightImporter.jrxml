@@ -83,7 +83,7 @@
 					<textElement textAlignment="Right" verticalAlignment="Top"/>
 					<textFieldExpression class="java.lang.Double"><![CDATA[$F{netWeightImporterFreightTypeInvoice}]]></textFieldExpression>
 				</textField>
-				<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
+				<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
 					<reportElement style="DefaultStyle" positionType="Float" stretchType="RelativeToBandHeight" x="463" y="28" width="71" height="18"/>
 					<textElement textAlignment="Right" verticalAlignment="Top"/>
 					<textFieldExpression class="java.lang.Double"><![CDATA[$F{sumInOutImporterFreightTypeInvoice}]]></textFieldExpression>
@@ -113,7 +113,7 @@
 					<textElement textAlignment="Right" verticalAlignment="Top"/>
 					<textFieldExpression class="java.lang.String"><![CDATA["Сумма с налогом:"]]></textFieldExpression>
 				</textField>
-				<textField isBlankWhenNull="true">
+				<textField pattern="#,##0.00" isBlankWhenNull="true">
 					<reportElement style="DefaultStyle" x="662" y="28" width="60" height="18"/>
 					<textElement textAlignment="Right" verticalAlignment="Top"/>
 					<textFieldExpression class="java.lang.Double"><![CDATA[$F{sumInOutImporterFreightTypeInvoice}]]></textFieldExpression>
@@ -140,7 +140,7 @@
 					<textElement textAlignment="Left" verticalAlignment="Top"/>
 					<textFieldExpression class="java.lang.String"><![CDATA[$F{barcode}]]></textFieldExpression>
 				</textField>
-				<textField pattern="#,##0.###" isBlankWhenNull="true">
+				<textField pattern="#,##0" isBlankWhenNull="true">
 					<reportElement style="GroupCellStyle1" positionType="Float" stretchType="RelativeToBandHeight" x="386" y="0" width="62" height="18"/>
 					<textElement textAlignment="Right" verticalAlignment="Top"/>
 					<textFieldExpression class="java.lang.Double"><![CDATA[$F{quantityImporterStockTypeInvoice}]]></textFieldExpression>
@@ -318,7 +318,7 @@
 				<textElement textAlignment="Left" verticalAlignment="Top"/>
 				<textFieldExpression class="java.lang.String"><![CDATA[$F{nameCategoryArticle}]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
+			<textField isStretchWithOverflow="true" pattern="#,##0" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle2" positionType="Float" stretchType="RelativeToBandHeight" x="386" y="0" width="62" height="18"/>
 				<textElement textAlignment="Right" verticalAlignment="Top"/>
 				<textFieldExpression class="java.lang.Double"><![CDATA[$F{quantityImporterStockArticle}]]></textFieldExpression>

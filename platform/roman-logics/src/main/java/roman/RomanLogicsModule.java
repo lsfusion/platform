@@ -601,11 +601,14 @@ public class RomanLogicsModule extends LogicsModule {
     private LP equalsPalletFreight;
     private LP equalsPalletFreightBox;
     private ConcreteCustomClass freightType;
+    private ConcreteCustomClass creationSku;
     private ConcreteCustomClass creationFreightBox;
     private ConcreteCustomClass creationPallet;
+    private LP quantityCreationSku;
     private LP quantityCreationPallet;
     private LP routeCreationPallet;
     private LP nameRouteCreationPallet;
+    private LP creationSkuSku;
     private LP creationPalletPallet;
     private LP routeCreationPalletPallet;
     private LP nameRouteCreationPalletPallet;
@@ -725,6 +728,7 @@ public class RomanLogicsModule extends LogicsModule {
     private LP userShipmentDetail;
     private LP nameUserShipmentDetail;
     private LP timeShipmentDetail;
+    private LP createSku;
     private LP createFreightBox;
     private LP createPallet;
     private ConcreteCustomClass transfer;
@@ -1091,6 +1095,8 @@ public class RomanLogicsModule extends LogicsModule {
     private LP womenSecretImportInvoice;
 
     private AbstractGroup importInvoiceActionGroup;
+    private LP skuPrintFA;
+    private LP printCreateSkuForm;
     private LP printCreatePalletForm;
     private LP printCreateFreightBoxForm;
     private LP priceSupplierBoxSku;
@@ -1294,6 +1300,7 @@ public class RomanLogicsModule extends LogicsModule {
 
         typeDuty = addConcreteClass("typeDuty", "Тип пошлины", baseClass);
 
+        creationSku = addConcreteClass("creationSku", "Операция создания товаров", baseLM.transaction);
         creationFreightBox = addConcreteClass("creationFreightBox", "Операция создания коробов", baseLM.transaction);
         creationPallet = addConcreteClass("creationPallet", "Операция создания паллет", baseLM.transaction);
         creationStamp = addConcreteClass("creationStamp", "Операция создания марок", baseLM.transaction);
@@ -1758,7 +1765,7 @@ public class RomanLogicsModule extends LogicsModule {
         originalNameArticle = addDProp(supplierAttributeGroup, "originalNameArticle", "Наименование (ориг.)", InsensitiveStringClass.get(50), article);
         originalNameArticleSku = addJProp(supplierAttributeGroup, "originalNameArticleSku", "Наименование (ориг.)", originalNameArticle, articleSku, 1);
 
-        coefficientArticle = addDProp(intraAttributeGroup, "coefficientArticle", "Кол-во в комплекте", DoubleClass.instance, article);
+        coefficientArticle = addDProp(intraAttributeGroup, "coefficientArticle", "Кол-во в комплекте", IntegerClass.instance, article);
         coefficientArticleSku = addJProp(intraAttributeGroup, true, "coefficientArticleSku", "Кол-во в комплекте", coefficientArticle, articleSku, 1);
 
         //Category
@@ -2314,7 +2321,9 @@ public class RomanLogicsModule extends LogicsModule {
         percentShipmentRouteSku = addJProp(baseGroup, "percentShipmentRouteSku", "Процент", baseLM.and1, percentShipmentRoute, 1, 2, is(sku), 3);
 
         // creation
-        //quantityCreationSku = addDProp(baseGroup, "quantityCreationSku", "Количество", IntegerClass.instance, creationSku);
+        quantityCreationSku = addDProp(baseGroup, "quantityCreationSku", "Количество", IntegerClass.instance, creationSku);
+
+        creationSkuSku = addDProp(idGroup, "creationSkuSku", "Операция (ИД)", creationSku, sku);
 
         quantityCreationFreightBox = addDProp(baseGroup, "quantityCreationFreightBox", "Количество", IntegerClass.instance, creationFreightBox);
         routeCreationFreightBox = addDProp(idGroup, "routeCreationFreightBox", "Маршрут (ИД)", route, creationFreightBox);
@@ -3187,9 +3196,9 @@ public class RomanLogicsModule extends LogicsModule {
         quantitySimpleShipmentRouteSku = addJProp(baseGroup, true, "quantitySimpleShipmentRouteSku", "Кол-во оприход.",
                 quantitySimpleShipmentStockSku, 1, currentFreightBoxRoute, 2, 3);
 
+        createSku = addJProp(true, "Сгенерировать товары", addAAProp(sku, baseLM.barcode, baseLM.barcodePrefix, true), quantityCreationSku, 1);
         createFreightBox = addJProp(true, "Сгенерировать короба", addAAProp(freightBox, baseLM.barcode, baseLM.barcodePrefix, true), quantityCreationFreightBox, 1);
         createPallet = addJProp(true, "Сгенерировать паллеты", addAAProp(pallet, baseLM.barcode, baseLM.barcodePrefix, true), quantityCreationPallet, 1);
-        //createStamp = addJProp(true, "Сгенерировать марки", addAAProp(stamp, baseLM.barcode, baseLM.barcodePrefix, true), quantityCreationStamp, 1);
         createStamp = addAProp(actionGroup, new CreateStampActionProperty());
 
         barcodeActionCheckFreightBox = addJProp(true, "Проверка короба для транспортировки",
@@ -3310,8 +3319,10 @@ public class RomanLogicsModule extends LogicsModule {
         addFormEntity(new SbivkaSupplierFormEntity(printForms, "sbivkaSupplierForm", "Сбивка товаров поставщика"));
         addFormEntity(new PackingListFormEntity(printForms, "packingListForm", "Исходящие упаковочные листы", false));
         addFormEntity(new PackingListFormEntity(printForms, "packingListForm2", "Исходящие упаковочные листы (перевод)", true));
-
         addFormEntity(new PackingListBoxFormEntity(printForms, "packingListBoxForm", "Упаковочные листы коробов"));
+        addFormEntity(new PrintSkuFormEntity(printForms, "printSkuForm", "Товар"));
+
+        FormEntity createSkuForm = addFormEntity(new CreateSkuFormEntity(printForms, "createSkuForm", "Штрих-коды товаров", FormType.PRINT));
         FormEntity createPalletForm = addFormEntity(new CreatePalletFormEntity(printForms, "createPalletForm", "Штрих-коды паллет", FormType.PRINT));
         FormEntity createFreightBoxForm = addFormEntity(new CreateFreightBoxFormEntity(printForms, "createFreightBoxForm", "Штрих-коды коробов", FormType.PRINT));
 
@@ -3349,6 +3360,8 @@ public class RomanLogicsModule extends LogicsModule {
         createPalletFormCreate.showType = FormShowType.MODAL;
         FormEntity createFreightBoxFormAdd = addFormEntity(new CreateFreightBoxFormEntity(generation, "createFreightBoxFormAdd", "Сгенерировать короба", FormType.ADD));
         createFreightBoxFormAdd.showType = FormShowType.MODAL;
+        FormEntity createSkuFormAdd = addFormEntity(new CreateSkuFormEntity(generation, "createSkuFormAdd", "Сгенерировать товары", FormType.ADD));
+        createSkuFormAdd.showType = FormShowType.MODAL;
         FormEntity createStampFormAdd = addFormEntity(new CreateStampFormEntity(generation, "createStampFormAdd", "Сгенерировать марки", FormType.ADD));
         createStampFormAdd.showType = FormShowType.MODAL;
 
@@ -3356,7 +3369,8 @@ public class RomanLogicsModule extends LogicsModule {
 
         addFormEntity(new CreatePalletFormEntity(preparation, "createPalletFormList", "Паллеты", FormType.LIST));
         addFormEntity(new CreateFreightBoxFormEntity(preparation, "createFreightBoxFormList", "Короба", FormType.LIST));
-        addFormEntity(new CreateStampFormEntity(preparation, "createStampFormList", "Марки", FormType.LIST));               
+        addFormEntity(new CreateSkuFormEntity(preparation, "createSkuFormList", "Товары", FormType.LIST));
+        addFormEntity(new CreateStampFormEntity(preparation, "createStampFormList", "Марки", FormType.LIST));
 
         NavigatorElement acceptance = new NavigatorElement(distribution, "acceptance", "Приемка");
         addFormEntity(new ShipmentSpecFormEntity(acceptance, "boxShipmentSpecForm", "Прием товара по коробам", true));
@@ -4411,6 +4425,21 @@ public class RomanLogicsModule extends LogicsModule {
         }
     }
 
+    private class PrintSkuFormEntity extends FormEntity<RomanBusinessLogics> {
+
+        private ObjectEntity objSku;
+
+        private PrintSkuFormEntity(NavigatorElement parent, String sID, String caption) {
+            super(parent, sID, caption, true);
+
+            objSku = addSingleGroupObject(sku, "Товар", baseLM.barcode);
+            objSku.groupTo.setSingleClassView(ClassViewType.PANEL);
+            setReadOnly(objSku, true);
+
+            skuPrintFA = addFAProp("Печать штрих-кода", this, objSku);
+        }
+    }
+
     private class ShipmentSpecFormEntity extends BarcodeFormEntity {
         private boolean box;
 
@@ -4463,6 +4492,7 @@ public class RomanLogicsModule extends LogicsModule {
 
             objSku.groupTo.setSingleClassView(ClassViewType.GRID);
             addPropertyDraw(skuEditFA, objSku).forceViewType = ClassViewType.GRID;
+            addPropertyDraw(skuPrintFA, objSku).forceViewType = ClassViewType.GRID;
 
             setForceViewType(itemAttributeGroup, ClassViewType.GRID, objSku.groupTo);
             setForceViewType(intraAttributeGroup, ClassViewType.PANEL, objSku.groupTo);
@@ -4993,7 +5023,7 @@ public class RomanLogicsModule extends LogicsModule {
             addPropertyDraw(objShipment, baseLM.date, sidDocument, nameSupplierDocument);
             addPropertyDraw(objShipment, objFreight, nameImporterShipmentFreight);
 
-            objPallet = addSingleGroupObject(pallet, "Паллета", baseLM.barcode, grossWeightPallet, freightBoxNumberPallet);
+            objPallet = addSingleGroupObject(pallet, "Паллета", baseLM.barcode, grossWeightPallet, freightBoxNumberPallet, routeCreationPalletPallet);
             objPallet.groupTo.setSingleClassView(ClassViewType.GRID);
             setReadOnly(objPallet, true);
 
@@ -5012,6 +5042,7 @@ public class RomanLogicsModule extends LogicsModule {
             addPropertyDraw(equalsDirectInvoiceFreight, objDirectInvoice, objFreight);
 
             addFixedFilter(new CompareFilterEntity(addPropertyObject(routeCreationPalletPallet, objPallet), Compare.EQUALS, addPropertyObject(routeFreight, objFreight)));
+            addFixedFilter(new NotNullFilterEntity(addPropertyObject(freightBoxNumberPallet, objPallet)));
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(quantityShipmentFreight, objShipment, objFreight)));
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(quantityPalletSku, objPallet, objSku)));
 
@@ -5149,6 +5180,43 @@ public class RomanLogicsModule extends LogicsModule {
 
             if (type.equals(FormType.PRINT))
                 printCreatePalletForm = addFAProp("Печать штрих-кодов", this, objCreate);
+        }
+    }
+
+
+    private class CreateSkuFormEntity extends FormEntity<RomanBusinessLogics> {
+
+        private ObjectEntity objCreate;
+        private ObjectEntity objSku;
+
+        private CreateSkuFormEntity(NavigatorElement parent, String sID, String caption, FormType type) {
+            super(parent, sID, caption, type.equals(FormType.PRINT));
+
+            objCreate = addSingleGroupObject(creationSku, "Документ генерации товаров");
+            if (!type.equals(FormType.ADD))
+                addPropertyDraw(objCreate, baseLM.objectValue);
+
+            addPropertyDraw(objCreate, quantityCreationSku);
+
+            if (type.equals(FormType.ADD))
+                addPropertyDraw(createSku, objCreate);
+
+            if (!type.equals(FormType.PRINT))
+                addPropertyDraw(objCreate, printCreateSkuForm);
+
+            if (!type.equals(FormType.LIST))
+                objCreate.groupTo.setSingleClassView(ClassViewType.PANEL);
+
+            if (type.equals(FormType.ADD))
+                objCreate.setAddOnTransaction();
+
+            objSku = addSingleGroupObject(sku, "Товары", baseLM.barcode);
+            setReadOnly(objSku, true);
+
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(creationSkuSku, objSku), Compare.EQUALS, objCreate));
+
+            if (type.equals(FormType.PRINT))
+                printCreateSkuForm = addFAProp("Печать штрих-кодов", this, objCreate);
         }
     }
 
@@ -6191,7 +6259,7 @@ public class RomanLogicsModule extends LogicsModule {
             }
 
             if (!translate) {
-                addPropertyDraw(objArticle, nameArticle);
+                addPropertyDraw(objArticle, nameArticle, nameOriginCategoryArticle);
                 addPropertyDraw(objComposition, baseLM.objectValue);
             }
 
