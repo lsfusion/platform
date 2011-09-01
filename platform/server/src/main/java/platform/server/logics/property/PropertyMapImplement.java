@@ -9,6 +9,7 @@ import platform.server.data.where.Where;
 import platform.server.data.where.WhereBuilder;
 import platform.server.form.instance.PropertyObjectInstance;
 import platform.server.form.instance.PropertyObjectInterfaceInstance;
+import platform.server.form.instance.remote.RemoteForm;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.DataObject;
 import platform.server.session.*;
@@ -78,7 +79,11 @@ public class PropertyMapImplement<P extends PropertyInterface, T extends Propert
     }
 
     public List<ClientAction> execute(Map<T, DataObject> keys, DataSession session, Object value, Modifier<? extends Changes> modifier) throws SQLException {
-        return session.execute(property, mapValues(keys).getPropertyChange(session.getObjectValue(value, property.getType()).getExpr()), modifier, null, null);
+        return execute(keys, session, value, modifier, null, null);
+    }
+
+    public List<ClientAction> execute(Map<T, DataObject> keys, DataSession session, Object value, Modifier<? extends Changes> modifier, RemoteForm executeForm, Map<P, PropertyObjectInterfaceInstance> mapObjects) throws SQLException {
+        return session.execute(property, mapValues(keys).getPropertyChange(session.getObjectValue(value, property.getType()).getExpr()), modifier, executeForm, mapObjects);
     }
 
     public void fill(Set<T> interfaces, Set<PropertyMapImplement<?, T>> properties) {

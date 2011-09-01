@@ -74,7 +74,7 @@ public class ExecutePropertiesActionProperty extends ActionProperty {
         for (int i = 0; i < dataProperties.length; ++i) {
             LP dataProperty = dataProperties[i];
             Map<?, ClassPropertyInterface> mapPropInterfaces = mapInterfaces[i];
-            List<?> propInterfaces = dataProperty.listInterfaces;
+            List<? extends PropertyInterface> propInterfaces = dataProperty.listInterfaces;
 
             ObjectValue execValue;
             switch (writeType) {
@@ -95,18 +95,19 @@ public class ExecutePropertiesActionProperty extends ActionProperty {
             boolean inForm = context.getRemoteForm() != null && dataProperty.property instanceof UserProperty;
 
             DataObject[] execInterfaces = new DataObject[propInterfaces.size()];
-            Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> execMapObjects = new HashMap<ClassPropertyInterface, PropertyObjectInterfaceInstance>();
+            Map<PropertyInterface, PropertyObjectInterfaceInstance> execMapObjects = new HashMap<PropertyInterface, PropertyObjectInterfaceInstance>();
             for (int j = 0; j < propInterfaces.size(); j++) {
-                ClassPropertyInterface execInterface = mapPropInterfaces.get(propInterfaces.get(j));
+                PropertyInterface dataInterface = propInterfaces.get(j);
+                ClassPropertyInterface execInterface = mapPropInterfaces.get(dataInterface);
                 execInterfaces[j] = context.getKeyValue(execInterface);
                 if (inForm)
-                    execMapObjects.put(execInterface, context.getObjectInstance(execInterface));
+                    execMapObjects.put(dataInterface, context.getObjectInstance(execInterface));
             }
 
             if (inForm) {
-                ((UserProperty)dataProperty.property).execute(new ExecutionContext(dataProperty.getMapValues(execInterfaces), execValue, context.getSession(), context.getModifier(), context.getActions(), context.getRemoteForm(), execMapObjects, true));
+                context.addActions(dataProperty.property.execute(dataProperty.getMapValues(execInterfaces), context.getSession(), execValue.getValue(), context.getModifier(), context.getRemoteForm(), execMapObjects));
             } else {
-                context.addActions(dataProperty.execute(execValue.getValue(), context.getSession(), execInterfaces));
+                context.addActions(dataProperty.execute(execValue.getValue(), context, execInterfaces));
             }
         }
     }

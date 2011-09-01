@@ -26,6 +26,7 @@ import platform.server.data.where.classes.ClassWhere;
 import platform.server.form.entity.FormEntity;
 import platform.server.form.entity.PropertyDrawEntity;
 import platform.server.form.instance.PropertyObjectInterfaceInstance;
+import platform.server.form.instance.remote.RemoteForm;
 import platform.server.form.view.DefaultFormView;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.DataObject;
@@ -579,6 +580,10 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
 
     public List<ClientAction> execute(Map<T, DataObject> keys, DataSession session, Object value, Modifier<? extends Changes> modifier) throws SQLException {
         return getImplement().execute(keys, session, value, modifier);
+    }
+
+    public List<ClientAction> execute(Map<T, DataObject> keys, DataSession session, Object value, Modifier<? extends Changes> modifier, RemoteForm executeForm, Map<T, PropertyObjectInterfaceInstance> mapObjects) throws SQLException {
+        return getImplement().execute(keys, session, value, modifier, executeForm, mapObjects);
     }
 
     // по умолчанию заполняет свойства

@@ -1527,7 +1527,12 @@ public abstract class LogicsModule {
      * @param writeType использовать ли значения по умолчанию для записи в свойства.
      *                           Если значение этого параметра false, то мэпиться должны не только выходы, но и вход, номер интерфейса, который пойдёт на вход, должен быть указан последним
      */
+
     protected LP addEPAProp(int writeType, Object... params) {
+        return addEPAProp(genSID(), "sysEPA", writeType, params);
+    }
+
+    protected LP addEPAProp(String sID, String caption, int writeType, Object... params) {
         List<LP> lps = new ArrayList<LP>();
         List<int[]> mapInterfaces = new ArrayList<int[]>();
 
@@ -1545,7 +1550,7 @@ public abstract class LogicsModule {
             lps.add(lp);
             mapInterfaces.add(propMapInterfaces);
         }
-        return addEPAProp(genSID(), "sysEPA", writeType, lps.toArray(new LP[lps.size()]), mapInterfaces.toArray(new int[mapInterfaces.size()][]));
+        return addEPAProp(sID, caption, writeType, lps.toArray(new LP[lps.size()]), mapInterfaces.toArray(new int[mapInterfaces.size()][]));
     }
 
     private LP addEPAProp(String sID, String caption, int writeType, LP[] lps, int[][] mapInterfaces) {

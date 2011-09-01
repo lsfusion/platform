@@ -4098,7 +4098,7 @@ public class RomanLogicsModule extends LogicsModule {
             objColorSupplier = addSingleGroupObject(colorSupplier, "Цвет", baseLM.selection, sidColorSupplier, baseLM.name);
             setReadOnly(sidColorSupplier, true, objColorSupplier.groupTo);
 
-            addActionsOnObjectChange(objSIDColorSupplier, addPropertyObject(executeAddColorDocument, objInvoice, objArticle, objColorSupplier));
+            addActionsOnObjectChange(objSIDColorSupplier, addPropertyObject(executeAddColorDocument, objList, objArticle, objColorSupplier));
 
             objItem = addSingleGroupObject(item, "Товар", baseLM.barcode, sidColorSupplierItem, nameColorSupplierItem, sidSizeSupplierItem);
 
@@ -4111,8 +4111,8 @@ public class RomanLogicsModule extends LogicsModule {
                     numberListArticle),
                     objList, objArticle);
             nullArticleColor = addPropertyDraw(addEPAProp("nullInvoiceListArticleCompositeColor", "Сбросить", EPA_NULL,
-                                                addGCAProp(actionGroup, "nullGCAInvoiceListArticleCompositeColor", "Сбросить (количество)", objSizeSupplier.groupTo, quantityListArticleCompositeColorSize, 1, 2, 3, 4, baseLM.vnull, 4),
-                                                addJProp(true, baseLM.and1, inListArticleColorSupplier, 1, 2, 3, is(sizeSupplier), 4)),
+                                                addGCAProp(actionGroup, "nullGCAInvoiceListArticleCompositeColor", "Сбросить (количество)", objSizeSupplier.groupTo, quantityListArticleCompositeColorSize, 1, 2, 3, 4, baseLM.vnull, 4), 1, 2, 3, 4,
+                                                inListArticleColorSupplier, 1, 2, 3),
                                                 objList, objArticle, objColorSupplier, objSizeSupplier);
 
             addPropertyDraw(quantityListSku, (box ? objSupplierBox : objInvoice), objItem);
@@ -4145,7 +4145,7 @@ public class RomanLogicsModule extends LogicsModule {
             RegularFilterGroupEntity filterGroupColor = new RegularFilterGroupEntity(genID());
             filterGroupColor.addFilter(new RegularFilterEntity(genID(), new OrFilterEntity(
                     new NotNullFilterEntity(addPropertyObject(quantityListArticleCompositeColor, objList, objArticle, objColorSupplier)),
-                    new CompareFilterEntity(addPropertyObject(inListArticleColorSupplier, objInvoice, objArticle, objColorSupplier), Compare.EQUALS, true)),
+                    new CompareFilterEntity(addPropertyObject(inListArticleColorSupplier, objList, objArticle, objColorSupplier), Compare.EQUALS, true)),
                     "В инвойсе",
                     KeyStroke.getKeyStroke(KeyEvent.VK_F11, 0)), true);
             addRegularFilterGroup(filterGroupColor);
