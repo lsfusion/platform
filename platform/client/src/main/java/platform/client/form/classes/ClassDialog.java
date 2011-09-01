@@ -50,6 +50,7 @@ public class ClassDialog extends JDialog {
 
         AbstractAction cancelAction = new AbstractAction(ClientResourceBundle.getString("descriptor.editor.cancelbutton")) {
             public void actionPerformed(ActionEvent ae) {
+                chosenClass = null;
                 ClassDialog.this.setVisible(false);
             }
         };
