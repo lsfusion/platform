@@ -31,7 +31,12 @@ public class FilePropertyEditor extends JFileChooser
             description = ClientResourceBundle.getString("form.editor.allfiles");
         }
 
-        setAcceptAllFileFilterUsed(BaseUtils.toList(extensions).contains("*.*"));
+        if (BaseUtils.toList(extensions).contains("*.*")) {
+            setAcceptAllFileFilterUsed(true);
+            if (BaseUtils.toList(extensions).size() == 1) {
+                return;
+            }
+        }
         addChoosableFileFilter(new FileNameExtensionFilter(description, extensions));
     }
 

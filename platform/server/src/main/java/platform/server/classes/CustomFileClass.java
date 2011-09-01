@@ -30,6 +30,6 @@ public class CustomFileClass extends FileClass{
     }
 
     public String getExtensions() {
-        return "*";
+        return "*.*";
     }
 }
