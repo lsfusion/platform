@@ -2209,9 +2209,11 @@ public class SkolkovoLogicsModule extends LogicsModule {
         private VoteExpertFormEntity(NavigatorElement parent, String sID) {
             super(parent, sID, "Реестр голосований");
 
-            objVote = addSingleGroupObject(vote, nameNativeProjectVote, dateStartVote, dateEndVote, openedVote, succeededVote, acceptedVote);
+            objVote = new ObjectEntity(genID(), vote, "Заседание");
+            addPropertyDraw(objVote, nameNativeProjectVote, dateStartVote, dateEndVote, openedVote, succeededVote, acceptedVote);
 
-            objExpert = addSingleGroupObject(expert, baseLM.userFirstName, baseLM.userLastName, documentNameExpert, baseLM.email, nameNativeClusterExpert, nameLanguageExpert);
+            objExpert = new ObjectEntity(genID(), expert, "Эксперт");
+            addPropertyDraw(objExpert, baseLM.userFirstName, baseLM.userLastName, documentNameExpert, baseLM.email, nameNativeClusterExpert, nameLanguageExpert);
 
             addPropertyDraw(objExpert, objVote, allowedEmailLetterExpertVote);
 
