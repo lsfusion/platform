@@ -44,7 +44,6 @@ import platform.server.mail.EmailActionProperty;
 import skolkovo.actions.ImportProjectsActionProperty;
 
 import javax.swing.*;
-import javax.swing.text.ComponentView;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.io.*;
@@ -523,11 +522,15 @@ public class SkolkovoLogicsModule extends LogicsModule {
     public LP fileForeignSummaryProject;
     LP loadFileForeignSummaryProject;
     LP openFileForeignSummaryProject;
-    public LP fileRoadMapProject;
-    LP loadFileRoadMapProject;
-    LP openFileRoadMapProject;
+    public LP fileNativeRoadMapProject;
+    LP loadNativeFileRoadMapProject;
+    LP openNativeFileRoadMapProject;
+    public LP fileForeignRoadMapProject;
+    LP loadForeignFileRoadMapProject;
+    LP openForeignFileRoadMapProject;
     public LP fileResolutionIPProject;
     LP loadFileResolutionIPProject;
+    LP hideLoadFileResolutionIPProject;
     LP openFileResolutionIPProject;
     public LP fileNativeTechnicalDescriptionProject;
     public LP loadFileNativeTechnicalDescriptionProject;
@@ -954,9 +957,13 @@ public class SkolkovoLogicsModule extends LogicsModule {
         hideCommentEquipmentProject = addHideCaptionProp(privateGroup, "Укажите", commentEquipmentProject, isOtherEquipmentProject);
 
         // документы
-        fileRoadMapProject = addDProp("fileRoadMapProject", "Файл дорожной карты", CustomFileClass.instance, project);
-        loadFileRoadMapProject = addLFAProp(projectDocumentsGroup, "Загрузить файл дорожной карты", fileRoadMapProject);
-        openFileRoadMapProject = addOFAProp(projectDocumentsGroup, "Открыть файл дорожной карты", fileRoadMapProject);
+        fileNativeRoadMapProject = addDProp("fileNativeRoadMapProject", "Файл дорожной карты", CustomFileClass.instance, project);
+        loadNativeFileRoadMapProject = addLFAProp(projectDocumentsGroup, "Загрузить файл дорожной карты", fileNativeRoadMapProject);
+        openNativeFileRoadMapProject = addOFAProp(projectDocumentsGroup, "Открыть файл дорожной карты", fileNativeRoadMapProject);
+
+        fileForeignRoadMapProject = addDProp("fileForeignRoadMapProject", "Файл дорожной карты (иностр.)", CustomFileClass.instance, project);
+        loadForeignFileRoadMapProject = addLFAProp(projectDocumentsGroup, "Загрузить файл дорожной карты (иностр.)", fileForeignRoadMapProject);
+        openForeignFileRoadMapProject = addOFAProp(projectDocumentsGroup, "Открыть файл дорожной карты (иностр.)", fileForeignRoadMapProject);
 
         fileResolutionIPProject = addDProp("fileResolutionIPProject", "Заявление IP", CustomFileClass.instance, project);
         loadFileResolutionIPProject = addLFAProp(projectDocumentsGroup, "Загрузить файл заявления IP", fileResolutionIPProject);
@@ -1799,7 +1806,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
             if (!("both".equals(lng))) {
                 design.getMainContainer().addAfter(design.getGroupPropertyContainer(objProject.groupTo, projectTranslationsGroup), specContainer);
-                }
+            }
             design.setShowTableFirstLogical(true);
 
             PropertyObjectEntity sidProjectProperty = addPropertyObject(sidProject, objProject);
@@ -1863,17 +1870,21 @@ public class SkolkovoLogicsModule extends LogicsModule {
             getPropertyDraw(isOtherClusterProject).propertyCaption = addPropertyObject(hideIsOtherClusterProject, objProject);
             getPropertyDraw(nativeSubstantiationOtherClusterProject).propertyCaption = addPropertyObject(hideNativeSubstantiationOtherClusterProject, objProject);
             getPropertyDraw(foreignSubstantiationOtherClusterProject).propertyCaption = addPropertyObject(hideForeignSubstantiationOtherClusterProject, objProject);
-            addPropertyDraw(objProject, nameNativeProject, nameForeignProject, translateToRussianProject, translateToEnglishProject);
+            addPropertyDraw(objProject, nameNativeProject, nameForeignProject, translateToRussianProject, translateToEnglishProject, loadFileResolutionIPProject);
             setForceViewType(nameNativeProject, ClassViewType.PANEL);
             setForceViewType(nameForeignProject, ClassViewType.PANEL);
             setForceViewType(translateToRussianProject, ClassViewType.PANEL);
             setForceViewType(translateToEnglishProject, ClassViewType.PANEL);
+            setForceViewType(loadFileResolutionIPProject, ClassViewType.PANEL);
 
             hideTranslateToRussianProject = addHideCaptionProp(privateGroup, "Перевести", translateToRussianProject, needsToBeTranslatedToRussianProject);
             getPropertyDraw(translateToRussianProject).propertyCaption = addPropertyObject(hideTranslateToRussianProject, objProject);
 
             hideTranslateToEnglishProject = addHideCaptionProp(privateGroup, "Перевести", translateToEnglishProject, needsToBeTranslatedToEnglishProject);
             getPropertyDraw(translateToEnglishProject).propertyCaption = addPropertyObject(hideTranslateToEnglishProject, objProject);
+
+            hideLoadFileResolutionIPProject = addHideCaptionProp(privateGroup, "Перевести", loadFileResolutionIPProject, addJProp(baseLM.andNot1, addCProp(LogicalClass.instance, true, project), 1, openFileResolutionIPProject, 1));
+            getPropertyDraw(loadFileResolutionIPProject).propertyCaption = addPropertyObject(hideLoadFileResolutionIPProject, objProject);
 
 
             addObjectActions(this, objProject);
@@ -1978,6 +1989,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             ContainerView docContainer = design.createContainer("Документы");
             docContainer.add(design.getGroupObjectContainer(objDocumentTemplate.groupTo));
             docContainer.add(design.getGroupObjectContainer(objDocument.groupTo));
+            docContainer.add(design.getGroupPropertyContainer(objProject.groupTo, projectDocumentsGroup));
 
             ContainerView expertContainer = design.createContainer("Экспертиза по существу");
             expertContainer.add(design.getGroupObjectContainer(objVote.groupTo));
@@ -2789,12 +2801,21 @@ public class SkolkovoLogicsModule extends LogicsModule {
                     fileDocument.execute(file, context, documentObject);
                 }
 
-                file = fileRoadMapProject.read(context, projectObject);
+                file = fileNativeRoadMapProject.read(context, projectObject);
                 if (file != null) {
                     documentObject = context.addObject(document);
                     projectDocument.execute(projectObject.getValue(), context, documentObject);
-                    typeDocument.execute(documentType.getID("techdesc"), context, documentObject);
+                    typeDocument.execute(documentType.getID("roadmap"), context, documentObject);
                     languageDocument.execute(language.getID("russian"), context, documentObject);
+                    fileDocument.execute(file, context, documentObject);
+                }
+
+                file = fileForeignRoadMapProject.read(context, projectObject);
+                if (file != null) {
+                    documentObject = context.addObject(document);
+                    projectDocument.execute(projectObject.getValue(), context, documentObject);
+                    typeDocument.execute(documentType.getID("roadmap"), context, documentObject);
+                    languageDocument.execute(language.getID("english"), context, documentObject);
                     fileDocument.execute(file, context, documentObject);
                 }
 

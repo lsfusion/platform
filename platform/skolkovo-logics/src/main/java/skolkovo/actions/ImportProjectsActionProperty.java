@@ -196,7 +196,7 @@ public class ImportProjectsActionProperty extends ActionProperty {
         fileExtractClaimerField = new ImportField(LM.extractClaimer);
         fileNativeSummaryProjectField = new ImportField(LM.fileNativeSummaryProject);
         fileForeignSummaryProjectField = new ImportField(LM.fileForeignSummaryProject);
-        fileRoadMapProjectField = new ImportField(LM.fileRoadMapProject);
+        fileRoadMapProjectField = new ImportField(LM.fileNativeRoadMapProject);
         fileNativeTechnicalDescriptionProjectField = new ImportField(LM.fileNativeTechnicalDescriptionProject);
         fileForeignTechnicalDescriptionProjectField = new ImportField(LM.fileForeignTechnicalDescriptionProject);
 
@@ -296,7 +296,7 @@ public class ImportProjectsActionProperty extends ActionProperty {
         propertiesFullClaimer.add(new ImportProperty(fileStatementClaimerField, LM.statementClaimer.getMapping(claimerKey)));
         propertiesFullClaimer.add(new ImportProperty(fileConstituentClaimerField, LM.constituentClaimer.getMapping(claimerKey)));
         propertiesFullClaimer.add(new ImportProperty(fileExtractClaimerField, LM.extractClaimer.getMapping(claimerKey)));
-        propertiesFullClaimer.add(new ImportProperty(fileRoadMapProjectField, LM.fileRoadMapProject.getMapping(projectKey)));
+        propertiesFullClaimer.add(new ImportProperty(fileRoadMapProjectField, LM.fileNativeRoadMapProject.getMapping(projectKey)));
 
         propertyDate = new ImportProperty(dateProjectField, LM.dateJoinProject.getMapping(projectKey));
 
@@ -759,7 +759,7 @@ public class ImportProjectsActionProperty extends ActionProperty {
                     row.add(buildFileByteArray(node.getChild("fileStatementClaimer")));
                     row.add(buildFileByteArray(node.getChild("fileConstituentClaimer")));
                     row.add(buildFileByteArray(node.getChild("fileExtractClaimer")));
-                    row.add(buildFileByteArray(node.getChild("fileRoadMapProject")));
+                    row.add(buildFileByteArray(node.getChild("fileNativeRoadMapProject")));
                 }
                 if (fillDate) {
                     row.add(new java.sql.Date(Integer.parseInt(node.getChildText("yearProject")) - 1900, Integer.parseInt(node.getChildText("monthProject")) - 1, Integer.parseInt(node.getChildText("dayProject"))));
