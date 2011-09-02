@@ -61,7 +61,7 @@ public class Settings {
     private boolean splitGroupStatInnerJoins = false;
 
     // будет ли компилятор вместо UNION (когда OR'ов слишком много) использовать FULL JOIN
-    boolean useFJInsteadOfUnion = true;
+    boolean useFJInsteadOfUnion = false;
 
     // будет ли оптимизатор разбивать группирующие выражения на максимум, так чтобы в группируемом выражении не было бы Case'ов 
     private boolean splitGroupMaxExprcases = false;
