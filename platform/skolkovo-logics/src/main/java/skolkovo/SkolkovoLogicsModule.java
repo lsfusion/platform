@@ -10,6 +10,7 @@ import net.sf.jasperreports.engine.JasperPrint;
 import net.sf.jasperreports.engine.export.JRPdfExporter;
 import platform.base.BaseUtils;
 import platform.base.IOUtils;
+import platform.base.OrderedMap;
 import platform.interop.ClassViewType;
 import platform.interop.Compare;
 import platform.interop.action.ClientAction;
@@ -18,6 +19,7 @@ import platform.interop.form.RemoteFormInterface;
 import platform.interop.form.layout.DoNotIntersectSimplexConstraint;
 import platform.server.classes.*;
 import platform.server.data.Union;
+import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.query.OrderType;
 import platform.server.data.query.Query;
 import platform.server.form.entity.*;
@@ -41,6 +43,7 @@ import platform.server.logics.property.ExecutionContext;
 import platform.server.logics.property.Property;
 import platform.server.logics.property.group.AbstractGroup;
 import platform.server.mail.EmailActionProperty;
+import platform.server.session.DataSession;
 import skolkovo.actions.ImportProjectsActionProperty;
 
 import javax.swing.*;
@@ -2782,6 +2785,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
                 query.and(projectNonRussianSpecialist.getExpr(context.getModifier(), query.mapKeys.get("nonRussianSpecialist")).compare(projectObject.getExpr(), Compare.EQUALS));
                 query.properties.put("fullNameNonRussianSpecialist", projectNonRussianSpecialist.getExpr(context.getModifier(), query.mapKeys.get("nonRussianSpecialist")));
                 query.properties.put("fileForeignResumeNonRussianSpecialist", fileForeignResumeNonRussianSpecialist.getExpr(context.getModifier(), query.mapKeys.get("nonRussianSpecialist")));
+                int count = 1;
+                int size = query.executeClasses(context.getSession(), baseClass).entrySet().size();
                 for (Map.Entry<Map<String, DataObject>, Map<String, ObjectValue>> row : query.executeClasses(context.getSession(), baseClass).entrySet()) {
                     row.getKey().get("nonRussianSpecialist");
                     row.getValue().get("fullNameNonRussianSpecialist");
@@ -2790,7 +2795,10 @@ public class SkolkovoLogicsModule extends LogicsModule {
                     projectDocument.execute(projectObject.getValue(), context, documentObject);
                     typeDocument.execute(documentType.getID("forres"), context, documentObject);
                     languageDocument.execute(language.getID("english"), context, documentObject);
+                    if (size > 1)
+                        postfixDocument.execute(String.valueOf(count), context, documentObject);
                     fileDocument.execute(row.getValue().get("fileForeignResumeNonRussianSpecialist").getValue(), context, documentObject);
+                    count++;
                 }
 
                 file = fileNativeTechnicalDescriptionProject.read(context, projectObject);
