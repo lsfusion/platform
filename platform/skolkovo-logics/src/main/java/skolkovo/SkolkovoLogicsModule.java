@@ -129,10 +129,11 @@ public class SkolkovoLogicsModule extends LogicsModule {
     AbstractGroup projectInformationGroup;
     AbstractGroup additionalInformationGroup;
     AbstractGroup innovationGroup;
-    AbstractGroup executiveSummaryGroup;
     AbstractGroup sourcesFundingGroup;
+    AbstractGroup nonReturnFundingGroup;
     AbstractGroup equipmentGroup;
     AbstractGroup projectDocumentsGroup;
+    AbstractGroup executiveSummaryGroup, techDescrGroup, roadMapGroup, resolutionIPGroup;
     AbstractGroup projectStatusGroup;
     AbstractGroup projectOptionsGroup;
     AbstractGroup translateActionGroup;
@@ -245,13 +246,16 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         innovationGroup = addAbstractGroup("innovationGroup", "Инновация", baseGroup);
 
-        executiveSummaryGroup = addAbstractGroup("executiveSummaryGroup", "Резюме проекта", baseGroup);
-
         sourcesFundingGroup = addAbstractGroup("sourcesFundingGroup", "Источники финансирования", baseGroup);
+        nonReturnFundingGroup = addAbstractGroup("nonReturnFundingGroup", "Безвозвратные", sourcesFundingGroup);
 
         equipmentGroup = addAbstractGroup("equipmentGroup", "Оборудование", baseGroup);
 
         projectDocumentsGroup = addAbstractGroup("projectDocumentsGroup", "Документы", baseGroup);
+        executiveSummaryGroup = addAbstractGroup("executiveSummaryGroup", "Резюме проекта", projectDocumentsGroup);
+        techDescrGroup = addAbstractGroup("techDescrGroup", "Техническое описание", projectDocumentsGroup);
+        roadMapGroup = addAbstractGroup("roadMapGroup", "Дорожная карта", projectDocumentsGroup);
+        resolutionIPGroup = addAbstractGroup("resolutionIPGroup", "Заявление IP", projectDocumentsGroup);
 
         projectStatusGroup = addAbstractGroup("projectStatusGroup", "Текущий статус проекта", baseGroup);
 
@@ -796,8 +800,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
         isStatusProject = addJProp("isStatusProject", "На статус участника", baseLM.equals2, projectActionProject, 1, addCProp(projectAction, "status", project), 1);
         isPreliminaryProject = addJProp("isPreliminaryProject", "На предварительную экспертизу", baseLM.equals2, projectActionProject, 1, addCProp(projectAction, "preliminary", project), 1);
 
-        nameNativeJoinClaimerProject = addJProp(projectInformationGroup, true, "nameNativeJoinClaimerProject", "Заявитель", nameNative, claimerProject, 1);
-        nameForeignJoinClaimerProject = addJProp(projectInformationGroup, true, "nameForeignJoinClaimerProject", "Claimer", nameForeign, claimerProject, 1);
+        nameNativeJoinClaimerProject = addJProp(projectInformationGroup, true, "nameNativeJoinClaimerProject", "Полное наименование организации", nameNative, claimerProject, 1);
+        nameForeignJoinClaimerProject = addJProp(projectInformationGroup, true, "nameForeignJoinClaimerProject", "Full name of the Organisation", nameForeign, claimerProject, 1);
 
         nameNativeClaimerProject = addIfElseUProp(baseGroup, "nameNativeClaimerProject", "Заявитель", nameNativeManagerProject, nameNativeJoinClaimerProject, isPreliminaryProject, 1);
         nameNativeClaimerProject.setMinimumWidth(10);
@@ -891,20 +895,20 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         isNonReturnInvestmentsProject = addDProp(sourcesFundingGroup, "isNonReturnInvestmentsProject", "Средства третьих лиц, привлекаемые на безвозвратной основе (гранты и т.п.)", LogicalClass.instance, project);
 
-        isCapitalInvestmentProject = addDProp(sourcesFundingGroup, "isCapitalInvestmentProject", "Вклады в уставный капитал", LogicalClass.instance, project);
-        isPropertyInvestmentProject = addDProp(sourcesFundingGroup, "isPropertyInvestmentProject", "Вклады в имущество", LogicalClass.instance, project);
-        isGrantsProject = addDProp(sourcesFundingGroup, "isGrantsProject", "Гранты", LogicalClass.instance, project);
+        isCapitalInvestmentProject = addDProp(nonReturnFundingGroup, "isCapitalInvestmentProject", "Вклады в уставный капитал", LogicalClass.instance, project);
+        isPropertyInvestmentProject = addDProp(nonReturnFundingGroup, "isPropertyInvestmentProject", "Вклады в имущество", LogicalClass.instance, project);
+        isGrantsProject = addDProp(nonReturnFundingGroup, "isGrantsProject", "Гранты", LogicalClass.instance, project);
 
-        isOtherNonReturnInvestmentsProject = addDProp(sourcesFundingGroup, "isOtherNonReturnInvestmentsProject", "Иное", LogicalClass.instance, project);
+        isOtherNonReturnInvestmentsProject = addDProp(nonReturnFundingGroup, "isOtherNonReturnInvestmentsProject", "Иное", LogicalClass.instance, project);
 
-        nameNonReturnInvestorProject = addDProp(sourcesFundingGroup, "nameNonReturnInvestorProject", "Третьи лица для возврата средств", InsensitiveStringClass.get(2000), project);
+        nameNonReturnInvestorProject = addDProp(nonReturnFundingGroup, "nameNonReturnInvestorProject", "Третьи лица для возврата средств", InsensitiveStringClass.get(2000), project);
         nameNonReturnInvestorProject.setMinimumWidth(10);
         nameNonReturnInvestorProject.setPreferredWidth(50);
-        amountNonReturnFundsProject = addDProp(sourcesFundingGroup, "amountNonReturnFundsProject", "Объем средств на безвозвратной основе (тыс. руб.)", StringClass.get(30), project);
+        amountNonReturnFundsProject = addDProp(nonReturnFundingGroup, "amountNonReturnFundsProject", "Объем средств на безвозвратной основе (тыс. руб.)", StringClass.get(30), project);
         hideNameNonReturnInvestorProject = addHideCaptionProp(privateGroup, "укажите данных лиц и их контактную информацию", nameReturnInvestorProject, isNonReturnInvestmentsProject);
         hideAmountNonReturnFundsProject = addHideCaptionProp(privateGroup, "укажите объем привлекаемых средств (тыс. руб.)", amountNonReturnFundsProject, isNonReturnInvestmentsProject);
 
-        commentOtherNonReturnInvestmentsProject = addDProp(sourcesFundingGroup, "commentOtherNonReturnInvestmentsProject", "Комментарий", InsensitiveStringClass.get(2000), project);
+        commentOtherNonReturnInvestmentsProject = addDProp(nonReturnFundingGroup, "commentOtherNonReturnInvestmentsProject", "Комментарий", InsensitiveStringClass.get(2000), project);
         commentOtherNonReturnInvestmentsProject.setMinimumWidth(10);
         commentOtherNonReturnInvestmentsProject.setPreferredWidth(50);
 
@@ -964,24 +968,24 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         // документы
         fileNativeRoadMapProject = addDProp("fileNativeRoadMapProject", "Файл дорожной карты", CustomFileClass.instance, project);
-        loadNativeFileRoadMapProject = addLFAProp(projectDocumentsGroup, "Загрузить файл дорожной карты", fileNativeRoadMapProject);
-        openNativeFileRoadMapProject = addOFAProp(projectDocumentsGroup, "Открыть файл дорожной карты", fileNativeRoadMapProject);
+        loadNativeFileRoadMapProject = addLFAProp(roadMapGroup, "Загрузить файл дорожной карты", fileNativeRoadMapProject);
+        openNativeFileRoadMapProject = addOFAProp(roadMapGroup, "Открыть файл дорожной карты", fileNativeRoadMapProject);
 
         fileForeignRoadMapProject = addDProp("fileForeignRoadMapProject", "Файл дорожной карты (иностр.)", CustomFileClass.instance, project);
-        loadForeignFileRoadMapProject = addLFAProp(projectDocumentsGroup, "Загрузить файл дорожной карты (иностр.)", fileForeignRoadMapProject);
-        openForeignFileRoadMapProject = addOFAProp(projectDocumentsGroup, "Открыть файл дорожной карты (иностр.)", fileForeignRoadMapProject);
+        loadForeignFileRoadMapProject = addLFAProp(roadMapGroup, "Загрузить файл дорожной карты (иностр.)", fileForeignRoadMapProject);
+        openForeignFileRoadMapProject = addOFAProp(roadMapGroup, "Открыть файл дорожной карты (иностр.)", fileForeignRoadMapProject);
 
         fileResolutionIPProject = addDProp("fileResolutionIPProject", "Заявление IP", CustomFileClass.instance, project);
-        loadFileResolutionIPProject = addLFAProp(projectDocumentsGroup, "Загрузить файл заявления IP", fileResolutionIPProject);
-        openFileResolutionIPProject = addOFAProp(projectDocumentsGroup, "Открыть файл заявления IP", fileResolutionIPProject);
+        loadFileResolutionIPProject = addLFAProp(resolutionIPGroup, "Загрузить файл заявления IP", fileResolutionIPProject);
+        openFileResolutionIPProject = addOFAProp(resolutionIPGroup, "Открыть файл заявления IP", fileResolutionIPProject);
 
         fileNativeTechnicalDescriptionProject = addDProp("fileNativeTechnicalDescriptionProject", "Файл технического описания", CustomFileClass.instance, project);
-        loadFileNativeTechnicalDescriptionProject = addLFAProp(projectDocumentsGroup, "Загрузить файл технического описания", fileNativeTechnicalDescriptionProject);
-        openFileNativeTechnicalDescriptionProject = addOFAProp(projectDocumentsGroup, "Открыть файл технического описания", fileNativeTechnicalDescriptionProject);
+        loadFileNativeTechnicalDescriptionProject = addLFAProp(techDescrGroup, "Загрузить файл технического описания", fileNativeTechnicalDescriptionProject);
+        openFileNativeTechnicalDescriptionProject = addOFAProp(techDescrGroup, "Открыть файл технического описания", fileNativeTechnicalDescriptionProject);
 
         fileForeignTechnicalDescriptionProject = addDProp("fileForeignTechnicalDescriptionProject", "Файл технического описания (иностр.)", CustomFileClass.instance, project);
-        loadFileForeignTechnicalDescriptionProject = addLFAProp(projectDocumentsGroup, "Загрузить файл технического описания (иностр.)", fileForeignTechnicalDescriptionProject);
-        openFileForeignTechnicalDescriptionProject = addOFAProp(projectDocumentsGroup, "Открыть файл технического описания (иностр.)", fileForeignTechnicalDescriptionProject);
+        loadFileForeignTechnicalDescriptionProject = addLFAProp(techDescrGroup, "Загрузить файл технического описания (иностр.)", fileForeignTechnicalDescriptionProject);
+        openFileForeignTechnicalDescriptionProject = addOFAProp(techDescrGroup, "Открыть файл технического описания (иностр.)", fileForeignTechnicalDescriptionProject);
 
         // патенты
         projectPatent = addDProp(idGroup, "projectPatent", "Проект патента", project, patent);
@@ -1668,8 +1672,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
             this.lng = lng;
 
-            objProject = addSingleGroupObject(1, "project", project, "Описание проекта", projectInformationGroup, innovationGroup, projectDocumentsGroup, executiveSummaryGroup, sourcesFundingGroup, equipmentGroup, projectOptionsGroup, projectStatusGroup);
-
+            objProject = addSingleGroupObject(1, "project", project, "Проект", projectInformationGroup, innovationGroup, projectDocumentsGroup, sourcesFundingGroup, equipmentGroup, projectOptionsGroup, projectStatusGroup);
 
             getPropertyDraw(nameReturnInvestorProject).propertyCaption = addPropertyObject(hideNameReturnInvestorProject, objProject);
             getPropertyDraw(amountReturnFundsProject).propertyCaption = addPropertyObject(hideAmountReturnFundsProject, objProject);
@@ -1748,65 +1751,43 @@ public class SkolkovoLogicsModule extends LogicsModule {
         public FormView createDefaultRichDesign() {
             DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign();
 
-            design.addIntersection(design.getGroupPropertyContainer(objProject.groupTo, innovationGroup),
-                    design.getGroupPropertyContainer(objProject.groupTo, sourcesFundingGroup), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
-            design.addIntersection(design.getGroupPropertyContainer(objProject.groupTo, innovationGroup),
-                    design.getGroupPropertyContainer(objProject.groupTo, equipmentGroup), DoNotIntersectSimplexConstraint.TOTHE_BOTTOM);
-            design.addIntersection(design.getGroupPropertyContainer(objProject.groupTo, equipmentGroup),
-                    design.getGroupPropertyContainer(objProject.groupTo, projectDocumentsGroup), DoNotIntersectSimplexConstraint.TOTHE_BOTTOM);
-            design.addIntersection(design.getGroupPropertyContainer(objProject.groupTo, projectDocumentsGroup),
-                    design.getGroupPropertyContainer(objProject.groupTo, executiveSummaryGroup), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
-            design.addIntersection(design.getGroupPropertyContainer(objProject.groupTo, innovationGroup),
-                    design.getGroupPropertyContainer(objProject.groupTo, executiveSummaryGroup), DoNotIntersectSimplexConstraint.TOTHE_BOTTOM);
-            design.addIntersection(design.getGroupPropertyContainer(objProject.groupTo, equipmentGroup),
-                    design.getGroupPropertyContainer(objProject.groupTo, executiveSummaryGroup), DoNotIntersectSimplexConstraint.TOTHE_BOTTOM);
-            design.addIntersection(design.getGroupPropertyContainer(objProject.groupTo, equipmentGroup),
-                    design.getGroupPropertyContainer(objProject.groupTo, executiveSummaryGroup), DoNotIntersectSimplexConstraint.TOTHE_BOTTOM);
-            design.addIntersection(design.getGroupPropertyContainer(objProject.groupTo, projectDocumentsGroup),
-                    design.getGroupPropertyContainer(objProject.groupTo, executiveSummaryGroup), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
-            design.addIntersection(design.getGroupPropertyContainer(objProject.groupTo, sourcesFundingGroup),
-                    design.getGroupPropertyContainer(objProject.groupTo, executiveSummaryGroup), DoNotIntersectSimplexConstraint.TOTHE_BOTTOM);
-            design.addIntersection(design.getGroupPropertyContainer(objProject.groupTo, projectOptionsGroup),
-                    design.getGroupPropertyContainer(objProject.groupTo, projectDocumentsGroup), DoNotIntersectSimplexConstraint.TOTHE_BOTTOM);
-            design.addIntersection(design.getGroupPropertyContainer(objProject.groupTo, projectStatusGroup),
-                    design.getGroupPropertyContainer(objProject.groupTo, projectDocumentsGroup), DoNotIntersectSimplexConstraint.TOTHE_BOTTOM);
-            design.addIntersection(design.getGroupPropertyContainer(objProject.groupTo, projectOptionsGroup),
-                    design.getGroupPropertyContainer(objProject.groupTo, executiveSummaryGroup), DoNotIntersectSimplexConstraint.TOTHE_BOTTOM);
-            design.addIntersection(design.getGroupPropertyContainer(objProject.groupTo, projectStatusGroup),
-                    design.getGroupPropertyContainer(objProject.groupTo, executiveSummaryGroup), DoNotIntersectSimplexConstraint.TOTHE_BOTTOM);
-            design.addIntersection(design.getGroupPropertyContainer(objProject.groupTo, projectOptionsGroup),
-                    design.getGroupPropertyContainer(objProject.groupTo, equipmentGroup), DoNotIntersectSimplexConstraint.TOTHE_BOTTOM);
-            design.addIntersection(design.getGroupPropertyContainer(objProject.groupTo, projectStatusGroup),
-                    design.getGroupPropertyContainer(objProject.groupTo, equipmentGroup), DoNotIntersectSimplexConstraint.TOTHE_BOTTOM);
-            design.addIntersection(design.getGroupPropertyContainer(objProject.groupTo, innovationGroup),
-                    design.getGroupPropertyContainer(objProject.groupTo, projectOptionsGroup), DoNotIntersectSimplexConstraint.TOTHE_BOTTOM);
-            design.addIntersection(design.getGroupPropertyContainer(objProject.groupTo, innovationGroup),
-                    design.getGroupPropertyContainer(objProject.groupTo, projectStatusGroup), DoNotIntersectSimplexConstraint.TOTHE_BOTTOM);
-            design.addIntersection(design.getGroupPropertyContainer(objProject.groupTo, sourcesFundingGroup),
-                    design.getGroupPropertyContainer(objProject.groupTo, projectOptionsGroup), DoNotIntersectSimplexConstraint.TOTHE_BOTTOM);
-            design.addIntersection(design.getGroupPropertyContainer(objProject.groupTo, sourcesFundingGroup),
-                    design.getGroupPropertyContainer(objProject.groupTo, projectStatusGroup), DoNotIntersectSimplexConstraint.TOTHE_BOTTOM);
-            design.addIntersection(design.getGroupPropertyContainer(objProject.groupTo, projectOptionsGroup),
-                    design.getGroupPropertyContainer(objProject.groupTo, projectStatusGroup), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
-            design.addIntersection(design.getGroupPropertyContainer(objProject.groupTo, projectOptionsGroup),
-                    design.getGroupPropertyContainer(objProject.groupTo, sourcesFundingGroup), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
-            design.addIntersection(design.getGroupPropertyContainer(objProject.groupTo, projectStatusGroup),
-                    design.getGroupPropertyContainer(objProject.groupTo, sourcesFundingGroup), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
-            design.addIntersection(design.getGroupPropertyContainer(objProject.groupTo, sourcesFundingGroup),
-                    design.getGroupPropertyContainer(objProject.groupTo, equipmentGroup), DoNotIntersectSimplexConstraint.TOTHE_BOTTOM);
+            ContainerView row112 = design.createContainer();
+            row112.constraints.childConstraints = DoNotIntersectSimplexConstraint.TOTHE_RIGHT;
+            row112.add(design.getGroupPropertyContainer(objProject.groupTo, projectOptionsGroup));
+            row112.add(design.getGroupPropertyContainer(objProject.groupTo, projectTranslationsGroup));
+            row112.add(design.getGroupPropertyContainer(objProject.groupTo, projectStatusGroup));
 
+            ContainerView col11 = design.createContainer();
+            col11.constraints.childConstraints = DoNotIntersectSimplexConstraint.TOTHE_BOTTOM;
             design.getGroupPropertyContainer(objProject.groupTo, innovationGroup).constraints.childConstraints = DoNotIntersectSimplexConstraint.TOTHE_BOTTOM;
-            design.getGroupPropertyContainer(objProject.groupTo, projectStatusGroup).constraints.childConstraints = DoNotIntersectSimplexConstraint.TOTHE_BOTTOM;
-            design.getGroupPropertyContainer(objProject.groupTo, projectOptionsGroup).constraints.childConstraints = DoNotIntersectSimplexConstraint.TOTHE_BOTTOM;
+            col11.add(design.getGroupPropertyContainer(objProject.groupTo, innovationGroup));
+            col11.add(row112);
+
+            ContainerView row1 = design.createContainer();
+            row1.constraints.childConstraints = DoNotIntersectSimplexConstraint.TOTHE_RIGHT;
+            row1.add(col11);
+            design.getGroupPropertyContainer(objProject.groupTo, sourcesFundingGroup).constraints.childConstraints = DoNotIntersectSimplexConstraint.TOTHE_BOTTOM;
+            design.getGroupPropertyContainer(objProject.groupTo, nonReturnFundingGroup).constraints.childConstraints = DoNotIntersectSimplexConstraint.TOTHE_BOTTOM;
+            row1.add(design.getGroupPropertyContainer(objProject.groupTo, sourcesFundingGroup));
+
+            design.getGroupPropertyContainer(objProject.groupTo, sourcesFundingGroup).addAfter(
+                    design.getGroupPropertyContainer(objProject.groupTo, nonReturnFundingGroup), design.get(getPropertyDraw(isNonReturnInvestmentsProject)));
+
+            design.getGroupPropertyContainer(objProject.groupTo, projectDocumentsGroup).constraints.childConstraints = DoNotIntersectSimplexConstraint.TOTHE_RIGHT;
             design.getGroupPropertyContainer(objProject.groupTo, executiveSummaryGroup).constraints.childConstraints = DoNotIntersectSimplexConstraint.TOTHE_BOTTOM;
+            design.getGroupPropertyContainer(objProject.groupTo, techDescrGroup).constraints.childConstraints = DoNotIntersectSimplexConstraint.TOTHE_BOTTOM;
+            design.getGroupPropertyContainer(objProject.groupTo, roadMapGroup).constraints.childConstraints = DoNotIntersectSimplexConstraint.TOTHE_BOTTOM;
+            design.getGroupPropertyContainer(objProject.groupTo, resolutionIPGroup).constraints.childConstraints = DoNotIntersectSimplexConstraint.TOTHE_BOTTOM;
 
-
-            design.addIntersection(design.getGroupPropertyContainer(objProject.groupTo, projectOptionsGroup),
-                    design.getGroupPropertyContainer(objProject.groupTo, projectStatusGroup), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
+            ContainerView descrContainer = design.createContainer("Описание проекта");
+            descrContainer.constraints.childConstraints = DoNotIntersectSimplexConstraint.TOTHE_BOTTOM;
+            descrContainer.add(row1);
+            descrContainer.add(design.getGroupPropertyContainer(objProject.groupTo, equipmentGroup));
+            descrContainer.add(design.getGroupPropertyContainer(objProject.groupTo, projectDocumentsGroup));
 
             ContainerView specContainer = design.createContainer();
             design.getMainContainer().addAfter(specContainer, design.getGroupObjectContainer(objProject.groupTo));
-            specContainer.add(design.getGroupObjectContainer(objProject.groupTo));
+            specContainer.add(descrContainer);
             specContainer.add(design.getGroupObjectContainer(objPatent.groupTo));
             specContainer.add(design.getGroupObjectContainer(objAcademic.groupTo));
             specContainer.add(design.getGroupObjectContainer(objNonRussianSpecialist.groupTo));
