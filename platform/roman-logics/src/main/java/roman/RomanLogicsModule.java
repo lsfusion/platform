@@ -492,6 +492,7 @@ public class RomanLogicsModule extends LogicsModule {
     private LP minPriceRateCustomCategoryFreightSku;
     private LP minPriceRateFreightSku;
     private LP minPriceRateImporterFreightSku;
+    private LP minPriceRateWeightImporterFreightSku;
     private LP diffPriceMinPriceImporterFreightSku;
     private LP greaterPriceMinPriceImporterFreightSku;
     private LP dutyNetWeightFreightSku;
@@ -3088,6 +3089,8 @@ public class RomanLogicsModule extends LogicsModule {
 
         minPriceRateFreightSku = addSUProp(baseGroup, "minPriceRateFreightSku", "Минимальная цена (евро)", Union.OVERRIDE, minPriceRateCustomCategoryFreightSku, minPriceRateCustomCategoryCountryFreightSku);
         minPriceRateImporterFreightSku = addJProp(baseGroup, "minPriceImporterFreightSku", "Минимальная цена (евро)", baseLM.and1, minPriceRateFreightSku, 2, 3, is(importer), 1);
+
+        minPriceRateWeightImporterFreightSku = addJProp(baseGroup, "minPriceRateWeightImporterFreightSku", "Минимальная для веса", baseLM.multiplyDouble2, minPriceRateImporterFreightSku, 1, 2, 3, netWeightFreightSku, 2, 3);
 
         diffPriceMinPriceImporterFreightSku = addDUProp(baseGroup, "diffPriceMinPriceImporterFreightSku", "Разница цен", minPriceRateImporterFreightSku, priceFullKgImporterFreightSku);
         greaterPriceMinPriceImporterFreightSku = addJProp(baseGroup, "greaterPriceMinPriceImporterFreightSku", "Недостаточность цены", baseLM.greater2, diffPriceMinPriceImporterFreightSku, 1, 2, 3, baseLM.vzero);
@@ -6887,6 +6890,7 @@ public class RomanLogicsModule extends LogicsModule {
             addPropertyDraw(priceFreightImporterFreightSku, objImporter, objFreight, objSku);
             addPropertyDraw(priceInsuranceImporterFreightSku, objImporter, objFreight, objSku);
             addPropertyDraw(priceFullImporterFreightSku, objImporter, objFreight, objSku);
+            addPropertyDraw(minPriceRateWeightImporterFreightSku, objImporter, objFreight, objSku);
             addPropertyDraw(priceFullKgImporterFreightSku, objImporter, objFreight, objSku);
             addPropertyDraw(minPriceRateFreightSku, objFreight, objSku);
             //addPropertyDraw(dutyNetWeightFreightSku, objFreight, objSku);
