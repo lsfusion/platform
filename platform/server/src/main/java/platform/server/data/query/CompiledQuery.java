@@ -162,10 +162,13 @@ public class CompiledQuery<K,V> {
         if(union) {
             if(queryJoins.size() < 15) {
                 queryJoins = query.where.getWhereJoins(false);
-                unionAll = true;
+                if(queryJoins.size() < 2) // теоретически такое может быть
+                    union = false;
+                else
+                    unionAll = true;
             } else
                 if(Settings.instance.isUseFJInsteadOfUnion())
-                union = false;
+                    union = false;
         }
         queryJoins = GroupJoinsWhere.pack(queryJoins);
 
