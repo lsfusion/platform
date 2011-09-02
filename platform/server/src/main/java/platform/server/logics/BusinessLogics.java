@@ -143,11 +143,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         }
 
         public String getMessage() {
-            String result = "";
-            for (Object segment : toArray()) {
-                result += segment.toString() + " : ";
-            }
-            return result.substring(0, result.length() - 3);
+            return  BaseUtils.toString(this, " : ");
         }
     }
 
