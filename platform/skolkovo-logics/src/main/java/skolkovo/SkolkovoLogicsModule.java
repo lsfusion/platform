@@ -668,6 +668,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
     LP editClaimer;
     LP addProject, editProject;
+    LP editClaimerProject;
     LP translateToRussianProject, translateToEnglishProject;
     LP hideTranslateToRussianProject, hideTranslateToEnglishProject;
     LP needTranslationProject;
@@ -1578,6 +1579,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
     public ProjectFullFormEntity projectFullNative;
     public ProjectFullFormEntity projectFullForeign;
     public ProjectFullFormEntity projectFullBoth;
+    public ClaimerFullFormEntity claimerFull;
 
     @Override
     public void initNavigators() throws JRException, FileNotFoundException {
@@ -1607,7 +1609,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
         projectFullForeign = addFormEntity(new ProjectFullFormEntity(baseLM.objectElement, "projectFullForeign", "Resume project for expert", "eng"));
 
 
-        claimer.setEditForm(addFormEntity(new ClaimerFullFormEntity(baseLM.objectElement, "claimerFull")));
+        claimerFull = addFormEntity(new ClaimerFullFormEntity(baseLM.objectElement, "claimerFull"));
+        claimer.setEditForm(claimerFull);
 
         NavigatorElement print = new NavigatorElement(baseLM.baseElement, "print", "Печатные формы");
         print.window = leftToolbar;
@@ -1655,6 +1658,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         private String lng;
 
         private ObjectEntity objProject;
+        private ObjectEntity objClaimer;
         private ObjectEntity objPatent;
         private ObjectEntity objAcademic;
         private ObjectEntity objNonRussianSpecialist;
@@ -1698,6 +1702,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
                 getPropertyDraw(translatedToEnglishProject).propertyCaption = addPropertyObject(hideTranslatedToEnglishProject, objProject);
             }
 
+            objClaimer = addSingleGroupObject(1, "claimer", claimer);
+
             //objOptionsProject = addSingleGroupObject(1, "optionsProject", project, "Параметры", projectOptionsGroup, projectStatusGroup, translateActionGroup);
             //objOptionsProject.groupTo.setSingleClassView(ClassViewType.PANEL);
 
@@ -1724,7 +1730,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             addProject = addMFAProp(actionGroup, "Добавить", this, new ObjectEntity[]{}, true, addPropertyObject(getAddObjectAction(project)));
 
             if (lng.equals("both"))
-                editProject = addMFAProp(actionGroup, "Редактировать", this, new ObjectEntity[]{objProject}).setImage("edit.png");
+                editProject = addMFAProp(actionGroup, "Редактировать проект", this, new ObjectEntity[]{objProject}).setImage("edit.png");
             if (lng.equals("rus")) {
                 translateToRussianProject = addJProp(translateActionGroup, true, "Перевести на русский", baseLM.and1,
                         addMFAProp("Требуется перевод на русский", this, new ObjectEntity[]{objProject}), 1,
@@ -1857,6 +1863,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
     private class ProjectFormEntity extends FormEntity<SkolkovoBusinessLogics> {
         private ObjectEntity objProject;
+        private ObjectEntity objClaimer;
         private ObjectEntity objCluster;
         private ObjectEntity objVote;
         private ObjectEntity objDocument;
@@ -1869,7 +1876,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             super(parent, sID, "Реестр проектов");
 
             objProject = addSingleGroupObject(project, dateProject, nameNative, nameForeign, nameNativeFinalClusterProject, nameNativeClaimerProject, emailClaimerProject,
-                    nameStatusProject, nameProjectActionProject, updateDateProject, autoGenerateProject, inactiveProject, generateVoteProject, editProject);
+                    nameStatusProject, nameProjectActionProject, updateDateProject, autoGenerateProject, inactiveProject, generateVoteProject, editClaimerProject, editProject);
             addPropertyDraw(objProject, isOtherClusterProject, nativeSubstantiationOtherClusterProject, foreignSubstantiationOtherClusterProject);
             getPropertyDraw(isOtherClusterProject).propertyCaption = addPropertyObject(hideIsOtherClusterProject, objProject);
             getPropertyDraw(nativeSubstantiationOtherClusterProject).propertyCaption = addPropertyObject(hideNativeSubstantiationOtherClusterProject, objProject);
@@ -1890,7 +1897,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             hideTranslateToEnglishProject = addHideCaptionProp(privateGroup, "Перевести", translateToEnglishProject, needsToBeTranslatedToEnglishProject);
             getPropertyDraw(translateToEnglishProject).propertyCaption = addPropertyObject(hideTranslateToEnglishProject, objProject);
 
-            hideLoadFileResolutionIPProject = addHideCaptionProp(privateGroup, "Перевести", loadFileResolutionIPProject, addJProp(baseLM.andNot1, addCProp(LogicalClass.instance, true, project), 1, openFileResolutionIPProject, 1));
+            hideLoadFileResolutionIPProject = addHideCaptionProp(privateGroup, "Загрузить", loadFileResolutionIPProject, addJProp(baseLM.andNot1, addCProp(LogicalClass.instance, true, project), 1, openFileResolutionIPProject, 1));
             getPropertyDraw(loadFileResolutionIPProject).propertyCaption = addPropertyObject(hideLoadFileResolutionIPProject, objProject);
 
             addObjectActions(this, objProject);
@@ -2308,6 +2315,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             objClaimer = addSingleGroupObject(claimer, "Заявитель", claimerInformationGroup, contactGroup, documentGroup, legalDataGroup);
             objClaimer.groupTo.setSingleClassView(ClassViewType.PANEL);
             editClaimer = addMFAProp(actionGroup, "Редактировать", this, new ObjectEntity[]{objClaimer}).setImage("edit.png");
+            editClaimerProject = addJProp(actionGroup, true, "Редактировать юр.лицо", editClaimer, claimerProject, 1);
         }
 
         @Override
