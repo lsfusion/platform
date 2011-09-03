@@ -1413,7 +1413,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         hideTranslatedToRussianProject = addHideCaptionProp(privateGroup, "Переведено", translatedToRussianProject, fillForeignProject);
         hideTranslatedToEnglishProject = addHideCaptionProp(privateGroup, "Переведено", translatedToEnglishProject, fillNativeProject);
 
-        needTranslationProject = addSUProp("needTranslationProject", Union.OVERRIDE, needsToBeTranslatedToRussianProject, needsToBeTranslatedToEnglishProject);
+        needTranslationProject = addSUProp("needTranslationProject", true, "Требуется перевод", Union.OVERRIDE, needsToBeTranslatedToRussianProject, needsToBeTranslatedToEnglishProject);
 
 
         statusProject = addCaseUProp(idGroup, "statusProject", true, "Статус (ИД)",

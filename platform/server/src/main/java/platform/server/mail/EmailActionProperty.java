@@ -57,7 +57,7 @@ public class EmailActionProperty extends ActionProperty {
     private final List<Map<ObjectEntity, ClassPropertyInterface>> mapObjects = new ArrayList<Map<ObjectEntity, ClassPropertyInterface>>();
     private final List<LP> attachmentNames = new ArrayList<LP>();
 
-    private final List<PropertyMapImplement<?, ClassPropertyInterface>> recepients = new ArrayList<PropertyMapImplement<?, ClassPropertyInterface>>();
+    private final List<PropertyMapImplement<?, ClassPropertyInterface>> recipients = new ArrayList<PropertyMapImplement<?, ClassPropertyInterface>>();
 
     private final String subject;
     private final LP fromAddress;
@@ -87,7 +87,7 @@ public class EmailActionProperty extends ActionProperty {
     }
 
     public <R extends PropertyInterface> void addRecepient(PropertyMapImplement<R, ClassPropertyInterface> recepient) {
-        recepients.add(recepient);
+        recipients.add(recepient);
     }
 
     public void addInlineForm(FormEntity form, Map<ObjectEntity, ClassPropertyInterface> objects) {
@@ -186,11 +186,11 @@ public class EmailActionProperty extends ActionProperty {
                 }
             }
 
-            Map<String, Message.RecipientType> recepientEmails = new HashMap<String, Message.RecipientType>();
-            for(PropertyMapImplement<?, ClassPropertyInterface> recepient : recepients) {
-                String recepientEmail = (String) recepient.read(context, context.getKeys());
+            Map<String, Message.RecipientType> recipientEmails = new HashMap<String, Message.RecipientType>();
+            for(PropertyMapImplement<?, ClassPropertyInterface> recipient : recipients) {
+                String recepientEmail = (String) recipient.read(context, context.getKeys());
                 if(recepientEmail != null)
-                    recepientEmails.put(recepientEmail.trim(), MimeMessage.RecipientType.TO);
+                    recipientEmails.put(recepientEmail.trim(), MimeMessage.RecipientType.TO);
             }
 
             List<ClassPropertyInterface> listInterfaces = (List<ClassPropertyInterface>)interfaces;
@@ -203,8 +203,8 @@ public class EmailActionProperty extends ActionProperty {
             String userName = (String) BL.LM.emailAccount.read(context);
             String password = (String) BL.LM.emailPassword.read(context);
             String emailBlindCarbonCopy = (String) this.emailBlindCarbonCopy.read(context);
-            if (emailBlindCarbonCopy != null && !emailBlindCarbonCopy.isEmpty() && !recepientEmails.containsKey(emailBlindCarbonCopy)) {
-                recepientEmails.put(emailBlindCarbonCopy.trim(), MimeMessage.RecipientType.BCC);
+            if (emailBlindCarbonCopy != null && !emailBlindCarbonCopy.isEmpty() && !recipientEmails.containsKey(emailBlindCarbonCopy.trim())) {
+                recipientEmails.put(emailBlindCarbonCopy.trim(), MimeMessage.RecipientType.BCC);
             }
 
             if(smtpHost==null || fromAddress==null) {
@@ -212,7 +212,7 @@ public class EmailActionProperty extends ActionProperty {
                 EmailSender.logger.error(errorMessage);
                 context.addAction(new MessageClientAction(errorMessage, ServerResourceBundle.getString("mail.sending")));
             } else {
-                EmailSender sender = new EmailSender(smtpHost.trim(), BaseUtils.nullTrim(smtpPort), fromAddress.trim(), BaseUtils.nullTrim(userName), BaseUtils.nullTrim(password), recepientEmails);
+                EmailSender sender = new EmailSender(smtpHost.trim(), BaseUtils.nullTrim(smtpPort), fromAddress.trim(), BaseUtils.nullTrim(userName), BaseUtils.nullTrim(password), recipientEmails);
                 sender.sendMail(subject, inlineForms, attachmentForms, attachmentFiles);
             }
         } catch (Exception e) {
