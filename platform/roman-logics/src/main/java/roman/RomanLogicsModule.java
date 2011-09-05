@@ -493,6 +493,9 @@ public class RomanLogicsModule extends LogicsModule {
     private LP minPriceRateFreightSku;
     private LP minPriceRateImporterFreightSku;
     private LP minPriceRateWeightImporterFreightSku;
+    private LP minPriceRateWeightImporterFreightArticle;
+    private LP priceInNegativeImporterFreightArticle;
+    private LP priceInImporterFreightArticle;
     private LP diffPriceMinPriceImporterFreightSku;
     private LP greaterPriceMinPriceImporterFreightSku;
     private LP dutyNetWeightFreightSku;
@@ -877,6 +880,10 @@ public class RomanLogicsModule extends LogicsModule {
     private LP quantityImporterFreightArticle;
     private LP quantityImporterFreightBrandSupplier;
     private LP markupPercentImporterFreightBrandSupplier;
+    private LP markupPercentImporterFreightBrandSupplierArticle;
+    private LP markupPercentImporterFreightDataArticle;
+    private LP markupPercentImporterFreightArticle;
+    private LP markupPercentImporterFreightArticleSku;
     private LP markupPercentImporterFreightDataSku;
     private LP markupPercentImporterFreightBrandSupplierSku;
     private LP markupInImporterFreightSku;
@@ -1752,7 +1759,7 @@ public class RomanLogicsModule extends LogicsModule {
         articleCompositeItem = addDProp(idGroup, "articleCompositeItem", "Артикул (ИД)", articleComposite, item);
         equalsItemArticleComposite = addJProp(baseGroup, "equalsItemArticleComposite", "Вкл.", baseLM.equals2, articleCompositeItem, 1, 2);
 
-        articleSku = addCUProp(idGroup, "articleSku", "Артикул (ИД)", object(articleSingle), articleCompositeItem);
+        articleSku = addCUProp(idGroup, "articleSku", true, "Артикул (ИД)", object(articleSingle), articleCompositeItem);
 //        setNotNull(articleSku);
 //        addConstraint(addJProp("Для товара должен быть задан артикул", baseLM.andNot1, is(sku), 1, articleSku, 1), false);
 
@@ -1776,7 +1783,7 @@ public class RomanLogicsModule extends LogicsModule {
         categoryArticle = addDProp(idGroup, "categoryArticle", "Номенклатурная группа товара (ИД)", category, article);
         nameOriginCategoryArticle = addJProp(intraAttributeGroup, "nameOriginCategoryArticle", "Номенклатурная группа товара (ориг.)", nameOrigin, categoryArticle, 1);
         nameCategoryArticle = addJProp(intraAttributeGroup, "nameCategoryArticle", "Номенклатурная группа товара", baseLM.name, categoryArticle, 1);
-        categoryArticleSku = addJProp(idGroup, true, "categoryArticleSku", "Номенклатурная группа товара (ИД)", categoryArticle, articleSku, 1);
+        categoryArticleSku = addJProp(idGroup, true, "categoryArticleSku", true, "Номенклатурная группа товара (ИД)", categoryArticle, articleSku, 1);
         nameCategoryArticleSku = addJProp(intraAttributeGroup, "nameCategoryArticleSku", "Номенклатурная группа товара", baseLM.name, categoryArticleSku, 1);
         nameCategoryArticleSku.property.preferredCharWidth = 50;
         nameCategoryArticleSku.property.minimumCharWidth = 15;
@@ -2009,12 +2016,12 @@ public class RomanLogicsModule extends LogicsModule {
 
         genderDataArticle = addDProp(idGroup, "genderDataArticle", "Пол (ИД)", gender, article);
         genderArticle = addSUProp(idGroup, "genderArticle", "Пол (ИД)", Union.OVERRIDE, genderBrandSupplierArticle, genderOriginArticle, genderDataArticle);
-        genderArticleSku = addJProp(idGroup, true, "genderArticleSku", "Пол (ИД)", genderArticle, articleSku, 1);
+        genderArticleSku = addJProp(idGroup, true, "genderArticleSku", true, "Пол (ИД)", genderArticle, articleSku, 1);
         sidGenderArticleSku = addJProp(baseGroup, "sidGenderArticleSku", "Пол", sidGender, genderArticleSku, 1);
 
         typeFabricArticle = addDProp(idGroup, "typeFabricArticle", "Тип одежды (ИД)", typeFabric, article);
         nameTypeFabricArticle = addJProp(baseGroup, "nameTypeFabricArticle", "Тип одежды", baseLM.name, typeFabricArticle, 1);
-        typeFabricArticleSku = addJProp(idGroup, true, "typeFabricArticleSku", "Тип одежды (ИД)", typeFabricArticle, articleSku, 1);
+        typeFabricArticleSku = addJProp(idGroup, true, "typeFabricArticleSku", true, "Тип одежды (ИД)", typeFabricArticle, articleSku, 1);
         nameTypeFabricArticleSku = addJProp(baseGroup, "nameTypeFabricArticleSku", "Тип одежды", baseLM.name, typeFabricArticleSku, 1);
         nameTypeFabricArticleSku.property.preferredCharWidth = 10;
         nameTypeFabricArticleSku.property.minimumCharWidth = 5;
@@ -2996,9 +3003,15 @@ public class RomanLogicsModule extends LogicsModule {
         priceExpenseImporterFreightSku = addJProp(baseGroup, "priceExpenseImporterFreightSku", "Цена затр.", baseLM.sumDouble2, priceInImporterFreightSku, 1, 2, 3, priceFreightImporterFreightSku, 1, 2, 3);
 
         markupPercentImporterFreightBrandSupplier = addDProp(baseGroup, "markupPercentImporterFreightBrandSupplier", "Надбавка (%)", DoubleClass.instance, importer, freight, brandSupplier);
+
+        markupPercentImporterFreightBrandSupplierArticle = addJProp(baseGroup, "markupPercentImporterFreightBrandSupplierArticle", true, "Надбавка (%)", markupPercentImporterFreightBrandSupplier, 1, 2, brandSupplierArticle, 3);
+        markupPercentImporterFreightDataArticle = addDProp(baseGroup, "markupPercentImporterFreightDataArticle", "Надбавка (%)", DoubleClass.instance, importer, freight, article);
+        markupPercentImporterFreightArticle = addSUProp(baseGroup, "markupPercentImporterFreightArticle", true, "Надбавка (%)", Union.OVERRIDE, markupPercentImporterFreightBrandSupplierArticle, markupPercentImporterFreightDataArticle);
+        markupPercentImporterFreightArticleSku = addJProp(baseGroup, "markupPercentImporterFreightArticleSku", "Надбавка (%)", markupPercentImporterFreightArticle, 1, 2, articleSku, 3);
+
         markupPercentImporterFreightDataSku = addDProp(baseGroup, "markupPercentImporterFreightDataSku", "Надбавка (%)", DoubleClass.instance, importer, freight, sku);
         markupPercentImporterFreightBrandSupplierSku = addJProp(baseGroup, "markupPercentImporterFreightBrandSupplierSku", true, "Надбавка (%)", markupPercentImporterFreightBrandSupplier, 1, 2, brandSupplierArticleSku, 3);
-        markupPercentImporterFreightSku = addSUProp(baseGroup, "markupPercentImporterFreightSku", true, "Надбавка (%)", Union.OVERRIDE, markupPercentImporterFreightBrandSupplierSku, markupPercentImporterFreightDataSku);
+        markupPercentImporterFreightSku = addSUProp(baseGroup, "markupPercentImporterFreightSku", true, "Надбавка (%)", Union.OVERRIDE, markupPercentImporterFreightBrandSupplierSku, markupPercentImporterFreightArticleSku, markupPercentImporterFreightDataSku);
 
         // надбавка на цену без учёта стоимости фрахта
         markupInImporterFreightSku = addJProp(baseGroup, "markupInImporterFreightSku", "Надбавка", baseLM.percent2, priceInImporterFreightSku, 1, 2, 3, markupPercentImporterFreightSku, 1, 2, 3);
@@ -3091,6 +3104,12 @@ public class RomanLogicsModule extends LogicsModule {
         minPriceRateImporterFreightSku = addJProp(baseGroup, "minPriceImporterFreightSku", "Минимальная цена (евро)", baseLM.and1, minPriceRateFreightSku, 2, 3, is(importer), 1);
 
         minPriceRateWeightImporterFreightSku = addJProp(baseGroup, "minPriceRateWeightImporterFreightSku", "Минимальная для веса", baseLM.multiplyDouble2, minPriceRateImporterFreightSku, 1, 2, 3, netWeightFreightSku, 2, 3);
+        minPriceRateWeightImporterFreightArticle = addMGProp(baseGroup, "minPriceRateWeightImporterFreightArticle", "Минимальная для артикула", minPriceRateWeightImporterFreightSku, 1, 2, articleSku, 3);
+
+        priceInNegativeImporterFreightArticle = addMGProp(baseGroup, "priceInNegativeImporterFreightArticle", "Цена", addJProp(baseLM.multiplyDouble2, priceInImporterFreightSku, 1, 2, 3, addCProp(IntegerClass.instance, -1)), 1, 2, articleSku, 3);
+
+        priceInImporterFreightArticle = addJProp(baseGroup, "priceInImporterFreightArticle", "Цена", baseLM.multiplyDouble2, priceInNegativeImporterFreightArticle, 1, 2, 3, addCProp(IntegerClass.instance, -1));
+
 
         diffPriceMinPriceImporterFreightSku = addDUProp(baseGroup, "diffPriceMinPriceImporterFreightSku", "Разница цен", minPriceRateImporterFreightSku, priceFullKgImporterFreightSku);
         greaterPriceMinPriceImporterFreightSku = addJProp(baseGroup, "greaterPriceMinPriceImporterFreightSku", "Недостаточность цены", baseLM.greater2, diffPriceMinPriceImporterFreightSku, 1, 2, 3, baseLM.vzero);
@@ -6670,7 +6689,9 @@ public class RomanLogicsModule extends LogicsModule {
         private ObjectEntity objCountry;
         private ObjectEntity objTheme;
         private ObjectEntity objGroupSize;
-        private ObjectEntity objGender;
+        //private ObjectEntity objGender;
+        //private ObjectEntity objCategory;
+        private ObjectEntity objGenderSupplier;
 
         private ColorSizeSupplierFormEntity(NavigatorElement parent, String sID, String caption) {
             super(parent, sID, caption);
@@ -6692,14 +6713,17 @@ public class RomanLogicsModule extends LogicsModule {
 
             addPropertyDraw(equalsGroupSizeSupplier, objSize, objGroupSize);
 
+            //objGender = addSingleGroupObject(gender, "Пол", sidGender);
+            //objCategory = addSingleGroupObject(category, "Номенклатурная группа", baseLM.name);
+
             objTheme = addSingleGroupObject(themeSupplier, "Тема", baseLM.name);
             addObjectActions(this, objTheme);
 
             objCountry = addSingleGroupObject(countrySupplier, "Страна", baseLM.name, nameCountryCountrySupplier);
             addObjectActions(this, objCountry);
 
-            objGender = addSingleGroupObject(genderSupplier, "Пол", baseLM.name, sidGenderSupplier, sidGenderGenderSupplier);
-            addObjectActions(this, objGender);
+            objGenderSupplier = addSingleGroupObject(genderSupplier, "Пол", baseLM.name, sidGenderSupplier, sidGenderGenderSupplier);
+            addObjectActions(this, objGenderSupplier);
 
             addFixedFilter(new CompareFilterEntity(addPropertyObject(supplierColorSupplier, objColor), Compare.EQUALS, objSupplier));
             addFixedFilter(new CompareFilterEntity(addPropertyObject(supplierSizeSupplier, objSize), Compare.EQUALS, objSupplier));
@@ -6707,7 +6731,7 @@ public class RomanLogicsModule extends LogicsModule {
             addFixedFilter(new CompareFilterEntity(addPropertyObject(supplierThemeSupplier, objTheme), Compare.EQUALS, objSupplier));
             addFixedFilter(new CompareFilterEntity(addPropertyObject(supplierCountrySupplier, objCountry), Compare.EQUALS, objSupplier));
             addFixedFilter(new CompareFilterEntity(addPropertyObject(supplierSizeGroup, objGroupSize), Compare.EQUALS, objSupplier));
-            addFixedFilter(new CompareFilterEntity(addPropertyObject(supplierGenderSupplier, objGender), Compare.EQUALS, objSupplier));
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(supplierGenderSupplier, objGenderSupplier), Compare.EQUALS, objSupplier));
 
             RegularFilterGroupEntity filterGroup = new RegularFilterGroupEntity(genID());
             filterGroup.addFilter(new RegularFilterEntity(genID(),
@@ -6738,7 +6762,7 @@ public class RomanLogicsModule extends LogicsModule {
                     DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
 
             design.addIntersection(design.getGroupObjectContainer(objCountry.groupTo),
-                    design.getGroupObjectContainer(objGender.groupTo),
+                    design.getGroupObjectContainer(objGenderSupplier.groupTo),
                     DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
 
             ContainerView sizeContainer = design.createContainer("Размеры");
@@ -6751,7 +6775,7 @@ public class RomanLogicsModule extends LogicsModule {
             specContainer.add(sizeContainer);
             specContainer.add(design.getGroupObjectContainer(objTheme.groupTo));
             specContainer.add(design.getGroupObjectContainer(objCountry.groupTo));
-            specContainer.add(design.getGroupObjectContainer(objGender.groupTo));
+            specContainer.add(design.getGroupObjectContainer(objGenderSupplier.groupTo));
             specContainer.tabbedPane = true;
 
             design.get(objSupplier.groupTo).grid.constraints.fillHorizontal = 3;
@@ -6763,7 +6787,7 @@ public class RomanLogicsModule extends LogicsModule {
             design.get(objSize.groupTo).grid.constraints.fillVertical = 2;
             design.get(objTheme.groupTo).grid.constraints.fillVertical = 2;
             design.get(objCountry.groupTo).grid.constraints.fillVertical = 2;
-            design.get(objGender.groupTo).grid.constraints.fillVertical = 2;
+            design.get(objGenderSupplier.groupTo).grid.constraints.fillVertical = 2;
 
             return design;
         }
@@ -6820,7 +6844,7 @@ public class RomanLogicsModule extends LogicsModule {
         private ObjectEntity objImporter;
         private ObjectEntity objBrandSupplier;
         private ObjectEntity objSku;
-        //private ObjectEntity objArticle;
+        private ObjectEntity objArticle;
         //private ObjectEntity objWeight;
 
         //private GroupObjectEntity gobjArticleNetWeight;
@@ -6868,6 +6892,13 @@ public class RomanLogicsModule extends LogicsModule {
             addPropertyDraw(objArticle, sidArticle, nameCategoryArticle, nameBrandSupplierArticle);
             addPropertyDraw(objWeight, baseLM.objectValue); */
 
+            objArticle = addSingleGroupObject(article, "Артикул", sidArticle, nameBrandSupplierArticle, nameCategoryArticle);
+
+            addPropertyDraw(quantityImporterFreightArticle, objImporter, objFreight, objArticle);
+            //addPropertyDraw(priceInNegativeImporterFreightArticle, objImporter, objFreight, objArticle);
+            //addPropertyDraw(priceInImporterFreightArticle, objImporter, objFreight, objArticle);
+            addPropertyDraw(minPriceRateWeightImporterFreightArticle, objImporter, objFreight, objArticle);
+
             objSku = addSingleGroupObject(sku, "SKU", baseLM.barcode, sidArticleSku, nameBrandSupplierArticleSku, nameCategoryArticleSku);
 
             setForceViewType(itemAttributeGroup, ClassViewType.GRID, objSku.groupTo);
@@ -6905,6 +6936,7 @@ public class RomanLogicsModule extends LogicsModule {
 
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(quantityImporterFreight, objImporter, objFreight)));
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(quantityImporterFreightBrandSupplier, objImporter, objFreight, objBrandSupplier)));
+            addFixedFilter(new NotNullFilterEntity(addPropertyObject(quantityImporterFreightArticle, objImporter, objFreight, objArticle)));
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(quantityImporterFreightSku, objImporter, objFreight, objSku)));
 
             RegularFilterGroupEntity filterGroup = new RegularFilterGroupEntity(genID());
@@ -6948,13 +6980,13 @@ public class RomanLogicsModule extends LogicsModule {
             design.addIntersection(design.getGroupObjectContainer(objFreight.groupTo), specContainer, DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
             design.addIntersection(design.getGroupObjectContainer(objImporter.groupTo), design.getGroupObjectContainer(objBrandSupplier.groupTo), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
 
-            /*ContainerView priceContainer = design.createContainer();
+            ContainerView priceContainer = design.createContainer();
             design.getMainContainer().addAfter(priceContainer, design.getGroupObjectContainer(objSku.groupTo));
-            priceContainer.add(design.getGroupObjectContainer(gobjArticleNetWeight));
+            priceContainer.add(design.getGroupObjectContainer(objArticle.groupTo));
             priceContainer.add(design.getGroupObjectContainer(objSku.groupTo));
             priceContainer.tabbedPane = true;
 
-            design.get(gobjArticleNetWeight).grid.constraints.fillVertical = 3; */
+            design.get(objArticle.groupTo).grid.constraints.fillVertical = 3;
             design.get(objSku.groupTo).grid.constraints.fillVertical = 3;
 
             design.setHighlightColor(new Color(255, 128, 128));
@@ -7159,8 +7191,6 @@ public class RomanLogicsModule extends LogicsModule {
 
             addPropertyDraw(invoiceOriginFormImporterFreight, objImporter, objFreight, objTypeInvoice);
             addPropertyDraw(invoiceFormImporterFreight, objImporter, objFreight, objTypeInvoice);
-            //addPropertyDraw(annexInvoiceOriginFormImporterFreight, objImporter, objFreight, objTypeInvoice);
-            //addPropertyDraw(annexInvoiceFormImporterFreight, objImporter, objFreight, objTypeInvoice);
             addPropertyDraw(sbivkaFormImporterFreight, objImporter, objFreight);
             addPropertyDraw(packingListOriginFormImporterFreight, objImporter, objFreight, objTypeInvoice);
             addPropertyDraw(packingListFormImporterFreight, objImporter, objFreight, objTypeInvoice);
@@ -7168,19 +7198,20 @@ public class RomanLogicsModule extends LogicsModule {
             addPropertyDraw(invoiceExportFormImporterFreight, objImporter, objFreight, objTypeInvoice);
             addPropertyDraw(invoiceExportDbf, objImporter, objFreight, objTypeInvoice);
 
-            objSku = addSingleGroupObject(sku, "SKU", baseLM.barcode, sidArticleSku, sidSizeSupplierItem,
-                    nameBrandSupplierArticleSku, nameCategoryArticleSku, sidCustomCategory10Sku,
-                    nameCountrySku, netWeightSku, mainCompositionOriginSku);
+            objSku = addSingleGroupObject(sku, "SKU", baseLM.barcode, sidArticleSku, nameBrandSupplierArticleSku, nameCategoryArticleSku, sidGenderArticleSku, nameUnitOfMeasureArticleSku,
+                      sidSizeSupplierItem, sidColorSupplierItem, nameColorSupplierItem);
 
             setForceViewType(itemAttributeGroup, ClassViewType.GRID, objSku.groupTo);
 
             setReadOnly(baseGroup, true, objSku.groupTo);
             setReadOnly(publicGroup, true, objSku.groupTo);
 
+            addPropertyDraw(objFreight, objSku, sidCustomCategory10FreightSku, nameCountryOfOriginFreightSku, mainCompositionFreightSku, additionalCompositionFreightSku, netWeightFreightSku, grossWeightFreightSku);
+
             addPropertyDraw(quantityImporterFreightSku, objImporter, objFreight, objSku);
-            addPropertyDraw(markupPercentImporterFreightSku, objImporter, objFreight, objSku);
+            //addPropertyDraw(markupPercentImporterFreightSku, objImporter, objFreight, objSku);
             addPropertyDraw(priceInImporterFreightSku, objImporter, objFreight, objSku);
-            addPropertyDraw(markupInImporterFreightSku, objImporter, objFreight, objSku);
+            //addPropertyDraw(markupInImporterFreightSku, objImporter, objFreight, objSku);
             addPropertyDraw(priceInOutImporterFreightSku, objImporter, objFreight, objSku);
 
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(quantityImporterFreight, objImporter, objFreight)));
