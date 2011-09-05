@@ -10,7 +10,6 @@ import net.sf.jasperreports.engine.JasperPrint;
 import net.sf.jasperreports.engine.export.JRPdfExporter;
 import platform.base.BaseUtils;
 import platform.base.IOUtils;
-import platform.base.OrderedMap;
 import platform.interop.ClassViewType;
 import platform.interop.Compare;
 import platform.interop.action.ClientAction;
@@ -19,7 +18,6 @@ import platform.interop.form.RemoteFormInterface;
 import platform.interop.form.layout.DoNotIntersectSimplexConstraint;
 import platform.server.classes.*;
 import platform.server.data.Union;
-import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.query.OrderType;
 import platform.server.data.query.Query;
 import platform.server.form.entity.*;
@@ -43,8 +41,7 @@ import platform.server.logics.property.ExecutionContext;
 import platform.server.logics.property.Property;
 import platform.server.logics.property.group.AbstractGroup;
 import platform.server.mail.EmailActionProperty;
-import platform.server.session.DataSession;
-import skolkovo.actions.ExportProjectsActionProperty;
+import skolkovo.actions.ExportProjectDocumentsActionProperty;
 import skolkovo.actions.ImportProjectsActionProperty;
 
 import javax.swing.*;
@@ -442,9 +439,9 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP authExpertSubjectLanguage, letterExpertSubjectLanguage;
 
     LP generateDocumentsProjectDocumentType;
-    LP includeDocumentsProjectDocumentType;
+    LP includeDocumentsProject, hideIncludeDocumentsProject;
     LP importProjectSidsAction, showProjectsToImportAction, showProjectsReplaceToImportAction, importProjectsAction;
-    LP exportProjectsAction;
+    LP exportProjectDocumentsAction;
     LP generateVoteProject, hideGenerateVoteProject;
     LP copyResultsVote;
 
@@ -984,8 +981,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
         openForeignFileRoadMapProject = addOFAProp(roadMapGroup, "Открыть файл дорожной карты (иностр.)", fileForeignRoadMapProject);
 
         fileResolutionIPProject = addDProp("fileResolutionIPProject", "Заявление IP", CustomFileClass.instance, project);
-        loadFileResolutionIPProject = addLFAProp(resolutionIPGroup, "Загрузить файл заявления IP", fileResolutionIPProject);
-        openFileResolutionIPProject = addOFAProp(resolutionIPGroup, "Открыть файл заявления IP", fileResolutionIPProject);
+        loadFileResolutionIPProject = addLFAProp(resolutionIPGroup, "Загрузить файл заявление IP", fileResolutionIPProject);
+        openFileResolutionIPProject = addOFAProp(resolutionIPGroup, "Открыть файл заявление IP", fileResolutionIPProject);
 
         fileNativeTechnicalDescriptionProject = addDProp("fileNativeTechnicalDescriptionProject", "Файл технического описания", CustomFileClass.instance, project);
         loadFileNativeTechnicalDescriptionProject = addLFAProp(techDescrGroup, "Загрузить файл технического описания", fileNativeTechnicalDescriptionProject);
@@ -1386,12 +1383,12 @@ public class SkolkovoLogicsModule extends LogicsModule {
 //                addSGProp(addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), inExpertVote, 2, 1), 1), 1), 1), false);
 
         generateDocumentsProjectDocumentType = addAProp(actionGroup, new GenerateDocumentsActionProperty());
-        includeDocumentsProjectDocumentType = addAProp(actionGroup, new IncludeDocumentsActionProperty());
+        includeDocumentsProject = addAProp(actionGroup, new IncludeDocumentsActionProperty());
         importProjectSidsAction = addAProp(importGroup, new ImportProjectsActionProperty("Импортировать идентификаторы проектов", this, BL, false, false, true));
         showProjectsToImportAction = addAProp(importGroup, new ImportProjectsActionProperty("Посмотреть импортируемые проекты", this, BL, true, false, false));
         showProjectsReplaceToImportAction = addAProp(importGroup, new ImportProjectsActionProperty("Посмотреть замещаемые проекты", this, BL, true, true, false));
         importProjectsAction = addAProp(importGroup, new ImportProjectsActionProperty("Импортировать проекты", this, BL, false, false, false));
-        exportProjectsAction = addAProp(actionGroup, new ExportProjectsActionProperty("Экспортировать проекты", this, project));
+        exportProjectDocumentsAction = addAProp(actionGroup, new ExportProjectDocumentsActionProperty("Экспортировать документы", this, project));
 
         generateVoteProject = addAProp(actionGroup, new GenerateVoteActionProperty());
         copyResultsVote = addAProp(actionGroup, new CopyResultsActionProperty());
@@ -1914,15 +1911,20 @@ public class SkolkovoLogicsModule extends LogicsModule {
             objDocumentTemplate.groupTo.setSingleClassView(ClassViewType.PANEL);
             setReadOnly(objDocumentTemplate, true);
             addPropertyDraw(generateDocumentsProjectDocumentType, objProject, objDocumentTemplate);
-            addPropertyDraw(includeDocumentsProjectDocumentType, objProject, objDocumentTemplate);
 
             objDocument = addSingleGroupObject(document, nameTypeDocument, nameLanguageDocument, postfixDocument, loadFileDocument, openFileDocument);
             addObjectActions(this, objDocument);
             getPropertyDraw(postfixDocument).forceViewType = ClassViewType.PANEL;
             getPropertyDraw(postfixDocument).propertyCaption = addPropertyObject(hidePostfixDocument, objDocument);
 
-            addPropertyDraw(exportProjectsAction, objProject).toDraw = objDocumentTemplate.groupTo;
-            setForceViewType(exportProjectsAction, ClassViewType.PANEL);
+            addPropertyDraw(exportProjectDocumentsAction, objProject).toDraw = objDocumentTemplate.groupTo;
+            setForceViewType(exportProjectDocumentsAction, ClassViewType.PANEL);
+
+            addPropertyDraw(includeDocumentsProject, objProject).toDraw = objDocumentTemplate.groupTo;
+            setForceViewType(includeDocumentsProject, ClassViewType.PANEL);
+
+            hideIncludeDocumentsProject = addHideCaptionProp(privateGroup, "Подключить", includeDocumentsProject, addJProp(baseLM.andNot1, openFileResolutionIPProject, 1, needTranslationProject, 1));
+            getPropertyDraw(includeDocumentsProject).propertyCaption = addPropertyObject(hideIncludeDocumentsProject, objProject);
 
             objExpert = addSingleGroupObject(expert);
             addPropertyDraw(objExpert, objVote, inExpertVote, oldExpertVote);
@@ -2703,14 +2705,11 @@ public class SkolkovoLogicsModule extends LogicsModule {
     public class IncludeDocumentsActionProperty extends ActionProperty {
 
         private final ClassPropertyInterface projectInterface;
-        private final ClassPropertyInterface documentTemplateInterface;
 
         public IncludeDocumentsActionProperty() {
-            super(genSID(), "Подключить документы", new ValueClass[]{project, documentTemplate});
+            super(genSID(), "Подключить документы", new ValueClass[]{project});
 
-            Iterator<ClassPropertyInterface> i = interfaces.iterator();
-            projectInterface = i.next();
-            documentTemplateInterface = i.next();
+            projectInterface = interfaces.iterator().next();
         }
 
 
@@ -2725,39 +2724,17 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
                 DataObject projectObject = context.getKeyValue(projectInterface);
 
-                RemoteFormInterface remoteForm = context.getRemoteForm().createForm(projectFullNative, Collections.singletonMap(projectFullNative.objProject, projectObject));
-                ReportGenerator report = new ReportGenerator(remoteForm);
-                JasperPrint print = report.createReport(false, false, new HashMap());
-                JRAbstractExporter exporter = new JRPdfExporter();
-                File tempFile = File.createTempFile("lsfReport", ".pdf");
-                exporter.setParameter(JRExporterParameter.OUTPUT_FILE_NAME, tempFile.getAbsolutePath());
-                exporter.setParameter(JRExporterParameter.JASPER_PRINT, print);
-                exporter.exportReport();
-                byte[] fileBytes = IOUtils.getFileBytes(tempFile);
-
                 DataObject documentObject = context.addObject(document);
                 projectDocument.execute(projectObject.getValue(), context, documentObject);
                 typeDocument.execute(documentType.getID("application"), context, documentObject);
                 languageDocument.execute(language.getID("russian"), context, documentObject);
-                fileDocument.execute(fileBytes, context, documentObject);
-
-
-                remoteForm = context.getRemoteForm().createForm(projectFullForeign, Collections.singletonMap(projectFullForeign.objProject, projectObject));
-                report = new ReportGenerator(remoteForm);
-                print = report.createReport(false, false, new HashMap());
-                exporter = new JRPdfExporter();
-                tempFile = File.createTempFile("lsfReport", ".pdf");
-                exporter.setParameter(JRExporterParameter.OUTPUT_FILE_NAME, tempFile.getAbsolutePath());
-                exporter.setParameter(JRExporterParameter.JASPER_PRINT, print);
-                exporter.exportReport();
-                fileBytes = IOUtils.getFileBytes(tempFile);
+                fileDocument.execute(generateApplicationFile(context, projectObject, false), context, documentObject);
 
                 documentObject = context.addObject(document);
                 projectDocument.execute(projectObject.getValue(), context, documentObject);
                 typeDocument.execute(documentType.getID("application"), context, documentObject);
                 languageDocument.execute(language.getID("english"), context, documentObject);
-                fileDocument.execute(fileBytes, context, documentObject);
-
+                fileDocument.execute(generateApplicationFile(context, projectObject, true), context, documentObject);
 
                 Object file = fileNativeSummaryProject.read(context, projectObject);
                 if (file != null) {
@@ -2852,6 +2829,24 @@ public class SkolkovoLogicsModule extends LogicsModule {
         }
     }
 
+    public byte[] generateApplicationFile(ExecutionContext context, DataObject project, boolean foreign) throws IOException, ClassNotFoundException, JRException {
+
+        ProjectFullFormEntity applicationForm = foreign ? projectFullForeign : projectFullNative;
+
+        RemoteFormInterface remoteForm = context.getRemoteForm().createForm(applicationForm, Collections.singletonMap(applicationForm.objProject, project));
+
+        ReportGenerator report = new ReportGenerator(remoteForm);
+        JasperPrint print = report.createReport(false, false, new HashMap());
+
+        File tempFile = File.createTempFile("lsfReport", ".pdf");
+
+        JRAbstractExporter exporter = new JRPdfExporter();
+        exporter.setParameter(JRExporterParameter.OUTPUT_FILE_NAME, tempFile.getAbsolutePath());
+        exporter.setParameter(JRExporterParameter.JASPER_PRINT, print);
+        exporter.exportReport();
+
+        return IOUtils.getFileBytes(tempFile);
+    }
 
     public class GenerateVoteActionProperty extends ActionProperty {
 

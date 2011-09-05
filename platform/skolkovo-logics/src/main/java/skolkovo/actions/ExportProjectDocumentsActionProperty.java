@@ -1,5 +1,6 @@
 package skolkovo.actions;
 
+import net.sf.jasperreports.engine.JRException;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.log4j.Logger;
 import org.jdom.Attribute;
@@ -41,15 +42,14 @@ import java.sql.*;
 import java.util.*;
 import java.util.Date;
 
-public class ExportProjectsActionProperty extends ActionProperty {
+public class ExportProjectDocumentsActionProperty extends ActionProperty {
 
     private SkolkovoLogicsModule LM;
     private String projectID;
     private DataSession session;
     private final ClassPropertyInterface projectInterface;
-    Map<String, byte[]> files = new HashMap<String, byte[]>();
 
-    public ExportProjectsActionProperty(String caption, SkolkovoLogicsModule LM, ValueClass project) {
+    public ExportProjectDocumentsActionProperty(String caption, SkolkovoLogicsModule LM, ValueClass project) {
         super(LM.genSID(), caption, new ValueClass[]{project});
         this.LM = LM;
 
@@ -66,7 +66,30 @@ public class ExportProjectsActionProperty extends ActionProperty {
     public void execute(ExecutionContext context) throws SQLException {
         this.session = context.getSession();
 
+        Map<String, byte[]> files = new HashMap<String, byte[]>();
+
         DataObject projectObject = context.getKeyValue(projectInterface);
+
+        // документы по проекту
+
+        try {
+            putFileIfNotNull(files, LM.generateApplicationFile(context, projectObject, false), "Анкета заявителя");
+            putFileIfNotNull(files, LM.generateApplicationFile(context, projectObject, true), "Анкета заявителя (иностр.)");
+        } catch (IOException e) {
+            new RuntimeException("Ошибка при экспорте документов", e);
+        } catch (ClassNotFoundException e) {
+            new RuntimeException("Ошибка при экспорте документов", e);
+        } catch (JRException e) {
+            new RuntimeException("Ошибка при экспорте документов", e);
+        }
+
+        putFileIfNotNull(files, LM.fileNativeSummaryProject.read(context, projectObject), "Файл резюме проекта");
+        putFileIfNotNull(files, LM.fileForeignSummaryProject.read(context, projectObject), "Файл резюме проекта (иностр.)");
+        putFileIfNotNull(files, LM.fileNativeRoadMapProject.read(context, projectObject), "Файл дорожной карты");
+        putFileIfNotNull(files, LM.fileForeignRoadMapProject.read(context, projectObject), "Файл дорожной карты (иностр.)");
+        putFileIfNotNull(files, LM.fileResolutionIPProject.read(context, projectObject), "Заявление IP");
+        putFileIfNotNull(files, LM.fileNativeTechnicalDescriptionProject.read(context, projectObject), "Файл технического описания");
+        putFileIfNotNull(files, LM.fileForeignTechnicalDescriptionProject.read(context, projectObject), "Файл технического описания (иностр.)");
 
         LP isNonRussianSpecialist = LM.is(LM.nonRussianSpecialist);
         Map<Object, KeyExpr> keys = isNonRussianSpecialist.getMapKeys();
@@ -81,10 +104,10 @@ public class ExportProjectsActionProperty extends ActionProperty {
         OrderedMap<Map<Object, Object>, Map<Object, Object>> result = query.execute(session.sql);
 
         for (Map<Object, Object> values : result.values()) {
-            putFileIfNotNull(values.get("fileForeignResumeNonRussianSpecialist"), values.get("fullNameNonRussianSpecialist").toString().trim() + " resume foreign");
-            putFileIfNotNull(values.get("fileNativeResumeNonRussianSpecialist"), values.get("fullNameNonRussianSpecialist").toString().trim() + " resume native");
-            putFileIfNotNull(values.get("filePassportNonRussianSpecialist"), values.get("fullNameNonRussianSpecialist").toString().trim() + " passport");
-            putFileIfNotNull(values.get("fileStatementNonRussianSpecialist"), values.get("fullNameNonRussianSpecialist").toString().trim() + " statement");
+            putFileIfNotNull(files, values.get("fileForeignResumeNonRussianSpecialist"), values.get("fullNameNonRussianSpecialist").toString().trim() + " resume foreign");
+            putFileIfNotNull(files, values.get("fileNativeResumeNonRussianSpecialist"), values.get("fullNameNonRussianSpecialist").toString().trim() + " resume native");
+            putFileIfNotNull(files, values.get("filePassportNonRussianSpecialist"), values.get("fullNameNonRussianSpecialist").toString().trim() + " passport");
+            putFileIfNotNull(files, values.get("fileStatementNonRussianSpecialist"), values.get("fullNameNonRussianSpecialist").toString().trim() + " statement");
         }
 
         LP isAcademic = LM.is(LM.academic);
@@ -98,28 +121,19 @@ public class ExportProjectsActionProperty extends ActionProperty {
         result = query.execute(session.sql);
 
         for (Map<Object, Object> values : result.values()) {
-            putFileIfNotNull(values.get("fileDocumentConfirmingAcademic"), values.get("fullNameAcademic").toString().trim() + " Файл трудового договора");
-            putFileIfNotNull(values.get("fileDocumentEmploymentAcademic"), values.get("fullNameAcademic").toString().trim() + " Файл заявления специалиста");
+            putFileIfNotNull(files, values.get("fileDocumentConfirmingAcademic"), values.get("fullNameAcademic").toString().trim() + " Файл трудового договора");
+            putFileIfNotNull(files, values.get("fileDocumentEmploymentAcademic"), values.get("fullNameAcademic").toString().trim() + " Файл заявления специалиста");
         }
 
-        putFileIfNotNull(LM.fileNativeSummaryProject.read(context, projectObject), "Файл резюме проекта");
-        putFileIfNotNull(LM.fileForeignSummaryProject.read(context, projectObject), "Файл резюме проекта (иностр.)");
-        putFileIfNotNull(LM.fileNativeRoadMapProject.read(context, projectObject), "Файл дорожной карты");
-        putFileIfNotNull(LM.fileForeignRoadMapProject.read(context, projectObject), "Файл дорожной карты (иностр.)");
-        putFileIfNotNull(LM.fileResolutionIPProject.read(context, projectObject), "Заявление IP");
-        putFileIfNotNull(LM.fileNativeTechnicalDescriptionProject.read(context, projectObject), "Файл технического описания");
-        putFileIfNotNull(LM.fileForeignTechnicalDescriptionProject.read(context, projectObject), "Файл технического описания (иностр.)");
-
-
-
-        putFileIfNotNull(LM.statementClaimerProject.read(context, projectObject), "Заявление");
-        putFileIfNotNull(LM.constituentClaimerProject.read(context, projectObject), "Учредительные документы");
-        putFileIfNotNull(LM.extractClaimerProject.read(context, projectObject), "Выписка из реестра");
+        // юридические документы
+        putFileIfNotNull(files, LM.statementClaimerProject.read(context, projectObject), "Заявление");
+        putFileIfNotNull(files, LM.constituentClaimerProject.read(context, projectObject), "Учредительные документы");
+        putFileIfNotNull(files, LM.extractClaimerProject.read(context, projectObject), "Выписка из реестра");
 
         context.addAction(new ExportFileClientAction(files));
     }
 
-    private void putFileIfNotNull(Object file, String name) {
+    private void putFileIfNotNull(Map<String, byte[]> files, Object file, String name) {
         if (file != null) files.put(name + ".pdf", (byte[]) file);
     }
 }
