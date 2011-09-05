@@ -44,6 +44,7 @@ import platform.server.logics.property.Property;
 import platform.server.logics.property.group.AbstractGroup;
 import platform.server.mail.EmailActionProperty;
 import platform.server.session.DataSession;
+import skolkovo.actions.ExportProjectsActionProperty;
 import skolkovo.actions.ImportProjectsActionProperty;
 
 import javax.swing.*;
@@ -289,6 +290,9 @@ public class SkolkovoLogicsModule extends LogicsModule {
     public LP emailFirmClaimer;
     public LP emailClaimerProject;
     public LP statementClaimer;
+    public LP constituentClaimerProject;
+    public LP extractClaimerProject;
+    public LP statementClaimerProject;
     LP loadStatementClaimer, openStatementClaimer;
     public LP constituentClaimer;
     LP loadConstituentClaimer, openConstituentClaimer;
@@ -440,6 +444,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP generateDocumentsProjectDocumentType;
     LP includeDocumentsProjectDocumentType;
     LP importProjectSidsAction, showProjectsToImportAction, showProjectsReplaceToImportAction, importProjectsAction;
+    LP exportProjectsAction;
     LP generateVoteProject, hideGenerateVoteProject;
     LP copyResultsVote;
 
@@ -763,6 +768,9 @@ public class SkolkovoLogicsModule extends LogicsModule {
         // project
         claimerProject = addDProp(idGroup, "claimerProject", "Заявитель (ИД)", claimer, project);
         emailClaimerProject = addJProp("emailClaimerProject", "E-mail заявителя", emailClaimer, claimerProject, 1);
+        statementClaimerProject = addJProp("statementClaimerProject", "Заявление", statementClaimer, claimerProject, 1);
+        constituentClaimerProject = addJProp("constituentClaimerProject", "Учредительные документы", constituentClaimer, claimerProject, 1);
+        extractClaimerProject = addJProp("extractClaimerProject", "Выписка", extractClaimer, claimerProject, 1);
 
         claimerVote = addJProp(idGroup, "claimerVote", "Заявитель (ИД)", claimerProject, projectVote, 1);
 
@@ -1383,6 +1391,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         showProjectsToImportAction = addAProp(importGroup, new ImportProjectsActionProperty("Посмотреть импортируемые проекты", this, BL, true, false, false));
         showProjectsReplaceToImportAction = addAProp(importGroup, new ImportProjectsActionProperty("Посмотреть замещаемые проекты", this, BL, true, true, false));
         importProjectsAction = addAProp(importGroup, new ImportProjectsActionProperty("Импортировать проекты", this, BL, false, false, false));
+        exportProjectsAction = addAProp(actionGroup, new ExportProjectsActionProperty("Экспортировать проекты", this, project));
 
         generateVoteProject = addAProp(actionGroup, new GenerateVoteActionProperty());
         copyResultsVote = addAProp(actionGroup, new CopyResultsActionProperty());
@@ -1911,6 +1920,9 @@ public class SkolkovoLogicsModule extends LogicsModule {
             addObjectActions(this, objDocument);
             getPropertyDraw(postfixDocument).forceViewType = ClassViewType.PANEL;
             getPropertyDraw(postfixDocument).propertyCaption = addPropertyObject(hidePostfixDocument, objDocument);
+
+            addPropertyDraw(exportProjectsAction, objProject).toDraw = objDocumentTemplate.groupTo;
+            setForceViewType(exportProjectsAction, ClassViewType.PANEL);
 
             objExpert = addSingleGroupObject(expert);
             addPropertyDraw(objExpert, objVote, inExpertVote, oldExpertVote);
