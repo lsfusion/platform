@@ -11,9 +11,6 @@
 			<pen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
 		</box>
 	</style>
-	<field name="ownerPatent(caption)" class="java.lang.String"/>
-	<field name="nameOwnerTypePatent(caption)" class="java.lang.String"/>
-	<field name="valuatorPatent(caption)" class="java.lang.String"/>
 	<field name="patent" class="java.lang.Integer"/>
 	<field name="objectClassName" class="java.lang.String"/>
 	<field name="nativeTypePatent" class="java.lang.String"/>
@@ -23,7 +20,8 @@
 	<field name="priorityDatePatent" class="java.util.Date"/>
 	<field name="isOwned" class="java.lang.Boolean"/>
 	<field name="ownerPatent" class="java.lang.String"/>
-	<field name="nameOwnerTypePatent" class="java.lang.String"/>
+	<field name="nameNativeOwnerTypePatent" class="java.lang.String"/>
+	<field name="nameForeignOwnerTypePatent" class="java.lang.String"/>
 	<field name="isValuated" class="java.lang.Boolean"/>
 	<field name="valuatorPatent" class="java.lang.String"/>
 	<variable name="npp" class="java.lang.Integer" calculation="Count">

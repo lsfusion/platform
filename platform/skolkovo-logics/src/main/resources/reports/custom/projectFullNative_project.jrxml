@@ -49,12 +49,13 @@
 	<field name="foreignProblemProject" class="java.lang.String"/>
 	<field name="nativeInnovativeProject" class="java.lang.String"/>
 	<field name="foreignInnovativeProject" class="java.lang.String"/>
-	<field name="nameProjectTypeProject" class="java.lang.String"/>
+	<field name="nameNativeProjectTypeProject" class="java.lang.String"/>
+	<field name="nameForeignProjectTypeProject" class="java.lang.String"/>
 	<field name="nativeSubstantiationProjectType" class="java.lang.String"/>
 	<field name="foreignSubstantiationProjectType" class="java.lang.String"/>
 	<field name="nameNativeFinalClusterProject" class="java.lang.String"/>
-	<field name="nativeSubstantiationClusterProject" class="java.lang.String"/>
-	<field name="foreignSubstantiationClusterProject" class="java.lang.String"/>
+	<field name="nativeSubstantiationFinalClusterProject" class="java.lang.String"/>
+	<field name="foreignSubstantiationFinalClusterProject" class="java.lang.String"/>
 	<field name="isReturnInvestmentsProject" class="java.lang.Boolean"/>
 	<field name="nameReturnInvestorProject" class="java.lang.String"/>
 	<field name="amountReturnFundsProject" class="java.lang.Double"/>
@@ -151,7 +152,7 @@
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 					<reportElement style="DefaultStyle" positionType="Float" x="125" y="0" width="418" height="18"/>
 					<textElement textAlignment="Left" verticalAlignment="Top"/>
-					<textFieldExpression class="java.lang.String"><![CDATA[$F{nameProjectTypeProject}]]></textFieldExpression>
+					<textFieldExpression class="java.lang.String"><![CDATA[$F{nameNativeProjectTypeProject}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
 					<reportElement style="BoldStyle" positionType="Float" x="5" y="0" width="120" height="18"/>
@@ -192,7 +193,7 @@
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 					<reportElement style="DefaultStyle" positionType="Float" x="125" y="0" width="418" height="18"/>
 					<textElement textAlignment="Left" verticalAlignment="Top"/>
-					<textFieldExpression class="java.lang.String"><![CDATA[$F{nativeSubstantiationClusterProject}]]></textFieldExpression>
+					<textFieldExpression class="java.lang.String"><![CDATA[$F{nativeSubstantiationFinalClusterProject}]]></textFieldExpression>
 				</textField>
 			</band>
 		</groupHeader>

@@ -24,12 +24,20 @@
 	<field name="prevDateVote" class="java.util.Date"/>
 	<field name="nameNativePrevClusterVote" class="java.lang.String"/>
 	<field name="nameNativeFinalClusterProjectVote" class="java.lang.String"/>
-	<field name="quantityDoneVote" class="java.lang.Integer"/>
-	<field name="quantityInClusterVote" class="java.lang.Integer"/>
+	<field name="quantityDoneVote" class="java.lang.Integer">
+		<fieldDescription><![CDATA[@Z]]></fieldDescription>
+	</field>
+	<field name="quantityInClusterVote" class="java.lang.Integer">
+		<fieldDescription><![CDATA[@Z]]></fieldDescription>
+	</field>
 	<field name="acceptedInClusterVote" class="java.lang.Boolean"/>
-	<field name="quantityInnovativeVote" class="java.lang.Integer"/>
+	<field name="quantityInnovativeVote" class="java.lang.Integer">
+		<fieldDescription><![CDATA[@Z]]></fieldDescription>
+	</field>
 	<field name="acceptedInnovativeVote" class="java.lang.Boolean"/>
-	<field name="quantityForeignVote" class="java.lang.Integer"/>
+	<field name="quantityForeignVote" class="java.lang.Integer">
+		<fieldDescription><![CDATA[@Z]]></fieldDescription>
+	</field>
 	<field name="acceptedForeignVote" class="java.lang.Boolean"/>
 	<field name="isLastClusterVote" class="java.lang.Boolean"/>
 	<detail>

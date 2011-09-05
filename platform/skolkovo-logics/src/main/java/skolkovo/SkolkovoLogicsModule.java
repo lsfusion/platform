@@ -475,6 +475,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
     LP finalClusterProjectVote, nameNativeFinalClusterProjectVote;
 
+    LP nativeSubstantiationFinalClusterProject, foreignSubstantiationFinalClusterProject;
+
     LP languageExpert;
     LP nameLanguageExpert;
     LP languageDocument;
@@ -507,8 +509,10 @@ public class SkolkovoLogicsModule extends LogicsModule {
     public LP foreignProblemProject;
     public LP nativeInnovativeProject;
     public LP foreignInnovativeProject;
+    public LP nameForeignProjectType;
     public LP projectTypeProject;
-    LP nameProjectTypeProject;
+    LP nameNativeProjectTypeProject;
+    LP nameForeignProjectTypeProject;
     public LP projectActionProject;
     LP nameProjectActionProject;
     LP projectActionVote;
@@ -614,9 +618,11 @@ public class SkolkovoLogicsModule extends LogicsModule {
     public LP priorityDatePatent;
     public LP isOwned;
     public LP ownerPatent;
+    public LP nameForeignOwnerType;
     public LP ownerTypePatent;
     LP ownerTypeToPatent;
-    LP nameOwnerTypePatent;
+    LP nameNativeOwnerTypePatent;
+    LP nameForeignOwnerTypePatent;
     public LP ownerTypeToSID;
     public LP projectTypeToSID;
     public LP projectActionToSID;
@@ -845,8 +851,11 @@ public class SkolkovoLogicsModule extends LogicsModule {
         foreignInnovativeProject.setMinimumWidth(10);
         foreignInnovativeProject.setPreferredWidth(50);
 
+        nameForeignProjectType = addDProp(baseGroup, "nameForeignProjectType", "Имя (иностр.)", InsensitiveStringClass.get(110), projectType);
+
         projectTypeProject = addDProp(idGroup, "projectTypeProject", "Тип проекта (ИД)", projectType, project);
-        nameProjectTypeProject = addJProp(innovationGroup, "nameProjectTypeProject", "Тип проекта", baseLM.name, projectTypeProject, 1);
+        nameNativeProjectTypeProject = addJProp(innovationGroup, "nameNativeProjectTypeProject", "Тип проекта", baseLM.name, projectTypeProject, 1);
+        nameForeignProjectTypeProject = addJProp(innovationGroup, "nameForeignProjectTypeProject", "Тип проекта (иностр.)", nameForeignProjectType, projectTypeProject, 1);
 
         projectActionVote = addDProp(idGroup, "projectActionVote", "Тип заявки (ИД)", projectAction, vote);
         nameProjectActionVote = addJProp(baseGroup, "nameProjectActionVote", "Тип заявки", baseLM.name, projectActionVote, 1);
@@ -1014,8 +1023,13 @@ public class SkolkovoLogicsModule extends LogicsModule {
         ownerPatent = addDProp(baseGroup, "ownerPatent", "Укажите правообладателя и его контактную информацию", InsensitiveStringClass.get(2000), patent);
         ownerPatent.setMinimumWidth(10);
         ownerPatent.setPreferredWidth(50);
+
+        nameForeignOwnerType = addDProp(baseGroup, "nameForeignOwnerType", "Имя (иностр.)", InsensitiveStringClass.get(110), ownerType);
+
         ownerTypePatent = addDProp(idGroup, "ownerTypePatent", "Кем является правообладатель (ИД)", ownerType, patent);
-        nameOwnerTypePatent = addJProp(baseGroup, "nameOwnerTypePatent", "Кем является правообладатель", baseLM.name, ownerTypePatent, 1);
+        nameNativeOwnerTypePatent = addJProp(baseGroup, "nameNativeOwnerTypePatent", "Кем является правообладатель", baseLM.name, ownerTypePatent, 1);
+        nameForeignOwnerTypePatent = addJProp(baseGroup, "nameForeignOwnerTypePatent", "Кем является правообладатель (иностр.)", nameForeignOwnerType, ownerTypePatent, 1);
+
         ownerTypeToSID = addAGProp("ownerTypeToSID", "SID типа правообладателя", addJProp(baseLM.and1, baseLM.classSID, 1, is(ownerType), 1));
         projectTypeToSID = addAGProp("projectTypeToSID", "SID типа проекта", addJProp(baseLM.and1, baseLM.classSID, 1, is(projectType), 1));
         projectActionToSID = addAGProp("projectActionToSID", "SID текущего статуса", addJProp(baseLM.and1, baseLM.classSID, 1, is(projectAction), 1));
@@ -1024,7 +1038,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         openFileIntentionOwnerPatent = addOFAProp(baseGroup, "Открыть файл документа о передаче права", fileIntentionOwnerPatent);
 
         hideOwnerPatent = addHideCaptionProp(privateGroup, "Укажите", ownerPatent, isOwned);
-        hideNameOwnerTypePatent = addHideCaptionProp(privateGroup, "Укажите", nameOwnerTypePatent, isOwned);
+        hideNameOwnerTypePatent = addHideCaptionProp(privateGroup, "Укажите", nameNativeOwnerTypePatent, isOwned);
         hideFileIntentionOwnerPatent = addHideCaptionProp(privateGroup, "Укажите", fileIntentionOwnerPatent, isOwned);
         hideLoadFileIntentionOwnerPatent = addHideCaptionProp(privateGroup, "Укажите", loadFileIntentionOwnerPatent, isOwned);
         hideOpenFileIntentionOwnerPatent = addHideCaptionProp(privateGroup, "Укажите", openFileIntentionOwnerPatent, isOwned);
@@ -1356,6 +1370,9 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         finalClusterProjectVote = addJProp("finalClusterProjectVote", "Тек. кластер (ИД)", finalClusterProject, projectVote, 1);
         nameNativeFinalClusterProjectVote = addJProp("nameNativeFinalClusterProjectVote", "Тек. кластер", nameNative, finalClusterProjectVote, 1);
+
+        nativeSubstantiationFinalClusterProject = addJProp(projectInformationGroup, "nativeSubstantiationFinalClusterProject", "Обоснование выбора (тек. кластер)", nativeSubstantiationProjectCluster, 1, finalClusterProject, 1);
+        foreignSubstantiationFinalClusterProject = addJProp(projectInformationGroup, "foreignSubstantiationFinalClusterProject", "Обоснование выбора (тек. кластер) (иностр.)", foreignSubstantiationProjectCluster, 1, finalClusterProject, 1);
 
         lastClusterProjectVote = addJProp("lastClusterProjectVote", "Посл. кластер (ИД)", lastClusterProject, projectVote, 1);
         isLastClusterVote = addJProp("isLastClusterVote", "Посл. кластер", baseLM.equals2, lastClusterProjectVote, 1, clusterVote, 1);
@@ -1713,7 +1730,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
             objPatent = addSingleGroupObject(2, "patent", patent, "Патент", baseGroup);
             getPropertyDraw(ownerPatent).propertyCaption = addPropertyObject(hideOwnerPatent, objPatent);
-            getPropertyDraw(nameOwnerTypePatent).propertyCaption = addPropertyObject(hideNameOwnerTypePatent, objPatent);
+            getPropertyDraw(nameNativeOwnerTypePatent).propertyCaption = addPropertyObject(hideNameOwnerTypePatent, objPatent);
             getPropertyDraw(loadFileIntentionOwnerPatent).propertyCaption = addPropertyObject(hideLoadFileIntentionOwnerPatent, objPatent);
             getPropertyDraw(openFileIntentionOwnerPatent).propertyCaption = addPropertyObject(hideOpenFileIntentionOwnerPatent, objPatent);
 
@@ -2815,7 +2832,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
                     documentObject = context.addObject(document);
                     projectDocument.execute(projectObject.getValue(), context, documentObject);
                     typeDocument.execute(documentType.getID("ipres"), context, documentObject);
-                    languageDocument.execute(language.getID("russian"), context, documentObject);
+                    languageDocument.execute(language.getID("english"), context, documentObject);
                     fileDocument.execute(file, context, documentObject);
                 }
 
