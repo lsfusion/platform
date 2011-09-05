@@ -44,7 +44,7 @@ public abstract class RemoteObjectProxy<T extends PendingRemote> implements Pend
             screenBlock |= (blockedScreen != null) && (blockedScreen.containsKey(invocation.name) && invocation.args.length > 0 && invocation.args[0].toString().equals(blockedScreen.get(invocation.name)));
         }
 
-        Window window = SwingUtils.getActiveWindow();
+        Window window = SwingUtils.getActiveVisibleWindow();
         if (window != null) {
             window.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         }
@@ -84,7 +84,7 @@ public abstract class RemoteObjectProxy<T extends PendingRemote> implements Pend
             screenBlock |= (blockedScreen != null) && (blockedScreen.containsKey(invocation.name) && invocation.args.length > 0 && invocation.args[0].toString().equals(blockedScreen.get(invocation.name)));
         }
 
-        Window window = SwingUtils.getActiveWindow();
+        Window window = SwingUtils.getActiveVisibleWindow();
         if (window != null) {
             window.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         }

@@ -1705,11 +1705,6 @@ public class SkolkovoLogicsModule extends LogicsModule {
                 getPropertyDraw(translatedToEnglishProject).propertyCaption = addPropertyObject(hideTranslatedToEnglishProject, objProject);
             }
 
-            objClaimer = addSingleGroupObject(1, "claimer", claimer);
-
-            //objOptionsProject = addSingleGroupObject(1, "optionsProject", project, "Параметры", projectOptionsGroup, projectStatusGroup, translateActionGroup);
-            //objOptionsProject.groupTo.setSingleClassView(ClassViewType.PANEL);
-
             objPatent = addSingleGroupObject(2, "patent", patent, "Патент", baseGroup);
             getPropertyDraw(ownerPatent).propertyCaption = addPropertyObject(hideOwnerPatent, objPatent);
             getPropertyDraw(nameOwnerTypePatent).propertyCaption = addPropertyObject(hideNameOwnerTypePatent, objPatent);
