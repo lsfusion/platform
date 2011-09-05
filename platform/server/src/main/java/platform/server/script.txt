@@ -65,9 +65,19 @@ oneShipmentSku2(shipment, sku) = quantityShipmentSku(shipment, sku) == 1.0;
 
 // IS, IF
 isArticle(object) = IS article;
-typeInvoiceCategoryFreightArticle2(freight, article) = and1(typeInvoiceCategoryArticle(article), freight IS RomanLogicsModule.freight) IN idGroup;
-testProp = between(date($1), $2 IF DATE, $3 IF DATE);
-substring10s13 = and1(substring10($1), $1 IS STRING[13]);
+typeInvoiceCategoryFreightArticle2(freight, article) = typeInvoiceCategoryArticle(article) AND freight IS RomanLogicsModule.freight IN idGroup;
+testProp2 = between(date($1), $2 AS DATE, $3 AS DATE);
+substring10s13 = substring10($1) IF $1 IS STRING[13];
+
+// AND
+testProp3(invoice, sku) = sumDocumentSku(invoice, sku) IF invoice IS directInvoice AND NOT freightShippedDirectInvoice(invoice);
+invoicedSimpleInvoiceSimpleShipmentStockSku2(invoice, shipment, st, sku) =
+    quantityDocumentSku(invoice, sku) IF
+        inInvoiceShipment(invoice, shipment) AND
+        invoice IS simpleInvoice AND
+        shipment IS simpleShipment AND
+        st IS stock;
+
 
 // Forms
 FORM ContractForm2 'ContractForm2'

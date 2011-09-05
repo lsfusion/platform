@@ -361,6 +361,20 @@ public class ScriptingLogicsModule extends LogicsModule {
         return addScriptedJProp(caption, getRelationProp(op), Arrays.asList(leftProp, rightProp), Arrays.asList(lUsedParams, rUsedParams));
     }
 
+    public LPWithParams addScriptedAndProp(String caption, List<Boolean> nots, List<LP<?>> properties, List<List<Integer>> usedParams) {
+        assert properties.size() == usedParams.size();
+        assert nots.size() + 1 == properties.size();
+
+        LPWithParams curLP = new LPWithParams(properties.get(0), usedParams.get(0));
+        if (nots.size() > 0) {
+            boolean[] notsArray = new boolean[nots.size()];
+            for (int i = 0; i < nots.size(); i++) {
+                notsArray[i] = nots.get(i);
+            }
+            curLP = addScriptedJProp(caption, and(notsArray), properties, usedParams);
+        }
+        return curLP;
+    }
 
     public LPWithParams addScriptedAdditiveProp(String caption, List<String> operands, List<LP<?>> properties, List<List<Integer>> usedParams) {
         assert properties.size() == usedParams.size();
@@ -468,7 +482,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public LP<?> addScriptedTypeProp(String className, boolean bIs) {
-        scriptLogger.info("addTypeProp(" + className + ", " + (bIs ? "IS" : "IF") + ");");
+        scriptLogger.info("addTypeProp(" + className + ", " + (bIs ? "IS" : "AS") + ");");
         if (bIs) {
             return is(getClassByName(className));
         } else {

@@ -226,8 +226,27 @@ propertyDeclaration returns [String name, List<String> paramNames]
 
 
 propertyExpression[List<String> context] returns [LP property, List<Integer> usedParams]
-	:	pe=equalityPE[context] { $property = $pe.property; $usedParams = $pe.usedParams; };
+	:	pe=andPE[context] { $property = $pe.property; $usedParams = $pe.usedParams; };
 
+
+andPE[List<String> context] returns [LP property, List<Integer> usedParams]
+@init {
+	List<LP<?>> props = new ArrayList<LP<?>>();
+	List<List<Integer>> allUsedParams = new ArrayList<List<Integer>>();
+	List<Boolean> nots = new ArrayList<Boolean>();
+}
+@after {
+	if (parseState == ScriptingLogicsModule.State.PROP) {
+		ScriptingLogicsModule.LPWithParams result = self.addScriptedAndProp("", nots, props, allUsedParams);				
+		$property = result.property;
+		$usedParams = result.usedParams;
+	}
+}
+	:	firstExpr=equalityPE[context] { props.add($firstExpr.property); allUsedParams.add($firstExpr.usedParams); }
+		((('AND') | ('IF')) { nots.add(false); }
+		('NOT' { nots.set(nots.size()-1, true); })?
+		nextExpr=equalityPE[context] { props.add($nextExpr.property); allUsedParams.add($nextExpr.usedParams); })*;
+		
 
 equalityPE[List<String> context] returns [LP property, List<Integer> usedParams]
 @init {
@@ -294,8 +313,7 @@ additivePE[List<String> context] returns [LP property, List<Integer> usedParams]
 }
 @after {
 	if (parseState == ScriptingLogicsModule.State.PROP) {
-		ScriptingLogicsModule.LPWithParams result = 
-			self.addScriptedAdditiveProp("", ops, props, allUsedParams);				
+		ScriptingLogicsModule.LPWithParams result = self.addScriptedAdditiveProp("", ops, props, allUsedParams);				
 		$property = result.property;
 		$usedParams = result.usedParams;
 	}
@@ -313,8 +331,7 @@ multiplicativePE[List<String> context] returns [LP property, List<Integer> usedP
 }
 @after {
 	if (parseState == ScriptingLogicsModule.State.PROP) {
-		ScriptingLogicsModule.LPWithParams result = 
-			self.addScriptedMultiplicativeProp("", ops, props, allUsedParams);				
+		ScriptingLogicsModule.LPWithParams result = self.addScriptedMultiplicativeProp("", ops, props, allUsedParams);				
 		$property = result.property;
 		$usedParams = result.usedParams;
 	}
@@ -462,9 +479,8 @@ typePropertyDefinition returns [LP property]
 		$property = self.addScriptedTypeProp(clsId, bIs);
 	}	
 }
-	:	('IS' { bIs = true; } | 'IF')
+	:	('IS' { bIs = true; } | 'AS')
 		id=classId { clsId = $id.text; };
-		
 
 
 propertyObject returns [LP property, String propName]
