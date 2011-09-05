@@ -79,22 +79,20 @@ public class ClientFormActionDispatcher implements ClientActionDispatcher {
             JFileChooser fileChooser = new JFileChooser();
             Preferences preferences = Preferences.userNodeForPackage(this.getClass());
             fileChooser.setCurrentDirectory(new File(preferences.get("LATEST_DIRECTORY", "")));
-            String path = "";
-            int result = fileChooser.showSaveDialog(null);
-            if (result == JFileChooser.APPROVE_OPTION) {
-                path = fileChooser.getSelectedFile().getAbsolutePath();
-                if (action.files.size() > 1) {
-                    fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-                    for (String file : action.files.keySet()) {
-                        IOUtils.putFileBytes(new File(path + "\\" + file), action.files.get(file));
-                    }
-                } else {
-                    for (String file : action.files.keySet()) {
-                        IOUtils.putFileBytes(new File(path), action.files.get(file));
-                        path = path.substring(0, path.lastIndexOf("\\"));
-                    }
+            boolean singleFile;
+            if (action.files.size() > 1) {
+                singleFile = false;
+                fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+                fileChooser.setAcceptAllFileFilterUsed(false);
+            } else {
+                singleFile = true;
+            }
+            if (fileChooser.showSaveDialog(null) == JFileChooser.APPROVE_OPTION) {
+                String path = fileChooser.getSelectedFile().getAbsolutePath();
+                for (String file : action.files.keySet()) {
+                    IOUtils.putFileBytes(new File(singleFile ? path : path + "\\" + file), action.files.get(file));
                 }
-                preferences.put("LATEST_DIRECTORY", path);
+                preferences.put("LATEST_DIRECTORY", !singleFile ? path : path.substring(0, path.lastIndexOf("\\")));
             }
         } catch (IOException e) {
             throw new RuntimeException(e);
