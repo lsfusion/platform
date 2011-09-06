@@ -1722,6 +1722,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         private String lng;
 
         private ObjectEntity objProject;
+        private ObjectEntity objCluster;
         private ObjectEntity objPatent;
         private ObjectEntity objAcademic;
         private ObjectEntity objNonRussianSpecialist;
@@ -1764,6 +1765,13 @@ public class SkolkovoLogicsModule extends LogicsModule {
                 getPropertyDraw(translatedToEnglishProject).propertyCaption = addPropertyObject(hideTranslatedToEnglishProject, objProject);
             }
 
+            objCluster = addSingleGroupObject(5, "cluster", cluster, "Кластер");
+            addPropertyDraw(inProjectCluster, objProject, objCluster);
+            addPropertyDraw(objCluster, nameNative, nameForeign);
+            addPropertyDraw(new LP[]{nativeSubstantiationProjectCluster, foreignSubstantiationProjectCluster}, objProject, objCluster);
+            addPropertyDraw(numberCluster, objCluster);
+            addFixedFilter(new NotNullFilterEntity(addPropertyObject(inProjectCluster, objProject, objCluster)));
+
             objPatent = addSingleGroupObject(2, "patent", patent, "Патент", baseGroup);
             getPropertyDraw(ownerPatent).propertyCaption = addPropertyObject(hideOwnerPatent, objPatent);
             getPropertyDraw(nameNativeOwnerTypePatent).propertyCaption = addPropertyObject(hideNameOwnerTypePatent, objPatent);
@@ -1779,6 +1787,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             objAcademic = addSingleGroupObject(3, "academic", academic, "Учёный", baseGroup);
             addObjectActions(this, objAcademic);
             addFixedFilter(new CompareFilterEntity(addPropertyObject(projectAcademic, objAcademic), Compare.EQUALS, objProject));
+
             objNonRussianSpecialist = addSingleGroupObject(4, "nonRussianSpecialist", nonRussianSpecialist, "Иностранный специалист", baseGroup);
             addObjectActions(this, objNonRussianSpecialist);
             addFixedFilter(new CompareFilterEntity(addPropertyObject(projectNonRussianSpecialist, objNonRussianSpecialist), Compare.EQUALS, objProject));
@@ -1843,6 +1852,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             ContainerView specContainer = design.createContainer();
             design.getMainContainer().addAfter(specContainer, design.getGroupObjectContainer(objProject.groupTo));
             specContainer.add(descrContainer);
+            specContainer.add(design.getGroupObjectContainer(objCluster.groupTo));
             specContainer.add(design.getGroupObjectContainer(objPatent.groupTo));
             specContainer.add(design.getGroupObjectContainer(objAcademic.groupTo));
             specContainer.add(design.getGroupObjectContainer(objNonRussianSpecialist.groupTo));

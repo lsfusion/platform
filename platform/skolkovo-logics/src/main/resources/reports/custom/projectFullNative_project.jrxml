@@ -11,6 +11,9 @@
 			<pen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
 		</box>
 	</style>
+	<parameter name="cluster_report" class="net.sf.jasperreports.engine.JasperReport"/>
+	<parameter name="cluster_source" class="net.sf.jasperreports.engine.JRDataSource"/>
+	<parameter name="cluster_params" class="java.util.Map"/>
 	<parameter name="patent_report" class="net.sf.jasperreports.engine.JasperReport"/>
 	<parameter name="patent_source" class="net.sf.jasperreports.engine.JRDataSource"/>
 	<parameter name="patent_params" class="java.util.Map"/>
@@ -172,30 +175,6 @@
 					<textFieldExpression class="java.lang.String"><![CDATA["Обоснование"]]></textFieldExpression>
 				</textField>
 			</band>
-			<band height="27" splitType="Immediate">
-				<textField isStretchWithOverflow="true">
-					<reportElement style="BoldStyle" positionType="Float" x="5" y="0" width="120" height="18"/>
-					<textElement verticalAlignment="Top"/>
-					<textFieldExpression class="java.lang.String"><![CDATA["Какое приоритетное направление проекта"]]></textFieldExpression>
-				</textField>
-				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-					<reportElement style="DefaultStyle" positionType="Float" x="125" y="0" width="418" height="18"/>
-					<textElement textAlignment="Left" verticalAlignment="Top"/>
-					<textFieldExpression class="java.lang.String"><![CDATA[$F{nameNativeFinalClusterProject}]]></textFieldExpression>
-				</textField>
-			</band>
-			<band height="27" splitType="Immediate">
-				<textField isStretchWithOverflow="true">
-					<reportElement style="BoldStyle" positionType="Float" x="5" y="0" width="120" height="18"/>
-					<textElement verticalAlignment="Top"/>
-					<textFieldExpression class="java.lang.String"><![CDATA["Обоснование выбора"]]></textFieldExpression>
-				</textField>
-				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-					<reportElement style="DefaultStyle" positionType="Float" x="125" y="0" width="418" height="18"/>
-					<textElement textAlignment="Left" verticalAlignment="Top"/>
-					<textFieldExpression class="java.lang.String"><![CDATA[$F{nativeSubstantiationFinalClusterProject}]]></textFieldExpression>
-				</textField>
-			</band>
 		</groupHeader>
 	</group>
 	<title>
@@ -213,6 +192,14 @@
 		<band splitType="Immediate">
 			<subreport>
 				<reportElement positionType="Float" x="0" y="0" width="0" height="0"/>
+				<parametersMapExpression><![CDATA[$P{cluster_params}]]></parametersMapExpression>
+				<dataSourceExpression><![CDATA[$P{cluster_source}]]></dataSourceExpression>
+				<subreportExpression class="net.sf.jasperreports.engine.JasperReport"><![CDATA[$P{cluster_report}]]></subreportExpression>
+			</subreport>
+		</band>
+		<band splitType="Immediate">
+			<subreport>
+				<reportElement positionType="Float" x="0" y="0" width="0" height="0"/>
 				<parametersMapExpression><![CDATA[$P{patent_params}]]></parametersMapExpression>
 				<dataSourceExpression><![CDATA[$P{patent_source}]]></dataSourceExpression>
 				<subreportExpression class="net.sf.jasperreports.engine.JasperReport"><![CDATA[$P{patent_report}]]></subreportExpression>
@@ -226,7 +213,7 @@
 				<subreportExpression class="net.sf.jasperreports.engine.JasperReport"><![CDATA[$P{academic_report}]]></subreportExpression>
 			</subreport>
 		</band>
-		<band splitType="Immediate">
+		<band>
 			<subreport>
 				<reportElement positionType="Float" x="0" y="0" width="0" height="0"/>
 				<parametersMapExpression><![CDATA[$P{nonRussianSpecialist_params}]]></parametersMapExpression>

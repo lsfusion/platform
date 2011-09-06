@@ -829,7 +829,7 @@ public class ImportProjectsActionProperty extends ActionProperty {
                     if (fillNative)
                         rowCluster.add(nodeCluster.nativeSubstantiationProjectCluster);
                     if (fillForeign)
-                        rowCluster.add(nodeCluster.nativeSubstantiationProjectCluster);
+                        rowCluster.add(nodeCluster.foreignSubstantiationProjectCluster);
                     dataCluster.add(rowCluster);
                 }
 
