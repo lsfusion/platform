@@ -364,7 +364,8 @@ expressionPrimitive[List<String> context] returns [LP property, List<Integer> us
 				$usedParams = Collections.singletonList(self.getParamIndex($paramName.text, $context));
 		 })
 		|
-		(expr=contextDependentPD[context] { $property = $expr.property; $usedParams = $expr.usedParams; });
+		(expr=contextDependentPD[context] { $property = $expr.property; $usedParams = $expr.usedParams; })
+	;
 
 propertyDefinition[List<String> context] returns [LP property, List<Integer> usedParams]
 	:
@@ -485,7 +486,10 @@ typePropertyDefinition returns [LP property]
 
 propertyObject returns [LP property, String propName]
 	:	name=compoundID	{ $property = self.getLPByName($name.text); $propName = $name.text; } |
-		'[' expr=propertyDefinition[null] ']' { $property = $expr.property; };
+		'[' 
+		(expr=propertyExpression[null] { $property = $expr.property; } |
+		def=contextIndependentPD[true] { $property = $def.property; })
+		']' ;
 
 
 commonPropertySettings[LP property, String propertyName, List<String> namedParams, boolean isData] 

@@ -56,7 +56,7 @@ sumSku2 = UNION SUM (sumStockedSku($1), sumDirectInvoicedSku($1)) IN baseGroup;
 // Nested
 netWeightImporterFreightUnitSku2(freight, unit, sku) =
     quantityImporterStockSku(freight, unit, sku) * netWeightFreightSku(freightFreightUnit(unit, sku)) IN baseGroup;
-invoicedShipmentSku2 = GROUP SUM [and1(quantityDocumentSku($1, $2), inInvoiceShipment($1, $3))] BY $3, $2 IN baseGroup PERSISTENT;
+invoicedShipmentSku2 = GROUP SUM [quantityDocumentSku($1, $2) AND inInvoiceShipment($1, $3)] BY $3, $2 IN baseGroup PERSISTENT;
 
 
 // Constants
