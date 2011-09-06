@@ -332,7 +332,7 @@ public class ImportProjectsActionProperty extends ActionProperty {
         propertiesFullClaimerForeign.add(new ImportProperty(nameForeignClaimerField, LM.nameForeignClaimer.getMapping(claimerKey)));
         propertiesFullClaimerForeign.add(new ImportProperty(firmNameForeignClaimerField, LM.firmNameForeignClaimer.getMapping(claimerKey)));
 
-        patentKey = new ImportKey(LM.patent, LM.nativeNumberToPatent.getMapping(nativeNumberPatentField));
+        patentKey = new ImportKey(LM.patent, LM.nativeNumberSIDToPatent.getMapping(nativeNumberPatentField, projectIdField));
         propertiesPatent.add(new ImportProperty(nativeNumberPatentField, LM.nativeNumberPatent.getMapping(patentKey)));
         propertiesPatent.add(new ImportProperty(datePatentField, LM.priorityDatePatent.getMapping(patentKey)));
         propertiesPatent.add(new ImportProperty(isOwnedPatentField, LM.isOwned.getMapping(patentKey)));
@@ -363,7 +363,7 @@ public class ImportProjectsActionProperty extends ActionProperty {
         propertyOtherClusterNative = new ImportProperty(nativeSubstantiationOtherClusterProjectField, LM.nativeSubstantiationOtherClusterProject.getMapping(projectKey));
         propertyOtherClusterForeign = new ImportProperty(foreignSubstantiationOtherClusterProjectField, LM.foreignSubstantiationOtherClusterProject.getMapping(projectKey));
 
-        academicKey = new ImportKey(LM.academic, LM.fullNameToAcademic.getMapping(fullNameAcademicField));
+        academicKey = new ImportKey(LM.academic, LM.fullNameSIDToAcademic.getMapping(fullNameAcademicField, projectIdField));
         propertiesAcademic.add(new ImportProperty(fullNameAcademicField, LM.fullNameAcademic.getMapping(academicKey)));
         propertiesAcademic.add(new ImportProperty(institutionAcademicField, LM.institutionAcademic.getMapping(academicKey)));
         propertiesAcademic.add(new ImportProperty(titleAcademicField, LM.titleAcademic.getMapping(academicKey)));
@@ -372,7 +372,7 @@ public class ImportProjectsActionProperty extends ActionProperty {
         propertiesAcademic.add(new ImportProperty(projectIdField, LM.projectAcademic.getMapping(academicKey),
                 LM.baseLM.object(LM.project).getMapping(projectKey)));
 
-        nonRussianSpecialistKey = new ImportKey(LM.nonRussianSpecialist, LM.fullNameToNonRussianSpecialist.getMapping(fullNameNonRussianSpecialistField));
+        nonRussianSpecialistKey = new ImportKey(LM.nonRussianSpecialist, LM.fullNameSIDToNonRussianSpecialist.getMapping(fullNameNonRussianSpecialistField, projectIdField));
         propertiesNonRussianSpecialist.add(new ImportProperty(fullNameNonRussianSpecialistField, LM.fullNameNonRussianSpecialist.getMapping(nonRussianSpecialistKey)));
         propertiesNonRussianSpecialist.add(new ImportProperty(organizationNonRussianSpecialistField, LM.organizationNonRussianSpecialist.getMapping(nonRussianSpecialistKey)));
         propertiesNonRussianSpecialist.add(new ImportProperty(titleNonRussianSpecialistField, LM.titleNonRussianSpecialist.getMapping(nonRussianSpecialistKey)));

@@ -87,6 +87,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
     public LP dateDataProject;
     public LP updateDateProject;
     public LP nativeNumberToPatent;
+    public LP nativeNumberSIDToPatent;
 
     private LP emailNoticeRejectedVoteEA;
     private LP emailNoticeRejectedVote;
@@ -611,6 +612,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP hideCommentEquipmentProject;
 
     public LP projectPatent;
+    public LP sidProjectPatent;
     public LP nativeTypePatent;
     public LP foreignTypePatent;
     public LP nativeNumberPatent;
@@ -645,8 +647,10 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP hideNameOwnerTypePatent;
 
     public LP projectAcademic;
+    public LP sidProjectAcademic;
     public LP fullNameAcademic;
     public LP fullNameToAcademic;
+    public LP fullNameSIDToAcademic;
     public LP institutionAcademic;
     public LP titleAcademic;
     public LP fileDocumentConfirmingAcademic;
@@ -657,8 +661,10 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP openFileDocumentEmploymentAcademic;
 
     public LP projectNonRussianSpecialist;
+    public LP sidProjectNonRussianSpecialist;
     public LP fullNameNonRussianSpecialist;
     public LP fullNameToNonRussianSpecialist;
+    public LP fullNameSIDToNonRussianSpecialist;
     public LP organizationNonRussianSpecialist;
     public LP titleNonRussianSpecialist;
     public LP fileNativeResumeNonRussianSpecialist;
@@ -1013,7 +1019,10 @@ public class SkolkovoLogicsModule extends LogicsModule {
         nativeNumberPatent = addDProp(baseGroup, "nativeNumberPatent", "Номер", InsensitiveStringClass.get(2000), patent);
         nativeNumberPatent.setMinimumWidth(10);
         nativeNumberPatent.setPreferredWidth(50);
-        nativeNumberToPatent = addAGProp("nativeNumberToPatent", "номер патента", nativeNumberPatent);
+        sidProjectPatent = addJProp("sidProjectPatent", sidProject, projectPatent, 1);
+        nativeNumberToPatent = addAGProp("nativeNumberToPatent", "Патент (номер патента, внутренний ID проекта)", nativeNumberPatent, projectPatent);
+        nativeNumberSIDToPatent = addJProp("nativeNumberSIDToPatent", "Патент (номер патента, внешний ID проекта)", nativeNumberToPatent, 1, sidToProject, 2);
+
         foreignNumberPatent = addDProp(baseGroup, "foreignNumberPatent", "Reference number", InsensitiveStringClass.get(2000), patent);
         foreignNumberPatent.setMinimumWidth(10);
         foreignNumberPatent.setPreferredWidth(50);
@@ -1057,11 +1066,13 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         // учёные
         projectAcademic = addDProp(idGroup, "projectAcademic", "Проект ученого", project, academic);
+        sidProjectAcademic = addJProp("sidProjectAcademic", sidProject, projectAcademic, 1);
 
         fullNameAcademic = addDProp(baseGroup, "fullNameAcademic", "ФИО", InsensitiveStringClass.get(2000), academic);
         fullNameAcademic.setMinimumWidth(10);
         fullNameAcademic.setPreferredWidth(50);
-        fullNameToAcademic = addAGProp("fullNameToAcademic", "ФИО учёного", fullNameAcademic);
+        fullNameToAcademic = addAGProp("fullNameToAcademic", "ФИО учёного (фамилия, внутренний ИД проекта)", fullNameAcademic, projectAcademic);
+        fullNameSIDToAcademic = addJProp("fullNameSIDToAcademic", "Учёный (фамилия, внешний ИД проекта)", fullNameToAcademic, 1, sidToProject, 2);
         institutionAcademic = addDProp(baseGroup, "institutionAcademic", "Учреждение, в котором данный специалист осуществляет научную и (или) преподавательскую деятельность", InsensitiveStringClass.get(2000), academic);
         institutionAcademic.setMinimumWidth(10);
         institutionAcademic.setPreferredWidth(50);
@@ -1079,11 +1090,13 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         // иностранные специалисты
         projectNonRussianSpecialist = addDProp(idGroup, "projectNonRussianSpecialist", "Проект иностранного специалиста", project, nonRussianSpecialist);
+        sidProjectNonRussianSpecialist = addJProp("sidProjectNonRussianSpecialist", sidProject, projectNonRussianSpecialist, 1);
 
         fullNameNonRussianSpecialist = addDProp(baseGroup, "fullNameNonRussianSpecialist", "ФИО", InsensitiveStringClass.get(2000), nonRussianSpecialist);
         fullNameNonRussianSpecialist.setMinimumWidth(10);
         fullNameNonRussianSpecialist.setPreferredWidth(50);
-        fullNameToNonRussianSpecialist = addAGProp("fullNameToNonRussianSpecialist", "ФИО иностранного специалиста", fullNameNonRussianSpecialist);
+        fullNameToNonRussianSpecialist = addAGProp("fullNameToNonRussianSpecialist", "Иностранный специалист (фамилия, внутренний ИД проекта)", fullNameNonRussianSpecialist, projectNonRussianSpecialist);
+        fullNameSIDToNonRussianSpecialist = addJProp("fullNameSIDToNonRussianSpecialist", "Иностранный специалист (фамилия, внешний ИД проекта)", fullNameToNonRussianSpecialist, 1, sidToProject, 2);
         organizationNonRussianSpecialist = addDProp(baseGroup, "organizationNonRussianSpecialist", "Место работы", InsensitiveStringClass.get(2000), nonRussianSpecialist);
         organizationNonRussianSpecialist.setMinimumWidth(10);
         organizationNonRussianSpecialist.setPreferredWidth(50);

@@ -45,7 +45,6 @@ import java.util.Date;
 public class ExportProjectDocumentsActionProperty extends ActionProperty {
 
     private SkolkovoLogicsModule LM;
-    private String projectID;
     private DataSession session;
     private final ClassPropertyInterface projectInterface;
 
@@ -56,7 +55,6 @@ public class ExportProjectDocumentsActionProperty extends ActionProperty {
         Iterator<ClassPropertyInterface> i = interfaces.iterator();
         projectInterface = i.next();
     }
-
 
     public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects) throws SQLException {
         throw new RuntimeException("no need");
@@ -137,4 +135,3 @@ public class ExportProjectDocumentsActionProperty extends ActionProperty {
         if (file != null) files.put(name + ".pdf", (byte[]) file);
     }
 }
-
