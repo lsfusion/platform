@@ -21,6 +21,8 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 
     public RomanBusinessLogics(DataAdapter adapter, int exportPort) throws IOException, ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException, FileNotFoundException, JRException {
         super(adapter, exportPort);
+
+        this.setDialogUndecorated(false);
     }
 
     @Override

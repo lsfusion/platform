@@ -1299,6 +1299,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends IncrementProps<Pr
         }
 
         dialog.readOnly = changeProperty.getDialogClass().dialogReadOnly;
+        dialog.undecorated = BL.isDialogUndecorated();
 
         return dialog;
     }

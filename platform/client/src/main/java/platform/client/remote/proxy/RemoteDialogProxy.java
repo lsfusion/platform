@@ -36,4 +36,12 @@ public class RemoteDialogProxy<T extends RemoteDialogInterface>
         logRemoteMethodEndCall("isReadOnly", result);
         return result;
     }
+
+    @ImmutableMethod
+    public Boolean isUndecorated() throws RemoteException {
+        logRemoteMethodStartCall("isUndecorated");
+        Boolean result = target.isUndecorated();
+        logRemoteMethodEndCall("isUndecorated", result);
+        return result;
+    }
 }

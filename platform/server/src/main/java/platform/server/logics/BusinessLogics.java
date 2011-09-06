@@ -132,6 +132,16 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         return Context.context.get().popActionMessage();
     }
 
+    private Boolean dialogUndecorated = true;
+
+    public Boolean isDialogUndecorated() {
+        return dialogUndecorated;
+    }
+
+    public void setDialogUndecorated(Boolean dialogUndecorated) {
+        this.dialogUndecorated = dialogUndecorated;
+    }
+
     public static class MessageStack extends Stack<String> {
         public void set(String message) {
             clear();
