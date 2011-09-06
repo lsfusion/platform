@@ -12,6 +12,7 @@ import platform.base.IOUtils;
 import platform.base.OrderedMap;
 import platform.interop.action.ClientAction;
 import platform.interop.action.MessageClientAction;
+import platform.server.classes.LogicalClass;
 import platform.server.classes.ValueClass;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.query.Query;
@@ -73,6 +74,7 @@ public class ImportProjectsActionProperty extends ActionProperty {
             isSeekEquipmentProjectField, descriptionEquipmentProjectField,
             isOtherEquipmentProjectField, commentEquipmentProjectField,
             fillNativeProjectField, fillForeignProjectField,
+            isConsultingCenterQuestionProjectField, isConsultingCenterCommentProjectField, consultingCenterCommentProjectField,
 
             isReturnInvestmentsProjectField, nameReturnInvestorProjectField, amountReturnFundsProjectField,
             isNonReturnInvestmentsProjectField, isCapitalInvestmentProjectField, isPropertyInvestmentProjectField, isGrantsProjectField, isOtherNonReturnInvestmentsProjectField,
@@ -173,6 +175,9 @@ public class ImportProjectsActionProperty extends ActionProperty {
         fillNativeProjectField = new ImportField(LM.fillNativeProject);
         fillForeignProjectField = new ImportField(LM.fillForeignProject);
         updateDateProjectField = new ImportField(LM.updateDateProject);
+        isConsultingCenterQuestionProjectField = new ImportField(LM.isConsultingCenterQuestionProject);
+        isConsultingCenterCommentProjectField = new ImportField(LM.isConsultingCenterCommentProject);
+        consultingCenterCommentProjectField = new ImportField(LM.consultingCenterCommentProject);
 
         nameNativeClusterField = new ImportField(LM.nameNativeCluster);
         inProjectClusterField = new ImportField(LM.inProjectCluster);
@@ -254,6 +259,9 @@ public class ImportProjectsActionProperty extends ActionProperty {
         properties.add(new ImportProperty(commentEquipmentProjectField, LM.commentEquipmentProject.getMapping(projectKey)));
         properties.add(new ImportProperty(fillNativeProjectField, LM.fillNativeProject.getMapping(projectKey)));
         properties.add(new ImportProperty(fillForeignProjectField, LM.fillForeignProject.getMapping(projectKey)));
+        properties.add(new ImportProperty(isConsultingCenterQuestionProjectField, LM.isConsultingCenterQuestionProject.getMapping(projectKey)));
+        properties.add(new ImportProperty(isConsultingCenterCommentProjectField, LM.isConsultingCenterCommentProject.getMapping(projectKey)));
+        properties.add(new ImportProperty(consultingCenterCommentProjectField, LM.consultingCenterCommentProject.getMapping(projectKey)));
 
         properties.add(new ImportProperty(isReturnInvestmentsProjectField, LM.isReturnInvestmentsProject.getMapping(projectKey)));
         properties.add(new ImportProperty(nameReturnInvestorProjectField, LM.nameReturnInvestorProject.getMapping(projectKey)));
@@ -713,6 +721,21 @@ public class ImportProjectsActionProperty extends ActionProperty {
                 if (fillForeign) row.add(true);
                 else row.add(null); //fillForeignProject
 
+                String consultingCenterComment = node.getChildText("consultingCenterComment");
+                if (consultingCenterComment == null) {
+                    row.add(null);
+                    row.add(null);
+                    row.add(null);
+                } else if ("".equals(consultingCenterComment)) {
+                    row.add(true);
+                    row.add(null);
+                    row.add(null);
+                } else {
+                    row.add(true);
+                    row.add(true);
+                    row.add(consultingCenterComment);
+                }
+
                 row.add(projectId);
                 row.add(BaseUtils.nullZero(node.getChildText("isOwnedEquipmentProject")));
                 row.add(BaseUtils.nullZero(node.getChildText("isAvailableEquipmentProject")));
@@ -927,7 +950,9 @@ public class ImportProjectsActionProperty extends ActionProperty {
                 List<ImportField> fieldsFullClaimerForeign = BaseUtils.toList(nameForeignClaimerField, firmNameForeignClaimerField);
 
                 List<ImportField> fieldsBoth = BaseUtils.toList(
-                        fillNativeProjectField, fillForeignProjectField, projectIdField,
+                        fillNativeProjectField, fillForeignProjectField,
+                        isConsultingCenterQuestionProjectField, isConsultingCenterCommentProjectField, consultingCenterCommentProjectField,
+                        projectIdField,
                         isOwnedEquipmentProjectField, isAvailableEquipmentProjectField, isTransferEquipmentProjectField,
                         descriptionTransferEquipmentProjectField, ownerEquipmentProjectField, isPlanningEquipmentProjectField,
                         specificationEquipmentProjectField, isSeekEquipmentProjectField, descriptionEquipmentProjectField,

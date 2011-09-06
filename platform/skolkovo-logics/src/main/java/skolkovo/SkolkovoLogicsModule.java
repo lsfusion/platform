@@ -138,6 +138,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
     AbstractGroup translateActionGroup;
     AbstractGroup projectTranslationsGroup;
     AbstractGroup projectOtherClusterGroup;
+    AbstractGroup consultingCenterGroup;
 
     AbstractGroup voteResultGroup;
     AbstractGroup voteResultCheckGroup;
@@ -265,6 +266,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
         projectTranslationsGroup = addAbstractGroup("projectTranslationsGroup", "Переведено", baseGroup);
 
         projectOtherClusterGroup = addAbstractGroup("projectOtherClusterGroup", "Иной кластер", baseGroup);
+
+        consultingCenterGroup = addAbstractGroup("consultingCenterGroup", "Консалтинговый центр", baseGroup);
 
         voteResultGroup = addAbstractGroup("voteResultGroup", "Результаты голосования", publicGroup);
 
@@ -580,6 +583,11 @@ public class SkolkovoLogicsModule extends LogicsModule {
     public LP hideTranslatedToEnglishProject;
     public LP fillNativeProject;
     public LP fillForeignProject;
+    public LP isConsultingCenterQuestionProject;
+    public LP isConsultingCenterCommentProject;
+    public LP consultingCenterCommentProject;
+    public LP sumConsultingCenterCommentProject;
+    public LP betweenDate;
 
     LP hideNameReturnInvestorProject;
     LP hideAmountReturnFundsProject;
@@ -1437,6 +1445,22 @@ public class SkolkovoLogicsModule extends LogicsModule {
 //        voteSucceededProject, 1, addCProp(projectStatus, "succeeded", project), 1,
 //        voteInProgressProject, 1, addCProp(projectStatus, "inProgress", project), 1,
 
+        isConsultingCenterQuestionProject = addDProp(consultingCenterGroup, "isConsultingCenterQuestionProject", "Был ли задан вопрос о консалтинговом центре", LogicalClass.instance, project);
+        isConsultingCenterCommentProject = addDProp(consultingCenterGroup, "isConsultingCenterCommentProject", "Утвердительный ответ", LogicalClass.instance, project);
+        consultingCenterCommentProject = addDProp(consultingCenterGroup, "consultingCenterCommentProject", "Комментарий о консалтинговом центре", InsensitiveStringClass.get(2000), project);
+        consultingCenterCommentProject.setMinimumWidth(50);
+        consultingCenterCommentProject.setPreferredWidth(50);
+
+        //quantitySupplierArticleBetweenDates = addSGProp("quantitySupplierArticleBetweenDates", "Проданное кол-во",
+        //        addJProp(and(false,false), innerQuantity, 1, 2, 3, is(orderSale), 1, betweenDate2, 1, 4, 5), contragentOrder, 3, 2, 4, 5);
+
+        betweenDate = addJProp(baseLM.between, baseLM.date, 1, object(DateClass.instance), 2, object(DateClass.instance), 3);
+
+        sumConsultingCenterCommentProject = addSGProp("sumConsultingCenterCommentProject", "Сумма положительных комментариев",
+                addJProp(and(false, false, false), addCProp(IntegerClass.instance, 1), isConsultingCenterQuestionProject, 1, isConsultingCenterCommentProject, 1, betweenDate, 1, 2, 3),
+                consultingCenterCommentProject, 1);
+
+
         fillNativeProject = addDProp(projectOptionsGroup, "fillNativeProject", "Анкета на русском", LogicalClass.instance, project);
         fillForeignProject = addDProp(projectOptionsGroup, "fillForeignProject", "Анкета на английском", LogicalClass.instance, project);
 
@@ -1698,7 +1722,6 @@ public class SkolkovoLogicsModule extends LogicsModule {
         private String lng;
 
         private ObjectEntity objProject;
-        private ObjectEntity objClaimer;
         private ObjectEntity objPatent;
         private ObjectEntity objAcademic;
         private ObjectEntity objNonRussianSpecialist;
@@ -1708,7 +1731,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
             this.lng = lng;
 
-            objProject = addSingleGroupObject(1, "project", project, "Проект", projectInformationGroup, innovationGroup, projectDocumentsGroup, sourcesFundingGroup, equipmentGroup, projectOptionsGroup, projectStatusGroup);
+            objProject = addSingleGroupObject(1, "project", project, "Проект", projectInformationGroup, innovationGroup, projectDocumentsGroup, sourcesFundingGroup, consultingCenterGroup, equipmentGroup, projectOptionsGroup, projectStatusGroup);
 
             getPropertyDraw(nameReturnInvestorProject).propertyCaption = addPropertyObject(hideNameReturnInvestorProject, objProject);
             getPropertyDraw(amountReturnFundsProject).propertyCaption = addPropertyObject(hideAmountReturnFundsProject, objProject);
@@ -1813,6 +1836,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             ContainerView descrContainer = design.createContainer("Описание проекта");
             descrContainer.constraints.childConstraints = DoNotIntersectSimplexConstraint.TOTHE_BOTTOM;
             descrContainer.add(row1);
+            descrContainer.add(design.getGroupPropertyContainer(objProject.groupTo, consultingCenterGroup));
             descrContainer.add(design.getGroupPropertyContainer(objProject.groupTo, equipmentGroup));
             descrContainer.add(design.getGroupPropertyContainer(objProject.groupTo, projectDocumentsGroup));
 
