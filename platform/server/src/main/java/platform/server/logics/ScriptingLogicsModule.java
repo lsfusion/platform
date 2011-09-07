@@ -255,13 +255,17 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
     }
 
-    public static int getParamIndex(String param, List<String> namedParams) {
+    public static int getParamIndex(String param, List<String> namedParams, boolean dynamic) {
         int index = -1;
         if (namedParams != null) {
             index = namedParams.indexOf(param);
         }
         if (index < 0 && param.startsWith("$")) {
             index = Integer.parseInt(param.substring(1)) - 1;
+        }
+        if (index < 0 && namedParams != null && dynamic) {
+            index = namedParams.size();
+            namedParams.add(param);
         }
         assert index >= 0;
         return index;
