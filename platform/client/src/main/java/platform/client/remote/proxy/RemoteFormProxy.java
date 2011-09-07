@@ -1,7 +1,5 @@
 package platform.client.remote.proxy;
 
-import platform.client.SwingUtils;
-import platform.client.form.BlockingTask;
 import platform.interop.ClassViewType;
 import platform.interop.action.ClientApply;
 import platform.interop.form.RemoteChanges;
@@ -122,6 +120,13 @@ public class RemoteFormProxy<T extends RemoteFormInterface>
         logRemoteMethodStartCall("groupChangePropertyDraw");
         target.groupChangePropertyDraw(mainID, mainColumnKey, getterID, getterColumnKey);
         logRemoteMethodEndVoidCall("groupChangePropertyDraw");
+    }
+
+    @PendingRemoteMethod
+    public void pasteExternalTable(List propertyIDs, List<List<Object>> table) throws RemoteException {
+        logRemoteMethodStartCall("pasteExternalTable");
+        target.pasteExternalTable(propertyIDs, table);
+        logRemoteMethodEndVoidCall("pasteExternalTable");
     }
 
     public boolean[] getCompatibleProperties(int mainPropertyID, int[] propertiesIDs) throws RemoteException {

@@ -47,8 +47,6 @@ import java.util.*;
 
 import static platform.base.BaseUtils.deserializeObject;
 import static platform.server.logics.BusinessLogics.getCurrentActionMessage;
-import static platform.server.logics.BusinessLogics.pushCurrentActionMessage;
-import static platform.server.logics.BusinessLogics.setCurrentActionMessage;
 
 // фасад для работы с клиентом
 public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> extends platform.interop.remote.RemoteObject implements RemoteFormInterface, Context {
@@ -539,6 +537,14 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
                     }
                 }
             }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void pasteExternalTable(List propertyIDs, List<List<Object>> table) {
+        try {
+            form.pasteExternalTable(propertyIDs, table);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

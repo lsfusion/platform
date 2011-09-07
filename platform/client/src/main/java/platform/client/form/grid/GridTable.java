@@ -312,18 +312,18 @@ public abstract class GridTable extends ClientFormTable
         if (changeObject != null) {
             SwingUtils.invokeLaterSingleAction(groupObject.getActionID()
                     , new ActionListener() {
-                        public void actionPerformed(ActionEvent ae) {
-                            try {
-                                ClientGroupObjectValue newCurrentObject = getSelectedObject();
-                                if (changeObject.equals(newCurrentObject)) {
-                                    selectObject(newCurrentObject);
-                                    form.changeGroupObject(groupObject, getSelectedObject());
-                                }
-                            } catch (IOException e) {
-                                throw new RuntimeException(ClientResourceBundle.getString("errors.error.changing.current.object"), e);
-                            }
+                public void actionPerformed(ActionEvent ae) {
+                    try {
+                        ClientGroupObjectValue newCurrentObject = getSelectedObject();
+                        if (changeObject.equals(newCurrentObject)) {
+                            selectObject(newCurrentObject);
+                            form.changeGroupObject(groupObject, getSelectedObject());
                         }
-                    }, 50);
+                    } catch (IOException e) {
+                        throw new RuntimeException(ClientResourceBundle.getString("errors.error.changing.current.object"), e);
+                    }
+                }
+            }, 50);
         }
     }
 
@@ -562,6 +562,51 @@ public abstract class GridTable extends ClientFormTable
         }
         if (oValue != null)
             changePropertyDraw(oValue, row, column, false, false);
+    }
+
+    public void pasteTable(List<List<String>> table) {
+        if (isReadOnly())
+            return;
+
+        int selectedColumn = getColumnModel().getSelectionModel().getLeadSelectionIndex();
+        int tableColumns = 0;
+        if (!table.isEmpty()) {
+            tableColumns = table.get(0).size();
+        }
+        if (table.size() > 1 || tableColumns > 1) {
+            int answer = JOptionPane.showConfirmDialog(null, ClientResourceBundle.getString("form.grid.sure.to.paste.multivalue"), "", JOptionPane.YES_NO_OPTION);
+            if (answer == JOptionPane.NO_OPTION)
+                return;
+        }
+        int columnsToInsert = Math.min(tableColumns, getColumnCount() - selectedColumn);
+
+        List<ClientPropertyDraw> propertyList = new ArrayList<ClientPropertyDraw>();
+        for (int i = 0; i < columnsToInsert; i++) {
+            ClientPropertyDraw propertyDraw = model.getColumnProperty(selectedColumn + i);
+            propertyList.add(propertyDraw);
+        }
+
+        List<List<Object>> pasteTable = new ArrayList<List<Object>>();
+        for (List<String> row : table) {
+            List<Object> pasteTableRow = new ArrayList<Object>();
+            for (String item : row) {
+                int itemIndex = row.indexOf(item);
+                if (itemIndex <= columnsToInsert - 1) {
+                    ClientPropertyDraw property = propertyList.get(itemIndex);
+                    try {
+                        pasteTableRow.add(item == null ? null : property.parseString(getForm(), model.getColumnKey(itemIndex), item, isDataChanging()));
+                    } catch (ParseException e) {
+                        pasteTableRow.add(null);
+                    }
+                }
+            }
+            pasteTable.add(pasteTableRow);
+        }
+        try {
+            form.pasteExternalTable(propertyList, pasteTable);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public boolean isReadOnly() {

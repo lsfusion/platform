@@ -6,6 +6,9 @@ import javax.swing.*;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.Transferable;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Scanner;
 
 public abstract class TableTransferHandler extends TransferHandler {
 
@@ -15,6 +18,8 @@ public abstract class TableTransferHandler extends TransferHandler {
         int getColumnCount();
 
         void writeSelectedValue(String value); // записать значение в текущую ячейку
+
+        void pasteTable(List<List<String>> table);
 
         boolean isReadOnly();
     }
@@ -49,6 +54,28 @@ public abstract class TableTransferHandler extends TransferHandler {
         return (flavor.getHumanPresentableName().equals("text/plain") || flavor.getHumanPresentableName().equals("Unicode String"));
     }
 
+    List<List<String>> getClipboardTable(String line) {
+        List<List<String>> table = new ArrayList<List<String>>();
+        Scanner rowScanner = new Scanner(line);
+        while (rowScanner.hasNext()) {
+            String rowString = rowScanner.nextLine();
+            List<String> row = new ArrayList<String>();
+            Scanner cellScanner = new Scanner(rowString).useDelimiter("\t");
+            if (rowString.startsWith("\t") || rowString.isEmpty()) {
+                row.add(null);
+            }
+            while (cellScanner.hasNext()) {
+                String cell = BaseUtils.nullEmpty(cellScanner.next());
+                row.add(cell);
+            }
+            if (rowString.endsWith("\t")) {
+                row.add(null);
+            }
+            table.add(row);
+        }
+        return table;
+    }
+
     @Override
     public boolean importData(JComponent c, Transferable t) {
         TableInterface table = getTable();
@@ -61,7 +88,8 @@ public abstract class TableTransferHandler extends TransferHandler {
                     } catch (Exception ignored) {
                     }
                     if (value != null) {
-                        table.writeSelectedValue(value);
+                        List<List<String>> clipboardTable = getClipboardTable(value);
+                        table.pasteTable(clipboardTable);
                         return true;
                     }
                 }

@@ -584,6 +584,15 @@ public class ClientFormController {
         applyRemoteChanges();
     }
 
+    public void pasteExternalTable(List<ClientPropertyDraw> propertyList, List<List<Object>> table) throws IOException {
+        List<Integer> propertyIdList = new ArrayList<Integer>();
+        for (ClientPropertyDraw propertyDraw : propertyList) {
+            propertyIdList.add(propertyDraw.getID());
+        }
+        remoteForm.pasteExternalTable(propertyIdList, table);
+        applyRemoteChanges();
+    }
+
     public void groupChangePropertyDraw(ClientPropertyDraw mainProperty, ClientGroupObjectValue mainColumnKey,
                                         ClientPropertyDraw getterProperty, ClientGroupObjectValue getterColumnKey) throws IOException {
         // для глобальных свойств пока не может быть отложенных действий

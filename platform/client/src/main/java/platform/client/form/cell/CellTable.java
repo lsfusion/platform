@@ -91,6 +91,12 @@ public abstract class CellTable extends SingleCellTable
         }
     }
 
+    public void pasteTable(List<List<String>> table) {
+        if (!table.isEmpty() && !table.get(0).isEmpty()) {
+            writeSelectedValue(table.get(0).get(0));
+        }
+    }
+
     public boolean isReadOnly() {
         return getForm().isReadOnlyMode() && isDataChanging();
     }

@@ -402,6 +402,13 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
         }
     }
 
+    public void pasteTable(List<List<String>> table) {
+        //пока вставляем только одно значение
+        if (!table.isEmpty() && !table.get(0).isEmpty()) {
+            writeSelectedValue(table.get(0).get(0));
+        }
+    }
+
     public boolean isReadOnly() {
         return form.isReadOnlyMode() && isDataChanging();
     }

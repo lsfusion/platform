@@ -1,5 +1,6 @@
 package platform.client.logics.classes;
 
+import platform.base.BaseUtils;
 import platform.client.ClientResourceBundle;
 import platform.client.form.PropertyEditorComponent;
 import platform.client.form.PropertyRendererComponent;
@@ -56,7 +57,7 @@ public class ClientLogicalClass extends ClientDataClass implements ClientTypeCla
 
     public Object parseString(String s) throws ParseException {
         try {
-            return Boolean.parseBoolean(s);
+            return BaseUtils.nullBoolean(Boolean.parseBoolean(s));
         } catch (NumberFormatException nfe) {
             throw new ParseException(s + ClientResourceBundle.getString("logics.classes.can.not.be.converted.to.boolean"), 0);
         }

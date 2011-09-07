@@ -11,10 +11,7 @@ import platform.interop.action.StopAutoActionsClientAction;
 import platform.interop.exceptions.ComplexQueryException;
 import platform.server.auth.SecurityPolicy;
 import platform.server.caches.ManualLazy;
-import platform.server.classes.ConcreteCustomClass;
-import platform.server.classes.CustomClass;
-import platform.server.classes.IntegerClass;
-import platform.server.classes.ValueClass;
+import platform.server.classes.*;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.ValueExpr;
@@ -474,6 +471,44 @@ public class FormInstance<T extends BusinessLogics<T>> extends IncrementProps<Pr
         } else {
             return null;
         }
+    }
+
+    public void pasteExternalTable(List<Integer> propertyIDs, List<List<Object>> table) throws SQLException {
+        List<PropertyDrawInstance> properties = new ArrayList<PropertyDrawInstance>();
+        for (Integer id : propertyIDs) {
+            properties.add(getPropertyDraw(id));
+        }
+        GroupObjectInstance groupObject = properties.get(0).toDraw;
+        OrderedMap<Map<ObjectInstance, DataObject>, Map<OrderInstance, ObjectValue>> executeList = groupObject.seekObjects(session.sql, session.env, this, BL.LM.baseClass, table.size());
+        for (Map<ObjectInstance, DataObject> key : executeList.keySet()) {
+            List<Object> row = table.get(executeList.indexOf(key));
+            for (PropertyDrawInstance property : properties) {
+                PropertyObjectInstance propertyObjectInstance = property.getPropertyObjectInstance();
+
+                for (CustomObjectInstance groupKey : (Collection<CustomObjectInstance>) propertyObjectInstance.mapping.values()) {
+                    if (!key.containsKey(groupKey)) {
+                        key.put(groupKey, getGroupObjectValue(groupKey));
+                    }
+                }
+
+                int propertyIndex = properties.indexOf(property);
+                if (propertyIndex < row.size() //если вдруг копировали не таблицу - может быть разное кол-во значений в строках
+                        && !(propertyObjectInstance.getType() instanceof ActionClass) && !property.isReadOnly()) {
+                    dataChanged = true;
+                    Object value = row.get(propertyIndex);
+                    propertyObjectInstance.property.execute(BaseUtils.join(propertyObjectInstance.mapping, key), session, value, this);
+                }
+            }
+        }
+    }
+
+    public DataObject getGroupObjectValue(CustomObjectInstance objectInstance) {
+        for (GroupObjectInstance groupObject : groups) {
+            DataObject object = groupObject.getGroupObjectValue().get(objectInstance);
+            if (object != null)
+                return object;
+        }
+        return null;
     }
 
     public int countRecords(int groupObjectID) throws SQLException {

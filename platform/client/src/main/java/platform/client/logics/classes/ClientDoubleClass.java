@@ -47,9 +47,13 @@ public class ClientDoubleClass extends ClientIntegralClass implements ClientType
         return format;
     }
 
+    public String reformatString(String string) {
+        return string.replaceAll(",", ".");
+    }
+
     public Object parseString(String s) throws ParseException {
         try {
-            return Double.parseDouble(s);
+            return Double.parseDouble(reformatString(s));
         } catch (NumberFormatException nfe) {
             throw new ParseException(s + ClientResourceBundle.getString("logics.classes.can.not.be.converted.to.double"), 0);
         }

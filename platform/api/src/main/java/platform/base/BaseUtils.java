@@ -1148,6 +1148,13 @@ public class BaseUtils {
             return string.trim();
     }
 
+    public static String nullEmpty(String string) {
+        if (string != null && string.trim().isEmpty())
+            return null;
+        else
+            return string;
+    }
+
     public static String rtrim(String string) {
         int len = string.length();
         while (len > 0 && string.charAt(len - 1) == ' ') len--;
