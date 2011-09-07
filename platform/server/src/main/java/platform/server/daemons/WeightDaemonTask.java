@@ -29,7 +29,7 @@ public class WeightDaemonTask implements IDaemonTask, Serializable {
     public void run() {
         try {
             serialPort.openPort();
-            serialPort.setParams(speed, 8, 1, 0);
+            serialPort.setParams(speed, SerialPort.DATABITS_8, SerialPort.STOPBITS_1, SerialPort.PARITY_EVEN);
             byte[] msg = {0x4A};
             serialPort.writeBytes(msg);
             byte[] buffer = serialPort.readBytes(5);
