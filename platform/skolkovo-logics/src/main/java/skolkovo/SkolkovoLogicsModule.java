@@ -139,6 +139,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
     AbstractGroup projectTranslationsGroup;
     AbstractGroup projectOtherClusterGroup;
     AbstractGroup consultingCenterGroup;
+    AbstractGroup consultingCenterStatGroup;
 
     AbstractGroup voteResultGroup;
     AbstractGroup voteResultCheckGroup;
@@ -267,7 +268,9 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         projectOtherClusterGroup = addAbstractGroup("projectOtherClusterGroup", "Иной кластер", baseGroup);
 
-        consultingCenterGroup = addAbstractGroup("consultingCenterGroup", "Консалтинговый центр", baseGroup);
+        consultingCenterGroup = addAbstractGroup("consultingCenterGroup", "Консультативный центр", baseGroup);
+
+        consultingCenterStatGroup = addAbstractGroup("consultingCenterStatGroup", "Консультативный центр", baseGroup);
 
         voteResultGroup = addAbstractGroup("voteResultGroup", "Результаты голосования", publicGroup);
 
@@ -586,7 +589,9 @@ public class SkolkovoLogicsModule extends LogicsModule {
     public LP isConsultingCenterQuestionProject;
     public LP isConsultingCenterCommentProject;
     public LP consultingCenterCommentProject;
-    public LP sumConsultingCenterCommentProject;
+    public LP sumPositiveConsultingCenterCommentProject;
+    public LP sumNegativeConsultingCenterCommentProject;
+    public LP sumTotalConsultingCenterCommentProject;
     public LP betweenDate;
 
     LP hideNameReturnInvestorProject;
@@ -1445,9 +1450,9 @@ public class SkolkovoLogicsModule extends LogicsModule {
 //        voteSucceededProject, 1, addCProp(projectStatus, "succeeded", project), 1,
 //        voteInProgressProject, 1, addCProp(projectStatus, "inProgress", project), 1,
 
-        isConsultingCenterQuestionProject = addDProp(consultingCenterGroup, "isConsultingCenterQuestionProject", "Был ли задан вопрос о консалтинговом центре", LogicalClass.instance, project);
+        isConsultingCenterQuestionProject = addDProp(consultingCenterGroup, "isConsultingCenterQuestionProject", "Был ли задан вопрос о консультативном центре", LogicalClass.instance, project);
         isConsultingCenterCommentProject = addDProp(consultingCenterGroup, "isConsultingCenterCommentProject", "Утвердительный ответ", LogicalClass.instance, project);
-        consultingCenterCommentProject = addDProp(consultingCenterGroup, "consultingCenterCommentProject", "Комментарий о консалтинговом центре", InsensitiveStringClass.get(2000), project);
+        consultingCenterCommentProject = addDProp(consultingCenterGroup, "consultingCenterCommentProject", "Комментарий о консультативном центре", InsensitiveStringClass.get(2000), project);
         consultingCenterCommentProject.setMinimumWidth(50);
         consultingCenterCommentProject.setPreferredWidth(50);
 
@@ -1456,9 +1461,15 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         betweenDate = addJProp(baseLM.between, baseLM.date, 1, object(DateClass.instance), 2, object(DateClass.instance), 3);
 
-        sumConsultingCenterCommentProject = addSGProp("sumConsultingCenterCommentProject", "Сумма положительных комментариев",
+        sumPositiveConsultingCenterCommentProject = addSGProp(consultingCenterStatGroup, "sumPositiveConsultingCenterCommentProject", "Сумма положительных комментариев",
                 addJProp(and(false, false, false), addCProp(IntegerClass.instance, 1), isConsultingCenterQuestionProject, 1, isConsultingCenterCommentProject, 1, betweenDate, 1, 2, 3),
-                consultingCenterCommentProject, 1);
+                2, 3);
+        sumNegativeConsultingCenterCommentProject = addSGProp(consultingCenterStatGroup, "sumNegativeConsultingCenterCommentProject", "Сумма отрицательных комментариев",
+                addJProp(and(false, true, false), addCProp(IntegerClass.instance, 1), isConsultingCenterQuestionProject, 1, isConsultingCenterCommentProject, 1, betweenDate, 1, 2, 3),
+                2, 3);
+        sumTotalConsultingCenterCommentProject = addSGProp(consultingCenterStatGroup, "sumTotalConsultingCenterCommentProject", "Всего комментариев",
+                addJProp(and(false, false), addCProp(IntegerClass.instance, 1), isConsultingCenterQuestionProject, 1, betweenDate, 1, 2, 3),
+                2, 3);
 
 
         fillNativeProject = addDProp(projectOptionsGroup, "fillNativeProject", "Анкета на русском", LogicalClass.instance, project);
@@ -1690,7 +1701,6 @@ public class SkolkovoLogicsModule extends LogicsModule {
         addFormEntity(new VoteClaimerFormEntity(print, "voteClaimer", "Уведомление о рассмотрении"));
         addFormEntity(new NoticeRejectedFormEntity(print, "noticeRejected", "Уведомление о несоответствии"));
         addFormEntity(new NoticeAcceptedStatusFormEntity(print, "noticeAcceptedStatus", "Уведомление о соответствии (статус участника)"));
-        addFormEntity(new NoticeAcceptedPreliminaryFormEntity(print, "noticeAcceptedPreliminary", "Уведомление о соответствии (предварительная экспертиза)"));
 
         addFormEntity(new ProjectFormEntity(baseLM.baseElement, "project"));
         addFormEntity(new ClaimerFormEntity(baseLM.baseElement, "claimer"));
@@ -1699,6 +1709,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         addFormEntity(new ExpertStatsFormEntity(baseLM.baseElement, "expertStats"));
         addFormEntity(new VoteExpertFormEntity(baseLM.baseElement, "voteExpert"));
         addFormEntity(new VoteFormEntity(baseLM.baseElement, "voterestricted", true));
+        addFormEntity(new ConsultingCenterFormEntity(baseLM.baseElement, "consultingCenter"));
 
         baseLM.baseElement.add(print);
 
@@ -1715,6 +1726,47 @@ public class SkolkovoLogicsModule extends LogicsModule {
     @Override
     public String getNamePrefix() {
         return null;
+    }
+
+    private class ConsultingCenterFormEntity extends FormEntity<SkolkovoBusinessLogics> {
+        private ObjectEntity objProject;
+        private ObjectEntity objDateFrom;
+        private ObjectEntity objDateTo;
+
+        private ConsultingCenterFormEntity(NavigatorElement parent, String sID) {
+            super(parent, sID, "Консультативный центр");
+
+            GroupObjectEntity gobjDates = new GroupObjectEntity(1, "date");
+            objDateFrom = new ObjectEntity(2, "dateFrom", DateClass.instance, "Дата (с)");
+            objDateTo = new ObjectEntity(3, "dateTo", DateClass.instance, "Дата (по)");
+            gobjDates.add(objDateFrom);
+            gobjDates.add(objDateTo);
+
+            addGroup(gobjDates);
+            gobjDates.setSingleClassView(ClassViewType.PANEL);
+
+            addPropertyDraw(objDateFrom, baseLM.objectValue);
+            addPropertyDraw(objDateTo, baseLM.objectValue);
+
+            objProject = addSingleGroupObject(4, "project", project, dateProject, nameNativeProject, nameNativeClaimerProject, consultingCenterCommentProject);
+
+            //addPropertyDraw(objDateFrom, objDateTo, consultingCenterStatGroup);
+            //setForceViewType(consultingCenterStatGroup, ClassViewType.PANEL);
+
+
+            addPropertyDraw(sumPositiveConsultingCenterCommentProject, objDateFrom, objDateTo);
+            setForceViewType(sumPositiveConsultingCenterCommentProject, ClassViewType.PANEL);
+            addPropertyDraw(sumNegativeConsultingCenterCommentProject, objDateFrom, objDateTo);
+            setForceViewType(sumNegativeConsultingCenterCommentProject, ClassViewType.PANEL);
+            addPropertyDraw(sumTotalConsultingCenterCommentProject, objDateFrom, objDateTo);
+            setForceViewType(sumTotalConsultingCenterCommentProject, ClassViewType.PANEL);
+
+
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(baseLM.date, objProject), Compare.GREATER_EQUALS, objDateFrom));
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(baseLM.date, objProject), Compare.LESS_EQUALS, objDateTo));
+            addFixedFilter(new NotNullFilterEntity(addPropertyObject(consultingCenterCommentProject, objProject)));
+        }
+
     }
 
     private class ProjectFullFormEntity extends ClassFormEntity<SkolkovoBusinessLogics> {
