@@ -297,8 +297,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         addPropertyToGroup(property.property, group);
         if (isData) {
             property.property.markStored(baseLM.tableFactory);
-        }
-        if (isPersistent) {
+        } else if (isPersistent) {
             addPersistent(property);
         }
         addNamedParams(property.property.getSID(), namedParams);
