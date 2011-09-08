@@ -35,11 +35,11 @@ priceExpenseImporterFreightSku2 = priceInImporterFreightSku($1, $2, $3) + priceF
 
 
 // GProp
-numberDocumentArticle2 = GROUP SUM [numberListArticle(param1, param2)] BY documentList(param1, param2) IN baseGroup;
-orderedInvoiceArticle2(invoice, param3) = GROUP SUM orderedOrderInvoiceArticle2 BY invoice, param3 IN baseGroup;
-invoicedOrderArticle2 = GROUP SUM invoicedOrderSku BY $1, articleSku($2) IN baseGroup;
+numberDocumentArticle2 = GROUP SUM numberListArticle(param1, param2) BY documentList(param1, param2) IN baseGroup;
+orderedInvoiceArticle2(invoice, param3) = GROUP SUM orderedOrderInvoiceArticle2(order, invoice, param3) BY invoice, param3 IN baseGroup;
+invoicedOrderArticle2 = GROUP SUM invoicedOrderSku($1, $2) BY $1, articleSku($2) IN baseGroup;
 compositionFreightArticleCompositionCountryCategory2 =
-    GROUP MAX mainCompositionFreightSku2 BY
+    GROUP MAX mainCompositionFreightSku2(freight, sku) BY
         freight,
         articleSku(sku),
         mainCompositionOriginFreightSku(freight, sku),
@@ -56,7 +56,7 @@ sumSku2 = UNION SUM (sumStockedSku($1), sumDirectInvoicedSku($1)) IN baseGroup;
 // Nested
 netWeightImporterFreightUnitSku2(freight, unit, sku) =
     quantityImporterStockSku(freight, unit, sku) * netWeightFreightSku(freightFreightUnit(unit, sku)) IN baseGroup;
-invoicedShipmentSku2 = GROUP SUM [quantityDocumentSku(document, sku) AND inInvoiceShipment(document, shipment)] BY shipment, sku IN baseGroup PERSISTENT;
+invoicedShipmentSku2 = GROUP SUM quantityDocumentSku(document, sku) AND inInvoiceShipment(document, shipment) BY shipment, sku IN baseGroup PERSISTENT;
 
 
 // Constants
