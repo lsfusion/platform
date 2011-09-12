@@ -104,6 +104,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     protected LP sqrtDouble2;
     public LP divideDouble;
     public LP divideDouble2;
+    public LP divideDouble3;
     public LP addDate2;
     public LP string2;
     public LP insensitiveString2;
@@ -404,6 +405,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         sqrtDouble2 = addSFProp("round(sqrt(prm1),2)", DoubleClass.instance, 1);
         divideDouble = addSFProp("((prm1)/(prm2))", DoubleClass.instance, 2);
         divideDouble2 = addSFProp("divideDouble2", "round(CAST((CAST((prm1) as numeric)/(prm2)) as numeric),2)", DoubleClass.instance, 2);
+        divideDouble3 = addSFProp("divideDouble3", "round(CAST((CAST((prm1) as numeric)/(prm2)) as numeric),3)", DoubleClass.instance, 2);
         addDate2 = addSFProp("((prm1)+(prm2))", DateClass.instance, 2);
         percent = addSFProp("((prm1)*(prm2)/100)", DoubleClass.instance, 2);
         percent2 = addSFProp("round(CAST(((prm1)*(prm2)/100) as numeric), 2)", DoubleClass.instance, 2);
