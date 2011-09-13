@@ -102,8 +102,8 @@
                 <configuration>
                     <workingDirectory>..</workingDirectory>
                     <executable>mvn</executable>
-                    <commandlineArgs>-Dgwt.draftCompile=true -Dgwt.style=PRETTY --also-make --also-make-dependents
-                        --projects by.luxsoft.platform:${project.artifactId} compile
+                    <commandlineArgs>
+                        -Dgwt.draftCompile=true -Dgwt.style=PRETTY --also-make --also-make-dependents --projects by.luxsoft.platform:${project.artifactId} compile
                     </commandlineArgs>
                 </configuration>
             </plugin>
