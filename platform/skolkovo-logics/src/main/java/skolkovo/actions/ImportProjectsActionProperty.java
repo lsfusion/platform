@@ -12,7 +12,6 @@ import platform.base.IOUtils;
 import platform.base.OrderedMap;
 import platform.interop.action.ClientAction;
 import platform.interop.action.MessageClientAction;
-import platform.server.classes.LogicalClass;
 import platform.server.classes.ValueClass;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.query.Query;
@@ -29,15 +28,17 @@ import platform.server.session.DataSession;
 import skolkovo.SkolkovoBusinessLogics;
 import skolkovo.SkolkovoLogicsModule;
 
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.math.BigInteger;
 import java.net.URL;
 import java.net.URLConnection;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.sql.*;
+import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.util.*;
-import java.util.Date;
 
 public class ImportProjectsActionProperty extends ActionProperty {
 
@@ -442,7 +443,7 @@ public class ImportProjectsActionProperty extends ActionProperty {
 
     public Map<String, Timestamp> importProjectsFromXML(String host) throws IOException, SQLException {
         OrderedMap<Map<Object, Object>, Map<Object, Object>> result = null;
-        List<Element> elementList = null;
+        List<Element> elementList = new ArrayList<Element>();
         try {
             URL url = new URL(host + "&show=projects&limit=1000");
             URLConnection connection = url.openConnection();
@@ -485,7 +486,7 @@ public class ImportProjectsActionProperty extends ActionProperty {
             Element rootNode = document.getRootElement();
             elementList = new ArrayList<Element>(rootNode.getChildren("project"));
         } catch (JDOMParseException e) {
-            logger.error(e.getCause() + " : " + new String(responseContents));
+            logger.error(e.getCause() + " : " + new String(responseContents), e);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

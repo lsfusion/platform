@@ -9,6 +9,11 @@
 
     <properties>
         <spring.version>3.0.5.RELEASE</spring.version>
+        <gwt.version>2.1.0</gwt.version>
+        <smartgwt.version>2.5-SNAPSHOT</smartgwt.version>
+
+        <maven.compiler.source>1.6</maven.compiler.source>
+        <maven.compiler.target>1.6</maven.compiler.target>
     </properties>
 
     <repositories>
@@ -48,13 +53,19 @@
     </distributionManagement>
 
     <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>gwt-maven-plugin</artifactId>
+                    <version>${gwt.version}</version>
+                </plugin>
+            </plugins>
+        </pluginManagement>
         <plugins>
             <plugin>
                 <artifactId>maven-assembly-plugin</artifactId>
                 <version>2.2-beta-5</version>
-                <configuration>
-                    <appendAssemblyId>true</appendAssemblyId>
-                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -91,10 +102,12 @@
                 <configuration>
                     <workingDirectory>..</workingDirectory>
                     <executable>mvn</executable>
-                    <commandlineArgs>-Dgwt.draftCompile=true -Dgwt.style=PRETTY --also-make --also-make-dependents --projects by.luxsoft.platform:${project.artifactId} compile</commandlineArgs>
+                    <commandlineArgs>-Dgwt.draftCompile=true -Dgwt.style=PRETTY --also-make --also-make-dependents
+                        --projects by.luxsoft.platform:${project.artifactId} compile
+                    </commandlineArgs>
                 </configuration>
             </plugin>
-       </plugins>
+        </plugins>
     </build>
 
     <pluginRepositories>
@@ -159,9 +172,24 @@
                 <version>${spring.version}</version>
             </dependency>
             <dependency>
+                <groupId>com.google.gwt</groupId>
+                <artifactId>gwt-servlet</artifactId>
+                <version>${gwt.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.google.gwt</groupId>
+                <artifactId>gwt-user</artifactId>
+                <version>${gwt.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.google.gwt</groupId>
+                <artifactId>gwt-dev</artifactId>
+                <version>${gwt.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>com.smartgwt</groupId>
                 <artifactId>smartgwt</artifactId>
-                <version>2.5-SNAPSHOT</version>
+                <version>${smartgwt.version}</version>
             </dependency>
 
             <dependency>

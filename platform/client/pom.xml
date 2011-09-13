@@ -137,14 +137,13 @@
             <version>2.6.10</version>
         </dependency>
         <dependency>
-          <groupId>jssc</groupId>
-          <artifactId>jssc</artifactId>
-          <version>0.7.1b</version>
+            <groupId>jssc</groupId>
+            <artifactId>jssc</artifactId>
+            <version>0.7.1b</version>
         </dependency>
         <dependency>
             <groupId>com.google.gwt</groupId>
             <artifactId>gwt-user</artifactId>
-            <version>2.1.0</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
