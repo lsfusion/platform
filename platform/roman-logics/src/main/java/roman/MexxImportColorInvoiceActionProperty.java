@@ -45,7 +45,7 @@ public class MexxImportColorInvoiceActionProperty extends BaseImportActionProper
             ImportTable table = new SingleSheetImporter(inputTable, 3, colorCodeField, colorNameField) {
                 @Override
                 protected boolean isCorrectRow(int rowNum) {
-                    return (rowNum > 0 && inputTable.columnsCnt() > 1 && inputTable.getCellString(0, 3).trim().equals("COLOR CODE")
+                    return (rowNum > 0 && inputTable.getCellString(0, 3).trim().equals("COLOR CODE")
                             && inputTable.getCellString(0, 4).trim().equals("COLOR DESCRIPTION"));
                 }
             }.getTable();

@@ -2,6 +2,7 @@ package platform.server.integration;
 
 import org.supercsv.io.CsvListReader;
 import org.supercsv.prefs.CsvPreference;
+import platform.base.BaseUtils;
 
 import java.io.IOException;
 import java.text.ParseException;
@@ -28,7 +29,8 @@ public class CSVInputTable implements ImportInputTable {
         while (true) {
             List<String> row = csvReader.read();
             if (row == null) break;
-            data.add(new ArrayList<String>(row));
+            if (! ((row.size() == 1 && BaseUtils.isRedundantString(row.get(0)))))
+                data.add(new ArrayList<String>(row));
         }
     }
 
