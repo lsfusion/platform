@@ -2519,8 +2519,8 @@ public class RomanLogicsModule extends LogicsModule {
 
         quantityArticle = addSGProp(baseGroup, "quantityArticle", true, "Оприходовано", quantityShipmentDetail, articleShipmentDetail, 1);
         addConstraint(addJProp("Для артикула должна быть задана номенклатурная группа", baseLM.andNot1, quantityArticle, 1, categoryArticle, 1), false);
-        addConstraint(addJProp("Для артикула должна быть задан пол", baseLM.andNot1, quantityArticle, 1, genderArticle, 1), false);
-        addConstraint(addJProp("Для артикула должна быть задан тип одежды", baseLM.andNot1, quantityArticle, 1, typeFabricArticle, 1), false);
+        addConstraint(addJProp("Для артикула должен быть задан пол", baseLM.andNot1, quantityArticle, 1, genderArticle, 1), false);
+        addConstraint(addJProp("Для артикула должен быть задан тип одежды", baseLM.andNot1, quantityArticle, 1, typeFabricArticle, 1), false);
 
         quantitySupplierBoxBoxShipmentStockSku = addSGProp(baseGroup, "quantitySupplierBoxBoxShipmentStockSku", true, "Кол-во оприход.", quantityShipmentDetail,
                 supplierBoxShipmentDetail, 1, boxShipmentBoxShipmentDetail, 1, stockShipmentDetail, 1, skuShipmentDetail, 1);
@@ -3467,6 +3467,7 @@ public class RomanLogicsModule extends LogicsModule {
         shipment.window = leftToolbar;
 
         addFormEntity(new FreightContentFormEntity(shipment, "freightContentForm", "Содержимое фрахта"));
+        addFormEntity(new FreightBoxContentFormEntity(shipment, "freightBoxContentForm", "Содержимое короба"));
         NavigatorElement actionFreight = new NavigatorElement(shipment, "actionFreight", "Действия");
         addFormEntity(new FreightCreateFormEntity(actionFreight, "freightCreateForm", "Редактирование фрахта"));
         addFormEntity(new FreightShipmentFormEntity(actionFreight, "freightShipmentForm", "Комплектация фрахта"));
@@ -3866,7 +3867,7 @@ public class RomanLogicsModule extends LogicsModule {
         private PackingListBoxFormEntity(NavigatorElement parent, String sID, String caption) {
             super(parent, sID, caption, true);
 
-            objBox = addSingleGroupObject(1, "box", freightBox, "Короб", baseLM.barcode, netWeightStock);
+            objBox = addSingleGroupObject(1, "box", freightBox, "Короб", nameDestinationFreightBox, baseLM.barcode, netWeightStock);
             objBox.groupTo.initClassView = ClassViewType.PANEL;
 
             objArticle = addSingleGroupObject(2, "article", article, "Артикул", sidArticle, nameBrandSupplierArticle, nameArticle);
@@ -5679,17 +5680,24 @@ public class RomanLogicsModule extends LogicsModule {
         private ObjectEntity objGender;
         private ObjectEntity objCommonSize;
 
+        private GroupObjectEntity gobjGenderSizeSupplier;
+
         private CommonSizeFormEntity(NavigatorElement parent, String sID, String caption) {
             super(parent, sID, caption);
-
-            objGender = addSingleGroupObject(gender, "Пол", sidGender);
 
             objCategory = addSingleGroupObject(category, "Номенклатурная группа", baseLM.name);
 
             objSupplier = addSingleGroupObject(supplier, "Поставщик", baseLM.name);
 
-            objSizeSupplier = addSingleGroupObject(sizeSupplier, "Размер поставщика", sidSizeSupplier, nameSupplierSizeSupplier, nameGroupSizeSupplier);
+            gobjGenderSizeSupplier = new GroupObjectEntity(genID());
+            objGender = new ObjectEntity(genID(), gender, "Пол");
+            objSizeSupplier = new ObjectEntity(genID(), sizeSupplier, "Размер");
+            gobjGenderSizeSupplier.add(objGender);
+            gobjGenderSizeSupplier.add(objSizeSupplier);
+            addGroup(gobjGenderSizeSupplier);
 
+            addPropertyDraw(objGender, sidGender);
+            addPropertyDraw(objSizeSupplier, sidSizeSupplier, nameSupplierSizeSupplier);
             addPropertyDraw(objSizeSupplier, objGender, objCategory, nameCommonSizeSizeSupplierGenderCategory);
 
             objCommonSize = addSingleGroupObject(commonSize, "Унифицированный размер", baseLM.name);
@@ -5709,21 +5717,18 @@ public class RomanLogicsModule extends LogicsModule {
         public FormView createDefaultRichDesign() {
             DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign();
 
-            design.get(objSizeSupplier.groupTo).grid.constraints.fillVertical = 2;
 
-            design.addIntersection(design.getGroupObjectContainer(objGender.groupTo),
-                    design.getGroupObjectContainer(objCategory.groupTo),
-                    DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
+            design.get(gobjGenderSizeSupplier).grid.constraints.fillVertical = 2;
 
             design.addIntersection(design.getGroupObjectContainer(objCategory.groupTo),
                     design.getGroupObjectContainer(objSupplier.groupTo),
                     DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
 
-            design.addIntersection(design.getGroupObjectContainer(objSizeSupplier.groupTo),
+            design.addIntersection(design.getGroupObjectContainer(gobjGenderSizeSupplier),
                     design.getGroupObjectContainer(objCommonSize.groupTo),
                     DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
 
-            design.get(objSizeSupplier.groupTo).grid.constraints.fillHorizontal = 2;
+            //design.get(objSizeSupplier.groupTo).grid.constraints.fillHorizontal = 2;
 
             return design;
         }
@@ -7209,6 +7214,57 @@ public class RomanLogicsModule extends LogicsModule {
         }
     }
 
+    private class FreightBoxContentFormEntity extends BarcodeFormEntity {
+
+        private ObjectEntity objFreightBox;
+        private ObjectEntity objFreight;
+        private ObjectEntity objImporter;
+        private ObjectEntity objArticle;
+
+        private FreightBoxContentFormEntity(NavigatorElement<RomanBusinessLogics> parent, String sID, String caption) {
+            super(parent, sID, caption);
+
+            objFreightBox = addSingleGroupObject(freightBox, "Короб", baseLM.barcode, netWeightStock);
+            objFreightBox.groupTo.setSingleClassView(ClassViewType.GRID);
+
+            objFreight = addSingleGroupObject(freight, "Фрахт", baseLM.date, dateArrivalFreight, nameExporterFreight);
+
+            objImporter = addSingleGroupObject(importer, "Импортер", baseLM.name);
+
+            //addPropertyDraw(objFreight, objBrand, quantityShipmentedFreightBrandSupplier, quantityFreightBrandSupplier, sumInFreightBrandSupplier, sumInOutFreightBrandSupplier);
+            //addPropertyDraw(objImporter, objFreight, objBrand, quantityImporterFreightBrandSupplier, sumInImporterFreightBrandSupplier, sumInOutImporterFreightBrandSupplier);
+
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(freightFreightBox, objFreightBox), Compare.EQUALS, objFreight));
+//            addFixedFilter(new CompareFilterEntity(addPropertyObject(quantityFreightBrandSupplier, objFreight, objBrand), Compare.GREATER, addPropertyObject(baseLM.vzero)));
+
+            objArticle = addSingleGroupObject(article, "Артикул", sidArticle, nameCategoryArticle);
+
+            //addPropertyDraw(objFreight, objArticle, quantityShipmentedFreightArticle, quantityFreightArticle, sumInFreightArticle, sumInOutFreightArticle);
+            //addPropertyDraw(objImporter, objFreight, objArticle, quantityImporterFreightArticle, sumInImporterFreightArticle, sumInOutImporterFreightArticle);
+
+            //addFixedFilter(new CompareFilterEntity(addPropertyObject(brandSupplierArticle, objArticle), Compare.EQUALS, objBrand));
+            //addFixedFilter(new CompareFilterEntity(addPropertyObject(quantityFreightArticle, objFreight, objArticle), Compare.GREATER, addPropertyObject(baseLM.vzero)));
+
+        }
+
+        @Override
+        public DefaultFormView createDefaultRichDesign() {
+            DefaultFormView design = super.createDefaultRichDesign();
+
+            design.get(getPropertyDraw(baseLM.date, objFreight)).caption = "Дата отгрузки";
+            //design.get(getPropertyDraw(baseLM.objectClassName, objFreight)).caption = "Статус фрахта";
+
+            design.addIntersection(design.getGroupObjectContainer(objFreight.groupTo), design.getGroupObjectContainer(objImporter.groupTo), DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
+
+            design.get(objFreight.groupTo).grid.constraints.fillHorizontal = 2;
+            design.get(objImporter.groupTo).grid.constraints.fillHorizontal = 1;
+            //design.get(objFreight.groupTo).grid.constraints.fillVertical = 1;
+            //design.get(objBrand.groupTo).grid.constraints.fillVertical = 1;
+            //design.get(objArticle.groupTo).grid.constraints.fillVertical = 2;
+
+            return design;
+        }
+    }
 
     private class FreightCreateFormEntity extends FormEntity<RomanBusinessLogics> {
 

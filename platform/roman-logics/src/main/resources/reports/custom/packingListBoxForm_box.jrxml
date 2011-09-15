@@ -27,8 +27,9 @@
 	<field name="nameArticle" class="java.lang.String"/>
 	<field name="quantityStockArticle" class="java.lang.Double"/>
 	<field name="netWeightStockArticle" class="java.lang.Double"/>
+	<field name="nameDestinationFreightBox" class="java.lang.String"/>
 	<title>
-		<band height="36">
+		<band height="48">
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="94" y="0" width="134" height="18"/>
 				<textElement textAlignment="Left"/>
@@ -38,6 +39,13 @@
 				<reportElement style="GroupCellStyle0" stretchType="RelativeToBandHeight" x="0" y="0" width="94" height="18"/>
 				<textElement textAlignment="Center"/>
 				<textFieldExpression class="java.lang.String"><![CDATA["Штрих-код"]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement x="228" y="0" width="324" height="38"/>
+				<textElement textAlignment="Right">
+					<font size="18" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{nameDestinationFreightBox}]]></textFieldExpression>
 			</textField>
 		</band>
 	</title>
