@@ -26,7 +26,8 @@ public class ClientDialog extends ClientModalForm {
     public ClientDialog(Component owner, final RemoteDialogInterface dialog) throws IOException, ClassNotFoundException {
         super(owner, dialog, false); // обозначаем parent'а и модальность
 
-        if (dialog.isUndecorated()) {
+        Boolean undecorated = dialog.isUndecorated();
+        if (undecorated == null || undecorated) {
             setResizable(false);
             // делаем, чтобы не выглядел как диалог
             setUndecorated(true);

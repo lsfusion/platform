@@ -773,8 +773,6 @@ public class SkolkovoLogicsModule extends LogicsModule {
         nameNativeProjectVote = addJProp(baseGroup, "nameNativeProjectVote", "Проект", nameNative, projectVote, 1);
         nameForeignProjectVote = addJProp(baseGroup, "nameForeignProjectVote", "Проект (иностр.)", nameForeign, projectVote, 1);
 
-        dateProjectVote = addJProp("dateProjectVote", "Дата проекта", baseLM.date, projectVote, 1);
-
         dataDocumentNameExpert = addDProp(baseGroup, "dataDocumentNameExpert", "Имя для документов", StringClass.get(70), expert);
         documentNameExpert = addSUProp("documentNameExpert", "Имя для документов", Union.OVERRIDE, addJProp(baseLM.and1, addJProp(baseLM.insensitiveString2, baseLM.userLastName, 1, baseLM.userFirstName, 1), 1, is(expert), 1), dataDocumentNameExpert);
 
@@ -1504,6 +1502,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
         //dateProject = addJProp("dateProject", "Дата проекта", baseLM.and1, baseLM.date, 1, is(project), 1);
         dateProject = addSUProp("dateProject", "Дата проекта", Union.OVERRIDE, dateJoinProject, dateDataProject);
         updateDateProject = addDProp(projectInformationGroup, "updateDateProject", "Дата изменения проекта", DateTimeClass.instance, project);
+
+        dateProjectVote = addJProp("dateProjectVote", "Дата проекта", dateProject, projectVote, 1);
         statusProjectVote = addJProp(idGroup, "statusProjectVote", "Статус проекта (ИД)", statusProject, projectVote, 1);
         nameStatusProjectVote = addJProp(baseGroup, "nameStatusProjectVote", "Статус проекта", baseLM.name, statusProjectVote, 1);
 
@@ -1763,8 +1763,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
             setForceViewType(sumTotalConsultingCenterCommentProject, ClassViewType.PANEL);
 
 
-            addFixedFilter(new CompareFilterEntity(addPropertyObject(baseLM.date, objProject), Compare.GREATER_EQUALS, objDateFrom));
-            addFixedFilter(new CompareFilterEntity(addPropertyObject(baseLM.date, objProject), Compare.LESS_EQUALS, objDateTo));
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(dateProject, objProject), Compare.GREATER_EQUALS, objDateFrom));
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(dateProject, objProject), Compare.LESS_EQUALS, objDateTo));
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(consultingCenterCommentProject, objProject)));
         }
 
@@ -2782,7 +2782,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         private ClaimerStatusFormEntity(NavigatorElement parent, String sID) {
             super(parent, sID, "Решение о присвоении статуса участника", true);
 
-            objProject = addSingleGroupObject(genID(), "project", project, "Проект", baseLM.date, nameNativeProject, nameNativeClaimerProject, nameAblateClaimerProject, nameDativusClaimerProject, nameGenitiveClaimerProject);
+            objProject = addSingleGroupObject(genID(), "project", project, "Проект", dateProject, nameNativeProject, nameNativeClaimerProject, nameAblateClaimerProject, nameDativusClaimerProject, nameGenitiveClaimerProject);
             objProject.groupTo.initClassView = ClassViewType.PANEL;
 
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(acceptedProject, objProject)));
