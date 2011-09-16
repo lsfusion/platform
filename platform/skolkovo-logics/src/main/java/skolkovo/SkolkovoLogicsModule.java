@@ -2335,7 +2335,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             super(parent, sID, (!restricted) ? "Реестр голосований" : "Результаты голосований");
 
             objVote = new ObjectEntity(genID(), vote, "Заседание");
-            addPropertyDraw(objVote, nameNativeProjectVote, dateStartVote, dateEndVote, openedVote, succeededVote, acceptedVote);
+            addPropertyDraw(objVote, nameNativeProjectVote, nameNativeClaimerVote, dateStartVote, dateEndVote, openedVote, succeededVote, acceptedVote);
 
             objExpert = new ObjectEntity(genID(), expert, "Эксперт");
             addPropertyDraw(objExpert, nameNativeClusterExpert, nameLanguageExpert);
@@ -2347,7 +2347,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
                 addPropertyDraw(objExpert, objVote, allowedEmailLetterExpertVote);
 
             addPropertyDraw(voteResultGroup, true, objExpert, objVote);
-            addPropertyDraw(expertResultGroup, true, objExpert);
+            if (!restricted)
+                addPropertyDraw(expertResultGroup, true, objExpert);
             setForceViewType(voteResultCommentGroup, ClassViewType.PANEL);
 
             GroupObjectEntity gobjVoteExpert = new GroupObjectEntity(genID());
