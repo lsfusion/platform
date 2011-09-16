@@ -1707,7 +1707,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
         addFormEntity(new VoteFormEntity(baseLM.baseElement, "vote", false));
         addFormEntity(new ExpertFormEntity(baseLM.baseElement, "expert"));
         addFormEntity(new ExpertStatsFormEntity(baseLM.baseElement, "expertStats"));
-        addFormEntity(new VoteExpertFormEntity(baseLM.baseElement, "voteExpert"));
+        addFormEntity(new VoteExpertFormEntity(baseLM.baseElement, "voteExpert", false));
+        addFormEntity(new VoteExpertFormEntity(baseLM.baseElement, "voteExpertRestricted", true));
         addFormEntity(new VoteFormEntity(baseLM.baseElement, "voterestricted", true));
         addFormEntity(new ConsultingCenterFormEntity(baseLM.baseElement, "consultingCenter"));
 
@@ -2330,16 +2331,20 @@ public class SkolkovoLogicsModule extends LogicsModule {
         private ObjectEntity objExpert;
         private ObjectEntity objVote;
 
-        private VoteExpertFormEntity(NavigatorElement parent, String sID) {
-            super(parent, sID, "Реестр голосований");
+        private VoteExpertFormEntity(NavigatorElement parent, String sID, boolean restricted) {
+            super(parent, sID, (!restricted) ? "Реестр голосований" : "Результаты голосований");
 
             objVote = new ObjectEntity(genID(), vote, "Заседание");
             addPropertyDraw(objVote, nameNativeProjectVote, dateStartVote, dateEndVote, openedVote, succeededVote, acceptedVote);
 
             objExpert = new ObjectEntity(genID(), expert, "Эксперт");
-            addPropertyDraw(objExpert, baseLM.userFirstName, baseLM.userLastName, documentNameExpert, baseLM.email, nameNativeClusterExpert, nameLanguageExpert);
+            addPropertyDraw(objExpert, nameNativeClusterExpert, nameLanguageExpert);
 
-            addPropertyDraw(objExpert, objVote, allowedEmailLetterExpertVote);
+            if (!restricted)
+                addPropertyDraw(objExpert,baseLM.userFirstName, baseLM.userLastName, documentNameExpert, baseLM.email);
+
+            if (!restricted)
+                addPropertyDraw(objExpert, objVote, allowedEmailLetterExpertVote);
 
             addPropertyDraw(voteResultGroup, true, objExpert, objVote);
             addPropertyDraw(expertResultGroup, true, objExpert);
