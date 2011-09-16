@@ -15,6 +15,7 @@
 	<field name="nameAblateClaimerProject" class="java.lang.String"/>
 	<field name="nameNativeClaimerClaimerProject" class="java.lang.String"/>
 	<field name="nameDativusClaimerProject" class="java.lang.String"/>
+	<field name="nameGenitiveClaimerProject" class="java.lang.String"/>
 	<detail>
 		<band height="700">
 			<staticText>
@@ -57,7 +58,9 @@
 				</textElement>
 				<textFieldExpression class="java.lang.String"><![CDATA["Некоммерческая организация Фонд развития Центра разработки и коммерциализации новых технологий, рассмотрев поданную " + $F{nameAblateClaimerProject} + " " +
 "заявку на присвоение статуса участника проекта от " +
-platform.base.BaseUtils.formatRussian($F{date}) + " года (" + $F{nameNativeProject} + ") и документы, представленные Соискателем в порядке, предусмотренном пунктом 15 Положения о присвоении и утрате статуса участника проекта создания и обеспечения функционирования инновационного центра «Сколково», в соответствии с пунктами 16, 21, 22 указанного Положения"]]></textFieldExpression>
+platform.base.BaseUtils.formatRussian($F{date}) + " года (" + $F{nameNativeProject} + ") и документы, представленные Соискателем в порядке, предусмотренном пунктом 15 Положения о присвоении и утрате статуса участника проекта создания и обеспечения функционирования инновационного центра «Сколково», в соответствии с пунктами 16, 21, 22 указанного Положения, "+
+"учитывая, что проект, представленный Соискателем, прошел предварительную экспертизу в соответствии с Положением о предварительной экспертизе проектов и был признан соответствующим критериям, указанным в подпункте Е пункта 2 Положения о присвоении и утрате статуса участника проекта создания и обеспечения функционирования инновационного центра «Сколково» "+
+"(заявка "+$F{nameGenitiveClaimerProject}+" на проведение предварительной экспертизы проекта от "+platform.base.BaseUtils.formatRussian($F{date})+" года)"]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
 				<reportElement style="DefaultStyle" positionType="Float" x="51" y="314" width="489" height="43"/>

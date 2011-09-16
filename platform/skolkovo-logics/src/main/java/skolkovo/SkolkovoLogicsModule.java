@@ -2743,7 +2743,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         private ClaimerAcceptedFormEntity(NavigatorElement parent, String sID) {
             super(parent, sID, "Решение о соответствии", true);
 
-            objVote = addSingleGroupObject(genID(), "vote", vote, "Заседание", dateEndVote, nameNativeProjectVote, dateProjectVote, nameNativeClaimerVote, nameAblateClaimerVote);
+            objVote = addSingleGroupObject(genID(), "vote", vote, "Заседание", dateEndVote, nameNativeProjectVote, dateProjectVote, nameNativeClaimerVote, nameAblateClaimerVote, nameNativeClusterVote, isStatusVote);
             objVote.groupTo.initClassView = ClassViewType.PANEL;
 
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(succeededVote, objVote)));
@@ -2760,7 +2760,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         private ClaimerRejectedFormEntity(NavigatorElement parent, String sID) {
             super(parent, sID, "Решение о несоответствии", true);
 
-            objVote = addSingleGroupObject(genID(), "vote", vote, "Заседание", dateEndVote, nameNativeProjectVote, dateProjectVote, nameNativeClaimerVote, nameAblateClaimerVote, nameDativusClaimerVote, nameGenitiveClaimerVote, isLastClusterVote);
+            objVote = addSingleGroupObject(genID(), "vote", vote, "Заседание", dateEndVote, nameNativeProjectVote, dateProjectVote, nameNativeClaimerVote, nameAblateClaimerVote, nameDativusClaimerVote, nameGenitiveClaimerVote, isLastClusterVote, nameNativeClusterVote, isStatusVote);
             objVote.groupTo.initClassView = ClassViewType.PANEL;
 
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(succeededVote, objVote)));
