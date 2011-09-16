@@ -24,7 +24,7 @@
 	<field name="article" class="java.lang.Integer"/>
 	<field name="sidArticle" class="java.lang.String"/>
 	<field name="nameBrandSupplierArticle" class="java.lang.String"/>
-	<field name="nameArticle" class="java.lang.String"/>
+	<field name="nameCategoryArticle" class="java.lang.String"/>
 	<field name="quantityStockArticle" class="java.lang.Double"/>
 	<field name="netWeightStockArticle" class="java.lang.Double"/>
 	<field name="nameDestinationFreightBox" class="java.lang.String"/>
@@ -93,7 +93,7 @@
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle1" positionType="Float" stretchType="RelativeToBandHeight" x="228" y="0" width="135" height="18"/>
 				<textElement textAlignment="Left"/>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{nameArticle}]]></textFieldExpression>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{nameCategoryArticle}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle1" positionType="Float" stretchType="RelativeToBandHeight" x="363" y="0" width="103" height="18"/>
