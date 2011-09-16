@@ -34,10 +34,10 @@ public class HugoBossImportInvoiceActionProperty extends ImportBoxInvoiceActionP
 
     @Override
     protected ImportInputTable createTable(ByteArrayInputStream inFile) throws BiffException, IOException {
-        ImportInputTable invoiceTable = new CSVInputTable(new InputStreamReader(inFile), 2, ';', false, 1, 1, 2, 11, 17, 18, 19, 20, 21, 21, 22, 25, 26, 27, 28, 32, 34);
+        ImportInputTable invoiceTable = new CSVInputTable(new InputStreamReader(inFile), 2, ';', false, 1, 1, 2, 11, 17, 18, 19, 20, 21, 21, 22, 25, 26, 27, 28, 32);
         return new InvoicePricatMergeInputTable(BL, invoiceTable, ResultField.INVOICE, ResultField.BOXNUMBER, ResultField.DATE, ResultField.NUMBERSKU,
                 ResultField.ORIGINALNAME, ResultField.ARTICLE, ResultField.COLORCODE, ResultField.COMPOSITION, ResultField.CUSTOMCODE,
-                ResultField.CUSTOMCODE6, ResultField.COUNTRY, ResultField.BARCODE, ResultField.SIZE, ResultField.QUANTITY, ResultField.PRICE, ResultField.SEASON, ResultField.GENDER);
+                ResultField.CUSTOMCODE6, ResultField.COUNTRY, ResultField.BARCODE, ResultField.SIZE, ResultField.QUANTITY, ResultField.PRICE, ResultField.SEASON);
     }
 
     @Override

@@ -1,6 +1,7 @@
 package roman;
 
 import platform.base.BaseUtils;
+import platform.base.ByteArray;
 import platform.interop.action.MessageClientAction;
 import platform.server.logics.DataObject;
 import platform.server.logics.property.ExecutionContext;
@@ -30,33 +31,32 @@ public class MexxImportDeliveryActionProperty extends BaseImportActionProperty {
                 ByteArrayInputStream stream = new ByteArrayInputStream(file);
 
                 ZipInputStream zin = new ZipInputStream(stream);
-                ZipEntry entry = zin.getNextEntry();
+                ZipEntry entry;
                 byte[][] outputListInOrder = new byte[4][];
 
                 while ((entry = zin.getNextEntry()) != null) {
                     String name = entry.getName();
-                    ByteArrayOutputStream output = new ByteArrayOutputStream();
-                    int data = 0;
-                    while ((data = zin.read()) != -1) {
-                        output.write(data);
-                    }
 
-                    byte[] outputList = BaseUtils.bytesToBytes(output.toByteArray());
+                    ByteArrayOutputStream output = new ByteArrayOutputStream();
+                    int readCount;
+                    byte[] buffer = new byte[(int) entry.getSize()];
+                    while ((readCount = zin.read(buffer, 0, buffer.length)) != -1) {
+                        output.write(buffer, 0, readCount);
+                    }
                     switch (name.charAt(0)) {
                         case 'W':
-                            outputListInOrder[0] = outputList;
+                            outputListInOrder[0] = BaseUtils.bytesToBytes(output.toByteArray());
                             break;
                         case 'I':
-                            outputListInOrder[1] = outputList;
+                            outputListInOrder[1] = output.toByteArray();
                             break;
                         case 'G':
-                            outputListInOrder[2] = outputList;
+                            outputListInOrder[2] = output.toByteArray();
                             break;
                         case 'K':
-                            outputListInOrder[3] = outputList;
+                            outputListInOrder[3] = output.toByteArray();
                             break;
                     }
-
                 }
 
                 LM.mexxImportInvoice.execute(outputListInOrder[0], context, supplier);
@@ -65,7 +65,8 @@ public class MexxImportDeliveryActionProperty extends BaseImportActionProperty {
                 LM.mexxImportPricesInvoice.execute(outputListInOrder[3], context, supplier);
             }
             context.addAction(new MessageClientAction("Данные были успешно приняты", "Импорт"));
-        } catch (IOException e) {
+        } catch (IOException
+                e) {
             e.printStackTrace();
         } catch (Exception
                 e) {
