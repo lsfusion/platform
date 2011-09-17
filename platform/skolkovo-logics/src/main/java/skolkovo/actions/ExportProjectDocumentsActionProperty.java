@@ -91,14 +91,15 @@ public class ExportProjectDocumentsActionProperty extends ActionProperty {
 
         LP isNonRussianSpecialist = LM.is(LM.nonRussianSpecialist);
         Map<Object, KeyExpr> keys = isNonRussianSpecialist.getMapKeys();
-        Query<Object, Object> query = new Query<Object, Object>(Collections.<Object>singleton("nonRussianSpecialist"));
-        query.properties.put("fullNameNonRussianSpecialist", LM.fullNameNonRussianSpecialist.getExpr(context.getModifier(), query.mapKeys.get("nonRussianSpecialist")));
-        query.properties.put("fileForeignResumeNonRussianSpecialist", LM.fileForeignResumeNonRussianSpecialist.getExpr(context.getModifier(), query.mapKeys.get("nonRussianSpecialist")));
-        query.properties.put("fileNativeResumeNonRussianSpecialist", LM.fileNativeResumeNonRussianSpecialist.getExpr(context.getModifier(), query.mapKeys.get("nonRussianSpecialist")));
-        query.properties.put("filePassportNonRussianSpecialist", LM.filePassportNonRussianSpecialist.getExpr(context.getModifier(), query.mapKeys.get("nonRussianSpecialist")));
-        query.properties.put("fileStatementNonRussianSpecialist", LM.fileStatementNonRussianSpecialist.getExpr(context.getModifier(), query.mapKeys.get("nonRussianSpecialist")));
-        query.and(isNonRussianSpecialist.property.getExpr(keys).getWhere());
-        query.and(LM.projectNonRussianSpecialist.getExpr(context.getModifier(), query.mapKeys.get("nonRussianSpecialist")).compare(projectObject.getExpr(), Compare.EQUALS));
+        KeyExpr key = BaseUtils.singleValue(keys);
+        Query<Object, Object> query = new Query<Object, Object>(keys);
+        query.properties.put("fullNameNonRussianSpecialist", LM.fullNameNonRussianSpecialist.getExpr(context.getModifier(), key));
+        query.properties.put("fileForeignResumeNonRussianSpecialist", LM.fileForeignResumeNonRussianSpecialist.getExpr(context.getModifier(), key));
+        query.properties.put("fileNativeResumeNonRussianSpecialist", LM.fileNativeResumeNonRussianSpecialist.getExpr(context.getModifier(), key));
+        query.properties.put("filePassportNonRussianSpecialist", LM.filePassportNonRussianSpecialist.getExpr(context.getModifier(), key));
+        query.properties.put("fileStatementNonRussianSpecialist", LM.fileStatementNonRussianSpecialist.getExpr(context.getModifier(), key));
+        query.and(isNonRussianSpecialist.getExpr(key).getWhere());
+        query.and(LM.projectNonRussianSpecialist.getExpr(context.getModifier(), key).compare(projectObject.getExpr(), Compare.EQUALS));
         OrderedMap<Map<Object, Object>, Map<Object, Object>> result = query.execute(session.sql);
 
         for (Map<Object, Object> values : result.values()) {
@@ -110,12 +111,13 @@ public class ExportProjectDocumentsActionProperty extends ActionProperty {
 
         LP isAcademic = LM.is(LM.academic);
         keys = isAcademic.getMapKeys();
-        query = new Query<Object, Object>(Collections.<Object>singleton("academic"));
-        query.properties.put("fullNameAcademic", LM.fullNameAcademic.getExpr(context.getModifier(), query.mapKeys.get("academic")));
-        query.properties.put("fileDocumentConfirmingAcademic", LM.fileDocumentConfirmingAcademic.getExpr(context.getModifier(), query.mapKeys.get("academic")));
-        query.properties.put("fileDocumentEmploymentAcademic", LM.fileDocumentEmploymentAcademic.getExpr(context.getModifier(), query.mapKeys.get("academic")));
-        query.and(isAcademic.property.getExpr(keys).getWhere());
-        query.and(LM.projectAcademic.getExpr(context.getModifier(), query.mapKeys.get("academic")).compare(projectObject.getExpr(), Compare.EQUALS));
+        key = BaseUtils.singleValue(keys);
+        query = new Query<Object, Object>(keys);
+        query.properties.put("fullNameAcademic", LM.fullNameAcademic.getExpr(context.getModifier(), key));
+        query.properties.put("fileDocumentConfirmingAcademic", LM.fileDocumentConfirmingAcademic.getExpr(context.getModifier(), key));
+        query.properties.put("fileDocumentEmploymentAcademic", LM.fileDocumentEmploymentAcademic.getExpr(context.getModifier(), key));
+        query.and(isAcademic.getExpr(key).getWhere());
+        query.and(LM.projectAcademic.getExpr(context.getModifier(), key).compare(projectObject.getExpr(), Compare.EQUALS));
         result = query.execute(session.sql);
 
         for (Map<Object, Object> values : result.values()) {
@@ -129,6 +131,8 @@ public class ExportProjectDocumentsActionProperty extends ActionProperty {
         putFileIfNotNull(files, LM.extractClaimerProject.read(context, projectObject), "Выписка из реестра");
 
         context.addAction(new ExportFileClientAction(files));
+
+        System.gc();
     }
 
     private void putFileIfNotNull(Map<String, byte[]> files, Object file, String name) {

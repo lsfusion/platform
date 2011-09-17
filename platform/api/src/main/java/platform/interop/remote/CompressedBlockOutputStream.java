@@ -94,24 +94,25 @@ public class CompressedBlockOutputStream extends FilterOutputStream {
         if (len > 0) {
             deflater.setInput(inBuf, 0, len);
             deflater.finish();
-            int size = deflater.deflate(outBuf);
+            int size = deflater.deflate(outBuf, 8, outBuf.length - 8);
 
             if (observer != null) {
                 observer.incrementOut(size);
             }
             // Write the size of the compressed data, followed
             // by the size of the uncompressed data
-            out.write((size >> 24) & 0xFF);
-            out.write((size >> 16) & 0xFF);
-            out.write((size >> 8) & 0xFF);
-            out.write((size >> 0) & 0xFF);
 
-            out.write((len >> 24) & 0xFF);
-            out.write((len >> 16) & 0xFF);
-            out.write((len >> 8) & 0xFF);
-            out.write((len >> 0) & 0xFF);
+            outBuf[0] = (byte)(size >>> 24);
+            outBuf[1] = (byte)(size >>> 16);
+            outBuf[2] = (byte)(size >>> 8);
+            outBuf[3] = (byte)(size);
 
-            out.write(outBuf, 0, size);
+            outBuf[4] = (byte)(len >>> 24);
+            outBuf[5] = (byte)(len >>> 16);
+            outBuf[6] = (byte)(len >>> 8);
+            outBuf[7] = (byte)(len);
+
+            out.write(outBuf, 0, size + 8);
             out.flush();
 
             len = 0;

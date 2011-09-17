@@ -42,6 +42,8 @@ public class CompressedBlockInputStream extends FilterInputStream {
         this.observer = observer;
     }
 
+    private byte[] lenBuf = null;
+
     /**
      * Buffer of compressed data read from the stream
      */
@@ -76,28 +78,23 @@ public class CompressedBlockInputStream extends FilterInputStream {
 
     private void readAndDecompress() throws IOException {
         // Read the length of the compressed block
-        int ch1 = in.read();
-        int ch2 = in.read();
-        int ch3 = in.read();
-        int ch4 = in.read();
-        if ((ch1 | ch2 | ch3 | ch4) < 0)
+
+        if (lenBuf == null)
+            lenBuf = new byte[8];
+
+        int len = in.read(lenBuf, 0, 8);
+        if (len < 8)
             throw new EOFException();
-        inLength = ((ch1 << 24) + (ch2 << 16) +
-                (ch3 << 8) + (ch4 << 0));
+
+        inLength = (lenBuf[0] << 24) + ((lenBuf[1] & 0xFF) << 16) +
+                ((lenBuf[2] & 0xFF) << 8) + (lenBuf[3] & 0xFF);
 
         if (observer != null) {
             observer.incrementIn(inLength);
         }
 
-        ch1 = in.read();
-        ch2 = in.read();
-        ch3 = in.read();
-        ch4 = in.read();
-        if ((ch1 | ch2 | ch3 | ch4) < 0)
-            throw new EOFException();
-        outLength = ((ch1 << 24) + (ch2 << 16) +
-                (ch3 << 8) + (ch4 << 0));
-
+        outLength = (lenBuf[4] << 24) + ((lenBuf[5] & 0xFF) << 16) +
+                ((lenBuf[6] & 0xFF) << 8) + (lenBuf[7] & 0xFF);
 
         // Make sure we've got enough space to read the block
         if ((inBuf == null) || (inLength > inBuf.length)) {
