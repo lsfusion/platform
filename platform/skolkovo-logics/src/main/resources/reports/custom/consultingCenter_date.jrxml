@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="date" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="555" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0">
 	<property name="ireport.zoom" value="1.5"/>
-	<property name="ireport.x" value="351"/>
+	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
 	<style name="DefaultStyle" isDefault="true" vAlign="Middle" fontName="lsf.TimesNewRoman" fontSize="10">
 		<box>
@@ -32,6 +32,7 @@
 	<field name="dateProject" class="java.util.Date"/>
 	<field name="nameNativeProject" class="java.lang.String"/>
 	<field name="nameNativeClaimerProject" class="java.lang.String"/>
+	<field name="isConsultingCenterCommentProject" class="java.lang.Boolean"/>
 	<field name="consultingCenterCommentProject" class="java.lang.String"/>
 	<group name="captionGroup1">
 		<groupExpression><![CDATA[String.valueOf($F{dateFrom})+" "+String.valueOf($F{dateTo})]]></groupExpression>
@@ -75,14 +76,19 @@
 					<textFieldExpression class="java.lang.String"><![CDATA["Название проекта "]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
-					<reportElement style="GroupCellStyle1" stretchType="RelativeToBandHeight" x="320" y="0" width="244" height="18"/>
+					<reportElement style="GroupCellStyle1" stretchType="RelativeToBandHeight" x="320" y="0" width="211" height="18"/>
 					<textElement textAlignment="Center"/>
 					<textFieldExpression class="java.lang.String"><![CDATA["Заявитель"]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
-					<reportElement style="GroupCellStyle1" stretchType="RelativeToBandHeight" x="564" y="0" width="238" height="18"/>
+					<reportElement style="GroupCellStyle1" stretchType="RelativeToBandHeight" x="584" y="0" width="218" height="18"/>
 					<textElement textAlignment="Center"/>
 					<textFieldExpression class="java.lang.String"><![CDATA["Комментарий о консультативном центре"]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true">
+					<reportElement style="GroupCellStyle1" stretchType="RelativeToBandHeight" x="531" y="0" width="53" height="18"/>
+					<textElement textAlignment="Center"/>
+					<textFieldExpression class="java.lang.String"><![CDATA["Пользовался КЦ?"]]></textFieldExpression>
 				</textField>
 			</band>
 		</groupHeader>
@@ -91,7 +97,7 @@
 				<textField isStretchWithOverflow="true">
 					<reportElement style="GroupCellStyle0" stretchType="RelativeToBandHeight" x="0" y="0" width="290" height="18"/>
 					<textElement textAlignment="Center"/>
-					<textFieldExpression class="java.lang.String"><![CDATA["Сумма положительных комментариев"]]></textFieldExpression>
+					<textFieldExpression class="java.lang.String"><![CDATA["Количество ответов ДА"]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" pattern="#,##0" isBlankWhenNull="true">
 					<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="290" y="0" width="30" height="18"/>
@@ -103,7 +109,7 @@
 				<textField isStretchWithOverflow="true">
 					<reportElement style="GroupCellStyle0" stretchType="RelativeToBandHeight" x="0" y="18" width="290" height="18"/>
 					<textElement textAlignment="Center"/>
-					<textFieldExpression class="java.lang.String"><![CDATA["Сумма отрицательных комментариев"]]></textFieldExpression>
+					<textFieldExpression class="java.lang.String"><![CDATA["Количество ответов НЕТ"]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" pattern="#,##0" isBlankWhenNull="true">
 					<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="290" y="18" width="30" height="18"/>
@@ -113,7 +119,7 @@
 				<textField isStretchWithOverflow="true">
 					<reportElement style="GroupCellStyle0" stretchType="RelativeToBandHeight" x="0" y="36" width="290" height="18"/>
 					<textElement textAlignment="Center"/>
-					<textFieldExpression class="java.lang.String"><![CDATA["Всего комментариев"]]></textFieldExpression>
+					<textFieldExpression class="java.lang.String"><![CDATA["Всего ответов"]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" pattern="#,##0" isBlankWhenNull="true">
 					<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="290" y="36" width="30" height="18"/>
@@ -145,14 +151,19 @@
 				<textFieldExpression class="java.lang.String"><![CDATA[$F{nameNativeProject}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement style="GroupCellStyle1" positionType="Float" stretchType="RelativeToBandHeight" x="320" y="0" width="244" height="18"/>
+				<reportElement style="GroupCellStyle1" positionType="Float" stretchType="RelativeToBandHeight" x="320" y="0" width="211" height="18"/>
 				<textElement textAlignment="Left"/>
 				<textFieldExpression class="java.lang.String"><![CDATA[$F{nameNativeClaimerProject}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement style="GroupCellStyle1" positionType="Float" stretchType="RelativeToBandHeight" x="564" y="0" width="238" height="18"/>
+				<reportElement style="GroupCellStyle1" positionType="Float" stretchType="RelativeToBandHeight" x="584" y="0" width="218" height="18"/>
 				<textElement textAlignment="Left"/>
 				<textFieldExpression class="java.lang.String"><![CDATA[$F{consultingCenterCommentProject}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement style="GroupCellStyle1" positionType="Float" stretchType="RelativeToBandHeight" x="531" y="0" width="53" height="18"/>
+				<textElement textAlignment="Left"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{isConsultingCenterCommentProject}==null?"НЕТ":"ДА"]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>

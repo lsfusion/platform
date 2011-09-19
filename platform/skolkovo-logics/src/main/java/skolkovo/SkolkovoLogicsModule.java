@@ -1460,13 +1460,13 @@ public class SkolkovoLogicsModule extends LogicsModule {
         betweenDate = addJProp(baseLM.between, baseLM.date, 1, object(DateClass.instance), 2, object(DateClass.instance), 3);
 
         sumPositiveConsultingCenterCommentProject = addSGProp(consultingCenterStatGroup, "sumPositiveConsultingCenterCommentProject", "Сумма положительных комментариев",
-                addJProp(and(false, false, false), addCProp(IntegerClass.instance, 1), isConsultingCenterQuestionProject, 1, isConsultingCenterCommentProject, 1, betweenDate, 1, 2, 3),
+                addJProp(and(false, false, false, true), addCProp(IntegerClass.instance, 1), isConsultingCenterQuestionProject, 1, isConsultingCenterCommentProject, 1, betweenDate, 1, 2, 3, inactiveProject, 1),
                 2, 3);
         sumNegativeConsultingCenterCommentProject = addSGProp(consultingCenterStatGroup, "sumNegativeConsultingCenterCommentProject", "Сумма отрицательных комментариев",
-                addJProp(and(false, true, false), addCProp(IntegerClass.instance, 1), isConsultingCenterQuestionProject, 1, isConsultingCenterCommentProject, 1, betweenDate, 1, 2, 3),
+                addJProp(and(false, true, false, true), addCProp(IntegerClass.instance, 1), isConsultingCenterQuestionProject, 1, isConsultingCenterCommentProject, 1, betweenDate, 1, 2, 3, inactiveProject, 1),
                 2, 3);
         sumTotalConsultingCenterCommentProject = addSGProp(consultingCenterStatGroup, "sumTotalConsultingCenterCommentProject", "Всего комментариев",
-                addJProp(and(false, false), addCProp(IntegerClass.instance, 1), isConsultingCenterQuestionProject, 1, betweenDate, 1, 2, 3),
+                addJProp(and(false, false, true), addCProp(IntegerClass.instance, 1), isConsultingCenterQuestionProject, 1, betweenDate, 1, 2, 3, inactiveProject, 1),
                 2, 3);
 
 
@@ -1749,11 +1749,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             addPropertyDraw(objDateFrom, baseLM.objectValue);
             addPropertyDraw(objDateTo, baseLM.objectValue);
 
-            objProject = addSingleGroupObject(4, "project", project, dateProject, nameNativeProject, nameNativeClaimerProject, consultingCenterCommentProject);
-
-            //addPropertyDraw(objDateFrom, objDateTo, consultingCenterStatGroup);
-            //setForceViewType(consultingCenterStatGroup, ClassViewType.PANEL);
-
+            objProject = addSingleGroupObject(4, "project", project, dateProject, nameNativeProject, nameNativeClaimerProject, isConsultingCenterCommentProject, consultingCenterCommentProject);
 
             addPropertyDraw(sumPositiveConsultingCenterCommentProject, objDateFrom, objDateTo);
             setForceViewType(sumPositiveConsultingCenterCommentProject, ClassViewType.PANEL);
@@ -1762,12 +1758,18 @@ public class SkolkovoLogicsModule extends LogicsModule {
             addPropertyDraw(sumTotalConsultingCenterCommentProject, objDateFrom, objDateTo);
             setForceViewType(sumTotalConsultingCenterCommentProject, ClassViewType.PANEL);
 
-
             addFixedFilter(new CompareFilterEntity(addPropertyObject(dateProject, objProject), Compare.GREATER_EQUALS, objDateFrom));
             addFixedFilter(new CompareFilterEntity(addPropertyObject(dateProject, objProject), Compare.LESS_EQUALS, objDateTo));
-            addFixedFilter(new NotNullFilterEntity(addPropertyObject(consultingCenterCommentProject, objProject)));
+            addFixedFilter(new NotFilterEntity(new NotNullFilterEntity(addPropertyObject(inactiveProject, objProject))));
+            addFixedFilter(new NotNullFilterEntity(addPropertyObject(isConsultingCenterQuestionProject, objProject)));
         }
 
+        @Override
+        public FormView createDefaultRichDesign() {
+            DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign();
+            design.defaultOrders.put(design.get(getPropertyDraw(dateProject)), true);
+            return design;
+        }
     }
 
     private class ProjectFullFormEntity extends ClassFormEntity<SkolkovoBusinessLogics> {
