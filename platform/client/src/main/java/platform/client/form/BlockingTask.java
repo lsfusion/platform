@@ -47,16 +47,17 @@ public class BlockingTask extends TimerTask {
         }
     }
 
-    private int count = 0;
     private long previousTime = 0;
     private String actionMessage = null;
+    private int segmentCount = 7;
+    private int count = segmentCount;
 
     private void drawProgressBar(Window window) throws RemoteException {
         Component canvas = null;
         if (window instanceof JDialog) {
-            canvas = ((JDialog) window).getContentPane();
+            canvas = ((JDialog) window).getRootPane();
         } else if (window instanceof JFrame) {
-            canvas = ((JFrame) window).getContentPane();
+            canvas = ((JFrame) window).getRootPane();
         }
 
         Graphics gr = window.getGraphics();
@@ -66,8 +67,12 @@ public class BlockingTask extends TimerTask {
             String loadingText = ClientResourceBundle.getString("form.loading");
             int segmentHeight = 25;
             int segmentWidth = 10;
-            int segmentGap = 3;
-            int segmentCount = (int) (canvas.getWidth() / (segmentWidth + segmentGap) * 0.4);
+            int segmentGap = 2;
+            int maxSegmentCount = (int) (canvas.getWidth() / (segmentWidth + segmentGap) * 0.3);
+            if (segmentCount > maxSegmentCount) {
+                segmentCount = maxSegmentCount;
+                count = segmentCount;
+            }
 
             int loadingTextWidth = gr.getFontMetrics(loadingTextFont).stringWidth(loadingText);
             int loadingTextHeight = gr.getFontMetrics(loadingTextFont).getHeight();
@@ -79,14 +84,16 @@ public class BlockingTask extends TimerTask {
                 previousTime = currentTime;
             }
 
-            int barWidth = segmentCount * segmentWidth + (segmentCount - 1) * (segmentGap);
+            int barWidth = maxSegmentCount * segmentWidth + (maxSegmentCount - 1) * (segmentGap);
             int rectHeight = segmentHeight + loadingTextHeight + actionMessageHeight + 23;
             int rectWidth = Math.max(barWidth, loadingTextWidth) + 20;
             int rectX = canvas.getX() + (canvas.getWidth() - Math.max(barWidth, loadingTextWidth)) / 2 - 10;
-            int rectY = canvas.getY() + (canvas.getHeight()) / 2;
+            int rectY = canvas.getY() + (canvas.getHeight() - rectHeight) / 2;
+            int barX = rectX + 10;
+            int barY = rectY + loadingTextHeight + 10;
 
             if (loadingTextWidth > barWidth) {
-                segmentCount = loadingTextWidth / (segmentWidth + segmentGap);
+                maxSegmentCount = loadingTextWidth / (segmentWidth + segmentGap);
             }
 
             gr.setColor(Color.DARK_GRAY);
@@ -101,15 +108,17 @@ public class BlockingTask extends TimerTask {
 
             if (actionMessage != null) {
                 gr.setFont(actionMessageFont);
-                gr.drawString(actionMessage, rectX + 10, rectY + rectHeight - 10);
+                gr.drawString(actionMessage, barX, rectY + rectHeight - 10);
             }
 
-            for (int i = 1; i <= count % (segmentCount + 1); i++) {
-                int segmentX = rectX + 10 + (i - 1) * (segmentWidth + segmentGap);
-                gr.setColor(Color.LIGHT_GRAY);
-                gr.fillRoundRect(segmentX, rectY + loadingTextHeight + 10, segmentWidth + 2, segmentHeight + 2, 3, 3);
-                gr.setColor(Color.DARK_GRAY);
-                gr.fillRoundRect(rectX + 10 + (i - 1) * (segmentWidth + segmentGap), rectY + loadingTextHeight + 10, segmentWidth, segmentHeight, 3, 3);
+            int tab = (count - segmentCount) % (maxSegmentCount + segmentCount);
+            for (int j = 0; j < segmentCount; j++) {
+                if ((j + tab - segmentCount) >= 0 && (j + tab - segmentCount) < maxSegmentCount) {
+                    int alpha = 255 / segmentCount * (j + 1);
+                    int segmentX = barX + (j + tab - segmentCount) * (segmentWidth + segmentGap);
+                    gr.setColor(new Color(192, 192, 255, alpha));
+                    gr.fillRoundRect(segmentX, barY, segmentWidth, segmentHeight, 3, 3);
+                }
             }
         }
         count++;

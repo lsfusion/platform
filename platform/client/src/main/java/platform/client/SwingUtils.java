@@ -57,22 +57,28 @@ public class SwingUtils {
         return (JTable) comp;
     }
 
-    public static void commitEditing(JTable table) {
-
+    public static boolean commitEditing(JTable table) {
         if (table.isEditing() && table.getCellEditor() != null) {
-            if (!table.getCellEditor().stopCellEditing()) {
+            boolean stopEditing = table.getCellEditor().stopCellEditing();
+            if (!stopEditing) {
                 table.getCellEditor().cancelCellEditing();
+                return false;
+            } else {
+                return true;
             }
         }
+        return false;
     }
 
-    public static void commitCurrentEditing() {
-
+    public static JTable commitCurrentEditing() {
         Component comp = KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusOwner();
         JTable table = getJTable(comp);
         if (table != null) {
-            commitEditing(table);
+            if (commitEditing(table)) {
+                return table;
+            }
         }
+        return null;
     }
 
     public static Point computeAbsoluteLocation(Component comp) {

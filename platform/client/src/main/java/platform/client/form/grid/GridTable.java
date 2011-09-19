@@ -310,6 +310,14 @@ public abstract class GridTable extends ClientFormTable
     public void changeCurrentObject() {
         final ClientGroupObjectValue changeObject = getSelectedObject();
         if (changeObject != null) {
+
+            int row = getSelectedRow();
+            JTable editedTable = SwingUtils.commitCurrentEditing();
+            if (this != editedTable) { //если нужно, завершаем редактирование свойства, вынесенного в панель
+                selectRow(row);
+                requestFocusInWindow();
+            }
+
             SwingUtils.invokeLaterSingleAction(groupObject.getActionID()
                     , new ActionListener() {
                 public void actionPerformed(ActionEvent ae) {

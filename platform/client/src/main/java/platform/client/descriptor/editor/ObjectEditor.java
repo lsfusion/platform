@@ -6,10 +6,14 @@ import platform.client.descriptor.ObjectDescriptor;
 import platform.client.descriptor.editor.base.NodeEditor;
 import platform.client.descriptor.editor.base.TitledPanel;
 import platform.client.descriptor.increment.editor.IncrementCheckBox;
+import platform.client.descriptor.increment.editor.IncrementMultipleListEditor;
+import platform.client.descriptor.increment.editor.IncrementMultipleListSelectionModel;
 import platform.client.descriptor.increment.editor.IncrementTextEditor;
+import platform.interop.FormEventType;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.*;
 
 public class ObjectEditor extends JPanel implements NodeEditor {
 
@@ -23,7 +27,12 @@ public class ObjectEditor extends JPanel implements NodeEditor {
         add(new TitledPanel(ClientResourceBundle.getString("descriptor.editor.object.editor.title"), new IncrementTextEditor(object, "caption")));
         add(Box.createRigidArea(new Dimension(5, 5)));
 
-        add(new TitledPanel(null, new IncrementCheckBox(ClientResourceBundle.getString("descriptor.editor.object.editor.add.new.object.on.transaction"), object, "addOnEvent")));
+        add(new TitledPanel(ClientResourceBundle.getString("descriptor.editor.object.editor.add.new.object.on.event"), new IncrementMultipleListEditor(
+                new IncrementMultipleListSelectionModel(object, "addOnEvent") {
+                    public java.util.List<?> getList() {
+                        return Arrays.asList(FormEventType.values());
+                    }
+                })));
         add(Box.createRigidArea(new Dimension(5, 5)));
         add(new TitledPanel(null, new IncrementCheckBox(ClientResourceBundle.getString("descriptor.editor.object.editor.show.class.tree"), object.client.classChooser, "show")));
         add(Box.createRigidArea(new Dimension(5, 5)));

@@ -10,8 +10,8 @@ import platform.interop.FormEventType;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 public class ObjectDescriptor extends ContextIdentityObject implements PropertyObjectInterfaceDescriptor, ClientIdentitySerializable, CustomConstructible {
 
@@ -62,13 +62,14 @@ public class ObjectDescriptor extends ContextIdentityObject implements PropertyO
         return client.baseClass;
     }
 
-    public void setAddOnTransaction(Set<FormEventType> addOnEvent) {
-        client.addOnEvent = addOnEvent;
+    public void setAddOnEvent(List<FormEventType> addOnEvent) {
+        client.addOnEvent.clear();
+        client.addOnEvent.addAll(addOnEvent);
         updateDependency(this, "addOnEvent");
     }
 
-    public Set<FormEventType> getAddOnTransaction() {
-        return client.addOnEvent;
+    public List<FormEventType> getAddOnEvent() {
+        return new ArrayList<FormEventType>(client.addOnEvent);
     }
 
     public String getInstanceCode(){
