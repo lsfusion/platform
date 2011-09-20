@@ -213,21 +213,21 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         projectStatus = addStaticClass("projectStatus", "Статус проекта",
                 new String[]{"unknown", "needTranslation", "needDocuments", "needExtraVote", "inProgress", "succeeded", "accepted", "rejected"},
-                   //     "notEnoughDocs", "noExperts", "noCluster", "negativeFCResult", "positiveFCResult", "negativeLCResult", "positiveLCResult"},
+                //     "notEnoughDocs", "noExperts", "noCluster", "negativeFCResult", "positiveFCResult", "negativeLCResult", "positiveLCResult"},
                 new String[]{"Неизвестный статус", "Требуется перевод", "Не соответствуют документы", "Требуется заседание", "Идет заседание", "Достаточно голосов", "Оценен положительно", "Оценен отрицательно"});
-                   //     "Неполный перечень документов", "Отсутствует перечень экспертов", "Не соответствует направлению", "Не прошла формальную экспертизу", "Прошла формальную экспертизу", "Не прошла юридическую проверку", "Прошла юридическую проверку"});
+        //     "Неполный перечень документов", "Отсутствует перечень экспертов", "Не соответствует направлению", "Не прошла формальную экспертизу", "Прошла формальную экспертизу", "Не прошла юридическую проверку", "Прошла юридическую проверку"});
 
         documentType = addStaticClass("documentType", "Тип документа",
                 new String[]{"application", "resume", "techdesc", "forres", "ipres", "roadmap"},
                 new String[]{"Анкета", "Резюме", "Техническое описание", "Резюме иностранного специалиста", "Заявление IP", "Дорожная карта"});
 
         formalControlResult = addStaticClass("formalControlResult", "Решение формальной экспертизы",
-                new String[] {"notEnoughDocuments", "noListOfExperts", "notSuitableCluster", "negativeFormalResult", "positiveFormalResult"},
-                new String[] {"Неполный перечень документов", "Отсутствует перечень экспертов", "Не соответствует направлению", "Не прошла формальную экспертизу", "Прошла формальную экспертизу"});
+                new String[]{"notEnoughDocuments", "noListOfExperts", "notSuitableCluster", "negativeFormalResult", "positiveFormalResult"},
+                new String[]{"Неполный перечень документов", "Отсутствует перечень экспертов", "Не соответствует направлению", "Не прошла формальную экспертизу", "Прошла формальную экспертизу"});
 
-        legalCheckResult =addStaticClass ("legalCheckResult", "Решение юридической проверки",
-                new String[] {"negativeLegalCheckResult", "positiveLegalCheckResult"},
-                new String[] {"Не прошла юридическую проверку", "Прошла юридическую проверку"});
+        legalCheckResult = addStaticClass("legalCheckResult", "Решение юридической проверки",
+                new String[]{"negativeLegalCheckResult", "positiveLegalCheckResult"},
+                new String[]{"Не прошла юридическую проверку", "Прошла юридическую проверку"});
 
         formalControl = addConcreteClass("formalControl", "Формальная экспертиза", baseLM.transaction);
         legalCheck = addConcreteClass("legalCheck", "Юридическая проверка", baseLM.transaction);
@@ -564,6 +564,12 @@ public class SkolkovoLogicsModule extends LogicsModule {
     public LP fileForeignSummaryProject;
     LP loadFileForeignSummaryProject;
     LP openFileForeignSummaryProject;
+    public LP fileNativeApplicationFormProject;
+    LP loadFileNativeApplicationFormProject;
+    LP openFileNativeApplicationFormProject;
+    public LP fileForeignApplicationFormProject;
+    LP loadFileForeignApplicationFormProject;
+    LP openFileForeignApplicationFormProject;
     public LP fileNativeRoadMapProject;
     LP loadNativeFileRoadMapProject;
     LP openNativeFileRoadMapProject;
@@ -962,6 +968,14 @@ public class SkolkovoLogicsModule extends LogicsModule {
         fileForeignSummaryProject = addDProp("fileForeignSummaryProject", "Файл резюме проекта (иностр.)", CustomFileClass.instance, project);
         loadFileForeignSummaryProject = addLFAProp(executiveSummaryGroup, "Загрузить файл резюме проекта (иностр.)", fileForeignSummaryProject);
         openFileForeignSummaryProject = addOFAProp(executiveSummaryGroup, "Открыть файл резюме проекта (иностр.)", fileForeignSummaryProject);
+
+        fileNativeApplicationFormProject = addDProp("fileNativeApplicationFormProject", "Анкета на русском", CustomFileClass.instance, project);
+        loadFileNativeApplicationFormProject = addLFAProp(executiveSummaryGroup, "Загрузить анкету на русском", fileNativeApplicationFormProject);
+        openFileNativeApplicationFormProject = addOFAProp(executiveSummaryGroup, "Открыть анкету на русском", fileNativeApplicationFormProject);
+        fileForeignApplicationFormProject = addDProp("fileForeignApplicationFormProject", "Анкета на английском", CustomFileClass.instance, project);
+        loadFileForeignApplicationFormProject = addLFAProp(executiveSummaryGroup, "Загрузить анкету на английском", fileForeignApplicationFormProject);
+        openFileForeignApplicationFormProject = addOFAProp(executiveSummaryGroup, "Открыть анкету на английском", fileForeignApplicationFormProject);
+
 
         // источники финансирования
         isReturnInvestmentsProject = addDProp(sourcesFundingGroup, "isReturnInvestmentsProject", "Средства третьих лиц, привлекаемые на возвратной основе (заемные средства и т.п.)", LogicalClass.instance, project);
@@ -1540,7 +1554,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         //формальная экспертиза и юридическая проверка
         dateFormalControl = addTCProp(Time.DATETIME, "dateFormalControl", true, "Дата экспертизы", is(formalControl));
-       // dateFormalControl.setDerivedChange(baseLM.currentDateTime, true, is(formalControl), 1);
+        // dateFormalControl.setDerivedChange(baseLM.currentDateTime, true, is(formalControl), 1);
         projectFormalControl = addDProp("projectFormalControl", "Проект (ИД)", project, formalControl);
         resultFormalControl = addDProp("resultFormalControl", "Решение формальной экспертизы", formalControlResult, formalControl);
         nameResultFormalControl = addJProp("nameResultFormalControl", "Решение формальной экспертизы", baseLM.name, resultFormalControl, 1);
@@ -1580,13 +1594,13 @@ public class SkolkovoLogicsModule extends LogicsModule {
                 voteOpenedSucceededProject, 1, addCProp(projectStatus, "succeeded", project), 1,
                 voteInProgressProject, 1, addCProp(projectStatus, "inProgress", project), 1,
                 needTranslationProject, 1, addCProp(projectStatus, "needTranslation", project), 1,
-            //    negativeLegalResultProject, 1, addCProp(projectStatus, "negativeLCResult", project), 1,
-            //    positiveLegalResultProject, 1, addCProp(projectStatus, "positiveLCResult", project), 1,
-            //    notEnoughDocumentsProject, 1, addCProp(projectStatus, "notEnoughDocs", project), 1,
-            //    noListOfExpertsProject, 1, addCProp(projectStatus, "noExperts", project), 1,
-            //    notSuitableClusterProject, 1, addCProp(projectStatus, "noCluster", project), 1,
-            //    negativeFormalResultProject, 1, addCProp(projectStatus, "negativeFCResult", project), 1,
-            //    positiveFormalResultProject, 1, addCProp(projectStatus, "positiveFCResult", project), 1,
+                //    negativeLegalResultProject, 1, addCProp(projectStatus, "negativeLCResult", project), 1,
+                //    positiveLegalResultProject, 1, addCProp(projectStatus, "positiveLCResult", project), 1,
+                //    notEnoughDocumentsProject, 1, addCProp(projectStatus, "notEnoughDocs", project), 1,
+                //    noListOfExpertsProject, 1, addCProp(projectStatus, "noExperts", project), 1,
+                //    notSuitableClusterProject, 1, addCProp(projectStatus, "noCluster", project), 1,
+                //    negativeFormalResultProject, 1, addCProp(projectStatus, "negativeFCResult", project), 1,
+                //    positiveFormalResultProject, 1, addCProp(projectStatus, "positiveFCResult", project), 1,
                 addIfElseUProp(addCProp(projectStatus, "needDocuments", project), addCProp(projectStatus, "needExtraVote", project), notEnoughProject, 1), 1);
 
         statusDataProject = addDProp("statusDataProject", "Статус", projectStatus, project);
@@ -2129,10 +2143,10 @@ public class SkolkovoLogicsModule extends LogicsModule {
             getPropertyDraw(postfixDocument).forceViewType = ClassViewType.PANEL;
             getPropertyDraw(postfixDocument).propertyCaption = addPropertyObject(hidePostfixDocument, objDocument);
 
-            addPropertyDraw(exportProjectDocumentsAction, objProject).toDraw = objDocumentTemplate.groupTo;
+            addPropertyDraw(exportProjectDocumentsAction, objProject).toDraw = objDocument.groupTo;
             setForceViewType(exportProjectDocumentsAction, ClassViewType.PANEL);
 
-            addPropertyDraw(includeDocumentsProject, objProject).toDraw = objDocumentTemplate.groupTo;
+            addPropertyDraw(includeDocumentsProject, objProject).toDraw = objDocument.groupTo;
             setForceViewType(includeDocumentsProject, ClassViewType.PANEL);
 
             hideIncludeDocumentsProject = addHideCaptionProp(privateGroup, "Подключить", includeDocumentsProject, addJProp(baseLM.andNot1, openFileResolutionIPProject, 1, needTranslationProject, 1));
@@ -2151,8 +2165,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
             addPropertyDraw(commentFormalControl, objFormalControl).forceViewType = ClassViewType.PANEL;
             addObjectActions(this, objFormalControl);
 
-           // addPropertyDraw(exportProjectDocumentsAction, objProject).toDraw = objFormalControl.groupTo;
-           // setForceViewType(exportProjectDocumentsAction, ClassViewType.PANEL);
+            // addPropertyDraw(exportProjectDocumentsAction, objProject).toDraw = objFormalControl.groupTo;
+            // setForceViewType(exportProjectDocumentsAction, ClassViewType.PANEL);
 
             objLegalCheck = addSingleGroupObject(legalCheck);
             addPropertyDraw(objLegalCheck, dateLegalCheck, nameResultLegalCheck);
@@ -2221,11 +2235,13 @@ public class SkolkovoLogicsModule extends LogicsModule {
             infoContainer.add(design.getGroupPropertyContainer(objProject.groupTo, projectOtherClusterGroup));
 
             ContainerView docContainer = design.createContainer("Документы");
+            docContainer.add(design.getGroupObjectContainer(objDocumentTemplate.groupTo));
             docContainer.add(design.getGroupObjectContainer(objDocument.groupTo));
             docContainer.add(design.getGroupPropertyContainer(objProject.groupTo, projectDocumentsGroup));
 
+
             ContainerView formalControlContainer = design.createContainer("Формальная экспертиза");
-           // formalControlContainer.add(design.getGroupObjectContainer(objDocumentTemplate.groupTo));
+            // formalControlContainer.add(design.getGroupObjectContainer(objDocumentTemplate.groupTo));
             formalControlContainer.add(design.getGroupObjectContainer(objFormalControl.groupTo));
             PropertyDrawView CommentFormalControl = design.get(getPropertyDraw(commentFormalControl, objFormalControl));
             CommentFormalControl.constraints.fillHorizontal = 1.0;
@@ -2238,7 +2254,6 @@ public class SkolkovoLogicsModule extends LogicsModule {
             ContainerView expertContainer = design.createContainer("Экспертиза по существу");
             expertContainer.add(design.getGroupObjectContainer(objVote.groupTo));
             expertContainer.add(design.getGroupObjectContainer(objExpert.groupTo));
-
 
 
             specContainer.add(infoContainer);
@@ -2466,7 +2481,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             addPropertyDraw(objExpert, nameNativeClusterExpert, nameLanguageExpert);
 
             if (!restricted)
-                addPropertyDraw(objExpert,baseLM.userFirstName, baseLM.userLastName, documentNameExpert, baseLM.email);
+                addPropertyDraw(objExpert, baseLM.userFirstName, baseLM.userLastName, documentNameExpert, baseLM.email);
 
             if (!restricted)
                 addPropertyDraw(objExpert, objVote, allowedEmailLetterExpertVote);
@@ -2970,20 +2985,28 @@ public class SkolkovoLogicsModule extends LogicsModule {
             try {
 
                 DataObject projectObject = context.getKeyValue(projectInterface);
+                DataObject documentObject;
 
-                DataObject documentObject = context.addObject(document);
+                Object file = fileNativeApplicationFormProject.read(context, projectObject);
+                documentObject = context.addObject(document);
                 projectDocument.execute(projectObject.getValue(), context, documentObject);
                 typeDocument.execute(documentType.getID("application"), context, documentObject);
                 languageDocument.execute(language.getID("russian"), context, documentObject);
-                fileDocument.execute(generateApplicationFile(context, projectObject, false), context, documentObject);
+                if (file != null)
+                    fileDocument.execute(file, context, documentObject);
+                else
+                    fileDocument.execute(generateApplicationFile(context, projectObject, false), context, documentObject);
 
                 documentObject = context.addObject(document);
                 projectDocument.execute(projectObject.getValue(), context, documentObject);
                 typeDocument.execute(documentType.getID("application"), context, documentObject);
                 languageDocument.execute(language.getID("english"), context, documentObject);
-                fileDocument.execute(generateApplicationFile(context, projectObject, true), context, documentObject);
+                if (file != null)
+                    fileDocument.execute(file, context, documentObject);
+                else
+                    fileDocument.execute(generateApplicationFile(context, projectObject, true), context, documentObject);
 
-                Object file = fileNativeSummaryProject.read(context, projectObject);
+                file = fileNativeSummaryProject.read(context, projectObject);
                 if (file != null) {
                     documentObject = context.addObject(document);
                     fileDocument.execute(file, context, documentObject);

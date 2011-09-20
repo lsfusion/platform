@@ -71,8 +71,10 @@ public class ExportProjectDocumentsActionProperty extends ActionProperty {
         // документы по проекту
 
         try {
-            putFileIfNotNull(files, LM.generateApplicationFile(context, projectObject, false), "Анкета заявителя");
-            putFileIfNotNull(files, LM.generateApplicationFile(context, projectObject, true), "Анкета заявителя (иностр.)");
+            if (!putFileIfNotNull(files, LM.fileNativeApplicationFormProject.read(context, projectObject), "Анкета заявителя"))
+                putFileIfNotNull(files, LM.generateApplicationFile(context, projectObject, false), "Анкета заявителя");
+            if (!putFileIfNotNull(files, LM.fileForeignApplicationFormProject.read(context, projectObject), "Анкета заявителя (иностр.)"))
+                putFileIfNotNull(files, LM.generateApplicationFile(context, projectObject, true), "Анкета заявителя (иностр.)");
         } catch (IOException e) {
             new RuntimeException("Ошибка при экспорте документов", e);
         } catch (ClassNotFoundException e) {
@@ -135,7 +137,12 @@ public class ExportProjectDocumentsActionProperty extends ActionProperty {
         System.gc();
     }
 
-    private void putFileIfNotNull(Map<String, byte[]> files, Object file, String name) {
-        if (file != null) files.put(name + ".pdf", (byte[]) file);
+    private boolean putFileIfNotNull(Map<String, byte[]> files, Object file, String name) {
+        if (file != null) {
+            files.put(name + ".pdf", (byte[]) file);
+            return true;
+        } else {
+            return false;
+        }
     }
 }
