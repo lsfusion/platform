@@ -52,7 +52,7 @@ public interface RemoteFormInterface extends PendingRemote, RemoteContextInterfa
 
     void groupChangePropertyDraw(int mainID, byte[] mainColumnKey, int getterID, byte[] getterColumnKey) throws RemoteException;
 
-    void pasteExternalTable(List propertyIDs, List<List<Object>> table) throws RemoteException;
+    void pasteExternalTable(List<Integer> propertyIDs, List<List<Object>> table) throws RemoteException;
 
     boolean[] getCompatibleProperties(int mainPropertyID, int[] propertiesIDs) throws RemoteException;
 

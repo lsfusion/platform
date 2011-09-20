@@ -8,6 +8,7 @@ import platform.interop.Order;
 import platform.interop.form.PropertyReadType;
 import platform.server.caches.IdentityLazy;
 import platform.server.classes.BaseClass;
+import platform.server.classes.ConcreteCustomClass;
 import platform.server.classes.CustomClass;
 import platform.server.data.QueryEnvironment;
 import platform.server.data.SQLSession;
@@ -24,10 +25,7 @@ import platform.server.logics.DataObject;
 import platform.server.logics.NullValue;
 import platform.server.logics.ObjectValue;
 import platform.server.logics.property.Property;
-import platform.server.session.Changes;
-import platform.server.session.Modifier;
-import platform.server.session.NoPropertyTableUsage;
-import platform.server.session.SessionChanges;
+import platform.server.session.*;
 
 import java.sql.SQLException;
 import java.util.*;
@@ -653,6 +651,24 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
             orderSeeks = new SeekObjects(keys.getValue(lowestInd), false);
         }
         return orderSeeks.executeOrders(sql, env, modifier, baseClass, availableSize, false).reverse();
+    }
+
+    public OrderedMap<Map<ObjectInstance, DataObject>, Map<OrderInstance, ObjectValue>> createObjects(DataSession session, Modifier<? extends Changes> modifier, int quantity) throws SQLException {
+        OrderedMap<Map<ObjectInstance, DataObject>, Map<OrderInstance, ObjectValue>> resultMap = new OrderedMap<Map<ObjectInstance, DataObject>, Map<OrderInstance, ObjectValue>>();
+        if (objects.size() > 1) {
+            return resultMap;
+        }
+        for (int i = 0; i < quantity; i++) {
+            Map<ObjectInstance, DataObject> objectKeys = new OrderedMap<ObjectInstance, DataObject>();
+            for (ObjectInstance objectInstance : objects) {
+                if (objectInstance.getBaseClass() instanceof ConcreteCustomClass) {
+                    DataObject object = session.addObject((ConcreteCustomClass) objectInstance.getBaseClass(), modifier);
+                    objectKeys.put(objectInstance, object);
+                }
+            }
+            resultMap.put(objectKeys, null);
+        }
+        return resultMap;
     }
 
     public class SeekObjects {

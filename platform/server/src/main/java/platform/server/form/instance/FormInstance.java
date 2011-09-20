@@ -34,6 +34,7 @@ import platform.server.form.instance.listener.CustomClassListener;
 import platform.server.form.instance.listener.FocusListener;
 import platform.server.form.instance.listener.FormEventListener;
 import platform.server.form.instance.remote.RemoteForm;
+import platform.server.integration.*;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
@@ -473,13 +474,20 @@ public class FormInstance<T extends BusinessLogics<T>> extends IncrementProps<Pr
         }
     }
 
-    public void pasteExternalTable(List<Integer> propertyIDs, List<List<Object>> table) throws SQLException {
+    public void pasteExternalTable(List<Integer> propertyIDs, List<List<Object>> table, RemoteForm form) throws SQLException {
         List<PropertyDrawInstance> properties = new ArrayList<PropertyDrawInstance>();
         for (Integer id : propertyIDs) {
             properties.add(getPropertyDraw(id));
         }
         GroupObjectInstance groupObject = properties.get(0).toDraw;
         OrderedMap<Map<ObjectInstance, DataObject>, Map<OrderInstance, ObjectValue>> executeList = groupObject.seekObjects(session.sql, session.env, this, BL.LM.baseClass, table.size());
+
+        //создание объектов
+        int availableQuantity = executeList.size();
+        if (availableQuantity < table.size()) {
+            executeList.putAll(groupObject.createObjects(session, this, table.size() - availableQuantity));
+        }
+
         for (Map<ObjectInstance, DataObject> key : executeList.keySet()) {
             List<Object> row = table.get(executeList.indexOf(key));
             for (PropertyDrawInstance property : properties) {

@@ -123,7 +123,7 @@ public class RemoteFormProxy<T extends RemoteFormInterface>
     }
 
     @PendingRemoteMethod
-    public void pasteExternalTable(List propertyIDs, List<List<Object>> table) throws RemoteException {
+    public void pasteExternalTable(List<Integer> propertyIDs, List<List<Object>> table) throws RemoteException {
         logRemoteMethodStartCall("pasteExternalTable");
         target.pasteExternalTable(propertyIDs, table);
         logRemoteMethodEndVoidCall("pasteExternalTable");
