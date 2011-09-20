@@ -313,7 +313,7 @@ public abstract class GridTable extends ClientFormTable
 
             int row = getSelectedRow();
             JTable editedTable = SwingUtils.commitCurrentEditing();
-            if (this != editedTable) { //если нужно, завершаем редактирование свойства, вынесенного в панель
+            if (editedTable != null && this != editedTable) { //если нужно, завершаем редактирование свойства, вынесенного в панель
                 selectRow(row);
                 requestFocusInWindow();
             }
