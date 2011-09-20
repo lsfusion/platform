@@ -229,8 +229,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
                 new String[]{"negativeLegalCheckResult", "positiveLegalCheckResult"},
                 new String[]{"Не прошла юридическую проверку", "Прошла юридическую проверку"});
 
-        formalControl = addConcreteClass("formalControl", "Формальная экспертиза", baseLM.transaction);
-        legalCheck = addConcreteClass("legalCheck", "Юридическая проверка", baseLM.transaction);
+        formalControl = addConcreteClass("formalControl", "Формальная экспертиза", baseClass);
+        legalCheck = addConcreteClass("legalCheck", "Юридическая проверка", baseClass);
     }
 
     @Override
@@ -1553,12 +1553,14 @@ public class SkolkovoLogicsModule extends LogicsModule {
         updateDateProject = addDProp(projectInformationGroup, "updateDateProject", "Дата изменения проекта", DateTimeClass.instance, project);
 
         //формальная экспертиза и юридическая проверка
-        dateFormalControl = addTCProp(Time.DATETIME, "dateFormalControl", true, "Дата экспертизы", is(formalControl));
-        // dateFormalControl.setDerivedChange(baseLM.currentDateTime, true, is(formalControl), 1);
+
         projectFormalControl = addDProp("projectFormalControl", "Проект (ИД)", project, formalControl);
         resultFormalControl = addDProp("resultFormalControl", "Решение формальной экспертизы", formalControlResult, formalControl);
         nameResultFormalControl = addJProp("nameResultFormalControl", "Решение формальной экспертизы", baseLM.name, resultFormalControl, 1);
         commentFormalControl = addDProp("commentFormalControl", "Комментарий", TextClass.instance, formalControl);
+
+        dateFormalControl = addTCProp(Time.DATETIME, "dateFormalControl", true, "Дата экспертизы", resultFormalControl);
+
         maxFormalControlProjectProps = addMGProp((AbstractGroup) null, new String[]{"maxDateFormalControlProject", "currentFCProject"}, new String[]{"Дата посл. формальной экспертизы.", "Посл. формальная экспертиза"}, 1,
                 dateFormalControl, 1, projectFormalControl, 1);
         LP currentDateFormalControlProject = maxFormalControlProjectProps[0];
@@ -1573,12 +1575,13 @@ public class SkolkovoLogicsModule extends LogicsModule {
         negativeFormalResultProject = addJProp("negativeFormalResultProject", "Не прошла формальную экспертизу", baseLM.equals2, resultExecuteFormalControlProject, 1, addCProp(formalControlResult, "negativeFormalResult"));
         positiveFormalResultProject = addJProp("positiveFormalResultProject", "Прошла формальную экспертизу", baseLM.equals2, resultExecuteFormalControlProject, 1, addCProp(formalControlResult, "positiveFormalResult"));
 
-        dateLegalCheck = addTCProp(Time.DATETIME, "dateLegalCheck", true, "Дата проверки", is(legalCheck));
-        // dateLegalCheck.setDerivedChange(baseLM.currentDateTime, true, is(legalCheck), 1);
         projectLegalCheck = addDProp("projectLegalCheck", "Проект (ИД)", project, legalCheck);
         resultLegalCheck = addDProp("resultLegalCheck", "Решение юридической проверки", legalCheckResult, legalCheck);
-        nameResultLegalCheck = addJProp("nameResultLegalCheck", "Решение юридической проверки", baseLM.name, resultLegalCheck, 1);
         commentLegalCheck = addDProp("commentLegalCheck", "Комментарий", TextClass.instance, legalCheck);
+
+        dateLegalCheck = addTCProp(Time.DATETIME, "dateLegalCheck", true, "Дата проверки", resultLegalCheck);
+        // dateLegalCheck.setDerivedChange(baseLM.currentDateTime, true, is(legalCheck), 1);
+        nameResultLegalCheck = addJProp("nameResultLegalCheck", "Решение юридической проверки", baseLM.name, resultLegalCheck, 1);
         maxLegalCheckProjectProps = addMGProp((AbstractGroup) null, new String[]{"maxDateLegalCheckProject", "currentLCProject"}, new String[]{"Дата посл. юр. проверки", "Посл. юр. проверка"}, 1,
                 dateLegalCheck, 1, projectLegalCheck, 1);
         LP currentDateLegalCheckProject = maxLegalCheckProjectProps[0];
@@ -2234,32 +2237,32 @@ public class SkolkovoLogicsModule extends LogicsModule {
             infoContainer.add(design.getGroupObjectContainer(objCluster.groupTo));
             infoContainer.add(design.getGroupPropertyContainer(objProject.groupTo, projectOtherClusterGroup));
 
+            ContainerView formalControlContainer = design.createContainer("Формальная экспертиза");
+            // formalControlContainer.add(design.getGroupObjectContainer(objDocumentTemplate.groupTo));
+            formalControlContainer.add(design.getGroupObjectContainer(objFormalControl.groupTo));
+            PropertyDrawView commentFormalView = design.get(getPropertyDraw(commentFormalControl, objFormalControl));
+            commentFormalView.constraints.fillHorizontal = 1.0;
+            commentFormalView.preferredSize = new Dimension(-1, 300);
+
+            ContainerView legalCheckContainer = design.createContainer("Юридическая проверка");
+            legalCheckContainer.add(design.getGroupObjectContainer(objLegalCheck.groupTo));
+            PropertyDrawView commentLegalView = design.get(getPropertyDraw(commentLegalCheck, objLegalCheck));
+            commentLegalView.constraints.fillHorizontal = 1.0;
+            commentLegalView.preferredSize = new Dimension(-1, 300);
+
             ContainerView docContainer = design.createContainer("Документы");
             docContainer.add(design.getGroupObjectContainer(objDocumentTemplate.groupTo));
             docContainer.add(design.getGroupObjectContainer(objDocument.groupTo));
             docContainer.add(design.getGroupPropertyContainer(objProject.groupTo, projectDocumentsGroup));
 
-
-            ContainerView formalControlContainer = design.createContainer("Формальная экспертиза");
-            // formalControlContainer.add(design.getGroupObjectContainer(objDocumentTemplate.groupTo));
-            formalControlContainer.add(design.getGroupObjectContainer(objFormalControl.groupTo));
-            PropertyDrawView CommentFormalControl = design.get(getPropertyDraw(commentFormalControl, objFormalControl));
-            CommentFormalControl.constraints.fillHorizontal = 1.0;
-
-            ContainerView legalCheckContainer = design.createContainer("Юридическая проверка");
-            legalCheckContainer.add(design.getGroupObjectContainer(objLegalCheck.groupTo));
-            PropertyDrawView CommentCheckContainer = design.get(getPropertyDraw(commentLegalCheck, objLegalCheck));
-            CommentCheckContainer.constraints.fillHorizontal = 1.0;
-
             ContainerView expertContainer = design.createContainer("Экспертиза по существу");
             expertContainer.add(design.getGroupObjectContainer(objVote.groupTo));
             expertContainer.add(design.getGroupObjectContainer(objExpert.groupTo));
 
-
             specContainer.add(infoContainer);
-            specContainer.add(docContainer);
             specContainer.add(formalControlContainer);
             specContainer.add(legalCheckContainer);
+            specContainer.add(docContainer);
             specContainer.add(expertContainer);
 
             design.setHighlightColor(new Color(223, 255, 223));
