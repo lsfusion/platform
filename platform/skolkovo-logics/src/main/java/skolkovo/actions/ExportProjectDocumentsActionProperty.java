@@ -71,9 +71,11 @@ public class ExportProjectDocumentsActionProperty extends ActionProperty {
         // документы по проекту
 
         try {
-            if (!putFileIfNotNull(files, LM.fileNativeApplicationFormProject.read(context, projectObject), "Анкета заявителя"))
+            if ((!putFileIfNotNull(files, LM.fileNativeApplicationFormProject.read(context, projectObject), "Анкета заявителя"))
+                    && (LM.fillNativeProject.read(context, projectObject))== (Object)true || (LM.translatedToRussianProject.read(context, projectObject))== (Object)true)
                 putFileIfNotNull(files, LM.generateApplicationFile(context, projectObject, false), "Анкета заявителя");
-            if (!putFileIfNotNull(files, LM.fileForeignApplicationFormProject.read(context, projectObject), "Анкета заявителя (иностр.)"))
+            if ((!putFileIfNotNull(files, LM.fileForeignApplicationFormProject.read(context, projectObject), "Анкета заявителя (иностр.)"))
+                && (LM.fillForeignProject.read(context, projectObject)== (Object)true) || (LM.translatedToEnglishProject.read(context, projectObject) == (Object)true))
                 putFileIfNotNull(files, LM.generateApplicationFile(context, projectObject, true), "Анкета заявителя (иностр.)");
         } catch (IOException e) {
             new RuntimeException("Ошибка при экспорте документов", e);
@@ -105,10 +107,11 @@ public class ExportProjectDocumentsActionProperty extends ActionProperty {
         OrderedMap<Map<Object, Object>, Map<Object, Object>> result = query.execute(session.sql);
 
         for (Map<Object, Object> values : result.values()) {
-            putFileIfNotNull(files, values.get("fileForeignResumeNonRussianSpecialist"), values.get("fullNameNonRussianSpecialist").toString().trim() + " resume foreign");
-            putFileIfNotNull(files, values.get("fileNativeResumeNonRussianSpecialist"), values.get("fullNameNonRussianSpecialist").toString().trim() + " resume native");
-            putFileIfNotNull(files, values.get("filePassportNonRussianSpecialist"), values.get("fullNameNonRussianSpecialist").toString().trim() + " passport");
-            putFileIfNotNull(files, values.get("fileStatementNonRussianSpecialist"), values.get("fullNameNonRussianSpecialist").toString().trim() + " statement");
+            String fullName = values.get("fullNameNonRussianSpecialist").toString().trim().replace("/", "-").replace("\\", "-");
+            putFileIfNotNull(files, values.get("fileForeignResumeNonRussianSpecialist"), fullName + " resume foreign");
+            putFileIfNotNull(files, values.get("fileNativeResumeNonRussianSpecialist"), fullName + " resume native");
+            putFileIfNotNull(files, values.get("filePassportNonRussianSpecialist"), fullName + " passport");
+            putFileIfNotNull(files, values.get("fileStatementNonRussianSpecialist"), fullName + " statement");
         }
 
         LP isAcademic = LM.is(LM.academic);

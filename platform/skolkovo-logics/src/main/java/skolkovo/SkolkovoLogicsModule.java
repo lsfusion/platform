@@ -139,7 +139,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
     AbstractGroup nonReturnFundingGroup;
     AbstractGroup equipmentGroup;
     AbstractGroup projectDocumentsGroup;
-    AbstractGroup executiveSummaryGroup, techDescrGroup, roadMapGroup, resolutionIPGroup;
+    AbstractGroup executiveSummaryGroup, applicationFormGroup, techDescrGroup, roadMapGroup, resolutionIPGroup;
     AbstractGroup projectStatusGroup;
     AbstractGroup projectOptionsGroup;
     AbstractGroup translateActionGroup;
@@ -276,6 +276,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         projectDocumentsGroup = addAbstractGroup("projectDocumentsGroup", "Документы", baseGroup);
         executiveSummaryGroup = addAbstractGroup("executiveSummaryGroup", "Резюме проекта", projectDocumentsGroup);
+        applicationFormGroup = addAbstractGroup("applicationFormGroup", "Анкеты", projectDocumentsGroup);
         techDescrGroup = addAbstractGroup("techDescrGroup", "Техническое описание", projectDocumentsGroup);
         roadMapGroup = addAbstractGroup("roadMapGroup", "Дорожная карта", projectDocumentsGroup);
         resolutionIPGroup = addAbstractGroup("resolutionIPGroup", "Заявление IP", projectDocumentsGroup);
@@ -972,11 +973,11 @@ public class SkolkovoLogicsModule extends LogicsModule {
         openFileForeignSummaryProject = addOFAProp(executiveSummaryGroup, "Открыть файл резюме проекта (иностр.)", fileForeignSummaryProject);
 
         fileNativeApplicationFormProject = addDProp("fileNativeApplicationFormProject", "Анкета на русском", CustomFileClass.instance, project);
-        loadFileNativeApplicationFormProject = addLFAProp(executiveSummaryGroup, "Загрузить анкету на русском", fileNativeApplicationFormProject);
-        openFileNativeApplicationFormProject = addOFAProp(executiveSummaryGroup, "Открыть анкету на русском", fileNativeApplicationFormProject);
+        loadFileNativeApplicationFormProject = addLFAProp(applicationFormGroup, "Загрузить анкету на русском", fileNativeApplicationFormProject);
+        openFileNativeApplicationFormProject = addOFAProp(applicationFormGroup, "Открыть анкету на русском", fileNativeApplicationFormProject);
         fileForeignApplicationFormProject = addDProp("fileForeignApplicationFormProject", "Анкета на английском", CustomFileClass.instance, project);
-        loadFileForeignApplicationFormProject = addLFAProp(executiveSummaryGroup, "Загрузить анкету на английском", fileForeignApplicationFormProject);
-        openFileForeignApplicationFormProject = addOFAProp(executiveSummaryGroup, "Открыть анкету на английском", fileForeignApplicationFormProject);
+        loadFileForeignApplicationFormProject = addLFAProp(applicationFormGroup, "Загрузить анкету на английском", fileForeignApplicationFormProject);
+        openFileForeignApplicationFormProject = addOFAProp(applicationFormGroup, "Открыть анкету на английском", fileForeignApplicationFormProject);
 
 
         // источники финансирования
@@ -2006,6 +2007,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
                     design.getGroupPropertyContainer(objProject.groupTo, nonReturnFundingGroup), design.get(getPropertyDraw(isNonReturnInvestmentsProject)));
 
             design.getGroupPropertyContainer(objProject.groupTo, projectDocumentsGroup).constraints.childConstraints = DoNotIntersectSimplexConstraint.TOTHE_RIGHT;
+            design.getGroupPropertyContainer(objProject.groupTo, applicationFormGroup).constraints.childConstraints = DoNotIntersectSimplexConstraint.TOTHE_BOTTOM;
             design.getGroupPropertyContainer(objProject.groupTo, executiveSummaryGroup).constraints.childConstraints = DoNotIntersectSimplexConstraint.TOTHE_BOTTOM;
             design.getGroupPropertyContainer(objProject.groupTo, techDescrGroup).constraints.childConstraints = DoNotIntersectSimplexConstraint.TOTHE_BOTTOM;
             design.getGroupPropertyContainer(objProject.groupTo, roadMapGroup).constraints.childConstraints = DoNotIntersectSimplexConstraint.TOTHE_BOTTOM;
@@ -2158,8 +2160,11 @@ public class SkolkovoLogicsModule extends LogicsModule {
             addPropertyDraw(includeDocumentsProject, objProject).toDraw = objDocument.groupTo;
             setForceViewType(includeDocumentsProject, ClassViewType.PANEL);
 
-            hideIncludeDocumentsProject = addHideCaptionProp(privateGroup, "Подключить", includeDocumentsProject, addJProp(baseLM.andNot1, openFileResolutionIPProject, 1, needTranslationProject, 1));
+            //hideIncludeDocumentsProject = addHideCaptionProp(privateGroup, "Подключить", includeDocumentsProject, addJProp(baseLM.andNot1, openFileResolutionIPProject, 1, needTranslationProject, 1));
+            //getPropertyDraw(includeDocumentsProject).propertyCaption = addPropertyObject(hideIncludeDocumentsProject, objProject);
+            hideIncludeDocumentsProject = addHideCaptionProp(privateGroup, "Подключить", includeDocumentsProject, openFileResolutionIPProject);
             getPropertyDraw(includeDocumentsProject).propertyCaption = addPropertyObject(hideIncludeDocumentsProject, objProject);
+
 
             objExpert = addSingleGroupObject(expert);
             addPropertyDraw(objExpert, objVote, inExpertVote, oldExpertVote);
@@ -3003,7 +3008,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
                 languageDocument.execute(language.getID("russian"), context, documentObject);
                 if (file != null)
                     fileDocument.execute(file, context, documentObject);
-                else
+                else if ((fillNativeProject.read(context, projectObject)) == (Object) true || (translatedToRussianProject.read(context, projectObject)) == (Object) true)
                     fileDocument.execute(generateApplicationFile(context, projectObject, false), context, documentObject);
 
                 documentObject = context.addObject(document);
@@ -3012,7 +3017,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
                 languageDocument.execute(language.getID("english"), context, documentObject);
                 if (file != null)
                     fileDocument.execute(file, context, documentObject);
-                else
+                else if ((fillForeignProject.read(context, projectObject)) == (Object) true || (translatedToEnglishProject.read(context, projectObject)) == (Object) true)
                     fileDocument.execute(generateApplicationFile(context, projectObject, true), context, documentObject);
 
                 file = fileNativeSummaryProject.read(context, projectObject);
@@ -3033,6 +3038,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
                     languageDocument.execute(language.getID("english"), context, documentObject);
                 }
 
+                /*
                 Query<String, String> query = new Query<String, String>(Collections.singleton("nonRussianSpecialist"));
                 query.and(projectNonRussianSpecialist.getExpr(context.getModifier(), query.mapKeys.get("nonRussianSpecialist")).compare(projectObject.getExpr(), Compare.EQUALS));
                 query.properties.put("fullNameNonRussianSpecialist", projectNonRussianSpecialist.getExpr(context.getModifier(), query.mapKeys.get("nonRussianSpecialist")));
@@ -3051,6 +3057,66 @@ public class SkolkovoLogicsModule extends LogicsModule {
                         postfixDocument.execute(String.valueOf(count), context, documentObject);
                     fileDocument.execute(row.getValue().get("fileForeignResumeNonRussianSpecialist").getValue(), context, documentObject);
                     count++;
+                }
+
+                query = new Query<String, String>(Collections.singleton("nonRussianSpecialist"));
+                query.and(projectNonRussianSpecialist.getExpr(context.getModifier(), query.mapKeys.get("nonRussianSpecialist")).compare(projectObject.getExpr(), Compare.EQUALS));
+                query.properties.put("fullNameNonRussianSpecialist", projectNonRussianSpecialist.getExpr(context.getModifier(), query.mapKeys.get("nonRussianSpecialist")));
+                query.properties.put("fileNativeResumeNonRussianSpecialist", fileNativeResumeNonRussianSpecialist.getExpr(context.getModifier(), query.mapKeys.get("nonRussianSpecialist")));
+                count = 1;
+                size = query.executeClasses(context.getSession(), baseClass).entrySet().size();
+                for (Map.Entry<Map<String, DataObject>, Map<String, ObjectValue>> row : query.executeClasses(context.getSession(), baseClass).entrySet()) {
+                    row.getKey().get("nonRussianSpecialist");
+                    row.getValue().get("fullNameNonRussianSpecialist");
+                    row.getValue().get("fileNativeResumeNonRussianSpecialist");
+                    documentObject = context.addObject(document);
+                    projectDocument.execute(projectObject.getValue(), context, documentObject);
+                    typeDocument.execute(documentType.getID("forres"), context, documentObject);
+                    languageDocument.execute(language.getID("russian"), context, documentObject);
+                    if (size > 1)
+                        postfixDocument.execute(String.valueOf(count), context, documentObject);
+                    fileDocument.execute(row.getValue().get("fileNativeResumeNonRussianSpecialist").getValue(), context, documentObject);
+                    count++;
+                }
+
+*/
+                Query<String, String> query = new Query<String, String>(Collections.singleton("nonRussianSpecialist"));
+                query.and(projectNonRussianSpecialist.getExpr(context.getModifier(), query.mapKeys.get("nonRussianSpecialist")).compare(projectObject.getExpr(), Compare.EQUALS));
+                query.properties.put("fullNameNonRussianSpecialist", projectNonRussianSpecialist.getExpr(context.getModifier(), query.mapKeys.get("nonRussianSpecialist")));
+                query.properties.put("fileNativeResumeNonRussianSpecialist", fileNativeResumeNonRussianSpecialist.getExpr(context.getModifier(), query.mapKeys.get("nonRussianSpecialist")));
+                query.properties.put("fileForeignResumeNonRussianSpecialist", fileForeignResumeNonRussianSpecialist.getExpr(context.getModifier(), query.mapKeys.get("nonRussianSpecialist")));
+                int countForeign = 1;
+                int countNative = 1;
+                int size = query.executeClasses(context.getSession(), baseClass).entrySet().size();
+                for (Map.Entry<Map<String, DataObject>, Map<String, ObjectValue>> row : query.executeClasses(context.getSession(), baseClass).entrySet()) {
+                    row.getKey().get("nonRussianSpecialist");
+                    row.getValue().get("fullNameNonRussianSpecialist");
+                    row.getValue().get("fileForeignResumeNonRussianSpecialist");
+                    row.getValue().get("fileNativeResumeNonRussianSpecialist");
+
+                    file = row.getValue().get("fileForeignResumeNonRussianSpecialist").getValue();
+                    if (file != null) {
+                        documentObject = context.addObject(document);
+                        projectDocument.execute(projectObject.getValue(), context, documentObject);
+                        typeDocument.execute(documentType.getID("forres"), context, documentObject);
+                        languageDocument.execute(language.getID("english"), context, documentObject);
+                        if (size > 1)
+                            postfixDocument.execute(String.valueOf(countForeign), context, documentObject);
+                        fileDocument.execute(file, context, documentObject);
+                        countForeign++;
+                    }
+
+                    file = row.getValue().get("fileNativeResumeNonRussianSpecialist").getValue();
+                    if (file != null) {
+                        documentObject = context.addObject(document);
+                        projectDocument.execute(projectObject.getValue(), context, documentObject);
+                        typeDocument.execute(documentType.getID("forres"), context, documentObject);
+                        languageDocument.execute(language.getID("russian"), context, documentObject);
+                        if (size > 1)
+                            postfixDocument.execute(String.valueOf(countNative), context, documentObject);
+                        fileDocument.execute(file, context, documentObject);
+                        countNative++;
+                    }
                 }
 
                 file = fileNativeTechnicalDescriptionProject.read(context, projectObject);
