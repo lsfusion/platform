@@ -213,17 +213,19 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         projectStatus = addStaticClass("projectStatus", "Статус проекта",
                 new String[]{"unknown", "needTranslation", "needDocuments", "needExtraVote", "inProgress", "succeeded", "accepted", "rejected",
-                     "notEnoughDocs", "noExperts", "noCluster", "negativeFCResult", "positiveFCResult", "negativeLCResult", "positiveLCResult"},
-                new String[]{"Неизвестный статус", "Требуется перевод", "Не соответствуют документы", "Требуется заседание", "Идет заседание", "Достаточно голосов", "Оценен положительно", "Оценен отрицательно",
-                     "Неполный перечень документов", "Отсутствует перечень экспертов", "Не соответствует направлению", "Не прошла формальную экспертизу", "Прошла формальную экспертизу", "Не прошла юридическую проверку", "Прошла юридическую проверку"});
+                     "notEnoughDocs", "noExperts", "noCluster", "negativeFCResult", "positiveFCResult", "negativeLCResult", "positiveLCResult",
+                     "registered", "repeated", "sentForVote", "withdrawn"},
+                new String[]{"Неизвестный статус", "Направлена на перевод", "Не соответствуют документы", "Требуется заседание", "Идет заседание", "Достаточно голосов", "Оценен положительно", "Оценен отрицательно",
+                     "Неполный перечень документов", "Отсутствует перечень экспертов", "Не соответствует направлению", "Не прошла формальную экспертизу", "Прошла формальную экспертизу", "Не прошла юридическую проверку", "Прошла юридическую проверку",
+                     "Зарегистирована", "Подана повторно", "Направлена на экспертизу по существу","Отозвана заявителем"});
 
         documentType = addStaticClass("documentType", "Тип документа",
                 new String[]{"application", "resume", "techdesc", "forres", "ipres", "roadmap"},
                 new String[]{"Анкета", "Резюме", "Техническое описание", "Резюме иностранного специалиста", "Заявление IP", "Дорожная карта"});
 
         formalControlResult = addStaticClass("formalControlResult", "Решение формальной экспертизы",
-                new String[]{"notEnoughDocuments", "noListOfExperts", "notSuitableCluster", "negativeFormalResult", "positiveFormalResult"},
-                new String[]{"Неполный перечень документов", "Отсутствует перечень экспертов", "Не соответствует направлению", "Не прошла формальную экспертизу", "Прошла формальную экспертизу"});
+                new String[]{"notEnoughDocuments", "noListOfExperts", "notSuitableCluster", "repeatedFC", "positiveFormalResult"},
+                new String[]{"Неполный перечень документов", "Отсутствует перечень экспертов", "Не соответствует направлению", "Подана повторно", "Прошла формальную экспертизу"});
 
         legalCheckResult = addStaticClass("legalCheckResult", "Решение юридической проверки",
                 new String[]{"negativeLegalCheckResult", "positiveLegalCheckResult"},
@@ -746,7 +748,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP notEnoughDocumentsProject;
     LP noListOfExpertsProject;
     LP notSuitableClusterProject;
-    LP negativeFormalResultProject;
+    LP repeatedProject;
     LP positiveFormalResultProject;
 
     LP dateLegalCheck;
@@ -760,6 +762,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP resultExecuteLegalCheckProject;
     LP negativeLegalResultProject;
     LP positiveLegalResultProject;
+    LP sentForTranslationProject;
 
     @Override
     public void initProperties() {
@@ -1577,7 +1580,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         notEnoughDocumentsProject = addJProp("notEnoughDocumentsProject", true, "Неполный перечень документов", baseLM.equals2, resultExecuteFormalControlProject, 1, addCProp(formalControlResult, "notEnoughDocuments"));
         noListOfExpertsProject = addJProp("noListOfExpertsProject", true, "Отсутствует перечень экспертов", baseLM.equals2, resultExecuteFormalControlProject, 1, addCProp(formalControlResult, "noListOfExperts"));
         notSuitableClusterProject = addJProp("notSuitableClusterProject", true, "Не соответствует направлению", baseLM.equals2, resultExecuteFormalControlProject, 1, addCProp(formalControlResult, "notSuitableCluster"));
-        negativeFormalResultProject = addJProp("negativeFormalResultProject", true, "Не прошла формальную экспертизу", baseLM.equals2, resultExecuteFormalControlProject, 1, addCProp(formalControlResult, "negativeFormalResult"));
+        repeatedProject = addJProp("repeatedProject", true, "Подана повторно", baseLM.equals2, resultExecuteFormalControlProject, 1, addCProp(formalControlResult, "repeatedFC"));
         positiveFormalResultProject = addJProp("positiveFormalResultProject", true, "Прошла формальную экспертизу", baseLM.equals2, resultExecuteFormalControlProject, 1, addCProp(formalControlResult, "positiveFormalResult"));
 
         projectLegalCheck = addDProp("projectLegalCheck", "Проект (ИД)", project, legalCheck);
@@ -1599,20 +1602,23 @@ public class SkolkovoLogicsModule extends LogicsModule {
         negativeLegalResultProject = addJProp("negativeLegalResultProject", true, "Не прошла юридическую проверку", baseLM.equals2, resultExecuteLegalCheckProject, 1, addCProp(legalCheckResult, "negativeLegalCheckResult"));
         positiveLegalResultProject = addJProp("positiveLegalResultProject", true, "Прошла юридическую проверку", baseLM.equals2, resultExecuteLegalCheckProject, 1, addCProp(legalCheckResult, "positiveLegalCheckResult"));
 
+        sentForTranslationProject = addDProp("sentForTranslationProject", "Направлена на перевод", LogicalClass.instance, project);
+
         statusProject = addCaseUProp(idGroup, "statusProject", true, "Статус (ИД)",
                 acceptedProject, 1, addCProp(projectStatus, "accepted", project), 1,
                 rejectedProject, 1, addCProp(projectStatus, "rejected", project), 1,
                 voteOpenedSucceededProject, 1, addCProp(projectStatus, "succeeded", project), 1,
                 voteInProgressProject, 1, addCProp(projectStatus, "inProgress", project), 1,
                 needExtraVoteProject, 1, addCProp(projectStatus, "needExtraVote", project), 1,
+                sentForTranslationProject, 1, addCProp(projectStatus, "needTranslation", project), 1,
                 negativeLegalResultProject, 1, addCProp(projectStatus, "negativeLCResult", project), 1,
                 positiveLegalResultProject, 1, addCProp(projectStatus, "positiveLCResult", project), 1,
                 notEnoughDocumentsProject, 1, addCProp(projectStatus, "notEnoughDocs", project), 1,
                 noListOfExpertsProject, 1, addCProp(projectStatus, "noExperts", project), 1,
                 notSuitableClusterProject, 1, addCProp(projectStatus, "noCluster", project), 1,
-                negativeFormalResultProject, 1, addCProp(projectStatus, "negativeFCResult", project), 1,
+                repeatedProject, 1, addCProp(projectStatus, "repeated", project), 1,
                 positiveFormalResultProject, 1, addCProp(projectStatus, "positiveFCResult", project), 1,
-                addCProp(projectStatus, "needDocuments", project), 1);
+                addCProp(projectStatus, "registered", project), 1);
 
         statusDataProject = addDProp("statusDataProject", "Статус", projectStatus, project);
         projectStatusProject = addSUProp(idGroup, "projectStatusProject", true, "Статус", Union.OVERRIDE, statusProject, statusDataProject);
@@ -2100,12 +2106,15 @@ public class SkolkovoLogicsModule extends LogicsModule {
             getPropertyDraw(isOtherClusterProject).propertyCaption = addPropertyObject(hideIsOtherClusterProject, objProject);
             getPropertyDraw(nativeSubstantiationOtherClusterProject).propertyCaption = addPropertyObject(hideNativeSubstantiationOtherClusterProject, objProject);
             getPropertyDraw(foreignSubstantiationOtherClusterProject).propertyCaption = addPropertyObject(hideForeignSubstantiationOtherClusterProject, objProject);
-            addPropertyDraw(objProject, nameNativeProject, nameForeignProject, translateToRussianProject, translateToEnglishProject, loadFileResolutionIPProject);
+            addPropertyDraw(objProject, nameNativeProject, nameForeignProject, translateToRussianProject, translateToEnglishProject, loadFileResolutionIPProject, sentForTranslationProject);
+            addPropertyDraw(objProject, projectDocumentsGroup);
             setForceViewType(nameNativeProject, ClassViewType.PANEL);
             setForceViewType(nameForeignProject, ClassViewType.PANEL);
             setForceViewType(translateToRussianProject, ClassViewType.PANEL);
             setForceViewType(translateToEnglishProject, ClassViewType.PANEL);
             setForceViewType(loadFileResolutionIPProject, ClassViewType.PANEL);
+            setForceViewType(sentForTranslationProject, ClassViewType.PANEL);
+            setForceViewType(projectDocumentsGroup, ClassViewType.PANEL);
 
             addPropertyDraw(importProjectsAction).toDraw = objProject.groupTo;
             setForceViewType(importProjectsAction, ClassViewType.PANEL);
@@ -2261,10 +2270,14 @@ public class SkolkovoLogicsModule extends LogicsModule {
             commentLegalView.constraints.fillHorizontal = 1.0;
             commentLegalView.preferredSize = new Dimension(-1, 300);
 
+            ContainerView translationContainer = design.createContainer("Перевод");
+            translationContainer.add(design.get(getPropertyDraw(sentForTranslationProject, objProject)));
+            translationContainer.add(design.getGroupPropertyContainer(objProject.groupTo, projectDocumentsGroup));
+
             ContainerView docContainer = design.createContainer("Документы");
             docContainer.add(design.getGroupObjectContainer(objDocumentTemplate.groupTo));
             docContainer.add(design.getGroupObjectContainer(objDocument.groupTo));
-            docContainer.add(design.getGroupPropertyContainer(objProject.groupTo, projectDocumentsGroup));
+            docContainer.add(design.getGroupPropertyContainer(objProject.groupTo, resolutionIPGroup));
 
             ContainerView expertContainer = design.createContainer("Экспертиза по существу");
             expertContainer.add(design.getGroupObjectContainer(objVote.groupTo));
@@ -2273,6 +2286,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             specContainer.add(infoContainer);
             specContainer.add(formalControlContainer);
             specContainer.add(legalCheckContainer);
+            specContainer.add(translationContainer);
             specContainer.add(docContainer);
             specContainer.add(expertContainer);
 
