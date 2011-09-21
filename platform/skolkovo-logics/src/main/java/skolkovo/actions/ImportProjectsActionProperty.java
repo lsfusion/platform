@@ -186,7 +186,7 @@ public class ImportProjectsActionProperty extends ActionProperty {
         nativeSubstantiationProjectClusterField = new ImportField(LM.nativeSubstantiationProjectCluster);
         foreignSubstantiationProjectClusterField = new ImportField(LM.foreignSubstantiationProjectCluster);
 
-        nameNativeClaimerField = new ImportField(LM.nameNativeClaimer);
+        nameNativeClaimerField = new ImportField(LM.nameNativeJoinClaimer);
         nameForeignClaimerField = new ImportField(LM.nameForeignClaimer);
         firmNameNativeClaimerField = new ImportField(LM.firmNameNativeClaimer);
         firmNameForeignClaimerField = new ImportField(LM.firmNameForeignClaimer);
@@ -327,7 +327,7 @@ public class ImportProjectsActionProperty extends ActionProperty {
                 LM.baseLM.object(LM.claimer).getMapping(claimerKey)));
 
         propertiesFullClaimerNative = new ArrayList<ImportProperty<?>>();
-        propertiesFullClaimerNative.add(new ImportProperty(nameNativeClaimerField, LM.nameNativeClaimer.getMapping(claimerKey)));
+        propertiesFullClaimerNative.add(new ImportProperty(nameNativeClaimerField, LM.nameNativeJoinClaimer.getMapping(claimerKey)));
         propertiesFullClaimerNative.add(new ImportProperty(firmNameNativeClaimerField, LM.firmNameNativeClaimer.getMapping(claimerKey)));
 
         propertiesForeign.add(new ImportProperty(nameForeignProjectField, LM.nameForeignProject.getMapping(projectKey)));
@@ -856,7 +856,7 @@ public class ImportProjectsActionProperty extends ActionProperty {
                     row.add(buildFileByteArray(node.getChild("fileNativeTechnicalDescriptionProject")));
                     row.add(buildFileByteArray(node.getChild("fileRoadMapProject")));
                     if (fillClaimer) {
-                        row.add(node.getChildText("nameNativeClaimer"));
+                        row.add(node.getChildText("nameNativeJoinClaimer"));
                         row.add(node.getChildText("firmNameNativeClaimer"));
                     }
                 }

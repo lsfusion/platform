@@ -77,7 +77,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
                 Boolean isForeign = (Boolean) SkolkovoLM.isForeignExpert.read(session, vo.expertObj);
                 if (isForeign == null) {
                     voteInfo.projectName = (String) SkolkovoLM.nameNative.read(session, vo.projectObj);
-                    voteInfo.projectClaimer = (String) SkolkovoLM.nameNativeClaimerProject.read(session, vo.projectObj);
+                    voteInfo.projectClaimer = (String) SkolkovoLM.nameNativeIfElseClaimerProject.read(session, vo.projectObj);
                     voteInfo.projectCluster = (String) SkolkovoLM.nameNativeClusterVote.read(session, vo.voteObj);
                 } else {
                     voteInfo.projectName = (String) SkolkovoLM.nameForeign.read(session, vo.projectObj);
@@ -195,7 +195,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
 
                 q.properties.put("projectId", projExpr);
                 q.properties.put("projectName", (isForeign ? SkolkovoLM.nameForeign : SkolkovoLM.nameNative).getExpr(session.modifier, projExpr));
-                q.properties.put("projectClaimer", (isForeign ? SkolkovoLM.nameForeignClaimerProject : SkolkovoLM.nameNativeClaimerProject).getExpr(session.modifier, projExpr));
+                q.properties.put("projectClaimer", (isForeign ? SkolkovoLM.nameForeignClaimerProject : SkolkovoLM.nameNativeIfElseClaimerProject).getExpr(session.modifier, projExpr));
                 q.properties.put("projectCluster", (isForeign ? SkolkovoLM.nameForeignClusterExpert : SkolkovoLM.nameNativeClusterExpert).getExpr(session.modifier, expExpr));
 
                 q.properties.put("inCluster", SkolkovoLM.inClusterExpertVote.getExpr(session.modifier, expExpr, voteExpr));
