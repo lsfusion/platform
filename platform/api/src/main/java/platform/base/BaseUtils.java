@@ -790,6 +790,11 @@ public class BaseUtils {
         return nullBoolean((Integer.parseInt(BaseUtils.nevl(str, "0")) == 1));
     }
 
+     public static Object nullString(String str) {
+         if("".equals(str)) return null;
+         else return str;
+    }
+
     public static Object nullBoolean(Boolean b) {
         if (b) return true;
         else return null;

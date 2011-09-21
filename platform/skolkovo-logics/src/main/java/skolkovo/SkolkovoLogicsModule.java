@@ -698,7 +698,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP hideFileActValuationPatent;
     LP hideLoadFileActValuationPatent;
     LP hideOpenFileActValuationPatent;
-    LP hideNameOwnerTypePatent;
+    LP hideNameNativeOwnerTypePatent;
+    LP hideNameForeignOwnerTypePatent;
 
     public LP projectAcademic;
     public LP sidProjectAcademic;
@@ -1151,7 +1152,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
         openFileIntentionOwnerPatent = addOFAProp(baseGroup, "Открыть файл документа о передаче права", fileIntentionOwnerPatent);
 
         hideOwnerPatent = addHideCaptionProp(privateGroup, "Укажите", ownerPatent, isOwned);
-        hideNameOwnerTypePatent = addHideCaptionProp(privateGroup, "Укажите", nameNativeOwnerTypePatent, isOwned);
+        hideNameNativeOwnerTypePatent = addHideCaptionProp(privateGroup, "Укажите", nameNativeOwnerTypePatent, isOwned);
+        hideNameForeignOwnerTypePatent = addHideCaptionProp(privateGroup, "Укажите", nameForeignOwnerTypePatent, isOwned);
         hideFileIntentionOwnerPatent = addHideCaptionProp(privateGroup, "Укажите", fileIntentionOwnerPatent, isOwned);
         hideLoadFileIntentionOwnerPatent = addHideCaptionProp(privateGroup, "Укажите", loadFileIntentionOwnerPatent, isOwned);
         hideOpenFileIntentionOwnerPatent = addHideCaptionProp(privateGroup, "Укажите", openFileIntentionOwnerPatent, isOwned);
@@ -1984,14 +1986,14 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
             objPatent = addSingleGroupObject(2, "patent", patent, "Патент", baseGroup);
             getPropertyDraw(ownerPatent).propertyCaption = addPropertyObject(hideOwnerPatent, objPatent);
-            getPropertyDraw(nameNativeOwnerTypePatent).propertyCaption = addPropertyObject(hideNameOwnerTypePatent, objPatent);
+            getPropertyDraw(nameNativeOwnerTypePatent).propertyCaption = addPropertyObject(hideNameNativeOwnerTypePatent, objPatent);
+            getPropertyDraw(nameForeignOwnerTypePatent).propertyCaption = addPropertyObject(hideNameForeignOwnerTypePatent, objPatent);
             getPropertyDraw(loadFileIntentionOwnerPatent).propertyCaption = addPropertyObject(hideLoadFileIntentionOwnerPatent, objPatent);
             getPropertyDraw(openFileIntentionOwnerPatent).propertyCaption = addPropertyObject(hideOpenFileIntentionOwnerPatent, objPatent);
 
             getPropertyDraw(valuatorPatent).propertyCaption = addPropertyObject(hideValuatorPatent, objPatent);
             getPropertyDraw(loadFileActValuationPatent).propertyCaption = addPropertyObject(hideLoadFileActValuationPatent, objPatent);
             getPropertyDraw(openFileActValuationPatent).propertyCaption = addPropertyObject(hideOpenFileActValuationPatent, objPatent);
-
             addObjectActions(this, objPatent);
 
             objAcademic = addSingleGroupObject(3, "academic", academic, "Учёный", baseGroup);

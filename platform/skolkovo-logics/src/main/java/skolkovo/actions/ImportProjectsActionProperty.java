@@ -890,10 +890,10 @@ public class ImportProjectsActionProperty extends ActionProperty {
                         rowPatent.add(null);
                     }
                     rowPatent.add(BaseUtils.nullZero(node.getChildText("isOwnedPatent")));
-                    rowPatent.add(nodePatent.getChildText("ownerPatent"));
-                    rowPatent.add(nodePatent.getChildText("ownerTypePatent"));
+                    rowPatent.add(BaseUtils.nullString(nodePatent.getChildText("ownerPatent")));
+                    rowPatent.add(BaseUtils.nullString(nodePatent.getChildText("ownerTypePatent")));
                     rowPatent.add(BaseUtils.nullZero(node.getChildText("isValuatedPatent")));
-                    rowPatent.add(nodePatent.getChildText("valuatorPatent"));
+                    rowPatent.add(BaseUtils.nullString(nodePatent.getChildText("valuatorPatent")));
                     rowPatent.add(buildFileByteArray(node.getChild("fileIntentionOwnerPatent")));
                     rowPatent.add(buildFileByteArray(node.getChild("fileActValuationPatent")));
                     if (fillNative) {
