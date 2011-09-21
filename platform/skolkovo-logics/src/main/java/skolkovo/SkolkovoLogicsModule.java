@@ -215,7 +215,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
                 new String[]{"unknown", "needTranslation", "needDocuments", "needExtraVote", "inProgress", "succeeded", "accepted", "rejected",
                      "notEnoughDocs", "noExperts", "noCluster", "negativeFCResult", "positiveFCResult", "negativeLCResult", "positiveLCResult",
                      "registered", "repeated", "sentForVote", "withdrawn"},
-                new String[]{"Неизвестный статус", "Направлена на перевод", "Не соответствуют документы", "Требуется заседание", "Идет заседание", "Достаточно голосов", "Оценен положительно", "Оценен отрицательно",
+                new String[]{"Неизвестный статус", "Направлена на перевод", "Не соответствуют документы", "Требуется заседание (повторное)", "Идет заседание", "Достаточно голосов", "Оценен положительно", "Оценен отрицательно",
                      "Неполный перечень документов", "Отсутствует перечень экспертов", "Не соответствует направлению", "Не прошла формальную экспертизу", "Прошла формальную экспертизу", "Не прошла юридическую проверку", "Прошла юридическую проверку",
                      "Зарегистирована", "Подана повторно", "Направлена на экспертизу по существу","Отозвана заявителем"});
 
@@ -277,7 +277,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         equipmentGroup = addAbstractGroup("equipmentGroup", "Оборудование", baseGroup);
 
         projectDocumentsGroup = addAbstractGroup("projectDocumentsGroup", "Документы", baseGroup);
-        applicationFormGroup = addAbstractGroup("applicationFormGroup", "Анкеты", projectDocumentsGroup);
+        applicationFormGroup = addAbstractGroup("applicationFormGroup", "Анкета", projectDocumentsGroup);
         executiveSummaryGroup = addAbstractGroup("executiveSummaryGroup", "Резюме проекта", projectDocumentsGroup);
         techDescrGroup = addAbstractGroup("techDescrGroup", "Техническое описание", projectDocumentsGroup);
         roadMapGroup = addAbstractGroup("roadMapGroup", "Дорожная карта", projectDocumentsGroup);
@@ -330,7 +330,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
     public LP OGRNClaimer;
     public LP INNClaimer;
     LP projectVote, claimerVote, nameNativeProjectVote, nameForeignProjectVote;
-    LP quantityVoteOfProject;
+    LP quantityVoteProject;
     LP dataDocumentNameExpert, documentNameExpert;
     LP clusterExpert, nameNativeClusterExpert, nameForeignClusterExpert, nameNativeShortClusterExpert;
     LP primClusterExpert, extraClusterExpert, inClusterExpert;
@@ -348,7 +348,6 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP nameNativeCorrectClaimer;
     LP nameNativeClaimer;
     LP nameNativeCorrectClaimerProject;
-    LP nameNativeIfElseClaimerProject;
     LP nameNativeClaimerProject;
     LP nameForeignClaimerProject;
     LP nameForeignJoinClaimerProject;
@@ -462,6 +461,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP valuedProject;
     LP voteRejectedProject;
     LP needExtraVoteProject;
+    LP needExtraVoteRepeatProject;
 
     LP emailLetterExpertVoteEA, emailLetterExpertVote;
     LP allowedEmailLetterExpertVote;
@@ -835,9 +835,11 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         projectVote = addDProp(idGroup, "projectVote", "Проект (ИД)", project, vote);
         setNotNull(projectVote);
-        quantityVoteOfProject = addSGProp(baseGroup, "quantityVoteOfProject", "Кол-во заседаний",
-                addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), is(vote), 1), projectVote, 1);
 
+        quantityVoteProject = addSGProp(baseGroup, "quantityVoteProject", true, "Кол-во заседаний", addCProp(IntegerClass.instance, 1, vote), projectVote, 1);
+        
+        nameNativeProjectVote = addJProp(baseGroup, "nameNativeProjectVote", "Проект", nameNative, projectVote, 1);
+        nameForeignProjectVote = addJProp(baseGroup, "nameForeignProjectVote", "Проект (иностр.)", nameForeign, projectVote, 1);
 
         nameNativeJoinProject = addJProp(baseLM.and1, nameNative, 1, is(project), 1);
         nameNativeDataProject = addDProp("nameNativeDataProject", "Название проекта", InsensitiveStringClass.get(2000), project);
@@ -1501,6 +1503,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
                 clusterAcceptedProject, 1,
                 currentClusterProject, 1); // есть открытое заседания и есть состояшееся заседания !!! нужно создать новое заседание
 
+        needExtraVoteRepeatProject = addJProp("needExtraVoteRepeatProject", true, "Треб. заседание (повторно)", baseLM.and1, needExtraVoteProject, 1, quantityVoteProject, 1);
+
 //        clusterVote.setDerivedForcedChange(false, currentClusterProject, 1, is(vote), 1);
 //        clusterVote = addDCProp(idGroup, "clusterVote", "Кластер (ИД)", true, currentClusterProject, true, projectVote, 1);
 
@@ -1630,7 +1634,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
                 rejectedProject, 1, addCProp(projectStatus, "rejected", project), 1,
                 voteOpenedSucceededProject, 1, addCProp(projectStatus, "succeeded", project), 1,
                 voteInProgressProject, 1, addCProp(projectStatus, "inProgress", project), 1,
-                needExtraVoteProject, 1, addCProp(projectStatus, "needExtraVote", project), 1,
+                needExtraVoteRepeatProject, 1, addCProp(projectStatus, "needExtraVote", project), 1,
                 sentForTranslationProject, 1, addCProp(projectStatus, "needTranslation", project), 1,
                 negativeLegalResultProject, 1, addCProp(projectStatus, "negativeLCResult", project), 1,
                 positiveLegalResultProject, 1, addCProp(projectStatus, "positiveLCResult", project), 1,
@@ -2134,6 +2138,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
             setForceViewType(translateToRussianProject, ClassViewType.PANEL);
             setForceViewType(translateToEnglishProject, ClassViewType.PANEL);
             setForceViewType(loadFileResolutionIPProject, ClassViewType.PANEL);
+
+            addPropertyDraw(objProject, sentForTranslationProject, projectDocumentsGroup);
             setForceViewType(sentForTranslationProject, ClassViewType.PANEL);
             setForceViewType(projectDocumentsGroup, ClassViewType.PANEL);
 
@@ -2289,16 +2295,19 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
             ContainerView formalControlContainer = design.createContainer("Формальная экспертиза");
             // formalControlContainer.add(design.getGroupObjectContainer(objDocumentTemplate.groupTo));
+            formalControlContainer.add(design.get(getPropertyDraw(exportProjectDocumentsAction)));
             formalControlContainer.add(design.getGroupObjectContainer(objFormalControl.groupTo));
             PropertyDrawView commentFormalView = design.get(getPropertyDraw(commentFormalControl, objFormalControl));
             commentFormalView.constraints.fillHorizontal = 1.0;
             commentFormalView.preferredSize = new Dimension(-1, 300);
+            commentFormalView.panelLabelAbove = true;
 
             ContainerView legalCheckContainer = design.createContainer("Юридическая проверка");
             legalCheckContainer.add(design.getGroupObjectContainer(objLegalCheck.groupTo));
             PropertyDrawView commentLegalView = design.get(getPropertyDraw(commentLegalCheck, objLegalCheck));
             commentLegalView.constraints.fillHorizontal = 1.0;
             commentLegalView.preferredSize = new Dimension(-1, 300);
+            commentLegalView.panelLabelAbove = true;
 
             ContainerView translationContainer = design.createContainer("Перевод");
             translationContainer.add(design.get(getPropertyDraw(sentForTranslationProject, objProject)));

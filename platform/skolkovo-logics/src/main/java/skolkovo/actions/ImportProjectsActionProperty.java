@@ -856,7 +856,7 @@ public class ImportProjectsActionProperty extends ActionProperty {
                     row.add(buildFileByteArray(node.getChild("fileNativeTechnicalDescriptionProject")));
                     row.add(buildFileByteArray(node.getChild("fileRoadMapProject")));
                     if (fillClaimer) {
-                        row.add(node.getChildText("nameNativeJoinClaimer"));
+                        row.add(node.getChildText("nameNativeClaimer"));
                         row.add(node.getChildText("firmNameNativeClaimer"));
                     }
                 }
