@@ -216,7 +216,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
                      "notEnoughDocs", "noExperts", "noCluster", "negativeFCResult", "positiveFCResult", "negativeLCResult", "positiveLCResult",
                      "registered", "repeated", "sentForVote", "withdrawn"},
                 new String[]{"Неизвестный статус", "Направлена на перевод", "Не соответствуют документы", "Требуется заседание (повторное)", "Идет заседание", "Достаточно голосов", "Оценен положительно", "Оценен отрицательно",
-                     "Неполный перечень документов", "Отсутствует перечень экспертов", "Не соответствует направлению", "Не прошла формальную экспертизу", "Прошла формальную экспертизу", "Не прошла юридическую проверку", "Прошла юридическую проверку",
+                     "Неполный перечень документов", "Отсутствует перечень экспертов", "Не соответствует направлению", "Не прошла формальную экспертизу", "Направлена на юридическую проверку", "Не прошла юридическую проверку", "Прошла юридическую проверку",
                      "Зарегистирована", "Подана повторно", "Направлена на экспертизу по существу","Отозвана заявителем"});
 
         documentType = addStaticClass("documentType", "Тип документа",
@@ -841,9 +841,6 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         quantityVoteProject = addSGProp(baseGroup, "quantityVoteProject", true, "Кол-во заседаний", addCProp(IntegerClass.instance, 1, vote), projectVote, 1);
         
-        nameNativeProjectVote = addJProp(baseGroup, "nameNativeProjectVote", "Проект", nameNative, projectVote, 1);
-        nameForeignProjectVote = addJProp(baseGroup, "nameForeignProjectVote", "Проект (иностр.)", nameForeign, projectVote, 1);
-
         nameNativeJoinProject = addJProp(baseLM.and1, nameNative, 1, is(project), 1);
         nameNativeDataProject = addDProp("nameNativeDataProject", "Название проекта", InsensitiveStringClass.get(2000), project);
         nameNativeProject = addSUProp(projectInformationGroup, "nameNativeProject", "Название проекта", Union.OVERRIDE, nameNativeJoinProject, nameNativeDataProject);
@@ -851,7 +848,9 @@ public class SkolkovoLogicsModule extends LogicsModule {
         nameNativeProject.setPreferredWidth(120);
 
         nameForeignJoinProject = addJProp(baseLM.and1, nameForeign, 1, is(project), 1);
+
         nameForeignDataProject = addDProp("nameForeignDataProject", "Name of the project", InsensitiveStringClass.get(2000), project);
+
         nameForeignProject = addSUProp(projectInformationGroup, "nameForeignProject", "Name of the project", Union.OVERRIDE, nameForeignJoinProject, nameForeignDataProject);
         nameForeignProject.setMinimumWidth(10);
         nameForeignProject.setPreferredWidth(120);
@@ -882,27 +881,41 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         sidProject = addDProp(projectInformationGroup, "sidProject", "Внешний идентификатор проекта", StringClass.get(10), project);
         sidToProject = addAGProp("sidToProject", "SID проекта", sidProject);
+
         nameNativeManagerProject = addDProp(projectInformationGroup, "nameNativeManagerProject", "ФИО руководителя проекта", InsensitiveStringClass.get(2000), project);
         nameNativeManagerProject.setMinimumWidth(10);
         nameNativeManagerProject.setPreferredWidth(50);
+
+        nameNativeCorrectManagerProject = addDProp(baseGroup, "nameNativeCorrectManagerProject", "ФИО руководителя проекта (испр.)", InsensitiveStringClass.get(2000), project);
+
+        nameNativeUnionManagerProject = addSUProp(baseGroup, "nameNativeUnionManagerProject", "ФИО руководителя проекта", Union.OVERRIDE, nameNativeManagerProject, nameNativeCorrectManagerProject);
+        nameNativeUnionManagerProject.setMinimumWidth(10);
+        nameNativeUnionManagerProject.setMinimumWidth(50);
+
         nameNativeGenitiveManagerProject = addDProp(projectOptionsGroup, "nameNativeGenitiveManagerProject", "ФИО руководителя проекта (Кого)", InsensitiveStringClass.get(2000), project);
         nameNativeGenitiveManagerProject.setMinimumWidth(10);
         nameNativeGenitiveManagerProject.setPreferredWidth(50);
-        nameGenitiveManagerProject = addSUProp("nameGenitiveManagerProject", "Заявитель (Кого)", Union.OVERRIDE, nameNativeManagerProject, nameNativeGenitiveManagerProject);
+
+        nameGenitiveManagerProject = addSUProp("nameGenitiveManagerProject", "Заявитель (Кого)", Union.OVERRIDE, nameNativeUnionManagerProject, nameNativeGenitiveManagerProject);
         nameGenitiveManagerProject.setMinimumWidth(10);
         nameGenitiveManagerProject.setPreferredWidth(50);
+
         nameNativeDativusManagerProject = addDProp(projectOptionsGroup, "nameNativeDativusManagerProject", "ФИО руководителя проекта (Кому)", InsensitiveStringClass.get(2000), project);
         nameNativeDativusManagerProject.setMinimumWidth(10);
         nameNativeDativusManagerProject.setPreferredWidth(50);
-        nameDativusManagerProject = addSUProp("nameDativusManagerProject", "Заявитель (Кому)", Union.OVERRIDE, nameNativeManagerProject, nameNativeDativusManagerProject);
+
+        nameDativusManagerProject = addSUProp("nameDativusManagerProject", "Заявитель (Кому)", Union.OVERRIDE, nameNativeUnionManagerProject, nameNativeDativusManagerProject);
         nameDativusManagerProject.setMinimumWidth(10);
         nameDativusManagerProject.setPreferredWidth(50);
+
         nameNativeAblateManagerProject = addDProp(projectOptionsGroup, "nameNativeAblateManagerProject", "ФИО руководителя проекта (Кем)", InsensitiveStringClass.get(2000), project);
         nameNativeAblateManagerProject.setMinimumWidth(10);
         nameNativeAblateManagerProject.setPreferredWidth(50);
-        nameAblateManagerProject = addSUProp("nameAblateManagerProject", "Заявитель (Кем)", Union.OVERRIDE, nameNativeManagerProject, nameNativeAblateManagerProject);
+
+        nameAblateManagerProject = addSUProp("nameAblateManagerProject", "Заявитель (Кем)", Union.OVERRIDE, nameNativeUnionManagerProject, nameNativeAblateManagerProject);
         nameAblateManagerProject.setMinimumWidth(10);
         nameAblateManagerProject.setPreferredWidth(50);
+
         nameForeignManagerProject = addDProp(projectInformationGroup, "nameForeignManagerProject", "Full name project manager", InsensitiveStringClass.get(2000), project);
         nameForeignManagerProject.setMinimumWidth(10);
         nameForeignManagerProject.setPreferredWidth(50);
@@ -914,15 +927,19 @@ public class SkolkovoLogicsModule extends LogicsModule {
         isStatusProject = addJProp("isStatusProject", "На статус участника", baseLM.equals2, projectActionProject, 1, addCProp(projectAction, "status", project), 1);
         isPreliminaryProject = addJProp("isPreliminaryProject", "На предварительную экспертизу", baseLM.equals2, projectActionProject, 1, addCProp(projectAction, "preliminary", project), 1);
 
-        nameNativeCorrectClaimer = addDProp(baseGroup, "nameNativeCorrectClaimer", "Полное наименование организации", InsensitiveStringClass.get(2000), claimer);
-        nameNativeClaimer = addSUProp(baseGroup, "nameNativeClaimer", "Заявитель", Union.OVERRIDE, nameNativeJoinClaimer, nameNativeCorrectClaimer);
-        nameNativeCorrectClaimerProject = addJProp(baseGroup, true, "nameNativeCorrectClaimerProject", "Полное наименование организации", nameNativeCorrectClaimer, claimerProject, 1);
-        nameNativeCorrectManagerProject = addDProp(baseGroup, "nameNativeCorrectManagerProject", "Заявитель", InsensitiveStringClass.get(2000), project);
-        nameNativeUnionManagerProject = addSUProp(baseGroup, "nameNativeUnionManagerProject", "Заявитель", Union.OVERRIDE, nameNativeManagerProject, nameNativeCorrectManagerProject);
+        nameNativeCorrectClaimer = addDProp("nameNativeCorrectClaimer", "Полное наименование организации", InsensitiveStringClass.get(2000), claimer);
+
+        nameNativeClaimer = addSUProp("nameNativeClaimer", "Заявитель", Union.OVERRIDE, nameNativeJoinClaimer, nameNativeCorrectClaimer);
+        nameNativeClaimer.setMinimumWidth(10);
+        nameNativeClaimer.setPreferredWidth(50);
+
         nameNativeJoinClaimerProject = addJProp(baseGroup, true, "nameNativeJoinClaimerProject", "Заявитель", nameNativeClaimer, claimerProject, 1);
+
         nameNativeClaimerProject = addIfElseUProp(projectInformationGroup, "nameNativeClaimerProject", "Заявитель", nameNativeUnionManagerProject, nameNativeJoinClaimerProject, isPreliminaryProject, 1);
         nameNativeClaimerProject.setMinimumWidth(10);
         nameNativeClaimerProject.setPreferredWidth(120);
+
+        nameNativeCorrectClaimerProject = addJProp(baseGroup, true, "nameNativeCorrectClaimerProject", "Полное наименование организации", nameNativeCorrectClaimer, claimerProject, 1);
         nameNativeCorrectHighlightClaimerProject = addIfElseUProp(baseGroup, "nameNativeCorrectHighlightClaimerProject", "Заявитель", nameNativeCorrectManagerProject, nameNativeCorrectClaimerProject, isPreliminaryProject, 1);
 
         nameForeignJoinClaimerProject = addJProp(projectInformationGroup, true, "nameForeignJoinClaimerProject", "Full name of the Organisation", nameForeign, claimerProject, 1);
@@ -1002,12 +1019,11 @@ public class SkolkovoLogicsModule extends LogicsModule {
         openFileForeignSummaryProject = addOFAProp(executiveSummaryGroup, "Открыть файл резюме проекта (иностр.)", fileForeignSummaryProject);
 
         fileNativeApplicationFormProject = addDProp("fileNativeApplicationFormProject", "Анкета на русском", CustomFileClass.instance, project);
-        loadFileNativeApplicationFormProject = addLFAProp(applicationFormGroup, "Загрузить анкету на русском", fileNativeApplicationFormProject);
-        openFileNativeApplicationFormProject = addOFAProp(applicationFormGroup, "Открыть анкету на русском", fileNativeApplicationFormProject);
+        loadFileNativeApplicationFormProject = addLFAProp(applicationFormGroup, "Загрузить файл анкеты", fileNativeApplicationFormProject);
+        openFileNativeApplicationFormProject = addOFAProp(applicationFormGroup, "Открыть файл анкеты", fileNativeApplicationFormProject);
         fileForeignApplicationFormProject = addDProp("fileForeignApplicationFormProject", "Анкета на английском", CustomFileClass.instance, project);
-        loadFileForeignApplicationFormProject = addLFAProp(applicationFormGroup, "Загрузить анкету на английском", fileForeignApplicationFormProject);
-        openFileForeignApplicationFormProject = addOFAProp(applicationFormGroup, "Открыть анкету на английском", fileForeignApplicationFormProject);
-
+        loadFileForeignApplicationFormProject = addLFAProp(applicationFormGroup, "Загрузить файл анкеты (иностр.)", fileForeignApplicationFormProject);
+        openFileForeignApplicationFormProject = addOFAProp(applicationFormGroup, "Открыть файл анкеты (иностр.)", fileForeignApplicationFormProject);
 
         // источники финансирования
         isReturnInvestmentsProject = addDProp(sourcesFundingGroup, "isReturnInvestmentsProject", "Средства третьих лиц, привлекаемые на возвратной основе (заемные средства и т.п.)", LogicalClass.instance, project);
@@ -1226,10 +1242,10 @@ public class SkolkovoLogicsModule extends LogicsModule {
         loadFileStatementNonRussianSpecialist = addLFAProp(baseGroup, "Загрузить файл заявления", fileStatementNonRussianSpecialist);
         openFileStatementNonRussianSpecialist = addOFAProp(baseGroup, "Открыть файл заявления", fileStatementNonRussianSpecialist);
 
-        nameNativeJoinClaimerVote = addJProp(baseGroup, "nameNativeJoinClaimerVote", nameNative, claimerVote, 1);
+        nameNativeJoinClaimerVote = addJProp(baseGroup, "nameNativeJoinClaimerVote", nameNativeClaimer, claimerVote, 1);
         nameForeignJoinClaimerVote = addJProp(baseGroup, "nameForeignJoinClaimerVote", nameForeign, claimerVote, 1);
 
-        nameNativeClaimerVote = addIfElseUProp(baseGroup, "nameNativeClaimerVote", "Заявитель", addJProp(nameNativeManagerProject, projectVote, 1), nameNativeJoinClaimerVote, isPreliminaryVote, 1);
+        nameNativeClaimerVote = addIfElseUProp(baseGroup, "nameNativeClaimerVote", "Заявитель", addJProp(nameNativeUnionManagerProject, projectVote, 1), nameNativeJoinClaimerVote, isPreliminaryVote, 1);
         nameNativeClaimerVote.setMinimumWidth(10);
         nameNativeClaimerVote.setPreferredWidth(50);
         nameForeignClaimerVote = addIfElseUProp(baseGroup, "nameForeignClaimerVote", "Заявитель (иностр.)", addJProp(nameForeignManagerProject, projectVote, 1), nameForeignJoinClaimerVote, isPreliminaryVote, 1);
@@ -1248,7 +1264,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         documentTemplateDocumentTemplateDetail = addDProp(idGroup, "documentTemplateDocumentTemplateDetail", "Шаблон (ИД)", documentTemplate, documentTemplateDetail);
 
         projectDocument = addDProp(idGroup, "projectDocument", "Проект (ИД)", project, document);
-        nameNativeProjectDocument = addJProp(baseGroup, "nameNativeProjectDocument", "Проект", nameNative, projectDocument, 1);
+        nameNativeProjectDocument = addJProp(baseGroup, "nameNativeProjectDocument", "Проект", nameNativeProject, projectDocument, 1);
 
         quantityMinLanguageDocumentType = addDProp(baseGroup, "quantityMinLanguageDocumentType", "Мин. док.", IntegerClass.instance, language, documentType);
         quantityMaxLanguageDocumentType = addDProp(baseGroup, "quantityMaxLanguageDocumentType", "Макс. док.", IntegerClass.instance, language, documentType);
@@ -2141,14 +2157,17 @@ public class SkolkovoLogicsModule extends LogicsModule {
             getPropertyDraw(isOtherClusterProject).propertyCaption = addPropertyObject(hideIsOtherClusterProject, objProject);
             getPropertyDraw(nativeSubstantiationOtherClusterProject).propertyCaption = addPropertyObject(hideNativeSubstantiationOtherClusterProject, objProject);
             getPropertyDraw(foreignSubstantiationOtherClusterProject).propertyCaption = addPropertyObject(hideForeignSubstantiationOtherClusterProject, objProject);
-            addPropertyDraw(objProject, translateToRussianProject, translateToEnglishProject, loadFileResolutionIPProject);
-            PropertyDrawEntity nameNativeEntity = addPropertyDraw(nameNativeProject, objProject);
-            PropertyDrawEntity nameForeignEntity = addPropertyDraw(nameForeignProject, objProject);
-            setForceViewType(nameNativeEntity, ClassViewType.PANEL);
-            setForceViewType(nameForeignEntity, ClassViewType.PANEL);
+
+            addPropertyDraw(objProject, translateToRussianProject, translateToEnglishProject);
             setForceViewType(translateToRussianProject, ClassViewType.PANEL);
             setForceViewType(translateToEnglishProject, ClassViewType.PANEL);
-            setForceViewType(loadFileResolutionIPProject, ClassViewType.PANEL);
+
+            PropertyDrawEntity nameNativeEntity = addPropertyDraw(nameNativeProject, objProject);
+            PropertyDrawEntity nameForeignEntity = addPropertyDraw(nameForeignProject, objProject);
+            PropertyDrawEntity nameNativeClaimerEntity = addPropertyDraw(nameNativeClaimerProject, objProject);
+            setForceViewType(nameNativeEntity, ClassViewType.PANEL);
+            setForceViewType(nameForeignEntity, ClassViewType.PANEL);
+            setForceViewType(nameNativeClaimerEntity, ClassViewType.PANEL);
 
             addPropertyDraw(objProject, sentForTranslationProject, projectDocumentsGroup);
             setForceViewType(sentForTranslationProject, ClassViewType.PANEL);
@@ -2300,7 +2319,6 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
             ContainerView infoContainer = design.createContainer("Информация");
             infoContainer.add(design.getGroupPropertyContainer(objProject.groupTo, projectInformationGroup));
-            infoContainer.add(design.getGroupPropertyContainer(objProject.groupTo, translateActionGroup));
             infoContainer.add(design.getGroupObjectContainer(objCluster.groupTo));
             infoContainer.add(design.getGroupPropertyContainer(objProject.groupTo, projectOtherClusterGroup));
 
@@ -2320,9 +2338,15 @@ public class SkolkovoLogicsModule extends LogicsModule {
             commentLegalView.preferredSize = new Dimension(-1, 300);
             commentLegalView.panelLabelAbove = true;
 
+            ContainerView projectDocumentsContainer = design.getGroupPropertyContainer(objProject.groupTo, projectDocumentsGroup);
+            projectDocumentsContainer.constraints.childConstraints = DoNotIntersectSimplexConstraint.TOTHE_RIGHT;
+
             ContainerView translationContainer = design.createContainer("Перевод");
+            translationContainer.constraints.fillHorizontal = 1.0;
+            translationContainer.constraints.fillVertical = 1.0;
             translationContainer.add(design.get(getPropertyDraw(sentForTranslationProject, objProject)));
-            translationContainer.add(design.getGroupPropertyContainer(objProject.groupTo, projectDocumentsGroup));
+            translationContainer.add(projectDocumentsContainer);
+            translationContainer.add(design.getGroupPropertyContainer(objProject.groupTo, translateActionGroup));
 
             ContainerView docContainer = design.createContainer("Документы");
             docContainer.add(design.getGroupObjectContainer(objDocumentTemplate.groupTo));
