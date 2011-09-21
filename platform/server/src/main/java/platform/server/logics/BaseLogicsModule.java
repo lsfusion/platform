@@ -113,6 +113,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public LP percent2;
     public LP share2;
     public LP weekInDate;
+    public LP monthInDate;
     public LP yearInDate;
 
     public LP vtrue, actionTrue, vzero;
@@ -432,6 +433,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         negative = addJProp(less2, 1, vzero);
 
         weekInDate = addSFProp("(extract(week from (prm1)))", IntegerClass.instance, 1);
+        monthInDate = addSFProp("(extract(month from (prm1)))", IntegerClass.instance, 1);
         yearInDate = addSFProp("(extract(year from (prm1)))", IntegerClass.instance, 1);
 
         delete = addAProp(new DeleteObjectActionProperty(baseClass));

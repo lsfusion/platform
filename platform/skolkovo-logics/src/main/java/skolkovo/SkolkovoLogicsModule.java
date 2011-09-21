@@ -447,7 +447,9 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP closedRejectedVote;
     LP closedAcceptedStatusVote, closedAcceptedPreliminaryVote;
     LP doneExpertVoteDateFromDateTo;
+    LP doneExpertVoteMonthYear;
     LP quantityDoneExpertDateFromDateTo;
+    LP quantityDoneExpertMonthYear;
     LP voteSucceededProjectCluster;
     LP voteOpenedSucceededProject;
     LP noCurrentVoteProject;
@@ -489,7 +491,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
     LP projectStatusProject, nameProjectStatusProject;
 
-    LP statusProject, nameStatusProject, statusDataProject;
+    LP statusProject, nameStatusProject, oficialNameProjectStatus, statusDataProject;
     LP statusProjectVote, nameStatusProjectVote;
 
     LP projectSucceededClaimer;
@@ -1437,6 +1439,12 @@ public class SkolkovoLogicsModule extends LogicsModule {
         quantityInExpertDateFromDateTo = addSGProp("quantityInExpertDateFromDateTo", "Кол-во участ.",
                 addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), inExpertVoteDateFromDateTo, 1, 2, 3, 4), 1, 3, 4); // в скольки заседаниях поучавствовал
 
+        LP expertVoteMonthYear = addJProp(baseLM.and1, addJProp(baseLM.equals2, 3, addJProp(baseLM.monthInDate, dateExpertVote, 1, 2), 1, 2), 1, 2, 3,
+                                                       addJProp(baseLM.equals2, 3, addJProp(baseLM.yearInDate, dateExpertVote, 1, 2), 1, 2), 1, 2, 4);
+        doneExpertVoteMonthYear = addJProp(baseLM.and1, doneNewExpertVote, 1, 2, expertVoteMonthYear, 1, 2, 3, 4);
+        quantityDoneExpertMonthYear = addSGProp("quantityDoneExpertMonthYear", "Кол-во голосов.",
+                addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), doneExpertVoteMonthYear, 1, 2, 3, 4), 1, 3, 4); // в скольки заседаниях поучавствовал за месяц
+
         clusterVote = addDProp(idGroup, "clusterVote", "Кластер (ИД)", cluster, vote);
         nameNativeClusterVote = addJProp(baseGroup, "nameNativeClusterVote", "Кластер", nameNative, clusterVote, 1);
         nameForeignClusterVote = addJProp("nameForeignClusterVote", "Кластер (иностр.)", nameForeign, clusterVote, 1);
@@ -1628,6 +1636,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         positiveLegalResultProject = addJProp("positiveLegalResultProject", true, "Прошла юридическую проверку", baseLM.equals2, resultExecuteLegalCheckProject, 1, addCProp(legalCheckResult, "positiveLegalCheckResult"));
 
         sentForTranslationProject = addDProp("sentForTranslationProject", "Направлена на перевод", LogicalClass.instance, project);
+        oficialNameProjectStatus = addDProp("oficialNameProjectStatus", "Наименование из регламента", StringClass.get(200), projectStatus);
 
         statusProject = addCaseUProp(idGroup, "statusProject", true, "Статус (ИД)",
                 acceptedProject, 1, addCProp(projectStatus, "accepted", project), 1,
