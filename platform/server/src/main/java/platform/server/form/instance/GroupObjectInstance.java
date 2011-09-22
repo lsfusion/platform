@@ -653,7 +653,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
         return orderSeeks.executeOrders(sql, env, modifier, baseClass, availableSize, false).reverse();
     }
 
-    public OrderedMap<Map<ObjectInstance, DataObject>, Map<OrderInstance, ObjectValue>> createObjects(DataSession session, Modifier<? extends Changes> modifier, int quantity) throws SQLException {
+    public OrderedMap<Map<ObjectInstance, DataObject>, Map<OrderInstance, ObjectValue>> createObjects(DataSession session, FormInstance form, int quantity) throws SQLException {
         OrderedMap<Map<ObjectInstance, DataObject>, Map<OrderInstance, ObjectValue>> resultMap = new OrderedMap<Map<ObjectInstance, DataObject>, Map<OrderInstance, ObjectValue>>();
         if (objects.size() > 1) {
             return resultMap;
@@ -662,7 +662,7 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
             Map<ObjectInstance, DataObject> objectKeys = new OrderedMap<ObjectInstance, DataObject>();
             for (ObjectInstance objectInstance : objects) {
                 if (objectInstance.getBaseClass() instanceof ConcreteCustomClass) {
-                    DataObject object = session.addObject((ConcreteCustomClass) objectInstance.getBaseClass(), modifier);
+                    DataObject object = form.addObject((ConcreteCustomClass) objectInstance.getBaseClass());
                     objectKeys.put(objectInstance, object);
                 }
             }

@@ -544,7 +544,7 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
 
     public void pasteExternalTable(List<Integer> propertyIDs, List<List<Object>> table) {
         try {
-            form.pasteExternalTable(propertyIDs, table, this);
+            form.pasteExternalTable(propertyIDs, table);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

@@ -474,7 +474,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends IncrementProps<Pr
         }
     }
 
-    public void pasteExternalTable(List<Integer> propertyIDs, List<List<Object>> table, RemoteForm form) throws SQLException {
+    public void pasteExternalTable(List<Integer> propertyIDs, List<List<Object>> table) throws SQLException {
         List<PropertyDrawInstance> properties = new ArrayList<PropertyDrawInstance>();
         for (Integer id : propertyIDs) {
             properties.add(getPropertyDraw(id));
@@ -493,9 +493,9 @@ public class FormInstance<T extends BusinessLogics<T>> extends IncrementProps<Pr
             for (PropertyDrawInstance property : properties) {
                 PropertyObjectInstance propertyObjectInstance = property.getPropertyObjectInstance();
 
-                for (CustomObjectInstance groupKey : (Collection<CustomObjectInstance>) propertyObjectInstance.mapping.values()) {
+                for (ObjectInstance groupKey : (Collection<ObjectInstance>) propertyObjectInstance.mapping.values()) {
                     if (!key.containsKey(groupKey)) {
-                        key.put(groupKey, getGroupObjectValue(groupKey));
+                        key.put(groupKey, groupKey.getDataObject());
                     }
                 }
 
@@ -508,15 +508,6 @@ public class FormInstance<T extends BusinessLogics<T>> extends IncrementProps<Pr
                 }
             }
         }
-    }
-
-    public DataObject getGroupObjectValue(CustomObjectInstance objectInstance) {
-        for (GroupObjectInstance groupObject : groups) {
-            DataObject object = groupObject.getGroupObjectValue().get(objectInstance);
-            if (object != null)
-                return object;
-        }
-        return null;
     }
 
     public int countRecords(int groupObjectID) throws SQLException {
