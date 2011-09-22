@@ -115,6 +115,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public LP weekInDate;
     public LP monthInDate;
     public LP yearInDate;
+    public LP dateInTime;
 
     public LP vtrue, actionTrue, vzero;
     public LP vnull;
@@ -435,6 +436,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         weekInDate = addSFProp("(extract(week from (prm1)))", IntegerClass.instance, 1);
         monthInDate = addSFProp("(extract(month from (prm1)))", IntegerClass.instance, 1);
         yearInDate = addSFProp("(extract(year from (prm1)))", IntegerClass.instance, 1);
+        dateInTime = addSFProp("(CAST((prm1) as date))", DateClass.instance, 1);
 
         delete = addAProp(new DeleteObjectActionProperty(baseClass));
 

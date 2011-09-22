@@ -214,10 +214,10 @@ public class SkolkovoLogicsModule extends LogicsModule {
         projectStatus = addStaticClass("projectStatus", "Статус проекта",
                 new String[]{"unknown", "needTranslation", "needDocuments", "needExtraVote", "inProgress", "succeeded", "accepted", "rejected",
                      "notEnoughDocs", "noExperts", "noCluster", "negativeFCResult", "positiveFCResult", "negativeLCResult", "positiveLCResult",
-                     "registered", "repeated", "sentForVote", "withdrawn"},
+                     "registered", "repeated", "sentForVote", "withdrawn", "overdueFC"},
                 new String[]{"Неизвестный статус", "Направлена на перевод", "Не соответствуют документы", "Требуется заседание (повторное)", "Идет заседание", "Достаточно голосов", "Оценен положительно", "Оценен отрицательно",
                      "Неполный перечень документов", "Отсутствует перечень экспертов", "Не соответствует направлению", "Не прошла формальную экспертизу", "Направлена на юридическую проверку", "Не прошла юридическую проверку", "Прошла юридическую проверку",
-                     "Зарегистирована", "Подана повторно", "Направлена на экспертизу по существу","Отозвана заявителем"});
+                     "Зарегистирована", "Подана повторно", "Направлена на экспертизу по существу","Отозвана заявителем", "Не исправлена в срок"});
 
         documentType = addStaticClass("documentType", "Тип документа",
                 new String[]{"application", "resume", "techdesc", "forres", "ipres", "roadmap"},
@@ -400,6 +400,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP closedVote;
     LP voteInProgressProject;
     LP requiredPeriod;
+    LP overduePeriod;
     LP requiredQuantity;
     LP limitExperts;
     public LP projectsImportLimit;
@@ -750,7 +751,12 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP resultFormalControl;
     LP nameResultFormalControl;
     LP dateFormalControl;
+    LP emailDateFormalControl;
+    LP overdueDateFormalControl;
+    LP overdueFormalControlProject;
     LP commentFormalControl;
+    LP notAvailableForStatusProjectStatus;
+    LP notAvailableForPreliminaryProjectStatus;
     LP[] maxFormalControlProjectProps;
     LP currentFormalControlProject;
     LP executeFormalControlProject;
@@ -761,6 +767,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP notSuitableClusterProject;
     LP repeatedProject;
     LP positiveFormalResultProject;
+    LP projectActionFormalControl;
+    LP nameProjectActionFormalControl;
 
     LP dateLegalCheck;
     LP projectLegalCheck;
@@ -796,6 +804,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         // глобальные свойства
         requiredPeriod = addDProp(baseGroup, "votePeriod", "Срок заседания", IntegerClass.instance);
+        overduePeriod = addDProp(baseGroup, "overduePeriod", "Срок просрочки для формального контроля", IntegerClass.instance);
         requiredQuantity = addDProp(baseGroup, "voteRequiredQuantity", "Кол-во экспертов", IntegerClass.instance);
         limitExperts = addDProp(baseGroup, "limitExperts", "Кол-во прогол. экспертов", IntegerClass.instance);
         projectsImportLimit = addDProp(baseGroup, "projectsImportLimit", "Максимальное кол-во импортируемых проектов", IntegerClass.instance);
@@ -1615,8 +1624,12 @@ public class SkolkovoLogicsModule extends LogicsModule {
         resultFormalControl = addDProp("resultFormalControl", "Решение формальной экспертизы", formalControlResult, formalControl);
         nameResultFormalControl = addJProp("nameResultFormalControl", "Решение формальной экспертизы", baseLM.name, resultFormalControl, 1);
         commentFormalControl = addDProp("commentFormalControl", "Комментарий", TextClass.instance, formalControl);
+        notAvailableForStatusProjectStatus = addDProp(baseGroup, "notAvailableForStatusProjectStatus", "Не действует для заявки на статус", LogicalClass.instance, projectStatus);
+        notAvailableForPreliminaryProjectStatus = addDProp(baseGroup, "notAvailableForPreliminaryProjectStatus", "Не действует для заявки на предварительную экспертизу", LogicalClass.instance, projectStatus);
 
         dateFormalControl = addTCProp(Time.DATETIME, "dateFormalControl", true, "Дата экспертизы", resultFormalControl);
+        emailDateFormalControl = addJProp("emailDateFormalControl", "Дата оправки уведомления", baseLM.dateInTime, dateFormalControl, 1);
+        overdueDateFormalControl = addJProp("overdueDateFormalControl", "Дата просрочки формальной экспертизы", baseLM.addDate2, emailDateFormalControl, 1, overduePeriod);
 
         maxFormalControlProjectProps = addMGProp((AbstractGroup) null, new String[]{"maxDateFormalControlProject", "currentFCProject"}, new String[]{"Дата посл. формальной экспертизы.", "Посл. формальная экспертиза"}, 1,
                 dateFormalControl, 1, projectFormalControl, 1);
@@ -1633,6 +1646,15 @@ public class SkolkovoLogicsModule extends LogicsModule {
         notSuitableClusterProject = addJProp("notSuitableClusterProject", true, "Не соответствует направлению", baseLM.equals2, resultExecuteFormalControlProject, 1, addCProp(formalControlResult, "notSuitableCluster"));
         repeatedProject = addJProp("repeatedProject", true, "Подана повторно", baseLM.equals2, resultExecuteFormalControlProject, 1, addCProp(formalControlResult, "repeatedFC"));
         positiveFormalResultProject = addJProp("positiveFormalResultProject", true, "Прошла формальную экспертизу", baseLM.equals2, resultExecuteFormalControlProject, 1, addCProp(formalControlResult, "positiveFormalResult"));
+
+        projectActionFormalControl = addDProp(idGroup, "projectActionFormalControl", "Тип заявки (ИД)", projectAction, formalControl);
+        nameProjectActionFormalControl = addJProp(baseGroup, "nameProjectActionFormalControl", "Тип заявки", baseLM.name, projectActionFormalControl, 1);
+        nameProjectActionFormalControl.setPreferredCharWidth(20);
+        projectActionFormalControl.setDerivedChange(true, addJProp(projectActionProject, projectFormalControl, 1), 1, is(formalControl), 1);
+
+        overdueFormalControlProject = addJProp("overdueFormalControlProject",  true, "Просрочена формальная экспертиза", baseLM.and1,
+                                                addJProp(baseLM.greater2, baseLM.currentDate, addJProp(overdueDateFormalControl, executeFormalControlProject, 1), 1), 1,
+                                                addJProp(baseLM.and1, notEnoughDocumentsProject, 1, addJProp(baseLM.equals2, addJProp(projectActionFormalControl, executeFormalControlProject, 1), 1, addCProp(projectAction, "status")), 1), 1);
 
         projectLegalCheck = addDProp("projectLegalCheck", "Проект (ИД)", project, legalCheck);
         resultLegalCheck = addDProp("resultLegalCheck", "Решение юридической проверки", legalCheckResult, legalCheck);
@@ -1654,7 +1676,9 @@ public class SkolkovoLogicsModule extends LogicsModule {
         positiveLegalResultProject = addJProp("positiveLegalResultProject", true, "Прошла юридическую проверку", baseLM.equals2, resultExecuteLegalCheckProject, 1, addCProp(legalCheckResult, "positiveLegalCheckResult"));
 
         sentForTranslationProject = addDProp("sentForTranslationProject", "Направлена на перевод", LogicalClass.instance, project);
-        oficialNameProjectStatus = addDProp("oficialNameProjectStatus", "Наименование из регламента", StringClass.get(200), projectStatus);
+        oficialNameProjectStatus = addDProp(baseGroup, "oficialNameProjectStatus", "Наименование из регламента", StringClass.get(200), projectStatus);
+        oficialNameProjectStatus.setMinimumWidth(10);
+        oficialNameProjectStatus.setPreferredWidth(50);
 
         statusProject = addCaseUProp(idGroup, "statusProject", true, "Статус (ИД)",
                 acceptedProject, 1, addCProp(projectStatus, "accepted", project), 1,
@@ -1665,6 +1689,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
                 sentForTranslationProject, 1, addCProp(projectStatus, "needTranslation", project), 1,
                 negativeLegalResultProject, 1, addCProp(projectStatus, "negativeLCResult", project), 1,
                 positiveLegalResultProject, 1, addCProp(projectStatus, "positiveLCResult", project), 1,
+                overdueFormalControlProject, 1, addCProp(projectStatus, "overdueFC", project), 1,
                 notEnoughDocumentsProject, 1, addCProp(projectStatus, "notEnoughDocs", project), 1,
                 noListOfExpertsProject, 1, addCProp(projectStatus, "noExperts", project), 1,
                 notSuitableClusterProject, 1, addCProp(projectStatus, "noCluster", project), 1,
@@ -2250,7 +2275,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             setForceViewType(projectOtherClusterGroup, ClassViewType.PANEL);
 
             objFormalControl = addSingleGroupObject(formalControl);
-            addPropertyDraw(objFormalControl, dateFormalControl, nameResultFormalControl);
+            addPropertyDraw(objFormalControl, dateFormalControl, nameResultFormalControl, nameProjectActionFormalControl);
             addPropertyDraw(commentFormalControl, objFormalControl).forceViewType = ClassViewType.PANEL;
             addObjectActions(this, objFormalControl);
 
@@ -2394,7 +2419,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         private GlobalFormEntity(NavigatorElement parent, String sID) {
             super(parent, sID, "Глобальные параметры");
 
-            addPropertyDraw(new LP[]{baseLM.currentDate, requiredPeriod, requiredQuantity, limitExperts, emailDocuments, emailClaimerFromAddress, projectsImportLimit, importProjectSidsAction, showProjectsToImportAction, showProjectsReplaceToImportAction, importProjectsAction});
+            addPropertyDraw(new LP[]{baseLM.currentDate, requiredPeriod, overduePeriod, requiredQuantity, limitExperts, emailDocuments, emailClaimerFromAddress, projectsImportLimit, importProjectSidsAction, showProjectsToImportAction, showProjectsReplaceToImportAction, importProjectsAction});
         }
     }
 
