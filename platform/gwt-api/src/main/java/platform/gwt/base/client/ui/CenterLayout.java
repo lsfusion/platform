@@ -6,19 +6,23 @@ import com.smartgwt.client.widgets.layout.LayoutSpacer;
 import com.smartgwt.client.widgets.layout.VLayout;
 
 public class CenterLayout extends VLayout {
+    private Canvas currentChild;
+
     public CenterLayout() {
         this(null);
     }
 
-    public CenterLayout(Canvas component) {
+    public CenterLayout(Canvas currentChild) {
         setWidth100();
         setHeight100();
-        setCenterComponent(component);
+        setCenterComponent(currentChild);
     }
 
     @Override
     public void addMember(Canvas component) {
-        clear();
+        if (currentChild != null) {
+            removeChild(currentChild);
+        }
         if (component != null) {
             HLayout hLayout = new HLayout();
             hLayout.addMember(createSpacer());
@@ -28,6 +32,8 @@ public class CenterLayout extends VLayout {
             super.addMember(createSpacer());
             super.addMember(hLayout);
             super.addMember(createSpacer());
+
+            this.currentChild = component;
         }
     }
 
@@ -50,7 +56,7 @@ public class CenterLayout extends VLayout {
         return layoutSpacer;
     }
 
-    public void setCenterComponent(Canvas component) {
-        addMember(component);
+    public void setCenterComponent(Canvas currentChild) {
+        addMember(currentChild);
     }
 }

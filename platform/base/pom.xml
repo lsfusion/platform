@@ -9,8 +9,8 @@
 
     <properties>
         <spring.version>3.0.5.RELEASE</spring.version>
-        <gwt.version>2.1.0</gwt.version>
-        <smartgwt.version>2.5-SNAPSHOT</smartgwt.version>
+        <gwt.version>2.2.0</gwt.version>
+        <smartgwt.version>2.5</smartgwt.version>
 
         <maven.compiler.source>1.6</maven.compiler.source>
         <maven.compiler.target>1.6</maven.compiler.target>
@@ -152,6 +152,21 @@
                 <version>${spring.version}</version>
             </dependency>
             <dependency>
+                <groupId>org.aspectj</groupId>
+                <artifactId>aspectjweaver</artifactId>
+                <version>1.6.10</version>
+            </dependency>
+            <dependency>
+                <groupId>org.aspectj</groupId>
+                <artifactId>aspectjrt</artifactId>
+                <version>1.6.10</version>
+            </dependency>
+            <dependency>
+                <groupId>org.aspectj</groupId>
+                <artifactId>aspectjtools</artifactId>
+                <version>1.6.10</version>
+            </dependency>
+            <dependency>
                 <groupId>org.springframework.security</groupId>
                 <artifactId>spring-security-config</artifactId>
                 <version>${spring.version}</version>
@@ -235,6 +250,11 @@
             <dependency>
                 <groupId>by.luxsoft.platform</groupId>
                 <artifactId>skolkovo-api</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>by.luxsoft.platform</groupId>
+                <artifactId>paas-api</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>

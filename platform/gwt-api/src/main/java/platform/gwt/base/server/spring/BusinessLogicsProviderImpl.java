@@ -1,7 +1,6 @@
 package platform.gwt.base.server.spring;
 
 import org.apache.log4j.Logger;
-import org.springframework.web.context.ServletContextAware;
 import platform.interop.RemoteLoaderInterface;
 import platform.interop.RemoteLogicsInterface;
 import platform.interop.remote.ServerSocketFactory;
@@ -15,7 +14,7 @@ import java.rmi.server.RMISocketFactory;
 
 import static platform.base.BaseUtils.nvl;
 
-public class BusinessLogicsProviderImpl<T extends RemoteLogicsInterface> implements ServletContextAware, BusinessLogicsProvider<T> {
+public class BusinessLogicsProviderImpl<T extends RemoteLogicsInterface> implements BusinessLogicsProvider<T> {
     protected final static Logger logger = Logger.getLogger(BusinessLogicsProviderImpl.class);
 
     private static final String DEFAULT_HOST = "localhost";
@@ -57,12 +56,13 @@ public class BusinessLogicsProviderImpl<T extends RemoteLogicsInterface> impleme
 
     private ServletContext servletContext;
 
-    private BusinessLogicsProviderImpl() {
-    }
-
     private final Object remoteLock = new Object();
 
     private volatile T logics;
+
+    public BusinessLogicsProviderImpl(ServletContext servletContext) {
+        this.servletContext = servletContext;
+    }
 
     public T getLogics() {
         //double-check locking
@@ -80,11 +80,5 @@ public class BusinessLogicsProviderImpl<T extends RemoteLogicsInterface> impleme
         synchronized (remoteLock) {
             logics = null;
         }
-    }
-
-    @Override
-    public void setServletContext(ServletContext servletContext) {
-        this.servletContext = servletContext;
-
     }
 }

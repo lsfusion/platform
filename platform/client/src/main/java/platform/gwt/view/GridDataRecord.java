@@ -2,8 +2,8 @@ package platform.gwt.view;
 
 import com.smartgwt.client.util.JSOHelper;
 import com.smartgwt.client.widgets.grid.ListGridRecord;
+import platform.gwt.utils.GwtUtils;
 import platform.gwt.view.changes.GGroupObjectValue;
-import platform.gwt.view.utills.GwtUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;

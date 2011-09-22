@@ -1,15 +1,11 @@
 package platform.server.data.sql;
 
-import com.sun.corba.se.spi.activation.Server;
-import org.apache.log4j.Logger;
 import platform.base.BaseUtils;
 import platform.base.IOUtils;
 import platform.server.data.type.Type;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.ServerResourceBundle;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;

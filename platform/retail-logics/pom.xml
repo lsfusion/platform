@@ -13,12 +13,4 @@
     <artifactId>retail-logics</artifactId>
     <packaging>jar</packaging>
     <name>Retail Logics</name>
-
-    <dependencies>
-        <dependency>
-            <groupId>by.luxsoft.platform</groupId>
-            <artifactId>server</artifactId>
-        </dependency>
-    </dependencies>
-
 </project>

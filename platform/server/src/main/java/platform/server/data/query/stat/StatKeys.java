@@ -7,7 +7,6 @@ import platform.server.data.expr.BaseExpr;
 import platform.server.data.expr.query.DistinctKeys;
 import platform.server.data.expr.query.Stat;
 import platform.server.data.translator.MapTranslate;
-import sun.security.krb5.internal.tools.Ktab;
 
 import java.util.Map;
 import java.util.Set;

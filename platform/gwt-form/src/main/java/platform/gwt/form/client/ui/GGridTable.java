@@ -11,12 +11,12 @@ import com.smartgwt.client.widgets.grid.events.CellSavedEvent;
 import com.smartgwt.client.widgets.grid.events.CellSavedHandler;
 import com.smartgwt.client.widgets.grid.events.SelectionChangedHandler;
 import com.smartgwt.client.widgets.grid.events.SelectionEvent;
+import platform.gwt.utils.GwtUtils;
 import platform.gwt.view.GForm;
 import platform.gwt.view.GGroupObject;
 import platform.gwt.view.GPropertyDraw;
 import platform.gwt.view.GridDataRecord;
 import platform.gwt.view.changes.GGroupObjectValue;
-import platform.gwt.view.utills.GwtUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;

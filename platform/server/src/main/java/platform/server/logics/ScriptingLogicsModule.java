@@ -66,7 +66,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         if (code != null) {
             return new ANTLRStringStream(code);
         } else {
-            return new ANTLRFileStream(filename);
+            return new ANTLRFileStream(filename, "UTF-8");
         }
     }
 

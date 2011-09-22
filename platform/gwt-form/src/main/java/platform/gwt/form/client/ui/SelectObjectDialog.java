@@ -5,8 +5,8 @@ import com.smartgwt.client.widgets.Button;
 import com.smartgwt.client.widgets.Window;
 import com.smartgwt.client.widgets.events.ClickEvent;
 import com.smartgwt.client.widgets.events.ClickHandler;
+import com.smartgwt.client.widgets.events.CloseClickEvent;
 import com.smartgwt.client.widgets.events.CloseClickHandler;
-import com.smartgwt.client.widgets.events.CloseClientEvent;
 import net.customware.gwt.dispatch.shared.Action;
 import platform.gwt.form.client.FormDispatchAsync;
 import platform.gwt.form.shared.actions.GetFormResult;
@@ -28,7 +28,7 @@ public class SelectObjectDialog extends Window {
         setOverflow(Overflow.VISIBLE);
 
         addCloseClickHandler(new CloseClickHandler() {
-            public void onCloseClick(CloseClientEvent event) {
+            public void onCloseClick(CloseClickEvent event) {
                 destroy();
             }
         });
@@ -43,19 +43,8 @@ public class SelectObjectDialog extends Window {
             }
         });
 
-        Button btn2 = new Button("Autosize");
-        btn2.addClickHandler(new ClickHandler() {
-            @Override
-            public void onClick(ClickEvent event) {
-                setAutoSize(true);
-                reflow();
-                reflowNow();
-            }
-        });
-
         addItem(editorForm);
         addItem(btnClose);
-        addItem(btn2);
     }
 
     public static SelectObjectDialog showObjectDialog(String objectCaption, FormDispatchAsync creationDispatcher, Action<GetFormResult> getFormAction, SelectObjectCallback selectObjectCallback) {

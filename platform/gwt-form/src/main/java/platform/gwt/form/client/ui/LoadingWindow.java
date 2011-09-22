@@ -2,8 +2,8 @@ package platform.gwt.form.client.ui;
 
 import com.smartgwt.client.widgets.ViewLoader;
 import com.smartgwt.client.widgets.Window;
+import com.smartgwt.client.widgets.events.CloseClickEvent;
 import com.smartgwt.client.widgets.events.CloseClickHandler;
-import com.smartgwt.client.widgets.events.CloseClientEvent;
 
 public class LoadingWindow extends Window {
     private LoadingWindow() {
@@ -16,7 +16,7 @@ public class LoadingWindow extends Window {
         setShowModalMask(true);
         centerInPage();
         addCloseClickHandler(new CloseClickHandler() {
-            public void onCloseClick(CloseClientEvent event) {
+            public void onCloseClick(CloseClickEvent event) {
                 destroy();
             }
         });

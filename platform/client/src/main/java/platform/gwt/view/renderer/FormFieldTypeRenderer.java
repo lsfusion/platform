@@ -6,8 +6,8 @@ import com.smartgwt.client.widgets.form.DynamicForm;
 import com.smartgwt.client.widgets.form.fields.FormItem;
 import com.smartgwt.client.widgets.form.fields.events.ChangedEvent;
 import com.smartgwt.client.widgets.form.fields.events.ChangedHandler;
+import platform.gwt.utils.GwtUtils;
 import platform.gwt.view.GPropertyDraw;
-import platform.gwt.view.utills.GwtUtils;
 
 public class FormFieldTypeRenderer implements GTypeRenderer {
     private FormItem item;
@@ -49,7 +49,7 @@ public class FormFieldTypeRenderer implements GTypeRenderer {
     @Override
     public void setValue(Object value) {
         if (value instanceof String) {
-            value = GwtUtils.rtrim((String)value);
+            value = GwtUtils.rtrim((String) value);
         }
         item.setValue(value);
     }

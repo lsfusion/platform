@@ -2,18 +2,19 @@
 <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xsi:schemaLocation="http://www.springframework.org/schema/beans
-           http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
+           http://www.springframework.org/schema/beans/spring-beans-3.0.xsd"
+        default-lazy-init="true">
 
     <bean id="dataAdapter" class="platform.server.data.sql.PostgreDataAdapter">
-        <constructor-arg><value>trushkin</value></constructor-arg>
-        <constructor-arg><value>localhost</value></constructor-arg>
-        <constructor-arg><value>postgres</value></constructor-arg>
-        <constructor-arg><value>11111</value></constructor-arg>
+        <constructor-arg value="trushkin"/>
+        <constructor-arg value="localhost"/>
+        <constructor-arg value="postgres"/>
+        <constructor-arg value="11111"/>
     </bean>
 
     <bean id="businessLogics" class="trushkin.TrushkinBusinessLogics">
-        <constructor-arg><ref bean="dataAdapter"/></constructor-arg>
-        <constructor-arg type="int"><value>7652</value></constructor-arg>
+        <constructor-arg ref="dataAdapter"/>
+        <constructor-arg type="int" value="7652"/>
     </bean>
 
 </beans>

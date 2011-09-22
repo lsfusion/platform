@@ -2,8 +2,7 @@ package platform.server.logics;
 
 import net.sf.jasperreports.engine.JRException;
 import org.apache.log4j.Logger;
-import org.springframework.beans.factory.xml.XmlBeanFactory;
-import org.springframework.core.io.FileSystemResource;
+import org.springframework.context.support.FileSystemXmlApplicationContext;
 import platform.interop.remote.ServerSocketFactory;
 import platform.server.Settings;
 import platform.server.net.ServerInstanceLocator;
@@ -19,6 +18,9 @@ import java.rmi.server.RMISocketFactory;
 import java.sql.SQLException;
 
 public class BusinessLogicsBootstrap {
+
+    public static final String SETTINGS_PATH_KEY = "lsf.settings.path";
+    public static final String DEFAULT_SETTINGS_PATH = "conf/settings.xml";
 
     public BusinessLogicsBootstrap() {
     }
@@ -49,13 +51,6 @@ public class BusinessLogicsBootstrap {
         RMISocketFactory.setSocketFactory(socketFactory);
     }
 
-    // -------------------------------
-    // интерфейс для старта через jsvc
-    // -------------------------------
-
-    public static void init(String[] args) throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException, IOException, JRException {
-    }
-
     public static void start() throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException, IOException, JRException {
 
         // делаем, чтобы сборщик мусора срабатывал каждую минуту - для удаления ненужных connection'ов
@@ -66,13 +61,18 @@ public class BusinessLogicsBootstrap {
 
         System.setProperty("mail.mime.encodefilename", "true");
 
-        initRMISocketFactory();
+        logger.info("Server is starting...");
 
         stopped = false;
 
-        logger.info("Server is starting...");
+        initRMISocketFactory();
 
-        XmlBeanFactory factory = new XmlBeanFactory(new FileSystemResource("conf/settings.xml"));
+        String settingsPath = System.getProperty(SETTINGS_PATH_KEY);
+        if (settingsPath == null) {
+            settingsPath = DEFAULT_SETTINGS_PATH;
+        }
+
+        FileSystemXmlApplicationContext factory = new FileSystemXmlApplicationContext(settingsPath);
 
         if (factory.containsBean("settings")) {
             Settings.instance = (Settings) factory.getBean("settings");
@@ -81,12 +81,10 @@ public class BusinessLogicsBootstrap {
         }
 
         BL = (BusinessLogics) factory.getBean("businessLogics");
+
         registry = LocateRegistry.createRegistry(BL.getExportPort());
-
-//        registry.rebind("BusinessLogics", BL);
+        registry.rebind("AppManager", new ApplicationManagerImpl(BL.getExportPort()));
         registry.rebind("BusinessLogicsLoader", new BusinessLogicsLoader(BL));
-
-        logger.info("Server has successfully started");
 
         if (factory.containsBean("serverInstanceLocatorSettings")) {
             ServerInstanceLocatorSettings settings = (ServerInstanceLocatorSettings) factory.getBean("serverInstanceLocatorSettings");
@@ -94,6 +92,8 @@ public class BusinessLogicsBootstrap {
 
             logger.info("Server instance locator successfully started");
         }
+
+        logger.info("Server has successfully started");
 
         synchronized (serviceMonitor) {
             while (!stopped) {
@@ -114,13 +114,28 @@ public class BusinessLogicsBootstrap {
         logger.info("Server is stopping...");
 
         registry.unbind("BusinessLogicsLoader");
+        registry.unbind("AppManager");
 
         registry = null;
         BL = null;
 
+        //убиваем поток RMI, а то зависает
+        for (Thread t : Thread.getAllStackTraces().keySet()) {
+            if ("RMI Reaper".equals(t.getName())) {
+                t.interrupt();
+            }
+        }
+
         synchronized (serviceMonitor) {
             serviceMonitor.notify();
         }
+    }
+
+    // -------------------------------
+    // интерфейс для старта через jsvc
+    // -------------------------------
+
+    public static void init(String[] args) throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException, IOException, JRException {
     }
 
     public static void destroy() {

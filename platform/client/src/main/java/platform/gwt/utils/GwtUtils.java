@@ -1,4 +1,6 @@
-package platform.gwt.view.utills;
+package platform.gwt.utils;
+
+import com.google.gwt.safehtml.shared.SimpleHtmlSanitizer;
 
 import java.util.Iterator;
 import java.util.List;
@@ -16,8 +18,17 @@ public class GwtUtils {
     }
 
     public static String rtrim(String string) {
+        if (string == null) return "";
+
         int len = string.length();
         while (len > 0 && string.charAt(len - 1) == ' ') len--;
         return string.substring(0, len);
+    }
+
+    public static String toHtml(String plainString) {
+        if (plainString == null) {
+            return "";
+        }
+        return SimpleHtmlSanitizer.sanitizeHtml(plainString).asString().replaceAll("(\r\n|\n\r|\r|\n)", "<br />");
     }
 }

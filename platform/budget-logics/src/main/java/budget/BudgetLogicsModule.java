@@ -1,7 +1,6 @@
 package budget;
 
 import net.sf.jasperreports.engine.JRException;
-import platform.base.BaseUtils;
 import platform.interop.ClassViewType;
 import platform.interop.Compare;
 import platform.interop.form.layout.DoNotIntersectSimplexConstraint;
@@ -495,8 +494,8 @@ public class BudgetLogicsModule extends LogicsModule {
             super(parent, sID, caption);
 
             ObjectEntity objDepartment = addSingleGroupObject(department, baseGroup);
-            objDepartment.groupTo.initClassView = ClassViewType.PANEL;
-            objDepartment.groupTo.banClassView.addAll(BaseUtils.toList(ClassViewType.GRID, ClassViewType.HIDE));
+            objDepartment.groupTo.setSingleClassView(ClassViewType.PANEL);
+
             ObjectEntity objOutOp = addSingleGroupObject(outOperation, baseGroup);
             ObjectEntity objExOp = addSingleGroupObject(exOperation, baseGroup);
 
@@ -519,8 +518,7 @@ public class BudgetLogicsModule extends LogicsModule {
             super(parent, sID, caption);
 
             ObjectEntity objDepartment = addSingleGroupObject(department, baseGroup);
-            objDepartment.groupTo.initClassView = ClassViewType.PANEL;
-            objDepartment.groupTo.banClassView.addAll(BaseUtils.toList(ClassViewType.GRID, ClassViewType.HIDE));
+            objDepartment.groupTo.setSingleClassView(ClassViewType.PANEL);
 
             ObjectEntity objIncCash = addSingleGroupObject(incomeCash, baseGroup);
             addPropertyDraw(objIncCash, nameInvestorInvestment);
@@ -583,12 +581,12 @@ public class BudgetLogicsModule extends LogicsModule {
             super(parent, sID, caption);
 
             ObjectEntity objDepartment = addSingleGroupObject(department, baseGroup);
-            objDepartment.groupTo.initClassView = ClassViewType.PANEL;
-            objDepartment.groupTo.banClassView.addAll(BaseUtils.toList(ClassViewType.GRID, ClassViewType.HIDE));
+            objDepartment.groupTo.setSingleClassView(ClassViewType.PANEL);
+
             ObjectEntity objExtraStateOp = addSingleGroupObject(extraSection, baseGroup);
             ObjectEntity objYearOp = addSingleGroupObject(YearClass.instance, "Год", baseGroup);
-            objYearOp.groupTo.initClassView = ClassViewType.PANEL;
-            objYearOp.groupTo.banClassView.addAll(BaseUtils.toList(ClassViewType.GRID, ClassViewType.HIDE));
+            objYearOp.groupTo.setSingleClassView(ClassViewType.PANEL);
+
             objMonthOp = addSingleGroupObject(absMonth, baseGroup);
             objCur = addSingleGroupObject(currency, baseGroup);
             ObjectEntity objExtraOp = addSingleGroupObject(extraCost, baseGroup);
@@ -630,12 +628,12 @@ public class BudgetLogicsModule extends LogicsModule {
         public SpecialRecordFormEntity(NavigatorElement parent, String sID, String caption) {
             super(parent, sID, caption);
             ObjectEntity objDepartment = addSingleGroupObject(department, baseGroup);
-            objDepartment.groupTo.initClassView = ClassViewType.PANEL;
-            objDepartment.groupTo.banClassView.addAll(BaseUtils.toList(ClassViewType.GRID, ClassViewType.HIDE));
+            objDepartment.groupTo.setSingleClassView(ClassViewType.PANEL);
+
             ObjectEntity objPersonOp = addSingleGroupObject(person, baseGroup);
             ObjectEntity objYearOp = addSingleGroupObject(YearClass.instance, "Год", baseGroup);
-            objYearOp.groupTo.initClassView = ClassViewType.PANEL;
-            objYearOp.groupTo.banClassView.addAll(BaseUtils.toList(ClassViewType.GRID, ClassViewType.HIDE));
+            objYearOp.groupTo.setSingleClassView(ClassViewType.PANEL);
+
             objMonthOp = addSingleGroupObject(absMonth, baseGroup);
             objCur = addSingleGroupObject(currency, baseGroup);
             objExtraStateOp = addSingleGroupObject(extraPersonSection, baseGroup);
@@ -683,8 +681,8 @@ public class BudgetLogicsModule extends LogicsModule {
         public MissionFormEntity(NavigatorElement parent, String sID, String caption) {
             super(parent, sID, caption);
             ObjectEntity objDepartment = addSingleGroupObject(department, baseGroup);
-            objDepartment.groupTo.initClassView = ClassViewType.PANEL;
-            objDepartment.groupTo.banClassView.addAll(BaseUtils.toList(ClassViewType.GRID, ClassViewType.HIDE));
+            objDepartment.groupTo.setSingleClassView(ClassViewType.PANEL);
+
             ObjectEntity objMission = addSingleGroupObject(mission, baseGroup);
             ObjectEntity objPerson = addSingleGroupObject(person, baseGroup);
             ObjectEntity objOutOp = addSingleGroupObject(misOperation, baseGroup);
@@ -706,8 +704,7 @@ public class BudgetLogicsModule extends LogicsModule {
         public VacationFormEntity(NavigatorElement parent, String sID, String caption) {
             super(parent, sID, caption);
             ObjectEntity objDepartment = addSingleGroupObject(department, baseGroup);
-            objDepartment.groupTo.initClassView = ClassViewType.PANEL;
-            objDepartment.groupTo.banClassView.addAll(BaseUtils.toList(ClassViewType.GRID, ClassViewType.HIDE));
+            objDepartment.groupTo.setSingleClassView(ClassViewType.PANEL);
 
             ObjectEntity objPerson = addSingleGroupObject(person, baseGroup);
             ObjectEntity objVacation = addSingleGroupObject(vacation, baseGroup);
@@ -727,8 +724,8 @@ public class BudgetLogicsModule extends LogicsModule {
             super(parent, sID, caption);
 
             ObjectEntity objDepartment = addSingleGroupObject(department, baseGroup);
-            objDepartment.groupTo.initClassView = ClassViewType.PANEL;
-            objDepartment.groupTo.banClassView.addAll(BaseUtils.toList(ClassViewType.GRID, ClassViewType.HIDE));
+            objDepartment.groupTo.setSingleClassView(ClassViewType.PANEL);
+
             ObjectEntity objCur = addSingleGroupObject(currency, baseGroup);
             ObjectEntity objInOp = addSingleGroupObject(inAbsOperation, baseGroup, true);
             ObjectEntity objOutOp = addSingleGroupObject(outAbsOperation, baseGroup, true);
@@ -793,13 +790,13 @@ public class BudgetLogicsModule extends LogicsModule {
         public DepartmentRevenueFormEntity(NavigatorElement parent, String sID, String caption) {
             super(parent, sID, caption);
             ObjectEntity objDepartment = addSingleGroupObject(department, baseGroup);
-            objDepartment.groupTo.initClassView = ClassViewType.PANEL;
-            objDepartment.groupTo.banClassView.addAll(BaseUtils.toList(ClassViewType.GRID, ClassViewType.HIDE));
+            objDepartment.groupTo.setSingleClassView(ClassViewType.PANEL);
+
             addPropertyDraw(baseCurrencyName);
 
             ObjectEntity objYearOp = addSingleGroupObject(YearClass.instance, "Год", baseGroup);
-            objYearOp.groupTo.initClassView = ClassViewType.PANEL;
-            objYearOp.groupTo.banClassView.addAll(BaseUtils.toList(ClassViewType.GRID, ClassViewType.HIDE));
+            objYearOp.groupTo.setSingleClassView(ClassViewType.PANEL);
+
             ObjectEntity objMonthOp = addSingleGroupObject(absMonth, baseGroup);
 
             addPropertyDraw(baseCurGroup, true, objDepartment, objMonthOp, objYearOp);
@@ -830,8 +827,7 @@ public class BudgetLogicsModule extends LogicsModule {
             ObjectEntity objDstCurrency = addSingleGroupObject(currency, "Целевая валюта", baseGroup);
 
             ObjectEntity objDate = addSingleGroupObject(DateClass.instance, "Дата", baseGroup);
-            objDate.groupTo.initClassView = ClassViewType.PANEL;
-            objDate.groupTo.banClassView.addAll(BaseUtils.toList(ClassViewType.GRID, ClassViewType.HIDE));
+            objDate.groupTo.setSingleClassView(ClassViewType.PANEL);
 
             addPropertyDraw(exchangeRate, objSrcCurrency, objDstCurrency, objDate);
             addPropertyDraw(nearestPredDate, objSrcCurrency, objDstCurrency, objDate);

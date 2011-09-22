@@ -2,12 +2,12 @@ package platform.gwt.form.client.ui;
 
 import com.smartgwt.client.types.Overflow;
 import com.smartgwt.client.widgets.layout.FlowLayout;
+import platform.gwt.utils.GwtUtils;
 import platform.gwt.view.GForm;
 import platform.gwt.view.GPropertyDraw;
 import platform.gwt.view.changes.GGroupObjectValue;
 import platform.gwt.view.renderer.GTypeRenderer;
 import platform.gwt.view.renderer.PropertyChangedHandler;
-import platform.gwt.view.utills.GwtUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;

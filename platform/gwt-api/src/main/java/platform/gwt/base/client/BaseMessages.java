@@ -26,6 +26,32 @@ public interface BaseMessages extends Messages {
 
     String logoff();
 
+    String username();
+
+    String password();
+
+    String login();
+
+    String forgot();
+
+    String loginFailed();
+
+    String cancel();
+
+    String emailPrompt();
+
+    String remind();
+
+    String incorrectEmail();
+
+    String remindError();
+
+    String remindSuccess();
+
+    String loginError();
+
+    String loggedInMessage(String userName);
+
     public static class Instance {
         private static final BaseMessages instance = (BaseMessages) GWT.create(BaseMessages.class);
 

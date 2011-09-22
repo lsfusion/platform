@@ -417,6 +417,10 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         return propertyDraw;
     }
 
+    protected <P extends PropertyInterface> void removePropertyDraw(PropertyDrawEntity<P> property) {
+        propertyDraws.remove(property);
+    }
+
     protected <P extends PropertyInterface> void removePropertyDraw(LP<P> property) {
         removePropertyDraw(property.property);
     }
