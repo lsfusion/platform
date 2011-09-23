@@ -6,6 +6,7 @@ import org.jdesktop.swingx.decorator.HighlightPredicate;
 import org.jdesktop.swingx.table.TableColumnExt;
 import platform.client.ClientResourceBundle;
 import platform.client.form.ClientFormController;
+import platform.client.form.PropertyRendererComponent;
 import platform.client.form.cell.CellTableInterface;
 import platform.client.form.cell.ClientAbstractCellEditor;
 import platform.client.form.cell.ClientAbstractCellRenderer;
@@ -21,8 +22,7 @@ import javax.swing.*;
 import javax.swing.event.*;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableCellEditor;
-import javax.swing.tree.ExpandVetoException;
-import javax.swing.tree.TreePath;
+import javax.swing.tree.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.FocusAdapter;
@@ -33,9 +33,6 @@ import java.util.*;
 import java.util.List;
 
 public class TreeGroupTable extends ClientFormTreeTable implements CellTableInterface {
-    public static Color SELECTED_CELL_COLOR = new Color(192, 192, 255);
-    public static Color FOCUSED_SELECTED_CELL_COLOR = new Color(128, 128, 255);
-
     private final TreeGroupNode rootNode;
     public final ClientFormController form;
     private final ClientTreeGroup treeGroup;
@@ -100,7 +97,7 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
                             new HighlightPredicate.AndHighlightPredicate(
                                     HighlightPredicate.HAS_FOCUS,
                                     new HighlightPredicate.ColumnHighlightPredicate(0)
-                            ), FOCUSED_SELECTED_CELL_COLOR, Color.BLACK, FOCUSED_SELECTED_CELL_COLOR, Color.BLACK
+                            ), PropertyRendererComponent.FOCUSED_CELL_BACKGROUND, Color.BLACK, PropertyRendererComponent.FOCUSED_CELL_BACKGROUND, Color.BLACK
                     ),
                     new ColorHighlighter(
                             new HighlightPredicate.AndHighlightPredicate(
@@ -108,7 +105,7 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
                                             HighlightPredicate.HAS_FOCUS
                                     ),
                                     new HighlightPredicate.ColumnHighlightPredicate(0)
-                            ), Color.WHITE, Color.BLACK, SELECTED_CELL_COLOR, Color.BLACK
+                            ), Color.WHITE, Color.BLACK, PropertyRendererComponent.SELECTED_CELL_BACKGROUND, Color.BLACK
                     )
             );
 

@@ -32,6 +32,8 @@ public abstract class SingleCellTable extends ClientFormTable {
         SwingUtils.addFocusTraversalKey(this,
                                         KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS,
                                         KeyStrokes.getBackwardTraversalKeyStroke());
+        getColumnModel().setColumnMargin(2);
+        setRowMargin(2);
     }
 
     // приходится делать вот таким извращенным способом, поскольку ComponentListener срабатывает после перерисовки формы

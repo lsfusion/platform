@@ -12,13 +12,11 @@ import java.text.Format;
 public class TextPropertyRenderer extends JTextArea implements PropertyRendererComponent {
 
     Format format;
-    Color background;
 
     public TextPropertyRenderer(Format iformat, ComponentDesign design) {
         super();
 
         format = iformat;
-        setBorder(new EmptyBorder(1, 3, 2, 2));
         setOpaque(true);
         setLineWrap(true);
         setWrapStyleWord(true);
@@ -27,18 +25,22 @@ public class TextPropertyRenderer extends JTextArea implements PropertyRendererC
         if (design != null)
             design.designCell(this);
         setEditable(false);
-        background = getBackground();
     }
 
     void setSelected(boolean isSelected, boolean hasFocus) {
         if (isSelected) {
-            if (hasFocus)
-                setBackground(new Color(128, 128, 255));
-            else
-                setBackground(new Color(192, 192, 255));
-
-        } else
-            setBackground(background);
+            if (hasFocus) {
+                setBorder(BorderFactory.createCompoundBorder(FOCUSED_CELL_BORDER, BorderFactory.createEmptyBorder(1, 2, 0, 1)));
+                setBackground(FOCUSED_CELL_BACKGROUND);
+            }
+            else {
+                setBorder(BorderFactory.createCompoundBorder(SELECTED_CELL_BORDER, BorderFactory.createEmptyBorder(1, 3, 0, 2)));
+                setBackground(SELECTED_CELL_BACKGROUND);
+            }
+        } else {
+            setBorder(BorderFactory.createEmptyBorder(2, 3, 1, 2));
+            setBackground(Color.WHITE);
+        }
     }
 
     public JComponent getComponent() {

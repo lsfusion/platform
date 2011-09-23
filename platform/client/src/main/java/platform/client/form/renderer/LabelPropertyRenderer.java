@@ -1,5 +1,6 @@
 package platform.client.form.renderer;
 
+import platform.client.form.PropertyRendererComponent;
 import platform.interop.ComponentDesign;
 
 import javax.swing.*;
@@ -10,30 +11,31 @@ import java.text.Format;
 class LabelPropertyRenderer extends JLabel { //DefaultTableCellRenderer {
 
     Format format;
-    Color background;
 
     LabelPropertyRenderer(Format iformat, ComponentDesign design) {
         super();
 
         format = iformat;
-        setBorder(new EmptyBorder(1, 3, 2, 2));
         setOpaque(true);
 
         if (design != null)
             design.designCell(this);
-
-        background = getBackground();
     }
 
     void setSelected(boolean isSelected, boolean hasFocus) {
         if (isSelected) {
-            if (hasFocus)
-                setBackground(new Color(128,128,255));
-            else
-                setBackground(new Color(192,192,255));
-
-        } else
-            setBackground(background);
+            if (hasFocus) {
+                setBorder(BorderFactory.createCompoundBorder(PropertyRendererComponent.FOCUSED_CELL_BORDER, BorderFactory.createEmptyBorder(0, 1, 0, 1)));
+                setBackground(PropertyRendererComponent.FOCUSED_CELL_BACKGROUND);
+            }
+            else {
+                setBorder(BorderFactory.createCompoundBorder(PropertyRendererComponent.SELECTED_CELL_BORDER, BorderFactory.createEmptyBorder(1, 2, 1, 2)));
+                setBackground(PropertyRendererComponent.SELECTED_CELL_BACKGROUND);
+            }
+        } else {
+            setBorder(new EmptyBorder(1, 2, 1, 2));
+            setBackground(Color.WHITE);
+        }
     }
 
 }

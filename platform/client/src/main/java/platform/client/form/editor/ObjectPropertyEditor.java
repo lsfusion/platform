@@ -39,6 +39,7 @@ public class ObjectPropertyEditor extends JDialog implements PropertyEditorCompo
         }
 
         clientDialog.setDefaultSize(false);
+        clientDialog.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
 
         SwingUtils.requestLocation(clientDialog, new Point((int)(tableLocation.getX() + cellRectangle.getX()), (int)(tableLocation.getY() + cellRectangle.getMaxY())));
 

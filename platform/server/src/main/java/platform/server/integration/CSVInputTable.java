@@ -29,8 +29,7 @@ public class CSVInputTable implements ImportInputTable {
         while (true) {
             List<String> row = csvReader.read();
             if (row == null) break;
-            if (! ((row.size() == 1 && BaseUtils.isRedundantString(row.get(0)))))
-                data.add(new ArrayList<String>(row));
+            data.add(new ArrayList<String>(row));
         }
     }
 

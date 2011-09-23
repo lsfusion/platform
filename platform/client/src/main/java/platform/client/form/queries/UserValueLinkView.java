@@ -27,9 +27,6 @@ public class UserValueLinkView extends ValueLinkView {
         property = iproperty;
         logicsSupplier = ilogicsSupplier;
 
-        JComboBox compBorder = new JComboBox();
-        setBorder(compBorder.getBorder());
-
         // непосредственно объект для изменения значения свойств
         valueTable = new CellTable(false, new ClientGroupObjectValue()) {
 

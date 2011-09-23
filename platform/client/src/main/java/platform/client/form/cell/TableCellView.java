@@ -105,8 +105,6 @@ public class TableCellView extends JPanel implements CellView {
             }
         });
 
-        table.setBorder(BorderFactory.createLineBorder(Color.gray));
-
         table.keyChanged(key);
 
         setToolTip(key.caption);

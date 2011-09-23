@@ -11,10 +11,12 @@ import platform.interop.KeyStrokes;
 
 import javax.swing.*;
 import javax.swing.table.AbstractTableModel;
+import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.text.ParseException;
 import java.util.*;
+import java.util.List;
 
 public abstract class CellTable extends SingleCellTable
         implements CellTableInterface {
@@ -35,6 +37,7 @@ public abstract class CellTable extends SingleCellTable
 
         setDefaultRenderer(Object.class, new ClientAbstractCellRenderer());
         setDefaultEditor(Object.class, new ClientAbstractCellEditor());
+        setBorder(BorderFactory.createLineBorder(Color.gray));
     }
 
     public void keyChanged(ClientPropertyDraw key) {

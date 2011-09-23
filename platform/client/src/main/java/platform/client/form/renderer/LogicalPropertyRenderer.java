@@ -12,7 +12,7 @@ public class LogicalPropertyRenderer extends JCheckBox
         super();
 
         setHorizontalAlignment(JCheckBox.CENTER);
-
+        setBorderPainted(true);
         setOpaque(true);
     }
 
@@ -21,15 +21,20 @@ public class LogicalPropertyRenderer extends JCheckBox
     }
 
     public void setValue(Object value, boolean isSelected, boolean hasFocus) {
-        setSelected(value!=null);
+        setSelected(value != null);
 
         if (isSelected) {
-            if (hasFocus)
-                setBackground(new Color(128,128,255));
-            else
-                setBackground(new Color(192,192,255));
-
-        } else
-            setBackground(Color.white);
+            if (hasFocus) {
+                setBorder(FOCUSED_CELL_BORDER);
+                setBackground(FOCUSED_CELL_BACKGROUND);
+            }
+            else {
+                setBorder(SELECTED_CELL_BORDER);
+                setBackground(SELECTED_CELL_BACKGROUND);
+            }
+        } else {
+            setBorder(BorderFactory.createEmptyBorder());
+            setBackground(Color.WHITE);
+        }
     }
 }

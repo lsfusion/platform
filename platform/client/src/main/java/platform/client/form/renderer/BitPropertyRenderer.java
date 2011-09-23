@@ -27,13 +27,18 @@ public class BitPropertyRenderer extends JCheckBox
             setSelected(false);
 
         if (isSelected) {
-            if (hasFocus)
-                setBackground(new Color(128,128,255));
-            else
-                setBackground(new Color(192,192,255));
-
-        } else
-            setBackground(Color.white);
+            if (hasFocus) {
+                setBorder(FOCUSED_CELL_BORDER);
+                setBackground(FOCUSED_CELL_BACKGROUND);
+            }
+            else {
+                setBorder(SELECTED_CELL_BORDER);
+                setBackground(SELECTED_CELL_BACKGROUND);
+            }
+        } else {
+            setBorder(BorderFactory.createEmptyBorder());
+            setBackground(Color.WHITE);
+        }
 
         if (!hasFocus && value == null) {
             this.setBackground(Color.lightGray);

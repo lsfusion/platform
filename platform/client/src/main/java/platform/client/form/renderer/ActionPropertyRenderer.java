@@ -25,21 +25,21 @@ public class ActionPropertyRenderer extends JButton
     public void setValue(Object value, boolean isSelected, boolean hasFocus) {
         if (defaultIcon == null && getIcon() != null) defaultIcon = getIcon(); // временно так
 
-        setBorder(value == null ? BorderFactory.createEmptyBorder() : defaultBorder);
         setText(defaultIcon != null || value == null ? "" : defaultCaption);
         setIcon(value == null ? null : defaultIcon);
 
         if (isSelected) {
-            if (hasFocus)
-                setBackground(new Color(128, 128, 255));
-            else
-                setBackground(new Color(192, 192, 255));
-
+            if (hasFocus) {
+                setBorder(FOCUSED_CELL_BORDER);
+                setBackground(FOCUSED_CELL_BACKGROUND);
+            }
+            else {
+                setBorder(SELECTED_CELL_BORDER);
+                setBackground(SELECTED_CELL_BACKGROUND);
+            }
         } else {
-            if (value == null)
-                setBackground(Color.white);
-            else
-                setBackground(defaultBackground);
+            setBorder(value == null ? BorderFactory.createEmptyBorder() : defaultBorder);
+            setBackground(value == null ? Color.white : defaultBackground);
         }
     }
 }
