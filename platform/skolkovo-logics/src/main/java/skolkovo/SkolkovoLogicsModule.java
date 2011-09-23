@@ -1497,7 +1497,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         rejectedProjectCluster = addJProp(baseGroup, "rejectedProjectCluster", true, "Оценен отрицательно", baseLM.andNot1, voteValuedProjectCluster, 1, 2, acceptedProjectCluster, 1, 2);
 
         clusterAcceptedProject = addAGProp(idGroup, "clusterAcceptedProject", true, "Кластер (ИД)", acceptedProjectCluster, 2);
-        acceptedProject = addJProp(baseGroup, "acceptedProject", "Оценен положительно", baseLM.and1, addCProp(LogicalClass.instance, true, project), 1, clusterAcceptedProject, 1);
+        acceptedProject = addJProp(baseGroup, "acceptedProject", true, "Оценен положительно", baseLM.and1, addCProp(LogicalClass.instance, true, project), 1, clusterAcceptedProject, 1);
 
         inProjectCluster = addDProp(baseGroup, "inProjectCluster", "Вкл", LogicalClass.instance, project, cluster);
 
@@ -1527,7 +1527,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         lastClusterProjectVote = addJProp("lastClusterProjectVote", "Посл. кластер (ИД)", lastClusterProject, projectVote, 1);
         isLastClusterVote = addJProp("isLastClusterVote", "Посл. кластер", baseLM.equals2, lastClusterProjectVote, 1, clusterVote, 1);
 
-        rejectedProject = addJProp("rejectedProject", "Оценен отрицательно", baseLM.andNot1, addCProp(LogicalClass.instance, true, project), 1, currentClusterProject, 1);
+        rejectedProject = addJProp("rejectedProject", true, "Оценен отрицательно", baseLM.andNot1, addCProp(LogicalClass.instance, true, project), 1, currentClusterProject, 1);
 
         valuedProject = addSUProp("valuedProject", "Оценен", Union.OVERRIDE, acceptedProject, rejectedProject);
 
@@ -2314,7 +2314,9 @@ public class SkolkovoLogicsModule extends LogicsModule {
                     KeyStroke.getKeyStroke(KeyEvent.VK_F9, 0)), true);
             addRegularFilterGroup(activeProjectFilterGroup);
 
-            addHintsIncrementTable(quantityDoneVote, notEnoughProject, acceptedVote, succeededVote, voteSucceededProjectCluster, voteValuedProjectCluster, clusterAcceptedProject, currentClusterProject, resultExecuteFormalControlProject, needExtraVoteProject, resultExecuteLegalCheckProject);
+            addHintsIncrementTable(quantityDoneVote, notEnoughProject, acceptedVote, succeededVote, voteSucceededProjectCluster,
+                    voteValuedProjectCluster, clusterAcceptedProject, currentClusterProject, resultExecuteFormalControlProject,
+                    needExtraVoteProject, resultExecuteLegalCheckProject, overdueFormalControlProject);
 //            addHintsNoUpdate(statusProject);
             setPageSize(0);
 
