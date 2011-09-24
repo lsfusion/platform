@@ -13,7 +13,7 @@ import java.util.List;
 public class BLLogicsManager {
     protected final static Logger logger = Logger.getLogger(BLLogicsManager.class);
 
-    private static final String javaExe = System.getProperty("java.home") + "/bin/java.exe";
+    private static final String javaExe = System.getProperty("java.home") + "/bin/java";
 
     public BLLogicsManager() {
     }
@@ -62,6 +62,7 @@ public class BLLogicsManager {
         commandLine.addArgument("-Dpaas.scripted.port=" + port);
         commandLine.addArgument("-Dpaas.scripted.db.name=" + dbName);
         commandLine.addArgument("-Dpaas.scripted.modules=" + toParameters(moduleNames, scriptFilePaths));
+        commandLine.addArgument("-Djava.rmi.server.hostname=" + "92.243.72.138");
 
         commandLine.addArgument("-cp");
         commandLine.addArgument(System.getProperty("java.class.path"));

@@ -309,7 +309,7 @@ public class ImportProjectsActionProperty extends ActionProperty {
 
         propertyDate = new ImportProperty(dateProjectField, LM.dateJoinProject.getMapping(projectKey));
 
-        propertiesNative.add(new ImportProperty(nameNativeProjectField, LM.nameNativeProject.getMapping(projectKey)));
+        propertiesNative.add(new ImportProperty(nameNativeProjectField, LM.nameNative.getMapping(projectKey)));
         propertiesNative.add(new ImportProperty(nameNativeManagerProjectField, LM.nameNativeManagerProject.getMapping(projectKey)));
         propertiesNative.add(new ImportProperty(nameNativeGenitiveManagerProjectField, LM.nameNativeGenitiveManagerProject.getMapping(projectKey)));
         propertiesNative.add(new ImportProperty(nameNativeDativusManagerProjectField, LM.nameNativeDativusManagerProject.getMapping(projectKey)));
@@ -330,7 +330,7 @@ public class ImportProjectsActionProperty extends ActionProperty {
         propertiesFullClaimerNative.add(new ImportProperty(nameNativeClaimerField, LM.nameNativeJoinClaimer.getMapping(claimerKey)));
         propertiesFullClaimerNative.add(new ImportProperty(firmNameNativeClaimerField, LM.firmNameNativeClaimer.getMapping(claimerKey)));
 
-        propertiesForeign.add(new ImportProperty(nameForeignProjectField, LM.nameForeignProject.getMapping(projectKey)));
+        propertiesForeign.add(new ImportProperty(nameForeignProjectField, LM.nameForeign.getMapping(projectKey)));
         propertiesForeign.add(new ImportProperty(nameForeignManagerProjectField, LM.nameForeignManagerProject.getMapping(projectKey)));
         propertiesForeign.add(new ImportProperty(foreignProblemProjectField, LM.foreignProblemProject.getMapping(projectKey)));
         propertiesForeign.add(new ImportProperty(foreignInnovativeProjectField, LM.foreignInnovativeProject.getMapping(projectKey)));
