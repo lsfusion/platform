@@ -1905,6 +1905,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         addFormEntity(new VoteClaimerFormEntity(print, "voteClaimer", "Уведомление о рассмотрении"));
         addFormEntity(new NoticeRejectedFormEntity(print, "noticeRejected", "Уведомление о несоответствии"));
         addFormEntity(new NoticeAcceptedStatusFormEntity(print, "noticeAcceptedStatus", "Уведомление о соответствии (статус участника)"));
+        addFormEntity(new NoticeAcceptedPreliminaryFormEntity(print, "noticeAcceptedPreliminary", "Уведомление о соответствии (предварительная экспертиза)"));
 
         addFormEntity(new ProjectFormEntity(baseLM.baseElement, "project"));
         addFormEntity(new ClaimerFormEntity(baseLM.baseElement, "claimer"));
