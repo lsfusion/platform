@@ -235,7 +235,7 @@ public class OrderExpr extends QueryExpr<KeyExpr, OrderExpr.Query,OrderJoin> imp
         // assert что expr учавствует в where
         if(query.orderType.isSelect())
             return new StatPullWheres().proceed(query.getWhere(), query.exprs.get(0));
-        return null;
+        return Stat.ALOT;
     }
 
     public Stat getTypeStat(KeyStat keyStat) {
