@@ -43,6 +43,7 @@ import platform.server.logics.property.ExecutionContext;
 import platform.server.logics.property.Property;
 import platform.server.logics.property.group.AbstractGroup;
 import platform.server.mail.EmailActionProperty;
+import skolkovo.actions.CopyProjectActionProperty;
 import skolkovo.actions.ExportProjectDocumentsActionProperty;
 import skolkovo.actions.ImportProjectsActionProperty;
 
@@ -348,7 +349,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP nameNativeCorrectClaimer;
     LP nameNativeClaimer;
     LP nameNativeCorrectClaimerProject;
-    LP nameNativeClaimerProject;
+    public LP nameNativeClaimerProject;
     LP nameForeignClaimerProject;
     LP nameForeignJoinClaimerProject;
     LP emailDocuments;
@@ -485,6 +486,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP includeDocumentsProject, hideIncludeDocumentsProject;
     LP importProjectSidsAction, showProjectsToImportAction, showProjectsReplaceToImportAction, importProjectsAction;
     LP exportProjectDocumentsAction;
+    LP copyProjectAction;
     LP generateVoteProject, hideGenerateVoteProject;
     LP copyResultsVote;
 
@@ -492,7 +494,10 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
     LP projectStatusProject, nameProjectStatusProject;
 
-    LP statusProject, nameStatusProject, oficialNameProjectStatus, statusDataProject;
+    LP statusProject;
+    public LP nameStatusProject;
+    LP oficialNameProjectStatus;
+    LP statusDataProject;
     LP statusProjectVote, nameStatusProjectVote;
 
     LP projectSucceededClaimer;
@@ -514,7 +519,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP clusterNumber;
     LP currentClusterProject, firstClusterProject, lastClusterProject, finalClusterProject;
     LP lastClusterProjectVote, isLastClusterVote;
-    LP nameNativeFinalClusterProject, nameForeignFinalClusterProject;
+    public LP nameNativeFinalClusterProject;
+    LP nameForeignFinalClusterProject;
 
     LP finalClusterProjectVote, nameNativeFinalClusterProjectVote;
 
@@ -539,8 +545,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP quantityProjectLanguageDocumentType;
     LP translateLanguageDocumentType;
     LP notEnoughProject;
-    LP inactiveProject;
-    LP autoGenerateProject;
+    public LP inactiveProject;
+    public LP autoGenerateProject;
 
     LP nameDocument;
 
@@ -557,7 +563,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP nameNativeProjectTypeProject;
     LP nameForeignProjectTypeProject;
     public LP projectActionProject;
-    LP nameProjectActionProject;
+    public LP nameProjectActionProject;
     LP projectActionVote;
     LP nameProjectActionVote;
     LP isStatusVote;
@@ -741,7 +747,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP disableExpert;
 
     LP editClaimer;
-    LP addProject, editProject;
+    public LP addProject;
+    LP editProject;
     LP editClaimerProject;
     LP translateToRussianProject, translateToEnglishProject;
     LP hideTranslateToRussianProject, hideTranslateToEnglishProject;
@@ -1200,7 +1207,6 @@ public class SkolkovoLogicsModule extends LogicsModule {
         // учёные
         projectAcademic = addDProp(idGroup, "projectAcademic", "Проект ученого", project, academic);
         sidProjectAcademic = addJProp("sidProjectAcademic", sidProject, projectAcademic, 1);
-
         fullNameAcademic = addDProp(baseGroup, "fullNameAcademic", "ФИО", InsensitiveStringClass.get(2000), academic);
         fullNameAcademic.setMinimumWidth(10);
         fullNameAcademic.setPreferredWidth(50);
@@ -1559,6 +1565,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         showProjectsToImportAction = addAProp(importGroup, new ImportProjectsActionProperty("Посмотреть импортируемые проекты", this, BL, true, false, false));
         showProjectsReplaceToImportAction = addAProp(importGroup, new ImportProjectsActionProperty("Посмотреть замещаемые проекты", this, BL, true, true, false));
         importProjectsAction = addAProp(importGroup, new ImportProjectsActionProperty("Импортировать проекты", this, BL, false, false, false));
+        copyProjectAction = addAProp(actionGroup, new CopyProjectActionProperty("Скопировать проект", this, project));
         exportProjectDocumentsAction = addAProp(actionGroup, new ExportProjectDocumentsActionProperty("Экспортировать документы", this, project));
 
         generateVoteProject = addAProp(actionGroup, new GenerateVoteActionProperty());
@@ -2208,6 +2215,9 @@ public class SkolkovoLogicsModule extends LogicsModule {
             addPropertyDraw(importProjectsAction).toDraw = objProject.groupTo;
             setForceViewType(importProjectsAction, ClassViewType.PANEL);
 
+            addPropertyDraw(copyProjectAction, objProject).toDraw = objProject.groupTo;
+            setForceViewType(copyProjectAction, ClassViewType.PANEL);
+
             hideTranslateToRussianProject = addHideCaptionProp(privateGroup, "Перевести", translateToRussianProject, needsToBeTranslatedToRussianProject);
             getPropertyDraw(translateToRussianProject).propertyCaption = addPropertyObject(hideTranslateToRussianProject, objProject);
 
@@ -2344,6 +2354,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
                     DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
 
             design.get(getPropertyDraw(importProjectsAction)).drawToToolbar = true;
+            design.get(getPropertyDraw(copyProjectAction)).drawToToolbar = true;
 //            design.getPanelContainer(objProject.groupTo).add(design.getGroupPropertyContainer((GroupObjectEntity)null, importGroup));
 
             ContainerView specContainer = design.createContainer();
