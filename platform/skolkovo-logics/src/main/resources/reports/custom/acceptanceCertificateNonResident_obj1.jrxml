@@ -2,7 +2,7 @@
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="ACT neresident" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0">
 	<property name="ireport.zoom" value="1.0"/>
 	<property name="ireport.x" value="0"/>
-	<property name="ireport.y" value="144"/>
+	<property name="ireport.y" value="382"/>
 	<style name="DefaultStyle" isDefault="true" vAlign="Middle" fontName="lsf.TimesNewRoman" fontSize="12" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false"/>
 	<style name="GroupCellStyle0" mode="Opaque" backcolor="#FFFFFF" vAlign="Middle" fontName="Serif" fontSize="10" pdfFontName="lsf.Times" pdfEncoding="Cp1251" isPdfEmbedded="false">
 		<box leftPadding="2" rightPadding="2">
@@ -21,7 +21,6 @@
 	<field name="dateAgreementExpert" class="java.util.Date"/>
 	<field name="quantityDoneExpertMonthYear" class="java.lang.Integer"/>
 	<field name="nameNativeJoinClaimerProjectVote" class="java.lang.String"/>
-	<field name="caseCurrencyExpert" class="java.lang.String"/>
 	<field name="caseCountryExpert" class="java.lang.String"/>
 	<field name="moneyQuantityDoneExpertMonthYear" class="java.lang.Double"/>
 	<field name="residencyCountryExpert" class="java.lang.Boolean"/>
@@ -36,7 +35,7 @@
 		<variableExpression><![CDATA[0]]></variableExpression>
 		<initialValueExpression><![CDATA[new Integer(1)]]></initialValueExpression>
 	</variable>
-	<group name="expert">
+	<group name="expert" isStartNewPage="true">
 		<groupExpression><![CDATA[$F{documentNameExpert}]]></groupExpression>
 		<groupHeader>
 			<band height="550">
@@ -73,14 +72,15 @@
 					<textElement textAlignment="Justified" verticalAlignment="Middle">
 						<font fontName="lsf.TimesNewRoman" isBold="false"/>
 					</textElement>
-					<textFieldExpression class="java.lang.String"><![CDATA["Некоммерческая организация Фонд развития Центра разработки и коммерциализации новых технологий, в лице Ответственного Секретаря Совета Дианы Владимировны Дудиной, действующей на основании доверенности от 29 июля 2011 года № 39 (далее – Фонд, Фонд «Сколково»), и "+$F{documentNameExpert}+" (далее – Член Экспертнойколлегии), в дальнейшем именуемые «Стороны», подписали настоящий Акт о нижеследующем:"]]></textFieldExpression>
+					<textFieldExpression class="java.lang.String"><![CDATA["Некоммерческая организация Фонд развития Центра разработки и коммерциализации новых технологий, в лице Ответственного Секретаря Совета Дианы Владимировны Дудиной, действующей на основании доверенности от 29 июля 2011 года № 39 (далее – Фонд, Фонд «Сколково»), и "+$F{documentNameExpert}+" (далее – Член Экспертной коллегии), в дальнейшем именуемые «Стороны», подписали настоящий Акт о нижеследующем:"]]></textFieldExpression>
 				</textField>
 				<textField>
 					<reportElement style="DefaultStyle" x="292" y="260" width="239" height="290"/>
 					<textElement textAlignment="Justified" verticalAlignment="Top">
 						<font fontName="lsf.TimesNewRoman" isBold="false"/>
 					</textElement>
-					<textFieldExpression class="java.lang.String"><![CDATA["В соответствии с Соглашением об исполнении функции члена Экспертной коллегии от "+platform.base.BaseUtils.formatRussian ($F{dateAgreementExpert})+" г. (далее - Соглашение) Член Экспертной коллегии осуществил экспертизу заявок с целью установления соответствия  проекта юридического лица, подавшего заявку в соответствии с пунктом 3 Положения о присвоении и утрате статуса участника проекта, (физического или юридического лица, подавшего заявку на проведение предварительной экспертизы проекта в соответствии с пунктом 4 Положения о проведении предварительной экспертизы проектов, критериям, установленным Положением о присвоении и утрате статуса участника проекта). Член Экспертной коллегии своевременно и надлежащим образом осуществил: "+
+					<textFieldExpression class="java.lang.String"><![CDATA["В соответствии с Соглашением об исполнении функции члена Экспертной коллегии от "+platform.base.BaseUtils.formatRussian ($F{dateAgreementExpert})+" г. (далее - Соглашение) Член Экспертной коллегии осуществил экспертизу заявок с целью установления соответствия  проекта юридического лица, подавшего заявку в соответствии с пунктом 3 Положения о присвоении и утрате статуса участника проекта, (физического или юридического лица, подавшего заявку на проведение предварительной экспертизы проекта в соответствии с пунктом 4 Положения о проведении предварительной экспертизы проектов, критериям, установленным Положением о присвоении и утрате статуса участника проекта).\n"+
+"Член Экспертной коллегии своевременно и надлежащим образом осуществил: "+
 $F{quantityDoneExpertMonthYear}+" "+"экспертиз(ы) за период c " + "по заявкам следующих лиц:"]]></textFieldExpression>
 				</textField>
 				<staticText>
@@ -123,19 +123,20 @@ $F{quantityDoneExpertMonthYear}+" "+"экспертиз(ы) за период c 
 					<textElement textAlignment="Justified" verticalAlignment="Top">
 						<font fontName="lsf.TimesNewRoman" isBold="false"/>
 					</textElement>
-					<textFieldExpression class="java.lang.String"><![CDATA["In accordance with this Agreementon the Execution of Functions as a Member of the Expert Board dated "+ $F{dateAgreementExpert}+" (hereinafter referred to as the Agreement), the Expert Board Member has carried out examination of the applicants’ requests for the purpose of establishment of compliance or non-compliance of the project of the legal entity submitted the applicant’s request in accordance with the paragraph 3 of the Provision on the award and loss of status (of the individual or legal entitysubmitted the applicant’s request in accordance with the paragraph 4 of the Provision on the carrying out preliminary examination of the projects with the criteria established by the Provision on the award and a loss of status). The Expert Board Member carried out in due time and properly: "+ $F{quantityDoneExpertMonthYear}+" "+"examinations from c///// " + "according the applicants’ requests of    the following persons:"]]></textFieldExpression>
+					<textFieldExpression class="java.lang.String"><![CDATA["In accordance with this Agreement on the Execution of Functions as a Member of the Expert Board dated "+ $F{dateAgreementExpert}+" (hereinafter referred to as the Agreement), the Expert Board Member has carried out examination of the applicants’ requests for the purpose of establishment of compliance or non-compliance of the project of the legal entity submitted the applicant’s request in accordance with the paragraph 3 of the Provision on the award and loss of status (of the individual or legal entity submitted the applicant’s request in accordance with the paragraph 4 of the Provision on the carrying out preliminary examination of the projects with the criteria established by the Provision on the award and a loss of status). \n"+
+"The Expert Board Member carried out in due time and properly: "+ $F{quantityDoneExpertMonthYear}+" "+"examinations from c///// " + "according the applicants’ requests of the following persons:"]]></textFieldExpression>
 				</textField>
 			</band>
 		</groupHeader>
 		<groupFooter>
-			<band height="366">
+			<band height="263">
 				<staticText>
-					<reportElement positionType="Float" x="327" y="300" width="188" height="16"/>
+					<reportElement positionType="Float" x="327" y="196" width="188" height="16"/>
 					<textElement verticalAlignment="Bottom"/>
 					<text><![CDATA[_____________ /D.V. Dudina/]]></text>
 				</staticText>
 				<textField isStretchWithOverflow="true">
-					<reportElement style="DefaultStyle" positionType="Float" x="12" y="202" width="489" height="15"/>
+					<reportElement style="DefaultStyle" positionType="Float" x="12" y="98" width="489" height="15"/>
 					<textElement textAlignment="Center" verticalAlignment="Bottom">
 						<font isBold="true"/>
 						<paragraph firstLineIndent="40"/>
@@ -143,63 +144,53 @@ $F{quantityDoneExpertMonthYear}+" "+"экспертиз(ы) за период c 
 					<textFieldExpression class="java.lang.String"><![CDATA["Signatures of the Parties / Подписи Cторон"]]></textFieldExpression>
 				</textField>
 				<staticText>
-					<reportElement style="DefaultStyle" x="12" y="300" width="89" height="16"/>
+					<reportElement style="DefaultStyle" x="12" y="196" width="89" height="16"/>
 					<textElement textAlignment="Center"/>
 					<text><![CDATA[____________]]></text>
 				</staticText>
 				<staticText>
-					<reportElement style="DefaultStyle" x="327" y="316" width="188" height="16"/>
+					<reportElement style="DefaultStyle" x="411" y="212" width="104" height="16"/>
 					<textElement/>
 					<text><![CDATA[Д.В. Дудина]]></text>
 				</staticText>
 				<staticText>
-					<reportElement style="DefaultStyle" x="12" y="234" width="266" height="33"/>
+					<reportElement style="DefaultStyle" x="12" y="130" width="266" height="33"/>
 					<textElement textAlignment="Center" verticalAlignment="Top">
 						<font isBold="true"/>
 					</textElement>
-					<text><![CDATA[EXPERTBOARDMEMBER / ЧЛЕН ЭКСПЕРТНОЙ КОЛЛЕГИИ	]]></text>
+					<text><![CDATA[EXPERT BOARD MEMBER / ЧЛЕН ЭКСПЕРТНОЙ КОЛЛЕГИИ	]]></text>
 				</staticText>
 				<staticText>
-					<reportElement style="DefaultStyle" x="292" y="234" width="223" height="33"/>
+					<reportElement style="DefaultStyle" x="292" y="130" width="223" height="33"/>
 					<textElement textAlignment="Center" verticalAlignment="Top">
 						<font isBold="true"/>
 					</textElement>
 					<text><![CDATA[FOUNDATION / ФОНД]]></text>
 				</staticText>
 				<textField isStretchWithOverflow="true">
-					<reportElement style="DefaultStyle" positionType="Float" x="292" y="0" width="239" height="104"/>
-					<textElement verticalAlignment="Top"/>
-					<textFieldExpression class="java.lang.String"><![CDATA["В соответствии с указанным Соглашением после подписания настоящего Акта Фонд  выплатит Члену Экспертной коллегии вознаграждение в сумме, равной "+ $F{moneyQuantityDoneExpertMonthYear}+" долларов США. Валюта платежа – "+ $F{pluralCurrencyExpert}+"."]]></textFieldExpression>
-				</textField>
-				<textField isStretchWithOverflow="true">
-					<reportElement style="DefaultStyle" positionType="Float" x="292" y="104" width="239" height="92"/>
+					<reportElement style="DefaultStyle" positionType="Float" x="292" y="0" width="239" height="92"/>
 					<textElement textAlignment="Justified" verticalAlignment="Top"/>
-					<textFieldExpression class="java.lang.String"><![CDATA["Член Экспертной коллегии осуществил проведение экспертизы заявок не в Российской Федерации в ("+$F{caseCountryExpert}+")" +($F{residencyCountryExpert}!=null?".":" и не является налоговым резидентом Российской Федерации.")]]></textFieldExpression>
-				</textField>
-				<textField isStretchWithOverflow="true" pattern="">
-					<reportElement style="DefaultStyle" positionType="Float" x="12" y="0" width="256" height="89"/>
-					<textElement verticalAlignment="Top"/>
-					<textFieldExpression class="java.lang.String"><![CDATA["In accordance with the above mentioned Agreement after signing of the present  Actthe Foundation is to pay to the Expert Board Member remuneration equal to "+ $F{moneyQuantityDoneExpertMonthYear}+" " +"U.S. dollars 00 cents. Currency of payment -"+ $F{englCurrencyExpert}+"."]]></textFieldExpression>
+					<textFieldExpression class="java.lang.String"><![CDATA["Член Экспертной коллегии осуществил проведение экспертизы заявок не в Российской Федерации (в "+$F{caseCountryExpert}+")" +($F{residencyCountryExpert}!=null?".":" и не является налоговым резидентом Российской Федерации.")]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
-					<reportElement style="DefaultStyle" positionType="Float" x="12" y="104" width="256" height="92"/>
+					<reportElement style="DefaultStyle" positionType="Float" x="12" y="0" width="256" height="92"/>
 					<textElement textAlignment="Justified" verticalAlignment="Top"/>
 					<textFieldExpression class="java.lang.String"><![CDATA["Expert Board Member has carried out examination abroad of the Russian Federation (in "+$F{englCountryExpert}+($F{residencyCountryExpert}!=null?").":") and is not a tax resident of the Russian Federation.")]]></textFieldExpression>
 				</textField>
 				<staticText>
-					<reportElement style="DefaultStyle" x="325" y="342" width="188" height="16"/>
+					<reportElement style="DefaultStyle" x="325" y="238" width="188" height="16"/>
 					<textElement/>
 					<text><![CDATA[stamphere / М.П.]]></text>
 				</staticText>
 				<textField>
-					<reportElement x="17" y="316" width="100" height="16"/>
+					<reportElement x="101" y="212" width="151" height="16"/>
 					<textElement/>
-					<textFieldExpression class="java.lang.String"><![CDATA["cd-do"]]></textFieldExpression>
+					<textFieldExpression class="java.lang.String"><![CDATA[$F{documentNameExpert}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
-					<reportElement style="DefaultStyle" positionType="Float" x="101" y="300" width="151" height="16"/>
+					<reportElement style="DefaultStyle" positionType="Float" x="101" y="196" width="151" height="16"/>
 					<textElement verticalAlignment="Top"/>
-					<textFieldExpression class="java.lang.String"><![CDATA["/ cd-dj /"]]></textFieldExpression>
+					<textFieldExpression class="java.lang.String"><![CDATA[$F{userLastName}+" "+$F{userFirstName}]]></textFieldExpression>
 				</textField>
 			</band>
 		</groupFooter>
@@ -207,15 +198,32 @@ $F{quantityDoneExpertMonthYear}+" "+"экспертиз(ы) за период c 
 	<group name="expert2">
 		<groupExpression><![CDATA[$F{documentNameExpert}]]></groupExpression>
 		<groupFooter>
-			<band height="71">
+			<band height="81">
 				<textField isStretchWithOverflow="true">
-					<reportElement style="DefaultStyle" positionType="Float" x="292" y="8" width="239" height="61"/>
+					<reportElement style="DefaultStyle" positionType="Float" x="292" y="0" width="239" height="78"/>
+					<textElement verticalAlignment="Top"/>
+					<textFieldExpression class="java.lang.String"><![CDATA["В соответствии с указанным Соглашением после подписания настоящего Акта Фонд  выплатит Члену Экспертной коллегии вознаграждение в сумме, равной "+ $F{moneyQuantityDoneExpertMonthYear}+" долларов США. Валюта платежа – "+ $F{pluralCurrencyExpert}+"."]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" pattern="">
+					<reportElement style="DefaultStyle" positionType="Float" x="12" y="0" width="256" height="78"/>
+					<textElement verticalAlignment="Top"/>
+					<textFieldExpression class="java.lang.String"><![CDATA["In accordance with the above mentioned Agreement after signing of the present Act the Foundation is to pay to the Expert Board Member remuneration equal to "+ $F{moneyQuantityDoneExpertMonthYear}+" " +"U.S. dollars 00 cents. Currency of payment -"+ $F{englCurrencyExpert}+"."]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupFooter>
+	</group>
+	<group name="expert3">
+		<groupExpression><![CDATA[$F{documentNameExpert}]]></groupExpression>
+		<groupFooter>
+			<band height="70">
+				<textField isStretchWithOverflow="true">
+					<reportElement style="DefaultStyle" positionType="Float" x="292" y="9" width="239" height="61"/>
 					<textElement verticalAlignment="Top"/>
 					<textFieldExpression class="java.lang.String"><![CDATA["Бюллетени оценки проектов по указанным заявкам прилагаются к настоящему Акту.\n"+
 "Фонд по объему и качеству осуществленных экспертиз претензий не имеет."]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
-					<reportElement style="DefaultStyle" positionType="Float" x="12" y="8" width="256" height="61"/>
+					<reportElement style="DefaultStyle" positionType="Float" x="12" y="9" width="256" height="61"/>
 					<textElement verticalAlignment="Top"/>
 					<textFieldExpression class="java.lang.String"><![CDATA["Evaluation Bulletins of the mentioned applicants’ requests are attached to the present Act.\n"+
 "The Foundation has no claims on volume and quality of the rendered examinations."]]></textFieldExpression>
@@ -224,7 +232,7 @@ $F{quantityDoneExpertMonthYear}+" "+"экспертиз(ы) за период c 
 		</groupFooter>
 	</group>
 	<detail>
-		<band height="20">
+		<band height="16">
 			<textField isStretchWithOverflow="true">
 				<reportElement style="DefaultStyle" positionType="Float" x="292" y="0" width="239" height="16"/>
 				<textElement verticalAlignment="Top"/>

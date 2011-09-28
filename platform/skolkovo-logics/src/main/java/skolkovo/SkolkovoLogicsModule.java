@@ -219,10 +219,10 @@ public class SkolkovoLogicsModule extends LogicsModule {
         projectStatus = addStaticClass("projectStatus", "Статус проекта",
                 new String[]{"unknown", "needTranslation", "needDocuments", "needExtraVote", "inProgress", "succeeded", "accepted", "rejected",
                      "notEnoughDocsForPreliminary", "notEnoughDocsForStatus", "noExperts", "noCluster", "positiveFCResult", "negativeLCResult", "positiveLCResult",
-                     "registered", "repeated", "sentForVote", "withdrawn", "overdueFC"},
+                     "registered", "repeated", "sentForVote", "withdrawn", "overdueFC", "overdueLC"},
                 new String[]{"Неизвестный статус", "Направлена на перевод", "Не соответствуют документы", "Требуется заседание (повторное)", "Идет заседание", "Достаточно голосов", "Оценен положительно", "Оценен отрицательно",
                      "Неполный перечень документов (на экспертизу)","Неполный перечень документов (на статус)",  "Отсутствует перечень экспертов", "Не соответствует направлению", "Направлена на юридическую проверку", "Не прошла юридическую проверку", "Прошла юридическую проверку",
-                     "Зарегистирована", "Подана повторно", "Направлена на экспертизу по существу","Отозвана заявителем", "Не исправлена в срок"});
+                     "Зарегистирована", "Подана повторно", "Направлена на экспертизу по существу","Отозвана заявителем", "Не исправлена в срок (ФЭ)", "Не исправлена в срок (ЮП)"});
 
         documentType = addStaticClass("documentType", "Тип документа",
                 new String[]{"application", "resume", "techdesc", "forres", "ipres", "roadmap"},
@@ -803,8 +803,6 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP caseCountry;
     LP caseCountryExpert;
     LP currencyExpert;
-    LP caseCurrency;
-    LP caseCurrencyExpert;
     LP nameCurrencyExpert;
     LP residency;
     LP residencyCountryExpert;
@@ -1904,11 +1902,10 @@ public class SkolkovoLogicsModule extends LogicsModule {
         caseCountryExpert = addJProp("caseCountryExpert", "Страна эксперта П.П.", caseCountry, countryExpert, 1);
 
         currencyExpert = addDProp("currencyExpert", "Валюта (ИД)", currency, expert);
-        caseCurrency= addDProp(baseGroup, "caseCurrency", "Валюта в Предложном падеже", StringClass.get(40), currency);
         nameCurrencyExpert = addJProp("nameCurrencyExpert", "Валюта договора", baseLM.name, currencyExpert,1);
         nameCurrencyExpert.setMinimumWidth(10);
         nameCurrencyExpert.setPreferredWidth(20);
-        caseCurrencyExpert = addJProp("caseCurrencyExpert", "Валюта П.П.", caseCurrency, currencyExpert, 1);
+
 
         residency = addDProp(baseGroup, "residency", "Признак резидентства", LogicalClass.instance, baseLM.country);
         residencyCountryExpert = addJProp("residencyCountryExpert", "Резидент", residency, countryExpert, 1);
@@ -3133,7 +3130,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             addPropertyDraw(objMonth, objYear, emailLetterExpertMonthYearEA);
             // addPropertyDraw(objMonth, objYear, lastDayOfMonthYear);
 
-            objExpert = addSingleGroupObject(expert, baseLM.selection, baseLM.userFirstName, baseLM.userLastName, documentNameExpert, dateAgreementExpert, nameCountryExpert, caseCountryExpert, nameCurrencyExpert, caseCurrencyExpert, baseCurrencyExpert, nameNativeClusterExpert, nameLanguageExpert, residencyCountryExpert);
+            objExpert = addSingleGroupObject(expert, baseLM.selection, baseLM.userFirstName, baseLM.userLastName, documentNameExpert, dateAgreementExpert, nameCountryExpert, caseCountryExpert, englCountryExpert, nameCurrencyExpert, baseCurrencyExpert, englCurrencyExpert, pluralCurrencyExpert,nameNativeClusterExpert, nameLanguageExpert, residencyCountryExpert);
             //   objExpert.groupTo.initClassView = ClassViewType.PANEL;
 
             objVote = addSingleGroupObject(vote, nameNativeProjectVote, nameNativeJoinClaimerProjectVote, nameForeignClaimerVote, dateStartVote, dateEndVote, openedVote, succeededVote, quantityDoneVote);
