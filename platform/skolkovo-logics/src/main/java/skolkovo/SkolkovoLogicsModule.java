@@ -49,6 +49,7 @@ import skolkovo.actions.ImportProjectsActionProperty;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.io.*;
 import java.sql.*;
@@ -132,6 +133,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
     ConcreteCustomClass formalControl;
     StaticCustomClass legalCheckResult;
     ConcreteCustomClass legalCheck;
+    ConcreteCustomClass currency;
 
     AbstractGroup projectInformationGroup;
     AbstractGroup additionalInformationGroup;
@@ -203,6 +205,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
         document = addConcreteClass("document", "Документ", documentAbstract);
 
         vote = addConcreteClass("vote", "Заседание", baseClass, baseLM.transaction);
+
+        currency = addConcreteClass("currency", "Валюта", baseClass.named);
 
         language = addStaticClass("language", "Язык",
                 new String[]{"russian", "english"},
@@ -762,8 +766,6 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP overdueDateFormalControl;
     LP overdueFormalControlProject;
     LP commentFormalControl;
-    LP notAvailableForStatusProjectStatus;
-    LP notAvailableForPreliminaryProjectStatus;
     LP[] maxFormalControlProjectProps;
     LP currentFormalControlProject;
     LP executeFormalControlProject;
@@ -792,10 +794,44 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP positiveLegalResultProject;
     LP sentForTranslationProject;
 
+    LP dateAgreementExpert;
+    LP vone;
+    LP claimerProjectVote;
+    LP nameNativeJoinClaimerProjectVote;
+    LP countryExpert;
+    LP nameCountryExpert;
+    LP caseCountry;
+    LP caseCountryExpert;
+    LP currencyExpert;
+    LP caseCurrency;
+    LP caseCurrencyExpert;
+    LP nameCurrencyExpert;
+    LP residency;
+    LP residencyCountryExpert;
+    LP rateExpert;
+    LP emailForCertificates;
+    LP moneyQuantityDoneExpertMonthYear;
+    LP baseCurrency;
+    LP baseCurrencyExpert;
+    LP englCountry;
+    LP englCountryExpert;
+    LP englCurrency;
+    LP englCurrencyExpert;
+    LP pluralCurrency;
+    LP pluralCurrencyExpert;
+    LP emailLetterExpertMonthYearEA;
+    LP emailLetterCertificatesExpertMonthYear;
+    LP monthInPreviousDate;
+    LP isNewMonth;
+
+
     @Override
     public void initProperties() {
         idGroup.add(baseLM.objectValue);
 
+        monthInPreviousDate = addJProp("monthInPreviousDate", "Вчерашний месяц", baseLM.monthInDate, addJProp(baseLM.subtractDate2, baseLM.currentDate, addCProp("1", IntegerClass.instance, 1)));
+        // monthInYeasterdayDate = addJProp("monthInYeasterdayDate", "Вчерашний месяц", baseLM.monthInDate, addJProp(baseLM.addDate2, baseLM.currentDate, addCProp("1", IntegerClass.instance, 1)));
+        isNewMonth = addJProp("isNewMonth", "Начало месяца", baseLM.diff2, addJProp(baseLM.monthInDate, baseLM.currentDate), monthInPreviousDate);
         nameNative = addDProp(recognizeGroup, "nameNative", "Имя", InsensitiveStringClass.get(2000), multiLanguageNamed);
         nameNative.property.aggProp = true;
         nameNative.setMinimumWidth(10);
@@ -817,6 +853,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
         requiredQuantity = addDProp(baseGroup, "voteRequiredQuantity", "Кол-во экспертов", IntegerClass.instance);
         limitExperts = addDProp(baseGroup, "limitExperts", "Кол-во прогол. экспертов", IntegerClass.instance);
         projectsImportLimit = addDProp(baseGroup, "projectsImportLimit", "Максимальное кол-во импортируемых проектов", IntegerClass.instance);
+        rateExpert = addDProp(baseGroup, "rateExpert", "Ставка эксперта (долларов)", DoubleClass.instance);
+        emailForCertificates = addDProp(baseGroup, "emailForCertificates", "e-mail для актов", StringClass.get(50));
 
         //свойства заявителя
         nameNativeJoinClaimer = addJProp(claimerInformationGroup, "nameNativeJoinClaimer", "Заявитель", baseLM.and1, nameNative, 1, is(claimer), 1);
@@ -1476,7 +1514,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         LP expertVoteMonthYear = addJProp(baseLM.and1, addJProp(baseLM.equals2, 3, addJProp(baseLM.monthInDate, dateExpertVote, 1, 2), 1, 2), 1, 2, 3,
                                                        addJProp(baseLM.equals2, 3, addJProp(baseLM.yearInDate, dateExpertVote, 1, 2), 1, 2), 1, 2, 4);
-        doneExpertVoteMonthYear = addJProp(baseLM.and1, doneNewExpertVote, 1, 2, expertVoteMonthYear, 1, 2, 3, 4);
+        doneExpertVoteMonthYear = addJProp("doneExpertVoteMonthYear", "Проголосовал в текущем месяце", baseLM.and1, doneNewExpertVote, 1, 2, expertVoteMonthYear, 1, 2, 3, 4);
         quantityDoneExpertMonthYear = addSGProp("quantityDoneExpertMonthYear", "Кол-во голосов.",
                 addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), doneExpertVoteMonthYear, 1, 2, 3, 4), 1, 3, 4); // в скольки заседаниях поучавствовал за месяц
 
@@ -1850,6 +1888,49 @@ public class SkolkovoLogicsModule extends LogicsModule {
         emailAcceptedProject.setDerivedForcedChange(addCProp(ActionClass.instance, true), acceptedProject, 1);
 
         emailToExpert = addJProp("emailToExpert", "Эксперт по e-mail", addJProp(baseLM.and1, 1, is(expert), 1), baseLM.emailToObject, 1);
+
+        dateAgreementExpert = addDProp("dateAgreementExpert", "Дата соглашения с экспертом", DateClass.instance, expert);
+        vone = addCProp("1", IntegerClass.instance, 1);
+        claimerProjectVote  = addJProp("claimerProjectVote", "claimerProjectVote", claimerProject, projectVote,1);
+        nameNativeJoinClaimerProjectVote = addJProp("nameNativeJoinClaimerProjectVote", "Имя заявителя", nameNativeJoinClaimerProject, projectVote, 1);
+        nameNativeJoinClaimerProjectVote.setMinimumWidth(10);
+        nameNativeJoinClaimerProjectVote.setPreferredWidth(120);
+        countryExpert = addDProp("countryExpert", "Страна эксперта", baseLM.country, expert);
+        nameCountryExpert = addJProp("nameCountryExpert", "Страна эксперта", baseLM.name, countryExpert,1);
+        nameCountryExpert.setMinimumWidth(10);
+        nameCountryExpert.setPreferredWidth(20);
+
+        caseCountry= addDProp(baseGroup, "caseCountry", "Страна в Предложном падеже", StringClass.get(40), baseLM.country);
+        caseCountryExpert = addJProp("caseCountryExpert", "Страна эксперта П.П.", caseCountry, countryExpert, 1);
+
+        currencyExpert = addDProp("currencyExpert", "Валюта (ИД)", currency, expert);
+        caseCurrency= addDProp(baseGroup, "caseCurrency", "Валюта в Предложном падеже", StringClass.get(40), currency);
+        nameCurrencyExpert = addJProp("nameCurrencyExpert", "Валюта договора", baseLM.name, currencyExpert,1);
+        nameCurrencyExpert.setMinimumWidth(10);
+        nameCurrencyExpert.setPreferredWidth(20);
+        caseCurrencyExpert = addJProp("caseCurrencyExpert", "Валюта П.П.", caseCurrency, currencyExpert, 1);
+
+        residency = addDProp(baseGroup, "residency", "Признак резидентства", LogicalClass.instance, baseLM.country);
+        residencyCountryExpert = addJProp("residencyCountryExpert", "Резидент", residency, countryExpert, 1);
+        moneyQuantityDoneExpertMonthYear = addJProp("moneyQuantityDoneExpertMonthYear", "ЗП эксперта за мес.", baseLM.round0,  addJProp (baseLM.multiplyDouble2, quantityDoneExpertMonthYear, 1, 2, 3, rateExpert), 1, 2, 3 );
+
+        baseCurrency = addDProp(baseGroup, "baseCurrency", "Базовая валюта", LogicalClass.instance, currency);
+        baseCurrencyExpert = addJProp("baseCurrencyExpert", "Базовая валюта", baseCurrency, currencyExpert,1);
+
+        englCountry = addDProp(baseGroup, "englCountry", "Страна на ангийском", StringClass.get(40), baseLM.country);
+        englCountryExpert   = addJProp("englCountryExpert", "Страна эксперта англ", englCountry, countryExpert, 1);
+        englCurrency= addDProp(baseGroup, "englCurrency", "Валюта на ангийском", StringClass.get(40), currency);
+        englCurrencyExpert   = addJProp("englCurrencyExpert", "Валюта эксперта англ", englCurrency, currencyExpert, 1);
+        pluralCurrency= addDProp(baseGroup, "pluralCurrency", "Валюта множ.числ", StringClass.get(40), currency);
+        pluralCurrencyExpert   = addJProp("pluralCurrencyExpert", "Валюта эксперта мн.ч.", pluralCurrency, currencyExpert, 1);
+
+        emailLetterExpertMonthYearEA = addEAProp(IntegerClass.instance, IntegerClass.instance);
+        addEARecepient(emailLetterExpertMonthYearEA, emailForCertificates);
+        emailLetterCertificatesExpertMonthYear = addJProp("emailLetterCertificatesExpertMonthYear", "Отправка актов", emailLetterExpertMonthYearEA, addJProp(baseLM.monthInDate, baseLM.currentDate), addJProp(baseLM.yearInDate, baseLM.currentDate));
+      //  emailLetterCertificatesExpertMonthYear.setImage("email.png");
+      //  emailLetterCertificatesExpertMonthYear.property.askConfirm = true;
+      //  emailLetterCertificatesExpertMonthYear.setDerivedForcedChange(addCProp(ActionClass.instance, true), isNewMonth);
+
     }
 
     @Override
@@ -1913,6 +1994,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
         addFormEntity(new NoticeRejectedFormEntity(print, "noticeRejected", "Уведомление о несоответствии"));
         addFormEntity(new NoticeAcceptedStatusFormEntity(print, "noticeAcceptedStatus", "Уведомление о соответствии (статус участника)"));
         addFormEntity(new NoticeAcceptedPreliminaryFormEntity(print, "noticeAcceptedPreliminary", "Уведомление о соответствии (предварительная экспертиза)"));
+        addFormEntity(new AcceptanceCertificateFormEntity(print, "acceptanceCertificate", "Акт оказанных услуг (резидент)", true));
+        addFormEntity(new AcceptanceCertificateFormEntity(print, "acceptanceCertificateNonResident", "Акт оказанных услуг (нерезидент)", false));
 
         addFormEntity(new ProjectFormEntity(baseLM.baseElement, "project"));
         addFormEntity(new ClaimerFormEntity(baseLM.baseElement, "claimer"));
@@ -2439,7 +2522,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         private GlobalFormEntity(NavigatorElement parent, String sID) {
             super(parent, sID, "Глобальные параметры");
 
-            addPropertyDraw(new LP[]{baseLM.currentDate, requiredPeriod, overduePeriod, requiredQuantity, limitExperts, emailDocuments, emailClaimerFromAddress, projectsImportLimit, importProjectSidsAction, showProjectsToImportAction, showProjectsReplaceToImportAction, importProjectsAction});
+            addPropertyDraw(new LP[]{baseLM.currentDate, requiredPeriod, overduePeriod, requiredQuantity, limitExperts, emailDocuments, emailClaimerFromAddress, emailForCertificates, projectsImportLimit, rateExpert, monthInPreviousDate, baseLM.currentDate, importProjectSidsAction, showProjectsToImportAction, showProjectsReplaceToImportAction, importProjectsAction});
         }
     }
 
@@ -2524,7 +2607,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         private ExpertFormEntity(NavigatorElement parent, String sID) {
             super(parent, sID, "Реестр экспертов");
 
-            objExpert = addSingleGroupObject(expert, baseLM.selection, baseLM.userFirstName, baseLM.userLastName, documentNameExpert, baseLM.userLogin, baseLM.userPassword, baseLM.email, disableExpert, nameNativeClusterExpert, nameLanguageExpert, expertResultGroup, baseLM.generateLoginPassword, emailAuthExpert);
+            objExpert = addSingleGroupObject(expert, baseLM.selection, baseLM.userFirstName, baseLM.userLastName, documentNameExpert, baseLM.userLogin, baseLM.userPassword, baseLM.email, disableExpert, nameNativeClusterExpert, nameLanguageExpert, dateAgreementExpert, nameCountryExpert, expertResultGroup, baseLM.generateLoginPassword, emailAuthExpert);
             addObjectActions(this, objExpert);
 
             objVote = addSingleGroupObject(vote, nameNativeProjectVote, dateStartVote, dateEndVote, openedVote, succeededVote, quantityDoneVote);
@@ -3028,6 +3111,49 @@ public class SkolkovoLogicsModule extends LogicsModule {
             addInlineEAForm(emailNoticeAcceptedPreliminaryVoteEA, this, objVote, 1);
         }
     }
+
+    private class AcceptanceCertificateFormEntity extends FormEntity<SkolkovoBusinessLogics> {
+               private ObjectEntity objExpert;
+               private ObjectEntity objVote;
+               private ObjectEntity objYear;
+               private ObjectEntity objMonth;
+
+
+                private AcceptanceCertificateFormEntity(NavigatorElement parent, String sID, String caption, boolean resident) {
+                super(parent, sID, caption);
+
+                objYear = addSingleGroupObject(IntegerClass.instance, "Год");
+                objYear.groupTo.setSingleClassView(ClassViewType.PANEL);
+                addPropertyDraw(objYear, baseLM.objectValue);
+
+                objMonth = addSingleGroupObject(IntegerClass.instance, "Месяц");
+                objMonth.groupTo.setSingleClassView(ClassViewType.PANEL);
+                addPropertyDraw(objMonth, baseLM.objectValue);
+               // addPropertyDraw(objMonth, objYear, lastDayOfMonthYear);
+
+                objExpert = addSingleGroupObject(expert, baseLM.selection, baseLM.userFirstName, baseLM.userLastName, documentNameExpert, dateAgreementExpert, nameCountryExpert, caseCountryExpert, nameCurrencyExpert, caseCurrencyExpert, baseCurrencyExpert, nameNativeClusterExpert, nameLanguageExpert, residencyCountryExpert);
+                //   objExpert.groupTo.initClassView = ClassViewType.PANEL;
+
+                objVote = addSingleGroupObject(vote, nameNativeProjectVote, nameNativeJoinClaimerProjectVote, nameForeignClaimerVote, dateStartVote, dateEndVote, openedVote, succeededVote, quantityDoneVote);
+                addPropertyDraw(inNewExpertVote, objExpert, objVote);
+                addPropertyDraw(objExpert, objVote, objMonth, objYear, doneExpertVoteMonthYear);
+
+              //  addPropertyDraw(voteResultGroup, true, objExpert, objVote);
+                addPropertyDraw(objExpert,objMonth, objYear, quantityDoneExpertMonthYear, moneyQuantityDoneExpertMonthYear);
+                if (resident)
+                    addFixedFilter(new NotNullFilterEntity(addPropertyObject(residencyCountryExpert, objExpert)));
+
+                if (!resident)
+                    addFixedFilter(new NotFilterEntity(new NotNullFilterEntity(addPropertyObject(residencyCountryExpert, objExpert))));
+
+                addFixedFilter(new NotNullFilterEntity(addPropertyObject(quantityDoneExpertMonthYear, objExpert,objMonth, objYear)));
+                addFixedFilter(new NotNullFilterEntity(addPropertyObject(doneExpertVoteMonthYear, objExpert, objVote, objMonth, objYear)));
+                addFixedFilter(new NotNullFilterEntity(addPropertyObject(inNewExpertVote, objExpert, objVote)));
+
+                addAttachEAForm(emailLetterExpertMonthYearEA, this, EmailActionProperty.Format.PDF, objMonth, 1, objYear, 2);
+           //     setPageSize(0);
+            }
+        }
 
     private class ClaimerAcceptedFormEntity extends FormEntity<SkolkovoBusinessLogics> {
 

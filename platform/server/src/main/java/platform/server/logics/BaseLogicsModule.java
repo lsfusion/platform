@@ -106,6 +106,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public LP divideDouble2;
     public LP divideDouble3;
     public LP addDate2;
+    public LP subtractDate2;
     public LP string2;
     public LP insensitiveString2;
     protected LP concat2;
@@ -115,6 +116,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public LP weekInDate;
     public LP monthInDate;
     public LP yearInDate;
+    public LP dayInDate;
     public LP dateInTime;
 
     public LP vtrue, actionTrue, vzero;
@@ -409,6 +411,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         divideDouble2 = addSFProp("divideDouble2", "round(CAST((CAST((prm1) as numeric)/(prm2)) as numeric),2)", DoubleClass.instance, 2);
         divideDouble3 = addSFProp("divideDouble3", "round(CAST((CAST((prm1) as numeric)/(prm2)) as numeric),3)", DoubleClass.instance, 2);
         addDate2 = addSFProp("((prm1)+(prm2))", DateClass.instance, 2);
+        subtractDate2 = addSFProp("((prm1)-(prm2))", DateClass.instance, 2);
         percent = addSFProp("((prm1)*(prm2)/100)", DoubleClass.instance, 2);
         percent2 = addSFProp("round(CAST(((prm1)*(prm2)/100) as numeric), 2)", DoubleClass.instance, 2);
         share2 = addSFProp("round(CAST(((prm1)/(prm2)*100) as numeric), 2)", DoubleClass.instance, 2);
@@ -436,6 +439,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         weekInDate = addSFProp("(extract(week from (prm1)))", IntegerClass.instance, 1);
         monthInDate = addSFProp("(extract(month from (prm1)))", IntegerClass.instance, 1);
         yearInDate = addSFProp("(extract(year from (prm1)))", IntegerClass.instance, 1);
+        dayInDate = addSFProp("(extract(day from (prm1)))", IntegerClass.instance, 1);
         dateInTime = addSFProp("(CAST((prm1) as date))", DateClass.instance, 1);
 
         delete = addAProp(new DeleteObjectActionProperty(baseClass));
