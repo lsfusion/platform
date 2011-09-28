@@ -44,7 +44,7 @@ public class PricatEDIInputTable extends EDIInputTable {
                             List<String> comp = getComposition();
                             if (comp.get(1).equals("SA")) {
                                 String article = comp.get(0);
-                                if (supplier !=null && ((ConcreteCustomClass) supplier.objectClass).getSID().equals("sOliverSupplier")) {
+                                if (supplier != null && ((ConcreteCustomClass) supplier.objectClass).getSID().equals("sOliverSupplier")) {
                                     article = new StringBuffer(article).insert(2, '.').insert(6, '.').insert(9, '.').toString();
                                 }
                                 row.put("article", article);
@@ -74,31 +74,26 @@ public class PricatEDIInputTable extends EDIInputTable {
                                         } else {
                                             row.put("colorCode", comp.get(comp.size() - 1));
                                         }
-                                    } else if (imd1.equals("F")) {
+                                    } else if (imd1.equals("B")) {
                                         row.put("color", comp.get(comp.size() - 1));
                                     }
-                                } else if (imd2.equals("ANM")) {
-                                    row.put("originalName", comp.get(comp.size() - 1));
-                                } else if (imd2.equals("MD")) {
-                                    String composition = "";
-                                    for (int i = 3; i< comp.size(); i++) {
-                                        composition += comp.get(i);
+                                } else if ((imd1.equals("F"))&&(imd2.equals("FIC"))) {
+                                        row.put("gender", comp.get(comp.size() - 1));
                                     }
-                                    row.put("composition", composition);
+                                else if (imd2.equals("ANM")) {
+                                    row.put("originalName", comp.get(comp.size() - 1));
+                                }  else if(imd2.equals(("TDS"))) {
+                                   row.put("composition", comp.get(3));
+                                } else if(imd2.equals(("XX6"))) {
+                                   row.put("season", comp.get(3));
                                 }
                             }
-                        } else if (segmentID.equals("LOC02")) {
+                            } else if (segmentID.equals("ALI01")) {
                             row.put("country", getTokenValue());
                         } else if (segmentID.equals("MEA03")) {
                             List<String> comp = getComposition();
                             if (comp.get(0).equals("NET")) {
                                 row.put("netWeight", comp.get(1));
-                            }
-                        } else if (segmentID.equals("FTX01")) {
-                            ftx1 = getTokenValue();
-                        } else if (segmentID.equals("FTX04")) {
-                            if (ftx1.equals("SIN")) {
-                                row.put("composition", getTokenValue());
                             }
                         } else if (segmentID.equals("PRI01")) {
                             List<String> comp = getComposition();

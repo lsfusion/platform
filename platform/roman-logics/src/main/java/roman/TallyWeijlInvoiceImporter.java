@@ -13,7 +13,7 @@ import java.text.ParseException;
  */
 
 public class TallyWeijlInvoiceImporter extends SingleSheetImporter {
-    private static final int LAST_COLUMN = AF;
+    private static final int INVOICENUMBER = C, BOXNUMBER = K, LAST_COLUMN = AF;
 
     public TallyWeijlInvoiceImporter(ImportInputTable inputTable, Object... fields) {
         super(inputTable, fields);
@@ -27,12 +27,24 @@ public class TallyWeijlInvoiceImporter extends SingleSheetImporter {
     @Override
     protected String getCellString(ImportField field, int row, int column) throws ParseException {
         if (column <= LAST_COLUMN) {
-            return super.getCellString(field, row, column);
+            String cellValue = super.getCellString(field, row, column);
+            if (column == BOXNUMBER)
+                if ("#".equals(cellValue)) return super.getCellString(field, row, INVOICENUMBER);
+            return cellValue;
         } else if (column == LAST_COLUMN + 1) {
             return String.valueOf(currentRow + 1);
         } else {
             return "";
         }
+
+        //if (column <= LAST_COLUMN) {
+        //    return super.getCellString(field, row, column);
+        //} else
+        //if (column == LAST_COLUMN + 1) {
+        //    return String.valueOf(currentRow + 1);
+        //} else {
+        //    return "";
+        //}
     }
 
     @Override
@@ -47,8 +59,10 @@ public class TallyWeijlInvoiceImporter extends SingleSheetImporter {
                     return value;
             case L:
                 switch (part) {
-                    case 0: return value.substring(0, Math.min(10, value.length())); // customs code
-                    case 1: return value.substring(0, Math.min(6, value.length())); // customs code 6
+                    case 0:
+                        return value.substring(0, Math.min(10, value.length())); // customs code
+                    case 1:
+                        return value.substring(0, Math.min(6, value.length())); // customs code 6
                 }
             case Q:
                 int lastBackslashPos = value.lastIndexOf('\\');
@@ -67,7 +81,8 @@ public class TallyWeijlInvoiceImporter extends SingleSheetImporter {
                             return value.substring(commonIndex + 1, endIndex).trim(); // color
                     }
                 }
-            default: return value;
+            default:
+                return value;
         }
     }
 }
