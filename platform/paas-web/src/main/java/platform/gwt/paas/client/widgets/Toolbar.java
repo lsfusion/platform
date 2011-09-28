@@ -1,7 +1,9 @@
 package platform.gwt.paas.client.widgets;
 
+import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.shared.EventBus;
 import com.google.inject.Inject;
+import com.smartgwt.client.util.SC;
 import com.smartgwt.client.widgets.events.ClickEvent;
 import com.smartgwt.client.widgets.events.ClickHandler;
 import com.smartgwt.client.widgets.toolbar.ToolStrip;
@@ -31,6 +33,16 @@ public class Toolbar extends ToolStrip {
         addButton(button);
 
         return button;
+    }
+
+    protected void addConsoleButton() {
+        if (!GWT.isScript()) {
+            addToolStripButton("Developer Console", "bug.png", "Developer Console", new ClickHandler() {
+                public void onClick(ClickEvent event) {
+                    SC.showConsole();
+                }
+            });
+        }
     }
 
     public void addLogoffButton() {

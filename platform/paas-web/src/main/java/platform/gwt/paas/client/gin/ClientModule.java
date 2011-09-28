@@ -1,6 +1,7 @@
 package platform.gwt.paas.client.gin;
 
 import com.google.inject.Singleton;
+import com.gwtplatform.mvp.client.RootPresenter;
 import com.gwtplatform.mvp.client.gin.AbstractPresenterModule;
 import com.gwtplatform.mvp.client.gin.DefaultModule;
 import platform.gwt.paas.client.PaasPlaceManager;
@@ -13,6 +14,7 @@ import platform.gwt.paas.client.pages.project.ProjectPagePresenter;
 import platform.gwt.paas.client.pages.project.ProjectPageView;
 import platform.gwt.paas.client.pages.projectlist.ProjectsListPagePresenter;
 import platform.gwt.paas.client.pages.projectlist.ProjectsListPageView;
+import platform.gwt.paas.client.widgets.SmartGwtRootView;
 
 public class ClientModule extends AbstractPresenterModule {
 
@@ -26,6 +28,10 @@ public class ClientModule extends AbstractPresenterModule {
 //        bind(RootPresenter.class).asEagerSingleton();
 //        bind(PlaceManager.class).to(MyPlaceManager.class).in(Singleton.class);
 //        bind(GoogleAnalytics.class).to(GoogleAnalyticsImpl.class).in(Singleton.class);
+
+        bind(SmartGwtRootView.class).in(Singleton.class);
+        bind(RootPresenter.RootView.class).to(SmartGwtRootView.class);
+
         bind(PaasPlaceManager.class).in(Singleton.class);
 
         bind(LoggedInGatekeeper.class).in(Singleton.class);

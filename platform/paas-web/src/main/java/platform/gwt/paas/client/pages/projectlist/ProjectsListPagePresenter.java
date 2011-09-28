@@ -8,10 +8,7 @@ import com.gwtplatform.mvp.client.Presenter;
 import com.gwtplatform.mvp.client.View;
 import com.gwtplatform.mvp.client.annotations.NameToken;
 import com.gwtplatform.mvp.client.annotations.ProxyCodeSplit;
-import com.gwtplatform.mvp.client.proxy.Place;
-import com.gwtplatform.mvp.client.proxy.PlaceRequest;
-import com.gwtplatform.mvp.client.proxy.Proxy;
-import com.gwtplatform.mvp.client.proxy.RevealRootLayoutContentEvent;
+import com.gwtplatform.mvp.client.proxy.*;
 import com.smartgwt.client.util.BooleanCallback;
 import com.smartgwt.client.util.SC;
 import paas.api.gwt.shared.dto.ProjectDTO;
@@ -112,7 +109,7 @@ public class ProjectsListPagePresenter extends Presenter<ProjectsListPagePresent
 
     @Override
     protected void revealInParent() {
-        RevealRootLayoutContentEvent.fire(this, this);
+        RevealRootContentEvent.fire(this, this);
     }
 
     private class GetProjectsCallback extends ErrorHandlingCallback<GetProjectsResult> {

@@ -9,7 +9,7 @@ import com.gwtplatform.mvp.client.annotations.NoGatekeeper;
 import com.gwtplatform.mvp.client.annotations.ProxyStandard;
 import com.gwtplatform.mvp.client.proxy.Place;
 import com.gwtplatform.mvp.client.proxy.Proxy;
-import com.gwtplatform.mvp.client.proxy.RevealRootLayoutContentEvent;
+import com.gwtplatform.mvp.client.proxy.RevealRootContentEvent;
 import platform.gwt.base.client.ui.login.LoginBox;
 import platform.gwt.base.client.ui.login.SpringLoginBoxUiHandlers;
 import platform.gwt.paas.client.NameTokens;
@@ -50,7 +50,7 @@ public class LoginPagePresenter extends Presenter<LoginPagePresenter.MyView, Log
 
     @Override
     protected void revealInParent() {
-        RevealRootLayoutContentEvent.fire(this, this);
+        RevealRootContentEvent.fire(this, this);
     }
 
     private class MySpringLoginBoxUiHandlers extends SpringLoginBoxUiHandlers {
