@@ -227,7 +227,7 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     public ScriptingFormEntity createScriptedForm(String formName, String caption) {
         scriptLogger.info("createScriptedForm(" + formName + ", " + caption + ");");
-        return new ScriptingFormEntity(baseLM.baseElement, this, formName, caption);
+        return new ScriptingFormEntity(baseLM.baseElement, this, formName, transformCaptionStr(caption));
     }
 
     public void addScriptedForm(ScriptingFormEntity form) {

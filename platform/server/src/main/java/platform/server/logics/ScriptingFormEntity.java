@@ -10,7 +10,6 @@ import platform.server.form.entity.filter.NotNullFilterEntity;
 import platform.server.form.navigator.NavigatorElement;
 import platform.server.logics.linear.LP;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -67,10 +66,18 @@ public class ScriptingFormEntity extends FormEntity {
         public LP<?> property;
         public PropertyObjectInterfaceEntity[] mapping;
 
-        public MappedProperty(LP<?> property, List<PropertyObjectInterfaceEntity> mapping) {
+        public MappedProperty(LP<?> property, PropertyObjectInterfaceEntity[] mapping) {
             this.property = property;
-            this.mapping = mapping.toArray(new PropertyObjectInterfaceEntity[mapping.size()]);
+            this.mapping = mapping;
         }
+    }
+
+    private ObjectEntity[] getMappingObjectsArray(List<String> mapping) {
+        ObjectEntity[] objects = new ObjectEntity[mapping.size()];
+        for (int i = 0; i < mapping.size(); i++) {
+            objects[i] = objectEntities.get(mapping.get(i));
+        }
+        return objects;
     }
 
     private MappedProperty getPropertyWithMapping(String name, List<String> mapping) {
@@ -78,18 +85,20 @@ public class ScriptingFormEntity extends FormEntity {
         assert property != null;
         assert property.property.interfaces.size() == mapping.size();
 
-        List<PropertyObjectInterfaceEntity> objects = new ArrayList<PropertyObjectInterfaceEntity>();
-        for (String objectName : mapping) {
-            objects.add(objectEntities.get(objectName));
-        }
-        return new MappedProperty(property, objects);
+        return new MappedProperty(property, getMappingObjectsArray(mapping));
     }
 
     public void addScriptedPropertyDraws(List<String> properties, List<List<String>> mappings) {
         assert properties.size() == mappings.size();
         for (int i = 0; i < properties.size(); i++) {
-            MappedProperty prop = getPropertyWithMapping(properties.get(i), mappings.get(i));
-            addPropertyDraw(prop.property, prop.mapping);
+            if (properties.get(i).equals("OBJVALUE")) { // todo [dale]: рефакторинг не помешает в будущем
+                addPropertyDraw(LM.baseLM.objectValue, false, getMappingObjectsArray(mappings.get(i)));
+            } else if (properties.get(i).equals("SELECTION")) {
+                addPropertyDraw(LM.baseLM.sessionGroup, false, getMappingObjectsArray(mappings.get(i)));
+            } else {
+                MappedProperty prop = getPropertyWithMapping(properties.get(i), mappings.get(i));
+                addPropertyDraw(prop.property, prop.mapping);
+            }
         }
     }
 

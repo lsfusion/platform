@@ -82,7 +82,7 @@ invoicedSimpleInvoiceSimpleShipmentStockSku2(invoice, shipment, st, sku) =
 // Forms
 FORM ContractForm2 'ContractForm2'
 OBJECTS seller, contract
-PROPERTIES name(seller), objectClassName(seller),
+PROPERTIES OBJVALUE(seller), SELECTION(seller), name(seller), objectClassName(seller),
            sidContract(contract), dateContract(contract), nameBuyerContract(contract), nameCurrencyContract(contract);
 
 FORM rateCurrency2 'Обмен валют'
@@ -95,4 +95,5 @@ PROPERTIES
     rateExchange(typeExchange, currency, exchangeDateRate)
 FILTERS
     NOT NULL rateExchange(typeExchange, currency, exchangeDateRate);
+
 
