@@ -1484,6 +1484,16 @@ public class BaseUtils {
         return "" + calendar.get(Calendar.DAY_OF_MONTH) + " " + months[calendar.get(Calendar.MONTH)] + " " + calendar.get(Calendar.YEAR);
     }
 
+    public static Date getFirstDateInMonth(int year, int month) {
+        return new GregorianCalendar(year, month-1, 1, 0, 0, 0).getTime();
+    }
+
+    public static Date getLastDateInMonth(int year, int month) {
+        Calendar calendar = new GregorianCalendar(year, month-1, 1, 0, 0, 0);
+        calendar.roll(Calendar.DAY_OF_MONTH, -1);
+        return calendar.getTime();
+    }
+
     public static String getFileExtension(File file) {
         String name = file.getName();
         int index = name.lastIndexOf(".");

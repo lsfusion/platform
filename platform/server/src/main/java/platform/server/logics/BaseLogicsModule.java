@@ -139,6 +139,8 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
     protected LP transactionLater;
     public LP currentDate;
+    public LP currentMonth;
+    public LP currentYear;
     public LP currentHour;
     public LP currentMinute;
     protected LP currentEpoch;
@@ -470,6 +472,8 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         hostname = addDProp(baseGroup, "hostname", getString("logics.host.name"), InsensitiveStringClass.get(100), computer);
 
         currentDate = addDProp(baseGroup, "currentDate", getString("logics.date.current.date"), DateClass.instance);
+        currentMonth = addJProp(baseGroup, "currentMonth", getString("logics.date.current.month"), monthInDate, currentDate);
+        currentYear = addJProp(baseGroup, "currentYear", getString("logics.date.current.year"), yearInDate, currentDate);
         currentHour = addTProp(Time.HOUR);
         currentMinute = addTProp(Time.MINUTE);
         currentEpoch = addTProp(Time.EPOCH);

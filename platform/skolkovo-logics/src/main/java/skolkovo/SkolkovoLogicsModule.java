@@ -819,7 +819,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP pluralCurrencyExpert;
     LP emailLetterExpertMonthYearEA;
     LP emailLetterCertificatesExpertMonthYear;
-    LP monthInPreviousDate;
+    LP previousDate;
+    LP monthInPreviousDate, yearInPreviousDate;
     LP isNewMonth;
 
 
@@ -827,9 +828,13 @@ public class SkolkovoLogicsModule extends LogicsModule {
     public void initProperties() {
         idGroup.add(baseLM.objectValue);
 
-        monthInPreviousDate = addJProp("monthInPreviousDate", "Вчерашний месяц", baseLM.monthInDate, addJProp(baseLM.subtractDate2, baseLM.currentDate, addCProp("1", IntegerClass.instance, 1)));
+        previousDate = addJProp("previousDate", "Вчерашняя дата", baseLM.subtractDate2, baseLM.currentDate, addCProp("1", IntegerClass.instance, 1));
+        monthInPreviousDate = addJProp("monthInPreviousDate", "Вчерашний месяц", baseLM.monthInDate, previousDate);
+        yearInPreviousDate = addJProp("yearInPreviousDate", "Вчерашний год", baseLM.yearInDate, previousDate);
+
         // monthInYeasterdayDate = addJProp("monthInYeasterdayDate", "Вчерашний месяц", baseLM.monthInDate, addJProp(baseLM.addDate2, baseLM.currentDate, addCProp("1", IntegerClass.instance, 1)));
-        isNewMonth = addJProp("isNewMonth", "Начало месяца", baseLM.diff2, addJProp(baseLM.monthInDate, baseLM.currentDate), monthInPreviousDate);
+        isNewMonth = addJProp("isNewMonth", "Начало месяца", baseLM.diff2, baseLM.currentMonth, monthInPreviousDate);
+
         nameNative = addDProp(recognizeGroup, "nameNative", "Имя", InsensitiveStringClass.get(2000), multiLanguageNamed);
         nameNative.property.aggProp = true;
         nameNative.setMinimumWidth(10);
@@ -852,7 +857,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         limitExperts = addDProp(baseGroup, "limitExperts", "Кол-во прогол. экспертов", IntegerClass.instance);
         projectsImportLimit = addDProp(baseGroup, "projectsImportLimit", "Максимальное кол-во импортируемых проектов", IntegerClass.instance);
         rateExpert = addDProp(baseGroup, "rateExpert", "Ставка эксперта (долларов)", DoubleClass.instance);
-        emailForCertificates = addDProp(baseGroup, "emailForCertificates", "e-mail для актов", StringClass.get(50));
+        emailForCertificates = addDProp(baseGroup, "emailForCertificates", "E-mail для актов", StringClass.get(50));
 
         //свойства заявителя
         nameNativeJoinClaimer = addJProp(claimerInformationGroup, "nameNativeJoinClaimer", "Заявитель", baseLM.and1, nameNative, 1, is(claimer), 1);
@@ -1923,11 +1928,13 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         emailLetterExpertMonthYearEA = addEAProp("Акт выполненных работ", IntegerClass.instance, IntegerClass.instance);
         addEARecepient(emailLetterExpertMonthYearEA, emailForCertificates);
-        emailLetterCertificatesExpertMonthYear = addJProp("emailLetterCertificatesExpertMonthYear", "Отправка актов", emailLetterExpertMonthYearEA, addJProp(baseLM.monthInDate, baseLM.currentDate), addJProp(baseLM.yearInDate, baseLM.currentDate));
-      //  emailLetterCertificatesExpertMonthYear.setImage("email.png");
-      //  emailLetterCertificatesExpertMonthYear.property.askConfirm = true;
-      //  emailLetterCertificatesExpertMonthYear.setDerivedForcedChange(addCProp(ActionClass.instance, true), isNewMonth);
 
+        emailLetterCertificatesExpertMonthYear = addJProp(true, "emailLetterCertificatesExpertMonthYear", "Отправка актов", emailLetterExpertMonthYearEA, monthInPreviousDate, yearInPreviousDate);
+        emailLetterCertificatesExpertMonthYear.setImage("email.png");
+        emailLetterCertificatesExpertMonthYear.property.askConfirm = true;
+
+        // так конечно не совсем правильно, если поменяется дата с 01 числа одного месяца на 01 число другого месяца
+        emailLetterCertificatesExpertMonthYear.setDerivedForcedChange(addCProp(ActionClass.instance, true), isNewMonth);
     }
 
     @Override
@@ -2519,7 +2526,10 @@ public class SkolkovoLogicsModule extends LogicsModule {
         private GlobalFormEntity(NavigatorElement parent, String sID) {
             super(parent, sID, "Глобальные параметры");
 
-            addPropertyDraw(new LP[]{baseLM.currentDate, requiredPeriod, overduePeriod, requiredQuantity, limitExperts, emailDocuments, emailClaimerFromAddress, emailForCertificates, projectsImportLimit, rateExpert, monthInPreviousDate, baseLM.currentDate, importProjectSidsAction, showProjectsToImportAction, showProjectsReplaceToImportAction, importProjectsAction});
+            addPropertyDraw(new LP[]{baseLM.currentDate, requiredPeriod, overduePeriod, requiredQuantity, limitExperts,
+                    emailDocuments, emailClaimerFromAddress, emailForCertificates,
+                    projectsImportLimit, importProjectSidsAction, showProjectsToImportAction, showProjectsReplaceToImportAction, importProjectsAction,
+                    rateExpert, emailLetterCertificatesExpertMonthYear});
         }
     }
 
@@ -3126,9 +3136,6 @@ public class SkolkovoLogicsModule extends LogicsModule {
             objMonth = addSingleGroupObject(IntegerClass.instance, "Месяц");
             objMonth.groupTo.setSingleClassView(ClassViewType.PANEL);
             addPropertyDraw(objMonth, baseLM.objectValue);
-
-            addPropertyDraw(objMonth, objYear, emailLetterExpertMonthYearEA);
-            // addPropertyDraw(objMonth, objYear, lastDayOfMonthYear);
 
             objExpert = addSingleGroupObject(expert, baseLM.selection, baseLM.userFirstName, baseLM.userLastName, documentNameExpert, dateAgreementExpert, nameCountryExpert, caseCountryExpert, englCountryExpert, nameCurrencyExpert, baseCurrencyExpert, englCurrencyExpert, pluralCurrencyExpert,nameNativeClusterExpert, nameLanguageExpert, residencyCountryExpert);
             //   objExpert.groupTo.initClassView = ClassViewType.PANEL;
