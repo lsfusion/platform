@@ -3144,6 +3144,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
                 else if ((fillNativeProject.read(context, projectObject)) == (Object) true || (translatedToRussianProject.read(context, projectObject)) == (Object) true)
                     fileDocument.execute(generateApplicationFile(context, projectObject, false), context, documentObject);
 
+                file = fileForeignApplicationFormProject.read(context, projectObject);
                 documentObject = context.addObject(document);
                 projectDocument.execute(projectObject.getValue(), context, documentObject);
                 typeDocument.execute(documentType.getID("application"), context, documentObject);
