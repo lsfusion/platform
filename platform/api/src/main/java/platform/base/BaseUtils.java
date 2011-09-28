@@ -1468,7 +1468,7 @@ public class BaseUtils {
         }
     }
 
-    public static String[] months = new String[]{"января", "февраля", "марта", "апреля", "мая", "июня", "июля", "августа", "сентября", "октября", "ноября", "декабря"};
+    public static String[] monthsRussian = new String[]{"января", "февраля", "марта", "апреля", "мая", "июня", "июля", "августа", "сентября", "октября", "ноября", "декабря"};
 
     // приходится складывать в baseUtils, потому что должна быть единая функция и для сервера и для клиента
     // так как отчеты формируются и на сервере
@@ -1476,12 +1476,23 @@ public class BaseUtils {
     @SuppressWarnings({"UnusedDeclaration"})
     public static String formatRussian(Date date) {
 
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(date);
+
+        return "" + calendar.get(Calendar.DAY_OF_MONTH) + " " + monthsRussian[calendar.get(Calendar.MONTH)] + " " + calendar.get(Calendar.YEAR);
+    }
+
+    public static String[] monthsEnglish = new String[]{"January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"};
+
+    @SuppressWarnings({"UnusedDeclaration"})
+    public static String formatEnglish(Date date) {
+
         // todo : сделать форматирование по timeZone сервера
 
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(date);
 
-        return "" + calendar.get(Calendar.DAY_OF_MONTH) + " " + months[calendar.get(Calendar.MONTH)] + " " + calendar.get(Calendar.YEAR);
+        return "" + calendar.get(Calendar.DAY_OF_MONTH) + " " + monthsEnglish[calendar.get(Calendar.MONTH)] + " " + calendar.get(Calendar.YEAR);
     }
 
     public static Date getFirstDateInMonth(int year, int month) {
