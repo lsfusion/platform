@@ -765,6 +765,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP emailDateFormalControl;
     LP overdueDateFormalControl;
     LP overdueFormalControlProject;
+    LP projectActionLegalCheck;
+    LP nameProjectActionLegalCheck;
     LP commentFormalControl;
     LP[] maxFormalControlProjectProps;
     LP currentFormalControlProject;
@@ -782,6 +784,9 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP nameProjectActionFormalControl;
 
     LP dateLegalCheck;
+    LP emailDateLegalCheck;
+    LP overdueDateLegalCheck;
+    LP overdueLegalCheckProject;
     LP projectLegalCheck;
     LP resultLegalCheck;
     LP nameResultLegalCheck;
@@ -1681,6 +1686,15 @@ public class SkolkovoLogicsModule extends LogicsModule {
         emailDateFormalControl = addJProp("emailDateFormalControl", "Дата оправки уведомления", baseLM.dateInTime, dateFormalControl, 1);
         overdueDateFormalControl = addJProp("overdueDateFormalControl", "Дата просрочки формальной экспертизы", baseLM.addDate2, emailDateFormalControl, 1, overduePeriod);
 
+        projectLegalCheck = addDProp("projectLegalCheck", "Проект (ИД)", project, legalCheck);
+        resultLegalCheck = addDProp("resultLegalCheck", "Решение юридической проверки", legalCheckResult, legalCheck);
+        commentLegalCheck = addDProp("commentLegalCheck", "Комментарий", TextClass.instance, legalCheck);
+        nameResultLegalCheck = addJProp("nameResultLegalCheck", "Решение юридической проверки", baseLM.name, resultLegalCheck, 1);
+
+        dateLegalCheck = addTCProp(Time.DATETIME, "dateLegalCheck", true, "Дата проверки", resultLegalCheck);
+        emailDateLegalCheck = addJProp("emailDateLegalCheck", "Дата оправки уведомления", baseLM.dateInTime, dateLegalCheck, 1);
+        overdueDateLegalCheck = addJProp("overdueDateLegalCheck", "Дата просрочки юридической проверки", baseLM.addDate2, emailDateLegalCheck, 1, overduePeriod);
+
         maxFormalControlProjectProps = addMGProp((AbstractGroup) null, new String[]{"maxDateFormalControlProject", "currentFCProject"}, new String[]{"Дата посл. формальной экспертизы.", "Посл. формальная экспертиза"}, 1,
                 dateFormalControl, 1, projectFormalControl, 1);
         LP currentDateFormalControlProject = maxFormalControlProjectProps[0];
@@ -1708,14 +1722,6 @@ public class SkolkovoLogicsModule extends LogicsModule {
                                                 addJProp(baseLM.greater2, baseLM.currentDate, addJProp(overdueDateFormalControl, executeFormalControlProject, 1), 1), 1,
                                                 addJProp(baseLM.and1, notEnoughDocumentsProject, 1, addJProp(baseLM.equals2, addJProp(projectActionFormalControl, executeFormalControlProject, 1), 1, addCProp(projectAction, "status")), 1), 1);
 
-        projectLegalCheck = addDProp("projectLegalCheck", "Проект (ИД)", project, legalCheck);
-        resultLegalCheck = addDProp("resultLegalCheck", "Решение юридической проверки", legalCheckResult, legalCheck);
-        commentLegalCheck = addDProp("commentLegalCheck", "Комментарий", TextClass.instance, legalCheck);
-
-        dateLegalCheck = addTCProp(Time.DATETIME, "dateLegalCheck", true, "Дата проверки", resultLegalCheck);
-        // dateLegalCheck.setDerivedChange(baseLM.currentDateTime, true, is(legalCheck), 1);
-        nameResultLegalCheck = addJProp("nameResultLegalCheck", "Решение юридической проверки", baseLM.name, resultLegalCheck, 1);
-
         maxLegalCheckProjectProps = addMGProp((AbstractGroup) null, new String[]{"maxDateLegalCheckProject", "currentLCProject"}, new String[]{"Дата посл. юр. проверки", "Посл. юр. проверка"}, 1,
                 dateLegalCheck, 1, projectLegalCheck, 1);
         LP currentDateLegalCheckProject = maxLegalCheckProjectProps[0];
@@ -1727,11 +1733,19 @@ public class SkolkovoLogicsModule extends LogicsModule {
         negativeLegalResultProject = addJProp("negativeLegalResultProject", true, "Не прошла юридическую проверку", baseLM.equals2, resultExecuteLegalCheckProject, 1, addCProp(legalCheckResult, "negativeLegalCheckResult"));
         positiveLegalResultProject = addJProp("positiveLegalResultProject", true, "Прошла юридическую проверку", baseLM.equals2, resultExecuteLegalCheckProject, 1, addCProp(legalCheckResult, "positiveLegalCheckResult"));
 
+        projectActionLegalCheck = addDProp(idGroup, "projectActionLegalCheck", "Тип заявки (ИД)", projectAction, legalCheck);
+        nameProjectActionLegalCheck = addJProp(baseGroup, "nameProjectActionLegalCheck", "Тип заявки", baseLM.name, projectActionLegalCheck, 1);
+        nameProjectActionLegalCheck.setPreferredCharWidth(20);
+        projectActionLegalCheck.setDerivedChange(true, addJProp(projectActionProject, projectLegalCheck, 1), 1, is(legalCheck), 1);
+
+        overdueLegalCheckProject = addJProp("overdueLegalCheckProject",  true, "Просрочена юридическая проверка", baseLM.and1,
+                                                        addJProp(baseLM.greater2, baseLM.currentDate, addJProp(overdueDateLegalCheck, executeLegalCheckProject, 1), 1), 1,
+                                                        addJProp(baseLM.and1, negativeLegalResultProject, 1, addJProp(baseLM.equals2, addJProp(projectActionLegalCheck, executeLegalCheckProject, 1), 1, addCProp(projectAction, "status")), 1), 1);
+
         sentForTranslationProject = addDProp("sentForTranslationProject", "Направлена на перевод", LogicalClass.instance, project);
         oficialNameProjectStatus = addDProp(baseGroup, "oficialNameProjectStatus", "Наименование из регламента", StringClass.get(200), projectStatus);
         oficialNameProjectStatus.setMinimumWidth(10);
         oficialNameProjectStatus.setPreferredWidth(50);
-
 
         statusProject = addCaseUProp(idGroup, "statusProject", true, "Статус (ИД)",
                 acceptedProject, 1, addCProp(projectStatus, "accepted", project), 1,
@@ -1740,8 +1754,9 @@ public class SkolkovoLogicsModule extends LogicsModule {
                 voteInProgressProject, 1, addCProp(projectStatus, "inProgress", project), 1,
                 needExtraVoteRepeatProject, 1, addCProp(projectStatus, "needExtraVote", project), 1,
                 sentForTranslationProject, 1, addCProp(projectStatus, "needTranslation", project), 1,
-                negativeLegalResultProject, 1, addCProp(projectStatus, "negativeLCResult", project), 1,
                 positiveLegalResultProject, 1, addCProp(projectStatus, "positiveLCResult", project), 1,
+                overdueLegalCheckProject, 1, addCProp(projectStatus, "overdueLC", project), 1,
+                negativeLegalResultProject, 1, addCProp(projectStatus, "negativeLCResult", project), 1,
                 overdueFormalControlProject, 1, addCProp(projectStatus, "overdueFC", project), 1,
                 isPreliminaryNotEnoughDocumentProject, 1, addCProp(projectStatus, "notEnoughDocsForPreliminary", project), 1,
                 isStatusNotEnoughDocumentProject, 1, addCProp(projectStatus, "notEnoughDocsForStatus", project), 1,

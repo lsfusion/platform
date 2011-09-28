@@ -2,7 +2,7 @@
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="ACT neresident" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0">
 	<property name="ireport.zoom" value="1.0"/>
 	<property name="ireport.x" value="0"/>
-	<property name="ireport.y" value="382"/>
+	<property name="ireport.y" value="142"/>
 	<style name="DefaultStyle" isDefault="true" vAlign="Middle" fontName="lsf.TimesNewRoman" fontSize="12" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false"/>
 	<style name="GroupCellStyle0" mode="Opaque" backcolor="#FFFFFF" vAlign="Middle" fontName="Serif" fontSize="10" pdfFontName="lsf.Times" pdfEncoding="Cp1251" isPdfEmbedded="false">
 		<box leftPadding="2" rightPadding="2">
@@ -81,7 +81,7 @@
 					</textElement>
 					<textFieldExpression class="java.lang.String"><![CDATA["В соответствии с Соглашением об исполнении функции члена Экспертной коллегии от "+platform.base.BaseUtils.formatRussian ($F{dateAgreementExpert})+" г. (далее - Соглашение) Член Экспертной коллегии осуществил экспертизу заявок с целью установления соответствия  проекта юридического лица, подавшего заявку в соответствии с пунктом 3 Положения о присвоении и утрате статуса участника проекта, (физического или юридического лица, подавшего заявку на проведение предварительной экспертизы проекта в соответствии с пунктом 4 Положения о проведении предварительной экспертизы проектов, критериям, установленным Положением о присвоении и утрате статуса участника проекта).\n"+
 "Член Экспертной коллегии своевременно и надлежащим образом осуществил: "+
-$F{quantityDoneExpertMonthYear}+" "+"экспертиз(ы) за период c " + "по заявкам следующих лиц:"]]></textFieldExpression>
+$F{quantityDoneExpertMonthYear}+" "+"экспертиз(ы) за период c " + platform.base.BaseUtils.formatRussian( platform.base.BaseUtils.getFirstDateInMonth(2011,1))+" по "+ platform.base.BaseUtils.formatRussian( platform.base.BaseUtils.getLastDateInMonth(2011,1)) + " по заявкам следующих лиц:"]]></textFieldExpression>
 				</textField>
 				<staticText>
 					<reportElement style="DefaultStyle" x="10" y="10" width="258" height="16"/>
