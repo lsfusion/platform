@@ -11,13 +11,27 @@ import platform.server.caches.hash.HashMapValues;
 import platform.server.data.Value;
 import platform.server.data.translator.MapTranslate;
 
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
 public abstract class InnerContext<I extends InnerContext<I>> extends InnerHashContext {
 
     public abstract Set<Value> getValues();
-    
+
+    public static Set<Value> getBigValues(Set<Value> values) {
+        Set<Value> result = new HashSet<Value>();
+        for(Value value : values)
+            if(value.isBig())
+                result.add(value);
+        return result;
+    }
+
+    public Set<Value> getBigValues() {
+        return getBigValues(getValues());
+    }
+
+
     public abstract I translateInner(MapTranslate translate);
     // проверка на соответствие если одинаковые контексты
     public abstract boolean equalsInner(I object);

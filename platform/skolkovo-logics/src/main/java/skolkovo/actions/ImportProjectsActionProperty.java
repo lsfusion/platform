@@ -12,6 +12,7 @@ import platform.base.IOUtils;
 import platform.base.OrderedMap;
 import platform.interop.action.ClientAction;
 import platform.interop.action.MessageClientAction;
+import platform.server.Context;
 import platform.server.classes.ValueClass;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.query.Query;
@@ -422,7 +423,9 @@ public class ImportProjectsActionProperty extends ActionProperty {
                     URLConnection connection = url.openConnection();
                     connection.setDoOutput(false);
                     connection.setDoInput(true);
+                    Context.context.get().pushActionMessage("ИД проекта: " + projectId);
                     importProject(connection.getInputStream(), projectId, projects.get(projectId));
+                    Context.context.get().popActionMessage();
                     System.gc();
                 }
             }

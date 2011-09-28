@@ -9,4 +9,5 @@ public interface Value {
     ParseInterface getParseInterface();
     GlobalObject getValueClass();
 
+    public boolean isBig();
 }

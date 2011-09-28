@@ -157,6 +157,9 @@ public class MapCacheAspect {
 
         JoinImplement<K> joinImplement = new JoinImplement<K>(joinExprs,joinValues);
 
+        if(joinImplement.getBigValues().size() > 0)
+            return (Join<V>) thisJoinPoint.proceed();
+
         Map<JoinImplement<K>,Join<V>> hashCaches;
         synchronized(joinCaches) {
             int hashImplement = joinImplement.hashInner(true);
@@ -218,7 +221,8 @@ public class MapCacheAspect {
 
         U implement = modifier.fullChanges();
 
-        if(implement.getValues().size() > Settings.instance.getUsedChangesCacheLimit())
+        Set<Value> values = implement.getValues();
+        if(values.size() > Settings.instance.getUsedChangesCacheLimit() || InnerContext.getBigValues(values).size()>0)
             return (U) thisJoinPoint.proceed();
 
         Map<U, U> hashCaches;
@@ -309,11 +313,15 @@ public class MapCacheAspect {
     public <K extends PropertyInterface,U extends Changes<U>> Expr getJoinExpr(Property<K> property, Map<K, Expr> joinExprs, Modifier<U> modifier, WhereBuilder changedWheres, Map<Integer,Map<JoinExprInterfaceImplement<U>,Query<K,String>>> exprCaches, ProceedingJoinPoint thisJoinPoint) throws Throwable {
 
         // если свойство AndFormulaProperty - то есть нарушается инвариант что все входные не null идет autoFillDB то не кэшируем
-        if(property instanceof AndFormulaProperty || property.equals(AggregateProperty.recalculate)) return (Expr) thisJoinPoint.proceed();
+        if(property instanceof AndFormulaProperty || property.equals(AggregateProperty.recalculate))
+            return (Expr) thisJoinPoint.proceed();
 
         property.cached = true;
 
         JoinExprInterfaceImplement<U> implement = new JoinExprInterfaceImplement<U>(property,modifier,changedWheres!=null);
+
+        if(InnerContext.getBigValues(implement.getValues()).size() > 0)
+            return (Expr) thisJoinPoint.proceed();
 
         Map<JoinExprInterfaceImplement<U>,Query<K,String>> hashCaches;
         synchronized(exprCaches) {
@@ -427,6 +435,9 @@ public class MapCacheAspect {
 
         DataChangesInterfaceImplement<K,U> implement = new DataChangesInterfaceImplement<K,U>(property,change,modifier,changedWheres!=null);
 
+        if(implement.getBigValues().size()>0)
+            return (MapDataChanges<K>) thisJoinPoint.proceed();
+
         Map<DataChangesInterfaceImplement, DataChangesResult> hashCaches;
         synchronized(dataChangesCaches) {
             int hashImplement = implement.hashInner(true);
@@ -527,11 +538,15 @@ public class MapCacheAspect {
     public <K extends PropertyInterface,U extends Changes<U>> Expr getExpr(Property<K> property, Map<K, Expr> joinExprs, Modifier<U> modifier, WhereBuilder changedWheres, Map<Integer, Map<ExprInterfaceImplement, ExprResult>> exprCaches, ProceedingJoinPoint thisJoinPoint) throws Throwable {
 
         // здесь по идее на And не надо проверять
-        if(disableCaches || property.equals(AggregateProperty.recalculate)) return (Expr) thisJoinPoint.proceed();
+        if(disableCaches || property.equals(AggregateProperty.recalculate))
+            return (Expr) thisJoinPoint.proceed();
 
         property.cached = true;
 
         ExprInterfaceImplement<K,U> implement = new ExprInterfaceImplement<K,U>(property,joinExprs,modifier,changedWheres!=null);
+
+        if(implement.getBigValues().size() > 0)
+            return (Expr) thisJoinPoint.proceed();
 
         Map<ExprInterfaceImplement, ExprResult> hashCaches;
         synchronized(exprCaches) {

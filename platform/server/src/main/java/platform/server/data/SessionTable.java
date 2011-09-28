@@ -37,6 +37,10 @@ public class SessionTable extends Table implements MapValues<SessionTable>, Valu
         return getStatKeys(this, count);
     }
 
+    public boolean isBig() {
+        return false;
+    }
+
     public Map<PropertyField, Stat> getStatProps() {
         return getStatProps(this, count);
     }

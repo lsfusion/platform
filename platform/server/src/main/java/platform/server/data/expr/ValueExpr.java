@@ -5,10 +5,7 @@ import platform.base.GlobalObject;
 import platform.base.TwinImmutableInterface;
 import platform.server.caches.ManualLazy;
 import platform.server.caches.hash.HashContext;
-import platform.server.classes.ConcreteClass;
-import platform.server.classes.DoubleClass;
-import platform.server.classes.IntegerClass;
-import platform.server.classes.LogicalClass;
+import platform.server.classes.*;
 import platform.server.data.Value;
 import platform.server.data.where.MapWhere;
 import platform.server.data.query.CompileSource;
@@ -28,6 +25,10 @@ import java.util.Set;
 public class ValueExpr extends StaticExpr<ConcreteClass> implements Value {
 
     public final Object object;
+
+    public boolean isBig() {
+        return objectClass instanceof FileClass && ((byte[])object).length > 1000;
+    }
 
     public ValueExpr(Object object, ConcreteClass objectClass) {
         super(objectClass);

@@ -62,7 +62,7 @@ public class MapDataChanges<P extends PropertyInterface> {
             if(existMap==null)
                 map.put(entry.getKey(),entry.getValue());
             else
-                map.put(entry.getKey(),BaseUtils.merge(existMap,entry.getValue()));
+                map.put(entry.getKey(),BaseUtils.override(existMap,entry.getValue()));
         }
     }
     public MapDataChanges<P> add(MapDataChanges<P> add) {

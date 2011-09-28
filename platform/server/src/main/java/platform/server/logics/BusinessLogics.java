@@ -149,7 +149,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         }
 
         public String pop() {
-            return isEmpty() ? null : pop();
+            return isEmpty() ? null : super.pop();
         }
 
         public String getMessage() {
