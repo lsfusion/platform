@@ -1924,7 +1924,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         pluralCurrency= addDProp(baseGroup, "pluralCurrency", "Валюта множ.числ", StringClass.get(40), currency);
         pluralCurrencyExpert   = addJProp("pluralCurrencyExpert", "Валюта эксперта мн.ч.", pluralCurrency, currencyExpert, 1);
 
-        emailLetterExpertMonthYearEA = addEAProp(IntegerClass.instance, IntegerClass.instance);
+        emailLetterExpertMonthYearEA = addEAProp("Акт выполненных работ", IntegerClass.instance, IntegerClass.instance);
         addEARecepient(emailLetterExpertMonthYearEA, emailForCertificates);
         emailLetterCertificatesExpertMonthYear = addJProp("emailLetterCertificatesExpertMonthYear", "Отправка актов", emailLetterExpertMonthYearEA, addJProp(baseLM.monthInDate, baseLM.currentDate), addJProp(baseLM.yearInDate, baseLM.currentDate));
       //  emailLetterCertificatesExpertMonthYear.setImage("email.png");
@@ -3113,47 +3113,49 @@ public class SkolkovoLogicsModule extends LogicsModule {
     }
 
     private class AcceptanceCertificateFormEntity extends FormEntity<SkolkovoBusinessLogics> {
-               private ObjectEntity objExpert;
-               private ObjectEntity objVote;
-               private ObjectEntity objYear;
-               private ObjectEntity objMonth;
+        private ObjectEntity objExpert;
+        private ObjectEntity objVote;
+        private ObjectEntity objYear;
+        private ObjectEntity objMonth;
 
 
-                private AcceptanceCertificateFormEntity(NavigatorElement parent, String sID, String caption, boolean resident) {
-                super(parent, sID, caption);
+        private AcceptanceCertificateFormEntity(NavigatorElement parent, String sID, String caption, boolean resident) {
+            super(parent, sID, caption);
 
-                objYear = addSingleGroupObject(IntegerClass.instance, "Год");
-                objYear.groupTo.setSingleClassView(ClassViewType.PANEL);
-                addPropertyDraw(objYear, baseLM.objectValue);
+            objYear = addSingleGroupObject(IntegerClass.instance, "Год");
+            objYear.groupTo.setSingleClassView(ClassViewType.PANEL);
+            addPropertyDraw(objYear, baseLM.objectValue);
 
-                objMonth = addSingleGroupObject(IntegerClass.instance, "Месяц");
-                objMonth.groupTo.setSingleClassView(ClassViewType.PANEL);
-                addPropertyDraw(objMonth, baseLM.objectValue);
-               // addPropertyDraw(objMonth, objYear, lastDayOfMonthYear);
+            objMonth = addSingleGroupObject(IntegerClass.instance, "Месяц");
+            objMonth.groupTo.setSingleClassView(ClassViewType.PANEL);
+            addPropertyDraw(objMonth, baseLM.objectValue);
 
-                objExpert = addSingleGroupObject(expert, baseLM.selection, baseLM.userFirstName, baseLM.userLastName, documentNameExpert, dateAgreementExpert, nameCountryExpert, caseCountryExpert, nameCurrencyExpert, caseCurrencyExpert, baseCurrencyExpert, nameNativeClusterExpert, nameLanguageExpert, residencyCountryExpert);
-                //   objExpert.groupTo.initClassView = ClassViewType.PANEL;
+            addPropertyDraw(objMonth, objYear, emailLetterExpertMonthYearEA);
+            // addPropertyDraw(objMonth, objYear, lastDayOfMonthYear);
 
-                objVote = addSingleGroupObject(vote, nameNativeProjectVote, nameNativeJoinClaimerProjectVote, nameForeignClaimerVote, dateStartVote, dateEndVote, openedVote, succeededVote, quantityDoneVote);
-                addPropertyDraw(inNewExpertVote, objExpert, objVote);
-                addPropertyDraw(objExpert, objVote, objMonth, objYear, doneExpertVoteMonthYear);
+            objExpert = addSingleGroupObject(expert, baseLM.selection, baseLM.userFirstName, baseLM.userLastName, documentNameExpert, dateAgreementExpert, nameCountryExpert, caseCountryExpert, nameCurrencyExpert, caseCurrencyExpert, baseCurrencyExpert, nameNativeClusterExpert, nameLanguageExpert, residencyCountryExpert);
+            //   objExpert.groupTo.initClassView = ClassViewType.PANEL;
 
-              //  addPropertyDraw(voteResultGroup, true, objExpert, objVote);
-                addPropertyDraw(objExpert,objMonth, objYear, quantityDoneExpertMonthYear, moneyQuantityDoneExpertMonthYear);
-                if (resident)
-                    addFixedFilter(new NotNullFilterEntity(addPropertyObject(residencyCountryExpert, objExpert)));
+            objVote = addSingleGroupObject(vote, nameNativeProjectVote, nameNativeJoinClaimerProjectVote, nameForeignClaimerVote, dateStartVote, dateEndVote, openedVote, succeededVote, quantityDoneVote);
+            addPropertyDraw(inNewExpertVote, objExpert, objVote);
+            addPropertyDraw(objExpert, objVote, objMonth, objYear, doneExpertVoteMonthYear);
 
-                if (!resident)
-                    addFixedFilter(new NotFilterEntity(new NotNullFilterEntity(addPropertyObject(residencyCountryExpert, objExpert))));
+            //  addPropertyDraw(voteResultGroup, true, objExpert, objVote);
+            addPropertyDraw(objExpert,objMonth, objYear, quantityDoneExpertMonthYear, moneyQuantityDoneExpertMonthYear);
+            if (resident)
+                addFixedFilter(new NotNullFilterEntity(addPropertyObject(residencyCountryExpert, objExpert)));
 
-                addFixedFilter(new NotNullFilterEntity(addPropertyObject(quantityDoneExpertMonthYear, objExpert,objMonth, objYear)));
-                addFixedFilter(new NotNullFilterEntity(addPropertyObject(doneExpertVoteMonthYear, objExpert, objVote, objMonth, objYear)));
-                addFixedFilter(new NotNullFilterEntity(addPropertyObject(inNewExpertVote, objExpert, objVote)));
+            if (!resident)
+                addFixedFilter(new NotFilterEntity(new NotNullFilterEntity(addPropertyObject(residencyCountryExpert, objExpert))));
 
-                addAttachEAForm(emailLetterExpertMonthYearEA, this, EmailActionProperty.Format.PDF, objMonth, 1, objYear, 2);
-           //     setPageSize(0);
-            }
+            addFixedFilter(new NotNullFilterEntity(addPropertyObject(quantityDoneExpertMonthYear, objExpert,objMonth, objYear)));
+            addFixedFilter(new NotNullFilterEntity(addPropertyObject(doneExpertVoteMonthYear, objExpert, objVote, objMonth, objYear)));
+            addFixedFilter(new NotNullFilterEntity(addPropertyObject(inNewExpertVote, objExpert, objVote)));
+
+            addAttachEAForm(emailLetterExpertMonthYearEA, this, EmailActionProperty.Format.PDF, objMonth, 1, objYear, 2);
+            //     setPageSize(0);
         }
+    }
 
     private class ClaimerAcceptedFormEntity extends FormEntity<SkolkovoBusinessLogics> {
 
