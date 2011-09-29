@@ -683,19 +683,19 @@ public class ImportProjectsActionProperty extends ActionProperty {
         SAXBuilder builder = new SAXBuilder();
 
         try {
-            //responseContents = IOUtils.readBytesFromStream(inputStream);
+            responseContents = IOUtils.readBytesFromStream(inputStream);
 
-            File file = new File("C://test.xml");
-            InputStream is = new FileInputStream(file);
-            long length = file.length();
-            byte[] bytes = new byte[(int) length];
-            int offset = 0;
-            int numRead = 0;
-            while (offset < bytes.length && (numRead = is.read(bytes, offset, bytes.length - offset)) >= 0) {
-                offset += numRead;
-            }
-            is.close();
-            responseContents = bytes;
+//            File file = new File("C://test.xml");
+//            InputStream is = new FileInputStream(file);
+//            long length = file.length();
+//            byte[] bytes = new byte[(int) length];
+//            int offset = 0;
+//            int numRead = 0;
+//            while (offset < bytes.length && (numRead = is.read(bytes, offset, bytes.length - offset)) >= 0) {
+//                offset += numRead;
+//            }
+//            is.close();
+//            responseContents = bytes;
 
             Document document = builder.build(new ByteArrayInputStream(responseContents));
             responseContents = null;
