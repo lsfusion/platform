@@ -76,11 +76,11 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
 
                 Boolean isForeign = (Boolean) SkolkovoLM.isForeignExpert.read(session, vo.expertObj);
                 if (isForeign == null) {
-                    voteInfo.projectName = (String) SkolkovoLM.nameNative.read(session, vo.projectObj);
+                    voteInfo.projectName = (String) SkolkovoLM.nameNativeProject.read(session, vo.projectObj);
                     voteInfo.projectClaimer = (String) SkolkovoLM.nameNativeClaimerProject.read(session, vo.projectObj);
                     voteInfo.projectCluster = (String) SkolkovoLM.nameNativeClusterVote.read(session, vo.voteObj);
                 } else {
-                    voteInfo.projectName = (String) SkolkovoLM.nameForeign.read(session, vo.projectObj);
+                    voteInfo.projectName = (String) SkolkovoLM.nameForeignProject.read(session, vo.projectObj);
                     voteInfo.projectClaimer = (String) SkolkovoLM.nameForeignClaimerProject.read(session, vo.projectObj);
                     voteInfo.projectCluster = (String) SkolkovoLM.nameForeignClusterVote.read(session, vo.voteObj);
                 }
@@ -194,7 +194,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
                 q.and(LM.userLogin.getExpr(session.modifier, expExpr).compare(new DataObject(expertLogin), Compare.EQUALS));
 
                 q.properties.put("projectId", projExpr);
-                q.properties.put("projectName", (isForeign ? SkolkovoLM.nameForeign : SkolkovoLM.nameNative).getExpr(session.modifier, projExpr));
+                q.properties.put("projectName", (isForeign ? SkolkovoLM.nameForeignProject : SkolkovoLM.nameNativeProject).getExpr(session.modifier, projExpr));
                 q.properties.put("projectClaimer", (isForeign ? SkolkovoLM.nameForeignClaimerProject : SkolkovoLM.nameNativeClaimerProject).getExpr(session.modifier, projExpr));
                 q.properties.put("projectCluster", (isForeign ? SkolkovoLM.nameForeignClusterExpert : SkolkovoLM.nameNativeClusterExpert).getExpr(session.modifier, expExpr));
 
