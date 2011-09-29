@@ -3137,6 +3137,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
     private class AcceptanceCertificateFormEntity extends FormEntity<SkolkovoBusinessLogics> {
         private ObjectEntity objExpert;
         private ObjectEntity objVote;
+        private ObjectEntity objVoteBallot;
         private ObjectEntity objYear;
         private ObjectEntity objMonth;
 
@@ -3144,18 +3145,24 @@ public class SkolkovoLogicsModule extends LogicsModule {
         private AcceptanceCertificateFormEntity(NavigatorElement parent, String sID, String caption, boolean resident) {
             super(parent, sID, caption);
 
-            objYear = addSingleGroupObject(IntegerClass.instance, "Год");
+            objYear = addSingleGroupObject(1, "year", IntegerClass.instance, "Год");
             objYear.groupTo.setSingleClassView(ClassViewType.PANEL);
             addPropertyDraw(objYear, baseLM.objectValue);
+            getPropertyDraw(baseLM.objectValue, objYear).setSID("year");
 
-            objMonth = addSingleGroupObject(IntegerClass.instance, "Месяц");
+            objMonth = addSingleGroupObject(2, "month", IntegerClass.instance, "Месяц");
             objMonth.groupTo.setSingleClassView(ClassViewType.PANEL);
             addPropertyDraw(objMonth, baseLM.objectValue);
+            getPropertyDraw(baseLM.objectValue, objMonth).setSID("month");
 
-            objExpert = addSingleGroupObject(expert, baseLM.selection, baseLM.userFirstName, baseLM.userLastName, documentNameExpert, dateAgreementExpert, nameCountryExpert, caseCountryExpert, englCountryExpert, nameCurrencyExpert, baseCurrencyExpert, englCurrencyExpert, pluralCurrencyExpert,nameNativeClusterExpert, nameLanguageExpert, residencyCountryExpert);
+            objExpert = addSingleGroupObject(3, "expert", expert, baseLM.selection, baseLM.userFirstName, baseLM.userLastName, documentNameExpert, dateAgreementExpert, nameCountryExpert, caseCountryExpert, englCountryExpert, nameCurrencyExpert, baseCurrencyExpert, englCurrencyExpert, pluralCurrencyExpert,nameNativeClusterExpert, nameLanguageExpert, residencyCountryExpert);
             //   objExpert.groupTo.initClassView = ClassViewType.PANEL;
 
-            objVote = addSingleGroupObject(vote, nameNativeProjectVote, nameNativeJoinClaimerProjectVote, nameForeignClaimerVote, dateStartVote, dateEndVote, openedVote, succeededVote, quantityDoneVote);
+            objVoteBallot = addSingleGroupObject(4, "voteBallot", vote, dateProjectVote, baseLM.date, dateEndVote, nameNativeProjectVote, nameNativeClaimerVote, nameNativeClusterVote);
+
+            addPropertyDraw(voteResultGroup, true, objExpert, objVoteBallot);
+
+            objVote = addSingleGroupObject(5, "vote", vote, nameNativeClaimerVote, nameForeignClaimerVote, openedVote, succeededVote, quantityDoneVote);
             addPropertyDraw(inNewExpertVote, objExpert, objVote);
             addPropertyDraw(objExpert, objVote, objMonth, objYear, doneExpertVoteMonthYear);
 
@@ -3168,8 +3175,12 @@ public class SkolkovoLogicsModule extends LogicsModule {
                 addFixedFilter(new NotFilterEntity(new NotNullFilterEntity(addPropertyObject(residencyCountryExpert, objExpert))));
 
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(quantityDoneExpertMonthYear, objExpert,objMonth, objYear)));
+
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(doneExpertVoteMonthYear, objExpert, objVote, objMonth, objYear)));
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(inNewExpertVote, objExpert, objVote)));
+
+            addFixedFilter(new NotNullFilterEntity(addPropertyObject(doneExpertVoteMonthYear, objExpert, objVoteBallot, objMonth, objYear)));
+            addFixedFilter(new NotNullFilterEntity(addPropertyObject(inNewExpertVote, objExpert, objVoteBallot)));
 
             addAttachEAForm(emailLetterExpertMonthYearEA, this, EmailActionProperty.Format.PDF, objMonth, 1, objYear, 2);
             //     setPageSize(0);
