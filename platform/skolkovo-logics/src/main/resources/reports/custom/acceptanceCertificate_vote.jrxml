@@ -2,7 +2,7 @@
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="ACT resident" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0">
 	<property name="ireport.zoom" value="1.2100000000000017"/>
 	<property name="ireport.x" value="0"/>
-	<property name="ireport.y" value="240"/>
+	<property name="ireport.y" value="207"/>
 	<style name="DefaultStyle" isDefault="true" vAlign="Middle" fontName="lsf.TimesNewRoman" fontSize="12" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false"/>
 	<style name="GroupCellStyle0" mode="Opaque" backcolor="#FFFFFF" vAlign="Middle" fontName="Serif" fontSize="10" pdfFontName="lsf.Times" pdfEncoding="Cp1251" isPdfEmbedded="false">
 		<box leftPadding="2" rightPadding="2">
@@ -124,7 +124,7 @@ $F{quantityDoneExpertMonthYear}+" экспертиз(ы) за период c " +
 				<textField isStretchWithOverflow="true">
 					<reportElement style="DefaultStyle" positionType="Float" x="10" y="37" width="489" height="47"/>
 					<textElement verticalAlignment="Top"/>
-					<textFieldExpression class="java.lang.String"><![CDATA["В соответствии с указанным Соглашением после подписания настоящего Акта Фонд  выплатит Члену Экспертной коллегии вознаграждение в сумме, равной " + $F{moneyQuantityDoneExpertMonthYear}.intValue() + " долларов США"+(($F{baseCurrencyExpert}==null)?".":(" в рублях по курсу ЦБ РФ на день платеже."))]]></textFieldExpression>
+					<textFieldExpression class="java.lang.String"><![CDATA["В соответствии с указанным Соглашением после подписания настоящего Акта Фонд  выплатит Члену Экспертной коллегии вознаграждение в сумме, равной " + $F{moneyQuantityDoneExpertMonthYear}.intValue() + " долларов США"+(($F{baseCurrencyExpert}==null)?".":(" в рублях по курсу ЦБ РФ на день платежа."))]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
 					<reportElement style="DefaultStyle" positionType="Float" x="10" y="84" width="489" height="70"/>
