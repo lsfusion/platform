@@ -105,7 +105,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
     AbstractCustomClass multiLanguageNamed;
 
     public ConcreteCustomClass project;
-    ConcreteCustomClass expert;
+    public ConcreteCustomClass expert;
     public ConcreteCustomClass cluster;
     public ConcreteCustomClass claimer;
     public ConcreteCustomClass claimerExpert;
@@ -337,6 +337,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP projectVote, claimerVote, nameNativeProjectVote, nameForeignProjectVote;
     LP quantityVoteProject;
     LP dataDocumentNameExpert, documentNameExpert;
+    public LP emailExpert;
     LP clusterExpert, nameNativeClusterExpert, nameForeignClusterExpert, nameNativeShortClusterExpert;
     LP primClusterExpert, extraClusterExpert, inClusterExpert;
     LP clusterInExpertVote;
@@ -358,7 +359,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP nameForeignJoinClaimerProject;
     LP emailDocuments;
 
-    LP emailToExpert;
+    public LP emailToExpert;
 
     LP nameNativeJoinClaimerVote, nameForeignJoinClaimerVote;
     LP nameNativeClaimerVote, nameForeignClaimerVote;
@@ -884,6 +885,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         siteClaimer = addDProp(contactGroup, "siteClaimer", "Сайт", StringClass.get(100), claimer);
         emailClaimer = addJProp(contactGroup, "emailClaimer", "E-mail", baseLM.and1, baseLM.email, 1, is(claimer), 1);
         emailFirmClaimer = addDProp(contactGroup, "emailFirmClaimer", "E-mail организации", StringClass.get(50), claimer);
+        emailExpert = addJProp("emailExpert", "E-mail", baseLM.and1, baseLM.email, 1, is(expert), 1);
 
         statementClaimer = addDProp("statementClaimer", "Заявление", CustomFileClass.instance, claimer);
         loadStatementClaimer = addLFAProp(documentGroup, "Загрузить заявление", statementClaimer);

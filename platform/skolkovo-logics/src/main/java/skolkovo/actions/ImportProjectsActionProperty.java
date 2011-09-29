@@ -10,6 +10,7 @@ import org.jdom.input.SAXBuilder;
 import platform.base.BaseUtils;
 import platform.base.IOUtils;
 import platform.base.OrderedMap;
+import platform.interop.Compare;
 import platform.interop.action.ClientAction;
 import platform.interop.action.MessageClientAction;
 import platform.server.Context;
@@ -29,9 +30,7 @@ import platform.server.session.DataSession;
 import skolkovo.SkolkovoBusinessLogics;
 import skolkovo.SkolkovoLogicsModule;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.math.BigInteger;
 import java.net.URL;
 import java.net.URLConnection;
@@ -423,9 +422,7 @@ public class ImportProjectsActionProperty extends ActionProperty {
                     URLConnection connection = url.openConnection();
                     connection.setDoOutput(false);
                     connection.setDoInput(true);
-                    Context.context.get().pushActionMessage("ИД проекта: " + projectId);
-                    importProject(connection.getInputStream(), projectId, projects.get(projectId));
-                    Context.context.get().popActionMessage();
+                    importProject(connection.getInputStream(), projectId, projects.get(projectId), context);
                     System.gc();
                 }
             }
@@ -458,19 +455,19 @@ public class ImportProjectsActionProperty extends ActionProperty {
             connection.setDoOutput(false);
             connection.setDoInput(true);
 
-            responseContents = IOUtils.readBytesFromStream(connection.getInputStream());
+            //responseContents = IOUtils.readBytesFromStream(connection.getInputStream());
 
-            //File file = new File("C://test.xml");
-            //InputStream is = new FileInputStream(file);
-            //long length = file.length();
-            //byte[] bytes = new byte[(int) length];
-            //int offset = 0;
-            //int numRead = 0;
-            //while (offset < bytes.length && (numRead = is.read(bytes, offset, bytes.length - offset)) >= 0) {
-            //    offset += numRead;
-            //}
-            //is.close();
-            //responseContents = bytes;
+            File file = new File("C://test.xml");
+            InputStream is = new FileInputStream(file);
+            long length = file.length();
+            byte[] bytes = new byte[(int) length];
+            int offset = 0;
+            int numRead = 0;
+            while (offset < bytes.length && (numRead = is.read(bytes, offset, bytes.length - offset)) >= 0) {
+                offset += numRead;
+            }
+            is.close();
+            responseContents = bytes;
 
             SAXBuilder builder = new SAXBuilder();
             Document document = builder.build(new ByteArrayInputStream(responseContents));
@@ -673,7 +670,7 @@ public class ImportProjectsActionProperty extends ActionProperty {
         return null;
     }
 
-    public void importProject(InputStream inputStream, String projectId, Timestamp currentProjectDate) throws SQLException {
+    public void importProject(InputStream inputStream, String projectId, Timestamp currentProjectDate, ExecutionContext context) throws SQLException {
         List<List<Object>> data = new ArrayList<List<Object>>();
         List<List<Object>> dataCluster = new ArrayList<List<Object>>();
         List<List<Object>> dataPatent = new ArrayList<List<Object>>();
@@ -684,19 +681,19 @@ public class ImportProjectsActionProperty extends ActionProperty {
         SAXBuilder builder = new SAXBuilder();
 
         try {
-            responseContents = IOUtils.readBytesFromStream(inputStream);
+            //responseContents = IOUtils.readBytesFromStream(inputStream);
 
-            //File file = new File("C://test.xml");
-            //InputStream is = new FileInputStream(file);
-            //long length = file.length();
-            //byte[] bytes = new byte[(int) length];
-            //int offset = 0;
-            //int numRead = 0;
-            //while (offset < bytes.length && (numRead = is.read(bytes, offset, bytes.length - offset)) >= 0) {
-            //    offset += numRead;
-            //}
-            //is.close();
-            //responseContents = bytes;
+            File file = new File("C://test.xml");
+            InputStream is = new FileInputStream(file);
+            long length = file.length();
+            byte[] bytes = new byte[(int) length];
+            int offset = 0;
+            int numRead = 0;
+            while (offset < bytes.length && (numRead = is.read(bytes, offset, bytes.length - offset)) >= 0) {
+                offset += numRead;
+            }
+            is.close();
+            responseContents = bytes;
 
             Document document = builder.build(new ByteArrayInputStream(responseContents));
             responseContents = null;
@@ -791,6 +788,11 @@ public class ImportProjectsActionProperty extends ActionProperty {
                     row.add(buildFileByteArray(node.getChild("fileConstituentClaimer")));
                     row.add(buildFileByteArray(node.getChild("fileExtractClaimer")));
                 }
+
+                DataObject expertObject = (DataObject) LM.emailToExpert.readClasses(session, new DataObject(node.getChildText("emailClaimer")));
+                if (expertObject != null)
+                    LM.baseLM.objectClass.execute(LM.claimerExpert.getSingleClass().ID, context, expertObject);
+
                 if (fillDate) {
                     row.add(new java.sql.Date(Integer.parseInt(node.getChildText("yearProject")) - 1900, Integer.parseInt(node.getChildText("monthProject")) - 1, Integer.parseInt(node.getChildText("dayProject"))));
                 }
