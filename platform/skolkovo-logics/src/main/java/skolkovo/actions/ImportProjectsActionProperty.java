@@ -422,7 +422,9 @@ public class ImportProjectsActionProperty extends ActionProperty {
                     URLConnection connection = url.openConnection();
                     connection.setDoOutput(false);
                     connection.setDoInput(true);
+                    Context.context.get().pushActionMessage("ИД проекта: " + projectId);
                     importProject(connection.getInputStream(), projectId, projects.get(projectId), context);
+                    Context.context.get().popActionMessage();
                     System.gc();
                 }
             }
@@ -455,19 +457,19 @@ public class ImportProjectsActionProperty extends ActionProperty {
             connection.setDoOutput(false);
             connection.setDoInput(true);
 
-            //responseContents = IOUtils.readBytesFromStream(connection.getInputStream());
+            responseContents = IOUtils.readBytesFromStream(connection.getInputStream());
 
-            File file = new File("C://test.xml");
-            InputStream is = new FileInputStream(file);
-            long length = file.length();
-            byte[] bytes = new byte[(int) length];
-            int offset = 0;
-            int numRead = 0;
-            while (offset < bytes.length && (numRead = is.read(bytes, offset, bytes.length - offset)) >= 0) {
-                offset += numRead;
-            }
-            is.close();
-            responseContents = bytes;
+//            File file = new File("C://test.xml");
+//            InputStream is = new FileInputStream(file);
+//            long length = file.length();
+//            byte[] bytes = new byte[(int) length];
+//            int offset = 0;
+//            int numRead = 0;
+//            while (offset < bytes.length && (numRead = is.read(bytes, offset, bytes.length - offset)) >= 0) {
+//                offset += numRead;
+//            }
+//            is.close();
+//            responseContents = bytes;
 
             SAXBuilder builder = new SAXBuilder();
             Document document = builder.build(new ByteArrayInputStream(responseContents));
