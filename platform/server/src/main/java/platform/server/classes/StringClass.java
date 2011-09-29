@@ -122,4 +122,8 @@ public class StringClass extends DataClass<String> {
     public Stat getTypeStat() {
         return new Stat(100, length);
     }
+
+    public boolean calculateStat() {
+        return length < 400;
+    }
 }

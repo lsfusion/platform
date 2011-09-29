@@ -120,10 +120,4 @@ public class ObjectType implements Type<Integer> {
     public AndClassSet getBaseClassSet(BaseClass baseClass) {
         return baseClass.getUpSet();
     }
-
-    @Override
-    public boolean calculateStat() {
-        return true;
-    }
-
 }

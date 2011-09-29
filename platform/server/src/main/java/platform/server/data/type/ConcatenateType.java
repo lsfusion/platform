@@ -9,7 +9,6 @@ import platform.server.data.SQLSession;
 import platform.server.data.expr.DeconcatenateExpr;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyType;
-import platform.server.data.expr.query.Stat;
 import platform.server.data.query.Query;
 import platform.server.data.sql.SQLSyntax;
 import platform.server.form.view.report.ReportDrawField;
@@ -170,11 +169,6 @@ public class ConcatenateType implements Type<byte[]> {
         for(int i=0;i<types.length;i++)
             classSets[i] = types[i].getBaseClassSet(baseClass);
         return new ConcatenateClassSet(classSets);
-    }
-
-    @Override
-    public boolean calculateStat() {
-        return true;
     }
 
     public Iterable<List<AndClassSet>> getUniversal(BaseClass baseClass, int part, AndClassSet fix) {

@@ -117,4 +117,8 @@ public class LogicalClass extends DataClass<Boolean> {
     public Stat getTypeStat() {
         return Stat.ONE;
     }
+
+    public boolean calculateStat() {
+        return false;
+    }
 }

@@ -1,14 +1,13 @@
 package platform.server.logics.table;
 
 import platform.base.BaseUtils;
-import platform.base.OrderedMap;
+import platform.server.classes.DataClass;
 import platform.server.classes.IntegerClass;
 import platform.server.data.*;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.ValueExpr;
 import platform.server.data.expr.query.*;
-import platform.server.data.query.Join;
 import platform.server.data.query.Query;
 import platform.server.data.query.stat.StatKeys;
 import platform.server.data.where.Where;
@@ -58,7 +57,7 @@ public abstract class DataTable extends GlobalTable {
         }
 
         for(PropertyField prop : properties) {
-            if (prop.type.calculateStat())
+            if (!(prop.type instanceof DataClass && !((DataClass)prop.type).calculateStat()))
                 query.properties.put(prop, GroupExpr.create(new HashMap<Object, KeyExpr>(), one,
                         GroupExpr.create(Collections.singletonMap(0, join.getExpr(prop)), Where.TRUE, Collections.singletonMap(0, new KeyExpr("count"))).getWhere(), GroupType.SUM, new HashMap<Object, Expr>()));
         }
@@ -68,19 +67,19 @@ public abstract class DataTable extends GlobalTable {
 
         Map<Object, Object> result = BaseUtils.singleValue(query.execute(session));
 
-        Integer rowCount = BaseUtils.nvl((Integer)result.get(0), 0);
+        Stat rowStat = new Stat(BaseUtils.nvl((Integer)result.get(0), 0));
 
         DistinctKeys<KeyField> distinctKeys = new DistinctKeys<KeyField>();
         for(KeyField key : keys)
             distinctKeys.add(key, new Stat(BaseUtils.nvl((Integer) result.get(key), 0)));
-        statKeys = new StatKeys<KeyField>(new Stat(rowCount), distinctKeys);
+        statKeys = new StatKeys<KeyField>(rowStat, distinctKeys);
 
         statProps = new HashMap<PropertyField, Stat>();
         for(PropertyField prop : properties) {
-            if (prop.type.calculateStat())
-                statProps.put(prop, new Stat(BaseUtils.nvl((Integer)result.get(prop), 0)));
+            if (prop.type instanceof DataClass && !((DataClass)prop.type).calculateStat())
+                statProps.put(prop, ((DataClass)prop.type).getTypeStat().min(rowStat));
             else
-                statProps.put(prop, new Stat(rowCount));
+                statProps.put(prop, new Stat(BaseUtils.nvl((Integer)result.get(prop), 0)));
         }
     }
 }
