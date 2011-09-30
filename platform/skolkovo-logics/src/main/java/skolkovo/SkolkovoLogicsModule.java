@@ -1907,19 +1907,30 @@ public class SkolkovoLogicsModule extends LogicsModule {
         emailNoticeRejectedVoteEA = addEAProp(emailClaimerFromAddress, emailClaimerFromAddress, vote);
         addEARecepient(emailNoticeRejectedVoteEA, claimerEmailVote, 1);
 
-        emailNoticeRejectedVote = addJProp(actionGroup, true, "emailNoticeRejectedVote", "Письмо о несоответствии", baseLM.and1, addJProp(emailNoticeRejectedVoteEA, 1, emailClaimerHeaderVote, 1), 1, closedRejectedVote, 1);
+        emailNoticeRejectedVote = addJProp(actionGroup, true, "emailNoticeRejectedVote", "Письмо о несоответствии", baseLM.and1,
+                addEPAProp(EPA_DEFAULT, addJProp(true, emailNoticeRejectedVoteEA, 1, emailClaimerHeaderVote, 1), decisionNoticedVote), 1,
+                closedRejectedVote, 1);
+        emailNoticeRejectedVote.setImage("email.png");
         emailNoticeRejectedVote.property.askConfirm = true;
 
         emailNoticeAcceptedStatusVoteEA = addEAProp(emailClaimerFromAddress, emailClaimerFromAddress, vote);
         addEARecepient(emailNoticeAcceptedStatusVoteEA, claimerEmailVote, 1);
 
-        emailNoticeAcceptedStatusVote = addJProp(actionGroup, true, "emailNoticeAcceptedStatusVote", "Письмо о соответствии (статус участника)", baseLM.and1, addJProp(emailNoticeAcceptedStatusVoteEA, 1, emailClaimerHeaderVote, 1), 1, closedAcceptedStatusVote, 1);
+        emailNoticeAcceptedStatusVote = addJProp(actionGroup, true, "emailNoticeAcceptedStatusVote", "Письмо о соответствии (статус участника)", baseLM.and1,
+                addEPAProp(EPA_DEFAULT, addJProp(true, emailNoticeAcceptedStatusVoteEA, 1, emailClaimerHeaderVote, 1), decisionNoticedVote), 1,
+                closedAcceptedStatusVote, 1);
+        emailNoticeAcceptedStatusVote.setImage("email.png");
         emailNoticeAcceptedStatusVote.property.askConfirm = true;
 
         emailNoticeAcceptedPreliminaryVoteEA = addEAProp(emailClaimerFromAddress, emailClaimerFromAddress, vote);
         addEARecepient(emailNoticeAcceptedPreliminaryVoteEA, claimerEmailVote, 1);
 
-        emailNoticeAcceptedPreliminaryVote = addJProp(actionGroup, true, "emailNoticeAcceptedPreliminaryVote", "Письмо о соответствии (предварительная экспертиза)", and(false, false), addJProp(emailNoticeAcceptedPreliminaryVoteEA, 1, emailClaimerHeaderVote, 1), 1, closedAcceptedPreliminaryVote, 1, fileDecisionVote, 1);
+//        emailNoticeAcceptedPreliminaryVote = addJProp(actionGroup, true, "emailNoticeAcceptedPreliminaryVote", "Письмо о соответствии (предварительная экспертиза)", and(false, false), addJProp(emailNoticeAcceptedPreliminaryVoteEA, 1, emailClaimerHeaderVote, 1), 1,);
+
+        emailNoticeAcceptedPreliminaryVote = addJProp(actionGroup, true, "emailNoticeAcceptedPreliminaryVote", "Письмо о соответствии (предварительная экспертиза)", and(false, false),
+                addEPAProp(EPA_DEFAULT, addJProp(true, emailNoticeAcceptedPreliminaryVoteEA, 1, emailClaimerHeaderVote, 1), decisionNoticedVote), 1,
+                closedAcceptedPreliminaryVote, 1, fileDecisionVote, 1);
+        emailNoticeAcceptedPreliminaryVote.setImage("email.png");
         emailNoticeAcceptedPreliminaryVote.property.askConfirm = true;
 
         emailStartVoteEA = addEAProp(vote);
@@ -2450,7 +2461,9 @@ public class SkolkovoLogicsModule extends LogicsModule {
             getPropertyDraw(generateVoteProject).forceViewType = ClassViewType.PANEL;
             getPropertyDraw(generateVoteProject).propertyCaption = addPropertyObject(hideGenerateVoteProject, objProject);
 
-            objVote = addSingleGroupObject(vote, dateStartVote, dateEndVote, nameNativeClusterVote, nameProjectActionVote, openedVote, succeededVote, acceptedVote, quantityDoneVote, quantityInClusterVote, quantityInnovativeVote, quantityForeignVote, loadFileDecisionVote, openFileDecisionVote, emailClaimerVote, emailNoticeRejectedVote, emailNoticeAcceptedStatusVote, emailNoticeAcceptedPreliminaryVote, decisionNoticedVote, baseLM.delete);
+            objVote = addSingleGroupObject(vote, dateStartVote, dateEndVote, nameNativeClusterVote, nameProjectActionVote, openedVote, succeededVote, acceptedVote,
+                    quantityDoneVote, quantityInClusterVote, quantityInnovativeVote, quantityForeignVote, loadFileDecisionVote, openFileDecisionVote,
+                    emailClaimerVote, emailNoticeRejectedVote, emailNoticeAcceptedStatusVote, emailNoticeAcceptedPreliminaryVote, decisionNoticedVote, baseLM.delete);
             objVote.groupTo.banClassView.addAll(BaseUtils.toList(ClassViewType.PANEL, ClassViewType.HIDE));
 
 //            getPropertyDraw(copyResultsVote).forceViewType = ClassViewType.PANEL;
