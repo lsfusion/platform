@@ -1002,7 +1002,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         @Override
         public DataClass getValueClass() {
             FileClass fileClass = (FileClass) fileProperty.property.getType();
-            return FileActionClass.getDefinedInstance(false, fileClass.toString(), fileClass.getExtensions());
+            return FileActionClass.getInstance(false, fileClass.isCustom(), fileClass.toString(), fileClass.getExtensions());
         }
 
         public void execute(ExecutionContext context) throws SQLException {
@@ -1039,12 +1039,11 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
             int i = 0; // здесь опять учитываем, что порядок тот же
             for (ClassPropertyInterface classInterface : interfaces)
                 objects[i++] = context.getKeyValue(classInterface);
-            if (getFileClass() instanceof CustomFileClass) {
-                byte[] fullData = (byte[]) fileProperty.read(context, objects);
+            byte[] fullData = (byte[]) fileProperty.read(context, objects);
+            if (getFileClass().isCustom()) {
                 context.addAction(new OpenFileClientAction(BaseUtils.getFile(fullData), BaseUtils.getExtension(fullData)));
-            } else {
-                context.addAction(new OpenFileClientAction((byte[]) fileProperty.read(context, objects), BaseUtils.firstWord(getFileClass().getExtensions(), ",")));
-            }
+            } else
+                context.addAction(new OpenFileClientAction(fullData, BaseUtils.firstWord(getFileClass().getExtensions(), ",")));
         }
 
         @Override

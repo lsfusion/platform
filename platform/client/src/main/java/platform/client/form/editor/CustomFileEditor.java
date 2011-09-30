@@ -60,7 +60,7 @@ public class CustomFileEditor extends DocumentPropertyEditor {
         byte result[] = null;
 
         try {
-            result = ((!multiple) && (!custom)) ? IOUtils.getFileBytes(files[0]) : BaseUtils.filesToBytes(custom, files);
+            result = ((!multiple) && (!custom)) ? IOUtils.getFileBytes(files[0]) : BaseUtils.filesToBytes(multiple, custom, files);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -71,7 +71,10 @@ public class CustomFileEditor extends DocumentPropertyEditor {
     public void openDocument() throws IOException {
         if (value != null) {
             byte[] union = (byte[]) value;
-            BaseUtils.openFile(BaseUtils.getFile(union), BaseUtils.getExtension(union));
+            if ((!multiple) && (!custom))
+                BaseUtils.openFile(union, extensions[0]);
+            else
+                BaseUtils.openFile(BaseUtils.getFile(union), BaseUtils.getExtension(union));
         }
         returnValue = JFileChooser.CANCEL_OPTION;
     }

@@ -1512,13 +1512,14 @@ public class BaseUtils {
         return extension;
     }
 
-    public static byte[] filesToBytes(boolean custom, File... files) {
+    public static byte[] filesToBytes(boolean multiple, boolean custom, File... files) {
         ByteArrayOutputStream byteOutStream = new ByteArrayOutputStream();
         DataOutputStream outStream = new DataOutputStream(byteOutStream);
 
         byte result[] = null;
         try {
-            outStream.writeInt(files.length);
+            if (multiple)
+                outStream.writeInt(files.length);
             for (File file : files) {
 
                 byte fileBytes[] = IOUtils.getFileBytes(file);
@@ -1530,7 +1531,8 @@ public class BaseUtils {
                 }
                 byte[] union = mergeFileAndExtension(fileBytes, ext);
 
-                outStream.writeInt(union.length);
+                if (multiple)
+                    outStream.writeInt(union.length);
                 outStream.write(union);
             }
 
@@ -1569,7 +1571,7 @@ public class BaseUtils {
         return file;
     }
 
-public static byte[] bytesToBytes(byte[]... files) {
+    public static byte[] bytesToBytes(byte[]... files) {
         ByteArrayOutputStream byteOutStream = new ByteArrayOutputStream();
         DataOutputStream outStream = new DataOutputStream(byteOutStream);
 

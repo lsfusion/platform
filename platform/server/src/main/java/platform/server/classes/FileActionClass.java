@@ -92,10 +92,6 @@ public class FileActionClass extends ActionClass {
         return getInstance(multiple, false, description, extensions);
     }
 
-    public static FileActionClass getCustomInstance(boolean multiple) {
-        return getInstance(multiple, true, "", "");
-    }
-
     public static FileActionClass getInstance(boolean multiple, boolean custom, String description, String extensions) {
         String sid = formatSID(multiple, custom, description, extensions);
         FileActionClass instance = instances.get(sid);
@@ -118,20 +114,7 @@ public class FileActionClass extends ActionClass {
         if ((!multiple) && (!custom)) {
             result.add(val);
         } else {
-            ByteArrayInputStream byteInStream = new ByteArrayInputStream(val);
-            DataInputStream inStream = new DataInputStream(byteInStream);
-
-            try {
-                int cnt = inStream.readInt();
-                for (int i = 0; i < cnt; i++) {
-                    int length = inStream.readInt();
-                    byte temp[] = new byte[length];
-                    inStream.readFully(temp);
-                    result.add(temp);
-                }
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
+            result.addAll(CustomFileClass.getFiles(val));
         }
 
         return result;

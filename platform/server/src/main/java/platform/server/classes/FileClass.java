@@ -70,4 +70,8 @@ public abstract class FileClass extends DataClass<byte[]> {
     public boolean calculateStat() {
         return false;
     }
+
+    public boolean isCustom() {
+        return false;
+    };
 }
