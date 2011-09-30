@@ -187,7 +187,7 @@ public class ImportProjectsActionProperty extends ActionProperty {
         foreignSubstantiationProjectClusterField = new ImportField(LM.foreignSubstantiationProjectCluster);
 
         nameNativeClaimerField = new ImportField(LM.nameNativeJoinClaimer);
-        nameForeignClaimerField = new ImportField(LM.nameForeignClaimer);
+        nameForeignClaimerField = new ImportField(LM.nameForeignJoinClaimer);
         firmNameNativeClaimerField = new ImportField(LM.firmNameNativeClaimer);
         firmNameForeignClaimerField = new ImportField(LM.firmNameForeignClaimer);
         phoneClaimerField = new ImportField(LM.phoneClaimer);
