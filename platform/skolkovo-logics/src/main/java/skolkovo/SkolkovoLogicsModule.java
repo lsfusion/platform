@@ -2062,6 +2062,12 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         baseLM.baseElement.add(print);
 
+        NavigatorElement summaryTables = new NavigatorElement(baseLM.baseElement, "summaryTables", "Сводные таблицы");
+        summaryTables.window = leftToolbar;
+
+        addFormEntity(new ProjectClusterFormEntity(summaryTables, "projectCluster"));
+        baseLM.baseElement.add(summaryTables);
+
         NavigatorElement options = new NavigatorElement(baseLM.baseElement, "options", "Настройки");
         options.window = leftToolbar;
 
@@ -2599,6 +2605,35 @@ public class SkolkovoLogicsModule extends LogicsModule {
             design.get(objFormalControl.groupTo).grid.constraints.fillHorizontal = 1;
 
             return design;
+        }
+    }
+
+    private class ProjectClusterFormEntity extends FormEntity<SkolkovoBusinessLogics> {
+        private ObjectEntity objProject;
+        private ObjectEntity objCluster;
+
+        private ProjectClusterFormEntity(NavigatorElement parent, String sID) {
+            super(parent, sID, "Проект/Кластер");
+
+
+            objProject = new ObjectEntity(genID(), project, "Проект");
+            addPropertyDraw(objProject, dateProject, nameNativeProject, nameForeignProject, nameNativeFinalClusterProject, nameNativeClaimerProject, nameForeignClaimerProject, emailClaimerProject,
+                    nameStatusProject, nameProjectActionProject, updateDateProject, autoGenerateProject, inactiveProject);
+
+            objCluster = new ObjectEntity(genID(), cluster, "Кластер");
+            addPropertyDraw(objCluster, nameNative, nameForeign);
+
+            addPropertyDraw(objProject, objCluster, nativeSubstantiationProjectCluster, foreignSubstantiationProjectCluster);
+
+            GroupObjectEntity gobjProjectCluster = new GroupObjectEntity(genID());
+            gobjProjectCluster.add(objProject);
+            gobjProjectCluster.add(objCluster);
+            addGroup(gobjProjectCluster);
+            gobjProjectCluster.setSingleClassView(ClassViewType.GRID);
+
+            addFixedFilter(new NotNullFilterEntity(addPropertyObject(inProjectCluster, objProject, objCluster)));
+
+            setReadOnly(true);
         }
     }
 
