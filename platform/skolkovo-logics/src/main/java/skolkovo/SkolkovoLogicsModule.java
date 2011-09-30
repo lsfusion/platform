@@ -220,11 +220,11 @@ public class SkolkovoLogicsModule extends LogicsModule {
                 new String[]{"unknown", "needTranslation", "needDocuments", "needExtraVote", "inProgress", "succeeded", "accepted", "rejected",
                      "notEnoughDocsForPreliminary", "notEnoughDocsForStatus", "noExperts", "noCluster", "positiveFCResult", "negativeLCResult", "positiveLCResult",
                      "registered", "repeated", "sentForVote", "withdrawn", "overdueFC", "overdueLC",
-                     "issuedVoteDocs", "applyStatus", "sentRejected", "sentPreliminaryAccepted", "sentStatusAccepted"},
+                     "issuedVoteDocs", "applyStatus", "sentRejected", "sentPreliminaryAccepted", "sentStatusAccepted", "inProgressRepeat"},
                 new String[]{"Неизвестный статус", "Направлена на перевод", "Не соответствуют документы", "Требуется заседание (повторное)", "Идет заседание", "Достаточно голосов", "Оценен положительно", "Оценен отрицательно",
                      "Неполный перечень документов (на экспертизу)","Неполный перечень документов (на статус)",  "Отсутствует перечень экспертов", "Не соответствует направлению", "Направлена на юридическую проверку", "Не прошла юридическую проверку", "Прошла юридическую проверку",
                      "Зарегистирована", "Подана повторно", "Направлена на экспертизу по существу","Отозвана заявителем", "Не исправлена в срок (ФЭ)", "Не исправлена в срок (ЮП)",
-                     "Оформление документов по заседанию", "Подана заявка на статус", "Отправлено отрицательное решение", "Отправлено положительное решение предв.экспертизы", "Отправлено положительное решение экспертизы на статус"});
+                     "Оформление документов по заседанию", "Подана заявка на статус", "Отправлено отрицательное решение", "Отправлено положительное решение предв.экспертизы", "Отправлено положительное решение экспертизы на статус", "Идет заседание (повторное)"});
 
         documentType = addStaticClass("documentType", "Тип документа",
                 new String[]{"application", "resume", "techdesc", "forres", "ipres", "roadmap"},
@@ -392,6 +392,9 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP loadFileDecisionVote;
     LP openFileDecisionVote;
 
+    LP fileDecisionProject;
+    LP acceptedDecisionProject, rejectedDecisionProject;
+
     LP inDefaultDocumentLanguage;
     LP inDefaultDocumentExpert;
     LP inDocumentLanguage;
@@ -407,6 +410,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP openedVote;
     LP closedVote;
     LP voteInProgressProject;
+    LP voteInProgressRepeatProject;
     LP requiredPeriod;
     LP overduePeriod;
     LP requiredQuantity;
@@ -464,6 +468,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP noCurrentVoteProject;
     LP valuedProjectCluster;
     LP voteValuedProjectCluster;
+    LP voteLastProject;
     LP acceptedProjectCluster;
     LP rejectedProjectCluster;
     LP clusterAcceptedProject;
@@ -1408,6 +1413,10 @@ public class SkolkovoLogicsModule extends LogicsModule {
         voteInProgressProject = addAGProp(idGroup, "voteInProgressProject", true, "Тек. заседание (ИД)",
                 openedVote, 1, projectVote, 1); // активно только одно заседание
 
+        voteInProgressRepeatProject = addJProp("voteInProgressRepeatProject", true, "Тек. заседание (ИД) (повт.)", baseLM.and1,
+                voteInProgressProject, 1,
+                addJProp(baseLM.greater2, quantityVoteProject, 1, addCProp(IntegerClass.instance, 1)), 1);
+
         // результаты голосования
         voteResultExpertVote = addDProp(idGroup, "voteResultExpertVote", "Результат (ИД)", voteResult, expert, vote);
         voteResultNewExpertVote = addJProp(baseGroup, "voteResultNewExpertVote", "Результат (ИД) (новый)", baseLM.and1,
@@ -1551,6 +1560,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
         voteValuedProjectCluster = addJProp(idGroup, "voteValuedProjectCluster", true, "Оцененное заседание (ИД)", baseLM.and1, voteSucceededProjectCluster, 1, 2, valuedProjectCluster, 1, 2);
 //        voteValuedProject = addJProp(idGroup, "voteValuedProject", true, "Оцененнное заседание (ИД)", baseLM.and1, voteSucceededProject, 1, noCurrentVoteProject, 1); // нет открытого заседания и есть состояшееся заседания
 
+        voteLastProject = addMGProp(idGroup, "voteLastProject", true, "Посл. заседание (ИД)", object(vote), projectVote, 1);
+
         acceptedProjectCluster = addJProp(baseGroup, "acceptedProjectCluster", true, "Оценен положительно", acceptedVote, voteValuedProjectCluster, 1, 2);
         rejectedProjectCluster = addJProp(baseGroup, "rejectedProjectCluster", true, "Оценен отрицательно", baseLM.andNot1, voteValuedProjectCluster, 1, 2, acceptedProjectCluster, 1, 2);
 
@@ -1587,7 +1598,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         rejectedProject = addJProp("rejectedProject", true, "Оценен отрицательно", baseLM.andNot1, addCProp(LogicalClass.instance, true, project), 1, currentClusterProject, 1);
 
-        valuedProject = addSUProp("valuedProject", "Оценен", Union.OVERRIDE, acceptedProject, rejectedProject);
+        valuedProject = addSUProp("valuedProject", true, "Оценен", Union.OVERRIDE, acceptedProject, rejectedProject);
 
         needExtraVoteProject = addJProp("needExtraVoteProject", true, "Треб. заседание", and(true, true, true, false),
                 is(project), 1,
@@ -1751,10 +1762,20 @@ public class SkolkovoLogicsModule extends LogicsModule {
         oficialNameProjectStatus.setMinimumWidth(10);
         oficialNameProjectStatus.setPreferredWidth(50);
 
+        fileDecisionVote = addDProp("fileDecisionVote", "Решение по проекту", PDFClass.instance, vote);
+        loadFileDecisionVote = addJProp(actionGroup, true, "Загрузить решение", baseLM.and1, addLFAProp(fileDecisionVote), 1, closedSucceededVote, 1);
+        openFileDecisionVote = addJProp(actionGroup, true, "Открыть решение", baseLM.and1, addOFAProp(fileDecisionVote), 1, closedSucceededVote, 1);
+
+        fileDecisionProject = addJProp("fileDecisionProject", "Решение по проекту", fileDecisionVote, voteLastProject, 1);
+
+        acceptedDecisionProject = addJProp("acceptedDecisionProject", true, "Есть решение о соответствии", baseLM.and1, acceptedProject, 1, fileDecisionProject, 1);
+        rejectedDecisionProject = addJProp("rejectedDecisionProject", true, "Есть решение о несоответствии", baseLM.and1, rejectedProject, 1, fileDecisionProject, 1);
+
         statusProject = addCaseUProp(idGroup, "statusProject", true, "Статус (ИД)",
-                acceptedProject, 1, addCProp(projectStatus, "accepted", project), 1,
-                rejectedProject, 1, addCProp(projectStatus, "rejected", project), 1,
-                voteOpenedSucceededProject, 1, addCProp(projectStatus, "succeeded", project), 1,
+                acceptedDecisionProject, 1, addCProp(projectStatus, "accepted", project), 1,
+                rejectedDecisionProject, 1, addCProp(projectStatus, "rejected", project), 1,
+                valuedProject, 1, addCProp(projectStatus, "issuedVoteDocs", project), 1,
+                voteInProgressRepeatProject, 1, addCProp(projectStatus, "inProgressRepeat", project), 1,
                 voteInProgressProject, 1, addCProp(projectStatus, "inProgress", project), 1,
                 needExtraVoteRepeatProject, 1, addCProp(projectStatus, "needExtraVote", project), 1,
                 sentForTranslationProject, 1, addCProp(projectStatus, "needTranslation", project), 1,
@@ -1810,10 +1831,6 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         numberNewExpertVote = addOProp("numberNewExpertVote", "Номер (нов.)", OrderType.SUM, addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), inNewExpertVote, 1, 2), true, true, 1, 2, 1);
         numberOldExpertVote = addOProp("numberOldExpertVote", "Номер (стар.)", OrderType.SUM, addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), inOldExpertVote, 1, 2), true, true, 1, 2, 1);
-
-        fileDecisionVote = addDProp("fileDecisionVote", "Решение по проекту", PDFClass.instance, vote);
-        loadFileDecisionVote = addJProp(actionGroup, true, "Загрузить решение", baseLM.and1, addLFAProp(fileDecisionVote), 1, closedSucceededVote, 1);
-        openFileDecisionVote = addJProp(actionGroup, true, "Открыть решение", baseLM.and1, addOFAProp(fileDecisionVote), 1, closedSucceededVote, 1);
 
         emailDocuments = addDProp(baseGroup, "emailDocuments", "E-mail для документов", StringClass.get(50));
 
@@ -2439,7 +2456,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
             addHintsIncrementTable(quantityDoneVote, notEnoughProject, acceptedVote, succeededVote, voteSucceededProjectCluster,
                     voteValuedProjectCluster, clusterAcceptedProject, currentClusterProject, resultExecuteFormalControlProject,
-                    needExtraVoteProject, resultExecuteLegalCheckProject, overdueFormalControlProject, isPreliminaryNotEnoughDocumentProject, isStatusNotEnoughDocumentProject);
+                    needExtraVoteProject, resultExecuteLegalCheckProject, overdueFormalControlProject, isPreliminaryNotEnoughDocumentProject, isStatusNotEnoughDocumentProject,
+                    acceptedProject, rejectedProject, acceptedDecisionProject, rejectedDecisionProject, valuedProject);
 //            addHintsNoUpdate(statusProject);
             setPageSize(0);
 
@@ -2633,7 +2651,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         private ExpertFormEntity(NavigatorElement parent, String sID) {
             super(parent, sID, "Реестр экспертов");
 
-            objExpert = addSingleGroupObject(expert, baseLM.selection, baseLM.userFirstName, baseLM.userLastName, documentNameExpert, baseLM.userLogin, baseLM.userPassword, baseLM.email, disableExpert, nameNativeClusterExpert, nameLanguageExpert, dateAgreementExpert, nameCountryExpert, expertResultGroup, baseLM.generateLoginPassword, emailAuthExpert);
+            objExpert = addSingleGroupObject(expert, baseLM.selection, baseLM.userFirstName, baseLM.userLastName, documentNameExpert, baseLM.userLogin, baseLM.userPassword, baseLM.email, disableExpert, nameNativeClusterExpert, nameLanguageExpert, dateAgreementExpert, nameCountryExpert, nameCurrencyExpert, expertResultGroup, baseLM.generateLoginPassword, emailAuthExpert);
             addObjectActions(this, objExpert);
 
             objVote = addSingleGroupObject(vote, nameNativeProjectVote, dateStartVote, dateEndVote, openedVote, succeededVote, quantityDoneVote);

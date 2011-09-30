@@ -791,9 +791,9 @@ public class ImportProjectsActionProperty extends ActionProperty {
                     row.add(buildFileByteArray(node.getChild("fileExtractClaimer")));
                 }
 
-                DataObject expertObject = (DataObject) LM.emailToExpert.readClasses(session, new DataObject(node.getChildText("emailClaimer")));
-                if (expertObject != null)
-                    LM.baseLM.objectClass.execute(LM.claimerExpert.getSingleClass().ID, context, expertObject);
+                ObjectValue expertObject = LM.emailToExpert.readClasses(session, new DataObject(node.getChildText("emailProject")));
+                if (expertObject instanceof DataObject)
+                    LM.baseLM.objectClass.execute(LM.claimerExpert.getSingleClass().ID, context, (DataObject)expertObject);
 
                 if (fillDate) {
                     row.add(new java.sql.Date(Integer.parseInt(node.getChildText("yearProject")) - 1900, Integer.parseInt(node.getChildText("monthProject")) - 1, Integer.parseInt(node.getChildText("dayProject"))));
