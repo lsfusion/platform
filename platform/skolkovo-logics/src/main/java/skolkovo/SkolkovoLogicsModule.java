@@ -2457,6 +2457,9 @@ public class SkolkovoLogicsModule extends LogicsModule {
             PropertyObjectEntity nameNativeCorrectHighlightClaimerProjectProperty = addPropertyObject(nameNativeCorrectHighlightClaimerProject, objProject);
             getPropertyDraw(nameNativeClaimerProject).setPropertyHighlight(nameNativeCorrectHighlightClaimerProjectProperty);
 
+            PropertyObjectEntity nameForeignCorrectHighlightClaimerProjectProperty = addPropertyObject(nameForeignCorrectHighlightClaimerProject, objProject);
+            getPropertyDraw(nameForeignClaimerProject).setPropertyHighlight(nameForeignCorrectHighlightClaimerProjectProperty);
+
 //            addPropertyDraw(addProject).toDraw = objProject.groupTo;
 //            getPropertyDraw(addProject).forceViewType = ClassViewType.PANEL;
 
