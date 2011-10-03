@@ -29,10 +29,7 @@ import platform.server.form.navigator.NavigatorElement;
 import platform.server.form.view.*;
 import platform.server.form.window.ToolBarNavigatorWindow;
 import platform.server.form.window.TreeNavigatorWindow;
-import platform.server.logics.BaseLogicsModule;
-import platform.server.logics.DataObject;
-import platform.server.logics.LogicsModule;
-import platform.server.logics.ObjectValue;
+import platform.server.logics.*;
 import platform.server.logics.linear.LP;
 import platform.server.logics.property.ActionProperty;
 import platform.server.logics.property.ClassPropertyInterface;
@@ -46,7 +43,6 @@ import skolkovo.actions.ImportProjectsActionProperty;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.io.*;
 import java.sql.*;
@@ -600,6 +596,10 @@ public class SkolkovoLogicsModule extends LogicsModule {
     public LP foreignSubstantiationOtherClusterProject;
     public LP fileNativeSummaryProject;
     LP hideForeignSubstantiationOtherClusterProject;
+    LP clusterComputer;
+    LP currentCluster;
+    LP nameNativeCurrentCluster;
+    LP inProjectCurrentCluster;
     LP loadFileNativeSummaryProject;
     LP openFileNativeSummaryProject;
     public LP fileForeignSummaryProject;
@@ -1593,6 +1593,12 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         inProjectCluster = addDProp(baseGroup, "inProjectCluster", "Вкл", LogicalClass.instance, project, cluster);
 
+        clusterComputer = addDProp("clusterComputer", "Кластер рабочего места", cluster);
+        //clusterComputer = addSDProp("clusterComputer", "Кластер рабочего места", cluster);
+        currentCluster = addJProp(true, "currentCluster", "Текущий кластер", clusterComputer);
+
+        nameNativeCurrentCluster = addJProp("nameNativeCurrentCluster", "Кластер", nameNative, currentCluster);
+
         numberCluster = addDProp(baseGroup, "numberCluster", "Приоритет", IntegerClass.instance, cluster);
         clusterNumber = addAGProp("clusterName", "Кластер (ИД)", numberCluster);
 
@@ -1609,6 +1615,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         finalClusterProject = addSUProp("finalClusterProject", "Тек. кластер (ИД)", Union.OVERRIDE, lastClusterProject, currentClusterProject, clusterAcceptedProject);
         nameNativeFinalClusterProject = addJProp(projectInformationGroup, "nameNativeFinalClusterProject", "Тек. кластер", nameNative, finalClusterProject, 1);
         nameForeignFinalClusterProject = addJProp(projectInformationGroup, "nameForeignFinalClusterProject", "Тек. кластер (иностр.)", nameForeign, finalClusterProject, 1);
+        inProjectCurrentCluster = addJProp(baseGroup, "inProjectCurrentCluster", "Вкл", inProjectCluster, 1, currentCluster);
 
         finalClusterProjectVote = addJProp("finalClusterProjectVote", "Тек. кластер (ИД)", finalClusterProject, projectVote, 1);
         nameNativeFinalClusterProjectVote = addJProp("nameNativeFinalClusterProjectVote", "Тек. кластер", nameNative, finalClusterProjectVote, 1);
@@ -2390,7 +2397,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
             getPropertyDraw(isOtherClusterProject).propertyCaption = addPropertyObject(hideIsOtherClusterProject, objProject);
             getPropertyDraw(nativeSubstantiationOtherClusterProject).propertyCaption = addPropertyObject(hideNativeSubstantiationOtherClusterProject, objProject);
             getPropertyDraw(foreignSubstantiationOtherClusterProject).propertyCaption = addPropertyObject(hideForeignSubstantiationOtherClusterProject, objProject);
-
+            addPropertyDraw(nameNativeCurrentCluster).toDraw = objProject.groupTo;
+            setForceViewType(nameNativeCurrentCluster, ClassViewType.PANEL);
             addPropertyDraw(objProject, translateToRussianProject, translateToEnglishProject);
             setForceViewType(translateToRussianProject, ClassViewType.PANEL);
             setForceViewType(translateToEnglishProject, ClassViewType.PANEL);
@@ -2516,6 +2524,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(clusterInExpertVote, objExpert, objVote)));
             addFixedFilter(new CompareFilterEntity(addPropertyObject(projectFormalControl, objFormalControl), Compare.EQUALS, objProject));
             addFixedFilter(new CompareFilterEntity(addPropertyObject(projectLegalCheck, objLegalCheck), Compare.EQUALS, objProject));
+            addFixedFilter(new OrFilterEntity(new NotNullFilterEntity(addPropertyObject(inProjectCurrentCluster, objProject)),
+                    new NotFilterEntity(new NotNullFilterEntity(addPropertyObject(currentCluster)))));
 
             RegularFilterGroupEntity expertFilterGroup = new RegularFilterGroupEntity(genID());
             expertFilterGroup.addFilter(new RegularFilterEntity(genID(),
@@ -2550,6 +2560,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
             setReadOnly(true, objCluster.groupTo);
             setReadOnly(inProjectCluster, false);
+            setReadOnly(nameNativeCurrentCluster, false);
         }
 
         @Override
