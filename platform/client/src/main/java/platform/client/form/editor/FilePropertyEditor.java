@@ -22,10 +22,9 @@ public class FilePropertyEditor extends JFileChooser
 
     public FilePropertyEditor(String description, String... extensions) {
         super();
-        this.extensions = extensions;
+        setLatestCurrentDirectory();
 
-        Preferences preferences = Preferences.userNodeForPackage(this.getClass());
-        setCurrentDirectory(new File(preferences.get("LATEST_DIRECTORY", "")));
+        this.extensions = extensions;
 
         if (description == null || description.isEmpty()) {
             description = ClientResourceBundle.getString("form.editor.allfiles");
@@ -42,7 +41,14 @@ public class FilePropertyEditor extends JFileChooser
 
     public FilePropertyEditor(boolean allFiles) {
         super();
+        setLatestCurrentDirectory();
+
         setAcceptAllFileFilterUsed(allFiles);
+    }
+
+    private void setLatestCurrentDirectory() {
+        Preferences preferences = Preferences.userNodeForPackage(this.getClass());
+        setCurrentDirectory(new File(preferences.get("LATEST_DIRECTORY", "")));
     }
 
     @Override
