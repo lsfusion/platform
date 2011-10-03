@@ -5,6 +5,7 @@ import platform.server.caches.hash.HashValues;
 import platform.server.data.Value;
 import platform.server.data.expr.Expr;
 import platform.server.data.query.Join;
+import platform.server.data.translator.HashLazy;
 import platform.server.data.translator.MapValuesTranslate;
 import platform.server.data.where.WhereBuilder;
 import platform.server.logics.property.Property;
@@ -68,7 +69,7 @@ public abstract class AbstractPropertyChangesModifier<P extends PropertyInterfac
         }
 
         @Override
-        @IdentityLazy
+        @HashLazy
         public int hashValues(HashValues hashValues) {
             return super.hashValues(hashValues) * 31 + changes.hashValues(hashValues);
         }

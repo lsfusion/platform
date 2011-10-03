@@ -8,6 +8,10 @@ public class HashCodeKeys implements HashKeys {
     }
     public static final HashCodeKeys instance = new HashCodeKeys();
 
+    public boolean isGlobal() {
+        return true;
+    }
+
     public int hash(KeyExpr expr) {
         return expr.hashCode();
     }

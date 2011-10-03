@@ -7,6 +7,7 @@ import platform.server.caches.ManualLazy;
 import platform.server.caches.hash.HashContext;
 import platform.server.data.query.CompileSource;
 import platform.server.data.query.ExprEnumerator;
+import platform.server.data.translator.HashLazy;
 import platform.server.data.where.classes.ClassExprWhere;
 
 import java.util.Arrays;
@@ -39,7 +40,7 @@ public abstract class FormulaWhere<WhereType extends Where> extends AbstractWher
             where.enumerate(enumerator);
     }
 
-    @IdentityLazy
+    @HashLazy
     public int hashOuter(HashContext hashContext) {
         int result = hashCoeff();
         for(Where where : wheres)

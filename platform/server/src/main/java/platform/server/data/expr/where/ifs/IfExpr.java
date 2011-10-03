@@ -1,8 +1,14 @@
 package platform.server.data.expr.where.ifs;
 
+import platform.server.caches.CacheAspect;
+import platform.server.caches.hash.HashMapValues;
+import platform.server.caches.hash.HashValues;
+import platform.server.data.Value;
 import platform.server.data.expr.*;
 import platform.server.data.expr.query.Stat;
 import platform.server.data.expr.where.cases.ExprCaseList;
+import platform.server.data.expr.where.extra.EqualsWhere;
+import platform.server.data.where.AbstractWhere;
 import platform.server.data.where.Where;
 import platform.server.data.where.MapWhere;
 import platform.server.data.type.Type;
@@ -21,6 +27,7 @@ import platform.base.BaseUtils;
 import platform.base.TwinImmutableInterface;
 import platform.interop.Compare;
 
+import java.util.HashSet;
 import java.util.Set;
 
 public class IfExpr extends Expr {

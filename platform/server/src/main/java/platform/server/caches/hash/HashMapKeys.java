@@ -14,6 +14,10 @@ public class HashMapKeys implements HashKeys {
         this.hashKeys = hashKeys;
     }
 
+    public boolean isGlobal() {
+        return false;
+    }
+
     public int hash(KeyExpr expr) {
         GlobalObject hash = hashKeys.get(expr);
         if(hash==null) {

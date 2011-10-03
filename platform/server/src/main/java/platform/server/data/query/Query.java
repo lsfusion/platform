@@ -13,6 +13,7 @@ import platform.server.data.QueryEnvironment;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.sql.SQLSyntax;
+import platform.server.data.translator.HashLazy;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.translator.MapValuesTranslate;
 import platform.server.data.translator.MapValuesTranslator;
@@ -275,7 +276,7 @@ public class Query<K,V> extends InnerContext<Query<?,?>> implements MapKeysInter
         return new Query<K,V>(translate.translateKey(mapKeys), translate.translate(properties), where.translateOuter(translate));
     }
 
-    @IdentityLazy
+    @HashLazy
     public int hashInner(HashContext hashContext) {
         int hash = 0;
         for(Expr property : properties.values())
@@ -286,6 +287,10 @@ public class Query<K,V> extends InnerContext<Query<?,?>> implements MapKeysInter
     public boolean equalsInner(Query<?,?> object) {
         // нужно проверить что совпадут
         return BaseUtils.hashEquals(where,object.where) && BaseUtils.hashEquals(BaseUtils.multiSet(properties.values()),BaseUtils.multiSet(object.properties.values()));
+    }
+
+    public Query<K,V> translate(MapTranslate translate) {
+        return new Query<K,V>(translate.translateKey(mapKeys), translate.translate(properties), where.translateOuter(translate));
     }
 }
 

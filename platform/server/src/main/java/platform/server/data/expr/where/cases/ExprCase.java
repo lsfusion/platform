@@ -23,7 +23,7 @@ public class ExprCase extends Case<BaseExpr> {
         return where.hashCode()*31+data.hashCode();
     }
 
-    int hashContext(HashContext hashContext) {
+    public int hashOuter(HashContext hashContext) {
         return where.hashOuter(hashContext)*31+ data.hashOuter(hashContext);
     }
 

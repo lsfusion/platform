@@ -11,6 +11,7 @@ import platform.server.caches.hash.HashMapValues;
 import platform.server.data.Value;
 import platform.server.data.translator.MapTranslate;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -19,18 +20,29 @@ public abstract class InnerContext<I extends InnerContext<I>> extends InnerHashC
 
     public abstract Set<Value> getValues();
 
-    public static Set<Value> getBigValues(Set<Value> values) {
-        Set<Value> result = new HashSet<Value>();
+    public static Map<Value, Value> getBigValues(Set<Value> values) {
+        Set<Value> usedValues = new HashSet<Value>(values);
+
+        Map<Value, Value> result = new HashMap<Value, Value>();
+        for(Value value : values) {
+            Value removeValue = value.removeBig(usedValues);
+            if(removeValue!=null) {
+                result.put(value, removeValue);
+                usedValues.add(removeValue);
+            }
+        }
+        if(result.isEmpty())
+            return null;
+
         for(Value value : values)
-            if(value.isBig())
-                result.add(value);
+            if(!result.containsKey(value))
+                result.put(value, value);
         return result;
     }
 
-    public Set<Value> getBigValues() {
+    public Map<Value, Value> getBigValues() {
         return getBigValues(getValues());
     }
-
 
     public abstract I translateInner(MapTranslate translate);
     // проверка на соответствие если одинаковые контексты

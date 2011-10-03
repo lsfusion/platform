@@ -11,6 +11,7 @@ import platform.server.data.expr.where.pull.ExprPullWheres;
 import platform.server.data.query.stat.CalculateJoin;
 import platform.server.data.query.stat.InnerBaseJoin;
 import platform.server.data.query.stat.KeyStat;
+import platform.server.data.translator.HashLazy;
 import platform.server.data.where.MapWhere;
 import platform.server.data.query.CompileSource;
 import platform.server.data.query.ExprEnumerator;
@@ -112,7 +113,7 @@ public class FormulaExpr extends StaticClassExpr {
         return formula.equals(((FormulaExpr) o).formula) && params.equals(((FormulaExpr) o).params) && valueClass.equals(((FormulaExpr) o).valueClass);
     }
 
-    @IdentityLazy
+    @HashLazy
     public int hashOuter(HashContext hashContext) {
         int hash = 0;
         for(Map.Entry<String, BaseExpr> param : params.entrySet())

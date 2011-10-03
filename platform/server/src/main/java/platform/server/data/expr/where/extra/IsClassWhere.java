@@ -13,6 +13,7 @@ import platform.server.data.expr.SingleClassExpr;
 import platform.server.data.expr.query.Stat;
 import platform.server.data.query.*;
 import platform.server.data.query.innerjoins.GroupJoinsWheres;
+import platform.server.data.translator.HashLazy;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.translator.QueryTranslator;
 import platform.server.data.where.DataWhere;
@@ -94,7 +95,7 @@ public class IsClassWhere extends DataWhere {
         return expr.getClassWhere(classes).and(expr.getWhere().getClassWhere());
     }
 
-    @IdentityLazy
+    @HashLazy
     public int hashOuter(HashContext hashContext) {
         return expr.hashOuter(hashContext) ^ classes.hashCode()*31;
     }

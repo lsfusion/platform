@@ -17,6 +17,7 @@ import platform.server.data.expr.where.extra.CompareWhere;
 import platform.server.data.expr.where.CaseExprInterface;
 import platform.server.data.query.Join;
 import platform.server.data.query.Query;
+import platform.server.data.translator.HashLazy;
 import platform.server.data.translator.MapValuesTranslate;
 import platform.server.data.where.Where;
 import platform.server.data.where.classes.ClassWhere;
@@ -80,7 +81,7 @@ public class SessionRows extends ImmutableObject implements SessionData<SessionR
         };
     }
 
-    @IdentityLazy
+    @HashLazy
     public int hashValues(HashValues hashValues) {
         int hash = 0;
         for(Map.Entry<Map<KeyField,DataObject>,Map<PropertyField,ObjectValue>> row : rows.entrySet())

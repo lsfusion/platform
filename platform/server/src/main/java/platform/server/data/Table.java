@@ -21,6 +21,7 @@ import platform.server.data.expr.where.pull.AddPullWheres;
 import platform.server.data.expr.where.ifs.NullJoin;
 import platform.server.data.expr.where.ifs.IfJoin;
 import platform.server.data.query.stat.WhereJoin;
+import platform.server.data.translator.HashLazy;
 import platform.server.data.where.MapWhere;
 import platform.server.data.query.*;
 import platform.server.data.query.innerjoins.GroupJoinsWheres;
@@ -309,8 +310,7 @@ public abstract class Table extends TwinImmutableObject implements MapKeysInterf
             return hashOuter(HashContext.hashCode);
         }
 
-
-        @IdentityLazy
+        @HashLazy
         public int hashOuter(HashContext hashContext) {
             int hash = Table.this.hashOuter(hashContext)*31;
                 // нужен симметричный хэш относительно выражений
@@ -488,7 +488,7 @@ public abstract class Table extends TwinImmutableObject implements MapKeysInterf
                 return Join.this.equals(((Expr) o).getInnerJoin()) && property.equals(((Expr) o).property);
             }
 
-            @IdentityLazy
+            @HashLazy
             public int hashOuter(HashContext hashContext) {
                 return Join.this.hashOuter(hashContext)*31+property.hashCode();
             }

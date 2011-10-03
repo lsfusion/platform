@@ -17,6 +17,7 @@ import platform.server.data.type.TypeObject;
 import platform.server.data.where.Where;
 import platform.server.logics.DataObject;
 
+import java.math.BigInteger;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -26,8 +27,16 @@ public class ValueExpr extends StaticExpr<ConcreteClass> implements Value {
 
     public final Object object;
 
-    public boolean isBig() {
-        return objectClass instanceof FileClass && ((byte[])object).length > 1000;
+    public Value removeBig(Set<Value> usedValues) {
+        if(objectClass instanceof FileClass && ((byte[])object).length > 1000) {
+            int i=0;
+            while(true) {
+                Value removeValue = new ValueExpr(new BigInteger(""+i).toByteArray(), objectClass);
+                if(!usedValues.contains(removeValue))
+                    return removeValue;
+            }
+        }
+        return null;
     }
 
     public ValueExpr(Object object, ConcreteClass objectClass) {

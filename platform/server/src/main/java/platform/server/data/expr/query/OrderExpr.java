@@ -14,6 +14,7 @@ import platform.server.data.expr.where.pull.ExprPullWheres;
 import platform.server.data.expr.where.pull.StatPullWheres;
 import platform.server.data.query.*;
 import platform.server.data.query.stat.KeyStat;
+import platform.server.data.translator.HashLazy;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.translator.PartialQueryTranslator;
 import platform.server.data.translator.QueryTranslator;
@@ -47,7 +48,7 @@ public class OrderExpr extends QueryExpr<KeyExpr, OrderExpr.Query,OrderJoin> imp
             return exprs.equals(((Query) o).exprs) && orders.equals(((Query) o).orders) && partitions.equals(((Query) o).partitions) && orderType.equals(((Query)o).orderType);
         }
 
-        @IdentityLazy
+        @HashLazy
         public int hashOuter(HashContext hashContext) {
             int hash = 0;
             for(Expr expr : exprs)

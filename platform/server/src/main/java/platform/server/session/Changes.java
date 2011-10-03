@@ -9,6 +9,7 @@ import platform.server.caches.MapValuesIterable;
 import platform.server.caches.hash.HashValues;
 import platform.server.classes.CustomClass;
 import platform.server.data.Value;
+import platform.server.data.translator.HashLazy;
 import platform.server.data.translator.MapValuesTranslate;
 import platform.server.logics.property.DataProperty;
 
@@ -101,7 +102,7 @@ public abstract class Changes<U extends Changes<U>> extends AbstractMapValues<U>
     }
     protected abstract U calculateAdd(U changes);
 
-    @IdentityLazy
+    @HashLazy
     public int hashValues(HashValues hashValues) {
         return ((MapValuesIterable.hash(add,hashValues) * 31 + MapValuesIterable.hash(remove,hashValues)) * 31 + MapValuesIterable.hash(data,hashValues)) * 31 + (newClasses ==null?0: newClasses.hashValues(hashValues));
     }

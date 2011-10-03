@@ -5,6 +5,7 @@ import platform.server.caches.hash.HashValues;
 import platform.server.classes.ValueClass;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.where.cases.CaseExpr;
+import platform.server.data.translator.HashLazy;
 import platform.server.data.translator.MapValuesTranslate;
 import platform.server.data.where.WhereBuilder;
 import platform.server.session.Changes;
@@ -83,6 +84,7 @@ public class SessionDataProperty extends DataProperty implements NoValueProperty
         }
 
         @Override
+        @HashLazy
         public int hashValues(HashValues hashValues) {
             return super.hashValues(hashValues) * 31 + properties.hashCode();
         }

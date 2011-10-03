@@ -14,6 +14,7 @@ import platform.server.data.query.InnerJoins;
 import platform.server.data.query.SourceJoin;
 import platform.server.data.query.innerjoins.KeyEqual;
 import platform.server.data.query.innerjoins.StatInterface;
+import platform.server.data.translator.HashLazy;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.where.DNFWheres;
 import platform.server.data.where.Where;
@@ -65,7 +66,7 @@ public class WhereJoins extends AddSet<WhereJoin, WhereJoins> implements StatInt
         return innerJoins;
     }
 
-    @IdentityLazy
+    @HashLazy
     public int hashOuter(HashContext hashContext) {
         int hash = 0;
         for(WhereJoin where : wheres)

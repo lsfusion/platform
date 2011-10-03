@@ -13,6 +13,7 @@ import platform.server.data.expr.where.pull.ExprPullWheres;
 import platform.server.data.query.stat.CalculateJoin;
 import platform.server.data.query.stat.InnerBaseJoin;
 import platform.server.data.query.stat.KeyStat;
+import platform.server.data.translator.HashLazy;
 import platform.server.data.where.DataWhereSet;
 import platform.server.data.where.MapWhere;
 import platform.server.data.query.CompileSource;
@@ -93,7 +94,7 @@ public class DeconcatenateExpr extends SingleClassExpr {
         return expr.equals(((DeconcatenateExpr)obj).expr) && part == ((DeconcatenateExpr)obj).part && baseClass.equals(((DeconcatenateExpr)obj).baseClass);  
     }
 
-    @IdentityLazy
+    @HashLazy
     public int hashOuter(HashContext hashContext) {
         return expr.hashOuter(hashContext) * 31 + part;
     }

@@ -13,6 +13,7 @@ import platform.server.data.expr.where.pull.ExprPullWheres;
 import platform.server.data.query.stat.CalculateJoin;
 import platform.server.data.query.stat.InnerBaseJoin;
 import platform.server.data.query.stat.KeyStat;
+import platform.server.data.translator.HashLazy;
 import platform.server.data.where.DataWhereSet;
 import platform.server.data.where.MapWhere;
 import platform.server.data.query.CompileSource;
@@ -103,7 +104,7 @@ public class ConcatenateExpr extends BaseExpr {
         return exprs.equals(((ConcatenateExpr)obj).exprs);
     }
 
-    @IdentityLazy
+    @HashLazy
     public int hashOuter(HashContext hashContext) {
         int hash = 0;
         for(BaseExpr expr : exprs)

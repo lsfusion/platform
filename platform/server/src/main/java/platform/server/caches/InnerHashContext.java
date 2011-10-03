@@ -1,13 +1,11 @@
 package platform.server.caches;
 
+import org.w3c.css.sac.ElementSelector;
 import platform.base.BaseUtils;
 import platform.base.ImmutableObject;
 import platform.base.GlobalObject;
 import platform.base.GlobalInteger;
-import platform.server.caches.hash.HashCodeKeys;
-import platform.server.caches.hash.HashContext;
-import platform.server.caches.hash.HashMapKeys;
-import platform.server.caches.hash.HashValues;
+import platform.server.caches.hash.*;
 import platform.server.data.expr.KeyExpr;
 
 import java.util.*;
@@ -24,12 +22,8 @@ public abstract class InnerHashContext extends ImmutableObject {
 
     private final static GlobalInteger keyClass = new GlobalInteger(39916801);
 
-    private final Map<HashValues, BaseUtils.HashComponents<KeyExpr>> cacheComponents = new HashMap<HashValues, BaseUtils.HashComponents<KeyExpr>>();
-    @ManualLazy
-    public BaseUtils.HashComponents<KeyExpr> getComponents(final HashValues hashValues) {
-        BaseUtils.HashComponents<KeyExpr> result = cacheComponents.get(hashValues);
-        if(result==null) {
-            result = BaseUtils.getComponents(new BaseUtils.HashInterface<KeyExpr, GlobalInteger>() {
+    private BaseUtils.HashComponents<KeyExpr> calculateComponents(final HashValues hashValues) {
+        return BaseUtils.getComponents(new BaseUtils.HashInterface<KeyExpr, GlobalInteger>() {
 
                 public Map<KeyExpr, GlobalInteger> getParams() {
                     return BaseUtils.toMap(getKeys(), keyClass);
@@ -39,9 +33,35 @@ public abstract class InnerHashContext extends ImmutableObject {
                     return hashInner(new HashContext(map.size()>0?new HashMapKeys(map):HashCodeKeys.instance, hashValues));
                 }
             });
-            cacheComponents.put(hashValues, result);
-        }
+    }
 
+    private BaseUtils.HashComponents<KeyExpr> cacheComponents;
+    private BaseUtils.HashComponents<KeyExpr> getCacheComponents(HashValues hashValues) {
+        if(hashValues instanceof HashLocalValues) {
+            HashLocalValues hashLocalValues = (HashLocalValues)hashValues;
+            return hashLocalValues.getCacheComponents().get(this);
+        } else {
+            assert hashValues.equals(HashCodeValues.instance);
+            return cacheComponents;
+        }
+    }
+    private void setCacheComponents(HashValues hashValues, BaseUtils.HashComponents<KeyExpr> result) {
+        if(hashValues instanceof HashLocalValues) {
+            HashLocalValues hashLocalValues = (HashLocalValues)hashValues;
+            hashLocalValues.getCacheComponents().put(this, result);
+        } else {
+            assert hashValues.equals(HashCodeValues.instance);
+            cacheComponents = result;
+        }
+    }
+
+    @ManualLazy
+    public BaseUtils.HashComponents<KeyExpr> getComponents(final HashValues hashValues) {
+        BaseUtils.HashComponents<KeyExpr> result = getCacheComponents(hashValues);
+        if(result==null) {
+            result = calculateComponents(hashValues);
+            setCacheComponents(hashValues, result);
+        }
         return result;
     }
 

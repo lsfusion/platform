@@ -10,6 +10,7 @@ import platform.server.data.Value;
 import platform.server.data.expr.Expr;
 import platform.server.data.query.Join;
 import platform.server.data.query.Query;
+import platform.server.data.translator.HashLazy;
 import platform.server.data.translator.MapValuesTranslate;
 import platform.server.data.type.Type;
 import platform.server.data.where.WhereBuilder;
@@ -96,7 +97,7 @@ public class IncrementProps<T> extends Modifier<IncrementProps.UsedChanges> {
         }
 
         @Override
-        @IdentityLazy
+        @HashLazy
         public int hashValues(HashValues hashValues) {
             return 31 * (super.hashValues(hashValues) * 31 + MapValuesIterable.hash(increment, hashValues)) + noUpdate.hashCode();
         }

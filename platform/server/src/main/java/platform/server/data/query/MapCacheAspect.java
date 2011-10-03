@@ -8,19 +8,21 @@ import org.aspectj.lang.annotation.DeclareParents;
 import platform.base.BaseUtils;
 import platform.base.Result;
 import platform.base.TwinImmutableInterface;
-import platform.server.caches.AbstractMapValues;
-import platform.server.caches.IdentityLazy;
-import platform.server.caches.InnerContext;
-import platform.server.caches.MapValuesIterable;
+import platform.server.caches.*;
 import platform.server.caches.hash.HashContext;
+import platform.server.caches.hash.HashMapValues;
 import platform.server.caches.hash.HashValues;
 import platform.server.data.Value;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.ValueExpr;
+import platform.server.data.expr.where.extra.EqualsWhere;
+import platform.server.data.expr.where.ifs.IfExpr;
+import platform.server.data.translator.HashLazy;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.translator.MapValuesTranslate;
 import platform.server.data.translator.MapValuesTranslator;
+import platform.server.data.where.AbstractWhere;
 import platform.server.data.where.Where;
 import platform.server.data.where.WhereBuilder;
 import platform.server.logics.property.*;
@@ -79,19 +81,27 @@ public class MapCacheAspect {
                 }
             }
             logger.info("not cached");
-            Query cache;
-            if(BaseUtils.onlyObjects(query.mapKeys.keySet()) && BaseUtils.onlyObjects(query.properties.keySet())) {
+            Query<?,?> cache;
+
+            Map<Value, Value> bigValues = query.getBigValues();
+            if(BaseUtils.onlyObjects(query.mapKeys.keySet()) && BaseUtils.onlyObjects(query.properties.keySet()) && bigValues == null) {
                 parsed = (ParsedQuery<K, V>) thisJoinPoint.proceed();
                 cache = query;
-            } else { // чтобы не было утечки памяти, "заменяем" компилируемый запрос на объекты
+            } else { // чтобы не было утечки памяти, "заменяем" компилируемый запрос на объекты, а все большие значения на поменьше
                 Map<K,Object> genKeys = BaseUtils.generateObjects(query.mapKeys.keySet());
                 Map<V,Object> genProps = BaseUtils.generateObjects(query.properties.keySet());
-                
-                cache = new Query<Object, Object>(BaseUtils.crossJoin(genKeys, query.mapKeys), BaseUtils.crossJoin(genProps, query.properties), query.where);
+
+                cache = new Query<Object, Object>(BaseUtils.crossJoin(genKeys, query.mapKeys), BaseUtils.crossJoin(genProps, query.properties),
+                        query.where);
+
+                if(bigValues!=null) // bigvalues - работа с транслированными объектами, а в конце трансляция назад
+                    cache = cache.translate(new MapValuesTranslator(bigValues));
+
                 ParsedQuery<Object,Object> parsedCache = (ParsedQuery<Object,Object>) thisJoinPoint.proceed(new Object[]{cache, cache});
                 ((ParseInterface) cache).setParse(parsedCache);
 
-                parsed = new MapParsedQuery<K, V, Object, Object>(parsedCache, genProps, genKeys, MapValuesTranslator.noTranslate);
+                parsed = new MapParsedQuery<K, V, Object, Object>(parsedCache, genProps, genKeys,
+                        bigValues==null ? MapValuesTranslator.noTranslate : new MapValuesTranslator(BaseUtils.reverse(bigValues)));
             }
 
             ((ParseInterface) query).setParse(parsed);
@@ -135,7 +145,7 @@ public class MapCacheAspect {
             return BaseUtils.mergeSet(AbstractSourceJoin.enumValues(exprs.values()), mapValues.getValues());
         }
 
-        @IdentityLazy
+        @HashLazy
         public int hashInner(HashContext hashContext) {
             int hash=0;
             for(Map.Entry<K,? extends Expr> expr : exprs.entrySet())
@@ -152,13 +162,10 @@ public class MapCacheAspect {
         }
     }
 
-    <K,V> Join<V> join(Map<K,? extends Expr> joinExprs, MapValuesTranslate joinValues,Map<Integer,Map<JoinImplement<K>,Join<V>>> joinCaches,ProceedingJoinPoint thisJoinPoint) throws Throwable {
+    private <K,V> Join<V> join(ParsedJoinQuery query, Map<K, ? extends Expr> joinExprs, MapValuesTranslate joinValues, Map<Integer, Map<JoinImplement<K>, Join<V>>> joinCaches, ProceedingJoinPoint thisJoinPoint) throws Throwable {
         assert BaseUtils.onlyObjects(joinExprs.keySet());
 
         JoinImplement<K> joinImplement = new JoinImplement<K>(joinExprs,joinValues);
-
-        if(joinImplement.getBigValues().size() > 0)
-            return (Join<V>) thisJoinPoint.proceed();
 
         Map<JoinImplement<K>,Join<V>> hashCaches;
         synchronized(joinCaches) {
@@ -179,15 +186,25 @@ public class MapCacheAspect {
                 }
             }
             logger.info("join not cached");
-            Join<V> join = (Join<V>) thisJoinPoint.proceed();
-            hashCaches.put(joinImplement,join);
-            return join;
+            Map<Value, Value> bigValues = joinImplement.getBigValues();
+            if(bigValues == null) {
+                Join<V> join = (Join<V>) thisJoinPoint.proceed();
+                hashCaches.put(joinImplement, join);
+                return join;
+            } else { // для предотвращения утечки памяти, bigvalues - работа с транслированными объектами, а в конце трансляция назад
+                JoinImplement<K> cacheImplement = joinImplement.translateInner(new MapValuesTranslator(bigValues));
+
+                Join<V> join = (Join<V>) thisJoinPoint.proceed(new Object[]{query, query, cacheImplement.exprs, cacheImplement.mapValues});
+                hashCaches.put(cacheImplement, join);
+
+                return new DirectTranslateJoin<V>(new MapValuesTranslator(BaseUtils.reverse(bigValues)), join);
+            }
         }
     }
 
     @Around("call(platform.server.data.query.Join platform.server.data.query.ParsedJoinQuery.joinExprs(java.util.Map,platform.server.data.translator.MapValuesTranslate)) && target(query) && args(joinExprs,mapValues)")
     public Object callJoin(ProceedingJoinPoint thisJoinPoint, ParsedJoinQuery query, Map joinExprs, MapValuesTranslate mapValues) throws Throwable {
-        return join(joinExprs,mapValues,((JoinInterface)query).getJoinCache(),thisJoinPoint);
+        return join(query, joinExprs,mapValues,((JoinInterface)query).getJoinCache(),thisJoinPoint);
     }
 
     public interface MapPropertyInterface {
@@ -221,8 +238,7 @@ public class MapCacheAspect {
 
         U implement = modifier.fullChanges();
 
-        Set<Value> values = implement.getValues();
-        if(values.size() > Settings.instance.getUsedChangesCacheLimit() || InnerContext.getBigValues(values).size()>0)
+        if(implement.getValues().size() > Settings.instance.getUsedChangesCacheLimit() || implement.getBigValues() != null)
             return (U) thisJoinPoint.proceed();
 
         Map<U, U> hashCaches;
@@ -291,7 +307,7 @@ public class MapCacheAspect {
             return changed == ((JoinExprInterfaceImplement) o).changed && usedChanges.equals(((JoinExprInterfaceImplement) o).usedChanges);
         }
 
-        @IdentityLazy
+        @HashLazy
         public int hashValues(HashValues hashValues) {
             return 31 * usedChanges.hashValues(hashValues) + (changed ? 1 : 0);
         }
@@ -320,7 +336,8 @@ public class MapCacheAspect {
 
         JoinExprInterfaceImplement<U> implement = new JoinExprInterfaceImplement<U>(property,modifier,changedWheres!=null);
 
-        if(InnerContext.getBigValues(implement.getValues()).size() > 0)
+        assert false; // надо еще обработку дописать bigValues чтобы не было утечки памяти
+        if(implement.getBigValues() !=null)
             return (Expr) thisJoinPoint.proceed();
 
         Map<JoinExprInterfaceImplement<U>,Query<K,String>> hashCaches;
@@ -394,7 +411,7 @@ public class MapCacheAspect {
             return BaseUtils.hashEquals(change,o.change) && BaseUtils.hashEquals(usedChanges,o.usedChanges) && where == o.where;
         }
 
-        @IdentityLazy
+        @HashLazy
         public int hashInner(HashContext hashContext) {
             return 31 * usedChanges.hashValues(hashContext.values) + change.hashInner(hashContext) + (where?1:0);
         }
@@ -429,14 +446,16 @@ public class MapCacheAspect {
             this.changes = changes;
             this.where = where;
         }
+
+        DataChangesResult<P> translate(MapValuesTranslator translate) {
+            return new DataChangesResult<P>(changes.translate(translate), where==null?null:where.translateOuter(translate));
+        }
     }
 
     public <K extends PropertyInterface,U extends Changes<U>> MapDataChanges<K> getDataChanges(Property<K> property, PropertyChange<K> change, WhereBuilder changedWheres, Modifier<U> modifier, Map<Integer,Map<DataChangesInterfaceImplement,DataChangesResult>> dataChangesCaches, ProceedingJoinPoint thisJoinPoint) throws Throwable {
 
         DataChangesInterfaceImplement<K,U> implement = new DataChangesInterfaceImplement<K,U>(property,change,modifier,changedWheres!=null);
 
-        if(implement.getBigValues().size()>0)
-            return (MapDataChanges<K>) thisJoinPoint.proceed();
 
         Map<DataChangesInterfaceImplement, DataChangesResult> hashCaches;
         synchronized(dataChangesCaches) {
@@ -458,12 +477,20 @@ public class MapCacheAspect {
                 }
             }
 
+            logger.info("getDataChanges - not cached "+property);
             WhereBuilder cacheWheres = Property.cascadeWhere(changedWheres);
             MapDataChanges<K> changes = (MapDataChanges<K>) thisJoinPoint.proceed(new Object[]{property,property,change,cacheWheres,modifier});
             if(Settings.instance.packOnCacheComplexity > 0 && changes.getComplexity() > Settings.instance.packOnCacheComplexity)
                 changes = changes.pack(); // пакуем так как в кэш складываем
-            hashCaches.put(implement, new DataChangesResult<K>(changes, changedWheres!=null?cacheWheres.toWhere():null));
-            logger.info("getDataChanges - not cached "+property);
+            DataChangesResult<K> result = new DataChangesResult<K>(changes, changedWheres != null ? cacheWheres.toWhere() : null);
+
+            Map<Value, Value> bigValues = implement.getBigValues();
+            if(bigValues == null) // если нет больших значений просто записываем
+                hashCaches.put(implement, result);
+            else { // bigvalues - работа со старыми объектами, а сохранение транслированных
+                MapValuesTranslator removeBig = new MapValuesTranslator(bigValues);
+                hashCaches.put(implement.translateInner(removeBig), result.translate(removeBig));
+            }
 
             if(changedWheres!=null) changedWheres.add(cacheWheres.toWhere());
             return changes;
@@ -493,7 +520,7 @@ public class MapCacheAspect {
             return BaseUtils.hashEquals(joinImplement,o.joinImplement) && BaseUtils.hashEquals(usedChanges,o.usedChanges) && where == o.where;
         }
 
-        @IdentityLazy
+        @HashLazy
         public int hashInner(HashContext hashContext) {
             int hash = 0;
             for(Map.Entry<P,Expr> joinExpr : joinImplement.entrySet())
@@ -531,6 +558,10 @@ public class MapCacheAspect {
             this.expr = expr;
             this.where = where;
         }
+
+        ExprResult translate(MapValuesTranslator translate) {
+            return new ExprResult(expr.translateOuter(translate), where.translateOuter(translate));
+        }
     }
 
     public static boolean disableCaches = false;
@@ -544,9 +575,6 @@ public class MapCacheAspect {
         property.cached = true;
 
         ExprInterfaceImplement<K,U> implement = new ExprInterfaceImplement<K,U>(property,joinExprs,modifier,changedWheres!=null);
-
-        if(implement.getBigValues().size() > 0)
-            return (Expr) thisJoinPoint.proceed();
 
         Map<ExprInterfaceImplement, ExprResult> hashCaches;
         synchronized(exprCaches) {
@@ -578,7 +606,15 @@ public class MapCacheAspect {
             Expr expr = (Expr) thisJoinPoint.proceed(new Object[]{property,property,joinExprs,modifier,cacheWheres});
             if(Settings.instance.packOnCacheComplexity > 0 && expr.getComplexity() > Settings.instance.packOnCacheComplexity)
                 expr = expr.pack(); // пакуем так как в кэш идет
-            hashCaches.put(implement, new ExprResult(expr, changedWheres!=null?cacheWheres.toWhere():null));
+            ExprResult result = new ExprResult(expr, changedWheres != null ? cacheWheres.toWhere() : null);
+
+            Map<Value, Value> bigValues = implement.getBigValues();
+            if(bigValues == null) // bigvalues - работа со старыми объектами, а сохранение транслированных
+                hashCaches.put(implement, result);
+            else {
+                MapValuesTranslator removeBig = new MapValuesTranslator(bigValues);
+                hashCaches.put(implement.translateInner(removeBig), result.translate(removeBig));
+            }
 
             if(expr.getComplexity() > 300) {
                 System.out.println("COMPLEX " + property.getSID() + " : " + property + " " + expr.getComplexity());

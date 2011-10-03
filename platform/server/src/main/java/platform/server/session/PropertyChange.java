@@ -10,6 +10,7 @@ import platform.server.data.expr.KeyExpr;
 import platform.server.data.query.AbstractSourceJoin;
 import platform.server.data.query.Query;
 import platform.server.data.query.Join;
+import platform.server.data.translator.HashLazy;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.translator.MapValuesTranslate;
 import platform.server.data.where.Where;
@@ -77,7 +78,7 @@ public class PropertyChange<T extends PropertyInterface> extends TwinsInnerConte
         return query;
    }
 
-    @IdentityLazy
+    @HashLazy
     public int hashInner(HashContext hashContext) {
         int hash = 0;
         for(Map.Entry<T,KeyExpr> mapKey : mapKeys.entrySet())
@@ -90,7 +91,7 @@ public class PropertyChange<T extends PropertyInterface> extends TwinsInnerConte
         return BaseUtils.hashEquals(where,object.where) && BaseUtils.hashEquals(expr,object.expr);
     }
 
-    @IdentityLazy
+    @HashLazy
     public int hashValues(final HashValues hashValues) {
         return hashInner(hashValues);
     }

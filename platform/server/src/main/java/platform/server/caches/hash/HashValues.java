@@ -1,8 +1,9 @@
 package platform.server.caches.hash;
 
+import platform.base.ImmutableObject;
 import platform.server.data.Value;
 
-public interface HashValues {
+public abstract class HashValues extends HashObject {
 
-    int hash(Value expr);
+    public abstract int hash(Value expr);
 }

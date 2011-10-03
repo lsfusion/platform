@@ -12,6 +12,7 @@ import platform.server.data.query.innerjoins.KeyEqual;
 import platform.server.data.query.innerjoins.StatInterface;
 import platform.server.data.query.stat.KeyStat;
 import platform.server.data.query.stat.StatKeys;
+import platform.server.data.translator.HashLazy;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.type.Type;
 import platform.server.data.where.Where;
@@ -38,7 +39,7 @@ public class GroupJoin extends QueryJoin<BaseExpr, GroupJoin.Query> {
             return joins.equals(((Query) o).joins) && where.equals(((Query) o).where) && keyStats.equals(((Query) o).keyStats) && keyTypes.equals(((Query) o).keyTypes);
         }
 
-        @IdentityLazy
+        @HashLazy
         public int hashOuter(HashContext hashContext) {
             int hash = 0;
             for(Map.Entry<KeyExpr, Stat> keyType : keyStats.entrySet())

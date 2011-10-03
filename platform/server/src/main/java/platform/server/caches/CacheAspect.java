@@ -37,9 +37,9 @@ public class CacheAspect {
     private ImmutableInterface immutable;
   */
 
-    static class Invocation extends TwinImmutableObject {
+    public static class Invocation extends TwinImmutableObject {
         final Method method;
-        final Object[] args;
+        public final Object[] args;
 
         Invocation(ProceedingJoinPoint thisJoinPoint, Object[] args) {
             this.method = ((MethodSignature) thisJoinPoint.getSignature()).getMethod();
@@ -60,7 +60,7 @@ public class CacheAspect {
         }
     }
 
-    private Object lazyExecute(ImmutableObject object,ProceedingJoinPoint thisJoinPoint,Object[] args) throws Throwable {
+    private static Object lazyExecute(ImmutableObject object,ProceedingJoinPoint thisJoinPoint,Object[] args) throws Throwable {
         Invocation invoke = new Invocation(thisJoinPoint,args);
         Map caches = object.getCaches();
         Object result = caches.get(invoke);
@@ -157,7 +157,7 @@ public class CacheAspect {
 //    public final static SoftHashMap<IdentityInvocation, Object> lazyIdentityExecute = new SoftHashMap<IdentityInvocation, Object>();
     public final static IdentityInvocationWeakMap lazyIdentityExecute = new IdentityInvocationWeakMap();
 
-    private Object lazyIdentityExecute(Object target, ProceedingJoinPoint thisJoinPoint, Object[] args) throws Throwable {
+    private static Object lazyIdentityExecute(Object target, ProceedingJoinPoint thisJoinPoint, Object[] args) throws Throwable {
         if(args.length>0 && args[0] instanceof NoCacheInterface)
             return thisJoinPoint.proceed();
         
@@ -174,23 +174,29 @@ public class CacheAspect {
         return result;
     }
 
+    public static Object callMethod(Object object, ProceedingJoinPoint thisJoinPoint) throws Throwable {
+        return lazyIdentityExecute(object, thisJoinPoint, thisJoinPoint.getArgs());
+    }
     //@net.jcip.annotations.Immutable
     @Around("execution(@platform.server.caches.IdentityLazy * *.*(..)) && target(object)")
     // с call'ом есть баги
     public Object callMethod(ProceedingJoinPoint thisJoinPoint, Object object) throws Throwable {
-        return lazyIdentityExecute(object, thisJoinPoint, thisJoinPoint.getArgs());
+        return callMethod(object, thisJoinPoint);
     }
 
-    //@net.jcip.annotations.Immutable *
-    @Around("execution(@platform.server.caches.ParamLazy * *.*(..)) && target(object)")
-    // с call'ом есть баги
-    public Object callParamMethod(ProceedingJoinPoint thisJoinPoint, Object object) throws Throwable {
+    public static Object callParamMethod(Object object, ProceedingJoinPoint thisJoinPoint) throws Throwable {
         Object[] args = thisJoinPoint.getArgs();
         Object[] switchArgs = new Object[args.length];
         switchArgs[0] = object;
         System.arraycopy(args, 1, switchArgs, 1, args.length - 1);
 
         return lazyIdentityExecute(args[0], thisJoinPoint, switchArgs);
+    }
+    //@net.jcip.annotations.Immutable *
+    @Around("execution(@platform.server.caches.ParamLazy * *.*(..)) && target(object)")
+    // с call'ом есть баги
+    public Object callParamMethod(ProceedingJoinPoint thisJoinPoint, Object object) throws Throwable {
+        return callParamMethod(object, thisJoinPoint);
     }
 
     //@net.jcip.annotations.Immutable

@@ -52,7 +52,7 @@ public class LinearOperandMap extends HashMap<Expr,Integer> {
         }
     }
 
-    public int hashContext(HashContext hashContext) {
+    public int hashOuter(HashContext hashContext) {
         int result = 0;
         for(Map.Entry<Expr,Integer> operand : entrySet())
             result += (operand.getValue()-1)*31 + operand.getKey().hashOuter(hashContext);

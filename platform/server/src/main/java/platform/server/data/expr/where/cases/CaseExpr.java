@@ -11,6 +11,7 @@ import platform.server.classes.DataClass;
 import platform.server.classes.sets.AndClassSet;
 import platform.server.data.expr.*;
 import platform.server.data.expr.query.Stat;
+import platform.server.data.translator.HashLazy;
 import platform.server.data.where.MapWhere;
 import platform.server.data.query.CompileSource;
 import platform.server.data.query.ExprEnumerator;
@@ -174,9 +175,9 @@ public class CaseExpr extends Expr {
         return cases.equals(((CaseExpr)obj).cases);
     }
 
-    @IdentityLazy
+    @HashLazy
     public int hashOuter(HashContext hashContext) {
-        return cases.hashContext(hashContext) + 5;
+        return cases.hashOuter(hashContext) + 5;
     }
 
     // получение Where'ов

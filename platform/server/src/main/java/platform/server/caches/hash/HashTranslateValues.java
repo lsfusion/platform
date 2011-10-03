@@ -1,15 +1,20 @@
 package platform.server.caches.hash;
 
+import platform.base.ImmutableObject;
 import platform.server.caches.NoCacheInterface;
 import platform.server.data.Value;
 import platform.server.data.translator.MapValuesTranslate;
 
-public class HashTranslateValues implements HashValues, NoCacheInterface {
+public class HashTranslateValues extends HashLocalValues {
 
     private final MapValuesTranslate map;
 
     public HashTranslateValues(MapValuesTranslate map) {
         this.map = map;
+    }
+
+    public boolean isGlobal() {
+        return false;
     }
 
     public int hash(Value expr) {

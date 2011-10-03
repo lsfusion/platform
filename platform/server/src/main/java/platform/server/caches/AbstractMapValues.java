@@ -18,6 +18,10 @@ public abstract class AbstractMapValues<U extends AbstractMapValues<U>> extends 
         return hashValues(HashCodeValues.instance);
     }
 
+    public Map<Value, Value> getBigValues() {
+        return InnerContext.getBigValues(getValues());
+    }
+
     public static Map<Value, GlobalObject> getParamClasses(Set<Value> values) {
         Map<Value, GlobalObject> result = new HashMap<Value, GlobalObject>();
         for(Value value : values)

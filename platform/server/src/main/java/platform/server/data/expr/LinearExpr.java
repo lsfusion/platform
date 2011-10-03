@@ -11,6 +11,7 @@ import platform.server.data.expr.query.Stat;
 import platform.server.data.query.stat.CalculateJoin;
 import platform.server.data.query.stat.InnerBaseJoin;
 import platform.server.data.query.stat.KeyStat;
+import platform.server.data.translator.HashLazy;
 import platform.server.data.where.MapWhere;
 import platform.server.data.query.CompileSource;
 import platform.server.data.query.ExprEnumerator;
@@ -81,9 +82,9 @@ public class LinearExpr extends StaticClassExpr {
         return map.equals(((LinearExpr)obj).map);
     }
 
-    @IdentityLazy
+    @HashLazy
     public int hashOuter(HashContext hashContext) {
-        return map.hashContext(hashContext) * 5;
+        return map.hashOuter(hashContext) * 5;
     }
 
     @ParamLazy

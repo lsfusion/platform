@@ -4,7 +4,6 @@ import platform.base.BaseUtils;
 import platform.server.caches.hash.HashContext;
 import platform.server.data.expr.BaseExpr;
 import platform.server.data.expr.Expr;
-import platform.server.data.expr.InnerExprSet;
 import platform.server.data.expr.where.CaseExprInterface;
 import platform.server.data.where.Where;
 
@@ -81,10 +80,10 @@ public class ExprCaseList extends CaseList<Expr, BaseExpr, ExprCase> implements 
         return upWhere.or(nullWhere);
     }
 
-    int hashContext(HashContext hashContext) {
+    public int hashOuter(HashContext hashContext) {
         int hash = 0;
         for(ExprCase exprCase : this)
-            hash = 31*hash + exprCase.hashContext(hashContext);
+            hash = 31*hash + exprCase.hashOuter(hashContext);
         return hash;
     }
 

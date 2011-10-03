@@ -6,6 +6,7 @@ import platform.server.caches.hash.HashContext;
 import platform.server.classes.InsensitiveStringClass;
 import platform.server.data.expr.BaseExpr;
 import platform.server.data.query.CompileSource;
+import platform.server.data.translator.HashLazy;
 import platform.server.data.where.Where;
 
 public class LikeWhere extends BinaryWhere<LikeWhere> {
@@ -25,7 +26,7 @@ public class LikeWhere extends BinaryWhere<LikeWhere> {
         return isStartWith ? Compare.START_WITH : Compare.LIKE;
     }
 
-    @IdentityLazy
+    @HashLazy
     public int hashOuter(HashContext hashContext) {
         return 1 + operator1.hashOuter(hashContext)*31 + operator2.hashOuter(hashContext)*31*31;
     }

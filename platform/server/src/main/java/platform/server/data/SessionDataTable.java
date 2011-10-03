@@ -15,6 +15,7 @@ import platform.server.data.expr.where.extra.CompareWhere;
 import platform.server.data.expr.where.cases.CaseJoin;
 import platform.server.data.query.Join;
 import platform.server.data.query.Query;
+import platform.server.data.translator.HashLazy;
 import platform.server.data.translator.MapValuesTranslate;
 import platform.server.data.where.Where;
 import platform.server.logics.DataObject;
@@ -81,7 +82,7 @@ public class SessionDataTable extends ImmutableObject implements SessionData<Ses
         return KeyExpr.getMapKeys(keys);
     }
 
-    @IdentityLazy
+    @HashLazy
     public int hashValues(HashValues hashValues) {
         int hash = table.hashValues(hashValues);
         hash += 31 * (MapValuesIterable.hash(keyValues, hashValues) ^ MapValuesIterable.hash(propertyValues, hashValues));

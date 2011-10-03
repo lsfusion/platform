@@ -5,18 +5,23 @@ import platform.base.TwinImmutableInterface;
 import platform.interop.Compare;
 import platform.server.caches.IdentityLazy;
 import platform.server.caches.hash.HashContext;
+import platform.server.caches.hash.HashMapValues;
+import platform.server.caches.hash.HashValues;
+import platform.server.data.Value;
 import platform.server.data.expr.*;
 import platform.server.data.expr.query.Stat;
 import platform.server.data.query.CompileSource;
 import platform.server.data.query.ExprJoin;
 import platform.server.data.query.innerjoins.GroupJoinsWheres;
 import platform.server.data.query.innerjoins.KeyEquals;
+import platform.server.data.translator.HashLazy;
 import platform.server.data.where.EqualMap;
 import platform.server.data.where.Where;
 import platform.server.data.where.classes.ClassExprWhere;
 import platform.server.data.where.classes.MeanClassWhere;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 
 public class EqualsWhere extends CompareWhere<EqualsWhere> {
@@ -48,7 +53,7 @@ public class EqualsWhere extends CompareWhere<EqualsWhere> {
                (BaseUtils.hashEquals(operator1,((EqualsWhere)o).operator2) && BaseUtils.hashEquals(operator2,((EqualsWhere)o).operator1)));
     }
 
-    @IdentityLazy
+    @HashLazy
     public int hashOuter(HashContext hashContext) {
         return operator1.hashOuter(hashContext)*31 + operator2.hashOuter(hashContext)*31;
     }

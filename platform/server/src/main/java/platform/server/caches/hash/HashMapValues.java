@@ -1,13 +1,14 @@
 package platform.server.caches.hash;
 
+import platform.base.ImmutableObject;
 import platform.server.data.Value;
 import platform.base.GlobalObject;
 
 import java.util.Map;
 
-public class HashMapValues implements HashValues {
+public class HashMapValues extends HashLocalValues {
 
-    private Map<Value, ? extends GlobalObject> hashValues;
+    public Map<Value, ? extends GlobalObject> hashValues;
     public HashMapValues(Map<Value, ? extends GlobalObject> hashValues) {
         this.hashValues = hashValues;
     }

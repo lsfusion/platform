@@ -10,6 +10,7 @@ import platform.server.caches.hash.HashContext;
 import platform.server.data.Value;
 import platform.server.data.expr.*;
 import platform.server.data.query.ExprEnumerator;
+import platform.server.data.translator.HashLazy;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.translator.MapValuesTranslate;
 
@@ -115,7 +116,7 @@ public abstract class QueryExpr<K extends BaseExpr,I extends OuterContext<I>,J e
         return enumValues(group.keySet(), query.getEnum());
     }
 
-    @IdentityLazy
+    @HashLazy
     public int hashOuter(final HashContext hashContext) {
         return new QueryInnerHashContext() {
             protected int hashOuterExpr(BaseExpr outerExpr) {

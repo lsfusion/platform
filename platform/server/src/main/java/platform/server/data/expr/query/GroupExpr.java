@@ -122,10 +122,6 @@ public class GroupExpr extends QueryExpr<BaseExpr,GroupExpr.Query,GroupJoin> {
 
     public class NotNull extends InnerExpr.NotNull {
 
-        public int hashOuter(HashContext hashContext) {
-            return GroupExpr.this.hashOuter(hashContext);
-        }
-
         @Override
         public Where packFollowFalse(Where falseWhere) {
             return GroupExpr.this.packFollowFalse(falseWhere).getWhere();

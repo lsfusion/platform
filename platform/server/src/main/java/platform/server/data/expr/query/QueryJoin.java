@@ -12,6 +12,7 @@ import platform.server.data.expr.*;
 import platform.server.data.query.InnerJoin;
 import platform.server.data.query.InnerJoins;
 import platform.server.data.query.stat.WhereJoin;
+import platform.server.data.translator.HashLazy;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.translator.MapValuesTranslate;
 import platform.server.data.where.Where;
@@ -37,7 +38,7 @@ public abstract class QueryJoin<K extends BaseExpr,I extends OuterContext<I>> ex
         return InnerExpr.getFollowJoins(this, upWheres);
     }
 
-    @IdentityLazy
+    @HashLazy
     public int hashOuter(final HashContext hashContext) {
         return new QueryInnerHashContext() {
             protected int hashOuterExpr(BaseExpr outerExpr) {
@@ -137,7 +138,7 @@ public abstract class QueryJoin<K extends BaseExpr,I extends OuterContext<I>> ex
         }
     };
 
-    @IdentityLazy
+    @HashLazy
     public int hashInner(HashContext hashContext) {
         return innerContext.hashInner(hashContext);
     }

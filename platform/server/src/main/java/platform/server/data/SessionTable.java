@@ -37,8 +37,8 @@ public class SessionTable extends Table implements MapValues<SessionTable>, Valu
         return getStatKeys(this, count);
     }
 
-    public boolean isBig() {
-        return false;
+    public Value removeBig(Set<Value> usedValues) {
+        return null;
     }
 
     public Map<PropertyField, Stat> getStatProps() {
@@ -110,7 +110,6 @@ public class SessionTable extends Table implements MapValues<SessionTable>, Valu
         values.add(this);
     }
 
-    @IdentityLazy
     public int hashValues(HashValues hashValues) {
         return hashValues.hash(this);
     }

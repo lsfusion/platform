@@ -12,6 +12,7 @@ import platform.server.data.query.InnerJoin;
 import platform.server.data.query.SourceJoin;
 import platform.server.data.query.stat.KeyStat;
 import platform.server.data.query.stat.StatKeys;
+import platform.server.data.translator.HashLazy;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.where.Where;
 
@@ -33,7 +34,7 @@ public class OrderJoin extends QueryJoin<KeyExpr, OrderJoin.Query> {
             return partitions.equals(((Query) o).partitions) && where.equals(((Query) o).where);
         }
 
-        @IdentityLazy
+        @HashLazy
         public int hashOuter(HashContext hashContext) {
             int hash = 0;
             for(Expr partition : partitions)

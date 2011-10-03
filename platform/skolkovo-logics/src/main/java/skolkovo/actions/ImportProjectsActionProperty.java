@@ -403,7 +403,6 @@ public class ImportProjectsActionProperty extends ActionProperty {
 
     @Override
     public void execute(ExecutionContext context) throws SQLException {
-        this.session = context.getSession();
         toLog = "";
 
         projectsImportLimit = (Integer) LM.projectsImportLimit.read(context);
@@ -412,6 +411,8 @@ public class ImportProjectsActionProperty extends ActionProperty {
         }
 
         try {
+            this.session = context.getSession();
+
             String host = getHost();
             Map<String, Timestamp> projects = importProjectsFromXML(host);
 
@@ -444,6 +445,8 @@ public class ImportProjectsActionProperty extends ActionProperty {
             context.addAction(new MessageClientAction(message, "Импорт", true));
         } catch (Exception e) {
             throw new RuntimeException(e);
+        } finally {
+            session = null;
         }
     }
 

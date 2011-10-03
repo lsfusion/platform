@@ -3,14 +3,17 @@ package platform.server.data.translator;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
+import platform.server.caches.CacheAspect;
 import platform.server.caches.InnerContext;
 import platform.server.caches.MapValues;
+import platform.server.caches.hash.HashObject;
 import platform.server.data.Value;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.query.SourceJoin;
 
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.IdentityHashMap;
 import java.util.Set;
 
 @Aspect
@@ -50,5 +53,23 @@ public class TranslateAspect {
             return toTranslate;
         else
             return thisJoinPoint.proceed();
+    }
+
+    //@net.jcip.annotations.Immutable
+    @Around("execution(@platform.server.data.translator.HashLazy * *.*(..)) && target(object)")
+    // с call'ом есть баги
+    public Object callMethod(ProceedingJoinPoint thisJoinPoint, Object object) throws Throwable {
+        HashObject hashObject = (HashObject) thisJoinPoint.getArgs()[0];
+        if(hashObject.isGlobal())
+            return CacheAspect.callMethod(object, thisJoinPoint); // записываем как IdentityLazy
+        else { // тут по сути и параметр должен быть identity, и объект, поэтому пока проще сделать вручную
+            IdentityHashMap<Object,Integer> identityCaches = hashObject.getIdentityCaches();
+            Integer result = identityCaches.get(object);
+            if(result==null) {
+                result = (Integer) thisJoinPoint.proceed();
+                identityCaches.put(object, result);
+            }
+            return result;
+       }
     }
 }

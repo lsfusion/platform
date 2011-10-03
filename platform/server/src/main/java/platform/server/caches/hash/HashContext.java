@@ -1,9 +1,15 @@
 package platform.server.caches.hash;
 
-public class HashContext {
+import platform.base.ImmutableObject;
+
+public class HashContext extends HashObject {
 
     public final HashKeys keys;
     public final HashValues values;
+
+    public boolean isGlobal() {
+        return keys.isGlobal() && values.isGlobal();
+    }
 
     public HashContext(HashKeys keys, HashValues values) {
         this.keys = keys;

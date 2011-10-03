@@ -6,6 +6,7 @@ import platform.server.caches.IdentityLazy;
 import platform.server.caches.hash.HashContext;
 import platform.server.data.expr.BaseExpr;
 import platform.server.data.query.CompileSource;
+import platform.server.data.translator.HashLazy;
 import platform.server.data.where.Where;
 
 // если operator1 не null и больше operator2 или operator2 null
@@ -22,7 +23,7 @@ public class GreaterWhere extends CompareWhere {
         return create(operator1, operator2, new GreaterWhere(operator1, operator2));
     }
 
-    @IdentityLazy
+    @HashLazy
     public int hashOuter(HashContext hashContext) {
         return 1 + operator1.hashOuter(hashContext)*31 + operator2.hashOuter(hashContext)*31*31;
     }
