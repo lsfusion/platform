@@ -2377,6 +2377,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         private ObjectEntity objDocumentTemplate;
         private ObjectEntity objFormalControl;
         private ObjectEntity objLegalCheck;
+        private ObjectEntity objNonRussianSpecialist;
         private RegularFilterGroupEntity projectFilterGroup;
         private RegularFilterGroupEntity activeProjectFilterGroup;
         private PropertyDrawEntity nameNativeEntity;
@@ -2522,6 +2523,11 @@ public class SkolkovoLogicsModule extends LogicsModule {
             addPropertyDraw(commentLegalCheck, objLegalCheck).forceViewType = ClassViewType.PANEL;
             addObjectActions(this, objLegalCheck);
 
+            objNonRussianSpecialist = addSingleGroupObject(4, "nonRussianSpecialist", nonRussianSpecialist, "Иностранный специалист", baseGroup);
+            addObjectActions(this, objNonRussianSpecialist);
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(projectNonRussianSpecialist, objNonRussianSpecialist), Compare.EQUALS, objProject));
+
+
             addFixedFilter(new CompareFilterEntity(addPropertyObject(projectVote, objVote), Compare.EQUALS, objProject));
             addFixedFilter(new CompareFilterEntity(addPropertyObject(projectDocument, objDocument), Compare.EQUALS, objProject));
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(clusterInExpertVote, objExpert, objVote)));
@@ -2628,6 +2634,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             translationContainer.add(design.get(getPropertyDraw(sentForTranslationProject, objProject)));
             translationContainer.add(projectTranslationInformationContainer);
             translationContainer.add(projectDocumentsContainer);
+            translationContainer.add(design.getGroupObjectContainer(objNonRussianSpecialist.groupTo));
             translationContainer.add(design.getGroupPropertyContainer(objProject.groupTo, translateActionGroup));
 
             ContainerView docContainer = design.createContainer("Документы");
