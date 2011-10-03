@@ -15,6 +15,7 @@ import platform.server.data.expr.query.Stat;
 import platform.server.data.query.innerjoins.GroupJoinsWheres;
 import platform.server.data.query.stat.InnerBaseJoin;
 import platform.server.data.query.stat.KeyStat;
+import platform.server.data.query.stat.StatKeys;
 import platform.server.data.where.MapWhere;
 import platform.server.data.query.CompileSource;
 import platform.server.data.query.ExprEnumerator;
@@ -390,12 +391,23 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
         public Stat getStatValue(KeyStat keyStat) {
             throw new RuntimeException("not supported");
         }
-        public InnerBaseJoin<?> getBaseJoin() {
-            throw new RuntimeException("not supported");
-        }
         public Stat getTypeStat(KeyStat keyStat) {
             throw new RuntimeException("not supported");
         }
+        public InnerBaseJoin<?> getBaseJoin() {
+            return new InnerBaseJoin<Object>() {
+                public InnerExprSet getExprFollows(boolean recursive) {
+                    return InnerExpr.getExprFollows(this, recursive);
+                }
+                public Map<Object, BaseExpr> getJoins() {
+                    return new HashMap<Object, BaseExpr>();
+                }
+                public StatKeys<Object> getStatKeys(KeyStat keyStat) {
+                    throw new RuntimeException("not supported");
+                }
+            };
+        }
+
     }
 
     public BaseExpr getClassExpr() {
