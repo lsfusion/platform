@@ -3,6 +3,7 @@ package platform.server.data.query;
 import platform.base.BaseUtils;
 import platform.base.OrderedMap;
 import platform.interop.Compare;
+import platform.server.Message;
 import platform.server.caches.IdentityLazy;
 import platform.server.caches.InnerContext;
 import platform.server.caches.hash.HashContext;
@@ -20,8 +21,10 @@ import platform.server.data.translator.MapValuesTranslator;
 import platform.server.data.type.Type;
 import platform.server.data.where.Where;
 import platform.server.data.where.classes.ClassWhere;
+import platform.server.logics.BusinessLogics;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
+import platform.server.logics.ServerResourceBundle;
 import platform.server.session.DataSession;
 
 import java.sql.SQLException;
@@ -191,8 +194,9 @@ public class Query<K,V> extends InnerContext<Query<?,?>> implements MapKeysInter
         return execute(session,new OrderedMap<V, Boolean>(),0, env);
     }
 
+    @Message("message.query.execute")
     public OrderedMap<Map<K, Object>, Map<V, Object>> execute(SQLSession session, OrderedMap<V, Boolean> orders, int selectTop, QueryEnvironment env) throws SQLException {
-        return compile(session.syntax,orders,selectTop).execute(session, env);
+        return compile(session.syntax, orders, selectTop).execute(session, env);
     }
 
     public OrderedMap<Map<K, DataObject>, Map<V, ObjectValue>> executeClasses(SQLSession session, BaseClass baseClass) throws SQLException {

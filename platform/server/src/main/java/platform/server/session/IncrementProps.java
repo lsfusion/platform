@@ -1,6 +1,9 @@
 package platform.server.session;
 
+import com.sun.servicetag.SystemEnvironment;
 import platform.base.BaseUtils;
+import platform.server.Message;
+import platform.server.ParamMessage;
 import platform.server.caches.IdentityLazy;
 import platform.server.caches.MapValues;
 import platform.server.caches.MapValuesIterable;
@@ -14,6 +17,8 @@ import platform.server.data.translator.HashLazy;
 import platform.server.data.translator.MapValuesTranslate;
 import platform.server.data.type.Type;
 import platform.server.data.where.WhereBuilder;
+import platform.server.logics.BusinessLogics;
+import platform.server.logics.ServerResourceBundle;
 import platform.server.logics.property.Property;
 import platform.server.logics.property.PropertyInterface;
 
@@ -182,7 +187,8 @@ public class IncrementProps<T> extends Modifier<IncrementProps.UsedChanges> {
         return property.getIncrementExpr(BaseUtils.join(group.getPropertyMap(property), joinExprs), modifier, changedWhere);
     }
 
-    public void read(PropertyGroup<T> propertyGroup, Collection<Property> properties, BaseClass baseClass) throws SQLException {
+    @Message("message.increment.read.properties")
+    public void read(PropertyGroup<T> propertyGroup, @ParamMessage Collection<Property> properties, BaseClass baseClass) throws SQLException {
         // создаем таблицу
         SessionTableUsage<T, Property> changeTable =
                 new SessionTableUsage<T, Property>(propertyGroup.getKeys(), new ArrayList<Property>(properties), propertyGroup.typeGetter(),

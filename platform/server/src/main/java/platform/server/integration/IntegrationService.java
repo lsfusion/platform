@@ -1,5 +1,6 @@
 package platform.server.integration;
 
+import platform.server.Message;
 import platform.server.classes.IntegerClass;
 import platform.server.data.query.Query;
 import platform.server.data.type.Type;
@@ -39,6 +40,7 @@ public class IntegrationService {
         synchronize(addNew, updateExisting, deleteOld, replaceNull, true);
     }
 
+    @Message("message.synchronize")
     public void synchronize(boolean addNew, boolean updateExisting, boolean deleteOld, boolean replaceNull, boolean replaceEqual) throws SQLException {
         SingleKeyTableUsage<ImportField> importTable = new SingleKeyTableUsage<ImportField>(IntegerClass.instance, table.fields, ImportField.typeGetter);
 

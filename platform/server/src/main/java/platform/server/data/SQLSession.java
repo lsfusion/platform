@@ -5,6 +5,8 @@ import platform.base.BaseUtils;
 import platform.base.MutableObject;
 import platform.base.OrderedMap;
 import platform.base.Result;
+import platform.server.Message;
+import platform.server.ParamMessage;
 import platform.server.data.expr.Expr;
 import platform.server.data.query.Query;
 import platform.server.data.sql.DataAdapter;
@@ -14,10 +16,7 @@ import platform.server.data.type.ParseInterface;
 import platform.server.data.type.Reader;
 import platform.server.data.type.Type;
 import platform.server.data.type.TypeObject;
-import platform.server.logics.DataObject;
-import platform.server.logics.NullValue;
-import platform.server.logics.ObjectValue;
-import platform.server.logics.ServerResourceBundle;
+import platform.server.logics.*;
 
 import java.lang.ref.WeakReference;
 import java.sql.*;
@@ -352,8 +351,11 @@ public class SQLSession extends MutableObject {
         }
     }
 
-    private int executeDML(String command, Map<String, ParseInterface> paramObjects) throws SQLException {
+    @Message("message.sql.execute")
+    private int executeDML(@ParamMessage String command, Map<String, ParseInterface> paramObjects) throws SQLException {
         Connection connection = getConnection();
+
+        logger.info(command);
 
         PreparedStatement statement = getStatement((explainAnalyzeMode?"EXPLAIN ANALYZE ":"") + command, paramObjects, connection, syntax);
 
@@ -376,14 +378,15 @@ public class SQLSession extends MutableObject {
         return result;
     }
 
-    private void executeDML(String executeString) throws SQLException {
+    @Message("message.sql.execute")
+    private void executeDML(@ParamMessage String command) throws SQLException {
         Connection connection = getConnection();
 
-        logger.info(executeString);
+        logger.info(command);
 
         Statement statement = connection.createStatement();
         try {
-            statement.executeUpdate(executeString);
+            statement.executeUpdate(command);
         } catch (SQLException e) {
             logger.info(statement.toString());
             throw e;
@@ -394,7 +397,8 @@ public class SQLSession extends MutableObject {
         }
     }
 
-    public <K,V> OrderedMap<Map<K, Object>, Map<V, Object>> executeSelect(String select, Map<String, ParseInterface> paramObjects, Map<K, String> keyNames, Map<K, ? extends Reader> keyReaders, Map<V, String> propertyNames, Map<V, ? extends Reader> propertyReaders) throws SQLException {
+    @Message("message.sql.execute")
+    public <K,V> OrderedMap<Map<K, Object>, Map<V, Object>> executeSelect(@ParamMessage String select, Map<String, ParseInterface> paramObjects, Map<K, String> keyNames, Map<K, ? extends Reader> keyReaders, Map<V, String> propertyNames, Map<V, ? extends Reader> propertyReaders) throws SQLException {
         Connection connection = getConnection();
 
         logger.info(select);

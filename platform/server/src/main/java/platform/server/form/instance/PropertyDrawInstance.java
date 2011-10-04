@@ -6,6 +6,7 @@ import platform.interop.ClassViewType;
 import platform.interop.form.PropertyReadType;
 import platform.server.form.entity.PropertyDrawEntity;
 import platform.server.logics.DataObject;
+import platform.server.logics.ServerResourceBundle;
 import platform.server.logics.property.Property;
 import platform.server.logics.property.PropertyInterface;
 import platform.server.logics.property.ObjectValueProperty;
@@ -149,6 +150,11 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
                 result = BaseUtils.mergeList(GroupObjectInstance.getObjects(toDraw.getUpTreeGroups()), result);
             }
             return result;
+        }
+
+        @Override
+        public String toString() {
+            return ServerResourceBundle.getString("logics.caption") + "(" + PropertyDrawInstance.this.toString() + ")";
         }
     }
 

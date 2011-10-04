@@ -1,5 +1,7 @@
 package platform.server.integration;
 
+import platform.server.Message;
+import platform.server.ThisMessage;
 import platform.server.classes.ConcreteCustomClass;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.query.GroupExpr;
@@ -73,7 +75,14 @@ public class ImportKey <P extends PropertyInterface> implements ImportKeyInterfa
         return mapExprs;
     }
 
+
+    public String toString() {
+        return keyClass.toString();
+    }
+
     // не будет виден CGProp, который тут неявно assert'ися но это и не важно
+    @Message("message.synchronize.key")
+    @ThisMessage
     public SinglePropertyTableUsage<P> synchronize(DataSession session, SingleKeyTableUsage<ImportField> importTable) throws SQLException {
         SinglePropertyTableUsage<P> propertyTable = new SinglePropertyTableUsage<P>(new ArrayList<P>(implement.property.interfaces), new Type.Getter<P>() { // именно так а не createChangeTable, потому как у property могут быть висячие ключи
             public Type getType(P key) {

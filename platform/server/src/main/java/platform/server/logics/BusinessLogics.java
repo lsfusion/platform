@@ -591,6 +591,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     public BusinessLogics(DataAdapter adapter, int exportPort) throws IOException, ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException, FileNotFoundException, JRException {
         super(exportPort);
 
+        Context.context.set(this);
+
         LM = new BaseLogicsModule(this, logger);
 
         this.adapter = adapter;

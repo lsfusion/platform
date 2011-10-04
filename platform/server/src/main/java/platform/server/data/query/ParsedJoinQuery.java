@@ -2,6 +2,7 @@ package platform.server.data.query;
 
 import platform.base.BaseUtils;
 import platform.base.OrderedMap;
+import platform.server.Message;
 import platform.server.caches.IdentityLazy;
 import platform.server.caches.SynchronizedLazy;
 import platform.server.data.Value;
@@ -43,6 +44,7 @@ class ParsedJoinQuery<K,V> extends Join<V> implements ParsedQuery<K,V> {
     }
 
     @SynchronizedLazy
+    @Message("message.core.query.compile")
     public CompiledQuery<K,V> compileSelect(SQLSyntax syntax, OrderedMap<V, Boolean> orders, int top, String prefix) {
         return new CompiledQuery<K,V>(this, syntax, orders, top, prefix);
     }

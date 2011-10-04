@@ -4,6 +4,7 @@ import platform.base.BaseUtils;
 import platform.base.MutableObject;
 import platform.base.OrderedMap;
 import platform.interop.action.ClientAction;
+import platform.server.Message;
 import platform.server.caches.MapValues;
 import platform.server.classes.*;
 import platform.server.data.*;
@@ -20,10 +21,7 @@ import platform.server.form.instance.remote.RemoteForm;
 import platform.server.form.navigator.ComputerController;
 import platform.server.form.navigator.IsServerRestartingController;
 import platform.server.form.navigator.UserController;
-import platform.server.logics.BusinessLogics;
-import platform.server.logics.DataObject;
-import platform.server.logics.NullValue;
-import platform.server.logics.ObjectValue;
+import platform.server.logics.*;
 import platform.server.logics.linear.LP;
 import platform.server.logics.property.*;
 import platform.server.logics.property.group.AbstractGroup;
@@ -339,6 +337,7 @@ public class DataSession extends MutableObject implements SessionChanges, ExprCh
 
     private IncrementApply incrementApply;
 
+    @Message("message.session.apply.check")
     public String check(final BusinessLogics<?> BL) throws SQLException {
         resolveFollows(BL, null);
 
@@ -440,10 +439,10 @@ public class DataSession extends MutableObject implements SessionChanges, ExprCh
         }
     }
 
+    @Message("message.session.apply.resolve.follows")
     public void resolveFollows(final BusinessLogics<?> BL, List<ClientAction> actions) throws SQLException {
 
         for(Property<?> property : BL.getFollowProperties()) {
-            // нужно проверить что оно change'ся в true
             for(PropertyFollows<?, ?> follow : property.follows)
                 follow.resolveFalse(this, BL);
             for(PropertyFollows<?, ?> follow : property.followed)
@@ -451,6 +450,7 @@ public class DataSession extends MutableObject implements SessionChanges, ExprCh
         }
     }
 
+    @Message("message.session.apply.auto.execute")
     public void executeDerived(final BusinessLogics<?> BL, List<ClientAction> actions) throws SQLException {
 
         for(ExecuteProperty property : BL.getExecuteDerivedProperties()) {
@@ -463,6 +463,7 @@ public class DataSession extends MutableObject implements SessionChanges, ExprCh
         }
     }
 
+    @Message("message.session.apply.write")
     public void write(final BusinessLogics<?> BL, List<ClientAction> actions) throws SQLException {
         assert incrementApply != null;
 

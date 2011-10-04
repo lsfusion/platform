@@ -63,18 +63,4 @@ public class TreeGroupInstance {
     public int getID() {
         return entity.getID();
     }
-
-    public void updateKeys(DataSession session, int sessionID, Modifier<? extends Changes> modifier, BaseClass baseClass, boolean refresh, FormChanges result, Collection<Property> changedProps, Collection<CustomClass> changedClasses) throws SQLException {
-        GroupObjectInstance selectGroup = null;
-        Map<ObjectInstance, DataObject> selectObjects = null;
-
-        for(GroupObjectInstance group : groups) {
-            selectObjects = group.updateKeys(session.sql, session.env, modifier, baseClass, refresh, result, changedProps, changedClasses);
-            if(selectObjects!=null) // то есть нужно изменять объект
-                selectGroup = group;
-        }
-
-        if(selectGroup!=null)
-            selectGroup.update(session, result, selectObjects);
-    }
 }

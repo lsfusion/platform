@@ -1,6 +1,8 @@
 package platform.server.integration;
 
 import platform.interop.Compare;
+import platform.server.Message;
+import platform.server.ThisMessage;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.ValueExpr;
@@ -58,6 +60,13 @@ public class ImportProperty <P extends PropertyInterface> {
         return importKeyExprs;
     }
 
+    @Override
+    public String toString() {
+        return implement.property.toString();
+    }
+
+    @Message("message.synchronize.property")
+    @ThisMessage
     public MapDataChanges<P> synchronize(DataSession session, SingleKeyTableUsage<ImportField> importTable, Map<ImportKey<?>, SinglePropertyTableUsage<?>> addedKeys, boolean replaceNull, boolean replaceEqual) throws SQLException {
         Map<ImportField,Expr> importExprs = importTable.join(importTable.getMapKeys()).getExprs();
 

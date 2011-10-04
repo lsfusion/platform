@@ -183,4 +183,9 @@ public class PropertyObjectInstance<P extends PropertyInterface> extends Propert
 
         return new PropertyObjectInstance<P>(property, remapping);
     }
+
+    @Override
+    public String toString() {
+        return property.toString();
+    }
 }

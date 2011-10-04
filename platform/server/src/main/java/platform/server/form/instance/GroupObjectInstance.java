@@ -6,6 +6,8 @@ import platform.interop.ClassViewType;
 import platform.interop.Compare;
 import platform.interop.Order;
 import platform.interop.form.PropertyReadType;
+import platform.server.Message;
+import platform.server.ThisMessage;
 import platform.server.caches.IdentityLazy;
 import platform.server.classes.BaseClass;
 import platform.server.classes.ConcreteCustomClass;
@@ -62,6 +64,10 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
     }
 
     public Collection<ObjectInstance> objects;
+
+    public String toString() {
+        return objects.toString();
+    }
 
     // глобальный идентификатор чтобы писать во GroupObjectTable
     public int getID() {
@@ -439,6 +445,8 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
         change(session, value);
     }
 
+    @Message("message.form.update.group.keys")
+    @ThisMessage
     public Map<ObjectInstance, DataObject> updateKeys(SQLSession sql, QueryEnvironment env, Modifier<? extends Changes> modifier, BaseClass baseClass, boolean refresh, FormChanges result, Collection<Property> changedProps, Collection<CustomClass> changedClasses) throws SQLException {
         if ((updated & UPDATED_CLASSVIEW) != 0) {
             result.classViews.put(this, curClassView);
