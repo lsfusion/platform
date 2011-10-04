@@ -17,7 +17,6 @@ public enum GroupType implements AggrType {
             case MAX:
                 return "MAX";
             case ANY:
-//                return "MAX";
                 return "ANYVALUE";
             case SUM:
                 return "SUM";

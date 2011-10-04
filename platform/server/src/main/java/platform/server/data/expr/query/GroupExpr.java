@@ -4,6 +4,7 @@ import platform.base.*;
 import platform.interop.Compare;
 import platform.server.caches.*;
 import platform.server.caches.hash.HashContext;
+import platform.server.classes.DataClass;
 import platform.server.classes.IntegralClass;
 import platform.server.data.expr.*;
 import platform.server.data.expr.where.cases.CaseExpr;
@@ -134,24 +135,21 @@ public class GroupExpr extends QueryExpr<BaseExpr,GroupExpr.Query,GroupJoin> {
         }
 
         protected ClassExprWhere getClassWhere(Where fullWhere) {
-            switch(query.groupType) {
-                case SUM:
-                    return fullWhere.getClassWhere().map(group).and(new ClassExprWhere(GroupExpr.this,(IntegralClass) query.expr.getType(fullWhere)));
-                case MAX:
-                case ANY:
-                    return new ExclExprPullWheres<ClassExprWhere>() {
-                        protected ClassExprWhere initEmpty() {
-                            return ClassExprWhere.FALSE;
-                        }
-                        protected ClassExprWhere proceedBase(Where data, BaseExpr baseExpr) {
-                            return data.getClassWhere().map(BaseUtils.merge(Collections.singletonMap(baseExpr, GroupExpr.this), group));
-                        }
-                        protected ClassExprWhere add(ClassExprWhere op1, ClassExprWhere op2) {
-                            return op1.or(op2);
-                        }
-                    }.proceed(fullWhere, query.expr);
+            if(query.groupType.isSelect()) {
+                return new ExclExprPullWheres<ClassExprWhere>() {
+                    protected ClassExprWhere initEmpty() {
+                        return ClassExprWhere.FALSE;
+                    }
+                    protected ClassExprWhere proceedBase(Where data, BaseExpr baseExpr) {
+                        return data.getClassWhere().map(BaseUtils.merge(Collections.singletonMap(baseExpr, GroupExpr.this), group));
+                    }
+                    protected ClassExprWhere add(ClassExprWhere op1, ClassExprWhere op2) {
+                        return op1.or(op2);
+                    }
+                }.proceed(fullWhere, query.expr);
+            } else {
+                return fullWhere.getClassWhere().map(group).and(new ClassExprWhere(GroupExpr.this,(DataClass) query.expr.getType(fullWhere)));
             }
-            throw new RuntimeException("not supported");
         }
     }
 

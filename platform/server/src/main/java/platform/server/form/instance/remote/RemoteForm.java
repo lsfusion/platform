@@ -20,6 +20,7 @@ import platform.interop.form.RemoteChanges;
 import platform.interop.form.RemoteDialogInterface;
 import platform.interop.form.RemoteFormInterface;
 import platform.server.Context;
+import platform.server.RemoteContextObject;
 import platform.server.classes.ConcreteCustomClass;
 import platform.server.classes.CustomClass;
 import platform.server.form.entity.FormEntity;
@@ -49,7 +50,7 @@ import static platform.base.BaseUtils.deserializeObject;
 import static platform.server.logics.BusinessLogics.getCurrentActionMessage;
 
 // фасад для работы с клиентом
-public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> extends platform.interop.remote.RemoteObject implements RemoteFormInterface, Context {
+public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> extends RemoteContextObject implements RemoteFormInterface {
     private final static Logger logger = Logger.getLogger(RemoteForm.class);
 
     public final F form;
@@ -300,24 +301,6 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
 
     public String getRemoteActionMessage() {
         return getCurrentActionMessage();
-    }
-
-    public BusinessLogics.MessageStack actionMessageStack = new BusinessLogics.MessageStack();
-
-    public String getActionMessage() {
-        return actionMessageStack.getMessage();
-    }
-
-    public void setActionMessage(String message) {
-        actionMessageStack.set(message);
-    }
-
-    public void pushActionMessage(String segment) {
-        actionMessageStack.push(segment);
-    }
-
-    public String popActionMessage() {
-        return actionMessageStack.pop();
     }
 
     public byte[] getRichDesignByteArray() {

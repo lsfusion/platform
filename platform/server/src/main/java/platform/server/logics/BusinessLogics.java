@@ -17,6 +17,7 @@ import platform.interop.navigator.RemoteNavigatorInterface;
 import platform.interop.remote.RemoteObject;
 import platform.interop.remote.UserInfo;
 import platform.server.Context;
+import platform.server.RemoteContextObject;
 import platform.server.auth.PolicyManager;
 import platform.server.auth.SecurityPolicy;
 import platform.server.auth.User;
@@ -58,7 +59,7 @@ import static platform.server.logics.ServerResourceBundle.getString;
 
 // @GenericImmutable нельзя так как Spring валится
 
-public abstract class BusinessLogics<T extends BusinessLogics<T>> extends RemoteObject implements RemoteLogicsInterface, Context {
+public abstract class BusinessLogics<T extends BusinessLogics<T>> extends RemoteContextObject implements RemoteLogicsInterface {
     protected List<LogicsModule> logicModules = new ArrayList<LogicsModule>();
     final public BaseLogicsModule<T> LM;
     public List<LogicsModule> getLogicModules() {
@@ -140,21 +141,6 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
     public void setDialogUndecorated(Boolean dialogUndecorated) {
         this.dialogUndecorated = dialogUndecorated;
-    }
-
-    public static class MessageStack extends Stack<String> {
-        public void set(String message) {
-            clear();
-            push(message);
-        }
-
-        public String pop() {
-            return isEmpty() ? null : super.pop();
-        }
-
-        public String getMessage() {
-            return  BaseUtils.toString(this, " : ");
-        }
     }
 
     public final static boolean activateCaches = true;
@@ -1511,24 +1497,6 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
     public String getRemoteActionMessage() {
         return getCurrentActionMessage();
-    }
-
-    public BusinessLogics.MessageStack actionMessageStack = new BusinessLogics.MessageStack();
-
-    public String getActionMessage() {
-        return actionMessageStack.getMessage();
-    }
-
-    public void setActionMessage(String message) {
-        actionMessageStack.set(message);
-    }
-
-    public void pushActionMessage(String segment) {
-        actionMessageStack.push(segment);
-    }
-
-    public String popActionMessage() {
-        return actionMessageStack.pop();
     }
 
     public String getName() throws RemoteException {

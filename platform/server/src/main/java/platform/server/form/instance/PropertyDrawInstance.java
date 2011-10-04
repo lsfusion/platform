@@ -154,7 +154,7 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
 
         @Override
         public String toString() {
-            return ServerResourceBundle.getString("logics.caption") + "(" + PropertyDrawInstance.this.toString() + ")";
+            return ServerResourceBundle.getString("logics.property.caption") + "(" + PropertyDrawInstance.this.toString() + ")";
         }
     }
 

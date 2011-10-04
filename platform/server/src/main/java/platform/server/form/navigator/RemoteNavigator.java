@@ -17,6 +17,7 @@ import platform.interop.remote.CallbackMessage;
 import platform.interop.remote.ClientCallBackInterface;
 import platform.interop.remote.RemoteObject;
 import platform.server.Context;
+import platform.server.RemoteContextObject;
 import platform.server.auth.SecurityPolicy;
 import platform.server.auth.User;
 import platform.server.classes.ConcreteCustomClass;
@@ -56,7 +57,7 @@ import static platform.server.logics.BusinessLogics.getCurrentActionMessage;
 
 // приходится везде BusinessLogics Generics'ом гонять потому как при инстанцировании формы нужен конкретный класс
 
-public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteObject implements RemoteNavigatorInterface, FocusListener<T>, CustomClassListener, RemoteFormListener, Context {
+public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteContextObject implements RemoteNavigatorInterface, FocusListener<T>, CustomClassListener, RemoteFormListener {
     protected final static Logger logger = Logger.getLogger(RemoteNavigator.class);
 
     T BL;
@@ -162,24 +163,6 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteObject i
 
     public String getRemoteActionMessage() {
         return getCurrentActionMessage();
-    }
-
-    public BusinessLogics.MessageStack actionMessageStack = new BusinessLogics.MessageStack();
-
-    public String getActionMessage() {
-        return actionMessageStack.getMessage();
-    }
-
-    public void setActionMessage(String message) {
-        actionMessageStack.set(message);
-    }
-
-    public void pushActionMessage(String segment) {
-        actionMessageStack.push(segment);
-    }
-
-    public String popActionMessage() {
-        return actionMessageStack.pop();
     }
 
     private long lastUsedTime;
