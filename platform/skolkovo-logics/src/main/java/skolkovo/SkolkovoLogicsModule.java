@@ -128,6 +128,11 @@ public class SkolkovoLogicsModule extends LogicsModule {
     ConcreteCustomClass legalCheck;
     ConcreteCustomClass currency;
 
+    AbstractCustomClass application;
+    ConcreteCustomClass applicationPreliminary;
+    ConcreteCustomClass applicationStatus;
+    ConcreteCustomClass applicationStatusPreliminary;
+
     AbstractGroup projectInformationGroup;
     AbstractGroup additionalInformationGroup;
     AbstractGroup innovationGroup;
@@ -233,6 +238,11 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         formalControl = addConcreteClass("formalControl", "Формальная экспертиза", baseClass);
         legalCheck = addConcreteClass("legalCheck", "Юридическая проверка", baseClass);
+
+        application = addAbstractClass("application", "Заявка", baseClass);
+        applicationPreliminary = addConcreteClass("applicationPreliminary", "Заявка на предварительную экспертизу", application);
+        applicationStatus = addConcreteClass("applicationStatus", "Заявка на статус участника", application);
+        applicationStatusPreliminary = addConcreteClass("applicationStatusPreliminary", "Заявка на статус участника (предв. экспертиза)", application);
     }
 
     @Override
@@ -499,7 +509,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP importProjectSidsAction, showProjectsToImportAction, showProjectsReplaceToImportAction, importProjectsAction;
     LP exportProjectDocumentsAction;
     LP copyProjectAction;
-    LP generateVoteProject, hideGenerateVoteProject;
+    LP generateVoteProject, needNameExtraVoteProject, hideGenerateVoteProject;
     LP copyResultsVote;
 
     LP expertLogin;
@@ -843,6 +853,13 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP monthInPreviousDate, yearInPreviousDate;
     LP isNewMonth;
 
+    LP projectApplication;
+    LP projectApplicationPreliminary, projectApplicationStatus, projectApplicationStatusPreliminary;
+    LP preliminaryApplicationProject;
+    LP statusApplicationProject;
+
+    LP nameNativeProjectApplication;
+    LP nameNativeClaimerApplication;
 
     @Override
     public void initProperties() {
@@ -1343,7 +1360,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         nameNativeClaimerVote = addIfElseUProp(baseGroup, "nameNativeClaimerVote", "Заявитель", addJProp(nameNativeUnionManagerProject, projectVote, 1), nameNativeJoinClaimerVote, isPreliminaryVote, 1);
         nameNativeClaimerVote.setMinimumWidth(10);
         nameNativeClaimerVote.setPreferredWidth(50);
-        nameForeignClaimerVote = addIfElseUProp(baseGroup, "nameForeignClaimerVote", "Заявитель (иностр.)", addJProp(nameForeignManagerProject, projectVote, 1), nameForeignJoinClaimerVote, isPreliminaryVote, 1);
+        nameForeignClaimerVote = addIfElseUProp(baseGroup, "nameForeignClaimerVote", "Заявитель (иностр.)", addJProp(nameForeignUnionManagerProject, projectVote, 1), nameForeignJoinClaimerVote, isPreliminaryVote, 1);
         nameForeignClaimerVote.setMinimumWidth(10);
         nameForeignClaimerVote.setPreferredWidth(50);
         nameGenitiveClaimerVote = addIfElseUProp(baseGroup, "nameGenitiveClaimerVote", "Заявитель (кого)", addJProp(nameGenitiveManagerProject, projectVote, 1), nameNativeJoinClaimerVote, isPreliminaryVote, 1);
@@ -1593,9 +1610,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         inProjectCluster = addDProp(baseGroup, "inProjectCluster", "Вкл", LogicalClass.instance, project, cluster);
 
-        clusterComputer = addDProp("clusterComputer", "Кластер рабочего места", cluster);
-        //clusterComputer = addSDProp("clusterComputer", "Кластер рабочего места", cluster);
-        currentCluster = addJProp(true, "currentCluster", "Текущий кластер", clusterComputer);
+        currentCluster = addSDProp("currentCluster", "Текущий кластер", cluster);
 
         nameNativeCurrentCluster = addJProp("nameNativeCurrentCluster", "Кластер", nameNative, currentCluster);
 
@@ -1661,7 +1676,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         generateVoteProject = addAProp(actionGroup, new GenerateVoteActionProperty());
         copyResultsVote = addAProp(actionGroup, new CopyResultsActionProperty());
-        hideGenerateVoteProject = addHideCaptionProp(privateGroup, "Сгенерировать заседание", generateVoteProject, needExtraVoteProject);
+        needNameExtraVoteProject = addJProp(and(false, false, false, false), needExtraVoteProject, 1, nameNativeProject, 1, nameForeignProject, 1, nameNativeClaimerProject, 1, nameForeignClaimerProject, 1);
+        hideGenerateVoteProject = addHideCaptionProp(privateGroup, "Сгенерировать заседание", generateVoteProject, needNameExtraVoteProject);
 //        generateVoteProject.setDerivedForcedChange(addCProp(ActionClass.instance, true), needExtraVoteProject, 1, autoGenerateProject, 1);
 
         baseLM.generateLoginPassword.setDerivedForcedChange(addCProp(ActionClass.instance, true), is(expert), 1);
@@ -2035,6 +2051,25 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         // так конечно не совсем правильно, если поменяется дата с 01 числа одного месяца на 01 число другого месяца
         emailLetterCertificatesExpertMonthYear.setDerivedForcedChange(addCProp(ActionClass.instance, true), isNewMonth);
+
+//        projectApplication = addDProp(idGroup, "projectApplication", "Проект (ИД)", project, application);
+//
+//        projectApplicationPreliminary = addJProp(idGroup, "projectPreliminaryApplication", "Проект (ИД)", baseLM.and1, projectApplication, 1, is(applicationPreliminary), 1);
+//        projectApplicationStatus = addJProp(idGroup, "projectApplicationStatus", "Проект (ИД)", baseLM.and1, projectApplication, 1, is(applicationStatus), 1);
+//        projectApplicationStatusPreliminary = addJProp(idGroup, "projectApplicationStatusPreliminary", "Проект (ИД)", baseLM.and1, projectApplication, 1, is(applicationStatusPreliminary), 1);
+//
+//        preliminaryApplicationProject = addAGProp(idGroup, false, "preliminaryApplicationProject", false, "Заяка на предварительную экспертизу", applicationPreliminary, projectApplication);
+//        statusApplicationProject = addAGProp(idGroup, false, "statusApplicationProject", false, "Заявка на статус участника", applicationStatus, projectApplication);
+//        follows(isPreliminaryProject, preliminaryApplicationProject, 1);
+//        follows(preliminaryApplicationProject, isPreliminaryProject, 1);
+
+/*        documentRevalueAct = addDProp(baseGroup, "documentRevalueAct", "Документ", documentShopPrice, revalueAct);
+        LP revalueActDocument = addAGProp(baseGroup, false, "revalueActDocument", false, "Акт переоценки", revalueAct, documentRevalueAct);
+        follows(sumPriceChangeOrder, revalueActDocument, 1);
+        follows(is(revalueAct), documentRevalueAct, 1);*/
+
+//        nameNativeProjectApplication = addJProp(baseGroup, "nameNativeProjectApplication", "Проект", nameNativeProject, projectApplication, 1);
+//        nameNativeClaimerApplication = addJProp(baseGroup, "nameNativeClaimerApplication", "Заявитель", nameNativeClaimerProject, projectApplication, 1);
     }
 
     @Override
@@ -2102,6 +2137,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         addFormEntity(new AcceptanceCertificateFormEntity(print, "acceptanceCertificateNonResident", "Акт оказанных услуг (нерезидент)", false));
 
         addFormEntity(new ProjectFormEntity(baseLM.baseElement, "project"));
+//        addFormEntity(new ApplicationFormEntity(baseLM.baseElement, "application"));
         addFormEntity(new ClaimerFormEntity(baseLM.baseElement, "claimer"));
         addFormEntity(new VoteFormEntity(baseLM.baseElement, "vote", false));
         addFormEntity(new ExpertFormEntity(baseLM.baseElement, "expert"));
@@ -2676,6 +2712,17 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
             return design;
         }
+    }
+
+    private class ApplicationFormEntity extends FormEntity<SkolkovoBusinessLogics> {
+        private ObjectEntity objApplication;
+
+        private ApplicationFormEntity(NavigatorElement parent, String sID) {
+            super(parent, sID, "Реестр заявок");
+
+            objApplication = addSingleGroupObject(application, nameNativeProjectApplication, nameNativeClaimerApplication);
+        }
+
     }
 
     private class ProjectClusterFormEntity extends FormEntity<SkolkovoBusinessLogics> {

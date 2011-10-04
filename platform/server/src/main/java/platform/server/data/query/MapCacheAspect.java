@@ -560,7 +560,7 @@ public class MapCacheAspect {
         }
 
         ExprResult translate(MapValuesTranslator translate) {
-            return new ExprResult(expr.translateOuter(translate), where.translateOuter(translate));
+            return new ExprResult(expr.translateOuter(translate), where == null ? null : where.translateOuter(translate));
         }
     }
 
