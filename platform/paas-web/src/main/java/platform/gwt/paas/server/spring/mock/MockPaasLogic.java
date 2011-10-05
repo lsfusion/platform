@@ -266,8 +266,8 @@ public class MockPaasLogic implements PaasRemoteInterface {
     }
 
     @Override
-    public ConfigurationDTO[] startConfiguration(String userLogin, int configurationId) throws RemoteException {
-        return getProjectConfigurations(userLogin, daoProj.getConfigurationProject(configurationId));
+    public ConfigurationDTO[] startConfiguration(String userLogin, ConfigurationDTO configuration) throws RemoteException {
+        return getProjectConfigurations(userLogin, daoProj.getConfigurationProject(configuration.id));
     }
 
     @Override

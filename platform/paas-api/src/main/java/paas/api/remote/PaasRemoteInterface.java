@@ -40,7 +40,7 @@ public interface PaasRemoteInterface extends RemoteLogicsInterface {
 
     public ConfigurationDTO[] updateConfiguration(String userLogin, ConfigurationDTO configuration) throws RemoteException;
 
-    public ConfigurationDTO[] startConfiguration(String userLogin, int configurationId) throws RemoteException;
+    public ConfigurationDTO[] startConfiguration(String userLogin, ConfigurationDTO configuration) throws RemoteException;
 
     public ConfigurationDTO[] stopConfiguration(String userLogin, int configurationId) throws RemoteException;
 

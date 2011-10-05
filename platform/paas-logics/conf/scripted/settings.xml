@@ -25,4 +25,10 @@
         <constructor-arg value="#{systemProperties['paas.scripted.port']}" />
         <constructor-arg value="#{systemProperties['paas.scripted.modules']}"/>
     </bean>
+
+    <bean id="lifecycleManager" class="platform.server.lifecycle.LifecycleManager">
+        <constructor-arg>
+            <bean class="paas.manager.client.AppManagerLifecycleNotifier"/>
+        </constructor-arg>
+    </bean>
 </beans>

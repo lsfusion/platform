@@ -25,7 +25,7 @@ public class StartConfigurationHandler extends SimpleActionHandlerEx<StartConfig
     public GetConfigurationsResult executeEx(final StartConfigurationAction action, final ExecutionContext context) throws ActionException, RemoteException {
         return new GetConfigurationsResult(
                 blProvider.getLogics().startConfiguration(
-                        getAuthentication().getName(), action.configurationId));
+                        getAuthentication().getName(), action.configuration));
     }
 }
 

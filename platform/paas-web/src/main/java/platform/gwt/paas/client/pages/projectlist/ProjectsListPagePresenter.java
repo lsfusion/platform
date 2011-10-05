@@ -114,7 +114,7 @@ public class ProjectsListPagePresenter extends Presenter<ProjectsListPagePresent
 
     private class GetProjectsCallback extends ErrorHandlingCallback<GetProjectsResult> {
         @Override
-        public void onSuccess(GetProjectsResult result) {
+        public void success(GetProjectsResult result) {
             getView().setProjects(result.projects);
         }
     }

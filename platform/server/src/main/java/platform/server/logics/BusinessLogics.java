@@ -1,6 +1,5 @@
 package platform.server.logics;
 
-import com.sun.servicetag.SystemEnvironment;
 import net.sf.jasperreports.engine.JRException;
 import org.apache.log4j.Logger;
 import org.aspectj.lang.annotation.Aspect;
@@ -14,9 +13,9 @@ import platform.interop.form.RemoteFormInterface;
 import platform.interop.form.screen.ExternalScreen;
 import platform.interop.form.screen.ExternalScreenParameters;
 import platform.interop.navigator.RemoteNavigatorInterface;
-import platform.interop.remote.RemoteObject;
 import platform.interop.remote.UserInfo;
 import platform.server.Context;
+import platform.server.ContextAwareThread;
 import platform.server.RemoteContextObject;
 import platform.server.auth.PolicyManager;
 import platform.server.auth.SecurityPolicy;
@@ -42,12 +41,10 @@ import platform.server.logics.linear.LP;
 import platform.server.logics.property.*;
 import platform.server.logics.scheduler.Scheduler;
 import platform.server.logics.table.ImplementTable;
-import platform.server.logics.table.MapKeysTable;
 import platform.server.serialization.ServerSerializationPool;
 import platform.server.session.DataSession;
 import platform.server.session.PropertyChange;
 
-import javax.mail.Session;
 import java.io.*;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
@@ -511,7 +508,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
     public void ping() throws RemoteException {
-        return;
+        //for keep-alive
     }
 
     public String getUserName(DataObject user) {
@@ -574,7 +571,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         }
     }
 
-    public BusinessLogics(DataAdapter adapter, int exportPort) throws IOException, ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException, FileNotFoundException, JRException {
+    public BusinessLogics(DataAdapter adapter, int exportPort) throws IOException, ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException, JRException {
         super(exportPort);
 
         Context.context.set(this);
@@ -648,7 +645,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
         fillDaysOff();
 
-        Thread thread = new Thread(new Runnable() {
+        Thread thread = new ContextAwareThread(this, new Runnable() {
             long time = 1000;
             boolean first = true;
 
@@ -679,7 +676,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
                         if (time < 1000) {
                             time = 1000;
                         }
-                    } catch (Exception e) {
+                    } catch (Exception ignore) {
                     }
                 }
             }

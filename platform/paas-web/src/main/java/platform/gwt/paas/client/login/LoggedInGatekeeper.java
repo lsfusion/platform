@@ -35,7 +35,7 @@ public class LoggedInGatekeeper implements Gatekeeper {
             public void onLogoff(LogoffAuthenticatedEvent event) {
                 dispatcher.execute(new LogoffAction(), new ErrorHandlingCallback<VoidResult>() {
                     @Override
-                    public void onSuccess(VoidResult result) {
+                    public void success(VoidResult result) {
                         currentUser = null;
                         Log.debug("User logoffed");
                         placeManager.revealDefaultPlace();

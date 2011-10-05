@@ -1062,6 +1062,39 @@ public class BaseUtils {
         return result;
     }
 
+    public static <T> T[] addElement(T[] array, T element, ArrayInstancer<T> instancer) {
+        T[] result = instancer.newArray(array.length + 1);
+
+        System.arraycopy(array, 0, result, 0, array.length);
+        result[array.length] = element;
+
+        return result;
+    }
+
+    public static <T> T[] removeElement(T[] array, T element, ArrayInstancer<T> instancer) {
+        if (array == null || array.length == 0) {
+            return array;
+        }
+
+        int ind = -1;
+        for (int i = 0; i < array.length; ++i) {
+            if (array[i] == element) {
+                ind = i;
+                break;
+            }
+        }
+
+        if (ind == -1) {
+            return array;
+        }
+
+        T[] result = instancer.newArray(array.length - 1);
+        System.arraycopy(array, 0, result, 0, ind);
+        System.arraycopy(array, ind+1, result, ind, result.length - ind);
+
+        return result;
+    }
+
     public static <T> T[] genArray(T element, int length, ArrayInstancer<T> instancer) {
         T[] result = instancer.newArray(length);
         for (int i = 0; i < length; i++)

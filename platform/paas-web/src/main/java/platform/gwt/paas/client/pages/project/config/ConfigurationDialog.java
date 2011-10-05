@@ -1,10 +1,12 @@
 package platform.gwt.paas.client.pages.project.config;
 
+import com.gwtplatform.dispatch.shared.Action;
 import com.gwtplatform.dispatch.shared.DispatchAsync;
 import com.smartgwt.client.types.Alignment;
 import com.smartgwt.client.types.Overflow;
 import com.smartgwt.client.types.TitleOrientation;
 import com.smartgwt.client.widgets.Button;
+import com.smartgwt.client.widgets.ImgButton;
 import com.smartgwt.client.widgets.Window;
 import com.smartgwt.client.widgets.events.ClickEvent;
 import com.smartgwt.client.widgets.events.ClickHandler;
@@ -15,6 +17,8 @@ import com.smartgwt.client.widgets.form.FormItemIfFunction;
 import com.smartgwt.client.widgets.form.events.ItemChangedEvent;
 import com.smartgwt.client.widgets.form.events.ItemChangedHandler;
 import com.smartgwt.client.widgets.form.fields.*;
+import com.smartgwt.client.widgets.form.validator.IntegerRangeValidator;
+import com.smartgwt.client.widgets.grid.ListGridRecord;
 import com.smartgwt.client.widgets.grid.events.SelectionChangedHandler;
 import com.smartgwt.client.widgets.grid.events.SelectionEvent;
 import com.smartgwt.client.widgets.layout.HLayout;
@@ -34,6 +38,7 @@ public class ConfigurationDialog extends Window {
     private final DispatchAsync dispatcher = Paas.ginjector.getDispatchAsync();
 
     private int project;
+    @SuppressWarnings({"UnusedDeclaration"})
     private final ConfigurationUIHandlers uiHandlers;
 
     private ConfigurationListGrid configurationGrid;
@@ -43,8 +48,9 @@ public class ConfigurationDialog extends Window {
     private ButtonItem btnApply;
     private ButtonItem btnStop;
     private ButtonItem btnStart;
-    private IntegerItem portItem;
+    private TextItem portItem;
     private TextItem nameItem;
+    private ImgButton loadingIndicator;
 
     public ConfigurationDialog(int project, ConfigurationUIHandlers uiHandlers) {
         this.project = project;
@@ -125,21 +131,9 @@ public class ConfigurationDialog extends Window {
                 refreshConfigurations();
             }
         });
-    }
-
-    private void addNewConfiguration() {
-        dispatcher.execute(new AddNewConfigurationAction(project), new GetConfigurationsCallback());
-    }
-
-    private void removeSelectedConfiguration() {
-        ConfigurationRecord record = (ConfigurationRecord) configurationGrid.getSelectedRecord();
-        if (record != null) {
-            dispatcher.execute(new RemoveConfigurationAction(project, record.getId()), new GetConfigurationsCallback());
-        }
-    }
-
-    private void refreshConfigurations() {
-        dispatcher.execute(new GetConfigurationsAction(project), new GetConfigurationsCallback());
+        toolbar.addFill();
+        loadingIndicator = toolbar.addLoadingIndicator();
+        loadingIndicator.hide();
     }
 
     private void createConfigurationGrid() {
@@ -162,10 +156,14 @@ public class ConfigurationDialog extends Window {
         nameItem.setColSpan(5);
         nameItem.setWidth("*");
 
-        portItem = new IntegerItem(ConfigurationRecord.PORT_FIELD, "Port");
+        portItem = new TextItem(ConfigurationRecord.PORT_FIELD, "Port");
         portItem.setRequired(true);
         portItem.setColSpan(5);
         portItem.setWidth("*");
+        IntegerRangeValidator portValidator = new IntegerRangeValidator();
+        portValidator.setMax(65535);
+        portValidator.setMin(1024);
+        portItem.setValidators(portValidator);
 
         RowSpacerItem filler = new RowSpacerItem();
         filler.setHeight("*");
@@ -239,30 +237,6 @@ public class ConfigurationDialog extends Window {
         configurationForm.hide();
     }
 
-    private void startPressed() {
-        ConfigurationRecord record = (ConfigurationRecord) configurationGrid.getSelectedRecord();
-        if (record != null) {
-            dispatcher.execute(new StartConfigurationAction(record.getId()), new GetConfigurationsCallback());
-        }
-    }
-
-    private void stopPressed() {
-        ConfigurationRecord record = (ConfigurationRecord) configurationGrid.getSelectedRecord();
-        if (record != null) {
-            dispatcher.execute(new StopConfigurationAction(record.getId()), new GetConfigurationsCallback());
-        }
-    }
-
-    private void applyPressed() {
-        if (configurationForm.validate()) {
-            ConfigurationRecord record = (ConfigurationRecord) configurationGrid.getSelectedRecord();
-            record.setName(nameItem.getValueAsString());
-            record.setPort(portItem.getValueAsInteger());
-
-            dispatcher.execute(new UpdateConfigurationAction(record.toDTO()), new GetConfigurationsCallback());
-        }
-    }
-
     private void createButtons() {
         btnClose = new Button("Close");
         btnClose.setLayoutAlign(Alignment.RIGHT);
@@ -297,6 +271,61 @@ public class ConfigurationDialog extends Window {
         });
     }
 
+    private void addNewConfiguration() {
+        executeDispatcherAction(new AddNewConfigurationAction(project));
+    }
+
+    private void removeSelectedConfiguration() {
+        ConfigurationRecord record = (ConfigurationRecord) configurationGrid.getSelectedRecord();
+        if (record != null) {
+            executeDispatcherAction(new RemoveConfigurationAction(project, record.getId()));
+        }
+    }
+
+    private void refreshConfigurations() {
+        executeDispatcherAction(new GetConfigurationsAction(project));
+    }
+
+    private void startPressed() {
+        ConfigurationRecord record = (ConfigurationRecord) configurationGrid.getSelectedRecord();
+        if (record != null && configurationForm.validate()) {
+            btnStart.disable();
+            executeDispatcherAction(new StartConfigurationAction(populateCurrentRecord().toDTO()));
+        }
+    }
+
+    private void stopPressed() {
+        ConfigurationRecord record = (ConfigurationRecord) configurationGrid.getSelectedRecord();
+        if (record != null) {
+            btnStop.disable();
+            executeDispatcherAction(new StopConfigurationAction(record.getId()));
+        }
+    }
+
+    private void applyPressed() {
+        if (configurationForm.validate()) {
+            populateCurrentRecord();
+
+            executeDispatcherAction(new UpdateConfigurationAction(populateCurrentRecord().toDTO()));
+        }
+    }
+
+    private ConfigurationRecord populateCurrentRecord() {
+        ConfigurationRecord record = (ConfigurationRecord) configurationGrid.getSelectedRecord();
+        record.setName(nameItem.getValueAsString());
+        record.setPort(getPortValue());
+        return record;
+    }
+
+    private Integer getPortValue() {
+        String portStr = portItem.getValueAsString();
+        try {
+            return Integer.parseInt(portStr);
+        } catch (NumberFormatException nfe) {
+            return null;
+        }
+    }
+
     private void recordSelected() {
         ConfigurationRecord selected = (ConfigurationRecord) configurationGrid.getSelectedRecord();
         if (selected != null) {
@@ -305,6 +334,8 @@ public class ConfigurationDialog extends Window {
             String status = selected.getStatus();
             btnStop.setDisabled("stopped".equals(status));
             btnStart.setDisabled("started".equals(status));
+            portItem.setDisabled("started".equals(status));
+            nameItem.setDisabled("started".equals(status));
             btnApply.disable();
         } else {
             configurationForm.hide();
@@ -315,6 +346,19 @@ public class ConfigurationDialog extends Window {
         configurationGrid.setDataFromDTOs(configurations);
     }
 
+    private void showLoading() {
+        loadingIndicator.show();
+    }
+
+    private void hideLoading() {
+        loadingIndicator.hide();
+    }
+
+    private void executeDispatcherAction(Action<GetConfigurationsResult> action) {
+        showLoading();
+        dispatcher.execute(action, new GetConfigurationsCallback());
+    }
+
     public static ConfigurationDialog showDialog(int project, ConfigurationUIHandlers uiHandlers) {
         ConfigurationDialog wl = new ConfigurationDialog(project, uiHandlers);
         wl.show();
@@ -323,8 +367,23 @@ public class ConfigurationDialog extends Window {
 
     private class GetConfigurationsCallback extends ErrorHandlingCallback<GetConfigurationsResult> {
         @Override
-        public void onSuccess(GetConfigurationsResult result) {
+        public void preProcess() {
+            hideLoading();
+        }
+
+        @Override
+        public void success(GetConfigurationsResult result) {
             setConfigurations(result.configurations);
+        }
+
+        @Override
+        public void failure(Throwable caught) {
+            super.failure(caught);
+            ListGridRecord selected = configurationGrid.getSelectedRecord();
+            if (selected != null) {
+                configurationGrid.deselectRecord(selected);
+                configurationGrid.selectSingleRecord(selected);
+            }
         }
     }
 }

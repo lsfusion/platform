@@ -17,12 +17,27 @@ grammar LsfLogics;
 	package platform.server; 
 }
 
-@members { 
+@members {
 	public ScriptingLogicsModule self;
 	public ScriptingLogicsModule.State parseState;
+
+	@Override
+	protected Object recoverFromMismatchedToken(IntStream input, int ttype, BitSet follow) throws RecognitionException {
+		  throw new MismatchedTokenException(ttype, input);
+	}
+	
+	@Override
+	public Object recoverFromMismatchedSet(IntStream input, RecognitionException e, BitSet follow) throws RecognitionException {
+		throw e;
+	}
+
 }
 
-
+@rulecatch {
+	catch (RecognitionException e) {
+		throw e;
+	}
+}
 
 script	
 	:	importDirective* statement*;

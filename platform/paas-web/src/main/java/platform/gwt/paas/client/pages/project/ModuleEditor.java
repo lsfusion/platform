@@ -78,7 +78,7 @@ public class ModuleEditor extends HLayout {
     private void saveModule() {
         dispatcher.execute(new UpdateModulesAction(moduleId, textAreaItem.getValueAsString()), new ErrorHandlingCallback<VoidResult>() {
             @Override
-            public void onSuccess(VoidResult result) {
+            public void success(VoidResult result) {
                 SC.say("Saved successfully!");
             }
         });
@@ -96,20 +96,18 @@ public class ModuleEditor extends HLayout {
 
     public void setModuleText(String text) {
         textAreaItem.setValue(text);
-        hideLoader();
     }
 
     public void updateModuleText() {
         showLoader();
         dispatcher.execute(new GetModuleTextAction(moduleId), new ErrorHandlingCallback<GetModuleTextResult>() {
             @Override
-            public void onFailure(Throwable caught) {
-                super.onFailure(caught);
+            public void preProcess() {
                 hideLoader();
             }
 
             @Override
-            public void onSuccess(GetModuleTextResult result) {
+            public void success(GetModuleTextResult result) {
                 setModuleText(result.text);
             }
         });

@@ -2,11 +2,13 @@ package platform.server.logics;
 
 import net.sf.jasperreports.engine.JRException;
 import org.apache.log4j.Logger;
+import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.context.support.FileSystemXmlApplicationContext;
+import platform.base.ExceptionUtils;
 import platform.interop.remote.ServerSocketFactory;
 import platform.server.Settings;
+import platform.server.lifecycle.LifecycleManager;
 import platform.server.net.ServerInstanceLocator;
-import platform.server.net.ServerInstanceLocatorSettings;
 
 import java.io.IOException;
 import java.rmi.NotBoundException;
@@ -18,6 +20,9 @@ import java.rmi.server.RMISocketFactory;
 import java.sql.SQLException;
 
 public class BusinessLogicsBootstrap {
+    private static FileSystemXmlApplicationContext springContext;
+
+    private static LifecycleManager lifecycle;
 
     public static final String SETTINGS_PATH_KEY = "lsf.settings.path";
     public static final String DEFAULT_SETTINGS_PATH = "conf/settings.xml";
@@ -34,21 +39,16 @@ public class BusinessLogicsBootstrap {
     private static Registry registry;
 
     private static void initRMISocketFactory() throws IOException {
-        RMISocketFactory socketFactory = RMISocketFactory.getSocketFactory();
-        if (socketFactory == null) {
-            socketFactory = RMISocketFactory.getDefaultSocketFactory();
+        if (RMISocketFactory.getSocketFactory() == null) {
+            RMISocketFactory.setFailureHandler(new RMIFailureHandler() {
+                public boolean failure(Exception ex) {
+                    logger.error("Ошибка RMI: ", ex);
+                    return true;
+                }
+            });
+
+            RMISocketFactory.setSocketFactory(new ServerSocketFactory());
         }
-
-        socketFactory = new ServerSocketFactory();
-
-        RMISocketFactory.setFailureHandler(new RMIFailureHandler() {
-
-            public boolean failure(Exception ex) {
-                return true;
-            }
-        });
-
-        RMISocketFactory.setSocketFactory(socketFactory);
     }
 
     public static void start() throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException, IOException, JRException {
@@ -67,67 +67,112 @@ public class BusinessLogicsBootstrap {
 
         initRMISocketFactory();
 
+        initSpringContext();
+
+        initLifecycleManager();
+
+        lifecycle.fireStarting();
+
+        boolean blCreated = true;
+        try {
+            BL = (BusinessLogics) springContext.getBean("businessLogics");
+        } catch (BeanCreationException bce) {
+            logger.info("Exception while creating business logic: ", bce);
+            blCreated = false;
+
+            lifecycle.fireError("Error, while creating bl: " + ExceptionUtils.getNonSpringCause(bce).getMessage());
+        }
+
+        if (blCreated) {
+            lifecycle.fireBlCreated(BL);
+
+            initRMIRegistry();
+
+            initServiceLocator();
+
+            logger.info("Server has successfully started");
+            lifecycle.fireStarted();
+
+            synchronized (serviceMonitor) {
+                while (!stopped) {
+                    try {
+                        serviceMonitor.wait();
+                    } catch (InterruptedException ignored) {
+                    }
+                }
+            }
+            logger.info("Server has successfully stopped");
+        } else {
+            lifecycle.fireStopping();
+            killRmiThread();
+            logger.info("Server has stopped");
+        }
+        lifecycle.fireStopped();
+    }
+
+    private static void initRMIRegistry() throws IOException, ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException, JRException {
+        registry = LocateRegistry.createRegistry(BL.getExportPort());
+        registry.rebind("AppTerminal", new ApplicationTerminalImpl(BL.getExportPort()));
+        registry.rebind("BusinessLogicsLoader", new BusinessLogicsLoader(BL));
+    }
+
+    private static void initSpringContext() {
         String settingsPath = System.getProperty(SETTINGS_PATH_KEY);
         if (settingsPath == null) {
             settingsPath = DEFAULT_SETTINGS_PATH;
         }
 
-        FileSystemXmlApplicationContext factory = new FileSystemXmlApplicationContext(settingsPath);
-
-        if (factory.containsBean("settings")) {
-            Settings.instance = (Settings) factory.getBean("settings");
+        springContext = new FileSystemXmlApplicationContext(settingsPath);
+        if (springContext.containsBean("settings")) {
+            Settings.instance = (Settings) springContext.getBean("settings");
         } else {
             Settings.instance = new Settings();
         }
+    }
 
-        BL = (BusinessLogics) factory.getBean("businessLogics");
-
-        registry = LocateRegistry.createRegistry(BL.getExportPort());
-        registry.rebind("AppManager", new ApplicationManagerImpl(BL.getExportPort()));
-        registry.rebind("BusinessLogicsLoader", new BusinessLogicsLoader(BL));
-
-        if (factory.containsBean("serverInstanceLocatorSettings")) {
-            ServerInstanceLocatorSettings settings = (ServerInstanceLocatorSettings) factory.getBean("serverInstanceLocatorSettings");
-            new ServerInstanceLocator().start(settings, BL.getExportPort());
+    private static void initServiceLocator() {
+        if (springContext.containsBean("serverInstanceLocator")) {
+            ServerInstanceLocator serverLocator = (ServerInstanceLocator) springContext.getBean("serverInstanceLocator");
+            serverLocator.start();
 
             logger.info("Server instance locator successfully started");
         }
+    }
 
-        logger.info("Server has successfully started");
-
-        synchronized (serviceMonitor) {
-            while (!stopped) {
-                try {
-                    serviceMonitor.wait();
-                } catch (InterruptedException e) {
-                }
-            }
+    private static void initLifecycleManager() {
+        if (springContext.containsBean("lifecycleManager")) {
+            lifecycle = (LifecycleManager) springContext.getBean("lifecycleManager");
+        } else {
+            lifecycle = new LifecycleManager();
         }
-
-        logger.info("Server has successfully stopped");
     }
 
     public static void stop() throws RemoteException, NotBoundException {
+        lifecycle.fireStopping();
 
         stopped = true;
 
         logger.info("Server is stopping...");
 
         registry.unbind("BusinessLogicsLoader");
-        registry.unbind("AppManager");
+        registry.unbind("AppTerminal");
 
         registry = null;
         BL = null;
 
         //убиваем поток RMI, а то зависает
+        killRmiThread();
+
+        synchronized (serviceMonitor) {
+            serviceMonitor.notify();
+        }
+    }
+
+    private static void killRmiThread() {
         for (Thread t : Thread.getAllStackTraces().keySet()) {
             if ("RMI Reaper".equals(t.getName())) {
                 t.interrupt();
             }
-        }
-
-        synchronized (serviceMonitor) {
-            serviceMonitor.notify();
         }
     }
 

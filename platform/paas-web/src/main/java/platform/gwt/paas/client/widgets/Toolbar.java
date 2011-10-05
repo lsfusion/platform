@@ -4,6 +4,7 @@ import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.shared.EventBus;
 import com.google.inject.Inject;
 import com.smartgwt.client.util.SC;
+import com.smartgwt.client.widgets.ImgButton;
 import com.smartgwt.client.widgets.events.ClickEvent;
 import com.smartgwt.client.widgets.events.ClickHandler;
 import com.smartgwt.client.widgets.toolbar.ToolStrip;
@@ -61,5 +62,20 @@ public class Toolbar extends ToolStrip {
                 placeManager.revealDefaultPlace();
             }
         });
+    }
+
+    public ImgButton addLoadingIndicator() {
+        ImgButton loadingButton = new ImgButton();
+
+        loadingButton.setWidth(16);
+        loadingButton.setHeight(16);
+        loadingButton.setSrc("updating.gif");
+        loadingButton.setShowRollOver(false);
+        loadingButton.setShowDownIcon(false);
+        loadingButton.setShowDown(false);
+        addMember(loadingButton);
+        addSpacer(10);
+
+        return loadingButton;
     }
 }

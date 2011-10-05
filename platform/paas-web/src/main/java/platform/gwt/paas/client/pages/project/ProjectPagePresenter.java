@@ -79,7 +79,7 @@ public class ProjectPagePresenter extends Presenter<ProjectPagePresenter.MyView,
     public void saveAllButtonClicked() {
         dispatcher.execute(getView().getModulesPane().prepareSaveModuleAction(), new ErrorHandlingCallback<VoidResult>() {
             @Override
-            public void onSuccess(VoidResult result) {
+            public void success(VoidResult result) {
                 SC.say("Saved successfully!");
             }
         });
@@ -122,8 +122,8 @@ public class ProjectPagePresenter extends Presenter<ProjectPagePresenter.MyView,
     private void updateModuleList() {
         dispatcher.execute(new GetModulesAction(currentProject), new GetModulesCallback() {
             @Override
-            public void onFailure(Throwable caught) {
-                super.onFailure(caught);
+            public void failure(Throwable caught) {
+                super.failure(caught);
                 placeManager.revealProjectListPage();
             }
         });
@@ -136,7 +136,7 @@ public class ProjectPagePresenter extends Presenter<ProjectPagePresenter.MyView,
 
     private class GetModulesCallback extends ErrorHandlingCallback<GetModulesResult> {
         @Override
-        public void onSuccess(GetModulesResult result) {
+        public void success(GetModulesResult result) {
             getView().setModules(result.modules);
         }
     }

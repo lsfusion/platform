@@ -1,48 +1,36 @@
 package paas;
 
 import net.sf.jasperreports.engine.JRException;
+import org.aspectj.lang.annotation.Aspect;
+import org.aspectj.lang.annotation.Before;
 import paas.api.gwt.shared.dto.ConfigurationDTO;
 import paas.api.gwt.shared.dto.ModuleDTO;
 import paas.api.gwt.shared.dto.ProjectDTO;
 import paas.api.remote.PaasRemoteInterface;
+import paas.manager.server.AppManager;
 import platform.base.OrderedMap;
+import platform.base.SoftHashMap;
 import platform.interop.Compare;
-import platform.interop.action.MessageClientAction;
-import platform.server.auth.User;
-import platform.server.classes.ValueClass;
+import platform.server.Context;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.query.Query;
 import platform.server.data.sql.DataAdapter;
-import platform.server.form.entity.PropertyDrawEntity;
-import platform.server.form.instance.FormInstance;
-import platform.server.form.view.DefaultFormView;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.DataObject;
-import platform.server.logics.linear.LP;
-import platform.server.logics.property.ActionProperty;
-import platform.server.logics.property.ClassPropertyInterface;
-import platform.server.logics.property.ExecutionContext;
 import platform.server.session.DataSession;
 
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.PrintStream;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 
 import static java.util.Arrays.asList;
-import static platform.base.BaseUtils.isRedundantString;
-import static platform.base.BaseUtils.nvl;
 
 public class PaasBusinessLogics extends BusinessLogics<PaasBusinessLogics> implements PaasRemoteInterface {
-    private PaasLogicsModule paasLM;
+    public PaasLogicsModule paasLM;
 
-    private BLLogicsManager logicsManager;
+    public AppManager appManager;
 
     public PaasBusinessLogics(DataAdapter iAdapter, int port) throws IOException, ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException, JRException {
         super(iAdapter, port);
@@ -60,9 +48,12 @@ public class PaasBusinessLogics extends BusinessLogics<PaasBusinessLogics> imple
     protected void initModules() throws ClassNotFoundException, IOException, SQLException, InstantiationException, IllegalAccessException, JRException {
         super.initModules();
 
-        logicsManager = new BLLogicsManager();
-        refreshConfigurationStatuses(null);
         cleanDatabases();
+    }
+
+    public void setAppManager(AppManager appManager) {
+        this.appManager = appManager;
+        refreshConfigurationStatuses(null);
     }
 
     private void cleanDatabases() {
@@ -114,14 +105,14 @@ public class PaasBusinessLogics extends BusinessLogics<PaasBusinessLogics> imple
 
             session.apply(this);
 
-            return (Integer)dbOjb.object;
+            return (Integer) dbOjb.object;
         } finally {
             session.close();
         }
     }
 
     protected void initAuthentication() throws ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException {
-        User admin = addUser("admin", "fusion");
+        addUser("admin", "fusion");
     }
 
     @Override
@@ -534,17 +525,21 @@ public class PaasBusinessLogics extends BusinessLogics<PaasBusinessLogics> imple
 
     @Override
     public ConfigurationDTO[] updateConfiguration(String userLogin, ConfigurationDTO configuration) throws RemoteException {
+        String currentStatus = getConfigurationStatus(configuration.id);
+        if ("started".equals(currentStatus)) {
+            //запрещаем изменение запущенных конфигураций
+            throw new RuntimeException("Изменение запущенных конфигураций запрещено");
+        }
+
         try {
             DataSession session = createSession();
             try {
                 DataObject confObj = new DataObject(configuration.id, paasLM.configuration);
 
-                Integer projId = (Integer) paasLM.configurationProject.read(session, session.modifier, confObj);
+                Integer projId = (Integer) paasLM.configurationProject.read(session, confObj);
                 checkProjectPermission(userLogin, projId);
 
-                paasLM.configurationPort.execute(configuration.port, session, confObj);
-//                paasLM.configurationDatabase.execute(configuration.port, session, confObj);
-                LM.name.execute(configuration.name, session, confObj);
+                updateConfiguration(session, confObj, configuration);
 
                 session.apply(this);
 
@@ -559,17 +554,25 @@ public class PaasBusinessLogics extends BusinessLogics<PaasBusinessLogics> imple
     }
 
     @Override
-    public ConfigurationDTO[] startConfiguration(String userLogin, int configurationId) throws RemoteException {
+    public ConfigurationDTO[] startConfiguration(String userLogin, ConfigurationDTO configuration) throws RemoteException {
         try {
             DataSession session = createSession();
 
             try {
-                DataObject confObj = new DataObject(configurationId, paasLM.configuration);
+                DataObject confObj = new DataObject(configuration.id, paasLM.configuration);
 
-                Integer projId = (Integer) paasLM.configurationProject.read(session, session.modifier, confObj);
+                Integer projId = (Integer) paasLM.configurationProject.read(session, confObj);
                 checkProjectPermission(userLogin, projId);
 
+                //сначала записываем новые значения
+                updateConfiguration(session, confObj, configuration);
+
                 paasLM.configurationStart.execute(true, session, confObj);
+
+                String errorMsg = waitForStarted(configuration.id);
+                if (errorMsg != null) {
+                    throw new RuntimeException("Error starting configuration: " + errorMsg);
+                }
 
                 session.apply(this);
 
@@ -583,6 +586,82 @@ public class PaasBusinessLogics extends BusinessLogics<PaasBusinessLogics> imple
         }
     }
 
+    private void updateConfiguration(DataSession session, DataObject confObj, ConfigurationDTO configuration) throws SQLException {
+        paasLM.configurationPort.execute(configuration.port, session, confObj);
+        LM.name.execute(configuration.name, session, confObj);
+    }
+
+    private String waitForStarted(int configurationId) throws RemoteException {
+        return waitForStatus(configurationId, "started");
+    }
+
+    private String waitForStopped(int configurationId) throws RemoteException {
+        return waitForStatus(configurationId, "stopped");
+    }
+
+    private final SoftHashMap<Integer, String> configurationLaunchErrors = new SoftHashMap<Integer, String>();
+
+    public void pushConfigurationLaunchError(int configurationId, String error) {
+        synchronized (configurationLaunchErrors) {
+            configurationLaunchErrors.put(configurationId, error);
+        }
+    }
+
+    public String popConfigurationLaunchError(int configurationId) {
+        synchronized (configurationLaunchErrors) {
+            return configurationLaunchErrors.remove(configurationId);
+        }
+    }
+
+    private String waitForStatus(int configurationId, String status) throws RemoteException {
+        //ждём 3 минуты
+        int maxAttempts = 3 * 60;
+        int attempts = 0;
+        while (true) {
+            String error = popConfigurationLaunchError(configurationId);
+            if (error != null) {
+                return error;
+            }
+
+            if (status.equals(getConfigurationStatus(configurationId))) {
+                return null;
+            }
+            attempts++;
+
+            if (attempts > maxAttempts) {
+                return "Timeout";
+            }
+
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                logger.debug("Thread interrupted: ", e);
+            }
+        }
+    }
+
+    private String getConfigurationStatus(int configurationId) {
+        try {
+            DataSession session = createSession();
+
+            try {
+                DataObject confObj = new DataObject(configurationId, paasLM.configuration);
+
+                Integer statusId = (Integer) paasLM.configurationStatus.read(session, confObj);
+                if (statusId == null) {
+                    return null;
+                }
+
+                return paasLM.status.getSID(statusId);
+            } finally {
+                session.close();
+            }
+        } catch (Exception e) {
+            logger.warn("Ошибка при чтении статуса: ", e);
+        }
+        return null;
+    }
+
     @Override
     public ConfigurationDTO[] stopConfiguration(String userLogin, int configurationId) throws RemoteException {
         try {
@@ -591,10 +670,15 @@ public class PaasBusinessLogics extends BusinessLogics<PaasBusinessLogics> imple
             try {
                 DataObject confObj = new DataObject(configurationId, paasLM.configuration);
 
-                Integer projId = (Integer) paasLM.configurationProject.read(session, session.modifier, confObj);
+                Integer projId = (Integer) paasLM.configurationProject.read(session, confObj);
                 checkProjectPermission(userLogin, projId);
 
                 paasLM.configurationStop.execute(true, session, confObj);
+
+                String errorMsg = waitForStopped(configurationId);
+                if (errorMsg != null) {
+                    throw new RuntimeException("Error stopping configuration: " + errorMsg);
+                }
 
                 session.apply(this);
 
@@ -616,7 +700,7 @@ public class PaasBusinessLogics extends BusinessLogics<PaasBusinessLogics> imple
             try {
                 DataObject confObj = new DataObject(configurationId, paasLM.configuration);
 
-                Integer projId = (Integer) paasLM.configurationProject.read(session, session.modifier, confObj);
+                Integer projId = (Integer) paasLM.configurationProject.read(session, confObj);
                 checkProjectPermission(userLogin, projId);
 
                 Integer port = (Integer) paasLM.configurationPort.read(session, confObj);
@@ -639,19 +723,7 @@ public class PaasBusinessLogics extends BusinessLogics<PaasBusinessLogics> imple
         paasLM.moduleInProject.execute(true, session, projectId, moduleId);
     }
 
-    public LP addRefreshStatusProperty() {
-        return paasLM.addProperty(LM.baseGroup, new LP<ClassPropertyInterface>(new RefreshStatusActionProperty(LM.genSID(), "")));
-    }
-
-    public LP addStartConfigurationProperty() {
-        return paasLM.addProperty(LM.baseGroup, new LP<ClassPropertyInterface>(new StartConfigurationActionProperty(LM.genSID(), "")));
-    }
-
-    public LP addStopConfigurationProperty() {
-        return paasLM.addProperty(LM.baseGroup, new LP<ClassPropertyInterface>(new StopConfigurationActionProperty(LM.genSID(), "")));
-    }
-
-    private void refreshConfigurationStatuses(DataObject projId) {
+    public void refreshConfigurationStatuses(DataObject projId) {
         logger.info("Обновление статусов конфигураций...");
         try {
             DataSession session = createSession();
@@ -675,7 +747,7 @@ public class PaasBusinessLogics extends BusinessLogics<PaasBusinessLogics> imple
                     Integer port = (Integer) entry.getValue().get("port");
 
                     if (port != null) {
-                        changeConfigurationStatus(session, configId, logicsManager.getStatus(port));
+                        changeConfigurationStatus(session, configId, appManager.getStatus(port));
                     }
                 }
 
@@ -689,171 +761,41 @@ public class PaasBusinessLogics extends BusinessLogics<PaasBusinessLogics> imple
         }
     }
 
-    public String executeScriptedBL(DataSession session, DataObject confId) throws IOException, InterruptedException, SQLException {
-        if (session == null) {
-            session = createSession();
-        }
-
-        Integer port = (Integer) paasLM.configurationPort.read(session, session.modifier, confId);
-        if (port == null) {
-            return "Порт не задан.";
-        } else if (!logicsManager.isPortAvailable(port)) {
-            return "Порт " + port + " занят.";
-        }
-
-        String dbName = (String) paasLM.configurationDatabaseName.read(session, session.modifier, confId);
-        if (dbName == null) {
-            return "Имя базы данных не задано.";
-        }
-
-        dbName = dbName.trim();
-        if (dbName.equals(adapter.dataBase.trim())) {
-            return "Некорректное имя базы данных";
-        }
-
-        Integer projId = (Integer) paasLM.configurationProject.read(session, session.modifier, confId);
-
-        Map<String, KeyExpr> keys = KeyExpr.getMapKeys(asList("moduleKey"));
-        Expr moduleExpr = keys.get("moduleKey");
-        Expr projExpr = new DataObject(projId, paasLM.project).getExpr();
-
-        Query<String, String> q = new Query<String, String>(keys);
-        q.and(
-                paasLM.moduleInProject.getExpr(session.modifier, projExpr, moduleExpr).getWhere()
-        );
-        q.properties.put("moduleOrder", paasLM.moduleOrder.getExpr(session.modifier, projExpr, moduleExpr));
-        q.properties.put("moduleName", LM.name.getExpr(session.modifier, moduleExpr));
-        q.properties.put("moduleSource", paasLM.moduleSource.getExpr(session.modifier, moduleExpr));
-
-        OrderedMap<String, Boolean> orders = new OrderedMap<String, Boolean>();
-        orders.put("moduleOrder", false);
-
-        OrderedMap<Map<String, Object>, Map<String, Object>> values = q.execute(session.sql, orders);
-
-        List<String> moduleNames = new ArrayList<String>();
-        List<String> moduleFilePaths = new ArrayList<String>();
-        for (Map.Entry<Map<String, Object>, Map<String, Object>> entry : values.entrySet()) {
-            String moduleName = (String) entry.getValue().get("moduleName");
-            String moduleSource = nvl((String) entry.getValue().get("moduleSource"), "");
-
-            if (isRedundantString(moduleName)) {
-                return "Имя модуля не задано";
-            }
-
-            moduleNames.add(moduleName.trim());
-            moduleFilePaths.add(createTemporaryScriptFile(moduleSource));
-        }
-
-        logicsManager.executeScriptedBL(port, dbName, moduleNames, moduleFilePaths);
-
-        return null;
+    public void changeConfigurationStatus(DataObject confId, String statusStr) {
+        changeConfigurationStatus(null, confId, statusStr);
     }
 
-    private String createTemporaryScriptFile(String moduleSource) throws IOException {
-        File moduleFile = File.createTempFile("paas", ".lsf");
-
-        PrintStream ps = new PrintStream(new FileOutputStream(moduleFile), false, "UTF-8");
-        ps.print(moduleSource);
-        ps.close();
-
-        return moduleFile.getAbsolutePath();
+    public void changeConfigurationStatus(Integer confId, String statusStr) {
+        changeConfigurationStatus(null, confId, statusStr);
     }
 
-    public class RefreshStatusActionProperty extends ActionProperty {
-
-        private RefreshStatusActionProperty(String sID, String caption) {
-            super(sID, caption, new ValueClass[]{paasLM.project});
-        }
-
-        @Override
-        public void execute(ExecutionContext context) throws SQLException {
-            refreshConfigurationStatuses(context.getSingleKeyValue());
-            FormInstance<?> form = context.getFormInstance();
-            if (form != null) {
-                form.refreshData();
-            }
-        }
-
-        @Override
-        public void proceedDefaultDesign(DefaultFormView view, PropertyDrawEntity<ClassPropertyInterface> entity) {
-            super.proceedDefaultDesign(view, entity);
-            view.get(entity).design.setIconPath("refresh.png");
-        }
-    }
-
-    public class StartConfigurationActionProperty extends ActionProperty {
-
-        private StartConfigurationActionProperty(String sID, String caption) {
-            super(sID, caption, new ValueClass[]{paasLM.configuration});
-        }
-
-        @Override
-        public void execute(ExecutionContext context) throws SQLException {
-            DataObject confId = context.getSingleKeyValue();
-
-            try {
-                String errorMsg = executeScriptedBL(context.getSession(), confId);
-                if (errorMsg != null) {
-                    context.getActions().add(new MessageClientAction(errorMsg, "Ошибка!"));
-                }
-            } catch (SQLException sqle) {
-                throw sqle;
-            } catch (Exception e) {
-                logger.warn("Ошибка при попытке запустить приложение: ", e);
-            }
-
-            changeConfigurationStatus(context.getSession(), confId, "started");
-        }
-
-        @Override
-        public void proceedDefaultDesign(DefaultFormView view, PropertyDrawEntity<ClassPropertyInterface> entity) {
-            super.proceedDefaultDesign(view, entity);
-            view.get(entity).design.setIconPath("start.png");
-        }
-    }
-
-    public class StopConfigurationActionProperty extends ActionProperty {
-        private StopConfigurationActionProperty(String sID, String caption) {
-            super(sID, caption, new ValueClass[]{paasLM.configuration});
-        }
-
-        @Override
-        public void execute(ExecutionContext context) throws SQLException {
-            DataObject confId = context.getSingleKeyValue();
-
-            Integer port = (Integer) paasLM.configurationPort.read(context.getSession(), context.getSession().modifier, confId);
-            if (port == null) {
-                context.getActions().add(new MessageClientAction("Порт не задан.", "Ошибка!"));
-                return;
-            }
-
-            logicsManager.stopApplication(port);
-
-            changeConfigurationStatus(context.getSession(), confId, "stopped");
-        }
-
-        @Override
-        public void proceedDefaultDesign(DefaultFormView view, PropertyDrawEntity<ClassPropertyInterface> entity) {
-            super.proceedDefaultDesign(view, entity);
-            view.get(entity).design.setIconPath("stop.png");
-        }
-    }
-
-    private void changeConfigurationStatus(DataSession session, Integer confId, String statusStr) throws SQLException {
+    public void changeConfigurationStatus(DataSession session, Integer confId, String statusStr) {
         changeConfigurationStatus(session, new DataObject(confId, paasLM.configuration), statusStr);
     }
 
-    private void changeConfigurationStatus(DataSession session, DataObject confId, String statusStr) throws SQLException {
-        boolean apply = false;
-        if (session == null) {
-            apply = true;
-            session = createSession();
+    public void changeConfigurationStatus(DataSession session, DataObject confId, String statusStr) {
+        try {
+            boolean apply = false;
+            if (session == null) {
+                apply = true;
+                session = createSession();
+            }
+
+            paasLM.configurationStatus.execute(paasLM.status.getID(statusStr), session, confId);
+
+            if (apply) {
+                session.apply(this);
+            }
+        } catch (SQLException e) {
+            logger.error("Ошибка при изменении статуса конфигурации: ", e);
         }
+    }
 
-        paasLM.configurationStatus.execute(paasLM.status.getID(statusStr), session, confId);
-
-        if (apply) {
-            session.apply(this);
+    @Aspect
+    private static class RemoteLogicsContextHoldingAspect {
+        @Before("execution(* paas.api.remote.PaasRemoteInterface.*(..)) && target(remoteLogics)")
+        public void beforeCall(BusinessLogics remoteLogics) {
+            Context.context.set(remoteLogics);
         }
     }
 }

@@ -99,7 +99,7 @@ public class AddNewModuleDialog extends Window {
     private void fillValues() {
         dispatcher.execute(new GetAvailableModulesAction(currentProject), new ErrorHandlingCallback<GetModulesResult>() {
             @Override
-            public void onSuccess(GetModulesResult result) {
+            public void success(GetModulesResult result) {
                 if (result.modules.length == 0) {
                     btnAdd.disable();
                 } else {

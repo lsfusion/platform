@@ -47,8 +47,8 @@ public class SoftHashMap<K,V> {
     }
 
     public SoftHashMap() {
-        this.loadFactor = DEFAULT_LOAD_FACTOR;
-        threshold = (int)(DEFAULT_INITIAL_CAPACITY);
+        loadFactor = DEFAULT_LOAD_FACTOR;
+        threshold = DEFAULT_INITIAL_CAPACITY;
         table = new Entry[DEFAULT_INITIAL_CAPACITY];
     }
 
@@ -114,8 +114,32 @@ public class SoftHashMap<K,V> {
         return null;
     }
 
-    public V put(K key, V value) {
-        K k = (K) key;
+    public V remove(Object key) {
+        int h = hash(key.hashCode());
+        Entry[] tab = getTable();
+        int i = indexFor(h, tab.length);
+        Entry<K,V> prev = tab[i];
+        Entry<K,V> e = prev;
+
+        while (e != null) {
+            Entry<K,V> next = e.next;
+            if (h == e.hash && key.equals(e.get())) {
+                modCount++;
+                size--;
+                if (prev == e)
+                    tab[i] = next;
+                else
+                    prev.next = next;
+                return e.value;
+            }
+            prev = e;
+            e = next;
+        }
+
+        return null;
+    }
+
+    public V put(K k, V value) {
         int h = hash(k.hashCode());
         Entry[] tab = getTable();
         int i = indexFor(h, tab.length);

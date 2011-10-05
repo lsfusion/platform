@@ -1,6 +1,9 @@
 package paas;
 
 import net.sf.jasperreports.engine.JRException;
+import paas.properties.RefreshStatusActionProperty;
+import paas.properties.StartConfigurationActionProperty;
+import paas.properties.StopConfigurationActionProperty;
 import platform.interop.ClassViewType;
 import platform.interop.Compare;
 import platform.server.classes.*;
@@ -15,6 +18,7 @@ import platform.server.form.view.PropertyDrawView;
 import platform.server.logics.BaseLogicsModule;
 import platform.server.logics.LogicsModule;
 import platform.server.logics.linear.LP;
+import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.group.AbstractGroup;
 
 import java.io.FileNotFoundException;
@@ -116,19 +120,31 @@ public class PaasLogicsModule extends LogicsModule {
         configurationStatus = addDProp("configurationStatus", "Статус", status, configuration);
         configurationStatusName = addJProp(baseGroup, "configurationStatus", "Статус", baseLM.name, configurationStatus, 1);
 
-        refreshStatus = addJProp("Обновить", baseLM.and1, paas.addRefreshStatusProperty(), 1, baseLM.vtrue);
+        refreshStatus = addJProp("Обновить", baseLM.and1, addRefreshStatusProperty(), 1, baseLM.vtrue);
 
         configurationStart = addJProp("Запустить", baseLM.and1,
-                                      paas.addStartConfigurationProperty(), 1,
+                                      addStartConfigurationProperty(), 1,
                                       addJProp(baseLM.diff2, configurationStatus, 1, addCProp(status, "started")), 1);
         configurationStop = addJProp("Остановить", baseLM.and1,
-                                      paas.addStopConfigurationProperty(), 1,
+                                      addStopConfigurationProperty(), 1,
                                       addJProp(baseLM.diff2, configurationStatus, 1, addCProp(status, "stopped")), 1);
         conditionalDelete = addJProp(baseLM.delete.property.caption, baseLM.and1,
                                       baseLM.delete, 1,
                                       addJProp(baseLM.diff2, configurationStatus, 1, addCProp(status, "started")), 1);
 
         databaseConfiguration = addAGProp("databaseConfiguration", "Конфигурация", configurationDatabase);
+    }
+
+    public LP addRefreshStatusProperty() {
+        return addProperty(baseLM.baseGroup, new LP<ClassPropertyInterface>(new RefreshStatusActionProperty(paas, baseLM.genSID(), "")));
+    }
+
+    public LP addStartConfigurationProperty() {
+        return addProperty(baseLM.baseGroup, new LP<ClassPropertyInterface>(new StartConfigurationActionProperty(paas, baseLM.genSID(), "")));
+    }
+
+    public LP addStopConfigurationProperty() {
+        return addProperty(baseLM.baseGroup, new LP<ClassPropertyInterface>(new StopConfigurationActionProperty(paas, baseLM.genSID(), "")));
     }
 
     @Override

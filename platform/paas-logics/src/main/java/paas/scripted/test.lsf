@@ -1,0 +1,13 @@
+IMPORT BaseLogicsModule;
+
+CLASS employee 'Сотрудник' : named;
+CLASS document 'Документ' : named;
+
+documentEmployee = DATA employee (document) IN idGroup;
+documentEmployeeName(document) = name(documentEmployee(document)) IN baseGroup;
+
+documentCount = DATA INTEGER (document) IN baseGroup;
+
+FORM documents 'Документы сотрудников'
+OBJECTS employee FIXED PANEL, document
+PROPERTIES name(employee), name(document), documentCount(document), documentEmployeeName(document);

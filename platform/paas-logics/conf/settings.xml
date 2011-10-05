@@ -17,4 +17,15 @@
         <constructor-arg type="int" value="7652"/>
     </bean>
 
+    <bean id="appManager" class="paas.manager.server.AppManager">
+        <constructor-arg value="7667"/>
+    </bean>
+
+    <bean id="lifecycleManager" class="platform.server.lifecycle.LifecycleManager">
+        <constructor-arg>
+            <bean class="paas.manager.server.AppManagerLifecycleListener">
+                <constructor-arg ref="appManager"/>
+            </bean>
+        </constructor-arg>
+    </bean>
 </beans>
