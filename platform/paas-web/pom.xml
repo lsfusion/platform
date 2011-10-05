@@ -9,7 +9,7 @@
     </parent>
 
     <artifactId>paas-web</artifactId>
-    <packaging>war</packaging>
+    <packaging>jar</packaging>
     <name>Paas Web</name>
 
     <properties>

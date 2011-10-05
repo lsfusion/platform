@@ -11,7 +11,7 @@
     </parent>
 
     <artifactId>skolkovo-gwt</artifactId>
-    <packaging>war</packaging>
+    <packaging>jar</packaging>
     <name>Skolkovo GWT</name>
 
     <dependencies>
