@@ -10,6 +10,7 @@ import platform.base.BaseUtils;
 import platform.base.Result;
 import platform.base.TwinImmutableInterface;
 import platform.server.Message;
+import platform.server.ParamMessage;
 import platform.server.caches.*;
 import platform.server.caches.hash.HashContext;
 import platform.server.caches.hash.HashMapValues;
@@ -505,7 +506,7 @@ public class MapCacheAspect {
     }
 
     @Message("message.core.property.data.changes")
-    private <K extends PropertyInterface, U extends Changes<U>> DataChangesResult<K> calculateDataChanges(Property<K> property, PropertyChange<K> change, WhereBuilder changedWheres, Modifier<U> modifier, ProceedingJoinPoint thisJoinPoint) throws Throwable {
+    private <K extends PropertyInterface, U extends Changes<U>> DataChangesResult<K> calculateDataChanges(@ParamMessage Property<K> property, PropertyChange<K> change, WhereBuilder changedWheres, Modifier<U> modifier, ProceedingJoinPoint thisJoinPoint) throws Throwable {
         WhereBuilder cacheWheres = Property.cascadeWhere(changedWheres);
         MapDataChanges<K> changes = (MapDataChanges<K>) thisJoinPoint.proceed(new Object[]{property,property,change,cacheWheres,modifier});
         if(Settings.instance.packOnCacheComplexity > 0 && changes.getComplexity() > Settings.instance.packOnCacheComplexity)
@@ -645,7 +646,7 @@ public class MapCacheAspect {
     }
 
     @Message("message.core.property.get.expr")
-    private <K extends PropertyInterface, U extends Changes<U>> ExprResult calculateExpr(Property<K> property, Map<K, Expr> joinExprs, Modifier<U> modifier, WhereBuilder changedWheres, ProceedingJoinPoint thisJoinPoint) throws Throwable {
+    private <K extends PropertyInterface, U extends Changes<U>> ExprResult calculateExpr(@ParamMessage Property<K> property, Map<K, Expr> joinExprs, Modifier<U> modifier, WhereBuilder changedWheres, ProceedingJoinPoint thisJoinPoint) throws Throwable {
         WhereBuilder cacheWheres = Property.cascadeWhere(changedWheres);
         Expr expr = (Expr) thisJoinPoint.proceed(new Object[]{property,property,joinExprs,modifier,cacheWheres});
         if(Settings.instance.packOnCacheComplexity > 0 && expr.getComplexity() > Settings.instance.packOnCacheComplexity)

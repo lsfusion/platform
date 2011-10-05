@@ -6,8 +6,6 @@ import net.sf.jasperreports.engine.design.JasperDesign;
 import net.sf.jasperreports.engine.xml.JRXmlLoader;
 import net.sf.jasperreports.engine.xml.JRXmlWriter;
 import org.apache.log4j.Logger;
-import org.aspectj.lang.annotation.Aspect;
-import org.aspectj.lang.annotation.Before;
 import platform.base.BaseUtils;
 import platform.base.OrderedMap;
 import platform.interop.ClassViewType;
@@ -19,7 +17,6 @@ import platform.interop.action.ClientApply;
 import platform.interop.form.RemoteChanges;
 import platform.interop.form.RemoteDialogInterface;
 import platform.interop.form.RemoteFormInterface;
-import platform.server.Context;
 import platform.server.RemoteContextObject;
 import platform.server.classes.ConcreteCustomClass;
 import platform.server.classes.CustomClass;
@@ -47,7 +44,6 @@ import java.sql.SQLException;
 import java.util.*;
 
 import static platform.base.BaseUtils.deserializeObject;
-import static platform.server.logics.BusinessLogics.getCurrentActionMessage;
 
 // фасад для работы с клиентом
 public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> extends RemoteContextObject implements RemoteFormInterface {
@@ -289,18 +285,6 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         } else {
             return "reports/auto/" + sid + "_" + name + ".jrxml";
         }
-    }
-
-    @Aspect
-    private static class RemoteFormContextHoldingAspect {
-        @Before("execution(* platform.interop.form.RemoteFormInterface.*(..)) && target(remoteForm)")
-        public void beforeCall(RemoteForm remoteForm) {
-            Context.context.set(remoteForm);
-        }
-    }
-
-    public String getRemoteActionMessage() {
-        return getCurrentActionMessage();
     }
 
     public byte[] getRichDesignByteArray() {

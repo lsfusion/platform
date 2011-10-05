@@ -10,15 +10,19 @@ import org.jdom.input.SAXBuilder;
 import platform.base.BaseUtils;
 import platform.base.IOUtils;
 import platform.base.OrderedMap;
+import platform.interop.Compare;
 import platform.interop.action.ClientAction;
 import platform.interop.action.MessageClientAction;
+import platform.server.Context;
+import platform.server.Message;
+import platform.server.ParamMessage;
+import platform.server.RemoteContextObject;
 import platform.server.classes.ValueClass;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.query.Query;
 import platform.server.form.instance.PropertyObjectInterfaceInstance;
 import platform.server.form.instance.remote.RemoteForm;
 import platform.server.integration.*;
-import platform.server.logics.BusinessLogics;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
 import platform.server.logics.linear.LP;
@@ -430,9 +434,9 @@ public class ImportProjectsActionProperty extends ActionProperty {
                     URLConnection connection = url.openConnection();
                     connection.setDoOutput(false);
                     connection.setDoInput(true);
-                    BusinessLogics.pushCurrentActionMessage("ИД проекта - " + projectId);
+                    RemoteContextObject.pushCurrentActionMessage("ИД проекта - " + projectId);
                     importProject(pInfo, connection.getInputStream(), projectId, projects.get(projectId), context);
-                    BusinessLogics.popCurrentActionMessage();
+                    RemoteContextObject.popCurrentActionMessage();
                     System.gc();
                 }
             }

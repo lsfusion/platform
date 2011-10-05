@@ -5,7 +5,6 @@ import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.reflect.MethodSignature;
 import platform.base.BaseUtils;
-import platform.server.logics.BusinessLogics;
 import platform.server.logics.ServerResourceBundle;
 
 import java.lang.annotation.Annotation;
@@ -42,9 +41,13 @@ public class MessageAspect {
                 String message = ServerResourceBundle.getString(((Message) annotation).value());
                 if(stringParams.size() > 0)
                     message = message + " : " + BaseUtils.toString(stringParams, ",");
-                BusinessLogics.pushCurrentActionMessage(message);
-                Object result = thisJoinPoint.proceed();
-                BusinessLogics.popCurrentActionMessage();
+                Object result = null;
+                RemoteContextObject.pushCurrentActionMessage(message);
+                try {
+                    result = thisJoinPoint.proceed();
+                } finally {
+                    RemoteContextObject.popCurrentActionMessage();
+                }
                 return result;
             }
         throw new RuntimeException("wrong aspect");

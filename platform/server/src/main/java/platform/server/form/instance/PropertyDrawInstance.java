@@ -129,6 +129,11 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
         public List<ObjectInstance> getKeysObjectsList(Set<PropertyReaderInstance> panelProperties) {
             return PropertyDrawInstance.this.getKeysObjectsList();
         }
+
+        @Override
+        public String toString() {
+            return ServerResourceBundle.getString("logics.property.caption") + "(" + PropertyDrawInstance.this.toString() + ")";
+        }
     }
 
     public class HighlightReaderInstance implements PropertyReaderInstance {
@@ -154,7 +159,7 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
 
         @Override
         public String toString() {
-            return ServerResourceBundle.getString("logics.property.caption") + "(" + PropertyDrawInstance.this.toString() + ")";
+            return ServerResourceBundle.getString("logics.highlight") + "(" + PropertyDrawInstance.this.toString() + ")";
         }
     }
 

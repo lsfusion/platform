@@ -2,8 +2,6 @@ package platform.server.logics;
 
 import net.sf.jasperreports.engine.JRException;
 import org.apache.log4j.Logger;
-import org.aspectj.lang.annotation.Aspect;
-import org.aspectj.lang.annotation.Before;
 import platform.base.*;
 import platform.interop.Compare;
 import platform.interop.RemoteLogicsInterface;
@@ -112,22 +110,6 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
     public SQLSyntax getAdapter() {
         return adapter;
-    }
-
-    public static String getCurrentActionMessage() {
-        return Context.context.get().getActionMessage();
-    }
-
-    public static void setCurrentActionMessage(String message) {
-        Context.context.get().setActionMessage(message);
-    }
-
-    public static void pushCurrentActionMessage(String segment) {
-        Context.context.get().pushActionMessage(segment);
-    }
-
-    public static String popCurrentActionMessage() {
-        return Context.context.get().popActionMessage();
     }
 
     private Boolean dialogUndecorated = true;
@@ -1482,18 +1464,6 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             return formSets.get(formSet);
         else
             return null;
-    }
-
-    @Aspect
-    private static class RemoteLogicsContextHoldingAspect {
-        @Before("execution(* platform.interop.RemoteLogicsInterface.*(..)) && target(remoteLogics)")
-        public void beforeCall(BusinessLogics remoteLogics) {
-            Context.context.set(remoteLogics);
-        }
-    }
-
-    public String getRemoteActionMessage() {
-        return getCurrentActionMessage();
     }
 
     public String getName() throws RemoteException {
