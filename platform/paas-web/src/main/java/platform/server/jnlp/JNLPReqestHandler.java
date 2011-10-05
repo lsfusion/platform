@@ -58,6 +58,7 @@ public class JNLPReqestHandler implements HttpRequestHandler {
             Properties properties = new Properties();
             properties.put("codebase.url", requestURL.substring(0, requestURL.lastIndexOf("/")));
             properties.put("jnlp.url", requestURL.append("?").append(request.getQueryString()).toString());
+            properties.put("scripted.name", configuration.name);
             properties.put("scripted.host", getLogicsHost());
             properties.put("scripted.port", configuration.port.toString());
 

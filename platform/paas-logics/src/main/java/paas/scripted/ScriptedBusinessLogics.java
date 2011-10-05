@@ -8,7 +8,7 @@ import platform.server.logics.ScriptingLogicsModule;
 
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class ScriptedBusinessLogics extends BusinessLogics<ScriptedBusinessLogics> {
@@ -35,20 +35,14 @@ public class ScriptedBusinessLogics extends BusinessLogics<ScriptedBusinessLogic
         User admin = addUser("admin", "fusion");
     }
 
-    public static ScriptedBusinessLogics createInstance(DataAdapter adapter, int port, String modules) throws ClassNotFoundException, IOException, JRException, SQLException, InstantiationException, IllegalAccessException {
+    public static ScriptedBusinessLogics createInstance(DataAdapter adapter, int port, String names, String paths) throws ClassNotFoundException, IOException, JRException, SQLException, InstantiationException, IllegalAccessException {
         ScriptedBusinessLogics.exportPort = port;
 
-        moduleNames = new ArrayList<String>();
-        scriptFilePaths = new ArrayList<String>();
+        moduleNames = Arrays.asList(names.split(";"));
+        scriptFilePaths = Arrays.asList(paths.split(";"));
 
-        for (String mod : modules.split(";")) {
-            int ind = mod.indexOf(":");
-            if (ind == -1) {
-                throw new RuntimeException("Неправильный формат списка модулей.");
-            }
-
-            moduleNames.add(mod.substring(0, ind));
-            scriptFilePaths.add(mod.substring(ind + 1));
+        if (moduleNames.size() != scriptFilePaths.size()) {
+            throw new RuntimeException("Количество имён модулей не равно количеству путей к файлам модулей.");
         }
 
         return new ScriptedBusinessLogics(adapter, port);

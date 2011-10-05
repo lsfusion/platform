@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <jnlp spec="1.5+" codebase="${codebase.url}">
     <information>
-        <title>Fusion Client</title>
+        <title>${scripted.name}</title>
         <vendor>Nomosoft Ltd.</vendor>
         <description>Fusion</description>
         <icon href="default.png" kind="default"/>

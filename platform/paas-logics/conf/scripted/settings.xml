@@ -23,7 +23,8 @@
     <bean id="businessLogics" class="paas.scripted.ScriptedBusinessLogics" factory-method="createInstance">
         <constructor-arg ref="dataAdapter" />
         <constructor-arg value="#{systemProperties['paas.scripted.port']}" />
-        <constructor-arg value="#{systemProperties['paas.scripted.modules']}"/>
+        <constructor-arg value="#{systemProperties['paas.scripted.modules.names']}"/>
+        <constructor-arg value="#{systemProperties['paas.scripted.modules.paths']}"/>
     </bean>
 
     <bean id="lifecycleManager" class="platform.server.lifecycle.LifecycleManager">

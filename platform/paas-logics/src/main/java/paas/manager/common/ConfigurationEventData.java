@@ -10,4 +10,9 @@ public class ConfigurationEventData implements Serializable {
         this.configurationId = configurationId;
         this.data = data;
     }
+
+    @Override
+    public String toString() {
+        return "{configurationId=" + configurationId + ", data=" + data + '}';
+    }
 }

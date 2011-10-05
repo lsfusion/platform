@@ -135,6 +135,8 @@ public final class AppManager {
     }
 
     public void executeScriptedBL(int confId, int port, String dbName, List<String> moduleNames, List<String> scriptFilePaths, long processId) throws IOException, InterruptedException {
+        assert moduleNames.size() == scriptFilePaths.size();
+
         CommandLine commandLine = new CommandLine(javaExe);
         commandLine.addArgument("-Dlsf.settings.path=conf/scripted/settings.xml");
         commandLine.addArgument("-Dpaas.manager.conf.id=" + confId);
@@ -143,7 +145,8 @@ public final class AppManager {
         commandLine.addArgument("-Dpaas.manager.process.id=" + processId);
         commandLine.addArgument("-Dpaas.scripted.port=" + port);
         commandLine.addArgument("-Dpaas.scripted.db.name=" + dbName);
-        commandLine.addArgument("-Dpaas.scripted.modules=" + toParameters(moduleNames, scriptFilePaths));
+        commandLine.addArgument("-Dpaas.scripted.modules.names=" + toParameters(moduleNames), false);
+        commandLine.addArgument("-Dpaas.scripted.modules.paths=" + toParameters(scriptFilePaths), false);
         String rmiServerHostname = System.getProperty("java.rmi.server.hostname");
         if (rmiServerHostname != null) {
             commandLine.addArgument("-Djava.rmi.server.hostname=" + rmiServerHostname);
@@ -152,23 +155,42 @@ public final class AppManager {
         commandLine.addArgument("-cp");
         commandLine.addArgument(System.getProperty("java.class.path"));
         commandLine.addArgument(ScriptedBusinessLogics.class.getName());
+        commandLine.addArguments("", true);
 
         Executor executor = new DefaultExecutor();
         executor.setStreamHandler(new PumpStreamHandler(new NullOutpuStream(), new NullOutpuStream()));
 //        executor.setStreamHandler(new PumpStreamHandler());
         executor.setExitValue(1);
 
-        executor.execute(commandLine, new DefaultExecuteResultHandler());
+        executor.execute(commandLine, new ManagedLogicsExecutionHandler(confId));
     }
 
-    private String toParameters(List<String> moduleNames, List<String> scriptFilePaths) {
-        assert moduleNames.size() == scriptFilePaths.size();
-        StringBuilder result = new StringBuilder(moduleNames.size() * 30);
-        for (int i = 0; i < moduleNames.size(); ++i) {
+    private class ManagedLogicsExecutionHandler extends DefaultExecuteResultHandler {
+        private final int configurationId;
+
+        public ManagedLogicsExecutionHandler(int configurationId) {
+            this.configurationId = configurationId;
+        }
+
+        @Override
+        public void onProcessFailed(ExecuteException e) {
+            logger.error("Error executing process: " + e.getMessage(), e.getCause());
+            lifecycleListener.onError(
+                    new LifecycleEvent(
+                            LifecycleEvent.ERROR,
+                            new ConfigurationEventData(configurationId, "Error while executing the process: " + e.getMessage())
+                    )
+            );
+        }
+    }
+
+    private String toParameters(List<String> strings) {
+        StringBuilder result = new StringBuilder(strings.size() * 30);
+        for (String string : strings) {
             if (result.length() != 0) {
                 result.append(";");
             }
-            result.append(moduleNames.get(i)).append(":").append(scriptFilePaths.get(i));
+            result.append(string);
         }
 
         return result.toString();
