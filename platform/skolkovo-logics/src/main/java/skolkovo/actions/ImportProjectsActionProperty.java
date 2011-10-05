@@ -10,12 +10,8 @@ import org.jdom.input.SAXBuilder;
 import platform.base.BaseUtils;
 import platform.base.IOUtils;
 import platform.base.OrderedMap;
-import platform.interop.Compare;
 import platform.interop.action.ClientAction;
 import platform.interop.action.MessageClientAction;
-import platform.server.Context;
-import platform.server.Message;
-import platform.server.ParamMessage;
 import platform.server.classes.ValueClass;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.query.Query;
@@ -47,14 +43,10 @@ public class ImportProjectsActionProperty extends ActionProperty {
 
     private SkolkovoLogicsModule LM;
     private SkolkovoBusinessLogics BL;
-    private DataSession session;
     private static Logger logger = Logger.getLogger("import");
-    private byte[] responseContents;
-    private String toLog = "";
     private boolean onlyMessage;
     private boolean onlyReplace;
     private boolean fillSids;
-    private Integer projectsImportLimit;
 
     public ImportProjectsActionProperty(String caption, SkolkovoLogicsModule LM, SkolkovoBusinessLogics BL, boolean onlyMessage, boolean onlyReplace, boolean fillSids) {
         super(LM.genSID(), caption, new ValueClass[]{});
@@ -65,7 +57,7 @@ public class ImportProjectsActionProperty extends ActionProperty {
         this.fillSids = fillSids;
     }
 
-    protected ImportField dateProjectField,
+    protected ImportField dateProjectField, dateStatusProjectField,
             projectIdField, nameNativeProjectField, nameForeignProjectField,
             nameNativeManagerProjectField, nameNativeGenitiveManagerProjectField, nameNativeDativusManagerProjectField, nameNativeAblateManagerProjectField,
             nameForeignManagerProjectField,
@@ -108,6 +100,7 @@ public class ImportProjectsActionProperty extends ActionProperty {
     ImportKey<?> projectKey, projectTypeProjectKey, projectActionProjectKey, claimerKey, patentKey, ownerTypePatentKey, clusterKey, academicKey, nonRussianSpecialistKey;
     List<ImportProperty<?>> properties = new ArrayList<ImportProperty<?>>();
     ImportProperty<?> propertyDate;
+    ImportProperty<?> propertyStatusDate;
     ImportProperty<?> propertyOtherCluster;
     ImportProperty<?> propertyOtherClusterNative;
     ImportProperty<?> propertyOtherClusterForeign;
@@ -127,6 +120,7 @@ public class ImportProjectsActionProperty extends ActionProperty {
 
     private void initFieldsNProperties() {
         dateProjectField = new ImportField(LM.baseLM.date);
+        dateStatusProjectField = new ImportField(LM.statusDateProject);
         projectIdField = new ImportField(LM.sidProject);
         nameNativeProjectField = new ImportField(LM.nameNativeJoinProject);
         nameForeignProjectField = new ImportField(LM.nameForeignJoinProject);
@@ -311,6 +305,7 @@ public class ImportProjectsActionProperty extends ActionProperty {
         propertiesFullClaimer.add(new ImportProperty(fileExtractClaimerField, LM.extractClaimer.getMapping(claimerKey)));
 
         propertyDate = new ImportProperty(dateProjectField, LM.dateJoinProject.getMapping(projectKey));
+        propertyStatusDate = new ImportProperty(dateStatusProjectField, LM.statusDateProject.getMapping(projectKey));
 
         propertiesNative.add(new ImportProperty(nameNativeProjectField, LM.nameNativeJoinProject.getMapping(projectKey)));
         propertiesNative.add(new ImportProperty(nameNativeManagerProjectField, LM.nameNativeManagerProject.getMapping(projectKey)));
@@ -406,18 +401,21 @@ public class ImportProjectsActionProperty extends ActionProperty {
 
     @Override
     public void execute(ExecutionContext context) throws SQLException {
-        toLog = "";
 
-        projectsImportLimit = (Integer) LM.projectsImportLimit.read(context);
-        if (projectsImportLimit == null) {
-            projectsImportLimit = 100;
+        PrivateInfo pInfo = new PrivateInfo();
+
+        pInfo.toLog = "";
+
+        pInfo.projectsImportLimit = (Integer) LM.projectsImportLimit.read(context);
+        if (pInfo.projectsImportLimit == null) {
+            pInfo.projectsImportLimit = 100;
         }
 
         try {
-            this.session = context.getSession();
+            pInfo.session = context.getSession();
 
             String host = getHost();
-            Map<String, Timestamp> projects = importProjectsFromXML(host);
+            Map<String, Timestamp> projects = importProjectsFromXML(pInfo, host);
 
             if (!onlyMessage && !fillSids) {
                 initFieldsNProperties();
@@ -427,7 +425,7 @@ public class ImportProjectsActionProperty extends ActionProperty {
                     connection.setDoOutput(false);
                     connection.setDoInput(true);
                     BusinessLogics.pushCurrentActionMessage("ИД проекта - " + projectId);
-                    importProject(connection.getInputStream(), projectId, projects.get(projectId), context);
+                    importProject(pInfo, connection.getInputStream(), projectId, projects.get(projectId), context);
                     BusinessLogics.popCurrentActionMessage();
                     System.gc();
                 }
@@ -437,10 +435,10 @@ public class ImportProjectsActionProperty extends ActionProperty {
                 if (!onlyMessage) {
                     message = "Данные были успешно приняты\n";
                 }
-                message += toLog;
+                message += pInfo.toLog;
             } else {
-                if (responseContents != null) {
-                    message = new String(responseContents);
+                if (pInfo.responseContents != null) {
+                    message = new String(pInfo.responseContents);
                 } else {
                     message = "Вся информация актуальна";
                 }
@@ -448,12 +446,10 @@ public class ImportProjectsActionProperty extends ActionProperty {
             context.addAction(new MessageClientAction(message, "Импорт", true));
         } catch (Exception e) {
             throw new RuntimeException(e);
-        } finally {
-            session = null;
         }
     }
 
-    public Map<String, Timestamp> importProjectsFromXML(String host) throws IOException, SQLException {
+    public Map<String, Timestamp> importProjectsFromXML(PrivateInfo pInfo, String host) throws IOException, SQLException {
         OrderedMap<Map<Object, Object>, Map<Object, Object>> result = null;
         List<Element> elementList = new ArrayList<Element>();
         try {
@@ -463,7 +459,7 @@ public class ImportProjectsActionProperty extends ActionProperty {
             connection.setDoOutput(false);
             connection.setDoInput(true);
 
-            responseContents = IOUtils.readBytesFromStream(connection.getInputStream());
+            pInfo.responseContents = IOUtils.readBytesFromStream(connection.getInputStream());
 
 //            File file = new File("C://test.xml");
 //            InputStream is = new FileInputStream(file);
@@ -478,8 +474,8 @@ public class ImportProjectsActionProperty extends ActionProperty {
 //            responseContents = bytes;
 
             SAXBuilder builder = new SAXBuilder();
-            Document document = builder.build(new ByteArrayInputStream(responseContents));
-            responseContents = null;
+            Document document = builder.build(new ByteArrayInputStream(pInfo.responseContents));
+            pInfo.responseContents = null;
 
             LP isProject = LM.is(LM.project);
             Map<Object, KeyExpr> keys = isProject.getMapKeys();
@@ -493,12 +489,12 @@ public class ImportProjectsActionProperty extends ActionProperty {
             } else {
                 query.and(LM.sidProject.getExpr(BaseUtils.singleValue(keys)).getWhere());
             }
-            result = query.execute(session.sql);
+            result = query.execute(pInfo.session.sql);
 
             Element rootNode = document.getRootElement();
             elementList = new ArrayList<Element>(rootNode.getChildren("project"));
         } catch (JDOMParseException e) {
-            logger.error(e.getCause() + " : " + new String(responseContents), e);
+            logger.error(e.getCause() + " : " + new String(pInfo.responseContents), e);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -511,12 +507,12 @@ public class ImportProjectsActionProperty extends ActionProperty {
         });
 
         if (fillSids) {
-            fillSids(result, elementList);
-            logger.info("Imported sids:" + toLog);
+            fillSids(pInfo, result, elementList);
+            logger.info("Imported sids:" + pInfo.toLog);
             return null;
         }
 
-        return makeImportList(result, elementList);
+        return makeImportList(pInfo, result, elementList);
     }
 
     public String getHost() throws NoSuchAlgorithmException {
@@ -557,7 +553,7 @@ public class ImportProjectsActionProperty extends ActionProperty {
         return calendar.getTime();
     }
 
-    public Map<String, Timestamp> makeImportList(OrderedMap<Map<Object, Object>, Map<Object, Object>> data, List<Element> elementList) {
+    public Map<String, Timestamp> makeImportList(PrivateInfo pInfo, OrderedMap<Map<Object, Object>, Map<Object, Object>> data, List<Element> elementList) {
         Map<String, Timestamp> projectList = new LinkedHashMap<String, Timestamp>();
         if (elementList != null) {
             Timestamp currentProjectDate;
@@ -574,7 +570,7 @@ public class ImportProjectsActionProperty extends ActionProperty {
                     if (project.get("id").toString().trim().equals(projectId)) {
                         if (date == null || currentProjectDate.after(date)) {
                             Object email = project.get("email");
-                            toLogString(projectId, email == null ? null : email.toString().trim(), element.getChildText("emailProject"), name.toString().trim(), name, date, currentProjectDate);
+                            toLogString(pInfo, projectId, email == null ? null : email.toString().trim(), element.getChildText("emailProject"), name.toString().trim(), name, date, currentProjectDate);
                             projectList.put(projectId, currentProjectDate);
                             counter++;
                             ignore = true;
@@ -586,28 +582,28 @@ public class ImportProjectsActionProperty extends ActionProperty {
                     }
                 }
                 if (!ignore && !onlyReplace) {
-                    toLogString(projectId, null, element.getChildText("emailProject"), null, name, null, currentProjectDate);
+                    toLogString(pInfo, projectId, null, element.getChildText("emailProject"), null, name, null, currentProjectDate);
                     projectList.put(projectId, currentProjectDate);
                     counter++;
                 }
-                if (counter == projectsImportLimit) {
+                if (counter == pInfo.projectsImportLimit) {
                     break;
                 }
             }
         }
 
         if (!onlyMessage) {
-            logger.info("Projects to import (" + projectList.size() + "):" + toLog);
+            logger.info("Projects to import (" + projectList.size() + "):" + pInfo.toLog);
         }
         return projectList;
     }
 
-    public void toLogString(Object projectId, Object oldEmail, Object newEmail, Object oldName, Object newName, Object oldDate, Object newDate) {
-        toLog += "\nprojectId: " + projectId + "\n\temail: " + oldEmail + " <- " + newEmail + "\n\tname: " + oldName +
+    public void toLogString(PrivateInfo pInfo, Object projectId, Object oldEmail, Object newEmail, Object oldName, Object newName, Object oldDate, Object newDate) {
+        pInfo.toLog += "\nprojectId: " + projectId + "\n\temail: " + oldEmail + " <- " + newEmail + "\n\tname: " + oldName +
                 " <- " + newName + "\n\tdate: " + oldDate + " <- " + newDate;
     }
 
-    public void fillSids(OrderedMap<Map<Object, Object>, Map<Object, Object>> data, List<Element> elements) throws SQLException {
+    public void fillSids(PrivateInfo pInfo, OrderedMap<Map<Object, Object>, Map<Object, Object>> data, List<Element> elements) throws SQLException {
         for (Map<Object, Object> key : data.keySet()) {
             Map<Object, Object> project = data.get(key);
             if (project.get("id") == null) {
@@ -615,8 +611,8 @@ public class ImportProjectsActionProperty extends ActionProperty {
                 if (email != null && getEmailRepeatings(data, elements, email.toString().trim()) == 1) {
                     String projectId = getProjectId(elements, email.toString().trim());
                     if (projectId != null) {
-                        LM.sidProject.execute(projectId, session, session.getDataObject(BaseUtils.singleValue(key), LM.project.getType()));
-                        toLog += "\nprojectId: " + projectId + "\n\temail: " + email.toString().trim() + "\n\t" +
+                        LM.sidProject.execute(projectId, pInfo.session, pInfo.session.getDataObject(BaseUtils.singleValue(key), LM.project.getType()));
+                        pInfo.toLog += "\nprojectId: " + projectId + "\n\temail: " + email.toString().trim() + "\n\t" +
                                 project.get("name").toString().trim() + " =? " + getProjectName(elements, email.toString().trim().toLowerCase());
                     }
                 }
@@ -678,7 +674,7 @@ public class ImportProjectsActionProperty extends ActionProperty {
         return null;
     }
 
-    public void importProject(InputStream inputStream, String projectId, Timestamp currentProjectDate, ExecutionContext context) throws SQLException {
+    public void importProject(PrivateInfo pInfo, InputStream inputStream, String projectId, Timestamp currentProjectDate, ExecutionContext context) throws SQLException {
         List<List<Object>> data = new ArrayList<List<Object>>();
         List<List<Object>> dataCluster = new ArrayList<List<Object>>();
         List<List<Object>> dataPatent = new ArrayList<List<Object>>();
@@ -689,7 +685,7 @@ public class ImportProjectsActionProperty extends ActionProperty {
         SAXBuilder builder = new SAXBuilder();
 
         try {
-            responseContents = IOUtils.readBytesFromStream(inputStream);
+            pInfo.responseContents = IOUtils.readBytesFromStream(inputStream);
 
 //            File file = new File("C://test.xml");
 //            InputStream is = new FileInputStream(file);
@@ -703,8 +699,8 @@ public class ImportProjectsActionProperty extends ActionProperty {
 //            is.close();
 //            responseContents = bytes;
 
-            Document document = builder.build(new ByteArrayInputStream(responseContents));
-            responseContents = null;
+            Document document = builder.build(new ByteArrayInputStream(pInfo.responseContents));
+            pInfo.responseContents = null;
             Element rootNode = document.getRootElement();
             List list = rootNode.getChildren("project");
 
@@ -717,6 +713,12 @@ public class ImportProjectsActionProperty extends ActionProperty {
                 boolean fillForeign = ("eng".equals(lng)) || "both".equals(lng);
                 boolean fillDate = (!"1970".equals(node.getChildText("yearProject")));
                 boolean fillClaimer = ("status".equals(node.getChildText("actionProject")));
+
+                boolean fillTwoDates = false;
+                if (fillClaimer) {
+                    ObjectValue projectObject = LM.sidToProject.readClasses(pInfo.session, new DataObject(node.getChildText("projectId")));
+                    fillTwoDates = !(projectObject instanceof DataObject) || LM.quantityPreliminaryVoteProject.read(context, (DataObject) projectObject) == null;
+                }
 
                 if ("unknown".equals(lng)) {
                     String nameNativeManagerProject = node.getChildText("nameNativeManagerProject");
@@ -797,12 +799,16 @@ public class ImportProjectsActionProperty extends ActionProperty {
                     row.add(buildFileByteArray(node.getChild("fileExtractClaimer")));
                 }
 
-                ObjectValue expertObject = LM.emailToExpert.readClasses(session, new DataObject(node.getChildText("emailProject")));
+                ObjectValue expertObject = LM.emailToExpert.readClasses(pInfo.session, new DataObject(node.getChildText("emailProject")));
                 if (expertObject instanceof DataObject)
-                    LM.baseLM.objectClass.execute(LM.claimerExpert.getSingleClass().ID, context, (DataObject)expertObject);
+                    LM.baseLM.objectClass.execute(LM.claimerExpert.getSingleClass().ID, context, (DataObject) expertObject);
 
+                Date date = new java.sql.Date(Integer.parseInt(node.getChildText("yearProject")) - 1900, Integer.parseInt(node.getChildText("monthProject")) - 1, Integer.parseInt(node.getChildText("dayProject")));
                 if (fillDate) {
-                    row.add(new java.sql.Date(Integer.parseInt(node.getChildText("yearProject")) - 1900, Integer.parseInt(node.getChildText("monthProject")) - 1, Integer.parseInt(node.getChildText("dayProject"))));
+                    row.add(date);
+                    if (fillTwoDates) {
+                        row.add(date);
+                    }
                 }
 
                 LP isCluster = LM.is(LM.cluster);
@@ -810,7 +816,7 @@ public class ImportProjectsActionProperty extends ActionProperty {
                 Query<Object, Object> query = new Query<Object, Object>(keys);
                 query.properties.put("name", LM.nameNative.getExpr(BaseUtils.singleValue(keys)));
                 query.and(isCluster.property.getExpr(keys).getWhere());
-                OrderedMap<Map<Object, Object>, Map<Object, Object>> result = query.execute(session.sql);
+                OrderedMap<Map<Object, Object>, Map<Object, Object>> result = query.execute(pInfo.session.sql);
 
                 boolean fillOtherCluster = false;
                 Object otherClusterNativeSubstantiation = null, otherClusterForeignSubstantiation = null;
@@ -999,8 +1005,20 @@ public class ImportProjectsActionProperty extends ActionProperty {
                 }
 
                 if (fillDate) {
-                    properties.add(propertyDate);
-                    fieldsBoth.add(dateProjectField);
+                    if (fillTwoDates) {
+                        properties.add(propertyStatusDate);
+                        fieldsBoth.add(dateStatusProjectField);
+
+                        properties.add(propertyDate);
+                        fieldsBoth.add(dateProjectField);
+
+                    } else if (fillClaimer) {
+                        properties.add(propertyStatusDate);
+                        fieldsBoth.add(dateStatusProjectField);
+                    } else {
+                        properties.add(propertyDate);
+                        fieldsBoth.add(dateProjectField);
+                    }
                 }
 
                 properties.add(propertyOtherCluster);
@@ -1015,7 +1033,7 @@ public class ImportProjectsActionProperty extends ActionProperty {
                 }
 
                 ImportKey<?>[] keysArray = new ImportKey<?>[]{projectKey, projectTypeProjectKey, projectActionProjectKey, claimerKey};
-                importMultilanguageData(
+                importMultilanguageData(pInfo,
                         fieldsBoth, fieldsNative, fieldsForeign,
                         properties, propertiesNative, propertiesForeign,
                         data, keysArray, fillNative, fillForeign);
@@ -1028,7 +1046,7 @@ public class ImportProjectsActionProperty extends ActionProperty {
                         foreignSubstantiationProjectClusterField);
 
                 keysArray = new ImportKey<?>[]{clusterKey, projectKey};
-                importMultilanguageData(
+                importMultilanguageData(pInfo,
                         fieldsCurrentClusterBoth, fieldsCurrentClusterNative, fieldsCurrentClusterForeign,
                         propertiesCluster, propertiesClusterNative, propertiesClusterForeign,
                         dataCluster, keysArray, fillNative, fillForeign);
@@ -1041,7 +1059,7 @@ public class ImportProjectsActionProperty extends ActionProperty {
                 List<ImportField> fieldsPatentNative = BaseUtils.toList(nativeTypePatentField);
                 List<ImportField> fieldsPatentForeign = BaseUtils.toList(foreignTypePatentField, foreignNumberPatentField);
                 keysArray = new ImportKey<?>[]{projectKey, patentKey, ownerTypePatentKey};
-                importMultilanguageData(
+                importMultilanguageData(pInfo,
                         fieldsPatentBoth, fieldsPatentNative, fieldsPatentForeign,
                         propertiesPatent, propertiesPatentNative, propertiesPatentForeign,
                         dataPatent, keysArray, fillNative, fillForeign);
@@ -1053,7 +1071,7 @@ public class ImportProjectsActionProperty extends ActionProperty {
                 );
                 ImportTable table = new ImportTable(fieldsAcademic, dataAcademic);
                 keysArray = new ImportKey<?>[]{projectKey, academicKey};
-                new IntegrationService(session, table, Arrays.asList(keysArray), propertiesAcademic).synchronize(true, true, false, true);
+                new IntegrationService(pInfo.session, table, Arrays.asList(keysArray), propertiesAcademic).synchronize(true, true, false, true);
 
                 List<ImportField> fieldsNonRussianSpecialist = BaseUtils.toList(
                         projectIdField,
@@ -1063,28 +1081,29 @@ public class ImportProjectsActionProperty extends ActionProperty {
                 );
                 table = new ImportTable(fieldsNonRussianSpecialist, dataNonRussianSpecialist);
                 keysArray = new ImportKey<?>[]{projectKey, nonRussianSpecialistKey};
-                new IntegrationService(session, table, Arrays.asList(keysArray), propertiesNonRussianSpecialist).synchronize(true, true, false, true);
+                new IntegrationService(pInfo.session, table, Arrays.asList(keysArray), propertiesNonRussianSpecialist).synchronize(true, true, false, true);
             }
         } catch (JDOMParseException e) {
-            String info = "failed to import project " + projectId + ". Reason: " + new String(responseContents);
+            String info = "failed to import project " + projectId + ". Reason: " + new String(pInfo.responseContents);
 //            String info = e.getCause() + " : projectId=" + projectId + " : " + new String(responseContents);
-            toLog += info;
+            pInfo.toLog += info;
             logger.info(info);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
 
-        String sessionApply = session.apply(BL);
+        String sessionApply = pInfo.session.apply(BL);
         if (sessionApply != null) {
             String info = "failed to import project " + projectId + ". Constraint: " + sessionApply;
-            toLog += info;
+            pInfo.toLog += info;
             logger.error(info);
-            session.restart(true);
+            pInfo.session.restart(true);
         } else
             logger.info(projectId + " project was imported successfully");
     }
 
     private void importMultilanguageData(
+            PrivateInfo pInfo,
             List<ImportField> fieldsBoth, List<ImportField> fieldsNative, List<ImportField> fieldsForeign,
             List<ImportProperty<?>> propertiesBoth, List<ImportProperty<?>> propertiesNative, List<ImportProperty<?>> propertiesForeign,
             List<List<Object>> data, ImportKey<?>[] keysArray, boolean fillNative, boolean fillForeign) throws SQLException {
@@ -1101,7 +1120,7 @@ public class ImportProjectsActionProperty extends ActionProperty {
         }
 
         try {
-            new IntegrationService(session, new ImportTable(fieldsMerged, data), Arrays.asList(keysArray), propertiesMerged).synchronize(true, true, false, true);
+            new IntegrationService(pInfo.session, new ImportTable(fieldsMerged, data), Arrays.asList(keysArray), propertiesMerged).synchronize(true, true, false, true);
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -1128,4 +1147,13 @@ public class ImportProjectsActionProperty extends ActionProperty {
         }
 
     }
+
+    public class PrivateInfo {
+        private DataSession session;
+        private byte[] responseContents;
+        private String toLog = "";
+        private Integer projectsImportLimit;
+    }
+
+
 }

@@ -82,6 +82,9 @@ public class SkolkovoLogicsModule extends LogicsModule {
     public LP dateProject;
     public LP dateJoinProject;
     public LP dateDataProject;
+    public LP dateStatusProject;
+    public LP statusDateProject;
+    public LP dateStatusDataProject;
     public LP updateDateProject;
     public LP nativeNumberToPatent;
     public LP nativeNumberSIDToPatent;
@@ -418,6 +421,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP inExpertVote, oldExpertVote, inNewExpertVote, inOldExpertVote;
     LP dateStartVote, dateEndVote;
     LP aggrDateEndVote;
+    public LP quantityPreliminaryVoteProject;
 
     LP weekStartVote, quantityNewExpertWeek;
     LP quantityNewWeek;
@@ -1459,6 +1463,10 @@ public class SkolkovoLogicsModule extends LogicsModule {
         quantityNewExpertWeek.setFixedCharWidth(2);
         quantityNewWeek = addSGProp("quantityNewWeek", "Кол-во заседаний", quantityNewExpertWeek, 2);
 
+        quantityPreliminaryVoteProject = addSGProp("quantityPreliminaryVoteProject", true, "Количество заседаний",
+                addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1, vote), 1,
+                        isPreliminaryVote, 1), projectVote, 1);
+
         openedVote = addJProp(baseGroup, "openedVote", "Открыто", baseLM.groeq2, dateEndVote, 1, baseLM.currentDate);
         closedVote = addJProp(baseGroup, "closedVote", "Закрыто", baseLM.andNot1, is(vote), 1, openedVote, 1);
 
@@ -1742,9 +1750,11 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         dateJoinProject = addJProp(baseLM.and1, baseLM.date, 1, is(project), 1);
         dateDataProject = addDProp("dateDataProject", "Дата", DateClass.instance, project);
-        //dateProject = addJProp("dateProject", "Дата проекта", baseLM.and1, baseLM.date, 1, is(project), 1);
         dateProject = addSUProp("dateProject", "Дата проекта", Union.OVERRIDE, dateJoinProject, dateDataProject);
         updateDateProject = addDProp(projectInformationGroup, "updateDateProject", "Дата изменения проекта", DateTimeClass.instance, project);
+        statusDateProject = addDProp(baseGroup, "statusDateProject", "Дата подачи на статус участника", DateClass.instance, project);
+        dateStatusDataProject = addDProp("dateStatusDataProject", "Дата", DateClass.instance, project);
+        dateStatusProject = addSUProp(projectInformationGroup, "dateStatusProject", "Дата подачи на статус участника", Union.OVERRIDE, statusDateProject, dateStatusDataProject);
 
         //формальная экспертиза и юридическая проверка
 
@@ -2449,7 +2459,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         private ProjectFormEntity(NavigatorElement parent, String sID) {
             super(parent, sID, "Реестр проектов");
 
-            objProject = addSingleGroupObject(project, dateProject, nameNativeProject, nameForeignProject, nameNativeFinalClusterProject, nameNativeClaimerProject, nameForeignClaimerProject, emailClaimerProject,
+            objProject = addSingleGroupObject(project, dateProject, dateStatusProject, nameNativeProject, nameForeignProject, nameNativeFinalClusterProject, nameNativeClaimerProject, nameForeignClaimerProject, emailClaimerProject,
                     nameStatusProject, nameProjectActionProject, updateDateProject, autoGenerateProject, inactiveProject, generateVoteProject, editClaimerProject, editProject);
             addPropertyDraw(objProject, isOtherClusterProject, nativeSubstantiationOtherClusterProject, foreignSubstantiationOtherClusterProject);
             getPropertyDraw(isOtherClusterProject).propertyCaption = addPropertyObject(hideIsOtherClusterProject, objProject);
@@ -2505,6 +2515,9 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
             PropertyObjectEntity dateProperty = addPropertyObject(dateDataProject, objProject);
             getPropertyDraw(dateProject).setPropertyHighlight(dateProperty);
+
+            PropertyObjectEntity dateStatusProperty = addPropertyObject(dateStatusDataProject, objProject);
+            getPropertyDraw(dateStatusProject).setPropertyHighlight(dateStatusProperty);
 
             PropertyObjectEntity nameNativeProperty = addPropertyObject(nameNativeDataProject, objProject);
             getPropertyDraw(nameNativeProject).setPropertyHighlight(nameNativeProperty);
