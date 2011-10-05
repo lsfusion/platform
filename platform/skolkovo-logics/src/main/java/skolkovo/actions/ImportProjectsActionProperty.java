@@ -57,7 +57,7 @@ public class ImportProjectsActionProperty extends ActionProperty {
         this.fillSids = fillSids;
     }
 
-    protected ImportField dateProjectField, dateStatusProjectField,
+    protected ImportField dateProjectField, dateStatusProjectField, langProjectField,
             projectIdField, nameNativeProjectField, nameForeignProjectField,
             nameNativeManagerProjectField, nameNativeGenitiveManagerProjectField, nameNativeDativusManagerProjectField, nameNativeAblateManagerProjectField,
             nameForeignManagerProjectField,
@@ -81,6 +81,7 @@ public class ImportProjectsActionProperty extends ActionProperty {
 
             nameNativeClusterField, inProjectClusterField, numberCurrentClusterField,
             isOtherClusterProjectField, nativeSubstantiationOtherClusterProjectField, foreignSubstantiationOtherClusterProjectField,
+            //nameNativeShortAggregateClusterProjectField,
             nameNativeClaimerField, nameForeignClaimerField,
             firmNameNativeClaimerField, firmNameForeignClaimerField, phoneClaimerField, addressClaimerField, siteClaimerField,
             emailClaimerField, emailFirmClaimerField, OGRNClaimerField, INNClaimerField,
@@ -121,6 +122,7 @@ public class ImportProjectsActionProperty extends ActionProperty {
     private void initFieldsNProperties() {
         dateProjectField = new ImportField(LM.baseLM.date);
         dateStatusProjectField = new ImportField(LM.statusDateProject);
+        langProjectField = new ImportField(LM.langProject);
         projectIdField = new ImportField(LM.sidProject);
         nameNativeProjectField = new ImportField(LM.nameNativeJoinProject);
         nameForeignProjectField = new ImportField(LM.nameForeignJoinProject);
@@ -140,6 +142,7 @@ public class ImportProjectsActionProperty extends ActionProperty {
         isOtherClusterProjectField = new ImportField(LM.isOtherClusterProject);
         nativeSubstantiationOtherClusterProjectField = new ImportField(LM.nativeSubstantiationOtherClusterProject);
         foreignSubstantiationOtherClusterProjectField = new ImportField(LM.foreignSubstantiationOtherClusterProject);
+        //nameNativeShortAggregateClusterProjectField = new ImportField(LM.nameNativeShortAggregateClusterProject);
         isOwnedEquipmentProjectField = new ImportField(LM.isOwnedEquipmentProject);
         isAvailableEquipmentProjectField = new ImportField(LM.isAvailableEquipmentProject);
         isTransferEquipmentProjectField = new ImportField(LM.isTransferEquipmentProject);
@@ -244,6 +247,7 @@ public class ImportProjectsActionProperty extends ActionProperty {
         propertiesNonRussianSpecialist = new ArrayList<ImportProperty<?>>();
 
         projectKey = new ImportKey(LM.project, LM.sidToProject.getMapping(projectIdField));
+        properties.add(new ImportProperty(langProjectField, LM.langProject.getMapping(projectKey)));
         properties.add(new ImportProperty(projectIdField, LM.sidProject.getMapping(projectKey)));
         properties.add(new ImportProperty(isOwnedEquipmentProjectField, LM.isOwnedEquipmentProject.getMapping(projectKey)));
         properties.add(new ImportProperty(isAvailableEquipmentProjectField, LM.isAvailableEquipmentProject.getMapping(projectKey)));
@@ -373,6 +377,8 @@ public class ImportProjectsActionProperty extends ActionProperty {
         propertyOtherCluster = new ImportProperty(isOtherClusterProjectField, LM.isOtherClusterProject.getMapping(projectKey));
         propertyOtherClusterNative = new ImportProperty(nativeSubstantiationOtherClusterProjectField, LM.nativeSubstantiationOtherClusterProject.getMapping(projectKey));
         propertyOtherClusterForeign = new ImportProperty(foreignSubstantiationOtherClusterProjectField, LM.foreignSubstantiationOtherClusterProject.getMapping(projectKey));
+        //properties.add(new ImportProperty(nameNativeShortAggregateClusterProjectField, LM.nameNativeShortAggregateClusterProject.getMapping(projectKey)));
+
 
         academicKey = new ImportKey(LM.academic, LM.fullNameSIDToAcademic.getMapping(fullNameAcademicField, projectIdField));
         propertiesAcademic.add(new ImportProperty(fullNameAcademicField, LM.fullNameAcademic.getMapping(academicKey)));
@@ -713,6 +719,14 @@ public class ImportProjectsActionProperty extends ActionProperty {
                 boolean fillForeign = ("eng".equals(lng)) || "both".equals(lng);
                 boolean fillDate = (!"1970".equals(node.getChildText("yearProject")));
                 boolean fillClaimer = ("status".equals(node.getChildText("actionProject")));
+                String langProject = "";
+                if ((fillNative) && (fillForeign)) {
+                    langProject = "Рус/Англ";
+                } else if (fillNative) {
+                    langProject = "Рус";
+                } else if (fillForeign) {
+                    langProject = "Англ";
+                }
 
                 boolean fillTwoDates = false;
                 if (fillClaimer) {
@@ -751,6 +765,7 @@ public class ImportProjectsActionProperty extends ActionProperty {
                     row.add(consultingCenterComment);
                 }
 
+                row.add(langProject);
                 row.add(projectId);
                 row.add(BaseUtils.nullZero(node.getChildText("isOwnedEquipmentProject")));
                 row.add(BaseUtils.nullZero(node.getChildText("isAvailableEquipmentProject")));
@@ -820,6 +835,7 @@ public class ImportProjectsActionProperty extends ActionProperty {
 
                 boolean fillOtherCluster = false;
                 Object otherClusterNativeSubstantiation = null, otherClusterForeignSubstantiation = null;
+                //String nameNativeShortAggregateClusterProject = "";
 
                 List<Element> listCluster = node.getChildren("cluster");
                 Map<String, ClusterInfo> clusterInfoList = new HashMap<String, ClusterInfo>();
@@ -835,11 +851,13 @@ public class ImportProjectsActionProperty extends ActionProperty {
                         fillOtherCluster = true;
                         otherClusterNativeSubstantiation = nodeCluster.getChildText("nativeSubstantiationClusterProject");
                         otherClusterForeignSubstantiation = nodeCluster.getChildText("foreignSubstantiationClusterProject");
-                    } else {
+                        } else {
                         if (clusterInfoList.containsKey(nameCluster)) {
                             clusterInfoList.put(nameCluster, new ClusterInfo(projectId, true, nameCluster,
                                     nodeCluster.getChildText("nativeSubstantiationClusterProject"),
                                     nodeCluster.getChildText("foreignSubstantiationClusterProject")));
+                                    //nameNativeShortAggregateClusterProject.concat(";").concat(nodeCluster.getChildText("nameNativeCluster"));
+
                         }
                     }
                 }
@@ -857,10 +875,12 @@ public class ImportProjectsActionProperty extends ActionProperty {
                 }
 
                 row.add(BaseUtils.nullBoolean(fillOtherCluster));
+                //row.add(nameNativeShortAggregateClusterProject);
                 if (fillNative)
                     row.add(otherClusterNativeSubstantiation);
                 if (fillForeign)
                     row.add(otherClusterForeignSubstantiation);
+
 
                 if (fillNative) {
                     row.add(node.getChildText("nameNativeProject"));
@@ -977,7 +997,7 @@ public class ImportProjectsActionProperty extends ActionProperty {
                 List<ImportField> fieldsBoth = BaseUtils.toList(
                         fillNativeProjectField, fillForeignProjectField,
                         isConsultingCenterQuestionProjectField, isConsultingCenterCommentProjectField, consultingCenterCommentProjectField,
-                        projectIdField,
+                        langProjectField, projectIdField,
                         isOwnedEquipmentProjectField, isAvailableEquipmentProjectField, isTransferEquipmentProjectField,
                         descriptionTransferEquipmentProjectField, ownerEquipmentProjectField, isPlanningEquipmentProjectField,
                         specificationEquipmentProjectField, isSeekEquipmentProjectField, descriptionEquipmentProjectField,
@@ -988,7 +1008,9 @@ public class ImportProjectsActionProperty extends ActionProperty {
                         isOtherNonReturnInvestmentsProjectField, isOwnFundsProjectField, amountOwnFundsProjectField,
                         isPlanningSearchSourceProjectField, amountFundsProjectField, isOtherSoursesProjectField,
                         commentOtherSoursesProjectField, updateDateProjectField, projectTypeProjectField,
-                        projectActionProjectField, emailClaimerField);
+                        projectActionProjectField, emailClaimerField
+                        //,nameNativeShortAggregateClusterProjectField
+                );
 
                 List<ImportField> fieldsFullClaimerBoth = BaseUtils.toList(phoneClaimerField, addressClaimerField,
                         siteClaimerField, emailFirmClaimerField,

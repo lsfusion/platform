@@ -328,6 +328,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
     public LP nameNative;
     public LP nameForeign;
     public LP nameNativeShort;
+    public LP nameNativeShortAggregateClusterProject;
     public LP firmNameNativeClaimer;
     public LP firmNameForeignClaimer;
     public LP phoneClaimer;
@@ -356,6 +357,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP clusterInExpertVote;
     public LP inProjectCluster;
     LP clusterVote, nameNativeClusterVote, nameForeignClusterVote;
+    LP projectCluster;
+    LP quantityClusterProject;
     LP isPrevVoteVote;
     LP countPrevVote;
     public LP claimerProject;
@@ -615,7 +618,6 @@ public class SkolkovoLogicsModule extends LogicsModule {
     public LP foreignSubstantiationOtherClusterProject;
     public LP fileNativeSummaryProject;
     LP hideForeignSubstantiationOtherClusterProject;
-    LP clusterComputer;
     LP currentCluster;
     LP nameNativeCurrentCluster;
     LP inProjectCurrentCluster;
@@ -672,6 +674,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
     public LP hideTranslatedToEnglishProject;
     public LP fillNativeProject;
     public LP fillForeignProject;
+    public LP langProject;
     public LP isConsultingCenterQuestionProject;
     public LP isConsultingCenterCommentProject;
     public LP consultingCenterCommentProject;
@@ -898,6 +901,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         nameForeign.setPreferredWidth(50);
 
         nameNativeShort = addDProp(baseGroup, "nameNativeShort", "Имя (сокр.)", InsensitiveStringClass.get(4), cluster);
+        nameNativeShortAggregateClusterProject = addDProp(baseGroup, "nameNativeShortAggregateClusterProject", "Кластеры", InsensitiveStringClass.get(50), project);
 
         baseGroup.add(baseLM.email.property); // сделано, чтобы email был не самой первой колонкой в диалогах
 
@@ -951,6 +955,14 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         projectVote = addDProp(idGroup, "projectVote", "Проект (ИД)", project, vote);
         setNotNull(projectVote);
+
+        inProjectCluster = addDProp(baseGroup, "inProjectCluster", "Вкл", LogicalClass.instance, project, cluster);
+        projectCluster = addDProp(idGroup, "projectCluster", "Проект (ИД)", project, cluster);
+
+        quantityClusterProject = addSGProp(baseGroup, "quantityClusterProject3", true, "Кол-во кластеров",
+                addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1, cluster), 2,
+                        addJProp(baseLM.equals2, baseLM.vtrue, inProjectCluster, 1, 2), 1, 2), 1);
+
 
         quantityVoteProject = addSGProp(baseGroup, "quantityVoteProject", true, "Кол-во заседаний", addCProp(IntegerClass.instance, 1, vote), projectVote, 1);
 
@@ -1628,8 +1640,6 @@ public class SkolkovoLogicsModule extends LogicsModule {
         clusterAcceptedProject = addAGProp(idGroup, "clusterAcceptedProject", true, "Кластер (ИД)", acceptedProjectCluster, 2);
         acceptedProject = addJProp(baseGroup, "acceptedProject", true, "Оценен положительно", baseLM.and1, addCProp(LogicalClass.instance, true, project), 1, clusterAcceptedProject, 1);
 
-        inProjectCluster = addDProp(baseGroup, "inProjectCluster", "Вкл", LogicalClass.instance, project, cluster);
-
         currentCluster = addSDProp("currentCluster", "Текущий кластер", cluster);
 
         nameNativeCurrentCluster = addJProp("nameNativeCurrentCluster", "Кластер", nameNative, currentCluster);
@@ -1736,6 +1746,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         fillNativeProject = addDProp(projectOptionsGroup, "fillNativeProject", "Анкета на русском", LogicalClass.instance, project);
         fillForeignProject = addDProp(projectOptionsGroup, "fillForeignProject", "Анкета на английском", LogicalClass.instance, project);
+        langProject = addDProp(projectOptionsGroup, "langProject", "Язык", InsensitiveStringClass.get(10), project);
 
         translatedToRussianProject = addDProp(projectTranslationsGroup, "translatedToRussianProject", "Переведено на русский", LogicalClass.instance, project);
         translatedToEnglishProject = addDProp(projectTranslationsGroup, "translatedToEnglishProject", "Переведено на английский", LogicalClass.instance, project);
@@ -2460,7 +2471,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             super(parent, sID, "Реестр проектов");
 
             objProject = addSingleGroupObject(project, dateProject, dateStatusProject, nameNativeProject, nameForeignProject, nameNativeFinalClusterProject, nameNativeClaimerProject, nameForeignClaimerProject, emailClaimerProject,
-                    nameStatusProject, nameProjectActionProject, updateDateProject, autoGenerateProject, inactiveProject, generateVoteProject, editClaimerProject, editProject);
+                    nameStatusProject, nameProjectActionProject, updateDateProject, autoGenerateProject, inactiveProject, quantityVoteProject, quantityClusterProject, nameNativeShortAggregateClusterProject, langProject, generateVoteProject, editClaimerProject, editProject);
             addPropertyDraw(objProject, isOtherClusterProject, nativeSubstantiationOtherClusterProject, foreignSubstantiationOtherClusterProject);
             getPropertyDraw(isOtherClusterProject).propertyCaption = addPropertyObject(hideIsOtherClusterProject, objProject);
             getPropertyDraw(nativeSubstantiationOtherClusterProject).propertyCaption = addPropertyObject(hideNativeSubstantiationOtherClusterProject, objProject);
@@ -2536,7 +2547,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
             objCluster = addSingleGroupObject(cluster);
             addPropertyDraw(inProjectCluster, objProject, objCluster);
-            addPropertyDraw(objCluster, nameNative, nameForeign);
+            addPropertyDraw(objCluster, nameNative, nameForeign, nameNativeShort);
             addPropertyDraw(new LP[]{nativeSubstantiationProjectCluster, foreignSubstantiationProjectCluster}, objProject, objCluster);
             addPropertyDraw(numberCluster, objCluster);
 
