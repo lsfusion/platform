@@ -221,13 +221,13 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         projectStatus = addStaticClass("projectStatus", "Статус проекта",
                 new String[]{"unknown", "needTranslation", "needDocuments", "needExtraVote", "inProgress", "succeeded", "accepted", "rejected",
-                     "notEnoughDocsForPreliminary", "notEnoughDocsForStatus", "noExperts", "noCluster", "positiveFCResult", "negativeLCResult", "positiveLCResult",
-                     "registered", "repeated", "sentForVote", "withdrawn", "overdueFC", "overdueLC",
-                     "issuedVoteDocs", "applyStatus", "sentRejected", "sentPreliminaryAccepted", "sentStatusAccepted", "inProgressRepeat"},
+                        "notEnoughDocsForPreliminary", "notEnoughDocsForStatus", "noExperts", "noCluster", "positiveFCResult", "negativeLCResult", "positiveLCResult",
+                        "registered", "repeated", "sentForVote", "withdrawn", "overdueFC", "overdueLC",
+                        "issuedVoteDocs", "applyStatus", "sentRejected", "sentPreliminaryAccepted", "sentStatusAccepted", "inProgressRepeat"},
                 new String[]{"Неизвестный статус", "Направлена на перевод", "Не соответствуют документы", "Требуется заседание (повторное)", "Идет заседание", "Достаточно голосов", "Оценен положительно", "Оценен отрицательно",
-                     "Неполный перечень документов (на экспертизу)","Неполный перечень документов (на статус)",  "Отсутствует перечень экспертов", "Не соответствует направлению", "Направлена на юридическую проверку", "Не прошла юридическую проверку", "Прошла юридическую проверку",
-                     "Зарегистирована", "Подана повторно", "Направлена на экспертизу по существу","Отозвана заявителем", "Не исправлена в срок (ФЭ)", "Не исправлена в срок (ЮП)",
-                     "Оформление документов по заседанию", "Подана заявка на статус", "Отправлено отрицательное решение", "Отправлено положительное решение предв.экспертизы", "Отправлено положительное решение экспертизы на статус", "Идет заседание (повторное)"});
+                        "Неполный перечень документов (на экспертизу)", "Неполный перечень документов (на статус)", "Отсутствует перечень экспертов", "Не соответствует направлению", "Направлена на юридическую проверку", "Не прошла юридическую проверку", "Прошла юридическую проверку",
+                        "Зарегистирована", "Подана повторно", "Направлена на экспертизу по существу", "Отозвана заявителем", "Не исправлена в срок (ФЭ)", "Не исправлена в срок (ЮП)",
+                        "Оформление документов по заседанию", "Подана заявка на статус", "Отправлено отрицательное решение", "Отправлено положительное решение предв.экспертизы", "Отправлено положительное решение экспертизы на статус", "Идет заседание (повторное)"});
 
         documentType = addStaticClass("documentType", "Тип документа",
                 new String[]{"application", "resume", "techdesc", "forres", "ipres", "roadmap"},
@@ -534,6 +534,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP statusProject;
     public LP nameStatusProject;
     LP oficialNameProjectStatus;
+    LP numberProjectStatus;
     LP statusDataProject;
     LP statusProjectVote, nameStatusProjectVote;
 
@@ -1021,7 +1022,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         nameNativeUnionManagerProject = addSUProp(baseGroup, "nameNativeUnionManagerProject", "ФИО руководителя проекта", Union.OVERRIDE, nameNativeManagerProject, nameNativeCorrectManagerProject);
         nameNativeUnionManagerProject.setMinimumWidth(10);
         nameNativeUnionManagerProject.setMinimumWidth(50);
-        
+
         nameForeignUnionManagerProject = addSUProp(baseGroup, "nameForeignUnionManagerProject", "Full name project manager", Union.OVERRIDE, nameForeignManagerProject, nameForeignCorrectManagerProject);
         nameForeignUnionManagerProject.setMinimumWidth(10);
         nameForeignUnionManagerProject.setMinimumWidth(50);
@@ -1606,7 +1607,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
                 addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), inExpertVoteDateFromDateTo, 1, 2, 3, 4), 1, 3, 4); // в скольки заседаниях поучавствовал
 
         LP expertVoteMonthYear = addJProp(baseLM.and1, addJProp(baseLM.equals2, 3, addJProp(baseLM.monthInDate, dateExpertVote, 1, 2), 1, 2), 1, 2, 3,
-                                                       addJProp(baseLM.equals2, 3, addJProp(baseLM.yearInDate, dateExpertVote, 1, 2), 1, 2), 1, 2, 4);
+                addJProp(baseLM.equals2, 3, addJProp(baseLM.yearInDate, dateExpertVote, 1, 2), 1, 2), 1, 2, 4);
         doneExpertVoteMonthYear = addJProp("doneExpertVoteMonthYear", "Проголосовал в текущем месяце", baseLM.and1, doneNewExpertVote, 1, 2, expertVoteMonthYear, 1, 2, 3, 4);
         quantityDoneExpertMonthYear = addSGProp("quantityDoneExpertMonthYear", "Кол-во голосов.",
                 addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), doneExpertVoteMonthYear, 1, 2, 3, 4), 1, 3, 4); // в скольки заседаниях поучавствовал за месяц
@@ -1821,9 +1822,9 @@ public class SkolkovoLogicsModule extends LogicsModule {
         nameProjectActionFormalControl.setPreferredCharWidth(20);
         projectActionFormalControl.setDerivedChange(true, addJProp(projectActionProject, projectFormalControl, 1), 1, is(formalControl), 1);
 
-        overdueFormalControlProject = addJProp("overdueFormalControlProject",  true, "Просрочена формальная экспертиза", baseLM.and1,
-                                                addJProp(baseLM.greater2, baseLM.currentDate, addJProp(overdueDateFormalControl, executeFormalControlProject, 1), 1), 1,
-                                                addJProp(baseLM.and1, notEnoughDocumentsProject, 1, addJProp(baseLM.equals2, addJProp(projectActionFormalControl, executeFormalControlProject, 1), 1, addCProp(projectAction, "status")), 1), 1);
+        overdueFormalControlProject = addJProp("overdueFormalControlProject", true, "Просрочена формальная экспертиза", baseLM.and1,
+                addJProp(baseLM.greater2, baseLM.currentDate, addJProp(overdueDateFormalControl, executeFormalControlProject, 1), 1), 1,
+                addJProp(baseLM.and1, notEnoughDocumentsProject, 1, addJProp(baseLM.equals2, addJProp(projectActionFormalControl, executeFormalControlProject, 1), 1, addCProp(projectAction, "status")), 1), 1);
 
         maxLegalCheckProjectProps = addMGProp((AbstractGroup) null, new String[]{"maxDateLegalCheckProject", "currentLCProject"}, new String[]{"Дата посл. юр. проверки", "Посл. юр. проверка"}, 1,
                 dateLegalCheck, 1, projectLegalCheck, 1);
@@ -1841,14 +1842,15 @@ public class SkolkovoLogicsModule extends LogicsModule {
         nameProjectActionLegalCheck.setPreferredCharWidth(20);
         projectActionLegalCheck.setDerivedChange(true, addJProp(projectActionProject, projectLegalCheck, 1), 1, is(legalCheck), 1);
 
-        overdueLegalCheckProject = addJProp("overdueLegalCheckProject",  true, "Просрочена юридическая проверка", baseLM.and1,
-                                                        addJProp(baseLM.greater2, baseLM.currentDate, addJProp(overdueDateLegalCheck, executeLegalCheckProject, 1), 1), 1,
-                                                        addJProp(baseLM.and1, negativeLegalResultProject, 1, addJProp(baseLM.equals2, addJProp(projectActionLegalCheck, executeLegalCheckProject, 1), 1, addCProp(projectAction, "status")), 1), 1);
+        overdueLegalCheckProject = addJProp("overdueLegalCheckProject", true, "Просрочена юридическая проверка", baseLM.and1,
+                addJProp(baseLM.greater2, baseLM.currentDate, addJProp(overdueDateLegalCheck, executeLegalCheckProject, 1), 1), 1,
+                addJProp(baseLM.and1, negativeLegalResultProject, 1, addJProp(baseLM.equals2, addJProp(projectActionLegalCheck, executeLegalCheckProject, 1), 1, addCProp(projectAction, "status")), 1), 1);
 
         sentForTranslationProject = addDProp("sentForTranslationProject", "Направлена на перевод", LogicalClass.instance, project);
         oficialNameProjectStatus = addDProp(baseGroup, "oficialNameProjectStatus", "Наименование из регламента", StringClass.get(200), projectStatus);
         oficialNameProjectStatus.setMinimumWidth(10);
         oficialNameProjectStatus.setPreferredWidth(50);
+        numberProjectStatus = addDProp(baseGroup, "numberProjectStatus", "Номер", StringClass.get(10), projectStatus);
 
         fileDecisionVote = addDProp("fileDecisionVote", "Решение по проекту", PDFClass.instance, vote);
         loadFileDecisionVote = addJProp(actionGroup, true, "Загрузить решение", baseLM.and1, addLFAProp(fileDecisionVote), 1, closedSucceededVote, 1);
@@ -2052,37 +2054,37 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         dateAgreementExpert = addDProp("dateAgreementExpert", "Дата соглашения с экспертом", DateClass.instance, expert);
         vone = addCProp("1", IntegerClass.instance, 1);
-        claimerProjectVote  = addJProp("claimerProjectVote", "claimerProjectVote", claimerProject, projectVote,1);
+        claimerProjectVote = addJProp("claimerProjectVote", "claimerProjectVote", claimerProject, projectVote, 1);
         nameNativeJoinClaimerProjectVote = addJProp("nameNativeJoinClaimerProjectVote", "Имя заявителя", nameNativeJoinClaimerProject, projectVote, 1);
         nameNativeJoinClaimerProjectVote.setMinimumWidth(10);
         nameNativeJoinClaimerProjectVote.setPreferredWidth(120);
         countryExpert = addDProp("countryExpert", "Страна эксперта", baseLM.country, expert);
-        nameCountryExpert = addJProp("nameCountryExpert", "Страна эксперта", baseLM.name, countryExpert,1);
+        nameCountryExpert = addJProp("nameCountryExpert", "Страна эксперта", baseLM.name, countryExpert, 1);
         nameCountryExpert.setMinimumWidth(10);
         nameCountryExpert.setPreferredWidth(20);
 
-        caseCountry= addDProp(baseGroup, "caseCountry", "Страна в Предложном падеже", StringClass.get(40), baseLM.country);
+        caseCountry = addDProp(baseGroup, "caseCountry", "Страна в Предложном падеже", StringClass.get(40), baseLM.country);
         caseCountryExpert = addJProp("caseCountryExpert", "Страна эксперта П.П.", caseCountry, countryExpert, 1);
 
         currencyExpert = addDProp("currencyExpert", "Валюта (ИД)", currency, expert);
-        nameCurrencyExpert = addJProp("nameCurrencyExpert", "Валюта договора", baseLM.name, currencyExpert,1);
+        nameCurrencyExpert = addJProp("nameCurrencyExpert", "Валюта договора", baseLM.name, currencyExpert, 1);
         nameCurrencyExpert.setMinimumWidth(10);
         nameCurrencyExpert.setPreferredWidth(20);
 
 
         residency = addDProp(baseGroup, "residency", "Признак резидентства", LogicalClass.instance, baseLM.country);
         residencyCountryExpert = addJProp("residencyCountryExpert", "Резидент", residency, countryExpert, 1);
-        moneyQuantityDoneExpertMonthYear = addJProp("moneyQuantityDoneExpertMonthYear", "ЗП эксперта за мес.", baseLM.round0,  addJProp (baseLM.multiplyDouble2, quantityDoneExpertMonthYear, 1, 2, 3, rateExpert), 1, 2, 3 );
+        moneyQuantityDoneExpertMonthYear = addJProp("moneyQuantityDoneExpertMonthYear", "ЗП эксперта за мес.", baseLM.round0, addJProp(baseLM.multiplyDouble2, quantityDoneExpertMonthYear, 1, 2, 3, rateExpert), 1, 2, 3);
 
         baseCurrency = addDProp(baseGroup, "baseCurrency", "Базовая валюта", LogicalClass.instance, currency);
-        baseCurrencyExpert = addJProp("baseCurrencyExpert", "Базовая валюта", baseCurrency, currencyExpert,1);
+        baseCurrencyExpert = addJProp("baseCurrencyExpert", "Базовая валюта", baseCurrency, currencyExpert, 1);
 
         englCountry = addDProp(baseGroup, "englCountry", "Страна на ангийском", StringClass.get(40), baseLM.country);
-        englCountryExpert   = addJProp("englCountryExpert", "Страна эксперта англ", englCountry, countryExpert, 1);
-        englCurrency= addDProp(baseGroup, "englCurrency", "Валюта на ангийском", StringClass.get(40), currency);
-        englCurrencyExpert   = addJProp("englCurrencyExpert", "Валюта эксперта англ", englCurrency, currencyExpert, 1);
-        pluralCurrency= addDProp(baseGroup, "pluralCurrency", "Валюта множ.числ", StringClass.get(40), currency);
-        pluralCurrencyExpert   = addJProp("pluralCurrencyExpert", "Валюта эксперта мн.ч.", pluralCurrency, currencyExpert, 1);
+        englCountryExpert = addJProp("englCountryExpert", "Страна эксперта англ", englCountry, countryExpert, 1);
+        englCurrency = addDProp(baseGroup, "englCurrency", "Валюта на ангийском", StringClass.get(40), currency);
+        englCurrencyExpert = addJProp("englCurrencyExpert", "Валюта эксперта англ", englCurrency, currencyExpert, 1);
+        pluralCurrency = addDProp(baseGroup, "pluralCurrency", "Валюта множ.числ", StringClass.get(40), currency);
+        pluralCurrencyExpert = addJProp("pluralCurrencyExpert", "Валюта эксперта мн.ч.", pluralCurrency, currencyExpert, 1);
 
         emailLetterExpertMonthYearEA = addEAProp("Акт выполненных работ", IntegerClass.instance, IntegerClass.instance);
         addEARecepient(emailLetterExpertMonthYearEA, emailForCertificates);
@@ -2131,6 +2133,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
     @Override
     public void initNavigators() throws JRException, FileNotFoundException {
+
+        projectStatus.setDialogForm(new StatusFormEntity(null, "StatusForm"));
 
         ToolBarNavigatorWindow mainToolbar = new ToolBarNavigatorWindow(JToolBar.VERTICAL, "mainToolbar", "Навигатор", BorderLayout.WEST);
         mainToolbar.titleShown = false;
@@ -2592,7 +2596,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             setForceViewType(projectOtherClusterGroup, ClassViewType.PANEL);
 
             objFormalControl = addSingleGroupObject(formalControl);
-            addPropertyDraw(new LP[] {addNoListOfExpertsFCResult, addNotEnoughDocumentsFCResult, addNotSuitableClusterFCResult, addRepeatedFCResult, addPositiveFCResult});
+            addPropertyDraw(new LP[]{addNoListOfExpertsFCResult, addNotEnoughDocumentsFCResult, addNotSuitableClusterFCResult, addRepeatedFCResult, addPositiveFCResult});
             addPropertyDraw(objFormalControl, dateFormalControl, nameResultFormalControl, nameProjectActionFormalControl);
             addPropertyDraw(commentFormalControl, objFormalControl).forceViewType = ClassViewType.PANEL;
             addObjectActions(this, objFormalControl);
@@ -2602,7 +2606,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
             objLegalCheck = addSingleGroupObject(legalCheck);
             addPropertyDraw(objLegalCheck, dateLegalCheck, nameResultLegalCheck);
-            addPropertyDraw(new LP[] {addNegativeLCResult, addPositiveLCResult});
+            addPropertyDraw(new LP[]{addNegativeLCResult, addPositiveLCResult});
             addPropertyDraw(commentLegalCheck, objLegalCheck).forceViewType = ClassViewType.PANEL;
             addObjectActions(this, objLegalCheck);
 
@@ -2696,7 +2700,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             ContainerView formalControlContainer = design.createContainer("Формальная экспертиза");
             formalControlContainer.add(design.get(getPropertyDraw(exportProjectDocumentsAction)));
             formalControlContainer.add(design.getGroupObjectContainer(objFormalControl.groupTo));
-            formalControlContainer.add(design.getGroupPropertyContainer((GroupObjectEntity)null, formalControlResultGroup));
+            formalControlContainer.add(design.getGroupPropertyContainer((GroupObjectEntity) null, formalControlResultGroup));
             PropertyDrawView commentFormalView = design.get(getPropertyDraw(commentFormalControl, objFormalControl));
             commentFormalView.constraints.fillHorizontal = 1.0;
             commentFormalView.preferredSize = new Dimension(-1, 300);
@@ -2704,7 +2708,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
             ContainerView legalCheckContainer = design.createContainer("Юридическая проверка");
             legalCheckContainer.add(design.getGroupObjectContainer(objLegalCheck.groupTo));
-            legalCheckContainer.add(design.getGroupPropertyContainer((GroupObjectEntity)null, legalCheckResultGroup));
+            legalCheckContainer.add(design.getGroupPropertyContainer((GroupObjectEntity) null, legalCheckResultGroup));
             PropertyDrawView commentLegalView = design.get(getPropertyDraw(commentLegalCheck, objLegalCheck));
             commentLegalView.constraints.fillHorizontal = 1.0;
             commentLegalView.preferredSize = new Dimension(-1, 300);
@@ -3434,14 +3438,14 @@ public class SkolkovoLogicsModule extends LogicsModule {
             addPropertyDraw(objExpert, objVote, objMonth, objYear, doneExpertVoteMonthYear);
 
             //  addPropertyDraw(voteResultGroup, true, objExpert, objVote);
-            addPropertyDraw(objExpert,objMonth, objYear, quantityDoneExpertMonthYear, moneyQuantityDoneExpertMonthYear);
+            addPropertyDraw(objExpert, objMonth, objYear, quantityDoneExpertMonthYear, moneyQuantityDoneExpertMonthYear);
             if (resident)
                 addFixedFilter(new NotNullFilterEntity(addPropertyObject(residencyCountryExpert, objExpert)));
 
             if (!resident)
                 addFixedFilter(new NotFilterEntity(new NotNullFilterEntity(addPropertyObject(residencyCountryExpert, objExpert))));
 
-            addFixedFilter(new NotNullFilterEntity(addPropertyObject(quantityDoneExpertMonthYear, objExpert,objMonth, objYear)));
+            addFixedFilter(new NotNullFilterEntity(addPropertyObject(quantityDoneExpertMonthYear, objExpert, objMonth, objYear)));
 
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(doneExpertVoteMonthYear, objExpert, objVote, objMonth, objYear)));
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(inNewExpertVote, objExpert, objVote)));
@@ -3511,6 +3515,28 @@ public class SkolkovoLogicsModule extends LogicsModule {
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(acceptedProject, objProject)));
 
             addAttachEAForm(emailAcceptedProjectEA, this, EmailActionProperty.Format.PDF, emailClaimerAcceptedHeaderProject, objProject, 1);
+        }
+    }
+
+    private class StatusFormEntity extends ClassFormEntity<SkolkovoBusinessLogics> {
+
+        private ObjectEntity objStatus;
+
+        private StatusFormEntity(NavigatorElement parent, String sID) {
+            super(parent, sID, "Статус", true);
+            objStatus = addSingleGroupObject(genID(), "Status", projectStatus, "Статус", numberProjectStatus, baseLM.name, oficialNameProjectStatus);
+        }
+
+        @Override
+        public FormView createDefaultRichDesign() {
+            DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign();
+            design.defaultOrders.put(design.get(getPropertyDraw(numberProjectStatus, objStatus)), true);
+            return design;
+        }
+
+        @Override
+        public ObjectEntity getObject() {
+            return objStatus;
         }
     }
 
@@ -3608,47 +3634,47 @@ public class SkolkovoLogicsModule extends LogicsModule {
                 }
 
                 /*
-                Query<String, String> query = new Query<String, String>(Collections.singleton("nonRussianSpecialist"));
-                query.and(projectNonRussianSpecialist.getExpr(context.getModifier(), query.mapKeys.get("nonRussianSpecialist")).compare(projectObject.getExpr(), Compare.EQUALS));
-                query.properties.put("fullNameNonRussianSpecialist", projectNonRussianSpecialist.getExpr(context.getModifier(), query.mapKeys.get("nonRussianSpecialist")));
-                query.properties.put("fileForeignResumeNonRussianSpecialist", fileForeignResumeNonRussianSpecialist.getExpr(context.getModifier(), query.mapKeys.get("nonRussianSpecialist")));
-                int count = 1;
-                int size = query.executeClasses(context.getSession(), baseClass).entrySet().size();
-                for (Map.Entry<Map<String, DataObject>, Map<String, ObjectValue>> row : query.executeClasses(context.getSession(), baseClass).entrySet()) {
-                    row.getKey().get("nonRussianSpecialist");
-                    row.getValue().get("fullNameNonRussianSpecialist");
-                    row.getValue().get("fileForeignResumeNonRussianSpecialist");
-                    documentObject = context.addObject(document);
-                    projectDocument.execute(projectObject.getValue(), context, documentObject);
-                    typeDocument.execute(documentType.getID("forres"), context, documentObject);
-                    languageDocument.execute(language.getID("english"), context, documentObject);
-                    if (size > 1)
-                        postfixDocument.execute(String.valueOf(count), context, documentObject);
-                    fileDocument.execute(row.getValue().get("fileForeignResumeNonRussianSpecialist").getValue(), context, documentObject);
-                    count++;
-                }
+                                Query<String, String> query = new Query<String, String>(Collections.singleton("nonRussianSpecialist"));
+                                query.and(projectNonRussianSpecialist.getExpr(context.getModifier(), query.mapKeys.get("nonRussianSpecialist")).compare(projectObject.getExpr(), Compare.EQUALS));
+                                query.properties.put("fullNameNonRussianSpecialist", projectNonRussianSpecialist.getExpr(context.getModifier(), query.mapKeys.get("nonRussianSpecialist")));
+                                query.properties.put("fileForeignResumeNonRussianSpecialist", fileForeignResumeNonRussianSpecialist.getExpr(context.getModifier(), query.mapKeys.get("nonRussianSpecialist")));
+                                int count = 1;
+                                int size = query.executeClasses(context.getSession(), baseClass).entrySet().size();
+                                for (Map.Entry<Map<String, DataObject>, Map<String, ObjectValue>> row : query.executeClasses(context.getSession(), baseClass).entrySet()) {
+                                    row.getKey().get("nonRussianSpecialist");
+                                    row.getValue().get("fullNameNonRussianSpecialist");
+                                    row.getValue().get("fileForeignResumeNonRussianSpecialist");
+                                    documentObject = context.addObject(document);
+                                    projectDocument.execute(projectObject.getValue(), context, documentObject);
+                                    typeDocument.execute(documentType.getID("forres"), context, documentObject);
+                                    languageDocument.execute(language.getID("english"), context, documentObject);
+                                    if (size > 1)
+                                        postfixDocument.execute(String.valueOf(count), context, documentObject);
+                                    fileDocument.execute(row.getValue().get("fileForeignResumeNonRussianSpecialist").getValue(), context, documentObject);
+                                    count++;
+                                }
 
-                query = new Query<String, String>(Collections.singleton("nonRussianSpecialist"));
-                query.and(projectNonRussianSpecialist.getExpr(context.getModifier(), query.mapKeys.get("nonRussianSpecialist")).compare(projectObject.getExpr(), Compare.EQUALS));
-                query.properties.put("fullNameNonRussianSpecialist", projectNonRussianSpecialist.getExpr(context.getModifier(), query.mapKeys.get("nonRussianSpecialist")));
-                query.properties.put("fileNativeResumeNonRussianSpecialist", fileNativeResumeNonRussianSpecialist.getExpr(context.getModifier(), query.mapKeys.get("nonRussianSpecialist")));
-                count = 1;
-                size = query.executeClasses(context.getSession(), baseClass).entrySet().size();
-                for (Map.Entry<Map<String, DataObject>, Map<String, ObjectValue>> row : query.executeClasses(context.getSession(), baseClass).entrySet()) {
-                    row.getKey().get("nonRussianSpecialist");
-                    row.getValue().get("fullNameNonRussianSpecialist");
-                    row.getValue().get("fileNativeResumeNonRussianSpecialist");
-                    documentObject = context.addObject(document);
-                    projectDocument.execute(projectObject.getValue(), context, documentObject);
-                    typeDocument.execute(documentType.getID("forres"), context, documentObject);
-                    languageDocument.execute(language.getID("russian"), context, documentObject);
-                    if (size > 1)
-                        postfixDocument.execute(String.valueOf(count), context, documentObject);
-                    fileDocument.execute(row.getValue().get("fileNativeResumeNonRussianSpecialist").getValue(), context, documentObject);
-                    count++;
-                }
+                                query = new Query<String, String>(Collections.singleton("nonRussianSpecialist"));
+                                query.and(projectNonRussianSpecialist.getExpr(context.getModifier(), query.mapKeys.get("nonRussianSpecialist")).compare(projectObject.getExpr(), Compare.EQUALS));
+                                query.properties.put("fullNameNonRussianSpecialist", projectNonRussianSpecialist.getExpr(context.getModifier(), query.mapKeys.get("nonRussianSpecialist")));
+                                query.properties.put("fileNativeResumeNonRussianSpecialist", fileNativeResumeNonRussianSpecialist.getExpr(context.getModifier(), query.mapKeys.get("nonRussianSpecialist")));
+                                count = 1;
+                                size = query.executeClasses(context.getSession(), baseClass).entrySet().size();
+                                for (Map.Entry<Map<String, DataObject>, Map<String, ObjectValue>> row : query.executeClasses(context.getSession(), baseClass).entrySet()) {
+                                    row.getKey().get("nonRussianSpecialist");
+                                    row.getValue().get("fullNameNonRussianSpecialist");
+                                    row.getValue().get("fileNativeResumeNonRussianSpecialist");
+                                    documentObject = context.addObject(document);
+                                    projectDocument.execute(projectObject.getValue(), context, documentObject);
+                                    typeDocument.execute(documentType.getID("forres"), context, documentObject);
+                                    languageDocument.execute(language.getID("russian"), context, documentObject);
+                                    if (size > 1)
+                                        postfixDocument.execute(String.valueOf(count), context, documentObject);
+                                    fileDocument.execute(row.getValue().get("fileNativeResumeNonRussianSpecialist").getValue(), context, documentObject);
+                                    count++;
+                                }
 
-*/
+                */
                 Query<String, String> query = new Query<String, String>(Collections.singleton("nonRussianSpecialist"));
                 query.and(projectNonRussianSpecialist.getExpr(context.getModifier(), query.mapKeys.get("nonRussianSpecialist")).compare(projectObject.getExpr(), Compare.EQUALS));
                 query.properties.put("fullNameNonRussianSpecialist", projectNonRussianSpecialist.getExpr(context.getModifier(), query.mapKeys.get("nonRussianSpecialist")));
