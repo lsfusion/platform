@@ -2,7 +2,7 @@
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="ACT neresident" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0">
 	<property name="ireport.zoom" value="1.0"/>
 	<property name="ireport.x" value="0"/>
-	<property name="ireport.y" value="336"/>
+	<property name="ireport.y" value="0"/>
 	<style name="DefaultStyle" isDefault="true" vAlign="Middle" fontName="lsf.TimesNewRoman" fontSize="12" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false"/>
 	<style name="GroupCellStyle0" mode="Opaque" backcolor="#FFFFFF" vAlign="Middle" fontName="Serif" fontSize="10" pdfFontName="lsf.Times" pdfEncoding="Cp1251" isPdfEmbedded="false">
 		<box leftPadding="2" rightPadding="2">

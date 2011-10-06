@@ -3239,27 +3239,31 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         private ObjectEntity objExpert;
         private ObjectEntity objOldExpert;
+        private ObjectEntity objPrevVote;
 
         private VoteStartFormEntity(NavigatorElement parent, String sID) {
-            super(parent, sID, "Созыв заседания", true);
+                    super(parent, sID, "Созыв заседания", true);
 
-            objVote = addSingleGroupObject(1, "vote", vote, baseLM.date, dateProjectVote, nameNativeClaimerVote, nameNativeProjectVote, nameAblateClaimerVote, prevDateStartVote, prevDateVote, quantityInVote, quantityInOldVote);
-            objVote.groupTo.initClassView = ClassViewType.PANEL;
+                objVote = addSingleGroupObject(1, "vote", vote, baseLM.date, dateProjectVote, nameNativeClaimerVote, nameNativeProjectVote, nameAblateClaimerVote, prevDateStartVote, prevDateVote, quantityInVote, quantityInOldVote, countPrevVote);
+                objVote.groupTo.initClassView = ClassViewType.PANEL;
 
-            objExpert = addSingleGroupObject(2, "expert", expert, baseLM.userLastName, baseLM.userFirstName, documentNameExpert);
-            addPropertyDraw(numberNewExpertVote, objExpert, objVote);
-            addFixedFilter(new NotNullFilterEntity(addPropertyObject(inNewExpertVote, objExpert, objVote)));
+                objExpert = addSingleGroupObject(2, "expert", expert, baseLM.userLastName, baseLM.userFirstName, documentNameExpert);
+                addPropertyDraw(numberNewExpertVote, objExpert, objVote);
+                addFixedFilter(new NotNullFilterEntity(addPropertyObject(inNewExpertVote, objExpert, objVote)));
 
-            objOldExpert = addSingleGroupObject(3, "oldexpert", expert, baseLM.userLastName, baseLM.userFirstName, documentNameExpert);
-            addPropertyDraw(numberOldExpertVote, objOldExpert, objVote);
-            addFixedFilter(new NotNullFilterEntity(addPropertyObject(inOldExpertVote, objOldExpert, objVote)));
+                objOldExpert = addSingleGroupObject(3, "oldexpert", expert, baseLM.userLastName, baseLM.userFirstName, documentNameExpert);
+                addPropertyDraw(numberOldExpertVote, objOldExpert, objVote);
+                addFixedFilter(new NotNullFilterEntity(addPropertyObject(inOldExpertVote, objOldExpert, objVote)));
 
-            addAttachEAForm(emailStartVoteEA, this, EmailActionProperty.Format.PDF, objVote, 1);
-            addAttachEAForm(emailClosedVoteEA, this, EmailActionProperty.Format.PDF, emailStartHeaderVote, objVote, 1);
+                objPrevVote = addSingleGroupObject(4, "prevVote", vote, dateEndVote);
+                addFixedFilter(new NotNullFilterEntity(addPropertyObject(isPrevVoteVote, objPrevVote, objVote)));
 
-            voteStartFormVote = addFAProp("Созыв заседания", this, objVote);
+                addAttachEAForm(emailStartVoteEA, this, EmailActionProperty.Format.PDF, objVote, 1);
+                addAttachEAForm(emailClosedVoteEA, this, EmailActionProperty.Format.PDF, emailStartHeaderVote, objVote, 1);
+
+                voteStartFormVote = addFAProp("Созыв заседания", this, objVote);
+
         }
-
         @Override
         public void modifyHierarchy(GroupObjectHierarchy groupHierarchy) {
             groupHierarchy.markGroupAsNonJoinable(objVote.groupTo);

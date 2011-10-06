@@ -2,7 +2,7 @@
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="vote" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0">
 	<property name="ireport.zoom" value="1.1000000000000025"/>
 	<property name="ireport.x" value="0"/>
-	<property name="ireport.y" value="81"/>
+	<property name="ireport.y" value="0"/>
 	<style name="DefaultStyle" isDefault="true" vAlign="Middle" fontName="lsf.TimesNewRoman" fontSize="12" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false"/>
 	<style name="GroupCellStyle0" mode="Opaque" backcolor="#DFDFDF" vAlign="Middle" fontName="lsf.TimesNewRoman" fontSize="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false">
 		<box leftPadding="2" rightPadding="2">
@@ -25,22 +25,27 @@
 	<field name="nameAblateClaimerVote" class="java.lang.String"/>
 	<field name="quantityInVote" class="java.lang.Integer"/>
 	<field name="quantityInOldVote" class="java.lang.Integer"/>
+	<field name="dateEndVote" class="java.util.Date"/>
+	<variable name="dateD" class="java.util.Date">
+		<variableExpression><![CDATA[$V{dateD}}+($V{dateD}.length() == 0 ? "" : " , ")+$F{dateEndVote}]]></variableExpression>
+		<initialValueExpression><![CDATA[""]]></initialValueExpression>
+	</variable>
 	<group name="captionGroup1">
 		<groupExpression><![CDATA[String.valueOf($F{vote})]]></groupExpression>
 	</group>
 	<group name="textGroup1">
 		<groupExpression><![CDATA[String.valueOf($F{vote})]]></groupExpression>
 		<groupHeader>
-			<band height="280" splitType="Prevent">
+			<band height="281" splitType="Prevent">
 				<textField isStretchWithOverflow="true">
 					<reportElement positionType="Float" x="50" y="175" width="489" height="45"/>
 					<textElement textAlignment="Justified" verticalAlignment="Top">
 						<paragraph firstLineIndent="40"/>
 					</textElement>
 					<textFieldExpression class="java.lang.String"><![CDATA["Некоммерческая организация Фонд развития Центра разработки и коммерциализации новых технологий, "+
-"рассмотрев поданную " + $F{nameAblateClaimerVote} + " заявку на проведение предварительной экспертизы проекта от "
-+ platform.base.BaseUtils.formatRussian($F{dateProjectVote}) + " года " + $F{nameNativeProjectVote} + ","+($F{prevDateVote}==null?
-" в соответствии с пунктом 9 Положения о присвоении и утрате статуса участника проекта создания и обеспечения функционирования инновационного центра «Сколково» и пунктами 4-7":
+"рассмотрев поданную Соискателем - " + $F{nameAblateClaimerVote} + " заявку на проведение предварительной экспертизы проекта от "
++ platform.base.BaseUtils.formatRussian($F{dateProjectVote}) + " года (проект «" + $F{nameNativeProjectVote} + "»),"+($F{prevDateVote}==null?
+" в соответствии с пунктом 8 Положения о проведении предварительной экспертизы проектов и пунктами 4-7 Положения об Экспертных коллегиях Фонда ":
 " учитывая, что заседание предыдущей Экспертной коллегии было признано несостоявшимся (протокол заседания Экспертной коллегии по вопросу о соответствии проекта, представленного Соискателем, критериям, указанным в подпункте Е пункта 2 Положения о присвоении и утрате статуса участника проекта создания и обеспечения функционирования инновационного центра «Сколково», от "+platform.base.BaseUtils.formatRussian($F{prevDateVote})+" года), в соответствии с пунктом 14")+
 " Положения об Экспертных коллегиях Фонда"]]></textFieldExpression>
 				</textField>
@@ -158,7 +163,7 @@
 				<textElement textAlignment="Justified" verticalAlignment="Top">
 					<paragraph firstLineIndent="40"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA["3. Включить в состав Экспертной коллегии следующих экспертов, направивших заполненные Бюллетени оценки для целей участия в заседании Экспертной коллегии от "+(platform.base.BaseUtils.formatRussian($F{prevDateVote})) + " года, признанном несостоявшимся, и Бюллетени оценки которых были учтены для целей определения результатов голосования:"]]></textFieldExpression>
+				<textFieldExpression class="java.lang.String"><![CDATA["3. Включить в состав Экспертной коллегии следующих экспертов, направивших заполненные Бюллетени оценки для целей участия в заседании Экспертной коллегии от "+(platform.base.BaseUtils.formatRussian($V{dateD})) + " года, признанном несостоявшимся, и Бюллетени оценки которых были учтены для целей определения результатов голосования:"]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>
