@@ -45,10 +45,6 @@ public abstract class RemoteContextObject extends RemoteObject implements Contex
         }
     }
 
-    public void initContext() {
-        Context.context.set(this); // вообще должен быть null, но в силу thread pooling'а не всегда
-    }
-
     public final MessageStack actionMessageStack = new MessageStack();
 
     public void setActionMessage(String message) {
@@ -80,9 +76,11 @@ public abstract class RemoteContextObject extends RemoteObject implements Contex
     @Aspect
     public static class RemoteFormContextHoldingAspect {
         @Before("execution(* (platform.interop.RemoteContextInterface+ && platform.interop..*).*(..)) && " +
-                "!cflowbelow(execution(* (platform.interop.RemoteContextInterface+ && platform.interop..*).*(..))) && target(remoteForm)")
-        public void beforeCall(RemoteContextObject remoteForm) {
-            remoteForm.initContext();
+                "!cflowbelow(execution(* (platform.interop.RemoteContextInterface+ && platform.interop..*).*(..))) && " +
+                "!cflowbelow(initialization(platform.server.logics.BusinessLogics.new(..))) && target(remoteObject)")
+        public void beforeCall(RemoteContextObject remoteObject) {
+            if(!(Thread.currentThread() instanceof ContextAwareThread))
+                Context.context.set(remoteObject); // вообще должен быть null, но в силу thread pooling'а не всегда
         }
     }
 

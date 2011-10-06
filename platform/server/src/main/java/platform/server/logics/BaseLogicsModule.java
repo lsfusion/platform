@@ -32,6 +32,7 @@ import platform.server.logics.property.actions.*;
 import platform.server.logics.property.group.AbstractGroup;
 import platform.server.logics.property.group.PropertySet;
 import platform.server.logics.table.TableFactory;
+import platform.server.session.DataSession;
 
 import javax.swing.*;
 import java.awt.event.KeyEvent;
@@ -258,6 +259,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     private LP selectUserRoles;
 
     private LP<ClassPropertyInterface> recalculateAction;
+    private LP<ClassPropertyInterface> recalculateFollowsAction;
     private LP<ClassPropertyInterface> packAction;
 
     public SelectionPropertySet selection;
@@ -555,6 +557,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         cancelRestartServerAction = addJProp(getString("logics.server.cancel.stop"), and1, addCancelRestartActionProp(), isServerRestarting);
 
         recalculateAction = addProperty(null, new LP<ClassPropertyInterface>(new RecalculateActionProperty(genSID(), getString("logics.recalculate.aggregations"))));
+        recalculateFollowsAction = addProperty(null, new LP<ClassPropertyInterface>(new RecalculateFollowsActionProperty(genSID(), getString("logics.recalculate.follows"))));
         packAction = addProperty(null, new LP<ClassPropertyInterface>(new PackActionProperty(genSID(), getString("logics.tables.pack"))));
 
         currentUserName = addJProp(getString("logics.user.current.user.name"), name, currentUser);
@@ -1118,10 +1121,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
             super(sID, caption, new ValueClass[]{});
         }
 
-        public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapExecuteObjects) {
-            throw new RuntimeException("should not be");
-        }
-
         @Override
         public void execute(ExecutionContext context) throws SQLException {
             SQLSession sqlSession = context.getSession().sql;
@@ -1150,6 +1149,23 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
             context.addAction(new MessageClientAction(getString("logics.tables.packing.completed"), getString("logics.tables.packing")));
         }
     }
+
+    private class RecalculateFollowsActionProperty extends ActionProperty {
+        private RecalculateFollowsActionProperty(String sID, String caption) {
+            super(sID, caption, new ValueClass[]{});
+        }
+
+        @Override
+        public void execute(ExecutionContext context) throws SQLException {
+            DataSession session = BL.createSession();
+            session.resolveFollows(BL, true);
+            session.apply(BL);
+            session.close();
+
+            context.addAction(new MessageClientAction(getString("logics.recalculation.was.completed"), getString("logics.recalculation.follows")));
+        }
+    }
+
 
     public static class MessageActionProperty extends ActionProperty {
         private String message;
@@ -1373,7 +1389,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         private AdminFormEntity(NavigatorElement parent, String sID) {
             super(parent, sID, getString("logics.global.parameters"));
 
-            addPropertyDraw(new LP[]{smtpHost, smtpPort, fromAddress, emailAccount, emailPassword, emailBlindCarbonCopy, disableEmail, webHost, defaultCountry, barcodePrefix, restartServerAction, cancelRestartServerAction, recalculateAction, packAction, runGarbageCollector});
+            addPropertyDraw(new LP[]{smtpHost, smtpPort, fromAddress, emailAccount, emailPassword, emailBlindCarbonCopy, disableEmail, webHost, defaultCountry, barcodePrefix, restartServerAction, cancelRestartServerAction, recalculateAction, recalculateFollowsAction, packAction, runGarbageCollector});
         }
     }
 

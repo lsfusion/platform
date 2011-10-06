@@ -36,25 +36,24 @@ public class PropertyFollows<T extends PropertyInterface, L extends PropertyInte
         return implement.property;
     }
 
-    public void resolveTrue(DataSession session, BusinessLogics<?> BL) throws SQLException {
-        if(!property.hasChanges(session.modifier) || ((options & RESOLVE_TRUE) == 0)) // для оптимизации в общем то
+    public void resolveTrue(DataSession session, BusinessLogics<?> BL, boolean recalculate) throws SQLException {
+        if((!recalculate && !property.hasChanges(session.modifier)) || ((options & RESOLVE_TRUE) == 0)) // для оптимизации в общем то
             return;
 
 //      f' and !f and !g(')	: g -> NotNull
-//      в общем то чтобы исключить избыточность надо ровно в одном из resolve'ов оставить новое значение, а в другом старое
         Map<T,KeyExpr> mapKeys = property.getMapKeys();
         implement.mapNotNull(mapKeys, property.getExpr(mapKeys, session.modifier).getWhere().
-                and(property.getExpr(mapKeys).getWhere().not()), session, BL);
+                and(recalculate?Where.TRUE:property.getExpr(mapKeys).getWhere().not()), session, BL);
     }
 
-    public void resolveFalse(DataSession session, BusinessLogics<?> BL) throws SQLException {
-        if(!implement.property.hasChanges(session.modifier) || ((options & RESOLVE_FALSE) == 0)) // для оптимизации в общем то
+    public void resolveFalse(DataSession session, BusinessLogics<?> BL, boolean recalculate) throws SQLException {
+        if((!recalculate && !implement.property.hasChanges(session.modifier)) || ((options & RESOLVE_FALSE) == 0)) // для оптимизации в общем то
             return;
 
 //      f(') and g and !g' : f -> Null
         Map<T,KeyExpr> mapKeys = property.getMapKeys();
-        property.setNull(mapKeys, implement.mapExpr(mapKeys).getWhere().
-                        and(implement.mapExpr(mapKeys, session.modifier).getWhere().not()), session, BL);
+        property.setNull(mapKeys, implement.mapExpr(mapKeys, session.modifier).getWhere().not().
+                        and(recalculate?Where.TRUE:implement.mapExpr(mapKeys).getWhere()), session, BL);
     }
 
 }

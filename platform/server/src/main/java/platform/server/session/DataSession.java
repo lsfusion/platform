@@ -339,7 +339,7 @@ public class DataSession extends MutableObject implements SessionChanges, ExprCh
 
     @Message("message.session.apply.check")
     public String check(final BusinessLogics<?> BL) throws SQLException {
-        resolveFollows(BL, null);
+        resolveFollows(BL, false);
 
         // до чтения persistent свойств в сессию
         if (applyObject == null) {
@@ -440,13 +440,13 @@ public class DataSession extends MutableObject implements SessionChanges, ExprCh
     }
 
     @Message("message.session.apply.resolve.follows")
-    public void resolveFollows(final BusinessLogics<?> BL, List<ClientAction> actions) throws SQLException {
+    public void resolveFollows(final BusinessLogics<?> BL, boolean recalculate) throws SQLException {
 
         for(Property<?> property : BL.getFollowProperties()) {
             for(PropertyFollows<?, ?> follow : property.follows)
-                follow.resolveFalse(this, BL);
+                follow.resolveFalse(this, BL, recalculate);
             for(PropertyFollows<?, ?> follow : property.followed)
-                follow.resolveTrue(this, BL);
+                follow.resolveTrue(this, BL, recalculate);
         }
     }
 
