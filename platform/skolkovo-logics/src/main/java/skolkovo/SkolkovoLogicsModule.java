@@ -901,7 +901,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         nameForeign.setPreferredWidth(50);
 
         nameNativeShort = addDProp(baseGroup, "nameNativeShort", "Имя (сокр.)", InsensitiveStringClass.get(4), cluster);
-        nameNativeShortAggregateClusterProject = addDProp(baseGroup, "nameNativeShortAggregateClusterProject", "Кластеры", InsensitiveStringClass.get(50), project);
+        nameNativeShortAggregateClusterProject = addDProp(baseGroup, "nameNativeShortAggregateClusterProject", "Кластеры", InsensitiveStringClass.get(20), project);
 
         baseGroup.add(baseLM.email.property); // сделано, чтобы email был не самой первой колонкой в диалогах
 
