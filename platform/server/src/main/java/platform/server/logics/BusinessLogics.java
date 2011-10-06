@@ -333,6 +333,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             policyManager.putUser(userId, userObject);
         }
 
+        setAvailableForms(userObject);
+
         List<Integer> userPoliciesIds = readUserPoliciesIds(userId);
         for (int policyId : userPoliciesIds) {
             SecurityPolicy policy = policyManager.getPolicy(policyId);
@@ -341,7 +343,6 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             }
         }
 
-        setAvailableForms(userObject);
         return userObject;
     }
 

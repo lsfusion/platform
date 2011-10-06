@@ -1074,6 +1074,8 @@ public class FormInstance<T extends BusinessLogics<T>> extends IncrementProps<Pr
                 changedProps = new ArrayList<Property>();
             }
 
+            updateIncrementTableProps(changedProps);
+
             GroupObjectValue updateGroupObject = null; // так как текущий groupObject идет относительно treeGroup, а не group
             for (GroupObjectInstance group : groups) {
                 if (refresh) {

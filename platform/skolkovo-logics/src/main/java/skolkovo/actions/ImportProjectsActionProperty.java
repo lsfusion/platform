@@ -348,7 +348,7 @@ public class ImportProjectsActionProperty extends ActionProperty {
         propertiesForeign.add(new ImportProperty(fileForeignRoadMapProjectField, LM.fileForeignRoadMapProject.getMapping(projectKey)));
 
         propertiesFullClaimerForeign = new ArrayList<ImportProperty<?>>();
-        propertiesFullClaimerForeign.add(new ImportProperty(nameForeignClaimerField, LM.nameForeignClaimer.getMapping(claimerKey)));
+        propertiesFullClaimerForeign.add(new ImportProperty(nameForeignClaimerField, LM.nameForeignJoinClaimer.getMapping(claimerKey)));
         propertiesFullClaimerForeign.add(new ImportProperty(firmNameForeignClaimerField, LM.firmNameForeignClaimer.getMapping(claimerKey)));
 
         patentKey = new ImportKey(LM.patent, LM.nativeNumberSIDToPatent.getMapping(nativeNumberPatentField, projectIdField));
