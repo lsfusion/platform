@@ -16,15 +16,22 @@ public abstract class RemoteContextObject extends RemoteObject implements Contex
     }
 
     public static String popCurrentActionMessage() {
-        return Context.context.get().popActionMessage();
+        if (Context.context.get() != null)
+            return Context.context.get().popActionMessage();
+        else
+            return "";
     }
 
     public static void pushCurrentActionMessage(String segment) {
-        Context.context.get().pushActionMessage(segment);
+        if (Context.context.get() != null)
+            Context.context.get().pushActionMessage(segment);
     }
 
     public String getRemoteActionMessage() throws RemoteException {
-        return Context.context.get().getActionMessage();
+        if (Context.context.get() != null)
+            return Context.context.get().getActionMessage();
+        else
+            return "";
     }
 
     public class MessageStack extends Stack<String> {
