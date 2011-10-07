@@ -128,7 +128,9 @@ public class SkolkovoLogicsModule extends LogicsModule {
     StaticCustomClass formalControlResult;
     ConcreteCustomClass formalControl;
     StaticCustomClass legalCheckResult;
+    StaticCustomClass originalDocsCheckResult;
     ConcreteCustomClass legalCheck;
+    ConcreteCustomClass originalDocsCheck;
     ConcreteCustomClass currency;
 
     AbstractCustomClass application;
@@ -156,6 +158,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
     AbstractGroup voteResultCommentGroup;
     AbstractGroup formalControlResultGroup;
     AbstractGroup legalCheckResultGroup;
+    AbstractGroup registerGroup;
+    AbstractGroup originalDoscCheckGroup;
 
     AbstractGroup contactGroup;
     AbstractGroup documentGroup;
@@ -219,14 +223,18 @@ public class SkolkovoLogicsModule extends LogicsModule {
                 new String[]{"Отказался", "Аффилирован", "Проголосовал"});
 
         projectStatus = addStaticClass("projectStatus", "Статус проекта",
-                new String[]{"unknown", "needTranslation", "needDocuments", "needExtraVote", "inProgress", "succeeded", "accepted", "rejected",
-                        "notEnoughDocsForPreliminary", "notEnoughDocsForStatus", "noExperts", "noCluster", "positiveFCResult", "negativeLCResult", "positiveLCResult",
-                        "registered", "repeated", "sentForVote", "withdrawn", "overdueFC", "overdueLC",
-                        "issuedVoteDocs", "applyStatus", "sentRejected", "sentPreliminaryAccepted", "sentStatusAccepted", "inProgressRepeat"},
-                new String[]{"Неизвестный статус", "Направлена на перевод", "Не соответствуют документы", "Требуется заседание (повторное)", "Идет заседание", "Достаточно голосов", "Оценен положительно", "Оценен отрицательно",
-                        "Неполный перечень документов (на экспертизу)", "Неполный перечень документов (на статус)", "Отсутствует перечень экспертов", "Не соответствует направлению", "Направлена на юридическую проверку", "Не прошла юридическую проверку", "Прошла юридическую проверку",
-                        "Зарегистирована", "Подана повторно", "Направлена на экспертизу по существу", "Отозвана заявителем", "Не исправлена в срок (ФЭ)", "Не исправлена в срок (ЮП)",
-                        "Оформление документов по заседанию", "Подана заявка на статус", "Отправлено отрицательное решение", "Отправлено положительное решение предв.экспертизы", "Отправлено положительное решение экспертизы на статус", "Идет заседание (повторное)"});
+                new String[]{"unknown", "needTranslation", "needExtraVote", "inProgress", "accepted", "rejected",
+                     "notEnoughDocsForPreliminary", "notEnoughDocsForStatus", "noExperts", "noCluster", "positiveFCResult", "negativeLCResult", "positiveLCResult",
+                     "registered", "repeated", "withdrawn", "overdueFC", "overdueLC",
+                     "issuedVoteDocs", "applyStatus", "sentRejected", "sentPreliminaryAccepted", "sentStatusAccepted", "inProgressRepeat",
+                     "haveStatus", "notEnoughOriginalDocs", "overdueOriginalDocs", "appliedOriginalDocs", "sentForSignature", "signed", "sentToFinDep",
+                     "submittedToRegister", "preparedCertificate", "certified"},
+                new String[]{"Неизвестный статус", "Направлена на перевод", "Требуется заседание (повторное)", "Идет заседание", "Оценен положительно", "Оценен отрицательно",
+                     "Неполный перечень документов (на экспертизу)","Неполный перечень документов (на статус)",  "Отсутствует перечень экспертов", "Не соответствует направлению", "Направлена на юридическую проверку", "Не прошла юридическую проверку", "Прошла юридическую проверку",
+                     "Зарегистирована", "Подана повторно", "Отозвана заявителем", "Не исправлена в срок (ФЭ)", "Не исправлена в срок (ЮП)",
+                     "Оформление документов по заседанию", "Подана заявка на статус", "Отправлено отрицательное решение", "Отправлено положительное решение предв.экспертизы", "Отправлено положительное решение экспертизы на статус", "Идет заседание (повторное)",
+                     "Оставлена без рассмотрения", "Неполный пакет оригиналов документов", "Пакет оригиналов документов не пополнен в срок", "Предоставлены документы в бумажном виде", "Решение передано на подпись", "Решение подписано", "Документы переданы в Финансовый департамент",
+                     "Внесен в реестр участников", "Подготовлено свидетельство участника", "Выдано свидетельство участника"});
 
         documentType = addStaticClass("documentType", "Тип документа",
                 new String[]{"application", "resume", "techdesc", "forres", "ipres", "roadmap"},
@@ -240,8 +248,13 @@ public class SkolkovoLogicsModule extends LogicsModule {
                 new String[]{"negativeLegalCheckResult", "positiveLegalCheckResult"},
                 new String[]{"Не прошла юридическую проверку", "Прошла юридическую проверку"});
 
+        originalDocsCheckResult = addStaticClass("originalDocsCheckResult", "Проверка оригиналов документов",
+                new String[]{"notCompleteOriginalDocsPacket", "completeOriginalDocsPacket"},
+                new String[]{"Подан неполный пакет документов", "Подан полный пакет документов"});
+
         formalControl = addConcreteClass("formalControl", "Формальная экспертиза", baseClass);
         legalCheck = addConcreteClass("legalCheck", "Юридическая проверка", baseClass);
+        originalDocsCheck = addConcreteClass("originalDocsCheck", "Проверка оригиналов документов", baseClass);;
 
         application = addAbstractClass("application", "Заявка", baseClass);
         applicationPreliminary = addConcreteClass("applicationPreliminary", "Заявка на предварительную экспертизу", application);
@@ -322,6 +335,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         formalControlResultGroup = addAbstractGroup("formalControlResultGroup", "Решения формальной экспертизы", publicGroup);
         legalCheckResultGroup = addAbstractGroup("legalCheckResultGroup", "Решения юридической проверки", publicGroup);
+        registerGroup = addAbstractGroup("registerGroup", "Оформление свидетельства участника", publicGroup);
+        originalDoscCheckGroup = addAbstractGroup("originalDoscCheckGroup", "Проверка оригиналов документов", publicGroup);
     }
 
     public LP nameNative;
@@ -414,6 +429,35 @@ public class SkolkovoLogicsModule extends LogicsModule {
     private LP rejectedNoticedProject;
     private LP acceptedNoticedStatusProject;
     private LP acceptedNoticedPreliminaryProject;
+
+
+    LP overdueOriginalDocsCheckProject;
+    LP projectOriginalDocsCheck;
+    LP resultOriginalDocsCheck;
+    LP commentOriginalDocsCheck;
+    LP nameResultOriginalDocsCheck;
+    LP dateOriginalDocsCheck;
+    LP emailDateOriginalDocsCheck;
+    LP overdueDateOriginalDocsCheck;
+    LP [] maxOriginalDocsCheckProjectProps;
+    LP currentOriginalDocsCheckProject;
+    LP executeOriginalDocsCheckProject;
+    LP resultExecuteOriginalDocsCheckProject;
+    LP negativeOriginalDocsCheckProject;
+    LP positiveOriginalDocsCheckProject;
+    LP sentForSignatureProject;
+    LP signedProject;
+    LP sentToFinDepProject;
+    LP submittedToRegisterProject;
+    LP preparedCertificateProject;
+    LP certifiedProject;
+    LP dateAppliedOriginalDocsProject;
+    LP dateSentForSignatureProject;
+    LP dateSignedProject;
+    LP dateSentToFinDepProject;
+    LP dateSubmittedToRegisterProject;
+    LP datePreparedCertificateProject;
+    LP dateCertifiedProject;
 
     LP inDefaultDocumentLanguage;
     LP inDefaultDocumentExpert;
@@ -528,6 +572,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP projectStatusProject, nameProjectStatusProject;
 
     LP valuedStatusProject;
+    LP certifiedStatusProject;
     LP legalCheckStatusProject;
     LP formalCheckStatusProject;
     LP statusProject;
@@ -1887,6 +1932,50 @@ public class SkolkovoLogicsModule extends LogicsModule {
         acceptedNoticedStatusProject = addJProp("acceptedNoticedStatusProject", true, "Отослано уведомление о соответствии (предв. экспертиза)", baseLM.and1, acceptedNoticedProject, 1, isStatusProject, 1);
         acceptedNoticedPreliminaryProject = addJProp("acceptedNoticedPreliminaryProject", true, "Отослано уведомление о соответствии (статус)", baseLM.andNot1, acceptedNoticedProject, 1, isStatusProject, 1);
 
+        projectOriginalDocsCheck = addDProp("projectOriginalDocsCheck", "Проект (ИД)", project, originalDocsCheck);
+        resultOriginalDocsCheck = addDProp("resultOriginalDocsCheck", "Проверка оригиналов документов", originalDocsCheckResult, originalDocsCheck);
+        dateOriginalDocsCheck = addTCProp(originalDoscCheckGroup, Time.DATETIME, "dateOriginalDocsCheck", true, "Дата подачи документов", resultOriginalDocsCheck);
+        commentOriginalDocsCheck = addDProp(originalDoscCheckGroup, "commentOriginalDocsCheck", "Комментарий", TextClass.instance, originalDocsCheck);
+        nameResultOriginalDocsCheck = addJProp(originalDoscCheckGroup, "nameResultOriginalDocsCheck", "Проверка оригиналов документов", baseLM.name, resultOriginalDocsCheck, 1);
+
+        emailDateOriginalDocsCheck = addJProp("emailDateOriginalDocsCheck", "Дата оправки уведомления", baseLM.dateInTime, dateOriginalDocsCheck, 1);
+        overdueDateOriginalDocsCheck = addJProp("overdueDateOriginalDocsCheck", "Дата просрочки формальной экспертизы", baseLM.addDate2, emailDateOriginalDocsCheck, 1, overduePeriod);
+
+        maxOriginalDocsCheckProjectProps = addMGProp((AbstractGroup) null, new String[]{"maxDateOriginalDocsCheckProject", "currentOCProject"}, new String[]{"Дата посл. проверки документов", "Посл. проверка документов"}, 1,
+                dateOriginalDocsCheck, 1, projectOriginalDocsCheck, 1);
+        LP currentDateOriginalDocsCheckProject = maxOriginalDocsCheckProjectProps[0];
+        executeOriginalDocsCheckProject = maxOriginalDocsCheckProjectProps[1];
+
+        resultExecuteOriginalDocsCheckProject = addJProp("resultExecuteOriginalDocsCheckProject", true, "Проверка", resultOriginalDocsCheck, executeOriginalDocsCheckProject, 1);
+        negativeOriginalDocsCheckProject = addJProp("negativeOriginalDocsCheckProject", true, "Не полный пакет документов", baseLM.equals2, resultExecuteOriginalDocsCheckProject, 1, addCProp(originalDocsCheckResult, "notCompleteOriginalDocsPacket"));
+        positiveOriginalDocsCheckProject = addJProp("positiveOriginalDocsCheckProject", true, "Полный пакет документов", baseLM.equals2, resultExecuteOriginalDocsCheckProject, 1, addCProp(originalDocsCheckResult, "completeOriginalDocsPacket"));
+        overdueOriginalDocsCheckProject = addJProp("overdueOriginalDocsCheckProject", true, "Пакет оригиналов документов не пополнен в срок", baseLM.greater2, baseLM.currentDate, addJProp(overdueDateOriginalDocsCheck, executeOriginalDocsCheckProject, 1), 1);
+
+        sentForSignatureProject = addDProp(registerGroup, "sentForSignatureProject", "Решение передано на подпись", LogicalClass.instance, project);
+        dateSentForSignatureProject = addDProp(registerGroup, "dateSentForSignatureProject", "Дата передачи на подпись", DateClass.instance, project);
+        signedProject = addDProp(registerGroup, "signedProject", "Решение подписано", LogicalClass.instance, project);
+        dateSignedProject = addDProp(registerGroup, "dateSignedProject", "Дата подписания", DateClass.instance, project);
+        sentToFinDepProject = addDProp(registerGroup, "sentToFinDepProject", "Документы переданы в Финансовый департамент", LogicalClass.instance, project);
+        dateSentToFinDepProject = addDProp(registerGroup, "dateSentToFinDepProject", "Дата передачи в Финансовый департамент", DateClass.instance, project);
+        submittedToRegisterProject = addDProp(registerGroup, "submittedToRegisterProject", "Внесен в реестр участников", LogicalClass.instance, project);
+        dateSubmittedToRegisterProject = addDProp(registerGroup, "dateSubmittedToRegisterProject", "Дата внесения в реестр участников", DateClass.instance, project);
+        preparedCertificateProject = addDProp(registerGroup, "preparedCertificateProject", "Подготовлено свидетельство участника", LogicalClass.instance, project);
+        datePreparedCertificateProject = addDProp(registerGroup, "datePreparedCertificateProject", "Дата подготовки свидетельства участника", DateClass.instance, project);
+        certifiedProject = addDProp(registerGroup, "certifiedProject", "Выдано свидетельство участника", LogicalClass.instance, project);
+        dateCertifiedProject = addDProp(registerGroup, "dateCertifiedProject", "Дата выдачи свидетельства участника", DateClass.instance, project);
+
+        certifiedStatusProject = addCaseUProp(idGroup, "certifiedStatusProject", true, "Статус (оформлен) (ИД)",
+                certifiedProject, 1, addCProp(projectStatus, "certified", project), 1,
+                preparedCertificateProject, 1, addCProp(projectStatus, "preparedCertificate", project), 1,
+                submittedToRegisterProject, 1, addCProp(projectStatus, "submittedToRegister", project), 1,
+                sentToFinDepProject, 1, addCProp(projectStatus, "sentToFinDep", project), 1,
+                signedProject, 1, addCProp(projectStatus, "signed", project), 1,
+                sentForSignatureProject, 1, addCProp(projectStatus, "sentForSignature", project), 1,
+                positiveOriginalDocsCheckProject, 1, addCProp(projectStatus, "appliedOriginalDocs", project), 1,
+                overdueOriginalDocsCheckProject, 1, addCProp(projectStatus, "overdueOriginalDocs", project), 1,
+                negativeOriginalDocsCheckProject, 1, addCProp(projectStatus, "notEnoughOriginalDocs", project), 1,
+                addCProp(projectStatus, "sentStatusAccepted", project), 1);
+
         valuedStatusProject = addCaseUProp(idGroup, "valuedStatusProject", true, "Статус (оценен) (ИД)",
                 acceptedNoticedStatusProject, 1, addCProp(projectStatus, "sentStatusAccepted", project), 1,
                 acceptedNoticedPreliminaryProject, 1, addCProp(projectStatus, "sentPreliminaryAccepted", project), 1,
@@ -1912,6 +2001,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
                 addCProp(projectStatus, "unknown", project), 1);
 
         statusProject = addCaseUProp(idGroup, "statusProject", true, "Статус (ИД)",
+                acceptedNoticedStatusProject, 1, certifiedStatusProject, 1,
                 valuedProject, 1, valuedStatusProject, 1,
                 voteInProgressRepeatProject, 1, addCProp(projectStatus, "inProgressRepeat", project), 1,
                 voteInProgressProject, 1, addCProp(projectStatus, "inProgress", project), 1,
@@ -2262,6 +2352,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
                 acceptedProject, rejectedProject, acceptedDecisionProject, rejectedDecisionProject, valuedProject,
                 rejectedNoticedProject, acceptedNoticedPreliminaryProject, acceptedNoticedStatusProject,
                 formalCheckStatusProject, legalCheckStatusProject, valuedStatusProject,
+                certifiedProject, preparedCertificateProject, submittedToRegisterProject, sentToFinDepProject, signedProject,
+                sentForSignatureProject, positiveOriginalDocsCheckProject, overdueOriginalDocsCheckProject, negativeOriginalDocsCheckProject, certifiedStatusProject,
                 statusProject, projectStatusProject);
     }
 
@@ -2510,6 +2602,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         private ObjectEntity objDocumentTemplate;
         private ObjectEntity objFormalControl;
         private ObjectEntity objLegalCheck;
+        private ObjectEntity objOriginalDocsCheck;
         private ObjectEntity objNonRussianSpecialist;
         private RegularFilterGroupEntity projectFilterGroup;
         private RegularFilterGroupEntity activeProjectFilterGroup;
@@ -2528,6 +2621,9 @@ public class SkolkovoLogicsModule extends LogicsModule {
             objProject = addSingleGroupObject(project, dateProject, dateStatusProject, nameNativeProject, nameForeignProject, nameNativeShortFinalClusterProject, nameNativeClaimerProject, nameForeignClaimerProject, emailClaimerProject,
                     nameStatusProject, nameProjectActionProject, updateDateProject, autoGenerateProject, inactiveProject, quantityVoteProject, quantityClusterProject, generateVoteProject, editClaimerProject, editProject);
             addPropertyDraw(objProject, isOtherClusterProject, nativeSubstantiationOtherClusterProject, foreignSubstantiationOtherClusterProject);
+            addPropertyDraw(objProject, registerGroup);
+            setForceViewType(registerGroup, ClassViewType.PANEL);
+            //   setForceViewType(dateNotEnoughOriginalDocsProject, ClassViewType.PANEL);
             getPropertyDraw(isOtherClusterProject).propertyCaption = addPropertyObject(hideIsOtherClusterProject, objProject);
             getPropertyDraw(nativeSubstantiationOtherClusterProject).propertyCaption = addPropertyObject(hideNativeSubstantiationOtherClusterProject, objProject);
             getPropertyDraw(foreignSubstantiationOtherClusterProject).propertyCaption = addPropertyObject(hideForeignSubstantiationOtherClusterProject, objProject);
@@ -2650,16 +2746,16 @@ public class SkolkovoLogicsModule extends LogicsModule {
             addPropertyDraw(new LP[]{addNoListOfExpertsFCResult, addNotEnoughDocumentsFCResult, addNotSuitableClusterFCResult, addRepeatedFCResult, addPositiveFCResult});
             addPropertyDraw(objFormalControl, dateFormalControl, nameResultFormalControl, nameProjectActionFormalControl);
             addPropertyDraw(commentFormalControl, objFormalControl).forceViewType = ClassViewType.PANEL;
-            addObjectActions(this, objFormalControl);
-
-            // addPropertyDraw(exportProjectDocumentsAction, objProject).toDraw = objFormalControl.groupTo;
-            // setForceViewType(exportProjectDocumentsAction, ClassViewType.PANEL);
 
             objLegalCheck = addSingleGroupObject(legalCheck);
             addPropertyDraw(objLegalCheck, dateLegalCheck, nameResultLegalCheck);
             addPropertyDraw(new LP[]{addNegativeLCResult, addPositiveLCResult});
             addPropertyDraw(commentLegalCheck, objLegalCheck).forceViewType = ClassViewType.PANEL;
-            addObjectActions(this, objLegalCheck);
+
+            objOriginalDocsCheck = addSingleGroupObject(originalDocsCheck);
+            addPropertyDraw(objOriginalDocsCheck, dateOriginalDocsCheck, nameResultOriginalDocsCheck);
+            addPropertyDraw(commentOriginalDocsCheck, objOriginalDocsCheck).forceViewType = ClassViewType.PANEL;
+            addObjectActions(this, objOriginalDocsCheck);
 
             objNonRussianSpecialist = addSingleGroupObject(4, "nonRussianSpecialist", nonRussianSpecialist, "Иностранный специалист", baseGroup);
             addObjectActions(this, objNonRussianSpecialist);
@@ -2671,6 +2767,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(clusterInExpertVote, objExpert, objVote)));
             addFixedFilter(new CompareFilterEntity(addPropertyObject(projectFormalControl, objFormalControl), Compare.EQUALS, objProject));
             addFixedFilter(new CompareFilterEntity(addPropertyObject(projectLegalCheck, objLegalCheck), Compare.EQUALS, objProject));
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(projectOriginalDocsCheck, objOriginalDocsCheck), Compare.EQUALS, objProject));
             addFixedFilter(new OrFilterEntity(new NotNullFilterEntity(addPropertyObject(inProjectCurrentCluster, objProject)),
                     new NotFilterEntity(new NotNullFilterEntity(addPropertyObject(currentCluster)))));
 
@@ -2779,12 +2876,26 @@ public class SkolkovoLogicsModule extends LogicsModule {
             expertContainer.add(design.getGroupObjectContainer(objVote.groupTo));
             expertContainer.add(design.getGroupObjectContainer(objExpert.groupTo));
 
+            ContainerView originalDocsContainer = design.createContainer("Проверка оригиналов документов");
+            originalDocsContainer.add(design.getGroupObjectContainer(objOriginalDocsCheck.groupTo));
+            PropertyDrawView commentOriginalDocsView = design.get(getPropertyDraw(commentOriginalDocsCheck, objOriginalDocsCheck));
+            commentOriginalDocsView.constraints.fillHorizontal = 1.0;
+            commentOriginalDocsView.preferredSize = new Dimension(-1, 200);
+            commentOriginalDocsView.panelLabelAbove = true;
+
+            ContainerView registerContainer = design.createContainer("Оформление свидетельства");
+            registerContainer.constraints.fillHorizontal = 1.0;
+            registerContainer.constraints.fillVertical = 1.0;
+            registerContainer.add(design.getGroupPropertyContainer(objProject.groupTo, registerGroup));
+
             specContainer.add(infoContainer);
             specContainer.add(formalControlContainer);
             specContainer.add(legalCheckContainer);
             specContainer.add(translationContainer);
             specContainer.add(docContainer);
             specContainer.add(expertContainer);
+            specContainer.add(originalDocsContainer);
+            specContainer.add(registerContainer);
 
             design.setHighlightColor(new Color(223, 255, 223));
 //            design.get(objVoteHeader.groupTo).grid.constraints.fillHorizontal = 1.5;
