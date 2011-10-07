@@ -666,10 +666,15 @@ public class RomanLogicsModule extends LogicsModule {
     private LP quantityBrandSupplier;
     private LP quantityRouteSku;
     private AbstractCustomClass destinationDocument;
+    private LP destinationInvoiceSupplierBox;
     private LP destinationSupplierBox;
     private LP destinationFreightBox;
     private LP nameDestinationFreightBox;
+    private LP nameDestinationInvoiceSupplierBox;
     private LP nameDestinationSupplierBox;
+    private LP destinationDataSupplierBox;
+    private LP sidDestinationDataSupplierBox;
+    private LP nameDestinationDataSupplierBox;
     private LP destinationCurrentFreightBoxRoute;
     private LP nameDestinationCurrentFreightBoxRoute;
     private LP quantityShipDimensionStock;
@@ -2153,10 +2158,10 @@ public class RomanLogicsModule extends LogicsModule {
 
         sidBoxInvoiceSupplierBox = addJProp(baseGroup, "sidBoxInvoiceSupplierBox", "Документ по коробам", sidDocument, boxInvoiceSupplierBox, 1);
 
-        destinationSupplierBox = addJProp(idGroup, "destinationSupplierBox", "Пункт назначения (ИД)", destinationDestinationDocument, boxInvoiceSupplierBox, 1);
-        nameDestinationSupplierBox = addJProp(baseGroup, "nameDestinationSupplierBox", "Пункт назначения", baseLM.name, destinationSupplierBox, 1);
-        nameDestinationSupplierBox.property.preferredCharWidth = 50;
-        nameDestinationSupplierBox.property.minimumCharWidth = 20;
+        destinationInvoiceSupplierBox = addJProp(idGroup, "destinationInvoiceSupplierBox", "Пункт назначения (ИД)", destinationDestinationDocument, boxInvoiceSupplierBox, 1);
+        nameDestinationInvoiceSupplierBox = addJProp(baseGroup, "nameDestinationInvoiceSupplierBox", "Пункт назначения", baseLM.name, destinationInvoiceSupplierBox, 1);
+        nameDestinationInvoiceSupplierBox.property.preferredCharWidth = 50;
+        nameDestinationInvoiceSupplierBox.property.minimumCharWidth = 20;
 
         supplierSupplierBox = addJProp(idGroup, "supplierSupplierBox", "Поставщик (ИД)", supplierDocument, boxInvoiceSupplierBox, 1);
 
@@ -2382,6 +2387,13 @@ public class RomanLogicsModule extends LogicsModule {
 
         destinationFreightBox = addDProp(idGroup, "destinationFreightBox", "Пункт назначения (ИД)", destination, freightBox);
         nameDestinationFreightBox = addJProp(baseGroup, "nameDestinationFreightBox", "Пункт назначения", baseLM.name, destinationFreightBox, 1);
+
+        destinationDataSupplierBox = addDProp(idGroup, "destinationDataSupplierBox", "Пункт назначения (ИД)", destination, supplierBox);
+        sidDestinationDataSupplierBox = addJProp(baseGroup, "sidDestinationDataSupplierBox", "Пункт назначения (код)", sidDestination, destinationDataSupplierBox, 1);
+        nameDestinationDataSupplierBox = addJProp(baseGroup, "nameDestinationDataSupplierBox", "Пункт назначения", baseLM.name, destinationDataSupplierBox, 1);
+
+        destinationSupplierBox = addSUProp(idGroup, "destinationSupplierBox", "Пункт назначения (ИД)", Union.OVERRIDE, destinationInvoiceSupplierBox, destinationDataSupplierBox);
+        nameDestinationSupplierBox = addJProp(baseGroup, "nameDestinationSupplierBox", "Пункт назначения", baseLM.name, destinationSupplierBox, 1);
 
         // поставка на склад
         inOrderShipment = addDProp(baseGroup, "inOrderShipment", "Вкл", LogicalClass.instance, order, shipment);
