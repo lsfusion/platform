@@ -818,7 +818,7 @@ public class ImportProjectsActionProperty extends ActionProperty {
 
                 boolean fillOtherCluster = false;
                 Object otherClusterNativeSubstantiation = null, otherClusterForeignSubstantiation = null;
-                String nameNativeShortAggregateClusterProject = "";
+                String nameNativeShortAggregateClusterProject = " ";
 
                 List<Element> listCluster = node.getChildren("cluster");
                 Map<String, ClusterInfo> clusterInfoList = new HashMap<String, ClusterInfo>();

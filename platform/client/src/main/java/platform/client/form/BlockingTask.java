@@ -31,7 +31,7 @@ public class BlockingTask extends TimerTask {
             Graphics gr = window.getGraphics();
             if (gr != null) {
                 if (image == null) {
-                //    image = blur(blur(getScreen(window)));
+                    //    image = blur(blur(getScreen(window)));
                     image = darken(getScreen(window));
                 }
                 if (first) {
@@ -81,14 +81,19 @@ public class BlockingTask extends TimerTask {
             long currentTime = System.currentTimeMillis();
             if (target instanceof RemoteContextInterface && (previousTime == 0 || currentTime - previousTime >= messagePeriod)) {
                 actionMessage = ((RemoteContextInterface) target).getRemoteActionMessage();
+                //actionMessage = actionMessage.concat(actionMessage).concat(actionMessage).concat(actionMessage).concat(actionMessage).concat(actionMessage).concat(actionMessage).concat(actionMessage);
                 previousTime = currentTime;
             }
 
             int barWidth = maxSegmentCount * segmentWidth + (maxSegmentCount - 1) * (segmentGap);
-            int rectHeight = segmentHeight + loadingTextHeight + actionMessageHeight + 23;
+            int rectHeight = segmentHeight + loadingTextHeight + 23;
             int rectWidth = Math.max(barWidth, loadingTextWidth) + 20;
             int rectX = canvas.getX() + (canvas.getWidth() - Math.max(barWidth, loadingTextWidth)) / 2 - 10;
             int rectY = canvas.getY() + (canvas.getHeight() - rectHeight) / 2;
+            int messageRectWidth = canvas.getWidth() - 40;
+            int messageRectHeight = 100;
+            int messageRectX = 20;
+            int messageRectY = canvas.getHeight() - 100;
             int barX = rectX + 10;
             int barY = rectY + loadingTextHeight + 10;
 
@@ -100,6 +105,7 @@ public class BlockingTask extends TimerTask {
             gr.fillRoundRect(rectX, rectY, rectWidth + 2, rectHeight + 2, 5, 5);
             gr.setColor(Color.WHITE);
             gr.fillRoundRect(rectX, rectY, rectWidth, rectHeight, 5, 5);
+            gr.fillRoundRect(messageRectX, messageRectY, messageRectWidth, messageRectHeight, 5, 5);
             gr.setColor(Color.BLACK);
             gr.drawRoundRect(rectX, rectY, rectWidth, rectHeight, 5, 5);
 
@@ -108,7 +114,32 @@ public class BlockingTask extends TimerTask {
 
             if (actionMessage != null) {
                 gr.setFont(actionMessageFont);
-                gr.drawString(actionMessage, barX, rectY + rectHeight - 10);
+                String[] splittedActionMessage = actionMessage.split(" ");
+                String output = "";
+                int maxWidth = messageRectWidth-10;
+                int outputWidth = 0;
+                int spaceWidth = gr.getFontMetrics(actionMessageFont).charWidth(' ');
+                int wordWidth = 0;
+                int j = 1;
+
+                for (String word : splittedActionMessage) {
+                    if (j <= 6) {
+                        wordWidth = 0;
+                        for (int i = 0; i < word.length(); i++)
+                            wordWidth += gr.getFontMetrics(actionMessageFont).charWidth(word.charAt(i));
+                        if ((outputWidth + spaceWidth + wordWidth) < maxWidth) {
+                            output = output.concat(" ").concat(word);
+                            outputWidth += spaceWidth + wordWidth;
+                        } else {
+                            gr.drawString(output, messageRectX + 5, messageRectY + 15 * j);
+                            output = word;
+                            outputWidth = wordWidth;
+                            j = j + 1;
+                        }
+                    }
+                }
+                if (j <= 6)
+                    gr.drawString(output, messageRectX + 5, messageRectY + 15 * j);
             }
 
             int tab = (count - segmentCount) % (maxSegmentCount + segmentCount);
