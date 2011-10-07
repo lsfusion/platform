@@ -443,6 +443,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP currentOriginalDocsCheckProject;
     LP executeOriginalDocsCheckProject;
     LP resultExecuteOriginalDocsCheckProject;
+    LP addNegativeODCResult;
+    LP addPositiveODCResult;
     LP negativeOriginalDocsCheckProject;
     LP positiveOriginalDocsCheckProject;
     LP sentForSignatureProject;
@@ -1934,9 +1936,9 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         projectOriginalDocsCheck = addDProp("projectOriginalDocsCheck", "Проект (ИД)", project, originalDocsCheck);
         resultOriginalDocsCheck = addDProp("resultOriginalDocsCheck", "Проверка оригиналов документов", originalDocsCheckResult, originalDocsCheck);
-        dateOriginalDocsCheck = addTCProp(originalDoscCheckGroup, Time.DATETIME, "dateOriginalDocsCheck", true, "Дата подачи документов", resultOriginalDocsCheck);
-        commentOriginalDocsCheck = addDProp(originalDoscCheckGroup, "commentOriginalDocsCheck", "Комментарий", TextClass.instance, originalDocsCheck);
-        nameResultOriginalDocsCheck = addJProp(originalDoscCheckGroup, "nameResultOriginalDocsCheck", "Проверка оригиналов документов", baseLM.name, resultOriginalDocsCheck, 1);
+        dateOriginalDocsCheck = addTCProp(Time.DATETIME, "dateOriginalDocsCheck", true, "Дата подачи документов", resultOriginalDocsCheck);
+        commentOriginalDocsCheck = addDProp("commentOriginalDocsCheck", "Комментарий", TextClass.instance, originalDocsCheck);
+        nameResultOriginalDocsCheck = addJProp("nameResultOriginalDocsCheck", "Проверка оригиналов документов", baseLM.name, resultOriginalDocsCheck, 1);
 
         emailDateOriginalDocsCheck = addJProp("emailDateOriginalDocsCheck", "Дата оправки уведомления", baseLM.dateInTime, dateOriginalDocsCheck, 1);
         overdueDateOriginalDocsCheck = addJProp("overdueDateOriginalDocsCheck", "Дата просрочки формальной экспертизы", baseLM.addDate2, emailDateOriginalDocsCheck, 1, overduePeriod);
@@ -1947,6 +1949,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
         executeOriginalDocsCheckProject = maxOriginalDocsCheckProjectProps[1];
 
         resultExecuteOriginalDocsCheckProject = addJProp("resultExecuteOriginalDocsCheckProject", true, "Проверка", resultOriginalDocsCheck, executeOriginalDocsCheckProject, 1);
+        addNegativeODCResult = addJProp(originalDoscCheckGroup, true, "Подан неполный пакет документов", addAAProp(originalDocsCheck, resultOriginalDocsCheck), addCProp(originalDocsCheckResult, "notCompleteOriginalDocsPacket"));
+        addPositiveODCResult = addJProp(originalDoscCheckGroup, true, "Подан полный пакет документов", addAAProp(originalDocsCheck, resultOriginalDocsCheck), addCProp(originalDocsCheckResult, "completeOriginalDocsPacket"));
         negativeOriginalDocsCheckProject = addJProp("negativeOriginalDocsCheckProject", true, "Не полный пакет документов", baseLM.equals2, resultExecuteOriginalDocsCheckProject, 1, addCProp(originalDocsCheckResult, "notCompleteOriginalDocsPacket"));
         positiveOriginalDocsCheckProject = addJProp("positiveOriginalDocsCheckProject", true, "Полный пакет документов", baseLM.equals2, resultExecuteOriginalDocsCheckProject, 1, addCProp(originalDocsCheckResult, "completeOriginalDocsPacket"));
         overdueOriginalDocsCheckProject = addJProp("overdueOriginalDocsCheckProject", true, "Пакет оригиналов документов не пополнен в срок", baseLM.greater2, baseLM.currentDate, addJProp(overdueDateOriginalDocsCheck, executeOriginalDocsCheckProject, 1), 1);
@@ -2744,18 +2748,18 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
             objFormalControl = addSingleGroupObject(formalControl);
             addPropertyDraw(new LP[]{addNoListOfExpertsFCResult, addNotEnoughDocumentsFCResult, addNotSuitableClusterFCResult, addRepeatedFCResult, addPositiveFCResult});
-            addPropertyDraw(objFormalControl, dateFormalControl, nameResultFormalControl, nameProjectActionFormalControl);
+            addPropertyDraw(objFormalControl, dateFormalControl, nameResultFormalControl, nameProjectActionFormalControl, baseLM.delete);
             addPropertyDraw(commentFormalControl, objFormalControl).forceViewType = ClassViewType.PANEL;
 
             objLegalCheck = addSingleGroupObject(legalCheck);
-            addPropertyDraw(objLegalCheck, dateLegalCheck, nameResultLegalCheck);
+            addPropertyDraw(objLegalCheck, dateLegalCheck, nameResultLegalCheck, baseLM.delete);
             addPropertyDraw(new LP[]{addNegativeLCResult, addPositiveLCResult});
             addPropertyDraw(commentLegalCheck, objLegalCheck).forceViewType = ClassViewType.PANEL;
 
             objOriginalDocsCheck = addSingleGroupObject(originalDocsCheck);
-            addPropertyDraw(objOriginalDocsCheck, dateOriginalDocsCheck, nameResultOriginalDocsCheck);
+            addPropertyDraw(objOriginalDocsCheck, dateOriginalDocsCheck, nameResultOriginalDocsCheck, baseLM.delete);
+            addPropertyDraw(new LP[]{addNegativeODCResult, addPositiveODCResult});
             addPropertyDraw(commentOriginalDocsCheck, objOriginalDocsCheck).forceViewType = ClassViewType.PANEL;
-            addObjectActions(this, objOriginalDocsCheck);
 
             objNonRussianSpecialist = addSingleGroupObject(4, "nonRussianSpecialist", nonRussianSpecialist, "Иностранный специалист", baseGroup);
             addObjectActions(this, objNonRussianSpecialist);
@@ -2878,6 +2882,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
             ContainerView originalDocsContainer = design.createContainer("Проверка оригиналов документов");
             originalDocsContainer.add(design.getGroupObjectContainer(objOriginalDocsCheck.groupTo));
+            originalDocsContainer.add(design.getGroupPropertyContainer((GroupObjectEntity) null, originalDoscCheckGroup));
             PropertyDrawView commentOriginalDocsView = design.get(getPropertyDraw(commentOriginalDocsCheck, objOriginalDocsCheck));
             commentOriginalDocsView.constraints.fillHorizontal = 1.0;
             commentOriginalDocsView.preferredSize = new Dimension(-1, 200);
