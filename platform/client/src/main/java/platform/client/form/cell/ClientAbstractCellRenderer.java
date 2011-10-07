@@ -35,6 +35,10 @@ public class ClientAbstractCellRenderer extends JComponent
             currentComp.setValue("", isSelected, hasFocus);
         }
 
+        if (cellTable.isSelected(row, column) && !hasFocus) {
+            currentComp.rateSelected();
+        }
+
         JComponent comp = currentComp.getComponent();
         if (comp instanceof JButton) {
             ((JButton) comp).setSelected(cellTable.isPressed(row, column));
@@ -46,7 +50,7 @@ public class ClientAbstractCellRenderer extends JComponent
                 highlightColor = Color.yellow;
             }
             
-            if (!hasFocus && !isSelected) {
+            if (!hasFocus && !isSelected && !cellTable.isSelected(row, column)) {
                 comp.setBackground(highlightColor);
             } else {
                 Color bgColor = comp.getBackground();

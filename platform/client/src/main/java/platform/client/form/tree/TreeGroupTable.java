@@ -105,7 +105,7 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
                                             HighlightPredicate.HAS_FOCUS
                                     ),
                                     new HighlightPredicate.ColumnHighlightPredicate(0)
-                            ), Color.WHITE, Color.BLACK, PropertyRendererComponent.SELECTED_CELL_BACKGROUND, Color.BLACK
+                            ), Color.WHITE, Color.BLACK, PropertyRendererComponent.SELECTED_ROW_BACKGROUND, Color.BLACK
                     )
             );
 
@@ -408,6 +408,12 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
 
     public boolean isReadOnly() {
         return form.isReadOnlyMode() && isDataChanging();
+    }
+
+    @Override
+    public boolean isSelected(int row, int coulumn) {
+        //todo:
+        return false;
     }
 
     @Override

@@ -1,6 +1,7 @@
 package platform.client.form;
 
 import platform.base.BaseUtils;
+import platform.client.form.grid.GridTable;
 
 import javax.swing.*;
 import java.awt.datatransfer.DataFlavor;
@@ -30,6 +31,10 @@ public abstract class TableTransferHandler extends TransferHandler {
 
     protected Transferable createTransferable(JComponent c) {
         if (c instanceof JTable) {
+            if (c instanceof GridTable) {
+                return new StringSelection(((GridTable) c).getSelectedTable());
+            }
+
             JTable table = (JTable) c;
             int row = table.getSelectionModel().getLeadSelectionIndex();
             int column = table.getColumnModel().getSelectionModel().getLeadSelectionIndex();

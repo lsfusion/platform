@@ -142,6 +142,10 @@ public abstract class CellTable extends SingleCellTable
 
     public abstract ClientFormController getForm();
 
+    public boolean isSelected(int row, int column) {
+        return false;
+    }
+
     @Override
     protected boolean processKeyBinding(KeyStroke ks, KeyEvent e, int condition, boolean pressed) {
         // пусть Enter обрабатывает верхний контейнер, если

@@ -535,6 +535,14 @@ public class BaseUtils {
         return removeList(list, Collections.singleton(list.get(index)));
     }
 
+    public static <K> K lastSetElement(Set<K> set) {
+        K key = null;
+        for (K k : set) {
+            key = k;
+        }
+        return key;
+    }
+
     public static <K> void moveElement(List<K> list, K elemFrom, K elemTo) {
 
         int indFrom = list.indexOf(elemFrom);

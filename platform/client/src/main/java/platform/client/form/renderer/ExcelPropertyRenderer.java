@@ -22,4 +22,9 @@ public class ExcelPropertyRenderer extends FilePropertyRenderer
         }
         setSelected(isSelected, hasFocus);
     }
+
+    @Override
+    public void rateSelected() {
+        super.paintSelected();
+    }
 }

@@ -4,7 +4,6 @@ import platform.client.form.PropertyRendererComponent;
 import platform.interop.ComponentDesign;
 
 import javax.swing.*;
-import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.text.Format;
 
@@ -34,8 +33,8 @@ public class TextPropertyRenderer extends JTextArea implements PropertyRendererC
                 setBackground(FOCUSED_CELL_BACKGROUND);
             }
             else {
-                setBorder(BorderFactory.createCompoundBorder(SELECTED_CELL_BORDER, BorderFactory.createEmptyBorder(1, 3, 0, 2)));
-                setBackground(SELECTED_CELL_BACKGROUND);
+                setBorder(BorderFactory.createCompoundBorder(SELECTED_ROW_BORDER, BorderFactory.createEmptyBorder(1, 3, 0, 2)));
+                setBackground(SELECTED_ROW_BACKGROUND);
             }
         } else {
             setBorder(BorderFactory.createEmptyBorder(2, 3, 1, 2));
@@ -53,5 +52,10 @@ public class TextPropertyRenderer extends JTextArea implements PropertyRendererC
         else
             setText("");
         setSelected(isSelected, hasFocus);
+    }
+
+    @Override
+    public void rateSelected() {
+        setBackground(PropertyRendererComponent.SELECTED_CELL_BACKGROUND);
     }
 }

@@ -34,12 +34,17 @@ public class ActionPropertyRenderer extends JButton
                 setBackground(FOCUSED_CELL_BACKGROUND);
             }
             else {
-                setBorder(SELECTED_CELL_BORDER);
-                setBackground(SELECTED_CELL_BACKGROUND);
+                setBorder(SELECTED_ROW_BORDER);
+                setBackground(SELECTED_ROW_BACKGROUND);
             }
         } else {
             setBorder(value == null ? BorderFactory.createEmptyBorder() : defaultBorder);
             setBackground(value == null ? Color.white : defaultBackground);
         }
+    }
+
+    @Override
+    public void rateSelected() {
+        setBackground(PropertyRendererComponent.SELECTED_CELL_BACKGROUND);
     }
 }

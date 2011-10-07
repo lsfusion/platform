@@ -26,4 +26,9 @@ public class CustomFileRenderer extends FilePropertyRenderer
         }
         setSelected(isSelected, hasFocus);
     }
+
+    @Override
+    public void rateSelected() {
+        super.paintSelected();
+    }
 }

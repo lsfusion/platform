@@ -29,12 +29,17 @@ public class LogicalPropertyRenderer extends JCheckBox
                 setBackground(FOCUSED_CELL_BACKGROUND);
             }
             else {
-                setBorder(SELECTED_CELL_BORDER);
-                setBackground(SELECTED_CELL_BACKGROUND);
+                setBorder(SELECTED_ROW_BORDER);
+                setBackground(SELECTED_ROW_BACKGROUND);
             }
         } else {
             setBorder(BorderFactory.createEmptyBorder());
             setBackground(Color.WHITE);
         }
+    }
+
+    @Override
+    public void rateSelected() {
+        setBackground(PropertyRendererComponent.SELECTED_CELL_BACKGROUND);
     }
 }

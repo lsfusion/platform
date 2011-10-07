@@ -29,8 +29,9 @@ class LabelPropertyRenderer extends JLabel { //DefaultTableCellRenderer {
                 setBackground(PropertyRendererComponent.FOCUSED_CELL_BACKGROUND);
             }
             else {
-                setBorder(BorderFactory.createCompoundBorder(PropertyRendererComponent.SELECTED_CELL_BORDER, BorderFactory.createEmptyBorder(1, 2, 1, 2)));
-                setBackground(PropertyRendererComponent.SELECTED_CELL_BACKGROUND);
+                setBorder(new EmptyBorder(2, 2, 2, 2));
+                setBorder(BorderFactory.createCompoundBorder(PropertyRendererComponent.SELECTED_ROW_BORDER, BorderFactory.createEmptyBorder(1, 2, 1, 2)));
+                setBackground(PropertyRendererComponent.SELECTED_ROW_BACKGROUND);
             }
         } else {
             setBorder(new EmptyBorder(1, 2, 1, 2));
@@ -38,4 +39,7 @@ class LabelPropertyRenderer extends JLabel { //DefaultTableCellRenderer {
         }
     }
 
+    public void paintSelected() {
+        setBackground(PropertyRendererComponent.SELECTED_CELL_BACKGROUND);
+    }
 }

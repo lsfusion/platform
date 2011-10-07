@@ -38,4 +38,9 @@ public class StringPropertyRenderer extends LabelPropertyRenderer
         }
         setSelected(isSelected, hasFocus);
     }
+
+    @Override
+    public void rateSelected() {
+        super.paintSelected();
+    }
 }
