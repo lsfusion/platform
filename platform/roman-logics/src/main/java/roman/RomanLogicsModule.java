@@ -1028,6 +1028,7 @@ public class RomanLogicsModule extends LogicsModule {
     private FindItemFormEntity findItemFormBox, findItemFormBoxBarcode;
     private FindItemFormEntity findItemFormSimple, findItemFormSimpleBarcode;
     private LogFormEntity logFreightForm;
+    private LP formLogFreight;
 
     private LP addItemBarcode;
     private LP barcodeActionSeekFreightBox;
@@ -3473,6 +3474,8 @@ public class RomanLogicsModule extends LogicsModule {
         addFormEntity(new FreightInvoiceFormEntity(actionFreight, "freightInvoiceForm", "Расценка фрахта"));
 
         logFreightForm = new LogFormEntity("logFreightForm", "История фрахта", nameClassFreight, logFreight, baseLM);
+        formLogFreight = addMFAProp("История фрахта", logFreightForm, logFreightForm.params);
+        formLogFreight.setImage("history.png");
 
         addFormEntity(new FreightListFormEntity(shipment, "freightListForm", "Список фрахтов"));
         addFormEntity(new PrintDocumentFormEntity(shipment, "printDocumentForm", "Печать документов"));
@@ -7419,11 +7422,10 @@ public class RomanLogicsModule extends LogicsModule {
         private FreightListFormEntity(NavigatorElement<RomanBusinessLogics> parent, String sID, String caption) {
             super(parent, sID, caption);
 
-            LP logFreightFA = addMFAProp("История фрахта", logFreightForm, logFreightForm.params);
-            objFreight = addSingleGroupObject(freight, "Фрахт", baseLM.date, baseLM.objectClassName, dateArrivalFreight, logFreightFA, nameRouteFreight, nameExporterFreight, nameFreightTypeFreight, tonnageFreight, netWeightInvoicedFreight, grossWeightFreight, volumeFreight, palletCountFreight, palletNumberFreight, freightBoxNumberFreight, nameCurrencyFreight, sumFreightFreight);
+            objFreight = addSingleGroupObject(freight, "Фрахт", baseLM.date, baseLM.objectClassName, dateArrivalFreight, formLogFreight, nameRouteFreight, nameExporterFreight, nameFreightTypeFreight, tonnageFreight, netWeightInvoicedFreight, grossWeightFreight, volumeFreight, palletCountFreight, palletNumberFreight, freightBoxNumberFreight, nameCurrencyFreight, sumFreightFreight);
             objFreight.groupTo.setSingleClassView(ClassViewType.GRID);
             setReadOnly(objFreight, true);
-            setReadOnly(logFreightFA, false);
+            setReadOnly(formLogFreight, false);
             //addFixedFilter(new NotFilterEntity(new CompareFilterEntity(addPropertyObject(is(freightShipped), objFreight), Compare.EQUALS, addPropertyObject(baseLM.vtrue))));
 
             createFreight = addPropertyDraw(freightCreateFA, objFreight);

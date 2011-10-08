@@ -856,10 +856,11 @@ public class ImportProjectsActionProperty extends ActionProperty {
                         rowCluster.add(nodeCluster.foreignSubstantiationProjectCluster);
                     dataCluster.add(rowCluster);
                 }
-                if ("".equals(nameNativeShortAggregateClusterProject))
+
+                if (nameNativeShortAggregateClusterProject.isEmpty())
                     row.add(nameNativeShortAggregateClusterProject);
                 else
-                    row.add(nameNativeShortAggregateClusterProject.substring(0, nameNativeShortAggregateClusterProject.length() - 1));
+                    row.add(nameNativeShortAggregateClusterProject.substring(0, nameNativeShortAggregateClusterProject.length()-1));
 
                 if (fillClaimer) {
                     row.add(node.getChildText("phoneClaimer"));

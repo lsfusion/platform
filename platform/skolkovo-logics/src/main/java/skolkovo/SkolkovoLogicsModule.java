@@ -572,6 +572,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP expertLogin;
 
     LP projectStatusProject, nameProjectStatusProject;
+    LP logStatusProject, logNameStatusProject;
 
     LP valuedStatusProject;
     LP certifiedStatusProject;
@@ -920,10 +921,12 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
     LP hasPreliminaryVoteProject;
     LP isPreliminaryStatusProject;
+    LP isPreliminaryAndStatusProject;
 
     LP projectApplication;
     LP projectApplicationPreliminary, projectApplicationStatus;
     LP isPreliminaryApplication, isStatusApplication;
+    LP isPreliminaryAndStatusApplication;
     LP preliminaryApplicationProject;
     LP statusApplicationProject;
 
@@ -939,8 +942,11 @@ public class SkolkovoLogicsModule extends LogicsModule {
     private LP langApplication;
     private LP nameNativeShortAggregateClusterApplication;
 
+    LP statusJoinApplication;
+    LP isPreliminaryAfterStatusApplication;
     LP statusApplication;
     LP nameStatusApplication;
+    LP officialNameStatusApplication;
 
     @Override
     public void initProperties() {
@@ -1738,7 +1744,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         rejectedProject = addJProp("rejectedProject", true, "Оценен отрицательно", baseLM.andNot1, addCProp(LogicalClass.instance, true, project), 1, currentClusterProject, 1);
 
-        valuedProject = addSUProp("valuedProject", true, "Оценен", Union.OVERRIDE, acceptedProject, rejectedProject);
+        valuedProject = addJProp("valuedProject", true, "Оценен", baseLM.and1, addSUProp(Union.OVERRIDE, acceptedProject, rejectedProject), 1, quantityClusterProject, 1);
 
         needExtraVoteProject = addJProp("needExtraVoteProject", true, "Треб. заседание", and(true, true, true, false),
                 is(project), 1,
@@ -2017,6 +2023,10 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         statusDataProject = addDProp("statusDataProject", "Статус", projectStatus, project);
         projectStatusProject = addSUProp(idGroup, "projectStatusProject", true, "Статус", Union.OVERRIDE, statusProject, statusDataProject);
+        // пока логи не работают, поскольку лог записывается каждый раз без проверки на изменилось ли на самом деле или нет
+//        logStatusProject = addLProp(projectStatusProject);
+//        logNameStatusProject = addJProp(baseGroup, "logNameStatusProject", "Статус", baseLM.name, logStatusProject, 1, 2);
+//
         nameStatusProject = addJProp(projectInformationGroup, "nameStatusProject", "Статус", baseLM.name, projectStatusProject, 1);
 
         dateProjectVote = addJProp("dateProjectVote", "Дата проекта", dateProject, projectVote, 1);
@@ -2210,6 +2220,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
         hasPreliminaryVoteProject = addJProp("hasPreliminaryVoteProject", "Подавался на предв. экспертизу", baseLM.and1, is(project), 1, quantityPreliminaryVoteProject, 1);
         isPreliminaryStatusProject = addSUProp("isPreliminaryStatusProject", "На предв. экспертизу", Union.OVERRIDE, hasPreliminaryVoteProject, isPreliminaryProject);
 
+        isPreliminaryAndStatusProject = addJProp("isPreliminaryAndStatusProject", "На предв. экспертизу и статус", baseLM.and1, isStatusProject, 1, hasPreliminaryVoteProject, 1);
+
         projectApplication = addDProp(idGroup, "projectApplication", "Проект (ИД)", project, application);
 
         projectApplicationPreliminary = addJProp(idGroup, "projectApplicationPreliminary", "Проект (ИД)", baseLM.and1, projectApplication, 1, is(applicationPreliminary), 1);
@@ -2217,6 +2229,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         isPreliminaryApplication = addJProp(isPreliminaryStatusProject, projectApplication, 1);
         isStatusApplication = addJProp(isStatusProject, projectApplication, 1);
+
+        isPreliminaryAndStatusApplication = addJProp(isPreliminaryAndStatusProject, projectApplication, 1);
 
         preliminaryApplicationProject = addAGProp(idGroup, false, "preliminaryApplicationProject", false, "Заяка на предварительную экспертизу", applicationPreliminary, projectApplication);
         follows(isPreliminaryStatusProject, preliminaryApplicationProject, 1);
@@ -2242,8 +2256,12 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         emailClaimerApplication = addJProp("emailClaimerApplication", "E-mail заявителя", emailClaimerProject, projectApplication, 1);
 
-        statusApplication = addJProp(idGroup, "statusApplication", "Статус заявки (ИД)", projectStatusProject, projectApplication, 1);
+        statusJoinApplication = addJProp(idGroup, "statusJoinApplication", "Статус заявки (ИД)", projectStatusProject, projectApplication, 1);
+        isPreliminaryAfterStatusApplication = addJProp("isPreliminaryAfterStatusApplication", "Заявка на предв. экспертизу (после подачи на статус)", baseLM.and1, is(applicationPreliminary), 1, isPreliminaryAndStatusApplication, 1);
+
+        statusApplication = addIfElseUProp(idGroup, "statusApplication", "Статус заявки (ИД)", addCProp(projectStatus, "applyStatus", application), statusJoinApplication, isPreliminaryAfterStatusApplication, 1);
         nameStatusApplication = addJProp(baseGroup, "nameStatusApplication", "Статус заявки", baseLM.name, statusApplication, 1);
+        officialNameStatusApplication = addJProp(baseGroup, "nameStatusApplication", "Статус заявки (по регламенту)", oficialNameProjectStatus, statusApplication, 1);
 
         langApplication = addJProp(baseGroup, "langApplication", "Язык", langProject, projectApplication, 1);
         nameNativeShortAggregateClusterApplication = addJProp(baseGroup, "nameNativeShortAggregateClusterApplication", "Кластеры", nameNativeShortAggregateClusterProject, projectApplication, 1);
@@ -2263,6 +2281,9 @@ public class SkolkovoLogicsModule extends LogicsModule {
     public ProjectFullFormEntity projectFullForeign;
     public ProjectFullFormEntity projectFullBoth;
     public ClaimerFullFormEntity claimerFull;
+
+    private StatusLogFormEntity logNameStatusForm;
+    private LP formLogNameStatusProject;
 
     @Override
     public void initNavigators() throws JRException, FileNotFoundException {
@@ -2287,6 +2308,10 @@ public class SkolkovoLogicsModule extends LogicsModule {
         baseLM.relevantFormsWindow.visible = false;
         baseLM.relevantClassFormsWindow.visible = false;
         baseLM.logWindow.visible = false;
+
+//        logNameStatusForm = new StatusLogFormEntity(null, "logNameStatusForm");
+//        formLogNameStatusProject = addMFAProp("История", logNameStatusForm, logNameStatusForm.objProject);
+//        formLogNameStatusProject.setImage("history.png");
 
         projectFullNative = addFormEntity(new ProjectFullFormEntity(baseLM.objectElement, "projectFullNative", "Резюме проекта для эксперта", "rus"));
         project.setEditForm(projectFullNative);
@@ -2316,7 +2341,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         addFormEntity(new AcceptanceCertificateFormEntity(print, "acceptanceCertificateNonResident", "Акт оказанных услуг (нерезидент)", false));
 
         addFormEntity(new ProjectFormEntity(baseLM.baseElement, "project"));
-//        addFormEntity(new ApplicationFormEntity(baseLM.baseElement, "application"));
+        addFormEntity(new ApplicationFormEntity(baseLM.baseElement, "application"));
         addFormEntity(new ClaimerFormEntity(baseLM.baseElement, "claimer"));
         addFormEntity(new VoteFormEntity(baseLM.baseElement, "vote", false));
         addFormEntity(new ExpertFormEntity(baseLM.baseElement, "expert"));
@@ -2622,8 +2647,11 @@ public class SkolkovoLogicsModule extends LogicsModule {
         private ProjectFormEntity(NavigatorElement parent, String sID) {
             super(parent, sID, "Реестр проектов");
 
-            objProject = addSingleGroupObject(project, dateProject, dateStatusProject, nameNativeProject, nameForeignProject, nameNativeShortFinalClusterProject, nameNativeClaimerProject, nameForeignClaimerProject, emailClaimerProject,
-                    nameStatusProject, nameProjectActionProject, updateDateProject, autoGenerateProject, inactiveProject, quantityVoteProject, quantityClusterProject, generateVoteProject, editClaimerProject, editProject);
+            objProject = addSingleGroupObject(project, dateProject, dateStatusProject, nameNativeProject, nameForeignProject,
+                    nameNativeShortFinalClusterProject, nameNativeClaimerProject, nameForeignClaimerProject, emailClaimerProject,
+                    nameStatusProject, formLogNameStatusProject, nameProjectActionProject, updateDateProject, autoGenerateProject,
+                    inactiveProject, quantityVoteProject, quantityClusterProject, generateVoteProject, editClaimerProject, editProject);
+
             addPropertyDraw(objProject, isOtherClusterProject, nativeSubstantiationOtherClusterProject, foreignSubstantiationOtherClusterProject);
             addPropertyDraw(objProject, registerGroup);
             setForceViewType(registerGroup, ClassViewType.PANEL);
@@ -2631,8 +2659,10 @@ public class SkolkovoLogicsModule extends LogicsModule {
             getPropertyDraw(isOtherClusterProject).propertyCaption = addPropertyObject(hideIsOtherClusterProject, objProject);
             getPropertyDraw(nativeSubstantiationOtherClusterProject).propertyCaption = addPropertyObject(hideNativeSubstantiationOtherClusterProject, objProject);
             getPropertyDraw(foreignSubstantiationOtherClusterProject).propertyCaption = addPropertyObject(hideForeignSubstantiationOtherClusterProject, objProject);
+
             addPropertyDraw(nameNativeCurrentCluster).toDraw = objProject.groupTo;
             setForceViewType(nameNativeCurrentCluster, ClassViewType.PANEL);
+
             addPropertyDraw(objProject, translateToRussianProject, translateToEnglishProject);
             setForceViewType(translateToRussianProject, ClassViewType.PANEL);
             setForceViewType(translateToEnglishProject, ClassViewType.PANEL);
@@ -2641,6 +2671,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             nameForeignEntity = addPropertyDraw(nameForeignProject, objProject);
             nameNativeClaimerEntity = addPropertyDraw(nameNativeClaimerProject, objProject);
             nameForeignClaimerEntity = addPropertyDraw(nameForeignClaimerProject, objProject);
+
             setForceViewType(nameNativeEntity, ClassViewType.PANEL);
             setForceViewType(nameForeignEntity, ClassViewType.PANEL);
             setForceViewType(nameNativeClaimerEntity, ClassViewType.PANEL);
@@ -2650,6 +2681,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             nameForeignTranslationEntity = addPropertyDraw(nameForeignProject, objProject);
             nameNativeClaimerTranslationEntity = addPropertyDraw(nameNativeClaimerProject, objProject);
             nameForeignClaimerTranslationEntity = addPropertyDraw(nameForeignClaimerProject, objProject);
+
             setForceViewType(nameNativeTranslationEntity, ClassViewType.PANEL);
             setForceViewType(nameForeignTranslationEntity, ClassViewType.PANEL);
             setForceViewType(nameNativeClaimerTranslationEntity, ClassViewType.PANEL);
@@ -2797,7 +2829,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             addRegularFilterGroup(activeProjectFilterGroup);
 
             addDefaultHintsIncrementTable(this);
-//            setPageSize(0);
+            setPageSize(0);
 
             setReadOnly(true, objCluster.groupTo);
             setReadOnly(inProjectCluster, false);
@@ -2927,6 +2959,27 @@ public class SkolkovoLogicsModule extends LogicsModule {
         }
     }
 
+    private class StatusLogFormEntity extends FormEntity<SkolkovoBusinessLogics> {
+        public ObjectEntity objProject;
+        private ObjectEntity objSession;
+
+        private StatusLogFormEntity(NavigatorElement parent, String sID) {
+            super(parent, sID, "История изменений статуса");
+
+            objProject = addSingleGroupObject(project, nameNativeProject, nameNativeClaimerProject);
+            objProject.groupTo.setSingleClassView(ClassViewType.PANEL);
+
+            objSession = addSingleGroupObject(baseLM.session, baseLM.baseGroup);
+
+            addPropertyDraw(logNameStatusProject, objProject, objSession);
+
+            addFixedFilter(new NotNullFilterEntity(addPropertyObject(logStatusProject, objProject, objSession)));
+
+            setReadOnly(true);
+        }
+    }
+
+
     private class ApplicationFormEntity extends FormEntity<SkolkovoBusinessLogics> {
         private ObjectEntity objApplication;
 
@@ -2934,7 +2987,9 @@ public class SkolkovoLogicsModule extends LogicsModule {
             super(parent, sID, "Реестр заявок");
 
             objApplication = addSingleGroupObject(application, dateApplication, nameNativeClaimerApplication, baseLM.objectClassName, nameNativeProjectApplication,
-                    nameStatusApplication, langApplication, nameNativeShortAggregateClusterApplication, emailClaimerApplication);
+                    officialNameStatusApplication, langApplication, nameNativeShortAggregateClusterApplication, emailClaimerApplication);
+
+            setReadOnly(false);
         }
 
     }
@@ -3358,27 +3413,28 @@ public class SkolkovoLogicsModule extends LogicsModule {
         private ObjectEntity objPrevVote;
 
         private VoteStartFormEntity(NavigatorElement parent, String sID) {
-                    super(parent, sID, "Созыв заседания", true);
+            super(parent, sID, "Созыв заседания", true);
 
-                objVote = addSingleGroupObject(1, "vote", vote, baseLM.date, dateProjectVote, nameNativeClaimerVote, nameNativeProjectVote, nameAblateClaimerVote, prevDateStartVote, prevDateVote, quantityInVote, quantityInOldVote, countPrevVote);
-                objVote.groupTo.initClassView = ClassViewType.PANEL;
+            objVote = addSingleGroupObject(1, "vote", vote, baseLM.date, dateProjectVote, nameNativeClaimerVote, nameNativeProjectVote, nameAblateClaimerVote, prevDateStartVote, prevDateVote, quantityInVote, quantityInOldVote, countPrevVote);
+            objVote.groupTo.initClassView = ClassViewType.PANEL;
 
-                objExpert = addSingleGroupObject(2, "expert", expert, baseLM.userLastName, baseLM.userFirstName, documentNameExpert);
-                addPropertyDraw(numberNewExpertVote, objExpert, objVote);
-                addFixedFilter(new NotNullFilterEntity(addPropertyObject(inNewExpertVote, objExpert, objVote)));
+            objExpert = addSingleGroupObject(2, "expert", expert, baseLM.userLastName, baseLM.userFirstName, documentNameExpert);
+            addPropertyDraw(numberNewExpertVote, objExpert, objVote);
+            addFixedFilter(new NotNullFilterEntity(addPropertyObject(inNewExpertVote, objExpert, objVote)));
 
-                objOldExpert = addSingleGroupObject(3, "oldexpert", expert, baseLM.userLastName, baseLM.userFirstName, documentNameExpert);
-                addPropertyDraw(numberOldExpertVote, objOldExpert, objVote);
-                addFixedFilter(new NotNullFilterEntity(addPropertyObject(inOldExpertVote, objOldExpert, objVote)));
+            objOldExpert = addSingleGroupObject(3, "oldexpert", expert, baseLM.userLastName, baseLM.userFirstName, documentNameExpert);
+            addPropertyDraw(numberOldExpertVote, objOldExpert, objVote);
+            addFixedFilter(new NotNullFilterEntity(addPropertyObject(inOldExpertVote, objOldExpert, objVote)));
 
-                objPrevVote = addSingleGroupObject(4, "prevVote", vote, dateEndVote);
-                addFixedFilter(new NotNullFilterEntity(addPropertyObject(isPrevVoteVote, objPrevVote, objVote)));
+            objPrevVote = addSingleGroupObject(4, "prevVote", vote, dateEndVote);
+            addFixedFilter(new NotNullFilterEntity(addPropertyObject(isPrevVoteVote, objPrevVote, objVote)));
 
-                addAttachEAForm(emailStartVoteEA, this, EmailActionProperty.Format.PDF, objVote, 1);
-                addAttachEAForm(emailClosedVoteEA, this, EmailActionProperty.Format.PDF, emailStartHeaderVote, objVote, 1);
+            addAttachEAForm(emailStartVoteEA, this, EmailActionProperty.Format.PDF, objVote, 1);
+            addAttachEAForm(emailClosedVoteEA, this, EmailActionProperty.Format.PDF, emailStartHeaderVote, objVote, 1);
 
-                voteStartFormVote = addFAProp("Созыв заседания", this, objVote);
+            addDefaultHintsIncrementTable(this);
 
+            voteStartFormVote = addFAProp("Созыв заседания", this, objVote);
         }
         @Override
         public void modifyHierarchy(GroupObjectHierarchy groupHierarchy) {
@@ -3421,6 +3477,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
             addAttachEAForm(emailProtocolVoteEA, this, EmailActionProperty.Format.PDF, objVote, 1);
             addAttachEAForm(emailClosedVoteEA, this, EmailActionProperty.Format.PDF, emailProtocolHeaderVote, objVote, 1);
+
+            addDefaultHintsIncrementTable(this);
 
             voteProtocolFormVote = addFAProp("Протокол заседания", this, objVote);
         }
@@ -3646,6 +3704,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(succeededVote, objVote)));
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(acceptedVote, objVote)));
 
+            addDefaultHintsIncrementTable(this);
+
             addAttachEAForm(emailClosedVoteEA, this, EmailActionProperty.Format.PDF, emailClaimerAcceptedHeaderVote, objVote, 1);
         }
     }
@@ -3662,6 +3722,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(succeededVote, objVote)));
             addFixedFilter(new NotFilterEntity(new NotNullFilterEntity(addPropertyObject(acceptedVote, objVote))));
+
+            addDefaultHintsIncrementTable(this);
 
             addAttachEAForm(emailClosedVoteEA, this, EmailActionProperty.Format.PDF, emailClaimerRejectedHeaderVote, objVote, 1);
         }
