@@ -83,9 +83,9 @@ public class KeyController {
         if (intersect) {
             if (primary.keySet().containsAll(secondary.keySet())) {
                 primary.remove(BaseUtils.lastSetElement(primary.keySet()));
+                secondary.remove(BaseUtils.lastSetElement(secondary.keySet()));
                 for (ClientGroupObjectValue key : secondary.keySet()) {
-                    if (primary.size() != 1)
-                        primary.remove(key);
+                    primary.remove(key);
                 }
             } else {
                 for (ClientGroupObjectValue key : primary.keySet()) {

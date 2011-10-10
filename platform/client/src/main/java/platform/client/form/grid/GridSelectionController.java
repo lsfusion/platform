@@ -16,7 +16,6 @@ public class GridSelectionController {
 
     private int firstColumn;
     private int lastColumn;
-    private boolean recordingOn;
 
     public GridSelectionController(GridTable table) {
         this.table = table;
@@ -77,7 +76,6 @@ public class GridSelectionController {
         } else {
             if (extend) {
                 //если без shift, resetSelection() уже сработал в !toggle && !extend
-                if (!recordingOn)
                     modifyTemporaryValues(rowIndex);
             } else {
                 firstColumn = columnIndex;
@@ -133,7 +131,6 @@ public class GridSelectionController {
         for (ClientPropertyDraw property : getProperties()) {
             selectedCells.put(property, new HashMap<ClientGroupObjectValue, Object>());
         }
-        recordingOn = false;
 
         gridKeys = new ArrayList<ClientGroupObjectValue>();
         keysChanged(true);
@@ -154,7 +151,6 @@ public class GridSelectionController {
 
     public void recordingStarted(int column) {
         firstColumn = column;
-        recordingOn = true;
     }
 
     public void submitShiftSelection(Map<ClientGroupObjectValue, Map<ClientPropertyDraw, Object>> recording) {
@@ -163,7 +159,6 @@ public class GridSelectionController {
 
     public void recordingStopped() {
         commitSelection();
-        recordingOn = false;
     }
 
     public void keysChanged(boolean movedDown) {
