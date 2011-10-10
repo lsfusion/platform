@@ -514,6 +514,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP completeCommentExpertVote;
 
     private LP percentNeededVote;
+    private LP quantityNeededVote;
 
     private LP competitiveAdvantagesExpertVote;
     private LP commercePotentialExpertVote;
@@ -539,11 +540,23 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP quantityInClusterVote;
     LP quantityInnovativeVote;
     LP quantityForeignVote;
+    LP quantityCompetitiveAdvantagesVote;
+    LP quantityCommercePotentialVote;
+    LP quantityCanBeImplementedVote;
+    LP quantityHaveExpertiseVote;
+    LP quantityInternationalExperienceVote;
     LP acceptedInClusterVote;
     LP acceptedInnovativeVote;
     LP acceptedForeignVote;
+    LP acceptedCompetitiveAdvantagesVote;
+    LP acceptedCommercePotentialVote;
+    LP acceptedCanBeImplementedVote;
+    LP acceptedHaveExpertiseVote;
+    LP acceptedInternationalExperienceVote;
 
     LP acceptedVote;
+    LP acceptedVoteR1;
+    LP acceptedVoteR2;
     LP succeededVote;
     LP openedSucceededVote, closedSucceededVote;
     LP closedAcceptedVote;
@@ -1637,7 +1650,6 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         // vote Revision 2
 
-        percentNeededVote = addDProp(baseGroup, "percentNeededVote", "Процент голосования", DoubleClass.instance, voteR2);
 
         competitiveAdvantagesExpertVote = addDProp(voteResultCheckGroup, "competitiveAdvantagesExpertVote", "Конкур. преим.", LogicalClass.instance, expert, voteR2);
         commercePotentialExpertVote = addDProp(voteResultCheckGroup, "commercePotentialExpertVote", "Потенциал коммерц.", LogicalClass.instance, expert, voteR2);
@@ -1652,6 +1664,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         commentHaveExpertiseExpertVote = addDProp(voteResultCommentGroup, "commentHaveExpertiseExpertVote", "Наличие экспертизы (обоснование)", TextClass.instance, expert, voteR2);
         commentInternationalExperienceExpertVote = addDProp(voteResultCommentGroup, "commentInternationalExperienceExpertVote", "Международный опыт (обоснование)", TextClass.instance, expert, voteR2);
         commentEnoughDocumentsExpertVote = addDProp(voteResultCommentGroup, "commentEnoughDocumentsExpertVote", "Достаточно документов (обоснование)", TextClass.instance, expert, voteR2);
+
 
         followed(doneExpertVote, competitiveAdvantagesExpertVote, commercePotentialExpertVote, canBeImplementedExpertVote, haveExpertiseExpertVote, internationalExperienceExpertVote,
                 commentCompetitiveAdvantagesExpertVote, commentCommercePotentialExpertVote, commentCanBeImplementedExpertVote, commentHaveExpertiseExpertVote, commentInternationalExperienceExpertVote);
@@ -1668,6 +1681,9 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         quantityDoneVote = addSGProp(voteResultGroup, "quantityDoneVote", true, "Проголосовало",
                 addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), doneExpertVote, 1, 2), 2); // сколько экспертов высказалось
+
+        percentNeededVote = addDProp(baseGroup, "percentNeededVote", "Процент голосования", DoubleClass.instance, voteR2);
+        quantityNeededVote = addJProp(baseGroup, "quantityNeededVote", "Треб. количество голосов", baseLM.percent2, quantityDoneVote, 1, percentNeededVote, 1);
 
         quantityDoneNewVote = addSGProp(voteResultGroup, "quantityDoneNewVote", true, "Проголосовало (нов.)",
                 addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), doneNewExpertVote, 1, 2), 2); // сколько новых экспертов высказалось
@@ -1690,6 +1706,21 @@ public class SkolkovoLogicsModule extends LogicsModule {
         quantityForeignVote = addSGProp(voteResultGroup, "quantityForeignVote", true, "Иностр. специалист (голоса)",
                 addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), foreignExpertVote, 1, 2), 2); // сколько экспертов высказалось
 
+        quantityCompetitiveAdvantagesVote = addSGProp(voteResultGroup, "quantityCompetitiveAdvantagesVote", true, "Конкур. преим. (голоса)",
+                addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), competitiveAdvantagesExpertVote, 1, 2), 2); // сколько экспертов высказалось
+
+        quantityCommercePotentialVote = addSGProp(voteResultGroup, "quantityCommercePotentialVote", true, "Потенциал коммерц. (голоса)",
+                addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), commercePotentialExpertVote, 1, 2), 2); // сколько экспертов высказалось
+
+        quantityCanBeImplementedVote = addSGProp(voteResultGroup, "quantityCanBeImplementedVote", true, "Теоретически реализуем (голоса)",
+                addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), canBeImplementedExpertVote, 1, 2), 2); // сколько экспертов высказалось
+
+        quantityHaveExpertiseVote = addSGProp(voteResultGroup, "quantityHaveExpertiseVote", true, "Наличие экспертизы (голоса)",
+                addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), haveExpertiseExpertVote, 1, 2), 2); // сколько экспертов высказалось
+
+        quantityInternationalExperienceVote = addSGProp(voteResultGroup, "quantityInternationalExperienceVote", true, "Международный опыт (голоса)",
+                addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), internationalExperienceExpertVote, 1, 2), 2); // сколько экспертов высказалось
+
         acceptedInClusterVote = addJProp(voteResultGroup, "acceptedInClusterVote", "Соотв-ие кластеру", baseLM.greater2,
                 addJProp(baseLM.multiplyIntegerBy2, quantityInClusterVote, 1), 1,
                 quantityDoneVote, 1);
@@ -1702,8 +1733,28 @@ public class SkolkovoLogicsModule extends LogicsModule {
                 addJProp(baseLM.multiplyIntegerBy2, quantityForeignVote, 1), 1,
                 quantityDoneVote, 1);
 
-        acceptedVote = addJProp(voteResultGroup, "acceptedVote", true, "Положительно", and(false, false),
+        acceptedCompetitiveAdvantagesVote = addJProp(voteResultGroup, "acceptedCompetitiveAdvantagesVote", "Конкур. преим.", baseLM.groeq2,
+                quantityCompetitiveAdvantagesVote, 1, quantityNeededVote, 1);
+
+        acceptedCommercePotentialVote = addJProp(voteResultGroup, "acceptedCommercePotentialVote", "Потенциал коммерц.", baseLM.groeq2,
+                quantityCommercePotentialVote, 1, quantityNeededVote, 1);
+
+        acceptedCanBeImplementedVote = addJProp(voteResultGroup, "acceptedCanBeImplementedVote", "Теоретически реализуем", baseLM.groeq2,
+                quantityCanBeImplementedVote, 1, quantityNeededVote, 1);
+
+        acceptedHaveExpertiseVote = addJProp(voteResultGroup, "acceptedHaveExpertiseVote", "Наличие экспертизы", baseLM.groeq2,
+                quantityHaveExpertiseVote, 1, quantityNeededVote, 1);
+
+        acceptedInternationalExperienceVote = addJProp(voteResultGroup, "acceptedInternationalExperienceVote", "Международный опыт", baseLM.groeq2,
+                quantityInternationalExperienceVote, 1, quantityNeededVote, 1);
+
+        acceptedVoteR1 = addJProp("acceptedVoteR1", true, "Положительно", and(false, false),
                 acceptedInClusterVote, 1, acceptedInnovativeVote, 1, acceptedForeignVote, 1);
+
+        acceptedVoteR2 = addJProp("acceptedVoteR2", true, "Положительно", and(false, false, false, false),
+                acceptedCompetitiveAdvantagesVote, 1, acceptedCommercePotentialVote, 1, acceptedCanBeImplementedVote, 1, acceptedHaveExpertiseVote, 1, acceptedInternationalExperienceVote, 1);
+
+        acceptedVote = addCUProp(voteResultGroup, "acceptedVote", "Положительно", acceptedVoteR1, acceptedVoteR2);
 
         succeededVote = addJProp(voteResultGroup, "succeededVote", true, "Состоялось", baseLM.groeq2, quantityDoneVote, 1, limitExperts); // достаточно экспертов
         openedSucceededVote = addJProp("openedSucceededVote", "Открыто и состоялось", baseLM.and1, succeededVote, 1, openedVote, 1);
