@@ -18,7 +18,7 @@
 	<field name="prevVote" class="java.lang.Integer"/>
 	<field name="dateEndVote" class="java.util.Date"/>
 	<variable name="dateD" class="java.util.Date">
-		<variableExpression><![CDATA[$V{dateD}}+($V{dateD}.length() == 0 ? "" : " , ")+$F{dateEndVote}]]></variableExpression>
+		<variableExpression><![CDATA[$V{dateD}+($V{dateD}.length() == 0 ? "" : " , ")+$F{dateEndVote}]]></variableExpression>
 		<initialValueExpression><![CDATA[""]]></initialValueExpression>
 	</variable>
 	<pageHeader>
