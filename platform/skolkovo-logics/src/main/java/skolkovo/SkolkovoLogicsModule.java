@@ -374,6 +374,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP dataDocumentNameExpert, documentNameExpert;
     public LP emailExpert;
     LP clusterExpert, nameNativeClusterExpert, nameForeignClusterExpert, nameNativeShortClusterExpert;
+    LP isTechnicalExpert, isBusinessExpert;
     LP primClusterExpert, extraClusterExpert, inClusterExpert;
     LP clusterInExpertVote;
     public LP inProjectCluster;
@@ -630,6 +631,11 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP percentInClusterExpert;
     LP percentInnovativeExpert;
     LP percentForeignExpert;
+    LP percentCompetitiveAdvantagesExpert;
+    LP percentCommercePotentialExpert;
+    LP percentCanBeImplementedExpert;
+    LP percentHaveExpertiseExpert;
+    LP percentInternationalExperienceExpert;
 
     LP prevDateStartVote, prevDateVote;
     LP prevClusterVote, nameNativePrevClusterVote;
@@ -1094,6 +1100,9 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         dataDocumentNameExpert = addDProp(baseGroup, "dataDocumentNameExpert", "Имя для документов", StringClass.get(70), expert);
         documentNameExpert = addSUProp("documentNameExpert", "Имя для документов", Union.OVERRIDE, addJProp(baseLM.and1, addJProp(baseLM.insensitiveString2, baseLM.userLastName, 1, baseLM.userFirstName, 1), 1, is(expert), 1), dataDocumentNameExpert);
+
+        isTechnicalExpert = addDProp("isTechnicalExpert", "Технический эксперт", LogicalClass.instance, expert);
+        isBusinessExpert = addDProp("isBusinessExpert", "Бизнес-эксперт", LogicalClass.instance, expert);
 
         clusterExpert = addDProp(idGroup, "clusterExpert", "Кластер (ИД)", cluster, expert);
         nameNativeClusterExpert = addJProp(baseGroup, "nameNativeClusterExpert", "Кластер", nameNative, clusterExpert, 1);
@@ -2157,6 +2166,26 @@ public class SkolkovoLogicsModule extends LogicsModule {
         LP quantityForeignExpert = addSGProp("quantityForeignExpert", "Иностр. специалист (голоса)",
                 addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), foreignNewExpertVote, 1, 2), 1);
         percentForeignExpert = addJProp(expertResultGroup, "percentForeignExpert", "Иностр. специалист (%)", percent, quantityForeignExpert, 1, quantityDoneExpert, 1);
+
+        LP quantityCompetitiveAdvantagesExpert = addSGProp("quantityCompetitiveAdvantagesExpert", "Конкур. преим. (голоса)",
+                addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), competitiveAdvantagesExpertVote, 1, 2), 1);
+        percentCompetitiveAdvantagesExpert = addJProp(expertResultGroup, "percentCompetitiveAdvantagesExpert", "Конкур. преим. (%)", percent, quantityCompetitiveAdvantagesExpert, 1, quantityDoneExpert, 1);
+
+        LP quantityCommercePotentialExpert = addSGProp("quantityCommercePotentialExpert", "Потенциал коммерц. (голоса)",
+                addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), commercePotentialExpertVote, 1, 2), 1);
+        percentCommercePotentialExpert = addJProp(expertResultGroup, "percentCommercePotentialExpert", "Потенциал коммерц. (%)", percent, quantityCommercePotentialExpert, 1, quantityDoneExpert, 1);
+
+        LP quantityCanBeImplementedExpert = addSGProp("quantityCanBeImplementedExpert", "Теоретически реализуем (голоса)",
+                addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), canBeImplementedExpertVote, 1, 2), 1);
+        percentCanBeImplementedExpert = addJProp(expertResultGroup, "percentCanBeImplementedExpert", "Теоретически реализуем (%)", percent, quantityCanBeImplementedExpert, 1, quantityDoneExpert, 1);
+
+        LP quantityHaveExpertiseExpert = addSGProp("quantityHaveExpertiseExpert", "Наличие экспертизы (голоса)",
+                addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), haveExpertiseExpertVote, 1, 2), 1);
+        percentHaveExpertiseExpert = addJProp(expertResultGroup, "percentHaveExpertiseExpert", "Наличие экспертизы (%)", percent, quantityHaveExpertiseExpert, 1, quantityDoneExpert, 1);
+
+        LP quantityInternationalExperienceExpert = addSGProp("quantityInternationalExperienceExpert", "Международный опыт (голоса)",
+                addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), internationalExperienceExpertVote, 1, 2), 1);
+        percentInternationalExperienceExpert = addJProp(expertResultGroup, "percentInternationalExperienceExpert", "Международный опыт (%)", percent, quantityInternationalExperienceExpert, 1, quantityDoneExpert, 1);
 
         prevDateStartVote = addOProp("prevDateStartVote", "Пред. засед. (старт)", OrderType.PREVIOUS, dateStartVote, true, true, 2, projectVote, 1, clusterVote, 1, baseLM.date, 1);
         prevDateVote = addOProp("prevDateVote", "Пред. засед. (окончание)", OrderType.PREVIOUS, dateEndVote, true, true, 2, projectVote, 1, clusterVote, 1, baseLM.date, 1);
@@ -3252,7 +3281,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         private ExpertFormEntity(NavigatorElement parent, String sID) {
             super(parent, sID, "Реестр экспертов");
 
-            objExpert = addSingleGroupObject(expert, baseLM.selection, baseLM.userFirstName, baseLM.userLastName, documentNameExpert, baseLM.userLogin, baseLM.userPassword, baseLM.email, disableExpert, nameNativeClusterExpert, nameLanguageExpert, dateAgreementExpert, nameCountryExpert, nameCurrencyExpert, expertResultGroup, baseLM.generateLoginPassword, emailAuthExpert);
+            objExpert = addSingleGroupObject(expert, baseLM.selection, baseLM.userFirstName, baseLM.userLastName, documentNameExpert, baseLM.userLogin, baseLM.userPassword, baseLM.email, disableExpert, nameNativeClusterExpert, nameLanguageExpert, dateAgreementExpert, nameCountryExpert, nameCurrencyExpert, isTechnicalExpert, isBusinessExpert, expertResultGroup, baseLM.generateLoginPassword, emailAuthExpert);
             addObjectActions(this, objExpert);
 
             objVote = addSingleGroupObject(vote, nameNativeProjectVote, dateStartVote, dateEndVote, openedVote, succeededVote, quantityDoneVote);
