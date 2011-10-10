@@ -114,7 +114,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
     public ConcreteCustomClass academic;
     public ConcreteCustomClass patent;
 
-    ConcreteCustomClass vote;
+    AbstractCustomClass vote;
 
     ConcreteCustomClass voteR1;
     ConcreteCustomClass voteR2;
@@ -213,7 +213,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         document = addConcreteClass("document", "Документ", documentAbstract);
 
-        vote = addConcreteClass("vote", "Заседание", baseClass, baseLM.transaction);
+        vote = addAbstractClass("vote", "Заседание", baseClass, baseLM.transaction);
 
         voteR1 = addConcreteClass("voteR1", "Заседание (регл. 1)", vote);
         voteR2 = addConcreteClass("voteR2", "Заседание (регл. 2)", vote);
@@ -368,6 +368,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP loadExtractClaimer, openExtractClaimer;
     public LP OGRNClaimer;
     public LP INNClaimer;
+    LP isR2Project;
     LP revisionVote;
     LP projectVote, claimerVote, nameNativeProjectVote, nameForeignProjectVote;
     LP quantityVoteProject;
@@ -514,6 +515,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP completeExpertVote;
     LP completeCommentExpertVote;
 
+    private LP percentNeeded;
     private LP percentNeededVote;
     private LP quantityNeededVote;
 
@@ -1065,6 +1067,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         OGRNClaimer = addDProp(legalDataGroup, "OGRNClaimer", "ОГРН", StringClass.get(13), claimer);
         INNClaimer = addDProp(legalDataGroup, "INNClaimer", "ИНН", StringClass.get(12), claimer);
+
+        isR2Project = addDProp(baseGroup, "isR2Project", "Новый регламент", LogicalClass.instance, project);
 
         revisionVote = addCUProp(baseGroup, "revisionVote", "Регламент", addCProp(StringClass.get(3), "R1", voteR1), addCProp(StringClass.get(3), "R2", voteR2));
 
@@ -1691,6 +1695,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         quantityDoneVote = addSGProp(voteResultGroup, "quantityDoneVote", true, "Проголосовало",
                 addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), doneExpertVote, 1, 2), 2); // сколько экспертов высказалось
 
+        percentNeeded = addDProp(baseGroup, "percentNeeded", "Процент для положительного решения", DoubleClass.instance);
         percentNeededVote = addDProp(baseGroup, "percentNeededVote", "Процент голосования", DoubleClass.instance, voteR2);
         quantityNeededVote = addJProp(baseGroup, "quantityNeededVote", "Треб. количество голосов", baseLM.percent2, quantityDoneVote, 1, percentNeededVote, 1);
 
@@ -2815,7 +2820,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
             objProject = addSingleGroupObject(project, dateProject, dateStatusProject, nameNativeProject, nameForeignProject,
                     nameNativeShortFinalClusterProject, nameNativeClaimerProject, nameForeignClaimerProject, emailClaimerProject,
                     nameStatusProject, formLogNameStatusProject, nameProjectActionProject, updateDateProject, autoGenerateProject,
-                    inactiveProject, quantityVoteProject, quantityClusterProject, generateVoteProject, editClaimerProject, editProject);
+                    inactiveProject, quantityVoteProject, quantityClusterProject, generateVoteProject, editClaimerProject, editProject,
+                    isR2Project);
 
             addPropertyDraw(objProject, isOtherClusterProject, nativeSubstantiationOtherClusterProject, foreignSubstantiationOtherClusterProject);
             addPropertyDraw(objProject, registerGroup);
@@ -2906,7 +2912,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             getPropertyDraw(generateVoteProject).forceViewType = ClassViewType.PANEL;
             getPropertyDraw(generateVoteProject).propertyCaption = addPropertyObject(hideGenerateVoteProject, objProject);
 
-            objVote = addSingleGroupObject(vote, dateStartVote, dateEndVote, nameNativeClusterVote, nameProjectActionVote, openedVote, succeededVote, acceptedVote,
+            objVote = addSingleGroupObject(vote, dateStartVote, dateEndVote, nameNativeClusterVote, nameProjectActionVote, percentNeededVote, openedVote, succeededVote, acceptedVote,
                     quantityDoneVote, quantityInClusterVote, quantityInnovativeVote, quantityForeignVote, loadFileDecisionVote, openFileDecisionVote,
                     emailClaimerVote, emailNoticeRejectedVote, emailNoticeAcceptedStatusVote, emailNoticeAcceptedPreliminaryVote, decisionNoticedVote, baseLM.delete);
             objVote.groupTo.banClassView.addAll(BaseUtils.toList(ClassViewType.PANEL, ClassViewType.HIDE));
@@ -3108,7 +3114,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             design.get(objExpert.groupTo).grid.constraints.fillVertical = 1.5;
 
             design.setPanelLabelAbove(voteResultCommentGroup, true);
-            design.setConstraintsFillHorizontal(voteResultCommentGroup, 1);
+            design.setConstraintsFillHorizontal(voteResultCommentGroup, 0.3333);
 
             design.setPreferredSize(voteResultCheckGroup, new Dimension(60, -1));
 
@@ -3193,7 +3199,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         private GlobalFormEntity(NavigatorElement parent, String sID) {
             super(parent, sID, "Глобальные параметры");
 
-            addPropertyDraw(new LP[]{baseLM.currentDate, requiredPeriod, overduePeriod, requiredQuantity, limitExperts,
+            addPropertyDraw(new LP[]{baseLM.currentDate, requiredPeriod, overduePeriod, requiredQuantity, limitExperts, percentNeeded,
                     emailDocuments, emailClaimerFromAddress, emailForCertificates,
                     projectsImportLimit, importProjectSidsAction, showProjectsToImportAction, showProjectsReplaceToImportAction, importProjectsAction,
                     rateExpert, emailLetterCertificatesExpertMonthYear});
@@ -3263,7 +3269,11 @@ public class SkolkovoLogicsModule extends LogicsModule {
             DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign();
 
             design.setPanelLabelAbove(voteResultCommentGroup, true);
-            design.setConstraintsFillHorizontal(voteResultCommentGroup, 0.3);
+            design.setConstraintsFillHorizontal(voteResultCommentGroup, 0.3333);
+
+            PropertyDrawView className = design.get(getPropertyDraw(baseLM.objectClassName, objVote.groupTo));
+            className.setPreferredCharWidth(20);
+            className.setMaximumCharWidth(20);
 
             design.setPreferredSize(voteResultCheckGroup, new Dimension(60, -1));
 
@@ -4194,6 +4204,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
         public void execute(ExecutionContext context) throws SQLException {
             DataObject projectObject = context.getKeyValue(projectInterface);
 
+            boolean r2 = isR2Project.read(context, projectObject) != null;
+
             // считываем всех экспертов, которые уже голосовали по проекту
             Query<String, String> query = new Query<String, String>(Collections.singleton("key"));
             query.and(doneProjectExpert.getExpr(context.getModifier(), projectObject.getExpr(), query.mapKeys.get("key")).getWhere());
@@ -4230,18 +4242,27 @@ public class SkolkovoLogicsModule extends LogicsModule {
             }
 
             // создаем новое заседание
-            DataObject voteObject = context.addObject(vote);
+            DataObject voteObject = context.addObject(r2 ? voteR2 : voteR1);
             projectVote.execute(projectObject.object, context, voteObject);
             clusterVote.execute(currentClusterProject.read(context, projectObject), context, voteObject);
             projectActionVote.execute(projectActionProject.read(context, projectObject), context, voteObject);
+            if (r2)
+                percentNeededVote.execute(percentNeeded.read(context), context, voteObject);
 
             // копируем результаты старых заседаний
             for (Map.Entry<DataObject, DataObject> row : previousResults.entrySet()) {
                 inExpertVote.execute(true, context, row.getKey(), voteObject);
                 oldExpertVote.execute(true, context, row.getKey(), voteObject);
-                LP[] copyProperties = new LP[]{dateExpertVote, voteResultExpertVote, inClusterExpertVote,
+                ArrayList<LP> copyProperties = new ArrayList<LP>(Arrays.asList(dateExpertVote, voteResultExpertVote));
+                if (r2)
+                    copyProperties.addAll(Arrays.asList(competitiveAdvantagesExpertVote, commercePotentialExpertVote, canBeImplementedExpertVote,
+                        haveExpertiseExpertVote, internationalExperienceExpertVote, enoughDocumentsExpertVote,
+                        commentCompetitiveAdvantagesExpertVote, commentCommercePotentialExpertVote, commentCanBeImplementedExpertVote,
+                        commentHaveExpertiseExpertVote, commentInternationalExperienceExpertVote, commentEnoughDocumentsExpertVote));
+                else
+                    copyProperties.addAll(Arrays.asList(inClusterExpertVote,
                         innovativeExpertVote, foreignExpertVote, innovativeCommentExpertVote,
-                        competentExpertVote, completeExpertVote, completeCommentExpertVote};
+                        competentExpertVote, completeExpertVote, completeCommentExpertVote));
                 for (LP property : copyProperties) {
                     property.execute(property.read(context, row.getKey(), row.getValue()), context, row.getKey(), voteObject);
                 }
