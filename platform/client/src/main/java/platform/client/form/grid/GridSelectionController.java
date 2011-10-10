@@ -138,7 +138,7 @@ public class GridSelectionController {
 
     public boolean isCellSelected(ClientPropertyDraw property, ClientGroupObjectValue key) {
         Map<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>> selection = mergeSelections();
-        return selection.get(property).containsKey(key);
+        return selection.get(property) != null && selection.get(property).containsKey(key);
     }
 
     public void mousePressed(int firstColumnSelectionIndex) {
