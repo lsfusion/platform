@@ -566,6 +566,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP importProjectSidsAction, showProjectsToImportAction, showProjectsReplaceToImportAction, importProjectsAction;
     LP exportProjectDocumentsAction;
     LP copyProjectAction;
+    public LP fillLangProjectAction;
     LP generateVoteProject, needNameExtraVoteProject, hideGenerateVoteProject;
     LP copyResultsVote;
 
@@ -1091,7 +1092,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         nameNativeUnionManagerProject = addSUProp(baseGroup, "nameNativeUnionManagerProject", "ФИО руководителя проекта", Union.OVERRIDE, nameNativeManagerProject, nameNativeCorrectManagerProject);
         nameNativeUnionManagerProject.setMinimumWidth(10);
         nameNativeUnionManagerProject.setPreferredWidth(50);
-        
+
         nameForeignUnionManagerProject = addSUProp(baseGroup, "nameForeignUnionManagerProject", "Full name project manager", Union.OVERRIDE, nameForeignManagerProject, nameForeignCorrectManagerProject);
         nameForeignUnionManagerProject.setMinimumWidth(10);
         nameForeignUnionManagerProject.setPreferredWidth(50);
@@ -1774,6 +1775,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         importProjectsAction = addAProp(importGroup, new ImportProjectsActionProperty("Импортировать проекты", this, BL, false, false, false));
         copyProjectAction = addAProp(actionGroup, new CopyProjectActionProperty("Скопировать проект", this, project));
         exportProjectDocumentsAction = addAProp(actionGroup, new ExportProjectDocumentsActionProperty("Экспортировать документы", this, project));
+        fillLangProjectAction = addAProp(baseGroup, new FillLangProjectActionProperty(this, project));
 
         generateVoteProject = addAProp(actionGroup, new GenerateVoteActionProperty());
         copyResultsVote = addAProp(actionGroup, new CopyResultsActionProperty());
@@ -2619,6 +2621,41 @@ public class SkolkovoLogicsModule extends LogicsModule {
         @Override
         public ObjectEntity getObject() {
             return objProject;
+        }
+    }
+
+    public class FillLangProjectActionProperty extends ActionProperty {
+
+        private final ClassPropertyInterface projectInterface;
+
+        public FillLangProjectActionProperty(SkolkovoLogicsModule LM, ValueClass project) {
+            super(LM.genSID(), "Заполнить язык", new ValueClass[]{project});
+
+            Iterator<ClassPropertyInterface> i = interfaces.iterator();
+            projectInterface = i.next();
+        }
+
+        public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects) throws SQLException {
+            throw new RuntimeException("no need");
+        }
+
+        @Override
+        public void execute(ExecutionContext context) throws SQLException {
+
+            DataObject projectObject = context.getKeyValue(projectInterface);
+
+            Object fillNative = fillNativeProject.read(context, projectObject);
+            Object fillForeign = fillForeignProject.read(context, projectObject);
+
+            String lang = "";
+            if ((fillNative != null) && (fillForeign != null)) {
+                lang = "Рус/Англ";
+            } else if (fillNative != null) {
+                lang = "Рус";
+            } else if (fillForeign != null) {
+                lang = "Англ";
+            }
+            langProject.execute(lang, context, projectObject);
         }
     }
 

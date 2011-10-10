@@ -17,6 +17,7 @@ import platform.server.Context;
 import platform.server.Message;
 import platform.server.ParamMessage;
 import platform.server.RemoteContextObject;
+import platform.server.classes.StringClass;
 import platform.server.classes.ValueClass;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.query.Query;
@@ -61,7 +62,7 @@ public class ImportProjectsActionProperty extends ActionProperty {
         this.fillSids = fillSids;
     }
 
-    protected ImportField dateProjectField, dateStatusProjectField, langProjectField,
+    protected ImportField dateProjectField, dateStatusProjectField,
             projectIdField, nameNativeProjectField, nameForeignProjectField,
             nameNativeManagerProjectField, nameNativeGenitiveManagerProjectField, nameNativeDativusManagerProjectField, nameNativeAblateManagerProjectField,
             nameForeignManagerProjectField,
@@ -126,7 +127,6 @@ public class ImportProjectsActionProperty extends ActionProperty {
     private void initFieldsNProperties() {
         dateProjectField = new ImportField(LM.baseLM.date);
         dateStatusProjectField = new ImportField(LM.statusDateProject);
-        langProjectField = new ImportField(LM.langProject);
         projectIdField = new ImportField(LM.sidProject);
         nameNativeProjectField = new ImportField(LM.nameNativeJoinProject);
         nameForeignProjectField = new ImportField(LM.nameForeignJoinProject);
@@ -251,7 +251,6 @@ public class ImportProjectsActionProperty extends ActionProperty {
         propertiesNonRussianSpecialist = new ArrayList<ImportProperty<?>>();
 
         projectKey = new ImportKey(LM.project, LM.sidToProject.getMapping(projectIdField));
-        properties.add(new ImportProperty(langProjectField, LM.langProject.getMapping(projectKey)));
         properties.add(new ImportProperty(projectIdField, LM.sidProject.getMapping(projectKey)));
         properties.add(new ImportProperty(isOwnedEquipmentProjectField, LM.isOwnedEquipmentProject.getMapping(projectKey)));
         properties.add(new ImportProperty(isAvailableEquipmentProjectField, LM.isAvailableEquipmentProject.getMapping(projectKey)));
@@ -471,17 +470,17 @@ public class ImportProjectsActionProperty extends ActionProperty {
 
             pInfo.responseContents = IOUtils.readBytesFromStream(connection.getInputStream());
 
-//            File file = new File("C://test.xml");
-//            InputStream is = new FileInputStream(file);
-//            long length = file.length();
-//            byte[] bytes = new byte[(int) length];
-//            int offset = 0;
-//            int numRead = 0;
-//            while (offset < bytes.length && (numRead = is.read(bytes, offset, bytes.length - offset)) >= 0) {
-//                offset += numRead;
-//            }
-//            is.close();
-//            responseContents = bytes;
+            //File file = new File("C://test3.xml");
+            //InputStream is = new FileInputStream(file);
+            //long length = file.length();
+            //byte[] bytes = new byte[(int) length];
+            //int offset = 0;
+            //int numRead = 0;
+            //while (offset < bytes.length && (numRead = is.read(bytes, offset, bytes.length - offset)) >= 0) {
+            //    offset += numRead;
+            //}
+            //is.close();
+            //pInfo.responseContents = bytes;
 
             SAXBuilder builder = new SAXBuilder();
             Document document = builder.build(new ByteArrayInputStream(pInfo.responseContents));
@@ -697,17 +696,17 @@ public class ImportProjectsActionProperty extends ActionProperty {
         try {
             pInfo.responseContents = IOUtils.readBytesFromStream(inputStream);
 
-//            File file = new File("C://test.xml");
-//            InputStream is = new FileInputStream(file);
-//            long length = file.length();
-//            byte[] bytes = new byte[(int) length];
-//            int offset = 0;
-//            int numRead = 0;
-//            while (offset < bytes.length && (numRead = is.read(bytes, offset, bytes.length - offset)) >= 0) {
-//                offset += numRead;
-//            }
-//            is.close();
-//            responseContents = bytes;
+            //File file = new File("C://test3.xml");
+            //InputStream is = new FileInputStream(file);
+            //long length = file.length();
+            //byte[] bytes = new byte[(int) length];
+            //int offset = 0;
+            //int numRead = 0;
+            //while (offset < bytes.length && (numRead = is.read(bytes, offset, bytes.length - offset)) >= 0) {
+            //    offset += numRead;
+            //}
+            //is.close();
+            //pInfo.responseContents = bytes;
 
             Document document = builder.build(new ByteArrayInputStream(pInfo.responseContents));
             pInfo.responseContents = null;
@@ -723,14 +722,6 @@ public class ImportProjectsActionProperty extends ActionProperty {
                 boolean fillForeign = ("eng".equals(lng)) || "both".equals(lng);
                 boolean fillDate = (!"1970".equals(node.getChildText("yearProject")));
                 boolean fillClaimer = ("status".equals(node.getChildText("actionProject")));
-                String langProject = "";
-                if ((fillNative) && (fillForeign)) {
-                    langProject = "Рус/Англ";
-                } else if (fillNative) {
-                    langProject = "Рус";
-                } else if (fillForeign) {
-                    langProject = "Англ";
-                }
 
                 boolean fillTwoDates = false;
                 if (fillClaimer) {
@@ -769,7 +760,6 @@ public class ImportProjectsActionProperty extends ActionProperty {
                     row.add(consultingCenterComment);
                 }
 
-                row.add(langProject);
                 row.add(projectId);
                 row.add(BaseUtils.nullZero(node.getChildText("isOwnedEquipmentProject")));
                 row.add(BaseUtils.nullZero(node.getChildText("isAvailableEquipmentProject")));
@@ -1009,7 +999,7 @@ public class ImportProjectsActionProperty extends ActionProperty {
                 List<ImportField> fieldsBoth = BaseUtils.toList(
                         fillNativeProjectField, fillForeignProjectField,
                         isConsultingCenterQuestionProjectField, isConsultingCenterCommentProjectField, consultingCenterCommentProjectField,
-                        langProjectField, projectIdField,
+                        projectIdField,
                         isOwnedEquipmentProjectField, isAvailableEquipmentProjectField, isTransferEquipmentProjectField,
                         descriptionTransferEquipmentProjectField, ownerEquipmentProjectField, isPlanningEquipmentProjectField,
                         specificationEquipmentProjectField, isSeekEquipmentProjectField, descriptionEquipmentProjectField,
@@ -1116,6 +1106,10 @@ public class ImportProjectsActionProperty extends ActionProperty {
                 table = new ImportTable(fieldsNonRussianSpecialist, dataNonRussianSpecialist);
                 keysArray = new ImportKey<?>[]{projectKey, nonRussianSpecialistKey};
                 new IntegrationService(pInfo.session, table, Arrays.asList(keysArray), propertiesNonRussianSpecialist).synchronize(true, true, false, true);
+
+                ObjectValue projectObject = LM.sidToProject.readClasses(pInfo.session, new DataObject(projectId, StringClass.get(10)));
+                if (projectObject instanceof DataObject)
+                    LM.fillLangProjectAction.execute("Заполнить язык", pInfo.session, (DataObject) projectObject);
             }
         } catch (JDOMParseException e) {
             String info = "failed to import project " + projectId + ". Reason: " + new String(pInfo.responseContents);
@@ -1132,8 +1126,9 @@ public class ImportProjectsActionProperty extends ActionProperty {
             pInfo.toLog += info;
             logger.error(info);
             pInfo.session.restart(true);
-        } else
+        } else {
             logger.info(projectId + " project was imported successfully");
+        }
     }
 
     private void importMultilanguageData(
