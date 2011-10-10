@@ -520,11 +520,13 @@ public class SkolkovoLogicsModule extends LogicsModule {
     private LP canBeImplementedExpertVote;
     private LP haveExpertiseExpertVote;
     private LP internationalExperienceExpertVote;
+    private LP enoughDocumentsExpertVote;
     private LP commentCompetitiveAdvantagesExpertVote;
     private LP commentCommercePotentialExpertVote;
     private LP commentCanBeImplementedExpertVote;
     private LP commentHaveExpertiseExpertVote;
     private LP commentInternationalExperienceExpertVote;
+    private LP commentEnoughDocumentsExpertVote;
 
     LP quantityInVote;
     LP quantityInOldVote;
@@ -1642,12 +1644,14 @@ public class SkolkovoLogicsModule extends LogicsModule {
         canBeImplementedExpertVote = addDProp(voteResultCheckGroup, "canBeImplementedExpertVote", "Теоретически реализуем", LogicalClass.instance, expert, voteR2);
         haveExpertiseExpertVote = addDProp(voteResultCheckGroup, "haveExpertiseExpertVote", "Наличие экспертизы", LogicalClass.instance, expert, voteR2);
         internationalExperienceExpertVote = addDProp(voteResultCheckGroup, "internationalExperienceExpertVote", "Международный опыт", LogicalClass.instance, expert, voteR2);
+        enoughDocumentsExpertVote = addDProp(voteResultCheckGroup, "enoughDocumentsExpertVote", "Достаточно документов", LogicalClass.instance, expert, voteR2);
 
         commentCompetitiveAdvantagesExpertVote = addDProp(voteResultCommentGroup, "commentCompetitiveAdvantagesExpertVote", "Конкур. преим. (обоснование)", TextClass.instance, expert, voteR2);
         commentCommercePotentialExpertVote = addDProp(voteResultCommentGroup, "commentCommercePotentialExpertVote", "Потенциал коммерц. (обоснование)", TextClass.instance, expert, voteR2);
         commentCanBeImplementedExpertVote = addDProp(voteResultCommentGroup, "commentCanBeImplementedExpertVote", "Теоретически реализуем (обоснование)", TextClass.instance, expert, voteR2);
         commentHaveExpertiseExpertVote = addDProp(voteResultCommentGroup, "commentHaveExpertiseExpertVote", "Наличие экспертизы (обоснование)", TextClass.instance, expert, voteR2);
         commentInternationalExperienceExpertVote = addDProp(voteResultCommentGroup, "commentInternationalExperienceExpertVote", "Международный опыт (обоснование)", TextClass.instance, expert, voteR2);
+        commentEnoughDocumentsExpertVote = addDProp(voteResultCommentGroup, "commentEnoughDocumentsExpertVote", "Достаточно документов (обоснование)", TextClass.instance, expert, voteR2);
 
         followed(doneExpertVote, competitiveAdvantagesExpertVote, commercePotentialExpertVote, canBeImplementedExpertVote, haveExpertiseExpertVote, internationalExperienceExpertVote,
                 commentCompetitiveAdvantagesExpertVote, commentCommercePotentialExpertVote, commentCanBeImplementedExpertVote, commentHaveExpertiseExpertVote, commentInternationalExperienceExpertVote);
@@ -3179,7 +3183,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign();
 
             design.setPanelLabelAbove(voteResultCommentGroup, true);
-            design.setConstraintsFillHorizontal(voteResultCommentGroup, 0.5);
+            design.setConstraintsFillHorizontal(voteResultCommentGroup, 0.3);
 
             design.setPreferredSize(voteResultCheckGroup, new Dimension(60, -1));
 
