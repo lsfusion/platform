@@ -332,14 +332,14 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         consultingCenterStatGroup = addAbstractGroup("consultingCenterStatGroup", "Консультативный центр", baseGroup);
 
-        voteResultGroup = addAbstractGroup("voteResultGroup", "Результаты голосования", publicGroup);
+        voteResultGroup = addAbstractGroup("voteResultGroup", "Результаты голосования", publicGroup, false);
 
         expertResultGroup = addAbstractGroup("expertResultGroup", "Статистика по экспертам", publicGroup);
 
         importGroup = addAbstractGroup("importProjectsGroup", "Импорт", actionGroup);
 
-        voteResultCheckGroup = addAbstractGroup("voteResultCheckGroup", "Результаты голосования (выбор)", voteResultGroup, false);
-        voteResultCommentGroup = addAbstractGroup("voteResultCommentGroup", "Результаты голосования (комментарии)", voteResultGroup, false);
+        voteResultCheckGroup = addAbstractGroup("voteResultCheckGroup", "Результаты голосования (выбор)", voteResultGroup, true);
+        voteResultCommentGroup = addAbstractGroup("voteResultCommentGroup", "Результаты голосования (комментарии)", voteResultGroup, true);
 
         formalControlResultGroup = addAbstractGroup("formalControlResultGroup", "Решения формальной экспертизы", publicGroup);
         legalCheckResultGroup = addAbstractGroup("legalCheckResultGroup", "Решения юридической проверки", publicGroup);
@@ -3351,7 +3351,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign();
 
             design.setPanelLabelAbove(voteResultCommentGroup, true);
-            design.setConstraintsFillHorizontal(voteResultCommentGroup, 0.5);
+            design.setConstraintsFillHorizontal(voteResultCommentGroup, 0.333);
 
             design.setPreferredSize(voteResultCheckGroup, new Dimension(60, -1));
 
