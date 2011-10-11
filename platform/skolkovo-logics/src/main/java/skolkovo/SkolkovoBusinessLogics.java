@@ -12,6 +12,7 @@ import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.query.Query;
 import platform.server.data.sql.DataAdapter;
+import platform.server.data.type.ObjectType;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.DataObject;
 import platform.server.logics.property.Property;
@@ -268,7 +269,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
                     throw new RuntimeException("Не удалось найти пользователя с логином " + expertLogin);
                 }
 
-                SkolkovoLM.allowedEmailLetterExpertVote.execute(true, session, new DataObject(expertId,  SkolkovoLM.expert), new DataObject(voteId, SkolkovoLM.vote));
+                SkolkovoLM.allowedEmailLetterExpertVote.execute(true, session, new DataObject(expertId,  SkolkovoLM.expert), session.getDataObject(voteId, ObjectType.instance));
             } finally {
                 session.close();
             }
@@ -315,7 +316,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
 //                throw new RuntimeException("Не удалось найти пользователя с логином " + login);
 //            }
 
-            voteObj = new DataObject(voteId, SkolkovoLM.vote);
+            voteObj = session.getDataObject(voteId, ObjectType.instance);
 
             Integer projectId = (Integer) SkolkovoLM.projectVote.read(session, voteObj);
             if (projectId == null) {
