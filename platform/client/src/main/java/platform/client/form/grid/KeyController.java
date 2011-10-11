@@ -44,7 +44,7 @@ public class KeyController {
 
     public static Map<ClientPropertyDraw, Object> getRowData(GridTable table, int rowIndex) {
         Map<ClientPropertyDraw, Object> map = new HashMap<ClientPropertyDraw, Object>();
-        for (ClientPropertyDraw property : table.getProperties()) {
+        for (ClientPropertyDraw property : table.getVisibleProperties()) {
             map.put(property, table.getValueAt(rowIndex, table.getModel().getPropertyIndex(property, null)));
         }
         return map;

@@ -31,7 +31,7 @@ public class GridSelectionController {
     }
 
     private List<ClientPropertyDraw> getProperties() {
-        return table.getProperties();
+        return table.getVisibleProperties();
     }
 
     private Map<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>> mergeSelections() {

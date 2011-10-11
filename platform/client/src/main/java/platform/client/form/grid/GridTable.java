@@ -493,8 +493,15 @@ public abstract class GridTable extends ClientFormTable
         this.tabVertical = tabVertical;
     }
 
-    public List<ClientPropertyDraw> getProperties() {
-        return properties;
+    public List<ClientPropertyDraw> getVisibleProperties() {
+        //возвращает все свойства, за исключеним тех, что формируют группы в колонки без единого значения
+        List<ClientPropertyDraw> props = new ArrayList<ClientPropertyDraw>(properties);
+        for (ClientPropertyDraw property : props) {
+            if (getModel().getPropertyIndex(property, null) == -1) {
+                props.remove(property);
+            }
+        }
+        return props;
     }
 
     public List<ClientGroupObjectValue> getRowKeys() {
