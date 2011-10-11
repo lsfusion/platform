@@ -3,4 +3,5 @@
 <module>
     <inherits name="platform.gwt.login.Login"/>
     <inherits name="skolkovo.gwt.Resources"/>
+    <entry-point class="skolkovo.gwt.login.client.StubEntryPoint"/>
 </module>
