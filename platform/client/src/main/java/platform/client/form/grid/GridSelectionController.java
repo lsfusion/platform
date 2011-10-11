@@ -34,6 +34,10 @@ public class GridSelectionController {
         return table.getVisibleProperties();
     }
 
+    private boolean notNewProperty(ClientPropertyDraw property) {
+        return selectedCells.containsKey(property);
+    }
+
     private Map<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>> mergeSelections() {
         if (temporaryValues.isEmpty() || firstColumn == -1)
             return selectedCells;
@@ -41,6 +45,7 @@ public class GridSelectionController {
         Map<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>> newMap = new HashMap<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>>(selectedCells);
         for (int column = Math.min(firstColumn, lastColumn); column <= Math.max(firstColumn, lastColumn); column++) {
             ClientPropertyDraw property = table.getProperty(0, column);
+            if (!notNewProperty(property)) break;
             Map<ClientGroupObjectValue, Object> valueMap = new HashMap<ClientGroupObjectValue, Object>(selectedCells.get(property));
             for (ClientGroupObjectValue key : temporaryValues.keySet()) {
                 if (temporaryValues.containsKey(key) && temporaryValues.get(key).containsKey(property)) {
@@ -71,7 +76,9 @@ public class GridSelectionController {
                     addToSelection(newProperty, rowIndex);
                 }
                 addToTemporaryValues(rowIndex);
-                temporarySelectionAddition = selectedCells.get(table.getProperty(rowIndex, columnIndex)).containsKey(getRowKeys().get(rowIndex));
+                ClientPropertyDraw selProp = table.getProperty(rowIndex, columnIndex);
+                if (notNewProperty(selProp))
+                    temporarySelectionAddition = selectedCells.get(selProp).containsKey(getRowKeys().get(rowIndex));
             }
         } else {
             if (extend) {
@@ -87,7 +94,8 @@ public class GridSelectionController {
     }
 
     private void addToSelection(ClientPropertyDraw property, int rowIndex) {
-        selectedCells.get(property).put(getRowKeys().get(rowIndex), table.getValueAt(rowIndex, table.getModel().getPropertyIndex(property, null)));
+        if (notNewProperty(property))
+            selectedCells.get(property).put(getRowKeys().get(rowIndex), table.getValueAt(rowIndex, table.getModel().getPropertyIndex(property, null)));
     }
 
     private void modifyTemporaryValues(int currentRow) {
@@ -106,7 +114,7 @@ public class GridSelectionController {
     }
 
     private boolean removeFromSelection(ClientPropertyDraw property, int rowIndex) {
-        if (selectedCells.get(property).containsKey(getRowKeys().get(rowIndex))) {
+        if (notNewProperty(property) && selectedCells.get(property).containsKey(getRowKeys().get(rowIndex))) {
             selectedCells.get(property).remove(getRowKeys().get(rowIndex));
             return true;
         }
@@ -205,7 +213,7 @@ public class GridSelectionController {
     public String getSelectedTableString() {
         int firstPropertyIndex = -1, lastPropertyIndex = -1;
         for (int i = 0; i < getProperties().size(); i++) {
-            if (!selectedCells.get(getProperties().get(i)).isEmpty()) {
+            if (notNewProperty(getProperties().get(i)) && !selectedCells.get(getProperties().get(i)).isEmpty()) {
                 if (firstPropertyIndex == -1)
                     firstPropertyIndex = i;
                 lastPropertyIndex = i;
@@ -216,7 +224,8 @@ public class GridSelectionController {
             return null;
 
         //если выделена одна ячейка и нажали CTRL+C, копируем текуще значение
-        if (firstPropertyIndex == lastPropertyIndex && (selectedCells.get(getProperties().get(firstPropertyIndex)).size() == 1)) {
+        ClientPropertyDraw firstProperty = getProperties().get(firstPropertyIndex);
+        if (firstPropertyIndex == lastPropertyIndex && !notNewProperty(firstProperty) && (selectedCells.get(firstProperty).size() == 1)) {
             Object value = trimIfString(table.getSelectedValue(getProperties().get(firstPropertyIndex), null));
             return value == null ? "" : value.toString();
         }
@@ -227,7 +236,7 @@ public class GridSelectionController {
             for (int i = firstPropertyIndex; i <= lastPropertyIndex; i++) {
                 ClientPropertyDraw property = getProperties().get(i);
                 Object value = null;
-                if (selectedCells.get(property).containsKey(key)) {
+                if (notNewProperty(property) && selectedCells.get(property).containsKey(key)) {
                     value = trimIfString(selectedCells.get(property).get(key));
                 }
                 rowString += (value == null ? "" : value.toString());
