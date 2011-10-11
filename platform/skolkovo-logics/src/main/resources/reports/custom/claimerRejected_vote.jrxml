@@ -80,18 +80,6 @@
 "участника проекта создания и обеспечения функционирования инновационного\n" +
 "центра «Сколково»" +($F{isStatusVote}!=null?(($F{isLastClusterVote})!=null? ", и об отказе в присвоению Соискателю статуса участника проекта":""):"")]]></textFieldExpression>
 			</textField>
-			<staticText>
-				<reportElement positionType="Float" mode="Opaque" x="435" y="384" width="104" height="16"/>
-				<textElement textAlignment="Right" verticalAlignment="Bottom"/>
-				<text><![CDATA[Д.Ю. Колосов]]></text>
-			</staticText>
-			<textField>
-				<reportElement positionType="Float" x="49" y="358" width="201" height="42"/>
-				<textElement/>
-				<textFieldExpression class="java.lang.String"><![CDATA["Вице-Президент Фонда, \n"+
-"Руководитель Аппарата Президента \n"+
-"и Советов Фонда "]]></textFieldExpression>
-			</textField>
 			<textField isStretchWithOverflow="true">
 				<reportElement style="DefaultStyle" positionType="Float" x="50" y="322" width="489" height="5">
 					<printWhenExpression><![CDATA[($F{isStatusVote})!=null]]></printWhenExpression>
@@ -101,6 +89,16 @@
 				</textElement>
 				<textFieldExpression class="java.lang.String"><![CDATA[(($F{isLastClusterVote})!=null? "2. Отказать " + $F{nameDativusClaimerVote} + " в присвоении статуса участника проекта по созданию и обеспечению функционирования инновационного центра «Сколково».":"")]]></textFieldExpression>
 			</textField>
+			<staticText>
+				<reportElement positionType="Float" x="435" y="371" width="104" height="16"/>
+				<textElement verticalAlignment="Bottom"/>
+				<text><![CDATA[Д.В. Дудина]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" x="50" y="371" width="247" height="16"/>
+				<textElement verticalAlignment="Bottom"/>
+				<text><![CDATA[Ответственный секретарь Совета]]></text>
+			</staticText>
 		</band>
 	</detail>
 </jasperReport>

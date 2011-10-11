@@ -127,17 +127,15 @@
 					</textElement>
 					<textFieldExpression class="java.lang.String"><![CDATA["4. Направить членам Экспертной коллегии" + ($F{prevDateVote}==null?"":", указанным в пункте 2 настоящего Решения,") + " материалы заявки Соискателя (в электронном виде) и Бюллетень оценки."]]></textFieldExpression>
 				</textField>
-				<textField>
-					<reportElement x="50" y="53" width="201" height="42"/>
-					<textElement/>
-					<textFieldExpression class="java.lang.String"><![CDATA["Вице-Президент Фонда, \n"+
-"Руководитель Аппарата Президента \n"+
-"и Советов Фонда "]]></textFieldExpression>
-				</textField>
 				<staticText>
-					<reportElement positionType="Float" mode="Opaque" x="435" y="79" width="104" height="16"/>
-					<textElement textAlignment="Right" verticalAlignment="Bottom"/>
-					<text><![CDATA[Д.Ю. Колосов]]></text>
+					<reportElement positionType="Float" x="435" y="74" width="104" height="16"/>
+					<textElement verticalAlignment="Bottom"/>
+					<text><![CDATA[Д.В. Дудина]]></text>
+				</staticText>
+				<staticText>
+					<reportElement positionType="Float" x="50" y="74" width="247" height="16"/>
+					<textElement verticalAlignment="Bottom"/>
+					<text><![CDATA[Ответственный секретарь Совета]]></text>
 				</staticText>
 			</band>
 		</groupFooter>

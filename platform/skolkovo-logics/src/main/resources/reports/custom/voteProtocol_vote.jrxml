@@ -273,16 +273,14 @@
 			</band>
 			<band height="63">
 				<staticText>
-					<reportElement positionType="Float" mode="Opaque" x="435" y="47" width="104" height="16"/>
+					<reportElement positionType="Float" mode="Opaque" x="435" y="34" width="104" height="16"/>
 					<textElement textAlignment="Right" verticalAlignment="Bottom"/>
-					<text><![CDATA[Д.Ю. Колосов]]></text>
+					<text><![CDATA[Д.В. Дудина]]></text>
 				</staticText>
 				<textField>
-					<reportElement positionType="Float" x="50" y="11" width="201" height="52"/>
+					<reportElement positionType="Float" x="50" y="34" width="201" height="16"/>
 					<textElement/>
-					<textFieldExpression class="java.lang.String"><![CDATA["Вице-Президент Фонда, \n"+
-"Руководитель Аппарата Президента \n"+
-"и Советов Фонда "]]></textFieldExpression>
+					<textFieldExpression class="java.lang.String"><![CDATA["Ответственный секретарь Совета"]]></textFieldExpression>
 				</textField>
 			</band>
 		</groupHeader>
