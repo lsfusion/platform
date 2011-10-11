@@ -103,6 +103,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
     public ConcreteCustomClass project;
     public ConcreteCustomClass expert;
     public ConcreteCustomClass cluster;
+    public ConcreteCustomClass foresight;
     public ConcreteCustomClass claimer;
     public ConcreteCustomClass claimerExpert;
     ConcreteCustomClass documentTemplate;
@@ -199,6 +200,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         project = addConcreteClass("project", "Проект", multiLanguageNamed, baseLM.transaction);
         expert = addConcreteClass("expert", "Эксперт", baseLM.customUser);
         cluster = addConcreteClass("cluster", "Кластер", multiLanguageNamed);
+        foresight = addConcreteClass("foresight", "Форсайт", multiLanguageNamed);
 
         claimer = addConcreteClass("claimer", "Заявитель", multiLanguageNamed, baseLM.emailObject);
         claimer.dialogReadOnly = false;
@@ -375,13 +377,19 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP dataDocumentNameExpert, documentNameExpert;
     public LP emailExpert;
     LP clusterExpert, nameNativeClusterExpert, nameForeignClusterExpert, nameNativeShortClusterExpert;
+    LP inForesightExpert, nameNativeForesightExpert, quantityInForesightExpert;
+    LP foresightInClusterExpert;
     LP isTechnicalExpert, isBusinessExpert;
     LP primClusterExpert, extraClusterExpert, inClusterExpert;
     LP clusterInExpertVote;
     public LP inProjectCluster;
+    public LP inProjectForesight;
     LP clusterVote, nameNativeClusterVote, nameForeignClusterVote;
     LP projectCluster;
     LP quantityClusterProject;
+    LP clusterForesight, sidForesight;
+    LP nameNativeShortClusterForesight;
+    LP quantityForesightProject;
     LP isPrevVoteVote;
     LP countPrevVote;
     public LP claimerProject;
@@ -1082,6 +1090,15 @@ public class SkolkovoLogicsModule extends LogicsModule {
                 addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1, cluster), 2,
                         addJProp(baseLM.equals2, baseLM.vtrue, inProjectCluster, 1, 2), 1, 2), 1);
 
+        sidForesight = addDProp(baseGroup, "sidForesight", "Код форсайта", StringClass.get(10), foresight);
+        clusterForesight = addDProp(idGroup, "clusterForesight", "Кластер (ИД)", cluster, foresight);
+        nameNativeShortClusterForesight = addJProp(baseGroup, "nameNativeShortClusterForesight", "Кластер (сокр.)", nameNativeShort, clusterForesight, 1);
+
+        inProjectForesight = addDProp(baseGroup, "inProjectForesight", "Вкл", LogicalClass.instance, project, foresight);
+
+        quantityForesightProject = addSGProp(baseGroup, "quantityForesightProject", true, "Кол-во форсайтов",
+                addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1, foresight), 2,
+                        addJProp(baseLM.equals2, baseLM.vtrue, inProjectForesight, 1, 2), 1, 2), 1);
 
         quantityVoteProject = addSGProp(baseGroup, "quantityVoteProject", true, "Кол-во заседаний", addCProp(IntegerClass.instance, 1, vote), projectVote, 1);
 
@@ -1117,6 +1134,10 @@ public class SkolkovoLogicsModule extends LogicsModule {
         extraClusterExpert = addDProp(baseGroup, "extraClusterExpert", "Вкл (доп.)", LogicalClass.instance, cluster, expert);
         inClusterExpert = addSUProp(baseGroup, "inClusterExpert", true, "Вкл", Union.OVERRIDE, extraClusterExpert, addJProp(baseLM.equals2, 1, clusterExpert, 2));
 
+        foresightInClusterExpert = addJProp(baseGroup, "foresightInClusterExpert", "Форсайт кластера эксперта", inClusterExpert, clusterForesight, 1, 2);
+        inForesightExpert = addDProp(baseGroup, "inForesightExpert", "Вкл.", LogicalClass.instance, foresight, expert);
+        quantityInForesightExpert = addSGProp(baseGroup, "quantityInForesightExpert", true, "Количество экспертов по форсайту",
+                addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1, expert), 2, inForesightExpert, 1, 2), 1);
         // project
         claimerProject = addDProp(idGroup, "claimerProject", "Заявитель (ИД)", claimer, project);
         emailClaimerProject = addJProp("emailClaimerProject", "E-mail заявителя", emailClaimer, claimerProject, 1);
@@ -3287,11 +3308,12 @@ public class SkolkovoLogicsModule extends LogicsModule {
         private ObjectEntity objExpert;
         private ObjectEntity objVote;
         private ObjectEntity objExtraCluster;
+        private ObjectEntity objForesight;
 
         private ExpertFormEntity(NavigatorElement parent, String sID) {
             super(parent, sID, "Реестр экспертов");
 
-            objExpert = addSingleGroupObject(expert, baseLM.selection, baseLM.userFirstName, baseLM.userLastName, documentNameExpert, baseLM.userLogin, baseLM.userPassword, baseLM.email, disableExpert, nameNativeClusterExpert, nameLanguageExpert, dateAgreementExpert, nameCountryExpert, nameCurrencyExpert, isTechnicalExpert, isBusinessExpert, expertResultGroup, baseLM.generateLoginPassword, emailAuthExpert);
+            objExpert = addSingleGroupObject(expert, baseLM.selection, baseLM.userFirstName, baseLM.userLastName, documentNameExpert, baseLM.userLogin, baseLM.userPassword, baseLM.email, disableExpert, nameNativeClusterExpert, nameNativeForesightExpert,nameLanguageExpert, dateAgreementExpert, nameCountryExpert, nameCurrencyExpert, isTechnicalExpert, isBusinessExpert, expertResultGroup, baseLM.generateLoginPassword, emailAuthExpert);
             addObjectActions(this, objExpert);
 
             objVote = addSingleGroupObject(vote, nameNativeProjectVote, dateStartVote, dateEndVote, openedVote, succeededVote, quantityDoneVote);
@@ -3304,6 +3326,10 @@ public class SkolkovoLogicsModule extends LogicsModule {
             addPropertyDraw(extraClusterExpert, objExtraCluster, objExpert);
             addPropertyDraw(objExtraCluster, nameNative, nameForeign);
 
+            objForesight = addSingleGroupObject(foresight, "Форсайты");
+            addPropertyDraw(objForesight, sidForesight, nameNative, nameForeign, nameNativeShortClusterForesight, quantityInForesightExpert);
+            addPropertyDraw(inForesightExpert, objForesight, objExpert);
+
             RegularFilterGroupEntity inactiveFilterGroup = new RegularFilterGroupEntity(genID());
             inactiveFilterGroup.addFilter(new RegularFilterEntity(genID(),
                     new NotFilterEntity(new NotNullFilterEntity(addPropertyObject(disableExpert, objExpert))),
@@ -3313,6 +3339,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(inNewExpertVote, objExpert, objVote)));
 
             addFixedFilter(new NotFilterEntity(new NotNullFilterEntity(addPropertyObject(primClusterExpert, objExtraCluster, objExpert))));
+            addFixedFilter(new NotNullFilterEntity(addPropertyObject(foresightInClusterExpert, objForesight, objExpert)));
 //            setReadOnly(true, objVote.groupTo);
 //            setReadOnly(allowedEmailLetterExpertVote, false);
 
@@ -3334,6 +3361,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             design.getMainContainer().addAfter(specContainer, design.getGroupObjectContainer(objExpert.groupTo));
             specContainer.add(design.getGroupObjectContainer(objVote.groupTo));
             specContainer.add(design.getGroupObjectContainer(objExtraCluster.groupTo));
+            specContainer.add(design.getGroupObjectContainer(objForesight.groupTo));
             specContainer.tabbedPane = true;
 
             return design;
