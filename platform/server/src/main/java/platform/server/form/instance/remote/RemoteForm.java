@@ -665,7 +665,7 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
 
     public void applyClientChanges(Object clientResult) throws RemoteException {
         try {
-            form.commitApply(form.entity.checkClientApply(clientResult), actions);
+            form.synchronizedCommitApply(form.entity.checkClientApply(clientResult), actions);
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }

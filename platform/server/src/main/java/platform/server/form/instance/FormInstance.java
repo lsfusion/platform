@@ -658,11 +658,20 @@ public class FormInstance<T extends BusinessLogics<T>> extends IncrementProps<Pr
     }
 
     public void applyActionChanges(List<ClientAction> actions) throws SQLException {
-        commitApply(checkApply(), actions);
+        synchronizedCommitApply(checkApply(), actions);
     }
 
     public String checkApply() throws SQLException {
         return session.check(BL);
+    }
+
+    public void synchronizedCommitApply(String checkResult, List<ClientAction> actions) throws SQLException {
+        if (entity.isSynchronizedApply)
+            synchronized (entity) {
+                commitApply(checkResult, actions);
+            }
+        else
+            commitApply(checkResult, actions);
     }
 
     public void commitApply(String checkResult, List<ClientAction> actions) throws SQLException {

@@ -4560,6 +4560,8 @@ public class RomanLogicsModule extends LogicsModule {
         private ShipmentSpecFormEntity(NavigatorElement parent, String sID, String caption, boolean box) {
             super(parent, sID, caption);
 
+            isSynchronizedApply = true;
+
             this.box = box;
 
             if (box) {

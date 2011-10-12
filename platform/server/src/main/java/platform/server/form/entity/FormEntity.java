@@ -61,6 +61,8 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
     public boolean isPrintForm;
     public FormShowType showType = FormShowType.DOCKING;
 
+    public boolean isSynchronizedApply = false;
+
     public FormEntity() {
     }
 
