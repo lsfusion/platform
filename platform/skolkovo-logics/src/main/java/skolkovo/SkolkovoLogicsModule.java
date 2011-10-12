@@ -374,6 +374,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP revisionVote;
     LP projectVote, claimerVote, nameNativeProjectVote, nameForeignProjectVote;
     LP quantityVoteProject;
+    LP quantityVoteProjectCluster;
+    LP quantityClusterVotedProject;
     LP dataDocumentNameExpert, documentNameExpert;
     public LP emailExpert;
     LP clusterExpert, nameNativeClusterExpert, nameForeignClusterExpert, nameNativeShortClusterExpert;
@@ -1820,6 +1822,9 @@ public class SkolkovoLogicsModule extends LogicsModule {
         nameNativeClusterVote = addJProp(baseGroup, "nameNativeClusterVote", "Кластер", nameNative, clusterVote, 1);
         nameForeignClusterVote = addJProp("nameForeignClusterVote", "Кластер (иностр.)", nameForeign, clusterVote, 1);
 
+        quantityVoteProjectCluster = addSGProp(baseGroup, "quantityVoteProjectCluster", true, "Кол-во заседаний", addCProp(IntegerClass.instance, 1, vote), projectVote, 1, clusterVote, 1);
+        quantityClusterVotedProject = addSGProp(baseGroup, "quantityClusterVotedProject", true, "Кол-во кластеров (засед.)", addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), quantityVoteProjectCluster, 1, 2), 1);
+
         isPrevVoteVote = addJProp("isPrevVoteVote", "Пред.", and(false, false, false), addJProp(baseLM.equals2, projectVote, 1, projectVote, 2), 1, 2,
                 addJProp(baseLM.equals2, clusterVote, 1, clusterVote, 2), 1, 2,
                 addJProp(baseLM.less2, dateStartVote, 1, dateStartVote, 2), 1, 2,
@@ -2841,7 +2846,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             objProject = addSingleGroupObject(project, dateProject, dateStatusProject, nameNativeProject, nameForeignProject,
                     nameNativeShortFinalClusterProject, nameNativeClaimerProject, nameForeignClaimerProject, emailClaimerProject,
                     nameStatusProject, formLogNameStatusProject, nameProjectActionProject, updateDateProject, autoGenerateProject,
-                    inactiveProject, quantityVoteProject, quantityClusterProject, generateVoteProject, editClaimerProject, editProject,
+                    inactiveProject, quantityClusterProject, quantityClusterVotedProject, quantityVoteProject, generateVoteProject, editClaimerProject, editProject,
                     isR2Project);
 
             addPropertyDraw(objProject, isOtherClusterProject, nativeSubstantiationOtherClusterProject, foreignSubstantiationOtherClusterProject);
