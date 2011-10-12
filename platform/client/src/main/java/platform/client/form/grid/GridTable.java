@@ -496,7 +496,7 @@ public abstract class GridTable extends ClientFormTable
     public List<ClientPropertyDraw> getVisibleProperties() {
         //возвращает все свойства, за исключеним тех, что формируют группы в колонки без единого значения
         List<ClientPropertyDraw> props = new ArrayList<ClientPropertyDraw>(properties);
-        for (ClientPropertyDraw property : props) {
+        for (ClientPropertyDraw property : properties) {
             if (getModel().getPropertyIndex(property, null) == -1) {
                 props.remove(property);
             }
@@ -848,6 +848,10 @@ public abstract class GridTable extends ClientFormTable
 
     public boolean isPressed(int row, int column) {
         return pressedCellRow == row && pressedCellColumn == column;
+    }
+
+    public int getColumnCount() {
+        return model.getColumnCount();
     }
 
     public ClientPropertyDraw getProperty(int row, int col) {

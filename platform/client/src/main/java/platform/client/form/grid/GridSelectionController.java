@@ -44,19 +44,21 @@ public class GridSelectionController {
 
         Map<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>> newMap = new HashMap<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>>(selectedCells);
         for (int column = Math.min(firstColumn, lastColumn); column <= Math.max(firstColumn, lastColumn); column++) {
-            ClientPropertyDraw property = table.getProperty(0, column);
-            if (!notNewProperty(property)) break;
-            Map<ClientGroupObjectValue, Object> valueMap = new HashMap<ClientGroupObjectValue, Object>(selectedCells.get(property));
-            for (ClientGroupObjectValue key : temporaryValues.keySet()) {
-                if (temporaryValues.containsKey(key) && temporaryValues.get(key).containsKey(property)) {
-                    if (temporarySelectionAddition) {
-                        valueMap.put(key, temporaryValues.get(key).get(property));
-                    } else {
-                        valueMap.remove(key);
+            if (column < table.getColumnCount()) {
+                ClientPropertyDraw property = table.getProperty(0, column);
+                if (!notNewProperty(property)) break;
+                Map<ClientGroupObjectValue, Object> valueMap = new HashMap<ClientGroupObjectValue, Object>(selectedCells.get(property));
+                for (ClientGroupObjectValue key : temporaryValues.keySet()) {
+                    if (temporaryValues.containsKey(key) && temporaryValues.get(key).containsKey(property)) {
+                        if (temporarySelectionAddition) {
+                            valueMap.put(key, temporaryValues.get(key).get(property));
+                        } else {
+                            valueMap.remove(key);
+                        }
                     }
                 }
+                newMap.put(property, valueMap);
             }
-            newMap.put(property, valueMap);
         }
         return newMap;
     }

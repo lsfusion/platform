@@ -370,7 +370,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP loadExtractClaimer, openExtractClaimer;
     public LP OGRNClaimer;
     public LP INNClaimer;
-    LP isR2Project;
+    LP isR2Project, isR1Project;
     LP revisionVote;
     LP projectVote, claimerVote, nameNativeProjectVote, nameForeignProjectVote;
     LP quantityVoteProject;
@@ -527,7 +527,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP completeCommentExpertVote;
 
     private LP percentNeeded;
-    private LP percentNeededVote;
+    private LP percentNeededVote, hidePercentNeededProject;
     private LP quantityNeededVote;
 
     private LP competitiveAdvantagesExpertVote;
@@ -551,14 +551,15 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP quantityDoneOldVote;
     LP quantityRefusedVote;
     LP quantityConnectedVote;
-    LP quantityInClusterVote;
-    LP quantityInnovativeVote;
-    LP quantityForeignVote;
-    LP quantityCompetitiveAdvantagesVote;
-    LP quantityCommercePotentialVote;
-    LP quantityCanBeImplementedVote;
-    LP quantityHaveExpertiseVote;
-    LP quantityInternationalExperienceVote;
+    LP quantityInClusterVote, hideQuantityInClusterProject;
+    LP quantityInnovativeVote, hideQuantityInnovativeProject;
+    LP quantityForeignVote, hideQuantityForeignProject;
+    LP quantityCompetitiveAdvantagesVote, hideQuantityCompetitiveAdvantagesProject;
+    LP quantityCommercePotentialVote, hideQuantityCommercePotentialProject;
+    LP quantityCanBeImplementedVote, hideQuantityCanBeImplementedProject;
+    LP quantityHaveExpertiseVote, hideQuantityHaveExpertiseProject;
+    LP quantityInternationalExperienceVote, hideQuantityInternationalExperienceProject;
+    LP quantityEnoughDocumentsVote, hideQuantityEnoughDocumentsProject;
     LP acceptedInClusterVote;
     LP acceptedInnovativeVote;
     LP acceptedForeignVote;
@@ -567,6 +568,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP acceptedCanBeImplementedVote;
     LP acceptedHaveExpertiseVote;
     LP acceptedInternationalExperienceVote;
+    LP acceptedEnoughDocumentsVote;
 
     LP acceptedVote;
     LP acceptedVoteR1;
@@ -649,6 +651,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP percentCanBeImplementedExpert;
     LP percentHaveExpertiseExpert;
     LP percentInternationalExperienceExpert;
+    LP percentEnoughDocumentsExpert;
 
     LP prevDateStartVote, prevDateVote;
     LP prevClusterVote, nameNativePrevClusterVote;
@@ -1080,6 +1083,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         INNClaimer = addDProp(legalDataGroup, "INNClaimer", "ИНН", StringClass.get(12), claimer);
 
         isR2Project = addDProp(baseGroup, "isR2Project", "Новый регламент", LogicalClass.instance, project);
+        isR1Project = addJProp(baseGroup, "isR1Project", "Старый регламент", baseLM.andNot1, addCProp(LogicalClass.instance, true, project), 1, isR2Project, 1);
 
         revisionVote = addCUProp(baseGroup, "revisionVote", "Регламент", addCProp(StringClass.get(3), "R1", voteR1), addCProp(StringClass.get(3), "R2", voteR2));
 
@@ -1706,8 +1710,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
         commentEnoughDocumentsExpertVote = addDProp(voteResultCommentGroup, "commentEnoughDocumentsExpertVote", "Достаточно документов (обоснование)", TextClass.instance, expert, voteR2);
 
 
-        followed(doneExpertVote, competitiveAdvantagesExpertVote, commercePotentialExpertVote, canBeImplementedExpertVote, haveExpertiseExpertVote, internationalExperienceExpertVote,
-                commentCompetitiveAdvantagesExpertVote, commentCommercePotentialExpertVote, commentCanBeImplementedExpertVote, commentHaveExpertiseExpertVote, commentInternationalExperienceExpertVote);
+        followed(doneExpertVote, competitiveAdvantagesExpertVote, commercePotentialExpertVote, canBeImplementedExpertVote, haveExpertiseExpertVote, internationalExperienceExpertVote, enoughDocumentsExpertVote,
+                commentCompetitiveAdvantagesExpertVote, commentCommercePotentialExpertVote, commentCanBeImplementedExpertVote, commentHaveExpertiseExpertVote, commentInternationalExperienceExpertVote, commentEnoughDocumentsExpertVote);
         followed(voteResultExpertVote, dateExpertVote);
 
         quantityInVote = addSGProp(voteResultGroup, "quantityInVote", true, "Участвовало",
@@ -1724,6 +1728,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         percentNeeded = addDProp(baseGroup, "percentNeeded", "Процент для положительного решения", DoubleClass.instance);
         percentNeededVote = addDProp(baseGroup, "percentNeededVote", "Процент голосования", DoubleClass.instance, voteR2);
+        hidePercentNeededProject = addHideCaptionProp(privateGroup, "Процент голосования (hide)", percentNeededVote, isR2Project);
+
         quantityNeededVote = addJProp(baseGroup, "quantityNeededVote", "Треб. количество голосов", baseLM.percent2, quantityDoneVote, 1, percentNeededVote, 1);
 
         quantityDoneNewVote = addSGProp(voteResultGroup, "quantityDoneNewVote", true, "Проголосовало (нов.)",
@@ -1740,27 +1746,39 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         quantityInClusterVote = addSGProp(voteResultGroup, "quantityInClusterVote", true, "Соотв-ие кластеру (голоса)",
                 addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), inClusterExpertVote, 1, 2), 2); // сколько экспертов высказалось
+        hideQuantityInClusterProject = addHideCaptionProp(privateGroup, "Соотв. кластеру (hide)", quantityInClusterVote, isR1Project);
 
         quantityInnovativeVote = addSGProp(voteResultGroup, "quantityInnovativeVote", true, "Инновац. (голоса)",
                 addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), innovativeExpertVote, 1, 2), 2); // сколько экспертов высказалось
+        hideQuantityInnovativeProject = addHideCaptionProp(privateGroup, "Инновац. (hide)", quantityInnovativeVote, isR1Project);
 
         quantityForeignVote = addSGProp(voteResultGroup, "quantityForeignVote", true, "Иностр. специалист (голоса)",
                 addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), foreignExpertVote, 1, 2), 2); // сколько экспертов высказалось
+        hideQuantityForeignProject = addHideCaptionProp(privateGroup, "Иностр. специалист (hide)", quantityForeignVote, isR1Project);
 
         quantityCompetitiveAdvantagesVote = addSGProp(voteResultGroup, "quantityCompetitiveAdvantagesVote", true, "Конкур. преим. (голоса)",
                 addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), competitiveAdvantagesExpertVote, 1, 2), 2); // сколько экспертов высказалось
+        hideQuantityCompetitiveAdvantagesProject = addHideCaptionProp(privateGroup, "Конкур. преим. (hide)", quantityCompetitiveAdvantagesVote, isR2Project);
 
         quantityCommercePotentialVote = addSGProp(voteResultGroup, "quantityCommercePotentialVote", true, "Потенциал коммерц. (голоса)",
                 addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), commercePotentialExpertVote, 1, 2), 2); // сколько экспертов высказалось
+        hideQuantityCommercePotentialProject = addHideCaptionProp(privateGroup, "Потенциал коммерц. (hide)", quantityCommercePotentialVote, isR2Project);
 
         quantityCanBeImplementedVote = addSGProp(voteResultGroup, "quantityCanBeImplementedVote", true, "Теоретически реализуем (голоса)",
                 addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), canBeImplementedExpertVote, 1, 2), 2); // сколько экспертов высказалось
+        hideQuantityCanBeImplementedProject = addHideCaptionProp(privateGroup, "Теоретически реализуем (hide)", quantityCanBeImplementedVote, isR2Project);
 
         quantityHaveExpertiseVote = addSGProp(voteResultGroup, "quantityHaveExpertiseVote", true, "Наличие экспертизы (голоса)",
                 addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), haveExpertiseExpertVote, 1, 2), 2); // сколько экспертов высказалось
+        hideQuantityHaveExpertiseProject = addHideCaptionProp(privateGroup, "Наличие экспертизы (hide)", quantityHaveExpertiseVote, isR2Project);
 
         quantityInternationalExperienceVote = addSGProp(voteResultGroup, "quantityInternationalExperienceVote", true, "Международный опыт (голоса)",
                 addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), internationalExperienceExpertVote, 1, 2), 2); // сколько экспертов высказалось
+        hideQuantityInternationalExperienceProject = addHideCaptionProp(privateGroup, "Международный опыт (hide)", quantityInternationalExperienceVote, isR2Project);
+
+        quantityEnoughDocumentsVote = addSGProp(voteResultGroup, "quantityEnoughDocumentsVote", true, "Достаточно документов (голоса)",
+                addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), enoughDocumentsExpertVote, 1, 2), 2); // сколько экспертов высказалось
+        hideQuantityEnoughDocumentsProject = addHideCaptionProp(privateGroup, "Достаточно документов (hide)", quantityEnoughDocumentsVote, isR2Project);
 
         acceptedInClusterVote = addJProp(voteResultGroup, "acceptedInClusterVote", "Соотв-ие кластеру", baseLM.greater2,
                 addJProp(baseLM.multiplyIntegerBy2, quantityInClusterVote, 1), 1,
@@ -1789,11 +1807,15 @@ public class SkolkovoLogicsModule extends LogicsModule {
         acceptedInternationalExperienceVote = addJProp(voteResultGroup, "acceptedInternationalExperienceVote", "Международный опыт", baseLM.groeq2,
                 quantityInternationalExperienceVote, 1, quantityNeededVote, 1);
 
+        acceptedEnoughDocumentsVote = addJProp(voteResultGroup, "acceptedInternationalExperienceVote", "Достаточно голосов", baseLM.groeq2,
+                quantityEnoughDocumentsVote, 1, quantityNeededVote, 1);
+
         acceptedVoteR1 = addJProp("acceptedVoteR1", true, "Положительно", and(false, false),
                 acceptedInClusterVote, 1, acceptedInnovativeVote, 1, acceptedForeignVote, 1);
 
-        acceptedVoteR2 = addJProp("acceptedVoteR2", true, "Положительно", and(false, false, false, false),
-                acceptedCompetitiveAdvantagesVote, 1, acceptedCommercePotentialVote, 1, acceptedCanBeImplementedVote, 1, acceptedHaveExpertiseVote, 1, acceptedInternationalExperienceVote, 1);
+        acceptedVoteR2 = addJProp("acceptedVoteR2", true, "Положительно", and(false, false, false, false, false),
+                acceptedCompetitiveAdvantagesVote, 1, acceptedCommercePotentialVote, 1, acceptedCanBeImplementedVote, 1,
+                acceptedHaveExpertiseVote, 1, acceptedInternationalExperienceVote, 1, acceptedEnoughDocumentsVote, 1);
 
         acceptedVote = addCUProp(voteResultGroup, "acceptedVote", "Положительно", acceptedVoteR1, acceptedVoteR2);
 
@@ -2221,6 +2243,10 @@ public class SkolkovoLogicsModule extends LogicsModule {
         LP quantityInternationalExperienceExpert = addSGProp("quantityInternationalExperienceExpert", "Международный опыт (голоса)",
                 addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), internationalExperienceExpertVote, 1, 2), 1);
         percentInternationalExperienceExpert = addJProp(expertResultGroup, "percentInternationalExperienceExpert", "Международный опыт (%)", percent, quantityInternationalExperienceExpert, 1, quantityDoneExpert, 1);
+
+        LP quantityEnoughDocumentsExpert = addSGProp("quantityEnoughDocumentsExpert", "Достаточно голосов (голоса)",
+                addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), enoughDocumentsExpertVote, 1, 2), 1);
+        percentEnoughDocumentsExpert = addJProp(expertResultGroup, "percentEnoughDocumentsExpert", "Достаточно голосов (%)", percent, quantityEnoughDocumentsExpert, 1, quantityDoneExpert, 1);
 
         prevDateStartVote = addOProp("prevDateStartVote", "Пред. засед. (старт)", OrderType.PREVIOUS, dateStartVote, true, true, 2, projectVote, 1, clusterVote, 1, baseLM.date, 1);
         prevDateVote = addOProp("prevDateVote", "Пред. засед. (окончание)", OrderType.PREVIOUS, dateEndVote, true, true, 2, projectVote, 1, clusterVote, 1, baseLM.date, 1);
@@ -2948,9 +2974,27 @@ public class SkolkovoLogicsModule extends LogicsModule {
           //  addPropertyDraw(inForesightExpert, objForesight, objExpert);
 
             objVote = addSingleGroupObject(vote, dateStartVote, dateEndVote, nameNativeClusterVote, nameProjectActionVote, percentNeededVote, openedVote, succeededVote, acceptedVote,
-                    quantityDoneVote, quantityInClusterVote, quantityInnovativeVote, quantityForeignVote, loadFileDecisionVote, openFileDecisionVote,
+                    quantityDoneVote,
+                    quantityInClusterVote, quantityInnovativeVote, quantityForeignVote,
+                    quantityCompetitiveAdvantagesVote, quantityCommercePotentialVote, quantityCanBeImplementedVote,
+                    quantityHaveExpertiseVote, quantityInternationalExperienceVote, quantityEnoughDocumentsVote,
+                    loadFileDecisionVote, openFileDecisionVote,
                     emailClaimerVote, emailNoticeRejectedVote, emailNoticeAcceptedStatusVote, emailNoticeAcceptedPreliminaryVote, decisionNoticedVote, baseLM.delete);
             objVote.groupTo.banClassView.addAll(BaseUtils.toList(ClassViewType.PANEL, ClassViewType.HIDE));
+
+            getPropertyDraw(percentNeededVote).forceViewType = ClassViewType.GRID;
+            getPropertyDraw(percentNeededVote).propertyCaption = addPropertyObject(hidePercentNeededProject, objProject);
+
+            setForceViewType(voteResultGroup, ClassViewType.GRID, objVote.groupTo);
+            getPropertyDraw(quantityInClusterVote).propertyCaption = addPropertyObject(hideQuantityInClusterProject, objProject);
+            getPropertyDraw(quantityInnovativeVote).propertyCaption = addPropertyObject(hideQuantityInClusterProject, objProject);
+            getPropertyDraw(quantityForeignVote).propertyCaption = addPropertyObject(hideQuantityForeignProject, objProject);
+            getPropertyDraw(quantityCompetitiveAdvantagesVote).propertyCaption = addPropertyObject(hideQuantityCompetitiveAdvantagesProject, objProject);
+            getPropertyDraw(quantityCommercePotentialVote).propertyCaption = addPropertyObject(hideQuantityCommercePotentialProject, objProject);
+            getPropertyDraw(quantityCanBeImplementedVote).propertyCaption = addPropertyObject(hideQuantityCanBeImplementedProject, objProject);
+            getPropertyDraw(quantityHaveExpertiseVote).propertyCaption = addPropertyObject(hideQuantityHaveExpertiseProject, objProject);
+            getPropertyDraw(quantityInternationalExperienceVote).propertyCaption = addPropertyObject(hideQuantityInternationalExperienceProject, objProject);
+            getPropertyDraw(quantityEnoughDocumentsVote).propertyCaption = addPropertyObject(hideQuantityEnoughDocumentsProject, objProject);
 
 //            getPropertyDraw(copyResultsVote).forceViewType = ClassViewType.PANEL;
 
@@ -3250,7 +3294,13 @@ public class SkolkovoLogicsModule extends LogicsModule {
         private VoteFormEntity(NavigatorElement parent, String sID, boolean restricted) {
             super(parent, sID, (!restricted) ? "Реестр заседаний" : "Результаты заседаний");
 
-            objVote = addSingleGroupObject(vote, baseLM.objectClassName, nameNativeProjectVote, nameNativeClaimerVote, nameProjectActionVote, nameNativeClusterVote, dateStartVote, dateEndVote, openedVote, succeededVote, acceptedVote, quantityDoneVote, quantityInClusterVote, quantityInnovativeVote, quantityForeignVote);
+            objVote = addSingleGroupObject(vote, baseLM.objectClassName, nameNativeProjectVote, nameNativeClaimerVote,
+                    nameProjectActionVote, nameNativeClusterVote, dateStartVote, dateEndVote,
+                    openedVote, succeededVote, acceptedVote, quantityDoneVote,
+                    quantityInClusterVote, quantityInnovativeVote, quantityForeignVote,
+                    quantityCompetitiveAdvantagesVote, quantityCommercePotentialVote, quantityCanBeImplementedVote,
+                    quantityHaveExpertiseVote, quantityInternationalExperienceVote, quantityEnoughDocumentsVote);
+
             if (!restricted)
                 addPropertyDraw(objVote, emailClosedVote, baseLM.delete);
 
