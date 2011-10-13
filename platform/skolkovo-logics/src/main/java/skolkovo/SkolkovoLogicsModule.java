@@ -2571,6 +2571,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
         addFormEntity(new DocumentTemplateFormEntity(options, "documentTemplate"));
         globalForm = addFormEntity(new GlobalFormEntity(options, "global"));
 
+        addFormEntity(new ClusterForesightFormEntity(options, "clusterForesight"));
+        baseLM.baseElement.add(options);
         baseLM.baseElement.add(baseLM.adminElement); // перемещаем adminElement в конец
     }
 
@@ -2985,7 +2987,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
             objForesight = addSingleGroupObject(foresight);
             addPropertyDraw(objForesight, sidForesight, nameNative, nameForeign, nameNativeShortClusterForesight, quantityInForesightExpert);
-          //  addPropertyDraw(inForesightExpert, objForesight, objExpert);
+
 
             objVote = addSingleGroupObject(vote, dateStartVote, dateEndVote, nameNativeClusterVote, nameProjectActionVote, percentNeededVote, openedVote, succeededVote, acceptedVote,
                     quantityDoneVote,
@@ -3612,6 +3614,24 @@ public class SkolkovoLogicsModule extends LogicsModule {
         @Override
         public ObjectEntity getObject() {
             return objClaimer;
+        }
+    }
+
+    private class ClusterForesightFormEntity extends FormEntity<SkolkovoBusinessLogics>{
+        private ObjectEntity objCluster;
+        private ObjectEntity objForesight;
+
+        private ClusterForesightFormEntity(NavigatorElement parent, String sID){
+            super(parent, sID, "Кластеры");
+
+            objCluster = addSingleGroupObject(1, "Кластер", cluster);
+            addPropertyDraw(objCluster, nameNative, nameForeign);
+            addObjectActions(this, objCluster);
+
+            objForesight = addSingleGroupObject(2, "Кластер", foresight);
+            addPropertyDraw(objForesight, sidForesight, nameNative, nameForeign, nameNativeShortClusterForesight);
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(clusterForesight, objForesight), Compare.EQUALS, objCluster));
+            addObjectActions(this, objForesight);
         }
     }
 
