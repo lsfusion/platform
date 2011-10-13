@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="vote" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0">
 	<property name="ireport.zoom" value="1.4641000000000006"/>
-	<property name="ireport.x" value="60"/>
-	<property name="ireport.y" value="218"/>
+	<property name="ireport.x" value="21"/>
+	<property name="ireport.y" value="667"/>
 	<style name="DefaultStyle" isDefault="true" vAlign="Middle" fontName="lsf.TimesNewRoman" fontSize="12" pdfEncoding="Cp1251" isPdfEmbedded="false"/>
 	<style name="GroupCellStyle0" mode="Opaque" backcolor="#DFDFDF" vAlign="Middle" fontName="Serif" fontSize="10" pdfFontName="lsf.Times" pdfEncoding="Cp1251" isPdfEmbedded="false">
 		<box leftPadding="2" rightPadding="2">
@@ -62,6 +62,31 @@
 		<fieldDescription><![CDATA[@Z]]></fieldDescription>
 	</field>
 	<field name="countPrevVote" class="java.lang.Integer"/>
+	<field name="quantityCompetitiveAdvantagesVote" class="java.lang.Integer">
+		<fieldDescription><![CDATA[@Z]]></fieldDescription>
+	</field>
+	<field name="quantityCommercePotentialVote" class="java.lang.Integer">
+		<fieldDescription><![CDATA[@Z]]></fieldDescription>
+	</field>
+	<field name="quantityCanBeImplementedVote" class="java.lang.Integer">
+		<fieldDescription><![CDATA[@Z]]></fieldDescription>
+	</field>
+	<field name="quantityHaveExpertiseVote" class="java.lang.Integer">
+		<fieldDescription><![CDATA[@Z]]></fieldDescription>
+	</field>
+	<field name="quantityInternationalExperienceVote" class="java.lang.Integer">
+		<fieldDescription><![CDATA[@Z]]></fieldDescription>
+	</field>
+	<field name="quantityEnoughDocumentsVote" class="java.lang.Integer">
+		<fieldDescription><![CDATA[@Z]]></fieldDescription>
+	</field>
+	<field name="revisionVote" class="java.lang.String"/>
+	<field name="acceptedCompetitiveAdvantagesVote" class="java.lang.Boolean"/>
+	<field name="acceptedCommercePotentialVote" class="java.lang.Boolean"/>
+	<field name="acceptedCanBeImplementedVote" class="java.lang.Boolean"/>
+	<field name="acceptedHaveExpertiseVote" class="java.lang.Boolean"/>
+	<field name="acceptedInternationalExperienceVote" class="java.lang.Boolean"/>
+	<field name="acceptedEnoughDocumentsVote" class="java.lang.Boolean"/>
 	<group name="textGroup1">
 		<groupExpression><![CDATA[String.valueOf($F{vote})]]></groupExpression>
 		<groupHeader>
@@ -178,7 +203,7 @@
 				</textField>
 			</band>
 			<band height="219" splitType="Immediate">
-				<printWhenExpression><![CDATA[$F{succeededVote}!=null]]></printWhenExpression>
+				<printWhenExpression><![CDATA[$F{succeededVote}!=null && !"R2".equals( $F{revisionVote})]]></printWhenExpression>
 				<textField isStretchWithOverflow="true">
 					<reportElement positionType="Float" x="50" y="150" width="489" height="14"/>
 					<textElement textAlignment="Justified">
@@ -271,14 +296,198 @@
 					<text><![CDATA[6. Заполненные Бюллетени оценки прилагаются к настоящему протоколу.]]></text>
 				</staticText>
 			</band>
-			<band height="63">
+			<band height="198">
+				<printWhenExpression><![CDATA[!"R1".equals( $F{revisionVote})]]></printWhenExpression>
+				<textField isStretchWithOverflow="true">
+					<reportElement positionType="Float" x="49" y="10" width="489" height="14"/>
+					<textElement textAlignment="Justified">
+						<paragraph firstLineIndent="40"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA["3. Решение по вопросу о том, обладают ли создаваемый продукт и (или) технология и (или) ожидаемый результат прикладных исследований потенциальными конкурентными преимуществами перед мировыми аналогами:"]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true">
+					<reportElement positionType="Float" x="50" y="38" width="489" height="14"/>
+					<textElement textAlignment="Justified">
+						<paragraph firstLineIndent="40"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA["НЕТ - "+($F{quantityDoneVote}-$F{quantityCompetitiveAdvantagesVote})+" "+new ChoiceFormat("0#голосов|1#голос|1<голоса|4<голосов").format($F{quantityDoneVote}-$F{quantityCompetitiveAdvantagesVote})+"."]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true">
+					<reportElement positionType="Float" x="50" y="24" width="489" height="14"/>
+					<textElement textAlignment="Justified">
+						<paragraph firstLineIndent="40"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA["ДА - "+$F{quantityCompetitiveAdvantagesVote}+" "+new ChoiceFormat("0#голосов|1#голос|1<голоса|4<голосов").format($F{quantityCompetitiveAdvantagesVote})+"."]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true">
+					<reportElement positionType="Float" x="49" y="52" width="489" height="14"/>
+					<textElement textAlignment="Justified">
+						<paragraph firstLineIndent="40"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA["Результат: Экспертной коллегией принято решение о " + ($F{acceptedCompetitiveAdvantagesVote}==null ? "не" : "") + "соответствии проекта, представленного Соискателем, данному Критерию."]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true">
+					<reportElement positionType="Float" x="50" y="90" width="489" height="14"/>
+					<textElement textAlignment="Justified">
+						<paragraph firstLineIndent="40"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA["ДА - "+$F{quantityCommercePotentialVote}+" "+new ChoiceFormat("0#голосов|1#голос|1<голоса|4<голосов").format($F{quantityCommercePotentialVote})+"."]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true">
+					<reportElement positionType="Float" x="50" y="104" width="489" height="14"/>
+					<textElement textAlignment="Justified">
+						<paragraph firstLineIndent="40"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA["НЕТ - "+($F{quantityDoneVote}-$F{quantityCommercePotentialVote})+" "+new ChoiceFormat("0#голосов|1#голос|1<голоса|4<голосов").format($F{quantityDoneVote}-$F{quantityCommercePotentialVote})+"."]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true">
+					<reportElement positionType="Float" x="50" y="118" width="489" height="14"/>
+					<textElement textAlignment="Justified">
+						<paragraph firstLineIndent="40"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA["Результат: Экспертной коллегией принято решение о " + ($F{acceptedCommercePotentialVote}==null ? "не" : "") + "соответствии проекта, представленного Соискателем, данному Критерию."]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true">
+					<reportElement positionType="Float" x="50" y="76" width="489" height="14"/>
+					<textElement textAlignment="Justified">
+						<paragraph firstLineIndent="40"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA["4. Решение по вопросу о том, обладают ли создаваемый продукт и (или) технология и (или) ожидаемый результат Прикладных Исследований существенным потенциалом коммерциализации, как минимум, на российском, а в перспективе – на мировом рынке:"]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true">
+					<reportElement positionType="Float" x="50" y="167" width="489" height="14"/>
+					<textElement textAlignment="Justified">
+						<paragraph firstLineIndent="40"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA["НЕТ - "+($F{quantityDoneVote}-$F{quantityCanBeImplementedVote})+" "+new ChoiceFormat("0#голосов|1#голос|1<голоса|4<голосов").format($F{quantityDoneVote}-$F{quantityCanBeImplementedVote})+"."]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true">
+					<reportElement positionType="Float" x="50" y="139" width="489" height="14"/>
+					<textElement textAlignment="Justified">
+						<paragraph firstLineIndent="40"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA["5. Решение по вопросу о том, является ли проект теоретически реализуемым и не противоречащим основополагающим научным принципам:"]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true">
+					<reportElement positionType="Float" x="50" y="153" width="489" height="14"/>
+					<textElement textAlignment="Justified">
+						<paragraph firstLineIndent="40"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA["ДА - "+$F{quantityCanBeImplementedVote}+" "+new ChoiceFormat("0#голосов|1#голос|1<голоса|4<голосов").format($F{quantityCanBeImplementedVote})+"."]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true">
+					<reportElement positionType="Float" x="50" y="181" width="489" height="14"/>
+					<textElement textAlignment="Justified">
+						<paragraph firstLineIndent="40"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA["Результат: Экспертной коллегией принято решение о "+ ($F{acceptedCanBeImplementedVote}==null ? "не" : "") + "соответствии проекта, представленного Соискателем, данному Критерию."]]></textFieldExpression>
+				</textField>
+			</band>
+			<band height="66">
+				<printWhenExpression><![CDATA[!"R1".equals( $F{revisionVote})]]></printWhenExpression>
+				<textField isStretchWithOverflow="true">
+					<reportElement positionType="Float" x="50" y="19" width="489" height="14"/>
+					<textElement textAlignment="Justified">
+						<paragraph firstLineIndent="40"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA["ДА - "+$F{quantityHaveExpertiseVote}+" "+new ChoiceFormat("0#голосов|1#голос|1<голоса|4<голосов").format($F{quantityHaveExpertiseVote})+"."]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true">
+					<reportElement positionType="Float" x="50" y="47" width="489" height="14"/>
+					<textElement textAlignment="Justified">
+						<paragraph firstLineIndent="40"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA["Результат: Экспертной коллегией принято решение о " + ($F{acceptedHaveExpertiseVote}==null ? "не" : "") + "соответствии проекта, представленного Соискателем, данному Критерию."]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true">
+					<reportElement positionType="Float" x="50" y="5" width="489" height="14"/>
+					<textElement textAlignment="Justified">
+						<paragraph firstLineIndent="40"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA["6. Решение по вопросу о том, обладают ли ключевые исследователи, разработчики и менеджеры проекта (далее - Команда проекта) необходимыми знаниями и опытом для успешной реализации проекта и (или) проведения прикладных Исследований:"]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true">
+					<reportElement positionType="Float" x="50" y="33" width="489" height="14"/>
+					<textElement textAlignment="Justified">
+						<paragraph firstLineIndent="40"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA["НЕТ - "+($F{quantityDoneVote}-$F{quantityHaveExpertiseVote})+" "+new ChoiceFormat("0#голосов|1#голос|1<голоса|4<голосов").format($F{quantityDoneVote}-$F{quantityHaveExpertiseVote})+"."]]></textFieldExpression>
+				</textField>
+			</band>
+			<band height="154">
+				<printWhenExpression><![CDATA[!"R1".equals( $F{revisionVote})]]></printWhenExpression>
+				<textField isStretchWithOverflow="true">
+					<reportElement positionType="Float" x="50" y="5" width="489" height="14"/>
+					<textElement textAlignment="Justified">
+						<paragraph firstLineIndent="40"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA["7. Решение по вопросу о том, присутствуют ли в Команде проекта специалист или несколько специалистов, обладающих международным опытом в области исследований, разработок и (или) коммерциализации их результатов:"]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true">
+					<reportElement positionType="Float" x="50" y="33" width="489" height="14"/>
+					<textElement textAlignment="Justified">
+						<paragraph firstLineIndent="40"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA["НЕТ - "+($F{quantityDoneVote}-$F{quantityInternationalExperienceVote})+" "+new ChoiceFormat("0#голосов|1#голос|1<голоса|4<голосов").format($F{quantityDoneVote}-$F{quantityInternationalExperienceVote})+"."]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true">
+					<reportElement positionType="Float" x="50" y="47" width="489" height="14"/>
+					<textElement textAlignment="Justified">
+						<paragraph firstLineIndent="40"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA["Результат: Экспертной коллегией принято решение о " + ($F{acceptedInternationalExperienceVote}==null ? "не" : "") + "соответствии проекта, представленного Соискателем, данному Критерию."]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true">
+					<reportElement positionType="Float" x="50" y="19" width="489" height="14"/>
+					<textElement textAlignment="Justified">
+						<paragraph firstLineIndent="40"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA["ДА - "+$F{quantityInternationalExperienceVote}+" "+new ChoiceFormat("0#голосов|1#голос|1<голоса|4<голосов").format($F{quantityInternationalExperienceVote})+"."]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true">
+					<reportElement positionType="Float" x="50" y="73" width="489" height="14"/>
+					<textElement textAlignment="Justified">
+						<paragraph firstLineIndent="40"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA["8. Решение по вопросу о том, достаточно ли представленных материалов для оценки проекта:"]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true">
+					<reportElement positionType="Float" x="50" y="115" width="489" height="14"/>
+					<textElement textAlignment="Justified">
+						<paragraph firstLineIndent="40"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA["Результат: Экспертной коллегией принято решение о " + ($F{acceptedEnoughDocumentsVote}==null ? "не" : "") + "соответствии проекта, представленного Соискателем, данному Критерию."]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true">
+					<reportElement positionType="Float" x="50" y="87" width="489" height="14"/>
+					<textElement textAlignment="Justified">
+						<paragraph firstLineIndent="40"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA["ДА - "+$F{quantityEnoughDocumentsVote}+" "+new ChoiceFormat("0#голосов|1#голос|1<голоса|4<голосов").format($F{quantityEnoughDocumentsVote})+"."]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true">
+					<reportElement positionType="Float" x="50" y="101" width="489" height="14"/>
+					<textElement textAlignment="Justified">
+						<paragraph firstLineIndent="40"/>
+					</textElement>
+					<textFieldExpression class="java.lang.String"><![CDATA["НЕТ - "+($F{quantityDoneVote}-$F{quantityEnoughDocumentsVote})+" "+new ChoiceFormat("0#голосов|1#голос|1<голоса|4<голосов").format($F{quantityDoneVote}-$F{quantityEnoughDocumentsVote})+"."]]></textFieldExpression>
+				</textField>
 				<staticText>
-					<reportElement positionType="Float" mode="Opaque" x="435" y="34" width="104" height="16"/>
+					<reportElement positionType="Float" x="50" y="139" width="489" height="14"/>
+					<textElement textAlignment="Justified">
+						<paragraph firstLineIndent="40"/>
+					</textElement>
+					<text><![CDATA[9. Заполненные Бюллетени оценки прилагаются к настоящему протоколу.]]></text>
+				</staticText>
+			</band>
+			<band height="50">
+				<staticText>
+					<reportElement positionType="Float" mode="Opaque" x="434" y="15" width="104" height="16"/>
 					<textElement textAlignment="Right" verticalAlignment="Bottom"/>
 					<text><![CDATA[Д.В. Дудина]]></text>
 				</staticText>
 				<textField>
-					<reportElement positionType="Float" x="50" y="34" width="201" height="16"/>
+					<reportElement positionType="Float" x="49" y="15" width="201" height="16"/>
 					<textElement/>
 					<textFieldExpression class="java.lang.String"><![CDATA["Ответственный секретарь Совета"]]></textFieldExpression>
 				</textField>
