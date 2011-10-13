@@ -110,6 +110,7 @@ public class GridSelectionController {
                 firstColumn = table.getProperty(0, columnIndex);
                 temporarySelectionAddition = true;
                 resetSelection();
+                addToSelection(newProperty, rowIndex);
                 addToTemporaryValues(rowIndex);
             }
         }
@@ -224,9 +225,11 @@ public class GridSelectionController {
         }
     }
 
-    private Object trimIfString(Object value) {
+    private Object modifyIfString(Object value) {
         if (value != null && value instanceof String) {
             value = BaseUtils.rtrim((String) value);
+            value = ((String) value).replaceAll("\n", " ");
+            value = ((String) value).replaceAll("\t", " ");
         }
         return value;
     }
@@ -247,7 +250,7 @@ public class GridSelectionController {
         //если выделена одна ячейка и нажали CTRL+C, копируем текуще значение
         ClientPropertyDraw firstProperty = getProperties().get(firstPropertyIndex);
         if (firstPropertyIndex == lastPropertyIndex && (selectedCells.get(firstProperty).size() == 1)) {
-            Object value = trimIfString(table.getSelectedValue(getProperties().get(firstPropertyIndex), null));
+            Object value = modifyIfString(table.getSelectedValue(getProperties().get(firstPropertyIndex), null));
             return value == null ? "" : value.toString();
         }
 
@@ -258,7 +261,7 @@ public class GridSelectionController {
                 ClientPropertyDraw property = getProperties().get(i);
                 Object value = null;
                 if (selectedCells.get(property).containsKey(key)) {
-                    value = trimIfString(selectedCells.get(property).get(key));
+                    value = modifyIfString(selectedCells.get(property).get(key));
                 }
                 rowString += (value == null ? "" : value.toString());
                 if (i < lastPropertyIndex) {
