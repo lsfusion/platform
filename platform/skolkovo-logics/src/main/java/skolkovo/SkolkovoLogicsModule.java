@@ -3093,8 +3093,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
             RegularFilterGroupEntity foresightFilterGroup = new RegularFilterGroupEntity(genID());
             foresightFilterGroup.addFilter(new RegularFilterEntity(genID(),
-                    new NotNullFilterEntity(addPropertyObject(isForesightInClusterProject, objProject, objForesight)),
-                    "Применимы для проекта",
+                    new NotNullFilterEntity(addPropertyObject(inProjectForesight, objProject, objForesight)),
+                    "В проекте",
                     KeyStroke.getKeyStroke(KeyEvent.VK_F11, 0)), true);
             addRegularFilterGroup(foresightFilterGroup);
 
