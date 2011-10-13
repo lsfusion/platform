@@ -1006,6 +1006,15 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP statusApplication;
     LP nameStatusApplication;
     LP officialNameStatusApplication;
+    LP hideAddPositiveFCResult;
+    LP hideAddNotEnoughDocumentsFCResult;
+    LP hideAddNoListOfExpertsFCResult;
+    LP hideAddNotSuitableClusterFCResult;
+    LP hideAddRepeatedFCResult;
+    LP needFormalCheckStatusProject;
+    LP needLegalCheckStatusProject;
+    LP hideAddPositiveLCResult;
+    LP hideAddNegativeLCResult;
 
     @Override
     public void initProperties() {
@@ -2009,7 +2018,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         projectFormalControl = addDProp("projectFormalControl", "Проект (ИД)", project, formalControl);
         resultFormalControl = addDProp("resultFormalControl", "Решение формальной экспертизы", formalControlResult, formalControl);
-
+                                     //кнопки
         addNotEnoughDocumentsFCResult = addJProp(formalControlResultGroup, true, "addNotEnoughDocumentsFCResult", "Неполный перечень документов", addAAProp(formalControl, resultFormalControl), addCProp(formalControlResult, "notEnoughDocuments"));
         addNoListOfExpertsFCResult = addJProp(formalControlResultGroup, true, "Отсутствует перечень экспертов", addAAProp(formalControl, resultFormalControl), addCProp(formalControlResult, "noListOfExperts"));
         addNotSuitableClusterFCResult = addJProp(formalControlResultGroup, true, "Не соответствует направлению", addAAProp(formalControl, resultFormalControl), addCProp(formalControlResult, "notSuitableCluster"));
@@ -2456,6 +2465,11 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         langApplication = addJProp(baseGroup, "langApplication", "Язык", langProject, projectApplication, 1);
         nameNativeShortAggregateClusterApplication = addJProp(baseGroup, "nameNativeShortAggregateClusterApplication", "Кластеры", nameNativeShortAggregateClusterProject, projectApplication, 1);
+
+        needFormalCheckStatusProject = addJProp("needFormalCheckStatusProject", and(true, true), addCProp(LogicalClass.instance, true, project), 1, positiveFormalResultProject, 1, overdueFormalControlProject, 1);
+
+        needLegalCheckStatusProject = addJProp("needLegalCheckStatusProject", and(true, true), addCProp(LogicalClass.instance, true, project), 1, positiveLegalResultProject, 1, overdueLegalCheckProject, 1);
+
     }
 
     @Override
@@ -2878,7 +2892,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
                     nameNativeShortFinalClusterProject, nameNativeClaimerProject, nameForeignClaimerProject, emailClaimerProject,
                     nameStatusProject, formLogNameStatusProject, nameProjectActionProject, updateDateProject, autoGenerateProject,
                     inactiveProject, quantityClusterProject, quantityClusterVotedProject, quantityVoteProject, generateVoteProject, editClaimerProject, editProject,
-                    isR2Project);
+                    isR2Project, needFormalCheckStatusProject, needLegalCheckStatusProject);
 
             addPropertyDraw(objProject, isOtherClusterProject, nativeSubstantiationOtherClusterProject, foreignSubstantiationOtherClusterProject);
             addPropertyDraw(objProject, registerGroup);
@@ -2979,7 +2993,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
                     quantityCompetitiveAdvantagesVote, quantityCommercePotentialVote, quantityCanBeImplementedVote,
                     quantityHaveExpertiseVote, quantityInternationalExperienceVote, quantityEnoughDocumentsVote,
                     loadFileDecisionVote, openFileDecisionVote,
-                    emailClaimerVote, emailNoticeRejectedVote, emailNoticeAcceptedStatusVote, emailNoticeAcceptedPreliminaryVote, decisionNoticedVote, baseLM.delete);
+                    emailClaimerVote, emailNoticeRejectedVote, emailNoticeAcceptedStatusVote, emailNoticeAcceptedPreliminaryVote, decisionNoticedVote, baseLM.delete, revisionVote);
             objVote.groupTo.banClassView.addAll(BaseUtils.toList(ClassViewType.PANEL, ClassViewType.HIDE));
 
             getPropertyDraw(percentNeededVote).forceViewType = ClassViewType.GRID;
@@ -3033,10 +3047,27 @@ public class SkolkovoLogicsModule extends LogicsModule {
             addPropertyDraw(objFormalControl, dateFormalControl, nameResultFormalControl, nameProjectActionFormalControl, baseLM.delete);
             addPropertyDraw(commentFormalControl, objFormalControl).forceViewType = ClassViewType.PANEL;
 
+            hideAddPositiveFCResult = addHideCaptionProp(privateGroup, "Прошла формальную экспертизу", addPositiveFCResult, needFormalCheckStatusProject);
+            getPropertyDraw(addPositiveFCResult).propertyCaption = addPropertyObject(hideAddPositiveFCResult, objProject);
+            hideAddNotEnoughDocumentsFCResult = addHideCaptionProp(privateGroup, "Неполный перечень документо", addNotEnoughDocumentsFCResult, needFormalCheckStatusProject);
+            getPropertyDraw(addNotEnoughDocumentsFCResult).propertyCaption = addPropertyObject(hideAddNotEnoughDocumentsFCResult, objProject);
+            hideAddNoListOfExpertsFCResult = addHideCaptionProp(privateGroup, "Отсутствует перечень экспертов", addNoListOfExpertsFCResult, needFormalCheckStatusProject);
+            getPropertyDraw(addNoListOfExpertsFCResult).propertyCaption = addPropertyObject(hideAddNoListOfExpertsFCResult, objProject);
+            hideAddNotSuitableClusterFCResult = addHideCaptionProp(privateGroup, "Не соответствует направлению", addNotSuitableClusterFCResult, needFormalCheckStatusProject);
+            getPropertyDraw(addNotSuitableClusterFCResult).propertyCaption = addPropertyObject(hideAddNotSuitableClusterFCResult, objProject);
+            hideAddRepeatedFCResult = addHideCaptionProp(privateGroup, "Подана повторно", addRepeatedFCResult, needFormalCheckStatusProject);
+            getPropertyDraw(addRepeatedFCResult).propertyCaption = addPropertyObject(hideAddRepeatedFCResult, objProject);
+
             objLegalCheck = addSingleGroupObject(legalCheck);
             addPropertyDraw(objLegalCheck, dateLegalCheck, nameResultLegalCheck, baseLM.delete);
             addPropertyDraw(new LP[]{addNegativeLCResult, addPositiveLCResult});
             addPropertyDraw(commentLegalCheck, objLegalCheck).forceViewType = ClassViewType.PANEL;
+
+            hideAddPositiveLCResult = addHideCaptionProp(privateGroup, "Прошла юридическую проверку", addPositiveLCResult, needLegalCheckStatusProject);
+            getPropertyDraw(addPositiveLCResult).propertyCaption = addPropertyObject(hideAddPositiveLCResult, objProject);
+            hideAddNegativeLCResult = addHideCaptionProp(privateGroup, "Не прошла юридическую проверку", addNegativeLCResult, needLegalCheckStatusProject);
+            getPropertyDraw(addNegativeLCResult).propertyCaption = addPropertyObject(hideAddNegativeLCResult, objProject);
+
 
             objOriginalDocsCheck = addSingleGroupObject(originalDocsCheck);
             addPropertyDraw(objOriginalDocsCheck, dateOriginalDocsCheck, nameResultOriginalDocsCheck, baseLM.delete);
@@ -3382,7 +3413,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             objExpert = addSingleGroupObject(expert, baseLM.selection, baseLM.userFirstName, baseLM.userLastName, documentNameExpert, baseLM.userLogin, baseLM.userPassword, baseLM.email, disableExpert, nameNativeClusterExpert, nameNativeForesightExpert,nameLanguageExpert, dateAgreementExpert, nameCountryExpert, nameCurrencyExpert, isTechnicalExpert, isBusinessExpert, expertResultGroup, baseLM.generateLoginPassword, emailAuthExpert);
             addObjectActions(this, objExpert);
 
-            objVote = addSingleGroupObject(vote, nameNativeProjectVote, dateStartVote, dateEndVote, openedVote, succeededVote, quantityDoneVote);
+            objVote = addSingleGroupObject(vote, nameNativeProjectVote, dateStartVote, dateEndVote, openedVote, succeededVote, quantityDoneVote, revisionVote);
 
             addPropertyDraw(voteResultGroup, true, objExpert, objVote);
             addPropertyDraw(objExpert, objVote, allowedEmailLetterExpertVote);
@@ -3483,7 +3514,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             super(parent, sID, (!restricted) ? "Реестр голосований" : "Результаты голосований");
 
             objVote = new ObjectEntity(genID(), vote, "Заседание");
-            addPropertyDraw(objVote, nameNativeProjectVote, nameNativeClaimerVote, dateStartVote, dateEndVote, openedVote, succeededVote, acceptedVote);
+            addPropertyDraw(objVote, nameNativeProjectVote, nameNativeClaimerVote, dateStartVote, dateEndVote, openedVote, succeededVote, acceptedVote, revisionVote);
 
             objExpert = new ObjectEntity(genID(), expert, "Эксперт");
             addPropertyDraw(objExpert, nameNativeClusterExpert, nameLanguageExpert);
@@ -3727,7 +3758,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
             objVote = addSingleGroupObject(1, "vote", vote, dateProjectVote, baseLM.date, dateEndVote, nameNativeProjectVote, nameNativeClaimerVote, nameNativeClusterVote,
                     quantityInVote, quantityRepliedVote, quantityDoneVote, quantityDoneNewVote, quantityDoneOldVote, quantityRefusedVote, quantityConnectedVote, succeededVote, acceptedVote,
-                    quantityInClusterVote, acceptedInClusterVote, quantityInnovativeVote, acceptedInnovativeVote, quantityForeignVote, acceptedForeignVote, prevDateStartVote, prevDateVote, countPrevVote);
+                    quantityInClusterVote, acceptedInClusterVote, quantityInnovativeVote, acceptedInnovativeVote, quantityForeignVote, acceptedForeignVote, prevDateStartVote, prevDateVote, countPrevVote, revisionVote);
             objVote.groupTo.initClassView = ClassViewType.PANEL;
 
             objPrevVote = addSingleGroupObject(5, "prevVote", vote, dateStartVote);
@@ -3738,7 +3769,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
             addPropertyDraw(voteResultGroup, true, objExpert, objVote);
 
-            addPropertyDraw(connectedExpertVote, objExpert, objVote);
+            addPropertyDraw(objExpert, objVote, connectedExpertVote,competitiveAdvantagesExpertVote, commercePotentialExpertVote, canBeImplementedExpertVote, haveExpertiseExpertVote, internationalExperienceExpertVote, enoughDocumentsExpertVote, commentCompetitiveAdvantagesExpertVote, commentCommercePotentialExpertVote, commentCanBeImplementedExpertVote, commentHaveExpertiseExpertVote, commentInternationalExperienceExpertVote, commentEnoughDocumentsExpertVote);
 
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(isPrevVoteVote, objPrevVote, objVote)));
             addFixedFilter(new OrFilterEntity(new NotNullFilterEntity(addPropertyObject(doneExpertVote, objExpert, objVote)),
@@ -3800,12 +3831,13 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
             objVoteHeader = addSingleGroupObject(5, "voteHeader", vote);
 
-            objVote = addSingleGroupObject(6, "vote", vote, dateProjectVote, baseLM.date, dateEndVote, nameNativeProjectVote, nameNativeClaimerVote, nameNativeClusterVote);
+            objVote = addSingleGroupObject(6, "vote", vote, dateProjectVote, baseLM.date, dateEndVote, nameNativeProjectVote, nameNativeClaimerVote, nameNativeClusterVote, revisionVote);
 
             addPropertyDraw(nameNativeClaimerVote, objVoteHeader).setSID("nameNativeClaimerVoteHeader");
             addPropertyDraw(nameNativeProjectVote, objVoteHeader);
 
             addPropertyDraw(voteResultGroup, true, objExpert, objVote);
+            addPropertyDraw(objExpert, objVote, competitiveAdvantagesExpertVote, commercePotentialExpertVote, canBeImplementedExpertVote, haveExpertiseExpertVote, internationalExperienceExpertVote, enoughDocumentsExpertVote, commentCompetitiveAdvantagesExpertVote, commentCommercePotentialExpertVote, commentCanBeImplementedExpertVote, commentHaveExpertiseExpertVote, commentInternationalExperienceExpertVote, commentEnoughDocumentsExpertVote);
 
             addPropertyDraw(connectedExpertVote, objExpert, objVote);
 
@@ -3921,12 +3953,13 @@ public class SkolkovoLogicsModule extends LogicsModule {
             objExpert = addSingleGroupObject(3, "expert", expert, baseLM.selection, baseLM.userFirstName, baseLM.userLastName, documentNameExpert, dateAgreementExpert, nameCountryExpert, caseCountryExpert, englCountryExpert, nameCurrencyExpert, baseCurrencyExpert, englCurrencyExpert, pluralCurrencyExpert, nameNativeClusterExpert, nameLanguageExpert, residencyCountryExpert);
             //   objExpert.groupTo.initClassView = ClassViewType.PANEL;
 
-            objVoteBallot = addSingleGroupObject(4, "voteBallot", vote, dateProjectVote, baseLM.date, dateEndVote, nameNativeProjectVote, nameNativeClaimerVote, nameNativeClusterVote);
+            objVoteBallot = addSingleGroupObject(4, "voteBallot", vote, dateProjectVote, baseLM.date, dateEndVote, nameNativeProjectVote, nameNativeClaimerVote, nameNativeClusterVote, revisionVote);
 
             addPropertyDraw(voteResultGroup, true, objExpert, objVoteBallot);
 
             objVote = addSingleGroupObject(5, "vote", vote, nameNativeClaimerVote, nameForeignClaimerVote, openedVote, succeededVote, quantityDoneVote);
             addPropertyDraw(inNewExpertVote, objExpert, objVote);
+            addPropertyDraw(objExpert, objVoteBallot, competitiveAdvantagesExpertVote, commercePotentialExpertVote, canBeImplementedExpertVote, haveExpertiseExpertVote, internationalExperienceExpertVote, enoughDocumentsExpertVote, commentCompetitiveAdvantagesExpertVote, commentCommercePotentialExpertVote, commentCanBeImplementedExpertVote, commentHaveExpertiseExpertVote, commentInternationalExperienceExpertVote, commentEnoughDocumentsExpertVote);
             addPropertyDraw(objExpert, objVote, objMonth, objYear, doneExpertVoteMonthYear);
 
             //  addPropertyDraw(voteResultGroup, true, objExpert, objVote);
