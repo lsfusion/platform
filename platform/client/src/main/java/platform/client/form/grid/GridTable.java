@@ -760,17 +760,20 @@ public abstract class GridTable extends ClientFormTable
     }
 
     public boolean addProperty(final ClientPropertyDraw property) {
-        if (properties.indexOf(property) == -1) {
+        if (!properties.contains(property)) {
             // конечно кривовато определять порядок по номеру в листе, но потом надо будет сделать по другому
             int ins = BaseUtils.relativePosition(property, form.getPropertyDraws(), properties);
             properties.add(ins, property);
+            selectionController.addProperty(property);
             return true;
         } else
             return false;
     }
 
     public boolean removeProperty(ClientPropertyDraw property) {
-        if (properties.remove(property)) {
+        if (properties.contains(property)) {
+            selectionController.removeProperty(property);
+            properties.remove(property);
             values.remove(property);
             captions.remove(property);
             columnKeys.remove(property);
