@@ -379,7 +379,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP dataDocumentNameExpert, documentNameExpert;
     public LP emailExpert;
     LP clusterExpert, nameNativeClusterExpert, nameForeignClusterExpert, nameNativeShortClusterExpert;
-    LP inForesightExpert, nameNativeForesightExpert, quantityInForesightExpert;
+    LP inExpertForesight, nameNativeForesightExpert, quantityInExpertForesight;
     LP foresightInClusterExpert;
     LP isTechnicalExpert, isBusinessExpert;
     LP primClusterExpert, extraClusterExpert, inClusterExpert;
@@ -392,7 +392,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP quantityClusterProject;
     LP clusterForesight, sidForesight;
     LP nameNativeShortClusterForesight;
-    LP quantityForesightProject;
+    LP quantityProjectForesight;
     LP isPrevVoteVote;
     LP countPrevVote;
     public LP claimerProject;
@@ -1112,7 +1112,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         inProjectForesight = addDProp(baseGroup, "inProjectForesight", "Вкл", LogicalClass.instance, project, foresight);
         isForesightInClusterProject = addJProp("isForesightInClusterProject", true, "Форсайт в кластере проекта", inProjectCluster, 1, clusterForesight, 2);
-        quantityForesightProject = addSGProp(baseGroup, "quantityForesightProject", true, "Кол-во форсайтов",
+        quantityProjectForesight = addSGProp(baseGroup, "quantityProjectForesight", true, "Кол-во форсайтов",
                 addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1, foresight), 2,
                         addJProp(baseLM.equals2, baseLM.vtrue, inProjectForesight, 1, 2), 1, 2), 1);
 
@@ -1151,11 +1151,11 @@ public class SkolkovoLogicsModule extends LogicsModule {
         inClusterExpert = addSUProp(baseGroup, "inClusterExpert", true, "Вкл", Union.OVERRIDE, extraClusterExpert, addJProp(baseLM.equals2, 1, clusterExpert, 2));
 
         foresightInClusterExpert = addJProp(baseGroup, "foresightInClusterExpert", "Форсайт кластера эксперта", inClusterExpert, clusterForesight, 1, 2);
-        inForesightExpert = addDProp(baseGroup, "inForesightExpert", "Вкл.", LogicalClass.instance, foresight, expert);
-        quantityInForesightExpert = addSGProp(baseGroup, "quantityInForesightExpert", true, "Количество экспертов по форсайту",
-                addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1, expert), 2, inForesightExpert, 1, 2), 1);
-        quantityInForesightExpert.setMinimumCharWidth(5);
-        quantityInForesightExpert.setPreferredCharWidth(10);
+        inExpertForesight = addDProp(baseGroup, "inExpertForesight", "Вкл.", LogicalClass.instance, expert, foresight);
+        quantityInExpertForesight = addSGProp(baseGroup, "quantityInExpertForesight", true, "Количество экспертов по форсайту",
+                addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1, expert), 1, inExpertForesight, 1, 2), 2);
+        quantityInExpertForesight.setMinimumCharWidth(5);
+        quantityInExpertForesight.setPreferredCharWidth(10);
 
         // project
         claimerProject = addDProp(idGroup, "claimerProject", "Заявитель (ИД)", claimer, project);
@@ -2986,8 +2986,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
             getPropertyDraw(generateVoteProject).propertyCaption = addPropertyObject(hideGenerateVoteProject, objProject);
 
             objForesight = addSingleGroupObject(foresight);
-            addPropertyDraw(objForesight, sidForesight, nameNative, nameForeign, nameNativeShortClusterForesight, quantityInForesightExpert);
-
+            addPropertyDraw(inProjectForesight, objProject, objForesight);
+            addPropertyDraw(objForesight, sidForesight, nameNative, nameForeign, nameNativeShortClusterForesight, quantityInExpertForesight);
 
             objVote = addSingleGroupObject(vote, dateStartVote, dateEndVote, nameNativeClusterVote, nameProjectActionVote, percentNeededVote, openedVote, succeededVote, acceptedVote,
                     quantityDoneVote,
@@ -3081,7 +3081,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             addFixedFilter(new CompareFilterEntity(addPropertyObject(projectNonRussianSpecialist, objNonRussianSpecialist), Compare.EQUALS, objProject));
 
             addFixedFilter(new CompareFilterEntity(addPropertyObject(clusterForesight, objForesight), Compare.EQUALS, objCluster));
-            addFixedFilter(new NotNullFilterEntity(addPropertyObject(isForesightInClusterProject, objProject, objForesight)));
+     //       addFixedFilter(new NotNullFilterEntity(addPropertyObject(isForesightInClusterProject, objProject, objForesight)));
             addFixedFilter(new CompareFilterEntity(addPropertyObject(projectVote, objVote), Compare.EQUALS, objProject));
             addFixedFilter(new CompareFilterEntity(addPropertyObject(projectDocument, objDocument), Compare.EQUALS, objProject));
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(clusterInExpertVote, objExpert, objVote)));
@@ -3090,6 +3090,13 @@ public class SkolkovoLogicsModule extends LogicsModule {
             addFixedFilter(new CompareFilterEntity(addPropertyObject(projectOriginalDocsCheck, objOriginalDocsCheck), Compare.EQUALS, objProject));
             addFixedFilter(new OrFilterEntity(new NotNullFilterEntity(addPropertyObject(inProjectCurrentCluster, objProject)),
                     new NotFilterEntity(new NotNullFilterEntity(addPropertyObject(currentCluster)))));
+
+            RegularFilterGroupEntity foresightFilterGroup = new RegularFilterGroupEntity(genID());
+            foresightFilterGroup.addFilter(new RegularFilterEntity(genID(),
+                    new NotNullFilterEntity(addPropertyObject(isForesightInClusterProject, objProject, objForesight)),
+                    "Применимы для проекта",
+                    KeyStroke.getKeyStroke(KeyEvent.VK_F11, 0)), true);
+            addRegularFilterGroup(foresightFilterGroup);
 
             RegularFilterGroupEntity expertFilterGroup = new RegularFilterGroupEntity(genID());
             expertFilterGroup.addFilter(new RegularFilterEntity(genID(),
@@ -3426,8 +3433,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
             addPropertyDraw(objExtraCluster, nameNative, nameForeign);
 
             objForesight = addSingleGroupObject(foresight, "Форсайты");
-            addPropertyDraw(objForesight, sidForesight, nameNative, nameForeign, nameNativeShortClusterForesight, quantityInForesightExpert);
-            addPropertyDraw(inForesightExpert, objForesight, objExpert);
+            addPropertyDraw(objForesight, sidForesight, nameNative, nameForeign, nameNativeShortClusterForesight, quantityInExpertForesight);
+            addPropertyDraw(inExpertForesight, objExpert, objForesight);
 
             RegularFilterGroupEntity inactiveFilterGroup = new RegularFilterGroupEntity(genID());
             inactiveFilterGroup.addFilter(new RegularFilterEntity(genID(),
