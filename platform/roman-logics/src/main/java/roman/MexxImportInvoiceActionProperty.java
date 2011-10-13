@@ -28,9 +28,9 @@ public class MexxImportInvoiceActionProperty extends ImportBoxInvoiceActionPrope
 
     @Override
     protected SingleSheetImporter createImporter(ImportInputTable inputTable) {
-        return new MexxInvoiceImporter(inputTable, new Object[] {null, invoiceSIDField, boxNumberField, null, null, null, null,
+        return new MexxInvoiceImporter(inputTable, new Object[] {null, invoiceSIDField, null, null, boxNumberField, null, null,
                 sidField, colorCodeField, null, sizeField, barCodeField, unitQuantityField, null, null,
-                null, null, null, unitNetWeightField, null, numberSkuField, new ImportField[] {
+                null, sidDestinationDataSupplierBoxField, null, unitNetWeightField, null, numberSkuField, new ImportField[] {
                 compositionField, countryField, customCodeField, customCode6Field, seasonField,
                 originalNameField, colorNameField, unitPriceField, RRPField}, dateInvoiceField,  themeCodeField, themeNameField, genderField});
     }

@@ -212,6 +212,7 @@ public class RomanLogicsModule extends LogicsModule {
     private LP nameSupplierArticleSku;
     public LP supplierThemeSupplier;
     public LP supplierSeasonSupplier;
+    public LP sidDestinationSupplier;
     private LP nameSupplierSeasonSupplier;
     public LP seasonSupplierArticle;
     public LP sidSeasonSupplierArticle;
@@ -224,9 +225,9 @@ public class RomanLogicsModule extends LogicsModule {
 
     private ConcreteCustomClass currency;
     private ConcreteCustomClass typeExchange;
-    private ConcreteCustomClass store;
+    public ConcreteCustomClass store;
     private ConcreteCustomClass unitOfMeasure;
-    private LP relationStoreSupplier;
+    public LP relationStoreSupplier;
     private LP symbolCurrency;
     private LP currencyTypeExchange;
     private LP nameCurrencyTypeExchange;
@@ -242,7 +243,7 @@ public class RomanLogicsModule extends LogicsModule {
     private LP nearestPredDate;
     private LP nearestRateExchange;
     public LP sidImporterFreightTypeInvoice;
-    private LP sidDestination;
+    public LP sidDestination;
     private LP destinationSID;
     private LP unitOfMeasureCategory;
     private LP nameUnitOfMeasureCategory;
@@ -672,15 +673,15 @@ public class RomanLogicsModule extends LogicsModule {
     private LP nameDestinationFreightBox;
     private LP nameDestinationInvoiceSupplierBox;
     private LP nameDestinationSupplierBox;
-    private LP destinationDataSupplierBox;
-    private LP sidDestinationDataSupplierBox;
-    private LP nameDestinationDataSupplierBox;
+    public LP destinationDataSupplierBox;
+    public LP sidDestinationDataSupplierBox;
+    public LP nameDestinationDataSupplierBox;
     private LP destinationCurrentFreightBoxRoute;
     private LP nameDestinationCurrentFreightBoxRoute;
     private LP quantityShipDimensionStock;
     private LP isStoreFreightBoxSupplierBox;
     private LP barcodeActionSetStore;
-    private AbstractCustomClass destination;
+    public AbstractCustomClass destination;
     private AbstractCustomClass shipmentDetail;
     private ConcreteCustomClass boxShipmentDetail;
     private ConcreteCustomClass simpleShipmentDetail;
@@ -1003,6 +1004,7 @@ public class RomanLogicsModule extends LogicsModule {
     LP seasonSupplierArticleSku;
     LP sidSeasonSupplierArticleSku;
     LP genderSIDSupplier;
+    LP destinationSIDSupplier;
     LP brandSIDSupplier;
     LP countryNameSupplier;
     LP numberDataListSku;
@@ -1170,6 +1172,7 @@ public class RomanLogicsModule extends LogicsModule {
     LP supplierPricat;
     LP barcodeToPricat;
     LP importPricatSupplier;
+    LP destinationPricat;
 
     private ConcreteCustomClass stamp;
     private ConcreteCustomClass creationStamp;
@@ -1682,11 +1685,14 @@ public class RomanLogicsModule extends LogicsModule {
         supplierSeasonSupplier = addDProp(idGroup, "supplierSeasonSupplier", "Поставщик (ИД)", supplier, seasonSupplier);
         nameSupplierSeasonSupplier = addJProp(baseGroup, "nameSupplierSeasonSupplier", "Поставщик", baseLM.name, supplierSeasonSupplier, 1);
         nameSupplierThemeSupplier = addJProp(baseGroup, "nameSupplierThemeSupplier", "Поставщик", baseLM.name, supplierThemeSupplier, 1);
+        sidDestinationSupplier = addDProp(idGroup, "sidDestinationSupplier", "Идентификатор магазина у поставщика", InsensitiveStringClass.get(50),  destination, supplier);
 
         sizeSIDSupplier = addAGProp(idGroup, "sizeSIDSupplier", "Размер поставщика (ИД)", sidSizeSupplier, supplierSizeSupplier);
         themeSIDSupplier = addAGProp(idGroup, "themeSIDSupplier", "Тема поставщика (ИД)", sidThemeSupplier, supplierThemeSupplier);
         seasonSIDSupplier = addAGProp(idGroup, "seasonSIDSupplier", "Сезон поставщика (ИД)", sidSeasonSupplier, supplierSeasonSupplier);
         genderSIDSupplier = addAGProp(idGroup, "genderSIDSupplier", "Пол поставщика (ИД)", sidGenderSupplier, supplierGenderSupplier);
+        destinationSIDSupplier = addAGProp(idGroup, "destinationSIDSupplier", "Магазин поставщика (ИД)",
+                addJProp(baseLM.and1, is(destination), 1, is(supplier), 2), 1, sidDestinationSupplier, 1, 2);
 
         // Country
         supplierCountrySupplier = addDProp(idGroup, "supplierCountrySupplier", "Поставщик (ИД)", supplier, countrySupplier);
@@ -2208,6 +2214,7 @@ public class RomanLogicsModule extends LogicsModule {
         compositionPricat = addDProp(baseGroup, "compositionPricat", "Состав", StringClass.get(50), pricat);
         pricePricat = addDProp(baseGroup, "pricePricat", "Цена", DoubleClass.instance, pricat);
         rrpPricat = addDProp(baseGroup, "RRP", "Рекомендованная цена", DoubleClass.instance, pricat);
+        destinationPricat = addDProp("destinationPricat", "Пункт назначения", destination, pricat);
         supplierPricat = addDProp("supplierPricat", "Поставщик", supplier, pricat);
         barcodeToPricat = addAGProp("barcodeToPricat", "штрих-код", barcodePricat);
         importPricatSupplier = addProperty(null, new LP<ClassPropertyInterface>(new PricatEDIImportActionProperty(genSID(), this, supplier)));
@@ -3870,6 +3877,7 @@ public class RomanLogicsModule extends LogicsModule {
             objSupplier.groupTo.initClassView = ClassViewType.GRID;
 
             addPropertyDraw(relationStoreSupplier, objStore, objSupplier);
+            addPropertyDraw(sidDestinationSupplier, objStore, objSupplier);
             setReadOnly(objSupplier, true);
             setReadOnly(relationStoreSupplier, false);
             //addFixedFilter(new NotNullFilterEntity(addPropertyObject(rateExchange, objTypeExchange, objCurrency, objDateRate)));
@@ -4174,7 +4182,7 @@ public class RomanLogicsModule extends LogicsModule {
 
             ObjectEntity objList;
             if (box) {
-                objSupplierBox = addSingleGroupObject(supplierBox, "Короб", sidSupplierBox, baseLM.barcode);
+                objSupplierBox = addSingleGroupObject(supplierBox, "Короб", sidSupplierBox, baseLM.barcode, nameDestinationDataSupplierBox);
                 objSupplierBox.groupTo.initClassView = ClassViewType.GRID;
                 addObjectActions(this, objSupplierBox);
                 objList = objSupplierBox;

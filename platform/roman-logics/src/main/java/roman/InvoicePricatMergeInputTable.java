@@ -34,7 +34,7 @@ public class InvoicePricatMergeInputTable implements ImportInputTable {
 
     public static enum ResultField {BARCODE, ARTICLE, INVOICE, BOXNUMBER, COLORCODE, COLOR, SIZE, ORIGINALNAME,
         COUNTRY, NETWEIGHT, COMPOSITION, PRICE, DATE, RRP, QUANTITY, NUMBERSKU, CUSTOMCODE, CUSTOMCODE6,
-        SEASON,  GENDER, THEMECODE, THEMENAME}
+        SEASON,  GENDER, THEMECODE, THEMENAME, DESTINATION}
 
     public InvoicePricatMergeInputTable(RomanBusinessLogics BL, ImportInputTable invoiceTable, ResultField... invoiceFields) {
         this.BL = BL;
@@ -98,6 +98,7 @@ public class InvoicePricatMergeInputTable implements ImportInputTable {
         propertyMap.put(ResultField.GENDER, BL.RomanLM.genderPricat);
         propertyMap.put(ResultField.THEMECODE, BL.RomanLM.themeCodePricat);
         propertyMap.put(ResultField.THEMENAME, BL.RomanLM.themeNamePricat);
+        propertyMap.put(ResultField.DESTINATION, BL.RomanLM.destinationPricat);
 
         return propertyMap;
     }

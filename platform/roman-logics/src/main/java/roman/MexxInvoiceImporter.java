@@ -15,7 +15,7 @@ import java.text.ParseException;
 public class MexxInvoiceImporter extends SingleSheetImporter {
     private static final int LAST_COLUMN = 19;
 
-    private final static int SHIP_PCS = 12, WEIGHT = 18, EAN = 11;
+    private final static int SHIP_PCS = 12, WEIGHT = 18, EAN = 11, BOXNUMBER = 4;
 
     public MexxInvoiceImporter(ImportInputTable inputTable, Object... fields) {
         super(inputTable, fields);
@@ -28,7 +28,9 @@ public class MexxInvoiceImporter extends SingleSheetImporter {
 
     @Override
     protected String getCellString(ImportField field, int row, int column) throws ParseException {
-        if (column == WEIGHT) {
+        if (column == BOXNUMBER)
+            return super.getCellString(field, row, column).substring(5, 18);
+        else if (column == WEIGHT) {
             double weight = Double.parseDouble(super.getCellString(field, row, WEIGHT));
             double cnt = Double.parseDouble(super.getCellString(field, row, SHIP_PCS));
             return String.valueOf(weight / cnt);

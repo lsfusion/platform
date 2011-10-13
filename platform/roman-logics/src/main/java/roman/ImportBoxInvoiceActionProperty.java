@@ -24,7 +24,7 @@ public abstract class ImportBoxInvoiceActionProperty extends BaseImportActionPro
 
     protected ImportField invoiceSIDField, dateInvoiceField, boxNumberField, barCodeField, itemSupplierArticleColorSizeField,
             colorCodeField, sidField, colorNameField, sizeField, themeCodeField, themeNameField, seasonField, genderField, compositionField, countryField, customCodeField,
-            customCode6Field, unitPriceField, unitQuantityField, unitNetWeightField, originalNameField, numberSkuField, RRPField;
+            customCode6Field, unitPriceField, unitQuantityField, unitNetWeightField, originalNameField, numberSkuField, RRPField, sidDestinationDataSupplierBoxField;
 
     public ImportBoxInvoiceActionProperty(RomanLogicsModule RomanLM, ValueClass supplierClass) {
         super(RomanLM, "Импортировать инвойс", supplierClass);
@@ -64,6 +64,7 @@ public abstract class ImportBoxInvoiceActionProperty extends BaseImportActionPro
         originalNameField = new ImportField(LM.originalNameArticle);
         numberSkuField = new ImportField(LM.numberDataListSku);
         RRPField = new ImportField(LM.RRPDocumentArticle);
+        sidDestinationDataSupplierBoxField = new ImportField(LM.sidDestinationDataSupplierBox);
     }
 
     protected boolean isSimpleInvoice() {
@@ -96,6 +97,7 @@ public abstract class ImportBoxInvoiceActionProperty extends BaseImportActionPro
         properties.add(new ImportProperty(supplier, LM.supplierDocument.getMapping(invoiceKey)));
 
         ImportKey<?> boxKey = null;
+        ImportKey<?> destinationKey = null;
         if (!isSimpleInvoice()) {
             boxKey = new ImportKey(LM.supplierBox, LM.supplierBoxSIDSupplier.getMapping(boxNumberField, supplier));
             properties.add(new ImportProperty(invoiceSIDField, LM.boxInvoiceSupplierBox.getMapping(boxKey), LM.object(LM.boxInvoice).getMapping(invoiceKey)));
@@ -105,6 +107,9 @@ public abstract class ImportBoxInvoiceActionProperty extends BaseImportActionPro
             } else {
                 properties.add(new ImportProperty(boxNumberField, LM.itemSupplierArticleSIDColorSIDSizeSID.getMapping(boxKey, sidField, colorCodeField, sizeField)));
             }
+            destinationKey = new ImportKey(LM.store, LM.destinationSIDSupplier.getMapping(sidDestinationDataSupplierBoxField, supplier));
+            properties.add(new ImportProperty(sidDestinationDataSupplierBoxField, LM.sidDestinationSupplier.getMapping(destinationKey, supplier)));
+            properties.add(new ImportProperty(sidDestinationDataSupplierBoxField, LM.destinationDataSupplierBox.getMapping(boxKey), LM.object(LM.destination).getMapping(destinationKey)));
         }
 
         ImportKey<?> articleKey = new ImportKey(LM.articleComposite, LM.articleSIDSupplier.getMapping(sidField, supplier));
@@ -211,7 +216,7 @@ public abstract class ImportBoxInvoiceActionProperty extends BaseImportActionPro
 
             ImportKey<?>[] keysArray;
             if (!isSimpleInvoice()) {
-                keysArray = new ImportKey<?>[]{invoiceKey, boxKey, articleKey, itemKey, colorKey, sizeKey, countryKey, customCategoryKey, customCategory6Key, themeKey, seasonKey, genderKey};
+                keysArray = new ImportKey<?>[]{invoiceKey, boxKey, destinationKey, articleKey, itemKey, colorKey, sizeKey, countryKey, customCategoryKey, customCategory6Key, themeKey, seasonKey, genderKey};
             } else {
                 keysArray = new ImportKey<?>[]{invoiceKey, articleKey, itemKey, colorKey, sizeKey, countryKey, customCategoryKey, customCategory6Key, themeKey, seasonKey, genderKey};
             }
