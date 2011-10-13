@@ -178,6 +178,10 @@ public abstract class GridTable extends ClientFormTable
                 }
                 previousSelectedRow = getSelectedRow();
 
+                if (getSelectedColumn() == -1) {
+                    return;
+                }
+
                 if (MouseEvent.getModifiersExText(e.getModifiersEx()).contains("Shift")) {
                     if (!keyController.isRecording) {//пока кривовато работает
                         keyController.startRecording(getSelectedRow());
