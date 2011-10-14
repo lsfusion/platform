@@ -533,18 +533,18 @@ public class SkolkovoLogicsModule extends LogicsModule {
     private LP percentNeededVote, hidePercentNeededProject;
     private LP quantityNeededVote;
 
-    private LP competitiveAdvantagesExpertVote;
-    private LP commercePotentialExpertVote;
-    private LP canBeImplementedExpertVote;
-    private LP haveExpertiseExpertVote;
-    private LP internationalExperienceExpertVote;
-    private LP enoughDocumentsExpertVote;
-    private LP commentCompetitiveAdvantagesExpertVote;
-    private LP commentCommercePotentialExpertVote;
-    private LP commentCanBeImplementedExpertVote;
-    private LP commentHaveExpertiseExpertVote;
-    private LP commentInternationalExperienceExpertVote;
-    private LP commentEnoughDocumentsExpertVote;
+    public LP competitiveAdvantagesExpertVote;
+    public LP commercePotentialExpertVote;
+    public LP canBeImplementedExpertVote;
+    public LP haveExpertiseExpertVote;
+    public LP internationalExperienceExpertVote;
+    public LP enoughDocumentsExpertVote;
+    public LP commentCompetitiveAdvantagesExpertVote;
+    public LP commentCommercePotentialExpertVote;
+    public LP commentCanBeImplementedExpertVote;
+    public LP commentHaveExpertiseExpertVote;
+    public LP commentInternationalExperienceExpertVote;
+    public LP commentEnoughDocumentsExpertVote;
 
     LP quantityInVote;
     LP quantityInOldVote;

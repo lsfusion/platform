@@ -199,15 +199,44 @@ public class ExpertProfileMainPanel extends HLayout {
         ListGridField clusterField = new ListGridField("projectCluster", messages.columnProjectCluster());
         ListGridField inClusterField = new ListGridField("inCluster", messages.columnInCluster());
         inClusterField.setType(ListGridFieldType.BOOLEAN);
+        inClusterField.setWidth("60");
 
         ListGridField innovativeField = new ListGridField("innovative", messages.columnInnovative());
         innovativeField.setType(ListGridFieldType.BOOLEAN);
+        innovativeField.setWidth("60");
 
         ListGridField foreignField = new ListGridField("foreign", messages.columnForeign());
         foreignField.setType(ListGridFieldType.BOOLEAN);
+        foreignField.setWidth("60");
 
         ListGridField competentField = new ListGridField("competent", messages.columnCompetent());
+        competentField.setWidth("60");
         ListGridField completeField = new ListGridField("complete", messages.columnComplete());
+        completeField.setWidth("60");
+
+        ListGridField competitiveField = new ListGridField("competitive", messages.columnCompetitive());
+        competitiveField.setType(ListGridFieldType.BOOLEAN);
+        competitiveField.setWidth("60");
+
+        ListGridField commercialPotentialField = new ListGridField("commercePotential", messages.columnCommercePotential());
+        commercialPotentialField.setType(ListGridFieldType.BOOLEAN);
+        commercialPotentialField.setWidth("60");
+
+        ListGridField implementField = new ListGridField("implement", messages.columnImplement());
+        implementField.setType(ListGridFieldType.BOOLEAN);
+        implementField.setWidth("60");
+
+        ListGridField expertiseField = new ListGridField("expertise", messages.columnExpertise());
+        expertiseField.setType(ListGridFieldType.BOOLEAN);
+        expertiseField.setWidth("60");
+
+        ListGridField internationalExperienceField = new ListGridField("internationalExperience", messages.columnInternationalExperience());
+        internationalExperienceField.setType(ListGridFieldType.BOOLEAN);
+        internationalExperienceField.setWidth("60");
+
+        ListGridField enoughDocumentsField = new ListGridField("enoughDocuments", messages.columnEnoughDocuments());
+        enoughDocumentsField.setType(ListGridFieldType.BOOLEAN);
+        enoughDocumentsField.setWidth("60");
 
         ListGridField ballotLinkField = new ListGridField("ballotLink", messages.columnGoToBallot());
         ballotLinkField.setLinkText(messages.view());
@@ -217,7 +246,9 @@ public class ExpertProfileMainPanel extends HLayout {
         sentDocsField.setAlign(Alignment.CENTER);
         sentDocsField.setWidth("130");
 
-        grid.setFields(voteResultField, startDateField, endDateField, claimerField, projectField, clusterField, inClusterField, innovativeField, foreignField, competentField, completeField, ballotLinkField, sentDocsField);
+        grid.setFields(voteResultField, startDateField, endDateField, claimerField, projectField, clusterField, inClusterField,
+                innovativeField, foreignField, competentField, completeField, competitiveField, commercialPotentialField,
+                implementField, expertiseField, internationalExperienceField, enoughDocumentsField, ballotLinkField, sentDocsField);
 
         grid.setCanResizeFields(true);
     }
@@ -238,6 +269,13 @@ public class ExpertProfileMainPanel extends HLayout {
                 setAttribute("foreign", vi.foreign);
                 setAttribute("competent", vi.competent);
                 setAttribute("complete", vi.complete);
+
+                setAttribute("competitive", vi.competitiveAdvantages);
+                setAttribute("commercePotential", vi.commercePotential);
+                setAttribute("implement", vi.implement);
+                setAttribute("expertise", vi.expertise);
+                setAttribute("internationalExperience", vi.internationalExperience);
+                setAttribute("enoughDocuments", vi.enoughDocuments);
             }
             setAttribute("voteStartDate", vi.voteStartDate);
             setAttribute("voteEndDate", vi.voteEndDate);

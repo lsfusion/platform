@@ -19,6 +19,10 @@ public class VoteInfo implements Serializable {
     //{{vote info
     public boolean voteDone;
     public String voteResult;
+    public String revision;
+    //}}
+
+    //{{vote R1 info
     public boolean inCluster;
     public boolean innovative;
     public String innovativeComment;
@@ -26,6 +30,21 @@ public class VoteInfo implements Serializable {
     public int competent;   //[1, 5]
     public int complete; //[1, 5]
     public String completeComment;
+    //}}
+
+    //{{vote R2 info
+    public boolean competitiveAdvantages;
+    public String competitiveAdvantagesComment;
+    public boolean commercePotential;
+    public String commercePotentialComment;
+    public boolean implement;
+    public String implementComment;
+    public boolean expertise;
+    public String expertiseComment;
+    public boolean internationalExperience;
+    public String internationalExperienceComment;
+    public boolean enoughDocuments;
+    public String enoughDocumentsComment;
     //}}
 
     public Date date;

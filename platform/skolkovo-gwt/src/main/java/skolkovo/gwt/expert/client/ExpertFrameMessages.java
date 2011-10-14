@@ -36,6 +36,22 @@ public interface ExpertFrameMessages extends Messages {
 
     String lbCompleteComment();
 
+    String lbCompetitive();
+
+    String lbR2DefaultComment();
+
+    String lbCommercePotential();
+
+    String lbImplement();
+
+    String lbExpertise();
+
+    String lbInternationalExperience();
+
+    String lbEnoughDocuments();
+
+    String lbEnoughDocumentsComment();
+
     String btnVote();
 
     String btnRefused();
@@ -55,6 +71,8 @@ public interface ExpertFrameMessages extends Messages {
     String voteClosed();
 
     String symbolsLeft();
+
+    String noRevisionSpan();
 
     public static class Instance {
         private static final ExpertFrameMessages instance = (ExpertFrameMessages) GWT.create(ExpertFrameMessages.class);

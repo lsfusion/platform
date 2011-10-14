@@ -24,6 +24,18 @@ public interface ExpertProfileMessages extends Messages {
 
     String columnForeign();
 
+    String columnCompetitive();
+
+    String columnCommercePotential();
+
+    String columnImplement();
+
+    String columnExpertise();
+
+    String columnInternationalExperience();
+
+    String columnEnoughDocuments();
+
     String view();
 
     String showUnvoted();

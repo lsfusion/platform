@@ -86,6 +86,8 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
                     voteInfo.projectCluster = (String) SkolkovoLM.nameForeignClusterVote.read(session, vo.voteObj);
                 }
 
+                voteInfo.revision = (String) SkolkovoLM.revisionVote.read(session, vo.voteObj);
+
                 voteInfo.inCluster = nvl((Boolean) SkolkovoLM.inClusterExpertVote.read(session, vo.expertObj, vo.voteObj), false);
                 voteInfo.innovative = nvl((Boolean) SkolkovoLM.innovativeExpertVote.read(session, vo.expertObj, vo.voteObj), false);
                 voteInfo.innovativeComment = (String) SkolkovoLM.innovativeCommentExpertVote.read(session, vo.expertObj, vo.voteObj);
@@ -93,6 +95,19 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
                 voteInfo.competent = nvl((Integer) SkolkovoLM.competentExpertVote.read(session, vo.expertObj, vo.voteObj), 1);
                 voteInfo.complete = nvl((Integer) SkolkovoLM.completeExpertVote.read(session, vo.expertObj, vo.voteObj), 1);
                 voteInfo.completeComment = (String) SkolkovoLM.completeCommentExpertVote.read(session, vo.expertObj, vo.voteObj);
+
+                voteInfo.competitiveAdvantages = nvl((Boolean) SkolkovoLM.competitiveAdvantagesExpertVote.read(session, vo.expertObj, vo.voteObj), false);
+                voteInfo.competitiveAdvantagesComment = (String) SkolkovoLM.commentCompetitiveAdvantagesExpertVote.read(session, vo.expertObj, vo.voteObj);
+                voteInfo.commercePotential = nvl((Boolean) SkolkovoLM.commercePotentialExpertVote.read(session, vo.expertObj, vo.voteObj), false);
+                voteInfo.commercePotentialComment = (String) SkolkovoLM.commentCommercePotentialExpertVote.read(session, vo.expertObj, vo.voteObj);
+                voteInfo.implement = nvl((Boolean) SkolkovoLM.canBeImplementedExpertVote.read(session, vo.expertObj, vo.voteObj), false);
+                voteInfo.implementComment = (String) SkolkovoLM.commentCanBeImplementedExpertVote.read(session, vo.expertObj, vo.voteObj);
+                voteInfo.expertise = nvl((Boolean) SkolkovoLM.haveExpertiseExpertVote.read(session, vo.expertObj, vo.voteObj), false);
+                voteInfo.expertiseComment = (String) SkolkovoLM.commentHaveExpertiseExpertVote.read(session, vo.expertObj, vo.voteObj);
+                voteInfo.internationalExperience = nvl((Boolean) SkolkovoLM.internationalExperienceExpertVote.read(session, vo.expertObj, vo.voteObj), false);
+                voteInfo.internationalExperienceComment = (String) SkolkovoLM.commentInternationalExperienceExpertVote.read(session, vo.expertObj, vo.voteObj);
+                voteInfo.enoughDocuments = nvl((Boolean) SkolkovoLM.enoughDocumentsExpertVote.read(session, vo.expertObj, vo.voteObj), false);
+                voteInfo.enoughDocumentsComment = (String) SkolkovoLM.commentEnoughDocumentsExpertVote.read(session, vo.expertObj, vo.voteObj);
 
                 Integer vResult = (Integer) SkolkovoLM.voteResultExpertVote.read(session, vo.expertObj, vo.voteObj);
                 if (vResult != null) {
@@ -123,6 +138,12 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         vi.competent = max(1, min(vi.competent, 5));
         vi.complete = max(1, min(vi.complete, 5));
         vi.completeComment = nullTrim(vi.completeComment);
+        vi.competitiveAdvantagesComment = nullTrim(vi.competitiveAdvantagesComment);
+        vi.commercePotentialComment = nullTrim(vi.commercePotentialComment);
+        vi.implementComment = nullTrim(vi.implementComment);
+        vi.expertiseComment = nullTrim(vi.expertiseComment);
+        vi.internationalExperienceComment = nullTrim(vi.internationalExperienceComment);
+        vi.enoughDocumentsComment = nullTrim(vi.enoughDocumentsComment);
 
         return vi;
     }
@@ -154,6 +175,19 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
                     SkolkovoLM.competentExpertVote.execute(voteInfo.competent, session, vo.expertObj, vo.voteObj);
                     SkolkovoLM.completeExpertVote.execute(voteInfo.complete, session, vo.expertObj, vo.voteObj);
                     SkolkovoLM.completeCommentExpertVote.execute(voteInfo.completeComment, session, vo.expertObj, vo.voteObj);
+
+                    SkolkovoLM.competitiveAdvantagesExpertVote.execute(voteInfo.competitiveAdvantages, session, vo.expertObj, vo.voteObj);
+                    SkolkovoLM.commentCompetitiveAdvantagesExpertVote.execute(voteInfo.competitiveAdvantagesComment, session, vo.expertObj, vo.voteObj);
+                    SkolkovoLM.commercePotentialExpertVote.execute(voteInfo.commercePotential, session, vo.expertObj, vo.voteObj);
+                    SkolkovoLM.commentCommercePotentialExpertVote.execute(voteInfo.commercePotentialComment, session, vo.expertObj, vo.voteObj);
+                    SkolkovoLM.canBeImplementedExpertVote.execute(voteInfo.implement, session, vo.expertObj, vo.voteObj);
+                    SkolkovoLM.commentCanBeImplementedExpertVote.execute(voteInfo.implementComment, session, vo.expertObj, vo.voteObj);
+                    SkolkovoLM.haveExpertiseExpertVote.execute(voteInfo.expertise, session, vo.expertObj, vo.voteObj);
+                    SkolkovoLM.commentHaveExpertiseExpertVote.execute(voteInfo.expertiseComment, session, vo.expertObj, vo.voteObj);
+                    SkolkovoLM.internationalExperienceExpertVote.execute(voteInfo.internationalExperience, session, vo.expertObj, vo.voteObj);
+                    SkolkovoLM.commentInternationalExperienceExpertVote.execute(voteInfo.internationalExperienceComment, session, vo.expertObj, vo.voteObj);
+                    SkolkovoLM.enoughDocumentsExpertVote.execute(voteInfo.enoughDocuments, session, vo.expertObj, vo.voteObj);
+                    SkolkovoLM.commentEnoughDocumentsExpertVote.execute(voteInfo.enoughDocumentsComment, session, vo.expertObj, vo.voteObj);
                 }
 
                 String result = session.apply(this);
@@ -206,6 +240,20 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
                 q.properties.put("competent", SkolkovoLM.competentExpertVote.getExpr(session.modifier, expExpr, voteExpr));
                 q.properties.put("complete", SkolkovoLM.completeExpertVote.getExpr(session.modifier, expExpr, voteExpr));
                 q.properties.put("completeComment", SkolkovoLM.completeCommentExpertVote.getExpr(session.modifier, expExpr, voteExpr));
+
+                q.properties.put("competitive", SkolkovoLM.competitiveAdvantagesExpertVote.getExpr(session.modifier, expExpr, voteExpr));
+                q.properties.put("competitiveComment", SkolkovoLM.commentCompetitiveAdvantagesExpertVote.getExpr(session.modifier, expExpr, voteExpr));
+                q.properties.put("commercialPotential", SkolkovoLM.commercePotentialExpertVote.getExpr(session.modifier, expExpr, voteExpr));
+                q.properties.put("commercialPotentialComment", SkolkovoLM.commentCommercePotentialExpertVote.getExpr(session.modifier, expExpr, voteExpr));
+                q.properties.put("implement", SkolkovoLM.canBeImplementedExpertVote.getExpr(session.modifier, expExpr, voteExpr));
+                q.properties.put("implementComment", SkolkovoLM.commentCanBeImplementedExpertVote.getExpr(session.modifier, expExpr, voteExpr));
+                q.properties.put("expertise", SkolkovoLM.haveExpertiseExpertVote.getExpr(session.modifier, expExpr, voteExpr));
+                q.properties.put("expertiseComment", SkolkovoLM.commentHaveExpertiseExpertVote.getExpr(session.modifier, expExpr, voteExpr));
+                q.properties.put("internationalExperience", SkolkovoLM.internationalExperienceExpertVote.getExpr(session.modifier, expExpr, voteExpr));
+                q.properties.put("internationalExperienceComment", SkolkovoLM.commentInternationalExperienceExpertVote.getExpr(session.modifier, expExpr, voteExpr));
+                q.properties.put("enoughDocuments", SkolkovoLM.enoughDocumentsExpertVote.getExpr(session.modifier, expExpr, voteExpr));
+                q.properties.put("enoughDocumentsComment", SkolkovoLM.commentEnoughDocumentsExpertVote.getExpr(session.modifier, expExpr, voteExpr));
+
                 q.properties.put("vResult", SkolkovoLM.voteResultExpertVote.getExpr(session.modifier, expExpr, voteExpr));
                 q.properties.put("openedVote", SkolkovoLM.openedVote.getExpr(session.modifier, voteExpr));
                 q.properties.put("date", SkolkovoLM.dateExpertVote.getExpr(session.modifier, expExpr, voteExpr));
@@ -234,6 +282,19 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
                     voteInfo.competent = nvl((Integer) propValues.get("competent"), 1);
                     voteInfo.complete = nvl((Integer) propValues.get("complete"), 1);
                     voteInfo.completeComment = (String) propValues.get("completeComment");
+
+                    voteInfo.competitiveAdvantages = nvl((Boolean) propValues.get("competitive"), false);
+                    voteInfo.competitiveAdvantagesComment = (String) propValues.get("competitiveComment");
+                    voteInfo.commercePotential = nvl((Boolean) propValues.get("commercialPotential"), false);
+                    voteInfo.commercePotentialComment = (String) propValues.get("commercialPotentialComment");
+                    voteInfo.implement = nvl((Boolean) propValues.get("implement"), false);
+                    voteInfo.implementComment = (String) propValues.get("implementComment");
+                    voteInfo.expertise = nvl((Boolean) propValues.get("expertise"), false);
+                    voteInfo.expertiseComment = (String) propValues.get("expertiseComment");
+                    voteInfo.internationalExperience = nvl((Boolean) propValues.get("internationalExperience"), false);
+                    voteInfo.internationalExperienceComment = (String) propValues.get("internationalExperienceComment");
+                    voteInfo.enoughDocuments = nvl((Boolean) propValues.get("enoughDocuments"), false);
+                    voteInfo.enoughDocumentsComment = (String) propValues.get("enoughDocumentsComment");
 
                     Integer vResult = (Integer) propValues.get("vResult");
                     if (vResult != null) {

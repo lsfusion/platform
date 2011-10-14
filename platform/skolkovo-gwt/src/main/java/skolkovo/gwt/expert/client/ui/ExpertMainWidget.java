@@ -22,6 +22,15 @@ import static skolkovo.api.gwt.shared.Result.*;
 public abstract class ExpertMainWidget extends Composite {
     public static final int innovativeCommentMaxLength = 1000;
     public static final int completeCommentMaxLength = 300;
+    public static final int competitiveMaxLength = 1000;
+    public static final int commercePotentialMaxLength = 1000;
+    public static final int implementMaxLength = 1000;
+    public static final int expertiseMaxLength = 1000;
+    public static final int internationalExperienceMaxLength = 1000;
+    public static final int enoughDocumentsMaxLength = 300;
+
+    public static final String VOTE_REVISION_1 = "R1";
+    public static final String VOTE_REVISION_2 = "R2";
 
     interface ExpertMainWidgetUiBinder extends UiBinder<Widget, ExpertMainWidget> {}
     private static ExpertMainWidgetUiBinder uiBinder = GWT.create(ExpertMainWidgetUiBinder.class);
@@ -107,6 +116,82 @@ public abstract class ExpertMainWidget extends Composite {
     HorizontalPanel loadingPanel;
     @UiField
     Image imgLogo;
+    @UiField
+    Label lbCompetitive;
+    @UiField
+    public ListBox bxCompetitive;
+    @UiField
+    Label lbCompetitiveCounter;
+    @UiField
+    Label lbCompetitiveCounterCaption;
+    @UiField
+    Label lbCompetitiveComment;
+    @UiField
+    public TextArea taCompetitiveComment;
+    @UiField
+    Label lbCommercePotential;
+    @UiField
+    public ListBox bxCommercePotential;
+    @UiField
+    Label lbCommercePotentialCounter;
+    @UiField
+    Label lbCommercePotentialCounterCaption;
+    @UiField
+    Label lbCommercePotentialComment;
+    @UiField
+    public TextArea taCommercePotentialComment;
+    @UiField
+    Label lbImplement;
+    @UiField
+    public ListBox bxImplement;
+    @UiField
+    Label lbImplementCounter;
+    @UiField
+    Label lbImplementCounterCaption;
+    @UiField
+    Label lbImplementComment;
+    @UiField
+    public TextArea taImplementComment;
+    @UiField
+    Label lbExpertise;
+    @UiField
+    public ListBox bxExpertise;
+    @UiField
+    Label lbExpertiseCounter;
+    @UiField
+    Label lbExpertiseCounterCaption;
+    @UiField
+    Label lbExpertiseComment;
+    @UiField
+    public TextArea taExpertiseComment;
+    @UiField
+    Label lbInternationalExperience;
+    @UiField
+    public ListBox bxInternationalExperience;
+    @UiField
+    Label lbInternationalExperienceCounter;
+    @UiField
+    Label lbInternationalExperienceCounterCaption;
+    @UiField
+    Label lbInternationalExperienceComment;
+    @UiField
+    public TextArea taInternationalExperienceComment;
+    @UiField
+    Label lbEnoughDocuments;
+    @UiField
+    public ListBox bxEnoughDocuments;
+    @UiField
+    Label lbEnoughDocumentsCounter;
+    @UiField
+    Label lbEnoughDocumentsCounterCaption;
+    @UiField
+    Label lbEnoughDocumentsComment;
+    @UiField
+    public TextArea taEnoughDocumentsComment;
+    @UiField
+    HorizontalPanel noRevisionPanel;
+    @UiField
+    Label noRevisionSpan;
 
     public ExpertMainWidget(VoteInfo vi) {
         initWidget(uiBinder.createAndBindUi(this));
@@ -128,12 +213,31 @@ public abstract class ExpertMainWidget extends Composite {
         logoffLink.setText(baseMessages.here());
         footerSpan.setInnerHTML(messages.footerCaption());
         loadingSpan.setText(baseMessages.loading());
+        noRevisionSpan.setText(messages.noRevisionSpan());
 
         lbInnovativeCounter.setText("1000");
         lbInnovativeCounterCaption.setText(messages.symbolsLeft());
 
         lbCompleteCounter.setText("300");
         lbCompleteCounterCaption.setText(messages.symbolsLeft());
+
+        lbCompetitiveCounter.setText("1000");
+        lbCompetitiveCounterCaption.setText(messages.symbolsLeft());
+
+        lbCommercePotentialCounter.setText("1000");
+        lbCommercePotentialCounterCaption.setText(messages.symbolsLeft());
+
+        lbImplementCounter.setText("1000");
+        lbImplementCounterCaption.setText(messages.symbolsLeft());
+
+        lbExpertiseCounter.setText("1000");
+        lbExpertiseCounterCaption.setText(messages.symbolsLeft());
+
+        lbInternationalExperienceCounter.setText("1000");
+        lbInternationalExperienceCounterCaption.setText(messages.symbolsLeft());
+
+        lbEnoughDocumentsCounter.setText("300");
+        lbEnoughDocumentsCounterCaption.setText(messages.symbolsLeft());
 
         voteResultSpan.setInnerHTML(!vi.voteDone
                                     ? messages.pleasePrompt()
@@ -188,6 +292,48 @@ public abstract class ExpertMainWidget extends Composite {
         taCompleteComment.setValue(vi.completeComment);
         taCompleteComment.setEnabled(!vi.voteDone);
 
+        lbCompetitive.setText(messages.lbCompetitive());
+        addListBoxBooleanItems(bxCompetitive, vi.voteDone ? (vi.competitiveAdvantages ? 1 : 2) : 0);
+        bxCompetitive.setEnabled(!vi.voteDone);
+        lbCompetitiveComment.setText(messages.lbR2DefaultComment());
+        taCompetitiveComment.setText(vi.competitiveAdvantagesComment);
+        taCompetitiveComment.setEnabled(!vi.voteDone);
+
+        lbCommercePotential.setText(messages.lbCommercePotential());
+        addListBoxBooleanItems(bxCommercePotential, vi.voteDone ? (vi.commercePotential ? 1 : 2) : 0);
+        bxCommercePotential.setEnabled(!vi.voteDone);
+        lbCommercePotentialComment.setText(messages.lbR2DefaultComment());
+        taCommercePotentialComment.setText(vi.commercePotentialComment);
+        taCommercePotentialComment.setEnabled(!vi.voteDone);
+
+        lbImplement.setText(messages.lbImplement());
+        addListBoxBooleanItems(bxImplement, vi.voteDone ? (vi.implement ? 1 : 2) : 0);
+        bxImplement.setEnabled(!vi.voteDone);
+        lbImplementComment.setText(messages.lbR2DefaultComment());
+        taImplementComment.setText(vi.implementComment);
+        taImplementComment.setEnabled(!vi.voteDone);
+
+        lbExpertise.setText(messages.lbExpertise());
+        addListBoxBooleanItems(bxExpertise, vi.voteDone ? (vi.expertise ? 1 : 2) : 0);
+        bxExpertise.setEnabled(!vi.voteDone);
+        lbExpertiseComment.setText(messages.lbR2DefaultComment());
+        taExpertiseComment.setText(vi.expertiseComment);
+        taExpertiseComment.setEnabled(!vi.voteDone);
+
+        lbInternationalExperience.setText(messages.lbInternationalExperience());
+        addListBoxBooleanItems(bxInternationalExperience, vi.voteDone ? (vi.internationalExperience ? 1 : 2) : 0);
+        bxInternationalExperience.setEnabled(!vi.voteDone);
+        lbInternationalExperienceComment.setText(messages.lbR2DefaultComment());
+        taInternationalExperienceComment.setText(vi.internationalExperienceComment);
+        taInternationalExperienceComment.setEnabled(!vi.voteDone);
+
+        lbEnoughDocuments.setText(messages.lbEnoughDocuments());
+        addListBoxBooleanItems(bxEnoughDocuments, vi.voteDone ? (vi.enoughDocuments ? 1 : 2) : 0);
+        bxEnoughDocuments.setEnabled(!vi.voteDone);
+        lbEnoughDocumentsComment.setText(messages.lbEnoughDocumentsComment());
+        taEnoughDocumentsComment.setText(vi.enoughDocumentsComment);
+        taEnoughDocumentsComment.setEnabled(!vi.voteDone);
+
         bVote.setText(messages.btnVote());
         bRefused.setText(messages.btnRefused());
         bConnected.setText(messages.btnConnected());
@@ -195,6 +341,8 @@ public abstract class ExpertMainWidget extends Composite {
         if (vi.voteDone) {
             hideDataRows(!VOTED.equals(vi.voteResult));
         }
+
+        hideRowsAccordingToRevision(vi);
     }
 
     private void hideDataRows(boolean hidePrompts) {
@@ -210,24 +358,71 @@ public abstract class ExpertMainWidget extends Composite {
         lbInnovativeCounter.setVisible(false);
         lbInnovativeCounterCaption.setVisible(false);
 
-        if (hidePrompts) {
-            for (int i = 1; ;++i) {
-                Element dataRow = dataHtmlPanel.getElementById("dataRow" + i);
-                if (dataRow == null) break;
+        lbCompetitiveCounter.setVisible(false);
+        lbCompetitiveCounterCaption.setVisible(false);
+        lbCommercePotentialCounter.setVisible(false);
+        lbCommercePotentialCounterCaption.setVisible(false);
+        lbImplementCounter.setVisible(false);
+        lbImplementCounterCaption.setVisible(false);
+        lbExpertiseCounter.setVisible(false);
+        lbExpertiseCounterCaption.setVisible(false);
+        lbInternationalExperienceCounter.setVisible(false);
+        lbInternationalExperienceCounterCaption.setVisible(false);
+        lbEnoughDocumentsCounter.setVisible(false);
+        lbEnoughDocumentsCounterCaption.setVisible(false);
 
-                dataRow.removeFromParent();
-            }
+        if (hidePrompts) {
+            hideRevisionRowGroup("dataRow");
+            hideRevisionRowGroup("r2DataRow");
+        }
+    }
+
+    private void hideRevisionRowGroup(String idPrefix) {
+        for (int i = 1; ; ++i) {
+            Element dataRow = dataHtmlPanel.getElementById(idPrefix + i);
+            if (dataRow == null) break;
+            dataRow.removeFromParent();
+        }
+    }
+
+    private void hideRowsAccordingToRevision(VoteInfo vi) {
+        if (VOTE_REVISION_1.equals(vi.revision)) {
+            hideRevisionRowGroup("r2DataRow");
+        } else if (VOTE_REVISION_2.equals(vi.revision)) {
+            hideRevisionRowGroup("dataRow");
+        } else {
+            voteResultSpan.setInnerText("");
+            noRevisionPanel.setVisible(true);
+            hideDataRows(true);
         }
     }
 
     private void setupHandlers() {
         LimitedTextHandler innovativeLimitedHandler = new LimitedTextHandler(taInnovativeComment, lbInnovativeCounter, innovativeCommentMaxLength);
         LimitedTextHandler completeLimitedHandler = new LimitedTextHandler(taCompleteComment, lbCompleteCounter, completeCommentMaxLength);
+        LimitedTextHandler competitiveLimitedHandler = new LimitedTextHandler(taCompetitiveComment, lbCompetitiveCounter, competitiveMaxLength);
+        LimitedTextHandler commercePotentialLimitedHandler = new LimitedTextHandler(taCommercePotentialComment, lbCommercePotentialCounter, commercePotentialMaxLength);
+        LimitedTextHandler implementLimitedHandler = new LimitedTextHandler(taImplementComment, lbImplementCounter, implementMaxLength);
+        LimitedTextHandler expertiseLimitedHandler = new LimitedTextHandler(taExpertiseComment, lbExpertiseCounter, expertiseMaxLength);
+        LimitedTextHandler internationalExperienceLimitedHandler = new LimitedTextHandler(taInternationalExperienceComment, lbInternationalExperienceCounter, internationalExperienceMaxLength);
+        LimitedTextHandler enoughDocumentsLimitedHandler = new LimitedTextHandler(taEnoughDocumentsComment, lbEnoughDocumentsCounter, enoughDocumentsMaxLength);
 
         taInnovativeComment.addValueChangeHandler(innovativeLimitedHandler);
         taInnovativeComment.addKeyboardListener(innovativeLimitedHandler);
         taCompleteComment.addValueChangeHandler(completeLimitedHandler);
         taCompleteComment.addKeyboardListener(completeLimitedHandler);
+        taCompetitiveComment.addValueChangeHandler(competitiveLimitedHandler);
+        taCompetitiveComment.addKeyboardListener(competitiveLimitedHandler);
+        taCommercePotentialComment.addValueChangeHandler(commercePotentialLimitedHandler);
+        taCommercePotentialComment.addKeyboardListener(commercePotentialLimitedHandler);
+        taImplementComment.addValueChangeHandler(implementLimitedHandler);
+        taImplementComment.addKeyboardListener(implementLimitedHandler);
+        taExpertiseComment.addValueChangeHandler(expertiseLimitedHandler);
+        taExpertiseComment.addKeyboardListener(expertiseLimitedHandler);
+        taInternationalExperienceComment.addValueChangeHandler(internationalExperienceLimitedHandler);
+        taInternationalExperienceComment.addKeyboardListener(internationalExperienceLimitedHandler);
+        taEnoughDocumentsComment.addValueChangeHandler(enoughDocumentsLimitedHandler);
+        taEnoughDocumentsComment.addKeyboardListener(enoughDocumentsLimitedHandler);
 
         logoffLink.addClickHandler(new VoteHandler(REFUSED, false));
         bVote.addClickHandler(new VoteHandler(VOTED, true));

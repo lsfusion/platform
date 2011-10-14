@@ -40,7 +40,7 @@ public class ExpertFrame extends BaseFrame {
 
         expertService.execute(new GetVoteInfo(voteId), new ErrorAsyncCallback<GetVoteInfoResult>() {
             public void onSuccess(final GetVoteInfoResult result) {
-                VoteInfo vi = result.voteInfo;
+                final VoteInfo vi = result.voteInfo;
                 if (vi == null) {
                     showErrorPage(null);
                     return;
@@ -50,9 +50,17 @@ public class ExpertFrame extends BaseFrame {
                     @Override
                     public boolean onVoted(String voteResult, boolean confirm) {
                         if (VOTED.equals(voteResult)) {
-                            if (bxInCluster.getSelectedIndex() == 0 ||
+                            if ((VOTE_REVISION_1.equals(vi.revision) &&
+                                (bxInCluster.getSelectedIndex() == 0 ||
                                 bxInnovative.getSelectedIndex() == 0 ||
-                                bxForeign.getSelectedIndex() == 0) {
+                                bxForeign.getSelectedIndex() == 0)) ||
+                                    (VOTE_REVISION_2.equals(vi.revision) &&
+                                    ((bxCompetitive.getSelectedIndex() == 0 ||
+                                    bxCommercePotential.getSelectedIndex() == 0 ||
+                                    bxImplement.getSelectedIndex() == 0 ||
+                                    bxExpertise.getSelectedIndex() == 0 ||
+                                    bxInternationalExperience.getSelectedIndex() == 0 ||
+                                    bxEnoughDocuments.getSelectedIndex() == 0)))) {
                                 Window.alert(messages.incompletePrompt());
                                 return false;
                             }
@@ -80,6 +88,19 @@ public class ExpertFrame extends BaseFrame {
                         vi.competent = bxCompetent.getSelectedIndex() + 1;
                         vi.complete = bxComplete.getSelectedIndex() + 1;
                         vi.completeComment = taCompleteComment.getText();
+
+                        vi.competitiveAdvantages = bxCompetitive.getSelectedIndex() == 1;
+                        vi.competitiveAdvantagesComment = taCompetitiveComment.getText();
+                        vi.commercePotential = bxCommercePotential.getSelectedIndex() == 1;
+                        vi.commercePotentialComment = taCommercePotentialComment.getText();
+                        vi.implement = bxImplement.getSelectedIndex() == 1;
+                        vi.implementComment = taImplementComment.getText();
+                        vi.expertise = bxExpertise.getSelectedIndex() == 1;
+                        vi.expertiseComment = taExpertiseComment.getText();
+                        vi.internationalExperience = bxInternationalExperience.getSelectedIndex() == 1;
+                        vi.internationalExperienceComment = taInternationalExperienceComment.getText();
+                        vi.enoughDocuments = bxEnoughDocuments.getSelectedIndex() == 1;
+                        vi.enoughDocumentsComment = taEnoughDocumentsComment.getText();
 
                         String voteId = getVoteId();
                         if (voteId == null) {
