@@ -90,6 +90,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
     public LP nativeNumberToPatent;
     public LP nativeNumberSIDToPatent;
 
+    private LP setCurrentDateDecisionNoticedVote;
+
     private LP emailNoticeRejectedVoteEA;
     private LP emailNoticeRejectedVote;
 
@@ -448,8 +450,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP fileDecisionProject;
     LP acceptedDecisionProject, rejectedDecisionProject;
 
-    private LP decisionNoticedVote;
-    private LP decisionNoticedProject;
+    private LP decisionNoticedVote, dateDecisionNoticedVote;
+    private LP decisionNoticedProject, dateDecisionNoticedProject;
     private LP acceptedNoticedProject;
     private LP rejectedNoticedProject;
     private LP acceptedNoticedStatusProject;
@@ -2052,7 +2054,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         // notAvailableForPreliminaryProjectStatus = addDProp(baseGroup, "notAvailableForPreliminaryProjectStatus", "Не действует для заявки на предварительную экспертизу", LogicalClass.instance, projectStatus);
 
         dateFormalControl = addTCProp(Time.DATETIME, "dateFormalControl", true, "Дата экспертизы", resultFormalControl);
-        emailDateFormalControl = addJProp("emailDateFormalControl", "Дата оправки уведомления", baseLM.dateInTime, dateFormalControl, 1);
+        emailDateFormalControl = addJProp("emailDateFormalControl", "Дата отправки уведомления", baseLM.dateInTime, dateFormalControl, 1);
         overdueDateFormalControl = addJProp("overdueDateFormalControl", "Дата просрочки формальной экспертизы", baseLM.addDate2, emailDateFormalControl, 1, overduePeriod);
 
         projectLegalCheck = addDProp("projectLegalCheck", "Проект (ИД)", project, legalCheck);
@@ -2063,7 +2065,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         nameResultLegalCheck = addJProp("nameResultLegalCheck", "Решение юридической проверки", baseLM.name, resultLegalCheck, 1);
 
         dateLegalCheck = addTCProp(Time.DATETIME, "dateLegalCheck", true, "Дата проверки", resultLegalCheck);
-        emailDateLegalCheck = addJProp("emailDateLegalCheck", "Дата оправки уведомления", baseLM.dateInTime, dateLegalCheck, 1);
+        emailDateLegalCheck = addJProp("emailDateLegalCheck", "Дата отправки уведомления", baseLM.dateInTime, dateLegalCheck, 1);
         overdueDateLegalCheck = addJProp("overdueDateLegalCheck", "Дата просрочки юридической проверки", baseLM.addDate2, emailDateLegalCheck, 1, overduePeriod);
 
         maxFormalControlProjectProps = addMGProp((AbstractGroup) null, new String[]{"maxDateFormalControlProject", "currentFCProject"}, new String[]{"Дата посл. формальной экспертизы.", "Посл. формальная экспертиза"}, 1,
@@ -2129,7 +2131,10 @@ public class SkolkovoLogicsModule extends LogicsModule {
         rejectedDecisionProject = addJProp("rejectedDecisionProject", true, "Есть решение о несоответствии", baseLM.and1, rejectedProject, 1, fileDecisionProject, 1);
 
         decisionNoticedVote = addDProp("decisionNoticedVote", "Отослано уведомление", LogicalClass.instance, vote);
+        dateDecisionNoticedVote = addDProp("dateDecisionNoticedVote", "Дата отсылки уведомления", DateClass.instance, vote);
+
         decisionNoticedProject = addJProp("decisionNoticedProject", "Отослано уведомление", decisionNoticedVote, voteLastProject, 1);
+        dateDecisionNoticedProject = addJProp("dateDecisionNoticedProject", "Дата отсылки уведомления", dateDecisionNoticedVote, voteLastProject, 1);
 
         acceptedNoticedProject = addJProp("acceptedNoticedProject", true, "Отослано уведомление о соответствии", baseLM.and1, acceptedProject, 1, decisionNoticedProject, 1);
         rejectedNoticedProject = addJProp("rejectedNoticedProject", true, "Отослано уведомление о несоответствии", baseLM.and1, rejectedProject, 1, decisionNoticedProject, 1);
@@ -2316,8 +2321,15 @@ public class SkolkovoLogicsModule extends LogicsModule {
         emailNoticeRejectedVoteEA = addEAProp(emailClaimerFromAddress, emailClaimerFromAddress, vote);
         addEARecepient(emailNoticeRejectedVoteEA, claimerEmailVote, 1);
 
+        setCurrentDateDecisionNoticedVote = addJProp(actionGroup, true, "setCurrentDateDecisionNoticedVote", "Установить текущую дату уведомления",
+                addEPAProp(EPA_INTERFACE, dateDecisionNoticedVote), 1, baseLM.currentDate);
+
         emailNoticeRejectedVote = addJProp(actionGroup, true, "emailNoticeRejectedVote", "Письмо о несоответствии", baseLM.and1,
-                addEPAProp(EPA_DEFAULT, addJProp(true, emailNoticeRejectedVoteEA, 1, emailClaimerHeaderVote, 1), decisionNoticedVote), 1,
+                addEPAProp(EPA_DEFAULT,
+                        addJProp(true, emailNoticeRejectedVoteEA, 1, emailClaimerHeaderVote, 1), // отсылаем письмо
+                        decisionNoticedVote, // пишем, что отослано
+                        setCurrentDateDecisionNoticedVote // записываем дату отсылки
+                ), 1,
                 closedRejectedVote, 1);
         emailNoticeRejectedVote.setImage("email.png");
         emailNoticeRejectedVote.property.askConfirm = true;
@@ -2326,7 +2338,11 @@ public class SkolkovoLogicsModule extends LogicsModule {
         addEARecepient(emailNoticeAcceptedStatusVoteEA, claimerEmailVote, 1);
 
         emailNoticeAcceptedStatusVote = addJProp(actionGroup, true, "emailNoticeAcceptedStatusVote", "Письмо о соответствии (статус участника)", baseLM.and1,
-                addEPAProp(EPA_DEFAULT, addJProp(true, emailNoticeAcceptedStatusVoteEA, 1, emailClaimerHeaderVote, 1), decisionNoticedVote), 1,
+                addEPAProp(EPA_DEFAULT,
+                        addJProp(true, emailNoticeAcceptedStatusVoteEA, 1, emailClaimerHeaderVote, 1),
+                        decisionNoticedVote,
+                        setCurrentDateDecisionNoticedVote
+                        ), 1,
                 closedAcceptedStatusVote, 1);
         emailNoticeAcceptedStatusVote.setImage("email.png");
         emailNoticeAcceptedStatusVote.property.askConfirm = true;
@@ -2337,7 +2353,11 @@ public class SkolkovoLogicsModule extends LogicsModule {
 //        emailNoticeAcceptedPreliminaryVote = addJProp(actionGroup, true, "emailNoticeAcceptedPreliminaryVote", "Письмо о соответствии (предварительная экспертиза)", and(false, false), addJProp(emailNoticeAcceptedPreliminaryVoteEA, 1, emailClaimerHeaderVote, 1), 1,);
 
         emailNoticeAcceptedPreliminaryVote = addJProp(actionGroup, true, "emailNoticeAcceptedPreliminaryVote", "Письмо о соответствии (предварительная экспертиза)", and(false, false),
-                addEPAProp(EPA_DEFAULT, addJProp(true, emailNoticeAcceptedPreliminaryVoteEA, 1, emailClaimerHeaderVote, 1), decisionNoticedVote), 1,
+                addEPAProp(EPA_DEFAULT,
+                        addJProp(true, emailNoticeAcceptedPreliminaryVoteEA, 1, emailClaimerHeaderVote, 1),
+                        decisionNoticedVote,
+                        setCurrentDateDecisionNoticedVote
+                ), 1,
                 closedAcceptedPreliminaryVote, 1, fileDecisionVote, 1);
         emailNoticeAcceptedPreliminaryVote.setImage("email.png");
         emailNoticeAcceptedPreliminaryVote.property.askConfirm = true;
@@ -3018,7 +3038,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
                     quantityCompetitiveAdvantagesVote, quantityCommercePotentialVote, quantityCanBeImplementedVote,
                     quantityHaveExpertiseVote, quantityInternationalExperienceVote, quantityEnoughDocumentsVote,
                     loadFileDecisionVote, openFileDecisionVote,
-                    emailClaimerVote, emailNoticeRejectedVote, emailNoticeAcceptedStatusVote, emailNoticeAcceptedPreliminaryVote, decisionNoticedVote, baseLM.delete, revisionVote);
+                    emailClaimerVote, emailNoticeRejectedVote, emailNoticeAcceptedStatusVote, emailNoticeAcceptedPreliminaryVote,
+                    decisionNoticedVote, dateDecisionNoticedVote, baseLM.delete, revisionVote);
             objVote.groupTo.banClassView.addAll(BaseUtils.toList(ClassViewType.PANEL, ClassViewType.HIDE));
 
             getPropertyDraw(percentNeededVote).forceViewType = ClassViewType.GRID;
