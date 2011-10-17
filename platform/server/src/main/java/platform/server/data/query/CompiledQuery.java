@@ -160,7 +160,7 @@ public class CompiledQuery<K,V> {
         union = !useFJ && queryJoins.size() >= 2;
         boolean unionAll = false;
         if(union) {
-            if(queryJoins.size() < 15) {
+            if(queryJoins.size() < Settings.instance.getCountJoinsUseUnionInsteadOfUnionAll()) {
                 queryJoins = query.where.getWhereJoins(false);
                 if(queryJoins.size() < 2) // теоретически такое может быть
                     union = false;

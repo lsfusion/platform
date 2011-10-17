@@ -16,6 +16,7 @@ import platform.interop.action.ClientAction;
 import platform.interop.action.MessageClientAction;
 import platform.interop.form.RemoteFormInterface;
 import platform.interop.form.layout.DoNotIntersectSimplexConstraint;
+import platform.server.Settings;
 import platform.server.classes.*;
 import platform.server.data.*;
 import platform.server.data.Time;
@@ -291,6 +292,9 @@ public class SkolkovoLogicsModule extends LogicsModule {
     @Override
     public void initGroups() {
         initBaseGroupAliases();
+
+        Settings.instance.setCountJoinsUseUnionInsteadOfUnionAll(5);
+
         contactGroup = addAbstractGroup("contactGroup", "Контакты организации", publicGroup);
 
         documentGroup = addAbstractGroup("documentGroup", "Юридические документы", publicGroup);
@@ -991,6 +995,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP isPreliminaryAndStatusApplication;
     LP preliminaryApplicationProject;
     LP statusApplicationProject;
+
+    LP inactiveApplication;
 
     LP dateApplicationPreliminary, dateApplicationStatus;
     LP dateApplication;
@@ -2458,6 +2464,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
         dateApplicationPreliminary = addJProp("dateApplicationPreliminary", "Дата (предв. экспертиза)", dateProject, projectApplicationPreliminary, 1);
         dateApplicationStatus = addJProp("dateApplicationStatus", "Дата (статус участника)", dateStatusProject, projectApplicationStatus, 1);
 
+        inactiveApplication = addJProp(baseGroup, "inactiveApplication", "Не акт.", inactiveProject, projectApplication, 1);
+
         dateApplication = addCUProp(baseGroup, "dateApplication", "Дата", dateApplicationPreliminary, dateApplicationStatus);
 
         nameNativeProjectApplication = addJProp(baseGroup, "nameNativeProjectApplication", "Проект", nameNativeProject, projectApplication, 1);
@@ -3018,7 +3026,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
             setForceViewType(voteResultGroup, ClassViewType.GRID, objVote.groupTo);
             getPropertyDraw(quantityInClusterVote).propertyCaption = addPropertyObject(hideQuantityInClusterProject, objProject);
-            getPropertyDraw(quantityInnovativeVote).propertyCaption = addPropertyObject(hideQuantityInClusterProject, objProject);
+            getPropertyDraw(quantityInnovativeVote).propertyCaption = addPropertyObject(hideQuantityInnovativeProject, objProject);
             getPropertyDraw(quantityForeignVote).propertyCaption = addPropertyObject(hideQuantityForeignProject, objProject);
             getPropertyDraw(quantityCompetitiveAdvantagesVote).propertyCaption = addPropertyObject(hideQuantityCompetitiveAdvantagesProject, objProject);
             getPropertyDraw(quantityCommercePotentialVote).propertyCaption = addPropertyObject(hideQuantityCommercePotentialProject, objProject);
@@ -3296,9 +3304,19 @@ public class SkolkovoLogicsModule extends LogicsModule {
             objApplication = addSingleGroupObject(application, dateApplication, nameNativeClaimerApplication, baseLM.objectClassName, nameNativeProjectApplication,
                     officialNameStatusApplication, langApplication, nameNativeShortAggregateClusterApplication, emailClaimerApplication);
 
+            addFixedFilter(new NotFilterEntity(new NotNullFilterEntity(addPropertyObject(inactiveApplication, objApplication))));
+
             setReadOnly(false);
         }
 
+        @Override
+        public FormView createDefaultRichDesign() {
+            DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign();
+
+            design.defaultOrders.put(design.get(getPropertyDraw(dateApplication)), true);
+
+            return design;
+        }
     }
 
     private class ProjectClusterFormEntity extends FormEntity<SkolkovoBusinessLogics> {

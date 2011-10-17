@@ -63,6 +63,8 @@ public class Settings {
     // будет ли компилятор вместо UNION (когда OR'ов слишком много) использовать FULL JOIN
     boolean useFJInsteadOfUnion = false;
 
+    int countJoinsUseUnionInsteadOfUnionAll = 15;
+
     // будет ли оптимизатор разбивать группирующие выражения на максимум, так чтобы в группируемом выражении не было бы Case'ов 
     private boolean splitGroupMaxExprcases = false;
 
@@ -98,6 +100,14 @@ public class Settings {
 
     public void setUseFJInsteadOfUnion(boolean useFJInsteadOfUnion) {
         this.useFJInsteadOfUnion = useFJInsteadOfUnion;
+    }
+
+    public int getCountJoinsUseUnionInsteadOfUnionAll() {
+        return countJoinsUseUnionInsteadOfUnionAll;
+    }
+
+    public void setCountJoinsUseUnionInsteadOfUnionAll(int countJoinsUseUnionInsteadOfUnionAll) {
+        this.countJoinsUseUnionInsteadOfUnionAll = countJoinsUseUnionInsteadOfUnionAll;
     }
 
     public void setPushOrderWhere(boolean pushOrderWhere) {
