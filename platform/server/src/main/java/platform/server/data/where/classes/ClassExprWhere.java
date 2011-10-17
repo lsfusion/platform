@@ -13,13 +13,15 @@ import platform.server.data.translator.MapTranslate;
 import platform.server.data.type.ObjectType;
 import platform.server.data.type.Type;
 import platform.server.data.where.*;
-import sun.reflect.annotation.ExceptionProxy;
 
 import java.util.Map;
 
 public class ClassExprWhere extends AbstractClassWhere<VariableClassExpr, ClassExprWhere> implements DNFWheres.Interface<ClassExprWhere> {
 
     public Type getType(KeyExpr keyExpr) {
+        if (wheres.length == 0) {
+            return ObjectType.instance;
+        }
         AndClassSet classWhere = wheres[0].get(keyExpr);
         Type type;
         if(classWhere==null) {
