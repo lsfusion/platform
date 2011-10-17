@@ -13,17 +13,24 @@ import platform.server.session.Modifier;
 import java.util.Collection;
 import java.util.Map;
 
-public class MaxGroupProperty<T extends PropertyInterface> extends GroupProperty<T> {
+public class MaxGroupProperty<I extends PropertyInterface> extends AddGroupProperty<I> {
+
+    final boolean min;
 
     protected GroupType getGroupType() {
-        if(groupProperty.getType() instanceof LogicalClass)
-            return GroupType.ANY;
-        else
-            return GroupType.MAX;
+        return min?GroupType.MIN:GroupType.MAX;
     }
 
-    public MaxGroupProperty(String sID, String caption, Collection<? extends PropertyInterfaceImplement<T>> interfaces, Property<T> property) {
+    public MaxGroupProperty(String sID, String caption, Collection<I> innerInterfaces, Collection<? extends PropertyInterfaceImplement<I>> groupInterfaces, PropertyInterfaceImplement<I> property) {
+        super(sID, caption, innerInterfaces, groupInterfaces, property);
+
+        min = false;
+    }
+
+    public MaxGroupProperty(String sID, String caption, Collection<? extends PropertyInterfaceImplement<I>> interfaces, Property<I> property, boolean min) {
         super(sID, caption, interfaces, property);
+
+        this.min = min;
     }
 
     @Override
@@ -31,20 +38,20 @@ public class MaxGroupProperty<T extends PropertyInterface> extends GroupProperty
         return super.noIncrement() || Settings.instance.isNoIncrementMaxGroupProperty();
     }
 
-    public Expr getChangedExpr(Expr changedExpr, Expr changedPrevExpr, Expr prevExpr, Map<Interface<T>, ? extends Expr> joinImplement, Modifier<? extends Changes> modifier, WhereBuilder changedWhere) {
-        Where increaseWhere = changedExpr.compare(prevExpr, Compare.GREATER).or(changedExpr.getWhere().and(prevExpr.getWhere().not()));
-        Where decreaseWhere = changedPrevExpr.compare(prevExpr, Compare.EQUALS);
+    public Expr getChangedExpr(Expr changedExpr, Expr changedPrevExpr, Expr prevExpr, Map<Interface<I>, ? extends Expr> joinImplement, Modifier<? extends Changes> modifier, WhereBuilder changedWhere) {
+        Where outWhere = changedExpr.compare(prevExpr, min).or(changedExpr.getWhere().and(prevExpr.getWhere().not()));
+        Where inWhere = changedPrevExpr.compare(prevExpr, Compare.EQUALS);
         if(noIncrement()) {
-            if(decreaseWhere.means(increaseWhere)) { // для оптимизации если calculateNewExpr заведомо не понадобится, лучше использовать инкрементный механизм
-                if(increaseWhere!=null) changedWhere.add(increaseWhere);
-                return changedExpr.ifElse(increaseWhere, prevExpr);
+            if(inWhere.means(outWhere)) { // для оптимизации если calculateNewExpr заведомо не понадобится, лучше использовать инкрементный механизм
+                if(outWhere!=null) changedWhere.add(outWhere);
+                return changedExpr.ifElse(outWhere, prevExpr);
             } else {
                 if(changedWhere!=null) changedWhere.add(changedExpr.getWhere().or(changedPrevExpr.getWhere()));
                 return calculateNewExpr(joinImplement, modifier);
             }
         } else {
-            if(changedWhere!=null) changedWhere.add(increaseWhere.or(decreaseWhere)); // если хоть один не null
-            return changedExpr.ifElse(increaseWhere, calculateNewExpr(joinImplement, modifier).ifElse(decreaseWhere, prevExpr));
+            if(changedWhere!=null) changedWhere.add(outWhere.or(inWhere)); // если хоть один не null
+            return changedExpr.ifElse(outWhere, calculateNewExpr(joinImplement, modifier).ifElse(inWhere, prevExpr));
         }
     }
 }

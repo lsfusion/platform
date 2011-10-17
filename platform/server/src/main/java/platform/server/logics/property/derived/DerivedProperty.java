@@ -4,6 +4,7 @@ import platform.base.BaseUtils;
 import platform.base.OrderedMap;
 import platform.interop.Compare;
 import platform.server.classes.*;
+import platform.server.data.expr.query.GroupType;
 import platform.server.logics.property.*;
 import platform.server.data.expr.query.OrderType;
 
@@ -296,28 +297,21 @@ public class DerivedProperty {
     }
 
     // строится partition с пустым order'ом
-    private static <T extends PropertyInterface> PropertyMapImplement<?,T> createPProp(Property<T> property, Collection<PropertyInterfaceImplement<T>> partitions, boolean sum) {
-        GroupProperty<T> partitionGroup;
-        if(sum)
-            partitionGroup = new SumGroupProperty<T>(genID(),"sys",partitions,property);
-        else
-            partitionGroup = new MaxGroupProperty<T>(genID(),"sys",partitions,property);
+    private static <T extends PropertyInterface> PropertyMapImplement<?,T> createPProp(Property<T> property, Collection<PropertyInterfaceImplement<T>> partitions, GroupType type) {
+        GroupProperty<T> partitionGroup = type.createProperty(genID(), "sys", partitions, property);
         return createJoin(new PropertyImplement<GroupProperty.Interface<T>, PropertyInterfaceImplement<T>>(partitionGroup,partitionGroup.getMapInterfaces()));
     }
 
-    private static <L extends PropertyInterface, T extends PropertyInterface> PropertyMapImplement<?,T> createPProp(PropertyMapImplement<L, T> mapImplement, Collection<PropertyInterfaceImplement<T>> partitions, boolean sum) {
+    private static <L extends PropertyInterface, T extends PropertyInterface> PropertyMapImplement<?,T> createPProp(PropertyMapImplement<L, T> mapImplement, Collection<PropertyInterfaceImplement<T>> partitions, GroupType type) {
         // assert что все интерфейсы есть
-        return createPProp(mapImplement.property, mapImplements(partitions, BaseUtils.reverse(mapImplement.mapping)), sum).map(mapImplement.mapping);
+        return createPProp(mapImplement.property, mapImplements(partitions, BaseUtils.reverse(mapImplement.mapping)), type).map(mapImplement.mapping);
     }
 
-    private static <T extends PropertyInterface> PropertyMapImplement<?,T> createPOProp(Property<T> property, Collection<PropertyInterfaceImplement<T>> partitions, OrderedMap<PropertyInterfaceImplement<T>,Boolean> orders, boolean includeLast) {
-        return createPOProp(genID(), "sys", property, partitions, orders, includeLast);
-    }
     // строит процент в partition'е
     public static <T extends PropertyInterface> PropertyMapImplement<?,T> createPOProp(String sID, String caption, Property<T> property, Collection<PropertyInterfaceImplement<T>> partitions, OrderedMap<PropertyInterfaceImplement<T>,Boolean> orders, boolean includeLast) {
         PropertyMapImplement<?,T> orderSum = createOProp(property, partitions, orders, includeLast);
 
-        PropertyMapImplement<?,T> partitionSum = createPProp(property, partitions, true);
+        PropertyMapImplement<?,T> partitionSum = createPProp(property, partitions, GroupType.SUM);
 
         return createFormula(sID, caption, property.interfaces, "(prm1*100)/prm2", formulaClass, BaseUtils.toList(orderSum, partitionSum)); // создаем процент
     }
@@ -347,7 +341,7 @@ public class DerivedProperty {
         PropertyMapImplement<?, T> andImplement = createAnd(property.interfaces, concImplement, property.getImplement());
 
         // делаем PProp на MAX по этому свойству
-        PropertyMapImplement<?, T> maxPartition = createPProp(andImplement, partitions, false);
+        PropertyMapImplement<?, T> maxPartition = createPProp(andImplement, partitions, GroupType.MAX);
 
         // делаем Compare с этим PProp, JoinProperty concatenate
         return createCompare(property.interfaces, andImplement, maxPartition, Compare.EQUALS);
@@ -404,9 +398,6 @@ public class DerivedProperty {
 
         Collection<PropertyInterfaceImplement<T>> partitions = group.mapping.values();
 
-        // общая сумма по пропорции в partition'е
-        PropertyMapImplement<?, T> propSum = createPProp(proportion, group.mapping.values(), true);
-
         // строим partition distribute св-во
         PropertyMapImplement<?, T> distribute = createJoin(group);
 
@@ -414,9 +405,12 @@ public class DerivedProperty {
             OrderedMap<PropertyInterfaceImplement<T>, Boolean> orders = new OrderedMap<PropertyInterfaceImplement<T>, Boolean>();
             for(T propertyInterface : proportion.interfaces)
                 orders.put(propertyInterface, false);
-            OrderProperty<T> orderProperty = new OrderProperty<T>(sID, caption, OrderType.DISTR_CUM_PROPORTION, proportion, partitions, orders, BaseUtils.<PropertyInterfaceImplement<T>>toList(distribute, propSum), false);
+            OrderProperty<T> orderProperty = new OrderProperty<T>(sID, caption, OrderType.DISTR_CUM_PROPORTION, proportion, partitions, orders, BaseUtils.<PropertyInterfaceImplement<T>>toList(distribute), false);
             return new PropertyMapImplement<OrderProperty.Interface<T>, T>(orderProperty, orderProperty.getMapInterfaces());
         }
+
+        // общая сумма по пропорции в partition'е
+        PropertyMapImplement<?, T> propSum = createPProp(proportion, group.mapping.values(), GroupType.SUM);
 
         String distrSID = !roundfirst ? sID : genID();
         String distrCaption = !roundfirst ? caption : "sys";
@@ -426,7 +420,7 @@ public class DerivedProperty {
         if (!roundfirst) return distrRound;
 
         // строим partition полученного округления
-        PropertyMapImplement<?, T> totRound = createPProp(distrRound, group.mapping.values(), true);
+        PropertyMapImplement<?, T> totRound = createPProp(distrRound, group.mapping.values(), GroupType.SUM);
 
         // получаем сколько надо дораспределить
         PropertyMapImplement<?, T> diffRound = createFormula(proportion.interfaces, "prm1-prm2", formulaClass, BaseUtils.toList(distribute, totRound)); // вообще гря разные параметры поэтому formula, а не diff
@@ -441,19 +435,19 @@ public class DerivedProperty {
         return createSum(sID, caption, proportion.interfaces, distrRound, diffFirst);
     }
 
-    private static <T extends PropertyInterface,L extends PropertyInterface> PropertyImplement<?, PropertyInterfaceImplement<T>> createMaxProp(String sID, String caption, PropertyMapImplement<L,T> implement, Collection<PropertyInterfaceImplement<T>> group) {
-        MaxGroupProperty<L> maxProperty = new MaxGroupProperty<L>(sID, caption, mapImplements(group, BaseUtils.reverse(implement.mapping)), implement.property);
+    private static <T extends PropertyInterface,L extends PropertyInterface> PropertyImplement<?, PropertyInterfaceImplement<T>> createMaxProp(String sID, String caption, PropertyMapImplement<L,T> implement, Collection<PropertyInterfaceImplement<T>> group, boolean min) {
+        MaxGroupProperty<L> maxProperty = new MaxGroupProperty<L>(sID, caption, mapImplements(group, BaseUtils.reverse(implement.mapping)), implement.property, min);
         return new PropertyImplement<GroupProperty.Interface<L>, PropertyInterfaceImplement<T>>(maxProperty, mapImplements(maxProperty.getMapInterfaces(),implement.mapping));
     }
     
-    public static <T extends PropertyInterface> List<PropertyImplement<?, PropertyInterfaceImplement<T>>> createMGProp(String[] sIDs, String[] captions, Property<T> property, BaseClass baseClass, List<PropertyInterfaceImplement<T>> extra, Collection<PropertyInterfaceImplement<T>> group, Collection<Property> persist) {
+    public static <T extends PropertyInterface> List<PropertyImplement<?, PropertyInterfaceImplement<T>>> createMGProp(String[] sIDs, String[] captions, Property<T> property, BaseClass baseClass, List<PropertyInterfaceImplement<T>> extra, Collection<PropertyInterfaceImplement<T>> group, Collection<Property> persist, boolean min) {
         if(extra.size()==0)
-            return createEqualsMGProp(sIDs, captions, property, extra, group, persist);
+            return createEqualsMGProp(sIDs, captions, property, extra, group, persist, min);
         else
-            return createConcMGProp(sIDs, captions, property, baseClass, extra, group, persist);
+            return createConcMGProp(sIDs, captions, property, baseClass, extra, group, persist, min);
     }
 
-    private static <T extends PropertyInterface> List<PropertyImplement<?, PropertyInterfaceImplement<T>>> createEqualsMGProp(String[] sIDs, String[] captions, Property<T> property, List<PropertyInterfaceImplement<T>> extra, Collection<PropertyInterfaceImplement<T>> group, Collection<Property> persist) {
+    private static <T extends PropertyInterface> List<PropertyImplement<?, PropertyInterfaceImplement<T>>> createEqualsMGProp(String[] sIDs, String[] captions, Property<T> property, List<PropertyInterfaceImplement<T>> extra, Collection<PropertyInterfaceImplement<T>> group, Collection<Property> persist, boolean min) {
         Collection<T> interfaces = property.interfaces;
 
         PropertyMapImplement<?,T> propertyImplement = property.getImplement();
@@ -461,7 +455,7 @@ public class DerivedProperty {
         List<PropertyImplement<?, PropertyInterfaceImplement<T>>> result = new ArrayList<PropertyImplement<?, PropertyInterfaceImplement<T>>>();
         int i = 0;
         do {
-            PropertyImplement<?, PropertyInterfaceImplement<T>> maxImplement = createMaxProp(sIDs[i], captions[i], propertyImplement, group);
+            PropertyImplement<?, PropertyInterfaceImplement<T>> maxImplement = createMaxProp(sIDs[i], captions[i], propertyImplement, group, min);
             result.add(maxImplement);
             if(i<extra.size()) { // если не последняя
                 PropertyMapImplement<?,T> prevMax = createJoin(maxImplement); // какой максимум в partition'е
@@ -481,14 +475,14 @@ public class DerivedProperty {
         return result;
     }
 
-    private static <T extends PropertyInterface> List<PropertyImplement<?, PropertyInterfaceImplement<T>>> createConcMGProp(String[] sIDs, String[] captions, Property<T> property, BaseClass baseClass, List<PropertyInterfaceImplement<T>> extra, Collection<PropertyInterfaceImplement<T>> group, Collection<Property> persist) {
-        String concID = BaseUtils.toString(sIDs, "_");
-        String concCaption = BaseUtils.toString(captions, ", ");
+    private static <T extends PropertyInterface> List<PropertyImplement<?, PropertyInterfaceImplement<T>>> createConcMGProp(String[] sIDs, String[] captions, Property<T> property, BaseClass baseClass, List<PropertyInterfaceImplement<T>> extra, Collection<PropertyInterfaceImplement<T>> group, Collection<Property> persist, boolean min) {
+        String concID = BaseUtils.toString("_", sIDs);
+        String concCaption = BaseUtils.toString(", ", captions);
 
         PropertyMapImplement<?, T> concate = createConcatenate("CC_" + concID, "Concatenate - "+ concCaption, property.interfaces, BaseUtils.mergeList(Collections.singletonList(property.getImplement()), extra));
         persist.add(concate.property);
         
-        PropertyImplement<?, PropertyInterfaceImplement<T>> max = createMaxProp("MC_" + concID, "Concatenate - " + concCaption, concate, group);
+        PropertyImplement<?, PropertyInterfaceImplement<T>> max = createMaxProp("MC_" + concID, "Concatenate - " + concCaption, concate, group, min);
         persist.add(max.property);
 
         return createDeconcatenate(sIDs, captions, max, extra.size()+1, baseClass);

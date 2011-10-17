@@ -28,6 +28,8 @@ public interface MapTranslate {
 
     <K> Map<BaseExpr,K> translateKeys(Map<? extends BaseExpr, K> map);
 
+    <K> Map<Expr,K> translateExprKeys(Map<? extends Expr, K> map);
+
     <K> Map<KeyExpr,K> translateMapKeys(Map<KeyExpr, K> map);
 
     <K> Map<K, Expr> translate(Map<K, ? extends Expr> map);

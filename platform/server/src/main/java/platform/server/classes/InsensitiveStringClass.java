@@ -44,4 +44,9 @@ public class InsensitiveStringClass extends StringClass {
     public String getSID() {
         return "InsensitiveStringClass_" + length;
     }
+
+    @Override
+    public InsensitiveStringClass extend(int times) {
+        return get(length * times);
+    }
 }

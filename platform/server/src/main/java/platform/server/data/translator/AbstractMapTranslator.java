@@ -1,6 +1,5 @@
 package platform.server.data.translator;
 
-import platform.base.ImmutableObject;
 import platform.base.OrderedMap;
 import platform.base.TwinImmutableObject;
 import platform.server.data.Value;
@@ -23,6 +22,13 @@ public abstract class AbstractMapTranslator extends TwinImmutableObject implemen
     public <K> Map<BaseExpr,K> translateKeys(Map<? extends BaseExpr, K> map) {
         Map<BaseExpr, K> transMap = new HashMap<BaseExpr, K>();
         for(Map.Entry<? extends BaseExpr,K> entry : map.entrySet())
+            transMap.put(entry.getKey().translateOuter(this),entry.getValue());
+        return transMap;
+    }
+
+    public <K> Map<Expr,K> translateExprKeys(Map<? extends Expr, K> map) {
+        Map<Expr, K> transMap = new HashMap<Expr, K>();
+        for(Map.Entry<? extends Expr, K> entry : map.entrySet())
             transMap.put(entry.getKey().translateOuter(this),entry.getValue());
         return transMap;
     }

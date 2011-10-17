@@ -312,11 +312,7 @@ public abstract class Table extends TwinImmutableObject implements MapKeysInterf
 
         @HashLazy
         public int hashOuter(HashContext hashContext) {
-            int hash = Table.this.hashOuter(hashContext)*31;
-                // нужен симметричный хэш относительно выражений
-            for(Map.Entry<KeyField, BaseExpr> join : joins.entrySet())
-                hash += join.getKey().hashCode() * join.getValue().hashOuter(hashContext);
-            return hash;
+            return Table.this.hashOuter(hashContext)*31 + AbstractSourceJoin.hashOuter(joins, hashContext);
         }
 
         @ParamLazy

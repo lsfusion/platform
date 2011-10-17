@@ -4,12 +4,13 @@ import platform.server.data.expr.BaseExpr;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.where.cases.MapCase;
 import platform.server.data.expr.where.cases.MapCaseList;
+import platform.server.data.query.AndContext;
 import platform.server.data.query.SourceJoin;
 import platform.server.data.where.Where;
 
 import java.util.Map;
 
-public abstract class ExclPullWheres<R, K, W extends SourceJoin<W>> {
+public abstract class ExclPullWheres<R, K, W extends AndContext<W>> {
 
     protected abstract R proceedBase(W data, Map<K, BaseExpr> map);
 

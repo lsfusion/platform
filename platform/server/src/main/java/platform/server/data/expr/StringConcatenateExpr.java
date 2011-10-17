@@ -85,10 +85,7 @@ public class StringConcatenateExpr extends StaticClassExpr {
     }
 
     public int hashOuter(HashContext hashContext) {
-        int hash = 5;
-        for(BaseExpr expr : exprs)
-            hash = hash * 31 + expr.hashOuter(hashContext);
-        return hash;
+        return 31 * hashOuter(exprs, hashContext) + 5;
     }
 
     public String getSource(CompileSource compile) {

@@ -23,6 +23,7 @@ import platform.server.data.type.Type;
 import platform.server.data.where.Where;
 
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 @TranslateExprLazy
@@ -71,11 +72,15 @@ public class FormulaExpr extends StaticClassExpr {
             param.fillJoinWheres(joins, andWhere);
     }
 
-    public String getSource(CompileSource compile) {
+    public static String getSource(String formula, Map<String, ? extends Expr> params, CompileSource compile) {
         String sourceString = formula;
-        for(String prm : params.keySet())
-            sourceString = sourceString.replace(prm, params.get(prm).getSource(compile));
+        for(Map.Entry<String, ? extends Expr> prm : params.entrySet())
+            sourceString = sourceString.replace(prm.getKey(), prm.getValue().getSource(compile));
          return "("+sourceString+")";
+    }
+
+    public String getSource(CompileSource compile) {
+        return getSource(formula, params, compile);
      }
 
     public Type getType(KeyType keyType) {
@@ -115,10 +120,7 @@ public class FormulaExpr extends StaticClassExpr {
 
     @HashLazy
     public int hashOuter(HashContext hashContext) {
-        int hash = 0;
-        for(Map.Entry<String, BaseExpr> param : params.entrySet())
-            hash += param.getKey().hashCode() ^ param.getValue().hashOuter(hashContext);
-        return valueClass.hashCode()*31*31 + hash*31 + formula.hashCode();
+        return valueClass.hashCode()*31*31 + hashOuter(params, hashContext) *31 + formula.hashCode();
     }
 
     public ConcreteValueClass getStaticClass() {

@@ -1,5 +1,7 @@
 package platform.server.data.where;
 
+import org.springframework.core.Ordered;
+import platform.base.OrderedMap;
 import platform.server.caches.OuterContext;
 import platform.server.caches.hash.HashContext;
 import platform.server.data.expr.BaseExpr;
@@ -16,6 +18,7 @@ import platform.server.data.where.classes.ClassExprWhere;
 import platform.server.data.where.classes.MeanClassWheres;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -56,6 +59,8 @@ public interface Where extends SourceJoin<Where>, OuterContext<Where>, KeyType, 
     Where pack();
 
     <K> Map<K, Expr> followTrue(Map<K,? extends Expr> map);
+    List<Expr> followFalse(List<Expr> list);
+    <K> OrderedMap<Expr, K> followFalse(OrderedMap<Expr, K> map);
 
     Where not();
 
@@ -77,10 +82,12 @@ public interface Where extends SourceJoin<Where>, OuterContext<Where>, KeyType, 
     // ДОПОЛНИТЕЛЬНЫЕ ИНТЕРФЕЙСЫ
 
     Collection<GroupJoinsWhere> getWhereJoins(boolean notExclusive);
+    <K extends Expr> Collection<GroupStatWhere<K>> getStatJoins(boolean notExclusive, Set<K> exprs);
+    <K extends BaseExpr> StatKeys<K> getStatKeys(Set<K> keys);
+    <K extends Expr> StatKeys<K> getStatExprs(Set<K> keys);
     GroupJoinsWheres groupJoinsWheres(); // protected
     KeyEquals getKeyEquals();
     MeanClassWheres groupMeanClassWheres();
-    <K extends BaseExpr> StatKeys<K> getStatKeys(Set<K> keys);
 
     abstract public ClassExprWhere getClassWhere();
 

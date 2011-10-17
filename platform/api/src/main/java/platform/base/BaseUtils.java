@@ -70,14 +70,14 @@ public class BaseUtils {
         return result;
     }
 
-    public static <K, V> List<V> mapList(List<? extends K> list, Map<K, V> map) {
+    public static <K, V> List<V> mapList(List<? extends K> list, Map<K, ? extends V> map) {
         List<V> result = new ArrayList<V>();
         for (K element : list)
             result.add(map.get(element));
         return result;
     }
 
-    public static <K, E, V> OrderedMap<V, E> mapOrder(OrderedMap<K, E> list, Map<K, V> map) { // map предполагается reversed
+    public static <K, E, V> OrderedMap<V, E> mapOrder(OrderedMap<K, E> list, Map<K, ? extends V> map) { // map предполагается reversed
         OrderedMap<V, E> result = new OrderedMap<V, E>();
         for (Map.Entry<K, E> entry : list.entrySet())
             result.put(map.get(entry.getKey()), entry.getValue());
@@ -642,7 +642,14 @@ public class BaseUtils {
         return result;
     }
 
-    public static <B, K1 extends B, K2 extends B> List<B> mergeList(List<K1> list1, Collection<K2> list2) {
+    public static <B, K1 extends B, K2 extends B> List<B> addList(K1 item, List<K2> list) {
+        List<B> result = new ArrayList<B>();
+        result.add(item);
+        result.addAll(list);
+        return result;
+    }
+
+    public static <B, K1 extends B, K2 extends B> List<B> mergeList(List<K1> list1, List<K2> list2) {
         List<B> result = new ArrayList<B>(list1);
         result.addAll(list2);
         return result;
@@ -1010,7 +1017,7 @@ public class BaseUtils {
         return result;
     }
 
-    public static <K> String toString(K[] array, String separator) {
+    public static <K> String toString(String separator, K... array) {
         String result = "";
         for (K element : array)
             result = (result.length() == 0 ? "" : result + separator) + element;
@@ -1654,5 +1661,9 @@ public class BaseUtils {
             result[i++] = a;
         }
         return result;
+    }
+
+    public static int max(int a, int b) {
+        return a>b ? a : b;
     }
 }

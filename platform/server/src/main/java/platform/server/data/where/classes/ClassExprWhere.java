@@ -2,19 +2,33 @@ package platform.server.data.where.classes;
 
 import platform.base.BaseUtils;
 import platform.base.QuickMap;
+import platform.base.ReversedHashMap;
+import platform.base.ReversedMap;
 import platform.server.classes.sets.AndClassSet;
 import platform.server.data.expr.*;
+import platform.server.data.expr.query.GroupExpr;
 import platform.server.data.expr.query.Stat;
+import platform.server.data.expr.where.pull.ExclPullWheres;
 import platform.server.data.translator.MapTranslate;
+import platform.server.data.type.ObjectType;
 import platform.server.data.type.Type;
 import platform.server.data.where.*;
+import sun.reflect.annotation.ExceptionProxy;
 
 import java.util.Map;
 
 public class ClassExprWhere extends AbstractClassWhere<VariableClassExpr, ClassExprWhere> implements DNFWheres.Interface<ClassExprWhere> {
 
     public Type getType(KeyExpr keyExpr) {
-        Type type = wheres[0].get(keyExpr).getType();
+        AndClassSet classWhere = wheres[0].get(keyExpr);
+        Type type;
+        if(classWhere==null) {
+            if(keyExpr instanceof PullExpr)
+                return ObjectType.instance;
+            else
+                throw new RuntimeException("no classes");
+        } else
+            type = classWhere.getType();
         assert checkType(keyExpr,type);
         return type;
     }
@@ -178,12 +192,7 @@ public class ClassExprWhere extends AbstractClassWhere<VariableClassExpr, ClassE
         return new InnerExprSet(follows);
     }
 
-    public ClassExprWhere map(Map<BaseExpr, BaseExpr> map) {
-//        return get(BaseUtils.reverse(map)).map(BaseUtils.toMap(map.values()));
-        return mapBack(BaseUtils.reverse(map));
-    }
-
-    // здесь не обязательно есть все BaseExpr'ы, но здесь как map - полностью reversed
+    // здесь не обязательно есть все BaseExpr'ы, равно как и то что они не повторяются
     public ClassExprWhere mapBack(Map<BaseExpr, BaseExpr> map) {
         ClassExprWhere transWhere = ClassExprWhere.FALSE;
         for(And<VariableClassExpr> andWhere : wheres) {
@@ -202,5 +211,38 @@ public class ClassExprWhere extends AbstractClassWhere<VariableClassExpr, ClassE
                 transWhere = transWhere.or(new ClassExprWhere(andTrans));
         }
         return transWhere;
+    }
+
+    // assert reversed, where содержит groups
+    public static ClassExprWhere map(Where innerWhere, Map<Expr, BaseExpr> innerOuter) {
+        return new ExclPullWheres<ClassExprWhere, BaseExpr, Where>() {
+            protected ClassExprWhere initEmpty() {
+                return ClassExprWhere.FALSE;
+            }
+            protected ClassExprWhere proceedBase(Where data, Map<BaseExpr, BaseExpr> outerInner) {
+                return data.getClassWhere().mapBack(outerInner);
+            }
+            protected ClassExprWhere add(ClassExprWhere op1, ClassExprWhere op2) {
+                return op1.or(op2);
+            }
+        }.proceed(innerWhere, BaseUtils.reverse(innerOuter));
+    }
+
+    // assert reversed, where не содержит groups
+    public static ClassExprWhere mapBack(Where where, Map<Expr, BaseExpr> innerOuter) {
+        final Where outerWhere = where.and(Expr.getWhere(innerOuter.values()));
+        return new ExclPullWheres<ClassExprWhere, BaseExpr, Where>() {
+            protected ClassExprWhere initEmpty() {
+                return ClassExprWhere.FALSE;
+            }
+            protected ClassExprWhere proceedBase(Where data, Map<BaseExpr, BaseExpr> outerInner) {
+                ReversedMap<BaseExpr, BaseExpr> innerOuter = new ReversedHashMap<BaseExpr, BaseExpr>();
+                Where where = outerWhere.and(GroupExpr.getEqualsWhere(GroupExpr.groupMap(outerInner, outerWhere.getExprValues(), innerOuter)));
+                return where.getClassWhere().mapBack(innerOuter).and(data.getClassWhere());
+            }
+            protected ClassExprWhere add(ClassExprWhere op1, ClassExprWhere op2) {
+                return op1.or(op2);
+            }
+        }.proceed(Expr.getWhere(innerOuter.keySet()), BaseUtils.reverse(innerOuter));
     }
 }

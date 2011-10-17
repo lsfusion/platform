@@ -157,10 +157,7 @@ public class MapCacheAspect {
 
         @HashLazy
         public int hashInner(HashContext hashContext) {
-            int hash=0;
-            for(Map.Entry<K,? extends Expr> expr : exprs.entrySet())
-                hash += expr.getKey().hashCode() ^ expr.getValue().hashOuter(hashContext);
-            return hash * 31 + mapValues.hash(hashContext.values);
+            return AbstractSourceJoin.hashOuter(exprs, hashContext) * 31 + mapValues.hash(hashContext.values);
         }
 
         public JoinImplement<K> translateInner(MapTranslate translate) {
@@ -539,10 +536,7 @@ public class MapCacheAspect {
 
         @HashLazy
         public int hashInner(HashContext hashContext) {
-            int hash = 0;
-            for(Map.Entry<P,Expr> joinExpr : joinImplement.entrySet())
-                hash += joinExpr.getKey().hashCode() * joinExpr.getValue().hashOuter(hashContext);
-            return 31 * usedChanges.hashValues(hashContext.values) + hash + (where?1:0);
+            return 31 * usedChanges.hashValues(hashContext.values) + AbstractOuterContext.hashOuter(joinImplement, hashContext) + (where?1:0);
         }
 
         public Set<KeyExpr> getKeys() {

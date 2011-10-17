@@ -7,6 +7,10 @@ import java.io.IOException;
 public enum Compare {
     EQUALS, GREATER, LESS, GREATER_EQUALS, LESS_EQUALS, NOT_EQUALS, START_WITH, LIKE;
 
+    public static Compare get(boolean min) {
+        return min?Compare.LESS:Compare.GREATER;
+    }
+
     public static Compare deserialize(DataInputStream inStream) throws IOException {
         switch(inStream.readByte()) {
             case 0:

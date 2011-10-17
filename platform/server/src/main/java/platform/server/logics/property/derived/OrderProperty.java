@@ -1,5 +1,6 @@
 package platform.server.logics.property.derived;
 
+import platform.base.BaseUtils;
 import platform.base.OrderedMap;
 import platform.server.data.Field;
 import platform.server.data.PropertyField;
@@ -19,31 +20,33 @@ import java.util.*;
 
 public class OrderProperty<T extends PropertyInterface> extends SimpleIncrementProperty<OrderProperty.Interface<T>> {
 
-    protected final Property<T> property;
-    protected final OrderedMap<PropertyInterfaceImplement<T>,Boolean> orders;
-
     protected final OrderType orderType;
+
+    protected final Collection<T> innerInterfaces;
+    protected final List<PropertyInterfaceImplement<T>> props;
+    protected final OrderedMap<PropertyInterfaceImplement<T>,Boolean> orders;
     protected final Collection<PropertyInterfaceImplement<T>> partitions;
     protected boolean includeLast;
 
-    protected final List<PropertyInterfaceImplement<T>> extras;
-
     public OrderProperty(String sID, String caption, OrderType orderType, Property<T> property, Collection<PropertyInterfaceImplement<T>> partitions, OrderedMap<PropertyInterfaceImplement<T>, Boolean> orders, List<PropertyInterfaceImplement<T>> extras, boolean includeLast) {
-        super(sID, caption, getInterfaces(property));
-        this.property = property;
+        this(sID, caption, orderType, property.interfaces, BaseUtils.mergeList(Collections.singletonList(property.getImplement()), extras), partitions, orders, includeLast);
+    }
+
+    public OrderProperty(String sID, String caption, OrderType orderType, Collection<T> innerInterfaces, List<PropertyInterfaceImplement<T>> props, Collection<PropertyInterfaceImplement<T>> partitions, OrderedMap<PropertyInterfaceImplement<T>, Boolean> orders, boolean includeLast) {
+        super(sID, caption, getInterfaces(innerInterfaces));
+        this.innerInterfaces = innerInterfaces;
+        this.props = props;
         this.orders = orders;
         this.orderType = orderType;
         this.partitions = partitions;
-        this.extras = extras;
         this.includeLast = includeLast;
     }
 
     @Override
     protected void fillDepends(Set<Property> depends, boolean derived) {
-        depends.add(property);
         fillDepends(depends, orders.keySet());
         fillDepends(depends, partitions);
-        fillDepends(depends, extras);
+        fillDepends(depends, props);
     }
 
     public static class Interface<T extends PropertyInterface> extends PropertyInterface<Interface<T>> {
@@ -55,9 +58,9 @@ public class OrderProperty<T extends PropertyInterface> extends SimpleIncrementP
         }
     }
 
-    private static <T extends PropertyInterface> List<Interface<T>> getInterfaces(Property<T> property) {
+    private static <T extends PropertyInterface> List<Interface<T>> getInterfaces(Collection<T> innerInterfaces) {
         List<Interface<T>> interfaces = new ArrayList<Interface<T>>();
-        for(T propertyInterface : property.interfaces)
+        for(T propertyInterface : innerInterfaces)
             interfaces.add(new Interface<T>(interfaces.size(), propertyInterface));
         return interfaces;
     }
@@ -71,7 +74,7 @@ public class OrderProperty<T extends PropertyInterface> extends SimpleIncrementP
 
     // кривовать как и в GroupProperty, перетягивание на себя функций компилятора (то есть с третьего ограничивается второй), но достаточно хороший case оптимизации
     protected Map<T, ? extends Expr> getGroupKeys(Map<Interface<T>, ? extends Expr> joinImplement, Map<KeyExpr, Expr> mapExprs) {
-        Map<T, KeyExpr> mapKeys = property.getMapKeys();
+        Map<T, KeyExpr> mapKeys = KeyExpr.getMapKeys(innerInterfaces);
 
         Map<T, Expr> result = new HashMap<T, Expr>();
         // читаем value из joinImplement, затем фильтруем partitions'ами
@@ -102,8 +105,7 @@ public class OrderProperty<T extends PropertyInterface> extends SimpleIncrementP
 
     protected List<Expr> getExprImplements(Map<T, ? extends Expr> joinImplement, Modifier<? extends Changes> modifier, WhereBuilder changedWhere) {
         List<Expr> exprs = new ArrayList<Expr>();
-        exprs.add(property.getExpr(joinImplement, modifier, changedWhere));
-        for(PropertyInterfaceImplement<T> extra : extras)
+        for(PropertyInterfaceImplement<T> extra : props)
             exprs.add(extra.mapExpr(joinImplement, modifier, changedWhere));
         return exprs;
     }

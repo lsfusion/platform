@@ -43,6 +43,13 @@ public class QueryTranslator extends TwinImmutableObject {
         return transMap;
     }
 
+    public <K> Map<Expr, K> translateKeys(Map<? extends Expr, K> map) {
+        Map<Expr, K> transMap = new HashMap<Expr, K>();
+        for(Map.Entry<? extends Expr,K> entry : map.entrySet())
+            transMap.put(entry.getKey().translateQuery(this), entry.getValue());
+        return transMap;
+    }
+
     public List<Expr> translate(List<? extends Expr> list) {
         List<Expr> result = new ArrayList<Expr>();
         for(Expr expr : list)

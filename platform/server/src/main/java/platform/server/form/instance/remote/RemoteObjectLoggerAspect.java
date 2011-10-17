@@ -28,7 +28,7 @@ public class RemoteObjectLoggerAspect {
                             "Executing remote method (time: %1$d ms.): %2$s(%3$s)",
                             runTime,
                             thisJoinPoint.getSignature().getName(),
-                            BaseUtils.toString(thisJoinPoint.getArgs(), ", ")
+                            BaseUtils.toString(", ", thisJoinPoint.getArgs())
                     )
             );
         }

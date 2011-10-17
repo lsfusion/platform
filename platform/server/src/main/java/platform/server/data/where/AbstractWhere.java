@@ -1,12 +1,15 @@
 package platform.server.data.where;
 
 import platform.base.BaseUtils;
+import platform.base.OrderedMap;
 import platform.server.caches.ManualLazy;
 import platform.server.caches.TwinLazy;
 import platform.server.data.expr.BaseExpr;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.query.Stat;
+import platform.server.data.expr.where.pull.ExclPullWheres;
+import platform.server.data.query.innerjoins.GroupStatWhere;
 import platform.server.data.query.stat.StatKeys;
 import platform.server.data.expr.where.extra.CompareWhere;
 import platform.server.data.expr.where.extra.EqualsWhere;
@@ -63,6 +66,20 @@ public abstract class AbstractWhere extends AbstractSourceJoin<Where> implements
         Map<K, Expr> result = new HashMap<K, Expr>();
         for(Map.Entry<K,? extends Expr> entry : map.entrySet())
             result.put(entry.getKey(),entry.getValue().followFalse(not(), true));
+        return result;
+    }
+
+    public List<Expr> followFalse(List<Expr> list) {
+        List<Expr> result = new ArrayList<Expr>();
+        for(Expr item : list)
+            result.add(item.followFalse(this, false));
+        return result;
+    }
+
+    public <K> OrderedMap<Expr, K> followFalse(OrderedMap<Expr, K> map) {
+        OrderedMap<Expr, K> result = new OrderedMap<Expr, K>();
+        for(Map.Entry<Expr, K> entry : map.entrySet())
+            result.put(entry.getKey().followFalse(this, false),entry.getValue());
         return result;
     }
 
@@ -179,10 +196,39 @@ public abstract class AbstractWhere extends AbstractSourceJoin<Where> implements
         return getKeyEquals().getWhereJoins(notExclusive);
     }
 
+    public <K extends Expr> Collection<GroupStatWhere<K>> getStatJoins(final boolean noExclusive, Set<K> exprs) {
+        return new ExclPullWheres<Collection<GroupStatWhere<K>>, K, Where>() {
+            protected Collection<GroupStatWhere<K>> proceedBase(Where data, Map<K, BaseExpr> map) {
+                Collection<GroupJoinsWhere> whereJoins = data.and(Expr.getWhere(map)).getWhereJoins(noExclusive); // если sum (не max) то exclusive
+
+                Collection<GroupStatWhere<K>> statJoins = new ArrayList<GroupStatWhere<K>>();
+                for(GroupJoinsWhere whereJoin : whereJoins)
+                    statJoins.add(new GroupStatWhere<K>(whereJoin.keyEqual,
+                            whereJoin.getStatKeys(new HashSet<BaseExpr>(map.values())).mapBack(map), whereJoin.where));
+                return statJoins;
+            }
+
+            protected Collection<GroupStatWhere<K>> initEmpty() {
+                return new ArrayList<GroupStatWhere<K>>();
+            }
+
+            protected Collection<GroupStatWhere<K>> add(Collection<GroupStatWhere<K>> op1, Collection<GroupStatWhere<K>> op2) {
+                return BaseUtils.merge(op1, op2);
+            }
+        }.proceed(this, BaseUtils.toMap(exprs));
+    }
+
     public <K extends BaseExpr> StatKeys<K> getStatKeys(Set<K> groups) { // assertion что where keys входят в это where
         StatKeys<K> result = new StatKeys<K>(groups);
         for(GroupJoinsWhere groupJoin : getWhereJoins(true))
             result = result.or(groupJoin.getStatKeys(groups));
+        return result;
+    }
+
+    public <K extends Expr> StatKeys<K> getStatExprs(Set<K> groups) {
+        StatKeys<K> result = new StatKeys<K>(groups);
+        for(GroupStatWhere<K> groupJoin : getStatJoins(true, groups))
+            result = result.or(groupJoin.stats);
         return result;
     }
 

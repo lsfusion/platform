@@ -510,8 +510,8 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         String propCaption = nullTrim(!isRedundantString(toolTip) ? toolTip : caption);
         String sid = getSID();
         String tableName = this.tableName != null ? this.tableName : "&lt;none&gt;";
-        String ifaceObjects = BaseUtils.toString(interfacesCaptions, ", ");
-        String ifaceClasses = BaseUtils.toString(interfacesTypes, ", ");
+        String ifaceObjects = BaseUtils.toString(", ", interfacesCaptions);
+        String ifaceClasses = BaseUtils.toString(", ", interfacesTypes);
         String returnClass = this.returnClass.toString();
 
         return String.format(toolTipFormat, propCaption, sid, tableName, ifaceObjects, ifaceClasses, returnClass);

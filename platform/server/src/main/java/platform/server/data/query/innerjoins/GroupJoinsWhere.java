@@ -1,26 +1,26 @@
 package platform.server.data.query.innerjoins;
 
-import platform.base.Pair;
-import platform.server.Settings;
+import platform.server.caches.ManualLazy;
 import platform.server.data.expr.BaseExpr;
-import platform.server.data.expr.KeyExpr;
 import platform.server.data.query.stat.StatKeys;
-import platform.server.data.query.InnerJoins;
 import platform.server.data.query.stat.WhereJoin;
 import platform.server.data.query.stat.WhereJoins;
-import platform.server.data.where.MapStatKeys;
-import platform.server.data.where.MapWhere;
 import platform.server.data.where.Where;
 
 import java.util.*;
 
-public class GroupJoinsWhere extends GroupStatWhere<WhereJoins> {
+public class GroupJoinsWhere {
+
+    public final KeyEqual keyEqual;
+    public final WhereJoins joins;
+    public final Where where; // !! where не включает keyEqual но включает все notNull baseExpr'ов его
 
     public final Map<WhereJoin, Where> upWheres;
 
     public GroupJoinsWhere(KeyEqual keyEqual, WhereJoins joins, Map<WhereJoin, Where> upWheres, Where where) {
-        super(keyEqual, joins, where);
-
+        this.keyEqual = keyEqual;
+        this.joins = joins;
+        this.where = where;
         this.upWheres = upWheres;
     }
 
@@ -43,28 +43,21 @@ public class GroupJoinsWhere extends GroupStatWhere<WhereJoins> {
         return joins.getStatKeys(groups, where, keyEqual);
     }
 
-    public static <K extends BaseExpr> Collection<GroupStatWhere> groupStat(Collection<GroupJoinsWhere> innerJoins, Set<K> groups) {
-        Collection<GroupStatWhere> result = new ArrayList<GroupStatWhere>();
+    private Where fullWhere;
+    @ManualLazy
+    public Where getFullWhere() {
+        if(fullWhere==null)
+            fullWhere = where.and(keyEqual.getWhere());
+        return fullWhere;
+    }
 
-        if (Settings.instance.isSplitGroupStatInnerJoins()) {
-            MapWhere<Pair<KeyEqual, StatKeys<K>>> mapWhere = new MapWhere<Pair<KeyEqual, StatKeys<K>>>();
-            for(GroupJoinsWhere innerJoin : innerJoins)
-                mapWhere.add(new Pair<KeyEqual, StatKeys<K>>(innerJoin.keyEqual,
-                        innerJoin.getStatKeys(groups)), innerJoin.where);
-            for(int i=0;i<mapWhere.size;i++) { // возвращаем результат
-                Pair<KeyEqual, StatKeys<K>> map = mapWhere.getKey(i);
-                result.add(new GroupStatWhere<GroupStatKeys<K>>(map.first, new GroupStatKeys<K>(map.second), mapWhere.getValue(i)));
-            }
-        } else {
-            MapWhere<KeyEqual> mapWhere = new MapWhere<KeyEqual>(); MapStatKeys<KeyEqual, K> mapStats = new MapStatKeys<KeyEqual, K>();
-            for(GroupJoinsWhere innerJoin : innerJoins) {
-                mapWhere.add(innerJoin.keyEqual, innerJoin.where); mapStats.add(innerJoin.keyEqual, innerJoin.getStatKeys(groups));
-            }
-            for(int i=0;i<mapWhere.size;i++) { // возвращаем результат
-                KeyEqual keys = mapWhere.getKey(i);
-                result.add(new GroupStatWhere<GroupStatKeys<K>>(keys, new GroupStatKeys<K>(mapStats.get(keys)), mapWhere.getValue(i)));
-            }
-        }
-        return result;
+    @Override
+    public boolean equals(Object o) {
+        return this == o || o instanceof GroupJoinsWhere && joins.equals(((GroupJoinsWhere) o).joins) && keyEqual.equals(((GroupJoinsWhere) o).keyEqual) && upWheres.equals(((GroupJoinsWhere) o).upWheres) && where.equals(((GroupJoinsWhere) o).where);
+    }
+
+    @Override
+    public int hashCode() {
+        return 31 * (31 * (31 * keyEqual.hashCode() + joins.hashCode()) + where.hashCode()) + upWheres.hashCode();
     }
 }

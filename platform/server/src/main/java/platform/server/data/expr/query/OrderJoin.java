@@ -36,10 +36,7 @@ public class OrderJoin extends QueryJoin<KeyExpr, OrderJoin.Query> {
 
         @HashLazy
         public int hashOuter(HashContext hashContext) {
-            int hash = 0;
-            for(Expr partition : partitions)
-                hash += partition.hashOuter(hashContext);
-            return hash * 31 + where.hashOuter(hashContext);
+            return hashOuter(partitions, hashContext) * 31 + where.hashOuter(hashContext);
         }
 
         public Query translateOuter(MapTranslate translator) {

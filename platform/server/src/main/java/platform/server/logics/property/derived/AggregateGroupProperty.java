@@ -18,11 +18,11 @@ import java.sql.SQLException;
 import java.util.*;
 
 // связь один к одному
-public class AggregateGroupProperty<T extends PropertyInterface, J extends PropertyInterface> extends CycleGroupProperty<J, PropertyInterface> {
+public class AggregateGroupProperty<T extends PropertyInterface, I extends PropertyInterface> extends CycleGroupProperty<I ,PropertyInterface> {
 
-    private final Map<J, T> mapping;
+    private final Map<I, T> mapping;
 
-    public Map<T, J> getMapping() {
+    public Map<T, I> getMapping() {
         return BaseUtils.reverse(mapping);
     }
 
@@ -42,7 +42,7 @@ public class AggregateGroupProperty<T extends PropertyInterface, J extends Prope
         return new AggregateGroupProperty<T, J>(sID, caption, and, DerivedProperty.mapImplements(groupInterfaces, BaseUtils.reverse(and.mapping)), property, aggrInterface, groupProps);
     }
 
-    private AggregateGroupProperty(String sID, String caption, PropertyMapImplement<J, T> and, Collection<PropertyInterfaceImplement<J>> groupInterfaces, Property<T> property, T aggrInterface, Collection<PropertyMapImplement<?, T>> groupProps) {
+    private AggregateGroupProperty(String sID, String caption, PropertyMapImplement<I, T> and, Collection<PropertyInterfaceImplement<I>> groupInterfaces, Property<T> property, T aggrInterface, Collection<PropertyMapImplement<?, T>> groupProps) {
         super(sID, caption, groupInterfaces, and.property, null);
 
         mapping = and.mapping;
@@ -58,16 +58,16 @@ public class AggregateGroupProperty<T extends PropertyInterface, J extends Prope
     }
 
     @Override
-    public Expr getChangedExpr(Expr changedExpr, Expr changedPrevExpr, Expr prevExpr, Map<Interface<J>, ? extends Expr> joinImplement, Modifier<? extends Changes> modifier, WhereBuilder changedWhere) {
+    public Expr getChangedExpr(Expr changedExpr, Expr changedPrevExpr, Expr prevExpr, Map<Interface<I>, ? extends Expr> joinImplement, Modifier<? extends Changes> modifier, WhereBuilder changedWhere) {
         if(changedWhere!=null) changedWhere.add(changedExpr.getWhere().or(changedPrevExpr.getWhere())); // если хоть один не null
         return changedExpr.ifElse(changedExpr.getWhere(), prevExpr.and(changedPrevExpr.getWhere().not()));
     }
 
     @Override
-    protected void proceedNotNull(Map<Interface<J>, KeyExpr> mapKeys, Where where, DataSession session, BusinessLogics<?> BL) throws SQLException {
-        Map<PropertyInterfaceImplement<T>, Interface<J>> aggrInterfaces = BaseUtils.reverse(DerivedProperty.mapImplements(getMapInterfaces(), mapping));
+    protected void proceedNotNull(Map<Interface<I>, KeyExpr> mapKeys, Where where, DataSession session, BusinessLogics<?> BL) throws SQLException {
+        Map<PropertyInterfaceImplement<T>, Interface<I>> aggrInterfaces = BaseUtils.reverse(DerivedProperty.mapImplements(getMapInterfaces(), mapping));
 
-        for(Map<Interface<J>, DataObject> row : new Query<Interface<J>, Object>(mapKeys, where).executeClasses(session.sql, session.env, session.baseClass).keySet()) {
+        for(Map<Interface<I>, DataObject> row : new Query<Interface<I>, Object>(mapKeys, where).executeClasses(session.sql, session.env, session.baseClass).keySet()) {
             DataObject aggrObject = session.addObject();
 
             Map<PropertyInterfaceImplement<T>, DataObject> interfaceValues = BaseUtils.join(aggrInterfaces, row);

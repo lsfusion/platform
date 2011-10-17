@@ -20,6 +20,7 @@ import platform.server.Settings;
 import platform.server.classes.*;
 import platform.server.data.*;
 import platform.server.data.Time;
+import platform.server.data.expr.query.GroupType;
 import platform.server.data.expr.query.OrderType;
 import platform.server.data.query.Query;
 import platform.server.form.entity.*;
@@ -627,7 +628,6 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP importProjectSidsAction, showProjectsToImportAction, showProjectsReplaceToImportAction, importProjectsAction;
     LP exportProjectDocumentsAction;
     LP copyProjectAction;
-    public LP fillLangProjectAction;
     LP generateVoteProject, needNameExtraVoteProject, hideGenerateVoteProject;
     LP copyResultsVote;
 
@@ -1050,8 +1050,6 @@ public class SkolkovoLogicsModule extends LogicsModule {
         nameNativeShort = addDProp(baseGroup, "nameNativeShort", "Имя (сокр.)", InsensitiveStringClass.get(4), cluster);
         nameNativeShort.setFixedCharWidth(5);
 
-        nameNativeShortAggregateClusterProject = addDProp(baseGroup, "nameNativeShortAggregateClusterProject", "Кластеры", InsensitiveStringClass.get(20), project);
-
         baseGroup.add(baseLM.email.property); // сделано, чтобы email был не самой первой колонкой в диалогах
 
         LP percent = addSFProp("(prm1*100/prm2)", DoubleClass.instance, 2);
@@ -1114,7 +1112,6 @@ public class SkolkovoLogicsModule extends LogicsModule {
         setNotNull(projectVote);
 
         inProjectCluster = addDProp(baseGroup, "inProjectCluster", "Вкл", LogicalClass.instance, project, cluster);
-
 
         quantityClusterProject = addSGProp(baseGroup, "quantityClusterProject", true, "Кол-во кластеров",
                 addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1, cluster), 2,
@@ -1914,6 +1911,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         numberCluster = addDProp(baseGroup, "numberCluster", "Приоритет", IntegerClass.instance, cluster);
         clusterNumber = addAGProp("clusterName", "Кластер (ИД)", numberCluster);
+        nameNativeShortAggregateClusterProject = addOGProp(baseGroup, "nameNativeShortAggregateClusterProject", false, "Кластеры", GroupType.STRING_AGG, 1, true, addJProp(baseLM.and1, nameNativeShort, 2, inProjectCluster, 1, 2), addCProp(StringClass.get(5), ";"), numberCluster, 2, 1);
 
         currentClusterProject = addJProp("currentClusterProject", true, "Рабочий кластер (ИД)", clusterNumber,
                 addMGProp(addJProp(and(false, true), numberCluster, 2, inProjectCluster, 1, 2, rejectedProjectCluster, 1, 2), 1), 1);
@@ -1972,7 +1970,6 @@ public class SkolkovoLogicsModule extends LogicsModule {
         importProjectsAction = addAProp(importGroup, new ImportProjectsActionProperty("Импортировать проекты", this, BL, false, false, false));
         copyProjectAction = addAProp(actionGroup, new CopyProjectActionProperty("Скопировать проект", this, project));
         exportProjectDocumentsAction = addAProp(actionGroup, new ExportProjectDocumentsActionProperty("Экспортировать документы", this, project));
-        fillLangProjectAction = addAProp(baseGroup, new FillLangProjectActionProperty(this, project));
 
         generateVoteProject = addAProp(actionGroup, new GenerateVoteActionProperty());
         copyResultsVote = addAProp(actionGroup, new CopyResultsActionProperty());
@@ -2016,7 +2013,9 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         fillNativeProject = addDProp(projectOptionsGroup, "fillNativeProject", "Анкета на русском", LogicalClass.instance, project);
         fillForeignProject = addDProp(projectOptionsGroup, "fillForeignProject", "Анкета на английском", LogicalClass.instance, project);
-        langProject = addDProp(projectOptionsGroup, "langProject", "Язык", InsensitiveStringClass.get(10), project);
+        langProject = addSFUProp(projectOptionsGroup, "langProject", "Язык", "/",
+                addJProp(baseLM.and1, addCProp(StringClass.get(10), "Рус"), fillNativeProject, 1),
+                addJProp(baseLM.and1, addCProp(StringClass.get(10), "Англ"), fillForeignProject, 1));
 
         translatedToRussianProject = addDProp(projectTranslationsGroup, "translatedToRussianProject", "Переведено на русский", LogicalClass.instance, project);
         translatedToEnglishProject = addDProp(projectTranslationsGroup, "translatedToEnglishProject", "Переведено на английский", LogicalClass.instance, project);

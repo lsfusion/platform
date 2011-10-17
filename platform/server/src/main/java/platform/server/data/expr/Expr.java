@@ -93,6 +93,9 @@ abstract public class Expr extends AbstractSourceJoin<Expr> {
 
     public abstract Where compareBase(BaseExpr expr, Compare compareBack);
     public abstract Where compare(Expr expr, Compare compare);
+    public Where compare(Expr expr, boolean min) {
+        return compare(expr, Compare.get(min));
+    }
 
     public Where compare(DataObject data, Compare compare) {
         return compare(data.getExpr(),compare);
@@ -131,8 +134,14 @@ abstract public class Expr extends AbstractSourceJoin<Expr> {
         else
             return IfExpr.create(where, this, elseExpr);
     }
+    public Expr compareExpr(Expr expr, boolean min) {
+        return ifElse(compare(expr, min).or(expr.getWhere().not()),expr);
+    }
     public Expr max(Expr expr) {
-        return ifElse(compare(expr, Compare.GREATER).or(expr.getWhere().not()),expr);
+        return compareExpr(expr, false);
+    }
+    public Expr min(Expr expr) {
+        return compareExpr(expr, true);
     }
     public Expr nvl(Expr expr) {
         return ifElse(getWhere(),expr);

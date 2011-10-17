@@ -21,7 +21,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-public abstract class QueryJoin<K extends BaseExpr,I extends OuterContext<I>> extends TwinsInnerContext<QueryJoin<K,I>> implements InnerJoin<K> {
+public abstract class QueryJoin<K extends Expr,I extends OuterContext<I>> extends TwinsInnerContext<QueryJoin<K,I>> implements InnerJoin<K> {
 
     protected final I query;
     public final Map<K, BaseExpr> group; // вообще гря не reverseable
@@ -146,7 +146,7 @@ public abstract class QueryJoin<K extends BaseExpr,I extends OuterContext<I>> ex
     protected abstract QueryJoin<K, I> createThis(Set<KeyExpr> keys, Set<Value> values, I query, Map<K,BaseExpr> group);
 
     public QueryJoin<K, I> translateInner(MapTranslate translator) {
-        return createThis(translator.translateKeys(keys), translator.translateValues(values), query.translateOuter(translator), (Map<K,BaseExpr>) translator.translateKeys(group));
+        return createThis(translator.translateKeys(keys), translator.translateValues(values), query.translateOuter(translator), (Map<K,BaseExpr>) translator.translateExprKeys(group));
     }
 
     public boolean equalsInner(QueryJoin<K, I> object) {

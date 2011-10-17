@@ -171,7 +171,7 @@ public class EmailSender {
                         logger.error(ServerResourceBundle.getString("mail.failed.to.send.mail")+" " + messageInfo + " : "+ServerResourceBundle.getString("mail.recipient.not.specified"));
                         throw new RuntimeException(ServerResourceBundle.getString("mail.error.send.mail") + " " + messageInfo + " : "+ServerResourceBundle.getString("mail.recipient.not.specified"));
                     }
-                    messageInfo += " "+ServerResourceBundle.getString("mail.recipients")+" : " + BaseUtils.toString(addressesTo, ",");
+                    messageInfo += " "+ServerResourceBundle.getString("mail.recipients")+" : " + BaseUtils.toString(",", addressesTo);
                 } catch (MessagingException me) {
                     messageInfo += " "+ServerResourceBundle.getString("mail.failed.to.get.list.of.recipients")+" " + me.toString();
                 }

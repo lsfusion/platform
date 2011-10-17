@@ -32,14 +32,4 @@ abstract public class UnionProperty extends ComplexIncrementProperty<UnionProper
     public void fillDepends(Set<Property> depends, boolean derived) {
         fillDepends(depends,getOperands());
     }
-
-    protected abstract Expr calculateNewExpr(Map<Interface, ? extends Expr> joinImplement, Modifier<? extends Changes> modifier, WhereBuilder changedWhere);
-    protected abstract Expr calculateIncrementExpr(Map<Interface, ? extends Expr> joinImplement, Modifier<? extends Changes> modifier, Expr prevExpr, WhereBuilder changedWhere);
-
-    @Override
-    protected Expr calculateExpr(Map<Interface, ? extends Expr> joinImplement, Modifier<? extends Changes> modifier, WhereBuilder changedWhere) {
-        if(!hasChanges(modifier) || !isStored())
-            return calculateNewExpr(joinImplement, modifier, changedWhere);
-        return calculateIncrementExpr(joinImplement, modifier, getExpr(joinImplement), changedWhere);
-    }
 }

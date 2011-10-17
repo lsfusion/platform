@@ -1,9 +1,6 @@
 package platform.server;
 
-import platform.server.data.expr.query.GroupType;
 import platform.server.logics.ServerResourceBundle;
-
-import java.util.Locale;
 
 public class Settings {
 
@@ -43,7 +40,7 @@ public class Settings {
     private boolean compileMeans = true;
 
     // обозначает что компилятор будет проталкивать внутрь order подзапросов, общее условие
-    private boolean pushOrderWhere = false;
+    private boolean pushOrderWhere = true;
 
     // обозначает что при проверке условия на TRUE не будет преобразовывать A cmp B в 3 противоположных NOT'а как правильно, а будет использовать эвристику
     private boolean simpleCheckCompare = true;
@@ -55,7 +52,7 @@ public class Settings {
     private boolean restructWhereOnMeans = false;
 
     // будет ли оптимизатор разбивать группирующие выражения, чтобы не было FULL JOIN и UNION ALL
-    private boolean splitMaxGroupInnerJoins = false;
+    private boolean splitSelectGroupInnerJoins = false;
 
     // будет ли оптимизатор разбивать inner join'ы по статистике
     private boolean splitGroupStatInnerJoins = false;
@@ -66,7 +63,7 @@ public class Settings {
     int countJoinsUseUnionInsteadOfUnionAll = 15;
 
     // будет ли оптимизатор разбивать группирующие выражения на максимум, так чтобы в группируемом выражении не было бы Case'ов 
-    private boolean splitGroupMaxExprcases = false;
+    private boolean splitGroupSelectExprcases = false;
 
     // будет ли высчитываться что именно изменилось в группирующих свойствах или же будет считаться что изменилось все
     private boolean calculateGroupDataChanged = false;
@@ -78,12 +75,12 @@ public class Settings {
         return pushOrderWhere;
     }
 
-    public boolean isSplitMaxGroupInnerJoins() {
-        return splitMaxGroupInnerJoins;
+    public boolean isSplitSelectGroupInnerJoins() {
+        return splitSelectGroupInnerJoins;
     }
 
-    public void setSplitMaxGroupInnerJoins(boolean splitMaxGroupInnerJoins) {
-        this.splitMaxGroupInnerJoins = splitMaxGroupInnerJoins;
+    public void setSplitSelectGroupInnerJoins(boolean splitSelectGroupInnerJoins) {
+        this.splitSelectGroupInnerJoins = splitSelectGroupInnerJoins;
     }
 
     public boolean isSplitGroupStatInnerJoins() {
@@ -138,12 +135,12 @@ public class Settings {
         this.restructWhereOnMeans = restructWhereOnMeans;
     }
 
-    public boolean isSplitGroupMaxExprcases() {
-        return splitGroupMaxExprcases;
+    public boolean isSplitGroupSelectExprcases() {
+        return splitGroupSelectExprcases;
     }
 
-    public void setSplitGroupMaxExprcases(boolean splitGroupMaxExprcases) {
-        this.splitGroupMaxExprcases = splitGroupMaxExprcases;
+    public void setSplitGroupSelectExprcases(boolean splitGroupSelectExprcases) {
+        this.splitGroupSelectExprcases = splitGroupSelectExprcases;
     }
 
     public boolean isCalculateGroupDataChanged() {
@@ -236,7 +233,7 @@ public class Settings {
         this.splitIncrementApply = splitIncrementApply;
     }
 
-    private int statDegree = 32;
+    private int statDegree = 100;
 
     public int getStatDegree() {
         return statDegree;

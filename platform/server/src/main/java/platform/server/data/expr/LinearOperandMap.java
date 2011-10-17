@@ -59,14 +59,6 @@ public class LinearOperandMap extends HashMap<Expr,Integer> {
         return result;
     }
 
-    // возвращает Where на notNull
-    public Where getWhere() {
-        Where result = Where.FALSE;
-        for(Expr operand : keySet())
-            result = result.or(operand.getWhere());
-        return result;
-    }
-
     public String getSource(CompileSource compile) {
 
         if(size()==1) {
@@ -95,15 +87,6 @@ public class LinearOperandMap extends HashMap<Expr,Integer> {
         return "L(" + result + ")";
     }
 
-    public void enumerate(ExprEnumerator enumerator) {
-        enumerator.fill(keySet());
-    }
-
-    public void fillJoinWheres(MapWhere<JoinData> joins, Where andWhere) {
-        for(Expr operand : keySet()) // просто гоним по операндам
-            operand.fillJoinWheres(joins, andWhere);
-    }
-
     protected static String addToString(boolean first, String string, int coeff) {
         if(coeff==0) return (first?"0":"");
         if(coeff>0) return (first?"":"+") + (coeff==1?"":coeff+"*") + string;
@@ -111,7 +94,7 @@ public class LinearOperandMap extends HashMap<Expr,Integer> {
         return coeff+"*"+string; // <0
     }
 
-    public Where getSiblingsWhere(Expr expr) {
+    private Where getSiblingsWhere(Expr expr) {
         Where result = Where.FALSE;
         for(Expr sibling : keySet())
             if(!BaseUtils.hashEquals(sibling,expr))
@@ -126,15 +109,9 @@ public class LinearOperandMap extends HashMap<Expr,Integer> {
             Where operandWhere = where;
             if(operand.getValue().equals(0)) // если коэффициент 0 то когда остальные не null нас тоже не интересует
                 operandWhere = operandWhere.or(getSiblingsWhere(operand.getKey()));
-
-            Expr operandFollow = operand.getKey().followFalse(operandWhere, true);
-//            if(operandFollow instanceof BaseExpr)
-            followedMap.add(operandFollow,operand.getValue());
-//            else
-//                linearCases = linearCases.sum(operandFollow.scale(operand.getValue()));
+            followedMap.add(operand.getKey().followFalse(operandWhere, true),operand.getValue());
         }
         return followedMap.getExpr();
-//        return linearCases.sum(followedMap.size()==0?CaseExpr.NULL:followedMap.getExpr());
     }
 
     public Expr getExpr() {
@@ -147,9 +124,5 @@ public class LinearOperandMap extends HashMap<Expr,Integer> {
                 return entry.getKey();
         }
         return new LinearExpr(this);
-    }
-
-    public long getComplexity() {
-        return AbstractSourceJoin.getComplexity(keySet());
     }
 }

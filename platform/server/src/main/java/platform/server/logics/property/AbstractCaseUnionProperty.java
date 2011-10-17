@@ -12,7 +12,7 @@ import platform.base.BaseUtils;
 
 import java.util.*;
 
-public abstract class AbstractCaseUnionProperty extends UnionProperty {
+public abstract class AbstractCaseUnionProperty extends IncrementUnionProperty {
 
     protected class Case {
         PropertyMapImplement<?, Interface> where;

@@ -8,6 +8,7 @@ import platform.server.session.Modifier;
 import java.util.List;
 import java.util.Map;
 
+// кроме OrderGroupProperty и FormulaUnionProperty
 public abstract class ComplexIncrementProperty<T extends PropertyInterface> extends FunctionProperty<T> {
 
     public ComplexIncrementProperty(String sID, String caption, List<T> interfaces) {

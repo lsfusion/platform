@@ -7,7 +7,6 @@ import platform.server.classes.LogicalClass;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.PullExpr;
-import platform.server.data.expr.ValueExpr;
 import platform.server.data.expr.query.GroupExpr;
 import platform.server.data.expr.query.GroupType;
 import platform.server.data.query.Join;
@@ -21,7 +20,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
-public class CycleGroupProperty<T extends PropertyInterface,P extends PropertyInterface> extends MaxGroupProperty<T> {
+public class CycleGroupProperty<I extends PropertyInterface, P extends PropertyInterface> extends MaxGroupProperty<I> {
 
     @Override
     protected GroupType getGroupType() {
@@ -30,9 +29,13 @@ public class CycleGroupProperty<T extends PropertyInterface,P extends PropertyIn
 
     final Property<P> toChange;
 
-    public CycleGroupProperty(String sID, String caption, Collection<PropertyInterfaceImplement<T>> interfaces, Property<T> property, Property<P> toChange) {
-        super(sID, caption, interfaces, property);
+    public CycleGroupProperty(String sID, String caption, Collection<I> innerInterfaces, Collection<? extends PropertyInterfaceImplement<I>> groupInterfaces, PropertyInterfaceImplement<I> property, Property<P> toChange) {
+        super(sID, caption, innerInterfaces, groupInterfaces, property);
+        this.toChange = toChange;
+    }
 
+    public CycleGroupProperty(String sID, String caption, Collection<PropertyInterfaceImplement<I>> interfaces, Property<I> property, Property<P> toChange) {
+        super(sID, caption, interfaces, property, false);
         this.toChange = toChange;
     }
 
@@ -40,9 +43,9 @@ public class CycleGroupProperty<T extends PropertyInterface,P extends PropertyIn
     public Property getConstrainedProperty(boolean checkChange) {
         // создает ограничение на "одинаковость" всех группировочных св-в
         // I1=I1' AND … In = In' AND G!=G' == false
-        Property constraint = DerivedProperty.createPartition(groupProperty.interfaces, DerivedProperty.<T>createStatic(true, LogicalClass.instance),
-                getMapInterfaces().values(), groupProperty.getImplement(), new HashMap<T, JoinProperty.Interface>(), Compare.GREATER);
-        constraint.caption = ServerResourceBundle.getString("logics.property.derived.violate.property.uniqueness.for.objects", groupProperty.caption);
+        Property constraint = DerivedProperty.createPartition(innerInterfaces, DerivedProperty.<I>createStatic(true, LogicalClass.instance),
+                getMapInterfaces().values(), groupProperty, new HashMap<I, JoinProperty.Interface>(), Compare.GREATER);
+        constraint.caption = ServerResourceBundle.getString("logics.property.derived.violate.property.uniqueness.for.objects", groupProperty.toString());
         constraint.setConstraint(checkChange);
         return constraint;
     }
@@ -56,7 +59,7 @@ public class CycleGroupProperty<T extends PropertyInterface,P extends PropertyIn
     }
 
     @Override
-    protected MapDataChanges<Interface<T>> calculateDataChanges(PropertyChange<Interface<T>> change, WhereBuilder changedWhere, Modifier<? extends Changes> modifier) {
+    protected MapDataChanges<Interface<I>> calculateDataChanges(PropertyChange<Interface<I>> change, WhereBuilder changedWhere, Modifier<? extends Changes> modifier) {
 
         if(toChange!=null) {
             Map<P,KeyExpr> toChangeKeys = toChange.getMapKeys();
@@ -69,14 +72,14 @@ public class CycleGroupProperty<T extends PropertyInterface,P extends PropertyIn
                 else
                     changedWhere.add(change.where);
             }
-            return new MapDataChanges<Interface<T>>(dataChanges);
+            return new MapDataChanges<Interface<I>>(dataChanges);
         } else
-            return new MapDataChanges<Interface<T>>();
+            return new MapDataChanges<Interface<I>>();
 
     }
 
-    private Expr getChangeExpr(PropertyChange<Interface<T>> change, Modifier<? extends Changes> modifier, Map<P,KeyExpr> toChangeKeys) {
-        Map<T, KeyExpr> mapKeys = groupProperty.getMapKeys();
+    private Expr getChangeExpr(PropertyChange<Interface<I>> change, Modifier<? extends Changes> modifier, Map<P,KeyExpr> toChangeKeys) {
+        Map<I, KeyExpr> mapKeys = KeyExpr.getMapKeys(innerInterfaces);
         
         // для G=newValue - изменением toChange
         // сделать чтобы все\хоть один I1=M1 AND I2=M2 AND … In=Mn AND G=newValue выполнялось - !FALSE - была хоть одна
@@ -85,13 +88,13 @@ public class CycleGroupProperty<T extends PropertyInterface,P extends PropertyIn
         WhereBuilder changedWhere = new WhereBuilder();
         Join<String> changeJoin = change.join(getGroupImplements(mapKeys, changeModifier, changedWhere));
         // группируем по новому значению, интерфейсам, а также по изменению toChange
-        Where compareWhere = groupProperty.getExpr(mapKeys, changeModifier, changedWhere).compare(changeJoin.getExpr("value"), Compare.EQUALS).and(changeJoin.getWhere());
+        Where compareWhere = groupProperty.mapExpr(mapKeys, changeModifier, changedWhere).compare(changeJoin.getExpr("value"), Compare.EQUALS).and(changeJoin.getWhere());
 
         return GroupExpr.create(toChange.getChangeExprs(), toChange.changeExpr, changedWhere.toWhere().and(compareWhere), getGroupType(), toChangeKeys, (PullExpr)toChange.changeExpr);
     }
 
-    private Where getNullWhere(PropertyChange<Interface<T>> change, Modifier<? extends Changes> modifier, Map<P,KeyExpr> toChangeKeys) {
-        Map<T, KeyExpr> mapKeys = groupProperty.getMapKeys();
+    private Where getNullWhere(PropertyChange<Interface<I>> change, Modifier<? extends Changes> modifier, Map<P,KeyExpr> toChangeKeys) {
+        Map<I, KeyExpr> mapKeys = KeyExpr.getMapKeys(innerInterfaces);
 
         // для G!=newValue, изменением toChange на null
         // сделать чтобы I1=M1 AND I2=M2 … In=Mn не выполнялось == FALSE - не было вообще
@@ -101,9 +104,9 @@ public class CycleGroupProperty<T extends PropertyInterface,P extends PropertyIn
         WhereBuilder newOldChangedWhere = new WhereBuilder();
 
         Where newOldWhere = Where.FALSE;
-        for(Interface<T> groupInterface : interfaces)
+        for(Interface<I> groupInterface : interfaces)
             newOldWhere = newOldWhere.or(groupInterface.implement.mapExpr(mapKeys,changeModifier,newOldChangedWhere).getWhere().not());
-        newOldWhere = newOldWhere.and(groupProperty.getExpr(mapKeys,modifier).getWhere());
+        newOldWhere = newOldWhere.and(groupProperty.mapExpr(mapKeys, modifier).getWhere());
 
         return GroupExpr.create(toChange.getChangeExprs(), newOldChangedWhere.toWhere().and(change.getWhere(getGroupImplements(mapKeys, modifier)).and(newOldWhere)), toChangeKeys).getWhere();
     }

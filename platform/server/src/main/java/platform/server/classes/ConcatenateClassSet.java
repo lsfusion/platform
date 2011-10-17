@@ -85,7 +85,7 @@ public class ConcatenateClassSet implements ConcreteClass  {
     }
 
     public AndClassSet getKeepClass() {
-        throw new RuntimeException("not supported");
+        return this;
     }
 
     @Override

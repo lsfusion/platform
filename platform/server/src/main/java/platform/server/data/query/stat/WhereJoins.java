@@ -4,7 +4,6 @@ import platform.base.AddSet;
 import platform.base.BaseUtils;
 import platform.base.Pair;
 import platform.base.Result;
-import platform.server.caches.IdentityLazy;
 import platform.server.caches.ManualLazy;
 import platform.server.caches.hash.HashContext;
 import platform.server.data.expr.*;
@@ -13,7 +12,6 @@ import platform.server.data.query.InnerJoin;
 import platform.server.data.query.InnerJoins;
 import platform.server.data.query.SourceJoin;
 import platform.server.data.query.innerjoins.KeyEqual;
-import platform.server.data.query.innerjoins.StatInterface;
 import platform.server.data.translator.HashLazy;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.where.DNFWheres;
@@ -22,7 +20,7 @@ import platform.server.data.where.WhereBuilder;
 
 import java.util.*;
 
-public class WhereJoins extends AddSet<WhereJoin, WhereJoins> implements StatInterface<WhereJoins>, DNFWheres.Interface<WhereJoins> {
+public class WhereJoins extends AddSet<WhereJoin, WhereJoins> implements DNFWheres.Interface<WhereJoins> {
 
     public WhereJoins() {
     }
@@ -275,7 +273,7 @@ public class WhereJoins extends AddSet<WhereJoin, WhereJoins> implements StatInt
     }
 
     // получает подможнство join'ов которое дает joinKeys, пропуская skipJoin. тут же алгоритм по определению достаточных ключей
-    public <K extends BaseExpr> StatKeys<K> getStatKeys(Set<K> joinKeys, Map<WhereJoin, Where> upWheres, QueryJoin<K, ?> skipJoin, WhereBuilder result, KeyStat keyStat) {
+    public <K extends Expr> StatKeys<K> getStatKeys(Set<K> joinKeys, Map<WhereJoin, Where> upWheres, QueryJoin<K, ?> skipJoin, WhereBuilder result, KeyStat keyStat) {
         // joinKeys из skipJoin.getJoins()
 
         Map<BaseExpr, K> groupKeys = BaseUtils.reverse(BaseUtils.filterKeys(skipJoin.getJoins(), joinKeys));

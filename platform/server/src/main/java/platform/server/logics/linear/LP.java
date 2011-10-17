@@ -89,9 +89,9 @@ public class LP<T extends PropertyInterface> {
 
     // небольшой конечно дебилизм так делать, но не хочется огород из классов городить
     public SumGroupProperty sumGroup;
-    public LP groupProperty;
+    public List<T> listGroupInterfaces;
     public void setDG(boolean ascending, Object... params) {
-        setDG(ascending, readImplements(groupProperty.listInterfaces, params));
+        setDG(ascending, readImplements(listGroupInterfaces, params));
     }
     public <T extends PropertyInterface> void setDG(boolean ascending, List<PropertyInterfaceImplement<T>> listImplements) {
         ((SumGroupProperty<T>)sumGroup).setDataChanges(new OrderedMap<PropertyInterfaceImplement<T>, Boolean>(listImplements.subList(1, listImplements.size()), ascending),

@@ -8,7 +8,7 @@ import platform.server.data.where.Where;
 
 import java.util.Set;
 
-public interface SourceJoin<T extends SourceJoin<T>> extends OuterContext<T> {
+public interface SourceJoin<T extends SourceJoin<T>> extends OuterContext<T>, AndContext<T> {
 
     String getSource(CompileSource compile);
 
@@ -25,6 +25,4 @@ public interface SourceJoin<T extends SourceJoin<T>> extends OuterContext<T> {
 
     // для дебага, определяет сложность выражения, предполагается что например packFollowFalse уменьшает сложность выражения чтобы не допустить рекурсию
     long getComplexity();
-
-    T and(Where where);
 }

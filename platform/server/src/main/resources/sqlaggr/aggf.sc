@@ -1,4 +1,6 @@
 
+-- пока не используются, вместо них используются multi-level props
+
 DROP TYPE IF EXISTS winddistr CASCADE;
 
 CREATE TYPE winddistr AS (

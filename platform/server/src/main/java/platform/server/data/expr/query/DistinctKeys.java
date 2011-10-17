@@ -37,6 +37,13 @@ public class DistinctKeys<K> extends QuickMap<K, Stat> {
         return result;
     }
 
+    public <T> DistinctKeys<T> mapBack(Map<T, K> map) {
+        DistinctKeys<T> result = new DistinctKeys<T>();
+        for(Map.Entry<T, K> entry : map.entrySet())
+            result.add(entry.getKey(), get(entry.getValue()));
+        return result;
+    }
+
     public DistinctKeys<K> or(DistinctKeys<K> stat) {
         DistinctKeys<K> result = new DistinctKeys<K>();
         for(int i=0;i<size;i++) {

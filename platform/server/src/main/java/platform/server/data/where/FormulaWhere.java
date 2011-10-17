@@ -42,10 +42,7 @@ public abstract class FormulaWhere<WhereType extends Where> extends AbstractWher
 
     @HashLazy
     public int hashOuter(HashContext hashContext) {
-        int result = hashCoeff();
-        for(Where where : wheres)
-            result += where.hashOuter(hashContext);
-        return result;
+        return hashCoeff() + hashSetOuter(wheres, hashContext);
     }
 
     protected abstract int hashCoeff();

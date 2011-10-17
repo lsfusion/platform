@@ -80,11 +80,7 @@ public class PropertyChange<T extends PropertyInterface> extends TwinsInnerConte
 
     @HashLazy
     public int hashInner(HashContext hashContext) {
-        int hash = 0;
-        for(Map.Entry<T,KeyExpr> mapKey : mapKeys.entrySet())
-            hash += mapKey.getKey().hashCode() ^ mapKey.getValue().hashOuter(hashContext);
-
-        return where.hashOuter(hashContext)*31*31 + expr.hashOuter(hashContext)*31 + hash;
+        return where.hashOuter(hashContext)*31*31 + expr.hashOuter(hashContext)*31 + AbstractOuterContext.hashOuter(mapKeys, hashContext);
     }
 
     public boolean equalsInner(PropertyChange<T> object) {

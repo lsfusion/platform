@@ -106,10 +106,7 @@ public class ConcatenateExpr extends BaseExpr {
 
     @HashLazy
     public int hashOuter(HashContext hashContext) {
-        int hash = 0;
-        for(BaseExpr expr : exprs)
-            hash = hash * 31 + expr.hashOuter(hashContext);
-        return hash;
+        return hashOuter(exprs, hashContext);
     }
 
     public Type getType(KeyType keyType) {

@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
 
-public class MaxUnionProperty extends UnionProperty {
+public class MaxUnionProperty extends IncrementUnionProperty {
 
     public Collection<PropertyMapImplement<?,Interface>> operands = new ArrayList<PropertyMapImplement<?, Interface>>();
 

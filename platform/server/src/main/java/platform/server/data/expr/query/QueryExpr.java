@@ -16,7 +16,7 @@ import platform.server.data.translator.MapValuesTranslate;
 
 import java.util.*;
 
-public abstract class QueryExpr<K extends BaseExpr,I extends OuterContext<I>,J extends QueryJoin<?, ?>> extends InnerExpr {
+public abstract class QueryExpr<K extends Expr,I extends OuterContext<I>,J extends QueryJoin<?, ?>> extends InnerExpr {
 
     public I query;
     Map<K, BaseExpr> group; // вообще гря не reverseable
@@ -92,7 +92,7 @@ public abstract class QueryExpr<K extends BaseExpr,I extends OuterContext<I>,J e
         }
 
         public QueryInnerContext translateInner(MapTranslate translate) {
-            return createThis(query.translateOuter(translate), (Map<K,BaseExpr>) translate.translateKeys(group)).innerContext;
+            return createThis(query.translateOuter(translate), (Map<K, BaseExpr>)translate.translateExprKeys(group)).innerContext;
         }
 
         private QueryExpr<K,I,J> getThis() {
@@ -108,7 +108,7 @@ public abstract class QueryExpr<K extends BaseExpr,I extends OuterContext<I>,J e
     // чисто для Lazy
     @IdentityLazy
     public Set<KeyExpr> getKeys() {
-        return getKeys(query, group);
+        return enumKeys(group.keySet(), query.getEnum());
     }
 
     @IdentityLazy
@@ -140,10 +140,6 @@ public abstract class QueryExpr<K extends BaseExpr,I extends OuterContext<I>,J e
 //        assert hashCode()==groupExpr.hashCode(); из-за singletonmap'а рушится
 
         return innerContext.equals(groupExpr.innerContext);
-    }
-
-    protected static <I extends OuterContext<I>,K extends BaseExpr> Set<KeyExpr> getKeys(I expr, Map<K, BaseExpr> group) {
-        return enumKeys(group.keySet(),expr.getEnum());
     }
 
     public long calculateComplexity() {

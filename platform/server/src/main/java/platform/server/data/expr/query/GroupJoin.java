@@ -2,14 +2,11 @@ package platform.server.data.expr.query;
 
 import platform.base.TwinImmutableInterface;
 import platform.server.caches.AbstractOuterContext;
-import platform.server.caches.IdentityLazy;
 import platform.server.caches.hash.HashContext;
 import platform.server.data.Value;
 import platform.server.data.expr.*;
 import platform.server.data.query.InnerJoin;
 import platform.server.data.query.SourceJoin;
-import platform.server.data.query.innerjoins.KeyEqual;
-import platform.server.data.query.innerjoins.StatInterface;
 import platform.server.data.query.stat.KeyStat;
 import platform.server.data.query.stat.StatKeys;
 import platform.server.data.translator.HashLazy;
@@ -20,38 +17,30 @@ import platform.server.data.where.Where;
 import java.util.Map;
 import java.util.Set;
 
-public class GroupJoin extends QueryJoin<BaseExpr, GroupJoin.Query> {
+public class GroupJoin extends QueryJoin<Expr, GroupJoin.Query> {
 
     public static class Query extends AbstractOuterContext<Query> {
         private final Where where;
-        private final StatInterface<?> joins;
-        private final Map<KeyExpr, Stat> keyStats;
-        private final Map<KeyExpr, Type> keyTypes;
+        private final StatKeys<Expr> stats;
+        private final Map<KeyExpr, Type> keyTypes; // чтобы не сливало группировки с разными типами
 
-        public Query(Where where, StatInterface joins, Map<KeyExpr, Stat> keyStats, Map<KeyExpr, Type> keyTypes) {
+        public Query(Where where, StatKeys<Expr> stats, Map<KeyExpr, Type> keyTypes) {
             this.where = where;
-            this.joins = joins;
-            this.keyStats = keyStats;
+            this.stats = stats;
             this.keyTypes = keyTypes;
         }
 
         public boolean twins(TwinImmutableInterface o) {
-            return joins.equals(((Query) o).joins) && where.equals(((Query) o).where) && keyStats.equals(((Query) o).keyStats) && keyTypes.equals(((Query) o).keyTypes);
+            return stats.equals(((Query) o).stats) && where.equals(((Query) o).where) && keyTypes.equals(((Query) o).keyTypes);
         }
 
         @HashLazy
         public int hashOuter(HashContext hashContext) {
-            int hash = 0;
-            for(Map.Entry<KeyExpr, Stat> keyType : keyStats.entrySet())
-                hash += keyType.getKey().hashOuter(hashContext) ^ keyType.getValue().hashCode();
-            hash = hash * 31;
-            for(Map.Entry<KeyExpr, Type> keyType : keyTypes.entrySet())
-                hash += keyType.getKey().hashOuter(hashContext) ^ keyType.getValue().hashCode();
-            return (31 * hash + where.hashOuter(hashContext))* 31 + joins.hashOuter(hashContext);
+            return (31 * hashKeysOuter(keyTypes, hashContext) + where.hashOuter(hashContext))* 31 + StatKeys.hashOuter(stats, hashContext);
         }
 
         public Query translateOuter(MapTranslate translator) {
-            return new Query(where.translateOuter(translator), joins.translateOuter(translator), translator.translateMapKeys(keyStats), translator.translateMapKeys(keyTypes));
+            return new Query(where.translateOuter(translator), StatKeys.translateOuter(stats, translator), translator.translateMapKeys(keyTypes));
         }
 
         public SourceJoin[] getEnum() {
@@ -68,24 +57,20 @@ public class GroupJoin extends QueryJoin<BaseExpr, GroupJoin.Query> {
         return new GroupJoin(this, translator);
     }
 
-    public GroupJoin(Map<KeyExpr, Stat> keyStats, Map<KeyExpr, Type> keyTypes, Set<Value> values, Where where, StatInterface joins, Map<BaseExpr, BaseExpr> group) {
-        super(keyStats.keySet(),values,new Query(where, joins, keyStats, keyTypes),group);
+    public GroupJoin(Map<KeyExpr, Type> keyTypes, Set<Value> values, Where where, StatKeys<Expr> joins, Map<Expr, BaseExpr> group) {
+        super(keyTypes.keySet(),values,new Query(where, joins, keyTypes),group);
     }
 
-    public GroupJoin(Set<KeyExpr> keys, Set<Value> values, Query inner, Map<BaseExpr, BaseExpr> group) {
+    public GroupJoin(Set<KeyExpr> keys, Set<Value> values, Query inner, Map<Expr, BaseExpr> group) {
         super(keys, values, inner, group);
     }
 
-    protected QueryJoin<BaseExpr, Query> createThis(Set<KeyExpr> keys, Set<Value> values, Query query, Map<BaseExpr, BaseExpr> group) {
+    protected GroupJoin createThis(Set<KeyExpr> keys, Set<Value> values, Query query, Map<Expr, BaseExpr> group) {
         return new GroupJoin(keys, values, query, group);
     }
 
     @Override
-    public StatKeys<BaseExpr> getStatKeys(KeyStat keyStat) {
-        return query.joins.getStatKeys(group.keySet(), new KeyStat() {
-            public Stat getKeyStat(KeyExpr key) {
-                return query.keyStats.get(key);
-            }
-        });
+    public StatKeys<Expr> getStatKeys(KeyStat keyStat) {
+        return query.stats;
     }
 }

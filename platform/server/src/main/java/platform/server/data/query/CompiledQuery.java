@@ -8,6 +8,8 @@ import platform.server.Settings;
 import platform.server.caches.OuterContext;
 import platform.server.data.*;
 import platform.server.data.expr.*;
+import platform.server.data.expr.order.OrderCalc;
+import platform.server.data.expr.order.OrderToken;
 import platform.server.data.expr.query.*;
 import platform.server.data.query.innerjoins.GroupJoinsWhere;
 import platform.server.data.query.stat.KeyStat;
@@ -399,7 +401,7 @@ public class CompiledQuery<K,V> {
             return getSource(classExpr.getJoinExpr());
         }
 
-        private abstract class QuerySelect<K extends BaseExpr,I extends OuterContext<I>,J extends QueryJoin<K,?>,E extends QueryExpr<K,I,J>> extends JoinSelect<J> {
+        private abstract class QuerySelect<K extends Expr,I extends OuterContext<I>,J extends QueryJoin<K,?>,E extends QueryExpr<K,I,J>> extends JoinSelect<J> {
             Map<String, K> group;
 
             protected Map<String, BaseExpr> initJoins(J groupJoin) {
@@ -432,7 +434,7 @@ public class CompiledQuery<K,V> {
             }
         }
 
-        private class GroupSelect extends QuerySelect<BaseExpr,GroupExpr.Query,GroupJoin,GroupExpr> {
+        private class GroupSelect extends QuerySelect<Expr,GroupExpr.Query,GroupJoin,GroupExpr> {
 
             final Set<KeyExpr> keys;
 
@@ -446,18 +448,18 @@ public class CompiledQuery<K,V> {
                 Set<Expr> queryExprs = new HashSet<Expr>(group.values()); // так как может одновременно и SUM и MAX нужен
                 Where exprWhere = Where.FALSE;
                 for(GroupExpr.Query query : queries.keySet()) {
-                    queryExprs.add(query.expr);
+                    queryExprs.addAll(query.getExprs());
                     exprWhere = exprWhere.or(query.getWhere());
                 }
                 Where fullWhere = exprWhere.and(platform.server.data.expr.Expr.getWhere(group));
 
-                StatKeys<BaseExpr> statKeys = innerJoin.getStatKeys(keyStat); // определяем ключи которые надо протолкнуть
-                Set<BaseExpr> groupExprs = innerJoin.getJoins().keySet();
+                StatKeys<Expr> statKeys = innerJoin.getStatKeys(keyStat); // определяем ключи которые надо протолкнуть
+                Set<Expr> groupExprs = innerJoin.getJoins().keySet();
                 WhereBuilder insufWhere = new WhereBuilder();
                 if(groupExprs.size() > 1 && whereJoins.getStatKeys(groupExprs, upWheres, innerJoin, insufWhere, keyStat).rows.less(statKeys.rows)) // проталкивание по многим ключам
                     fullWhere = fullWhere.and(GroupExpr.create(innerJoin.getJoins(), insufWhere.toWhere(), BaseUtils.toMap(groupExprs)).getWhere());
                 else {
-                    for(BaseExpr key : groupExprs) { // проталкивание по одному ключу
+                    for(Expr key : groupExprs) { // проталкивание по одному ключу
                         WhereBuilder insufDistWhere = new WhereBuilder();
                         if(whereJoins.getStatKeys(Collections.singleton(key), upWheres, innerJoin, insufDistWhere, keyStat).rows.less(statKeys.distinct.get(key)))
                             fullWhere = fullWhere.and(GroupExpr.create(Collections.singletonMap(0, innerJoin.group.get(key)), insufDistWhere.toWhere(), Collections.singletonMap(0, key)).getWhere());
@@ -472,7 +474,7 @@ public class CompiledQuery<K,V> {
                 Map<String, String> keySelect = BaseUtils.join(group,fromPropertySelect);
                 Map<String,String> propertySelect = new HashMap<String, String>();
                 for(Map.Entry<GroupExpr.Query, String> expr : queries.entrySet())
-                    propertySelect.put(expr.getValue(),expr.getKey().groupType.getString() + "(" + fromPropertySelect.get(expr.getKey().expr) + ")");
+                    propertySelect.put(expr.getValue(),expr.getKey().getSource(fromPropertySelect, syntax));
                 return "(" + syntax.getSelect(fromSelect, SQLSession.stringExpr(keySelect,propertySelect),
                         BaseUtils.toString(whereSelect," AND "),"",BaseUtils.evl(BaseUtils.toString(keySelect.values(),","),"3+2"),"") + ")";
             }
@@ -481,7 +483,7 @@ public class CompiledQuery<K,V> {
                 // бежим по всем exprs'ам и проверяем что нет AggrType'а
                 Where result = Where.TRUE;
                 for(Map.Entry<GroupExpr.Query, GroupExpr> expr : exprs.entrySet()) {
-                    if(expr.getKey().groupType.canBeNull())
+                    if(expr.getKey().type.canBeNull())
                         return Where.TRUE;
                     result = result.or(expr.getValue().getWhere());
                 }
@@ -500,35 +502,17 @@ public class CompiledQuery<K,V> {
             public String getSource() {
 
                 Set<Expr> queryExprs = new HashSet<Expr>();
+                for(OrderExpr.Query query : queries.keySet())
+                    queryExprs.addAll(query.getExprs());
+                Where fullWhere = innerJoin.getWhere();
 
-                Map<Set<Expr>,Where> cachedPartitions = new HashMap<Set<Expr>,Where>();
-
-                Where fullWhere = Where.FALSE;
-                for(OrderExpr.Query query : queries.keySet()) {
-                    queryExprs.addAll(query.exprs);
-                    queryExprs.addAll(query.orders.keySet());
-                    queryExprs.addAll(query.partitions);
-
-/*                    // кэшируем так как не самая быстрая операция
-                    Where partitionWhere;
-                    if(Settings.instance.isPushOrderWhere()) {
-                        partitionWhere = cachedPartitions.get(query.partitions);
-                        if(partitionWhere==null) {
-                            partitionWhere = OrderExpr.getPartitionWhere(true, getInnerWhere(), mapKeys, query.partitions);
-                            cachedPartitions.put(query.partitions,partitionWhere);
-                        }
-                    } else
-                        partitionWhere = Where.TRUE;
-
-                    fullWhere = fullWhere.or(query.getWhere().and(partitionWhere));*/
+                if(Settings.instance.isPushOrderWhere()) {
+                    StatKeys<KeyExpr> statKeys = innerJoin.getStatKeys(keyStat); // определяем ключи которые надо протолкнуть
+                    Set<KeyExpr> joins = innerJoin.getJoins().keySet();
+                    WhereBuilder insufWhere = new WhereBuilder();
+                    if(whereJoins.getStatKeys(joins, upWheres, innerJoin, insufWhere, keyStat).rows.less(statKeys.rows)) // проталкивание по многим ключам
+                        fullWhere = fullWhere.and(OrderExpr.getPartitionWhere(false, insufWhere.toWhere(), innerJoin.getJoins(), innerJoin.getPartitions()));
                 }
-                fullWhere = innerJoin.getWhere();
-
-                StatKeys<KeyExpr> statKeys = innerJoin.getStatKeys(keyStat); // определяем ключи которые надо протолкнуть
-                Set<KeyExpr> joins = innerJoin.getJoins().keySet();
-                WhereBuilder insufWhere = new WhereBuilder();
-                if(whereJoins.getStatKeys(joins, upWheres, innerJoin, insufWhere, keyStat).rows.less(statKeys.rows)) // проталкивание по многим ключам
-                    fullWhere = fullWhere.and(OrderExpr.getPartitionWhere(false, insufWhere.toWhere(), innerJoin.getJoins(), innerJoin.getPartitions()));
 
                 Map<String,String> keySelect = new HashMap<String,String>();
                 Map<Expr,String> fromPropertySelect = new HashMap<Expr, String>();
@@ -536,13 +520,51 @@ public class CompiledQuery<K,V> {
                 String fromSelect = new Query<String,Expr>(group,BaseUtils.toMap(queryExprs),fullWhere)
                     .compile(syntax, prefix).fillSelect(keySelect, fromPropertySelect, whereSelect, params);
 
-                Map<String,String> propertySelect = new HashMap<String, String>();
-                for(Map.Entry<OrderExpr.Query,String> expr : queries.entrySet()) // ORDER BY не проверяем на Clause потому как всегда должна быть
-                    propertySelect.put(expr.getValue(),expr.getKey().orderType.getSource(syntax, BaseUtils.mapList(expr.getKey().exprs, fromPropertySelect))  +
-                            " OVER ("+ BaseUtils.clause("PARTITION BY ",BaseUtils.toString(BaseUtils.filterKeys(fromPropertySelect, expr.getKey().partitions).values(),",")) +
-                            " ORDER BY " + Query.stringOrder(BaseUtils.mapOrder(expr.getKey().orders,fromPropertySelect), syntax) + ")");
-                return "(" + syntax.getSelect(fromSelect, SQLSession.stringExpr(keySelect,propertySelect),
-                        BaseUtils.toString(whereSelect," AND "),"","","") + ")";
+                // обработка multi-level order'ов
+                Map<OrderToken, String> tokens = new HashMap<OrderToken, String>();
+                Map<OrderCalc, String> resultNames = new HashMap<OrderCalc, String>();
+                for(Map.Entry<OrderExpr.Query, String> query : queries.entrySet()) {
+                    OrderCalc calc = query.getKey().orderType.createAggr(tokens,
+                            BaseUtils.mapList(query.getKey().exprs, fromPropertySelect),
+                            BaseUtils.mapOrder(query.getKey().orders, fromPropertySelect),
+                            new HashSet<String>(BaseUtils.filterKeys(fromPropertySelect, query.getKey().partitions).values()));
+                    resultNames.put(calc, query.getValue());
+                }
+
+                Set<String> proceeded = new HashSet<String>();
+                for(int i=1;;i++) {
+                    Set<OrderToken> next = new HashSet<OrderToken>();
+                    boolean last = true;
+                    for(Map.Entry<OrderToken, String> token : tokens.entrySet()) {
+                        boolean neededUp = token.getKey().next.isEmpty(); // верхний, надо протаскивать
+                        last = true;
+                        for(OrderCalc usedToken : token.getKey().next) {
+                            if(usedToken.getLevel() >= i) {
+                                if(usedToken.getLevel() == i) // если тот же уровень
+                                    next.add(usedToken);
+                                else
+                                    neededUp = true;
+                                last = false;
+                            }
+                        }
+                        if(neededUp)
+                            next.add(token.getKey());
+                    }
+                    if(last)
+                        return fromSelect;
+
+                    Map<OrderToken, String> nextTokens = new HashMap<OrderToken, String>();
+                    Map<String, String> propertySelect = new HashMap<String, String>(BaseUtils.toMap(proceeded));
+                    for(OrderToken token : next) {
+                        String name = token.next.isEmpty() ? resultNames.get((OrderCalc) token) : "ne" + nextTokens.size(); // если верхний то нужно с нормальным именем тащить
+                        propertySelect.put(name, token.getSource(tokens, syntax));
+                        nextTokens.put(token, name);
+                    }
+                    fromSelect = "(" + syntax.getSelect(fromSelect + (i>1?" q":""), SQLSession.stringExpr(keySelect,propertySelect),
+                        (i>1?"":BaseUtils.toString(whereSelect," AND ")),"","","") + ")";
+                    keySelect = BaseUtils.toMap(keySelect.keySet()); // ключи просто превращаем в имена
+                    tokens = nextTokens;
+                }
             }
 
             protected Where getInnerWhere() {
@@ -554,7 +576,7 @@ public class CompiledQuery<K,V> {
             }
         }
 
-        private <K extends BaseExpr,I extends OuterContext<I>,IJ extends OuterContext<IJ>,J extends QueryJoin<K,IJ>,E extends QueryExpr<K,I,J>,Q extends QuerySelect<K,I,J,E>>
+        private <K extends Expr,I extends OuterContext<I>,IJ extends OuterContext<IJ>,J extends QueryJoin<K,IJ>,E extends QueryExpr<K,I,J>,Q extends QuerySelect<K,I,J,E>>
                     String getSource(Map<J,Q> selects, E expr) {
             J exprJoin = expr.getInnerJoin();
 

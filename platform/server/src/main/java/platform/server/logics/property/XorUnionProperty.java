@@ -15,7 +15,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-public class XorUnionProperty extends UnionProperty {
+public class XorUnionProperty extends IncrementUnionProperty {
 
     public XorUnionProperty(String sID, String caption, int intNum) {
         super(sID, caption, intNum);

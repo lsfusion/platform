@@ -9,7 +9,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
-public class SumUnionProperty extends UnionProperty {
+public class SumUnionProperty extends IncrementUnionProperty {
 
     public SumUnionProperty(String sID, String caption, int intNum) {
         super(sID, caption, intNum);

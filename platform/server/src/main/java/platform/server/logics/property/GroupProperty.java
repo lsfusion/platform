@@ -1,7 +1,9 @@
 package platform.server.logics.property;
 
 import platform.base.BaseUtils;
+import platform.base.OrderedMap;
 import platform.server.data.expr.Expr;
+import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.query.GroupExpr;
 import platform.server.data.expr.query.GroupType;
 import platform.server.data.where.WhereBuilder;
@@ -10,114 +12,89 @@ import platform.server.session.Modifier;
 
 import java.util.*;
 
-abstract public class GroupProperty<T extends PropertyInterface> extends ComplexIncrementProperty<GroupProperty.Interface<T>> {
+abstract public class GroupProperty<I extends PropertyInterface> extends ComplexIncrementProperty<GroupProperty.Interface<I>> {
 
-    protected final boolean SIMPLE_SCHEME = true;
+    public static class Interface<I extends PropertyInterface> extends PropertyInterface<Interface<I>> {
+        public PropertyInterfaceImplement<I> implement;
 
-    // оператор
-    int groupType;
-
-    public static class Interface<T extends PropertyInterface> extends PropertyInterface<Interface<T>> {
-        public PropertyInterfaceImplement<T> implement;
-
-        public Interface(int ID,PropertyInterfaceImplement<T> implement) {
+        public Interface(int ID,PropertyInterfaceImplement<I> implement) {
             super(ID);
             this.implement = implement;
         }
     }
 
-    private static <T extends PropertyInterface> List<Interface<T>> getInterfaces(Collection<? extends PropertyInterfaceImplement<T>> interfaceImplements) {
-        List<Interface<T>> interfaces = new ArrayList<Interface<T>>();
-        for(PropertyInterfaceImplement<T> implement : interfaceImplements)
-            interfaces.add(new Interface<T>(interfaces.size(),implement));
+    private static <I extends PropertyInterface> List<Interface<I>> getInterfaces(Collection<? extends PropertyInterfaceImplement<I>> interfaceImplements) {
+        List<Interface<I>> interfaces = new ArrayList<Interface<I>>();
+        for(PropertyInterfaceImplement<I> implement : interfaceImplements)
+            interfaces.add(new Interface<I>(interfaces.size(),implement));
         return interfaces;
     }
 
     protected abstract GroupType getGroupType();
 
-    protected GroupProperty(String sID, String caption, Collection<? extends PropertyInterfaceImplement<T>> interfaces, Property<T> property) {
-        super(sID, caption, getInterfaces(interfaces));
-        groupProperty = property;
-        this.groupType = groupType;
+    protected GroupProperty(String sID, String caption, Collection<I> innerInterfaces, Collection<? extends PropertyInterfaceImplement<I>> groupInterfaces) {
+        super(sID, caption, getInterfaces(groupInterfaces));
+        this.innerInterfaces = innerInterfaces;
     }
 
-    // группировочное св-во
-    protected Property<T> groupProperty;
-
-    Object groupValue = "grfield";
-
-    protected Map<Interface<T>, Expr> getGroupImplements(Map<T, ? extends Expr> mapKeys, Modifier<? extends Changes> modifier) {
-        Map<Interface<T>, Expr> group = new HashMap<Interface<T>, Expr>();
-        for(Interface<T> propertyInterface : interfaces)
-            group.put(propertyInterface,propertyInterface.implement.mapExpr(mapKeys, modifier));
-        return group;
+    public Map<Interface<I>,PropertyInterfaceImplement<I>> getMapInterfaces() {
+        Map<Interface<I>,PropertyInterfaceImplement<I>> mapInterfaces = new HashMap<Interface<I>, PropertyInterfaceImplement<I>>();
+        for(GroupProperty.Interface<I> propertyInterface : interfaces)
+            mapInterfaces.put(propertyInterface,propertyInterface.implement);
+        return mapInterfaces;
     }
 
-    protected Map<Interface<T>, Expr> getGroupImplements(Map<T, ? extends Expr> mapKeys, Modifier<? extends Changes> modifier, WhereBuilder changedWhere) {
-        Map<Interface<T>, Expr> group = new HashMap<Interface<T>, Expr>();
-        for(Interface<T> propertyInterface : interfaces)
+    protected abstract List<PropertyInterfaceImplement<I>> getProps();
+    protected abstract OrderedMap<PropertyInterfaceImplement<I>, Boolean> getOrders();
+    protected final Collection<I> innerInterfaces;
+
+    protected Map<Interface<I>, Expr> getGroupImplements(Map<I, ? extends Expr> mapKeys, Modifier<? extends Changes> modifier) {
+        return getGroupImplements(mapKeys, modifier, null);
+    }
+
+    protected Map<Interface<I>, Expr> getGroupImplements(Map<I, ? extends Expr> mapKeys, Modifier<? extends Changes> modifier, WhereBuilder changedWhere) {
+        Map<Interface<I>, Expr> group = new HashMap<Interface<I>, Expr>();
+        for(Interface<I> propertyInterface : interfaces)
             group.put(propertyInterface,propertyInterface.implement.mapExpr(mapKeys, modifier, changedWhere));
         return group;
     }
 
+    protected OrderedMap<Expr, Boolean> getOrderImplements(Map<I, ? extends Expr> joinImplement, Modifier<? extends Changes> modifier) {
+        return getOrderImplements(joinImplement, modifier, null);
+    }
+
+    protected OrderedMap<Expr, Boolean> getOrderImplements(Map<I, ? extends Expr> joinImplement, Modifier<? extends Changes> modifier, WhereBuilder changedWhere) {
+        OrderedMap<Expr, Boolean> result = new OrderedMap<Expr, Boolean>();
+        for(Map.Entry<PropertyInterfaceImplement<I>, Boolean> order : getOrders().entrySet())
+            result.put(order.getKey().mapExpr(joinImplement, modifier, changedWhere), order.getValue());
+        return result;
+    }
+
+    protected List<Expr> getExprImplements(Map<I, ? extends Expr> joinImplement, Modifier<? extends Changes> modifier) {
+        return getExprImplements(joinImplement, modifier, null);
+    }
+
+    protected List<Expr> getExprImplements(Map<I, ? extends Expr> joinImplement, Modifier<? extends Changes> modifier, WhereBuilder changedWhere) {
+        List<Expr> exprs = new ArrayList<Expr>();
+        for(PropertyInterfaceImplement<I> expr : getProps())
+            exprs.add(expr.mapExpr(joinImplement, modifier, changedWhere));
+        return exprs;
+    }
+
     // не очень хорошо, так как берет на себя часть функций компилятора (проталкивание значений), но достаточно неплохо должна помогать оптимизации
-    private Map<T, Expr> getGroupKeys(Map<Interface<T>, ? extends Expr> joinImplement) {
-        Map<PropertyInterfaceImplement<T>, Expr> interfaceValues = new HashMap<PropertyInterfaceImplement<T>, Expr>();
-        for(Map.Entry<Interface<T>, ? extends Expr> entry : joinImplement.entrySet())
+    protected Map<I, Expr> getGroupKeys(Map<Interface<I>, ? extends Expr> joinImplement) {
+        Map<PropertyInterfaceImplement<I>, Expr> interfaceValues = new HashMap<PropertyInterfaceImplement<I>, Expr>();
+        for(Map.Entry<Interface<I>, ? extends Expr> entry : joinImplement.entrySet())
             if(entry.getValue().isValue())
                 interfaceValues.put(entry.getKey().implement, entry.getValue());
-        return BaseUtils.replace(groupProperty.getMapKeys(), interfaceValues);
+        return BaseUtils.replace(KeyExpr.getMapKeys(innerInterfaces), interfaceValues);
     }
-
-    protected Expr calculateNewExpr(Map<Interface<T>, ? extends Expr> joinImplement, Modifier<? extends Changes> modifier) {
-        Map<T, Expr> mapKeys = getGroupKeys(joinImplement);
-        return GroupExpr.create(getGroupImplements(mapKeys, modifier), groupProperty.getExpr(mapKeys, modifier), getGroupType(), joinImplement);
-    }
-
-    protected Expr calculateIncrementExpr(Map<Interface<T>, ? extends Expr> joinImplement, Modifier<? extends Changes> modifier, Expr prevExpr, WhereBuilder changedWhere) {
-        // если нужна инкрементность
-        Map<T, Expr> mapKeys = getGroupKeys(joinImplement); // изначально чтобы новые и старые группировочные записи в одном контексте были
-
-        // новые группировочные записи
-        WhereBuilder changedGroupWhere = new WhereBuilder();
-        Expr changedExpr = GroupExpr.create(getGroupImplements(mapKeys, modifier, changedGroupWhere), groupProperty.getExpr(mapKeys, modifier, changedGroupWhere), changedGroupWhere.toWhere(), getGroupType(), joinImplement);
-
-        // старые группировочные записи
-        Expr changedPrevExpr = GroupExpr.create(getGroupImplements(mapKeys, defaultModifier), groupProperty.getExpr(mapKeys), changedGroupWhere.toWhere(), getGroupType(), joinImplement);
-
-        return getChangedExpr(changedExpr, changedPrevExpr, prevExpr, joinImplement, modifier, changedWhere);
-    }
-
-    protected boolean noIncrement() {
-        return !isStored();
-    }
-
-    protected Expr calculateExpr(Map<Interface<T>, ? extends Expr> joinImplement, Modifier<? extends Changes> modifier, WhereBuilder changedWhere) {
-
-        if(!hasChanges(modifier) || (changedWhere==null && noIncrement()))
-            return calculateNewExpr(joinImplement, modifier);
-
-        return calculateIncrementExpr(joinImplement, modifier, getExpr(joinImplement), changedWhere);
-    }
-
-    protected abstract Expr getChangedExpr(Expr changedExpr, Expr changedPrevExpr, Expr prevExpr, Map<Interface<T>, ? extends Expr> joinImplement, Modifier<? extends Changes> modifier, WhereBuilder changedWhere);
 
     @Override
     public void fillDepends(Set<Property> depends, boolean derived) {
-        for(Interface<T> interfaceImplement : interfaces)
+        for(Interface interfaceImplement : interfaces)
             interfaceImplement.implement.mapFillDepends(depends);
-        depends.add(groupProperty);
-    }
-
-    @Override
-    protected boolean useSimpleIncrement() {
-        return false;
-    }
-
-    public Map<Interface<T>,PropertyInterfaceImplement<T>> getMapInterfaces() {
-        Map<Interface<T>,PropertyInterfaceImplement<T>> mapInterfaces = new HashMap<Interface<T>, PropertyInterfaceImplement<T>>();
-        for(GroupProperty.Interface<T> propertyInterface : interfaces)
-            mapInterfaces.put(propertyInterface,propertyInterface.implement);
-        return mapInterfaces;
+        fillDepends(depends, getProps());
+        fillDepends(depends, getOrders().keySet());
     }
 }

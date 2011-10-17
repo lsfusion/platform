@@ -50,30 +50,16 @@ public class OrderExpr extends QueryExpr<KeyExpr, OrderExpr.Query,OrderJoin> imp
 
         @HashLazy
         public int hashOuter(HashContext hashContext) {
-            int hash = 0;
-            for(Expr expr : exprs)
-                hash = hash * 31 + expr.hashOuter(hashContext);
-            hash = hash * 31;
-            for(Map.Entry<Expr,Boolean> order : orders.entrySet())
-                hash = hash * 31 + order.getKey().hashOuter(hashContext) ^ order.getValue().hashCode();
-            hash = hash * 31;
-            for(Expr partition : partitions)
-                hash += partition.hashOuter(hashContext);
-            return 31 * hash + orderType.hashCode();
+            return 31 * ((hashOuter(exprs, hashContext) * 31 + hashOuter(orders, hashContext)) * 31 + hashOuter(partitions, hashContext)) + orderType.hashCode();
         }
 
         @IdentityLazy
         public Where getWhere() {
-            return Expr.getWhere(exprs).and(getGroupWhere());
+            return Expr.getWhere(getExprs());
         }
 
         public Stat getTypeStat() {
             return exprs.get(0).getTypeStat(getWhere());
-        }
-
-        @IdentityLazy
-        public Where getGroupWhere() {
-            return Expr.getWhere(orders.keySet()).and(Expr.getWhere(partitions));
         }
 
         @IdentityLazy
@@ -87,12 +73,16 @@ public class OrderExpr extends QueryExpr<KeyExpr, OrderExpr.Query,OrderJoin> imp
         }
 
         public SourceJoin[] getEnum() { // !!! Включим ValueExpr.TRUE потому как в OrderSelect.getSource - при проталкивании partition'а может создать TRUE
-            return AbstractSourceJoin.merge(partitions,AbstractSourceJoin.merge(BaseUtils.merge(orders.keySet(), exprs), ValueExpr.TRUE));
+            return AbstractSourceJoin.merge(getExprs(), ValueExpr.TRUE);
         }
 
         @IdentityLazy
         public Query pack() { // пока так
             return new Query(Expr.pack(exprs), orders, partitions, orderType);
+        }
+
+        public Set<Expr> getExprs() {
+            return OrderType.getSet(exprs, orders, partitions);
         }
     }
 
