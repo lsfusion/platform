@@ -45,11 +45,6 @@
             <artifactId>client</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.tuckey</groupId>
-            <artifactId>urlrewritefilter</artifactId>
-            <version>3.1.0</version>
-        </dependency>
-        <dependency>
             <groupId>log4j</groupId>
             <artifactId>log4j</artifactId>
         </dependency>
@@ -68,6 +63,11 @@
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-webmvc</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.googlecode.gwtupload</groupId>
+            <artifactId>gwtupload</artifactId>
+            <version>0.6.3-compat</version>
         </dependency>
     </dependencies>
 

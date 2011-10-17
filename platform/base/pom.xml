@@ -9,7 +9,7 @@
 
     <properties>
         <spring.version>3.0.5.RELEASE</spring.version>
-        <gwt.version>2.2.0</gwt.version>
+        <gwt.version>2.3.0</gwt.version>
         <smartgwt.version>2.5</smartgwt.version>
 
         <maven.compiler.source>1.6</maven.compiler.source>

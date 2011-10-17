@@ -1,15 +1,10 @@
 package skolkovo.gwt.expertprofile.client.ui;
 
-import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.rpc.AsyncCallback;
-import com.smartgwt.client.types.Alignment;
-import com.smartgwt.client.types.ListGridFieldType;
-import com.smartgwt.client.types.TitleOrientation;
-import com.smartgwt.client.types.VisibilityMode;
+import com.smartgwt.client.types.*;
 import com.smartgwt.client.util.SC;
 import com.smartgwt.client.widgets.Canvas;
 import com.smartgwt.client.widgets.IButton;
-import com.smartgwt.client.widgets.Label;
 import com.smartgwt.client.widgets.events.ClickEvent;
 import com.smartgwt.client.widgets.events.ClickHandler;
 import com.smartgwt.client.widgets.form.DynamicForm;
@@ -91,19 +86,6 @@ public class ExpertProfileMainPanel extends HLayout {
         unvotedForm.setColWidths("10", "*");
         unvotedForm.setFields(cbShowUnvoted);
 
-        VLayout main = new VLayout();
-        main.setWidth100();
-        main.setHeight100();
-        //??
-        main.setStyleName("tabSetContainer");
-
-        main.addMember(new ToolStripPanel(messages.title()));
-
-        SectionStack mainSectionStack = new SectionStack();
-        mainSectionStack.setMargin(20);
-        mainSectionStack.setVisibilityMode(VisibilityMode.MULTIPLE);
-//        mainSectionStack.setAnimateSections(true);
-
         SectionStackSection detailsSection = new SectionStackSection(messages.sectionExpertDetails());
         detailsSection.setItems(expertDetailsForm);
         detailsSection.setExpanded(true);
@@ -112,17 +94,15 @@ public class ExpertProfileMainPanel extends HLayout {
         gridSection.setItems(unvotedForm, grid);
         gridSection.setExpanded(true);
 
-        //todo: delete this when[if] implemented
-        if (!GWT.isScript()) {
-            SectionStackSection voteSection = new SectionStackSection(messages.sectionVoteDetails());
-            voteSection.setItems(new Label("to be done..."));
-            voteSection.setExpanded(true);
+        SectionStack mainSectionStack = new SectionStack();
+        mainSectionStack.setMargin(20);
+        mainSectionStack.setVisibilityMode(VisibilityMode.MULTIPLE);
+        mainSectionStack.setSections(detailsSection, gridSection);
 
-            mainSectionStack.setSections(detailsSection, gridSection, voteSection);
-        } else {
-            mainSectionStack.setSections(detailsSection, gridSection);
-        }
-
+        VLayout main = new VLayout();
+        main.setWidth100();
+        main.setHeight100();
+        main.addMember(new ToolStripPanel(messages.title()));
         main.addMember(mainSectionStack);
 
         addMember(main);
@@ -142,35 +122,21 @@ public class ExpertProfileMainPanel extends HLayout {
     private void createGrid() {
         grid = new ListGrid() {
             @Override
+            public Canvas updateRecordComponent(ListGridRecord record, Integer colNum, Canvas component, boolean recordChanged) {
+                final VoteInfo vi = ((ListVoteInfo) record).vi;
+                if (!vi.voteDone && "sentDocs".equals(getFieldName(colNum))) {
+                    final SendDocumentsButton btn = (SendDocumentsButton) component;
+                    btn.setVoteInfo(vi);
+                    return btn;
+                }
+                return null;
+            }
+
+            @Override
             protected Canvas createRecordComponent(final ListGridRecord record, Integer colNum) {
                 final VoteInfo vi = ((ListVoteInfo) record).vi;
                 if (!vi.voteDone && "sentDocs".equals(getFieldName(colNum))) {
-                    final IButton btn = new IButton(messages.send());
-                    btn.setShowDisabledIcon(false);
-                    btn.addClickHandler(new ClickHandler() {
-                        @Override
-                        public void onClick(ClickEvent event) {
-                            btn.disable();
-                            btn.setIcon("loading.gif");
-
-                            expertProfileService.execute(new SentVoteDocuments(vi.voteId), new AsyncCallback<VoidResult>() {
-                                @Override
-                                public void onFailure(Throwable caught) {
-                                    SC.warn(messages.sentFailedMessage());
-                                    btn.enable();
-                                    btn.setIcon(null);
-                                }
-
-                                @Override
-                                public void onSuccess(VoidResult result) {
-                                    SC.say(messages.sentSuccessMessage());
-                                    btn.enable();
-                                    btn.setIcon(null);
-                                }
-                            });
-                        }
-                    });
-                    return btn;
+                    return new SendDocumentsButton(vi);
                 }
 
                 return null;
@@ -183,6 +149,7 @@ public class ExpertProfileMainPanel extends HLayout {
         grid.setShowRollOver(false);
         grid.setShowRecordComponents(true);
         grid.setShowRecordComponentsByCell(true);
+        grid.setRecordComponentPoolingMode(RecordComponentPoolingMode.RECYCLE);
         grid.setEmptyCellValue("--");
 
         ListGridField voteResultField = new ListGridField("voteResult", messages.columnVoteResult());
@@ -296,6 +263,46 @@ public class ExpertProfileMainPanel extends HLayout {
             }
         } else {
             return messages.resultOpened();
+        }
+    }
+
+    private static class SendDocumentsButton extends IButton {
+        public VoteInfo voteInfo;
+        public SendDocumentsButton(VoteInfo vi) {
+            super(messages.send());
+
+            setVoteInfo(vi);
+            addClickHandler(new ClickHandler() {
+                @Override
+                public void onClick(ClickEvent event) {
+                    if (voteInfo == null) {
+                        return;
+                    }
+
+                    disable();
+                    setIcon("loading.gif");
+
+                    expertProfileService.execute(new SentVoteDocuments(voteInfo.voteId), new AsyncCallback<VoidResult>() {
+                        @Override
+                        public void onFailure(Throwable caught) {
+                            SC.warn(messages.sentFailedMessage());
+                            enable();
+                            setIcon(null);
+                        }
+
+                        @Override
+                        public void onSuccess(VoidResult result) {
+                            SC.say(messages.sentSuccessMessage());
+                            enable();
+                            setIcon(null);
+                        }
+                    });
+                }
+            });
+        }
+
+        public void setVoteInfo(VoteInfo vi) {
+            this.voteInfo = vi;
         }
     }
 }

@@ -8,8 +8,8 @@ import org.springframework.web.HttpRequestHandler;
 import paas.api.gwt.shared.dto.ConfigurationDTO;
 import paas.api.remote.PaasRemoteInterface;
 import platform.base.IOUtils;
+import platform.gwt.base.server.ServerUtils;
 import platform.gwt.base.server.spring.BusinessLogicsProvider;
-import platform.server.ServerUtils;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
@@ -58,7 +58,7 @@ public class JNLPReqestHandler implements HttpRequestHandler {
             Properties properties = new Properties();
             properties.put("codebase.url", requestURL.substring(0, requestURL.lastIndexOf("/")));
             properties.put("jnlp.url", requestURL.append("?").append(request.getQueryString()).toString());
-            properties.put("scripted.name", configuration.name);
+            properties.put("scripted.name", configuration.name == null ? "Launch app" : configuration.name);
             properties.put("scripted.host", getLogicsHost());
             properties.put("scripted.port", configuration.port.toString());
 

@@ -8,9 +8,18 @@
     <http auto-config="true" use-expressions="true" entry-point-ref="loginUrlAuthenticationEntryPoint">
         <intercept-url pattern="/expertProfile.html" access="hasRole('expert')"/>
         <intercept-url pattern="/skolkovo.gwt.expertprofile.ExpertProfile/*" access="hasRole('expert')"/>
-        <intercept-url pattern="/skolkovo.gwt.form.Form/*" access="hasRole('admin')"/>
+
         <intercept-url pattern="/form.jsp" access="hasRole('admin')"/>
+        <intercept-url pattern="/skolkovo.gwt.form.Form/*" access="hasRole('admin')"/>
+
+        <intercept-url pattern="/skolkovo.gwt.navigator.Navigator/*" access="hasRole('admin')"/>
         <intercept-url pattern="/navigator.jsp" access="hasRole('admin')"/>
+
+        <!-- пока закрываем доступ -->
+        <intercept-url pattern="/skolkovo.gwt.claimer.Claimer/*" access="hasRole('admin')"/>
+        <intercept-url pattern="/claimer.html" access="hasRole('admin')"/>
+        <intercept-url pattern="*.gupld" access="hasRole('admin')"/>
+
         <form-login authentication-failure-url="/loginFailed.txt" default-target-url="/navigator.jsp"/>
         <anonymous enabled="false" />
         <logout logout-url="/logoff.jsp" logout-success-url="/navigator.jsp" />

@@ -7,9 +7,9 @@ import com.gwtplatform.dispatch.shared.ActionException;
 import com.gwtplatform.dispatch.shared.Result;
 import org.springframework.security.core.Authentication;
 import platform.base.GenericUtils;
+import platform.gwt.base.server.ServerUtils;
 import platform.gwt.paas.server.exceptions.IOActionException;
 import platform.gwt.paas.server.exceptions.RemoteActionException;
-import platform.server.ServerUtils;
 
 import java.io.IOException;
 import java.rmi.RemoteException;

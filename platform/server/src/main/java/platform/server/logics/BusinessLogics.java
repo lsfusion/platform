@@ -1367,9 +1367,9 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             if (property instanceof AggregateProperty) {
                 AggregateProperty dependProperty = (AggregateProperty) property;
                 if (recalculateProperties.contains(dependProperty)) {
-                    logger.debug(getString("logics.info.recalculation.of.aggregated.property")+" (" + dependProperty + ")... ");
+                    logger.info(getString("logics.info.recalculation.of.aggregated.property")+" (" + dependProperty + ")... ");
                     dependProperty.recalculateAggregation(session);
-                    logger.debug("Done");
+                    logger.info("Done");
                 }
             }
     }

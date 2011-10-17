@@ -1,4 +1,4 @@
-package platform.server;
+package platform.gwt.base.server;
 
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
