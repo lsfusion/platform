@@ -1,6 +1,7 @@
 package skolkovo.actions;
 
 import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.codec.binary.Hex;
 import org.apache.log4j.Logger;
 import org.jdom.Attribute;
 import org.jdom.Document;
@@ -535,8 +536,7 @@ public class ImportProjectsActionProperty extends ActionProperty {
         String string = cal.getTimeInMillis() / 1000 + "_1q2w3e";
 
         MessageDigest m = MessageDigest.getInstance("MD5");
-        m.update(string.getBytes(), 0, string.length());
-        return "http://app.i-gorod.com/xml.php?hash=" + new BigInteger(1, m.digest()).toString(16);
+        return "http://app.i-gorod.com/xml.php?hash=" + Hex.encodeHexString(m.digest(string.getBytes()));
     }
 
     public Date getUpdateProjectDate(String year, String month, String day, String hour, String minute, String second) {
