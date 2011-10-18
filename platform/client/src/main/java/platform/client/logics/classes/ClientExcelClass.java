@@ -26,6 +26,11 @@ public class ClientExcelClass extends ClientFileClass {
         return new ExcelPropertyRenderer(format, design);
     }
 
+    @Override
+    public String formatString(Object obj) {
+        return "Excel";
+    }
+
     public byte getTypeId() {
         return Data.EXCEL;
     }

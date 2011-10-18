@@ -30,6 +30,11 @@ public class ClientImageClass extends ClientFileClass {
     }
 
     @Override
+    public String formatString(Object obj) {
+        return "Image";
+    }
+
+    @Override
     public PropertyEditorComponent getComponent(Object value, Format format, ComponentDesign design) {
         return new FilePropertyEditor(ClientResourceBundle.getString("logics.classes.image"), "jpg", "jpeg", "bmp", "png");
     }

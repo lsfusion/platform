@@ -1,5 +1,6 @@
 package platform.client.logics.classes;
 
+import jxl.write.DateTime;
 import platform.client.ClientResourceBundle;
 import platform.client.Main;
 import platform.client.form.PropertyEditorComponent;
@@ -11,6 +12,7 @@ import platform.gwt.view.classes.GType;
 import platform.interop.ComponentDesign;
 import platform.interop.Data;
 
+import java.sql.Date;
 import java.text.DateFormat;
 import java.text.Format;
 import java.text.ParseException;
@@ -58,10 +60,19 @@ public class ClientDateClass extends ClientDataClass implements ClientTypeClass 
 
     public Object parseString(String s) throws ParseException {
         try {
-            return getSimpleDateFormat().parse(s);
+            return new java.sql.Date(getSimpleDateFormat().parse(s).getTime());
         } catch (Exception e) {
             throw new ParseException(s +  ClientResourceBundle.getString("logics.classes.can.not.be.converted.to.date"), 0);
         }
+    }
+
+    @Override
+    public String formatString(Object obj) {
+        String dateString = "";
+        if(obj!=null) {
+            return dateString.concat(obj.toString().substring(8,10).concat(".").concat(obj.toString().substring(5,7).concat(".").concat(obj.toString().substring(0,4))));
+        }
+        else return dateString;
     }
 
     @Override

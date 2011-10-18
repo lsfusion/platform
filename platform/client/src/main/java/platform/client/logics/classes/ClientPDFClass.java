@@ -27,6 +27,11 @@ public class ClientPDFClass extends ClientFileClass {
         return new PDFPropertyRenderer(format, design);
     }
 
+    @Override
+    public String formatString(Object obj) {
+        return "PDF";
+    }
+
     public byte getTypeId() {
         return Data.PDF;
     }

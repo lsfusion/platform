@@ -59,6 +59,11 @@ public class ClientDoubleClass extends ClientIntegralClass implements ClientType
         }
     }
 
+    @Override
+    public String formatString(Object obj) {
+        return reformatString(obj.toString());
+    }
+
     public PropertyEditorComponent getComponent(Object value, Format format, ComponentDesign design) {
         return new DoublePropertyEditor(value, (NumberFormat) format, design, getJavaClass());
     }

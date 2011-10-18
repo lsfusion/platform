@@ -1,12 +1,15 @@
 package platform.client.form;
 
 import platform.base.BaseUtils;
+import platform.client.form.cell.CellTableInterface;
 import platform.client.form.grid.GridTable;
+import platform.client.logics.ClientPropertyDraw;
 
 import javax.swing.*;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.Transferable;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
@@ -30,9 +33,13 @@ public abstract class TableTransferHandler extends TransferHandler {
     // ghgfdffddf
 
     protected Transferable createTransferable(JComponent c) {
-        if (c instanceof JTable) {
+        if (c instanceof CellTableInterface) {
             if (c instanceof GridTable) {
-                return new StringSelection(((GridTable) c).getSelectedTable());
+                try {
+                    return new StringSelection(((GridTable) c).getSelectedTable());
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                }
             }
 
             JTable table = (JTable) c;
@@ -49,7 +56,13 @@ public abstract class TableTransferHandler extends TransferHandler {
             if (value instanceof String) {
                 value = BaseUtils.rtrim((String) value);
             }
-            return new StringSelection(value.toString());
+            CellTableInterface cellTable = (CellTableInterface) table;
+            ClientPropertyDraw property = cellTable.getProperty(row, column);
+            try {
+                return new StringSelection(property.formatString(value));
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
         }
 
         return null;
@@ -61,7 +74,7 @@ public abstract class TableTransferHandler extends TransferHandler {
 
     List<List<String>> getClipboardTable(String line) {
         List<List<String>> table = new ArrayList<List<String>>();
-        Scanner rowScanner = new Scanner(line);
+        Scanner rowScanner = new Scanner(line).useDelimiter("\n");
         while (rowScanner.hasNext()) {
             String rowString = rowScanner.nextLine();
             List<String> row = new ArrayList<String>();
@@ -76,6 +89,15 @@ public abstract class TableTransferHandler extends TransferHandler {
             if (rowString.endsWith("\t")) {
                 row.add(null);
             }
+            table.add(row);
+        }
+        if (line.equals("\n") || line.endsWith("\n\n") || line.equals("")) {
+            List<String> row = new ArrayList<String>();
+            if (table.isEmpty()) {
+                row.add("");
+            } else
+                for (int i = 0; i < table.get(0).size(); i++)
+                    row.add("");
             table.add(row);
         }
         return table;

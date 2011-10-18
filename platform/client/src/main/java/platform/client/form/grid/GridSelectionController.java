@@ -3,7 +3,9 @@ package platform.client.form.grid;
 import platform.base.BaseUtils;
 import platform.client.logics.ClientGroupObjectValue;
 import platform.client.logics.ClientPropertyDraw;
+import platform.client.logics.classes.ClientTypeSerializer;
 
+import java.text.ParseException;
 import java.util.*;
 
 public class GridSelectionController {
@@ -240,7 +242,7 @@ public class GridSelectionController {
         return value;
     }
 
-    public String getSelectedTableString() {
+    public String getSelectedTableString() throws ParseException {
         int firstPropertyIndex = -1, lastPropertyIndex = -1;
         for (int i = 0; i < getProperties().size(); i++) {
             if (!selectedCells.get(getProperties().get(i)).isEmpty()) {
@@ -257,26 +259,30 @@ public class GridSelectionController {
         ClientPropertyDraw firstProperty = getProperties().get(firstPropertyIndex);
         if (firstPropertyIndex == lastPropertyIndex && (selectedCells.get(firstProperty).size() == 1)) {
             Object value = modifyIfString(table.getSelectedValue(getProperties().get(firstPropertyIndex), null));
-            return value == null ? "" : value.toString();
+            ClientPropertyDraw property = getProperties().get(firstPropertyIndex);
+            return value == null ? "" : property.formatString(value);
         }
 
         String str = "";
+
         for (ClientGroupObjectValue key : gridKeys) {
+            boolean addString = false;
             String rowString = "";
             for (int i = firstPropertyIndex; i <= lastPropertyIndex; i++) {
                 ClientPropertyDraw property = getProperties().get(i);
                 Object value = null;
                 if (selectedCells.get(property).containsKey(key)) {
+                    addString = true;
                     value = modifyIfString(selectedCells.get(property).get(key));
                 }
-                rowString += (value == null ? "" : value.toString());
+                rowString += (value == null ? "" : property.formatString(value));
                 if (i < lastPropertyIndex) {
                     rowString += "\t";
                 }
             }
-            if (!BaseUtils.isRedundantString(rowString))
-                str += rowString + "\n";
+            if(addString) str +=rowString +"\n";
         }
+
         return str;
     }
 

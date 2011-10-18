@@ -314,6 +314,10 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         }
     }
 
+    public String formatString(Object obj) throws ParseException {
+      return baseType.formatString(obj);
+    }
+
     public boolean shouldBeDrawn(ClientFormController form) {
         return baseType.shouldBeDrawn(form);
     }

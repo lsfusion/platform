@@ -93,6 +93,11 @@ public class ClientObjectType implements ClientType, ClientTypeClass {
         throw new ParseException(ClientResourceBundle.getString("logics.classes.objectclass.doesnt.support.convertation.from.string"), 0);
     }
 
+    @Override
+    public String formatString(Object obj) {
+        return obj.toString();
+    }
+
     public String getConformedMessage() {
         return ClientResourceBundle.getString("logics.classes.do.you.really.want.to.edit.property");
     }

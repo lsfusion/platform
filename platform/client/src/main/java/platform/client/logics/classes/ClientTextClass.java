@@ -73,6 +73,11 @@ public class ClientTextClass extends ClientDataClass implements ClientTypeClass 
     }
 
     @Override
+    public String formatString(Object obj) {
+        return obj.toString();
+    }
+
+    @Override
     public String toString() {
         return ClientResourceBundle.getString("logics.classes.text");
     }

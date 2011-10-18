@@ -19,6 +19,7 @@ import platform.client.form.sort.TableSortableHeaderManager;
 import platform.client.logics.ClientGroupObject;
 import platform.client.logics.ClientGroupObjectValue;
 import platform.client.logics.ClientPropertyDraw;
+import platform.client.logics.classes.ClientDateClass;
 import platform.interop.KeyStrokes;
 import platform.interop.Order;
 import platform.interop.Scroll;
@@ -363,18 +364,18 @@ public abstract class GridTable extends ClientFormTable
 
             SwingUtils.invokeLaterSingleAction(groupObject.getActionID()
                     , new ActionListener() {
-                public void actionPerformed(ActionEvent ae) {
-                    try {
-                        ClientGroupObjectValue newCurrentObject = getSelectedObject();
-                        if (changeObject.equals(newCurrentObject)) {
-                            selectObject(newCurrentObject);
-                            form.changeGroupObject(groupObject, getSelectedObject());
+                        public void actionPerformed(ActionEvent ae) {
+                            try {
+                                ClientGroupObjectValue newCurrentObject = getSelectedObject();
+                                if (changeObject.equals(newCurrentObject)) {
+                                    selectObject(newCurrentObject);
+                                    form.changeGroupObject(groupObject, getSelectedObject());
+                                }
+                            } catch (IOException e) {
+                                throw new RuntimeException(ClientResourceBundle.getString("errors.error.changing.current.object"), e);
+                            }
                         }
-                    } catch (IOException e) {
-                        throw new RuntimeException(ClientResourceBundle.getString("errors.error.changing.current.object"), e);
-                    }
-                }
-            }, 50);
+                    }, 50);
         }
     }
 
@@ -604,10 +605,10 @@ public abstract class GridTable extends ClientFormTable
     public ClientPropertyDraw getCurrentProperty() {
         ClientPropertyDraw selectedProperty = getSelectedProperty();
         return selectedProperty != null
-               ? selectedProperty
-               : model.getColumnCount() > 0
-                 ? model.getColumnProperty(0)
-                 : null;
+                ? selectedProperty
+                : model.getColumnCount() > 0
+                ? model.getColumnProperty(0)
+                : null;
     }
 
     public void changePropertyDraw(Object value, int row, int col, boolean multyChange, boolean aggValue) {
@@ -660,8 +661,10 @@ public abstract class GridTable extends ClientFormTable
         List<List<Object>> pasteTable = new ArrayList<List<Object>>();
         for (List<String> row : table) {
             List<Object> pasteTableRow = new ArrayList<Object>();
+            int itemIndex = -1;
             for (String item : row) {
-                int itemIndex = row.indexOf(item);
+                //int itemIndex = row.indexOf(item);
+                itemIndex++;
                 if (itemIndex <= columnsToInsert - 1) {
                     ClientPropertyDraw property = propertyList.get(itemIndex);
                     try {
@@ -725,21 +728,21 @@ public abstract class GridTable extends ClientFormTable
         groupObjectController.updateSelectionInfo(quantity, null ,null);
     }
 
-    public String getSelectedTable() {
+    public String getSelectedTable() throws ParseException {
         return selectionController.getSelectedTableString();
     }
 
     /**
      * Переопределено, чтобы учесть групповую корректировку...
      * <br><br>
-
+     * <p/>
      * {@inheritDoc}
      *
      * @see GridTableModel#setValueAt(Object, int, int, boolean)
      */
     public void setValueAt(Object aValue, int row, int column) {
         getModel().setValueAt(aValue, convertRowIndexToModel(row),
-                              convertColumnIndexToModel(column), multyChange);
+                convertColumnIndexToModel(column), multyChange);
     }
 
     public boolean editCellAt(int row, int column, EventObject editEvent) {
@@ -901,7 +904,7 @@ public abstract class GridTable extends ClientFormTable
 
     public void changeGridOrder(ClientPropertyDraw property, Order modiType) throws IOException {
         int ind = getMinPropertyIndex(property);
-        sortableHeaderManager.changeOrder(new Pair<ClientPropertyDraw, ClientGroupObjectValue>(property, ind==-1?new ClientGroupObjectValue():model.getColumnKey(ind)), modiType);
+        sortableHeaderManager.changeOrder(new Pair<ClientPropertyDraw, ClientGroupObjectValue>(property, ind == -1 ? new ClientGroupObjectValue() : model.getColumnKey(ind)), modiType);
     }
 
     public int getMinPropertyIndex(ClientPropertyDraw property) {
@@ -1115,7 +1118,7 @@ public abstract class GridTable extends ClientFormTable
             }
             int modelIndex = columnModel.getColumn(index).getModelIndex();
 
-            return model.getColumnProperty(modelIndex).getTooltipText((String)columnModel.getColumn(index).getHeaderValue());
+            return model.getColumnProperty(modelIndex).getTooltipText((String) columnModel.getColumn(index).getHeaderValue());
         }
 
         @Override

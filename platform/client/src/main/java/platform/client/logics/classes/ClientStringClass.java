@@ -97,6 +97,11 @@ public class ClientStringClass extends ClientDataClass {
     }
 
     @Override
+    public String formatString(Object obj) {
+        return obj.toString();
+    }
+
+    @Override
     public String toString() {
         return ClientResourceBundle.getString("logics.classes.string")+"(" + length + ")";
     }

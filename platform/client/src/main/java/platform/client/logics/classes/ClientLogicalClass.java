@@ -64,6 +64,11 @@ public class ClientLogicalClass extends ClientDataClass implements ClientTypeCla
     }
 
     @Override
+    public String formatString(Object obj) {
+        return obj.toString();
+    }
+
+    @Override
     public String toString() {
         return ClientResourceBundle.getString("logics.classes.boolean");
     }

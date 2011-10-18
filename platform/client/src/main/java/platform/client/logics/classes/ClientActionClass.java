@@ -83,6 +83,11 @@ public class ClientActionClass extends ClientDataClass implements ClientTypeClas
     }
 
     @Override
+    public String formatString(Object obj) throws ParseException {
+        throw new ParseException(ClientResourceBundle.getString("logics.classes.actionclass.doesnt.support.convertation.from.string"), 0);
+    }
+
+    @Override
     public String getConformedMessage() {
         return ClientResourceBundle.getString("logics.classes.do.you.really.want.to.take.action");
     }

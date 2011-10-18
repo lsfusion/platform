@@ -33,10 +33,17 @@ public class ClientIntegerClass extends ClientIntegralClass implements ClientTyp
 
     public Object parseString(String s) throws ParseException {
         try {
-            return Integer.parseInt(s);
+            if (!"".equals(s))
+                return Integer.parseInt(s);
+            else return null;
         } catch (NumberFormatException nfe) {
             throw new ParseException(s + ClientResourceBundle.getString("logics.classes.can.not.be.converted.to.integer"), 0);
         }
+    }
+
+    @Override
+    public String formatString(Object obj) {
+        return obj.toString();
     }
 
     public PropertyEditorComponent getComponent(Object value, Format format, ComponentDesign design) {

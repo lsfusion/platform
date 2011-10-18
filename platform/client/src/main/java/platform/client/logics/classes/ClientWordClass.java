@@ -26,6 +26,11 @@ public class ClientWordClass extends ClientFileClass {
         return new WordPropertyRenderer(format, design);
     }
 
+    @Override
+    public String formatString(Object obj) {
+        return obj.toString();
+    }
+
     public byte getTypeId() {
         return Data.WORD;
     }

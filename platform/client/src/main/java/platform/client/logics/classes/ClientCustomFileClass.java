@@ -9,6 +9,7 @@ import platform.interop.ComponentDesign;
 import platform.interop.Data;
 
 import java.awt.*;
+import java.io.File;
 import java.text.Format;
 
 public class ClientCustomFileClass extends ClientFileClass {
@@ -24,6 +25,11 @@ public class ClientCustomFileClass extends ClientFileClass {
 
     public PropertyRendererComponent getRendererComponent(Format format, String caption, ComponentDesign design) {
         return new CustomFileRenderer(format, design);
+    }
+
+    @Override
+    public String formatString(Object obj) {
+        return "File";
     }
 
     public byte getTypeId() {
