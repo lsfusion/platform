@@ -1083,7 +1083,19 @@ public abstract class GridTable extends ClientFormTable
         @Override
         public void actionPerformed(ActionEvent e) {
             try {
-                form.changeGroupObject(groupObject, direction);
+                if (groupObject.pageSize != 0) {
+                    form.changeGroupObject(groupObject, direction);
+                } else if (!rowKeys.isEmpty()) {
+                    switch (direction) {
+                        case HOME:
+                            selectObject(rowKeys.get(0));
+                            break;
+                        case END:
+                            selectObject(rowKeys.get(rowKeys.size() - 1));
+                            break;
+                    }
+                    updateTable();
+                }
             } catch (IOException ioe) {
                 throw new RuntimeException(ClientResourceBundle.getString("errors.error.moving.to.the.node"), ioe);
             }
