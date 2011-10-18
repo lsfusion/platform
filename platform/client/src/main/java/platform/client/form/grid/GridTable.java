@@ -32,6 +32,7 @@ import javax.swing.table.TableColumnModel;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.IOException;
+import java.text.NumberFormat;
 import java.text.ParseException;
 import java.util.*;
 import java.util.List;
@@ -178,19 +179,17 @@ public abstract class GridTable extends ClientFormTable
                 }
                 previousSelectedRow = getSelectedRow();
 
-                if (getSelectedColumn() == -1) {
-                    return;
-                }
-
-                if (MouseEvent.getModifiersExText(e.getModifiersEx()).contains("Shift")) {
-                    if (!keyController.isRecording) {//пока кривовато работает
-                        keyController.startRecording(getSelectedRow());
-                        selectionController.recordingStarted(getSelectedColumn());
+                if (getSelectedColumn() != -1) {
+                    if (MouseEvent.getModifiersExText(e.getModifiersEx()).contains("Shift")) {
+                        if (!keyController.isRecording) {//пока кривовато работает
+                            keyController.startRecording(getSelectedRow());
+                            selectionController.recordingStarted(getSelectedColumn());
+                        }
+                        keyController.completeRecording(getSelectedRow());
+                        selectionController.submitShiftSelection(keyController.getValues());
+                    } else {
+                        selectionController.mousePressed(getSelectedColumn());
                     }
-                    keyController.completeRecording(getSelectedRow());
-                    selectionController.submitShiftSelection(keyController.getValues());
-                } else {
-                    selectionController.mousePressed(getSelectedColumn());
                 }
             }
 
@@ -481,6 +480,10 @@ public abstract class GridTable extends ClientFormTable
         if (oldIndex != -1 && newIndex != -1) {
             viewMoveInterval = newIndex - oldIndex;
         }
+        if (newIndex == -1) {
+            selectionController.resetSelection();
+            updateSelectionInfo();
+        }
     }
 
     public void selectObject(ClientGroupObjectValue value) {
@@ -703,8 +706,23 @@ public abstract class GridTable extends ClientFormTable
                 selectionController.changeSelection(rowIndex, columnIndex, toggle, extend);
             }
             super.changeSelection(rowIndex, columnIndex, toggle, extend);
+            updateSelectionInfo();
             repaint();
         }
+    }
+
+    private void updateSelectionInfo() {
+        int quantity = selectionController.getQuantity();
+        if (quantity > 1) {
+            int numbers = selectionController.getNumbersQuantity();
+            if (numbers > 1) {
+                Double sum = selectionController.getSum();
+                NumberFormat format = java.text.NumberFormat.getNumberInstance();
+                groupObjectController.updateSelectionInfo(quantity, format.format(sum), format.format(sum / numbers));
+                return;
+            }
+        }
+        groupObjectController.updateSelectionInfo(quantity, null ,null);
     }
 
     public String getSelectedTable() {

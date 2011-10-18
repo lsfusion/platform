@@ -1,8 +1,10 @@
 package platform.client.form.panel;
 
+import platform.client.ClientResourceBundle;
 import platform.client.form.ClientFormController;
 import platform.client.form.ClientFormLayout;
 import platform.client.form.cell.PropertyController;
+import platform.client.form.queries.ToolbarGridButton;
 import platform.client.logics.ClientRegularFilterGroup;
 import platform.interop.ClassViewType;
 
@@ -24,6 +26,8 @@ public class PanelToolbar {
     private JPanel mainContainer;
     private JPanel bottomContainer;
 
+    private JLabel selectionInfoLabel;
+
     public PanelToolbar(ClientFormController form, ClientFormLayout formLayout) {
         this.form = form;
         this.formLayout = formLayout;
@@ -44,14 +48,21 @@ public class PanelToolbar {
         bottomContainer.setLayout(new BoxLayout(bottomContainer, BoxLayout.X_AXIS));
         bottomContainer.setAlignmentY(Component.TOP_ALIGNMENT);
 
-        JPanel centerContainer = new JPanel();
-        centerContainer.setLayout(new BoxLayout(centerContainer, BoxLayout.X_AXIS));
-        centerContainer.add(Box.createHorizontalGlue());
-        centerContainer.add(rightContainer);
+        JPanel eastContainer = new JPanel();
+        eastContainer.setLayout(new BoxLayout(eastContainer, BoxLayout.X_AXIS));
+        eastContainer.add(Box.createHorizontalGlue());
+        eastContainer.add(rightContainer);
+
+        selectionInfoLabel = new JLabel();
+        JPanel centerContainer = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        centerContainer.setMinimumSize(new Dimension(1, ToolbarGridButton.BUTTON_SIZE.height));
+        centerContainer.setPreferredSize(new Dimension(centerContainer.getPreferredSize().width, ToolbarGridButton.BUTTON_SIZE.height));
+        centerContainer.add(selectionInfoLabel);
 
         mainContainer = new JPanel(new BorderLayout());
         mainContainer.add(leftContainer, BorderLayout.WEST);
-        mainContainer.add(centerContainer, BorderLayout.EAST);
+        mainContainer.add(centerContainer, BorderLayout.CENTER);
+        mainContainer.add(eastContainer, BorderLayout.EAST);
         mainContainer.add(bottomContainer, BorderLayout.SOUTH);
     }
 
@@ -108,6 +119,14 @@ public class PanelToolbar {
 
     public Set<Map.Entry<ClientRegularFilterGroup, JComponent>> getFilters() {
         return filters.entrySet();
+    }
+
+    public void updateSelectionInfo(int quantity, String sum, String avg) {
+        String text = "";
+        text += avg == null ? "" : ClientResourceBundle.getString("form.grid.selection.average") + avg.replace(',', '.') + "  ";
+        text += sum == null ? "" : ClientResourceBundle.getString("form.grid.selection.sum") + sum.replace(',', '.') + "  ";
+        text += quantity <= 1 ? "" : ClientResourceBundle.getString("form.grid.selection.quantity") + quantity;
+        selectionInfoLabel.setText(text);
     }
 
     public void update(ClassViewType viewType) {

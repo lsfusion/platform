@@ -418,6 +418,10 @@ public class GroupObjectController implements GroupObjectLogicsSupplier {
         panelToolbar.addComponent(component);
     }
 
+    public void updateSelectionInfo(int quantity, String sum, String avg) {
+        panelToolbar.updateSelectionInfo(quantity, sum, avg);
+    }
+
     public JPanel getToolbarView() {
         return panelToolbar.getView();
     }

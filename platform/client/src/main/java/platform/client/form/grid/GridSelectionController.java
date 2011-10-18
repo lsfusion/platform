@@ -14,6 +14,8 @@ public class GridSelectionController {
     private boolean temporarySelectionAddition;
     private boolean directionDown;
 
+    private Map<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>> mergedSelection = new HashMap<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>>();
+
     private ClientPropertyDraw firstColumn;
     private ClientPropertyDraw lastColumn;
 
@@ -23,7 +25,7 @@ public class GridSelectionController {
     }
 
     private void commitSelection() {
-        selectedCells = mergeSelections();
+        selectedCells = mergedSelection;
     }
 
     private List<ClientGroupObjectValue> getRowKeys() {
@@ -60,11 +62,13 @@ public class GridSelectionController {
         }
     }
 
-    private Map<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>> mergeSelections() {
+    private void mergeSelections() {
         int firstColumnIndex = indexOf(firstColumn);
         int lastColumnIndex = indexOf(lastColumn);
-        if (temporaryValues.isEmpty() ||  firstColumnIndex == -1 || lastColumnIndex == -1)
-            return selectedCells;
+        if (temporaryValues.isEmpty() ||  firstColumnIndex == -1 || lastColumnIndex == -1) {
+            mergedSelection = selectedCells;
+            return;
+        }
 
         Map<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>> newMap = new HashMap<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>>(selectedCells);
         for (int column = Math.min(firstColumnIndex, lastColumnIndex); column <= Math.max(firstColumnIndex, lastColumnIndex); column++) {
@@ -81,7 +85,7 @@ public class GridSelectionController {
                 newMap.put(property, valueMap);
             }
         }
-        return newMap;
+        mergedSelection = newMap;
     }
 
     public void changeSelection(int rowIndex, int columnIndex, boolean toggle, boolean extend) {
@@ -98,9 +102,9 @@ public class GridSelectionController {
                 if (!removeFromSelection(newProperty, rowIndex)) {
                     addToSelection(newProperty, rowIndex);
                 }
-                addToTemporaryValues(rowIndex);
                 ClientPropertyDraw selProp = table.getProperty(rowIndex, columnIndex);
                 temporarySelectionAddition = selectedCells.get(selProp).containsKey(getRowKeys().get(rowIndex));
+                addToTemporaryValues(rowIndex);
             }
         } else {
             if (extend) {
@@ -132,6 +136,7 @@ public class GridSelectionController {
             }
 
             temporaryValues = KeyController.mergeSelectionMaps(temporaryValues, segment);
+            mergeSelections();
         }
     }
 
@@ -145,6 +150,7 @@ public class GridSelectionController {
 
     private void resetTemporarySelection() {
         temporaryValues.clear();
+        mergeSelections();
     }
 
     private void addToTemporaryValues(int rowIndex) {
@@ -167,8 +173,7 @@ public class GridSelectionController {
     }
 
     public boolean isCellSelected(ClientPropertyDraw property, ClientGroupObjectValue key) {
-        Map<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>> selection = mergeSelections();
-        return selection.get(property) != null && selection.get(property).containsKey(key);
+        return mergedSelection.get(property) != null && mergedSelection.get(property).containsKey(key);
     }
 
     public void mousePressed(int firstColumnSelectionIndex) {
@@ -185,6 +190,7 @@ public class GridSelectionController {
 
     public void submitShiftSelection(Map<ClientGroupObjectValue, Map<ClientPropertyDraw, Object>> recording) {
         temporaryValues = recording;
+        mergeSelections();
     }
 
     public void recordingStopped() {
@@ -272,5 +278,38 @@ public class GridSelectionController {
                 str += rowString + "\n";
         }
         return str;
+    }
+
+    public int getQuantity() {
+        int quantity = 0;
+        for (ClientPropertyDraw property : mergedSelection.keySet()) {
+            quantity += mergedSelection.get(property).size();
+        }
+        return quantity;
+    }
+
+    public int getNumbersQuantity() {
+        int quantity = 0;
+        for (ClientPropertyDraw property : mergedSelection.keySet()) {
+            for (ClientGroupObjectValue key : mergedSelection.get(property).keySet()) {
+                if (mergedSelection.get(property).get(key) instanceof Number) {
+                    quantity++;
+                }
+            }
+        }
+        return quantity;
+    }
+
+    public Double getSum() {
+        double sum = 0;
+        for (ClientPropertyDraw property : mergedSelection.keySet()) {
+            for (ClientGroupObjectValue key : mergedSelection.get(property).keySet()) {
+                Object value = mergedSelection.get(property).get(key);
+                if (value instanceof Number) {
+                    sum += ((Number) value).doubleValue();
+                }
+            }
+        }
+        return sum;
     }
 }
