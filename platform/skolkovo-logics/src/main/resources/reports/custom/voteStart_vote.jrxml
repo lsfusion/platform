@@ -29,6 +29,7 @@
 	<field name="quantityInVote" class="java.lang.Integer"/>
 	<field name="quantityInOldVote" class="java.lang.Integer"/>
 	<field name="dateEndVote" class="java.util.Date"/>
+	<field name="isStatusVote" class="java.lang.Boolean"/>
 	<group name="captionGroup1">
 		<groupExpression><![CDATA[String.valueOf($F{vote})]]></groupExpression>
 	</group>
@@ -42,9 +43,9 @@
 						<paragraph firstLineIndent="40"/>
 					</textElement>
 					<textFieldExpression class="java.lang.String"><![CDATA["Некоммерческая организация Фонд развития Центра разработки и коммерциализации новых технологий, "+
-"рассмотрев поданную Соискателем - " + $F{nameNativeClaimerVote} + " заявку на проведение предварительной экспертизы проекта от "
+"рассмотрев поданную Соискателем - " + $F{nameNativeClaimerVote} + " заявку на " + ($F{isStatusVote}==null?"проведение предварительной экспертизы проекта":"присвоение статуса участника проекта") + " от "
 + platform.base.BaseUtils.formatRussian($F{dateProjectVote}) + " года (проект «" + $F{nameNativeProjectVote} + "»),"+($F{prevDateVote}==null?
-" в соответствии с пунктом 8 Положения о проведении предварительной экспертизы проектов и пунктами 4-7 Положения об Экспертных коллегиях Фонда ":
+" в соответствии с пунктом 9 Положения о проведении предварительной экспертизы проектов и пунктами 4-7 Положения об Экспертных коллегиях Фонда ":
 " учитывая, что заседание предыдущей Экспертной коллегии было признано несостоявшимся (протокол заседания Экспертной коллегии по вопросу о соответствии проекта, представленного Соискателем, критериям, указанным в подпункте Е пункта 2 Положения о присвоении и утрате статуса участника проекта создания и обеспечения функционирования инновационного центра «Сколково», от "+platform.base.BaseUtils.formatRussian($F{prevDateVote})+" года), в соответствии с пунктом 14")+
 " Положения об Экспертных коллегиях Фонда"]]></textFieldExpression>
 				</textField>

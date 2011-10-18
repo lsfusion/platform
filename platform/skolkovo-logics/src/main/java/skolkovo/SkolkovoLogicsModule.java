@@ -1037,6 +1037,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
     private LP daysClaimerExtraOriginalDocsProject;
     private LP daysClaimerOriginalDocsProject;
 
+    LP dateRegisteredStatusProject;
+
     @Override
     public void initProperties() {
         idGroup.add(baseLM.objectValue);
@@ -2556,6 +2558,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
                 addJProp(baseLM.subtractInteger2, dateSubmitOriginalDocsCheck, 1, datePrevOriginalDocsCheck, 1), projectOriginalDocsCheck, 1);
 
         daysClaimerOriginalDocsProject = addSUProp("daysClaimerOriginalDocsProject", "Кол-во дней подачи документов в бумажном виде", Union.SUM, daysClaimerFirstOriginalDocsProject, daysClaimerExtraOriginalDocsProject);
+
+        dateRegisteredStatusProject = addJProp("dateRegisteredStatusProject", "Дата подачи", baseLM.and1, dateProject, 1, addJProp(baseLM.equals2, statusProject, 1, addCProp(projectStatus, "registered")), 1);
     }
 
     @Override
@@ -3840,7 +3844,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         private VoteStartFormEntity(NavigatorElement parent, String sID) {
             super(parent, sID, "Созыв заседания", true);
 
-            objVote = addSingleGroupObject(1, "vote", vote, baseLM.date, dateProjectVote, nameNativeClaimerVote, nameNativeProjectVote, nameAblateClaimerVote, prevDateStartVote, prevDateVote, quantityInVote, quantityInOldVote, countPrevVote);
+            objVote = addSingleGroupObject(1, "vote", vote, baseLM.date, dateProjectVote, nameNativeClaimerVote, nameNativeProjectVote, nameAblateClaimerVote, prevDateStartVote, prevDateVote, quantityInVote, quantityInOldVote, countPrevVote, isStatusVote);
             objVote.groupTo.initClassView = ClassViewType.PANEL;
 
             objExpert = addSingleGroupObject(2, "expert", expert, baseLM.userLastName, baseLM.userFirstName, documentNameExpert);

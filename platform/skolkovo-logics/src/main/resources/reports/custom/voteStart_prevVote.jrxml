@@ -25,6 +25,10 @@
 		<variableExpression><![CDATA[$V{dataD}+($V{dataD}.length() == 0 ? "" : " года, ")+platform.base.BaseUtils.formatRussian($F{dateEndVote})]]></variableExpression>
 		<initialValueExpression><![CDATA[""]]></initialValueExpression>
 	</variable>
+	<variable name="quantityPrev" class="java.lang.Integer" calculation="Count">
+		<variableExpression><![CDATA[0]]></variableExpression>
+		<initialValueExpression><![CDATA[new Integer(1)]]></initialValueExpression>
+	</variable>
 	<summary>
 		<band height="52">
 			<textField isStretchWithOverflow="true" isBlankWhenNull="false">
@@ -33,7 +37,8 @@
 					<font size="12"/>
 					<paragraph firstLineIndent="40"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA["3. Включить в состав Экспертной коллегии следующих экспертов, направивших заполненные Бюллетени оценки для целей участия в заседании Экспертной коллегии от "+ $V{dataD}+" года, признанном несостоявшимся, и Бюллетени оценки которых были учтены для целей определения результатов голосования:"]]></textFieldExpression>
+				<textFieldExpression class="java.lang.String"><![CDATA[$V{quantityPrev}==1?"3. Включить в состав Экспертной коллегии следующих экспертов, направивших заполненные Бюллетени оценки для целей участия в заседании Экспертной коллегии от "+ $V{dataD}+" года, признанном несостоявшимся, и Бюллетени оценки которых были учтены для целей определения результатов голосования:":
+"3. Включить в состав Экспертной коллегии следующих экспертов, направивших заполненные Бюллетени оценки для целей участия в заседаниях Экспертных коллегий от "+ $V{dataD}+" года, признанных несостоявшимися, и Бюллетени оценки которых были учтены для целей определения результатов голосования:"]]></textFieldExpression>
 			</textField>
 		</band>
 	</summary>
