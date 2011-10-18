@@ -208,14 +208,6 @@ public class GroupExpr extends QueryExpr<Expr,GroupExpr.Query,GroupJoin> {
     private Collection<ClassExprWhere> packNoChange = new ArrayList<ClassExprWhere>();
     private Map<ClassExprWhere, Expr> packClassExprs = new HashMap<ClassExprWhere, Expr>();
 
-    private void addNoChange(ClassExprWhere classes) {
-        Iterator<ClassExprWhere> i = packNoChange.iterator();
-        while(i.hasNext())
-            if(classes.means(i.next()))
-                i.remove();
-        packNoChange.add(classes);
-    }
-
     @ManualLazy
     @Override
     public Expr packFollowFalse(Where falseWhere) {
@@ -237,28 +229,43 @@ public class GroupExpr extends QueryExpr<Expr,GroupExpr.Query,GroupJoin> {
         if(!BaseUtils.hashEquals(packGroup,group) || !Collections.disjoint(group.values(), outerExprValues.keySet())) // если простой пак
             return createOuterGroupCases(packGroup, query, outerExprValues);
 
-        ClassExprWhere packClasses = ClassExprWhere.mapBack(outerWhere, group);
+        return packFollowFalse(outerWhere, Where.TRUE, query, group, this);
+    }
 
-        for(ClassExprWhere packed : packNoChange)
-            if(packed.means(packClasses)) // если более общим пакуем
-                return this;
+    private static Expr packFollowFalse(Where outerWhere, Where innerWhere, Query query, Map<Expr, BaseExpr> innerOuter, GroupExpr thisExpr) {
+        ClassExprWhere packClasses = ClassExprWhere.mapBack(outerWhere, innerOuter);
 
-        Expr packResult = packClassExprs.get(packClasses);
-        if(packResult!=null)
-            return packResult;
+        if(thisExpr!=null) {
+            for(ClassExprWhere packed : thisExpr.packNoChange)
+                if(packed.means(packClasses)) // если более общим пакуем
+                    return thisExpr;
 
-        Where packWhere = packClasses.getPackWhere();
-        Query packQuery = query.followFalse(packWhere.not()).and(getKeepWhere(getFullWhere())); // сначала pack'аем expr
-        Map<BaseExpr, Expr> packInnerGroup = new HashMap<BaseExpr, Expr>();
-        for(Map.Entry<Expr,BaseExpr> entry : group.entrySet()) // собсно будем паковать "общим" where исключив, одновременно за or not'им себя, чтобы собой не пакнуться
-            packInnerGroup.put(entry.getValue(), entry.getKey().followFalse(packQuery.getWhere().and(packWhere.or(entry.getKey().getWhere().not())).not(), true));
+            Expr packResult = thisExpr.packClassExprs.get(packClasses);
+            if(packResult!=null)
+                return packResult;
+        }
 
-        if(BaseUtils.hashEquals(packQuery,query) && BaseUtils.hashEquals(BaseUtils.reverse(group),packInnerGroup)) { // если изменилось погнали по кругу, или же один раз
-            addNoChange(packClasses);
-            return this;
+        Where packWhere = packClasses.getPackWhere().and(innerWhere);
+        Query packQuery = query.followFalse(packWhere.not()).and(getKeepWhere(thisExpr!=null?thisExpr.getFullWhere():getFullWhere(innerOuter, query))); // сначала pack'аем expr
+        Map<BaseExpr, Expr> packOuterInner = new HashMap<BaseExpr, Expr>();
+        for(Map.Entry<Expr,BaseExpr> entry : innerOuter.entrySet()) // собсно будем паковать "общим" where исключив, одновременно за or not'им себя, чтобы собой не пакнуться
+            packOuterInner.put(entry.getValue(), entry.getKey().followFalse(packQuery.getWhere().and(packWhere.or(entry.getKey().getWhere().not())).not(), true));
+
+        if((thisExpr==null || BaseUtils.hashEquals(packQuery,query)) && BaseUtils.hashEquals(BaseUtils.reverse(innerOuter),packOuterInner)) { // если изменилось погнали по кругу, или же один раз
+            if(thisExpr!=null) {
+                Iterator<ClassExprWhere> i = thisExpr.packNoChange.iterator();
+                while(i.hasNext())
+                    if(packClasses.means(i.next()))
+                        i.remove();
+                thisExpr.packNoChange.add(packClasses);
+
+                return thisExpr;
+            } else
+                return createHandleKeys(innerOuter, packQuery);
         } else {
-            Expr result = createInner(packInnerGroup, packQuery);
-            packClassExprs.put(packClasses, result);
+            Expr result = createInner(packOuterInner, packQuery);
+            if(thisExpr!=null)
+                thisExpr.packClassExprs.put(packClasses, result);
             return result;
         }
     }
@@ -549,9 +556,7 @@ public class GroupExpr extends QueryExpr<Expr,GroupExpr.Query,GroupJoin> {
 
     private static Expr createFollowExpr(ReversedMap<Expr, BaseExpr> innerOuter, Query query, Where notWhere) {
         // именно так потому как нужно обеспечить инвариант что в ClassWhere должны быть все следствия
-
-        return createHandleKeys(innerOuter, query.followFalse(ClassExprWhere.mapBack(Where.TRUE, innerOuter).getPackWhere().and(notWhere).not()).
-                and(getKeepWhere(getFullWhere(innerOuter, query))));
+        return packFollowFalse(Where.TRUE, notWhere, query, innerOuter, null);
     }
 
     private static Where getKeepWhere(Where fullWhere) {
@@ -562,7 +567,7 @@ public class GroupExpr extends QueryExpr<Expr,GroupExpr.Query,GroupJoin> {
         return keepWhere;
     }
 
-    private static Expr createHandleKeys(ReversedMap<Expr, BaseExpr> innerOuter, Query query) {
+    private static Expr createHandleKeys(Map<Expr, BaseExpr> innerOuter, Query query) {
 
         // NOGROUP - проверяем если по всем ключам группируется, значит это никакая не группировка
         Map<Expr, BaseExpr> compares = new HashMap<Expr, BaseExpr>();
