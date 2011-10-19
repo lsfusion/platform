@@ -236,13 +236,13 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         projectStatus = addStaticClass("projectStatus", "Статус проекта",
                 new String[]{"unknown", "needTranslation", "needExtraVote", "inProgress", "accepted", "rejected",
-                     "notEnoughDocsForPreliminary", "notEnoughDocsForStatus", "noExperts", "noCluster", "positiveFCResult", "negativeLCResult", "positiveLCResult",
+                     "notEnoughDocsForPreliminary", "notEnoughDocsForStatus", "noExperts", "noCluster", "positiveFCResult", "negativeLCStatusResult", "negativeLCPreliminaryResult","positiveLCResult",
                      "registered", "repeated", "withdrawn", "overdueFC", "overdueLC",
                      "issuedVoteDocs", "applyStatus", "sentRejected", "sentPreliminaryAccepted", "sentStatusAccepted", "inProgressRepeat",
                      "haveStatus", "notEnoughOriginalDocs", "overdueOriginalDocs", "appliedOriginalDocs", "sentForSignature", "signed", "sentToFinDep",
                      "submittedToRegister", "preparedCertificate", "certified"},
                 new String[]{"Неизвестный статус", "Направлена на перевод", "Требуется заседание (повторное)", "Идет заседание", "Оценен положительно", "Оценен отрицательно",
-                     "Неполный перечень документов (на экспертизу)","Неполный перечень документов (на статус)",  "Отсутствует перечень экспертов", "Не соответствует направлению", "Направлена на юридическую проверку", "Не прошла юридическую проверку", "Прошла юридическую проверку",
+                     "Неполный перечень документов (на экспертизу)","Неполный перечень документов (на статус)",  "Отсутствует перечень экспертов", "Не соответствует направлению", "Направлена на юридическую проверку", "Не прошла юридическую проверку (на статус)", "Не прошла юридическую проверку (на предв.экспертизу)", "Прошла юридическую проверку",
                      "Зарегистирована", "Подана повторно", "Отозвана заявителем", "Не исправлена в срок (ФЭ)", "Не исправлена в срок (ЮП)",
                      "Оформление документов по заседанию", "Подана заявка на статус", "Отправлено отрицательное решение", "Отправлено положительное решение предв.экспертизы", "Отправлено положительное решение экспертизы на статус", "Идет заседание (повторное)",
                      "Оставлена без рассмотрения", "Неполный пакет оригиналов документов", "Пакет оригиналов документов не пополнен в срок", "Предоставлены документы в бумажном виде", "Решение передано на подпись", "Решение подписано", "Документы переданы в Финансовый департамент",
@@ -976,6 +976,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP executeLegalCheckProject;
     LP resultExecuteLegalCheckProject;
     LP negativeLegalResultProject;
+    LP negativeLegalResultStatusProject;
+    LP negativeLegalResultPreliminaryProject;
     LP positiveLegalResultProject;
     LP sentForTranslationProject;
     LP positiveStatusLegalCheckProject, datePositiveStatusLegalCheckProject;
@@ -2176,6 +2178,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         resultExecuteLegalCheckProject = addJProp("resultExecuteLegalCheckProject", true, "Решение", resultLegalCheck, executeLegalCheckProject, 1);
         negativeLegalResultProject = addJProp("negativeLegalResultProject", true, "Не прошла юридическую проверку", negativeResultLegalCheck, executeLegalCheckProject, 1);
+        negativeLegalResultStatusProject = addJProp("negativeLegalResultStatusProject", true, "Не прошла юридическую проверку (на статус)", baseLM.and1, negativeLegalResultProject, 1, addJProp(baseLM.equals2, projectActionProject,  1, addCProp(projectAction, "status")), 1);
+        negativeLegalResultPreliminaryProject = addJProp("negativeLegalResultPreliminaryProject", true, "Не прошла юридическую проверку (на предв.экспертизу)", baseLM.and1, negativeLegalResultProject, 1, addJProp(baseLM.equals2, projectActionProject,  1, addCProp(projectAction, "preliminary")), 1);
         positiveLegalResultProject = addJProp("positiveLegalResultProject", true, "Прошла юридическую проверку", positiveResultLegalCheck, executeLegalCheckProject, 1);
 
         // последняя юридическая проверка (на статус)
@@ -2193,7 +2197,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         overdueLegalCheckProject = addJProp("overdueLegalCheckProject", true, "Просрочена юридическая проверка", baseLM.and1,
                 addJProp(baseLM.greater2, baseLM.currentDate, addJProp(overdueDateLegalCheck, executeLegalCheckProject, 1), 1), 1,
-                addJProp(baseLM.and1, negativeLegalResultProject, 1, addJProp(baseLM.equals2, addJProp(projectActionLegalCheck, executeLegalCheckProject, 1), 1, addCProp(projectAction, "status")), 1), 1);
+                negativeLegalResultStatusProject, 1);
 
         sentForTranslationProject = addDProp("sentForTranslationProject", "Направлена на перевод", LogicalClass.instance, project);
         oficialNameProjectStatus = addDProp(baseGroup, "oficialNameProjectStatus", "Наименование из регламента", StringClass.get(200), projectStatus);
@@ -2291,7 +2295,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
         legalCheckStatusProject = addCaseUProp(idGroup, "legalCheckStatusProject", true, "Статус (юридич. пров.) (ИД)",
                 positiveLegalResultProject, 1, addCProp(projectStatus, "positiveLCResult", project), 1,
                 overdueLegalCheckProject, 1, addCProp(projectStatus, "overdueLC", project), 1,
-                negativeLegalResultProject, 1, addCProp(projectStatus, "negativeLCResult", project), 1,
+                negativeLegalResultStatusProject, 1, addCProp(projectStatus, "negativeLCStatusResult", project), 1,
+                negativeLegalResultPreliminaryProject, 1, addCProp(projectStatus, "negativeLCPreliminaryResult", project), 1,
                 addCProp(projectStatus, "unknown", project), 1);
 
         formalCheckStatusProject = addCaseUProp(idGroup, "formalCheckStatusProject", true, "Статус (предв. эксп.) (ИД)",
