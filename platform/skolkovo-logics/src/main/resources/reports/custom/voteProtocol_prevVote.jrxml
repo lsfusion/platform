@@ -18,12 +18,12 @@
 	</variable>
 	<detail>
 		<band height="14">
-			<textField isStretchWithOverflow="true" isBlankWhenNull="false">
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement positionType="Float" x="50" y="0" width="489" height="14" isRemoveLineWhenBlank="true"/>
 				<textElement textAlignment="Justified">
 					<paragraph firstLineIndent="40"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[$V{voteNumber} + ") решения Фонда о направлении заявки Соискателя на рассмотрение в Экспертную коллегию для проведения экспертизы заявки по существу и о созыве заседания Экспертной коллегии от " + platform.base.BaseUtils.formatRussian($F{dateStartVote}) + " года;"]]></textFieldExpression>
+				<textFieldExpression class="java.lang.String"><![CDATA[$V{voteNumber}==1?$V{voteNumber} + ") решения Фонда о направлении заявки Соискателя на рассмотрение в Экспертную коллегию для проведения экспертизы заявки по существу и о созыве заседания Экспертной коллегии от " + platform.base.BaseUtils.formatRussian($F{dateStartVote}) + " года;":""]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>

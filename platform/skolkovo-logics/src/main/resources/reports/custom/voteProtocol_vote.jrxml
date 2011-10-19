@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="vote" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0">
 	<property name="ireport.zoom" value="1.4641000000000006"/>
-	<property name="ireport.x" value="21"/>
-	<property name="ireport.y" value="667"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="240"/>
 	<style name="DefaultStyle" isDefault="true" vAlign="Middle" fontName="lsf.TimesNewRoman" fontSize="12" pdfEncoding="Cp1251" isPdfEmbedded="false"/>
 	<style name="GroupCellStyle0" mode="Opaque" backcolor="#DFDFDF" vAlign="Middle" fontName="Serif" fontSize="10" pdfFontName="lsf.Times" pdfEncoding="Cp1251" isPdfEmbedded="false">
 		<box leftPadding="2" rightPadding="2">
@@ -87,6 +87,7 @@
 	<field name="acceptedHaveExpertiseVote" class="java.lang.Boolean"/>
 	<field name="acceptedInternationalExperienceVote" class="java.lang.Boolean"/>
 	<field name="acceptedEnoughDocumentsVote" class="java.lang.Boolean"/>
+	<field name="isStatusVote" class="java.lang.Boolean"/>
 	<group name="textGroup1">
 		<groupExpression><![CDATA[String.valueOf($F{vote})]]></groupExpression>
 		<groupHeader>
@@ -167,7 +168,7 @@
 					<textElement textAlignment="Justified">
 						<paragraph firstLineIndent="40"/>
 					</textElement>
-					<textFieldExpression class="java.lang.String"><![CDATA["2. В срок, указанный в пункте 10 Положения об Экспертных коллегиях Фонда, в Фонд направлены " + ($F{quantityDoneNewVote}+$F{quantityConnectedVote}) + " " + new ChoiceFormat("0#заполненных Бюллетеней|1#заполненный Бюллетень|1<заполненных Бюллетеня|4<заполненных Бюллетеней").format($F{quantityDoneNewVote}+$F{quantityConnectedVote}) + " оценки."]]></textFieldExpression>
+					<textFieldExpression class="java.lang.String"><![CDATA["2. В срок, указанный в пункте "+($F{isStatusVote}==null?"8":"10") + " Положения об Экспертных коллегиях Фонда, в Фонд направлены " + ($F{quantityDoneNewVote}+$F{quantityConnectedVote}) + " " + new ChoiceFormat("0#заполненных Бюллетеней|1#заполненный Бюллетень|1<заполненных Бюллетеня|4<заполненных Бюллетеней").format($F{quantityDoneNewVote}+$F{quantityConnectedVote}) + " оценки."]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
 					<reportElement positionType="Float" x="50" y="50" width="489" height="14"/>
@@ -190,7 +191,7 @@
 					<textElement textAlignment="Justified">
 						<paragraph firstLineIndent="40"/>
 					</textElement>
-					<textFieldExpression class="java.lang.String"><![CDATA[($F{countPrevVote} + 1) + ") решения о созыве заседания новой Экспертной коллегии от " + platform.base.BaseUtils.formatRussian($F{date}) + " года"]]></textFieldExpression>
+					<textFieldExpression class="java.lang.String"><![CDATA["2) решения о созыве заседания новой Экспертной коллегии от " + platform.base.BaseUtils.formatRussian($F{date}) + " года"]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="false">
 					<reportElement positionType="Float" x="50" y="64" width="489" height="14" isRemoveLineWhenBlank="true">
