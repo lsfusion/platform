@@ -99,6 +99,8 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     protected LP subtractDouble2;
     protected LP deltaDouble2;
     public LP multiplyDouble2;
+    public LP sumInteger2;
+    public LP sumInteger3;
     public LP subtractInteger2;
     public LP multiplyIntegerBy2;
     protected LP squareInteger;
@@ -408,7 +410,9 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         subtractDouble2 = addSFProp("subtractDouble2", "((prm1)-(prm2))", DoubleClass.instance, 2);
         deltaDouble2 = addSFProp("abs((prm1)-(prm2))", DoubleClass.instance, 2);
         multiplyDouble2 = addMFProp("multiplyDouble2", DoubleClass.instance, 2);
-        subtractInteger2 = addSFProp("subtractDouble2", "((prm1)-(prm2))", IntegerClass.instance, 2);
+        sumInteger2 = addSFProp("sumInteger2", "((prm1)+(prm2))", IntegerClass.instance, 2);
+        sumInteger3 = addSFProp("sumInteger2", "((prm1)+(prm2)+(prm3))", IntegerClass.instance, 3);
+        subtractInteger2 = addSFProp("subtractInteger2", "((prm1)-(prm2))", IntegerClass.instance, 2);
         multiplyIntegerBy2 = addSFProp("((prm1)*2)", IntegerClass.instance, 1);
         squareInteger = addSFProp("(prm1)*(prm1)", IntegerClass.instance, 1);
         squareDouble = addSFProp("(prm1)*(prm1)", DoubleClass.instance, 1);
