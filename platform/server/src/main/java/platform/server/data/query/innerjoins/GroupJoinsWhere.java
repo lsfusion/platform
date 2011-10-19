@@ -33,8 +33,11 @@ public class GroupJoinsWhere {
             return whereJoins;
         else {
             Collection<GroupJoinsWhere> result = new ArrayList<GroupJoinsWhere>();
-            for(GroupJoinsWhere innerJoin : whereJoins)
-                result.add(innerJoin.pack());
+            for(GroupJoinsWhere innerJoin : whereJoins) {
+                GroupJoinsWhere packJoin = innerJoin.pack();
+                if(!packJoin.where.isFalse())
+                    result.add(packJoin);
+            }
             return result;
         }
     }

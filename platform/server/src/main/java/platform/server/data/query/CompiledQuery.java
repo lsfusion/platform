@@ -164,15 +164,14 @@ public class CompiledQuery<K,V> {
         if(union) {
             if(queryJoins.size() < Settings.instance.getCountJoinsUseUnionInsteadOfUnionAll()) {
                 queryJoins = query.where.getWhereJoins(false);
-                if(queryJoins.size() < 2) // теоретически такое может быть
-                    union = false;
-                else
-                    unionAll = true;
+                unionAll = true;
             } else
                 if(Settings.instance.isUseFJInsteadOfUnion())
                     union = false;
         }
         queryJoins = GroupJoinsWhere.pack(queryJoins);
+        if(queryJoins.size() < 2) // теоретически такое может быть
+            union = false;
 
         if (union) { // сложный UNION запрос
             Map<V, Type> castTypes = new HashMap<V, Type>();
