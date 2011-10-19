@@ -209,10 +209,10 @@ public class BaseUtils {
     }
 
     public static <K, V> void removeNotEquals(Map<K, V> part, Map<K, V> full) {
-        Iterator<Map.Entry<K,V>> it = part.entrySet().iterator();
-        while(it.hasNext()) {
+        Iterator<Map.Entry<K, V>> it = part.entrySet().iterator();
+        while (it.hasNext()) {
             Map.Entry<K, V> entry = it.next();
-            if(!full.get(entry.getKey()).equals(entry.getValue()))
+            if (!full.get(entry.getKey()).equals(entry.getValue()))
                 it.remove();
         }
     }
@@ -805,9 +805,9 @@ public class BaseUtils {
         return nullBoolean((Integer.parseInt(BaseUtils.nevl(str, "0")) == 1));
     }
 
-     public static Object nullString(String str) {
-         if("".equals(str)) return null;
-         else return str;
+    public static Object nullString(String str) {
+        if ("".equals(str)) return null;
+        else return str;
     }
 
     public static Object nullBoolean(Boolean b) {
@@ -1105,7 +1105,7 @@ public class BaseUtils {
 
         T[] result = instancer.newArray(array.length - 1);
         System.arraycopy(array, 0, result, 0, ind);
-        System.arraycopy(array, ind+1, result, ind, result.length - ind);
+        System.arraycopy(array, ind + 1, result, ind, result.length - ind);
 
         return result;
     }
@@ -1523,11 +1523,19 @@ public class BaseUtils {
     // используется в *.jrxml
     @SuppressWarnings({"UnusedDeclaration"})
     public static String formatRussian(Date date) {
+        return formatRussian(date, false, false);
+        }
 
+    public static String formatRussian(Date date, boolean quotes, boolean leadZero) {
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(date);
+        String dayOfMonth = String.valueOf(calendar.get(Calendar.DAY_OF_MONTH));
+        if ((leadZero) && (dayOfMonth.length() == 1))
+            dayOfMonth = "0" + dayOfMonth;
+        if (quotes)
+            dayOfMonth = "«" + dayOfMonth + "»";
 
-        return "" + calendar.get(Calendar.DAY_OF_MONTH) + " " + monthsRussian[calendar.get(Calendar.MONTH)] + " " + calendar.get(Calendar.YEAR);
+        return "" + dayOfMonth + " " + monthsRussian[calendar.get(Calendar.MONTH)] + " " + calendar.get(Calendar.YEAR);
     }
 
     public static String[] monthsEnglish = new String[]{"January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"};
@@ -1537,18 +1545,52 @@ public class BaseUtils {
 
         // todo : сделать форматирование по timeZone сервера
 
+        return formatEnglish(date, false, false);
+        }
+
+    public static String formatEnglish(Date date, boolean quotes, boolean leadZero) {
+
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(date);
+        String dayOfMonth = String.valueOf(calendar.get(Calendar.DAY_OF_MONTH));
+        if ((leadZero) && (dayOfMonth.length() == 1))
+            dayOfMonth = "0" + dayOfMonth;
+        if (quotes)
+            dayOfMonth = "“" + dayOfMonth + "”";
 
-        return "" + calendar.get(Calendar.DAY_OF_MONTH) + " " + monthsEnglish[calendar.get(Calendar.MONTH)] + " " + calendar.get(Calendar.YEAR);
+        return "" + monthsEnglish[calendar.get(Calendar.MONTH)] + " " + dayOfMonth + "," + calendar.get(Calendar.YEAR);
+
+    }
+
+    public static String justInitials(String fullName, boolean lastNameFirst) {
+        String[] names = fullName.split(" ");
+        String initials = "";
+        if (lastNameFirst) {
+            initials = names[0] + " ";
+            for (int i = 1; i < names.length; i++)
+                initials += names[i].charAt(0) + ".";
+        } else {
+            for (int i = 0; i < names.length - 1; i++)
+                initials += names[i].charAt(0) + ".";
+            initials += " " + names[names.length - 1];
+        }
+        return initials;
+    }
+
+    public static String[] feminineNumbers = new String[]{"одна", "две", "три", "четыре", "пять", "шесть", "семь", "восемь", "девять", "десять"};
+
+    public static String intToFeminine(int number) {
+        if ((number >= 1) && (number <= 10))
+            return feminineNumbers[number];
+        else return String.valueOf(number);
     }
 
     public static Date getFirstDateInMonth(int year, int month) {
-        return new GregorianCalendar(year, month-1, 1, 0, 0, 0).getTime();
+        return new GregorianCalendar(year, month - 1, 1, 0, 0, 0).getTime();
     }
 
     public static Date getLastDateInMonth(int year, int month) {
-        Calendar calendar = new GregorianCalendar(year, month-1, 1, 0, 0, 0);
+        Calendar calendar = new GregorianCalendar(year, month - 1, 1, 0, 0, 0);
         calendar.roll(Calendar.DAY_OF_MONTH, -1);
         return calendar.getTime();
     }
@@ -1642,7 +1684,7 @@ public class BaseUtils {
         return result;
     }
 
-    
+
     public static int[] consecutiveInts(int length) {
         int[] result = new int[length];
         for (int i = 0; i < length; ++i) {
@@ -1664,6 +1706,6 @@ public class BaseUtils {
     }
 
     public static int max(int a, int b) {
-        return a>b ? a : b;
+        return a > b ? a : b;
     }
 }
