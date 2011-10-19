@@ -242,7 +242,34 @@ public class GridSelectionController {
         return value;
     }
 
+    public Map<ClientPropertyDraw, List<ClientGroupObjectValue>> getSelectedCells() {
+        Map<ClientPropertyDraw, List<ClientGroupObjectValue>> cellsMap = new HashMap<ClientPropertyDraw, List<ClientGroupObjectValue>>();
+        for (ClientPropertyDraw propertyDraw : selectedCells.keySet()) {
+            List<ClientGroupObjectValue> keys = new ArrayList<ClientGroupObjectValue>();
+            for (ClientGroupObjectValue key : selectedCells.get(propertyDraw).keySet()) {
+                keys.add(key);
+            }
+            if (!keys.isEmpty()) {
+                cellsMap.put(propertyDraw, keys);
+            }
+        }
+        return cellsMap;
+    }
+
+    public boolean hasSingleSelection() {
+        int selectedCellsCount = 0;
+        for (ClientPropertyDraw property : selectedCells.keySet()) {
+            selectedCellsCount += selectedCells.get(property).size();
+        }
+        //сейчас возвращает true, даже если селекшн совсем пустой. сделано для более красивой работы CTRL+C/CTRL+V -
+        //там при пустом выделении используется в качестве выделенной фокусная ячейка
+        return selectedCellsCount <= 1;
+    }
+
     public String getSelectedTableString() throws ParseException {
+        if (selectedCells.isEmpty())
+            return null;
+
         int firstPropertyIndex = -1, lastPropertyIndex = -1;
         for (int i = 0; i < getProperties().size(); i++) {
             if (!selectedCells.get(getProperties().get(i)).isEmpty()) {
@@ -252,16 +279,14 @@ public class GridSelectionController {
             }
         }
 
+        //если выделена одна ячейка (или ни одной) и нажали CTRL+C, копируем текущее значение
+        if (hasSingleSelection()) {
+            Object value = modifyIfString(table.getSelectedValue(getProperties().get(firstPropertyIndex != -1 ? firstPropertyIndex : table.getSelectedColumn()), null));
+            return value == null ? "" : value.toString();
+        }
+
         if (firstPropertyIndex == -1 || lastPropertyIndex == -1)
             return null;
-
-        //если выделена одна ячейка и нажали CTRL+C, копируем текуще значение
-        ClientPropertyDraw firstProperty = getProperties().get(firstPropertyIndex);
-        if (firstPropertyIndex == lastPropertyIndex && (selectedCells.get(firstProperty).size() == 1)) {
-            Object value = modifyIfString(table.getSelectedValue(getProperties().get(firstPropertyIndex), null));
-            ClientPropertyDraw property = getProperties().get(firstPropertyIndex);
-            return value == null ? "" : property.formatString(value);
-        }
 
         String str = "";
 

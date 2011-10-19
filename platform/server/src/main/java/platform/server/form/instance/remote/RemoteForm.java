@@ -517,6 +517,14 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         }
     }
 
+    public void pasteMulticellValue(Map<Integer, List<Map<Integer, Object>>> cells, Object value) {
+        try {
+            form.pasteMulticellValue(cells, value);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     public boolean[] getCompatibleProperties(int mainID, int[] propertiesIDs) throws RemoteException {
         Property mainProperty = form.getPropertyDraw(mainID).getChangeInstance(form.BL).property;
 

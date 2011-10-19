@@ -129,6 +129,13 @@ public class RemoteFormProxy<T extends RemoteFormInterface>
         logRemoteMethodEndVoidCall("pasteExternalTable");
     }
 
+    @PendingRemoteMethod
+    public void pasteMulticellValue(Map<Integer, List<Map<Integer, Object>>> cells, Object value) throws RemoteException {
+        logRemoteMethodStartCall("pasteMulticellValue");
+        target.pasteMulticellValue(cells, value);
+        logRemoteMethodEndVoidCall("pasteMulticellValue");
+    }
+
     public boolean[] getCompatibleProperties(int mainPropertyID, int[] propertiesIDs) throws RemoteException {
         logRemoteMethodStartCall("getCompatibleProperties");
         boolean[] result = target.getCompatibleProperties(mainPropertyID, propertiesIDs);

@@ -593,6 +593,23 @@ public class ClientFormController {
         applyRemoteChanges();
     }
 
+    public void pasteMulticellValue(Map<ClientPropertyDraw, List<ClientGroupObjectValue>> cells, Object value) throws IOException {
+        Map<Integer, List<Map<Integer, Object>>> reCells = new HashMap<Integer, List<Map<Integer, Object>>>();
+        for (ClientPropertyDraw property : cells.keySet()) {
+            List<Map<Integer, Object>> keys = new ArrayList<Map<Integer, Object>>();
+            for (ClientGroupObjectValue groupObjectValue : cells.get(property)) {
+                Map<Integer, Object> key = new HashMap<Integer, Object>();
+                for (ClientObject object : groupObjectValue.keySet()) {
+                    key.put(object.getID(), groupObjectValue.get(object));
+                }
+                keys.add(key);
+            }
+            reCells.put(property.getID(), keys);
+        }
+        remoteForm.pasteMulticellValue(reCells, value);
+        applyRemoteChanges();
+    }
+
     public void groupChangePropertyDraw(ClientPropertyDraw mainProperty, ClientGroupObjectValue mainColumnKey,
                                         ClientPropertyDraw getterProperty, ClientGroupObjectValue getterColumnKey) throws IOException {
         // для глобальных свойств пока не может быть отложенных действий

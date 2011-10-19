@@ -640,44 +640,53 @@ public abstract class GridTable extends ClientFormTable
         if (isReadOnly())
             return;
 
+        boolean singleV = selectionController.hasSingleSelection();
         int selectedColumn = getColumnModel().getSelectionModel().getLeadSelectionIndex();
+        if (selectedColumn == -1)
+            return;
         int tableColumns = 0;
         if (!table.isEmpty()) {
             tableColumns = table.get(0).size();
         }
-        if (table.size() > 1 || tableColumns > 1) {
-            int answer = JOptionPane.showConfirmDialog(null, ClientResourceBundle.getString("form.grid.sure.to.paste.multivalue"), "", JOptionPane.YES_NO_OPTION);
+        boolean singleC = table.size() == 1 && tableColumns == 1;
+        if (!singleV || !singleC) {
+            int answer = SwingUtils.showConfirmDialog(null, ClientResourceBundle.getString("form.grid.sure.to.paste.multivalue"), "", JOptionPane.QUESTION_MESSAGE, 1);
             if (answer == JOptionPane.NO_OPTION)
                 return;
         }
-        int columnsToInsert = Math.min(tableColumns, getColumnCount() - selectedColumn);
 
-        List<ClientPropertyDraw> propertyList = new ArrayList<ClientPropertyDraw>();
-        for (int i = 0; i < columnsToInsert; i++) {
-            ClientPropertyDraw propertyDraw = model.getColumnProperty(selectedColumn + i);
-            propertyList.add(propertyDraw);
-        }
-
-        List<List<Object>> pasteTable = new ArrayList<List<Object>>();
-        for (List<String> row : table) {
-            List<Object> pasteTableRow = new ArrayList<Object>();
-            int itemIndex = -1;
-            for (String item : row) {
-                //int itemIndex = row.indexOf(item);
-                itemIndex++;
-                if (itemIndex <= columnsToInsert - 1) {
-                    ClientPropertyDraw property = propertyList.get(itemIndex);
-                    try {
-                        pasteTableRow.add(item == null ? null : property.parseString(getForm(), model.getColumnKey(itemIndex), item, isDataChanging()));
-                    } catch (ParseException e) {
-                        pasteTableRow.add(null);
-                    }
-                }
-            }
-            pasteTable.add(pasteTableRow);
-        }
         try {
-            form.pasteExternalTable(propertyList, pasteTable);
+            if (singleV) {
+                int columnsToInsert = Math.min(tableColumns, getColumnCount() - selectedColumn);
+
+                List<ClientPropertyDraw> propertyList = new ArrayList<ClientPropertyDraw>();
+                for (int i = 0; i < columnsToInsert; i++) {
+                    ClientPropertyDraw propertyDraw = model.getColumnProperty(selectedColumn + i);
+                    propertyList.add(propertyDraw);
+                }
+
+                List<List<Object>> pasteTable = new ArrayList<List<Object>>();
+                for (List<String> row : table) {
+                    List<Object> pasteTableRow = new ArrayList<Object>();
+                    int itemIndex = -1;
+                    for (String item : row) {
+                        itemIndex++;
+                        if (itemIndex <= columnsToInsert - 1) {
+                            ClientPropertyDraw property = propertyList.get(itemIndex);
+                            try {
+                                pasteTableRow.add(item == null ? null : property.parseString(getForm(), model.getColumnKey(itemIndex), item, isDataChanging()));
+                            } catch (ParseException e) {
+                                pasteTableRow.add(null);
+                            }
+                        }
+                    }
+                    pasteTable.add(pasteTableRow);
+                }
+                form.pasteExternalTable(propertyList, pasteTable);
+            } else {
+                form.pasteMulticellValue(selectionController.getSelectedCells(), table.get(0).get(0));
+                selectionController.resetSelection();
+            }
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

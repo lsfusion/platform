@@ -511,6 +511,29 @@ public class FormInstance<T extends BusinessLogics<T>> extends IncrementProps<Pr
         }
     }
 
+    public void pasteMulticellValue(Map<Integer, List<Map<Integer, Object>>> cells, Object value) throws SQLException {
+        for (Integer propertyId : cells.keySet()) {
+            PropertyDrawInstance property = getPropertyDraw(propertyId);
+            PropertyObjectInstance propertyObjectInstance = property.getPropertyObjectInstance();
+            for (Map<Integer, Object> keyIds : cells.get(propertyId)) {
+                Map<ObjectInstance, DataObject> key = new HashMap<ObjectInstance, DataObject>();
+                for (Integer objectId : keyIds.keySet()) {
+                    ObjectInstance objectInstance = getObjectInstance(objectId);
+                    key.put(objectInstance, session.getDataObject(keyIds.get(objectId), objectInstance.getType()));
+                }
+                for (ObjectInstance groupKey : (Collection<ObjectInstance>) propertyObjectInstance.mapping.values()) {
+                    if (!key.containsKey(groupKey)) {
+                        key.put(groupKey, groupKey.getDataObject());
+                    }
+                }
+                if (!(propertyObjectInstance.getType() instanceof ActionClass) && !property.isReadOnly()) {
+                    propertyObjectInstance.property.execute(BaseUtils.join(propertyObjectInstance.mapping, key), session, value, this);
+                    dataChanged = true;
+                }
+            }
+        }
+    }
+
     public int countRecords(int groupObjectID) throws SQLException {
         GroupObjectInstance group = getGroupObjectInstance(groupObjectID);
         Expr expr = GroupExpr.create(new HashMap(), new ValueExpr(1, IntegerClass.instance), group.getWhere(group.getMapKeys(), this), GroupType.SUM, new HashMap());

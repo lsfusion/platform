@@ -94,10 +94,10 @@ public abstract class TableTransferHandler extends TransferHandler {
         if (line.equals("\n") || line.endsWith("\n\n") || line.equals("")) {
             List<String> row = new ArrayList<String>();
             if (table.isEmpty()) {
-                row.add("");
+                row.add(null);
             } else
                 for (int i = 0; i < table.get(0).size(); i++)
-                    row.add("");
+                    row.add(null);
             table.add(row);
         }
         return table;

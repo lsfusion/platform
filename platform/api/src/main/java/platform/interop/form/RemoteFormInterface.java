@@ -54,6 +54,8 @@ public interface RemoteFormInterface extends PendingRemote, RemoteContextInterfa
 
     void pasteExternalTable(List<Integer> propertyIDs, List<List<Object>> table) throws RemoteException;
 
+    void pasteMulticellValue(Map<Integer, List<Map<Integer, Object>>> cells, Object value) throws RemoteException;
+
     boolean[] getCompatibleProperties(int mainPropertyID, int[] propertiesIDs) throws RemoteException;
 
     Object getPropertyChangeValue(int propertyID) throws RemoteException;
