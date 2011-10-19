@@ -74,7 +74,7 @@ public class CopyProjectActionProperty extends ActionProperty {
                 LM.dateProject, LM.nameProjectActionProject, LM.autoGenerateProject,
                 LM.inactiveProject, LM.statementClaimerProject, LM.constituentClaimerProject,
                 LM.extractClaimerProject, LM.isOtherClusterProject, LM.nativeSubstantiationOtherClusterProject,
-                LM.foreignSubstantiationOtherClusterProject, LM.claimerProject, LM.nameStatusProject
+                LM.foreignSubstantiationOtherClusterProject, LM.claimerProject//, LM.nameStatusProject
         );
         for (LP prop : propertiesToCopy)
             copyProperty(prop, context, projectObject, projectCopy);
