@@ -6,10 +6,13 @@ import platform.base.BaseUtils;
 import platform.base.OSUtils;
 import platform.client.exceptions.ClientExceptionManager;
 import platform.client.exceptions.ExceptionThreadGroup;
+import platform.client.form.ClientExternalScreen;
 import platform.client.form.SimplexLayout;
 import platform.client.logics.classes.ClientObjectClass;
 import platform.client.logics.classes.ClientTypeSerializer;
+import platform.client.navigator.ClientNavigatorWindow;
 import platform.client.remote.PendingExecutionAspect;
+import platform.client.remote.proxy.RemoteFormProxy;
 import platform.client.rmi.ConnectionLostManager;
 import platform.client.rmi.RMITimeoutSocketFactory;
 import platform.interop.RemoteLoaderInterface;
@@ -457,6 +460,10 @@ public class Main {
         }
 
         mainThreadGroup.interrupt();
+
+        RemoteFormProxy.dropCaches();
+        ClientExternalScreen.dropCaches();
+        ClientNavigatorWindow.dropCaches();
 
         eventBus.invalidate();
 

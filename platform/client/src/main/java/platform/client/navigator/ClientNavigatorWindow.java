@@ -7,11 +7,15 @@ import java.io.IOException;
 import java.util.*;
 
 public abstract class ClientNavigatorWindow extends ClientAbstractWindow {
-
-    public List<ClientNavigatorElement> elements = new ArrayList<ClientNavigatorElement>();
     // конечно не совсем правильно хранить sidToWindow static'ом
     // правильно было бы наверное хранить в DockableMainFrame, но тогда пришлось бы передавать во все сериализации
     public static Map<String, ClientNavigatorWindow> sidToWindow = new HashMap<String, ClientNavigatorWindow>();
+
+    public static void dropCaches() {
+        sidToWindow.clear();
+    }
+
+    public List<ClientNavigatorElement> elements = new ArrayList<ClientNavigatorElement>();
 
     public int type;
     public boolean drawRoot;

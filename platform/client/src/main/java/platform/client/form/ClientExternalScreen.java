@@ -14,8 +14,6 @@ import java.util.Map;
 public class ClientExternalScreen {
 
     private static Map<Integer, ClientExternalScreen> screens = new HashMap<Integer, ClientExternalScreen>();
-    private boolean valid = true;
-
     public static ClientExternalScreen getScreen(int screenID) {
         ClientExternalScreen screen = screens.get(screenID);
         if (screen == null) {
@@ -30,6 +28,12 @@ public class ClientExternalScreen {
 
         return screen;
     }
+
+    public static void dropCaches() {
+        screens.clear();
+    }
+
+    private boolean valid = true;
 
     public int getID() {
         return screen.getID();
