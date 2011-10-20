@@ -11,6 +11,8 @@ import java.io.*;
 import java.rmi.RemoteException;
 import java.util.Scanner;
 
+import static platform.client.ClientResourceBundle.getString;
+
 public abstract class MainFrame extends JFrame {
     protected File baseDir;
     public RemoteNavigatorInterface remoteNavigator;
@@ -48,35 +50,37 @@ public abstract class MainFrame extends JFrame {
 
         addWindowListener(new WindowAdapter() {
             public void windowClosing(WindowEvent event) {
-
                 int confirmed = JOptionPane.showConfirmDialog(MainFrame.this,
-                        ClientResourceBundle.getString("quit.do.you.really.want.to.quit"), ClientResourceBundle.getString("quit.confirmation"),
-                        JOptionPane.YES_NO_OPTION);
-
+                                                              getString("quit.do.you.really.want.to.quit"),
+                                                              getString("quit.confirmation"),
+                                                              JOptionPane.YES_NO_OPTION);
                 if (confirmed == JOptionPane.YES_OPTION) {
-
-                    baseDir.mkdirs();
-
-                    try {
-                        FileWriter fileWr = new FileWriter(new File(baseDir, "dimension.txt"));
-                        fileWr.write(getWidth() + " " + getHeight() + '\n');
-
-                        fileWr.close();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-
                     try {
                         remoteNavigator.close();
                     } catch (RemoteException e) {
                         e.printStackTrace();
                     }
 
-                    MainFrame.this.dispose();
+                    dispose();
+
+                    Main.shutdown();
                 }
             }
+
+            @Override
             public void windowClosed(WindowEvent e) {
-                System.exit(0);
+                //windowClosing не срабатывает, если просто вызван dispose,
+                //поэтому сохраняем лэйаут в windowClosed
+                baseDir.mkdirs();
+
+                try {
+                    FileWriter fileWr = new FileWriter(new File(baseDir, "dimension.txt"));
+                    fileWr.write(getWidth() + " " + getHeight() + '\n');
+
+                    fileWr.close();
+                } catch (IOException e1) {
+                    e1.printStackTrace();
+                }
             }
         });
         status = new JPanel(new BorderLayout());

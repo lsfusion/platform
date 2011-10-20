@@ -250,10 +250,10 @@ public class ClientFormActionDispatcher implements ClientActionDispatcher {
 
     public Object execute(ResultClientAction action) {
         if (action.failed) {
-            Log.printFailedMessage(action.message);
+            Log.error(action.message);
             return null;
         } else {
-            Log.printSuccessMessage(action.message);
+            Log.message(action.message);
             return true;
         }
     }

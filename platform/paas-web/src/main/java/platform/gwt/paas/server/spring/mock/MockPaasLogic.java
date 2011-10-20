@@ -11,6 +11,7 @@ import platform.interop.remote.MethodInvocation;
 import platform.interop.remote.UserInfo;
 
 import java.rmi.RemoteException;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Set;
 import java.util.TimeZone;
@@ -64,7 +65,6 @@ public class MockPaasLogic implements PaasRemoteInterface {
 
     @Override
     public void endSession(String clientInfo) throws RemoteException {
-
     }
 
     @Override
@@ -83,7 +83,7 @@ public class MockPaasLogic implements PaasRemoteInterface {
 
     @Override
     public UserInfo getUserInfo(String username) throws RemoteException {
-        return null;
+        return new UserInfo("admin", "fusion", Arrays.asList("admin"));
     }
 
     @Override
@@ -141,7 +141,19 @@ public class MockPaasLogic implements PaasRemoteInterface {
         daoProj.addConfiguration(3, new ConfigurationDTO(8, "Test", "asdfasdf", 22123, "started"));
 
         daoMod.addModule(new ModuleDTO(1, "TestModule 1", ""));
-        daoMod.setModuleText(1, "asdfasdfasdfasd asdf asdf asdf asdf\n asdfasdf asdfasd f\n asdfasd asdf asdf\n asdfasdfasdfasdf");
+        daoMod.setModuleText(1, "IMPORT BaseLogicsModule;\n" +
+                                "\n" +
+                                "CLASS employee 'Сотрудник' : named;\n" +
+                                "CLASS document 'Документ' : named;\n" +
+                                "\n" +
+                                "documentEmployee = DATA employee (document) IN idGroup;\n" +
+                                "documentEmployeeName(document) = name(documentEmployee(document)) IN baseGroup;\n" +
+                                "\n" +
+                                "documentCount = DATA INTEGER (document) IN baseGroup;\n" +
+                                "\n" +
+                                "FORM documents 'Документы сотрудников'\n" +
+                                "OBJECTS employee FIXED PANEL, document\n" +
+                                "PROPERTIES name(employee), name(document), documentCount(document), documentEmployeeName(document);");
         daoMod.addModule(new ModuleDTO(2, "TestModule 2", ""));
         daoMod.setModuleText(2, "aasdfasdfsdfasdfasdfasd asdf asdf asdf asdf\n asdfasdf asdfasd f\n asdfasd asdf asdf\n asdfasdfasdfasdf");
         daoMod.addModule(new ModuleDTO(3, "SampleModule 1", ""));
@@ -153,7 +165,7 @@ public class MockPaasLogic implements PaasRemoteInterface {
         daoMod.addModule(new ModuleDTO(6, "MockModule 2", ""));
         daoMod.setModuleText(6, "aasdfasdfsdfasdfasdfasd asdf asdf asdf asdf\n asdfasdf asdfasd f\n asdfasd asdf asdf\n asdfasdfasdfasdf");
 
-        daoProj.addModulesToProject(1, 1, 2);
+        daoProj.addModulesToProject(1, 1);
         daoProj.addModulesToProject(2, 3, 4);
         daoProj.addModulesToProject(3, 5, 6);
     }
@@ -267,12 +279,28 @@ public class MockPaasLogic implements PaasRemoteInterface {
 
     @Override
     public ConfigurationDTO[] startConfiguration(String userLogin, ConfigurationDTO configuration) throws RemoteException {
-        return getProjectConfigurations(userLogin, daoProj.getConfigurationProject(configuration.id));
+        ConfigurationDTO conf = daoProj.getConfiguration(configuration.id);
+        conf.status = "started";
+
+        int projectId = daoProj.getConfigurationProject(configuration.id);
+
+        return getProjectConfigurations(userLogin, projectId);
+    }
+
+    @Override
+    public ConfigurationDTO[] restartConfiguration(String userLogin, ConfigurationDTO configuration) throws RemoteException {
+        stopConfiguration(userLogin, configuration.id);
+        return startConfiguration(userLogin, configuration);
     }
 
     @Override
     public ConfigurationDTO[] stopConfiguration(String userLogin, int configurationId) throws RemoteException {
-        return getProjectConfigurations(userLogin, daoProj.getConfigurationProject(configurationId));
+        ConfigurationDTO conf = daoProj.getConfiguration(configurationId);
+        conf.status = "stopped";
+
+        int projectId = daoProj.getConfigurationProject(configurationId);
+
+        return getProjectConfigurations(userLogin, projectId);
     }
 
     @Override

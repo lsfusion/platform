@@ -38,7 +38,7 @@ public class DockableMainFrame extends MainFrame {
 
 
     private ClientNavigator mainNavigator;
-    public static NavigatorController navigatorController;
+    public NavigatorController navigatorController;
 
     public DockableMainFrame(RemoteNavigatorInterface remoteNavigator) throws ClassNotFoundException, IOException {
         super(remoteNavigator);
@@ -116,8 +116,10 @@ public class DockableMainFrame extends MainFrame {
 
         // временно отключаем из-за непредсказуемого поведения при измении окон
         addWindowListener(new WindowAdapter() {
-            public void windowClosing(WindowEvent event) {
-                super.windowClosing(event);
+            @Override
+            public void windowClosed(WindowEvent event) {
+                //windowClosing не срабатывает, если вызван dispose,
+                //поэтому сохраняем лэйаут в windowClosed
                 try {
                     control.save("default");
                     DataOutputStream out = new DataOutputStream(new FileOutputStream(new File(baseDir, "layout.data")));
@@ -173,7 +175,7 @@ public class DockableMainFrame extends MainFrame {
 
             windows.put(new ClientRelevantFormsWindow(inStream), mainNavigator.relevantFormNavigator);
             windows.put(new ClientRelevantClassFormsWindow(inStream), mainNavigator.relevantClassNavigator);
-            windows.put(new ClientLogWindow(inStream), Log.getPanel());
+            windows.put(new ClientLogWindow(inStream), Log.recreateLogPanel());
             windows.put(new ClientStatusWindow(inStream), status);
 
             formsWindow = new ClientFormsWindow(inStream);

@@ -1,6 +1,6 @@
 package platform.client;
 
-public class PropertyConstants {
+public class StartupProperties {
 
     public static final String PLATFORM_CLIENT_HOSTNAME = "platform.client.hostname";
 
@@ -9,8 +9,6 @@ public class PropertyConstants {
     public static final String PLATFORM_CLIENT_USER = "platform.client.user";
 
     public static final String PLATFORM_CLIENT_PASSWORD = "platform.client.password";
-
-    public static final String PLATFORM_CLIENT_LOGLEVEL = "platform.client.loglevel";
 
     public static final String PLATFORM_CLIENT_AUTOLOGIN = "platform.client.autologin";
 
@@ -26,5 +24,7 @@ public class PropertyConstants {
 
     public static final String PLATFORM_CLIENT_LOGO = "platform.client.logo";
 
-    public static final String PLATFORM_CLIENT_ICON = "platform.client.icon";
+    public static final String PLATFORM_CLIENT_FORMS = "platform.client.forms";
+
+    public static final String PLATFORM_CLIENT_FORMSET = "platform.client.formset";
 }

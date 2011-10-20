@@ -10,23 +10,41 @@ import org.jboss.netty.channel.group.DefaultChannelGroup;
 import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory;
 import org.jboss.netty.handler.codec.serialization.ObjectDecoder;
 import paas.PaasBusinessLogics;
+import paas.PaasLogicsModule;
+import paas.PaasUtils;
 import paas.manager.common.ConfigurationEventData;
 import paas.scripted.ScriptedBusinessLogics;
 import platform.base.NullOutpuStream;
+import platform.base.OrderedMap;
 import platform.interop.remote.ApplicationTerminal;
 import platform.server.ContextAwareDaemonThreadFactory;
+import platform.server.data.expr.Expr;
+import platform.server.data.expr.KeyExpr;
+import platform.server.data.query.Query;
 import platform.server.lifecycle.LifecycleAdapter;
 import platform.server.lifecycle.LifecycleEvent;
+import platform.server.logics.DataObject;
+import platform.server.session.DataSession;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.net.InetSocketAddress;
 import java.net.MalformedURLException;
 import java.net.Socket;
 import java.rmi.Naming;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
+import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Executors;
+
+import static java.util.Arrays.asList;
+import static platform.base.BaseUtils.isRedundantString;
+import static platform.base.BaseUtils.nvl;
 
 public final class AppManager {
     private final static Logger logger = Logger.getLogger(AppManager.class);
@@ -43,6 +61,7 @@ public final class AppManager {
 
     private final int acceptPort;
     private PaasBusinessLogics paas;
+    private PaasLogicsModule paasLM;
 
     public AppManager(int acceptPort) {
         this.acceptPort = acceptPort;
@@ -98,6 +117,7 @@ public final class AppManager {
 
     public void setLogics(PaasBusinessLogics logics) {
         paas = logics;
+        paasLM = paas.paasLM;
     }
 
     public String getStatus(int port) {
@@ -134,7 +154,58 @@ public final class AppManager {
         remoteManager.stop();
     }
 
-    public void executeScriptedBL(int confId, int port, String dbName, List<String> moduleNames, List<String> scriptFilePaths, long processId) throws IOException, InterruptedException {
+    public void executeScriptedBL(DataSession session, DataObject confObj) throws IOException, InterruptedException, SQLException {
+        Integer port = (Integer) paasLM.configurationPort.read(session, confObj);
+
+        PaasUtils.checkPortExceptionally(port);
+
+        if (!paas.appManager.isPortAvailable(port)) {
+            throw new IllegalStateException("Port is busy.");
+        }
+
+        String dbName = (String) paasLM.configurationDatabaseName.read(session, confObj);
+        if (dbName == null) {
+            throw new IllegalStateException("DB name is empty.");
+        }
+
+        Integer projId = (Integer) paasLM.configurationProject.read(session, confObj);
+
+        Map<String, KeyExpr> keys = KeyExpr.getMapKeys(asList("moduleKey"));
+        Expr moduleExpr = keys.get("moduleKey");
+        Expr projExpr = new DataObject(projId, paasLM.project).getExpr();
+
+        Query<String, String> q = new Query<String, String>(keys);
+        q.and(
+                paasLM.moduleInProject.getExpr(session.modifier, projExpr, moduleExpr).getWhere()
+        );
+        q.properties.put("moduleOrder", paasLM.moduleOrder.getExpr(session.modifier, projExpr, moduleExpr));
+        q.properties.put("moduleName", paasLM.baseLM.name.getExpr(session.modifier, moduleExpr));
+        q.properties.put("moduleSource", paasLM.moduleSource.getExpr(session.modifier, moduleExpr));
+
+        OrderedMap<String, Boolean> orders = new OrderedMap<String, Boolean>();
+        orders.put("moduleOrder", false);
+
+        OrderedMap<Map<String, Object>, Map<String, Object>> values = q.execute(session.sql, orders);
+
+        List<String> moduleNames = new ArrayList<String>();
+        List<String> moduleFilePaths = new ArrayList<String>();
+        for (Map.Entry<Map<String, Object>, Map<String, Object>> entry : values.entrySet()) {
+            String moduleName = (String) entry.getValue().get("moduleName");
+            String moduleSource = nvl((String) entry.getValue().get("moduleSource"), "");
+
+            if (isRedundantString(moduleName)) {
+                throw new IllegalStateException("Module isn't set.");
+            }
+
+            moduleNames.add(moduleName.trim());
+            moduleFilePaths.add(createTemporaryScriptFile(moduleSource));
+        }
+
+        executeScriptedBL((Integer) confObj.object, port, dbName, moduleNames, moduleFilePaths);
+    }
+
+
+    public void executeScriptedBL(int confId, int port, String dbName, List<String> moduleNames, List<String> scriptFilePaths) throws IOException, InterruptedException {
         assert moduleNames.size() == scriptFilePaths.size();
 
         CommandLine commandLine = new CommandLine(javaExe);
@@ -142,7 +213,6 @@ public final class AppManager {
         commandLine.addArgument("-Dpaas.manager.conf.id=" + confId);
         commandLine.addArgument("-Dpaas.manager.host=localhost");
         commandLine.addArgument("-Dpaas.manager.port=" + acceptPort);
-        commandLine.addArgument("-Dpaas.manager.process.id=" + processId);
         commandLine.addArgument("-Dpaas.scripted.port=" + port);
         commandLine.addArgument("-Dpaas.scripted.db.name=" + dbName);
         commandLine.addArgument("-Dpaas.scripted.modules.names=" + toParameters(moduleNames), false);
@@ -155,14 +225,23 @@ public final class AppManager {
         commandLine.addArgument("-cp");
         commandLine.addArgument(System.getProperty("java.class.path"));
         commandLine.addArgument(ScriptedBusinessLogics.class.getName());
-        commandLine.addArguments("", true);
 
         Executor executor = new DefaultExecutor();
         executor.setStreamHandler(new PumpStreamHandler(new NullOutpuStream(), new NullOutpuStream()));
 //        executor.setStreamHandler(new PumpStreamHandler());
-        executor.setExitValue(1);
+        executor.setExitValue(0);
 
         executor.execute(commandLine, new ManagedLogicsExecutionHandler(confId));
+    }
+
+    private String createTemporaryScriptFile(String moduleSource) throws IOException {
+        File moduleFile = File.createTempFile("paas", ".lsf");
+
+        PrintStream ps = new PrintStream(new FileOutputStream(moduleFile), false, "UTF-8");
+        ps.print(moduleSource);
+        ps.close();
+
+        return moduleFile.getAbsolutePath();
     }
 
     private class ManagedLogicsExecutionHandler extends DefaultExecuteResultHandler {

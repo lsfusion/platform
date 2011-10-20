@@ -555,11 +555,11 @@ public class PaasBusinessLogics extends BusinessLogics<PaasBusinessLogics> imple
 
     @Override
     public ConfigurationDTO[] startConfiguration(String userLogin, ConfigurationDTO configuration) throws RemoteException {
+        DataObject confObj = new DataObject(configuration.id, paasLM.configuration);
         try {
             DataSession session = createSession();
 
             try {
-                DataObject confObj = new DataObject(configuration.id, paasLM.configuration);
 
                 Integer projId = (Integer) paasLM.configurationProject.read(session, confObj);
                 checkProjectPermission(userLogin, projId);
@@ -567,7 +567,7 @@ public class PaasBusinessLogics extends BusinessLogics<PaasBusinessLogics> imple
                 //сначала записываем новые значения
                 updateConfiguration(session, confObj, configuration);
 
-                paasLM.configurationStart.execute(true, session, confObj);
+                appManager.executeScriptedBL(session, confObj);
 
                 String errorMsg = waitForStarted(configuration.id);
                 if (errorMsg != null) {
@@ -581,12 +581,19 @@ public class PaasBusinessLogics extends BusinessLogics<PaasBusinessLogics> imple
                 session.close();
             }
         } catch (Exception e) {
-            e.printStackTrace();
             throw new RemoteException("Ошибка при старте конфигурации", e);
         }
     }
 
+    @Override
+    public ConfigurationDTO[] restartConfiguration(String userLogin, ConfigurationDTO configuration) throws RemoteException {
+        stopConfiguration(userLogin, configuration.id);
+        return startConfiguration(userLogin, configuration);
+    }
+
     private void updateConfiguration(DataSession session, DataObject confObj, ConfigurationDTO configuration) throws SQLException {
+        PaasUtils.checkPortExceptionally(configuration.port);
+
         paasLM.configurationPort.execute(configuration.port, session, confObj);
         LM.name.execute(configuration.name, session, confObj);
     }
@@ -707,8 +714,12 @@ public class PaasBusinessLogics extends BusinessLogics<PaasBusinessLogics> imple
                 if (port == null) {
                     throw new IllegalStateException("Порт конфигурации не задан");
                 }
+
+                String name = (String) LM.name.read(session, confObj);
+
                 ConfigurationDTO configuration = new ConfigurationDTO();
                 configuration.port = port;
+                configuration.name = name;
                 return configuration;
             } finally {
                 session.close();

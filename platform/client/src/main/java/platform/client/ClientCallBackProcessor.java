@@ -8,6 +8,8 @@ import javax.swing.*;
 import java.rmi.RemoteException;
 import java.util.List;
 
+import static platform.client.ClientResourceBundle.getString;
+
 public class ClientCallBackProcessor {
     private final ClientCallBackInterface remoteClient;
 
@@ -28,8 +30,8 @@ public class ClientCallBackProcessor {
             case DISCONNECTED:
                 disconnect();
                 break;
-            case SERVER_RESTARTED:
-                notifyServerRestart();
+            case SERVER_RESTARTING:
+                notifyServerRestarting();
                 break;
         }
     }
@@ -42,22 +44,19 @@ public class ClientCallBackProcessor {
         });
     }
 
-    public void notifyServerRestart() {
+    public void notifyServerRestarting() {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 int result = JOptionPane.showConfirmDialog(
-                        SwingUtils.getActiveWindow(),
-                            "<html>"+ClientResourceBundle.getString("notification.server.will.be.stopped")+"<br/>" +
-                            ClientResourceBundle.getString("notification.save.and.exit")+"<br/>" +
-                            ClientResourceBundle.getString("notification.cancel.if.can.not.break")+"</html>",
-                        ClientResourceBundle.getString("notification.stop.server"),
+                        SwingUtils.getActiveWindow(),getString("notification.server.stop"),
+                        getString("notification.stop.title"),
                         JOptionPane.OK_CANCEL_OPTION,
                         JOptionPane.WARNING_MESSAGE);
                 if (result == JOptionPane.CANCEL_OPTION) {
                     try {
                         remoteClient.denyRestart();
                     } catch (RemoteException e) {
-                        throw new RuntimeException(ClientResourceBundle.getString("notification.error.cancelling.stopping.server"), e);
+                        throw new RuntimeException(getString("notification.error.cancelstopping"), e);
                     }
                 }
             }

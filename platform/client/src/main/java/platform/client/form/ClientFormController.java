@@ -472,7 +472,6 @@ public class ClientFormController {
 
         applyActions(remoteActions, true);
 
-        Log.incrementBytesReceived(remoteChanges.form.length);
         applyFormChanges(new ClientFormChanges(new DataInputStream(new ByteArrayInputStream(remoteChanges.form)), form, controllers));
 
         applyActions(remoteActions, false);
@@ -531,7 +530,7 @@ public class ClientFormController {
 
         // выдадим сообщение если было от сервера
         if (formChanges.message.length() > 0) {
-            Log.printFailedMessage(formChanges.message);
+            Log.error(formChanges.message);
         }
 
     }
@@ -770,7 +769,7 @@ public class ClientFormController {
                 if (remoteForm.hasClientApply()) {
                     ClientApply clientApply = remoteForm.checkClientChanges();
                     if (clientApply instanceof CheckFailed) { // чтобы не делать лишний RMI вызов
-                        Log.printFailedMessage(((CheckFailed) clientApply).message);
+                        Log.error(((CheckFailed) clientApply).message);
                         return false;
                     } else {
                         Object clientResult;

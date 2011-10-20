@@ -1,7 +1,9 @@
 package platform.gwt.paas.client.pages.project;
 
 import com.google.gwt.event.shared.EventBus;
+import com.google.gwt.user.client.Window;
 import com.google.inject.Inject;
+import com.gwtplatform.dispatch.shared.Action;
 import com.gwtplatform.dispatch.shared.DispatchAsync;
 import com.gwtplatform.mvp.client.HasUiHandlers;
 import com.gwtplatform.mvp.client.Presenter;
@@ -13,11 +15,13 @@ import com.gwtplatform.mvp.client.proxy.Proxy;
 import com.gwtplatform.mvp.client.proxy.RevealRootContentEvent;
 import com.smartgwt.client.util.SC;
 import com.smartgwt.client.widgets.grid.ListGridRecord;
+import paas.api.gwt.shared.dto.ConfigurationDTO;
 import paas.api.gwt.shared.dto.ModuleDTO;
 import platform.gwt.paas.client.NameTokens;
 import platform.gwt.paas.client.PaasPlaceManager;
 import platform.gwt.paas.client.common.ErrorHandlingCallback;
 import platform.gwt.paas.client.data.BasicRecord;
+import platform.gwt.paas.client.data.ConfigurationRecord;
 import platform.gwt.paas.client.data.ModuleRecord;
 import platform.gwt.paas.client.pages.project.add.AddNewModuleDialog;
 import platform.gwt.paas.client.pages.project.add.AddNewModuleUIHandlers;
@@ -45,6 +49,12 @@ public class ProjectPagePresenter extends Presenter<ProjectPagePresenter.MyView,
         void setModules(ModuleDTO[] modules);
 
         void cleanView();
+
+        void setConfigurations(ConfigurationDTO[] configurations);
+
+        void showLoading();
+
+        void hideLoading();
     }
 
     @Inject
@@ -94,6 +104,7 @@ public class ProjectPagePresenter extends Presenter<ProjectPagePresenter.MyView,
     @Override
     public void refreshButtonClicked(boolean refreshContent) {
         updateModuleList();
+        fillConfigurations();
         if (refreshContent) {
             getView().getModulesPane().refreshModules();
         }
@@ -102,6 +113,43 @@ public class ProjectPagePresenter extends Presenter<ProjectPagePresenter.MyView,
     @Override
     public void removeRecordClicked(ModuleRecord record) {
         dispatcher.execute(new RemoveModuleFromProjectAction(currentProject, record.getId()), new GetModulesCallback());
+    }
+
+    @Override
+    public void startConfiguration(ConfigurationRecord record) {
+        executeGetConfigAction(new StartConfigurationAction(record.toDTO()));
+    }
+
+    @Override
+    public void stopConfiguration(ConfigurationRecord record) {
+        executeGetConfigAction(new StopConfigurationAction(record.getId()));
+    }
+
+    @Override
+    public void restartConfiguration(ConfigurationRecord record) {
+        executeGetConfigAction(new RestartConfigurationAction(record.toDTO()));
+    }
+
+    private void fillConfigurations() {
+        executeGetConfigAction(new GetConfigurationsAction(currentProject));
+    }
+
+    @Override
+    public void downloadJnlp(ConfigurationRecord record) {
+        Window.open(record.getJnlp(), "", "");
+    }
+
+    private void showLoading() {
+        getView().showLoading();
+    }
+
+    private void hideLoading() {
+        getView().hideLoading();
+    }
+
+    private void executeGetConfigAction(Action<GetConfigurationsResult> action) {
+        showLoading();
+        dispatcher.execute(action, new GetConfigurationsCallback());
     }
 
     @Override
@@ -116,6 +164,7 @@ public class ProjectPagePresenter extends Presenter<ProjectPagePresenter.MyView,
             }
 
             updateModuleList();
+            fillConfigurations();
         }
     }
 
@@ -138,6 +187,18 @@ public class ProjectPagePresenter extends Presenter<ProjectPagePresenter.MyView,
         @Override
         public void success(GetModulesResult result) {
             getView().setModules(result.modules);
+        }
+    }
+
+    private class GetConfigurationsCallback extends ErrorHandlingCallback<GetConfigurationsResult> {
+        @Override
+        public void preProcess() {
+            hideLoading();
+        }
+
+        @Override
+        public void success(GetConfigurationsResult result) {
+            getView().setConfigurations(result.configurations);
         }
     }
 }

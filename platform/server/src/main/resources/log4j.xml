@@ -164,6 +164,10 @@
         <priority value="INFO"/>
     </category>
 
+    <category name="paas.manager">
+        <priority value="DEBUG"/>
+    </category>
+
     <category name="platform.server.logics.ScriptingLogicsModule" additivity="false">
         <priority value="INFO"/>
         <appender-ref ref="scriptlog"/>

@@ -6,7 +6,6 @@ import com.smartgwt.client.types.Alignment;
 import com.smartgwt.client.types.Overflow;
 import com.smartgwt.client.types.TitleOrientation;
 import com.smartgwt.client.widgets.Button;
-import com.smartgwt.client.widgets.ImgButton;
 import com.smartgwt.client.widgets.Window;
 import com.smartgwt.client.widgets.events.ClickEvent;
 import com.smartgwt.client.widgets.events.ClickHandler;
@@ -50,7 +49,6 @@ public class ConfigurationDialog extends Window {
     private ButtonItem btnStart;
     private TextItem portItem;
     private TextItem nameItem;
-    private ImgButton loadingIndicator;
 
     public ConfigurationDialog(int project, ConfigurationUIHandlers uiHandlers) {
         this.project = project;
@@ -132,8 +130,8 @@ public class ConfigurationDialog extends Window {
             }
         });
         toolbar.addFill();
-        loadingIndicator = toolbar.addLoadingIndicator();
-        loadingIndicator.hide();
+        toolbar.addLoadingIndicator();
+        toolbar.addSpacer(10);
     }
 
     private void createConfigurationGrid() {
@@ -347,11 +345,11 @@ public class ConfigurationDialog extends Window {
     }
 
     private void showLoading() {
-        loadingIndicator.show();
+        toolbar.showLoading();
     }
 
     private void hideLoading() {
-        loadingIndicator.hide();
+        toolbar.hideLoading();
     }
 
     private void executeDispatcherAction(Action<GetConfigurationsResult> action) {

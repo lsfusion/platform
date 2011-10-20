@@ -13,6 +13,7 @@ public class BasicListGrid extends ListGrid {
     public BasicListGrid() {
         converter = createDTOConverter();
 
+        setLeaveScrollbarGap(false);
         setWidth100();
         setSelectionType(SelectionStyle.SINGLE);
         setShowHeaderContextMenu(false);

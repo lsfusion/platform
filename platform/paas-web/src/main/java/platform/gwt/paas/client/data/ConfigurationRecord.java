@@ -29,7 +29,7 @@ public class ConfigurationRecord extends BasicRecord {
         setAttribute(JNLP_FIELD, jnlp);
     }
 
-    private String getJnlp() {
+    public String getJnlp() {
         return getAttributeAsString(JNLP_FIELD);
     }
 
@@ -51,6 +51,14 @@ public class ConfigurationRecord extends BasicRecord {
 
     public static ConfigurationRecord fromDTO(ConfigurationDTO dto) {
         return new ConfigurationRecord(dto.id, dto.name, dto.description, dto.port, dto.status);
+    }
+
+    public static ConfigurationRecord[] fromDTOs(ConfigurationDTO[] dtos) {
+        ConfigurationRecord records[] = new ConfigurationRecord[dtos.length];
+        for (int i = 0; i < dtos.length; i++) {
+            records[i] = ConfigurationRecord.fromDTO(dtos[i]);
+        }
+        return records;
     }
 
     public ConfigurationDTO toDTO() {

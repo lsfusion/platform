@@ -135,7 +135,7 @@ public class TableCellView extends JPanel implements CellView {
                     });
                 }
             };
-            Main.eBus.addListener(valueEventListener, key.eventSID);
+            Main.eventBus.addListener(valueEventListener, key.eventSID);
         }
     }
 

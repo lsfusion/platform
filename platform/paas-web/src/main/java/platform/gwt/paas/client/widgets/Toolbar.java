@@ -17,6 +17,7 @@ public class Toolbar extends ToolStrip {
     private EventBus eventBus;
     @Inject
     private PaasPlaceManager placeManager;
+    private ImgButton loadingIndicator;
 
     public Toolbar() {
         setWidth100();
@@ -64,18 +65,27 @@ public class Toolbar extends ToolStrip {
         });
     }
 
-    public ImgButton addLoadingIndicator() {
-        ImgButton loadingButton = new ImgButton();
+    public void addLoadingIndicator() {
+        loadingIndicator = new ImgButton();
+        loadingIndicator.setWidth(16);
+        loadingIndicator.setHeight(16);
+        loadingIndicator.setSrc("updating.gif");
+        loadingIndicator.setShowRollOver(false);
+        loadingIndicator.setShowDownIcon(false);
+        loadingIndicator.setShowDown(false);
+        loadingIndicator.hide();
+        addMember(loadingIndicator);
+    }
 
-        loadingButton.setWidth(16);
-        loadingButton.setHeight(16);
-        loadingButton.setSrc("updating.gif");
-        loadingButton.setShowRollOver(false);
-        loadingButton.setShowDownIcon(false);
-        loadingButton.setShowDown(false);
-        addMember(loadingButton);
-        addSpacer(10);
+    public void showLoading() {
+        if (loadingIndicator != null) {
+            loadingIndicator.show();
+        }
+    }
 
-        return loadingButton;
+    public void hideLoading() {
+        if (loadingIndicator != null) {
+            loadingIndicator.hide();
+        }
     }
 }

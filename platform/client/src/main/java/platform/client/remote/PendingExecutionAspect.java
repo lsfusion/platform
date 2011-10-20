@@ -21,7 +21,10 @@ public class PendingExecutionAspect {
     @Around("execution(@platform.client.remote.proxy.PendingRemoteMethod" +
             " * platform.client.remote.proxy.RemoteObjectProxy+.*(..))" +
             " && target(object)")
-    public Object moveInvocationToQueue(ProceedingJoinPoint thisJoinPoint, Object object) throws Throwable {
+    public synchronized Object moveInvocationToQueue(ProceedingJoinPoint thisJoinPoint, Object object) throws Throwable {
+        if (isRestarting) {
+            return null;
+        }
         Signature signature = thisJoinPoint.getSignature();
         logger.debug("Pending : " + signature.getDeclaringTypeName() + "." + signature.getName());
 
@@ -47,7 +50,11 @@ public class PendingExecutionAspect {
             " || platform.client.remote.proxy.ImmutableMethod)" +
             " * platform.client.remote.proxy.RemoteObjectProxy+.*(..))" +
             " && target(object)")
-    public Object executePendingMethods(ProceedingJoinPoint thisJoinPoint, Object object) throws Throwable {
+    public synchronized Object executePendingMethods(ProceedingJoinPoint thisJoinPoint, Object object) throws Throwable {
+        if (isRestarting) {
+            return null;
+        }
+
         Signature signature = thisJoinPoint.getSignature();
         logger.debug("Execute all after: " + signature.getDeclaringTypeName() + "." + signature.getName());
 
@@ -85,7 +92,11 @@ public class PendingExecutionAspect {
             "@platform.client.remote.proxy.ImmutableMethod" +
             " * platform.client.remote.proxy.RemoteObjectProxy+.*(..))" +
             " && target(object)")
-    public Object executeImmutableMethod(ProceedingJoinPoint thisJoinPoint, Object object) throws Throwable {
+    public synchronized Object executeImmutableMethod(ProceedingJoinPoint thisJoinPoint, Object object) throws Throwable {
+        if (isRestarting) {
+            return null;
+        }
+
         String name = thisJoinPoint.getSignature().getName();
         RemoteObjectProxy remoteObject = (RemoteObjectProxy) object;
         logger.debug("Running immutable method: " + name);
@@ -100,5 +111,15 @@ public class PendingExecutionAspect {
             return remoteObject.flushPendingInvocations();
 //            return thisJoinPoint.proceed();
         }
+    }
+
+    private boolean isRestarting = false;
+    public synchronized void startRestarting() {
+        lastRemoteObject = null;
+        isRestarting = true;
+    }
+
+    public synchronized void stopRestarting() {
+        isRestarting = false;
     }
 }

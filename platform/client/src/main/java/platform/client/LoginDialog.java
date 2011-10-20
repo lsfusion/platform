@@ -20,6 +20,8 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Scanner;
 
+import static platform.client.StartupProperties.PLATFORM_CLIENT_HOSTPORT;
+
 public class LoginDialog extends JDialog {
 
     private JPanel contentPane;
@@ -100,23 +102,17 @@ public class LoginDialog extends JDialog {
             }
         });
 
-        loginField.addFocusListener(new FocusListener() {
+        loginField.addFocusListener(new FocusAdapter() {
             public void focusGained(FocusEvent e) {
                 JTextField textField = (JTextField) e.getComponent();
                 textField.selectAll();
-            }
-
-            public void focusLost(FocusEvent e) {
             }
         });
 
-        passwordField.addFocusListener(new FocusListener() {
+        passwordField.addFocusListener(new FocusAdapter() {
             public void focusGained(FocusEvent e) {
                 JTextField textField = (JTextField) e.getComponent();
                 textField.selectAll();
-            }
-
-            public void focusLost(FocusEvent e) {
             }
         });
 
@@ -273,14 +269,13 @@ public class LoginDialog extends JDialog {
     private ServerInfo getServerInfo(String server) {
         int pos = server.indexOf(':');
         if (pos == -1) {
-            return new ServerInfo(server, server, Integer.parseInt(System.getProperty(PropertyConstants.PLATFORM_CLIENT_HOSTPORT, "7652")));
+            return new ServerInfo(server, server, Integer.parseInt(System.getProperty(PLATFORM_CLIENT_HOSTPORT, "7652")));
         }
 
         return new ServerInfo(server, server.substring(0, pos), Integer.parseInt(server.substring(pos + 1)));
     }
 
     private void onCancel() {
-
         result = null;
         dispose();
     }

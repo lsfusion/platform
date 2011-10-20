@@ -9,53 +9,59 @@ import platform.interop.navigator.RemoteNavigatorInterface;
 
 import java.net.MalformedURLException;
 import java.rmi.*;
+import java.util.concurrent.CancellationException;
+
+import static platform.client.ClientResourceBundle.getString;
+import static platform.client.StartupProperties.*;
 
 public final class LoginAction {
+    private static class LoginActionHolder {
+        private static LoginAction instance = new LoginAction();
+    }
 
-    public String serverHost;
-    private String serverPort;
-    private String user;
-    private String password;
-    private LoginInfo loginInfo;
-    private LoginDialog loginDialog;
+    public static LoginAction getInstance() {
+        return LoginActionHolder.instance;
+    }
 
-    private RemoteLogicsInterface remoteLogics;
-    private int computerId;
-    private RemoteNavigatorInterface remoteNavigator;
+    //login statuses
     final static int OK = 0;
     final static int HOST_NAME_ERROR = 1;
     final static int CONNECT_ERROR = 2;
     final static int SERVER_ERROR = 3;
     final static int PENDING_RESTART_WARNING = 4;
     final static int ERROR = 5;
+    final static int CANCELED = 6;
+
+    public String serverHost;
+    private String serverPort;
+    private String user;
+    private String password;
+    private boolean autoLogin;
+    private LoginInfo loginInfo;
+    private LoginDialog loginDialog;
+
+    private RemoteLogicsInterface remoteLogics;
+    private int computerId;
+    private RemoteNavigatorInterface remoteNavigator;
 
     private LoginAction() {
-        this.serverHost = System.getProperty(PropertyConstants.PLATFORM_CLIENT_HOSTNAME);
-        this.serverPort = System.getProperty(PropertyConstants.PLATFORM_CLIENT_HOSTPORT);
-        this.user = System.getProperty(PropertyConstants.PLATFORM_CLIENT_USER);
-        this.password = System.getProperty(PropertyConstants.PLATFORM_CLIENT_PASSWORD);
-        this.loginInfo = new LoginInfo(serverHost, serverPort, user, password);
-    }
+        serverHost = System.getProperty(PLATFORM_CLIENT_HOSTNAME);
+        serverPort = System.getProperty(PLATFORM_CLIENT_HOSTPORT);
+        user = System.getProperty(PLATFORM_CLIENT_USER);
+        password = System.getProperty(PLATFORM_CLIENT_PASSWORD);
+        autoLogin = Boolean.getBoolean(PLATFORM_CLIENT_AUTOLOGIN);
+        loginInfo = new LoginInfo(serverHost, serverPort, user, password);
 
-    private static class LoginActionHolder {
-        private static LoginAction instance = new LoginAction();
-    }
-
-    public static LoginAction getDefault() {
-        return LoginActionHolder.instance;
+        loginDialog = new LoginDialog(loginInfo);
     }
 
     public boolean login() throws MalformedURLException, NotBoundException, RemoteException {
-        if (loginDialog == null) {
-            loginDialog = new LoginDialog(loginInfo);
-        }
-
         boolean needData = serverHost == null || serverPort == null || user == null || password == null;
-        boolean autoLogin = Boolean.getBoolean(PropertyConstants.PLATFORM_CLIENT_AUTOLOGIN);
         if (!autoLogin || needData) {
             loginDialog.setAutoLogin(autoLogin);
             loginInfo = loginDialog.login();
         }
+
         if (loginInfo == null) {
             return false;
         }
@@ -64,19 +70,22 @@ public final class LoginAction {
         while (!(status == OK)) {
             switch (status) {
                 case HOST_NAME_ERROR:
-                    loginDialog.setWarningMsg(ClientResourceBundle.getString("errors.check.server.address"));
+                    loginDialog.setWarningMsg(getString("errors.check.server.address"));
                     break;
                 case CONNECT_ERROR:
-                    loginDialog.setWarningMsg(ClientResourceBundle.getString("errors.error.connecting.to.the.server"));
+                    loginDialog.setWarningMsg(getString("errors.error.connecting.to.the.server"));
                     break;
                 case SERVER_ERROR:
-                    loginDialog.setWarningMsg(ClientResourceBundle.getString("errors.check.login.and.password"));
+                    loginDialog.setWarningMsg(getString("errors.check.login.and.password"));
                     break;
                 case PENDING_RESTART_WARNING:
-                    loginDialog.setWarningMsg(ClientResourceBundle.getString("errors.server.reboots"));
+                    loginDialog.setWarningMsg(getString("errors.server.reboots"));
                     break;
                 case ERROR:
-                    loginDialog.setWarningMsg(ClientResourceBundle.getString("errors.error.connecting"));
+                    loginDialog.setWarningMsg(getString("errors.error.connecting"));
+                    break;
+                case CANCELED:
+                    loginDialog.setWarningMsg(getString("errors.error.cancel"));
                     break;
             }
             loginDialog.setAutoLogin(false);
@@ -85,6 +94,11 @@ public final class LoginAction {
                 return false;
             }
             status = connect();
+
+            serverHost = loginInfo.getServerHost();
+            serverPort = loginInfo.getServerPort();
+            user = loginInfo.getUserName();
+            password = loginInfo.getPassword();
         }
 
         return true;
@@ -97,7 +111,11 @@ public final class LoginAction {
         RemoteNavigatorInterface remoteNavigator;
 
         try {
-            Main.remoteLoader = remoteLoader = (RemoteLoaderInterface) Naming.lookup("rmi://" + loginInfo.getServerHost() + ":" + loginInfo.getServerPort() + "/BusinessLogicsLoader");
+            //Нужно сразу инициализировать Main.remoteLoader, т.к. используется для загрузки классов в ClientRMIClassLoaderSpi
+            Main.remoteLoader = remoteLoader = new ReconnectWorker(loginInfo.getServerHost(), loginInfo.getServerPort()).connect();
+            if (remoteLoader == null) {
+                return CANCELED;
+            }
             RemoteLogicsInterface remote = remoteLoader.getRemoteLogics();
 
             remoteLogics = new RemoteBusinessLogicProxy(remote);
@@ -108,16 +126,15 @@ public final class LoginAction {
                 Main.remoteLoader = null;
                 return PENDING_RESTART_WARNING;
             }
+        } catch (CancellationException ce) {
+            return CANCELED;
         } catch (UnknownHostException e) {
             System.out.println(e.getCause());
             return HOST_NAME_ERROR;
-        } catch (ConnectException e) {
-            System.out.println(e.getCause());
-            return CONNECT_ERROR;
         } catch (InternalServerException e) {
             e.printStackTrace();
             return SERVER_ERROR;
-        } catch (Exception e) {
+        } catch (Throwable e) {
             e.printStackTrace();
             return ERROR;
         }
@@ -141,4 +158,7 @@ public final class LoginAction {
         return remoteNavigator;
     }
 
+    public void setAutoLogin(boolean autoLogin) {
+        this.autoLogin = autoLogin;
+    }
 }

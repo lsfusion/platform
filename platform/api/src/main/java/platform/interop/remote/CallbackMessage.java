@@ -1,5 +1,5 @@
 package platform.interop.remote;
 
 public enum CallbackMessage {
-    DISCONNECTED, SERVER_RESTARTED
+    DISCONNECTED, SERVER_RESTARTING
 }

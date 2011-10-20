@@ -17,6 +17,7 @@
         <j2se version="1.6+" initial-heap-size="32m" max-heap-size="128m"/>
         <property name="platform.client.hostname" value="${scripted.host}"/>
         <property name="platform.client.hostport" value="${scripted.port}"/>
+        <property name="platform.client.autologin" value="true"/>
         <jar href="fullclient-prod.jar"/>
     </resources>
     <application-desc/>

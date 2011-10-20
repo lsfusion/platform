@@ -33,6 +33,10 @@ public class MockProjectDAO {
         }
     }
 
+    public void addConfigurationToProject(int projId, int configId) {
+        getProject(projId).add(configs.get(configId));
+    }
+
     public void addConfiguration(int projId, ConfigurationDTO configurationDTO) {
         configs.put(configurationDTO.id, configurationDTO);
         getProject(projId).add(configurationDTO);

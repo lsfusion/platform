@@ -531,7 +531,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteContextO
 
         public synchronized void notifyServerRestart() {
             deniedRestart = false;
-            addMessage(CallbackMessage.SERVER_RESTARTED);
+            addMessage(CallbackMessage.SERVER_RESTARTING);
         }
 
         public synchronized void notifyServerRestartCanceled() {

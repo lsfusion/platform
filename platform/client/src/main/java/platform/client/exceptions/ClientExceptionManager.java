@@ -8,7 +8,6 @@ import platform.client.Main;
 import platform.client.rmi.ConnectionLostManager;
 import platform.interop.exceptions.InternalServerException;
 
-import java.awt.*;
 import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
@@ -24,17 +23,13 @@ public class ClientExceptionManager {
     private final static Logger logger = Logger.getLogger(ClientExceptionManager.class);
 
     public static void handle(Throwable e) {
-        handle(e, null);
-    }
-
-    public static void handle(Throwable e, Component parentComponent) {
 
         // Проверяем на потерю соединения и делаем особую обработку
         RemoteException remote = getRemoteExceptionCause(e);
         if (remote instanceof ConnectIOException || remote instanceof ConnectException) {
             //при этих RemoteException'ах возможно продолжение работы
             ConnectionLostManager.connectionLost(false);
-            logger.error(ClientResourceBundle.getString("exceptions.error.on.communication.with.server")+": ", e);
+            logger.error(ClientResourceBundle.getString("exceptions.error.on.communication.with.server"), e);
             return;
         }
 
@@ -46,7 +41,7 @@ public class ClientExceptionManager {
             } else {
                 //при остальных RemoteException'ах нужно релогиниться
                 ConnectionLostManager.connectionLost(true);
-                logger.error(ClientResourceBundle.getString("exceptions.error.on.communication.with.server")+": ", e);
+                logger.error(ClientResourceBundle.getString("exceptions.error.on.communication.with.server"), e);
                 return;
             }
         }
@@ -66,21 +61,21 @@ public class ClientExceptionManager {
         String erTrace = os.toString();
 
         if (!(e instanceof ConcurrentModificationException) ||
-            !(erTrace.indexOf("bibliothek.gui.dock.themes.basic.action.buttons.ButtonPanel.setForeground") >= 0)) {
+            !(erTrace.contains("bibliothek.gui.dock.themes.basic.action.buttons.ButtonPanel.setForeground"))) {
             try {
-                String info = ClientResourceBundle.getString("exceptions.client")+" " + OSUtils.getLocalHostName() + ClientResourceBundle.getString("exceptions.error") +" " + message;
+                String info = ClientResourceBundle.getString("exceptions.client.error", OSUtils.getLocalHostName(), message);
                 if (!isInternalServerException) {
                     info += lineSeparator + erTrace;
                 }
-                Main.frame.remoteNavigator.clientExceptionLog(info);
+                Main.clientExceptionLog(info);
             } catch (RemoteException exc) {
             }
-            Log.printFailedMessage(ClientResourceBundle.getString("exceptions.error.on.executing")+" : " + message, erTrace, parentComponent);
+            Log.printFailedMessage(ClientResourceBundle.getString("exceptions.error.on.executing") + message, erTrace);
         }
     }
 
     private static RemoteException getRemoteExceptionCause(Throwable e) {
-        for (Throwable ex = e; ex != null && ex.getCause() != null && ex != ex.getCause(); ex = ex.getCause()) {
+        for (Throwable ex = e; ex != null && ex != ex.getCause(); ex = ex.getCause()) {
             if (ex instanceof RemoteException) {
                 return ex instanceof ServerException
                        ? (RemoteException) ex.getCause()

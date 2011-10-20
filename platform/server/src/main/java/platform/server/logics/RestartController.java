@@ -7,6 +7,8 @@ import platform.server.form.navigator.RemoteNavigator;
 import java.rmi.RemoteException;
 import java.util.concurrent.*;
 
+import static platform.server.logics.ServerResourceBundle.getString;
+
 class RestartController {
     private final static Logger logger = Logger.getLogger(RestartController.class);
 
@@ -26,7 +28,7 @@ class RestartController {
             return;
         }
 
-        logger.info(ServerResourceBundle.getString("logics.server.initiated.server.stopping"));
+        logger.info(getString("logics.server.initiated.server.stopping"));
         try {
             task = scheduler.scheduleAtFixedRate(new Runnable() {
                 public void run() {
@@ -38,7 +40,7 @@ class RestartController {
                                 try {
                                     remoteNavigator.notifyServerRestart();
                                 } catch (RemoteException e) {
-                                    logger.debug(ServerResourceBundle.getString("logics.server.remote.exception.on.questioning.client.for.stopping"), e);
+                                    logger.debug(getString("logics.server.remote.exception.on.questioning.client.for.stopping"), e);
                                 }
                             }
                         }
@@ -46,7 +48,7 @@ class RestartController {
                     if (canRestart) {
                         doRestart();
                     } else {
-                        logger.info(ServerResourceBundle.getString("logics.server.some.clients.prohibited.server.stopping"));
+                        logger.info(getString("logics.server.some.clients.prohibited.server.stopping"));
                     }
                 }
             }, 0, restartDelayMinutes, TimeUnit.MINUTES);
@@ -61,7 +63,7 @@ class RestartController {
         //чтобы удалённый клиент продолжил выполнение
         scheduler.submit(new Runnable() {
             public void run() {
-                logger.info(ServerResourceBundle.getString("logics.server.server.stopping"));
+                logger.info(getString("logics.server.server.stopping"));
                 System.exit(0);
             }
         });
@@ -76,7 +78,7 @@ class RestartController {
             return;
         }
 
-        logger.info(ServerResourceBundle.getString("logics.server.stopping.canceled"));
+        logger.info(getString("logics.server.stopping.canceled"));
         task.cancel(false);
 
         task = null;
@@ -88,7 +90,7 @@ class RestartController {
                         try {
                             remoteNavigator.notifyServerRestartCanceled();
                         } catch (RemoteException e) {
-                            logger.debug(ServerResourceBundle.getString("logics.server.remote.exception.on.questioning.client.for.stopping"), e);
+                            logger.debug(getString("logics.server.remote.exception.on.questioning.client.for.stopping"), e);
                         }
                     }
                 }
@@ -100,7 +102,7 @@ class RestartController {
         if (isPendingRestart()) {
             synchronized (BL.navigators) {
                 if (BL.navigators.size() == 0) {
-                    logger.info(ServerResourceBundle.getString("logics.server.all.clients.disconnected.server.will.be.stopped"));
+                    logger.info(getString("logics.server.all.clients.disconnected.server.will.be.stopped"));
                     doRestart();
                 }
             }

@@ -13,6 +13,7 @@ import com.smartgwt.client.widgets.layout.HLayout;
 import com.smartgwt.client.widgets.layout.SectionStack;
 import com.smartgwt.client.widgets.layout.SectionStackSection;
 import com.smartgwt.client.widgets.layout.VLayout;
+import paas.api.gwt.shared.dto.ConfigurationDTO;
 import paas.api.gwt.shared.dto.ModuleDTO;
 import platform.gwt.paas.client.data.ModuleRecord;
 
@@ -124,4 +125,20 @@ public class ProjectPageView extends ViewWithUiHandlers<ProjectPageUIHandlers> i
     public Widget asWidget() {
         return mainPane;
     }
+
+    @Override
+    public void setConfigurations(ConfigurationDTO[] configurations) {
+        toolbar.setConfigurations(configurations);
+    }
+
+    @Override
+    public void showLoading() {
+        toolbar.showLoading();
+    }
+
+    @Override
+    public void hideLoading() {
+        toolbar.hideLoading();
+    }
 }
+

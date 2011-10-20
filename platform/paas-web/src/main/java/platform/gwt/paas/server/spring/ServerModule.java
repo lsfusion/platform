@@ -41,5 +41,6 @@ public class ServerModule extends HandlerModule {
         bindHandler(UpdateConfigurationAction.class, UpdateConfigurationHandler.class);
         bindHandler(StartConfigurationAction.class, StartConfigurationHandler.class);
         bindHandler(StopConfigurationAction.class, StopConfigurationHandler.class);
+        bindHandler(RestartConfigurationAction.class, RestartConfigurationHandler.class);
     }
 }

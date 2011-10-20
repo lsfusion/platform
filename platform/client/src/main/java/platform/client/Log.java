@@ -2,21 +2,41 @@ package platform.client;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.lang.ref.WeakReference;
 import java.text.DateFormat;
 import java.util.Date;
 
-public final class Log {
+import static platform.client.ClientResourceBundle.getString;
 
+public final class Log {
     private static String text = "";
 
-    private static void print(String itext) {
+    private static WeakReference<LogPanel> logPanelRef = new WeakReference<LogPanel>(null);
 
+    public static JPanel recreateLogPanel() {
+        LogPanel logPanel = new LogPanel();
+
+        logPanelRef = new WeakReference<LogPanel>(logPanel);
+        text = "";
+
+        return logPanel;
+    }
+
+    private static LogPanel getLogPanel() {
+        LogPanel logPanel = logPanelRef.get();
+        // пока таким образом определим есть ли он на экране
+        if (logPanel != null && logPanel.getTopLevelAncestor() != null) {
+            return logPanel;
+        }
+
+        return null;
+    }
+
+    private static void print(String itext) {
         text += itext;
-        out.stateChanged();
+        stateChanged();
     }
 
     private static void println(String itext) {
@@ -27,14 +47,6 @@ public final class Log {
         println(getMsgHeader() + itext + getMsgFooter());
     }
 
-    private static int bytesReceived = 0;
-
-    public static void incrementBytesReceived(int cnt) {
-
-        bytesReceived += cnt;
-        out.stateChanged();
-    }
-
     private static String getMsgHeader() {
         return "--- " + DateFormat.getInstance().format(new Date(System.currentTimeMillis())) + " ---\n";
     }
@@ -43,25 +55,35 @@ public final class Log {
         return "";
     }
 
-
-    private final static LogView out = new LogView();
-
-    public static JPanel getPanel() {
-        return out;
+    private static void stateChanged() {
+        LogPanel logPanel = getLogPanel();
+        if (logPanel != null) {
+            logPanel.updateText(text);
+        }
     }
 
-    public static void printSuccessMessage(String message) {
+    private static void provideSuccessFeedback() {
+        LogPanel logPanel = getLogPanel();
+        if (logPanel != null) {
+            logPanel.setTemporaryBackground(Color.green);
+        }
+    }
+
+    private static void provideErrorFeedback() {
+        LogPanel logPanel = getLogPanel();
+        if (logPanel != null) {
+            logPanel.setTemporaryBackground(Color.red);
+            logPanel.provideErrorFeedback();
+        }
+    }
+
+    public static void message(String message) {
         printmsg(message);
-        // пока таким образом определим есть ли он на экране
-        if (out.getTopLevelAncestor() != null) {
-            out.setTemporaryBackground(Color.green);
-        } // else {
-//            JOptionPane.showMessageDialog(SwingUtils.getActiveWindow(), message, Main.getMainTitle(), JOptionPane.INFORMATION_MESSAGE);
-//        }
+        provideSuccessFeedback();
     }
 
-    public static void printFailedMessage(String message) {
-        printFailedMessage(message, "", null);
+    public static void error(String message) {
+        printFailedMessage(message, "");
     }
 
     static JTextArea errorText;
@@ -71,18 +93,11 @@ public final class Log {
     static JPanel line;
     static JPanel south;
 
-    public static void printFailedMessage(String message, String trace, Component parentComponent) {
-
+    public static void printFailedMessage(String message, String trace) {
         printmsg(message);
 
-        // пока таким образом определим есть ли он на экране
-        if (out.getTopLevelAncestor() != null) {
-            out.setTemporaryBackground(Color.red);
-            out.provideErrorFeedback();
-        }
+        provideErrorFeedback();
 
-        // ошибки всегда идут на экран
-        //JOptionPane.showMessageDialog(parentComponent, message, "LS Fusion", JOptionPane.ERROR_MESSAGE);
         JPanel panel = new JPanel();
         BorderLayout layout = new BorderLayout(10, 10);
         panel.setLayout(layout);
@@ -100,7 +115,6 @@ public final class Log {
 
         JLabel text = new JLabel(htmlMessage.toString());
         panel.add(text, BorderLayout.CENTER);
-        //panel.add(new JLabel(" "));
 
         south = new JPanel();
         south.setLayout(new BoxLayout(south, BoxLayout.Y_AXIS));
@@ -122,22 +136,22 @@ public final class Log {
 
         String opt[];
         if (trace.length() > 0) {
-            opt = new String[]{"OK", ClientResourceBundle.getString("client.more")};
+            opt = new String[]{"OK", getString("client.more")};
         } else {
             opt = new String[]{"OK"};
         }
         optionPane = new JOptionPane(panel, JOptionPane.ERROR_MESSAGE,
-                JOptionPane.YES_NO_OPTION,
-                null,
-                opt,
-                "OK");
+                                     JOptionPane.YES_NO_OPTION,
+                                     null,
+                                     opt,
+                                     "OK");
 
         optionPane.addPropertyChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent e) {
                 Object value = optionPane.getValue();
                 if (dialog.isVisible() && value.equals("OK")) {
                     dialog.dispose();
-                } else if (value.equals(ClientResourceBundle.getString("client.more"))) {
+                } else if (value.equals(getString("client.more"))) {
                     south.setVisible(!south.isVisible());
                     dialog.pack();
                     optionPane.setValue(JOptionPane.UNINITIALIZED_VALUE);
@@ -156,75 +170,6 @@ public final class Log {
 
         dialog.setVisible(true);
     }
-
-    private static class LogView extends JPanel {
-
-        private final LogTextArea view;
-        private final JLabel info;
-
-        public LogView() {
-
-            setLayout(new BorderLayout());
-
-            view = new LogTextArea();
-            view.setLineWrap(true);
-            view.setWrapStyleWord(true);
-            JScrollPane pane = new JScrollPane(view);
-
-            add(pane, BorderLayout.CENTER);
-
-            info = new JLabel();
-            add(info, BorderLayout.PAGE_END);
-
-            stateChanged();
-        }
-
-        public void stateChanged() {
-
-            view.setText(text);
-            if (!text.isEmpty())
-                view.setCaretPosition(text.length() - 1);
-
-//            info.setText("Bytes received : " + bytesReceived);
-        }
-
-        public void setTemporaryBackground(Color color) {
-
-            SwingUtils.stopSingleAction("logSetOldBackground", true);
-
-            final Color oldBackground = view.getBackground();
-            view.setBackground(color);
-
-            SwingUtils.invokeLaterSingleAction("logSetOldBackground", new ActionListener() {
-
-                public void actionPerformed(ActionEvent e) {
-                    view.setBackground(oldBackground);
-                }
-            }, 10000);
-
-        }
-
-        public void provideErrorFeedback() {
-            UIManager.getLookAndFeel().provideErrorFeedback(view);
-        }
-
-        class LogTextArea extends JTextArea {
-
-            public LogTextArea() {
-                super();
-
-                setEditable(false);
-            }
-
-            public void updateUI() {
-                super.updateUI();
-
-                JTextField fontGetter = new JTextField();
-                setFont(fontGetter.getFont());
-            }
-        }
-    }
-
 }
 
 
