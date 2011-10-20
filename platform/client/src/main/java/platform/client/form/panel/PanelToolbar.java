@@ -54,14 +54,13 @@ public class PanelToolbar {
         eastContainer.add(rightContainer);
 
         selectionInfoLabel = new JLabel();
-        JPanel centerContainer = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-        centerContainer.setMinimumSize(new Dimension(1, ToolbarGridButton.BUTTON_SIZE.height));
-        centerContainer.setPreferredSize(new Dimension(centerContainer.getPreferredSize().width, ToolbarGridButton.BUTTON_SIZE.height));
-        centerContainer.add(selectionInfoLabel);
+        selectionInfoLabel.setMinimumSize(new Dimension(1, ToolbarGridButton.BUTTON_SIZE.height));
+        selectionInfoLabel.setPreferredSize(new Dimension(selectionInfoLabel.getPreferredSize().width, ToolbarGridButton.BUTTON_SIZE.height));
+        selectionInfoLabel.setHorizontalAlignment(SwingConstants.RIGHT);
 
         mainContainer = new JPanel(new BorderLayout());
         mainContainer.add(leftContainer, BorderLayout.WEST);
-        mainContainer.add(centerContainer, BorderLayout.CENTER);
+        mainContainer.add(selectionInfoLabel, BorderLayout.CENTER);
         mainContainer.add(eastContainer, BorderLayout.EAST);
         mainContainer.add(bottomContainer, BorderLayout.SOUTH);
     }
@@ -127,6 +126,8 @@ public class PanelToolbar {
         text += sum == null ? "" : ClientResourceBundle.getString("form.grid.selection.sum") + sum.replace(',', '.') + "  ";
         text += quantity <= 1 ? "" : ClientResourceBundle.getString("form.grid.selection.quantity") + quantity;
         selectionInfoLabel.setText(text);
+        selectionInfoLabel.setVisible(!text.isEmpty());
+        selectionInfoLabel.invalidate();
     }
 
     public void update(ClassViewType viewType) {

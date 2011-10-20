@@ -17,7 +17,6 @@ import platform.server.form.entity.*;
 import platform.server.form.entity.filter.*;
 import platform.server.form.instance.FormInstance;
 import platform.server.form.instance.ObjectInstance;
-import platform.server.form.instance.PropertyObjectInterfaceInstance;
 import platform.server.form.instance.remote.RemoteForm;
 import platform.server.form.navigator.NavigatorElement;
 import platform.server.form.view.ContainerView;
@@ -87,7 +86,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
     // properties
     public LP groeq2;
-    protected LP lsoeq2;
+    public LP lsoeq2;
     public LP greater2, less2;
     public LP greater22, less22;
     public LP between;
@@ -102,6 +101,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public LP sumInteger2;
     public LP sumInteger3;
     public LP subtractInteger2;
+    public LP subtractInclInteger2;
     public LP multiplyIntegerBy2;
     protected LP squareInteger;
     protected LP squareDouble;
@@ -109,6 +109,8 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public LP divideDouble;
     public LP divideDouble2;
     public LP divideDouble3;
+    public LP divideInteger;
+    public LP divideInteger0;
     public LP addDate2;
     public LP subtractDate2;
     public LP string2;
@@ -140,6 +142,12 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
     public LP<?> name;
     public LP<?> date;
+
+    public LP daysInclBetweenDates;
+    public LP weeksInclBetweenDates;
+
+    public LP sumDateWeekFrom;
+    public LP sumDateWeekTo;
 
     protected LP transactionLater;
     public LP currentDate;
@@ -413,6 +421,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         sumInteger2 = addSFProp("sumInteger2", "((prm1)+(prm2))", IntegerClass.instance, 2);
         sumInteger3 = addSFProp("sumInteger2", "((prm1)+(prm2)+(prm3))", IntegerClass.instance, 3);
         subtractInteger2 = addSFProp("subtractInteger2", "((prm1)-(prm2))", IntegerClass.instance, 2);
+        subtractInclInteger2 = addSFProp("subtractInclInteger2", "((prm1)-(prm2)+1)", IntegerClass.instance, 2);
         multiplyIntegerBy2 = addSFProp("((prm1)*2)", IntegerClass.instance, 1);
         squareInteger = addSFProp("(prm1)*(prm1)", IntegerClass.instance, 1);
         squareDouble = addSFProp("(prm1)*(prm1)", DoubleClass.instance, 1);
@@ -420,6 +429,8 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         divideDouble = addSFProp("((prm1)/(prm2))", DoubleClass.instance, 2);
         divideDouble2 = addSFProp("divideDouble2", "round(CAST((CAST((prm1) as numeric)/(prm2)) as numeric),2)", DoubleClass.instance, 2);
         divideDouble3 = addSFProp("divideDouble3", "round(CAST((CAST((prm1) as numeric)/(prm2)) as numeric),3)", DoubleClass.instance, 2);
+        divideInteger = addSFProp("CAST(((prm1)/(prm2)) as integer)", IntegerClass.instance, 2);
+        divideInteger0 = addSFProp("CAST(round((prm1)/(prm2),0) as integer)", IntegerClass.instance, 2);
         addDate2 = addSFProp("((prm1)+(prm2))", DateClass.instance, 2);
         subtractDate2 = addSFProp("((prm1)-(prm2))", DateClass.instance, 2);
         percent = addSFProp("((prm1)*(prm2)/100)", DoubleClass.instance, 2);
@@ -458,6 +469,12 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         cancel = addAProp(new CancelActionProperty());
 
         date = addDProp(baseGroup, "date", getString("logics.date"), DateClass.instance, transaction);
+
+        daysInclBetweenDates = addJProp("daysInclBetweenDates", "Кол-во дней", and(false, false), addJProp(subtractInclInteger2, 2, 1), 1, 2, is(DateClass.instance), 1, is(DateClass.instance), 2);
+        weeksInclBetweenDates = addJProp("weeksInclBetweenDates", "Кол-во недель", divideInteger, daysInclBetweenDates, 1, 2, addCProp(IntegerClass.instance, 7));
+
+        sumDateWeekFrom = addJProp("sumDateWeekFrom", "Дата (с)", and(false, false), addSFProp("((prm1)+(prm2)*7)", DateClass.instance, 2), 1, 2, is(DateClass.instance), 1, is(IntegerClass.instance), 2);
+        sumDateWeekTo = addJProp("sumDateWeekTo", "Дата (по)", and(false, false), addSFProp("((prm1)+((prm2)*7+6))", DateClass.instance, 2), 1, 2, is(DateClass.instance), 1, is(IntegerClass.instance), 2);
 
         betweenDates = addJProp(getString("logics.date.of.doc.between"), between, object(DateClass.instance), 1, object(DateClass.instance), 2, object(DateClass.instance), 3);
         betweenDate = addJProp(getString("logics.date.of.doc.between"), betweenDates, date, 1, 2, 3);

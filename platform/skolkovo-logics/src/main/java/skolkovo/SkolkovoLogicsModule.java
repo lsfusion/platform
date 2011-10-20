@@ -192,7 +192,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         projectAction = addStaticClass("projectAction", "Тип заявки",
                 new String[]{"preliminary", "status"},
-                new String[]{"Предварительная экспертиза", "Статус участника"});
+                new String[]{"На предварительную экспертизу", "На статус участника"});
 
         ownerType = addStaticClass("ownerType", "Тип правообладателя",
                 new String[]{"employee", "participant", "thirdparty"},
@@ -804,7 +804,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
     public LP sumPositiveConsultingCenterCommentProject;
     public LP sumNegativeConsultingCenterCommentProject;
     public LP sumTotalConsultingCenterCommentProject;
-    public LP betweenDate;
+    public LP betweenDateProject;
 
     LP hideNameReturnInvestorProject;
     LP hideAmountReturnFundsProject;
@@ -1018,6 +1018,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP isPreliminaryStatusProject;
     LP isPreliminaryAndStatusProject;
 
+    LP projectActionApplication, nameProjectActionApplication;
+
     LP projectApplication;
     LP projectApplicationPreliminary, projectApplicationStatus;
     LP isPreliminaryApplication, isStatusApplication;
@@ -1039,6 +1041,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
     private LP langApplication;
     private LP nameNativeShortAggregateClusterApplication;
 
+    private LP finalClusterApplication, nameFinalClusterApplication;
+
     LP statusJoinApplication;
     LP isPreliminaryAfterStatusApplication;
     LP statusApplication;
@@ -1053,6 +1057,14 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP needLegalCheckStatusProject;
     LP hideAddPositiveLCResult;
     LP hideAddNegativeLCResult;
+
+    private LP daysSubmitApplicationDate;
+    private LP weekSubmitApplicationDate;
+    private LP applicationsSubmitDateWeek;
+    private LP oneApplicationDateDate;
+    private LP applicationsSubmitDateDate;
+    private LP applicationsSubmitProjectActionClusterDateDate;
+    private LP averageWeekApplSubmitDateDate;
 
     private LP daysClaimerFirstOriginalDocsProject;
     private LP daysClaimerExtraOriginalDocsProject;
@@ -1803,6 +1815,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         quantityDoneVote = addSGProp(voteResultGroup, "quantityDoneVote", true, "Проголосовало",
                 addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), doneExpertVote, 1, 2), 2); // сколько экспертов высказалось
+        quantityDoneVote.setFixedCharWidth(3);
 
         percentNeeded = addDProp(baseGroup, "percentNeeded", "Процент для положительного решения", DoubleClass.instance);
         percentNeededVote = addDProp(baseGroup, "percentNeededVote", "Процент голосования", DoubleClass.instance, voteR2);
@@ -1824,38 +1837,47 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         quantityInClusterVote = addSGProp(voteResultGroup, "quantityInClusterVote", true, "Соотв-ие кластеру (голоса)",
                 addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), inClusterExpertVote, 1, 2), 2); // сколько экспертов высказалось
+        quantityInClusterVote.setFixedCharWidth(3);
         hideQuantityInClusterProject = addHideCaptionProp(privateGroup, "Соотв. кластеру (hide)", quantityInClusterVote, isR1Project);
 
         quantityInnovativeVote = addSGProp(voteResultGroup, "quantityInnovativeVote", true, "Инновац. (голоса)",
                 addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), innovativeExpertVote, 1, 2), 2); // сколько экспертов высказалось
+        quantityInnovativeVote.setFixedCharWidth(3);
         hideQuantityInnovativeProject = addHideCaptionProp(privateGroup, "Инновац. (hide)", quantityInnovativeVote, isR1Project);
 
         quantityForeignVote = addSGProp(voteResultGroup, "quantityForeignVote", true, "Иностр. специалист (голоса)",
                 addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), foreignExpertVote, 1, 2), 2); // сколько экспертов высказалось
+        quantityForeignVote.setFixedCharWidth(3);
         hideQuantityForeignProject = addHideCaptionProp(privateGroup, "Иностр. специалист (hide)", quantityForeignVote, isR1Project);
 
         quantityCompetitiveAdvantagesVote = addSGProp(voteResultGroup, "quantityCompetitiveAdvantagesVote", true, "Конкур. преим. (голоса)",
                 addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), competitiveAdvantagesExpertVote, 1, 2), 2); // сколько экспертов высказалось
+        quantityCompetitiveAdvantagesVote.setFixedCharWidth(3);
         hideQuantityCompetitiveAdvantagesProject = addHideCaptionProp(privateGroup, "Конкур. преим. (hide)", quantityCompetitiveAdvantagesVote, isR2Project);
 
         quantityCommercePotentialVote = addSGProp(voteResultGroup, "quantityCommercePotentialVote", true, "Потенциал коммерц. (голоса)",
                 addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), commercePotentialExpertVote, 1, 2), 2); // сколько экспертов высказалось
+        quantityCommercePotentialVote.setFixedCharWidth(3);
         hideQuantityCommercePotentialProject = addHideCaptionProp(privateGroup, "Потенциал коммерц. (hide)", quantityCommercePotentialVote, isR2Project);
 
         quantityCanBeImplementedVote = addSGProp(voteResultGroup, "quantityCanBeImplementedVote", true, "Теоретически реализуем (голоса)",
                 addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), canBeImplementedExpertVote, 1, 2), 2); // сколько экспертов высказалось
+        quantityCanBeImplementedVote.setFixedCharWidth(3);
         hideQuantityCanBeImplementedProject = addHideCaptionProp(privateGroup, "Теоретически реализуем (hide)", quantityCanBeImplementedVote, isR2Project);
 
         quantityHaveExpertiseVote = addSGProp(voteResultGroup, "quantityHaveExpertiseVote", true, "Наличие экспертизы (голоса)",
                 addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), haveExpertiseExpertVote, 1, 2), 2); // сколько экспертов высказалось
+        quantityHaveExpertiseVote.setFixedCharWidth(3);
         hideQuantityHaveExpertiseProject = addHideCaptionProp(privateGroup, "Наличие экспертизы (hide)", quantityHaveExpertiseVote, isR2Project);
 
         quantityInternationalExperienceVote = addSGProp(voteResultGroup, "quantityInternationalExperienceVote", true, "Международный опыт (голоса)",
                 addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), internationalExperienceExpertVote, 1, 2), 2); // сколько экспертов высказалось
+        quantityInternationalExperienceVote.setFixedCharWidth(3);
         hideQuantityInternationalExperienceProject = addHideCaptionProp(privateGroup, "Международный опыт (hide)", quantityInternationalExperienceVote, isR2Project);
 
         quantityEnoughDocumentsVote = addSGProp(voteResultGroup, "quantityEnoughDocumentsVote", true, "Достаточно документов (голоса)",
                 addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), enoughDocumentsExpertVote, 1, 2), 2); // сколько экспертов высказалось
+        quantityEnoughDocumentsVote.setFixedCharWidth(3);
         hideQuantityEnoughDocumentsProject = addHideCaptionProp(privateGroup, "Достаточно документов (hide)", quantityEnoughDocumentsVote, isR2Project);
 
         acceptedInClusterVote = addJProp(voteResultGroup, "acceptedInClusterVote", "Соотв-ие кластеру", baseLM.greater2,
@@ -1973,7 +1995,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
                 addJProp(baseLM.minusInteger,
                         addMGProp(addJProp(and(false), addJProp(baseLM.minusInteger, numberCluster, 1), 2, inProjectCluster, 1, 2), 1), 1), 1);
 
-        finalClusterProject = addSUProp("finalClusterProject", "Тек. кластер (ИД)", Union.OVERRIDE, lastClusterProject, currentClusterProject, clusterAcceptedProject);
+        finalClusterProject = addSUProp("finalClusterProject", true, "Тек. кластер (ИД)", Union.OVERRIDE, lastClusterProject, currentClusterProject, clusterAcceptedProject);
         nameNativeFinalClusterProject = addJProp(projectInformationGroup, "nameNativeFinalClusterProject", "Тек. кластер", nameNative, finalClusterProject, 1);
         nameForeignFinalClusterProject = addJProp(projectInformationGroup, "nameForeignFinalClusterProject", "Тек. кластер (иностр.)", nameForeign, finalClusterProject, 1);
         nameNativeShortFinalClusterProject = addJProp(projectInformationGroup, "nameShortFinalClusterProject", "Тек. кластер (сокр.)", nameNativeShort, finalClusterProject, 1);
@@ -2048,19 +2070,6 @@ public class SkolkovoLogicsModule extends LogicsModule {
         //quantitySupplierArticleBetweenDates = addSGProp("quantitySupplierArticleBetweenDates", "Проданное кол-во",
         //        addJProp(and(false,false), innerQuantity, 1, 2, 3, is(orderSale), 1, betweenDate2, 1, 4, 5), contragentOrder, 3, 2, 4, 5);
 
-        betweenDate = addJProp(baseLM.between, baseLM.date, 1, object(DateClass.instance), 2, object(DateClass.instance), 3);
-
-        sumPositiveConsultingCenterCommentProject = addSGProp(consultingCenterStatGroup, "sumPositiveConsultingCenterCommentProject", "Сумма положительных комментариев",
-                addJProp(and(false, false, false, true), addCProp(IntegerClass.instance, 1), isConsultingCenterQuestionProject, 1, isConsultingCenterCommentProject, 1, betweenDate, 1, 2, 3, inactiveProject, 1),
-                2, 3);
-        sumNegativeConsultingCenterCommentProject = addSGProp(consultingCenterStatGroup, "sumNegativeConsultingCenterCommentProject", "Сумма отрицательных комментариев",
-                addJProp(and(false, true, false, true), addCProp(IntegerClass.instance, 1), isConsultingCenterQuestionProject, 1, isConsultingCenterCommentProject, 1, betweenDate, 1, 2, 3, inactiveProject, 1),
-                2, 3);
-        sumTotalConsultingCenterCommentProject = addSGProp(consultingCenterStatGroup, "sumTotalConsultingCenterCommentProject", "Всего комментариев",
-                addJProp(and(false, false, true), addCProp(IntegerClass.instance, 1), isConsultingCenterQuestionProject, 1, betweenDate, 1, 2, 3, inactiveProject, 1),
-                2, 3);
-
-
         fillNativeProject = addDProp(projectOptionsGroup, "fillNativeProject", "Анкета на русском", LogicalClass.instance, project);
         fillForeignProject = addDProp(projectOptionsGroup, "fillForeignProject", "Анкета на английском", LogicalClass.instance, project);
         langProject = addSFUProp(projectOptionsGroup, "langProject", "Язык", "/",
@@ -2085,6 +2094,18 @@ public class SkolkovoLogicsModule extends LogicsModule {
         statusDateProject = addDProp(baseGroup, "statusDateProject", "Дата подачи на статус участника", DateClass.instance, project);
         dateStatusDataProject = addDProp("dateStatusDataProject", "Дата", DateClass.instance, project);
         dateStatusProject = addSUProp(projectInformationGroup, "dateStatusProject", "Дата подачи на статус участника", Union.OVERRIDE, statusDateProject, dateStatusDataProject);
+
+        betweenDateProject = addJProp(baseLM.between, dateProject, 1, object(DateClass.instance), 2, object(DateClass.instance), 3);
+
+        sumPositiveConsultingCenterCommentProject = addSGProp(consultingCenterStatGroup, "sumPositiveConsultingCenterCommentProject", "Сумма положительных комментариев",
+                addJProp(and(false, false, false, true), addCProp(IntegerClass.instance, 1), isConsultingCenterQuestionProject, 1, isConsultingCenterCommentProject, 1, betweenDateProject, 1, 2, 3, inactiveProject, 1),
+                2, 3);
+        sumNegativeConsultingCenterCommentProject = addSGProp(consultingCenterStatGroup, "sumNegativeConsultingCenterCommentProject", "Сумма отрицательных комментариев",
+                addJProp(and(false, true, false, true), addCProp(IntegerClass.instance, 1), isConsultingCenterQuestionProject, 1, isConsultingCenterCommentProject, 1, betweenDateProject, 1, 2, 3, inactiveProject, 1),
+                2, 3);
+        sumTotalConsultingCenterCommentProject = addSGProp(consultingCenterStatGroup, "sumTotalConsultingCenterCommentProject", "Всего комментариев",
+                addJProp(and(false, false, true), addCProp(IntegerClass.instance, 1), isConsultingCenterQuestionProject, 1, betweenDateProject, 1, 2, 3, inactiveProject, 1),
+                2, 3);
 
         //формальная экспертиза и юридическая проверка
 
@@ -2576,6 +2597,13 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         isPreliminaryAndStatusProject = addJProp("isPreliminaryAndStatusProject", "На предв. экспертизу и статус", baseLM.and1, isStatusProject, 1, hasPreliminaryVoteProject, 1);
 
+        // заявки
+
+        projectActionApplication = addCUProp(idGroup, "projectActionApplication", true, "Тип заявки (ИД)",
+                addCProp(projectAction, "preliminary", applicationPreliminary),
+                addCProp(projectAction, "status", applicationStatus));
+        nameProjectActionApplication = addJProp(baseGroup, "nameProjectActionApplication", "Тип заявки", baseLM.name, projectActionApplication, 1);
+
         projectApplication = addDProp(idGroup, "projectApplication", "Проект (ИД)", project, application);
 
         projectApplicationPreliminary = addJProp(idGroup, "projectApplicationPreliminary", "Проект (ИД)", baseLM.and1, projectApplication, 1, is(applicationPreliminary), 1);
@@ -2599,7 +2627,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         inactiveApplication = addJProp(baseGroup, "inactiveApplication", "Не акт.", inactiveProject, projectApplication, 1);
 
-        dateApplication = addCUProp(baseGroup, "dateApplication", "Дата", dateApplicationPreliminary, dateApplicationStatus);
+        dateApplication = addCUProp(baseGroup, "dateApplication", true, "Дата", dateApplicationPreliminary, dateApplicationStatus);
 
         nameNativeProjectApplication = addJProp(baseGroup, "nameNativeProjectApplication", "Проект", nameNativeProject, projectApplication, 1);
 
@@ -2622,15 +2650,41 @@ public class SkolkovoLogicsModule extends LogicsModule {
         langApplication = addJProp(baseGroup, "langApplication", "Язык", langProject, projectApplication, 1);
         nameNativeShortAggregateClusterApplication = addJProp(baseGroup, "nameNativeShortAggregateClusterApplication", "Кластеры", nameNativeShortAggregateClusterProject, projectApplication, 1);
 
+        finalClusterApplication = addJProp(idGroup, "finalClusterApplication", true, "Последний кластер (ИД)", finalClusterProject, projectApplication, 1);
+        nameFinalClusterApplication = addJProp(baseGroup, "nameFinalClusterApplication", "Последний кластер", baseLM.name, finalClusterApplication, 1);
+
         needFormalCheckStatusProject = addJProp("needFormalCheckStatusProject", and(true, true), addCProp(LogicalClass.instance, true, project), 1, positiveFormalResultProject, 1, overdueFormalControlProject, 1);
 
         needLegalCheckStatusProject = addJProp("needLegalCheckStatusProject", and(true, true), addCProp(LogicalClass.instance, true, project), 1, positiveLegalResultProject, 1, overdueLegalCheckProject, 1);
 
+        // статистика заявок
+
+        daysSubmitApplicationDate = addJProp("daysSubmitApplicationDate", "Кол-во дней заявки", baseLM.subtractInteger2, dateApplication, 1, object(DateClass.instance), 2);
+
+        weekSubmitApplicationDate = addJProp("weekSubmitApplicationDate", "Неделя заявки", baseLM.divideInteger, daysSubmitApplicationDate, 1, 2, addCProp(IntegerClass.instance, 7));
+
+        oneApplicationDateDate = addJProp(and(false, false), addCProp(IntegerClass.instance, 1, application, DateClass.instance, DateClass.instance), 1, 2, 3,
+                                            addJProp(baseLM.groeq2, dateApplication, 1, 2), 1, 2,
+                                            addJProp(baseLM.lsoeq2, dateApplication, 1, 2), 1, 3);
+
+        applicationsSubmitDateDate = addSGProp("applicationsSubmitDateDate", "Всего поступивших заявок", oneApplicationDateDate, 2, 3);
+
+        applicationsSubmitProjectActionClusterDateDate = addSGProp("applicationsSubmitProjectActionClusterDateDate", "Всего поступивших заявок",
+                oneApplicationDateDate, projectActionApplication, 1, finalClusterApplication, 1, 2, 3);
+
+        averageWeekApplSubmitDateDate = addJProp("averageApplSubmitDateDate", "Среднее кол-во заявок в день",
+                baseLM.divideInteger0, applicationsSubmitDateDate, 1, 2, baseLM.weeksInclBetweenDates, 1, 2);
+
+        applicationsSubmitDateWeek = addSGProp("applicationsSubmitDateWeek", "Кол-во поступивших заявок",
+                addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1, application, DateClass.instance), 1, 2,
+                        addJProp(baseLM.groeq2, dateApplication, 1, 2), 1, 2),
+                        2, weekSubmitApplicationDate, 1, 2);
+
         // подсчет дат нахождения заявки на стороне заявителя
         daysClaimerFirstOriginalDocsProject = addJProp("daysClaimerFirstOriginalDocumentsProject", "Кол-во дней подачи документов в бумажном виде (первый раз)", baseLM.and1,
                 addIfElseUProp(addJProp(baseLM.subtractInteger2, dateFirstSubmitOriginalDocsProject, 1, datePositiveStatusLegalCheckProject, 1),
-                               addJProp(baseLM.subtractInteger2, dateFirstSubmitOriginalDocsProject, 1, dateDecisionNoticedProject, 1),
-                               hasPreliminaryVoteProject, 1), 1, isStatusProject, 1);
+                        addJProp(baseLM.subtractInteger2, dateFirstSubmitOriginalDocsProject, 1, dateDecisionNoticedProject, 1),
+                        hasPreliminaryVoteProject, 1), 1, isStatusProject, 1);
 
         daysClaimerExtraOriginalDocsProject = addSGProp("daysClaimerExtraOriginalDocsProject", true, "Кол-во дней подачи документов в бумажном виде (повторно)",
                 addJProp(baseLM.subtractInteger2, dateSubmitOriginalDocsCheck, 1, datePrevOriginalDocsCheck, 1), projectOriginalDocsCheck, 1);
@@ -2749,6 +2803,14 @@ public class SkolkovoLogicsModule extends LogicsModule {
         addFormEntity(new AcceptanceCertificateFormEntity(print, "acceptanceCertificate", "Акт оказанных услуг (резидент)", true));
         addFormEntity(new AcceptanceCertificateFormEntity(print, "acceptanceCertificateNonResident", "Акт оказанных услуг (нерезидент)", false));
 
+        NavigatorElement report = new NavigatorElement(baseLM.baseElement, "report", "Отчеты");
+        report.window = leftToolbar;
+
+        addFormEntity(new ApplicationsSubmittedFormEntity(report, "applicationsSubmitted"));
+        addFormEntity(new ApplicationsStatusWeekFormEntity(report, "applicationsStatusWeek"));
+        addFormEntity(new ApplicationsStatusTimeFormEntity(report, "applicationsStatusTime"));
+        addFormEntity(new ApplicationsListFormEntity(report, "applicationsList"));
+
         addFormEntity(new ProjectFormEntity(baseLM.baseElement, "project"));
         addFormEntity(new ApplicationFormEntity(baseLM.baseElement, "application"));
         addFormEntity(new ClaimerFormEntity(baseLM.baseElement, "claimer"));
@@ -2761,6 +2823,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         addFormEntity(new ConsultingCenterFormEntity(baseLM.baseElement, "consultingCenter"));
 
         baseLM.baseElement.add(print);
+        baseLM.baseElement.add(report);
 
         NavigatorElement summaryTables = new NavigatorElement(baseLM.baseElement, "summaryTables", "Сводные таблицы");
         summaryTables.window = leftToolbar;
@@ -3200,7 +3263,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
                     quantityHaveExpertiseVote, quantityInternationalExperienceVote, quantityEnoughDocumentsVote,
                     loadFileDecisionVote, openFileDecisionVote,
                     emailClaimerVote, emailNoticeRejectedVote, emailNoticeAcceptedStatusVote, emailNoticeAcceptedPreliminaryVote,
-                    decisionNoticedVote, dateDecisionNoticedVote, baseLM.delete, revisionVote);
+                    decisionNoticedVote, dateDecisionNoticedVote, baseLM.delete);
             objVote.groupTo.banClassView.addAll(BaseUtils.toList(ClassViewType.PANEL, ClassViewType.HIDE));
 
             getPropertyDraw(percentNeededVote).forceViewType = ClassViewType.GRID;
@@ -3345,6 +3408,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
             design.get(getPropertyDraw(importProjectsAction)).drawToToolbar = true;
             design.get(getPropertyDraw(copyProjectAction)).drawToToolbar = true;
+            design.get(getPropertyDraw(nameNativeCurrentCluster)).drawToToolbar = true;
 //            design.getPanelContainer(objProject.groupTo).add(design.getGroupPropertyContainer((GroupObjectEntity)null, importGroup));
 
             ContainerView specContainer = design.createContainer();
@@ -3487,7 +3551,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         private ApplicationFormEntity(NavigatorElement parent, String sID) {
             super(parent, sID, "Реестр заявок");
 
-            objApplication = addSingleGroupObject(application, dateApplication, nameNativeClaimerApplication, baseLM.objectClassName, nameNativeProjectApplication,
+            objApplication = addSingleGroupObject(application, dateApplication, nameNativeClaimerApplication, nameProjectActionApplication, nameNativeProjectApplication,
                     officialNameStatusApplication, langApplication, nameNativeShortAggregateClusterApplication, emailClaimerApplication, daysClaimerApplication);
 
             addFixedFilter(new NotFilterEntity(new NotNullFilterEntity(addPropertyObject(inactiveApplication, objApplication))));
@@ -4323,6 +4387,78 @@ public class SkolkovoLogicsModule extends LogicsModule {
         @Override
         public ObjectEntity getObject() {
             return objStatus;
+        }
+    }
+
+    private class ApplicationsSubmittedFormEntity extends FormEntity<SkolkovoBusinessLogics> {
+        private ObjectEntity objDateFrom;
+        private ObjectEntity objDateTo;
+        private ObjectEntity objCluster;
+        private ObjectEntity objProjectAction;
+
+        public ApplicationsSubmittedFormEntity(NavigatorElement parent, String sID) {
+            super(parent, sID, "Статистика заявок, поступивших в отчетный период");
+
+            GroupObjectEntity gobjDates = new GroupObjectEntity(1, "date");
+            objDateFrom = new ObjectEntity(2, "dateFrom", DateClass.instance, "Дата (с)");
+            objDateTo = new ObjectEntity(3, "dateTo", DateClass.instance, "Дата (по)");
+            gobjDates.add(objDateFrom);
+            gobjDates.add(objDateTo);
+
+            addGroup(gobjDates);
+            gobjDates.setSingleClassView(ClassViewType.PANEL);
+
+            addPropertyDraw(objDateFrom, baseLM.objectValue);
+            addPropertyDraw(objDateTo, baseLM.objectValue);
+
+            objCluster = addSingleGroupObject(4, "projectAction", cluster, "Тип заявки", nameNativeShort, nameNative, nameForeign);
+            objProjectAction = addSingleGroupObject(5, "projectAction", projectAction, "Тип заявки", baseLM.name);
+
+            PropertyDrawEntity count = addPropertyDraw(applicationsSubmitProjectActionClusterDateDate, objProjectAction, objCluster, objDateFrom, objDateTo);
+            count.columnGroupObjects.add(objCluster.groupTo);
+            count.propertyCaption = addPropertyObject(nameNativeShort, objCluster);
+        }
+    }
+
+    private class ApplicationsStatusWeekFormEntity extends FormEntity<SkolkovoBusinessLogics> {
+        private ObjectEntity objDateFrom;
+        private ObjectEntity objDateTo;
+        private ObjectEntity objWeek;
+
+        public ApplicationsStatusWeekFormEntity(NavigatorElement parent, String sID) {
+            super(parent, sID, "Общая статистика. Динамика изменения");
+
+            GroupObjectEntity gobjDates = new GroupObjectEntity(1, "date");
+            objDateFrom = new ObjectEntity(2, "dateFrom", DateClass.instance, "Дата (с)");
+            objDateTo = new ObjectEntity(3, "dateTo", DateClass.instance, "Дата (по)");
+            gobjDates.add(objDateFrom);
+            gobjDates.add(objDateTo);
+
+            addGroup(gobjDates);
+            gobjDates.setSingleClassView(ClassViewType.PANEL);
+
+            addPropertyDraw(objDateFrom, baseLM.objectValue);
+            addPropertyDraw(objDateTo, baseLM.objectValue);
+            addPropertyDraw(objDateFrom, objDateTo, applicationsSubmitDateDate, averageWeekApplSubmitDateDate);
+
+            objWeek = addSingleGroupObject(4, "week", IntegerClass.instance, "Неделя", baseLM.objectValue);
+            addPropertyDraw(objDateFrom, objWeek, baseLM.sumDateWeekFrom, baseLM.sumDateWeekTo, applicationsSubmitDateWeek);
+
+            addFixedFilter(new NotNullFilterEntity(addPropertyObject(applicationsSubmitDateWeek, objDateFrom, objWeek)));
+            addFixedFilter(new NotFilterEntity(new NotNullFilterEntity(addPropertyObject(baseLM.negative, objWeek))));
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(baseLM.sumDateWeekTo, objDateFrom, objWeek), Compare.LESS_EQUALS, objDateTo));
+        }
+    }
+
+    private class ApplicationsStatusTimeFormEntity extends FormEntity<SkolkovoBusinessLogics> {
+        public ApplicationsStatusTimeFormEntity(NavigatorElement parent, String sID) {
+            super(parent, sID, "Средний срок рассмотрения заявки на статус участника");
+        }
+    }
+
+    private class ApplicationsListFormEntity extends FormEntity<SkolkovoBusinessLogics> {
+        public ApplicationsListFormEntity(NavigatorElement parent, String sID) {
+            super(parent, sID, "Заявки, поступившие в отчетный период");
         }
     }
 
