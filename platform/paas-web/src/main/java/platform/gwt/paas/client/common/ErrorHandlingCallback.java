@@ -5,6 +5,7 @@ import com.google.gwt.http.client.RequestTimeoutException;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.smartgwt.client.util.SC;
 import platform.gwt.paas.shared.exceptions.MessageException;
+import platform.gwt.utils.GwtUtils;
 
 public abstract class ErrorHandlingCallback<T> implements AsyncCallback<T> {
     @Override
@@ -34,10 +35,11 @@ public abstract class ErrorHandlingCallback<T> implements AsyncCallback<T> {
         if (caught instanceof RequestTimeoutException) {
             SC.warn("The action timed out.");
         }
+        String message = GwtUtils.toHtml(caught.getMessage());
         if (caught instanceof MessageException) {
-            SC.warn(caught.getMessage());
+            SC.warn(message);
         } else {
-            SC.warn("Failure, while performing an action: " + caught.getMessage());
+            SC.warn("Failure, while performing an action: " + message);
         }
     }
 
