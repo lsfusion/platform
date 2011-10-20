@@ -1558,7 +1558,7 @@ public class BaseUtils {
         if (quotes)
             dayOfMonth = "“" + dayOfMonth + "”";
 
-        return "" + monthsEnglish[calendar.get(Calendar.MONTH)] + " " + dayOfMonth + "," + calendar.get(Calendar.YEAR);
+        return "" + monthsEnglish[calendar.get(Calendar.MONTH)] + " " + dayOfMonth + ", " + calendar.get(Calendar.YEAR);
 
     }
 
@@ -1577,10 +1577,10 @@ public class BaseUtils {
         return initials;
     }
 
-    public static String[] feminineNumbers = new String[]{"одна", "две", "три", "четыре", "пять", "шесть", "семь", "восемь", "девять", "десять"};
+    public static String[] feminineNumbers = new String[]{"ноль", "одна", "две", "три", "четыре", "пять", "шесть", "семь", "восемь", "девять", "десять"};
 
     public static String intToFeminine(int number) {
-        if ((number >= 1) && (number <= 10))
+        if ((number >= 0) && (number <= 10))
             return feminineNumbers[number];
         else return String.valueOf(number);
     }

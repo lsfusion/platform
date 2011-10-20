@@ -2,7 +2,7 @@
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="ACT resident" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0">
 	<property name="ireport.zoom" value="1.2100000000000017"/>
 	<property name="ireport.x" value="0"/>
-	<property name="ireport.y" value="207"/>
+	<property name="ireport.y" value="0"/>
 	<style name="DefaultStyle" isDefault="true" vAlign="Middle" fontName="lsf.TimesNewRoman" fontSize="12" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false"/>
 	<style name="GroupCellStyle0" mode="Opaque" backcolor="#FFFFFF" vAlign="Middle" fontName="Serif" fontSize="10" pdfFontName="lsf.Times" pdfEncoding="Cp1251" isPdfEmbedded="false">
 		<box leftPadding="2" rightPadding="2">
@@ -49,7 +49,7 @@
 					<textElement textAlignment="Center">
 						<font isBold="false"/>
 					</textElement>
-					<text><![CDATA[<<_______>>_________________20______г.]]></text>
+					<text><![CDATA[_______    _________________20______г.]]></text>
 				</staticText>
 				<staticText>
 					<reportElement style="DefaultStyle" x="10" y="56" width="489" height="18"/>
@@ -65,14 +65,14 @@
 					</textElement>
 					<text><![CDATA[АКТ]]></text>
 				</staticText>
-				<textField>
+				<textField isStretchWithOverflow="true">
 					<reportElement style="DefaultStyle" isPrintRepeatedValues="false" x="10" y="102" width="489" height="219" isRemoveLineWhenBlank="true"/>
 					<textElement textAlignment="Justified" verticalAlignment="Middle">
 						<font fontName="lsf.TimesNewRoman" isBold="false"/>
 					</textElement>
-					<textFieldExpression class="java.lang.String"><![CDATA["Некоммерческая организация Фонд развития Центра разработки и коммерциализации новых технологий, в лице Ответственного Секретаря Совета Дианы Владимировны Дудиной, действующей на основании доверенности от 29 июля 2011 года № 39 (далее – Фонд, Фонд «Сколково»), и "+$F{documentNameExpert}+" (далее – Член Экспертной коллегии), в дальнейшем именуемые «Стороны», подписали настоящий Акт о нижеследующем:\n"+
-"В соответствии с Соглашением об исполнении функции члена Экспертной коллегии от "+  (platform.base.BaseUtils.formatRussian ($F{dateAgreementExpert}))+" г. (далее - Соглашение) Член Экспертной коллегии осуществил экспертизу заявок с целью установления соответствия  проекта юридического лица, подавшего заявку в соответствии с пунктом 3 Положения о присвоении и утрате статуса участника проекта, (физического или юридического лица, подавшего заявку на проведение предварительной экспертизы проекта в соответствии с пунктом 4 Положения о проведении предварительной экспертизы проектов, критериям, установленным Положением о присвоении и утрате статуса участника проекта).\n"+"Член Экспертной коллегии своевременно и надлежащим образом осуществил: \n"+
-$F{quantityDoneExpertMonthYear}+" экспертиз(ы) за период c " + platform.base.BaseUtils.formatRussian( platform.base.BaseUtils.getFirstDateInMonth($F{year},$F{month}))+" по "+ platform.base.BaseUtils.formatRussian( platform.base.BaseUtils.getLastDateInMonth($F{year},$F{month})) + " по заявкам следующих лиц:"]]></textFieldExpression>
+					<textFieldExpression class="java.lang.String"><![CDATA["Некоммерческая организация Фонд развития Центра разработки и коммерциализации новых технологий, в лице Ответственного Секретаря Совета Дианы Владимировны Дудиной, действующей на основании доверенности от 29 июля 2011 года № 39 (далее – Фонд, Фонд «Сколково»), и \n"+$F{documentNameExpert}+" (далее – Член Экспертной коллегии), в дальнейшем именуемые «Стороны», подписали настоящий Акт о нижеследующем:\n"+
+"В соответствии с Соглашением об исполнении функции члена Экспертной коллегии от "+  (platform.base.BaseUtils.formatRussian ($F{dateAgreementExpert}, true, true))+" г. (далее - Соглашение) Член Экспертной коллегии осуществил экспертизу заявок с целью установления соответствия  проекта юридического лица, подавшего заявку в соответствии с пунктом 3 Положения о присвоении и утрате статуса участника проекта, (физического или юридического лица, подавшего заявку на проведение предварительной экспертизы проекта в соответствии с пунктом 4 Положения о проведении предварительной экспертизы проектов, критериям, установленным Положением о присвоении и утрате статуса участника проекта).\n"+"Член Экспертной коллегии своевременно и надлежащим образом осуществил: \n"+
+$F{quantityDoneExpertMonthYear}+" ("+platform.base.BaseUtils.intToFeminine($F{quantityDoneExpertMonthYear})+") экспертиз(ы) за период c " + platform.base.BaseUtils.formatRussian( platform.base.BaseUtils.getFirstDateInMonth($F{year},$F{month}), false, true)+ " по " + platform.base.BaseUtils.formatRussian(platform.base.BaseUtils.getLastDateInMonth($F{year},$F{month}), false, true) + " по заявкам следующих лиц:"]]></textFieldExpression>
 				</textField>
 			</band>
 		</groupHeader>
@@ -136,7 +136,7 @@ $F{quantityDoneExpertMonthYear}+" экспертиз(ы) за период c " +
 					<textElement verticalAlignment="Bottom">
 						<font isBold="false"/>
 					</textElement>
-					<textFieldExpression class="java.lang.String"><![CDATA[$F{documentNameExpert}]]></textFieldExpression>
+					<textFieldExpression class="java.lang.String"><![CDATA["/"+platform.base.BaseUtils.justInitials($F{documentNameExpert}, false)+"/"]]></textFieldExpression>
 				</textField>
 			</band>
 		</groupFooter>

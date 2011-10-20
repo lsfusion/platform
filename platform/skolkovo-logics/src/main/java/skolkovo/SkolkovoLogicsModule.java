@@ -1070,6 +1070,12 @@ public class SkolkovoLogicsModule extends LogicsModule {
     private LP daysClaimerApplicationPreliminary, daysClaimerApplicationStatus, daysClaimerApplication;
 
     LP dateRegisteredStatusProject;
+    LP dateNoClusterStatusProject;
+    LP dateNoExpertsStatusProject;
+    LP dateNotEnoughDocsForPreliminaryStatusProject;
+    LP dateRepeatedStatusProject;
+    LP datePositiveFCResultStatusProject;
+    LP dateOverdueFCStatusProject;
 
     @Override
     public void initProperties() {
@@ -2658,7 +2664,16 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         daysClaimerApplication = addCUProp("daysClaimerApplication", "Кол-во дней на стороне заявителя", daysClaimerApplicationPreliminary, daysClaimerApplicationStatus);
 
-        dateRegisteredStatusProject = addJProp("dateRegisteredStatusProject", "Дата подачи", baseLM.and1, dateProject, 1, addJProp(baseLM.equals2, statusProject, 1, addCProp(projectStatus, "registered")), 1);
+        dateRegisteredStatusProject = addJProp("dateRegisteredStatusProject", true, "Дата статуса", baseLM.and1, dateProject, 1, addJProp(baseLM.equals2, statusProject, 1, addCProp(projectStatus, "registered")), 1);
+        dateNoClusterStatusProject = addJProp("dateNoClusterStatusProject", true, "Дата статуса", baseLM.dateInTime, addJProp(baseLM.and1, addJProp(dateTimeFormalControl, executeFormalControlProject, 1), 1, addJProp(baseLM.equals2, statusProject, 1, addCProp(projectStatus, "noCluster")), 1), 1);
+        dateNoExpertsStatusProject = addJProp("dateNoExpertsStatusProject", true, "Дата статуса", baseLM.dateInTime, addJProp(baseLM.and1, addJProp(dateTimeFormalControl, executeFormalControlProject, 1), 1, addJProp(baseLM.equals2, statusProject, 1, addCProp(projectStatus, "noExperts")), 1), 1);
+        dateNotEnoughDocsForPreliminaryStatusProject = addJProp("dateNotEnoughDocsForPreliminaryStatusProject", true, "Дата статуса", baseLM.dateInTime, addJProp(baseLM.and1, addJProp(dateTimeFormalControl, executeFormalControlProject, 1), 1, addJProp(baseLM.equals2, statusProject, 1, addCProp(projectStatus, "notEnoughDocsForPreliminary")), 1), 1);
+        dateRepeatedStatusProject = addJProp("dateRepeatedStatusProject", true, "Дата статуса", baseLM.dateInTime, addJProp(baseLM.and1, addJProp(dateTimeFormalControl, executeFormalControlProject, 1), 1, addJProp(baseLM.equals2, statusProject, 1, addCProp(projectStatus, "repeated")), 1), 1);
+        datePositiveFCResultStatusProject = addJProp("datePositiveFCResultStatusProject", true, "Дата статуса", baseLM.dateInTime, addJProp(baseLM.and1, addJProp(dateTimeFormalControl, executeFormalControlProject, 1), 1, addJProp(baseLM.equals2, statusProject, 1, addCProp(projectStatus, "positiveFCResult")), 1), 1);
+        dateOverdueFCStatusProject = addJProp("dateOverdueFCStatusProject", true, "Дата статуса", baseLM.dateInTime, addJProp(baseLM.and1, addJProp(dateTimeFormalControl, executeFormalControlProject, 1), 1, addJProp(baseLM.equals2, statusProject, 1, addCProp(projectStatus, "overdueFC")), 1), 1);
+
+
+
     }
 
     @Override
