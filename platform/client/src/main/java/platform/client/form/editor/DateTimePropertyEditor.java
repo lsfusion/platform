@@ -14,6 +14,7 @@ import javax.swing.event.PopupMenuListener;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.sql.Timestamp;
+import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -124,7 +125,10 @@ class DateTimePropertyEditorComponent extends JTextFieldDateEditor {
 
     public Date getDate() {
         try {
-            return dateFormatter.parse(getText());
+            String dateText = getText();
+            if(dateText.endsWith("  :  :  "))
+                dateText = dateText.substring(0,dateText.length()-8)+"12:00:00";
+            return dateFormatter.parse(dateText);
         } catch (ParseException e) {
             return null;
         }
