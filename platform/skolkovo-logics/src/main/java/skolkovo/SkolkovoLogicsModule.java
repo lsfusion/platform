@@ -156,6 +156,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
     AbstractGroup projectStatusGroup;
     AbstractGroup projectOptionsGroup;
     AbstractGroup translateActionGroup;
+    AbstractGroup translationGroup;
     AbstractGroup projectTranslationsGroup;
     AbstractGroup projectOtherClusterGroup;
     AbstractGroup consultingCenterGroup;
@@ -331,6 +332,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
         projectOptionsGroup = addAbstractGroup("projectOptionsGroup", "Параметры проекта", baseGroup);
 
         translateActionGroup = addAbstractGroup("translateActionGroup", "Перевод", baseGroup);
+
+        translationGroup = addAbstractGroup("translationGroup", "Перевод материалов", baseGroup);
 
         projectTranslationsGroup = addAbstractGroup("projectTranslationsGroup", "Переведено", baseGroup);
 
@@ -979,7 +982,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP negativeLegalResultStatusProject;
     LP negativeLegalResultPreliminaryProject;
     LP positiveLegalResultProject;
-    LP sentForTranslationProject;
+    LP sentForTranslationProject, dateSentForTranslationProject;
     LP positiveStatusLegalCheckProject, datePositiveStatusLegalCheckProject;
 
     LP dateAgreementExpert;
@@ -2199,7 +2202,9 @@ public class SkolkovoLogicsModule extends LogicsModule {
                 addJProp(baseLM.greater2, baseLM.currentDate, addJProp(overdueDateLegalCheck, executeLegalCheckProject, 1), 1), 1,
                 negativeLegalResultStatusProject, 1);
 
-        sentForTranslationProject = addDProp("sentForTranslationProject", "Направлена на перевод", LogicalClass.instance, project);
+        sentForTranslationProject = addDProp(translationGroup, "sentForTranslationProject", "Направлена на перевод", LogicalClass.instance, project);
+        dateSentForTranslationProject = addDCProp(translationGroup, "dateSentForTranslationProject", "Дата направления на перевод", true, baseLM.currentDate, sentForTranslationProject, 1);
+
         oficialNameProjectStatus = addDProp(baseGroup, "oficialNameProjectStatus", "Наименование из регламента", StringClass.get(200), projectStatus);
         oficialNameProjectStatus.setMinimumWidth(10);
         oficialNameProjectStatus.setPreferredWidth(50);
@@ -2260,17 +2265,22 @@ public class SkolkovoLogicsModule extends LogicsModule {
         datePrevOriginalDocsCheck = addJProp("datePrevOriginalDocsCheck", "Дата пред. проверки", dateOriginalDocsCheck, prevOriginalDocsCheck, 1);
 
         sentForSignatureProject = addDProp(registerGroup, "sentForSignatureProject", "Решение передано на подпись", LogicalClass.instance, project);
-        dateSentForSignatureProject = addDProp(registerGroup, "dateSentForSignatureProject", "Дата передачи на подпись", DateClass.instance, project);
+        dateSentForSignatureProject = addDCProp(registerGroup, "dateSentForSignatureProject", "Дата передачи на подпись", true, baseLM.currentDate, sentForSignatureProject, 1);
+
         signedProject = addDProp(registerGroup, "signedProject", "Решение подписано", LogicalClass.instance, project);
-        dateSignedProject = addDProp(registerGroup, "dateSignedProject", "Дата подписания", DateClass.instance, project);
+        dateSignedProject = addDCProp(registerGroup, "dateSignedProject", "Дата подписания", true, baseLM.currentDate, signedProject, 1);
+
         sentToFinDepProject = addDProp(registerGroup, "sentToFinDepProject", "Документы переданы в Финансовый департамент", LogicalClass.instance, project);
-        dateSentToFinDepProject = addDProp(registerGroup, "dateSentToFinDepProject", "Дата передачи в Финансовый департамент", DateClass.instance, project);
+        dateSentToFinDepProject = addDCProp(registerGroup, "dateSentToFinDepProject", "Дата передачи в Финансовый департамент", true, baseLM.currentDate, sentToFinDepProject, 1);
+
         submittedToRegisterProject = addDProp(registerGroup, "submittedToRegisterProject", "Внесен в реестр участников", LogicalClass.instance, project);
-        dateSubmittedToRegisterProject = addDProp(registerGroup, "dateSubmittedToRegisterProject", "Дата внесения в реестр участников", DateClass.instance, project);
+        dateSubmittedToRegisterProject = addDCProp(registerGroup, "dateSubmittedToRegisterProject", "Дата внесения в реестр участников", true, baseLM.currentDate, submittedToRegisterProject, 1);
+
         preparedCertificateProject = addDProp(registerGroup, "preparedCertificateProject", "Подготовлено свидетельство участника", LogicalClass.instance, project);
-        datePreparedCertificateProject = addDProp(registerGroup, "datePreparedCertificateProject", "Дата подготовки свидетельства участника", DateClass.instance, project);
+        datePreparedCertificateProject = addDCProp(registerGroup, "datePreparedCertificateProject", "Дата подготовки свидетельства участника", true, baseLM.currentDate, preparedCertificateProject, 1);
+
         certifiedProject = addDProp(registerGroup, "certifiedProject", "Выдано свидетельство участника", LogicalClass.instance, project);
-        dateCertifiedProject = addDProp(registerGroup, "dateCertifiedProject", "Дата выдачи свидетельства участника", DateClass.instance, project);
+        dateCertifiedProject = addDCProp(registerGroup, "dateCertifiedProject", "Дата выдачи свидетельства участника", true, baseLM.currentDate, certifiedProject, 1);
 
         certifiedStatusProject = addCaseUProp(idGroup, "certifiedStatusProject", true, "Статус (оформлен) (ИД)",
                 certifiedProject, 1, addCProp(projectStatus, "certified", project), 1,
@@ -3073,7 +3083,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
                     nameNativeShortFinalClusterProject, nameNativeClaimerProject, nameForeignClaimerProject, emailClaimerProject,
                     nameStatusProject, formLogNameStatusProject, nameProjectActionProject, updateDateProject, autoGenerateProject,
                     inactiveProject, quantityClusterProject, quantityClusterVotedProject, quantityVoteProject, generateVoteProject, editClaimerProject, editProject,
-                    isR2Project, executeFormalControlProject, resultExecuteFormalControlProject, positiveFormalResultProject, needFormalCheckStatusProject);
+                    isR2Project);
 
             addPropertyDraw(objProject, isOtherClusterProject, nativeSubstantiationOtherClusterProject, foreignSubstantiationOtherClusterProject);
             addPropertyDraw(objProject, registerGroup);
@@ -3110,8 +3120,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
             setForceViewType(nameNativeClaimerTranslationEntity, ClassViewType.PANEL);
             setForceViewType(nameForeignClaimerTranslationEntity, ClassViewType.PANEL);
 
-            addPropertyDraw(objProject, sentForTranslationProject, projectDocumentsGroup);
-            setForceViewType(sentForTranslationProject, ClassViewType.PANEL);
+            addPropertyDraw(objProject, translationGroup, projectDocumentsGroup);
+            setForceViewType(translationGroup, ClassViewType.PANEL);
             setForceViewType(projectDocumentsGroup, ClassViewType.PANEL);
 
             addPropertyDraw(importProjectsAction).toDraw = objProject.groupTo;
@@ -3365,11 +3375,16 @@ public class SkolkovoLogicsModule extends LogicsModule {
             ContainerView projectDocumentsContainer = design.getGroupPropertyContainer(objProject.groupTo, projectDocumentsGroup);
             projectDocumentsContainer.constraints.childConstraints = DoNotIntersectSimplexConstraint.TOTHE_RIGHT;
 
+            ContainerView translationHeaderContainer = design.createContainer();
+            translationHeaderContainer.constraints.childConstraints = DoNotIntersectSimplexConstraint.TOTHE_RIGHT;
+            translationHeaderContainer.add(design.getGroupPropertyContainer(objProject.groupTo, translationGroup));
+            translationHeaderContainer.add(projectTranslationInformationContainer);
+
             ContainerView translationContainer = design.createContainer("Перевод");
+            translationContainer.constraints.childConstraints = DoNotIntersectSimplexConstraint.TOTHE_BOTTOM;
             translationContainer.constraints.fillHorizontal = 1.0;
             translationContainer.constraints.fillVertical = 1.0;
-            translationContainer.add(design.get(getPropertyDraw(sentForTranslationProject, objProject)));
-            translationContainer.add(projectTranslationInformationContainer);
+            translationContainer.add(translationHeaderContainer);
             translationContainer.add(projectDocumentsContainer);
             translationContainer.add(design.getGroupObjectContainer(objNonRussianSpecialist.groupTo));
             translationContainer.add(design.getGroupPropertyContainer(objProject.groupTo, translateActionGroup));
