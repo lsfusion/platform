@@ -10,6 +10,7 @@ import net.sf.jasperreports.engine.JasperPrint;
 import net.sf.jasperreports.engine.export.JRPdfExporter;
 import platform.base.BaseUtils;
 import platform.base.IOUtils;
+import platform.base.OrderedMap;
 import platform.interop.ClassViewType;
 import platform.interop.Compare;
 import platform.interop.action.ClientAction;
@@ -18,8 +19,9 @@ import platform.interop.form.RemoteFormInterface;
 import platform.interop.form.layout.DoNotIntersectSimplexConstraint;
 import platform.server.Settings;
 import platform.server.classes.*;
-import platform.server.data.*;
 import platform.server.data.Time;
+import platform.server.data.Union;
+import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.query.GroupType;
 import platform.server.data.expr.query.OrderType;
 import platform.server.data.query.Query;
@@ -28,10 +30,16 @@ import platform.server.form.entity.filter.*;
 import platform.server.form.instance.PropertyObjectInterfaceInstance;
 import platform.server.form.instance.remote.RemoteForm;
 import platform.server.form.navigator.NavigatorElement;
-import platform.server.form.view.*;
+import platform.server.form.view.ContainerView;
+import platform.server.form.view.DefaultFormView;
+import platform.server.form.view.FormView;
+import platform.server.form.view.PropertyDrawView;
 import platform.server.form.window.ToolBarNavigatorWindow;
 import platform.server.form.window.TreeNavigatorWindow;
-import platform.server.logics.*;
+import platform.server.logics.BaseLogicsModule;
+import platform.server.logics.DataObject;
+import platform.server.logics.LogicsModule;
+import platform.server.logics.ObjectValue;
 import platform.server.logics.linear.LP;
 import platform.server.logics.property.ActionProperty;
 import platform.server.logics.property.ClassPropertyInterface;
@@ -46,8 +54,10 @@ import skolkovo.actions.ImportProjectsActionProperty;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyEvent;
-import java.io.*;
-import java.sql.*;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.sql.SQLException;
 import java.util.*;
 import java.util.List;
 
@@ -638,6 +648,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP copyProjectAction;
     LP generateVoteProject, needNameExtraVoteProject, hideGenerateVoteProject;
     LP copyResultsVote;
+    LP includeProjectClusterForesight;
 
     LP expertLogin;
 
@@ -2049,6 +2060,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
         hideGenerateVoteProject = addHideCaptionProp(privateGroup, "Сгенерировать заседание", generateVoteProject, needNameExtraVoteProject);
 //        generateVoteProject.setDerivedForcedChange(addCProp(ActionClass.instance, true), needExtraVoteProject, 1, autoGenerateProject, 1);
 
+        includeProjectClusterForesight = addAProp(actionGroup, new IncludeProjectClusterForesightActionProperty(project, cluster, foresight));
+
         baseLM.generateLoginPassword.setDerivedForcedChange(addCProp(ActionClass.instance, true), is(expert), 1);
 
         expertLogin = addAGProp(baseGroup, "expertLogin", "Эксперт (ИД)", baseLM.userLogin);
@@ -3131,6 +3144,53 @@ public class SkolkovoLogicsModule extends LogicsModule {
         }
     }
 
+    public class IncludeProjectClusterForesightActionProperty extends ActionProperty {
+
+        private final ClassPropertyInterface projectInterface;
+        private final ClassPropertyInterface clusterInterface;
+        private final ClassPropertyInterface foresightInterface;
+
+        public IncludeProjectClusterForesightActionProperty(ValueClass project, ValueClass cluster, ValueClass foresight) {
+            super("IncludeProjectClusterForesight", "Подключить", new ValueClass[]{project, cluster, foresight});
+
+            Iterator<ClassPropertyInterface> i = interfaces.iterator();
+            projectInterface = i.next();
+            clusterInterface = i.next();
+            foresightInterface = i.next();
+        }
+
+        public void execute(ExecutionContext context) throws SQLException {
+            DataObject projectObject = context.getKeyValue(projectInterface);
+            DataObject clusterObject = context.getKeyValue(clusterInterface);
+            DataObject foresightObject = context.getKeyValue(foresightInterface);
+
+            Object valueInProjectForesight = null;
+            if (inProjectForesight.read(context, projectObject, foresightObject) == null)
+                valueInProjectForesight = true;
+            inProjectForesight.execute(valueInProjectForesight, context, projectObject, foresightObject);
+
+            String codeForesight = "";
+            Object codeForesightObject = sidForesight.read(context, foresightObject);
+            if (codeForesightObject != null)
+                codeForesight = codeForesightObject.toString().trim();
+
+            LP isForesight = is(foresight);
+            Map<Object, KeyExpr> keys = isForesight.getMapKeys();
+            KeyExpr key = BaseUtils.singleValue(keys);
+            Query<Object, Object> query = new Query<Object, Object>(keys);
+            query.properties.put("sidForesight", sidForesight.getExpr(BaseUtils.singleValue(keys)));
+            query.and(isForesight.property.getExpr(keys).getWhere());
+            query.and(clusterForesight.getExpr(context.getModifier(), key).compare(clusterObject.getExpr(), Compare.EQUALS));
+            OrderedMap<Map<Object, Object>, Map<Object, Object>> result = query.execute(context.getSession().sql);
+
+            for (Map.Entry<Map<Object, Object>, Map<Object, Object>> rows : result.entrySet()) {
+                DataObject foresightNewObject = new DataObject(rows.getKey().get(((OrderedMap) keys).getKey(0)), foresight);
+                if (rows.getValue().get("sidForesight").toString().startsWith(codeForesight) && (!"".equals(codeForesight)))
+                    inProjectForesight.execute(valueInProjectForesight, context, projectObject, foresightNewObject);
+            }
+        }
+    }
+
     private class ProjectFormEntity extends FormEntity<SkolkovoBusinessLogics> {
         private ObjectEntity objProject;
         private ObjectEntity objCluster;
@@ -3255,6 +3315,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             objForesight = addSingleGroupObject(foresight);
             addPropertyDraw(inProjectForesight, objProject, objForesight);
             addPropertyDraw(objForesight, sidForesight, nameNative, nameForeign, nameNativeShortClusterForesight, quantityInExpertForesight);
+            addPropertyDraw(includeProjectClusterForesight, objProject, objCluster, objForesight);
 
             objVote = addSingleGroupObject(vote, dateStartVote, dateEndVote, nameNativeClusterVote, nameProjectActionVote, percentNeededVote, openedVote, succeededVote, acceptedVote,
                     quantityDoneVote,
@@ -3924,6 +3985,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
             addPropertyDraw(objForesight, sidForesight, nameNative, nameForeign, nameNativeShortClusterForesight);
             addFixedFilter(new CompareFilterEntity(addPropertyObject(clusterForesight, objForesight), Compare.EQUALS, objCluster));
             addObjectActions(this, objForesight);
+
+            includeProjectClusterForesight = addJProp(actionGroup, true, "Подключить", editClaimer, claimerProject, 1);
         }
     }
 
