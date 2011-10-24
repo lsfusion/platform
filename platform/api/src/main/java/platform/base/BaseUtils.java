@@ -1562,19 +1562,35 @@ public class BaseUtils {
 
     }
 
-    public static String justInitials(String fullName, boolean lastNameFirst) {
+    public static String justInitials(String fullName, boolean lastNameFirst, boolean revert) {
         String[] names = fullName.split(" ");
-        String initials = "";
+        String initials = "", lastName = "";
         if (lastNameFirst) {
-            initials = names[0] + " ";
+            lastName = names[0];
             for (int i = 1; i < names.length; i++)
-                initials += names[i].charAt(0) + ".";
+                if (!names[i].isEmpty()) {
+                    if (!initials.isEmpty())
+                        initials += ' ';
+                    initials += names[i].charAt(0) + ".";
+                }
+            if (revert)
+                return initials + ' ' + lastName;
+            else
+                return lastName + ' ' + initials;
         } else {
             for (int i = 0; i < names.length - 1; i++)
-                initials += names[i].charAt(0) + ".";
-            initials += " " + names[names.length - 1];
+                if (!names[i].isEmpty()) {
+                    if (!initials.isEmpty())
+                        initials += " ";
+                    initials += names[i].charAt(0) + ".";
+                }
+            if (names.length > 0)
+                lastName = names[names.length - 1];
+            if (revert)
+                return lastName + ' ' + initials;
+            else
+                return initials + ' ' + lastName;
         }
-        return initials;
     }
 
     public static String[] feminineNumbers = new String[]{"ноль", "одна", "две", "три", "четыре", "пять", "шесть", "семь", "восемь", "девять", "десять"};

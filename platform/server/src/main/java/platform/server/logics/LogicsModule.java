@@ -1680,6 +1680,10 @@ public abstract class LogicsModule {
      * @param hideProperty критерий
      * @return свойство, которое должно использоваться в качестве propertyCaption для скрываемого свойства
      */
+    protected LP addHideCaptionProp(LP original, LP hideProperty) {
+        return addHideCaptionProp(privateGroup, "hideCaption", original, hideProperty);
+    }
+
     protected LP addHideCaptionProp(AbstractGroup group, String caption, LP original, LP hideProperty) {
         LP originalCaption = addCProp(StringClass.get(100), original.property.caption);
         LP result = addJProp(group, caption, baseLM.and1, BaseUtils.add(new Object[]{originalCaption}, directLI(hideProperty)));

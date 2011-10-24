@@ -50,7 +50,7 @@
 				<textElement textAlignment="Justified" verticalAlignment="Top">
 					<paragraph firstLineIndent="40"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA["Некоммерческая организация Фонд развития Центра разработки и коммерциализации новых технологий, рассмотрев поданную Соискателем - " + $F{nameAblateClaimerVote} + " " +
+				<textFieldExpression class="java.lang.String"><![CDATA["Некоммерческая организация Фонд развития Центра разработки и коммерциализации новых технологий, рассмотрев поданную Соискателем - " + $F{nameNativeClaimerVote} + " " +
 "заявку на "+($F{isStatusVote}==null?"проведение предварительной экспертизы проекта":"присвоение статуса участника проекта")+" от " +
 platform.base.BaseUtils.formatRussian($F{dateProjectVote}) + " года (" + $F{nameNativeProjectVote} +
 "), на основании протокола заседания Экспертной коллегии, сформированной по Направлению «"+$F{nameNativeClusterVote}+

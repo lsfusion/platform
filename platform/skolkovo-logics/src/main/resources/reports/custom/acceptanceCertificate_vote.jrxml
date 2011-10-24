@@ -136,7 +136,7 @@ $F{quantityDoneExpertMonthYear}+" ("+platform.base.BaseUtils.intToFeminine($F{qu
 					<textElement verticalAlignment="Bottom">
 						<font isBold="false"/>
 					</textElement>
-					<textFieldExpression class="java.lang.String"><![CDATA["/"+platform.base.BaseUtils.justInitials($F{documentNameExpert}, false)+"/"]]></textFieldExpression>
+					<textFieldExpression class="java.lang.String"><![CDATA["/"+platform.base.BaseUtils.justInitials($F{documentNameExpert}, true, true)+"/"]]></textFieldExpression>
 				</textField>
 			</band>
 		</groupFooter>
