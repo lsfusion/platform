@@ -124,6 +124,9 @@ public class Main {
         mainThread = new Thread(mainThreadGroup, "Init thread") {
             public void run() {
                 try {
+                    //UIManager.setLookAndFeel("com.jgoodies.looks.plastic.PlasticXPLookAndFeel");
+                    UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+
                     LoginAction loginAction = LoginAction.getInstance();
                     if (!loginAction.login()) {
                         return;
@@ -251,9 +254,6 @@ public class Main {
     }
 
     private static void initSwing() throws ClassNotFoundException, InstantiationException, IllegalAccessException, UnsupportedLookAndFeelException {
-        //UIManager.setLookAndFeel("com.jgoodies.looks.plastic.PlasticXPLookAndFeel");
-        UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-
         //хак для решения проблемы со сканированием...
         KeyboardFocusManager.setCurrentKeyboardFocusManager(new DefaultKeyboardFocusManager() {
             @Override

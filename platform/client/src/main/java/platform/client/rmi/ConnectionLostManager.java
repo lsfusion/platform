@@ -2,6 +2,7 @@ package platform.client.rmi;
 
 import org.jdesktop.jxlayer.JXLayer;
 import platform.client.Main;
+import platform.client.StartupProperties;
 import platform.client.exceptions.ClientExceptionManager;
 
 import javax.swing.*;
@@ -14,6 +15,8 @@ import java.rmi.RemoteException;
 import static platform.client.ClientResourceBundle.getString;
 
 public class ConnectionLostManager {
+
+    private final static boolean preventBlockerActivation = System.getProperty(StartupProperties.PLATFORM_CLIENT_BLOCKER_ACTIVATION_OFF) != null;
 
     private static boolean connectionLost = false;
     private static ConnectionLostPainterUI connectionLostUI;
@@ -115,6 +118,9 @@ public class ConnectionLostManager {
 
             setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
             setLocationRelativeTo(owner);
+            if (preventBlockerActivation) {
+                setFocusableWindowState(false);
+            }
 
             String messageText =
                     message != null

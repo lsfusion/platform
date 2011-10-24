@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<project name="LS Fusion Build Utils">
+    <target name="recursiveCompile">
+        <exec dir="${basedir}" executable="cmd">
+            <arg value="/c"/>
+            <arg value="mvn"/>
+            <!--<arg value="-X"/>-->
+            <arg value="--also-make" />
+            <arg value="--projects" />
+            <arg value="by.luxsoft.platform:${artifactId}" />
+            <arg value="compile" />
+        </exec>
+    </target>
+
+    <target name="quickCompile">
+        <exec dir="${basedir}/${artifactId}" executable="cmd">
+            <arg value="/c"/>
+            <arg value="mvn"/>
+            <arg value="compile" />
+            <arg value="-Dquickbuild" />
+        </exec>
+    </target>
+
+${modulesTargets}
+</project>

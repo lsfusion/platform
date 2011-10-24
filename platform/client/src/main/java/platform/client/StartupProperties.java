@@ -27,4 +27,6 @@ public class StartupProperties {
     public static final String PLATFORM_CLIENT_FORMS = "platform.client.forms";
 
     public static final String PLATFORM_CLIENT_FORMSET = "platform.client.formset";
+
+    public static final String PLATFORM_CLIENT_BLOCKER_ACTIVATION_OFF = "platform.client.blocker.activation.off";
 }
