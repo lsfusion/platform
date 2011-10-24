@@ -44,34 +44,38 @@ public abstract class DataTable extends GlobalTable {
     public void updateStat(SQLSession session) throws SQLException {
         Query<Object, Object> query = new Query<Object, Object>(new ArrayList<Object>());
 
-        ValueExpr one = new ValueExpr(1, IntegerClass.instance);
+        boolean alot = ("true".equals(System.getProperty("platform.server.logics.donotcalculatestats")));
 
-        Map<KeyField, KeyExpr> mapKeys = KeyExpr.getMapKeys(keys);
-        platform.server.data.query.Join<PropertyField> join = join(mapKeys);
+        if (!alot) {
+            ValueExpr one = new ValueExpr(1, IntegerClass.instance);
 
-        Where inWhere = join.getWhere();
-        for(KeyField key : keys) {
-            Map<Object, Expr> map = Collections.<Object, Expr>singletonMap(0, mapKeys.get(key));
-            query.properties.put(key, GroupExpr.create(new HashMap<Integer, Expr>(), one,
-                    GroupExpr.create(map, inWhere, map).getWhere(), GroupType.SUM, new HashMap<Integer, Expr>()));
+            Map<KeyField, KeyExpr> mapKeys = KeyExpr.getMapKeys(keys);
+            platform.server.data.query.Join<PropertyField> join = join(mapKeys);
+
+            Where inWhere = join.getWhere();
+            for(KeyField key : keys) {
+                Map<Object, Expr> map = Collections.<Object, Expr>singletonMap(0, mapKeys.get(key));
+                query.properties.put(key, GroupExpr.create(new HashMap<Integer, Expr>(), one,
+                        GroupExpr.create(map, inWhere, map).getWhere(), GroupType.SUM, new HashMap<Integer, Expr>()));
+            }
+
+            for(PropertyField prop : properties) {
+                if (!(prop.type instanceof DataClass && !((DataClass)prop.type).calculateStat()))
+                    query.properties.put(prop, GroupExpr.create(new HashMap<Object, KeyExpr>(), one,
+                            GroupExpr.create(Collections.singletonMap(0, join.getExpr(prop)), Where.TRUE, Collections.singletonMap(0, new KeyExpr("count"))).getWhere(), GroupType.SUM, new HashMap<Object, Expr>()));
+            }
+
+            query.properties.put(0, GroupExpr.create(new HashMap<Object, Expr>(), one, inWhere, GroupType.SUM, new HashMap<Object, Expr>()));
+            query.and(Where.TRUE);
         }
 
-        for(PropertyField prop : properties) {
-            if (!(prop.type instanceof DataClass && !((DataClass)prop.type).calculateStat()))
-                query.properties.put(prop, GroupExpr.create(new HashMap<Object, KeyExpr>(), one,
-                        GroupExpr.create(Collections.singletonMap(0, join.getExpr(prop)), Where.TRUE, Collections.singletonMap(0, new KeyExpr("count"))).getWhere(), GroupType.SUM, new HashMap<Object, Expr>()));
-        }
+        Map<Object, Object> result = alot ? new HashMap<Object, Object>() : BaseUtils.singleValue(query.execute(session));
 
-        query.properties.put(0, GroupExpr.create(new HashMap<Object, Expr>(), one, inWhere, GroupType.SUM, new HashMap<Object, Expr>()));
-        query.and(Where.TRUE);
-
-        Map<Object, Object> result = BaseUtils.singleValue(query.execute(session));
-
-        Stat rowStat = new Stat(BaseUtils.nvl((Integer)result.get(0), 0));
+        Stat rowStat = alot ? Stat.ALOT : new Stat(BaseUtils.nvl((Integer)result.get(0), 0));
 
         DistinctKeys<KeyField> distinctKeys = new DistinctKeys<KeyField>();
         for(KeyField key : keys)
-            distinctKeys.add(key, new Stat(BaseUtils.nvl((Integer) result.get(key), 0)));
+            distinctKeys.add(key, alot ? Stat.ALOT : new Stat(BaseUtils.nvl((Integer) result.get(key), 0)));
         statKeys = new StatKeys<KeyField>(rowStat, distinctKeys);
 
         statProps = new HashMap<PropertyField, Stat>();
@@ -79,7 +83,7 @@ public abstract class DataTable extends GlobalTable {
             if (prop.type instanceof DataClass && !((DataClass)prop.type).calculateStat())
                 statProps.put(prop, ((DataClass)prop.type).getTypeStat().min(rowStat));
             else
-                statProps.put(prop, new Stat(BaseUtils.nvl((Integer)result.get(prop), 0)));
+                statProps.put(prop, alot ? Stat.ALOT : new Stat(BaseUtils.nvl((Integer)result.get(prop), 0)));
         }
     }
 }

@@ -23,6 +23,7 @@ import platform.server.classes.*;
 import platform.server.data.*;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
+import platform.server.data.expr.query.GroupType;
 import platform.server.data.query.Query;
 import platform.server.data.sql.DataAdapter;
 import platform.server.data.sql.PostgreDataAdapter;
@@ -720,18 +721,19 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         ImportKey<?> key2 = new ImportKey(LM.navigatorElement, LM.SIDToNavigatorElement.getMapping(parentSidField));
         List<ImportProperty<?>> props2 = new ArrayList<ImportProperty<?>>();
         props2.add(new ImportProperty(parentSidField, LM.parentNavigatorElement.getMapping(key), LM.object(LM.navigatorElement).getMapping(key2)));
-        props2.add(new ImportProperty(numberField, LM.numberNavigatorElement.getMapping(key)));
+        props2.add(new ImportProperty(numberField, LM.numberNavigatorElement.getMapping(key), GroupType.MIN));
         ImportTable table2 = new ImportTable(Arrays.asList(sidField, parentSidField, numberField), data2);
 
         try {
             DataSession session = createSession();
             IntegrationService service = new IntegrationService(session, table, Arrays.asList(key), props);
-            service.synchronize(true, true, true);
+            service.synchronize(true, true, true, true, false);
 
             service = new IntegrationService(session, table2, Arrays.asList(key, key2), props2);
-            service.synchronize(true, true, true);
+            service.synchronize(true, true, true, true, false);
 
-            session.apply(this);
+            if (session.hasChanges())
+                session.apply(this);
             session.close();
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -750,7 +752,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
             session.execute(LM.connectionCurrentStatus.property, statusChanges, session.modifier, null, null);
 
-            session.apply(this);
+            if (session.hasChanges())
+                session.apply(this);
             session.close();
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -948,8 +951,14 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
     private void changeCurrentDate() throws SQLException, ClassNotFoundException, InstantiationException, IllegalAccessException {
         DataSession session = createSession();
-        LM.currentDate.execute(DateConverter.dateToSql(new Date()), session, session.modifier);
-        session.apply(this);
+
+        java.sql.Date currentDate = (java.sql.Date)LM.currentDate.read(session);
+        java.sql.Date newDate = DateConverter.dateToSql(new Date());
+        if (currentDate == null || currentDate.getDay() != newDate.getDay() || currentDate.getMonth() != newDate.getMonth() || currentDate.getYear() != newDate.getYear()) {
+            LM.currentDate.execute(newDate, session, session.modifier);
+            session.apply(this);
+        }
+
         session.close();
     }
 
@@ -1110,7 +1119,9 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
         LM.baseClass.fillIDs(session, LM.name, LM.classSID);
 
-        session.apply(this);
+        if (session.hasChanges())
+            session.apply(this);
+
         session.close();
     }
 
