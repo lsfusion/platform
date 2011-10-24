@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <project name="LS Fusion Build Utils">
     <target name="recursiveCompile">
-        <exec dir="${basedir}" executable="cmd">
+        <exec dir="${basedir}" executable="cmd" failonerror="true">
             <arg value="/c"/>
             <arg value="mvn"/>
             <!--<arg value="-X"/>-->
@@ -13,7 +13,7 @@
     </target>
 
     <target name="quickCompile">
-        <exec dir="${basedir}/${artifactId}" executable="cmd">
+        <exec dir="${basedir}/${artifactId}" executable="cmd" failonerror="true">
             <arg value="/c"/>
             <arg value="mvn"/>
             <arg value="compile" />
