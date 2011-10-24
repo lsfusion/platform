@@ -813,7 +813,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
         for (int i = 0; i < 3; i++) {
             Calendar calendar = new GregorianCalendar(currentYear + i, 0, 1);
-            int day = cal.get(Calendar.DAY_OF_WEEK);
+            int day = calendar.get(Calendar.DAY_OF_WEEK);
             if (day != 1 && day != 7)
                 addDayOff(session, countryId, calendar.getTimeInMillis());
         }
