@@ -79,11 +79,33 @@
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>gwt-maven-plugin</artifactId>
             </plugin>
-            <!-- Copy static web files before executing gwt:run -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-war-plugin</artifactId>
                 <version>2.1.1</version>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-war-plugin</artifactId>
+                <version>2.1.1</version>
+                <configuration>
+                    <webResources>
+                        <resource>
+                            <directory>../fullclient/target</directory>
+                            <includes>
+                                <include>fullclient-prod.jar</include>
+                            </includes>
+                        </resource>
+                        <resource>
+                            <directory>src/main/resources</directory>
+                            <includes>
+                                <include>fullclient.jnlp</include>
+                                <include>logo.png</include>
+                                <include>splash.png</include>
+                            </includes>
+                        </resource>
+                    </webResources>
+                </configuration>
             </plugin>
         </plugins>
     </build>
