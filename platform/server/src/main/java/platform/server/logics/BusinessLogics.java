@@ -792,37 +792,39 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
     private void generateDates(int countryId) throws ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException {
         DataSession session = createSession();
-        Date date = new Date();
-        int currentYear = date.getYear();
+        Calendar current = Calendar.getInstance();
+        int currentYear = current.get(Calendar.YEAR);
         //если проставлен выходной 1 января через 2 года, пропускаем генерацию
         DataObject countryObject = new DataObject(countryId, LM.country);
-        if (LM.isDayOffCountryDate.read(session, countryObject, new DataObject(new java.sql.Date(new Date(currentYear + 2, 0, 1).getTime()), DateClass.instance)) != null) {
+        if (LM.isDayOffCountryDate.read(session, countryObject, new DataObject(new java.sql.Date(new GregorianCalendar(currentYear + 2, 0, 1).getTimeInMillis()), DateClass.instance)) != null) {
             return;
         }
 
-        long wholeYearMillisecs = new Date(currentYear + 3, 0, 1).getTime() - new Date(currentYear, 0, 1).getTime();
+        long wholeYearMillisecs = new GregorianCalendar(currentYear + 3, 0, 1).getTimeInMillis() - current.getTimeInMillis();
         long wholeYearDays = wholeYearMillisecs / 1000 / 60 / 60 / 24;
+        Calendar cal = new GregorianCalendar(currentYear, 0, 1);
         for (int i = 0; i < wholeYearDays; i++) {
-            Date newDate = new Date(currentYear, 0, 1 + i);
-            int day = newDate.getDay();
-            if (day == 5 || day == 6) {
-                addDayOff(session, countryId, newDate);
+            cal.add(Calendar.DAY_OF_MONTH, 1);
+            int day = cal.get(Calendar.DAY_OF_WEEK);
+            if (day == 1 || day == 7) {
+                addDayOff(session, countryId, cal.getTimeInMillis());
             }
         }
 
         for (int i = 0; i < 3; i++) {
-            Date newYear = new Date(currentYear + i + "/01/01");
-            if (newYear.getDay() != 5 && newYear.getDay() != 6)
-                addDayOff(session, countryId, newYear);
+            Calendar calendar = new GregorianCalendar(currentYear + i, 0, 1);
+            int day = cal.get(Calendar.DAY_OF_WEEK);
+            if (day != 1 && day != 7)
+                addDayOff(session, countryId, calendar.getTimeInMillis());
         }
 
         session.apply(this);
         session.close();
     }
 
-    private void addDayOff(DataSession session, int countryId, Date dayOff) throws ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException {
+    private void addDayOff(DataSession session, int countryId, long timeInMillis) throws ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException {
         DataObject countryObject = new DataObject(countryId, LM.country);
-        LM.isDayOffCountryDate.execute(true, session, countryObject, new DataObject(new java.sql.Date(dayOff.getTime()), DateClass.instance));
+        LM.isDayOffCountryDate.execute(true, session, countryObject, new DataObject(new java.sql.Date(timeInMillis), DateClass.instance));
     }
 
     public void mergeNavigatorTree(DataInputStream inStream) throws IOException {

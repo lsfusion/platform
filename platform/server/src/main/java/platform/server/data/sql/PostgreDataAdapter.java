@@ -59,15 +59,8 @@ public class PostgreDataAdapter extends DataAdapter {
         connect.close();
 
         connect = startConnection();
-        connect.createStatement().execute("CREATE OR REPLACE FUNCTION getAnyNotNull(ANYELEMENT, ANYELEMENT) RETURNS ANYELEMENT AS \n" +
-                "$$\n" +
-                "    SELECT CASE WHEN $1 = NULL THEN $2 ELSE $1 END;\n" +
-                "$$ LANGUAGE SQL STRICT;\n" +
-                "DROP AGGREGATE IF EXISTS ANYVALUE (anyelement) CASCADE;\n" +
-                "CREATE AGGREGATE ANYVALUE (anyelement) (\n" +
-                "    sfunc = getAnyNotNull,\n" +
-                "    stype = anyelement\n" +
-                ");");
+        connect.createStatement().execute(IOUtils.readStreamToString(BusinessLogics.class.getResourceAsStream("/sqlaggr/getAnyNotNull.sc")));
+        connect.createStatement().execute(IOUtils.readStreamToString(BusinessLogics.class.getResourceAsStream("/sqlfun/jumpWorkdays.sc")));
         connect.createStatement().execute(IOUtils.readStreamToString(BusinessLogics.class.getResourceAsStream("/sqlaggr/aggf.sc")));
         connect.close();
     }

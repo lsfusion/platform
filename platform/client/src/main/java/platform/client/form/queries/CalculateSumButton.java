@@ -41,6 +41,6 @@ public abstract class CalculateSumButton extends ToolbarGridButton {
 
     public String format(Object number) {
         NumberFormat nf = NumberFormat.getNumberInstance();
-        return nf.format(number);
+        return nf.format(number).replace(',', '.');
     }
 }
