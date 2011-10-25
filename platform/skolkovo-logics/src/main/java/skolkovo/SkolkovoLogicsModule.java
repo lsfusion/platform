@@ -1227,10 +1227,23 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP dateRegisteredStatusProject;
     LP dateNoClusterStatusProject;
     LP dateNoExpertsStatusProject;
+    LP dateNotEnoughDocsForStatusStatusProject;
     LP dateNotEnoughDocsForPreliminaryStatusProject;
     LP dateRepeatedStatusProject;
     LP datePositiveFCResultStatusProject;
     LP dateOverdueFCStatusProject;
+    LP dateNegativeLCPreliminaryResultStatusProject;
+    LP dateNegativeLCStatusResultStatusProject;
+    LP datePositiveLCResultStatusProject;
+    LP dateOverdueLCStatusProject;
+    LP dateNeedTranslationStatusProject;
+    LP dateInProgressStatusProject, dateInProgressRepeatStatusProject, dateIssuedVoteDocsStatusProject, dateNeedExtraVoteStatusProject, dateRejectedStatusProject, dateAcceptedStatusProject;
+    LP dateAppliedOriginalDocsStatusProject, dateNotEnoughOriginalDocsStatusProject, dateOverdueOriginalDocsStatusProject;
+    LP dateApplyStatusStatusProject;
+    LP dateSentPreliminaryAcceptedStatusProject, dateSentStatusAcceptedStatusProject, dateSentRejectedStatusProject;
+    LP dateSentForSignatureStatusProject, dateSignedStatusProject, dateSentToFinDepStatusProject, dateSubmittedToRegisterStatusProject, datePreparedCertificateStatusProject, dateCertifiedStatusProject;
+    LP dateInStatusProject;
+    LP overdueDateStatusProject, normalPeriodStatus, normalPeriodStatusPrject, isWorkDaysNormalPeriodStatus, quantutyDaysToOverdueDateStatusProject;
 
     @Override
     public void initProperties() {
@@ -3207,16 +3220,64 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         daysClaimerApplication = addCUProp("daysClaimerApplication", "Кол-во дней на стороне заявителя", daysClaimerApplicationPreliminary, daysClaimerApplicationStatus);
 
+        // даты для статусов-проектов
         dateRegisteredStatusProject = addJProp("dateRegisteredStatusProject", true, "Дата статуса", baseLM.and1, dateProject, 1, addJProp(baseLM.equals2, statusProject, 1, addCProp(projectStatus, "registered")), 1);
-        dateNoClusterStatusProject = addJProp("dateNoClusterStatusProject", true, "Дата статуса", baseLM.dateInTime, addJProp(baseLM.and1, addJProp(dateTimeFormalControl, executeFormalControlProject, 1), 1, addJProp(baseLM.equals2, statusProject, 1, addCProp(projectStatus, "noCluster")), 1), 1);
-        dateNoExpertsStatusProject = addJProp("dateNoExpertsStatusProject", true, "Дата статуса", baseLM.dateInTime, addJProp(baseLM.and1, addJProp(dateTimeFormalControl, executeFormalControlProject, 1), 1, addJProp(baseLM.equals2, statusProject, 1, addCProp(projectStatus, "noExperts")), 1), 1);
-        dateNotEnoughDocsForPreliminaryStatusProject = addJProp("dateNotEnoughDocsForPreliminaryStatusProject", true, "Дата статуса", baseLM.dateInTime, addJProp(baseLM.and1, addJProp(dateTimeFormalControl, executeFormalControlProject, 1), 1, addJProp(baseLM.equals2, statusProject, 1, addCProp(projectStatus, "notEnoughDocsForPreliminary")), 1), 1);
-        dateRepeatedStatusProject = addJProp("dateRepeatedStatusProject", true, "Дата статуса", baseLM.dateInTime, addJProp(baseLM.and1, addJProp(dateTimeFormalControl, executeFormalControlProject, 1), 1, addJProp(baseLM.equals2, statusProject, 1, addCProp(projectStatus, "repeated")), 1), 1);
-        datePositiveFCResultStatusProject = addJProp("datePositiveFCResultStatusProject", true, "Дата статуса", baseLM.dateInTime, addJProp(baseLM.and1, addJProp(dateTimeFormalControl, executeFormalControlProject, 1), 1, addJProp(baseLM.equals2, statusProject, 1, addCProp(projectStatus, "positiveFCResult")), 1), 1);
-        dateOverdueFCStatusProject = addJProp("dateOverdueFCStatusProject", true, "Дата статуса", baseLM.dateInTime, addJProp(baseLM.and1, addJProp(dateTimeFormalControl, executeFormalControlProject, 1), 1, addJProp(baseLM.equals2, statusProject, 1, addCProp(projectStatus, "overdueFC")), 1), 1);
+        dateNoClusterStatusProject = addJProp("dateNoClusterStatusProject", true, "Дата статуса", baseLM.and1, addJProp(dateFormalControl, executeFormalControlProject, 1), 1, addJProp(baseLM.equals2, statusProject, 1, addCProp(projectStatus, "noCluster")), 1);
+        dateNoExpertsStatusProject = addJProp("dateNoExpertsStatusProject", true, "Дата статуса", baseLM.and1, addJProp(dateFormalControl, executeFormalControlProject, 1), 1, addJProp(baseLM.equals2, statusProject, 1, addCProp(projectStatus, "noExperts")), 1);
+        dateNotEnoughDocsForStatusStatusProject = addJProp("dateNotEnoughDocsForStatusStatusProject", true, "Дата статуса", baseLM.and1, addJProp(dateFormalControl, executeFormalControlProject, 1), 1, addJProp(baseLM.equals2, statusProject, 1, addCProp(projectStatus, "notEnoughDocsForStatus")), 1);
+        dateNotEnoughDocsForPreliminaryStatusProject = addJProp("dateNotEnoughDocsForPreliminaryStatusProject", true, "Дата статуса", baseLM.and1, addJProp(dateFormalControl, executeFormalControlProject, 1), 1, addJProp(baseLM.equals2, statusProject, 1, addCProp(projectStatus, "notEnoughDocsForPreliminary")), 1);
+        dateRepeatedStatusProject = addJProp("dateRepeatedStatusProject", true, "Дата статуса", baseLM.and1, addJProp(dateFormalControl, executeFormalControlProject, 1), 1, addJProp(baseLM.equals2, statusProject, 1, addCProp(projectStatus, "repeated")), 1);
+        datePositiveFCResultStatusProject = addJProp("datePositiveFCResultStatusProject", true, "Дата статуса", baseLM.and1, addJProp(dateFormalControl, executeFormalControlProject, 1), 1, addJProp(baseLM.equals2, statusProject, 1, addCProp(projectStatus, "positiveFCResult")), 1);
+        dateOverdueFCStatusProject = addJProp("dateOverdueFCStatusProject", true, "Дата статуса", baseLM.and1, addJProp(overdueDateFormalControl, executeFormalControlProject, 1), 1, addJProp(baseLM.equals2, statusProject, 1, addCProp(projectStatus, "overdueFC")), 1);
 
+        dateNegativeLCPreliminaryResultStatusProject = addJProp("dateNegativeLCPreliminaryResultStatusProject", true, "Дата статуса", baseLM.and1, addJProp(dateLegalCheck, executeLegalCheckProject, 1), 1, addJProp(baseLM.equals2, statusProject, 1, addCProp(projectStatus, "negativeLCPreliminaryResult")), 1);
+        dateNegativeLCStatusResultStatusProject = addJProp("dateNegativeLCStatusResultStatusProject", true, "Дата статуса", baseLM.and1, addJProp(dateLegalCheck, executeLegalCheckProject, 1), 1, addJProp(baseLM.equals2, statusProject, 1, addCProp(projectStatus, "negativeLCStatusResult")), 1);
+        datePositiveLCResultStatusProject = addJProp("datePositiveLCResultStatusProject", true, "Дата статуса", baseLM.and1, addJProp(dateLegalCheck, executeLegalCheckProject, 1), 1, addJProp(baseLM.equals2, statusProject, 1, addCProp(projectStatus, "positiveLCResult")), 1);
+        dateOverdueLCStatusProject = addJProp("dateOverdueLCStatusProject", true, "Дата статуса", baseLM.and1, addJProp(overdueDateLegalCheck, executeLegalCheckProject, 1), 1, addJProp(baseLM.equals2, statusProject, 1, addCProp(projectStatus, "overdueLC")), 1);
 
+        dateNeedTranslationStatusProject = addJProp("dateNeedTranslationStatusProject", true, "Дата статуса", baseLM.and1, dateSentForTranslationProject, 1, addJProp(baseLM.equals2, statusProject, 1, addCProp(projectStatus, "needTranslation")), 1);
 
+        dateInProgressStatusProject = addJProp("dateInProgressStatusProject", true, "Дата статуса", baseLM.and1, addJProp(dateStartVote, voteLastProject, 1), 1, addJProp(baseLM.equals2, statusProject, 1, addCProp(projectStatus, "inProgress")), 1);
+        dateInProgressRepeatStatusProject = addJProp("dateInProgressRepeatStatusProject", true, "Дата статуса", baseLM.and1, addJProp(dateStartVote, voteLastProject, 1), 1, addJProp(baseLM.equals2, statusProject, 1, addCProp(projectStatus, "inProgressRepeat")), 1);
+        dateIssuedVoteDocsStatusProject = addJProp("dateIssuedVoteDocsStatusProject", true, "Дата статуса", baseLM.and1, addJProp(dateEndVote, voteLastProject, 1), 1, addJProp(baseLM.equals2, statusProject, 1, addCProp(projectStatus, "issuedVoteDocs")), 1);
+        dateNeedExtraVoteStatusProject = addJProp("dateNeedExtraVoteStatusProject", true, "Дата статуса", baseLM.and1, addJProp(dateEndVote, voteLastProject, 1), 1, addJProp(baseLM.equals2, statusProject, 1, addCProp(projectStatus, "needExtraVote")), 1);
+        dateRejectedStatusProject = addJProp("dateRejectedStatusProject", true, "Дата статуса", baseLM.and1, addJProp(dateEndVote, voteLastProject, 1), 1, addJProp(baseLM.equals2, statusProject, 1, addCProp(projectStatus, "rejected")), 1);
+        dateAcceptedStatusProject = addJProp("dateAcceptedStatusProject", true, "Дата статуса", baseLM.and1, addJProp(dateEndVote, voteLastProject, 1), 1, addJProp(baseLM.equals2, statusProject, 1, addCProp(projectStatus, "accepted")), 1);
+
+        dateSentPreliminaryAcceptedStatusProject = addJProp("dateSentPreliminaryAcceptedStatusProject", true, "Дата статуса", baseLM.and1, dateDecisionNoticedProject, 1, addJProp(baseLM.equals2, statusProject, 1, addCProp(projectStatus, "sentPreliminaryAccepted")), 1);
+        dateSentStatusAcceptedStatusProject = addJProp("dateSentStatusAcceptedStatusProject", true, "Дата статуса", baseLM.and1, dateDecisionNoticedProject, 1, addJProp(baseLM.equals2, statusProject, 1, addCProp(projectStatus, "sentStatusAccepted")), 1);
+        dateSentRejectedStatusProject = addJProp("dateSentRejectedStatusProject", true, "Дата статуса", baseLM.and1, dateDecisionNoticedProject, 1, addJProp(baseLM.equals2, statusProject, 1, addCProp(projectStatus, "sentRejected")), 1);
+
+        dateAppliedOriginalDocsStatusProject = addJProp("dateAppliedOriginalDocsStatusProject", true, "Дата статуса", baseLM.and1, addJProp(dateOriginalDocsCheck, executeOriginalDocsCheckProject, 1), 1, addJProp(baseLM.equals2, statusProject, 1, addCProp(projectStatus, "appliedOriginalDocs")), 1);
+        dateNotEnoughOriginalDocsStatusProject = addJProp("dateNotEnoughOriginalDocsStatusProject", true, "Дата статуса", baseLM.and1, addJProp(dateOriginalDocsCheck, executeOriginalDocsCheckProject, 1), 1, addJProp(baseLM.equals2, statusProject, 1, addCProp(projectStatus, "notEnoughOriginalDocs")), 1);
+        dateOverdueOriginalDocsStatusProject = addJProp("dateOverdueOriginalDocsStatusProject", true, "Дата статуса", baseLM.and1, addJProp(overdueDateOriginalDocsCheck, executeOriginalDocsCheckProject, 1), 1, addJProp(baseLM.equals2, statusProject, 1, addCProp(projectStatus, "overdueOriginalDocs")), 1);
+
+        dateApplyStatusStatusProject = addJProp("datApplyStatusStatusProject", true, "Дата статуса", baseLM.and1, dateStatusProject, 1, addJProp(baseLM.equals2, statusProject, 1, addCProp(projectStatus, "applyStatus")), 1);
+
+        dateSentForSignatureStatusProject = addJProp("dateSentForSignatureStatusProject", true, "Дата статуса", baseLM.and1, dateSentForSignatureProject, 1, addJProp(baseLM.equals2, statusProject, 1, addCProp(projectStatus, "sentForSignature")), 1);
+        dateSignedStatusProject = addJProp("dateSignedStatusProject", true, "Дата статуса", baseLM.and1, dateSignedProject, 1, addJProp(baseLM.equals2, statusProject, 1, addCProp(projectStatus, "signed")), 1);
+        dateSentToFinDepStatusProject = addJProp("dateSentToFinDepStatusProject", true, "Дата статуса", baseLM.and1, dateSentToFinDepProject, 1, addJProp(baseLM.equals2, statusProject, 1, addCProp(projectStatus, "sentToFinDep")), 1);
+        dateSubmittedToRegisterStatusProject = addJProp("dateSubmittedToRegisterStatusProject", true, "Дата статуса", baseLM.and1, dateSubmittedToRegisterProject, 1, addJProp(baseLM.equals2, statusProject, 1, addCProp(projectStatus, "submittedToRegister")), 1);
+        datePreparedCertificateStatusProject = addJProp("datePreparedCertificateStatusProject", true, "Дата статуса", baseLM.and1, datePreparedCertificateProject, 1, addJProp(baseLM.equals2, statusProject, 1, addCProp(projectStatus, "preparedCertificate")), 1);
+        dateCertifiedStatusProject = addJProp("dateCertifiedStatusProject", true, "Дата статуса", baseLM.and1, dateCertifiedProject, 1, addJProp(baseLM.equals2, statusProject, 1, addCProp(projectStatus, "certified")), 1);
+
+        dateInStatusProject = addXSUProp(baseGroup,"dateInStatusProject", true, "Дата статуса", dateRegisteredStatusProject, dateNoClusterStatusProject, dateNoExpertsStatusProject, dateNotEnoughDocsForStatusStatusProject,
+                dateNotEnoughDocsForPreliminaryStatusProject, dateRepeatedStatusProject, datePositiveFCResultStatusProject, dateOverdueFCStatusProject, dateNegativeLCPreliminaryResultStatusProject,
+                dateNegativeLCStatusResultStatusProject, datePositiveLCResultStatusProject, dateOverdueLCStatusProject, dateNeedTranslationStatusProject, dateInProgressStatusProject,
+                dateInProgressRepeatStatusProject, dateIssuedVoteDocsStatusProject, dateNeedExtraVoteStatusProject, dateRejectedStatusProject, dateAcceptedStatusProject,
+                dateSentPreliminaryAcceptedStatusProject, dateSentStatusAcceptedStatusProject, dateSentRejectedStatusProject,
+                dateAppliedOriginalDocsStatusProject, dateNotEnoughOriginalDocsStatusProject, dateOverdueOriginalDocsStatusProject, dateApplyStatusStatusProject,
+                dateSentForSignatureStatusProject, dateSignedStatusProject, dateSentToFinDepStatusProject, dateSubmittedToRegisterStatusProject, datePreparedCertificateStatusProject, dateCertifiedStatusProject);
+
+        normalPeriodStatus = addDProp(baseGroup, "normalPeriodStatus", "Нормативный срок в статусе", IntegerClass.instance, projectStatus);
+        normalPeriodStatusPrject = addJProp(baseGroup, true, "normalPeriodStatusPrject", "Нормативный срок в статусе", normalPeriodStatus, statusProject, 1);
+        normalPeriodStatusPrject.setFixedCharWidth(2);
+        isWorkDaysNormalPeriodStatus = addDProp(baseGroup, "isWorkDaysNormalPeriodStatus", "В рабочих днях", LogicalClass.instance, projectStatus);
+        overdueDateStatusProject = addCaseUProp(baseGroup, "overdueDateStatusProject", true, "Дата просрочки статуса",
+                addJProp(isWorkDaysNormalPeriodStatus, statusProject, 1), 1, addJProp(baseLM.jumpWorkdays, baseLM.defaultCountry, dateInStatusProject, 1, normalPeriodStatusPrject, 1), 1,
+                addJProp(baseLM.addDate2, dateInStatusProject, 1, normalPeriodStatusPrject, 1), 1);
+        quantutyDaysToOverdueDateStatusProject = addJProp("quantutyDaysToOverdueDateStatusProject", true, "Количество дней до просрочки", baseLM.subtractInteger2, overdueDateStatusProject, 1, baseLM.currentDate);
+        quantutyDaysToOverdueDateStatusProject.setFixedCharWidth(4);
     }
 
     @Override
@@ -3851,7 +3912,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
             objProject = addSingleGroupObject(project, dateProject, dateStatusProject, nameNativeProject, nameForeignProject,
                     nameNativeShortFinalClusterProject, nameNativeClaimerProject, nameForeignClaimerProject, emailClaimerProject,
-                    nameStatusProject, formLogNameStatusProject, nameProjectActionProject, updateDateProject, autoGenerateProject,
+                    nameStatusProject, dateInStatusProject, normalPeriodStatusPrject, quantutyDaysToOverdueDateStatusProject, formLogNameStatusProject, nameProjectActionProject, updateDateProject, autoGenerateProject,
                     inactiveProject, quantityClusterProject, quantityClusterVotedProject, quantityVoteProject, generateVoteProject, editClaimerProject, editR1Project,
                     isR2Project);
 

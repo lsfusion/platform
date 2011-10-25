@@ -251,7 +251,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public LP emailBlindCarbonCopy;
     public LP fromAddress;
     public LP disableEmail;
-    protected LP defaultCountry;
+    public LP defaultCountry;
 
     public LP sidCountry;
     protected LP generateDatesCountry;
