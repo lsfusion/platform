@@ -3292,13 +3292,13 @@ public class SkolkovoLogicsModule extends LogicsModule {
         quantityDaysToOverdueDateStatusProject = addJProp("quantityDaysToOverdueDateStatusProject", true, "Количество дней до просрочки", baseLM.subtractInteger2, overdueDateStatusProject, 1, baseLM.currentDate);
         quantityDaysToOverdueDateStatusProject.setFixedCharWidth(4);
 
-        dateInStatusApplication = addIfElseUProp(idGroup, "dateInStatusApplication", "Дата статуса", addJProp(dateStatusProject, projectApplication, 1), addJProp(dateInStatusProject, projectApplication, 1), isPreliminaryAfterStatusApplication, 1);
-        normalPeriodStatusApplication = addJProp(baseGroup, true, "normalPeriodStatusApplication", "Нормативный срок в статусе", normalPeriodStatus, statusApplication, 1);
+        dateInStatusApplication = addIfElseUProp(idGroup, "dateInStatusApplication", "Дата статуса", addJProp(dateDecisionNoticedProject, projectApplication, 1), addJProp(dateInStatusProject, projectApplication, 1), isPreliminaryAfterStatusApplication, 1);
+        normalPeriodStatusApplication = addJProp(baseGroup, "normalPeriodStatusApplication", "Нормативный срок в статусе", normalPeriodStatus, statusApplication, 1);
         normalPeriodStatusApplication.setFixedCharWidth(2);
-        overdueDateStatusApplication = addIfElseUProp(baseGroup, "overdueDateStatusApplication", true, "Дата просрочки статуса",
+        overdueDateStatusApplication = addIfElseUProp(baseGroup, "overdueDateStatusApplication", "Дата просрочки статуса",
                 addJProp(baseLM.jumpWorkdays, baseLM.defaultCountry, dateInStatusApplication, 1, normalPeriodStatusApplication, 1),
                 addJProp(baseLM.addDate2, dateInStatusApplication, 1, normalPeriodStatusApplication, 1), addJProp(isWorkDaysNormalPeriodStatus, statusApplication, 1), 1);
-        quantityDaysToOverdueDateStatusApplication = addJProp("quantityDaysToOverdueDateStatusApplication", true, "Количество дней до просрочки", baseLM.subtractInteger2, overdueDateStatusApplication, 1, baseLM.currentDate);
+        quantityDaysToOverdueDateStatusApplication = addJProp("quantityDaysToOverdueDateStatusApplication", "Количество дней до просрочки", baseLM.subtractInteger2, overdueDateStatusApplication, 1, baseLM.currentDate);
         quantityDaysToOverdueDateStatusApplication.setFixedCharWidth(4);
     }
 
@@ -4338,9 +4338,6 @@ public class SkolkovoLogicsModule extends LogicsModule {
                     officialNameStatusApplication, dateInStatusApplication, normalPeriodStatusApplication, quantityDaysToOverdueDateStatusApplication, langApplication, nameNativeShortAggregateClusterApplication, emailClaimerApplication, daysClaimerApplication);
 
             addFixedFilter(new NotFilterEntity(new NotNullFilterEntity(addPropertyObject(inactiveApplication, objApplication))));
-
-            addDefaultHintsIncrementTable(this);
-            addHintsNoUpdate(dateInStatusApplication, quantityDaysToOverdueDateStatusApplication);
 
             setReadOnly(false);
         }
