@@ -27,13 +27,15 @@ import java.util.*;
  */
 
 public class ScriptingLogicsModule extends LogicsModule {
+
     private final static Logger scriptLogger = Logger.getLogger(ScriptingLogicsModule.class);
     private String scriptName;
     private String code = null;
     private String filename = null;
     private final BusinessLogics<?> BL;
-
     private final Set<String> importedModules = new HashSet<String>();
+    private final ScriptingErrorLog errLog;
+    private LsfLogicsParser parser;
 
     public enum State {GROUP, CLASS, PROP, NAVIGATOR}
     public enum ConstType { INT, REAL, STRING, LOGICAL }
@@ -48,6 +50,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         setBaseLogicsModule(baseModule);
         this.scriptName = scriptName;
         this.BL = BL;
+        errLog = new ScriptingErrorLog(scriptName);
     }
 
     public static ScriptingLogicsModule createFromString(String scriptName, String code, BaseLogicsModule<?> baseModule, BusinessLogics<?> BL) {
@@ -68,6 +71,10 @@ public class ScriptingLogicsModule extends LogicsModule {
         } else {
             return new ANTLRFileStream(filename, "UTF-8");
         }
+    }
+
+    public ScriptingErrorLog getErrLog() {
+        return errLog;
     }
 
     public void addImportedModule(String moduleName) {
@@ -125,13 +132,16 @@ public class ScriptingLogicsModule extends LogicsModule {
             return valueClass;
     }
 
-    public void addScriptedClass(String className, String captionStr, boolean isAbstract, List<String> parentNames) {
+    public void addScriptedClass(String className, String captionStr, boolean isAbstract, List<String> parentNames) throws ScriptingErrorLog.SemanticErrorException {
         scriptLogger.info("addScriptedClass(" + className + ", " + (captionStr==null ? "" : captionStr) + ", " + isAbstract + ", " + parentNames + ");");
         String caption = (captionStr == null ? className : transformCaptionStr(captionStr));
         CustomClass[] parents = new CustomClass[parentNames.size()];
         for (int i = 0; i < parentNames.size(); i++) {
             String parentName = parentNames.get(i);
             ValueClass valueClass = getClassByName(parentName);
+            if (valueClass == null) {
+                errLog.emitClassNotFoundError(parser, parentName);
+            }
             assert valueClass instanceof CustomClass;
             parents[i] = (CustomClass) valueClass;
         }
@@ -500,9 +510,14 @@ public class ScriptingLogicsModule extends LogicsModule {
     private void parseStep(State state) {
         try {
             LsfLogicsLexer lexer = new LsfLogicsLexer(createStream());
-            LsfLogicsParser parser = new LsfLogicsParser(new CommonTokenStream(lexer));
+            parser = new LsfLogicsParser(new CommonTokenStream(lexer));
+
             parser.self = this;
             parser.parseState = state;
+
+            lexer.self = this;
+            lexer.parseState = state;
+
             parser.script();
 //            arithLexer lexer = new arithLexer(createStream());
 //            arithParser parser = new arithParser(new CommonTokenStream(lexer));
@@ -519,7 +534,6 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     @Override
     public void initTables() {
-        //To change body of implemented methods use File | Settings | File Templates.
     }
 
     @Override
@@ -534,12 +548,16 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     @Override
     public void initIndexes() {
-        //To change body of implemented methods use File | Settings | File Templates.
     }
 
     @Override
     public void initNavigators() throws JRException, FileNotFoundException {
         parseStep(ScriptingLogicsModule.State.NAVIGATOR);
+    }
+
+    @Override
+    public String getErrorsDescription() {
+        return errLog.toString();
     }
 
     @Override

@@ -515,43 +515,56 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
     protected void initModules() throws ClassNotFoundException, IOException, SQLException, InstantiationException, IllegalAccessException, JRException {
-        for (LogicsModule module : logicModules) {
-            module.initGroups();
+        String errors = "";
+        try {
+            for (LogicsModule module : logicModules) {
+                module.initGroups();
+            }
+            for (LogicsModule module : logicModules) {
+                module.initClasses();
+            }
+
+            checkClasses(); //проверка на то, что у каждого абстрактного класса есть конкретный потомок
+            LM.baseClass.initObjectClass();
+            LM.storeCustomClass(LM.baseClass.objectClass);
+
+            for (LogicsModule module : logicModules) {
+                module.initTables();
+            }
+            for (LogicsModule module : logicModules) {
+                module.initProperties();
+            }
+
+            Set idSet = new HashSet<String>();
+            for (Property property : getProperties()) {
+    //            assert idSet.add(property.getSID()) : "Same sid " + property.getSID();
+            }
+
+            for (LogicsModule module : logicModules) {
+                module.initIndexes();
+            }
+            assert checkProps();
+
+            synchronizeDB();
+
+            initExternalScreens();
+
+            logger.debug("Initializing navigators...");
+
+            for (LogicsModule module : logicModules) {
+                module.initNavigators();
+            }
+        } catch (Exception e) {
+            errors += e.getMessage();
         }
+
+        String syntaxErrors = "";
         for (LogicsModule module : logicModules) {
-            module.initClasses();
+            syntaxErrors += module.getErrorsDescription();
         }
-
-        checkClasses(); //проверка на то, что у каждого абстрактного класса есть конкретный потомок
-        LM.baseClass.initObjectClass();
-        LM.storeCustomClass(LM.baseClass.objectClass);
-
-        for (LogicsModule module : logicModules) {
-            module.initTables();
-        }
-        for (LogicsModule module : logicModules) {
-            module.initProperties();
-        }
-
-        Set idSet = new HashSet<String>();
-        for (Property property : getProperties()) {
-//            assert idSet.add(property.getSID()) : "Same sid " + property.getSID();
-        }
-
-        for (LogicsModule module : logicModules) {
-            module.initIndexes();
-        }
-
-        assert checkProps();
-
-        synchronizeDB();
-
-        initExternalScreens();
-
-        logger.debug("Initializing navigators...");
-
-        for (LogicsModule module : logicModules) {
-            module.initNavigators();
+        if (errors.length() > 0 || syntaxErrors.length() > 0) {
+            errors = "\n" + syntaxErrors + errors;
+            throw new RuntimeException(errors);
         }
     }
 

@@ -6,6 +6,7 @@ grammar LsfLogics;
 	import platform.server.logics.ScriptingFormEntity;
 	import platform.server.data.Union;
 	import platform.server.logics.linear.LP;
+	import platform.server.logics.ScriptingErrorLog;
 	import platform.interop.ClassViewType;
 	import java.util.Collections;
 	import java.util.Set;
@@ -15,27 +16,61 @@ grammar LsfLogics;
 
 @lexer::header { 
 	package platform.server; 
+	import platform.server.logics.ScriptingLogicsModule; 
+}
+
+@lexer::members {
+	public ScriptingLogicsModule self;
+	public ScriptingLogicsModule.State parseState;
+	
+	@Override
+	public void emitErrorMessage(String msg) {
+		if (parseState == ScriptingLogicsModule.State.GROUP) { 
+			self.getErrLog().write(msg + "\n");
+		}
+	}
+	
+	@Override
+	public String getErrorMessage(RecognitionException e, String[] tokenNames) {
+		return self.getErrLog().getErrorMessage(this, super.getErrorMessage(e, tokenNames), e);
+	} 	
+	
+	@Override
+	public void displayRecognitionError(String[] tokenNames, RecognitionException e) {
+		self.getErrLog().displayRecognitionError(this, "lexer", tokenNames, e);
+	}
 }
 
 @members {
 	public ScriptingLogicsModule self;
 	public ScriptingLogicsModule.State parseState;
-
-	@Override
-	protected Object recoverFromMismatchedToken(IntStream input, int ttype, BitSet follow) throws RecognitionException {
-		  throw new MismatchedTokenException(ttype, input);
-	}
 	
 	@Override
-	public Object recoverFromMismatchedSet(IntStream input, RecognitionException e, BitSet follow) throws RecognitionException {
-		throw e;
-	}
+	public void emitErrorMessage(String msg) {
+		if (parseState == ScriptingLogicsModule.State.GROUP) { 
+			self.getErrLog().write(msg + "\n");
+		}
+	}	
 
+	@Override
+	public String getErrorMessage(RecognitionException e, String[] tokenNames) {
+		return self.getErrLog().getErrorMessage(this, super.getErrorMessage(e, tokenNames), e);
+	} 	
+
+	@Override
+	public void displayRecognitionError(String[] tokenNames, RecognitionException e) {
+		self.getErrLog().displayRecognitionError(this, "parser", tokenNames, e);
+	}
 }
 
 @rulecatch {
-	catch (RecognitionException e) {
-		throw e;
+	catch(RecognitionException re) {
+		if (re instanceof ScriptingErrorLog.SemanticErrorException) {
+			throw re;
+		} else {
+	        	reportError(re);
+			recover(input,re);
+		}
 	}
 }
 
