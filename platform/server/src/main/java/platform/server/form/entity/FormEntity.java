@@ -556,6 +556,11 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         }
     }
 
+    public void addHintsNoUpdate(LP... props) {
+        for (LP prop : props)
+            addHintsNoUpdate(prop);
+    }
+
     protected void addHintsNoUpdate(LP<?> prop) {
         addHintsNoUpdate(prop.property);
     }

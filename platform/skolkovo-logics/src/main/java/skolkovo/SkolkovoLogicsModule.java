@@ -529,6 +529,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP [] maxOriginalDocsCheckProjectProps;
     LP currentOriginalDocsCheckProject;
     LP executeOriginalDocsCheckProject;
+    LP dateExecuteOriginalDocsCheckProject;
     LP resultExecuteOriginalDocsCheckProject;
     LP setNegativeResultOriginalDocsCheck;
     LP setPositiveResultOriginalDocsCheck;
@@ -596,7 +597,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP completeCommentExpertVote;
 
     private LP percentNeeded;
-    private LP percentNeededVote, hidePercentNeededProject;
+    private LP percentNeededVote;
     private LP quantityNeededVote;
 
     public LP competitiveAdvantagesExpertVote;
@@ -620,15 +621,15 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP quantityDoneOldVote;
     LP quantityRefusedVote;
     LP quantityConnectedVote;
-    LP quantityInClusterVote, hideQuantityInClusterProject;
-    LP quantityInnovativeVote, hideQuantityInnovativeProject;
-    LP quantityForeignVote, hideQuantityForeignProject;
-    LP quantityCompetitiveAdvantagesVote, hideQuantityCompetitiveAdvantagesProject;
-    LP quantityCommercePotentialVote, hideQuantityCommercePotentialProject;
-    LP quantityCanBeImplementedVote, hideQuantityCanBeImplementedProject;
-    LP quantityHaveExpertiseVote, hideQuantityHaveExpertiseProject;
-    LP quantityInternationalExperienceVote, hideQuantityInternationalExperienceProject;
-    LP quantityEnoughDocumentsVote, hideQuantityEnoughDocumentsProject;
+    LP quantityInClusterVote;
+    LP quantityInnovativeVote;
+    LP quantityForeignVote;
+    LP quantityCompetitiveAdvantagesVote;
+    LP quantityCommercePotentialVote;
+    LP quantityCanBeImplementedVote;
+    LP quantityHaveExpertiseVote;
+    LP quantityInternationalExperienceVote;
+    LP quantityEnoughDocumentsVote;
     LP acceptedInClusterVote;
     LP acceptedInnovativeVote;
     LP acceptedForeignVote;
@@ -657,6 +658,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP valuedProjectCluster;
     LP voteValuedProjectCluster;
     LP voteLastProject;
+    LP dateStartVoteLastProject, dateEndVoteLastProject;
     LP acceptedProjectCluster;
     LP rejectedProjectCluster;
     LP clusterAcceptedProject;
@@ -999,6 +1001,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP[] maxFormalControlProjectProps;
     LP currentFormalControlProject;
     LP executeFormalControlProject;
+    LP dateExecuteFormalControlProject;
     LP resultExecuteFormalControlProject;
     LP nameResultExecuteFormalControlProject;
     LP notEnoughDocumentsProject;
@@ -1030,6 +1033,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP[] maxLegalCheckProjectProps;
     LP currentLegalCheckProject;
     LP executeLegalCheckProject;
+    LP dateExecuteLegalCheckProject;
     LP resultExecuteLegalCheckProject;
     LP negativeLegalResultProject;
     LP negativeLegalResultStatusProject;
@@ -1101,15 +1105,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP statusApplication;
     LP nameStatusApplication;
     LP officialNameStatusApplication;
-    LP hideAddPositiveFCResult;
-    LP hideAddNotEnoughDocumentsFCResult;
-    LP hideAddNoListOfExpertsFCResult;
-    LP hideAddNotSuitableClusterFCResult;
-    LP hideAddRepeatedFCResult;
     LP needFormalCheckStatusProject;
     LP needLegalCheckStatusProject;
-    LP hideAddPositiveLCResult;
-    LP hideAddNegativeLCResult;
     LP projectMissionProject;
     LP nameProjectMissionProject;
     LP nativeResumeProject;
@@ -2332,7 +2329,6 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         percentNeeded = addDProp(baseGroup, "percentNeeded", "Процент для положительного решения", DoubleClass.instance);
         percentNeededVote = addDProp(baseGroup, "percentNeededVote", "Процент голосования", DoubleClass.instance, voteR2);
-        hidePercentNeededProject = addHideCaptionProp(privateGroup, "Процент голосования (hide)", percentNeededVote, isR2Project);
 
         quantityNeededVote = addJProp(baseGroup, "quantityNeededVote", "Треб. количество голосов", baseLM.percent2, quantityDoneVote, 1, percentNeededVote, 1);
 
@@ -2351,47 +2347,38 @@ public class SkolkovoLogicsModule extends LogicsModule {
         quantityInClusterVote = addSGProp(voteResultGroup, "quantityInClusterVote", true, "Соотв-ие кластеру (голоса)",
                 addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), inClusterExpertVote, 1, 2), 2); // сколько экспертов высказалось
         quantityInClusterVote.setFixedCharWidth(3);
-        hideQuantityInClusterProject = addHideCaptionProp(privateGroup, "Соотв. кластеру (hide)", quantityInClusterVote, isR1Project);
 
         quantityInnovativeVote = addSGProp(voteResultGroup, "quantityInnovativeVote", true, "Инновац. (голоса)",
                 addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), innovativeExpertVote, 1, 2), 2); // сколько экспертов высказалось
         quantityInnovativeVote.setFixedCharWidth(3);
-        hideQuantityInnovativeProject = addHideCaptionProp(privateGroup, "Инновац. (hide)", quantityInnovativeVote, isR1Project);
 
         quantityForeignVote = addSGProp(voteResultGroup, "quantityForeignVote", true, "Иностр. специалист (голоса)",
                 addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), foreignExpertVote, 1, 2), 2); // сколько экспертов высказалось
         quantityForeignVote.setFixedCharWidth(3);
-        hideQuantityForeignProject = addHideCaptionProp(privateGroup, "Иностр. специалист (hide)", quantityForeignVote, isR1Project);
 
         quantityCompetitiveAdvantagesVote = addSGProp(voteResultGroup, "quantityCompetitiveAdvantagesVote", true, "Конкур. преим. (голоса)",
                 addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), competitiveAdvantagesExpertVote, 1, 2), 2); // сколько экспертов высказалось
         quantityCompetitiveAdvantagesVote.setFixedCharWidth(3);
-        hideQuantityCompetitiveAdvantagesProject = addHideCaptionProp(privateGroup, "Конкур. преим. (hide)", quantityCompetitiveAdvantagesVote, isR2Project);
 
         quantityCommercePotentialVote = addSGProp(voteResultGroup, "quantityCommercePotentialVote", true, "Потенциал коммерц. (голоса)",
                 addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), commercePotentialExpertVote, 1, 2), 2); // сколько экспертов высказалось
         quantityCommercePotentialVote.setFixedCharWidth(3);
-        hideQuantityCommercePotentialProject = addHideCaptionProp(privateGroup, "Потенциал коммерц. (hide)", quantityCommercePotentialVote, isR2Project);
 
         quantityCanBeImplementedVote = addSGProp(voteResultGroup, "quantityCanBeImplementedVote", true, "Теоретически реализуем (голоса)",
                 addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), canBeImplementedExpertVote, 1, 2), 2); // сколько экспертов высказалось
         quantityCanBeImplementedVote.setFixedCharWidth(3);
-        hideQuantityCanBeImplementedProject = addHideCaptionProp(privateGroup, "Теоретически реализуем (hide)", quantityCanBeImplementedVote, isR2Project);
 
         quantityHaveExpertiseVote = addSGProp(voteResultGroup, "quantityHaveExpertiseVote", true, "Наличие экспертизы (голоса)",
                 addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), haveExpertiseExpertVote, 1, 2), 2); // сколько экспертов высказалось
         quantityHaveExpertiseVote.setFixedCharWidth(3);
-        hideQuantityHaveExpertiseProject = addHideCaptionProp(privateGroup, "Наличие экспертизы (hide)", quantityHaveExpertiseVote, isR2Project);
 
         quantityInternationalExperienceVote = addSGProp(voteResultGroup, "quantityInternationalExperienceVote", true, "Международный опыт (голоса)",
                 addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), internationalExperienceExpertVote, 1, 2), 2); // сколько экспертов высказалось
         quantityInternationalExperienceVote.setFixedCharWidth(3);
-        hideQuantityInternationalExperienceProject = addHideCaptionProp(privateGroup, "Международный опыт (hide)", quantityInternationalExperienceVote, isR2Project);
 
         quantityEnoughDocumentsVote = addSGProp(voteResultGroup, "quantityEnoughDocumentsVote", true, "Достаточно документов (голоса)",
                 addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), enoughDocumentsExpertVote, 1, 2), 2); // сколько экспертов высказалось
         quantityEnoughDocumentsVote.setFixedCharWidth(3);
-        hideQuantityEnoughDocumentsProject = addHideCaptionProp(privateGroup, "Достаточно документов (hide)", quantityEnoughDocumentsVote, isR2Project);
 
         acceptedInClusterVote = addJProp(voteResultGroup, "acceptedInClusterVote", "Соотв-ие кластеру", baseLM.greater2,
                 addJProp(baseLM.multiplyIntegerBy2, quantityInClusterVote, 1), 1,
@@ -2483,6 +2470,9 @@ public class SkolkovoLogicsModule extends LogicsModule {
 //        voteValuedProject = addJProp(idGroup, "voteValuedProject", true, "Оцененнное заседание (ИД)", baseLM.and1, voteSucceededProject, 1, noCurrentVoteProject, 1); // нет открытого заседания и есть состояшееся заседания
 
         voteLastProject = addMGProp(idGroup, "voteLastProject", true, "Посл. заседание (ИД)", object(vote), projectVote, 1);
+
+        dateStartVoteLastProject = addJProp("dateStartVoteLastProject", true, "Дата начала посл. заседания", dateStartVote, voteLastProject, 1);
+        dateEndVoteLastProject = addJProp("dateEndVoteLastProject", true, "Дата окончания посл. заседания", dateEndVote, voteLastProject, 1);
 
         acceptedProjectCluster = addJProp(baseGroup, "acceptedProjectCluster", true, "Оценен положительно", acceptedVote, voteValuedProjectCluster, 1, 2);
         rejectedProjectCluster = addJProp(baseGroup, "rejectedProjectCluster", true, "Оценен отрицательно", baseLM.andNot1, voteValuedProjectCluster, 1, 2, acceptedProjectCluster, 1, 2);
@@ -2684,6 +2674,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
                 addJProp(baseLM.greater2, addJProp(dateTimeFormalControl, currentFormalControlProject, 1), 1, updateDateProject, 1), 1,
                 addJProp(baseLM.equals2, addJProp(projectActionFormalControl, currentFormalControlProject, 1), 1, projectActionProject, 1), 1);
 
+        dateExecuteFormalControlProject = addJProp("dateExecuteFormalControlProject", true, "Дата действующего решения формальной экспертизы", dateFormalControl, executeFormalControlProject, 1);
         resultExecuteFormalControlProject = addJProp("resultExecuteFormalControlProject", true, "Решение", resultFormalControl, executeFormalControlProject, 1);
         nameResultExecuteFormalControlProject = addJProp("nameResultExecuteFormalControlProject", "Решение", baseLM.name, resultExecuteFormalControlProject, 1);
 
@@ -2721,7 +2712,9 @@ public class SkolkovoLogicsModule extends LogicsModule {
                 addJProp(baseLM.greater2, addJProp(dateTimeLegalCheck, currentLegalCheckProject, 1), 1, updateDateProject, 1), 1,
                 addJProp(baseLM.equals2, addJProp(projectActionLegalCheck, currentLegalCheckProject, 1), 1, projectActionProject, 1), 1);
 
+        dateExecuteLegalCheckProject = addJProp("dateExecuteLegalCheckProject", true, "Дата действующей юридической проверки", dateLegalCheck, executeLegalCheckProject, 1);
         resultExecuteLegalCheckProject = addJProp("resultExecuteLegalCheckProject", true, "Решение", resultLegalCheck, executeLegalCheckProject, 1);
+
         negativeLegalResultProject = addJProp("negativeLegalResultProject", true, "Не прошла юридическую проверку", negativeResultLegalCheck, executeLegalCheckProject, 1);
         negativeLegalResultStatusProject = addJProp("negativeLegalResultStatusProject", true, "Не прошла юридическую проверку (на статус)", baseLM.and1, negativeLegalResultProject, 1, addJProp(baseLM.equals2, projectActionProject,  1, addCProp(projectAction, "status")), 1);
         negativeLegalResultPreliminaryProject = addJProp("negativeLegalResultPreliminaryProject", true, "Не прошла юридическую проверку (на предв.экспертизу)", baseLM.and1, negativeLegalResultProject, 1, addJProp(baseLM.equals2, projectActionProject,  1, addCProp(projectAction, "preliminary")), 1);
@@ -2765,7 +2758,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         dateDecisionNoticedVote = addDProp("dateDecisionNoticedVote", "Дата отсылки уведомления", DateClass.instance, vote);
 
         decisionNoticedProject = addJProp("decisionNoticedProject", "Отослано уведомление", decisionNoticedVote, voteLastProject, 1);
-        dateDecisionNoticedProject = addJProp("dateDecisionNoticedProject", "Дата отсылки уведомления", dateDecisionNoticedVote, voteLastProject, 1);
+        dateDecisionNoticedProject = addJProp("dateDecisionNoticedProject", true, "Дата отсылки уведомления", dateDecisionNoticedVote, voteLastProject, 1);
 
         acceptedNoticedProject = addJProp("acceptedNoticedProject", true, "Отослано уведомление о соответствии", baseLM.and1, acceptedProject, 1, decisionNoticedProject, 1);
         rejectedNoticedProject = addJProp("rejectedNoticedProject", true, "Отослано уведомление о несоответствии", baseLM.and1, rejectedProject, 1, decisionNoticedProject, 1);
@@ -2792,6 +2785,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         LP currentDateOriginalDocsCheckProject = maxOriginalDocsCheckProjectProps[0];
         executeOriginalDocsCheckProject = maxOriginalDocsCheckProjectProps[1];
 
+        dateExecuteOriginalDocsCheckProject = addJProp("dateExecuteOriginalDocsCheckProject", true, "Дата действующей проверки оригиналов документов", dateOriginalDocsCheck, executeOriginalDocsCheckProject, 1);
         resultExecuteOriginalDocsCheckProject = addJProp("resultExecuteOriginalDocsCheckProject", true, "Проверка", resultOriginalDocsCheck, executeOriginalDocsCheckProject, 1);
 
 //        setNegativeResultOriginalDocsCheck = addJProp(originalDoscCheckGroup, true, "Подан неполный пакет документов", addAAProp(originalDocsCheck, resultOriginalDocsCheck), addCProp(originalDocsCheckResult, "notCompleteOriginalDocsPacket"));
@@ -3239,34 +3233,34 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         // даты для статусов-проектов
         dateRegisteredStatusProject = addJProp("dateRegisteredStatusProject", true, "Дата статуса", baseLM.and1, dateProject, 1, addJProp(baseLM.equals2, statusProject, 1, addCProp(projectStatus, "registered")), 1);
-        dateNoClusterStatusProject = addJProp("dateNoClusterStatusProject", true, "Дата статуса", baseLM.and1, addJProp(dateFormalControl, executeFormalControlProject, 1), 1, addJProp(baseLM.equals2, statusProject, 1, addCProp(projectStatus, "noCluster")), 1);
-        dateNoExpertsStatusProject = addJProp("dateNoExpertsStatusProject", true, "Дата статуса", baseLM.and1, addJProp(dateFormalControl, executeFormalControlProject, 1), 1, addJProp(baseLM.equals2, statusProject, 1, addCProp(projectStatus, "noExperts")), 1);
-        dateNotEnoughDocsForStatusStatusProject = addJProp("dateNotEnoughDocsForStatusStatusProject", true, "Дата статуса", baseLM.and1, addJProp(dateFormalControl, executeFormalControlProject, 1), 1, addJProp(baseLM.equals2, statusProject, 1, addCProp(projectStatus, "notEnoughDocsForStatus")), 1);
-        dateNotEnoughDocsForPreliminaryStatusProject = addJProp("dateNotEnoughDocsForPreliminaryStatusProject", true, "Дата статуса", baseLM.and1, addJProp(dateFormalControl, executeFormalControlProject, 1), 1, addJProp(baseLM.equals2, statusProject, 1, addCProp(projectStatus, "notEnoughDocsForPreliminary")), 1);
-        dateRepeatedStatusProject = addJProp("dateRepeatedStatusProject", true, "Дата статуса", baseLM.and1, addJProp(dateFormalControl, executeFormalControlProject, 1), 1, addJProp(baseLM.equals2, statusProject, 1, addCProp(projectStatus, "repeated")), 1);
-        datePositiveFCResultStatusProject = addJProp("datePositiveFCResultStatusProject", true, "Дата статуса", baseLM.and1, addJProp(dateFormalControl, executeFormalControlProject, 1), 1, addJProp(baseLM.equals2, statusProject, 1, addCProp(projectStatus, "positiveFCResult")), 1);
+        dateNoClusterStatusProject = addJProp("dateNoClusterStatusProject", true, "Дата статуса", baseLM.and1, dateExecuteFormalControlProject, 1, addJProp(baseLM.equals2, statusProject, 1, addCProp(projectStatus, "noCluster")), 1);
+        dateNoExpertsStatusProject = addJProp("dateNoExpertsStatusProject", true, "Дата статуса", baseLM.and1, dateExecuteFormalControlProject, 1, addJProp(baseLM.equals2, statusProject, 1, addCProp(projectStatus, "noExperts")), 1);
+        dateNotEnoughDocsForStatusStatusProject = addJProp("dateNotEnoughDocsForStatusStatusProject", true, "Дата статуса", baseLM.and1, dateExecuteFormalControlProject, 1, addJProp(baseLM.equals2, statusProject, 1, addCProp(projectStatus, "notEnoughDocsForStatus")), 1);
+        dateNotEnoughDocsForPreliminaryStatusProject = addJProp("dateNotEnoughDocsForPreliminaryStatusProject", true, "Дата статуса", baseLM.and1, dateExecuteFormalControlProject, 1, addJProp(baseLM.equals2, statusProject, 1, addCProp(projectStatus, "notEnoughDocsForPreliminary")), 1);
+        dateRepeatedStatusProject = addJProp("dateRepeatedStatusProject", true, "Дата статуса", baseLM.and1, dateExecuteFormalControlProject, 1, addJProp(baseLM.equals2, statusProject, 1, addCProp(projectStatus, "repeated")), 1);
+        datePositiveFCResultStatusProject = addJProp("datePositiveFCResultStatusProject", true, "Дата статуса", baseLM.and1, dateExecuteFormalControlProject, 1, addJProp(baseLM.equals2, statusProject, 1, addCProp(projectStatus, "positiveFCResult")), 1);
         dateOverdueFCStatusProject = addJProp("dateOverdueFCStatusProject", true, "Дата статуса", baseLM.and1, addJProp(overdueDateFormalControl, executeFormalControlProject, 1), 1, addJProp(baseLM.equals2, statusProject, 1, addCProp(projectStatus, "overdueFC")), 1);
 
-        dateNegativeLCPreliminaryResultStatusProject = addJProp("dateNegativeLCPreliminaryResultStatusProject", true, "Дата статуса", baseLM.and1, addJProp(dateLegalCheck, executeLegalCheckProject, 1), 1, addJProp(baseLM.equals2, statusProject, 1, addCProp(projectStatus, "negativeLCPreliminaryResult")), 1);
-        dateNegativeLCStatusResultStatusProject = addJProp("dateNegativeLCStatusResultStatusProject", true, "Дата статуса", baseLM.and1, addJProp(dateLegalCheck, executeLegalCheckProject, 1), 1, addJProp(baseLM.equals2, statusProject, 1, addCProp(projectStatus, "negativeLCStatusResult")), 1);
-        datePositiveLCResultStatusProject = addJProp("datePositiveLCResultStatusProject", true, "Дата статуса", baseLM.and1, addJProp(dateLegalCheck, executeLegalCheckProject, 1), 1, addJProp(baseLM.equals2, statusProject, 1, addCProp(projectStatus, "positiveLCResult")), 1);
+        dateNegativeLCPreliminaryResultStatusProject = addJProp("dateNegativeLCPreliminaryResultStatusProject", true, "Дата статуса", baseLM.and1, dateExecuteLegalCheckProject, 1, addJProp(baseLM.equals2, statusProject, 1, addCProp(projectStatus, "negativeLCPreliminaryResult")), 1);
+        dateNegativeLCStatusResultStatusProject = addJProp("dateNegativeLCStatusResultStatusProject", true, "Дата статуса", baseLM.and1, dateExecuteLegalCheckProject, 1, addJProp(baseLM.equals2, statusProject, 1, addCProp(projectStatus, "negativeLCStatusResult")), 1);
+        datePositiveLCResultStatusProject = addJProp("datePositiveLCResultStatusProject", true, "Дата статуса", baseLM.and1, dateExecuteLegalCheckProject, 1, addJProp(baseLM.equals2, statusProject, 1, addCProp(projectStatus, "positiveLCResult")), 1);
         dateOverdueLCStatusProject = addJProp("dateOverdueLCStatusProject", true, "Дата статуса", baseLM.and1, addJProp(overdueDateLegalCheck, executeLegalCheckProject, 1), 1, addJProp(baseLM.equals2, statusProject, 1, addCProp(projectStatus, "overdueLC")), 1);
 
         dateNeedTranslationStatusProject = addJProp("dateNeedTranslationStatusProject", true, "Дата статуса", baseLM.and1, dateSentForTranslationProject, 1, addJProp(baseLM.equals2, statusProject, 1, addCProp(projectStatus, "needTranslation")), 1);
 
-        dateInProgressStatusProject = addJProp("dateInProgressStatusProject", true, "Дата статуса", baseLM.and1, addJProp(dateStartVote, voteLastProject, 1), 1, addJProp(baseLM.equals2, statusProject, 1, addCProp(projectStatus, "inProgress")), 1);
-        dateInProgressRepeatStatusProject = addJProp("dateInProgressRepeatStatusProject", true, "Дата статуса", baseLM.and1, addJProp(dateStartVote, voteLastProject, 1), 1, addJProp(baseLM.equals2, statusProject, 1, addCProp(projectStatus, "inProgressRepeat")), 1);
-        dateIssuedVoteDocsStatusProject = addJProp("dateIssuedVoteDocsStatusProject", true, "Дата статуса", baseLM.and1, addJProp(dateEndVote, voteLastProject, 1), 1, addJProp(baseLM.equals2, statusProject, 1, addCProp(projectStatus, "issuedVoteDocs")), 1);
-        dateNeedExtraVoteStatusProject = addJProp("dateNeedExtraVoteStatusProject", true, "Дата статуса", baseLM.and1, addJProp(dateEndVote, voteLastProject, 1), 1, addJProp(baseLM.equals2, statusProject, 1, addCProp(projectStatus, "needExtraVote")), 1);
-        dateRejectedStatusProject = addJProp("dateRejectedStatusProject", true, "Дата статуса", baseLM.and1, addJProp(dateEndVote, voteLastProject, 1), 1, addJProp(baseLM.equals2, statusProject, 1, addCProp(projectStatus, "rejected")), 1);
-        dateAcceptedStatusProject = addJProp("dateAcceptedStatusProject", true, "Дата статуса", baseLM.and1, addJProp(dateEndVote, voteLastProject, 1), 1, addJProp(baseLM.equals2, statusProject, 1, addCProp(projectStatus, "accepted")), 1);
+        dateInProgressStatusProject = addJProp("dateInProgressStatusProject", true, "Дата статуса", baseLM.and1, dateStartVoteLastProject, 1, addJProp(baseLM.equals2, statusProject, 1, addCProp(projectStatus, "inProgress")), 1);
+        dateInProgressRepeatStatusProject = addJProp("dateInProgressRepeatStatusProject", true, "Дата статуса", baseLM.and1, dateStartVoteLastProject, 1, addJProp(baseLM.equals2, statusProject, 1, addCProp(projectStatus, "inProgressRepeat")), 1);
+        dateIssuedVoteDocsStatusProject = addJProp("dateIssuedVoteDocsStatusProject", true, "Дата статуса", baseLM.and1, dateEndVoteLastProject, 1, addJProp(baseLM.equals2, statusProject, 1, addCProp(projectStatus, "issuedVoteDocs")), 1);
+        dateNeedExtraVoteStatusProject = addJProp("dateNeedExtraVoteStatusProject", true, "Дата статуса", baseLM.and1, dateEndVoteLastProject, 1, addJProp(baseLM.equals2, statusProject, 1, addCProp(projectStatus, "needExtraVote")), 1);
+        dateRejectedStatusProject = addJProp("dateRejectedStatusProject", true, "Дата статуса", baseLM.and1, dateEndVoteLastProject, 1, addJProp(baseLM.equals2, statusProject, 1, addCProp(projectStatus, "rejected")), 1);
+        dateAcceptedStatusProject = addJProp("dateAcceptedStatusProject", true, "Дата статуса", baseLM.and1, dateEndVoteLastProject, 1, addJProp(baseLM.equals2, statusProject, 1, addCProp(projectStatus, "accepted")), 1);
 
         dateSentPreliminaryAcceptedStatusProject = addJProp("dateSentPreliminaryAcceptedStatusProject", true, "Дата статуса", baseLM.and1, dateDecisionNoticedProject, 1, addJProp(baseLM.equals2, statusProject, 1, addCProp(projectStatus, "sentPreliminaryAccepted")), 1);
         dateSentStatusAcceptedStatusProject = addJProp("dateSentStatusAcceptedStatusProject", true, "Дата статуса", baseLM.and1, dateDecisionNoticedProject, 1, addJProp(baseLM.equals2, statusProject, 1, addCProp(projectStatus, "sentStatusAccepted")), 1);
         dateSentRejectedStatusProject = addJProp("dateSentRejectedStatusProject", true, "Дата статуса", baseLM.and1, dateDecisionNoticedProject, 1, addJProp(baseLM.equals2, statusProject, 1, addCProp(projectStatus, "sentRejected")), 1);
 
-        dateAppliedOriginalDocsStatusProject = addJProp("dateAppliedOriginalDocsStatusProject", true, "Дата статуса", baseLM.and1, addJProp(dateOriginalDocsCheck, executeOriginalDocsCheckProject, 1), 1, addJProp(baseLM.equals2, statusProject, 1, addCProp(projectStatus, "appliedOriginalDocs")), 1);
-        dateNotEnoughOriginalDocsStatusProject = addJProp("dateNotEnoughOriginalDocsStatusProject", true, "Дата статуса", baseLM.and1, addJProp(dateOriginalDocsCheck, executeOriginalDocsCheckProject, 1), 1, addJProp(baseLM.equals2, statusProject, 1, addCProp(projectStatus, "notEnoughOriginalDocs")), 1);
+        dateAppliedOriginalDocsStatusProject = addJProp("dateAppliedOriginalDocsStatusProject", true, "Дата статуса", baseLM.and1, dateExecuteOriginalDocsCheckProject, 1, addJProp(baseLM.equals2, statusProject, 1, addCProp(projectStatus, "appliedOriginalDocs")), 1);
+        dateNotEnoughOriginalDocsStatusProject = addJProp("dateNotEnoughOriginalDocsStatusProject", true, "Дата статуса", baseLM.and1, dateExecuteOriginalDocsCheckProject, 1, addJProp(baseLM.equals2, statusProject, 1, addCProp(projectStatus, "notEnoughOriginalDocs")), 1);
         dateOverdueOriginalDocsStatusProject = addJProp("dateOverdueOriginalDocsStatusProject", true, "Дата статуса", baseLM.and1, addJProp(overdueDateOriginalDocsCheck, executeOriginalDocsCheckProject, 1), 1, addJProp(baseLM.equals2, statusProject, 1, addCProp(projectStatus, "overdueOriginalDocs")), 1);
 
         dateApplyStatusStatusProject = addJProp("datApplyStatusStatusProject", true, "Дата статуса", baseLM.and1, dateStatusProject, 1, addJProp(baseLM.equals2, statusProject, 1, addCProp(projectStatus, "applyStatus")), 1);
@@ -3422,13 +3416,18 @@ public class SkolkovoLogicsModule extends LogicsModule {
     private void addDefaultHintsIncrementTable(FormEntity form) {
         form.addHintsIncrementTable(quantityDoneVote, quantityProjectLanguageDocumentType, notEnoughProject, acceptedVote, succeededVote, voteSucceededProjectCluster,
                 voteInProgressRepeatProject, voteInProgressProject, needExtraVoteRepeatProject,
-                voteValuedProjectCluster, rejectedProjectCluster, clusterAcceptedProject, currentClusterProject, finalClusterProject, executeFormalControlProject, resultExecuteFormalControlProject,
-                needExtraVoteProject, executeLegalCheckProject, resultExecuteLegalCheckProject, overdueFormalControlProject, isPreliminaryNotEnoughDocumentProject, isStatusNotEnoughDocumentProject,
+                voteValuedProjectCluster, rejectedProjectCluster, clusterAcceptedProject, currentClusterProject, finalClusterProject,
+                executeFormalControlProject, dateExecuteFormalControlProject, resultExecuteFormalControlProject, overdueFormalControlProject,
+                executeLegalCheckProject, dateExecuteLegalCheckProject, resultExecuteLegalCheckProject, overdueLegalCheckProject,
+                needExtraVoteProject, isPreliminaryNotEnoughDocumentProject, isStatusNotEnoughDocumentProject,
+                voteLastProject, dateStartVoteLastProject, dateEndVoteLastProject,
                 acceptedProject, rejectedProject, acceptedDecisionProject, rejectedDecisionProject, valuedProject,
-                rejectedNoticedProject, acceptedNoticedPreliminaryProject, acceptedNoticedStatusProject,
+                dateDecisionNoticedProject, rejectedNoticedProject, acceptedNoticedPreliminaryProject, acceptedNoticedStatusProject,
                 formalCheckStatusProject, legalCheckStatusProject, certifiedStatusProject, valuedStatusProject,
+                executeOriginalDocsCheckProject, dateExecuteOriginalDocsCheckProject, resultExecuteOriginalDocsCheckProject,
+                positiveOriginalDocsCheckProject, overdueOriginalDocsCheckProject, negativeOriginalDocsCheckProject,
                 certifiedProject, preparedCertificateProject, submittedToRegisterProject, sentToFinDepProject, signedProject,
-                sentForSignatureProject, positiveOriginalDocsCheckProject, overdueOriginalDocsCheckProject, negativeOriginalDocsCheckProject, certifiedStatusProject,
+                sentForSignatureProject, certifiedStatusProject,
                 quantityVoteProject, voteStatusProject, statusProject, projectStatusProject);
     }
 
@@ -4046,18 +4045,15 @@ public class SkolkovoLogicsModule extends LogicsModule {
             objVote.groupTo.banClassView.addAll(BaseUtils.toList(ClassViewType.PANEL, ClassViewType.HIDE));
 
             getPropertyDraw(percentNeededVote).forceViewType = ClassViewType.GRID;
-            getPropertyDraw(percentNeededVote).propertyCaption = addPropertyObject(hidePercentNeededProject, objProject);
+            showIf(this, percentNeededVote, isR2Project, objProject);
 
             setForceViewType(voteResultGroup, ClassViewType.GRID, objVote.groupTo);
-            getPropertyDraw(quantityInClusterVote).propertyCaption = addPropertyObject(hideQuantityInClusterProject, objProject);
-            getPropertyDraw(quantityInnovativeVote).propertyCaption = addPropertyObject(hideQuantityInnovativeProject, objProject);
-            getPropertyDraw(quantityForeignVote).propertyCaption = addPropertyObject(hideQuantityForeignProject, objProject);
-            getPropertyDraw(quantityCompetitiveAdvantagesVote).propertyCaption = addPropertyObject(hideQuantityCompetitiveAdvantagesProject, objProject);
-            getPropertyDraw(quantityCommercePotentialVote).propertyCaption = addPropertyObject(hideQuantityCommercePotentialProject, objProject);
-            getPropertyDraw(quantityCanBeImplementedVote).propertyCaption = addPropertyObject(hideQuantityCanBeImplementedProject, objProject);
-            getPropertyDraw(quantityHaveExpertiseVote).propertyCaption = addPropertyObject(hideQuantityHaveExpertiseProject, objProject);
-            getPropertyDraw(quantityInternationalExperienceVote).propertyCaption = addPropertyObject(hideQuantityInternationalExperienceProject, objProject);
-            getPropertyDraw(quantityEnoughDocumentsVote).propertyCaption = addPropertyObject(hideQuantityEnoughDocumentsProject, objProject);
+
+            showIf(this, new LP[] {quantityInClusterVote, quantityInnovativeVote, quantityForeignVote},
+                    isR1Project, objProject);
+
+            showIf(this, new LP[] {quantityCompetitiveAdvantagesVote, quantityCommercePotentialVote, quantityCanBeImplementedVote, quantityHaveExpertiseVote, quantityInternationalExperienceVote, quantityEnoughDocumentsVote},
+                    isR2Project, objProject);
 
 //            getPropertyDraw(copyResultsVote).forceViewType = ClassViewType.PANEL;
 
@@ -4096,26 +4092,16 @@ public class SkolkovoLogicsModule extends LogicsModule {
             addPropertyDraw(objFormalControl, dateTimeSubmitFormalControl, nameResultFormalControl, nameProjectActionFormalControl, dateTimeFormalControl, baseLM.delete);
             addPropertyDraw(commentFormalControl, objFormalControl).forceViewType = ClassViewType.PANEL;
 
-            hideAddPositiveFCResult = addHideCaptionProp(privateGroup, "Прошла формальную экспертизу", addPositiveFCResult, needFormalCheckStatusProject);
-            getPropertyDraw(addPositiveFCResult).propertyCaption = addPropertyObject(hideAddPositiveFCResult, objProject);
-            hideAddNotEnoughDocumentsFCResult = addHideCaptionProp(privateGroup, "Неполный перечень документо", addNotEnoughDocumentsFCResult, needFormalCheckStatusProject);
-            getPropertyDraw(addNotEnoughDocumentsFCResult).propertyCaption = addPropertyObject(hideAddNotEnoughDocumentsFCResult, objProject);
-            hideAddNoListOfExpertsFCResult = addHideCaptionProp(privateGroup, "Отсутствует перечень экспертов", addNoListOfExpertsFCResult, needFormalCheckStatusProject);
-            getPropertyDraw(addNoListOfExpertsFCResult).propertyCaption = addPropertyObject(hideAddNoListOfExpertsFCResult, objProject);
-            hideAddNotSuitableClusterFCResult = addHideCaptionProp(privateGroup, "Не соответствует направлению", addNotSuitableClusterFCResult, needFormalCheckStatusProject);
-            getPropertyDraw(addNotSuitableClusterFCResult).propertyCaption = addPropertyObject(hideAddNotSuitableClusterFCResult, objProject);
-            hideAddRepeatedFCResult = addHideCaptionProp(privateGroup, "Подана повторно", addRepeatedFCResult, needFormalCheckStatusProject);
-            getPropertyDraw(addRepeatedFCResult).propertyCaption = addPropertyObject(hideAddRepeatedFCResult, objProject);
+            showIf(this, new LP[] {addPositiveFCResult, addNotEnoughDocumentsFCResult, addNoListOfExpertsFCResult, addNotSuitableClusterFCResult, addRepeatedFCResult},
+                    needFormalCheckStatusProject, objProject);
 
             objLegalCheck = addSingleGroupObject(legalCheck);
             addPropertyDraw(objLegalCheck, dateTimeSubmitLegalCheck, nameResultLegalCheck, nameProjectActionLegalCheck, dateTimeLegalCheck, baseLM.delete);
             addPropertyDraw(new LP[]{addNegativeLCResult, addPositiveLCResult});
             addPropertyDraw(commentLegalCheck, objLegalCheck).forceViewType = ClassViewType.PANEL;
 
-            hideAddPositiveLCResult = addHideCaptionProp(privateGroup, "Прошла юридическую проверку", addPositiveLCResult, needLegalCheckStatusProject);
-            getPropertyDraw(addPositiveLCResult).propertyCaption = addPropertyObject(hideAddPositiveLCResult, objProject);
-            hideAddNegativeLCResult = addHideCaptionProp(privateGroup, "Не прошла юридическую проверку", addNegativeLCResult, needLegalCheckStatusProject);
-            getPropertyDraw(addNegativeLCResult).propertyCaption = addPropertyObject(hideAddNegativeLCResult, objProject);
+            showIf(this, new LP[] {addPositiveLCResult, addNegativeLCResult},
+                    needLegalCheckStatusProject, objProject);
 
             objOriginalDocsCheck = addSingleGroupObject(originalDocsCheck);
             addPropertyDraw(objOriginalDocsCheck, dateSubmitOriginalDocsCheck, nameResultOriginalDocsCheck, dateTimeOriginalDocsCheck, setNegativeResultOriginalDocsCheck, setPositiveResultOriginalDocsCheck);
@@ -4166,6 +4152,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
             addRegularFilterGroup(activeProjectFilterGroup);
 
             addDefaultHintsIncrementTable(this);
+            addHintsNoUpdate(dateInStatusProject, quantutyDaysToOverdueDateStatusProject);
+
             setPageSize(0);
 
             setReadOnly(true, objCluster.groupTo);

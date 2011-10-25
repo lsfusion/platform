@@ -16,6 +16,9 @@ import platform.server.data.expr.query.GroupType;
 import platform.server.data.expr.query.OrderType;
 import platform.server.data.where.classes.ClassWhere;
 import platform.server.form.entity.*;
+import platform.server.form.entity.FormEntity;
+import platform.server.form.entity.ObjectEntity;
+import platform.server.form.entity.PropertyDrawEntity;
 import platform.server.form.entity.filter.FilterEntity;
 import platform.server.logics.linear.LP;
 import platform.server.logics.property.*;
@@ -775,6 +778,18 @@ public abstract class LogicsModule {
         return addProperty(group, new LP<ClassPropertyInterface>(
                 new GroupChangeActionProperty(name, caption, groupObject,
                         mainProperty, mainInts, getterProperty, getterInts, groupInts)));
+    }
+
+    public void showIf(FormEntity<?> form, LP[] properties, LP ifProperty, ObjectEntity... objects) {
+        for (LP property : properties)
+            showIf(form, property, ifProperty, objects);
+    }
+
+    public void showIf(FormEntity<?> form, LP property, LP ifProperty, ObjectEntity... objects) {
+        PropertyObjectEntity hideCaptionProp = form.addPropertyObject(addHideCaptionProp(property, ifProperty), objects);
+        for (PropertyDrawEntity propertyDraw : form.getProperties(property.property)) {
+            propertyDraw.propertyCaption = hideCaptionProp;
+        }
     }
 
     private <P extends PropertyInterface, L extends PropertyInterface> LP mapLProp(AbstractGroup group, boolean persistent, PropertyMapImplement<L, P> implement, LP<P> property) {
