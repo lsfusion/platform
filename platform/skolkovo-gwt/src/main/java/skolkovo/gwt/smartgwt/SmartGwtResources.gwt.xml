@@ -4,5 +4,5 @@
     <inherits name="platform.gwt.settings.BasicSettings"/>
     <inherits name="com.smartgwt.SmartGwt"/>
 
-    <entry-point class="skolkovo.gwt.form.client.StubEntryPoint"/>
+    <entry-point class="skolkovo.gwt.smartgwt.client.StubEntryPoint"/>
 </module>

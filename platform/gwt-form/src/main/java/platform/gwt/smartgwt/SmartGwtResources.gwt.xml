@@ -3,4 +3,6 @@
 <module rename-to="smartgwt">
     <inherits name="platform.gwt.settings.BasicSettings"/>
     <inherits name="com.smartgwt.SmartGwt"/>
+
+    <entry-point class="platform.gwt.smartgwt.client.StubEntryPoint"/>
 </module>
