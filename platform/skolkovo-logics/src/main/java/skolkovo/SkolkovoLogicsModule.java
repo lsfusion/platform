@@ -1180,6 +1180,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP foreignPublications;
     LP nativeAvtorPublications;
     LP foreignAvtorPublications;
+    LP nativeEditionPublications;
+    LP foreignEditionPublications;
     LP datePublications;
     LP nativeLinksPublications;
     LP projectCommercialization;
@@ -1200,6 +1202,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP nameNativeSpecialist;
     LP foreignSpecialist;
     LP editR2Project;
+    LP foreignProjectMissionProject;
+    LP descriptionProjectMission;
 
     private LP daysSubmitApplicationDate;
     private LP weekSubmitApplicationDate;
@@ -1464,6 +1468,11 @@ public class SkolkovoLogicsModule extends LogicsModule {
         nameProjectMissionProject = addJProp(descGroup, "nameProjectMissionProject", "Цель заявки", baseLM.name, projectMissionProject, 1);
         nameProjectMissionProject.setPreferredCharWidth(10);
 
+        descriptionProjectMission = addDProp(descGroup, "descriptionProjectMission", "Description", InsensitiveStringClass.get(2000), projectMission);
+        foreignProjectMissionProject = addJProp(descGroup, "foreignProjectMissionProject", "Objectives of the project", descriptionProjectMission, projectMissionProject, 1);
+        foreignProjectMissionProject.setMinimumWidth(10);
+        foreignProjectMissionProject.setPreferredWidth(50);
+
         nativeCommentMissionProject = addDProp(descGroup, "nativeCommentMissionProject", "Комментарий к цели", InsensitiveStringClass.get(2000), project);
         nativeCommentMissionProject.setMinimumWidth(10);
         nativeCommentMissionProject.setPreferredWidth(50);
@@ -1522,7 +1531,15 @@ public class SkolkovoLogicsModule extends LogicsModule {
         foreignAvtorPublications.setMinimumWidth(10);
         foreignAvtorPublications.setPreferredWidth(50);
 
-        datePublications = addDProp(publicationsGroup, "datePublications", "Год", DoubleClass.instance, publications);
+        nativeEditionPublications = addDProp(publicationsGroup, "nativeEditionPublications", "Издание", InsensitiveStringClass.get(500), publications);
+        nativeEditionPublications.setMinimumWidth(10);
+        nativeEditionPublications.setPreferredWidth(50);
+
+        foreignEditionPublications = addDProp(publicationsGroup, "foreignEditionPublications", "Edition", InsensitiveStringClass.get(2000), publications);
+        foreignEditionPublications.setMinimumWidth(10);
+        foreignEditionPublications.setPreferredWidth(50);
+
+        datePublications = addDProp(publicationsGroup, "datePublications", "Год", IntegerClass.instance, publications);
         nativeLinksPublications = addDProp(publicationsGroup, "nativeLinksPublications", "Ссылка на эл.версию", InsensitiveStringClass.get(2000), publications);
         nativeLinksPublications.setMinimumWidth(10);
         nativeLinksPublications.setPreferredWidth(50);
