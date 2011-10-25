@@ -1244,7 +1244,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP dateSentPreliminaryAcceptedStatusProject, dateSentStatusAcceptedStatusProject, dateSentRejectedStatusProject;
     LP dateSentForSignatureStatusProject, dateSignedStatusProject, dateSentToFinDepStatusProject, dateSubmittedToRegisterStatusProject, datePreparedCertificateStatusProject, dateCertifiedStatusProject;
     LP dateInStatusProject;
-    LP overdueDateStatusProject, normalPeriodStatus, normalPeriodStatusPrject, isWorkDaysNormalPeriodStatus, quantutyDaysToOverdueDateStatusProject;
+    LP overdueDateStatusProject, normalPeriodStatus, normalPeriodStatusProject, normalPeriodStatusApplication, isWorkDaysNormalPeriodStatus, quantityDaysToOverdueDateStatusProject;
+    LP dateInStatusApplication, overdueDateStatusApplication, quantityDaysToOverdueDateStatusApplication;
 
     @Override
     public void initProperties() {
@@ -3281,14 +3282,24 @@ public class SkolkovoLogicsModule extends LogicsModule {
                 dateSentForSignatureStatusProject, dateSignedStatusProject, dateSentToFinDepStatusProject, dateSubmittedToRegisterStatusProject, datePreparedCertificateStatusProject, dateCertifiedStatusProject);
 
         normalPeriodStatus = addDProp(baseGroup, "normalPeriodStatus", "Нормативный срок в статусе", IntegerClass.instance, projectStatus);
-        normalPeriodStatusPrject = addJProp(baseGroup, true, "normalPeriodStatusPrject", "Нормативный срок в статусе", normalPeriodStatus, statusProject, 1);
-        normalPeriodStatusPrject.setFixedCharWidth(2);
+        normalPeriodStatusProject = addJProp(baseGroup, true, "normalPeriodStatusProject", "Нормативный срок в статусе", normalPeriodStatus, statusProject, 1);
+        normalPeriodStatusProject.setFixedCharWidth(2);
+
         isWorkDaysNormalPeriodStatus = addDProp(baseGroup, "isWorkDaysNormalPeriodStatus", "В рабочих днях", LogicalClass.instance, projectStatus);
-        overdueDateStatusProject = addCaseUProp(baseGroup, "overdueDateStatusProject", true, "Дата просрочки статуса",
-                addJProp(isWorkDaysNormalPeriodStatus, statusProject, 1), 1, addJProp(baseLM.jumpWorkdays, baseLM.defaultCountry, dateInStatusProject, 1, normalPeriodStatusPrject, 1), 1,
-                addJProp(baseLM.addDate2, dateInStatusProject, 1, normalPeriodStatusPrject, 1), 1);
-        quantutyDaysToOverdueDateStatusProject = addJProp("quantutyDaysToOverdueDateStatusProject", true, "Количество дней до просрочки", baseLM.subtractInteger2, overdueDateStatusProject, 1, baseLM.currentDate);
-        quantutyDaysToOverdueDateStatusProject.setFixedCharWidth(4);
+        overdueDateStatusProject = addIfElseUProp(baseGroup, "overdueDateStatusProject", true, "Дата просрочки статуса",
+                addJProp(baseLM.jumpWorkdays, baseLM.defaultCountry, dateInStatusProject, 1, normalPeriodStatusProject, 1),
+                addJProp(baseLM.addDate2, dateInStatusProject, 1, normalPeriodStatusProject, 1), addJProp(isWorkDaysNormalPeriodStatus, statusProject, 1), 1);
+        quantityDaysToOverdueDateStatusProject = addJProp("quantityDaysToOverdueDateStatusProject", true, "Количество дней до просрочки", baseLM.subtractInteger2, overdueDateStatusProject, 1, baseLM.currentDate);
+        quantityDaysToOverdueDateStatusProject.setFixedCharWidth(4);
+
+        dateInStatusApplication = addIfElseUProp(idGroup, "dateInStatusApplication", "Дата статуса", addJProp(dateStatusProject, projectApplication, 1), addJProp(dateInStatusProject, projectApplication, 1), isPreliminaryAfterStatusApplication, 1);
+        normalPeriodStatusApplication = addJProp(baseGroup, true, "normalPeriodStatusApplication", "Нормативный срок в статусе", normalPeriodStatus, statusApplication, 1);
+        normalPeriodStatusApplication.setFixedCharWidth(2);
+        overdueDateStatusApplication = addIfElseUProp(baseGroup, "overdueDateStatusApplication", true, "Дата просрочки статуса",
+                addJProp(baseLM.jumpWorkdays, baseLM.defaultCountry, dateInStatusApplication, 1, normalPeriodStatusApplication, 1),
+                addJProp(baseLM.addDate2, dateInStatusApplication, 1, normalPeriodStatusApplication, 1), addJProp(isWorkDaysNormalPeriodStatus, statusApplication, 1), 1);
+        quantityDaysToOverdueDateStatusApplication = addJProp("quantityDaysToOverdueDateStatusApplication", true, "Количество дней до просрочки", baseLM.subtractInteger2, overdueDateStatusApplication, 1, baseLM.currentDate);
+        quantityDaysToOverdueDateStatusApplication.setFixedCharWidth(4);
     }
 
     @Override
@@ -3928,7 +3939,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
             objProject = addSingleGroupObject(project, dateProject, dateStatusProject, nameNativeProject, nameForeignProject,
                     nameNativeShortFinalClusterProject, nameNativeClaimerProject, nameForeignClaimerProject, emailClaimerProject,
-                    nameStatusProject, dateInStatusProject, normalPeriodStatusPrject, quantutyDaysToOverdueDateStatusProject, formLogNameStatusProject, nameProjectActionProject, updateDateProject, autoGenerateProject,
+                    nameStatusProject, dateInStatusProject, normalPeriodStatusProject, quantityDaysToOverdueDateStatusProject, formLogNameStatusProject, nameProjectActionProject, updateDateProject, autoGenerateProject,
                     inactiveProject, quantityClusterProject, quantityClusterVotedProject, quantityVoteProject, generateVoteProject, editClaimerProject, editR1Project,
                     isR2Project);
 
@@ -4152,7 +4163,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             addRegularFilterGroup(activeProjectFilterGroup);
 
             addDefaultHintsIncrementTable(this);
-            addHintsNoUpdate(dateInStatusProject, quantutyDaysToOverdueDateStatusProject);
+            addHintsNoUpdate(dateInStatusProject, quantityDaysToOverdueDateStatusProject);
 
             setPageSize(0);
 
@@ -4324,9 +4335,12 @@ public class SkolkovoLogicsModule extends LogicsModule {
             super(parent, sID, "Реестр заявок");
 
             objApplication = addSingleGroupObject(application, dateApplication, nameNativeClaimerApplication, nameProjectActionApplication, nameNativeProjectApplication,
-                    officialNameStatusApplication, langApplication, nameNativeShortAggregateClusterApplication, emailClaimerApplication, daysClaimerApplication);
+                    officialNameStatusApplication, dateInStatusApplication, normalPeriodStatusApplication, quantityDaysToOverdueDateStatusApplication, langApplication, nameNativeShortAggregateClusterApplication, emailClaimerApplication, daysClaimerApplication);
 
             addFixedFilter(new NotFilterEntity(new NotNullFilterEntity(addPropertyObject(inactiveApplication, objApplication))));
+
+            addDefaultHintsIncrementTable(this);
+            addHintsNoUpdate(dateInStatusApplication, quantityDaysToOverdueDateStatusApplication);
 
             setReadOnly(false);
         }
