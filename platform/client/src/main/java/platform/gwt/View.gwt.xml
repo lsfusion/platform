@@ -2,7 +2,7 @@
         "http://google-web-toolkit.googlecode.com/svn/releases/2.0/distro-source/core/src/gwt-module.dtd">
 <module>
     <inherits name="com.google.gwt.user.User"/>
-    <inherits name="com.smartgwt.SmartGwtNoScript"/>
+    <inherits name="com.smartgwt.SmartGwtNoSmartClient"/>
     <inherits name="platform.gwt.Utils"/>
 
     <source path='view'/>
