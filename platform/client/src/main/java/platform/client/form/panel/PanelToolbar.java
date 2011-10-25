@@ -13,7 +13,7 @@ import java.awt.*;
 import java.util.*;
 
 public class PanelToolbar {
-    private Set<PropertyController> properties = new HashSet<PropertyController>();
+    private Set<PropertyController> properties = new LinkedHashSet<PropertyController>();
     private Map<ClientRegularFilterGroup, JComponent> filters = new LinkedHashMap<ClientRegularFilterGroup, JComponent>();
 
     private final ClientFormController form;
@@ -148,9 +148,13 @@ public class PanelToolbar {
         for (PropertyController control : getProperties()) {
             control.removeView(formLayout);
             if (!draw.contains(control.getView())) {
+                // нужно вставить компонент в соответствии с порядком в propertyDraws
                 int index = form.getPropertyDraws().indexOf(control.getKey());
-                int curIndex = 0;
+                int curIndex = -1;
                 PropertyController prevProp = null;
+
+                int minIndex = Integer.MAX_VALUE;
+                PropertyController minProp = null;
 
                 for (PropertyController curProp : getProperties()) {
                     int temp = form.getPropertyDraws().indexOf(curProp.getKey());
@@ -158,9 +162,16 @@ public class PanelToolbar {
                         curIndex = temp;
                         prevProp = curProp;
                     }
+                    if (temp < minIndex && temp != index) {
+                        minIndex = temp;
+                        minProp = curProp;
+                    }
                 }
-                if (prevProp == null) {
-                    rightContainer.add(control.getView());
+                if (prevProp == null) { // если не нашли элемента, который уже есть в компонентах и раньше в propertyDraws
+                    if (minProp == null)
+                        rightContainer.add(control.getView());
+                    else // вставляем самым первым элементом
+                        rightContainer.add(control.getView(), Arrays.asList(rightContainer.getComponents()).indexOf(minProp.getView()));
                 } else {
                     rightContainer.add(control.getView(), Arrays.asList(rightContainer.getComponents()).indexOf(prevProp.getView()) + 1);
                 }
