@@ -133,7 +133,14 @@ public class PanelController {
             while (it.hasNext()) { // удаляем те которые есть, но не нужны
                 Map.Entry<ClientGroupObjectValue, PropertyController> propEntry = it.next();
                 if (!drawKeys.contains(propEntry.getKey())) {
-                    propEntry.getValue().removeView(formLayout);
+                    if (property.drawToToolbar && property.getKeyBindingGroup() != null) {
+                        GroupObjectLogicsSupplier logicsSupplier = form.getGroupObjectLogicsSupplier(property.getKeyBindingGroup());
+                        if (logicsSupplier != null) {
+                            logicsSupplier.removePropertyFromToolbar(propEntry.getValue());
+                            logicsSupplier.updateToolbar();
+                        }
+                    } else
+                        propEntry.getValue().removeView(formLayout);
                     it.remove();
                 }
             }

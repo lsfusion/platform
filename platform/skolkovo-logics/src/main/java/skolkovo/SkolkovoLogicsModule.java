@@ -3692,7 +3692,6 @@ public class SkolkovoLogicsModule extends LogicsModule {
         private ObjectEntity objSpecialist;
         private ObjectEntity objObjectives;
 
-
         private ProjectFullR2FormEntity(NavigatorElement parent, String sID, String caption) {
             super(parent, sID, caption);
 
@@ -3753,8 +3752,9 @@ public class SkolkovoLogicsModule extends LogicsModule {
             addFixedFilter(new CompareFilterEntity(addPropertyObject(projectObjectives, objObjectives), Compare.EQUALS, objProject));
             addObjectActions(this, objObjectives);
 
-            editR2Project = addJProp(true, "editR2Project", "Редактировать проект", baseLM.and1,
-                    addMFAProp("Редактировать проект", this, new ObjectEntity[]{objProject}), 1, isR2Project, 1).setImage("edit.png");
+            if (editR2Project == null)
+                editR2Project = addJProp(true, "editR2Project", "Редактировать проект", baseLM.and1,
+                        addMFAProp("Редактировать проект", this, new ObjectEntity[]{objProject}), 1, isR2Project, 1).setImage("edit.png");
 
             addDefaultHintsIncrementTable(this);
         }
@@ -3940,17 +3940,9 @@ public class SkolkovoLogicsModule extends LogicsModule {
             objProject = addSingleGroupObject(project, dateProject, dateStatusProject, nameNativeProject, nameForeignProject,
                     nameNativeShortFinalClusterProject, nameNativeClaimerProject, nameForeignClaimerProject, emailClaimerProject,
                     nameStatusProject, dateInStatusProject, normalPeriodStatusProject, quantityDaysToOverdueDateStatusProject, formLogNameStatusProject, nameProjectActionProject, updateDateProject, autoGenerateProject,
-                    inactiveProject, quantityClusterProject, quantityClusterVotedProject, quantityVoteProject, generateVoteProject, editClaimerProject, editR1Project,
+                    inactiveProject, quantityClusterProject, quantityClusterVotedProject, quantityVoteProject, generateVoteProject,
                     isR2Project);
 
-//            setForceViewType(editR1Project, ClassViewType.PANEL);
-//            getPropertyDraw(editR1Project).propertyCaption = addPropertyObject(addHideCaptionProp(editR1Project, isR1Project), objProject);
-//
-//            setForceViewType(editR2Project, ClassViewType.PANEL);
-//            getPropertyDraw(editR2Project).propertyCaption = addPropertyObject(addHideCaptionProp(editR2Project, isR2Project), objProject);
-//
-//            setForceViewType(editClaimerProject, ClassViewType.PANEL);
-//
             addPropertyDraw(objProject, isOtherClusterProject, nativeSubstantiationOtherClusterProject, foreignSubstantiationOtherClusterProject);
             addPropertyDraw(objProject, registerGroup);
             setForceViewType(registerGroup, ClassViewType.PANEL);
@@ -4005,7 +3997,17 @@ public class SkolkovoLogicsModule extends LogicsModule {
             hideLoadFileResolutionIPProject = addHideCaptionProp(privateGroup, "Загрузить", loadFileResolutionIPProject, addJProp(baseLM.andNot1, addCProp(LogicalClass.instance, true, project), 1, openFileResolutionIPProject, 1));
             getPropertyDraw(loadFileResolutionIPProject).propertyCaption = addPropertyObject(hideLoadFileResolutionIPProject, objProject);
 
-            addObjectActions(this, objProject);
+            addObjectActions(this, objProject, false, false);
+
+            addPropertyDraw(objProject, editR1Project, editR2Project, editClaimerProject);
+
+            setForceViewType(editR1Project, ClassViewType.PANEL);
+            getPropertyDraw(editR1Project).propertyCaption = addPropertyObject(addHideCaptionProp(editR1Project, isR1Project), objProject);
+
+            setForceViewType(editR2Project, ClassViewType.PANEL);
+            getPropertyDraw(editR2Project).propertyCaption = addPropertyObject(addHideCaptionProp(editR2Project, isR2Project), objProject);
+
+            setForceViewType(editClaimerProject, ClassViewType.PANEL);
 
             PropertyObjectEntity statusProperty = addPropertyObject(statusDataProject, objProject);
             getPropertyDraw(nameStatusProject).setPropertyHighlight(statusProperty);
@@ -4186,9 +4188,9 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
             design.get(getPropertyDraw(importProjectsAction)).drawToToolbar = true;
             design.get(getPropertyDraw(copyProjectAction)).drawToToolbar = true;
-//            design.get(getPropertyDraw(editR1Project)).drawToToolbar = true;
-//            design.get(getPropertyDraw(editR2Project)).drawToToolbar = true;
-//            design.get(getPropertyDraw(editClaimerProject)).drawToToolbar = true;
+            design.get(getPropertyDraw(editR1Project)).drawToToolbar = true;
+            design.get(getPropertyDraw(editR2Project)).drawToToolbar = true;
+            design.get(getPropertyDraw(editClaimerProject)).drawToToolbar = true;
             design.get(getPropertyDraw(nameNativeShortCurrentCluster)).drawToToolbar = true;
 //            design.getPanelContainer(objProject.groupTo).add(design.getGroupPropertyContainer((GroupObjectEntity)null, importGroup));
 
@@ -4682,7 +4684,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
             objClaimer = addSingleGroupObject(claimer, "Заявитель", claimerInformationGroup, contactGroup, documentGroup, legalDataGroup);
             objClaimer.groupTo.setSingleClassView(ClassViewType.PANEL);
-            editClaimer = addMFAProp(actionGroup, "Редактировать", this, new ObjectEntity[]{objClaimer}).setImage("edit.png");
+
+            editClaimer = addMFAProp(actionGroup, "Редактировать", this, new ObjectEntity[]{objClaimer}).setImage("form.gif");
             editClaimerProject = addJProp(actionGroup, true, "Юр.лицо", editClaimer, claimerProject, 1);
         }
 

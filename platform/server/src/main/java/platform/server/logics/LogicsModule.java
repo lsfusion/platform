@@ -1849,15 +1849,19 @@ public abstract class LogicsModule {
     }
 
     protected void addObjectActions(FormEntity form, ObjectEntity object, ObjectEntity checkObject, ValueClass checkObjectClass) {
-        addObjectActions(form, object, false, checkObject, checkObjectClass);
+        addObjectActions(form, object, false, true, checkObject, checkObjectClass);
     }
 
     public void addObjectActions(FormEntity form, ObjectEntity object, boolean actionImport) {
-        addObjectActions(form, object, actionImport, null, null);
+        addObjectActions(form, object, actionImport, true);
     }
 
-    protected void addObjectActions(FormEntity form, ObjectEntity object, boolean actionImport, ObjectEntity checkObject, ValueClass checkObjectClass) {
-        form.addPropertyDraw(baseLM.delete, object);
+    public void addObjectActions(FormEntity form, ObjectEntity object, boolean actionImport, boolean shouldBeLast) {
+        addObjectActions(form, object, actionImport, shouldBeLast, null, null);
+    }
+
+    protected void addObjectActions(FormEntity form, ObjectEntity object, boolean actionImport, boolean shouldBeLast, ObjectEntity checkObject, ValueClass checkObjectClass) {
+        form.addPropertyDraw(baseLM.delete, object).shouldBeLast = shouldBeLast;
         if (actionImport)
             form.forceDefaultDraw.put(form.addPropertyDraw(getImportObjectAction(object.baseClass)), object.groupTo);
 
@@ -1872,6 +1876,7 @@ public abstract class LogicsModule {
             actionAddPropertyDraw.shouldBeLast = true;
             actionAddPropertyDraw.forceViewType = ClassViewType.PANEL;
         }
+        actionAddPropertyDraw.shouldBeLast = shouldBeLast;
         form.forceDefaultDraw.put(actionAddPropertyDraw, object.groupTo);
     }
 
