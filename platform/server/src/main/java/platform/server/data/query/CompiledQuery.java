@@ -6,6 +6,7 @@ import platform.base.Counter;
 import platform.base.OrderedMap;
 import platform.server.Settings;
 import platform.server.caches.OuterContext;
+import platform.server.classes.IntegralClass;
 import platform.server.data.*;
 import platform.server.data.expr.*;
 import platform.server.data.expr.order.OrderCalc;
@@ -16,15 +17,12 @@ import platform.server.data.query.stat.KeyStat;
 import platform.server.data.query.stat.StatKeys;
 import platform.server.data.query.stat.WhereJoin;
 import platform.server.data.query.stat.WhereJoins;
+import platform.server.data.type.*;
 import platform.server.data.where.MapWhere;
 import platform.server.data.sql.SQLSyntax;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.translator.MapValuesTranslate;
 import platform.server.data.translator.QueryTranslator;
-import platform.server.data.type.ClassReader;
-import platform.server.data.type.NullReader;
-import platform.server.data.type.ParseInterface;
-import platform.server.data.type.Type;
 import platform.server.data.where.CheckWhere;
 import platform.server.data.where.Where;
 import platform.server.data.where.WhereBuilder;
@@ -708,8 +706,15 @@ public class CompiledQuery<K,V> {
 
         compile.fillInnerJoins();
         QueryTranslator keyEqualTranslator = innerSelect.keyEqual.getTranslator();
-        for(Map.Entry<AV, Expr> joinProp : keyEqualTranslator.translate(compiledProps).entrySet()) // свойства
-            propertySelect.put(joinProp.getKey(), joinProp.getValue().getSource(compile));
+        for(Map.Entry<AV, Expr> joinProp : keyEqualTranslator.translate(compiledProps).entrySet()) { // свойства
+            String source = joinProp.getValue().getSource(compile);
+            if(joinProp.getValue() instanceof ValueExpr) {
+                Type type = joinProp.getValue().getType(innerSelect.where);
+                if(type instanceof ObjectType || type instanceof IntegralClass)
+                    source = "CAST(" + source + " AS " + type.getDB(syntax) + ")";
+            }
+            propertySelect.put(joinProp.getKey(), source);
+        }
         for(Map.Entry<K,KeyExpr> mapKey : mapKeys.entrySet()) {
             Expr keyValue = keyEqualTranslator.translate(mapKey.getValue());
             keySelect.put(mapKey.getKey(),BaseUtils.hashEquals(keyValue,mapKey.getValue())?compile.keySelect.get(mapKey.getValue()):keyValue.getSource(compile));
