@@ -1304,13 +1304,13 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
             PropertyDrawEntity sidDraw = getPropertyDraw(userRoleSID, objUserRole.groupTo);
             balanceDraw.addColumnGroupObject(objUserRole.groupTo);
             balanceDraw.setPropertyCaption(sidDraw.propertyObject);
+
+            addDefaultOrder(getPropertyDraw(numberNavigatorElement, objTreeForm.groupTo), true);
         }
 
         @Override
         public FormView createDefaultRichDesign() {
             DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign();
-
-            design.defaultOrders.put(design.get(getPropertyDraw(numberNavigatorElement, objTreeForm.groupTo)), true);
 
             ContainerView container = design.createContainer();
             container.tabbedPane = true;

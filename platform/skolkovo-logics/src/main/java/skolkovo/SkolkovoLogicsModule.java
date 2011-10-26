@@ -5301,15 +5301,10 @@ public class SkolkovoLogicsModule extends LogicsModule {
             addFixedFilter(new CompareFilterEntity(addPropertyObject(dateApplication, objApplication), Compare.LESS_EQUALS, objDateTo));
             addFixedFilter(new CompareFilterEntity(addPropertyObject(dateApplication, objApplication), Compare.GREATER_EQUALS, objDateFrom));
 
-         }
-
-         @Override
-         public FormView createDefaultRichDesign() {
-            DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign();
-            design.defaultOrders.put(design.get(getPropertyDraw(dateApplication, objApplication)), true);
-            return design;
+             addDefaultOrder(getPropertyDraw(dateApplication, objApplication), true);
          }
     }
+
     public class GenerateDocumentsActionProperty extends ActionProperty {
 
         private final ClassPropertyInterface projectInterface;
