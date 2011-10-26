@@ -204,7 +204,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
     AbstractGroup expertResultGroup;
     AbstractGroup importGroup;
-    StaticCustomClass projectMission;
+    public StaticCustomClass projectMission;
 
     @Override
     public void initClasses() {
@@ -908,6 +908,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
     public LP ownerTypeToSID;
     public LP projectTypeToSID;
     public LP projectActionToSID;
+    public LP projectMissionToSID;
     public LP fileIntentionOwnerPatent;
     LP loadFileIntentionOwnerPatent;
     LP openFileIntentionOwnerPatent;
@@ -1107,97 +1108,111 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP officialNameStatusApplication;
     LP needFormalCheckStatusProject;
     LP needLegalCheckStatusProject;
-    LP projectMissionProject;
+    LP hideAddPositiveLCResult;
+    LP hideAddNegativeLCResult;
+    public LP projectMissionProject;
     LP nameProjectMissionProject;
-    LP nativeResumeProject;
-    LP foreignResumeProject;
-    LP nameNativeContactProject;
-    LP foreignContactProjec;
-    LP phoneContactProject;
-    LP emailContactProject;
-    LP nativeMarketTrendsProject;
-    LP foreignMarketTrendsProject;
-    LP linksMarketTrendsProject;
-    LP linksAnalogProject;
-    LP nativeRelevanceProject;
-    LP foreignRelevanceProject;
-    LP nativeBasicTechnologyProject;
-    LP foreignBasicTechnologyProject;
-    LP nativeCaseStudiesProject;
-    LP foreignCaseStudiesProject;
-    LP nativeCharacteristicsAnaloguesProject;
-    LP foreignCharacteristicsAnaloguesProject;
-    LP nativeCompaniesAnaloguesProject;
-    LP foreignCompaniesAnaloguesProjec;
-    LP nativeMarketIntroductionProject;
-    LP foreignMarketIntroductionProject;
-    LP linksMarketIntroductionProject;
-    LP nativeHistoryProject;
-    LP foreignHistoryProject;
-    LP nativeDynamicsProject;
-    LP foreignDynamicsProject;
-    LP nativeGrantsProject;
-    LP foreignGrantsProject;
-    LP nativeLaboratoryProject;
-    LP foreignLaboratoryProject;
-    LP nativeInvestmentProject;
-    LP foreignInvestmentProject;
-    LP nativeResultsProject;
-    LP foreignResultsProject;
-    LP nativeGeneralizedPlanProject;
-    LP foreignGeneralizedPlanProject;
-    LP projectSpecialist;
-    LP nativePostSpecialist;
-    LP foreignPostSpecialist;
-    LP nativeFunctionSpecialist;
-    LP foreignFunctionSpecialist;
-    LP nativeScopeSpecialist;
-    LP foreignScopeSpecialist;
-    LP nativeExperienceSpecialist;
-    LP foreignExperienceSpecialist;
-    LP nativeTitleSpecialist;
-    LP foreignTitleSpecialist;
-    LP nativeWorkSpecialist;
-    LP foreignWorkSpecialist;
-    LP nativePublicationsSpecialist;
-    LP foreignPublicationsSpecialist;
-    LP nativeCitationSpecialist;
-    LP foreignCitationSpecialist;
-    LP nativeIntellectualPropertySpecialist;
-    LP foreignIntellectualPropertySpecialist;
-    LP projectResearch;
-    LP foreignCommentResearch;
-    LP nativeCommentResearch;
-    LP dataResearch;
+    public LP nativeResumeProject;
+    public LP foreignResumeProject;
+    public LP nameNativeContactProject;
+    public LP nameForeignContactProject;
+    public LP phoneContactProject;
+    public LP emailContactProject;
+    public LP nativeMarketTrendsProject;
+    public LP foreignMarketTrendsProject;
+    public LP linksMarketTrendsProject;
+    public LP linksAnalogProject;
+    public LP nativeRelevanceProject;
+    public LP foreignRelevanceProject;
+    public LP nativeBasicTechnologyProject;
+    public LP foreignBasicTechnologyProject;
+    public LP nativeCaseStudiesProject;
+    public LP foreignCaseStudiesProject;
+    public LP nativeCharacteristicsAnaloguesProject;
+    public LP foreignCharacteristicsAnaloguesProject;
+    public LP nativeCompaniesAnaloguesProject;
+    public LP foreignCompaniesAnaloguesProject;
+    public LP nativeMarketIntroductionProject;
+    public LP foreignMarketIntroductionProject;
+    public LP linksMarketIntroductionProject;
+    public LP nativeHistoryProject;
+    public LP foreignHistoryProject;
+    public LP nativeDynamicsProject;
+    public LP foreignDynamicsProject;
+    public LP nativeGrantsProject;
+    public LP foreignGrantsProject;
+    public LP nativeLaboratoryProject;
+    public LP foreignLaboratoryProject;
+    public LP nativeInvestmentProject;
+    public LP foreignInvestmentProject;
+    public LP nativeResultsProject;
+    public LP foreignResultsProject;
+    public LP nativeGeneralizedPlanProject;
+    public LP foreignGeneralizedPlanProject;
+    public LP projectSpecialist;
+    public LP nativePostSpecialist;
+    public LP foreignPostSpecialist;
+    public LP nativeFunctionSpecialist;
+    public LP foreignFunctionSpecialist;
+    public LP nativeScopeSpecialist;
+    public LP foreignScopeSpecialist;
+    public LP nativeExperienceSpecialist;
+    public LP foreignExperienceSpecialist;
+    public LP nativeTitleSpecialist;
+    public LP foreignTitleSpecialist;
+    public LP nativeWorkSpecialist;
+    public LP foreignWorkSpecialist;
+    public LP nativePublicationsSpecialist;
+    public LP foreignPublicationsSpecialist;
+    public LP nativeCitationSpecialist;
+    public LP foreignCitationSpecialist;
+    public LP nativeIntellectualPropertySpecialist;
+    public LP foreignIntellectualPropertySpecialist;
+    public LP projectResearch;
+    public LP foreignCommentResearch;
+    public LP nativeCommentResearch;
+    public LP dataResearch;
+    public LP nativeCommentToResearch;
+    public LP nativeCommentSIDToResearch;
     LP linksPatent;
-    LP nativeCommentMissionProject;
-    LP foreignCommentMissionProject;
-    LP projectPublications;
-    LP nativePublications;
-    LP foreignPublications;
-    LP nativeAvtorPublications;
-    LP foreignAvtorPublications;
+    public LP nativeCommentMissionProject;
+    public LP foreignCommentMissionProject;
+    public LP projectPublications;
+    public LP nativeToPublications;
+    public LP nativeSIDToPublications;
+    public LP foreignPublications;
+    public LP nativeAuthorPublications;
+    public LP foreignAuthorPublications;
+    public LP datePublications;
+    public LP nativeLinksPublications;
+    public LP projectCommercialization;
+    public LP nativeProjectCommercialization;
+    public LP nativeProjectToCommercialization;
+    public LP nativeProjectSIDToCommercialization;
+    public LP foreignProjectCommercialization;
+    public LP nativeCommentProjectCommercialization;
+    public LP foreignCommentProjectCommercialization;
+    public LP projectAnalogues;
+    public LP nativeProjectAnalogues;
+    public LP nativeProjectToAnalogues;
+    public LP nativeProjectSIDToAnalogues;
+    public LP foreignProjectAnalogues;
+    public LP nativeDescriptionProjectAnalogues;
+    public LP foreignDescriptionProjectAnalogues;
+    public LP nativeCharacteristicsProjectAnalogues;
+    public LP foreignCharacteristicsProjectAnalogues;
+    public LP projectObjectives;
+    public LP nativeProjectObjectives;
+    public LP nativeProjectToObjectives;
+    public LP nativeProjectSIDToObjectives;
+    public LP foreignProjectObjectives;
+    public LP nameNativeSpecialist;
+    public LP nameNativeToSpecialist;
+    public LP nameNativeSIDToSpecialist;
+    public LP nameForeignSpecialist;
+    public LP nativePublications;
     LP nativeEditionPublications;
     LP foreignEditionPublications;
-    LP datePublications;
-    LP nativeLinksPublications;
-    LP projectCommercialization;
-    LP nativeProjectCommercialization;
-    LP foreignProjectCommercialization;
-    LP nativeCommentProjectCommercialization;
-    LP foreignCommentProjectCommercialization;
-    LP projectAnalogues;
-    LP nativeProjectAnalogues;
-    LP foreignProjectAnalogues;
-    LP nativeDescriptionProjectAnalogues;
-    LP foreignDescriptionProjectAnalogues;
-    LP nativeCharacteristicsProjectAnalogues;
-    LP foreignCharacteristicsProjectAnalogues;
-    LP projectObjectives;
-    LP nativeProjectObjectives;
-    LP foreignProjectObjectives;
-    LP nameNativeSpecialist;
-    LP foreignSpecialist;
     LP editR2Project;
     LP foreignProjectMissionProject;
     LP descriptionProjectMission;
@@ -1491,9 +1506,9 @@ public class SkolkovoLogicsModule extends LogicsModule {
         nameNativeContactProject.setMinimumWidth(10);
         nameNativeContactProject.setPreferredWidth(50);
 
-        foreignContactProjec = addDProp(descGroup, "foreignContactProjec", "Contact the project", InsensitiveStringClass.get(2000), project);
-        foreignContactProjec.setMinimumWidth(10);
-        foreignContactProjec.setPreferredWidth(50);
+        nameForeignContactProject = addDProp(descGroup, "nameForeignContactProject", "Contact the project", InsensitiveStringClass.get(2000), project);
+        nameForeignContactProject.setMinimumWidth(10);
+        nameForeignContactProject.setPreferredWidth(50);
 
         phoneContactProject = addDProp(descGroup, "phoneContactProject", "Телефон контактного лица", StringClass.get(50), project);
         emailContactProject = addDProp(descGroup, "emailContactProject", "e-mail контактного лица", StringClass.get(50), project);
@@ -1503,6 +1518,9 @@ public class SkolkovoLogicsModule extends LogicsModule {
         nativeCommentResearch = addDProp(problemGroup, "nativeCommentResearch", "Комментарий, навзвание публикации", InsensitiveStringClass.get(2000), research);
         nativeCommentResearch.setMinimumWidth(10);
         nativeCommentResearch.setPreferredWidth(50);
+
+        nativeCommentToResearch = addAGProp("nativeCommentToResearch", "Исследование (номер комментария, внутренний ID проекта)", nativeCommentResearch, projectResearch);
+        nativeCommentSIDToResearch = addJProp("nativeCommentSIDToResearch", "Исследование (номер комментария, внешний ID проекта)", nativeCommentToResearch, 1, sidToProject, 2);
 
         foreignCommentResearch = addDProp(problemGroup, "foreignCommentResearch", "Comment research", InsensitiveStringClass.get(2000), research);
         foreignCommentResearch.setMinimumWidth(10);
@@ -1517,17 +1535,20 @@ public class SkolkovoLogicsModule extends LogicsModule {
         nativePublications.setMinimumWidth(10);
         nativePublications.setPreferredWidth(50);
 
+        nativeToPublications = addAGProp("nativeToPublications", "Публикация", nativePublications, projectPublications);
+        nativeSIDToPublications = addJProp("nativeSIDToPublications", "Публикация", nativeToPublications, 1, sidToProject, 2);
+
         foreignPublications = addDProp(publicationsGroup, "foreignPublications", "Publications", InsensitiveStringClass.get(2000), publications);
         foreignPublications.setMinimumWidth(10);
         foreignPublications.setPreferredWidth(50);
 
-        nativeAvtorPublications = addDProp(publicationsGroup, "nativeAvtorPublications", "Автор", InsensitiveStringClass.get(500), publications);
-        nativeAvtorPublications.setMinimumWidth(10);
-        nativeAvtorPublications.setPreferredWidth(50);
+        nativeAuthorPublications = addDProp(publicationsGroup, "nativeAuthorPublications", "Автор", InsensitiveStringClass.get(500), publications);
+        nativeAuthorPublications.setMinimumWidth(10);
+        nativeAuthorPublications.setPreferredWidth(50);
 
-        foreignAvtorPublications = addDProp(publicationsGroup, "foreignAvtorPublications", "Author", InsensitiveStringClass.get(2000), publications);
-        foreignAvtorPublications.setMinimumWidth(10);
-        foreignAvtorPublications.setPreferredWidth(50);
+        foreignAuthorPublications = addDProp(publicationsGroup, "foreignAuthorPublications", "Author", InsensitiveStringClass.get(2000), publications);
+        foreignAuthorPublications.setMinimumWidth(10);
+        foreignAuthorPublications.setPreferredWidth(50);
 
         nativeEditionPublications = addDProp(publicationsGroup, "nativeEditionPublications", "Издание", InsensitiveStringClass.get(500), publications);
         nativeEditionPublications.setMinimumWidth(10);
@@ -1547,6 +1568,9 @@ public class SkolkovoLogicsModule extends LogicsModule {
         nativeProjectCommercialization = addDProp(commercializationGroup, "nativeProjectCommercialization", "Основные направления коммерциализации проекта", InsensitiveStringClass.get(2000), commercialization);
         nativeProjectCommercialization.setMinimumWidth(10);
         nativeProjectCommercialization.setPreferredWidth(50);
+
+        nativeProjectToCommercialization = addAGProp("nativeProjectToCommercialization", "Коммерциализация", nativeProjectCommercialization, projectCommercialization);
+        nativeProjectSIDToCommercialization = addJProp("nativeProjectSIDToCommercialization", "Коммерциализация", nativeProjectToCommercialization, 1, sidToProject, 2);
 
         foreignProjectCommercialization = addDProp(commercializationGroup, "foreignProjectCommercialization", "Main areas of commercialization of the project", InsensitiveStringClass.get(2000), commercialization);
         foreignProjectCommercialization.setMinimumWidth(10);
@@ -1568,7 +1592,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         foreignMarketTrendsProject.setMinimumWidth(10);
         foreignMarketTrendsProject.setPreferredWidth(50);
 
-        linksMarketTrendsProject = addDProp(problemGroup, "linksMarketTrendsProject", "Ссылки на рыночные трендны", InsensitiveStringClass.get(2000), project);
+        linksMarketTrendsProject = addDProp(problemGroup, "linksMarketTrendsProject", "Ссылки на рыночные тренды", InsensitiveStringClass.get(2000), project);
         linksMarketTrendsProject.setMinimumWidth(10);
         linksMarketTrendsProject.setPreferredWidth(50);
 
@@ -1606,6 +1630,9 @@ public class SkolkovoLogicsModule extends LogicsModule {
         nativeProjectAnalogues.setMinimumWidth(10);
         nativeProjectAnalogues.setPreferredWidth(50);
 
+        nativeProjectToAnalogues = addAGProp("nativeProjectToAnalogues", "Аналоги", nativeProjectAnalogues, projectAnalogues);
+        nativeProjectSIDToAnalogues = addJProp("nativeProjectSIDToAnalogues", "Аналоги", nativeProjectToAnalogues, 1, sidToProject, 2);
+
         foreignProjectAnalogues = addDProp(analoguesGroup, "foreignProjectAnalogues", "Analogues of the project and its benefit", InsensitiveStringClass.get(2000), analogues);
         foreignProjectAnalogues.setMinimumWidth(10);
         foreignProjectAnalogues.setPreferredWidth(50);
@@ -1638,9 +1665,9 @@ public class SkolkovoLogicsModule extends LogicsModule {
         nativeCompaniesAnaloguesProject.setMinimumWidth(10);
         nativeCompaniesAnaloguesProject.setPreferredWidth(50);
 
-        foreignCompaniesAnaloguesProjec = addDProp(analoguesGroup, "foreignCompaniesAnaloguesProjec", "Companies engaged in similar or closely related development", InsensitiveStringClass.get(2000), project);
-        foreignCompaniesAnaloguesProjec.setMinimumWidth(10);
-        foreignCompaniesAnaloguesProjec.setPreferredWidth(50);
+        foreignCompaniesAnaloguesProject = addDProp(analoguesGroup, "foreignCompaniesAnaloguesProject", "Companies engaged in similar or closely related development", InsensitiveStringClass.get(2000), project);
+        foreignCompaniesAnaloguesProject.setMinimumWidth(10);
+        foreignCompaniesAnaloguesProject.setPreferredWidth(50);
 
         nativeMarketIntroductionProject = addDProp(analoguesGroup, "nativeMarketIntroductionProject", "Рынки для реализации данного проекта", InsensitiveStringClass.get(2000), project);
         nativeMarketIntroductionProject.setMinimumWidth(10);
@@ -1674,7 +1701,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         nativeGrantsProject.setMinimumWidth(10);
         nativeGrantsProject.setPreferredWidth(50);
 
-        foreignGrantsProject = addDProp(historyGroup, "foreignGrantsProject", "Have lichleny project team grants", InsensitiveStringClass.get(2000), project);
+        foreignGrantsProject = addDProp(historyGroup, "foreignGrantsProject", "Have the project team grants", InsensitiveStringClass.get(2000), project);
         foreignGrantsProject.setMinimumWidth(10);
         foreignGrantsProject.setPreferredWidth(50);
 
@@ -1708,6 +1735,9 @@ public class SkolkovoLogicsModule extends LogicsModule {
         nativeProjectObjectives.setMinimumWidth(10);
         nativeProjectObjectives.setPreferredWidth(50);
 
+        nativeProjectToObjectives = addAGProp("nameNativeToObjectives", "Цели проекта", nativeProjectObjectives, projectObjectives);
+        nativeProjectSIDToObjectives = addJProp("nativeProjectSIDToObjectives", "Цели проекта", nativeProjectToObjectives, 1, sidToProject, 2);
+
         foreignProjectObjectives = addDProp(projectmissionGroup, "foreignProjectObjectives", "Describe the key objectives of the project", InsensitiveStringClass.get(2000), objectives);
         foreignProjectObjectives.setMinimumWidth(10);
         foreignProjectObjectives.setPreferredWidth(50);
@@ -1727,9 +1757,12 @@ public class SkolkovoLogicsModule extends LogicsModule {
         nameNativeSpecialist.setMinimumWidth(10);
         nameNativeSpecialist.setPreferredWidth(50);
 
-        foreignSpecialist = addDProp(teamGroup, "foreignSpecialist", "The name of the specialist", InsensitiveStringClass.get(2000), specialist);
-        foreignSpecialist.setMinimumWidth(10);
-        foreignSpecialist.setPreferredWidth(50);
+        nameNativeToSpecialist = addAGProp("nameNativeToSpecialist", "Специалист", nameNativeSpecialist, projectSpecialist);
+        nameNativeSIDToSpecialist = addJProp("nameNativeSIDToSpecialist", "Аналоги", nameNativeToSpecialist, 1, sidToProject, 2);
+        
+        nameForeignSpecialist = addDProp(teamGroup, "nameForeignSpecialist", "The name of the specialist", InsensitiveStringClass.get(2000), specialist);
+        nameForeignSpecialist.setMinimumWidth(10);
+        nameForeignSpecialist.setPreferredWidth(50);
 
         nativePostSpecialist = addDProp(teamGroup, "nativePostSpecialist", "Роль в прокте, должность в компании", InsensitiveStringClass.get(2000), specialist);
         nativePostSpecialist.setMinimumWidth(10);
@@ -2056,6 +2089,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         ownerTypeToSID = addAGProp("ownerTypeToSID", "SID типа правообладателя", addJProp(baseLM.and1, baseLM.classSID, 1, is(ownerType), 1));
         projectTypeToSID = addAGProp("projectTypeToSID", "SID типа проекта", addJProp(baseLM.and1, baseLM.classSID, 1, is(projectType), 1));
         projectActionToSID = addAGProp("projectActionToSID", "SID текущего статуса", addJProp(baseLM.and1, baseLM.classSID, 1, is(projectAction), 1));
+        projectMissionToSID = addAGProp("projectMissionToSID", "SID назначения", addJProp(baseLM.and1, baseLM.classSID, 1, is(projectMission), 1));
         fileIntentionOwnerPatent = addDProp("fileIntentionOwnerPatent", "Файл документа о передаче права", CustomFileClass.instance, patent);
         loadFileIntentionOwnerPatent = addLFAProp(baseGroup, "Загрузить файл документа о передаче права", fileIntentionOwnerPatent);
         openFileIntentionOwnerPatent = addOFAProp(baseGroup, "Открыть файл документа о передаче права", fileIntentionOwnerPatent);
