@@ -151,11 +151,13 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
     StaticCustomClass voteResult;
     StaticCustomClass projectStatus;
+    StaticCustomClass typeProjectStatus;
 
     StaticCustomClass formalControlResult;
     ConcreteCustomClass formalControl;
     StaticCustomClass legalCheckResult;
     StaticCustomClass originalDocsCheckResult;
+    StaticCustomClass projectSchedule;
     ConcreteCustomClass legalCheck;
     ConcreteCustomClass originalDocsCheck;
     ConcreteCustomClass currency;
@@ -288,6 +290,10 @@ public class SkolkovoLogicsModule extends LogicsModule {
                      "Оставлена без рассмотрения", "Неполный пакет оригиналов документов", "Пакет оригиналов документов не пополнен в срок", "Предоставлены документы в бумажном виде", "Решение передано на подпись", "Решение подписано", "Документы переданы в Финансовый департамент",
                      "Внесен в реестр участников", "Подготовлено свидетельство участника", "Выдано свидетельство участника"});
 
+        typeProjectStatus = addStaticClass("typeProjectStatus", "Тип статуса проекта",
+                new String[]{"inConsideration", "requestMaterials", "positiveResult", "negativeResult"},
+                new String[]{"На рассмотрении в Фонде", "Запрос материалов у Заявителя", "Положительный результат", "Отрицательный результат"});
+
         documentType = addStaticClass("documentType", "Тип документа",
                 new String[]{"application", "resume", "techdesc", "forres", "ipres", "roadmap"},
                 new String[]{"Анкета", "Резюме", "Техническое описание", "Резюме иностранного специалиста", "Заявление IP", "Дорожная карта"});
@@ -311,6 +317,10 @@ public class SkolkovoLogicsModule extends LogicsModule {
         application = addAbstractClass("application", "Заявка", baseClass);
         applicationPreliminary = addConcreteClass("applicationPreliminary", "Заявка на предварительную экспертизу", application);
         applicationStatus = addConcreteClass("applicationStatus", "Заявка на статус участника", application);
+
+        projectSchedule = addStaticClass("projectSchedule", "Регламент проекта",
+                new String[]{"R1", "R2"},
+                new String[]{"Старый регламент", "Новый регламент"});
     }
 
     @Override
@@ -432,6 +442,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP loadExtractClaimer, openExtractClaimer;
     public LP OGRNClaimer;
     public LP INNClaimer;
+    LP projectScheduleProject;
+    LP regulationsProject, nameRegulationsProject;
     LP isR2Project, isR1Project;
     LP revisionVote;
     LP projectVote, claimerVote, nameNativeProjectVote, nameForeignProjectVote;
@@ -1260,6 +1272,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP dateSentForSignatureStatusProject, dateSignedStatusProject, dateSentToFinDepStatusProject, dateSubmittedToRegisterStatusProject, datePreparedCertificateStatusProject, dateCertifiedStatusProject;
     LP dateInStatusProject;
     LP overdueDateStatusProject, normalPeriodStatus, normalPeriodStatusProject, normalPeriodStatusApplication, isWorkDaysNormalPeriodStatus, quantityDaysToOverdueDateStatusProject;
+    LP isFinalProjectStatus;
+    LP typeProjectStatusProjectStatus, nameTypeProjectStatusProjectStatus;
     LP dateInStatusApplication, overdueDateStatusApplication, quantityDaysToOverdueDateStatusApplication;
  //   LP dateSubmittedToRegisterProjectApplication;
 
@@ -1346,8 +1360,15 @@ public class SkolkovoLogicsModule extends LogicsModule {
         OGRNClaimer = addDProp(legalDataGroup, "OGRNClaimer", "ОГРН", StringClass.get(13), claimer);
         INNClaimer = addDProp(legalDataGroup, "INNClaimer", "ИНН", StringClass.get(12), claimer);
 
-        isR2Project = addDProp(baseGroup, "isR2Project", "Новый регламент", LogicalClass.instance, project);
-        isR1Project = addJProp(baseGroup, "isR1Project", "Старый регламент", baseLM.andNot1, addCProp(LogicalClass.instance, true, project), 1, isR2Project, 1);
+        projectScheduleProject = addDProp(idGroup, "projectScheduleProject", "Регламент проекта (ИД)", projectSchedule, project);
+        regulationsProject = addSUProp("regulationsProject", "regulationsProject", Union.OVERRIDE, addCProp(projectSchedule, "R1", project), projectScheduleProject);
+        nameRegulationsProject = addJProp(baseGroup, "nameRegulationsProject", "Регламент проекта", baseLM.name, regulationsProject, 1);
+        nameRegulationsProject.setMinimumCharWidth(10);
+        nameRegulationsProject.setPreferredCharWidth(20);
+      //  isR2Project = addDProp(baseGroup, "isR2Project", "Новый регламент", LogicalClass.instance, project);
+      //  isR1Project = addJProp(baseGroup, "isR1Project", "Старый регламент", baseLM.andNot1, addCProp(LogicalClass.instance, true, project), 1, isR2Project, 1);
+        isR2Project = addJProp(baseGroup, "isR2Project", "Новый регламент", baseLM.equals2, regulationsProject, 1, addCProp(projectSchedule, "R2"));
+        isR1Project = addJProp(baseGroup, "isR1Project", "Старый регламент", baseLM.equals2, regulationsProject, 1, addCProp(projectSchedule, "R1"));
 
         revisionVote = addCUProp(baseGroup, "revisionVote", "Регламент", addCProp(StringClass.get(3), "R1", voteR1), addCProp(StringClass.get(3), "R2", voteR2));
 
@@ -3323,6 +3344,11 @@ public class SkolkovoLogicsModule extends LogicsModule {
         normalPeriodStatusProject = addJProp(baseGroup, true, "normalPeriodStatusProject", "Нормативный срок в статусе", normalPeriodStatus, statusProject, 1);
         normalPeriodStatusProject.setFixedCharWidth(2);
 
+        isFinalProjectStatus = addDProp(baseGroup, "isFinalProjectStatus", "Завершающий статус", LogicalClass.instance, projectStatus);
+
+        typeProjectStatusProjectStatus = addDProp(idGroup, "typeProjectStatusProjectStatus", "Тип статуса (ИД)", typeProjectStatus, projectStatus);
+        nameTypeProjectStatusProjectStatus = addJProp(baseGroup, "nameTypeProjectStatusProjectStatus", "Тип статуса", baseLM.name, typeProjectStatusProjectStatus, 1);
+
         isWorkDaysNormalPeriodStatus = addDProp(baseGroup, "isWorkDaysNormalPeriodStatus", "В рабочих днях", LogicalClass.instance, projectStatus);
         overdueDateStatusProject = addIfElseUProp(baseGroup, "overdueDateStatusProject", true, "Дата просрочки статуса",
                 addJProp(baseLM.jumpWorkdays, baseLM.defaultCountry, dateInStatusProject, 1, normalPeriodStatusProject, 1),
@@ -3974,7 +4000,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
                     nameNativeShortFinalClusterProject, nameNativeClaimerProject, nameForeignClaimerProject, emailClaimerProject,
                     nameStatusProject, dateInStatusProject, normalPeriodStatusProject, quantityDaysToOverdueDateStatusProject, formLogNameStatusProject, nameProjectActionProject, updateDateProject, autoGenerateProject,
                     inactiveProject, quantityClusterProject, quantityClusterVotedProject, quantityVoteProject, generateVoteProject,
-                    isR2Project);
+                    nameRegulationsProject);
 
             addPropertyDraw(objProject, isOtherClusterProject, nativeSubstantiationOtherClusterProject, foreignSubstantiationOtherClusterProject);
             addPropertyDraw(objProject, registerGroup);
