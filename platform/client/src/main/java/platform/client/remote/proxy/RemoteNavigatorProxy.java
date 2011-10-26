@@ -121,22 +121,22 @@ public class RemoteNavigatorProxy<T extends RemoteNavigatorInterface>
         return target.getClientCallBack();
     }
 
-    @Override
+    @ImmutableMethod
     public boolean showDefaultForms() throws RemoteException {
         return target.showDefaultForms();
     }
 
-    @Override
+    @ImmutableMethod
     public ArrayList<String> getDefaultForms() throws RemoteException {
         return target.getDefaultForms();
     }
 
-    @Override
+    @ImmutableMethod
     public byte[] getNavigatorTree() throws RemoteException {
         return target.getNavigatorTree();
     }
 
-    @Override
+    @ImmutableMethod
     public byte[] getWindows() throws RemoteException {
         return target.getWindows();
     }

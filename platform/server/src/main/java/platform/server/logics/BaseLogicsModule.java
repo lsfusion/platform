@@ -600,7 +600,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
         permissionUserRoleForm = addDProp(baseGroup, "permissionUserRoleForm", getString("logics.forms.prohibit.form"), LogicalClass.instance, userRole, navigatorElement);
         permissionUserForm = addJProp(baseGroup, "permissionUserForm", getString("logics.forms.prohibit.form"), permissionUserRoleForm, userMainRole, 1, 2);
-        userRoleFormDefaultNumber = addDProp(baseGroup, "userRoleFormDefaultNumber", getString("logics.forms.prohibit.form"), IntegerClass.instance, userRole, navigatorElement);
+        userRoleFormDefaultNumber = addDProp(baseGroup, "userRoleFormDefaultNumber", getString("logics.forms.default.number"), IntegerClass.instance, userRole, navigatorElement);
         userFormDefaultNumber = addJProp(baseGroup, "userFormDefaultNumber", getString("logics.forms.default.number"), userRoleFormDefaultNumber, userMainRole, 1, 2);
         userDefaultForms = addJProp(baseGroup, "userDefaultForms", getString("logics.user.displaying.forms.by.default"), userRoleDefaultForms, userMainRole, 1);
 //        permissionUserForm = addDProp(baseGroup, "permissionUserForm", "Запретить форму", LogicalClass.instance, user, navigatorElement);
@@ -1310,6 +1310,8 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         public FormView createDefaultRichDesign() {
             DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign();
 
+            design.defaultOrders.put(design.get(getPropertyDraw(numberNavigatorElement, objTreeForm.groupTo)), true);
+
             ContainerView container = design.createContainer();
             container.tabbedPane = true;
 
@@ -1433,9 +1435,9 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
             objNewDate.groupTo.setSingleClassView(ClassViewType.PANEL);
 
             addPropertyDraw(objCountry, baseGroup);
-            addPropertyDraw(objDays, baseGroup);
+            addPropertyDraw(objDays, baseLM.objectValue);
             addPropertyDraw(isDayOffCountryDate, objCountry, objDays);
-            addPropertyDraw(objNewDate, baseGroup);
+            addPropertyDraw(objNewDate, baseLM.objectValue);
             addPropertyDraw(isDayOffCountryDate, objCountry, objNewDate);
 
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(isDayOffCountryDate, objCountry, objDays)));

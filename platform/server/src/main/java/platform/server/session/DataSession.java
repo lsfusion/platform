@@ -528,6 +528,17 @@ public class DataSession extends MutableObject implements SessionChanges, ExprCh
         return !add.isEmpty() || !remove.isEmpty() || !data.isEmpty() || news!=null;
     }
 
+    public boolean hasStoredChanges() {
+        if (!add.isEmpty() || !remove.isEmpty() || news != null)
+            return true;
+
+        for (DataProperty property : data.keySet())
+            if (property.isStored())
+                return true;
+
+        return false;
+    }
+
     public void changeClass(Set<CustomClass> addClasses, Set<CustomClass> removeClasses, ConcreteObjectClass toClass, DataObject change, SQLSession session, boolean groupLast) throws SQLException {
         for(CustomClass addClass : addClasses) {
             SingleKeyNoPropertyUsage addTable = add.get(addClass);

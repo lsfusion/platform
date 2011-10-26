@@ -1147,7 +1147,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends IncrementProps<Pr
         }
 
         if (dataChanged)
-            result.dataChanged = session.hasChanges();
+            result.dataChanged = session.hasStoredChanges();
 
         // сбрасываем все пометки
         for (GroupObjectInstance group : groups) {
