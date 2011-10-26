@@ -1261,6 +1261,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP dateInStatusProject;
     LP overdueDateStatusProject, normalPeriodStatus, normalPeriodStatusProject, normalPeriodStatusApplication, isWorkDaysNormalPeriodStatus, quantityDaysToOverdueDateStatusProject;
     LP dateInStatusApplication, overdueDateStatusApplication, quantityDaysToOverdueDateStatusApplication;
+ //   LP dateSubmittedToRegisterProjectApplication;
 
     @Override
     public void initProperties() {
@@ -3153,6 +3154,9 @@ public class SkolkovoLogicsModule extends LogicsModule {
         nameProjectActionApplication = addJProp(baseGroup, "nameProjectActionApplication", "Тип заявки", baseLM.name, projectActionApplication, 1);
 
         projectApplication = addDProp(idGroup, "projectApplication", "Проект (ИД)", project, application);
+
+//        dateSubmittedToRegisterProjectApplication = addJProp("dateSubmittedToRegisterProjectApplication", "дата внесения в реестр участников", dateSubmittedToRegisterProject, projectApplication, 1);
+
 
         projectApplicationPreliminary = addJProp(idGroup, "projectApplicationPreliminary", "Проект (ИД)", baseLM.and1, projectApplication, 1, is(applicationPreliminary), 1);
         projectApplicationStatus = addJProp(idGroup, "projectApplicationStatus", "Проект (ИД)", baseLM.and1, projectApplication, 1, is(applicationStatus), 1);
@@ -5273,17 +5277,69 @@ public class SkolkovoLogicsModule extends LogicsModule {
     }
 
     private class ApplicationsStatusTimeFormEntity extends FormEntity<SkolkovoBusinessLogics> {
+ //       private ObjectEntity objDateFrom;
+//        private ObjectEntity objDateTo;
+//        private ObjectEntity objApplicationStatus;
+
+
         public ApplicationsStatusTimeFormEntity(NavigatorElement parent, String sID) {
             super(parent, sID, "Средний срок рассмотрения заявки на статус участника");
+
+ //           GroupObjectEntity gobjDates = new GroupObjectEntity(1, "date");
+  //          objDateFrom = new ObjectEntity(2, "dateFrom", DateClass.instance, "Дата (с)");
+  //          objDateTo = new ObjectEntity(3, "dateTo", DateClass.instance, "Дата (по)");
+  //          gobjDates.add(objDateFrom);
+  //          gobjDates.add(objDateTo);
+
+ //           addGroup(gobjDates);
+//            gobjDates.setSingleClassView(ClassViewType.PANEL);
+
+//            addPropertyDraw(objDateFrom, baseLM.objectValue);
+ //           addPropertyDraw(objDateTo, baseLM.objectValue);
+  //          addPropertyDraw(objDateFrom, objDateTo, applicationsSubmitDateDate, averageWeekApplSubmitDateDate);
+  //          objApplicationStatus = addSingleGroupObject(4, "applicationStatus", applicationStatus, "Заявка", nameNativeClaimerApplication, dateApplication, dateSubmittedToRegisterProjectApplication, nameProjectActionApplication, nameNativeProjectApplication, daysClaimerApplication, quantityStatusVoteProjectApplication, officialNameStatusApplication);
+
         }
     }
 
     private class ApplicationsListFormEntity extends FormEntity<SkolkovoBusinessLogics> {
-        public ApplicationsListFormEntity(NavigatorElement parent, String sID) {
-            super(parent, sID, "Заявки, поступившие в отчетный период");
-        }
-    }
 
+        private ObjectEntity objDateFrom;
+        private ObjectEntity objDateTo;
+        private ObjectEntity objApplication;
+
+         public ApplicationsListFormEntity(NavigatorElement parent, String sID) {
+            super(parent, sID, "Заявки, поступившие в отчетный период");
+
+            GroupObjectEntity gobjDates = new GroupObjectEntity(1, "date");
+            objDateFrom = new ObjectEntity(2, "dateFrom", DateClass.instance, "Дата (с)");
+            objDateTo = new ObjectEntity(3, "dateTo", DateClass.instance, "Дата (по)");
+            gobjDates.add(objDateFrom);
+            gobjDates.add(objDateTo);
+
+            addGroup(gobjDates);
+            gobjDates.setSingleClassView(ClassViewType.PANEL);
+
+            addPropertyDraw(objDateFrom, baseLM.objectValue);
+            addPropertyDraw(objDateTo, baseLM.objectValue);
+
+            objApplication = addSingleGroupObject(4, "application", application, "Заявка");
+            addPropertyDraw(objApplication, dateApplication, nameNativeClaimerApplication, nameProjectActionApplication, nameNativeProjectApplication, officialNameStatusApplication, nameNativeShortAggregateClusterApplication);
+
+            addPropertyDraw(objDateFrom, objDateTo, applicationsSubmitDateDate);
+            addFixedFilter(new NotFilterEntity(new NotNullFilterEntity(addPropertyObject(inactiveApplication, objApplication))));
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(dateApplication, objApplication), Compare.LESS_EQUALS, objDateTo));
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(dateApplication, objApplication), Compare.GREATER_EQUALS, objDateFrom));
+
+         }
+
+         @Override
+         public FormView createDefaultRichDesign() {
+            DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign();
+            design.defaultOrders.put(design.get(getPropertyDraw(dateApplication, objApplication)), true);
+            return design;
+         }
+    }
     public class GenerateDocumentsActionProperty extends ActionProperty {
 
         private final ClassPropertyInterface projectInterface;
