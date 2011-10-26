@@ -1,6 +1,7 @@
 package platform.client.descriptor;
 
 import platform.base.BaseUtils;
+import platform.base.OrderedMap;
 import platform.base.context.ApplicationContext;
 import platform.base.context.ContextIdentityObject;
 import platform.base.context.IncrementView;
@@ -12,10 +13,7 @@ import platform.client.descriptor.filter.FilterDescriptor;
 import platform.client.descriptor.filter.RegularFilterGroupDescriptor;
 import platform.client.descriptor.property.PropertyDescriptor;
 import platform.client.descriptor.property.PropertyInterfaceDescriptor;
-import platform.client.logics.ClientComponent;
-import platform.client.logics.ClientContainer;
-import platform.client.logics.ClientForm;
-import platform.client.logics.ClientFunction;
+import platform.client.logics.*;
 import platform.client.logics.classes.ClientClass;
 import platform.client.serialization.ClientIdentitySerializable;
 import platform.client.serialization.ClientSerializationPool;
@@ -41,6 +39,7 @@ public class FormDescriptor extends ContextIdentityObject implements ClientIdent
     public List<RegularFilterGroupDescriptor> regularFilterGroups = new ArrayList<RegularFilterGroupDescriptor>();
     public Map<PropertyDrawDescriptor, GroupObjectDescriptor> forceDefaultDraw = new HashMap<PropertyDrawDescriptor, GroupObjectDescriptor>();
     public Map<Object, List<PropertyObjectDescriptor>> eventActions = new HashMap<Object, List<PropertyObjectDescriptor>>();
+    public OrderedMap<PropertyDrawDescriptor, Boolean> defaultOrders = new OrderedMap<PropertyDrawDescriptor, Boolean>();
 
     // по сути IncrementLazy
     IncrementView allPropertiesLazy;
@@ -225,7 +224,11 @@ public class FormDescriptor extends ContextIdentityObject implements ClientIdent
         pool.serializeCollection(outStream, regularFilterGroups);
         pool.serializeMap(outStream, forceDefaultDraw);
 
-
+        outStream.writeInt(defaultOrders.size());
+        for (Map.Entry<PropertyDrawDescriptor, Boolean> entry : defaultOrders.entrySet()) {
+            pool.serializeObject(outStream, entry.getKey(), serializationType);
+            outStream.writeBoolean(entry.getValue());
+        }
 
         outStream.writeInt(eventActions.size());
         for (Map.Entry<Object, List<PropertyObjectDescriptor>> entry : eventActions.entrySet()) {
@@ -257,6 +260,12 @@ public class FormDescriptor extends ContextIdentityObject implements ClientIdent
         regularFilterGroups = pool.deserializeList(inStream);
         forceDefaultDraw = pool.deserializeMap(inStream);
 
+        defaultOrders = new OrderedMap<PropertyDrawDescriptor, Boolean>();
+        int orderCount = inStream.readInt();
+        for (int i = 0; i < orderCount; i++) {
+            PropertyDrawDescriptor order = pool.deserializeObject(inStream);
+            defaultOrders.put(order, inStream.readBoolean());
+        }
 
         eventActions = new HashMap<Object, List<PropertyObjectDescriptor>>();
         int length = inStream.readInt();
@@ -556,6 +565,18 @@ public class FormDescriptor extends ContextIdentityObject implements ClientIdent
         client.caption = caption;
 
         updateDependency(this, "caption");
+    }
+
+    public void setDefaultOrders(OrderedMap<PropertyDrawDescriptor, Boolean> defaultOrders) {
+        OrderedMap<ClientPropertyDraw, Boolean> clientOrders = new OrderedMap<ClientPropertyDraw, Boolean>();
+        for (Map.Entry<PropertyDrawDescriptor, Boolean> entry : defaultOrders.entrySet()) {
+            clientOrders.put(entry.getKey().client, entry.getValue());
+        }
+
+        this.defaultOrders = defaultOrders;
+        client.defaultOrders = clientOrders;
+
+        context.updateDependency(this, "defaultOrders");
     }
 
     public String getCaption() {

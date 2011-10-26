@@ -19,6 +19,7 @@ import platform.server.form.instance.FormInstance;
 import platform.server.form.navigator.NavigatorElement;
 import platform.server.form.view.DefaultFormView;
 import platform.server.form.view.FormView;
+import platform.server.form.view.PropertyDrawView;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.ServerResourceBundle;
 import platform.server.logics.linear.LP;
@@ -56,6 +57,7 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
     public Set<FilterEntity> fixedFilters = new HashSet<FilterEntity>();
     public List<RegularFilterGroupEntity> regularFilterGroups = new ArrayList<RegularFilterGroupEntity>();
 
+    public OrderedMap<PropertyDrawEntity<?>,Boolean> defaultOrders = new OrderedMap<PropertyDrawEntity<?>, Boolean>();
     public OrderedMap<OrderEntity<?>, Boolean> fixedOrders = new OrderedMap<OrderEntity<?>, Boolean>();
 
     public boolean isPrintForm;
@@ -627,6 +629,12 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         pool.serializeCollection(outStream, regularFilterGroups);
         pool.serializeMap(outStream, forceDefaultDraw);
 
+        outStream.writeInt(defaultOrders.size());
+        for (Map.Entry<PropertyDrawEntity<?>, Boolean> entry : defaultOrders.entrySet()) {
+            pool.serializeObject(outStream, entry.getKey(), serializationType);
+            outStream.writeBoolean(entry.getValue());
+        }
+
         outStream.writeInt(eventActions.size());
         for (Map.Entry<Object, List<PropertyObjectEntity>> entry : eventActions.entrySet()) {
             Object event = entry.getKey();
@@ -656,6 +664,12 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         fixedFilters = pool.deserializeSet(inStream);
         regularFilterGroups = pool.deserializeList(inStream);
         forceDefaultDraw = pool.deserializeMap(inStream);
+
+        int orderCount = inStream.readInt();
+        for (int i = 0; i < orderCount; i++) {
+            PropertyDrawEntity order = pool.deserializeObject(inStream);
+            defaultOrders.put(order, inStream.readBoolean());
+        }
 
         eventActions = new HashMap<Object, List<PropertyObjectEntity>>();
         int length = inStream.readInt();
@@ -866,18 +880,25 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         property.readOnly = readOnly;
     }
 
+    public void addDefaultOrder(LP lp, boolean ascending) {
+        addDefaultOrder(getPropertyDraw(lp), ascending);
+    }
+
+    public void addDefaultOrder(PropertyDrawEntity property, boolean ascending) {
+        defaultOrders.put(property, ascending);
+    }
+
     public void setPageSize(int pageSize) {
         for (GroupObjectEntity group : groups)
             group.pageSize = pageSize;
     }
 
     public void setNeedVerticalScroll(boolean scroll) {
-        DefaultFormView view = null;
         if (richDesign instanceof DefaultFormView) {
-            view = (DefaultFormView) richDesign;
-        }
-        for (GroupObjectEntity entity : groups) {
-            view.get(entity).needVerticalScroll = scroll;
+            DefaultFormView view = (DefaultFormView) richDesign;
+            for (GroupObjectEntity entity : groups) {
+                view.get(entity).needVerticalScroll = scroll;
+            }
         }
     }
 

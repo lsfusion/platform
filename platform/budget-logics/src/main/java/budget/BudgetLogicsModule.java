@@ -13,7 +13,6 @@ import platform.server.form.entity.filter.CompareFilterEntity;
 import platform.server.form.entity.filter.NotNullFilterEntity;
 import platform.server.form.navigator.NavigatorElement;
 import platform.server.form.view.DefaultFormView;
-import platform.server.form.view.FormView;
 import platform.server.logics.BaseLogicsModule;
 import platform.server.logics.LogicsModule;
 import platform.server.logics.linear.LP;
@@ -562,14 +561,8 @@ public class BudgetLogicsModule extends LogicsModule {
             ObjectEntity objInvestor = addSingleGroupObject(investor, baseGroup, sumInvestmentInvestor, shareInvestor);
 
             addPropertyDraw(investmentTotal);
-        }
 
-        @Override
-        public FormView createDefaultRichDesign() {
-            DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign();
-
-            design.defaultOrders.put(design.get(getPropertyDraw(baseLM.date)), true);
-            return design;
+            addDefaultOrder(baseLM.date, true);
         }
     }
 

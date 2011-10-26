@@ -9,7 +9,7 @@ import java.util.List;
 
 public class RegularFilterGroupInstance implements Serializable {
 
-    RegularFilterGroupEntity entity;
+    public RegularFilterGroupEntity entity;
 
     public int getID() {
         return entity.ID;

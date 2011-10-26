@@ -37,10 +37,16 @@
             <artifactId>smartgwt</artifactId>
         </dependency>
         <dependency>
+            <groupId>com.google.code.gwt-log</groupId>
+            <artifactId>gwt-log</artifactId>
+            <version>3.1.2</version>
+        </dependency>
+        <dependency>
             <groupId>net.customware.gwt.dispatch</groupId>
             <artifactId>gwt-dispatch</artifactId>
             <version>1.2.0</version>
         </dependency>
+
         <dependency>
             <groupId>by.luxsoft.platform</groupId>
             <artifactId>api</artifactId>

@@ -3945,53 +3945,54 @@ public class VEDLogicsModule extends LogicsModule {
         private ObjectEntity objShop;
 
         protected DocumentArticleFormEntity(NavigatorElement parent, String sID) {
-                super(parent, sID, "Операции с товарами");
+            super(parent, sID, "Операции с товарами");
 
-                objArt = addSingleGroupObject(article, baseLM.barcode, baseLM.name, nameArticleGroupArticle, nameBrendArticle, nameCountryArticle, nameUnitOfMeasureArticle);
+            objArt = addSingleGroupObject(article, baseLM.barcode, baseLM.name, nameArticleGroupArticle, nameBrendArticle, nameCountryArticle, nameUnitOfMeasureArticle);
 
-                objShop = addSingleGroupObject(shop, baseLM.objectValue, baseLM.name, shopFormat);
-                addPropertyDraw(articleFreeQuantity, objShop, objArt);
+            objShop = addSingleGroupObject(shop, baseLM.objectValue, baseLM.name, shopFormat);
+            addPropertyDraw(articleFreeQuantity, objShop, objArt);
 
-                GroupObjectEntity gobjDates = new GroupObjectEntity(genID());
-                ObjectEntity dateFrom = new ObjectEntity(genID(), DateClass.instance, "Дата (с)");
-                ObjectEntity dateTo = new ObjectEntity(genID(), DateClass.instance, "Дата (по)");
-                gobjDates.add(dateFrom);
-                gobjDates.add(dateTo);
+            GroupObjectEntity gobjDates = new GroupObjectEntity(genID());
+            ObjectEntity dateFrom = new ObjectEntity(genID(), DateClass.instance, "Дата (с)");
+            ObjectEntity dateTo = new ObjectEntity(genID(), DateClass.instance, "Дата (по)");
+            gobjDates.add(dateFrom);
+            gobjDates.add(dateTo);
 
-                addGroup(gobjDates);
-                gobjDates.banClassView.addAll(BaseUtils.toList(ClassViewType.GRID, ClassViewType.HIDE));
-                gobjDates.initClassView = ClassViewType.PANEL;
+            addGroup(gobjDates);
+            gobjDates.banClassView.addAll(BaseUtils.toList(ClassViewType.GRID, ClassViewType.HIDE));
+            gobjDates.initClassView = ClassViewType.PANEL;
 
-                addPropertyDraw(dateFrom, baseLM.objectValue);
-                addPropertyDraw(dateTo, baseLM.objectValue);
-
-
-                objDoc = addSingleGroupObject(order, baseLM.objectValue, baseLM.objectClassName);
-                addPropertyDraw(nameSubjectIncOrder, objDoc).forceViewType = ClassViewType.GRID;
-                addPropertyDraw(priceOrderArticle, objDoc, objArt).forceViewType = ClassViewType.GRID;
-
-                addPropertyDraw(baseLM.date, objDoc);
+            addPropertyDraw(dateFrom, baseLM.objectValue);
+            addPropertyDraw(dateTo, baseLM.objectValue);
 
 
-                addPropertyDraw(articleDocQuantity, objDoc, objArt);
+            objDoc = addSingleGroupObject(order, baseLM.objectValue, baseLM.objectClassName);
+            addPropertyDraw(nameSubjectIncOrder, objDoc).forceViewType = ClassViewType.GRID;
+            addPropertyDraw(priceOrderArticle, objDoc, objArt).forceViewType = ClassViewType.GRID;
 
-                addFixedFilter(new CompareFilterEntity(addPropertyObject(baseLM.date, objDoc), Compare.GREATER_EQUALS, dateFrom));
-                addFixedFilter(new CompareFilterEntity(addPropertyObject(baseLM.date, objDoc), Compare.LESS_EQUALS, dateTo));
+            addPropertyDraw(baseLM.date, objDoc);
 
-                addFixedFilter(new NotNullFilterEntity(addPropertyObject(articleDocQuantity, objDoc, objArt)));
-                addFixedFilter(new NotNullFilterEntity(addPropertyObject(articleFreeQuantity, objShop, objArt)));
 
-                addFixedFilter(new OrFilterEntity(new CompareFilterEntity(addPropertyObject(nameSubjectOutOrder, objDoc), Compare.EQUALS, addPropertyObject(baseLM.name, objShop)),
-                                                  new CompareFilterEntity(addPropertyObject(nameSubjectIncOrder, objDoc), Compare.EQUALS, addPropertyObject(baseLM.name, objShop))
-                                                                     ));
-            }
+            addPropertyDraw(articleDocQuantity, objDoc, objArt);
+
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(baseLM.date, objDoc), Compare.GREATER_EQUALS, dateFrom));
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(baseLM.date, objDoc), Compare.LESS_EQUALS, dateTo));
+
+            addFixedFilter(new NotNullFilterEntity(addPropertyObject(articleDocQuantity, objDoc, objArt)));
+            addFixedFilter(new NotNullFilterEntity(addPropertyObject(articleFreeQuantity, objShop, objArt)));
+
+            addFixedFilter(new OrFilterEntity(
+                    new CompareFilterEntity(addPropertyObject(nameSubjectOutOrder, objDoc), Compare.EQUALS, addPropertyObject(baseLM.name, objShop)),
+                    new CompareFilterEntity(addPropertyObject(nameSubjectIncOrder, objDoc), Compare.EQUALS, addPropertyObject(baseLM.name, objShop))));
+
+            addDefaultOrder(baseLM.date, true);
+
+        }
 
         @Override
         public DefaultFormView createDefaultRichDesign() {
 
             DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign();
-
-            design.defaultOrders.put(design.get(getPropertyDraw(baseLM.date)), true);
 
             design.get(objShop.groupTo).grid.constraints.fillVertical = 0.5;
 

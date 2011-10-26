@@ -61,7 +61,7 @@ public class DefaultFormView extends FormView {
     public DefaultFormView(FormEntity<?> formEntity) {
         super(formEntity);
 
-        readOnly = formEntity.isReadOnly();
+        readOnly = entity.isReadOnly();
 
         ContainerFactory<ContainerView> containerFactory = new ContainerFactory<ContainerView>() {
             public ContainerView createContainer() {
@@ -78,7 +78,7 @@ public class DefaultFormView extends FormView {
         FormContainerSet<ContainerView, ComponentView> formSet = FormContainerSet.fillContainers(this, containerFactory, functionFactory);
 
         Map<GroupObjectView, ContainerView> filterContainers = new HashMap<GroupObjectView, ContainerView>();
-        for (GroupObjectEntity group : formEntity.groups) {
+        for (GroupObjectEntity group : entity.groups) {
             GroupObjectView clientGroup = new GroupObjectView(idGenerator, group);
 
             mgroupObjects.put(group, clientGroup);
@@ -100,7 +100,7 @@ public class DefaultFormView extends FormView {
             }
         }
 
-        for (TreeGroupEntity treeGroup : formEntity.treeGroups) {
+        for (TreeGroupEntity treeGroup : entity.treeGroups) {
 
             TreeGroupView treeGroupView = new TreeGroupView(this, treeGroup);
 
@@ -115,20 +115,26 @@ public class DefaultFormView extends FormView {
             treeContainers.put(treeGroupView, treeSet.getContainer());
         }
 
-        for (PropertyDrawEntity control : formEntity.propertyDraws) {
+        for (PropertyDrawEntity control : entity.propertyDraws) {
 
             PropertyDrawView clientProperty = new PropertyDrawView(control);
 
-            GroupObjectEntity groupDraw = formEntity.forceDefaultDraw.get(control);
+            GroupObjectEntity groupDraw = entity.forceDefaultDraw.get(control);
             if(groupDraw!=null) {
                 clientProperty.keyBindingGroup = groupDraw;
             } else {
-                groupDraw = control.getToDraw(formEntity);
+                groupDraw = control.getToDraw(entity);
             }
             GroupObjectView groupObject = mgroupObjects.get(groupDraw);
 
             mproperties.put(control, clientProperty);
             properties.add(clientProperty);
+
+            //походу инициализируем порядки по умолчанию
+            Boolean ascending = entity.defaultOrders.get(control);
+            if (ascending != null) {
+                defaultOrders.put(clientProperty, ascending);
+            }
 
             addComponent(groupObject, clientProperty, control.propertyObject.property.getParent());
             order.add(clientProperty);
@@ -136,16 +142,16 @@ public class DefaultFormView extends FormView {
             control.proceedDefaultDesign(this);
         }
 
-        for (RegularFilterGroupEntity filterGroup : formEntity.regularFilterGroups) {
+        for (RegularFilterGroupEntity filterGroup : entity.regularFilterGroups) {
 
             Set<ObjectEntity> groupObjects = new HashSet<ObjectEntity>();
 
             // ищем самый нижний GroupObjectInstance, к которому применяется фильтр
             for (RegularFilterEntity regFilter : filterGroup.filters) {
-                groupObjects.addAll(formEntity.getApplyObject(regFilter.filter.getObjects()).objects);
+                groupObjects.addAll(entity.getApplyObject(regFilter.filter.getObjects()).objects);
             }
 
-            GroupObjectEntity filterGroupObject = formEntity.getApplyObject(groupObjects);
+            GroupObjectEntity filterGroupObject = entity.getApplyObject(groupObjects);
 
             RegularFilterGroupView filterGroupView = new RegularFilterGroupView(filterGroup);
             filterContainers.get(mgroupObjects.get(filterGroupObject)).add(filterGroupView);
@@ -157,12 +163,12 @@ public class DefaultFormView extends FormView {
         }
 
         // передобавляем еще раз, чтобы управляющие кнопки оказались в конце контейнера
-        for (GroupObjectEntity group : formEntity.groups) {
+        for (GroupObjectEntity group : entity.groups) {
             panelContainers.get(mgroupObjects.get(group)).add(controlsContainers.get(mgroupObjects.get(group)));
         }
         mainContainer.add(formSet.getFormButtonContainer());
 
-        caption = formEntity.caption;
+        caption = entity.caption;
     }
 
     private void addComponent(GroupObjectView groupObject, ComponentView childComponent, AbstractGroup groupAbstract) {

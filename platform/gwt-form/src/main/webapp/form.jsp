@@ -57,25 +57,25 @@
 
         <!--include the SC Core API-->
         <script> var isomorphicDir = "smartgwt/sc/"; </script>
-        <script src="platform.gwt.form.Form/sc/modules/ISC_Core.js"></script>
+        <script src="smartgwt/sc/modules/ISC_Core.js"></script>
 
         <!--include SmartClient -->
         <script type="text/javascript">document.getElementById('loadingMsg').innerHTML = 'Loading UI Components...';</script>
-        <script src='platform.gwt.form.Form/sc/modules/ISC_Foundation.js'></script>
-        <script src='platform.gwt.form.Form/sc/modules/ISC_Containers.js'></script>
-        <script src='platform.gwt.form.Form/sc/modules/ISC_Grids.js'></script>
-        <script src='platform.gwt.form.Form/sc/modules/ISC_Forms.js'></script>
-        <script src='platform.gwt.form.Form/sc/modules/ISC_RichTextEditor.js'></script>
-        <script src='platform.gwt.form.Form/sc/modules/ISC_Calendar.js'></script>
-        <script src='platform.gwt.form.Form/sc/modules/ISC_History.js'></script>
-        <script src='platform.gwt.form.Form/sc/modules/ISC_PluginBridges.js'></script>
+        <script src='smartgwt/sc/modules/ISC_Foundation.js'></script>
+        <script src='smartgwt/sc/modules/ISC_Containers.js'></script>
+        <script src='smartgwt/sc/modules/ISC_Grids.js'></script>
+        <script src='smartgwt/sc/modules/ISC_Forms.js'></script>
+        <script src='smartgwt/sc/modules/ISC_RichTextEditor.js'></script>
+        <script src='smartgwt/sc/modules/ISC_Calendar.js'></script>
+        <script src='smartgwt/sc/modules/ISC_History.js'></script>
+        <script src='smartgwt/sc/modules/ISC_PluginBridges.js'></script>
 
         <script type="text/javascript">document.getElementById('loadingMsg').innerHTML = 'Loading Data API...';</script>
-        <script src='platform.gwt.form.Form/sc/modules/ISC_DataBinding.js'></script>
+        <script src='smartgwt/sc/modules/ISC_DataBinding.js'></script>
 
         <!--load skin-->
         <script type="text/javascript">document.getElementById('loadingMsg').innerHTML = 'Loading skin...';</script>
-        <script src='platform.gwt.form.Form/sc/skins/Enterprise/load_skin.js?isc_version=7.0-nightly.js'></script>
+        <script src='smartgwt/sc/skins/Enterprise/load_skin.js?isc_version=7.0-nightly.js'></script>
 
         <!--include the application JS-->
         <script type="text/javascript">document.getElementById('loadingMsg').innerHTML = 'Loading Application<br>Please wait...';</script>

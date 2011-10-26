@@ -2,19 +2,17 @@ package platform.client.descriptor.editor;
 
 import platform.base.BaseUtils;
 import platform.base.OrderedMap;
-import platform.client.ClientResourceBundle;
+import platform.base.context.ApplicationContext;
+import platform.base.context.ApplicationContextProvider;
+import platform.base.context.IncrementView;
 import platform.client.Main;
 import platform.client.descriptor.FormDescriptor;
 import platform.client.descriptor.GroupObjectDescriptor;
 import platform.client.descriptor.PropertyDrawDescriptor;
 import platform.client.descriptor.editor.base.TitledPanel;
-import platform.base.context.ApplicationContext;
-import platform.base.context.ApplicationContextProvider;
-import platform.base.context.IncrementView;
 import platform.client.descriptor.increment.editor.IncrementMultipleListEditor;
 import platform.client.descriptor.increment.editor.IncrementMultipleListSelectionModel;
 import platform.client.descriptor.increment.editor.IncrementSingleListSelectionModel;
-import platform.client.logics.ClientPropertyDraw;
 
 import javax.swing.*;
 import javax.swing.table.AbstractTableModel;
@@ -22,6 +20,8 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.util.*;
 import java.util.List;
+
+import static platform.client.ClientResourceBundle.getString;
 
 public class DefaultOrdersEditor extends JPanel implements IncrementView {
 
@@ -44,7 +44,7 @@ public class DefaultOrdersEditor extends JPanel implements IncrementView {
         form.addDependency(dataHolder, "defaultOrders", this);
 
         if (group == null) {
-            add(new TitledPanel(ClientResourceBundle.getString("descriptor.editor.group"), new JComboBox(new IncrementSingleListSelectionModel(dataHolder, "groupObject", true) {
+            add(new TitledPanel(getString("descriptor.editor.group"), new JComboBox(new IncrementSingleListSelectionModel(dataHolder, "groupObject", true) {
                 public List<?> getSingleList() {
                     return form.groupObjects;
                 }
@@ -55,7 +55,7 @@ public class DefaultOrdersEditor extends JPanel implements IncrementView {
             })));
         }
 
-        JPanel propertiesPanel = new TitledPanel(ClientResourceBundle.getString("descriptor.editor.pending.properties"), new JScrollPane(new IncrementMultipleListEditor(
+        JPanel propertiesPanel = new TitledPanel(getString("descriptor.editor.pending.properties"), new JScrollPane(new IncrementMultipleListEditor(
                 new IncrementMultipleListSelectionModel(dataHolder, "pendingProperties") {
 
             public List<?> getList() {
@@ -69,7 +69,7 @@ public class DefaultOrdersEditor extends JPanel implements IncrementView {
             }
         })));
 
-        JButton addBtn = new JButton(new AbstractAction(ClientResourceBundle.getString("descriptor.editor.pending.add")) {
+        JButton addBtn = new JButton(new AbstractAction(getString("descriptor.editor.pending.add")) {
             public void actionPerformed(ActionEvent e) {
                 dataHolder.addToDefaultOrders(dataHolder.getPendingProperties());
                 dataHolder.clearPendingProperties();
@@ -77,7 +77,7 @@ public class DefaultOrdersEditor extends JPanel implements IncrementView {
         });
         addBtn.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-        JButton delBtn = new JButton(new AbstractAction(ClientResourceBundle.getString("descriptor.editor.pending.delete")) {
+        JButton delBtn = new JButton(new AbstractAction(getString("descriptor.editor.pending.delete")) {
             public void actionPerformed(ActionEvent e) {
                 dataHolder.removeFromDefaultOrders(table.getSelectedProperties());
             }
@@ -98,7 +98,7 @@ public class DefaultOrdersEditor extends JPanel implements IncrementView {
         });
         downBtn.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-        JPanel tablePanel = new TitledPanel(ClientResourceBundle.getString("descriptor.editor.chosen.properties"), new JScrollPane(table = new IncrementDefaultOrdersTable()));
+        JPanel tablePanel = new TitledPanel(getString("descriptor.editor.chosen.properties"), new JScrollPane(table = new IncrementDefaultOrdersTable()));
         tablePanel.setPreferredSize(new Dimension(300, 200));
 
         JPanel selectPanel = new JPanel();
@@ -128,15 +128,18 @@ public class DefaultOrdersEditor extends JPanel implements IncrementView {
     }
 
     public void update(Object updateObject, String updateField) {
-        OrderedMap<ClientPropertyDraw, Boolean> newOrders = new OrderedMap<ClientPropertyDraw, Boolean>();
+        OrderedMap<PropertyDrawDescriptor, Boolean> newOrders = new OrderedMap<PropertyDrawDescriptor, Boolean>();
         for (PropertyDrawDescriptor propertyDraw : dataHolder.defaultOrdersProps) {
-            newOrders.put(propertyDraw.client, dataHolder.defaultOrders.get(propertyDraw));
+            newOrders.put(propertyDraw, dataHolder.defaultOrders.get(propertyDraw));
         }
-        form.client.setDefaultOrders(newOrders);
+        form.setDefaultOrders(newOrders);
     }
 
     public class IncrementDefaultOrdersTable extends JTable {
-        private final String columnNames[] = new String[]{ClientResourceBundle.getString("descriptor.editor.chosen.properties.property"), ClientResourceBundle.getString("descriptor.editor.chosen.properties.ascending")};
+        private final String columnNames[] = new String[]{
+                getString("descriptor.editor.chosen.properties.property"),
+                getString("descriptor.editor.chosen.properties.ascending")
+        };
 
         public IncrementDefaultOrdersTable() {
             super();
@@ -236,15 +239,8 @@ public class DefaultOrdersEditor extends JPanel implements IncrementView {
 
         public DataHolder(FormDescriptor form) {
             this.form = form;
-            for (Map.Entry<ClientPropertyDraw, Boolean> entry : form.client.defaultOrders.entrySet()) {
-                for (PropertyDrawDescriptor propertyDraw : form.propertyDraws) {
-                    if (propertyDraw.client == entry.getKey()) {
-                        defaultOrders.put(propertyDraw, entry.getValue());
-                        defaultOrdersProps.add(propertyDraw);
-                        break;
-                    }
-                }
-            }
+            defaultOrders.putAll(form.defaultOrders);
+            defaultOrdersProps.addAll(form.defaultOrders.keySet());
             form.updateDependency(this, "defaultOrders");
         }
 

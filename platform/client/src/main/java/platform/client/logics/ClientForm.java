@@ -343,15 +343,6 @@ public class ClientForm extends IdentityObject implements LogicsSupplier, Client
         return mainContainer.findContainerBySID(sID);
     }
 
-    public void setDefaultOrders(OrderedMap<ClientPropertyDraw, Boolean> defaultOrders) {
-        this.defaultOrders = defaultOrders;
-        context.updateDependency(this, "defaultOrders");
-    }
-
-    public OrderedMap<ClientPropertyDraw, Boolean> getDefaultOrders() {
-        return defaultOrders;
-    }
-
     private GForm gwtForm;
     public GForm getGwtForm() {
         if (gwtForm == null) {

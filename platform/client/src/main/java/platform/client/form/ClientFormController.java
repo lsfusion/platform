@@ -157,16 +157,11 @@ public class ClientFormController {
             }
         };
 
-//        setContentPane(formLayout.getComponent());
-//        setComponent(formLayout.getComponent());
-
-//        initializeGroupObjects();
-
         initializeControllers();
 
         initializeRegularFilters();
 
-        initializeOrders();
+        initializeDefaultOrders();
 
         initializeButtons();
 
@@ -220,6 +215,15 @@ public class ClientFormController {
             comboBox.addItem(new ClientRegularFilterWrapped(filter));
         }
 
+        if (filterGroup.drawToToolbar && filterGroup.keyBindingGroup != null) {
+            GroupObjectController controller = controllers.get(filterGroup.keyBindingGroup);
+            controller.addFilterToToolbar(filterGroup, comboBox);
+        }
+
+        if (filterGroup.defaultFilter >= 0) {
+            ClientRegularFilter defaultFilter = filterGroup.filters.get(filterGroup.defaultFilter);
+            comboBox.setSelectedItem(new ClientRegularFilterWrapped(defaultFilter));
+        }
         comboBox.addItemListener(new ItemAdapter() {
             @Override
             public void itemSelected(ItemEvent e) {
@@ -231,17 +235,6 @@ public class ClientFormController {
             }
         });
 
-        if (filterGroup.drawToToolbar && filterGroup.keyBindingGroup != null) {
-            GroupObjectController controller = controllers.get(filterGroup.keyBindingGroup);
-            controller.addFilterToToolbar(filterGroup, comboBox);
-        }
-
-        if (filterGroup.defaultFilter >= 0) {
-            ClientRegularFilter defaultFilter = filterGroup.filters.get(filterGroup.defaultFilter);
-            comboBox.setSelectedItem(new ClientRegularFilterWrapped(defaultFilter));
-        }
-        formLayout.add(filterGroup, comboBox);
-
         for (final ClientRegularFilter filter : filterGroup.filters) {
             formLayout.addBinding(filter.key, "regularFilter" + filterGroup.getID() + filter.getID(), new AbstractAction() {
                 public void actionPerformed(ActionEvent e) {
@@ -249,6 +242,8 @@ public class ClientFormController {
                 }
             });
         }
+
+        formLayout.add(filterGroup, comboBox);
     }
 
     private void createSingleFilterComponent(final ClientRegularFilterGroup filterGroup, final ClientRegularFilter singleFilter) {
@@ -256,11 +251,6 @@ public class ClientFormController {
 
         if (filterGroup.defaultFilter >= 0) {
             checkBox.setSelected(true);
-            try {
-                setRemoteRegularFilter(filterGroup, singleFilter);
-            } catch (IOException e) {
-                throw new RuntimeException(ClientResourceBundle.getString("form.error.initialization.regular.filter"), e);
-            }
         }
 
         if (filterGroup.drawToToolbar && filterGroup.keyBindingGroup != null) {
@@ -428,17 +418,17 @@ public class ClientFormController {
         return null;
     }
 
-    private boolean ordersInitialized = false;
+    private boolean defaultOrdersInitialized = false;
 
-    private void initializeOrders() {
-        if (!ordersInitialized) {
-            try {
-                // Применяем порядки по умолчанию
-                applyOrders(form.defaultOrders);
-                ordersInitialized = true;
-            } catch (IOException e) {
-                throw new RuntimeException(ClientResourceBundle.getString("form.error.cant.initialize.default.orders"));
-            }
+    private void initializeDefaultOrders() throws IOException {
+        //сначала получаем изменения, чтобы был первоначальный список свойств в таблице
+        applyRemoteChanges();
+        try {
+            // Применяем порядки по умолчанию
+            applyOrders(form.defaultOrders);
+            defaultOrdersInitialized = true;
+        } catch (IOException e) {
+            throw new RuntimeException(ClientResourceBundle.getString("form.error.cant.initialize.default.orders"));
         }
     }
 
@@ -645,8 +635,8 @@ public class ClientFormController {
     }
 
     public void changeOrder(ClientPropertyDraw property, Order modiType, ClientGroupObjectValue columnKey) throws IOException {
-        remoteForm.changePropertyOrder(property.getID(), modiType.serialize(), columnKey.serialize());
-        if (ordersInitialized) {
+        if (defaultOrdersInitialized) {
+            remoteForm.changePropertyOrder(property.getID(), modiType.serialize(), columnKey.serialize());
             applyRemoteChanges();
         }
     }
@@ -693,12 +683,8 @@ public class ClientFormController {
         applyRemoteChanges();
     }
 
-    private void setRemoteRegularFilter(ClientRegularFilterGroup filterGroup, ClientRegularFilter filter) throws IOException {
-        remoteForm.setRegularFilter(filterGroup.getID(), (filter == null) ? -1 : filter.getID());
-    }
-
     private void setRegularFilter(ClientRegularFilterGroup filterGroup, ClientRegularFilter filter) throws IOException {
-        setRemoteRegularFilter(filterGroup, filter);
+        remoteForm.setRegularFilter(filterGroup.getID(), (filter == null) ? -1 : filter.getID());
 
         applyOrders(filter != null ? filter.orders : filterGroup.nullOrders);
 

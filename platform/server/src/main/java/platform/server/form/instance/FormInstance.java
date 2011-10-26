@@ -55,6 +55,9 @@ import java.util.Map.Entry;
 
 import static platform.base.BaseUtils.mergeSet;
 import static platform.interop.ClassViewType.*;
+import static platform.interop.Order.ADD;
+import static platform.interop.Order.DIR;
+import static platform.interop.Order.REPLACE;
 import static platform.server.form.instance.GroupObjectInstance.*;
 
 // класс в котором лежит какие изменения произошли
@@ -224,6 +227,27 @@ public class FormInstance<T extends BusinessLogics<T>> extends IncrementProps<Pr
 
         addObjectOnTransaction(FormEventType.INIT);
 
+        //устанавливаем фильтры и порядки по умолчанию...
+        for (RegularFilterGroupInstance filterGroup : regularFilterGroups) {
+            int defaultInd = filterGroup.entity.defaultFilter;
+            if (defaultInd >= 0 && defaultInd < filterGroup.filters.size()) {
+                setRegularFilter(filterGroup, filterGroup.filters.get(defaultInd));
+            }
+        }
+
+        Set<GroupObjectInstance> wasOrder = new HashSet<GroupObjectInstance>();
+        for (Entry<PropertyDrawEntity<?>, Boolean> entry : entity.defaultOrders.entrySet()) {
+            PropertyDrawInstance property = instanceFactory.getInstance(entry.getKey());
+            GroupObjectInstance toDraw = property.toDraw;
+            Boolean ascending = entry.getValue();
+
+            toDraw.changeOrder(property.propertyObject, wasOrder.contains(toDraw) ? ADD : REPLACE);
+            if (!ascending) {
+                toDraw.changeOrder(property.propertyObject, DIR);
+            }
+            wasOrder.add(toDraw);
+        }
+
         if(!interactive) {
             endApply();
             this.mapObjects = mapObjects;
@@ -364,6 +388,10 @@ public class FormInstance<T extends BusinessLogics<T>> extends IncrementProps<Pr
     // сстандартные фильтры
     public List<RegularFilterGroupInstance> regularFilterGroups = new ArrayList<RegularFilterGroupInstance>();
     private Map<RegularFilterGroupInstance, RegularFilterInstance> regularFilterValues = new HashMap<RegularFilterGroupInstance, RegularFilterInstance>();
+
+    public void setRegularFilter(RegularFilterGroupInstance filterGroup, int filterId) {
+        setRegularFilter(filterGroup, filterGroup.getFilter(filterId));
+    }
 
     public void setRegularFilter(RegularFilterGroupInstance filterGroup, RegularFilterInstance filter) {
 

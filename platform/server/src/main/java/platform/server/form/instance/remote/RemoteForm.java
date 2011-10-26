@@ -25,7 +25,6 @@ import platform.server.form.entity.GroupObjectHierarchy;
 import platform.server.form.entity.ObjectEntity;
 import platform.server.form.instance.*;
 import platform.server.form.instance.filter.FilterInstance;
-import platform.server.form.instance.filter.RegularFilterGroupInstance;
 import platform.server.form.instance.listener.RemoteFormListener;
 import platform.server.form.view.FormView;
 import platform.server.form.view.report.ReportDesignGenerator;
@@ -634,8 +633,7 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
     }
 
     public void setRegularFilter(int groupID, int filterID) {
-        RegularFilterGroupInstance filterGroup = form.getRegularFilterGroup(groupID);
-        form.setRegularFilter(filterGroup, filterGroup.getFilter(filterID));
+        form.setRegularFilter(form.getRegularFilterGroup(groupID), filterID);
     }
 
     public int getID() {

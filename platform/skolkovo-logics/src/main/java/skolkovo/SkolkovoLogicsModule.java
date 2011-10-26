@@ -3513,13 +3513,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
             addFixedFilter(new CompareFilterEntity(addPropertyObject(dateProject, objProject), Compare.LESS_EQUALS, objDateTo));
             addFixedFilter(new NotFilterEntity(new NotNullFilterEntity(addPropertyObject(inactiveProject, objProject))));
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(isConsultingCenterQuestionProject, objProject)));
-        }
 
-        @Override
-        public FormView createDefaultRichDesign() {
-            DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign();
-            design.defaultOrders.put(design.get(getPropertyDraw(dateProject)), true);
-            return design;
+            addDefaultOrder(dateProject, true);
         }
     }
 
@@ -4210,14 +4205,15 @@ public class SkolkovoLogicsModule extends LogicsModule {
             setReadOnly(true, objCluster.groupTo);
             setReadOnly(inProjectCluster, false);
             setReadOnly(nameNativeShortCurrentCluster, false);
+
+            addDefaultOrder(getPropertyDraw(dateProject, objProject), true);
+            addDefaultOrder(numberCluster, true);
         }
 
         @Override
         public FormView createDefaultRichDesign() {
             DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign();
 
-            design.defaultOrders.put(design.get(getPropertyDraw(dateProject, objProject)), true);
-            design.defaultOrders.put(design.get(getPropertyDraw(numberCluster)), true);
 //            design.get(getPropertyDraw(addProject)).drawToToolbar = true;
 
             design.addIntersection(design.getGroupPropertyContainer(objProject.groupTo, projectInformationGroup),
@@ -4380,15 +4376,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
             addFixedFilter(new NotFilterEntity(new NotNullFilterEntity(addPropertyObject(inactiveApplication, objApplication))));
 
             setReadOnly(false);
-        }
 
-        @Override
-        public FormView createDefaultRichDesign() {
-            DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign();
-
-            design.defaultOrders.put(design.get(getPropertyDraw(dateApplication)), true);
-
-            return design;
+            addDefaultOrder(dateApplication, true);
         }
     }
 
@@ -4608,18 +4597,11 @@ public class SkolkovoLogicsModule extends LogicsModule {
                     "Только активные"));
             addRegularFilterGroup(inactiveFilterGroup);
 
+            addDefaultOrder(nameNativeShortClusterExpert, true);
+            addDefaultOrder(baseLM.userLastName, true);
+
             setReadOnly(true);
             setPageSize(0);
-        }
-
-        @Override
-        public FormView createDefaultRichDesign() {
-            DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign();
-
-            design.defaultOrders.put(design.get(getPropertyDraw(nameNativeShortClusterExpert)), true);
-            design.defaultOrders.put(design.get(getPropertyDraw(baseLM.userLastName)), true);
-
-            return design;
         }
     }
 
@@ -5121,19 +5103,12 @@ public class SkolkovoLogicsModule extends LogicsModule {
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(doneExpertVoteMonthYear, objExpert, objVoteBallot, objMonth, objYear)));
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(inNewExpertVote, objExpert, objVoteBallot)));
 
+            addDefaultOrder(nameNativeClusterExpert, true);
+            addDefaultOrder(documentNameExpert, true);
+
             addAttachEAForm(emailLetterExpertMonthYearEA, this, EmailActionProperty.Format.PDF, objMonth, 1, objYear, 2);
             addAttachEAForm(emailLetterExpertMonthYearEA, this, EmailActionProperty.Format.DOCX, objMonth, 1, objYear, 2);
             //     setPageSize(0);
-        }
-
-        @Override
-        public FormView createDefaultRichDesign() {
-            DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign();
-
-            design.defaultOrders.put(design.get(getPropertyDraw(nameNativeClusterExpert)), true);
-            design.defaultOrders.put(design.get(getPropertyDraw(documentNameExpert)), true);
-
-            return design;
         }
     }
 
@@ -5201,13 +5176,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
         private StatusFormEntity(NavigatorElement parent, String sID) {
             super(parent, sID, "Статус", true);
             objStatus = addSingleGroupObject(genID(), "Status", projectStatus, "Статус", numberProjectStatus, baseLM.name, oficialNameProjectStatus);
-        }
 
-        @Override
-        public FormView createDefaultRichDesign() {
-            DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign();
-            design.defaultOrders.put(design.get(getPropertyDraw(numberProjectStatus, objStatus)), true);
-            return design;
+            addDefaultOrder(getPropertyDraw(numberProjectStatus, objStatus), true);
         }
 
         @Override

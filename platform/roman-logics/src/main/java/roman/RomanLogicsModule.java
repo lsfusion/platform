@@ -3589,15 +3589,8 @@ public class RomanLogicsModule extends LogicsModule {
 
             objCategory = addSingleGroupObject(category, "Номенклатурная группа", baseGroup);
             addObjectActions(this, objCategory);
-        }
 
-        @Override
-        public FormView createDefaultRichDesign() {
-            DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign();
-
-            design.defaultOrders.put(design.get(getPropertyDraw(baseLM.name)), true);
-
-            return design;
+            addDefaultOrder(baseLM.name, true);
         }
 
         @Override
@@ -3616,15 +3609,8 @@ public class RomanLogicsModule extends LogicsModule {
 
             objArticleComposite = addSingleGroupObject(articleComposite, "Артикул", sidArticle, nameSupplierArticle, nameBrandSupplierArticle, nameCategoryArticle, mainCompositionOriginArticle);
             addObjectActions(this, objArticleComposite);
-        }
 
-        @Override
-        public FormView createDefaultRichDesign() {
-            DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign();
-
-            design.defaultOrders.put(design.get(getPropertyDraw(sidArticle)), true);
-
-            return design;
+            addDefaultOrder(sidArticle, true);
         }
 
         @Override
@@ -3642,15 +3628,8 @@ public class RomanLogicsModule extends LogicsModule {
 
             objColor = addSingleGroupObject(colorSupplier, "Цвет поставщика", sidColorSupplier, baseLM.name, nameSupplierColorSupplier);
             addObjectActions(this, objColor);
-        }
 
-        @Override
-        public FormView createDefaultRichDesign() {
-            DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign();
-
-            design.defaultOrders.put(design.get(getPropertyDraw(sidColorSupplier)), true);
-
-            return design;
+            addDefaultOrder(sidColorSupplier, true);
         }
 
         @Override
@@ -3668,15 +3647,8 @@ public class RomanLogicsModule extends LogicsModule {
 
             objSeason = addSingleGroupObject(seasonSupplier, "Сезон поставщика", sidSeasonSupplier, nameSupplierSeasonSupplier);
             addObjectActions(this, objSeason);
-        }
 
-        @Override
-        public FormView createDefaultRichDesign() {
-            DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign();
-
-            design.defaultOrders.put(design.get(getPropertyDraw(sidSeasonSupplier)), true);
-
-            return design;
+            addDefaultOrder(sidSeasonSupplier, true);
         }
 
         @Override
@@ -3694,15 +3666,8 @@ public class RomanLogicsModule extends LogicsModule {
 
             objGender = addSingleGroupObject(genderSupplier, "Пол поставщика", sidGenderSupplier, nameSupplierGenderSupplier/*, nameGenderSupplierSku*/);
             addObjectActions(this, objGender);
-        }
 
-        @Override
-        public FormView createDefaultRichDesign() {
-            DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign();
-
-            design.defaultOrders.put(design.get(getPropertyDraw(sidGenderSupplier)), true);
-
-            return design;
+            addDefaultOrder(sidGenderSupplier, true);
         }
 
         @Override
@@ -3720,15 +3685,8 @@ public class RomanLogicsModule extends LogicsModule {
 
             objTheme = addSingleGroupObject(themeSupplier, "Тема поставщика", sidThemeSupplier, baseLM.name, nameSupplierThemeSupplier);
             addObjectActions(this, objTheme);
-        }
 
-        @Override
-        public FormView createDefaultRichDesign() {
-            DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign();
-
-            design.defaultOrders.put(design.get(getPropertyDraw(sidThemeSupplier)), true);
-
-            return design;
+            addDefaultOrder(sidThemeSupplier, true);
         }
 
         @Override
@@ -3746,15 +3704,8 @@ public class RomanLogicsModule extends LogicsModule {
 
             objSize = addSingleGroupObject(sizeSupplier, "Размер поставщика", sidSizeSupplier, nameSupplierSizeSupplier, orderSizeSupplier);
             addObjectActions(this, objSize);
-        }
 
-        @Override
-        public FormView createDefaultRichDesign() {
-            DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign();
-
-            design.defaultOrders.put(design.get(getPropertyDraw(orderSizeSupplier)), true);
-
-            return design;
+            addDefaultOrder(orderSizeSupplier, true);
         }
 
         @Override
@@ -3772,15 +3723,8 @@ public class RomanLogicsModule extends LogicsModule {
 
             objCustomCategory10 = addSingleGroupObject(customCategory10, "ТН ВЭД", sidCustomCategory10, nameCustomCategory, nameCustomCategory4CustomCategory10, numberIdCustomCategory10);
             objCustomCategory10.groupTo.initClassView = ClassViewType.GRID;
-        }
 
-        @Override
-        public FormView createDefaultRichDesign() {
-            DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign();
-
-            design.defaultOrders.put(design.get(getPropertyDraw(numberIdCustomCategory10)), true);
-
-            return design;
+            addDefaultOrder(numberIdCustomCategory10, true);
         }
 
         @Override
@@ -3799,15 +3743,8 @@ public class RomanLogicsModule extends LogicsModule {
 
             objCommonSize = addSingleGroupObject(commonSize, "Унифицированный размер", baseLM.name);
             objCommonSize.groupTo.initClassView = ClassViewType.GRID;
-        }
 
-        @Override
-        public FormView createDefaultRichDesign() {
-            DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign();
-
-            design.defaultOrders.put(design.get(getPropertyDraw(baseLM.name)), true);
-
-            return design;
+            addDefaultOrder(baseLM.name, true);
         }
 
         @Override
@@ -4059,6 +3996,9 @@ public class RomanLogicsModule extends LogicsModule {
             addActionsOnObjectChange(objSIDArticleComposite, addPropertyObject(addAProp(new AddNewArticleActionProperty(objArticle)), objSIDArticleComposite, objOrder));
             addActionsOnObjectChange(objSIDArticleComposite, addPropertyObject(incrementNumberListSID, objOrder, objSIDArticleComposite));
             addActionsOnObjectChange(objSIDArticleComposite, addPropertyObject(seekArticleSIDInvoice, objSIDArticleComposite, objOrder));
+
+            addDefaultOrder(numberListArticle, true);
+            addDefaultOrder(orderSizeSupplier, true);
         }
 
         @Override
@@ -4067,9 +4007,6 @@ public class RomanLogicsModule extends LogicsModule {
 
             design.get(getPropertyDraw(sidDocument, objOrder)).caption = "Номер заказа";
             design.get(getPropertyDraw(baseLM.date, objOrder)).caption = "Дата заказа";
-
-            design.defaultOrders.put(design.get(getPropertyDraw(numberListArticle)), true);
-            design.defaultOrders.put(design.get(getPropertyDraw(orderSizeSupplier)), true);
 
             design.get(objOrder.groupTo).grid.constraints.fillVertical = 0.2;
 
@@ -4146,6 +4083,8 @@ public class RomanLogicsModule extends LogicsModule {
             addFixedFilter(invoiceSupplierFilter);
 
             setReadOnly(objSupplier, true);
+
+            //addDefaultOrder(numberListArticle, true);
         }
 
         @Override
@@ -4161,7 +4100,6 @@ public class RomanLogicsModule extends LogicsModule {
             detContainer.add(design.getGroupObjectContainer(objInvoice.groupTo));
             detContainer.tabbedPane = true;
 
-            //design.defaultOrders.put(design.get(getPropertyDraw(numberListArticle)), true);
             return design;
         }
     }
@@ -4323,6 +4261,9 @@ public class RomanLogicsModule extends LogicsModule {
             addActionsOnObjectChange(objSIDArticleComposite, addPropertyObject(addAProp(new AddNewArticleActionProperty(objArticle)), objSIDArticleComposite, objInvoice));
             addActionsOnObjectChange(objSIDArticleComposite, addPropertyObject(incrementNumberListSID, (box ? objSupplierBox : objInvoice), objSIDArticleComposite));
             addActionsOnObjectChange(objSIDArticleComposite, addPropertyObject(seekArticleSIDInvoice, objSIDArticleComposite, objInvoice));
+
+            addDefaultOrder(numberListArticle, true);
+            addDefaultOrder(orderSizeSupplier, true);
         }
 
         @Override
@@ -4332,9 +4273,6 @@ public class RomanLogicsModule extends LogicsModule {
             design.get(getPropertyDraw(baseLM.objectClassName, objInvoice)).caption = "Тип инвойса";
             design.get(getPropertyDraw(sidDocument, objInvoice)).caption = "Номер инвойса";
             design.get(getPropertyDraw(baseLM.date, objInvoice)).caption = "Дата инвойса";
-
-            design.defaultOrders.put(design.get(getPropertyDraw(numberListArticle)), true);
-            design.defaultOrders.put(design.get(getPropertyDraw(orderSizeSupplier)), true);
 
             design.get(objInvoice.groupTo).grid.constraints.fillVertical = 0.2;
 
@@ -4452,6 +4390,8 @@ public class RomanLogicsModule extends LogicsModule {
 
             setReadOnly(objSupplier, true);
             setReadOnly(importInvoiceActionGroup, false, objSupplier.groupTo);
+
+            //addDefaultOrder(numberListArticle, true);
         }
 
         @Override
@@ -4464,7 +4404,6 @@ public class RomanLogicsModule extends LogicsModule {
             design.get(getPropertyDraw(sidDocument, objOrder)).caption = "Номер заказа";
             design.get(getPropertyDraw(baseLM.date, objOrder)).caption = "Дата заказа";
 
-            //design.defaultOrders.put(design.get(getPropertyDraw(numberListArticle)), true);
             design.get(objSupplier.groupTo).grid.constraints.fillVertical = 1;
             design.get(objInvoice.groupTo).grid.constraints.fillVertical = 3;
             design.get(objOrder.groupTo).grid.constraints.fillVertical = 4;
@@ -7887,13 +7826,13 @@ public class RomanLogicsModule extends LogicsModule {
                 else
                     addActionsOnOk(addPropertyObject(addSimpleShipmentDetailSimpleShipmentRouteSku, objShipment, objRoute, objSku));
             }
+
+            addDefaultOrder(sidArticleSku, true);
         }
 
         @Override
         public FormView createDefaultRichDesign() {
             DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign();
-
-            design.defaultOrders.put(design.get(getPropertyDraw(sidArticleSku)), true);
 
             if (box) {
                 design.addIntersection(design.getGroupObjectContainer(objShipment.groupTo),

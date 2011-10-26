@@ -49,7 +49,7 @@ public class FormView implements ServerIdentitySerializable, AbstractForm<Contai
     // список фильтров
     public List<RegularFilterGroupView> regularFilters = new ArrayList<RegularFilterGroupView>();
 
-    public OrderedMap<PropertyDrawView,Boolean> defaultOrders = new OrderedMap<PropertyDrawView, Boolean>();
+    protected OrderedMap<PropertyDrawView,Boolean> defaultOrders = new OrderedMap<PropertyDrawView, Boolean>();
 
     // map с названиями функций, при которых дисплей сразу будет блокироваться
     public Map<String, String> blockedScreen = new HashMap<String, String>();
