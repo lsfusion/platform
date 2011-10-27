@@ -67,12 +67,11 @@ public class ClientDateClass extends ClientDataClass implements ClientTypeClass 
     }
 
     @Override
-    public String formatString(Object obj) {
-        String dateString = "";
-        if(obj!=null) {
-            return dateString.concat(obj.toString().substring(8,10).concat(".").concat(obj.toString().substring(5,7).concat(".").concat(obj.toString().substring(0,4))));
+    public String formatString(Object obj) throws ParseException {
+        if (obj != null) {
+            return getSimpleDateFormat().format((Date) obj);
         }
-        else return dateString;
+        else return "";
     }
 
     @Override

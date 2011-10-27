@@ -10,6 +10,7 @@ import platform.gwt.view.classes.GType;
 import platform.interop.ComponentDesign;
 import platform.interop.Data;
 
+import java.sql.Date;
 import java.text.Format;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -56,7 +57,10 @@ public class ClientDateTimeClass extends ClientDataClass implements ClientTypeCl
 
     @Override
     public String formatString(Object obj) {
-        return obj.toString();
+        if (obj != null) {
+            return new SimpleDateFormat().format((Date) obj);
+        }
+        else return "";
     }
 
     @Override
