@@ -3251,7 +3251,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
                 oneApplicationDateDate, projectActionApplication, 1, finalClusterApplication, 1, 2, 3);
 
         averageWeekApplSubmitDateDate = addJProp("averageApplSubmitDateDate", "Среднее кол-во заявок в день",
-                baseLM.divideInteger0, applicationsSubmitDateDate, 1, 2, baseLM.weeksInclBetweenDates, 1, 2);
+                baseLM.divideInteger0, applicationsSubmitDateDate, 1, 2, baseLM.weeksNullInclBetweenDates, 1, 2);
 
         applicationsSubmitDateWeek = addSGProp("applicationsSubmitDateWeek", "Кол-во поступивших заявок",
                 addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1, application, DateClass.instance), 1, 2,

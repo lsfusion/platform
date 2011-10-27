@@ -146,6 +146,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
     public LP daysInclBetweenDates;
     public LP weeksInclBetweenDates;
+    public LP weeksNullInclBetweenDates;
 
     public LP sumDateWeekFrom;
     public LP sumDateWeekTo;
@@ -472,8 +473,12 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
         date = addDProp(baseGroup, "date", getString("logics.date"), DateClass.instance, transaction);
 
+        onlyNotZero = addJProp(andNot1, 1, addJProp(equals2, 1, vzero), 1);
+        onlyNotZero.property.isOnlyNotZero = true;
+
         daysInclBetweenDates = addJProp("daysInclBetweenDates", "Кол-во дней", and(false, false), addJProp(subtractInclInteger2, 2, 1), 1, 2, is(DateClass.instance), 1, is(DateClass.instance), 2);
         weeksInclBetweenDates = addJProp("weeksInclBetweenDates", "Кол-во недель", divideInteger, daysInclBetweenDates, 1, 2, addCProp(IntegerClass.instance, 7));
+        weeksNullInclBetweenDates = addJProp("weeksNullInclBetweenDates", "Кол-во недель", onlyNotZero, weeksInclBetweenDates, 1, 2);
 
         sumDateWeekFrom = addJProp("sumDateWeekFrom", "Дата (с)", and(false, false), addSFProp("((prm1)+(prm2)*7)", DateClass.instance, 2), 1, 2, is(DateClass.instance), 1, is(IntegerClass.instance), 2);
         sumDateWeekTo = addJProp("sumDateWeekTo", "Дата (по)", and(false, false), addSFProp("((prm1)+((prm2)*7+6))", DateClass.instance, 2), 1, 2, is(DateClass.instance), 1, is(IntegerClass.instance), 2);
@@ -614,8 +619,6 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         addJProp(baseGroup, getString("logics.session.user"), name, sessionUser, 1);
         LP sessionDate = addDProp(baseGroup, "sessionDate", getString("logics.session.date"), DateTimeClass.instance, session);
         sessionDate.setDerivedChange(currentDateTime, true, is(session), 1);
-        onlyNotZero = addJProp(andNot1, 1, addJProp(equals2, 1, vzero), 1);
-        onlyNotZero.property.isOnlyNotZero = true;
 
         objectByName = addMGProp(idGroup, "objectByName", getString("logics.object.name"), object(baseClass.named), name, 1);
         seekObjectName = addJProp(true, getString("logics.object.search"), addSAProp(null), objectByName, 1);
