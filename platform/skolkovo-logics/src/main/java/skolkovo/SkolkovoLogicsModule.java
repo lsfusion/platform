@@ -320,7 +320,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         projectSchedule = addStaticClass("projectSchedule", "Регламент проекта",
                 new String[]{"R1", "R2"},
-                new String[]{"Старый регламент", "Новый регламент"});
+                new String[]{"Регламент 1", "Регламент 2"});
     }
 
     @Override
@@ -1368,8 +1368,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
         nameRegulationsProject.setPreferredCharWidth(20);
       //  isR2Project = addDProp(baseGroup, "isR2Project", "Новый регламент", LogicalClass.instance, project);
       //  isR1Project = addJProp(baseGroup, "isR1Project", "Старый регламент", baseLM.andNot1, addCProp(LogicalClass.instance, true, project), 1, isR2Project, 1);
-        isR2Project = addJProp(baseGroup, "isR2Project", "Новый регламент", baseLM.equals2, regulationsProject, 1, addCProp(projectSchedule, "R2"));
-        isR1Project = addJProp(baseGroup, "isR1Project", "Старый регламент", baseLM.equals2, regulationsProject, 1, addCProp(projectSchedule, "R1"));
+        isR2Project = addJProp(baseGroup, "isR2Project", "Регламент 2", baseLM.equals2, regulationsProject, 1, addCProp(projectSchedule, "R2"));
+        isR1Project = addJProp(baseGroup, "isR1Project", "Регламент 1", baseLM.equals2, regulationsProject, 1, addCProp(projectSchedule, "R1"));
 
         revisionVote = addCUProp(baseGroup, "revisionVote", "Регламент", addCProp(StringClass.get(3), "R1", voteR1), addCProp(StringClass.get(3), "R2", voteR2));
 
