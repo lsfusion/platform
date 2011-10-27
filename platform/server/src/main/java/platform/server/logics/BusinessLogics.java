@@ -154,6 +154,10 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             Pair<String, Integer> key = new Pair<String, Integer>(login, computer);
             RemoteNavigator navigator = forceCreateNew ? null : navigators.get(key);
 
+            if (navigator != null && navigator.isBusy()) {
+                navigator = null;
+            }
+
             if (navigator != null) {
                 navigator.invalidate();
             } else {

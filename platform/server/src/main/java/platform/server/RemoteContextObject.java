@@ -1,5 +1,6 @@
 package platform.server;
 
+import org.aspectj.lang.annotation.After;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
 import platform.base.BaseUtils;
@@ -7,9 +8,13 @@ import platform.interop.RemoteContextInterface;
 import platform.interop.remote.RemoteObject;
 
 import java.rmi.RemoteException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Stack;
 
 public abstract class RemoteContextObject extends RemoteObject implements Context, RemoteContextInterface {
+
+    public List<Thread> threads = new ArrayList<Thread>();
 
     protected RemoteContextObject(int port) throws RemoteException {
         super(port);
@@ -71,17 +76,32 @@ public abstract class RemoteContextObject extends RemoteObject implements Contex
         }
     }
 
+    public void killThreads() {
+        if (Settings.instance.getKillThread())
+            for (Thread thread : threads) {
+                thread.stop();
+            }
+    }
+
 //        @Before("execution(* (platform.interop.RemoteContextInterface || platform.interop.navigator.RemoteNavigatorInterface || platform.interop.form.RemoteFormInterface || platform.interop.RemoteLogicsInterface).*(..)) && target(remoteForm)")
+
+    private static final String aspectArgs = "execution(* (platform.interop.RemoteContextInterface+ && platform.interop..*).*(..)) &&" +
+                "!cflowbelow(execution(* (platform.interop.RemoteContextInterface+ && platform.interop..*).*(..))) && " +
+                "!cflowbelow(initialization(platform.server.logics.BusinessLogics.new(..))) && target(remoteObject)";
 
     @Aspect
     public static class RemoteFormContextHoldingAspect {
-        @Before("execution(* (platform.interop.RemoteContextInterface+ && platform.interop..*).*(..)) && " +
-                "!cflowbelow(execution(* (platform.interop.RemoteContextInterface+ && platform.interop..*).*(..))) && " +
-                "!cflowbelow(initialization(platform.server.logics.BusinessLogics.new(..))) && target(remoteObject)")
+        @Before(aspectArgs)
         public void beforeCall(RemoteContextObject remoteObject) {
-            if(!(Thread.currentThread() instanceof ContextAwareThread))
+            if(!(Thread.currentThread() instanceof ContextAwareThread)) {
                 Context.context.set(remoteObject); // вообще должен быть null, но в силу thread pooling'а не всегда
+                remoteObject.threads.add(Thread.currentThread());
+            }
+        }
+
+        @After(aspectArgs)
+        public void afterReturn(RemoteContextObject remoteObject) {
+            remoteObject.threads.remove(Thread.currentThread());
         }
     }
-
 }

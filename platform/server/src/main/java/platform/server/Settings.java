@@ -242,4 +242,14 @@ public class Settings {
     public void setStatDegree(int statDegree) {
         this.statDegree = statDegree;
     }
+
+    private boolean killThread = true;
+
+    public boolean getKillThread() {
+        return killThread;
+    }
+
+    public void setKillThread(boolean killThread) {
+        this.killThread = killThread;
+    }
 }

@@ -610,4 +610,18 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteContextO
     public ArrayList<IDaemonTask> getDaemonTasks(int compId) throws RemoteException {
         return  BL.getDaemonTasks(compId);
     }
+
+    public boolean isBusy() {
+        boolean busy = !threads.isEmpty();
+        if (busy) {
+            killThreads();
+        }
+        for (RemoteForm form : openForms.values()) {
+            if (!form.threads.isEmpty()) {
+                busy = true;
+                form.killThreads();
+            }
+        }
+        return busy;
+    }
 }
