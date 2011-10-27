@@ -375,7 +375,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
                 SkolkovoLM.isBusinessExpert.execute(profileInfo.business, session, expertObj);
 
                 for (ForesightInfo foresightInfo : profileInfo.foresightInfos) {
-                    DataObject foresightObj = (DataObject) SkolkovoLM.foresightSID.read(session, new DataObject(foresightInfo.sID, (ConcreteClass)SkolkovoLM.sidForesight.getResultClass()));
+                    DataObject foresightObj = (DataObject) SkolkovoLM.foresightSID.readClasses(session, new DataObject(foresightInfo.sID, (ConcreteClass)SkolkovoLM.sidForesight.getResultClass()));
                     SkolkovoLM.inExpertForesight.execute(foresightInfo.selected, session, expertObj, foresightObj);
                     SkolkovoLM.commentExpertForesight.execute(foresightInfo.comment, session, expertObj, foresightObj);
                 }
