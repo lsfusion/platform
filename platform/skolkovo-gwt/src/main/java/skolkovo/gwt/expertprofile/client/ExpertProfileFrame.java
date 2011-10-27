@@ -14,6 +14,7 @@ import skolkovo.gwt.expertprofile.shared.actions.SetProfileInfo;
 public class ExpertProfileFrame extends BaseFrame {
     private static ExpertProfileMessages messages = ExpertProfileMessages.Instance.get();
     private final static StandardDispatchAsync expertProfileService = new StandardDispatchAsync(new DefaultExceptionHandler());
+    private ExpertProfileMainPanel expertProfileMainPanel;
 
     public void onModuleLoad() {
         Window.setTitle(messages.title());
@@ -29,7 +30,10 @@ public class ExpertProfileFrame extends BaseFrame {
                     return;
                 }
 
-                new ExpertProfileMainPanel(pi) {
+                if (expertProfileMainPanel != null) {
+                    expertProfileMainPanel.clear();
+                }
+                expertProfileMainPanel = new ExpertProfileMainPanel(pi) {
                     @Override
                     public void updateButtonClicked() {
                         expertProfileService.execute(new SetProfileInfo(populateProfileInfo()), new ErrorAsyncCallback<VoidResult>() {
@@ -39,7 +43,8 @@ public class ExpertProfileFrame extends BaseFrame {
                             }
                         });
                     }
-                }.draw();
+                };
+                expertProfileMainPanel.draw();
             }
         });
     }

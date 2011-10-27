@@ -80,6 +80,7 @@ public abstract class ExpertProfileMainPanel extends VLayout100 {
 
     private void createBottomPane() {
         btnUpdate = new Button(messages.update());
+        btnUpdate.setShowDisabledIcon(false);
         btnUpdate.setLayoutAlign(Alignment.CENTER);
         btnUpdate.addClickHandler(new ClickHandler() {
             @Override
@@ -90,6 +91,7 @@ public abstract class ExpertProfileMainPanel extends VLayout100 {
                     return;
                 }
 
+                btnUpdate.disable();
                 btnUpdate.setIcon("loading.gif");
                 foresightPanel.disable();
                 updateButtonClicked();
