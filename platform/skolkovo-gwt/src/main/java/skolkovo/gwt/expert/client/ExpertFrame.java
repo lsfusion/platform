@@ -39,7 +39,7 @@ public class ExpertFrame extends BaseFrame {
         }
 
         expertService.execute(new GetVoteInfo(voteId), new ErrorAsyncCallback<GetVoteInfoResult>() {
-            public void onSuccess(final GetVoteInfoResult result) {
+            public void success(final GetVoteInfoResult result) {
                 final VoteInfo vi = result.voteInfo;
                 if (vi == null) {
                     showErrorPage(null);

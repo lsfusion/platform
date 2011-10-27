@@ -6,12 +6,10 @@ import skolkovo.api.gwt.shared.ProfileInfo;
 
 public class SetProfileInfo implements Action<VoidResult> {
     public ProfileInfo profileInfo;
-    public String expertLogin;
 
     public SetProfileInfo() {}
 
-    public SetProfileInfo(ProfileInfo profileInfo, String expertLogin) {
+    public SetProfileInfo(ProfileInfo profileInfo) {
         this.profileInfo = profileInfo;
-        this.expertLogin = expertLogin;
     }
 }

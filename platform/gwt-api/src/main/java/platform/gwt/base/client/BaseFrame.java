@@ -11,9 +11,9 @@ import platform.gwt.base.client.ui.ErrorFrameWidget;
 public class BaseFrame implements EntryPoint {
     public static BaseMessages baseMessages = BaseMessages.Instance.get();
 
-    public abstract class ErrorAsyncCallback<T> implements AsyncCallback<T> {
+    public abstract class ErrorAsyncCallback<T> extends AsyncCallbackEx<T> {
         @Override
-        public void onFailure(Throwable caught) {
+        public void failure(Throwable caught) {
             showErrorPage(caught);
         }
     }

@@ -3,13 +3,18 @@ package skolkovo.gwt.expertprofile.client.ui;
 import com.smartgwt.client.types.Alignment;
 import com.smartgwt.client.types.TitleOrientation;
 import com.smartgwt.client.types.VisibilityMode;
+import com.smartgwt.client.util.SC;
 import com.smartgwt.client.widgets.Button;
+import com.smartgwt.client.widgets.events.ClickEvent;
+import com.smartgwt.client.widgets.events.ClickHandler;
 import com.smartgwt.client.widgets.form.DynamicForm;
 import com.smartgwt.client.widgets.form.fields.StaticTextItem;
 import com.smartgwt.client.widgets.layout.SectionStack;
 import com.smartgwt.client.widgets.layout.SectionStackSection;
 import com.smartgwt.client.widgets.layout.VLayout;
 import com.smartgwt.client.widgets.layout.VStack;
+import net.customware.gwt.dispatch.client.DefaultExceptionHandler;
+import net.customware.gwt.dispatch.client.standard.StandardDispatchAsync;
 import platform.gwt.base.client.BaseFrame;
 import platform.gwt.base.client.BaseMessages;
 import platform.gwt.base.client.ui.ToolStripPanel;
@@ -17,9 +22,10 @@ import platform.gwt.base.client.ui.VLayout100;
 import skolkovo.api.gwt.shared.ProfileInfo;
 import skolkovo.gwt.expertprofile.client.ExpertProfileMessages;
 
-public class ExpertProfileMainPanel extends VLayout100 {
+public abstract class ExpertProfileMainPanel extends VLayout100 {
     private static BaseMessages baseMessages = BaseMessages.Instance.get();
     private static ExpertProfileMessages messages = ExpertProfileMessages.Instance.get();
+    private final static StandardDispatchAsync expertProfileService = new StandardDispatchAsync(new DefaultExceptionHandler());
 
     private final ProfileInfo pi;
     private DynamicForm expertDetailsForm;
@@ -80,6 +86,27 @@ public class ExpertProfileMainPanel extends VLayout100 {
     private void createBottomPane() {
         btnUpdate = new Button(messages.update());
         btnUpdate.setLayoutAlign(Alignment.CENTER);
+        btnUpdate.addClickHandler(new ClickHandler() {
+            @Override
+            public void onClick(ClickEvent event) {
+                String error = foresightPanel.validate();
+                if (error != null) {
+                    SC.warn(error);
+                    return;
+                }
+
+                btnUpdate.setIcon("loading.gif");
+                foresightPanel.disable();
+//                votePanel.disable();
+                updateButtonClicked();
+            }
+        });
+    }
+
+    public abstract void updateButtonClicked();
+
+    public ProfileInfo populateProfileInfo() {
+        return foresightPanel.populateProfileInfo();
     }
 
     private void createSections() {
