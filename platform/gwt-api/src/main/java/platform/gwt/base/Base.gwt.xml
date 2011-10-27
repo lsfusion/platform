@@ -3,7 +3,6 @@
 <module>
     <inherits name='com.google.gwt.user.User'/>
     <inherits name="com.smartgwt.SmartGwtNoSmartClient"/>
-    <!--<inherits name="com.smartgwt.SmartGwt"/>-->
 
     <inherits name="net.customware.gwt.dispatch.Dispatch"/>
 

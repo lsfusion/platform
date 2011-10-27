@@ -2,6 +2,7 @@ package platform.gwt.form.client.ui;
 
 import com.smartgwt.client.types.Autofit;
 import com.smartgwt.client.types.ListGridEditEvent;
+import com.smartgwt.client.types.RecordComponentPoolingMode;
 import com.smartgwt.client.types.SelectionStyle;
 import com.smartgwt.client.widgets.Canvas;
 import com.smartgwt.client.widgets.grid.ListGrid;
@@ -48,20 +49,21 @@ public class GGridTable extends ListGrid {
         setShowAllRecords(true);
         setModalEditing(true);
         setShowRollOver(false);
-        setShowRecordComponents(true);
-        setShowRecordComponentsByCell(true);
         setCanResizeFields(true);
         setCanSort(false);
         setShowHeaderContextMenu(false);
         setShowHeaderMenuButton(false);
         setAutoFitData(Autofit.VERTICAL);
         setAutoFitMaxRecords(10);
+        setEmptyCellValue("--");
 
         setCanEdit(iformController.isEditingEnabled());
         setEditEvent(ListGridEditEvent.DOUBLECLICK);
         setEditByCell(true);
 
-        setEmptyCellValue("--");
+        setShowRecordComponents(true);
+        setShowRecordComponentsByCell(true);
+        setRecordComponentPoolingMode(RecordComponentPoolingMode.RECYCLE);
 
         addSelectionChangedHandler(new SelectionChangedHandler() {
             @Override
@@ -112,6 +114,17 @@ public class GGridTable extends ListGrid {
         }
 
         return super.createRecordComponent(record, colNum);
+    }
+
+    @Override
+    public Canvas updateRecordComponent(ListGridRecord record, Integer colNum, Canvas component, boolean recordChanged) {
+        GPropertyDraw property = properties.get(colNum);
+        Canvas cellRenderer =  property.updateGridCellRenderer(component, (GridDataRecord) record);
+        if (cellRenderer != null) {
+            return cellRenderer;
+        }
+
+        return super.updateRecordComponent(record, colNum, component, recordChanged);
     }
 
     public void removeProperty(GPropertyDraw property) {

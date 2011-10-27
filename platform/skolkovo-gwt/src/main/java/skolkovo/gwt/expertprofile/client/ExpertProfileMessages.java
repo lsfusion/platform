@@ -79,7 +79,9 @@ public interface ExpertProfileMessages extends Messages {
 
     String sectionVoteList();
 
-    String sectionVoteDetails();
+    String sectionForesights();
+
+    String update();
 
     public static class Instance {
         private static final ExpertProfileMessages instance = (ExpertProfileMessages) GWT.create(ExpertProfileMessages.class);

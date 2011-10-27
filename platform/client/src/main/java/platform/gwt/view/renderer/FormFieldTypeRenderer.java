@@ -57,4 +57,8 @@ public class FormFieldTypeRenderer implements GTypeRenderer {
     public void setChangedHandler(PropertyChangedHandler handler) {
         this.handler = handler;
     }
+
+    public DynamicForm getItemForm() {
+        return itemForm;
+    }
 }

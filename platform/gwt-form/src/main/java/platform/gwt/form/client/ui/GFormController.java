@@ -84,7 +84,6 @@ public class GFormController extends HLayout implements FormLogicsProvider {
         setHeight100();
         setAutoHeight();
 
-//        mainPane = new VLayout();
         mainPane = new VStack();
         mainPane.setWidth100();
         mainPane.setHeight100();
@@ -157,7 +156,6 @@ public class GFormController extends HLayout implements FormLogicsProvider {
 
         if (filterGroup.defaultFilter >= 0) {
             filterCheck.setValue(true);
-            setRegularFilter(filterGroup, filter);
         }
     }
 
@@ -190,7 +188,6 @@ public class GFormController extends HLayout implements FormLogicsProvider {
         if (filterGroup.defaultFilter >= 0) {
             GRegularFilter defaultFilter = filterGroup.filters.get(filterGroup.defaultFilter);
             filterBox.setValue("" + filterGroup.defaultFilter);
-            setRegularFilter(filterGroup, defaultFilter);
         }
     }
 

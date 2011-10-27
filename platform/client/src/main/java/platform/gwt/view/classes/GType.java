@@ -34,6 +34,10 @@ public abstract class GType implements Serializable {
         return null;
     }
 
+    public Canvas updateGridCellRenderer(final Canvas component, final GridDataRecord record) {
+        return null;
+    }
+
     public GTypeRenderer createPanelRenderer(FormLogicsProvider formLogics, GPropertyDraw property) {
         // по умолчанию рендеринг через FormItem
         FormItem item = property.changeType.createPanelFormItem(formLogics, property);

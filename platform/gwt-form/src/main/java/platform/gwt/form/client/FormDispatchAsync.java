@@ -1,10 +1,12 @@
 package platform.gwt.form.client;
 
+import com.allen_sauer.gwt.log.client.Log;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import net.customware.gwt.dispatch.client.ExceptionHandler;
 import net.customware.gwt.dispatch.client.standard.StandardDispatchAsync;
 import net.customware.gwt.dispatch.shared.Action;
 import net.customware.gwt.dispatch.shared.Result;
+import platform.gwt.base.client.AsyncCallbackEx;
 import platform.gwt.form.shared.actions.form.ChangeGroupObject;
 import platform.gwt.form.shared.actions.form.FormBoundAction;
 import platform.gwt.form.shared.actions.form.FormChangesResult;
@@ -40,21 +42,33 @@ public class FormDispatchAsync extends StandardDispatchAsync {
     }
 
     private <A extends Action<R>, R extends Result> void queueAction(A action, AsyncCallback<R> callback) {
+        Log.debug("Queued action: " + action.getClass());
         q.add(new QueuedAction(action, callback));
     }
 
-    private <A extends Action<R>, R extends Result> void executeAction(A action, final AsyncCallback<R> callback) {
+    private <A extends Action<R>, R extends Result> void executeAction(final A action, final AsyncCallback<R> callback) {
+        Log.debug("Executing action: " + action.getClass());
+        final long startExecTime = System.currentTimeMillis();
         executing = true;
-        super.execute(action, new AsyncCallback<R>() {
+        super.execute(action, new AsyncCallbackEx<R> () {
             @Override
-            public void onFailure(Throwable caught) {
-                callback.onFailure(caught);
-                executeNextQueuedAction();
+            public void preProcess() {
+                long execTime = System.currentTimeMillis() - startExecTime;
+                Log.debug("Executed: " + action.getClass() + ", in " + execTime/1000 + " ms.");
             }
 
             @Override
-            public void onSuccess(R result) {
+            public void failure(Throwable caught) {
+                callback.onFailure(caught);
+            }
+
+            @Override
+            public void success(R result) {
                 callback.onSuccess(result);
+            }
+
+            @Override
+            public void postProcess() {
                 executeNextQueuedAction();
             }
         });

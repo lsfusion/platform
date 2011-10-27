@@ -32,6 +32,10 @@ public class GPropertyDraw extends GComponent {
         return baseType.createGridCellRenderer(formLogics, group, record, this);
     }
 
+    public Canvas updateGridCellRenderer(Canvas component, GridDataRecord record) {
+        return baseType.updateGridCellRenderer(component, record);
+    }
+
     private transient GTypeRenderer panelRenderer = null;
     public GTypeRenderer createPanelRenderer(FormLogicsProvider formLogics) {
 //        if (panelRenderer == null) {
