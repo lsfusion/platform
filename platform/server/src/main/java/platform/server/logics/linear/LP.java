@@ -120,6 +120,12 @@ public class LP<T extends PropertyInterface> {
         return BaseUtils.mapList(listInterfaces, common.interfaces).toArray(new ValueClass[1]);
     }
 
+    public ValueClass getResultClass() {
+        Result<ValueClass> result = new Result<ValueClass>();
+        getCommonClasses(result);
+        return result.result;
+    }
+
     public ClassWhere<Integer> getClassWhere() {
         ClassWhere<T> classWhere = property.getClassWhere();
         Map<T, Integer> mapping = new HashMap<T, Integer>();
