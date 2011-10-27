@@ -35,7 +35,7 @@ public class ForesightPanel extends HLayout100 {
 
     public static class ForesightRecord extends ListGridRecord {
         public ForesightRecord(ForesightInfo fi) {
-            setAttribute("name", fi.sID + ":: " + fi.name + ":: " + fi.substantiation);
+            setAttribute("name", fi.sID + ":: " + fi.name + ":: " + fi.comment);
         }
     }
 }

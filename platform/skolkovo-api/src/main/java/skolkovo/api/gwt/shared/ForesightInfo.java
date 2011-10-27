@@ -7,5 +7,5 @@ public class ForesightInfo implements Serializable {
     public String name;
 
     public boolean selected;
-    public String substantiation;
+    public String comment;
 }

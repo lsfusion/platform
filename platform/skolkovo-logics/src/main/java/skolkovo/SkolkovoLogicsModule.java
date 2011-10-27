@@ -342,6 +342,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
         baseLM.tableFactory.include("originalDocsCheck", originalDocsCheck);
         baseLM.tableFactory.include("application", application);
         baseLM.tableFactory.include("foresight", foresight);
+        baseLM.tableFactory.include("projectForesight", project, foresight);
+        baseLM.tableFactory.include("expertForesight", expert, foresight);
     }
 
     @Override
@@ -453,7 +455,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP dataDocumentNameExpert, documentNameExpert;
     public LP emailExpert;
     LP clusterExpert, nameNativeClusterExpert, nameForeignClusterExpert, nameNativeShortClusterExpert;
-    LP inExpertForesight, substantiationExpertForesight, quantityInExpertForesight;
+    LP inExpertForesight, commentExpertForesight, quantityInExpertForesight;
     public LP inProjectForesightExpert, quantityForesightProjectExpert;
     public LP clusterInExpertForesight;
     LP isTechnicalExpert, isBusinessExpert;
@@ -461,7 +463,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP clusterInExpertVote;
     public LP inProjectCluster;
     public LP inProjectForesight;
-    LP isForesightInClusterProject;
+    LP isInClusterProjectForesight;
     LP clusterVote, nameNativeClusterVote, nameForeignClusterVote;
     LP projectCluster;
     LP quantityClusterProject;
@@ -1392,7 +1394,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         nameNativeShortClusterForesight = addJProp(baseGroup, "nameNativeShortClusterForesight", "Кластер (сокр.)", nameNativeShort, clusterForesight, 1);
 
         inProjectForesight = addDProp(baseGroup, "inProjectForesight", "Вкл", LogicalClass.instance, project, foresight);
-        isForesightInClusterProject = addJProp("isForesightInClusterProject", true, "Форсайт в кластере проекта", inProjectCluster, 1, clusterForesight, 2);
+        isInClusterProjectForesight = addJProp("isInClusterProjectForesight", true, "Форсайт в кластере проекта", inProjectCluster, 1, clusterForesight, 2);
         quantityProjectForesight = addSGProp(baseGroup, "quantityProjectForesight", true, "Кол-во форсайтов",
                 addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1, foresight), 2,
                         addJProp(baseLM.equals2, baseLM.vtrue, inProjectForesight, 1, 2), 1, 2), 1);
@@ -1434,7 +1436,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         clusterInExpertForesight = addJProp(baseGroup, "clusterInExpertForesight", "Форсайт кластера эксперта", inClusterExpert, clusterForesight, 2, 1);
         inExpertForesight = addDProp(baseGroup, "inExpertForesight", "Вкл.", LogicalClass.instance, expert, foresight);
-        substantiationExpertForesight = addDProp(baseGroup, "substantiationExpertForesight", "Обоснование", TextClass.instance, expert, foresight);
+        commentExpertForesight = addDProp(baseGroup, "commentExpertForesight", "Комментарий", TextClass.instance, expert, foresight);
 
         quantityInExpertForesight = addSGProp(baseGroup, "quantityInExpertForesight", true, "Количество экспертов по форсайту",
                 addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1, expert), 1, inExpertForesight, 1, 2), 2);
@@ -4190,7 +4192,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             addFixedFilter(new CompareFilterEntity(addPropertyObject(projectNonRussianSpecialist, objNonRussianSpecialist), Compare.EQUALS, objProject));
 
             addFixedFilter(new CompareFilterEntity(addPropertyObject(clusterForesight, objForesight), Compare.EQUALS, objCluster));
-     //       addFixedFilter(new NotNullFilterEntity(addPropertyObject(isForesightInClusterProject, objProject, objForesight)));
+     //       addFixedFilter(new NotNullFilterEntity(addPropertyObject(isInClusterProjectForesight, objProject, objForesight)));
             addFixedFilter(new CompareFilterEntity(addPropertyObject(projectVote, objVote), Compare.EQUALS, objProject));
             addFixedFilter(new CompareFilterEntity(addPropertyObject(projectDocument, objDocument), Compare.EQUALS, objProject));
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(clusterInExpertVote, objExpert, objVote)));
@@ -4562,9 +4564,9 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
             objForesight = addSingleGroupObject(foresight, "Форсайты");
             addPropertyDraw(objForesight, sidForesight, nameNative, nameForeign, nameNativeShortClusterForesight, quantityInExpertForesight);
-            addPropertyDraw(objExpert, objForesight, inExpertForesight, substantiationExpertForesight);
+            addPropertyDraw(objExpert, objForesight, inExpertForesight, commentExpertForesight);
 
-            getPropertyDraw(substantiationExpertForesight).forceViewType = ClassViewType.PANEL;
+            getPropertyDraw(commentExpertForesight).forceViewType = ClassViewType.PANEL;
 
             RegularFilterGroupEntity inactiveFilterGroup = new RegularFilterGroupEntity(genID());
             inactiveFilterGroup.addFilter(new RegularFilterEntity(genID(),
@@ -4600,9 +4602,9 @@ public class SkolkovoLogicsModule extends LogicsModule {
             specContainer.add(design.getGroupObjectContainer(objForesight.groupTo));
             specContainer.tabbedPane = true;
 
-            design.setPanelLabelAbove(design.get(getPropertyDraw(substantiationExpertForesight)), true);
+            design.setPanelLabelAbove(design.get(getPropertyDraw(commentExpertForesight)), true);
 
-            design.get(getPropertyDraw(substantiationExpertForesight)).constraints.fillHorizontal = 1;
+            design.get(getPropertyDraw(commentExpertForesight)).constraints.fillHorizontal = 1;
 
             return design;
         }

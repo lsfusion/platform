@@ -29,6 +29,7 @@ import java.io.InputStream;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.Map;
 
@@ -325,12 +326,13 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
                 q.and(SkolkovoLM.clusterInExpertForesight.getExpr(session.modifier, expertExpr, foresightExpr).getWhere());
                 q.and(LM.userLogin.getExpr(session.modifier, expertExpr).compare(new DataObject(expertLogin), Compare.EQUALS));
 
+                q.properties.put("id", foresightExpr);
                 q.properties.put("sID", SkolkovoLM.sidForesight.getExpr(session.modifier, foresightExpr));
                 q.properties.put("name", isForeign ? SkolkovoLM.nameForeign.getExpr(session.modifier, foresightExpr) : SkolkovoLM.nameNative.getExpr(session.modifier, foresightExpr));
                 q.properties.put("selected", SkolkovoLM.inExpertForesight.getExpr(session.modifier, expertExpr, foresightExpr));
-                q.properties.put("substantiation", SkolkovoLM.substantiationExpertForesight.getExpr(session.modifier, expertExpr, foresightExpr));
+                q.properties.put("comment", SkolkovoLM.commentExpertForesight.getExpr(session.modifier, expertExpr, foresightExpr));
 
-                values = q.execute(session.sql, new OrderedMap<String, Boolean>(Arrays.asList("sID"), false));
+                values = q.execute(session.sql, new OrderedMap<String, Boolean>(Arrays.asList("id"), false));
                 profileInfo.foresightInfos = new ForesightInfo[values.size()];
 
                 i = 0;
@@ -343,7 +345,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
                     foresightInfo.name = ((String) propValues.get("name")).trim();
 
                     foresightInfo.selected = propValues.get("selected") != null;
-                    foresightInfo.substantiation = (String) propValues.get("substantiation");
+                    foresightInfo.comment = (String) propValues.get("comment");
 
                     profileInfo.foresightInfos[i++] = foresightInfo;
                 }
@@ -375,7 +377,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
                 for (ForesightInfo foresightInfo : profileInfo.foresightInfos) {
                     DataObject foresightObj = (DataObject) SkolkovoLM.foresightSID.read(session, new DataObject(foresightInfo.sID, (ConcreteClass)SkolkovoLM.sidForesight.getResultClass()));
                     SkolkovoLM.inExpertForesight.execute(foresightInfo.selected, session, expertObj, foresightObj);
-                    SkolkovoLM.substantiationExpertForesight.execute(foresightInfo.substantiation, session, expertObj, foresightObj);
+                    SkolkovoLM.commentExpertForesight.execute(foresightInfo.comment, session, expertObj, foresightObj);
                 }
 
                 String result = session.apply(this);
