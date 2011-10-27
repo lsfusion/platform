@@ -13,8 +13,6 @@ import com.smartgwt.client.widgets.layout.SectionStack;
 import com.smartgwt.client.widgets.layout.SectionStackSection;
 import com.smartgwt.client.widgets.layout.VLayout;
 import com.smartgwt.client.widgets.layout.VStack;
-import net.customware.gwt.dispatch.client.DefaultExceptionHandler;
-import net.customware.gwt.dispatch.client.standard.StandardDispatchAsync;
 import platform.gwt.base.client.BaseFrame;
 import platform.gwt.base.client.BaseMessages;
 import platform.gwt.base.client.ui.ToolStripPanel;
@@ -25,7 +23,6 @@ import skolkovo.gwt.expertprofile.client.ExpertProfileMessages;
 public abstract class ExpertProfileMainPanel extends VLayout100 {
     private static BaseMessages baseMessages = BaseMessages.Instance.get();
     private static ExpertProfileMessages messages = ExpertProfileMessages.Instance.get();
-    private final static StandardDispatchAsync expertProfileService = new StandardDispatchAsync(new DefaultExceptionHandler());
 
     private final ProfileInfo pi;
     private DynamicForm expertDetailsForm;
@@ -34,12 +31,10 @@ public abstract class ExpertProfileMainPanel extends VLayout100 {
     private StaticTextItem lbNotice;
     private Button btnUpdate;
     private SectionStack mainSectionStack;
-    private VotePanel votePanel;
+//    private VotePanel votePanel;
     private ForesightPanel foresightPanel;
 
     public ExpertProfileMainPanel(ProfileInfo pi) {
-        super(0);
-
         this.pi = pi;
 
         createDetailsSection();
@@ -97,7 +92,6 @@ public abstract class ExpertProfileMainPanel extends VLayout100 {
 
                 btnUpdate.setIcon("loading.gif");
                 foresightPanel.disable();
-//                votePanel.disable();
                 updateButtonClicked();
             }
         });

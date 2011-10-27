@@ -29,6 +29,12 @@
             <artifactId>smartgwt</artifactId>
         </dependency>
         <dependency>
+            <groupId>com.google.gwt.inject</groupId>
+            <artifactId>gin</artifactId>
+            <version>1.5.0</version>
+        </dependency>
+
+        <dependency>
             <groupId>by.luxsoft.platform</groupId>
             <artifactId>gwt-api</artifactId>
         </dependency>

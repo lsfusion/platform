@@ -71,7 +71,6 @@ public class ForesightPanel extends VLayout100 {
         form = new DynamicForm();
         form.setIsGroup(true);
         form.setGroupTitle(messages.expertiseClass());
-        form.setMargin(5);
         form.setWidth100();
         form.setAutoHeight();
         form.setNumCols(1);
@@ -124,7 +123,6 @@ public class ForesightPanel extends VLayout100 {
 
     private Layout createGroupElement(ForesightInfo fi) {
         VLayout layout = new VLayout();
-        layout.setMargin(5);
         layout.setIsGroup(true);
         layout.setGroupTitle(fi.sID + " " + fi.name);
         return layout;
@@ -172,11 +170,12 @@ public class ForesightPanel extends VLayout100 {
 
         DynamicForm form = new DynamicForm();
         form.setWidth100();
-        form.setMargin(5);
         form.setNumCols(1);
         form.setFields(cbSelected, taComment);
 
         VLayout vl = new VLayout();
+        vl.setLayoutMargin(5);
+        vl.setLayoutBottomMargin(0);
         vl.setWidth100();
         vl.setAutoHeight();
         vl.addMember(form);

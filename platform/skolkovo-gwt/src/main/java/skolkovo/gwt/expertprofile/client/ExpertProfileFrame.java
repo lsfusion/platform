@@ -3,7 +3,6 @@ package skolkovo.gwt.expertprofile.client;
 import com.google.gwt.user.client.Window;
 import net.customware.gwt.dispatch.client.DefaultExceptionHandler;
 import net.customware.gwt.dispatch.client.standard.StandardDispatchAsync;
-import platform.gwt.base.client.AsyncCallbackEx;
 import platform.gwt.base.client.BaseFrame;
 import platform.gwt.base.shared.actions.VoidResult;
 import skolkovo.api.gwt.shared.ProfileInfo;
