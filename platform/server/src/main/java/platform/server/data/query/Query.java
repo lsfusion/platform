@@ -282,7 +282,7 @@ public class Query<K,V> extends InnerContext<Query<?,?>> implements MapKeysInter
 
     @HashLazy
     public int hashInner(HashContext hashContext) {
-        return where.hashOuter(hashContext) * 31 + AbstractSourceJoin.hashOuter(properties, hashContext);
+        return where.hashOuter(hashContext) * 31 + AbstractSourceJoin.hashOuter(properties.values(), hashContext);
     }
 
     public boolean equalsInner(Query<?,?> object) {

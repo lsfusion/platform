@@ -7,6 +7,7 @@ import platform.server.caches.hash.HashContext;
 import platform.server.data.expr.BaseExpr;
 import platform.server.data.expr.Expr;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -31,7 +32,7 @@ public abstract class AbstractOuterContext<This extends OuterContext> extends Tw
         return hash;
     }
 
-    public static int hashOuter(Set<? extends OuterContext> set, HashContext hashContext) {
+    public static int hashOuter(Collection<? extends OuterContext> set, HashContext hashContext) {
         int hash = 0;
         for(OuterContext element : set)
             hash += element.hashOuter(hashContext);
