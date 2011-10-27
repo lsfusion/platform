@@ -199,4 +199,8 @@ public abstract class DataAdapter extends AbstractConnectionPool implements SQLS
     public String getInsensitiveLike() {
         return "LIKE";
     }
+
+    public boolean supportGroupNumbers() {
+        return false;
+    }
 }

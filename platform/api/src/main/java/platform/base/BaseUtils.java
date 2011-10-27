@@ -1724,4 +1724,11 @@ public class BaseUtils {
     public static int max(int a, int b) {
         return a > b ? a : b;
     }
+
+    public static List<Integer> genList(int i) {
+        List<Integer> result = new ArrayList<Integer>();
+        for(int j=0;j<i;j++)
+            result.add(j+1);
+        return result;
+    }
 }

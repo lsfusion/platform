@@ -78,7 +78,7 @@ public class CompiledQuery<K,V> {
                 if(mapProperty.getValue()==property) {
                     propertyOrder.add(mapProperty.getKey()); break;}
         keyNames = BaseUtils.join(mapKeys,compile.keyNames);
-        keyReaders = BaseUtils.join(mapKeys,compile.keyReaders);
+        keyReaders = BaseUtils.join(mapKeys, compile.keyReaders);
         propertyNames = BaseUtils.join(mapProperties,compile.propertyNames);
         propertyReaders = BaseUtils.join(mapProperties,compile.propertyReaders);
         union = compile.union;
@@ -473,7 +473,8 @@ public class CompiledQuery<K,V> {
                 for(Map.Entry<GroupExpr.Query, String> expr : queries.entrySet())
                     propertySelect.put(expr.getValue(),expr.getKey().getSource(fromPropertySelect, syntax));
                 return "(" + syntax.getSelect(fromSelect, SQLSession.stringExpr(keySelect,propertySelect),
-                        BaseUtils.toString(whereSelect," AND "),"",BaseUtils.evl(BaseUtils.toString(keySelect.values(),","),"3+2"),"") + ")";
+                        BaseUtils.toString(whereSelect," AND "),"",BaseUtils.evl(
+                        BaseUtils.toString((Collection)(syntax.supportGroupNumbers() ? BaseUtils.genList(keySelect.size()) : keySelect.values()),","),"3+2"),"") + ")";
             }
 
             protected Where getInnerWhere() {
@@ -706,15 +707,8 @@ public class CompiledQuery<K,V> {
 
         compile.fillInnerJoins();
         QueryTranslator keyEqualTranslator = innerSelect.keyEqual.getTranslator();
-        for(Map.Entry<AV, Expr> joinProp : keyEqualTranslator.translate(compiledProps).entrySet()) { // свойства
-            String source = joinProp.getValue().getSource(compile);
-            if(joinProp.getValue() instanceof ValueExpr) {
-                Type type = joinProp.getValue().getType(innerSelect.where);
-                if(type instanceof ObjectType || type instanceof IntegralClass)
-                    source = "CAST(" + source + " AS " + type.getDB(syntax) + ")";
-            }
-            propertySelect.put(joinProp.getKey(), source);
-        }
+        for(Map.Entry<AV, Expr> joinProp : keyEqualTranslator.translate(compiledProps).entrySet()) // свойства
+            propertySelect.put(joinProp.getKey(), joinProp.getValue().getSource(compile));
         for(Map.Entry<K,KeyExpr> mapKey : mapKeys.entrySet()) {
             Expr keyValue = keyEqualTranslator.translate(mapKey.getValue());
             keySelect.put(mapKey.getKey(),BaseUtils.hashEquals(keyValue,mapKey.getValue())?compile.keySelect.get(mapKey.getValue()):keyValue.getSource(compile));

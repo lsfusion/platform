@@ -157,4 +157,8 @@ public class PostgreDataAdapter extends DataAdapter {
     public String getInsensitiveLike() {
         return "ILIKE";
     }
+
+    public boolean supportGroupNumbers() {
+        return true;
+    }
 }

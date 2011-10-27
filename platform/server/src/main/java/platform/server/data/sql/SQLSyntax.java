@@ -89,4 +89,6 @@ public interface SQLSyntax {
     String typeConvertSuffix(Type oldType, Type newType, String name);
 
     String getInsensitiveLike();
+
+    boolean supportGroupNumbers();
 }
