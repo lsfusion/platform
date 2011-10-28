@@ -320,7 +320,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         projectSchedule = addStaticClass("projectSchedule", "Регламент проекта",
                 new String[]{"R1", "R2"},
-                new String[]{"Регламент 1", "Регламент 2"});
+                new String[]{"R1", "R2"});
     }
 
     @Override
@@ -459,6 +459,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
     public LP inProjectForesightExpert, quantityForesightProjectExpert;
     public LP clusterInExpertForesight;
     LP isTechnicalExpert, isBusinessExpert;
+    LP expertiseExpert, grantExpert;
     LP primClusterExpert, extraClusterExpert, inClusterExpert;
     LP clusterInExpertVote;
     public LP inProjectCluster;
@@ -1366,8 +1367,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         projectScheduleProject = addDProp(idGroup, "projectScheduleProject", "Регламент проекта (ИД)", projectSchedule, project);
         regulationsProject = addSUProp("regulationsProject", "regulationsProject", Union.OVERRIDE, addCProp(projectSchedule, "R1", project), projectScheduleProject);
         nameRegulationsProject = addJProp(baseGroup, "nameRegulationsProject", "Регламент проекта", baseLM.name, regulationsProject, 1);
-        nameRegulationsProject.setMinimumCharWidth(10);
-        nameRegulationsProject.setPreferredCharWidth(20);
+        nameRegulationsProject.setFixedCharWidth(2);
       //  isR2Project = addDProp(baseGroup, "isR2Project", "Новый регламент", LogicalClass.instance, project);
       //  isR1Project = addJProp(baseGroup, "isR1Project", "Старый регламент", baseLM.andNot1, addCProp(LogicalClass.instance, true, project), 1, isR2Project, 1);
         isR2Project = addJProp(baseGroup, "isR2Project", "Регламент 2", baseLM.equals2, regulationsProject, 1, addCProp(projectSchedule, "R2"));
@@ -1424,6 +1424,9 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         isTechnicalExpert = addDProp("isTechnicalExpert", "Технический эксперт", LogicalClass.instance, expert);
         isBusinessExpert = addDProp("isBusinessExpert", "Бизнес-эксперт", LogicalClass.instance, expert);
+
+        expertiseExpert = addDProp("expertiseExpert", "Экспертиза по существу", LogicalClass.instance, expert);
+        grantExpert = addDProp("grantExpert", "Гранты", LogicalClass.instance, expert);
 
         clusterExpert = addDProp(idGroup, "clusterExpert", "Кластер (ИД)", cluster, expert);
         nameNativeClusterExpert = addJProp(baseGroup, "nameNativeClusterExpert", "Кластер", nameNative, clusterExpert, 1);
@@ -4549,7 +4552,12 @@ public class SkolkovoLogicsModule extends LogicsModule {
         private ExpertFormEntity(NavigatorElement parent, String sID) {
             super(parent, sID, "Реестр экспертов");
 
-            objExpert = addSingleGroupObject(expert, baseLM.selection, baseLM.userFirstName, baseLM.userLastName, documentNameExpert, baseLM.userLogin, baseLM.userPassword, baseLM.email, disableExpert, nameNativeClusterExpert, nameLanguageExpert, dateAgreementExpert, nameCountryExpert, nameCurrencyExpert, isTechnicalExpert, isBusinessExpert, expertResultGroup, baseLM.generateLoginPassword, emailAuthExpert);
+            objExpert = addSingleGroupObject(expert, baseLM.selection, baseLM.userFirstName, baseLM.userLastName, documentNameExpert,
+                    baseLM.userLogin, baseLM.userPassword, baseLM.email, disableExpert,
+                    nameNativeClusterExpert, nameLanguageExpert,
+                    dateAgreementExpert, nameCountryExpert, nameCurrencyExpert,
+                    isTechnicalExpert, isBusinessExpert, expertiseExpert, grantExpert,
+                    expertResultGroup, baseLM.generateLoginPassword, emailAuthExpert);
             addObjectActions(this, objExpert);
 
             objVote = addSingleGroupObject(vote, nameNativeProjectVote, dateStartVote, dateEndVote, openedVote, succeededVote, quantityDoneVote, revisionVote);

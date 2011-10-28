@@ -318,6 +318,9 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
                 profileInfo.technical = SkolkovoLM.isTechnicalExpert.read(session, expertObj) != null;
                 profileInfo.business = SkolkovoLM.isBusinessExpert.read(session, expertObj) != null;
 
+                profileInfo.expertise = SkolkovoLM.expertiseExpert.read(session, expertObj) != null;
+                profileInfo.grant = SkolkovoLM.expertiseExpert.read(session, expertObj) != null;
+
                 keys = KeyExpr.getMapKeys(asList("exp", "foresight"));
                 expertExpr = keys.get("exp");
                 Expr foresightExpr = keys.get("foresight");
@@ -373,6 +376,9 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
 
                 SkolkovoLM.isTechnicalExpert.execute(profileInfo.technical, session, expertObj);
                 SkolkovoLM.isBusinessExpert.execute(profileInfo.business, session, expertObj);
+
+                SkolkovoLM.expertiseExpert.execute(profileInfo.expertise, session, expertObj);
+                SkolkovoLM.grantExpert.execute(profileInfo.grant, session, expertObj);
 
                 for (ForesightInfo foresightInfo : profileInfo.foresightInfos) {
                     DataObject foresightObj = (DataObject) SkolkovoLM.foresightSID.readClasses(session, new DataObject(foresightInfo.sID, (ConcreteClass)SkolkovoLM.sidForesight.getResultClass()));

@@ -9,6 +9,9 @@ public class ProfileInfo implements Serializable {
     public boolean technical;
     public boolean business;
 
+    public boolean expertise;
+    public boolean grant;
+
     public VoteInfo voteInfos[];
     public ForesightInfo foresightInfos[];
 }
