@@ -85,13 +85,19 @@ public interface ExpertProfileMessages extends Messages {
 
     String commentHint();
 
-    String technical();
+    String classTechnical();
 
-    String business();
+    String classBusiness();
 
     String emptyForesightsError();
 
-    String expertiseClass();
+    String expertiseClassPrompt();
+
+    String appTypePropmpt();
+
+    String appTypeExpertise();
+
+    String appTypeGrant();
 
     public static class Instance {
         private static final ExpertProfileMessages instance = (ExpertProfileMessages) GWT.create(ExpertProfileMessages.class);

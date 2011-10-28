@@ -2,6 +2,7 @@ package platform.gwt.base.client;
 
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.http.client.URL;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.RootPanel;
@@ -78,7 +79,7 @@ public class BaseFrame implements EntryPoint {
     }
 
     public static String getLogoffUrl() {
-        return getPageUrlPreservingParameters("logoff.jsp");
+        return getPageUrlPreservingParameters("logoff.jsp", "spring-security-redirect", URL.encodePathSegment(Window.Location.createUrlBuilder().buildString()));
     }
 
     public static void logoff() {

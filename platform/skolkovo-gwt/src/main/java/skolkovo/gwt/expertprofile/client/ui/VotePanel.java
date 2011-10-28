@@ -50,6 +50,9 @@ public class VotePanel extends VLayout100 {
         createGrid();
 
         setGridData();
+
+        addMember(unvotedForm);
+        addMember(grid);
     }
 
     private void createForm() {
@@ -75,7 +78,7 @@ public class VotePanel extends VLayout100 {
             }
         }
 
-        grid.setData(lvInfos.toArray(new ListGridRecord[lvInfos.size()]));
+        grid.setData(lvInfos.toArray(new ListVoteInfo[lvInfos.size()]));
     }
 
     private void createGrid() {
@@ -136,8 +139,10 @@ public class VotePanel extends VLayout100 {
         foreignField.setWidth("60");
 
         ListGridField competentField = new ListGridField("competent", messages.columnCompetent());
+        competentField.setType(ListGridFieldType.INTEGER);
         competentField.setWidth("60");
         ListGridField completeField = new ListGridField("complete", messages.columnComplete());
+        completeField.setType(ListGridFieldType.INTEGER);
         completeField.setWidth("60");
 
         ListGridField competitiveField = new ListGridField("competitive", messages.columnCompetitive());

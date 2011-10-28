@@ -4,6 +4,8 @@
     <inherits name='com.google.gwt.user.User'/>
     <inherits name="com.smartgwt.SmartGwtNoSmartClient"/>
 
+    <!-- GIN configuration -->
+    <inherits name="com.google.gwt.inject.Inject"/>
     <inherits name="net.customware.gwt.dispatch.Dispatch"/>
 
     <stylesheet src="css/toolstrip.css" />

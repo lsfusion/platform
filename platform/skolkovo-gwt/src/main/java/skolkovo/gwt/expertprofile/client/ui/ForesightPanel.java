@@ -26,7 +26,6 @@ public class ForesightPanel extends VLayout100 {
 
     private ProfileInfo pi;
     private SectionStack fSections;
-    private DynamicForm form;
 
     public ForesightPanel(ProfileInfo PI) {
         this.pi = PI;
@@ -34,53 +33,16 @@ public class ForesightPanel extends VLayout100 {
         setLayoutMargin(10);
         setOverflow(Overflow.AUTO);
 
-        createForesightForm();
         createSectionStack();
 
-        addMember(form);
         addMember(fSections);
-    }
-
-    private void createForesightForm() {
-        final CheckboxItem cbTechnical = new CheckboxItem();
-        cbTechnical.setTitle(messages.technical());
-        cbTechnical.setWrapTitle(true);
-        cbTechnical.setWidth("*");
-        cbTechnical.setColSpan("*");
-        cbTechnical.setShowTitle(false);
-        cbTechnical.addChangedHandler(new ChangedHandler() {
-            @Override
-            public void onChanged(ChangedEvent event) {
-                pi.technical = cbTechnical.getValueAsBoolean();
-            }
-        });
-
-        final CheckboxItem cbBusiness = new CheckboxItem();
-        cbBusiness.setTitle(messages.business());
-        cbBusiness.setWrapTitle(true);
-        cbBusiness.setWidth("*");
-        cbBusiness.setColSpan("*");
-        cbBusiness.setShowTitle(false);
-        cbBusiness.addChangedHandler(new ChangedHandler() {
-            @Override
-            public void onChanged(ChangedEvent event) {
-                pi.business = cbBusiness.getValueAsBoolean();
-            }
-        });
-
-        form = new DynamicForm();
-        form.setIsGroup(true);
-        form.setGroupTitle(messages.expertiseClass());
-        form.setWidth100();
-        form.setAutoHeight();
-        form.setNumCols(1);
-        form.setFields(cbTechnical, cbBusiness);
     }
 
     private void createSectionStack() {
         fSections = new SectionStack();
         fSections.setOverflow(Overflow.VISIBLE);
         fSections.setVisibilityMode(VisibilityMode.MULTIPLE);
+        fSections.setHeaderHeight(20);
 
         ForesightInfo[] fis = pi.foresightInfos;
         int cnt = fis.length;
@@ -145,6 +107,7 @@ public class ForesightPanel extends VLayout100 {
         });
 
         final CheckboxItem cbSelected = new CheckboxItem();
+        cbSelected.setAttribute("wrap", true);
         cbSelected.setTitle(fi.sID + " " + fi.name);
         cbSelected.setWrapTitle(true);
         cbSelected.setWidth("*");
@@ -204,10 +167,6 @@ public class ForesightPanel extends VLayout100 {
             }
         }
         return null;
-    }
-
-    public ProfileInfo populateProfileInfo() {
-        return pi;
     }
 
     public static class StackElement {

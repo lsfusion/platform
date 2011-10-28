@@ -20,7 +20,7 @@
         <intercept-url pattern="/claimer.html" access="hasRole('admin')"/>
         <intercept-url pattern="*.gupld" access="hasRole('admin')"/>
 
-        <form-login authentication-failure-url="/loginFailed.txt" default-target-url="/navigator.jsp"/>
+        <form-login authentication-failure-url="/loginFailed.txt" default-target-url="/login.jsp"/>
         <anonymous enabled="false" />
         <logout logout-url="/logoff.jsp" logout-success-url="/navigator.jsp" />
         <access-denied-handler error-page="/restricted.jsp" />
