@@ -119,10 +119,27 @@
 				</textElement>
 				<textFieldExpression class="java.lang.String"><![CDATA["Приложение. Заявки, поступившие в отчетный период"]]></textFieldExpression>
 			</textField>
-			<image>
-				<reportElement x="0" y="0" width="78" height="39"/>
-				<imageExpression class="java.lang.String"><![CDATA["D:\\strikes.png"]]></imageExpression>
-			</image>
+			<textField isStretchWithOverflow="true">
+				<reportElement style="GroupCellStyle0" x="15" y="0" width="11" height="37" forecolor="#FFFFFF" backcolor="#CCFF66"/>
+				<textElement>
+					<font size="18" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[""]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement style="GroupCellStyle0" x="0" y="0" width="11" height="37" forecolor="#FFFFFF" backcolor="#CCFF66"/>
+				<textElement>
+					<font size="18" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[""]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement style="GroupCellStyle0" x="30" y="0" width="11" height="37" forecolor="#FFFFFF" backcolor="#CCFF66"/>
+				<textElement>
+					<font size="18" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA[""]]></textFieldExpression>
+			</textField>
 		</band>
 	</pageHeader>
 	<detail>

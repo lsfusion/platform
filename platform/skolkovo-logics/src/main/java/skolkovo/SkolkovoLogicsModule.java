@@ -467,6 +467,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP isInClusterProjectForesight;
     LP clusterVote, nameNativeClusterVote, nameForeignClusterVote;
     LP projectCluster;
+    LP inTestCluster;
     LP quantityClusterProject;
     LP clusterForesight, sidForesight;
     LP foresightSID;
@@ -1117,6 +1118,11 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
     private LP finalClusterApplication, nameFinalClusterApplication;
 
+    LP quantityClusterApplication;
+    LP nonClusterApplication;
+    LP nonClusterApplicationsSubmitDateDate;
+    LP nonClusterApplicationsIsSatusSubmitDateDate;
+
     LP statusJoinApplication;
     LP isPreliminaryAfterStatusApplication;
     LP statusApplication;
@@ -1256,6 +1262,13 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
     private LP daysClaimerApplicationPreliminary, daysClaimerApplicationStatus, daysClaimerApplication;
 
+    LP nonClusterApplicationsProjectActionSubmitDateDate;
+    LP applicationsSubmitClusterDateDate;
+    LP applicationsSubmitProjectActionDateDate;
+    LP applicationsSubmitStatusApplicationClusterDateDate;
+    LP applicationsSubmitStatusApplicationDateDate;
+    LP nonClusterApplicationsStatusAplicationSubmitDateDate;
+
     LP dateRegisteredStatusProject;
     LP dateNoClusterStatusProject;
     LP dateNoExpertsStatusProject;
@@ -1279,7 +1292,11 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP isFinalProjectStatus;
     LP typeProjectStatusProjectStatus, nameTypeProjectStatusProjectStatus;
     LP dateInStatusApplication, overdueDateStatusApplication, quantityDaysToOverdueDateStatusApplication;
- //   LP dateSubmittedToRegisterProjectApplication;
+    LP dateSubmittedToRegisterProjectApplication;
+    LP quantityStatusVoteProject;
+    LP quantityStatusVoteApplication;
+    LP daysCommonApplication;
+    LP daysStatusApplication;
 
     @Override
     public void initProperties() {
@@ -1377,6 +1394,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         projectVote = addDProp(idGroup, "projectVote", "Проект (ИД)", project, vote);
         setNotNull(projectVote);
+
+        inTestCluster = addDProp(baseGroup, "inTestCluster", "Ненужный", LogicalClass.instance, cluster);
 
         inProjectCluster = addDProp(baseGroup, "inProjectCluster", "Вкл", LogicalClass.instance, project, cluster);
 
@@ -2299,6 +2318,10 @@ public class SkolkovoLogicsModule extends LogicsModule {
                 addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1, vote), 1,
                         isPreliminaryVote, 1), projectVote, 1);
 
+        quantityStatusVoteProject = addSGProp("quantityStatusVoteProject", true, "Количество заседаний",
+                 addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1, vote), 1,
+                         isStatusVote, 1), projectVote, 1);
+
         openedVote = addJProp(baseGroup, "openedVote", "Открыто", baseLM.groeq2, dateEndVote, 1, baseLM.currentDate);
         closedVote = addJProp(baseGroup, "closedVote", "Закрыто", baseLM.andNot1, is(vote), 1, openedVote, 1);
 
@@ -3186,8 +3209,9 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         projectApplication = addDProp(idGroup, "projectApplication", "Проект (ИД)", project, application);
 
-//        dateSubmittedToRegisterProjectApplication = addJProp("dateSubmittedToRegisterProjectApplication", "дата внесения в реестр участников", dateSubmittedToRegisterProject, projectApplication, 1);
+        dateSubmittedToRegisterProjectApplication = addJProp("dateSubmittedToRegisterProjectApplication", "дата внесения в реестр участников", dateSubmittedToRegisterProject, projectApplication, 1);
 
+        quantityStatusVoteApplication = addJProp("quantityStatusVoteApplication", true, "Количество заседаний", quantityStatusVoteProject, projectApplication, 1);
 
         projectApplicationPreliminary = addJProp(idGroup, "projectApplicationPreliminary", "Проект (ИД)", baseLM.and1, projectApplication, 1, is(applicationPreliminary), 1);
         projectApplicationStatus = addJProp(idGroup, "projectApplicationStatus", "Проект (ИД)", baseLM.and1, projectApplication, 1, is(applicationStatus), 1);
@@ -3195,7 +3219,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         isPreliminaryApplication = addJProp(isPreliminaryStatusProject, projectApplication, 1);
         isStatusApplication = addJProp(isStatusProject, projectApplication, 1);
 
-        isPreliminaryAndStatusApplication = addJProp(isPreliminaryAndStatusProject, projectApplication, 1);
+        isPreliminaryAndStatusApplication = addJProp("isPreliminaryAndStatusApplication", "Заявка была и на статус, и на предв", isPreliminaryAndStatusProject, projectApplication, 1);
 
         preliminaryApplicationProject = addAGProp(idGroup, false, "preliminaryApplicationProject", false, "Заяка на предварительную экспертизу", applicationPreliminary, projectApplication);
         follows(isPreliminaryStatusProject, preliminaryApplicationProject, 1);
@@ -3255,6 +3279,24 @@ public class SkolkovoLogicsModule extends LogicsModule {
         applicationsSubmitProjectActionClusterDateDate = addSGProp("applicationsSubmitProjectActionClusterDateDate", "Всего поступивших заявок",
                 oneApplicationDateDate, projectActionApplication, 1, finalClusterApplication, 1, 2, 3);
 
+        applicationsSubmitClusterDateDate = addSGProp("applicationsSubmitClusterDateDate", "Всего поступивших заявок",
+                oneApplicationDateDate, finalClusterApplication, 1, 2, 3);
+
+        applicationsSubmitProjectActionDateDate = addSGProp("applicationsSubmitProjectActionDateDate", "Всего поступивших заявок",
+                oneApplicationDateDate, projectActionApplication, 1, 2, 3);
+
+        quantityClusterApplication = addJProp("quantityClusterApplication", "К-во кластеров", quantityClusterProject, projectApplication, 1);
+        nonClusterApplication = addJProp("nonClusterApplication", "Заявка без кластера", baseLM.andNot1, is(application), 1, quantityClusterApplication, 1);
+        nonClusterApplicationsSubmitDateDate = addSGProp("nonClusterApplicationsSubmitDateDate", "Итого не указано", addJProp(baseLM.andNot1, oneApplicationDateDate, 1, 2, 3, quantityClusterApplication, 1), 2, 3);
+        nonClusterApplicationsProjectActionSubmitDateDate = addSGProp("nonClusterApplicationsProjectActionSubmitDateDate", "Итого не указано", addJProp(baseLM.andNot1, oneApplicationDateDate, 1, 2, 3, quantityClusterApplication, 1), projectActionApplication, 1, 2, 3);
+
+        applicationsSubmitStatusApplicationDateDate = addSGProp("applicationsSubmitStatusApplicationDateDate", "Всего поступивших заявок",
+                oneApplicationDateDate, statusApplication, 1, 2, 3);
+        applicationsSubmitStatusApplicationClusterDateDate = addSGProp("applicationsSubmitStatusApplicationClusterDateDate", "Всего поступивших заявок",
+                oneApplicationDateDate, statusApplication, 1, finalClusterApplication,1, 2, 3);
+
+        nonClusterApplicationsStatusAplicationSubmitDateDate = addSGProp("nonClusterApplicationsStatusAplicationSubmitDateDate", "Итого не указано", addJProp(baseLM.and1, oneApplicationDateDate, 1, 2, 3, nonClusterApplication, 1), statusApplication, 1, 2, 3);
+
         averageWeekApplSubmitDateDate = addJProp("averageApplSubmitDateDate", "Среднее кол-во заявок в день",
                 baseLM.divideInteger0, applicationsSubmitDateDate, 1, 2, baseLM.weeksNullInclBetweenDates, 1, 2);
 
@@ -3300,6 +3342,9 @@ public class SkolkovoLogicsModule extends LogicsModule {
         daysClaimerApplicationStatus = addJProp("daysClaimerApplicationStatus", "Кол-во дней на стороне заявителя", daysClaimerStatusProject, projectApplicationStatus, 1);
 
         daysClaimerApplication = addCUProp("daysClaimerApplication", "Кол-во дней на стороне заявителя", daysClaimerApplicationPreliminary, daysClaimerApplicationStatus);
+
+        daysCommonApplication =  addJProp("daysCommonApplication", "Общее к-во дней заявки", baseLM.subtractInteger2, dateSubmittedToRegisterProjectApplication, 1, dateApplicationStatus, 1);
+        daysStatusApplication =  addDUProp("daysStatusApplication", "Кол-во дней рассмотрения заявки на статус", daysCommonApplication, daysClaimerApplication);
 
         // даты для статусов-проектов
         dateRegisteredStatusProject = addJProp("dateRegisteredStatusProject", true, "Дата статуса", baseLM.and1, dateProject, 1, addJProp(baseLM.equals2, statusProject, 1, addCProp(projectStatus, "registered")), 1);
@@ -4770,7 +4815,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             super(parent, sID, "Кластеры");
 
             objCluster = addSingleGroupObject(1, "Кластер", cluster);
-            addPropertyDraw(objCluster, nameNative, nameForeign);
+            addPropertyDraw(objCluster, nameNative, nameForeign, inTestCluster);
             addObjectActions(this, objCluster);
 
             objForesight = addSingleGroupObject(2, "Кластер", foresight);
@@ -5238,6 +5283,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         private ObjectEntity objDateTo;
         private ObjectEntity objCluster;
         private ObjectEntity objProjectAction;
+        private ObjectEntity objProjectStatus;
 
         public ApplicationsSubmittedFormEntity(NavigatorElement parent, String sID) {
             super(parent, sID, "Статистика заявок, поступивших в отчетный период");
@@ -5254,12 +5300,27 @@ public class SkolkovoLogicsModule extends LogicsModule {
             addPropertyDraw(objDateFrom, baseLM.objectValue);
             addPropertyDraw(objDateTo, baseLM.objectValue);
 
-            objCluster = addSingleGroupObject(4, "projectAction", cluster, "Тип заявки", nameNativeShort, nameNative, nameForeign);
+            objCluster = addSingleGroupObject(4, "cluster", cluster, "Кластер", nameNativeShort, nameNative, nameForeign);
             objProjectAction = addSingleGroupObject(5, "projectAction", projectAction, "Тип заявки", baseLM.name);
 
             PropertyDrawEntity count = addPropertyDraw(applicationsSubmitProjectActionClusterDateDate, objProjectAction, objCluster, objDateFrom, objDateTo);
             count.columnGroupObjects.add(objCluster.groupTo);
             count.propertyCaption = addPropertyObject(nameNativeShort, objCluster);
+
+            addPropertyDraw(objDateFrom, objDateTo, nonClusterApplicationsSubmitDateDate);
+            addPropertyDraw(objCluster, objDateFrom, objDateTo, applicationsSubmitClusterDateDate);
+            addPropertyDraw(objProjectAction, objDateFrom, objDateTo, nonClusterApplicationsProjectActionSubmitDateDate, applicationsSubmitProjectActionDateDate);
+
+            objProjectStatus = addSingleGroupObject(6, "projectStatus", projectStatus, "Статус заявки", baseLM.name, oficialNameProjectStatus);
+
+            PropertyDrawEntity count1 = addPropertyDraw(applicationsSubmitStatusApplicationClusterDateDate, objProjectStatus, objCluster, objDateFrom, objDateTo);
+            count1.columnGroupObjects.add(objCluster.groupTo);
+            count1.propertyCaption = addPropertyObject(nameNativeShort, objCluster);
+            addPropertyDraw(objProjectStatus, objDateFrom, objDateTo, nonClusterApplicationsStatusAplicationSubmitDateDate, applicationsSubmitStatusApplicationDateDate);
+
+            addFixedFilter(new NotFilterEntity(new NotNullFilterEntity(addPropertyObject(inTestCluster, objCluster))));
+            addFixedFilter(new NotNullFilterEntity(addPropertyObject(applicationsSubmitStatusApplicationClusterDateDate, objProjectStatus, objCluster, objDateFrom, objDateTo)));
+
         }
     }
 
@@ -5294,28 +5355,30 @@ public class SkolkovoLogicsModule extends LogicsModule {
     }
 
     private class ApplicationsStatusTimeFormEntity extends FormEntity<SkolkovoBusinessLogics> {
- //       private ObjectEntity objDateFrom;
-//        private ObjectEntity objDateTo;
-//        private ObjectEntity objApplicationStatus;
+        private ObjectEntity objDateFrom;
+        private ObjectEntity objDateTo;
+        private ObjectEntity objApplicationStatus;
 
 
         public ApplicationsStatusTimeFormEntity(NavigatorElement parent, String sID) {
             super(parent, sID, "Средний срок рассмотрения заявки на статус участника");
 
- //           GroupObjectEntity gobjDates = new GroupObjectEntity(1, "date");
-  //          objDateFrom = new ObjectEntity(2, "dateFrom", DateClass.instance, "Дата (с)");
-  //          objDateTo = new ObjectEntity(3, "dateTo", DateClass.instance, "Дата (по)");
-  //          gobjDates.add(objDateFrom);
-  //          gobjDates.add(objDateTo);
+            GroupObjectEntity gobjDates = new GroupObjectEntity(1, "date");
+            objDateFrom = new ObjectEntity(2, "dateFrom", DateClass.instance, "Дата (с)");
+            objDateTo = new ObjectEntity(3, "dateTo", DateClass.instance, "Дата (по)");
+            gobjDates.add(objDateFrom);
+            gobjDates.add(objDateTo);
 
- //           addGroup(gobjDates);
-//            gobjDates.setSingleClassView(ClassViewType.PANEL);
+            addGroup(gobjDates);
+            gobjDates.setSingleClassView(ClassViewType.PANEL);
 
-//            addPropertyDraw(objDateFrom, baseLM.objectValue);
- //           addPropertyDraw(objDateTo, baseLM.objectValue);
-  //          addPropertyDraw(objDateFrom, objDateTo, applicationsSubmitDateDate, averageWeekApplSubmitDateDate);
-  //          objApplicationStatus = addSingleGroupObject(4, "applicationStatus", applicationStatus, "Заявка", nameNativeClaimerApplication, dateApplication, dateSubmittedToRegisterProjectApplication, nameProjectActionApplication, nameNativeProjectApplication, daysClaimerApplication, quantityStatusVoteProjectApplication, officialNameStatusApplication);
-
+            addPropertyDraw(objDateFrom, baseLM.objectValue);
+            addPropertyDraw(objDateTo, baseLM.objectValue);
+//            addPropertyDraw(objDateFrom, objDateTo, applicationsSubmitDateDate);
+            objApplicationStatus = addSingleGroupObject(4, "applicationStatus", applicationStatus, "Заявка", nameProjectActionApplication, nameNativeClaimerApplication, dateApplicationStatus, daysClaimerApplication, quantityStatusVoteApplication, dateSubmittedToRegisterProjectApplication, daysStatusApplication, isPreliminaryAndStatusApplication);
+            addFixedFilter(new NotFilterEntity(new NotNullFilterEntity(addPropertyObject(inactiveApplication, objApplicationStatus))));
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(dateSubmittedToRegisterProjectApplication, objApplicationStatus), Compare.LESS_EQUALS, objDateTo));
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(dateSubmittedToRegisterProjectApplication, objApplicationStatus), Compare.GREATER_EQUALS, objDateFrom));
         }
     }
 
