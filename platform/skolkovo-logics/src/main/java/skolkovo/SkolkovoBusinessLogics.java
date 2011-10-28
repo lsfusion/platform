@@ -19,9 +19,9 @@ import platform.server.logics.DataObject;
 import platform.server.logics.property.Property;
 import platform.server.session.DataSession;
 import skolkovo.api.gwt.shared.ForesightInfo;
-import skolkovo.api.remote.SkolkovoRemoteInterface;
 import skolkovo.api.gwt.shared.ProfileInfo;
 import skolkovo.api.gwt.shared.VoteInfo;
+import skolkovo.api.remote.SkolkovoRemoteInterface;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -29,7 +29,6 @@ import java.io.InputStream;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.Arrays;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.Map;
 
@@ -379,6 +378,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
 
                 SkolkovoLM.expertiseExpert.execute(profileInfo.expertise, session, expertObj);
                 SkolkovoLM.grantExpert.execute(profileInfo.grant, session, expertObj);
+                SkolkovoLM.profileUpdateDateExpert.execute(DateConverter.dateToSql(new Date()), session, expertObj);
 
                 for (ForesightInfo foresightInfo : profileInfo.foresightInfos) {
                     DataObject foresightObj = (DataObject) SkolkovoLM.foresightSID.readClasses(session, new DataObject(foresightInfo.sID, (ConcreteClass)SkolkovoLM.sidForesight.getResultClass()));

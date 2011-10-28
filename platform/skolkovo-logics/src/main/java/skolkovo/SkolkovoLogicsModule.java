@@ -460,6 +460,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
     public LP clusterInExpertForesight;
     LP isTechnicalExpert, isBusinessExpert;
     LP expertiseExpert, grantExpert;
+    LP profileUpdateDateExpert;
+    LP profileBlockedExpert;
     LP primClusterExpert, extraClusterExpert, inClusterExpert;
     LP clusterInExpertVote;
     public LP inProjectCluster;
@@ -1446,6 +1448,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         expertiseExpert = addDProp("expertiseExpert", "Экспертиза по существу", LogicalClass.instance, expert);
         grantExpert = addDProp("grantExpert", "Гранты", LogicalClass.instance, expert);
+        profileBlockedExpert = addDProp("profileBlockedExpert", "Профайл заблокирован", LogicalClass.instance, expert);
+        profileUpdateDateExpert = addDProp("profileUpdateDateExpert", "Время обновления", DateClass.instance, expert);
 
         clusterExpert = addDProp(idGroup, "clusterExpert", "Кластер (ИД)", cluster, expert);
         nameNativeClusterExpert = addJProp(baseGroup, "nameNativeClusterExpert", "Кластер", nameNative, clusterExpert, 1);
@@ -4601,7 +4605,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
                     baseLM.userLogin, baseLM.userPassword, baseLM.email, disableExpert,
                     nameNativeClusterExpert, nameLanguageExpert,
                     dateAgreementExpert, nameCountryExpert, nameCurrencyExpert,
-                    isTechnicalExpert, isBusinessExpert, expertiseExpert, grantExpert,
+                    isTechnicalExpert, isBusinessExpert, expertiseExpert, grantExpert, profileBlockedExpert, profileUpdateDateExpert,
                     expertResultGroup, baseLM.generateLoginPassword, emailAuthExpert);
             addObjectActions(this, objExpert);
 
