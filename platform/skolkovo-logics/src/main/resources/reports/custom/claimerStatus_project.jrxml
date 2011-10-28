@@ -10,10 +10,10 @@
 		</box>
 	</style>
 	<field name="project" class="java.lang.Integer"/>
-	<field name="date" class="java.util.Date"/>
+	<field name="dateProject" class="java.util.Date"/>
 	<field name="nameNativeProject" class="java.lang.String"/>
 	<field name="nameAblateClaimerProject" class="java.lang.String"/>
-	<field name="nameNativeClaimerClaimerProject" class="java.lang.String"/>
+	<field name="nameNativeClaimerProject" class="java.lang.String"/>
 	<field name="nameDativusClaimerProject" class="java.lang.String"/>
 	<field name="nameGenitiveClaimerProject" class="java.lang.String"/>
 	<detail>
@@ -51,16 +51,16 @@
 				</textElement>
 				<text><![CDATA[О присвоении статуса участника проекта]]></text>
 			</staticText>
-			<textField isStretchWithOverflow="true">
+			<textField isStretchWithOverflow="true" isBlankWhenNull="false">
 				<reportElement style="DefaultStyle" positionType="Float" x="51" y="153" width="489" height="86"/>
 				<textElement textAlignment="Justified" verticalAlignment="Top">
 					<paragraph firstLineIndent="40"/>
 				</textElement>
 				<textFieldExpression class="java.lang.String"><![CDATA["Некоммерческая организация Фонд развития Центра разработки и коммерциализации новых технологий, рассмотрев поданную " + $F{nameAblateClaimerProject} + " " +
 "заявку на присвоение статуса участника проекта от " +
-platform.base.BaseUtils.formatRussian($F{date}) + " года (" + $F{nameNativeProject} + ") и документы, представленные Соискателем в порядке, предусмотренном пунктом 15 Положения о присвоении и утрате статуса участника проекта создания и обеспечения функционирования инновационного центра «Сколково», в соответствии с пунктами 16, 21, 22 указанного Положения, "+
+platform.base.BaseUtils.formatRussian($F{dateProject}) + " года (" + $F{nameNativeProject} + ") и документы, представленные Соискателем в порядке, предусмотренном пунктом 15 Положения о присвоении и утрате статуса участника проекта создания и обеспечения функционирования инновационного центра «Сколково», в соответствии с пунктами 16, 21, 22 указанного Положения, "+
 "учитывая, что проект, представленный Соискателем, прошел предварительную экспертизу в соответствии с Положением о предварительной экспертизе проектов и был признан соответствующим критериям, указанным в подпункте Е пункта 2 Положения о присвоении и утрате статуса участника проекта создания и обеспечения функционирования инновационного центра «Сколково» "+
-"(заявка "+$F{nameGenitiveClaimerProject}+" на проведение предварительной экспертизы проекта от "+platform.base.BaseUtils.formatRussian($F{date})+" года)"]]></textFieldExpression>
+"(заявка "+$F{nameGenitiveClaimerProject}+" на проведение предварительной экспертизы проекта от " + platform.base.BaseUtils.formatRussian($F{dateProject}) + " года)"]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
 				<reportElement style="DefaultStyle" positionType="Float" x="51" y="314" width="489" height="43"/>
