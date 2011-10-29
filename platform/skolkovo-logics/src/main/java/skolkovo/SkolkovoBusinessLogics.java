@@ -378,7 +378,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
 
                 SkolkovoLM.expertiseExpert.execute(profileInfo.expertise, session, expertObj);
                 SkolkovoLM.grantExpert.execute(profileInfo.grant, session, expertObj);
-                SkolkovoLM.profileUpdateDateExpert.execute(DateConverter.dateToSql(new Date()), session, expertObj);
+                SkolkovoLM.profileUpdateDateExpert.execute(DateConverter.dateToStamp(new Date()), session, expertObj);
 
                 for (ForesightInfo foresightInfo : profileInfo.foresightInfos) {
                     DataObject foresightObj = (DataObject) SkolkovoLM.foresightSID.readClasses(session, new DataObject(foresightInfo.sID, (ConcreteClass)SkolkovoLM.sidForesight.getResultClass()));

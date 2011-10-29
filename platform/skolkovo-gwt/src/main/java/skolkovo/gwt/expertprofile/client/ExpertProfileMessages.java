@@ -99,6 +99,8 @@ public interface ExpertProfileMessages extends Messages {
 
     String appTypeGrant();
 
+    String foresightHint();
+
     public static class Instance {
         private static final ExpertProfileMessages instance = (ExpertProfileMessages) GWT.create(ExpertProfileMessages.class);
 

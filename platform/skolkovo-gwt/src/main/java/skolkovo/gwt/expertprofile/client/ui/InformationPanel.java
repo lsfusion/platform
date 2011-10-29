@@ -104,7 +104,7 @@ public class InformationPanel extends VLayout100 {
         cbExpertise.setWidth("*");
         cbExpertise.setColSpan("*");
         cbExpertise.setShowTitle(false);
-        cbExpertise.setValue(pi.technical);
+        cbExpertise.setValue(pi.expertise);
         cbExpertise.addChangedHandler(new ChangedHandler() {
             @Override
             public void onChanged(ChangedEvent event) {
@@ -118,7 +118,7 @@ public class InformationPanel extends VLayout100 {
         cbGrant.setWidth("*");
         cbGrant.setColSpan("*");
         cbGrant.setShowTitle(false);
-        cbGrant.setValue(pi.business);
+        cbGrant.setValue(pi.grant);
         cbGrant.addChangedHandler(new ChangedHandler() {
             @Override
             public void onChanged(ChangedEvent event) {

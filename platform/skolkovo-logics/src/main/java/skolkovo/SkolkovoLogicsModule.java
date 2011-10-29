@@ -701,7 +701,9 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP emailProtocolVoteEA, emailProtocolHeaderVote, emailProtocolVote;
     LP emailClosedVoteEA, emailClosedHeaderVote, emailClosedVote;
     LP emailAuthExpertEA, emailAuthExpert;
+    LP emailAuthProfileExpertEA, emailAuthProfileExpert;
     LP authExpertSubjectLanguage, letterExpertSubjectLanguage;
+    LP authProfileExpertSubjectLanguage;
 
     LP generateDocumentsProjectDocumentType;
     LP includeDocumentsProject, hideIncludeDocumentsProject;
@@ -1249,20 +1251,21 @@ public class SkolkovoLogicsModule extends LogicsModule {
     private LP applicationsSubmitProjectActionClusterDateDate;
     private LP averageWeekApplSubmitDateDate;
 
-    private LP daysClaimerFirstOriginalDocsProject;
-    private LP daysClaimerExtraOriginalDocsProject;
-    private LP daysClaimerOriginalDocsProject;
+    private LP daysClaimerFirstOriginalDocsProject, isClaimerFirstOriginalDocsProjectDate;
+    private LP daysClaimerExtraOriginalDocsProject, isClaimerExtraOriginalDocsProjectDate;
+    private LP daysClaimerOriginalDocsProject, isClaimerOriginalDocsProjectDate;
 
-    private LP daysClaimerPreliminaryFormalControlProject;
-    private LP daysClaimerStatusFormalControlProject;
+    private LP daysClaimerPreliminaryFormalControlProject, isClaimerPreliminaryFormalControlProjectDate;
+    private LP daysClaimerStatusFormalControlProject, isClaimerStatusFormalControlProjectDate;
 
-    private LP daysClaimerPreliminaryLegalCheckProject;
-    private LP daysClaimerStatusLegalCheckProject;
+    private LP daysClaimerPreliminaryLegalCheckProject, isClaimerPreliminaryLegalCheckProjectDate;
+    private LP daysClaimerStatusLegalCheckProject, isClaimerStatusLegalCheckProjectDate;
 
-    private LP daysClaimerPreliminaryProject;
-    private LP daysClaimerStatusProject;
+    private LP daysClaimerPreliminaryProject, isClaimerPreliminaryProjectDate;
+    private LP daysClaimerStatusProject, isClaimerStatusProjectDate;
 
     private LP daysClaimerApplicationPreliminary, daysClaimerApplicationStatus, daysClaimerApplication;
+    private LP isClaimerApplicationPreliminaryDate, isClaimerApplicationStatusDate, isClaimerApplicationDate;
 
     LP nonClusterApplicationsProjectActionSubmitDateDate;
     LP applicationsSubmitClusterDateDate;
@@ -1449,7 +1452,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         expertiseExpert = addDProp("expertiseExpert", "Экспертиза по существу", LogicalClass.instance, expert);
         grantExpert = addDProp("grantExpert", "Гранты", LogicalClass.instance, expert);
         profileBlockedExpert = addDProp("profileBlockedExpert", "Профайл заблокирован", LogicalClass.instance, expert);
-        profileUpdateDateExpert = addDProp("profileUpdateDateExpert", "Время обновления", DateClass.instance, expert);
+        profileUpdateDateExpert = addDProp("profileUpdateDateExpert", "Время обновления", DateTimeClass.instance, expert);
 
         clusterExpert = addDProp(idGroup, "clusterExpert", "Кластер (ИД)", cluster, expert);
         nameNativeClusterExpert = addJProp(baseGroup, "nameNativeClusterExpert", "Кластер", nameNative, clusterExpert, 1);
@@ -2269,6 +2272,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         localeLanguage = addDProp(baseGroup, "localeLanguage", "Locale", StringClass.get(5), language);
         authExpertSubjectLanguage = addDProp(baseGroup, "authExpertSubjectLanguage", "Заголовок аутентификации эксперта", StringClass.get(100), language);
+        authProfileExpertSubjectLanguage = addDProp(baseGroup, "authProfileExpertSubjectLanguage", "Заголовок уведомления о заполнении профиля", StringClass.get(100), language);
         letterExpertSubjectLanguage = addDProp(baseGroup, "letterExpertSubjectLanguage", "Заголовок письма о заседании", StringClass.get(100), language);
 
         LP multipleDocument = addJProp(multipleLanguageDocumentType, languageDocument, 1, typeDocument, 1);
@@ -3140,6 +3144,15 @@ public class SkolkovoLogicsModule extends LogicsModule {
                 emailAuthExpertEA, 1, addJProp(authExpertSubjectLanguage, languageExpert, 1), 1);
         emailAuthExpert.setImage("email.png");
         emailAuthExpert.property.askConfirm = true;
+
+        emailAuthProfileExpertEA = addEAProp(expert);
+        addEARecepient(emailAuthProfileExpertEA, baseLM.email, 1);
+
+        emailAuthProfileExpert = addJProp(baseGroup, true, "emailAuthProfileExpert", "Уведомление о заполнении профиля (e-mail)",
+                emailAuthProfileExpertEA, 1, addJProp(authProfileExpertSubjectLanguage, languageExpert, 1), 1);
+        emailAuthProfileExpert.setImage("email.png");
+        emailAuthProfileExpert.property.askConfirm = true;
+
 //        emailAuthExpert.setDerivedChange(addCProp(ActionClass.instance, true), userLogin, 1, userPassword, 1);
 
         emailClaimerAcceptedHeaderVote = addJProp(emailClaimerNameVote, 1, addCProp(StringClass.get(2000), "Решение о соответствии - "));
@@ -3315,37 +3328,72 @@ public class SkolkovoLogicsModule extends LogicsModule {
                         addJProp(baseLM.subtractInteger2, dateFirstSubmitOriginalDocsProject, 1, dateDecisionNoticedProject, 1),
                         hasPreliminaryVoteProject, 1), 1, isStatusProject, 1);
 
+        isClaimerFirstOriginalDocsProjectDate = addJProp("isClaimerFirstOriginalDocsProjectDate", "На стороне заявителя подача документов в бумажном виде (первый раз)", baseLM.and1,
+                addIfElseUProp(addJProp(baseLM.betweenDates, 2, datePositiveStatusLegalCheckProject, 1, dateFirstSubmitOriginalDocsProject, 1),
+                        addJProp(baseLM.betweenDates, 2, dateDecisionNoticedProject, 1, dateFirstSubmitOriginalDocsProject, 1),
+                        hasPreliminaryVoteProject, 1), 1, 2, isStatusProject, 1);
+
         daysClaimerExtraOriginalDocsProject = addSGProp("daysClaimerExtraOriginalDocsProject", true, "Кол-во дней подачи документов в бумажном виде (повторно)",
                 addJProp(baseLM.subtractInteger2, dateSubmitOriginalDocsCheck, 1, datePrevOriginalDocsCheck, 1), projectOriginalDocsCheck, 1);
 
+        isClaimerExtraOriginalDocsProjectDate = addMGProp("isClaimerExtraOriginalDocsProjectDate", "На стороне заявителя подача документов в бумажном виде (повторно)",
+                addJProp(baseLM.betweenDates, 2, datePrevOriginalDocsCheck, 1, dateSubmitOriginalDocsCheck, 1), projectOriginalDocsCheck, 1, 2);
+
         daysClaimerOriginalDocsProject = addSUProp("daysClaimerOriginalDocsProject", "Кол-во дней подачи документов в бумажном виде", Union.SUM, daysClaimerFirstOriginalDocsProject, daysClaimerExtraOriginalDocsProject);
+        isClaimerOriginalDocsProjectDate = addSUProp("isClaimerOriginalDocsProjectDate", "На стороне заявителя подача документов в бумажном виде", Union.OVERRIDE, isClaimerFirstOriginalDocsProjectDate, isClaimerExtraOriginalDocsProjectDate);
 
         daysClaimerPreliminaryFormalControlProject = addSGProp("daysClaimerPreliminaryFormalControlProject", true, "Кол-во дней формальной экспертизы (предв. экспертиза)",
                 addJProp(baseLM.and1, addJProp(baseLM.subtractInteger2, dateSubmitFormalControl, 1, datePrevFormalControl, 1), 1, isPreliminaryFormalControl, 1),
                         projectFormalControl, 1);
 
+        isClaimerPreliminaryFormalControlProjectDate = addMGProp("isClaimerPreliminaryFormalControlProjectDate", "На стороне заявителя формальной экспертизы (предв. экспертиза)",
+                addJProp(baseLM.and1, addJProp(baseLM.betweenDates, 2, datePrevFormalControl, 1, dateSubmitFormalControl, 1), 1, 2, isPreliminaryFormalControl, 1),
+                        projectFormalControl, 1, 2);
+
         daysClaimerStatusFormalControlProject = addSGProp("daysClaimerStatusFormalControlProject", true, "Кол-во дней формальной экспертизы (статус)",
                 addJProp(baseLM.and1, addJProp(baseLM.subtractInteger2, dateSubmitFormalControl, 1, datePrevFormalControl, 1), 1, isStatusFormalControl, 1),
                         projectFormalControl, 1);
+
+        isClaimerStatusFormalControlProjectDate = addMGProp("isClaimerStatusFormalControlProjectDate", "На стороне заявителя формальной экспертизы (статус)",
+                addJProp(baseLM.and1, addJProp(baseLM.betweenDates, 2, datePrevFormalControl, 1, dateSubmitFormalControl, 1), 1, 2, isStatusFormalControl, 1),
+                        projectFormalControl, 1, 2);
 
         daysClaimerPreliminaryLegalCheckProject = addSGProp("daysClaimerPreliminaryLegalCheckProject", true, "Кол-во дней юридической проверки (предв. экспертиза)",
                 addJProp(baseLM.and1, addJProp(baseLM.subtractInteger2, dateSubmitLegalCheck, 1, datePrevLegalCheck, 1), 1, isPreliminaryLegalCheck, 1),
                         projectLegalCheck, 1);
 
+        isClaimerPreliminaryLegalCheckProjectDate = addMGProp("isClaimerPreliminaryLegalCheckProjectDate", "На стороне заявителя юридической проверки (предв. экспертиза)",
+                addJProp(baseLM.and1, addJProp(baseLM.betweenDates, 2, datePrevLegalCheck, 1, dateSubmitLegalCheck, 1), 1, 2, isPreliminaryLegalCheck, 1),
+                        projectLegalCheck, 1, 2);
+
         daysClaimerStatusLegalCheckProject = addSGProp("daysClaimerStatusLegalCheckProject", true, "Кол-во дней юридической проверки (статус)",
                 addJProp(baseLM.and1, addJProp(baseLM.subtractInteger2, dateSubmitLegalCheck, 1, datePrevLegalCheck, 1), 1, isStatusLegalCheck, 1),
                         projectLegalCheck, 1);
 
+        isClaimerStatusLegalCheckProjectDate = addMGProp("isClaimerStatusLegalCheckProjectDate", "На стороне заявителя юридической проверки (статус)",
+                addJProp(baseLM.and1, addJProp(baseLM.betweenDates, 2, datePrevLegalCheck, 1, dateSubmitLegalCheck, 1), 1, 2, isStatusLegalCheck, 1),
+                        projectLegalCheck, 1, 2);
+
         daysClaimerPreliminaryProject = addSUProp("daysClaimerPreliminaryProject", "Кол-во дней на стороне заявителя (предв. экспертиза)", Union.SUM,
                 daysClaimerPreliminaryFormalControlProject, daysClaimerPreliminaryLegalCheckProject);
+
+        isClaimerPreliminaryProjectDate = addSUProp("isClaimerPreliminaryProjectDate", "На стороне заявителя (предв. экспертиза)", Union.OVERRIDE,
+                isClaimerPreliminaryFormalControlProjectDate, isClaimerPreliminaryLegalCheckProjectDate);
 
         daysClaimerStatusProject = addSUProp("daysClaimerPreliminaryProject", "Кол-во дней на стороне заявителя (статус)", Union.SUM,
                 daysClaimerStatusFormalControlProject, daysClaimerStatusLegalCheckProject, daysClaimerOriginalDocsProject);
 
+        isClaimerStatusProjectDate = addSUProp("isClaimerStatusProjectDate", "На стороне заявителя (статус)", Union.OVERRIDE,
+                isClaimerStatusFormalControlProjectDate, isClaimerStatusLegalCheckProjectDate, isClaimerOriginalDocsProjectDate);
+
         daysClaimerApplicationPreliminary = addJProp("daysClaimerApplicationPreliminary", "Кол-во дней на стороне заявителя", daysClaimerPreliminaryProject, projectApplicationPreliminary, 1);
         daysClaimerApplicationStatus = addJProp("daysClaimerApplicationStatus", "Кол-во дней на стороне заявителя", daysClaimerStatusProject, projectApplicationStatus, 1);
 
+        isClaimerApplicationPreliminaryDate = addJProp("isClaimerApplicationPreliminaryDate", "На стороне заявителя", isClaimerPreliminaryProjectDate, projectApplicationPreliminary, 1, 2);
+        isClaimerApplicationStatusDate = addJProp("isClaimerApplicationStatusDate", "На стороне заявителя", isClaimerStatusProjectDate, projectApplicationStatus, 1, 2);
+
         daysClaimerApplication = addCUProp("daysClaimerApplication", "Кол-во дней на стороне заявителя", daysClaimerApplicationPreliminary, daysClaimerApplicationStatus);
+        isClaimerApplicationDate = addCUProp("isClaimerApplicationDate", "На стороне заявителя", isClaimerApplicationPreliminaryDate, isClaimerApplicationStatusDate);
 
         daysCommonApplication =  addJProp("daysCommonApplication", "Общее к-во дней заявки", baseLM.subtractInteger2, dateSubmittedToRegisterProjectApplication, 1, dateApplicationStatus, 1);
         daysStatusApplication =  addDUProp("daysStatusApplication", "Кол-во дней рассмотрения заявки на статус", daysCommonApplication, daysClaimerApplication);
@@ -3492,6 +3540,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         addFormEntity(new VoteProtocolFormEntity(print, "voteProtocol"));
         addFormEntity(new ExpertProtocolFormEntity(print, "expertProtocol"));
         addFormEntity(new ExpertAuthFormEntity(print, "expertAuth"));
+        addFormEntity(new ExpertAuthProfileFormEntity(print, "expertAuthProfile"));
         addFormEntity(new ClaimerAcceptedFormEntity(print, "claimerAccepted"));
         addFormEntity(new ClaimerRejectedFormEntity(print, "claimerRejected"));
         addFormEntity(new ClaimerStatusFormEntity(print, "claimerStatus"));
@@ -4606,7 +4655,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
                     nameNativeClusterExpert, nameLanguageExpert,
                     dateAgreementExpert, nameCountryExpert, nameCurrencyExpert,
                     isTechnicalExpert, isBusinessExpert, expertiseExpert, grantExpert, profileBlockedExpert, profileUpdateDateExpert,
-                    expertResultGroup, baseLM.generateLoginPassword, emailAuthExpert);
+                    expertResultGroup, baseLM.generateLoginPassword, emailAuthExpert, emailAuthProfileExpert);
             addObjectActions(this, objExpert);
 
             objVote = addSingleGroupObject(vote, nameNativeProjectVote, dateStartVote, dateEndVote, openedVote, succeededVote, quantityDoneVote, revisionVote);
@@ -4912,6 +4961,24 @@ public class SkolkovoLogicsModule extends LogicsModule {
             objExpert.groupTo.initClassView = ClassViewType.PANEL;
 
             addInlineEAForm(emailAuthExpertEA, this, objExpert, 1);
+        }
+
+        @Override
+        public boolean isReadOnly() {
+            return true;
+        }
+    }
+
+    private class ExpertAuthProfileFormEntity extends FormEntity<SkolkovoBusinessLogics> { // письмо эксперту о логине
+        private ObjectEntity objExpert;
+
+        private ExpertAuthProfileFormEntity(NavigatorElement parent, String sID) {
+            super(parent, sID, "Уведомление о заполнении профиля", true);
+
+            objExpert = addSingleGroupObject(1, "expert", expert, baseLM.userLogin, baseLM.userPassword, baseLM.name, documentNameExpert, isForeignExpert, baseLM.webHost, localeExpert);
+            objExpert.groupTo.initClassView = ClassViewType.PANEL;
+
+            addInlineEAForm(emailAuthProfileExpertEA, this, objExpert, 1);
         }
 
         @Override

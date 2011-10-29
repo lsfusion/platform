@@ -1524,7 +1524,7 @@ public class BaseUtils {
     @SuppressWarnings({"UnusedDeclaration"})
     public static String formatRussian(Date date) {
         return formatRussian(date, false, false);
-        }
+    }
 
     public static String formatRussian(Date date, boolean quotes, boolean leadZero) {
         Calendar calendar = Calendar.getInstance();

@@ -1,5 +1,6 @@
 package skolkovo.gwt.expertprofile.client.ui;
 
+import com.google.gwt.user.client.ui.HTML;
 import com.smartgwt.client.types.Overflow;
 import com.smartgwt.client.types.TitleOrientation;
 import com.smartgwt.client.types.VisibilityMode;
@@ -7,6 +8,7 @@ import com.smartgwt.client.widgets.form.DynamicForm;
 import com.smartgwt.client.widgets.form.FormItemIfFunction;
 import com.smartgwt.client.widgets.form.fields.CheckboxItem;
 import com.smartgwt.client.widgets.form.fields.FormItem;
+import com.smartgwt.client.widgets.form.fields.StaticTextItem;
 import com.smartgwt.client.widgets.form.fields.TextAreaItem;
 import com.smartgwt.client.widgets.form.fields.events.ChangedEvent;
 import com.smartgwt.client.widgets.form.fields.events.ChangedHandler;
@@ -32,6 +34,10 @@ public class ForesightPanel extends VLayout100 {
 
         setLayoutMargin(10);
         setOverflow(Overflow.AUTO);
+
+        HTML hint = new HTML(messages.foresightHint());
+        hint.setHeight("1");
+        addMember(hint);
 
         createSectionStack();
 
