@@ -4,6 +4,8 @@ import com.google.gwt.user.client.ui.HTML;
 import com.smartgwt.client.types.Overflow;
 import com.smartgwt.client.types.TitleOrientation;
 import com.smartgwt.client.types.VisibilityMode;
+import com.smartgwt.client.widgets.*;
+import com.smartgwt.client.widgets.Label;
 import com.smartgwt.client.widgets.form.DynamicForm;
 import com.smartgwt.client.widgets.form.FormItemIfFunction;
 import com.smartgwt.client.widgets.form.fields.CheckboxItem;
@@ -21,13 +23,13 @@ import skolkovo.api.gwt.shared.ForesightInfo;
 import skolkovo.api.gwt.shared.ProfileInfo;
 import skolkovo.gwt.expertprofile.client.ExpertProfileMessages;
 
+import java.awt.*;
 import java.util.Stack;
 
 public class ForesightPanel extends VLayout100 {
     private static ExpertProfileMessages messages = ExpertProfileMessages.Instance.get();
 
     private ProfileInfo pi;
-    private SectionStack fSections;
 
     public ForesightPanel(ProfileInfo PI) {
         this.pi = PI;
@@ -40,15 +42,13 @@ public class ForesightPanel extends VLayout100 {
         addMember(hint);
 
         createSectionStack();
-
-        addMember(fSections);
     }
 
     private void createSectionStack() {
-        fSections = new SectionStack();
-        fSections.setOverflow(Overflow.VISIBLE);
-        fSections.setVisibilityMode(VisibilityMode.MULTIPLE);
-        fSections.setHeaderHeight(20);
+
+        SectionStack fSections = null;
+
+        String currentNameCluster = null;
 
         ForesightInfo[] fis = pi.foresightInfos;
         int cnt = fis.length;
@@ -56,9 +56,24 @@ public class ForesightPanel extends VLayout100 {
         for (int i = 0; i < cnt; i++) {
             ForesightInfo fi = fis[i];
 
+            if (currentNameCluster == null || !currentNameCluster.equals(fi.nameCluster)) {
+                Label lbNameCluster = new Label("<b>" + fi.nameCluster + "</b>");
+                lbNameCluster.setHeight("30");
+                addMember(lbNameCluster);
+
+                fSections = new SectionStack();
+                fSections.setOverflow(Overflow.VISIBLE);
+                fSections.setVisibilityMode(VisibilityMode.MULTIPLE);
+                fSections.setHeaderHeight(20);
+
+                addMember(fSections);
+
+                currentNameCluster = fi.nameCluster;
+            }
+
             int fLevel = popWithMoreEqLevel(s, fi);
             if (s.empty()) {
-                Layout fComponent = createSectionElement(fi);
+                Layout fComponent = createSectionElement(fSections, fi);
 
                 s.push(new StackElement(fi, fLevel, fComponent));
             } else if (i < cnt - 1 && getForesightLevel(fis[i+1]) > getForesightLevel(fi)) {
@@ -75,7 +90,7 @@ public class ForesightPanel extends VLayout100 {
         }
     }
 
-    private Layout createSectionElement(ForesightInfo fi) {
+    private Layout createSectionElement(SectionStack fSections, ForesightInfo fi) {
         VLayout layout = new VLayout(5);
         layout.setLayoutMargin(10);
         layout.setAutoHeight();

@@ -4,6 +4,7 @@ import java.io.Serializable;
 
 public class ForesightInfo implements Serializable {
     public String sID;
+    public String nameCluster;
     public String name;
 
     public boolean selected;

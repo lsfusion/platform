@@ -335,11 +335,12 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
 
                 q.properties.put("id", foresightExpr);
                 q.properties.put("sID", SkolkovoLM.sidForesight.getExpr(session.modifier, foresightExpr));
+                q.properties.put("nameCluster", isForeign ? SkolkovoLM.nameForeignClusterForesight.getExpr(session.modifier, foresightExpr) : SkolkovoLM.nameNativeClusterForesight.getExpr(session.modifier, foresightExpr));
                 q.properties.put("name", isForeign ? SkolkovoLM.nameForeign.getExpr(session.modifier, foresightExpr) : SkolkovoLM.nameNative.getExpr(session.modifier, foresightExpr));
                 q.properties.put("selected", SkolkovoLM.inExpertForesight.getExpr(session.modifier, expertExpr, foresightExpr));
                 q.properties.put("comment", SkolkovoLM.commentExpertForesight.getExpr(session.modifier, expertExpr, foresightExpr));
 
-                values = q.execute(session.sql, new OrderedMap<String, Boolean>(Arrays.asList("id"), false));
+                values = q.execute(session.sql, new OrderedMap<String, Boolean>(Arrays.asList("nameCluster", "id"), false));
                 profileInfo.foresightInfos = new ForesightInfo[values.size()];
 
                 i = 0;
@@ -349,6 +350,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
                     ForesightInfo foresightInfo = new ForesightInfo();
 
                     foresightInfo.sID = ((String) propValues.get("sID")).trim();
+                    foresightInfo.nameCluster = ((String) propValues.get("nameCluster")).trim();
                     foresightInfo.name = ((String) propValues.get("name")).trim();
 
                     foresightInfo.selected = propValues.get("selected") != null;

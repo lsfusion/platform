@@ -473,7 +473,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP quantityClusterProject;
     LP clusterForesight, sidForesight;
     LP foresightSID;
-    LP nameNativeShortClusterForesight;
+    LP nameNativeClusterForesight, nameForeignClusterForesight, nameNativeShortClusterForesight;
     LP quantityProjectForesight;
     LP isPrevVoteVote;
     LP countPrevVote;
@@ -1415,6 +1415,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
         foresightSID = addAGProp("foresightSID", "Форсайт (ИД)", sidForesight);
 
         clusterForesight = addDProp(idGroup, "clusterForesight", "Кластер (ИД)", cluster, foresight);
+        nameNativeClusterForesight = addJProp(baseGroup, "nameNativeClusterForesight", "Кластер", nameNative, clusterForesight, 1);
+        nameForeignClusterForesight = addJProp(baseGroup, "nameForeignClusterForesight", "Кластер (иностр.)", nameForeign, clusterForesight, 1);
         nameNativeShortClusterForesight = addJProp(baseGroup, "nameNativeShortClusterForesight", "Кластер (сокр.)", nameNativeShort, clusterForesight, 1);
 
         inProjectForesight = addDProp(baseGroup, "inProjectForesight", "Вкл", LogicalClass.instance, project, foresight);
