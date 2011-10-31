@@ -836,6 +836,7 @@ public class RomanLogicsModule extends LogicsModule {
     private LP priceInInvoiceShipmentStockSku;
     private LP contractInInvoiceShipmentStockSku;
     private LP priceInShipmentStockSku;
+    private LP priceInShipmentDetail;
     private LP contractInShipmentStockSku;
     public LP priceInImporterFreightSku;
     private LP netWeightImporterFreightSku;
@@ -1389,6 +1390,8 @@ public class RomanLogicsModule extends LogicsModule {
         baseLM.tableFactory.include("articleColorSupplier", article, colorSupplier);
         baseLM.tableFactory.include("articleSizeSupplier", article, sizeSupplier);
 
+        baseLM.tableFactory.include("shipmentRoute", shipment, route);
+
         baseLM.tableFactory.include("stockSku", stock, sku);
         baseLM.tableFactory.include("stockArticle", stock, article);
         baseLM.tableFactory.include("importerStockSku", importer, stock, sku);
@@ -1397,6 +1400,7 @@ public class RomanLogicsModule extends LogicsModule {
         baseLM.tableFactory.include("importerFreightBrandSupplier", importer, freight, brandSupplier);
         baseLM.tableFactory.include("importerFreightArticle", importer, freight, article);
         baseLM.tableFactory.include("importerFreightCustomCategory6", importer, freight, customCategory6);
+        baseLM.tableFactory.include("freightBrandSupplier", freight, brandSupplier);
         baseLM.tableFactory.include("freightArticle", freight, article);
         baseLM.tableFactory.include("freightCategory", freight, category);
         baseLM.tableFactory.include("shipmentFreight", shipment, freight);
@@ -2614,6 +2618,8 @@ public class RomanLogicsModule extends LogicsModule {
         contractInInvoiceShipmentStockSku = addJProp("contractInInvoiceShipmentStockSku", "Контракт (ИД)", baseLM.and1, contractInInvoiceStockSku, 1, 3, 4, inInvoiceShipment, 1, 2);
 
         priceInShipmentStockSku = addMGProp(baseGroup, "priceShipmentStockSku", true, "Цена входная", priceInInvoiceShipmentStockSku, 2, 3, 4);
+        priceInShipmentDetail = addJProp(baseGroup, "priceInShipmentDetail", "Цена входная", priceInShipmentStockSku, shipmentShipmentDetail, 1, stockShipmentDetail, 1, skuShipmentDetail, 1);
+
         contractInShipmentStockSku = addMGProp(baseGroup, "contractInShipmentStockSku", true, "Контракт (ИД)", contractInInvoiceShipmentStockSku, 2, 3, 4);
 
         quantityShipDimensionStock = addSGProp(baseGroup, "quantityShipDimensionStock", "Всего оприход.", quantityShipDimensionShipmentStockSku, 1, 3);
@@ -4620,7 +4626,7 @@ public class RomanLogicsModule extends LogicsModule {
                     nameCountryOfOriginArticleSkuShipmentDetail, mainCompositionOriginArticleSkuShipmentDetail,
                     netWeightSkuShipmentDetail, nameCountryOfOriginSkuShipmentDetail,
                     mainCompositionOriginSkuShipmentDetail, additionalCompositionOriginSkuShipmentDetail,
-                    sidShipmentShipmentDetail,
+                    sidShipmentShipmentDetail, priceInShipmentDetail,
                     sidSupplierBoxShipmentDetail, barcodeSupplierBoxShipmentDetail,
                     barcodeStockShipmentDetail, nameRouteFreightBoxShipmentDetail,
                     quantityShipmentDetail, nameUserShipmentDetail, sidStampShipmentDetail, seriesOfStampShipmentDetail, timeShipmentDetail, baseLM.delete);
@@ -4864,6 +4870,8 @@ public class RomanLogicsModule extends LogicsModule {
                 ((FormActionProperty)findItemSimple.propertyObject.property).seekOnOk.add(findItemFormSimple.objShipmentDetail);
                 findItemSimple.forceViewType = ClassViewType.PANEL;
             }
+
+            addHintsIncrementTable(priceInShipmentStockSku, priceInInvoiceShipmentStockSku, priceInInvoiceStockSku, quantityInvoiceStockSku, quantityInvoiceShipmentStockSku);
         }
 
         @Override
@@ -7334,8 +7342,8 @@ public class RomanLogicsModule extends LogicsModule {
 
             design.get(getPropertyDraw(baseLM.date, objFreight)).caption = "Дата отгрузки";
             design.get(getPropertyDraw(baseLM.name, objImporter)).caption = "Импортёр";
-            design.get(getPropertyDraw(sumInFreight, objFreight)).caption = "Итого по ценам поставщика";
-            design.get(getPropertyDraw(sumInOutFreight, objFreight)).caption = "Итого по отгрузочным ценам";
+            design.get(getPropertyDraw(sumInFreight, objFreight)).caption = "Итого в ценах поставщика";
+            design.get(getPropertyDraw(sumInOutFreight, objFreight)).caption = "Итого в отгрузочных ценах";
 
             design.get(getPropertyDraw(sidImporterFreightTypeInvoice)).setPreferredCharWidth(15);
             design.get(getPropertyDraw(dateArrivalFreight, objFreight)).setPreferredCharWidth(20);
