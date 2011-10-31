@@ -206,7 +206,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         }
     }
 
-    public ProfileInfo getProfileInfo(String expertLogin) throws RemoteException {
+    public ProfileInfo getProfileInfo(String expertLogin, String locale) throws RemoteException {
         assert expertLogin != null;
         try {
             DataSession session = createSession();
@@ -221,7 +221,12 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
 
                 profileInfo.expertName = (String) LM.name.read(session, expertObj);
                 profileInfo.expertEmail = (String) LM.email.read(session, expertObj);
-                boolean isForeign = SkolkovoLM.isForeignExpert.read(session, expertObj) != null;
+
+                boolean isForeign;
+                if (locale != null)
+                    isForeign = "en".equals(locale);
+                else
+                    isForeign = SkolkovoLM.isForeignExpert.read(session, expertObj) != null;
 
                 Map<String, KeyExpr> keys = KeyExpr.getMapKeys(asList("exp", "vote"));
                 Expr expertExpr = keys.get("exp");
@@ -318,7 +323,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
                 profileInfo.business = SkolkovoLM.isBusinessExpert.read(session, expertObj) != null;
 
                 profileInfo.expertise = SkolkovoLM.expertiseExpert.read(session, expertObj) != null;
-                profileInfo.grant = SkolkovoLM.expertiseExpert.read(session, expertObj) != null;
+                profileInfo.grant = SkolkovoLM.grantExpert.read(session, expertObj) != null;
 
                 keys = KeyExpr.getMapKeys(asList("exp", "foresight"));
                 expertExpr = keys.get("exp");

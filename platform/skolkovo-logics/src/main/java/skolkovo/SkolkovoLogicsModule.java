@@ -4863,6 +4863,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
     private class ClusterForesightFormEntity extends FormEntity<SkolkovoBusinessLogics>{
         private ObjectEntity objCluster;
         private ObjectEntity objForesight;
+        private ObjectEntity objExpert;
 
         private ClusterForesightFormEntity(NavigatorElement parent, String sID){
             super(parent, sID, "Кластеры");
@@ -4871,10 +4872,14 @@ public class SkolkovoLogicsModule extends LogicsModule {
             addPropertyDraw(objCluster, nameNative, nameForeign, inTestCluster);
             addObjectActions(this, objCluster);
 
-            objForesight = addSingleGroupObject(2, "Кластер", foresight);
-            addPropertyDraw(objForesight, sidForesight, nameNative, nameForeign, nameNativeShortClusterForesight);
+            objForesight = addSingleGroupObject(2, "Форсайт", foresight);
+            addPropertyDraw(objForesight, sidForesight, nameNative, nameForeign, nameNativeShortClusterForesight, quantityInExpertForesight);
             addFixedFilter(new CompareFilterEntity(addPropertyObject(clusterForesight, objForesight), Compare.EQUALS, objCluster));
             addObjectActions(this, objForesight);
+
+            objExpert = addSingleGroupObject(3, "Эксперт", expert, baseLM.userFirstName, baseLM.userLastName, documentNameExpert, baseLM.email);
+
+            addFixedFilter(new NotNullFilterEntity(addPropertyObject(inExpertForesight, objExpert, objForesight)));
 
             includeProjectClusterForesight = addJProp(actionGroup, true, "Подключить", editClaimer, claimerProject, 1);
         }
@@ -4975,8 +4980,10 @@ public class SkolkovoLogicsModule extends LogicsModule {
         private ExpertAuthProfileFormEntity(NavigatorElement parent, String sID) {
             super(parent, sID, "Уведомление о заполнении профиля", true);
 
-            objExpert = addSingleGroupObject(1, "expert", expert, baseLM.userLogin, baseLM.userPassword, baseLM.name, documentNameExpert, isForeignExpert, baseLM.webHost, localeExpert);
+            objExpert = addSingleGroupObject(1, "expert", expert, baseLM.userLogin, baseLM.userPassword, baseLM.name, documentNameExpert, isForeignExpert, localeExpert);
             objExpert.groupTo.initClassView = ClassViewType.PANEL;
+
+            addPropertyDraw(baseLM.webHost, objExpert.groupTo);
 
             addInlineEAForm(emailAuthProfileExpertEA, this, objExpert, 1);
         }

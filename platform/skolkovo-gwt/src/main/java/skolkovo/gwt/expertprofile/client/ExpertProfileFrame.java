@@ -22,7 +22,7 @@ public class ExpertProfileFrame extends BaseFrame {
     }
 
     protected void update() {
-        expertProfileService.execute(new GetProfileInfo(), new ErrorAsyncCallback<GetProfileInfoResult>() {
+        expertProfileService.execute(new GetProfileInfo(Window.Location.getParameter("locale")), new ErrorAsyncCallback<GetProfileInfoResult>() {
             public void success(GetProfileInfoResult result) {
                 ProfileInfo pi = result.profileInfo;
                 if (pi == null) {

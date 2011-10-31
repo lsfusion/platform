@@ -9,7 +9,7 @@ import java.rmi.RemoteException;
 public interface SkolkovoRemoteInterface extends RemoteLogicsInterface {
     VoteInfo getVoteInfo(String voteId) throws RemoteException;
     void setVoteInfo(String voteId, VoteInfo voteInfo) throws RemoteException;
-    ProfileInfo getProfileInfo(String expertLogin) throws RemoteException;
+    ProfileInfo getProfileInfo(String expertLogin, String locale) throws RemoteException;
     void setProfileInfo(String expertLogin, ProfileInfo profileInfo) throws RemoteException;
     void sentVoteDocuments(String login, int voteId) throws RemoteException;
     void remindPassword(String email) throws RemoteException;
