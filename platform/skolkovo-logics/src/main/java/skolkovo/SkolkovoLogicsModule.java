@@ -1273,6 +1273,19 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP applicationsSubmitStatusApplicationClusterDateDate;
     LP applicationsSubmitStatusApplicationDateDate;
     LP nonClusterApplicationsStatusAplicationSubmitDateDate;
+    LP oneApplications;
+    LP sumApplicationsStatusApplication;
+    LP sumApplicationsStatusApplicationCluster;
+    LP typeProjectStatusApplication;
+    LP sumApplicationsTypeProjectStatus;
+    LP sumApplicationsTypeProjectStatusCluster;
+    LP sumSubmitApplications;
+    LP nonClusterApplicationsStatusApplicationCluster;
+    LP nonClusterApplicationsStatusApplication;
+    LP nonClusterApplicationsTypeProjectStatusCluster;
+    LP nonClusterApplicationsTypeProjectStatus;
+    LP nonClusterApplicationsSubmit;
+    LP sumApplicationsCluster;
 
     LP dateRegisteredStatusProject;
     LP dateNoClusterStatusProject;
@@ -3289,9 +3302,10 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         weekSubmitApplicationDate = addJProp("weekSubmitApplicationDate", "Неделя заявки", baseLM.divideInteger, daysSubmitApplicationDate, 1, 2, addCProp(IntegerClass.instance, 7));
 
-        oneApplicationDateDate = addJProp(and(false, false), addCProp(IntegerClass.instance, 1, application, DateClass.instance, DateClass.instance), 1, 2, 3,
+        oneApplicationDateDate = addJProp(and(false, false, true), addCProp(IntegerClass.instance, 1, application, DateClass.instance, DateClass.instance), 1, 2, 3,
                                             addJProp(baseLM.groeq2, dateApplication, 1, 2), 1, 2,
-                                            addJProp(baseLM.lsoeq2, dateApplication, 1, 2), 1, 3);
+                                            addJProp(baseLM.lsoeq2, dateApplication, 1, 2), 1, 3,
+                                            inactiveApplication, 1);
 
         applicationsSubmitDateDate = addSGProp("applicationsSubmitDateDate", "Всего поступивших заявок", oneApplicationDateDate, 2, 3);
 
@@ -3457,6 +3471,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         typeProjectStatusProjectStatus = addDProp(idGroup, "typeProjectStatusProjectStatus", "Тип статуса (ИД)", typeProjectStatus, projectStatus);
         nameTypeProjectStatusProjectStatus = addJProp(baseGroup, "nameTypeProjectStatusProjectStatus", "Тип статуса", baseLM.name, typeProjectStatusProjectStatus, 1);
+        typeProjectStatusApplication = addJProp("typeProjectStatusApplication", "Тип статуса заявки (ИД)", typeProjectStatusProjectStatus, statusApplication, 1);
 
         isWorkDaysNormalPeriodStatus = addDProp(baseGroup, "isWorkDaysNormalPeriodStatus", "В рабочих днях", LogicalClass.instance, projectStatus);
         overdueDateStatusProject = addIfElseUProp(baseGroup, "overdueDateStatusProject", true, "Дата просрочки статуса",
@@ -3473,6 +3488,25 @@ public class SkolkovoLogicsModule extends LogicsModule {
                 addJProp(baseLM.addDate2, dateInStatusApplication, 1, normalPeriodStatusApplication, 1), addJProp(isWorkDaysNormalPeriodStatus, statusApplication, 1), 1);
         quantityDaysToOverdueDateStatusApplication = addJProp("quantityDaysToOverdueDateStatusApplication", "Количество дней до просрочки", baseLM.subtractInteger2, overdueDateStatusApplication, 1, baseLM.currentDate);
         quantityDaysToOverdueDateStatusApplication.setFixedCharWidth(4);
+
+        oneApplications = addJProp("oneApplications", "К-во заявок" ,and(false,true),  addCProp(IntegerClass.instance, 1), is(application), 1, inactiveApplication, 1);
+        sumSubmitApplications = addSGProp("sumSubmitApplications", "К-во заявок" , oneApplications);
+        sumApplicationsStatusApplication = addSGProp("sumApplicationsStatusApplication", "Всего поступивших заявок",
+                oneApplications, statusApplication, 1);
+        sumApplicationsStatusApplicationCluster = addSGProp("sumApplicationsStatusApplicationCluster", "Всего поступивших заявок",
+                oneApplications, statusApplication, 1, finalClusterApplication, 1);
+        nonClusterApplicationsStatusApplicationCluster = addSGProp("nonClusterApplicationsStatusApplicationCluster", "Итого не указано", addJProp(baseLM.andNot1, oneApplications, 1, quantityClusterApplication, 1), statusApplication, 1, finalClusterApplication, 1);
+        nonClusterApplicationsStatusApplication = addSGProp("nonClusterApplicationsStatusApplication", "Итого не указано", addJProp(baseLM.andNot1, oneApplications, 1, quantityClusterApplication, 1), statusApplication, 1);
+
+        nonClusterApplicationsSubmit = addSGProp("nonClusterApplicationsSubmit", "Итого не указано", addJProp(baseLM.andNot1, oneApplications, 1, quantityClusterApplication, 1));
+        sumApplicationsCluster = addSGProp("sumApplicationsCluster", "Всего поступивших заявок",
+                oneApplications, finalClusterApplication, 1);
+        sumApplicationsTypeProjectStatus = addSGProp("sumApplicationsTypeProjectStatus", "Всего поступивших заявок",
+                oneApplications, typeProjectStatusApplication, 1);
+        sumApplicationsTypeProjectStatusCluster = addSGProp("sumApplicationsTypeProjectStatusCluster", "Всего поступивших заявок",
+                oneApplications, typeProjectStatusApplication, 1, finalClusterApplication,1);
+        nonClusterApplicationsTypeProjectStatusCluster = addSGProp("nonClusterApplicationsTypeProjectStatusCluster", "Итого не указано", addJProp(baseLM.andNot1, oneApplications, 1, quantityClusterApplication, 1), typeProjectStatusApplication, 1, finalClusterApplication, 1);
+        nonClusterApplicationsTypeProjectStatus = addSGProp("nonClusterApplicationsTypeProjectStatus", "Итого не указано", addJProp(baseLM.andNot1, oneApplications, 1, quantityClusterApplication, 1), typeProjectStatusApplication, 1);
     }
 
     @Override
@@ -3557,6 +3591,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         report.window = leftToolbar;
 
         addFormEntity(new ApplicationsSubmittedFormEntity(report, "applicationsSubmitted"));
+        addFormEntity(new ApplicationsDynamicsFormEntity(report, "applicationsDynamics"));
         addFormEntity(new ApplicationsStatusWeekFormEntity(report, "applicationsStatusWeek"));
         addFormEntity(new ApplicationsStatusTimeFormEntity(report, "applicationsStatusTime"));
         addFormEntity(new ApplicationsListFormEntity(report, "applicationsList"));
@@ -5399,7 +5434,43 @@ public class SkolkovoLogicsModule extends LogicsModule {
             addPropertyDraw(objProjectStatus, objDateFrom, objDateTo, nonClusterApplicationsStatusAplicationSubmitDateDate, applicationsSubmitStatusApplicationDateDate);
 
             addFixedFilter(new NotFilterEntity(new NotNullFilterEntity(addPropertyObject(inTestCluster, objCluster))));
-            addFixedFilter(new NotNullFilterEntity(addPropertyObject(applicationsSubmitStatusApplicationClusterDateDate, objProjectStatus, objCluster, objDateFrom, objDateTo)));
+            addFixedFilter(new NotNullFilterEntity(addPropertyObject(applicationsSubmitStatusApplicationDateDate, objProjectStatus, objDateFrom, objDateTo)));
+
+        }
+    }
+
+     private class ApplicationsDynamicsFormEntity extends FormEntity<SkolkovoBusinessLogics> {
+        private ObjectEntity objCluster;
+        private ObjectEntity objTypeProjectStatus;
+        private ObjectEntity objProjectStatus;
+
+        public ApplicationsDynamicsFormEntity(NavigatorElement parent, String sID) {
+            super(parent, sID, "Статистика заявок с разбивкой");
+
+
+            objCluster = addSingleGroupObject(1, "cluster", cluster, "Кластер", nameNativeShort, nameNative, nameForeign, sumApplicationsCluster);
+
+            objTypeProjectStatus = addSingleGroupObject(3, "typeProjectStatus", typeProjectStatus, "Тип статуса проекта", baseLM.name);
+            addPropertyDraw(sumSubmitApplications);
+            addPropertyDraw(nonClusterApplicationsSubmit);
+
+            PropertyDrawEntity count = addPropertyDraw(sumApplicationsTypeProjectStatusCluster, objTypeProjectStatus, objCluster);
+            count.columnGroupObjects.add(objCluster.groupTo);
+            count.propertyCaption = addPropertyObject(nameNativeShort, objCluster);
+            addPropertyDraw(objTypeProjectStatus, nonClusterApplicationsTypeProjectStatus, sumApplicationsTypeProjectStatus);
+
+            objProjectStatus = addSingleGroupObject(2, "projectStatus", projectStatus, "Статус заявки", baseLM.name, oficialNameProjectStatus);
+
+            PropertyDrawEntity count1 = addPropertyDraw(sumApplicationsStatusApplicationCluster, objProjectStatus, objCluster);
+            count1.columnGroupObjects.add(objCluster.groupTo);
+            count1.propertyCaption = addPropertyObject(nameNativeShort, objCluster);
+            addPropertyDraw(objProjectStatus, nonClusterApplicationsStatusApplication, sumApplicationsStatusApplication);
+
+
+            addFixedFilter(new NotFilterEntity(new NotNullFilterEntity(addPropertyObject(inTestCluster, objCluster))));
+            addFixedFilter(new NotNullFilterEntity(addPropertyObject(sumApplicationsStatusApplication, objProjectStatus)));
+ //           addFixedFilter(new NotNullFilterEntity(addPropertyObject(sumApplicationsTypeProjectStatusCluster, objTypeProjectStatus, objCluster)));
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(typeProjectStatusProjectStatus, objProjectStatus), Compare.EQUALS, objTypeProjectStatus));
 
         }
     }
