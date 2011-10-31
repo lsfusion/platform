@@ -93,13 +93,14 @@ public abstract class ExpertProfileMainPanel extends VLayout100 {
         foresightSection.setItems(foresightPanel);
         foresightSection.setExpanded(true);
 
-        SectionStackSection gridSection = new SectionStackSection(messages.sectionVoteList());
-        gridSection.setItems(votePanel);
-        gridSection.setExpanded(false);
+//        SectionStackSection gridSection = new SectionStackSection(messages.sectionVoteList());
+//        gridSection.setItems(votePanel);
+//        gridSection.setExpanded(false);
 
         mainSectionStack = new SectionStack();
         mainSectionStack.setVisibilityMode(VisibilityMode.MULTIPLE);
-        mainSectionStack.setSections(detailsSection, foresightSection, gridSection);
+        mainSectionStack.setSections(detailsSection, foresightSection);
+//        mainSectionStack.setSections(detailsSection, foresightSection, gridSection);
     }
 
     private void configureLayout() {

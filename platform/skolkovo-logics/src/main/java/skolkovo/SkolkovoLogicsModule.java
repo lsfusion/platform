@@ -455,7 +455,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP dataDocumentNameExpert, documentNameExpert;
     public LP emailExpert;
     LP clusterExpert, nameNativeClusterExpert, nameForeignClusterExpert, nameNativeShortClusterExpert;
-    LP inExpertForesight, commentExpertForesight, quantityInExpertForesight;
+    LP inExpertForesight, commentExpertForesight, quantityInForesightExpert, quantityInExpertForesight;
     public LP inProjectForesightExpert, quantityForesightProjectExpert;
     public LP clusterInExpertForesight;
     LP isTechnicalExpert, isBusinessExpert;
@@ -463,6 +463,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP profileUpdateDateExpert;
     LP profileBlockedExpert;
     LP primClusterExpert, extraClusterExpert, inClusterExpert;
+    LP quantityInClusterExpert;
     LP clusterInExpertVote;
     public LP inProjectCluster;
     public LP inProjectForesight;
@@ -1460,6 +1461,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         dataDocumentNameExpert = addDProp(baseGroup, "dataDocumentNameExpert", "Имя для документов", StringClass.get(70), expert);
         documentNameExpert = addSUProp("documentNameExpert", "Имя для документов", Union.OVERRIDE, addJProp(baseLM.and1, addJProp(baseLM.insensitiveString2, baseLM.userLastName, 1, baseLM.userFirstName, 1), 1, is(expert), 1), dataDocumentNameExpert);
+        documentNameExpert.setMinimumCharWidth(20);
 
         isTechnicalExpert = addDProp("isTechnicalExpert", "Технический эксперт", LogicalClass.instance, expert);
         isBusinessExpert = addDProp("isBusinessExpert", "Бизнес-эксперт", LogicalClass.instance, expert);
@@ -1478,14 +1480,20 @@ public class SkolkovoLogicsModule extends LogicsModule {
         extraClusterExpert = addDProp(baseGroup, "extraClusterExpert", "Вкл (доп.)", LogicalClass.instance, cluster, expert);
         inClusterExpert = addSUProp(baseGroup, "inClusterExpert", true, "Вкл", Union.OVERRIDE, extraClusterExpert, addJProp(baseLM.equals2, 1, clusterExpert, 2));
 
+        quantityInClusterExpert = addSGProp("quantityInClusterExpert", true, "Кол-во кластеров", addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1, cluster, expert), 1, 2, inClusterExpert, 1, 2), 2);
+        quantityInClusterExpert.setFixedCharWidth(2);
+
         clusterInExpertForesight = addJProp(baseGroup, "clusterInExpertForesight", "Форсайт кластера эксперта", inClusterExpert, clusterForesight, 2, 1);
         inExpertForesight = addDProp(baseGroup, "inExpertForesight", "Вкл.", LogicalClass.instance, expert, foresight);
         commentExpertForesight = addDProp(baseGroup, "commentExpertForesight", "Комментарий", TextClass.instance, expert, foresight);
 
         quantityInExpertForesight = addSGProp(baseGroup, "quantityInExpertForesight", true, "Количество экспертов по форсайту",
                 addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1, expert), 1, inExpertForesight, 1, 2), 2);
-        quantityInExpertForesight.setMinimumCharWidth(5);
-        quantityInExpertForesight.setPreferredCharWidth(10);
+        quantityInExpertForesight.setFixedCharWidth(3);
+
+        quantityInForesightExpert = addSGProp(baseGroup, "quantityInForesightExpert", true, "Количество форсайтов",
+                addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1, expert), 1, inExpertForesight, 1, 2), 1);
+        quantityInForesightExpert.setFixedCharWidth(3);
 
         inProjectForesightExpert = addJProp(baseGroup, "inProjectForesightExpert", "Вкл.", baseLM.and1, inProjectForesight, 1, 2, inExpertForesight, 3, 2);
         quantityForesightProjectExpert = addSGProp(baseGroup, "quantityForesightProjectExpert", "Кол-во форсайтов",
@@ -3651,25 +3659,11 @@ public class SkolkovoLogicsModule extends LogicsModule {
                 quantityVoteProject, voteStatusProject, statusProject, projectStatusProject);
     }
 
-    private class ConsultingCenterFormEntity extends FormEntity<SkolkovoBusinessLogics> {
+    private class ConsultingCenterFormEntity extends DateIntervalFormEntity<SkolkovoBusinessLogics> {
         private ObjectEntity objProject;
-        private ObjectEntity objDateFrom;
-        private ObjectEntity objDateTo;
 
         private ConsultingCenterFormEntity(NavigatorElement parent, String sID) {
-            super(parent, sID, "Консультативный центр");
-
-            GroupObjectEntity gobjDates = new GroupObjectEntity(1, "date");
-            objDateFrom = new ObjectEntity(2, "dateFrom", DateClass.instance, "Дата (с)");
-            objDateTo = new ObjectEntity(3, "dateTo", DateClass.instance, "Дата (по)");
-            gobjDates.add(objDateFrom);
-            gobjDates.add(objDateTo);
-
-            addGroup(gobjDates);
-            gobjDates.setSingleClassView(ClassViewType.PANEL);
-
-            addPropertyDraw(objDateFrom, baseLM.objectValue);
-            addPropertyDraw(objDateTo, baseLM.objectValue);
+            super(baseLM, parent, sID, "Консультативный центр");
 
             objProject = addSingleGroupObject(4, "project", project, dateProject, nameNativeProject, nameNativeClaimerProject, isConsultingCenterCommentProject, consultingCenterCommentProject);
 
@@ -4689,9 +4683,10 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
             objExpert = addSingleGroupObject(expert, baseLM.selection, baseLM.userFirstName, baseLM.userLastName, documentNameExpert,
                     baseLM.userLogin, baseLM.userPassword, baseLM.email, disableExpert,
-                    nameNativeClusterExpert, nameLanguageExpert,
+                    nameNativeShortClusterExpert, nameLanguageExpert,
                     dateAgreementExpert, nameCountryExpert, nameCurrencyExpert,
                     isTechnicalExpert, isBusinessExpert, expertiseExpert, grantExpert, profileBlockedExpert, profileUpdateDateExpert,
+                    quantityInClusterExpert, quantityInForesightExpert,
                     expertResultGroup, baseLM.generateLoginPassword, emailAuthExpert, emailAuthProfileExpert);
             addObjectActions(this, objExpert);
 
@@ -5126,10 +5121,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         }
     }
 
-    private class ExpertProtocolFormEntity extends FormEntity<SkolkovoBusinessLogics> { // письмо эксперту
-
-        private ObjectEntity objDateFrom;
-        private ObjectEntity objDateTo;
+    private class ExpertProtocolFormEntity extends DateIntervalFormEntity<SkolkovoBusinessLogics> { // письмо эксперту
 
         private ObjectEntity objExpert;
 
@@ -5137,18 +5129,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
         private ObjectEntity objVote;
 
         private ExpertProtocolFormEntity(NavigatorElement parent, String sID) {
-            super(parent, sID, "Протокол голосования экспертов", true);
+            super(baseLM, parent, sID, "Протокол голосования экспертов", true);
 
-            GroupObjectEntity gobjDates = new GroupObjectEntity(1, "date");
-            objDateFrom = new ObjectEntity(2, DateClass.instance, "Дата (с)");
-            objDateTo = new ObjectEntity(3, DateClass.instance, "Дата (по)");
-            gobjDates.add(objDateFrom);
-            gobjDates.add(objDateTo);
-
-            addGroup(gobjDates);
-            gobjDates.setSingleClassView(ClassViewType.PANEL);
-
-            addPropertyDraw(objDateFrom, baseLM.objectValue);
             getPropertyDraw(baseLM.objectValue, objDateFrom).setSID("dateFrom");
 
             // так делать неправильно в общем случае, поскольку getPropertyDraw ищет по groupObject, а не object
@@ -5393,27 +5375,13 @@ public class SkolkovoLogicsModule extends LogicsModule {
         }
     }
 
-    private class ApplicationsSubmittedFormEntity extends FormEntity<SkolkovoBusinessLogics> {
-        private ObjectEntity objDateFrom;
-        private ObjectEntity objDateTo;
+    private class ApplicationsSubmittedFormEntity extends DateIntervalFormEntity<SkolkovoBusinessLogics> {
         private ObjectEntity objCluster;
         private ObjectEntity objProjectAction;
         private ObjectEntity objProjectStatus;
 
         public ApplicationsSubmittedFormEntity(NavigatorElement parent, String sID) {
-            super(parent, sID, "Статистика заявок, поступивших в отчетный период");
-
-            GroupObjectEntity gobjDates = new GroupObjectEntity(1, "date");
-            objDateFrom = new ObjectEntity(2, "dateFrom", DateClass.instance, "Дата (с)");
-            objDateTo = new ObjectEntity(3, "dateTo", DateClass.instance, "Дата (по)");
-            gobjDates.add(objDateFrom);
-            gobjDates.add(objDateTo);
-
-            addGroup(gobjDates);
-            gobjDates.setSingleClassView(ClassViewType.PANEL);
-
-            addPropertyDraw(objDateFrom, baseLM.objectValue);
-            addPropertyDraw(objDateTo, baseLM.objectValue);
+            super(baseLM, parent, sID, "Статистика заявок, поступивших в отчетный период");
 
             objCluster = addSingleGroupObject(4, "cluster", cluster, "Кластер", nameNativeShort, nameNative, nameForeign);
             objProjectAction = addSingleGroupObject(5, "projectAction", projectAction, "Тип заявки", baseLM.name);
@@ -5447,7 +5415,6 @@ public class SkolkovoLogicsModule extends LogicsModule {
         public ApplicationsDynamicsFormEntity(NavigatorElement parent, String sID) {
             super(parent, sID, "Статистика заявок с разбивкой");
 
-
             objCluster = addSingleGroupObject(1, "cluster", cluster, "Кластер", nameNativeShort, nameNative, nameForeign, sumApplicationsCluster);
 
             objTypeProjectStatus = addSingleGroupObject(3, "typeProjectStatus", typeProjectStatus, "Тип статуса проекта", baseLM.name);
@@ -5475,25 +5442,12 @@ public class SkolkovoLogicsModule extends LogicsModule {
         }
     }
 
-    private class ApplicationsStatusWeekFormEntity extends FormEntity<SkolkovoBusinessLogics> {
-        private ObjectEntity objDateFrom;
-        private ObjectEntity objDateTo;
+    private class ApplicationsStatusWeekFormEntity extends DateIntervalFormEntity<SkolkovoBusinessLogics> {
         private ObjectEntity objWeek;
 
         public ApplicationsStatusWeekFormEntity(NavigatorElement parent, String sID) {
-            super(parent, sID, "Общая статистика. Динамика изменения");
+            super(baseLM, parent, sID, "Общая статистика. Динамика изменения");
 
-            GroupObjectEntity gobjDates = new GroupObjectEntity(1, "date");
-            objDateFrom = new ObjectEntity(2, "dateFrom", DateClass.instance, "Дата (с)");
-            objDateTo = new ObjectEntity(3, "dateTo", DateClass.instance, "Дата (по)");
-            gobjDates.add(objDateFrom);
-            gobjDates.add(objDateTo);
-
-            addGroup(gobjDates);
-            gobjDates.setSingleClassView(ClassViewType.PANEL);
-
-            addPropertyDraw(objDateFrom, baseLM.objectValue);
-            addPropertyDraw(objDateTo, baseLM.objectValue);
             addPropertyDraw(objDateFrom, objDateTo, applicationsSubmitDateDate, averageWeekApplSubmitDateDate);
 
             objWeek = addSingleGroupObject(4, "week", IntegerClass.instance, "Неделя", baseLM.objectValue);
@@ -5505,27 +5459,12 @@ public class SkolkovoLogicsModule extends LogicsModule {
         }
     }
 
-    private class ApplicationsStatusTimeFormEntity extends FormEntity<SkolkovoBusinessLogics> {
-        private ObjectEntity objDateFrom;
-        private ObjectEntity objDateTo;
+    private class ApplicationsStatusTimeFormEntity extends DateIntervalFormEntity<SkolkovoBusinessLogics> {
         private ObjectEntity objApplicationStatus;
 
-
         public ApplicationsStatusTimeFormEntity(NavigatorElement parent, String sID) {
-            super(parent, sID, "Средний срок рассмотрения заявки на статус участника");
+            super(baseLM, parent, sID, "Средний срок рассмотрения заявки на статус участника");
 
-            GroupObjectEntity gobjDates = new GroupObjectEntity(1, "date");
-            objDateFrom = new ObjectEntity(2, "dateFrom", DateClass.instance, "Дата (с)");
-            objDateTo = new ObjectEntity(3, "dateTo", DateClass.instance, "Дата (по)");
-            gobjDates.add(objDateFrom);
-            gobjDates.add(objDateTo);
-
-            addGroup(gobjDates);
-            gobjDates.setSingleClassView(ClassViewType.PANEL);
-
-            addPropertyDraw(objDateFrom, baseLM.objectValue);
-            addPropertyDraw(objDateTo, baseLM.objectValue);
-//            addPropertyDraw(objDateFrom, objDateTo, applicationsSubmitDateDate);
             objApplicationStatus = addSingleGroupObject(4, "applicationStatus", applicationStatus, "Заявка", nameProjectActionApplication, nameNativeClaimerApplication, dateApplicationStatus, daysClaimerApplication, quantityStatusVoteApplication, dateSubmittedToRegisterProjectApplication, daysStatusApplication, isPreliminaryAndStatusApplication);
             addFixedFilter(new NotFilterEntity(new NotNullFilterEntity(addPropertyObject(inactiveApplication, objApplicationStatus))));
             addFixedFilter(new CompareFilterEntity(addPropertyObject(dateSubmittedToRegisterProjectApplication, objApplicationStatus), Compare.LESS_EQUALS, objDateTo));
@@ -5533,26 +5472,12 @@ public class SkolkovoLogicsModule extends LogicsModule {
         }
     }
 
-    private class ApplicationsListFormEntity extends FormEntity<SkolkovoBusinessLogics> {
+    private class ApplicationsListFormEntity extends DateIntervalFormEntity<SkolkovoBusinessLogics> {
 
-        private ObjectEntity objDateFrom;
-        private ObjectEntity objDateTo;
         private ObjectEntity objApplication;
 
          public ApplicationsListFormEntity(NavigatorElement parent, String sID) {
-            super(parent, sID, "Заявки, поступившие в отчетный период");
-
-            GroupObjectEntity gobjDates = new GroupObjectEntity(1, "date");
-            objDateFrom = new ObjectEntity(2, "dateFrom", DateClass.instance, "Дата (с)");
-            objDateTo = new ObjectEntity(3, "dateTo", DateClass.instance, "Дата (по)");
-            gobjDates.add(objDateFrom);
-            gobjDates.add(objDateTo);
-
-            addGroup(gobjDates);
-            gobjDates.setSingleClassView(ClassViewType.PANEL);
-
-            addPropertyDraw(objDateFrom, baseLM.objectValue);
-            addPropertyDraw(objDateTo, baseLM.objectValue);
+            super(baseLM, parent, sID, "Заявки, поступившие в отчетный период");
 
             objApplication = addSingleGroupObject(4, "application", application, "Заявка");
             addPropertyDraw(objApplication, dateApplication, nameNativeClaimerApplication, nameProjectActionApplication, nameNativeProjectApplication, officialNameStatusApplication, nameNativeShortAggregateClusterApplication);

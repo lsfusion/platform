@@ -519,8 +519,12 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         userLogin = addDProp(baseGroup, "userLogin", getString("logics.user.login"), StringClass.get(30), customUser);
         loginToUser = addAGProp("loginToUser", getString("logics.user"), userLogin);
         userPassword = addDProp(baseGroup, "userPassword", getString("logics.user.password"), StringClass.get(30), customUser);
+
         userFirstName = addDProp(baseGroup, "userFirstName", getString("logics.user.firstname"), StringClass.get(30), customUser);
+        userFirstName.setMinimumCharWidth(10);
+
         userLastName = addDProp(baseGroup, "userLastName", getString("logics.user.lastname"), StringClass.get(30), customUser);
+        userLastName.setMinimumCharWidth(10);
 
         userRoleSID = addDProp(baseGroup, "userRoleSID", getString("logics.user.identificator"), StringClass.get(30), userRole);
         sidToRole = addAGProp(idGroup, "sidToRole", getString("logics.user.role.id"), userRole, userRoleSID);

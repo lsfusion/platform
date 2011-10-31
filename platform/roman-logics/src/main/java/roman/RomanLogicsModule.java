@@ -5545,26 +5545,12 @@ public class RomanLogicsModule extends LogicsModule {
     }
 
 
-    private class BalanceWarehousePeriodFormEntity extends FormEntity<RomanBusinessLogics> {
+    private class BalanceWarehousePeriodFormEntity extends DateIntervalFormEntity<RomanBusinessLogics> {
 
         private ObjectEntity objSku;
-        private ObjectEntity objDateFrom;
-        private ObjectEntity objDateTo;
 
         private BalanceWarehousePeriodFormEntity(NavigatorElement parent, String sID, String caption) {
-            super(parent, sID, caption);
-
-            GroupObjectEntity gobjDates = new GroupObjectEntity(genID());
-            objDateFrom = new ObjectEntity(genID(), DateClass.instance, "Дата (с)");
-            objDateTo = new ObjectEntity(genID(), DateClass.instance, "Дата (по)");
-            gobjDates.add(objDateFrom);
-            gobjDates.add(objDateTo);
-
-            addGroup(gobjDates);
-            gobjDates.setSingleClassView(ClassViewType.PANEL);
-
-            addPropertyDraw(objDateFrom, baseLM.objectValue);
-            addPropertyDraw(objDateTo, baseLM.objectValue);
+            super(baseLM, parent, sID, caption);
 
             objSku = addSingleGroupObject(sku, "SKU", baseLM.selection, baseLM.barcode, nameBrandSupplierArticleSku,
                     nameCategoryArticleSku, sidArticleSku, sidColorSupplierItem, nameColorSupplierItem, sidSizeSupplierItem,
