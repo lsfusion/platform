@@ -303,7 +303,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
     public boolean isDebug() {
-        logger.setLevel(Level.DEBUG);
+        //logger.setLevel(Level.DEBUG);
         return logger.isDebugEnabled();
     }
 
