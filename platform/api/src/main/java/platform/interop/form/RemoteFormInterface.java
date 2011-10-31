@@ -21,6 +21,7 @@ public interface RemoteFormInterface extends PendingRemote, RemoteContextInterfa
     byte[] getSingleGroupReportDesignByteArray(boolean toExcel, int groupId) throws RemoteException;
     byte[] getReportSourcesByteArray() throws RemoteException;
     byte[] getSingleGroupReportSourcesByteArray(int groupId) throws RemoteException;
+    String[] getReportPath(boolean toExcel, Integer groupId) throws RemoteException;
 
     public RemoteChanges getRemoteChanges() throws RemoteException;
 

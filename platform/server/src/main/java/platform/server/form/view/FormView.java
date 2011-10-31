@@ -55,6 +55,7 @@ public class FormView implements ServerIdentitySerializable, AbstractForm<Contai
     public Map<String, String> blockedScreen = new HashMap<String, String>();
 
     private FunctionView printFunction;
+    private FunctionView editFunction;
     private FunctionView xlsFunction;
     private FunctionView nullFunction;
     private FunctionView refreshFunction;
@@ -65,6 +66,10 @@ public class FormView implements ServerIdentitySerializable, AbstractForm<Contai
 
     public FunctionView getPrintFunction() {
         return printFunction;
+    }
+
+    public FunctionView getEditFunction() {
+        return editFunction;
     }
 
     public FunctionView getXlsFunction() {
@@ -97,6 +102,10 @@ public class FormView implements ServerIdentitySerializable, AbstractForm<Contai
 
     public void setPrintFunction(FunctionView printFunction) {
         this.printFunction = printFunction;
+    }
+
+    public void setEditFunction(FunctionView editFunction) {
+        this.editFunction = editFunction;
     }
 
     public void setXlsFunction(FunctionView xlsFunction) {
@@ -186,6 +195,7 @@ public class FormView implements ServerIdentitySerializable, AbstractForm<Contai
         }
 
         pool.serializeObject(outStream, printFunction);
+        pool.serializeObject(outStream, editFunction);
         pool.serializeObject(outStream, xlsFunction);
         pool.serializeObject(outStream, nullFunction);
         pool.serializeObject(outStream, refreshFunction);
@@ -218,6 +228,7 @@ public class FormView implements ServerIdentitySerializable, AbstractForm<Contai
         }
 
         printFunction = pool.deserializeObject(inStream);
+        editFunction = pool.deserializeObject(inStream);
         xlsFunction = pool.deserializeObject(inStream);
         nullFunction = pool.deserializeObject(inStream);
         refreshFunction = pool.deserializeObject(inStream);

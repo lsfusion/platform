@@ -25,11 +25,12 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
-import java.io.ByteArrayInputStream;
-import java.io.DataInputStream;
-import java.io.IOException;
+import java.io.*;
+import java.nio.channels.FileChannel;
+import java.rmi.RemoteException;
 import java.util.*;
 import java.util.List;
+import java.util.logging.Logger;
 
 import static platform.interop.Order.*;
 
@@ -333,9 +334,10 @@ public class ClientFormController {
         }
     }
 
-    private void initializeButtons() {
+    private void initializeButtons() throws RemoteException {
 
         KeyStroke printKeyStroke = KeyStrokes.getPrintKeyStroke();
+        KeyStroke editKeyStroke = KeyStrokes.getEditKeyStroke();
         KeyStroke xlsKeyStroke = KeyStrokes.getXlsKeyStroke();
         KeyStroke nullKeyStroke = KeyStrokes.getNullKeyStroke();
         KeyStroke refreshKeyStroke = KeyStrokes.getRefreshKeyStroke();
@@ -350,6 +352,13 @@ public class ClientFormController {
             addClientFunction(form.getPrintFunction(), printKeyStroke, new AbstractAction() {
                 public void actionPerformed(ActionEvent ae) {
                     print();
+                }
+            });
+
+            if(Main.remoteLogics.isDebug())
+            addClientFunction(form.getEditFunction(), editKeyStroke, new AbstractAction() {
+                public void actionPerformed(ActionEvent ae) {
+                    edit();
                 }
             });
 
@@ -713,6 +722,29 @@ public class ClientFormController {
 
         try {
             Main.frame.runReport(remoteForm, false);
+        } catch (Exception e) {
+            throw new RuntimeException(ClientResourceBundle.getString("form.error.printing.form"), e);
+        }
+    }
+
+    void edit() {
+
+        try {
+
+            String[] path = Main.frame.editReport(remoteForm);
+            String iReport = System.getenv("ProgramFiles") + "\\Jaspersoft\\iReport-4.0.2\\bin\\ireport.exe";
+            Process proc = Runtime.getRuntime().exec(new String[]{iReport, path[0]});
+            int exitCode = proc.waitFor();
+
+            FileChannel source = new FileInputStream(path[0]).getChannel();
+            FileChannel destination = new FileOutputStream(path[1]).getChannel();
+
+            destination.transferFrom(source, 0, source.size());
+
+            source.close();
+            destination.close();
+
+
         } catch (Exception e) {
             throw new RuntimeException(ClientResourceBundle.getString("form.error.printing.form"), e);
         }

@@ -147,6 +147,11 @@ public class DockableMainFrame extends MainFrame {
     }
 
     @Override
+    public String[] editReport(RemoteFormInterface remoteForm) throws ClassNotFoundException, IOException {
+        return remoteForm.getReportPath(false, null);
+    }
+
+    @Override
     public void runSingleGroupReport(RemoteFormInterface remoteForm, int groupId) throws IOException, ClassNotFoundException {
         view.openSingleGroupReport(mainNavigator, remoteForm, groupId);
     }

@@ -1,6 +1,7 @@
 package platform.server.logics;
 
 import net.sf.jasperreports.engine.JRException;
+import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import platform.base.*;
 import platform.interop.Compare;
@@ -299,6 +300,11 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             }
         }
         return null;
+    }
+
+    public boolean isDebug() {
+        logger.setLevel(Level.DEBUG);
+        return logger.isDebugEnabled();
     }
 
     public ExternalScreenParameters getExternalScreenParameters(int screenID, int computerId) throws RemoteException {

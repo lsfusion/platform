@@ -5,6 +5,7 @@ public interface AbstractForm<C extends AbstractContainer<C, T>, T extends Abstr
     void setMainContainer(C mainContainer);
 
     void setPrintFunction(F printFunction);
+    void setEditFunction(F editFunction);
     void setXlsFunction(F xlsFunction);
     void setNullFunction(F nullFunction);
     void setRefreshFunction(F refreshFunction);

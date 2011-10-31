@@ -13,6 +13,8 @@ import java.util.TimeZone;
 
 public interface RemoteLogicsInterface extends PendingRemote, PingRemote, RemoteDescriptorInterface, RemoteContextInterface {
 
+    boolean isDebug() throws RemoteException;
+
     String getName() throws RemoteException;
 
     String getDisplayName() throws RemoteException;

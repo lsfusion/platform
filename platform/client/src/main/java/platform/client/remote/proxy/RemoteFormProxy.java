@@ -51,6 +51,12 @@ public class RemoteFormProxy<T extends RemoteFormInterface>
         return result;
     }
 
+    @Override
+    public String[] getReportPath(boolean toExcel, Integer groupId) throws RemoteException {
+        String[] result = target.getReportPath(toExcel, groupId);
+        return result;
+    }
+
     public byte[] getReportHierarchyByteArray() throws RemoteException {
         logRemoteMethodStartCall("getReportHierarchyByteArray");
         byte[] result = target.getReportHierarchyByteArray();

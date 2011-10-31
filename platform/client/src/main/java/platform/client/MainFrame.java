@@ -95,6 +95,8 @@ public abstract class MainFrame extends JFrame {
 
     public abstract void runReport(RemoteFormInterface remoteForm, boolean isModal) throws ClassNotFoundException, IOException;
 
+    public abstract String[] editReport(RemoteFormInterface remoteForm) throws ClassNotFoundException, IOException;
+
     public abstract void runSingleGroupReport(RemoteFormInterface remoteForm, int groupId) throws IOException, ClassNotFoundException;
 
     public abstract void runSingleGroupXlsExport(RemoteFormInterface remoteForm, int groupId) throws IOException, ClassNotFoundException;

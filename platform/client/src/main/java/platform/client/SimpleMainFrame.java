@@ -57,6 +57,11 @@ public class SimpleMainFrame extends MainFrame {
     }
 
     @Override
+    public String[] editReport(RemoteFormInterface remoteForm) throws ClassNotFoundException, IOException {
+       return new String[] {"",""};
+    }
+
+    @Override
     public void runSingleGroupReport(RemoteFormInterface remoteForm, int groupId) {
     }
 

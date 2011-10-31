@@ -36,6 +36,12 @@ public class FormContainerSet <C extends AbstractContainer<C, T>, T extends Abst
         printFunction.getConstraints().directions = new SimplexComponentDirections(0,0.01,0.01,0);
         set.formButtonContainer.add((T)printFunction);
 
+        F editFunction = funcFactory.createFunction();
+        editFunction.setCaption("Редактировать");
+        editFunction.setType("Edit");
+        editFunction.getConstraints().directions = new SimplexComponentDirections(0,0.01,0.01,0);
+        set.formButtonContainer.add((T) editFunction);
+
         F xlsFunction = funcFactory.createFunction();
         xlsFunction.setCaption("Xls");
         xlsFunction.setType("Xls");
@@ -82,6 +88,7 @@ public class FormContainerSet <C extends AbstractContainer<C, T>, T extends Abst
 
         form.setMainContainer(set.mainContainer);
         form.setPrintFunction(printFunction);
+        form.setEditFunction(editFunction);
         form.setXlsFunction(xlsFunction);
         form.setNullFunction(nullFunction);
         form.setRefreshFunction(refreshFunction);

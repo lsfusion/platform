@@ -232,6 +232,40 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         }
     }
 
+    public String[] getReportPath(boolean toExcel, Integer groupId) {
+
+        String sid = getReportSID(toExcel, groupId);
+        Map<String, JasperDesign> customDesigns = getCustomReportDesigns(toExcel, groupId);
+        if (customDesigns != null) {
+            return new String[] {System.getProperty("user.dir") + "//src//main//resources//" + getCustomReportName(customDesigns.keySet().iterator().next(), sid),
+                   System.getProperty("user.dir") + "//target//classes//"+getCustomReportName(customDesigns.keySet().iterator().next(), sid)};
+        } else {
+            Set<Integer> hidedGroupsId = new HashSet<Integer>();
+            for (GroupObjectInstance group : form.groups) {
+                if (group.curClassView == ClassViewType.HIDE || groupId != null && groupId != group.getID()) {
+                    hidedGroupsId.add(group.getID());
+                }
+            }
+            try {
+                ReportDesignGenerator generator = new ReportDesignGenerator(richDesign, getReportHierarchy(groupId), hidedGroupsId, toExcel);
+                Map<String, JasperDesign> designs = generator.generate();
+                String reportName = "";
+                for (Map.Entry<String, JasperDesign> entry : designs.entrySet()) {
+                    String id = entry.getKey();
+                    reportName = getAutoReportName(id, sid);
+                    new File(reportName).getParentFile().mkdirs();
+                    JRXmlWriter.writeReport(JasperCompileManager.compileReport(entry.getValue()), reportName, "UTF-8");
+                }
+
+                return new String[] {System.getProperty("user.dir") + "//" + reportName,
+                   System.getProperty("user.dir") + "//target//classes//reports/custom//"+ sid};
+
+            } catch (JRException e) {
+                throw new RuntimeException(ServerResourceBundle.getString("form.instance.error.creating.design"), e);
+            }
+        }
+    }
+
     private static final String xlsSuffix = "_xls";
     private static final String tablePrefix = "_Table";
 

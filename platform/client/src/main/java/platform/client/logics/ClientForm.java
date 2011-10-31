@@ -48,6 +48,7 @@ public class ClientForm extends IdentityObject implements LogicsSupplier, Client
     public Map<String, String> blockedScreen = new HashMap<String, String>();
 
     private ClientFunction printFunction;
+    private ClientFunction editFunction;
     private ClientFunction xlsFunction;
     private ClientFunction nullFunction;
     private ClientFunction refreshFunction;
@@ -58,6 +59,10 @@ public class ClientForm extends IdentityObject implements LogicsSupplier, Client
 
     public ClientFunction getPrintFunction() {
         return printFunction;
+    }
+
+    public ClientFunction getEditFunction() {
+        return editFunction;
     }
 
     public ClientFunction getXlsFunction() {
@@ -90,6 +95,10 @@ public class ClientForm extends IdentityObject implements LogicsSupplier, Client
 
     public void setPrintFunction(ClientFunction printFunction) {
         this.printFunction = printFunction;
+    }
+
+    public void setEditFunction(ClientFunction editFunction) {
+        this.editFunction = editFunction;
     }
 
     public void setXlsFunction(ClientFunction xlsFunction) {
@@ -249,6 +258,7 @@ public class ClientForm extends IdentityObject implements LogicsSupplier, Client
         }
 
         pool.serializeObject(outStream, printFunction);
+        pool.serializeObject(outStream, editFunction);
         pool.serializeObject(outStream, xlsFunction);
         pool.serializeObject(outStream, nullFunction);
         pool.serializeObject(outStream, refreshFunction);
@@ -281,6 +291,7 @@ public class ClientForm extends IdentityObject implements LogicsSupplier, Client
         }
 
         printFunction = pool.deserializeObject(inStream);
+        editFunction = pool.deserializeObject(inStream);
         xlsFunction = pool.deserializeObject(inStream);
         nullFunction = pool.deserializeObject(inStream);
         refreshFunction = pool.deserializeObject(inStream);
