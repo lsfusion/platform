@@ -1,5 +1,8 @@
 package skolkovo.gwt.expertprofile.client;
 
+import com.google.gwt.core.client.GWT;
+import com.google.gwt.resources.client.ClientBundle;
+import com.google.gwt.resources.client.CssResource;
 import com.google.gwt.user.client.Window;
 import net.customware.gwt.dispatch.client.DefaultExceptionHandler;
 import net.customware.gwt.dispatch.client.standard.StandardDispatchAsync;
@@ -12,11 +15,20 @@ import skolkovo.gwt.expertprofile.shared.actions.GetProfileInfoResult;
 import skolkovo.gwt.expertprofile.shared.actions.SetProfileInfo;
 
 public class ExpertProfileFrame extends BaseFrame {
+    interface StyleResources extends ClientBundle {
+        @CssResource.NotStrict
+        @Source("ExpertProfileFrame.css")
+        CssResource css();
+    }
+
     private static ExpertProfileMessages messages = ExpertProfileMessages.Instance.get();
     private final static StandardDispatchAsync expertProfileService = new StandardDispatchAsync(new DefaultExceptionHandler());
     private ExpertProfileMainPanel expertProfileMainPanel;
 
     public void onModuleLoad() {
+        // inject global styles
+        GWT.<StyleResources>create(StyleResources.class).css().ensureInjected();
+
         Window.setTitle(messages.title());
         update();
     }

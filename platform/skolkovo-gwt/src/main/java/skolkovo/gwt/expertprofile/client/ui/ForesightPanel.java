@@ -1,16 +1,13 @@
 package skolkovo.gwt.expertprofile.client.ui;
 
-import com.google.gwt.user.client.ui.HTML;
 import com.smartgwt.client.types.Overflow;
 import com.smartgwt.client.types.TitleOrientation;
 import com.smartgwt.client.types.VisibilityMode;
-import com.smartgwt.client.widgets.*;
 import com.smartgwt.client.widgets.Label;
 import com.smartgwt.client.widgets.form.DynamicForm;
 import com.smartgwt.client.widgets.form.FormItemIfFunction;
 import com.smartgwt.client.widgets.form.fields.CheckboxItem;
 import com.smartgwt.client.widgets.form.fields.FormItem;
-import com.smartgwt.client.widgets.form.fields.StaticTextItem;
 import com.smartgwt.client.widgets.form.fields.TextAreaItem;
 import com.smartgwt.client.widgets.form.fields.events.ChangedEvent;
 import com.smartgwt.client.widgets.form.fields.events.ChangedHandler;
@@ -23,7 +20,6 @@ import skolkovo.api.gwt.shared.ForesightInfo;
 import skolkovo.api.gwt.shared.ProfileInfo;
 import skolkovo.gwt.expertprofile.client.ExpertProfileMessages;
 
-import java.awt.*;
 import java.util.Stack;
 
 public class ForesightPanel extends VLayout100 {
@@ -37,9 +33,9 @@ public class ForesightPanel extends VLayout100 {
         setLayoutMargin(10);
         setOverflow(Overflow.AUTO);
 
-        HTML hint = new HTML(messages.foresightHint());
-        hint.setHeight("1");
-        addMember(hint);
+        Label lbHint = new Label(messages.foresightHint());
+        lbHint.setAutoHeight();
+        addMember(lbHint);
 
         createSectionStack();
     }
@@ -62,6 +58,7 @@ public class ForesightPanel extends VLayout100 {
                 addMember(lbNameCluster);
 
                 fSections = new SectionStack();
+                fSections.setAutoHeight();
                 fSections.setOverflow(Overflow.VISIBLE);
                 fSections.setVisibilityMode(VisibilityMode.MULTIPLE);
                 fSections.setHeaderHeight(20);

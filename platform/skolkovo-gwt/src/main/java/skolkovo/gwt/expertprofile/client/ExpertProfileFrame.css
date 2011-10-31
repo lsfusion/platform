@@ -1,0 +1,17 @@
+.button,
+.buttonDisabled,
+.buttonDown,
+.buttonFocused,
+.buttonFocusedDown,
+.buttonFocusedOver,
+.buttonOver,
+.buttonSelected,
+.buttonSelectedDisabled,
+.buttonSelectedDown,
+.buttonSelectedFocused,
+.buttonSelectedFocusedDown,
+.buttonSelectedFocusedOver,
+.buttonSelectedOver {
+    font-weight: bold !important;
+    font-size: 12px !important;
+}

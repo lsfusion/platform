@@ -56,6 +56,8 @@ public abstract class ExpertProfileMainPanel extends VLayout100 {
 
     private void createBottomPane() {
         btnUpdate = new Button(messages.update());
+        btnUpdate.setWidth(280);
+        btnUpdate.setHeight(25);
         btnUpdate.setShowDisabledIcon(false);
         btnUpdate.setLayoutAlign(Alignment.CENTER);
         btnUpdate.addClickHandler(new ClickHandler() {
