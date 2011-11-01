@@ -10,6 +10,7 @@ public class Stat {
     private final int deg;
 
     public final static Stat ALOT = new Stat(10000, true);
+    public final static Stat DEFAULT = new Stat(5, true);
 
     public String toString() {
         return "(" + deg + ")";

@@ -44,9 +44,9 @@ public abstract class DataTable extends GlobalTable {
     public void updateStat(SQLSession session) throws SQLException {
         Query<Object, Object> query = new Query<Object, Object>(new ArrayList<Object>());
 
-        boolean alot = ("true".equals(System.getProperty("platform.server.logics.donotcalculatestats")));
+        boolean statDefault = ("true".equals(System.getProperty("platform.server.logics.donotcalculatestats")));
 
-        if (!alot) {
+        if (!statDefault) {
             ValueExpr one = new ValueExpr(1, IntegerClass.instance);
 
             Map<KeyField, KeyExpr> mapKeys = KeyExpr.getMapKeys(keys);
@@ -69,13 +69,13 @@ public abstract class DataTable extends GlobalTable {
             query.and(Where.TRUE);
         }
 
-        Map<Object, Object> result = alot ? new HashMap<Object, Object>() : BaseUtils.singleValue(query.execute(session));
+        Map<Object, Object> result = statDefault ? new HashMap<Object, Object>() : BaseUtils.singleValue(query.execute(session));
 
-        Stat rowStat = alot ? Stat.ALOT : new Stat(BaseUtils.nvl((Integer)result.get(0), 0));
+        Stat rowStat = statDefault ? Stat.DEFAULT : new Stat(BaseUtils.nvl((Integer)result.get(0), 0));
 
         DistinctKeys<KeyField> distinctKeys = new DistinctKeys<KeyField>();
         for(KeyField key : keys)
-            distinctKeys.add(key, alot ? Stat.ALOT : new Stat(BaseUtils.nvl((Integer) result.get(key), 0)));
+            distinctKeys.add(key, statDefault ? Stat.DEFAULT : new Stat(BaseUtils.nvl((Integer) result.get(key), 0)));
         statKeys = new StatKeys<KeyField>(rowStat, distinctKeys);
 
         statProps = new HashMap<PropertyField, Stat>();
@@ -83,7 +83,7 @@ public abstract class DataTable extends GlobalTable {
             if (prop.type instanceof DataClass && !((DataClass)prop.type).calculateStat())
                 statProps.put(prop, ((DataClass)prop.type).getTypeStat().min(rowStat));
             else
-                statProps.put(prop, alot ? Stat.ALOT : new Stat(BaseUtils.nvl((Integer)result.get(prop), 0)));
+                statProps.put(prop, statDefault ? Stat.DEFAULT : new Stat(BaseUtils.nvl((Integer)result.get(prop), 0)));
         }
     }
 }
