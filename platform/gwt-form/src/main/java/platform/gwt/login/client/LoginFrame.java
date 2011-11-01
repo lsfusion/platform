@@ -16,6 +16,7 @@ import platform.gwt.base.client.ui.login.SpringLoginBoxUiHandlers;
 import platform.gwt.base.shared.MessageException;
 import platform.gwt.base.shared.actions.VoidResult;
 import platform.gwt.login.shared.actions.RemindPassword;
+import platform.gwt.utils.GwtUtils;
 
 public class LoginFrame extends VLayout implements EntryPoint {
     private static final LoginFrameMessages messages = LoginFrameMessages.Instance.get();
@@ -54,6 +55,8 @@ public class LoginFrame extends VLayout implements EntryPoint {
         addMember(main);
 
         draw();
+
+        GwtUtils.removeLoaderFromHostedPage();
     }
 
     public String getUserName() {

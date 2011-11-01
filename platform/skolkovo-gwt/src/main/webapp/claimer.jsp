@@ -9,8 +9,8 @@
         <link rel="stylesheet" href="style.css">
     </head>
     <body>
-        <script> var isomorphicDir = "smartgwt/sc/"; </script>
-        <script type="text/javascript" language="javascript" src="smartgwt/smartgwt.nocache.js"></script>
+        <jsp:include page="WEB-INF/jsp/smartgwt.jsp"/>
+
         <script type="text/javascript" language="javascript"
                 src="skolkovo.gwt.claimer.Claimer/skolkovo.gwt.claimer.Claimer.nocache.js"></script>
     </body>

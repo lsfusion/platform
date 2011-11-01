@@ -8,6 +8,7 @@ import net.customware.gwt.dispatch.client.DefaultExceptionHandler;
 import net.customware.gwt.dispatch.client.standard.StandardDispatchAsync;
 import platform.gwt.base.client.BaseFrame;
 import platform.gwt.base.shared.actions.VoidResult;
+import platform.gwt.utils.GwtUtils;
 import skolkovo.api.gwt.shared.ProfileInfo;
 import skolkovo.gwt.expertprofile.client.ui.ExpertProfileMainPanel;
 import skolkovo.gwt.expertprofile.shared.actions.GetProfileInfo;
@@ -57,6 +58,8 @@ public class ExpertProfileFrame extends BaseFrame {
                     }
                 };
                 expertProfileMainPanel.draw();
+
+                GwtUtils.removeLoaderFromHostedPage();
             }
         });
     }

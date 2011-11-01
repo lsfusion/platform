@@ -4,6 +4,7 @@
     <inherits name='com.google.gwt.user.User'/>
     <inherits name="platform.gwt.base.Base"/>
     <inherits name="platform.gwt.Resources"/>
+    <inherits name="platform.gwt.Utils"/>
 
     <entry-point class='platform.gwt.login.client.LoginFrame'/>
 

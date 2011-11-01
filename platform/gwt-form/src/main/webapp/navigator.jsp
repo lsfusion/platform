@@ -22,8 +22,8 @@
                   %>
             };
         </script>
-        <script> var isomorphicDir = "smartgwt/sc/"; </script>
-        <script type="text/javascript" language="javascript" src="smartgwt/smartgwt.nocache.js"></script>
+        <jsp:include page="WEB-INF/jsp/smartgwt.jsp"/>
+
         <script type="text/javascript" language="javascript"
                 src="platform.gwt.navigator.Navigator/platform.gwt.navigator.Navigator.nocache.js"></script>
     </body>

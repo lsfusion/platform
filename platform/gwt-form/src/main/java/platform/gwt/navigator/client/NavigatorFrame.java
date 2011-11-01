@@ -19,6 +19,7 @@ import platform.gwt.base.client.BaseFrame;
 import platform.gwt.base.client.ui.ToolStripPanel;
 import platform.gwt.navigator.shared.actions.GetNavigatorElements;
 import platform.gwt.navigator.shared.actions.GetNavigatorElementsResult;
+import platform.gwt.utils.GwtUtils;
 import platform.gwt.view.GNavigatorElement;
 
 public class NavigatorFrame extends VLayout implements EntryPoint {
@@ -38,6 +39,8 @@ public class NavigatorFrame extends VLayout implements EntryPoint {
         addMember(main);
 
         draw();
+
+        GwtUtils.removeLoaderFromHostedPage();
     }
 
     private TreeGrid createTreeGrid() {

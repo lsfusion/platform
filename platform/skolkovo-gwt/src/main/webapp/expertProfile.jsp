@@ -12,8 +12,8 @@
         <link rel="stylesheet" href="style.css">
     </head>
     <body>
-        <script> var isomorphicDir = "smartgwt/sc/"; </script>
-        <script type="text/javascript" language="javascript" src="smartgwt/smartgwt.nocache.js"></script>
+        <jsp:include page="WEB-INF/jsp/smartgwt.jsp"/>
+
         <script type="text/javascript" language="javascript"
                 src="skolkovo.gwt.expertprofile.ExpertProfile/skolkovo.gwt.expertprofile.ExpertProfile.nocache.js"></script>
     </body>
