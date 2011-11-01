@@ -46,7 +46,6 @@ public class GFormController extends HLayout implements FormLogicsProvider {
     private final FormDispatchAsync dispatcher = new FormDispatchAsync(new DefaultExceptionHandler());
 
     private GForm form;
-//    private VLayout mainPane;
     private VStack mainPane;
 
     public GFormController(String sid) {
@@ -186,7 +185,6 @@ public class GFormController extends HLayout implements FormLogicsProvider {
         addFilterComponent(filterGroup, filterBox);
 
         if (filterGroup.defaultFilter >= 0) {
-            GRegularFilter defaultFilter = filterGroup.filters.get(filterGroup.defaultFilter);
             filterBox.setValue("" + filterGroup.defaultFilter);
         }
     }
