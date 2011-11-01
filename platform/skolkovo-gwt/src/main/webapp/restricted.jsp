@@ -1,3 +1,6 @@
+<%@ page import="java.net.URLEncoder" %>
+<%@ page import="platform.gwt.base.server.spring.AccessDeniedHandlerImpl" %>
+<%@ page import="static platform.gwt.base.server.spring.AccessDeniedHandlerImpl.ACCESS_DENIED_RESOURCE_URL" %>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <html>
   <head>
@@ -8,7 +11,9 @@
     <p>
         Доступ к странице ограничен. Вы можете выйти и попробовать войти под другим именем.
         </p>
-        <a href="logoff.jsp">Выйти</a>
+        <a href="logout.jsp?spring-security-redirect=<%=URLEncoder.encode(request.getAttribute(ACCESS_DENIED_RESOURCE_URL).toString(), "UTF-8")%>">
+            Выйти
+        </a>
     </p>
   </body>
 </html>

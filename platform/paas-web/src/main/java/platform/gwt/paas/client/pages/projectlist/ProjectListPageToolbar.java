@@ -24,6 +24,6 @@ public class ProjectListPageToolbar extends ToolbarWithUIHandlers<ProjectsListPa
 
         addConsoleButton();
 
-        addLogoffButton();
+        addLogoutButton();
     }
 }

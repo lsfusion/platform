@@ -106,7 +106,7 @@ public class ProjectPageToolbar extends ToolbarWithUIHandlers<ProjectPageUIHandl
 
         addConsoleButton();
 
-        addLogoffButton();
+        addLogoutButton();
     }
 
     private void addConfigurationsComboBox() {

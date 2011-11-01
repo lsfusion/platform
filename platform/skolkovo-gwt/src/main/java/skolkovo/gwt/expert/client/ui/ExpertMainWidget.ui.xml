@@ -50,8 +50,8 @@
                                 <td/>
                                 <td colspan="2" align="left">
                                     <g:HorizontalPanel spacing="5">
-                                        <g:Label ui:field="logoffNotice" styleName="{style.logoffNotice}"/>
-                                        <g:Anchor href="javascript:;" ui:field="logoffLink" styleName="{style.logoffNotice}"/>
+                                        <g:Label ui:field="logoutNotice" styleName="{style.logoutNotice}"/>
+                                        <g:Anchor href="javascript:;" ui:field="logoutLink" styleName="{style.logoutNotice}"/>
                                     </g:HorizontalPanel>
                                 </td>
                             </tr>

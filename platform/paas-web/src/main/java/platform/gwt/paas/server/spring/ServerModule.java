@@ -20,7 +20,7 @@ public class ServerModule extends HandlerModule {
 //    }
 
     protected void configureHandlers() {
-        bindHandler(LogoffAction.class, LogoffHandler.class);
+        bindHandler(LogoutAction.class, LogoutHandler.class);
 
         bindHandler(GetProjectsAction.class, GetProjectsHandler.class);
         bindHandler(AddNewProjectAction.class, AddNewProjectHandler.class);

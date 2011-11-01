@@ -23,7 +23,7 @@
     <http auto-config="true" use-expressions="true" entry-point-ref="loginUrlAuthenticationEntryPoint">
         <form-login authentication-failure-url="/loginFailed.txt"/>
         <anonymous enabled="false"/>
-        <logout logout-url="/logoff.jsp" logout-success-url="/Paas.jsp"/>
+        <logout logout-url="/logout.jsp" logout-success-url="/Paas.jsp"/>
     </http>
 
     <b:bean id="loginUrlAuthenticationEntryPoint"

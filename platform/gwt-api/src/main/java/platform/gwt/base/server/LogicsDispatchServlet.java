@@ -9,11 +9,11 @@ import net.customware.gwt.dispatch.shared.Action;
 import net.customware.gwt.dispatch.shared.DispatchException;
 import net.customware.gwt.dispatch.shared.Result;
 import org.apache.log4j.Logger;
-import org.springframework.context.ApplicationContext;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.context.WebApplicationContext;
+import org.springframework.web.context.support.WebApplicationContextUtils;
 import platform.base.ExceptionUtils;
 import platform.gwt.base.server.exceptions.RemoteDispatchException;
 import platform.gwt.base.server.spring.BusinessLogicsProvider;
@@ -88,12 +88,8 @@ public abstract class LogicsDispatchServlet<T extends RemoteLogicsInterface> ext
     }
 
     //todo: это будет не нужно после интеграции сервлетов в Spring
-    private ApplicationContext getSpringContext() {
-        Object webSpringContext = getServletContext().getAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE);
-        if (!(webSpringContext instanceof ApplicationContext)) {
-            throw new IllegalStateException("Spring web context wasn't found, spring wasn't configured properly!");
-        }
-        return (ApplicationContext) webSpringContext;
+    private WebApplicationContext getSpringContext() {
+        return WebApplicationContextUtils.getWebApplicationContext(getServletContext());
     }
 
     public HttpSession getSession() {

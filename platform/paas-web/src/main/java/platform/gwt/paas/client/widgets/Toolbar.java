@@ -10,7 +10,7 @@ import com.smartgwt.client.widgets.events.ClickHandler;
 import com.smartgwt.client.widgets.toolbar.ToolStrip;
 import com.smartgwt.client.widgets.toolbar.ToolStripButton;
 import platform.gwt.paas.client.PaasPlaceManager;
-import platform.gwt.paas.client.login.LogoffAuthenticatedEvent;
+import platform.gwt.paas.client.login.LogoutAuthenticatedEvent;
 
 public class Toolbar extends ToolStrip {
     @Inject
@@ -47,11 +47,11 @@ public class Toolbar extends ToolStrip {
         }
     }
 
-    public void addLogoffButton() {
-        addToolStripButton("Log off", "door.png", "Logoff", new ClickHandler() {
+    public void addLogoutButton() {
+        addToolStripButton("Log out", "door.png", "Logout", new ClickHandler() {
             @Override
             public void onClick(ClickEvent event) {
-                LogoffAuthenticatedEvent.fire(eventBus);
+                LogoutAuthenticatedEvent.fire(eventBus);
             }
         });
     }

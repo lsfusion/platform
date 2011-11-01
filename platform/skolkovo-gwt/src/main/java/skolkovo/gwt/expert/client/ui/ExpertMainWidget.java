@@ -47,9 +47,9 @@ public abstract class ExpertMainWidget extends Composite {
     @UiField
     SpanElement dateSpan;
     @UiField
-    Anchor logoffLink;
+    Anchor logoutLink;
     @UiField
-    Label logoffNotice;
+    Label logoutNotice;
     @UiField
     SpanElement voteResultSpan;
     @UiField
@@ -209,8 +209,8 @@ public abstract class ExpertMainWidget extends Composite {
         expertSpan.setInnerText(vi.expertName);
         dateLabelSpan.setInnerHTML(messages.date());
         dateSpan.setInnerText(DateTimeFormat.getFormat(DateTimeFormat.PredefinedFormat.DATE_SHORT).format(voteDate));
-        logoffNotice.setText(baseMessages.logoffNotice());
-        logoffLink.setText(baseMessages.here());
+        logoutNotice.setText(baseMessages.logoutNotice());
+        logoutLink.setText(baseMessages.here());
         footerSpan.setInnerHTML(messages.footerCaption());
         loadingSpan.setText(baseMessages.loading());
         noRevisionSpan.setText(messages.noRevisionSpan());
@@ -254,8 +254,8 @@ public abstract class ExpertMainWidget extends Composite {
         setupHandlers();
 
         if (vi.voteDone) {
-            logoffLink.setVisible(false);
-            logoffNotice.setVisible(false);
+            logoutLink.setVisible(false);
+            logoutNotice.setVisible(false);
         }
 
         lbInCluster.setText(messages.lbInCluster(vi.projectCluster));
@@ -424,7 +424,7 @@ public abstract class ExpertMainWidget extends Composite {
         taEnoughDocumentsComment.addValueChangeHandler(enoughDocumentsLimitedHandler);
         taEnoughDocumentsComment.addKeyboardListener(enoughDocumentsLimitedHandler);
 
-        logoffLink.addClickHandler(new VoteHandler(REFUSED, false));
+        logoutLink.addClickHandler(new VoteHandler(REFUSED, false));
         bVote.addClickHandler(new VoteHandler(VOTED, true));
         bRefused.addClickHandler(new VoteHandler(REFUSED, true));
         bConnected.addClickHandler(new VoteHandler(CONNECTED, true));

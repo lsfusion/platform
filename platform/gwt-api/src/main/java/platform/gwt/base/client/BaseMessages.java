@@ -14,7 +14,7 @@ public interface BaseMessages extends Messages {
 
     String showProfile();
 
-    String logoffNotice();
+    String logoutNotice();
 
     @Key("locale.ru")
     String localeRu();

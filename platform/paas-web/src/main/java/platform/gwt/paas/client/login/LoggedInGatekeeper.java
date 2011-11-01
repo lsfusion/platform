@@ -7,7 +7,7 @@ import com.gwtplatform.dispatch.shared.DispatchAsync;
 import com.gwtplatform.mvp.client.proxy.Gatekeeper;
 import platform.gwt.paas.client.PaasPlaceManager;
 import platform.gwt.paas.client.common.ErrorHandlingCallback;
-import platform.gwt.paas.shared.actions.LogoffAction;
+import platform.gwt.paas.shared.actions.LogoutAction;
 import platform.gwt.paas.shared.actions.VoidResult;
 
 public class LoggedInGatekeeper implements Gatekeeper {
@@ -30,14 +30,14 @@ public class LoggedInGatekeeper implements Gatekeeper {
             }
         });
 
-        eventBus.addHandler(LogoffAuthenticatedEvent.TYPE, new LogoffAuthenticatedEventHandler() {
+        eventBus.addHandler(LogoutAuthenticatedEvent.TYPE, new LogoutAuthenticatedEventHandler() {
             @Override
-            public void onLogoff(LogoffAuthenticatedEvent event) {
-                dispatcher.execute(new LogoffAction(), new ErrorHandlingCallback<VoidResult>() {
+            public void onLogout(LogoutAuthenticatedEvent event) {
+                dispatcher.execute(new LogoutAction(), new ErrorHandlingCallback<VoidResult>() {
                     @Override
                     public void success(VoidResult result) {
                         currentUser = null;
-                        Log.debug("User logoffed");
+                        Log.debug("User logouted");
                         placeManager.revealDefaultPlace();
                     }
                 });

@@ -19,6 +19,6 @@ public class GetProfileInfoHandler extends SimpleActionHandlerEx<GetProfileInfo,
 
     @Override
     public GetProfileInfoResult executeEx(GetProfileInfo action, ExecutionContext context) throws DispatchException, IOException {
-        return new GetProfileInfoResult(servlet.getLogics().getProfileInfo(ServerUtils.getAuthentication().getName(), action.locale));
+        return new GetProfileInfoResult(servlet.getLogics().getProfileInfo(ServerUtils.getAuthentication().getName(), ServerUtils.getLocaleLanguage()));
     }
 }

@@ -9,9 +9,13 @@
         <intercept-url pattern="/platform.gwt.form.Form/*" access="hasRole('admin')"/>
         <form-login authentication-failure-url="/loginFailed.txt" default-target-url="/navigator.jsp"/>
         <anonymous enabled="false" />
-        <logout logout-url="/logoff.jsp" logout-success-url="/navigator.jsp" />
-        <access-denied-handler error-page="/restricted.jsp" />
+        <logout logout-url="/logout.jsp" logout-success-url="/navigator.jsp" />
+        <access-denied-handler ref="accessDeniedHandler" />
     </http>
+
+    <b:bean id="accessDeniedHandler" class="platform.gwt.base.server.spring.AccessDeniedHandlerImpl" >
+        <b:property name="errorPage" value="/restricted.jsp" />
+    </b:bean>
 
     <b:bean id="loginUrlAuthenticationEntryPoint" class="org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint">
         <b:property name="useForward" value="true"/>

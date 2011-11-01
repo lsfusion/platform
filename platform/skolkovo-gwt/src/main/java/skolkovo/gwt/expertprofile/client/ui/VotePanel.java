@@ -1,5 +1,6 @@
 package skolkovo.gwt.expertprofile.client.ui;
 
+import com.google.gwt.i18n.client.LocaleInfo;
 import com.smartgwt.client.types.Alignment;
 import com.smartgwt.client.types.ListGridFieldType;
 import com.smartgwt.client.types.RecordComponentPoolingMode;
@@ -210,7 +211,9 @@ public class VotePanel extends VLayout100 {
             }
             setAttribute("voteStartDate", vi.voteStartDate);
             setAttribute("voteEndDate", vi.voteEndDate);
-            setAttribute("ballotLink", BaseFrame.getPageUrlPreservingParameters("expert.html", "voteId", vi.linkHash));
+            setAttribute("ballotLink", BaseFrame.getPageUrlPreservingParameters("expert.html",
+                                                                                "voteId", vi.linkHash,
+                                                                                "locale", LocaleInfo.getCurrentLocale().getLocaleName()));
         }
     }
 

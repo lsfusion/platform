@@ -51,7 +51,7 @@ public class InformationPanel extends VLayout100 {
 
         StaticTextItem lbNotice = new StaticTextItem();
         lbNotice.setTitle("");
-        lbNotice.setValue("<i style=\"color: gray;\">" + baseMessages.logoffNotice() + "" +
+        lbNotice.setValue("<i style=\"color: gray;\">" + baseMessages.logoutNotice() + "" +
                           "<a href=\"" + BaseFrame.getLogoutUrl() + "\">&nbsp;" + baseMessages.here() + "</a></i>");
 
         detailsForm = new DynamicForm();

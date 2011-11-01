@@ -3,6 +3,7 @@ package platform.gwt.base.client;
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.http.client.URL;
+import com.google.gwt.http.client.UrlBuilder;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.RootPanel;
@@ -48,7 +49,7 @@ public class BaseFrame implements EntryPoint {
     }
 
     public static String getPageUrlPreservingParameters(String pageUrl) {
-        return getPageUrlPreservingParameters(pageUrl, null, null);
+        return getPageUrlPreservingParameters(pageUrl, (String[])null, null);
     }
 
     public static String getPageUrlPreservingParameters(String param, String value) {
@@ -56,11 +57,28 @@ public class BaseFrame implements EntryPoint {
     }
 
     public static String getPageUrlPreservingParameters(String pageUrl, String param, String value) {
+        return getPageUrlPreservingParameters(pageUrl, param, value, null, null);
+    }
+
+    public static String getPageUrlPreservingParameters(String pageUrl, String param1, String value1, String param2, String value2) {
+        return getPageUrlPreservingParameters(pageUrl, new String[]{param1, param2}, new String[]{value1, value2});
+    }
+
+    public static String getPageUrlPreservingParameters(String pageUrl, String[] params, String[] values) {
         String url;
-        if (param != null) {
-            url = value != null
-                  ? Window.Location.createUrlBuilder().setParameter(param, value).buildString()
-                  : Window.Location.createUrlBuilder().removeParameter(param).buildString();
+        if (params != null && params.length > 0) {
+            UrlBuilder urlBuilder = Window.Location.createUrlBuilder();
+            for (int i = 0; i < params.length; ++i) {
+                String param = params[i];
+                String value = values[i];
+
+                if (value != null) {
+                    urlBuilder.setParameter(param, value).buildString();
+                } else {
+                    urlBuilder.removeParameter(param).buildString();
+                }
+            }
+            url = urlBuilder.buildString();
         } else {
             url = Window.Location.getQueryString();
         }
@@ -79,7 +97,7 @@ public class BaseFrame implements EntryPoint {
     }
 
     public static String getLogoutUrl() {
-        return getPageUrlPreservingParameters("logoff.jsp", "spring-security-redirect", URL.encodePathSegment(Window.Location.createUrlBuilder().buildString()));
+        return getPageUrlPreservingParameters("logout.jsp", "spring-security-redirect", URL.encodePathSegment(Window.Location.createUrlBuilder().buildString()));
     }
 
     public static void logout() {
