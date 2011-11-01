@@ -1,9 +1,10 @@
 package skolkovo.gwt.expertprofile.client.ui;
 
 import com.smartgwt.client.types.Alignment;
+import com.smartgwt.client.types.Overflow;
 import com.smartgwt.client.types.VisibilityMode;
 import com.smartgwt.client.util.SC;
-import com.smartgwt.client.widgets.Button;
+import com.smartgwt.client.widgets.StretchImgButton;
 import com.smartgwt.client.widgets.events.ClickEvent;
 import com.smartgwt.client.widgets.events.ClickHandler;
 import com.smartgwt.client.widgets.layout.SectionStack;
@@ -19,7 +20,7 @@ public abstract class ExpertProfileMainPanel extends VLayout100 {
     private static ExpertProfileMessages messages = ExpertProfileMessages.Instance.get();
 
     private final ProfileInfo pi;
-    private Button btnUpdate;
+    private StretchImgButton btnUpdate;
     private SectionStack mainSectionStack;
 
     private InformationPanel infoPanel;
@@ -55,10 +56,14 @@ public abstract class ExpertProfileMainPanel extends VLayout100 {
     }
 
     private void createBottomPane() {
-        btnUpdate = new Button(messages.update());
+        btnUpdate = new StretchImgButton();
+        btnUpdate.setTitle(messages.update());
         btnUpdate.setWidth(280);
-        btnUpdate.setHeight(25);
+        btnUpdate.setHeight(27);
+        btnUpdate.setBaseStyle("confirmButton");
         btnUpdate.setShowDisabledIcon(false);
+        btnUpdate.setLabelHPad(0);
+        btnUpdate.setLabelVPad(0);
         btnUpdate.setLayoutAlign(Alignment.CENTER);
         btnUpdate.addClickHandler(new ClickHandler() {
             @Override
@@ -98,6 +103,8 @@ public abstract class ExpertProfileMainPanel extends VLayout100 {
 //        gridSection.setExpanded(false);
 
         mainSectionStack = new SectionStack();
+        mainSectionStack.setOverflow(Overflow.VISIBLE);
+        mainSectionStack.setAutoHeight();
         mainSectionStack.setVisibilityMode(VisibilityMode.MULTIPLE);
         mainSectionStack.setSections(detailsSection, foresightSection);
 //        mainSectionStack.setSections(detailsSection, foresightSection, gridSection);
@@ -111,6 +118,9 @@ public abstract class ExpertProfileMainPanel extends VLayout100 {
         bottomPane.addMember(btnUpdate);
 
         VLayout centerPane = new VLayout100();
+        centerPane.setShowEdges(true);
+        centerPane.setHeight100();
+        centerPane.setOverflow(Overflow.AUTO);
         centerPane.setLayoutMargin(10);
         centerPane.setLayoutBottomMargin(0);
         centerPane.addMember(mainSectionStack);

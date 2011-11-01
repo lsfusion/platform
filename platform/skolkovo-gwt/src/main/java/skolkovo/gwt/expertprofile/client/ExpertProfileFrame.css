@@ -1,17 +1,32 @@
-.button,
-.buttonDisabled,
-.buttonDown,
-.buttonFocused,
-.buttonFocusedDown,
-.buttonFocusedOver,
-.buttonOver,
-.buttonSelected,
-.buttonSelectedDisabled,
-.buttonSelectedDown,
-.buttonSelectedFocused,
-.buttonSelectedFocusedDown,
-.buttonSelectedFocusedOver,
-.buttonSelectedOver {
-    font-weight: bold !important;
-    font-size: 12px !important;
+* {
+    font-size: 13px !important;
+}
+
+/* StretchImgButton */
+.confirmButton,
+.confirmButtonSelected,
+.confirmButtonSelectedOver,
+.confirmButtonOver,
+.confirmButtonDown,
+.confirmButtonSelectedDown,
+.confirmButtonSelectedDisabled,
+.confirmButtonDisabled {
+    font-family:Arial,Verdana,sans-serif;
+    font-size: 12px;
+    font-weight: bold;
+
+    border: 1pt solid black;
+    background: #bcd85f url(images/button_green_bg.png) repeat-x;
+    height: 25px;
+}
+.confirmButtonOver {
+/*    font-weight:normal; */
+    background-position: 0 -25px;
+    background-color: white;
+}
+
+.confirmButtonSelectedDisabled,
+.confirmButtonDisabled {
+    background: #d7d7d7 url(images/button_gray_bg.png) repeat-x;
+	color:#AAAAAA;
 }

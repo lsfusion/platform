@@ -31,7 +31,7 @@ public class ForesightPanel extends VLayout100 {
         this.pi = PI;
 
         setLayoutMargin(10);
-        setOverflow(Overflow.AUTO);
+        setOverflow(Overflow.VISIBLE);
 
         Label lbHint = new Label(messages.foresightHint());
         lbHint.setAutoHeight();
