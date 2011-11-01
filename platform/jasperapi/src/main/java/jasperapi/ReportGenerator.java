@@ -164,6 +164,8 @@ public class ReportGenerator {
                 String dataFieldId = fieldId;
                 if (fieldId.endsWith(ReportConstants.captionSuffix)) {
                     dataFieldId = fieldId.substring(0, fieldId.length() - ReportConstants.captionSuffix.length());
+                } else if (fieldId.endsWith(ReportConstants.footerSuffix)) {
+                    dataFieldId = fieldId.substring(0, fieldId.length() - ReportConstants.footerSuffix.length());
                 }
                 int objCnt = output.compositeFieldsObjects.get(dataFieldId).size();
                 for (int k = 0; k < objCnt; k++) {
@@ -280,6 +282,8 @@ public class ReportGenerator {
             String dataId = id;
             if (id.endsWith(ReportConstants.captionSuffix)) {
                 dataId = id.substring(0, id.length() - ReportConstants.captionSuffix.length());
+            } else if (id.endsWith(ReportConstants.footerSuffix)) {
+                dataId = id.substring(0, id.length() - ReportConstants.footerSuffix.length());
             }
             if (compositeColumnValues.containsKey(dataId)) {
                 toDelete.add(textField);

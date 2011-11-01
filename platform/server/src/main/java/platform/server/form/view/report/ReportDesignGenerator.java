@@ -148,6 +148,10 @@ public class ReportDesignGenerator {
                     String fieldId = field.sID + ReportConstants.captionSuffix;
                     addDesignField(design, fieldId, field.captionClass.getName());
                 }
+                if (field.hasFooterProperty) {
+                    String fieldId = field.sID + ReportConstants.footerSuffix;
+                    addDesignField(design, fieldId, field.footerClass.getName());
+                }
             }
 
             String highlightPropertySID = null;

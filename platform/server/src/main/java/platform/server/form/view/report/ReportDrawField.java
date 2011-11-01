@@ -7,6 +7,7 @@ public class ReportDrawField implements AbstractRowLayoutElement {
     public String caption;
     public Class valueClass;
     public Class captionClass;
+    public Class footerClass;
 
     public int minimumWidth;
     private int preferredWidth;
@@ -17,6 +18,7 @@ public class ReportDrawField implements AbstractRowLayoutElement {
 
     public boolean hasColumnGroupObjects;
     public boolean hasCaptionProperty;
+    public boolean hasFooterProperty;
 
     static final int charWidth = 8;
 

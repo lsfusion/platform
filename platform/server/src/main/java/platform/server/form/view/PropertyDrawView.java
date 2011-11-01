@@ -136,6 +136,7 @@ public class PropertyDrawView extends ComponentView {
 
         reportField.hasColumnGroupObjects = !entity.columnGroupObjects.isEmpty();
         reportField.hasCaptionProperty = (entity.propertyCaption != null);
+        reportField.hasFooterProperty = (entity.propertyFooter != null);
 
         // определяем класс заголовка
         if (reportField.hasCaptionProperty) {
@@ -144,6 +145,15 @@ public class PropertyDrawView extends ComponentView {
             reportField.captionClass = captionField.valueClass;
         } else {
             reportField.captionClass = java.lang.String.class;
+        }
+
+        // определяем класс футера
+        if (reportField.hasFooterProperty) {
+            ReportDrawField footerField = new ReportDrawField(getSID() + ReportConstants.footerSuffix, "");
+            entity.propertyFooter.property.getType().fillReportDrawField(footerField);
+            reportField.footerClass = footerField.valueClass;
+        } else {
+            reportField.footerClass = java.lang.String.class;
         }
 
         if (!getType().fillReportDrawField(reportField)) {

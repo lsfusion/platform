@@ -32,6 +32,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
 
     // предполагается что propertyCaption ссылается на все из propertyObject но без toDraw (хотя опять таки не обязательно)
     public PropertyObjectEntity<?> propertyCaption;
+    public PropertyObjectEntity<?> propertyFooter;
     public PropertyObjectEntity<?> propertyHighlight;
 
     public boolean shouldBeLast = false;
@@ -59,6 +60,10 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         this.propertyCaption = propertyCaption;
     }
 
+    public void setPropertyFooter(PropertyObjectEntity propertyFooter) {
+        this.propertyFooter = propertyFooter;
+    }
+
     public void setPropertyHighlight(PropertyObjectEntity propertyHighlight) {
         this.propertyHighlight = propertyHighlight;
     }
@@ -72,6 +77,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         pool.serializeObject(outStream, toDraw);
         pool.serializeCollection(outStream, columnGroupObjects);
         pool.serializeObject(outStream, propertyCaption);
+        pool.serializeObject(outStream, propertyFooter);
         pool.serializeObject(outStream, propertyHighlight);
 
         outStream.writeBoolean(shouldBeLast);
@@ -87,6 +93,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         toDraw = (GroupObjectEntity) pool.deserializeObject(inStream);
         columnGroupObjects = pool.deserializeList(inStream);
         propertyCaption = (PropertyObjectEntity<?>) pool.deserializeObject(inStream);
+        propertyFooter = (PropertyObjectEntity<?>) pool.deserializeObject(inStream);
         propertyHighlight = (PropertyObjectEntity<?>) pool.deserializeObject(inStream);
 
         shouldBeLast = inStream.readBoolean();

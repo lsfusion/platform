@@ -805,6 +805,9 @@ public class FormInstance<T extends BusinessLogics<T>> extends IncrementProps<Pr
             if (propertyDraw.propertyCaption != null) {
                 result.add(propertyDraw.propertyCaption.property);
             }
+            if (propertyDraw.propertyFooter != null) {
+                result.add(propertyDraw.propertyFooter.property);
+            }
             if (propertyDraw.propertyHighlight != null) {
                 result.add(propertyDraw.propertyHighlight.property);
             }
@@ -1226,6 +1229,8 @@ public class FormInstance<T extends BusinessLogics<T>> extends IncrementProps<Pr
 
                 if (drawProperty.propertyCaption != null && (read || propertyUpdated(drawProperty.propertyCaption, columnGroupGrids, changedProps)))
                     readProperties.put(drawProperty.captionReader, columnGroupGrids);
+                if (drawProperty.propertyFooter != null && (read || propertyUpdated(drawProperty.propertyFooter, columnGroupGrids, changedProps)))
+                    readProperties.put(drawProperty.footerReader, columnGroupGrids);
                 if (drawProperty.propertyHighlight != null && (read || propertyUpdated(drawProperty.propertyHighlight, drawGridObjects, changedProps))) {
                     readProperties.put(drawProperty.highlightReader, drawGridObjects);
                     if (!inInterface) {

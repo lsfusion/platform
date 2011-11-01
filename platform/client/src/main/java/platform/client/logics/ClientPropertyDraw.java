@@ -41,6 +41,7 @@ import static platform.base.BaseUtils.nullTrim;
 public class ClientPropertyDraw extends ClientComponent implements ClientPropertyReader, ClientIdentitySerializable {
     public CaptionReader captionReader = new CaptionReader();
     public HighlightReader highlightReader = new HighlightReader();
+    public FooterReader footerReader = new FooterReader();
 
     // символьный идентификатор, нужен для обращению к свойствам в печатных формах
     public ClientType baseType;
@@ -562,6 +563,23 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
         public void update(Map<ClientGroupObjectValue, Object> readKeys, GroupObjectController controller) {
             controller.updateDrawPropertyCaptions(ClientPropertyDraw.this, readKeys);
+        }
+    }
+
+    public class FooterReader implements ClientPropertyReader {
+        public List<ClientObject> getKeysObjectsList(Set<ClientPropertyReader> panelProperties, Map<ClientGroupObject, ClassViewType> classViews, Map<ClientGroupObject, GroupObjectController> controllers) {
+            return ClientPropertyDraw.this.getKeysObjectsList(classViews, controllers);
+        }
+
+        public ClientGroupObject getGroupObject() {
+            return ClientPropertyDraw.this.getGroupObject();
+        }
+
+        public boolean shouldBeDrawn(ClientFormController form) {
+            return false;
+        }
+
+        public void update(Map<ClientGroupObjectValue, Object> readKeys, GroupObjectController controller) {
         }
     }
 

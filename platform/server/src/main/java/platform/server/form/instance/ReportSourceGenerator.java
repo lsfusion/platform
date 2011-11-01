@@ -106,6 +106,12 @@ public class ReportSourceGenerator<T extends BusinessLogics<T>>  {
                     newQuery.properties.put(captionObject, property.propertyCaption.getExpr(newQuery.mapKeys, form));
                     types.put(captionObject, property.propertyCaption.getType());
                 }
+
+                if (property.propertyFooter != null) {
+                    Pair<Object, PropertyType> footerObject = new Pair<Object, PropertyType>(property, PropertyType.FOOTER);
+                    newQuery.properties.put(footerObject, property.propertyFooter.getExpr(newQuery.mapKeys, form));
+                    types.put(footerObject, property.propertyFooter.getType());
+                }
             }
         }
         return newQuery;
@@ -142,6 +148,9 @@ public class ReportSourceGenerator<T extends BusinessLogics<T>>  {
                     if (property.propertyCaption != null) {
                         propertyList.add(new Pair<String, PropertyReaderInstance>(property.getsID(), property.captionReader));
                     }
+                    if (property.propertyFooter != null) {
+                        propertyList.add(new Pair<String, PropertyReaderInstance>(property.getsID(), property.footerReader));
+                    }
                 }
 
                 for (GroupObjectInstance group : groups) {
@@ -159,6 +168,9 @@ public class ReportSourceGenerator<T extends BusinessLogics<T>>  {
                         propertyValues.add(row.getValue().get(new Pair<Object, PropertyType>(property, PropertyType.PLAIN)));
                         if (property.propertyCaption != null) {
                             propertyValues.add(row.getValue().get(new Pair<Object, PropertyType>(property, PropertyType.CAPTION)));
+                        }
+                        if (property.propertyFooter != null) {
+                            propertyValues.add(row.getValue().get(new Pair<Object, PropertyType>(property, PropertyType.FOOTER)));
                         }
                     }
 
@@ -203,6 +215,7 @@ public class ReportSourceGenerator<T extends BusinessLogics<T>>  {
 
                 Map<List<Object>, Object> data = new HashMap<List<Object>, Object>();
                 Map<List<Object>, Object> captionData = new HashMap<List<Object>, Object>();
+                Map<List<Object>, Object> footerData = new HashMap<List<Object>, Object>();
                 LinkedHashSet<List<Object>> columnData = new LinkedHashSet<List<Object>>();
 
                 for (Map.Entry<Map<ObjectInstance, Object>, Map<Object, Object>> entry : qResult.entrySet()) {
@@ -213,6 +226,9 @@ public class ReportSourceGenerator<T extends BusinessLogics<T>>  {
                     data.put(values, entry.getValue().get(property));
                     if (property.propertyCaption != null) {
                         captionData.put(values, entry.getValue().get(property.propertyCaption));
+                    }
+                    if (property.propertyFooter != null) {
+                        footerData.put(values, entry.getValue().get(property.propertyFooter));
                     }
 
                     List<Object> columnValues = new ArrayList<Object>();
@@ -227,6 +243,9 @@ public class ReportSourceGenerator<T extends BusinessLogics<T>>  {
                 resultData.data.put(property.getsID(), data);
                 if (property.propertyCaption != null) {
                     resultData.data.put(property.getsID() + ReportConstants.captionSuffix, captionData);
+                }
+                if (property.propertyFooter != null) {
+                    resultData.data.put(property.getsID() + ReportConstants.footerSuffix, footerData);
                 }
                 resultData.columnData.put(property.getsID(), columnData);
             }
@@ -262,6 +281,9 @@ public class ReportSourceGenerator<T extends BusinessLogics<T>>  {
         query.properties.put(property, property.propertyObject.getExpr(query.mapKeys, form));
         if (property.propertyCaption != null) {
             query.properties.put(property.propertyCaption, property.propertyCaption.getExpr(query.mapKeys, form));
+        }
+        if (property.propertyFooter != null) {
+            query.properties.put(property.propertyFooter, property.propertyFooter.getExpr(query.mapKeys, form));
         }
 
         return query.execute(form.session.sql, queryOrders, 0, form.session.env);
@@ -300,5 +322,5 @@ public class ReportSourceGenerator<T extends BusinessLogics<T>>  {
         return BaseUtils.filterList(form.groups, groups);
     }
 
-    public enum PropertyType {PLAIN, ORDER, CAPTION, HIGHLIGHT}
+    public enum PropertyType {PLAIN, ORDER, CAPTION, FOOTER, HIGHLIGHT}
 }

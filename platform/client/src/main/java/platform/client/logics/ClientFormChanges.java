@@ -89,6 +89,8 @@ public class ClientFormChanges {
                 return clientForm.getProperty(inStream.readInt());
             case PropertyReadType.CAPTION:
                 return clientForm.getProperty(inStream.readInt()).captionReader;
+            case PropertyReadType.FOOTER:
+                return clientForm.getProperty(inStream.readInt()).footerReader;
             case PropertyReadType.CELL_HIGHLIGHT:
                 return clientForm.getProperty(inStream.readInt()).highlightReader;
             case PropertyReadType.ROW_HIGHLIGHT:

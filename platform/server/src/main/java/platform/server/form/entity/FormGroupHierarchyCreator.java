@@ -56,6 +56,11 @@ public class FormGroupHierarchyCreator {
                     Set<GroupObjectEntity> captionObjects = getGroupsByObjects(property.propertyCaption.getObjectInstances());
                     addDependencies(graph, captionObjects, true);
                 }
+
+                if (property.propertyFooter != null) {
+                    Set<GroupObjectEntity> footerObjects = getGroupsByObjects(property.propertyFooter.getObjectInstances());
+                    addDependencies(graph, footerObjects, true);
+                }
             }
         }
 

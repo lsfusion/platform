@@ -13,4 +13,5 @@ public class ReportConstants {
     public static final String paramsSuffix = "_params";
 
     public static final String captionSuffix = "(caption)";
+    public static final String footerSuffix = "(footer)";
 }

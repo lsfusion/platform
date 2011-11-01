@@ -5410,6 +5410,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             PropertyDrawEntity count = addPropertyDraw(applicationsSubmitProjectActionClusterDateDate, objProjectAction, objCluster, objDateFrom, objDateTo);
             count.columnGroupObjects.add(objCluster.groupTo);
             count.propertyCaption = addPropertyObject(nameNativeShort, objCluster);
+            count.propertyFooter = addPropertyObject(applicationsSubmitClusterDateDate, objCluster, objDateFrom, objDateTo);
 
             addPropertyDraw(objDateFrom, objDateTo, nonClusterApplicationsSubmitDateDate);
             addPropertyDraw(objCluster, objDateFrom, objDateTo, applicationsSubmitClusterDateDate);

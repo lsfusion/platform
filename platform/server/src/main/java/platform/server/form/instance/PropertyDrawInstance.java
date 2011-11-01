@@ -25,18 +25,22 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
 
     // предполагается что propertyCaption ссылается на все из propertyObject но без toDraw (хотя опять таки не обязательно)
     public final PropertyObjectInstance<?> propertyCaption;
+    public final PropertyObjectInstance<?> propertyFooter;
     public final PropertyObjectInstance<?> propertyHighlight;
 
     // извращенное множественное наследование
     public CaptionReaderInstance captionReader = new CaptionReaderInstance();
+    public FooterReaderInstance footerReader = new FooterReaderInstance();
     public HighlightReaderInstance highlightReader = new HighlightReaderInstance();
 
-    public PropertyDrawInstance(PropertyDrawEntity<P> entity, PropertyObjectInstance<P> propertyObject, GroupObjectInstance toDraw, List<GroupObjectInstance> columnGroupObjects, PropertyObjectInstance<?> propertyCaption, PropertyObjectInstance<?> propertyHighlight) {
+    public PropertyDrawInstance(PropertyDrawEntity<P> entity, PropertyObjectInstance<P> propertyObject, GroupObjectInstance toDraw, List<GroupObjectInstance> columnGroupObjects,
+                                PropertyObjectInstance<?> propertyCaption, PropertyObjectInstance<?> propertyFooter, PropertyObjectInstance<?> propertyHighlight) {
         super(entity);
         this.propertyObject = propertyObject;
         this.toDraw = toDraw;
         this.columnGroupObjects = columnGroupObjects;
         this.propertyCaption = propertyCaption;
+        this.propertyFooter = propertyFooter;
         this.propertyHighlight = propertyHighlight;
     }
 
@@ -133,6 +137,29 @@ public class PropertyDrawInstance<P extends PropertyInterface> extends CellInsta
         @Override
         public String toString() {
             return ServerResourceBundle.getString("logics.property.caption") + "(" + PropertyDrawInstance.this.toString() + ")";
+        }
+    }
+
+    public class FooterReaderInstance implements PropertyReaderInstance {
+        public PropertyObjectInstance getPropertyObjectInstance() {
+            return propertyFooter;
+        }
+
+        public byte getTypeID() {
+            return PropertyReadType.FOOTER;
+        }
+
+        public int getID() {
+            return PropertyDrawInstance.this.getID();
+        }
+
+        public List<ObjectInstance> getKeysObjectsList(Set<PropertyReaderInstance> panelProperties) {
+            return PropertyDrawInstance.this.getKeysObjectsList();
+        }
+
+        @Override
+        public String toString() {
+            return ServerResourceBundle.getString("logics.property.footer") + "(" + PropertyDrawInstance.this.toString() + ")";
         }
     }
 

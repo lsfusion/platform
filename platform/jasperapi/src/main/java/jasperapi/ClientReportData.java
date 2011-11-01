@@ -52,6 +52,8 @@ public class ClientReportData implements JRDataSource {
                 int type = inStream.readInt();
                 if (type == PropertyReadType.CAPTION) {
                     name += ReportConstants.captionSuffix;
+                } else if (type == PropertyReadType.FOOTER) {
+                    name += ReportConstants.footerSuffix;
                 }
                 propertyNames.add(name);
                 properties.put(name, new Pair<Integer, Integer>(type, inStream.readInt()));
@@ -118,6 +120,8 @@ public class ClientReportData implements JRDataSource {
                     String dataFieldName = realFieldName;
                     if (realFieldName.endsWith(ReportConstants.captionSuffix)) {
                         dataFieldName = realFieldName.substring(0, realFieldName.length() - ReportConstants.captionSuffix.length());
+                    } else if (realFieldName.endsWith(ReportConstants.footerSuffix)) {
+                        dataFieldName = realFieldName.substring(0, realFieldName.length() - ReportConstants.footerSuffix.length());
                     }
                     value = getCompositeFieldValue(dataFieldName, realFieldName, index);
                 }
