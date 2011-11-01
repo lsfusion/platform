@@ -25,7 +25,7 @@ public class BallotToolbar extends Composite {
         mainPane.setHorizontalAlignment(HorizontalPanel.ALIGN_RIGHT);
         mainPane.setWidth("100%");
 
-        String profileUrl = getPageUrlPreservingParameters("expertProfile.html");
+        String profileUrl = getPageUrlPreservingParameters("expertProfile.jsp");
 
         HorizontalPanel userBtnPanel = new HorizontalPanel();
         userBtnPanel.setWidth("100%");
