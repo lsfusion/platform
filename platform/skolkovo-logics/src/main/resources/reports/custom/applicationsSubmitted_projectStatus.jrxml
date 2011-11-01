@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="projectStatus" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="555" leftMargin="0" rightMargin="0" topMargin="5" bottomMargin="0">
-	<property name="ireport.zoom" value="1.0"/>
-	<property name="ireport.x" value="0"/>
+	<property name="ireport.zoom" value="1.5"/>
+	<property name="ireport.x" value="257"/>
 	<property name="ireport.y" value="0"/>
 	<style name="DefaultStyle" isDefault="true" vAlign="Middle" fontName="lsf.TimesNewRoman" fontSize="10">
 		<box>
@@ -22,6 +22,9 @@
 	<field name="applicationsSubmitStatusApplicationClusterDateDate" class="java.lang.Integer"/>
 	<field name="nonClusterApplicationsStatusAplicationSubmitDateDate" class="java.lang.Integer"/>
 	<field name="applicationsSubmitStatusApplicationDateDate" class="java.lang.Integer"/>
+	<field name="applicationsSubmitStatusApplicationClusterDateDate(footer)" class="java.lang.Integer"/>
+	<field name="nonClusterApplicationsSubmitDateDate" class="java.lang.Integer"/>
+	<field name="applicationsSubmitDateDate" class="java.lang.Integer"/>
 	<pageHeader>
 		<band height="18">
 			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="false">
@@ -94,4 +97,40 @@
 			</textField>
 		</band>
 	</detail>
+	<lastPageFooter>
+		<band height="18">
+			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="false">
+				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" mode="Opaque" x="0" y="0" width="200" height="18" forecolor="#FFFFFF" backcolor="#666666"/>
+				<textElement verticalAlignment="Middle" rotation="None" markup="none">
+					<font fontName="lsf.TimesNewRoman" size="10" isBold="true" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Итого"]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="false">
+				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" mode="Opaque" x="623" y="0" width="89" height="18" forecolor="#FFFFFF" backcolor="#666666"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle" rotation="None" markup="none">
+					<font fontName="lsf.TimesNewRoman" size="10" isBold="true" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression class="java.lang.Integer"><![CDATA[$F{nonClusterApplicationsSubmitDateDate}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="false">
+				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" mode="Opaque" x="200" y="0" width="423" height="18" forecolor="#FFFFFF" backcolor="#666666"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle" rotation="None" markup="none">
+					<font fontName="lsf.TimesNewRoman" size="10" isBold="true" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression class="java.lang.Integer"><![CDATA[$F{applicationsSubmitStatusApplicationClusterDateDate(footer)}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="false">
+				<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" mode="Opaque" x="712" y="0" width="90" height="18" forecolor="#FFFFFF" backcolor="#666666"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle" rotation="None" markup="none">
+					<font fontName="lsf.TimesNewRoman" size="10" isBold="true" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression class="java.lang.Integer"><![CDATA[$F{applicationsSubmitDateDate}]]></textFieldExpression>
+			</textField>
+		</band>
+	</lastPageFooter>
 </jasperReport>

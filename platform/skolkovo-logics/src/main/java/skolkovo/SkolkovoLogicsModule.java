@@ -1292,6 +1292,9 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP nonClusterApplicationsTypeProjectStatus;
     LP nonClusterApplicationsSubmit;
     LP sumApplicationsCluster;
+    LP percentSumApplicationsTypeProjectStatusCluster;
+    LP percentNonClusterApplicationsTypeProjectStatus;
+    LP percentApplicationsTypeProjectStatus;
 
     LP dateRegisteredStatusProject;
     LP dateNoClusterStatusProject;
@@ -3525,6 +3528,11 @@ public class SkolkovoLogicsModule extends LogicsModule {
                 oneApplications, typeProjectStatusApplication, 1, finalClusterApplication,1);
         nonClusterApplicationsTypeProjectStatusCluster = addSGProp("nonClusterApplicationsTypeProjectStatusCluster", "Итого не указано", addJProp(baseLM.andNot1, oneApplications, 1, quantityClusterApplication, 1), typeProjectStatusApplication, 1, finalClusterApplication, 1);
         nonClusterApplicationsTypeProjectStatus = addSGProp("nonClusterApplicationsTypeProjectStatus", "Итого не указано", addJProp(baseLM.andNot1, oneApplications, 1, quantityClusterApplication, 1), typeProjectStatusApplication, 1);
+
+        percentSumApplicationsTypeProjectStatusCluster = addJProp("percentSumApplicationsTypeProjectStatusCluster", "По кластеру (%)", percent, sumApplicationsTypeProjectStatusCluster, 1, 2, sumApplicationsCluster, 2);
+        percentNonClusterApplicationsTypeProjectStatus = addJProp("percentNonClusterApplicationsTypeProjectStatus", "Не указано (%)", percent, nonClusterApplicationsTypeProjectStatus, 1, nonClusterApplicationsSubmit);
+        percentApplicationsTypeProjectStatus = addJProp("percentApplicationsTypeProjectStatus", "Итого (%)", percent, sumApplicationsTypeProjectStatus, 1, sumSubmitApplications);
+
     }
 
     @Override
@@ -5412,7 +5420,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             count.propertyCaption = addPropertyObject(nameNativeShort, objCluster);
             count.propertyFooter = addPropertyObject(applicationsSubmitClusterDateDate, objCluster, objDateFrom, objDateTo);
 
-            addPropertyDraw(objDateFrom, objDateTo, nonClusterApplicationsSubmitDateDate);
+            addPropertyDraw(objDateFrom, objDateTo, nonClusterApplicationsSubmitDateDate, applicationsSubmitDateDate);
             addPropertyDraw(objCluster, objDateFrom, objDateTo, applicationsSubmitClusterDateDate);
             addPropertyDraw(objProjectAction, objDateFrom, objDateTo, nonClusterApplicationsProjectActionSubmitDateDate, applicationsSubmitProjectActionDateDate);
 
@@ -5421,6 +5429,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
             PropertyDrawEntity count1 = addPropertyDraw(applicationsSubmitStatusApplicationClusterDateDate, objProjectStatus, objCluster, objDateFrom, objDateTo);
             count1.columnGroupObjects.add(objCluster.groupTo);
             count1.propertyCaption = addPropertyObject(nameNativeShort, objCluster);
+            count1.propertyFooter = addPropertyObject(applicationsSubmitClusterDateDate, objCluster, objDateFrom, objDateTo);
+
             addPropertyDraw(objProjectStatus, objDateFrom, objDateTo, nonClusterApplicationsStatusAplicationSubmitDateDate, applicationsSubmitStatusApplicationDateDate);
 
             addFixedFilter(new NotFilterEntity(new NotNullFilterEntity(addPropertyObject(inTestCluster, objCluster))));
@@ -5447,6 +5457,12 @@ public class SkolkovoLogicsModule extends LogicsModule {
             count.columnGroupObjects.add(objCluster.groupTo);
             count.propertyCaption = addPropertyObject(nameNativeShort, objCluster);
             addPropertyDraw(objTypeProjectStatus, nonClusterApplicationsTypeProjectStatus, sumApplicationsTypeProjectStatus);
+            addPropertyDraw(objTypeProjectStatus, percentNonClusterApplicationsTypeProjectStatus);
+            addPropertyDraw(objTypeProjectStatus, percentApplicationsTypeProjectStatus);
+
+            PropertyDrawEntity count2 = addPropertyDraw(percentSumApplicationsTypeProjectStatusCluster, objTypeProjectStatus, objCluster);
+            count2.columnGroupObjects.add(objCluster.groupTo);
+            count2.propertyCaption = addPropertyObject(nameNativeShort, objCluster);
 
             objProjectStatus = addSingleGroupObject(2, "projectStatus", projectStatus, "Статус заявки", baseLM.name, oficialNameProjectStatus);
 
@@ -5458,7 +5474,6 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
             addFixedFilter(new NotFilterEntity(new NotNullFilterEntity(addPropertyObject(inTestCluster, objCluster))));
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(sumApplicationsStatusApplication, objProjectStatus)));
- //           addFixedFilter(new NotNullFilterEntity(addPropertyObject(sumApplicationsTypeProjectStatusCluster, objTypeProjectStatus, objCluster)));
             addFixedFilter(new CompareFilterEntity(addPropertyObject(typeProjectStatusProjectStatus, objProjectStatus), Compare.EQUALS, objTypeProjectStatus));
 
         }
