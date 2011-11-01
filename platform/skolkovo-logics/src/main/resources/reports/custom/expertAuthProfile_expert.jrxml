@@ -70,7 +70,7 @@
 					<font fontName="Serif" size="14"/>
 				</textElement>
 				<textFieldExpression class="java.lang.String"><![CDATA[($F{isForeignExpert}==null?"Ссылка":"Link")]]></textFieldExpression>
-				<hyperlinkReferenceExpression><![CDATA["http://"+$F{webHost}+"/expertProfile.html?locale="+$F{localeExpert}]]></hyperlinkReferenceExpression>
+				<hyperlinkReferenceExpression><![CDATA["http://"+$F{webHost}+"/expertProfile.jsp?locale="+$F{localeExpert}]]></hyperlinkReferenceExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
 				<reportElement positionType="Float" x="19" y="143" width="545" height="30"/>
