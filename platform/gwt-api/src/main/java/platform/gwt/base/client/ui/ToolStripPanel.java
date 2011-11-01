@@ -30,7 +30,7 @@ public class ToolStripPanel extends ToolStrip {
         this(logoUrl, title, true);
     }
 
-    public ToolStripPanel(String logoUrl, String title, boolean showLogoffButton) {
+    public ToolStripPanel(String logoUrl, String title, boolean showLogoutButton) {
         Page.setAppImgDir(GWT.getModuleBaseURL() + "images/");
 
         setHeight(33);
@@ -82,20 +82,20 @@ public class ToolStripPanel extends ToolStrip {
 
         addButtonsAfterLocaleChooser();
 
-        if (showLogoffButton) {
+        if (showLogoutButton) {
             addSeparator();
 
-            ToolStripButton logoffBtn = new ToolStripButton();
-            logoffBtn.setTitle(baseMessages.logoff());
-            logoffBtn.setIcon("door.png");
-            logoffBtn.addClickHandler(new ClickHandler() {
+            ToolStripButton logoutBtn = new ToolStripButton();
+            logoutBtn.setTitle(baseMessages.logout());
+            logoutBtn.setIcon("door.png");
+            logoutBtn.addClickHandler(new ClickHandler() {
                 @Override
                 public void onClick(ClickEvent event) {
-                    logoff();
+                    logout();
                 }
             });
 
-            addMember(logoffBtn);
+            addMember(logoutBtn);
         }
 
         addSpacer(6);

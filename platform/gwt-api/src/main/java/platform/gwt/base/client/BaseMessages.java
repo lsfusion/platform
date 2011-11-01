@@ -24,7 +24,7 @@ public interface BaseMessages extends Messages {
 
     String loading();
 
-    String logoff();
+    String logout();
 
     String username();
 

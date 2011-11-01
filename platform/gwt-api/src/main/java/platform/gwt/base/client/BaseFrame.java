@@ -78,11 +78,11 @@ public class BaseFrame implements EntryPoint {
         return GWT.getHostPageBaseURL() + pageUrl + url.substring(paramBegin);
     }
 
-    public static String getLogoffUrl() {
+    public static String getLogoutUrl() {
         return getPageUrlPreservingParameters("logoff.jsp", "spring-security-redirect", URL.encodePathSegment(Window.Location.createUrlBuilder().buildString()));
     }
 
-    public static void logoff() {
-        com.google.gwt.user.client.Window.open(BaseFrame.getLogoffUrl(), "_self", null);
+    public static void logout() {
+        com.google.gwt.user.client.Window.open(BaseFrame.getLogoutUrl(), "_self", null);
     }
 }

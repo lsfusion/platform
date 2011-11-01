@@ -85,6 +85,10 @@ public interface ExpertProfileMessages extends Messages {
 
     String commentHint();
 
+    String classHint();
+
+    String classScientific();
+
     String classTechnical();
 
     String classBusiness();

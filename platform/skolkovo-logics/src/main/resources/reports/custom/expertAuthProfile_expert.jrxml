@@ -17,7 +17,7 @@
 	<field name="webHost" class="java.lang.String"/>
 	<field name="localeExpert" class="java.lang.String"/>
 	<detail>
-		<band height="283">
+		<band height="306">
 			<textField isStretchWithOverflow="true">
 				<reportElement x="19" y="13" width="545" height="20"/>
 				<textElement verticalAlignment="Top">
@@ -46,13 +46,13 @@
 					<font fontName="Serif" size="14"/>
 				</textElement>
 				<textFieldExpression class="java.lang.String"><![CDATA[($F{isForeignExpert}==null?
-    "Мы будем признательны, если Вы заполните анкету до 04.11.11. По всем вопросам, связанным с заполнением профиля, пожалуйста, обращайтесь к сотруднику Фонда Диане Дудиной по эл. почте ddudina@corp.i-gorod.com."
+    "Мы будем признательны, если Вы заполните анкету до 04.11.11. По всем вопросам, связанным с заполнением профиля, пожалуйста, обращайтесь по адресу:"
     :
-    "We would be grateful if you could complete the questionnaire by Nov 4, 11. If you have any questions or comments please feel free contacting Diana Dudina of Skolkovo Foundation at ddudina@corp.i-gorod.com."
+    "We would be grateful if you could complete the questionnaire by Nov 4, 11. If you have any questions or comments please feel free contacting us at"
 )]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
-				<reportElement positionType="Float" x="19" y="238" width="545" height="40"/>
+				<reportElement positionType="Float" x="19" y="257" width="545" height="40"/>
 				<textElement verticalAlignment="Top">
 					<font size="14" isBold="false" isItalic="false"/>
 				</textElement>
@@ -84,6 +84,14 @@
     "Login : " + $F{userLogin} + "\n" +
     "Password : " + $F{userPassword}
 )]]></textFieldExpression>
+			</textField>
+			<textField hyperlinkType="Reference" hyperlinkTarget="Blank">
+				<reportElement positionType="Float" x="19" y="228" width="545" height="21" forecolor="#3399FF"/>
+				<textElement verticalAlignment="Top">
+					<font fontName="Serif" size="14"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["expert_support@corp.i-gorod.com"]]></textFieldExpression>
+				<hyperlinkReferenceExpression><![CDATA["mailto:expert_support@corp.i-gorod.com"]]></hyperlinkReferenceExpression>
 			</textField>
 		</band>
 	</detail>

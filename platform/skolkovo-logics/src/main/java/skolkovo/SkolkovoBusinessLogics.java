@@ -319,8 +319,13 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
                     profileInfo.voteInfos[i++] = correctVoteInfo(voteInfo);
                 }
 
+                profileInfo.scientific = SkolkovoLM.isScientificExpert.read(session, expertObj) != null;
                 profileInfo.technical = SkolkovoLM.isTechnicalExpert.read(session, expertObj) != null;
                 profileInfo.business = SkolkovoLM.isBusinessExpert.read(session, expertObj) != null;
+
+                profileInfo.commentScientific = (String) SkolkovoLM.commentScientificExpert.read(session, expertObj);
+                profileInfo.commentTechnical = (String) SkolkovoLM.commentTechnicalExpert.read(session, expertObj);
+                profileInfo.commentBusiness = (String) SkolkovoLM.commentBusinessExpert.read(session, expertObj);
 
                 profileInfo.expertise = SkolkovoLM.expertiseExpert.read(session, expertObj) != null;
                 profileInfo.grant = SkolkovoLM.grantExpert.read(session, expertObj) != null;
@@ -380,8 +385,13 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
                 }
                 DataObject expertObj = new DataObject(expertId, SkolkovoLM.expert);
 
+                SkolkovoLM.isScientificExpert.execute(profileInfo.scientific, session, expertObj);
                 SkolkovoLM.isTechnicalExpert.execute(profileInfo.technical, session, expertObj);
                 SkolkovoLM.isBusinessExpert.execute(profileInfo.business, session, expertObj);
+
+                SkolkovoLM.commentScientificExpert.execute(profileInfo.commentScientific, session, expertObj);
+                SkolkovoLM.commentTechnicalExpert.execute(profileInfo.commentTechnical, session, expertObj);
+                SkolkovoLM.commentBusinessExpert.execute(profileInfo.commentBusiness, session, expertObj);
 
                 SkolkovoLM.expertiseExpert.execute(profileInfo.expertise, session, expertObj);
                 SkolkovoLM.grantExpert.execute(profileInfo.grant, session, expertObj);

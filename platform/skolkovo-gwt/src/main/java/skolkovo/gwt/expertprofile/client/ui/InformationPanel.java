@@ -2,8 +2,11 @@ package skolkovo.gwt.expertprofile.client.ui;
 
 import com.smartgwt.client.types.TitleOrientation;
 import com.smartgwt.client.widgets.form.DynamicForm;
+import com.smartgwt.client.widgets.form.FormItemIfFunction;
 import com.smartgwt.client.widgets.form.fields.CheckboxItem;
+import com.smartgwt.client.widgets.form.fields.FormItem;
 import com.smartgwt.client.widgets.form.fields.StaticTextItem;
+import com.smartgwt.client.widgets.form.fields.TextAreaItem;
 import com.smartgwt.client.widgets.form.fields.events.ChangedEvent;
 import com.smartgwt.client.widgets.form.fields.events.ChangedHandler;
 import platform.gwt.base.client.BaseFrame;
@@ -49,7 +52,7 @@ public class InformationPanel extends VLayout100 {
         StaticTextItem lbNotice = new StaticTextItem();
         lbNotice.setTitle("");
         lbNotice.setValue("<i style=\"color: gray;\">" + baseMessages.logoffNotice() + "" +
-                          "<a href=\"" + BaseFrame.getLogoffUrl() + "\">&nbsp;" + baseMessages.here() + "</a></i>");
+                          "<a href=\"" + BaseFrame.getLogoutUrl() + "\">&nbsp;" + baseMessages.here() + "</a></i>");
 
         detailsForm = new DynamicForm();
         detailsForm.setMargin(5);
@@ -59,6 +62,58 @@ public class InformationPanel extends VLayout100 {
     }
 
     private void createExpertiseClassForm() {
+        final TextAreaItem taScientific = new TextAreaItem();
+        taScientific.setTitleOrientation(TitleOrientation.TOP);
+        taScientific.setTitle(messages.classHint());
+        taScientific.setEndRow(true);
+        taScientific.setStartRow(true);
+        taScientific.setWidth("*");
+        taScientific.setHeight(50);
+        taScientific.setValue(pi.commentScientific);
+        taScientific.addChangedHandler(new ChangedHandler() {
+            @Override
+            public void onChanged(ChangedEvent event) {
+                pi.commentScientific = taScientific.getValueAsString();
+            }
+        });
+
+        final CheckboxItem cbScientific = new CheckboxItem();
+        cbScientific.setTitle(messages.classScientific());
+        cbScientific.setWrapTitle(true);
+        cbScientific.setWidth("*");
+        cbScientific.setColSpan("*");
+        cbScientific.setShowTitle(false);
+        cbScientific.setValue(pi.scientific);
+        cbScientific.setRedrawOnChange(true);
+        cbScientific.addChangedHandler(new ChangedHandler() {
+            @Override
+            public void onChanged(ChangedEvent event) {
+                pi.scientific = cbScientific.getValueAsBoolean();
+            }
+        });
+
+        taScientific.setShowIfCondition(new FormItemIfFunction() {
+            @Override
+            public boolean execute(FormItem item, Object value, DynamicForm form) {
+                return cbScientific.getValueAsBoolean();
+            }
+        });
+
+        final TextAreaItem taTechnical = new TextAreaItem();
+        taTechnical.setTitleOrientation(TitleOrientation.TOP);
+        taTechnical.setTitle(messages.classHint());
+        taTechnical.setEndRow(true);
+        taTechnical.setStartRow(true);
+        taTechnical.setWidth("*");
+        taTechnical.setHeight(50);
+        taTechnical.setValue(pi.commentTechnical);
+        taTechnical.addChangedHandler(new ChangedHandler() {
+            @Override
+            public void onChanged(ChangedEvent event) {
+                pi.commentTechnical = taTechnical.getValueAsString();
+            }
+        });
+
         final CheckboxItem cbTechnical = new CheckboxItem();
         cbTechnical.setTitle(messages.classTechnical());
         cbTechnical.setWrapTitle(true);
@@ -66,10 +121,33 @@ public class InformationPanel extends VLayout100 {
         cbTechnical.setColSpan("*");
         cbTechnical.setShowTitle(false);
         cbTechnical.setValue(pi.technical);
+        cbTechnical.setRedrawOnChange(true);
         cbTechnical.addChangedHandler(new ChangedHandler() {
             @Override
             public void onChanged(ChangedEvent event) {
                 pi.technical = cbTechnical.getValueAsBoolean();
+            }
+        });
+
+        taTechnical.setShowIfCondition(new FormItemIfFunction() {
+            @Override
+            public boolean execute(FormItem item, Object value, DynamicForm form) {
+                return cbTechnical.getValueAsBoolean();
+            }
+        });
+
+        final TextAreaItem taBusiness = new TextAreaItem();
+        taBusiness.setTitleOrientation(TitleOrientation.TOP);
+        taBusiness.setTitle(messages.classHint());
+        taBusiness.setEndRow(true);
+        taBusiness.setStartRow(true);
+        taBusiness.setWidth("*");
+        taBusiness.setHeight(50);
+        taBusiness.setValue(pi.commentBusiness);
+        taBusiness.addChangedHandler(new ChangedHandler() {
+            @Override
+            public void onChanged(ChangedEvent event) {
+                pi.commentBusiness = taBusiness.getValueAsString();
             }
         });
 
@@ -80,10 +158,18 @@ public class InformationPanel extends VLayout100 {
         cbBusiness.setColSpan("*");
         cbBusiness.setShowTitle(false);
         cbBusiness.setValue(pi.business);
+        cbBusiness.setRedrawOnChange(true);
         cbBusiness.addChangedHandler(new ChangedHandler() {
             @Override
             public void onChanged(ChangedEvent event) {
                 pi.business = cbBusiness.getValueAsBoolean();
+            }
+        });
+
+        taBusiness.setShowIfCondition(new FormItemIfFunction() {
+            @Override
+            public boolean execute(FormItem item, Object value, DynamicForm form) {
+                return cbBusiness.getValueAsBoolean();
             }
         });
 
@@ -94,7 +180,7 @@ public class InformationPanel extends VLayout100 {
         expertiseForm.setMargin(5);
         expertiseForm.setAutoHeight();
         expertiseForm.setNumCols(1);
-        expertiseForm.setFields(cbTechnical, cbBusiness);
+        expertiseForm.setFields(cbScientific, taScientific, cbTechnical, taTechnical, cbBusiness, taBusiness);
     }
 
     private void createApplicationTypeForm() {

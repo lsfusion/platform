@@ -191,6 +191,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
     AbstractGroup registerGroup;
     AbstractGroup originalDoscCheckGroup;
 
+    AbstractGroup commentExpertiseGroup;
+
     AbstractGroup contactGroup;
     AbstractGroup documentGroup;
     AbstractGroup legalDataGroup;
@@ -418,6 +420,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
         legalCheckResultGroup = addAbstractGroup("legalCheckResultGroup", "Решения юридической проверки", publicGroup);
         registerGroup = addAbstractGroup("registerGroup", "Оформление свидетельства участника", publicGroup);
         originalDoscCheckGroup = addAbstractGroup("originalDoscCheckGroup", "Проверка оригиналов документов", publicGroup);
+
+        commentExpertiseGroup = addAbstractGroup("commentExpertiseGroup", "Опыт в областях", publicGroup);
     }
 
     public LP nameNative;
@@ -458,7 +462,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP inExpertForesight, commentExpertForesight, quantityInForesightExpert, quantityInExpertForesight;
     public LP inProjectForesightExpert, quantityForesightProjectExpert;
     public LP clusterInExpertForesight;
-    LP isTechnicalExpert, isBusinessExpert;
+    LP isScientificExpert, isTechnicalExpert, isBusinessExpert;
+    LP commentScientificExpert, commentTechnicalExpert, commentBusinessExpert;
     LP expertiseExpert, grantExpert;
     LP profileUpdateDateExpert;
     LP profileBlockedExpert;
@@ -1463,8 +1468,13 @@ public class SkolkovoLogicsModule extends LogicsModule {
         documentNameExpert = addSUProp("documentNameExpert", "Имя для документов", Union.OVERRIDE, addJProp(baseLM.and1, addJProp(baseLM.insensitiveString2, baseLM.userLastName, 1, baseLM.userFirstName, 1), 1, is(expert), 1), dataDocumentNameExpert);
         documentNameExpert.setMinimumCharWidth(20);
 
+        isScientificExpert = addDProp("isScientificExpert", "Научный эксперт", LogicalClass.instance, expert);
         isTechnicalExpert = addDProp("isTechnicalExpert", "Технический эксперт", LogicalClass.instance, expert);
         isBusinessExpert = addDProp("isBusinessExpert", "Бизнес-эксперт", LogicalClass.instance, expert);
+
+        commentScientificExpert = addDProp(commentExpertiseGroup, "commentScientificExpert", "Опыт в научной сфере", TextClass.instance, expert);
+        commentTechnicalExpert = addDProp(commentExpertiseGroup, "commentTechnicalExpert", "Опыт в технической сфере", TextClass.instance, expert);
+        commentBusinessExpert = addDProp(commentExpertiseGroup, "commentBusinessExpert", "Опыт в бизнес сфере", TextClass.instance, expert);
 
         expertiseExpert = addDProp("expertiseExpert", "Экспертиза по существу", LogicalClass.instance, expert);
         grantExpert = addDProp("grantExpert", "Гранты", LogicalClass.instance, expert);
@@ -4685,10 +4695,13 @@ public class SkolkovoLogicsModule extends LogicsModule {
                     baseLM.userLogin, baseLM.userPassword, baseLM.email, disableExpert,
                     nameNativeShortClusterExpert, nameLanguageExpert,
                     dateAgreementExpert, nameCountryExpert, nameCurrencyExpert,
-                    isTechnicalExpert, isBusinessExpert, expertiseExpert, grantExpert, profileBlockedExpert, profileUpdateDateExpert,
+                    isScientificExpert, isTechnicalExpert, isBusinessExpert, expertiseExpert, grantExpert, profileBlockedExpert, profileUpdateDateExpert,
                     quantityInClusterExpert, quantityInForesightExpert,
                     expertResultGroup, baseLM.generateLoginPassword, emailAuthExpert, emailAuthProfileExpert);
             addObjectActions(this, objExpert);
+
+            addPropertyDraw(objExpert, commentExpertiseGroup);
+            setForceViewType(commentExpertiseGroup, ClassViewType.PANEL);;
 
             objVote = addSingleGroupObject(vote, nameNativeProjectVote, dateStartVote, dateEndVote, openedVote, succeededVote, quantityDoneVote, revisionVote);
 
@@ -4733,11 +4746,19 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
             design.get(objExpert.groupTo).grid.getContainer().setFixedSize(new Dimension(-1, 300));
 
+            design.setPanelLabelAbove(commentExpertiseGroup, true);
+            design.setConstraintsFillHorizontal(commentExpertiseGroup, 0.333);
+
+            ContainerView foresightContainer = design.createContainer("Области специализации");
+            foresightContainer.constraints.childConstraints = DoNotIntersectSimplexConstraint.TOTHE_BOTTOM;
+            foresightContainer.add(design.getGroupPropertyContainer(objExpert.groupTo, commentExpertiseGroup));
+            foresightContainer.add(design.getGroupObjectContainer(objForesight.groupTo));
+
             ContainerView specContainer = design.createContainer();
             design.getMainContainer().addAfter(specContainer, design.getGroupObjectContainer(objExpert.groupTo));
             specContainer.add(design.getGroupObjectContainer(objVote.groupTo));
             specContainer.add(design.getGroupObjectContainer(objExtraCluster.groupTo));
-            specContainer.add(design.getGroupObjectContainer(objForesight.groupTo));
+            specContainer.add(foresightContainer);
             specContainer.tabbedPane = true;
 
             design.setPanelLabelAbove(design.get(getPropertyDraw(commentExpertForesight)), true);
@@ -5777,8 +5798,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
             query.and(inClusterExpert.getExpr(context.getModifier(), currentClusterProject.getExpr(context.getModifier(), projectObject.getExpr()), query.mapKeys.get("key")).getWhere());
             query.and(disableExpert.getExpr(context.getModifier(), query.mapKeys.get("key")).getWhere().not());
             query.and(voteResultProjectExpert.getExpr(context.getModifier(), projectObject.getExpr(), query.mapKeys.get("key")).getWhere().not());
-            query.properties.put("business", isBusinessExpert.getExpr(context.getModifier(), query.mapKeys.get("key")));
             query.properties.put("technical", isTechnicalExpert.getExpr(context.getModifier(), query.mapKeys.get("key")));
+            query.properties.put("business", isBusinessExpert.getExpr(context.getModifier(), query.mapKeys.get("key")));
 
             if (r2) {
                 query.and(quantityForesightProjectExpert.getExpr(context.getModifier(), projectObject.getExpr(), query.mapKeys.get("key")).getWhere());

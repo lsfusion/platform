@@ -566,6 +566,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             }
         } catch (Exception e) {
             errors += e.getMessage();
+            e.printStackTrace();
         }
 
         String syntaxErrors = "";
