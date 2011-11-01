@@ -3,6 +3,8 @@
 <module>
     <inherits name='com.google.gwt.user.User'/>
 
+    <set-configuration-property name="UiBinder.useSafeHtmlTemplates" value="true" />
+
     <extend-property name="locale" values="en,ru"/>
     <set-property-fallback name="locale" value="ru"/>
 
