@@ -9,6 +9,7 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.Widget;
 import platform.gwt.base.client.ui.ErrorFrameWidget;
+import platform.gwt.utils.GwtUtils;
 
 public class BaseFrame implements EntryPoint {
     public static BaseMessages baseMessages = BaseMessages.Instance.get();
@@ -46,6 +47,7 @@ public class BaseFrame implements EntryPoint {
 
     public static void showErrorPage(Throwable caught) {
         setAsRootPane(new ErrorFrameWidget(caught));
+        GwtUtils.removeLoaderFromHostedPage();
     }
 
     public static String getPageUrlPreservingParameters(String pageUrl) {

@@ -58,12 +58,16 @@ public abstract class ExpertProfileMainPanel extends VLayout100 {
     private void createBottomPane() {
         btnUpdate = new StretchImgButton();
         btnUpdate.setTitle(messages.update());
+        btnUpdate.setCapSize(0);
         btnUpdate.setWidth(280);
         btnUpdate.setHeight(27);
         btnUpdate.setBaseStyle("confirmButton");
         btnUpdate.setShowDisabledIcon(false);
-        btnUpdate.setLabelHPad(0);
-        btnUpdate.setLabelVPad(0);
+        btnUpdate.setLabelHPad(1);
+        btnUpdate.setLabelVPad(1);
+        btnUpdate.setSrc(null);
+        btnUpdate.setBorder("1px solid black");
+
         btnUpdate.setLayoutAlign(Alignment.CENTER);
         btnUpdate.addClickHandler(new ClickHandler() {
             @Override
