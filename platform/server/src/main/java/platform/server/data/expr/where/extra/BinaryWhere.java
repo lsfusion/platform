@@ -1,6 +1,5 @@
 package platform.server.data.expr.where.extra;
 
-import org.apache.xml.dtm.ref.DTMDefaultBaseIterators;
 import platform.base.BaseUtils;
 import platform.base.TwinImmutableInterface;
 import platform.interop.Compare;
@@ -13,17 +12,15 @@ import platform.server.data.query.CompileSource;
 import platform.server.data.query.ExprEnumerator;
 import platform.server.data.query.JoinData;
 import platform.server.data.query.innerjoins.GroupJoinsWheres;
-import platform.server.data.query.innerjoins.KeyEquals;
+import platform.server.data.query.stat.KeyStat;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.translator.QueryTranslator;
-import platform.server.data.where.DataWhere;
-import platform.server.data.where.DataWhereSet;
-import platform.server.data.where.Where;
-import platform.server.data.where.MapWhere;
+import platform.server.data.where.*;
 import platform.server.data.where.classes.ClassExprWhere;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Set;
 
 public abstract class BinaryWhere<This extends BinaryWhere<This>> extends DataWhere {
 
@@ -50,6 +47,15 @@ public abstract class BinaryWhere<This extends BinaryWhere<This>> extends DataWh
         if(!operator1.isOr())
             follows.add(operator1);
         if(!operator2.isOr())
+            follows.add(operator2);
+        return follows;
+    }
+
+    private static Collection<BaseExpr> getOrOperands(BaseExpr operator1, BaseExpr operator2) {
+        Collection<BaseExpr> follows = new ArrayList<BaseExpr>();
+        if(operator1.isOr())
+            follows.add(operator1);
+        if(operator2.isOr())
             follows.add(operator2);
         return follows;
     }
@@ -85,8 +91,8 @@ public abstract class BinaryWhere<This extends BinaryWhere<This>> extends DataWh
             return packOperator1.compare(packOperator2, getCompare());
     }
 
-    public GroupJoinsWheres groupJoinsWheres() {
-        return getOperandWhere().groupJoinsWheres().and(new GroupJoinsWheres(this));
+    public <K extends BaseExpr> GroupJoinsWheres groupJoinsWheres(Set<K> keepStat, KeyStat keyStat) {
+        return getOperandWhere().groupJoinsWheres(keepStat, keyStat).and(new GroupJoinsWheres(this));
     }
 
     protected Where getOperandWhere() {
@@ -111,6 +117,6 @@ public abstract class BinaryWhere<This extends BinaryWhere<This>> extends DataWh
     }
 
     protected static Where create(BaseExpr operator1, BaseExpr operator2, BinaryWhere where) {
-        return create(where).and(Expr.getWhere(getAndOperands(operator1, operator2)));
+        return create(where).and(Expr.getWhere(getOrOperands(operator1, operator2)));
     }
 }

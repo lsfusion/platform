@@ -4,19 +4,19 @@ import platform.base.BaseUtils;
 import platform.base.Result;
 import platform.base.GlobalObject;
 import platform.base.GlobalInteger;
-import platform.server.caches.hash.HashCodeValues;
-import platform.server.caches.hash.HashContext;
-import platform.server.caches.hash.HashMapKeys;
-import platform.server.caches.hash.HashMapValues;
+import platform.server.caches.hash.*;
 import platform.server.data.Value;
+import platform.server.data.expr.KeyExpr;
+import platform.server.data.translator.HashLazy;
 import platform.server.data.translator.MapTranslate;
+import platform.server.data.translator.MapValuesTranslate;
 
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-public abstract class InnerContext<I extends InnerContext<I>> extends InnerHashContext {
+public abstract class InnerContext<I extends InnerContext<I>> extends InnerHashContext implements MapValues<I> {
 
     public abstract Set<Value> getValues();
 
@@ -68,7 +68,7 @@ public abstract class InnerContext<I extends InnerContext<I>> extends InnerHashC
     }
 
     public int hashInner(boolean values) {
-        return hashInner(values?new HashMapValues(getValueComponents()):HashCodeValues.instance);
+        return hashValues(values ? new HashMapValues(getValueComponents()) : HashCodeValues.instance);
     }
 
     private final GlobalInteger keyValueHash = new GlobalInteger(5);
@@ -92,4 +92,21 @@ public abstract class InnerContext<I extends InnerContext<I>> extends InnerHashC
         return valueComponents;
     }
 
+    @Override
+    @HashLazy
+    public BaseUtils.HashComponents<KeyExpr> getComponents(HashValues hashValues) {
+        return super.getComponents(hashValues);
+    }
+
+    // нижние методы как таковые пока не используются, нужно для implement MapValues
+    private BaseUtils.HashComponents<Value> components = null;
+    public BaseUtils.HashComponents<Value> getComponents() {
+        if(components==null)
+            components = AbstractMapValues.getComponents(this);
+        return components;
+    }
+
+    public I translate(MapValuesTranslate mapValues) {
+        return translateInner(mapValues.mapKeys());
+    }
 }

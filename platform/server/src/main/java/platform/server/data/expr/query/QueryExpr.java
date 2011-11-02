@@ -11,6 +11,7 @@ import platform.server.data.Value;
 import platform.server.data.expr.*;
 import platform.server.data.query.ExprEnumerator;
 import platform.server.data.translator.HashLazy;
+import platform.server.data.translator.HashOuterLazy;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.translator.MapValuesTranslate;
 
@@ -65,7 +66,7 @@ public abstract class QueryExpr<K extends Expr,I extends OuterContext<I>,J exten
         }
 
         public Set<KeyExpr> getKeys() {
-            return QueryExpr.this.getKeys();
+            return QueryExpr.this.getInnerKeys();
         }
     }
 
@@ -88,7 +89,7 @@ public abstract class QueryExpr<K extends Expr,I extends OuterContext<I>,J exten
         }
 
         public Set<Value> getValues() {
-            return QueryExpr.this.getValues();
+            return QueryExpr.this.getInnerValues();
         }
 
         public QueryInnerContext translateInner(MapTranslate translate) {
@@ -107,22 +108,22 @@ public abstract class QueryExpr<K extends Expr,I extends OuterContext<I>,J exten
 
     // чисто для Lazy
     @IdentityLazy
-    public Set<KeyExpr> getKeys() {
+    public Set<KeyExpr> getInnerKeys() {
         return enumKeys(group.keySet(), query.getEnum());
     }
 
     @IdentityLazy
-    public Set<Value> getValues() {
+    public Set<Value> getInnerValues() {
         return enumValues(group.keySet(), query.getEnum());
     }
 
-    @HashLazy
+    @HashOuterLazy
     public int hashOuter(final HashContext hashContext) {
         return new QueryInnerHashContext() {
             protected int hashOuterExpr(BaseExpr outerExpr) {
                 return outerExpr.hashOuter(hashContext);
             }
-        }.hashInner(hashContext.values);
+        }.hashValues(hashContext.values);
     }
 
     public void enumDepends(ExprEnumerator enumerator) {

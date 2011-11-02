@@ -6,10 +6,12 @@ import org.aspectj.lang.annotation.Aspect;
 import platform.server.caches.CacheAspect;
 import platform.server.caches.InnerContext;
 import platform.server.caches.MapValues;
+import platform.server.caches.OuterContext;
 import platform.server.caches.hash.HashObject;
 import platform.server.data.Value;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.query.SourceJoin;
+import sun.jdbc.odbc.ee.ObjectPool;
 
 import java.util.Collections;
 import java.util.HashSet;
@@ -55,21 +57,18 @@ public class TranslateAspect {
             return thisJoinPoint.proceed();
     }
 
-    //@net.jcip.annotations.Immutable
-    @Around("execution(@platform.server.data.translator.HashLazy * *.*(..)) && target(object)")
+    @Around("execution(@platform.server.data.translator.HashLazy * *.*(..)) && target(object) && args(hashObject)")
+    // может быть hashInner, hashValues, getComponents
+    public Object callInnerMethod(ProceedingJoinPoint thisJoinPoint, Object object, HashObject hashObject) throws Throwable {
+        HashObject filterHash = hashObject.filterValues(((MapValues<?>) object).getValues());
+        return CacheAspect.lazyIdentityExecute(object, thisJoinPoint, new Object[]{filterHash}, !filterHash.equals(hashObject));
+    }
+
+    //(platform.server.caches.OuterContext ||
+    @Around("execution(@platform.server.data.translator.HashOuterLazy * *.*(..)) && target(object) && args(hashObject)")
     // с call'ом есть баги
-    public Object callMethod(ProceedingJoinPoint thisJoinPoint, Object object) throws Throwable {
-        HashObject hashObject = (HashObject) thisJoinPoint.getArgs()[0];
-        if(hashObject.isGlobal())
-            return CacheAspect.callMethod(object, thisJoinPoint); // записываем как IdentityLazy
-        else { // тут по сути и параметр должен быть identity, и объект, поэтому пока проще сделать вручную
-            IdentityHashMap<Object,Integer> identityCaches = hashObject.getIdentityCaches();
-            Integer result = identityCaches.get(object);
-            if(result==null) {
-                result = (Integer) thisJoinPoint.proceed();
-                identityCaches.put(object, result);
-            }
-            return result;
-       }
+    public Object callOuterMethod(ProceedingJoinPoint thisJoinPoint, Object object, HashObject hashObject) throws Throwable {
+        HashObject filterHash = hashObject.filterValues(((OuterContext<?>)object).getOuterValues());
+        return CacheAspect.lazyIdentityExecute(object, thisJoinPoint, new Object[]{filterHash}, !filterHash.equals(hashObject));
     }
 }

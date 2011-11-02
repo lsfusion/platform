@@ -124,7 +124,7 @@ public class CompiledQuery<K,V> {
         }
     }
 
-    CompiledQuery(ParsedJoinQuery<K,V> query, SQLSyntax syntax, OrderedMap<V,Boolean> orders, int top, String prefix) {
+    public CompiledQuery(ParsedJoinQuery<K,V> query, SQLSyntax syntax, OrderedMap<V,Boolean> orders, int top, String prefix) {
 
         keySelect = new HashMap<K, String>();
         propertySelect = new HashMap<V, String>();
@@ -156,12 +156,12 @@ public class CompiledQuery<K,V> {
             propertyReaders.put(property.getKey(),query.where.isFalse()?NullReader.instance:property.getValue().getReader(query.where));
 
         boolean useFJ = syntax.useFJ();
-        Collection<GroupJoinsWhere> queryJoins = query.where.getWhereJoins(true);
+        Collection<GroupJoinsWhere> queryJoins = query.getWhereJoins(true);
         union = !useFJ && queryJoins.size() >= 2;
         boolean unionAll = false;
         if(union) {
             if(queryJoins.size() < Settings.instance.getCountJoinsUseUnionInsteadOfUnionAll()) {
-                queryJoins = query.where.getWhereJoins(false);
+                queryJoins = query.getWhereJoins(false);
                 unionAll = true;
             } else
                 if(Settings.instance.isUseFJInsteadOfUnion())

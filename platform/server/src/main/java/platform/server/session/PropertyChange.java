@@ -89,7 +89,7 @@ public class PropertyChange<T extends PropertyInterface> extends TwinsInnerConte
 
     @HashLazy
     public int hashValues(final HashValues hashValues) {
-        return hashInner(hashValues);
+        return super.hashValues(hashValues);
     }
 
     public PropertyChange<T> translateInner(MapTranslate translator) {
@@ -98,14 +98,6 @@ public class PropertyChange<T extends PropertyInterface> extends TwinsInnerConte
 
     public PropertyChange<T> translate(MapValuesTranslate mapValues) {
         return translateInner(mapValues.mapKeys());
-    }
-
-    private BaseUtils.HashComponents<Value> components = null;
-    @ManualLazy
-    public BaseUtils.HashComponents<Value> getComponents() {
-        if(components==null)
-            components = AbstractMapValues.getComponents(this);
-        return components;
     }
 
     public long getComplexity() {

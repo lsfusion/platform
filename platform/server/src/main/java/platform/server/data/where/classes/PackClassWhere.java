@@ -2,7 +2,9 @@ package platform.server.data.where.classes;
 
 import platform.base.TwinImmutableInterface;
 import platform.server.caches.hash.HashContext;
+import platform.server.data.expr.BaseExpr;
 import platform.server.data.query.innerjoins.GroupJoinsWheres;
+import platform.server.data.query.stat.KeyStat;
 import platform.server.data.where.MapWhere;
 import platform.server.data.query.CompileSource;
 import platform.server.data.query.ExprEnumerator;
@@ -12,6 +14,8 @@ import platform.server.data.translator.QueryTranslator;
 import platform.server.data.where.DataWhere;
 import platform.server.data.where.DataWhereSet;
 import platform.server.data.where.Where;
+
+import java.util.Set;
 
 // упрощенный Where
 public class PackClassWhere extends DataWhere {
@@ -64,7 +68,7 @@ public class PackClassWhere extends DataWhere {
         throw new RuntimeException("Not supported");
     }
 
-    public GroupJoinsWheres groupJoinsWheres() {
+    public <K extends BaseExpr> GroupJoinsWheres groupJoinsWheres(Set<K> keepStat, KeyStat keyStat) {
         throw new RuntimeException("Not supported");
     }
     public ClassExprWhere calculateClassWhere() {

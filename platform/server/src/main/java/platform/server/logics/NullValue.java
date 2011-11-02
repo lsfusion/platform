@@ -7,6 +7,7 @@ import platform.server.data.expr.Expr;
 import platform.server.data.sql.SQLSyntax;
 import platform.server.data.translator.MapValuesTranslate;
 import platform.server.data.where.Where;
+import platform.server.data.where.classes.ClassWhere;
 import platform.server.form.instance.ObjectInstance;
 import platform.server.session.SessionChanges;
 
@@ -81,4 +82,7 @@ public class NullValue extends ObjectValue<NullValue> {
         return result;
     }
 
+    public <K> ClassWhere<K> getClassWhere(K key) {
+        return ClassWhere.STATIC(false);
+    }
 }

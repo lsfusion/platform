@@ -271,6 +271,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     private LP selectRoleForms;
     private LP selectUserRoles;
 
+    private LP<ClassPropertyInterface> checkAggregationsAction;
     private LP<ClassPropertyInterface> recalculateAction;
     private LP<ClassPropertyInterface> recalculateFollowsAction;
     private LP<ClassPropertyInterface> packAction;
@@ -590,6 +591,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         runGarbageCollector = addGarbageCollectorActionProp();
         cancelRestartServerAction = addJProp(getString("logics.server.cancel.stop"), and1, addCancelRestartActionProp(), isServerRestarting);
 
+        checkAggregationsAction = addProperty(null, new LP<ClassPropertyInterface>(new CheckAggregationsActionProperty(genSID(), getString("logics.check.aggregations"))));
         recalculateAction = addProperty(null, new LP<ClassPropertyInterface>(new RecalculateActionProperty(genSID(), getString("logics.recalculate.aggregations"))));
         recalculateFollowsAction = addProperty(null, new LP<ClassPropertyInterface>(new RecalculateFollowsActionProperty(genSID(), getString("logics.recalculate.follows"))));
         packAction = addProperty(null, new LP<ClassPropertyInterface>(new PackActionProperty(genSID(), getString("logics.tables.pack"))));
@@ -1148,6 +1150,23 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         }
     }
 
+    private class CheckAggregationsActionProperty extends ActionProperty {
+        private CheckAggregationsActionProperty(String sID, String caption) {
+            super(sID, caption, new ValueClass[]{});
+        }
+
+        @Override
+        public void execute(ExecutionContext context) throws SQLException {
+            SQLSession sqlSession = context.getSession().sql;
+
+            sqlSession.startTransaction();
+            String message = BL.checkAggregations(sqlSession);
+            sqlSession.commitTransaction();
+
+            context.addAction(new MessageClientAction(getString("logics.check.aggregation.was.completed")+'\n'+'\n'+message, getString("logics.checking.aggregations"), true));
+        }
+    }
+
     private class RecalculateActionProperty extends ActionProperty {
         private RecalculateActionProperty(String sID, String caption) {
             super(sID, caption, new ValueClass[]{});
@@ -1158,7 +1177,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
             SQLSession sqlSession = context.getSession().sql;
 
             sqlSession.startTransaction();
-            BL.recalculateAggregations(context.getSession().sql, BL.getAggregateStoredProperties());
+            BL.recalculateAggregations(sqlSession, BL.getAggregateStoredProperties());
             sqlSession.commitTransaction();
 
             context.addAction(new MessageClientAction(getString("logics.recalculation.was.completed"), getString("logics.recalculation.aggregations")));
@@ -1423,7 +1442,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         private AdminFormEntity(NavigatorElement parent, String sID) {
             super(parent, sID, getString("logics.global.parameters"));
 
-            addPropertyDraw(new LP[]{smtpHost, smtpPort, fromAddress, emailAccount, emailPassword, emailBlindCarbonCopy, disableEmail, webHost, defaultCountry, barcodePrefix, restartServerAction, cancelRestartServerAction, recalculateAction, recalculateFollowsAction, packAction, runGarbageCollector});
+            addPropertyDraw(new LP[]{smtpHost, smtpPort, fromAddress, emailAccount, emailPassword, emailBlindCarbonCopy, disableEmail, webHost, defaultCountry, barcodePrefix, restartServerAction, cancelRestartServerAction, checkAggregationsAction, recalculateAction, recalculateFollowsAction, packAction, runGarbageCollector});
         }
     }
 

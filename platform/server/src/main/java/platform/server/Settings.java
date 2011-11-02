@@ -71,6 +71,17 @@ public class Settings {
     // не использовать инкрементную логику в группирующем свойстве на максимум
     private boolean noIncrementMaxGroupProperty = true;
 
+    // использовать применение изменений "по одному"
+    private boolean enableApplySingleStored = true;
+
+    public boolean isEnableApplySingleStored() {
+        return enableApplySingleStored;
+    }
+
+    public void setEnableApplySingleStored(boolean enableApplySingleStored) {
+        this.enableApplySingleStored = enableApplySingleStored;
+    }
+
     public boolean isPushOrderWhere() {
         return pushOrderWhere;
     }

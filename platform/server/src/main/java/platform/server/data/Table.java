@@ -1,7 +1,7 @@
 package platform.server.data;
 
 import platform.base.*;
-import platform.interop.Data;
+import platform.server.caches.AbstractOuterContext;
 import platform.server.caches.IdentityLazy;
 import platform.server.caches.ParamLazy;
 import platform.server.caches.TwinLazy;
@@ -22,6 +22,7 @@ import platform.server.data.expr.where.ifs.NullJoin;
 import platform.server.data.expr.where.ifs.IfJoin;
 import platform.server.data.query.stat.WhereJoin;
 import platform.server.data.translator.HashLazy;
+import platform.server.data.translator.HashOuterLazy;
 import platform.server.data.where.MapWhere;
 import platform.server.data.query.*;
 import platform.server.data.query.innerjoins.GroupJoinsWheres;
@@ -310,7 +311,7 @@ public abstract class Table extends TwinImmutableObject implements MapKeysInterf
             return hashOuter(HashContext.hashCode);
         }
 
-        @HashLazy
+        @HashOuterLazy
         public int hashOuter(HashContext hashContext) {
             return Table.this.hashOuter(hashContext)*31 + AbstractSourceJoin.hashOuter(joins, hashContext);
         }
@@ -351,6 +352,15 @@ public abstract class Table extends TwinImmutableObject implements MapKeysInterf
 
         private long getComplexity() {
             return AbstractSourceJoin.getComplexity(joins.values()); 
+        }
+
+        public SourceJoin[] getEnum() {
+            return getWhere().getEnum();
+        }
+
+        @IdentityLazy
+        public Set<Value> getOuterValues() {
+            return AbstractOuterContext.getOuterValues(this);
         }
 
         public class IsIn extends DataWhere implements JoinData {
@@ -408,7 +418,7 @@ public abstract class Table extends TwinImmutableObject implements MapKeysInterf
                 return exprFJ + " IS NOT NULL";
             }
 
-            public GroupJoinsWheres groupJoinsWheres() {
+            public <K extends BaseExpr> GroupJoinsWheres groupJoinsWheres(Set<K> keepStat, KeyStat keyStat) {
                 return new GroupJoinsWheres(Join.this, this);
             }
             public ClassExprWhere calculateClassWhere() {
@@ -484,7 +494,7 @@ public abstract class Table extends TwinImmutableObject implements MapKeysInterf
                 return Join.this.equals(((Expr) o).getInnerJoin()) && property.equals(((Expr) o).property);
             }
 
-            @HashLazy
+            @HashOuterLazy
             public int hashOuter(HashContext hashContext) {
                 return Join.this.hashOuter(hashContext)*31+property.hashCode();
             }
@@ -535,5 +545,13 @@ public abstract class Table extends TwinImmutableObject implements MapKeysInterf
         public String toString() {
             return Table.this.toString();
         }
+    }
+
+    public ClassWhere<KeyField> getClasses() {
+        return classes;
+    }
+
+    public ClassWhere<Field> getClassWhere(PropertyField property) {
+        return propertyClasses.get(property);
     }
 }

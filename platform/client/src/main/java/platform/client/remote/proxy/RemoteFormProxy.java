@@ -260,16 +260,9 @@ public class RemoteFormProxy<T extends RemoteFormInterface>
     }
 
     @PendingRemoteMethod
-    public void applyClientChanges(Object clientResult) throws RemoteException {
-        logRemoteMethodStartVoidCall("confirmClientChanges");
-        target.applyClientChanges(clientResult);
-        logRemoteMethodEndVoidCall("confirmClientChanges");
-    }
-
-    @PendingRemoteMethod
-    public void applyChanges() throws RemoteException {
+    public void applyChanges(Object clientResult) throws RemoteException {
         logRemoteMethodStartVoidCall("applyChanges");
-        target.applyChanges();
+        target.applyChanges(clientResult);
         logRemoteMethodEndVoidCall("applyChanges");
     }
 

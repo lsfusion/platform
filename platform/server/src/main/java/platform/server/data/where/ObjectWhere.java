@@ -1,8 +1,13 @@
 package platform.server.data.where;
 
 import platform.base.BaseUtils;
+import platform.server.data.expr.BaseExpr;
 import platform.server.data.query.JoinData;
+import platform.server.data.query.innerjoins.GroupJoinsWheres;
 import platform.server.data.query.innerjoins.KeyEquals;
+import platform.server.data.query.stat.KeyStat;
+
+import java.util.Set;
 
 
 abstract class ObjectWhere extends AbstractWhere implements OrObjectWhere<ObjectWhere>,AndObjectWhere<ObjectWhere> {
@@ -78,4 +83,6 @@ abstract class ObjectWhere extends AbstractWhere implements OrObjectWhere<Object
     public KeyEquals calculateKeyEquals() {
         return new KeyEquals(this);  // в operator'ах никаких equals быть не может
     }
+
+    public abstract <K extends BaseExpr> GroupJoinsWheres groupJoinsWheres(Set<K> keepStat, KeyStat keyStat);
 }

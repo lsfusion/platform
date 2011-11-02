@@ -2,6 +2,7 @@ package platform.server.logics.property;
 
 import platform.base.BaseUtils;
 import platform.interop.action.ClientAction;
+import platform.server.caches.IdentityLazy;
 import platform.server.classes.ValueClass;
 import platform.server.classes.sets.AndClassSet;
 import platform.server.data.Field;
@@ -61,7 +62,8 @@ public abstract class UserProperty extends Property<ClassPropertyInterface> {
 
     public abstract ValueClass getValueClass();
 
-    protected ClassWhere<Field> getClassWhere(PropertyField storedField) {
+    @IdentityLazy
+    public ClassWhere<Field> getClassWhere(PropertyField storedField) {
         Map<Field, AndClassSet> result = new HashMap<Field, AndClassSet>();
         for(Map.Entry<ClassPropertyInterface, KeyField> mapKey : mapTable.mapKeys.entrySet())
             result.put(mapKey.getValue(), mapKey.getKey().interfaceClass.getUpSet());

@@ -602,7 +602,7 @@ public class GroupExpr extends QueryExpr<Expr,GroupExpr.Query,GroupJoin> {
 
         Map<Expr,String> fromPropertySelect = new HashMap<Expr, String>();
         Collection<String> whereSelect = new ArrayList<String>(); // проверить crossJoin
-        String fromSelect = new platform.server.data.query.Query<KeyExpr,Expr>(BaseUtils.toMap(getKeys()),BaseUtils.toMap(queryExprs), Expr.getWhere(queryExprs))
+        String fromSelect = new platform.server.data.query.Query<KeyExpr,Expr>(BaseUtils.toMap(getInnerKeys()),BaseUtils.toMap(queryExprs), Expr.getWhere(queryExprs))
             .compile(source.syntax, prefix).fillSelect(new HashMap<KeyExpr, String>(), fromPropertySelect, whereSelect, source.params);
         for(Map.Entry<Expr, BaseExpr> groupEntry : group.entrySet())
             whereSelect.add(fromPropertySelect.get(groupEntry.getKey())+"="+groupEntry.getValue().getSource(source));
@@ -637,8 +637,8 @@ public class GroupExpr extends QueryExpr<Expr,GroupExpr.Query,GroupJoin> {
         if(query.type.isSelect()) {
             // assert что expr учавствует в where
             return new StatPullWheres().proceed(getFullWhere(), query.getMainExpr());
-        }
-        return null;
+        } else
+            return Stat.ALOT;
     }
 
     public Stat getTypeStat(KeyStat keyStat) {

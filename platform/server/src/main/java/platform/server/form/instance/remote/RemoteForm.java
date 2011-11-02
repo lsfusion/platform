@@ -703,22 +703,14 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
         }
     }
 
-    public void applyClientChanges(Object clientResult) throws RemoteException {
-        try {
-            form.synchronizedCommitApply(form.entity.checkClientApply(clientResult), actions);
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
+    public void applyChanges(Object clientResult) throws RemoteException {
+        applyChanges(clientResult, actions);
     }
 
-    public void applyChanges() throws RemoteException {
-        applyChanges(actions);
-    }
-
-    public void applyChanges(List<ClientAction> actions) {
+    public void applyChanges(Object clientResult, List<ClientAction> actions) {
         try {
             actions.addAll(form.fireOnApply(this));
-            form.applyActionChanges(actions);
+            form.synchronizedApplyChanges(form.entity.checkClientApply(clientResult), actions);
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }

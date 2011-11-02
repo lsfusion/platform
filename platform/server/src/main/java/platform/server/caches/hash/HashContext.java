@@ -1,15 +1,13 @@
 package platform.server.caches.hash;
 
-import platform.base.ImmutableObject;
+import platform.server.data.Value;
+
+import java.util.Set;
 
 public class HashContext extends HashObject {
 
     public final HashKeys keys;
     public final HashValues values;
-
-    public boolean isGlobal() {
-        return keys.isGlobal() && values.isGlobal();
-    }
 
     public HashContext(HashKeys keys, HashValues values) {
         this.keys = keys;
@@ -26,5 +24,10 @@ public class HashContext extends HashObject {
     @Override
     public int hashCode() {
         return 31 * keys.hashCode() + values.hashCode();
+    }
+
+    @Override
+    public HashContext filterValues(Set<Value> filter) {
+        return new HashContext(keys, values.filterValues(filter));
     }
 }

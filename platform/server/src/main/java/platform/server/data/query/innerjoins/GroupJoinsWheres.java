@@ -1,5 +1,8 @@
 package platform.server.data.query.innerjoins;
 
+import platform.base.BaseUtils;
+import platform.server.data.expr.BaseExpr;
+import platform.server.data.query.stat.KeyStat;
 import platform.server.data.query.stat.WhereJoin;
 import platform.server.data.query.stat.WhereJoins;
 import platform.server.data.where.DNFWheres;
@@ -59,40 +62,57 @@ public class GroupJoinsWheres extends DNFWheres<WhereJoins, GroupJoinsWheres.Val
         return new GroupJoinsWheres();
     }
 
-    // компилирует запрос на выполнение группируя means'ы, отдельно means по-любому нельзя так как JoinSelect спрячется за not,
-    // который потом может уйти в followFalse, а JoinSelect так и останется в Where торчать и не хватит ключа
-    // а так у нас есть гарантия что ключей хватит
-    public Map<WhereJoins, Value> compileMeans() {
+    private static <K extends BaseExpr> boolean compileMeans(WhereJoins from, WhereJoins what, Set<K> keepStat, KeyStat keyStat) {
+        return from.means(what) && (keepStat == null || BaseUtils.hashEquals(from.getStatKeys(keepStat, keyStat), what.getStatKeys(keepStat, keyStat)));
+    }
+
+    private GroupJoinsWheres(Map<WhereJoins, Value> map) {
+        for(Map.Entry<WhereJoins, Value> entry : map.entrySet())
+            add(entry.getKey(), entry.getValue());
+    }
+
+    // keepStat нужен чтобы можно было гарантировать что не образуется case с недостающим WhereJoin существенно влияющим на статистику
+    public <K extends BaseExpr> GroupJoinsWheres compileMeans(Set<K> keepStat, KeyStat keyStat) {
+        if(!Settings.instance.isCompileMeans())
+            return this;
 
         Map<WhereJoins, Value> result = new HashMap<WhereJoins, Value>();
         for(int i=0;i<size;i++) {
             WhereJoins objectJoin = getKey(i);
             Value where = getValue(i);
 
-            if(Settings.instance.isCompileMeans()) {
-                boolean found = false;
-                // ищем кого-нибудь кого он means
-                for(Map.Entry<WhereJoins, Value> resultJoin : result.entrySet())
-                    if(objectJoin.means(resultJoin.getKey())) {
-                        resultJoin.setValue(resultJoin.getValue().orMeans(resultJoin.getKey(), objectJoin, where));
-                        found = true;
-                    }
-                if(!found) {
-                    // ищем все кто его means и удаляем
-                    for(Iterator<Map.Entry<WhereJoins,Value>> it = result.entrySet().iterator();it.hasNext();) {
-                        Map.Entry<WhereJoins, Value> resultJoin = it.next();
-                        if(resultJoin.getKey().means(objectJoin)) {
-                            where = where.orMeans(objectJoin, resultJoin.getKey(), resultJoin.getValue());
-                            it.remove();
-                        }
-                    }
-                    result.put(objectJoin, where);
+            boolean found = false;
+            // ищем кого-нибудь кого он means
+            for(Map.Entry<WhereJoins, Value> resultJoin : result.entrySet())
+                if(compileMeans(objectJoin, resultJoin.getKey(), keepStat, keyStat)) {
+                    resultJoin.setValue(resultJoin.getValue().orMeans(resultJoin.getKey(), objectJoin, where));
+                    found = true;
                 }
-            } else
+            if(!found) {
+                // ищем все кто его means и удаляем
+                for(Iterator<Map.Entry<WhereJoins,Value>> it = result.entrySet().iterator();it.hasNext();) {
+                    Map.Entry<WhereJoins, Value> resultJoin = it.next();
+                    if(compileMeans(resultJoin.getKey(), objectJoin, keepStat, keyStat)) {
+                        where = where.orMeans(objectJoin, resultJoin.getKey(), resultJoin.getValue());
+                        it.remove();
+                    }
+                }
                 result.put(objectJoin, where);
+            }
         }
 
-        return result;
+        return new GroupJoinsWheres(result);
+    }
+
+    public GroupJoinsWheres compileMeans() {
+        return compileMeans(null, null);
+    }
+
+    public void fillList(KeyEqual keyEqual, Collection<GroupJoinsWhere> col) {
+        for(int i=0;i<size;i++) {
+            Value value = getValue(i);
+            col.add(new GroupJoinsWhere(keyEqual, getKey(i), value.upWheres, value.where));
+        }
     }
 
     public GroupJoinsWheres() {
@@ -108,5 +128,12 @@ public class GroupJoinsWheres extends DNFWheres<WhereJoins, GroupJoinsWheres.Val
 
     public GroupJoinsWheres(WhereJoin join, DataWhere where) {
         this(new WhereJoins(join), new Value(join, where));
+    }
+
+    public int getComplexity() {
+        int result = 0;
+        for(int i=0;i<size;i++)
+            result += getValue(i).where.getComplexity();
+        return result;
     }
 }

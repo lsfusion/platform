@@ -46,7 +46,7 @@ public class CustomerCheckRetailImportActionProperty extends ActionProperty {
                 formInstance.changeProperty(formInstance.getPropertyDraw(BL.VEDLM.clientInitialSum), Double.parseDouble(impFile.getField("clientsum").get()), false);
             }
 
-            formInstance.applyActionChanges(context.getActions());
+            formInstance.synchronizedApplyChanges(null, context.getActions());
 
         } catch (Exception e) {
             throw new RuntimeException(e);

@@ -1,11 +1,16 @@
 package platform.server.data.query.innerjoins;
 
+import platform.server.caches.ManualLazy;
 import platform.server.data.expr.Expr;
 import platform.server.data.query.stat.StatKeys;
 import platform.server.data.where.Where;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Map;
+
 // сделаем generics для обратной совместимости, хотя в общем то он не нужен
-public class GroupStatWhere<K extends Expr> {
+public class GroupStatWhere<K> {
 
     public final KeyEqual keyEqual;
     public final StatKeys<K> stats;
@@ -17,6 +22,21 @@ public class GroupStatWhere<K extends Expr> {
         this.where = where;
 
         assert where.getKeyEquals().getSingleKey().isEmpty();
+    }
+
+    public static <K, V> Collection<GroupStatWhere<V>> mapBack(Collection<GroupStatWhere<K>> col, Map<V,K> map) {
+        Collection<GroupStatWhere<V>> result = new ArrayList<GroupStatWhere<V>>();
+        for(GroupStatWhere<K> group : col)
+            result.add(new GroupStatWhere<V>(group.keyEqual, group.stats.mapBack(map), group.where));
+        return result;
+    }
+
+    private Where fullWhere;
+    @ManualLazy
+    public Where getFullWhere() {
+        if(fullWhere==null)
+            fullWhere = where.and(keyEqual.getWhere());
+        return fullWhere;
     }
 
     @Override

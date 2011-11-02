@@ -19,7 +19,7 @@ import platform.server.data.where.Where;
 import java.util.HashMap;
 import java.util.Map;
 
-public class ExprEqualsJoin extends AbstractOuterContext<ExprEqualsJoin> implements WhereJoin<Integer> {
+public class ExprEqualsJoin extends AbstractOuterContext<ExprEqualsJoin> implements WhereJoin<Integer, ExprEqualsJoin> {
 
     public BaseExpr expr1;
     public BaseExpr expr2;
@@ -38,7 +38,7 @@ public class ExprEqualsJoin extends AbstractOuterContext<ExprEqualsJoin> impleme
     }
 
     public SourceJoin[] getEnum() {
-        throw new RuntimeException("not supported");
+        return new SourceJoin[]{expr1, expr2};
     }
 
     public InnerJoins getInnerJoins() {

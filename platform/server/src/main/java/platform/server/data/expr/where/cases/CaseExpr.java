@@ -11,15 +11,12 @@ import platform.server.classes.DataClass;
 import platform.server.classes.sets.AndClassSet;
 import platform.server.data.expr.*;
 import platform.server.data.expr.query.Stat;
-import platform.server.data.translator.HashLazy;
+import platform.server.data.translator.*;
 import platform.server.data.where.MapWhere;
 import platform.server.data.query.CompileSource;
 import platform.server.data.query.ExprEnumerator;
 import platform.server.data.query.JoinData;
 import platform.server.data.sql.SQLSyntax;
-import platform.server.data.translator.MapTranslate;
-import platform.server.data.translator.QueryTranslator;
-import platform.server.data.translator.TranslateExprLazy;
 import platform.server.data.type.ClassReader;
 import platform.server.data.type.NullReader;
 import platform.server.data.type.Type;
@@ -175,7 +172,7 @@ public class CaseExpr extends Expr {
         return cases.equals(((CaseExpr)obj).cases);
     }
 
-    @HashLazy
+    @HashOuterLazy
     public int hashOuter(HashContext hashContext) {
         return cases.hashOuter(hashContext) + 5;
     }

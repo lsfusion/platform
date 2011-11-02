@@ -16,6 +16,7 @@ import platform.server.data.translator.MapValuesTranslate;
 import platform.server.data.type.Type;
 import platform.server.data.type.TypeSerializer;
 import platform.server.data.where.Where;
+import platform.server.data.where.classes.ClassWhere;
 import platform.server.form.entity.ObjectEntity;
 import platform.server.form.entity.PropertyObjectInterfaceEntity;
 import platform.server.form.instance.GroupObjectInstance;
@@ -213,5 +214,9 @@ public class DataObject extends ObjectValue<DataObject> implements PropertyObjec
 
     public Expr getExpr(Map<ImportField, ? extends Expr> importKeys, Map<ImportKey<?>, SinglePropertyTableUsage<?>> addedKeys, Modifier<? extends Changes> modifier) {
         return getExpr(importKeys);
+    }
+
+    public <K> ClassWhere<K> getClassWhere(K key) {
+        return new ClassWhere<K>(key, objectClass);
     }
 }

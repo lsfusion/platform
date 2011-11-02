@@ -1,20 +1,21 @@
 package platform.server.data.expr.where.extra;
 
-import platform.base.BaseUtils;
 import platform.base.TwinImmutableInterface;
-import platform.server.caches.IdentityLazy;
 import platform.server.caches.ParamLazy;
 import platform.server.caches.hash.HashContext;
 import platform.server.classes.BaseClass;
 import platform.server.classes.ObjectValueClassSet;
 import platform.server.classes.sets.AndClassSet;
 import platform.server.classes.sets.ObjectClassSet;
+import platform.server.data.expr.BaseExpr;
 import platform.server.data.expr.IsClassExpr;
 import platform.server.data.expr.SingleClassExpr;
 import platform.server.data.expr.query.Stat;
 import platform.server.data.query.*;
 import platform.server.data.query.innerjoins.GroupJoinsWheres;
+import platform.server.data.query.stat.KeyStat;
 import platform.server.data.translator.HashLazy;
+import platform.server.data.translator.HashOuterLazy;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.translator.QueryTranslator;
 import platform.server.data.where.DataWhere;
@@ -22,6 +23,8 @@ import platform.server.data.where.DataWhereSet;
 import platform.server.data.where.Where;
 import platform.server.data.where.MapWhere;
 import platform.server.data.where.classes.ClassExprWhere;
+
+import java.util.Set;
 
 public class IsClassWhere extends DataWhere {
 
@@ -87,16 +90,16 @@ public class IsClassWhere extends DataWhere {
         BaseClass baseClass = classes.getBaseClass();
         return new Stat((double) (classes.getCount() * baseClass.objectClass.getCount()) / (double) baseClass.getCount());
     }
-    public GroupJoinsWheres groupJoinsWheres() {
+    public <K extends BaseExpr> GroupJoinsWheres groupJoinsWheres(Set<K> keepStat, KeyStat keyStat) {
         if(classes instanceof ObjectValueClassSet)
             return new GroupJoinsWheres(new ExprJoin(classExpr, getClassStat((ObjectValueClassSet)classes)), this);
-        return expr.getWhere().groupJoinsWheres().and(new GroupJoinsWheres(this));
+        return expr.getWhere().groupJoinsWheres(keepStat, keyStat).and(new GroupJoinsWheres(this));
     }
     public ClassExprWhere calculateClassWhere() {
         return expr.getClassWhere(classes).and(expr.getWhere().getClassWhere());
     }
 
-    @HashLazy
+    @HashOuterLazy
     public int hashOuter(HashContext hashContext) {
         return expr.hashOuter(hashContext) ^ classes.hashCode()*31;
     }

@@ -4,6 +4,7 @@ import platform.base.Result;
 import platform.server.caches.ManualLazy;
 import platform.server.data.query.InnerJoin;
 import platform.server.data.query.InnerJoins;
+import platform.server.data.query.SourceJoin;
 import platform.server.data.query.innerjoins.GroupJoinsWheres;
 import platform.server.data.query.stat.*;
 import platform.server.data.query.stat.InnerBaseJoin;
@@ -18,6 +19,7 @@ import platform.server.data.where.Where;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 @TranslateExprLazy
 public abstract class InnerExpr extends NotNullExpr implements JoinData {
@@ -40,7 +42,7 @@ public abstract class InnerExpr extends NotNullExpr implements JoinData {
 
     public abstract class NotNull extends NotNullExpr.NotNull {
 
-        public GroupJoinsWheres groupJoinsWheres() {
+        public <K extends BaseExpr> GroupJoinsWheres groupJoinsWheres(Set<K> keepStat, KeyStat keyStat) {
             return new GroupJoinsWheres(InnerExpr.this.getInnerJoin(), this);
         }
 
@@ -77,7 +79,7 @@ public abstract class InnerExpr extends NotNullExpr implements JoinData {
     }
 
     // множественное наследование
-    public static InnerJoins getFollowJoins(WhereJoin<?> join, Result<Map<InnerJoin, Where>> upWheres) { // куда-то надо же положить
+    public static InnerJoins getFollowJoins(WhereJoin<?, ?> join, Result<Map<InnerJoin, Where>> upWheres) { // куда-то надо же положить
         InnerJoins result = new InnerJoins();
         Map<InnerJoin, Where> upResult = new HashMap<InnerJoin, Where>();
         InnerExprSet innerExprs = join.getExprFollows(false);

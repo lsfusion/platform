@@ -14,6 +14,7 @@ import platform.server.data.query.stat.CalculateJoin;
 import platform.server.data.query.stat.InnerBaseJoin;
 import platform.server.data.query.stat.KeyStat;
 import platform.server.data.translator.HashLazy;
+import platform.server.data.translator.HashOuterLazy;
 import platform.server.data.where.DataWhereSet;
 import platform.server.data.where.MapWhere;
 import platform.server.data.query.CompileSource;
@@ -104,7 +105,7 @@ public class ConcatenateExpr extends BaseExpr {
         return exprs.equals(((ConcatenateExpr)obj).exprs);
     }
 
-    @HashLazy
+    @HashOuterLazy
     public int hashOuter(HashContext hashContext) {
         return hashOuter(exprs, hashContext);
     }

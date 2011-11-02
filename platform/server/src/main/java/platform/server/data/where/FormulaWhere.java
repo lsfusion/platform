@@ -5,12 +5,17 @@ import platform.base.BaseUtils;
 import platform.server.caches.IdentityLazy;
 import platform.server.caches.ManualLazy;
 import platform.server.caches.hash.HashContext;
+import platform.server.data.expr.BaseExpr;
 import platform.server.data.query.CompileSource;
 import platform.server.data.query.ExprEnumerator;
+import platform.server.data.query.innerjoins.GroupJoinsWheres;
+import platform.server.data.query.stat.KeyStat;
 import platform.server.data.translator.HashLazy;
+import platform.server.data.translator.HashOuterLazy;
 import platform.server.data.where.classes.ClassExprWhere;
 
 import java.util.Arrays;
+import java.util.Set;
 
 public abstract class FormulaWhere<WhereType extends Where> extends AbstractWhere {
 
@@ -40,7 +45,7 @@ public abstract class FormulaWhere<WhereType extends Where> extends AbstractWher
             where.enumerate(enumerator);
     }
 
-    @HashLazy
+    @HashOuterLazy
     public int hashOuter(HashContext hashContext) {
         return hashCoeff() + hashSetOuter(wheres, hashContext);
     }
@@ -116,5 +121,14 @@ public abstract class FormulaWhere<WhereType extends Where> extends AbstractWher
 
     public long calculateComplexity() {
         return getComplexity(Arrays.asList(wheres)) + 1;
+    }
+
+    protected abstract <K extends BaseExpr> GroupJoinsWheres calculateGroupJoinsWheres(Set<K> keepStat, KeyStat keyStat);
+
+    public <K extends BaseExpr> GroupJoinsWheres groupJoinsWheres(Set<K> keepStat, KeyStat keyStat) {
+        GroupJoinsWheres result = calculateGroupJoinsWheres(keepStat, keyStat);
+        if(false) // result.size > 20 || result.getComplexity() > 200
+            result = result.compileMeans(keepStat, keyStat);
+        return result;
     }
 }

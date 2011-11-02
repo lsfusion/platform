@@ -107,7 +107,7 @@ public class LP<T extends PropertyInterface> {
     }
 
     public OrderedMap<T, KeyExpr> getMapKeys() {
-        return BaseUtils.listMap(listInterfaces, property.getMapKeys());
+        return BaseUtils.orderMap(property.getMapKeys(), listInterfaces);
     }
 
     public ValueClass[] getMapClasses() {

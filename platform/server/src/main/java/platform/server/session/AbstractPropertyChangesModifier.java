@@ -50,7 +50,7 @@ public abstract class AbstractPropertyChangesModifier<P extends PropertyInterfac
 
         @Override
         public boolean hasChanges() {
-            return super.hasChanges() || modifyUsed();
+            return super.hasChanges() || !changes.isEmpty();
         }
 
         protected UsedChanges(UC changes, Changes merge) {

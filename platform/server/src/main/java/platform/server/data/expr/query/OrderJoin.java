@@ -1,5 +1,6 @@
 package platform.server.data.expr.query;
 
+import platform.base.BaseUtils;
 import platform.base.TwinImmutableInterface;
 import platform.server.caches.AbstractOuterContext;
 import platform.server.caches.IdentityLazy;
@@ -8,11 +9,13 @@ import platform.server.data.Value;
 import platform.server.data.expr.BaseExpr;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
+import platform.server.data.query.AbstractSourceJoin;
 import platform.server.data.query.InnerJoin;
 import platform.server.data.query.SourceJoin;
 import platform.server.data.query.stat.KeyStat;
 import platform.server.data.query.stat.StatKeys;
 import platform.server.data.translator.HashLazy;
+import platform.server.data.translator.HashOuterLazy;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.where.Where;
 
@@ -34,7 +37,7 @@ public class OrderJoin extends QueryJoin<KeyExpr, OrderJoin.Query> {
             return partitions.equals(((Query) o).partitions) && where.equals(((Query) o).where);
         }
 
-        @HashLazy
+        @HashOuterLazy
         public int hashOuter(HashContext hashContext) {
             return hashOuter(partitions, hashContext) * 31 + where.hashOuter(hashContext);
         }
@@ -44,7 +47,7 @@ public class OrderJoin extends QueryJoin<KeyExpr, OrderJoin.Query> {
         }
 
         public SourceJoin[] getEnum() {
-            throw new RuntimeException("not supported");
+            return AbstractSourceJoin.merge(partitions, where);
         }
     }
 

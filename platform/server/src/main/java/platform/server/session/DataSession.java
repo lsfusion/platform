@@ -5,6 +5,8 @@ import platform.base.MutableObject;
 import platform.base.OrderedMap;
 import platform.interop.action.ClientAction;
 import platform.server.Message;
+import platform.server.ParamMessage;
+import platform.server.Settings;
 import platform.server.caches.MapValues;
 import platform.server.classes.*;
 import platform.server.data.*;
@@ -289,6 +291,22 @@ public class DataSession extends MutableObject implements SessionChanges, ExprCh
             return newClass;
     }
 
+    public ObjectValue getCurrentValue(ObjectValue value) {
+        if(value instanceof NullValue)
+            return value;
+        else {
+            DataObject dataObject = (DataObject)value;
+            return new DataObject(dataObject.object, getCurrentClass(dataObject));
+        }
+    }
+
+    public <K, V extends ObjectValue> Map<K, V> getCurrentObjects(Map<K, V> map) {
+        Map<K, V> result = new HashMap<K, V>();
+        for(Map.Entry<K, V> entry : map.entrySet())
+            result.put(entry.getKey(), (V) getCurrentValue(entry.getValue()));
+        return result;
+    }
+
     public DataObject getDataObject(Object value, Type type) throws SQLException {
         return new DataObject(value,type.getDataClass(value, sql, baseClass));
     }
@@ -326,19 +344,74 @@ public class DataSession extends MutableObject implements SessionChanges, ExprCh
         return incrementChange.properties;
     }
 
-    public String apply(final BusinessLogics<?> BL) throws SQLException {
-        String check = check(BL);
-        if(check!=null)
-            return check;
-
-        write(BL, new ArrayList<ClientAction>());
-        return null;
+    public String apply(BusinessLogics<?> BL) throws SQLException {
+        return apply(BL, new ArrayList<ClientAction>());
     }
 
-    private IncrementApply incrementApply;
+    public String apply(BusinessLogics<?> BL, List<ClientAction> actions) throws SQLException {
+        return apply(BL, actions, false);
+    }
 
-    @Message("message.session.apply.check")
-    public String check(final BusinessLogics<?> BL) throws SQLException {
+    public String check(BusinessLogics BL) throws SQLException {
+        return apply(BL, new ArrayList<ClientAction>(), true);
+    }
+
+    private <T extends PropertyInterface> boolean fitClasses(Property<T> property, SessionTableUsage<KeyField, Property> change) {
+        return change.<Field>getClassWhere(property, property.field).means(property.getClassWhere(property.field));
+    }
+
+    private <T extends PropertyInterface> void applySingleStored(Property<T> property, SessionTableUsage<KeyField, Property> change, BusinessLogics<?> BL, IncrementApply incrementApply) throws SQLException {
+        // assert что у change классы совпадают с property
+        assert property.isStored();
+        assert fitClasses(property, change); // проверяет гипотезу
+
+        if(change.isEmpty())
+            return;
+
+        IncrementProps<KeyField> increment = new IncrementProps<KeyField>() {
+            public ExprChanges getSession() {
+                return ExprChanges.EMPTY;
+            }
+            public SQLSession getSql() {
+                return sql;
+            }
+            public QueryEnvironment getEnv() {
+                return env;
+            }
+        };
+        increment.add(property, change);
+
+        // true нужно предыдущее значение сохранить
+        OrderedMap<Property, Boolean> properties = BL.getAppliedDependFrom(property); // !!! важно в лексикографическом порядке должно быть
+        for(Map.Entry<Property, Boolean> update : properties.entrySet()) {
+            Property<?> depend = update.getKey();
+
+            if(depend.isStored()) { // читаем новое значение, запускаем рекурсию
+                SessionTableUsage<KeyField, Property> dependChange = increment.readTable(depend, baseClass);
+
+                if(update.getValue()) // запоминаем предыдущее значение
+                    incrementApply.readApplyStart(depend, increment, dependChange);
+
+                applySingleStored(depend, dependChange, BL, incrementApply);
+                increment.noUpdate.add(depend); // докидываем noUpdate чтобы по нескольку раз одну ветку не отрабатывать
+            } else {
+                assert update.getValue(); // запоминаем предыдущее значение
+                incrementApply.readApplyStart(depend, increment, null);
+            }
+        }
+        savePropertyChanges(property.mapTable.table, Collections.singleton((Property) property), change);
+    }
+
+    private void savePropertyChanges(Table implementTable, Collection<Property> props, SessionTableUsage<KeyField, Property> changeTable) throws SQLException {
+        Query<KeyField, PropertyField> modifyQuery = new Query<KeyField, PropertyField>(implementTable);
+        Join<Property> join = changeTable.join(modifyQuery.mapKeys);
+        for (Property property : props)
+            modifyQuery.properties.put(property.field, join.getExpr(property));
+        modifyQuery.and(join.getWhere());
+        sql.modifyRecords(new ModifyQuery(implementTable, modifyQuery, env));
+    }
+
+    public String apply(final BusinessLogics<?> BL, List<ClientAction> actions, boolean onlyCheck) throws SQLException {
         resolveFollows(BL, false);
 
         // до чтения persistent свойств в сессию
@@ -346,28 +419,69 @@ public class DataSession extends MutableObject implements SessionChanges, ExprCh
             applyObject = addObject(sessionClass, modifier);
         }
 
-        prepareApply(BL);
+        sql.startTransaction();
 
-        // сохранить св-ва которые Persistent, те что входят в Persistents и DataProperty
-        for (Property<?> property : BL.getConstrainedProperties()) {
-            if (property.hasChanges(modifier)) {
-                String constraintResult = check(property);
+        Map<ExecuteProperty, List<ExecutionContext>> pendingExecutes = new HashMap<ExecuteProperty, List<ExecutionContext>>();
+        IncrementApply incrementApply = new IncrementApply(this);
+
+        // тоже нужен посередине, чтобы он успел dataproperty изменить до того как они обработаны
+        for (Property<?> property : BL.getAppliedProperties(onlyCheck)) {
+            if(property.isFalse) { // ограничения
+                String constraintResult = check(property, incrementApply);
                 if (constraintResult != null) {
                     // не надо DROP'ать так как Rollback автоматически drop'ает все temporary таблицы
-                    cleanApply();
+                    incrementApply.cleanIncrementTables();
+                    sql.rollbackTransaction();
                     return constraintResult;
                 }
             }
+            if(property.isExecuteDerived()) // действия
+                execute((ExecuteProperty) property, incrementApply, actions, pendingExecutes);
+            if(property.isStored()) // постоянно-хранимые свойства
+                readStored(property, incrementApply, BL);
         }
+
+        // записываем в базу, то что туда еще не сохранено, приходится сохранять группами, так могут не подходить по классам
+        for (Map.Entry<ImplementTable, Collection<Property>> groupTable : incrementApply.groupPropertiesByTables().entrySet())
+            savePropertyChanges(groupTable.getKey(), groupTable.getValue(), incrementApply.read(groupTable.getKey(), groupTable.getValue(), baseClass));
+
+        for (Map.Entry<DataObject, ConcreteObjectClass> newClass : newClasses.entrySet())
+            newClass.getValue().saveClassChanges(sql, newClass.getKey());
+
+        incrementApply.cleanIncrementTables();
+        sql.commitTransaction();
+        restart(false);
+
+        for(Map.Entry<ExecuteProperty, List<ExecutionContext>> pendingExecute : pendingExecutes.entrySet())
+            for(ExecutionContext context : pendingExecute.getValue())
+                executePending(pendingExecute.getKey(), context);
+
         return null;
+
     }
 
-    public <T extends PropertyInterface> String check(Property<T> property) throws SQLException {
-        if(property.isFalse) {
+    @Message("message.session.apply.write")
+    private void readStored(@ParamMessage Property<?> property, IncrementApply incrementApply, BusinessLogics<?> BL) throws SQLException {
+        if(property.hasChanges(incrementApply)) {
+            SessionTableUsage<KeyField, Property> readTable = incrementApply.read(property.mapTable.table, Collections.<Property>singleton(property), baseClass);
+
+            if(Settings.instance.isEnableApplySingleStored() && fitClasses(property, readTable)) {
+                applySingleStored(property, readTable, BL, incrementApply);
+                incrementApply.remove(property);
+                incrementApply.noUpdate.add(property);
+            }
+        }
+    }
+
+    @Message("message.session.apply.check")
+    public <T extends PropertyInterface> String check(@ParamMessage Property<T> property, IncrementApply incrementApply) throws SQLException {
+        if(property.hasChanges(incrementApply) || property.hasChanges(incrementApply.getApplyStart())) {
             Query<T,String> changed = new Query<T,String>(property);
 
             WhereBuilder changedWhere = new WhereBuilder();
-            changed.and(property.getExpr(changed.mapKeys, incrementApply, changedWhere).getWhere().and(changedWhere.toWhere())); // только на измененные смотрим
+            Expr newExpr = property.getExpr(changed.mapKeys, incrementApply, changedWhere);
+            Expr prevExpr = property.getExpr(changed.mapKeys, incrementApply.getApplyStart(), changedWhere);
+            changed.and(newExpr.getWhere().and(prevExpr.getWhere().not()).and(changedWhere.toWhere())); // только на измененные смотрим
 
             // сюда надо name'ы вставить
             List<List<String>> propCaptions = new ArrayList<List<String>>();
@@ -421,22 +535,35 @@ public class DataSession extends MutableObject implements SessionChanges, ExprCh
         return null;
     }
 
-    public void prepareApply(final BusinessLogics<?> BL) throws SQLException {
-        incrementApply = new IncrementApply(DataSession.this);
+    @Message("message.session.apply.auto.execute")
+    public void execute(@ParamMessage ExecuteProperty property, IncrementApply incrementApply, List<ClientAction> actions, Map<ExecuteProperty, List<ExecutionContext>> pendingExecute) throws SQLException {
+        if(property.derivedChange.hasDerivedChange(incrementApply)) {
+            PropertyChange<ClassPropertyInterface> propertyChange = property.derivedChange.getDataChanges(incrementApply).get(property);
+            if(propertyChange!=null) {
+                List<ExecutionContext> pendingPropExecute = null;
+                if(property.pendingDerivedExecute()) {
+                    pendingPropExecute = new ArrayList<ExecutionContext>();
+                    pendingExecute.put(property, pendingPropExecute);
+                }
 
-        // сохранить св-ва которые Persistent, те что входят в Persistents и DataProperty
-        for (Property<?> property : BL.getStoredProperties()) {
-            if (property.hasChanges(incrementApply)) {
-                incrementApply.read(property.mapTable.table, Collections.<Property>singleton(property), baseClass);
+                for (Iterator<Map.Entry<Map<ClassPropertyInterface, DataObject>, Map<String, ObjectValue>>> iterator = propertyChange.getQuery().executeClasses(sql, env, baseClass).entrySet().iterator(); iterator.hasNext();) {
+                    Map.Entry<Map<ClassPropertyInterface, DataObject>, Map<String, ObjectValue>> executeRow = iterator.next();
+                    Map<ClassPropertyInterface, DataObject> executeKeys = executeRow.getKey();
+                    ObjectValue executeValue = executeRow.getValue().get("value");
+
+                    if(pendingPropExecute!=null)
+                        // иначе "pend'им" выполнение
+                        pendingPropExecute.add(new ExecutionContext(getCurrentObjects(executeKeys), getCurrentValue(executeValue), this, modifier, actions, null, null, !iterator.hasNext()));
+                    else
+                        property.execute(new ExecutionContext(executeKeys, executeValue, this, incrementApply, actions, null, null, !iterator.hasNext()));
+                }
             }
         }
     }
 
-    public void cleanApply() throws SQLException {
-        if (incrementApply != null) {
-            incrementApply.cleanIncrementTables();
-            incrementApply = null;
-        }
+    @Message("message.session.apply.auto.execute")
+    public void executePending(@ParamMessage ExecuteProperty property, ExecutionContext context) throws SQLException {
+        property.execute(context);
     }
 
     @Message("message.session.apply.resolve.follows")
@@ -448,50 +575,6 @@ public class DataSession extends MutableObject implements SessionChanges, ExprCh
             for(PropertyFollows<?, ?> follow : property.followed)
                 follow.resolveTrue(this, BL, recalculate);
         }
-    }
-
-    @Message("message.session.apply.auto.execute")
-    public void executeDerived(final BusinessLogics<?> BL, List<ClientAction> actions) throws SQLException {
-
-        for(ExecuteProperty property : BL.getExecuteDerivedProperties()) {
-            PropertyChange<ClassPropertyInterface> propertyChange = property.derivedChange.getDataChanges(incrementApply).get(property);
-            if(propertyChange!=null)
-                for (Iterator<Map.Entry<Map<ClassPropertyInterface, DataObject>, Map<String, ObjectValue>>> iterator = propertyChange.getQuery().executeClasses(sql, env, baseClass).entrySet().iterator(); iterator.hasNext();) {
-                    Map.Entry<Map<ClassPropertyInterface, DataObject>, Map<String, ObjectValue>> executeRow = iterator.next();
-                    property.execute(new ExecutionContext(executeRow.getKey(), executeRow.getValue().get("value"), this, incrementApply, actions, null, null, !iterator.hasNext()));
-                }
-        }
-    }
-
-    @Message("message.session.apply.write")
-    public void write(final BusinessLogics<?> BL, List<ClientAction> actions) throws SQLException {
-        assert incrementApply != null;
-
-        executeDerived(BL, actions);
-
-        sql.startTransaction();
-
-        // записываем в базу
-        for (Map.Entry<ImplementTable, Collection<Property>> groupTable : incrementApply.groupPropertiesByTables().entrySet()) {
-
-            SessionTableUsage<KeyField, Property> changeTable = incrementApply.read(groupTable.getKey(), groupTable.getValue(), baseClass);
-
-            Query<KeyField, PropertyField> modifyQuery = new Query<KeyField, PropertyField>(groupTable.getKey());
-            Join<Property> join = changeTable.join(modifyQuery.mapKeys);
-            for (Property property : groupTable.getValue())
-                modifyQuery.properties.put(property.field, join.getExpr(property));
-            modifyQuery.and(join.getWhere());
-            sql.modifyRecords(new ModifyQuery(groupTable.getKey(), modifyQuery, env));
-        }
-
-        for (Map.Entry<DataObject, ConcreteObjectClass> newClass : newClasses.entrySet())
-            newClass.getValue().saveClassChanges(sql, newClass.getKey());
-
-        cleanApply();
-
-        sql.commitTransaction();
-
-        restart(false);
     }
 
     public final QueryEnvironment env = new QueryEnvironment() {

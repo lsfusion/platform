@@ -1,9 +1,14 @@
 package platform.server.caches.hash;
 
+import platform.base.GlobalInteger;
 import platform.base.ImmutableObject;
 import platform.server.caches.NoCacheInterface;
 import platform.server.data.Value;
 import platform.server.data.translator.MapValuesTranslate;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 
 public class HashTranslateValues extends HashLocalValues {
 
@@ -11,10 +16,6 @@ public class HashTranslateValues extends HashLocalValues {
 
     public HashTranslateValues(MapValuesTranslate map) {
         this.map = map;
-    }
-
-    public boolean isGlobal() {
-        return false;
     }
 
     public int hash(Value expr) {
@@ -29,5 +30,13 @@ public class HashTranslateValues extends HashLocalValues {
     @Override
     public int hashCode() {
         return map.hashCode();
+    }
+
+    @Override
+    public HashValues filterValues(Set<Value> values) {
+        Map<Value, GlobalInteger> mapHashes = new HashMap<Value, GlobalInteger>();
+        for(Value value : values)
+            mapHashes.put(value, new GlobalInteger(hash(value)));
+        return new HashMapValues(mapHashes);
     }
 }

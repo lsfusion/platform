@@ -340,7 +340,7 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
 
     public abstract CommonClasses<T> getCommonClasses();
 
-    protected abstract ClassWhere<Field> getClassWhere(PropertyField storedField);
+    public abstract ClassWhere<Field> getClassWhere(PropertyField storedField);
 
     public boolean cached = false;
 
@@ -731,5 +731,58 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
     // assert что where содержит getWhere()
     protected void proceedNull(Map<T, KeyExpr> mapKeys, Where where, DataSession session, BusinessLogics<?> BL) throws SQLException {
         session.execute(this, new PropertyChange<T>(mapKeys, CaseExpr.NULL, where), session.modifier, null, null);
+    }
+
+    private AbstractIncrementProps.PropertyGroup tableGroup;
+    public AbstractIncrementProps.PropertyGroup<KeyField> getTableGroup() { // через Lazy чтобы equals'ы не писать
+        assert isStored();
+
+        final MapKeysTable<T> mapTable = this.mapTable;
+        if(tableGroup==null)
+            tableGroup = new AbstractIncrementProps.PropertyGroup<KeyField>() {
+
+            public List<KeyField> getKeys() {
+                return mapTable.table.keys;
+            }
+
+            public Type.Getter<KeyField> typeGetter() {
+                return Field.typeGetter();
+            }
+
+            public <P extends PropertyInterface> Map<P, KeyField> getPropertyMap(Property<P> property) {
+                assert Property.this.equals(property);
+                return property.mapTable.mapKeys;
+            }
+        };
+
+        return tableGroup;
+    }
+
+    public AbstractIncrementProps.PropertyGroup<PropertyInterface> getInterfaceGroup() {
+        return new AbstractIncrementProps.PropertyGroup<PropertyInterface>() {
+            public List<PropertyInterface> getKeys() {
+                return new ArrayList<PropertyInterface>(interfaces);
+            }
+
+            public Type.Getter<PropertyInterface> typeGetter() {
+                return (Type.Getter<PropertyInterface>) interfaceTypeGetter;
+            }
+
+            public <PP extends PropertyInterface> Map<PP, PropertyInterface> getPropertyMap(Property<PP> mapProperty) {
+                assert Property.this.equals(mapProperty);
+                Map<PP, PropertyInterface> result = new HashMap<PP, PropertyInterface>();
+                for (T propertyInterface : interfaces)
+                    result.put((PP) propertyInterface, propertyInterface);
+                return result;
+            }
+        };
+    }
+
+    public boolean isDerived() {
+        return this instanceof UserProperty && ((UserProperty)this).derivedChange != null;
+    }
+
+    public boolean isExecuteDerived() {
+        return this instanceof ExecuteProperty && ((ExecuteProperty)this).derivedChange != null;
     }
 }

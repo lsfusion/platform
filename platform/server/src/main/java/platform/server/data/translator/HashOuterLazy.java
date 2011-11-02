@@ -7,5 +7,5 @@ import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.CLASS)
 @Target(ElementType.METHOD)
-public @interface HashLazy { // можно вешать на MapValues и OuterContext
+public @interface HashOuterLazy {
 }

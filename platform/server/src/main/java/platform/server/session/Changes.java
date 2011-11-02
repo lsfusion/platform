@@ -23,8 +23,11 @@ public abstract class Changes<U extends Changes<U>> extends AbstractMapValues<U>
 
     public MapValues newClasses; //final на самом деле, но как в add и remove так как используется this() в явную это не задается
 
-    public boolean hasChanges() { // newClasses - не нужен так как иначе либо add либо remove непустые
-        return !add.isEmpty() || !remove.isEmpty() || !data.isEmpty() || newClasses!=null || modifyUsed();
+    public boolean isEmpty() {
+        return add.isEmpty() && remove.isEmpty() && data.isEmpty() && newClasses==null && !modifyUsed();
+    }
+    public boolean hasChanges() {
+        return !add.isEmpty() || !remove.isEmpty() || !data.isEmpty() || newClasses!=null;
     }
 
     public Changes() {
@@ -82,9 +85,9 @@ public abstract class Changes<U extends Changes<U>> extends AbstractMapValues<U>
         newClasses = BaseUtils.nvl(changes.newClasses, merge.newClasses);
     }
     public U addChanges(Changes changes) { // оборачиваем для оптимизации
-        if(!changes.hasChanges())
+        if(changes.isEmpty())
             return (U) this;
-        if(!hasChanges() && getClass()==changes.getClass())
+        if(isEmpty() && getClass()==changes.getClass())
             return (U) changes;
         return calculateAddChanges(changes);
     }
@@ -94,9 +97,9 @@ public abstract class Changes<U extends Changes<U>> extends AbstractMapValues<U>
         this(changes, merge, true);
     }
     public U add(U changes) {
-        if(!changes.hasChanges())
+        if(changes.isEmpty())
             return (U) this;
-        if(!hasChanges())
+        if(isEmpty())
             return (U) changes;
         return calculateAdd(changes);
     }

@@ -129,6 +129,16 @@ public class BaseUtils {
         return result;
     }
 
+    public static <BK, K extends BK, V> Map<K, V> filterInclKeys(Map<BK, V> map, Iterable<? extends K> keys) {
+        Map<K, V> result = new HashMap<K, V>();
+        for (K key : keys) {
+            V value = map.get(key);
+            assert value!=null;
+            result.put(key, value);
+        }
+        return result;
+    }
+
     // возвращает более конкретный класс если 
     public static <K, V, CV extends V> Map<K, CV> filterClass(Map<K, V> map, Class<CV> cvClass) {
         for (Map.Entry<K, V> entry : map.entrySet())
@@ -766,10 +776,13 @@ public class BaseUtils {
         return (data == 0 ? "" : " " + clause + " " + data);
     }
 
-    public static <T, K> OrderedMap<T, K> listMap(List<T> list, Map<T, K> map) {
+    public static <T, K> OrderedMap<T, K> orderMap(Map<T, K> map, Iterable<T> list) {
         OrderedMap<T, K> result = new OrderedMap<T, K>();
-        for (T element : list)
-            result.put(element, map.get(element));
+        for (T element : list) {
+            K value = map.get(element);
+            if(value!=null)
+                result.put(element, value);
+        }
         return result;
     }
 

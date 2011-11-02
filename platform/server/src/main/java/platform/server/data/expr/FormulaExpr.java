@@ -11,14 +11,11 @@ import platform.server.data.expr.where.pull.ExprPullWheres;
 import platform.server.data.query.stat.CalculateJoin;
 import platform.server.data.query.stat.InnerBaseJoin;
 import platform.server.data.query.stat.KeyStat;
-import platform.server.data.translator.HashLazy;
+import platform.server.data.translator.*;
 import platform.server.data.where.MapWhere;
 import platform.server.data.query.CompileSource;
 import platform.server.data.query.ExprEnumerator;
 import platform.server.data.query.JoinData;
-import platform.server.data.translator.MapTranslate;
-import platform.server.data.translator.QueryTranslator;
-import platform.server.data.translator.TranslateExprLazy;
 import platform.server.data.type.Type;
 import platform.server.data.where.Where;
 
@@ -118,7 +115,7 @@ public class FormulaExpr extends StaticClassExpr {
         return formula.equals(((FormulaExpr) o).formula) && params.equals(((FormulaExpr) o).params) && valueClass.equals(((FormulaExpr) o).valueClass);
     }
 
-    @HashLazy
+    @HashOuterLazy
     public int hashOuter(HashContext hashContext) {
         return valueClass.hashCode()*31*31 + hashOuter(params, hashContext) *31 + formula.hashCode();
     }

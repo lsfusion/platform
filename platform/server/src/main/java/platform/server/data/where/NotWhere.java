@@ -2,15 +2,19 @@ package platform.server.data.where;
 
 import platform.base.TwinImmutableInterface;
 import platform.server.caches.hash.HashContext;
+import platform.server.data.expr.BaseExpr;
 import platform.server.data.query.innerjoins.GroupJoinsWheres;
 import platform.server.data.query.CompileSource;
 import platform.server.data.query.ExprEnumerator;
 import platform.server.data.query.JoinData;
+import platform.server.data.query.stat.KeyStat;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.translator.QueryTranslator;
 import platform.server.data.where.classes.ClassExprWhere;
 import platform.server.data.where.classes.MeanClassWhere;
 import platform.server.data.where.classes.MeanClassWheres;
+
+import java.util.Set;
 
 public class NotWhere extends ObjectWhere {
 
@@ -64,7 +68,7 @@ public class NotWhere extends ObjectWhere {
         where.fillDataJoinWheres(joins, andWhere);
     }
 
-    public GroupJoinsWheres groupJoinsWheres() {
+    public <K extends BaseExpr> GroupJoinsWheres groupJoinsWheres(Set<K> keepStat, KeyStat keyStat) {
         return new GroupJoinsWheres(this);
     }
 

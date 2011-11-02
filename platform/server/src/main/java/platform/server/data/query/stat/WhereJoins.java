@@ -4,15 +4,20 @@ import platform.base.AddSet;
 import platform.base.BaseUtils;
 import platform.base.Pair;
 import platform.base.Result;
+import platform.server.caches.IdentityLazy;
 import platform.server.caches.ManualLazy;
+import platform.server.caches.OuterContext;
 import platform.server.caches.hash.HashContext;
+import platform.server.data.Value;
 import platform.server.data.expr.*;
 import platform.server.data.expr.query.*;
+import platform.server.data.query.AbstractSourceJoin;
 import platform.server.data.query.InnerJoin;
 import platform.server.data.query.InnerJoins;
 import platform.server.data.query.SourceJoin;
 import platform.server.data.query.innerjoins.KeyEqual;
 import platform.server.data.translator.HashLazy;
+import platform.server.data.translator.HashOuterLazy;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.where.DNFWheres;
 import platform.server.data.where.Where;
@@ -20,7 +25,7 @@ import platform.server.data.where.WhereBuilder;
 
 import java.util.*;
 
-public class WhereJoins extends AddSet<WhereJoin, WhereJoins> implements DNFWheres.Interface<WhereJoins> {
+public class WhereJoins extends AddSet<WhereJoin, WhereJoins> implements DNFWheres.Interface<WhereJoins>, OuterContext<WhereJoins> {
 
     public WhereJoins() {
     }
@@ -64,7 +69,7 @@ public class WhereJoins extends AddSet<WhereJoin, WhereJoins> implements DNFWher
         return innerJoins;
     }
 
-    @HashLazy
+    @HashOuterLazy
     public int hashOuter(HashContext hashContext) {
         int hash = 0;
         for(WhereJoin where : wheres)
@@ -80,7 +85,17 @@ public class WhereJoins extends AddSet<WhereJoin, WhereJoins> implements DNFWher
     }
 
     public SourceJoin[] getEnum() {
-        throw new RuntimeException("not supported");
+        SourceJoin[][] enums = new SourceJoin[wheres.length][]; int tot = 0;
+        for(int i=0;i<wheres.length;i++) {
+            enums[i] = wheres[i].getEnum();
+            tot += enums[i].length;
+        }
+        SourceJoin[] result = new SourceJoin[tot]; int wr = 0;
+        for(int i=0;i<wheres.length;i++) {
+            System.arraycopy(enums[i], 0, result, wr, enums[i].length);
+            wr += enums[i].length;
+        }
+        return result;
     }
 
     private static class Edge<K> {
@@ -215,7 +230,7 @@ public class WhereJoins extends AddSet<WhereJoin, WhereJoins> implements DNFWher
         Map<WhereJoin, Where> reducedUpWheres = new HashMap<WhereJoin, Where>(upWheres);
         int it = 0;
         while(it < current.size()) {
-            WhereJoin<?> reduceJoin = current.get(it);
+            WhereJoin<?, ?> reduceJoin = current.get(it);
 
             List<WhereJoin> reduced = new ArrayList<WhereJoin>(current);
             reduced.remove(it);
@@ -331,8 +346,13 @@ public class WhereJoins extends AddSet<WhereJoin, WhereJoins> implements DNFWher
 
     public Where getWhere(Map<WhereJoin, Where> upWheres) {
         Where result = Where.TRUE;
-        for(int i=0;i<wheres.length;i++)
-            result = result.and(upWheres.get(wheres[i]));
+        for (WhereJoin where : wheres)
+            result = result.and(upWheres.get(where));
         return result;
+    }
+
+    @IdentityLazy
+    public Set<Value> getOuterValues() {
+        return AbstractSourceJoin.getOuterValues(this);
     }
 }

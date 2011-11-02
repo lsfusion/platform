@@ -115,19 +115,6 @@ public class KeyEquals extends QuickMap<KeyEqual, Where> {
         throw new RuntimeException("not supported yet");
     }
 
-    private Collection<GroupJoinsWhere> getWhereJoins() {
-        Collection<GroupJoinsWhere> result = new ArrayList<GroupJoinsWhere>();
-        for(int i=0;i<size;i++) {
-            KeyEqual keyEqual = getKey(i);
-            Where where = getValue(i);
-
-            GroupJoinsWheres groupJoinsWheres = where.groupJoinsWheres();
-            for(Map.Entry<WhereJoins, GroupJoinsWheres.Value> objectJoin : groupJoinsWheres.compileMeans().entrySet())
-                result.add(new GroupJoinsWhere(keyEqual, objectJoin.getKey(), objectJoin.getValue().upWheres, objectJoin.getValue().where));
-        }
-        return result;
-    }
-
     // получает Where с учетом трансляций
     private Where getWhere() {
         Where where = Where.FALSE;
@@ -136,13 +123,67 @@ public class KeyEquals extends QuickMap<KeyEqual, Where> {
         return where;
     }
 
-    public Collection<GroupJoinsWhere> getWhereJoins(boolean notExclusive) {
-        Collection<GroupJoinsWhere> whereJoins = getWhereJoins();
+    private <K extends BaseExpr> Collection<GroupJoinsWhere> getWhereJoins(Set<K> keepStat) {
+        Collection<GroupJoinsWhere> result = new ArrayList<GroupJoinsWhere>();
+        for(int i=0;i<size;i++) {
+            Where where = getValue(i);
+            where.groupJoinsWheres(keepStat, where).compileMeans().fillList(getKey(i), result);
+        }
+        return result;
+    }
+
+    public <K extends BaseExpr> Collection<GroupJoinsWhere> getWhereJoins(boolean notExclusive, Set<K> keepStat) {
+        Collection<GroupJoinsWhere> whereJoins = getWhereJoins(keepStat);
         if(notExclusive || whereJoins.size()<=1)
             return whereJoins;
         else {
             GroupJoinsWhere firstJoin = whereJoins.iterator().next();
-            return BaseUtils.add(getWhere().and(firstJoin.getFullWhere().not()).getWhereJoins(false), firstJoin); // assert что keyEquals.getWhere тоже самое что this только упрощенное транслятором
+            return BaseUtils.add(getWhere().and(firstJoin.getFullWhere().not()).getWhereJoins(false, keepStat), firstJoin); // assert что keyEquals.getWhere тоже самое что this только упрощенное транслятором
         }
     }
+
+    /* отдельной веткой сделать statJoins, но смысла иметь не будет так как придется все равно собировать WhereJoins и там запускать алгоритм статистики
+    private <K extends BaseExpr> Collection<GroupStatWhere<K>> getStatJoins(Set<K> keys) {
+        Collection<GroupStatWhere<K>> result = new ArrayList<GroupStatWhere<K>>();
+
+        for(int i=0;i<size;i++) {
+            KeyEqual keyEqual = getKey(i);
+            Where where = getValue(i);
+
+            QueryTranslator translator = keyEqual.getTranslator();
+            Map<K, Expr> mapKeys = new HashMap<K, Expr>();
+            boolean hasCase = false;
+            for(K key : keys) {
+                Expr transKey = key.translateQuery(translator);
+                mapKeys.put(key, transKey);
+                hasCase = hasCase || !(transKey instanceof BaseExpr);
+            }
+
+            if(hasCase) {
+                // так конечно жестко делать, она по сути второй раз будет keyEqual считать, но иначе придется сливать keyEqual'ы а это удовольствие ниже среднего
+                result.addAll(GroupStatWhere.mapBack(where.and(keyEqual.getWhere()).getStatJoins(true, new HashSet<Expr>(mapKeys.values())), mapKeys));
+            } else {
+                Map<K, BaseExpr> mapBaseKeys = BaseUtils.immutableCast(mapKeys);
+                Set<BaseExpr> transKeys = new HashSet<BaseExpr>((Collection<? extends BaseExpr>) mapKeys.values());
+
+                // здесь надо сделать groupStatKeys
+                for(GroupJoinsWhere groupJoin : getWhereJoins(keyEqual, where))
+                    result.add(new GroupStatWhere<K>(groupJoin.keyEqual, groupJoin.getStatKeys(keys), groupJoin.where));
+
+                result.addAll(GroupStatWhere.mapBack(where.and(keyEqual.getWhere()).getStatJoins(true, new HashSet<Expr>(mapKeys.values())), mapKeys));
+            }
+        }
+        return result;
+    }
+
+    // тоже самое что в getWhereJoins, но пока нет смысла городить огород ради 3-х строк кода
+    public <K extends BaseExpr> Collection<GroupStatWhere<K>> getStatJoins(Set<K> keys, boolean notExclusive) {
+        Collection<GroupStatWhere<K>> whereJoins = getStatJoins(keys);
+        if(notExclusive || whereJoins.size()<=1)
+            return whereJoins;
+        else {
+            GroupStatWhere<K> firstJoin = whereJoins.iterator().next();
+            return BaseUtils.add(getWhere().and(firstJoin.getFullWhere().not()).getStatJoins(keys, false), firstJoin); // assert что keyEquals.getWhere тоже самое что this только упрощенное транслятором
+        }
+    }*/
 }

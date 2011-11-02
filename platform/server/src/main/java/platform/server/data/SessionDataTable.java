@@ -12,12 +12,12 @@ import platform.server.classes.BaseClass;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.where.extra.CompareWhere;
-import platform.server.data.expr.where.cases.CaseJoin;
 import platform.server.data.query.Join;
 import platform.server.data.query.Query;
 import platform.server.data.translator.HashLazy;
 import platform.server.data.translator.MapValuesTranslate;
 import platform.server.data.where.Where;
+import platform.server.data.where.classes.ClassWhere;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
 
@@ -89,6 +89,7 @@ public class SessionDataTable extends ImmutableObject implements SessionData<Ses
         return hash;
     }
 
+    @IdentityLazy
     public Set<Value> getValues() {
         Set<Value> result = new HashSet<Value>();
         MapValuesIterable.enumValues(result, keyValues);
@@ -165,6 +166,10 @@ public class SessionDataTable extends ImmutableObject implements SessionData<Ses
         return SessionRows.rewrite(this, session, query, baseClass, env, owner);
     }
 
+    public boolean used(Query<?, ?> query) {
+        return query.getValues().contains(table);
+    }
+
     public SessionData deleteRecords(SQLSession session, Map<KeyField, DataObject> deleteKeys) throws SQLException {
         if(BaseUtils.filterKeys(deleteKeys, keyValues.keySet()).equals(keyValues)) //если константная часть ключа не равна, то нечего удалять
             table.deleteRecords(session, filterKeys(deleteKeys, table.keys));
@@ -206,5 +211,27 @@ public class SessionDataTable extends ImmutableObject implements SessionData<Ses
         System.out.println("Key Values : " + keyValues);
         System.out.println("Prop Values : " + propertyValues);
         table.out(session);
+    }
+
+    private ClassWhere<KeyField> getKeyValueClasses() {
+        return new ClassWhere<KeyField>(DataObject.getMapClasses(keyValues));
+    }
+
+    public ClassWhere<KeyField> getClassWhere() {
+        return table.getClasses().and(getKeyValueClasses());
+    }
+
+    public ClassWhere<Field> getClassWhere(PropertyField property) {
+        ClassWhere<Field> propClasses;
+        ObjectValue<?> objectValue = propertyValues.get(property);
+        if(objectValue!=null)
+            propClasses = objectValue.<Field>getClassWhere(property).and(BaseUtils.<ClassWhere<KeyField>, ClassWhere<Field>>immutableCast(table.getClasses()));
+        else
+            propClasses = table.getClassWhere(property);
+        return propClasses.and(BaseUtils.<ClassWhere<KeyField>, ClassWhere<Field>>immutableCast(getKeyValueClasses()));
+    }
+
+    public boolean isEmpty() {
+        return false;
     }
 }

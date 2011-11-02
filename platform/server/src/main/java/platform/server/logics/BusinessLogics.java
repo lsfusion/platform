@@ -1051,43 +1051,23 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         return LM.rootGroup.getProperties();
     }
 
-    @IdentityLazy
     public Iterable<Property> getPropertyList() {
+        return getPropertyList(false);
+    }
+
+    @IdentityLazy
+    public Iterable<Property> getPropertyList(boolean onlyCheck) {
         LinkedHashSet<Property> linkedSet = new LinkedHashSet<Property>();
         for (Property property : getProperties())
-            fillPropertyList(property, linkedSet);
-        return linkedSet;
-    }
+            if(property.isFalse) // сначала чтобы constraint'ы были
+                fillPropertyList(property, linkedSet);
+        if(!onlyCheck)
+            for (Property property : getProperties())
+                if(!property.isFalse)
+                    fillPropertyList(property, linkedSet);
 
-    @IdentityLazy
-    public List<Property> getStoredProperties() {
         List<Property> result = new ArrayList<Property>();
-        for (Property property : getPropertyList())
-            if (property.isStored())
-                result.add(property);
-        return result;
-    }
-
-    @IdentityLazy
-    public List<Property> getFollowProperties() {
-        List<Property> result = new ArrayList<Property>();
-        for (Property property : getPropertyList())
-            if (property.isFollow())
-                result.add(property);
-        return result;
-    }
-
-    public List<AggregateProperty> getAggregateStoredProperties() {
-        List<AggregateProperty> result = new ArrayList<AggregateProperty>();
-        for (Property property : getPropertyList())
-            if (property.isStored() && property instanceof AggregateProperty)
-                result.add((AggregateProperty) property);
-        return result;
-    }
-
-    private List<Property> getDerivedPropertyList() { // переставляет execute'ы заведомо до changeProps, чтобы разрешать циклы
-        List<Property> result = new ArrayList<Property>();
-        for (Property property : getPropertyList()) {
+        for (Property property : linkedSet) { // переставляет execute'ы заведомо до changeProps, чтобы разрешать циклы
             Integer minChange = null;
             if (property instanceof ExecuteProperty) {
                 ExecuteProperty executeProperty = (ExecuteProperty) property;
@@ -1107,9 +1087,97 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
     @IdentityLazy
+    public List<Property> getStoredProperties() {
+        List<Property> result = new ArrayList<Property>();
+        for (Property property : getPropertyList())
+            if (property.isStored())
+                result.add(property);
+        return result;
+    }
+
+    @IdentityLazy
+    public List<UserProperty> getDerivedProperties() {
+        // здесь нужно вернуть список stored или тех кто
+        List<UserProperty> result = new ArrayList<UserProperty>();
+        for (Property property : getPropertyList())
+            if (property.isDerived())
+                result.add((UserProperty)property);
+        return result;
+    }
+
+    @IdentityLazy
+    public List<Property> getAppliedProperties(boolean onlyCheck) {
+        // здесь нужно вернуть список stored или тех кто
+        List<Property> result = new ArrayList<Property>();
+        for (Property property : getPropertyList(onlyCheck))
+            if (property.isStored() || property.isExecuteDerived() || property.isFalse)
+                result.add(property);
+        return result;
+    }
+
+    private void fillAppliedDependFrom(Property<?> fill, Property<?> applied, boolean needPrevious, Map<Property, Map<Property, Boolean>> mapDepends) {
+        if(!fill.equals(applied) && fill.isStored()) {
+            Map<Property, Boolean> mapDepend = mapDepends.get(fill);
+            if(mapDepend == null) {
+                mapDepend = new OrderedMap<Property, Boolean>();
+                mapDepends.put(fill, mapDepend);
+            }
+            Boolean alreadyPrevious = mapDepend.get(fill);
+            mapDepend.put(applied, needPrevious || (alreadyPrevious==null?false:alreadyPrevious));
+        } else
+            for(Property depend : fill.getDepends())
+                fillAppliedDependFrom(depend, applied, needPrevious, mapDepends);
+    }
+
+    @IdentityLazy
+    private Map<Property, OrderedMap<Property, Boolean>> getMapAppliedDepends() {
+        Map<Property, Map<Property, Boolean>> mapDepends = new HashMap<Property, Map<Property, Boolean>>();
+        for(Property property : getStoredProperties()) {
+            mapDepends.put(property, new OrderedMap<Property, Boolean>());
+            fillAppliedDependFrom(property, property, false, mapDepends);
+        }
+        for(Property property : getConstrainedProperties())
+            fillAppliedDependFrom(property, property, true, mapDepends);
+        for(UserProperty property : getDerivedProperties()) {
+            DerivedChange<?, ?> derivedChange = property.derivedChange;
+            for(Property depend : derivedChange.getDepends())
+                fillAppliedDependFrom(depend, depend, true, mapDepends);
+        }
+
+        Iterable<Property> propertyList = getPropertyList();
+        Map<Property, OrderedMap<Property, Boolean>> orderedMapDepends = new HashMap<Property, OrderedMap<Property, Boolean>>();
+        for(Map.Entry<Property, Map<Property, Boolean>> mapDepend : mapDepends.entrySet())
+            orderedMapDepends.put(mapDepend.getKey(), BaseUtils.orderMap(mapDepend.getValue(), propertyList));
+        return orderedMapDepends;
+    }
+
+    // определяет для stored свойства зависимые от него stored свойства, а также свойства которым необходимо хранить изменения с начала транзакции (constraints и derived'ы)
+    public OrderedMap<Property,Boolean> getAppliedDependFrom(Property property) {
+        assert property.isStored();
+        return getMapAppliedDepends().get(property);
+    }
+
+    @IdentityLazy
+    public List<Property> getFollowProperties() {
+        List<Property> result = new ArrayList<Property>();
+        for (Property property : getPropertyList())
+            if (property.isFollow())
+                result.add(property);
+        return result;
+    }
+
+    public List<AggregateProperty> getAggregateStoredProperties() {
+        List<AggregateProperty> result = new ArrayList<AggregateProperty>();
+        for (Property property : getPropertyList())
+            if (property.isStored() && property instanceof AggregateProperty)
+                result.add((AggregateProperty) property);
+        return result;
+    }
+
+    @IdentityLazy
     public List<ExecuteProperty> getExecuteDerivedProperties() {
         List<ExecuteProperty> result = new ArrayList<ExecuteProperty>();
-        for (Property property : getDerivedPropertyList())
+        for (Property property : getPropertyList())
             if (property instanceof ExecuteProperty && ((ExecuteProperty) property).derivedChange != null)
                 result.add((ExecuteProperty) property);
         return result;
@@ -1331,19 +1399,6 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         sql.commitTransaction();
     }
 
-    boolean checkPersistent(SQLSession session) throws SQLException {
-//        System.out.println("checking persistent...");
-        for (Property property : getStoredProperties()) {
-//            System.out.println(Property.title);
-            if (property instanceof AggregateProperty && !((AggregateProperty) property).checkAggregation(session, property.caption)) // Property.title.equals("Расх. со скл.")
-                return false;
-//            Property.Out(Adapter);
-        }
-
-        return true;
-    }
-
-
     protected LP getLP(String sID) {
         LM.objectValue.getProperty(sID);
         LM.selection.getProperty(sID);
@@ -1398,16 +1453,20 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     public void fillData() throws SQLException, ClassNotFoundException, IllegalAccessException, InstantiationException {
     }
 
+    public String checkAggregations(SQLSession session) throws SQLException {
+        String message = "";
+        for (AggregateProperty property : getAggregateStoredProperties())
+            message += property.checkAggregation(session);
+        return message;
+    }
+
     public void recalculateAggregations(SQLSession session, Collection<AggregateProperty> recalculateProperties) throws SQLException {
 
         for (Property property : getPropertyList())
             if (property instanceof AggregateProperty) {
                 AggregateProperty dependProperty = (AggregateProperty) property;
-                if (recalculateProperties.contains(dependProperty)) {
-                    logger.info(getString("logics.info.recalculation.of.aggregated.property")+" (" + dependProperty + ")... ");
+                if (recalculateProperties.contains(dependProperty))
                     dependProperty.recalculateAggregation(session);
-                    logger.info("Done");
-                }
             }
     }
 

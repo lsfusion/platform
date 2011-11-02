@@ -5,6 +5,7 @@ import platform.server.classes.ConcreteClass;
 import platform.server.data.expr.Expr;
 import platform.server.data.sql.SQLSyntax;
 import platform.server.data.where.Where;
+import platform.server.data.where.classes.ClassWhere;
 import platform.server.form.instance.GroupObjectInstance;
 import platform.server.form.instance.ObjectInstance;
 import platform.server.form.instance.filter.CompareValue;
@@ -67,4 +68,6 @@ public abstract class ObjectValue<T extends ObjectValue<T>> extends AbstractMapV
     public abstract ObjectValue refresh(SessionChanges session) throws SQLException;
 
     public abstract boolean isNull();
+
+    public abstract <K> ClassWhere<K> getClassWhere(K key);
 }

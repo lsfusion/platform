@@ -6,11 +6,8 @@ import platform.server.caches.IdentityLazy;
 import platform.server.caches.ParamLazy;
 import platform.server.caches.hash.HashContext;
 import platform.server.classes.IntegralClass;
-import platform.server.data.translator.HashLazy;
+import platform.server.data.translator.*;
 import platform.server.data.query.CompileSource;
-import platform.server.data.translator.MapTranslate;
-import platform.server.data.translator.QueryTranslator;
-import platform.server.data.translator.TranslateExprLazy;
 import platform.server.data.where.Where;
 
 import java.util.*;
@@ -53,7 +50,7 @@ public class LinearExpr extends UnionExpr {
         return map.equals(((LinearExpr)obj).map);
     }
 
-    @HashLazy
+    @HashOuterLazy
     public int hashOuter(HashContext hashContext) {
         return map.hashOuter(hashContext) * 5;
     }

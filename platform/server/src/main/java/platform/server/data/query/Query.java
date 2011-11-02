@@ -285,13 +285,9 @@ public class Query<K,V> extends InnerContext<Query<?,?>> implements MapKeysInter
         return where.hashOuter(hashContext) * 31 + AbstractSourceJoin.hashOuter(properties.values(), hashContext);
     }
 
-    public boolean equalsInner(Query<?,?> object) {
+    public boolean equalsInner(Query<?, ?> object) {
         // нужно проверить что совпадут
         return BaseUtils.hashEquals(where,object.where) && BaseUtils.hashEquals(BaseUtils.multiSet(properties.values()),BaseUtils.multiSet(object.properties.values()));
-    }
-
-    public Query<K,V> translate(MapTranslate translate) {
-        return new Query<K,V>(translate.translateKey(mapKeys), translate.translate(properties), where.translateOuter(translate));
     }
 }
 

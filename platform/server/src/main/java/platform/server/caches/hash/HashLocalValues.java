@@ -5,7 +5,6 @@ import platform.server.caches.InnerHashContext;
 import platform.server.data.expr.KeyExpr;
 
 import java.util.IdentityHashMap;
-import java.util.Map;
 
 public abstract class HashLocalValues extends HashValues {
 
@@ -16,7 +15,4 @@ public abstract class HashLocalValues extends HashValues {
         return cacheComponents;
     }
 
-    public boolean isGlobal() {
-        return false;
-    }
 }

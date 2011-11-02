@@ -81,17 +81,18 @@ public interface Where extends SourceJoin<Where>, OuterContext<Where>, KeyType, 
 
     // ДОПОЛНИТЕЛЬНЫЕ ИНТЕРФЕЙСЫ
 
-    Collection<GroupJoinsWhere> getWhereJoins(boolean notExclusive);
-    <K extends Expr> Collection<GroupStatWhere<K>> getStatJoins(boolean notExclusive, Set<K> exprs);
+    <K extends BaseExpr> Collection<GroupJoinsWhere> getWhereJoins(boolean notExclusive, Set<K> keepStat);
+    <K extends BaseExpr> Collection<GroupStatWhere<K>> getStatJoins(Set<K> keys, boolean notExclusive);
     <K extends BaseExpr> StatKeys<K> getStatKeys(Set<K> keys);
+    <K extends Expr> Collection<GroupStatWhere<K>> getStatJoins(boolean notExclusive, Set<K> exprs);
     <K extends Expr> StatKeys<K> getStatExprs(Set<K> keys);
-    GroupJoinsWheres groupJoinsWheres(); // protected
+
+    // группировки в ДНФ, protected по сути
     KeyEquals getKeyEquals();
+    <K extends BaseExpr> GroupJoinsWheres groupJoinsWheres(Set<K> keepStat, KeyStat keyStat);
     MeanClassWheres groupMeanClassWheres();
 
     abstract public ClassExprWhere getClassWhere();
-
-    int hashOuter(HashContext hashContext);
 
     int getHeight();
 

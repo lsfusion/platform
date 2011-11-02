@@ -3,6 +3,7 @@ package platform.server.data;
 import platform.base.BaseUtils;
 import platform.base.ImmutableObject;
 import platform.base.OrderedMap;
+import platform.base.Pair;
 import platform.server.caches.AbstractMapValues;
 import platform.server.caches.IdentityLazy;
 import platform.server.caches.ManualLazy;
@@ -204,8 +205,15 @@ public class SessionRows extends ImmutableObject implements SessionData<SessionR
     }
 
     public static SessionData rewrite(SessionData<?> data, SQLSession session, Query<KeyField, PropertyField> query, BaseClass baseClass, QueryEnvironment env, Object owner) throws SQLException {
-        data.drop(session, owner);
-        return write(session, data.getKeys(), data.getProperties(), query, baseClass, env, owner);
+        boolean used = data.used(query);
+        if(!used)
+            data.drop(session, owner);
+
+        SessionData result = write(session, data.getKeys(), data.getProperties(), query, baseClass, env, owner);
+
+        if(used)
+            data.drop(session, owner);
+        return result;
     }
 
     public SessionData rewrite(SQLSession session, Query<KeyField, PropertyField> query, BaseClass baseClass, QueryEnvironment env, Object owner) throws SQLException {
@@ -245,5 +253,37 @@ public class SessionRows extends ImmutableObject implements SessionData<SessionR
     @Override
     public void out(SQLSession session) throws SQLException {
         System.out.println("Rows :" + rows);
+    }
+
+    public boolean used(Query<?, ?> query) {
+        return false;
+    }
+
+    public static Pair<ClassWhere<KeyField>, Map<PropertyField, ClassWhere<Field>>> getClasses(Set<PropertyField> properties, Map<Map<KeyField, DataObject>, Map<PropertyField, ObjectValue>> rows) {
+        Pair<ClassWhere<KeyField>, Map<PropertyField, ClassWhere<Field>>> orClasses = new Pair<ClassWhere<KeyField>, Map<PropertyField,ClassWhere<Field>>>(ClassWhere.<KeyField>STATIC(false), BaseUtils.toMap(properties, ClassWhere.<Field>STATIC(false)));
+        for(Map.Entry<Map<KeyField, DataObject>, Map<PropertyField, ObjectValue>> row : rows.entrySet())
+            orClasses = SessionTable.orFieldsClassWheres(orClasses.first, orClasses.second, row.getKey(), row.getValue());
+        return orClasses;
+    }
+
+    @IdentityLazy
+    private Pair<ClassWhere<KeyField>, Map<PropertyField, ClassWhere<Field>>> getClasses() {
+        return getClasses(properties, rows);
+    }
+
+    @Override
+    public ClassWhere<KeyField> getClassWhere() {
+        return getClasses().first;
+    }
+
+    public ClassWhere<Field> getClassWhere(PropertyField property) {
+        if(rows.size()==0)
+            return ClassWhere.STATIC(false);
+        else
+            return getClasses().second.get(property);
+    }
+
+    public boolean isEmpty() {
+        return rows.size()==0;
     }
 }

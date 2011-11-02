@@ -14,6 +14,8 @@ import platform.server.ParamMessage;
 import platform.server.auth.SecurityPolicy;
 import platform.server.caches.ManualLazy;
 import platform.server.classes.*;
+import platform.server.data.QueryEnvironment;
+import platform.server.data.SQLSession;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.ValueExpr;
@@ -21,7 +23,6 @@ import platform.server.data.expr.query.GroupExpr;
 import platform.server.data.expr.query.GroupType;
 import platform.server.data.query.Query;
 import platform.server.data.type.ObjectType;
-import platform.server.data.type.Type;
 import platform.server.data.type.TypeSerializer;
 import platform.server.form.entity.*;
 import platform.server.form.entity.filter.FilterEntity;
@@ -71,10 +72,6 @@ public class FormInstance<T extends BusinessLogics<T>> extends IncrementProps<Pr
 
     public final T BL;
 
-    public ExprChanges getSession() {
-        return session;
-    }
-
     SecurityPolicy securityPolicy;
 
     public CustomClass getCustomClass(int classID) {
@@ -83,9 +80,14 @@ public class FormInstance<T extends BusinessLogics<T>> extends IncrementProps<Pr
 
     public Modifier<? extends Changes> update(final ExprChanges sessionChanges) {
         return new IncrementProps<Object>(noUpdate) {
-            @Override
             public ExprChanges getSession() {
                 return sessionChanges;
+            }
+            public SQLSession getSql() {
+                return null;
+            }
+            public QueryEnvironment getEnv() {
+                return null;
             }
         };
     }
@@ -93,27 +95,8 @@ public class FormInstance<T extends BusinessLogics<T>> extends IncrementProps<Pr
     List<Property> incrementTableProps = new ArrayList<Property>();
 
     private void read(final Property property) throws SQLException {
-        PropertyGroup<PropertyInterface> prevGroup = incrementGroups.remove(property);
-        if(prevGroup!=null)
-            tables.remove(prevGroup);
-
-        read(new PropertyGroup<PropertyInterface>() {
-                    public List<PropertyInterface> getKeys() {
-                        return new ArrayList<PropertyInterface>(property.interfaces);
-                    }
-
-                    public Type.Getter<PropertyInterface> typeGetter() {
-                        return (Type.Getter<PropertyInterface>) property.interfaceTypeGetter;
-                    }
-
-                    public <PP extends PropertyInterface> Map<PP, PropertyInterface> getPropertyMap(Property<PP> mapProperty) {
-                        assert mapProperty == property;
-                        Map<PP, PropertyInterface> result = new HashMap<PP, PropertyInterface>();
-                        for (PP propertyInterface : mapProperty.interfaces)
-                            result.put(propertyInterface, (PP) propertyInterface);
-                        return result;
-                    }
-                }, Collections.singleton(property), BL.LM.baseClass);
+        remove(property);
+        read(((Property<?>)property).getInterfaceGroup(), Collections.singleton(property), BL.LM.baseClass);
     }
 
     public Set<Property> getUpdateProperties(ExprChanges sessionChanges) {
@@ -155,8 +138,22 @@ public class FormInstance<T extends BusinessLogics<T>> extends IncrementProps<Pr
         this(entity, BL, session, securityPolicy, focusListener, classListener, computer, mapObjects, interactive, null);
     }
 
+    public final DataSession session;
+
+    public ExprChanges getSession() {
+        return session;
+    }
+
+    public SQLSession getSql() {
+        return session.sql;
+    }
+
+    public QueryEnvironment getEnv() {
+        return session.env;
+    }
+
     public FormInstance(FormEntity<T> entity, T BL, DataSession session, SecurityPolicy securityPolicy, FocusListener<T> focusListener, CustomClassListener classListener, PropertyObjectInterfaceInstance computer, Map<ObjectEntity, ? extends ObjectValue> mapObjects, boolean interactive, Set<FilterEntity> additionalFixedFilters) throws SQLException {
-        super(session);
+        this.session = session;
         this.entity = entity;
         this.BL = BL;
         this.securityPolicy = securityPolicy;
@@ -166,7 +163,7 @@ public class FormInstance<T extends BusinessLogics<T>> extends IncrementProps<Pr
         this.weakFocusListener = new WeakReference<FocusListener<T>>(focusListener);
         this.weakClassListener = new WeakReference<CustomClassListener>(classListener);
 
-        for(Property property : BL.getPropertyList())
+        for(Property property : BL.getPropertyList(false))
             if(entity.hintsIncrementTable.contains(property)) // чтобы в лексикографике был список
                 incrementTableProps.add(property);
 
@@ -708,32 +705,29 @@ public class FormInstance<T extends BusinessLogics<T>> extends IncrementProps<Pr
         }
     }
 
-    public void applyActionChanges(List<ClientAction> actions) throws SQLException {
-        synchronizedCommitApply(checkApply(), actions);
-    }
-
     public String checkApply() throws SQLException {
         return session.check(BL);
     }
 
-    public void synchronizedCommitApply(String checkResult, List<ClientAction> actions) throws SQLException {
+    public void synchronizedApplyChanges(String clientResult, List<ClientAction> actions) throws SQLException {
         if (entity.isSynchronizedApply)
             synchronized (entity) {
-                commitApply(checkResult, actions);
+                applyChanges(clientResult, actions);
             }
         else
-            commitApply(checkResult, actions);
+            applyChanges(clientResult, actions);
     }
 
-    public void commitApply(String checkResult, List<ClientAction> actions) throws SQLException {
+    public void applyChanges(String checkResult, List<ClientAction> actions) throws SQLException {
+        if(checkResult == null)
+            checkResult = session.apply(BL, actions);
+
         if (checkResult != null) {
             actions.add(new ResultClientAction(checkResult, true));
             actions.add(new StopAutoActionsClientAction());
-            session.cleanApply();
             return;
         }
 
-        session.write(BL, actions);
         cleanIncrementTables();
 
         refreshData();

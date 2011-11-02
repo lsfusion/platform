@@ -98,10 +98,19 @@ public class SQLSession extends MutableObject {
         if(--inTransaction == 0)
             setACID(privateConnection, false);
 
+        transactionTables.clear();
+
         tryCommon();
     }
 
     public void rollbackTransaction() throws SQLException {
+        if(inTransaction == 1) // транзакция заканчивается
+            for(String transactionTable : transactionTables) {
+                dropTemporaryTableFromDB(transactionTable);
+
+                getSQLTemporaryPool().removeTable(transactionTable);
+            }
+
         privateConnection.rollback();
         endTransaction();
     }
@@ -251,6 +260,8 @@ public class SQLSession extends MutableObject {
     private final Map<String, WeakReference<Object>> sessionTablesMap = new HashMap<String, WeakReference<Object>>();
     private int sessionCounter = 0;
 
+    private final Set<String> transactionTables = new HashSet<String>();
+
     public String getTemporaryTable(List<KeyField> keys, Set<PropertyField> properties, FillTemporaryTable fill, Integer count, Result<Integer> actual, Object owner) throws SQLException {
         needPrivate();
 
@@ -258,6 +269,8 @@ public class SQLSession extends MutableObject {
 
         String table = getSQLTemporaryPool().getTable(this, keys, properties, fill, count, actual, sessionTablesMap);
         sessionTablesMap.put(table, new WeakReference<Object>(owner));
+        if(isInTransaction())
+            transactionTables.add(table);
 
         return table;
     }

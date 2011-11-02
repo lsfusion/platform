@@ -91,11 +91,10 @@ public interface RemoteFormInterface extends PendingRemote, RemoteContextInterfa
     void moveGroupObject(int parentGroupId, byte[] parentKey, int childGroupId, byte[] childKey, int index) throws RemoteException;
 
     ClientApply checkClientChanges() throws RemoteException;
-    void applyClientChanges(Object clientResult) throws RemoteException;
 
     void dialogClosed() throws RemoteException;
 
-    void applyChanges() throws RemoteException;
+    void applyChanges(Object clientResult) throws RemoteException;
 
     void continueAutoActions() throws RemoteException;
 }

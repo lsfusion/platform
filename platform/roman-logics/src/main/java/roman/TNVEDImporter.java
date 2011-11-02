@@ -42,11 +42,11 @@ public abstract class TNVEDImporter {
     protected List<String> getFullCategory10() throws SQLException {
         List<String> list = new ArrayList<String>();
         Map<Object, KeyExpr> keys = LM.sidCustomCategory10.getMapKeys();
-        Expr expr = LM.sidCustomCategory10.property.getExpr(keys);
+        Expr expr = LM.sidCustomCategory10.property.getExpr(keys, session.modifier);
         Query<Object, Object> query = new Query<Object, Object>(keys);
         query.properties.put("sid", expr);
         query.and(expr.getWhere());
-        query.and(LM.customCategory4CustomCategory10.getExpr(BaseUtils.singleValue(keys)).getWhere());
+        query.and(LM.customCategory4CustomCategory10.getExpr(session.modifier, BaseUtils.singleValue(keys)).getWhere());
         OrderedMap<Map<Object, Object>, Map<Object, Object>> result = query.execute(session.sql);
         for (Map<Object, Object> key : result.keySet()) {
             list.add(result.get(key).get("sid").toString());

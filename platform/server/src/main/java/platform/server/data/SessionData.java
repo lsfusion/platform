@@ -7,6 +7,7 @@ import platform.server.data.query.Join;
 import platform.server.data.query.MapKeysInterface;
 import platform.server.data.query.Query;
 import platform.server.data.translator.MapValuesTranslate;
+import platform.server.data.where.classes.ClassWhere;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
 
@@ -27,6 +28,8 @@ public interface SessionData<T extends SessionData<T>> extends MapValues<T>, Map
 
     void drop(SQLSession session, Object owner) throws SQLException;
 
+    boolean used(Query<?, ?> query);
+
     SessionData insertRecord(SQLSession session, Map<KeyField, DataObject> keyFields, Map<PropertyField, ObjectValue> propFields, boolean update, boolean groupLast, Object owner) throws SQLException;
 
     SessionData rewrite(SQLSession session, Collection<Map<KeyField, DataObject>> writeRows, Object owner) throws SQLException;
@@ -40,4 +43,9 @@ public interface SessionData<T extends SessionData<T>> extends MapValues<T>, Map
     SessionData deleteProperty(SQLSession session, PropertyField property, DataObject object) throws SQLException;
 
     void out(SQLSession session) throws SQLException;
+
+    ClassWhere<KeyField> getClassWhere();
+    ClassWhere<Field> getClassWhere(PropertyField property);
+
+    boolean isEmpty();
 }

@@ -10,6 +10,7 @@ import platform.server.data.query.SourceJoin;
 import platform.server.data.query.stat.KeyStat;
 import platform.server.data.query.stat.StatKeys;
 import platform.server.data.translator.HashLazy;
+import platform.server.data.translator.HashOuterLazy;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.type.Type;
 import platform.server.data.where.Where;
@@ -34,7 +35,7 @@ public class GroupJoin extends QueryJoin<Expr, GroupJoin.Query> {
             return stats.equals(((Query) o).stats) && where.equals(((Query) o).where) && keyTypes.equals(((Query) o).keyTypes);
         }
 
-        @HashLazy
+        @HashOuterLazy
         public int hashOuter(HashContext hashContext) {
             return (31 * hashKeysOuter(keyTypes, hashContext) + where.hashOuter(hashContext))* 31 + StatKeys.hashOuter(stats, hashContext);
         }
@@ -44,7 +45,7 @@ public class GroupJoin extends QueryJoin<Expr, GroupJoin.Query> {
         }
 
         public SourceJoin[] getEnum() {
-            throw new RuntimeException("not supported");
+            return where.getEnum();
         }
     }
 

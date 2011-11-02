@@ -4,8 +4,11 @@ import platform.base.ImmutableObject;
 import platform.base.OrderedMap;
 import platform.base.TwinImmutableObject;
 import platform.server.caches.hash.HashContext;
+import platform.server.data.Value;
 import platform.server.data.expr.BaseExpr;
 import platform.server.data.expr.Expr;
+import platform.server.data.query.AbstractSourceJoin;
+import platform.server.data.query.SourceJoin;
 
 import java.util.Collection;
 import java.util.List;
@@ -58,5 +61,14 @@ public abstract class AbstractOuterContext<This extends OuterContext> extends Tw
         for(Map.Entry<? extends OuterContext, ?> entry : map.entrySet())
             hash += entry.getKey().hashOuter(hashContext) ^ entry.getValue().hashCode();
         return hash;
+    }
+
+    public static Set<Value> getOuterValues(OuterContext outerContext) {
+        return AbstractSourceJoin.enumValues(outerContext.getEnum());
+    }
+
+    @IdentityLazy
+    public Set<Value> getOuterValues() {
+        return getOuterValues(this);
     }
 }

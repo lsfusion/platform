@@ -13,8 +13,10 @@ import platform.server.data.query.MapKeysInterface;
 import platform.server.data.query.Query;
 import platform.server.data.type.Type;
 import platform.server.data.where.Where;
+import platform.server.data.where.classes.ClassWhere;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
+import platform.server.logics.table.ImplementTable;
 
 import java.sql.SQLException;
 import java.util.*;
@@ -84,12 +86,27 @@ public class SessionTableUsage<K,V> implements MapKeysInterface<K> {
         table = table.rewrite(session, new Query<KeyField,PropertyField>(query, mapKeys, mapProps), baseClass, env, this);
     }
 
+    public void addRows(SQLSession session, Query<K, V> query, BaseClass baseClass, QueryEnvironment env) throws SQLException {
+        Query<K, V> addQuery = new Query<K, V>(query.mapKeys);
+        Join<V> prevJoin = join(addQuery.mapKeys);
+
+        Where prevWhere = prevJoin.getWhere();
+        addQuery.and(prevWhere.or(query.where));
+        for(Map.Entry<V, Expr> property : query.properties.entrySet())
+            addQuery.properties.put(property.getKey(), prevJoin.getExpr(property.getKey()).ifElse(prevWhere, property.getValue()));
+        writeRows(session, query, baseClass, env);
+    }
+
+    private PropertyField getField(V property) {
+        return BaseUtils.reverse(mapProps).get(property);
+    }
+
     public void deleteKey(SQLSession session, K key, DataObject object) throws SQLException {
         table = table.deleteKey(session, BaseUtils.reverse(mapKeys).get(key), object);
     }
 
     public void deleteProperty(SQLSession session, V property, DataObject object) throws SQLException {
-        table = table.deleteProperty(session, BaseUtils.reverse(mapProps).get(property), object);
+        table = table.deleteProperty(session, getField(property), object);
     }
 
     public void drop(SQLSession session) throws SQLException {
@@ -108,5 +125,25 @@ public class SessionTableUsage<K,V> implements MapKeysInterface<K> {
     // assert что ни вызывается при нижнем конструкторе пока
     public MapValues getUsage() { // IMMUTABLE
         return table;
+    }
+
+    public SessionTableUsage(SessionData<?> table, Map<KeyField, K> mapKeys, Map<PropertyField, V> mapProps) {
+        this.table = table;
+        this.mapKeys = mapKeys;
+        this.mapProps = mapProps;
+    }
+
+    public <MK> SessionTableUsage<MK, V> map(Map<K, MK> remapKeys) {
+        return new SessionTableUsage<MK, V>(table, BaseUtils.join(mapKeys, remapKeys), mapProps);
+    }
+
+    public <B> ClassWhere<B> getClassWhere(V property, B mapProp) {
+        return new ClassWhere<B>(table.getClassWhere(getField(property)),
+                BaseUtils.merge(BaseUtils.<Map<KeyField, K>,Map<KeyField, B>>immutableCast(mapKeys),
+                                BaseUtils.rightJoin(mapProps, Collections.singletonMap(property, mapProp))));
+    }
+
+    public boolean isEmpty() {
+        return table.isEmpty();
     }
 }

@@ -14,10 +14,7 @@ import platform.server.data.expr.where.pull.ExprPullWheres;
 import platform.server.data.expr.where.pull.StatPullWheres;
 import platform.server.data.query.*;
 import platform.server.data.query.stat.KeyStat;
-import platform.server.data.translator.HashLazy;
-import platform.server.data.translator.MapTranslate;
-import platform.server.data.translator.PartialQueryTranslator;
-import platform.server.data.translator.QueryTranslator;
+import platform.server.data.translator.*;
 import platform.server.data.type.Type;
 import platform.server.data.where.Where;
 import platform.server.data.where.classes.ClassExprWhere;
@@ -48,7 +45,7 @@ public class OrderExpr extends QueryExpr<KeyExpr, OrderExpr.Query,OrderJoin> imp
             return exprs.equals(((Query) o).exprs) && orders.equals(((Query) o).orders) && partitions.equals(((Query) o).partitions) && orderType.equals(((Query)o).orderType);
         }
 
-        @HashLazy
+        @HashOuterLazy
         public int hashOuter(HashContext hashContext) {
             return 31 * ((hashOuter(exprs, hashContext) * 31 + hashOuter(orders, hashContext)) * 31 + hashOuter(partitions, hashContext)) + orderType.hashCode();
         }
@@ -113,6 +110,12 @@ public class OrderExpr extends QueryExpr<KeyExpr, OrderExpr.Query,OrderJoin> imp
 
     public Where getFullWhere() {
         return query.getWhere();
+    }
+
+    public boolean isOr() {
+        if(!query.orderType.canBeNull())
+            return true;
+        return super.isOr();
     }
 
     public Where calculateWhere() {
@@ -231,11 +234,5 @@ public class OrderExpr extends QueryExpr<KeyExpr, OrderExpr.Query,OrderJoin> imp
 
     public Stat getTypeStat(KeyStat keyStat) {
         return query.getTypeStat();
-    }
-
-    public boolean isOr() {
-        if(!query.orderType.canBeNull())
-            return true;
-        return super.isOr();
     }
 }

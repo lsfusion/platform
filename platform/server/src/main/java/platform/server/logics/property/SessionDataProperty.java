@@ -84,6 +84,11 @@ public class SessionDataProperty extends DataProperty implements NoValueProperty
         }
 
         @Override
+        public boolean hasChanges() {
+            return super.hasChanges() || !properties.isEmpty();
+        }
+
+        @Override
         @HashLazy
         public int hashValues(HashValues hashValues) {
             return super.hashValues(hashValues) * 31 + properties.hashCode();

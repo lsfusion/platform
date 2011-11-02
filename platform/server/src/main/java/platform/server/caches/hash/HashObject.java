@@ -1,18 +1,13 @@
 package platform.server.caches.hash;
 
 import platform.base.ImmutableObject;
+import platform.server.data.Value;
 
 import java.security.Identity;
 import java.util.IdentityHashMap;
+import java.util.Set;
 
 public abstract class HashObject {
 
-    private IdentityHashMap<Object, Integer> identityCaches;
-    public IdentityHashMap<Object, Integer> getIdentityCaches() {
-        if(identityCaches==null)
-            identityCaches = new IdentityHashMap<Object, Integer>();
-        return identityCaches;
-    }
-
-    public abstract boolean isGlobal();
+    public abstract HashObject filterValues(Set<Value> values);
 }

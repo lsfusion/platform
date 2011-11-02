@@ -163,10 +163,9 @@ public abstract class BaseExpr extends Expr {
     }
 
     public boolean isOr() {
-/*        boolean result = false;
+        boolean result = false;
         for(BaseExpr baseExpr : getBaseJoin().getJoins().values())
             result = result || baseExpr.isOr();
-        return result;*/
-        return false;
+        return result;
     }
 }

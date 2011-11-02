@@ -11,7 +11,6 @@ import platform.server.form.instance.remote.RemoteForm;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
-import platform.server.logics.linear.LP;
 import platform.server.session.Changes;
 import platform.server.session.DataSession;
 import platform.server.session.Modifier;
@@ -144,7 +143,7 @@ public class ExecutionContext {
 
     public void applyChanges(BusinessLogics BL) throws SQLException {
         if (form != null)
-            form.applyChanges(getActions());
+            form.applyChanges(null, getActions());
         else
             getSession().apply(BL);
     }

@@ -2,17 +2,17 @@ package platform.server.data.expr.query;
 
 import platform.base.BaseUtils;
 import platform.base.Result;
-import platform.server.caches.IdentityLazy;
-import platform.server.caches.InnerHashContext;
-import platform.server.caches.OuterContext;
-import platform.server.caches.TwinsInnerContext;
+import platform.server.caches.*;
 import platform.server.caches.hash.HashContext;
 import platform.server.data.Value;
 import platform.server.data.expr.*;
+import platform.server.data.query.AbstractSourceJoin;
 import platform.server.data.query.InnerJoin;
 import platform.server.data.query.InnerJoins;
+import platform.server.data.query.SourceJoin;
 import platform.server.data.query.stat.WhereJoin;
 import platform.server.data.translator.HashLazy;
+import platform.server.data.translator.HashOuterLazy;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.translator.MapValuesTranslate;
 import platform.server.data.where.Where;
@@ -38,13 +38,13 @@ public abstract class QueryJoin<K extends Expr,I extends OuterContext<I>> extend
         return InnerExpr.getFollowJoins(this, upWheres);
     }
 
-    @HashLazy
+    @HashOuterLazy
     public int hashOuter(final HashContext hashContext) {
         return new QueryInnerHashContext() {
             protected int hashOuterExpr(BaseExpr outerExpr) {
                 return outerExpr.hashOuter(hashContext);
             }
-        }.hashInner(hashContext.values);
+        }.hashValues(hashContext.values);
     }
 
     public InnerExpr getInnerExpr(WhereJoin join) {
@@ -76,6 +76,15 @@ public abstract class QueryJoin<K extends Expr,I extends OuterContext<I>> extend
 
     public Set<Value> getValues() {
         return values;
+    }
+
+    public SourceJoin[] getEnum() {
+        return AbstractSourceJoin.merge(BaseUtils.merge(group.values(), group.keySet()), query.getEnum());
+    }
+
+    @IdentityLazy
+    public Set<Value> getOuterValues() {
+        return AbstractOuterContext.getOuterValues(this);
     }
 
     // дублируем аналогичную логику GroupExpr'а
@@ -131,10 +140,6 @@ public abstract class QueryJoin<K extends Expr,I extends OuterContext<I>> extend
     private QueryInnerHashContext innerContext = new QueryInnerHashContext() {
         protected int hashOuterExpr(BaseExpr outerExpr) {
             return outerExpr.hashCode();
-        }
-
-        public Set<Value> getValues() {
-            return values;
         }
     };
 

@@ -3,7 +3,6 @@ package platform.server.data;
 import platform.base.*;
 import platform.interop.Compare;
 import platform.server.caches.AbstractMapValues;
-import platform.server.caches.IdentityLazy;
 import platform.server.caches.ManualLazy;
 import platform.server.caches.MapValues;
 import platform.server.caches.hash.HashContext;
@@ -58,10 +57,7 @@ public class SessionTable extends Table implements MapValues<SessionTable>, Valu
     // создает таблицу batch'ем
     public static SessionTable create(final SQLSession session, final List<KeyField> keys, Set<PropertyField> properties, final Map<Map<KeyField, DataObject>, Map<PropertyField, ObjectValue>> rows, boolean groupLast, Object owner) throws SQLException {
         // прочитаем классы
-        Pair<ClassWhere<KeyField>, Map<PropertyField, ClassWhere<Field>>> orClasses = new Pair<ClassWhere<KeyField>, Map<PropertyField,ClassWhere<Field>>>(ClassWhere.<KeyField>STATIC(false), BaseUtils.toMap(properties, ClassWhere.<Field>STATIC(false)));
-        for(Map.Entry<Map<KeyField, DataObject>, Map<PropertyField, ObjectValue>> row : rows.entrySet())
-            orClasses = orFieldsClassWheres(orClasses.first, orClasses.second, row.getKey(), row.getValue());
-
+        Pair<ClassWhere<KeyField>, Map<PropertyField, ClassWhere<Field>>> orClasses = SessionRows.getClasses(properties, rows);
         return new SessionTable(session, keys, properties, rows.size(), new FillTemporaryTable() {
             public Integer fill(String name) throws SQLException {
                 session.insertBatchRecords(name, keys, rows);

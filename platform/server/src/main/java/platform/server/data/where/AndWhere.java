@@ -4,13 +4,17 @@ import platform.base.ArrayInstancer;
 import platform.base.BaseUtils;
 import platform.base.TwinImmutableInterface;
 import platform.server.caches.ManualLazy;
+import platform.server.data.expr.BaseExpr;
 import platform.server.data.query.innerjoins.GroupJoinsWheres;
 import platform.server.data.query.JoinData;
 import platform.server.data.query.innerjoins.KeyEquals;
+import platform.server.data.query.stat.KeyStat;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.translator.QueryTranslator;
 import platform.server.data.where.classes.MeanClassWhere;
 import platform.server.data.where.classes.MeanClassWheres;
+
+import java.util.Set;
 
 
 public class AndWhere extends FormulaWhere<OrObjectWhere> implements AndObjectWhere<OrWhere>, ArrayInstancer<OrObjectWhere> {
@@ -83,10 +87,10 @@ public class AndWhere extends FormulaWhere<OrObjectWhere> implements AndObjectWh
         return wheres.length==0 || (where instanceof AndWhere && (BaseUtils.hashEquals(this, where) || (substractWheres(((AndWhere)where).wheres,wheres,instancer)!=null)));
     }
 
-    public GroupJoinsWheres groupJoinsWheres() {
+    protected <K extends BaseExpr> GroupJoinsWheres calculateGroupJoinsWheres(Set<K> keepStat, KeyStat keyStat) {
         GroupJoinsWheres result = new GroupJoinsWheres(TRUE);
         for(Where where : wheres)
-            result = result.and(where.groupJoinsWheres());
+            result = result.and(where.groupJoinsWheres(keepStat, keyStat));
         return result;
     }
     public KeyEquals calculateKeyEquals() {

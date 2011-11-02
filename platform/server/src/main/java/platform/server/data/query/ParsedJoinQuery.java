@@ -10,6 +10,7 @@ import platform.server.data.expr.BaseExpr;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.where.pull.ExclPullWheres;
+import platform.server.data.query.innerjoins.GroupJoinsWhere;
 import platform.server.data.sql.SQLSyntax;
 import platform.server.data.translator.MapTranslator;
 import platform.server.data.translator.MapValuesTranslate;
@@ -18,10 +19,7 @@ import platform.server.data.translator.QueryTranslator;
 import platform.server.data.where.Where;
 import platform.server.data.where.classes.ClassWhere;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 class ParsedJoinQuery<K,V> extends Join<V> implements ParsedQuery<K,V> {
 
@@ -114,6 +112,14 @@ class ParsedJoinQuery<K,V> extends Join<V> implements ParsedQuery<K,V> {
 
     public Where getWhere() {
         return where;
+    }
+
+    public Set<KeyExpr> getKeys() {
+        return new HashSet<KeyExpr>(mapKeys.values());
+    }
+
+    public Collection<GroupJoinsWhere> getWhereJoins(boolean notExclusive) {
+        return where.getWhereJoins(notExclusive, getKeys());
     }
 
     private static <K> void pullValues(Map<K, ? extends Expr> map, Where where, Map<K, Expr> result) {

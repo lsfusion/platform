@@ -60,12 +60,12 @@ public class CacheAspect {
         }
     }
 
-    private static Object lazyExecute(ImmutableObject object,ProceedingJoinPoint thisJoinPoint,Object[] args) throws Throwable {
+    private static Object lazyExecute(ImmutableObject object, ProceedingJoinPoint thisJoinPoint, Object[] args, boolean changedArgs) throws Throwable {
         Invocation invoke = new Invocation(thisJoinPoint,args);
         Map caches = object.getCaches();
         Object result = caches.get(invoke);
         if(result==null) {
-            result = thisJoinPoint.proceed();
+            result = execute(object, thisJoinPoint, args, changedArgs);
             caches.put(invoke,result);
         }
         return result;
@@ -156,18 +156,27 @@ public class CacheAspect {
 
 //    public final static SoftHashMap<IdentityInvocation, Object> lazyIdentityExecute = new SoftHashMap<IdentityInvocation, Object>();
     public final static IdentityInvocationWeakMap lazyIdentityExecute = new IdentityInvocationWeakMap();
-
-    private static Object lazyIdentityExecute(Object target, ProceedingJoinPoint thisJoinPoint, Object[] args) throws Throwable {
-        if(args.length>0 && args[0] instanceof NoCacheInterface)
+    private static Object execute(Object target, ProceedingJoinPoint thisJoinPoint, Object[] args, boolean changedArgs) throws Throwable {
+        if(changedArgs) {
+            Object[] call = new Object[args.length+1];
+            call[0] = target;
+            System.arraycopy(args, 0, call, 1, args.length);
+            return thisJoinPoint.proceed(call);
+        } else
             return thisJoinPoint.proceed();
-        
+    }
+
+    public static Object lazyIdentityExecute(Object target, ProceedingJoinPoint thisJoinPoint, Object[] args, boolean changedArgs) throws Throwable {
+        if(args.length>0 && args[0] instanceof NoCacheInterface)
+            return execute(target, thisJoinPoint, args, changedArgs);
+
         if(target instanceof ImmutableObject)
-            return lazyExecute((ImmutableObject) target, thisJoinPoint, args);
+            return lazyExecute((ImmutableObject) target, thisJoinPoint, args, changedArgs);
 
         IdentityInvocation invocation = new IdentityInvocation(lazyIdentityExecute.getRefQueue(), target, thisJoinPoint, args);
         Object result = lazyIdentityExecute.get(invocation);
         if (result == null) {
-            result = thisJoinPoint.proceed();
+            result = execute(target, thisJoinPoint, args, changedArgs);
             lazyIdentityExecute.put(invocation, result);
         }
 
@@ -175,7 +184,7 @@ public class CacheAspect {
     }
 
     public static Object callMethod(Object object, ProceedingJoinPoint thisJoinPoint) throws Throwable {
-        return lazyIdentityExecute(object, thisJoinPoint, thisJoinPoint.getArgs());
+        return lazyIdentityExecute(object, thisJoinPoint, thisJoinPoint.getArgs(), false);
     }
     //@net.jcip.annotations.Immutable
     @Around("execution(@platform.server.caches.IdentityLazy * *.*(..)) && target(object)")
@@ -190,7 +199,7 @@ public class CacheAspect {
         switchArgs[0] = object;
         System.arraycopy(args, 1, switchArgs, 1, args.length - 1);
 
-        return lazyIdentityExecute(args[0], thisJoinPoint, switchArgs);
+        return lazyIdentityExecute(args[0], thisJoinPoint, switchArgs, false);
     }
     //@net.jcip.annotations.Immutable *
     @Around("execution(@platform.server.caches.ParamLazy * *.*(..)) && target(object)")
@@ -251,7 +260,7 @@ public class CacheAspect {
     @Around("execution(@platform.server.caches.TwinLazy * *.*(..)) && target(object)")
     // с call'ом есть баги
     public Object callTwinMethod(ProceedingJoinPoint thisJoinPoint, Object object) throws Throwable {
-        return lazyIdentityExecute(object, thisJoinPoint, thisJoinPoint.getArgs());
+        return lazyIdentityExecute(object, thisJoinPoint, thisJoinPoint.getArgs(), false);
 //        return lazyTwinExecute(object, thisJoinPoint, thisJoinPoint.getArgs());
     }
 
@@ -269,7 +278,7 @@ public class CacheAspect {
     }
     @Around("execution(@platform.server.caches.TwinManualLazy * *.*(..)) && target(object)")
     public Object callTwinManualMethod(ProceedingJoinPoint thisJoinPoint, Object object) throws Throwable {
-        return lazyIdentityExecute(object, thisJoinPoint, thisJoinPoint.getArgs());
+        return lazyIdentityExecute(object, thisJoinPoint, thisJoinPoint.getArgs(), false);
 //        return lazyTwinManualExecute(object, thisJoinPoint, thisJoinPoint.getArgs());
     }
     

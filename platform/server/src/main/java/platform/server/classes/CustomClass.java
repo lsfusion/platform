@@ -350,7 +350,7 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
                 return new ClassExprWhere(ClassExpr.this, valueClass.getUpSet());
             }
 
-            public GroupJoinsWheres groupJoinsWheres() {
+            public <K extends BaseExpr> GroupJoinsWheres groupJoinsWheres(Set<K> keepStat, KeyStat keyStat) {
                 return new GroupJoinsWheres(this);
             }
         }

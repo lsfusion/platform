@@ -2,6 +2,9 @@ package platform.server.logics.property;
 
 import platform.base.BaseUtils;
 import platform.base.OrderedMap;
+import platform.interop.Compare;
+import platform.server.Message;
+import platform.server.ThisMessage;
 import platform.server.caches.IdentityLazy;
 import platform.server.classes.ValueClass;
 import platform.server.data.*;
@@ -36,63 +39,41 @@ public abstract class AggregateProperty<T extends PropertyInterface> extends Pro
     }
 
     // проверяет аггрегацию для отладки
-    public boolean checkAggregation(SQLSession session,String caption) throws SQLException {
-        Map<T, KeyExpr> mapKeys = getMapKeys();
+    @ThisMessage
+    @Message("logics.info.checking.aggregated.property")
+    public String checkAggregation(SQLSession session) throws SQLException {
+        String message = "";
 
-        OrderedMap<Map<T, Object>, Map<String, Object>> aggrResult = new Query<T,String>(mapKeys,getExpr(mapKeys),"value").execute(session);
-        DataSession.reCalculateAggr = true;
-        OrderedMap<Map<T, Object>, Map<String, Object>> calcResult = new Query<T,String>(mapKeys,getExpr(mapKeys),"value").execute(session);
-        DataSession.reCalculateAggr = false;
+        Query<T, String> checkQuery = new Query<T, String>(this);
 
-        Iterator<Map.Entry<Map<T,Object>,Map<String,Object>>> i = aggrResult.entrySet().iterator();
-        while(i.hasNext()) {
-            Map.Entry<Map<T,Object>,Map<String,Object>> row = i.next();
-            Map<T, Object> rowKey = row.getKey();
-            Object rowValue = dropZero(row.getValue().get("value"));
-            Map<String,Object> calcRow = calcResult.get(rowKey);
-            Object calcValue = (calcRow==null?null:dropZero(calcRow.get("value")));
-            if(rowValue==calcValue || (rowValue!=null && rowValue.equals(calcValue))) {
-                i.remove();
-                calcResult.remove(rowKey);
-            }
-        }
-        // вычистим и отсюда 0
-        i = calcResult.entrySet().iterator();
-        while(i.hasNext()) {
-            if(dropZero(i.next().getValue().get("value"))==null)
-                i.remove();
+        Expr dbExpr = getExpr(checkQuery.mapKeys);
+        Expr calculateExpr = calculateExpr(checkQuery.mapKeys);
+        checkQuery.properties.put("dbvalue", dbExpr);
+        checkQuery.properties.put("calcvalue", calculateExpr);
+        checkQuery.and(dbExpr.getWhere().or(calculateExpr.getWhere()));
+        checkQuery.and(dbExpr.compare(calculateExpr, Compare.EQUALS).not());
+
+        OrderedMap<Map<T, Object>, Map<String, Object>> checkResult = checkQuery.execute(session);
+        if(checkResult.size() > 0) {
+            message += "---- Checking Aggregations : " + this + "-----" + '\n';
+            for(Map.Entry<Map<T,Object>,Map<String,Object>> row : checkResult.entrySet())
+                message += "Keys : " + row.getKey() + " : " + row.getValue() + '\n';
         }
 
-        if(calcResult.size()>0 || aggrResult.size()>0) {
-            System.out.println("----CheckAggregations "+caption+"-----");
-            System.out.println("----Aggr-----");
-            for(Map.Entry<Map<T,Object>,Map<String,Object>> row : aggrResult.entrySet())
-                System.out.println(row);
-            System.out.println("----Calc-----");
-            for(Map.Entry<Map<T,Object>,Map<String,Object>> row : calcResult.entrySet())
-                System.out.println(row);
-//
-//            ((GroupProperty)this).outIncrementState(Session);
-//            Session = Session;
-        }
-
-        return true;
+        return message;
     }
 
     public static AggregateProperty recalculate = null;
-    
-    public void recalculateAggregation(SQLSession session) throws SQLException {
-        stored = false;
-        recalculate = this;
 
+    @Message("logics.info.recalculation.of.aggregated.property")
+    @ThisMessage
+    public void recalculateAggregation(SQLSession session) throws SQLException {
         Query<KeyField, PropertyField> writeQuery = new Query<KeyField, PropertyField>(mapTable.table);
-        Expr recalculateExpr = getExpr(BaseUtils.join(mapTable.mapKeys, writeQuery.mapKeys));
+        Expr recalculateExpr = calculateExpr(BaseUtils.join(mapTable.mapKeys, writeQuery.mapKeys));
         writeQuery.properties.put(field, recalculateExpr);
         writeQuery.and(mapTable.table.joinAnd(writeQuery.mapKeys).getWhere().or(recalculateExpr.getWhere()));
 
         session.modifyRecords(new ModifyQuery(mapTable.table,writeQuery));
-        stored = true;
-        recalculate = null;
     }
 
     int getCoeff(PropertyMapImplement<?, T> implement) { return 0; }
@@ -119,7 +100,8 @@ public abstract class AggregateProperty<T extends PropertyInterface> extends Pro
         return new CommonClasses<T>(BaseUtils.filterKeys(mapClasses, interfaces), mapClasses.get("value"));
     }
 
-    protected ClassWhere<Field> getClassWhere(PropertyField storedField) {
+    @IdentityLazy
+    public ClassWhere<Field> getClassWhere(PropertyField storedField) {
         Query<KeyField, Field> query = new Query<KeyField,Field>(mapTable.table);
         Expr expr = calculateClassExpr(BaseUtils.join(mapTable.mapKeys, query.mapKeys));
         query.properties.put(storedField,expr);

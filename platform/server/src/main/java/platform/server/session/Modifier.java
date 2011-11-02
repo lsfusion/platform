@@ -5,11 +5,13 @@ import platform.base.MutableObject;
 import platform.server.caches.ManualLazy;
 import platform.server.data.expr.Expr;
 import platform.server.data.where.WhereBuilder;
+import platform.server.logics.property.DerivedChange;
 import platform.server.logics.property.Property;
 import platform.server.logics.property.PropertyInterface;
 
 import java.util.Collection;
 import java.util.Map;
+import java.util.Set;
 
 public abstract class Modifier<U extends Changes<U>> extends MutableObject {
 
@@ -52,5 +54,14 @@ public abstract class Modifier<U extends Changes<U>> extends MutableObject {
     }
 
     public abstract boolean neededClass(Changes changes);
+
+    public Modifier<? extends Changes> getApplyStart() {
+        return Property.defaultModifier;
+    }
+
+    public U getApplyUsedChanges(Set<Property> props) {
+        return getUsedChanges(props);
+    }
+
 }
 

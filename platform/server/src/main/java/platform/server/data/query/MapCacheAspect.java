@@ -109,7 +109,7 @@ public class MapCacheAspect {
                     query.where);
 
             if(bigValues!=null) // bigvalues - работа с транслированными объектами, а в конце трансляция назад
-                cache = cache.translate(new MapValuesTranslator(bigValues));
+                cache = (Query<Object, Object>) cache.translate(new MapValuesTranslator(bigValues));
 
             ParsedQuery<Object,Object> parsedCache = (ParsedQuery<Object,Object>) thisJoinPoint.proceed(new Object[]{cache, cache});
             ((ParseInterface) cache).setParse(parsedCache);
@@ -429,6 +429,7 @@ public class MapCacheAspect {
             return change.getKeys();
         }
 
+        @IdentityLazy
         public Set<Value> getValues() {
             Set<Value> result = new HashSet<Value>();
             result.addAll(usedChanges.getValues());
@@ -543,6 +544,7 @@ public class MapCacheAspect {
             return AbstractSourceJoin.enumKeys(joinImplement.values());
         }
 
+        @IdentityLazy
         public Set<Value> getValues() {
             Set<Value> result = new HashSet<Value>();
             result.addAll(usedChanges.getValues());
@@ -623,7 +625,7 @@ public class MapCacheAspect {
                 hashCaches.put(implement.translateInner(removeBig), result.translate(removeBig));
             }
 
-            if(result.expr.getComplexity() > 300) {
+            if(result.expr.getComplexity() > 20) {
                 System.out.println("COMPLEX " + property.getSID() + " : " + property + " " + result.expr.getComplexity());
             }
 

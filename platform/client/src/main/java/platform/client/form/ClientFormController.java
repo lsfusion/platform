@@ -784,27 +784,24 @@ public class ClientFormController {
                     }
                 }
 
+                Object clientResult = null;
                 if (remoteForm.hasClientApply()) {
                     ClientApply clientApply = remoteForm.checkClientChanges();
                     if (clientApply instanceof CheckFailed) { // чтобы не делать лишний RMI вызов
                         Log.error(((CheckFailed) clientApply).message);
                         return false;
                     } else {
-                        Object clientResult;
                         try {
                             clientResult = ((ClientResultAction) clientApply).dispatchResult(actionDispatcher);
                         } catch (Exception e) {
                             throw new RuntimeException(ClientResourceBundle.getString("form.error.applying.changes"), e);
                         }
-                        remoteForm.applyClientChanges(clientResult);
-
-                        return applyRemoteChanges();
                     }
-                } else {
-                    remoteForm.applyChanges();
-
-                    return applyRemoteChanges();
                 }
+
+                remoteForm.applyChanges(clientResult);
+
+                return applyRemoteChanges();
             } else
                 return true;
 

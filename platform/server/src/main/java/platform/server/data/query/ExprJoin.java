@@ -17,10 +17,15 @@ import platform.server.data.where.Where;
 import java.util.Collections;
 import java.util.Map;
 
-public class ExprJoin extends AbstractOuterContext<ExprJoin> implements WhereJoin<Integer> {
+public class ExprJoin extends AbstractOuterContext<ExprJoin> implements WhereJoin<Integer, ExprJoin> {
 
     private final BaseExpr baseExpr;
     private final Stat stat;
+
+    @Override
+    public String toString() {
+        return baseExpr + " - " + stat.toString();
+    }
 
     protected Stat getStat() {
         return stat;
@@ -38,7 +43,7 @@ public class ExprJoin extends AbstractOuterContext<ExprJoin> implements WhereJoi
     }
 
     public SourceJoin[] getEnum() {
-        throw new RuntimeException("not supported");
+        return new SourceJoin[]{baseExpr};
     }
 
     public Map<Integer, BaseExpr> getJoins() {
