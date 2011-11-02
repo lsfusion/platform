@@ -93,6 +93,8 @@ public interface ExpertProfileMessages extends Messages {
 
     String classBusiness();
 
+    String emptyClassError();
+
     String emptyForesightsError();
 
     String expertiseClassPrompt();

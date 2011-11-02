@@ -223,8 +223,13 @@ public class ReportGenerator {
     }
 
     private void transformDesign(JasperDesign design, boolean ignorePagination) {
+        transformBand(design, design.getTitle(), ignorePagination);
         transformBand(design, design.getPageHeader(), ignorePagination);
+        transformBand(design, design.getColumnHeader(), ignorePagination);
+        transformBand(design, design.getColumnFooter(), ignorePagination);
         transformBand(design, design.getPageFooter(), ignorePagination);
+        transformBand(design, design.getLastPageFooter(), ignorePagination);
+        transformBand(design, design.getSummary(), ignorePagination);
 
         transformSection(design, design.getDetailSection(), ignorePagination);
         for (JRGroup group : design.getGroups()) {

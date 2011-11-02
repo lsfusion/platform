@@ -46,9 +46,9 @@
 					<font fontName="Serif" size="14"/>
 				</textElement>
 				<textFieldExpression class="java.lang.String"><![CDATA[($F{isForeignExpert}==null?
-    "Мы будем признательны, если Вы заполните анкету до 04.11.11. По всем вопросам, связанным с заполнением профиля, пожалуйста, обращайтесь по адресу:"
+    "Мы будем признательны, если Вы заполните анкету до 09.11.11. По всем вопросам, связанным с заполнением профиля, пожалуйста, обращайтесь по адресу:"
     :
-    "We would be grateful if you could complete the questionnaire by Nov 4, 11. If you have any questions or comments please feel free contacting us at"
+    "We would be grateful if you could complete the questionnaire by Nov 9, 11. If you have any questions or comments please feel free contacting us at"
 )]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">

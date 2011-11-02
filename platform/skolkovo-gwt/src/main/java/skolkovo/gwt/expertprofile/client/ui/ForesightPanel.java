@@ -178,6 +178,10 @@ public class ForesightPanel extends VLayout100 {
     }
 
     public String validate() {
+        if ((pi.scientific && (pi.commentScientific == null || pi.commentScientific.trim().isEmpty())) ||
+            (pi.technical && (pi.commentTechnical == null || pi.commentTechnical.trim().isEmpty())) ||
+            (pi.business && (pi.commentBusiness == null || pi.commentBusiness.trim().isEmpty())))
+            return messages.emptyClassError();
         for (ForesightInfo fi : pi.foresightInfos) {
             String comment = fi.comment;
             if (fi.selected && (comment == null || comment.trim().isEmpty())) {

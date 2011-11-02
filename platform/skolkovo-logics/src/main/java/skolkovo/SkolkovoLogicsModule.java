@@ -606,6 +606,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP voteResultNewExpertVote;
     LP inProjectExpert;
     LP voteProjectExpert;
+    LP clusterVotedProjectExpert;
     LP voteResultProjectExpert;
     LP doneProjectExpert;
     LP doneExpertVote, doneNewExpertVote, doneOldExpertVote;
@@ -2581,6 +2582,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
         clusterVote = addDProp(idGroup, "clusterVote", "Кластер (ИД)", cluster, vote);
         nameNativeClusterVote = addJProp(baseGroup, "nameNativeClusterVote", "Кластер", nameNative, clusterVote, 1);
         nameForeignClusterVote = addJProp("nameForeignClusterVote", "Кластер (иностр.)", nameForeign, clusterVote, 1);
+
+        clusterVotedProjectExpert = addJProp(baseGroup, "clusterVotedProjectExpert", "Кластер результ. заседания", clusterVote, voteProjectExpert, 1, 2);
 
         quantityVoteProjectCluster = addSGProp(baseGroup, "quantityVoteProjectCluster", true, "Кол-во заседаний", addCProp(IntegerClass.instance, 1, vote), projectVote, 1, clusterVote, 1);
         quantityClusterVotedProject = addSGProp(baseGroup, "quantityClusterVotedProject", true, "Кол-во кластеров (засед.)", addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), quantityVoteProjectCluster, 1, 2), 1);
@@ -5795,6 +5798,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
             // считываем всех экспертов, которые уже голосовали по проекту
             Query<String, String> query = new Query<String, String>(Collections.singleton("key"));
             query.and(doneProjectExpert.getExpr(context.getModifier(), projectObject.getExpr(), query.mapKeys.get("key")).getWhere());
+            query.and(currentClusterProject.getExpr(context.getModifier(), projectObject.getExpr()).compare( // смотрим чтобы голосование было из того же кластера
+                      clusterVotedProjectExpert.getExpr(context.getModifier(), projectObject.getExpr(), query.mapKeys.get("key")), Compare.EQUALS));
             query.and(inClusterExpert.getExpr(context.getModifier(), currentClusterProject.getExpr(context.getModifier(), projectObject.getExpr()), query.mapKeys.get("key")).getWhere());
             query.properties.put("vote", voteProjectExpert.getExpr(context.getModifier(), projectObject.getExpr(), query.mapKeys.get("key")));
             query.properties.put("business", isBusinessExpert.getExpr(context.getModifier(), query.mapKeys.get("key")));
