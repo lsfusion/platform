@@ -1296,6 +1296,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP percentSumApplicationsTypeProjectStatusCluster;
     LP percentNonClusterApplicationsTypeProjectStatus;
     LP percentApplicationsTypeProjectStatus;
+    LP inTestApplication;
 
     LP dateRegisteredStatusProject;
     LP dateNoClusterStatusProject;
@@ -3315,6 +3316,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         finalClusterApplication = addJProp(idGroup, "finalClusterApplication", true, "Последний кластер (ИД)", finalClusterProject, projectApplication, 1);
         nameFinalClusterApplication = addJProp(baseGroup, "nameFinalClusterApplication", "Последний кластер", baseLM.name, finalClusterApplication, 1);
+        inTestApplication = addJProp("inTestApplication", "Ненужный", inTestCluster, finalClusterApplication, 1);
 
         needFormalCheckStatusProject = addJProp("needFormalCheckStatusProject", and(true, true), addCProp(LogicalClass.instance, true, project), 1, positiveFormalResultProject, 1, overdueFormalControlProject, 1);
 
@@ -3326,10 +3328,11 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         weekSubmitApplicationDate = addJProp("weekSubmitApplicationDate", "Неделя заявки", baseLM.divideInteger, daysSubmitApplicationDate, 1, 2, addCProp(IntegerClass.instance, 7));
 
-        oneApplicationDateDate = addJProp(and(false, false, true), addCProp(IntegerClass.instance, 1, application, DateClass.instance, DateClass.instance), 1, 2, 3,
+        oneApplicationDateDate = addJProp(and(false, false, true, true), addCProp(IntegerClass.instance, 1, application, DateClass.instance, DateClass.instance), 1, 2, 3,
                                             addJProp(baseLM.groeq2, dateApplication, 1, 2), 1, 2,
                                             addJProp(baseLM.lsoeq2, dateApplication, 1, 2), 1, 3,
-                                            inactiveApplication, 1);
+                                            inactiveApplication, 1,
+                                            inTestApplication, 1);
 
         applicationsSubmitDateDate = addSGProp("applicationsSubmitDateDate", "Всего поступивших заявок", oneApplicationDateDate, 2, 3);
 
@@ -3513,7 +3516,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         quantityDaysToOverdueDateStatusApplication = addJProp("quantityDaysToOverdueDateStatusApplication", "Количество дней до просрочки", baseLM.subtractInteger2, overdueDateStatusApplication, 1, baseLM.currentDate);
         quantityDaysToOverdueDateStatusApplication.setFixedCharWidth(4);
 
-        oneApplications = addJProp("oneApplications", "К-во заявок" ,and(false,true),  addCProp(IntegerClass.instance, 1), is(application), 1, inactiveApplication, 1);
+        oneApplications = addJProp("oneApplications", "К-во заявок" ,and(false,true, true),  addCProp(IntegerClass.instance, 1), is(application), 1, inactiveApplication, 1, inTestApplication, 1);
         sumSubmitApplications = addSGProp("sumSubmitApplications", "К-во заявок" , oneApplications);
         sumApplicationsStatusApplication = addSGProp("sumApplicationsStatusApplication", "Всего поступивших заявок",
                 oneApplications, statusApplication, 1);
@@ -3529,11 +3532,11 @@ public class SkolkovoLogicsModule extends LogicsModule {
                 oneApplications, typeProjectStatusApplication, 1);
         sumApplicationsTypeProjectStatusCluster = addSGProp("sumApplicationsTypeProjectStatusCluster", "Всего поступивших заявок",
                 oneApplications, typeProjectStatusApplication, 1, finalClusterApplication,1);
-        nonClusterApplicationsTypeProjectStatusCluster = addSGProp("nonClusterApplicationsTypeProjectStatusCluster", "Итого не указано", addJProp(baseLM.andNot1, oneApplications, 1, quantityClusterApplication, 1), typeProjectStatusApplication, 1, finalClusterApplication, 1);
-        nonClusterApplicationsTypeProjectStatus = addSGProp("nonClusterApplicationsTypeProjectStatus", "Итого не указано", addJProp(baseLM.andNot1, oneApplications, 1, quantityClusterApplication, 1), typeProjectStatusApplication, 1);
+        nonClusterApplicationsTypeProjectStatusCluster = addSGProp("nonClusterApplicationsTypeProjectStatusCluster", "Не указано", addJProp(baseLM.andNot1, oneApplications, 1, quantityClusterApplication, 1), typeProjectStatusApplication, 1, finalClusterApplication, 1);
+        nonClusterApplicationsTypeProjectStatus = addSGProp("nonClusterApplicationsTypeProjectStatus", "Не указано", addJProp(baseLM.andNot1, oneApplications, 1, quantityClusterApplication, 1), typeProjectStatusApplication, 1);
 
-        percentSumApplicationsTypeProjectStatusCluster = addJProp("percentSumApplicationsTypeProjectStatusCluster", "По кластеру (%)", percent, sumApplicationsTypeProjectStatusCluster, 1, 2, sumApplicationsCluster, 2);
-        percentNonClusterApplicationsTypeProjectStatus = addJProp("percentNonClusterApplicationsTypeProjectStatus", "Не указано (%)", percent, nonClusterApplicationsTypeProjectStatus, 1, nonClusterApplicationsSubmit);
+        percentSumApplicationsTypeProjectStatusCluster = addJProp("percentSumApplicationsTypeProjectStatusCluster", "(%) по кластеру", percent, sumApplicationsTypeProjectStatusCluster, 1, 2, sumApplicationsCluster, 2);
+        percentNonClusterApplicationsTypeProjectStatus = addJProp("percentNonClusterApplicationsTypeProjectStatus", "(%) не указано", percent, nonClusterApplicationsTypeProjectStatus, 1, nonClusterApplicationsSubmit);
         percentApplicationsTypeProjectStatus = addJProp("percentApplicationsTypeProjectStatus", "Итого (%)", percent, sumApplicationsTypeProjectStatus, 1, sumSubmitApplications);
 
     }
@@ -4557,7 +4560,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             super(parent, sID, "Реестр заявок");
 
             objApplication = addSingleGroupObject(application, dateApplication, nameNativeClaimerApplication, nameProjectActionApplication, nameNativeProjectApplication,
-                    officialNameStatusApplication, dateInStatusApplication, normalPeriodStatusApplication, quantityDaysToOverdueDateStatusApplication, langApplication, nameNativeShortAggregateClusterApplication, emailClaimerApplication, daysClaimerApplication);
+                    officialNameStatusApplication, dateInStatusApplication, normalPeriodStatusApplication, quantityDaysToOverdueDateStatusApplication, langApplication, nameNativeShortAggregateClusterApplication, finalClusterApplication, emailClaimerApplication, daysClaimerApplication);
 
             addFixedFilter(new NotFilterEntity(new NotNullFilterEntity(addPropertyObject(inactiveApplication, objApplication))));
 
@@ -5459,6 +5462,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
             PropertyDrawEntity count = addPropertyDraw(sumApplicationsTypeProjectStatusCluster, objTypeProjectStatus, objCluster);
             count.columnGroupObjects.add(objCluster.groupTo);
             count.propertyCaption = addPropertyObject(nameNativeShort, objCluster);
+            count.propertyFooter = addPropertyObject(sumApplicationsCluster, objCluster);
+
             addPropertyDraw(objTypeProjectStatus, nonClusterApplicationsTypeProjectStatus, sumApplicationsTypeProjectStatus);
             addPropertyDraw(objTypeProjectStatus, percentNonClusterApplicationsTypeProjectStatus);
             addPropertyDraw(objTypeProjectStatus, percentApplicationsTypeProjectStatus);
