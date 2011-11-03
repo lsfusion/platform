@@ -9,6 +9,7 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.*;
 import java.rmi.RemoteException;
+import java.util.Map;
 import java.util.Scanner;
 
 import static platform.client.ClientResourceBundle.getString;
@@ -95,7 +96,7 @@ public abstract class MainFrame extends JFrame {
 
     public abstract void runReport(RemoteFormInterface remoteForm, boolean isModal) throws ClassNotFoundException, IOException;
 
-    public abstract String[] editReport(RemoteFormInterface remoteForm) throws ClassNotFoundException, IOException;
+    public abstract Map<String, String> getReportPath(RemoteFormInterface remoteForm) throws ClassNotFoundException, IOException;
 
     public abstract void runSingleGroupReport(RemoteFormInterface remoteForm, int groupId) throws IOException, ClassNotFoundException;
 

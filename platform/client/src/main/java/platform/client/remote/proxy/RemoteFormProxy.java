@@ -52,8 +52,8 @@ public class RemoteFormProxy<T extends RemoteFormInterface>
     }
 
     @Override
-    public String[] getReportPath(boolean toExcel, Integer groupId) throws RemoteException {
-        String[] result = target.getReportPath(toExcel, groupId);
+    public Map<String, String> getReportPath(boolean toExcel, Integer groupId) throws RemoteException {
+        Map<String, String> result = target.getReportPath(toExcel, groupId);
         return result;
     }
 

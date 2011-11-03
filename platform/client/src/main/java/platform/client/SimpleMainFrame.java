@@ -11,6 +11,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
+import java.util.Map;
 import java.util.StringTokenizer;
 
 public class SimpleMainFrame extends MainFrame {
@@ -57,8 +58,8 @@ public class SimpleMainFrame extends MainFrame {
     }
 
     @Override
-    public String[] editReport(RemoteFormInterface remoteForm) throws ClassNotFoundException, IOException {
-       return new String[] {"",""};
+    public Map<String, String> getReportPath(RemoteFormInterface remoteForm) throws ClassNotFoundException, IOException {
+       return null;
     }
 
     @Override

@@ -18,10 +18,6 @@ import java.util.TimeZone;
 
 @SuppressWarnings({"ToArrayCallWithZeroLengthArrayArgument"})
 public class MockPaasLogic implements PaasRemoteInterface {
-    @Override
-    public boolean isDebug() {
-        return false;
-    }
 
     @Override
     public String getName() throws RemoteException {

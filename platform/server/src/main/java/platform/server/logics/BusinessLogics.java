@@ -302,10 +302,6 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         return null;
     }
 
-    public boolean isDebug() {
-        //logger.setLevel(Level.DEBUG);
-        return logger.isDebugEnabled();
-    }
 
     public ExternalScreenParameters getExternalScreenParameters(int screenID, int computerId) throws RemoteException {
         //NP

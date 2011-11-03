@@ -1,6 +1,9 @@
 package platform.fullclient.layout;
 
-import bibliothek.gui.dock.common.*;
+import bibliothek.gui.dock.common.CControl;
+import bibliothek.gui.dock.common.CGrid;
+import bibliothek.gui.dock.common.DefaultSingleCDockable;
+import bibliothek.gui.dock.common.SingleCDockable;
 import bibliothek.gui.dock.common.intern.CSetting;
 import bibliothek.gui.dock.common.menu.*;
 import bibliothek.gui.dock.common.mode.ExtendedMode;
@@ -30,7 +33,10 @@ import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
 import java.rmi.RemoteException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 public class DockableMainFrame extends MainFrame {
     private CControl control;
@@ -147,7 +153,7 @@ public class DockableMainFrame extends MainFrame {
     }
 
     @Override
-    public String[] editReport(RemoteFormInterface remoteForm) throws ClassNotFoundException, IOException {
+    public Map<String, String> getReportPath(RemoteFormInterface remoteForm) throws ClassNotFoundException, IOException {
         return remoteForm.getReportPath(false, null);
     }
 

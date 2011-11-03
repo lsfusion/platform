@@ -26,11 +26,6 @@ public class RemoteBusinessLogicProxy<T extends RemoteLogicsInterface>
         return new RemoteNavigatorProxy(remote);
     }
 
-    @Override
-    public boolean isDebug() throws RemoteException {
-        return target.isDebug();
-    }
-
     public String getName() throws RemoteException {
         logRemoteMethodStartCall("getName");
         String result = target.getName();

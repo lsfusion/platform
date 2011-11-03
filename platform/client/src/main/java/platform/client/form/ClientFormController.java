@@ -30,7 +30,6 @@ import java.nio.channels.FileChannel;
 import java.rmi.RemoteException;
 import java.util.*;
 import java.util.List;
-import java.util.logging.Logger;
 
 import static platform.interop.Order.*;
 
@@ -355,12 +354,12 @@ public class ClientFormController {
                 }
             });
 
-            if(Main.remoteLogics.isDebug())
-            addClientFunction(form.getEditFunction(), editKeyStroke, new AbstractAction() {
-                public void actionPerformed(ActionEvent ae) {
-                    edit();
-                }
-            });
+            if(System.getProperty(StartupProperties.PLATFORM_CLIENT_ISDEBUG).equals("true"))
+                addClientFunction(form.getEditFunction(), editKeyStroke, new AbstractAction() {
+                    public void actionPerformed(ActionEvent ae) {
+                        edit();
+                    }
+                });
 
             addClientFunction(form.getXlsFunction(), xlsKeyStroke, new AbstractAction() {
                 public void actionPerformed(ActionEvent ae) {
@@ -731,22 +730,55 @@ public class ClientFormController {
 
         try {
 
-            String[] path = Main.frame.editReport(remoteForm);
-            String iReport = System.getenv("ProgramFiles") + "\\Jaspersoft\\iReport-4.0.2\\bin\\ireport.exe";
-            Process proc = Runtime.getRuntime().exec(new String[]{iReport, path[0]});
-            int exitCode = proc.waitFor();
+            Map<String, String> pathMap = Main.frame.getReportPath(remoteForm);
 
-            FileChannel source = new FileInputStream(path[0]).getChannel();
-            FileChannel destination = new FileOutputStream(path[1]).getChannel();
+            for (String path : pathMap.keySet()) {
+                Desktop.getDesktop().open(new File(path));
+            }
 
-            destination.transferFrom(source, 0, source.size());
-
-            source.close();
-            destination.close();
-
+            SavingThread r = new SavingThread();
+            r.setPath(pathMap);
+            Thread t = new Thread(r);
+            t.start();
 
         } catch (Exception e) {
             throw new RuntimeException(ClientResourceBundle.getString("form.error.printing.form"), e);
+        }
+    }
+
+    class SavingThread implements Runnable {
+
+        Map<String, String> pathMap;
+
+        public void setPath(Map<String, String> pathMap) {
+            this.pathMap = pathMap;
+        }
+
+        @Override
+        public void run() {
+
+            while (true) {
+
+                try {
+                    Set<Map.Entry<String, String>> entrySet = pathMap.entrySet();
+                    for (Map.Entry<String, String> entry : entrySet) {
+                        File original = new File(entry.getKey());
+                        File copy = new File(entry.getValue());
+                        if (copy.lastModified() < original.lastModified()) {
+                            FileChannel source = new FileInputStream(entry.getKey()).getChannel();
+                            FileChannel destination = new FileOutputStream(entry.getValue()).getChannel();
+                            source.transferTo(0, source.size(), destination);
+                            destination.close();
+                            source.close();
+                        }
+                    }
+                    Thread.sleep(3000);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
         }
     }
 
