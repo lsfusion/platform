@@ -38,6 +38,7 @@ import java.awt.event.KeyEvent;
 import java.sql.SQLException;
 import java.util.*;
 
+import static platform.server.logics.PropertyUtils.getUParams;
 import static platform.server.logics.PropertyUtils.mapImplement;
 import static platform.server.logics.PropertyUtils.readImplements;
 import static platform.server.logics.ServerResourceBundle.getString;
@@ -201,11 +202,13 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public LP emailUserPassUser;
 
     public LP connectionUser;
+    public LP userNameConnection;
     public LP connectionComputer;
     public LP connectionCurrentStatus;
     public LP connectionFormCount;
     public LP connectionConnectTime;
     public LP connectionDisconnectTime;
+    public LP disconnectConnection;
 
     public LP policyDescription;
     protected LP<?> nameToPolicy;
@@ -547,7 +550,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         connectionComputer = addDProp("connectionComputer", getString("logics.computer"), computer, connection);
         addJProp(baseGroup, getString("logics.computer"), hostname, connectionComputer, 1);
         connectionUser = addDProp("connectionUser", getString("logics.user"), customUser, connection);
-        addJProp(baseGroup, getString("logics.user"), userLogin, connectionUser, 1);
+        userNameConnection = addJProp(baseGroup, getString("logics.user"), userLogin, connectionUser, 1);
         connectionCurrentStatus = addDProp("connectionCurrentStatus", getString("logics.connection.status"), connectionStatus, connection);
         addJProp(baseGroup, getString("logics.connection.status"), name, connectionCurrentStatus, 1);
 
@@ -555,6 +558,8 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         connectionDisconnectTime = addDProp(baseGroup, "connectionDisconnectTime", getString("logics.connection.disconnect.time"), DateTimeClass.instance, connection);
         connectionDisconnectTime.setDerivedForcedChange(currentDateTime,
                 addJProp(equals2, connectionCurrentStatus, 1, addCProp(connectionStatus, "disconnectedConnection")), 1);
+        disconnectConnection = addProperty(null, new LP<ClassPropertyInterface>(new DisconnectActionProperty(BL, this, connection)));
+        addJProp(baseGroup, getString("logics.connection.disconnect"), andNot1, getUParams(new LP[]{disconnectConnection, connectionDisconnectTime}, 0));
 
         connectionFormCount = addDProp(baseGroup, "connectionFormCount", getString("logics.forms.number.of.opened.forms"), IntegerClass.instance, connection, navigatorElement);
 

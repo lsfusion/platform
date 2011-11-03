@@ -121,6 +121,10 @@ public class RemoteNavigatorProxy<T extends RemoteNavigatorInterface>
         return target.getClientCallBack();
     }
 
+    public void setUpdateTime(int updateTime) throws RemoteException {
+        target.setUpdateTime(updateTime);
+    }
+
     @ImmutableMethod
     public boolean showDefaultForms() throws RemoteException {
         return target.showDefaultForms();

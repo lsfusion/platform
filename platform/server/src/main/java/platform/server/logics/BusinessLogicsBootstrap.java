@@ -26,6 +26,7 @@ public class BusinessLogicsBootstrap {
 
     public static final String SETTINGS_PATH_KEY = "lsf.settings.path";
     public static final String DEFAULT_SETTINGS_PATH = "conf/settings.xml";
+    public static final String PLATFORM_SERVER_ISDEBUG = "platform.server.isdebug";
 
     public BusinessLogicsBootstrap() {
     }
@@ -57,6 +58,11 @@ public class BusinessLogicsBootstrap {
 
         if (System.getProperty("sun.rmi.dgc.server.gcInterval") == null) {
             System.setProperty("sun.rmi.dgc.server.gcInterval", "600000");
+        }
+
+        String isDebug = System.getProperty(PLATFORM_SERVER_ISDEBUG);
+        if (isDebug == null || !isDebug.equals("true")) {
+            System.setProperty("java.rmi.dgc.leaseValue", "120000");
         }
 
         System.setProperty("mail.mime.encodefilename", "true");

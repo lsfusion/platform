@@ -354,7 +354,8 @@ public class ClientFormController {
                 }
             });
 
-            if(System.getProperty(StartupProperties.PLATFORM_CLIENT_ISDEBUG).equals("true"))
+            String isDebug = System.getProperty(StartupProperties.PLATFORM_CLIENT_ISDEBUG);
+            if(isDebug != null && isDebug.equals("true"))
                 addClientFunction(form.getEditFunction(), editKeyStroke, new AbstractAction() {
                     public void actionPerformed(ActionEvent ae) {
                         edit();

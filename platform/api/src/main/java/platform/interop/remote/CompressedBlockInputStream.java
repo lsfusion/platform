@@ -76,15 +76,19 @@ public class CompressedBlockInputStream extends FilterInputStream {
         inflater = new Inflater();
     }
 
+    public boolean hangs = false;
+
     private void readAndDecompress() throws IOException {
         // Read the length of the compressed block
 
         if (lenBuf == null)
             lenBuf = new byte[8];
 
+        hangs = true;
         int len = in.read(lenBuf, 0, 8);
         if (len < 8)
             throw new EOFException();
+        hangs = false;
 
         inLength = (lenBuf[0] << 24) + ((lenBuf[1] & 0xFF) << 16) +
                 ((lenBuf[2] & 0xFF) << 8) + (lenBuf[3] & 0xFF);

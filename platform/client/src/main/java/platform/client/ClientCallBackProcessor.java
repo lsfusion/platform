@@ -1,10 +1,13 @@
 package platform.client;
 
 import platform.client.rmi.ConnectionLostManager;
+import platform.client.rmi.RMITimeoutSocketFactory;
 import platform.interop.remote.CallbackMessage;
 import platform.interop.remote.ClientCallBackInterface;
 
 import javax.swing.*;
+import java.awt.*;
+import java.lang.reflect.Method;
 import java.rmi.RemoteException;
 import java.util.List;
 
@@ -28,18 +31,22 @@ public class ClientCallBackProcessor {
     private void processMessage(CallbackMessage message) {
         switch (message) {
             case DISCONNECTED:
-                disconnect();
+                disconnect(getString("rmi.connectionlost.relogin"));
                 break;
             case SERVER_RESTARTING:
                 notifyServerRestarting();
                 break;
+            case CUT_OFF:
+                RMITimeoutSocketFactory.closeHangingSockets();
+                disconnect(getString("rmi.connectionlost.cutoff"));
+                break;
         }
     }
 
-    public void disconnect() {
+    public void disconnect(final String message) {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                ConnectionLostManager.forceDisconnect();
+                ConnectionLostManager.forceDisconnect(message);
             }
         });
     }

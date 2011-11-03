@@ -44,6 +44,7 @@ import platform.server.session.*;
 import java.io.*;
 import java.lang.ref.WeakReference;
 import java.rmi.RemoteException;
+import java.rmi.server.Unreferenced;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -52,7 +53,7 @@ import static platform.base.BaseUtils.nvl;
 
 // приходится везде BusinessLogics Generics'ом гонять потому как при инстанцировании формы нужен конкретный класс
 
-public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteContextObject implements RemoteNavigatorInterface, FocusListener<T>, CustomClassListener, RemoteFormListener {
+public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteContextObject implements RemoteNavigatorInterface, FocusListener<T>, CustomClassListener, RemoteFormListener, Unreferenced {
     protected final static Logger logger = Logger.getLogger(RemoteNavigator.class);
 
     T BL;
@@ -65,6 +66,8 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteContextO
     private DataObject computer;
 
     private DataObject connection;
+
+    private int updateTime;
 
     // в настройку надо будет вынести : по группам, способ релевантности групп, какую релевантность отсекать
 
@@ -137,6 +140,11 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteContextO
         }
 
         return outStream.toByteArray();
+    }
+
+    @Override
+    public void unreferenced() {
+        killThreads();
     }
 
     @Aspect
@@ -505,6 +513,14 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteContextO
         return client;
     }
 
+    public void setUpdateTime(int updateTime) {
+        this.updateTime = updateTime;
+    }
+
+    public int getUpdateTime() {
+        return updateTime;
+    }
+
     public boolean isRestartAllowed() {
         return client.isRestartAllowed();
     }
@@ -517,7 +533,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteContextO
         client.notifyServerRestartCanceled();
     }
 
-    private static class ClientCallBackController extends RemoteObject implements ClientCallBackInterface {
+    public static class ClientCallBackController extends RemoteObject implements ClientCallBackInterface {
         private List<CallbackMessage> messages = new ArrayList<CallbackMessage>();
         private Boolean deniedRestart = null;
 
@@ -527,6 +543,10 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteContextO
 
         public synchronized void disconnect() {
             addMessage(CallbackMessage.DISCONNECTED);
+        }
+
+        public synchronized void cutOff() {
+            addMessage(CallbackMessage.CUT_OFF);
         }
 
         public synchronized void notifyServerRestart() {
@@ -613,15 +633,22 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteContextO
 
     public boolean isBusy() {
         boolean busy = !threads.isEmpty();
-        if (busy) {
-            killThreads();
-        }
         for (RemoteForm form : openForms.values()) {
             if (!form.threads.isEmpty()) {
                 busy = true;
-                form.killThreads();
             }
         }
         return busy;
+    }
+
+    public void killThreads() {
+        if (!threads.isEmpty()) {
+            super.killThreads();
+        }
+        for (RemoteForm form : openForms.values()) {
+            if (!form.threads.isEmpty()) {
+                form.killThreads();
+            }
+        }
     }
 }

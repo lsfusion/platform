@@ -157,6 +157,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
             if (navigator != null && navigator.isBusy()) {
                 navigator = null;
+                removeNavigator(key);
             }
 
             if (navigator != null) {
@@ -193,6 +194,42 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
             navigator.setConnection(new DataObject(newConnection.object, LM.connection));
             navigators.put(key, navigator);
+        }
+    }
+
+    public void removeNavigator(Pair<String, Integer> key) {
+        try {
+            DataSession session = createSession();
+            synchronized (navigators) {
+                RemoteNavigator navigator = navigators.get(key);
+                if (navigator != null) {
+                    LM.connectionCurrentStatus.execute(LM.connectionStatus.getID("disconnectedConnection"), session, navigator.getConnection());
+                    navigators.remove(key);
+                }
+            }
+            session.apply(this);
+            session.close();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void cutOffConnection(Pair<String, Integer> key) {
+        try {
+            final RemoteNavigator navigator = navigators.get(key);
+            if (navigator != null) {
+                navigator.getClientCallBack().cutOff();
+                removeNavigator(key);
+
+                if (navigator.isBusy()) {
+                    Thread.sleep(navigator.getUpdateTime() * 3); //ожидаем, пока пройдёт пинг и убъётся сокет. затем грохаем поток. чтобы не словить ThreadDeath на клиенте.
+                    navigator.killThreads();
+                }
+            }
+        } catch (RemoteException e) {
+            throw new RuntimeException(e);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
         }
     }
 

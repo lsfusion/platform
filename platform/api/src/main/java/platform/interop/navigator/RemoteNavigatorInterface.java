@@ -40,6 +40,8 @@ public interface RemoteNavigatorInterface extends PendingRemote, RemoteContextIn
 
     ClientCallBackInterface getClientCallBack() throws RemoteException;
 
+    void setUpdateTime(int updateTime) throws RemoteException;
+
     boolean showDefaultForms() throws RemoteException;
 
     ArrayList<String> getDefaultForms() throws RemoteException;

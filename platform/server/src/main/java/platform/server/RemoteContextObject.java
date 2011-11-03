@@ -1,6 +1,6 @@
 package platform.server;
 
-import org.aspectj.lang.annotation.After;
+import org.aspectj.lang.annotation.AfterReturning;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
 import platform.base.BaseUtils;
@@ -85,12 +85,12 @@ public abstract class RemoteContextObject extends RemoteObject implements Contex
 
 //        @Before("execution(* (platform.interop.RemoteContextInterface || platform.interop.navigator.RemoteNavigatorInterface || platform.interop.form.RemoteFormInterface || platform.interop.RemoteLogicsInterface).*(..)) && target(remoteForm)")
 
-    private static final String aspectArgs = "execution(* (platform.interop.RemoteContextInterface+ && platform.interop..*).*(..)) &&" +
+    @Aspect
+    public static class RemoteFormContextHoldingAspect {
+        final String aspectArgs = "execution(* (platform.interop.RemoteContextInterface+ && platform.interop..*).*(..)) &&" +
                 "!cflowbelow(execution(* (platform.interop.RemoteContextInterface+ && platform.interop..*).*(..))) && " +
                 "!cflowbelow(initialization(platform.server.logics.BusinessLogics.new(..))) && target(remoteObject)";
 
-    @Aspect
-    public static class RemoteFormContextHoldingAspect {
         @Before(aspectArgs)
         public void beforeCall(RemoteContextObject remoteObject) {
             if(!(Thread.currentThread() instanceof ContextAwareThread)) {
@@ -99,7 +99,7 @@ public abstract class RemoteContextObject extends RemoteObject implements Contex
             }
         }
 
-        @After(aspectArgs)
+        @AfterReturning(aspectArgs)
         public void afterReturn(RemoteContextObject remoteObject) {
             remoteObject.threads.remove(Thread.currentThread());
         }

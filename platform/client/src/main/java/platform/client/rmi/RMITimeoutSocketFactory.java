@@ -1,5 +1,6 @@
 package platform.client.rmi;
 
+import platform.base.WeakLinkedHashSet;
 import platform.interop.remote.CountZipServerSocket;
 import platform.interop.remote.CountZipSocket;
 import platform.interop.remote.ISocketTrafficSum;
@@ -8,12 +9,14 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.rmi.server.RMISocketFactory;
+import java.util.Iterator;
 
 public class RMITimeoutSocketFactory extends RMISocketFactory implements ISocketTrafficSum{
 
     private int timeout;
     public long inSum;
     public long outSum;
+    public static WeakLinkedHashSet<CountZipSocket> sockets = new WeakLinkedHashSet<CountZipSocket>();
 
     public RMITimeoutSocketFactory(int timeout) {
         this.timeout = timeout;
@@ -31,7 +34,18 @@ public class RMITimeoutSocketFactory extends RMISocketFactory implements ISocket
         socket.setObserver(this);
         socket.setSoTimeout(timeout);
         ConnectionLostManager.connectionRelived();
+        sockets.add(socket);
         return socket;
+    }
+
+    public static void closeHangingSockets() {
+        Iterator<CountZipSocket> iterator = sockets.iterator();
+        while (iterator.hasNext()) {
+            CountZipSocket socket = iterator.next();
+            if (socket != null) {
+                socket.closeIfHung();
+            }
+        }
     }
 
     @Override
