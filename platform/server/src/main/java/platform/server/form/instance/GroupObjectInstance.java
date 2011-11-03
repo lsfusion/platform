@@ -648,17 +648,8 @@ public class GroupObjectInstance implements MapKeysInterface<ObjectInstance>, Pr
     }
 
     public OrderedMap<Map<ObjectInstance, DataObject>, Map<OrderInstance, ObjectValue>> seekObjects(SQLSession sql, QueryEnvironment env, Modifier<? extends Changes> modifier, BaseClass baseClass, int readSize) throws SQLException {
-        int keyNum = keys.indexOf(getGroupObjectValue());
-        SeekObjects orderSeeks;
-        int lowestInd = keyNum + readSize;
-        int availableSize = readSize;
-        if (lowestInd >= keys.size()) {
-            availableSize = keys.size() - keyNum;
-            orderSeeks = new SeekObjects(true);
-        } else {
-            orderSeeks = new SeekObjects(keys.getValue(lowestInd), false);
-        }
-        return orderSeeks.executeOrders(sql, env, modifier, baseClass, availableSize, false).reverse();
+        SeekObjects orderSeeks = new SeekObjects(keys.getValue(keys.indexOf(getGroupObjectValue())), false);
+        return orderSeeks.executeOrders(sql, env, modifier, baseClass, readSize, true);
     }
 
     public OrderedMap<Map<ObjectInstance, DataObject>, Map<OrderInstance, ObjectValue>> createObjects(DataSession session, FormInstance form, int quantity) throws SQLException {

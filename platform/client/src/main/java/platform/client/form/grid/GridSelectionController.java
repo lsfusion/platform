@@ -209,13 +209,12 @@ public class GridSelectionController {
             start = 0;
             end = getRowKeys().size() - 1;
         } else {
-            int lastKeyIndex = getRowKeys().indexOf(gridKeys.get(gridKeys.size() - 1));
             if (movedDown) {
-                start = lastKeyIndex;
+                start = getRowKeys().indexOf(gridKeys.get(gridKeys.size() - 1)) + 1;
                 end = getRowKeys().size() - 1;
             } else {
                 start = 0;
-                end = lastKeyIndex;
+                end = getRowKeys().indexOf(gridKeys.get(0)) - 1;
             }
         }
         if (start == -1 || end == -1)
@@ -225,12 +224,13 @@ public class GridSelectionController {
             differenceMap.add(getRowKeys().get(i));
         }
 
-        if (movedDown) {
-            gridKeys.addAll(differenceMap);
-        } else {
-            differenceMap.addAll(gridKeys);
-            gridKeys = differenceMap;
-        }
+        if (!gridKeys.containsAll(differenceMap))
+            if (movedDown) {
+                gridKeys.addAll(differenceMap);
+            } else {
+                differenceMap.addAll(gridKeys);
+                gridKeys = differenceMap;
+            }
     }
 
     private Object modifyIfString(Object value) {
