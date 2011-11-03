@@ -240,12 +240,6 @@ public class GroupObjectHierarchy {
             }
 
             squeezeAll();
-            groupToReportNode.clear();
-            for (ReportNode node : reportNodes) {
-                for (GroupObjectEntity group : node.getGroupList()) {
-                    groupToReportNode.put(group, node);
-                }
-            }
             countGroupLevels(null);
         }
 
@@ -310,6 +304,9 @@ public class GroupObjectHierarchy {
                 dependencies.put(reportNode, dependencies.get(child));
                 dependencies.remove(child);
                 reportNode.merge(child);
+                for (GroupObjectEntity childGroup : child.getGroupList()) {
+                    groupToReportNode.put(childGroup, reportNode);
+                }
                 reportNodes.remove(child);
             }
         }
