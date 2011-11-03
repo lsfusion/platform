@@ -68,7 +68,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
     }
     //!!!!
 
-    public VoteInfo getVoteInfo(String voteId) throws RemoteException {
+    public VoteInfo getVoteInfo(String voteId, String locale) throws RemoteException {
 
         try {
             DataSession session = createSession();
@@ -78,8 +78,11 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
                 VoteInfo voteInfo = new VoteInfo();
                 voteInfo.expertName = (String) LM.name.read(session, vo.expertObj);
 
-                Boolean isForeign = (Boolean) SkolkovoLM.isForeignExpert.read(session, vo.expertObj);
-                if (isForeign == null) {
+                boolean isForeign = locale != null
+                                    ? "en".equals(locale)
+                                    : SkolkovoLM.isForeignExpert.read(session, vo.expertObj) != null;
+
+                if (!isForeign) {
                     voteInfo.projectName = (String) SkolkovoLM.nameNativeProject.read(session, vo.projectObj);
                     voteInfo.projectClaimer = (String) SkolkovoLM.nameNativeClaimerProject.read(session, vo.projectObj);
                     voteInfo.projectCluster = (String) SkolkovoLM.nameNativeClusterVote.read(session, vo.voteObj);

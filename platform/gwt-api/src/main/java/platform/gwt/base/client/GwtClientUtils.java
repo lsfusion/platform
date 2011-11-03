@@ -1,57 +1,31 @@
 package platform.gwt.base.client;
 
-import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.http.client.URL;
 import com.google.gwt.http.client.UrlBuilder;
+import com.google.gwt.safehtml.shared.SimpleHtmlSanitizer;
 import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.Widget;
-import platform.gwt.base.client.ui.ErrorFrameWidget;
-import platform.gwt.utils.GwtUtils;
 
-public class BaseFrame implements EntryPoint {
+public class GwtClientUtils {
     public static BaseMessages baseMessages = BaseMessages.Instance.get();
+    public static final String TARGET_PARAM = "targetUrl";
 
-    public abstract class ErrorAsyncCallback<T> extends AsyncCallbackEx<T> {
-        @Override
-        public void failure(Throwable caught) {
-            showErrorPage(caught);
+    public static void removeLoaderFromHostedPage() {
+        RootPanel p = RootPanel.get("loadingWrapper");
+        if (p != null) {
+            RootPanel.getBodyElement().removeChild(p.getElement());
         }
     }
 
-    public class UpdateAsyncCallback<T> implements AsyncCallback<T> {
-        @Override
-        public void onFailure(Throwable caught) {
-            showErrorPage(caught);
-        }
-
-        @Override
-        public void onSuccess(T result) {
-            update();
-        }
-    }
-
-    protected void update() {
-    }
-
-    @Override
-    public void onModuleLoad() {
-    }
-
-    protected static void setAsRootPane(Widget widget) {
+    public static void setAsRootPane(Widget widget) {
         RootPanel.get().clear();
         RootPanel.get().add(widget);
     }
 
-    public static void showErrorPage(Throwable caught) {
-        setAsRootPane(new ErrorFrameWidget(caught));
-        GwtUtils.removeLoaderFromHostedPage();
-    }
-
     public static String getPageUrlPreservingParameters(String pageUrl) {
-        return getPageUrlPreservingParameters(pageUrl, (String[])null, null);
+        return getPageUrlPreservingParameters(pageUrl, (String[]) null, null);
     }
 
     public static String getPageUrlPreservingParameters(String param, String value) {
@@ -98,11 +72,30 @@ public class BaseFrame implements EntryPoint {
         return GWT.getHostPageBaseURL() + pageUrl + url.substring(paramBegin);
     }
 
+    public static String getCurrentUrlEncoded() {
+        return URL.encodePathSegment(Window.Location.createUrlBuilder().buildString());
+    }
+
     public static String getLogoutUrl() {
-        return getPageUrlPreservingParameters("logout.jsp", "spring-security-redirect", URL.encodePathSegment(Window.Location.createUrlBuilder().buildString()));
+        return getPageUrlPreservingParameters("logout.jsp", TARGET_PARAM, getCurrentUrlEncoded());
+    }
+
+    public static String getLoginUrl() {
+        return getPageUrlPreservingParameters("login.jsp", TARGET_PARAM, getCurrentUrlEncoded());
+    }
+
+    public static void relogin() {
+        Window.open(GwtClientUtils.getLoginUrl(), "_self", null);
     }
 
     public static void logout() {
-        com.google.gwt.user.client.Window.open(BaseFrame.getLogoutUrl(), "_self", null);
+        Window.open(GwtClientUtils.getLogoutUrl(), "_self", null);
+    }
+
+    public static String toHtml(String plainString) {
+        if (plainString == null) {
+            return "";
+        }
+        return SimpleHtmlSanitizer.sanitizeHtml(plainString).asString().replaceAll("(\r\n|\n\r|\r|\n)", "<br />");
     }
 }

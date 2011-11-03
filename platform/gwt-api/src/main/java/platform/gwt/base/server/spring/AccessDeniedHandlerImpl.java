@@ -26,7 +26,12 @@ public class AccessDeniedHandlerImpl implements AccessDeniedHandler {
                 request.setAttribute(WebAttributes.ACCESS_DENIED_403, accessDeniedException);
 
                 //put the original url to use on the errorPage
-                request.setAttribute(ACCESS_DENIED_RESOURCE_URL, request.getRequestURL().append("?").append(request.getQueryString()).toString());
+                StringBuffer targetUrl = request.getRequestURL();
+                String queryString = request.getQueryString();
+                if (queryString != null) {
+                    targetUrl.append("?").append(queryString);
+                }
+                request.setAttribute(ACCESS_DENIED_RESOURCE_URL, targetUrl.toString());
 
                 // Set the 403 status code.
                 response.setStatus(HttpServletResponse.SC_FORBIDDEN);

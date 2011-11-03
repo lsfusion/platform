@@ -9,7 +9,7 @@
     <inherits name='com.google.gwt.user.theme.standard.Standard'/>
 
     <inherits name="paas.api.gwt.API"/>
-    <inherits name="platform.gwt.base.Base"/>
+    <inherits name="platform.gwt.sgwtbase.SGWTBase"/>
     <inherits name="platform.gwt.Utils"/>
 
     <!-- Other module inherits                                      -->

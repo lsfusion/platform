@@ -2,7 +2,7 @@ package platform.gwt.form.client.ui;
 
 import com.smartgwt.client.types.Overflow;
 import com.smartgwt.client.widgets.layout.FlowLayout;
-import platform.gwt.utils.GwtUtils;
+import platform.gwt.utils.GwtSharedUtils;
 import platform.gwt.view.GForm;
 import platform.gwt.view.GPropertyDraw;
 import platform.gwt.view.changes.GGroupObjectValue;
@@ -44,7 +44,7 @@ public class GGroupPanel extends FlowLayout {
                 }
             });
 
-            int ins = GwtUtils.relativePosition(property, form.propertyDraws, properties);
+            int ins = GwtSharedUtils.relativePosition(property, form.propertyDraws, properties);
             properties.add(ins, property);
             typeRenderers.add(ins, renderer);
 

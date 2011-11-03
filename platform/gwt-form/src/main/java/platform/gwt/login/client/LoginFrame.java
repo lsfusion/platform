@@ -9,14 +9,14 @@ import com.smartgwt.client.widgets.Label;
 import com.smartgwt.client.widgets.layout.VLayout;
 import net.customware.gwt.dispatch.client.DefaultExceptionHandler;
 import net.customware.gwt.dispatch.client.standard.StandardDispatchAsync;
-import platform.gwt.base.client.ui.CenterLayout;
-import platform.gwt.base.client.ui.ToolStripPanel;
-import platform.gwt.base.client.ui.login.LoginBox;
-import platform.gwt.base.client.ui.login.SpringLoginBoxUiHandlers;
+import platform.gwt.base.client.GwtClientUtils;
+import platform.gwt.sgwtbase.client.ui.CenterLayout;
+import platform.gwt.sgwtbase.client.ui.ToolStripPanel;
+import platform.gwt.sgwtbase.client.ui.login.LoginBox;
+import platform.gwt.sgwtbase.client.ui.login.SpringLoginBoxUiHandlers;
 import platform.gwt.base.shared.MessageException;
 import platform.gwt.base.shared.actions.VoidResult;
 import platform.gwt.login.shared.actions.RemindPassword;
-import platform.gwt.utils.GwtUtils;
 
 public class LoginFrame extends VLayout implements EntryPoint {
     private static final LoginFrameMessages messages = LoginFrameMessages.Instance.get();
@@ -56,7 +56,7 @@ public class LoginFrame extends VLayout implements EntryPoint {
 
         draw();
 
-        GwtUtils.removeLoaderFromHostedPage();
+        GwtClientUtils.removeLoaderFromHostedPage();
     }
 
     public String getUserName() {

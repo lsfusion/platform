@@ -19,7 +19,7 @@ import com.smartgwt.client.widgets.layout.VStack;
 import com.smartgwt.client.widgets.toolbar.ToolStripButton;
 import net.customware.gwt.dispatch.client.DefaultExceptionHandler;
 import net.customware.gwt.dispatch.shared.Action;
-import platform.gwt.base.client.ui.ToolStripPanel;
+import platform.gwt.sgwtbase.client.ui.ToolStripPanel;
 import platform.gwt.form.client.FormDispatchAsync;
 import platform.gwt.form.shared.actions.GetForm;
 import platform.gwt.form.shared.actions.GetFormResult;

@@ -1,9 +1,11 @@
 package skolkovo.gwt.expert.client;
 
+import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.user.client.Window;
 import net.customware.gwt.dispatch.client.DefaultExceptionHandler;
 import net.customware.gwt.dispatch.client.standard.StandardDispatchAsync;
-import platform.gwt.base.client.BaseFrame;
+import platform.gwt.base.client.ErrorAsyncCallback;
+import platform.gwt.base.client.GwtClientUtils;
 import skolkovo.api.gwt.shared.VoteInfo;
 import skolkovo.gwt.expert.client.ui.ExpertMainWidget;
 import skolkovo.gwt.expert.shared.actions.GetVoteInfo;
@@ -14,7 +16,7 @@ import java.util.Date;
 
 import static skolkovo.api.gwt.shared.Result.VOTED;
 
-public class ExpertFrame extends BaseFrame {
+public class ExpertFrame implements EntryPoint {
     private static ExpertFrameMessages messages = ExpertFrameMessages.Instance.get();
     private final static StandardDispatchAsync expertService = new StandardDispatchAsync(new DefaultExceptionHandler());
 
@@ -32,35 +34,26 @@ public class ExpertFrame extends BaseFrame {
     }
 
     protected void update() {
-        String voteId = getVoteId();
-        if (voteId == null) {
-            showErrorPage(null);
-            return;
-        }
-
+        final String voteId = getVoteId();
         expertService.execute(new GetVoteInfo(voteId), new ErrorAsyncCallback<GetVoteInfoResult>() {
             public void success(final GetVoteInfoResult result) {
                 final VoteInfo vi = result.voteInfo;
-                if (vi == null) {
-                    showErrorPage(null);
-                    return;
-                }
 
-                setAsRootPane(new ExpertMainWidget(vi) {
+                GwtClientUtils.setAsRootPane(new ExpertMainWidget(vi) {
                     @Override
                     public boolean onVoted(String voteResult, boolean confirm) {
                         if (VOTED.equals(voteResult)) {
                             if ((VOTE_REVISION_1.equals(vi.revision) &&
-                                (bxInCluster.getSelectedIndex() == 0 ||
-                                bxInnovative.getSelectedIndex() == 0 ||
-                                bxForeign.getSelectedIndex() == 0)) ||
-                                    (VOTE_REVISION_2.equals(vi.revision) &&
-                                    ((bxCompetitive.getSelectedIndex() == 0 ||
-                                    bxCommercePotential.getSelectedIndex() == 0 ||
-                                    bxImplement.getSelectedIndex() == 0 ||
-                                    bxExpertise.getSelectedIndex() == 0 ||
-                                    bxInternationalExperience.getSelectedIndex() == 0 ||
-                                    bxEnoughDocuments.getSelectedIndex() == 0)))) {
+                                 (bxInCluster.getSelectedIndex() == 0 ||
+                                  bxInnovative.getSelectedIndex() == 0 ||
+                                  bxForeign.getSelectedIndex() == 0)) ||
+                                (VOTE_REVISION_2.equals(vi.revision) &&
+                                 ((bxCompetitive.getSelectedIndex() == 0 ||
+                                   bxCommercePotential.getSelectedIndex() == 0 ||
+                                   bxImplement.getSelectedIndex() == 0 ||
+                                   bxExpertise.getSelectedIndex() == 0 ||
+                                   bxInternationalExperience.getSelectedIndex() == 0 ||
+                                   bxEnoughDocuments.getSelectedIndex() == 0)))) {
                                 Window.alert(messages.incompletePrompt());
                                 return false;
                             }
@@ -102,13 +95,13 @@ public class ExpertFrame extends BaseFrame {
                         vi.enoughDocuments = bxEnoughDocuments.getSelectedIndex() == 1;
                         vi.enoughDocumentsComment = taEnoughDocumentsComment.getText();
 
-                        String voteId = getVoteId();
-                        if (voteId == null) {
-                            showErrorPage(null);
-                            return confirm;
-                        }
+                        expertService.execute(new SetVoteInfo(vi, voteId), new ErrorAsyncCallback() {
+                            @Override
+                            public void success(Object result) {
+                                update();
+                            }
+                        });
 
-                        expertService.execute(new SetVoteInfo(vi, voteId), new UpdateAsyncCallback());
                         return true;
                     }
                 });

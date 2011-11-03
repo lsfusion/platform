@@ -7,11 +7,27 @@
     <http auto-config="true" use-expressions="true" entry-point-ref="loginUrlAuthenticationEntryPoint">
         <intercept-url pattern="/form.jsp" access="hasAnyRole('admin')"/>
         <intercept-url pattern="/platform.gwt.form.Form/*" access="hasRole('admin')"/>
+
         <form-login authentication-failure-url="/loginFailed.txt" default-target-url="/navigator.jsp"/>
+
         <anonymous enabled="false" />
-        <logout logout-url="/logout.jsp" logout-success-url="/navigator.jsp" />
+
+        <logout logout-url="/logout.jsp" success-handler-ref="successLogoutHandler"/>
+
         <access-denied-handler ref="accessDeniedHandler" />
+
+        <custom-filter ref="expiredSessionFilter" before="SESSION_MANAGEMENT_FILTER" />
     </http>
+
+    <b:bean id="expiredSessionFilter" class="platform.gwt.base.server.spring.ExpiredSessionFilter">
+        <!-- фильтруем запросы к gwt-сервисам -->
+        <b:property name="urlPattern" value="/platform\.gwt\..*/dispatch.*"/>
+    </b:bean>
+
+    <b:bean id="successLogoutHandler" class="org.springframework.security.web.authentication.logout.SimpleUrlLogoutSuccessHandler" >
+        <b:property name="targetUrlParameter" value="targetUrl" />
+        <b:property name="defaultTargetUrl" value="/navigator.jsp" />
+    </b:bean>
 
     <b:bean id="accessDeniedHandler" class="platform.gwt.base.server.spring.AccessDeniedHandlerImpl" >
         <b:property name="errorPage" value="/restricted.jsp" />

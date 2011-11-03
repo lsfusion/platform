@@ -1,10 +1,11 @@
-package platform.gwt.base.client.ui.login;
+package platform.gwt.sgwtbase.client.ui.login;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.http.client.*;
 import com.google.gwt.user.client.Window;
 import com.smartgwt.client.util.SC;
 import platform.gwt.base.client.BaseMessages;
+import platform.gwt.base.client.GwtClientUtils;
 
 public class SpringLoginBoxUiHandlers implements LoginBoxUiHandlers {
     private static final BaseMessages messages = BaseMessages.Instance.get();
@@ -70,7 +71,12 @@ public class SpringLoginBoxUiHandlers implements LoginBoxUiHandlers {
     }
 
     protected void onLoginSucceded() {
-        Window.Location.reload();
+        String targetUrl = Window.Location.getParameter(GwtClientUtils.TARGET_PARAM);
+        if (targetUrl != null) {
+            Window.open(URL.decodePathSegment(targetUrl), "_self", null);
+        } else {
+            Window.Location.reload();
+        }
     }
 
     protected void onLoginFailed() {

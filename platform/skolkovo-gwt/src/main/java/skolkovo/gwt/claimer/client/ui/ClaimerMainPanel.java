@@ -4,7 +4,7 @@ import com.smartgwt.client.types.Overflow;
 import com.smartgwt.client.widgets.grid.ListGrid;
 import com.smartgwt.client.widgets.layout.HLayout;
 import com.smartgwt.client.widgets.layout.VLayout;
-import platform.gwt.base.client.ui.ToolStripPanel;
+import platform.gwt.sgwtbase.client.ui.ToolStripPanel;
 import skolkovo.gwt.claimer.client.ClaimerMessages;
 
 public class ClaimerMainPanel extends VLayout {

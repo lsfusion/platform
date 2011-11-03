@@ -5,7 +5,7 @@ import com.google.gwt.core.client.GWT;
 import com.google.gwt.resources.client.ClientBundle;
 import com.google.gwt.resources.client.CssResource;
 import com.google.gwt.user.client.Window;
-import platform.gwt.utils.GwtUtils;
+import platform.gwt.base.client.GwtClientUtils;
 import skolkovo.gwt.claimer.client.ui.ClaimerMainPanel;
 
 public class ClaimerFrame implements EntryPoint {
@@ -27,7 +27,7 @@ public class ClaimerFrame implements EntryPoint {
 
     protected void update() {
         new ClaimerMainPanel().draw();
-        GwtUtils.removeLoaderFromHostedPage();
+        GwtClientUtils.removeLoaderFromHostedPage();
 
 //        claimerService.execute(new GetProfileInfo(), new BaseFrame.ErrorAsyncCallback<GetProfileInfoResult>() {
 //            public void onSuccess(GetProfileInfoResult result) {

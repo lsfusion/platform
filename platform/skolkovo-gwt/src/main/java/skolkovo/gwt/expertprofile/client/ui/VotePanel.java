@@ -1,9 +1,7 @@
 package skolkovo.gwt.expertprofile.client.ui;
 
 import com.google.gwt.i18n.client.LocaleInfo;
-import com.smartgwt.client.types.Alignment;
-import com.smartgwt.client.types.ListGridFieldType;
-import com.smartgwt.client.types.RecordComponentPoolingMode;
+import com.smartgwt.client.types.*;
 import com.smartgwt.client.util.SC;
 import com.smartgwt.client.widgets.Canvas;
 import com.smartgwt.client.widgets.IButton;
@@ -19,9 +17,9 @@ import com.smartgwt.client.widgets.grid.ListGridRecord;
 import net.customware.gwt.dispatch.client.DefaultExceptionHandler;
 import net.customware.gwt.dispatch.client.standard.StandardDispatchAsync;
 import platform.gwt.base.client.AsyncCallbackEx;
-import platform.gwt.base.client.BaseFrame;
-import platform.gwt.base.client.ui.VLayout100;
+import platform.gwt.base.client.GwtClientUtils;
 import platform.gwt.base.shared.actions.VoidResult;
+import platform.gwt.sgwtbase.client.ui.VLayout100;
 import platform.gwt.ui.DateCellFormatter;
 import skolkovo.api.gwt.shared.ProfileInfo;
 import skolkovo.api.gwt.shared.VoteInfo;
@@ -45,6 +43,8 @@ public class VotePanel extends VLayout100 {
 
     public VotePanel(ProfileInfo PI) {
         this.pi = PI;
+
+        setOverflow(Overflow.VISIBLE);
 
         createForm();
 
@@ -108,6 +108,8 @@ public class VotePanel extends VLayout100 {
 
         grid.setWidth100();
         grid.setShowAllRecords(true);
+        grid.setAutoFitData(Autofit.VERTICAL);
+        grid.setAutoFitMaxRecords(10);
         grid.setEmptyMessage(messages.emptyVoteList());
         grid.setShowRollOver(false);
         grid.setShowRecordComponents(true);
@@ -179,8 +181,8 @@ public class VotePanel extends VLayout100 {
         sentDocsField.setWidth("130");
 
         grid.setFields(voteResultField, startDateField, endDateField, claimerField, projectField, clusterField, inClusterField,
-                innovativeField, foreignField, competentField, completeField, competitiveField, commercialPotentialField,
-                implementField, expertiseField, internationalExperienceField, enoughDocumentsField, ballotLinkField, sentDocsField);
+                       innovativeField, foreignField, competentField, completeField, competitiveField, commercialPotentialField,
+                       implementField, expertiseField, internationalExperienceField, enoughDocumentsField, ballotLinkField, sentDocsField);
 
         grid.setCanResizeFields(true);
     }
@@ -211,9 +213,10 @@ public class VotePanel extends VLayout100 {
             }
             setAttribute("voteStartDate", vi.voteStartDate);
             setAttribute("voteEndDate", vi.voteEndDate);
-            setAttribute("ballotLink", BaseFrame.getPageUrlPreservingParameters("expert.html",
-                                                                                "voteId", vi.linkHash,
-                                                                                "locale", LocaleInfo.getCurrentLocale().getLocaleName()));
+            setAttribute("ballotLink",
+                         GwtClientUtils.getPageUrlPreservingParameters("expert.html",
+                                                                       "voteId", vi.linkHash,
+                                                                       "locale", LocaleInfo.getCurrentLocale().getLocaleName()));
         }
     }
 
@@ -235,6 +238,7 @@ public class VotePanel extends VLayout100 {
 
     private static class SendDocumentsButton extends IButton {
         public VoteInfo voteInfo;
+
         public SendDocumentsButton(VoteInfo vi) {
             super(messages.send());
 
@@ -249,7 +253,7 @@ public class VotePanel extends VLayout100 {
                     disable();
                     setIcon("loading.gif");
 
-                    expertProfileService.execute(new SentVoteDocuments(voteInfo.voteId), new AsyncCallbackEx<VoidResult> () {
+                    expertProfileService.execute(new SentVoteDocuments(voteInfo.voteId), new AsyncCallbackEx<VoidResult>() {
                         @Override
                         public void failure(Throwable caught) {
                             SC.warn(messages.sentFailedMessage());

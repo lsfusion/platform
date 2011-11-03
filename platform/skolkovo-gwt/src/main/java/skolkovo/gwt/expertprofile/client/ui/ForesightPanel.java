@@ -15,7 +15,7 @@ import com.smartgwt.client.widgets.layout.Layout;
 import com.smartgwt.client.widgets.layout.SectionStack;
 import com.smartgwt.client.widgets.layout.SectionStackSection;
 import com.smartgwt.client.widgets.layout.VLayout;
-import platform.gwt.base.client.ui.VLayout100;
+import platform.gwt.sgwtbase.client.ui.VLayout100;
 import skolkovo.api.gwt.shared.ForesightInfo;
 import skolkovo.api.gwt.shared.ProfileInfo;
 import skolkovo.gwt.expertprofile.client.ExpertProfileMessages;

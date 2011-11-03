@@ -4,8 +4,8 @@ import com.google.gwt.user.client.ui.Widget;
 import com.google.inject.Inject;
 import com.gwtplatform.mvp.client.ViewImpl;
 import com.smartgwt.client.widgets.layout.VLayout;
-import platform.gwt.base.client.ui.CenterLayout;
-import platform.gwt.base.client.ui.login.LoginBox;
+import platform.gwt.sgwtbase.client.ui.CenterLayout;
+import platform.gwt.sgwtbase.client.ui.login.LoginBox;
 
 public class LoginPageView extends ViewImpl implements LoginPagePresenter.MyView {
     private VLayout mainPane;

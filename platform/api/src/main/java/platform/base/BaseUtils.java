@@ -1524,7 +1524,7 @@ public class BaseUtils {
             for (int i = 0; i < number; i++)
                 result[i] = (dis.readInt() ^ 248979893) / (27 * (i + 1));
             return result;
-        } catch (IOException e) {
+        } catch (Exception e) {
             throw new RuntimeException("Ошибка при декодировании ссылки (" + string + ")", e);
         }
     }

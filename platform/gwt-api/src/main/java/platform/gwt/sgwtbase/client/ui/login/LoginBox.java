@@ -1,4 +1,4 @@
-package platform.gwt.base.client.ui.login;
+package platform.gwt.sgwtbase.client.ui.login;
 
 import com.smartgwt.client.types.Alignment;
 import com.smartgwt.client.types.TitleOrientation;

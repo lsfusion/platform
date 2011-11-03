@@ -9,9 +9,9 @@ import com.smartgwt.client.widgets.form.fields.StaticTextItem;
 import com.smartgwt.client.widgets.form.fields.TextAreaItem;
 import com.smartgwt.client.widgets.form.fields.events.ChangedEvent;
 import com.smartgwt.client.widgets.form.fields.events.ChangedHandler;
-import platform.gwt.base.client.BaseFrame;
+import platform.gwt.base.client.GwtClientUtils;
 import platform.gwt.base.client.BaseMessages;
-import platform.gwt.base.client.ui.VLayout100;
+import platform.gwt.sgwtbase.client.ui.VLayout100;
 import skolkovo.api.gwt.shared.ProfileInfo;
 import skolkovo.gwt.expertprofile.client.ExpertProfileMessages;
 
@@ -52,7 +52,7 @@ public class InformationPanel extends VLayout100 {
         StaticTextItem lbNotice = new StaticTextItem();
         lbNotice.setTitle("");
         lbNotice.setValue("<i style=\"color: gray;\">" + baseMessages.logoutNotice() + "" +
-                          "<a href=\"" + BaseFrame.getLogoutUrl() + "\">&nbsp;" + baseMessages.here() + "</a></i>");
+                          "<a href=\"" + GwtClientUtils.getLogoutUrl() + "\">&nbsp;" + baseMessages.here() + "</a></i>");
 
         detailsForm = new DynamicForm();
         detailsForm.setMargin(5);

@@ -2,7 +2,7 @@ package platform.gwt.view;
 
 import com.smartgwt.client.util.JSOHelper;
 import com.smartgwt.client.widgets.grid.ListGridRecord;
-import platform.gwt.utils.GwtUtils;
+import platform.gwt.utils.GwtSharedUtils;
 import platform.gwt.view.changes.GGroupObjectValue;
 
 import java.util.ArrayList;
@@ -18,7 +18,7 @@ public class GridDataRecord extends ListGridRecord {
             for (Map.Entry<GPropertyDraw, Object> entry : values.entrySet()) {
                 Object value = entry.getValue();
                 if (value instanceof String) {
-                    value = GwtUtils.rtrim((String) value);
+                    value = GwtSharedUtils.rtrim((String) value);
                 }
 
                 //чтобы задавать всё, как простой объект, а не конкретный класс

@@ -1,4 +1,4 @@
-package platform.gwt.base.client.ui;
+package platform.gwt.sgwtbase.client.ui;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.i18n.client.LocaleInfo;
@@ -19,7 +19,7 @@ import com.smartgwt.client.widgets.toolbar.ToolStripButton;
 
 import java.util.LinkedHashMap;
 
-import static platform.gwt.base.client.BaseFrame.*;
+import static platform.gwt.base.client.GwtClientUtils.*;
 
 public class ToolStripPanel extends ToolStrip {
     public ToolStripPanel(String title) {

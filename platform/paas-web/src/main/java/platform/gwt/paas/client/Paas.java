@@ -8,8 +8,8 @@ import com.google.gwt.i18n.client.Dictionary;
 import com.google.gwt.resources.client.ClientBundle;
 import com.google.gwt.resources.client.CssResource;
 import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.ui.RootPanel;
 import com.gwtplatform.mvp.client.DelayedBindRegistry;
+import platform.gwt.base.client.GwtClientUtils;
 import platform.gwt.paas.client.gin.PaasGinjector;
 import platform.gwt.paas.client.login.LoginAuthenticatedEvent;
 
@@ -59,11 +59,7 @@ public class Paas implements EntryPoint {
 
             ginjector.getPlaceManager().revealCurrentPlace();
 
-            // hide the animated 'loading.gif'
-            RootPanel loading = RootPanel.get("loading");
-            if (loading != null) {
-                loading.setVisible(false);
-            }
+            GwtClientUtils.removeLoaderFromHostedPage();
 
             if (Log.isDebugEnabled()) {
                 long endTimeMillis = System.currentTimeMillis();

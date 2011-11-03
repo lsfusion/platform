@@ -7,30 +7,42 @@
 
         <title>Paas Application</title>
 
-        <!-- You must set the variable isomorphicDir to [MODULE_NAME]/sc/ -->
-        <!-- so that the SmartGWT resources are correctly resolved        -->
-        <script> var isomorphicDir = "paas/sc/"; </script>
+        <!--CSS for loading message at application Startup-->
+        <style type="text/css">
+            body {
+                overflow: hidden
+            }
 
-        <script type="text/javascript" language="javascript" src="paas/paas.nocache.js"></script>
+            #loading {
+                border: 1px solid #ccc;
+                position: absolute;
+                left: 45%;
+                top: 40%;
+                padding: 2px;
+                z-index: 20001;
+                height: auto;
+            }
+
+            #loading a {
+                color: #225588;
+            }
+
+            #loading .loadingIndicator {
+                background: white;
+                font: bold 13px tahoma, arial, helvetica;
+                padding: 10px;
+                margin: 0;
+                height: auto;
+                color: #444;
+            }
+
+            #loadingMsg {
+                font: normal 13px arial, tahoma, sans-serif;
+            }
+        </style>
     </head>
 
     <body>
-        <script language="JavaScript">
-            var parameters = {
-                username: <%=
-                            SecurityContextHolder.getContext().getAuthentication() != null
-                                ? "\"" + SecurityContextHolder.getContext().getAuthentication().getName() + "\""
-                                : "undefined"
-                          %>
-            };
-        </script>
-
-        <div id="loading" style="display: block;position: absolute;top: 50%;left: 50%;
-         text-align: center;font-family: Tahoma, Verdana, sans-serif;font-size: 11px;">
-            <img src="images/loading.gif"/>
-            Loading
-        </div>
-
         <!-- OPTIONAL: include this if you want history support -->
         <iframe id="__gwt_historyFrame" style="width:0;height:0;border:0"></iframe>
 
@@ -42,5 +54,54 @@
                 in order for this application to display correctly.
             </div>
         </noscript>
+
+        <script language="JavaScript">
+            var parameters = {
+                username: <%=
+                            SecurityContextHolder.getContext().getAuthentication() != null
+                                ? "\"" + SecurityContextHolder.getContext().getAuthentication().getName() + "\""
+                                : "undefined"
+                          %>
+            };
+        </script>
+
+        <!--add loading indicator while the app is being loaded-->
+        <div id="loadingWrapper">
+            <div id="loading">
+                <div class="loadingIndicator">
+                    <img src="images/loading.gif" width="16" height="16"
+                         style="margin-right:8px;float:left;vertical-align:top;"/>Loading...<br/>
+                    <span id="loadingMsg">Loading styles and images...</span></div>
+            </div>
+        </div>
+
+        <script type="text/javascript">document.getElementById('loadingMsg').innerHTML = 'Loading Core API...';</script>
+
+        <script> var isomorphicDir = "paas/sc/"; </script>
+
+        <!--include the SC Core API-->
+        <script src="paas/sc/modules/ISC_Core.js"></script>
+
+        <!--include SmartClient -->
+        <script type="text/javascript">document.getElementById('loadingMsg').innerHTML = 'Loading UI Components...';</script>
+        <script src='paas/sc/modules/ISC_Foundation.js'></script>
+        <script src='paas/sc/modules/ISC_Containers.js'></script>
+        <script src='paas/sc/modules/ISC_Grids.js'></script>
+        <script src='paas/sc/modules/ISC_Forms.js'></script>
+        <script src='paas/sc/modules/ISC_RichTextEditor.js'></script>
+        <script src='paas/sc/modules/ISC_Calendar.js'></script>
+        <script src='paas/sc/modules/ISC_History.js'></script>
+        <script src='paas/sc/modules/ISC_PluginBridges.js'></script>
+
+        <script type="text/javascript">document.getElementById('loadingMsg').innerHTML = 'Loading Data API...';</script>
+        <script src='paas/sc/modules/ISC_DataBinding.js'></script>
+
+        <!--load skin-->
+        <script type="text/javascript">document.getElementById('loadingMsg').innerHTML = 'Loading skin...';</script>
+        <script src='paas/sc/skins/Enterprise/load_skin.js?isc_version=8.1.js'></script>
+
+        <!--include the application JS-->
+        <script type="text/javascript">document.getElementById('loadingMsg').innerHTML = 'Loading Application<br>Please wait...';</script>
+        <script type="text/javascript" language="javascript" src="paas/paas.nocache.js"></script>
     </body>
 </html>

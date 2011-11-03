@@ -10,8 +10,8 @@ import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.ListBox;
 
-import static platform.gwt.base.client.BaseFrame.baseMessages;
-import static platform.gwt.base.client.BaseFrame.getPageUrlPreservingParameters;
+import static platform.gwt.base.client.GwtClientUtils.baseMessages;
+import static platform.gwt.base.client.GwtClientUtils.getPageUrlPreservingParameters;
 
 public class BallotToolbar extends Composite {
     private static final String locales[] = {"ru", "en"};

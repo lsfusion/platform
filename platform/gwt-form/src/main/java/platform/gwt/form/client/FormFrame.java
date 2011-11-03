@@ -7,8 +7,8 @@ import com.google.gwt.user.client.Window;
 import com.smartgwt.client.types.Overflow;
 import com.smartgwt.client.widgets.layout.HLayout;
 import com.smartgwt.client.widgets.layout.VStack;
+import platform.gwt.base.client.GwtClientUtils;
 import platform.gwt.form.client.ui.GFormController;
-import platform.gwt.utils.GwtUtils;
 
 public class FormFrame extends HLayout implements EntryPoint {
     public void onModuleLoad() {
@@ -27,7 +27,7 @@ public class FormFrame extends HLayout implements EntryPoint {
         vs.addMember(new GFormController(getFormSID()));
         vs.draw();
 
-        GwtUtils.removeLoaderFromHostedPage();
+        GwtClientUtils.removeLoaderFromHostedPage();
     }
 
     public String getFormSID() {

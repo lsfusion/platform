@@ -3,7 +3,6 @@ package skolkovo.gwt.expertprofile.client.ui;
 import com.smartgwt.client.types.Alignment;
 import com.smartgwt.client.types.Overflow;
 import com.smartgwt.client.types.VisibilityMode;
-import com.smartgwt.client.util.SC;
 import com.smartgwt.client.widgets.StretchImgButton;
 import com.smartgwt.client.widgets.events.ClickEvent;
 import com.smartgwt.client.widgets.events.ClickHandler;
@@ -11,8 +10,8 @@ import com.smartgwt.client.widgets.layout.SectionStack;
 import com.smartgwt.client.widgets.layout.SectionStackSection;
 import com.smartgwt.client.widgets.layout.VLayout;
 import com.smartgwt.client.widgets.layout.VStack;
-import platform.gwt.base.client.ui.ToolStripPanel;
-import platform.gwt.base.client.ui.VLayout100;
+import platform.gwt.sgwtbase.client.ui.ToolStripPanel;
+import platform.gwt.sgwtbase.client.ui.VLayout100;
 import skolkovo.api.gwt.shared.ProfileInfo;
 import skolkovo.gwt.expertprofile.client.ExpertProfileMessages;
 
@@ -72,19 +71,29 @@ public abstract class ExpertProfileMainPanel extends VLayout100 {
         btnUpdate.addClickHandler(new ClickHandler() {
             @Override
             public void onClick(ClickEvent event) {
-                String error = foresightPanel.validate();
-                if (error != null) {
-                    SC.warn(error);
-                    return;
-                }
-
-                btnUpdate.disable();
-                btnUpdate.setIcon("loading.gif");
-                foresightPanel.disable();
-                infoPanel.disable();
                 updateButtonClicked();
             }
         });
+    }
+
+    public String validate() {
+        return foresightPanel.validate();
+    }
+
+    public void showLoading() {
+        btnUpdate.setIcon("loading.gif");
+
+        btnUpdate.disable();
+        foresightPanel.disable();
+        infoPanel.disable();
+    }
+
+    public void hideLoading() {
+        btnUpdate.setIcon(null);
+
+        btnUpdate.enable();
+        foresightPanel.enable();
+        infoPanel.enable();
     }
 
     public abstract void updateButtonClicked();

@@ -15,11 +15,10 @@ import com.smartgwt.client.widgets.tree.TreeGrid;
 import com.smartgwt.client.widgets.tree.TreeNode;
 import net.customware.gwt.dispatch.client.DefaultExceptionHandler;
 import net.customware.gwt.dispatch.client.standard.StandardDispatchAsync;
-import platform.gwt.base.client.BaseFrame;
-import platform.gwt.base.client.ui.ToolStripPanel;
+import platform.gwt.base.client.GwtClientUtils;
+import platform.gwt.sgwtbase.client.ui.ToolStripPanel;
 import platform.gwt.navigator.shared.actions.GetNavigatorElements;
 import platform.gwt.navigator.shared.actions.GetNavigatorElementsResult;
-import platform.gwt.utils.GwtUtils;
 import platform.gwt.view.GNavigatorElement;
 
 public class NavigatorFrame extends VLayout implements EntryPoint {
@@ -40,7 +39,7 @@ public class NavigatorFrame extends VLayout implements EntryPoint {
 
         draw();
 
-        GwtUtils.removeLoaderFromHostedPage();
+        GwtClientUtils.removeLoaderFromHostedPage();
     }
 
     private TreeGrid createTreeGrid() {
@@ -64,7 +63,7 @@ public class NavigatorFrame extends VLayout implements EntryPoint {
                 boolean isForm = Boolean.parseBoolean(event.getRecord().getAttribute("isForm"));
                 if (isForm) {
                     String sid = event.getRecord().getAttribute("sid");
-                    Window.open(BaseFrame.getPageUrlPreservingParameters("form.jsp", "formSID", sid), "", "");
+                    Window.open(GwtClientUtils.getPageUrlPreservingParameters("form.jsp", "formSID", sid), "", "");
                 }
             }
         });

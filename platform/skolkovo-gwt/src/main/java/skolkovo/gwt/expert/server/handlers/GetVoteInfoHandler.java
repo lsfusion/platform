@@ -2,6 +2,7 @@ package skolkovo.gwt.expert.server.handlers;
 
 import net.customware.gwt.dispatch.server.ExecutionContext;
 import net.customware.gwt.dispatch.shared.DispatchException;
+import platform.gwt.base.server.ServerUtils;
 import platform.gwt.base.server.handlers.SimpleActionHandlerEx;
 import skolkovo.gwt.expert.server.ExpertServiceImpl;
 import skolkovo.gwt.expert.shared.actions.GetVoteInfo;
@@ -18,6 +19,6 @@ public class GetVoteInfoHandler extends SimpleActionHandlerEx<GetVoteInfo, GetVo
 
     @Override
     public GetVoteInfoResult executeEx(GetVoteInfo action, ExecutionContext context) throws DispatchException, IOException {
-        return new GetVoteInfoResult(servlet.getLogics().getVoteInfo(action.voteId));
+        return new GetVoteInfoResult(servlet.getLogics().getVoteInfo(action.voteId, ServerUtils.getLocaleLanguage()));
     }
 }

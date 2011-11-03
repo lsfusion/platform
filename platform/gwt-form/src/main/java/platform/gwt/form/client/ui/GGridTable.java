@@ -12,7 +12,7 @@ import com.smartgwt.client.widgets.grid.events.CellSavedEvent;
 import com.smartgwt.client.widgets.grid.events.CellSavedHandler;
 import com.smartgwt.client.widgets.grid.events.SelectionChangedHandler;
 import com.smartgwt.client.widgets.grid.events.SelectionEvent;
-import platform.gwt.utils.GwtUtils;
+import platform.gwt.utils.GwtSharedUtils;
 import platform.gwt.view.GForm;
 import platform.gwt.view.GGroupObject;
 import platform.gwt.view.GPropertyDraw;
@@ -144,7 +144,7 @@ public class GGridTable extends ListGrid {
             return;
         }
 
-        int ins = GwtUtils.relativePosition(property, form.propertyDraws, properties);
+        int ins = GwtSharedUtils.relativePosition(property, form.propertyDraws, properties);
         properties.add(ins, property);
 
         if (createdFields.contains(property.sID)) {

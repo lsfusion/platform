@@ -6,6 +6,10 @@ import com.google.gwt.i18n.client.Messages;
 public interface BaseMessages extends Messages {
     String internalServerErrorMessage();
 
+    String actionTimeoutErrorMessage();
+
+    String sessionTimeoutErrorMessage();
+
     String yes();
 
     String no();

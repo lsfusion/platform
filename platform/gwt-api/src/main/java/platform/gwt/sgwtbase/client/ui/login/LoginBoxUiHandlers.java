@@ -1,4 +1,4 @@
-package platform.gwt.base.client.ui.login;
+package platform.gwt.sgwtbase.client.ui.login;
 
 public interface LoginBoxUiHandlers {
     void login();

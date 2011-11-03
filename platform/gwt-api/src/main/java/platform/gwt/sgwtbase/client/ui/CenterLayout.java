@@ -1,4 +1,4 @@
-package platform.gwt.base.client.ui;
+package platform.gwt.sgwtbase.client.ui;
 
 import com.smartgwt.client.widgets.Canvas;
 import com.smartgwt.client.widgets.layout.HLayout;
