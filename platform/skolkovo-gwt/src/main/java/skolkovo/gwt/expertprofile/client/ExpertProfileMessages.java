@@ -6,6 +6,10 @@ import com.google.gwt.i18n.client.Messages;
 public interface ExpertProfileMessages extends Messages {
     String title();
 
+    String tabInfo();
+
+    String tabVotes();
+
     String columnGoToBallot();
 
     String columnProjectClaimer();

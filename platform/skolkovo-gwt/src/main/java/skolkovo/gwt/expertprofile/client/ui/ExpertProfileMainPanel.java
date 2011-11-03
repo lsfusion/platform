@@ -10,6 +10,8 @@ import com.smartgwt.client.widgets.layout.SectionStack;
 import com.smartgwt.client.widgets.layout.SectionStackSection;
 import com.smartgwt.client.widgets.layout.VLayout;
 import com.smartgwt.client.widgets.layout.VStack;
+import com.smartgwt.client.widgets.tab.TabSet;
+import platform.gwt.sgwtbase.client.ui.TitledTab;
 import platform.gwt.sgwtbase.client.ui.ToolStripPanel;
 import platform.gwt.sgwtbase.client.ui.VLayout100;
 import skolkovo.api.gwt.shared.ProfileInfo;
@@ -111,16 +113,11 @@ public abstract class ExpertProfileMainPanel extends VLayout100 {
         foresightSection.setItems(foresightPanel);
         foresightSection.setExpanded(true);
 
-//        SectionStackSection gridSection = new SectionStackSection(messages.sectionVoteList());
-//        gridSection.setItems(votePanel);
-//        gridSection.setExpanded(false);
-
         mainSectionStack = new SectionStack();
         mainSectionStack.setOverflow(Overflow.VISIBLE);
         mainSectionStack.setAutoHeight();
         mainSectionStack.setVisibilityMode(VisibilityMode.MULTIPLE);
         mainSectionStack.setSections(detailsSection, foresightSection);
-//        mainSectionStack.setSections(detailsSection, foresightSection, gridSection);
     }
 
     private void configureLayout() {
@@ -132,16 +129,26 @@ public abstract class ExpertProfileMainPanel extends VLayout100 {
 
         VLayout centerPane = new VLayout100();
         centerPane.setShowEdges(true);
-        centerPane.setHeight100();
         centerPane.setOverflow(Overflow.AUTO);
         centerPane.setLayoutMargin(10);
         centerPane.setLayoutBottomMargin(0);
         centerPane.addMember(mainSectionStack);
 
+        VLayout infoPane = new VLayout100();
+        infoPane.addMember(centerPane);
+        infoPane.addMember(bottomPane);
+
+        votePanel.setLayoutMargin(10);
+        votePanel.setMembersMargin(5);
+        votePanel.setShowEdges(true);
+
+        TabSet tabSet = new TabSet();
+        tabSet.addTab(new TitledTab(messages.tabInfo(), infoPane));
+        tabSet.addTab(new TitledTab(messages.tabVotes(), votePanel));
+
         VLayout main = new VLayout100();
         main.addMember(new ToolStripPanel(messages.title()));
-        main.addMember(centerPane);
-        main.addMember(bottomPane);
+        main.addMember(tabSet);
 
         addMember(main);
     }

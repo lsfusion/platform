@@ -11,11 +11,9 @@ import platform.server.caches.hash.HashObject;
 import platform.server.data.Value;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.query.SourceJoin;
-import sun.jdbc.odbc.ee.ObjectPool;
 
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.IdentityHashMap;
 import java.util.Set;
 
 @Aspect

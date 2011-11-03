@@ -29,6 +29,7 @@ import java.io.InputStream;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.Map;
 
@@ -272,7 +273,8 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
                 q.properties.put("voteStartDate", SkolkovoLM.dateStartVote.getExpr(session.modifier, voteExpr));
                 q.properties.put("voteEndDate", SkolkovoLM.dateEndVote.getExpr(session.modifier, voteExpr));
 
-                OrderedMap<Map<String, Object>, Map<String, Object>> values = q.execute(session.sql);
+                OrderedMap<Map<String, Object>, Map<String, Object>> values =
+                        q.execute(session.sql, new OrderedMap<String, Boolean>(Collections.singletonList("voteStartDate"), false));
                 profileInfo.voteInfos = new VoteInfo[values.size()];
 
                 int i = 0;

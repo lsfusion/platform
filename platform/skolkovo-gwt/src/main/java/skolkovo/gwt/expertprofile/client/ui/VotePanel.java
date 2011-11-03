@@ -35,7 +35,7 @@ public class VotePanel extends VLayout100 {
     private static ExpertProfileMessages messages = ExpertProfileMessages.Instance.get();
     private final static StandardDispatchAsync expertProfileService = new StandardDispatchAsync(new DefaultExceptionHandler());
 
-    private boolean showUnvoted = false;
+    private boolean showUnvoted = true;
     private ListGrid grid;
     private DynamicForm unvotedForm;
     private CheckboxItem cbShowUnvoted;
@@ -43,8 +43,6 @@ public class VotePanel extends VLayout100 {
 
     public VotePanel(ProfileInfo PI) {
         this.pi = PI;
-
-        setOverflow(Overflow.VISIBLE);
 
         createForm();
 
@@ -58,6 +56,7 @@ public class VotePanel extends VLayout100 {
 
     private void createForm() {
         cbShowUnvoted = new CheckboxItem("cbUnvoted");
+        cbShowUnvoted.setValue(true);
         cbShowUnvoted.setTitle(messages.showUnvoted());
         cbShowUnvoted.addChangedHandler(new ChangedHandler() {
             @Override
@@ -108,8 +107,6 @@ public class VotePanel extends VLayout100 {
 
         grid.setWidth100();
         grid.setShowAllRecords(true);
-        grid.setAutoFitData(Autofit.VERTICAL);
-        grid.setAutoFitMaxRecords(10);
         grid.setEmptyMessage(messages.emptyVoteList());
         grid.setShowRollOver(false);
         grid.setShowRecordComponents(true);
