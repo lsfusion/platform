@@ -263,8 +263,8 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
                     new File(reportName).getParentFile().mkdirs();
                     JRXmlWriter.writeReport(JasperCompileManager.compileReport(entry.getValue()), reportName, "UTF-8");
                     ret.put(
-                            System.getProperty(System.getProperty("user.dir") + "//" + reportName),
-                            System.getProperty(System.getProperty("user.dir") + "//target//classes//reports/custom//" + sid)
+                            System.getProperty("user.dir") + "//" + reportName,
+                            System.getProperty("user.dir") + "//target//classes//reports/custom//" + sid
                     );
 
                 }

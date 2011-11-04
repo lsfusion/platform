@@ -17,12 +17,6 @@ import platform.server.session.*;
 import java.sql.SQLException;
 import java.util.*;
 
-/**
- * User: DAle
- * Date: 06.12.2010
- * Time: 14:54:28
- */
-
 public class IntegrationService {
     private ImportTable table;
     private Collection<ImportProperty<?>> properties;
@@ -121,32 +115,4 @@ public class IntegrationService {
             }
         }
     }
-
-/*    private void deleteObjects(Map<ImportKey, List<DataObject>> keyValueLists) throws SQLException {
-        for (final ImportKey<?> key : keys) {
-            SessionTableUsage<String, Object> table = new SessionTableUsage<String, Object>(Arrays.asList("key"), new ArrayList<Object>(),
-                    new Type.Getter<String>() {
-                        public Type getType(String k) {
-                            return key.getCustomClass().getType();
-                        }
-                    },
-                    new Type.Getter<Object>() {
-                        public Type getType(Object o) {return null;}
-                    });
-
-            for (Iterator<DataObject> iterator = keyValueLists.get(key).iterator(); iterator.hasNext();) {
-                DataObject keyValue = iterator.next();
-                table.insertRecord(session.sql, Collections.singletonMap("key", keyValue), new HashMap<Object, ObjectValue>(), false, !iterator.hasNext());
-            }
-
-            Query<String, Object> query = new Query<String, Object>(Collections.singletonList("key"));
-            query.and(query.mapKeys.get("key").isClass(key.getCustomClass().getUpSet()));
-            query.and(table.getWhere(query.mapKeys).not());
-
-            Set<Map<String, Object>> keyMaps = query.execute(session.sql).keySet();
-            for (Map<String, Object> keyMap : keyMaps) {
-                session.changeClass(new DataObject(keyMap.get("key"), key.getCustomClass()), null);
-            }
-        }
-    }*/
 }
