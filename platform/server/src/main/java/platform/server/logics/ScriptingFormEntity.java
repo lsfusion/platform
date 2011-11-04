@@ -29,7 +29,7 @@ public class ScriptingFormEntity extends FormEntity {
         this.LM = LM;
     }
 
-    public void addScriptedGroupObjects(List<List<String>> names, List<List<String>> classes, List<ClassViewType> viewTypes, List<Boolean> isInitType) {
+    public void addScriptedGroupObjects(List<List<String>> names, List<List<String>> classes, List<ClassViewType> viewTypes, List<Boolean> isInitType) throws ScriptingErrorLog.SemanticErrorException {
         assert names.size() == classes.size();
         for (int i = 0; i < names.size();  i++) {
             List<String> groupObjectNames = names.get(i);
@@ -39,7 +39,7 @@ public class ScriptingFormEntity extends FormEntity {
             for (int j = 0; j < groupObjectNames.size(); j++) {
                 String objectName = groupObjectNames.get(j);
                 String objectSID = objectName;
-                ValueClass cls = LM.getClassByName(groupClassIds.get(j));
+                ValueClass cls = LM.findClassByCompoundName(groupClassIds.get(j));
                 if (objectSID == null) {
                     objectSID = cls.getSID();
                     objectName = groupClassIds.get(j);
@@ -72,23 +72,26 @@ public class ScriptingFormEntity extends FormEntity {
         }
     }
 
-    private ObjectEntity[] getMappingObjectsArray(List<String> mapping) {
+    private ObjectEntity[] getMappingObjectsArray(List<String> mapping) throws ScriptingErrorLog.SemanticErrorException {
         ObjectEntity[] objects = new ObjectEntity[mapping.size()];
         for (int i = 0; i < mapping.size(); i++) {
             objects[i] = objectEntities.get(mapping.get(i));
+            if (objects[i] == null) {
+                LM.getErrLog().emitParamNotFoundError(LM.getParser(), mapping.get(i));
+            }
         }
         return objects;
     }
 
-    private MappedProperty getPropertyWithMapping(String name, List<String> mapping) {
-        LP<?> property = LM.getLPByName(name);
-        assert property != null;
-        assert property.property.interfaces.size() == mapping.size();
-
+    private MappedProperty getPropertyWithMapping(String name, List<String> mapping) throws ScriptingErrorLog.SemanticErrorException {
+        LP<?> property = LM.findLPByCompoundName(name);
+        if (property.property.interfaces.size() != mapping.size()) {
+            LM.getErrLog().emitParamCountError(LM.getParser(), property, mapping.size());
+        }
         return new MappedProperty(property, getMappingObjectsArray(mapping));
     }
 
-    public void addScriptedPropertyDraws(List<String> properties, List<List<String>> mappings) {
+    public void addScriptedPropertyDraws(List<String> properties, List<List<String>> mappings) throws ScriptingErrorLog.SemanticErrorException {
         assert properties.size() == mappings.size();
         for (int i = 0; i < properties.size(); i++) {
             if (properties.get(i).equals("OBJVALUE")) { // todo [dale]: рефакторинг не помешает в будущем
@@ -102,7 +105,7 @@ public class ScriptingFormEntity extends FormEntity {
         }
     }
 
-    public void addScriptedFilters(List<String> properties, List<List<String>> mappings) {
+    public void addScriptedFilters(List<String> properties, List<List<String>> mappings) throws ScriptingErrorLog.SemanticErrorException {
         assert properties.size() == mappings.size();
         for (int i = 0; i < properties.size(); i++) {
             MappedProperty prop = getPropertyWithMapping(properties.get(i), mappings.get(i));

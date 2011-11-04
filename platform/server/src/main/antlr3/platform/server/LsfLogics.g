@@ -37,7 +37,7 @@ grammar LsfLogics;
 	
 	@Override
 	public void displayRecognitionError(String[] tokenNames, RecognitionException e) {
-		self.getErrLog().displayRecognitionError(this, "lexer", tokenNames, e);
+		self.getErrLog().displayRecognitionError(this, "error", tokenNames, e);
 	}
 }
 
@@ -59,7 +59,7 @@ grammar LsfLogics;
 
 	@Override
 	public void displayRecognitionError(String[] tokenNames, RecognitionException e) {
-		self.getErrLog().displayRecognitionError(this, "parser", tokenNames, e);
+		self.getErrLog().displayRecognitionError(this, "error", tokenNames, e);
 	}
 }
 
@@ -535,7 +535,9 @@ propertyObject returns [LP property, String propName, List<String> innerContext]
 @init {
 	List<String> newContext = new ArrayList<String>(); 
 }
-	:	name=compoundID	{ $property = self.getLPByName($name.text); $propName = $name.text; } |
+	:	name=compoundID	{ if (parseState == ScriptingLogicsModule.State.PROP) 
+					{$property = self.getLPByName($name.text); $propName = $name.text;} 
+				} |
 		'[' 
 		(expr=propertyExpression[newContext, true] { $property = $expr.property; $innerContext = newContext; } |
 		def=contextIndependentPD[true] { $property = $def.property; })

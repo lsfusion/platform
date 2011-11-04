@@ -90,8 +90,12 @@ public abstract class LogicsModule {
         return sID;
     }
 
-    public LP<?> getLP(String sID) {
+    public LP<?> getLPBySID(String sID) {
         return moduleProperties.get(sID);
+    }
+
+    public LP<?> getLPByName(String name) {
+        return getLPBySID(transformNameToSID(name));
     }
 
     protected void addModuleLP(LP<?> lp) {
@@ -103,8 +107,12 @@ public abstract class LogicsModule {
         moduleProperties.remove(lp.property.getSID());
     }
 
-    public AbstractGroup getGroup(String sid) {
+    public AbstractGroup getGroupBySID(String sid) {
         return moduleGroups.get(sid);
+    }
+
+    public AbstractGroup getGroupByName(String name) {
+        return getGroupBySID(transformNameToSID(name));
     }
 
     protected void addModuleGroup(AbstractGroup group) {
@@ -112,8 +120,12 @@ public abstract class LogicsModule {
         moduleGroups.put(group.getSID(), group);
     }
 
-    public ValueClass getClass(String sid) {
+    public ValueClass getClassBySID(String sid) {
         return moduleClasses.get(sid);
+    }
+
+    public ValueClass getClassByName(String name) {
+        return getClassBySID(transformNameToSID(name));
     }
 
     protected void addModuleClass(ValueClass valueClass) {
