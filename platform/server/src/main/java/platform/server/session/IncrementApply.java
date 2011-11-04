@@ -1,5 +1,6 @@
 package platform.server.session;
 
+import org.apache.poi.ss.formula.Formula;
 import platform.base.BaseUtils;
 import platform.server.Settings;
 import platform.server.caches.IdentityLazy;
@@ -14,6 +15,7 @@ import platform.server.data.translator.HashLazy;
 import platform.server.data.translator.MapValuesTranslate;
 import platform.server.data.type.Type;
 import platform.server.data.where.WhereBuilder;
+import platform.server.logics.property.FormulaProperty;
 import platform.server.logics.property.Property;
 import platform.server.logics.property.PropertyInterface;
 import platform.server.logics.table.ImplementTable;
@@ -190,6 +192,9 @@ public class IncrementApply extends AbstractIncrementProps<KeyField, IncrementAp
         }
 
         public UsedChanges preUsed(Property property) {
+            if(property instanceof FormulaProperty)
+                return null;
+
             SinglePropertyTableUsage<? extends PropertyInterface> prevTable = previous.get(property);
             if(prevTable!=null)
                 return new UsedChanges(prevTable, property);
@@ -197,6 +202,9 @@ public class IncrementApply extends AbstractIncrementProps<KeyField, IncrementAp
         }
 
         public <P extends PropertyInterface> Expr changed(Property<P> property, Map<P, ? extends Expr> joinImplement, WhereBuilder changedWhere) {
+            if(property instanceof FormulaProperty)
+                return null;
+
             SinglePropertyTableUsage<P> prevTable = (SinglePropertyTableUsage<P>) previous.get(property);
             if(prevTable==null) // если уже все посчитано - просто возвращаем его
                 prevTable = property.createChangeTable();
