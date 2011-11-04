@@ -28,10 +28,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Date;
-import java.util.Map;
+import java.util.*;
 
 import static java.lang.Math.max;
 import static java.lang.Math.min;
@@ -377,6 +374,22 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
             e.printStackTrace();
             throw new RemoteException("Ошибка при считывании информации о профиле эксперта", e);
         }
+    }
+
+    @Override
+    protected List<String> getExtraUserRoleNames(DataObject user) {
+        List<String> extraRoles = new ArrayList<String>();
+        try {
+            DataSession session = createSession();
+            if (LM.is(SkolkovoLM.expert).read(session, session.getDataObject(LM.loginToUser.read(session, user), LM.customUser.getType())) != null) {
+                extraRoles.add("expert");
+            }
+            session.close();
+        } catch (SQLException e) {
+            throw new RuntimeException();
+        }
+
+        return extraRoles;
     }
 
     public void setProfileInfo(String expertLogin, ProfileInfo profileInfo) throws RemoteException {

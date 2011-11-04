@@ -1796,6 +1796,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
                         }
                     }
                 }
+                roles.addAll(getExtraUserRoleNames(new DataObject(username)));
 
                 return roles;
             } finally {
@@ -1805,6 +1806,10 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         } catch (SQLException e) {
             throw new RuntimeException(getString("logics.info.error.reading.list.of.roles"), e);
         }
+    }
+
+    protected List<String> getExtraUserRoleNames(DataObject user) {
+        return new ArrayList<String>();
     }
 
     private User authenticateUser(String login, String password) throws LoginException, SQLException {

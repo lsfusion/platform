@@ -146,6 +146,7 @@ public class Main {
 
                     pingThread = new PingThread(remoteNavigator.getClientCallBack());
                     pingThread.start();
+                    remoteNavigator.setUpdateTime(pingThread.updateTime);
 
                     frame.addWindowListener(
                             new WindowAdapter() {
