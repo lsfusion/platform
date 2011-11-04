@@ -828,6 +828,10 @@ public class BaseUtils {
         else return null;
     }
 
+    public static Integer nullParseInt(String s) {
+        if (s == null) return null;
+        else return Integer.parseInt(s);
+    }
 
     public static abstract class Group<G, K> {
         public abstract G group(K key);

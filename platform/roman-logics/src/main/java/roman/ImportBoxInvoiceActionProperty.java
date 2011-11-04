@@ -220,7 +220,7 @@ public abstract class ImportBoxInvoiceActionProperty extends BaseImportActionPro
             } else {
                 keysArray = new ImportKey<?>[]{invoiceKey, articleKey, itemKey, colorKey, sizeKey, countryKey, customCategoryKey, customCategory6Key, themeKey, seasonKey, genderKey};
             }
-            new IntegrationService(context.getSession(), table, Arrays.asList(keysArray), properties).synchronize(true, true, false, false, false);
+            new IntegrationService(context.getSession(), table, Arrays.asList(keysArray), properties).synchronize(false, false);
         }
 
         context.addAction(new MessageClientAction("Данные были успешно приняты", "Импорт"));

@@ -4,22 +4,23 @@ import platform.server.Message;
 import platform.server.ThisMessage;
 import platform.server.classes.ConcreteCustomClass;
 import platform.server.data.expr.Expr;
+import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.query.GroupExpr;
+import platform.server.data.expr.query.GroupType;
 import platform.server.data.query.Join;
 import platform.server.data.query.Query;
 import platform.server.data.type.Type;
 import platform.server.data.where.Where;
 import platform.server.logics.DataObject;
+import platform.server.logics.LogicsModule;
+import platform.server.logics.linear.LP;
 import platform.server.logics.property.Property;
 import platform.server.logics.property.PropertyImplement;
 import platform.server.logics.property.PropertyInterface;
 import platform.server.session.*;
 
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
+import java.util.*;
 
 /**
  * User: DAle
@@ -27,9 +28,14 @@ import java.util.Map;
  * Time: 16:33
  */
 
-public class ImportKey <P extends PropertyInterface> implements ImportKeyInterface {
-    private ConcreteCustomClass keyClass;
-    private final PropertyImplement<P, ImportFieldInterface> implement;
+public class ImportKey <P extends PropertyInterface> implements ImportKeyInterface, ImportDeleteInterface {
+    ConcreteCustomClass keyClass;
+    final PropertyImplement<P, ImportFieldInterface> implement;
+
+    public ImportKey(ImportKey key) {
+        this.keyClass = key.keyClass;
+        this.implement = key.implement;
+    }
 
     public ImportKey(ConcreteCustomClass keyClass, PropertyImplement<P, ImportFieldInterface> implement) {
         this.keyClass = keyClass;
@@ -61,6 +67,10 @@ public class ImportKey <P extends PropertyInterface> implements ImportKeyInterfa
         return getProperty().read(session, mapObjects(row));
     }
 
+    public Expr getExpr(Map<ImportField, ? extends Expr> importKeys, Modifier<? extends Changes> modifier) {
+        return implement.property.getExpr(getImplementExprs(importKeys), modifier);
+    }
+
     public Expr getExpr(Map<ImportField, ? extends Expr> importKeys, Map<ImportKey<?>, SinglePropertyTableUsage<?>> addedKeys, Modifier<? extends Changes> modifier) {
         Map<P, Expr> implementExprs = getImplementExprs(importKeys);
 
@@ -68,7 +78,7 @@ public class ImportKey <P extends PropertyInterface> implements ImportKeyInterfa
         return addedJoin.getExpr("value").ifElse(addedJoin.getWhere(), implement.property.getExpr(implementExprs, modifier));
     }
 
-    private Map<P, Expr> getImplementExprs(Map<ImportField, ? extends Expr> importKeys) {
+    Map<P, Expr> getImplementExprs(Map<ImportField, ? extends Expr> importKeys) {
         Map<P, Expr> mapExprs = new HashMap<P, Expr>();
         for(Map.Entry<P, ImportFieldInterface> entry : implement.mapping.entrySet())
             mapExprs.put(entry.getKey(), entry.getValue().getExpr(importKeys));
@@ -100,5 +110,15 @@ public class ImportKey <P extends PropertyInterface> implements ImportKeyInterfa
         }
 
         return propertyTable;
+    }
+
+    @Override
+    public Expr getDeleteExpr(SessionTableUsage<String, ImportField> importTable, KeyExpr intraKeyExpr, Modifier<SimpleChanges> modifier) {
+        Map<ImportField, Expr> importExprs = importTable.join(importTable.getMapKeys()).getExprs();
+        Expr interfaceKeyExpr = getExpr(importExprs, modifier);
+        return GroupExpr.create(Collections.singletonMap("key", interfaceKeyExpr),
+                                                                interfaceKeyExpr,
+                                                                GroupType.ANY,
+                                                                Collections.singletonMap("key", intraKeyExpr));
     }
 }

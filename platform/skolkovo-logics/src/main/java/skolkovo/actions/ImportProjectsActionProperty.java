@@ -27,6 +27,7 @@ import platform.server.logics.property.ActionProperty;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
 import platform.server.session.DataSession;
+import platform.server.session.SessionTableUsage;
 import skolkovo.SkolkovoBusinessLogics;
 import skolkovo.SkolkovoLogicsModule;
 
@@ -1127,7 +1128,7 @@ public class ImportProjectsActionProperty extends ActionProperty {
 
                 boolean fillTwoDates = false;
                 if (fillClaimer) {
-                    ObjectValue projectObject = LM.sidToProject.readClasses(pInfo.session, new DataObject(node.getChildText("projectId")));
+                    ObjectValue projectObject = LM.sidToProject.readClasses(pInfo.session, new DataObject(projectId));
                     fillTwoDates = !(projectObject instanceof DataObject) || LM.quantityPreliminaryVoteProject.read(context, (DataObject) projectObject) == null;
                 }
 
@@ -1458,7 +1459,7 @@ public class ImportProjectsActionProperty extends ActionProperty {
                     importMultilanguageData(pInfo,
                             fieldsBoth, fieldsNative, fieldsForeign,
                             properties, propertiesNative, propertiesForeign,
-                            data, keysArray, fillNative, fillForeign);
+                            data, keysArray, null, fillNative, fillForeign);
 
                     List<ImportField> fieldsCurrentClusterBoth = BaseUtils.toList(
                             projectIdField, inProjectClusterField, nameNativeClusterField);
@@ -1471,7 +1472,7 @@ public class ImportProjectsActionProperty extends ActionProperty {
                     importMultilanguageData(pInfo,
                             fieldsCurrentClusterBoth, fieldsCurrentClusterNative, fieldsCurrentClusterForeign,
                             propertiesCluster, propertiesClusterNative, propertiesClusterForeign,
-                            dataCluster, keysArray, fillNative, fillForeign);
+                            dataCluster, keysArray, null, fillNative, fillForeign);
 
                     List<ImportField> fieldsPatentBoth = BaseUtils.toList(
                             projectIdField, nativeNumberPatentField, datePatentField,
@@ -1484,7 +1485,7 @@ public class ImportProjectsActionProperty extends ActionProperty {
                     importMultilanguageData(pInfo,
                             fieldsPatentBoth, fieldsPatentNative, fieldsPatentForeign,
                             propertiesPatent, propertiesPatentNative, propertiesPatentForeign,
-                            dataPatent, keysArray, fillNative, fillForeign);
+                            dataPatent, keysArray, null, fillNative, fillForeign);
 
                     List<ImportField> fieldsAcademic = BaseUtils.toList(
                             projectIdField,
@@ -1493,7 +1494,7 @@ public class ImportProjectsActionProperty extends ActionProperty {
                     );
                     ImportTable table = new ImportTable(fieldsAcademic, dataAcademic);
                     keysArray = new ImportKey<?>[]{projectKey, academicKey};
-                    new IntegrationService(pInfo.session, table, Arrays.asList(keysArray), propertiesAcademic).synchronize(true, true, false, true);
+                    new IntegrationService(pInfo.session, table, Arrays.asList(keysArray), propertiesAcademic).synchronize(true);
 
                     List<ImportField> fieldsNonRussianSpecialist = BaseUtils.toList(
                             projectIdField,
@@ -1503,7 +1504,7 @@ public class ImportProjectsActionProperty extends ActionProperty {
                     );
                     table = new ImportTable(fieldsNonRussianSpecialist, dataNonRussianSpecialist);
                     keysArray = new ImportKey<?>[]{projectKey, nonRussianSpecialistKey};
-                    new IntegrationService(pInfo.session, table, Arrays.asList(keysArray), propertiesNonRussianSpecialist).synchronize(true, true, false, true);
+                    new IntegrationService(pInfo.session, table, Arrays.asList(keysArray), propertiesNonRussianSpecialist).synchronize(true);
 
                 } else {
 
@@ -1710,7 +1711,7 @@ public class ImportProjectsActionProperty extends ActionProperty {
                         List<Object> rowPublications = new ArrayList<Object>();
 
                         rowPublications.add(projectId);
-                        rowPublications.add(nodePublications.getChildText("datePublications"));
+                        rowPublications.add(BaseUtils.nullParseInt(nodePublications.getChildText("datePublications")));
                         rowPublications.add(nodePublications.getChildText("nativeLinksPublications"));
                         rowPublications.add(nodePublications.getChildText("nativePublications"));
                         rowPublications.add(nodePublications.getChildText("nativeAuthorPublications"));
@@ -1871,10 +1872,11 @@ public class ImportProjectsActionProperty extends ActionProperty {
                     }
 
                     ImportKey<?>[] keysArray = new ImportKey<?>[]{projectKey, projectMissionProjectKey, projectActionProjectKey, claimerKey};
-                    importMultilanguageData(pInfo,
-                            fieldsBoth, fieldsNative, fieldsForeign,
-                            properties, propertiesNative, propertiesForeign,
-                            data, keysArray, fillNative, fillForeign);
+                    SessionTableUsage<String, ImportField> projectTable =
+                            importMultilanguageData(pInfo,
+                                                    fieldsBoth, fieldsNative, fieldsForeign,
+                                                    properties, propertiesNative, propertiesForeign,
+                                                    data, keysArray, null, fillNative, fillForeign);
 
                     List<ImportField> fieldsCurrentClusterBoth = BaseUtils.toList(
                             projectIdField, inProjectClusterField, nameNativeClusterField);
@@ -1887,7 +1889,7 @@ public class ImportProjectsActionProperty extends ActionProperty {
                     importMultilanguageData(pInfo,
                             fieldsCurrentClusterBoth, fieldsCurrentClusterNative, fieldsCurrentClusterForeign,
                             propertiesCluster, propertiesClusterNative, propertiesClusterForeign,
-                            dataCluster, keysArray, fillNative, fillForeign);
+                            dataCluster, keysArray, null, fillNative, fillForeign);
 
                     List<ImportField> fieldsPatentBoth = BaseUtils.toList(
                             projectIdField, nativeNumberPatentField, datePatentField,
@@ -1899,7 +1901,12 @@ public class ImportProjectsActionProperty extends ActionProperty {
                     importMultilanguageData(pInfo,
                             fieldsPatentBoth, fieldsPatentNative, fieldsPatentForeign,
                             propertiesPatent, propertiesPatentNative, propertiesPatentForeign,
-                            dataPatent, keysArray, fillNative, fillForeign);
+                            dataPatent, keysArray,
+                            Collections.singletonList(new ImportDelete(patentKey,
+                                                                       LM.equalsPatentProject.getMapping(patentKey,
+                                                                                                         new ImportKeyTable(projectKey, projectTable)),
+                                                                       false)),
+                            fillNative, fillForeign);
 
 
                     List<ImportField> fieldsResearchBoth = BaseUtils.toList(
@@ -1910,7 +1917,12 @@ public class ImportProjectsActionProperty extends ActionProperty {
                     importMultilanguageData(pInfo,
                             fieldsResearchBoth, fieldsResearchNative, fieldsResearchForeign,
                             propertiesResearch, propertiesResearchNative, propertiesResearchForeign,
-                            dataResearch, keysArray, fillNative, fillForeign);
+                            dataResearch, keysArray,
+                            Collections.singletonList(new ImportDelete(researchKey,
+                                                                       LM.equalsResearchProject.getMapping(researchKey,
+                                                                                                           new ImportKeyTable(projectKey, projectTable)),
+                                                                       false)),
+                            fillNative, fillForeign);
 
                     List<ImportField> fieldsPublicationsBoth = BaseUtils.toList(
                             projectIdField, datePublicationsField, nativeLinksPublicationsField);
@@ -1920,7 +1932,12 @@ public class ImportProjectsActionProperty extends ActionProperty {
                     importMultilanguageData(pInfo,
                             fieldsPublicationsBoth, fieldsPublicationsNative, fieldsPublicationsForeign,
                             propertiesPublications, propertiesPublicationsNative, propertiesPublicationsForeign,
-                            dataPublications, keysArray, fillNative, fillForeign);
+                            dataPublications, keysArray,
+                            Collections.singletonList(new ImportDelete(publicationsKey,
+                                                                       LM.equalsPublicationsProject.getMapping(publicationsKey,
+                                                                                                               new ImportKeyTable(projectKey, projectTable)),
+                                                                       false)),
+                            fillNative, fillForeign);
 
                     List<ImportField> fieldsCommercializationBoth = BaseUtils.toList(
                             projectIdField);
@@ -1930,7 +1947,12 @@ public class ImportProjectsActionProperty extends ActionProperty {
                     importMultilanguageData(pInfo,
                             fieldsCommercializationBoth, fieldsCommercializationNative, fieldsCommercializationForeign,
                             propertiesCommercialization, propertiesCommercializationNative, propertiesCommercializationForeign,
-                            dataCommercialization, keysArray, fillNative, fillForeign);
+                            dataCommercialization, keysArray,
+                            Collections.singletonList(new ImportDelete(commercializationKey,
+                                                                       LM.equalsCommercializationProject.getMapping(commercializationKey,
+                                                                                                                    new ImportKeyTable(projectKey, projectTable)),
+                                                                       false)),
+                            fillNative, fillForeign);
 
                     List<ImportField> fieldsAnaloguesBoth = BaseUtils.toList(
                             projectIdField);
@@ -1940,7 +1962,12 @@ public class ImportProjectsActionProperty extends ActionProperty {
                     importMultilanguageData(pInfo,
                             fieldsAnaloguesBoth, fieldsAnaloguesNative, fieldsAnaloguesForeign,
                             propertiesAnalogues, propertiesAnaloguesNative, propertiesAnaloguesForeign,
-                            dataAnalogues, keysArray, fillNative, fillForeign);
+                            dataAnalogues, keysArray,
+                            Collections.singletonList(new ImportDelete(analoguesKey,
+                                                                       LM.equalsAnaloguesProject.getMapping(analoguesKey,
+                                                                                                            new ImportKeyTable(projectKey, projectTable)),
+                                                                       false)),
+                            fillNative, fillForeign);
 
                     List<ImportField> fieldsSpecialistBoth = BaseUtils.toList(
                             projectIdField);
@@ -1959,7 +1986,12 @@ public class ImportProjectsActionProperty extends ActionProperty {
                     importMultilanguageData(pInfo,
                             fieldsSpecialistBoth, fieldsSpecialistNative, fieldsSpecialistForeign,
                             propertiesSpecialist, propertiesSpecialistNative, propertiesSpecialistForeign,
-                            dataSpecialist, keysArray, fillNative, fillForeign);
+                            dataSpecialist, keysArray,
+                            Collections.singletonList(new ImportDelete(specialistKey,
+                                                                       LM.equalsSpecialistProject.getMapping(specialistKey,
+                                                                                                             new ImportKeyTable(projectKey, projectTable)),
+                                                                       false)),
+                            fillNative, fillForeign);
 
                     List<ImportField> fieldsObjectivesBoth = BaseUtils.toList(
                             projectIdField);
@@ -1969,7 +2001,12 @@ public class ImportProjectsActionProperty extends ActionProperty {
                     importMultilanguageData(pInfo,
                             fieldsObjectivesBoth, fieldsObjectivesNative, fieldsObjectivesForeign,
                             propertiesObjectives, propertiesObjectivesNative, propertiesObjectivesForeign,
-                            dataObjectives, keysArray, fillNative, fillForeign);
+                            dataObjectives, keysArray,
+                            Collections.singletonList(new ImportDelete(objectivesKey,
+                                                                       LM.equalsObjectivesProject.getMapping(objectivesKey,
+                                                                                                             new ImportKeyTable(projectKey, projectTable)),
+                                                                       false)),
+                            fillNative, fillForeign);
                 }
             }
         } catch (JDOMParseException e) {
@@ -1992,11 +2029,11 @@ public class ImportProjectsActionProperty extends ActionProperty {
         }
     }
 
-    private void importMultilanguageData(
+    private SessionTableUsage<String, ImportField> importMultilanguageData (
             PrivateInfo pInfo,
             List<ImportField> fieldsBoth, List<ImportField> fieldsNative, List<ImportField> fieldsForeign,
             List<ImportProperty<?>> propertiesBoth, List<ImportProperty<?>> propertiesNative, List<ImportProperty<?>> propertiesForeign,
-            List<List<Object>> data, ImportKey<?>[] keysArray, boolean fillNative, boolean fillForeign) throws SQLException {
+            List<List<Object>> data, ImportKey<?>[] keysArray, Collection<ImportDelete> deletes, boolean fillNative, boolean fillForeign) throws SQLException {
 
         List<ImportField> fieldsMerged = new ArrayList<ImportField>(fieldsBoth);
         List<ImportProperty<?>> propertiesMerged = new ArrayList<ImportProperty<?>>(propertiesBoth);
@@ -2010,9 +2047,13 @@ public class ImportProjectsActionProperty extends ActionProperty {
         }
 
         try {
-            new IntegrationService(pInfo.session, new ImportTable(fieldsMerged, data), Arrays.asList(keysArray), propertiesMerged).synchronize(true, true, false, true);
+            return new IntegrationService(pInfo.session,
+                                          new ImportTable(fieldsMerged, data),
+                                          Arrays.asList(keysArray),
+                                          propertiesMerged,
+                                          deletes).synchronize(true);
         } catch (SQLException e) {
-            e.printStackTrace();
+            throw new RuntimeException("Ошибка при импорте данных", e);
         }
     }
 

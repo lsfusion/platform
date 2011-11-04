@@ -67,7 +67,7 @@ public class HugoBossPricatCSVImportActionProperty extends ActionProperty {
                 ImportTable table = new HugoBossPricatCSVImporter(inputTable, new Object[] {null, articleField, null, colorCodeField,
                         5, barcodeField, sizeField, priceField, 15, compositionField, 21, customCategoryOriginalField, 28, colorField,
                         32, netWeightField, 34, genderField, 49, seasonField}).getTable();
-                new IntegrationService(context.getSession(), table, Arrays.asList(keysArray), properties).synchronize(true, true, false);
+                new IntegrationService(context.getSession(), table, Arrays.asList(keysArray), properties).synchronize();
             } catch (Exception e) {
                 throw new RuntimeException();
             }

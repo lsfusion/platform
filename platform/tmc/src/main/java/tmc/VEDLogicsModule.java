@@ -4324,7 +4324,7 @@ public class VEDLogicsModule extends LogicsModule {
                 rows.add(row);
             }
 
-            new IntegrationService(context.getSession(), new ImportTable(fields, rows), importKeys, properties).synchronize(true, true, false);
+            new IntegrationService(context.getSession(), new ImportTable(fields, rows), importKeys, properties).synchronize();
 
             context.addAction(new MessageClientAction("Данные были успешно приняты", "Импорт"));
         }
@@ -4386,7 +4386,7 @@ public class VEDLogicsModule extends LogicsModule {
                 rows.add(row);
             }
 
-            new IntegrationService(context.getSession(), new ImportTable(fields, rows), importKeys, properties).synchronize(true, true, false);
+            new IntegrationService(context.getSession(), new ImportTable(fields, rows), importKeys, properties).synchronize();
 
             context.addAction(new MessageClientAction("Данные были успешно приняты", "Импорт"));
         }
@@ -4447,7 +4447,7 @@ public class VEDLogicsModule extends LogicsModule {
                 rows.add(row);
             }
 
-            new IntegrationService(context.getSession(), new ImportTable(fields, rows), importKeys, properties).synchronize(true, true, false);
+            new IntegrationService(context.getSession(), new ImportTable(fields, rows), importKeys, properties).synchronize();
 
             context.addAction(new MessageClientAction("Данные были успешно приняты", "Импорт"));
         }
@@ -4521,7 +4521,7 @@ public class VEDLogicsModule extends LogicsModule {
                 rows.add(row);
             }
 
-            new IntegrationService(context.getSession(), new ImportTable(fields, rows), importKeys, properties).synchronize(true, true, false);
+            new IntegrationService(context.getSession(), new ImportTable(fields, rows), importKeys, properties).synchronize();
 
             context.addAction(new MessageClientAction("Данные были успешно приняты", "Импорт"));
         }

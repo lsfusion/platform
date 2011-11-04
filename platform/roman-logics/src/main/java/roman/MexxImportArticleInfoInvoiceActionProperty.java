@@ -60,7 +60,7 @@ public class MexxImportArticleInfoInvoiceActionProperty extends BaseImportAction
                     10, countryField, compositionField).getTable();
 
             ImportKey<?>[] keysArray = {articleKey, countryKey, seasonKey};
-            new IntegrationService(context.getSession(), table, Arrays.asList(keysArray), properties).synchronize(true, true, false);
+            new IntegrationService(context.getSession(), table, Arrays.asList(keysArray), properties).synchronize();
 
             context.addAction(new MessageClientAction("Данные были успешно приняты", "Импорт"));
         } catch (Exception e) {

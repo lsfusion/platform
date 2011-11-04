@@ -66,7 +66,7 @@ public class MexxImportPricesInvoiceActionProperty extends BaseImportActionPrope
                     null, unitPriceField, null, barCodeField, null, new ImportField[] {customCodeField, customCode6Field}).getTable();
 
             ImportKey<?>[] keysArray = {invoiceKey, articleKey, itemKey, customCategoryKey, customCategory6Key};
-            new IntegrationService(context.getSession(), table, Arrays.asList(keysArray), properties).synchronize(true, true, false);
+            new IntegrationService(context.getSession(), table, Arrays.asList(keysArray), properties).synchronize();
 
             context.addAction(new MessageClientAction("Данные были успешно приняты", "Импорт"));
         } catch (Exception e) {

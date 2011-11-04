@@ -9,6 +9,7 @@ import platform.server.classes.*;
 import platform.server.classes.sets.AndClassSet;
 import platform.server.data.Value;
 import platform.server.data.expr.Expr;
+import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.StaticValueExpr;
 import platform.server.data.expr.ValueExpr;
 import platform.server.data.sql.SQLSyntax;
@@ -33,7 +34,7 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.*;
 
-public class DataObject extends ObjectValue<DataObject> implements PropertyObjectInterfaceInstance, PropertyObjectInterfaceEntity, ImportKeyInterface, ImportFieldInterface {
+public class DataObject extends ObjectValue<DataObject> implements PropertyObjectInterfaceInstance, PropertyObjectInterfaceEntity, ImportKeyInterface, ImportFieldInterface, ImportDeleteInterface {
 
     public Object object;
     public ConcreteClass objectClass;
@@ -218,5 +219,10 @@ public class DataObject extends ObjectValue<DataObject> implements PropertyObjec
 
     public <K> ClassWhere<K> getClassWhere(K key) {
         return new ClassWhere<K>(key, objectClass);
+    }
+
+    @Override
+    public Expr getDeleteExpr(SessionTableUsage<String, ImportField> importTable, KeyExpr intraKeyExpr, Modifier<SimpleChanges> modifier) {
+        return getExpr();
     }
 }

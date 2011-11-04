@@ -36,7 +36,7 @@ public class TNVEDDutiesImporter extends TNVEDImporter {
         properties.add(new ImportProperty(dutyEuroField, LM.dutySumCustomCategory10TypeDuty.getMapping(category10Key, dutyTypeKey)));
 
         ImportKey<?>[] keysArray = {category10Key, dutyTypeKey};
-        new IntegrationService(session, getImportTable(), Arrays.asList(keysArray), properties).synchronize(true, true, false);
+        new IntegrationService(session, getImportTable(), Arrays.asList(keysArray), properties).synchronize();
     }
 
     private ImportTable getImportTable() throws IOException, xBaseJException, SQLException {

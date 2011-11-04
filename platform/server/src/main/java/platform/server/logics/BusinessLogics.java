@@ -1,7 +1,6 @@
 package platform.server.logics;
 
 import net.sf.jasperreports.engine.JRException;
-import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import platform.base.*;
 import platform.interop.Compare;
@@ -770,6 +769,9 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         props.add(new ImportProperty(sidField, LM.navigatorElementSID.getMapping(key)));
         props.add(new ImportProperty(captionField, LM.navigatorElementCaption.getMapping(key)));
 
+        List<ImportDelete> deletes = new ArrayList<ImportDelete>();
+        deletes.add(new ImportDelete(key, LM.is(LM.navigatorElement).getMapping(key), false));
+
         ImportTable table = new ImportTable(Arrays.asList(sidField, captionField), data);
 
         List<List<Object>> data2 = getRelations(LM.baseElement);
@@ -783,11 +785,11 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
         try {
             DataSession session = createSession();
-            IntegrationService service = new IntegrationService(session, table, Arrays.asList(key), props);
-            service.synchronize(true, true, true, true, false);
+            IntegrationService service = new IntegrationService(session, table, Arrays.asList(key), props, deletes);
+            service.synchronize(true, false);
 
             service = new IntegrationService(session, table2, Arrays.asList(key, key2), props2);
-            service.synchronize(true, true, true, true, false);
+            service.synchronize(true, false);
 
             if (session.hasChanges())
                 session.apply(this);

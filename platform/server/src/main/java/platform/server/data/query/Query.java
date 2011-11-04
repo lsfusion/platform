@@ -203,6 +203,10 @@ public class Query<K,V> extends InnerContext<Query<?,?>> implements MapKeysInter
         return executeClasses(session, new OrderedMap<V, Boolean>(), 0, baseClass, QueryEnvironment.empty);
     }
 
+    public OrderedMap<Map<K, DataObject>, Map<V, ObjectValue>> executeClasses(DataSession session) throws SQLException {
+        return executeClasses(session, session.baseClass);
+    }
+
     public OrderedMap<Map<K, DataObject>, Map<V, ObjectValue>> executeClasses(DataSession session, BaseClass baseClass) throws SQLException {
         return executeClasses(session.sql, session.env, baseClass);
     }

@@ -80,7 +80,7 @@ public class PricatEDIImportActionProperty extends ActionProperty {
                 ImportTable table = new EDIInvoiceImporter(inputTable, barcodeField, articleField, customCategoryOriginalField, colorCodeField, colorField,
                         sizeField, originalNameField, countryField, netWeightField, compositionField, priceField, rrpField, seasonField, genderField, themeCodeField, themeNameField).getTable();
 
-                new IntegrationService(context.getSession(), table, Arrays.asList(keysArray), properties).synchronize(true, true, false);
+                new IntegrationService(context.getSession(), table, Arrays.asList(keysArray), properties).synchronize();
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }

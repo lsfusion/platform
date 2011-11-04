@@ -919,7 +919,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP hideDescriptionEquipmentProject;
     LP hideCommentEquipmentProject;
 
-    public LP projectPatent;
+    public LP projectPatent, equalsPatentProject;
     public LP sidProjectPatent;
     public LP nativeTypePatent;
     public LP foreignTypePatent;
@@ -1182,7 +1182,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
     public LP foreignResultsProject;
     public LP nativeGeneralizedPlanProject;
     public LP foreignGeneralizedPlanProject;
-    public LP projectSpecialist;
+    public LP projectSpecialist, equalsSpecialistProject;
     public LP nativePostSpecialist;
     public LP foreignPostSpecialist;
     public LP nativeFunctionSpecialist;
@@ -1202,6 +1202,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
     public LP nativeIntellectualPropertySpecialist;
     public LP foreignIntellectualPropertySpecialist;
     public LP projectResearch;
+    public LP equalsResearchProject;
     public LP foreignCommentResearch;
     public LP nativeCommentResearch;
     public LP dataResearch;
@@ -1210,7 +1211,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP linksPatent;
     public LP nativeCommentMissionProject;
     public LP foreignCommentMissionProject;
-    public LP projectPublications;
+    public LP projectPublications, equalsPublicationsProject;
     public LP nativeToPublications;
     public LP nativeSIDToPublications;
     public LP foreignPublications;
@@ -1218,14 +1219,14 @@ public class SkolkovoLogicsModule extends LogicsModule {
     public LP foreignAuthorPublications;
     public LP datePublications;
     public LP nativeLinksPublications;
-    public LP projectCommercialization;
+    public LP projectCommercialization, equalsCommercializationProject;
     public LP nativeProjectCommercialization;
     public LP nativeProjectToCommercialization;
     public LP nativeProjectSIDToCommercialization;
     public LP foreignProjectCommercialization;
     public LP nativeCommentProjectCommercialization;
     public LP foreignCommentProjectCommercialization;
-    public LP projectAnalogues;
+    public LP projectAnalogues, equalsAnaloguesProject;
     public LP nativeProjectAnalogues;
     public LP nativeProjectToAnalogues;
     public LP nativeProjectSIDToAnalogues;
@@ -1234,7 +1235,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
     public LP foreignDescriptionProjectAnalogues;
     public LP nativeCharacteristicsProjectAnalogues;
     public LP foreignCharacteristicsProjectAnalogues;
-    public LP projectObjectives;
+    public LP projectObjectives, equalsObjectivesProject;
     public LP nativeProjectObjectives;
     public LP nativeProjectToObjectives;
     public LP nativeProjectSIDToObjectives;
@@ -1610,6 +1611,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         emailContactProject = addDProp(descGroup, "emailContactProject", "e-mail контактного лица", StringClass.get(50), project);
 
         projectResearch = addDProp("projectResearch", "Проект Исследования (ИД)", project, research);
+        equalsResearchProject = addJProp("equalsResearchProject", "Вкл", baseLM.equals2, projectResearch, 1, 2);
 
         nativeCommentResearch = addDProp(problemGroup, "nativeCommentResearch", "Комментарий, навзвание публикации", InsensitiveStringClass.get(2000), research);
         nativeCommentResearch.setMinimumWidth(10);
@@ -1627,6 +1629,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
         dataResearch.setPreferredWidth(50);
 
         projectPublications = addDProp("projectPublications", "Проект публикации (ИД)", project, publications);
+        equalsPublicationsProject = addJProp("equalsPublicationsProject", "Вкл", baseLM.equals2, projectPublications, 1, 2);
+
         nativePublications = addDProp(publicationsGroup, "nativePublications", "Название", InsensitiveStringClass.get(2000), publications);
         nativePublications.setMinimumWidth(10);
         nativePublications.setPreferredWidth(50);
@@ -1660,6 +1664,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         nativeLinksPublications.setPreferredWidth(50);
 
         projectCommercialization = addDProp("projectCommercialization", "Проект коммерциализации (ИД)", project, commercialization);
+        equalsCommercializationProject = addJProp("equalsCommercializationProject", "Вкл", baseLM.equals2, projectCommercialization, 1, 2);
 
         nativeProjectCommercialization = addDProp(commercializationGroup, "nativeProjectCommercialization", "Основные направления коммерциализации проекта", InsensitiveStringClass.get(2000), commercialization);
         nativeProjectCommercialization.setMinimumWidth(10);
@@ -1721,6 +1726,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         foreignCaseStudiesProject.setPreferredWidth(50);
 
         projectAnalogues = addDProp("projectAnalogues", "Проект аналога (ИД)", project, analogues);
+        equalsAnaloguesProject = addJProp("equalsAnaloguesProject", "Вкл", baseLM.equals2, projectAnalogues, 1, 2);
 
         nativeProjectAnalogues = addDProp(analoguesGroup, "nativeProjectAnalogues", "Аналоги проекта и его преимущество", InsensitiveStringClass.get(2000), analogues);
         nativeProjectAnalogues.setMinimumWidth(10);
@@ -1826,6 +1832,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         foreignResultsProject.setPreferredWidth(50);
 
         projectObjectives = addDProp("projectObjectives", "Проект цели (ИД)", project, objectives);
+        equalsObjectivesProject = addJProp("equalsObjectivesProject", "Вкл", baseLM.equals2, projectObjectives, 1, 2);
 
         nativeProjectObjectives = addDProp(projectmissionGroup, "nativeProjectObjectives", "Ключевые цели проекта", InsensitiveStringClass.get(2000), objectives);
         nativeProjectObjectives.setMinimumWidth(10);
@@ -1848,6 +1855,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
                           // команда
         projectSpecialist = addDProp("projectSpecialist", "Проект члена команды (ИД)", project, specialist);
+        equalsSpecialistProject = addJProp("equalsSpecialistProject", "Вкл", baseLM.equals2, projectSpecialist, 1, 2);
 
         nameNativeSpecialist = addDProp(teamGroup, "nameNativeSpecialist", "ФИО", InsensitiveStringClass.get(2000), specialist);
         nameNativeSpecialist.setMinimumWidth(10);
@@ -2149,6 +2157,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         // патенты
         projectPatent = addDProp(idGroup, "projectPatent", "Проект патента", project, patent);
+        equalsPatentProject = addJProp("equalsPatentProject", "Вкл", baseLM.equals2, projectPatent, 1, 2);
 
         nativeTypePatent = addDProp(baseGroup, "nativeTypePatent", "Тип заявки/патента", InsensitiveStringClass.get(2000), patent);
         nativeTypePatent.setMinimumWidth(10);

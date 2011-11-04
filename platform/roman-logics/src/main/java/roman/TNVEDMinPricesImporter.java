@@ -43,7 +43,7 @@ public class TNVEDMinPricesImporter extends TNVEDImporter {
         properties.add(new ImportProperty(relationField, LM.relationCustomCategory10SubCategory.getMapping(category10Key, subcategoryKey)));
         properties.add(new ImportProperty(minPriceField, LM.minPriceCustomCategory10SubCategory.getMapping(category10Key, subcategoryKey)));
         ImportKey<?>[] keysArray = {category10Key, subcategoryKey};
-        new IntegrationService(session, table, Arrays.asList(keysArray), properties).synchronize(true, true, false);
+        new IntegrationService(session, table, Arrays.asList(keysArray), properties).synchronize();
 
         propertiesCountry.add(new ImportProperty(subcategoryNameField, LM.nameSubCategory.getMapping(subcategoryKey)));
         propertiesCountry.add(new ImportProperty(countryIdField, LM.sidOrigin2Country.getMapping(countryKey)));
@@ -51,7 +51,7 @@ public class TNVEDMinPricesImporter extends TNVEDImporter {
         propertiesCountry.add(new ImportProperty(relationField, LM.relationCustomCategory10SubCategory.getMapping(category10Key, subcategoryKey)));
         propertiesCountry.add(new ImportProperty(minPriceField, LM.minPriceCustomCategory10SubCategoryCountry.getMapping(category10Key, subcategoryKey, countryKey)));
         ImportKey<?>[] keysArrayCountry = {category10Key, subcategoryKey, countryKey};
-        new IntegrationService(session, tableCountry, Arrays.asList(keysArrayCountry), propertiesCountry).synchronize(true, true, false);
+        new IntegrationService(session, tableCountry, Arrays.asList(keysArrayCountry), propertiesCountry).synchronize();
     }
 
     private void readData() throws IOException, xBaseJException, SQLException {

@@ -181,7 +181,7 @@ public class TNVEDClassifierImporter extends TNVEDImporter {
             properties.add(new ImportProperty(numberIdField, LM.numberIdCustomCategoryOrigin.getMapping(categoryOriginKey)));
 
             ImportKey<?>[] keysArray = {category6Key, category10Key, categoryOriginKey};
-            new IntegrationService(session, table, Arrays.asList(keysArray), properties).synchronize(true, true, false);
+            new IntegrationService(session, table, Arrays.asList(keysArray), properties).synchronize();
             return;
         }
 
@@ -207,6 +207,6 @@ public class TNVEDClassifierImporter extends TNVEDImporter {
         properties.add(new ImportProperty(numberIdField, LM.numberIdCustomCategory10.getMapping(category10Key)));
 
         ImportKey<?>[] keysArray = {category4Key, category6Key, category9Key, category10Key};
-        new IntegrationService(session, table, Arrays.asList(keysArray), properties).synchronize(true, true, false);
+        new IntegrationService(session, table, Arrays.asList(keysArray), properties).synchronize();
     }
 }

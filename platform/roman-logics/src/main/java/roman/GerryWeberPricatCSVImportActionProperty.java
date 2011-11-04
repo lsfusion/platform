@@ -73,7 +73,7 @@ public class GerryWeberPricatCSVImportActionProperty extends ActionProperty {
 
 
 
-                new IntegrationService(context.getSession(), table, Arrays.asList(keysArray), properties).synchronize(true, true, false);
+                new IntegrationService(context.getSession(), table, Arrays.asList(keysArray), properties).synchronize();
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
