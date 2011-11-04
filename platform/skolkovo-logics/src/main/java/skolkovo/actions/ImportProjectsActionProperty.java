@@ -823,7 +823,11 @@ public class ImportProjectsActionProperty extends ActionProperty {
         try {
             pInfo.session = context.getSession();
 
-            String host = getHost();
+            String host = getHost(pInfo);
+            if (host == null) {
+                context.addAction(new MessageClientAction("Не задан web хост", "Импорт", true));
+                return;
+            }
             Map<String, Timestamp> projects = importProjectsFromXML(pInfo, host);
 
             if (!onlyMessage && !fillSids) {
@@ -923,20 +927,22 @@ public class ImportProjectsActionProperty extends ActionProperty {
         return makeImportList(pInfo, result, elementList);
     }
 
-    public String getHost() throws NoSuchAlgorithmException {
-        Calendar calTZ = new GregorianCalendar(TimeZone.getTimeZone("EST"));
+    public String getHost(PrivateInfo pInfo) throws NoSuchAlgorithmException, SQLException {
+        Calendar calTZ = new GregorianCalendar(TimeZone.getTimeZone("Europe/Moscow"));
         calTZ.setTimeInMillis(new java.util.Date().getTime());
-        Calendar cal = Calendar.getInstance(TimeZone.getTimeZone("EST"));
+        Calendar cal = Calendar.getInstance(TimeZone.getTimeZone("Europe/Moscow"));
         cal.set(Calendar.SECOND, 0);
         cal.set(Calendar.MINUTE, 0);
-        cal.set(Calendar.HOUR_OF_DAY, 15);
-        cal.set(Calendar.DAY_OF_MONTH, calTZ.get(Calendar.DAY_OF_MONTH) - 3);
+        cal.set(Calendar.HOUR_OF_DAY, 0);
+        cal.set(Calendar.DAY_OF_MONTH, calTZ.get(Calendar.DAY_OF_MONTH) - 2);
         cal.set(Calendar.MONTH, calTZ.get(Calendar.MONTH));
         cal.set(Calendar.YEAR, calTZ.get(Calendar.YEAR));
         String string = cal.getTimeInMillis() / 1000 + "_1q2w3e";
 
         MessageDigest m = MessageDigest.getInstance("MD5");
-        return "http://app.i-gorod.com/xml.php?hash=" + Hex.encodeHexString(m.digest(string.getBytes()));
+        String webHost = (String) LM.baseLM.webHost.read(pInfo.session);
+        webHost = webHost != null ? webHost.substring(0, webHost.indexOf("/")) : null;
+        return webHost == null ? null : "http://" + webHost + "/xml.php?hash=" + Hex.encodeHexString(m.digest(string.getBytes()));
     }
 
     public Date getUpdateProjectDate(String year, String month, String day, String hour, String minute, String second) {
