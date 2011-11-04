@@ -983,8 +983,26 @@ public abstract class LogicsModule {
     }
 
     private <T extends PropertyInterface> LP addSGProp(AbstractGroup group, String name, boolean persistent, boolean notZero, String caption, LP<T> groupProp, List<PropertyInterfaceImplement<T>> listImplements) {
+        return addSGProp(group, name, persistent, notZero, caption, groupProp.listInterfaces, BaseUtils.add(groupProp.property.getImplement(), listImplements));
+    }
+
+    private List<PropertyInterface> genInterfaces(int interfaces) {
+        List<PropertyInterface> innerInterfaces = new ArrayList<PropertyInterface>();
+        for(int i=0;i<interfaces;i++)
+            innerInterfaces.add(new PropertyInterface());
+        return innerInterfaces;
+    }
+
+    private <T extends PropertyInterface> LP addSGProp(AbstractGroup group, String name, boolean persistent, boolean notZero, String caption, int interfaces, Object... params) {
+        List<PropertyInterface> innerInterfaces = genInterfaces(interfaces);
+        List<PropertyInterfaceImplement<PropertyInterface>> implement = readImplements(innerInterfaces, params);
+        return addSGProp(group, name, persistent, notZero, caption, innerInterfaces, implement);
+    }
+
+    private <T extends PropertyInterface> LP addSGProp(AbstractGroup group, String name, boolean persistent, boolean notZero, String caption, List<T> innerInterfaces, List<PropertyInterfaceImplement<T>> implement) {
         boolean wrapNotZero = persistent && (notZero || !Settings.instance.isDisableSumGroupNotZero());
-        SumGroupProperty<T> property = new SumGroupProperty<T>(wrapNotZero ? genSID() : name, caption, listImplements, groupProp.property);
+        List<PropertyInterfaceImplement<T>> listImplements = implement.subList(1, implement.size());
+        SumGroupProperty<T> property = new SumGroupProperty<T>(name, caption, innerInterfaces, listImplements, implement.get(0));
 
         LP result;
         if (wrapNotZero)
@@ -993,7 +1011,7 @@ public abstract class LogicsModule {
             result = mapLGProp(group, persistent, property, listImplements);
 
         result.sumGroup = property; // так как может wrap'ся, использование - setDG
-        result.listGroupInterfaces = groupProp.listInterfaces; // для порядка параметров, использование - setDG
+        result.listGroupInterfaces = innerInterfaces; // для порядка параметров, использование - setDG
 
         return result;
     }
