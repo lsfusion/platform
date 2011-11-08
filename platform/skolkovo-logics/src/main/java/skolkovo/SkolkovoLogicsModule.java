@@ -3360,7 +3360,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         daysSubmitApplicationDate = addJProp("daysSubmitApplicationDate", "Кол-во дней заявки", baseLM.subtractInteger2, dateApplication, 1, object(DateClass.instance), 2);
 
-        weekSubmitApplicationDate = addJProp("weekSubmitApplicationDate", "Неделя заявки", baseLM.divideInteger, daysSubmitApplicationDate, 1, 2, addCProp(IntegerClass.instance, 7));
+        weekSubmitApplicationDate = addJProp("weekSubmitApplicationDate", "Неделя заявки", baseLM.divideNegativeInteger, daysSubmitApplicationDate, 1, 2, addCProp(IntegerClass.instance, 7));
 
         oneApplicationDateDate = addJProp(and(false, false, false), addCProp(IntegerClass.instance, 1, application, DateClass.instance, DateClass.instance), 1, 2, 3,
                                             addJProp(baseLM.groeq2, dateApplication, 1, 2), 1, 2,

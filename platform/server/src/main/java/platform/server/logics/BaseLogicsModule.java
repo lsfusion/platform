@@ -111,6 +111,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public LP divideDouble2;
     public LP divideDouble3;
     public LP divideInteger;
+    public LP divideNegativeInteger;
     public LP divideInteger0;
     public LP addDate2;
     public LP subtractDate2;
@@ -436,6 +437,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         divideDouble2 = addSFProp("divideDouble2", "round(CAST((CAST((prm1) as numeric)/(prm2)) as numeric),2)", DoubleClass.instance, 2);
         divideDouble3 = addSFProp("divideDouble3", "round(CAST((CAST((prm1) as numeric)/(prm2)) as numeric),3)", DoubleClass.instance, 2);
         divideInteger = addSFProp("CAST(((prm1)/(prm2)) as integer)", IntegerClass.instance, 2);
+        divideNegativeInteger = addSFProp("CASE WHEN (prm1)<0 THEN -CAST(((-(prm1)-1)/(prm2)) as integer) ELSE CAST(((prm1)/(prm2)) as integer) END", IntegerClass.instance, 2);
         divideInteger0 = addSFProp("CAST(round((prm1)/(prm2),0) as integer)", IntegerClass.instance, 2);
         addDate2 = addSFProp("((prm1)+(prm2))", DateClass.instance, 2);
         subtractDate2 = addSFProp("((prm1)-(prm2))", DateClass.instance, 2);
