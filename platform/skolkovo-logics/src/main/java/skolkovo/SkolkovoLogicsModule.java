@@ -695,6 +695,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP needExtraVoteProject;
     LP needExtraVoteRepeatProject;
 
+    LP nameNativeShortFinalClusterApplication;
     LP emailLetterExpertVoteEA, emailLetterExpertVote;
     LP allowedEmailLetterExpertVote;
 
@@ -1113,6 +1114,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP isPreliminaryAndStatusApplication;
     LP preliminaryApplicationProject;
     LP statusApplicationProject;
+    LP inActTestApplication;
+    LP inActTestApplicationDate;
 
     LP inactiveApplication;
 
@@ -1323,11 +1326,29 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP isFinalProjectStatus;
     LP typeProjectStatusProjectStatus, nameTypeProjectStatusProjectStatus;
     LP dateInStatusApplication, overdueDateStatusApplication, quantityDaysToOverdueDateStatusApplication;
-    LP dateSubmittedToRegisterProjectApplication;
+    LP dateSubmittedToRegisterApplication;
     LP quantityStatusVoteProject;
     LP quantityStatusVoteApplication;
     LP daysCommonApplication;
     LP daysStatusApplication;
+    LP registerApplicationDateTo;
+    LP daysRegisterApplicationDateTo;
+    LP oneRegisterApplicationDateTo;
+    LP submitRegisterApplicationsDateTo;
+    LP submitDaysRegisterApplicationDateTo;
+    LP averageDaysRegisterApplicationsDateTo;
+    LP qSubmitRegisterApplicationsDateTo;
+    LP daysSubmitRegisterApplicationDate;
+    LP weekSubmitRegisterApplicationDate;
+    LP registerApplicationDate;
+    LP submitDaysRegisterApplicationDateWeek;
+    LP submitRegisterApplicationsDateWeek;
+    LP risingDaysRegisterApplicationDateWeek;
+    LP risingRegisterApplicationsDateWeek;
+    LP averageDaysRegisterApplicationsDateWeek;
+    LP registerApplication;
+    LP oneStatusApplicationDateDate;
+    LP statusApplicationsSubmitDateDate;
 
     @Override
     public void initProperties() {
@@ -3277,7 +3298,6 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         projectApplication = addDProp(idGroup, "projectApplication", "Проект (ИД)", project, application);
 
-        dateSubmittedToRegisterProjectApplication = addJProp("dateSubmittedToRegisterProjectApplication", "дата внесения в реестр участников", dateSubmittedToRegisterProject, projectApplication, 1);
 
         quantityStatusVoteApplication = addJProp("quantityStatusVoteApplication", true, "Количество заседаний", quantityStatusVoteProject, projectApplication, 1);
 
@@ -3327,8 +3347,11 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         finalClusterApplication = addJProp(idGroup, "finalClusterApplication", true, "Последний кластер (ИД)", finalClusterProject, projectApplication, 1);
         nameFinalClusterApplication = addJProp(baseGroup, "nameFinalClusterApplication", "Последний кластер", baseLM.name, finalClusterApplication, 1);
-        inTestApplication = addJProp("inTestApplication", "Ненужный", inTestCluster, finalClusterApplication, 1);
+        nameNativeShortFinalClusterApplication = addJProp(baseGroup, "nameNativeShortFinalClusterApplication", "Тек. кластер (сокр.)", nameNativeShort, finalClusterApplication, 1);
 
+        inTestApplication = addJProp("inTestApplication", "Ненужный", inTestCluster, finalClusterApplication, 1);
+        inActTestApplication =  addJProp("inActTestApplication", "Активные", and(true, true), object(application), 1, inTestApplication, 1,  inactiveApplication, 1);
+        inActTestApplicationDate =  addJProp("inActTestApplicationDate", baseLM.and1, inActTestApplication, 1, is(DateClass.instance), 2);
         needFormalCheckStatusProject = addJProp("needFormalCheckStatusProject", and(true, true), addCProp(LogicalClass.instance, true, project), 1, positiveFormalResultProject, 1, overdueFormalControlProject, 1);
 
         needLegalCheckStatusProject = addJProp("needLegalCheckStatusProject", and(true, true), addCProp(LogicalClass.instance, true, project), 1, positiveLegalResultProject, 1, overdueLegalCheckProject, 1);
@@ -3339,11 +3362,10 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         weekSubmitApplicationDate = addJProp("weekSubmitApplicationDate", "Неделя заявки", baseLM.divideInteger, daysSubmitApplicationDate, 1, 2, addCProp(IntegerClass.instance, 7));
 
-        oneApplicationDateDate = addJProp(and(false, false, true, true), addCProp(IntegerClass.instance, 1, application, DateClass.instance, DateClass.instance), 1, 2, 3,
+        oneApplicationDateDate = addJProp(and(false, false, false), addCProp(IntegerClass.instance, 1, application, DateClass.instance, DateClass.instance), 1, 2, 3,
                                             addJProp(baseLM.groeq2, dateApplication, 1, 2), 1, 2,
                                             addJProp(baseLM.lsoeq2, dateApplication, 1, 2), 1, 3,
-                                            inactiveApplication, 1,
-                                            inTestApplication, 1);
+                                            inActTestApplication, 1);
 
         applicationsSubmitDateDate = addSGProp("applicationsSubmitDateDate", "Всего поступивших заявок", oneApplicationDateDate, 2, 3);
 
@@ -3368,12 +3390,13 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         nonClusterApplicationsStatusAplicationSubmitDateDate = addSGProp("nonClusterApplicationsStatusAplicationSubmitDateDate", "Итого не указано", addJProp(baseLM.and1, oneApplicationDateDate, 1, 2, 3, nonClusterApplication, 1), statusApplication, 1, 2, 3);
 
-        averageWeekApplSubmitDateDate = addJProp("averageApplSubmitDateDate", "Среднее кол-во заявок в день",
+        averageWeekApplSubmitDateDate = addJProp("averageApplSubmitDateDate", "Среднее кол-во заявок в неделю",
                 baseLM.divideInteger0, applicationsSubmitDateDate, 1, 2, baseLM.weeksNullInclBetweenDates, 1, 2);
 
-        applicationsSubmitDateWeek = addSGProp("applicationsSubmitDateWeek", "Кол-во поступивших заявок",
-                addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1, application, DateClass.instance), 1, 2,
-                        addJProp(baseLM.groeq2, dateApplication, 1, 2), 1, 2),
+        applicationsSubmitDateWeek = addSGProp("applicationsSubmitDateWeek", "Кол-во поступивших заявок",              // с даты
+                addJProp(and(false, false), addCProp(IntegerClass.instance, 1, application, DateClass.instance), 1, 2,
+                        addJProp(baseLM.groeq2, dateApplication, 1, 2), 1, 2,
+                        inActTestApplication, 1),
                         2, weekSubmitApplicationDate, 1, 2);
 
         // подсчет дат нахождения заявки на стороне заявителя
@@ -3449,7 +3472,9 @@ public class SkolkovoLogicsModule extends LogicsModule {
         daysClaimerApplication = addCUProp("daysClaimerApplication", "Кол-во дней на стороне заявителя", daysClaimerApplicationPreliminary, daysClaimerApplicationStatus);
         isClaimerApplicationDate = addCUProp("isClaimerApplicationDate", "На стороне заявителя", isClaimerApplicationPreliminaryDate, isClaimerApplicationStatusDate);
 
-        daysCommonApplication =  addJProp("daysCommonApplication", "Общее к-во дней заявки", baseLM.subtractInteger2, dateSubmittedToRegisterProjectApplication, 1, dateApplicationStatus, 1);
+        dateSubmittedToRegisterApplication = addJProp("dateSubmittedToRegisterApplication", "дата внесения в реестр участников", dateSubmittedToRegisterProject, projectApplicationStatus, 1);
+
+        daysCommonApplication =  addJProp("daysCommonApplication", "Общее к-во дней заявки", baseLM.subtractInteger2, dateSubmittedToRegisterApplication, 1, dateApplicationStatus, 1);
         daysStatusApplication =  addDUProp("daysStatusApplication", "Кол-во дней рассмотрения заявки на статус", daysCommonApplication, daysClaimerApplication);
 
         // даты для статусов-проектов
@@ -3550,6 +3575,39 @@ public class SkolkovoLogicsModule extends LogicsModule {
         percentNonClusterApplicationsTypeProjectStatus = addJProp("percentNonClusterApplicationsTypeProjectStatus", "(%) не указано", percent, nonClusterApplicationsTypeProjectStatus, 1, nonClusterApplicationsSubmit);
         percentApplicationsTypeProjectStatus = addJProp("percentApplicationsTypeProjectStatus", "Итого (%)", percent, sumApplicationsTypeProjectStatus, 1, sumSubmitApplications);
 
+        registerApplicationDateTo = addJProp(and(false, false, false), object(application), 1,
+                 addJProp(baseLM.lsoeq2, dateSubmittedToRegisterApplication, 1, 2), 1, 2,     // заявки по  дату
+                 object(DateClass.instance), 2,
+                 inActTestApplication, 1);
+        daysRegisterApplicationDateTo = addJProp("daysRegisterApplicationDateTo", "Дней на статус", daysStatusApplication, registerApplicationDateTo, 1, 2);
+        submitDaysRegisterApplicationDateTo = addSGProp("submitDaysRegisterApplicationDateTo",  "Дней на статус", daysRegisterApplicationDateTo, 2);
+
+        oneRegisterApplicationDateTo = addJProp("oneRegisterApplicationDateTo", addCProp(IntegerClass.instance, 1, application), registerApplicationDateTo, 1, 2);
+        submitRegisterApplicationsDateTo = addSGProp("submitRegisterApplicationsDateTo", "К-во заявок всего",  oneRegisterApplicationDateTo, 2);
+
+        averageDaysRegisterApplicationsDateTo = addJProp("averageDaysRegisterApplicationsDateTo", "Средний срок рассмотрения зявки на статус",
+                baseLM.divideInteger0, submitDaysRegisterApplicationDateTo, 1, submitRegisterApplicationsDateTo, 1);
+
+        oneStatusApplicationDateDate = addJProp(and(false, false, false), addCProp(IntegerClass.instance, 1, application, DateClass.instance, DateClass.instance), 1, 2, 3,
+                                            addJProp(baseLM.groeq2, dateSubmittedToRegisterApplication, 1, 2), 1, 2,
+                                            addJProp(baseLM.lsoeq2, dateSubmittedToRegisterApplication, 1, 2), 1, 3,
+                                            inActTestApplication, 1);
+        statusApplicationsSubmitDateDate =  addSGProp("statusApplicationsSubmitDateDate", "К-во заявок", oneStatusApplicationDateDate, 2, 3);
+
+        daysSubmitRegisterApplicationDate = addJProp("daysSubmitRegisterApplicationDate", "Кол-во дней заявки", baseLM.subtractInteger2, dateSubmittedToRegisterApplication, 1, object(DateClass.instance), 2);
+        weekSubmitRegisterApplicationDate = addJProp("weekSubmitRegisterApplicationDate", "Неделя заявки", baseLM.divideInteger, daysSubmitRegisterApplicationDate, 1, 2, addCProp(IntegerClass.instance, 7));
+
+        submitDaysRegisterApplicationDateWeek = addSGProp("submitDaysRegisterApplicationDateWeek", "Дней на статус", addJProp(daysStatusApplication, inActTestApplicationDate, 1, 2), 2, weekSubmitRegisterApplicationDate, 1, 2);
+        submitRegisterApplicationsDateWeek = addSGProp("submitRegisterApplicationsDateWeek", "К-во заявок за неделю", addJProp(addCProp(IntegerClass.instance, 1, application), inActTestApplicationDate, 1, 2), 2, weekSubmitRegisterApplicationDate, 1, 2);
+        risingDaysRegisterApplicationDateWeek = addOProp("risingDaysRegisterApplicationDateWeek", "Дней на статус, нарастающий", OrderType.SUM, submitDaysRegisterApplicationDateWeek, true, true, 1, 1, 2);
+        risingRegisterApplicationsDateWeek = addOProp("risingRegisterApplicationsDateWeek", "К-во заявок, нарастающий", OrderType.SUM, submitRegisterApplicationsDateWeek, true, true, 1, 1, 2);
+
+        averageDaysRegisterApplicationsDateWeek = addJProp("averageDaysRegisterApplicationsDateWeek", "Средний срок рассмотрения зявки на статус",
+                baseLM.divideInteger0, risingDaysRegisterApplicationDateWeek, 1, 2, risingRegisterApplicationsDateWeek, 1, 2);
+
+//        qSubmitRegisterApplicationsDateTo = addOProp("qSubmitRegisterApplicationsDateTo", "К-во заявок", OrderType.SUM, submitRegisterApplicationsDateTo, true, true, 0, 1);
+//        averageDaysRegisterApplicationsDateWeekTo = addJProp("averageDaysRegisterApplicationsDateWeekTo", "Средний срок рассмотрения зявки на статус", averageDaysRegisterApplicationsDateTo, baseLM.sumDateWeekTo, 1, 2);
+//        submitRegisterApplicationsDateWeekTo = addJProp("submitRegisterApplicationsDateWeekTo", "К-во заявок всего", submitRegisterApplicationsDateTo, baseLM.sumDateWeekTo, 1, 2);
     }
 
     @Override
@@ -3637,6 +3695,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         addFormEntity(new ApplicationsDynamicsFormEntity(report, "applicationsDynamics"));
         addFormEntity(new ApplicationsStatusWeekFormEntity(report, "applicationsStatusWeek"));
         addFormEntity(new ApplicationsStatusTimeFormEntity(report, "applicationsStatusTime"));
+        addFormEntity(new RegisterApplicationWeekFormEntity(report, "registerApplicationWeekFormEntity"));
         addFormEntity(new ApplicationsListFormEntity(report, "applicationsList"));
 
         addFormEntity(new ProjectFormEntity(baseLM.baseElement, "project"));
@@ -4571,7 +4630,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             super(parent, sID, "Реестр заявок");
 
             objApplication = addSingleGroupObject(application, dateApplication, nameNativeClaimerApplication, nameProjectActionApplication, nameNativeProjectApplication,
-                    officialNameStatusApplication, dateInStatusApplication, normalPeriodStatusApplication, quantityDaysToOverdueDateStatusApplication, langApplication, nameNativeShortAggregateClusterApplication, finalClusterApplication, emailClaimerApplication, daysClaimerApplication);
+                    officialNameStatusApplication, dateInStatusApplication, normalPeriodStatusApplication, quantityDaysToOverdueDateStatusApplication, langApplication, nameNativeShortAggregateClusterApplication, nameNativeShortFinalClusterApplication, emailClaimerApplication, daysClaimerApplication);
 
             addFixedFilter(new NotFilterEntity(new NotNullFilterEntity(addPropertyObject(inactiveApplication, objApplication))));
 
@@ -5467,8 +5526,6 @@ public class SkolkovoLogicsModule extends LogicsModule {
             objCluster = addSingleGroupObject(1, "cluster", cluster, "Кластер", nameNativeShort, nameNative, nameForeign, sumApplicationsCluster);
 
             objTypeProjectStatus = addSingleGroupObject(3, "typeProjectStatus", typeProjectStatus, "Тип статуса проекта", baseLM.name);
-            addPropertyDraw(sumSubmitApplications);
-            addPropertyDraw(nonClusterApplicationsSubmit);
 
             PropertyDrawEntity count = addPropertyDraw(sumApplicationsTypeProjectStatusCluster, objTypeProjectStatus, objCluster);
             count.columnGroupObjects.add(objCluster.groupTo);
@@ -5494,6 +5551,9 @@ public class SkolkovoLogicsModule extends LogicsModule {
             addFixedFilter(new NotFilterEntity(new NotNullFilterEntity(addPropertyObject(inTestCluster, objCluster))));
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(sumApplicationsStatusApplication, objProjectStatus)));
             addFixedFilter(new CompareFilterEntity(addPropertyObject(typeProjectStatusProjectStatus, objProjectStatus), Compare.EQUALS, objTypeProjectStatus));
+
+            addPropertyDraw(sumSubmitApplications).toDraw = objProjectStatus.groupTo;
+            addPropertyDraw(nonClusterApplicationsSubmit).toDraw = objProjectStatus.groupTo;
 
         }
     }
@@ -5521,12 +5581,30 @@ public class SkolkovoLogicsModule extends LogicsModule {
         public ApplicationsStatusTimeFormEntity(NavigatorElement parent, String sID) {
             super(baseLM, parent, sID, "Средний срок рассмотрения заявки на статус участника");
 
-            objApplicationStatus = addSingleGroupObject(4, "applicationStatus", applicationStatus, "Заявка", nameProjectActionApplication, nameNativeClaimerApplication, dateApplicationStatus, daysClaimerApplication, quantityStatusVoteApplication, dateSubmittedToRegisterProjectApplication, daysStatusApplication, isPreliminaryAndStatusApplication);
+            objApplicationStatus = addSingleGroupObject(4, "applicationStatus", applicationStatus, "Заявка", nameProjectActionApplication, nameNativeClaimerApplication, dateApplicationStatus, daysClaimerApplication, quantityStatusVoteApplication, dateSubmittedToRegisterApplication, daysStatusApplication, isPreliminaryAndStatusApplication);
             addFixedFilter(new NotFilterEntity(new NotNullFilterEntity(addPropertyObject(inactiveApplication, objApplicationStatus))));
-            addFixedFilter(new CompareFilterEntity(addPropertyObject(dateSubmittedToRegisterProjectApplication, objApplicationStatus), Compare.LESS_EQUALS, objDateTo));
-            addFixedFilter(new CompareFilterEntity(addPropertyObject(dateSubmittedToRegisterProjectApplication, objApplicationStatus), Compare.GREATER_EQUALS, objDateFrom));
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(dateSubmittedToRegisterApplication, objApplicationStatus), Compare.LESS_EQUALS, objDateTo));
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(dateSubmittedToRegisterApplication, objApplicationStatus), Compare.GREATER_EQUALS, objDateFrom));
         }
     }
+
+    private class RegisterApplicationWeekFormEntity extends DateIntervalFormEntity<SkolkovoBusinessLogics> {
+        private ObjectEntity objWeek;
+
+        public RegisterApplicationWeekFormEntity(NavigatorElement parent, String sID) {
+            super(baseLM, parent, sID, "Динамика среднего срока рассмотрения заявки на статус участника");
+
+            objWeek = addSingleGroupObject(4, "week", IntegerClass.instance, "Неделя", baseLM.objectValue);
+            addPropertyDraw(objDateFrom, objDateTo, statusApplicationsSubmitDateDate);
+            addPropertyDraw(objDateFrom, objWeek, baseLM.sumDateWeekFrom, baseLM.sumDateWeekTo, submitRegisterApplicationsDateWeek, risingDaysRegisterApplicationDateWeek, risingRegisterApplicationsDateWeek, averageDaysRegisterApplicationsDateWeek);
+
+            addFixedFilter(new NotNullFilterEntity(addPropertyObject(submitRegisterApplicationsDateWeek, objDateFrom, objWeek)));
+            addFixedFilter(new NotFilterEntity(new NotNullFilterEntity(addPropertyObject(baseLM.negative, objWeek))));
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(baseLM.sumDateWeekTo, objDateFrom, objWeek), Compare.LESS_EQUALS, objDateTo));
+
+        }
+    }
+
 
     private class ApplicationsListFormEntity extends DateIntervalFormEntity<SkolkovoBusinessLogics> {
 
