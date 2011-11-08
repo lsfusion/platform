@@ -157,7 +157,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
     ConcreteCustomClass formalControl;
     StaticCustomClass legalCheckResult;
     StaticCustomClass originalDocsCheckResult;
-    StaticCustomClass projectSchedule;
+    public StaticCustomClass projectSchedule;
     ConcreteCustomClass legalCheck;
     ConcreteCustomClass originalDocsCheck;
     ConcreteCustomClass currency;
@@ -448,7 +448,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP loadExtractClaimer, openExtractClaimer;
     public LP OGRNClaimer;
     public LP INNClaimer;
-    LP projectScheduleProject;
+    public LP projectScheduleProject;
     LP regulationsProject, nameRegulationsProject;
     LP isR2Project, isR1Project;
     LP revisionVote;
@@ -937,6 +937,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
     public LP projectTypeToSID;
     public LP projectActionToSID;
     public LP projectMissionToSID;
+    public LP projectScheduleToSID;
     public LP fileIntentionOwnerPatent;
     LP loadFileIntentionOwnerPatent;
     LP openFileIntentionOwnerPatent;
@@ -2195,6 +2196,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         projectTypeToSID = addAGProp("projectTypeToSID", "SID типа проекта", addJProp(baseLM.and1, baseLM.classSID, 1, is(projectType), 1));
         projectActionToSID = addAGProp("projectActionToSID", "SID текущего статуса", addJProp(baseLM.and1, baseLM.classSID, 1, is(projectAction), 1));
         projectMissionToSID = addAGProp("projectMissionToSID", "SID назначения", addJProp(baseLM.and1, baseLM.classSID, 1, is(projectMission), 1));
+        projectScheduleToSID = addAGProp("projectScheduleToSID", "SID регламента", addJProp(baseLM.and1, baseLM.classSID, 1, is(projectSchedule), 1));
         fileIntentionOwnerPatent = addDProp("fileIntentionOwnerPatent", "Файл документа о передаче права", CustomFileClass.instance, patent);
         loadFileIntentionOwnerPatent = addLFAProp(baseGroup, "Загрузить файл документа о передаче права", fileIntentionOwnerPatent);
         openFileIntentionOwnerPatent = addOFAProp(baseGroup, "Открыть файл документа о передаче права", fileIntentionOwnerPatent);

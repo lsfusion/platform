@@ -100,6 +100,7 @@ public class ImportProjectsActionProperty extends ActionProperty {
             fileNativeTechnicalDescriptionProjectField, fileForeignTechnicalDescriptionProjectField,
 
             projectMissionProjectField, nativeCommentMissionProjectField, foreignCommentMissionProjectField,
+            projectScheduleProjectField,
             nativeResumeProjectField, foreignResumeProjectField, nameNativeContactProjectField, nameForeignContactProjectField,
             phoneContactProjectField, emailContactProjectField,
             nativeMarketTrendsProjectField, foreignMarketTrendsProjectField, nativeRelevanceProjectField,
@@ -132,7 +133,9 @@ public class ImportProjectsActionProperty extends ActionProperty {
             nativeIntellectualPropertySpecialistField, foreignIntellectualPropertySpecialistField,
             nativeProjectObjectivesField, foreignProjectObjectivesField;
 
-    ImportKey<?> projectKey, projectTypeProjectKey, projectActionProjectKey, claimerKey, patentKey, ownerTypePatentKey, clusterKey, academicKey, nonRussianSpecialistKey, projectMissionProjectKey, researchKey, publicationsKey, commercializationKey, analoguesKey, specialistKey, objectivesKey;
+    ImportKey<?> projectKey, projectTypeProjectKey, projectActionProjectKey, claimerKey, patentKey, ownerTypePatentKey,
+            clusterKey, academicKey, nonRussianSpecialistKey, projectMissionProjectKey, projectScheduleProjectKey,
+            researchKey, publicationsKey, commercializationKey, analoguesKey, specialistKey, objectivesKey;
     List<ImportProperty<?>> properties = new ArrayList<ImportProperty<?>>();
     ImportProperty<?> propertyDate;
     ImportProperty<?> propertyStatusDate;
@@ -298,6 +301,7 @@ public class ImportProjectsActionProperty extends ActionProperty {
 
         projectKey = new ImportKey(LM.project, LM.sidToProject.getMapping(projectIdField));
         properties.add(new ImportProperty(projectIdField, LM.sidProject.getMapping(projectKey)));
+        properties.add(new ImportProperty(projectScheduleProjectField, LM.projectScheduleProject.getMapping(projectKey)));
         properties.add(new ImportProperty(isOwnedEquipmentProjectField, LM.isOwnedEquipmentProject.getMapping(projectKey)));
         properties.add(new ImportProperty(isAvailableEquipmentProjectField, LM.isAvailableEquipmentProject.getMapping(projectKey)));
         properties.add(new ImportProperty(isTransferEquipmentProjectField, LM.isTransferEquipmentProject.getMapping(projectKey)));
@@ -527,6 +531,7 @@ public class ImportProjectsActionProperty extends ActionProperty {
 
         updateDateProjectField = new ImportField(LM.updateDateProject);
         projectMissionProjectField = new ImportField(LM.baseLM.classSID);
+        projectScheduleProjectField = new ImportField(LM.baseLM.classSID);
         projectActionProjectField = new ImportField(LM.baseLM.classSID);
 
         isOtherClusterProjectField = new ImportField(LM.isOtherClusterProject);
@@ -621,6 +626,7 @@ public class ImportProjectsActionProperty extends ActionProperty {
 
         projectKey = new ImportKey(LM.project, LM.sidToProject.getMapping(projectIdField));
         properties.add(new ImportProperty(projectIdField, LM.sidProject.getMapping(projectKey)));
+        properties.add(new ImportProperty(projectScheduleProjectField, LM.projectScheduleProject.getMapping(projectKey)));
         properties.add(new ImportProperty(fillNativeProjectField, LM.fillNativeProject.getMapping(projectKey)));
         properties.add(new ImportProperty(fillForeignProjectField, LM.fillForeignProject.getMapping(projectKey)));
         properties.add(new ImportProperty(phoneContactProjectField, LM.phoneContactProject.getMapping(projectKey)));
@@ -633,6 +639,10 @@ public class ImportProjectsActionProperty extends ActionProperty {
         projectMissionProjectKey = new ImportKey(LM.projectMission, LM.projectMissionToSID.getMapping(projectMissionProjectField));
         properties.add(new ImportProperty(projectMissionProjectField, LM.projectMissionProject.getMapping(projectKey),
                 LM.baseLM.object(LM.projectMission).getMapping(projectMissionProjectKey)));
+
+        projectScheduleProjectKey = new ImportKey(LM.projectSchedule, LM.projectScheduleToSID.getMapping(projectScheduleProjectField));
+        properties.add(new ImportProperty(projectScheduleProjectField, LM.projectScheduleProject.getMapping(projectKey),
+                LM.baseLM.object(LM.projectSchedule).getMapping(projectScheduleProjectKey)));
 
         projectActionProjectKey = new ImportKey(LM.projectAction, LM.projectActionToSID.getMapping(projectActionProjectField));
         properties.add(new ImportProperty(projectActionProjectField, LM.projectActionProject.getMapping(projectKey),
@@ -1148,8 +1158,9 @@ public class ImportProjectsActionProperty extends ActionProperty {
                         fillForeign = true;
                     }
                 }
+                String regulationProject = BaseUtils.nevl(node.getChildText("regulationProject"), "a");
 
-                if (!"b".equals(BaseUtils.nevl(node.getChildText("regulationProject"), "a"))) {
+                if (!"b".equals(regulationProject)) {
 
                     initOldFieldsNProperties();
 
@@ -1531,6 +1542,7 @@ public class ImportProjectsActionProperty extends ActionProperty {
 
                     row.add(currentProjectDate);
                     row.add(node.getChildText("missionProject"));
+                    row.add("R2"); //scheduleProject
                     row.add(node.getChildText("actionProject"));
 
                     row.add(node.getChildText("emailProject"));
@@ -1833,7 +1845,7 @@ public class ImportProjectsActionProperty extends ActionProperty {
                             emailContactProjectField, linksMarketTrendsProjectField, linksAnalogProjectField,
                             linksMarketIntroductionProjectField,
                             projectIdField, updateDateProjectField, projectMissionProjectField,
-                            projectActionProjectField, emailClaimerField
+                            projectScheduleProjectField, projectActionProjectField, emailClaimerField
                     );
 
                     List<ImportField> fieldsFullClaimerBoth = BaseUtils.toList(phoneClaimerField, addressClaimerField,
@@ -1877,7 +1889,7 @@ public class ImportProjectsActionProperty extends ActionProperty {
                         fieldsBoth.add(foreignSubstantiationOtherClusterProjectField);
                     }
 
-                    ImportKey<?>[] keysArray = new ImportKey<?>[]{projectKey, projectMissionProjectKey, projectActionProjectKey, claimerKey};
+                    ImportKey<?>[] keysArray = new ImportKey<?>[]{projectKey, projectMissionProjectKey, projectScheduleProjectKey, projectActionProjectKey, claimerKey};
                     SessionTableUsage<String, ImportField> projectTable =
                             importMultilanguageData(pInfo,
                                                     fieldsBoth, fieldsNative, fieldsForeign,
