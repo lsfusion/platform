@@ -77,7 +77,7 @@ public class ClientFormActionDispatcher implements ClientActionDispatcher {
     public void execute(ExportFileClientAction action) {
         try {
             JFileChooser fileChooser = new JFileChooser();
-            Preferences preferences = Preferences.userNodeForPackage(this.getClass());
+            Preferences preferences = Preferences.userNodeForPackage(Main.class);
             fileChooser.setCurrentDirectory(new File(preferences.get("LATEST_DIRECTORY", "")));
             boolean singleFile;
             if (action.files.size() > 1) {

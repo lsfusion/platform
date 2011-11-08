@@ -2,6 +2,7 @@ package platform.client.form.editor;
 
 import platform.base.BaseUtils;
 import platform.base.IOUtils;
+import platform.client.Main;
 import platform.client.SwingUtils;
 import platform.interop.KeyStrokes;
 
@@ -54,7 +55,7 @@ public class CustomFileEditor extends DocumentPropertyEditor {
     public Object getCellEditorValue() throws RemoteException {
         File[] files = isMultiSelectionEnabled() ? getSelectedFiles() : new File[]{getSelectedFile()};
 
-        Preferences preferences = Preferences.userNodeForPackage(this.getClass());
+        Preferences preferences = Preferences.userNodeForPackage(Main.class);
         preferences.put("LATEST_DIRECTORY", files[0].getAbsolutePath());
 
         byte result[] = null;

@@ -3,6 +3,7 @@ package platform.client.form.editor;
 import platform.base.BaseUtils;
 import platform.base.IOUtils;
 import platform.client.ClientResourceBundle;
+import platform.client.Main;
 import platform.client.form.PropertyEditorComponent;
 
 import javax.swing.*;
@@ -47,7 +48,7 @@ public class FilePropertyEditor extends JFileChooser
     }
 
     private void setLatestCurrentDirectory() {
-        Preferences preferences = Preferences.userNodeForPackage(this.getClass());
+        Preferences preferences = Preferences.userNodeForPackage(Main.class);
         setCurrentDirectory(new File(preferences.get("LATEST_DIRECTORY", "")));
     }
 
@@ -60,7 +61,7 @@ public class FilePropertyEditor extends JFileChooser
     @Override
     public Object getCellEditorValue() throws RemoteException {
         try {
-            Preferences preferences = Preferences.userNodeForPackage(this.getClass());
+            Preferences preferences = Preferences.userNodeForPackage(Main.class);
             preferences.put("LATEST_DIRECTORY", this.getSelectedFile().getAbsolutePath());
             return returnValue == JFileChooser.APPROVE_OPTION ? IOUtils.getFileBytes(this.getSelectedFile()) : null;
         } catch (IOException e) {

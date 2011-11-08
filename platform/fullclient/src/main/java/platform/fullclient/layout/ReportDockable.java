@@ -10,6 +10,7 @@ import net.sf.jasperreports.engine.export.JRXlsAbstractExporterParameter;
 import net.sf.jasperreports.engine.util.JRLoader;
 import net.sf.jasperreports.view.JRViewer;
 import org.apache.poi.hssf.record.formula.functions.T;
+import platform.client.Main;
 import platform.client.navigator.ClientNavigator;
 import platform.interop.form.RemoteFormInterface;
 
@@ -100,13 +101,13 @@ public class ReportDockable extends FormDockable {
 
         public void getCurrentDirectory() {
             if (lastFolder != null) {
-                Preferences preferences = Preferences.userNodeForPackage(this.getClass());
+                Preferences preferences = Preferences.userNodeForPackage(Main.class);
                 preferences.put("LATEST_DIRECTORY", lastFolder.getAbsolutePath());
             }
         }
 
         public void setCurrentDirectory() {
-            Preferences preferences = Preferences.userNodeForPackage(this.getClass());
+            Preferences preferences = Preferences.userNodeForPackage(Main.class);
             lastFolder = new File(preferences.get("LATEST_DIRECTORY", ""));
         }
     }
