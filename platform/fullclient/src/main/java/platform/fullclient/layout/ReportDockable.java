@@ -3,26 +3,19 @@ package platform.fullclient.layout;
 import bibliothek.gui.dock.common.MultipleCDockableFactory;
 import jasperapi.ReportGenerator;
 import net.sf.jasperreports.engine.JRException;
-import net.sf.jasperreports.engine.JRExporterParameter;
 import net.sf.jasperreports.engine.JasperPrint;
-import net.sf.jasperreports.engine.export.JRCsvExporter;
 import net.sf.jasperreports.engine.export.JRXlsAbstractExporterParameter;
 import net.sf.jasperreports.engine.util.JRLoader;
 import net.sf.jasperreports.view.JRViewer;
-import org.apache.poi.hssf.record.formula.functions.T;
-import platform.client.Main;
+import platform.base.OSUtils;
 import platform.client.navigator.ClientNavigator;
 import platform.interop.form.RemoteFormInterface;
 
 import javax.swing.*;
-import javax.swing.event.EventListenerList;
 import java.awt.*;
 import java.awt.event.ActionListener;
-import java.awt.event.ItemListener;
 import java.io.File;
 import java.io.IOException;
-import java.util.Locale;
-import java.util.prefs.Preferences;
 
 public class ReportDockable extends FormDockable {
 
@@ -85,7 +78,7 @@ public class ReportDockable extends FormDockable {
     private static class RViewer extends JRViewer {
         public RViewer(JasperPrint print) {
             super(print);
-            setCurrentDirectory();
+            lastFolder = OSUtils.loadCurrentDirectory();
 
             ActionListener[] al = btnSave.getActionListeners();
 
@@ -93,22 +86,10 @@ public class ReportDockable extends FormDockable {
 
             btnSave.addActionListener(new java.awt.event.ActionListener() {
                 public void actionPerformed(java.awt.event.ActionEvent evt) {
-                    getCurrentDirectory();
+                    OSUtils.saveCurrentDirectory(lastFolder);
                 }
             });
             btnSave.addActionListener(al[0]);
-        }
-
-        public void getCurrentDirectory() {
-            if (lastFolder != null) {
-                Preferences preferences = Preferences.userNodeForPackage(Main.class);
-                preferences.put("LATEST_DIRECTORY", lastFolder.getAbsolutePath());
-            }
-        }
-
-        public void setCurrentDirectory() {
-            Preferences preferences = Preferences.userNodeForPackage(Main.class);
-            lastFolder = new File(preferences.get("LATEST_DIRECTORY", ""));
         }
     }
 }

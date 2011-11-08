@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.prefs.Preferences;
 
 public class OSUtils {
 
@@ -41,6 +42,18 @@ public class OSUtils {
         libPath += is64Arch() ? "64" : "32";
 
         return getResourcePath(libName + libExtension, path + libPath + '/', cls, false, false); // будем считать, что в library зашифрована вер
+    }
+
+    public static void saveCurrentDirectory(File lastFolder) {
+        if (lastFolder != null) {
+            Preferences preferences = Preferences.userNodeForPackage(OSUtils.class);
+            preferences.put("LATEST_DIRECTORY", lastFolder.getAbsolutePath());
+        }
+    }
+
+    public static File loadCurrentDirectory() {
+        Preferences preferences = Preferences.userNodeForPackage(OSUtils.class);
+        return new File(preferences.get("LATEST_DIRECTORY", ""));
     }
 
     public static boolean is64Arch() {

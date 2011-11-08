@@ -2,19 +2,15 @@ package platform.client.form.editor;
 
 import platform.base.BaseUtils;
 import platform.base.IOUtils;
-import platform.client.Main;
+import platform.base.OSUtils;
 import platform.client.SwingUtils;
-import platform.interop.KeyStrokes;
 
 import javax.swing.*;
 import java.awt.*;
-import java.io.ByteArrayInputStream;
-import java.io.DataInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.rmi.RemoteException;
 import java.util.EventObject;
-import java.util.prefs.Preferences;
 
 public class CustomFileEditor extends DocumentPropertyEditor {
     boolean allowOpen;
@@ -55,8 +51,7 @@ public class CustomFileEditor extends DocumentPropertyEditor {
     public Object getCellEditorValue() throws RemoteException {
         File[] files = isMultiSelectionEnabled() ? getSelectedFiles() : new File[]{getSelectedFile()};
 
-        Preferences preferences = Preferences.userNodeForPackage(Main.class);
-        preferences.put("LATEST_DIRECTORY", files[0].getAbsolutePath());
+        OSUtils.saveCurrentDirectory(files[0]);
 
         byte result[] = null;
 

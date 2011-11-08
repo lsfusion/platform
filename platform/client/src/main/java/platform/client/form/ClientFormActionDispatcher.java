@@ -2,6 +2,7 @@ package platform.client.form;
 
 import platform.base.BaseUtils;
 import platform.base.IOUtils;
+import platform.base.OSUtils;
 import platform.client.ClientResourceBundle;
 import platform.client.Log;
 import platform.client.Main;
@@ -16,7 +17,6 @@ import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
 import java.text.DecimalFormat;
-import java.util.prefs.Preferences;
 
 public class ClientFormActionDispatcher implements ClientActionDispatcher {
 
@@ -77,8 +77,7 @@ public class ClientFormActionDispatcher implements ClientActionDispatcher {
     public void execute(ExportFileClientAction action) {
         try {
             JFileChooser fileChooser = new JFileChooser();
-            Preferences preferences = Preferences.userNodeForPackage(Main.class);
-            fileChooser.setCurrentDirectory(new File(preferences.get("LATEST_DIRECTORY", "")));
+            fileChooser.setCurrentDirectory(OSUtils.loadCurrentDirectory());
             boolean singleFile;
             if (action.files.size() > 1) {
                 singleFile = false;
@@ -92,7 +91,7 @@ public class ClientFormActionDispatcher implements ClientActionDispatcher {
                 for (String file : action.files.keySet()) {
                     IOUtils.putFileBytes(new File(singleFile ? path : path + "\\" + file), action.files.get(file));
                 }
-                preferences.put("LATEST_DIRECTORY", !singleFile ? path : path.substring(0, path.lastIndexOf("\\")));
+                OSUtils.saveCurrentDirectory(!singleFile ? new File(path) : new File(path.substring(0, path.lastIndexOf("\\"))));
             }
         } catch (IOException e) {
             throw new RuntimeException(e);
