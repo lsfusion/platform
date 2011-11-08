@@ -301,7 +301,6 @@ public class ImportProjectsActionProperty extends ActionProperty {
 
         projectKey = new ImportKey(LM.project, LM.sidToProject.getMapping(projectIdField));
         properties.add(new ImportProperty(projectIdField, LM.sidProject.getMapping(projectKey)));
-        properties.add(new ImportProperty(projectScheduleProjectField, LM.projectScheduleProject.getMapping(projectKey)));
         properties.add(new ImportProperty(isOwnedEquipmentProjectField, LM.isOwnedEquipmentProject.getMapping(projectKey)));
         properties.add(new ImportProperty(isAvailableEquipmentProjectField, LM.isAvailableEquipmentProject.getMapping(projectKey)));
         properties.add(new ImportProperty(isTransferEquipmentProjectField, LM.isTransferEquipmentProject.getMapping(projectKey)));
@@ -626,7 +625,6 @@ public class ImportProjectsActionProperty extends ActionProperty {
 
         projectKey = new ImportKey(LM.project, LM.sidToProject.getMapping(projectIdField));
         properties.add(new ImportProperty(projectIdField, LM.sidProject.getMapping(projectKey)));
-        properties.add(new ImportProperty(projectScheduleProjectField, LM.projectScheduleProject.getMapping(projectKey)));
         properties.add(new ImportProperty(fillNativeProjectField, LM.fillNativeProject.getMapping(projectKey)));
         properties.add(new ImportProperty(fillForeignProjectField, LM.fillForeignProject.getMapping(projectKey)));
         properties.add(new ImportProperty(phoneContactProjectField, LM.phoneContactProject.getMapping(projectKey)));
