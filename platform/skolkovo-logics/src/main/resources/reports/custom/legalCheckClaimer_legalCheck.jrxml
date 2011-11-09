@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="formalControl" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0">
+	<property name="ireport.zoom" value="1.0"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<style name="DefaultStyle" isDefault="true" vAlign="Middle" fontName="lsf.TimesNewRoman" fontSize="10">
+		<box>
+			<pen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+			<topPen lineWidth="0.0"/>
+			<leftPen lineWidth="0.0"/>
+			<bottomPen lineWidth="0.0"/>
+			<rightPen lineWidth="0.0"/>
+		</box>
+		<paragraph leftIndent="2" rightIndent="2"/>
+	</style>
+	<style name="GroupCellStyle0" mode="Opaque" backcolor="#FFFFFF" vAlign="Middle" fontName="lsf.TimesNewRoman" fontSize="10">
+		<box>
+			<pen lineWidth="0.5" lineStyle="Solid" lineColor="#000000"/>
+		</box>
+		<paragraph leftIndent="2" rightIndent="2"/>
+	</style>
+	<field name="legalCheck" class="java.lang.Integer"/>
+	<field name="nameResultLegalCheck" class="java.lang.String"/>
+	<field name="nameProjectActionLegalCheck" class="java.lang.String"/>
+	<field name="dateTimeLegalCheck" class="java.util.Date"/>
+	<field name="dateProjectLegalCheck" class="java.util.Date"/>
+	<field name="commentLegalCheck" class="java.lang.String"/>
+	<field name="overdueDateLegalCheck" class="java.util.Date"/>
+	<field name="sidResultLegalCheck" class="java.lang.String"/>
+	<field name="nameNativeClusterProjectLegalCheck" class="java.lang.String"/>
+	<field name="isPreliminaryAndStatusProjectLegalCheck" class="java.lang.Boolean"/>
+	<field name="executiveLD" class="java.lang.String"/>
+	<field name="phoneExecutiveLD" class="java.lang.String"/>
+	<field name="mobileExecutiveLD" class="java.lang.String"/>
+	<field name="dateResultNoticedLegalCheck" class="java.util.Date"/>
+	<field name="sidStatusProjectLegalCheck" class="java.lang.String"/>
+	<detail>
+		<band height="45">
+			<printWhenExpression><![CDATA["positiveLegalCheckResult".equals($F{sidResultLegalCheck})&&$F{isPreliminaryAndStatusProjectLegalCheck}==null]]></printWhenExpression>
+			<textField isStretchWithOverflow="true">
+				<reportElement style="DefaultStyle" x="20" y="0" width="525" height="17"/>
+				<textElement>
+					<font size="14"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Уважаемый заявитель! \n \n"]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement style="DefaultStyle" positionType="Float" x="21" y="17" width="525" height="19"/>
+				<textElement>
+					<font size="14"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Ваша заявка успешно прошла формальную проверку и в течение ближайших 10 дней будет направлена экспертам по направлению "+$F{nameNativeClusterProjectLegalCheck}+
+" для прохождения экспертизы по существу. \n \n"+
+"Пожалуйста, ожидайте."]]></textFieldExpression>
+			</textField>
+		</band>
+		<band height="61">
+			<printWhenExpression><![CDATA["positiveLegalCheckResult".equals($F{sidResultLegalCheck})&&$F{isPreliminaryAndStatusProjectLegalCheck}]]></printWhenExpression>
+			<textField isStretchWithOverflow="true">
+				<reportElement style="DefaultStyle" x="20" y="11" width="525" height="17"/>
+				<textElement>
+					<font size="14"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Уважаемый заявитель! \n \n"+
+"Ваша заявка успешно прошла формальную проверку. \n \n"+
+"Для успешного завершения процедуры рассмотрения Вашей заявки Вам необходимо в течение 10 дней с сегодняшней даты предоставить в Фонд следующие документы: \n \n"+
+"А) Заявление Соискателя о намерении стать Участником проекта, подписанное руководителем постоянно действующего исполнительного органа Соискателя, или иным лицом, имеющим право без доверенности действовать от имени этого юридического лица, или представителем Соискателя по доверенности (оригинал). Заявление должно быть  заверено печатью Соискателя; \n \n"+
+"Б) Копию документа о постановке Соискателя на учет в налоговом органе (с представлением оригиналов в случае, если верность копий не засвидетельствована в нотариальном порядке); \n \n"+
+"В) Копию учредительных документов (с представлением оригиналов в случае, если верность копий не засвидетельствована в нотариальном порядке или налоговыми органами). \n \n"+
+"Наш адрес: 123610, Москва, Краснопресненская наб., 12, под. 6, к. 741 \n \n"+
+"Документы должны быть направлены по почте или переданы лично с 10 до 17 часов в рабочие дни сотруднику Правового департамента: \n"+
+$F{executiveLD}+"\n"+
+"Тел. раб.: "+$F{phoneExecutiveLD}+"\n"+
+"Тел. моб.: "+$F{mobileExecutiveLD}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement style="DefaultStyle" positionType="Float" x="21" y="28" width="525" height="21"/>
+				<textElement>
+					<font size="14"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Пожалуйста, предварительно согласуйте с "+$F{executiveLD}+" время Вашего визита. \n \n"+
+"Обращаем Ваше внимание, что в случае направления документов по почте предоставление незаверенных копий не допускается."]]></textFieldExpression>
+			</textField>
+		</band>
+		<band height="47">
+			<printWhenExpression><![CDATA["negativeLegalCheckResult".equals($F{sidResultLegalCheck})&&!"overdueLC".equals($F{sidStatusProjectLegalCheck})]]></printWhenExpression>
+			<textField isStretchWithOverflow="true">
+				<reportElement style="DefaultStyle" x="21" y="0" width="525" height="17"/>
+				<textElement>
+					<font size="14"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Уважаемый заявитель! \n \n"+
+"Мы провели формальную проверку Вашей заявки и выявили следующие несоответствия: \n"+
+$F{commentLegalCheck}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement style="DefaultStyle" positionType="Float" x="21" y="17" width="525" height="19"/>
+				<textElement>
+					<font size="14"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Пожалуйста, устраните данные несоответствия и отправьте заявку повторно не позднее "+platform.base.BaseUtils.formatRussian($F{overdueDateLegalCheck})+".* Вам открыта возможность редактирования анкеты в личном кабинете. \n \n"+
+"*Согласно пункту 7 Положения о присвоении и утрате статуса участника проекта создания и обеспечения функционирования инновационного центра «Сколково» срок исправления несоответствий составляет тридцать дней с момента получения уведомления."]]></textFieldExpression>
+			</textField>
+		</band>
+		<band height="70">
+			<printWhenExpression><![CDATA["negativeLegalCheckResult".equals($F{sidResultLegalCheck})&&"overdueLC".equals($F{sidStatusProjectLegalCheck})]]></printWhenExpression>
+			<textField isStretchWithOverflow="true">
+				<reportElement style="DefaultStyle" positionType="Float" x="21" y="27" width="525" height="19"/>
+				<textElement>
+					<font size="14"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["К сожалению, Вы не устранили несоответствия, о которых мы сообщили Вам в письме от "+ platform.base.BaseUtils.formatRussian($F{dateResultNoticedLegalCheck}) +". Мы вынуждены прекратить рассмотрение Вашей заявки*. \n \n"+
+"Пожалуйста, подайте новую заявку после необходимой доработки.\n \n"+
+"* на основании пункта 7 Положения о присвоении и утрате статуса участника проекта создания и обеспечения функционирования инновационного центра «Сколково»"]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement style="DefaultStyle" x="21" y="10" width="525" height="17"/>
+				<textElement>
+					<font size="14"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["Уважаемый заявитель! \n"]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+</jasperReport>
