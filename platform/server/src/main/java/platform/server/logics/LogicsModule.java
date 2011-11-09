@@ -1694,6 +1694,26 @@ public abstract class LogicsModule {
     }
 
     @IdentityLazy
+    protected LP getAddFormAction(ConcreteCustomClass cls) {
+        ClassFormEntity form = cls.getEditForm(baseLM);
+        LP property = addMFAProp(actionGroup, ServerResourceBundle.getString("logics.add") + "(" + cls + ")",
+                                form, new ObjectEntity[] {},
+                                new PropertyObjectEntity[] {form.addPropertyObject(getAddObjectAction(cls))},
+                                new OrderEntity[] {(DataObject)cls.getClassObject()}, true);
+        property.setImage("add.png");
+        return property;
+    }
+
+    @IdentityLazy
+    protected LP getEditFormAction(ConcreteCustomClass cls) {
+        ClassFormEntity form = cls.getEditForm(baseLM);
+        LP property = addMFAProp(actionGroup, ServerResourceBundle.getString("logics.edit") + "(" + cls + ")",
+                                form, new ObjectEntity[] {form.getObject()}, true);
+        property.setImage("edit.png");
+        return property;
+    }
+
+    @IdentityLazy
     protected LP getImportObjectAction(ValueClass cls) {
         return addAProp(new ImportFromExcelActionProperty(genSID(), (CustomClass) cls));
     }
@@ -1903,11 +1923,34 @@ public abstract class LogicsModule {
                     getAddObjectActionWithClassCheck(object.baseClass, checkObjectClass != null ? checkObjectClass : checkObject.baseClass),
                     checkObject);
 
-            actionAddPropertyDraw.shouldBeLast = true;
+            actionAddPropertyDraw.shouldBeLast = shouldBeLast;
             actionAddPropertyDraw.forceViewType = ClassViewType.PANEL;
         }
         actionAddPropertyDraw.shouldBeLast = shouldBeLast;
         form.forceDefaultDraw.put(actionAddPropertyDraw, object.groupTo);
     }
 
+    protected void addFormActions(FormEntity form, ObjectEntity object) {
+        addFormActions(form, object, true);
+    }
+
+    protected void addFormActions(FormEntity form, ObjectEntity object, boolean shouldBeLast) {
+        form.addPropertyDraw(baseLM.delete, object).shouldBeLast = shouldBeLast;
+
+        PropertyDrawEntity actionEditPropertyDraw = form.addPropertyDraw(getEditFormAction((ConcreteCustomClass)object.baseClass));
+        actionEditPropertyDraw.shouldBeLast = shouldBeLast;
+        actionEditPropertyDraw.forceViewType = ClassViewType.PANEL;
+
+        form.forceDefaultDraw.put(actionEditPropertyDraw, object.groupTo);
+
+        LP addForm = getAddFormAction((ConcreteCustomClass)object.baseClass);
+        PropertyDrawEntity actionAddPropertyDraw = form.addPropertyDraw(addForm);
+        actionAddPropertyDraw.shouldBeLast = shouldBeLast;
+        actionAddPropertyDraw.forceViewType = ClassViewType.PANEL;
+
+        // todo : так не очень правильно делать - получается, что мы добавляем к Immutable объекту FormActionProperty ссылки на ObjectEntity
+        ((FormActionProperty)addForm.property).seekOnOk.add(object);
+
+        form.forceDefaultDraw.put(actionAddPropertyDraw, object.groupTo);
+    }
 }

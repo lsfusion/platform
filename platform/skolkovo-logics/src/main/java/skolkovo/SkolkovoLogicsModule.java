@@ -119,6 +119,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
     public ConcreteCustomClass project;
     public ConcreteCustomClass expert;
     public ConcreteCustomClass cluster;
+    public ConcreteCustomClass clusterUser;
     public ConcreteCustomClass foresight;
     public ConcreteCustomClass claimer;
     public ConcreteCustomClass claimerExpert;
@@ -156,6 +157,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
     StaticCustomClass typeProjectStatus;
 
     StaticCustomClass formalControlResult;
+    StaticCustomClass foresightCheckResult;
     ConcreteCustomClass formalControl;
     StaticCustomClass legalCheckResult;
     StaticCustomClass originalDocsCheckResult;
@@ -252,6 +254,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
         cluster = addConcreteClass("cluster", "Кластер", multiLanguageNamed);
         foresight = addConcreteClass("foresight", "Форсайт", multiLanguageNamed);
 
+        clusterUser = addConcreteClass("clusterUser", "Сотрудник кластера", baseLM.customUser);
+
         claimer = addConcreteClass("claimer", "Заявитель", multiLanguageNamed, baseLM.emailObject);
         claimer.dialogReadOnly = false;
 
@@ -305,6 +309,10 @@ public class SkolkovoLogicsModule extends LogicsModule {
         formalControlResult = addStaticClass("formalControlResult", "Решение формальной экспертизы",
                 new String[]{"notEnoughDocuments", "noListOfExperts", "notSuitableCluster", "repeatedFC", "positiveFormalResult"},
                 new String[]{"Неполный перечень документов", "Отсутствует перечень экспертов", "Не соответствует направлению", "Подана повторно", "Прошла формальную экспертизу"});
+
+        foresightCheckResult = addStaticClass("foresightCheckResult", "Решение проверки на форсайты",
+                new String[]{"negativeForesightCheckResult", "positiveForesightCheckResult"},
+                new String[]{"Не прошла проверку на форсайты", "Прошла проверку на форсайты"});
 
         legalCheckResult = addStaticClass("legalCheckResult", "Решение юридической проверки",
                 new String[]{"negativeLegalCheckResult", "positiveLegalCheckResult"},
@@ -461,6 +469,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP quantityClusterVotedProject;
     LP dataDocumentNameExpert, documentNameExpert;
     public LP emailExpert;
+    public LP clusterClusterUser, nameClusterClusterUser, clusterCurrentUser;
+    public LP inClusterCurrentUserProject;
     LP clusterExpert, nameNativeClusterExpert, nameForeignClusterExpert, nameNativeShortClusterExpert;
     LP inExpertForesight, commentExpertForesight, quantityInForesightExpert, quantityInExpertForesight;
     public LP inProjectForesightExpert, quantityForesightProjectExpert;
@@ -474,6 +484,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP quantityInClusterExpert;
     LP clusterInExpertVote;
     public LP inProjectCluster;
+    public LP inClaimerProjectCluster;
     public LP inProjectForesight;
     LP isInClusterProjectForesight;
     LP clusterVote, nameNativeClusterVote, nameForeignClusterVote;
@@ -1065,6 +1076,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
     LP overdueLegalCheckProject;
     LP projectLegalCheck;
+    LP resultForesightCheckProject, positiveResultForesightCheckProject, negativeResultForesightCheckProject;
+    LP needForesightCheckProject;
     LP resultLegalCheck, positiveResultLegalCheck, negativeResultLegalCheck;
     LP nameResultLegalCheck;
     LP dateProjectLegalCheck, sidResultLegalCheck, clusterProjectLegalCheck, nameNativeClusterProjectLegalCheck, isPreliminaryAndStatusProjectLegalCheck;
@@ -1441,6 +1454,10 @@ public class SkolkovoLogicsModule extends LogicsModule {
         emailFirmClaimer = addDProp(contactGroup, "emailFirmClaimer", "E-mail организации", StringClass.get(50), claimer);
         emailExpert = addJProp("emailExpert", "E-mail", baseLM.and1, baseLM.email, 1, is(expert), 1);
 
+        clusterClusterUser = addDProp(idGroup, "clusterClusterUser", "Кластер (ИД)", cluster, clusterUser);
+        nameClusterClusterUser = addJProp(baseGroup, "nameClusterClusterUser", "Кластер", nameNativeShort, clusterClusterUser, 1);
+        clusterCurrentUser = addJProp(idGroup, "clusterCurrentUser", "Кластер текущего пользователя", clusterClusterUser, baseLM.currentUser);
+
         statementClaimer = addDProp("statementClaimer", "Заявление", CustomFileClass.instance, claimer);
         loadStatementClaimer = addLFAProp(documentGroup, "Загрузить заявление", statementClaimer);
         openStatementClaimer = addOFAProp(documentGroup, "Открыть заявление", statementClaimer);
@@ -1474,6 +1491,9 @@ public class SkolkovoLogicsModule extends LogicsModule {
         inTestCluster = addDProp(baseGroup, "inTestCluster", "Ненужный", LogicalClass.instance, cluster);
 
         inProjectCluster = addDProp(baseGroup, "inProjectCluster", "Вкл", LogicalClass.instance, project, cluster);
+        inClaimerProjectCluster = addDProp(baseGroup, "inClaimerProjectCluster", "Вкл (заявитель)", LogicalClass.instance, project, cluster);
+
+        inClusterCurrentUserProject = addJProp("inClusterCurrentUserProject", "Вкл", inProjectCluster, 1, clusterCurrentUser);
 
         quantityClusterProject = addSGProp(baseGroup, "quantityClusterProject", true, "Кол-во кластеров",
                 addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1, cluster), 2,
@@ -2951,6 +2971,15 @@ public class SkolkovoLogicsModule extends LogicsModule {
                 addJProp(baseLM.greater2, baseLM.currentDate, addJProp(overdueDateLegalCheck, executeLegalCheckProject, 1), 1), 1,
                 negativeLegalResultStatusProject, 1);
 
+        resultForesightCheckProject = addDProp("resultForesightCheckProject", "Решение проверки на форсайты", foresightCheckResult, project);
+        positiveResultForesightCheckProject = addJProp("positiveResultForesightCheckProject", "Положительное решение проверки на форсайты", baseLM.equals2, resultForesightCheckProject, 1, addCProp(foresightCheckResult, "positiveForesightCheckResult"));
+        negativeResultForesightCheckProject = addJProp("negativeResultForesightCheckProject", "Отрицательное решение проверки на форсайты", baseLM.equals2, resultForesightCheckProject, 1, addCProp(foresightCheckResult, "negativeForesightCheckResult"));
+
+        needForesightCheckProject = addJProp("needForesightCheckProject", "Требуется проверка на форсайты", and(false, false, true),
+                isR2Project, 1,
+                resultExecuteLegalCheckProject, 1,
+                resultForesightCheckProject, 1);
+
         sentForTranslationProject = addDProp(translationGroup, "sentForTranslationProject", "Направлена на перевод", LogicalClass.instance, project);
         dateSentForTranslationProject = addDCProp(translationGroup, "dateSentForTranslationProject", "Дата направления на перевод", true, baseLM.currentDate, sentForTranslationProject, 1);
 
@@ -3839,6 +3868,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         addFormEntity(new VoteExpertFormEntity(baseLM.baseElement, "voteExpertRestricted", true));
         addFormEntity(new VoteFormEntity(baseLM.baseElement, "voterestricted", true));
         addFormEntity(new ConsultingCenterFormEntity(baseLM.baseElement, "consultingCenter"));
+        addFormEntity(new ForesightExpertiseListFormEntity(baseLM.baseElement, "foresightExpertiseList"));
 
         baseLM.baseElement.add(print);
         baseLM.baseElement.add(report);
@@ -3855,6 +3885,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         languageDocumentTypeForm = addFormEntity(new LanguageDocumentTypeFormEntity(options, "languageDocumentType"));
         addFormEntity(new DocumentTemplateFormEntity(options, "documentTemplate"));
         globalForm = addFormEntity(new GlobalFormEntity(options, "global"));
+        addFormEntity(new ClusterUserFormEntity(options, "clusterUser"));
 
         addFormEntity(new ClusterForesightFormEntity(options, "clusterForesight"));
         baseLM.baseElement.add(options);
@@ -4250,7 +4281,45 @@ public class SkolkovoLogicsModule extends LogicsModule {
             return design;
 
         }
-    }    
+    }
+
+    public class ClusterUserFormEntity extends FormEntity<SkolkovoBusinessLogics> {
+
+        private ObjectEntity objClusterUser;
+
+        public ClusterUserFormEntity(NavigatorElement parent, String sID) {
+            super(parent, sID, "Сотрудники кластеров");
+
+            objClusterUser = addSingleGroupObject(clusterUser, "Сотрудник", baseLM.userFirstName, baseLM.userLastName, baseLM.userLogin, baseLM.userPassword, baseLM.nameUserMainRole, nameClusterClusterUser);
+            addObjectActions(this, objClusterUser);
+        }
+    }
+
+    public class ForesightExpertiseListFormEntity extends FormEntity<SkolkovoBusinessLogics> {
+
+        private ObjectEntity objProject;
+        private RegularFilterGroupEntity projectFilterGroup;
+
+        public ForesightExpertiseListFormEntity(NavigatorElement parent, String sID) {
+            super(parent, sID, "Соответствие кластеру");
+
+            objProject = addSingleGroupObject(project, "Проект", dateProject, nameNativeProject, nameForeignProject, nameNativeClaimerProject, nameForeignClaimerProject, openApplicationProjectAction, exportProjectDocumentsAction);
+
+            setForceViewType(actionGroup, ClassViewType.PANEL, objProject.groupTo);
+
+            projectFilterGroup = new RegularFilterGroupEntity(genID());
+            projectFilterGroup.addFilter(new RegularFilterEntity(genID(),
+                   new NotNullFilterEntity(addPropertyObject(inClusterCurrentUserProject, objProject)),
+                   "В моем кластере",
+                   KeyStroke.getKeyStroke(KeyEvent.VK_F10, 0)), true);
+            addRegularFilterGroup(projectFilterGroup);
+
+            addFixedFilter(new NotNullFilterEntity(addPropertyObject(needForesightCheckProject, objProject)));
+
+            setReadOnly(true, objProject.groupTo);
+            setReadOnly(actionGroup, false);
+        }
+    }
 
     public class FillLangProjectActionProperty extends ActionProperty {
 
@@ -4461,6 +4530,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
             objCluster = addSingleGroupObject(cluster);
             addPropertyDraw(inProjectCluster, objProject, objCluster);
+            addPropertyDraw(inClaimerProjectCluster, objProject, objCluster);
             addPropertyDraw(objCluster, nameNative, nameForeign, nameNativeShort);
             addPropertyDraw(new LP[]{nativeSubstantiationProjectCluster, foreignSubstantiationProjectCluster}, objProject, objCluster);
             addPropertyDraw(numberCluster, objCluster);

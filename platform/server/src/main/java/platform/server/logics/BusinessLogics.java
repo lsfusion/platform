@@ -597,13 +597,13 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
                 module.initNavigators();
             }
         } catch (Exception e) {
+            e.printStackTrace();
             String msg = e.getMessage();
             int errorTagPos = msg.indexOf("[error]"); // todo [dale]: надо как-то получше это реализовать
             if (errorTagPos > 0) {
                 msg = msg.substring(errorTagPos);
             }
             errors += msg;
-            e.printStackTrace();
         }
 
         String syntaxErrors = "";

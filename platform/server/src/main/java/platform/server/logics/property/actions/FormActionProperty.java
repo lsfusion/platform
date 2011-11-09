@@ -11,6 +11,7 @@ import platform.server.form.entity.ObjectEntity;
 import platform.server.form.entity.OrderEntity;
 import platform.server.form.entity.PropertyObjectEntity;
 import platform.server.form.instance.FormInstance;
+import platform.server.form.instance.ObjectInstance;
 import platform.server.form.instance.listener.FormEventListener;
 import platform.server.form.instance.remote.RemoteForm;
 import platform.server.logics.DataObject;
@@ -93,8 +94,9 @@ public class FormActionProperty extends ActionProperty {
                             if (event.equals(FormEventType.OK)) {
                                 for (ObjectEntity object : seekOnOk) {
                                     try {
-                                        thisFormInstance.seekObject(object.baseClass,
-                                                newFormInstance.instanceFactory.getInstance(object).getObjectValue());
+                                        ObjectInstance objectInstance = newFormInstance.instanceFactory.getInstance(object);
+                                        if (objectInstance != null) // в принципе пока FormActionProperty может ссылаться на ObjectEntity из разных FormEntity
+                                        thisFormInstance.seekObject(object.baseClass, objectInstance.getObjectValue());
                                     } catch (SQLException e) {
                                         throw new RuntimeException(e);
                                     }
