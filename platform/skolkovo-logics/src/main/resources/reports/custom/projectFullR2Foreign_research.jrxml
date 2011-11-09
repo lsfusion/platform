@@ -18,12 +18,12 @@
 	<title>
 		<band height="46">
 			<textField isStretchWithOverflow="true">
-				<reportElement style="BoldStyle" positionType="Float" stretchType="RelativeToBandHeight" x="162" y="23" width="387" height="18"/>
+				<reportElement style="BoldStyle" positionType="Float" stretchType="RelativeToBandHeight" x="162" y="23" width="386" height="18"/>
 				<textElement/>
 				<textFieldExpression class="java.lang.String"><![CDATA["Comment, the name of the publication"]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
-				<reportElement style="BoldStyle" positionType="Float" stretchType="RelativeToBandHeight" x="11" y="23" width="151" height="18"/>
+				<reportElement style="BoldStyle" positionType="Float" stretchType="RelativeToBandHeight" x="10" y="23" width="151" height="18"/>
 				<textElement/>
 				<textFieldExpression class="java.lang.String"><![CDATA["Reference"]]></textFieldExpression>
 			</textField>
@@ -37,7 +37,7 @@
 	<detail>
 		<band height="23">
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement style="DefaultStyle" positionType="Float" stretchType="RelativeToBandHeight" x="161" y="0" width="387" height="18"/>
+				<reportElement style="DefaultStyle" positionType="Float" stretchType="RelativeToBandHeight" x="162" y="0" width="386" height="18"/>
 				<textElement textAlignment="Left" verticalAlignment="Top"/>
 				<textFieldExpression class="java.lang.String"><![CDATA[$F{foreignCommentResearch}]]></textFieldExpression>
 			</textField>

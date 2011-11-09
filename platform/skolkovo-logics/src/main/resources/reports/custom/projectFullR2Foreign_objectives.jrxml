@@ -10,7 +10,9 @@
 		</box>
 	</style>
 	<style name="BoldStyle2" fontName="lsf.TimesNewRoman" fontSize="14" isBold="true"/>
-	<style name="BoldStyle" fontName="lsf.TimesNewRoman" fontSize="10" isBold="true"/>
+	<style name="BoldStyle" fontName="lsf.TimesNewRoman" fontSize="10" isBold="true">
+		<paragraph rightIndent="3"/>
+	</style>
 	<field name="objectives" class="java.lang.Integer"/>
 	<field name="nativeProjectObjectives" class="java.lang.String"/>
 	<field name="foreignProjectObjectives" class="java.lang.String"/>

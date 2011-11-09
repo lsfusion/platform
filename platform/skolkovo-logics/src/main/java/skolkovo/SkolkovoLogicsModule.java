@@ -138,6 +138,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
     public ConcreteCustomClass analogues;
     public ConcreteCustomClass commercialization;
     public ConcreteCustomClass objectives;
+    public ConcreteCustomClass mileStone;
 
 
 
@@ -151,6 +152,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
     StaticCustomClass language;
     StaticCustomClass documentType;
     public StaticCustomClass ownerType;
+    public StaticCustomClass typeMileStone;
 
     StaticCustomClass voteResult;
     StaticCustomClass projectStatus;
@@ -233,6 +235,9 @@ public class SkolkovoLogicsModule extends LogicsModule {
         projectMission = addStaticClass("projectMission", "Цель проекта",
                        new String[]{"development", "investigation"},
                        new String[]{"Коммерциализация продукта", "Осуществление исследований"});
+        typeMileStone = addStaticClass("typeMileStone", "Раздел дорожной карты",
+                       new String[]{"research and development", "product Creation and Production", "plan on hiring", "licensing", "promotion", "selling"},
+                       new String[]{"Разработка", "Создание продукта", "План по найму", "Лицензирование", "Продвижение", "Продажи"});
 
         ownerType = addStaticClass("ownerType", "Тип правообладателя",
                 new String[]{"employee", "participant", "thirdparty"},
@@ -325,6 +330,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
         formalControl = addConcreteClass("formalControl", "Формальная экспертиза", baseClass);
         legalCheck = addConcreteClass("legalCheck", "Юридическая проверка", baseClass);
         originalDocsCheck = addConcreteClass("originalDocsCheck", "Проверка оригиналов документов", baseLM.transaction);
+
+        mileStone = addConcreteClass("mileStone", "Квартал", baseClass);
 
         application = addAbstractClass("application", "Заявка", baseClass);
         applicationPreliminary = addConcreteClass("applicationPreliminary", "Заявка на предварительную экспертизу", application);
@@ -1198,6 +1205,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
     public LP nativeMarketIntroductionProject;
     public LP foreignMarketIntroductionProject;
     public LP linksMarketIntroductionProject;
+    public LP linksForeignMarketIntroductionProject;
     public LP nativeHistoryProject;
     public LP foreignHistoryProject;
     public LP nativeDynamicsProject;
@@ -1334,6 +1342,12 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP percentNonClusterApplicationsTypeProjectStatus;
     LP percentApplicationsTypeProjectStatus;
     LP inTestApplication;
+    LP projectMileStone;
+    LP nativeMileStone;
+    LP nativeDescriptionTypeMileStoneMileStone;
+    LP foreignDescriptionTypeMileStoneMileStone;
+    LP nativeTypeMileStone;
+    LP foreignTypeMileStone;
 
     LP dateRegisteredStatusProject;
     LP dateNoClusterStatusProject;
@@ -1849,6 +1863,10 @@ public class SkolkovoLogicsModule extends LogicsModule {
         linksMarketIntroductionProject.setMinimumWidth(10);
         linksMarketIntroductionProject.setPreferredWidth(50);
 
+        linksForeignMarketIntroductionProject = addDProp(analoguesGroup, "linksForeignMarketIntroductionProject", "Links to research market", InsensitiveStringClass.get(2000), project);
+        linksForeignMarketIntroductionProject.setMinimumWidth(10);
+        linksForeignMarketIntroductionProject.setPreferredWidth(50);
+
         nativeHistoryProject = addDProp(historyGroup, "nativeHistoryProject", "История возникновения проекта", InsensitiveStringClass.get(2000), project);
         nativeHistoryProject.setMinimumWidth(10);
         nativeHistoryProject.setPreferredWidth(50);
@@ -2005,6 +2023,27 @@ public class SkolkovoLogicsModule extends LogicsModule {
         foreignIntellectualPropertySpecialist = addDProp(teamGroup, "foreignIntellectualPropertySpecialist", "Information about the objects of intellectual property", InsensitiveStringClass.get(2000), specialist);
         foreignIntellectualPropertySpecialist.setMinimumWidth(10);
         foreignIntellectualPropertySpecialist.setPreferredWidth(50);
+//                                               Новая дорожная карта
+        projectMileStone = addDProp("projectMileStone", "Проект квартала (ИД)", project, mileStone);
+        nativeMileStone = addDProp("nativeMileStone", "Название", InsensitiveStringClass.get(2000), mileStone);
+        nativeMileStone.setMinimumWidth(10);
+        nativeMileStone.setPreferredWidth(50);
+
+        nativeDescriptionTypeMileStoneMileStone = addDProp("nativeDescriptionTypeMileStoneMileStone", "Описание дорожное карты", InsensitiveStringClass.get(2000), typeMileStone, mileStone);
+        nativeDescriptionTypeMileStoneMileStone.setMinimumWidth(10);
+        nativeDescriptionTypeMileStoneMileStone.setPreferredWidth(50);
+
+        foreignDescriptionTypeMileStoneMileStone = addDProp("foreignDescriptionTypeMileStoneMileStone", "Description of the road map", InsensitiveStringClass.get(2000), typeMileStone, mileStone);
+        foreignDescriptionTypeMileStoneMileStone.setMinimumWidth(10);
+        foreignDescriptionTypeMileStoneMileStone.setPreferredWidth(50);
+
+        nativeTypeMileStone = addDProp("nativeTypeMileStone", "Название раздела на русск.", InsensitiveStringClass.get(2000), typeMileStone);
+        nativeTypeMileStone.setMinimumWidth(10);
+        nativeTypeMileStone.setPreferredWidth(50);
+
+        foreignTypeMileStone = addDProp("foreignTypeMileStone", "Section title", InsensitiveStringClass.get(2000), typeMileStone);
+        foreignTypeMileStone.setMinimumWidth(10);
+        foreignTypeMileStone.setPreferredWidth(50);
 
         fileStatementSpecialist = addDProp("fileStatementSpecialist", "Файл заявления", CustomFileClass.instance, specialist);
         loadFileStatementSpecialist = addLFAProp(teamGroup, "Загрузить файл заявления", fileStatementSpecialist);
@@ -4145,6 +4184,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
         private ObjectEntity objAnalogues;
         private ObjectEntity objSpecialist;
         private ObjectEntity objObjectives;
+        private ObjectEntity objMileStone;
+        private ObjectEntity objTypeMileStone;
 
         private ProjectFullR2FormEntity(NavigatorElement parent, String sID, String caption) {
             super(parent, sID, caption);
@@ -4206,6 +4247,15 @@ public class SkolkovoLogicsModule extends LogicsModule {
             addFixedFilter(new CompareFilterEntity(addPropertyObject(projectObjectives, objObjectives), Compare.EQUALS, objProject));
             addObjectActions(this, objObjectives);
 
+            objMileStone = addSingleGroupObject(10, "mileStone", mileStone, "Квартал", nativeMileStone);
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(projectMileStone, objMileStone), Compare.EQUALS, objProject));
+            addObjectActions(this, objMileStone);
+
+            objTypeMileStone = addSingleGroupObject(11, "typeMileStone", typeMileStone, "Раздел дорожной карты", baseLM.name, nativeTypeMileStone, foreignTypeMileStone);
+
+            addObjectActions(this, objTypeMileStone);
+            addPropertyDraw(objTypeMileStone, objMileStone, nativeDescriptionTypeMileStoneMileStone, foreignDescriptionTypeMileStoneMileStone);
+
             if (editR2Project == null)
                 editR2Project = addJProp(true, "editR2Project", "Редактировать проект", baseLM.and1,
                         addMFAProp("Редактировать проект", this, new ObjectEntity[]{objProject}), 1, isR2Project, 1).setImage("edit.png");
@@ -4261,6 +4311,11 @@ public class SkolkovoLogicsModule extends LogicsModule {
             descrContainer.constraints.childConstraints = DoNotIntersectSimplexConstraint.TOTHE_BOTTOM;
             descrContainer.add(problemMainInformationContainer);
 
+            ContainerView mapContainer = design.createContainer("Дорожная карта");
+            mapContainer.constraints.childConstraints = DoNotIntersectSimplexConstraint.TOTHE_BOTTOM;
+            mapContainer.add(design.getGroupObjectContainer(objMileStone.groupTo));
+            mapContainer.add(design.getGroupObjectContainer(objTypeMileStone.groupTo));
+
             ContainerView specContainer = design.createContainer();
 
             design.getGroupObjectContainer(objProject.groupTo).constraints.childConstraints = DoNotIntersectSimplexConstraint.TOTHE_RIGHT;
@@ -4274,6 +4329,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             specContainer.add(design.getGroupObjectContainer(objSpecialist.groupTo));
             specContainer.add(design.getGroupObjectContainer(objCluster.groupTo));
             specContainer.add(exchequerContainer);
+            specContainer.add(mapContainer);
 
             specContainer.tabbedPane = true;
 

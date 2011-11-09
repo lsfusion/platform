@@ -4,7 +4,9 @@
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
 	<style name="DefaultStyle" isDefault="true" vAlign="Middle" fontName="lsf.TimesNewRoman" fontSize="10"/>
-	<style name="BoldStyle" fontName="lsf.TimesNewRoman" fontSize="10" isBold="true"/>
+	<style name="BoldStyle" fontName="lsf.TimesNewRoman" fontSize="10" isBold="true">
+		<paragraph rightIndent="3"/>
+	</style>
 	<style name="BoldStyle2" fontName="lsf.TimesNewRoman" fontSize="14" isBold="true"/>
 	<style name="GroupCellStyle0" mode="Opaque" backcolor="#DFDFDF" vAlign="Middle" fontName="Arial" fontSize="10" pdfFontName="lsf.TimesBD" pdfEncoding="Cp1251" isPdfEmbedded="false">
 		<box leftPadding="2" rightPadding="2">
@@ -13,7 +15,7 @@
 	</style>
 	<field name="specialist" class="java.lang.Integer"/>
 	<field name="nameNativeSpecialist" class="java.lang.String"/>
-	<field name="foreignSpecialist" class="java.lang.String"/>
+	<field name="nameForeignSpecialist" class="java.lang.String"/>
 	<field name="nativePostSpecialist" class="java.lang.String"/>
 	<field name="foreignPostSpecialist" class="java.lang.String"/>
 	<field name="nativeFunctionSpecialist" class="java.lang.String"/>

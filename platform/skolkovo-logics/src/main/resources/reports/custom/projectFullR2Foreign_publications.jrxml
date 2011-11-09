@@ -14,8 +14,8 @@
 	<field name="publications" class="java.lang.Integer"/>
 	<field name="nativePublications" class="java.lang.String"/>
 	<field name="foreignPublications" class="java.lang.String"/>
-	<field name="nativeAvtorPublications" class="java.lang.String"/>
-	<field name="foreignAvtorPublications" class="java.lang.String"/>
+	<field name="nativeAuthorPublications" class="java.lang.String"/>
+	<field name="foreignAuthorPublications" class="java.lang.String"/>
 	<field name="datePublications" class="java.lang.Integer"/>
 	<field name="nativeLinksPublications" class="java.lang.String"/>
 	<field name="foreignEditionPublications" class="java.lang.String"/>
@@ -63,7 +63,7 @@
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement style="DefaultStyle" positionType="Float" stretchType="RelativeToBandHeight" x="151" y="0" width="112" height="18"/>
 				<textElement textAlignment="Left" verticalAlignment="Top"/>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{foreignAvtorPublications}]]></textFieldExpression>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{foreignAuthorPublications}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="###0" isBlankWhenNull="true">
 				<reportElement style="DefaultStyle" positionType="Float" stretchType="RelativeToBandHeight" x="361" y="0" width="46" height="18"/>
