@@ -1349,6 +1349,10 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP registerApplication;
     LP oneStatusApplicationDateDate;
     LP statusApplicationsSubmitDateDate;
+    LP averageDaysRegisterApplicationsDateWeekWeek;
+    LP averageDaysStatusApplicationsSubmitDateDate;
+    LP daysStatusApplicationsSubmitDateDate;
+    LP statusApplicationDateDate;
 
     @Override
     public void initProperties() {
@@ -3588,21 +3592,27 @@ public class SkolkovoLogicsModule extends LogicsModule {
         averageDaysRegisterApplicationsDateTo = addJProp("averageDaysRegisterApplicationsDateTo", "Средний срок рассмотрения зявки на статус",
                 baseLM.divideInteger0, submitDaysRegisterApplicationDateTo, 1, submitRegisterApplicationsDateTo, 1);
 
-        oneStatusApplicationDateDate = addJProp(and(false, false, false), addCProp(IntegerClass.instance, 1, application, DateClass.instance, DateClass.instance), 1, 2, 3,
+        statusApplicationDateDate = addJProp(and(false, false, false, false), inActTestApplication, 1,
                                             addJProp(baseLM.groeq2, dateSubmittedToRegisterApplication, 1, 2), 1, 2,
                                             addJProp(baseLM.lsoeq2, dateSubmittedToRegisterApplication, 1, 2), 1, 3,
-                                            inActTestApplication, 1);
-        statusApplicationsSubmitDateDate =  addSGProp("statusApplicationsSubmitDateDate", "К-во заявок", oneStatusApplicationDateDate, 2, 3);
+                                            object(DateClass.instance), 2,
+                                            object(DateClass.instance), 3);
+
+        statusApplicationsSubmitDateDate =  addSGProp("statusApplicationsSubmitDateDate", "К-во заявок", addJProp(addCProp(IntegerClass.instance, 1, application), statusApplicationDateDate, 1, 2, 3), 2, 3);
+        daysStatusApplicationsSubmitDateDate = addSGProp("daysStatusApplicationsSubmitDateDate", "Дней на статус", addJProp(daysStatusApplication, statusApplicationDateDate, 1, 2, 3), 2, 3);
+        averageDaysStatusApplicationsSubmitDateDate = addJProp("averageDaysStatusApplicationsSubmitDateDate", "Средний срок, на статус",baseLM.divideInteger0, daysStatusApplicationsSubmitDateDate, 1, 2, statusApplicationsSubmitDateDate, 1, 2);
 
         daysSubmitRegisterApplicationDate = addJProp("daysSubmitRegisterApplicationDate", "Кол-во дней заявки", baseLM.subtractInteger2, dateSubmittedToRegisterApplication, 1, object(DateClass.instance), 2);
-        weekSubmitRegisterApplicationDate = addJProp("weekSubmitRegisterApplicationDate", "Неделя заявки", baseLM.divideInteger, daysSubmitRegisterApplicationDate, 1, 2, addCProp(IntegerClass.instance, 7));
+        weekSubmitRegisterApplicationDate = addJProp("weekSubmitRegisterApplicationDate", "Неделя заявки", baseLM.divideNegativeInteger, daysSubmitRegisterApplicationDate, 1, 2, addCProp(IntegerClass.instance, 7));
 
         submitDaysRegisterApplicationDateWeek = addSGProp("submitDaysRegisterApplicationDateWeek", "Дней на статус", addJProp(daysStatusApplication, inActTestApplicationDate, 1, 2), 2, weekSubmitRegisterApplicationDate, 1, 2);
         submitRegisterApplicationsDateWeek = addSGProp("submitRegisterApplicationsDateWeek", "К-во заявок за неделю", addJProp(addCProp(IntegerClass.instance, 1, application), inActTestApplicationDate, 1, 2), 2, weekSubmitRegisterApplicationDate, 1, 2);
         risingDaysRegisterApplicationDateWeek = addOProp("risingDaysRegisterApplicationDateWeek", "Дней на статус, нарастающий", OrderType.SUM, submitDaysRegisterApplicationDateWeek, true, true, 1, 1, 2);
         risingRegisterApplicationsDateWeek = addOProp("risingRegisterApplicationsDateWeek", "К-во заявок, нарастающий", OrderType.SUM, submitRegisterApplicationsDateWeek, true, true, 1, 1, 2);
 
-        averageDaysRegisterApplicationsDateWeek = addJProp("averageDaysRegisterApplicationsDateWeek", "Средний срок рассмотрения зявки на статус",
+        averageDaysRegisterApplicationsDateWeekWeek = addJProp("averageDaysRegisterApplicationsDateWeekWeek", "Ср.срок на статус, за нед.",
+                baseLM.divideInteger0, submitDaysRegisterApplicationDateWeek, 1, 2, submitRegisterApplicationsDateWeek, 1, 2);
+        averageDaysRegisterApplicationsDateWeek = addJProp("averageDaysRegisterApplicationsDateWeek", "Ср.срок на статус, нарастающий",
                 baseLM.divideInteger0, risingDaysRegisterApplicationDateWeek, 1, 2, risingRegisterApplicationsDateWeek, 1, 2);
 
 //        qSubmitRegisterApplicationsDateTo = addOProp("qSubmitRegisterApplicationsDateTo", "К-во заявок", OrderType.SUM, submitRegisterApplicationsDateTo, true, true, 0, 1);
@@ -5595,8 +5605,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
             super(baseLM, parent, sID, "Динамика среднего срока рассмотрения заявки на статус участника");
 
             objWeek = addSingleGroupObject(4, "week", IntegerClass.instance, "Неделя", baseLM.objectValue);
-            addPropertyDraw(objDateFrom, objDateTo, statusApplicationsSubmitDateDate);
-            addPropertyDraw(objDateFrom, objWeek, baseLM.sumDateWeekFrom, baseLM.sumDateWeekTo, submitRegisterApplicationsDateWeek, risingDaysRegisterApplicationDateWeek, risingRegisterApplicationsDateWeek, averageDaysRegisterApplicationsDateWeek);
+            addPropertyDraw(objDateFrom, objDateTo, statusApplicationsSubmitDateDate, averageDaysStatusApplicationsSubmitDateDate);
+            addPropertyDraw(objDateFrom, objWeek, baseLM.sumDateWeekFrom, baseLM.sumDateWeekTo, submitRegisterApplicationsDateWeek, risingDaysRegisterApplicationDateWeek, risingRegisterApplicationsDateWeek, averageDaysRegisterApplicationsDateWeekWeek, averageDaysRegisterApplicationsDateWeek);
 
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(submitRegisterApplicationsDateWeek, objDateFrom, objWeek)));
             addFixedFilter(new NotFilterEntity(new NotNullFilterEntity(addPropertyObject(baseLM.negative, objWeek))));

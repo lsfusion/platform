@@ -34,6 +34,8 @@
 	<field name="risingDaysRegisterApplicationDateWeek" class="java.lang.Integer"/>
 	<field name="risingRegisterApplicationsDateWeek" class="java.lang.Integer"/>
 	<field name="averageDaysRegisterApplicationsDateWeek" class="java.lang.Integer"/>
+	<field name="averageDaysStatusApplicationsSubmitDateDate" class="java.lang.Integer"/>
+	<field name="averageDaysRegisterApplicationsDateWeekWeek" class="java.lang.Integer"/>
 	<group name="designGroup1">
 		<groupExpression><![CDATA[String.valueOf($F{dateFrom})+" "+String.valueOf($F{dateTo})]]></groupExpression>
 	</group>
@@ -83,51 +85,12 @@
 		</band>
 	</pageHeader>
 	<summary>
-		<band height="316">
+		<band height="375">
 			<elementGroup>
 				<elementGroup/>
 			</elementGroup>
-			<timeSeriesChart>
-				<chart renderType="draw" theme="default">
-					<reportElement x="0" y="24" width="802" height="247"/>
-					<box>
-						<topPen lineWidth="0.0"/>
-						<leftPen lineWidth="0.0"/>
-						<bottomPen lineWidth="0.0"/>
-						<rightPen lineWidth="0.0"/>
-					</box>
-					<chartTitle/>
-					<chartSubtitle/>
-					<chartLegend/>
-				</chart>
-				<timeSeriesDataset>
-					<timeSeries>
-						<seriesExpression><![CDATA["Средний срок рассмотрения заявок на статус участника"]]></seriesExpression>
-						<timePeriodExpression><![CDATA[$F{sumDateWeekTo}]]></timePeriodExpression>
-						<valueExpression><![CDATA[$F{averageDaysRegisterApplicationsDateWeek}]]></valueExpression>
-						<labelExpression><![CDATA[$F{averageDaysRegisterApplicationsDateWeek}.toString()]]></labelExpression>
-					</timeSeries>
-				</timeSeriesDataset>
-				<timeSeriesPlot isShowLines="true" isShowShapes="true">
-					<plot foregroundAlpha="0.6" labelRotation="90.0">
-						<seriesColor seriesOrder="0" color="#00CCCC"/>
-					</plot>
-					<timeAxisFormat>
-						<axisFormat verticalTickLabels="true">
-							<labelFont/>
-							<tickLabelFont/>
-						</axisFormat>
-					</timeAxisFormat>
-					<valueAxisFormat>
-						<axisFormat verticalTickLabels="false">
-							<labelFont/>
-							<tickLabelFont/>
-						</axisFormat>
-					</valueAxisFormat>
-				</timeSeriesPlot>
-			</timeSeriesChart>
 			<textField isStretchWithOverflow="true">
-				<reportElement style="GroupCellStyle0" stretchType="RelativeToBandHeight" x="11" y="291" width="787" height="18" forecolor="#000000" backcolor="#FFFFFF"/>
+				<reportElement style="GroupCellStyle0" stretchType="RelativeToBandHeight" x="11" y="350" width="791" height="18" forecolor="#000000" backcolor="#FFFFFF"/>
 				<box>
 					<topPen lineWidth="0.0"/>
 					<leftPen lineWidth="0.0"/>
@@ -137,9 +100,102 @@
 				<textElement verticalAlignment="Middle">
 					<font size="14" isBold="true"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA["Средний срок рассмотрения заявки на статус Участника – " + $F{averageDaysRegisterApplicationsDateWeek}+" "
-+new ChoiceFormat("0#календарных дней|1#календарный день|1<календарных дня|4<календарных дней").format($F{averageDaysRegisterApplicationsDateWeek})+ "."]]></textFieldExpression>
+				<textFieldExpression class="java.lang.String"><![CDATA["Средний срок рассмотрения заявки на статус Участника – " + $F{averageDaysStatusApplicationsSubmitDateDate}+" "
++new ChoiceFormat("0#календарных дней|1#календарный день|1<календарных дня|4<календарных дней").format($F{averageDaysStatusApplicationsSubmitDateDate})+ "."]]></textFieldExpression>
 			</textField>
+			<multiAxisChart>
+				<chart>
+					<reportElement mode="Opaque" x="0" y="0" width="802" height="334"/>
+					<box>
+						<topPen lineWidth="0.0"/>
+						<leftPen lineWidth="0.0"/>
+						<bottomPen lineWidth="0.0"/>
+						<rightPen lineWidth="0.0"/>
+					</box>
+					<chartTitle position="Left"/>
+					<chartSubtitle>
+						<font size="12" isBold="true"/>
+						<subtitleExpression><![CDATA["Дней"]]></subtitleExpression>
+					</chartSubtitle>
+					<chartLegend/>
+				</chart>
+				<multiAxisPlot>
+					<plot/>
+					<axis position="rightOrBottom">
+						<lineChart>
+							<chart>
+								<reportElement x="0" y="0" width="0" height="0" backcolor="#FFFFFF"/>
+								<chartTitle color="#000000"/>
+								<chartSubtitle color="#000000"/>
+								<chartLegend textColor="#000000" backgroundColor="#FFFFFF"/>
+							</chart>
+							<categoryDataset>
+								<categorySeries>
+									<seriesExpression><![CDATA["Средний срок"]]></seriesExpression>
+									<categoryExpression><![CDATA[platform.base.BaseUtils.formatRussian($F{sumDateWeekTo})]]></categoryExpression>
+									<valueExpression><![CDATA[$F{averageDaysStatusApplicationsSubmitDateDate}]]></valueExpression>
+								</categorySeries>
+								<categorySeries>
+									<seriesExpression><![CDATA[""]]></seriesExpression>
+									<categoryExpression><![CDATA[platform.base.BaseUtils.formatRussian($F{sumDateWeekTo})]]></categoryExpression>
+									<valueExpression><![CDATA[$F{averageDaysRegisterApplicationsDateWeek}]]></valueExpression>
+								</categorySeries>
+							</categoryDataset>
+							<linePlot isShowShapes="false">
+								<plot labelRotation="90.0"/>
+								<categoryAxisFormat labelRotation="90.0">
+									<axisFormat verticalTickLabels="true">
+										<labelFont/>
+										<tickLabelFont/>
+									</axisFormat>
+								</categoryAxisFormat>
+								<valueAxisFormat>
+									<axisFormat>
+										<labelFont/>
+										<tickLabelFont/>
+									</axisFormat>
+								</valueAxisFormat>
+							</linePlot>
+						</lineChart>
+					</axis>
+					<axis>
+						<barChart>
+							<chart>
+								<reportElement mode="Transparent" x="0" y="0" width="0" height="0" backcolor="#FFFFFF"/>
+								<chartTitle color="#000000"/>
+								<chartSubtitle color="#000000"/>
+								<chartLegend textColor="#000000" backgroundColor="#FFFFFF"/>
+							</chart>
+							<categoryDataset>
+								<categorySeries>
+									<seriesExpression><![CDATA["Дней на статус"]]></seriesExpression>
+									<categoryExpression><![CDATA[platform.base.BaseUtils.formatRussian($F{sumDateWeekTo})]]></categoryExpression>
+									<valueExpression><![CDATA[$F{averageDaysRegisterApplicationsDateWeek}]]></valueExpression>
+									<labelExpression><![CDATA[$F{averageDaysRegisterApplicationsDateWeek}.toString()]]></labelExpression>
+								</categorySeries>
+							</categoryDataset>
+							<barPlot isShowLabels="true">
+								<plot backgroundAlpha="0.0" foregroundAlpha="0.0" labelRotation="0.0">
+									<seriesColor seriesOrder="0" color="#CCCCFF"/>
+								</plot>
+								<itemLabel color="#000000" backgroundColor="#FFFFFF"/>
+								<categoryAxisFormat labelRotation="0.0">
+									<axisFormat verticalTickLabels="true">
+										<labelFont/>
+										<tickLabelFont/>
+									</axisFormat>
+								</categoryAxisFormat>
+								<valueAxisFormat>
+									<axisFormat>
+										<labelFont/>
+										<tickLabelFont/>
+									</axisFormat>
+								</valueAxisFormat>
+							</barPlot>
+						</barChart>
+					</axis>
+				</multiAxisPlot>
+			</multiAxisChart>
 		</band>
 	</summary>
 </jasperReport>
