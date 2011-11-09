@@ -80,6 +80,10 @@ public class SkolkovoLogicsModule extends LogicsModule {
         this.BL = BL;
     }
 
+    private LP dateResultForesightCheckProject;
+    private LP userResultForesightCheckProject;
+    private LP nameResultForesightCheckProject;
+    private LP nameUserResultForesightCheckProject;
     private LP useAllClusterExpertsProject;
     private LP inExpertVoteDateFromDateTo;
     private LP quantityInExpertDateFromDateTo;
@@ -3010,7 +3014,11 @@ public class SkolkovoLogicsModule extends LogicsModule {
                 addJProp(baseLM.greater2, baseLM.currentDate, addJProp(overdueDateLegalCheck, executeLegalCheckProject, 1), 1), 1,
                 negativeLegalResultStatusProject, 1);
 
-        resultForesightCheckProject = addDProp("resultForesightCheckProject", "Решение проверки на форсайты", foresightCheckResult, project);
+        resultForesightCheckProject = addDProp("resultForesightCheckProject", "Решение проверки на форсайты (ИД)", foresightCheckResult, project);
+        nameResultForesightCheckProject = addJProp("nameResultForesightCheckProject", "Решение проверки на форсайты", baseLM.name, resultForesightCheckProject, 1);
+        dateResultForesightCheckProject = addDCProp("dateResultForesightCheckProject", "Дата проверки на форсайты", true, baseLM.currentDate, resultForesightCheckProject, 1);
+        userResultForesightCheckProject = addDCProp("userResultForesightCheckProject", "Пользователь проверки на форсайты (ИД)", true, baseLM.currentUser, resultForesightCheckProject, 1);
+        nameUserResultForesightCheckProject = addJProp("nameUserResultForesightCheckProject", "Пользователь проверки на форсайты", baseLM.name, userResultForesightCheckProject, 1);
         positiveResultForesightCheckProject = addJProp("positiveResultForesightCheckProject", "Положительное решение проверки на форсайты", baseLM.equals2, resultForesightCheckProject, 1, addCProp(foresightCheckResult, "positiveForesightCheckResult"));
         negativeResultForesightCheckProject = addJProp("negativeResultForesightCheckProject", "Отрицательное решение проверки на форсайты", baseLM.equals2, resultForesightCheckProject, 1, addCProp(foresightCheckResult, "negativeForesightCheckResult"));
 
@@ -4635,6 +4643,13 @@ public class SkolkovoLogicsModule extends LogicsModule {
             addPropertyDraw(exportProjectDocumentsAction, objProject).toDraw = objDocument.groupTo;
             setForceViewType(exportProjectDocumentsAction, ClassViewType.PANEL);
 
+            addPropertyDraw(nameResultForesightCheckProject, objProject).toDraw = objDocument.groupTo;
+            setForceViewType(nameResultForesightCheckProject, ClassViewType.PANEL);
+            addPropertyDraw(dateResultForesightCheckProject, objProject).toDraw = objDocument.groupTo;
+            setForceViewType(dateResultForesightCheckProject, ClassViewType.PANEL);
+            addPropertyDraw(nameUserResultForesightCheckProject, objProject).toDraw = objDocument.groupTo;
+            setForceViewType(nameUserResultForesightCheckProject, ClassViewType.PANEL);
+
             addPropertyDraw(includeDocumentsProject, objProject).toDraw = objDocument.groupTo;
             setForceViewType(includeDocumentsProject, ClassViewType.PANEL);
 
@@ -4775,6 +4790,10 @@ public class SkolkovoLogicsModule extends LogicsModule {
             formalControlContainer.add(design.get(getPropertyDraw(exportProjectDocumentsAction)));
             formalControlContainer.add(design.getGroupObjectContainer(objFormalControl.groupTo));
             formalControlContainer.add(design.getGroupPropertyContainer((GroupObjectEntity) null, formalControlResultGroup));
+            formalControlContainer.add(design.get(getPropertyDraw(nameResultForesightCheckProject)));
+            formalControlContainer.add(design.get(getPropertyDraw(dateResultForesightCheckProject)));
+            formalControlContainer.add(design.get(getPropertyDraw(nameUserResultForesightCheckProject)));
+
             PropertyDrawView commentFormalView = design.get(getPropertyDraw(commentFormalControl, objFormalControl));
             commentFormalView.constraints.fillHorizontal = 1.0;
             commentFormalView.preferredSize = new Dimension(-1, 200);
