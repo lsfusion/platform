@@ -450,7 +450,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
     public LP OGRNClaimer;
     public LP INNClaimer;
     public LP projectScheduleProject;
-    LP regulationsProject, nameRegulationsProject;
+    LP regulationsProject;
+    public LP nameRegulationsProject;
     LP isR2Project, isR1Project;
     LP revisionVote;
     LP projectVote, claimerVote, nameNativeProjectVote, nameForeignProjectVote;
@@ -1207,6 +1208,12 @@ public class SkolkovoLogicsModule extends LogicsModule {
     public LP foreignCitationSpecialist;
     public LP nativeIntellectualPropertySpecialist;
     public LP foreignIntellectualPropertySpecialist;
+    public LP fileStatementSpecialist;
+    public LP loadFileStatementSpecialist;
+    public LP openFileStatementSpecialist;
+    public LP filePassportSpecialist;
+    public LP loadFilePassportSpecialist;
+    public LP openFilePassportSpecialist;
     public LP projectResearch;
     public LP equalsResearchProject;
     public LP foreignCommentResearch;
@@ -1967,6 +1974,14 @@ public class SkolkovoLogicsModule extends LogicsModule {
         foreignIntellectualPropertySpecialist = addDProp(teamGroup, "foreignIntellectualPropertySpecialist", "Information about the objects of intellectual property", InsensitiveStringClass.get(2000), specialist);
         foreignIntellectualPropertySpecialist.setMinimumWidth(10);
         foreignIntellectualPropertySpecialist.setPreferredWidth(50);
+
+        fileStatementSpecialist = addDProp("fileStatementSpecialist", "Файл заявления", CustomFileClass.instance, specialist);
+        loadFileStatementSpecialist = addLFAProp(teamGroup, "Загрузить файл заявления", fileStatementSpecialist);
+        openFileStatementSpecialist = addOFAProp(teamGroup, "Открыть файл заявления", fileStatementSpecialist);
+
+        filePassportSpecialist = addDProp("filePassportSpecialist", "Файл документа, удостоверяющего личность", CustomFileClass.instance, specialist);
+        loadFilePassportSpecialist = addLFAProp(teamGroup, "Загрузить файл документа, удостоверяющего личность", filePassportSpecialist);
+        openFilePassportSpecialist = addOFAProp(teamGroup, "Открыть файл документа, удостоверяющего личность", filePassportSpecialist);
 
         isStatusProject = addJProp("isStatusProject", "На статус участника", baseLM.equals2, projectActionProject, 1, addCProp(projectAction, "status", project), 1);
         isPreliminaryProject = addJProp("isPreliminaryProject", "На предварительную экспертизу", baseLM.equals2, projectActionProject, 1, addCProp(projectAction, "preliminary", project), 1);

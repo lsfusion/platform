@@ -98,6 +98,7 @@ public class ImportProjectsActionProperty extends ActionProperty {
             fileForeignResumeNonRussianSpecialistField, fileNativeResumeNonRussianSpecialistField,
             filePassportNonRussianSpecialistField, fileStatementNonRussianSpecialistField,
             fileNativeTechnicalDescriptionProjectField, fileForeignTechnicalDescriptionProjectField,
+            filePassportSpecialistField, fileStatementSpecialistField,
 
             projectMissionProjectField, nativeCommentMissionProjectField, foreignCommentMissionProjectField,
             projectScheduleProjectField,
@@ -511,6 +512,8 @@ public class ImportProjectsActionProperty extends ActionProperty {
         foreignCitationSpecialistField = new ImportField(LM.foreignCitationSpecialist);
         nativeIntellectualPropertySpecialistField = new ImportField(LM.nativeIntellectualPropertySpecialist);
         foreignIntellectualPropertySpecialistField = new ImportField(LM.foreignIntellectualPropertySpecialist);
+        filePassportSpecialistField = new ImportField(LM.fileStatementSpecialist);
+        fileStatementSpecialistField = new ImportField(LM.filePassportSpecialist);
         nativeHistoryProjectField = new ImportField(LM.nativeHistoryProject);
         foreignHistoryProjectField = new ImportField(LM.foreignHistoryProject);
         nativeDynamicsProjectField = new ImportField(LM.nativeDynamicsProject);
@@ -784,6 +787,8 @@ public class ImportProjectsActionProperty extends ActionProperty {
         specialistKey = new ImportKey(LM.specialist, LM.nameNativeSIDToSpecialist.getMapping(nameNativeSpecialistField, projectIdField));
         propertiesSpecialist.add(new ImportProperty(projectIdField, LM.projectSpecialist.getMapping(specialistKey),
                 LM.baseLM.object(LM.project).getMapping(projectKey)));
+        propertiesSpecialist.add(new ImportProperty(filePassportSpecialistField, LM.filePassportSpecialist.getMapping(specialistKey)));
+        propertiesSpecialist.add(new ImportProperty(fileStatementSpecialistField, LM.fileStatementSpecialist.getMapping(specialistKey)));
         propertiesSpecialistNative.add(new ImportProperty(nameNativeSpecialistField, LM.nameNativeSpecialist.getMapping(specialistKey)));
         propertiesSpecialistNative.add(new ImportProperty(nativePostSpecialistField, LM.nativePostSpecialist.getMapping(specialistKey)));
         propertiesSpecialistNative.add(new ImportProperty(nativeFunctionSpecialistField, LM.nativeFunctionSpecialist.getMapping(specialistKey)));
@@ -1771,6 +1776,8 @@ public class ImportProjectsActionProperty extends ActionProperty {
                         List<Object> rowSpecialist = new ArrayList<Object>();
 
                         rowSpecialist.add(projectId);
+                        rowSpecialist.add(buildFileByteArray(nodeSpecialist.getChild("filePassportSpecialist")));
+                        rowSpecialist.add(buildFileByteArray(nodeSpecialist.getChild("fileStatementSpecialist")));
                         rowSpecialist.add(nodeSpecialist.getChildText("nameNativeSpecialist"));
                         rowSpecialist.add(nodeSpecialist.getChildText("nativePostSpecialist"));
                         rowSpecialist.add(nodeSpecialist.getChildText("nativeFunctionSpecialist"));
@@ -1986,7 +1993,7 @@ public class ImportProjectsActionProperty extends ActionProperty {
                             fillNative, fillForeign);
 
                     List<ImportField> fieldsSpecialistBoth = BaseUtils.toList(
-                            projectIdField);
+                            projectIdField, filePassportSpecialistField, fileStatementSpecialistField);
                     List<ImportField> fieldsSpecialistNative = BaseUtils.toList(
                             nameNativeSpecialistField, nativePostSpecialistField, nativeFunctionSpecialistField,
                             nativeScopeSpecialistField, nativeExperienceSpecialistField, nativeTitleSpecialistField,
