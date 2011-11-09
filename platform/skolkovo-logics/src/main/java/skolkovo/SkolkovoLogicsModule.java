@@ -5690,6 +5690,11 @@ public class SkolkovoLogicsModule extends LogicsModule {
                 DataObject projectObject = context.getKeyValue(projectInterface);
                 DataObject documentObject;
 
+                Object regulation = nameRegulationsProject.read(context, projectObject);
+
+                if(regulation!=null) {
+                    if("R1".equals(regulation.toString().trim())) {
+
                 Object file = fileNativeApplicationFormProject.read(context, projectObject);
                 documentObject = context.addObject(document);
                 projectDocument.execute(projectObject.getValue(), context, documentObject);
@@ -5853,7 +5858,27 @@ public class SkolkovoLogicsModule extends LogicsModule {
                     languageDocument.execute(language.getID("english"), context, documentObject);
                     fileDocument.execute(file, context, documentObject);
                 }
+                    } else {
 
+                        Object file = fileNativeRoadMapProject.read(context, projectObject);
+                        if (file != null) {
+                            documentObject = context.addObject(document);
+                            projectDocument.execute(projectObject.getValue(), context, documentObject);
+                            typeDocument.execute(documentType.getID("roadmap"), context, documentObject);
+                            languageDocument.execute(language.getID("russian"), context, documentObject);
+                            fileDocument.execute(file, context, documentObject);
+                        }
+
+                        file = fileForeignRoadMapProject.read(context, projectObject);
+                        if (file != null) {
+                            documentObject = context.addObject(document);
+                            projectDocument.execute(projectObject.getValue(), context, documentObject);
+                            typeDocument.execute(documentType.getID("roadmap"), context, documentObject);
+                            languageDocument.execute(language.getID("english"), context, documentObject);
+                            fileDocument.execute(file, context, documentObject);
+                        }
+                    }
+                }
             } catch (IOException e) {
                 e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
             } catch (JRException e) {
