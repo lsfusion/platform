@@ -15,6 +15,7 @@ import platform.interop.ClassViewType;
 import platform.interop.Compare;
 import platform.interop.action.ClientAction;
 import platform.interop.action.MessageClientAction;
+import platform.interop.action.OpenFileClientAction;
 import platform.interop.form.RemoteFormInterface;
 import platform.interop.form.layout.DoNotIntersectSimplexConstraint;
 import platform.server.Settings;
@@ -716,6 +717,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP generateDocumentsProjectDocumentType;
     LP includeDocumentsProject, hideIncludeDocumentsProject;
     LP importProjectSidsAction, showProjectsToImportAction, showProjectsReplaceToImportAction, importProjectsAction;
+    LP openApplicationProjectAction;
     LP exportProjectDocumentsAction;
     LP copyProjectAction;
     LP generateVoteProject, needNameExtraVoteProject, hideGenerateVoteProject;
@@ -2718,6 +2720,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         showProjectsReplaceToImportAction = addAProp(importGroup, new ImportProjectsActionProperty("Посмотреть замещаемые проекты", this, BL, true, true, false));
         importProjectsAction = addAProp(importGroup, new ImportProjectsActionProperty("Импортировать", this, BL, false, false, false));
         copyProjectAction = addAProp(actionGroup, new CopyProjectActionProperty("Копировать", this, project));
+        openApplicationProjectAction = addAProp(actionGroup, new OpenApplicationProjectActionProperty());
         exportProjectDocumentsAction = addAProp(actionGroup, new ExportProjectDocumentsActionProperty("Экспортировать документы", this, project));
 
         generateVoteProject = addAProp(actionGroup, new GenerateVoteActionProperty());
@@ -4290,6 +4293,9 @@ public class SkolkovoLogicsModule extends LogicsModule {
             addPropertyDraw(copyProjectAction, objProject).toDraw = objProject.groupTo;
             setForceViewType(copyProjectAction, ClassViewType.PANEL);
 
+            //addPropertyDraw(openApplicationProjectAction, objProject).toDraw = objProject.groupTo;
+            //setForceViewType(openApplicationProjectAction, ClassViewType.PANEL);
+
             hideTranslateToRussianProject = addHideCaptionProp(privateGroup, "Перевести", translateToRussianProject, needsToBeTranslatedToRussianProject);
             getPropertyDraw(translateToRussianProject).propertyCaption = addPropertyObject(hideTranslateToRussianProject, objProject);
 
@@ -4491,6 +4497,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
             design.get(getPropertyDraw(importProjectsAction)).drawToToolbar = true;
             design.get(getPropertyDraw(copyProjectAction)).drawToToolbar = true;
+            //design.get(getPropertyDraw(openApplicationProjectAction)).drawToToolbar = true;
             design.get(getPropertyDraw(editR1Project)).drawToToolbar = true;
             design.get(getPropertyDraw(editR2Project)).drawToToolbar = true;
             design.get(getPropertyDraw(editClaimerProject)).drawToToolbar = true;
@@ -5666,6 +5673,45 @@ public class SkolkovoLogicsModule extends LogicsModule {
         }
     }
 
+    public class OpenApplicationProjectActionProperty extends ActionProperty {
+
+        private final ClassPropertyInterface projectInterface;
+
+        public OpenApplicationProjectActionProperty() {
+            super(genSID(), "Открыть анкету", new ValueClass[]{project});
+
+            projectInterface = interfaces.iterator().next();
+        }
+
+        @Override
+        public void execute(ExecutionContext context) throws SQLException {
+            try {
+                DataObject projectObject = context.getKeyValue(projectInterface);
+
+                byte[] file = (byte[]) fileNativeApplicationFormProject.read(context, projectObject);
+
+                boolean newRegulation = false;
+                Object regulation = nameRegulationsProject.read(context, projectObject);
+                if (regulation != null) {
+                    if ("R2".equals(regulation.toString().trim())) {
+                        newRegulation = true;
+                    } else newRegulation = false;
+                }
+
+                if (file == null)
+                    file = generateApplicationFile(context, projectObject, false, newRegulation);
+                context.addAction(new OpenFileClientAction(file, "pdf"));
+
+            } catch (IOException e) {
+                e.printStackTrace();
+            } catch (ClassNotFoundException e) {
+                e.printStackTrace();
+            } catch (JRException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
 
     public class IncludeDocumentsActionProperty extends ActionProperty {
 
@@ -5703,7 +5749,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
                 if (file != null)
                     fileDocument.execute(file, context, documentObject);
                 else if ((fillNativeProject.read(context, projectObject)) == (Object) true || (translatedToRussianProject.read(context, projectObject)) == (Object) true)
-                    fileDocument.execute(generateApplicationFile(context, projectObject, false), context, documentObject);
+                    fileDocument.execute(generateApplicationFile(context, projectObject, false, true), context, documentObject);
 
                 file = fileForeignApplicationFormProject.read(context, projectObject);
                 documentObject = context.addObject(document);
@@ -5713,7 +5759,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
                 if (file != null)
                     fileDocument.execute(file, context, documentObject);
                 else if ((fillForeignProject.read(context, projectObject)) == (Object) true || (translatedToEnglishProject.read(context, projectObject)) == (Object) true)
-                    fileDocument.execute(generateApplicationFile(context, projectObject, true), context, documentObject);
+                    fileDocument.execute(generateApplicationFile(context, projectObject, true, true), context, documentObject);
 
                 file = fileNativeSummaryProject.read(context, projectObject);
                 if (file != null) {
@@ -5877,6 +5923,27 @@ public class SkolkovoLogicsModule extends LogicsModule {
                             languageDocument.execute(language.getID("english"), context, documentObject);
                             fileDocument.execute(file, context, documentObject);
                         }
+
+                        file = fileNativeApplicationFormProject.read(context, projectObject);
+                        documentObject = context.addObject(document);
+                        projectDocument.execute(projectObject.getValue(), context, documentObject);
+                        typeDocument.execute(documentType.getID("application"), context, documentObject);
+                        languageDocument.execute(language.getID("russian"), context, documentObject);
+                        if (file != null)
+                            fileDocument.execute(file, context, documentObject);
+                        else if ((fillNativeProject.read(context, projectObject)) == (Object) true || (translatedToRussianProject.read(context, projectObject)) == (Object) true)
+                            fileDocument.execute(generateApplicationFile(context, projectObject, false, true), context, documentObject);
+
+                        file = fileForeignApplicationFormProject.read(context, projectObject);
+                        documentObject = context.addObject(document);
+                        projectDocument.execute(projectObject.getValue(), context, documentObject);
+                        typeDocument.execute(documentType.getID("application"), context, documentObject);
+                        languageDocument.execute(language.getID("english"), context, documentObject);
+                        if (file != null)
+                            fileDocument.execute(file, context, documentObject);
+                        else if ((fillForeignProject.read(context, projectObject)) == (Object) true || (translatedToEnglishProject.read(context, projectObject)) == (Object) true)
+                            fileDocument.execute(generateApplicationFile(context, projectObject, true, true), context, documentObject);
+
                     }
                 }
             } catch (IOException e) {
@@ -5889,11 +5956,17 @@ public class SkolkovoLogicsModule extends LogicsModule {
         }
     }
 
-    public byte[] generateApplicationFile(ExecutionContext context, DataObject project, boolean foreign) throws IOException, ClassNotFoundException, JRException {
+    public byte[] generateApplicationFile(ExecutionContext context, DataObject project, boolean foreign, boolean newRegulation) throws IOException, ClassNotFoundException, JRException {
 
-        ProjectFullFormEntity applicationForm = foreign ? projectFullForeign : projectFullNative;
+        RemoteFormInterface remoteForm;
 
-        RemoteFormInterface remoteForm = context.getRemoteForm().createForm(applicationForm, Collections.singletonMap(applicationForm.objProject, project));
+        if (newRegulation) {
+            ProjectFullR2FormEntity applicationForm = foreign ? projectFullR2Foreign : projectFullR2Native;
+            remoteForm = context.getRemoteForm().createForm(applicationForm, Collections.singletonMap(applicationForm.objProject, project));
+        } else {
+            ProjectFullFormEntity applicationForm = foreign ? projectFullForeign : projectFullNative;
+            remoteForm = context.getRemoteForm().createForm(applicationForm, Collections.singletonMap(applicationForm.objProject, project));
+        }
 
         ReportGenerator report = new ReportGenerator(remoteForm);
         JasperPrint print = report.createReport(false, false, new HashMap());
