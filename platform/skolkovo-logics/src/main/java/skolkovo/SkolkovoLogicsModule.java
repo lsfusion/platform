@@ -80,6 +80,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         this.BL = BL;
     }
 
+    private LP useAllClusterExpertsProject;
     private LP inExpertVoteDateFromDateTo;
     private LP quantityInExpertDateFromDateTo;
     private LP emailClaimerAcceptedHeaderVote;
@@ -1463,6 +1464,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
       //  isR1Project = addJProp(baseGroup, "isR1Project", "Старый регламент", baseLM.andNot1, addCProp(LogicalClass.instance, true, project), 1, isR2Project, 1);
         isR2Project = addJProp(baseGroup, "isR2Project", "Регламент 2", baseLM.equals2, regulationsProject, 1, addCProp(projectSchedule, "R2"));
         isR1Project = addJProp(baseGroup, "isR1Project", "Регламент 1", baseLM.equals2, regulationsProject, 1, addCProp(projectSchedule, "R1"));
+        useAllClusterExpertsProject = addDProp(baseGroup, "useAllClusterExpertsProject", "Все эксп.", LogicalClass.instance, project);
 
         revisionVote = addCUProp(baseGroup, "revisionVote", "Регламент", addCProp(StringClass.get(3), "R1", voteR1), addCProp(StringClass.get(3), "R2", voteR2));
 
@@ -2605,8 +2607,9 @@ public class SkolkovoLogicsModule extends LogicsModule {
         acceptedInternationalExperienceVote = addJProp(voteResultGroup, "acceptedInternationalExperienceVote", "Международный опыт", baseLM.groeq2,
                 quantityInternationalExperienceVote, 1, quantityNeededVote, 1);
 
-        acceptedEnoughDocumentsVote = addJProp(voteResultGroup, "acceptedInternationalExperienceVote", "Достаточно голосов", baseLM.groeq2,
-                quantityEnoughDocumentsVote, 1, quantityNeededVote, 1);
+        acceptedEnoughDocumentsVote = addJProp(voteResultGroup, "acceptedEnoughDocumentsVote", "Достаточно голосов", baseLM.greater2,
+                addJProp(baseLM.multiplyIntegerBy2, quantityEnoughDocumentsVote, 1), 1,
+                quantityDoneVote, 1);
 
         acceptedVoteR1 = addJProp("acceptedVoteR1", true, "Положительно", and(false, false),
                 acceptedInClusterVote, 1, acceptedInnovativeVote, 1, acceptedForeignVote, 1);
@@ -4361,7 +4364,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
                     nameNativeShortFinalClusterProject, nameNativeClaimerProject, nameForeignClaimerProject, emailClaimerProject,
                     nameStatusProject, dateInStatusProject, normalPeriodStatusProject, quantityDaysToOverdueDateStatusProject, formLogNameStatusProject, nameProjectActionProject, updateDateProject, autoGenerateProject,
                     inactiveProject, quantityClusterProject, quantityClusterVotedProject, quantityVoteProject, generateVoteProject,
-                    nameRegulationsProject);
+                    nameRegulationsProject, useAllClusterExpertsProject);
 
             addPropertyDraw(objProject, isOtherClusterProject, nativeSubstantiationOtherClusterProject, foreignSubstantiationOtherClusterProject);
             addPropertyDraw(objProject, registerGroup);
@@ -6145,7 +6148,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         public void execute(ExecutionContext context) throws SQLException {
             DataObject projectObject = context.getKeyValue(projectInterface);
 
-            boolean r2 = isR2Project.read(context, projectObject) != null;
+            boolean r2 = isR2Project.read(context, projectObject) != null && useAllClusterExpertsProject.read(context, projectObject) == null;
 
             // считываем всех экспертов, которые уже голосовали по проекту
             Query<String, String> query = new Query<String, String>(Collections.singleton("key"));
