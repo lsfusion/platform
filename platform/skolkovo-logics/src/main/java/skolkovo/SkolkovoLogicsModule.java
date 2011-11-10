@@ -1259,7 +1259,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
     public LP dataResearch;
     public LP nativeCommentToResearch;
     public LP nativeCommentSIDToResearch;
-    LP linksPatent;
+    public LP linksPatent;
     public LP nativeCommentMissionProject;
     public LP foreignCommentMissionProject;
     public LP projectPublications, equalsPublicationsProject;
@@ -1349,12 +1349,26 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP percentNonClusterApplicationsTypeProjectStatus;
     LP percentApplicationsTypeProjectStatus;
     LP inTestApplication;
-    LP projectMileStone;
-    LP nativeMileStone;
-    LP nativeDescriptionTypeMileStoneMileStone;
-    LP foreignDescriptionTypeMileStoneMileStone;
+    public LP projectMileStone, equalsMileStoneProject;
+    public LP nativeMileStone;
+    LP nativeToMileStone;
+    public LP nativeSIDToMileStone;
+    public LP nativeDescriptionTypeMileStoneMileStone;
+    public LP foreignDescriptionTypeMileStoneMileStone;
     LP nativeTypeMileStone;
     LP foreignTypeMileStone;
+    public LP nativeResearchDescriptionTypeMileStoneMileStone;
+    public LP nativeProductCreationDescriptionTypeMileStoneMileStone;
+    public LP nativePlanOnHiringDescriptionTypeMileStoneMileStone;
+    public LP nativeLicensingDescriptionTypeMileStoneMileStone;
+    public LP nativePromotionDescriptionTypeMileStoneMileStone;
+    public LP nativeSellingDescriptionTypeMileStoneMileStone;
+    public LP foreignResearchDescriptionTypeMileStoneMileStone;
+    public LP foreignProductCreationDescriptionTypeMileStoneMileStone;
+    public LP foreignPlanOnHiringDescriptionTypeMileStoneMileStone;
+    public LP foreignLicensingDescriptionTypeMileStoneMileStone;
+    public LP foreignPromotionDescriptionTypeMileStoneMileStone;
+    public LP foreignSellingDescriptionTypeMileStoneMileStone;
 
     LP dateRegisteredStatusProject;
     LP dateNoClusterStatusProject;
@@ -2032,17 +2046,37 @@ public class SkolkovoLogicsModule extends LogicsModule {
         foreignIntellectualPropertySpecialist.setPreferredWidth(50);
 //                                               Новая дорожная карта
         projectMileStone = addDProp("projectMileStone", "Проект квартала (ИД)", project, mileStone);
+        equalsMileStoneProject = addJProp("equalsMileStoneProject", "Вкл", baseLM.equals2, projectMileStone, 1, 2);
         nativeMileStone = addDProp("nativeMileStone", "Название", InsensitiveStringClass.get(2000), mileStone);
         nativeMileStone.setMinimumWidth(10);
         nativeMileStone.setPreferredWidth(50);
 
-        nativeDescriptionTypeMileStoneMileStone = addDProp("nativeDescriptionTypeMileStoneMileStone", "Описание дорожное карты", InsensitiveStringClass.get(2000), typeMileStone, mileStone);
+        nativeToMileStone = addAGProp("nativeToMileStone", "Название", nativeMileStone, projectMileStone);
+        nativeSIDToMileStone = addJProp("nativeSIDToMileStone", "Дорожная карта", nativeToMileStone, 1, sidToProject, 2);
+
+
+        nativeDescriptionTypeMileStoneMileStone = addDProp("nativeDescriptionTypeMileStoneMileStone", "Описание дорожной карты", InsensitiveStringClass.get(2000), typeMileStone, mileStone);
         nativeDescriptionTypeMileStoneMileStone.setMinimumWidth(10);
         nativeDescriptionTypeMileStoneMileStone.setPreferredWidth(50);
+
+        nativeResearchDescriptionTypeMileStoneMileStone = addJProp(true, "nativeResearchDescriptionTypeMileStoneMileStone", "Описание разработки", nativeDescriptionTypeMileStoneMileStone, addCProp(typeMileStone, "research and development"), 1);
+        nativeProductCreationDescriptionTypeMileStoneMileStone = addJProp(true, "nativeProductCreationDescriptionTypeMileStoneMileStone", "Описание создания продукта", nativeDescriptionTypeMileStoneMileStone, addCProp(typeMileStone, "product Creation and Production"), 1);
+        nativePlanOnHiringDescriptionTypeMileStoneMileStone = addJProp(true, "nativePlanOnHiringDescriptionTypeMileStoneMileStone", "Описание плана по найму", nativeDescriptionTypeMileStoneMileStone, addCProp(typeMileStone, "plan on hiring"), 1);
+        nativeLicensingDescriptionTypeMileStoneMileStone = addJProp(true, "nativeLicensingDescriptionTypeMileStoneMileStone", "Описание лицензирования", nativeDescriptionTypeMileStoneMileStone, addCProp(typeMileStone, "licensing"), 1);
+        nativePromotionDescriptionTypeMileStoneMileStone = addJProp(true, "nativePromotionDescriptionTypeMileStoneMileStone", "Описание продвижения", nativeDescriptionTypeMileStoneMileStone, addCProp(typeMileStone, "promotion"), 1);
+        nativeSellingDescriptionTypeMileStoneMileStone = addJProp(true, "nativeSellingDescriptionTypeMileStoneMileStone", "Описание продаж", nativeDescriptionTypeMileStoneMileStone, addCProp(typeMileStone, "selling"), 1);
 
         foreignDescriptionTypeMileStoneMileStone = addDProp("foreignDescriptionTypeMileStoneMileStone", "Description of the road map", InsensitiveStringClass.get(2000), typeMileStone, mileStone);
         foreignDescriptionTypeMileStoneMileStone.setMinimumWidth(10);
         foreignDescriptionTypeMileStoneMileStone.setPreferredWidth(50);
+
+        foreignResearchDescriptionTypeMileStoneMileStone = addJProp(true, "foreignResearchDescriptionTypeMileStoneMileStone", "Описание разработки", foreignDescriptionTypeMileStoneMileStone, addCProp(typeMileStone, "research and development"), 1);
+        foreignProductCreationDescriptionTypeMileStoneMileStone = addJProp(true, "foreignProductCreationDescriptionTypeMileStoneMileStone", "Описание создания продукта", foreignDescriptionTypeMileStoneMileStone, addCProp(typeMileStone, "product Creation and Production"), 1);
+        foreignPlanOnHiringDescriptionTypeMileStoneMileStone = addJProp(true, "foreignPlanOnHiringDescriptionTypeMileStoneMileStone", "Описание плана по найму", foreignDescriptionTypeMileStoneMileStone, addCProp(typeMileStone, "plan on hiring"), 1);
+        foreignLicensingDescriptionTypeMileStoneMileStone = addJProp(true, "foreignLicensingDescriptionTypeMileStoneMileStone", "Описание лицензирования", foreignDescriptionTypeMileStoneMileStone, addCProp(typeMileStone, "licensing"), 1);
+        foreignPromotionDescriptionTypeMileStoneMileStone = addJProp(true, "foreignPromotionDescriptionTypeMileStoneMileStone", "Описание продвижения", foreignDescriptionTypeMileStoneMileStone, addCProp(typeMileStone, "promotion"), 1);
+        foreignSellingDescriptionTypeMileStoneMileStone = addJProp(true, "foreignSellingDescriptionTypeMileStoneMileStone", "Описание продаж", foreignDescriptionTypeMileStoneMileStone, addCProp(typeMileStone, "selling"), 1);
+
 
         nativeTypeMileStone = addDProp("nativeTypeMileStone", "Название раздела на русск.", InsensitiveStringClass.get(2000), typeMileStone);
         nativeTypeMileStone.setMinimumWidth(10);
@@ -4233,17 +4267,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             addPropertyDraw(numberCluster, objCluster);
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(inProjectCluster, objProject, objCluster)));
 
-            objPatent = addSingleGroupObject(5, "patent", patent, "Патент", baseGroup);
-            addPropertyDraw(objPatent, linksPatent);
-            getPropertyDraw(ownerPatent).propertyCaption = addPropertyObject(hideOwnerPatent, objPatent);
-            getPropertyDraw(nameNativeOwnerTypePatent).propertyCaption = addPropertyObject(hideNameNativeOwnerTypePatent, objPatent);
-            getPropertyDraw(nameForeignOwnerTypePatent).propertyCaption = addPropertyObject(hideNameForeignOwnerTypePatent, objPatent);
-            getPropertyDraw(loadFileIntentionOwnerPatent).propertyCaption = addPropertyObject(hideLoadFileIntentionOwnerPatent, objPatent);
-            getPropertyDraw(openFileIntentionOwnerPatent).propertyCaption = addPropertyObject(hideOpenFileIntentionOwnerPatent, objPatent);
-
-            getPropertyDraw(valuatorPatent).propertyCaption = addPropertyObject(hideValuatorPatent, objPatent);
-            getPropertyDraw(loadFileActValuationPatent).propertyCaption = addPropertyObject(hideLoadFileActValuationPatent, objPatent);
-            getPropertyDraw(openFileActValuationPatent).propertyCaption = addPropertyObject(hideOpenFileActValuationPatent, objPatent);
+            objPatent = addSingleGroupObject(5, "patent", patent, "Патент", nativeTypePatent, foreignTypePatent, nativeNumberPatent, linksPatent);
             addObjectActions(this, objPatent);
             addFixedFilter(new CompareFilterEntity(addPropertyObject(projectPatent, objPatent), Compare.EQUALS, objProject));
 

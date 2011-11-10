@@ -91,7 +91,7 @@ public class ImportProjectsActionProperty extends ActionProperty {
             fileRoadMapProjectField, fileForeignRoadMapProjectField,
             nativeTypePatentField, foreignTypePatentField, nativeNumberPatentField, foreignNumberPatentField,
             datePatentField, isOwnedPatentField, ownerPatentField, ownerTypePatentField, isValuatedPatentField, valuatorPatentField,
-            fileIntentionOwnerPatentField, fileActValuationPatentField,
+            fileIntentionOwnerPatentField, fileActValuationPatentField, linksPatentField,
             fullNameAcademicField, institutionAcademicField, titleAcademicField,
             fileDocumentConfirmingAcademicField, fileDocumentEmploymentAcademicField,
             fullNameNonRussianSpecialistField, organizationNonRussianSpecialistField, titleNonRussianSpecialistField,
@@ -132,11 +132,18 @@ public class ImportProjectsActionProperty extends ActionProperty {
             nativeWorkSpecialistField, foreignWorkSpecialistField, nativePublicationsSpecialistField,
             foreignPublicationsSpecialistField, nativeCitationSpecialistField, foreignCitationSpecialistField,
             nativeIntellectualPropertySpecialistField, foreignIntellectualPropertySpecialistField,
+            nativeMileStoneField, nativeResearchDescriptionTypeMileStoneMileStoneField,
+            nativeProductCreationDescriptionTypeMileStoneMileStoneField, nativePlanOnHiringDescriptionTypeMileStoneMileStoneField,
+            nativeLicensingDescriptionTypeMileStoneMileStoneField, nativePromotionDescriptionTypeMileStoneMileStoneField, 
+            nativeSellingDescriptionTypeMileStoneMileStoneField, foreignResearchDescriptionTypeMileStoneMileStoneField, 
+            foreignProductCreationDescriptionTypeMileStoneMileStoneField, foreignPlanOnHiringDescriptionTypeMileStoneMileStoneField,
+            foreignLicensingDescriptionTypeMileStoneMileStoneField, foreignPromotionDescriptionTypeMileStoneMileStoneField,
+            foreignSellingDescriptionTypeMileStoneMileStoneField,
             nativeProjectObjectivesField, foreignProjectObjectivesField;
 
     ImportKey<?> projectKey, projectTypeProjectKey, projectActionProjectKey, claimerKey, patentKey, ownerTypePatentKey,
             clusterKey, academicKey, nonRussianSpecialistKey, projectMissionProjectKey, projectScheduleProjectKey,
-            researchKey, publicationsKey, commercializationKey, analoguesKey, specialistKey, objectivesKey;
+            researchKey, publicationsKey, commercializationKey, analoguesKey, specialistKey, mileStoneKey, objectivesKey;
     List<ImportProperty<?>> properties = new ArrayList<ImportProperty<?>>();
     ImportProperty<?> propertyDate;
     ImportProperty<?> propertyStatusDate;
@@ -171,6 +178,9 @@ public class ImportProjectsActionProperty extends ActionProperty {
     List<ImportProperty<?>> propertiesSpecialist = new ArrayList<ImportProperty<?>>();
     List<ImportProperty<?>> propertiesSpecialistNative = new ArrayList<ImportProperty<?>>();
     List<ImportProperty<?>> propertiesSpecialistForeign = new ArrayList<ImportProperty<?>>();
+    List<ImportProperty<?>> propertiesMileStone = new ArrayList<ImportProperty<?>>();
+    List<ImportProperty<?>> propertiesMileStoneNative = new ArrayList<ImportProperty<?>>();
+    List<ImportProperty<?>> propertiesMileStoneForeign = new ArrayList<ImportProperty<?>>();
     List<ImportProperty<?>> propertiesObjectives = new ArrayList<ImportProperty<?>>();
     List<ImportProperty<?>> propertiesObjectivesNative = new ArrayList<ImportProperty<?>>();
     List<ImportProperty<?>> propertiesObjectivesForeign = new ArrayList<ImportProperty<?>>();
@@ -514,6 +524,19 @@ public class ImportProjectsActionProperty extends ActionProperty {
         foreignIntellectualPropertySpecialistField = new ImportField(LM.foreignIntellectualPropertySpecialist);
         filePassportSpecialistField = new ImportField(LM.fileStatementSpecialist);
         fileStatementSpecialistField = new ImportField(LM.filePassportSpecialist);
+        nativeMileStoneField = new ImportField(LM.nativeMileStone);
+        nativeResearchDescriptionTypeMileStoneMileStoneField = new ImportField(LM.nativeDescriptionTypeMileStoneMileStone);
+        nativeProductCreationDescriptionTypeMileStoneMileStoneField = new ImportField(LM.nativeDescriptionTypeMileStoneMileStone);
+        nativePlanOnHiringDescriptionTypeMileStoneMileStoneField = new ImportField(LM.nativeDescriptionTypeMileStoneMileStone);
+        nativeLicensingDescriptionTypeMileStoneMileStoneField = new ImportField(LM.nativeDescriptionTypeMileStoneMileStone);
+        nativePromotionDescriptionTypeMileStoneMileStoneField = new ImportField(LM.nativeDescriptionTypeMileStoneMileStone);
+        nativeSellingDescriptionTypeMileStoneMileStoneField = new ImportField(LM.nativeDescriptionTypeMileStoneMileStone);
+        foreignResearchDescriptionTypeMileStoneMileStoneField = new ImportField(LM.foreignDescriptionTypeMileStoneMileStone);
+        foreignProductCreationDescriptionTypeMileStoneMileStoneField = new ImportField(LM.foreignDescriptionTypeMileStoneMileStone);
+        foreignPlanOnHiringDescriptionTypeMileStoneMileStoneField = new ImportField(LM.foreignDescriptionTypeMileStoneMileStone);
+        foreignLicensingDescriptionTypeMileStoneMileStoneField = new ImportField(LM.foreignDescriptionTypeMileStoneMileStone);
+        foreignPromotionDescriptionTypeMileStoneMileStoneField = new ImportField(LM.foreignDescriptionTypeMileStoneMileStone);
+        foreignSellingDescriptionTypeMileStoneMileStoneField = new ImportField(LM.foreignDescriptionTypeMileStoneMileStone);
         nativeHistoryProjectField = new ImportField(LM.nativeHistoryProject);
         foreignHistoryProjectField = new ImportField(LM.foreignHistoryProject);
         nativeDynamicsProjectField = new ImportField(LM.nativeDynamicsProject);
@@ -564,13 +587,7 @@ public class ImportProjectsActionProperty extends ActionProperty {
         nativeTypePatentField = new ImportField(LM.nativeTypePatent);
         foreignTypePatentField = new ImportField(LM.foreignTypePatent);
         nativeNumberPatentField = new ImportField(LM.nativeNumberPatent);
-        foreignNumberPatentField = new ImportField(LM.foreignNumberPatent);
-        datePatentField = new ImportField(LM.priorityDatePatent);
-        isOwnedPatentField = new ImportField(LM.isOwned);
-        ownerPatentField = new ImportField(LM.ownerPatent);
-        ownerTypePatentField = new ImportField(LM.baseLM.classSID);
-        isValuatedPatentField = new ImportField(LM.isValuated);
-        valuatorPatentField = new ImportField(LM.valuatorPatent);
+        linksPatentField = new ImportField(LM.linksPatent);
 
         nativeCommentResearchField = new ImportField(LM.nativeCommentResearch);
         foreignCommentResearchField = new ImportField(LM.foreignCommentResearch);
@@ -622,6 +639,9 @@ public class ImportProjectsActionProperty extends ActionProperty {
         propertiesSpecialist = new ArrayList<ImportProperty<?>>();
         propertiesSpecialistNative = new ArrayList<ImportProperty<?>>();
         propertiesSpecialistForeign = new ArrayList<ImportProperty<?>>();
+        propertiesMileStone = new ArrayList<ImportProperty<?>>();
+        propertiesMileStoneNative = new ArrayList<ImportProperty<?>>();
+        propertiesMileStoneForeign = new ArrayList<ImportProperty<?>>();
         propertiesObjectives = new ArrayList<ImportProperty<?>>();
         propertiesObjectivesNative = new ArrayList<ImportProperty<?>>();
         propertiesObjectivesForeign = new ArrayList<ImportProperty<?>>();
@@ -720,21 +740,11 @@ public class ImportProjectsActionProperty extends ActionProperty {
 
         patentKey = new ImportKey(LM.patent, LM.nativeNumberSIDToPatent.getMapping(nativeNumberPatentField, projectIdField));
         propertiesPatent.add(new ImportProperty(nativeNumberPatentField, LM.nativeNumberPatent.getMapping(patentKey)));
-        propertiesPatent.add(new ImportProperty(datePatentField, LM.priorityDatePatent.getMapping(patentKey)));
-        propertiesPatent.add(new ImportProperty(isOwnedPatentField, LM.isOwned.getMapping(patentKey)));
-        propertiesPatent.add(new ImportProperty(ownerPatentField, LM.ownerPatent.getMapping(patentKey)));
-        propertiesPatent.add(new ImportProperty(isValuatedPatentField, LM.isValuated.getMapping(patentKey)));
-        propertiesPatent.add(new ImportProperty(valuatorPatentField, LM.valuatorPatent.getMapping(patentKey)));
+        propertiesPatent.add(new ImportProperty(linksPatentField, LM.linksPatent.getMapping(patentKey)));
         propertiesPatent.add(new ImportProperty(projectIdField, LM.projectPatent.getMapping(patentKey),
                 LM.baseLM.object(LM.project).getMapping(projectKey)));
-
-        ownerTypePatentKey = new ImportKey(LM.ownerType, LM.ownerTypeToSID.getMapping(ownerTypePatentField));
-        propertiesPatent.add(new ImportProperty(ownerTypePatentField, LM.ownerTypePatent.getMapping(patentKey),
-                LM.baseLM.object(LM.ownerType).getMapping(ownerTypePatentKey)));
-
         propertiesPatentNative.add(new ImportProperty(nativeTypePatentField, LM.nativeTypePatent.getMapping(patentKey)));
         propertiesPatentForeign.add(new ImportProperty(foreignTypePatentField, LM.foreignTypePatent.getMapping(patentKey)));
-        propertiesPatentForeign.add(new ImportProperty(foreignNumberPatentField, LM.foreignNumberPatent.getMapping(patentKey)));
 
         clusterKey = new ImportKey(LM.cluster, LM.nameNativeToCluster.getMapping(nameNativeClusterField));
         propertiesCluster.add(new ImportProperty(inProjectClusterField, LM.inClaimerProjectCluster.getMapping(projectKey, clusterKey)));
@@ -809,6 +819,23 @@ public class ImportProjectsActionProperty extends ActionProperty {
         propertiesSpecialistForeign.add(new ImportProperty(foreignPublicationsSpecialistField, LM.foreignPublicationsSpecialist.getMapping(specialistKey)));
         propertiesSpecialistForeign.add(new ImportProperty(foreignCitationSpecialistField, LM.foreignCitationSpecialist.getMapping(specialistKey)));
         propertiesSpecialistForeign.add(new ImportProperty(foreignIntellectualPropertySpecialistField, LM.foreignIntellectualPropertySpecialist.getMapping(specialistKey)));
+
+        mileStoneKey = new ImportKey(LM.mileStone, LM.nativeSIDToMileStone.getMapping(nativeMileStoneField, projectIdField));
+        propertiesMileStone.add(new ImportProperty(projectIdField, LM.projectMileStone.getMapping(mileStoneKey),
+                LM.baseLM.object(LM.project).getMapping(projectKey)));
+        propertiesMileStone.add(new ImportProperty(nativeMileStoneField, LM.nativeMileStone.getMapping(mileStoneKey)));
+        propertiesMileStoneNative.add(new ImportProperty(nativeResearchDescriptionTypeMileStoneMileStoneField, LM.nativeResearchDescriptionTypeMileStoneMileStone.getMapping(mileStoneKey)));
+        propertiesMileStoneNative.add(new ImportProperty(nativeProductCreationDescriptionTypeMileStoneMileStoneField, LM.nativeProductCreationDescriptionTypeMileStoneMileStone.getMapping(mileStoneKey)));
+        propertiesMileStoneNative.add(new ImportProperty(nativePlanOnHiringDescriptionTypeMileStoneMileStoneField, LM.nativePlanOnHiringDescriptionTypeMileStoneMileStone.getMapping(mileStoneKey)));
+        propertiesMileStoneNative.add(new ImportProperty(nativeLicensingDescriptionTypeMileStoneMileStoneField, LM.nativeLicensingDescriptionTypeMileStoneMileStone.getMapping(mileStoneKey)));
+        propertiesMileStoneNative.add(new ImportProperty(nativePromotionDescriptionTypeMileStoneMileStoneField, LM.nativePromotionDescriptionTypeMileStoneMileStone.getMapping(mileStoneKey)));
+        propertiesMileStoneNative.add(new ImportProperty(nativeSellingDescriptionTypeMileStoneMileStoneField, LM.nativeSellingDescriptionTypeMileStoneMileStone.getMapping(mileStoneKey)));
+        propertiesMileStoneForeign.add(new ImportProperty(foreignResearchDescriptionTypeMileStoneMileStoneField, LM.foreignResearchDescriptionTypeMileStoneMileStone.getMapping(mileStoneKey)));
+        propertiesMileStoneForeign.add(new ImportProperty(foreignProductCreationDescriptionTypeMileStoneMileStoneField, LM.foreignProductCreationDescriptionTypeMileStoneMileStone.getMapping(mileStoneKey)));
+        propertiesMileStoneForeign.add(new ImportProperty(foreignPlanOnHiringDescriptionTypeMileStoneMileStoneField, LM.foreignPlanOnHiringDescriptionTypeMileStoneMileStone.getMapping(mileStoneKey)));
+        propertiesMileStoneForeign.add(new ImportProperty(foreignLicensingDescriptionTypeMileStoneMileStoneField, LM.foreignLicensingDescriptionTypeMileStoneMileStone.getMapping(mileStoneKey)));
+        propertiesMileStoneForeign.add(new ImportProperty(foreignPromotionDescriptionTypeMileStoneMileStoneField, LM.foreignPromotionDescriptionTypeMileStoneMileStone.getMapping(mileStoneKey)));
+        propertiesMileStoneForeign.add(new ImportProperty(foreignSellingDescriptionTypeMileStoneMileStoneField, LM.foreignSellingDescriptionTypeMileStoneMileStone.getMapping(mileStoneKey)));
 
         objectivesKey = new ImportKey(LM.objectives, LM.nativeProjectSIDToObjectives.getMapping(nativeProjectObjectivesField, projectIdField));
         propertiesObjectives.add(new ImportProperty(projectIdField, LM.projectObjectives.getMapping(objectivesKey),
@@ -1111,6 +1138,7 @@ public class ImportProjectsActionProperty extends ActionProperty {
         List<List<Object>> dataCommercialization = new ArrayList<List<Object>>();
         List<List<Object>> dataAnalogues = new ArrayList<List<Object>>();
         List<List<Object>> dataSpecialist = new ArrayList<List<Object>>();
+        List<List<Object>> dataMileStone = new ArrayList<List<Object>>();
         List<List<Object>> dataObjectives = new ArrayList<List<Object>>();
         List<Object> row;
 
@@ -1694,22 +1722,12 @@ public class ImportProjectsActionProperty extends ActionProperty {
 
                         rowPatent.add(projectId);
                         rowPatent.add(nodePatent.getChildText("nativeNumberPatent"));
-                        try {
-                            rowPatent.add(new java.sql.Date(new Date(Integer.parseInt(nodePatent.getChildText("yearPatent")) - 1900, Integer.parseInt(nodePatent.getChildText("monthPatent")), Integer.parseInt(nodePatent.getChildText("dayPatent")) - 1).getTime()));
-                        } catch (NumberFormatException e) {
-                            rowPatent.add(null);
-                        }
-                        rowPatent.add(BaseUtils.nullZero(node.getChildText("isOwnedPatent")));
-                        rowPatent.add(BaseUtils.nullString(nodePatent.getChildText("ownerPatent")));
-                        rowPatent.add(BaseUtils.nullString(nodePatent.getChildText("ownerTypePatent")));
-                        rowPatent.add(BaseUtils.nullZero(node.getChildText("isValuatedPatent")));
-                        rowPatent.add(BaseUtils.nullString(nodePatent.getChildText("valuatorPatent")));
+                        rowPatent.add(BaseUtils.nullString(nodePatent.getChildText("linksPatent")));
                         if (fillNative) {
                             rowPatent.add(nodePatent.getChildText("nativeTypePatent"));
                         }
                         if (fillForeign) {
                             rowPatent.add(nodePatent.getChildText("foreignTypePatent"));
-                            rowPatent.add(nodePatent.getChildText("foreignNumberPatent"));
                         }
                         dataPatent.add(rowPatent);
                     }
@@ -1799,6 +1817,28 @@ public class ImportProjectsActionProperty extends ActionProperty {
                         rowSpecialist.add(nodeSpecialist.getChildText("foreignCitationSpecialist"));
                         rowSpecialist.add(nodeSpecialist.getChildText("foreignIntellectualPropertySpecialist"));
                         dataSpecialist.add(rowSpecialist);
+                    }
+
+                    List listMileStone = node.getChildren("mileStone");
+                    for (int j = 0; j < listMileStone.size(); j++) {
+                        Element nodeMileStone = (Element) listMileStone.get(j);
+                        List<Object> rowMileStone = new ArrayList<Object>();
+
+                        rowMileStone.add(projectId);
+                        rowMileStone.add(nodeMileStone.getChildText("nativeMileStone"));
+                        rowMileStone.add(nodeMileStone.getChildText("nativeResearch"));
+                        rowMileStone.add(nodeMileStone.getChildText("nativeProductCreation"));
+                        rowMileStone.add(nodeMileStone.getChildText("nativePlanOnHiring"));
+                        rowMileStone.add(nodeMileStone.getChildText("nativeLicensing"));
+                        rowMileStone.add(nodeMileStone.getChildText("nativePromotion"));
+                        rowMileStone.add(nodeMileStone.getChildText("nativeSelling"));
+                        rowMileStone.add(nodeMileStone.getChildText("foreignResearch"));
+                        rowMileStone.add(nodeMileStone.getChildText("foreignProductCreation"));
+                        rowMileStone.add(nodeMileStone.getChildText("foreignPlanOnHiring"));
+                        rowMileStone.add(nodeMileStone.getChildText("foreignLicensing"));
+                        rowMileStone.add(nodeMileStone.getChildText("foreignPromotion"));
+                        rowMileStone.add(nodeMileStone.getChildText("foreignSelling"));
+                        dataMileStone.add(rowMileStone);
                     }
 
                     List listObjectives = node.getChildren("objectives");
@@ -1915,12 +1955,10 @@ public class ImportProjectsActionProperty extends ActionProperty {
                             dataCluster, keysArray, null, fillNative, fillForeign);
 
                     List<ImportField> fieldsPatentBoth = BaseUtils.toList(
-                            projectIdField, nativeNumberPatentField, datePatentField,
-                            isOwnedPatentField, ownerPatentField, ownerTypePatentField,
-                            isValuatedPatentField, valuatorPatentField);
+                            projectIdField, nativeNumberPatentField, linksPatentField);
                     List<ImportField> fieldsPatentNative = BaseUtils.toList(nativeTypePatentField);
-                    List<ImportField> fieldsPatentForeign = BaseUtils.toList(foreignTypePatentField, foreignNumberPatentField);
-                    keysArray = new ImportKey<?>[]{projectKey, patentKey, ownerTypePatentKey};
+                    List<ImportField> fieldsPatentForeign = BaseUtils.toList(foreignTypePatentField);
+                    keysArray = new ImportKey<?>[]{projectKey, patentKey};
                     importMultilanguageData(pInfo,
                             fieldsPatentBoth, fieldsPatentNative, fieldsPatentForeign,
                             propertiesPatent, propertiesPatentNative, propertiesPatentForeign,
@@ -2012,6 +2050,25 @@ public class ImportProjectsActionProperty extends ActionProperty {
                             dataSpecialist, keysArray,
                             Collections.singletonList(new ImportDelete(specialistKey,
                                                                        LM.equalsSpecialistProject.getMapping(specialistKey,
+                                                                                                             new ImportKeyTable(projectKey, projectTable)),
+                                                                       false)),
+                            fillNative, fillForeign);
+
+                    List<ImportField> fieldsMileStoneBoth = BaseUtils.toList(
+                            projectIdField, nativeMileStoneField);
+                    List<ImportField> fieldsMileStoneNative = BaseUtils.toList(nativeResearchDescriptionTypeMileStoneMileStoneField, nativeProductCreationDescriptionTypeMileStoneMileStoneField,
+                            nativePlanOnHiringDescriptionTypeMileStoneMileStoneField, nativeLicensingDescriptionTypeMileStoneMileStoneField,
+                            nativePromotionDescriptionTypeMileStoneMileStoneField, nativeSellingDescriptionTypeMileStoneMileStoneField);
+                    List<ImportField> fieldsMileStoneForeign = BaseUtils.toList(foreignResearchDescriptionTypeMileStoneMileStoneField, foreignProductCreationDescriptionTypeMileStoneMileStoneField,
+                            foreignPlanOnHiringDescriptionTypeMileStoneMileStoneField, foreignLicensingDescriptionTypeMileStoneMileStoneField,
+                            foreignPromotionDescriptionTypeMileStoneMileStoneField, foreignSellingDescriptionTypeMileStoneMileStoneField);
+                    keysArray = new ImportKey<?>[]{projectKey, mileStoneKey};
+                    importMultilanguageData(pInfo,
+                            fieldsMileStoneBoth, fieldsMileStoneNative, fieldsMileStoneForeign,
+                            propertiesMileStone, propertiesMileStoneNative, propertiesMileStoneForeign,
+                            dataMileStone, keysArray,
+                            Collections.singletonList(new ImportDelete(mileStoneKey,
+                                                                       LM.equalsMileStoneProject.getMapping(mileStoneKey,
                                                                                                              new ImportKeyTable(projectKey, projectTable)),
                                                                        false)),
                             fillNative, fillForeign);
