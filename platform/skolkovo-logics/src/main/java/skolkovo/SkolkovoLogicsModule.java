@@ -83,6 +83,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
     private LP dateResultForesightCheckProject;
     private LP userResultForesightCheckProject;
     private LP nameResultForesightCheckProject;
+    private LP sidResultForesightCheckProject;
     private LP nameUserResultForesightCheckProject;
     private LP useAllClusterExpertsProject;
     private LP inExpertVoteDateFromDateTo;
@@ -734,6 +735,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP emailStartVoteEA, emailStartHeaderVote, emailStartVote;
     LP emailProtocolVoteEA, emailProtocolHeaderVote, emailProtocolVote;
     LP emailClosedVoteEA, emailClosedHeaderVote, emailClosedVote;
+    LP emailForesightCheckProjectEA;
     LP emailAuthExpertEA, emailAuthExpert;
     LP emailAuthProfileExpertEA, emailAuthProfileExpert;
     LP authExpertSubjectLanguage, letterExpertSubjectLanguage;
@@ -2057,7 +2059,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         nativeSIDToMileStone = addJProp("nativeSIDToMileStone", "Дорожная карта", nativeToMileStone, 1, sidToProject, 2);
 
 
-        nativeDescriptionTypeMileStoneMileStone = addDProp("nativeDescriptionTypeMileStoneMileStone", "Описание дорожное карты", InsensitiveStringClass.get(2000), typeMileStone, mileStone);
+        nativeDescriptionTypeMileStoneMileStone = addDProp("nativeDescriptionTypeMileStoneMileStone", "Описание дорожной карты", InsensitiveStringClass.get(2000), typeMileStone, mileStone);
         nativeDescriptionTypeMileStoneMileStone.setMinimumWidth(10);
         nativeDescriptionTypeMileStoneMileStone.setPreferredWidth(50);
 
@@ -3055,6 +3057,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         resultForesightCheckProject = addDProp("resultForesightCheckProject", "Решение проверки на форсайты (ИД)", foresightCheckResult, project);
         nameResultForesightCheckProject = addJProp("nameResultForesightCheckProject", "Решение проверки на форсайты", baseLM.name, resultForesightCheckProject, 1);
+        sidResultForesightCheckProject = addJProp("sidResultForesightCheckProject", "Результат проверки", baseLM.classSID, resultForesightCheckProject, 1);
         dateResultForesightCheckProject = addDCProp("dateResultForesightCheckProject", "Дата проверки на форсайты", true, baseLM.currentDate, resultForesightCheckProject, 1);
         userResultForesightCheckProject = addDCProp("userResultForesightCheckProject", "Пользователь проверки на форсайты (ИД)", true, baseLM.currentUser, resultForesightCheckProject, 1);
         nameUserResultForesightCheckProject = addJProp("nameUserResultForesightCheckProject", "Пользователь проверки на форсайты", baseLM.name, userResultForesightCheckProject, 1);
@@ -3372,6 +3375,9 @@ public class SkolkovoLogicsModule extends LogicsModule {
         emailClosedVote.setImage("email.png");
         emailClosedVote.property.askConfirm = true;
         emailClosedVote.setDerivedForcedChange(addCProp(ActionClass.instance, true), closedVote, 1);
+
+        emailForesightCheckProjectEA = addEAProp("Решение проверки о соответствии форсайту", project);
+        addEARecepient(emailForesightCheckProjectEA, emailDocuments);
 
         emailClaimerFormalControlEA = addEAProp(emailClaimerFromAddress, emailClaimerFromAddress, formalControl);
 
@@ -3963,6 +3969,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         addFormEntity(new VoteFormEntity(baseLM.baseElement, "voterestricted", true));
         addFormEntity(new ConsultingCenterFormEntity(baseLM.baseElement, "consultingCenter"));
         addFormEntity(new ForesightExpertiseApplyFormEntity(baseLM.objectElement, "foresightExpertiseApply"));
+        addFormEntity(new ForesightAdviceFormEntity(baseLM.objectElement, "foresightAdviceFormEntity"));
         addFormEntity(new ForesightExpertiseListFormEntity(baseLM.baseElement, "foresightExpertiseList"));
 
         baseLM.baseElement.add(print);
@@ -4430,6 +4437,23 @@ public class SkolkovoLogicsModule extends LogicsModule {
             applyForesightCheckProject = addMFAProp(actionGroup, "Прошла проверку на соответствие форсайту", this, new ObjectEntity[] {objProject}, true);
             applyForesightCheckProject.property.askConfirm = true;
             applyForesightCheckProject.setImage("sign_tick.png");
+        }
+    }
+
+    public class ForesightAdviceFormEntity extends FormEntity<SkolkovoBusinessLogics> {
+
+        private ObjectEntity objProject;
+
+
+        public ForesightAdviceFormEntity(NavigatorElement parent, String sID) {
+            super(parent, sID, "Уведомление по форсайту");
+
+            objProject = addSingleGroupObject(project, "Проект", dateProject, nameNativeProject, nameForeignProject, nameNativeClaimerProject, nameForeignClaimerProject, emailClaimerProject, positiveResultForesightCheckProject, negativeResultForesightCheckProject, sidResultForesightCheckProject);
+            objProject.groupTo.setSingleClassView(ClassViewType.PANEL);
+
+            setReadOnly(true);
+
+            addInlineEAForm(emailForesightCheckProjectEA, this, objProject, 1);
         }
     }
 
