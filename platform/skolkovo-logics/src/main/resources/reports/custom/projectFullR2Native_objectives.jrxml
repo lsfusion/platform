@@ -26,9 +26,9 @@
 		</band>
 	</title>
 	<detail>
-		<band height="23">
+		<band height="20">
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement style="DefaultStyle" positionType="Float" stretchType="RelativeToBandHeight" x="161" y="0" width="387" height="18"/>
+				<reportElement style="DefaultStyle" positionType="Float" stretchType="RelativeToBandHeight" x="172" y="0" width="376" height="18"/>
 				<textElement textAlignment="Left" verticalAlignment="Top"/>
 				<textFieldExpression class="java.lang.String"><![CDATA[$F{nativeProjectObjectives}]]></textFieldExpression>
 			</textField>
@@ -39,4 +39,14 @@
 			</textField>
 		</band>
 	</detail>
+	<summary>
+		<band height="6">
+			<line>
+				<reportElement positionType="Float" x="10" y="0" width="538" height="1"/>
+				<graphicElement>
+					<pen lineWidth="0.25" lineStyle="Dotted"/>
+				</graphicElement>
+			</line>
+		</band>
+	</summary>
 </jasperReport>

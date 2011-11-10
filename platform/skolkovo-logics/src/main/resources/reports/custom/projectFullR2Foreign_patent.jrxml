@@ -54,7 +54,7 @@
 		</band>
 	</title>
 	<detail>
-		<band height="23">
+		<band height="20">
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement style="DefaultStyle" positionType="Float" stretchType="RelativeToBandHeight" x="10" y="0" width="265" height="18"/>
 				<textElement textAlignment="Left" verticalAlignment="Top"/>
@@ -63,7 +63,7 @@
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement style="DefaultStyle" positionType="Float" stretchType="RelativeToBandHeight" x="275" y="0" width="110" height="18"/>
 				<textElement textAlignment="Left" verticalAlignment="Top"/>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{foreignNumberPatent}]]></textFieldExpression>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{nativeNumberPatent}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement style="DefaultStyle" positionType="Float" stretchType="RelativeToBandHeight" x="385" y="0" width="163" height="18"/>
@@ -72,4 +72,7 @@
 			</textField>
 		</band>
 	</detail>
+	<summary>
+		<band height="8"/>
+	</summary>
 </jasperReport>

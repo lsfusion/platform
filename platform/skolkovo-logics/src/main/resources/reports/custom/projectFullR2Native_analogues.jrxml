@@ -19,19 +19,19 @@
 	<field name="nativeCharacteristicsProjectAnalogues" class="java.lang.String"/>
 	<field name="foreignCharacteristicsProjectAnalogues" class="java.lang.String"/>
 	<title>
-		<band height="46">
+		<band height="52">
 			<textField isStretchWithOverflow="true">
-				<reportElement style="BoldStyle" positionType="Float" stretchType="RelativeToBandHeight" x="10" y="23" width="152" height="18"/>
+				<reportElement style="BoldStyle" positionType="Float" stretchType="RelativeToBandHeight" x="10" y="26" width="152" height="18"/>
 				<textElement/>
 				<textFieldExpression class="java.lang.String"><![CDATA["Название"]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
-				<reportElement style="BoldStyle" positionType="Float" stretchType="RelativeToBandHeight" x="165" y="23" width="204" height="18"/>
+				<reportElement style="BoldStyle" positionType="Float" stretchType="RelativeToBandHeight" x="165" y="26" width="204" height="18"/>
 				<textElement/>
 				<textFieldExpression class="java.lang.String"><![CDATA["Описание"]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
-				<reportElement style="BoldStyle" positionType="Float" stretchType="RelativeToBandHeight" x="371" y="23" width="177" height="18"/>
+				<reportElement style="BoldStyle" positionType="Float" stretchType="RelativeToBandHeight" x="371" y="26" width="177" height="18"/>
 				<textElement/>
 				<textFieldExpression class="java.lang.String"><![CDATA["Характеристики рынка"]]></textFieldExpression>
 			</textField>
@@ -43,7 +43,7 @@
 		</band>
 	</title>
 	<detail>
-		<band height="23">
+		<band height="20">
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement style="DefaultStyle" positionType="Float" stretchType="RelativeToBandHeight" x="10" y="0" width="152" height="18"/>
 				<textElement textAlignment="Left" verticalAlignment="Top"/>
@@ -61,4 +61,14 @@
 			</textField>
 		</band>
 	</detail>
+	<summary>
+		<band height="6">
+			<line>
+				<reportElement positionType="Float" x="10" y="0" width="538" height="1"/>
+				<graphicElement>
+					<pen lineWidth="0.25" lineStyle="Dotted"/>
+				</graphicElement>
+			</line>
+		</band>
+	</summary>
 </jasperReport>

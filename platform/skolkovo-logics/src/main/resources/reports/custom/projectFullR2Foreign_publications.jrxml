@@ -20,7 +20,7 @@
 	<field name="nativeLinksPublications" class="java.lang.String"/>
 	<field name="foreignEditionPublications" class="java.lang.String"/>
 	<title>
-		<band height="55">
+		<band height="57">
 			<textField isStretchWithOverflow="true">
 				<reportElement style="BoldStyle" positionType="Float" stretchType="RelativeToBandHeight" x="10" y="23" width="141" height="27"/>
 				<textElement/>
@@ -54,7 +54,7 @@
 		</band>
 	</title>
 	<detail>
-		<band height="23">
+		<band height="20">
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement style="DefaultStyle" positionType="Float" stretchType="RelativeToBandHeight" x="10" y="0" width="141" height="18"/>
 				<textElement textAlignment="Left" verticalAlignment="Top"/>
@@ -82,4 +82,14 @@
 			</textField>
 		</band>
 	</detail>
+	<summary>
+		<band height="8">
+			<line>
+				<reportElement positionType="Float" x="10" y="0" width="538" height="1"/>
+				<graphicElement>
+					<pen lineWidth="0.25" lineStyle="Dotted"/>
+				</graphicElement>
+			</line>
+		</band>
+	</summary>
 </jasperReport>

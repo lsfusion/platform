@@ -2057,7 +2057,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         nativeSIDToMileStone = addJProp("nativeSIDToMileStone", "Дорожная карта", nativeToMileStone, 1, sidToProject, 2);
 
 
-        nativeDescriptionTypeMileStoneMileStone = addDProp("nativeDescriptionTypeMileStoneMileStone", "Описание дорожной карты", InsensitiveStringClass.get(2000), typeMileStone, mileStone);
+        nativeDescriptionTypeMileStoneMileStone = addDProp("nativeDescriptionTypeMileStoneMileStone", "Описание дорожное карты", InsensitiveStringClass.get(2000), typeMileStone, mileStone);
         nativeDescriptionTypeMileStoneMileStone.setMinimumWidth(10);
         nativeDescriptionTypeMileStoneMileStone.setPreferredWidth(50);
 
@@ -4249,7 +4249,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             objProject = addSingleGroupObject(1, "project", project, "Проект", nameNativeProject, nameForeignProject, nameNativeClaimerProject, nameForeignClaimerProject, nameNativeFinalClusterProject, nameForeignFinalClusterProject,
                     nativeProblemProject, foreignProblemProject, nativeInnovativeProject, foreignInnovativeProject, descGroup);
 
-            addPropertyDraw(objProject, problemGroup, analoguesGroup, commercializationGroup, historyGroup, projectmissionGroup, nativeResultsProject, foreignResultsProject, roadMapGroup);
+            addPropertyDraw(objProject, problemGroup, analoguesGroup, commercializationGroup, historyGroup, projectmissionGroup, nativeResultsProject, foreignResultsProject);
             objProject.groupTo.setSingleClassView(ClassViewType.PANEL);
 
             objResearch = addSingleGroupObject(2, "research", research, "Исследования");
@@ -4263,13 +4263,12 @@ public class SkolkovoLogicsModule extends LogicsModule {
             addObjectActions(this, objPublications);
 
             objCluster = addSingleGroupObject(4, "cluster", cluster, "Кластер");
-            addPropertyDraw(inProjectCluster, objProject, objCluster);
+            addPropertyDraw(inClaimerProjectCluster, objProject, objCluster);
             addPropertyDraw(objCluster, nameNative, nameForeign);
-            addPropertyDraw(new LP[]{nativeSubstantiationProjectCluster, foreignSubstantiationProjectCluster}, objProject, objCluster);
-            addPropertyDraw(numberCluster, objCluster);
-            addFixedFilter(new NotNullFilterEntity(addPropertyObject(inProjectCluster, objProject, objCluster)));
+            addFixedFilter(new NotNullFilterEntity(addPropertyObject(inClaimerProjectCluster, objProject, objCluster)));
 
-            objPatent = addSingleGroupObject(5, "patent", patent, "Патент", nativeTypePatent, foreignTypePatent, nativeNumberPatent, linksPatent);
+            objPatent = addSingleGroupObject(5, "patent", patent, "Патент");
+            addPropertyDraw(objPatent, nativeTypePatent, foreignTypePatent, nativeNumberPatent, linksPatent);
             addObjectActions(this, objPatent);
             addFixedFilter(new CompareFilterEntity(addPropertyObject(projectPatent, objPatent), Compare.EQUALS, objProject));
 
@@ -4350,8 +4349,6 @@ public class SkolkovoLogicsModule extends LogicsModule {
             exchequerContainer.add(design.getGroupPropertyContainer(objProject.groupTo, historyGroup));
             exchequerContainer.add(resul1);
             exchequerContainer.add(design.getGroupObjectContainer(objObjectives.groupTo));
-            exchequerContainer.add(design.getGroupPropertyContainer(objProject.groupTo, projectmissionGroup));
-            exchequerContainer.add(design.getGroupPropertyContainer(objProject.groupTo, roadMapGroup));
 
             ContainerView descrContainer = design.createContainer("Описание проекта");
             descrContainer.constraints.childConstraints = DoNotIntersectSimplexConstraint.TOTHE_BOTTOM;
@@ -4361,6 +4358,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             mapContainer.constraints.childConstraints = DoNotIntersectSimplexConstraint.TOTHE_BOTTOM;
             mapContainer.add(design.getGroupObjectContainer(objMileStone.groupTo));
             mapContainer.add(design.getGroupObjectContainer(objTypeMileStone.groupTo));
+            mapContainer.add(design.getGroupPropertyContainer(objProject.groupTo, projectmissionGroup));
 
             ContainerView specContainer = design.createContainer();
 

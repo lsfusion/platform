@@ -17,14 +17,14 @@
 	<field name="nativeCommentProjectCommercialization" class="java.lang.String"/>
 	<field name="foreignCommentProjectCommercialization" class="java.lang.String"/>
 	<title>
-		<band height="46">
+		<band height="52">
 			<textField isStretchWithOverflow="true">
-				<reportElement style="BoldStyle" positionType="Float" stretchType="RelativeToBandHeight" x="10" y="23" width="245" height="18"/>
+				<reportElement style="BoldStyle" positionType="Float" stretchType="RelativeToBandHeight" x="10" y="26" width="245" height="18"/>
 				<textElement/>
 				<textFieldExpression class="java.lang.String"><![CDATA["Основные направления коммерциализации проекта"]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
-				<reportElement style="BoldStyle" positionType="Float" stretchType="RelativeToBandHeight" x="266" y="23" width="282" height="18"/>
+				<reportElement style="BoldStyle" positionType="Float" stretchType="RelativeToBandHeight" x="266" y="26" width="282" height="18"/>
 				<textElement/>
 				<textFieldExpression class="java.lang.String"><![CDATA["Комментарий"]]></textFieldExpression>
 			</textField>
@@ -36,7 +36,7 @@
 		</band>
 	</title>
 	<detail>
-		<band height="18">
+		<band height="20">
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement style="DefaultStyle" positionType="Float" stretchType="RelativeToBandHeight" x="10" y="0" width="245" height="18"/>
 				<textElement textAlignment="Left" verticalAlignment="Top"/>
@@ -49,4 +49,14 @@
 			</textField>
 		</band>
 	</detail>
+	<summary>
+		<band height="6">
+			<line>
+				<reportElement positionType="Float" x="10" y="0" width="538" height="1"/>
+				<graphicElement>
+					<pen lineWidth="0.25" lineStyle="Dotted"/>
+				</graphicElement>
+			</line>
+		</band>
+	</summary>
 </jasperReport>

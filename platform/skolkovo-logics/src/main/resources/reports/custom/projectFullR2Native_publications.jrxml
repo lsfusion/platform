@@ -20,24 +20,24 @@
 	<field name="nativeLinksPublications" class="java.lang.String"/>
 	<field name="nativeEditionPublications" class="java.lang.String"/>
 	<title>
-		<band height="43">
+		<band height="52">
 			<textField isStretchWithOverflow="true">
-				<reportElement style="BoldStyle" positionType="Float" stretchType="RelativeToBandHeight" x="10" y="23" width="141" height="18"/>
+				<reportElement style="BoldStyle" positionType="Float" stretchType="RelativeToBandHeight" x="10" y="26" width="141" height="18"/>
 				<textElement/>
 				<textFieldExpression class="java.lang.String"><![CDATA["Название"]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
-				<reportElement style="BoldStyle" positionType="Float" stretchType="RelativeToBandHeight" x="151" y="23" width="112" height="18"/>
+				<reportElement style="BoldStyle" positionType="Float" stretchType="RelativeToBandHeight" x="151" y="26" width="112" height="18"/>
 				<textElement/>
 				<textFieldExpression class="java.lang.String"><![CDATA["Автор"]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
-				<reportElement style="BoldStyle" positionType="Float" stretchType="RelativeToBandHeight" x="361" y="23" width="46" height="18"/>
+				<reportElement style="BoldStyle" positionType="Float" stretchType="RelativeToBandHeight" x="361" y="26" width="46" height="18"/>
 				<textElement/>
 				<textFieldExpression class="java.lang.String"><![CDATA["Год"]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
-				<reportElement style="BoldStyle" positionType="Float" stretchType="RelativeToBandHeight" x="407" y="23" width="141" height="18"/>
+				<reportElement style="BoldStyle" positionType="Float" stretchType="RelativeToBandHeight" x="407" y="26" width="141" height="18"/>
 				<textElement/>
 				<textFieldExpression class="java.lang.String"><![CDATA["Ссылка на эл.версию"]]></textFieldExpression>
 			</textField>
@@ -47,14 +47,14 @@
 				<textFieldExpression class="java.lang.String"><![CDATA["Приведите научные публикации членов команды проекта по теме проекта"]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
-				<reportElement style="BoldStyle" positionType="Float" stretchType="RelativeToBandHeight" x="263" y="23" width="98" height="18"/>
+				<reportElement style="BoldStyle" positionType="Float" stretchType="RelativeToBandHeight" x="263" y="26" width="98" height="18"/>
 				<textElement/>
 				<textFieldExpression class="java.lang.String"><![CDATA["Издание"]]></textFieldExpression>
 			</textField>
 		</band>
 	</title>
 	<detail>
-		<band height="23">
+		<band height="20">
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement style="DefaultStyle" positionType="Float" stretchType="RelativeToBandHeight" x="10" y="0" width="141" height="18"/>
 				<textElement textAlignment="Left" verticalAlignment="Top"/>
@@ -82,4 +82,14 @@
 			</textField>
 		</band>
 	</detail>
+	<summary>
+		<band height="8">
+			<line>
+				<reportElement positionType="Float" x="10" y="0" width="538" height="1"/>
+				<graphicElement>
+					<pen lineWidth="0.25" lineStyle="Dotted"/>
+				</graphicElement>
+			</line>
+		</band>
+	</summary>
 </jasperReport>

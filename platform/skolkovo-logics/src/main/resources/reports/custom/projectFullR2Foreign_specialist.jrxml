@@ -41,9 +41,9 @@
 	<group name="textGroup">
 		<groupExpression><![CDATA[$F{specialist}]]></groupExpression>
 		<groupHeader>
-			<band height="23">
+			<band height="26">
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-					<reportElement style="DefaultStyle" positionType="Float" stretchType="RelativeToBandHeight" x="182" y="0" width="366" height="18"/>
+					<reportElement style="DefaultStyle" positionType="Float" stretchType="RelativeToBandHeight" x="188" y="0" width="360" height="18"/>
 					<textElement textAlignment="Left" verticalAlignment="Top"/>
 					<textFieldExpression class="java.lang.String"><![CDATA[$F{nameForeignSpecialist}]]></textFieldExpression>
 				</textField>
@@ -58,9 +58,9 @@
 					<textFieldExpression class="java.lang.Integer"><![CDATA[$V{npp}]]></textFieldExpression>
 				</textField>
 			</band>
-			<band height="23">
+			<band height="26">
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-					<reportElement style="DefaultStyle" positionType="Float" stretchType="RelativeToBandHeight" x="182" y="0" width="366" height="18"/>
+					<reportElement style="DefaultStyle" positionType="Float" stretchType="RelativeToBandHeight" x="188" y="0" width="360" height="18"/>
 					<textElement textAlignment="Left" verticalAlignment="Top"/>
 					<textFieldExpression class="java.lang.String"><![CDATA[$F{foreignPostSpecialist}]]></textFieldExpression>
 				</textField>
@@ -70,9 +70,9 @@
 					<textFieldExpression class="java.lang.String"><![CDATA["The role of the project, the position of the company"]]></textFieldExpression>
 				</textField>
 			</band>
-			<band height="23">
+			<band height="26">
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-					<reportElement style="DefaultStyle" positionType="Float" stretchType="RelativeToBandHeight" x="182" y="0" width="366" height="18"/>
+					<reportElement style="DefaultStyle" positionType="Float" stretchType="RelativeToBandHeight" x="188" y="0" width="360" height="18"/>
 					<textElement textAlignment="Left" verticalAlignment="Top"/>
 					<textFieldExpression class="java.lang.String"><![CDATA[$F{foreignFunctionSpecialist}]]></textFieldExpression>
 				</textField>
@@ -82,9 +82,9 @@
 					<textFieldExpression class="java.lang.String"><![CDATA["Description of the functions and tasks within the project"]]></textFieldExpression>
 				</textField>
 			</band>
-			<band height="23">
+			<band height="26">
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-					<reportElement style="DefaultStyle" positionType="Float" stretchType="RelativeToBandHeight" x="182" y="0" width="366" height="18"/>
+					<reportElement style="DefaultStyle" positionType="Float" stretchType="RelativeToBandHeight" x="188" y="0" width="360" height="18"/>
 					<textElement textAlignment="Left" verticalAlignment="Top"/>
 					<textFieldExpression class="java.lang.String"><![CDATA[$F{foreignScopeSpecialist}]]></textFieldExpression>
 				</textField>
@@ -94,9 +94,9 @@
 					<textFieldExpression class="java.lang.String"><![CDATA["Scope and professional achievement"]]></textFieldExpression>
 				</textField>
 			</band>
-			<band height="23">
+			<band height="26">
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-					<reportElement style="DefaultStyle" positionType="Float" stretchType="RelativeToBandHeight" x="182" y="0" width="366" height="18"/>
+					<reportElement style="DefaultStyle" positionType="Float" stretchType="RelativeToBandHeight" x="188" y="0" width="360" height="18"/>
 					<textElement textAlignment="Left" verticalAlignment="Top"/>
 					<textFieldExpression class="java.lang.String"><![CDATA[$F{foreignExperienceSpecialist}]]></textFieldExpression>
 				</textField>
@@ -106,9 +106,9 @@
 					<textFieldExpression class="java.lang.String"><![CDATA["The key experience relevant to the area of the project"]]></textFieldExpression>
 				</textField>
 			</band>
-			<band height="23">
+			<band height="26">
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-					<reportElement style="DefaultStyle" positionType="Float" stretchType="RelativeToBandHeight" x="182" y="0" width="366" height="18"/>
+					<reportElement style="DefaultStyle" positionType="Float" stretchType="RelativeToBandHeight" x="188" y="0" width="360" height="18"/>
 					<textElement textAlignment="Left" verticalAlignment="Top"/>
 					<textFieldExpression class="java.lang.String"><![CDATA[$F{foreignTitleSpecialist}]]></textFieldExpression>
 				</textField>
@@ -118,9 +118,9 @@
 					<textFieldExpression class="java.lang.String"><![CDATA["Education (college, profession, etc.), degree, title"]]></textFieldExpression>
 				</textField>
 			</band>
-			<band height="23">
+			<band height="26">
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-					<reportElement style="DefaultStyle" positionType="Float" stretchType="RelativeToBandHeight" x="182" y="0" width="366" height="18"/>
+					<reportElement style="DefaultStyle" positionType="Float" stretchType="RelativeToBandHeight" x="188" y="0" width="360" height="18"/>
 					<textElement textAlignment="Left" verticalAlignment="Top"/>
 					<textFieldExpression class="java.lang.String"><![CDATA[$F{foreignWorkSpecialist}]]></textFieldExpression>
 				</textField>
@@ -130,9 +130,9 @@
 					<textFieldExpression class="java.lang.String"><![CDATA["Position, for the last 5 years"]]></textFieldExpression>
 				</textField>
 			</band>
-			<band height="23">
+			<band height="26">
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-					<reportElement style="DefaultStyle" positionType="Float" stretchType="RelativeToBandHeight" x="182" y="0" width="366" height="18"/>
+					<reportElement style="DefaultStyle" positionType="Float" stretchType="RelativeToBandHeight" x="188" y="0" width="360" height="18"/>
 					<textElement textAlignment="Left" verticalAlignment="Top"/>
 					<textFieldExpression class="java.lang.String"><![CDATA[$F{foreignPublicationsSpecialist}]]></textFieldExpression>
 				</textField>
@@ -142,9 +142,9 @@
 					<textFieldExpression class="java.lang.String"><![CDATA["Scientific Publications"]]></textFieldExpression>
 				</textField>
 			</band>
-			<band height="23">
+			<band height="26">
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-					<reportElement style="DefaultStyle" positionType="Float" stretchType="RelativeToBandHeight" x="182" y="0" width="366" height="18"/>
+					<reportElement style="DefaultStyle" positionType="Float" stretchType="RelativeToBandHeight" x="188" y="0" width="360" height="18"/>
 					<textElement textAlignment="Left" verticalAlignment="Top"/>
 					<textFieldExpression class="java.lang.String"><![CDATA[$F{foreignCitationSpecialist}]]></textFieldExpression>
 				</textField>
@@ -154,9 +154,9 @@
 					<textFieldExpression class="java.lang.String"><![CDATA["Citation reports at international scientific conferences"]]></textFieldExpression>
 				</textField>
 			</band>
-			<band height="23">
+			<band height="26">
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-					<reportElement style="DefaultStyle" positionType="Float" stretchType="RelativeToBandHeight" x="182" y="0" width="366" height="18"/>
+					<reportElement style="DefaultStyle" positionType="Float" stretchType="RelativeToBandHeight" x="188" y="0" width="360" height="18"/>
 					<textElement textAlignment="Left" verticalAlignment="Top"/>
 					<textFieldExpression class="java.lang.String"><![CDATA[$F{foreignIntellectualPropertySpecialist}]]></textFieldExpression>
 				</textField>
@@ -169,7 +169,7 @@
 		</groupHeader>
 	</group>
 	<title>
-		<band height="23">
+		<band height="26">
 			<textField isStretchWithOverflow="true">
 				<reportElement style="BoldStyle" stretchType="RelativeToBandHeight" x="10" y="0" width="538" height="18"/>
 				<textElement/>
@@ -177,4 +177,7 @@
 			</textField>
 		</band>
 	</title>
+	<summary>
+		<band height="2"/>
+	</summary>
 </jasperReport>
