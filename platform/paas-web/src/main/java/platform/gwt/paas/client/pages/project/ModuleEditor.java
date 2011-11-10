@@ -4,12 +4,12 @@ import com.gwtplatform.dispatch.shared.DispatchAsync;
 import com.smartgwt.client.types.Overflow;
 import com.smartgwt.client.util.SC;
 import com.smartgwt.client.widgets.ViewLoader;
+import com.smartgwt.client.widgets.WidgetCanvas;
 import com.smartgwt.client.widgets.events.ClickEvent;
 import com.smartgwt.client.widgets.events.ClickHandler;
-import com.smartgwt.client.widgets.form.DynamicForm;
-import com.smartgwt.client.widgets.form.fields.TextAreaItem;
 import com.smartgwt.client.widgets.layout.HLayout;
 import com.smartgwt.client.widgets.layout.VLayout;
+import platform.gwt.codemirror.client.CodeMirror;
 import platform.gwt.paas.client.Paas;
 import platform.gwt.paas.client.common.ErrorHandlingCallback;
 import platform.gwt.paas.client.widgets.Toolbar;
@@ -26,8 +26,7 @@ public class ModuleEditor extends HLayout {
     private ViewLoader loader;
     private VLayout mainPane;
 
-    private DynamicForm textForm;
-    private TextAreaItem textAreaItem;
+    private CodeMirror codeMirror;
 
     private final int moduleId;
 
@@ -55,20 +54,15 @@ public class ModuleEditor extends HLayout {
             }
         });
 
-        textAreaItem = new TextAreaItem();
-        textAreaItem.setShowTitle(false);
-        textAreaItem.setColSpan("*");
-        textAreaItem.setWidth("*");
-        textAreaItem.setHeight("*");
+        codeMirror = new CodeMirror();
 
-        textForm = new DynamicForm();
-        textForm.setWidth100();
-        textForm.setHeight100();
-        textForm.setFields(textAreaItem);
+        WidgetCanvas codeMirrorCanvas = new WidgetCanvas(codeMirror);
+        codeMirrorCanvas.setWidth100();
+        codeMirrorCanvas.setHeight100();
 
         mainPane = new VLayout();
         mainPane.addMember(toolbar);
-        mainPane.addMember(textForm);
+        mainPane.addMember(codeMirrorCanvas);
 
         addMember(mainPane);
 
@@ -76,7 +70,7 @@ public class ModuleEditor extends HLayout {
     }
 
     private void saveModule() {
-        dispatcher.execute(new UpdateModulesAction(moduleId, textAreaItem.getValueAsString()), new ErrorHandlingCallback<VoidResult>() {
+        dispatcher.execute(new UpdateModulesAction(moduleId, getCurrentText()), new ErrorHandlingCallback<VoidResult>() {
             @Override
             public void success(VoidResult result) {
                 SC.say("Saved successfully!");
@@ -95,7 +89,11 @@ public class ModuleEditor extends HLayout {
     }
 
     public void setModuleText(String text) {
-        textAreaItem.setValue(text);
+        codeMirror.setValue(text);
+    }
+
+    public String getCurrentText() {
+        return codeMirror.getValue();
     }
 
     public void updateModuleText() {
@@ -111,9 +109,5 @@ public class ModuleEditor extends HLayout {
                 setModuleText(result.text);
             }
         });
-    }
-
-    public String getCurrentText() {
-        return textAreaItem.getValueAsString();
     }
 }

@@ -3,6 +3,7 @@ package platform.gwt.view.changes.dto;
 import com.google.gwt.user.client.rpc.SerializationException;
 import com.google.gwt.user.client.rpc.SerializationStreamReader;
 import com.google.gwt.user.client.rpc.SerializationStreamWriter;
+import platform.gwt.utils.GwtSharedUtils;
 
 import java.util.Date;
 
@@ -19,6 +20,8 @@ public class ObjectDTO_CustomFieldSerializer {
         Object value = instance.getValue();
         if (value instanceof Date && !(value instanceof java.sql.Date)) {
             value = new java.sql.Date(((Date) value).getTime());
+        } else if (value instanceof String) {
+            value = GwtSharedUtils.rtrim((String) value);
         }
         out.writeObject(value);
     }
