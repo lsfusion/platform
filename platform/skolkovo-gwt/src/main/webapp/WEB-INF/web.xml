@@ -6,7 +6,8 @@
          version="2.5">
 
     <session-config>
-        <session-timeout>30</session-timeout>
+        <!-- timeout = 1 day -->
+        <session-timeout>1440</session-timeout>
     </session-config>
 
     <welcome-file-list>

@@ -33,7 +33,7 @@
 
     <b:bean id="expiredSessionFilter" class="platform.gwt.base.server.spring.ExpiredSessionFilter">
         <!-- фильтруем запросы к gwt-сервисам -->
-        <b:property name="urlPattern" value="/skolkovo\.gwt\..*/dispatch.*"/>
+        <b:property name="urlPattern" value="/skolkovo\.gwt\.(?!(expert|login)\.).*/dispatch.*"/>
     </b:bean>
 
     <b:bean id="successLogoutHandler" class="org.springframework.security.web.authentication.logout.SimpleUrlLogoutSuccessHandler" >
