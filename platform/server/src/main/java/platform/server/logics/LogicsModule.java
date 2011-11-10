@@ -30,6 +30,8 @@ import platform.server.logics.property.derived.DerivedProperty;
 import platform.server.logics.property.group.AbstractGroup;
 import platform.server.mail.EmailActionProperty;
 
+import javax.mail.Message;
+import javax.mail.internet.MimeMessage;
 import java.io.FileNotFoundException;
 import java.util.*;
 
@@ -479,10 +481,14 @@ public abstract class LogicsModule {
     }
 
     protected <X extends PropertyInterface> void addEARecepient(LP<ClassPropertyInterface> eaProp, LP<X> emailProp, Integer... params) {
+        addEARecepient(eaProp, MimeMessage.RecipientType.TO, emailProp, params);
+    }
+
+    protected <X extends PropertyInterface> void addEARecepient(LP<ClassPropertyInterface> eaProp, Message.RecipientType type, LP<X> emailProp, Integer... params) {
         Map<X, ClassPropertyInterface> mapInterfaces = new HashMap<X, ClassPropertyInterface>();
         for (int i = 0; i < emailProp.listInterfaces.size(); i++)
             mapInterfaces.put(emailProp.listInterfaces.get(i), eaProp.listInterfaces.get(params[i] - 1));
-        ((EmailActionProperty) eaProp.property).addRecepient(new PropertyMapImplement<X, ClassPropertyInterface>(emailProp.property, mapInterfaces));
+        ((EmailActionProperty) eaProp.property).addRecipient(new PropertyMapImplement<X, ClassPropertyInterface>(emailProp.property, mapInterfaces), type);
     }
 
     protected void addInlineEAForm(LP<ClassPropertyInterface> eaProp, FormEntity form, Object... params) {

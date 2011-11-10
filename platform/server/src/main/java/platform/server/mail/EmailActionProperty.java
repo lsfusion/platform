@@ -28,10 +28,7 @@ import javax.mail.Message;
 import javax.mail.internet.MimeMessage;
 import java.io.File;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * User: DAle
@@ -57,7 +54,7 @@ public class EmailActionProperty extends ActionProperty {
     private final List<Map<ObjectEntity, ClassPropertyInterface>> mapObjects = new ArrayList<Map<ObjectEntity, ClassPropertyInterface>>();
     private final List<LP> attachmentNames = new ArrayList<LP>();
 
-    private final List<PropertyMapImplement<?, ClassPropertyInterface>> recipients = new ArrayList<PropertyMapImplement<?, ClassPropertyInterface>>();
+    private final LinkedHashMap<PropertyMapImplement<?, ClassPropertyInterface>, Message.RecipientType> recipients = new LinkedHashMap<PropertyMapImplement<?, ClassPropertyInterface>, Message.RecipientType>();
 
     private final String subject;
     private final LP fromAddress;
@@ -86,8 +83,8 @@ public class EmailActionProperty extends ActionProperty {
         return result;
     }
 
-    public <R extends PropertyInterface> void addRecepient(PropertyMapImplement<R, ClassPropertyInterface> recepient) {
-        recipients.add(recepient);
+    public <R extends PropertyInterface> void addRecipient(PropertyMapImplement<R, ClassPropertyInterface> recipient, Message.RecipientType type) {
+        recipients.put(recipient, type);
     }
 
     public void addInlineForm(FormEntity form, Map<ObjectEntity, ClassPropertyInterface> objects) {
@@ -187,10 +184,10 @@ public class EmailActionProperty extends ActionProperty {
             }
 
             Map<String, Message.RecipientType> recipientEmails = new HashMap<String, Message.RecipientType>();
-            for(PropertyMapImplement<?, ClassPropertyInterface> recipient : recipients) {
-                String recepientEmail = (String) recipient.read(context, context.getKeys());
-                if(recepientEmail != null)
-                    recipientEmails.put(recepientEmail.trim(), MimeMessage.RecipientType.TO);
+            for(Map.Entry<PropertyMapImplement<?, ClassPropertyInterface>, Message.RecipientType> recipient : recipients.entrySet()) {
+                String recipientEmail = (String) recipient.getKey().read(context, context.getKeys());
+                if(recipientEmail != null)
+                    recipientEmails.put(recipientEmail.trim(), recipient.getValue());
             }
 
             List<ClassPropertyInterface> listInterfaces = (List<ClassPropertyInterface>)interfaces;
