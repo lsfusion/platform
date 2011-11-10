@@ -520,7 +520,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
     public LP nameNativeClaimerProject, nameForeignClaimerProject;
     //LP nameForeignClaimerProject;
     //LP nameForeignJoinClaimerProject;
-    LP emailDocuments;
+    LP emailDocuments, emailPresident;
 
     public LP emailToExpert;
 
@@ -1088,6 +1088,9 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP overdueLegalCheckProject;
     LP projectLegalCheck;
     LP resultForesightCheckProject, positiveResultForesightCheckProject, negativeResultForesightCheckProject;
+    LP setNegativeResultForesightCheckProject, setPositiveResultForesightCheckProject;
+    LP setNegativeResultForesightCheckProjectApply;
+    LP applyForesightCheckProject;
     LP needForesightCheckProject;
     LP resultLegalCheck, positiveResultLegalCheck, negativeResultLegalCheck;
     LP nameResultLegalCheck;
@@ -3022,7 +3025,14 @@ public class SkolkovoLogicsModule extends LogicsModule {
         positiveResultForesightCheckProject = addJProp("positiveResultForesightCheckProject", "Положительное решение проверки на форсайты", baseLM.equals2, resultForesightCheckProject, 1, addCProp(foresightCheckResult, "positiveForesightCheckResult"));
         negativeResultForesightCheckProject = addJProp("negativeResultForesightCheckProject", "Отрицательное решение проверки на форсайты", baseLM.equals2, resultForesightCheckProject, 1, addCProp(foresightCheckResult, "negativeForesightCheckResult"));
 
-        needForesightCheckProject = addJProp("needForesightCheckProject", "Требуется проверка на форсайты", and(false, false, true),
+        setNegativeResultForesightCheckProject = addJProp(true, "setNegativeResultForesightCheckProject", "Не прошла проверку на соответствие форсайту", addEPAProp(EPA_INTERFACE, resultForesightCheckProject), 1, addCProp(foresightCheckResult, "negativeForesightCheckResult"));
+        setNegativeResultForesightCheckProjectApply = addEPAProp("setNegativeResultForesightCheckProjectApply", "Не прошла проверку на соответствие форсайту", EPA_DEFAULT, setNegativeResultForesightCheckProject, 1, baseLM.apply, baseLM.cancel);
+        setNegativeResultForesightCheckProjectApply.property.askConfirm = true;
+        setNegativeResultForesightCheckProjectApply.setImage("delete.png");
+
+        setPositiveResultForesightCheckProject = addJProp(true, "Прошла проверку на соответствие форсайты", addEPAProp(EPA_INTERFACE, resultForesightCheckProject), 1, addCProp(foresightCheckResult, "positiveForesightCheckResult"));
+
+        needForesightCheckProject = addJProp("needForesightCheckProject", "Требуется проверка на форсайты", and(false, true),
                 isR2Project, 1,
                 resultExecuteLegalCheckProject, 1,
                 resultForesightCheckProject, 1);
@@ -3230,6 +3240,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         numberOldExpertVote = addOProp("numberOldExpertVote", "Номер (стар.)", OrderType.SUM, addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), inOldExpertVote, 1, 2), true, true, 1, 2, 1);
 
         emailDocuments = addDProp(baseGroup, "emailDocuments", "E-mail для документов", StringClass.get(50));
+        emailPresident = addDProp(baseGroup, "emailPresident", "E-mail аппарата президента Фонда", StringClass.get(50));
 
         emailLetterExpertVoteEA = addEAProp(expert, vote);
         addEARecepient(emailLetterExpertVoteEA, baseLM.email, 1);
@@ -3915,6 +3926,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         addFormEntity(new VoteExpertFormEntity(baseLM.baseElement, "voteExpertRestricted", true));
         addFormEntity(new VoteFormEntity(baseLM.baseElement, "voterestricted", true));
         addFormEntity(new ConsultingCenterFormEntity(baseLM.baseElement, "consultingCenter"));
+        addFormEntity(new ForesightExpertiseApplyFormEntity(baseLM.objectElement, "foresightExpertiseApply"));
         addFormEntity(new ForesightExpertiseListFormEntity(baseLM.baseElement, "foresightExpertiseList"));
 
         baseLM.baseElement.add(print);
@@ -4359,6 +4371,44 @@ public class SkolkovoLogicsModule extends LogicsModule {
         }
     }
 
+    public class ForesightExpertiseApplyFormEntity extends FormEntity<SkolkovoBusinessLogics> {
+
+        private ObjectEntity objProject;
+        private ObjectEntity objCluster;
+        private ObjectEntity objForesight;
+
+        public ForesightExpertiseApplyFormEntity(NavigatorElement parent, String sID) {
+            super(parent, sID, "Проверка на соответствие форсайту");
+
+            objProject = addSingleGroupObject(project, "Проект", dateProject, nameNativeProject, nameForeignProject, nameNativeClaimerProject, nameForeignClaimerProject,
+                    openApplicationProjectAction, exportProjectDocumentsAction);
+            objProject.groupTo.setSingleClassView(ClassViewType.PANEL);
+
+            objCluster = addSingleGroupObject(cluster);
+            addPropertyDraw(inProjectCluster, objProject, objCluster);
+            addPropertyDraw(objCluster, nameNative, nameForeign, nameNativeShort);
+
+            objForesight = addSingleGroupObject(foresight);
+            addPropertyDraw(includeProjectClusterForesight, objProject, objCluster, objForesight);
+            addPropertyDraw(inProjectForesight, objProject, objForesight);
+            addPropertyDraw(objForesight, sidForesight, nameNative, nameForeign, nameNativeShortClusterForesight, quantityInExpertForesight);
+
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(clusterForesight, objForesight), Compare.EQUALS, objCluster));
+
+            setReadOnly(true);
+
+            setReadOnly(inProjectCluster, false);
+            setReadOnly(includeProjectClusterForesight, false);
+            setReadOnly(inProjectForesight, false);
+
+            addActionsOnOk(addPropertyObject(setPositiveResultForesightCheckProject, objProject));
+
+            applyForesightCheckProject = addMFAProp(actionGroup, "Прошла проверку на соответствие форсайту", this, new ObjectEntity[] {objProject}, true);
+            applyForesightCheckProject.property.askConfirm = true;
+            applyForesightCheckProject.setImage("sign_tick.png");
+        }
+    }
+
     public class ForesightExpertiseListFormEntity extends FormEntity<SkolkovoBusinessLogics> {
 
         private ObjectEntity objProject;
@@ -4367,9 +4417,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
         public ForesightExpertiseListFormEntity(NavigatorElement parent, String sID) {
             super(parent, sID, "Соответствие кластеру");
 
-            objProject = addSingleGroupObject(project, "Проект", dateProject, nameNativeProject, nameForeignProject, nameNativeClaimerProject, nameForeignClaimerProject, openApplicationProjectAction, exportProjectDocumentsAction);
-
-            setForceViewType(actionGroup, ClassViewType.PANEL, objProject.groupTo);
+            objProject = addSingleGroupObject(project, "Проект", dateProject, nameNativeProject, nameForeignProject, nameNativeClaimerProject, nameForeignClaimerProject,
+                    resultForesightCheckProject, openApplicationProjectAction, exportProjectDocumentsAction, applyForesightCheckProject, setNegativeResultForesightCheckProjectApply);
 
             projectFilterGroup = new RegularFilterGroupEntity(genID());
             projectFilterGroup.addFilter(new RegularFilterEntity(genID(),
@@ -4957,7 +5006,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             addPropertyDraw(new LP[]{baseLM.currentDate, requiredPeriod, overduePeriod,
                     requiredQuantity, requiredBusinessQuantity,
                     limitExperts, percentNeeded,
-                    emailDocuments, emailClaimerFromAddress, emailForCertificates,
+                    emailDocuments, emailPresident, emailClaimerFromAddress, emailForCertificates,
                     projectsImportLimit, importProjectSidsAction, showProjectsToImportAction, showProjectsReplaceToImportAction, importProjectsAction,
                     rateExpert, emailLetterCertificatesExpertMonthYear, executiveLD, phoneExecutiveLD, mobileExecutiveLD});
         }
