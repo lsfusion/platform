@@ -583,6 +583,9 @@ public class ImportProjectsActionProperty extends ActionProperty {
         emailFirmClaimerField = new ImportField(LM.emailFirmClaimer);
         OGRNClaimerField = new ImportField(LM.OGRNClaimer);
         INNClaimerField = new ImportField(LM.INNClaimer);
+        fileStatementClaimerField = new ImportField(LM.statementClaimer);
+        fileConstituentClaimerField = new ImportField(LM.constituentClaimer);
+        fileExtractClaimerField = new ImportField(LM.extractClaimer);
 
         nativeTypePatentField = new ImportField(LM.nativeTypePatent);
         foreignTypePatentField = new ImportField(LM.foreignTypePatent);
@@ -679,6 +682,10 @@ public class ImportProjectsActionProperty extends ActionProperty {
         propertiesFullClaimer.add(new ImportProperty(emailFirmClaimerField, LM.emailFirmClaimer.getMapping(claimerKey)));
         propertiesFullClaimer.add(new ImportProperty(OGRNClaimerField, LM.OGRNClaimer.getMapping(claimerKey)));
         propertiesFullClaimer.add(new ImportProperty(INNClaimerField, LM.INNClaimer.getMapping(claimerKey)));
+
+        propertiesFullClaimer.add(new ImportProperty(fileStatementClaimerField, LM.statementClaimer.getMapping(claimerKey)));
+        propertiesFullClaimer.add(new ImportProperty(fileConstituentClaimerField, LM.constituentClaimer.getMapping(claimerKey)));
+        propertiesFullClaimer.add(new ImportProperty(fileExtractClaimerField, LM.extractClaimer.getMapping(claimerKey)));
 
         propertyDate = new ImportProperty(dateProjectField, LM.dateJoinProject.getMapping(projectKey));
         propertyStatusDate = new ImportProperty(dateStatusProjectField, LM.statusDateProject.getMapping(projectKey));
@@ -1018,6 +1025,23 @@ public class ImportProjectsActionProperty extends ActionProperty {
                         element.getChildText("minuteProject"), element.getChildText("secondProject")).getTime());
                 String name = element.getChildText("nameNativeProject");
                 boolean ignore = false;
+                Object regulation = element.getChildText("regulationProject");
+                try {
+                    if (LM.importOnlyR2Projects.read(pInfo.session) != null)
+                        if (regulation != null) {
+                            if ("b".equals(regulation)) {
+                                ignore = false;
+                            } else {
+                                ignore = true;
+                                break;
+                            }
+                        } else {
+                            ignore = true;
+                            break;
+                        }
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
                 for (Map<Object, Object> project : data.values()) {
                     Timestamp date = (Timestamp) project.get("date");
                     if (project.get("id").toString().trim().equals(projectId)) {
@@ -1633,6 +1657,9 @@ public class ImportProjectsActionProperty extends ActionProperty {
                         row.add(node.getChildText("emailClaimer"));
                         row.add(node.getChildText("OGRNClaimer"));
                         row.add(node.getChildText("INNClaimer"));
+                        row.add(buildFileByteArray(node.getChild("fileStatementClaimer")));
+                        row.add(buildFileByteArray(node.getChild("fileConstituentClaimer")));
+                        row.add(buildFileByteArray(node.getChild("fileExtractClaimer")));
                     }
 
                     ObjectValue expertObject = LM.emailToExpert.readClasses(pInfo.session, new DataObject(node.getChildText("emailProject")));
@@ -1893,9 +1920,10 @@ public class ImportProjectsActionProperty extends ActionProperty {
                             projectScheduleProjectField, projectActionProjectField, emailClaimerField
                     );
 
-                    List<ImportField> fieldsFullClaimerBoth = BaseUtils.toList(phoneClaimerField, addressClaimerField,
+                   List<ImportField> fieldsFullClaimerBoth = BaseUtils.toList(phoneClaimerField, addressClaimerField,
                             siteClaimerField, emailFirmClaimerField,
-                            OGRNClaimerField, INNClaimerField);
+                            OGRNClaimerField, INNClaimerField, fileStatementClaimerField,
+                            fileConstituentClaimerField, fileExtractClaimerField);
 
                     if (fillClaimer) {
                         fieldsNative.addAll(fieldsFullClaimerNative);

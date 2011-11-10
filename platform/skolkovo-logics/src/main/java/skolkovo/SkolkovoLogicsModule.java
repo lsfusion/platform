@@ -623,6 +623,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP requiredBusinessQuantity;
     LP limitExperts;
     public LP projectsImportLimit;
+    public LP importOnlyR2Projects;
     LP voteStartFormVote;
     LP voteProtocolFormVote;
 
@@ -1457,6 +1458,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         limitExperts = addDProp(baseGroup, "limitExperts", "Кол-во прогол. экспертов", IntegerClass.instance);
         projectsImportLimit = addDProp(baseGroup, "projectsImportLimit", "Максимальное кол-во импортируемых проектов", IntegerClass.instance);
+        importOnlyR2Projects = addDProp(baseGroup, "importOnlyR2Projects", "Импортировать проекты только по новому регламенту", LogicalClass.instance);
         rateExpert = addDProp(baseGroup, "rateExpert", "Ставка эксперта (долларов)", DoubleClass.instance);
         emailForCertificates = addDProp(baseGroup, "emailForCertificates", "E-mail для актов", StringClass.get(50));
 
@@ -5031,7 +5033,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
                     requiredQuantity, requiredBusinessQuantity,
                     limitExperts, percentNeeded,
                     emailDocuments, emailPresident, emailClaimerFromAddress, emailForCertificates,
-                    projectsImportLimit, importProjectSidsAction, showProjectsToImportAction, showProjectsReplaceToImportAction, importProjectsAction,
+                    projectsImportLimit, importOnlyR2Projects, importProjectSidsAction, showProjectsToImportAction, showProjectsReplaceToImportAction, importProjectsAction,
                     rateExpert, emailLetterCertificatesExpertMonthYear, executiveLD, phoneExecutiveLD, mobileExecutiveLD});
         }
     }
