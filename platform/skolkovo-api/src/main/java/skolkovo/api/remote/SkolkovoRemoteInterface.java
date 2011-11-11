@@ -4,6 +4,7 @@ import platform.interop.RemoteLogicsInterface;
 import skolkovo.api.gwt.shared.ProfileInfo;
 import skolkovo.api.gwt.shared.VoteInfo;
 
+import javax.sound.midi.VoiceStatus;
 import java.rmi.RemoteException;
 
 public interface SkolkovoRemoteInterface extends RemoteLogicsInterface {
@@ -13,4 +14,6 @@ public interface SkolkovoRemoteInterface extends RemoteLogicsInterface {
     void setProfileInfo(String expertLogin, ProfileInfo profileInfo) throws RemoteException;
     void sentVoteDocuments(String login, int voteId) throws RemoteException;
     void remindPassword(String email) throws RemoteException;
+
+    void setConfResult(String login, boolean result) throws RemoteException;
 }

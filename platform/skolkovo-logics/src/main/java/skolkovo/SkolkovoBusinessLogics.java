@@ -546,4 +546,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
             return null;
         }
     }
+
+    public void setConfResult(String hash, String result) throws RemoteException {
+    }
 }
