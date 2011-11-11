@@ -64,21 +64,13 @@
 				</textElement>
 				<textFieldExpression class="java.lang.String"><![CDATA[$F{nameNativeClaimerProject}]]></textFieldExpression>
 			</textField>
-			<textField>
-				<reportElement style="DefaultStyle" positionType="Float" x="10" y="155" width="139" height="20"/>
-				<box topPadding="0" leftPadding="0" bottomPadding="2"/>
-				<textElement verticalAlignment="Top">
-					<font size="14"/>
-				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA["e-mail заявителя:"]]></textFieldExpression>
-			</textField>
 			<textField isStretchWithOverflow="true">
-				<reportElement style="DefaultStyle" positionType="Float" x="170" y="155" width="349" height="20"/>
+				<reportElement style="DefaultStyle" positionType="Float" x="10" y="155" width="509" height="20"/>
 				<box topPadding="0" leftPadding="0" bottomPadding="2"/>
 				<textElement verticalAlignment="Top">
 					<font size="14"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{emailClaimerProject}]]></textFieldExpression>
+				<textFieldExpression class="java.lang.String"><![CDATA["e-mail заявителя:"+"        "+$F{emailClaimerProject}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement style="DefaultStyle" positionType="Float" x="170" y="124" width="349" height="20"/>
@@ -123,22 +115,6 @@
 				</textElement>
 				<textFieldExpression class="java.lang.String"><![CDATA["Заявитель: "]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true">
-				<reportElement style="DefaultStyle" positionType="Float" x="170" y="155" width="349" height="20"/>
-				<box topPadding="0" leftPadding="0" bottomPadding="2"/>
-				<textElement verticalAlignment="Top">
-					<font size="14"/>
-				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{emailClaimerProject}]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement style="DefaultStyle" positionType="Float" x="10" y="155" width="139" height="20"/>
-				<box topPadding="0" leftPadding="0" bottomPadding="2"/>
-				<textElement verticalAlignment="Top">
-					<font size="14"/>
-				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA["e-mail заявителя:"]]></textFieldExpression>
-			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement style="DefaultStyle" positionType="Float" x="170" y="124" width="349" height="20"/>
 				<box topPadding="0" leftPadding="0" bottomPadding="2"/>
@@ -146,6 +122,14 @@
 					<font size="14"/>
 				</textElement>
 				<textFieldExpression class="java.lang.String"><![CDATA[$F{nameForeignClaimerProject}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement style="DefaultStyle" positionType="Float" x="10" y="155" width="509" height="20"/>
+				<box topPadding="0" leftPadding="0" bottomPadding="2"/>
+				<textElement verticalAlignment="Top">
+					<font size="14"/>
+				</textElement>
+				<textFieldExpression class="java.lang.String"><![CDATA["e-mail заявителя:"+"        "+$F{emailClaimerProject}]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>

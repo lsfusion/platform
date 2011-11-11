@@ -739,6 +739,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP emailForesightCheckProjectEA;
     LP emailAuthExpertEA, emailAuthExpert;
     LP emailAuthProfileExpertEA, emailAuthProfileExpert;
+    LP emailReminderProfileExpertEA, emailReminderProfileExpert;
+    LP reminderProfileExpertSubjectLanguage;
     LP authExpertSubjectLanguage, letterExpertSubjectLanguage;
     LP authProfileExpertSubjectLanguage;
     LP emailClaimerFormalControlEA, claimerFormalControl, claimerEmailFormalControl, nameNativeJoinClaimerFormalControl, nameForeignJoinClaimerFormalControl, nameNativeClaimerFormalControl;
@@ -2483,6 +2485,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         authExpertSubjectLanguage = addDProp(baseGroup, "authExpertSubjectLanguage", "Заголовок аутентификации эксперта", StringClass.get(100), language);
         authProfileExpertSubjectLanguage = addDProp(baseGroup, "authProfileExpertSubjectLanguage", "Заголовок уведомления о заполнении профиля", StringClass.get(100), language);
         letterExpertSubjectLanguage = addDProp(baseGroup, "letterExpertSubjectLanguage", "Заголовок письма о заседании", StringClass.get(100), language);
+        reminderProfileExpertSubjectLanguage = addDProp(baseGroup, "reminderProfileExpertSubjectLanguage", "Заголовок напоминания о заполнении профиля", StringClass.get(100), language);
 
         LP multipleDocument = addJProp(multipleLanguageDocumentType, languageDocument, 1, typeDocument, 1);
         postfixDocument = addJProp(baseLM.and1, addDProp("postfixDocument", "Доп. описание", StringClass.get(15), document), 1, multipleDocument, 1);
@@ -3476,6 +3479,14 @@ public class SkolkovoLogicsModule extends LogicsModule {
         emailAuthProfileExpert.setImage("email.png");
         emailAuthProfileExpert.property.askConfirm = true;
 
+        emailReminderProfileExpertEA = addEAProp(expert);
+        addEARecepient(emailReminderProfileExpertEA, baseLM.email, 1);
+
+        emailReminderProfileExpert = addJProp(baseGroup, true, "emailReminderProfileExpert", "Напоминание о заполнении профиля (e-mail)",
+                emailReminderProfileExpertEA, 1, addJProp(reminderProfileExpertSubjectLanguage, languageExpert, 1), 1);
+        emailReminderProfileExpert.setImage("email.png");
+        emailReminderProfileExpert.property.askConfirm = true;
+
 //        emailAuthExpert.setDerivedChange(addCProp(ActionClass.instance, true), userLogin, 1, userPassword, 1);
 
         emailClaimerAcceptedHeaderVote = addJProp(emailClaimerNameVote, 1, addCProp(StringClass.get(2000), "Решение о соответствии - "));
@@ -3948,6 +3959,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         addFormEntity(new ExpertProtocolFormEntity(print, "expertProtocol"));
         addFormEntity(new ExpertAuthFormEntity(print, "expertAuth"));
         addFormEntity(new ExpertAuthProfileFormEntity(print, "expertAuthProfile"));
+        addFormEntity(new ExpertReminderProfileFormEntity(print, "expertReminderProfile"));
         addFormEntity(new ClaimerAcceptedFormEntity(print, "claimerAccepted"));
         addFormEntity(new ClaimerRejectedFormEntity(print, "claimerRejected"));
         addFormEntity(new ClaimerStatusFormEntity(print, "claimerStatus"));
@@ -4463,7 +4475,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
             objProject = addSingleGroupObject(project, "Проект", dateProject, nameNativeProject, nameForeignProject, nameNativeClaimerProject, nameForeignClaimerProject, emailClaimerProject, positiveResultForesightCheckProject, negativeResultForesightCheckProject, sidResultForesightCheckProject);
             objProject.groupTo.setSingleClassView(ClassViewType.PANEL);
-
+            addFixedFilter(new NotNullFilterEntity(addPropertyObject(sidResultForesightCheckProject, objProject)));
             setReadOnly(true);
 
             addInlineEAForm(emailForesightCheckProjectEA, this, objProject, 1);
@@ -5171,11 +5183,11 @@ public class SkolkovoLogicsModule extends LogicsModule {
                     dateAgreementExpert, nameCountryExpert, nameCurrencyExpert,
                     isScientificExpert, isTechnicalExpert, isBusinessExpert, expertiseExpert, grantExpert, profileBlockedExpert, profileUpdateDateExpert,
                     quantityInClusterExpert, quantityInForesightExpert,
-                    expertResultGroup, baseLM.generateLoginPassword, emailAuthExpert, emailAuthProfileExpert);
+                    expertResultGroup, baseLM.generateLoginPassword, emailAuthExpert, emailAuthProfileExpert, emailReminderProfileExpert);
             addObjectActions(this, objExpert);
 
             addPropertyDraw(objExpert, commentExpertiseGroup);
-            setForceViewType(commentExpertiseGroup, ClassViewType.PANEL);;
+            setForceViewType(commentExpertiseGroup, ClassViewType.PANEL);
 
             objVote = addSingleGroupObject(vote, nameNativeProjectVote, dateStartVote, dateEndVote, openedVote, succeededVote, quantityDoneVote, revisionVote);
 
@@ -5520,6 +5532,27 @@ public class SkolkovoLogicsModule extends LogicsModule {
             return true;
         }
     }
+
+    private class ExpertReminderProfileFormEntity extends FormEntity<SkolkovoBusinessLogics> { // письмо-напоминание эксперту о заполнении профиля
+        private ObjectEntity objExpert;
+
+        private ExpertReminderProfileFormEntity(NavigatorElement parent, String sID) {
+            super(parent, sID, "Напоминание о заполнении профиля", true);
+
+            objExpert = addSingleGroupObject(1, "expert", expert, baseLM.userLogin, baseLM.userPassword, baseLM.name, documentNameExpert, isForeignExpert, localeExpert);
+            objExpert.groupTo.initClassView = ClassViewType.PANEL;
+
+            addPropertyDraw(baseLM.webHost, objExpert.groupTo);
+
+            addInlineEAForm(emailReminderProfileExpertEA, this, objExpert, 1);
+        }
+
+        @Override
+        public boolean isReadOnly() {
+            return true;
+        }
+    }
+
 
     private class VoteStartFormEntity extends FormEntity<SkolkovoBusinessLogics> { // письмо эксперту
 
