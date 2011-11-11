@@ -29,6 +29,7 @@
         <module>paas-api</module>
         <module>paas-logics</module>
         <module>paas-web</module>
+        <module>test-logics</module>
     </modules>
 
 </project>
