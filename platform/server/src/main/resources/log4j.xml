@@ -30,7 +30,7 @@
             <param name="fileNamePattern" value="logs/server-%i.log.zip"/>
         </rollingPolicy>
         <triggeringPolicy class="org.apache.log4j.rolling.SizeBasedTriggeringPolicy">
-            <param name="maxFileSize" value="100485760"/> <!-- 10MB -->
+            <param name="maxFileSize" value="104857600"/> <!-- 100MB -->
         </triggeringPolicy>
         <layout class="org.apache.log4j.PatternLayout">
             <param name="ConversionPattern" value="%d{DATE} %5p %t %c{1}:%M:%L - %m%n"/>
