@@ -3983,6 +3983,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         addFormEntity(new ForesightExpertiseApplyFormEntity(baseLM.objectElement, "foresightExpertiseApply"));
         addFormEntity(new ForesightAdviceFormEntity(baseLM.objectElement, "foresightAdviceFormEntity"));
         addFormEntity(new ForesightExpertiseListFormEntity(baseLM.baseElement, "foresightExpertiseList"));
+        addFormEntity(new ProjectDocumentsFormEntity(baseLM.baseElement, "projectdocs"));
 
         baseLM.baseElement.add(print);
         baseLM.baseElement.add(report);
@@ -5901,6 +5902,80 @@ public class SkolkovoLogicsModule extends LogicsModule {
         @Override
         public ObjectEntity getObject() {
             return objStatus;
+        }
+    }
+
+    private class ProjectDocumentsFormEntity extends FormEntity<SkolkovoBusinessLogics> {
+        private ObjectEntity objProject;
+        private ObjectEntity objDocumentTemplate;
+        private ObjectEntity objDocument;
+        private PropertyDrawEntity nameNativeEntity;
+        private PropertyDrawEntity nameForeignEntity;
+        private PropertyDrawEntity nameNativeClaimerEntity;
+        private PropertyDrawEntity nameForeignClaimerEntity;
+        private PropertyDrawEntity nameNativeTranslationEntity;
+        private PropertyDrawEntity nameForeignTranslationEntity;
+        private PropertyDrawEntity nameNativeClaimerTranslationEntity;
+        private PropertyDrawEntity nameForeignClaimerTranslationEntity;
+
+        private ProjectDocumentsFormEntity(NavigatorElement parent, String sID) {
+            super(parent, sID, "Документы по проектам");
+
+            objProject = addSingleGroupObject(project, dateProject, dateStatusProject, nameNativeProject, nameForeignProject,
+                    nameNativeShortFinalClusterProject, nameNativeClaimerProject, nameForeignClaimerProject, emailClaimerProject,
+                    nameStatusProject, dateInStatusProject, normalPeriodStatusProject, quantityDaysToOverdueDateStatusProject, formLogNameStatusProject, nameProjectActionProject, updateDateProject,
+                    inactiveProject, quantityClusterProject, nameRegulationsProject);
+
+            addPropertyDraw(nameNativeShortCurrentCluster).toDraw = objProject.groupTo;
+            setForceViewType(nameNativeShortCurrentCluster, ClassViewType.PANEL);
+
+            addPropertyDraw(objProject, resolutionIPGroup);
+            hideLoadFileResolutionIPProject = addHideCaptionProp(privateGroup, "Загрузить", loadFileResolutionIPProject, addJProp(baseLM.andNot1, addCProp(LogicalClass.instance, true, project), 1, openFileResolutionIPProject, 1));
+            getPropertyDraw(loadFileResolutionIPProject).propertyCaption = addPropertyObject(hideLoadFileResolutionIPProject, objProject);
+            getPropertyDraw(loadFileResolutionIPProject).forceViewType = ClassViewType.PANEL;
+
+            PropertyObjectEntity statusProperty = addPropertyObject(statusDataProject, objProject);
+            getPropertyDraw(nameStatusProject).setPropertyHighlight(statusProperty);
+
+            PropertyObjectEntity dateProperty = addPropertyObject(dateDataProject, objProject);
+            getPropertyDraw(dateProject).setPropertyHighlight(dateProperty);
+
+            PropertyObjectEntity dateStatusProperty = addPropertyObject(dateStatusDataProject, objProject);
+            getPropertyDraw(dateStatusProject).setPropertyHighlight(dateStatusProperty);
+
+            PropertyObjectEntity nameNativeProperty = addPropertyObject(nameNativeDataProject, objProject);
+            getPropertyDraw(nameNativeProject).setPropertyHighlight(nameNativeProperty);
+
+            PropertyObjectEntity nameForeignProperty = addPropertyObject(nameForeignDataProject, objProject);
+            getPropertyDraw(nameForeignProject).setPropertyHighlight(nameForeignProperty);
+
+            PropertyObjectEntity nameNativeCorrectHighlightClaimerProjectProperty = addPropertyObject(nameNativeCorrectHighlightClaimerProject, objProject);
+            getPropertyDraw(nameNativeClaimerProject).setPropertyHighlight(nameNativeCorrectHighlightClaimerProjectProperty);
+
+            PropertyObjectEntity nameForeignCorrectHighlightClaimerProjectProperty = addPropertyObject(nameForeignCorrectHighlightClaimerProject, objProject);
+            getPropertyDraw(nameForeignClaimerProject).setPropertyHighlight(nameForeignCorrectHighlightClaimerProjectProperty);
+
+            objDocument = addSingleGroupObject(document, nameTypeDocument, nameLanguageDocument, postfixDocument, openFileDocument);
+            getPropertyDraw(postfixDocument).forceViewType = ClassViewType.PANEL;
+            getPropertyDraw(postfixDocument).propertyCaption = addPropertyObject(hidePostfixDocument, objDocument);
+
+            addPropertyDraw(exportProjectDocumentsAction, objProject).toDraw = objDocument.groupTo;
+            setForceViewType(exportProjectDocumentsAction, ClassViewType.PANEL);
+
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(projectDocument, objDocument), Compare.EQUALS, objProject));
+        }
+
+        @Override
+        public FormView createDefaultRichDesign() {
+            DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign();
+
+            design.setHighlightColor(new Color(223, 255, 223));
+
+            design.get(objProject.groupTo).grid.constraints.fillVertical = 1.5;
+            design.get(objProject.groupTo).grid.getContainer().setFixedSize(new Dimension(-1, 200));
+            design.getMainContainer().addAfter(design.getGroupPropertyContainer(objProject.groupTo, projectDocumentsGroup), design.getGroupObjectContainer(objDocument.groupTo));
+
+            return design;
         }
     }
 
