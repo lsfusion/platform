@@ -252,5 +252,16 @@
             <param name="artifactId" value="paas-web"/>
         </antcall>
     </target>
+    <target name="test-logics-recursiveCompile">
+        <antcall target="recursiveCompile">
+            <param name="artifactId" value="test-logics"/>
+        </antcall>
+    </target>
+
+    <target name="test-logics-quickCompile">
+        <antcall target="quickCompile">
+            <param name="artifactId" value="test-logics"/>
+        </antcall>
+    </target>
 
 </project>
