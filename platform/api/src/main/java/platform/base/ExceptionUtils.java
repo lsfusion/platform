@@ -15,10 +15,11 @@ public class ExceptionUtils {
         return result;
     }
 
-    public static boolean isRecoverableRemoteException(RemoteException remote) {
-        return remote.getClass() == RemoteException.class
-               || remote instanceof ServerException
-               || getInitialCause(remote) instanceof RemoteServerException;
+    public static boolean isRecoverableRemoteException(Throwable remote) {
+        return remote instanceof RemoteException &&
+               (remote.getClass() == RemoteException.class
+                || remote instanceof ServerException
+                || getInitialCause(remote) instanceof RemoteServerException);
     }
 
     public static Throwable getNonSpringCause(Throwable throwable) {

@@ -547,6 +547,9 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         }
     }
 
-    public void setConfResult(String hash, boolean result) throws RemoteException {
+    public void setConfResult(String conferenceHash, boolean result) throws RemoteException {
+        //todo: выбросить RemoteException, чтобы показать сообщение, что уже голосовал или не валидная ссылка и т. д.
+        //todo: ну или не кидать если можно менять решение...
+        throw new RemoteException("Your vote is already counted!");
     }
 }

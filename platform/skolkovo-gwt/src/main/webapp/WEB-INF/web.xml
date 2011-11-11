@@ -79,6 +79,15 @@
         <url-pattern>/skolkovo.gwt.navigator.Navigator/dispatch</url-pattern>
     </servlet-mapping>
 
+    <servlet>
+        <servlet-name>confVoteHandler</servlet-name>
+        <servlet-class>org.springframework.web.context.support.HttpRequestHandlerServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>confVoteHandler</servlet-name>
+        <url-pattern>/votes/conference.do</url-pattern>
+    </servlet-mapping>
+
     <!--<servlet>-->
         <!--<servlet-name>applicantFormUploadHandler</servlet-name>-->
         <!--<servlet-class>org.springframework.web.context.support.HttpRequestHandlerServlet</servlet-class>-->
