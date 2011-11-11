@@ -25,7 +25,7 @@
     <appender name="serverlog" class="org.apache.log4j.rolling.RollingFileAppender">
         <rollingPolicy class="org.apache.log4j.rolling.FixedWindowRollingPolicy">
             <param name="minIndex" value="1"/>
-            <param name="maxIndex" value="5"/>
+            <param name="maxIndex" value="12"/>
             <param name="activeFileName" value="logs/server.log"/>
             <param name="fileNamePattern" value="logs/server-%i.log.zip"/>
         </rollingPolicy>
@@ -40,7 +40,7 @@
     <appender name="errorlog" class="org.apache.log4j.rolling.RollingFileAppender">
         <rollingPolicy class="org.apache.log4j.rolling.FixedWindowRollingPolicy">
             <param name="minIndex" value="1"/>
-            <param name="maxIndex" value="5"/>
+            <param name="maxIndex" value="12"/>
             <param name="activeFileName" value="logs/server-err.log"/>
             <param name="fileNamePattern" value="logs/server-err-%i.log.zip"/>
         </rollingPolicy>
@@ -58,7 +58,7 @@
     <appender name="sqllog" class="org.apache.log4j.rolling.RollingFileAppender">
         <rollingPolicy class="org.apache.log4j.rolling.FixedWindowRollingPolicy">
             <param name="minIndex" value="1"/>
-            <param name="maxIndex" value="5"/>
+            <param name="maxIndex" value="12"/>
             <param name="activeFileName" value="logs/sql.log"/>
             <param name="fileNamePattern" value="logs/sql-%i.log.zip"/>
         </rollingPolicy>
