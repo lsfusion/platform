@@ -60,10 +60,10 @@ public class BusinessLogicsBootstrap {
             System.setProperty("sun.rmi.dgc.server.gcInterval", "600000");
         }
 
-        String isDebug = System.getProperty(PLATFORM_SERVER_ISDEBUG);
-        if (isDebug == null || !isDebug.equals("true")) {
-            System.setProperty("java.rmi.dgc.leaseValue", "120000");
-        }
+//        String isDebug = System.getProperty(PLATFORM_SERVER_ISDEBUG);
+//        if (isDebug == null || !isDebug.equals("true")) {
+//            System.setProperty("java.rmi.dgc.leaseValue", "120000");
+//        }
 
         System.setProperty("mail.mime.encodefilename", "true");
 
