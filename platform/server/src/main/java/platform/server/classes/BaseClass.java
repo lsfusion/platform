@@ -1,6 +1,5 @@
 package platform.server.classes;
 
-import org.eclipse.jdt.core.dom.rewrite.ITrackedNodePosition;
 import platform.base.BaseUtils;
 import platform.server.caches.IdentityLazy;
 import platform.server.classes.sets.ConcreteCustomClassSet;

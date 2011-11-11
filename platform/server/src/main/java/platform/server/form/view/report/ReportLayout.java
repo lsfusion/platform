@@ -1,9 +1,6 @@
 package platform.server.form.view.report;
 
-import net.sf.jasperreports.engine.design.JRDesignBand;
-import net.sf.jasperreports.engine.design.JRDesignGroup;
-import net.sf.jasperreports.engine.design.JRDesignTextField;
-import net.sf.jasperreports.engine.design.JasperDesign;
+import net.sf.jasperreports.engine.design.*;
 import net.sf.jasperreports.engine.type.SplitTypeEnum;
 
 import java.util.ArrayList;
@@ -62,7 +59,8 @@ class ReportDetailLayout extends ReportLayout {
         design.setPageHeader(pageHeadBand);
 
         detailBand = new JRDesignBand();
-        design.setDetail(detailBand);
+
+        ((JRDesignSection)design.getDetailSection()).addBand(detailBand);
     }
 
     public void add(ReportDrawField reportField, JRDesignTextField caption, JRDesignTextField text) {
@@ -95,7 +93,7 @@ class ReportGroupRowLayout extends ReportGroupLayout {
 
         groupBand = new JRDesignBand();
         groupBand.setSplitType(SplitTypeEnum.PREVENT);
-        designGroup.setGroupHeader(groupBand);
+        ((JRDesignSection)designGroup.getGroupHeaderSection()).addBand(groupBand);
     }
 
     public void add(ReportDrawField reportField, JRDesignTextField caption, JRDesignTextField text) {
@@ -147,11 +145,11 @@ class ReportGroupColumnLayout extends ReportGroupLayout {
 
         captionGroupBand = new JRDesignBand();
         captionGroupBand.setSplitType(SplitTypeEnum.PREVENT);
-        captionGroup.setGroupHeader(captionGroupBand);
+        ((JRDesignSection)captionGroup.getGroupHeaderSection()).addBand(captionGroupBand);
 
         textGroupBand = new JRDesignBand();
         textGroupBand.setSplitType(SplitTypeEnum.PREVENT);
-        textGroup.setGroupHeader(textGroupBand);
+        ((JRDesignSection)textGroup.getGroupHeaderSection()).addBand(textGroupBand);
     }
 
     public void add(ReportDrawField reportField, JRDesignTextField caption, JRDesignTextField text) {

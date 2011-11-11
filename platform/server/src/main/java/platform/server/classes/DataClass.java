@@ -1,6 +1,6 @@
 package platform.server.classes;
 
-import net.sf.jasperreports.engine.JRAlignment;
+import net.sf.jasperreports.engine.type.HorizontalAlignEnum;
 import platform.interop.Data;
 import platform.server.classes.sets.AndClassSet;
 import platform.server.classes.sets.OrClassSet;
@@ -177,7 +177,7 @@ public abstract class DataClass<T> implements StaticClass, Type<T>, AndClassSet,
 
     public boolean fillReportDrawField(ReportDrawField reportField) {
         reportField.valueClass = getReportJavaClass();
-        reportField.alignment = JRAlignment.HORIZONTAL_ALIGN_LEFT;
+        reportField.alignment = HorizontalAlignEnum.LEFT.getValue();
         return !reportField.valueClass.isArray();
     }
 

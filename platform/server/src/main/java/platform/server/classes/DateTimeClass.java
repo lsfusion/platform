@@ -1,6 +1,6 @@
 package platform.server.classes;
 
-import net.sf.jasperreports.engine.JRAlignment;
+import net.sf.jasperreports.engine.type.HorizontalAlignEnum;
 import platform.interop.Data;
 import platform.server.data.expr.query.Stat;
 import platform.server.data.sql.SQLSyntax;
@@ -48,7 +48,7 @@ public class DateTimeClass extends DataClass<Timestamp> {
         if (!super.fillReportDrawField(reportField))
             return false;
 
-        reportField.alignment = JRAlignment.HORIZONTAL_ALIGN_RIGHT;
+        reportField.alignment = HorizontalAlignEnum.RIGHT.getValue();
         return true;
     }
 

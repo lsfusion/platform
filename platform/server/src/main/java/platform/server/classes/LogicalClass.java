@@ -1,6 +1,6 @@
 package platform.server.classes;
 
-import net.sf.jasperreports.engine.JRAlignment;
+import net.sf.jasperreports.engine.type.HorizontalAlignEnum;
 import platform.interop.Data;
 import platform.server.data.expr.query.Stat;
 import platform.server.data.sql.SQLSyntax;
@@ -40,7 +40,7 @@ public class LogicalClass extends DataClass<Boolean> {
         if (!super.fillReportDrawField(reportField))
             return false;
 
-        reportField.alignment = JRAlignment.HORIZONTAL_ALIGN_CENTER;
+        reportField.alignment = HorizontalAlignEnum.CENTER.getValue();
         return true;
     }
 

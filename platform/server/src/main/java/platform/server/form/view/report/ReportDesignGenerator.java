@@ -4,10 +4,7 @@ import net.sf.jasperreports.engine.JRDataSource;
 import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JasperReport;
 import net.sf.jasperreports.engine.design.*;
-import net.sf.jasperreports.engine.type.HorizontalAlignEnum;
-import net.sf.jasperreports.engine.type.OrientationEnum;
-import net.sf.jasperreports.engine.type.PositionTypeEnum;
-import net.sf.jasperreports.engine.type.StretchTypeEnum;
+import net.sf.jasperreports.engine.type.*;
 import platform.interop.form.ReportConstants;
 import platform.server.form.entity.GroupObjectEntity;
 import platform.server.form.entity.GroupObjectHierarchy;
@@ -255,7 +252,7 @@ public class ReportDesignGenerator {
 
         JRDesignExpression dataExpr = ReportUtils.createExpression(ReportUtils.createFieldString(reportField.sID), reportField.valueClass);
         JRDesignTextField dataField = ReportUtils.createTextField(style, dataExpr);
-        dataField.setHorizontalAlignment(reportField.alignment);
+        dataField.setHorizontalAlignment(HorizontalAlignEnum.getByValue(reportField.alignment));
         dataField.setPositionType(PositionTypeEnum.FLOAT);
         dataField.setBlankWhenNull(true);
 

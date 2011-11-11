@@ -1,6 +1,6 @@
 package platform.server.data.type;
 
-import net.sf.jasperreports.engine.JRAlignment;
+import net.sf.jasperreports.engine.type.HorizontalAlignEnum;
 import platform.base.BaseUtils;
 import platform.server.classes.BaseClass;
 import platform.server.classes.ConcreteClass;
@@ -70,7 +70,7 @@ public class ObjectType implements Type<Integer> {
 
     public boolean fillReportDrawField(ReportDrawField reportField) {
         reportField.valueClass = Integer.class;
-        reportField.alignment = JRAlignment.HORIZONTAL_ALIGN_RIGHT;
+        reportField.alignment = HorizontalAlignEnum.RIGHT.getValue();
         return true;
     }
 

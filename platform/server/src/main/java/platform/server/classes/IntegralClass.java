@@ -1,6 +1,6 @@
 package platform.server.classes;
 
-import net.sf.jasperreports.engine.JRAlignment;
+import net.sf.jasperreports.engine.type.HorizontalAlignEnum;
 import platform.server.data.sql.SQLSyntax;
 import platform.server.form.view.report.ReportDrawField;
 
@@ -25,7 +25,7 @@ public abstract class IntegralClass<T extends Number> extends DataClass<T> {
         if (!super.fillReportDrawField(reportField))
             return false;
 
-        reportField.alignment = JRAlignment.HORIZONTAL_ALIGN_RIGHT;
+        reportField.alignment = HorizontalAlignEnum.RIGHT.getValue();
         return true;
     }
 
