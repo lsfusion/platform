@@ -118,6 +118,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
     private LP textConference;
     private LP emailConferenceExpertEA;
     private LP emailConferenceExpert;
+    private LP inConferenceExpert;
+    private LP nameNativeShortAggregateClusterExpert;
 
     private LP setCurrentDateDecisionNoticedVote;
 
@@ -3903,8 +3905,10 @@ public class SkolkovoLogicsModule extends LogicsModule {
                 baseLM.divideInteger0, risingDaysRegisterApplicationDateWeek, 1, 2, risingRegisterApplicationsDateWeek, 1, 2);
 
         textConference = addDProp("textConference", "Текст", TextClass.instance, expertConference);
+        inConferenceExpert = addDProp("inConferenceExpert", "Вкл", LogicalClass.instance, expertConference, expert);
         resultConferenceExpert = addDProp("resultConferenceExpert", "Результат (ИД)", expertConferenceResult, expertConference, expert);
         nameResultConferenceExpert = addJProp("Результат", baseLM.name, resultConferenceExpert, 1, 2);
+        follows(resultConferenceExpert, inConferenceExpert, 1, 2);
 
         confirmedConferenceExpert = addJProp(baseLM.equals2, resultConferenceExpert, 1, 2, addCProp(expertConferenceResult, "confirmedConference"));
         rejectedConferenceExpert = addJProp(baseLM.equals2, resultConferenceExpert, 1, 2, addCProp(expertConferenceResult, "rejectedConference"));
@@ -3912,11 +3916,12 @@ public class SkolkovoLogicsModule extends LogicsModule {
         rejectedConference = addSGProp("Отказалось", addJProp(baseLM.and1, vone, rejectedConferenceExpert, 1, 2), 1);
         totalExperts = addSGProp("Всего", addJProp(baseLM.and1, vone, is(expert), 1));
 
+        nameNativeShortAggregateClusterExpert = addOGProp(baseGroup, "nameNativeShortAggregateClusterExpert", false, "Кластеры", GroupType.STRING_AGG, 1, true, addJProp(baseLM.and1, nameNativeShort, 1, inClusterExpert, 1, 2), addCProp(StringClass.get(5), ";"), numberCluster, 1, 2);
+
         emailConferenceExpertEA = addEAProp(expertConference, expert);
         addEARecepient(emailConferenceExpertEA, baseLM.email, 2);
 
-        emailConferenceExpert = addJProp(baseLM.andNot1, addJProp(baseGroup, true, "emailConferenceExpert", "Участие в конф. (e-mail)",
-                emailConferenceExpertEA, 1, 2, addCProp(StringClass.get(50), "Участие в конференции")), 1, 2, resultConferenceExpert, 1, 2);
+        emailConferenceExpert = addJProp(baseGroup, "emailConferenceExpert", "Участие в конф. (e-mail)", and(false, true), addJProp(true, emailConferenceExpertEA, 1, 2, addCProp(StringClass.get(50), "Участие в конференции")), 1, 2, inConferenceExpert, 1, 2, resultConferenceExpert, 1, 2);
         emailConferenceExpert.setImage("email.png");
         emailConferenceExpert.property.askConfirm = true;
 
@@ -5611,6 +5616,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
             addPropertyDraw(baseLM.webHost, gobjConferenceExpert);
 
+            addFixedFilter(new NotNullFilterEntity(addPropertyObject(inConferenceExpert, objConference, objExpert)));
+
             addInlineEAForm(emailConferenceExpertEA, this, objConference, 1, objExpert, 2);
         }
 
@@ -5832,8 +5839,23 @@ public class SkolkovoLogicsModule extends LogicsModule {
             objConference = addSingleGroupObject(expertConference, textConference, confirmedConference, rejectedConference);
             addObjectActions(this, objConference);
 
-            objExpert = addSingleGroupObject(expert, baseLM.selection, baseLM.userFirstName, baseLM.userLastName, documentNameExpert, baseLM.userLogin, baseLM.userPassword, baseLM.email);
-            addPropertyDraw(objConference, objExpert, nameResultConferenceExpert, emailConferenceExpert);
+            objExpert = addSingleGroupObject(expert, baseLM.selection, baseLM.userFirstName, baseLM.userLastName, documentNameExpert, baseLM.userLogin, baseLM.userPassword, baseLM.email,
+                    nameLanguageExpert, nameCountryExpert, disableExpert, nameNativeShortClusterExpert, nameNativeShortAggregateClusterExpert);
+            addPropertyDraw(objConference, objExpert, inConferenceExpert, nameResultConferenceExpert, emailConferenceExpert);
+
+            RegularFilterGroupEntity inFilterGroup = new RegularFilterGroupEntity(genID());
+            inFilterGroup.addFilter(new RegularFilterEntity(genID(),
+                    new NotNullFilterEntity(addPropertyObject(inConferenceExpert, objConference, objExpert)),
+                    "В конференции",
+                    KeyStroke.getKeyStroke(KeyEvent.VK_F11, 0)));
+            addRegularFilterGroup(inFilterGroup);
+
+            RegularFilterGroupEntity inactiveGroup = new RegularFilterGroupEntity(genID());
+            inactiveGroup.addFilter(new RegularFilterEntity(genID(),
+                    new NotFilterEntity(new NotNullFilterEntity(addPropertyObject(disableExpert, objExpert))),
+                    "Акт.",
+                    KeyStroke.getKeyStroke(KeyEvent.VK_F10, 0)), true);
+            addRegularFilterGroup(inactiveGroup);
         }
     }
 
