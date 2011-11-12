@@ -548,8 +548,27 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
     }
 
     public void setConfResult(String conferenceHash, boolean result) throws RemoteException {
-        //todo: выбросить RemoteException, чтобы показать сообщение, что уже голосовал или не валидная ссылка и т. д.
-        //todo: ну или не кидать если можно менять решение...
-        throw new RemoteException("Your vote is already counted!");
+        Integer[] ids = BaseUtils.decode(2, conferenceHash);
+
+        try {
+            DataSession session = createSession();
+            try {
+                DataObject confObj = session.getDataObject(ids[0], ObjectType.instance);
+                DataObject expertObj = session.getDataObject(ids[1], ObjectType.instance);
+                if(result)
+                    SkolkovoLM.confirmedConferenceExpert.execute(true, session, confObj, expertObj);
+                else
+                    SkolkovoLM.rejectedConferenceExpert.execute(true, session, confObj, expertObj);
+                String apply = session.apply(this);
+                if (apply != null) {
+                    throw new RuntimeException("Не удалось сохранить информацию о участии : " + apply);
+                }
+            } finally {
+                session.close();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RemoteException("Ошибка при записи результата", e);
+        }
     }
 }

@@ -109,6 +109,16 @@ public class SkolkovoLogicsModule extends LogicsModule {
     public LP nativeNumberToPatent;
     public LP nativeNumberSIDToPatent;
 
+    private LP resultConferenceExpert, nameResultConferenceExpert;
+    public LP confirmedConferenceExpert;
+    public LP rejectedConferenceExpert;
+    private LP confirmedConference;
+    private LP rejectedConference;
+    private LP totalExperts;
+    private LP textConference;
+    private LP emailConferenceExpertEA;
+    private LP emailConferenceExpert;
+
     private LP setCurrentDateDecisionNoticedVote;
 
     private LP emailNoticeRejectedVoteEA;
@@ -146,7 +156,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
     public ConcreteCustomClass objectives;
     public ConcreteCustomClass mileStone;
 
-
+    private ConcreteCustomClass expertConference;
+    private StaticClass expertConferenceResult;
 
     AbstractCustomClass vote;
 
@@ -346,6 +357,11 @@ public class SkolkovoLogicsModule extends LogicsModule {
         projectSchedule = addStaticClass("projectSchedule", "Регламент проекта",
                 new String[]{"R1", "R2"},
                 new String[]{"R1", "R2"});
+
+        expertConference = addConcreteClass("expertConference", "Конференция экспертов", baseLM.transaction);
+        expertConferenceResult = addStaticClass("expertConferenceResult", "Участие в конференции",
+                new String[]{"confirmedConference", "rejectedConference"},
+                new String[]{"Подтвердил участие", "Отказался от участия"});
     }
 
     @Override
@@ -3886,6 +3902,25 @@ public class SkolkovoLogicsModule extends LogicsModule {
         averageDaysRegisterApplicationsDateWeek = addJProp("averageDaysRegisterApplicationsDateWeek", "Ср.срок на статус, нарастающий",
                 baseLM.divideInteger0, risingDaysRegisterApplicationDateWeek, 1, 2, risingRegisterApplicationsDateWeek, 1, 2);
 
+        textConference = addDProp("textConference", "Текст", TextClass.instance, expertConference);
+        resultConferenceExpert = addDProp("resultConferenceExpert", "Результат (ИД)", expertConferenceResult, expertConference, expert);
+        nameResultConferenceExpert = addJProp("Результат", baseLM.name, resultConferenceExpert, 1, 2);
+
+        confirmedConferenceExpert = addJProp(baseLM.equals2, resultConferenceExpert, 1, 2, addCProp(expertConferenceResult, "confirmedConference"));
+        rejectedConferenceExpert = addJProp(baseLM.equals2, resultConferenceExpert, 1, 2, addCProp(expertConferenceResult, "rejectedConference"));
+        confirmedConference = addSGProp("Согласилось", addJProp(baseLM.and1, vone, confirmedConferenceExpert, 1, 2), 1);
+        rejectedConference = addSGProp("Отказалось", addJProp(baseLM.and1, vone, rejectedConferenceExpert, 1, 2), 1);
+        totalExperts = addSGProp("Всего", addJProp(baseLM.and1, vone, is(expert), 1));
+
+        emailConferenceExpertEA = addEAProp(expertConference, expert);
+        addEARecepient(emailConferenceExpertEA, baseLM.email, 2);
+
+        emailConferenceExpert = addJProp(baseLM.andNot1, addJProp(baseGroup, true, "emailConferenceExpert", "Участие в конф. (e-mail)",
+                emailConferenceExpertEA, 1, 2, addCProp(StringClass.get(50), "Участие в конференции")), 1, 2, resultConferenceExpert, 1, 2);
+        emailConferenceExpert.setImage("email.png");
+        emailConferenceExpert.property.askConfirm = true;
+
+
 //        qSubmitRegisterApplicationsDateTo = addOProp("qSubmitRegisterApplicationsDateTo", "К-во заявок", OrderType.SUM, submitRegisterApplicationsDateTo, true, true, 0, 1);
 //        averageDaysRegisterApplicationsDateWeekTo = addJProp("averageDaysRegisterApplicationsDateWeekTo", "Средний срок рассмотрения зявки на статус", averageDaysRegisterApplicationsDateTo, baseLM.sumDateWeekTo, 1, 2);
 //        submitRegisterApplicationsDateWeekTo = addJProp("submitRegisterApplicationsDateWeekTo", "К-во заявок всего", submitRegisterApplicationsDateTo, baseLM.sumDateWeekTo, 1, 2);
@@ -3960,6 +3995,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         addFormEntity(new ExpertAuthFormEntity(print, "expertAuth"));
         addFormEntity(new ExpertAuthProfileFormEntity(print, "expertAuthProfile"));
         addFormEntity(new ExpertReminderProfileFormEntity(print, "expertReminderProfile"));
+        addFormEntity(new ConferenceExpertLetterFormEntity(print, "conferenceExpertLetter"));
         addFormEntity(new ClaimerAcceptedFormEntity(print, "claimerAccepted"));
         addFormEntity(new ClaimerRejectedFormEntity(print, "claimerRejected"));
         addFormEntity(new ClaimerStatusFormEntity(print, "claimerStatus"));
@@ -3996,6 +4032,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         addFormEntity(new ForesightAdviceFormEntity(baseLM.objectElement, "foresightAdviceFormEntity"));
         addFormEntity(new ForesightExpertiseListFormEntity(baseLM.baseElement, "foresightExpertiseList"));
         addFormEntity(new ProjectDocumentsFormEntity(baseLM.baseElement, "projectdocs"));
+        addFormEntity(new ConferenceFormEntity(baseLM.baseElement, "conferences"));
 
         baseLM.baseElement.add(print);
         baseLM.baseElement.add(report);
@@ -5553,6 +5590,35 @@ public class SkolkovoLogicsModule extends LogicsModule {
         }
     }
 
+    private class ConferenceExpertLetterFormEntity extends FormEntity<SkolkovoBusinessLogics> {
+        private GroupObjectEntity gobjConferenceExpert;
+        private ObjectEntity objConference;
+        private ObjectEntity objExpert;
+
+        private ConferenceExpertLetterFormEntity(NavigatorElement parent, String sID) {
+            super(parent, sID, "Письмо о конференции", true);
+
+            gobjConferenceExpert = new GroupObjectEntity(2, "conferenceExpert");
+            objExpert = new ObjectEntity(2, "expert", expert, "Эксперт");
+            objConference = new ObjectEntity(3, "conference", expertConference, "Конференция");
+            gobjConferenceExpert.add(objExpert);
+            gobjConferenceExpert.add(objConference);
+            addGroup(gobjConferenceExpert);
+            gobjConferenceExpert.initClassView = ClassViewType.PANEL;
+
+            addPropertyDraw(objConference, textConference);
+            addPropertyDraw(objExpert, baseLM.name);
+
+            addPropertyDraw(baseLM.webHost, gobjConferenceExpert);
+
+            addInlineEAForm(emailConferenceExpertEA, this, objConference, 1, objExpert, 2);
+        }
+
+        @Override
+        public boolean isReadOnly() {
+            return true;
+        }
+    }
 
     private class VoteStartFormEntity extends FormEntity<SkolkovoBusinessLogics> { // письмо эксперту
 
@@ -5753,6 +5819,21 @@ public class SkolkovoLogicsModule extends LogicsModule {
             objLegalCheck.groupTo.initClassView = ClassViewType.PANEL;
 
             addInlineEAForm(emailClaimerLegalCheckEA, this, objLegalCheck, 1);
+        }
+    }
+
+    private class ConferenceFormEntity extends FormEntity<SkolkovoBusinessLogics> {
+        private ObjectEntity objConference;
+        private ObjectEntity objExpert;
+
+        private ConferenceFormEntity(NavigatorElement parent, String sID) {
+            super(parent, sID, "Конференции экспертов");
+
+            objConference = addSingleGroupObject(expertConference, textConference, confirmedConference, rejectedConference);
+            addObjectActions(this, objConference);
+
+            objExpert = addSingleGroupObject(expert, baseLM.selection, baseLM.userFirstName, baseLM.userLastName, documentNameExpert, baseLM.userLogin, baseLM.userPassword, baseLM.email);
+            addPropertyDraw(objConference, objExpert, nameResultConferenceExpert, emailConferenceExpert);
         }
     }
 

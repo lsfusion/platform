@@ -37,7 +37,7 @@ public class ConfVoteReqestHandler implements HttpRequestHandler {
         try {
             boolean voteResult = "yes".equalsIgnoreCase(sVoteResult);
             blProvider.getLogics().setConfResult(conferenceHash, voteResult);
-            response.getOutputStream().println("You vote is counted!");
+            response.getOutputStream().println(voteResult?"Вы подтвердили свое участие":"Вы отказались от участия");
         } catch (Exception e) {
             if (ExceptionUtils.isRecoverableRemoteException(e)) {
                 response.getOutputStream().println(ExceptionUtils.getInitialCause(e).getMessage());
