@@ -541,6 +541,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
     //LP nameForeignClaimerProject;
     //LP nameForeignJoinClaimerProject;
     LP emailDocuments, emailPresident;
+    LP isR1ProjectVote;
+    LP isR2ProjectVote;
 
     public LP emailToExpert;
 
@@ -1551,6 +1553,15 @@ public class SkolkovoLogicsModule extends LogicsModule {
         projectVote = addDProp(idGroup, "projectVote", "Проект (ИД)", project, vote);
         setNotNull(projectVote);
 
+        isR1ProjectVote = addJProp(baseGroup, "isR1ProjectVote", "Проект 1", isR1Project, projectVote, 1);
+        isR2ProjectVote = addJProp(baseGroup, "isR2ProjectVote", "Проект 2", isR2Project, projectVote, 1);
+
+        addConstraint(addJProp("Не соответствует регламенту", baseLM.andNot1,
+                is(voteR1), 1, isR1ProjectVote, 1), false);
+
+        addConstraint(addJProp("Не соответствует регламенту", baseLM.andNot1,
+                is(voteR2), 1, isR2ProjectVote, 1), false);
+
         inTestCluster = addDProp(baseGroup, "inTestCluster", "Ненужный", LogicalClass.instance, cluster);
 
         inProjectCluster = addDProp(baseGroup, "inProjectCluster", "Вкл", LogicalClass.instance, project, cluster);
@@ -1574,10 +1585,12 @@ public class SkolkovoLogicsModule extends LogicsModule {
         nameNativeShortClusterForesight = addJProp(baseGroup, "nameNativeShortClusterForesight", "Кластер (сокр.)", nameNativeShort, clusterForesight, 1);
 
         inProjectForesight = addDProp(baseGroup, "inProjectForesight", "Вкл", LogicalClass.instance, project, foresight);
-        isInClusterProjectForesight = addJProp("isInClusterProjectForesight", true, "Форсайт в кластере проекта", inProjectCluster, 1, clusterForesight, 2);
+        isInClusterProjectForesight = addJProp(true, "isInClusterProjectForesight", "Форсайт в кластере проекта", inProjectCluster, 1, clusterForesight, 2);
         quantityProjectForesight = addSGProp(baseGroup, "quantityProjectForesight", true, "Кол-во форсайтов",
                 addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1, foresight), 2,
                         addJProp(baseLM.equals2, baseLM.vtrue, inProjectForesight, 1, 2), 1, 2), 1);
+
+        followed(isInClusterProjectForesight, inProjectForesight);
 
         quantityVoteProject = addSGProp(baseGroup, "quantityVoteProject", true, "Кол-во заседаний", addCProp(IntegerClass.instance, 1, vote), projectVote, 1);
         quantityVoteProject.setFixedCharWidth(2);
@@ -1631,6 +1644,9 @@ public class SkolkovoLogicsModule extends LogicsModule {
         clusterInExpertForesight = addJProp(baseGroup, "clusterInExpertForesight", "Форсайт кластера эксперта", inClusterExpert, clusterForesight, 2, 1);
         inExpertForesight = addDProp(baseGroup, "inExpertForesight", "Вкл.", LogicalClass.instance, expert, foresight);
         commentExpertForesight = addDProp(baseGroup, "commentExpertForesight", "Комментарий", TextClass.instance, expert, foresight);
+
+        addConstraint(addJProp("Вначале выберите для эксперта кластер", baseLM.andNot1,
+                inExpertForesight, 1, 2, clusterInExpertForesight, 1, 2), false);
 
         quantityInExpertForesight = addSGProp(baseGroup, "quantityInExpertForesight", true, "Количество экспертов по форсайту",
                 addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1, expert), 1, inExpertForesight, 1, 2), 2);
