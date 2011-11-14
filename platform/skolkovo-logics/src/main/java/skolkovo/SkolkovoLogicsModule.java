@@ -5860,7 +5860,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
             objExpert = addSingleGroupObject(expert);
             addPropertyDraw(objConference, objExpert, inConferenceExpert);
-            addPropertyDraw(objExpert, baseLM.selection, baseLM.userFirstName, baseLM.userLastName, documentNameExpert, baseLM.userLogin, baseLM.userPassword, baseLM.email,
+            addPropertyDraw(objExpert, baseLM.userFirstName, baseLM.userLastName, documentNameExpert, baseLM.userLogin, baseLM.userPassword, baseLM.email,
                     nameLanguageExpert, nameCountryExpert, disableExpert, nameNativeShortClusterExpert, nameNativeShortAggregateClusterExpert);
             addPropertyDraw(objConference, objExpert, nameResultConferenceExpert, emailConferenceExpert);
             setForceViewType(textConference, ClassViewType.PANEL);

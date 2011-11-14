@@ -169,7 +169,7 @@
 					</graphicElement>
 				</line>
 			</band>
-			<band height="26">
+			<band height="23">
 				<textField isStretchWithOverflow="true">
 					<reportElement style="BoldStyle" positionType="Float" x="10" y="0" width="151" height="18"/>
 					<textElement verticalAlignment="Top"/>
@@ -187,37 +187,33 @@
 					</graphicElement>
 				</line>
 			</band>
-			<band height="26">
-				<textField isStretchWithOverflow="true">
-					<reportElement style="BoldStyle" positionType="Float" x="10" y="0" width="151" height="18"/>
-					<textElement verticalAlignment="Top"/>
-					<textFieldExpression class="java.lang.String"><![CDATA["Направление, к которому относится проект (можно выбрать только одно направление): "]]></textFieldExpression>
-				</textField>
-				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-					<reportElement style="DefaultStyle" positionType="Float" x="165" y="0" width="383" height="18"/>
-					<textElement textAlignment="Left" verticalAlignment="Top"/>
-					<textFieldExpression class="java.lang.String"><![CDATA[$F{nameNativeFinalClusterProject}]]></textFieldExpression>
-				</textField>
+			<band>
+				<subreport>
+					<reportElement stretchType="RelativeToBandHeight" x="0" y="0" width="0" height="0"/>
+					<parametersMapExpression><![CDATA[$P{cluster_params}]]></parametersMapExpression>
+					<dataSourceExpression><![CDATA[$P{cluster_source}]]></dataSourceExpression>
+					<subreportExpression class="net.sf.jasperreports.engine.JasperReport"><![CDATA[$P{cluster_report}]]></subreportExpression>
+				</subreport>
+			</band>
+			<band height="29">
 				<line>
-					<reportElement positionType="Float" x="10" y="19" width="538" height="1"/>
+					<reportElement positionType="Float" x="10" y="3" width="538" height="1"/>
 					<graphicElement>
 						<pen lineWidth="0.25" lineStyle="Dotted"/>
 					</graphicElement>
 				</line>
-			</band>
-			<band height="26">
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-					<reportElement style="DefaultStyle" positionType="Float" x="165" y="0" width="383" height="18"/>
+					<reportElement style="DefaultStyle" positionType="Float" x="165" y="7" width="383" height="18"/>
 					<textElement textAlignment="Left" verticalAlignment="Top"/>
 					<textFieldExpression class="java.lang.String"><![CDATA[$F{nativeResumeProject}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
-					<reportElement style="BoldStyle" positionType="Float" x="10" y="0" width="151" height="18"/>
+					<reportElement style="BoldStyle" positionType="Float" x="10" y="7" width="151" height="18"/>
 					<textElement verticalAlignment="Top"/>
 					<textFieldExpression class="java.lang.String"><![CDATA["Краткое резюме проекта (5 предложений) с указанием имеющихся наработок и основных целей развития проекта."]]></textFieldExpression>
 				</textField>
 				<line>
-					<reportElement positionType="Float" x="10" y="19" width="538" height="1"/>
+					<reportElement positionType="Float" x="10" y="26" width="538" height="1"/>
 					<graphicElement>
 						<pen lineWidth="0.25" lineStyle="Dotted"/>
 					</graphicElement>
@@ -756,14 +752,6 @@
 						<pen lineWidth="0.25" lineStyle="Dotted"/>
 					</graphicElement>
 				</line>
-			</band>
-			<band>
-				<subreport>
-					<reportElement stretchType="RelativeToBandHeight" x="0" y="0" width="0" height="0"/>
-					<parametersMapExpression><![CDATA[$P{cluster_params}]]></parametersMapExpression>
-					<dataSourceExpression><![CDATA[$P{cluster_source}]]></dataSourceExpression>
-					<subreportExpression class="net.sf.jasperreports.engine.JasperReport"><![CDATA[$P{cluster_report}]]></subreportExpression>
-				</subreport>
 			</band>
 		</groupHeader>
 	</group>

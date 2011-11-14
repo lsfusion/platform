@@ -18,10 +18,18 @@
 	<field name="nativeSubstantiationProjectCluster" class="java.lang.String"/>
 	<field name="foreignSubstantiationProjectCluster" class="java.lang.String"/>
 	<field name="numberCluster" class="java.lang.Integer"/>
-	<pageHeader>
-		<band height="19"/>
-	</pageHeader>
 	<detail>
-		<band height="18"/>
+		<band height="21">
+			<textField isStretchWithOverflow="true">
+				<reportElement style="BoldStyle" positionType="Float" x="10" y="0" width="151" height="18"/>
+				<textElement verticalAlignment="Top"/>
+				<textFieldExpression class="java.lang.String"><![CDATA["Направление, к которому относится проект (можно выбрать только одно направление): "]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement style="DefaultStyle" positionType="Float" x="165" y="0" width="383" height="18"/>
+				<textElement textAlignment="Left" verticalAlignment="Top"/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{nameNative}]]></textFieldExpression>
+			</textField>
+		</band>
 	</detail>
 </jasperReport>
