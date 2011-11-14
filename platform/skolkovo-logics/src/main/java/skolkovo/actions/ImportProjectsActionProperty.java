@@ -898,7 +898,6 @@ public class ImportProjectsActionProperty extends ActionProperty {
 
             if (!onlyMessage && !fillSids) {
                 for (String projectId : projects.keySet()) {
-                    projectId = "29763";
                     URL url = new URL(host + "&show=all&projectId=" + projectId);
                     URLConnection connection = url.openConnection();
                     connection.setDoOutput(false);
@@ -907,7 +906,6 @@ public class ImportProjectsActionProperty extends ActionProperty {
                     importProject(pInfo, connection.getInputStream(), projectId, projects.get(projectId), context);
                     RemoteContextObject.popCurrentActionMessage();
                     System.gc();
-                    break;
                 }
             }
             String message = "";
