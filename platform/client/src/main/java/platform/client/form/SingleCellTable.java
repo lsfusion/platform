@@ -43,6 +43,11 @@ public abstract class SingleCellTable extends ClientFormTable {
         super.setBounds(x, y, width, height);
     }
 
+     @Override
+     protected boolean isEditOnSingleClick(int row, int column){
+        return false;
+    }
+
     protected boolean processKeyBinding(KeyStroke ks, KeyEvent e, int condition, boolean pressed) {
         // сами обрабатываем нажатие клавиши Enter
         if (ks.equals(KeyStrokes.getEnter())) {

@@ -20,6 +20,9 @@ public abstract class ClientFormTable extends JTable implements TableTransferHan
         this(null);
     }
 
+
+    abstract protected boolean isEditOnSingleClick(int row, int column);
+
     protected ClientFormTable(TableModel model) {
         super(model);
 
@@ -53,7 +56,7 @@ public abstract class ClientFormTable extends JTable implements TableTransferHan
             // чтобы не срабатывало редактирование при изменении ряда,
             // потому что всё равно будет апдейт
             int selRow = getSelectedRow();
-            if (selRow != -1 && selRow != row) {
+            if (selRow != -1 && selRow != row && !isEditOnSingleClick(row, column)) {
                 return false;
             }
         }

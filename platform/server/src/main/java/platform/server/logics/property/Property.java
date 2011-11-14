@@ -4,11 +4,9 @@ import platform.base.BaseUtils;
 import platform.base.ListPermutations;
 import platform.base.Result;
 import platform.interop.action.ClientAction;
+import platform.server.Settings;
 import platform.server.caches.IdentityLazy;
-import platform.server.classes.ConcreteClass;
-import platform.server.classes.CustomClass;
-import platform.server.classes.DataClass;
-import platform.server.classes.ValueClass;
+import platform.server.classes.*;
 import platform.server.classes.sets.AndClassSet;
 import platform.server.data.*;
 import platform.server.data.expr.*;
@@ -596,6 +594,8 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
             view.get(entity).design.iconPath = iconPath;
             view.get(entity).design.setImage(image);
         }
+        if(view.get(entity).getType() instanceof LogicalClass)
+            view.get(entity).editOnSingleClick = Settings.instance.getEditLogicalOnSingleClick();
     }
 
     public boolean hasChild(Property prop) {

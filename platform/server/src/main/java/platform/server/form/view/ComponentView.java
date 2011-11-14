@@ -51,7 +51,12 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
     public ComponentView() {
 
     }
-    
+
+    //@Override
+    // public boolean isEditOnSingleClick(int row, int column){
+    //     return ;
+    //}
+
     public ComponentView(int ID) {
         this.ID = ID;
     }

@@ -59,5 +59,6 @@ public class SelectionProperty extends SessionDataProperty {
         super.proceedDefaultDesign(view, entity);
         PropertyDrawView selectionPropView = view.get(entity);
         selectionPropView.editKey = KeyStrokes.getSelectionPropertyKeyStroke();
+        selectionPropView.editOnSingleClick = true;
     }
 }

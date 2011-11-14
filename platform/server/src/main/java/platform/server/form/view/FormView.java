@@ -528,6 +528,32 @@ public class FormView implements ServerIdentitySerializable, AbstractForm<Contai
         property.showTableFirst = showTableFirst;
     }
 
+    public void setEditOnSingleClickLogical(Boolean editOnSingleClick, Boolean onlyLogical) {
+
+        for (PropertyDrawView propertyView : getProperties()) {
+            if (onlyLogical) {
+                if (propertyView.entity.propertyObject.property.getType() instanceof LogicalClass)
+                    setShowTableFirst(propertyView, editOnSingleClick);
+            } else
+                setShowTableFirst(propertyView, editOnSingleClick);
+        }
+    }
+
+    public void setEditOnSingleClick(Boolean editOnSingleClick, GroupObjectEntity groupObject, Boolean onlyLogical) {
+
+        for (PropertyDrawView propertyView : getProperties(groupObject)) {
+            if (onlyLogical) {
+                if (propertyView.entity.propertyObject.property.getType() instanceof LogicalClass)
+                    setShowTableFirst(propertyView, editOnSingleClick);
+            } else
+                setShowTableFirst(propertyView, editOnSingleClick);
+        }
+    }
+
+    public void setEditOnSingleClick(PropertyDrawView property, Boolean editOnSingleClick) {
+        property.showTableFirst = editOnSingleClick;
+    }
+
 //    public void setReadOnly(AbstractGroup group, boolean readOnly, GroupObjectEntity groupObject) {
 //
 //        for (PropertyDrawView property : getProperties(group, groupObject)) {

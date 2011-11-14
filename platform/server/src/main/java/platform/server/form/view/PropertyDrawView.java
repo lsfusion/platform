@@ -45,6 +45,7 @@ public class PropertyDrawView extends ComponentView {
      */
     public boolean autoHide;
     public boolean showTableFirst;
+    public boolean editOnSingleClick;
 
     public Color highlightColor;
 
@@ -97,6 +98,7 @@ public class PropertyDrawView extends ComponentView {
     public String getDefaultCaption() {
         return entity.propertyObject.property.caption;
     }
+
 
     // предполагается, что для свойств, для которых заголовок динамический (например, группы в колонки),
     // getCaption должно возвращать null
@@ -193,6 +195,7 @@ public class PropertyDrawView extends ComponentView {
 
         outStream.writeBoolean(autoHide);
         outStream.writeBoolean(showTableFirst);
+        outStream.writeBoolean(editOnSingleClick);
 
         pool.writeObject(outStream, highlightColor);
 
@@ -259,6 +262,7 @@ public class PropertyDrawView extends ComponentView {
 
         autoHide = inStream.readBoolean();
         showTableFirst = inStream.readBoolean();
+        editOnSingleClick = inStream.readBoolean();
 
         highlightColor = pool.readObject(inStream);
 

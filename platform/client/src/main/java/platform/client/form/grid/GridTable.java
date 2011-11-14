@@ -241,6 +241,11 @@ public abstract class GridTable extends ClientFormTable
         initializeActionMap();
     }
 
+     @Override
+     public boolean isEditOnSingleClick(int row, int column){
+         return getProperty(row, column).editOnSingleClick;
+    }
+
     private void orderChanged(Pair<ClientPropertyDraw, ClientGroupObjectValue> columnKey, Order modiType) {
         try {
             form.changeOrder(columnKey.first, modiType, columnKey.second);

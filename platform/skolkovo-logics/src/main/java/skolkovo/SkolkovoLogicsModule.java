@@ -395,6 +395,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         Settings.instance.setCountJoinsUseUnionInsteadOfUnionAll(5);
 
+        Settings.instance.setEditLogicalOnSingleClick(true);
+
         contactGroup = addAbstractGroup("contactGroup", "Контакты организации", publicGroup);
 
         documentGroup = addAbstractGroup("documentGroup", "Юридические документы", publicGroup);
@@ -5054,7 +5056,6 @@ public class SkolkovoLogicsModule extends LogicsModule {
             design.setPreferredSize(voteResultCheckGroup, new Dimension(60, -1));
 
             design.get(getPropertyDraw(nameNative, objForesight)).setPreferredCharWidth(500);
-            //design.get(getPropertyDraw(nameNative, objForesight)).editOnSingleClick = true;
 
             design.get(objVote.groupTo).grid.hideToolbarItems();
 
@@ -5863,7 +5864,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
             objExpert = addSingleGroupObject(expert);
             addPropertyDraw(objConference, objExpert, inConferenceExpert);
-            addPropertyDraw(objExpert, baseLM.userFirstName, baseLM.userLastName, documentNameExpert, baseLM.userLogin, baseLM.userPassword, baseLM.email,
+            addPropertyDraw(objExpert, baseLM.selection, baseLM.userFirstName, baseLM.userLastName, documentNameExpert, baseLM.userLogin, baseLM.userPassword, baseLM.email,
                     nameLanguageExpert, nameCountryExpert, disableExpert, nameNativeShortClusterExpert, nameNativeShortAggregateClusterExpert);
             addPropertyDraw(objConference, objExpert, nameResultConferenceExpert, emailConferenceExpert);
 
