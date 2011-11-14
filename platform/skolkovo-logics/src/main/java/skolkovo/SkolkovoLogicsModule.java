@@ -360,7 +360,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
                 new String[]{"R1", "R2"},
                 new String[]{"R1", "R2"});
 
-        expertConference = addConcreteClass("expertConference", "Конференция экспертов", baseLM.transaction);
+        expertConference = addConcreteClass("expertConference", "Конференция экспертов", baseLM.transaction, baseClass.named);
         expertConferenceResult = addStaticClass("expertConferenceResult", "Участие в конференции",
                 new String[]{"confirmedConference", "rejectedConference"},
                 new String[]{"Подтвердил участие", "Отказался от участия"});
@@ -3947,10 +3947,6 @@ public class SkolkovoLogicsModule extends LogicsModule {
         emailConferenceExpert.setImage("email.png");
         emailConferenceExpert.property.askConfirm = true;
 
-
-//        qSubmitRegisterApplicationsDateTo = addOProp("qSubmitRegisterApplicationsDateTo", "К-во заявок", OrderType.SUM, submitRegisterApplicationsDateTo, true, true, 0, 1);
-//        averageDaysRegisterApplicationsDateWeekTo = addJProp("averageDaysRegisterApplicationsDateWeekTo", "Средний срок рассмотрения зявки на статус", averageDaysRegisterApplicationsDateTo, baseLM.sumDateWeekTo, 1, 2);
-//        submitRegisterApplicationsDateWeekTo = addJProp("submitRegisterApplicationsDateWeekTo", "К-во заявок всего", submitRegisterApplicationsDateTo, baseLM.sumDateWeekTo, 1, 2);
     }
 
     @Override
@@ -5859,7 +5855,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         private ConferenceFormEntity(NavigatorElement parent, String sID) {
             super(parent, sID, "Конференции экспертов");
 
-            objConference = addSingleGroupObject(expertConference, textConference, confirmedConference, rejectedConference);
+            objConference = addSingleGroupObject(expertConference, textConference, baseLM.date, baseLM.name, confirmedConference, rejectedConference);
             addObjectActions(this, objConference);
 
             objExpert = addSingleGroupObject(expert);
@@ -5867,6 +5863,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             addPropertyDraw(objExpert, baseLM.selection, baseLM.userFirstName, baseLM.userLastName, documentNameExpert, baseLM.userLogin, baseLM.userPassword, baseLM.email,
                     nameLanguageExpert, nameCountryExpert, disableExpert, nameNativeShortClusterExpert, nameNativeShortAggregateClusterExpert);
             addPropertyDraw(objConference, objExpert, nameResultConferenceExpert, emailConferenceExpert);
+            setForceViewType(textConference, ClassViewType.PANEL);
 
             RegularFilterGroupEntity inFilterGroup = new RegularFilterGroupEntity(genID());
             inFilterGroup.addFilter(new RegularFilterEntity(genID(),
@@ -5875,13 +5872,44 @@ public class SkolkovoLogicsModule extends LogicsModule {
                     KeyStroke.getKeyStroke(KeyEvent.VK_F11, 0)));
             addRegularFilterGroup(inFilterGroup);
 
-            RegularFilterGroupEntity inactiveGroup = new RegularFilterGroupEntity(genID());
-            inactiveGroup.addFilter(new RegularFilterEntity(genID(),
+            RegularFilterGroupEntity inactiveFilterGroup = new RegularFilterGroupEntity(genID());
+            inactiveFilterGroup.addFilter(new RegularFilterEntity(genID(),
                     new NotFilterEntity(new NotNullFilterEntity(addPropertyObject(disableExpert, objExpert))),
                     "Акт.",
                     KeyStroke.getKeyStroke(KeyEvent.VK_F10, 0)), true);
-            addRegularFilterGroup(inactiveGroup);
+            inactiveFilterGroup.addFilter(new RegularFilterEntity(genID(),
+                    new NotNullFilterEntity(addPropertyObject(disableExpert, objExpert)),
+                    "Не акт.",
+                    KeyStroke.getKeyStroke(KeyEvent.VK_F9, 0)));
+
+            addRegularFilterGroup(inactiveFilterGroup);
+
         }
+
+        @Override
+        public FormView createDefaultRichDesign() {
+            DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign();
+
+            ContainerView textContainer = design.createContainer("Содержание");
+            textContainer.constraints.childConstraints = DoNotIntersectSimplexConstraint.TOTHE_BOTTOM;
+            textContainer.add(design.get(getPropertyDraw(textConference, objConference)));
+            textContainer.constraints.fillHorizontal = 1.0;
+            textContainer.constraints.fillVertical = 1.0;
+
+            PropertyDrawView textView = design.get(getPropertyDraw(textConference, objConference));
+            textView.constraints.fillHorizontal = 1.0;
+            textView.preferredSize = new Dimension(-1, 300);
+            textView.panelLabelAbove = true;
+
+            ContainerView specContainer = design.createContainer();
+            design.getMainContainer().addAfter(specContainer, design.getGroupObjectContainer(objConference.groupTo));
+            specContainer.add(design.getGroupObjectContainer(objExpert.groupTo));
+            specContainer.add(textContainer);
+            specContainer.tabbedPane = true;
+
+            return design;
+        }
+
     }
 
     private class NoticeRejectedFormEntity extends FormEntity<SkolkovoBusinessLogics> {
