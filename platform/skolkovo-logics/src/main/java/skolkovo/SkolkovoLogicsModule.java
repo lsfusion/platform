@@ -1321,8 +1321,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
     public LP nameNativeSIDToSpecialist;
     public LP nameForeignSpecialist;
     public LP nativePublications;
-    LP nativeEditionPublications;
-    LP foreignEditionPublications;
+    public LP nativeEditionPublications;
+    public LP foreignEditionPublications;
     LP editR2Project;
     LP foreignProjectMissionProject;
     LP descriptionProjectMission;
@@ -4907,7 +4907,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
             setReadOnly(true, objCluster.groupTo);
             setReadOnly(inProjectCluster, false);
-            setReadOnly(nameNativeShortCurrentCluster, false);
+            setReadOnly(inClaimerProjectCluster, false);
 
             addDefaultOrder(getPropertyDraw(dateProject, objProject), true);
             addDefaultOrder(numberCluster, true);
@@ -5845,9 +5845,11 @@ public class SkolkovoLogicsModule extends LogicsModule {
             objConference = addSingleGroupObject(expertConference, textConference, confirmedConference, rejectedConference);
             addObjectActions(this, objConference);
 
-            objExpert = addSingleGroupObject(expert, baseLM.selection, baseLM.userFirstName, baseLM.userLastName, documentNameExpert, baseLM.userLogin, baseLM.userPassword, baseLM.email,
+            objExpert = addSingleGroupObject(expert);
+            addPropertyDraw(objConference, objExpert, inConferenceExpert);
+            addPropertyDraw(objExpert, baseLM.userFirstName, baseLM.userLastName, documentNameExpert, baseLM.userLogin, baseLM.userPassword, baseLM.email,
                     nameLanguageExpert, nameCountryExpert, disableExpert, nameNativeShortClusterExpert, nameNativeShortAggregateClusterExpert);
-            addPropertyDraw(objConference, objExpert, inConferenceExpert, nameResultConferenceExpert, emailConferenceExpert);
+            addPropertyDraw(objConference, objExpert, nameResultConferenceExpert, emailConferenceExpert);
 
             RegularFilterGroupEntity inFilterGroup = new RegularFilterGroupEntity(genID());
             inFilterGroup.addFilter(new RegularFilterEntity(genID(),

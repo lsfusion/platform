@@ -1327,6 +1327,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
             addPropertyDraw(objUserRole, objPolicy, baseGroup, true);
             addPropertyDraw(objUserRole, objForm, permissionUserRoleForm);
             addPropertyDraw(objUserRole, objTreeForm, permissionUserRoleForm);
+            addPropertyDraw(permissionUserRoleForm, objUserRole, objTreeForm).toDraw = objUserRole.groupTo;
             addPropertyDraw(objUserRole, objForm, userRoleFormDefaultNumber);
             addPropertyDraw(objUserRole, objTreeForm, userRoleFormDefaultNumber);
 

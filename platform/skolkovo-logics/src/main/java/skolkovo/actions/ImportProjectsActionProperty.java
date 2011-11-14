@@ -110,7 +110,7 @@ public class ImportProjectsActionProperty extends ActionProperty {
             nativeCaseStudiesProjectField, foreignCaseStudiesProjectField,
             nativeCharacteristicsAnaloguesProjectField, foreignCharacteristicsAnaloguesProjectField,
             nativeCompaniesAnaloguesProjectField, foreignCompaniesAnaloguesProjectField,
-            nativeMarketIntroductionProjectField, foreignMarketIntroductionProjectField, linksMarketIntroductionProjectField,
+            nativeMarketIntroductionProjectField, foreignMarketIntroductionProjectField, linksMarketIntroductionProjectField, linksForeignMarketIntroductionProjectField,
             nativeHistoryProjectField, foreignHistoryProjectField, nativeDynamicsProjectField,
             foreignDynamicsProjectField, nativeGrantsProjectField, foreignGrantsProjectField,
             nativeLaboratoryProjectField, foreignLaboratoryProjectField, nativeInvestmentProjectField,
@@ -118,8 +118,8 @@ public class ImportProjectsActionProperty extends ActionProperty {
             nativeGeneralizedPlanProjectField, foreignGeneralizedPlanProjectField,
 
             nativeCommentResearchField, foreignCommentResearchField, dataResearchField,
-            nativePublicationsField, foreignPublicationsField, nativeAuthorPublicationsField,
-            foreignAuthorPublicationsField, datePublicationsField, nativeLinksPublicationsField,
+            nativePublicationsField, foreignPublicationsField, nativeAuthorPublicationsField, foreignAuthorPublicationsField,
+            nativeEditionPublicationsField, foreignEditionPublicationsField, datePublicationsField, nativeLinksPublicationsField,
             nativeProjectCommercializationField, foreignProjectCommercializationField,
             nativeCommentProjectCommercializationField, foreignCommentProjectCommercializationField,
             nativeProjectAnaloguesField, foreignProjectAnaloguesField, nativeDescriptionProjectAnaloguesField,
@@ -474,6 +474,12 @@ public class ImportProjectsActionProperty extends ActionProperty {
         nativeInnovativeProjectField = new ImportField(LM.nativeInnovativeProject);
         foreignInnovativeProjectField = new ImportField(LM.foreignInnovativeProject);
 
+        nameNativeManagerProjectField = new ImportField(LM.nameNativeManagerProject);
+        nameNativeGenitiveManagerProjectField = new ImportField(LM.nameNativeGenitiveManagerProject);
+        nameNativeDativusManagerProjectField = new ImportField(LM.nameNativeDativusManagerProject);
+        nameNativeAblateManagerProjectField = new ImportField(LM.nameNativeAblateManagerProject);
+        nameForeignManagerProjectField = new ImportField(LM.nameForeignManagerProject);
+
         nativeCommentMissionProjectField = new ImportField(LM.nativeCommentMissionProject);
         foreignCommentMissionProjectField = new ImportField(LM.foreignCommentMissionProject);
         nativeResumeProjectField = new ImportField(LM.nativeResumeProject);
@@ -501,6 +507,7 @@ public class ImportProjectsActionProperty extends ActionProperty {
         nativeMarketIntroductionProjectField = new ImportField(LM.nativeMarketIntroductionProject);
         foreignMarketIntroductionProjectField = new ImportField(LM.foreignMarketIntroductionProject);
         linksMarketIntroductionProjectField = new ImportField(LM.linksMarketIntroductionProject);
+        linksForeignMarketIntroductionProjectField = new ImportField(LM.linksForeignMarketIntroductionProject);
 
         nameNativeSpecialistField = new ImportField(LM.nameNativeSpecialist);
         nameForeignSpecialistField = new ImportField(LM.nameForeignSpecialist);
@@ -601,6 +608,8 @@ public class ImportProjectsActionProperty extends ActionProperty {
         foreignPublicationsField = new ImportField(LM.foreignPublications);
         nativeAuthorPublicationsField = new ImportField(LM.nativeAuthorPublications);
         foreignAuthorPublicationsField = new ImportField(LM.foreignAuthorPublications);
+        nativeEditionPublicationsField = new ImportField(LM.nativeEditionPublications);
+        foreignEditionPublicationsField = new ImportField(LM.foreignEditionPublications);
         datePublicationsField = new ImportField(LM.datePublications);
         nativeLinksPublicationsField = new ImportField(LM.nativeLinksPublications);
 
@@ -658,7 +667,6 @@ public class ImportProjectsActionProperty extends ActionProperty {
         properties.add(new ImportProperty(emailContactProjectField, LM.emailContactProject.getMapping(projectKey)));
         properties.add(new ImportProperty(linksMarketTrendsProjectField, LM.linksMarketTrendsProject.getMapping(projectKey)));
         properties.add(new ImportProperty(linksAnalogProjectField, LM.linksAnalogProject.getMapping(projectKey)));
-        properties.add(new ImportProperty(linksMarketIntroductionProjectField, LM.linksMarketIntroductionProject.getMapping(projectKey)));
         properties.add(new ImportProperty(updateDateProjectField, LM.updateDateProject.getMapping(projectKey)));
 
         projectMissionProjectKey = new ImportKey(LM.projectMission, LM.projectMissionToSID.getMapping(projectMissionProjectField));
@@ -692,6 +700,10 @@ public class ImportProjectsActionProperty extends ActionProperty {
         propertyStatusDate = new ImportProperty(dateStatusProjectField, LM.statusDateProject.getMapping(projectKey));
 
         propertiesNative.add(new ImportProperty(nameNativeProjectField, LM.nameNativeJoinProject.getMapping(projectKey)));
+        propertiesNative.add(new ImportProperty(nameNativeManagerProjectField, LM.nameNativeManagerProject.getMapping(projectKey)));
+        propertiesNative.add(new ImportProperty(nameNativeGenitiveManagerProjectField, LM.nameNativeGenitiveManagerProject.getMapping(projectKey)));
+        propertiesNative.add(new ImportProperty(nameNativeDativusManagerProjectField, LM.nameNativeDativusManagerProject.getMapping(projectKey)));
+        propertiesNative.add(new ImportProperty(nameNativeAblateManagerProjectField, LM.nameNativeAblateManagerProject.getMapping(projectKey)));
         propertiesNative.add(new ImportProperty(nativeProblemProjectField, LM.nativeProblemProject.getMapping(projectKey)));
         propertiesNative.add(new ImportProperty(nativeInnovativeProjectField, LM.nativeInnovativeProject.getMapping(projectKey)));
         propertiesNative.add(new ImportProperty(nativeCommentMissionProjectField, LM.nativeCommentMissionProject.getMapping(projectKey)));
@@ -711,6 +723,7 @@ public class ImportProjectsActionProperty extends ActionProperty {
         propertiesNative.add(new ImportProperty(nativeInvestmentProjectField, LM.nativeInvestmentProject.getMapping(projectKey)));
         propertiesNative.add(new ImportProperty(nativeResultsProjectField, LM.nativeResultsProject.getMapping(projectKey)));
         propertiesNative.add(new ImportProperty(nativeGeneralizedPlanProjectField, LM.nativeGeneralizedPlanProject.getMapping(projectKey)));
+        propertiesNative.add(new ImportProperty(linksMarketIntroductionProjectField, LM.linksMarketIntroductionProject.getMapping(projectKey)));
         propertiesNative.add(new ImportProperty(fileRoadMapProjectField, LM.fileNativeRoadMapProject.getMapping(projectKey)));
 
         properties.add(new ImportProperty(emailClaimerField, LM.claimerProject.getMapping(projectKey),
@@ -721,6 +734,7 @@ public class ImportProjectsActionProperty extends ActionProperty {
         propertiesFullClaimerNative.add(new ImportProperty(firmNameNativeClaimerField, LM.firmNameNativeClaimer.getMapping(claimerKey)));
 
         propertiesForeign.add(new ImportProperty(nameForeignProjectField, LM.nameForeignJoinProject.getMapping(projectKey)));
+        propertiesForeign.add(new ImportProperty(nameForeignManagerProjectField, LM.nameForeignManagerProject.getMapping(projectKey)));
         propertiesForeign.add(new ImportProperty(foreignProblemProjectField, LM.foreignProblemProject.getMapping(projectKey)));
         propertiesForeign.add(new ImportProperty(foreignInnovativeProjectField, LM.foreignInnovativeProject.getMapping(projectKey)));
         propertiesForeign.add(new ImportProperty(foreignCommentMissionProjectField, LM.foreignCommentMissionProject.getMapping(projectKey)));
@@ -740,6 +754,7 @@ public class ImportProjectsActionProperty extends ActionProperty {
         propertiesForeign.add(new ImportProperty(foreignInvestmentProjectField, LM.foreignInvestmentProject.getMapping(projectKey)));
         propertiesForeign.add(new ImportProperty(foreignResultsProjectField, LM.foreignResultsProject.getMapping(projectKey)));
         propertiesForeign.add(new ImportProperty(foreignGeneralizedPlanProjectField, LM.foreignGeneralizedPlanProject.getMapping(projectKey)));
+        propertiesForeign.add(new ImportProperty(linksForeignMarketIntroductionProjectField, LM.linksForeignMarketIntroductionProject.getMapping(projectKey)));
         propertiesForeign.add(new ImportProperty(fileForeignRoadMapProjectField, LM.fileForeignRoadMapProject.getMapping(projectKey)));
 
         propertiesFullClaimerForeign = new ArrayList<ImportProperty<?>>();
@@ -779,8 +794,10 @@ public class ImportProjectsActionProperty extends ActionProperty {
                 LM.baseLM.object(LM.project).getMapping(projectKey)));
         propertiesPublicationsNative.add(new ImportProperty(nativePublicationsField, LM.nativePublications.getMapping(publicationsKey)));
         propertiesPublicationsNative.add(new ImportProperty(nativeAuthorPublicationsField, LM.nativeAuthorPublications.getMapping(publicationsKey)));
+        propertiesPublicationsNative.add(new ImportProperty(nativeEditionPublicationsField, LM.nativeEditionPublications.getMapping(publicationsKey)));
         propertiesPublicationsForeign.add(new ImportProperty(foreignPublicationsField, LM.foreignPublications.getMapping(publicationsKey)));
         propertiesPublicationsForeign.add(new ImportProperty(foreignAuthorPublicationsField, LM.foreignAuthorPublications.getMapping(publicationsKey)));
+        propertiesPublicationsForeign.add(new ImportProperty(foreignEditionPublicationsField, LM.foreignEditionPublications.getMapping(publicationsKey)));
 
 
         commercializationKey = new ImportKey(LM.commercialization, LM.nativeProjectSIDToCommercialization.getMapping(nativeProjectCommercializationField, projectIdField));
@@ -881,6 +898,7 @@ public class ImportProjectsActionProperty extends ActionProperty {
 
             if (!onlyMessage && !fillSids) {
                 for (String projectId : projects.keySet()) {
+                    projectId = "29763";
                     URL url = new URL(host + "&show=all&projectId=" + projectId);
                     URLConnection connection = url.openConnection();
                     connection.setDoOutput(false);
@@ -889,6 +907,7 @@ public class ImportProjectsActionProperty extends ActionProperty {
                     importProject(pInfo, connection.getInputStream(), projectId, projects.get(projectId), context);
                     RemoteContextObject.popCurrentActionMessage();
                     System.gc();
+                    break;
                 }
             }
             String message = "";
@@ -914,7 +933,7 @@ public class ImportProjectsActionProperty extends ActionProperty {
         OrderedMap<Map<Object, Object>, Map<Object, Object>> result = null;
         List<Element> elementList = new ArrayList<Element>();
         try {
-            URL url = new URL(host + "&show=projects&limit=1000");
+            URL url = new URL(host + "&show=projects&limit=2000");
             URLConnection connection = url.openConnection();
 
             connection.setDoOutput(false);
@@ -1593,7 +1612,6 @@ public class ImportProjectsActionProperty extends ActionProperty {
                     row.add(node.getChildText("emailContactProject"));
                     row.add(node.getChildText("linksMarketTrendsProject"));
                     row.add(node.getChildText("linksAnalogProject"));
-                    row.add(node.getChildText("linksMarketIntroductionProject"));
 
                     row.add(projectId);
 
@@ -1685,6 +1703,10 @@ public class ImportProjectsActionProperty extends ActionProperty {
 
                     if (fillNative) {
                         row.add(node.getChildText("nameNativeProject"));
+                        row.add(node.getChildText("nameNativeManagerProject"));
+                        row.add(node.getChildText("nameNativeGenitiveManagerProject"));
+                        row.add(node.getChildText("nameNativeDativusManagerProject"));
+                        row.add(node.getChildText("nameNativeAblateManagerProject"));
                         row.add(node.getChildText("nativeProblemProject"));
                         row.add(node.getChildText("nativeInnovativeProject"));
                         row.add(node.getChildText("nativeCommentMissionProject"));
@@ -1705,6 +1727,7 @@ public class ImportProjectsActionProperty extends ActionProperty {
                         row.add(node.getChildText("nativeInvestmentProject"));
                         row.add(node.getChildText("nativeResultsProject"));
                         row.add(node.getChildText("nativeGeneralizedPlanProject"));
+                        row.add(node.getChildText("linksMarketIntroductionProject"));
                         row.add(buildFileByteArray(node.getChild("fileRoadMapProject")));
 
                         if (fillClaimer) {
@@ -1715,6 +1738,7 @@ public class ImportProjectsActionProperty extends ActionProperty {
 
                     if (fillForeign) {
                         row.add(node.getChildText("nameForeignProject"));
+                        row.add(node.getChildText("nameForeignManagerProject"));
                         row.add(node.getChildText("foreignProblemProject"));
                         row.add(node.getChildText("foreignInnovativeProject"));
                         row.add(node.getChildText("foreignCommentMissionProject"));
@@ -1735,6 +1759,7 @@ public class ImportProjectsActionProperty extends ActionProperty {
                         row.add(node.getChildText("foreignInvestmentProject"));
                         row.add(node.getChildText("foreignResultsProject"));
                         row.add(node.getChildText("foreignGeneralizedPlanProject"));
+                        row.add(node.getChildText("linksForeignMarketIntroductionProject"));
                         row.add(buildFileByteArray(node.getChild("fileForeignRoadMapProject")));
 
                         if (fillClaimer) {
@@ -1783,8 +1808,10 @@ public class ImportProjectsActionProperty extends ActionProperty {
                         rowPublications.add(nodePublications.getChildText("nativeLinksPublications"));
                         rowPublications.add(nodePublications.getChildText("nativePublications"));
                         rowPublications.add(nodePublications.getChildText("nativeAuthorPublications"));
+                        rowPublications.add(nodePublications.getChildText("nativeEditionPublications"));
                         rowPublications.add(nodePublications.getChildText("foreignPublications"));
                         rowPublications.add(nodePublications.getChildText("foreignAuthorPublications"));
+                        rowPublications.add(nodePublications.getChildText("foreignEditionPublications"));
 
                         dataPublications.add(rowPublications);
                     }
@@ -1890,27 +1917,29 @@ public class ImportProjectsActionProperty extends ActionProperty {
                     List<ImportProperty<?>> propertiesFullClaimerForeign = new ArrayList<ImportProperty<?>>(this.propertiesFullClaimerForeign);
 
                     List<ImportField> fieldsNative = BaseUtils.toList(
-                            nameNativeProjectField, nativeProblemProjectField, nativeInnovativeProjectField,
+                            nameNativeProjectField, nameNativeManagerProjectField, nameNativeGenitiveManagerProjectField,
+                            nameNativeDativusManagerProjectField, nameNativeAblateManagerProjectField,
+                            nativeProblemProjectField, nativeInnovativeProjectField,
                             nativeCommentMissionProjectField, nativeResumeProjectField, nameNativeContactProjectField,
                             nativeMarketTrendsProjectField, nativeRelevanceProjectField, nativeBasicTechnologyProjectField,
                             nativeCaseStudiesProjectField, nativeCharacteristicsAnaloguesProjectField,
                             nativeCompaniesAnaloguesProjectField, nativeMarketIntroductionProjectField,
                             nativeHistoryProjectField, nativeDynamicsProjectField, nativeGrantsProjectField,
                             nativeLaboratoryProjectField, nativeInvestmentProjectField, nativeResultsProjectField,
-                            nativeGeneralizedPlanProjectField, fileRoadMapProjectField
+                            nativeGeneralizedPlanProjectField, linksMarketIntroductionProjectField, fileRoadMapProjectField
                     );
 
                     List<ImportField> fieldsFullClaimerNative = BaseUtils.toList(nameNativeClaimerField, firmNameNativeClaimerField);
 
                     List<ImportField> fieldsForeign = BaseUtils.toList(
-                            nameForeignProjectField, foreignProblemProjectField, foreignInnovativeProjectField,
+                            nameForeignProjectField, nameForeignManagerProjectField, foreignProblemProjectField, foreignInnovativeProjectField,
                             foreignCommentMissionProjectField, foreignResumeProjectField, nameForeignContactProjectField,
                             foreignMarketTrendsProjectField, foreignRelevanceProjectField, foreignBasicTechnologyProjectField,
                             foreignCaseStudiesProjectField, foreignCharacteristicsAnaloguesProjectField,
                             foreignCompaniesAnaloguesProjectField, foreignMarketIntroductionProjectField,
                             foreignHistoryProjectField, foreignDynamicsProjectField, foreignGrantsProjectField,
                             foreignLaboratoryProjectField, foreignInvestmentProjectField, foreignResultsProjectField,
-                            foreignGeneralizedPlanProjectField, fileForeignRoadMapProjectField
+                            foreignGeneralizedPlanProjectField, linksForeignMarketIntroductionProjectField, fileForeignRoadMapProjectField
                     );
 
                     List<ImportField> fieldsFullClaimerForeign = BaseUtils.toList(nameForeignClaimerField, firmNameForeignClaimerField);
@@ -1918,7 +1947,6 @@ public class ImportProjectsActionProperty extends ActionProperty {
                     List<ImportField> fieldsBoth = BaseUtils.toList(
                             fillNativeProjectField, fillForeignProjectField, phoneContactProjectField,
                             emailContactProjectField, linksMarketTrendsProjectField, linksAnalogProjectField,
-                            linksMarketIntroductionProjectField,
                             projectIdField, updateDateProjectField, projectMissionProjectField,
                             projectScheduleProjectField, projectActionProjectField, emailClaimerField
                     );
@@ -2018,8 +2046,8 @@ public class ImportProjectsActionProperty extends ActionProperty {
 
                     List<ImportField> fieldsPublicationsBoth = BaseUtils.toList(
                             projectIdField, datePublicationsField, nativeLinksPublicationsField);
-                    List<ImportField> fieldsPublicationsNative = BaseUtils.toList(nativePublicationsField, nativeAuthorPublicationsField);
-                    List<ImportField> fieldsPublicationsForeign = BaseUtils.toList(foreignPublicationsField, foreignAuthorPublicationsField);
+                    List<ImportField> fieldsPublicationsNative = BaseUtils.toList(nativePublicationsField, nativeAuthorPublicationsField, nativeEditionPublicationsField);
+                    List<ImportField> fieldsPublicationsForeign = BaseUtils.toList(foreignPublicationsField, foreignAuthorPublicationsField, foreignEditionPublicationsField);
                     keysArray = new ImportKey<?>[]{projectKey, publicationsKey};
                     importMultilanguageData(pInfo,
                             fieldsPublicationsBoth, fieldsPublicationsNative, fieldsPublicationsForeign,
