@@ -328,7 +328,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         documentType = addStaticClass("documentType", "Тип документа",
                 new String[]{"application", "resume", "techdesc", "forres", "ipres", "roadmap", "passport", "statement"},
-                new String[]{"Анкета", "Резюме", "Техническое описание", "Резюме иностранного специалиста", "Заявление IP", "Дорожная карта", "Документ, удостоверяющие личность участников Команды проекта", "Заявление участника Команды проекта"});
+                new String[]{"Анкета", "Резюме", "Техническое описание", "Резюме иностранного специалиста", "Заявление IP", "Дорожная карта", "Документ, удостоверяющий личность участников Команды проекта", "Заявление участника Команды проекта"});
 
         formalControlResult = addStaticClass("formalControlResult", "Решение формальной экспертизы",
                 new String[]{"notEnoughDocuments", "noListOfExperts", "notSuitableCluster", "repeatedFC", "positiveFormalResult"},
@@ -1376,6 +1376,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP inTestApplication;
     public LP projectMileStone, equalsMileStoneProject;
     public LP nativeMileStone;
+    public LP orderNumberMileStone;
     LP nativeToMileStone;
     public LP nativeSIDToMileStone;
     public LP nativeDescriptionTypeMileStoneMileStone;
@@ -2077,6 +2078,9 @@ public class SkolkovoLogicsModule extends LogicsModule {
         nativeMileStone = addDProp("nativeMileStone", "Название", InsensitiveStringClass.get(2000), mileStone);
         nativeMileStone.setMinimumWidth(10);
         nativeMileStone.setPreferredWidth(50);
+
+        orderNumberMileStone = addDProp("orderNumberMileStone", "Порядок", IntegerClass.instance, mileStone);
+        orderNumberMileStone.setFixedCharWidth(2);
 
         nativeToMileStone = addAGProp("nativeToMileStone", "Название", nativeMileStone, projectMileStone);
         nativeSIDToMileStone = addJProp("nativeSIDToMileStone", "Дорожная карта", nativeToMileStone, 1, sidToProject, 2);
@@ -4366,9 +4370,10 @@ public class SkolkovoLogicsModule extends LogicsModule {
             addFixedFilter(new CompareFilterEntity(addPropertyObject(projectObjectives, objObjectives), Compare.EQUALS, objProject));
             addObjectActions(this, objObjectives);
 
-            objMileStone = addSingleGroupObject(10, "mileStone", mileStone, "Квартал", nativeMileStone);
+            objMileStone = addSingleGroupObject(10, "mileStone", mileStone, "Квартал", nativeMileStone, orderNumberMileStone);
             addFixedFilter(new CompareFilterEntity(addPropertyObject(projectMileStone, objMileStone), Compare.EQUALS, objProject));
             addObjectActions(this, objMileStone);
+            addDefaultOrder(getPropertyDraw(orderNumberMileStone, objMileStone), true);
 
             objTypeMileStone = addSingleGroupObject(11, "typeMileStone", typeMileStone, "Раздел дорожной карты", baseLM.name, nativeTypeMileStone, foreignTypeMileStone);
 
@@ -5033,6 +5038,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             design.setPreferredSize(voteResultCheckGroup, new Dimension(60, -1));
 
             design.get(getPropertyDraw(nameNative, objForesight)).setPreferredCharWidth(500);
+            //design.get(getPropertyDraw(nameNative, objForesight)).editOnSingleClick = true;
 
             design.get(objVote.groupTo).grid.hideToolbarItems();
 
@@ -6397,48 +6403,6 @@ public class SkolkovoLogicsModule extends LogicsModule {
                     languageDocument.execute(language.getID("english"), context, documentObject);
                 }
 
-                /*
-                                Query<String, String> query = new Query<String, String>(Collections.singleton("nonRussianSpecialist"));
-                                query.and(projectNonRussianSpecialist.getExpr(context.getModifier(), query.mapKeys.get("nonRussianSpecialist")).compare(projectObject.getExpr(), Compare.EQUALS));
-                                query.properties.put("fullNameNonRussianSpecialist", projectNonRussianSpecialist.getExpr(context.getModifier(), query.mapKeys.get("nonRussianSpecialist")));
-                                query.properties.put("fileForeignResumeNonRussianSpecialist", fileForeignResumeNonRussianSpecialist.getExpr(context.getModifier(), query.mapKeys.get("nonRussianSpecialist")));
-                                int count = 1;
-                                int size = query.executeClasses(context.getSession(), baseClass).entrySet().size();
-                                for (Map.Entry<Map<String, DataObject>, Map<String, ObjectValue>> row : query.executeClasses(context.getSession(), baseClass).entrySet()) {
-                                    row.getKey().get("nonRussianSpecialist");
-                                    row.getValue().get("fullNameNonRussianSpecialist");
-                                    row.getValue().get("fileForeignResumeNonRussianSpecialist");
-                                    documentObject = context.addObject(document);
-                                    projectDocument.execute(projectObject.getValue(), context, documentObject);
-                                    typeDocument.execute(documentType.getID("forres"), context, documentObject);
-                                    languageDocument.execute(language.getID("english"), context, documentObject);
-                                    if (size > 1)
-                                        postfixDocument.execute(String.valueOf(count), context, documentObject);
-                                    fileDocument.execute(row.getValue().get("fileForeignResumeNonRussianSpecialist").getValue(), context, documentObject);
-                                    count++;
-                                }
-
-                                query = new Query<String, String>(Collections.singleton("nonRussianSpecialist"));
-                                query.and(projectNonRussianSpecialist.getExpr(context.getModifier(), query.mapKeys.get("nonRussianSpecialist")).compare(projectObject.getExpr(), Compare.EQUALS));
-                                query.properties.put("fullNameNonRussianSpecialist", projectNonRussianSpecialist.getExpr(context.getModifier(), query.mapKeys.get("nonRussianSpecialist")));
-                                query.properties.put("fileNativeResumeNonRussianSpecialist", fileNativeResumeNonRussianSpecialist.getExpr(context.getModifier(), query.mapKeys.get("nonRussianSpecialist")));
-                                count = 1;
-                                size = query.executeClasses(context.getSession(), baseClass).entrySet().size();
-                                for (Map.Entry<Map<String, DataObject>, Map<String, ObjectValue>> row : query.executeClasses(context.getSession(), baseClass).entrySet()) {
-                                    row.getKey().get("nonRussianSpecialist");
-                                    row.getValue().get("fullNameNonRussianSpecialist");
-                                    row.getValue().get("fileNativeResumeNonRussianSpecialist");
-                                    documentObject = context.addObject(document);
-                                    projectDocument.execute(projectObject.getValue(), context, documentObject);
-                                    typeDocument.execute(documentType.getID("forres"), context, documentObject);
-                                    languageDocument.execute(language.getID("russian"), context, documentObject);
-                                    if (size > 1)
-                                        postfixDocument.execute(String.valueOf(count), context, documentObject);
-                                    fileDocument.execute(row.getValue().get("fileNativeResumeNonRussianSpecialist").getValue(), context, documentObject);
-                                    count++;
-                                }
-
-                */
                 Query<String, String> query = new Query<String, String>(Collections.singleton("nonRussianSpecialist"));
                 query.and(projectNonRussianSpecialist.getExpr(context.getModifier(), query.mapKeys.get("nonRussianSpecialist")).compare(projectObject.getExpr(), Compare.EQUALS));
                 query.properties.put("fullNameNonRussianSpecialist", projectNonRussianSpecialist.getExpr(context.getModifier(), query.mapKeys.get("nonRussianSpecialist")));
@@ -6562,6 +6526,44 @@ public class SkolkovoLogicsModule extends LogicsModule {
                         else if ((fillForeignProject.read(context, projectObject)) == (Object) true || (translatedToEnglishProject.read(context, projectObject)) == (Object) true)
                             fileDocument.execute(generateApplicationFile(context, projectObject, true, true), context, documentObject);
 
+                        Query<String, String> query = new Query<String, String>(Collections.singleton("specialist"));
+                        query.and(projectSpecialist.getExpr(context.getModifier(), query.mapKeys.get("specialist")).compare(projectObject.getExpr(), Compare.EQUALS));
+                        query.properties.put("nameNativeSpecialist", projectNonRussianSpecialist.getExpr(context.getModifier(), query.mapKeys.get("specialist")));
+                        query.properties.put("filePassportSpecialist", filePassportSpecialist.getExpr(context.getModifier(), query.mapKeys.get("specialist")));
+                        query.properties.put("fileStatementSpecialist", fileStatementSpecialist.getExpr(context.getModifier(), query.mapKeys.get("specialist")));
+                        int countPassport = 1;
+                        int countStatement = 1;
+                        int size = query.executeClasses(context.getSession(), baseClass).entrySet().size();
+                        for (Map.Entry<Map<String, DataObject>, Map<String, ObjectValue>> row : query.executeClasses(context.getSession(), baseClass).entrySet()) {
+                            row.getKey().get("specialist");
+                            row.getValue().get("nameNativeSpecialist");
+                            row.getValue().get("filePassportSpecialist");
+                            row.getValue().get("fileStatementSpecialist");
+
+                            file = row.getValue().get("filePassportSpecialist").getValue();
+                            if (file != null) {
+                                documentObject = context.addObject(document);
+                                projectDocument.execute(projectObject.getValue(), context, documentObject);
+                                typeDocument.execute(documentType.getID("passport"), context, documentObject);
+                                languageDocument.execute(language.getID("russian"), context, documentObject);
+                                if (size > 1)
+                                    postfixDocument.execute(String.valueOf(countPassport), context, documentObject);
+                                fileDocument.execute(file, context, documentObject);
+                                countPassport++;
+                            }
+
+                            file = row.getValue().get("fileStatementSpecialist").getValue();
+                            if (file != null) {
+                                documentObject = context.addObject(document);
+                                projectDocument.execute(projectObject.getValue(), context, documentObject);
+                                typeDocument.execute(documentType.getID("statement"), context, documentObject);
+                                languageDocument.execute(language.getID("russian"), context, documentObject);
+                                if (size > 1)
+                                    postfixDocument.execute(String.valueOf(countStatement), context, documentObject);
+                                fileDocument.execute(file, context, documentObject);
+                                countStatement++;
+                            }
+                        }
                     }
                 }
             } catch (IOException e) {

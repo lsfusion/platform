@@ -132,7 +132,7 @@ public class ImportProjectsActionProperty extends ActionProperty {
             nativeWorkSpecialistField, foreignWorkSpecialistField, nativePublicationsSpecialistField,
             foreignPublicationsSpecialistField, nativeCitationSpecialistField, foreignCitationSpecialistField,
             nativeIntellectualPropertySpecialistField, foreignIntellectualPropertySpecialistField,
-            nativeMileStoneField, nativeResearchDescriptionTypeMileStoneMileStoneField,
+            nativeMileStoneField, orderNumberMileStoneField, nativeResearchDescriptionTypeMileStoneMileStoneField,
             nativeProductCreationDescriptionTypeMileStoneMileStoneField, nativePlanOnHiringDescriptionTypeMileStoneMileStoneField,
             nativeLicensingDescriptionTypeMileStoneMileStoneField, nativePromotionDescriptionTypeMileStoneMileStoneField, 
             nativeSellingDescriptionTypeMileStoneMileStoneField, foreignResearchDescriptionTypeMileStoneMileStoneField, 
@@ -525,6 +525,7 @@ public class ImportProjectsActionProperty extends ActionProperty {
         filePassportSpecialistField = new ImportField(LM.fileStatementSpecialist);
         fileStatementSpecialistField = new ImportField(LM.filePassportSpecialist);
         nativeMileStoneField = new ImportField(LM.nativeMileStone);
+        orderNumberMileStoneField = new ImportField(LM.orderNumberMileStone);
         nativeResearchDescriptionTypeMileStoneMileStoneField = new ImportField(LM.nativeDescriptionTypeMileStoneMileStone);
         nativeProductCreationDescriptionTypeMileStoneMileStoneField = new ImportField(LM.nativeDescriptionTypeMileStoneMileStone);
         nativePlanOnHiringDescriptionTypeMileStoneMileStoneField = new ImportField(LM.nativeDescriptionTypeMileStoneMileStone);
@@ -831,6 +832,7 @@ public class ImportProjectsActionProperty extends ActionProperty {
         propertiesMileStone.add(new ImportProperty(projectIdField, LM.projectMileStone.getMapping(mileStoneKey),
                 LM.baseLM.object(LM.project).getMapping(projectKey)));
         propertiesMileStone.add(new ImportProperty(nativeMileStoneField, LM.nativeMileStone.getMapping(mileStoneKey)));
+        propertiesMileStone.add(new ImportProperty(orderNumberMileStoneField, LM.orderNumberMileStone.getMapping(mileStoneKey)));
         propertiesMileStoneNative.add(new ImportProperty(nativeResearchDescriptionTypeMileStoneMileStoneField, LM.nativeResearchDescriptionTypeMileStoneMileStone.getMapping(mileStoneKey)));
         propertiesMileStoneNative.add(new ImportProperty(nativeProductCreationDescriptionTypeMileStoneMileStoneField, LM.nativeProductCreationDescriptionTypeMileStoneMileStone.getMapping(mileStoneKey)));
         propertiesMileStoneNative.add(new ImportProperty(nativePlanOnHiringDescriptionTypeMileStoneMileStoneField, LM.nativePlanOnHiringDescriptionTypeMileStoneMileStone.getMapping(mileStoneKey)));
@@ -1853,6 +1855,7 @@ public class ImportProjectsActionProperty extends ActionProperty {
 
                         rowMileStone.add(projectId);
                         rowMileStone.add(nodeMileStone.getChildText("nativeMileStone"));
+                        rowMileStone.add(j+1); //orderNumberMileStone
                         rowMileStone.add(nodeMileStone.getChildText("nativeResearch"));
                         rowMileStone.add(nodeMileStone.getChildText("nativeProductCreation"));
                         rowMileStone.add(nodeMileStone.getChildText("nativePlanOnHiring"));
@@ -2083,7 +2086,7 @@ public class ImportProjectsActionProperty extends ActionProperty {
                             fillNative, fillForeign);
 
                     List<ImportField> fieldsMileStoneBoth = BaseUtils.toList(
-                            projectIdField, nativeMileStoneField);
+                            projectIdField, nativeMileStoneField, orderNumberMileStoneField);
                     List<ImportField> fieldsMileStoneNative = BaseUtils.toList(nativeResearchDescriptionTypeMileStoneMileStoneField, nativeProductCreationDescriptionTypeMileStoneMileStoneField,
                             nativePlanOnHiringDescriptionTypeMileStoneMileStoneField, nativeLicensingDescriptionTypeMileStoneMileStoneField,
                             nativePromotionDescriptionTypeMileStoneMileStoneField, nativeSellingDescriptionTypeMileStoneMileStoneField);
