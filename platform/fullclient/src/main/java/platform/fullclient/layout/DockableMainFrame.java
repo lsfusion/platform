@@ -35,7 +35,6 @@ import java.io.*;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 
 public class DockableMainFrame extends MainFrame {
@@ -164,7 +163,7 @@ public class DockableMainFrame extends MainFrame {
 
     @Override
     public void runSingleGroupXlsExport(RemoteFormInterface remoteForm, int groupId) throws IOException, ClassNotFoundException {
-        ReportGenerator.exportToExcel(remoteForm, groupId);
+        ReportGenerator.exportToExcel(remoteForm, groupId, Main.timeZone);
     }
 
     @Override

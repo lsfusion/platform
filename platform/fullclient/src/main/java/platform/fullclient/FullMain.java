@@ -21,7 +21,7 @@ public class FullMain extends Main {
             }
 
             public void runExcel(RemoteFormInterface remoteForm) {
-                ReportGenerator.exportToExcel(remoteForm);
+                ReportGenerator.exportToExcel(remoteForm, timeZone);
             }
 
             public boolean isFull() {

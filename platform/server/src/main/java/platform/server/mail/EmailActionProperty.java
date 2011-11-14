@@ -159,7 +159,7 @@ public class EmailActionProperty extends ActionProperty {
                 else
                     remoteForm = BL.createForm(context.getSession(), forms.get(i), formObjects);
                 if(remoteForm!=null) { // если объекты подошли
-                    ReportGenerator report = new ReportGenerator(remoteForm);
+                    ReportGenerator report = new ReportGenerator(remoteForm, BL.getTimeZone());
                     JasperPrint print = report.createReport(false, types.get(i) == FormStorageType.INLINE, attachmentFiles);
                     String filePath = createReportFile(print, formats.get(i));
                     if (types.get(i) == FormStorageType.INLINE) {

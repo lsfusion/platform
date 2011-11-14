@@ -6635,7 +6635,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             remoteForm = context.getRemoteForm().createForm(applicationForm, Collections.singletonMap(applicationForm.objProject, project));
         }
 
-        ReportGenerator report = new ReportGenerator(remoteForm);
+        ReportGenerator report = new ReportGenerator(remoteForm, BL.getTimeZone());
         JasperPrint print = report.createReport(false, false, new HashMap());
 
         File tempFile = File.createTempFile("lsfReport", ".pdf");

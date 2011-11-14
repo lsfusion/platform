@@ -5,6 +5,7 @@ import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JasperPrint;
 import net.sf.jasperreports.engine.export.JRXlsAbstractExporterParameter;
 import net.sf.jasperreports.view.JRViewer;
+import platform.client.Main;
 import platform.client.SwingUtils;
 import platform.interop.form.RemoteFormInterface;
 
@@ -17,7 +18,7 @@ public class ReportDialog extends JDialog {
         super(owner, true);
         setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 
-        ReportGenerator report = new ReportGenerator(remoteForm);
+        ReportGenerator report = new ReportGenerator(remoteForm, Main.timeZone);
         JasperPrint print = report.createReport(false, false, null);
         print.setProperty(JRXlsAbstractExporterParameter.PROPERTY_DETECT_CELL_TYPE, "true");
 

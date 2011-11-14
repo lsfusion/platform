@@ -8,6 +8,7 @@ import net.sf.jasperreports.engine.export.JRXlsAbstractExporterParameter;
 import net.sf.jasperreports.engine.util.JRLoader;
 import net.sf.jasperreports.view.JRViewer;
 import platform.base.OSUtils;
+import platform.client.Main;
 import platform.client.navigator.ClientNavigator;
 import platform.interop.form.RemoteFormInterface;
 
@@ -46,7 +47,7 @@ public class ReportDockable extends FormDockable {
     @Override
     Component getActiveComponent(ClientNavigator navigator, RemoteFormInterface remoteForm) throws IOException, ClassNotFoundException {
         try {
-            ReportGenerator report = new ReportGenerator(remoteForm);
+            ReportGenerator report = new ReportGenerator(remoteForm, Main.timeZone);
             JasperPrint print;
             if (groupId != null) {
                 print = report.createSingleGroupReport(groupId, false, false, null);

@@ -5,8 +5,8 @@ import net.sf.jasperreports.engine.design.*;
 import net.sf.jasperreports.engine.export.JExcelApiExporter;
 import net.sf.jasperreports.engine.export.JRXlsAbstractExporterParameter;
 import platform.base.BaseUtils;
-import platform.base.Pair;
 import platform.base.ByteArray;
+import platform.base.Pair;
 import platform.interop.form.RemoteFormInterface;
 import platform.interop.form.ReportConstants;
 
@@ -24,6 +24,8 @@ import java.util.List;
 public class ReportGenerator {
     private final RemoteFormInterface form;
     private String rootID;
+    private TimeZone reportTimeZone;
+
     private Map<String, List<String>> hierarchy;
     private Map<String, JasperDesign> designs;
     private Map<String, ClientReportData> data;
@@ -41,8 +43,9 @@ public class ReportGenerator {
         public Map<String, List<List<Object>>> compositeColumnValues;
     }
 
-    public ReportGenerator(RemoteFormInterface remoteForm) throws ClassNotFoundException, IOException {
+    public ReportGenerator(RemoteFormInterface remoteForm, TimeZone timeZone) throws ClassNotFoundException, IOException {
         form = remoteForm;
+        reportTimeZone = timeZone;
     }
 
     public JasperPrint createReport(boolean toExcel, boolean ignorePagination, Map<ByteArray, String> files) throws JRException, ClassNotFoundException, IOException {
@@ -101,6 +104,7 @@ public class ReportGenerator {
         params.put(parentID + ReportConstants.reportSuffix, JasperCompileManager.compileReport(designs.get(parentID)));
         params.put(parentID + ReportConstants.sourceSuffix, source);
         params.put(parentID + ReportConstants.paramsSuffix, localParams);
+        params.put(JRParameter.REPORT_TIME_ZONE, reportTimeZone);
         return source;
     }
 
@@ -343,14 +347,14 @@ public class ReportGenerator {
         return res;
     }
 
-    public static void exportToExcel(RemoteFormInterface remoteForm, Integer groupId) {
+    public static void exportToExcel(RemoteFormInterface remoteForm, Integer groupId, TimeZone timerZone) {
         try {
 
             File tempFile = File.createTempFile("lsf", ".xls");
 
             JExcelApiExporter xlsExporter = new JExcelApiExporter();
 
-            ReportGenerator report = new ReportGenerator(remoteForm);
+            ReportGenerator report = new ReportGenerator(remoteForm, timerZone);
             JasperPrint print;
             if (groupId != null) {
                 print = report.createSingleGroupReport(groupId, true, true, null);
@@ -374,7 +378,7 @@ public class ReportGenerator {
         }
     }
 
-    public static void exportToExcel(RemoteFormInterface remoteForm) {
-        exportToExcel(remoteForm, null);
+    public static void exportToExcel(RemoteFormInterface remoteForm, TimeZone timeZone) {
+        exportToExcel(remoteForm, null, timeZone);
     }
 }
