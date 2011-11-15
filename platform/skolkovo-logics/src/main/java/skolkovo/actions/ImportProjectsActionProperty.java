@@ -80,9 +80,8 @@ public class ImportProjectsActionProperty extends ActionProperty {
             isPlanningSearchSourceProjectField, amountFundsProjectField,
             isOtherSoursesProjectField, commentOtherSoursesProjectField, updateDateProjectField,
 
-            nameNativeClusterField, inProjectClusterField, numberCurrentClusterField,
+            nameNativeClusterField, inProjectClusterField, inClaimerProjectClusterField, numberCurrentClusterField,
             isOtherClusterProjectField, nativeSubstantiationOtherClusterProjectField, foreignSubstantiationOtherClusterProjectField,
-            nameNativeShortAggregateClusterProjectField,
             nameNativeClaimerField, nameForeignClaimerField,
             firmNameNativeClaimerField, firmNameForeignClaimerField, phoneClaimerField, addressClaimerField, siteClaimerField,
             emailClaimerField, emailFirmClaimerField, OGRNClaimerField, INNClaimerField,
@@ -575,7 +574,8 @@ public class ImportProjectsActionProperty extends ActionProperty {
         fillForeignProjectField = new ImportField(LM.fillForeignProject);
 
         nameNativeClusterField = new ImportField(LM.nameNativeCluster);
-        inProjectClusterField = new ImportField(LM.inClaimerProjectCluster);
+        inProjectClusterField = new ImportField(LM.inProjectCluster);
+        inClaimerProjectClusterField = new ImportField(LM.inClaimerProjectCluster);
         numberCurrentClusterField = new ImportField(LM.numberCluster);
         nativeSubstantiationProjectClusterField = new ImportField(LM.nativeSubstantiationProjectCluster);
         foreignSubstantiationProjectClusterField = new ImportField(LM.foreignSubstantiationProjectCluster);
@@ -770,7 +770,8 @@ public class ImportProjectsActionProperty extends ActionProperty {
         propertiesPatentForeign.add(new ImportProperty(foreignTypePatentField, LM.foreignTypePatent.getMapping(patentKey)));
 
         clusterKey = new ImportKey(LM.cluster, LM.nameNativeToCluster.getMapping(nameNativeClusterField));
-        propertiesCluster.add(new ImportProperty(inProjectClusterField, LM.inClaimerProjectCluster.getMapping(projectKey, clusterKey)));
+        propertiesCluster.add(new ImportProperty(inProjectClusterField, LM.inProjectCluster.getMapping(projectKey, clusterKey)));
+        propertiesCluster.add(new ImportProperty(inClaimerProjectClusterField, LM.inClaimerProjectCluster.getMapping(projectKey, clusterKey)));
         propertiesCluster.add(new ImportProperty(nameNativeClusterField, LM.nameNativeCluster.getMapping(clusterKey)));
 
         propertiesClusterNative.add(new ImportProperty(nativeSubstantiationProjectClusterField, LM.nativeSubstantiationProjectCluster.getMapping(projectKey, clusterKey)));
@@ -1660,6 +1661,7 @@ public class ImportProjectsActionProperty extends ActionProperty {
                         List<Object> rowCluster = new ArrayList<Object>();
                         rowCluster.add(nodeCluster.projectID);
                         rowCluster.add(nodeCluster.inProjectCluster);
+                        rowCluster.add(nodeCluster.inProjectCluster); //inClaimerProjectCluster
                         rowCluster.add(nodeCluster.nameNativeCluster);
                         if (fillNative)
                             rowCluster.add(nodeCluster.nativeSubstantiationProjectCluster);
@@ -1999,7 +2001,7 @@ public class ImportProjectsActionProperty extends ActionProperty {
                                                     data, keysArray, null, fillNative, fillForeign);
 
                     List<ImportField> fieldsCurrentClusterBoth = BaseUtils.toList(
-                            projectIdField, inProjectClusterField, nameNativeClusterField);
+                            projectIdField, inProjectClusterField, inClaimerProjectClusterField, nameNativeClusterField);
                     List<ImportField> fieldsCurrentClusterNative = BaseUtils.toList(
                             nativeSubstantiationProjectClusterField);
                     List<ImportField> fieldsCurrentClusterForeign = BaseUtils.toList(
