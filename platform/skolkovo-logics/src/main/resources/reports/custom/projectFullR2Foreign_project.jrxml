@@ -37,9 +37,9 @@
 	<parameter name="objectives_report" class="net.sf.jasperreports.engine.JasperReport"/>
 	<parameter name="objectives_source" class="net.sf.jasperreports.engine.JRDataSource"/>
 	<parameter name="objectives_params" class="java.util.Map"/>
-	<parameter name="mileStone_report" class="net.sf.jasperreports.engine.JasperReport"/>
-	<parameter name="mileStone_source" class="net.sf.jasperreports.engine.JRDataSource"/>
-	<parameter name="mileStone_params" class="java.util.Map"/>
+	<parameter name="mileStoneYear_report" class="net.sf.jasperreports.engine.JasperReport"/>
+	<parameter name="mileStoneYear_source" class="net.sf.jasperreports.engine.JRDataSource"/>
+	<parameter name="mileStoneYear_params" class="java.util.Map"/>
 	<field name="project" class="java.lang.Integer"/>
 	<field name="nameProjectMissionProject" class="java.lang.String"/>
 	<field name="nativeCommentMissionProject" class="java.lang.String"/>
@@ -731,9 +731,9 @@
 			<band>
 				<subreport>
 					<reportElement stretchType="RelativeToBandHeight" x="0" y="0" width="0" height="0"/>
-					<parametersMapExpression><![CDATA[$P{mileStone_params}]]></parametersMapExpression>
-					<dataSourceExpression><![CDATA[$P{mileStone_source}]]></dataSourceExpression>
-					<subreportExpression class="net.sf.jasperreports.engine.JasperReport"><![CDATA[$P{mileStone_report}]]></subreportExpression>
+					<parametersMapExpression><![CDATA[$P{mileStoneYear_params}]]></parametersMapExpression>
+					<dataSourceExpression><![CDATA[$P{mileStoneYear_source}]]></dataSourceExpression>
+					<subreportExpression class="java.lang.String"><![CDATA[$P{mileStoneYear_report}]]></subreportExpression>
 				</subreport>
 			</band>
 			<band height="25">

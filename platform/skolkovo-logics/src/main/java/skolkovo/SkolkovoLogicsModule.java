@@ -4416,25 +4416,26 @@ public class SkolkovoLogicsModule extends LogicsModule {
             objMileStoneYear = addSingleGroupObject(10, "mileStoneYear", mileStoneYear, "Год", nativeMileStoneYear);
             addFixedFilter(new CompareFilterEntity(addPropertyObject(projectMileStoneYear, objMileStoneYear), Compare.EQUALS, objProject));
             addObjectActions(this, objMileStoneYear);
+            addDefaultOrder(getPropertyDraw(nativeMileStoneYear, objMileStoneYear), true);
 
             objMileStone = addSingleGroupObject(11, "mileStone", mileStone, "Квартал", nativeMileStone, orderNumberMileStone);
 //            addFixedFilter(new CompareFilterEntity(addPropertyObject(projectMileStone, objMileStone), Compare.EQUALS, objProject));
             addFixedFilter(new CompareFilterEntity(addPropertyObject(yearMileStone, objMileStone), Compare.EQUALS, objMileStoneYear));
 
             addObjectActions(this, objMileStone);
-            addDefaultOrder(getPropertyDraw(orderNumberMileStone, objMileStone), true);
+            addDefaultOrder(getPropertyDraw(nativeMileStone, objMileStone), true);
 
             objTypeMileStone = addSingleGroupObject(12, "typeMileStone", typeMileStone, "Раздел дорожной карты", baseLM.name, nativeTypeMileStone, foreignTypeMileStone);
-            PropertyDrawEntity count = addPropertyDraw(nativeDescriptionTypeMileStoneMileStone, objTypeMileStone, objMileStone);
-            count.columnGroupObjects.add(objMileStone.groupTo);
-            count.propertyCaption = addPropertyObject(nativeMileStone, objMileStone);
+//            PropertyDrawEntity count = addPropertyDraw(nativeDescriptionTypeMileStoneMileStone, objTypeMileStone, objMileStone);
+//            count.columnGroupObjects.add(objMileStone.groupTo);
+//            count.propertyCaption = addPropertyObject(nativeMileStone, objMileStone);
 
-            PropertyDrawEntity count1 = addPropertyDraw(foreignDescriptionTypeMileStoneMileStone, objTypeMileStone, objMileStone);
-            count1.columnGroupObjects.add(objMileStone.groupTo);
-            count1.propertyCaption = addPropertyObject(nativeMileStone, objMileStone);
+//            PropertyDrawEntity count1 = addPropertyDraw(foreignDescriptionTypeMileStoneMileStone, objTypeMileStone, objMileStone);
+//            count1.columnGroupObjects.add(objMileStone.groupTo);
+//            count1.propertyCaption = addPropertyObject(nativeMileStone, objMileStone);
 
             addObjectActions(this, objTypeMileStone);
-//            addPropertyDraw(objTypeMileStone, objMileStone, nativeDescriptionTypeMileStoneMileStone, foreignDescriptionTypeMileStoneMileStone);
+            addPropertyDraw(objTypeMileStone, objMileStone, nativeDescriptionTypeMileStoneMileStone, foreignDescriptionTypeMileStoneMileStone);
 
             if (editR2Project == null)
                 editR2Project = addJProp(true, "editR2Project", "Редактировать проект", baseLM.and1,
