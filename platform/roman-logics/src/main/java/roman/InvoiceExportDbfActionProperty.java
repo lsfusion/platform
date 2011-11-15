@@ -56,6 +56,7 @@ public class InvoiceExportDbfActionProperty extends ActionProperty {
         CharField name = new CharField("NAME", 50);
         CharField color = new CharField("COLOR", 50);
         CharField size = new CharField("SIZE", 50);
+        CharField commonSize = new CharField("COMMONSIZE", 110);
         CharField comp = new CharField("COMP", 110);
         CharField countOrig = new CharField("COUNT_ORIG", 110);
         CharField countProd = new CharField("COUNT_PROD", 110);
@@ -86,7 +87,7 @@ public class InvoiceExportDbfActionProperty extends ActionProperty {
             tempDbfInvoice = File.createTempFile("dbfInvoice", ".DBF");
             dbfInvoice = new CustomDBF(tempDbfInvoice.getPath(), DBF.DBASEIV, true, "Cp866");
             Util.setxBaseJProperty("ignoreDBFLengthCheck", "true");
-            dbfInvoice.addField(new Field[]{invN, date, boxN, art, name, color, size, comp, countOrig, countProd, barcode,
+            dbfInvoice.addField(new Field[]{invN, date, boxN, art, name, color, size, commonSize, comp, countOrig, countProd, barcode,
                     brand, gender, theme, season, categ, quant, price, sum, contractIn, dateConIn, priceIn, sumIn, imp, contract, dateCon});
         }
 
@@ -119,6 +120,7 @@ public class InvoiceExportDbfActionProperty extends ActionProperty {
             map.put(name, formInstance.getPropertyDraw(BL.RomanLM.originalNameArticleSku));
             map.put(color, formInstance.getPropertyDraw(BL.RomanLM.sidColorSupplierItem));
             map.put(size, formInstance.getPropertyDraw(BL.RomanLM.sidSizeSupplierItem));
+            map.put(commonSize, formInstance.getPropertyDraw(BL.RomanLM.nameCommonSizeSku));
             map.put(comp, formInstance.getPropertyDraw(BL.RomanLM.mainCompositionFreightSku));
 //            map.put(countOrig, formInstance.getPropertyDraw());
             map.put(countProd, formInstance.getPropertyDraw(BL.RomanLM.nameCountryOfOriginFreightSku));
@@ -150,6 +152,7 @@ public class InvoiceExportDbfActionProperty extends ActionProperty {
             putString(name, row.values.get(map.get(name)));
             putString(color, row.values.get(map.get(color)));
             putString(size, row.values.get(map.get(size)));
+            putString(commonSize, row.values.get(map.get(commonSize)));
             putString(comp, row.values.get(map.get(comp)));
             putString(countOrig, row.values.get(map.get(countOrig)));
             putString(countProd, row.values.get(map.get(countProd)));
