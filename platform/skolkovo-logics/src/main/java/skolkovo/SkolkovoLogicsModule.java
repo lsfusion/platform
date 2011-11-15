@@ -157,6 +157,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
     public ConcreteCustomClass commercialization;
     public ConcreteCustomClass objectives;
     public ConcreteCustomClass mileStone;
+    public ConcreteCustomClass mileStoneYear;
 
     private ConcreteCustomClass expertConference;
     private StaticClass expertConferenceResult;
@@ -351,6 +352,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         originalDocsCheck = addConcreteClass("originalDocsCheck", "Проверка оригиналов документов", baseLM.transaction);
 
         mileStone = addConcreteClass("mileStone", "Квартал", baseClass);
+        mileStoneYear = addConcreteClass("mileStoneYear", "Год", baseClass);
 
         application = addAbstractClass("application", "Заявка", baseClass);
         applicationPreliminary = addConcreteClass("applicationPreliminary", "Заявка на предварительную экспертизу", application);
@@ -1384,6 +1386,9 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP inTestApplication;
     public LP projectMileStone, equalsMileStoneProject;
     public LP nativeMileStone;
+    public LP yearMileStone;
+    public LP projectMileStoneYear;
+    public LP nativeMileStoneYear;
     public LP orderNumberMileStone;
     LP nativeToMileStone;
     public LP nativeSIDToMileStone;
@@ -2099,6 +2104,10 @@ public class SkolkovoLogicsModule extends LogicsModule {
         foreignIntellectualPropertySpecialist.setPreferredWidth(50);
 //                                               Новая дорожная карта
         projectMileStone = addDProp("projectMileStone", "Проект квартала (ИД)", project, mileStone);
+        yearMileStone = addDProp("yearMileStone", "Год квартала (ИД)", mileStoneYear, mileStone);
+        projectMileStoneYear = addDProp("projectMileStoneYear", "Проект года (ИД)", project, mileStoneYear);
+        nativeMileStoneYear = addJProp("nativeYearMileStone", "Год", baseLM.name, mileStoneYear, 1);
+
         equalsMileStoneProject = addJProp("equalsMileStoneProject", "Вкл", baseLM.equals2, projectMileStone, 1, 2);
         nativeMileStone = addDProp("nativeMileStone", "Название", InsensitiveStringClass.get(2000), mileStone);
         nativeMileStone.setMinimumWidth(10);
