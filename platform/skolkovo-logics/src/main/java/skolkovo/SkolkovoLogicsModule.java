@@ -2106,7 +2106,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         projectMileStone = addDProp("projectMileStone", "Проект квартала (ИД)", project, mileStone);
         yearMileStone = addDProp("yearMileStone", "Год квартала (ИД)", mileStoneYear, mileStone);
         projectMileStoneYear = addDProp("projectMileStoneYear", "Проект года (ИД)", project, mileStoneYear);
-        nativeMileStoneYear = addJProp("nativeYearMileStone", "Год", baseLM.name, mileStoneYear, 1);
+        nativeMileStoneYear = addDProp("nativeYearMileStone", "Год", IntegerClass.instance, mileStoneYear);
 
         equalsMileStoneProject = addJProp("equalsMileStoneProject", "Вкл", baseLM.equals2, projectMileStone, 1, 2);
         nativeMileStone = addDProp("nativeMileStone", "Название", InsensitiveStringClass.get(2000), mileStone);
@@ -4360,6 +4360,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         private ObjectEntity objAnalogues;
         private ObjectEntity objSpecialist;
         private ObjectEntity objObjectives;
+        private ObjectEntity objMileStoneYear;
         private ObjectEntity objMileStone;
         private ObjectEntity objTypeMileStone;
 
@@ -4412,15 +4413,28 @@ public class SkolkovoLogicsModule extends LogicsModule {
             addFixedFilter(new CompareFilterEntity(addPropertyObject(projectObjectives, objObjectives), Compare.EQUALS, objProject));
             addObjectActions(this, objObjectives);
 
-            objMileStone = addSingleGroupObject(10, "mileStone", mileStone, "Квартал", nativeMileStone, orderNumberMileStone);
-            addFixedFilter(new CompareFilterEntity(addPropertyObject(projectMileStone, objMileStone), Compare.EQUALS, objProject));
+            objMileStoneYear = addSingleGroupObject(10, "mileStoneYear", mileStoneYear, "Год", nativeMileStoneYear);
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(projectMileStoneYear, objMileStoneYear), Compare.EQUALS, objProject));
+            addObjectActions(this, objMileStoneYear);
+
+            objMileStone = addSingleGroupObject(11, "mileStone", mileStone, "Квартал", nativeMileStone, orderNumberMileStone);
+//            addFixedFilter(new CompareFilterEntity(addPropertyObject(projectMileStone, objMileStone), Compare.EQUALS, objProject));
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(yearMileStone, objMileStone), Compare.EQUALS, objMileStoneYear));
+
             addObjectActions(this, objMileStone);
             addDefaultOrder(getPropertyDraw(orderNumberMileStone, objMileStone), true);
 
-            objTypeMileStone = addSingleGroupObject(11, "typeMileStone", typeMileStone, "Раздел дорожной карты", baseLM.name, nativeTypeMileStone, foreignTypeMileStone);
+            objTypeMileStone = addSingleGroupObject(12, "typeMileStone", typeMileStone, "Раздел дорожной карты", baseLM.name, nativeTypeMileStone, foreignTypeMileStone);
+            PropertyDrawEntity count = addPropertyDraw(nativeDescriptionTypeMileStoneMileStone, objTypeMileStone, objMileStone);
+            count.columnGroupObjects.add(objMileStone.groupTo);
+            count.propertyCaption = addPropertyObject(nativeMileStone, objMileStone);
+
+            PropertyDrawEntity count1 = addPropertyDraw(foreignDescriptionTypeMileStoneMileStone, objTypeMileStone, objMileStone);
+            count1.columnGroupObjects.add(objMileStone.groupTo);
+            count1.propertyCaption = addPropertyObject(nativeMileStone, objMileStone);
 
             addObjectActions(this, objTypeMileStone);
-            addPropertyDraw(objTypeMileStone, objMileStone, nativeDescriptionTypeMileStoneMileStone, foreignDescriptionTypeMileStoneMileStone);
+//            addPropertyDraw(objTypeMileStone, objMileStone, nativeDescriptionTypeMileStoneMileStone, foreignDescriptionTypeMileStoneMileStone);
 
             if (editR2Project == null)
                 editR2Project = addJProp(true, "editR2Project", "Редактировать проект", baseLM.and1,
@@ -4477,6 +4491,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
             ContainerView mapContainer = design.createContainer("Дорожная карта");
             mapContainer.constraints.childConstraints = DoNotIntersectSimplexConstraint.TOTHE_BOTTOM;
+            mapContainer.add(design.getGroupObjectContainer(objMileStoneYear.groupTo));
             mapContainer.add(design.getGroupObjectContainer(objMileStone.groupTo));
             mapContainer.add(design.getGroupObjectContainer(objTypeMileStone.groupTo));
             mapContainer.add(design.getGroupPropertyContainer(objProject.groupTo, projectmissionGroup));
