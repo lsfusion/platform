@@ -590,6 +590,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
     private LP prevOriginalDocsCheck;
     private LP datePrevOriginalDocsCheck;
 
+    LP add2Strings;
     LP overdueOriginalDocsCheckProject;
     LP projectOriginalDocsCheck;
     LP resultOriginalDocsCheck;
@@ -759,6 +760,9 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP emailProtocolVoteEA, emailProtocolHeaderVote, emailProtocolVote;
     LP emailClosedVoteEA, emailClosedHeaderVote, emailClosedVote;
     LP emailForesightCheckProjectEA;
+    LP emailNotificationProjectEA;
+    LP emailNotificationHeaderProject;
+    LP emailNotificationProject;
     LP emailAuthExpertEA, emailAuthExpert;
     LP emailAuthProfileExpertEA, emailAuthProfileExpert;
     LP emailReminderProfileExpertEA, emailReminderProfileExpert;
@@ -1451,6 +1455,9 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP averageDaysStatusApplicationsSubmitDateDate;
     LP daysStatusApplicationsSubmitDateDate;
     LP statusApplicationDateDate;
+    LP notificationPeriodProject;
+    LP dateNotificationPeriodProject;
+    LP datePositiveLegalResultProject;
 
     @Override
     public void initProperties() {
@@ -3083,6 +3090,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         negativeLegalResultStatusProject = addJProp("negativeLegalResultStatusProject", true, "Не прошла юридическую проверку (на статус)", baseLM.and1, negativeLegalResultProject, 1, addJProp(baseLM.equals2, projectActionProject,  1, addCProp(projectAction, "status")), 1);
         negativeLegalResultPreliminaryProject = addJProp("negativeLegalResultPreliminaryProject", true, "Не прошла юридическую проверку (на предв.экспертизу)", baseLM.and1, negativeLegalResultProject, 1, addJProp(baseLM.equals2, projectActionProject,  1, addCProp(projectAction, "preliminary")), 1);
         positiveLegalResultProject = addJProp("positiveLegalResultProject", true, "Прошла юридическую проверку", positiveResultLegalCheck, executeLegalCheckProject, 1);
+        datePositiveLegalResultProject = addJProp("datePositiveLegalResultProject", "Дата прохождения юридической экспертизы", baseLM.and1, dateExecuteLegalCheckProject, 1, positiveLegalResultProject, 1);
 
         // последняя юридическая проверка (на статус)
 
@@ -3404,7 +3412,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
         emailStartVoteEA = addEAProp(vote);
         addEARecepient(emailStartVoteEA, emailDocuments);
 
-        emailClaimerNameVote = addJProp(addSFProp("(CAST(prm1 as text))||(CAST(prm2 as text))", StringClass.get(2000), 2), object(StringClass.get(2000)), 2, nameNativeClaimerVote, 1);
+        add2Strings = addSFProp("(CAST(prm1 as text))||(CAST(prm2 as text))", StringClass.get(2000), 2);
+        emailClaimerNameVote = addJProp(add2Strings, 2, nameNativeClaimerVote, 1);
 
         emailStartHeaderVote = addJProp("emailStartHeaderVote", "Заголовок созыва заседания", emailClaimerNameVote, 1, addCProp(StringClass.get(2000), "Созыв заседания - "));
         emailStartVote = addJProp(baseGroup, true, "emailStartVote", "Созыв заседания (e-mail)", emailStartVoteEA, 1, emailStartHeaderVote, 1);
@@ -3430,6 +3439,13 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         emailForesightCheckProjectEA = addEAProp("Решение проверки о соответствии форсайту", project);
         addEARecepient(emailForesightCheckProjectEA, emailDocuments);
+
+        emailNotificationProjectEA = addEAProp(project);
+        addEARecepient(emailNotificationProjectEA, emailDocuments);
+        emailNotificationHeaderProject = addJProp(add2Strings, addCProp(StringClass.get(2000), "Проверка проекта - "), nameNativeProject, 1);
+        emailNotificationProject = addJProp(baseGroup, true, "emailNotificationProject", "Проверка на соответствие направлению деятельности (e-mail)", emailNotificationProjectEA, 1, emailNotificationHeaderProject, 1);
+        emailNotificationProject.setImage("email.png");
+        emailNotificationProject.property.askConfirm = true;
 
         emailClaimerFormalControlEA = addEAProp(emailClaimerFromAddress, emailClaimerFromAddress, formalControl);
 
@@ -3807,6 +3823,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         datePositiveFSResultProject = addJProp("datePositiveFSResultProject", true, "Дата статуса", baseLM.and1, dateResultForesightCheckProject, 1, addJProp(baseLM.equals2, statusProject, 1, addCProp(projectStatus, "positiveFSResult")), 1);
 
+        dateNotificationPeriodProject = addJProp("dateNotificationPeriodProject", "Дата до которой д.б. проверен", baseLM.jumpWorkdays, baseLM.defaultCountry, datePositiveLegalResultProject, 1, addCProp(IntegerClass.instance, 3));
+
         dateNeedTranslationStatusProject = addJProp("dateNeedTranslationStatusProject", true, "Дата статуса", baseLM.and1, dateSentForTranslationProject, 1, addJProp(baseLM.equals2, statusProject, 1, addCProp(projectStatus, "needTranslation")), 1);
 
         dateInProgressStatusProject = addJProp("dateInProgressStatusProject", true, "Дата статуса", baseLM.and1, dateStartVoteLastProject, 1, addJProp(baseLM.equals2, statusProject, 1, addCProp(projectStatus, "inProgress")), 1);
@@ -4053,6 +4071,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         addFormEntity(new ConsultingCenterFormEntity(baseLM.baseElement, "consultingCenter"));
         addFormEntity(new ForesightExpertiseApplyFormEntity(baseLM.objectElement, "foresightExpertiseApply"));
         addFormEntity(new ForesightAdviceFormEntity(baseLM.objectElement, "foresightAdviceFormEntity"));
+        addFormEntity(new NotificationProjectFormEntity(baseLM.objectElement, "notificationProjectFormEntity"));
         addFormEntity(new ForesightExpertiseListFormEntity(baseLM.baseElement, "foresightExpertiseList"));
         addFormEntity(new ProjectDocumentsFormEntity(baseLM.baseElement, "projectdocs"));
         addFormEntity(new ConferenceFormEntity(baseLM.baseElement, "conferences"));
@@ -4542,6 +4561,24 @@ public class SkolkovoLogicsModule extends LogicsModule {
             addInlineEAForm(emailForesightCheckProjectEA, this, objProject, 1);
         }
     }
+
+    public class NotificationProjectFormEntity extends FormEntity<SkolkovoBusinessLogics> {
+
+        private ObjectEntity objProject;
+
+
+        public NotificationProjectFormEntity(NavigatorElement parent, String sID) {
+            super(parent, sID, "Уведомление на соответствие направлению деятельности");
+
+            objProject = addSingleGroupObject(project, "Проект", positiveLegalResultProject, dateProject, nameNativeProject, nameForeignProject, nameNativeClaimerProject, datePositiveLegalResultProject, dateNotificationPeriodProject);      //    уточнить дату
+            objProject.groupTo.setSingleClassView(ClassViewType.PANEL);
+            addFixedFilter(new NotNullFilterEntity(addPropertyObject(positiveLegalResultProject, objProject)));
+            setReadOnly(true);
+
+            addInlineEAForm(emailNotificationProjectEA, this, objProject, 1);
+        }
+    }
+
 
     public class ForesightExpertiseListFormEntity extends FormEntity<SkolkovoBusinessLogics> {
 
