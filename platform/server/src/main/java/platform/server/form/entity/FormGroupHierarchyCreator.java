@@ -80,6 +80,19 @@ public class FormGroupHierarchyCreator {
                 addDependencies(graph, getGroupsByObjects(filter.filter.getObjects()), true);
             }
         }
+
+        // добавляем дополнительные зависимости для свойств с группами в колонках
+        for (GroupObjectEntity targetGroup : form.groups) { // перебираем группы в этом порядке, чтобы не пропустить зависимости
+            for (PropertyDrawEntity<?> property : form.propertyDraws) {
+                if (property.getToDraw(form) == property.propertyObject.getApplyObject(form.groups) && !property.columnGroupObjects.isEmpty()) {
+                    if (targetGroup == property.getToDraw(form)) {
+                        for (GroupObjectEntity columnGroup : property.columnGroupObjects) {
+                            graph.get(targetGroup).addAll(graph.get(columnGroup));
+                        }
+                    }
+                }
+            }
+        }
     }
 
     private Map<GroupObjectEntity, Set<GroupObjectEntity>> createNewGraph() {
