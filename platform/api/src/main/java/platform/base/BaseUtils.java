@@ -1551,8 +1551,14 @@ public class BaseUtils {
     }
 
     public static String formatRussian(Date date, boolean quotes, boolean leadZero) {
+        return formatRussian(date, quotes, leadZero, null);
+    }
+
+    public static String formatRussian(Date date, boolean quotes, boolean leadZero, TimeZone timeZone) {
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(date);
+        if (timeZone != null)
+            calendar.setTimeZone(timeZone);
         String dayOfMonth = String.valueOf(calendar.get(Calendar.DAY_OF_MONTH));
         if ((leadZero) && (dayOfMonth.length() == 1))
             dayOfMonth = "0" + dayOfMonth;
@@ -1570,12 +1576,18 @@ public class BaseUtils {
         // todo : сделать форматирование по timeZone сервера
 
         return formatEnglish(date, false, false);
-        }
+    }
 
     public static String formatEnglish(Date date, boolean quotes, boolean leadZero) {
+        return formatEnglish(date, quotes, leadZero, null);
+    }
+
+    public static String formatEnglish(Date date, boolean quotes, boolean leadZero, TimeZone timeZone) {
 
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(date);
+        if (timeZone != null)
+            calendar.setTimeZone(timeZone);
         String dayOfMonth = String.valueOf(calendar.get(Calendar.DAY_OF_MONTH));
         if ((leadZero) && (dayOfMonth.length() == 1))
             dayOfMonth = "0" + dayOfMonth;
