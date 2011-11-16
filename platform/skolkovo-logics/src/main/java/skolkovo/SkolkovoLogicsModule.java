@@ -276,7 +276,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         project = addConcreteClass("project", "Проект", multiLanguageNamed, baseLM.transaction);
         expert = addConcreteClass("expert", "Эксперт", baseLM.customUser);
-        cluster = addConcreteClass("cluster", "Кластер", multiLanguageNamed);
+        cluster = addConcreteClass("cluster", "Кластер", multiLanguageNamed, baseLM.emailObject);
         foresight = addConcreteClass("foresight", "Форсайт", multiLanguageNamed);
 
         clusterUser = addConcreteClass("clusterUser", "Сотрудник кластера", baseLM.customUser);
@@ -1387,8 +1387,9 @@ public class SkolkovoLogicsModule extends LogicsModule {
     public LP projectMileStone, equalsMileStoneProject;
     public LP nativeMileStone;
     public LP yearMileStone;
-    public LP projectMileStoneYear;
+    public LP projectMileStoneYear, equalsMileStoneYearProject;
     public LP nativeMileStoneYear;
+    public LP nativeToMileStoneYear, nativeSIDToMileStoneYear;
     public LP orderNumberMileStone;
     LP nativeToMileStone;
     public LP nativeSIDToMileStone;
@@ -2104,11 +2105,18 @@ public class SkolkovoLogicsModule extends LogicsModule {
         foreignIntellectualPropertySpecialist.setPreferredWidth(50);
 //                                               Новая дорожная карта
         projectMileStone = addDProp("projectMileStone", "Проект квартала (ИД)", project, mileStone);
-        yearMileStone = addDProp("yearMileStone", "Год квартала (ИД)", mileStoneYear, mileStone);
-        projectMileStoneYear = addDProp("projectMileStoneYear", "Проект года (ИД)", project, mileStoneYear);
-        nativeMileStoneYear = addDProp("nativeYearMileStone", "Год", IntegerClass.instance, mileStoneYear);
-
         equalsMileStoneProject = addJProp("equalsMileStoneProject", "Вкл", baseLM.equals2, projectMileStone, 1, 2);
+
+        yearMileStone = addDProp("yearMileStone", "Год квартала (ИД)", mileStoneYear, mileStone);
+
+        projectMileStoneYear = addDProp("projectMileStoneYear", "Проект года (ИД)", project, mileStoneYear);
+        equalsMileStoneYearProject = addJProp("equalsMileStoneYearProject", "Вкл", baseLM.equals2, projectMileStoneYear, 1, 2);
+
+        nativeMileStoneYear = addDProp("nativeYearMileStone", "Год", StringClass.get(4), mileStoneYear);
+
+        nativeToMileStoneYear = addAGProp("nativeToMileStone", "Название", nativeMileStoneYear, projectMileStoneYear);
+        nativeSIDToMileStoneYear = addJProp("nativeSIDToMileStoneYear", "Дорожная карта", nativeToMileStoneYear, 1, sidToProject, 2);
+
         nativeMileStone = addDProp("nativeMileStone", "Название", InsensitiveStringClass.get(2000), mileStone);
         nativeMileStone.setMinimumWidth(10);
         nativeMileStone.setPreferredWidth(50);
@@ -2116,9 +2124,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
         orderNumberMileStone = addDProp("orderNumberMileStone", "Порядок", IntegerClass.instance, mileStone);
         orderNumberMileStone.setFixedCharWidth(2);
 
-        nativeToMileStone = addAGProp("nativeToMileStone", "Название", nativeMileStone, projectMileStone);
-        nativeSIDToMileStone = addJProp("nativeSIDToMileStone", "Дорожная карта", nativeToMileStone, 1, sidToProject, 2);
-
+        nativeToMileStone = addAGProp("nativeToMileStone", "Название", nativeMileStone, yearMileStone);
+        nativeSIDToMileStone = addJProp("nativeSIDToMileStone", "Дорожная карта", nativeToMileStone, 1, nativeSIDToMileStoneYear, 2, 3);
 
         nativeDescriptionTypeMileStoneMileStone = addDProp("nativeDescriptionTypeMileStoneMileStone", "Описание дорожной карты", InsensitiveStringClass.get(2000), typeMileStone, mileStone);
         nativeDescriptionTypeMileStoneMileStone.setMinimumWidth(10);

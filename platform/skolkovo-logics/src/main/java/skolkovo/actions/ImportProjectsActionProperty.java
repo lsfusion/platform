@@ -131,7 +131,7 @@ public class ImportProjectsActionProperty extends ActionProperty {
             nativeWorkSpecialistField, foreignWorkSpecialistField, nativePublicationsSpecialistField,
             foreignPublicationsSpecialistField, nativeCitationSpecialistField, foreignCitationSpecialistField,
             nativeIntellectualPropertySpecialistField, foreignIntellectualPropertySpecialistField,
-            nativeMileStoneField, orderNumberMileStoneField, nativeResearchDescriptionTypeMileStoneMileStoneField,
+            nativeMileStoneYearField, nativeMileStoneField, orderNumberMileStoneField, nativeResearchDescriptionTypeMileStoneMileStoneField,
             nativeProductCreationDescriptionTypeMileStoneMileStoneField, nativePlanOnHiringDescriptionTypeMileStoneMileStoneField,
             nativeLicensingDescriptionTypeMileStoneMileStoneField, nativePromotionDescriptionTypeMileStoneMileStoneField, 
             nativeSellingDescriptionTypeMileStoneMileStoneField, foreignResearchDescriptionTypeMileStoneMileStoneField, 
@@ -142,7 +142,7 @@ public class ImportProjectsActionProperty extends ActionProperty {
 
     ImportKey<?> projectKey, projectTypeProjectKey, projectActionProjectKey, claimerKey, patentKey, ownerTypePatentKey,
             clusterKey, academicKey, nonRussianSpecialistKey, projectMissionProjectKey, projectScheduleProjectKey,
-            researchKey, publicationsKey, commercializationKey, analoguesKey, specialistKey, mileStoneKey, objectivesKey;
+            researchKey, publicationsKey, commercializationKey, analoguesKey, specialistKey, mileStoneYearKey, mileStoneKey, objectivesKey;
     List<ImportProperty<?>> properties = new ArrayList<ImportProperty<?>>();
     ImportProperty<?> propertyDate;
     ImportProperty<?> propertyStatusDate;
@@ -530,6 +530,7 @@ public class ImportProjectsActionProperty extends ActionProperty {
         foreignIntellectualPropertySpecialistField = new ImportField(LM.foreignIntellectualPropertySpecialist);
         filePassportSpecialistField = new ImportField(LM.fileStatementSpecialist);
         fileStatementSpecialistField = new ImportField(LM.filePassportSpecialist);
+        nativeMileStoneYearField = new ImportField(LM.nativeMileStoneYear);
         nativeMileStoneField = new ImportField(LM.nativeMileStone);
         orderNumberMileStoneField = new ImportField(LM.orderNumberMileStone);
         nativeResearchDescriptionTypeMileStoneMileStoneField = new ImportField(LM.nativeDescriptionTypeMileStoneMileStone);
@@ -846,9 +847,15 @@ public class ImportProjectsActionProperty extends ActionProperty {
         propertiesSpecialistForeign.add(new ImportProperty(foreignCitationSpecialistField, LM.foreignCitationSpecialist.getMapping(specialistKey)));
         propertiesSpecialistForeign.add(new ImportProperty(foreignIntellectualPropertySpecialistField, LM.foreignIntellectualPropertySpecialist.getMapping(specialistKey)));
 
-        mileStoneKey = new ImportKey(LM.mileStone, LM.nativeSIDToMileStone.getMapping(nativeMileStoneField, projectIdField));
+        mileStoneYearKey = new ImportKey(LM.mileStoneYear, LM.nativeSIDToMileStoneYear.getMapping(nativeMileStoneYearField, projectIdField));
+        propertiesMileStone.add(new ImportProperty(projectIdField, LM.projectMileStoneYear.getMapping(mileStoneYearKey),
+                LM.baseLM.object(LM.project).getMapping(projectKey)));
+
+        mileStoneKey = new ImportKey(LM.mileStone, LM.nativeSIDToMileStone.getMapping(nativeMileStoneField, nativeMileStoneYearField, projectIdField));
         propertiesMileStone.add(new ImportProperty(projectIdField, LM.projectMileStone.getMapping(mileStoneKey),
                 LM.baseLM.object(LM.project).getMapping(projectKey)));
+        propertiesMileStone.add(new ImportProperty(nativeMileStoneYearField, LM.projectMileStone.getMapping(mileStoneKey),
+                LM.baseLM.object(LM.mileStoneYear).getMapping(mileStoneYearKey)));
         propertiesMileStone.add(new ImportProperty(nativeMileStoneField, LM.nativeMileStone.getMapping(mileStoneKey)));
         propertiesMileStone.add(new ImportProperty(orderNumberMileStoneField, LM.orderNumberMileStone.getMapping(mileStoneKey)));
         propertiesMileStoneNative.add(new ImportProperty(nativeResearchDescriptionTypeMileStoneMileStoneField, LM.nativeResearchDescriptionTypeMileStoneMileStone.getMapping(mileStoneKey)));
@@ -899,6 +906,7 @@ public class ImportProjectsActionProperty extends ActionProperty {
 
             if (!onlyMessage && !fillSids) {
                 for (String projectId : projects.keySet()) {
+                    projectId = "41691";
                     URL url = new URL(host + "&show=all&projectId=" + projectId);
                     URLConnection connection = url.openConnection();
                     connection.setDoOutput(false);
@@ -907,6 +915,7 @@ public class ImportProjectsActionProperty extends ActionProperty {
                     importProject(pInfo, connection.getInputStream(), projectId, projects.get(projectId), context);
                     RemoteContextObject.popCurrentActionMessage();
                     System.gc();
+                    break;
                 }
             }
             String message = "";
@@ -1881,6 +1890,7 @@ public class ImportProjectsActionProperty extends ActionProperty {
                         List<Object> rowMileStone = new ArrayList<Object>();
 
                         rowMileStone.add(projectId);
+                        rowMileStone.add(nodeMileStone.getChildText("nativeMileStoneYear"));
                         rowMileStone.add(nodeMileStone.getChildText("nativeMileStone"));
                         rowMileStone.add(j+1); //orderNumberMileStone
                         rowMileStone.add(nodeMileStone.getChildText("nativeResearch"));
@@ -2114,22 +2124,26 @@ public class ImportProjectsActionProperty extends ActionProperty {
                             fillNative, fillForeign);
 
                     List<ImportField> fieldsMileStoneBoth = BaseUtils.toList(
-                            projectIdField, nativeMileStoneField, orderNumberMileStoneField);
+                            projectIdField, nativeMileStoneYearField, nativeMileStoneField, orderNumberMileStoneField);
                     List<ImportField> fieldsMileStoneNative = BaseUtils.toList(nativeResearchDescriptionTypeMileStoneMileStoneField, nativeProductCreationDescriptionTypeMileStoneMileStoneField,
                             nativePlanOnHiringDescriptionTypeMileStoneMileStoneField, nativeLicensingDescriptionTypeMileStoneMileStoneField,
                             nativePromotionDescriptionTypeMileStoneMileStoneField, nativeSellingDescriptionTypeMileStoneMileStoneField);
                     List<ImportField> fieldsMileStoneForeign = BaseUtils.toList(foreignResearchDescriptionTypeMileStoneMileStoneField, foreignProductCreationDescriptionTypeMileStoneMileStoneField,
                             foreignPlanOnHiringDescriptionTypeMileStoneMileStoneField, foreignLicensingDescriptionTypeMileStoneMileStoneField,
                             foreignPromotionDescriptionTypeMileStoneMileStoneField, foreignSellingDescriptionTypeMileStoneMileStoneField);
-                    keysArray = new ImportKey<?>[]{projectKey, mileStoneKey};
+                    keysArray = new ImportKey<?>[]{projectKey, mileStoneYearKey, mileStoneKey};
                     importMultilanguageData(pInfo,
                             fieldsMileStoneBoth, fieldsMileStoneNative, fieldsMileStoneForeign,
                             propertiesMileStone, propertiesMileStoneNative, propertiesMileStoneForeign,
                             dataMileStone, keysArray,
-                            Collections.singletonList(new ImportDelete(mileStoneKey,
-                                                                       LM.equalsMileStoneProject.getMapping(mileStoneKey,
-                                                                                                             new ImportKeyTable(projectKey, projectTable)),
-                                                                       false)),
+                            BaseUtils.toList(new ImportDelete(mileStoneYearKey,
+                                                              LM.equalsMileStoneYearProject.getMapping(mileStoneYearKey,
+                                                                                                       new ImportKeyTable(projectKey, projectTable)),
+                                                              false),
+                                             new ImportDelete(mileStoneKey,
+                                                              LM.equalsMileStoneProject.getMapping(mileStoneKey,
+                                                                                                   new ImportKeyTable(projectKey, projectTable)),
+                                                              false)),
                             fillNative, fillForeign);
 
                     List<ImportField> fieldsObjectivesBoth = BaseUtils.toList(

@@ -284,29 +284,33 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteContextO
 
     private void updateOpenFormCount(String sid) {
         try {
-            DataSession session = createSession();
+            DataObject connection = getConnection();
 
-            Integer formId = (Integer) BL.LM.SIDToNavigatorElement.read(session, new DataObject(sid, BL.LM.formSIDValueClass));
-            if (formId == null) {
-                //будем считать, что к SID модифицированных форм будет добавляться что-нибудь через подчёркивание
-                int ind = sid.indexOf('_');
-                if (ind != -1) {
-                    sid = sid.substring(0, ind);
-                    formId = (Integer) BL.LM.SIDToNavigatorElement.read(session, new DataObject(sid, BL.LM.formSIDValueClass));
-                }
+            if (connection != null) {
+                DataSession session = createSession();
 
+                Integer formId = (Integer) BL.LM.SIDToNavigatorElement.read(session, new DataObject(sid, BL.LM.formSIDValueClass));
                 if (formId == null) {
-                    return;
+                    //будем считать, что к SID модифицированных форм будет добавляться что-нибудь через подчёркивание
+                    int ind = sid.indexOf('_');
+                    if (ind != -1) {
+                        sid = sid.substring(0, ind);
+                        formId = (Integer) BL.LM.SIDToNavigatorElement.read(session, new DataObject(sid, BL.LM.formSIDValueClass));
+                    }
+
+                    if (formId == null) {
+                        return;
+                    }
                 }
+
+                DataObject formObject = new DataObject(formId, BL.LM.navigatorElement);
+
+                int count = 1 + nvl((Integer) BL.LM.connectionFormCount.read(session, connection, formObject), 0);
+                BL.LM.connectionFormCount.execute(count, session, connection, formObject);
+
+                session.apply(BL);
+                session.close();
             }
-
-            DataObject formObject = new DataObject(formId, BL.LM.navigatorElement);
-
-            int count = 1 + nvl((Integer) BL.LM.connectionFormCount.read(session, getConnection(), formObject), 0);
-            BL.LM.connectionFormCount.execute(count, session, getConnection(), formObject);
-
-            session.apply(BL);
-            session.close();
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

