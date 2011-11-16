@@ -4,7 +4,9 @@ import platform.base.OrderedMap;
 import platform.base.identity.IDGenerator;
 import platform.interop.form.layout.AbstractForm;
 import platform.interop.form.layout.DoNotIntersectSimplexConstraint;
+import platform.server.classes.ActionClass;
 import platform.server.classes.LogicalClass;
+import platform.server.data.type.Type;
 import platform.server.form.entity.*;
 import platform.server.logics.ServerResourceBundle;
 import platform.server.logics.linear.LP;
@@ -15,6 +17,7 @@ import platform.server.serialization.ServerIdentitySerializable;
 import platform.server.serialization.ServerSerializationPool;
 
 import javax.swing.*;
+import javax.swing.event.RowSorterEvent;
 import java.awt.*;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -528,30 +531,24 @@ public class FormView implements ServerIdentitySerializable, AbstractForm<Contai
         property.showTableFirst = showTableFirst;
     }
 
-    public void setEditOnSingleClickLogical(Boolean editOnSingleClick, Boolean onlyLogical) {
+    public void setEditOnSingleClick(Boolean editOnSingleClick, Type type) {
 
         for (PropertyDrawView propertyView : getProperties()) {
-            if (onlyLogical) {
-                if (propertyView.entity.propertyObject.property.getType() instanceof LogicalClass)
-                    setShowTableFirst(propertyView, editOnSingleClick);
-            } else
-                setShowTableFirst(propertyView, editOnSingleClick);
+            if (propertyView.entity.propertyObject.property.getType().equals(type))
+                setEditOnSingleClick(propertyView, editOnSingleClick);
         }
     }
 
-    public void setEditOnSingleClick(Boolean editOnSingleClick, GroupObjectEntity groupObject, Boolean onlyLogical) {
+    public void setEditOnSingleClick(Boolean editOnSingleClick, GroupObjectEntity groupObject, Type type) {
 
         for (PropertyDrawView propertyView : getProperties(groupObject)) {
-            if (onlyLogical) {
-                if (propertyView.entity.propertyObject.property.getType() instanceof LogicalClass)
-                    setShowTableFirst(propertyView, editOnSingleClick);
-            } else
-                setShowTableFirst(propertyView, editOnSingleClick);
+            if (propertyView.entity.propertyObject.property.getType().equals(type))
+                setEditOnSingleClick(propertyView, editOnSingleClick);
         }
     }
 
     public void setEditOnSingleClick(PropertyDrawView property, Boolean editOnSingleClick) {
-        property.showTableFirst = editOnSingleClick;
+        property.editOnSingleClick = editOnSingleClick;
     }
 
 //    public void setReadOnly(AbstractGroup group, boolean readOnly, GroupObjectEntity groupObject) {

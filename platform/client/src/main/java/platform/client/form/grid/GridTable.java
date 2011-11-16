@@ -173,9 +173,11 @@ public abstract class GridTable extends ClientFormTable
         addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
-                if (getSelectedRow() == previousSelectedRow) {
-                    pressedCellColumn = columnAtPoint(e.getPoint());
-                    pressedCellRow = rowAtPoint(e.getPoint());
+                int column = columnAtPoint(e.getPoint());
+                int row = rowAtPoint(e.getPoint());
+                if (getSelectedRow() == previousSelectedRow || isEditOnSingleClick(row, column)) {
+                    pressedCellColumn = column;
+                    pressedCellRow = row;
                     repaint();
                 }
                 previousSelectedRow = getSelectedRow();

@@ -26,6 +26,7 @@ import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.query.GroupType;
 import platform.server.data.expr.query.OrderType;
 import platform.server.data.query.Query;
+import platform.server.data.type.Type;
 import platform.server.form.entity.*;
 import platform.server.form.entity.filter.*;
 import platform.server.form.instance.PropertyObjectInterfaceInstance;
@@ -396,8 +397,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
         initBaseGroupAliases();
 
         Settings.instance.setCountJoinsUseUnionInsteadOfUnionAll(5);
-
         Settings.instance.setEditLogicalOnSingleClick(true);
+        Settings.instance.setEditActionOnSingleClick(true);
 
         contactGroup = addAbstractGroup("contactGroup", "Контакты организации", publicGroup);
 

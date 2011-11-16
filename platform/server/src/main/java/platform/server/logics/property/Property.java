@@ -596,6 +596,8 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
         }
         if(view.get(entity).getType() instanceof LogicalClass)
             view.get(entity).editOnSingleClick = Settings.instance.getEditLogicalOnSingleClick();
+        if(view.get(entity).getType() instanceof ActionClass)
+            view.get(entity).editOnSingleClick = Settings.instance.getEditActionClassOnSingleClick();
     }
 
     public boolean hasChild(Property prop) {

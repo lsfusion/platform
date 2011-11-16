@@ -1,5 +1,7 @@
 package platform.server;
 
+import platform.server.classes.ActionClass;
+import platform.server.classes.DataClass;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.ServerResourceBundle;
 
@@ -75,7 +77,8 @@ public class Settings {
     // использовать применение изменений "по одному"
     private boolean enableApplySingleStored = true;
 
-    private boolean editLogicalOnSingleClick = true;
+    private boolean editLogicalOnSingleClick = false;
+    private boolean editActionOnSingleClick = false;
 
     public boolean isEnableApplySingleStored() {
         return enableApplySingleStored;
@@ -135,6 +138,15 @@ public class Settings {
 
     public void setEditLogicalOnSingleClick(boolean editLogicalOnSingleClick) {
        this.editLogicalOnSingleClick = editLogicalOnSingleClick;
+    }
+
+    public Boolean getEditActionClassOnSingleClick() {
+       return editActionOnSingleClick;
+    }
+
+    public void setEditActionOnSingleClick(boolean editActionOnSingleClick) {
+            this.editActionOnSingleClick = editActionOnSingleClick;
+
     }
 
     public void setSimpleCheckCompare(boolean simpleCheckCompare) {
