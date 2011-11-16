@@ -52,17 +52,16 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
 
 
     protected void initAuthentication() throws ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException {
-        PolicyManager.defaultSecurityPolicy.navigator.deny(LM.adminElement, LM.objectElement, SkolkovoLM.languageDocumentTypeForm, SkolkovoLM.globalForm);
+        policyManager.defaultSecurityPolicy.navigator.deny(LM.adminElement, LM.objectElement, SkolkovoLM.languageDocumentTypeForm, SkolkovoLM.globalForm);
 
-        PolicyManager.defaultSecurityPolicy.property.view.deny(LM.userPassword);
+        policyManager.defaultSecurityPolicy.property.view.deny(LM.userPassword);
 
-        PolicyManager.defaultSecurityPolicy.property.change.deny(SkolkovoLM.dateStartVote, SkolkovoLM.dateEndVote, SkolkovoLM.inExpertVote, SkolkovoLM.oldExpertVote, SkolkovoLM.voteResultExpertVote, SkolkovoLM.doneExpertVote);
+        policyManager.defaultSecurityPolicy.property.change.deny(SkolkovoLM.dateStartVote, SkolkovoLM.dateEndVote, SkolkovoLM.inExpertVote, SkolkovoLM.oldExpertVote, SkolkovoLM.voteResultExpertVote, SkolkovoLM.doneExpertVote);
 
         for (Property property : SkolkovoLM.voteResultGroup.getProperties())
-            PolicyManager.defaultSecurityPolicy.property.change.deny(property);
+            policyManager.defaultSecurityPolicy.property.change.deny(property);
 
-        User admin = addUser("admin", "fusion");
-        admin.addSecurityPolicy(permitAllPolicy);
+        policyManager.userPolicies.put(addUser("admin", "fusion").ID, permitAllPolicy);
     }
     //!!!!
 

@@ -40,7 +40,6 @@ public class AbstractSecurityPolicy<T> {
         if (policy.replaceMode) {
             permitted.clear();
             denied.clear();
-            replaceMode = true;
         }
 
         deny(policy.denied);

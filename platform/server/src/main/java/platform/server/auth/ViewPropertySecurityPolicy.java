@@ -5,5 +5,8 @@ import platform.server.logics.property.Property;
 
 public class ViewPropertySecurityPolicy extends AbstractSecurityPolicy<Property> {
 
-    public void deny(LP<?> lp) { deny(lp.property); }
+    public void deny(LP<?> lp) {
+        if (lp != null)
+            deny(lp.property);
+    }
 }

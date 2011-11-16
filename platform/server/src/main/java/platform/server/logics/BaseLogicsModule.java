@@ -64,6 +64,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public ConcreteCustomClass country;
     public ConcreteCustomClass navigatorElement;
     public ConcreteCustomClass form;
+    public ConcreteCustomClass property;
     public ConcreteCustomClass connection;
     public StaticCustomClass connectionStatus;
     public ConcreteCustomClass dictionary;
@@ -232,10 +233,30 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public LP numberNavigatorElement;
     public LP navigatorElementCaption;
 
+    public LP SIDProperty;
+    public LP captionProperty;
+    public LP SIDToProperty;
+    public LP permitViewUserRoleProperty;
+    public LP permitViewUserProperty;
+    public LP forbidViewUserRoleProperty;
+    public LP forbidViewUserProperty;
+    public LP permitChangeUserRoleProperty;
+    public LP permitChangeUserProperty;
+    public LP forbidChangeUserRoleProperty;
+    public LP forbidChangeUserProperty;
+    public LP permitViewProperty;
+    public LP forbidViewProperty;
+    public LP permitChangeProperty;
+    public LP forbidChangeProperty;
+
     public LP SIDToNavigatorElement;
     public LP parentNavigatorElement;
-    public LP permissionUserRoleForm;
-    public LP permissionUserForm;
+    public LP permitUserRoleForm;
+    public LP forbidUserRoleForm;
+    public LP permitUserForm;
+    public LP forbidUserForm;
+    public LP permitForm;
+    public LP forbidForm;
     public LP userRoleFormDefaultNumber;
     public LP userFormDefaultNumber;
 
@@ -304,6 +325,9 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public final StringClass formSIDValueClass = StringClass.get(50);
     public final StringClass formCaptionValueClass = StringClass.get(250);
 
+    public final StringClass propertySIDValueClass = StringClass.get(50);
+    public final StringClass propertyCaptionValueClass = StringClass.get(250);
+
     public List<LP> lproperties = new ArrayList<LP>();
 
     // счетчик идентификаторов
@@ -333,7 +357,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         computer = addConcreteClass("computer", getString("logics.workplace"), baseClass);
         userRole = addConcreteClass("userRole", getString("logics.role"), baseClass.named);
 
-        policy = addConcreteClass("policy", getString("logics.security.policy"), baseClass.named);
+        policy = addConcreteClass("policy", getString("logics.policy.security.policy"), baseClass.named);
         session = addConcreteClass("session", getString("logics.transaction"), baseClass);
 
         connection = addConcreteClass("connection", getString("logics.connection"), baseClass);
@@ -345,6 +369,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
         navigatorElement = addConcreteClass("navigatorElement", getString("logics.navigator.element"), baseClass);
         form = addConcreteClass("form", getString("logics.forms.form"), navigatorElement);
+        property = addConcreteClass("property", getString("logics.property"), baseClass);
         dictionary = addConcreteClass("dictionary", getString("logics.dictionary"), baseClass.named);
         dictionaryEntry = addConcreteClass("dictionaryEntry", getString("logics.dictionary.entries"), baseClass);
     }
@@ -616,8 +641,28 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         SIDToNavigatorElement = addAGProp("SIDToNavigatorElement", getString("logics.forms.form"), navigatorElementSID);
         parentNavigatorElement = addDProp("parentNavigatorElement", getString("logics.forms.parent.form"), navigatorElement, navigatorElement);
 
-        permissionUserRoleForm = addDProp(baseGroup, "permissionUserRoleForm", getString("logics.forms.prohibit.form"), LogicalClass.instance, userRole, navigatorElement);
-        permissionUserForm = addJProp(baseGroup, "permissionUserForm", getString("logics.forms.prohibit.form"), permissionUserRoleForm, userMainRole, 1, 2);
+        SIDProperty = addDProp(baseGroup, "SIDProperty", getString("logics.property.sid"), propertySIDValueClass, property);
+        captionProperty = addDProp(baseGroup, "captionProperty", getString("logics.property.caption"), propertyCaptionValueClass, property);
+        SIDToProperty = addAGProp("SIDToProperty", getString("logics.property"), SIDProperty);
+        permitViewUserRoleProperty = addDProp(baseGroup, "permitViewUserRoleProperty", getString("logics.policy.permit.property.view"), LogicalClass.instance, userRole, property);
+        permitViewUserProperty = addJProp(baseGroup, "permitViewUserProperty", getString("logics.policy.permit.property.view"), permitViewUserRoleProperty, userMainRole, 1, 2);
+        forbidViewUserRoleProperty = addDProp(baseGroup, "forbidViewUserRoleProperty", getString("logics.policy.forbid.property.view"), LogicalClass.instance, userRole, property);
+        forbidViewUserProperty = addJProp(baseGroup, "forbidViewUserProperty", getString("logics.policy.forbid.property.view"), forbidViewUserRoleProperty, userMainRole, 1, 2);
+        permitChangeUserRoleProperty = addDProp(baseGroup, "permitChangeUserRoleProperty", getString("logics.policy.permit.property.change"), LogicalClass.instance, userRole, property);
+        permitChangeUserProperty = addJProp(baseGroup, "permitChangeUserProperty", getString("logics.policy.permit.property.change"), permitChangeUserRoleProperty, userMainRole, 1, 2);
+        forbidChangeUserRoleProperty = addDProp(baseGroup, "forbidChangeUserRoleProperty", getString("logics.policy.forbid.property.change"), LogicalClass.instance, userRole, property);
+        forbidChangeUserProperty = addJProp(baseGroup, "forbidChangeUserProperty", getString("logics.policy.forbid.property.change"), forbidChangeUserRoleProperty, userMainRole, 1, 2);
+        permitViewProperty = addDProp(baseGroup, "permitViewProperty", getString("logics.policy.permit.property.view"), LogicalClass.instance, property);
+        forbidViewProperty = addDProp(baseGroup, "forbidViewProperty", getString("logics.policy.forbid.property.view"), LogicalClass.instance, property);
+        permitChangeProperty = addDProp(baseGroup, "permitChangeProperty", getString("logics.policy.permit.property.change"), LogicalClass.instance, property);
+        forbidChangeProperty = addDProp(baseGroup, "forbidChangeProperty", getString("logics.policy.forbid.property.change"), LogicalClass.instance, property);
+        permitUserRoleForm = addDProp(baseGroup, "permitUserRoleForm", getString("logics.forms.permit.form"), LogicalClass.instance, userRole, navigatorElement);
+        permitUserForm = addJProp(baseGroup, "permitUserForm", getString("logics.forms.permit.form"), permitUserRoleForm, userMainRole, 1, 2);
+        forbidUserRoleForm = addDProp(baseGroup, "permissionUserRoleForm", getString("logics.forms.prohibit.form"), LogicalClass.instance, userRole, navigatorElement);
+        forbidUserForm = addJProp(baseGroup, "permissionUserForm", getString("logics.forms.prohibit.form"), forbidUserRoleForm, userMainRole, 1, 2);
+        permitForm = addDProp(baseGroup, "permitForm", getString("logics.forms.permit.form"), LogicalClass.instance, navigatorElement);
+        forbidForm = addDProp(baseGroup, "forbidForm", getString("logics.forms.prohibit.form"), LogicalClass.instance, navigatorElement);
+
         userRoleFormDefaultNumber = addDProp(baseGroup, "userRoleFormDefaultNumber", getString("logics.forms.default.number"), IntegerClass.instance, userRole, navigatorElement);
         userFormDefaultNumber = addJProp(baseGroup, "userFormDefaultNumber", getString("logics.forms.default.number"), userRoleFormDefaultNumber, userMainRole, 1, 2);
         userDefaultForms = addJProp(baseGroup, "userDefaultForms", getString("logics.user.displaying.forms.by.default"), userRoleDefaultForms, userMainRole, 1);
@@ -951,9 +996,8 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         objectElement = baseClass.getBaseClassForm(this);
         adminElement.add(objectElement);
 
-        NavigatorElement policyElement = new NavigatorElement(adminElement, "policyElement", getString("logics.security.policy"));
-        addFormEntity(new UserPolicyFormEntity(policyElement, "userPolicyForm"));
-        addFormEntity(new RolePolicyFormEntity(policyElement, "rolePolicyForm"));
+        addFormEntity(new UserPolicyFormEntity(adminElement, "userPolicyForm"));
+        addFormEntity(new SecurityPolicyFormEntity(adminElement, "securityPolicyForm"));
         addFormEntity(new ConnectionsFormEntity(adminElement, "connectionsForm"));
         addFormEntity(new AdminFormEntity(adminElement, "adminForm"));
         addFormEntity(new DaysOffFormEntity(adminElement, "daysOffForm"));
@@ -1301,35 +1345,54 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         }
     }
 
-    private class RolePolicyFormEntity extends FormEntity {
+    private class SecurityPolicyFormEntity extends FormEntity {
 
         private ObjectEntity objUserRole;
         private ObjectEntity objPolicy;
         private ObjectEntity objForm;
         private ObjectEntity objTreeForm;
         private TreeGroupEntity treeFormObject;
+        private ObjectEntity objProperty;
+        private ObjectEntity objDefaultForm;
+        private ObjectEntity objTreeDefaultForm;
+        private TreeGroupEntity treeDefaultForm;
+        private ObjectEntity objDefaultProperty;
 
-        protected RolePolicyFormEntity(NavigatorElement parent, String sID) {
-            super(parent, sID, getString("logics.user.role.roles"));
+        protected SecurityPolicyFormEntity(NavigatorElement parent, String sID) {
+            super(parent, sID, getString("logics.policy.security.policy"));
 
             objUserRole = addSingleGroupObject(userRole, baseGroup, true);
-            objPolicy = addSingleGroupObject(policy, getString("logics.security.policies"), baseGroup, true);
+            objPolicy = addSingleGroupObject(policy, getString("logics.policy.additional.policies"), baseGroup, true);
             objForm = addSingleGroupObject(navigatorElement, getString("logics.grid"), true);
             objTreeForm = addSingleGroupObject(navigatorElement, getString("logics.tree"), true);
+            objProperty = addSingleGroupObject(property, getString("logics.property.properties"), true);
+            objDefaultForm = addSingleGroupObject(navigatorElement, getString("logics.grid"), true);
+            objTreeDefaultForm = addSingleGroupObject(navigatorElement, getString("logics.tree"), true);
+            objDefaultProperty = addSingleGroupObject(property, getString("logics.property.properties"), true);
 
             objTreeForm.groupTo.setIsParents(addPropertyObject(parentNavigatorElement, objTreeForm));
             treeFormObject = addTreeGroupObject(objTreeForm.groupTo);
+
+            objTreeDefaultForm.groupTo.setIsParents(addPropertyObject(parentNavigatorElement, objTreeDefaultForm));
+            treeDefaultForm = addTreeGroupObject(objTreeDefaultForm.groupTo);
 
             addObjectActions(this, objUserRole);
 
             addPropertyDraw(new LP[]{navigatorElementCaption, navigatorElementSID, numberNavigatorElement}, objForm);
             addPropertyDraw(new LP[]{navigatorElementCaption, navigatorElementSID, numberNavigatorElement}, objTreeForm);
             addPropertyDraw(objUserRole, objPolicy, baseGroup, true);
-            addPropertyDraw(objUserRole, objForm, permissionUserRoleForm);
-            addPropertyDraw(objUserRole, objTreeForm, permissionUserRoleForm);
-            addPropertyDraw(permissionUserRoleForm, objUserRole, objTreeForm).toDraw = objUserRole.groupTo;
+            addPropertyDraw(objUserRole, objForm, permitUserRoleForm, forbidUserRoleForm);
+            addPropertyDraw(objUserRole, objTreeForm, permitUserRoleForm, forbidUserRoleForm);
+            addPropertyDraw(forbidUserRoleForm, objUserRole, objTreeForm).toDraw = objUserRole.groupTo;
             addPropertyDraw(objUserRole, objForm, userRoleFormDefaultNumber);
             addPropertyDraw(objUserRole, objTreeForm, userRoleFormDefaultNumber);
+            addPropertyDraw(new LP[]{captionProperty, SIDProperty}, objProperty);
+            addPropertyDraw(objUserRole, objProperty, permitViewUserRoleProperty, forbidViewUserRoleProperty, permitChangeUserRoleProperty, forbidChangeUserRoleProperty);
+
+            addPropertyDraw(new LP[]{navigatorElementCaption, navigatorElementSID, numberNavigatorElement, permitForm, forbidForm}, objDefaultForm);
+            addPropertyDraw(new LP[]{navigatorElementCaption, navigatorElementSID, numberNavigatorElement, permitForm, forbidForm}, objTreeDefaultForm);
+            addPropertyDraw(new LP[]{captionProperty, SIDProperty}, objDefaultProperty);
+            addPropertyDraw(objDefaultProperty, permitViewProperty, forbidViewProperty, permitChangeProperty, forbidChangeProperty);
 
             setReadOnly(navigatorElementSID, true);
             setReadOnly(navigatorElementCaption, true);
@@ -1340,6 +1403,9 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
             balanceDraw.setPropertyCaption(sidDraw.propertyObject);
 
             addDefaultOrder(getPropertyDraw(numberNavigatorElement, objTreeForm.groupTo), true);
+            addDefaultOrder(getPropertyDraw(numberNavigatorElement, objTreeDefaultForm.groupTo), true);
+            addDefaultOrder(getPropertyDraw(SIDProperty, objProperty.groupTo), true);
+            addDefaultOrder(getPropertyDraw(SIDProperty, objDefaultProperty.groupTo), true);
         }
 
         @Override
@@ -1349,14 +1415,32 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
             ContainerView container = design.createContainer();
             container.tabbedPane = true;
 
+            ContainerView defaultPolicyContainer = design.createContainer(getString("logics.policy.default"));
+            ContainerView defaultFormsContainer = design.createContainer(getString("logics.forms"));
+            defaultFormsContainer.tabbedPane = true;
+            defaultFormsContainer.add(design.getTreeContainer(treeDefaultForm));
+            defaultFormsContainer.add(design.getGroupObjectContainer(objDefaultForm.groupTo));
+            defaultPolicyContainer.tabbedPane = true;
+            defaultPolicyContainer.add(defaultFormsContainer);
+            defaultPolicyContainer.add(design.getGroupObjectContainer(objDefaultProperty.groupTo));
+
+            ContainerView rolesContainer = design.createContainer(getString("logics.policy.roles"));
+            ContainerView rolePolicyContainer = design.createContainer();
+            rolePolicyContainer.tabbedPane = true;
             ContainerView formsContainer = design.createContainer(getString("logics.forms"));
             formsContainer.tabbedPane = true;
             formsContainer.add(design.getTreeContainer(treeFormObject));
             formsContainer.add(design.getGroupObjectContainer(objForm.groupTo));
+            rolePolicyContainer.add(formsContainer);
+            rolePolicyContainer.add(design.getGroupObjectContainer(objProperty.groupTo));
+            rolesContainer.add(design.getGroupObjectContainer(objUserRole.groupTo));
+            rolesContainer.add(rolePolicyContainer);
 
-            design.getMainContainer().addAfter(container, design.getGroupObjectContainer(objUserRole.groupTo));
+            container.add(defaultPolicyContainer);
+            container.add(rolesContainer);
             container.add(design.getGroupObjectContainer(objPolicy.groupTo));
-            container.add(formsContainer);
+
+            design.getMainContainer().add(0, container);
 
             return design;
         }

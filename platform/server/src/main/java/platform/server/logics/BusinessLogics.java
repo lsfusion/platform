@@ -364,7 +364,6 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             Integer userID = (Integer) addObject.object;
             session.apply(this);
             user = new User(userID);
-            policyManager.putUser(userID, user);
         }
 
         session.close();
@@ -377,14 +376,16 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         if (userId == null) {
             return null;
         }
+        User userObject = new User(userId);
 
-        User userObject = policyManager.getUser(userId);
-        if (userObject == null) {
-            userObject = new User(userId);
-            policyManager.putUser(userId, userObject);
+        applyDefaultPolicy(userObject);
+
+        SecurityPolicy codeUserPolicy = policyManager.userPolicies.get(userObject.ID);
+        if (codeUserPolicy != null) {
+            userObject.addSecurityPolicy(codeUserPolicy);
         }
 
-        setAvailableForms(userObject);
+        applyFormDefinedUserPolicy(userObject);
 
         List<Integer> userPoliciesIds = readUserPoliciesIds(userId);
         for (int policyId : userPoliciesIds) {
@@ -425,30 +426,110 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         }
     }
 
-    private void setAvailableForms(User user) {
+    private void applyDefaultPolicy(User user) {
+        //сначала политика по умолчанию из кода
+        user.addSecurityPolicy(policyManager.defaultSecurityPolicy);
+        //затем политика по умолчанию из визуальной настройки
         SecurityPolicy policy = new SecurityPolicy(-1);
-        policy.navigator.replaceMode = true;
         try {
             DataSession session = createSession();
 
-            Query<String, String> q = new Query<String, String>(BaseUtils.toList("userId", "formId"));
-            Expr expr = LM.permissionUserForm.getExpr(session.modifier, q.mapKeys.get("userId"), q.mapKeys.get("formId"));
-            q.and(expr.getWhere());
-            q.and(q.mapKeys.get("userId").compare(new DataObject(user.ID, LM.customUser), Compare.EQUALS));
+            Query<String, String> qf = new Query<String, String>(BaseUtils.toList("formId"));
+            Expr expr = LM.navigatorElementSID.getExpr(session.modifier, qf.mapKeys.get("formId"));
+            qf.and(expr.getWhere());
+            qf.properties.put("sid", expr);
+            qf.properties.put("permit", LM.permitForm.getExpr(session.modifier, qf.mapKeys.get("formId")));
+            qf.properties.put("forbid", LM.forbidForm.getExpr(session.modifier, qf.mapKeys.get("formId")));
 
-            q.properties.put("sid", LM.navigatorElementSID.getExpr(session.modifier, q.mapKeys.get("formId")));
-
-            Collection<Map<String, Object>> values = q.execute(session.sql).values();
-            for (Map<String, Object> valueMap : values) {
-                String sid = (String) valueMap.get("sid");
-                policy.navigator.deny(LM.baseElement.getNavigatorElement(sid.trim()));
+            Collection<Map<String, Object>> formValues = qf.execute(session.sql).values();
+            for (Map<String, Object> valueMap : formValues) {
+                NavigatorElement element = LM.baseElement.getNavigatorElement(((String) valueMap.get("sid")).trim());
+                if (valueMap.get("forbid") != null)
+                    policy.navigator.deny(element);
+                else if (valueMap.get("permit") != null)
+                    policy.navigator.permit(element);
             }
+
+            Query<String, String> qp = new Query<String, String>(BaseUtils.toList("propertyId"));
+            Expr expr2 = LM.SIDProperty.getExpr(session.modifier, qp.mapKeys.get("propertyId"));
+            qp.and(expr2.getWhere());
+            qp.properties.put("sid", expr2);
+            qp.properties.put("permitView", LM.permitViewProperty.getExpr(session.modifier, qp.mapKeys.get("propertyId")));
+            qp.properties.put("forbidView", LM.forbidViewProperty.getExpr(session.modifier, qp.mapKeys.get("propertyId")));
+            qp.properties.put("permitChange", LM.permitChangeProperty.getExpr(session.modifier, qp.mapKeys.get("propertyId")));
+            qp.properties.put("forbidChange", LM.forbidChangeProperty.getExpr(session.modifier, qp.mapKeys.get("propertyId")));
+
+            Collection<Map<String, Object>> propertyValues = qp.execute(session.sql).values();
+            for (Map<String, Object> valueMap : propertyValues) {
+                Property prop = getProperty(((String) valueMap.get("sid")).trim());
+                if (valueMap.get("forbidView") != null)
+                    policy.property.view.deny(prop);
+                else if (valueMap.get("permitView") != null)
+                    policy.property.view.permit(prop);
+                if (valueMap.get("forbidChange") != null)
+                    policy.property.change.deny(prop);
+                else if (valueMap.get("permitChange") != null)
+                    policy.property.change.permit(prop);
+            }
+
             user.addSecurityPolicy(policy);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
 
+    private void applyFormDefinedUserPolicy(User user) {
+        SecurityPolicy policy = new SecurityPolicy(-1);
+        try {
+            DataSession session = createSession();
+
+            Query<String, String> qf = new Query<String, String>(BaseUtils.toList("userId", "formId"));
+            Expr formExpr = LM.navigatorElementSID.getExpr(session.modifier, qf.mapKeys.get("formId"));
+            qf.and(formExpr.getWhere());
+            qf.and(qf.mapKeys.get("userId").compare(new DataObject(user.ID, LM.customUser), Compare.EQUALS));
+
+            qf.properties.put("sid", formExpr);
+            qf.properties.put("permit", LM.permitUserForm.getExpr(session.modifier, qf.mapKeys.get("userId"), qf.mapKeys.get("formId")));
+            qf.properties.put("forbid", LM.forbidUserForm.getExpr(session.modifier, qf.mapKeys.get("userId"), qf.mapKeys.get("formId")));
+
+            Collection<Map<String, Object>> formValues = qf.execute(session.sql).values();
+            for (Map<String, Object> valueMap : formValues) {
+                NavigatorElement element = LM.baseElement.getNavigatorElement(((String) valueMap.get("sid")).trim());
+                if (valueMap.get("forbid") != null)
+                    policy.navigator.deny(element);
+                else if (valueMap.get("permit") != null)
+                    policy.navigator.permit(element);
+            }
+
+            Query<String, String> qp = new Query<String, String>(BaseUtils.toList("userId", "propertyId"));
+            Expr propExpr = LM.SIDProperty.getExpr(session.modifier, qp.mapKeys.get("propertyId"));
+            qp.and(propExpr.getWhere());
+            qp.and(qp.mapKeys.get("userId").compare(new DataObject(user.ID, LM.customUser), Compare.EQUALS));
+
+            qp.properties.put("sid", propExpr);
+            qp.properties.put("permitView", LM.permitViewUserProperty.getExpr(session.modifier, qp.mapKeys.get("userId"), qp.mapKeys.get("propertyId")));
+            qp.properties.put("forbidView", LM.forbidViewUserProperty.getExpr(session.modifier, qp.mapKeys.get("userId"), qp.mapKeys.get("propertyId")));
+            qp.properties.put("permitChange", LM.permitChangeUserProperty.getExpr(session.modifier, qp.mapKeys.get("userId"), qp.mapKeys.get("propertyId")));
+            qp.properties.put("forbidChange", LM.forbidChangeUserProperty.getExpr(session.modifier, qp.mapKeys.get("userId"), qp.mapKeys.get("propertyId")));
+
+            Collection<Map<String, Object>> propValues = qp.execute(session.sql).values();
+            for (Map<String, Object> valueMap : propValues) {
+                Property prop = getProperty(((String) valueMap.get("sid")).trim());
+                if (valueMap.get("forbidView") != null)
+                    policy.property.view.deny(prop);
+                else if (valueMap.get("permitView") != null)
+                    policy.property.view.permit(prop);
+                if (valueMap.get("forbidChange") != null)
+                    policy.property.change.deny(prop);
+                else if (valueMap.get("permitChange") != null)
+                    policy.property.change.permit(prop);
+            }
+
+            user.addSecurityPolicy(policy);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
     public boolean showDefaultForms(DataObject user) {
         try {
             DataSession session = createSession();
@@ -646,10 +727,12 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         createModules();
         initModules();
 
+        synchronizeForms();
+        synchronizeProperties();
+
         initBaseAuthentication();
         initAuthentication();
 
-        synchronizeForms();
         resetConnectionStatus();
 
         // считаем системного пользователя
@@ -806,6 +889,40 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
             if (session.hasChanges())
                 session.apply(this);
+            session.close();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private void synchronizeProperties() {
+        ImportField sidPropertyField = new ImportField(LM.propertySIDValueClass);
+        ImportField captionPropertyField = new ImportField(LM.propertyCaptionValueClass);
+
+        ImportKey<?> key = new ImportKey(LM.property, LM.SIDToProperty.getMapping(sidPropertyField));
+
+        List<List<Object>> data = new ArrayList<List<Object>>();
+        for(Property property : getProperties()) {
+            if (!LM.idSet.contains(property.getSID()))
+                data.add(Arrays.asList((Object) property.getSID(), property.caption));
+        }
+
+        List<ImportProperty<?>> properties = new ArrayList<ImportProperty<?>>();
+        properties.add(new ImportProperty(sidPropertyField, LM.SIDProperty.getMapping(key)));
+        properties.add(new ImportProperty(captionPropertyField, LM.captionProperty.getMapping(key)));
+
+        List<ImportDelete> deletes = new ArrayList<ImportDelete>();
+        deletes.add(new ImportDelete(key, LM.is(LM.property).getMapping(key), false));
+
+        ImportTable table = new ImportTable(Arrays.asList(sidPropertyField, captionPropertyField), data);
+
+        try {
+            DataSession session = createSession();
+            IntegrationService service = new IntegrationService(session, table, Arrays.asList(key), properties, deletes);
+            service.synchronize(true, false);
+            if (session.hasChanges()) {
+                session.apply(this);
+            }
             session.close();
         } catch (Exception e) {
             throw new RuntimeException(e);

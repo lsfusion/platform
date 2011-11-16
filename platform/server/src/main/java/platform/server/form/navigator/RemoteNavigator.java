@@ -78,7 +78,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteContextO
         this.BL = BL;
         classCache = new ClassCache();
 
-        securityPolicy = this.BL.policyManager.getSecurityPolicy(currentUser);
+        securityPolicy = currentUser.getSecurityPolicy();
 
         user = new DataObject(currentUser.ID, this.BL.LM.customUser);
         this.computer = new DataObject(computer, this.BL.LM.computer);

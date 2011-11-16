@@ -88,9 +88,8 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         permitCachRegister.navigator.permit(VEDLM.returnSaleCheckRetailArticleForm);
         permitCachRegister.navigator.permit(VEDLM.cachRegManagementForm);
 
-        User admin = addUser("admin", "fusion");
         //админ игнорит настройки в базе, ему разрешено всё
-        admin.addSecurityPolicy(permitAllPolicy);
+        policyManager.userPolicies.put(addUser("admin", "fusion").ID, permitAllPolicy);
     }
 
     public Scheduler getScheduler() {

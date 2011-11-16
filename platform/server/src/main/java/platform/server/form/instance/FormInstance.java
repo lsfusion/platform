@@ -527,7 +527,8 @@ public class FormInstance<T extends BusinessLogics<T>> extends IncrementProps<Pr
 
                 int propertyIndex = properties.indexOf(property);
                 if (propertyIndex < row.size() //если вдруг копировали не таблицу - может быть разное кол-во значений в строках
-                        && !(propertyObjectInstance.getType() instanceof ActionClass) && !property.isReadOnly()) {
+                        && !(propertyObjectInstance.getType() instanceof ActionClass)
+                        && !property.isReadOnly() && securityPolicy.property.change.checkPermission(property.getPropertyObjectInstance().property)) {
                     dataChanged = true;
                     Object value = row.get(propertyIndex);
                     propertyObjectInstance.property.execute(BaseUtils.join(propertyObjectInstance.mapping, key), session, value, this);
@@ -551,7 +552,8 @@ public class FormInstance<T extends BusinessLogics<T>> extends IncrementProps<Pr
                         key.put(groupKey, groupKey.getDataObject());
                     }
                 }
-                if (!(propertyObjectInstance.getType() instanceof ActionClass) && !property.isReadOnly()) {
+                if (!(propertyObjectInstance.getType() instanceof ActionClass)
+                        && !property.isReadOnly() && securityPolicy.property.change.checkPermission(property.getPropertyObjectInstance().property)) {
                     propertyObjectInstance.property.execute(BaseUtils.join(propertyObjectInstance.mapping, key), session, value, this);
                     dataChanged = true;
                 }
