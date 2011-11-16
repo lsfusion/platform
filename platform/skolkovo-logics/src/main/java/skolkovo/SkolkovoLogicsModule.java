@@ -1755,11 +1755,11 @@ public class SkolkovoLogicsModule extends LogicsModule {
         foreignCommentMissionProject.setMinimumWidth(10);
         foreignCommentMissionProject.setPreferredWidth(50);
 
-        nativeResumeProject = addDProp(descGroup, "nativeResumeProject", "Резюме проекта", InsensitiveStringClass.get(2000), project);
+        nativeResumeProject = addDProp(descGroup, "nativeResumeProject", "Резюме проекта", InsensitiveStringClass.get(500), project);
         nativeResumeProject.setMinimumWidth(10);
         nativeResumeProject.setPreferredWidth(50);
 
-        foreignResumeProject = addDProp(descGroup, "foreignResumeProject", "Resume of the project", InsensitiveStringClass.get(2000), project);
+        foreignResumeProject = addDProp(descGroup, "foreignResumeProject", "Resume of the project", InsensitiveStringClass.get(500), project);
         foreignResumeProject.setMinimumWidth(10);
         foreignResumeProject.setPreferredWidth(50);
 
@@ -1865,19 +1865,19 @@ public class SkolkovoLogicsModule extends LogicsModule {
         linksAnalogProject.setMinimumWidth(10);
         linksAnalogProject.setPreferredWidth(50);
 
-        nativeRelevanceProject = addDProp(problemGroup, "nativeRelevanceProject", "Обоснование актуальности проекта", InsensitiveStringClass.get(2000), project);
+        nativeRelevanceProject = addDProp(problemGroup, "nativeRelevanceProject", "Обоснование актуальности проекта", InsensitiveStringClass.get(4000), project);
         nativeRelevanceProject.setMinimumWidth(10);
         nativeRelevanceProject.setPreferredWidth(50);
 
-        foreignRelevanceProject = addDProp(problemGroup, "foreignRelevanceProject", "Study the relevance of the project", InsensitiveStringClass.get(2000), project);
+        foreignRelevanceProject = addDProp(problemGroup, "foreignRelevanceProject", "Study the relevance of the project", InsensitiveStringClass.get(4000), project);
         foreignRelevanceProject.setMinimumWidth(10);
         foreignRelevanceProject.setPreferredWidth(50);
 
-        nativeBasicTechnologyProject = addDProp(problemGroup, "nativeBasicTechnologyProject", "Описание базовой технологии проекта", InsensitiveStringClass.get(2000), project);
+        nativeBasicTechnologyProject = addDProp(problemGroup, "nativeBasicTechnologyProject", "Описание базовой технологии проекта", InsensitiveStringClass.get(20000), project);
         nativeBasicTechnologyProject.setMinimumWidth(10);
         nativeBasicTechnologyProject.setPreferredWidth(50);
 
-        foreignBasicTechnologyProject = addDProp(problemGroup, "foreignBasicTechnologyProject", "Description of the underlying technology of the project", InsensitiveStringClass.get(2000), project);
+        foreignBasicTechnologyProject = addDProp(problemGroup, "foreignBasicTechnologyProject", "Description of the underlying technology of the project", InsensitiveStringClass.get(20000), project);
         foreignBasicTechnologyProject.setMinimumWidth(10);
         foreignBasicTechnologyProject.setPreferredWidth(50);
 
@@ -2002,14 +2002,14 @@ public class SkolkovoLogicsModule extends LogicsModule {
         projectObjectives = addDProp("projectObjectives", "Проект цели (ИД)", project, objectives);
         equalsObjectivesProject = addJProp("equalsObjectivesProject", "Вкл", baseLM.equals2, projectObjectives, 1, 2);
 
-        nativeProjectObjectives = addDProp(projectmissionGroup, "nativeProjectObjectives", "Ключевые цели проекта", InsensitiveStringClass.get(2000), objectives);
+        nativeProjectObjectives = addDProp(projectmissionGroup, "nativeProjectObjectives", "Ключевые цели проекта", InsensitiveStringClass.get(200), objectives);
         nativeProjectObjectives.setMinimumWidth(10);
         nativeProjectObjectives.setPreferredWidth(50);
 
         nativeProjectToObjectives = addAGProp("nameNativeToObjectives", "Цели проекта", nativeProjectObjectives, projectObjectives);
         nativeProjectSIDToObjectives = addJProp("nativeProjectSIDToObjectives", "Цели проекта", nativeProjectToObjectives, 1, sidToProject, 2);
 
-        foreignProjectObjectives = addDProp(projectmissionGroup, "foreignProjectObjectives", "Describe the key objectives of the project", InsensitiveStringClass.get(2000), objectives);
+        foreignProjectObjectives = addDProp(projectmissionGroup, "foreignProjectObjectives", "Describe the key objectives of the project", InsensitiveStringClass.get(200), objectives);
         foreignProjectObjectives.setMinimumWidth(10);
         foreignProjectObjectives.setPreferredWidth(50);
 
@@ -2036,11 +2036,11 @@ public class SkolkovoLogicsModule extends LogicsModule {
         nameForeignSpecialist.setMinimumWidth(10);
         nameForeignSpecialist.setPreferredWidth(50);
 
-        nativePostSpecialist = addDProp(teamGroup, "nativePostSpecialist", "Роль в прокте, должность в компании", InsensitiveStringClass.get(2000), specialist);
+        nativePostSpecialist = addDProp(teamGroup, "nativePostSpecialist", "Роль в прокте, должность в компании", InsensitiveStringClass.get(170), specialist);
         nativePostSpecialist.setMinimumWidth(10);
         nativePostSpecialist.setPreferredWidth(50);
 
-        foreignPostSpecialist = addDProp(teamGroup, "foreignPostSpecialist", "The role of proctitis, position in the company", InsensitiveStringClass.get(2000), specialist);
+        foreignPostSpecialist = addDProp(teamGroup, "foreignPostSpecialist", "The role of proctitis, position in the company", InsensitiveStringClass.get(170), specialist);
         foreignPostSpecialist.setMinimumWidth(10);
         foreignPostSpecialist.setPreferredWidth(50);
 
@@ -2092,11 +2092,11 @@ public class SkolkovoLogicsModule extends LogicsModule {
         foreignPublicationsSpecialist.setMinimumWidth(10);
         foreignPublicationsSpecialist.setPreferredWidth(50);
 
-        nativeCitationSpecialist = addDProp(teamGroup, "nativeCitationSpecialist", "Цитируемость, доклады на международных научных конференциях", InsensitiveStringClass.get(2000), specialist);
+        nativeCitationSpecialist = addDProp(teamGroup, "nativeCitationSpecialist", "Цитируемость, доклады на международных научных конференциях", InsensitiveStringClass.get(200), specialist);
         nativeCitationSpecialist.setMinimumWidth(10);
         nativeCitationSpecialist.setPreferredWidth(50);
 
-        foreignCitationSpecialist = addDProp(teamGroup, "foreignCitationSpecialist", "Citations, papers at international scientific conferences", InsensitiveStringClass.get(2000), specialist);
+        foreignCitationSpecialist = addDProp(teamGroup, "foreignCitationSpecialist", "Citations, papers at international scientific conferences", InsensitiveStringClass.get(200), specialist);
         foreignCitationSpecialist.setMinimumWidth(10);
         foreignCitationSpecialist.setPreferredWidth(50);
 
@@ -2117,14 +2117,11 @@ public class SkolkovoLogicsModule extends LogicsModule {
         equalsMileStoneYearProject = addJProp("equalsMileStoneYearProject", "Вкл", baseLM.equals2, projectMileStoneYear, 1, 2);
 
         nativeMileStoneYear = addDProp("nativeMileStoneYear", "Год", StringClass.get(4), mileStoneYear);
-        nativeMileStoneYear.setMinimumWidth(10);
-        nativeMileStoneYear.setPreferredWidth(50);
+
 //        nativeToMileStoneYear = addAGProp("nativeToMileStone", "Название", nativeMileStoneYear, projectMileStoneYear);
 //        nativeSIDToMileStoneYear = addJProp("nativeSIDToMileStoneYear", "Дорожная карта", nativeToMileStoneYear, 1, sidToProject, 2);
 
-        nativeMileStone = addDProp("nativeMileStone", "Название", InsensitiveStringClass.get(2000), mileStone);
-        nativeMileStone.setMinimumWidth(10);
-        nativeMileStone.setPreferredWidth(50);
+        nativeMileStone = addDProp("nativeMileStone", "Название", InsensitiveStringClass.get(1), mileStone);
 
         orderNumberMileStone = addDProp("orderNumberMileStone", "Порядок", IntegerClass.instance, mileStone);
         orderNumberMileStone.setFixedCharWidth(2);
@@ -2132,7 +2129,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 //        nativeToMileStone = addAGProp("nativeToMileStone", "Название", nativeMileStone, yearMileStone);
 //        nativeSIDToMileStone = addJProp("nativeSIDToMileStone", "Дорожная карта", nativeToMileStone, 1, nativeSIDToMileStoneYear, 2, 3);
 
-        nativeDescriptionTypeMileStoneMileStoneYear = addDProp("nativeDescriptionTypeMileStoneMileStoneYear", "Описание дорожной карты", InsensitiveStringClass.get(2000), typeMileStone, mileStone, mileStoneYear);
+        nativeDescriptionTypeMileStoneMileStoneYear = addDProp("nativeDescriptionTypeMileStoneMileStoneYear", "Описание дорожной карты", InsensitiveStringClass.get(1000), typeMileStone, mileStone, mileStoneYear);
         nativeDescriptionTypeMileStoneMileStoneYear.setMinimumWidth(10);
         nativeDescriptionTypeMileStoneMileStoneYear.setPreferredWidth(50);
 
@@ -2215,17 +2212,17 @@ public class SkolkovoLogicsModule extends LogicsModule {
         nameAblateClaimerProject.setPreferredWidth(50);
 
 
-        nativeProblemProject = addDProp(innovationGroup, "nativeProblemProject", "Проблема, на решение которой направлен проект", InsensitiveStringClass.get(2000), project);
+        nativeProblemProject = addDProp(innovationGroup, "nativeProblemProject", "Проблема, на решение которой направлен проект", InsensitiveStringClass.get(4000), project);
         nativeProblemProject.setMinimumWidth(10);
         nativeProblemProject.setPreferredWidth(50);
-        foreignProblemProject = addDProp(innovationGroup, "foreignProblemProject", "The problem that the project will solve", InsensitiveStringClass.get(2000), project);
+        foreignProblemProject = addDProp(innovationGroup, "foreignProblemProject", "The problem that the project will solve", InsensitiveStringClass.get(4000), project);
         foreignProblemProject.setMinimumWidth(10);
         foreignProblemProject.setPreferredWidth(50);
 
-        nativeInnovativeProject = addDProp(innovationGroup, "nativeInnovativeProject", "Суть инновации", InsensitiveStringClass.get(2000), project);
+        nativeInnovativeProject = addDProp(innovationGroup, "nativeInnovativeProject", "Суть инновации", InsensitiveStringClass.get(6000), project);
         nativeInnovativeProject.setMinimumWidth(10);
         nativeInnovativeProject.setPreferredWidth(50);
-        foreignInnovativeProject = addDProp(innovationGroup, "foreignInnovativeProject", "Description of the innovation", InsensitiveStringClass.get(2000), project);
+        foreignInnovativeProject = addDProp(innovationGroup, "foreignInnovativeProject", "Description of the innovation", InsensitiveStringClass.get(6000), project);
         foreignInnovativeProject.setMinimumWidth(10);
         foreignInnovativeProject.setPreferredWidth(50);
 

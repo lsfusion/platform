@@ -20,17 +20,17 @@
 			<textField isStretchWithOverflow="true">
 				<reportElement style="BoldStyle" positionType="Float" stretchType="RelativeToBandHeight" x="168" y="26" width="380" height="18"/>
 				<textElement/>
-				<textFieldExpression class="java.lang.String"><![CDATA["Комментарий, название публикации"]]></textFieldExpression>
+				<textFieldExpression><![CDATA["Комментарий, название публикации"]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
 				<reportElement style="BoldStyle" positionType="Float" stretchType="RelativeToBandHeight" x="10" y="26" width="151" height="18"/>
 				<textElement/>
-				<textFieldExpression class="java.lang.String"><![CDATA["Ссылка"]]></textFieldExpression>
+				<textFieldExpression><![CDATA["Ссылка"]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
 				<reportElement style="BoldStyle" stretchType="RelativeToBandHeight" x="10" y="0" width="538" height="18"/>
 				<textElement/>
-				<textFieldExpression class="java.lang.String"><![CDATA["Приведите ссылки на исследования и материалы, подтверждающие актуальность заявленной проблемы"]]></textFieldExpression>
+				<textFieldExpression><![CDATA["Приведите ссылки на исследования и материалы, подтверждающие актуальность заявленной проблемы"]]></textFieldExpression>
 			</textField>
 		</band>
 	</title>
@@ -39,19 +39,19 @@
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement style="DefaultStyle" positionType="Float" stretchType="RelativeToBandHeight" x="168" y="0" width="380" height="18"/>
 				<textElement textAlignment="Left" verticalAlignment="Top"/>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{nativeCommentResearch}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{nativeCommentResearch}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement style="DefaultStyle" positionType="Float" stretchType="RelativeToBandHeight" x="10" y="0" width="151" height="18"/>
 				<textElement textAlignment="Left" verticalAlignment="Top"/>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{dataResearch}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{dataResearch}]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>
 	<summary>
 		<band height="8">
 			<line>
-				<reportElement positionType="Float" x="10" y="0" width="538" height="1"/>
+				<reportElement positionType="Float" x="10" y="1" width="538" height="1"/>
 				<graphicElement>
 					<pen lineWidth="0.25" lineStyle="Dotted"/>
 				</graphicElement>

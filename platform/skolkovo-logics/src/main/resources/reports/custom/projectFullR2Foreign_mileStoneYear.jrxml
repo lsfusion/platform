@@ -29,26 +29,38 @@
 	<field name="commonName" class="java.lang.String"/>
 	<field name="nativeTypeMileStone" class="java.lang.String"/>
 	<field name="foreignTypeMileStone" class="java.lang.String"/>
-	<field name="nativeDescriptionTypeMileStoneMileStone" class="java.lang.String"/>
-	<field name="foreignDescriptionTypeMileStoneMileStone" class="java.lang.String"/>
 	<field name="nativeYearMileStone" class="java.lang.Integer"/>
+	<field name="nativeDescriptionTypeMileStoneMileStoneYear" class="java.lang.String"/>
+	<field name="foreignDescriptionTypeMileStoneMileStoneYear" class="java.lang.String"/>
+	<field name="nativeDescriptionTypeMileStoneMileStoneYear(caption)" class="java.lang.String"/>
+	<field name="foreignDescriptionTypeMileStoneMileStoneYear(caption)" class="java.lang.String"/>
+	<field name="nativeMileStoneYear" class="java.lang.String"/>
 	<group name="designGroup10">
-		<groupExpression><![CDATA[String.valueOf($F{mileStone})]]></groupExpression>
+		<groupExpression><![CDATA[$F{nativeMileStoneYear}]]></groupExpression>
 		<groupHeader>
-			<band height="18" splitType="Prevent">
+			<band height="18">
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-					<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="170" y="0" width="378" height="18"/>
+					<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="10" y="0" width="538" height="18"/>
 					<textElement textAlignment="Center">
 						<font isBold="true"/>
 					</textElement>
-					<textFieldExpression class="java.lang.String"><![CDATA[$F{nativeMileStone}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{nativeMileStoneYear}]]></textFieldExpression>
+				</textField>
+			</band>
+			<band height="18">
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+					<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="87" y="0" width="461" height="18"/>
+					<textElement textAlignment="Center">
+						<font isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{foreignDescriptionTypeMileStoneMileStoneYear(caption)}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-					<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="10" y="0" width="160" height="18"/>
+					<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="10" y="0" width="77" height="18" backcolor="#F0F0F0"/>
 					<textElement textAlignment="Center">
 						<font isBold="true"/>
 					</textElement>
-					<textFieldExpression class="java.lang.String"><![CDATA[$F{nativeYearMileStone}]]></textFieldExpression>
+					<textFieldExpression><![CDATA["Section title"]]></textFieldExpression>
 				</textField>
 			</band>
 		</groupHeader>
@@ -58,23 +70,23 @@
 			<textField isStretchWithOverflow="true">
 				<reportElement style="BoldStyle" stretchType="RelativeToBandHeight" x="10" y="0" width="538" height="18"/>
 				<textElement/>
-				<textFieldExpression class="java.lang.String"><![CDATA["The road map of the project (the next key (2-3 years) stages) in the form below:"]]></textFieldExpression>
+				<textFieldExpression><![CDATA["The road map of the project (the next key (2-3 years) stages) in the form below:"]]></textFieldExpression>
 			</textField>
 		</band>
 	</title>
 	<detail>
 		<band height="18">
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement style="GroupCellStyle1" positionType="Float" stretchType="RelativeToBandHeight" x="10" y="0" width="160" height="18"/>
+				<reportElement style="GroupCellStyle1" positionType="Float" stretchType="RelativeToBandHeight" x="10" y="0" width="77" height="18"/>
 				<box topPadding="2" leftPadding="2" bottomPadding="2" rightPadding="2"/>
 				<textElement textAlignment="Left"/>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{foreignTypeMileStone}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{foreignTypeMileStone}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement style="GroupCellStyle1" positionType="Float" stretchType="RelativeToBandHeight" x="170" y="0" width="378" height="18"/>
+				<reportElement style="GroupCellStyle1" positionType="Float" stretchType="RelativeToBandHeight" x="87" y="0" width="461" height="18"/>
 				<box topPadding="2" leftPadding="2" bottomPadding="2" rightPadding="2"/>
-				<textElement textAlignment="Left"/>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{foreignDescriptionTypeMileStoneMileStone}]]></textFieldExpression>
+				<textElement textAlignment="Center"/>
+				<textFieldExpression><![CDATA[$F{foreignDescriptionTypeMileStoneMileStoneYear}]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>

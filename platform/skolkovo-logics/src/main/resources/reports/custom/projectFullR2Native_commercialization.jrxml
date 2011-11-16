@@ -21,17 +21,17 @@
 			<textField isStretchWithOverflow="true">
 				<reportElement style="BoldStyle" positionType="Float" stretchType="RelativeToBandHeight" x="10" y="26" width="245" height="18"/>
 				<textElement/>
-				<textFieldExpression class="java.lang.String"><![CDATA["Основные направления коммерциализации проекта"]]></textFieldExpression>
+				<textFieldExpression><![CDATA["Основные направления коммерциализации проекта"]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
 				<reportElement style="BoldStyle" positionType="Float" stretchType="RelativeToBandHeight" x="266" y="26" width="282" height="18"/>
 				<textElement/>
-				<textFieldExpression class="java.lang.String"><![CDATA["Комментарий"]]></textFieldExpression>
+				<textFieldExpression><![CDATA["Комментарий"]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
 				<reportElement style="BoldStyle" stretchType="RelativeToBandHeight" x="10" y="0" width="538" height="18"/>
 				<textElement/>
-				<textFieldExpression class="java.lang.String"><![CDATA["Опишите предполагаемые основные направления коммерциализации Вашего проекта (в ближайшей перспективе и (или) в будущем): "]]></textFieldExpression>
+				<textFieldExpression><![CDATA["Опишите предполагаемые основные направления коммерциализации Вашего проекта (в ближайшей перспективе и (или) в будущем): "]]></textFieldExpression>
 			</textField>
 		</band>
 	</title>
@@ -40,19 +40,19 @@
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement style="DefaultStyle" positionType="Float" stretchType="RelativeToBandHeight" x="10" y="0" width="245" height="18"/>
 				<textElement textAlignment="Left" verticalAlignment="Top"/>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{nativeProjectCommercialization}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{nativeProjectCommercialization}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement style="DefaultStyle" positionType="Float" stretchType="RelativeToBandHeight" x="266" y="0" width="282" height="18"/>
 				<textElement textAlignment="Left" verticalAlignment="Top"/>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{nativeCommentProjectCommercialization}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{nativeCommentProjectCommercialization}]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>
 	<summary>
 		<band height="6">
 			<line>
-				<reportElement positionType="Float" x="10" y="0" width="538" height="1"/>
+				<reportElement positionType="Float" x="10" y="1" width="538" height="1"/>
 				<graphicElement>
 					<pen lineWidth="0.25" lineStyle="Dotted"/>
 				</graphicElement>
