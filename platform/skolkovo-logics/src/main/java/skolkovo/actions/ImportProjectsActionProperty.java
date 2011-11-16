@@ -854,7 +854,7 @@ public class ImportProjectsActionProperty extends ActionProperty {
         mileStoneKey = new ImportKey(LM.mileStone, LM.nativeSIDToMileStone.getMapping(nativeMileStoneField, nativeMileStoneYearField, projectIdField));
         propertiesMileStone.add(new ImportProperty(projectIdField, LM.projectMileStone.getMapping(mileStoneKey),
                 LM.baseLM.object(LM.project).getMapping(projectKey)));
-        propertiesMileStone.add(new ImportProperty(nativeMileStoneYearField, LM.projectMileStone.getMapping(mileStoneKey),
+        propertiesMileStone.add(new ImportProperty(nativeMileStoneYearField, LM.yearMileStone.getMapping(mileStoneKey),
                 LM.baseLM.object(LM.mileStoneYear).getMapping(mileStoneYearKey)));
         propertiesMileStone.add(new ImportProperty(nativeMileStoneField, LM.nativeMileStone.getMapping(mileStoneKey)));
         propertiesMileStone.add(new ImportProperty(orderNumberMileStoneField, LM.orderNumberMileStone.getMapping(mileStoneKey)));
@@ -906,7 +906,6 @@ public class ImportProjectsActionProperty extends ActionProperty {
 
             if (!onlyMessage && !fillSids) {
                 for (String projectId : projects.keySet()) {
-                    projectId = "41691";
                     URL url = new URL(host + "&show=all&projectId=" + projectId);
                     URLConnection connection = url.openConnection();
                     connection.setDoOutput(false);
@@ -915,7 +914,6 @@ public class ImportProjectsActionProperty extends ActionProperty {
                     importProject(pInfo, connection.getInputStream(), projectId, projects.get(projectId), context);
                     RemoteContextObject.popCurrentActionMessage();
                     System.gc();
-                    break;
                 }
             }
             String message = "";
