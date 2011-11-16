@@ -26,7 +26,6 @@ import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.query.GroupType;
 import platform.server.data.expr.query.OrderType;
 import platform.server.data.query.Query;
-import platform.server.data.type.Type;
 import platform.server.form.entity.*;
 import platform.server.form.entity.filter.*;
 import platform.server.form.instance.PropertyObjectInterfaceInstance;
@@ -522,6 +521,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
     public LP inProjectCluster;
     public LP inClaimerProjectCluster;
     public LP inProjectForesight;
+    public LP isRootForesight;
+    public LP isRootInProjectForesight;
     LP isInClusterProjectForesight;
     LP clusterVote, nameNativeClusterVote, nameForeignClusterVote;
     LP projectCluster;
@@ -1601,6 +1602,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
         nameNativeShortClusterForesight = addJProp(baseGroup, "nameNativeShortClusterForesight", "Кластер (сокр.)", nameNativeShort, clusterForesight, 1);
 
         inProjectForesight = addDProp(baseGroup, "inProjectForesight", "Вкл", LogicalClass.instance, project, foresight);
+        isRootForesight = addDProp(baseGroup, "isRootForesight", "Корневой", LogicalClass.instance, foresight);
+        isRootInProjectForesight = addJProp("isRootInProjectForesight", "Вкл", baseLM.andNot1, inProjectForesight, 1, 2, isRootForesight, 2);
         isInClusterProjectForesight = addJProp(true, "isInClusterProjectForesight", "Форсайт в кластере проекта", inProjectCluster, 1, clusterForesight, 2);
         quantityProjectForesight = addSGProp(baseGroup, "quantityProjectForesight", true, "Кол-во форсайтов",
                 addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1, foresight), 2,
@@ -2931,6 +2934,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 //        generateVoteProject.setDerivedForcedChange(addCProp(ActionClass.instance, true), needExtraVoteProject, 1, autoGenerateProject, 1);
 
         includeProjectClusterForesight = addAProp(actionGroup, new IncludeProjectClusterForesightActionProperty(project, cluster, foresight));
+        includeProjectClusterForesight.setImage("include.png");
 
         baseLM.generateLoginPassword.setDerivedForcedChange(addCProp(ActionClass.instance, true), is(expert), 1);
 
@@ -3142,10 +3146,9 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         setPositiveResultForesightCheckProject = addJProp(true, "Прошла проверку на соответствие форсайты", addEPAProp(EPA_INTERFACE, resultForesightCheckProject), 1, addCProp(foresightCheckResult, "positiveForesightCheckResult"));
 
-        needForesightCheckProject = addJProp("needForesightCheckProject", "Требуется проверка на форсайты", and(false, true),
+        needForesightCheckProject = addJProp("needForesightCheckProject", "Требуется проверка на форсайты", baseLM.and1,
                 isR2Project, 1,
-                resultExecuteLegalCheckProject, 1,
-                resultForesightCheckProject, 1);
+                resultExecuteLegalCheckProject, 1);
 
         sentForTranslationProject = addDProp(translationGroup, "sentForTranslationProject", "Направлена на перевод", LogicalClass.instance, project);
         dateSentForTranslationProject = addDCProp(translationGroup, "dateSentForTranslationProject", "Дата направления на перевод", true, baseLM.currentDate, sentForTranslationProject, 1);
@@ -4559,7 +4562,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
             objForesight = addSingleGroupObject(foresight);
             addPropertyDraw(includeProjectClusterForesight, objProject, objCluster, objForesight);
-            addPropertyDraw(inProjectForesight, objProject, objForesight);
+            addPropertyDraw(objProject, objForesight, isRootInProjectForesight);
             addPropertyDraw(objForesight, sidForesight, nameNative, nameForeign, nameNativeShortClusterForesight, quantityInExpertForesight);
 
             addFixedFilter(new CompareFilterEntity(addPropertyObject(clusterForesight, objForesight), Compare.EQUALS, objCluster));
@@ -4568,7 +4571,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
             setReadOnly(inProjectCluster, false);
             setReadOnly(includeProjectClusterForesight, false);
-            setReadOnly(inProjectForesight, false);
+            setReadOnly(isRootInProjectForesight, false);
 
             addActionsOnOk(addPropertyObject(setPositiveResultForesightCheckProject, objProject));
 
@@ -4622,13 +4625,20 @@ public class SkolkovoLogicsModule extends LogicsModule {
             super(parent, sID, "Соответствие кластеру");
 
             objProject = addSingleGroupObject(project, "Проект", dateProject, nameNativeProject, nameForeignProject, nameNativeClaimerProject, nameForeignClaimerProject,
-                    resultForesightCheckProject, openApplicationProjectAction, exportProjectDocumentsAction, applyForesightCheckProject, setNegativeResultForesightCheckProjectApply);
+                    nameResultForesightCheckProject, dateResultForesightCheckProject, nameUserResultForesightCheckProject, openApplicationProjectAction, exportProjectDocumentsAction, applyForesightCheckProject, setNegativeResultForesightCheckProjectApply);
 
             projectFilterGroup = new RegularFilterGroupEntity(genID());
             projectFilterGroup.addFilter(new RegularFilterEntity(genID(),
-                   new NotNullFilterEntity(addPropertyObject(inClusterCurrentUserProject, objProject)),
-                   "В моем кластере",
-                   KeyStroke.getKeyStroke(KeyEvent.VK_F10, 0)), true);
+                    new NotNullFilterEntity(addPropertyObject(inClusterCurrentUserProject, objProject)),
+                    "В моем кластере",
+                    KeyStroke.getKeyStroke(KeyEvent.VK_F9, 0)), true);
+            addRegularFilterGroup(projectFilterGroup);
+
+            projectFilterGroup = new RegularFilterGroupEntity(genID());
+            projectFilterGroup.addFilter(new RegularFilterEntity(genID(),
+                    new NotNullFilterEntity(addPropertyObject(nameResultForesightCheckProject, objProject)),
+                    "C решением проверки на форсайты",
+                    KeyStroke.getKeyStroke(KeyEvent.VK_F10, 0)), true);
             addRegularFilterGroup(projectFilterGroup);
 
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(needForesightCheckProject, objProject)));
@@ -5543,7 +5553,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             addObjectActions(this, objCluster);
 
             objForesight = addSingleGroupObject(2, "Форсайт", foresight);
-            addPropertyDraw(objForesight, sidForesight, nameNative, nameForeign, nameNativeShortClusterForesight, quantityInExpertForesight);
+            addPropertyDraw(objForesight, sidForesight, isRootForesight, nameNative, nameForeign, nameNativeShortClusterForesight, quantityInExpertForesight);
             addFixedFilter(new CompareFilterEntity(addPropertyObject(clusterForesight, objForesight), Compare.EQUALS, objCluster));
             addObjectActions(this, objForesight);
 
