@@ -1154,6 +1154,18 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
     @IdentityLazy
+    public LinkedHashSet<Property> getConstraintDerivedDependProperties() {
+        LinkedHashSet<Property> result = new LinkedHashSet<Property>();
+        for (Property property : getPropertyList()) {
+            if (property.isFalse)
+                result.add(property);
+            if (property.isDerived())
+                result.addAll(((UserProperty)property).derivedChange.getDepends());
+        }
+        return result;
+    }
+
+    @IdentityLazy
     public List<Property> getAppliedProperties(boolean onlyCheck) {
         // здесь нужно вернуть список stored или тех кто
         List<Property> result = new ArrayList<Property>();
@@ -1163,44 +1175,33 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         return result;
     }
 
-    private void fillAppliedDependFrom(Property<?> fill, Property<?> applied, boolean needPrevious, Map<Property, Map<Property, Boolean>> mapDepends) {
-        if(!fill.equals(applied) && fill.isStored()) {
-            Map<Property, Boolean> mapDepend = mapDepends.get(fill);
-            if(mapDepend == null) {
-                mapDepend = new OrderedMap<Property, Boolean>();
-                mapDepends.put(fill, mapDepend);
-            }
-            Boolean alreadyPrevious = mapDepend.get(fill);
-            mapDepend.put(applied, needPrevious || (alreadyPrevious==null?false:alreadyPrevious));
-        } else
+    private void fillAppliedDependFrom(Property<?> fill, Property<?> applied, Map<Property, Set<Property>> mapDepends) {
+        if(!fill.equals(applied) && fill.isStored())
+            mapDepends.get(fill).add(applied);
+        else
             for(Property depend : fill.getDepends())
-                fillAppliedDependFrom(depend, applied, needPrevious, mapDepends);
+                fillAppliedDependFrom(depend, applied, mapDepends);
     }
 
     @IdentityLazy
-    private Map<Property, OrderedMap<Property, Boolean>> getMapAppliedDepends() {
-        Map<Property, Map<Property, Boolean>> mapDepends = new HashMap<Property, Map<Property, Boolean>>();
+    private Map<Property, List<Property>> getMapAppliedDepends() {
+        Map<Property, Set<Property>> mapDepends = new HashMap<Property, Set<Property>>();
         for(Property property : getStoredProperties()) {
-            mapDepends.put(property, new OrderedMap<Property, Boolean>());
-            fillAppliedDependFrom(property, property, false, mapDepends);
+            mapDepends.put(property, new HashSet<Property>());
+            fillAppliedDependFrom(property, property, mapDepends);
         }
-        for(Property property : getConstrainedProperties())
-            fillAppliedDependFrom(property, property, true, mapDepends);
-        for(UserProperty property : getDerivedProperties()) {
-            DerivedChange<?, ?> derivedChange = property.derivedChange;
-            for(Property depend : derivedChange.getDepends())
-                fillAppliedDependFrom(depend, depend, true, mapDepends);
-        }
+        for(Property property : getConstraintDerivedDependProperties())
+            fillAppliedDependFrom(property, property, mapDepends);
 
         Iterable<Property> propertyList = getPropertyList();
-        Map<Property, OrderedMap<Property, Boolean>> orderedMapDepends = new HashMap<Property, OrderedMap<Property, Boolean>>();
-        for(Map.Entry<Property, Map<Property, Boolean>> mapDepend : mapDepends.entrySet())
-            orderedMapDepends.put(mapDepend.getKey(), BaseUtils.orderMap(mapDepend.getValue(), propertyList));
+        Map<Property, List<Property>> orderedMapDepends = new HashMap<Property, List<Property>>();
+        for(Map.Entry<Property, Set<Property>> mapDepend : mapDepends.entrySet())
+            orderedMapDepends.put(mapDepend.getKey(), BaseUtils.orderList(mapDepend.getValue(), propertyList));
         return orderedMapDepends;
     }
 
     // определяет для stored свойства зависимые от него stored свойства, а также свойства которым необходимо хранить изменения с начала транзакции (constraints и derived'ы)
-    public OrderedMap<Property,Boolean> getAppliedDependFrom(Property property) {
+    public List<Property> getAppliedDependFrom(Property property) {
         assert property.isStored();
         return getMapAppliedDepends().get(property);
     }

@@ -14,6 +14,7 @@ import platform.server.data.expr.KeyExpr;
 import platform.server.data.translator.HashLazy;
 import platform.server.data.translator.MapValuesTranslate;
 import platform.server.data.type.Type;
+import platform.server.data.where.Where;
 import platform.server.data.where.WhereBuilder;
 import platform.server.logics.property.FormulaProperty;
 import platform.server.logics.property.Property;
@@ -24,6 +25,7 @@ import java.sql.SQLException;
 import java.util.*;
 
 import static platform.base.BaseUtils.crossJoin;
+import static platform.base.BaseUtils.objectInstancer;
 
 // вообщем то public потому как иначе aspect не ловит
 public class IncrementApply extends AbstractIncrementProps<KeyField, IncrementApply.UsedChanges> {
@@ -151,7 +153,7 @@ public class IncrementApply extends AbstractIncrementProps<KeyField, IncrementAp
 
     // для singleApply нужен
     public Map<Property, SinglePropertyTableUsage<? extends PropertyInterface>> previous = new HashMap<Property, SinglePropertyTableUsage<? extends PropertyInterface>>();
-    public <P extends PropertyInterface> void readApplyStart(Property<P> property, Modifier<? extends Changes> modifier, SessionTableUsage<KeyField, Property> tableChange) throws SQLException {
+    public <P extends PropertyInterface> void readApplyStart(Property<P> property, Object source) throws SQLException { // изврат конечно
         SinglePropertyTableUsage<P> prevTable = (SinglePropertyTableUsage<P>) previous.get(property);
         if(prevTable==null) {
             prevTable = property.createChangeTable();
@@ -161,10 +163,13 @@ public class IncrementApply extends AbstractIncrementProps<KeyField, IncrementAp
         Map<P, KeyExpr> mapKeys = property.getMapKeys();
 
         WhereBuilder changedWhere = new WhereBuilder();
-        if(tableChange!=null)
+        if(source instanceof SessionTableUsage) {
+            SessionTableUsage<KeyField, Property> tableChange = (SessionTableUsage<KeyField, Property>) source;
             changedWhere.add(tableChange.join(BaseUtils.crossJoin(property.mapTable.mapKeys, mapKeys)).getWhere());
-        else
+        } else {
+            Modifier<? extends Changes> modifier = (Modifier<? extends Changes>)source;
             property.getIncrementExpr(mapKeys, modifier, changedWhere);
+        }
 
         prevTable.addRows(session.sql, mapKeys, property.getExpr(mapKeys), changedWhere.toWhere(), session.baseClass, session.env); // если он уже был в базе он не заместится
     }

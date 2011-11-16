@@ -360,6 +360,9 @@ public class DataSession extends MutableObject implements SessionChanges, ExprCh
         return change.<Field>getClassWhere(property, property.field).means(property.getClassWhere(property.field));
     }
 
+    private static boolean needPrevious(Property<?> property, BusinessLogics<?> BL) {
+        return BL.getConstraintDerivedDependProperties().contains(property);
+    }
     private <T extends PropertyInterface> void applySingleStored(Property<T> property, SessionTableUsage<KeyField, Property> change, BusinessLogics<?> BL, IncrementApply incrementApply) throws SQLException {
         // assert что у change классы совпадают с property
         assert property.isStored();
@@ -367,6 +370,9 @@ public class DataSession extends MutableObject implements SessionChanges, ExprCh
 
         if(change.isEmpty())
             return;
+
+        if(needPrevious(property, BL)) // запоминаем предыдущее значение
+            incrementApply.readApplyStart(property, change);
 
         IncrementProps<KeyField> increment = new IncrementProps<KeyField>() {
             public ExprChanges getSession() {
@@ -382,21 +388,13 @@ public class DataSession extends MutableObject implements SessionChanges, ExprCh
         increment.add(property, change);
 
         // true нужно предыдущее значение сохранить
-        OrderedMap<Property, Boolean> properties = BL.getAppliedDependFrom(property); // !!! важно в лексикографическом порядке должно быть
-        for(Map.Entry<Property, Boolean> update : properties.entrySet()) {
-            Property<?> depend = update.getKey();
-
+        for(Property<?> depend : BL.getAppliedDependFrom(property)) { // !!! важно в лексикографическом порядке должно быть
             if(depend.isStored()) { // читаем новое значение, запускаем рекурсию
-                SessionTableUsage<KeyField, Property> dependChange = increment.readTable(depend, baseClass);
-
-                if(update.getValue()) // запоминаем предыдущее значение
-                    incrementApply.readApplyStart(depend, increment, dependChange);
-
-                applySingleStored(depend, dependChange, BL, incrementApply);
+                applySingleStored(depend, increment.readTable(depend, baseClass), BL, incrementApply);
                 increment.noUpdate.add(depend); // докидываем noUpdate чтобы по нескольку раз одну ветку не отрабатывать
             } else {
-                assert update.getValue(); // запоминаем предыдущее значение
-                incrementApply.readApplyStart(depend, increment, null);
+                assert needPrevious(depend, BL);
+                incrementApply.readApplyStart(depend, increment);
             }
         }
         savePropertyChanges(property.mapTable.table, Collections.singleton((Property) property), change);
