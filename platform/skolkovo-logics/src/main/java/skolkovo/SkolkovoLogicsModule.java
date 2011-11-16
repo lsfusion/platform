@@ -1395,22 +1395,22 @@ public class SkolkovoLogicsModule extends LogicsModule {
     public LP orderNumberMileStone;
     LP nativeToMileStone;
     public LP nativeSIDToMileStone;
-    public LP nativeDescriptionTypeMileStoneMileStone;
-    public LP foreignDescriptionTypeMileStoneMileStone;
+    public LP nativeDescriptionTypeMileStoneMileStoneYear;
+    public LP foreignDescriptionTypeMileStoneMileStoneYear;
     LP nativeTypeMileStone;
     LP foreignTypeMileStone;
-    public LP nativeResearchDescriptionTypeMileStoneMileStone;
-    public LP nativeProductCreationDescriptionTypeMileStoneMileStone;
-    public LP nativePlanOnHiringDescriptionTypeMileStoneMileStone;
-    public LP nativeLicensingDescriptionTypeMileStoneMileStone;
-    public LP nativePromotionDescriptionTypeMileStoneMileStone;
-    public LP nativeSellingDescriptionTypeMileStoneMileStone;
-    public LP foreignResearchDescriptionTypeMileStoneMileStone;
-    public LP foreignProductCreationDescriptionTypeMileStoneMileStone;
-    public LP foreignPlanOnHiringDescriptionTypeMileStoneMileStone;
-    public LP foreignLicensingDescriptionTypeMileStoneMileStone;
-    public LP foreignPromotionDescriptionTypeMileStoneMileStone;
-    public LP foreignSellingDescriptionTypeMileStoneMileStone;
+    public LP nativeResearchDescriptionTypeMileStoneMileStoneYear;
+    public LP nativeProductCreationDescriptionTypeMileStoneMileStoneYear;
+    public LP nativePlanOnHiringDescriptionTypeMileStoneMileStoneYear;
+    public LP nativeLicensingDescriptionTypeMileStoneMileStoneYear;
+    public LP nativePromotionDescriptionTypeMileStoneMileStoneYear;
+    public LP nativeSellingDescriptionTypeMileStoneMileStoneYear;
+    public LP foreignResearchDescriptionTypeMileStoneMileStoneYear;
+    public LP foreignProductCreationDescriptionTypeMileStoneMileStoneYear;
+    public LP foreignPlanOnHiringDescriptionTypeMileStoneMileStoneYear;
+    public LP foreignLicensingDescriptionTypeMileStoneMileStoneYear;
+    public LP foreignPromotionDescriptionTypeMileStoneMileStoneYear;
+    public LP foreignSellingDescriptionTypeMileStoneMileStoneYear;
 
     LP dateRegisteredStatusProject;
     LP dateNoClusterStatusProject;
@@ -2111,15 +2111,16 @@ public class SkolkovoLogicsModule extends LogicsModule {
         projectMileStone = addDProp("projectMileStone", "Проект квартала (ИД)", project, mileStone);
         equalsMileStoneProject = addJProp("equalsMileStoneProject", "Вкл", baseLM.equals2, projectMileStone, 1, 2);
 
-        yearMileStone = addDProp("yearMileStone", "Год квартала (ИД)", mileStoneYear, mileStone);
+//        yearMileStone = addDProp("yearMileStone", "Год квартала (ИД)", mileStoneYear, mileStone);
 
         projectMileStoneYear = addDProp("projectMileStoneYear", "Проект года (ИД)", project, mileStoneYear);
         equalsMileStoneYearProject = addJProp("equalsMileStoneYearProject", "Вкл", baseLM.equals2, projectMileStoneYear, 1, 2);
 
-        nativeMileStoneYear = addDProp("nativeYearMileStone", "Год", StringClass.get(4), mileStoneYear);
-
-        nativeToMileStoneYear = addAGProp("nativeToMileStone", "Название", nativeMileStoneYear, projectMileStoneYear);
-        nativeSIDToMileStoneYear = addJProp("nativeSIDToMileStoneYear", "Дорожная карта", nativeToMileStoneYear, 1, sidToProject, 2);
+        nativeMileStoneYear = addDProp("nativeMileStoneYear", "Год", StringClass.get(4), mileStoneYear);
+        nativeMileStoneYear.setMinimumWidth(10);
+        nativeMileStoneYear.setPreferredWidth(50);
+//        nativeToMileStoneYear = addAGProp("nativeToMileStone", "Название", nativeMileStoneYear, projectMileStoneYear);
+//        nativeSIDToMileStoneYear = addJProp("nativeSIDToMileStoneYear", "Дорожная карта", nativeToMileStoneYear, 1, sidToProject, 2);
 
         nativeMileStone = addDProp("nativeMileStone", "Название", InsensitiveStringClass.get(2000), mileStone);
         nativeMileStone.setMinimumWidth(10);
@@ -2128,30 +2129,30 @@ public class SkolkovoLogicsModule extends LogicsModule {
         orderNumberMileStone = addDProp("orderNumberMileStone", "Порядок", IntegerClass.instance, mileStone);
         orderNumberMileStone.setFixedCharWidth(2);
 
-        nativeToMileStone = addAGProp("nativeToMileStone", "Название", nativeMileStone, yearMileStone);
-        nativeSIDToMileStone = addJProp("nativeSIDToMileStone", "Дорожная карта", nativeToMileStone, 1, nativeSIDToMileStoneYear, 2, 3);
+//        nativeToMileStone = addAGProp("nativeToMileStone", "Название", nativeMileStone, yearMileStone);
+//        nativeSIDToMileStone = addJProp("nativeSIDToMileStone", "Дорожная карта", nativeToMileStone, 1, nativeSIDToMileStoneYear, 2, 3);
 
-        nativeDescriptionTypeMileStoneMileStone = addDProp("nativeDescriptionTypeMileStoneMileStone", "Описание дорожной карты", InsensitiveStringClass.get(2000), typeMileStone, mileStone);
-        nativeDescriptionTypeMileStoneMileStone.setMinimumWidth(10);
-        nativeDescriptionTypeMileStoneMileStone.setPreferredWidth(50);
+        nativeDescriptionTypeMileStoneMileStoneYear = addDProp("nativeDescriptionTypeMileStoneMileStoneYear", "Описание дорожной карты", InsensitiveStringClass.get(2000), typeMileStone, mileStone, mileStoneYear);
+        nativeDescriptionTypeMileStoneMileStoneYear.setMinimumWidth(10);
+        nativeDescriptionTypeMileStoneMileStoneYear.setPreferredWidth(50);
 
-        nativeResearchDescriptionTypeMileStoneMileStone = addJProp(true, "nativeResearchDescriptionTypeMileStoneMileStone", "Описание разработки", nativeDescriptionTypeMileStoneMileStone, addCProp(typeMileStone, "research and development"), 1);
-        nativeProductCreationDescriptionTypeMileStoneMileStone = addJProp(true, "nativeProductCreationDescriptionTypeMileStoneMileStone", "Описание создания продукта", nativeDescriptionTypeMileStoneMileStone, addCProp(typeMileStone, "product Creation and Production"), 1);
-        nativePlanOnHiringDescriptionTypeMileStoneMileStone = addJProp(true, "nativePlanOnHiringDescriptionTypeMileStoneMileStone", "Описание плана по найму", nativeDescriptionTypeMileStoneMileStone, addCProp(typeMileStone, "plan on hiring"), 1);
-        nativeLicensingDescriptionTypeMileStoneMileStone = addJProp(true, "nativeLicensingDescriptionTypeMileStoneMileStone", "Описание лицензирования", nativeDescriptionTypeMileStoneMileStone, addCProp(typeMileStone, "licensing"), 1);
-        nativePromotionDescriptionTypeMileStoneMileStone = addJProp(true, "nativePromotionDescriptionTypeMileStoneMileStone", "Описание продвижения", nativeDescriptionTypeMileStoneMileStone, addCProp(typeMileStone, "promotion"), 1);
-        nativeSellingDescriptionTypeMileStoneMileStone = addJProp(true, "nativeSellingDescriptionTypeMileStoneMileStone", "Описание продаж", nativeDescriptionTypeMileStoneMileStone, addCProp(typeMileStone, "selling"), 1);
+        nativeResearchDescriptionTypeMileStoneMileStoneYear = addJProp(true, "nativeResearchDescriptionTypeMileStoneMileStoneYear", "Описание разработки", nativeDescriptionTypeMileStoneMileStoneYear, addCProp(typeMileStone, "research and development"), 1);
+        nativeProductCreationDescriptionTypeMileStoneMileStoneYear = addJProp(true, "nativeProductCreationDescriptionTypeMileStoneMileStoneYear", "Описание создания продукта", nativeDescriptionTypeMileStoneMileStoneYear, addCProp(typeMileStone, "product Creation and Production"), 1);
+        nativePlanOnHiringDescriptionTypeMileStoneMileStoneYear = addJProp(true, "nativePlanOnHiringDescriptionTypeMileStoneMileStoneYear", "Описание плана по найму", nativeDescriptionTypeMileStoneMileStoneYear, addCProp(typeMileStone, "plan on hiring"), 1);
+        nativeLicensingDescriptionTypeMileStoneMileStoneYear = addJProp(true, "nativeLicensingDescriptionTypeMileStoneMileStoneYear", "Описание лицензирования", nativeDescriptionTypeMileStoneMileStoneYear, addCProp(typeMileStone, "licensing"), 1);
+        nativePromotionDescriptionTypeMileStoneMileStoneYear = addJProp(true, "nativePromotionDescriptionTypeMileStoneMileStoneYear", "Описание продвижения", nativeDescriptionTypeMileStoneMileStoneYear, addCProp(typeMileStone, "promotion"), 1);
+        nativeSellingDescriptionTypeMileStoneMileStoneYear = addJProp(true, "nativeSellingDescriptionTypeMileStoneMileStoneYear", "Описание продаж", nativeDescriptionTypeMileStoneMileStoneYear, addCProp(typeMileStone, "selling"), 1);
 
-        foreignDescriptionTypeMileStoneMileStone = addDProp("foreignDescriptionTypeMileStoneMileStone", "Description of the road map", InsensitiveStringClass.get(2000), typeMileStone, mileStone);
-        foreignDescriptionTypeMileStoneMileStone.setMinimumWidth(10);
-        foreignDescriptionTypeMileStoneMileStone.setPreferredWidth(50);
+        foreignDescriptionTypeMileStoneMileStoneYear = addDProp("foreignDescriptionTypeMileStoneMileStoneYear", "Description of the road map", InsensitiveStringClass.get(2000), typeMileStone, mileStone, mileStoneYear);
+        foreignDescriptionTypeMileStoneMileStoneYear.setMinimumWidth(10);
+        foreignDescriptionTypeMileStoneMileStoneYear.setPreferredWidth(50);
 
-        foreignResearchDescriptionTypeMileStoneMileStone = addJProp(true, "foreignResearchDescriptionTypeMileStoneMileStone", "Описание разработки", foreignDescriptionTypeMileStoneMileStone, addCProp(typeMileStone, "research and development"), 1);
-        foreignProductCreationDescriptionTypeMileStoneMileStone = addJProp(true, "foreignProductCreationDescriptionTypeMileStoneMileStone", "Описание создания продукта", foreignDescriptionTypeMileStoneMileStone, addCProp(typeMileStone, "product Creation and Production"), 1);
-        foreignPlanOnHiringDescriptionTypeMileStoneMileStone = addJProp(true, "foreignPlanOnHiringDescriptionTypeMileStoneMileStone", "Описание плана по найму", foreignDescriptionTypeMileStoneMileStone, addCProp(typeMileStone, "plan on hiring"), 1);
-        foreignLicensingDescriptionTypeMileStoneMileStone = addJProp(true, "foreignLicensingDescriptionTypeMileStoneMileStone", "Описание лицензирования", foreignDescriptionTypeMileStoneMileStone, addCProp(typeMileStone, "licensing"), 1);
-        foreignPromotionDescriptionTypeMileStoneMileStone = addJProp(true, "foreignPromotionDescriptionTypeMileStoneMileStone", "Описание продвижения", foreignDescriptionTypeMileStoneMileStone, addCProp(typeMileStone, "promotion"), 1);
-        foreignSellingDescriptionTypeMileStoneMileStone = addJProp(true, "foreignSellingDescriptionTypeMileStoneMileStone", "Описание продаж", foreignDescriptionTypeMileStoneMileStone, addCProp(typeMileStone, "selling"), 1);
+        foreignResearchDescriptionTypeMileStoneMileStoneYear = addJProp(true, "foreignResearchDescriptionTypeMileStoneMileStoneYear", "Описание разработки", foreignDescriptionTypeMileStoneMileStoneYear, addCProp(typeMileStone, "research and development"), 1);
+        foreignProductCreationDescriptionTypeMileStoneMileStoneYear = addJProp(true, "foreignProductCreationDescriptionTypeMileStoneMileStoneYear", "Описание создания продукта", foreignDescriptionTypeMileStoneMileStoneYear, addCProp(typeMileStone, "product Creation and Production"), 1);
+        foreignPlanOnHiringDescriptionTypeMileStoneMileStoneYear = addJProp(true, "foreignPlanOnHiringDescriptionTypeMileStoneMileStoneYear", "Описание плана по найму", foreignDescriptionTypeMileStoneMileStoneYear, addCProp(typeMileStone, "plan on hiring"), 1);
+        foreignLicensingDescriptionTypeMileStoneMileStoneYear = addJProp(true, "foreignLicensingDescriptionTypeMileStoneMileStoneYear", "Описание лицензирования", foreignDescriptionTypeMileStoneMileStoneYear, addCProp(typeMileStone, "licensing"), 1);
+        foreignPromotionDescriptionTypeMileStoneMileStoneYear = addJProp(true, "foreignPromotionDescriptionTypeMileStoneMileStoneYear", "Описание продвижения", foreignDescriptionTypeMileStoneMileStoneYear, addCProp(typeMileStone, "promotion"), 1);
+        foreignSellingDescriptionTypeMileStoneMileStoneYear = addJProp(true, "foreignSellingDescriptionTypeMileStoneMileStoneYear", "Описание продаж", foreignDescriptionTypeMileStoneMileStoneYear, addCProp(typeMileStone, "selling"), 1);
 
 
         nativeTypeMileStone = addDProp("nativeTypeMileStone", "Название раздела на русск.", InsensitiveStringClass.get(2000), typeMileStone);
@@ -4430,23 +4431,22 @@ public class SkolkovoLogicsModule extends LogicsModule {
             addDefaultOrder(getPropertyDraw(nativeMileStoneYear, objMileStoneYear), true);
 
             objMileStone = addSingleGroupObject(11, "mileStone", mileStone, "Квартал", nativeMileStone, orderNumberMileStone);
-//            addFixedFilter(new CompareFilterEntity(addPropertyObject(projectMileStone, objMileStone), Compare.EQUALS, objProject));
-            addFixedFilter(new CompareFilterEntity(addPropertyObject(yearMileStone, objMileStone), Compare.EQUALS, objMileStoneYear));
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(projectMileStone, objMileStone), Compare.EQUALS, objProject));
 
             addObjectActions(this, objMileStone);
             addDefaultOrder(getPropertyDraw(nativeMileStone, objMileStone), true);
 
             objTypeMileStone = addSingleGroupObject(12, "typeMileStone", typeMileStone, "Раздел дорожной карты", baseLM.name, nativeTypeMileStone, foreignTypeMileStone);
-//            PropertyDrawEntity count = addPropertyDraw(nativeDescriptionTypeMileStoneMileStone, objTypeMileStone, objMileStone);
-//            count.columnGroupObjects.add(objMileStone.groupTo);
-//            count.propertyCaption = addPropertyObject(nativeMileStone, objMileStone);
+            PropertyDrawEntity count = addPropertyDraw(nativeDescriptionTypeMileStoneMileStoneYear, objTypeMileStone, objMileStone, objMileStoneYear);
+            count.columnGroupObjects.add(objMileStone.groupTo);
+            count.propertyCaption = addPropertyObject(nativeMileStone, objMileStone);
 
-//            PropertyDrawEntity count1 = addPropertyDraw(foreignDescriptionTypeMileStoneMileStone, objTypeMileStone, objMileStone);
-//            count1.columnGroupObjects.add(objMileStone.groupTo);
-//            count1.propertyCaption = addPropertyObject(nativeMileStone, objMileStone);
+            PropertyDrawEntity count1 = addPropertyDraw(foreignDescriptionTypeMileStoneMileStoneYear, objTypeMileStone, objMileStone, objMileStoneYear);
+            count1.columnGroupObjects.add(objMileStone.groupTo);
+            count1.propertyCaption = addPropertyObject(nativeMileStone, objMileStone);
 
             addObjectActions(this, objTypeMileStone);
-            addPropertyDraw(objTypeMileStone, objMileStone, nativeDescriptionTypeMileStoneMileStone, foreignDescriptionTypeMileStoneMileStone);
+//            addPropertyDraw(objTypeMileStone, objMileStone, nativeDescriptionTypeMileStoneMileStoneYear, foreignDescriptionTypeMileStoneMileStoneYear);
 
             if (editR2Project == null)
                 editR2Project = addJProp(true, "editR2Project", "Редактировать проект", baseLM.and1,
