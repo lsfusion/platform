@@ -793,6 +793,14 @@ public class BaseUtils {
         return result;
     }
 
+    public static <T> List<T> orderList(Set<T> map, Iterable<T> list) {
+        List<T> result = new ArrayList<T>();
+        for (T element : list)
+            if(map.contains(element))
+                result.add(element);
+        return result;
+    }
+
     public static <K, V> OrderedMap<K, V> mergeOrders(OrderedMap<K, V> map1, OrderedMap<K, V> map2) {
         OrderedMap<K, V> result = new OrderedMap<K, V>(map1);
         result.putAll(map2);
