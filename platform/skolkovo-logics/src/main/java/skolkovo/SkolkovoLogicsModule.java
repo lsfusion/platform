@@ -56,9 +56,7 @@ import javax.mail.internet.MimeMessage;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyEvent;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
+import java.io.*;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.List;
@@ -1393,10 +1391,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
     public LP projectMileStoneYear, equalsMileStoneYearProject;
     public LP nativeMileStoneYear;
     public LP nativeToMileStoneYear, nativeSIDToMileStoneYear;
-    public LP projectTypeMileStone;
     public LP nativeTypeMileStone, foreignTypeMileStone;
-    LP nativeToTypeMileStone;
-    public LP nativeSIDToTypeMileStone;
     public LP nativeDescriptionTypeMileStoneMileStoneMileStoneYear;
     public LP foreignDescriptionTypeMileStoneMileStoneMileStoneYear;
     public LP nativeResearchDescriptionTypeMileStoneMileStoneYear;
@@ -2124,13 +2119,9 @@ public class SkolkovoLogicsModule extends LogicsModule {
         nativeToMileStone = addAGProp("nativeToMileStone", "Название", nativeMileStone, projectMileStone);
         nativeSIDToMileStone = addJProp("nativeSIDToMileStone", "Дорожная карта", nativeToMileStone, 1, sidToProject, 2);
 
-        projectTypeMileStone = addDProp("projectTypeMileStone", "Тип (ИД)", project, typeMileStone);
-
         nativeTypeMileStone = addDProp("nativeTypeMileStone", "Название раздела на русск.", InsensitiveStringClass.get(2000), typeMileStone);
         nativeTypeMileStone.setMinimumWidth(10);
         nativeTypeMileStone.setPreferredWidth(50);
-        nativeToTypeMileStone = addAGProp("nativeToTypeMileStone", "Название", nativeTypeMileStone, projectTypeMileStone);
-        nativeSIDToTypeMileStone = addJProp("nativeSIDToTypeMileStone", "Дорожная карта", nativeToTypeMileStone, 1, sidToProject, 2);
 
         orderNumberMileStone = addDProp("orderNumberMileStone", "Порядок", IntegerClass.instance, mileStone);
         orderNumberMileStone.setFixedCharWidth(2);
@@ -6704,7 +6695,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         }
     }
 
-    public byte[] generateApplicationFile(ExecutionContext context, DataObject project, boolean foreign, boolean newRegulation) throws IOException, ClassNotFoundException, JRException {
+    public byte[] generateApplicationFile(ExecutionContext context, DataObject project, boolean foreign, boolean newRegulation) throws IOException, ClassNotFoundException, JRException, SQLException {
 
         RemoteFormInterface remoteForm;
 
@@ -6726,6 +6717,15 @@ public class SkolkovoLogicsModule extends LogicsModule {
         exporter.setParameter(JRExporterParameter.JASPER_PRINT, print);
         exporter.exportReport();
 
+        //if (newRegulation) {
+        //    List<InputStream> pdfs = new ArrayList<InputStream>();
+        //    FileInputStream fileInputStream = new FileInputStream();
+        //    fileOutputStream.write()
+        //    pdfs.add(new FileInputStream(tempFile));
+        //    pdfs.add(new FileInputStream(((Byte[])fileNativeApplicationFormProject.read(context, project)));
+        //    OutputStream output = new FileOutputStream("c:\\pdf\\merge.pdf");
+        //    MergePDF.concatPDFs(pdfs, output, true);
+        //}
         return IOUtils.getFileBytes(tempFile);
     }
 
