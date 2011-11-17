@@ -573,6 +573,9 @@ public class ImportProjectsActionProperty extends ActionProperty {
 
         fillNativeProjectField = new ImportField(LM.fillNativeProject);
         fillForeignProjectField = new ImportField(LM.fillForeignProject);
+        isConsultingCenterQuestionProjectField = new ImportField(LM.isConsultingCenterQuestionProject);
+        isConsultingCenterCommentProjectField = new ImportField(LM.isConsultingCenterCommentProject);
+        consultingCenterCommentProjectField = new ImportField(LM.consultingCenterCommentProject);
 
         nameNativeClusterField = new ImportField(LM.nameNativeCluster);
         inProjectClusterField = new ImportField(LM.inProjectCluster);
@@ -664,6 +667,10 @@ public class ImportProjectsActionProperty extends ActionProperty {
         properties.add(new ImportProperty(projectIdField, LM.sidProject.getMapping(projectKey)));
         properties.add(new ImportProperty(fillNativeProjectField, LM.fillNativeProject.getMapping(projectKey)));
         properties.add(new ImportProperty(fillForeignProjectField, LM.fillForeignProject.getMapping(projectKey)));
+        properties.add(new ImportProperty(isConsultingCenterQuestionProjectField, LM.isConsultingCenterQuestionProject.getMapping(projectKey)));
+        properties.add(new ImportProperty(isConsultingCenterCommentProjectField, LM.isConsultingCenterCommentProject.getMapping(projectKey)));
+        properties.add(new ImportProperty(consultingCenterCommentProjectField, LM.consultingCenterCommentProject.getMapping(projectKey)));
+
         properties.add(new ImportProperty(phoneContactProjectField, LM.phoneContactProject.getMapping(projectKey)));
         properties.add(new ImportProperty(emailContactProjectField, LM.emailContactProject.getMapping(projectKey)));
         properties.add(new ImportProperty(linksMarketTrendsProjectField, LM.linksMarketTrendsProject.getMapping(projectKey)));
@@ -1613,6 +1620,21 @@ public class ImportProjectsActionProperty extends ActionProperty {
                     if (fillForeign) row.add(true);
                     else row.add(null); //fillForeignProject
 
+                    String consultingCenterComment = node.getChildText("consultingCenterComment");
+                    if (consultingCenterComment == null) {
+                        row.add(null);
+                        row.add(null);
+                        row.add(null);
+                    } else if ("".equals(consultingCenterComment)) {
+                        row.add(true);
+                        row.add(null);
+                        row.add(null);
+                    } else {
+                        row.add(true);
+                        row.add(true);
+                        row.add(consultingCenterComment);
+                    }
+
                     row.add(node.getChildText("phoneContactProject"));
                     row.add(node.getChildText("emailContactProject"));
                     row.add(node.getChildText("linksMarketTrendsProject"));
@@ -1952,7 +1974,9 @@ public class ImportProjectsActionProperty extends ActionProperty {
                     List<ImportField> fieldsFullClaimerForeign = BaseUtils.toList(nameForeignClaimerField, firmNameForeignClaimerField);
 
                     List<ImportField> fieldsBoth = BaseUtils.toList(
-                            fillNativeProjectField, fillForeignProjectField, phoneContactProjectField,
+                            fillNativeProjectField, fillForeignProjectField,
+                            isConsultingCenterQuestionProjectField, isConsultingCenterCommentProjectField, consultingCenterCommentProjectField,
+                            phoneContactProjectField,
                             emailContactProjectField, linksMarketTrendsProjectField, linksAnalogProjectField,
                             projectIdField, updateDateProjectField, projectMissionProjectField,
                             projectScheduleProjectField, projectActionProjectField, emailClaimerField
