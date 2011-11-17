@@ -23,13 +23,23 @@
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement style="DefaultStyle" positionType="Float" x="165" y="0" width="383" height="18"/>
 				<textElement textAlignment="Left" verticalAlignment="Top"/>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{nameForeign}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{nameForeign}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
 				<reportElement style="BoldStyle" positionType="Float" x="10" y="0" width="151" height="18"/>
 				<textElement verticalAlignment="Top"/>
-				<textFieldExpression class="java.lang.String"><![CDATA["The direction to which the project (you can select only one direction):"]]></textFieldExpression>
+				<textFieldExpression><![CDATA["The direction to which the project (you can select only one direction):"]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>
+	<summary>
+		<band height="8">
+			<line>
+				<reportElement positionType="Float" x="10" y="1" width="538" height="1"/>
+				<graphicElement>
+					<pen lineWidth="0.25" lineStyle="Dotted"/>
+				</graphicElement>
+			</line>
+		</band>
+	</summary>
 </jasperReport>

@@ -2,7 +2,7 @@
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="project" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0">
 	<property name="ireport.zoom" value="1.5"/>
 	<property name="ireport.x" value="0"/>
-	<property name="ireport.y" value="528"/>
+	<property name="ireport.y" value="1386"/>
 	<style name="DefaultStyle" isDefault="true" vAlign="Middle" fontName="lsf.TimesNewRoman" fontSize="10"/>
 	<style name="BoldStyle" fontName="lsf.TimesNewRoman" fontSize="10" isBold="true">
 		<paragraph rightIndent="3"/>
@@ -95,6 +95,7 @@
 	<field name="nativeResultsProject" class="java.lang.String"/>
 	<field name="foreignResultsProject" class="java.lang.String"/>
 	<field name="linksForeignMarketIntroductionProject" class="java.lang.String"/>
+	<field name="isFileNativeTechnicalDescriptionProject" class="java.lang.Boolean"/>
 	<variable name="npp" class="java.lang.Integer" calculation="Count">
 		<variableExpression><![CDATA[0]]></variableExpression>
 		<initialValueExpression><![CDATA[new Integer(1)]]></initialValueExpression>
@@ -135,7 +136,7 @@
 			</band>
 		</groupHeader>
 	</group>
-	<group name="textGroup1">
+	<group name="textGroup1" isStartNewPage="true">
 		<groupExpression><![CDATA[String.valueOf($F{project})]]></groupExpression>
 		<groupHeader>
 			<band height="52" splitType="Prevent">
@@ -198,25 +199,19 @@
 					<subreportExpression><![CDATA[$P{cluster_report}]]></subreportExpression>
 				</subreport>
 			</band>
-			<band height="29">
-				<line>
-					<reportElement positionType="Float" x="10" y="3" width="538" height="1"/>
-					<graphicElement>
-						<pen lineWidth="0.25" lineStyle="Dotted"/>
-					</graphicElement>
-				</line>
+			<band height="26">
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-					<reportElement style="DefaultStyle" positionType="Float" x="165" y="7" width="383" height="18"/>
+					<reportElement style="DefaultStyle" positionType="Float" x="165" y="0" width="383" height="18"/>
 					<textElement textAlignment="Left" verticalAlignment="Top"/>
 					<textFieldExpression><![CDATA[$F{nativeResumeProject}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
-					<reportElement style="BoldStyle" positionType="Float" x="10" y="7" width="151" height="18"/>
+					<reportElement style="BoldStyle" positionType="Float" x="10" y="0" width="151" height="18"/>
 					<textElement verticalAlignment="Top"/>
 					<textFieldExpression><![CDATA["Краткое резюме проекта (5 предложений) с указанием имеющихся наработок и основных целей развития проекта."]]></textFieldExpression>
 				</textField>
 				<line>
-					<reportElement positionType="Float" x="10" y="26" width="538" height="1"/>
+					<reportElement positionType="Float" x="10" y="19" width="538" height="1"/>
 					<graphicElement>
 						<pen lineWidth="0.25" lineStyle="Dotted"/>
 					</graphicElement>
@@ -429,6 +424,14 @@
 					<subreportExpression><![CDATA[$P{patent_report}]]></subreportExpression>
 				</subreport>
 			</band>
+			<band height="22">
+				<printWhenExpression><![CDATA[$F{isFileNativeTechnicalDescriptionProject}!=null]]></printWhenExpression>
+				<textField isStretchWithOverflow="true">
+					<reportElement style="BoldStyle" positionType="Float" x="10" y="0" width="538" height="18"/>
+					<textElement verticalAlignment="Top"/>
+					<textFieldExpression><![CDATA["Смотри приложение 1"]]></textFieldExpression>
+				</textField>
+			</band>
 			<band height="50">
 				<subreport>
 					<reportElement stretchType="RelativeToBandHeight" x="0" y="40" width="0" height="0"/>
@@ -450,14 +453,14 @@
 					<reportElement positionType="Float" x="10" y="0" width="538" height="1"/>
 				</line>
 			</band>
-			<band height="30">
+			<band height="50">
 				<textField isStretchWithOverflow="true">
-					<reportElement style="BoldStyle" positionType="Float" x="10" y="0" width="151" height="18"/>
+					<reportElement style="BoldStyle" positionType="Float" x="10" y="0" width="538" height="18"/>
 					<textElement verticalAlignment="Top"/>
-					<textFieldExpression><![CDATA["Приведите, при наличии, примеры успешных компаний, сделок по продаже подобных компаний, примеры привлечения инвестиций со стороны венчурных фондов и стратегических инвесторов в похожие проекты/компании или, если Вы осуществляете Прикладные Исследования, приведите примеры внедрения  аналогичных научно-исследовательских разработок в производствой:"]]></textFieldExpression>
+					<textFieldExpression><![CDATA["Приведите, при наличии, примеры успешных компаний, сделок по продаже подобных компаний, примеры привлечения инвестиций со стороны венчурных фондов и стратегических инвесторов в похожие проекты/компании или, если Вы осуществляете Прикладные Исследования, приведите примеры внедрения  аналогичных научно-исследовательских разработок в производство:"]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-					<reportElement style="DefaultStyle" positionType="Float" x="165" y="0" width="383" height="18"/>
+					<reportElement style="DefaultStyle" positionType="Float" x="10" y="22" width="538" height="18"/>
 					<textElement textAlignment="Left" verticalAlignment="Top"/>
 					<textFieldExpression><![CDATA[$F{nativeCaseStudiesProject}]]></textFieldExpression>
 				</textField>
@@ -503,26 +506,26 @@
 					</graphicElement>
 				</line>
 			</band>
-			<band height="30">
+			<band height="50">
 				<textField isStretchWithOverflow="true">
-					<reportElement style="BoldStyle" positionType="Float" x="10" y="1" width="151" height="18"/>
+					<reportElement style="BoldStyle" positionType="Float" x="10" y="0" width="538" height="18"/>
 					<textElement verticalAlignment="Top"/>
 					<textFieldExpression><![CDATA["Перечислите научные группы, институты, компании, ведущие аналогичные или близкие разработки и опишите, в чем заключается Ваше преимущество, или, если Вы осуществляете Прикладные исследования, приведите примеры  подобных Прикладных Исследований в ведущих университетах  мира и, при наличии, предварительные соглашения с ними о проведении совместных исследований:"]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-					<reportElement style="DefaultStyle" positionType="Float" x="165" y="1" width="383" height="18"/>
+					<reportElement style="DefaultStyle" positionType="Float" x="10" y="22" width="538" height="18"/>
 					<textElement textAlignment="Left" verticalAlignment="Top"/>
 					<textFieldExpression><![CDATA[$F{nativeCompaniesAnaloguesProject}]]></textFieldExpression>
 				</textField>
 			</band>
-			<band height="56">
+			<band height="78">
 				<textField isStretchWithOverflow="true">
-					<reportElement style="BoldStyle" positionType="Float" x="10" y="30" width="151" height="18"/>
+					<reportElement style="BoldStyle" positionType="Float" x="10" y="30" width="538" height="18"/>
 					<textElement verticalAlignment="Top"/>
 					<textFieldExpression><![CDATA["Укажите рынки, на которых потенциально может быть реализован проект  (перечислите страны, регионы, укажите основных потребителей, оцените примерный объем рынка, его динамику, ваше будущее позиционирование на нем)"]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-					<reportElement style="DefaultStyle" positionType="Float" x="165" y="30" width="383" height="18"/>
+					<reportElement style="DefaultStyle" positionType="Float" x="10" y="52" width="538" height="18"/>
 					<textElement textAlignment="Left" verticalAlignment="Top"/>
 					<textFieldExpression><![CDATA[$F{nativeMarketIntroductionProject}]]></textFieldExpression>
 				</textField>
@@ -540,7 +543,7 @@
 					<reportElement positionType="Float" x="10" y="0" width="538" height="1"/>
 				</line>
 				<line>
-					<reportElement positionType="Float" x="10" y="49" width="538" height="1"/>
+					<reportElement positionType="Float" x="10" y="71" width="538" height="1"/>
 					<graphicElement>
 						<pen lineWidth="0.25" lineStyle="Dotted"/>
 					</graphicElement>
@@ -738,7 +741,7 @@
 					<subreportExpression><![CDATA[$P{mileStoneYear_report}]]></subreportExpression>
 				</subreport>
 			</band>
-			<band height="26">
+			<band height="30">
 				<textField isStretchWithOverflow="true">
 					<reportElement style="BoldStyle" positionType="Float" x="10" y="5" width="151" height="18"/>
 					<textElement verticalAlignment="Top"/>
@@ -755,12 +758,21 @@
 						<pen lineWidth="0.25" lineStyle="Dotted"/>
 					</graphicElement>
 				</line>
+			</band>
+			<band height="22">
+				<printWhenExpression><![CDATA[$F{isFileNativeTechnicalDescriptionProject}!=null && false]]></printWhenExpression>
 				<subreport>
-					<reportElement stretchType="RelativeToBandHeight" x="0" y="26" width="0" height="0"/>
+					<reportElement stretchType="RelativeToBandHeight" x="0" y="0" width="0" height="0"/>
 					<parametersMapExpression><![CDATA[$P{mileStone_params}]]></parametersMapExpression>
 					<dataSourceExpression><![CDATA[$P{mileStone_source}]]></dataSourceExpression>
 					<subreportExpression><![CDATA[$P{mileStone_report}]]></subreportExpression>
 				</subreport>
+				<textField isStretchWithOverflow="true">
+					<reportElement style="BoldStyle" positionType="Float" x="10" y="0" width="538" height="18"/>
+					<textElement textAlignment="Right" verticalAlignment="Top"/>
+					<textFieldExpression><![CDATA["Приложение 1 к пункту \n" +
+"«Технология и(или) направление прикладных исследований»"]]></textFieldExpression>
+				</textField>
 			</band>
 		</groupHeader>
 	</group>

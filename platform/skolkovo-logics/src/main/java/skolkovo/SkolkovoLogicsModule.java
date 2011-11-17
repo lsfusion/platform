@@ -1466,6 +1466,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP notificationPeriodProject;
     LP dateNotificationPeriodProject;
     LP datePositiveLegalResultProject;
+    LP isFileNativeTechnicalDescriptionProject;
+    LP isFileForeignTechnicalDescriptionProject;
 
     @Override
     public void initProperties() {
@@ -2377,10 +2379,12 @@ public class SkolkovoLogicsModule extends LogicsModule {
         fileNativeTechnicalDescriptionProject = addDProp("fileNativeTechnicalDescriptionProject", "Файл технического описания", CustomFileClass.instance, project);
         loadFileNativeTechnicalDescriptionProject = addLFAProp(techDescrGroup, "Загрузить файл технического описания", fileNativeTechnicalDescriptionProject);
         openFileNativeTechnicalDescriptionProject = addOFAProp(techDescrGroup, "Открыть файл технического описания", fileNativeTechnicalDescriptionProject);
+        isFileNativeTechnicalDescriptionProject = addJProp(techDescrGroup, "isFileNativeTechnicalDescriptionProject", "Файл", baseLM.and1, addCProp(LogicalClass.instance, true, project), 1, fileNativeTechnicalDescriptionProject, 1);
 
         fileForeignTechnicalDescriptionProject = addDProp("fileForeignTechnicalDescriptionProject", "Файл технического описания (иностр.)", CustomFileClass.instance, project);
         loadFileForeignTechnicalDescriptionProject = addLFAProp(techDescrGroup, "Загрузить файл технического описания (иностр.)", fileForeignTechnicalDescriptionProject);
         openFileForeignTechnicalDescriptionProject = addOFAProp(techDescrGroup, "Открыть файл технического описания (иностр.)", fileForeignTechnicalDescriptionProject);
+        isFileForeignTechnicalDescriptionProject = addJProp(techDescrGroup, "isFileForeignTechnicalDescriptionProject", "Файл (ин.)", baseLM.and1, addCProp(LogicalClass.instance, true, project), 1, fileForeignTechnicalDescriptionProject, 1);
 
         // патенты
         projectPatent = addDProp(idGroup, "projectPatent", "Проект патента", project, patent);
@@ -4376,7 +4380,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             super(parent, sID, caption);
 
             objProject = addSingleGroupObject(1, "project", project, "Проект", nameNativeProject, nameForeignProject, nameNativeClaimerProject, nameForeignClaimerProject, nameNativeFinalClusterProject, nameForeignFinalClusterProject,
-                    nativeProblemProject, foreignProblemProject, nativeInnovativeProject, foreignInnovativeProject, descGroup);
+                    nativeProblemProject, foreignProblemProject, nativeInnovativeProject, foreignInnovativeProject, descGroup, techDescrGroup);
 
             addPropertyDraw(objProject, problemGroup, analoguesGroup, commercializationGroup, historyGroup, projectmissionGroup, nativeResultsProject, foreignResultsProject);
             objProject.groupTo.setSingleClassView(ClassViewType.PANEL);
@@ -4474,6 +4478,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             problemMainInformationContainer.add(max);
             problemMainInformationContainer.add(design.getGroupPropertyContainer(objProject.groupTo, innovationGroup));
             problemMainInformationContainer.add(design.getGroupPropertyContainer(objProject.groupTo, problemGroup));
+            problemMainInformationContainer.add(design.getGroupPropertyContainer(objProject.groupTo, techDescrGroup));
             problemMainInformationContainer.add(author);
 
             ContainerView commercContainer = design.createContainer("Схема коммерциализации, конкурирующие решения, параметры рынка");              // схема коммерциализации и конкурирующие решения и параметры рынка
