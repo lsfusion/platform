@@ -347,14 +347,14 @@ public class ReportGenerator {
         return res;
     }
 
-    public static void exportToExcel(RemoteFormInterface remoteForm, Integer groupId, TimeZone timerZone) {
+    public static void exportToExcel(RemoteFormInterface remoteForm, Integer groupId, TimeZone timeZone) {
         try {
 
             File tempFile = File.createTempFile("lsf", ".xls");
 
             JExcelApiExporter xlsExporter = new JExcelApiExporter();
 
-            ReportGenerator report = new ReportGenerator(remoteForm, timerZone);
+            ReportGenerator report = new ReportGenerator(remoteForm, timeZone);
             JasperPrint print;
             if (groupId != null) {
                 print = report.createSingleGroupReport(groupId, true, true, null);
