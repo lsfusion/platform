@@ -533,18 +533,18 @@ public class ImportProjectsActionProperty extends ActionProperty {
         nativeMileStoneYearField = new ImportField(LM.nativeMileStoneYear);
         nativeMileStoneField = new ImportField(LM.nativeMileStone);
         orderNumberMileStoneField = new ImportField(LM.orderNumberMileStone);
-        nativeResearchDescriptionTypeMileStoneMileStoneField = new ImportField(LM.nativeDescriptionTypeMileStoneMileStone);
-        nativeProductCreationDescriptionTypeMileStoneMileStoneField = new ImportField(LM.nativeDescriptionTypeMileStoneMileStone);
-        nativePlanOnHiringDescriptionTypeMileStoneMileStoneField = new ImportField(LM.nativeDescriptionTypeMileStoneMileStone);
-        nativeLicensingDescriptionTypeMileStoneMileStoneField = new ImportField(LM.nativeDescriptionTypeMileStoneMileStone);
-        nativePromotionDescriptionTypeMileStoneMileStoneField = new ImportField(LM.nativeDescriptionTypeMileStoneMileStone);
-        nativeSellingDescriptionTypeMileStoneMileStoneField = new ImportField(LM.nativeDescriptionTypeMileStoneMileStone);
-        foreignResearchDescriptionTypeMileStoneMileStoneField = new ImportField(LM.foreignDescriptionTypeMileStoneMileStone);
-        foreignProductCreationDescriptionTypeMileStoneMileStoneField = new ImportField(LM.foreignDescriptionTypeMileStoneMileStone);
-        foreignPlanOnHiringDescriptionTypeMileStoneMileStoneField = new ImportField(LM.foreignDescriptionTypeMileStoneMileStone);
-        foreignLicensingDescriptionTypeMileStoneMileStoneField = new ImportField(LM.foreignDescriptionTypeMileStoneMileStone);
-        foreignPromotionDescriptionTypeMileStoneMileStoneField = new ImportField(LM.foreignDescriptionTypeMileStoneMileStone);
-        foreignSellingDescriptionTypeMileStoneMileStoneField = new ImportField(LM.foreignDescriptionTypeMileStoneMileStone);
+        nativeResearchDescriptionTypeMileStoneMileStoneField = new ImportField(LM.nativeDescriptionTypeMileStoneMileStoneMileStoneYear);
+        nativeProductCreationDescriptionTypeMileStoneMileStoneField = new ImportField(LM.nativeDescriptionTypeMileStoneMileStoneMileStoneYear);
+        nativePlanOnHiringDescriptionTypeMileStoneMileStoneField = new ImportField(LM.nativeDescriptionTypeMileStoneMileStoneMileStoneYear);
+        nativeLicensingDescriptionTypeMileStoneMileStoneField = new ImportField(LM.nativeDescriptionTypeMileStoneMileStoneMileStoneYear);
+        nativePromotionDescriptionTypeMileStoneMileStoneField = new ImportField(LM.nativeDescriptionTypeMileStoneMileStoneMileStoneYear);
+        nativeSellingDescriptionTypeMileStoneMileStoneField = new ImportField(LM.nativeDescriptionTypeMileStoneMileStoneMileStoneYear);
+        foreignResearchDescriptionTypeMileStoneMileStoneField = new ImportField(LM.foreignDescriptionTypeMileStoneMileStoneMileStoneYear);
+        foreignProductCreationDescriptionTypeMileStoneMileStoneField = new ImportField(LM.foreignDescriptionTypeMileStoneMileStoneMileStoneYear);
+        foreignPlanOnHiringDescriptionTypeMileStoneMileStoneField = new ImportField(LM.foreignDescriptionTypeMileStoneMileStoneMileStoneYear);
+        foreignLicensingDescriptionTypeMileStoneMileStoneField = new ImportField(LM.foreignDescriptionTypeMileStoneMileStoneMileStoneYear);
+        foreignPromotionDescriptionTypeMileStoneMileStoneField = new ImportField(LM.foreignDescriptionTypeMileStoneMileStoneMileStoneYear);
+        foreignSellingDescriptionTypeMileStoneMileStoneField = new ImportField(LM.foreignDescriptionTypeMileStoneMileStoneMileStoneYear);
         nativeHistoryProjectField = new ImportField(LM.nativeHistoryProject);
         foreignHistoryProjectField = new ImportField(LM.foreignHistoryProject);
         nativeDynamicsProjectField = new ImportField(LM.nativeDynamicsProject);
@@ -851,25 +851,24 @@ public class ImportProjectsActionProperty extends ActionProperty {
         propertiesMileStone.add(new ImportProperty(projectIdField, LM.projectMileStoneYear.getMapping(mileStoneYearKey),
                 LM.baseLM.object(LM.project).getMapping(projectKey)));
 
-        mileStoneKey = new ImportKey(LM.mileStone, LM.nativeSIDToMileStone.getMapping(nativeMileStoneField, nativeMileStoneYearField, projectIdField));
+        mileStoneKey = new ImportKey(LM.mileStone, LM.nativeSIDToMileStone.getMapping(nativeMileStoneField, projectIdField));
         propertiesMileStone.add(new ImportProperty(projectIdField, LM.projectMileStone.getMapping(mileStoneKey),
                 LM.baseLM.object(LM.project).getMapping(projectKey)));
-        propertiesMileStone.add(new ImportProperty(nativeMileStoneYearField, LM.yearMileStone.getMapping(mileStoneKey),
-                LM.baseLM.object(LM.mileStoneYear).getMapping(mileStoneYearKey)));
+        propertiesMileStone.add(new ImportProperty(nativeMileStoneYearField, LM.nativeMileStoneYear.getMapping(mileStoneYearKey)));
         propertiesMileStone.add(new ImportProperty(nativeMileStoneField, LM.nativeMileStone.getMapping(mileStoneKey)));
         propertiesMileStone.add(new ImportProperty(orderNumberMileStoneField, LM.orderNumberMileStone.getMapping(mileStoneKey)));
-        propertiesMileStoneNative.add(new ImportProperty(nativeResearchDescriptionTypeMileStoneMileStoneField, LM.nativeResearchDescriptionTypeMileStoneMileStone.getMapping(mileStoneKey)));
-        propertiesMileStoneNative.add(new ImportProperty(nativeProductCreationDescriptionTypeMileStoneMileStoneField, LM.nativeProductCreationDescriptionTypeMileStoneMileStone.getMapping(mileStoneKey)));
-        propertiesMileStoneNative.add(new ImportProperty(nativePlanOnHiringDescriptionTypeMileStoneMileStoneField, LM.nativePlanOnHiringDescriptionTypeMileStoneMileStone.getMapping(mileStoneKey)));
-        propertiesMileStoneNative.add(new ImportProperty(nativeLicensingDescriptionTypeMileStoneMileStoneField, LM.nativeLicensingDescriptionTypeMileStoneMileStone.getMapping(mileStoneKey)));
-        propertiesMileStoneNative.add(new ImportProperty(nativePromotionDescriptionTypeMileStoneMileStoneField, LM.nativePromotionDescriptionTypeMileStoneMileStone.getMapping(mileStoneKey)));
-        propertiesMileStoneNative.add(new ImportProperty(nativeSellingDescriptionTypeMileStoneMileStoneField, LM.nativeSellingDescriptionTypeMileStoneMileStone.getMapping(mileStoneKey)));
-        propertiesMileStoneForeign.add(new ImportProperty(foreignResearchDescriptionTypeMileStoneMileStoneField, LM.foreignResearchDescriptionTypeMileStoneMileStone.getMapping(mileStoneKey)));
-        propertiesMileStoneForeign.add(new ImportProperty(foreignProductCreationDescriptionTypeMileStoneMileStoneField, LM.foreignProductCreationDescriptionTypeMileStoneMileStone.getMapping(mileStoneKey)));
-        propertiesMileStoneForeign.add(new ImportProperty(foreignPlanOnHiringDescriptionTypeMileStoneMileStoneField, LM.foreignPlanOnHiringDescriptionTypeMileStoneMileStone.getMapping(mileStoneKey)));
-        propertiesMileStoneForeign.add(new ImportProperty(foreignLicensingDescriptionTypeMileStoneMileStoneField, LM.foreignLicensingDescriptionTypeMileStoneMileStone.getMapping(mileStoneKey)));
-        propertiesMileStoneForeign.add(new ImportProperty(foreignPromotionDescriptionTypeMileStoneMileStoneField, LM.foreignPromotionDescriptionTypeMileStoneMileStone.getMapping(mileStoneKey)));
-        propertiesMileStoneForeign.add(new ImportProperty(foreignSellingDescriptionTypeMileStoneMileStoneField, LM.foreignSellingDescriptionTypeMileStoneMileStone.getMapping(mileStoneKey)));
+        propertiesMileStoneNative.add(new ImportProperty(nativeResearchDescriptionTypeMileStoneMileStoneField, LM.nativeResearchDescriptionTypeMileStoneMileStoneYear.getMapping(mileStoneKey, mileStoneYearKey)));
+        propertiesMileStoneNative.add(new ImportProperty(nativeProductCreationDescriptionTypeMileStoneMileStoneField, LM.nativeProductCreationDescriptionTypeMileStoneMileStoneYear.getMapping(mileStoneKey, mileStoneYearKey)));
+        propertiesMileStoneNative.add(new ImportProperty(nativePlanOnHiringDescriptionTypeMileStoneMileStoneField, LM.nativePlanOnHiringDescriptionTypeMileStoneMileStoneYear.getMapping(mileStoneKey, mileStoneYearKey)));
+        propertiesMileStoneNative.add(new ImportProperty(nativeLicensingDescriptionTypeMileStoneMileStoneField, LM.nativeLicensingDescriptionTypeMileStoneMileStoneYear.getMapping(mileStoneKey, mileStoneYearKey)));
+        propertiesMileStoneNative.add(new ImportProperty(nativePromotionDescriptionTypeMileStoneMileStoneField, LM.nativePromotionDescriptionTypeMileStoneMileStoneYear.getMapping(mileStoneKey, mileStoneYearKey)));
+        propertiesMileStoneNative.add(new ImportProperty(nativeSellingDescriptionTypeMileStoneMileStoneField, LM.nativeSellingDescriptionTypeMileStoneMileStoneYear.getMapping(mileStoneKey, mileStoneYearKey)));
+        propertiesMileStoneForeign.add(new ImportProperty(foreignResearchDescriptionTypeMileStoneMileStoneField, LM.foreignResearchDescriptionTypeMileStoneMileStoneYear.getMapping(mileStoneKey, mileStoneYearKey)));
+        propertiesMileStoneForeign.add(new ImportProperty(foreignProductCreationDescriptionTypeMileStoneMileStoneField, LM.foreignProductCreationDescriptionTypeMileStoneMileStoneYear.getMapping(mileStoneKey, mileStoneYearKey)));
+        propertiesMileStoneForeign.add(new ImportProperty(foreignPlanOnHiringDescriptionTypeMileStoneMileStoneField, LM.foreignPlanOnHiringDescriptionTypeMileStoneMileStoneYear.getMapping(mileStoneKey, mileStoneYearKey)));
+        propertiesMileStoneForeign.add(new ImportProperty(foreignLicensingDescriptionTypeMileStoneMileStoneField, LM.foreignLicensingDescriptionTypeMileStoneMileStoneYear.getMapping(mileStoneKey, mileStoneYearKey)));
+        propertiesMileStoneForeign.add(new ImportProperty(foreignPromotionDescriptionTypeMileStoneMileStoneField, LM.foreignPromotionDescriptionTypeMileStoneMileStoneYear.getMapping(mileStoneKey, mileStoneYearKey)));
+        propertiesMileStoneForeign.add(new ImportProperty(foreignSellingDescriptionTypeMileStoneMileStoneField, LM.foreignSellingDescriptionTypeMileStoneMileStoneYear.getMapping(mileStoneKey, mileStoneYearKey)));
 
         objectivesKey = new ImportKey(LM.objectives, LM.nativeProjectSIDToObjectives.getMapping(nativeProjectObjectivesField, projectIdField));
         propertiesObjectives.add(new ImportProperty(projectIdField, LM.projectObjectives.getMapping(objectivesKey),
@@ -946,19 +945,19 @@ public class ImportProjectsActionProperty extends ActionProperty {
             connection.setDoInput(true);
 
             pInfo.responseContents = IOUtils.readBytesFromStream(connection.getInputStream());
-
-            //File file = new File("C://testNew.xml");
-            //InputStream is = new FileInputStream(file);
-            //long length = file.length();
-            //byte[] bytes = new byte[(int) length];
-            //int offset = 0;
-            //int numRead = 0;
-            //while (offset < bytes.length && (numRead = is.read(bytes, offset, bytes.length - offset)) >= 0) {
-            //    offset += numRead;
-            //}
-            //is.close();
-            //pInfo.responseContents = bytes;
-
+            /*
+            File file = new File("C://testNew.xml");
+            InputStream is = new FileInputStream(file);
+            long length = file.length();
+            byte[] bytes = new byte[(int) length];
+            int offset = 0;
+            int numRead = 0;
+            while (offset < bytes.length && (numRead = is.read(bytes, offset, bytes.length - offset)) >= 0) {
+                offset += numRead;
+            }
+            is.close();
+            pInfo.responseContents = bytes;
+            */
             SAXBuilder builder = new SAXBuilder();
             Document document = builder.build(new ByteArrayInputStream(pInfo.responseContents));
             pInfo.responseContents = null;
@@ -1197,19 +1196,19 @@ public class ImportProjectsActionProperty extends ActionProperty {
 
         try {
             pInfo.responseContents = IOUtils.readBytesFromStream(inputStream);
-
-            //File file = new File("C://testNew.xml");
-            //InputStream is = new FileInputStream(file);
-            //long length = file.length();
-            //byte[] bytes = new byte[(int) length];
-            //int offset = 0;
-            //int numRead = 0;
-            //while (offset < bytes.length && (numRead = is.read(bytes, offset, bytes.length - offset)) >= 0) {
-            //    offset += numRead;
-            //}
-            //is.close();
-            //pInfo.responseContents = bytes;
-
+            /*
+            File file = new File("C://testNew.xml");
+            InputStream is = new FileInputStream(file);
+            long length = file.length();
+            byte[] bytes = new byte[(int) length];
+            int offset = 0;
+            int numRead = 0;
+            while (offset < bytes.length && (numRead = is.read(bytes, offset, bytes.length - offset)) >= 0) {
+                offset += numRead;
+            }
+            is.close();
+            pInfo.responseContents = bytes;
+            */
             Document document = builder.build(new ByteArrayInputStream(pInfo.responseContents));
             pInfo.responseContents = null;
             Element rootNode = document.getRootElement();
@@ -1882,7 +1881,7 @@ public class ImportProjectsActionProperty extends ActionProperty {
                         dataSpecialist.add(rowSpecialist);
                     }
 
-                    List listMileStone = node.getChildren("mileStone");
+                    List listMileStone = node.getChildren("yearMileStone");
                     for (int j = 0; j < listMileStone.size(); j++) {
                         Element nodeMileStone = (Element) listMileStone.get(j);
                         List<Object> rowMileStone = new ArrayList<Object>();

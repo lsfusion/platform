@@ -1387,18 +1387,18 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP percentApplicationsTypeProjectStatus;
     LP inTestApplication;
     public LP projectMileStone, equalsMileStoneProject;
-    public LP nativeMileStone;
-    public LP yearMileStone;
+    public LP nativeMileStone, nativeToMileStone;;
+    public LP nativeSIDToMileStone;
+    public LP orderNumberMileStone;
     public LP projectMileStoneYear, equalsMileStoneYearProject;
     public LP nativeMileStoneYear;
     public LP nativeToMileStoneYear, nativeSIDToMileStoneYear;
-    public LP orderNumberMileStone;
-    LP nativeToMileStone;
-    public LP nativeSIDToMileStone;
-    public LP nativeDescriptionTypeMileStoneMileStoneYear;
-    public LP foreignDescriptionTypeMileStoneMileStoneYear;
-    LP nativeTypeMileStone;
-    LP foreignTypeMileStone;
+    public LP projectTypeMileStone;
+    public LP nativeTypeMileStone, foreignTypeMileStone;
+    LP nativeToTypeMileStone;
+    public LP nativeSIDToTypeMileStone;
+    public LP nativeDescriptionTypeMileStoneMileStoneMileStoneYear;
+    public LP foreignDescriptionTypeMileStoneMileStoneMileStoneYear;
     public LP nativeResearchDescriptionTypeMileStoneMileStoneYear;
     public LP nativeProductCreationDescriptionTypeMileStoneMileStoneYear;
     public LP nativePlanOnHiringDescriptionTypeMileStoneMileStoneYear;
@@ -2111,50 +2111,49 @@ public class SkolkovoLogicsModule extends LogicsModule {
         projectMileStone = addDProp("projectMileStone", "Проект квартала (ИД)", project, mileStone);
         equalsMileStoneProject = addJProp("equalsMileStoneProject", "Вкл", baseLM.equals2, projectMileStone, 1, 2);
 
-//        yearMileStone = addDProp("yearMileStone", "Год квартала (ИД)", mileStoneYear, mileStone);
-
         projectMileStoneYear = addDProp("projectMileStoneYear", "Проект года (ИД)", project, mileStoneYear);
         equalsMileStoneYearProject = addJProp("equalsMileStoneYearProject", "Вкл", baseLM.equals2, projectMileStoneYear, 1, 2);
 
         nativeMileStoneYear = addDProp("nativeMileStoneYear", "Год", StringClass.get(4), mileStoneYear);
-
-//        nativeToMileStoneYear = addAGProp("nativeToMileStone", "Название", nativeMileStoneYear, projectMileStoneYear);
-//        nativeSIDToMileStoneYear = addJProp("nativeSIDToMileStoneYear", "Дорожная карта", nativeToMileStoneYear, 1, sidToProject, 2);
+        nativeToMileStoneYear = addAGProp("nativeToMileStone", "Название", nativeMileStoneYear, projectMileStoneYear);
+        nativeSIDToMileStoneYear = addJProp("nativeSIDToMileStoneYear", "Дорожная карта", nativeToMileStoneYear, 1, sidToProject, 2);
 
         nativeMileStone = addDProp("nativeMileStone", "Название", InsensitiveStringClass.get(1), mileStone);
+        nativeToMileStone = addAGProp("nativeToMileStone", "Название", nativeMileStone, projectMileStone);
+        nativeSIDToMileStone = addJProp("nativeSIDToMileStone", "Дорожная карта", nativeToMileStone, 1, sidToProject, 2);
 
-        orderNumberMileStone = addDProp("orderNumberMileStone", "Порядок", IntegerClass.instance, mileStone);
-        orderNumberMileStone.setFixedCharWidth(2);
-
-//        nativeToMileStone = addAGProp("nativeToMileStone", "Название", nativeMileStone, yearMileStone);
-//        nativeSIDToMileStone = addJProp("nativeSIDToMileStone", "Дорожная карта", nativeToMileStone, 1, nativeSIDToMileStoneYear, 2, 3);
-
-        nativeDescriptionTypeMileStoneMileStoneYear = addDProp("nativeDescriptionTypeMileStoneMileStoneYear", "Описание дорожной карты", InsensitiveStringClass.get(1000), typeMileStone, mileStone, mileStoneYear);
-        nativeDescriptionTypeMileStoneMileStoneYear.setMinimumWidth(10);
-        nativeDescriptionTypeMileStoneMileStoneYear.setPreferredWidth(50);
-
-        nativeResearchDescriptionTypeMileStoneMileStoneYear = addJProp(true, "nativeResearchDescriptionTypeMileStoneMileStoneYear", "Описание разработки", nativeDescriptionTypeMileStoneMileStoneYear, addCProp(typeMileStone, "research and development"), 1);
-        nativeProductCreationDescriptionTypeMileStoneMileStoneYear = addJProp(true, "nativeProductCreationDescriptionTypeMileStoneMileStoneYear", "Описание создания продукта", nativeDescriptionTypeMileStoneMileStoneYear, addCProp(typeMileStone, "product Creation and Production"), 1);
-        nativePlanOnHiringDescriptionTypeMileStoneMileStoneYear = addJProp(true, "nativePlanOnHiringDescriptionTypeMileStoneMileStoneYear", "Описание плана по найму", nativeDescriptionTypeMileStoneMileStoneYear, addCProp(typeMileStone, "plan on hiring"), 1);
-        nativeLicensingDescriptionTypeMileStoneMileStoneYear = addJProp(true, "nativeLicensingDescriptionTypeMileStoneMileStoneYear", "Описание лицензирования", nativeDescriptionTypeMileStoneMileStoneYear, addCProp(typeMileStone, "licensing"), 1);
-        nativePromotionDescriptionTypeMileStoneMileStoneYear = addJProp(true, "nativePromotionDescriptionTypeMileStoneMileStoneYear", "Описание продвижения", nativeDescriptionTypeMileStoneMileStoneYear, addCProp(typeMileStone, "promotion"), 1);
-        nativeSellingDescriptionTypeMileStoneMileStoneYear = addJProp(true, "nativeSellingDescriptionTypeMileStoneMileStoneYear", "Описание продаж", nativeDescriptionTypeMileStoneMileStoneYear, addCProp(typeMileStone, "selling"), 1);
-
-        foreignDescriptionTypeMileStoneMileStoneYear = addDProp("foreignDescriptionTypeMileStoneMileStoneYear", "Description of the road map", InsensitiveStringClass.get(2000), typeMileStone, mileStone, mileStoneYear);
-        foreignDescriptionTypeMileStoneMileStoneYear.setMinimumWidth(10);
-        foreignDescriptionTypeMileStoneMileStoneYear.setPreferredWidth(50);
-
-        foreignResearchDescriptionTypeMileStoneMileStoneYear = addJProp(true, "foreignResearchDescriptionTypeMileStoneMileStoneYear", "Описание разработки", foreignDescriptionTypeMileStoneMileStoneYear, addCProp(typeMileStone, "research and development"), 1);
-        foreignProductCreationDescriptionTypeMileStoneMileStoneYear = addJProp(true, "foreignProductCreationDescriptionTypeMileStoneMileStoneYear", "Описание создания продукта", foreignDescriptionTypeMileStoneMileStoneYear, addCProp(typeMileStone, "product Creation and Production"), 1);
-        foreignPlanOnHiringDescriptionTypeMileStoneMileStoneYear = addJProp(true, "foreignPlanOnHiringDescriptionTypeMileStoneMileStoneYear", "Описание плана по найму", foreignDescriptionTypeMileStoneMileStoneYear, addCProp(typeMileStone, "plan on hiring"), 1);
-        foreignLicensingDescriptionTypeMileStoneMileStoneYear = addJProp(true, "foreignLicensingDescriptionTypeMileStoneMileStoneYear", "Описание лицензирования", foreignDescriptionTypeMileStoneMileStoneYear, addCProp(typeMileStone, "licensing"), 1);
-        foreignPromotionDescriptionTypeMileStoneMileStoneYear = addJProp(true, "foreignPromotionDescriptionTypeMileStoneMileStoneYear", "Описание продвижения", foreignDescriptionTypeMileStoneMileStoneYear, addCProp(typeMileStone, "promotion"), 1);
-        foreignSellingDescriptionTypeMileStoneMileStoneYear = addJProp(true, "foreignSellingDescriptionTypeMileStoneMileStoneYear", "Описание продаж", foreignDescriptionTypeMileStoneMileStoneYear, addCProp(typeMileStone, "selling"), 1);
-
+        projectTypeMileStone = addDProp("projectTypeMileStone", "Тип (ИД)", project, typeMileStone);
 
         nativeTypeMileStone = addDProp("nativeTypeMileStone", "Название раздела на русск.", InsensitiveStringClass.get(2000), typeMileStone);
         nativeTypeMileStone.setMinimumWidth(10);
         nativeTypeMileStone.setPreferredWidth(50);
+        nativeToTypeMileStone = addAGProp("nativeToTypeMileStone", "Название", nativeTypeMileStone, projectTypeMileStone);
+        nativeSIDToTypeMileStone = addJProp("nativeSIDToTypeMileStone", "Дорожная карта", nativeToTypeMileStone, 1, sidToProject, 2);
+
+        orderNumberMileStone = addDProp("orderNumberMileStone", "Порядок", IntegerClass.instance, mileStone);
+        orderNumberMileStone.setFixedCharWidth(2);
+
+        nativeDescriptionTypeMileStoneMileStoneMileStoneYear = addDProp("nativeDescriptionTypeMileStoneMileStoneMileStoneYear", "Описание дорожной карты", InsensitiveStringClass.get(1000), typeMileStone, mileStone, mileStoneYear);
+        nativeDescriptionTypeMileStoneMileStoneMileStoneYear.setMinimumWidth(10);
+        nativeDescriptionTypeMileStoneMileStoneMileStoneYear.setPreferredWidth(50);
+
+        nativeResearchDescriptionTypeMileStoneMileStoneYear = addJProp(true, "nativeResearchDescriptionTypeMileStoneMileStoneYear", "Описание разработки", nativeDescriptionTypeMileStoneMileStoneMileStoneYear, addCProp(typeMileStone, "research and development"), 1, 2);
+        nativeProductCreationDescriptionTypeMileStoneMileStoneYear = addJProp(true, "nativeProductCreationDescriptionTypeMileStoneMileStoneYear", "Описание создания продукта", nativeDescriptionTypeMileStoneMileStoneMileStoneYear, addCProp(typeMileStone, "product Creation and Production"), 1, 2);
+        nativePlanOnHiringDescriptionTypeMileStoneMileStoneYear = addJProp(true, "nativePlanOnHiringDescriptionTypeMileStoneMileStoneYear", "Описание плана по найму", nativeDescriptionTypeMileStoneMileStoneMileStoneYear, addCProp(typeMileStone, "plan on hiring"), 1, 2);
+        nativeLicensingDescriptionTypeMileStoneMileStoneYear = addJProp(true, "nativeLicensingDescriptionTypeMileStoneMileStoneYear", "Описание лицензирования", nativeDescriptionTypeMileStoneMileStoneMileStoneYear, addCProp(typeMileStone, "licensing"), 1, 2);
+        nativePromotionDescriptionTypeMileStoneMileStoneYear = addJProp(true, "nativePromotionDescriptionTypeMileStoneMileStoneYear", "Описание продвижения", nativeDescriptionTypeMileStoneMileStoneMileStoneYear, addCProp(typeMileStone, "promotion"), 1, 2);
+        nativeSellingDescriptionTypeMileStoneMileStoneYear = addJProp(true, "nativeSellingDescriptionTypeMileStoneMileStoneYear", "Описание продаж", nativeDescriptionTypeMileStoneMileStoneMileStoneYear, addCProp(typeMileStone, "selling"), 1, 2);
+
+        foreignDescriptionTypeMileStoneMileStoneMileStoneYear = addDProp("foreignDescriptionTypeMileStoneMileStoneMileStoneYear", "Description of the road map", InsensitiveStringClass.get(2000), typeMileStone, mileStone, mileStoneYear);
+        foreignDescriptionTypeMileStoneMileStoneMileStoneYear.setMinimumWidth(10);
+        foreignDescriptionTypeMileStoneMileStoneMileStoneYear.setPreferredWidth(50);
+
+        foreignResearchDescriptionTypeMileStoneMileStoneYear = addJProp(true, "foreignResearchDescriptionTypeMileStoneMileStoneYear", "Описание разработки", foreignDescriptionTypeMileStoneMileStoneMileStoneYear, addCProp(typeMileStone, "research and development"), 1, 2);
+        foreignProductCreationDescriptionTypeMileStoneMileStoneYear = addJProp(true, "foreignProductCreationDescriptionTypeMileStoneMileStoneYear", "Описание создания продукта", foreignDescriptionTypeMileStoneMileStoneMileStoneYear, addCProp(typeMileStone, "product Creation and Production"), 1, 2);
+        foreignPlanOnHiringDescriptionTypeMileStoneMileStoneYear = addJProp(true, "foreignPlanOnHiringDescriptionTypeMileStoneMileStoneYear", "Описание плана по найму", foreignDescriptionTypeMileStoneMileStoneMileStoneYear, addCProp(typeMileStone, "plan on hiring"), 1, 2);
+        foreignLicensingDescriptionTypeMileStoneMileStoneYear = addJProp(true, "foreignLicensingDescriptionTypeMileStoneMileStoneYear", "Описание лицензирования", foreignDescriptionTypeMileStoneMileStoneMileStoneYear, addCProp(typeMileStone, "licensing"), 1, 2);
+        foreignPromotionDescriptionTypeMileStoneMileStoneYear = addJProp(true, "foreignPromotionDescriptionTypeMileStoneMileStoneYear", "Описание продвижения", foreignDescriptionTypeMileStoneMileStoneMileStoneYear, addCProp(typeMileStone, "promotion"), 1, 2);
+        foreignSellingDescriptionTypeMileStoneMileStoneYear = addJProp(true, "foreignSellingDescriptionTypeMileStoneMileStoneYear", "Описание продаж", foreignDescriptionTypeMileStoneMileStoneMileStoneYear, addCProp(typeMileStone, "selling"), 1, 2);
 
         foreignTypeMileStone = addDProp("foreignTypeMileStone", "Section title", InsensitiveStringClass.get(2000), typeMileStone);
         foreignTypeMileStone.setMinimumWidth(10);
@@ -4434,16 +4433,16 @@ public class SkolkovoLogicsModule extends LogicsModule {
             addDefaultOrder(getPropertyDraw(nativeMileStone, objMileStone), true);
 
             objTypeMileStone = addSingleGroupObject(12, "typeMileStone", typeMileStone, "Раздел дорожной карты", baseLM.name, nativeTypeMileStone, foreignTypeMileStone);
-            PropertyDrawEntity count = addPropertyDraw(nativeDescriptionTypeMileStoneMileStoneYear, objTypeMileStone, objMileStone, objMileStoneYear);
+            PropertyDrawEntity count = addPropertyDraw(nativeDescriptionTypeMileStoneMileStoneMileStoneYear, objTypeMileStone, objMileStone, objMileStoneYear);
             count.columnGroupObjects.add(objMileStone.groupTo);
             count.propertyCaption = addPropertyObject(nativeMileStone, objMileStone);
 
-            PropertyDrawEntity count1 = addPropertyDraw(foreignDescriptionTypeMileStoneMileStoneYear, objTypeMileStone, objMileStone, objMileStoneYear);
+            PropertyDrawEntity count1 = addPropertyDraw(foreignDescriptionTypeMileStoneMileStoneMileStoneYear, objTypeMileStone, objMileStone, objMileStoneYear);
             count1.columnGroupObjects.add(objMileStone.groupTo);
             count1.propertyCaption = addPropertyObject(nativeMileStone, objMileStone);
 
             addObjectActions(this, objTypeMileStone);
-//            addPropertyDraw(objTypeMileStone, objMileStone, nativeDescriptionTypeMileStoneMileStoneYear, foreignDescriptionTypeMileStoneMileStoneYear);
+//            addPropertyDraw(objTypeMileStone, objMileStone, nativeDescriptionTypeMileStoneMileStoneMileStoneYear, foreignDescriptionTypeMileStoneMileStoneMileStoneYear);
 
             if (editR2Project == null)
                 editR2Project = addJProp(true, "editR2Project", "Редактировать проект", baseLM.and1,
