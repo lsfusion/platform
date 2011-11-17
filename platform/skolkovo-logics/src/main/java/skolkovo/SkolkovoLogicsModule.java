@@ -4567,6 +4567,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
             addActionsOnOk(addPropertyObject(setPositiveResultForesightCheckProject, objProject));
 
+            setPageSize(0);
+
             applyForesightCheckProject = addMFAProp(actionGroup, "Прошла проверку на соответствие форсайту", this, new ObjectEntity[] {objProject}, true);
             applyForesightCheckProject.property.askConfirm = true;
             applyForesightCheckProject.setImage("sign_tick.png");
@@ -5554,6 +5556,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(inExpertForesight, objExpert, objForesight)));
 
             includeProjectClusterForesight = addJProp(actionGroup, true, "Подключить", editClaimer, claimerProject, 1);
+
+            setPageSize(0);
         }
     }
 
