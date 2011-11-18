@@ -1,16 +1,13 @@
 package roman;
 
-import org.apache.commons.beanutils.converters.StringConverter;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
-import platform.base.DateConverter;
 import platform.server.classes.DateClass;
 import platform.server.integration.EDIInputTable;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.sql.Date;
-import java.text.DateFormat;
 import java.util.List;
 
 public class SOliverInvoiceEDIInputTable extends EDIInputTable {

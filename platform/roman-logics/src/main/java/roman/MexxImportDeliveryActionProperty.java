@@ -4,7 +4,6 @@ import net.sf.sevenzipjbinding.*;
 import net.sf.sevenzipjbinding.impl.RandomAccessFileInStream;
 import net.sf.sevenzipjbinding.simple.ISimpleInArchive;
 import net.sf.sevenzipjbinding.simple.ISimpleInArchiveItem;
-import org.apache.commons.beanutils.converters.StringConverter;
 import platform.base.BaseUtils;
 import platform.interop.action.MessageClientAction;
 import platform.server.logics.DataObject;
@@ -12,7 +11,6 @@ import platform.server.logics.property.ExecutionContext;
 
 import java.io.*;
 import java.sql.SQLException;
-import java.util.Arrays;
 import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;

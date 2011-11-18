@@ -999,7 +999,7 @@ public abstract class LogicsModule {
         return innerInterfaces;
     }
 
-    protected <T extends PropertyInterface> LP addSGProp(AbstractGroup group, String name, boolean persistent, boolean notZero, String caption, int interfaces, Object... params) {
+    protected LP addSGProp(AbstractGroup group, String name, boolean persistent, boolean notZero, String caption, int interfaces, Object... params) {
         List<PropertyInterface> innerInterfaces = genInterfaces(interfaces);
         List<PropertyInterfaceImplement<PropertyInterface>> implement = readImplements(innerInterfaces, params);
         return addSGProp(group, name, persistent, notZero, caption, innerInterfaces, implement);
