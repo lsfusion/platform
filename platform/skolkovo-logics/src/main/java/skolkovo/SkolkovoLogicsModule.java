@@ -395,8 +395,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
         initBaseGroupAliases();
 
         Settings.instance.setCountJoinsUseUnionInsteadOfUnionAll(5);
-        Settings.instance.setEditLogicalOnSingleClick(true);
-        Settings.instance.setEditActionOnSingleClick(true);
+//        Settings.instance.setEditLogicalOnSingleClick(true);
+//        Settings.instance.setEditActionOnSingleClick(true);
 
         contactGroup = addAbstractGroup("contactGroup", "Контакты организации", publicGroup);
 
@@ -831,7 +831,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP clusterNumber;
     LP currentClusterProject, firstClusterProject, lastClusterProject, finalClusterProject;
     LP lastClusterProjectVote, isLastClusterVote;
-    public LP nameNativeFinalClusterProject, nameForeignFinalClusterProject, nameNativeShortFinalClusterProject;
+    public LP nameNativeFinalClusterProject, nameForeignFinalClusterProject, nameNativeShortFinalClusterProject, emailFinalClusterProject;
 
     LP finalClusterProjectVote, nameNativeFinalClusterProjectVote;
 
@@ -2875,6 +2875,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         nameNativeFinalClusterProject = addJProp(projectInformationGroup, "nameNativeFinalClusterProject", "Тек. кластер", nameNative, finalClusterProject, 1);
         nameForeignFinalClusterProject = addJProp(projectInformationGroup, "nameForeignFinalClusterProject", "Тек. кластер (иностр.)", nameForeign, finalClusterProject, 1);
         nameNativeShortFinalClusterProject = addJProp(projectInformationGroup, "nameShortFinalClusterProject", "Тек. кластер (сокр.)", nameNativeShort, finalClusterProject, 1);
+        emailFinalClusterProject = addJProp("emailFinalClusterProject", "E-mail тек. кластера", baseLM.email, finalClusterProject, 1);
         inProjectCurrentCluster = addJProp(baseGroup, "inProjectCurrentCluster", "Вкл", inProjectCluster, 1, currentCluster);
 
         finalClusterProjectVote = addJProp("finalClusterProjectVote", "Тек. кластер (ИД)", finalClusterProject, projectVote, 1);
@@ -3452,13 +3453,15 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         emailForesightCheckProjectEA = addEAProp("Решение проверки о соответствии форсайту", project);
         addEARecepient(emailForesightCheckProjectEA, emailDocuments);
+        emailForesightCheckProjectEA.setDerivedForcedChange(addCProp(ActionClass.instance, true), resultForesightCheckProject, 1);
 
         emailNotificationProjectEA = addEAProp(project);
-        addEARecepient(emailNotificationProjectEA, emailDocuments);
+        addEARecepient(emailNotificationProjectEA, emailFinalClusterProject, 1);
         emailNotificationHeaderProject = addJProp(add2Strings, addCProp(StringClass.get(2000), "Проверка проекта - "), nameNativeProject, 1);
         emailNotificationProject = addJProp(baseGroup, true, "emailNotificationProject", "Проверка на соответствие направлению деятельности (e-mail)", emailNotificationProjectEA, 1, emailNotificationHeaderProject, 1);
         emailNotificationProject.setImage("email.png");
         emailNotificationProject.property.askConfirm = true;
+        emailNotificationProject.setDerivedForcedChange(addCProp(ActionClass.instance, true), needForesightCheckProject, 1);
 
         emailClaimerFormalControlEA = addEAProp(emailClaimerFromAddress, emailClaimerFromAddress, formalControl);
 
@@ -4554,7 +4557,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             addPropertyDraw(objCluster, nameNative, nameForeign, nameNativeShort);
 
             objForesight = addSingleGroupObject(foresight);
-            addPropertyDraw(includeProjectClusterForesight, objProject, objCluster, objForesight);
+//            addPropertyDraw(includeProjectClusterForesight, objProject, objCluster, objForesight);
             addPropertyDraw(objProject, objForesight, isRootInProjectForesight);
             addPropertyDraw(objForesight, sidForesight, nameNative, nameForeign, nameNativeShortClusterForesight, quantityInExpertForesight);
 
@@ -4563,8 +4566,10 @@ public class SkolkovoLogicsModule extends LogicsModule {
             setReadOnly(true);
 
             setReadOnly(inProjectCluster, false);
-            setReadOnly(includeProjectClusterForesight, false);
+//            setReadOnly(includeProjectClusterForesight, false);
             setReadOnly(isRootInProjectForesight, false);
+            setReadOnly(openApplicationProjectAction, false);
+            setReadOnly(exportProjectDocumentsAction, false);
 
             addActionsOnOk(addPropertyObject(setPositiveResultForesightCheckProject, objProject));
 
@@ -4632,8 +4637,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
             projectFilterGroup = new RegularFilterGroupEntity(genID());
             projectFilterGroup.addFilter(new RegularFilterEntity(genID(),
                     new NotNullFilterEntity(addPropertyObject(nameResultForesightCheckProject, objProject)),
-                    "C решением проверки на форсайты",
-                    KeyStroke.getKeyStroke(KeyEvent.VK_F10, 0)), true);
+                    "Только непроверенные проекты",
+                    KeyStroke.getKeyStroke(KeyEvent.VK_F10, 0)));
             addRegularFilterGroup(projectFilterGroup);
 
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(needForesightCheckProject, objProject)));
@@ -5544,7 +5549,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             super(parent, sID, "Кластеры");
 
             objCluster = addSingleGroupObject(1, "Кластер", cluster);
-            addPropertyDraw(objCluster, nameNative, nameForeign, inTestCluster);
+            addPropertyDraw(objCluster, nameNative, nameForeign, baseLM.email, inTestCluster);
             addObjectActions(this, objCluster);
 
             objForesight = addSingleGroupObject(2, "Форсайт", foresight);
@@ -6649,7 +6654,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
                             fileDocument.execute(file, context, documentObject);
                         else if ((fillForeignProject.read(context, projectObject)) == (Object) true || (translatedToEnglishProject.read(context, projectObject)) == (Object) true)
                             fileDocument.execute(generateApplicationFile(context, projectObject, true, true), context, documentObject);
-
+/*
                         Query<String, String> query = new Query<String, String>(Collections.singleton("specialist"));
                         query.and(projectSpecialist.getExpr(context.getModifier(), query.mapKeys.get("specialist")).compare(projectObject.getExpr(), Compare.EQUALS));
                         query.properties.put("nameNativeSpecialist", projectNonRussianSpecialist.getExpr(context.getModifier(), query.mapKeys.get("specialist")));
@@ -6687,7 +6692,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
                                 fileDocument.execute(file, context, documentObject);
                                 countStatement++;
                             }
-                        }
+                        } */
                     }
                 }
             } catch (IOException e) {

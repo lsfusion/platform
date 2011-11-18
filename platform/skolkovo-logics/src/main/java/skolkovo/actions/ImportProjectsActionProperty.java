@@ -1903,7 +1903,7 @@ public class ImportProjectsActionProperty extends ActionProperty {
                         dataSpecialist.add(rowSpecialist);
                     }
 
-                    List listMileStone = node.getChildren("yearMileStone");
+                    List listMileStone = node.getChildren("mileStone");
                     for (int j = 0; j < listMileStone.size(); j++) {
                         Element nodeMileStone = (Element) listMileStone.get(j);
                         List<Object> rowMileStone = new ArrayList<Object>();

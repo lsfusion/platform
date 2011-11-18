@@ -29,11 +29,11 @@
 	<field name="commonName" class="java.lang.String"/>
 	<field name="nativeTypeMileStone" class="java.lang.String"/>
 	<field name="foreignTypeMileStone" class="java.lang.String"/>
-	<field name="nativeDescriptionTypeMileStoneMileStoneYear" class="java.lang.String"/>
-	<field name="foreignDescriptionTypeMileStoneMileStoneYear" class="java.lang.String"/>
+	<field name="nativeDescriptionTypeMileStoneMileStoneMileStoneYear" class="java.lang.String"/>
+	<field name="foreignDescriptionTypeMileStoneMileStoneMileStoneYear" class="java.lang.String"/>
 	<field name="nativeMileStoneYear" class="java.lang.String"/>
-	<field name="nativeDescriptionTypeMileStoneMileStoneYear(caption)" class="java.lang.String"/>
-	<field name="foreignDescriptionTypeMileStoneMileStoneYear(caption)" class="java.lang.String"/>
+	<field name="nativeDescriptionTypeMileStoneMileStoneMileStoneYear(caption)" class="java.lang.String"/>
+	<field name="foreignDescriptionTypeMileStoneMileStoneMileStoneYear(caption)" class="java.lang.String"/>
 	<group name="Caption">
 		<groupExpression><![CDATA[$F{nativeMileStoneYear}]]></groupExpression>
 		<groupHeader>
@@ -43,7 +43,7 @@
 					<textElement textAlignment="Center">
 						<font isBold="true"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$F{nativeMileStoneYear}]]></textFieldExpression>
+					<textFieldExpression class="java.lang.String"><![CDATA[$F{nativeMileStoneYear}]]></textFieldExpression>
 				</textField>
 			</band>
 		</groupHeader>
@@ -57,14 +57,14 @@
 					<textElement textAlignment="Center">
 						<font isBold="true"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$F{nativeDescriptionTypeMileStoneMileStoneYear(caption)}]]></textFieldExpression>
+					<textFieldExpression class="java.lang.String"><![CDATA[$F{nativeDescriptionTypeMileStoneMileStoneMileStoneYear(caption)}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 					<reportElement style="GroupCellStyle0" positionType="Float" stretchType="RelativeToBandHeight" x="10" y="0" width="77" height="18" backcolor="#F0F0F0"/>
 					<textElement textAlignment="Center">
 						<font isBold="true"/>
 					</textElement>
-					<textFieldExpression><![CDATA["Название раздела"]]></textFieldExpression>
+					<textFieldExpression class="java.lang.String"><![CDATA["Название раздела"]]></textFieldExpression>
 				</textField>
 			</band>
 		</groupHeader>
@@ -74,7 +74,7 @@
 			<textField isStretchWithOverflow="true">
 				<reportElement style="BoldStyle" stretchType="RelativeToBandHeight" x="10" y="0" width="538" height="18"/>
 				<textElement/>
-				<textFieldExpression><![CDATA["Дорожная карта проекта (ключевые ближайшие (2-3 года) этапы) по форме, приведенной ниже:"]]></textFieldExpression>
+				<textFieldExpression class="java.lang.String"><![CDATA["Дорожная карта проекта (ключевые ближайшие (2-3 года) этапы) по форме, приведенной ниже:"]]></textFieldExpression>
 			</textField>
 		</band>
 	</title>
@@ -84,13 +84,13 @@
 				<reportElement style="GroupCellStyle1" positionType="Float" stretchType="RelativeToBandHeight" x="87" y="0" width="461" height="18"/>
 				<box topPadding="2" leftPadding="2" bottomPadding="2" rightPadding="2"/>
 				<textElement textAlignment="Center"/>
-				<textFieldExpression><![CDATA[$F{nativeDescriptionTypeMileStoneMileStoneYear}]]></textFieldExpression>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{nativeDescriptionTypeMileStoneMileStoneMileStoneYear}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle1" positionType="Float" stretchType="RelativeToBandHeight" x="10" y="0" width="77" height="18"/>
 				<box topPadding="2" leftPadding="2" bottomPadding="2" rightPadding="2"/>
 				<textElement textAlignment="Left"/>
-				<textFieldExpression><![CDATA[$F{nativeTypeMileStone}]]></textFieldExpression>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{nativeTypeMileStone}]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>
