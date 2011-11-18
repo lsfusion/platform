@@ -2,6 +2,7 @@ package jasperapi;
 
 import com.lowagie.text.Document;
 import com.lowagie.text.pdf.*;
+import com.lowagie.text.pdf.codec.Base64;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -12,7 +13,7 @@ import java.util.List;
 
 public class PdfUtils {
 
-    public static void mergePDFs(List<InputStream> streamOfPDFFiles, OutputStream outputStream, boolean paginate) {
+    public static void mergePDFs(List<InputStream> streamOfPDFFiles, List<String> titles, OutputStream outputStream, boolean paginate) {
 
         Document document = new Document();
         try {
@@ -20,6 +21,7 @@ public class PdfUtils {
             List<PdfReader> readers = new ArrayList<PdfReader>();
             int totalPages = 0;
             Iterator<InputStream> iteratorPDFs = pdfs.iterator();
+            Iterator<String> iteratorTitles = titles.iterator();
 
             // Create Readers for the pdfs.
             while (iteratorPDFs.hasNext()) {
@@ -32,7 +34,9 @@ public class PdfUtils {
             PdfWriter writer = PdfWriter.getInstance(document, outputStream);
 
             document.open();
-            BaseFont bf = BaseFont.createFont(BaseFont.HELVETICA, BaseFont.CP1252, BaseFont.NOT_EMBEDDED);
+            BaseFont bf = BaseFont.createFont("arial.ttf", BaseFont.IDENTITY_H, BaseFont.NOT_EMBEDDED);
+            //BaseFont bf = BaseFont.createFont("D:\\platform\\jasperapi\\src\\main\\resource\\times.ttf", BaseFont.IDENTITY_H, BaseFont.NOT_EMBEDDED);
+            //BaseFont bf = BaseFont.createFont("Arial", BaseFont.IDENTITY_H, BaseFont.NOT_EMBEDDED);
             PdfContentByte cb = writer.getDirectContent(); // Holds the PDF
             // data
 
@@ -44,6 +48,7 @@ public class PdfUtils {
             // Loop through the PDF files and add to the output.
             while (iteratorPDFReader.hasNext()) {
                 PdfReader pdfReader = iteratorPDFReader.next();
+                String title = iteratorTitles.next();
 
                 // Create a new page in the target for each source page.
                 while (pageOfCurrentReaderPDF < pdfReader.getNumberOfPages()) {
@@ -52,7 +57,6 @@ public class PdfUtils {
                     currentPageNumber++;
                     document.setPageSize(pdfReader.getPageSizeWithRotation(pageOfCurrentReaderPDF));
                     document.newPage();
-                    //pdfReader.getPageRotation(currentPageNumber);
                     page = writer.getImportedPage(pdfReader, pageOfCurrentReaderPDF);
                     cb.addTemplate(page, 0, 0);
 
@@ -61,6 +65,13 @@ public class PdfUtils {
                         cb.beginText();
                         cb.setFontAndSize(bf, 9);
                         cb.showTextAligned(PdfContentByte.ALIGN_CENTER, "" + currentPageNumber + " of " + totalPages, 520, 5, 0);
+                        cb.endText();
+                    }
+
+                    if(title!=null) {
+                        cb.beginText();
+                        cb.setFontAndSize(bf, 10);
+                        cb.showTextAligned(PdfContentByte.ALIGN_CENTER, title, 50, page.getHeight()-20, 0);
                         cb.endText();
                     }
                 }

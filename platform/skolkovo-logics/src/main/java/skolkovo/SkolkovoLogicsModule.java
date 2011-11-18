@@ -6724,6 +6724,10 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         if (newRegulation) {
             List<InputStream> pdfs = new ArrayList<InputStream>();
+            List<String> titles = new ArrayList<String>();
+            titles.add("");
+            titles.add("Приложение 1 к пункту «Технология и(или) направление прикладных исследований»");
+
             pdfs.add(new FileInputStream(tempFile));
             byte[] descriptionFile;
             if (foreign)
@@ -6734,7 +6738,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
                 pdfs.add(new ByteArrayInputStream(descriptionFile));
                 File outputFile = File.createTempFile("merged", ".pdf");
                 OutputStream output = new FileOutputStream(outputFile);
-                PdfUtils.mergePDFs(pdfs, output, false);
+                PdfUtils.mergePDFs(pdfs, titles, output, false);
                 return IOUtils.getFileBytes(outputFile);
             }
         }
