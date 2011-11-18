@@ -7,6 +7,7 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.i18n.client.DateTimeFormat;
+import com.google.gwt.i18n.client.LocaleInfo;
 import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.uibinder.client.UiField;
 import com.google.gwt.user.client.Element;
@@ -34,6 +35,8 @@ public abstract class ExpertMainWidget extends Composite {
 
     interface ExpertMainWidgetUiBinder extends UiBinder<Widget, ExpertMainWidget> {}
     private static ExpertMainWidgetUiBinder uiBinder = GWT.create(ExpertMainWidgetUiBinder.class);
+
+    private static ExpertMainWidgetCSSBundle cssBundle = ExpertMainWidgetCSSBundle.INSTANCE;
 
     private static ExpertFrameMessages messages = ExpertFrameMessages.Instance.get();
     private static BaseMessages baseMessages = BaseMessages.Instance.get();
@@ -86,6 +89,8 @@ public abstract class ExpertMainWidget extends Composite {
     Button bRefused;
     @UiField
     Button bConnected;
+    @UiField
+    Anchor connectedQuestionLink;
     @UiField
     HorizontalPanel voteButtonsPanel;
     @UiField
@@ -195,6 +200,8 @@ public abstract class ExpertMainWidget extends Composite {
 
     public ExpertMainWidget(VoteInfo vi) {
         initWidget(uiBinder.createAndBindUi(this));
+
+        cssBundle.css().ensureInjected();
 
         Date voteDate = vi.date == null ? new Date() : vi.date;
 
@@ -337,6 +344,8 @@ public abstract class ExpertMainWidget extends Composite {
         bVote.setText(messages.btnVote());
         bRefused.setText(messages.btnRefused());
         bConnected.setText(messages.btnConnected());
+        if ("ru".equals(LocaleInfo.getCurrentLocale().getLocaleName()))
+            connectedQuestionLink.setText(messages.connectedQuestion());
 
         if (vi.voteDone) {
             hideDataRows(!VOTED.equals(vi.voteResult));
@@ -428,6 +437,35 @@ public abstract class ExpertMainWidget extends Composite {
         bVote.addClickHandler(new VoteHandler(VOTED, true));
         bRefused.addClickHandler(new VoteHandler(REFUSED, true));
         bConnected.addClickHandler(new VoteHandler(CONNECTED, true));
+        connectedQuestionLink.addClickHandler(new ClickHandler() {
+            @Override
+            public void onClick(ClickEvent clickEvent) {
+                new MessageDialogBox(true, false, messages.connectedQuestion(), new HTML(messages.connectedInfo())).center();
+            }
+        });
+    }
+
+    private class MessageDialogBox extends DialogBox {
+        private MessageDialogBox(boolean autoHide, boolean modal, String title, HTML message) {
+            super(autoHide, modal);
+            setTitle(title);
+            setStyleName(cssBundle.css().dialog());
+            VerticalPanel contents = new VerticalPanel();
+            contents.add(message);
+
+            if (!autoHide) {
+                Button closeButton = new Button(messages.closeDialogButton(), new  ClickHandler() {
+                    public void onClick(ClickEvent event)
+                    {
+                        hide();
+                    }
+                });
+                contents.add(closeButton);
+                contents.setCellHorizontalAlignment(closeButton, HasAlignment.ALIGN_CENTER);
+            }
+
+            setWidget(contents);
+        }
     }
 
     private void addListBoxBooleanItems(ListBox listBox, int defaultValue) {

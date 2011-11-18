@@ -69,7 +69,10 @@
                                     <g:HorizontalPanel ui:field="voteButtonsPanel">
                                         <g:Button width="280" ui:field="bRefused" styleName="{style.refuse}"/>
                                         <g:Label width="20" />
-                                        <g:Button width="280" ui:field="bConnected"/>
+                                        <g:VerticalPanel>
+                                            <g:Button width="280" ui:field="bConnected" styleName="{style.connected}"/>
+                                            <g:Anchor href="javascript:;" ui:field="connectedQuestionLink" styleName="{style.connectedQuestion}"/>
+                                        </g:VerticalPanel>
                                     </g:HorizontalPanel>
                                     <br/>
                                     <span ui:field="voteResultSpan"></span>

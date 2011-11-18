@@ -58,6 +58,10 @@ public interface ExpertFrameMessages extends Messages {
 
     String btnConnected();
 
+    String connectedQuestion();
+
+    String connectedInfo();
+
     String incompletePrompt();
 
     String incompleteComment();
@@ -73,6 +77,8 @@ public interface ExpertFrameMessages extends Messages {
     String symbolsLeft();
 
     String noRevisionSpan();
+
+    String closeDialogButton();
 
     public static class Instance {
         private static final ExpertFrameMessages instance = (ExpertFrameMessages) GWT.create(ExpertFrameMessages.class);

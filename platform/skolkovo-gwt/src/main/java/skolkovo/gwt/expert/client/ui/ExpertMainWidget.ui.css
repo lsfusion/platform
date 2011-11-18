@@ -41,12 +41,17 @@ button:hover {
 }
 
 button.refuse {
+    height: 40px;
     border-color: #C9FA15;
     background: #bcd85f url(images/button_green_bg.png) repeat-x;
 }
 button.refuse:hover {
     background-position: 0 -25px;
     background-color: white;
+}
+
+button.connected {
+    height: 40px;
 }
 
 .numberLabel {
@@ -87,4 +92,16 @@ button.refuse:hover {
 .logoutNotice {
     font-size: 10pt;
     font-style: italic;
+}
+
+.connectedQuestion {
+    font-size: 8pt;
+    font-style: italic;
+}
+
+.dialog {
+    -webkit-box-shadow: 3px 3px 2px #888;
+    width: 50%;
+    background-color: #F8FCEB;
+    border: 2pt solid #C9FA15;
 }
