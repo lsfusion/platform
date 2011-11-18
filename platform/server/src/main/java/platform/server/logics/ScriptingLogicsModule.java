@@ -458,15 +458,15 @@ public class ScriptingLogicsModule extends LogicsModule {
         return resultParams;
     }
 
-    public LP<?> addScriptedGProp(String caption, LP<?> groupProp, boolean isSGProp, List<LP<?>> paramProps, List<List<Integer>> usedParams) throws ScriptingErrorLog.SemanticErrorException {
-        scriptLogger.info("addScriptedGProp(" + groupProp.property.getSID() + ", " + isSGProp + ", " + paramProps + ", " + usedParams + ");");
+    public LP<?> addScriptedGProp(String caption, int groupPropParamCount, boolean isSGProp, List<LP<?>> paramProps, List<List<Integer>> usedParams) throws ScriptingErrorLog.SemanticErrorException {
+        scriptLogger.info("addScriptedGProp(" + groupPropParamCount + ", " + isSGProp + ", " + paramProps + ", " + usedParams + ");");
 
         List<Object> resultParams = getParamsPlainList(paramProps, usedParams);
-        LP<?> resultProp;
+        LP<?> resultProp = null;
         if (isSGProp) {
-            resultProp = addSGProp(caption, groupProp, resultParams.toArray());
+            resultProp = addSGProp(null, genSID(), false, false, caption, groupPropParamCount, resultParams.toArray());
         } else {
-            resultProp = addMGProp(caption, groupProp, resultParams.toArray());
+            //resultProp = addMGProp(caption, groupProp, resultParams.toArray());
         }
         return resultProp;
     }

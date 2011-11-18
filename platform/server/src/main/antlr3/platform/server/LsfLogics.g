@@ -463,20 +463,19 @@ groupPropertyDefinition returns [LP property, List<Integer> usedParams]
 @init {
 	List<LP<?>> paramProps = new ArrayList<LP<?>>();
 	List<List<Integer>> usedParams = new ArrayList<List<Integer>>();
-	LP<?> groupProp = null;
 	boolean isSGProp = true;
 	List<String> groupContext = new ArrayList<String>();
 }
 @after {
 	if (parseState == ScriptingLogicsModule.State.PROP) {
-		$property = self.addScriptedGProp("", groupProp, isSGProp, paramProps, usedParams);
+		$property = self.addScriptedGProp("", groupContext.size(), isSGProp, paramProps, usedParams);
 	}
 }
 	:	'GROUP' (('SUM') { isSGProp = true; } | ('MAX') { isSGProp = false; })
-		prop=propertyExpression[groupContext, true] { groupProp = $prop.property; }
+		prop=propertyExpression[groupContext, true] { paramProps.add($prop.property); usedParams.add($prop.usedParams); }
 		'BY'
-		(firstParam=propertyExpression[groupContext, false] { paramProps.add($firstParam.property); usedParams.add($firstParam.usedParams); }
-		(',' nextParam=propertyExpression[groupContext, false] { paramProps.add($nextParam.property); usedParams.add($nextParam.usedParams);})* )
+		(firstParam=propertyExpression[groupContext, true] { paramProps.add($firstParam.property); usedParams.add($firstParam.usedParams); }
+		(',' nextParam=propertyExpression[groupContext, true] { paramProps.add($nextParam.property); usedParams.add($nextParam.usedParams);})* )
 		;
 
 
@@ -536,7 +535,7 @@ propertyObject returns [LP property, String propName, List<String> innerContext]
 	List<String> newContext = new ArrayList<String>(); 
 }
 	:	name=compoundID	{ if (parseState == ScriptingLogicsModule.State.PROP) 
-					{$property = self.getLPByName($name.text); $propName = $name.text;} 
+					{$property = self.findLPByCompoundName($name.text); $propName = $name.text;} 
 				} |
 		'[' 
 		(expr=propertyExpression[newContext, true] { $property = $expr.property; $innerContext = newContext; } |
