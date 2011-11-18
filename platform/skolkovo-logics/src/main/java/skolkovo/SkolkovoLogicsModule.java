@@ -2,6 +2,7 @@ package skolkovo;
 
 //import com.smartgwt.client.docs.Files;
 
+import jasperapi.PdfUtils;
 import jasperapi.ReportGenerator;
 import net.sf.jasperreports.engine.JRAbstractExporter;
 import net.sf.jasperreports.engine.JRException;
@@ -6496,7 +6497,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
                 if (file != null)
                     fileDocument.execute(file, context, documentObject);
                 else if ((fillNativeProject.read(context, projectObject)) == (Object) true || (translatedToRussianProject.read(context, projectObject)) == (Object) true)
-                    fileDocument.execute(generateApplicationFile(context, projectObject, false, true), context, documentObject);
+                    fileDocument.execute(generateApplicationFile(context, projectObject, false, false), context, documentObject);
 
                 file = fileForeignApplicationFormProject.read(context, projectObject);
                 documentObject = context.addObject(document);
@@ -6506,7 +6507,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
                 if (file != null)
                     fileDocument.execute(file, context, documentObject);
                 else if ((fillForeignProject.read(context, projectObject)) == (Object) true || (translatedToEnglishProject.read(context, projectObject)) == (Object) true)
-                    fileDocument.execute(generateApplicationFile(context, projectObject, true, true), context, documentObject);
+                    fileDocument.execute(generateApplicationFile(context, projectObject, true, false), context, documentObject);
 
                 file = fileNativeSummaryProject.read(context, projectObject);
                 if (file != null) {
@@ -6721,15 +6722,22 @@ public class SkolkovoLogicsModule extends LogicsModule {
         exporter.setParameter(JRExporterParameter.JASPER_PRINT, print);
         exporter.exportReport();
 
-        //if (newRegulation) {
-        //    List<InputStream> pdfs = new ArrayList<InputStream>();
-        //    FileInputStream fileInputStream = new FileInputStream();
-        //    fileOutputStream.write()
-        //    pdfs.add(new FileInputStream(tempFile));
-        //    pdfs.add(new FileInputStream(((Byte[])fileNativeApplicationFormProject.read(context, project)));
-        //    OutputStream output = new FileOutputStream("c:\\pdf\\merge.pdf");
-        //    MergePDF.concatPDFs(pdfs, output, true);
-        //}
+        if (newRegulation) {
+            List<InputStream> pdfs = new ArrayList<InputStream>();
+            pdfs.add(new FileInputStream(tempFile));
+            byte[] descriptionFile;
+            if (foreign)
+                descriptionFile = (byte[]) fileForeignTechnicalDescriptionProject.read(context, project);
+            else
+                descriptionFile = (byte[]) fileNativeTechnicalDescriptionProject.read(context, project);
+            if (descriptionFile != null) {
+                pdfs.add(new ByteArrayInputStream(descriptionFile));
+                File outputFile = File.createTempFile("merged", ".pdf");
+                OutputStream output = new FileOutputStream(outputFile);
+                PdfUtils.mergePDFs(pdfs, output, false);
+                return IOUtils.getFileBytes(outputFile);
+            }
+        }
         return IOUtils.getFileBytes(tempFile);
     }
 
