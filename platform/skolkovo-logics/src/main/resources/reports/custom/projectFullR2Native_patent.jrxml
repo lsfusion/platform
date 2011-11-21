@@ -30,46 +30,96 @@
 	<field name="valuatorPatent" class="java.lang.String"/>
 	<field name="linksPatent" class="java.lang.String"/>
 	<title>
-		<band height="52">
+		<band height="45">
 			<textField isStretchWithOverflow="true">
 				<reportElement style="BoldStyle" positionType="Float" x="10" y="26" width="265" height="18"/>
+				<box topPadding="0" leftPadding="0" bottomPadding="0" rightPadding="0">
+					<topPen lineWidth="0.0" lineStyle="Dashed"/>
+					<leftPen lineStyle="Dashed"/>
+					<bottomPen lineWidth="0.0" lineStyle="Dashed"/>
+					<rightPen lineStyle="Dashed"/>
+				</box>
 				<textElement/>
-				<textFieldExpression class="java.lang.String"><![CDATA["Тип заявки/патента"]]></textFieldExpression>
+				<textFieldExpression><![CDATA["Тип заявки/патента"]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
-				<reportElement style="BoldStyle" positionType="Float" x="275" y="26" width="110" height="18"/>
+				<reportElement style="BoldStyle" positionType="Float" x="275" y="26" width="273" height="18"/>
+				<box topPadding="0" leftPadding="0" bottomPadding="0" rightPadding="0">
+					<topPen lineWidth="0.0" lineStyle="Dashed"/>
+					<leftPen lineStyle="Dashed"/>
+					<bottomPen lineWidth="0.0" lineStyle="Dashed"/>
+					<rightPen lineStyle="Dashed"/>
+				</box>
 				<textElement/>
-				<textFieldExpression class="java.lang.String"><![CDATA["Номер"]]></textFieldExpression>
-			</textField>
-			<textField isStretchWithOverflow="true">
-				<reportElement style="BoldStyle" positionType="Float" x="385" y="26" width="163" height="18"/>
-				<textElement/>
-				<textFieldExpression class="java.lang.String"><![CDATA["Ссылки на патенты и алгоритмы"]]></textFieldExpression>
+				<textFieldExpression><![CDATA["Номер"]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
 				<reportElement style="BoldStyle" stretchType="RelativeToBandHeight" x="10" y="0" width="538" height="18"/>
 				<textElement/>
-				<textFieldExpression class="java.lang.String"><![CDATA["Укажите, при наличии, имеющие непосредственное отношение к проекту российские и (или) зарубежные патенты и (или) заявки на выдачу патента, обладателем (заявителем по которым) является Соискатель, а также разработанные алгоритмы, протоколы, программы для ЭВМ и (или) базы данных, исключительные права на которые принадлежат Вам, или, если они реализованы в рамках открытого кода GPL, то публичные ссылки на них"]]></textFieldExpression>
+				<textFieldExpression><![CDATA["Укажите, при наличии, имеющие непосредственное отношение к проекту российские и (или) зарубежные патенты и (или) заявки на выдачу патента, обладателем (заявителем по которым) является Соискатель, а также разработанные алгоритмы, протоколы, программы для ЭВМ и (или) базы данных, исключительные права на которые принадлежат Вам, или, если они реализованы в рамках открытого кода GPL, то публичные ссылки на них"]]></textFieldExpression>
 			</textField>
 		</band>
 	</title>
 	<detail>
+		<band height="18">
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement style="DefaultStyle" positionType="Float" stretchType="RelativeToBandHeight" x="10" y="0" width="265" height="18" backcolor="#CCCCFF"/>
+				<box topPadding="0" leftPadding="0" bottomPadding="0" rightPadding="0">
+					<topPen lineWidth="0.0" lineStyle="Dashed"/>
+					<leftPen lineStyle="Dashed"/>
+					<bottomPen lineWidth="0.0" lineStyle="Dashed"/>
+					<rightPen lineStyle="Dashed"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Top"/>
+				<textFieldExpression><![CDATA[$F{nativeTypePatent}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement style="DefaultStyle" positionType="Float" stretchType="RelativeToBandHeight" x="275" y="0" width="273" height="18" backcolor="#FFFFFF"/>
+				<box topPadding="0" leftPadding="0" bottomPadding="0" rightPadding="0">
+					<topPen lineWidth="0.0" lineStyle="Dashed"/>
+					<leftPen lineStyle="Dashed"/>
+					<bottomPen lineWidth="0.0" lineStyle="Dashed"/>
+					<rightPen lineStyle="Dashed"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Top"/>
+				<textFieldExpression><![CDATA[$F{nativeNumberPatent}]]></textFieldExpression>
+			</textField>
+		</band>
 		<band height="20">
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement style="DefaultStyle" positionType="Float" stretchType="RelativeToBandHeight" x="10" y="0" width="265" height="18"/>
-				<textElement textAlignment="Left" verticalAlignment="Top"/>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{nativeTypePatent}]]></textFieldExpression>
+				<reportElement style="BoldStyle" positionType="Float" stretchType="RelativeToBandHeight" x="10" y="0" width="47" height="18" isRemoveLineWhenBlank="true">
+					<printWhenExpression><![CDATA[$F{linksPatent}!=null]]></printWhenExpression>
+				</reportElement>
+				<box topPadding="0" leftPadding="0" bottomPadding="0" rightPadding="0">
+					<topPen lineWidth="0.0" lineStyle="Dashed"/>
+					<leftPen lineStyle="Dashed"/>
+					<bottomPen lineWidth="0.0" lineStyle="Dashed"/>
+					<rightPen lineStyle="Dashed"/>
+				</box>
+				<textElement>
+					<font isBold="false" isItalic="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Ссылки:"]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement style="DefaultStyle" positionType="Float" stretchType="RelativeToBandHeight" x="275" y="0" width="110" height="18"/>
+				<reportElement style="DefaultStyle" positionType="Float" stretchType="RelativeToBandHeight" x="57" y="0" width="491" height="18" isRemoveLineWhenBlank="true">
+					<printWhenExpression><![CDATA[$F{linksPatent}!=null]]></printWhenExpression>
+				</reportElement>
+				<box topPadding="0" leftPadding="0" bottomPadding="0" rightPadding="0">
+					<topPen lineWidth="0.0" lineStyle="Dashed"/>
+					<leftPen lineStyle="Dashed"/>
+					<bottomPen lineWidth="0.0" lineStyle="Dashed"/>
+					<rightPen lineStyle="Dashed"/>
+				</box>
 				<textElement textAlignment="Left" verticalAlignment="Top"/>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{nativeNumberPatent}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{linksPatent}]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement style="DefaultStyle" positionType="Float" stretchType="RelativeToBandHeight" x="385" y="0" width="163" height="18"/>
-				<textElement textAlignment="Left" verticalAlignment="Top"/>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{linksPatent}]]></textFieldExpression>
-			</textField>
+			<line>
+				<reportElement positionType="Float" x="10" y="19" width="538" height="1"/>
+				<graphicElement>
+					<pen lineWidth="0.25" lineStyle="Dotted"/>
+				</graphicElement>
+			</line>
 		</band>
 	</detail>
 	<summary>

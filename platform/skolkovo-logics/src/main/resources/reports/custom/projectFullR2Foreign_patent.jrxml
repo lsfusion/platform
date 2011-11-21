@@ -30,46 +30,60 @@
 	<field name="valuatorPatent" class="java.lang.String"/>
 	<field name="linksPatent" class="java.lang.String"/>
 	<title>
-		<band height="46">
+		<band height="45">
 			<textField isStretchWithOverflow="true">
-				<reportElement style="BoldStyle" positionType="Float" x="10" y="23" width="265" height="18"/>
+				<reportElement style="BoldStyle" positionType="Float" x="10" y="26" width="265" height="18"/>
 				<textElement/>
-				<textFieldExpression class="java.lang.String"><![CDATA["Type of application / patent"]]></textFieldExpression>
+				<textFieldExpression><![CDATA["Type of application / patent"]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
-				<reportElement style="BoldStyle" positionType="Float" x="275" y="23" width="110" height="18"/>
+				<reportElement style="BoldStyle" positionType="Float" x="275" y="26" width="273" height="18"/>
 				<textElement/>
-				<textFieldExpression class="java.lang.String"><![CDATA["Number"]]></textFieldExpression>
-			</textField>
-			<textField isStretchWithOverflow="true">
-				<reportElement style="BoldStyle" positionType="Float" x="385" y="23" width="163" height="18"/>
-				<textElement/>
-				<textFieldExpression class="java.lang.String"><![CDATA["References to patents and algorithms"]]></textFieldExpression>
+				<textFieldExpression><![CDATA["Number"]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
 				<reportElement style="BoldStyle" stretchType="RelativeToBandHeight" x="10" y="0" width="538" height="18"/>
 				<textElement/>
-				<textFieldExpression class="java.lang.String"><![CDATA["Specify, if any, relevance to the project, Russian and (or) foreign patents, and (or) a patent application, the owner (the applicant for which) is a competitor, as well as the developed algorithms, protocols, software, and (or) base data, the exclusive rights which belong to you, or if they are implemented within the framework of the Open Source GPL, then a public reference to them"]]></textFieldExpression>
+				<textFieldExpression><![CDATA["Specify, if any, relevance to the project, Russian and (or) foreign patents, and (or) a patent application, the owner (the applicant for which) is a competitor, as well as the developed algorithms, protocols, software, and (or) base data, the exclusive rights which belong to you, or if they are implemented within the framework of the Open Source GPL, then a public reference to them"]]></textFieldExpression>
 			</textField>
 		</band>
 	</title>
 	<detail>
-		<band height="20">
+		<band height="18">
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement style="DefaultStyle" positionType="Float" stretchType="RelativeToBandHeight" x="10" y="0" width="265" height="18"/>
 				<textElement textAlignment="Left" verticalAlignment="Top"/>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{foreignTypePatent}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{foreignTypePatent}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement style="DefaultStyle" positionType="Float" stretchType="RelativeToBandHeight" x="275" y="0" width="110" height="18"/>
+				<reportElement style="DefaultStyle" positionType="Float" stretchType="RelativeToBandHeight" x="275" y="0" width="273" height="18"/>
 				<textElement textAlignment="Left" verticalAlignment="Top"/>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{nativeNumberPatent}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{nativeNumberPatent}]]></textFieldExpression>
+			</textField>
+		</band>
+		<band height="20">
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement style="BoldStyle" positionType="Float" x="10" y="0" width="55" height="18" isRemoveLineWhenBlank="true">
+					<printWhenExpression><![CDATA[$F{linksPatent}!=null]]></printWhenExpression>
+				</reportElement>
+				<textElement>
+					<font isBold="false" isItalic="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA["References:"]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement style="DefaultStyle" positionType="Float" stretchType="RelativeToBandHeight" x="385" y="0" width="163" height="18"/>
+				<reportElement style="DefaultStyle" positionType="Float" stretchType="RelativeToBandHeight" x="65" y="0" width="483" height="18" isRemoveLineWhenBlank="true">
+					<printWhenExpression><![CDATA[$F{linksPatent}!=null]]></printWhenExpression>
+				</reportElement>
 				<textElement textAlignment="Left" verticalAlignment="Top"/>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{linksPatent}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{linksPatent}]]></textFieldExpression>
 			</textField>
+			<line>
+				<reportElement positionType="Float" x="10" y="19" width="538" height="1"/>
+				<graphicElement>
+					<pen lineWidth="0.25" lineStyle="Dotted"/>
+				</graphicElement>
+			</line>
 		</band>
 	</detail>
 	<summary>

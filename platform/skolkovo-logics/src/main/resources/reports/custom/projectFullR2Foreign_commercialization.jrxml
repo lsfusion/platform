@@ -21,17 +21,17 @@
 			<textField isStretchWithOverflow="true">
 				<reportElement style="BoldStyle" positionType="Float" stretchType="RelativeToBandHeight" x="10" y="26" width="245" height="18"/>
 				<textElement/>
-				<textFieldExpression class="java.lang.String"><![CDATA["The main directions of commercialization of the project"]]></textFieldExpression>
+				<textFieldExpression><![CDATA["The main directions of commercialization of the project"]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
-				<reportElement style="BoldStyle" positionType="Float" stretchType="RelativeToBandHeight" x="265" y="26" width="283" height="18"/>
+				<reportElement style="BoldStyle" positionType="Float" stretchType="RelativeToBandHeight" x="256" y="26" width="292" height="18"/>
 				<textElement/>
-				<textFieldExpression class="java.lang.String"><![CDATA["Comment"]]></textFieldExpression>
+				<textFieldExpression><![CDATA["Comment"]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
 				<reportElement style="BoldStyle" stretchType="RelativeToBandHeight" x="10" y="0" width="538" height="18"/>
 				<textElement/>
-				<textFieldExpression class="java.lang.String"><![CDATA["Describe the anticipated commercialization of the main areas of your project (in the short term and (or) in the future):"]]></textFieldExpression>
+				<textFieldExpression><![CDATA["Describe the anticipated commercialization of the main areas of your project (in the short term and (or) in the future):"]]></textFieldExpression>
 			</textField>
 		</band>
 	</title>
@@ -40,12 +40,12 @@
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement style="DefaultStyle" positionType="Float" stretchType="RelativeToBandHeight" x="10" y="0" width="245" height="18"/>
 				<textElement textAlignment="Left" verticalAlignment="Top"/>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{foreignProjectCommercialization}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{foreignProjectCommercialization}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement style="DefaultStyle" positionType="Float" stretchType="RelativeToBandHeight" x="265" y="0" width="283" height="18"/>
+				<reportElement style="DefaultStyle" positionType="Float" stretchType="RelativeToBandHeight" x="256" y="0" width="292" height="18"/>
 				<textElement textAlignment="Left" verticalAlignment="Top"/>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{foreignCommentProjectCommercialization}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{foreignCommentProjectCommercialization}]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>

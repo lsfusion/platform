@@ -20,76 +20,83 @@
 	<field name="nativeLinksPublications" class="java.lang.String"/>
 	<field name="foreignEditionPublications" class="java.lang.String"/>
 	<title>
-		<band height="57">
+		<band height="50">
 			<textField isStretchWithOverflow="true">
-				<reportElement style="BoldStyle" positionType="Float" stretchType="RelativeToBandHeight" x="10" y="23" width="141" height="27"/>
+				<reportElement style="BoldStyle" positionType="Float" stretchType="RelativeToBandHeight" x="10" y="26" width="189" height="18"/>
 				<textElement/>
-				<textFieldExpression class="java.lang.String"><![CDATA["Name"]]></textFieldExpression>
+				<textFieldExpression><![CDATA["Name"]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
-				<reportElement style="BoldStyle" positionType="Float" stretchType="RelativeToBandHeight" x="151" y="23" width="112" height="27"/>
+				<reportElement style="BoldStyle" positionType="Float" stretchType="RelativeToBandHeight" x="199" y="26" width="152" height="18"/>
 				<textElement/>
-				<textFieldExpression class="java.lang.String"><![CDATA["Author"]]></textFieldExpression>
+				<textFieldExpression><![CDATA["Author"]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
-				<reportElement style="BoldStyle" positionType="Float" stretchType="RelativeToBandHeight" x="361" y="23" width="46" height="27"/>
+				<reportElement style="BoldStyle" positionType="Float" stretchType="RelativeToBandHeight" x="502" y="26" width="46" height="18"/>
 				<textElement/>
-				<textFieldExpression class="java.lang.String"><![CDATA["Year"]]></textFieldExpression>
-			</textField>
-			<textField isStretchWithOverflow="true">
-				<reportElement style="BoldStyle" positionType="Float" stretchType="RelativeToBandHeight" x="407" y="23" width="141" height="27"/>
-				<textElement/>
-				<textFieldExpression class="java.lang.String"><![CDATA["The reference to the electronic version"]]></textFieldExpression>
+				<textFieldExpression><![CDATA["Year"]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
 				<reportElement style="BoldStyle" x="10" y="0" width="538" height="18"/>
 				<textElement/>
-				<textFieldExpression class="java.lang.String"><![CDATA["Give publications project team members on the project"]]></textFieldExpression>
+				<textFieldExpression><![CDATA["Give publications project team members on the project"]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
-				<reportElement style="BoldStyle" positionType="Float" stretchType="RelativeToBandHeight" x="263" y="23" width="98" height="27"/>
+				<reportElement style="BoldStyle" positionType="Float" stretchType="RelativeToBandHeight" x="351" y="26" width="151" height="18"/>
 				<textElement/>
-				<textFieldExpression class="java.lang.String"><![CDATA["Edition"]]></textFieldExpression>
+				<textFieldExpression><![CDATA["Edition"]]></textFieldExpression>
 			</textField>
 		</band>
 	</title>
 	<detail>
-		<band height="20">
+		<band height="18">
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement style="DefaultStyle" positionType="Float" stretchType="RelativeToBandHeight" x="10" y="0" width="141" height="18"/>
+				<reportElement style="DefaultStyle" positionType="Float" stretchType="RelativeToBandHeight" x="10" y="0" width="189" height="18"/>
 				<textElement textAlignment="Left" verticalAlignment="Top"/>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{foreignPublications}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{foreignPublications}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement style="DefaultStyle" positionType="Float" stretchType="RelativeToBandHeight" x="151" y="0" width="112" height="18"/>
+				<reportElement style="DefaultStyle" positionType="Float" stretchType="RelativeToBandHeight" x="199" y="0" width="152" height="18"/>
 				<textElement textAlignment="Left" verticalAlignment="Top"/>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{foreignAuthorPublications}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{foreignAuthorPublications}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="###0" isBlankWhenNull="true">
-				<reportElement style="DefaultStyle" positionType="Float" stretchType="RelativeToBandHeight" x="361" y="0" width="46" height="18"/>
+				<reportElement style="DefaultStyle" positionType="Float" stretchType="RelativeToBandHeight" x="502" y="0" width="46" height="18"/>
 				<textElement verticalAlignment="Top"/>
-				<textFieldExpression class="java.lang.Integer"><![CDATA[$F{datePublications}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{datePublications}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement style="DefaultStyle" positionType="Float" stretchType="RelativeToBandHeight" x="407" y="0" width="141" height="18"/>
+				<reportElement style="DefaultStyle" positionType="Float" stretchType="RelativeToBandHeight" x="351" y="0" width="151" height="18"/>
 				<textElement textAlignment="Left" verticalAlignment="Top"/>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{nativeLinksPublications}]]></textFieldExpression>
-			</textField>
-			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement style="DefaultStyle" positionType="Float" stretchType="RelativeToBandHeight" x="263" y="0" width="98" height="18"/>
-				<textElement textAlignment="Left" verticalAlignment="Top"/>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{foreignEditionPublications}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{foreignEditionPublications}]]></textFieldExpression>
 			</textField>
 		</band>
-	</detail>
-	<summary>
-		<band height="8">
+		<band height="20">
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement style="BoldStyle" positionType="Float" stretchType="RelativeToBandHeight" x="10" y="0" width="50" height="18" isRemoveLineWhenBlank="true">
+					<printWhenExpression><![CDATA[$F{nativeLinksPublications}!=null]]></printWhenExpression>
+				</reportElement>
+				<textElement>
+					<font isBold="false" isItalic="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Reference:"]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement style="DefaultStyle" positionType="Float" stretchType="RelativeToBandHeight" x="61" y="0" width="487" height="18" isRemoveLineWhenBlank="true">
+					<printWhenExpression><![CDATA[$F{nativeLinksPublications}!=null]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Left" verticalAlignment="Top"/>
+				<textFieldExpression><![CDATA[$F{nativeLinksPublications}]]></textFieldExpression>
+			</textField>
 			<line>
-				<reportElement positionType="Float" x="10" y="0" width="538" height="1"/>
+				<reportElement positionType="Float" x="10" y="19" width="538" height="1"/>
 				<graphicElement>
 					<pen lineWidth="0.25" lineStyle="Dotted"/>
 				</graphicElement>
 			</line>
 		</band>
+	</detail>
+	<summary>
+		<band height="6"/>
 	</summary>
 </jasperReport>

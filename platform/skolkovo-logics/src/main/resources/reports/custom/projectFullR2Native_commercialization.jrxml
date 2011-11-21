@@ -24,7 +24,7 @@
 				<textFieldExpression><![CDATA["Основные направления коммерциализации проекта"]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
-				<reportElement style="BoldStyle" positionType="Float" stretchType="RelativeToBandHeight" x="266" y="26" width="282" height="18"/>
+				<reportElement style="BoldStyle" positionType="Float" stretchType="RelativeToBandHeight" x="256" y="26" width="292" height="18"/>
 				<textElement/>
 				<textFieldExpression><![CDATA["Комментарий"]]></textFieldExpression>
 			</textField>
@@ -43,7 +43,7 @@
 				<textFieldExpression><![CDATA[$F{nativeProjectCommercialization}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement style="DefaultStyle" positionType="Float" stretchType="RelativeToBandHeight" x="266" y="0" width="282" height="18"/>
+				<reportElement style="DefaultStyle" positionType="Float" stretchType="RelativeToBandHeight" x="256" y="0" width="292" height="18"/>
 				<textElement textAlignment="Left" verticalAlignment="Top"/>
 				<textFieldExpression><![CDATA[$F{nativeCommentProjectCommercialization}]]></textFieldExpression>
 			</textField>

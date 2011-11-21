@@ -2,7 +2,7 @@
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="project" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0">
 	<property name="ireport.zoom" value="1.5"/>
 	<property name="ireport.x" value="0"/>
-	<property name="ireport.y" value="1386"/>
+	<property name="ireport.y" value="223"/>
 	<style name="DefaultStyle" isDefault="true" vAlign="Middle" fontName="lsf.TimesNewRoman" fontSize="10"/>
 	<style name="BoldStyle" fontName="lsf.TimesNewRoman" fontSize="10" isBold="true">
 		<paragraph rightIndent="3"/>
@@ -219,7 +219,7 @@
 			</band>
 			<band height="80">
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-					<reportElement style="DefaultStyle" positionType="Float" x="10" y="52" width="217" height="18"/>
+					<reportElement style="DefaultStyle" positionType="Float" x="10" y="52" width="217" height="18" isRemoveLineWhenBlank="true"/>
 					<textElement textAlignment="Left" verticalAlignment="Top"/>
 					<textFieldExpression><![CDATA[$F{nameNativeContactProject}]]></textFieldExpression>
 				</textField>
@@ -229,12 +229,12 @@
 					<textFieldExpression><![CDATA["Контактное лицо по проекту (лицо, заполнявшее анкету): "]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-					<reportElement style="DefaultStyle" positionType="Float" x="227" y="52" width="151" height="18"/>
+					<reportElement style="DefaultStyle" positionType="Float" x="227" y="52" width="151" height="18" isRemoveLineWhenBlank="true"/>
 					<textElement textAlignment="Left" verticalAlignment="Top"/>
 					<textFieldExpression><![CDATA[$F{phoneContactProject}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-					<reportElement style="DefaultStyle" positionType="Float" x="378" y="52" width="170" height="18"/>
+					<reportElement style="DefaultStyle" positionType="Float" x="378" y="52" width="170" height="18" isRemoveLineWhenBlank="true"/>
 					<textElement textAlignment="Left" verticalAlignment="Top"/>
 					<textFieldExpression><![CDATA[$F{emailContactProject}]]></textFieldExpression>
 				</textField>
@@ -329,19 +329,19 @@
 					</graphicElement>
 				</line>
 			</band>
-			<band height="27">
+			<band height="48">
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-					<reportElement style="DefaultStyle" positionType="Float" x="165" y="0" width="383" height="18"/>
+					<reportElement style="DefaultStyle" positionType="Float" x="10" y="22" width="538" height="18" isRemoveLineWhenBlank="true"/>
 					<textElement textAlignment="Left" verticalAlignment="Top"/>
 					<textFieldExpression><![CDATA[$F{linksMarketTrendsProject}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
-					<reportElement style="BoldStyle" positionType="Float" x="10" y="0" width="151" height="18"/>
+					<reportElement style="BoldStyle" positionType="Float" x="10" y="0" width="538" height="18"/>
 					<textElement verticalAlignment="Top"/>
 					<textFieldExpression><![CDATA["Приведите ссылки на соответствующие исследования и материалы:"]]></textFieldExpression>
 				</textField>
 				<line>
-					<reportElement positionType="Float" x="10" y="19" width="538" height="1"/>
+					<reportElement positionType="Float" x="10" y="41" width="538" height="1"/>
 					<graphicElement>
 						<pen lineWidth="0.25" lineStyle="Dotted"/>
 					</graphicElement>
@@ -549,14 +549,14 @@
 					</graphicElement>
 				</line>
 			</band>
-			<band height="30">
+			<band height="50">
 				<textField isStretchWithOverflow="true">
-					<reportElement style="BoldStyle" positionType="Float" x="10" y="0" width="151" height="18"/>
+					<reportElement style="BoldStyle" positionType="Float" x="10" y="0" width="538" height="18"/>
 					<textElement verticalAlignment="Top"/>
 					<textFieldExpression><![CDATA["Приведите ссылки на соответствующие исследования рынков (на русском или английском языках)"]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-					<reportElement style="DefaultStyle" positionType="Float" x="165" y="0" width="383" height="18"/>
+					<reportElement style="DefaultStyle" positionType="Float" x="10" y="22" width="538" height="18"/>
 					<textElement textAlignment="Left" verticalAlignment="Top"/>
 					<textFieldExpression><![CDATA[$F{linksMarketIntroductionProject}]]></textFieldExpression>
 				</textField>
