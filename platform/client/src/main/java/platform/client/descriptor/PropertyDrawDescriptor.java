@@ -25,6 +25,7 @@ public class PropertyDrawDescriptor extends ContextIdentityObject implements Cli
 
     private PropertyObjectDescriptor propertyObject;
     private PropertyObjectDescriptor propertyCaption;
+    private PropertyObjectDescriptor propertyFooter;
     private PropertyObjectDescriptor propertyHighlight;
 
     private boolean readOnly;
@@ -204,6 +205,7 @@ public class PropertyDrawDescriptor extends ContextIdentityObject implements Cli
         pool.serializeObject(outStream, toDraw);
         pool.serializeCollection(outStream, columnGroupObjects);
         pool.serializeObject(outStream, propertyCaption);
+        pool.serializeObject(outStream, propertyFooter);
         pool.serializeObject(outStream, propertyHighlight);
 
         outStream.writeBoolean(shouldBeLast);
@@ -219,6 +221,7 @@ public class PropertyDrawDescriptor extends ContextIdentityObject implements Cli
         toDraw = (GroupObjectDescriptor) pool.deserializeObject(inStream);
         columnGroupObjects = pool.deserializeList(inStream);
         propertyCaption = (PropertyObjectDescriptor) pool.deserializeObject(inStream);
+        propertyFooter = (PropertyObjectDescriptor) pool.deserializeObject(inStream);
         propertyHighlight = (PropertyObjectDescriptor) pool.deserializeObject(inStream);
 
         shouldBeLast = inStream.readBoolean();
