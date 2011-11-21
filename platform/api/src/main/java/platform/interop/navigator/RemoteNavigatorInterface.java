@@ -31,6 +31,10 @@ public interface RemoteNavigatorInterface extends PendingRemote, RemoteContextIn
 
     void relogin(String login) throws RemoteException;
 
+    String getCurrentUserLogin() throws RemoteException;
+
+    void changePassword(String login, String newPassword) throws RemoteException;
+
     void clientExceptionLog(String info) throws RemoteException;
 
     final static String NAVIGATORGROUP_RELEVANTFORM = "_NAV_RELEVANTFORM_";

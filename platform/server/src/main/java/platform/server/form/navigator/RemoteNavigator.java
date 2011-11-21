@@ -112,6 +112,32 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteContextO
         }
     }
 
+    public void changePassword(String login, String newPassword) throws RemoteException {
+        try {
+            DataSession session = createSession();
+            Integer userId = (Integer) BL.LM.loginToUser.read(session, new DataObject(login, StringClass.get(30)));
+            DataObject user = session.getDataObject(userId, BL.LM.customUser.getType());
+            BL.LM.userPassword.execute(newPassword, session, session.modifier, user);
+            session.apply(BL);
+            session.close();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public String getCurrentUserLogin() throws RemoteException {
+        try {
+            DataSession session = createSession();
+            Integer userId = (Integer)BL.LM.currentUser.read(session);
+            DataObject currentUser = session.getDataObject(userId, ObjectType.instance);
+            String userLogin = (String)BL.LM.userLogin.read(session, currentUser);
+            session.close();
+            return userLogin.trim();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     public void clientExceptionLog(String info) {
         String errorMessage = info + " в " + new SimpleDateFormat().format(Calendar.getInstance().getTime());
         System.err.println(errorMessage);

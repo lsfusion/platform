@@ -6730,7 +6730,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         if (newRegulation) {
             List<InputStream> pdfs = new ArrayList<InputStream>();
             List<String> titles = new ArrayList<String>();
-            titles.add("");
+            titles.add(null);
             titles.add("Приложение 1 к пункту «Технология и(или) направление прикладных исследований»");
 
             pdfs.add(new FileInputStream(tempFile));
