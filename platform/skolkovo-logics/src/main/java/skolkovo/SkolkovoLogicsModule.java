@@ -4579,6 +4579,13 @@ public class SkolkovoLogicsModule extends LogicsModule {
             applyForesightCheckProject.property.askConfirm = true;
             applyForesightCheckProject.setImage("sign_tick.png");
         }
+
+        @Override
+        public FormView createDefaultRichDesign() {
+            DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign();
+            design.getApplyFunction().setVisible(false);
+            return design;
+        }
     }
 
     public class ForesightAdviceFormEntity extends FormEntity<SkolkovoBusinessLogics> {

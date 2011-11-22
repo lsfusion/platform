@@ -388,7 +388,9 @@ public class ClientFormController {
                     applyChanges(false);
                 }
             });
-            buttonApply.setEnabled(false);
+            if (buttonApply != null) {
+                buttonApply.setEnabled(false);
+            }
 
             buttonCancel = addClientFunction(form.getCancelFunction(), cancelKeyStroke, new AbstractAction() {
                 public void actionPerformed(ActionEvent ae) {
