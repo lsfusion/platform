@@ -545,7 +545,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
     public LP nameNativeClaimerProject, nameForeignClaimerProject;
     //LP nameForeignClaimerProject;
     //LP nameForeignJoinClaimerProject;
-    LP emailDocuments, emailPresident;
+    LP emailDocuments, emailIO, emailPresident;
     LP isR1ProjectVote;
     LP isR2ProjectVote;
 
@@ -3353,6 +3353,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         numberOldExpertVote = addOProp("numberOldExpertVote", "Номер (стар.)", OrderType.SUM, addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), inOldExpertVote, 1, 2), true, true, 1, 2, 1);
 
         emailDocuments = addDProp(baseGroup, "emailDocuments", "E-mail для документов", StringClass.get(50));
+        emailIO = addDProp(baseGroup, "emailIO", "E-mail инвестиционного отдела", StringClass.get(50));
         emailPresident = addDProp(baseGroup, "emailPresident", "E-mail аппарата президента Фонда", StringClass.get(50));
 
         emailLetterExpertVoteEA = addEAProp(expert, vote);
@@ -3452,11 +3453,12 @@ public class SkolkovoLogicsModule extends LogicsModule {
         emailClosedVote.setDerivedForcedChange(addCProp(ActionClass.instance, true), closedVote, 1);
 
         emailForesightCheckProjectEA = addEAProp("Решение проверки о соответствии форсайту", project);
-        addEARecepient(emailForesightCheckProjectEA, emailDocuments);
+        addEARecepient(emailForesightCheckProjectEA, emailIO);
         emailForesightCheckProjectEA.setDerivedForcedChange(addCProp(ActionClass.instance, true), resultForesightCheckProject, 1);
 
-        emailNotificationProjectEA = addEAProp(project);
+        emailNotificationProjectEA = addEAProp(emailIO, project);
         addEARecepient(emailNotificationProjectEA, emailFinalClusterProject, 1);
+        addEARecepient(emailNotificationProjectEA, MimeMessage.RecipientType.CC, emailIO, 1);
         emailNotificationHeaderProject = addJProp(add2Strings, addCProp(StringClass.get(2000), "Проверка проекта - "), nameNativeProject, 1);
         emailNotificationProject = addJProp(baseGroup, true, "emailNotificationProject", "Проверка на соответствие направлению деятельности (e-mail)", emailNotificationProjectEA, 1, emailNotificationHeaderProject, 1);
         emailNotificationProject.setImage("email.png");
@@ -3839,7 +3841,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         datePositiveFSResultProject = addJProp("datePositiveFSResultProject", true, "Дата статуса", baseLM.and1, dateResultForesightCheckProject, 1, addJProp(baseLM.equals2, statusProject, 1, addCProp(projectStatus, "positiveFSResult")), 1);
 
-        dateNotificationPeriodProject = addJProp("dateNotificationPeriodProject", "Дата до которой д.б. проверен", baseLM.jumpWorkdays, baseLM.defaultCountry, datePositiveLegalResultProject, 1, addCProp(IntegerClass.instance, 3));
+        dateNotificationPeriodProject = addJProp("dateNotificationPeriodProject", "Дата до которой д.б. проверен", baseLM.jumpWorkdays, baseLM.defaultCountry, datePositiveLegalResultProject, 1, addCProp(IntegerClass.instance, 2));
 
         dateNeedTranslationStatusProject = addJProp("dateNeedTranslationStatusProject", true, "Дата статуса", baseLM.and1, dateSentForTranslationProject, 1, addJProp(baseLM.equals2, statusProject, 1, addCProp(projectStatus, "needTranslation")), 1);
 
