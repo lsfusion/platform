@@ -6,6 +6,7 @@ import platform.server.classes.sets.AndClassSet;
 import platform.server.classes.sets.OrClassSet;
 import platform.server.data.SQLSession;
 import platform.server.data.expr.*;
+import platform.server.data.expr.query.Stat;
 import platform.server.data.query.Query;
 import platform.server.data.type.Type;
 import platform.server.form.entity.ObjectEntity;
@@ -235,5 +236,9 @@ public abstract class DataClass<T> implements StaticClass, Type<T>, AndClassSet,
 
     public boolean calculateStat() {
         return true;
+    }
+
+    public Stat getDefaultStat() {
+        return getTypeStat().min(Stat.DEFAULT);
     }
 }

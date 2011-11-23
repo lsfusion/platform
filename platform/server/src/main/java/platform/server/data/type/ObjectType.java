@@ -8,6 +8,7 @@ import platform.server.classes.sets.AndClassSet;
 import platform.server.data.SQLSession;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyType;
+import platform.server.data.expr.query.Stat;
 import platform.server.data.query.Query;
 import platform.server.data.sql.SQLSyntax;
 import platform.server.form.view.report.ReportDrawField;
@@ -119,5 +120,9 @@ public class ObjectType implements Type<Integer> {
 
     public AndClassSet getBaseClassSet(BaseClass baseClass) {
         return baseClass.getUpSet();
+    }
+
+    public Stat getDefaultStat() {
+        return Stat.DEFAULT;
     }
 }
