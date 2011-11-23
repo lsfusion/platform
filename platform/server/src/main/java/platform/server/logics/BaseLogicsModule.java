@@ -69,6 +69,9 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public StaticCustomClass connectionStatus;
     public ConcreteCustomClass dictionary;
     public ConcreteCustomClass dictionaryEntry;
+    public ConcreteCustomClass table;
+    public ConcreteCustomClass tableKey;
+    public ConcreteCustomClass tableColumn;
 
     public AbstractCustomClass transaction, barcodeObject;
 
@@ -260,6 +263,22 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public LP userRoleFormDefaultNumber;
     public LP userFormDefaultNumber;
 
+    public LP sidTable;
+    public LP sidTableKey;
+    public LP nameTableKey;
+    public LP sidTableColumn;
+    public LP propertyTableColumn;
+    public LP propertyNameTableColumn;
+    public LP sidToTable;
+    public LP sidToTableKey;
+    public LP sidToTableColumn;
+    public LP tableTableKey;
+    public LP classTableKey;
+    public LP tableTableColumn;
+    public LP rowsTable;
+    public LP quantityTableKey;
+    public LP quantityTableColumn;
+
     public LP customID;
     public LP stringID;
     public LP integerID;
@@ -325,7 +344,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public final StringClass formSIDValueClass = StringClass.get(50);
     public final StringClass formCaptionValueClass = StringClass.get(250);
 
-    public final StringClass propertySIDValueClass = StringClass.get(50);
+    public final StringClass propertySIDValueClass = StringClass.get(100);
     public final StringClass propertyCaptionValueClass = StringClass.get(250);
 
     public List<LP> lproperties = new ArrayList<LP>();
@@ -372,6 +391,10 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         property = addConcreteClass("property", getString("logics.property"), baseClass);
         dictionary = addConcreteClass("dictionary", getString("logics.dictionary"), baseClass.named);
         dictionaryEntry = addConcreteClass("dictionaryEntry", getString("logics.dictionary.entries"), baseClass);
+
+        table = addConcreteClass("table", getString("logics.tables.table"), baseClass);
+        tableKey = addConcreteClass("tableKey", getString("lodics.tables.key"), baseClass);
+        tableColumn = addConcreteClass("tableColumn", getString("logics.tables.column"), baseClass);
     }
 
     @Override
@@ -415,6 +438,10 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
         tableFactory.include("connectionNavigatorElement", connection, navigatorElement);
         tableFactory.include("userRoleNavigatorElement", userRole, navigatorElement);
+
+        tableFactory.include("tables", table);
+        tableFactory.include("tableKey", tableKey);
+        tableFactory.include("tableColumn", tableColumn);
     }
 
     @Override
@@ -670,6 +697,22 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
         selectUserRoles = addSelectFromListAction(null, getString("logics.user.role.edit.roles"), inUserRole, userRole, customUser);
         //selectRoleForms = addSelectFromListAction(null, "Редактировать формы", permissionUserRoleForm, navigatorElement, userRole);
+
+        sidTable = addDProp(baseGroup, "sidTable", getString("logics.tables.name"), StringClass.get(100), table);
+        sidTableKey = addDProp("sidTableKey", getString("logics.tables.key.sid"), StringClass.get(100), tableKey);
+        nameTableKey = addDProp(baseGroup, "nameTableKey", getString("logics.tables.key.name"), StringClass.get(20), tableKey);
+        sidTableColumn = addDProp(baseGroup, "sidTableColumn", getString("logics.tables.column.name"), StringClass.get(100), tableColumn);
+        propertyTableColumn = addJProp("propertyTableColumn", getString("logics.property"), SIDToProperty, sidTableColumn, 1);
+        propertyNameTableColumn = addJProp(baseGroup, "propertyNameTableColumn", getString("logics.tables.property.name"), captionProperty, propertyTableColumn, 1);
+        sidToTable = addAGProp("sidToTable", getString("logics.tables.table"), sidTable);
+        sidToTableKey = addAGProp("sidToTableKey", getString("lodics.tables.key"), sidTableKey);
+        sidToTableColumn = addAGProp("sidToTableColumn", getString("logics.tables.column"), sidTableColumn);
+        tableTableKey = addDProp("tableTableKey", getString("logics.tables.table"), table, tableKey);
+        classTableKey = addDProp(baseGroup, "classTableKey", getString("logics.tables.key.class"), StringClass.get(40), tableKey);
+        tableTableColumn = addDProp("tableTableColumn", getString("logics.tables.table"), table, tableColumn);
+        rowsTable = addDProp(baseGroup, "rowsTable", getString("logics.tables.rows"), IntegerClass.instance, table);
+        quantityTableKey = addDProp(baseGroup, "quantityTableKey", getString("logics.tables.key.distinct.quantity"), IntegerClass.instance, tableKey);
+        quantityTableColumn = addDProp(baseGroup, "quantityTableColumn", getString("logics.tables.column.values.quantity"), IntegerClass.instance, tableColumn);
 
         // заполним сессии
         LP sessionUser = addDProp("sessionUser", getString("logics.session.user"), user, session);
@@ -999,6 +1042,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         addFormEntity(new UserPolicyFormEntity(adminElement, "userPolicyForm"));
         addFormEntity(new SecurityPolicyFormEntity(adminElement, "securityPolicyForm"));
         addFormEntity(new ConnectionsFormEntity(adminElement, "connectionsForm"));
+        addFormEntity(new PhysicalModelFormEntity(adminElement, "physicalModelForm"));
         addFormEntity(new AdminFormEntity(adminElement, "adminForm"));
         addFormEntity(new DaysOffFormEntity(adminElement, "daysOffForm"));
 
@@ -1268,6 +1312,16 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         }
     }
 
+    private class RecalculateStatsActionProperty extends ActionProperty {
+        private RecalculateStatsActionProperty(String sID, String caption) {
+            super(sID, caption, new ValueClass[]{});
+        }
+
+        @Override
+        public void execute(ExecutionContext context) throws SQLException {
+            BL.synchronizeTables();
+        }
+    }
 
     public static class MessageActionProperty extends ActionProperty {
         private String message;
@@ -1465,6 +1519,23 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
                     getString("logics.connection.active.connections"),
                     KeyStroke.getKeyStroke(KeyEvent.VK_F8, 0)));
             addRegularFilterGroup(filterGroup);
+        }
+    }
+
+    class PhysicalModelFormEntity extends FormEntity{
+        protected PhysicalModelFormEntity(NavigatorElement parent, String sID) {
+            super(parent, sID, getString("logics.tables.physical.model"));
+
+            ObjectEntity objTable = addSingleGroupObject(table, getString("logics.tables.tables"), baseGroup);
+            ObjectEntity objKey = addSingleGroupObject(tableKey, getString("lodics.tables.keys"), baseGroup);
+            ObjectEntity objColumn = addSingleGroupObject(tableColumn, getString("logics.tables.columns"), baseGroup);
+
+            addPropertyDraw(addAProp(new RecalculateStatsActionProperty("refreshPhysicalModel", getString("logics.tables.refresh.physical.model"))));
+
+            setReadOnly(propertyNameTableColumn, true);
+
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(tableTableKey, objKey), Compare.EQUALS, objTable));
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(tableTableColumn, objColumn), Compare.EQUALS, objTable));
         }
     }
 

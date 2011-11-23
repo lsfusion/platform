@@ -1540,8 +1540,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
         packTables(sql, packTables); // упакуем таблицы
 
-        for(ImplementTable implementTable : implementTables.values()) // пересчитаем статистику
-            implementTable.updateStat(sql);
+        updateStats();  // пересчитаем статистику
 
         // создадим индексы в базе
         for (Map.Entry<ImplementTable, Set<List<String>>> mapIndex : mapIndexes.entrySet())
@@ -1563,6 +1562,90 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 //        recalculateAggregations(sql, getAggregateStoredProperties());
 
         sql.commitTransaction();
+    }
+
+    public void synchronizeTables() {
+        ImportField tableSidField = new ImportField(LM.sidTable);
+        ImportField tableKeySidField = new ImportField(LM.sidTableKey);
+        ImportField tableKeyNameField = new ImportField(LM.nameTableKey);
+        ImportField tableKeyClassField = new ImportField(LM.classTableKey);
+        ImportField tableColumnSidField = new ImportField(LM.sidTableColumn);
+
+        ImportKey<?> tableKey = new ImportKey(LM.table, LM.sidToTable.getMapping(tableSidField));
+        ImportKey<?> tableKeyKey = new ImportKey(LM.tableKey, LM.sidToTableKey.getMapping(tableKeySidField));
+        ImportKey<?> tableColumnKey = new ImportKey(LM.tableColumn, LM.sidToTableColumn.getMapping(tableColumnSidField));
+
+        List<List<Object>> data = new ArrayList<List<Object>>();
+        for(ImplementTable implementTable : LM.tableFactory.getImplementTables().values()) {
+            Object tableName = implementTable.name;
+            Map classes = implementTable.getClasses().getCommonParent(implementTable.keys);
+            for (KeyField key : implementTable.keys) {
+                data.add(Arrays.asList(tableName, key.name, tableName + "." + key.name, ((ValueClass) classes.get(key)).getCaption()));
+            }
+        }
+
+        List<ImportProperty<?>> properties = new ArrayList<ImportProperty<?>>();
+        properties.add(new ImportProperty(tableSidField, LM.sidTable.getMapping(tableKey)));
+        properties.add(new ImportProperty(tableKeySidField, LM.sidTableKey.getMapping(tableKeyKey)));
+        properties.add(new ImportProperty(tableKeyNameField, LM.nameTableKey.getMapping(tableKeyKey)));
+        properties.add(new ImportProperty(tableSidField, LM.tableTableKey.getMapping(tableKeyKey), LM.object(LM.table).getMapping(tableKey)));
+        properties.add(new ImportProperty(tableKeyClassField, LM.classTableKey.getMapping(tableKeyKey)));
+
+        List<ImportDelete> deletes = new ArrayList<ImportDelete>();
+        deletes.add(new ImportDelete(tableKey, LM.is(LM.table).getMapping(tableKey), false));
+        deletes.add(new ImportDelete(tableKeyKey, LM.is(LM.tableKey).getMapping(tableKeyKey), true));
+
+        ImportTable table = new ImportTable(Arrays.asList(tableSidField, tableKeyNameField, tableKeySidField, tableKeyClassField), data);
+
+        List<List<Object>> data2 = new ArrayList<List<Object>>();
+        for(ImplementTable implementTable : LM.tableFactory.getImplementTables().values()) {
+            Object tableName = implementTable.name;
+            for (PropertyField property : implementTable.properties) {
+                data2.add(Arrays.asList(tableName, property.name));
+            }
+        }
+
+        List<ImportProperty<?>> properties2 = new ArrayList<ImportProperty<?>>();
+        properties2.add(new ImportProperty(tableSidField, LM.sidTable.getMapping(tableKey)));
+        properties2.add(new ImportProperty(tableColumnSidField, LM.sidTableColumn.getMapping(tableColumnKey)));
+        properties2.add(new ImportProperty(tableSidField, LM.tableTableColumn.getMapping(tableColumnKey), LM.object(LM.table).getMapping(tableKey)));
+
+        List<ImportDelete> deletes2 = new ArrayList<ImportDelete>();
+        deletes2.add(new ImportDelete(tableColumnKey, LM.is(LM.tableColumn).getMapping(tableColumnKey), false));
+
+        ImportTable table2 = new ImportTable(Arrays.asList(tableSidField, tableColumnSidField), data2);
+
+        try {
+            DataSession session = createSession();
+            IntegrationService service = new IntegrationService(session, table, Arrays.asList(tableKey, tableKeyKey), properties, deletes);
+            service.synchronize(true, false);
+
+            service = new IntegrationService(session, table2, Arrays.asList(tableKey, tableColumnKey), properties2, deletes2);
+            service.synchronize(true, false);
+
+            if (session.hasChanges()) {
+                session.apply(this);
+            }
+
+            for (ImplementTable implementTable : LM.tableFactory.getImplementTables().values()) {
+                implementTable.calculateStat(LM, session);
+                implementTable.updateStat(LM, session);
+            }
+            if (session.hasChanges()) {
+                session.apply(this);
+            }
+
+            session.close();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void updateStats() throws SQLException {
+        DataSession session = createSession();
+        for (ImplementTable implementTable : LM.tableFactory.getImplementTables().values()) {
+            implementTable.updateStat(LM, session);
+        }
     }
 
     protected LP getLP(String sID) {
