@@ -561,6 +561,8 @@ public class ImportProjectsActionProperty extends ActionProperty {
         foreignGeneralizedPlanProjectField = new ImportField(LM.foreignGeneralizedPlanProject);
         fileRoadMapProjectField = new ImportField(LM.fileNativeRoadMapProject);
         fileForeignRoadMapProjectField = new ImportField(LM.fileForeignRoadMapProject);
+        fileNativeTechnicalDescriptionProjectField = new ImportField(LM.fileNativeTechnicalDescriptionProject);
+        fileForeignTechnicalDescriptionProjectField = new ImportField(LM.fileForeignTechnicalDescriptionProject);
 
         updateDateProjectField = new ImportField(LM.updateDateProject);
         projectMissionProjectField = new ImportField(LM.baseLM.classSID);
@@ -733,6 +735,7 @@ public class ImportProjectsActionProperty extends ActionProperty {
         propertiesNative.add(new ImportProperty(nativeGeneralizedPlanProjectField, LM.nativeGeneralizedPlanProject.getMapping(projectKey)));
         propertiesNative.add(new ImportProperty(linksMarketIntroductionProjectField, LM.linksMarketIntroductionProject.getMapping(projectKey)));
         propertiesNative.add(new ImportProperty(fileRoadMapProjectField, LM.fileNativeRoadMapProject.getMapping(projectKey)));
+        propertiesNative.add(new ImportProperty(fileNativeTechnicalDescriptionProjectField, LM.fileNativeTechnicalDescriptionProject.getMapping(projectKey)));
 
         properties.add(new ImportProperty(emailClaimerField, LM.claimerProject.getMapping(projectKey),
                 LM.baseLM.object(LM.claimer).getMapping(claimerKey)));
@@ -764,6 +767,7 @@ public class ImportProjectsActionProperty extends ActionProperty {
         propertiesForeign.add(new ImportProperty(foreignGeneralizedPlanProjectField, LM.foreignGeneralizedPlanProject.getMapping(projectKey)));
         propertiesForeign.add(new ImportProperty(linksForeignMarketIntroductionProjectField, LM.linksForeignMarketIntroductionProject.getMapping(projectKey)));
         propertiesForeign.add(new ImportProperty(fileForeignRoadMapProjectField, LM.fileForeignRoadMapProject.getMapping(projectKey)));
+        propertiesForeign.add(new ImportProperty(fileForeignTechnicalDescriptionProjectField, LM.fileForeignTechnicalDescriptionProject.getMapping(projectKey)));
 
         propertiesFullClaimerForeign = new ArrayList<ImportProperty<?>>();
         propertiesFullClaimerForeign.add(new ImportProperty(nameForeignClaimerField, LM.nameForeignJoinClaimer.getMapping(claimerKey)));
@@ -1757,6 +1761,7 @@ public class ImportProjectsActionProperty extends ActionProperty {
                         row.add(node.getChildText("nativeGeneralizedPlanProject"));
                         row.add(node.getChildText("linksMarketIntroductionProject"));
                         row.add(buildFileByteArray(node.getChild("fileRoadMapProject")));
+                        row.add(buildFileByteArray(node.getChild("fileNativeTechnicalDescriptionProject")));
 
                         if (fillClaimer) {
                             row.add(node.getChildText("nameNativeClaimer"));
@@ -1789,6 +1794,7 @@ public class ImportProjectsActionProperty extends ActionProperty {
                         row.add(node.getChildText("foreignGeneralizedPlanProject"));
                         row.add(node.getChildText("linksForeignMarketIntroductionProject"));
                         row.add(buildFileByteArray(node.getChild("fileForeignRoadMapProject")));
+                        row.add(buildFileByteArray(node.getChild("fileForeignTechnicalDescriptionProject")));
 
                         if (fillClaimer) {
                             row.add(node.getChildText("nameForeignClaimer"));
@@ -1955,7 +1961,8 @@ public class ImportProjectsActionProperty extends ActionProperty {
                             nativeCompaniesAnaloguesProjectField, nativeMarketIntroductionProjectField,
                             nativeHistoryProjectField, nativeDynamicsProjectField, nativeGrantsProjectField,
                             nativeLaboratoryProjectField, nativeInvestmentProjectField, nativeResultsProjectField,
-                            nativeGeneralizedPlanProjectField, linksMarketIntroductionProjectField, fileRoadMapProjectField
+                            nativeGeneralizedPlanProjectField, linksMarketIntroductionProjectField, fileRoadMapProjectField,
+                            fileNativeTechnicalDescriptionProjectField
                     );
 
                     List<ImportField> fieldsFullClaimerNative = BaseUtils.toList(nameNativeClaimerField, firmNameNativeClaimerField);
@@ -1968,7 +1975,8 @@ public class ImportProjectsActionProperty extends ActionProperty {
                             foreignCompaniesAnaloguesProjectField, foreignMarketIntroductionProjectField,
                             foreignHistoryProjectField, foreignDynamicsProjectField, foreignGrantsProjectField,
                             foreignLaboratoryProjectField, foreignInvestmentProjectField, foreignResultsProjectField,
-                            foreignGeneralizedPlanProjectField, linksForeignMarketIntroductionProjectField, fileForeignRoadMapProjectField
+                            foreignGeneralizedPlanProjectField, linksForeignMarketIntroductionProjectField, fileForeignRoadMapProjectField,
+                            fileForeignTechnicalDescriptionProjectField
                     );
 
                     List<ImportField> fieldsFullClaimerForeign = BaseUtils.toList(nameForeignClaimerField, firmNameForeignClaimerField);
