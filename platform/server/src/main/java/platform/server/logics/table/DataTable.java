@@ -99,7 +99,6 @@ public abstract class DataTable extends GlobalTable {
             rowStat = new Stat(BaseUtils.nvl((Integer) LM.rowsTable.read(session, tableObject), 0));
         }
 
-        new DataObject(tableValue, LM.table);
         DistinctKeys<KeyField> distinctKeys = new DistinctKeys<KeyField>();
         for(KeyField key : keys) {
             Object keyValue = LM.sidToTableKey.read(session, new DataObject(name + "." + key.name));

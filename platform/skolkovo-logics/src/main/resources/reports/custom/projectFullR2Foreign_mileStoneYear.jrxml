@@ -75,7 +75,7 @@
 		</band>
 	</title>
 	<detail>
-		<band height="18">
+		<band height="18" splitType="Prevent">
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement style="GroupCellStyle1" positionType="Float" stretchType="RelativeToBandHeight" x="10" y="0" width="77" height="18"/>
 				<box topPadding="2" leftPadding="2" bottomPadding="2" rightPadding="2"/>
