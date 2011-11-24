@@ -400,58 +400,68 @@ public class DockableMainFrame extends MainFrame {
         final JMenuItem changePassword = new JMenuItem(ClientResourceBundle.getString("layout.menu.file.change.password"));
         changePassword.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent event) {
+                String login = null;
                 try {
-                    String login = Main.frame.remoteNavigator.getCurrentUserLogin();
-                    while (true) {
-                        final JPasswordField oldPassword = new JPasswordField();
-                        final JPasswordField newPassword = new JPasswordField();
-                        final JPasswordField confirmPassword = new JPasswordField();
-                        JOptionPane jop = new JOptionPane(new Object[]{new JLabel(ClientResourceBundle.getString("layout.menu.file.login")+": " +login),
-                                new JLabel(ClientResourceBundle.getString("layout.menu.file.old.password")), oldPassword,
-                                new JLabel(ClientResourceBundle.getString("layout.menu.file.new.password")), newPassword,
-                                new JLabel(ClientResourceBundle.getString("layout.menu.file.confirm.password")), confirmPassword},
-                                JOptionPane.QUESTION_MESSAGE,
-                                JOptionPane.OK_CANCEL_OPTION);
-                        JDialog dialog = jop.createDialog(DockableMainFrame.this, ClientResourceBundle.getString("layout.menu.file.change.password"));
-                        dialog.addComponentListener(new ComponentAdapter() {
-                            @Override
-                            public void componentShown(ComponentEvent e) {
-                                oldPassword.requestFocusInWindow();
-                            }
-                        });
-                        dialog.setVisible(true);
-                        int result = (jop.getValue() != null) ? (Integer) jop.getValue() : JOptionPane.CANCEL_OPTION;
-                        dialog.dispose();
+                    login = Main.frame.remoteNavigator.getCurrentUserLogin();
+                } catch (RemoteException e) {
+                    e.printStackTrace();
+                }
+                while (true) {
+                    final JPasswordField oldPassword = new JPasswordField();
+                    final JPasswordField newPassword = new JPasswordField();
+                    final JPasswordField confirmPassword = new JPasswordField();
+                    JOptionPane jop = new JOptionPane(new Object[]{new JLabel(ClientResourceBundle.getString("layout.menu.file.login") + ": " + login),
+                            new JLabel(ClientResourceBundle.getString("layout.menu.file.old.password")), oldPassword,
+                            new JLabel(ClientResourceBundle.getString("layout.menu.file.new.password")), newPassword,
+                            new JLabel(ClientResourceBundle.getString("layout.menu.file.confirm.password")), confirmPassword},
+                            JOptionPane.QUESTION_MESSAGE,
+                            JOptionPane.OK_CANCEL_OPTION);
+                    JDialog dialog = jop.createDialog(DockableMainFrame.this, ClientResourceBundle.getString("layout.menu.file.change.password"));
+                    dialog.addComponentListener(new ComponentAdapter() {
+                        @Override
+                        public void componentShown(ComponentEvent e) {
+                            oldPassword.requestFocusInWindow();
+                        }
+                    });
+                    dialog.setVisible(true);
+                    int result = (jop.getValue() != null) ? (Integer) jop.getValue() : JOptionPane.CANCEL_OPTION;
+                    dialog.dispose();
 
-                        if (result == JOptionPane.OK_OPTION) {
+                    if (result == JOptionPane.OK_OPTION) {
                         String oldPass = new String(oldPassword.getPassword());
                         String newPass = new String(newPassword.getPassword());
                         String confirmPass = new String(confirmPassword.getPassword());
-                            try {
-                                if (Main.remoteLogics.checkUser(login, oldPass)) {
-                                    if (!"".equals(newPass))
-                                        if (newPass.equals(confirmPass))
-                                            Main.frame.remoteNavigator.changePassword(login, newPass);
-                                    login = Main.frame.remoteNavigator.getCurrentUserLogin();
-                                    Main.frame.updateUser();
-                                    break;
-                                }
-                            } catch (RemoteException e) {
-                                if (ExceptionUtils.getInitialCause(e) instanceof LoginException)
-                                    JOptionPane.showMessageDialog(DockableMainFrame.this, ExceptionUtils.getInitialCause(e).getMessage(), ClientResourceBundle.getString("layout.menu.file.error.password.changing"), JOptionPane.ERROR_MESSAGE);
-                                else
-                                    throw new RuntimeException(e);
+                        try {
+                            if (Main.remoteLogics.checkUser(login, oldPass)) {
+                                if (!"".equals(newPass))
+                                    if (newPass.equals(confirmPass)) {
+                                        Main.frame.remoteNavigator.changePassword(login, newPass);
+                                    } else {
+                                        JOptionPane.showMessageDialog(DockableMainFrame.this, ClientResourceBundle.getString("layout.menu.file.passwords.not.equals"));
+                                        break;
+                                    }
+                                login = Main.frame.remoteNavigator.getCurrentUserLogin();
+                                Main.frame.updateUser();
+                                break;
                             }
-                        } else
-                            break;
-                    }
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                } catch (ClassNotFoundException e) {
-                    throw new RuntimeException(e);
+                        } catch (IOException e1) {
+                            if (ExceptionUtils.getInitialCause(e1) instanceof LoginException) {
+                                JOptionPane.showMessageDialog(DockableMainFrame.this, ExceptionUtils.getInitialCause(e1).getMessage(), ClientResourceBundle.getString("layout.menu.file.error.password.changing"), JOptionPane.ERROR_MESSAGE);
+                                break;
+                            }
+                            else
+                                throw new RuntimeException(e1);
+                        } catch (ClassNotFoundException e1) {
+                            e1.printStackTrace();
+                        }
+
+                    } else
+                        break;
                 }
             }
-        });
+        }
+
+        );
 
         menu.add(changePassword);
 
