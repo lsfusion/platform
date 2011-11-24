@@ -9,6 +9,7 @@ import javax.swing.filechooser.FileSystemView;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.InputEvent;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
@@ -292,5 +293,13 @@ public class SwingUtils {
             }
         }
         return null;
+    }
+
+    /**
+     * c/p from javax.swing.plaf.basic.BasicGraphicsUtils#isMenuShortcutKeyDown(java.awt.event.InputEvent)
+     */
+    public static boolean isMenuShortcutKeyDown(InputEvent event) {
+        return (event.getModifiers() &
+                Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()) != 0;
     }
 }

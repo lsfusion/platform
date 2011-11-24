@@ -1,15 +1,11 @@
 package platform.client.form;
 
-import platform.base.BaseUtils;
 import platform.interop.KeyStrokes;
 
 import javax.swing.*;
 import javax.swing.table.TableModel;
 import javax.swing.text.JTextComponent;
 import java.awt.*;
-import java.awt.datatransfer.DataFlavor;
-import java.awt.datatransfer.StringSelection;
-import java.awt.datatransfer.Transferable;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.util.EventObject;

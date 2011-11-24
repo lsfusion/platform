@@ -19,13 +19,14 @@ import platform.client.form.sort.TableSortableHeaderManager;
 import platform.client.logics.ClientGroupObject;
 import platform.client.logics.ClientGroupObjectValue;
 import platform.client.logics.ClientPropertyDraw;
-import platform.client.logics.classes.ClientDateClass;
 import platform.interop.KeyStrokes;
 import platform.interop.Order;
 import platform.interop.Scroll;
 
 import javax.swing.*;
-import javax.swing.event.*;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import javax.swing.event.TableModelEvent;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableColumn;
@@ -152,12 +153,14 @@ public abstract class GridTable extends ClientFormTable
         });
 
         addKeyListener(new KeyListener() {
-            public void keyTyped(KeyEvent e) {}
+            public void keyTyped(KeyEvent e) {
+            }
 
             public void keyPressed(KeyEvent e) {
                 if (KeyEvent.getKeyText(e.getKeyCode()).equals("Shift") && getSelectedObject() != null) {
-                    if (!keyController.isRecording)
+                    if (!keyController.isRecording) {
                         selectionController.recordingStarted(getSelectedColumn());
+                    }
                     keyController.startRecording(getSelectedRow());
                 }
             }
@@ -207,8 +210,9 @@ public abstract class GridTable extends ClientFormTable
                 pressedCellColumn = -1;
                 previousSelectedRow = getSelectedRow();
 
-                if (!MouseEvent.getModifiersExText(e.getModifiersEx()).contains("Shift"))
+                if (!MouseEvent.getModifiersExText(e.getModifiersEx()).contains("Shift")) {
                     selectionController.mouseReleased();
+                }
 
                 repaint();
             }
@@ -233,9 +237,7 @@ public abstract class GridTable extends ClientFormTable
 
         getSelectionModel().addListSelectionListener(new ListSelectionListener() {
             public void valueChanged(ListSelectionEvent e) {
-//                if (!e.getValueIsAdjusting()) {
-                    changeCurrentObject();
-//                }
+                changeCurrentObject();
                 moveToFocusableCellIfNeeded();
             }
         });
@@ -243,9 +245,9 @@ public abstract class GridTable extends ClientFormTable
         initializeActionMap();
     }
 
-     @Override
-     public boolean isEditOnSingleClick(int row, int column){
-         return getProperty(row, column).editOnSingleClick;
+    @Override
+    public boolean isEditOnSingleClick(int row, int column) {
+        return getProperty(row, column).editOnSingleClick;
     }
 
     private void orderChanged(Pair<ClientPropertyDraw, ClientGroupObjectValue> columnKey, Order modiType) {
@@ -325,8 +327,9 @@ public abstract class GridTable extends ClientFormTable
         model.update(groupObject, properties, rowKeys, columnKeys, captions, values, rowHighlights, cellHighlights);
 
         refreshColumnModel();
-        if (viewMoveInterval != 0)
+        if (viewMoveInterval != 0) {
             selectionController.keysChanged(viewMoveInterval < 0);
+        }
         adjustSelection();
 
         setPreferredScrollableViewportSize(getPreferredSize());
@@ -341,17 +344,20 @@ public abstract class GridTable extends ClientFormTable
             groupObjectController.getGridView().pane.setMaximumSize(new Dimension(getMaximumSize().width, height + 5));
         }
 
-        if (groupObject.grid.minimumSize != null)
+        if (groupObject.grid.minimumSize != null) {
             groupObjectController.getGridView().pane.setMinimumSize(
                     SwingUtils.getOverridedSize(groupObjectController.getGridView().pane.getMinimumSize(), groupObject.grid.minimumSize));
+        }
 
-        if (groupObject.grid.preferredSize != null)
+        if (groupObject.grid.preferredSize != null) {
             groupObjectController.getGridView().pane.setPreferredSize(
                     SwingUtils.getOverridedSize(groupObjectController.getGridView().pane.getPreferredSize(), groupObject.grid.preferredSize));
+        }
 
-        if (groupObject.grid.maximumSize != null)
+        if (groupObject.grid.maximumSize != null) {
             groupObjectController.getGridView().pane.setMaximumSize(
                     SwingUtils.getOverridedSize(groupObjectController.getGridView().pane.getMaximumSize(), groupObject.grid.maximumSize));
+        }
 
         previousSelectedRow = getSelectedRow();
     }
@@ -369,8 +375,9 @@ public abstract class GridTable extends ClientFormTable
 //                }
 //            }
 
-            SwingUtils.invokeLaterSingleAction(groupObject.getActionID()
-                    , new ActionListener() {
+            SwingUtils.invokeLaterSingleAction(
+                    groupObject.getActionID(),
+                    new ActionListener() {
                         public void actionPerformed(ActionEvent ae) {
                             try {
                                 ClientGroupObjectValue newCurrentObject = getSelectedObject();
@@ -407,10 +414,11 @@ public abstract class GridTable extends ClientFormTable
 
             TableColumn column = getColumnModel().getColumn(i);
             if (newColumnCount != oldColumnCount) {
-                if (autoResizeMode == JTable.AUTO_RESIZE_OFF)
+                if (autoResizeMode == JTable.AUTO_RESIZE_OFF) {
                     column.setPreferredWidth(cell.getMinimumWidth(this));
-                else
+                } else {
                     column.setPreferredWidth(cell.getPreferredWidth(this));
+                }
                 column.setMinWidth(cell.getMinimumWidth(this));
                 column.setMaxWidth(cell.getMaximumWidth(this));
             }
@@ -450,7 +458,9 @@ public abstract class GridTable extends ClientFormTable
         final Point viewPos = ((JViewport) getParent()).getViewPosition();
         final int dltpos = viewMoveInterval * getRowHeight();
         viewPos.y += dltpos;
-        if (viewPos.y < 0) viewPos.y = 0;
+        if (viewPos.y < 0) {
+            viewPos.y = 0;
+        }
         ((JViewport) getParent()).setViewPosition(viewPos);
         viewMoveInterval = 0;
 
@@ -547,8 +557,8 @@ public abstract class GridTable extends ClientFormTable
     @Override
     public void doLayout() {
         int newAutoResizeMode = fitWidth()
-                ? JTable.AUTO_RESIZE_SUBSEQUENT_COLUMNS
-                : JTable.AUTO_RESIZE_OFF;
+                                ? JTable.AUTO_RESIZE_SUBSEQUENT_COLUMNS
+                                : JTable.AUTO_RESIZE_OFF;
         if (newAutoResizeMode != autoResizeMode) {
             autoResizeMode = newAutoResizeMode;
             setAutoResizeMode(newAutoResizeMode);
@@ -612,10 +622,10 @@ public abstract class GridTable extends ClientFormTable
     public ClientPropertyDraw getCurrentProperty() {
         ClientPropertyDraw selectedProperty = getSelectedProperty();
         return selectedProperty != null
-                ? selectedProperty
-                : model.getColumnCount() > 0
-                ? model.getColumnProperty(0)
-                : null;
+               ? selectedProperty
+               : model.getColumnCount() > 0
+                 ? model.getColumnProperty(0)
+                 : null;
     }
 
     public void changePropertyDraw(Object value, int row, int col, boolean multyChange, boolean aggValue) {
@@ -627,8 +637,9 @@ public abstract class GridTable extends ClientFormTable
     }
 
     public void writeSelectedValue(String value) {
-        if (isReadOnly())
+        if (isReadOnly()) {
             return;
+        }
 
         int row = getSelectionModel().getLeadSelectionIndex();
         int column = getColumnModel().getSelectionModel().getLeadSelectionIndex();
@@ -639,18 +650,21 @@ public abstract class GridTable extends ClientFormTable
         } catch (ParseException e) {
             oValue = null;
         }
-        if (oValue != null)
+        if (oValue != null) {
             changePropertyDraw(oValue, row, column, false, false);
+        }
     }
 
     public void pasteTable(List<List<String>> table) {
-        if (isReadOnly())
+        if (isReadOnly()) {
             return;
+        }
 
         boolean singleV = selectionController.hasSingleSelection();
         int selectedColumn = getColumnModel().getSelectionModel().getLeadSelectionIndex();
-        if (selectedColumn == -1)
+        if (selectedColumn == -1) {
             return;
+        }
         int tableColumns = 0;
         if (!table.isEmpty()) {
             tableColumns = table.get(0).size();
@@ -658,8 +672,9 @@ public abstract class GridTable extends ClientFormTable
         boolean singleC = table.size() == 1 && tableColumns == 1;
         if (!singleV || !singleC) {
             int answer = SwingUtils.showConfirmDialog(null, ClientResourceBundle.getString("form.grid.sure.to.paste.multivalue"), "", JOptionPane.QUESTION_MESSAGE, 1);
-            if (answer == JOptionPane.NO_OPTION)
+            if (answer == JOptionPane.NO_OPTION) {
                 return;
+            }
         }
 
         try {
@@ -714,7 +729,8 @@ public abstract class GridTable extends ClientFormTable
     }
 
     private boolean isCellFocusable(int row, int col) {
-        //вообще говоря нужно скорректировать индексы к модели, но не актуально
+        //вообще говоря нужно скорректировать индексы к модели, но не актуально,
+        //т.к. у нас всё равно не включено перемещение/сокрытие колонок
         return model.isCellFocusable(row, col);
     }
 
@@ -741,7 +757,7 @@ public abstract class GridTable extends ClientFormTable
                 return;
             }
         }
-        groupObjectController.updateSelectionInfo(quantity, null ,null);
+        groupObjectController.updateSelectionInfo(quantity, null, null);
     }
 
     public String getSelectedTable() throws ParseException {
@@ -753,12 +769,12 @@ public abstract class GridTable extends ClientFormTable
      * <br><br>
      * <p/>
      * {@inheritDoc}
-     *
      * @see GridTableModel#setValueAt(Object, int, int, boolean)
      */
     public void setValueAt(Object aValue, int row, int column) {
-        getModel().setValueAt(aValue, convertRowIndexToModel(row),
-                convertColumnIndexToModel(column), multyChange);
+        getModel().setValueAt(aValue,
+                              convertRowIndexToModel(row),
+                              convertColumnIndexToModel(column), multyChange);
     }
 
     public boolean editCellAt(int row, int column, EventObject editEvent) {
@@ -769,27 +785,35 @@ public abstract class GridTable extends ClientFormTable
             cellEditor.editPerformed = false;
         }
 
-        if (super.editCellAt(row, column, editEvent)) {
-            //нужно для редактирования нефокусных ячеек
-            isInternalNavigating = true;
-            changeSelection(row, column, false, false);
-            isInternalNavigating = false;
-            SwingUtils.stopSingleAction(groupObject.getActionID(), false);
-            return true;
-        } else if (editEvent instanceof KeyEvent && cellEditor != null) {
-            if (!cellEditor.editPerformed && cellEditor.isCellEditable(editEvent)) {
-                groupObjectController.quickEditFilter();
+        if (!super.editCellAt(row, column, editEvent)) {
+            if (editEvent instanceof KeyEvent && cellEditor != null) {
+                if (!cellEditor.editPerformed && cellEditor.isCellEditable(editEvent)) {
+                    groupObjectController.quickEditFilter();
+                }
+            } else {
+                //если редактирование не сработало, но это был обычный клик по нефокусной ячейке
+                //то просто перемещаемся на соответствующий ряд, чтобы была возможность редактирования таких ячеек
+                if (editEvent instanceof MouseEvent) {
+                    boolean toggle = SwingUtils.isMenuShortcutKeyDown((InputEvent) editEvent);
+                    boolean extend = ((MouseEvent) editEvent).isShiftDown();
+
+                    if (!isCellFocusable(row, column) && !toggle && !extend) {
+                        selectRow(row);
+                    }
+                }
             }
+
+            return false;
         }
 
-        return false;
+        return true;
     }
 
     private ClientAbstractCellEditor getAbstractCellEditor(int row, int column) {
         TableCellEditor editor = getCellEditor(row, column);
         return editor instanceof ClientAbstractCellEditor
-                ? (ClientAbstractCellEditor) editor
-                : null;
+               ? (ClientAbstractCellEditor) editor
+               : null;
     }
 
     private void moveToFocusableCellIfNeeded() {
@@ -807,8 +831,9 @@ public abstract class GridTable extends ClientFormTable
             properties.add(ins, property);
             selectionController.addProperty(property);
             return true;
-        } else
+        } else {
             return false;
+        }
     }
 
     public boolean removeProperty(ClientPropertyDraw property) {
@@ -959,7 +984,9 @@ public abstract class GridTable extends ClientFormTable
                         int firstRow = rowAtPoint(new Point(0, viewRect.y + getRowHeight() - 1));
                         int lastRow = rowAtPoint(new Point(0, viewRect.y + viewRect.height - getRowHeight() + 1));
 
-                        if (lastRow < firstRow) return;
+                        if (lastRow < firstRow) {
+                            return;
+                        }
 
                         if (isLayouting) {
                             selectRow(currRow);
@@ -1020,7 +1047,9 @@ public abstract class GridTable extends ClientFormTable
         }
 
         public void actionPerformed(ActionEvent e) {
-            if (!hasFocusableCells || rowKeys.size() == 0) return;
+            if (!hasFocusableCells || rowKeys.size() == 0) {
+                return;
+            }
             isInternalNavigating = true;
 
             int initRow = getSelectedRow();
@@ -1047,7 +1076,7 @@ public abstract class GridTable extends ClientFormTable
                     column = next % getColumnCount();
                 }
                 if (((row == 0 && column == 0 && isNext) || (row == getRowCount() - 1 && column == getColumnCount() - 1 && (!isNext)))
-                        && isCellFocusable(initRow, initColumn)) {
+                    && isCellFocusable(initRow, initColumn)) {
                     row = initRow;
                     column = initColumn;
                     break;
@@ -1070,7 +1099,9 @@ public abstract class GridTable extends ClientFormTable
         }
 
         public void actionPerformed(ActionEvent e) {
-            if (!hasFocusableCells || rowKeys.size() == 0) return;
+            if (!hasFocusableCells || rowKeys.size() == 0) {
+                return;
+            }
             isInternalNavigating = true;
 
             oldMoveLastAction.actionPerformed(e);

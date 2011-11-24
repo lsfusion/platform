@@ -4,7 +4,6 @@ import platform.client.ClientResourceBundle;
 import platform.client.SwingUtils;
 import platform.client.form.PropertyEditorComponent;
 import platform.client.form.PropertyRendererComponent;
-import platform.client.form.editor.LogicalPropertyEditor;
 import platform.client.form.grid.GridTable;
 import platform.client.form.renderer.ActionPropertyRenderer;
 import platform.client.logics.ClientGroupObjectValue;
@@ -14,7 +13,8 @@ import platform.interop.KeyStrokes;
 import javax.swing.*;
 import javax.swing.table.TableCellEditor;
 import java.awt.*;
-import java.awt.event.*;
+import java.awt.event.KeyEvent;
+import java.awt.event.MouseEvent;
 import java.rmi.RemoteException;
 import java.util.EventObject;
 
@@ -119,12 +119,6 @@ public class ClientAbstractCellEditor extends AbstractCellEditor
 
             if (comp == null && propertyEditor.valueChanged()) {
                 table.setValueAt(getCellEditorValue(), row, column);
-            }
-
-            if (propertyEditor instanceof LogicalPropertyEditor && comp != null) {
-                Object value = getCellEditorValue();
-                table.setValueAt(value == null ? true : null, row, column);
-                comp = null;
             }
         }
 
