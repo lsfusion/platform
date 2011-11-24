@@ -89,7 +89,7 @@
 				<textElement textAlignment="Justified" verticalAlignment="Top">
 					<font size="14"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA["что проект -"+$F{nameNativeProject}+" "+"НЕ прошел проверку на соответствие форсайту"]]></textFieldExpression>
+				<textFieldExpression class="java.lang.String"><![CDATA["что проект - "+$F{nameNativeProject}+" "+"НЕ прошел проверку на соответствие форсайту"]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement style="DefaultStyle" x="10" y="14" width="160" height="20"/>
