@@ -1645,9 +1645,15 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
     public void updateStats() throws SQLException {
+        updateStats(true); // чтобы сами таблицы статистики получили статистику
+        if(!"true".equals(System.getProperty("platform.server.logics.donotcalculatestats")))
+            updateStats(false);
+    }
+
+    public void updateStats(boolean statDefault) throws SQLException {
         DataSession session = createSession();
         for (ImplementTable implementTable : LM.tableFactory.getImplementTables().values()) {
-            implementTable.updateStat(LM, session);
+            implementTable.updateStat(LM, session, statDefault);
         }
     }
 

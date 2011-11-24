@@ -87,12 +87,10 @@ public abstract class DataTable extends GlobalTable {
         }
     }
 
-    public void updateStat(BaseLogicsModule LM, DataSession session) throws SQLException {
-        boolean statDefault = ("true".equals(System.getProperty("platform.server.logics.donotcalculatestats")));
-
-        Object tableValue = LM.sidToTable.read(session, new DataObject(name));
+    public void updateStat(BaseLogicsModule LM, DataSession session, boolean statDefault) throws SQLException {
+        Object tableValue;
         Stat rowStat;
-        if (tableValue == null || statDefault) {
+        if (statDefault || (tableValue = LM.sidToTable.read(session, new DataObject(name))) == null) {
             rowStat = Stat.DEFAULT;
         } else {
             DataObject tableObject = new DataObject(tableValue, LM.table);
@@ -101,8 +99,8 @@ public abstract class DataTable extends GlobalTable {
 
         DistinctKeys<KeyField> distinctKeys = new DistinctKeys<KeyField>();
         for(KeyField key : keys) {
-            Object keyValue = LM.sidToTableKey.read(session, new DataObject(name + "." + key.name));
-            if (keyValue == null || statDefault) {
+            Object keyValue;
+            if (statDefault || (keyValue = LM.sidToTableKey.read(session, new DataObject(name + "." + key.name))) == null) {
                 distinctKeys.add(key, Stat.DEFAULT);
             } else {
                 DataObject keyObject = new DataObject(keyValue, LM.tableKey);
@@ -116,8 +114,8 @@ public abstract class DataTable extends GlobalTable {
             if (prop.type instanceof DataClass && !((DataClass)prop.type).calculateStat())
                 statProps.put(prop, ((DataClass)prop.type).getTypeStat().min(rowStat));
             else {
-                Object propertyValue = LM.sidToTableColumn.read(session, new DataObject(prop.name));
-                if (propertyValue == null || statDefault) {
+                Object propertyValue;
+                if (statDefault || (propertyValue = LM.sidToTableColumn.read(session, new DataObject(prop.name))) == null) {
                     statProps.put(prop, Stat.DEFAULT);
                 } else {
                     DataObject propertyObject = new DataObject(propertyValue, LM.tableColumn);
