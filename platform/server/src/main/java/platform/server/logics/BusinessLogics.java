@@ -729,6 +729,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
         synchronizeForms();
         synchronizeProperties();
+        synchronizeTables();
 
         initBaseAuthentication();
         initAuthentication();
@@ -1627,17 +1628,19 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
                 session.apply(this);
             }
 
-            for (ImplementTable implementTable : LM.tableFactory.getImplementTables().values()) {
-                implementTable.calculateStat(LM, session);
-                implementTable.updateStat(LM, session);
-            }
-            if (session.hasChanges()) {
-                session.apply(this);
-            }
-
             session.close();
         } catch (Exception e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    public void recalculateStats() throws SQLException {
+        DataSession session = createSession();
+        for (ImplementTable implementTable : LM.tableFactory.getImplementTables().values()) {
+            implementTable.calculateStat(LM, session);
+        }
+        if (session.hasChanges()) {
+            session.apply(this);
         }
     }
 

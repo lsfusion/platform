@@ -1319,7 +1319,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
         @Override
         public void execute(ExecutionContext context) throws SQLException {
-            BL.synchronizeTables();
+            BL.recalculateStats();
         }
     }
 
@@ -1530,7 +1530,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
             ObjectEntity objKey = addSingleGroupObject(tableKey, getString("lodics.tables.keys"), baseGroup);
             ObjectEntity objColumn = addSingleGroupObject(tableColumn, getString("logics.tables.columns"), baseGroup);
 
-            addPropertyDraw(addAProp(new RecalculateStatsActionProperty("refreshPhysicalModel", getString("logics.tables.refresh.physical.model"))));
+            addPropertyDraw(addAProp(new RecalculateStatsActionProperty("recalculateStats", getString("logics.tables.recalculate.stats"))));
 
             setReadOnly(propertyNameTableColumn, true);
 
