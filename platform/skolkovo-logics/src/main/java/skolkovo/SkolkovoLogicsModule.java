@@ -2,6 +2,9 @@ package skolkovo;
 
 //import com.smartgwt.client.docs.Files;
 
+import com.lowagie.text.DocumentException;
+import com.lowagie.text.pdf.PdfCopyFields;
+import com.lowagie.text.pdf.PdfReader;
 import jasperapi.PdfUtils;
 import jasperapi.ReportGenerator;
 import net.sf.jasperreports.engine.JRAbstractExporter;
@@ -6737,23 +6740,31 @@ public class SkolkovoLogicsModule extends LogicsModule {
         exporter.exportReport();
 
         if (newRegulation) {
-            List<InputStream> pdfs = new ArrayList<InputStream>();
-            List<String> titles = new ArrayList<String>();
-            titles.add(null);
-            titles.add("Приложение 1 к пункту «Технология и(или) направление прикладных исследований»");
-
-            pdfs.add(new FileInputStream(tempFile));
             byte[] descriptionFile;
             if (foreign)
                 descriptionFile = (byte[]) fileForeignTechnicalDescriptionProject.read(context, project);
             else
                 descriptionFile = (byte[]) fileNativeTechnicalDescriptionProject.read(context, project);
             if (descriptionFile != null) {
-                pdfs.add(new ByteArrayInputStream(descriptionFile));
+                PdfReader reader1 = new PdfReader(new FileInputStream(tempFile));
+                PdfReader reader2 = null;
+                try {
+                    reader2 = new PdfReader(new FileInputStream(PdfUtils.makeStamp(new ByteArrayInputStream(descriptionFile),
+                            "Приложение 1 к пункту «Технология и(или) направление прикладных исследований»")));
+                } catch (DocumentException e) {
+                    e.printStackTrace();
+                }
                 File outputFile = File.createTempFile("merged", ".pdf");
-                OutputStream output = new FileOutputStream(outputFile);
-                PdfUtils.mergePDFs(pdfs, titles, output, false);
-                return IOUtils.getFileBytes(outputFile);
+                PdfCopyFields copy = null;
+                try {
+                    copy = new PdfCopyFields(new FileOutputStream(outputFile));
+                    copy.addDocument(reader1);
+                    copy.addDocument(reader2);
+                    copy.close();
+                    return IOUtils.getFileBytes(outputFile);
+                } catch (DocumentException e) {
+                    e.printStackTrace();
+                }
             }
         }
         return IOUtils.getFileBytes(tempFile);
