@@ -88,6 +88,11 @@ public class SkolkovoLogicsModule extends LogicsModule {
     private LP useAllClusterExpertsProject;
     private LP inExpertVoteDateFromDateTo;
     private LP quantityInExpertDateFromDateTo;
+    private LP doneClusterExpertVoteDateFromDateTo;
+    private LP quantityDoneClusterExpertDateFromDateTo;
+    private LP inClusterExpertVoteDateFromDateTo;
+    private LP quantityInClusterExpertDateFromDateTo;
+
     private LP emailClaimerAcceptedHeaderVote;
     private LP emailClaimerNameVote;
     private LP emailClaimerRejectedHeaderVote;
@@ -2812,6 +2817,13 @@ public class SkolkovoLogicsModule extends LogicsModule {
         quantityInExpertDateFromDateTo = addSGProp("quantityInExpertDateFromDateTo", "Кол-во участ.",
                 addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), inExpertVoteDateFromDateTo, 1, 2, 3, 4), 1, 3, 4); // в скольки заседаниях поучавствовал
 
+        doneClusterExpertVoteDateFromDateTo = addJProp(and(false, false), doneNewExpertVote, 2, 3, betweenExpertVoteDateFromDateTo, 2, 3, 4, 5, addJProp(baseLM.equals2, 1, clusterExpert, 2), 1, 2);
+        quantityDoneClusterExpertDateFromDateTo = addSGProp("quantityDoneClusterExpertDateFromDateTo", "Кол-во голосов.",
+                addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), doneClusterExpertVoteDateFromDateTo, 1, 2, 3, 4, 5), 1, 2, 4, 5); // в скольки заседаниях голосовал
+        inClusterExpertVoteDateFromDateTo = addJProp(and(false, false), inNewExpertVote, 2, 3, betweenExpertVoteDateFromDateTo, 2, 3, 4, 5, addJProp(baseLM.equals2, 1, clusterExpert, 2), 1, 2);
+        quantityInClusterExpertDateFromDateTo = addSGProp("quantityInClusterExpertDateFromDateTo", "Кол-во участ.",
+                addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), inClusterExpertVoteDateFromDateTo, 1, 2, 3, 4, 5), 1, 2, 4, 5);    // в скольки заседаниях участвовал
+
         LP expertVoteMonthYear = addJProp(baseLM.and1, addJProp(baseLM.equals2, 3, addJProp(baseLM.monthInDate, dateExpertVote, 1, 2), 1, 2), 1, 2, 3,
                 addJProp(baseLM.equals2, 3, addJProp(baseLM.yearInDate, dateExpertVote, 1, 2), 1, 2), 1, 2, 4);
         doneExpertVoteMonthYear = addJProp("doneExpertVoteMonthYear", "Проголосовал в текущем месяце", baseLM.and1, doneNewExpertVote, 1, 2, expertVoteMonthYear, 1, 2, 3, 4);
@@ -4054,6 +4066,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         addFormEntity(new ExpertLetterFormEntity(print, "expertLetter"));
         addFormEntity(new VoteProtocolFormEntity(print, "voteProtocol"));
         addFormEntity(new ExpertProtocolFormEntity(print, "expertProtocol"));
+        addFormEntity(new ExpertProtocolClusterFormEntity(print, "expertProtocolCluster"));
         addFormEntity(new ExpertAuthFormEntity(print, "expertAuth"));
         addFormEntity(new ExpertAuthProfileFormEntity(print, "expertAuthProfile"));
         addFormEntity(new ExpertReminderProfileFormEntity(print, "expertReminderProfile"));
@@ -5849,7 +5862,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
             // так делать неправильно в общем случае, поскольку getPropertyDraw ищет по groupObject, а не object
 
-            addPropertyDraw(objDateTo, baseLM.objectValue);
+//            addPropertyDraw(objDateTo, baseLM.objectValue);
             getPropertyDraw(baseLM.objectValue, objDateTo).setSID("dateTo");
 
             objExpert = addSingleGroupObject(4, "expert", expert, baseLM.userFirstName, baseLM.userLastName, documentNameExpert, nameNativeClusterExpert);
@@ -5884,6 +5897,77 @@ public class SkolkovoLogicsModule extends LogicsModule {
                     KeyStroke.getKeyStroke(KeyEvent.VK_F9, 0)), true);
             filterGroupExpertVote.addFilter(new RegularFilterEntity(genID(),
                     new NotNullFilterEntity(addPropertyObject(quantityInExpertDateFromDateTo, objExpert, objDateFrom, objDateTo)),
+                    "Учавствовавшие",
+                    KeyStroke.getKeyStroke(KeyEvent.VK_F8, 0)));
+            addRegularFilterGroup(filterGroupExpertVote);
+
+            setReadOnly(true);
+            setReadOnly(false, objDateFrom.groupTo);
+        }
+    }
+
+    private class ExpertProtocolClusterFormEntity extends DateIntervalFormEntity<SkolkovoBusinessLogics> {
+
+        private ObjectEntity objCluster;
+        private ObjectEntity objExpert;
+
+        private ObjectEntity objVoteHeader;
+        private ObjectEntity objVote;
+
+        private ExpertProtocolClusterFormEntity(NavigatorElement parent, String sID) {
+            super(baseLM, parent, sID, "Протокол голосования экспертов по кластеру", true);
+
+            getPropertyDraw(baseLM.objectValue, objDateFrom).setSID("dateFrom");
+
+            // так делать неправильно в общем случае, поскольку getPropertyDraw ищет по groupObject, а не object
+
+//            addPropertyDraw(objDateTo, baseLM.objectValue);
+            getPropertyDraw(baseLM.objectValue, objDateTo).setSID("dateTo");
+
+            objCluster = addSingleGroupObject(4, "Кластер", cluster);
+            addPropertyDraw(objCluster, nameNative, nameForeign);
+            objCluster.groupTo.initClassView = ClassViewType.PANEL;
+
+            objExpert = addSingleGroupObject(5, "expert", expert, baseLM.userFirstName, baseLM.userLastName, documentNameExpert, nameNativeClusterExpert);
+//            objExpert.groupTo.initClassView = ClassViewType.PANEL;
+
+//            addPropertyDraw(objExpert, objDateFrom, objDateTo, quantityDoneExpertDateFromDateTo, quantityInExpertDateFromDateTo);
+            addPropertyDraw(objCluster, objExpert, objDateFrom, objDateTo, quantityDoneClusterExpertDateFromDateTo, quantityInClusterExpertDateFromDateTo);
+
+
+
+            objVoteHeader = addSingleGroupObject(6, "voteHeader", vote);
+
+            objVote = addSingleGroupObject(7, "vote", vote, dateProjectVote, baseLM.date, dateEndVote, nameNativeProjectVote, nameNativeClaimerVote, nameNativeClusterVote, revisionVote);
+
+            addPropertyDraw(nameNativeClaimerVote, objVoteHeader).setSID("nameNativeClaimerVoteHeader");
+            addPropertyDraw(nameNativeProjectVote, objVoteHeader);
+
+            addPropertyDraw(voteResultGroup, true, objExpert, objVote);
+            addPropertyDraw(objExpert, objVote, competitiveAdvantagesExpertVote, commercePotentialExpertVote, canBeImplementedExpertVote, haveExpertiseExpertVote, internationalExperienceExpertVote, enoughDocumentsExpertVote, commentCompetitiveAdvantagesExpertVote, commentCommercePotentialExpertVote, commentCanBeImplementedExpertVote, commentHaveExpertiseExpertVote, commentInternationalExperienceExpertVote, commentEnoughDocumentsExpertVote);
+
+            addPropertyDraw(connectedExpertVote, objExpert, objVote);
+
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(clusterExpert, objExpert), Compare.EQUALS, objCluster));
+
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(dateExpertVote, objExpert, objVoteHeader), Compare.GREATER_EQUALS, objDateFrom));
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(dateExpertVote, objExpert, objVoteHeader), Compare.LESS_EQUALS, objDateTo));
+            addFixedFilter(new NotNullFilterEntity(addPropertyObject(doneNewExpertVote, objExpert, objVoteHeader)));
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(clusterVote, objVoteHeader), Compare.EQUALS, objCluster));
+
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(dateExpertVote, objExpert, objVote), Compare.GREATER_EQUALS, objDateFrom));
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(dateExpertVote, objExpert, objVote), Compare.LESS_EQUALS, objDateTo));
+            addFixedFilter(new NotNullFilterEntity(addPropertyObject(doneNewExpertVote, objExpert, objVote)));
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(clusterVote, objVote), Compare.EQUALS, objCluster));
+
+
+            RegularFilterGroupEntity filterGroupExpertVote = new RegularFilterGroupEntity(genID());
+            filterGroupExpertVote.addFilter(new RegularFilterEntity(genID(),
+                    new NotNullFilterEntity(addPropertyObject(quantityDoneClusterExpertDateFromDateTo, objCluster, objExpert, objDateFrom, objDateTo)),
+                    "Голосовавшие",
+                    KeyStroke.getKeyStroke(KeyEvent.VK_F9, 0)), true);
+            filterGroupExpertVote.addFilter(new RegularFilterEntity(genID(),
+                    new NotNullFilterEntity(addPropertyObject(quantityInClusterExpertDateFromDateTo, objCluster, objExpert, objDateFrom, objDateTo)),
                     "Учавствовавшие",
                     KeyStroke.getKeyStroke(KeyEvent.VK_F8, 0)));
             addRegularFilterGroup(filterGroupExpertVote);
