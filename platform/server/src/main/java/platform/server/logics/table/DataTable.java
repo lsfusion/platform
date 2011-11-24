@@ -109,19 +109,20 @@ public abstract class DataTable extends GlobalTable {
         }
         statKeys = new StatKeys<KeyField>(rowStat, distinctKeys);
 
-        statProps = new HashMap<PropertyField, Stat>();
+        Map<PropertyField, Stat> updateStatProps = new HashMap<PropertyField, Stat>();
         for(PropertyField prop : properties) {
             if (prop.type instanceof DataClass && !((DataClass)prop.type).calculateStat())
-                statProps.put(prop, ((DataClass)prop.type).getTypeStat().min(rowStat));
+                updateStatProps.put(prop, ((DataClass)prop.type).getTypeStat().min(rowStat));
             else {
                 Object propertyValue;
                 if (statDefault || (propertyValue = LM.sidToTableColumn.read(session, new DataObject(prop.name))) == null) {
-                    statProps.put(prop, Stat.DEFAULT);
+                    updateStatProps.put(prop, Stat.DEFAULT);
                 } else {
                     DataObject propertyObject = new DataObject(propertyValue, LM.tableColumn);
-                    statProps.put(prop, new Stat(BaseUtils.nvl((Integer) LM.quantityTableColumn.read(session, propertyObject), 0)));
+                    updateStatProps.put(prop, new Stat(BaseUtils.nvl((Integer) LM.quantityTableColumn.read(session, propertyObject), 0)));
                 }
             }
         }
+        statProps = updateStatProps;
     }
 }
