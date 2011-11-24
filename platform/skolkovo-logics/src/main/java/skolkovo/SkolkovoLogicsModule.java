@@ -4631,7 +4631,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         public NotificationProjectFormEntity(NavigatorElement parent, String sID) {
             super(parent, sID, "Уведомление на соответствие направлению деятельности");
 
-            objProject = addSingleGroupObject(project, "Проект", positiveLegalResultProject, dateProject, nameNativeProject, nameForeignProject, nameNativeClaimerProject, datePositiveLegalResultProject, dateNotificationPeriodProject);      //    уточнить дату
+            objProject = addSingleGroupObject(project, "Проект", positiveLegalResultProject, dateProject, nameNativeProject, nameForeignProject, nameNativeClaimerProject, emailClaimerProject, datePositiveLegalResultProject, dateNotificationPeriodProject);      //    уточнить дату
             objProject.groupTo.setSingleClassView(ClassViewType.PANEL);
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(positiveLegalResultProject, objProject)));
             setReadOnly(true);
@@ -4661,7 +4661,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
             projectFilterGroup = new RegularFilterGroupEntity(genID());
             projectFilterGroup.addFilter(new RegularFilterEntity(genID(),
-                    new NotNullFilterEntity(addPropertyObject(nameResultForesightCheckProject, objProject)),
+                    new NotFilterEntity(new NotNullFilterEntity(addPropertyObject(nameResultForesightCheckProject, objProject))),
                     "Только непроверенные проекты",
                     KeyStroke.getKeyStroke(KeyEvent.VK_F10, 0)));
             addRegularFilterGroup(projectFilterGroup);

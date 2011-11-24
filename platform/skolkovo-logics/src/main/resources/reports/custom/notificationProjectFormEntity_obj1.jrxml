@@ -23,6 +23,7 @@
 	<field name="datePositiveLegalResultProject" class="java.util.Date"/>
 	<field name="dateNotificationPeriodProject" class="java.util.Date"/>
 	<field name="positiveLegalResultProject" class="java.lang.Boolean"/>
+	<field name="emailClaimerProject" class="java.lang.String"/>
 	<detail>
 		<band height="136">
 			<textField isStretchWithOverflow="true">
@@ -36,9 +37,10 @@
 				</box>
 				<textElement verticalAlignment="Top">
 					<font fontName="Serif" size="14"/>
+					<paragraph firstLineIndent="40"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA["         "+"Уважаемый сотрудник кластера. Для проверки на соответствие направлению деятельности фонда (кластеру) и определения инновационного приоритета (форсайта) поступила заявка по проекту: "
-+" "+$F{nameNativeProject}]]></textFieldExpression>
+				<textFieldExpression class="java.lang.String"><![CDATA["Уважаемый сотрудник кластера. Для проверки на соответствие направлению деятельности фонда (кластеру) и определения инновационного приоритета (форсайта) поступила заявка по проекту: "
++" "+$F{nameNativeProject} + "\n" + " Заявитель : " + $F{nameNativeClaimerProject} + " ( " + $F{emailClaimerProject} + " )"]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
 				<reportElement style="DefaultStyle" positionType="Float" x="10" y="95" width="545" height="34"/>
@@ -51,8 +53,9 @@
 				</box>
 				<textElement verticalAlignment="Top">
 					<font fontName="Serif" size="14"/>
+					<paragraph firstLineIndent="40"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA["         "+"Пожалуйста перейдите в систему голосования и произведите проверку до"+" "+ platform.base.BaseUtils.formatRussian($F{dateNotificationPeriodProject})+"."]]></textFieldExpression>
+				<textFieldExpression class="java.lang.String"><![CDATA["Пожалуйста перейдите в систему голосования и произведите проверку до"+" "+ platform.base.BaseUtils.formatRussian($F{dateNotificationPeriodProject})+"."]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>

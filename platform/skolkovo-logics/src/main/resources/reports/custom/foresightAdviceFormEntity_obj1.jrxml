@@ -46,7 +46,7 @@
 				<textElement textAlignment="Justified" verticalAlignment="Top">
 					<font size="14"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA["что проект -"+$F{nameNativeProject}+" "+"УСПЕШНО прошел проверку на соответствие форсайту"]]></textFieldExpression>
+				<textFieldExpression class="java.lang.String"><![CDATA["что проект - "+$F{nameNativeProject}+" "+"УСПЕШНО прошел проверку на соответствие форсайту"]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement style="DefaultStyle" positionType="Float" x="10" y="90" width="139" height="20"/>
