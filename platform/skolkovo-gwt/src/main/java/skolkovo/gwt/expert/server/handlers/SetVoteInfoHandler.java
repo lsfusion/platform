@@ -18,6 +18,7 @@ public class SetVoteInfoHandler extends SimpleActionHandlerEx<SetVoteInfo, VoidR
 
     @Override
     public VoidResult executeEx(SetVoteInfo action, ExecutionContext context) throws DispatchException, IOException {
+        action.voteInfo.expertIP = servlet.getRequest().getRemoteAddr();
         servlet.getLogics().setVoteInfo(action.voteId, action.voteInfo);
         return new VoidResult();
     }

@@ -35,10 +35,7 @@ import platform.server.form.entity.filter.*;
 import platform.server.form.instance.PropertyObjectInterfaceInstance;
 import platform.server.form.instance.remote.RemoteForm;
 import platform.server.form.navigator.NavigatorElement;
-import platform.server.form.view.ContainerView;
-import platform.server.form.view.DefaultFormView;
-import platform.server.form.view.FormView;
-import platform.server.form.view.PropertyDrawView;
+import platform.server.form.view.*;
 import platform.server.form.window.ToolBarNavigatorWindow;
 import platform.server.form.window.TreeNavigatorWindow;
 import platform.server.logics.BaseLogicsModule;
@@ -670,6 +667,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP refusedExpertVote;
     LP connectedExpertVote;
     LP expertVoteConnected;
+    LP ipExpertVote;
 
     LP inClusterExpertVote, inClusterNewExpertVote;
     LP innovativeExpertVote, innovativeNewExpertVote;
@@ -2634,6 +2632,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         connectedExpertVote = addJProp(baseGroup, "connectedExpertVote", "Аффилирован", baseLM.equals2,
                 voteResultExpertVote, 1, 2, addCProp(voteResult, "connected"));
+
+        ipExpertVote = addDProp(voteResultCheckGroup, "ipExpertVote", "IP эксперта", StringClass.get(15), expert, vote);
 
         nameVoteResultExpertVote = addJProp(voteResultCheckGroup, "nameVoteResultExpertVote", "Результат", baseLM.name, voteResultExpertVote, 1, 2);
 

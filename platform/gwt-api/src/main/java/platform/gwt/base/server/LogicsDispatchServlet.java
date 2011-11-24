@@ -96,7 +96,7 @@ public abstract class LogicsDispatchServlet<T extends RemoteLogicsInterface> ext
         return getThreadLocalRequest().getSession();
     }
 
-    public HttpServletRequest getReqest() {
+    public HttpServletRequest getRequest() {
         return getThreadLocalRequest();
     }
 

@@ -50,6 +50,7 @@ public class VoteInfo implements Serializable {
     public Date date;
     public Date voteStartDate;
     public Date voteEndDate;
+    public String expertIP;
 
     public boolean isVoted() {
         return "voted".equals(voteResult);

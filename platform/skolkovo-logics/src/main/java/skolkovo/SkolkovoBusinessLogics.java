@@ -121,6 +121,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
                                     || !nvl((Boolean) SkolkovoLM.openedVote.read(session, vo.voteObj), false);
 
                 voteInfo.date = DateConverter.sqlToDate((java.sql.Date)SkolkovoLM.dateExpertVote.read(session, vo.expertObj, vo.voteObj));
+                voteInfo.expertIP = (String) SkolkovoLM.ipExpertVote.read(session, vo.expertObj, vo.voteObj);
 
                 return correctVoteInfo(voteInfo);
             } finally {
@@ -147,6 +148,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         vi.expertiseComment = nullTrim(vi.expertiseComment);
         vi.internationalExperienceComment = nullTrim(vi.internationalExperienceComment);
         vi.enoughDocumentsComment = nullTrim(vi.enoughDocumentsComment);
+        vi.expertIP = nullTrim(vi.expertIP);
 
         return vi;
     }
@@ -170,6 +172,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
 
                 SkolkovoLM.dateExpertVote.execute(DateConverter.dateToSql(new Date()), session, vo.expertObj, vo.voteObj);
                 SkolkovoLM.voteResultExpertVote.execute(SkolkovoLM.voteResult.getID(voteInfo.voteResult), session, vo.expertObj, vo.voteObj);
+                SkolkovoLM.ipExpertVote.execute(voteInfo.expertIP, session, vo.expertObj, vo.voteObj);
                 if (voteInfo.voteResult.equals("voted")) {
                     SkolkovoLM.inClusterExpertVote.execute(voteInfo.inCluster, session, vo.expertObj, vo.voteObj);
                     SkolkovoLM.innovativeExpertVote.execute(voteInfo.innovative, session, vo.expertObj, vo.voteObj);
@@ -268,6 +271,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
                 q.properties.put("date", SkolkovoLM.dateExpertVote.getExpr(session.modifier, expertExpr, voteExpr));
                 q.properties.put("voteStartDate", SkolkovoLM.dateStartVote.getExpr(session.modifier, voteExpr));
                 q.properties.put("voteEndDate", SkolkovoLM.dateEndVote.getExpr(session.modifier, voteExpr));
+                q.properties.put("expertIP", SkolkovoLM.ipExpertVote.getExpr(session.modifier, expertExpr, voteExpr));
 
                 OrderedMap<Map<String, Object>, Map<String, Object>> values =
                         q.execute(session.sql, new OrderedMap<String, Boolean>(Collections.singletonList("voteStartDate"), false));
@@ -316,6 +320,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
                     voteInfo.date = DateConverter.sqlToDate((java.sql.Date)propValues.get("date"));
                     voteInfo.voteStartDate = DateConverter.sqlToDate((java.sql.Date)propValues.get("voteStartDate"));
                     voteInfo.voteEndDate = DateConverter.sqlToDate((java.sql.Date)propValues.get("voteEndDate"));
+                    voteInfo.expertIP = (String) propValues.get("expertIP");
 
                     profileInfo.voteInfos[i++] = correctVoteInfo(voteInfo);
                 }
