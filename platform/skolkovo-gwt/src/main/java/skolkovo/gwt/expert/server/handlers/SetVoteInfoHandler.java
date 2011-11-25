@@ -7,6 +7,7 @@ import platform.gwt.base.shared.actions.VoidResult;
 import skolkovo.gwt.expert.server.ExpertServiceImpl;
 import skolkovo.gwt.expert.shared.actions.SetVoteInfo;
 
+import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 
 public class SetVoteInfoHandler extends SimpleActionHandlerEx<SetVoteInfo, VoidResult> {
@@ -18,7 +19,12 @@ public class SetVoteInfoHandler extends SimpleActionHandlerEx<SetVoteInfo, VoidR
 
     @Override
     public VoidResult executeEx(SetVoteInfo action, ExecutionContext context) throws DispatchException, IOException {
-        action.voteInfo.expertIP = servlet.getRequest().getRemoteAddr();
+        HttpServletRequest request = servlet.getRequest();
+        String ipAddress  = request.getHeader("X-FORWARDED-FOR");
+        if (ipAddress == null) {
+            ipAddress = request.getRemoteAddr();
+        }
+        action.voteInfo.expertIP = ipAddress;
         servlet.getLogics().setVoteInfo(action.voteId, action.voteInfo);
         return new VoidResult();
     }
