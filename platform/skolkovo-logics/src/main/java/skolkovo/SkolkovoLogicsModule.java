@@ -1611,7 +1611,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         isInClusterProjectForesight = addJProp(true, "isInClusterProjectForesight", "Форсайт в кластере проекта", inProjectCluster, 1, clusterForesight, 2);
         quantityProjectForesight = addSGProp(baseGroup, "quantityProjectForesight", true, "Кол-во форсайтов",
                 addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1, foresight), 2,
-                        addJProp(baseLM.equals2, baseLM.vtrue, inProjectForesight, 1, 2), 1, 2), 1);
+                        inProjectForesight, 1, 2), 1);
 
         followed(isInClusterProjectForesight, inProjectForesight);
 
@@ -3154,6 +3154,9 @@ public class SkolkovoLogicsModule extends LogicsModule {
         setNegativeResultForesightCheckProjectApply.setImage("delete.png");
 
         setPositiveResultForesightCheckProject = addJProp(true, "Прошла проверку на соответствие форсайты", addEPAProp(EPA_INTERFACE, resultForesightCheckProject), 1, addCProp(foresightCheckResult, "positiveForesightCheckResult"));
+
+        addConstraint(addJProp("Необходимо выбрать хотя бы один форсайт", baseLM.andNot1,
+                positiveResultForesightCheckProject, 1, quantityProjectForesight, 1), false);
 
         needForesightCheckProject = addJProp("needForesightCheckProject", "Требуется проверка на форсайты", baseLM.and1,
                 isR2Project, 1,
@@ -5022,7 +5025,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             addDefaultHintsIncrementTable(this);
             addHintsNoUpdate(dateInStatusProject, quantityDaysToOverdueDateStatusProject);
 
-            setPageSize(0);
+//            setPageSize(0);
 
             setReadOnly(true, objCluster.groupTo);
             setReadOnly(inProjectCluster, false);
@@ -5245,7 +5248,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             addPropertyDraw(new LP[]{baseLM.currentDate, requiredPeriod, overduePeriod,
                     requiredQuantity, requiredBusinessQuantity,
                     limitExperts, percentNeeded,
-                    emailDocuments, emailPresident, emailClaimerFromAddress, emailForCertificates,
+                    emailDocuments, emailPresident, emailClaimerFromAddress, emailForCertificates, emailIO,
                     projectsImportLimit, importOnlyR2Projects, importProjectSidsAction, showProjectsToImportAction, showProjectsReplaceToImportAction, importProjectsAction,
                     rateExpert, emailLetterCertificatesExpertMonthYear, executiveLD, phoneExecutiveLD, mobileExecutiveLD});
         }
@@ -5384,7 +5387,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 //            setReadOnly(true, objVote.groupTo);
 //            setReadOnly(allowedEmailLetterExpertVote, false);
 
-            setPageSize(0);
+//            setPageSize(0);
         }
 
         @Override
