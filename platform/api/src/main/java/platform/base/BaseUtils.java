@@ -4,6 +4,7 @@ import org.apache.commons.codec.binary.Base64;
 
 import java.awt.*;
 import java.io.*;
+import java.lang.reflect.Array;
 import java.lang.reflect.Method;
 import java.sql.Timestamp;
 import java.util.*;
@@ -1107,6 +1108,21 @@ public class BaseUtils {
         System.arraycopy(array1, 0, result, 0, array1.length);
         System.arraycopy(array2, 0, result, array1.length, array2.length);
         return result;
+    }
+
+    public static class GenericTypeInstancer<T> implements ArrayInstancer<T> {
+        private final Class arrayType;
+        public GenericTypeInstancer(Class<T> arrayType) {
+            this.arrayType = arrayType;
+        }
+
+        public T[] newArray(int size) {
+            return (T []) Array.newInstance(arrayType, size);
+        }
+    }
+
+    public static <T> T[] addElement(T[] array, T element, Class<T> elementClass) {
+        return addElement(array, element, new GenericTypeInstancer<T>(elementClass));
     }
 
     public static <T> T[] addElement(T[] array, T element, ArrayInstancer<T> instancer) {

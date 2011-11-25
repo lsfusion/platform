@@ -11,11 +11,7 @@ public class LifecycleManager {
 
     private LifecycleListener listeners[] = new LifecycleListener[0];
 
-    private final static ArrayInstancer<LifecycleListener> arrayInstancer = new ArrayInstancer<LifecycleListener>() {
-        public LifecycleListener[] newArray(int size) {
-            return new LifecycleListener[size];
-        }
-    };
+    private final static ArrayInstancer<LifecycleListener> arrayInstancer = new BaseUtils.GenericTypeInstancer<LifecycleListener>(LifecycleListener.class);
 
     public LifecycleManager(LifecycleListener... listeners) {
         if (listeners != null && listeners.length > 0) {
