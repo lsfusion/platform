@@ -4077,6 +4077,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         addFormEntity(new ExpertAuthFormEntity(print, "expertAuth"));
         addFormEntity(new ExpertAuthProfileFormEntity(print, "expertAuthProfile"));
         addFormEntity(new ExpertReminderProfileFormEntity(print, "expertReminderProfile"));
+        addFormEntity(new ClusterExpertProfileFormEntity(print, "clusterExpertProfile"));
         addFormEntity(new ConferenceExpertLetterFormEntity(print, "conferenceExpertLetter"));
         addFormEntity(new ClaimerAcceptedFormEntity(print, "claimerAccepted"));
         addFormEntity(new ClaimerRejectedFormEntity(print, "claimerRejected"));
@@ -5727,6 +5728,39 @@ public class SkolkovoLogicsModule extends LogicsModule {
             return true;
         }
     }
+
+     private class ClusterExpertProfileFormEntity extends FormEntity<SkolkovoBusinessLogics>{
+        private ObjectEntity objCluster;
+        private ObjectEntity objExpert;
+        private ObjectEntity objForesight;
+
+        private ClusterExpertProfileFormEntity(NavigatorElement parent, String sID){
+            super(parent, sID, "Информация о заполненном профайле");
+
+            objCluster = addSingleGroupObject(1, "cluster", cluster, "Кластер");
+            addPropertyDraw(objCluster, nameNative, nameForeign);
+            objCluster.groupTo.initClassView = ClassViewType.PANEL;
+
+
+            objExpert = addSingleGroupObject(2, "expert", expert, "Эксперт", baseLM.userFirstName, baseLM.userLastName, documentNameExpert, baseLM.email, baseLM.userPassword, nameNativeClusterExpert);
+            addPropertyDraw(objExpert, commentExpertiseGroup);
+            addPropertyDraw(objExpert, isScientificExpert, isTechnicalExpert, isBusinessExpert, expertiseExpert, grantExpert, profileBlockedExpert, profileUpdateDateExpert);
+
+            objForesight = addSingleGroupObject(3, "foresight", foresight, "Области специализации");
+            addPropertyDraw(objForesight, sidForesight, isRootForesight, nameNative, nameForeign, nameNativeShortClusterForesight);
+            addPropertyDraw(objExpert, objForesight, commentExpertForesight, inExpertForesight);
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(clusterExpert, objExpert), Compare.EQUALS, objCluster));
+
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(clusterForesight, objForesight), Compare.EQUALS, objCluster));
+            addObjectActions(this, objForesight);
+            addFixedFilter(new NotNullFilterEntity(addPropertyObject(inExpertForesight, objExpert, objForesight)));
+            addFixedFilter(new NotNullFilterEntity(addPropertyObject(profileUpdateDateExpert, objExpert)));
+//            includeProjectClusterForesight = addJProp(actionGroup, true, "Подключить", editClaimer, claimerProject, 1);
+
+            setPageSize(0);
+        }
+    }
+
 
     private class ConferenceExpertLetterFormEntity extends FormEntity<SkolkovoBusinessLogics> {
         private GroupObjectEntity gobjConferenceExpert;
