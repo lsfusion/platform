@@ -3155,7 +3155,11 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         setPositiveResultForesightCheckProject = addJProp(true, "Прошла проверку на соответствие форсайты", addEPAProp(EPA_INTERFACE, resultForesightCheckProject), 1, addCProp(foresightCheckResult, "positiveForesightCheckResult"));
 
-        addConstraint(addJProp("Необходимо выбрать хотя бы один форсайт", baseLM.andNot1,
+        addConstraint(addJProp("Вы не выбрали ни одного инновационного приоритета ( форсайта )\n" +
+                " \n" +
+                "Согласно п.17 новой редакции положения, ответственный сотрудник кластера должен проверить заявку на соответствие направлению деятельности Фонда, а так же определеить инновационные приоритеты (форсайты) для каждой заявки.\n" +
+                "Пожалуйста выберите один или несколько инновационных приоритетов.\n" +
+                "Обращаем Ваше внимание, что согласно п.5 Положения об экспертных коллегиях, под инновационным приоритетом понимается пункт списка, не включающий в себя подпунктов.", baseLM.andNot1,
                 positiveResultForesightCheckProject, 1, quantityProjectForesight, 1), false);
 
         needForesightCheckProject = addJProp("needForesightCheckProject", "Требуется проверка на форсайты", baseLM.and1,
