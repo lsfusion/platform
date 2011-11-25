@@ -6,7 +6,7 @@ import com.gwtplatform.dispatch.shared.Action;
 import com.gwtplatform.dispatch.shared.ActionException;
 import com.gwtplatform.dispatch.shared.Result;
 import org.springframework.security.core.Authentication;
-import platform.base.GenericUtils;
+import platform.base.ReflectionUtils;
 import platform.gwt.base.server.ServerUtils;
 import platform.gwt.paas.server.exceptions.IOActionException;
 import platform.gwt.paas.server.exceptions.RemoteActionException;
@@ -18,7 +18,7 @@ public abstract class SimpleActionHandlerEx<A extends Action<R>, R extends Resul
     private final Class<A> actionType;
 
     public SimpleActionHandlerEx() {
-        actionType = GenericUtils.getFirstTypeParameterOfSuperclass(getClass());
+        actionType = ReflectionUtils.getFirstTypeParameterOfSuperclass(getClass());
     }
 
     public SimpleActionHandlerEx(Class<A> actionType) {
