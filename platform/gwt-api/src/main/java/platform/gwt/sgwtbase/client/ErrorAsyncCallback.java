@@ -23,8 +23,10 @@ public class ErrorAsyncCallback<T> extends AsyncCallbackEx<T> {
         String message = getServerMessage(caught);
         if (message != null) {
             SC.warn(GwtClientUtils.toHtml(message));
+            return;
         } else if (caught instanceof RequestTimeoutException) {
             SC.warn(baseMessages.actionTimeoutErrorMessage());
+            return;
         } else if (caught instanceof StatusCodeException) {
             StatusCodeException statusEx = (StatusCodeException) caught;
             if (statusEx.getStatusCode() == 500 && statusEx.getEncodedResponse().contains(TIMEOUT_MESSAGE)) {
