@@ -38,7 +38,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     private LsfLogicsParser parser;
 
     public enum State {GROUP, CLASS, PROP, NAVIGATOR}
-    public enum ConstType { INT, REAL, STRING, LOGICAL }
+    public enum ConstType { INT, REAL, STRING, LOGICAL, ENUM }
 
     private Map<String, ValueClass> primitiveTypeAliases = BaseUtils.buildMap(
             Arrays.<String>asList("INTEGER", "DOUBLE", "LONG", "DATE", "BOOLEAN"),
@@ -138,20 +138,28 @@ public class ScriptingLogicsModule extends LogicsModule {
             return valueClass;
     }
 
-    public void addScriptedClass(String className, String captionStr, boolean isAbstract, List<String> parentNames) throws ScriptingErrorLog.SemanticErrorException {
-        scriptLogger.info("addScriptedClass(" + className + ", " + (captionStr==null ? "" : captionStr) + ", " + isAbstract + ", " + parentNames + ");");
+    public void addScriptedClass(String className, String captionStr, boolean isAbstract, boolean isStatic,
+                                 List<String> instNames, List<String> instCaptions, List<String> parentNames) throws ScriptingErrorLog.SemanticErrorException {
+        scriptLogger.info("addScriptedClass(" + className + ", " + (captionStr==null ? "" : captionStr) + ", " + isAbstract + ", " + isStatic + ", " + instNames + ", " + instCaptions + ", " + parentNames + ");");
         checkDuplicateClass(className);
+        checkStaticClassConstraints(className, isStatic, isAbstract, instNames, instCaptions);
+        checkClassParents(parentNames);
+
         String caption = (captionStr == null ? className : transformCaptionStr(captionStr));
         CustomClass[] parents = new CustomClass[parentNames.size()];
         for (int i = 0; i < parentNames.size(); i++) {
             String parentName = parentNames.get(i);
-            ValueClass valueClass = findClassByCompoundName(parentName);
-            if (!(valueClass instanceof CustomClass)) {
-                errLog.emitClassIsNotCustomClassError(parser, parentName);
-            }
-            parents[i] = (CustomClass) valueClass;
+            parents[i] = (CustomClass) findClassByCompoundName(parentName);
         }
-        if (isAbstract) {
+
+        assert !(isStatic && isAbstract);
+        if (isStatic) {
+            String[] captions = new String[instCaptions.size()];
+            for (int i = 0; i < instCaptions.size(); i++) {
+                captions[i] = (instCaptions.get(i) == null ? null : transformCaptionStr(instCaptions.get(i)));
+            }
+            addStaticClass(className, caption, instNames.toArray(new String[instNames.size()]), captions, parents);
+        } else if (isAbstract) {
             addAbstractClass(className, caption, parents);
         } else {
             addConcreteClass(className, caption, parents);
@@ -492,7 +500,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         return addUProp(null, caption, unionType, resultParams.toArray());
     }
 
-    public LP<?> addConstantProp(ConstType type, String text) {
+    public LP<?> addConstantProp(ConstType type, String text) throws ScriptingErrorLog.SemanticErrorException {
         scriptLogger.info("addConstantProp(" + type + ", " + text + ");");
 
         switch (type) {
@@ -500,8 +508,32 @@ public class ScriptingLogicsModule extends LogicsModule {
             case REAL: return addCProp(DoubleClass.instance, Double.parseDouble(text));
             case STRING: return addCProp(StringClass.get(text.length()), text);
             case LOGICAL: return addCProp(LogicalClass.instance, text.equals("TRUE"));
+            case ENUM: return addStaticClassConst(text);
         }
         return null;
+    }
+
+    private LP<?> addStaticClassConst(String name) throws ScriptingErrorLog.SemanticErrorException {
+        int pointPos = name.indexOf('.');
+        assert pointPos > 0;
+        assert name.indexOf('.') == name.lastIndexOf('.');
+
+        String className = name.substring(0, pointPos);
+        String instanceName = name.substring(pointPos+1);
+        LP<?> resultProp = null;
+
+        ValueClass cls = findClassByCompoundName(className);
+        if (cls instanceof StaticCustomClass) {
+            StaticCustomClass staticClass = (StaticCustomClass) cls;
+            if (staticClass.hasSID(instanceName)) {
+                resultProp = addCProp(staticClass, instanceName);
+            } else {
+                errLog.emitNotFoundError(parser, "static class instance", instanceName);
+            }
+        } else {
+            errLog.emitNonStaticHasInstancesError(parser, className);
+        }
+        return resultProp;
     }
 
     public LP<?> addScriptedTypeProp(String className, boolean bIs) throws ScriptingErrorLog.SemanticErrorException {
@@ -576,6 +608,37 @@ public class ScriptingLogicsModule extends LogicsModule {
         for (LP<?> lp : uPropParams) {
             if (lp.property.interfaces.size() != paramCnt) {
                 errLog.emitUnionPropParamsError(parser);
+            }
+        }
+    }
+
+    private void checkStaticClassConstraints(String className, boolean isStatic, boolean isAbstract, List<String> instNames, List<String> instCaptions) throws ScriptingErrorLog.SemanticErrorException {
+        assert instCaptions.size() == instNames.size();
+        if (isStatic && isAbstract) {
+            errLog.emitAbstractStaticClassError(parser);
+        } else if (!isStatic && instNames.size() > 0) {
+            errLog.emitNonStaticHasInstancesError(parser, className);
+        } else if (isStatic && instNames.size() == 0) {
+            errLog.emitStaticHasNoInstancesError(parser, className);
+        } else if (isStatic) {
+            Set<String> names = new HashSet<String>();
+            for (String name : instNames) {
+                if (names.contains(name)) {
+                    errLog.emitAlreadyDefinedError(parser, "instance", name);
+                }
+                names.add(name);
+            }
+        }
+    }
+
+    private void checkClassParents(List<String> parents) throws ScriptingErrorLog.SemanticErrorException {
+        for (String parentName : parents) {
+            ValueClass valueClass = findClassByCompoundName(parentName);
+            if (!(valueClass instanceof CustomClass)) {
+                errLog.emitBuiltInClassAsParentError(parser, parentName);
+            }
+            if (valueClass instanceof StaticCustomClass) {
+                errLog.emitStaticClassAsParentError(parser, parentName);
             }
         }
     }

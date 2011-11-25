@@ -1,23 +1,23 @@
 package platform.server.classes;
 
-import platform.server.data.expr.StaticValueExpr;
-import platform.server.data.expr.query.Stat;
-import platform.server.data.sql.SQLSyntax;
-import platform.server.logics.ServerResourceBundle;
-import platform.server.session.DataSession;
-import platform.server.logics.linear.LP;
-import platform.server.logics.DataObject;
-import platform.server.data.query.Query;
-import platform.server.data.expr.ValueExpr;
-import platform.server.data.expr.Expr;
+import platform.base.ArrayInstancer;
 import platform.base.BaseUtils;
 import platform.base.OrderedMap;
 import platform.interop.Compare;
+import platform.server.data.expr.Expr;
+import platform.server.data.expr.StaticValueExpr;
+import platform.server.data.expr.ValueExpr;
+import platform.server.data.query.Query;
+import platform.server.data.sql.SQLSyntax;
+import platform.server.logics.DataObject;
+import platform.server.logics.ServerResourceBundle;
+import platform.server.logics.linear.LP;
+import platform.server.session.DataSession;
 
+import java.sql.SQLException;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
-import java.util.Collections;
-import java.sql.SQLException;
 
 public class StaticCustomClass extends ConcreteCustomClass implements StaticClass {
 
@@ -25,11 +25,25 @@ public class StaticCustomClass extends ConcreteCustomClass implements StaticClas
     public String[] names;
     public Integer[] ids;
 
-    public StaticCustomClass(String sID, String caption, CustomClass sidClass, String[] sids, String[] names) {
-        super(sID, caption, sidClass);
+    public StaticCustomClass(String sID, String caption, CustomClass sidClass, String[] sids, String[] names, CustomClass... parents) {
+        super(sID, caption, BaseUtils.addElement(parents, sidClass, new ArrayInstancer<CustomClass>() {
+            @Override
+            public CustomClass[] newArray(int size) {
+                return new CustomClass[size];
+            }
+        }));
 
         this.sids = sids;
         this.names = names;
+    }
+
+    public boolean hasSID(String sID) {
+        for (String classSID : sids) {
+            if (classSID.equals(sID)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public int getID(String sID) {

@@ -106,9 +106,33 @@ public class ScriptingErrorLog {
         emitSemanticError(msg, e);
     }
 
-    public void emitClassIsNotCustomClassError(LsfLogicsParser parser, String className) throws SemanticErrorException {
+    public void emitBuiltInClassAsParentError(LsfLogicsParser parser, String className) throws SemanticErrorException {
         SemanticErrorException e = new SemanticErrorException(parser.input);
-        String msg = getSemanticRecognitionErrorText("сlass '" + className + "' should not be a built-in class\n", parser, e);
+        String msg = getSemanticRecognitionErrorText("Built-in class '" + className + "' cannot be inherited\n", parser, e);
+        emitSemanticError(msg, e);
+    }
+
+    public void emitStaticClassAsParentError(LsfLogicsParser parser, String className) throws SemanticErrorException {
+        SemanticErrorException e = new SemanticErrorException(parser.input);
+        String msg = getSemanticRecognitionErrorText("Static class '" + className + "' cannot be inherited\n", parser, e);
+        emitSemanticError(msg, e);
+    }
+
+    public void emitAbstractStaticClassError(LsfLogicsParser parser) throws SemanticErrorException {
+        SemanticErrorException e = new SemanticErrorException(parser.input);
+        String msg = getSemanticRecognitionErrorText("static сlass cannot be abstract\n", parser, e);
+        emitSemanticError(msg, e);
+    }
+
+    public void emitNonStaticHasInstancesError(LsfLogicsParser parser, String className) throws SemanticErrorException {
+        SemanticErrorException e = new SemanticErrorException(parser.input);
+        String msg = getSemanticRecognitionErrorText("сlass '" + className + "' must be static to have instances\n", parser, e);
+        emitSemanticError(msg, e);
+    }
+
+    public void emitStaticHasNoInstancesError(LsfLogicsParser parser, String className) throws SemanticErrorException {
+        SemanticErrorException e = new SemanticErrorException(parser.input);
+        String msg = getSemanticRecognitionErrorText("static сlass '" + className + "' should have instances\n", parser, e);
         emitSemanticError(msg, e);
     }
 

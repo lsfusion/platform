@@ -231,8 +231,8 @@ public abstract class LogicsModule {
         return customClass;
     }
 
-    protected StaticCustomClass addStaticClass(String name, String caption, String[] sids, String[] names) {
-        StaticCustomClass customClass = new StaticCustomClass(transformNameToSID(name), caption, baseLM.baseClass.sidClass, sids, names);
+    protected StaticCustomClass addStaticClass(String name, String caption, String[] sids, String[] names, CustomClass... parents) {
+        StaticCustomClass customClass = new StaticCustomClass(transformNameToSID(name), caption, baseLM.baseClass.sidClass, sids, names, parents);
         storeCustomClass(customClass);
         customClass.dialogReadOnly = true;
         return customClass;
