@@ -802,7 +802,7 @@ public class ClientFormController {
 
         try {
 
-            if (dataChanged) {
+            if (true) { //(dataChanged) {
 
                 if (!sureApply) {
                     String okMessage = "";

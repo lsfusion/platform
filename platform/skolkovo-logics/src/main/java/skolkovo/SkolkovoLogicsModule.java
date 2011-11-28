@@ -3164,7 +3164,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         needForesightCheckProject = addJProp("needForesightCheckProject", "Требуется проверка на форсайты", baseLM.and1,
                 isR2Project, 1,
-                resultExecuteLegalCheckProject, 1);
+                positiveLegalResultProject, 1);
 
         sentForTranslationProject = addDProp(translationGroup, "sentForTranslationProject", "Направлена на перевод", LogicalClass.instance, project);
         dateSentForTranslationProject = addDCProp(translationGroup, "dateSentForTranslationProject", "Дата направления на перевод", true, baseLM.currentDate, sentForTranslationProject, 1);
@@ -6909,7 +6909,10 @@ public class SkolkovoLogicsModule extends LogicsModule {
         public void execute(ExecutionContext context) throws SQLException {
             DataObject projectObject = context.getKeyValue(projectInterface);
 
-            boolean r2 = isR2Project.read(context, projectObject) != null && useAllClusterExpertsProject.read(context, projectObject) == null;
+            boolean r2 = isR2Project.read(context, projectObject) != null;
+            boolean allExperts = useAllClusterExpertsProject.read(context, projectObject) != null;
+
+            boolean r2Foresight = r2 && !allExperts;
 
             // считываем всех экспертов, которые уже голосовали по проекту
             Query<String, String> query = new Query<String, String>(Collections.singleton("key"));
@@ -6938,7 +6941,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             query.properties.put("technical", isTechnicalExpert.getExpr(context.getModifier(), query.mapKeys.get("key")));
             query.properties.put("business", isBusinessExpert.getExpr(context.getModifier(), query.mapKeys.get("key")));
 
-            if (r2) {
+            if (r2Foresight) {
                 query.and(quantityForesightProjectExpert.getExpr(context.getModifier(), projectObject.getExpr(), query.mapKeys.get("key")).getWhere());
             }
 
@@ -6986,7 +6989,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
                 return;
             }
 
-            if (r2 && (requiredBusiness > expertNewBusiness.size() + expertVotedBusiness.size())) {
+            if (r2Foresight && (requiredBusiness > expertNewBusiness.size() + expertVotedBusiness.size())) {
                 context.addAction(new MessageClientAction("Недостаточно бизнес-экспертов по форсайту", "Генерация заседания"));
                 return;
             }
@@ -7022,7 +7025,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             // назначаем новых экспертов - сначала, которые не голосовали еще, а затем остальных
             Random rand = new Random();
             while (required > 0) {
-                if (r2) {
+                if (r2Foresight) {
                     if (requiredBusiness > 0) { // сначала берем бизнес-экспертов
                         if (!expertNewBusiness.isEmpty()) {
                             includeExpertInVote(rand, context, voteObject, expertNewBusiness, expertNewTechnical, true);
