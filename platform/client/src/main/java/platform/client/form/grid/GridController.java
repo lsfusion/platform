@@ -1,12 +1,12 @@
 package platform.client.form.grid;
 
-import platform.base.OrderedMap;
 import platform.client.ClientResourceBundle;
 import platform.client.Main;
 import platform.client.form.ClientFormController;
 import platform.client.form.ClientFormLayout;
 import platform.client.form.GroupObjectController;
 import platform.client.form.queries.*;
+import platform.client.logics.ClientFormChanges;
 import platform.client.logics.ClientGrid;
 import platform.client.logics.ClientGroupObjectValue;
 import platform.client.logics.ClientPropertyDraw;
@@ -20,7 +20,10 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.ByteArrayInputStream;
+import java.io.DataInputStream;
 import java.io.IOException;
+import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -224,6 +227,31 @@ public class GridController {
                     });
                 }
             });
+            groupObjectController.addToToolbar(Box.createHorizontalStrut(5));
+        }
+
+        if (key.showHideSettings) {
+            groupObjectController.addToToolbar(new HideSettingsButton() {
+                public void addListener() {
+                    addActionListener(new ActionListener() {
+                        public void actionPerformed(ActionEvent e) {
+                            try {
+                                dialog = new HideSettingsButton.HideSettingsDialog(Main.frame, table);
+                            } catch (IOException ex) {
+                                throw new RuntimeException(ex);
+                            }
+                            dialog.setVisible(true);
+                            try {
+                                form.remoteForm.refreshData();
+                            } catch (RemoteException e1) {
+                                e1.printStackTrace();
+                            }
+                            form.dataChanged = true;
+                        }
+                    });
+                }
+            });
+            groupObjectController.addToToolbar(Box.createHorizontalStrut(5));
         }
 
         if (this.key.minRowCount > 0) { // вообще говоря, так делать неправильно, посколько и HeaderHeight и RowHeight могут изменяться во времени

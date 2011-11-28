@@ -414,11 +414,11 @@ public abstract class GridTable extends ClientFormTable
 
             TableColumn column = getColumnModel().getColumn(i);
             if (newColumnCount != oldColumnCount) {
-                if (autoResizeMode == JTable.AUTO_RESIZE_OFF) {
-                    column.setPreferredWidth(cell.getMinimumWidth(this));
-                } else {
-                    column.setPreferredWidth(cell.getPreferredWidth(this));
-                }
+//                if (autoResizeMode == JTable.AUTO_RESIZE_OFF) {
+//                    column.setPreferredWidth(cell.getMinimumWidth(this));
+//                } else {
+//                    column.setPreferredWidth(cell.getPreferredWidth(this));
+//                }
                 column.setMinWidth(cell.getMinimumWidth(this));
                 column.setMaxWidth(cell.getMaximumWidth(this));
             }
@@ -443,6 +443,9 @@ public abstract class GridTable extends ClientFormTable
                 });
             }
         }
+
+        if (newColumnCount != oldColumnCount)
+            setOrResetPreferredColumnWidths();
 
         if (model.getColumnCount() != 0) {
             setRowHeight(rowHeight);
@@ -563,13 +566,17 @@ public abstract class GridTable extends ClientFormTable
             autoResizeMode = newAutoResizeMode;
             setAutoResizeMode(newAutoResizeMode);
 
-            if (newAutoResizeMode == JTable.AUTO_RESIZE_OFF) {
+            setOrResetPreferredColumnWidths();
+        }
+        super.doLayout();
+    }
+
+    public void setOrResetPreferredColumnWidths() {
+        if (getAutoResizeMode() == JTable.AUTO_RESIZE_OFF) {
                 setPreferredColumnWidthsAsMinWidth();
             } else {
                 resetPreferredColumnWidths();
             }
-        }
-        super.doLayout();
     }
 
     @Override
@@ -925,6 +932,18 @@ public abstract class GridTable extends ClientFormTable
 
     public ClientPropertyDraw getProperty(int row, int col) {
         return model.getColumnProperty(col);
+    }
+
+    public ClientPropertyDraw getProperty(int num) {
+        return properties.get(num);
+    }
+
+    public int getPropertyCount() {
+        return properties.size();
+    }
+
+    public String getPropertyName(int num) {
+        return properties.get(num).caption;
     }
 
     public ClientGroupObjectValue getKey(int row, int col) {

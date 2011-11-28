@@ -453,6 +453,31 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         return null;
     }
 
+    public List<PropertyDrawEntity> getPropertyDrawList(LP...properties) {
+        List<PropertyDrawEntity> list = new ArrayList<PropertyDrawEntity>();
+        for(LP property : properties)
+           list.add(getPropertyDraw(property));
+        return list;
+    }
+
+
+    protected List<PropertyDrawEntity> getPropertyDrawList(ObjectEntity object, LP... properties) {
+        return getPropertyDrawList(object.groupTo, properties);
+    }
+
+    public List<PropertyDrawEntity> getPropertyDrawList(GroupObjectEntity groupObject, LP... properties) {
+        List<PropertyDrawEntity> list = new ArrayList<PropertyDrawEntity>();
+        for (LP property : properties) {
+            for (PropertyDrawEntity<?> propertyDraw : propertyDraws) {
+                if ((propertyDraw.propertyObject.property.equals(property.property))&&(groupObject.equals(propertyDraw.getToDraw(this)))) {
+                    list.add(propertyDraw);
+                    break;
+                }
+            }
+        }
+        return list;
+    }
+
     protected PropertyObjectEntity getPropertyObject(LP<?> lp) {
         return getPropertyDraw(lp).propertyObject;
     }

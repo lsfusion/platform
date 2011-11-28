@@ -46,6 +46,7 @@ public class PropertyDrawView extends ComponentView {
     public boolean autoHide;
     public boolean showTableFirst;
     public boolean editOnSingleClick;
+    public boolean hide;
 
     public Color highlightColor;
 
@@ -196,6 +197,7 @@ public class PropertyDrawView extends ComponentView {
         outStream.writeBoolean(autoHide);
         outStream.writeBoolean(showTableFirst);
         outStream.writeBoolean(editOnSingleClick);
+        outStream.writeBoolean(hide);
 
         pool.writeObject(outStream, highlightColor);
 
@@ -263,6 +265,7 @@ public class PropertyDrawView extends ComponentView {
         autoHide = inStream.readBoolean();
         showTableFirst = inStream.readBoolean();
         editOnSingleClick = inStream.readBoolean();
+        hide = inStream.readBoolean();
 
         highlightColor = pool.readObject(inStream);
 

@@ -92,6 +92,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public String tableName;
     public String eventSID;
     public boolean editOnSingleClick;
+    public boolean hide;
 
     public ClientPropertyDraw() {
     }
@@ -351,6 +352,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         outStream.writeBoolean(autoHide);
         outStream.writeBoolean(showTableFirst);
         outStream.writeBoolean(editOnSingleClick);
+        outStream.writeBoolean(hide);
 
         pool.writeObject(outStream, highlightColor);
 
@@ -385,6 +387,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         autoHide = inStream.readBoolean();
         showTableFirst = inStream.readBoolean();
         editOnSingleClick = inStream.readBoolean();
+        hide = inStream.readBoolean();
 
         highlightColor = pool.readObject(inStream);
 

@@ -17,6 +17,7 @@ public class GridView extends ComponentView {
     public boolean showGroup = true;
     public boolean showPrintGroupButton = true;
     public boolean showPrintGroupXlsButton = true;
+    public boolean showHideSettings = true;
 
     public byte minRowCount = 0;
     public boolean tabVertical = false;
@@ -49,6 +50,7 @@ public class GridView extends ComponentView {
         outStream.writeBoolean(showGroup);
         outStream.writeBoolean(showPrintGroupButton);
         outStream.writeBoolean(showPrintGroupXlsButton);
+        outStream.writeBoolean(showHideSettings);
 
         outStream.writeByte(minRowCount);
         outStream.writeBoolean(tabVertical);
@@ -69,6 +71,7 @@ public class GridView extends ComponentView {
         showGroup = inStream.readBoolean();
         showPrintGroupButton = inStream.readBoolean();
         showPrintGroupXlsButton = inStream.readBoolean();
+        showHideSettings = inStream.readBoolean();
 
         minRowCount = inStream.readByte();
         tabVertical = inStream.readBoolean();
@@ -86,5 +89,6 @@ public class GridView extends ComponentView {
         showGroup = false;
         showPrintGroupButton = false;
         showPrintGroupXlsButton = false;
+        showHideSettings = false;
     }
 }

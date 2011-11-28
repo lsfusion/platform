@@ -39,7 +39,7 @@ public class GridTableModel extends AbstractTableModel {
                 Map<ClientGroupObjectValue, Object> columnCaption = columnCaptions.get(property);
                 for (ClientGroupObjectValue key : mapColumnKeys.get(property)) {
                     //не показываем колонку, если propertyCaption равно null
-                    if (columnCaption == null || columnCaption.get(key) != null) {
+                    if ((columnCaption == null || columnCaption.get(key) != null) && !property.hide) {
                         columnKeysList.add(key);
                         columnPropsList.add(property);
                     }

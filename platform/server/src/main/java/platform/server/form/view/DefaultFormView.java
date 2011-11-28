@@ -6,10 +6,7 @@ import platform.server.form.entity.filter.RegularFilterEntity;
 import platform.server.form.entity.filter.RegularFilterGroupEntity;
 import platform.server.logics.property.group.AbstractGroup;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class DefaultFormView extends FormView {
 
@@ -24,6 +21,15 @@ public class DefaultFormView extends FormView {
 
     private transient Map<PropertyDrawEntity, PropertyDrawView> mproperties = new HashMap<PropertyDrawEntity, PropertyDrawView>();
     public PropertyDrawView get(PropertyDrawEntity property) { return mproperties.get(property); }
+
+    public void setPropertyDrawViewHide(List<PropertyDrawEntity> properties, Boolean hide) {
+        for(PropertyDrawEntity property : properties)
+          setPropertyDrawViewHide(property,hide);
+    }
+
+    public void setPropertyDrawViewHide(PropertyDrawEntity property, Boolean hide) {
+          getProperty(property).hide = hide;
+    }
 
     private transient Map<RegularFilterGroupEntity, RegularFilterGroupView> mfilters = new HashMap<RegularFilterGroupEntity, RegularFilterGroupView>();
     public RegularFilterGroupView get(RegularFilterGroupEntity filterGroup) { return mfilters.get(filterGroup); }
