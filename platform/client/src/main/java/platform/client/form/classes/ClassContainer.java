@@ -1,6 +1,7 @@
 package platform.client.form.classes;
 
 import platform.client.FlatRolloverButton;
+import platform.interop.ComponentDesign;
 
 import javax.swing.*;
 import java.awt.*;
@@ -15,13 +16,16 @@ public abstract class ClassContainer extends JPanel {
     private JPanel buttonContainer;
 
     public ClassContainer(ClassTree view) {
-
+        Dimension BUTTON_SIZE = new Dimension(20, 20);
         setLayout(new BorderLayout());
 
         pane = new JScrollPane(view);
         add(pane, BorderLayout.CENTER);
 
-        JButton collapseButton = new FlatRolloverButton("<<");
+        JButton collapseButton = new FlatRolloverButton(new ImageIcon(ComponentDesign.class.getResource("/images/side_hide.png")));
+        collapseButton.setMinimumSize(BUTTON_SIZE);
+        collapseButton.setPreferredSize(BUTTON_SIZE);
+        collapseButton.setMaximumSize(BUTTON_SIZE);
         collapseButton.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
@@ -31,14 +35,14 @@ public abstract class ClassContainer extends JPanel {
         collapseButton.setFocusable(false);
         collapseButton.setFont(getFont().deriveFont(Font.BOLD));
 
-        expandButton = new FlatRolloverButton(">");
+        expandButton = new FlatRolloverButton(new ImageIcon(ComponentDesign.class.getResource("/images/side_expand.png")));
         expandButton.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
                 expandTree();
             }
         });
-        
+
         Insets insets = expandButton.getInsets();
         insets.left = 0; insets.right = 0;
         expandButton.setMargin(insets); // экономим на спичках
@@ -48,7 +52,10 @@ public abstract class ClassContainer extends JPanel {
 
         add(expandButton, BorderLayout.EAST);
 
-        JButton widthDecButton = new FlatRolloverButton("<");
+        JButton widthDecButton = new FlatRolloverButton(new ImageIcon(ComponentDesign.class.getResource("/images/expand_dec.png")));
+        widthDecButton.setMinimumSize(BUTTON_SIZE);
+        widthDecButton.setPreferredSize(BUTTON_SIZE);
+        widthDecButton.setMaximumSize(BUTTON_SIZE);
         widthDecButton.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
@@ -59,7 +66,10 @@ public abstract class ClassContainer extends JPanel {
         widthDecButton.setFocusable(false);
         widthDecButton.setFont(getFont().deriveFont(Font.BOLD));
 
-        JButton widthIncButton = new FlatRolloverButton(">");
+        JButton widthIncButton = new FlatRolloverButton(new ImageIcon(ComponentDesign.class.getResource("/images/expand_inc.png")));
+        widthIncButton.setMinimumSize(BUTTON_SIZE);
+        widthIncButton.setPreferredSize(BUTTON_SIZE);
+        widthIncButton.setMaximumSize(BUTTON_SIZE);
         widthIncButton.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
