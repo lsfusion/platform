@@ -3,6 +3,7 @@ package platform.server.data.expr;
 import platform.base.TwinImmutableInterface;
 import platform.server.caches.hash.HashContext;
 import platform.server.classes.ValueClass;
+import platform.server.classes.sets.AndClassSet;
 import platform.server.data.expr.query.Stat;
 import platform.server.data.query.innerjoins.GroupJoinsWheres;
 import platform.server.data.query.stat.InnerBaseJoin;
@@ -24,9 +25,9 @@ import java.util.Set;
 public class CurrentEnvironmentExpr extends NotNullExpr {
 
     private final String paramString;
-    private final ValueClass paramClass;
+    private final AndClassSet paramClass;
 
-    public CurrentEnvironmentExpr(String paramString, ValueClass paramClass) {
+    public CurrentEnvironmentExpr(String paramString, AndClassSet paramClass) {
         this.paramString = paramString;
         this.paramClass = paramClass;
     }
@@ -53,7 +54,7 @@ public class CurrentEnvironmentExpr extends NotNullExpr {
     }
 
     public boolean twins(TwinImmutableInterface obj) {
-        return paramString.equals(((CurrentEnvironmentExpr)obj).paramString);
+        return paramString.equals(((CurrentEnvironmentExpr) obj).paramString);
     }
 
     public int hashOuter(HashContext hashContext) {
@@ -77,7 +78,7 @@ public class CurrentEnvironmentExpr extends NotNullExpr {
         }
 
         public ClassExprWhere calculateClassWhere() {
-            return new ClassExprWhere(CurrentEnvironmentExpr.this, paramClass.getUpSet());
+            return new ClassExprWhere(CurrentEnvironmentExpr.this, paramClass);
         }
 
         public <K extends BaseExpr> GroupJoinsWheres groupJoinsWheres(Set<K> keepStat, KeyStat keyStat) {

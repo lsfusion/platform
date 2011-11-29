@@ -7,6 +7,6 @@ import platform.server.logics.ServerResourceBundle;
 public class CurrentComputerFormulaProperty extends CurrentEnvironmentFormulaProperty {
 
     public CurrentComputerFormulaProperty(String sID, ValueClass paramClass) {
-        super(sID, ServerResourceBundle.getString("logics.property.current.computer"), SQLSession.computerParam, paramClass);
+        super(sID, ServerResourceBundle.getString("logics.property.current.computer"), SQLSession.computerParam, paramClass.getUpSet());
     }
 }
