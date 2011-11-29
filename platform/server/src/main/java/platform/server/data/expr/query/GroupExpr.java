@@ -525,7 +525,7 @@ public class GroupExpr extends QueryExpr<Expr,GroupExpr.Query,GroupJoin> {
                 Expr innerResult;
                 if(!innerWhere.keyEqual.isEmpty()) { // translatе'им expr
                     QueryTranslator equalTranslator = innerWhere.keyEqual.getTranslator();
-                    innerResult = createInner(equalTranslator.translate(outerInner), query.translateQuery(equalTranslator));
+                    innerResult = createInner(equalTranslator.translate(outerInner), query.translateQuery(equalTranslator).and(innerWhere.where));
                 } else
                     innerResult = createInnerBase(outerInner, query.and(innerWhere.where));
 
