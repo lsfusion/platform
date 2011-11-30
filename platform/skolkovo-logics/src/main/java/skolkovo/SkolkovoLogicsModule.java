@@ -3497,7 +3497,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
         emailClosedVote.setDerivedForcedChange(addCProp(ActionClass.instance, true), closedVote, 1);
 
         emailForesightCheckProjectEA = addEAProp("Решение проверки о соответствии форсайту", project);
-        addEARecepient(emailForesightCheckProjectEA, emailForesightLC);
+        addEARecepient(emailForesightCheckProjectEA, emailIO);
+        addEARecepient(emailForesightCheckProjectEA, MimeMessage.RecipientType.CC, emailForesightLC);
         emailForesightCheckProjectEA.setDerivedForcedChange(addCProp(ActionClass.instance, true), resultForesightCheckProject, 1);
 
         emailNotificationProjectEA = addEAProp(emailIO, project);
@@ -3510,7 +3511,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
         emailNotificationProject.setDerivedForcedChange(addCProp(ActionClass.instance, true), needForesightCheckProject, 1);
 
         emailTransferredProjectEA = addEAProp(emailIO, project);
-        addEARecepient(emailTransferredProjectEA, emailFondTransferred);
+        addEARecepient(emailTransferredProjectEA, emailIO);
+        addEARecepient(emailTransferredProjectEA, MimeMessage.RecipientType.CC, emailFondTransferred);
         emailTransferredHeaderProject = addJProp("emailTransferredHeaderProject", "Заголовок уведомления" ,add2Strings, addCProp(StringClass.get(2000), "Уведомление. "), nameNativeClaimerProject, 1);
         emailTransferredProject = addJProp(baseGroup, true, "emailTransferredProject", "Уведомление о прохождении перевода (e-mail)", emailTransferredProjectEA, 1, emailTransferredHeaderProject, 1);
         emailTransferredProject.setImage("email.png");
@@ -3552,9 +3554,9 @@ public class SkolkovoLogicsModule extends LogicsModule {
         emailClaimerFormalControl.setImage("email.png");
         emailClaimerFormalControl.property.askConfirm = true;
 
-
         emailFondFormalControlEA = addEAProp(emailIO, formalControl);
-        addEARecepient(emailFondFormalControlEA, emailFondFC);
+        addEARecepient(emailFondFormalControlEA, emailIO);
+        addEARecepient(emailFondFormalControlEA, MimeMessage.RecipientType.CC, emailFondFC);
         emailFondHeaderFormalControl = addJProp("emailFondHeaderFormalControl", "Заголовок уведомления", baseLM.string2, addCProp(StringClass.get(2000), "Уведомление."), nameNativeClaimerFormalControl, 1);
         emailFondFormalControl = addJProp(actionGroup, true, "emailFondFormalControl", "Письмо о формальной экспертизе",   emailFondFormalControlEA, 1, emailFondHeaderFormalControl, 1);
         emailFondFormalControl.setImage("email.png");
