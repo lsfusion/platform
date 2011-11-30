@@ -159,18 +159,20 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
     }
 
     public boolean notDeterministic() {
-        Set<Property> depends = new HashSet<Property>();
-        fillDepends(depends, false);
-        for (Property property : depends)
+        for (Property property : getDepends(false))
             if (property.notDeterministic())
                 return true;
         return false;
     }
 
-    public Set<Property> getDepends() {
+    public Set<Property> getDepends(boolean derived) {
         Set<Property> depends = new HashSet<Property>();
-        fillDepends(depends, true);
+        fillDepends(depends, derived);
         return depends;
+    }
+
+    public Set<Property> getDepends() {
+        return getDepends(true);
     }
 
     @IdentityLazy

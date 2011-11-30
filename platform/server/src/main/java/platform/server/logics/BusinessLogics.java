@@ -1297,7 +1297,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         if(!fill.equals(applied) && fill.isStored())
             mapDepends.get(fill).add(applied);
         else
-            for(Property depend : fill.getDepends())
+            for(Property depend : fill.getDepends(false)) // derived'ы отдельно отрабатываются
                 fillAppliedDependFrom(depend, applied, mapDepends);
     }
 

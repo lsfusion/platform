@@ -7,7 +7,7 @@ import platform.server.logics.ServerResourceBundle;
 
 public class CurrentSessionFormulaProperty extends CurrentEnvironmentFormulaProperty {
 
-    public CurrentSessionFormulaProperty(String sID, BaseClass baseClass) {
-        super(sID, ServerResourceBundle.getString("logics.property.current.session"), SQLSession.sessionParam, baseClass.unknown);
+    public CurrentSessionFormulaProperty(String sID, ValueClass valueClass) {
+        super(sID, ServerResourceBundle.getString("logics.property.current.session"), SQLSession.sessionParam, valueClass.getUpSet());
     }
 }
