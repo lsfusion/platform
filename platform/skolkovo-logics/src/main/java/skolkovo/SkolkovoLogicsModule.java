@@ -1143,8 +1143,9 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP projectLegalCheck;
     LP resultForesightCheckProject, positiveResultForesightCheckProject, negativeResultForesightCheckProject;
     LP setNegativeResultForesightCheckProject, setPositiveResultForesightCheckProject;
+    LP commentForesightCheckProject;
     LP setNegativeResultForesightCheckProjectApply;
-    LP applyForesightCheckProject;
+    LP applyForesightCheckProject, rejectForesightCheckProject;
     LP needForesightCheckProject;
     LP resultLegalCheck, positiveResultLegalCheck, negativeResultLegalCheck;
     LP nameResultLegalCheck;
@@ -1824,7 +1825,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         foreignPublications.setMinimumWidth(10);
         foreignPublications.setPreferredWidth(50);
 
-        nativeAuthorPublications = addDProp(publicationsGroup, "nativeAuthorPublications", "Автор", InsensitiveStringClass.get(500), publications);
+        nativeAuthorPublications = addDProp(publicationsGroup, "nativeAuthorPublications", "Автор", InsensitiveStringClass.get(2000), publications);
         nativeAuthorPublications.setMinimumWidth(10);
         nativeAuthorPublications.setPreferredWidth(50);
 
@@ -1832,7 +1833,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         foreignAuthorPublications.setMinimumWidth(10);
         foreignAuthorPublications.setPreferredWidth(50);
 
-        nativeEditionPublications = addDProp(publicationsGroup, "nativeEditionPublications", "Издание", InsensitiveStringClass.get(500), publications);
+        nativeEditionPublications = addDProp(publicationsGroup, "nativeEditionPublications", "Издание", InsensitiveStringClass.get(2000), publications);
         nativeEditionPublications.setMinimumWidth(10);
         nativeEditionPublications.setPreferredWidth(50);
 
@@ -3171,6 +3172,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         setPositiveResultForesightCheckProject = addJProp(true, "Прошла проверку на соответствие форсайты", addEPAProp(EPA_INTERFACE, resultForesightCheckProject), 1, addCProp(foresightCheckResult, "positiveForesightCheckResult"));
 
+        commentForesightCheckProject = addDProp("commentForesightCheckProject", "Комментарий проверки на форсайты", TextClass.instance, project);
+
         addConstraint(addJProp("Вы не выбрали ни одного инновационного приоритета ( форсайта )\n" +
                 " \n" +
                 "Согласно п.17 новой редакции положения, ответственный сотрудник кластера должен проверить заявку на соответствие направлению деятельности Фонда, а так же определеить инновационные приоритеты (форсайты) для каждой заявки.\n" +
@@ -4169,6 +4172,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         addFormEntity(new VoteFormEntity(baseLM.baseElement, "voterestricted", true));
         addFormEntity(new ConsultingCenterFormEntity(baseLM.baseElement, "consultingCenter"));
         addFormEntity(new ForesightExpertiseApplyFormEntity(baseLM.objectElement, "foresightExpertiseApply"));
+        addFormEntity(new ForesightExpertiseRejectFormEntity(baseLM.objectElement, "foresightExpertiseReject"));
         addFormEntity(new ForesightExpertiseListFormEntity(baseLM.baseElement, "foresightExpertiseList"));
         addFormEntity(new ProjectDocumentsFormEntity(baseLM.baseElement, "projectdocs"));
         addFormEntity(new ConferenceFormEntity(baseLM.baseElement, "conferences"));
@@ -4627,7 +4631,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         private ObjectEntity objForesight;
 
         public ForesightExpertiseApplyFormEntity(NavigatorElement parent, String sID) {
-            super(parent, sID, "Проверка на соответствие форсайту");
+            super(parent, sID, "Проверка на соответствие форсайту (положительная)");
 
             objProject = addSingleGroupObject(1, "project", project, "Проект", dateProject, nameNativeProject, nameForeignProject, nameNativeClaimerProject, nameForeignClaimerProject,
                     openApplicationProjectAction, exportProjectDocumentsAction);
@@ -4664,7 +4668,45 @@ public class SkolkovoLogicsModule extends LogicsModule {
         @Override
         public FormView createDefaultRichDesign() {
             DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign();
+            design.getPrintFunction().setVisible(false);
+            design.getXlsFunction().setVisible(false);
             design.getApplyFunction().setVisible(false);
+            design.getCancelFunction().setVisible(false);
+            return design;
+        }
+    }
+
+    public class ForesightExpertiseRejectFormEntity extends FormEntity<SkolkovoBusinessLogics> {
+
+        private ObjectEntity objProject;
+        private ObjectEntity objCluster;
+        private ObjectEntity objForesight;
+
+        public ForesightExpertiseRejectFormEntity(NavigatorElement parent, String sID) {
+            super(parent, sID, "Проверка на соответствие форсайту (отрицательная)");
+
+            objProject = addSingleGroupObject(1, "project", project, "Проект", commentForesightCheckProject);
+            objProject.groupTo.setSingleClassView(ClassViewType.PANEL);
+
+            addActionsOnOk(addPropertyObject(setNegativeResultForesightCheckProject, objProject));
+
+            rejectForesightCheckProject = addMFAProp(actionGroup, "Не прошла проверку на соответствие форсайту", this, new ObjectEntity[] {objProject}, true);
+            rejectForesightCheckProject.property.askConfirm = true;
+            rejectForesightCheckProject.setImage("delete.png");
+        }
+
+        @Override
+        public FormView createDefaultRichDesign() {
+            DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign();
+            design.getPrintFunction().setVisible(false);
+            design.getXlsFunction().setVisible(false);
+            design.getApplyFunction().setVisible(false);
+            design.getCancelFunction().setVisible(false);
+
+            design.get(getPropertyDraw(commentForesightCheckProject)).panelLabelAbove = true;
+            design.get(getPropertyDraw(commentForesightCheckProject)).constraints.fillHorizontal = 1;
+            design.get(getPropertyDraw(commentForesightCheckProject)).constraints.fillVertical = 1;
+            design.get(getPropertyDraw(commentForesightCheckProject)).preferredSize = new Dimension(400, 300);
             return design;
         }
     }
@@ -4730,7 +4772,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             super(parent, sID, "Соответствие кластеру");
 
             objProject = addSingleGroupObject(project, "Проект", dateProject, nameNativeProject, nameForeignProject, nameNativeClaimerProject, nameForeignClaimerProject,
-                    nameResultForesightCheckProject, dateResultForesightCheckProject, nameUserResultForesightCheckProject, openApplicationProjectAction, exportProjectDocumentsAction, applyForesightCheckProject, setNegativeResultForesightCheckProjectApply);
+                    nameResultForesightCheckProject, dateResultForesightCheckProject, nameUserResultForesightCheckProject, openApplicationProjectAction, exportProjectDocumentsAction, applyForesightCheckProject, rejectForesightCheckProject); // setNegativeResultForesightCheckProjectApply);
 
             projectFilterGroup = new RegularFilterGroupEntity(genID());
             projectFilterGroup.addFilter(new RegularFilterEntity(genID(),
@@ -5017,6 +5059,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
             setForceViewType(dateResultForesightCheckProject, ClassViewType.PANEL);
             addPropertyDraw(nameUserResultForesightCheckProject, objProject).toDraw = objDocument.groupTo;
             setForceViewType(nameUserResultForesightCheckProject, ClassViewType.PANEL);
+            addPropertyDraw(commentForesightCheckProject, objProject).toDraw = objDocument.groupTo;
+            setForceViewType(commentForesightCheckProject, ClassViewType.PANEL);
 
             addPropertyDraw(includeDocumentsProject, objProject).toDraw = objDocument.groupTo;
             setForceViewType(includeDocumentsProject, ClassViewType.PANEL);
@@ -5175,6 +5219,17 @@ public class SkolkovoLogicsModule extends LogicsModule {
             commentLegalView.preferredSize = new Dimension(-1, 200);
             commentLegalView.panelLabelAbove = true;
 
+            ContainerView foresightCheckContainer = design.createContainer("Соответствие форсайту");
+            foresightCheckContainer.add(design.get(getPropertyDraw(nameResultForesightCheckProject)));
+            foresightCheckContainer.add(design.get(getPropertyDraw(dateResultForesightCheckProject)));
+            foresightCheckContainer.add(design.get(getPropertyDraw(nameUserResultForesightCheckProject)));
+            foresightCheckContainer.add(design.get(getPropertyDraw(commentForesightCheckProject)));
+
+            design.get(getPropertyDraw(commentForesightCheckProject)).panelLabelAbove = true;
+            design.get(getPropertyDraw(commentForesightCheckProject)).constraints.fillHorizontal = 1;
+            design.get(getPropertyDraw(commentForesightCheckProject)).constraints.fillVertical = 1;
+            design.get(getPropertyDraw(commentForesightCheckProject)).preferredSize = new Dimension(-1, 300);
+
             ContainerView projectDocumentsContainer = design.getGroupPropertyContainer(objProject.groupTo, projectDocumentsGroup);
             projectDocumentsContainer.constraints.childConstraints = DoNotIntersectSimplexConstraint.TOTHE_RIGHT;
 
@@ -5217,6 +5272,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             specContainer.add(infoContainer);
             specContainer.add(formalControlContainer);
             specContainer.add(legalCheckContainer);
+            specContainer.add(foresightCheckContainer);
             specContainer.add(translationContainer);
             specContainer.add(docContainer);
             specContainer.add(expertContainer);

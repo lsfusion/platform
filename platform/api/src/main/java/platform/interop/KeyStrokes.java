@@ -102,6 +102,10 @@ public class KeyStrokes {
         return KeyStroke.getKeyStroke(KeyEvent.VK_L, InputEvent.ALT_DOWN_MASK);
     }
 
+    public static KeyStroke getEditActionPropertyKeyStroke() {
+        return KeyStroke.getKeyStroke(KeyEvent.VK_H, InputEvent.ALT_DOWN_MASK);
+    }
+
     public static KeyStroke getDeleteActionPropertyKeyStroke() {
         return KeyStroke.getKeyStroke(KeyEvent.VK_E, InputEvent.ALT_DOWN_MASK);
     }

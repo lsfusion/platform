@@ -397,7 +397,8 @@ public class ClientFormController {
                     cancelChanges();
                 }
             });
-            buttonCancel.setEnabled(false);
+            if (buttonCancel != null)
+                buttonCancel.setEnabled(false);
         }
 
         if (isModal()) {

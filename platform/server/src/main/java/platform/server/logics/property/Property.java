@@ -53,6 +53,8 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
 
     private String sID;
 
+    // вот отсюда идут свойства, которые отвечают за логику представлений и подставляются автоматически для PropertyDrawEntity и PropertyDrawView
+
     public String caption;
     public String toolTip;
 
@@ -84,6 +86,11 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
         this.iconPath = iconPath;
         this.image = new ImageIcon(Property.class.getResource("/images/" + iconPath));
     }
+
+    public KeyStroke editKey;
+    public Boolean showEditKey;
+
+    public Boolean drawToToolbar;
 
     public boolean askConfirm = false;
 
@@ -596,6 +603,15 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
             view.get(entity).design.iconPath = iconPath;
             view.get(entity).design.setImage(image);
         }
+
+        if (editKey != null)
+            view.get(entity).editKey = editKey;
+        if (showEditKey != null)
+            view.get(entity).showEditKey = showEditKey;
+
+        if (drawToToolbar != null)
+            view.get(entity).drawToToolbar = drawToToolbar;
+
         if(view.get(entity).getType() instanceof LogicalClass)
             view.get(entity).editOnSingleClick = Settings.instance.getEditLogicalOnSingleClick();
         if(view.get(entity).getType() instanceof ActionClass)

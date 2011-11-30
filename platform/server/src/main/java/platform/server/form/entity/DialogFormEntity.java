@@ -13,6 +13,10 @@ public class DialogFormEntity<T extends BusinessLogics<T>> extends BaseClassForm
         object.groupTo.setSingleClassView(ClassViewType.GRID);
 
         LM.addObjectActions(this, object);
+
+//        setReadOnly(true);
+//
+//        LM.addFormActions(this, object);
     }
 
     public DialogFormEntity(BaseLogicsModule<T> LM, CustomClass cls) {

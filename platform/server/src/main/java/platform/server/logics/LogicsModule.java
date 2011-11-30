@@ -6,6 +6,7 @@ import platform.base.OrderedMap;
 import platform.base.Result;
 import platform.interop.ClassViewType;
 import platform.interop.Compare;
+import platform.interop.KeyStrokes;
 import platform.server.Settings;
 import platform.server.caches.IdentityLazy;
 import platform.server.classes.*;
@@ -1707,6 +1708,9 @@ public abstract class LogicsModule {
                                 new PropertyObjectEntity[] {form.addPropertyObject(getAddObjectAction(cls))},
                                 new OrderEntity[] {(DataObject)cls.getClassObject()}, true);
         property.setImage("add.png");
+        property.setEditKey(KeyStrokes.getAddActionPropertyKeyStroke());
+        property.setShowEditKey(true);
+        property.setDrawToToolbar(true);
         return property;
     }
 
@@ -1716,6 +1720,9 @@ public abstract class LogicsModule {
         LP property = addMFAProp(actionGroup, ServerResourceBundle.getString("logics.edit") + "(" + cls + ")",
                                 form, new ObjectEntity[] {form.getObject()}, true);
         property.setImage("edit.png");
+        property.setEditKey(KeyStrokes.getEditActionPropertyKeyStroke());
+        property.setShowEditKey(true);
+        property.setDrawToToolbar(true);
         return property;
     }
 
@@ -1936,14 +1943,14 @@ public abstract class LogicsModule {
         form.forceDefaultDraw.put(actionAddPropertyDraw, object.groupTo);
     }
 
-    protected void addFormActions(FormEntity form, ObjectEntity object) {
+    public void addFormActions(FormEntity form, ObjectEntity object) {
         addFormActions(form, object, true);
     }
 
     protected void addFormActions(FormEntity form, ObjectEntity object, boolean shouldBeLast) {
         form.addPropertyDraw(baseLM.delete, object).shouldBeLast = shouldBeLast;
 
-        PropertyDrawEntity actionEditPropertyDraw = form.addPropertyDraw(getEditFormAction((ConcreteCustomClass)object.baseClass));
+        PropertyDrawEntity actionEditPropertyDraw = form.addPropertyDraw(getEditFormAction((ConcreteCustomClass)object.baseClass), object);
         actionEditPropertyDraw.shouldBeLast = shouldBeLast;
         actionEditPropertyDraw.forceViewType = ClassViewType.PANEL;
 
@@ -1955,7 +1962,10 @@ public abstract class LogicsModule {
         actionAddPropertyDraw.forceViewType = ClassViewType.PANEL;
 
         // todo : так не очень правильно делать - получается, что мы добавляем к Immutable объекту FormActionProperty ссылки на ObjectEntity
-        ((FormActionProperty)addForm.property).seekOnOk.add(object);
+        FormActionProperty formAction = (FormActionProperty)addForm.property;
+        ClassFormEntity classForm = (ClassFormEntity)formAction.form;
+
+        formAction.seekOnOk.add(classForm.getObject());
 
         form.forceDefaultDraw.put(actionAddPropertyDraw, object.groupTo);
     }

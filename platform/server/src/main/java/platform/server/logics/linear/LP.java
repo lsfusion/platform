@@ -17,6 +17,7 @@ import platform.server.logics.ObjectValue;
 import platform.server.logics.property.*;
 import platform.server.session.*;
 
+import javax.swing.*;
 import java.sql.SQLException;
 import java.util.*;
 
@@ -268,5 +269,17 @@ public class LP<T extends PropertyInterface> {
     public LP setImage(String name) {
         property.setImage(name);
         return this;
+    }
+
+    public void setEditKey(KeyStroke editKey) {
+        property.editKey = editKey;
+    }
+
+    public void setShowEditKey(boolean showEditKey) {
+        property.showEditKey = showEditKey;
+    }
+
+    public void setDrawToToolbar(boolean drawToToolbar) {
+        property.drawToToolbar = drawToToolbar;
     }
 }
