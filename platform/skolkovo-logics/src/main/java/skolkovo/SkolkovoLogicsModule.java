@@ -18,6 +18,7 @@ import platform.base.OrderedMap;
 import platform.interop.ClassViewType;
 import platform.interop.Compare;
 import platform.interop.action.ClientAction;
+import platform.interop.action.ImportFileClientActionResult;
 import platform.interop.action.MessageClientAction;
 import platform.interop.action.OpenFileClientAction;
 import platform.interop.form.RemoteFormInterface;
@@ -30,6 +31,7 @@ import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.query.GroupType;
 import platform.server.data.expr.query.OrderType;
 import platform.server.data.query.Query;
+import platform.server.data.type.ObjectType;
 import platform.server.form.entity.*;
 import platform.server.form.entity.filter.*;
 import platform.server.form.instance.PropertyObjectInterfaceInstance;
@@ -49,6 +51,7 @@ import platform.server.logics.property.ExecutionContext;
 import platform.server.logics.property.Property;
 import platform.server.logics.property.group.AbstractGroup;
 import platform.server.mail.EmailActionProperty;
+import platform.server.session.DataSession;
 import skolkovo.actions.CopyProjectActionProperty;
 import skolkovo.actions.ExportProjectDocumentsActionProperty;
 import skolkovo.actions.ImportProjectsActionProperty;
@@ -61,6 +64,8 @@ import java.io.*;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static platform.base.BaseUtils.nvl;
 
@@ -799,6 +804,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP generateVoteProject, needNameExtraVoteProject, hideGenerateVoteProject;
     LP copyResultsVote;
     LP includeProjectClusterForesight;
+    LP importIPsExpertVoteAction;
 
     LP expertLogin;
 
@@ -2943,6 +2949,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
         copyProjectAction = addAProp(actionGroup, new CopyProjectActionProperty("Копировать", this, project));
         openApplicationProjectAction = addAProp(actionGroup, new OpenApplicationProjectActionProperty());
         exportProjectDocumentsAction = addAProp(actionGroup, new ExportProjectDocumentsActionProperty("Экспортировать документы", this, project));
+        importIPsExpertVoteAction = addAProp(actionGroup, new ImportIPsExpertVoteActionProperty());
+        importProjectSidsAction = addAProp(importGroup, new ImportProjectsActionProperty("Импортировать идентификаторы проектов", this, BL, false, false, true));
 
         generateVoteProject = addAProp(actionGroup, new GenerateVoteActionProperty());
         copyResultsVote = addAProp(actionGroup, new CopyResultsActionProperty());
@@ -5318,7 +5326,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
                     requiredQuantity, requiredBusinessQuantity,
                     limitExperts, percentNeeded,
                     emailDocuments, emailPresident, emailClaimerFromAddress, emailForCertificates, emailIO, emailFondFC, emailForesightLC, emailFondTransferred, emailFondStartVote,
-                    projectsImportLimit, importOnlyR2Projects, importProjectSidsAction, showProjectsToImportAction, showProjectsReplaceToImportAction, importProjectsAction,
+                    projectsImportLimit, importOnlyR2Projects, importProjectSidsAction, showProjectsToImportAction, showProjectsReplaceToImportAction, importProjectsAction, importIPsExpertVoteAction,
                     rateExpert, emailLetterCertificatesExpertMonthYear, executiveLD, phoneExecutiveLD, mobileExecutiveLD});
         }
     }
@@ -6937,6 +6945,62 @@ public class SkolkovoLogicsModule extends LogicsModule {
             } catch (ClassNotFoundException e) {
                 e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
             }
+        }
+    }
+
+
+    public class ImportIPsExpertVoteActionProperty extends ActionProperty {
+
+        protected FileActionClass valueClass;
+
+        public ImportIPsExpertVoteActionProperty() {
+            super(genSID(), "Импортировать IP экспертов", new ValueClass[]{});
+            valueClass = FileActionClass.getDefinedInstance(true, "Файлы c данными","*");
+        }
+
+
+        public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects) throws SQLException {
+            throw new RuntimeException("no need");
+        }
+
+        @Override
+        public void execute(ExecutionContext context) throws SQLException {
+            try {
+                DataSession session = context.getSession();
+
+                List<byte[]> fileList = valueClass.getFiles(context.getValueObject());
+
+                for(byte[] file : fileList) {
+
+                File tempFile = File.createTempFile("temp", "tempFile");
+                FileOutputStream fileOuputStream = new FileOutputStream(tempFile);
+	            fileOuputStream.write(file);
+	            fileOuputStream.close();
+                Scanner rowScanner = new Scanner(tempFile);
+
+                    while (rowScanner.hasNextLine()) {
+                        String str = rowScanner.nextLine();
+                        Pattern p = Pattern.compile("(.*)(\\s-\\s-)(.*)(/res/expert\\.html\\?voteId=)([a-zA-Z0-9-_]*)(.*)");
+                        Matcher m = p.matcher(str);
+                        if (m.find()) {
+                            Integer[] ids = BaseUtils.decode(2, m.group(5)); //voteID - expertID
+                            DataObject voteObj = session.getDataObject(ids[0], ObjectType.instance);
+                            DataObject expertObj = session.getDataObject(ids[1], ObjectType.instance);
+                            if (ipExpertVote.read(session, expertObj, voteObj) == null)
+                                ipExpertVote.execute(m.group(1), session, expertObj, voteObj);
+                        }
+                    }
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+
+        }
+
+        @Override
+        public DataClass getValueClass() {
+            return valueClass;
         }
     }
 
