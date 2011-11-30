@@ -115,8 +115,8 @@ public abstract class HideSettingsButton extends ToolbarGridButton {
 
             JPanel buttonsPanel = new JPanel();
             buttonsPanel.add(checkAllButton);
-            buttonsPanel.add(cancelButton);
             buttonsPanel.add(executeButton);
+            buttonsPanel.add(cancelButton);
 
             JPanel bottomPanel = new JPanel();
             bottomPanel.setLayout(new BorderLayout());
