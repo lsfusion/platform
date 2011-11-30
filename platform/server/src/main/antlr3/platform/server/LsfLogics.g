@@ -293,7 +293,8 @@ propertyStatement
 		(	def=contextIndependentPD[false] { property = $def.property; isData = $def.isData; }  
 		|	expr=propertyExpression[context, dynamic] { property = $expr.property; }
 		)
-		settings=commonPropertySettings[property, $declaration.name, context, isData];
+		settings=commonPropertySettings[property, $declaration.name, context, isData]
+	;
 
 
 propertyDeclaration returns [String name, List<String> paramNames]
@@ -714,8 +715,8 @@ intLiteral
 //////////////////////////////////// LEXER //////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////
 	
-fragment NEWLINE	:   '\r'?'\n'; 
-fragment SPACE		:   (' '|'\t');
+fragment NEWLINE	:	'\r'?'\n'; 
+fragment SPACE		:	(' '|'\t');
 fragment STR_LITERAL_CHAR	: '\\\'' | ~('\r'|'\n'|'\'');	 // overcomplicated due to bug in ANTLR Works
 fragment DIGITS		:	('0'..'9')+;
 	 

@@ -97,9 +97,12 @@ public class ScriptingLogicsModule extends LogicsModule {
         return null;
     }
 
-    private String transformCaptionStr(String captionStr) {
-        String caption = captionStr.replace("\'", "'");
-        return caption.substring(1, captionStr.length()-1);
+    private String transformStringLiteral(String captionStr) {
+        String caption = captionStr.replace("\\'", "'");
+        caption = caption.replace("\\n", "\n");
+        caption = caption.replace("\\r", "\r");
+        caption = caption.replace("\\t", "\t");
+        return caption.substring(1, caption.length()-1);
     }
 
     private ValueClass getPredefinedClass(String name) {
@@ -145,18 +148,24 @@ public class ScriptingLogicsModule extends LogicsModule {
         checkStaticClassConstraints(className, isStatic, isAbstract, instNames, instCaptions);
         checkClassParents(parentNames);
 
-        String caption = (captionStr == null ? className : transformCaptionStr(captionStr));
-        CustomClass[] parents = new CustomClass[parentNames.size()];
-        for (int i = 0; i < parentNames.size(); i++) {
-            String parentName = parentNames.get(i);
-            parents[i] = (CustomClass) findClassByCompoundName(parentName);
+        String caption = (captionStr == null ? className : transformStringLiteral(captionStr));
+
+        CustomClass[] parents;
+        if (!isStatic && parentNames.isEmpty()) {
+            parents = new CustomClass[] {baseLM.baseClass};
+        } else {
+            parents = new CustomClass[parentNames.size()];
+            for (int i = 0; i < parentNames.size(); i++) {
+                String parentName = parentNames.get(i);
+                parents[i] = (CustomClass) findClassByCompoundName(parentName);
+            }
         }
 
         assert !(isStatic && isAbstract);
         if (isStatic) {
             String[] captions = new String[instCaptions.size()];
             for (int i = 0; i < instCaptions.size(); i++) {
-                captions[i] = (instCaptions.get(i) == null ? null : transformCaptionStr(instCaptions.get(i)));
+                captions[i] = (instCaptions.get(i) == null ? null : transformStringLiteral(instCaptions.get(i)));
             }
             addStaticClass(className, caption, instNames.toArray(new String[instNames.size()]), captions, parents);
         } else if (isAbstract) {
@@ -240,14 +249,14 @@ public class ScriptingLogicsModule extends LogicsModule {
     public void addScriptedGroup(String groupName, String captionStr, String parentName) throws ScriptingErrorLog.SemanticErrorException {
         scriptLogger.info("addScriptedGroup(" + groupName + ", " + (captionStr==null ? "" : captionStr) + ", " + (parentName == null ? "null" : parentName) + ");");
         checkDuplicateGroup(groupName);
-        String caption = (captionStr == null ? groupName : transformCaptionStr(captionStr));
+        String caption = (captionStr == null ? groupName : transformStringLiteral(captionStr));
         AbstractGroup parentGroup = (parentName == null ? null : findGroupByCompoundName(parentName));
         addAbstractGroup(groupName, caption, parentGroup);
     }
 
     public ScriptingFormEntity createScriptedForm(String formName, String caption) {
         scriptLogger.info("createScriptedForm(" + formName + ", " + caption + ");");
-        return new ScriptingFormEntity(baseLM.baseElement, this, formName, transformCaptionStr(caption));
+        return new ScriptingFormEntity(baseLM.baseElement, this, formName, transformStringLiteral(caption));
     }
 
     public void addScriptedForm(ScriptingFormEntity form) {
@@ -506,7 +515,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         switch (type) {
             case INT: return addCProp(IntegerClass.instance, Integer.parseInt(text));
             case REAL: return addCProp(DoubleClass.instance, Double.parseDouble(text));
-            case STRING: return addCProp(StringClass.get(text.length()), text);
+            case STRING: text = transformStringLiteral(text); return addCProp(StringClass.get(text.length()), text);
             case LOGICAL: return addCProp(LogicalClass.instance, text.equals("TRUE"));
             case ENUM: return addStaticClassConst(text);
         }
