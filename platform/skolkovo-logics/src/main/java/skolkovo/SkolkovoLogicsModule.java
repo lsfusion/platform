@@ -553,7 +553,9 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP emailDocuments, emailIO, emailPresident;
     LP isR1ProjectVote;
     LP isR2ProjectVote;
-
+    LP emailFondFC;
+    LP emailForesightLC;
+    LP emailFondTransferred;
     public LP emailToExpert;
 
     LP nameNativeJoinClaimerVote, nameForeignJoinClaimerVote;
@@ -764,6 +766,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP claimerEmailVote;
     LP emailClaimerHeaderVote;
     LP emailClaimerVote;
+    LP emailFondVoteEA, emailFondHeaderVote, emailFondVote;
+    LP emailFondStartVote;
 
     LP emailStartVoteEA, emailStartHeaderVote, emailStartVote;
     LP emailProtocolVoteEA, emailProtocolHeaderVote, emailProtocolVote;
@@ -783,6 +787,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP resultNoticedFormalControl, dateResultNoticedFormalControl, setCurrentDateResultNoticedFormalControl, emailClaimerHeaderFormalControl, emailClaimerFormalControl;
     LP emailClaimerLegalCheckEA, claimerLegalCheck, claimerEmailLegalCheck, nameNativeJoinClaimerLegalCheck, nameForeignJoinClaimerLegalCheck, nameNativeClaimerLegalCheck;
     LP resultNoticedLegalCheck, dateResultNoticedLegalCheck, setCurrentDateResultNoticedLegalCheck, emailClaimerHeaderLegalCheck, emailClaimerLegalCheck;
+    LP emailFondFormalControlEA, emailFondHeaderFormalControl, emailFondFormalControl;
+    LP emailTransferredProjectEA, emailTransferredHeaderProject, emailTransferredProject;
 
     LP generateDocumentsProjectDocumentType;
     LP includeDocumentsProject, hideIncludeDocumentsProject;
@@ -1153,6 +1159,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP positiveLegalResultProject;
     LP sentForTranslationProject, dateSentForTranslationProject;
     LP positiveStatusLegalCheckProject, datePositiveStatusLegalCheckProject;
+    LP transferredProject, dateTransferredProject;
 
     LP dateAgreementExpert;
     LP vone;
@@ -1470,6 +1477,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP datePositiveLegalResultProject;
     LP isFileNativeTechnicalDescriptionProject;
     LP isFileForeignTechnicalDescriptionProject;
+    LP nameNativeProjectFormalControl;
 
     @Override
     public void initProperties() {
@@ -3168,6 +3176,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         sentForTranslationProject = addDProp(translationGroup, "sentForTranslationProject", "Направлена на перевод", LogicalClass.instance, project);
         dateSentForTranslationProject = addDCProp(translationGroup, "dateSentForTranslationProject", "Дата направления на перевод", true, baseLM.currentDate, sentForTranslationProject, 1);
+        transferredProject = addDProp(translationGroup, "transferredProject", "Переведена", LogicalClass.instance, project);
+        dateTransferredProject = addDCProp(translationGroup, "dateTransferredProject", "Дата перевода", true, baseLM.currentDate, transferredProject, 1);
 
         oficialNameProjectStatus = addDProp(baseGroup, "oficialNameProjectStatus", "Наименование из регламента", StringClass.get(200), projectStatus);
         oficialNameProjectStatus.setMinimumWidth(10);
@@ -3378,6 +3388,11 @@ public class SkolkovoLogicsModule extends LogicsModule {
         emailIO = addDProp(baseGroup, "emailIO", "E-mail инвестиционного отдела", StringClass.get(50));
         emailPresident = addDProp(baseGroup, "emailPresident", "E-mail аппарата президента Фонда", StringClass.get(50));
 
+        emailFondFC = addDProp(baseGroup, "emailFondFC", "E-mail для формальной проверки", StringClass.get(100));
+        emailForesightLC = addDProp(baseGroup, "emailForesightLC", "E-mail для решения проверки на соот. форсайту", StringClass.get(100));
+        emailFondTransferred = addDProp(baseGroup, "emailFondTransferred", "E-mail для решения о переводе", StringClass.get(100));
+        emailFondStartVote = addDProp(baseGroup, "emailFondStartVote", "E-mail для уведомления о начале заседания", StringClass.get(100));
+
         emailLetterExpertVoteEA = addEAProp(expert, vote);
         addEARecepient(emailLetterExpertVoteEA, baseLM.email, 1);
 
@@ -3401,6 +3416,13 @@ public class SkolkovoLogicsModule extends LogicsModule {
         emailClaimerVote.property.askConfirm = true;
 
         emailClaimerVote.setDerivedForcedChange(addCProp(ActionClass.instance, true), openedVote, 1);
+
+        emailFondVoteEA = addEAProp(emailIO, vote);
+        addEARecepient(emailFondVoteEA, emailFondStartVote);
+        emailFondHeaderVote = addJProp("emailFondHeaderVote", "Заголовок уведомления в фонд", baseLM.string2, addCProp(StringClass.get(2000), "Уведомление."), nameNativeClaimerVote, 1);
+        emailFondVote = addJProp(actionGroup, true, "emailFondVote", "Письмо о рассмотрении", emailFondVoteEA, 1, emailFondHeaderVote, 1);
+        emailFondVote.property.askConfirm = true;
+        emailFondVote.setDerivedForcedChange(addCProp(ActionClass.instance, true), openedVote, 1);
 
         emailNoticeRejectedVoteEA = addEAProp(emailClaimerFromAddress, emailClaimerFromAddress, vote);
         addEARecepient(emailNoticeRejectedVoteEA, claimerEmailVote, 1);
@@ -3475,7 +3497,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         emailClosedVote.setDerivedForcedChange(addCProp(ActionClass.instance, true), closedVote, 1);
 
         emailForesightCheckProjectEA = addEAProp("Решение проверки о соответствии форсайту", project);
-        addEARecepient(emailForesightCheckProjectEA, emailIO);
+        addEARecepient(emailForesightCheckProjectEA, emailForesightLC);
         emailForesightCheckProjectEA.setDerivedForcedChange(addCProp(ActionClass.instance, true), resultForesightCheckProject, 1);
 
         emailNotificationProjectEA = addEAProp(emailIO, project);
@@ -3486,6 +3508,14 @@ public class SkolkovoLogicsModule extends LogicsModule {
         emailNotificationProject.setImage("email.png");
         emailNotificationProject.property.askConfirm = true;
         emailNotificationProject.setDerivedForcedChange(addCProp(ActionClass.instance, true), needForesightCheckProject, 1);
+
+        emailTransferredProjectEA = addEAProp(emailIO, project);
+        addEARecepient(emailTransferredProjectEA, emailFondTransferred);
+        emailTransferredHeaderProject = addJProp("emailTransferredHeaderProject", "Заголовок уведомления" ,add2Strings, addCProp(StringClass.get(2000), "Уведомление. "), nameNativeClaimerProject, 1);
+        emailTransferredProject = addJProp(baseGroup, true, "emailTransferredProject", "Уведомление о прохождении перевода (e-mail)", emailTransferredProjectEA, 1, emailTransferredHeaderProject, 1);
+        emailTransferredProject.setImage("email.png");
+        emailTransferredProject.property.askConfirm = true;
+        emailTransferredProject.setDerivedForcedChange(addCProp(ActionClass.instance, true), transferredProject, 1);
 
         emailClaimerFormalControlEA = addEAProp(emailClaimerFromAddress, emailClaimerFromAddress, formalControl);
 
@@ -3522,6 +3552,16 @@ public class SkolkovoLogicsModule extends LogicsModule {
         emailClaimerFormalControl.setImage("email.png");
         emailClaimerFormalControl.property.askConfirm = true;
 
+
+        emailFondFormalControlEA = addEAProp(emailIO, formalControl);
+        addEARecepient(emailFondFormalControlEA, emailFondFC);
+        emailFondHeaderFormalControl = addJProp("emailFondHeaderFormalControl", "Заголовок уведомления", baseLM.string2, addCProp(StringClass.get(2000), "Уведомление."), nameNativeClaimerFormalControl, 1);
+        emailFondFormalControl = addJProp(actionGroup, true, "emailFondFormalControl", "Письмо о формальной экспертизе",   emailFondFormalControlEA, 1, emailFondHeaderFormalControl, 1);
+        emailFondFormalControl.setImage("email.png");
+        emailFondFormalControl.property.askConfirm = true;
+        emailFondFormalControl.setDerivedForcedChange(addCProp(ActionClass.instance, true), resultFormalControl, 1);
+        nameNativeProjectFormalControl = addJProp(baseGroup, "nameNativeProjectFormalControl", "Проект", nameNativeProject, projectFormalControl, 1);
+
         // для отсылки по юридической проверке
         emailClaimerLegalCheckEA = addEAProp(emailClaimerFromAddress, emailClaimerFromAddress, legalCheck);
 
@@ -3543,6 +3583,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         addEARecepient(emailClaimerLegalCheckEA, claimerEmailLegalCheck, 1);
         addEARecepient(emailClaimerLegalCheckEA, MimeMessage.RecipientType.BCC, emailPresident);
+        addEARecepient(emailClaimerLegalCheckEA, MimeMessage.RecipientType.BCC, emailIO);
+//        addEARecepient(emailClaimerLegalCheckEA, MimeMessage.RecipientType.BCC, emailFinalClusterLegalCheck, 1);
 
         emailClaimerHeaderLegalCheck = addJProp("emailClaimerHeaderLegalCheck", "Заголовок уведомления заявителю", baseLM.string2, addCProp(StringClass.get(2000), "Уведомление."), nameNativeClaimerLegalCheck, 1);
 
@@ -4084,7 +4126,12 @@ public class SkolkovoLogicsModule extends LogicsModule {
         addFormEntity(new ClaimerStatusFormEntity(print, "claimerStatus"));
         addFormEntity(new FormalControlClaimerFormEntity(print, "formalControlClaimer", "Уведомление о формальной экспертизе"));
         addFormEntity(new LegalCheckClaimerFormEntity(print, "legalCheckClaimer", "Уведомление о юридической проверке"));
+        addFormEntity(new FormalControlFondFormEntity(print, "formalControlFond", "Уведомление FC, фонд"));
+        addFormEntity(new ForesightAdviceFormEntity(print, "foresightAdvice", "Уведомление по форсайту"));
+        addFormEntity(new NotificationProjectFormEntity(print, "notificationProject", "Уведомление о соответствии направлению деятельности"));
+        addFormEntity(new TransferredProjectFormEntity(print, "transferredProject", "Уведомление о прохождении перевода"));
         addFormEntity(new VoteClaimerFormEntity(print, "voteClaimer", "Уведомление о рассмотрении"));
+        addFormEntity(new VoteFondFormEntity(print, "voteFond", "Уведомление о рассмотрении в фонд"));
         addFormEntity(new NoticeRejectedFormEntity(print, "noticeRejected", "Уведомление о несоответствии"));
         addFormEntity(new NoticeAcceptedStatusFormEntity(print, "noticeAcceptedStatus", "Уведомление о соответствии (статус участника)"));
         addFormEntity(new NoticeAcceptedPreliminaryFormEntity(print, "noticeAcceptedPreliminary", "Уведомление о соответствии (предварительная экспертиза)"));
@@ -4112,8 +4159,6 @@ public class SkolkovoLogicsModule extends LogicsModule {
         addFormEntity(new VoteFormEntity(baseLM.baseElement, "voterestricted", true));
         addFormEntity(new ConsultingCenterFormEntity(baseLM.baseElement, "consultingCenter"));
         addFormEntity(new ForesightExpertiseApplyFormEntity(baseLM.objectElement, "foresightExpertiseApply"));
-        addFormEntity(new ForesightAdviceFormEntity(baseLM.objectElement, "foresightAdviceFormEntity"));
-        addFormEntity(new NotificationProjectFormEntity(baseLM.objectElement, "notificationProjectFormEntity"));
         addFormEntity(new ForesightExpertiseListFormEntity(baseLM.baseElement, "foresightExpertiseList"));
         addFormEntity(new ProjectDocumentsFormEntity(baseLM.baseElement, "projectdocs"));
         addFormEntity(new ConferenceFormEntity(baseLM.baseElement, "conferences"));
@@ -4574,7 +4619,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         public ForesightExpertiseApplyFormEntity(NavigatorElement parent, String sID) {
             super(parent, sID, "Проверка на соответствие форсайту");
 
-            objProject = addSingleGroupObject(project, "Проект", dateProject, nameNativeProject, nameForeignProject, nameNativeClaimerProject, nameForeignClaimerProject,
+            objProject = addSingleGroupObject(1, "project", project, "Проект", dateProject, nameNativeProject, nameForeignProject, nameNativeClaimerProject, nameForeignClaimerProject,
                     openApplicationProjectAction, exportProjectDocumentsAction);
             objProject.groupTo.setSingleClassView(ClassViewType.PANEL);
 
@@ -4619,10 +4664,10 @@ public class SkolkovoLogicsModule extends LogicsModule {
         private ObjectEntity objProject;
 
 
-        public ForesightAdviceFormEntity(NavigatorElement parent, String sID) {
-            super(parent, sID, "Уведомление по форсайту");
+        public ForesightAdviceFormEntity(NavigatorElement parent, String sID, String caption) {
+            super(parent, sID, caption, true);
 
-            objProject = addSingleGroupObject(project, "Проект", dateProject, nameNativeProject, nameForeignProject, nameNativeClaimerProject, nameForeignClaimerProject, emailClaimerProject, positiveResultForesightCheckProject, negativeResultForesightCheckProject, sidResultForesightCheckProject);
+            objProject = addSingleGroupObject(1, "project", project, "Проект", dateProject, nameNativeProject, nameForeignProject, nameNativeClaimerProject, nameForeignClaimerProject, emailClaimerProject, positiveResultForesightCheckProject, negativeResultForesightCheckProject, sidResultForesightCheckProject);
             objProject.groupTo.setSingleClassView(ClassViewType.PANEL);
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(sidResultForesightCheckProject, objProject)));
             setReadOnly(true);
@@ -4636,10 +4681,10 @@ public class SkolkovoLogicsModule extends LogicsModule {
         private ObjectEntity objProject;
 
 
-        public NotificationProjectFormEntity(NavigatorElement parent, String sID) {
-            super(parent, sID, "Уведомление на соответствие направлению деятельности");
+        public NotificationProjectFormEntity(NavigatorElement parent, String sID, String caption) {
+            super(parent, sID, caption, true);
 
-            objProject = addSingleGroupObject(project, "Проект", positiveLegalResultProject, dateProject, nameNativeProject, nameForeignProject, nameNativeClaimerProject, emailClaimerProject, datePositiveLegalResultProject, dateNotificationPeriodProject);      //    уточнить дату
+            objProject = addSingleGroupObject(1, "project", project, "Проект", positiveLegalResultProject, dateProject, nameNativeProject, nameForeignProject, nameNativeClaimerProject, emailClaimerProject, datePositiveLegalResultProject, dateNotificationPeriodProject);      //    уточнить дату
             objProject.groupTo.setSingleClassView(ClassViewType.PANEL);
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(positiveLegalResultProject, objProject)));
             setReadOnly(true);
@@ -4648,6 +4693,23 @@ public class SkolkovoLogicsModule extends LogicsModule {
         }
     }
 
+    public class TransferredProjectFormEntity extends FormEntity<SkolkovoBusinessLogics> {
+
+            private ObjectEntity objProject;
+
+
+            public TransferredProjectFormEntity(NavigatorElement parent, String sID, String caption) {
+                super(parent, sID, caption, true);
+
+                objProject = addSingleGroupObject(1, "project", project, "Проект", dateProject, nameNativeProject, nameForeignProject, nameNativeClaimerProject, emailClaimerProject);
+                addPropertyDraw(objProject, translationGroup);
+                objProject.groupTo.setSingleClassView(ClassViewType.PANEL);
+                addFixedFilter(new NotNullFilterEntity(addPropertyObject(transferredProject, objProject)));
+                setReadOnly(true);
+
+                addInlineEAForm(emailTransferredProjectEA, this, objProject, 1);
+            }
+        }
 
     public class ForesightExpertiseListFormEntity extends FormEntity<SkolkovoBusinessLogics> {
 
@@ -5253,7 +5315,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             addPropertyDraw(new LP[]{baseLM.currentDate, requiredPeriod, overduePeriod,
                     requiredQuantity, requiredBusinessQuantity,
                     limitExperts, percentNeeded,
-                    emailDocuments, emailPresident, emailClaimerFromAddress, emailForCertificates, emailIO,
+                    emailDocuments, emailPresident, emailClaimerFromAddress, emailForCertificates, emailIO, emailFondFC, emailForesightLC, emailFondTransferred, emailFondStartVote,
                     projectsImportLimit, importOnlyR2Projects, importProjectSidsAction, showProjectsToImportAction, showProjectsReplaceToImportAction, importProjectsAction,
                     rateExpert, emailLetterCertificatesExpertMonthYear, executiveLD, phoneExecutiveLD, mobileExecutiveLD});
         }
@@ -6031,6 +6093,20 @@ public class SkolkovoLogicsModule extends LogicsModule {
             addInlineEAForm(emailClaimerVoteEA, this, objVote, 1);
         }
     }
+     private class VoteFondFormEntity extends FormEntity<SkolkovoBusinessLogics> {
+
+        private ObjectEntity objVote;
+
+        private VoteFondFormEntity(NavigatorElement parent, String sID, String caption) {
+            super(parent, sID, caption, true);
+
+            objVote = addSingleGroupObject(1, "vote", vote, "Заседание", openedVote, nameNativeProjectVote, nameNativeClaimerVote, claimerEmailVote, nameNativeClusterVote, prevDateVote, nameNativePrevClusterVote);
+            objVote.groupTo.setSingleClassView(ClassViewType.PANEL);
+
+            addInlineEAForm(emailFondVoteEA, this, objVote, 1);
+        }
+    }
+
 
      private class FormalControlClaimerFormEntity extends FormEntity<SkolkovoBusinessLogics> {
 
@@ -6046,6 +6122,26 @@ public class SkolkovoLogicsModule extends LogicsModule {
             addPropertyDraw(phoneExecutiveLD, objFormalControl).toDraw = objFormalControl.groupTo;
             addPropertyDraw(mobileExecutiveLD, objFormalControl).toDraw = objFormalControl.groupTo;
             addInlineEAForm(emailClaimerFormalControlEA, this, objFormalControl, 1);
+        }
+    }
+
+    private class FormalControlFondFormEntity extends FormEntity<SkolkovoBusinessLogics> {
+
+        private ObjectEntity objFormalControl;
+
+        private FormalControlFondFormEntity(NavigatorElement parent, String sID, String caption) {
+            super(parent, sID, caption, true);
+
+            objFormalControl = addSingleGroupObject(1, "formalControl", formalControl, "Формальная экспертиза", nameNativeClaimerFormalControl, nameNativeProjectFormalControl, claimerEmailFormalControl, dateProjectFormalControl, sidResultFormalControl, sidStatusProjectFormalControl, nameResultFormalControl, nameNativeClusterProjectFormalControl, nameProjectActionFormalControl, commentFormalControl,
+                    dateTimeFormalControl, overdueDateFormalControl, dateResultNoticedFormalControl, isPreliminaryAndStatusProjectFormalControl);
+            objFormalControl.groupTo.initClassView = ClassViewType.PANEL;
+//            addPropertyDraw(executiveLD, objFormalControl).toDraw = objFormalControl.groupTo;
+//            addPropertyDraw(phoneExecutiveLD, objFormalControl).toDraw = objFormalControl.groupTo;
+//            addPropertyDraw(mobileExecutiveLD, objFormalControl).toDraw = objFormalControl.groupTo;
+
+            addFixedFilter(new NotNullFilterEntity(addPropertyObject(sidResultFormalControl, objFormalControl)));
+//            setReadOnly(true);
+            addInlineEAForm(emailFondFormalControlEA, this, objFormalControl, 1);
         }
     }
 

@@ -36,27 +36,27 @@
 	<field name="sidStatusProjectFormalControl" class="java.lang.String"/>
 	<detail>
 		<band height="128">
-			<printWhenExpression><![CDATA["notEnoughDocuments".equals($F{sidResultFormalControl})&&!"overdueFC".equals($F{sidStatusProjectFormalControl})]]></printWhenExpression>
+			<printWhenExpression><![CDATA["notEnoughDocuments".equals($F{sidResultFormalControl})]]></printWhenExpression>
 			<textField isStretchWithOverflow="true">
 				<reportElement style="DefaultStyle" x="21" y="10" width="525" height="17"/>
 				<textElement>
 					<font size="14" isUnderline="true"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA["app.i-gorod.com: в Вашей заявке отсутствуют необходимые документы"]]></textFieldExpression>
+				<textFieldExpression><![CDATA["app.i-gorod.com: в Вашей заявке отсутствуют необходимые документы"]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
 				<reportElement style="DefaultStyle" positionType="Float" x="21" y="62" width="525" height="19"/>
 				<textElement>
 					<font size="14"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{commentFormalControl}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{commentFormalControl}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
 				<reportElement style="DefaultStyle" positionType="Float" x="21" y="81" width="525" height="19"/>
 				<textElement>
 					<font size="14"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA["Пожалуйста, доработайте и отправьте заявку повторно не позднее "+platform.base.BaseUtils.formatRussian($F{overdueDateFormalControl}) +" года.* Вам открыта возможность редактирования анкеты в личном кабинете. Для правильного оформления документов воспользуйтесь разделом F.A.Q. \n"+
+				<textFieldExpression><![CDATA["Пожалуйста, доработайте и отправьте заявку повторно не позднее "+platform.base.BaseUtils.formatRussian($F{overdueDateFormalControl}) +" года.* Вам открыта возможность редактирования анкеты в личном кабинете. Для правильного оформления документов воспользуйтесь разделом F.A.Q. \n"+
 "\n"+
 "При возникновении вопросов обратитесь в техническую поддержку (ссылка находится в Вашем личном кабинете)."]]></textFieldExpression>
 			</textField>
@@ -65,7 +65,7 @@
 				<textElement>
 					<font size="14" isBold="false" isItalic="true"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[" \n"+
+				<textFieldExpression><![CDATA[" \n"+
 " \n"+
 "* Согласно пункту 7 Положения о присвоении и утрате статуса участника проекта создания и обеспечения функционирования инновационного центра «Сколково» срок исправления несоответствий составляет тридцать дней с момента получения уведомления."]]></textFieldExpression>
 			</textField>
@@ -74,7 +74,7 @@
 				<textElement>
 					<font size="14" isUnderline="false"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA["Уважаемый заявитель! \n"+
+				<textFieldExpression><![CDATA["Уважаемый заявитель! \n"+
 "\n"+
 "К вашей заявке на присвоение статуса Участника проекта от "+ platform.base.BaseUtils.formatRussian($F{dateProjectFormalControl})+" года не были прикреплены следующие обязательные документы:"]]></textFieldExpression>
 			</textField>
@@ -86,21 +86,21 @@
 				<textElement>
 					<font size="14" isUnderline="true"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA["app.i-gorod.com: Ваша заявка отклонена"]]></textFieldExpression>
+				<textFieldExpression><![CDATA["app.i-gorod.com: Ваша заявка отклонена"]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
 				<reportElement style="DefaultStyle" positionType="Float" x="21" y="63" width="525" height="19"/>
 				<textElement>
 					<font size="14"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA["Пожалуйста, доработайте и подайте новую заявку. В случае возникновения вопросов обратитесь в техническую поддержку (ссылка находится в Вашем личном кабинете)."]]></textFieldExpression>
+				<textFieldExpression><![CDATA["Пожалуйста, доработайте и подайте новую заявку. В случае возникновения вопросов обратитесь в техническую поддержку (ссылка находится в Вашем личном кабинете)."]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
 				<reportElement style="DefaultStyle" positionType="Float" x="20" y="82" width="525" height="26"/>
 				<textElement>
 					<font size="14" isBold="false" isItalic="true"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[" \n"+
+				<textFieldExpression><![CDATA[" \n"+
 " \n"+
 "* в соответствии с пунктом 8 Положения о присвоении и утрате статуса участника проекта создания и обеспечения функционирования инновационного центра «Сколково»."]]></textFieldExpression>
 			</textField>
@@ -109,7 +109,7 @@
 				<textElement>
 					<font size="14" isUnderline="false"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA["Уважаемый заявитель! \n"+
+				<textFieldExpression><![CDATA["Уважаемый заявитель! \n"+
 "\n"+
 "Сообщаем, что была установлена тождественность Вашей заявки от "+ platform.base.BaseUtils.formatRussian($F{dateProjectFormalControl})+" года ранее поданным заявкам, в связи с чем мы вынуждены оставить Вашу заявку без рассмотрения*. "]]></textFieldExpression>
 			</textField>
@@ -121,14 +121,14 @@
 				<textElement>
 					<font size="14" isUnderline="true"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA["app.i-gorod.com: Ваша заявка отклонена"]]></textFieldExpression>
+				<textFieldExpression><![CDATA["app.i-gorod.com: Ваша заявка отклонена"]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
 				<reportElement style="DefaultStyle" positionType="Float" x="21" y="64" width="525" height="19"/>
 				<textElement>
 					<font size="14"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA["К сожалению, Вы не устранили несоответствия, о которых мы сообщили Вам в письме от "+ platform.base.BaseUtils.formatRussian($F{dateResultNoticedFormalControl}) +". Мы вынуждены прекратить рассмотрение Вашей заявки*. \n \n"+
+				<textFieldExpression><![CDATA["К сожалению, Вы не устранили несоответствия, о которых мы сообщили Вам в письме от "+ platform.base.BaseUtils.formatRussian($F{dateResultNoticedFormalControl}) +". Мы вынуждены прекратить рассмотрение Вашей заявки*. \n \n"+
 "Пожалуйста, подайте новую заявку после необходимой доработки.\n \n"+
 "* на основании пункта 7 Положения о присвоении и утрате статуса участника проекта создания и обеспечения функционирования инновационного центра «Сколково»"]]></textFieldExpression>
 			</textField>
@@ -137,7 +137,7 @@
 				<textElement>
 					<font size="14" isUnderline="false"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA["Уважаемый заявитель! \n"]]></textFieldExpression>
+				<textFieldExpression><![CDATA["Уважаемый заявитель! \n"]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>

@@ -21,54 +21,53 @@
 	<title>
 		<band height="52">
 			<textField isStretchWithOverflow="true">
-				<reportElement style="BoldStyle" positionType="Float" stretchType="RelativeToBandHeight" x="10" y="26" width="153" height="18"/>
+				<reportElement style="BoldStyle" positionType="Float" stretchType="RelativeToBandHeight" x="10" y="26" width="100" height="18"/>
 				<textElement/>
-				<textFieldExpression class="java.lang.String"><![CDATA["Name"]]></textFieldExpression>
+				<textFieldExpression><![CDATA["Name"]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
-				<reportElement style="BoldStyle" positionType="Float" stretchType="RelativeToBandHeight" x="165" y="26" width="203" height="18"/>
+				<reportElement style="BoldStyle" positionType="Float" stretchType="RelativeToBandHeight" x="115" y="26" width="222" height="18"/>
 				<textElement/>
-				<textFieldExpression class="java.lang.String"><![CDATA["Description"]]></textFieldExpression>
+				<textFieldExpression><![CDATA["Description"]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
-				<reportElement style="BoldStyle" positionType="Float" stretchType="RelativeToBandHeight" x="371" y="26" width="177" height="18"/>
+				<reportElement style="BoldStyle" positionType="Float" stretchType="RelativeToBandHeight" x="342" y="26" width="206" height="18"/>
 				<textElement/>
-				<textFieldExpression class="java.lang.String"><![CDATA["Characteristics"]]></textFieldExpression>
+				<textFieldExpression><![CDATA["Characteristics"]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
 				<reportElement style="BoldStyle" stretchType="RelativeToBandHeight" x="10" y="0" width="538" height="18"/>
 				<textElement/>
-				<textFieldExpression class="java.lang.String"><![CDATA["List the closest analogs of your decisions and describe what is your advantage"]]></textFieldExpression>
+				<textFieldExpression><![CDATA["List the closest analogs of your decisions and describe what is your advantage"]]></textFieldExpression>
 			</textField>
 		</band>
 	</title>
 	<detail>
 		<band height="20">
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement style="DefaultStyle" positionType="Float" stretchType="RelativeToBandHeight" x="10" y="0" width="153" height="18"/>
+				<reportElement style="DefaultStyle" positionType="Float" stretchType="RelativeToBandHeight" x="10" y="0" width="100" height="18"/>
 				<textElement textAlignment="Left" verticalAlignment="Top"/>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{foreignProjectAnalogues}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{foreignProjectAnalogues}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement style="DefaultStyle" positionType="Float" stretchType="RelativeToBandHeight" x="165" y="0" width="203" height="18"/>
+				<reportElement style="DefaultStyle" positionType="Float" stretchType="RelativeToBandHeight" x="115" y="0" width="222" height="18"/>
 				<textElement textAlignment="Left" verticalAlignment="Top"/>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{foreignDescriptionProjectAnalogues}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{foreignDescriptionProjectAnalogues}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement style="DefaultStyle" positionType="Float" stretchType="RelativeToBandHeight" x="371" y="0" width="177" height="18"/>
+				<reportElement style="DefaultStyle" positionType="Float" stretchType="RelativeToBandHeight" x="342" y="0" width="206" height="18"/>
 				<textElement textAlignment="Left" verticalAlignment="Top"/>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{foreignCharacteristicsProjectAnalogues}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{foreignCharacteristicsProjectAnalogues}]]></textFieldExpression>
 			</textField>
-		</band>
-	</detail>
-	<summary>
-		<band height="6">
 			<line>
-				<reportElement positionType="Float" x="10" y="0" width="538" height="1"/>
+				<reportElement positionType="Float" x="10" y="19" width="538" height="1"/>
 				<graphicElement>
 					<pen lineWidth="0.25" lineStyle="Dotted"/>
 				</graphicElement>
 			</line>
 		</band>
+	</detail>
+	<summary>
+		<band height="6"/>
 	</summary>
 </jasperReport>
