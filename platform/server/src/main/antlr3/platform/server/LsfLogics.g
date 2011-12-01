@@ -499,7 +499,7 @@ groupPropertyDefinition returns [LP property, List<Integer> usedParams]
 }
 @after {
 	if (parseState == ScriptingLogicsModule.State.PROP) {
-		$property = self.addScriptedGProp("", groupContext.size(), isSGProp, paramProps, usedParams);
+		$property = self.addScriptedGProp("", isSGProp, paramProps, usedParams);
 	}
 }
 	:	'GROUP' (('SUM') { isSGProp = true; } | ('MAX') { isSGProp = false; })
