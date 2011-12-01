@@ -2,6 +2,7 @@ package platform.server.form.view;
 
 import platform.base.identity.IdentityObject;
 import platform.interop.ComponentDesign;
+import platform.interop.PanelLocation;
 import platform.interop.form.layout.AbstractComponent;
 import platform.interop.form.layout.DoNotIntersectSimplexConstraint;
 import platform.interop.form.layout.SimplexConstraints;
@@ -36,7 +37,7 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
 
     public GroupObjectEntity keyBindingGroup = null;
 
-    public boolean drawToToolbar;
+    protected PanelLocation panelLocation;
 
     public SimplexConstraints<ComponentView> getDefaultConstraints() {
         return new SimplexConstraints<ComponentView>();
@@ -64,6 +65,14 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
         this.container = container;
     }
 
+    public PanelLocation getPanelLocation() {
+        return panelLocation;
+    }
+
+    public void setPanelLocation(PanelLocation panelLocation) {
+        this.panelLocation = panelLocation;
+    }
+
     public void customSerialize(ServerSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
         pool.writeObject(outStream, design);
         pool.serializeObject(outStream, container, serializationType);
@@ -81,7 +90,7 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
         }
         outStream.writeBoolean(defaultComponent);
         pool.serializeObject(outStream, pool.context.view.getGroupObject(keyBindingGroup));
-        outStream.writeBoolean(drawToToolbar);
+        pool.writeObject(outStream, panelLocation);
     }
 
     public void customDeserialize(ServerSerializationPool pool, DataInputStream inStream) throws IOException {
@@ -110,6 +119,6 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
             keyBindingGroup = keyBindingGroupView.entity;
         }
 
-        drawToToolbar = inStream.readBoolean();
+        panelLocation = pool.readObject(inStream);
     }
 }

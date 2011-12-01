@@ -203,7 +203,8 @@ public abstract class GridTable extends ClientFormTable
             public void mouseReleased(MouseEvent e) {
                 int column = columnAtPoint(e.getPoint());
                 int row = rowAtPoint(e.getPoint());
-                if (row != -1 && column != -1 && pressedCellColumn == column && pressedCellRow == row && getProperty(row, column).getRendererComponent() instanceof ActionPropertyRenderer) {
+                if (row != -1 && column != -1 && pressedCellColumn == column && pressedCellRow == row && getProperty(row, column).getRendererComponent() instanceof ActionPropertyRenderer &&
+                        !SwingUtilities.isRightMouseButton(e)) {
                     editCellAt(row, column);
                 }
                 pressedCellRow = -1;
@@ -821,6 +822,14 @@ public abstract class GridTable extends ClientFormTable
         return editor instanceof ClientAbstractCellEditor
                ? (ClientAbstractCellEditor) editor
                : null;
+    }
+
+    public void buildShortcut(Component invoker, Point point) {
+        if (rowAtPoint(point) != -1) {
+            changeSelection(rowAtPoint(point), columnAtPoint(point), false , false);
+            requestFocusInWindow();
+            groupObjectController.showShortcut(invoker, point, getCurrentProperty());
+        }
     }
 
     private void moveToFocusableCellIfNeeded() {

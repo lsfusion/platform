@@ -2,11 +2,10 @@ package paas.properties;
 
 import paas.PaasBusinessLogics;
 import platform.server.classes.ValueClass;
-import platform.server.form.entity.PropertyDrawEntity;
 import platform.server.form.instance.FormInstance;
 import platform.server.form.view.DefaultFormView;
+import platform.server.form.view.PropertyDrawView;
 import platform.server.logics.property.ActionProperty;
-import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
 
 import java.sql.SQLException;
@@ -30,8 +29,8 @@ public class RefreshStatusActionProperty extends ActionProperty {
     }
 
     @Override
-    public void proceedDefaultDesign(DefaultFormView view, PropertyDrawEntity<ClassPropertyInterface> entity) {
-        super.proceedDefaultDesign(view, entity);
-        view.get(entity).design.setIconPath("refresh.png");
+    public void proceedDefaultDesign(PropertyDrawView propertyView, DefaultFormView view) {
+        super.proceedDefaultDesign(propertyView, view);
+        propertyView.design.setIconPath("refresh.png");
     }
 }

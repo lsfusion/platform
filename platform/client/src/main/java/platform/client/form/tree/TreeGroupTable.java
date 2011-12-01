@@ -622,4 +622,12 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
             }
         };
     }
+
+    public void buildShortcut(Component invoker, Point point) {
+        if (rowAtPoint(point) != -1) {
+            changeSelection(rowAtPoint(point), columnAtPoint(point), false, false);
+            requestFocusInWindow();
+            form.treeControllers.get(treeGroup).showShortcut(invoker, point, getCurrentProperty());
+        }
+    }
 }

@@ -7,7 +7,7 @@ import platform.client.form.cell.PropertyController;
 import platform.client.form.grid.GridController;
 import platform.client.form.grid.GridView;
 import platform.client.form.panel.PanelController;
-import platform.client.form.panel.PanelToolbar;
+import platform.client.form.panel.PanelShortcut;
 import platform.client.form.showtype.ShowTypeController;
 import platform.client.logics.*;
 import platform.interop.ClassViewType;
@@ -22,17 +22,11 @@ import java.io.IOException;
 import java.util.*;
 import java.util.List;
 
-public class GroupObjectController implements GroupObjectLogicsSupplier {
+public class GroupObjectController extends AbstractGroupObjectController {
     private final ClientGroupObject groupObject;
-    private final LogicsSupplier logicsSupplier;
-    private final ClientFormController form;
-    private final ClientFormLayout formLayout;
 
     public GridController grid;
-    private final PanelController panel;
     public ShowTypeController showType;
-
-    private PanelToolbar panelToolbar;
 
     private final Map<ClientObject, ObjectController> objects = new HashMap<ClientObject, ObjectController>();
 
@@ -41,19 +35,16 @@ public class GroupObjectController implements GroupObjectLogicsSupplier {
     public ClassViewType classView = ClassViewType.HIDE;
 
     public GroupObjectController(ClientGroupObject igroupObject, LogicsSupplier ilogicsSupplier, ClientFormController iform, ClientFormLayout formLayout) throws IOException {
-
+        super(iform, ilogicsSupplier, formLayout);
         groupObject = igroupObject;
-        logicsSupplier = ilogicsSupplier;
-        form = iform;
-        this.formLayout = formLayout;
-
-        panelToolbar = new PanelToolbar(form, formLayout);
 
         panel = new PanelController(this, form, formLayout) {
             protected void addGroupObjectActions(JComponent comp) {
                 GroupObjectController.this.addGroupObjectActions(comp);
             }
         };
+
+        panelShortcut = new PanelShortcut(form, panel);
 
         if (groupObject != null) {
 
@@ -86,8 +77,6 @@ public class GroupObjectController implements GroupObjectLogicsSupplier {
             grid.update();
         }
     }
-
-    private Set<ClientPropertyDraw> panelProperties = new HashSet<ClientPropertyDraw>();
 
     public void processFormChanges(ClientFormChanges fc,
                                    Map<ClientGroupObject, List<ClientGroupObjectValue>> cachedGridObjects
@@ -335,11 +324,6 @@ public class GroupObjectController implements GroupObjectLogicsSupplier {
         comp.putClientProperty("groupObject", groupObject);
     }
 
-    // реализация GroupObjectLogicsSupplier
-    public List<ClientObject> getObjects() {
-        return logicsSupplier.getObjects();
-    }
-
     public List<ClientPropertyDraw> getPropertyDraws() {
         return logicsSupplier.getPropertyDraws();
     }
@@ -372,10 +356,6 @@ public class GroupObjectController implements GroupObjectLogicsSupplier {
 
     public Object getSelectedValue(ClientPropertyDraw cell, ClientGroupObjectValue columnKey) {
         return grid.getSelectedValue(cell, columnKey);
-    }
-
-    public ClientFormController getForm() {
-        return form;
     }
 
     public String getSaveMessage() {
@@ -414,24 +394,12 @@ public class GroupObjectController implements GroupObjectLogicsSupplier {
         panelToolbar.moveComponent(component, destination);
     }
 
-    public void addToToolbar(Component component) {
-        panelToolbar.addComponent(component);
-    }
-
     public void updateSelectionInfo(int quantity, String sum, String avg) {
         panelToolbar.updateSelectionInfo(quantity, sum, avg);
     }
 
     public JPanel getToolbarView() {
         return panelToolbar.getView();
-    }
-
-    public void addPropertyToToolbar(PropertyController property) {
-        panelToolbar.addProperty(property);
-    }
-
-    public void removePropertyFromToolbar(PropertyController property) {
-        panelToolbar.removeProperty(property);
     }
 
     public void updateToolbar() {

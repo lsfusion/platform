@@ -3,6 +3,7 @@ package platform.server.logics.linear;
 import platform.base.BaseUtils;
 import platform.base.OrderedMap;
 import platform.base.Result;
+import platform.interop.PanelLocation;
 import platform.interop.action.ClientAction;
 import platform.server.classes.ValueClass;
 import platform.server.data.QueryEnvironment;
@@ -11,9 +12,8 @@ import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.where.Where;
 import platform.server.data.where.classes.ClassWhere;
-import platform.server.logics.BusinessLogics;
-import platform.server.logics.DataObject;
-import platform.server.logics.ObjectValue;
+import platform.server.form.entity.LogFormEntity;
+import platform.server.logics.*;
 import platform.server.logics.property.*;
 import platform.server.session.*;
 
@@ -266,6 +266,29 @@ public class LP<T extends PropertyInterface> {
         property.setFixedCharWidth(charWidth);
     }
 
+    public void setLoggable(boolean loggable) {
+        property.loggable = loggable;
+    }
+
+    public void setLogProperty(LP logProperty) {
+        property.setLogProperty(logProperty);
+    }
+
+    public void setLogFormProperty(LP logFormPropertyProp) {
+        property.setLogFormProperty(logFormPropertyProp);
+    }
+
+    public void makeLoggable(BaseLogicsModule LM) {
+        property.loggable = true;
+        if (property.getLogProperty() == null) {
+            property.setLogProperty(LM.addLProp(this));
+        }
+        if (property.getLogFormProperty() == null) {
+            LogFormEntity logFormEntity = new LogFormEntity("log" + BaseUtils.capitalize(property.getSID()) + "Form", ServerResourceBundle.getString("logics.property.log.form"), LM.getLP(property.getSID()), property.getLogProperty(), LM);
+            property.setLogFormProperty(LM.addMFAProp(ServerResourceBundle.getString("logics.property.log.action"), logFormEntity, logFormEntity.params));
+        }
+    }
+
     public LP setImage(String name) {
         property.setImage(name);
         return this;
@@ -279,7 +302,7 @@ public class LP<T extends PropertyInterface> {
         property.showEditKey = showEditKey;
     }
 
-    public void setDrawToToolbar(boolean drawToToolbar) {
-        property.drawToToolbar = drawToToolbar;
+    public void setPanelLocation(PanelLocation panelLocation) {
+        property.panelLocation = panelLocation;
     }
 }

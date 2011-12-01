@@ -8,10 +8,7 @@ import platform.server.logics.BaseLogicsModule;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.ServerResourceBundle;
 import platform.server.logics.linear.LP;
-import platform.server.logics.property.JoinProperty;
-import platform.server.logics.property.Property;
-import platform.server.logics.property.PropertyClassImplement;
-import platform.server.logics.property.ValueClassWrapper;
+import platform.server.logics.property.*;
 
 import java.util.Arrays;
 import java.util.List;
@@ -49,6 +46,7 @@ public class LogFormEntity<T extends BusinessLogics<T>> extends FormEntity<T> {
             ObjectEntity obj = new ObjectEntity(index, "param" + index, valueClass, valueClass.getCaption());
             entities[index-1] = obj;
             paramsGroup.add(obj);
+            index++;
         }
 
         params = Arrays.copyOf(entities, classes.length);
@@ -91,14 +89,16 @@ public class LogFormEntity<T extends BusinessLogics<T>> extends FormEntity<T> {
         }
 
         addFixedFilter(new NotNullFilterEntity(addPropertyObject(logProperty, entities)));
+
+        setReadOnly(true);
     }
 
     private static ValueClass[] getValueClassesList(LP<?> property) {
         Property.CommonClasses<?> commonClasses = property.property.getCommonClasses();
         ValueClass[] classes = new ValueClass[commonClasses.interfaces.size()];
         int index = 0;
-        for (ValueClass valueClass : commonClasses.interfaces.values()) {
-            classes[index++] = valueClass;
+        for (PropertyInterface pi : property.property.interfaces) {
+            classes[index++] = commonClasses.interfaces.get(pi);
         }
         return classes;
     }

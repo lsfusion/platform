@@ -4,6 +4,7 @@ import platform.base.Pair;
 import platform.server.classes.ValueClass;
 import platform.server.form.entity.PropertyDrawEntity;
 import platform.server.form.view.DefaultFormView;
+import platform.server.form.view.PropertyDrawView;
 import platform.server.logics.BaseLogicsModule;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.DataObject;
@@ -38,8 +39,8 @@ public class DisconnectActionProperty extends ActionProperty {
     }
 
     @Override
-    public void proceedDefaultDesign(DefaultFormView view, PropertyDrawEntity<ClassPropertyInterface> entity) {
-        super.proceedDefaultDesign(view, entity);
-        view.get(entity).design.setIconPath("disconnect.png");
+    public void proceedDefaultDesign(PropertyDrawView propertyView, DefaultFormView view) {
+        super.proceedDefaultDesign(propertyView, view);
+        propertyView.design.setIconPath("disconnect.png");
     }
 }

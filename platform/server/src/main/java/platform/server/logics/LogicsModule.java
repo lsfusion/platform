@@ -7,6 +7,7 @@ import platform.base.Result;
 import platform.interop.ClassViewType;
 import platform.interop.Compare;
 import platform.interop.KeyStrokes;
+import platform.interop.ToolbarPanelLocation;
 import platform.server.Settings;
 import platform.server.caches.IdentityLazy;
 import platform.server.classes.*;
@@ -414,7 +415,7 @@ public abstract class LogicsModule {
         return addFAProp(group, caption, form, params, new PropertyObjectEntity[0], new PropertyObjectEntity[0], false, false);
     }
 
-    protected LP addMFAProp(String caption, FormEntity form, ObjectEntity... params) {
+    public LP addMFAProp(String caption, FormEntity form, ObjectEntity... params) {
         return addMFAProp(null, caption, form, params, new PropertyObjectEntity[0], new PropertyObjectEntity[0]);
     }
 
@@ -1406,7 +1407,7 @@ public abstract class LogicsModule {
         return addUProp(group, name, persistent, caption, Union.SUM, params);
     }
 
-    protected LP addLProp(LP lp, ValueClass... classes) {
+    public LP addLProp(LP lp, ValueClass... classes) {
         return addDCProp("LG_" + lp.property.getSID(), ServerResourceBundle.getString("logics.log")+" " + lp.property, baseLM.object1, BaseUtils.add(BaseUtils.add(directLI(lp), new Object[]{addJProp(baseLM.equals2, 1, baseLM.currentSession), lp.listInterfaces.size() + 1}), classes));
     }
 
@@ -1710,7 +1711,7 @@ public abstract class LogicsModule {
         property.setImage("add.png");
         property.setEditKey(KeyStrokes.getAddActionPropertyKeyStroke());
         property.setShowEditKey(true);
-        property.setDrawToToolbar(true);
+        property.setPanelLocation(new ToolbarPanelLocation());
         return property;
     }
 
@@ -1722,7 +1723,7 @@ public abstract class LogicsModule {
         property.setImage("edit.png");
         property.setEditKey(KeyStrokes.getEditActionPropertyKeyStroke());
         property.setShowEditKey(true);
-        property.setDrawToToolbar(true);
+        property.setPanelLocation(new ToolbarPanelLocation());
         return property;
     }
 
@@ -1863,6 +1864,23 @@ public abstract class LogicsModule {
                         new PropertyMapImplement(property.property, mapInterfaces),
                         ServerResourceBundle.getString("logics.property") + " " + property.property.caption + " [" + property.property.getSID() + "] " + ServerResourceBundle.getString("logics.property.not.defined"),
                         resolve));
+    }
+
+    protected void makeLoggable(LP... lps) {
+        for (LP lp : lps)
+            lp.makeLoggable(baseLM);
+    }
+
+    protected void makeLoggable(AbstractGroup group) {
+        makeLoggable(group, false);
+    }
+
+    protected void makeLoggable(AbstractGroup group, boolean dataPropertiesOnly) {
+        for (Property property : group.getProperties()) {
+            if (!dataPropertiesOnly || property instanceof DataProperty) {
+                baseLM.getLP(property.getSID()).makeLoggable(baseLM);
+            }
+        }
     }
 
     // получает свойство is

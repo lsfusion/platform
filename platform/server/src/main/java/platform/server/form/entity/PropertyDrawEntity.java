@@ -6,6 +6,7 @@ import platform.server.form.instance.InstanceFactory;
 import platform.server.form.instance.Instantiable;
 import platform.server.form.instance.PropertyDrawInstance;
 import platform.server.form.view.DefaultFormView;
+import platform.server.form.view.PropertyDrawView;
 import platform.server.logics.property.PropertyInterface;
 import platform.server.serialization.ServerIdentitySerializable;
 import platform.server.serialization.ServerSerializationPool;
@@ -68,8 +69,8 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         this.propertyHighlight = propertyHighlight;
     }
 
-    public void proceedDefaultDesign(DefaultFormView defaultView) {
-        propertyObject.property.proceedDefaultDesign(defaultView, this);
+    public void proceedDefaultDesign(PropertyDrawView propertyView, DefaultFormView defaultView) {
+        propertyObject.property.proceedDefaultDesign(propertyView, defaultView);
     }
 
     public void customSerialize(ServerSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {

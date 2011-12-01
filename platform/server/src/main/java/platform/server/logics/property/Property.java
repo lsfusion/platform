@@ -3,6 +3,9 @@ package platform.server.logics.property;
 import platform.base.BaseUtils;
 import platform.base.ListPermutations;
 import platform.base.Result;
+import platform.interop.ClassViewType;
+import platform.interop.PanelLocation;
+import platform.interop.ShortcutPanelLocation;
 import platform.interop.action.ClientAction;
 import platform.server.Settings;
 import platform.server.caches.IdentityLazy;
@@ -21,15 +24,13 @@ import platform.server.data.where.Where;
 import platform.server.data.where.WhereBuilder;
 import platform.server.data.where.classes.AbstractClassWhere;
 import platform.server.data.where.classes.ClassWhere;
-import platform.server.form.entity.FormEntity;
-import platform.server.form.entity.PropertyDrawEntity;
+import platform.server.form.entity.*;
 import platform.server.form.instance.PropertyObjectInterfaceInstance;
 import platform.server.form.instance.remote.RemoteForm;
 import platform.server.form.view.DefaultFormView;
-import platform.server.logics.BusinessLogics;
-import platform.server.logics.DataObject;
-import platform.server.logics.ObjectValue;
-import platform.server.logics.ServerResourceBundle;
+import platform.server.form.view.PropertyDrawView;
+import platform.server.logics.*;
+import platform.server.logics.linear.LP;
 import platform.server.logics.property.derived.DerivedProperty;
 import platform.server.logics.property.derived.MaxChangeProperty;
 import platform.server.logics.property.derived.OnChangeProperty;
@@ -62,6 +63,10 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
     public int maximumCharWidth;
     public int preferredCharWidth;
 
+    public boolean loggable;
+    private LP logProperty;
+    private LP logFormProperty;
+
     public void setFixedCharWidth(int charWidth) {
         minimumCharWidth = charWidth;
         maximumCharWidth = charWidth;
@@ -90,7 +95,7 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
     public KeyStroke editKey;
     public Boolean showEditKey;
 
-    public Boolean drawToToolbar;
+    public PanelLocation panelLocation;
 
     public boolean askConfirm = false;
 
@@ -114,6 +119,22 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
 
     public void setID(int iID) {
         ID = iID;
+    }
+
+    public LP getLogProperty() {
+        return logProperty;
+    }
+
+    public void setLogProperty(LP logProperty) {
+        this.logProperty = logProperty;
+    }
+
+    public LP getLogFormProperty() {
+        return logFormProperty;
+    }
+
+    public void setLogFormProperty(LP logFormProperty) {
+        this.logFormProperty = logFormProperty;
     }
 
     public final Collection<T> interfaces;
@@ -596,26 +617,42 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
     // по умолчанию заполняет свойства
     // assert что entity этого свойства
     public void proceedDefaultDraw(PropertyDrawEntity<T> entity, FormEntity form) {
+        if (loggable && logFormProperty != null) {
+            form.addPropertyDraw(logFormProperty, BaseUtils.orderMap(entity.propertyObject.mapping, interfaces).values().toArray(new ObjectEntity[]{}));
+            form.setForceViewType(logFormProperty, ClassViewType.PANEL);
+        }
     }
 
-    public void proceedDefaultDesign(DefaultFormView view, PropertyDrawEntity<T> entity) {
+    public void proceedDefaultDesign(PropertyDrawView propertyView, DefaultFormView view) {
         if (iconPath != null) {
-            view.get(entity).design.iconPath = iconPath;
-            view.get(entity).design.setImage(image);
+            propertyView.design.iconPath = iconPath;
+            propertyView.design.setImage(image);
         }
-
+        
         if (editKey != null)
-            view.get(entity).editKey = editKey;
+            propertyView.editKey = editKey;
         if (showEditKey != null)
-            view.get(entity).showEditKey = showEditKey;
+            propertyView.showEditKey = showEditKey;
 
-        if (drawToToolbar != null)
-            view.get(entity).drawToToolbar = drawToToolbar;
+        if (panelLocation != null)
+            propertyView.setPanelLocation(panelLocation);
+        
+        if(propertyView.getType() instanceof LogicalClass)
+            propertyView.editOnSingleClick = Settings.instance.getEditLogicalOnSingleClick();
+        if(propertyView.getType() instanceof ActionClass)
+            propertyView.editOnSingleClick = Settings.instance.getEditActionClassOnSingleClick();
 
-        if(view.get(entity).getType() instanceof LogicalClass)
-            view.get(entity).editOnSingleClick = Settings.instance.getEditLogicalOnSingleClick();
-        if(view.get(entity).getType() instanceof ActionClass)
-            view.get(entity).editOnSingleClick = Settings.instance.getEditActionClassOnSingleClick();
+        if (loggable && logFormProperty != null) {
+            PropertyDrawView logPropertyView = view.get(view.entity.getPropertyDraw(logFormProperty));
+            GroupObjectEntity groupObject = propertyView.entity.getToDraw(view.entity);
+            if (groupObject != null) {
+                logPropertyView = BaseUtils.nvl(view.get(view.entity.getPropertyDraw(logFormProperty.property, groupObject)), logPropertyView);
+            }
+            if (logPropertyView != null) {
+                logPropertyView.entity.readOnly = false; //бывает, что проставляют true для всего groupObject'а
+                logPropertyView.setPanelLocation(new ShortcutPanelLocation(getSID()));
+            }
+        }
     }
 
     public boolean hasChild(Property prop) {

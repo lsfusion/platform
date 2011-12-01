@@ -6,6 +6,7 @@ import jxl.Workbook;
 import org.apache.log4j.Logger;
 import platform.interop.ClassViewType;
 import platform.interop.KeyStrokes;
+import platform.interop.ToolbarPanelLocation;
 import platform.server.classes.*;
 import platform.server.data.type.ParseException;
 import platform.server.data.type.Type;
@@ -13,8 +14,8 @@ import platform.server.form.entity.FormEntity;
 import platform.server.form.entity.PropertyDrawEntity;
 import platform.server.form.instance.FormInstance;
 import platform.server.form.instance.PropertyDrawInstance;
-import platform.server.form.instance.remote.RemoteForm;
 import platform.server.form.view.DefaultFormView;
+import platform.server.form.view.PropertyDrawView;
 import platform.server.logics.ServerResourceBundle;
 import platform.server.logics.property.ActionProperty;
 import platform.server.logics.property.ClassPropertyInterface;
@@ -94,12 +95,12 @@ public class ImportFromExcelActionProperty extends ActionProperty {
     }
 
     @Override
-    public void proceedDefaultDesign(DefaultFormView view, PropertyDrawEntity<ClassPropertyInterface> entity) {
-        super.proceedDefaultDesign(view, entity);
-        view.get(entity).editKey = KeyStrokes.getImportActionPropertyKeyStroke();
-        view.get(entity).design.setIconPath("import.png");
-        view.get(entity).showEditKey = false;
-        view.get(entity).drawToToolbar = true;
+    public void proceedDefaultDesign(PropertyDrawView propertyView, DefaultFormView view) {
+        super.proceedDefaultDesign(propertyView, view);
+        propertyView.editKey = KeyStrokes.getImportActionPropertyKeyStroke();
+        propertyView.design.setIconPath("import.png");
+        propertyView.showEditKey = false;
+        propertyView.setPanelLocation(new ToolbarPanelLocation());
     }
 
 }

@@ -3,9 +3,8 @@ package platform.client.form.tree;
 import platform.base.BaseUtils;
 import platform.client.ClientResourceBundle;
 import platform.client.form.*;
-import platform.client.form.cell.PropertyController;
 import platform.client.form.panel.PanelController;
-import platform.client.form.panel.PanelToolbar;
+import platform.client.form.panel.PanelShortcut;
 import platform.client.form.queries.FilterController;
 import platform.client.logics.*;
 import platform.interop.ClassViewType;
@@ -17,31 +16,23 @@ import java.io.IOException;
 import java.util.*;
 import java.util.List;
 
-public class TreeGroupController implements GroupObjectLogicsSupplier {
-    private PanelController panel;
-
+public class TreeGroupController extends AbstractGroupObjectController {
     public final ClientTreeGroup treeGroup;
-    private final LogicsSupplier logicsSupplier;
-    private final ClientFormController form;
     private final TreeView view;
-
-    private PanelToolbar panelToolbar;
 
     private TreeGroupTable tree;
 
     private final ClientGroupObject lastGroupObject;
 
     public TreeGroupController(ClientTreeGroup itreeGroup, LogicsSupplier ilogicsSupplier, ClientFormController iform, ClientFormLayout formLayout) throws IOException {
+        super(iform, ilogicsSupplier, formLayout);
         treeGroup = itreeGroup;
-        logicsSupplier = ilogicsSupplier;
-        form = iform;
 
         view = new TreeView(this.form, treeGroup);
         tree = view.getTree();
 
-        panelToolbar = new PanelToolbar(form, formLayout);
-
         panel = new PanelController(this, form, formLayout);
+        panelShortcut = new PanelShortcut(form, panel);
 
         JPanel pane = new JPanel(new BorderLayout());
         pane.add(view, BorderLayout.CENTER);
@@ -131,8 +122,6 @@ public class TreeGroupController implements GroupObjectLogicsSupplier {
         tree.restoreVisualState();
     }
 
-    private Set<ClientPropertyDraw> panelProperties = new HashSet<ClientPropertyDraw>();
-
     public void addDrawProperty(ClientGroupObject group, ClientPropertyDraw property, boolean toPanel) {
         if (toPanel) {
             panelProperties.add(property);
@@ -183,18 +172,8 @@ public class TreeGroupController implements GroupObjectLogicsSupplier {
         return tree.getSelectedValue(property);
     }
 
-    @Override
-    public ClientFormController getForm() {
-        return form;
-    }
-
     public void changeOrder(ClientPropertyDraw property, Order modiType) throws IOException {
         tree.changeOrder(property, modiType);
-    }
-
-    @Override
-    public List<ClientObject> getObjects() {
-        return logicsSupplier.getObjects();
     }
 
     @Override
@@ -213,19 +192,5 @@ public class TreeGroupController implements GroupObjectLogicsSupplier {
     @Override
     public void updateToolbar() {
         panelToolbar.update(ClassViewType.GRID);
-    }
-
-    @Override
-    public void addPropertyToToolbar(PropertyController property) {
-        panelToolbar.addProperty(property);
-    }
-
-    @Override
-    public void removePropertyFromToolbar(PropertyController property) {
-        panelToolbar.removeProperty(property);
-    }
-
-    public void addToToolbar(JComponent component) {
-        panelToolbar.addComponent(component);
     }
 }

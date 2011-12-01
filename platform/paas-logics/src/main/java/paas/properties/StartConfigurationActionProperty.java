@@ -5,11 +5,10 @@ import paas.PaasBusinessLogics;
 import paas.PaasLogicsModule;
 import platform.interop.action.MessageClientAction;
 import platform.server.classes.ValueClass;
-import platform.server.form.entity.PropertyDrawEntity;
 import platform.server.form.view.DefaultFormView;
+import platform.server.form.view.PropertyDrawView;
 import platform.server.logics.DataObject;
 import platform.server.logics.property.ActionProperty;
-import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
 
 import java.sql.SQLException;
@@ -40,8 +39,8 @@ public class StartConfigurationActionProperty extends ActionProperty {
     }
 
     @Override
-    public void proceedDefaultDesign(DefaultFormView view, PropertyDrawEntity<ClassPropertyInterface> entity) {
-        super.proceedDefaultDesign(view, entity);
-        view.get(entity).design.setIconPath("start.png");
+    public void proceedDefaultDesign(PropertyDrawView propertyView, DefaultFormView view) {
+        super.proceedDefaultDesign(propertyView, view);
+        propertyView.design.setIconPath("start.png");
     }
 }

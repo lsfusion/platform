@@ -14,8 +14,7 @@ import javax.swing.text.Position;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.MouseEvent;
+import java.awt.event.*;
 import java.util.Enumeration;
 import java.util.EventObject;
 
@@ -46,7 +45,28 @@ public abstract class ClientFormTreeTable extends JXTreeTable implements TableTr
                 return ClientFormTreeTable.this;
             }
         });
+
+        addMouseListener(new MouseAdapter() {
+            @Override
+            public void mousePressed(MouseEvent e) {
+                if (SwingUtilities.isRightMouseButton(e)) {
+                    buildShortcut(e.getComponent(), e.getPoint());
+                }
+            }
+        });
+
+        addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyPressed(KeyEvent e) {
+                if (e.getKeyCode() == KeyEvent.VK_CONTEXT_MENU) {
+                    Rectangle rect = getCellRect(getSelectedRow(), getSelectedColumn(), true);
+                    buildShortcut(getComponentAt(rect.getLocation()), new Point(rect.x, rect.y + rect.height - 1));
+                }
+            }
+        });
     }
+
+    abstract public void buildShortcut(Component component,  Point point);
 
     private void setupActionMap() {
         //  Have the enter key work the same as the tab key

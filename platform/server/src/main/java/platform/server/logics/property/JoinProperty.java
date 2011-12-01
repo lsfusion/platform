@@ -16,6 +16,7 @@ import platform.server.form.entity.ObjectEntity;
 import platform.server.form.entity.PropertyDrawEntity;
 import platform.server.form.entity.PropertyObjectInterfaceEntity;
 import platform.server.form.view.DefaultFormView;
+import platform.server.form.view.PropertyDrawView;
 import platform.server.session.Changes;
 import platform.server.session.MapDataChanges;
 import platform.server.session.Modifier;
@@ -195,8 +196,8 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
     }
 
     @Override
-    public void proceedDefaultDesign(DefaultFormView view, PropertyDrawEntity<Interface> entity) {
-        super.proceedDefaultDesign(view, entity);
+    public void proceedDefaultDesign(PropertyDrawView propertyView, DefaultFormView view) {
+        super.proceedDefaultDesign(propertyView, view);
 
         if (implement.property instanceof AndFormulaProperty) {
             AndFormulaProperty andProp = (AndFormulaProperty) implement.property;
@@ -205,7 +206,7 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
 
             PropertyInterfaceImplement<Interface> objectIface = andImplement.mapping.get(andProp.objectInterface);
             if (objectIface instanceof PropertyMapImplement) {
-                ((PropertyMapImplement) objectIface).property.proceedDefaultDesign(view, entity);
+                ((PropertyMapImplement) objectIface).property.proceedDefaultDesign(propertyView, view);
             }
         }
     }

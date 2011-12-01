@@ -9,6 +9,7 @@ import platform.client.serialization.ClientIdentitySerializable;
 import platform.client.serialization.ClientSerializationPool;
 import platform.gwt.view.GComponent;
 import platform.interop.ComponentDesign;
+import platform.interop.PanelLocation;
 import platform.interop.form.layout.AbstractComponent;
 import platform.interop.form.layout.DoNotIntersectSimplexConstraint;
 import platform.interop.form.layout.SimplexConstraints;
@@ -42,7 +43,7 @@ public abstract class ClientComponent extends ContextIdentityObject implements S
 
     public ClientGroupObject keyBindingGroup = null;
 
-    public boolean drawToToolbar;
+    public PanelLocation panelLocation;
 
     public ClientComponent() {
     }
@@ -82,7 +83,7 @@ public abstract class ClientComponent extends ContextIdentityObject implements S
         outStream.writeBoolean(defaultComponent);
 
         pool.serializeObject(outStream, keyBindingGroup);
-        outStream.writeBoolean(drawToToolbar);
+        pool.writeObject(outStream, panelLocation);
     }
 
     public void customDeserialize(ClientSerializationPool pool, DataInputStream inStream) throws IOException {
@@ -108,7 +109,7 @@ public abstract class ClientComponent extends ContextIdentityObject implements S
 
         keyBindingGroup = pool.deserializeObject(inStream);
 
-        drawToToolbar = inStream.readBoolean();
+        panelLocation = pool.readObject(inStream);
     }
 
     public ComponentNode getNode() {
@@ -254,7 +255,6 @@ public abstract class ClientComponent extends ContextIdentityObject implements S
         component.container = container == null ? null : container.getGwtComponent();
         component.defaultComponent = defaultComponent;
         component.keyBindingGroup = keyBindingGroup == null ? null : keyBindingGroup.getGwtGroupObject();
-        component.drawToToolbar = drawToToolbar;
     }
 
     private GComponent gwtComponent;

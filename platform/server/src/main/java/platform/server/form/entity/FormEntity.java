@@ -354,7 +354,7 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         }
     }
 
-    protected <P extends PropertyInterface> PropertyDrawEntity addPropertyDraw(LP<P> property, GroupObjectEntity groupObject, PropertyObjectInterfaceEntity... objects) {
+    public <P extends PropertyInterface> PropertyDrawEntity addPropertyDraw(LP<P> property, GroupObjectEntity groupObject, PropertyObjectInterfaceEntity... objects) {
 
         return addPropertyDraw(groupObject, new PropertyObjectEntity<P>(property, objects));
     }
@@ -778,7 +778,7 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         }
     }
 
-    protected void setForceViewType(LP property, ClassViewType type) {
+    public void setForceViewType(LP property, ClassViewType type) {
         setForceViewType(property.property, type);
     }
 

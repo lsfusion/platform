@@ -73,4 +73,6 @@ public abstract class SingleCellTable extends ClientFormTable {
 
         return super.processKeyBinding(ks, e, condition, pressed);
     }
+
+    public void buildShortcut(Component invoker, Point point) {}
 }

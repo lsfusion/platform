@@ -41,7 +41,7 @@ public class TableCellView extends JPanel implements CellView {
         return o instanceof TableCellView && ((TableCellView) o).key.equals(key) && ((TableCellView) o).columnKey.equals(columnKey);
     }
 
-    public TableCellView(final ClientPropertyDraw key, ClientGroupObjectValue columnKey, ClientFormController form) {
+    public TableCellView(final ClientPropertyDraw key, ClientGroupObjectValue columnKey, final ClientFormController form) {
 
         setOpaque(false);
 
@@ -95,11 +95,15 @@ public class TableCellView extends JPanel implements CellView {
                 return key.clearText;
             }
 
+            @Override
+            public void buildShortcut(Component invoker, Point point) {
+                form.controllers.get(key.groupObject).showShortcut(invoker, point, key);
+            }
         };
 
         table.addMouseListener(new MouseAdapter() {
             public void mousePressed(MouseEvent e) {
-                if (e.isMetaDown() && e.getClickCount() >= 2) {
+                if (e.isMetaDown() && e.getClickCount() >= 2 && !SwingUtilities.isRightMouseButton(e)) {
                     rightClick();
                 }
             }

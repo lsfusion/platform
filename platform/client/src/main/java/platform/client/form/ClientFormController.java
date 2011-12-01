@@ -12,10 +12,7 @@ import platform.client.logics.filter.ClientPropertyFilter;
 import platform.client.navigator.ClientNavigator;
 import platform.client.remote.proxy.RemoteObjectProxy;
 import platform.client.serialization.ClientSerializationPool;
-import platform.interop.ClassViewType;
-import platform.interop.KeyStrokes;
-import platform.interop.Order;
-import platform.interop.Scroll;
+import platform.interop.*;
 import platform.interop.action.*;
 import platform.interop.form.RemoteChanges;
 import platform.interop.form.RemoteFormInterface;
@@ -50,7 +47,7 @@ public class ClientFormController {
     private ClientFormLayout formLayout;
 
     public Map<ClientGroupObject, GroupObjectController> controllers;
-    private Map<ClientTreeGroup, TreeGroupController> treeControllers;
+    public Map<ClientTreeGroup, TreeGroupController> treeControllers;
 
     private JButton buttonApply;
     private JButton buttonCancel;
@@ -215,7 +212,7 @@ public class ClientFormController {
             comboBox.addItem(new ClientRegularFilterWrapped(filter));
         }
 
-        if (filterGroup.drawToToolbar && filterGroup.keyBindingGroup != null) {
+        if (filterGroup.panelLocation.isToolbarLocation() && filterGroup.keyBindingGroup != null) {
             GroupObjectController controller = controllers.get(filterGroup.keyBindingGroup);
             controller.addFilterToToolbar(filterGroup, comboBox);
         }
@@ -253,7 +250,7 @@ public class ClientFormController {
             checkBox.setSelected(true);
         }
 
-        if (filterGroup.drawToToolbar && filterGroup.keyBindingGroup != null) {
+        if (filterGroup.panelLocation.isToolbarLocation() && filterGroup.keyBindingGroup != null) {
             GroupObjectController controller = controllers.get(filterGroup.keyBindingGroup);
             controller.addFilterToToolbar(filterGroup, checkBox);
         }

@@ -145,7 +145,7 @@ public class DefaultFormView extends FormView {
             addComponent(groupObject, clientProperty, control.propertyObject.property.getParent());
             order.add(clientProperty);
 
-            control.proceedDefaultDesign(this);
+            control.proceedDefaultDesign(clientProperty, this);
         }
 
         for (RegularFilterGroupEntity filterGroup : entity.regularFilterGroups) {

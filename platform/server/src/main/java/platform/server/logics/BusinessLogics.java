@@ -1594,7 +1594,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
         List<ImportDelete> deletes = new ArrayList<ImportDelete>();
         deletes.add(new ImportDelete(tableKey, LM.is(LM.table).getMapping(tableKey), false));
-        deletes.add(new ImportDelete(tableKeyKey, LM.is(LM.tableKey).getMapping(tableKeyKey), true));
+        deletes.add(new ImportDelete(tableKeyKey, LM.is(LM.tableKey).getMapping(tableKeyKey), false));
 
         ImportTable table = new ImportTable(Arrays.asList(tableSidField, tableKeyNameField, tableKeySidField, tableKeyClassField), data);
 
@@ -1658,16 +1658,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     }
 
     protected LP getLP(String sID) {
-        LM.objectValue.getProperty(sID);
-        LM.selection.getProperty(sID);
-        LM.compositeName.getProperty(sID);
-
-        for (LP lp : LM.lproperties) {
-            if (lp.property.getSID().equals(sID)) {
-                return lp;
-            }
-        }
-        return null;
+        return LM.getLP(sID);
     }
 
     private boolean intersect(LP[] props) {

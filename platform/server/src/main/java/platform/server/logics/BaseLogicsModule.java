@@ -22,6 +22,7 @@ import platform.server.form.navigator.NavigatorElement;
 import platform.server.form.view.ContainerView;
 import platform.server.form.view.DefaultFormView;
 import platform.server.form.view.FormView;
+import platform.server.form.view.PropertyDrawView;
 import platform.server.form.window.AbstractWindow;
 import platform.server.form.window.NavigatorWindow;
 import platform.server.form.window.TreeNavigatorWindow;
@@ -361,6 +362,19 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         this.logger = logger;
     }
 
+    public LP getLP(String sID) {
+        objectValue.getProperty(sID);
+        selection.getProperty(sID);
+        compositeName.getProperty(sID);
+
+        for (LP lp : lproperties) {
+            if (lp.property.getSID().equals(sID)) {
+                return lp;
+            }
+        }
+        return null;
+    }
+
     @Override
     public void initClasses() {
         baseClass = addBaseClass("object", getString("logics.object"));
@@ -423,6 +437,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         tableFactory.include("customUser", customUser);
         tableFactory.include("loginSID", StringClass.get(30), StringClass.get(30));
         tableFactory.include("countryDate", country, DateClass.instance);
+        tableFactory.include("objectObjectDate", baseClass, baseClass, DateClass.instance);
         tableFactory.include("country", country, DateClass.instance);
         tableFactory.include("navigatorElement", navigatorElement);
         tableFactory.include("transaction", transaction);
@@ -1146,9 +1161,9 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         }
 
         @Override
-        public void proceedDefaultDesign(DefaultFormView view, PropertyDrawEntity<ClassPropertyInterface> entity) {
-            super.proceedDefaultDesign(view, entity);
-            view.get(entity).design.setIconPath("load.png");
+        public void proceedDefaultDesign(PropertyDrawView propertyView, DefaultFormView view) {
+            super.proceedDefaultDesign(propertyView, view);
+            propertyView.design.setIconPath("load.png");
         }
     }
 
@@ -1179,9 +1194,9 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         }
 
         @Override
-        public void proceedDefaultDesign(DefaultFormView view, PropertyDrawEntity<ClassPropertyInterface> entity) {
-            super.proceedDefaultDesign(view, entity);
-            view.get(entity).design.setIconPath("open.png");
+        public void proceedDefaultDesign(PropertyDrawView propertyView, DefaultFormView view) {
+            super.proceedDefaultDesign(propertyView, view);
+            propertyView.design.setIconPath("open.png");
         }
     }
 

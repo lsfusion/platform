@@ -15,8 +15,8 @@ import net.sf.jasperreports.engine.export.JRPdfExporter;
 import platform.base.BaseUtils;
 import platform.base.IOUtils;
 import platform.base.OrderedMap;
-import platform.interop.ClassViewType;
-import platform.interop.Compare;
+import platform.interop.*;
+import platform.interop.ToolbarPanelLocation;
 import platform.interop.action.ClientAction;
 import platform.interop.action.ImportFileClientActionResult;
 import platform.interop.action.MessageClientAction;
@@ -5179,19 +5179,19 @@ public class SkolkovoLogicsModule extends LogicsModule {
         public FormView createDefaultRichDesign() {
             DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign();
 
-//            design.get(getPropertyDraw(addProject)).drawToToolbar = true;
+//            design.get(getPropertyDraw(addProject)).setPanelLocation(new ToolbarPanelLocation());
 
             design.addIntersection(design.getGroupPropertyContainer(objProject.groupTo, projectInformationGroup),
                     design.getGroupPropertyContainer(objProject.groupTo, translateActionGroup),
                     DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
 
-            design.get(getPropertyDraw(importProjectsAction)).drawToToolbar = true;
-            design.get(getPropertyDraw(copyProjectAction)).drawToToolbar = true;
-            //design.get(getPropertyDraw(openApplicationProjectAction)).drawToToolbar = true;
-            design.get(getPropertyDraw(editR1Project)).drawToToolbar = true;
-            design.get(getPropertyDraw(editR2Project)).drawToToolbar = true;
-            design.get(getPropertyDraw(editClaimerProject)).drawToToolbar = true;
-            design.get(getPropertyDraw(nameNativeShortCurrentCluster)).drawToToolbar = true;
+            design.get(getPropertyDraw(importProjectsAction)).setPanelLocation(new ToolbarPanelLocation());
+            design.get(getPropertyDraw(copyProjectAction)).setPanelLocation(new ToolbarPanelLocation());
+            //design.get(getPropertyDraw(openApplicationProjectAction)).setPanelLocation(new ToolbarPanelLocation());
+            design.get(getPropertyDraw(editR1Project)).setPanelLocation(new ToolbarPanelLocation());
+            design.get(getPropertyDraw(editR2Project)).setPanelLocation(new ToolbarPanelLocation());
+            design.get(getPropertyDraw(editClaimerProject)).setPanelLocation(new ToolbarPanelLocation());
+            design.get(getPropertyDraw(nameNativeShortCurrentCluster)).setPanelLocation(new ToolbarPanelLocation());
 //            design.getPanelContainer(objProject.groupTo).add(design.getGroupPropertyContainer((GroupObjectEntity)null, importGroup));
 
             ContainerView specContainer = design.createContainer();

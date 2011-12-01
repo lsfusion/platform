@@ -25,6 +25,10 @@ public class PanelController {
         formLayout = iformLayout;
     }
 
+    public Map<ClientPropertyDraw, Map<ClientGroupObjectValue, PropertyController>> getProperties() {
+        return properties;
+    }
+
     public void requestFocusInWindow() {
         // так делать конечно немного неправильно, так как теоретически objectID может вообще не быть в панели
         for (ClientPropertyDraw property : form.getPropertyDraws()) {
@@ -47,13 +51,8 @@ public class PanelController {
             // так как вызывается в addDrawProperty, без проверки было свойство в панели или нет
 
             for (PropertyController controller : properties.remove(property).values()) {
-                if (property.drawToToolbar) {
-                    GroupObjectLogicsSupplier logicsSupplier = form.getGroupObjectLogicsSupplier(property.getKeyBindingGroup());
-                    if (logicsSupplier != null) {
-                        logicsSupplier.removePropertyFromToolbar(controller);
-                        logicsSupplier.updateToolbar();
-                    }
-                }
+                if (property.panelLocation != null)
+                    removePropertyFromPanelLocation(controller);
                 controller.removeView(formLayout);
             }
         }
@@ -93,6 +92,30 @@ public class PanelController {
         }
     }
 
+    private void addPropertyToPanelLocation(PropertyController controller) {
+        GroupObjectLogicsSupplier logicsSupplier = form.getGroupObjectLogicsSupplier(controller.getKey().getKeyBindingGroup());
+        if (logicsSupplier != null) {
+            if (controller.getKey().panelLocation.isToolbarLocation()) {
+                logicsSupplier.addPropertyToToolbar(controller);
+                logicsSupplier.updateToolbar();
+            } else {
+                logicsSupplier.addPropertyToShortcut(controller);
+            }
+        }
+    }
+
+    private void removePropertyFromPanelLocation(PropertyController controller) {
+        GroupObjectLogicsSupplier logicsSupplier = form.getGroupObjectLogicsSupplier(controller.getKey().getKeyBindingGroup());
+        if (logicsSupplier != null) {
+            if (controller.getKey().panelLocation.isToolbarLocation()) {
+                logicsSupplier.removePropertyFromToolbar(controller);
+                logicsSupplier.updateToolbar();
+            } else {
+                logicsSupplier.removePropertyFromShortcut(controller);
+            }
+        }
+    }
+
     public void update() {
         for (Map.Entry<ClientPropertyDraw, Map<ClientGroupObjectValue, Object>> entry : values.entrySet()) {
             ClientPropertyDraw property = entry.getKey();
@@ -110,12 +133,8 @@ public class PanelController {
                     if (propController == null) {
                         propController = new PropertyController(property, form, columnKey);
                         addGroupObjectActions(propController.getView());
-                        if (property.drawToToolbar && property.getKeyBindingGroup() != null) {
-                            GroupObjectLogicsSupplier logicsSupplier = form.getGroupObjectLogicsSupplier(property.getKeyBindingGroup());
-                            if (logicsSupplier != null) {
-                                logicsSupplier.addPropertyToToolbar(propController);
-                                logicsSupplier.updateToolbar();
-                            }
+                        if (property.panelLocation != null && property.getKeyBindingGroup() != null) {
+                            addPropertyToPanelLocation(propController);
                         } else {
                             propController.addView(formLayout);
                         }
@@ -133,12 +152,8 @@ public class PanelController {
             while (it.hasNext()) { // удаляем те которые есть, но не нужны
                 Map.Entry<ClientGroupObjectValue, PropertyController> propEntry = it.next();
                 if (!drawKeys.contains(propEntry.getKey())) {
-                    if (property.drawToToolbar && property.getKeyBindingGroup() != null) {
-                        GroupObjectLogicsSupplier logicsSupplier = form.getGroupObjectLogicsSupplier(property.getKeyBindingGroup());
-                        if (logicsSupplier != null) {
-                            logicsSupplier.removePropertyFromToolbar(propEntry.getValue());
-                            logicsSupplier.updateToolbar();
-                        }
+                    if (property.panelLocation != null && property.getKeyBindingGroup() != null) {
+                        removePropertyFromPanelLocation(propEntry.getValue());
                     } else
                         propEntry.getValue().removeView(formLayout);
                     it.remove();

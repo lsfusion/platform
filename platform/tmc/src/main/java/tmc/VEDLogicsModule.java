@@ -4167,9 +4167,9 @@ public class VEDLogicsModule extends LogicsModule {
         }
 
         @Override
-        public void proceedDefaultDesign(DefaultFormView view, PropertyDrawEntity<ClassPropertyInterface> entity) {
-            super.proceedDefaultDesign(view, entity);
-            view.get(entity).editKey = KeyStroke.getKeyStroke(KeyEvent.VK_C, InputEvent.ALT_DOWN_MASK);
+        public void proceedDefaultDesign(PropertyDrawView propertyView, DefaultFormView view) {
+            super.proceedDefaultDesign(propertyView, view);
+            propertyView.editKey = KeyStroke.getKeyStroke(KeyEvent.VK_C, InputEvent.ALT_DOWN_MASK);
         }
     }
 
@@ -4186,9 +4186,9 @@ public class VEDLogicsModule extends LogicsModule {
         }
 
         @Override
-        public void proceedDefaultDesign(DefaultFormView view, PropertyDrawEntity<ClassPropertyInterface> entity) {
-            super.proceedDefaultDesign(view, entity);
-            view.get(entity).editKey = KeyStroke.getKeyStroke(KeyEvent.VK_Z, InputEvent.ALT_DOWN_MASK);
+        public void proceedDefaultDesign(PropertyDrawView propertyView, DefaultFormView view) {
+            super.proceedDefaultDesign(propertyView, view);
+            propertyView.editKey = KeyStroke.getKeyStroke(KeyEvent.VK_Z, InputEvent.ALT_DOWN_MASK);
         }
     }
 

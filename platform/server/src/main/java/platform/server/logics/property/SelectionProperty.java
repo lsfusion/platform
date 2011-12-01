@@ -55,10 +55,9 @@ public class SelectionProperty extends SessionDataProperty {
     }
 
     @Override
-    public void proceedDefaultDesign(DefaultFormView view, PropertyDrawEntity<ClassPropertyInterface> entity) {
-        super.proceedDefaultDesign(view, entity);
-        PropertyDrawView selectionPropView = view.get(entity);
-        selectionPropView.editKey = KeyStrokes.getSelectionPropertyKeyStroke();
-        selectionPropView.editOnSingleClick = true;
+    public void proceedDefaultDesign(PropertyDrawView propertyView, DefaultFormView view) {
+        super.proceedDefaultDesign(propertyView, view);
+        propertyView.editKey = KeyStrokes.getSelectionPropertyKeyStroke();
+        propertyView.editOnSingleClick = true;
     }
 }

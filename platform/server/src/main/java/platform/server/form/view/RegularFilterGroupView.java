@@ -1,6 +1,7 @@
 package platform.server.form.view;
 
 import platform.base.OrderedMap;
+import platform.interop.ToolbarPanelLocation;
 import platform.interop.form.layout.SimplexConstraints;
 import platform.server.form.entity.filter.RegularFilterEntity;
 import platform.server.form.entity.filter.RegularFilterGroupEntity;
@@ -28,7 +29,7 @@ public class RegularFilterGroupView extends ComponentView {
     
     public RegularFilterGroupView(RegularFilterGroupEntity entity) {
         super(entity.ID);
-        drawToToolbar = true;
+        setPanelLocation(new ToolbarPanelLocation());
         this.entity = entity;
 
         for (RegularFilterEntity filterEntity : entity.filters) {

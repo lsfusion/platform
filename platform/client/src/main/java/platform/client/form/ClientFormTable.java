@@ -6,7 +6,9 @@ import javax.swing.*;
 import javax.swing.table.TableModel;
 import javax.swing.text.JTextComponent;
 import java.awt.*;
+import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.EventObject;
 
@@ -39,7 +41,28 @@ public abstract class ClientFormTable extends JTable implements TableTransferHan
                 return ClientFormTable.this;
             }
         });
+
+        addMouseListener(new MouseAdapter() {
+            @Override
+            public void mousePressed(MouseEvent e) {
+                if (SwingUtilities.isRightMouseButton(e)) {
+                    buildShortcut(e.getComponent(), e.getPoint());
+                }
+            }
+        });
+
+        addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyPressed(KeyEvent e) {
+                if (e.getKeyCode() == KeyEvent.VK_CONTEXT_MENU) {
+                    Rectangle rect = getCellRect(getSelectedRow(), getSelectedColumn(), true);
+                    buildShortcut(getComponentAt(rect.getLocation()), new Point(rect.x, rect.y + rect.height - 1));
+                }
+            }
+        });
     }
+
+    abstract public void buildShortcut(Component invoker,  Point point);
 
     private void setupActionMap() {
         //  Have the enter key work the same as the tab key

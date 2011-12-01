@@ -14,6 +14,7 @@ import platform.server.form.instance.FormInstance;
 import platform.server.form.instance.ObjectInstance;
 import platform.server.form.instance.PropertyObjectInterfaceInstance;
 import platform.server.form.view.DefaultFormView;
+import platform.server.form.view.PropertyDrawView;
 import platform.server.logics.DataObject;
 import platform.server.logics.ServerResourceBundle;
 import platform.server.session.Changes;
@@ -66,10 +67,10 @@ public class ObjectValueProperty extends ExecuteProperty {
     }
 
     @Override
-    public void proceedDefaultDesign(DefaultFormView view, PropertyDrawEntity<ClassPropertyInterface> entity) {
-        super.proceedDefaultDesign(view, entity);
-        PropertyObjectInterfaceEntity mapObject = BaseUtils.singleValue(entity.propertyObject.mapping);
+    public void proceedDefaultDesign(PropertyDrawView propertyView, DefaultFormView view) {
+        super.proceedDefaultDesign(propertyView, view);
+        PropertyObjectInterfaceEntity mapObject = BaseUtils.singleValue(propertyView.entity.propertyObject.mapping);
         if (mapObject instanceof ObjectEntity)
-            view.get(entity).caption = ((ObjectEntity) mapObject).getCaption();
+            propertyView.caption = ((ObjectEntity) mapObject).getCaption();
     }
 }

@@ -9,6 +9,7 @@ import platform.server.form.entity.PropertyDrawEntity;
 import platform.server.form.instance.CustomObjectInstance;
 import platform.server.form.instance.FormInstance;
 import platform.server.form.view.DefaultFormView;
+import platform.server.form.view.PropertyDrawView;
 import platform.server.logics.ServerResourceBundle;
 import platform.server.logics.property.ActionProperty;
 import platform.server.logics.property.ClassPropertyInterface;
@@ -37,10 +38,10 @@ public class DeleteObjectActionProperty extends ActionProperty {
     }
 
     @Override
-    public void proceedDefaultDesign(DefaultFormView view, PropertyDrawEntity<ClassPropertyInterface> entity) {
-        super.proceedDefaultDesign(view, entity);
-        view.get(entity).editKey = KeyStrokes.getDeleteActionPropertyKeyStroke();
-        view.get(entity).design.setIconPath("delete.png");
-        view.get(entity).showEditKey = false;
+    public void proceedDefaultDesign(PropertyDrawView propertyView, DefaultFormView view) {
+        super.proceedDefaultDesign(propertyView, view);
+        propertyView.editKey = KeyStrokes.getDeleteActionPropertyKeyStroke();
+        propertyView.design.setIconPath("delete.png");
+        propertyView.showEditKey = false;
     }
 }
