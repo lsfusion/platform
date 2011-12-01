@@ -25,6 +25,8 @@ public interface ClientType {
 
     int getPreferredHeight(FontMetrics fontMetrics);
 
+    int getMaximumHeight(FontMetrics fontMetrics);
+
     Format getDefaultFormat();
 
     PropertyRendererComponent getRendererComponent(Format format, String caption, ComponentDesign design);

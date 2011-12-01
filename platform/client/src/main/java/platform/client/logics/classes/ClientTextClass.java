@@ -50,6 +50,11 @@ public class ClientTextClass extends ClientDataClass implements ClientTypeClass 
     }
 
     @Override
+    public int getMaximumHeight(FontMetrics fontMetrics) {
+        return Integer.MAX_VALUE;
+    }
+
+    @Override
     public int getPreferredWidth(int prefCharWidth, FontMetrics fontMetrics) {
         return fontMetrics.charWidth('0') * 25;//stringWidth(getPreferredMask()) + 8;
     }

@@ -57,6 +57,11 @@ public class ClientObjectType implements ClientType, ClientTypeClass {
         return fontMetrics.getHeight() + 1;
     }
 
+    @Override
+    public int getMaximumHeight(FontMetrics fontMetrics) {
+        return getPreferredHeight(fontMetrics);
+    }
+
     public Format getDefaultFormat() {
         return NumberFormat.getInstance();
     }

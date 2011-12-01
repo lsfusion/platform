@@ -1868,11 +1868,11 @@ public class SkolkovoLogicsModule extends LogicsModule {
         foreignCommentProjectCommercialization.setMinimumWidth(10);
         foreignCommentProjectCommercialization.setPreferredWidth(50);
 
-        nativeMarketTrendsProject = addDProp(problemGroup, "nativeMarketTrendsProject", "Описание рыночных трендов", InsensitiveStringClass.get(2000), project);
+        nativeMarketTrendsProject = addDProp(problemGroup, "nativeMarketTrendsProject", "Описание рыночных трендов", InsensitiveStringClass.get(4000), project);
         nativeMarketTrendsProject.setMinimumWidth(10);
         nativeMarketTrendsProject.setPreferredWidth(50);
 
-        foreignMarketTrendsProject = addDProp(problemGroup, "foreignMarketTrendsProject", "Description of market trends", InsensitiveStringClass.get(2000), project);
+        foreignMarketTrendsProject = addDProp(problemGroup, "foreignMarketTrendsProject", "Description of market trends", InsensitiveStringClass.get(4000), project);
         foreignMarketTrendsProject.setMinimumWidth(10);
         foreignMarketTrendsProject.setPreferredWidth(50);
 
@@ -3181,6 +3181,9 @@ public class SkolkovoLogicsModule extends LogicsModule {
                 "Обращаем Ваше внимание, что согласно п.5 Положения об экспертных коллегиях, под инновационным приоритетом понимается пункт списка, не включающий в себя подпунктов.", baseLM.andNot1,
                 positiveResultForesightCheckProject, 1, quantityProjectForesight, 1), false);
 
+        addConstraint(addJProp("При отрицательном результате проверки на соответствие направлению деятельности Фонда необходимо указать комментарий.", baseLM.andNot1,
+                negativeResultForesightCheckProject, 1, commentForesightCheckProject, 1), false);
+
         needForesightCheckProject = addJProp("needForesightCheckProject", "Требуется проверка на форсайты", baseLM.and1,
                 isR2Project, 1,
                 positiveLegalResultProject, 1);
@@ -4174,7 +4177,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         addFormEntity(new ForesightExpertiseApplyFormEntity(baseLM.objectElement, "foresightExpertiseApply"));
         addFormEntity(new ForesightExpertiseRejectFormEntity(baseLM.objectElement, "foresightExpertiseReject"));
         addFormEntity(new ForesightExpertiseListFormEntity(baseLM.baseElement, "foresightExpertiseList"));
-        addFormEntity(new ProjectDocumentsFormEntity(baseLM.baseElement, "projectdocs"));
+//        addFormEntity(new ProjectDocumentsFormEntity(baseLM.baseElement, "projectdocs"));
         addFormEntity(new ConferenceFormEntity(baseLM.baseElement, "conferences"));
 
         baseLM.baseElement.add(print);
@@ -4706,7 +4709,6 @@ public class SkolkovoLogicsModule extends LogicsModule {
             design.get(getPropertyDraw(commentForesightCheckProject)).panelLabelAbove = true;
             design.get(getPropertyDraw(commentForesightCheckProject)).constraints.fillHorizontal = 1;
             design.get(getPropertyDraw(commentForesightCheckProject)).constraints.fillVertical = 1;
-            design.get(getPropertyDraw(commentForesightCheckProject)).preferredSize = new Dimension(400, 300);
             return design;
         }
     }

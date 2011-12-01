@@ -244,7 +244,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         if (maximumSize != null && maximumSize.width > -1) {
             return maximumSize.height;
         }
-        return getPreferredHeight(comp);
+        return baseType.getMaximumHeight(comp.getFontMetrics(design.getFont(comp)));
     }
 
     public Dimension getMaximumSize(JComponent comp) {

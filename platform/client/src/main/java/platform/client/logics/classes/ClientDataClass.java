@@ -67,8 +67,14 @@ public abstract class ClientDataClass extends ClientClass implements ClientType 
             return Integer.MAX_VALUE;
     }
 
+    @Override
     public int getPreferredHeight(FontMetrics fontMetrics) {
         return fontMetrics.getHeight() + 1;
+    }
+
+    @Override
+    public int getMaximumHeight(FontMetrics fontMetrics) {
+        return getPreferredHeight(fontMetrics);
     }
 
     public String getMinimumMask() {
