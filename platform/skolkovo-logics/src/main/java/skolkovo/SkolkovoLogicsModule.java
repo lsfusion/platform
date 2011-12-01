@@ -2849,13 +2849,6 @@ public class SkolkovoLogicsModule extends LogicsModule {
         quantityInExpertDateFromDateTo = addSGProp("quantityInExpertDateFromDateTo", "Кол-во участ.",
                 addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), inExpertVoteDateFromDateTo, 1, 2, 3, 4), 1, 3, 4); // в скольки заседаниях поучавствовал
 
-        doneClusterExpertVoteDateFromDateTo = addJProp(and(false, false), doneNewExpertVote, 2, 3, betweenExpertVoteDateFromDateTo, 2, 3, 4, 5, addJProp(baseLM.equals2, 1, clusterExpert, 2), 1, 2);
-        quantityDoneClusterExpertDateFromDateTo = addSGProp("quantityDoneClusterExpertDateFromDateTo", "Кол-во голосов.",
-                addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), doneClusterExpertVoteDateFromDateTo, 1, 2, 3, 4, 5), 1, 2, 4, 5); // в скольки заседаниях голосовал
-        inClusterExpertVoteDateFromDateTo = addJProp(and(false, false), inNewExpertVote, 2, 3, betweenExpertVoteDateFromDateTo, 2, 3, 4, 5, addJProp(baseLM.equals2, 1, clusterExpert, 2), 1, 2);
-        quantityInClusterExpertDateFromDateTo = addSGProp("quantityInClusterExpertDateFromDateTo", "Кол-во участ.",
-                addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), inClusterExpertVoteDateFromDateTo, 1, 2, 3, 4, 5), 1, 2, 4, 5);    // в скольки заседаниях участвовал
-
         LP expertVoteMonthYear = addJProp(baseLM.and1, addJProp(baseLM.equals2, 3, addJProp(baseLM.monthInDate, dateExpertVote, 1, 2), 1, 2), 1, 2, 3,
                 addJProp(baseLM.equals2, 3, addJProp(baseLM.yearInDate, dateExpertVote, 1, 2), 1, 2), 1, 2, 4);
         doneExpertVoteMonthYear = addJProp("doneExpertVoteMonthYear", "Проголосовал в текущем месяце", baseLM.and1, doneNewExpertVote, 1, 2, expertVoteMonthYear, 1, 2, 3, 4);
@@ -2865,6 +2858,13 @@ public class SkolkovoLogicsModule extends LogicsModule {
         clusterVote = addDProp(idGroup, "clusterVote", "Кластер (ИД)", cluster, vote);
         nameNativeClusterVote = addJProp(baseGroup, "nameNativeClusterVote", "Кластер", nameNative, clusterVote, 1);
         nameForeignClusterVote = addJProp("nameForeignClusterVote", "Кластер (иностр.)", nameForeign, clusterVote, 1);
+
+        doneClusterExpertVoteDateFromDateTo = addJProp(and(false, false), doneNewExpertVote, 2, 3, betweenExpertVoteDateFromDateTo, 2, 3, 4, 5, addJProp(baseLM.equals2, 1, clusterVote, 2), 1, 3);
+        quantityDoneClusterExpertDateFromDateTo = addSGProp("quantityDoneClusterExpertDateFromDateTo", "Кол-во голосов.",
+                addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), doneClusterExpertVoteDateFromDateTo, 1, 2, 3, 4, 5), 1, 2, 4, 5); // в скольки заседаниях голосовал
+        inClusterExpertVoteDateFromDateTo = addJProp(and(false, false), inNewExpertVote, 2, 3, betweenExpertVoteDateFromDateTo, 2, 3, 4, 5, addJProp(baseLM.equals2, 1, clusterVote, 2), 1, 3);
+        quantityInClusterExpertDateFromDateTo = addSGProp("quantityInClusterExpertDateFromDateTo", "Кол-во участ.",
+                addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), inClusterExpertVoteDateFromDateTo, 1, 2, 3, 4, 5), 1, 2, 4, 5);    // в скольки заседаниях участвовал
 
         clusterVotedProjectExpert = addJProp(baseGroup, "clusterVotedProjectExpert", "Кластер результ. заседания", clusterVote, voteProjectExpert, 1, 2);
 
@@ -3592,7 +3592,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         emailFondFormalControl = addJProp(actionGroup, true, "emailFondFormalControl", "Письмо о формальной экспертизе",   emailFondFormalControlEA, 1, emailFondHeaderFormalControl, 1);
         emailFondFormalControl.setImage("email.png");
         emailFondFormalControl.property.askConfirm = true;
-        emailFondFormalControl.setDerivedForcedChange(addCProp(ActionClass.instance, true), resultFormalControl, 1);
+//        emailFondFormalControl.setDerivedForcedChange(addCProp(ActionClass.instance, true), resultFormalControl, 1);
         nameNativeProjectFormalControl = addJProp(baseGroup, "nameNativeProjectFormalControl", "Проект", nameNativeProject, projectFormalControl, 1);
 
         // для отсылки по юридической проверке
@@ -6141,7 +6141,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
             addPropertyDraw(connectedExpertVote, objExpert, objVote);
 
-            addFixedFilter(new CompareFilterEntity(addPropertyObject(clusterExpert, objExpert), Compare.EQUALS, objCluster));
+            addFixedFilter(new NotNullFilterEntity(addPropertyObject(inClusterExpert, objCluster, objExpert)));
 
             addFixedFilter(new CompareFilterEntity(addPropertyObject(dateExpertVote, objExpert, objVoteHeader), Compare.GREATER_EQUALS, objDateFrom));
             addFixedFilter(new CompareFilterEntity(addPropertyObject(dateExpertVote, objExpert, objVoteHeader), Compare.LESS_EQUALS, objDateTo));
