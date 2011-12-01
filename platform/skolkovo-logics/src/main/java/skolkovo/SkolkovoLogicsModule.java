@@ -90,7 +90,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
     private LP nameResultForesightCheckProject;
     private LP sidResultForesightCheckProject;
     private LP nameUserResultForesightCheckProject;
-    private LP useAllClusterExpertsProject;
+    private LP useAllClusterExpertsProject, useAllClusterExperts, useAllClusterExpertsUnionProject;
     private LP inExpertVoteDateFromDateTo;
     private LP quantityInExpertDateFromDateTo;
     private LP doneClusterExpertVoteDateFromDateTo;
@@ -1596,7 +1596,10 @@ public class SkolkovoLogicsModule extends LogicsModule {
       //  isR1Project = addJProp(baseGroup, "isR1Project", "Старый регламент", baseLM.andNot1, addCProp(LogicalClass.instance, true, project), 1, isR2Project, 1);
         isR2Project = addJProp(baseGroup, "isR2Project", "Регламент 2", baseLM.equals2, regulationsProject, 1, addCProp(projectSchedule, "R2"));
         isR1Project = addJProp(baseGroup, "isR1Project", "Регламент 1", baseLM.equals2, regulationsProject, 1, addCProp(projectSchedule, "R1"));
-        useAllClusterExpertsProject = addDProp(baseGroup, "useAllClusterExpertsProject", "Все эксп.", LogicalClass.instance, project);
+
+        useAllClusterExpertsProject = addDProp("useAllClusterExpertsProject", "Все эксп.", LogicalClass.instance, project);
+        useAllClusterExperts = addDProp(baseGroup, "useAllClusterExperts", "Все эксперты", LogicalClass.instance);
+        useAllClusterExpertsUnionProject = addSUProp(baseGroup, "useAllClusterExpertsUnionProject", "Все эксп.", Union.OVERRIDE, addJProp(baseLM.and1, useAllClusterExperts, is(project), 1), useAllClusterExpertsProject);
 
         revisionVote = addCUProp(baseGroup, "revisionVote", "Регламент", addCProp(StringClass.get(3), "R1", voteR1), addCProp(StringClass.get(3), "R2", voteR2));
 
@@ -4923,7 +4926,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
                     nameNativeShortFinalClusterProject, nameNativeClaimerProject, nameForeignClaimerProject, emailClaimerProject,
                     nameStatusProject, dateInStatusProject, normalPeriodStatusProject, quantityDaysToOverdueDateStatusProject, formLogNameStatusProject, nameProjectActionProject, updateDateProject, autoGenerateProject,
                     inactiveProject, quantityClusterProject, quantityClusterVotedProject, quantityVoteProject, generateVoteProject,
-                    nameRegulationsProject, useAllClusterExpertsProject);
+                    nameRegulationsProject, useAllClusterExpertsUnionProject);
 
             addPropertyDraw(objProject, isOtherClusterProject, nativeSubstantiationOtherClusterProject, foreignSubstantiationOtherClusterProject);
             addPropertyDraw(objProject, registerGroup);
@@ -5395,7 +5398,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             super(parent, sID, "Глобальные параметры");
 
             addPropertyDraw(new LP[]{baseLM.currentDate, requiredPeriod, overduePeriod,
-                    requiredQuantity, requiredBusinessQuantity,
+                    requiredQuantity, requiredBusinessQuantity, useAllClusterExperts,
                     limitExperts, percentNeeded,
                     emailDocuments, emailPresident, emailClaimerFromAddress, emailForCertificates, emailIO, emailFondFC, emailForesightLC, emailFondTransferred, emailFondStartVote,
                     projectsImportLimit, importOnlyR2Projects, importProjectSidsAction, showProjectsToImportAction, showProjectsReplaceToImportAction, importProjectsAction, importIPsExpertVoteAction,
@@ -6089,6 +6092,13 @@ public class SkolkovoLogicsModule extends LogicsModule {
             setReadOnly(true);
             setReadOnly(false, objDateFrom.groupTo);
         }
+
+        @Override
+        public FormView createDefaultRichDesign() {
+            DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign();
+            design.setPanelLabelAbove(voteResultCommentGroup, true);
+            return design;
+        }
     }
 
     private class ExpertProtocolClusterFormEntity extends DateIntervalFormEntity<SkolkovoBusinessLogics> {
@@ -6118,8 +6128,6 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
 //            addPropertyDraw(objExpert, objDateFrom, objDateTo, quantityDoneExpertDateFromDateTo, quantityInExpertDateFromDateTo);
             addPropertyDraw(objCluster, objExpert, objDateFrom, objDateTo, quantityDoneClusterExpertDateFromDateTo, quantityInClusterExpertDateFromDateTo);
-
-
 
             objVoteHeader = addSingleGroupObject(6, "voteHeader", vote);
 
@@ -6159,6 +6167,13 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
             setReadOnly(true);
             setReadOnly(false, objDateFrom.groupTo);
+        }
+
+        @Override
+        public FormView createDefaultRichDesign() {
+            DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign();
+            design.setPanelLabelAbove(voteResultCommentGroup, true);
+            return design;
         }
     }
 
@@ -7144,7 +7159,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             DataObject projectObject = context.getKeyValue(projectInterface);
 
             boolean r2 = isR2Project.read(context, projectObject) != null;
-            boolean allExperts = useAllClusterExpertsProject.read(context, projectObject) != null;
+            boolean allExperts = useAllClusterExpertsUnionProject.read(context, projectObject) != null;
 
             boolean r2Foresight = r2 && !allExperts;
 
