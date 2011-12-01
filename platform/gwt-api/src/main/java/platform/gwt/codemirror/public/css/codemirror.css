@@ -1,6 +1,6 @@
 .CodeMirror {
     font-family: monospace !important;
-    font-size: 15px;
+    font-size: 10pt;
     line-height: 1.2em;
 }
 
@@ -77,9 +77,9 @@ span.CodeMirror-selected {
 }
 
 .CodeMirror-matchingbracket {
-    color: #0f0 !important;
+    background: #99ccff !important;
 }
 
 .CodeMirror-nonmatchingbracket {
-    color: #f22 !important;
+    background: #ffdcdc !important;
 }
