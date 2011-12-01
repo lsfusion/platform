@@ -396,8 +396,22 @@ public class SkolkovoLogicsModule extends LogicsModule {
         baseLM.tableFactory.include("originalDocsCheck", originalDocsCheck);
         baseLM.tableFactory.include("application", application);
         baseLM.tableFactory.include("foresight", foresight);
+        baseLM.tableFactory.include("specialist", specialist);
+        baseLM.tableFactory.include("commercialization", commercialization);
+        baseLM.tableFactory.include("analogues", analogues);
+        baseLM.tableFactory.include("publications", publications);
+        baseLM.tableFactory.include("research", research);
+        baseLM.tableFactory.include("objectives", objectives);
+        baseLM.tableFactory.include("mileStone", mileStone);
+        baseLM.tableFactory.include("mileStoneYear", mileStoneYear);
         baseLM.tableFactory.include("projectForesight", project, foresight);
+        baseLM.tableFactory.include("projectCluster", project, cluster);
+        baseLM.tableFactory.include("clusterExpert", cluster, expert);
         baseLM.tableFactory.include("expertForesight", expert, foresight);
+        baseLM.tableFactory.include("expertConferenceExpert", expertConference, expert);
+        baseLM.tableFactory.include("typeMileStoneMileStoneMileStoneYear", typeMileStone, mileStone, mileStoneYear);
+        baseLM.tableFactory.include("projectLanguageDocumentType", project, language, documentType);
+
     }
 
     @Override
