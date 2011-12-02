@@ -675,6 +675,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP overduePeriod;
     LP requiredQuantity;
     LP requiredBusinessQuantity;
+    LP requiredQuantityVote;
     LP limitExperts;
     public LP projectsImportLimit;
     public LP importOnlyR2Projects;
@@ -1533,6 +1534,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         requiredQuantity = addDProp(baseGroup, "voteRequiredQuantity", "Кол-во экспертов", IntegerClass.instance);
         requiredBusinessQuantity = addDProp(baseGroup, "voteRequiredBusinessQuantity", "Кол-во экспертов (бизнес)", IntegerClass.instance);
+        requiredQuantityVote = addDProp(baseGroup, "requiredQuantityVote", "Кол-во экспертов", IntegerClass.instance, vote);
 
         limitExperts = addDProp(baseGroup, "limitExperts", "Кол-во прогол. экспертов", IntegerClass.instance);
         projectsImportLimit = addDProp(baseGroup, "projectsImportLimit", "Максимальное кол-во импортируемых проектов", IntegerClass.instance);
@@ -2726,6 +2728,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         quantityInVote = addSGProp(voteResultGroup, "quantityInVote", true, "Участвовало",
                 addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), inExpertVote, 1, 2), 2); // сколько экспертов учавстовало
+
+        addConstraint(addJProp("Количество экспертов в заседании не соответствует требуемому.", baseLM.diff2, requiredQuantityVote, 1, quantityInVote, 1), false);
 
         quantityInOldVote = addSGProp(voteResultGroup, "quantityInOldVote", true, "Участвовало",
                 addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), oldExpertVote, 1, 2), 2); // сколько экспертов учавстовало
@@ -5036,7 +5040,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             addPropertyDraw(inProjectForesight, objProject, objForesight);
             addPropertyDraw(objForesight, sidForesight, nameNative, nameForeign, nameNativeShortClusterForesight, quantityInExpertForesight);
 
-            objVote = addSingleGroupObject(vote, dateStartVote, dateEndVote, nameNativeClusterVote, nameProjectActionVote, percentNeededVote, openedVote, succeededVote, acceptedVote,
+            objVote = addSingleGroupObject(vote, dateStartVote, dateEndVote, nameNativeClusterVote, nameProjectActionVote, requiredQuantityVote, percentNeededVote, openedVote, succeededVote, acceptedVote,
                     quantityDoneVote,
                     quantityInClusterVote, quantityInnovativeVote, quantityForeignVote,
                     quantityCompetitiveAdvantagesVote, quantityCommercePotentialVote, quantityCanBeImplementedVote,
@@ -7231,7 +7235,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
                 }
             }
 
-            Integer required = nvl((Integer) requiredQuantity.read(context), 0) - previousResults.size();
+            Integer requiredTotal = nvl((Integer) requiredQuantity.read(context), 0);
+            Integer required = requiredTotal - previousResults.size();
             Integer requiredBusiness = Math.max(nvl((Integer) requiredBusinessQuantity.read(context), 0) - previousBusiness, 0);
             if (required > expertVoted.size() + expertNew.size()) {
                 context.addAction(new MessageClientAction("Недостаточно экспертов по кластеру/форсайту", "Генерация заседания"));
@@ -7250,6 +7255,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             projectActionVote.execute(projectActionProject.read(context, projectObject), context, voteObject);
             if (r2)
                 percentNeededVote.execute(percentNeeded.read(context), context, voteObject);
+            requiredQuantityVote.execute(requiredTotal, context, voteObject);
 
             // копируем результаты старых заседаний
             for (Map.Entry<DataObject, DataObject> row : previousResults.entrySet()) {
