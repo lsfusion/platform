@@ -96,6 +96,7 @@ public class ImportProjectsActionProperty extends ActionProperty {
             fullNameNonRussianSpecialistField, organizationNonRussianSpecialistField, titleNonRussianSpecialistField,
             fileForeignResumeNonRussianSpecialistField, fileNativeResumeNonRussianSpecialistField,
             filePassportNonRussianSpecialistField, fileStatementNonRussianSpecialistField,
+            fileMinutesOfMeetingExpertCollegiumProjectField,  fileWrittenConsentClaimerProjectField,
             fileNativeTechnicalDescriptionProjectField, fileForeignTechnicalDescriptionProjectField,
             filePassportSpecialistField, fileStatementSpecialistField,
 
@@ -265,6 +266,7 @@ public class ImportProjectsActionProperty extends ActionProperty {
         fileExtractClaimerField = new ImportField(LM.extractClaimer);
         fileNativeSummaryProjectField = new ImportField(LM.fileNativeSummaryProject);
         fileForeignSummaryProjectField = new ImportField(LM.fileForeignSummaryProject);
+        fileMinutesOfMeetingExpertCollegiumProjectField = new ImportField(LM.fileMinutesOfMeetingExpertCollegiumProject);
         fileNativeTechnicalDescriptionProjectField = new ImportField(LM.fileNativeTechnicalDescriptionProject);
         fileForeignTechnicalDescriptionProjectField = new ImportField(LM.fileForeignTechnicalDescriptionProject);
         fileRoadMapProjectField = new ImportField(LM.fileNativeRoadMapProject);
@@ -346,6 +348,7 @@ public class ImportProjectsActionProperty extends ActionProperty {
         properties.add(new ImportProperty(isOtherSoursesProjectField, LM.isOtherSoursesProject.getMapping(projectKey)));
         properties.add(new ImportProperty(commentOtherSoursesProjectField, LM.commentOtherSoursesProject.getMapping(projectKey)));
         properties.add(new ImportProperty(updateDateProjectField, LM.updateDateProject.getMapping(projectKey)));
+        properties.add(new ImportProperty(fileMinutesOfMeetingExpertCollegiumProjectField, LM.fileMinutesOfMeetingExpertCollegiumProject.getMapping(projectKey)));
 
         projectTypeProjectKey = new ImportKey(LM.projectType, LM.projectTypeToSID.getMapping(projectTypeProjectField));
         properties.add(new ImportProperty(projectTypeProjectField, LM.projectTypeProject.getMapping(projectKey),
@@ -563,6 +566,8 @@ public class ImportProjectsActionProperty extends ActionProperty {
         fileForeignRoadMapProjectField = new ImportField(LM.fileForeignRoadMapProject);
         fileNativeTechnicalDescriptionProjectField = new ImportField(LM.fileNativeTechnicalDescriptionProject);
         fileForeignTechnicalDescriptionProjectField = new ImportField(LM.fileForeignTechnicalDescriptionProject);
+        fileMinutesOfMeetingExpertCollegiumProjectField = new ImportField(LM.fileMinutesOfMeetingExpertCollegiumProject);
+        fileWrittenConsentClaimerProjectField = new ImportField(LM.fileWrittenConsentClaimerProject);
 
         updateDateProjectField = new ImportField(LM.updateDateProject);
         projectMissionProjectField = new ImportField(LM.baseLM.classSID);
@@ -678,6 +683,8 @@ public class ImportProjectsActionProperty extends ActionProperty {
         properties.add(new ImportProperty(linksMarketTrendsProjectField, LM.linksMarketTrendsProject.getMapping(projectKey)));
         properties.add(new ImportProperty(linksAnalogProjectField, LM.linksAnalogProject.getMapping(projectKey)));
         properties.add(new ImportProperty(updateDateProjectField, LM.updateDateProject.getMapping(projectKey)));
+        properties.add(new ImportProperty(fileMinutesOfMeetingExpertCollegiumProjectField, LM.fileMinutesOfMeetingExpertCollegiumProject.getMapping(projectKey)));
+        properties.add(new ImportProperty(fileWrittenConsentClaimerProjectField, LM.fileWrittenConsentClaimerProject.getMapping(projectKey)));
 
         projectMissionProjectKey = new ImportKey(LM.projectMission, LM.projectMissionToSID.getMapping(projectMissionProjectField));
         properties.add(new ImportProperty(projectMissionProjectField, LM.projectMissionProject.getMapping(projectKey),
@@ -1307,6 +1314,7 @@ public class ImportProjectsActionProperty extends ActionProperty {
                     row.add(BaseUtils.nullZero(node.getChildText("isOtherSoursesProject")));
                     row.add(node.getChildText("commentOtherSoursesProject"));
                     row.add(currentProjectDate);
+                    row.add(buildFileByteArray(node.getChild("fileMinutesOfMeetingExpertCollegiumProject")));
 
                     row.add(node.getChildText("typeProject"));
                     row.add(node.getChildText("actionProject"));
@@ -1518,8 +1526,8 @@ public class ImportProjectsActionProperty extends ActionProperty {
                             isCapitalInvestmentProjectField, isPropertyInvestmentProjectField, isGrantsProjectField,
                             isOtherNonReturnInvestmentsProjectField, isOwnFundsProjectField, amountOwnFundsProjectField,
                             isPlanningSearchSourceProjectField, amountFundsProjectField, isOtherSoursesProjectField,
-                            commentOtherSoursesProjectField, updateDateProjectField, projectTypeProjectField,
-                            projectActionProjectField, emailClaimerField
+                            commentOtherSoursesProjectField, updateDateProjectField, fileMinutesOfMeetingExpertCollegiumProjectField,
+                            projectTypeProjectField, projectActionProjectField, emailClaimerField
                     );
 
                     List<ImportField> fieldsFullClaimerBoth = BaseUtils.toList(phoneClaimerField, addressClaimerField,
@@ -1647,6 +1655,8 @@ public class ImportProjectsActionProperty extends ActionProperty {
                     row.add(projectId);
 
                     row.add(currentProjectDate);
+                    row.add(buildFileByteArray(node.getChild("fileMinutesOfMeetingExpertCollegiumProject")));
+                    row.add(buildFileByteArray(node.getChild("fileWrittenConsentClaimerProject")));
                     row.add(node.getChildText("missionProject"));
                     row.add("R2"); //scheduleProject
                     row.add(node.getChildText("actionProject"));
@@ -1986,8 +1996,9 @@ public class ImportProjectsActionProperty extends ActionProperty {
                             isConsultingCenterQuestionProjectField, isConsultingCenterCommentProjectField, consultingCenterCommentProjectField,
                             phoneContactProjectField,
                             emailContactProjectField, linksMarketTrendsProjectField, linksAnalogProjectField,
-                            projectIdField, updateDateProjectField, projectMissionProjectField,
-                            projectScheduleProjectField, projectActionProjectField, emailClaimerField
+                            projectIdField, updateDateProjectField, fileMinutesOfMeetingExpertCollegiumProjectField,
+                            fileWrittenConsentClaimerProjectField, projectMissionProjectField, projectScheduleProjectField,
+                            projectActionProjectField, emailClaimerField
                     );
 
                    List<ImportField> fieldsFullClaimerBoth = BaseUtils.toList(phoneClaimerField, addressClaimerField,

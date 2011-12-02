@@ -18,7 +18,6 @@ import platform.base.OrderedMap;
 import platform.interop.*;
 import platform.interop.ToolbarPanelLocation;
 import platform.interop.action.ClientAction;
-import platform.interop.action.ImportFileClientActionResult;
 import platform.interop.action.MessageClientAction;
 import platform.interop.action.OpenFileClientAction;
 import platform.interop.form.RemoteFormInterface;
@@ -209,6 +208,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
     AbstractGroup equipmentGroup;
     AbstractGroup projectDocumentsGroup;
     AbstractGroup executiveSummaryGroup, applicationFormGroup, techDescrGroup, roadMapGroup, resolutionIPGroup;
+    AbstractGroup minutesOfMettingGroup, writtenConsentGroup;
     AbstractGroup projectStatusGroup;
     AbstractGroup projectOptionsGroup;
     AbstractGroup translateActionGroup;
@@ -458,6 +458,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
         techDescrGroup = addAbstractGroup("techDescrGroup", "Техническое описание", projectDocumentsGroup);
         roadMapGroup = addAbstractGroup("roadMapGroup", "Дорожная карта", projectDocumentsGroup);
         resolutionIPGroup = addAbstractGroup("resolutionIPGroup", "Заявление IP", projectDocumentsGroup);
+        minutesOfMettingGroup = addAbstractGroup("minutesOfMettingGroup", "Протокол заседания", baseGroup);
+        writtenConsentGroup  = addAbstractGroup("writtenConsentGroup", "Письменое согласие заявителя", baseGroup);
 
         projectStatusGroup = addAbstractGroup("projectStatusGroup", "Текущий статус проекта", baseGroup);
 
@@ -1091,6 +1093,14 @@ public class SkolkovoLogicsModule extends LogicsModule {
     public LP fileStatementNonRussianSpecialist;
     LP loadFileStatementNonRussianSpecialist;
     LP openFileStatementNonRussianSpecialist;
+
+    public LP fileMinutesOfMeetingExpertCollegiumProject;
+    LP loadFileMinutesOfMeetingExpertCollegiumProject;
+    LP openFileMinutesOfMeetingExpertCollegiumProject;
+    public LP fileWrittenConsentClaimerProject;
+    LP loadFileWrittenConsentClaimerProject;
+    LP openFileWrittenConsentClaimerProject;
+
 
     LP isForeignExpert;
     LP localeExpert;
@@ -2536,6 +2546,14 @@ public class SkolkovoLogicsModule extends LogicsModule {
         fileStatementNonRussianSpecialist = addDProp("fileStatementNonRussianSpecialist", "Файл заявления", CustomFileClass.instance, nonRussianSpecialist);
         loadFileStatementNonRussianSpecialist = addLFAProp(baseGroup, "Загрузить файл заявления", fileStatementNonRussianSpecialist);
         openFileStatementNonRussianSpecialist = addOFAProp(baseGroup, "Открыть файл заявления", fileStatementNonRussianSpecialist);
+
+        fileMinutesOfMeetingExpertCollegiumProject = addDProp("fileMinutesOfMeetingExpertCollegiumProject", "Файл протокола заседания Экспертной коллегии", CustomFileClass.instance, project);
+        loadFileMinutesOfMeetingExpertCollegiumProject = addLFAProp(minutesOfMettingGroup, "Загрузить файл протокола заседания Экспертной коллегии", fileMinutesOfMeetingExpertCollegiumProject);
+        openFileMinutesOfMeetingExpertCollegiumProject = addOFAProp(minutesOfMettingGroup, "Открыть Файл протокола заседания Экспертной коллегии", fileMinutesOfMeetingExpertCollegiumProject);
+
+        fileWrittenConsentClaimerProject = addDProp("fileWrittenConsentClaimerProject", "Файл письменного согласия заявителя", CustomFileClass.instance, project);
+        loadFileWrittenConsentClaimerProject = addLFAProp(writtenConsentGroup, "Загрузить файл письменного согласия заявителя", fileWrittenConsentClaimerProject);
+        openFileWrittenConsentClaimerProject = addOFAProp(writtenConsentGroup, "Открыть Файл письменного согласия заявителя", fileWrittenConsentClaimerProject);
 
         nameNativeJoinClaimerVote = addJProp(baseGroup, "nameNativeJoinClaimerVote", nameNativeClaimer, claimerVote, 1);
         nameForeignJoinClaimerVote = addJProp(baseGroup, "nameForeignJoinClaimerVote", nameForeign, claimerVote, 1);
@@ -4286,7 +4304,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
             this.lng = lng;
 
-            objProject = addSingleGroupObject(1, "project", project, "Проект", projectInformationGroup, innovationGroup, projectDocumentsGroup, sourcesFundingGroup, consultingCenterGroup, equipmentGroup, projectOptionsGroup, projectStatusGroup);
+            objProject = addSingleGroupObject(1, "project", project, "Проект", projectInformationGroup, innovationGroup, projectDocumentsGroup, minutesOfMettingGroup, sourcesFundingGroup, consultingCenterGroup, equipmentGroup, projectOptionsGroup, projectStatusGroup);
 
             getPropertyDraw(nameReturnInvestorProject).propertyCaption = addPropertyObject(hideNameReturnInvestorProject, objProject);
             getPropertyDraw(amountReturnFundsProject).propertyCaption = addPropertyObject(hideAmountReturnFundsProject, objProject);
@@ -4398,6 +4416,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             design.getGroupPropertyContainer(objProject.groupTo, applicationFormGroup).constraints.childConstraints = DoNotIntersectSimplexConstraint.TOTHE_BOTTOM;
             design.getGroupPropertyContainer(objProject.groupTo, executiveSummaryGroup).constraints.childConstraints = DoNotIntersectSimplexConstraint.TOTHE_BOTTOM;
             design.getGroupPropertyContainer(objProject.groupTo, techDescrGroup).constraints.childConstraints = DoNotIntersectSimplexConstraint.TOTHE_BOTTOM;
+            design.getGroupPropertyContainer(objProject.groupTo, minutesOfMettingGroup).constraints.childConstraints = DoNotIntersectSimplexConstraint.TOTHE_BOTTOM;
             design.getGroupPropertyContainer(objProject.groupTo, roadMapGroup).constraints.childConstraints = DoNotIntersectSimplexConstraint.TOTHE_BOTTOM;
             design.getGroupPropertyContainer(objProject.groupTo, resolutionIPGroup).constraints.childConstraints = DoNotIntersectSimplexConstraint.TOTHE_BOTTOM;
 
@@ -4407,6 +4426,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             descrContainer.add(design.getGroupPropertyContainer(objProject.groupTo, consultingCenterGroup));
             descrContainer.add(design.getGroupPropertyContainer(objProject.groupTo, equipmentGroup));
             descrContainer.add(design.getGroupPropertyContainer(objProject.groupTo, projectDocumentsGroup));
+            descrContainer.add(design.getGroupPropertyContainer(objProject.groupTo, minutesOfMettingGroup));
 
             ContainerView specContainer = design.createContainer();
             design.getMainContainer().addAfter(specContainer, design.getGroupObjectContainer(objProject.groupTo));
@@ -4485,7 +4505,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             super(parent, sID, caption);
 
             objProject = addSingleGroupObject(1, "project", project, "Проект", nameNativeProject, nameForeignProject, nameNativeClaimerProject, nameForeignClaimerProject, nameNativeFinalClusterProject, nameForeignFinalClusterProject,
-                    nativeProblemProject, foreignProblemProject, nativeInnovativeProject, foreignInnovativeProject, descGroup, techDescrGroup);
+                    nativeProblemProject, foreignProblemProject, nativeInnovativeProject, foreignInnovativeProject, descGroup, techDescrGroup, minutesOfMettingGroup, writtenConsentGroup);
 
             addPropertyDraw(objProject, problemGroup, analoguesGroup, commercializationGroup, historyGroup, projectmissionGroup, nativeResultsProject, foreignResultsProject);
             objProject.groupTo.setSingleClassView(ClassViewType.PANEL);
@@ -4584,6 +4604,13 @@ public class SkolkovoLogicsModule extends LogicsModule {
             problemMainInformationContainer.add(design.getGroupPropertyContainer(objProject.groupTo, innovationGroup));
             problemMainInformationContainer.add(design.getGroupPropertyContainer(objProject.groupTo, problemGroup));
             problemMainInformationContainer.add(design.getGroupPropertyContainer(objProject.groupTo, techDescrGroup));
+
+            ContainerView additionalDocuments = design.createContainer();
+
+            additionalDocuments.add(design.getGroupPropertyContainer(objProject.groupTo, minutesOfMettingGroup));
+            additionalDocuments.add(design.getGroupPropertyContainer(objProject.groupTo, writtenConsentGroup));
+            problemMainInformationContainer.add(additionalDocuments);
+
             problemMainInformationContainer.add(author);
 
             ContainerView commercContainer = design.createContainer("Схема коммерциализации, конкурирующие решения, параметры рынка");              // схема коммерциализации и конкурирующие решения и параметры рынка
