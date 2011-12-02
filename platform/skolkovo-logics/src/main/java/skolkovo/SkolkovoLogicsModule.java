@@ -4197,7 +4197,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
         addFormEntity(new ConsultingCenterFormEntity(baseLM.baseElement, "consultingCenter"));
         addFormEntity(new ForesightExpertiseApplyFormEntity(baseLM.objectElement, "foresightExpertiseApply"));
         addFormEntity(new ForesightExpertiseRejectFormEntity(baseLM.objectElement, "foresightExpertiseReject"));
-        addFormEntity(new ForesightExpertiseListFormEntity(baseLM.baseElement, "foresightExpertiseList"));
+        addFormEntity(new ForesightExpertiseListFormEntity(baseLM.baseElement, "foresightExpertiseList", "Соответствие кластеру", 2));
+        addFormEntity(new ForesightExpertiseListFormEntity(baseLM.baseElement, "foresightExpertiseList2", "Проверка форсайтов", 1));
 //        addFormEntity(new ProjectDocumentsFormEntity(baseLM.baseElement, "projectdocs"));
         addFormEntity(new ConferenceFormEntity(baseLM.baseElement, "conferences"));
 
@@ -4791,18 +4792,17 @@ public class SkolkovoLogicsModule extends LogicsModule {
         private ObjectEntity objProject;
         private RegularFilterGroupEntity projectFilterGroup;
 
-        public ForesightExpertiseListFormEntity(NavigatorElement parent, String sID) {
-            super(parent, sID, "Соответствие кластеру");
+        public ForesightExpertiseListFormEntity(NavigatorElement parent, String sID, String caption, int mode) {
+            super(parent, sID, caption);
 
-            objProject = addSingleGroupObject(project, "Проект", dateProject, nameNativeProject, nameForeignProject, nameNativeClaimerProject, nameForeignClaimerProject,
-                    nameResultForesightCheckProject, dateResultForesightCheckProject, nameUserResultForesightCheckProject, openApplicationProjectAction, exportProjectDocumentsAction, applyForesightCheckProject, rejectForesightCheckProject); // setNegativeResultForesightCheckProjectApply);
-
-            projectFilterGroup = new RegularFilterGroupEntity(genID());
-            projectFilterGroup.addFilter(new RegularFilterEntity(genID(),
-                    new NotNullFilterEntity(addPropertyObject(inClusterCurrentUserProject, objProject)),
-                    "В моем кластере",
-                    KeyStroke.getKeyStroke(KeyEvent.VK_F9, 0)), true);
-            addRegularFilterGroup(projectFilterGroup);
+            if (mode == 1)
+                objProject = addSingleGroupObject(project, "Проект", dateProject, nameNativeProject, nameForeignProject, nameNativeShortFinalClusterProject, nameNativeClaimerProject, nameForeignClaimerProject,
+                        emailClaimerProject, nameResultForesightCheckProject, dateResultForesightCheckProject, dateNotificationPeriodProject, nameUserResultForesightCheckProject, openApplicationProjectAction, exportProjectDocumentsAction, applyForesightCheckProject, rejectForesightCheckProject);
+            else if (mode == 2) {
+                objProject = addSingleGroupObject(project, "Проект", dateProject, nameNativeProject, nameForeignProject, nameNativeClaimerProject, nameForeignClaimerProject,
+                        emailClaimerProject, nameResultForesightCheckProject, dateResultForesightCheckProject, dateNotificationPeriodProject, nameUserResultForesightCheckProject, openApplicationProjectAction, exportProjectDocumentsAction, applyForesightCheckProject, rejectForesightCheckProject);
+                addFixedFilter(new NotNullFilterEntity(addPropertyObject(inClusterCurrentUserProject, objProject)));
+            }
 
             projectFilterGroup = new RegularFilterGroupEntity(genID());
             projectFilterGroup.addFilter(new RegularFilterEntity(genID(),
