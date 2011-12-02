@@ -483,6 +483,32 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         try {
             DataSession session = createSession();
 
+            DataObject userObject =  new DataObject(user.ID, LM.customUser);
+
+            Object forbidAll = LM.forbidAllUserForm.read(session, userObject);
+            Object allowAll = LM.allowAllUserForm.read(session, userObject);
+            if (forbidAll != null)
+                policy.navigator.defaultPermission = false;
+            else if (allowAll != null)
+                policy.navigator.defaultPermission = true;
+
+
+            Object forbidViewAll = LM.forbidViewAllUserForm.read(session, userObject);
+            Object allowViewAll = LM.allowViewAllUserForm.read(session, userObject);
+            if (forbidViewAll != null)
+                policy.property.view.defaultPermission = false;
+            else if (allowViewAll != null)
+                policy.property.view.defaultPermission = true;
+
+
+            Object forbidChangeAll = LM.forbidChangeAllUserForm.read(session, userObject);
+            Object allowChangeAll = LM.allowChangeAllUserForm.read(session, userObject);
+            if (forbidChangeAll != null)
+                policy.property.change.defaultPermission = false;
+            else if (allowChangeAll != null)
+                policy.property.change.defaultPermission = true;
+
+
             Query<String, String> qf = new Query<String, String>(BaseUtils.toList("userId", "formId"));
             Expr formExpr = LM.navigatorElementSID.getExpr(session.modifier, qf.mapKeys.get("formId"));
             qf.and(formExpr.getWhere());

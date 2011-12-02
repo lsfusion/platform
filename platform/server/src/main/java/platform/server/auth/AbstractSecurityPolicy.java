@@ -10,7 +10,7 @@ public class AbstractSecurityPolicy<T> {
     private Set<T> denied = new HashSet<T>();
 
     public boolean replaceMode = false;
-    public boolean defaultPermission = true;
+    public Boolean defaultPermission;
 
     public void permit(T obj) {
         denied.remove(obj);
@@ -45,13 +45,16 @@ public class AbstractSecurityPolicy<T> {
         deny(policy.denied);
         permit(policy.permitted);
 
-        defaultPermission = policy.defaultPermission;
+        if (policy.defaultPermission != null)
+            defaultPermission = policy.defaultPermission;
     }
 
     public boolean checkPermission(T obj) {
 
         if (permitted.contains(obj)) return true;
         if (denied.contains(obj)) return false;
-        return defaultPermission;
+        if (defaultPermission != null)
+            return defaultPermission;
+        else return true;
     }
 }

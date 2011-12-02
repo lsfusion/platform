@@ -194,6 +194,19 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public LP inUserMainRole;
     public LP userRoleSID;
     public LP userRoleDefaultForms;
+    public LP forbidAllUserRoleForms;
+    public LP forbidAllUserForm;
+    public LP allowAllUserRoleForms;
+    public LP allowAllUserForm;
+    public LP forbidViewAllUserRoleProperty;
+    public LP forbidViewAllUserForm;
+    public LP allowViewAllUserRoleProperty;
+    public LP allowViewAllUserForm;
+    public LP forbidChangeAllUserRoleProperty;
+    public LP forbidChangeAllUserForm;
+    public LP allowChangeAllUserRoleProperty;
+    public LP allowChangeAllUserForm;
+
     public LP userDefaultForms;
     public LP sidToRole;
     public LP inUserRole;
@@ -704,6 +717,21 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         forbidUserForm = addJProp(baseGroup, "permissionUserForm", getString("logics.forms.prohibit.form"), forbidUserRoleForm, userMainRole, 1, 2);
         permitForm = addDProp(baseGroup, "permitForm", getString("logics.forms.permit.form"), LogicalClass.instance, navigatorElement);
         forbidForm = addDProp(baseGroup, "forbidForm", getString("logics.forms.prohibit.form"), LogicalClass.instance, navigatorElement);
+
+        allowAllUserRoleForms = addDProp(baseGroup, "allowAllUserRoleForms", getString("logics.user.allow.all.user.form"), LogicalClass.instance, userRole);
+        allowAllUserForm = addJProp(baseGroup, "allowAllUserForm", getString("logics.user.allow.all.user.form"), allowAllUserRoleForms, userMainRole, 1);
+        forbidAllUserRoleForms = addDProp(baseGroup, "forbidAllUserRoleForms", getString("logics.user.forbid.all.user.form"), LogicalClass.instance, userRole);
+        forbidAllUserForm = addJProp(baseGroup, "forbidAllUserForm", getString("logics.user.forbid.all.user.form"), forbidAllUserRoleForms, userMainRole, 1);
+
+        allowViewAllUserRoleProperty = addDProp(baseGroup, "allowViewAllUserRoleProperty", getString("logics.user.allow.view.all.property"), LogicalClass.instance, userRole);
+        allowViewAllUserForm = addJProp(baseGroup, "allowViewAllUserForm", getString("logics.user.allow.view.all.property"), allowViewAllUserRoleProperty, userMainRole, 1);
+        forbidViewAllUserRoleProperty = addDProp(baseGroup, "forbidViewAllUserRoleProperty", getString("logics.user.forbid.view.all.property"), LogicalClass.instance, userRole);
+        forbidViewAllUserForm = addJProp(baseGroup, "forbidViewAllUserForm", getString("logics.user.forbid.view.all.property"), forbidViewAllUserRoleProperty, userMainRole, 1);
+
+        allowChangeAllUserRoleProperty = addDProp(baseGroup, "allowChangeAllUserRoleProperty", getString("logics.user.allow.change.all.property"), LogicalClass.instance, userRole);
+        allowChangeAllUserForm = addJProp(baseGroup, "allowChangeAllUserForm", getString("logics.user.allow.change.all.property"), allowChangeAllUserRoleProperty, userMainRole, 1);
+        forbidChangeAllUserRoleProperty = addDProp(baseGroup, "forbidChangeAllUserRoleProperty", getString("logics.user.forbid.change.all.property"), LogicalClass.instance, userRole);
+        forbidChangeAllUserForm = addJProp(baseGroup, "forbidChangeAllUserForm", getString("logics.user.forbid.change.all.property"), forbidChangeAllUserRoleProperty, userMainRole, 1);
 
         userRoleFormDefaultNumber = addDProp(baseGroup, "userRoleFormDefaultNumber", getString("logics.forms.default.number"), IntegerClass.instance, userRole, navigatorElement);
         userFormDefaultNumber = addJProp(baseGroup, "userFormDefaultNumber", getString("logics.forms.default.number"), userRoleFormDefaultNumber, userMainRole, 1, 2);
