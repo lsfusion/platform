@@ -58,6 +58,31 @@ public class ExpertFrame implements EntryPoint {
                                 return false;
                             }
 
+                            if (VOTE_REVISION_2.equals(vi.revision)) {
+                                String questions = "";
+                                if (taCompetitiveComment.getText().length() > commentMaxLength || taCompetitiveComment.getText().length() < commentMinLength) {
+                                    questions += "1";
+                                }
+                                if (taCommercePotentialComment.getText().length() > commentMaxLength || taCommercePotentialComment.getText().length() < commentMinLength) {
+                                    questions += questions.isEmpty() ? "2" : ", 2";
+                                }
+                                if (taImplementComment.getText().length() > commentMaxLength || taImplementComment.getText().length() < commentMinLength) {
+                                    questions += questions.isEmpty() ? "3" : ", 3";
+                                }
+                                if (taExpertiseComment.getText().length() > commentMaxLength || taExpertiseComment.getText().length() < commentMinLength) {
+                                    questions += questions.isEmpty() ? "4" : ", 4";
+                                }
+                                if (taInternationalExperienceComment.getText().length() > commentMaxLength || taInternationalExperienceComment.getText().length() < commentMinLength) {
+                                    questions += questions.isEmpty() ? "5" : ", 5";
+                                }
+                                if (taEnoughDocumentsComment.getText().length() > commentMaxLength || taEnoughDocumentsComment.getText().length() < commentMinLength) {
+                                    questions += questions.isEmpty() ? "6" : ", 6";
+                                }
+                                if (!questions.isEmpty()) {
+                                    Window.alert(messages.commentLengthError(questions));
+                                    return false;
+                                }
+                            }
 //                            if (taInnovativeComment.getText().length() < innovativeCommentMaxLength ||
 //                                    taCompleteComment.getText().length() < completeCommentMaxLength) {
 //                                Window.alert(messages.incompleteComment());

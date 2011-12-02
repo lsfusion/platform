@@ -66,6 +66,8 @@ public interface ExpertFrameMessages extends Messages {
 
     String incompleteComment();
 
+    String commentLengthError(String questions);
+
     String confirmPrompt();
 
     String footerCaption();

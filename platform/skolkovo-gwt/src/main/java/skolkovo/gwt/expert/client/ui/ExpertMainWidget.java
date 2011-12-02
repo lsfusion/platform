@@ -21,14 +21,8 @@ import java.util.Date;
 import static skolkovo.api.gwt.shared.Result.*;
 
 public abstract class ExpertMainWidget extends Composite {
-    public static final int innovativeCommentMaxLength = 1000;
-    public static final int completeCommentMaxLength = 300;
-    public static final int competitiveMaxLength = 1000;
-    public static final int commercePotentialMaxLength = 1000;
-    public static final int implementMaxLength = 1000;
-    public static final int expertiseMaxLength = 1000;
-    public static final int internationalExperienceMaxLength = 1000;
-    public static final int enoughDocumentsMaxLength = 300;
+    public static final int commentMaxLength = 1000;
+    public static final int commentMinLength = 100;
 
     public static final String VOTE_REVISION_1 = "R1";
     public static final String VOTE_REVISION_2 = "R2";
@@ -222,28 +216,28 @@ public abstract class ExpertMainWidget extends Composite {
         loadingSpan.setText(baseMessages.loading());
         noRevisionSpan.setText(messages.noRevisionSpan());
 
-        lbInnovativeCounter.setText("1000");
+        lbInnovativeCounter.setText(String.valueOf(commentMinLength));
         lbInnovativeCounterCaption.setText(messages.symbolsLeft());
 
-        lbCompleteCounter.setText("300");
+        lbCompleteCounter.setText(String.valueOf(commentMinLength));
         lbCompleteCounterCaption.setText(messages.symbolsLeft());
 
-        lbCompetitiveCounter.setText("1000");
+        lbCompetitiveCounter.setText(String.valueOf(commentMinLength));
         lbCompetitiveCounterCaption.setText(messages.symbolsLeft());
 
-        lbCommercePotentialCounter.setText("1000");
+        lbCommercePotentialCounter.setText(String.valueOf(commentMinLength));
         lbCommercePotentialCounterCaption.setText(messages.symbolsLeft());
 
-        lbImplementCounter.setText("1000");
+        lbImplementCounter.setText(String.valueOf(commentMinLength));
         lbImplementCounterCaption.setText(messages.symbolsLeft());
 
-        lbExpertiseCounter.setText("1000");
+        lbExpertiseCounter.setText(String.valueOf(commentMinLength));
         lbExpertiseCounterCaption.setText(messages.symbolsLeft());
 
-        lbInternationalExperienceCounter.setText("1000");
+        lbInternationalExperienceCounter.setText(String.valueOf(commentMinLength));
         lbInternationalExperienceCounterCaption.setText(messages.symbolsLeft());
 
-        lbEnoughDocumentsCounter.setText("300");
+        lbEnoughDocumentsCounter.setText(String.valueOf(commentMinLength));
         lbEnoughDocumentsCounterCaption.setText(messages.symbolsLeft());
 
         voteResultSpan.setInnerHTML(!vi.voteDone
@@ -407,14 +401,14 @@ public abstract class ExpertMainWidget extends Composite {
     }
 
     private void setupHandlers() {
-        LimitedTextHandler innovativeLimitedHandler = new LimitedTextHandler(taInnovativeComment, lbInnovativeCounter, innovativeCommentMaxLength);
-        LimitedTextHandler completeLimitedHandler = new LimitedTextHandler(taCompleteComment, lbCompleteCounter, completeCommentMaxLength);
-        LimitedTextHandler competitiveLimitedHandler = new LimitedTextHandler(taCompetitiveComment, lbCompetitiveCounter, competitiveMaxLength);
-        LimitedTextHandler commercePotentialLimitedHandler = new LimitedTextHandler(taCommercePotentialComment, lbCommercePotentialCounter, commercePotentialMaxLength);
-        LimitedTextHandler implementLimitedHandler = new LimitedTextHandler(taImplementComment, lbImplementCounter, implementMaxLength);
-        LimitedTextHandler expertiseLimitedHandler = new LimitedTextHandler(taExpertiseComment, lbExpertiseCounter, expertiseMaxLength);
-        LimitedTextHandler internationalExperienceLimitedHandler = new LimitedTextHandler(taInternationalExperienceComment, lbInternationalExperienceCounter, internationalExperienceMaxLength);
-        LimitedTextHandler enoughDocumentsLimitedHandler = new LimitedTextHandler(taEnoughDocumentsComment, lbEnoughDocumentsCounter, enoughDocumentsMaxLength);
+        LimitedTextHandler innovativeLimitedHandler = new LimitedTextHandler(taInnovativeComment, lbInnovativeCounter, commentMaxLength);
+        LimitedTextHandler completeLimitedHandler = new LimitedTextHandler(taCompleteComment, lbCompleteCounter, commentMaxLength);
+        LimitedTextHandler competitiveLimitedHandler = new LimitedTextHandler(taCompetitiveComment, lbCompetitiveCounter, commentMaxLength);
+        LimitedTextHandler commercePotentialLimitedHandler = new LimitedTextHandler(taCommercePotentialComment, lbCommercePotentialCounter, commentMaxLength);
+        LimitedTextHandler implementLimitedHandler = new LimitedTextHandler(taImplementComment, lbImplementCounter, commentMaxLength);
+        LimitedTextHandler expertiseLimitedHandler = new LimitedTextHandler(taExpertiseComment, lbExpertiseCounter, commentMaxLength);
+        LimitedTextHandler internationalExperienceLimitedHandler = new LimitedTextHandler(taInternationalExperienceComment, lbInternationalExperienceCounter, commentMaxLength);
+        LimitedTextHandler enoughDocumentsLimitedHandler = new LimitedTextHandler(taEnoughDocumentsComment, lbEnoughDocumentsCounter, commentMaxLength);
 
         taInnovativeComment.addValueChangeHandler(innovativeLimitedHandler);
         taInnovativeComment.addKeyboardListener(innovativeLimitedHandler);
