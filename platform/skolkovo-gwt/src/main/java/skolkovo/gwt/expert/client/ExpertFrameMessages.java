@@ -66,7 +66,7 @@ public interface ExpertFrameMessages extends Messages {
 
     String incompleteComment();
 
-    String commentLengthError(String questions);
+    String commentLengthWarning(String questions);
 
     String confirmPrompt();
 
@@ -77,6 +77,10 @@ public interface ExpertFrameMessages extends Messages {
     String voteClosed();
 
     String symbolsLeft();
+
+    String minSymbols();
+
+    String maxSymbols();
 
     String noRevisionSpan();
 

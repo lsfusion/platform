@@ -159,8 +159,17 @@
                                     </div>
                                 </td>
                                 <td style="padding-right:5px;">
-                                    <g:Label visible="false" ui:field="lbCompetitiveCounter" styleName="{style.commentBox}"/>
-                                    <g:Label visible="false" ui:field="lbCompetitiveCounterCaption"/>
+                                    <g:VerticalPanel width="100%">
+                                        <g:Label ui:field="lbCompetitiveCounterCaption" styleName="{style.commentLabel}"/>
+                                        <g:HorizontalPanel>
+                                            <g:Label ui:field="lbCompetitiveMinCounterCaption" styleName="{style.commentLabel}" width="60"/>
+                                            <g:Label ui:field="lbCompetitiveMinCounter" styleName="{style.warningCommentBox}" width="50"/>
+                                        </g:HorizontalPanel>
+                                        <g:HorizontalPanel>
+                                            <g:Label ui:field="lbCompetitiveMaxCounterCaption" styleName="{style.commentLabel}" width="60"/>
+                                            <g:Label ui:field="lbCompetitiveMaxCounter" styleName="{style.commentBox}" width="50"/>
+                                        </g:HorizontalPanel>
+                                    </g:VerticalPanel>
                                 </td>
                             </tr>
                             <tr id="r2DataRow3">
@@ -176,8 +185,17 @@
                                     </div>
                                 </td>
                                 <td style="padding-right:5px;">
-                                    <g:Label visible="false" ui:field="lbCommercePotentialCounter" styleName="{style.commentBox}"/>
-                                    <g:Label visible="false" ui:field="lbCommercePotentialCounterCaption"/>
+                                    <g:VerticalPanel width="100%">
+                                        <g:Label ui:field="lbCommercePotentialCounterCaption" styleName="{style.commentLabel}"/>
+                                        <g:HorizontalPanel>
+                                            <g:Label ui:field="lbCommercePotentialMinCounterCaption" styleName="{style.commentLabel}" width="60"/>
+                                            <g:Label ui:field="lbCommercePotentialMinCounter" styleName="{style.warningCommentBox}" width="50"/>
+                                        </g:HorizontalPanel>
+                                        <g:HorizontalPanel>
+                                            <g:Label ui:field="lbCommercePotentialMaxCounterCaption" styleName="{style.commentLabel}" width="60"/>
+                                            <g:Label ui:field="lbCommercePotentialMaxCounter" styleName="{style.commentBox}" width="50"/>
+                                        </g:HorizontalPanel>
+                                    </g:VerticalPanel>
                                 </td>
                             </tr>
                             <tr id="r2DataRow5">
@@ -193,8 +211,17 @@
                                     </div>
                                 </td>
                                 <td style="padding-right:5px;">
-                                    <g:Label visible="false" ui:field="lbImplementCounter" styleName="{style.commentBox}"/>
-                                    <g:Label visible="false" ui:field="lbImplementCounterCaption"/>
+                                    <g:VerticalPanel width="100%">
+                                        <g:Label ui:field="lbImplementCounterCaption" styleName="{style.commentLabel}"/>
+                                        <g:HorizontalPanel>
+                                            <g:Label ui:field="lbImplementMinCounterCaption" styleName="{style.commentLabel}" width="60"/>
+                                            <g:Label ui:field="lbImplementMinCounter" styleName="{style.warningCommentBox}" width="50"/>
+                                        </g:HorizontalPanel>
+                                        <g:HorizontalPanel>
+                                            <g:Label ui:field="lbImplementMaxCounterCaption" styleName="{style.commentLabel}" width="60"/>
+                                            <g:Label ui:field="lbImplementMaxCounter" styleName="{style.commentBox}" width="50"/>
+                                        </g:HorizontalPanel>
+                                    </g:VerticalPanel>
                                 </td>
                             </tr>
                             <tr id="r2DataRow7">
@@ -210,8 +237,17 @@
                                     </div>
                                 </td>
                                 <td style="padding-right:5px;">
-                                    <g:Label visible="false" ui:field="lbExpertiseCounter" styleName="{style.commentBox}"/>
-                                    <g:Label visible="false" ui:field="lbExpertiseCounterCaption"/>
+                                    <g:VerticalPanel width="100%">
+                                        <g:Label ui:field="lbExpertiseCounterCaption" styleName="{style.commentLabel}"/>
+                                        <g:HorizontalPanel>
+                                            <g:Label ui:field="lbExpertiseMinCounterCaption" styleName="{style.commentLabel}" width="60"/>
+                                            <g:Label ui:field="lbExpertiseMinCounter" styleName="{style.warningCommentBox}" width="50"/>
+                                        </g:HorizontalPanel>
+                                        <g:HorizontalPanel>
+                                            <g:Label ui:field="lbExpertiseMaxCounterCaption" styleName="{style.commentLabel}" width="60"/>
+                                            <g:Label ui:field="lbExpertiseMaxCounter" styleName="{style.commentBox}" width="50"/>
+                                        </g:HorizontalPanel>
+                                    </g:VerticalPanel>
                                 </td>
                             </tr>
                             <tr id="r2DataRow9">
@@ -227,8 +263,17 @@
                                     </div>
                                 </td>
                                 <td style="padding-right:5px;">
-                                    <g:Label visible="false" ui:field="lbInternationalExperienceCounter" styleName="{style.commentBox}"/>
-                                    <g:Label visible="false" ui:field="lbInternationalExperienceCounterCaption"/>
+                                    <g:VerticalPanel width="100%">
+                                        <g:Label ui:field="lbInternationalExperienceCounterCaption" styleName="{style.commentLabel}"/>
+                                        <g:HorizontalPanel>
+                                            <g:Label ui:field="lbInternationalExperienceMinCounterCaption" styleName="{style.commentLabel}" width="60"/>
+                                            <g:Label ui:field="lbInternationalExperienceMinCounter" styleName="{style.warningCommentBox}" width="50"/>
+                                        </g:HorizontalPanel>
+                                        <g:HorizontalPanel>
+                                            <g:Label ui:field="lbInternationalExperienceMaxCounterCaption" styleName="{style.commentLabel}" width="60"/>
+                                            <g:Label ui:field="lbInternationalExperienceMaxCounter" styleName="{style.commentBox}" width="50"/>
+                                        </g:HorizontalPanel>
+                                    </g:VerticalPanel>
                                 </td>
                             </tr>
                             <tr id="r2DataRow11">
@@ -244,8 +289,17 @@
                                     </div>
                                 </td>
                                 <td style="padding-right:5px;">
-                                    <g:Label visible="false" ui:field="lbEnoughDocumentsCounter" styleName="{style.commentBox}"/>
-                                    <g:Label visible="false" ui:field="lbEnoughDocumentsCounterCaption"/>
+                                    <g:VerticalPanel width="100%">
+                                        <g:Label ui:field="lbEnoughDocumentsCounterCaption" styleName="{style.commentLabel}"/>
+                                        <g:HorizontalPanel>
+                                            <g:Label ui:field="lbEnoughDocumentsMinCounterCaption" styleName="{style.commentLabel}" width="60"/>
+                                            <g:Label ui:field="lbEnoughDocumentsMinCounter" styleName="{style.warningCommentBox}" width="50"/>
+                                        </g:HorizontalPanel>
+                                        <g:HorizontalPanel>
+                                            <g:Label ui:field="lbEnoughDocumentsMaxCounterCaption" styleName="{style.commentLabel}" width="60"/>
+                                            <g:Label ui:field="lbEnoughDocumentsMaxCounter" styleName="{style.commentBox}" width="50"/>
+                                        </g:HorizontalPanel>
+                                    </g:VerticalPanel>
                                 </td>
                             </tr>
                             <tr id="resultDataRow">

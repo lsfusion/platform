@@ -120,7 +120,13 @@ public abstract class ExpertMainWidget extends Composite {
     @UiField
     public ListBox bxCompetitive;
     @UiField
-    Label lbCompetitiveCounter;
+    Label lbCompetitiveMinCounterCaption;
+    @UiField
+    Label lbCompetitiveMinCounter;
+    @UiField
+    Label lbCompetitiveMaxCounterCaption;
+    @UiField
+    Label lbCompetitiveMaxCounter;
     @UiField
     Label lbCompetitiveCounterCaption;
     @UiField
@@ -132,7 +138,13 @@ public abstract class ExpertMainWidget extends Composite {
     @UiField
     public ListBox bxCommercePotential;
     @UiField
-    Label lbCommercePotentialCounter;
+    Label lbCommercePotentialMinCounterCaption;
+    @UiField
+    Label lbCommercePotentialMinCounter;
+    @UiField
+    Label lbCommercePotentialMaxCounterCaption;
+    @UiField
+    Label lbCommercePotentialMaxCounter;
     @UiField
     Label lbCommercePotentialCounterCaption;
     @UiField
@@ -144,7 +156,13 @@ public abstract class ExpertMainWidget extends Composite {
     @UiField
     public ListBox bxImplement;
     @UiField
-    Label lbImplementCounter;
+    Label lbImplementMinCounterCaption;
+    @UiField
+    Label lbImplementMinCounter;
+    @UiField
+    Label lbImplementMaxCounterCaption;
+    @UiField
+    Label lbImplementMaxCounter;
     @UiField
     Label lbImplementCounterCaption;
     @UiField
@@ -156,7 +174,13 @@ public abstract class ExpertMainWidget extends Composite {
     @UiField
     public ListBox bxExpertise;
     @UiField
-    Label lbExpertiseCounter;
+    Label lbExpertiseMinCounterCaption;
+    @UiField
+    Label lbExpertiseMinCounter;
+    @UiField
+    Label lbExpertiseMaxCounterCaption;
+    @UiField
+    Label lbExpertiseMaxCounter;
     @UiField
     Label lbExpertiseCounterCaption;
     @UiField
@@ -168,7 +192,13 @@ public abstract class ExpertMainWidget extends Composite {
     @UiField
     public ListBox bxInternationalExperience;
     @UiField
-    Label lbInternationalExperienceCounter;
+    Label lbInternationalExperienceMinCounterCaption;
+    @UiField
+    Label lbInternationalExperienceMinCounter;
+    @UiField
+    Label lbInternationalExperienceMaxCounterCaption;
+    @UiField
+    Label lbInternationalExperienceMaxCounter;
     @UiField
     Label lbInternationalExperienceCounterCaption;
     @UiField
@@ -180,7 +210,13 @@ public abstract class ExpertMainWidget extends Composite {
     @UiField
     public ListBox bxEnoughDocuments;
     @UiField
-    Label lbEnoughDocumentsCounter;
+    Label lbEnoughDocumentsMinCounterCaption;
+    @UiField
+    Label lbEnoughDocumentsMinCounter;
+    @UiField
+    Label lbEnoughDocumentsMaxCounterCaption;
+    @UiField
+    Label lbEnoughDocumentsMaxCounter;
     @UiField
     Label lbEnoughDocumentsCounterCaption;
     @UiField
@@ -222,22 +258,40 @@ public abstract class ExpertMainWidget extends Composite {
         lbCompleteCounter.setText(String.valueOf(commentMinLength));
         lbCompleteCounterCaption.setText(messages.symbolsLeft());
 
-        lbCompetitiveCounter.setText(String.valueOf(commentMinLength));
+        lbCompetitiveMinCounterCaption.setText(messages.minSymbols());
+        lbCompetitiveMinCounter.setText(String.valueOf(commentMinLength));
+        lbCompetitiveMaxCounterCaption.setText(messages.maxSymbols());
+        lbCompetitiveMaxCounter.setText(String.valueOf(commentMaxLength));
         lbCompetitiveCounterCaption.setText(messages.symbolsLeft());
 
-        lbCommercePotentialCounter.setText(String.valueOf(commentMinLength));
+        lbCommercePotentialMinCounterCaption.setText(messages.minSymbols());
+        lbCommercePotentialMinCounter.setText(String.valueOf(commentMinLength));
+        lbCommercePotentialMaxCounterCaption.setText(messages.maxSymbols());
+        lbCommercePotentialMaxCounter.setText(String.valueOf(commentMaxLength));
         lbCommercePotentialCounterCaption.setText(messages.symbolsLeft());
 
-        lbImplementCounter.setText(String.valueOf(commentMinLength));
+        lbImplementMinCounterCaption.setText(messages.minSymbols());
+        lbImplementMinCounter.setText(String.valueOf(commentMinLength));
+        lbImplementMaxCounterCaption.setText(messages.maxSymbols());
+        lbImplementMaxCounter.setText(String.valueOf(commentMaxLength));
         lbImplementCounterCaption.setText(messages.symbolsLeft());
 
-        lbExpertiseCounter.setText(String.valueOf(commentMinLength));
+        lbExpertiseMinCounterCaption.setText(messages.minSymbols());
+        lbExpertiseMinCounter.setText(String.valueOf(commentMinLength));
+        lbExpertiseMaxCounterCaption.setText(messages.maxSymbols());
+        lbExpertiseMaxCounter.setText(String.valueOf(commentMaxLength));
         lbExpertiseCounterCaption.setText(messages.symbolsLeft());
 
-        lbInternationalExperienceCounter.setText(String.valueOf(commentMinLength));
+        lbInternationalExperienceMinCounterCaption.setText(messages.minSymbols());
+        lbInternationalExperienceMinCounter.setText(String.valueOf(commentMinLength));
+        lbInternationalExperienceMaxCounterCaption.setText(messages.maxSymbols());
+        lbInternationalExperienceMaxCounter.setText(String.valueOf(commentMaxLength));
         lbInternationalExperienceCounterCaption.setText(messages.symbolsLeft());
 
-        lbEnoughDocumentsCounter.setText(String.valueOf(commentMinLength));
+        lbEnoughDocumentsMinCounterCaption.setText(messages.minSymbols());
+        lbEnoughDocumentsMinCounter.setText(String.valueOf(commentMinLength));
+        lbEnoughDocumentsMaxCounterCaption.setText(messages.maxSymbols());
+        lbEnoughDocumentsMaxCounter.setText(String.valueOf(commentMaxLength));
         lbEnoughDocumentsCounterCaption.setText(messages.symbolsLeft());
 
         voteResultSpan.setInnerHTML(!vi.voteDone
@@ -361,17 +415,35 @@ public abstract class ExpertMainWidget extends Composite {
         lbInnovativeCounter.setVisible(false);
         lbInnovativeCounterCaption.setVisible(false);
 
-        lbCompetitiveCounter.setVisible(false);
+        lbCompetitiveMinCounterCaption.setVisible(false);
+        lbCompetitiveMinCounter.setVisible(false);
+        lbCompetitiveMaxCounterCaption.setVisible(false);
+        lbCompetitiveMaxCounter.setVisible(false);
         lbCompetitiveCounterCaption.setVisible(false);
-        lbCommercePotentialCounter.setVisible(false);
+        lbCommercePotentialMinCounterCaption.setVisible(false);
+        lbCommercePotentialMinCounter.setVisible(false);
+        lbCommercePotentialMaxCounterCaption.setVisible(false);
+        lbCommercePotentialMaxCounter.setVisible(false);
         lbCommercePotentialCounterCaption.setVisible(false);
-        lbImplementCounter.setVisible(false);
+        lbImplementMinCounterCaption.setVisible(false);
+        lbImplementMinCounter.setVisible(false);
+        lbImplementMaxCounterCaption.setVisible(false);
+        lbImplementMaxCounter.setVisible(false);
         lbImplementCounterCaption.setVisible(false);
-        lbExpertiseCounter.setVisible(false);
+        lbExpertiseMinCounterCaption.setVisible(false);
+        lbExpertiseMinCounter.setVisible(false);
+        lbExpertiseMaxCounterCaption.setVisible(false);
+        lbExpertiseMaxCounter.setVisible(false);
         lbExpertiseCounterCaption.setVisible(false);
-        lbInternationalExperienceCounter.setVisible(false);
+        lbInternationalExperienceMinCounterCaption.setVisible(false);
+        lbInternationalExperienceMinCounter.setVisible(false);
+        lbInternationalExperienceMaxCounterCaption.setVisible(false);
+        lbInternationalExperienceMaxCounter.setVisible(false);
         lbInternationalExperienceCounterCaption.setVisible(false);
-        lbEnoughDocumentsCounter.setVisible(false);
+        lbEnoughDocumentsMinCounterCaption.setVisible(false);
+        lbEnoughDocumentsMinCounter.setVisible(false);
+        lbEnoughDocumentsMaxCounterCaption.setVisible(false);
+        lbEnoughDocumentsMaxCounter.setVisible(false);
         lbEnoughDocumentsCounterCaption.setVisible(false);
 
         if (hidePrompts) {
@@ -401,19 +473,19 @@ public abstract class ExpertMainWidget extends Composite {
     }
 
     private void setupHandlers() {
-        LimitedTextHandler innovativeLimitedHandler = new LimitedTextHandler(taInnovativeComment, lbInnovativeCounter, commentMaxLength);
-        LimitedTextHandler completeLimitedHandler = new LimitedTextHandler(taCompleteComment, lbCompleteCounter, commentMaxLength);
-        LimitedTextHandler competitiveLimitedHandler = new LimitedTextHandler(taCompetitiveComment, lbCompetitiveCounter, commentMaxLength);
-        LimitedTextHandler commercePotentialLimitedHandler = new LimitedTextHandler(taCommercePotentialComment, lbCommercePotentialCounter, commentMaxLength);
-        LimitedTextHandler implementLimitedHandler = new LimitedTextHandler(taImplementComment, lbImplementCounter, commentMaxLength);
-        LimitedTextHandler expertiseLimitedHandler = new LimitedTextHandler(taExpertiseComment, lbExpertiseCounter, commentMaxLength);
-        LimitedTextHandler internationalExperienceLimitedHandler = new LimitedTextHandler(taInternationalExperienceComment, lbInternationalExperienceCounter, commentMaxLength);
-        LimitedTextHandler enoughDocumentsLimitedHandler = new LimitedTextHandler(taEnoughDocumentsComment, lbEnoughDocumentsCounter, commentMaxLength);
+//        LimitedTextHandler innovativeLimitedHandler = new LimitedTextHandler(taInnovativeComment, lbInnovativeCounter, commentMinLength, lb);
+//        LimitedTextHandler completeLimitedHandler = new LimitedTextHandler(taCompleteComment, lbCompleteCounter, commentMinLength);
+        LimitedTextHandler competitiveLimitedHandler = new LimitedTextHandler(taCompetitiveComment, lbCompetitiveMinCounter, lbCompetitiveMaxCounter);
+        LimitedTextHandler commercePotentialLimitedHandler = new LimitedTextHandler(taCommercePotentialComment, lbCommercePotentialMinCounter, lbCommercePotentialMaxCounter);
+        LimitedTextHandler implementLimitedHandler = new LimitedTextHandler(taImplementComment, lbImplementMinCounter, lbImplementMaxCounter);
+        LimitedTextHandler expertiseLimitedHandler = new LimitedTextHandler(taExpertiseComment, lbExpertiseMinCounter, lbExpertiseMaxCounter);
+        LimitedTextHandler internationalExperienceLimitedHandler = new LimitedTextHandler(taInternationalExperienceComment, lbInternationalExperienceMinCounter, lbInternationalExperienceMaxCounter);
+        LimitedTextHandler enoughDocumentsLimitedHandler = new LimitedTextHandler(taEnoughDocumentsComment, lbEnoughDocumentsMinCounter, lbEnoughDocumentsMaxCounter);
 
-        taInnovativeComment.addValueChangeHandler(innovativeLimitedHandler);
-        taInnovativeComment.addKeyboardListener(innovativeLimitedHandler);
-        taCompleteComment.addValueChangeHandler(completeLimitedHandler);
-        taCompleteComment.addKeyboardListener(completeLimitedHandler);
+//        taInnovativeComment.addValueChangeHandler(innovativeLimitedHandler);
+//        taInnovativeComment.addKeyboardListener(innovativeLimitedHandler);
+//        taCompleteComment.addValueChangeHandler(completeLimitedHandler);
+//        taCompleteComment.addKeyboardListener(completeLimitedHandler);
         taCompetitiveComment.addValueChangeHandler(competitiveLimitedHandler);
         taCompetitiveComment.addKeyboardListener(competitiveLimitedHandler);
         taCommercePotentialComment.addValueChangeHandler(commercePotentialLimitedHandler);
@@ -492,13 +564,13 @@ public abstract class ExpertMainWidget extends Composite {
 
     private static class LimitedTextHandler implements ValueChangeHandler<String>, KeyboardListener {
         private final TextArea taText;
-        private final Label lbCounter;
-        private final int maxLength;
+        private final Label lbMinCounter;
+        private final Label lbMaxCounter;
 
-        public LimitedTextHandler(TextArea taText, Label lbCounter, int maxLength) {
+        public LimitedTextHandler(TextArea taText, Label lbMinCounter, Label lbMaxCounter) {
             this.taText = taText;
-            this.lbCounter = lbCounter;
-            this.maxLength = maxLength;
+            this.lbMinCounter = lbMinCounter;
+            this.lbMaxCounter = lbMaxCounter;
         }
 
         @Override
@@ -527,7 +599,18 @@ public abstract class ExpertMainWidget extends Composite {
                 text = "";
             }
 
-            lbCounter.setText("" + Math.max(0, maxLength - text.length()));
+            if (text.length() >= commentMinLength)
+                lbMinCounter.setStyleName(cssBundle.css().commentBox());
+            else
+                lbMinCounter.setStyleName(cssBundle.css().warningCommentBox());
+
+            if (text.length() <= commentMaxLength)
+                lbMaxCounter.setStyleName(cssBundle.css().commentBox());
+            else
+                lbMaxCounter.setStyleName(cssBundle.css().warningCommentBox());
+
+            lbMinCounter.setText("" + Math.max(0, commentMinLength - text.length()));
+            lbMaxCounter.setText("" + Math.max(0, commentMaxLength - text.length()));
         }
     }
 }

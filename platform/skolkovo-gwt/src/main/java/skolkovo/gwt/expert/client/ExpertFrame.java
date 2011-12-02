@@ -79,7 +79,7 @@ public class ExpertFrame implements EntryPoint {
                                     questions += questions.isEmpty() ? "6" : ", 6";
                                 }
                                 if (!questions.isEmpty()) {
-                                    Window.alert(messages.commentLengthError(questions));
+                                    Window.alert(messages.commentLengthWarning(questions));
                                     return false;
                                 }
                             }

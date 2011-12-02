@@ -360,9 +360,9 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
 
                     ForesightInfo foresightInfo = new ForesightInfo();
 
-                    foresightInfo.sID = ((String) propValues.get("sID")).trim();
-                    foresightInfo.nameCluster = ((String) propValues.get("nameCluster")).trim();
-                    foresightInfo.name = ((String) propValues.get("name")).trim();
+                    foresightInfo.sID = BaseUtils.nullTrim((String) propValues.get("sID"));
+                    foresightInfo.nameCluster = BaseUtils.nullTrim((String) propValues.get("nameCluster"));
+                    foresightInfo.name = BaseUtils.nullTrim((String) propValues.get("name"));
 
                     foresightInfo.selected = propValues.get("selected") != null;
                     foresightInfo.comment = (String) propValues.get("comment");

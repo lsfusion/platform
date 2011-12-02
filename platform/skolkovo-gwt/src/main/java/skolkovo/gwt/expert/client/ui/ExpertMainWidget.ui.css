@@ -66,6 +66,12 @@ button.connected {
     width: 100%;
 }
 
+.warningCommentBox {
+    background: none repeat scroll 0 0 #FFE8E8;
+    border: 2pt solid #C9FA15;
+    width: 100%;
+}
+
 .commentLabel {
     font-size: 12px;
     width: 100%

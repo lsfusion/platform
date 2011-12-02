@@ -9,6 +9,8 @@ public interface ExpertMainWidgetCSSBundle extends ClientBundle {
 
     public interface ExpertMainWidgetCss extends CssResource {
         String dialog();
+        String commentBox();
+        String warningCommentBox();
     }
 
     @CssResource.NotStrict
