@@ -470,6 +470,10 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         tableFactory.include("tables", table);
         tableFactory.include("tableKey", tableKey);
         tableFactory.include("tableColumn", tableColumn);
+
+        tableFactory.include("customUserRole", customUser, userRole);
+        tableFactory.include("userRolePolicy", userRole, policy);
+        tableFactory.include("userRoleProperty", userRole, property);
     }
 
     @Override

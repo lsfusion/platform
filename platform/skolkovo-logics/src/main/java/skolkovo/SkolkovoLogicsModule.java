@@ -379,6 +379,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
     @Override
     public void initTables() {
+        baseLM.tableFactory.include("property", baseLM.property);
         baseLM.tableFactory.include("multiLanguageNamed", multiLanguageNamed);
         baseLM.tableFactory.include("project", project);
         baseLM.tableFactory.include("expert", expert);
@@ -411,6 +412,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         baseLM.tableFactory.include("expertConferenceExpert", expertConference, expert);
         baseLM.tableFactory.include("typeMileStoneMileStoneMileStoneYear", typeMileStone, mileStone, mileStoneYear);
         baseLM.tableFactory.include("projectLanguageDocumentType", project, language, documentType);
+        baseLM.tableFactory.include("languageDocumentType", language, documentType);
 
     }
 
