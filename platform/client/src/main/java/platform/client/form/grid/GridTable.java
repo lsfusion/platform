@@ -178,6 +178,11 @@ public abstract class GridTable extends ClientFormTable
             public void mousePressed(MouseEvent e) {
                 int column = columnAtPoint(e.getPoint());
                 int row = rowAtPoint(e.getPoint());
+
+                if ((column == -1 || row == -1) && selectionController.hasSingleSelection()) {
+                    changeSelection(getSelectedRow(), getSelectedColumn(), false, false);
+                }
+
                 if (getSelectedRow() == previousSelectedRow || isEditOnSingleClick(row, column)) {
                     pressedCellColumn = column;
                     pressedCellRow = row;

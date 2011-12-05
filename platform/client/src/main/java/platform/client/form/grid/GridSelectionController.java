@@ -280,8 +280,8 @@ public class GridSelectionController {
         }
 
         //если выделена одна ячейка (или ни одной) и нажали CTRL+C, копируем текущее значение
-        if (hasSingleSelection()) {
-            Object value = modifyIfString(table.getSelectedValue(getProperties().get(firstPropertyIndex != -1 ? firstPropertyIndex : table.getSelectedColumn()), null));
+        if (hasSingleSelection() && firstPropertyIndex != -1) {
+            Object value = modifyIfString(table.getSelectedValue(getProperties().get(firstPropertyIndex), null));
             ClientPropertyDraw property = getProperties().get(firstPropertyIndex);
             return value == null ? "" : property.formatString(value);
         }
