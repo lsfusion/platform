@@ -5,6 +5,7 @@ import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import platform.interop.exceptions.InternalServerException;
+import platform.interop.exceptions.LoginException;
 import platform.interop.exceptions.RemoteServerException;
 
 import java.io.ByteArrayOutputStream;
@@ -34,8 +35,10 @@ public class RemoteExceptionManager {
     }
 
     public static InternalServerException createInternalServerException(Throwable e) {
-        e.printStackTrace();
-        logger.error("Internal server error: ", e);
+        if (!(e.getCause() instanceof LoginException)) {
+            e.printStackTrace();
+            logger.error("Internal server error: ", e);
+        }
         OutputStream os = new ByteArrayOutputStream();
         e.printStackTrace(new PrintStream(os));
         return new InternalServerException(0, e.getLocalizedMessage(), os.toString());

@@ -2692,7 +2692,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         connectedExpertVote = addJProp(baseGroup, "connectedExpertVote", "Аффилирован", baseLM.equals2,
                 voteResultExpertVote, 1, 2, addCProp(voteResult, "connected"));
 
-        ipExpertVote = addDProp(voteResultCheckGroup, "ipExpertVote", "IP эксперта", StringClass.get(15), expert, vote);
+        ipExpertVote = addDProp(voteResultCheckGroup, "ipExpertVote", "IP эксперта", StringClass.get(150), expert, vote);
 
         nameVoteResultExpertVote = addJProp(voteResultCheckGroup, "nameVoteResultExpertVote", "Результат", baseLM.name, voteResultExpertVote, 1, 2);
 
