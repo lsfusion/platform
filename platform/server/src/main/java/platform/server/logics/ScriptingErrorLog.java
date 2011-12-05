@@ -144,6 +144,12 @@ public class ScriptingErrorLog {
         emitSemanticError(msg, e);
     }
 
+    public void emitConstraintPropertyAlwaysNullError(LsfLogicsParser parser) throws SemanticErrorException {
+        SemanticErrorException e = new SemanticErrorException(parser.input);
+        String msg = getSemanticRecognitionErrorText("constrained property is always NULL\n", parser, e);
+        emitSemanticError(msg, e);
+    }
+
     public void emitPropertyAlwaysNullError(LsfLogicsParser parser, String propertyName) throws SemanticErrorException {
         SemanticErrorException e = new SemanticErrorException(parser.input);
         String msg = getSemanticRecognitionErrorText("property '" + propertyName +  "' is always NULL\n", parser, e);

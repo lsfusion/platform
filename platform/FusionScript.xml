@@ -18,7 +18,9 @@
       <keyword name="AS" />
       <keyword name="BOOLEAN" />
       <keyword name="BY" />
+      <keyword name="CHECKED" />
       <keyword name="CLASS" />
+      <keyword name="CONSTRAINT" />
       <keyword name="DATA" />
       <keyword name="DATE" />
       <keyword name="DOUBLE" />

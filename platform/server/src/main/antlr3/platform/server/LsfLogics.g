@@ -90,7 +90,7 @@ importDirective
 
 
 statement
-	:	(classStatement | groupStatement | propertyStatement | tableStatement | indexStatement | formStatement) ';'
+	:	(classStatement | groupStatement | propertyStatement | constraintStatement | tableStatement | indexStatement | formStatement) ';'
 	;
 
 
@@ -592,6 +592,24 @@ commonPropertySettings[LP property, String propertyName, List<String> namedParam
 		('PERSISTENT' { isPersistent = true; })?
 	;
 
+
+////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////// CONSTRAINT STATEMENT //////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+
+constraintStatement 
+@init {
+	boolean checked = false;
+	LP<?> prop = null;
+}
+@after {
+	if (parseState == ScriptingLogicsModule.State.PROP) { 
+		self.addScriptedConstraint(prop, checked);	
+	}
+}
+	:	'CONSTRAINT' ('CHECKED' { checked = true; })? 
+		expr=propertyExpression[new ArrayList<String>(), true] { prop = $expr.property; }	
+	;
 
 
 ////////////////////////////////////////////////////////////////////////////////

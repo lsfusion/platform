@@ -256,7 +256,8 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     public ScriptingFormEntity createScriptedForm(String formName, String caption) {
         scriptLogger.info("createScriptedForm(" + formName + ", " + caption + ");");
-        return new ScriptingFormEntity(baseLM.baseElement, this, formName, transformStringLiteral(caption));
+        caption = (caption == null ? formName : transformStringLiteral(caption));
+        return new ScriptingFormEntity(baseLM.baseElement, this, formName, caption);
     }
 
     public void addScriptedForm(ScriptingFormEntity form) {
@@ -553,6 +554,14 @@ public class ScriptingLogicsModule extends LogicsModule {
         } else {
             return object(findClassByCompoundName(className));
         }
+    }
+
+    public void addScriptedConstraint(LP<?> property, boolean checked) throws ScriptingErrorLog.SemanticErrorException {
+        scriptLogger.info("addScriptedConstraint(" + property + ", " + checked + ");");
+        if (!property.property.check()) {
+            errLog.emitConstraintPropertyAlwaysNullError(parser);
+        }
+        addConstraint(property, checked);
     }
 
     public LP<?> addScriptedTypeExprProp(LP<?> mainProp, LP<?> property, List<Integer> usedParams) throws ScriptingErrorLog.SemanticErrorException {

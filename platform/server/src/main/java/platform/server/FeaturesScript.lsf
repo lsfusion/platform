@@ -112,6 +112,11 @@ storeIsHuge2(store) = (storeSize(store) == storeSize.huge) == TRUE;
 
 documentBalance(document, article) = balanceQuantity(store(document), article);
 
+///////////////CONSTRAINT STATEMENT/////////////
+
+// Syntax:
+// CONSTRAINT [CHECKED] propertyExpression;
+CONSTRAINT CHECKED foo(store, article) > 1000;
 
 ////////////////////////////// FORM STATEMENT ////////////////////////////
 

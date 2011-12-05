@@ -1,0 +1,78 @@
+IMPORT BaseLogicsModule;
+
+CLASS game 'Игра';
+CLASS team 'Команда' : named;
+
+CLASS STATIC gameResult 'Результат матча'
+{
+    win 'В основное время',
+    winOT 'В овертайме',
+    winSO 'По буллитам'
+};
+
+city(team) = DATA STRING[100] (team) IN baseGroup;
+
+hostTeam(game) = DATA team (game);
+guestTeam(game) = DATA team (game);
+
+gameDate(game) = DATA DATE (game) IN baseGroup;
+
+hostTeamName = name(hostTeam(game)) IN baseGroup;
+guestTeamName = name(guestTeam(game)) IN baseGroup;
+
+hostGoals(game) = DATA INTEGER (game) IN baseGroup;
+guestGoals(game) = DATA INTEGER (game) IN baseGroup;
+
+gameWinner(game) = UNION EXCLUSIVE (hostTeam(game) IF hostGoals(game) > guestGoals(game),
+                                    guestTeam(game) IF hostGoals(game) <  guestGoals(game));
+
+gameLooser(game) = UNION OVERRIDE (hostTeam(game), guestTeam(game) IF gameWinner(game) != guestTeam(game));
+
+gameWinnerName = name(gameWinner(game));
+gameLooserName = name(gameLooser(game));
+
+gameResult(game) = DATA gameResult (game);
+
+gameResultName(game) = name(gameResult(game)) IN baseGroup;
+
+hostGamesPlayed(team) = GROUP SUM 1 BY hostTeam(game);
+guestGamesPlayed(team) = GROUP SUM 1 BY guestTeam(game);
+
+gamesPlayed(team) = UNION SUM (hostGamesPlayed(team), guestGamesPlayed(team));
+
+zeroIfTeamResult(obj1, obj2) = 0 IF obj1 IS team AND obj2 IS gameResult;
+
+gamesWonByResult(team, type) = UNION SUM ([GROUP SUM 1 BY gameWinner(game), gameResult(game)](team, type),
+                                          zeroIfTeamResult(team, type));
+gamesLostByResult(team, type) = UNION SUM ([GROUP SUM 1 BY gameLooser(game), gameResult(game)](team, type),
+                                          zeroIfTeamResult(team, type));
+
+gamesWon(team) = gamesWonByResult(team, gameResult.win);
+gamesWonOT(team) = gamesWonByResult(team, gameResult.winOT);
+gamesWonSO(team) = gamesWonByResult(team, gameResult.winSO);
+
+gamesLost(team) = gamesLostByResult(team, gameResult.win);
+gamesLostOT(team) = gamesLostByResult(team, gameResult.winOT);
+gamesLostSO(team) = gamesLostByResult(team, gameResult.winSO);
+
+points(team) = gamesWon(team) * 3 + (gamesWonSO(team) + gamesWonOT(team)) * 2 + gamesLostOT(team) + gamesLostSO(team);
+
+hostGoalsScored(team) = GROUP SUM hostGoals(game) BY hostTeam(game);
+guestGoalsScored(team) = GROUP SUM guestGoals(game) BY guestTeam(game);
+goalsScored(team) = UNION SUM (hostGoalsScored(team), guestGoalsScored(team));
+
+hostGoalsConceded(team) = GROUP SUM guestGoals(game) BY hostTeam(game);
+guestGoalsConceded(team) = GROUP SUM hostGoals(game) BY guestTeam(game);
+goalsConceded(team) = UNION SUM (hostGoalsConceded(team), guestGoalsConceded(team));
+
+extendedGame(game) = gameResult(game) != gameResult.win;
+
+CONSTRAINT CHECKED hostTeam(team) == guestTeam(team);
+CONSTRAINT CHECKED extendedGame(game) AND hostGoals(game) > guestGoals(game) + 1;
+CONSTRAINT CHECKED extendedGame(game) AND guestGoals(game) > hostGoals(game) + 1;
+
+FORM MainForm 'Турнирная таблица'
+OBJECTS game, team
+PROPERTIES gameDate(game), hostTeamName(game), hostGoals(game), guestGoals(game), guestTeamName(game)
+PROPERTIES name(team), gamesPlayed(team), gamesWon(team), gamesWonOT(team), gamesWonSO(team), gamesLostSO(team),
+           gamesLostOT(team), gamesLost(team), goalsScored(team), goalsConceded(team), points(team);
