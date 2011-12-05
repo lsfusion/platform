@@ -384,9 +384,6 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
     }
 
     public void writeSelectedValue(String value) {
-        if (isReadOnly())
-            return;
-
         int row = getSelectionModel().getLeadSelectionIndex();
         int column = getColumnModel().getSelectionModel().getLeadSelectionIndex();
 
@@ -404,10 +401,6 @@ public class TreeGroupTable extends ClientFormTreeTable implements CellTableInte
         if (!table.isEmpty() && !table.get(0).isEmpty()) {
             writeSelectedValue(table.get(0).get(0));
         }
-    }
-
-    public boolean isReadOnly() {
-        return form.isReadOnlyMode() && isDataChanging();
     }
 
     @Override

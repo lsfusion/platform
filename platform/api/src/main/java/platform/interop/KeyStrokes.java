@@ -58,8 +58,8 @@ public class KeyStrokes {
         return KeyStroke.getKeyStroke(KeyEvent.VK_R, InputEvent.ALT_DOWN_MASK);
     }
 
-    public static KeyStroke getApplyKeyStroke(boolean single) {
-        return KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, single ? 0 : InputEvent.ALT_DOWN_MASK);
+    public static KeyStroke getApplyKeyStroke(int modifiers) {
+        return KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, modifiers);
     }
 
     public static KeyStroke getCancelKeyStroke(boolean single) {

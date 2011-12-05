@@ -48,7 +48,7 @@ public abstract class CustomClass extends ImmutableObject implements ObjectClass
         return Stat.ALOT;
     }
 
-    public Boolean dialogReadOnly;
+    public boolean dialogReadOnly = false;
 
     public final Collection<CustomClass> parents;
     public final List<CustomClass> children;

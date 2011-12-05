@@ -219,7 +219,7 @@ public abstract class GridTable extends ClientFormTable
             }
         });
 
-        if (form.isModal() && form.isReadOnlyMode()) {
+        if (form.isDialog()) {
             addMouseListener(new MouseAdapter() {
                 public void mouseClicked(MouseEvent e) {
                     if (e.getClickCount() > 1) {
@@ -600,8 +600,7 @@ public abstract class GridTable extends ClientFormTable
 
     @Override
     protected boolean processKeyBinding(KeyStroke ks, KeyEvent e, int condition, boolean pressed) {
-        boolean isReadOnlyDialog = form.isModal() && form.isReadOnlyMode();
-        if (isReadOnlyDialog && ks.equals(KeyStrokes.getApplyKeyStroke(isReadOnlyDialog))) {
+        if (form.isDialog() && ks.equals(KeyStrokes.getApplyKeyStroke(0))) {
             return false;
         }
 
@@ -645,10 +644,6 @@ public abstract class GridTable extends ClientFormTable
     }
 
     public void writeSelectedValue(String value) {
-        if (isReadOnly()) {
-            return;
-        }
-
         int row = getSelectionModel().getLeadSelectionIndex();
         int column = getColumnModel().getSelectionModel().getLeadSelectionIndex();
 
@@ -664,10 +659,6 @@ public abstract class GridTable extends ClientFormTable
     }
 
     public void pasteTable(List<List<String>> table) {
-        if (isReadOnly()) {
-            return;
-        }
-
         boolean singleV = selectionController.hasSingleSelection();
         int selectedColumn = getColumnModel().getSelectionModel().getLeadSelectionIndex();
         if (selectedColumn == -1) {
@@ -720,10 +711,6 @@ public abstract class GridTable extends ClientFormTable
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-    }
-
-    public boolean isReadOnly() {
-        return form.isReadOnlyMode() && isDataChanging();
     }
 
     @Override

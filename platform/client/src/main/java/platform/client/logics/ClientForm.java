@@ -24,8 +24,6 @@ public class ClientForm extends IdentityObject implements LogicsSupplier, Client
                                                           AbstractForm<ClientContainer, ClientComponent, ClientFunction>,
                                                           ApplicationContextHolder {
 
-    public boolean readOnly = false;
-
     public KeyStroke keyStroke = null;
 
     public String caption = "";
@@ -244,7 +242,6 @@ public class ClientForm extends IdentityObject implements LogicsSupplier, Client
     }
 
     public void customSerialize(ClientSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
-        outStream.writeBoolean(readOnly);
         pool.serializeObject(outStream, mainContainer);
         pool.serializeCollection(outStream, treeGroups, serializationType);
         pool.serializeCollection(outStream, groupObjects);
@@ -275,8 +272,6 @@ public class ClientForm extends IdentityObject implements LogicsSupplier, Client
     }
 
     public void customDeserialize(ClientSerializationPool pool, DataInputStream inStream) throws IOException {
-        readOnly = inStream.readBoolean();
-
         mainContainer = pool.deserializeObject(inStream);
         treeGroups = pool.deserializeList(inStream);
         groupObjects = pool.deserializeList(inStream);
@@ -358,7 +353,6 @@ public class ClientForm extends IdentityObject implements LogicsSupplier, Client
     public GForm getGwtForm() {
         if (gwtForm == null) {
             gwtForm = new GForm();
-            gwtForm.readOnly = readOnly;
             gwtForm.caption = caption;
             gwtForm.mainContainer = mainContainer.getGwtComponent();
 

@@ -433,11 +433,18 @@ public abstract class LogicsModule {
     }
 
     protected LP addMFAProp(AbstractGroup group, String caption, FormEntity form, ObjectEntity[] objectsToSet, PropertyObjectEntity[] setProperties, OrderEntity[] getProperties, boolean newSession) {
-        return addFAProp(group, caption, form, objectsToSet, setProperties, getProperties, newSession, true);
+        return addMFAProp(group, caption, form, objectsToSet, setProperties, getProperties, null, newSession);
+    }
+
+    protected LP addMFAProp(AbstractGroup group, String caption, FormEntity form, ObjectEntity[] objectsToSet, PropertyObjectEntity[] setProperties, OrderEntity[] getProperties, DataClass valueClass, boolean newSession) {
+        return addFAProp(group, caption, form, objectsToSet, setProperties, getProperties, valueClass, newSession, true);
     }
 
     protected LP addFAProp(AbstractGroup group, String caption, FormEntity form, ObjectEntity[] objectsToSet, PropertyObjectEntity[] setProperties, OrderEntity[] getProperties, boolean newSession, boolean isModal) {
-        return addProperty(group, new LP<ClassPropertyInterface>(new FormActionProperty(genSID(), caption, form, objectsToSet, setProperties, getProperties, newSession, isModal)));
+        return addFAProp(group, caption, form, objectsToSet, setProperties, getProperties, null, newSession, isModal);
+    }
+    protected LP addFAProp(AbstractGroup group, String caption, FormEntity form, ObjectEntity[] objectsToSet, PropertyObjectEntity[] setProperties, OrderEntity[] getProperties, DataClass valueClass, boolean newSession, boolean isModal) {
+        return addProperty(group, new LP<ClassPropertyInterface>(new FormActionProperty(genSID(), caption, form, objectsToSet, setProperties, getProperties, valueClass, newSession, isModal)));
     }
 
     protected LP addSelectFromListAction(AbstractGroup group, String caption, LP selectionProperty, ValueClass selectionClass, ValueClass... baseClasses) {
@@ -1702,12 +1709,14 @@ public abstract class LogicsModule {
     }
 
     @IdentityLazy
-    protected LP getAddFormAction(ConcreteCustomClass cls) {
+    protected LP getAddFormAction(CustomClass cls) {
         ClassFormEntity form = cls.getEditForm(baseLM);
+
+        LP addObjectAction = getAddObjectAction(cls);
         LP property = addMFAProp(actionGroup, ServerResourceBundle.getString("logics.add") + "(" + cls + ")",
                                 form, new ObjectEntity[] {},
-                                new PropertyObjectEntity[] {form.addPropertyObject(getAddObjectAction(cls))},
-                                new OrderEntity[] {(DataObject)cls.getClassObject()}, true);
+                                new PropertyObjectEntity[] {form.addPropertyObject(addObjectAction)},
+                                new OrderEntity[] {null}, ((ActionProperty)addObjectAction.property).getValueClass(), true);
         property.setImage("add.png");
         property.setEditKey(KeyStrokes.getAddActionPropertyKeyStroke());
         property.setShowEditKey(true);
@@ -1716,7 +1725,7 @@ public abstract class LogicsModule {
     }
 
     @IdentityLazy
-    protected LP getEditFormAction(ConcreteCustomClass cls) {
+    protected LP getEditFormAction(CustomClass cls) {
         ClassFormEntity form = cls.getEditForm(baseLM);
         LP property = addMFAProp(actionGroup, ServerResourceBundle.getString("logics.edit") + "(" + cls + ")",
                                 form, new ObjectEntity[] {form.getObject()}, true);
@@ -1968,13 +1977,13 @@ public abstract class LogicsModule {
     protected void addFormActions(FormEntity form, ObjectEntity object, boolean shouldBeLast) {
         form.addPropertyDraw(baseLM.delete, object).shouldBeLast = shouldBeLast;
 
-        PropertyDrawEntity actionEditPropertyDraw = form.addPropertyDraw(getEditFormAction((ConcreteCustomClass)object.baseClass), object);
+        PropertyDrawEntity actionEditPropertyDraw = form.addPropertyDraw(getEditFormAction((CustomClass)object.baseClass), object);
         actionEditPropertyDraw.shouldBeLast = shouldBeLast;
         actionEditPropertyDraw.forceViewType = ClassViewType.PANEL;
 
         form.forceDefaultDraw.put(actionEditPropertyDraw, object.groupTo);
 
-        LP addForm = getAddFormAction((ConcreteCustomClass)object.baseClass);
+        LP addForm = getAddFormAction((CustomClass)object.baseClass);
         PropertyDrawEntity actionAddPropertyDraw = form.addPropertyDraw(addForm);
         actionAddPropertyDraw.shouldBeLast = shouldBeLast;
         actionAddPropertyDraw.forceViewType = ClassViewType.PANEL;

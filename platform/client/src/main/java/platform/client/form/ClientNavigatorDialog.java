@@ -12,9 +12,4 @@ public class ClientNavigatorDialog extends ClientDialog {
 
         setUndecorated(false);
     }
-
-    @Override
-    protected boolean isReadOnlyMode() {
-        return (readOnly != null) ? readOnly : false;
-    }
 }

@@ -30,14 +30,6 @@ public class RemoteDialogProxy<T extends RemoteDialogInterface>
     }
 
     @ImmutableMethod
-    public Boolean isReadOnly() throws RemoteException {
-        logRemoteMethodStartCall("isReadOnly");
-        Boolean result = target.isReadOnly();
-        logRemoteMethodEndCall("isReadOnly", result);
-        return result;
-    }
-
-    @ImmutableMethod
     public Boolean isUndecorated() throws RemoteException {
         logRemoteMethodStartCall("isUndecorated");
         Boolean result = target.isUndecorated();

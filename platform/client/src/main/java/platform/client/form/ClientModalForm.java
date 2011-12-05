@@ -82,11 +82,6 @@ public class ClientModalForm extends JDialog {
             }
 
             @Override
-            public boolean isReadOnlyMode() {
-                return super.isReadOnlyMode();
-            }
-
-            @Override
             public boolean okPressed() {
                 if (super.okPressed()) {
                     hideDialog();

@@ -20,6 +20,7 @@ import platform.interop.form.RemoteFormInterface;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
+import java.awt.event.InputEvent;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.io.*;
@@ -66,10 +67,6 @@ public class ClientFormController {
 
     public boolean isNewSession() {
         return true;
-    }
-
-    public boolean isReadOnlyMode() {
-        return form.readOnly;
     }
 
     public int getID() {
@@ -337,9 +334,9 @@ public class ClientFormController {
         KeyStroke xlsKeyStroke = KeyStrokes.getXlsKeyStroke();
         KeyStroke nullKeyStroke = KeyStrokes.getNullKeyStroke();
         KeyStroke refreshKeyStroke = KeyStrokes.getRefreshKeyStroke();
-        KeyStroke okKeyStroke = KeyStrokes.getApplyKeyStroke(isModal() && isReadOnlyMode());
+        KeyStroke okKeyStroke = KeyStrokes.getApplyKeyStroke(isDialog() ? 0 : InputEvent.CTRL_DOWN_MASK);
         KeyStroke closeKeyStroke = KeyStrokes.getCancelKeyStroke(true);
-        KeyStroke applyKeyStroke = KeyStrokes.getApplyKeyStroke(false);
+        KeyStroke applyKeyStroke = KeyStrokes.getApplyKeyStroke(InputEvent.ALT_DOWN_MASK);
         KeyStroke cancelKeyStroke = KeyStrokes.getCancelKeyStroke(!isModal());
 
         // Добавляем стандартные кнопки

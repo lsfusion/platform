@@ -73,11 +73,6 @@ public class ClientActionClass extends ClientDataClass implements ClientTypeClas
         return null;
     }
 
-    @Override
-    public boolean shouldBeDrawn(ClientFormController form) {
-        return !form.isReadOnlyMode(); // не рисуем кнопки на диалогах
-    }
-
     public Object parseString(String s) throws ParseException {
         throw new ParseException(ClientResourceBundle.getString("logics.classes.actionclass.doesnt.support.convertation.from.string"), 0);
     }

@@ -141,8 +141,6 @@ public class FormView implements ServerIdentitySerializable, AbstractForm<Contai
 
     public List<PropertyDrawView> order = new ArrayList<PropertyDrawView>();
 
-    public boolean readOnly = false;
-
     public KeyStroke keyStroke = null;
 
     public String caption = "";
@@ -184,7 +182,6 @@ public class FormView implements ServerIdentitySerializable, AbstractForm<Contai
     }
 
     public void customSerialize(ServerSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
-        outStream.writeBoolean(readOnly);
         pool.serializeObject(outStream, mainContainer, serializationType);
         pool.serializeCollection(outStream, treeGroups, serializationType);
         pool.serializeCollection(outStream, groupObjects, serializationType);
@@ -216,8 +213,6 @@ public class FormView implements ServerIdentitySerializable, AbstractForm<Contai
     }
 
     public void customDeserialize(ServerSerializationPool pool, DataInputStream inStream) throws IOException {
-        readOnly = inStream.readBoolean();
-
         mainContainer = pool.deserializeObject(inStream);
         treeGroups = pool.deserializeList(inStream);
         groupObjects = pool.deserializeList(inStream);

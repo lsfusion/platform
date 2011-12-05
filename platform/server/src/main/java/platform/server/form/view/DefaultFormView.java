@@ -67,8 +67,6 @@ public class DefaultFormView extends FormView {
     public DefaultFormView(FormEntity<?> formEntity) {
         super(formEntity);
 
-        readOnly = entity.isReadOnly();
-
         ContainerFactory<ContainerView> containerFactory = new ContainerFactory<ContainerView>() {
             public ContainerView createContainer() {
                 return new ContainerView(idGenerator.idShift());

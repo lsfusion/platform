@@ -3615,7 +3615,9 @@ public class RomanLogicsModule extends LogicsModule {
             super(parent, sID, caption);
 
             objCategory = addSingleGroupObject(category, "Номенклатурная группа", baseGroup);
-            addObjectActions(this, objCategory);
+            setReadOnly(true);
+
+            addFormActions(this, objCategory);
 
             addDefaultOrder(baseLM.name, true);
         }
@@ -3635,7 +3637,9 @@ public class RomanLogicsModule extends LogicsModule {
             super(parent, sID, caption);
 
             objArticleComposite = addSingleGroupObject(articleComposite, "Артикул", sidArticle, nameSupplierArticle, nameBrandSupplierArticle, nameCategoryArticle, mainCompositionOriginArticle);
-            addObjectActions(this, objArticleComposite);
+            setReadOnly(true);
+
+            addFormActions(this, objArticleComposite);
 
             addDefaultOrder(sidArticle, true);
         }
@@ -3654,7 +3658,9 @@ public class RomanLogicsModule extends LogicsModule {
             super(parent, sID, caption);
 
             objColor = addSingleGroupObject(colorSupplier, "Цвет поставщика", sidColorSupplier, baseLM.name, nameSupplierColorSupplier);
-            addObjectActions(this, objColor);
+            setReadOnly(true);
+
+            addFormActions(this, objColor);
 
             addDefaultOrder(sidColorSupplier, true);
         }
@@ -3673,7 +3679,9 @@ public class RomanLogicsModule extends LogicsModule {
             super(parent, sID, caption);
 
             objSeason = addSingleGroupObject(seasonSupplier, "Сезон поставщика", sidSeasonSupplier, nameSupplierSeasonSupplier);
-            addObjectActions(this, objSeason);
+            setReadOnly(true);
+
+            addFormActions(this, objSeason);
 
             addDefaultOrder(sidSeasonSupplier, true);
         }
@@ -3692,7 +3700,9 @@ public class RomanLogicsModule extends LogicsModule {
             super(parent, sID, caption);
 
             objGender = addSingleGroupObject(genderSupplier, "Пол поставщика", sidGenderSupplier, nameSupplierGenderSupplier/*, nameGenderSupplierSku*/);
-            addObjectActions(this, objGender);
+            setReadOnly(true);
+
+            addFormActions(this, objGender);
 
             addDefaultOrder(sidGenderSupplier, true);
         }
@@ -3711,7 +3721,9 @@ public class RomanLogicsModule extends LogicsModule {
             super(parent, sID, caption);
 
             objTheme = addSingleGroupObject(themeSupplier, "Тема поставщика", sidThemeSupplier, baseLM.name, nameSupplierThemeSupplier);
-            addObjectActions(this, objTheme);
+            setReadOnly(true);
+
+            addFormActions(this, objTheme);
 
             addDefaultOrder(sidThemeSupplier, true);
         }
@@ -3730,7 +3742,9 @@ public class RomanLogicsModule extends LogicsModule {
             super(parent, sID, caption);
 
             objSize = addSingleGroupObject(sizeSupplier, "Размер поставщика", sidSizeSupplier, nameSupplierSizeSupplier, orderSizeSupplier);
-            addObjectActions(this, objSize);
+            setReadOnly(true);
+
+            addFormActions(this, objSize);
 
             addDefaultOrder(orderSizeSupplier, true);
         }
@@ -7840,11 +7854,6 @@ public class RomanLogicsModule extends LogicsModule {
         ObjectEntity objSku;
         ObjectEntity objShipmentDetail;
 
-        @Override
-        public boolean isReadOnly() {
-            return true;
-        }
-
         public FindItemFormEntity(NavigatorElement parent, String sID, String caption, boolean box, boolean barcode) {
             super(parent, sID, caption);
 
@@ -7911,6 +7920,8 @@ public class RomanLogicsModule extends LogicsModule {
                 else
                     addActionsOnOk(addPropertyObject(addSimpleShipmentDetailSimpleShipmentRouteSku, objShipment, objRoute, objSku));
             }
+
+            setReadOnly(true);
 
             addDefaultOrder(sidArticleSku, true);
         }

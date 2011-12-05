@@ -1898,8 +1898,7 @@ public class VEDLogicsModule extends LogicsModule {
                 objDoc.setAddOnTransaction();
             } else {
                 addPropertyDraw(orderUserName, objDoc);
-                if (!isReadOnly())
-                    addObjectActions(this, objDoc);
+                addObjectActions(this, objDoc);
             }
 
             addActionsOnObjectChange(objBarcode, addPropertyObject(barcodeAction2, objDoc, objBarcode));
@@ -2544,12 +2543,6 @@ public class VEDLogicsModule extends LogicsModule {
         private ObjectEntity objIssue;
 
         @Override
-        public boolean isReadOnly() {
-            return false;
-//            return !toAdd;
-        }
-
-        @Override
         protected boolean isSubjectImpl() {
             return true;
         }
@@ -3026,12 +3019,6 @@ public class VEDLogicsModule extends LogicsModule {
     }
 
     public class ReturnSaleCheckRetailFormEntity extends ReturnSaleRetailFormEntity {
-
-        @Override
-        public boolean isReadOnly() {
-            return false;
-//            return !toAdd;
-        }
 
         @Override
         protected String getReturnCaption() {
@@ -3702,12 +3689,6 @@ public class VEDLogicsModule extends LogicsModule {
     }
 
     public class SaleCheckCertFormEntity extends SaleCertFormEntity {
-
-        @Override
-        public boolean isReadOnly() {
-            return false;
-//            return !toAdd;
-        }
 
         protected SaleCheckCertFormEntity(NavigatorElement parent, String sID, boolean toAdd, boolean allStores) {
             super(parent, sID, saleCheckCert, toAdd, allStores);

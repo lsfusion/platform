@@ -5,6 +5,7 @@ import platform.interop.FormEventType;
 import platform.interop.action.ContinueAutoActionsClientAction;
 import platform.interop.action.FormClientAction;
 import platform.interop.action.MessageClientAction;
+import platform.server.classes.DataClass;
 import platform.server.classes.ValueClass;
 import platform.server.form.entity.FormEntity;
 import platform.server.form.entity.ObjectEntity;
@@ -31,6 +32,7 @@ public class FormActionProperty extends ActionProperty {
     private final PropertyObjectEntity[] setProperties;
     private final OrderEntity[] getProperties;
     public Set<ObjectEntity> seekOnOk = new HashSet<ObjectEntity>();
+    private DataClass valueClass;
     private final boolean newSession;
     private final boolean isModal;
 
@@ -46,8 +48,10 @@ public class FormActionProperty extends ActionProperty {
     //assert getProperties и setProperties одинаковой длины
     //setProperties привязаны к созадаваемой форме
     //getProperties привязаны к форме, содержащей свойство...
-    public FormActionProperty(String sID, String caption, FormEntity form, ObjectEntity[] objectsToSet, PropertyObjectEntity[] setProperties, OrderEntity[] getProperties, boolean newSession, boolean isModal) {
+    public FormActionProperty(String sID, String caption, FormEntity form, ObjectEntity[] objectsToSet, PropertyObjectEntity[] setProperties, OrderEntity[] getProperties, DataClass valueClass, boolean newSession, boolean isModal) {
         super(sID, caption, getValueClasses(objectsToSet));
+
+        this.valueClass = valueClass;
 
         assert setProperties.length == getProperties.length;
 
@@ -83,7 +87,7 @@ public class FormActionProperty extends ActionProperty {
 
                 for (int i = 0; i < setProperties.length; i++) {
                     newFormInstance.changeProperty(newFormInstance.instanceFactory.getInstance(setProperties[i]),
-                                                   getProperties[i] != null ? getProperties[i].getValue(thisFormInstance.instanceFactory, context.getSession(), context.getModifier()) : null,
+                                                   getProperties[i] != null ? getProperties[i].getValue(thisFormInstance.instanceFactory, context.getSession(), context.getModifier()) : context.getValueObject(),
                                                    newRemoteForm, null);
                 }
 
@@ -116,5 +120,13 @@ public class FormActionProperty extends ActionProperty {
 
     public static interface SelfInstancePostProcessor {
         public void postProcessSelfInstance(Map<ClassPropertyInterface, DataObject> keys, RemoteForm executeForm, FormInstance selfFormInstance);
+    }
+
+    @Override
+    public DataClass getValueClass() {
+        if (valueClass != null)
+            return valueClass;
+        else
+            return super.getValueClass();
     }
 }

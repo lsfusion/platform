@@ -558,7 +558,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP clusterForesight, sidForesight;
     LP foresightSID;
     LP nameNativeClusterForesight, nameForeignClusterForesight, nameNativeShortClusterForesight;
-    LP quantityProjectForesight;
+    LP quantityForesightProject;
     LP isPrevVoteVote;
     LP countPrevVote;
     public LP claimerProject;
@@ -1655,7 +1655,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         isRootForesight = addDProp(baseGroup, "isRootForesight", "Корневой", LogicalClass.instance, foresight);
         isRootInProjectForesight = addJProp("isRootInProjectForesight", "Вкл", baseLM.andNot1, inProjectForesight, 1, 2, isRootForesight, 2);
         isInClusterProjectForesight = addJProp(true, "isInClusterProjectForesight", "Форсайт в кластере проекта", inProjectCluster, 1, clusterForesight, 2);
-        quantityProjectForesight = addSGProp(baseGroup, "quantityProjectForesight", true, "Кол-во форсайтов",
+        quantityForesightProject = addSGProp(baseGroup, "quantityForesightProject", true, "Кол-во форсайтов",
                 addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1, foresight), 2,
                         inProjectForesight, 1, 2), 1);
 
@@ -3220,10 +3220,13 @@ public class SkolkovoLogicsModule extends LogicsModule {
                 "Согласно п.17 новой редакции положения, ответственный сотрудник кластера должен проверить заявку на соответствие направлению деятельности Фонда, а так же определеить инновационные приоритеты (форсайты) для каждой заявки.\n" +
                 "Пожалуйста выберите один или несколько инновационных приоритетов.\n" +
                 "Обращаем Ваше внимание, что согласно п.5 Положения об экспертных коллегиях, под инновационным приоритетом понимается пункт списка, не включающий в себя подпунктов.", baseLM.andNot1,
-                positiveResultForesightCheckProject, 1, quantityProjectForesight, 1), false);
+                positiveResultForesightCheckProject, 1, quantityForesightProject, 1), false);
 
-        addConstraint(addJProp("При отрицательном результате проверки на соответствие направлению деятельности Фонда необходимо указать комментарий.", baseLM.andNot1,
-                negativeResultForesightCheckProject, 1, commentForesightCheckProject, 1), false);
+        addConstraint(addJProp("Вы выбрали более одного инновационного приоритета ( форсайта ) - временно это запрещено \n", baseLM.and1,
+                positiveResultForesightCheckProject, 1, addJProp(baseLM.greater2, quantityForesightProject, 1, addCProp(IntegerClass.instance, 1)), 1), false);
+
+//        addConstraint(addJProp("При отрицательном результате проверки на соответствие направлению деятельности Фонда необходимо указать комментарий.", baseLM.andNot1,
+//                negativeResultForesightCheckProject, 1, commentForesightCheckProject, 1), false);
 
         needForesightCheckProject = addJProp("needForesightCheckProject", "Требуется проверка на форсайты", baseLM.and1,
                 isR2Project, 1,
@@ -5838,16 +5841,13 @@ public class SkolkovoLogicsModule extends LogicsModule {
                     new NotNullFilterEntity(addPropertyObject(inDefaultDocumentExpert, objDocument, objExpert))));
 
             addInlineEAForm(emailLetterExpertVoteEA, this, objExpert, 1, objVote, 2);
+
+            setReadOnly(true);
         }
 
         @Override
         public void modifyHierarchy(GroupObjectHierarchy groupHierarchy) {
             groupHierarchy.markGroupAsNonJoinable(gobjExpertVote);
-        }
-
-        @Override
-        public boolean isReadOnly() {
-            return true;
         }
     }
 
@@ -5861,11 +5861,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
             objExpert.groupTo.initClassView = ClassViewType.PANEL;
 
             addInlineEAForm(emailAuthExpertEA, this, objExpert, 1);
-        }
 
-        @Override
-        public boolean isReadOnly() {
-            return true;
+            setReadOnly(true);
         }
     }
 
@@ -5881,11 +5878,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
             addPropertyDraw(baseLM.webHost, objExpert.groupTo);
 
             addInlineEAForm(emailAuthProfileExpertEA, this, objExpert, 1);
-        }
 
-        @Override
-        public boolean isReadOnly() {
-            return true;
+            setReadOnly(true);
         }
     }
 
@@ -5901,11 +5895,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
             addPropertyDraw(baseLM.webHost, objExpert.groupTo);
 
             addInlineEAForm(emailReminderProfileExpertEA, this, objExpert, 1);
-        }
 
-        @Override
-        public boolean isReadOnly() {
-            return true;
+            setReadOnly(true);
         }
     }
 
@@ -5966,11 +5957,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(inConferenceExpert, objConference, objExpert)));
 
             addInlineEAForm(emailConferenceExpertEA, this, objConference, 1, objExpert, 2);
-        }
 
-        @Override
-        public boolean isReadOnly() {
-            return true;
+            setReadOnly(true);
         }
     }
 
@@ -6007,15 +5995,12 @@ public class SkolkovoLogicsModule extends LogicsModule {
             addDefaultHintsIncrementTable(this);
 
             voteStartFormVote = addFAProp("Созыв заседания", this, objVote);
+
+            setReadOnly(true);
         }
         @Override
         public void modifyHierarchy(GroupObjectHierarchy groupHierarchy) {
             groupHierarchy.markGroupAsNonJoinable(objVote.groupTo);
-        }
-
-        @Override
-        public boolean isReadOnly() {
-            return true;
         }
     }
 
@@ -6056,16 +6041,13 @@ public class SkolkovoLogicsModule extends LogicsModule {
             addDefaultHintsIncrementTable(this);
 
             voteProtocolFormVote = addFAProp("Протокол заседания", this, objVote);
+
+            setReadOnly(true);
         }
 
         @Override
         public void modifyHierarchy(GroupObjectHierarchy groupHierarchy) {
             groupHierarchy.markGroupAsNonJoinable(objVote.groupTo);
-        }
-
-        @Override
-        public boolean isReadOnly() {
-            return true;
         }
     }
 
@@ -6529,6 +6511,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
         private StatusFormEntity(NavigatorElement parent, String sID) {
             super(parent, sID, "Статус", true);
             objStatus = addSingleGroupObject(genID(), "Status", projectStatus, "Статус", numberProjectStatus, baseLM.name, oficialNameProjectStatus);
+
+            setReadOnly(true);
 
             addDefaultOrder(getPropertyDraw(numberProjectStatus, objStatus), true);
         }

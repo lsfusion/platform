@@ -64,15 +64,9 @@ public class ClientDialog extends ClientModalForm {
     }
 
 
-    protected Boolean readOnly;
-    boolean isReadOnlyMode() {
-        return (readOnly != null) ? readOnly : true;
-    }
-
     // необходим чтобы в диалоге менять формы (панели)
     protected ClientFormController createFormController() throws IOException, ClassNotFoundException {
         remoteDialog = (RemoteDialogInterface) remoteForm;
-        readOnly = remoteDialog.isReadOnly();
 
         return new ClientFormController(remoteDialog, null) {
 
@@ -89,11 +83,6 @@ public class ClientDialog extends ClientModalForm {
             @Override
             public boolean isNewSession() {
                 return false;
-            }
-
-            @Override
-            public boolean isReadOnlyMode() {
-                return super.isReadOnlyMode() || ClientDialog.this.isReadOnlyMode();
             }
 
             @Override

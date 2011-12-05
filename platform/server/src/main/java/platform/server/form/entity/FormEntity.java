@@ -87,10 +87,6 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         isPrintForm = iisPrintForm;
     }
 
-    public boolean isReadOnly() {
-        return false;
-    }
-
     public boolean shouldProceedDefaultDraw() {
         return true;
     }

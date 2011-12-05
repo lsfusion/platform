@@ -1714,11 +1714,8 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
             objUser.groupTo.initClassView = ClassViewType.PANEL;
 
             addInlineEAForm(emailUserPassUser, this, objUser, 1);
-        }
 
-        @Override
-        public boolean isReadOnly() {
-            return true;
+            setReadOnly(true);
         }
     }
 

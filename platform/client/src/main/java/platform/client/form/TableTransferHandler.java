@@ -24,8 +24,6 @@ public abstract class TableTransferHandler extends TransferHandler {
         void writeSelectedValue(String value); // записать значение в текущую ячейку
 
         void pasteTable(List<List<String>> table);
-
-        boolean isReadOnly();
     }
 
     protected abstract TableInterface getTable();

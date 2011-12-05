@@ -12,7 +12,6 @@ public class GForm implements Serializable {
     public GFormChangesDTO changes;
 
     public String caption;
-    public boolean readOnly;
 
     public GContainer mainContainer;
     public ArrayList<GGroupObject> groupObjects = new ArrayList<GGroupObject>();
