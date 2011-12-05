@@ -3940,7 +3940,7 @@ public class RomanLogicsModule extends LogicsModule {
                 objOrder.setAddOnEvent(FormEventType.INIT);
             }
 
-            addPropertyDraw(objOrder, baseLM.date, sidDocument, dateFromOrder, dateToOrder, nameCurrencyDocument, sumDocument, quantityDocument, netWeightDocument);
+            addPropertyDraw(objOrder, baseLM.date, sidDocument, nameDestinationDestinationDocument, dateFromOrder, dateToOrder, nameCurrencyDocument, sumDocument, quantityDocument, netWeightDocument);
             objOrder.groupTo.setSingleClassView(ClassViewType.PANEL);
 
             objSIDArticleComposite = addSingleGroupObject(StringClass.get(50), "Ввод составного артикула", baseLM.objectValue);
