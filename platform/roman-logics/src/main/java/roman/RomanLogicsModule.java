@@ -3638,9 +3638,7 @@ public class RomanLogicsModule extends LogicsModule {
             super(parent, sID, caption);
 
             objArticleComposite = addSingleGroupObject(articleComposite, "Артикул", sidArticle, nameSupplierArticle, nameBrandSupplierArticle);
-            setReadOnly(true);
-
-            addFormActions(this, objArticleComposite);
+            objArticleComposite.groupTo.setSingleClassView(ClassViewType.PANEL);
 
             addDefaultOrder(sidArticle, true);
         }

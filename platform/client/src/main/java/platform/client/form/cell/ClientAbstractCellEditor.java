@@ -48,9 +48,10 @@ public class ClientAbstractCellEditor extends AbstractCellEditor
             // ESC почему-то считается KEY_TYPED кнопкой, пока обрабатываем отдельно
             if (KeyStrokes.isEscapeEvent(event)) return false;
 
-            //будем считать, что если нажата кнопка ALT то явно пользователь не хочет вводить текст
+            //будем считать, что если нажата кнопка ALT или CTRL то явно пользователь не хочет вводить текст
             //noinspection RedundantIfStatement
-            if ((event.getModifiersEx() & KeyEvent.ALT_DOWN_MASK) > 0) return false;
+            if ((event.getModifiersEx() & KeyEvent.ALT_DOWN_MASK) > 0 ||
+                (event.getModifiersEx() & KeyEvent.CTRL_DOWN_MASK) > 0) return false;
 
             return true;
         }
