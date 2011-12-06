@@ -3423,6 +3423,7 @@ public class RomanLogicsModule extends LogicsModule {
         classifier.add(freightType.getListForm(baseLM));
         classifier.add(baseLM.dictionaryForm);
 
+        articleComposite.setEditForm(new ArticleCompositeEditFormEntity(null, "articleCompositeEditForm", "Артикул (составной)"));
         articleComposite.setDialogForm(new ArticleCompositeFormEntity(null, "articleCompositeForm", "Артикул (составной)"));
         colorSupplier.setDialogForm(new ColorSupplierFormEntity(null, "colorSupplierForm", "Цвет поставщика"));
         sizeSupplier.setDialogForm(new SizeSupplierFormEntity(null, "sizeSupplierForm", "Размер поставщика"));
@@ -3629,6 +3630,28 @@ public class RomanLogicsModule extends LogicsModule {
 
     }
 
+    private class ArticleCompositeEditFormEntity extends ClassFormEntity<RomanBusinessLogics> {
+
+        private ObjectEntity objArticleComposite;
+
+        public ArticleCompositeEditFormEntity(NavigatorElement parent, String sID, String caption) {
+            super(parent, sID, caption);
+
+            objArticleComposite = addSingleGroupObject(articleComposite, "Артикул", sidArticle, nameSupplierArticle, nameBrandSupplierArticle);
+            setReadOnly(true);
+
+            addFormActions(this, objArticleComposite);
+
+            addDefaultOrder(sidArticle, true);
+        }
+
+        @Override
+        public ObjectEntity getObject() {
+            return objArticleComposite;
+        }
+    }
+
+
     private class ArticleCompositeFormEntity extends ClassFormEntity<RomanBusinessLogics> {
 
         private ObjectEntity objArticleComposite;
@@ -3649,6 +3672,7 @@ public class RomanLogicsModule extends LogicsModule {
             return objArticleComposite;
         }
     }
+
 
     private class ColorSupplierFormEntity extends ClassFormEntity<RomanBusinessLogics> {
 
