@@ -3,6 +3,8 @@ IMPORT BaseLogicsModule;
 CLASS game 'Игра';
 CLASS team 'Команда' : named;
 
+CLASS conference 'Конференция' : named;
+
 CLASS STATIC gameResult 'Результат матча'
 {
     win 'В основное время',
@@ -11,6 +13,9 @@ CLASS STATIC gameResult 'Результат матча'
 };
 
 city(team) = DATA STRING[100] (team) IN baseGroup;
+
+conference(team) = DATA conference (team);
+conferenceName(team) = name(conference(team)) IN baseGroup;
 
 hostTeam(game) = DATA team (game);
 guestTeam(game) = DATA team (game);
@@ -24,14 +29,16 @@ hostGoals(game) = DATA INTEGER (game) IN baseGroup;
 guestGoals(game) = DATA INTEGER (game) IN baseGroup;
 
 gameWinner(game) = UNION EXCLUSIVE (hostTeam(game) IF hostGoals(game) > guestGoals(game),
-                                    guestTeam(game) IF hostGoals(game) <  guestGoals(game));
+                                    guestTeam(game) IF hostGoals(game) < guestGoals(game));
 
 gameLooser(game) = UNION OVERRIDE (hostTeam(game), guestTeam(game) IF gameWinner(game) != guestTeam(game));
 
 gameWinnerName = name(gameWinner(game));
 gameLooserName = name(gameLooser(game));
 
-gameResult(game) = DATA gameResult (game);
+gameResultData(game) = DATA gameResult (game);
+
+gameResult(game) = UNION OVERRIDE (gameResult.win IF game IS game, gameResultData(game));
 
 gameResultName(game) = name(gameResult(game)) IN baseGroup;
 
@@ -73,6 +80,8 @@ CONSTRAINT CHECKED extendedGame(game) AND guestGoals(game) > hostGoals(game) + 1
 
 FORM MainForm 'Турнирная таблица'
 OBJECTS game, team
-PROPERTIES gameDate(game), hostTeamName(game), hostGoals(game), guestGoals(game), guestTeamName(game)
+PROPERTIES gameDate(game), hostTeamName(game), hostGoals(game), guestGoals(game), guestTeamName(game), gameResultName(game)
 PROPERTIES name(team), gamesPlayed(team), gamesWon(team), gamesWonOT(team), gamesWonSO(team), gamesLostSO(team),
-           gamesLostOT(team), gamesLost(team), goalsScored(team), goalsConceded(team), points(team);
+           gamesLostOT(team), gamesLost(team), goalsScored(team), goalsConceded(team), points(team)
+PROPERTIES ADDOBJ(game);
+           

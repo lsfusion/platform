@@ -112,13 +112,13 @@ storeIsHuge2(store) = (storeSize(store) == storeSize.huge) == TRUE;
 
 documentBalance(document, article) = balanceQuantity(store(document), article);
 
-///////////////CONSTRAINT STATEMENT/////////////
+///////////////CONSTRAINT STATEMENT//////////////
 
 // Syntax:
 // CONSTRAINT [CHECKED] propertyExpression;
 CONSTRAINT CHECKED foo(store, article) > 1000;
 
-////////////////////////////// FORM STATEMENT ////////////////////////////
+//////////////// FORM STATEMENT /////////////////
 
 // Syntax:
 // FORM name ['caption']
@@ -135,7 +135,7 @@ OBJECTS document, article
 
 // Property list syntax:
 // PROPERTIES propName1(param1, ..., paramN1), ..., propNameK(param1, ..., paramNK)
-// Special properties: SELECTION, OBJVALUE
+// Special properties: SELECTION, OBJVALUE, ADDOBJ
 PROPERTIES name(document), store(document), name(article), storeName(document)
 PROPERTIES quantity(document, article)
 PROPERTIES inQuantity(document, article), outQuantity(document, article), documentBalance(document, article)

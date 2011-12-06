@@ -251,10 +251,16 @@ formPropertiesList[ScriptingFormEntity form]
 
 
 formPropertyDeclaration returns [String name, List<String> mapping]
-	:	id=compoundID { $name = $id.text; }
+	:	(  id=compoundID { $name = $id.text; }
+		|  spid=formSpecialPropertyName { $name = $spid.text; }	 
+		)
 		'(' 
 		objects=idList { $mapping = $objects.ids; } 
 		')'
+	;
+
+formSpecialPropertyName 
+	:	('OBJVALUE') | ('SELECTION') | ('ADDOBJ')
 	;
 
 

@@ -14,6 +14,7 @@
     </options>
     <keywords ignore_case="false">
       <keyword name="ABSTRACT" />
+      <keyword name="ADDOBJ" />
       <keyword name="AND" />
       <keyword name="AS" />
       <keyword name="BOOLEAN" />

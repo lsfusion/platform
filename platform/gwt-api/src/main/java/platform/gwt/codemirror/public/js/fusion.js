@@ -12,8 +12,8 @@ CodeMirror.defineMode("fusion", function(config, parserConfig) {
                          "PROPERTIES FILTERS FORM INIT FIXED " +
                          "PANEL HIDE GRID SUM MAX BY DATA UNION " +
                          "OVERRIDE XOR EXCLUSIVE IS AS IN PERSISTENT " +
-                         "TRUE FALSE NOT NULL AND IF STATIC" +
-                         "OBJVALUE SELECTION CONSTRAINT CHECKED");
+                         "TRUE FALSE NOT NULL AND IF STATIC " +
+                         "OBJVALUE SELECTION ADDOBJ CONSTRAINT CHECKED");
 
     var isOperatorChar = /[+\-*&%=<>!?|]/;
 

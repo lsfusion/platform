@@ -137,8 +137,12 @@ public class ScriptingErrorLog {
     }
 
     public void emitParamCountError(LsfLogicsParser parser, LP<?> property, int paramCount) throws SemanticErrorException {
-        SemanticErrorException e = new SemanticErrorException(parser.input);
         int interfacesCount = property.property.interfaces.size();
+        emitParamCountError(parser, interfacesCount, paramCount);
+    }
+
+    public void emitParamCountError(LsfLogicsParser parser, int interfacesCount, int paramCount) throws SemanticErrorException {
+        SemanticErrorException e = new SemanticErrorException(parser.input);
         String msg = getSemanticRecognitionErrorText(String.valueOf(interfacesCount) + " parameter(s) expected, " +
                 String.valueOf(paramCount) + " provided\n", parser, e);
         emitSemanticError(msg, e);

@@ -94,12 +94,24 @@ public class ScriptingFormEntity extends FormEntity {
     public void addScriptedPropertyDraws(List<String> properties, List<List<String>> mappings) throws ScriptingErrorLog.SemanticErrorException {
         assert properties.size() == mappings.size();
         for (int i = 0; i < properties.size(); i++) {
-            if (properties.get(i).equals("OBJVALUE")) { // todo [dale]: рефакторинг не помешает в будущем
-                addPropertyDraw(LM.baseLM.objectValue, false, getMappingObjectsArray(mappings.get(i)));
+            List<String> mapping = mappings.get(i);
+            if (properties.get(i).equals("OBJVALUE")) {
+                if (mapping.size() != 1) {
+                    LM.getErrLog().emitParamCountError(LM.getParser(), 1, mapping.size());
+                }
+                addPropertyDraw(LM.baseLM.objectValue, false, getMappingObjectsArray(mapping));
             } else if (properties.get(i).equals("SELECTION")) {
-                addPropertyDraw(LM.baseLM.sessionGroup, false, getMappingObjectsArray(mappings.get(i)));
+                addPropertyDraw(LM.baseLM.sessionGroup, false, getMappingObjectsArray(mapping));
+            } else if (properties.get(i).equals("ADDOBJ")) {
+                if (mapping.size() != 1) {
+                    LM.getErrLog().emitParamCountError(LM.getParser(), 1, mapping.size());
+                }
+
+                ObjectEntity[] obj = getMappingObjectsArray(mapping);
+                LP<?> addObjAction = LM.getAddObjectAction(obj[0].baseClass);
+                addPropertyDraw(addObjAction);
             } else {
-                MappedProperty prop = getPropertyWithMapping(properties.get(i), mappings.get(i));
+                MappedProperty prop = getPropertyWithMapping(properties.get(i), mapping);
                 addPropertyDraw(prop.property, prop.mapping);
             }
         }
