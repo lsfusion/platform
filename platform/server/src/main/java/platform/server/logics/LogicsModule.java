@@ -424,8 +424,11 @@ public abstract class LogicsModule {
     }
 
     protected LP addMFAProp(AbstractGroup group, String caption, FormEntity form, ObjectEntity[] objectsToSet, boolean newSession, PropertyObjectEntity... setProperties) {
-        // во все setProperties просто будут записаны null'ы
-        return addMFAProp(group, caption, form, objectsToSet, setProperties, new PropertyObjectEntity[setProperties.length], newSession);
+        return addMFAProp(group, genSID(), caption, form, objectsToSet, newSession, setProperties);
+    }
+
+    protected LP addMFAProp(AbstractGroup group, String sID, String caption, FormEntity form, ObjectEntity[] objectsToSet, boolean newSession, PropertyObjectEntity... setProperties) {
+        return addMFAProp(group, sID, caption, form, objectsToSet, setProperties, new PropertyObjectEntity[setProperties.length], newSession);
     }
 
     protected LP addMFAProp(AbstractGroup group, String caption, FormEntity form, ObjectEntity[] objectsToSet, PropertyObjectEntity[] setProperties, OrderEntity[] getProperties) {
@@ -436,15 +439,28 @@ public abstract class LogicsModule {
         return addMFAProp(group, caption, form, objectsToSet, setProperties, getProperties, null, newSession);
     }
 
+    protected LP addMFAProp(AbstractGroup group, String sID, String caption, FormEntity form, ObjectEntity[] objectsToSet, PropertyObjectEntity[] setProperties, OrderEntity[] getProperties, boolean newSession) {
+        return addMFAProp(group, sID, caption, form, objectsToSet, setProperties, getProperties, null, newSession);
+    }
+
     protected LP addMFAProp(AbstractGroup group, String caption, FormEntity form, ObjectEntity[] objectsToSet, PropertyObjectEntity[] setProperties, OrderEntity[] getProperties, DataClass valueClass, boolean newSession) {
-        return addFAProp(group, caption, form, objectsToSet, setProperties, getProperties, valueClass, newSession, true);
+        return addMFAProp(group, genSID(), caption, form, objectsToSet, setProperties, getProperties, valueClass, newSession);
+    }
+
+    protected LP addMFAProp(AbstractGroup group, String sID, String caption, FormEntity form, ObjectEntity[] objectsToSet, PropertyObjectEntity[] setProperties, OrderEntity[] getProperties, DataClass valueClass, boolean newSession) {
+        return addFAProp(group, sID, caption, form, objectsToSet, setProperties, getProperties, valueClass, newSession, true);
     }
 
     protected LP addFAProp(AbstractGroup group, String caption, FormEntity form, ObjectEntity[] objectsToSet, PropertyObjectEntity[] setProperties, OrderEntity[] getProperties, boolean newSession, boolean isModal) {
         return addFAProp(group, caption, form, objectsToSet, setProperties, getProperties, null, newSession, isModal);
     }
+
     protected LP addFAProp(AbstractGroup group, String caption, FormEntity form, ObjectEntity[] objectsToSet, PropertyObjectEntity[] setProperties, OrderEntity[] getProperties, DataClass valueClass, boolean newSession, boolean isModal) {
-        return addProperty(group, new LP<ClassPropertyInterface>(new FormActionProperty(genSID(), caption, form, objectsToSet, setProperties, getProperties, valueClass, newSession, isModal)));
+        return addFAProp(group, genSID(), caption, form, objectsToSet, setProperties, getProperties, valueClass, newSession, isModal);
+    }
+
+    protected LP addFAProp(AbstractGroup group, String sID, String caption, FormEntity form, ObjectEntity[] objectsToSet, PropertyObjectEntity[] setProperties, OrderEntity[] getProperties, DataClass valueClass, boolean newSession, boolean isModal) {
+        return addProperty(group, new LP<ClassPropertyInterface>(new FormActionProperty(sID, caption, form, objectsToSet, setProperties, getProperties, valueClass, newSession, isModal)));
     }
 
     protected LP addSelectFromListAction(AbstractGroup group, String caption, LP selectionProperty, ValueClass selectionClass, ValueClass... baseClasses) {
@@ -1699,7 +1715,7 @@ public abstract class LogicsModule {
 
     @IdentityLazy
     protected LP getAddObjectAction(ValueClass cls) {
-        return addAProp(new AddObjectActionProperty(genSID(), (CustomClass) cls));
+        return addAProp(new AddObjectActionProperty("add" + BaseUtils.capitalize(cls.getSID()), (CustomClass) cls));
     }
 
     @IdentityLazy
@@ -1713,7 +1729,7 @@ public abstract class LogicsModule {
         ClassFormEntity form = cls.getEditForm(baseLM);
 
         LP addObjectAction = getAddObjectAction(cls);
-        LP property = addMFAProp(actionGroup, ServerResourceBundle.getString("logics.add") + "(" + cls + ")",
+        LP property = addMFAProp(actionGroup, "addForm" + BaseUtils.capitalize(cls.getSID()), ServerResourceBundle.getString("logics.add") + "(" + cls + ")",
                                 form, new ObjectEntity[] {},
                                 new PropertyObjectEntity[] {form.addPropertyObject(addObjectAction)},
                                 new OrderEntity[] {null}, ((ActionProperty)addObjectAction.property).getValueClass(), true);
@@ -1727,7 +1743,7 @@ public abstract class LogicsModule {
     @IdentityLazy
     protected LP getEditFormAction(CustomClass cls) {
         ClassFormEntity form = cls.getEditForm(baseLM);
-        LP property = addMFAProp(actionGroup, ServerResourceBundle.getString("logics.edit") + "(" + cls + ")",
+        LP property = addMFAProp(actionGroup, "editForm" + BaseUtils.capitalize(cls.getSID()), ServerResourceBundle.getString("logics.edit") + "(" + cls + ")",
                                 form, new ObjectEntity[] {form.getObject()}, true);
         property.setImage("edit.png");
         property.setEditKey(KeyStrokes.getEditActionPropertyKeyStroke());
