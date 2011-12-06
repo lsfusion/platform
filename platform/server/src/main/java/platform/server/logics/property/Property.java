@@ -97,6 +97,10 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
 
     public PanelLocation panelLocation;
 
+    public Boolean shouldBeLast;
+
+    public ClassViewType forceViewType;
+
     public boolean askConfirm = false;
 
     public String toString() {
@@ -621,6 +625,12 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
             form.addPropertyDraw(logFormProperty, BaseUtils.orderMap(entity.propertyObject.mapping, interfaces).values().toArray(new ObjectEntity[]{}));
             form.setForceViewType(logFormProperty, ClassViewType.PANEL);
         }
+
+        if (shouldBeLast != null)
+            entity.shouldBeLast = shouldBeLast;
+
+        if (forceViewType != null)
+            entity.forceViewType = forceViewType;
     }
 
     public void proceedDefaultDesign(PropertyDrawView propertyView, DefaultFormView view) {

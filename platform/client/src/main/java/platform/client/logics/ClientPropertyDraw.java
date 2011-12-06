@@ -138,10 +138,6 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         return null;
     }
 
-    public ClientGroupObject getKeyBindingGroup() {
-        return BaseUtils.nvl(keyBindingGroup, getGroupObject());
-    }
-
     public ClientGroupObject getGroupObject() {
         return groupObject;
     }

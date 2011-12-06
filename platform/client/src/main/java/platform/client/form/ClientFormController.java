@@ -209,8 +209,8 @@ public class ClientFormController {
             comboBox.addItem(new ClientRegularFilterWrapped(filter));
         }
 
-        if (filterGroup.panelLocation.isToolbarLocation() && filterGroup.keyBindingGroup != null) {
-            GroupObjectController controller = controllers.get(filterGroup.keyBindingGroup);
+        if (filterGroup.panelLocation.isToolbarLocation()) {
+            GroupObjectController controller = controllers.get(filterGroup.groupObject);
             controller.addFilterToToolbar(filterGroup, comboBox);
         }
 
@@ -247,8 +247,8 @@ public class ClientFormController {
             checkBox.setSelected(true);
         }
 
-        if (filterGroup.panelLocation.isToolbarLocation() && filterGroup.keyBindingGroup != null) {
-            GroupObjectController controller = controllers.get(filterGroup.keyBindingGroup);
+        if (filterGroup.panelLocation.isToolbarLocation()) {
+            GroupObjectController controller = controllers.get(filterGroup.groupObject);
             controller.addFilterToToolbar(filterGroup, checkBox);
         }
 

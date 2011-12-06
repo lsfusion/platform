@@ -37,7 +37,6 @@ public class FormDescriptor extends ContextIdentityObject implements ClientIdent
     public List<PropertyDrawDescriptor> propertyDraws = new ArrayList<PropertyDrawDescriptor>();
     public Set<FilterDescriptor> fixedFilters = new HashSet<FilterDescriptor>();
     public List<RegularFilterGroupDescriptor> regularFilterGroups = new ArrayList<RegularFilterGroupDescriptor>();
-    public Map<PropertyDrawDescriptor, GroupObjectDescriptor> forceDefaultDraw = new HashMap<PropertyDrawDescriptor, GroupObjectDescriptor>();
     public Map<Object, List<PropertyObjectDescriptor>> eventActions = new HashMap<Object, List<PropertyObjectDescriptor>>();
     public OrderedMap<PropertyDrawDescriptor, Boolean> defaultOrders = new OrderedMap<PropertyDrawDescriptor, Boolean>();
 
@@ -222,7 +221,6 @@ public class FormDescriptor extends ContextIdentityObject implements ClientIdent
         pool.serializeCollection(outStream, propertyDraws);
         pool.serializeCollection(outStream, fixedFilters);
         pool.serializeCollection(outStream, regularFilterGroups);
-        pool.serializeMap(outStream, forceDefaultDraw);
 
         outStream.writeInt(defaultOrders.size());
         for (Map.Entry<PropertyDrawDescriptor, Boolean> entry : defaultOrders.entrySet()) {
@@ -258,7 +256,6 @@ public class FormDescriptor extends ContextIdentityObject implements ClientIdent
         propertyDraws = pool.deserializeList(inStream);
         fixedFilters = pool.deserializeSet(inStream);
         regularFilterGroups = pool.deserializeList(inStream);
-        forceDefaultDraw = pool.deserializeMap(inStream);
 
         defaultOrders = new OrderedMap<PropertyDrawDescriptor, Boolean>();
         int orderCount = inStream.readInt();

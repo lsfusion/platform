@@ -22,6 +22,8 @@ public class ClientRegularFilterGroup extends ClientComponent {
 
     public int defaultFilter = -1;
 
+    public ClientGroupObject groupObject;
+
     public ClientRegularFilterGroup() {
 
     }
@@ -61,6 +63,8 @@ public class ClientRegularFilterGroup extends ClientComponent {
             ClientPropertyDraw order = pool.deserializeObject(inStream);
             nullOrders.put(order, inStream.readBoolean());
         }
+
+        groupObject = pool.deserializeObject(inStream);
     }
 
     @Override
@@ -93,6 +97,7 @@ public class ClientRegularFilterGroup extends ClientComponent {
 
             initGwtComponent(gwtFilterGroup);
             gwtFilterGroup.defaultFilter = defaultFilter;
+            gwtFilterGroup.groupObject = groupObject.getGwtGroupObject();
 
             for (ClientRegularFilter filter : filters) {
                 gwtFilterGroup.filters.add(filter.getGwtRegularFilter());

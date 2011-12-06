@@ -54,7 +54,7 @@ public class PropertyController implements CellViewListener {
         view.addListener(this);
 
         if (key.editKey != null)
-            form.getComponent().addKeyBinding(key.editKey, key.getKeyBindingGroup(), new KeyAdapter() {
+            form.getComponent().addKeyBinding(key.editKey, key.groupObject, new KeyAdapter() {
                 @Override
                 public void keyPressed(KeyEvent e) {
                     startEditing(e);

@@ -199,7 +199,7 @@ public class GFormController extends HLayout implements FormLogicsProvider {
     }
 
     private void addFilterComponent(GRegularFilterGroup filterGroup, FormItem item) {
-        controllers.get(filterGroup.keyBindingGroup).addFilterComponent(item);
+        controllers.get(filterGroup.groupObject).addFilterComponent(item);
     }
 
     private void initializeControllers() {

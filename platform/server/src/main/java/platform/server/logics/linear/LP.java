@@ -3,6 +3,7 @@ package platform.server.logics.linear;
 import platform.base.BaseUtils;
 import platform.base.OrderedMap;
 import platform.base.Result;
+import platform.interop.ClassViewType;
 import platform.interop.PanelLocation;
 import platform.interop.action.ClientAction;
 import platform.server.classes.ValueClass;
@@ -304,5 +305,13 @@ public class LP<T extends PropertyInterface> {
 
     public void setPanelLocation(PanelLocation panelLocation) {
         property.panelLocation = panelLocation;
+    }
+
+    public void setShouldBeLast(boolean shouldBeLast) {
+        property.shouldBeLast = shouldBeLast;
+    }
+
+    public void setForceViewType(ClassViewType forceViewType) {
+        property.forceViewType = forceViewType;
     }
 }

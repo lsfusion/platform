@@ -163,6 +163,17 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         return null;
     }
 
+    public ObjectEntity getObject(ValueClass cls) {
+        for (GroupObjectEntity group : groups) {
+            for (ObjectEntity object : group.objects) {
+                if (cls.equals(object.baseClass)) {
+                    return object;
+                }
+            }
+        }
+        return null;
+    }
+
     public RegularFilterGroupEntity getRegularFilterGroup(int id) {
         for (RegularFilterGroupEntity filterGroup : regularFilterGroups) {
             if (filterGroup.getID() == id) {
@@ -684,7 +695,6 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         propertyDraws = pool.deserializeList(inStream);
         fixedFilters = pool.deserializeSet(inStream);
         regularFilterGroups = pool.deserializeList(inStream);
-        forceDefaultDraw = pool.deserializeMap(inStream);
 
         int orderCount = inStream.readInt();
         for (int i = 0; i < orderCount; i++) {

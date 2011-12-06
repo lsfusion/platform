@@ -1734,9 +1734,11 @@ public abstract class LogicsModule {
                                 new PropertyObjectEntity[] {form.addPropertyObject(addObjectAction)},
                                 new OrderEntity[] {null}, ((ActionProperty)addObjectAction.property).getValueClass(), true);
         property.setImage("add.png");
+        property.setShouldBeLast(true);
         property.setEditKey(KeyStrokes.getAddActionPropertyKeyStroke());
         property.setShowEditKey(true);
         property.setPanelLocation(new ToolbarPanelLocation());
+        property.setForceViewType(ClassViewType.PANEL);
         return property;
     }
 
@@ -1746,9 +1748,11 @@ public abstract class LogicsModule {
         LP property = addMFAProp(actionGroup, "editForm" + BaseUtils.capitalize(cls.getSID()), ServerResourceBundle.getString("logics.edit") + "(" + cls + ")",
                                 form, new ObjectEntity[] {form.getObject()}, true);
         property.setImage("edit.png");
+        property.setShouldBeLast(true);
         property.setEditKey(KeyStrokes.getEditActionPropertyKeyStroke());
         property.setShowEditKey(true);
         property.setPanelLocation(new ToolbarPanelLocation());
+        property.setForceViewType(ClassViewType.PANEL);
         return property;
     }
 
@@ -1967,9 +1971,8 @@ public abstract class LogicsModule {
     }
 
     protected void addObjectActions(FormEntity form, ObjectEntity object, boolean actionImport, boolean shouldBeLast, ObjectEntity checkObject, ValueClass checkObjectClass) {
-        form.addPropertyDraw(baseLM.delete, object).shouldBeLast = shouldBeLast;
         if (actionImport)
-            form.forceDefaultDraw.put(form.addPropertyDraw(getImportObjectAction(object.baseClass)), object.groupTo);
+            form.addPropertyDraw(getImportObjectAction(object.baseClass)).toDraw = object.groupTo;
 
         PropertyDrawEntity actionAddPropertyDraw;
         if (checkObject == null) {
@@ -1979,11 +1982,13 @@ public abstract class LogicsModule {
                     getAddObjectActionWithClassCheck(object.baseClass, checkObjectClass != null ? checkObjectClass : checkObject.baseClass),
                     checkObject);
 
-            actionAddPropertyDraw.shouldBeLast = shouldBeLast;
             actionAddPropertyDraw.forceViewType = ClassViewType.PANEL;
         }
+
         actionAddPropertyDraw.shouldBeLast = shouldBeLast;
-        form.forceDefaultDraw.put(actionAddPropertyDraw, object.groupTo);
+        actionAddPropertyDraw.toDraw = object.groupTo;
+
+        form.addPropertyDraw(baseLM.delete, object).shouldBeLast = shouldBeLast;
     }
 
     public void addFormActions(FormEntity form, ObjectEntity object) {
@@ -1991,18 +1996,10 @@ public abstract class LogicsModule {
     }
 
     protected void addFormActions(FormEntity form, ObjectEntity object, boolean shouldBeLast) {
-        form.addPropertyDraw(baseLM.delete, object).shouldBeLast = shouldBeLast;
-
-        PropertyDrawEntity actionEditPropertyDraw = form.addPropertyDraw(getEditFormAction((CustomClass)object.baseClass), object);
-        actionEditPropertyDraw.shouldBeLast = shouldBeLast;
-        actionEditPropertyDraw.forceViewType = ClassViewType.PANEL;
-
-        form.forceDefaultDraw.put(actionEditPropertyDraw, object.groupTo);
-
         LP addForm = getAddFormAction((CustomClass)object.baseClass);
         PropertyDrawEntity actionAddPropertyDraw = form.addPropertyDraw(addForm);
         actionAddPropertyDraw.shouldBeLast = shouldBeLast;
-        actionAddPropertyDraw.forceViewType = ClassViewType.PANEL;
+        actionAddPropertyDraw.toDraw = object.groupTo;
 
         // todo : так не очень правильно делать - получается, что мы добавляем к Immutable объекту FormActionProperty ссылки на ObjectEntity
         FormActionProperty formAction = (FormActionProperty)addForm.property;
@@ -2010,6 +2007,8 @@ public abstract class LogicsModule {
 
         formAction.seekOnOk.add(classForm.getObject());
 
-        form.forceDefaultDraw.put(actionAddPropertyDraw, object.groupTo);
+        form.addPropertyDraw(getEditFormAction((CustomClass)object.baseClass), object).shouldBeLast = shouldBeLast;
+
+        form.addPropertyDraw(baseLM.delete, object).shouldBeLast = shouldBeLast;
     }
 }

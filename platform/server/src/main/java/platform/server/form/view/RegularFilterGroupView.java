@@ -63,6 +63,8 @@ public class RegularFilterGroupView extends ComponentView {
             pool.serializeObject(outStream, entry.getKey(), serializationType);
             outStream.writeBoolean(entry.getValue());
         }
+
+        pool.serializeObject(outStream, pool.context.view.getGroupObject(entity.getToDraw(pool.context.view.entity)));
     }
 
     @Override

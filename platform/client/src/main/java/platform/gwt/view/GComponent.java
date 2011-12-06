@@ -6,6 +6,5 @@ public class GComponent implements Serializable {
     public int ID;
     public GContainer container;
     public boolean defaultComponent;
-    public GGroupObject keyBindingGroup;
     public boolean drawToToolbar;
 }

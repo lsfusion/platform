@@ -123,13 +123,7 @@ public class DefaultFormView extends FormView {
 
             PropertyDrawView clientProperty = new PropertyDrawView(control);
 
-            GroupObjectEntity groupDraw = entity.forceDefaultDraw.get(control);
-            if(groupDraw!=null) {
-                clientProperty.keyBindingGroup = groupDraw;
-            } else {
-                groupDraw = control.getToDraw(entity);
-            }
-            GroupObjectView groupObject = mgroupObjects.get(groupDraw);
+            GroupObjectView groupObject = mgroupObjects.get(control.getToDraw(entity));
 
             mproperties.put(control, clientProperty);
             properties.add(clientProperty);
@@ -148,19 +142,10 @@ public class DefaultFormView extends FormView {
 
         for (RegularFilterGroupEntity filterGroup : entity.regularFilterGroups) {
 
-            Set<ObjectEntity> groupObjects = new HashSet<ObjectEntity>();
-
-            // ищем самый нижний GroupObjectInstance, к которому применяется фильтр
-            for (RegularFilterEntity regFilter : filterGroup.filters) {
-                groupObjects.addAll(entity.getApplyObject(regFilter.filter.getObjects()).objects);
-            }
-
-            GroupObjectEntity filterGroupObject = entity.getApplyObject(groupObjects);
+            GroupObjectView filterGroupObject = mgroupObjects.get(filterGroup.getToDraw(entity));
 
             RegularFilterGroupView filterGroupView = new RegularFilterGroupView(filterGroup);
-            filterContainers.get(mgroupObjects.get(filterGroupObject)).add(filterGroupView);
-
-            filterGroupView.keyBindingGroup = filterGroupObject;
+            filterContainers.get(filterGroupObject).add(filterGroupView);
 
             regularFilters.add(filterGroupView);
             mfilters.put(filterGroup, filterGroupView);

@@ -35,8 +35,6 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
 
     public SimplexConstraints<ComponentView> constraints = getDefaultConstraints();
 
-    public GroupObjectEntity keyBindingGroup = null;
-
     protected PanelLocation panelLocation;
 
     public SimplexConstraints<ComponentView> getDefaultConstraints() {
@@ -89,7 +87,6 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
             pool.writeObject(outStream, intersect.getValue());
         }
         outStream.writeBoolean(defaultComponent);
-        pool.serializeObject(outStream, pool.context.view.getGroupObject(keyBindingGroup));
         pool.writeObject(outStream, panelLocation);
     }
 
@@ -113,12 +110,6 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
         }
 
         defaultComponent = inStream.readBoolean();
-
-        GroupObjectView keyBindingGroupView = pool.deserializeObject(inStream);
-        if (keyBindingGroupView != null) {
-            keyBindingGroup = keyBindingGroupView.entity;
-        }
-
         panelLocation = pool.readObject(inStream);
     }
 }

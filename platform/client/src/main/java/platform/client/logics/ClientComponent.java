@@ -41,8 +41,6 @@ public abstract class ClientComponent extends ContextIdentityObject implements S
 
     public boolean defaultComponent = false;
 
-    public ClientGroupObject keyBindingGroup = null;
-
     public PanelLocation panelLocation;
 
     public ClientComponent() {
@@ -81,8 +79,6 @@ public abstract class ClientComponent extends ContextIdentityObject implements S
         }
 
         outStream.writeBoolean(defaultComponent);
-
-        pool.serializeObject(outStream, keyBindingGroup);
         pool.writeObject(outStream, panelLocation);
     }
 
@@ -106,9 +102,6 @@ public abstract class ClientComponent extends ContextIdentityObject implements S
         }
 
         defaultComponent = inStream.readBoolean();
-
-        keyBindingGroup = pool.deserializeObject(inStream);
-
         panelLocation = pool.readObject(inStream);
     }
 
@@ -254,7 +247,6 @@ public abstract class ClientComponent extends ContextIdentityObject implements S
         component.ID = ID;
         component.container = container == null ? null : container.getGwtComponent();
         component.defaultComponent = defaultComponent;
-        component.keyBindingGroup = keyBindingGroup == null ? null : keyBindingGroup.getGwtGroupObject();
     }
 
     private GComponent gwtComponent;

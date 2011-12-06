@@ -1,6 +1,9 @@
 package platform.server.form.entity.filter;
 
 import platform.base.identity.IdentityObject;
+import platform.server.form.entity.FormEntity;
+import platform.server.form.entity.GroupObjectEntity;
+import platform.server.form.entity.ObjectEntity;
 import platform.server.serialization.ServerIdentitySerializable;
 import platform.server.serialization.ServerSerializationPool;
 
@@ -8,7 +11,9 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class RegularFilterGroupEntity extends IdentityObject implements ServerIdentitySerializable {
 
@@ -43,5 +48,16 @@ public class RegularFilterGroupEntity extends IdentityObject implements ServerId
     public void customDeserialize(ServerSerializationPool pool, DataInputStream inStream) throws IOException {
         filters = pool.deserializeList(inStream);
         defaultFilter = inStream.readInt();
+    }
+
+    public GroupObjectEntity getToDraw(FormEntity form) {
+        Set<ObjectEntity> groupObjects = new HashSet<ObjectEntity>();
+
+        // ищем самый нижний GroupObjectInstance, к которому применяется фильтр
+        for (RegularFilterEntity regFilter : filters) {
+            groupObjects.addAll(regFilter.filter.getObjects());
+        }
+
+        return form.getApplyObject(groupObjects);
     }
 }

@@ -93,7 +93,7 @@ public class PanelController {
     }
 
     private void addPropertyToPanelLocation(PropertyController controller) {
-        GroupObjectLogicsSupplier logicsSupplier = form.getGroupObjectLogicsSupplier(controller.getKey().getKeyBindingGroup());
+        GroupObjectLogicsSupplier logicsSupplier = form.getGroupObjectLogicsSupplier(controller.getKey().groupObject);
         if (logicsSupplier != null) {
             if (controller.getKey().panelLocation.isToolbarLocation()) {
                 logicsSupplier.addPropertyToToolbar(controller);
@@ -105,7 +105,7 @@ public class PanelController {
     }
 
     private void removePropertyFromPanelLocation(PropertyController controller) {
-        GroupObjectLogicsSupplier logicsSupplier = form.getGroupObjectLogicsSupplier(controller.getKey().getKeyBindingGroup());
+        GroupObjectLogicsSupplier logicsSupplier = form.getGroupObjectLogicsSupplier(controller.getKey().groupObject);
         if (logicsSupplier != null) {
             if (controller.getKey().panelLocation.isToolbarLocation()) {
                 logicsSupplier.removePropertyFromToolbar(controller);
@@ -133,7 +133,7 @@ public class PanelController {
                     if (propController == null) {
                         propController = new PropertyController(property, form, columnKey);
                         addGroupObjectActions(propController.getView());
-                        if (property.panelLocation != null && property.getKeyBindingGroup() != null) {
+                        if (property.panelLocation != null && property.groupObject != null) {
                             addPropertyToPanelLocation(propController);
                         } else {
                             propController.addView(formLayout);
@@ -152,7 +152,7 @@ public class PanelController {
             while (it.hasNext()) { // удаляем те которые есть, но не нужны
                 Map.Entry<ClientGroupObjectValue, PropertyController> propEntry = it.next();
                 if (!drawKeys.contains(propEntry.getKey())) {
-                    if (property.panelLocation != null && property.getKeyBindingGroup() != null) {
+                    if (property.panelLocation != null && property.groupObject != null) {
                         removePropertyFromPanelLocation(propEntry.getValue());
                     } else
                         propEntry.getValue().removeView(formLayout);

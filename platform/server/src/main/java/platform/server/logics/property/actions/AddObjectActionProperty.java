@@ -160,6 +160,8 @@ public class AddObjectActionProperty extends ActionProperty {
         super.proceedDefaultDraw(entity, form);
         entity.shouldBeLast = true;
         entity.forceViewType = ClassViewType.PANEL;
+
+        entity.toDraw = form.getObject(valueClass).groupTo;
     }
 
     @Override
