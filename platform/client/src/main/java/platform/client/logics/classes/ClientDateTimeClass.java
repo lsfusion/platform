@@ -1,5 +1,6 @@
 package platform.client.logics.classes;
 
+import platform.base.DateConverter;
 import platform.client.ClientResourceBundle;
 import platform.client.form.PropertyEditorComponent;
 import platform.client.form.PropertyRendererComponent;
@@ -10,7 +11,7 @@ import platform.gwt.view.classes.GType;
 import platform.interop.ComponentDesign;
 import platform.interop.Data;
 
-import java.sql.Date;
+import java.sql.Timestamp;
 import java.text.Format;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -58,7 +59,7 @@ public class ClientDateTimeClass extends ClientDataClass implements ClientTypeCl
     @Override
     public String formatString(Object obj) {
         if (obj != null) {
-            return new SimpleDateFormat().format((Date) obj);
+            return new SimpleDateFormat().format(DateConverter.stampToDate((Timestamp) obj));
         }
         else return "";
     }

@@ -238,6 +238,18 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
     }
 
     protected void addGroup(GroupObjectEntity group) {
+        // регистрируем ID'шники, чтобы случайно не пересеклись заданные вручную и сгенерированные ID'шники
+        idGenerator.idRegister(group.getID());
+        for (ObjectEntity obj : group.objects) {
+            idGenerator.idRegister(obj.getID());
+        }
+
+        for (GroupObjectEntity groupOld : groups) {
+            assert group.getID() != groupOld.getID() && !group.getSID().equals(groupOld.getSID());
+            for (ObjectEntity obj : group.objects)
+                for (ObjectEntity objOld : groupOld.objects)
+                    assert obj.getID() != objOld.getID() && !obj.getSID().equals(objOld.getSID());
+        }
         groups.add(group);
     }
 
