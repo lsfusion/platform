@@ -74,7 +74,7 @@ extendedGame(game) = gameResult(game) != gameResult.win;
 CONSTRAINT CHECKED hostTeam(team) == guestTeam(team) MSG 'Команда не может играть сама с собой';
 CONSTRAINT extendedGame(game) AND hostGoals(game) > guestGoals(game) + 1 MSG 'При таком счете матч должен закончиться в основное время';
 CONSTRAINT extendedGame(game) AND guestGoals(game) > hostGoals(game) + 1 MSG 'При таком счете матч должен закончиться в основное время';
-CONSTRAINT hostGoals(team) == guestGoals(team) MSG 'Матч не может закончиться вничью';
+CONSTRAINT hostGoals(game) == guestGoals(game) MSG 'Матч не может закончиться вничью';
 
 FORM MainForm 'Турнирная таблица'
 OBJECTS game, team

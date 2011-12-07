@@ -41,7 +41,7 @@ CLASS STATIC storeSize 'Размер склада'
 
 //////////// PROPERTY STATEMENT///////////
 // Common syntax:
-// name [(namedParam1, ..., namedParamN)] = propertyExpression [IN group] [PERSISTENT];
+// name ['caption'] [(namedParam1, ..., namedParamN)] = propertyExpression [IN group] [PERSISTENT];
 // Если именованные параметры не указываются, то они выводятся из propertyExpression
 
 // Data property
@@ -55,7 +55,7 @@ storeSize = DATA storeSize (store) IN base;
 // Join property
 // Expression syntax:
 // (name | '[' propertyDefinition ']') (param1, ..., paramN)
-storeName(document) = name(store(document)) IN base;
+storeName 'Склад' (document) = name(store(document)) IN base;
 storeSizeName = name(storeSize(store)) IN base; // можем не указывать именованные параметры слева от '=', но все равно пользоваться ими
 objectIsStore = [IS store](object);             // аналог: object IS store
 
@@ -115,8 +115,8 @@ documentBalance(document, article) = balanceQuantity(store(document), article);
 ///////////////CONSTRAINT STATEMENT//////////////
 
 // Syntax:
-// CONSTRAINT [CHECKED] propertyExpression;
-CONSTRAINT CHECKED foo(store, article) > 1000;
+// CONSTRAINT [CHECKED] propertyExpression MSG 'message';
+CONSTRAINT CHECKED foo(store, article) > 1000 MSG 'ошибка: >1000';
 
 //////////////// FORM STATEMENT /////////////////
 
@@ -136,15 +136,16 @@ OBJECTS document, article
 // Property list syntax:
 // PROPERTIES propName1(param1, ..., paramN1), ..., propNameK(param1, ..., paramNK)
 // Special properties: SELECTION, OBJVALUE, ADDOBJ
-PROPERTIES name(document), store(document), name(article), storeName(document)
+PROPERTIES store(document), name(article), storeName(document)
 PROPERTIES quantity(document, article)
 PROPERTIES inQuantity(document, article), outQuantity(document, article), documentBalance(document, article)
+PROPERTIES ADDOBJ(document), ADDOBJ(article)
 
 // Filters list syntax:
 // FILTERS NOT NULL property1(param1, ..., paramN1),
 //         ...
 //         NOT NULL propertyK(param1, ..., paramNK)
-FILTERS NOT NULL quantity(document, article);
+FILTERS NOT NULL name(article);
 
 
 FORM storeArticle 'По складам'
