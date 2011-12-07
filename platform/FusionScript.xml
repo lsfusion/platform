@@ -42,6 +42,7 @@
       <keyword name="ISTRING" />
       <keyword name="LONG" />
       <keyword name="MAX" />
+      <keyword name="MSG" />
       <keyword name="NOT" />
       <keyword name="NULL" />
       <keyword name="OBJECTS" />

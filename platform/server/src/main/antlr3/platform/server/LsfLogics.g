@@ -299,12 +299,12 @@ propertyStatement
 		(	def=contextIndependentPD[false] { property = $def.property; isData = $def.isData; }  
 		|	expr=propertyExpression[context, dynamic] { property = $expr.property; }
 		)
-		settings=commonPropertySettings[property, $declaration.name, context, isData]
+		settings=commonPropertySettings[property, $declaration.name, $declaration.caption, context, isData]
 	;
 
 
-propertyDeclaration returns [String name, List<String> paramNames]
-	:	propName=ID { $name = $propName.text; }
+propertyDeclaration returns [String name, String caption, List<String> paramNames]
+	:	propNameCaption=simpleNameWithCaption { $name = $propNameCaption.name; $caption = $propNameCaption.caption; }
 		('(' paramList=idList ')' { $paramNames = $paramList.ids; })? 
 	;
 
@@ -322,7 +322,7 @@ andPE[List<String> context, boolean dynamic] returns [LP property, List<Integer>
 }
 @after {
 	if (parseState == ScriptingLogicsModule.State.PROP) {
-		ScriptingLogicsModule.LPWithParams result = self.addScriptedAndProp("", nots, props, allUsedParams);				
+		ScriptingLogicsModule.LPWithParams result = self.addScriptedAndProp(nots, props, allUsedParams);				
 		$property = result.property;
 		$usedParams = result.usedParams;
 	}
@@ -344,7 +344,7 @@ equalityPE[List<String> context, boolean dynamic] returns [LP property, List<Int
 @after {
 	if (parseState == ScriptingLogicsModule.State.PROP && op != null) {
 		ScriptingLogicsModule.LPWithParams result =
-			self.addScriptedEqualityProp("", op, leftProp, lUsedParams, rightProp, rUsedParams);
+			self.addScriptedEqualityProp(op, leftProp, lUsedParams, rightProp, rUsedParams);
 		$property = result.property;
 		$usedParams = result.usedParams;
 	} else {
@@ -371,7 +371,7 @@ relationalPE[List<String> context, boolean dynamic] returns [LP property, List<I
 	{
 		if (op != null) {
 			ScriptingLogicsModule.LPWithParams result =
-				self.addScriptedRelationalProp("", op, leftProp, lUsedParams, rightProp, rUsedParams);
+				self.addScriptedRelationalProp(op, leftProp, lUsedParams, rightProp, rUsedParams);
 			$property = result.property;
 			$usedParams = result.usedParams;
 		} else if (mainProp != null) {
@@ -400,7 +400,7 @@ additivePE[List<String> context, boolean dynamic] returns [LP property, List<Int
 }
 @after {
 	if (parseState == ScriptingLogicsModule.State.PROP) {
-		ScriptingLogicsModule.LPWithParams result = self.addScriptedAdditiveProp("", ops, props, allUsedParams);				
+		ScriptingLogicsModule.LPWithParams result = self.addScriptedAdditiveProp(ops, props, allUsedParams);				
 		$property = result.property;
 		$usedParams = result.usedParams;
 	}
@@ -419,7 +419,7 @@ multiplicativePE[List<String> context, boolean dynamic] returns [LP property, Li
 }
 @after {
 	if (parseState == ScriptingLogicsModule.State.PROP) {
-		ScriptingLogicsModule.LPWithParams result = self.addScriptedMultiplicativeProp("", ops, props, allUsedParams);				
+		ScriptingLogicsModule.LPWithParams result = self.addScriptedMultiplicativeProp(ops, props, allUsedParams);				
 		$property = result.property;
 		$usedParams = result.usedParams;
 	}
@@ -441,7 +441,7 @@ simplePE[List<String> context, boolean dynamic] returns [LP property, List<Integ
 unaryMinusPE[List<String> context, boolean dynamic] returns [LP property, List<Integer> usedParams] 	
 @after {
 	if (parseState == ScriptingLogicsModule.State.PROP) { 
-		$property = self.addScriptedUnaryMinusProp("", $property, $usedParams);
+		$property = self.addScriptedUnaryMinusProp($property, $usedParams);
 	}
 }
 	: MINUS expr=simplePE[context, dynamic] { $property = $expr.property; $usedParams = $expr.usedParams; }
@@ -481,7 +481,7 @@ joinPropertyDefinition[List<String> context, boolean dynamic] returns [LP proper
 }
 @after {
 	if (parseState == ScriptingLogicsModule.State.PROP) {
-		ScriptingLogicsModule.LPWithParams result = self.addScriptedJProp("", mainProp, paramProps, usedSubParams);
+		ScriptingLogicsModule.LPWithParams result = self.addScriptedJProp(mainProp, paramProps, usedSubParams);
 		$property = result.property;
 		$usedParams = result.usedParams;
 	}
@@ -505,7 +505,7 @@ groupPropertyDefinition returns [LP property, List<Integer> usedParams]
 }
 @after {
 	if (parseState == ScriptingLogicsModule.State.PROP) {
-		$property = self.addScriptedGProp("", isSGProp, paramProps, usedParams);
+		$property = self.addScriptedGProp(isSGProp, paramProps, usedParams);
 	}
 }
 	:	'GROUP' (('SUM') { isSGProp = true; } | ('MAX') { isSGProp = false; })
@@ -523,7 +523,7 @@ dataPropertyDefinition[boolean innerPD] returns [LP property]
 }
 @after {
 	if (parseState == ScriptingLogicsModule.State.PROP) {
-		$property = self.addScriptedDProp("", returnClass, paramClassNames, innerPD);
+		$property = self.addScriptedDProp(returnClass, paramClassNames, innerPD);
 	}
 }
 	:	'DATA'
@@ -543,7 +543,7 @@ unionPropertyDefinition[List<String> context, boolean dynamic] returns [LP prope
 }
 @after {
 	if (parseState == ScriptingLogicsModule.State.PROP) {
-		$property = self.addScriptedUProp("", type, paramProps, usedParams);
+		$property = self.addScriptedUProp(type, paramProps, usedParams);
 	}
 }
 	:	'UNION'
@@ -584,14 +584,14 @@ propertyObject returns [LP property, String propName, List<String> innerContext]
 	;
 
 
-commonPropertySettings[LP property, String propertyName, List<String> namedParams, boolean isData] 
+commonPropertySettings[LP property, String propertyName, String caption, List<String> namedParams, boolean isData] 
 @init {
 	String groupName = null;
 	boolean isPersistent = false;	
 }
 @after {
 	if (parseState == ScriptingLogicsModule.State.PROP) { 
-		self.addSettingsToProperty(property, propertyName, namedParams, groupName, isPersistent, isData);	
+		self.addSettingsToProperty(property, propertyName, caption, namedParams, groupName, isPersistent, isData);	
 	}
 } 
 	: 	('IN' name=compoundID { groupName = $name.text; })?
@@ -607,14 +607,16 @@ constraintStatement
 @init {
 	boolean checked = false;
 	LP<?> prop = null;
+	String message = null;
 }
 @after {
 	if (parseState == ScriptingLogicsModule.State.PROP) { 
-		self.addScriptedConstraint(prop, checked);	
+		self.addScriptedConstraint(prop, checked, message);	
 	}
 }
 	:	'CONSTRAINT' ('CHECKED' { checked = true; })? 
 		expr=propertyExpression[new ArrayList<String>(), true] { prop = $expr.property; }	
+		'MSG' msg=STRING_LITERAL { message = $msg.text; }	 
 	;
 
 
