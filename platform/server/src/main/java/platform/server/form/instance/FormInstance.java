@@ -317,6 +317,13 @@ public class FormInstance<T extends BusinessLogics<T>> extends IncrementProps<Pr
         return null;
     }
 
+    public PropertyDrawInstance getPropertyDraw(Property<?> property, ObjectInstance object) {
+        for (PropertyDrawInstance propertyDraw : properties)
+            if (property.equals(propertyDraw.propertyObject.property) && propertyDraw.propertyObject.mapping.containsValue(object))
+                return propertyDraw;
+        return null;
+    }
+
     public PropertyDrawInstance getPropertyDraw(Property<?> property, GroupObjectInstance group) {
         for (PropertyDrawInstance propertyDraw : properties)
             if (property.equals(propertyDraw.propertyObject.property) && (group==null || group.equals(propertyDraw.toDraw)))
@@ -325,11 +332,15 @@ public class FormInstance<T extends BusinessLogics<T>> extends IncrementProps<Pr
     }
 
     public PropertyDrawInstance getPropertyDraw(Property<?> property) {
-        return getPropertyDraw(property, null);
+        return getPropertyDraw(property, (GroupObjectInstance)null);
     }
 
     public PropertyDrawInstance getPropertyDraw(LP<?> property) {
         return getPropertyDraw(property.property);
+    }
+
+    public PropertyDrawInstance getPropertyDraw(LP<?> property, ObjectInstance object) {
+        return getPropertyDraw(property.property, object);
     }
 
     public PropertyDrawInstance getPropertyDraw(LP<?> property, GroupObjectInstance group) {

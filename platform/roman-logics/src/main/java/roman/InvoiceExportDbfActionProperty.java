@@ -115,7 +115,7 @@ public class InvoiceExportDbfActionProperty extends ActionProperty {
 
             map.put(invN, formInstance.getPropertyDraw(BL.RomanLM.sidImporterFreightTypeInvoice));
             map.put(date, formInstance.getPropertyDraw(BL.RomanLM.dateImporterFreightTypeInvoice));
-            map.put(boxN, formInstance.getPropertyDraw(BL.LM.barcode, objFreightBox.groupTo));
+            map.put(boxN, formInstance.getPropertyDraw(BL.LM.barcode, objFreightBox));
             map.put(art, formInstance.getPropertyDraw(BL.RomanLM.sidArticleSku));
             map.put(name, formInstance.getPropertyDraw(BL.RomanLM.originalNameArticleSku));
             map.put(color, formInstance.getPropertyDraw(BL.RomanLM.sidColorSupplierItem));
@@ -124,7 +124,7 @@ public class InvoiceExportDbfActionProperty extends ActionProperty {
             map.put(comp, formInstance.getPropertyDraw(BL.RomanLM.mainCompositionFreightSku));
 //            map.put(countOrig, formInstance.getPropertyDraw());
             map.put(countProd, formInstance.getPropertyDraw(BL.RomanLM.nameCountryOfOriginFreightSku));
-            map.put(barcode, formInstance.getPropertyDraw(BL.LM.barcode, objSku.groupTo));
+            map.put(barcode, formInstance.getPropertyDraw(BL.LM.barcode, objSku));
             map.put(brand, formInstance.getPropertyDraw(BL.RomanLM.nameBrandSupplierArticleSku));
             map.put(gender, formInstance.getPropertyDraw(BL.RomanLM.sidGenderArticleSku));
             map.put(theme, formInstance.getPropertyDraw(BL.RomanLM.nameThemeSupplierArticleSku));
