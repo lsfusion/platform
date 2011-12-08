@@ -11,7 +11,7 @@
 	</style>
 	<field name="prevDateVote" class="java.util.Date"/>
 	<field name="nameNativeClusterVote" class="java.lang.String"/>
-	<field name="nameNativePrevClusterVote" class="java.lang.Boolean"/>
+	<field name="nameNativePrevClusterVote" class="java.lang.String"/>
 	<field name="openedVote" class="java.lang.String"/>
 	<field name="nameNativeProjectVote" class="java.lang.String"/>
 	<field name="nameNativeClaimerVote" class="java.lang.String"/>
