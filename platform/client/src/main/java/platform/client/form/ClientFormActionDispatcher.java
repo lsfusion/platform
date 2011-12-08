@@ -85,6 +85,7 @@ public class ClientFormActionDispatcher implements ClientActionDispatcher {
                 fileChooser.setAcceptAllFileFilterUsed(false);
             } else {
                 singleFile = true;
+                fileChooser.setSelectedFile(new File(action.files.keySet().iterator().next()));
             }
             if (fileChooser.showSaveDialog(null) == JFileChooser.APPROVE_OPTION) {
                 String path = fileChooser.getSelectedFile().getAbsolutePath();

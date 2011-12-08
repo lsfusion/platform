@@ -85,7 +85,7 @@ public class InvoiceExportDbfActionProperty extends ActionProperty {
             invoiceTypeObject = keys.get(interfacesList.remove(0));
 
             tempDbfInvoice = File.createTempFile("dbfInvoice", ".DBF");
-            dbfInvoice = new CustomDBF(tempDbfInvoice.getPath(), DBF.DBASEIV, true, "Cp866");
+            dbfInvoice = new CustomDBF(tempDbfInvoice.getPath(), true, "Cp866");
             Util.setxBaseJProperty("ignoreDBFLengthCheck", "true");
             dbfInvoice.addField(new Field[]{invN, date, boxN, art, name, color, size, commonSize, comp, countOrig, countProd, barcode,
                     brand, gender, theme, season, categ, quant, price, sum, contractIn, dateConIn, priceIn, sumIn, imp, contract, dateCon});
