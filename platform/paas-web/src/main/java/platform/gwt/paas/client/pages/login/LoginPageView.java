@@ -23,8 +23,8 @@ public class LoginPageView extends ViewImpl implements LoginPagePresenter.MyView
     private void configureLayout() {
         CenterLayout main = new CenterLayout(loginBox);
 
-        loginBox.setUserName("admin");
-        loginBox.setPassword("fusion");
+//        loginBox.setUserName("admin");
+//        loginBox.setPassword("fusion");
 
         mainPane = new VLayout();
         mainPane.setWidth100();
