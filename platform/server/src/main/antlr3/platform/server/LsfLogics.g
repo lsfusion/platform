@@ -496,7 +496,7 @@ joinPropertyDefinition[List<String> context, boolean dynamic] returns [LP proper
 
 
 
-groupPropertyDefinition returns [LP property, List<Integer> usedParams]
+groupPropertyDefinition returns [LP property]
 @init {
 	List<LP<?>> paramProps = new ArrayList<LP<?>>();
 	List<List<Integer>> usedParams = new ArrayList<List<Integer>>();
@@ -514,6 +514,17 @@ groupPropertyDefinition returns [LP property, List<Integer> usedParams]
 		(firstParam=propertyExpression[groupContext, true] { paramProps.add($firstParam.property); usedParams.add($firstParam.usedParams); }
 		(',' nextParam=propertyExpression[groupContext, true] { paramProps.add($nextParam.property); usedParams.add($nextParam.usedParams);})* )
 	;
+
+//partitionPropertyDefinition[List<String> context, boolean dynamic] returns [LP property, List<Integer> usedParams]
+//@init {
+//	LP<?> mainProp = null;
+//	
+//}
+//@after {
+//}
+//	:	'PARTITION' (('SUM' ) | ('PREV'))
+//		prop=propertyExpression[context, dynamic] {}
+//	;
 
 
 dataPropertyDefinition[boolean innerPD] returns [LP property]
@@ -538,19 +549,21 @@ dataPropertyDefinition[boolean innerPD] returns [LP property]
 unionPropertyDefinition[List<String> context, boolean dynamic] returns [LP property, List<Integer> usedParams]
 @init {
 	List<LP<?>> paramProps = new ArrayList<LP<?>>();
-	List<List<Integer>> usedParams = new ArrayList<List<Integer>>();
+	List<List<Integer>> usedSubParams = new ArrayList<List<Integer>>();
 	Union type = null;
 }
 @after {
 	if (parseState == ScriptingLogicsModule.State.PROP) {
-		$property = self.addScriptedUProp(type, paramProps, usedParams);
+		ScriptingLogicsModule.LPWithParams result = self.addScriptedUProp(type, paramProps, usedSubParams);
+		$property = result.property;
+		$usedParams = result.usedParams;	
 	}
 }
 	:	'UNION'
 		(('MAX' {type = Union.MAX;}) | ('SUM' {type = Union.SUM;}) | ('OVERRIDE' {type = Union.OVERRIDE;}) | ('XOR' { type = Union.XOR;}) | ('EXCLUSIVE' {type = Union.EXCLUSIVE;}))
 		'('
-		firstParam=propertyExpression[context, dynamic] { paramProps.add($firstParam.property); usedParams.add($firstParam.usedParams); }
-		(',' nextParam=propertyExpression[context, dynamic] { paramProps.add($nextParam.property); usedParams.add($nextParam.usedParams);})*
+		firstParam=propertyExpression[context, dynamic] { paramProps.add($firstParam.property); usedSubParams.add($firstParam.usedParams); }
+		(',' nextParam=propertyExpression[context, dynamic] { paramProps.add($nextParam.property); usedSubParams.add($nextParam.usedParams);})*
 		')'
 	;
 

@@ -503,14 +503,15 @@ public class ScriptingLogicsModule extends LogicsModule {
         return newList;
     }
 
-    public LP<?> addScriptedUProp(Union unionType, List<LP<?>> paramProps, List<List<Integer>> usedParams) throws ScriptingErrorLog.SemanticErrorException {
+    public LPWithParams addScriptedUProp(Union unionType, List<LP<?>> paramProps, List<List<Integer>> usedParams) throws ScriptingErrorLog.SemanticErrorException {
         scriptLogger.info("addScriptedUProp(" + unionType + ", " + paramProps + ", " + usedParams + ");");
         checkUnionPropertyParams(paramProps);
         List<Object> resultParams = getParamsPlainList(paramProps, usedParams);
         if (unionType == Union.SUM) {
             resultParams = transformSumUnionParams(resultParams);
         }
-        return addUProp(null, "", unionType, resultParams.toArray());
+        LP<?> prop = addUProp(null, "", unionType, resultParams.toArray());
+        return new LPWithParams(prop, mergeLists(usedParams));
     }
 
     public LP<?> addConstantProp(ConstType type, String text) throws ScriptingErrorLog.SemanticErrorException {
