@@ -91,7 +91,7 @@
 					<textElement textAlignment="Right" verticalAlignment="Top"/>
 					<textFieldExpression class="java.lang.String"><![CDATA["Сумма без налога:"]]></textFieldExpression>
 				</textField>
-				<textField isStretchWithOverflow="true" pattern="#,##0.###" isBlankWhenNull="true">
+				<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
 					<reportElement style="DefaultStyle" positionType="Float" stretchType="RelativeToBandHeight" x="460" y="28" width="52" height="18"/>
 					<textElement textAlignment="Right" verticalAlignment="Top"/>
 					<textFieldExpression class="java.lang.Double"><![CDATA[$F{sumImporterFreightTypeInvoice}]]></textFieldExpression>
@@ -111,7 +111,7 @@
 					<textElement textAlignment="Right" verticalAlignment="Top"/>
 					<textFieldExpression class="java.lang.String"><![CDATA["Сумма с налогом:"]]></textFieldExpression>
 				</textField>
-				<textField>
+				<textField pattern="#,##0.00">
 					<reportElement style="DefaultStyle" x="725" y="28" width="52" height="18"/>
 					<textElement textAlignment="Right" verticalAlignment="Top"/>
 					<textFieldExpression class="java.lang.Double"><![CDATA[$F{sumImporterFreightTypeInvoice}]]></textFieldExpression>

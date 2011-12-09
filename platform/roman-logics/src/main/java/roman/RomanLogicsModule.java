@@ -202,6 +202,8 @@ public class RomanLogicsModule extends LogicsModule {
     private LP sidBrandSupplierArticle;
     private LP nameBrandSupplierArticle;
     private LP supplierBrandSupplierArticle;
+    private LP countryBrandSupplier;
+    private LP nameCountryBrandSupplier;
     private LP brandSupplierDataArticle;
     private LP brandSupplierSupplierArticle;
     private LP brandSupplierArticleSku;
@@ -1084,6 +1086,8 @@ public class RomanLogicsModule extends LogicsModule {
     private LP sid3Country;
     public  LP sidOrigin2ToCountry;
     private LP nameCountrySku;
+    public LP countryBrandSupplierSku;
+    public LP nameCountryBrandSupplierSku;
     private LP sumInCurrentYear;
     private LP sumInOutCurrentYear;
     private LP balanceSumCurrentYear;
@@ -1753,6 +1757,9 @@ public class RomanLogicsModule extends LogicsModule {
 
         addConstraint(addJProp("Бренд по умолчанию для поставщика должен соответствовать брендам поставщика", baseLM.diff2, 1, addJProp(supplierBrandSupplier, brandSupplierSupplier, 1), 1), true);
 
+        countryBrandSupplier = addDProp(idGroup, "countryBrandSupplier", "Страна бренда (ИД)", baseLM.country, brandSupplier);
+        nameCountryBrandSupplier = addJProp(baseGroup, "nameCountryBrandSupplier", "Страна бренда", baseLM.name, countryBrandSupplier, 1);
+
         // Document
         supplierDocument = addDProp(idGroup, "supplierDocument", "Поставщик (ИД)", supplier, document);
         supplierPriceDocument = addJProp(idGroup, "supplierPricedDocument", "Поставщик(ИД)", baseLM.and1, supplierDocument, 1, is(priceDocument), 1);
@@ -2106,6 +2113,10 @@ public class RomanLogicsModule extends LogicsModule {
 
         addConstraint(addJProp("Поставщик артикула должен соответствовать поставщику страны артикула", baseLM.diff2,
                 supplierArticle, 1, addJProp(supplierCountrySupplier, countrySupplierOfOriginArticle, 1), 1), true);
+
+        countryBrandSupplierSku = addJProp(idGroup, "countryBrandSupplierSku", "Страна поставки (ИД)", countryBrandSupplier, brandSupplierArticleSku, 1);
+        nameCountryBrandSupplierSku = addJProp(baseGroup, "nameCountryBrandSupplierSku", "Страна поставки", baseLM.name, countryBrandSupplierSku, 1);
+
 
         // Composition
         mainCompositionOriginArticle = addDProp(supplierAttributeGroup, "mainCompositionOriginArticle", "Состав", COMPOSITION_CLASS, article);
@@ -6457,7 +6468,7 @@ public class RomanLogicsModule extends LogicsModule {
             addPropertyDraw(objFreightBox, baseLM.barcode);
             addPropertyDraw(objSku, sidArticleSku, originalNameArticleSku, sidColorSupplierItem, sidSizeSupplierItem, nameCommonSizeSku);
             addPropertyDraw(objFreight, objSku, mainCompositionFreightSku, nameCountryOfOriginFreightSku);
-            addPropertyDraw(objSku, baseLM.barcode, nameBrandSupplierArticleSku, sidGenderArticleSku, nameThemeSupplierArticleSku, sidSeasonSupplierArticleSku, nameCategoryArticleSku, nameSupplierArticleSku);
+            addPropertyDraw(objSku, baseLM.barcode, nameBrandSupplierArticleSku, nameCountryBrandSupplierSku, sidGenderArticleSku, nameThemeSupplierArticleSku, sidSeasonSupplierArticleSku, nameCategoryArticleSku, nameSupplierArticleSku);
             //setForceViewType(itemAttributeGroup, ClassViewType.GRID, objSku.groupTo);
 //            getPropertyDraw(sidImporterFreightTypeInvoice).toDraw = objSku.groupTo;
 //            getPropertyDraw(dateImporterFreightTypeInvoice).toDraw = objSku.groupTo;
@@ -7026,7 +7037,7 @@ public class RomanLogicsModule extends LogicsModule {
             objSupplier = addSingleGroupObject(supplier, "Поставщик", baseLM.name, nameBrandSupplierSupplier, nameCurrencySupplier);
             addObjectActions(this, objSupplier);
 
-            objBrand = addSingleGroupObject(brandSupplier, "Бренд", sidBrandSupplier, baseLM.name, sidGenderBrandSupplier);
+            objBrand = addSingleGroupObject(brandSupplier, "Бренд", sidBrandSupplier, baseLM.name, nameCountryBrandSupplier, sidGenderBrandSupplier);
             addObjectActions(this, objBrand);
 
             objColor = addSingleGroupObject(colorSupplier, "Цвет", sidColorSupplier, baseLM.name);

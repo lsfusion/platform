@@ -123,6 +123,7 @@ public class InvoiceExportDbfActionProperty extends ActionProperty {
             map.put(commonSize, formInstance.getPropertyDraw(BL.RomanLM.nameCommonSizeSku));
             map.put(comp, formInstance.getPropertyDraw(BL.RomanLM.mainCompositionFreightSku));
 //            map.put(countOrig, formInstance.getPropertyDraw());
+            map.put(countOrig, formInstance.getPropertyDraw(BL.RomanLM.nameCountryBrandSupplierSku));
             map.put(countProd, formInstance.getPropertyDraw(BL.RomanLM.nameCountryOfOriginFreightSku));
             map.put(barcode, formInstance.getPropertyDraw(BL.LM.barcode, objSku));
             map.put(brand, formInstance.getPropertyDraw(BL.RomanLM.nameBrandSupplierArticleSku));
