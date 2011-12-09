@@ -1,5 +1,7 @@
-# chkconfig : 2345 99 50
-
+##!/bin/sh
+# chkconfig: 2345 99 50
+# description: fusion management script
+#
 # Adapt the following lines to your configuration
 FUSION_HOME=/usr/local/fusion
 FUSION_IP=174.129.46.47
