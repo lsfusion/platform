@@ -50,7 +50,7 @@ public class ClientDateTimeClass extends ClientDataClass implements ClientTypeCl
 
     public Object parseString(String s) throws ParseException {
         try {
-            return new SimpleDateFormat().parse(s);
+            return DateConverter.dateToStamp(new SimpleDateFormat().parse(s));
         } catch (Exception e) {
             throw new ParseException(s + ClientResourceBundle.getString("logics.classes.can.not.be.converted.to.date"), 0);
         }

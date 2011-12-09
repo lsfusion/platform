@@ -1,6 +1,7 @@
 package platform.server.classes;
 
 import net.sf.jasperreports.engine.type.HorizontalAlignEnum;
+import platform.base.DateConverter;
 import platform.interop.Data;
 import platform.server.data.expr.query.Stat;
 import platform.server.data.sql.SQLSyntax;
@@ -8,6 +9,7 @@ import platform.server.data.type.ParseException;
 import platform.server.form.view.report.ReportDrawField;
 import platform.server.logics.ServerResourceBundle;
 
+import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Timestamp;
@@ -98,12 +100,16 @@ public class DateTimeClass extends DataClass<Timestamp> {
         throw new RuntimeException("not supported");
     }
 
-    public Object parseString(String s) throws ParseException {
+    public Date parseString(String s) throws ParseException {
         try {
-            return new SimpleDateFormat().parse(s);
+            return DateConverter.dateToSql(DateClass.getDateFormat().parse(s));
         } catch (Exception e) {
-            throw new ParseException("error parsing date", e);
+            throw new ParseException("error parsing datetime", e);
         }
+    }
+
+    public static String format(Date date) {
+        return DateClass.getDateFormat().format(date);
     }
 
     public String getSID() {

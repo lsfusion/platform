@@ -94,7 +94,7 @@ public class DateClass extends DataClass<Date> {
         return "'" + value + "'";
     }
 
-    private static DateFormat getDateFormat() {
+    public static DateFormat getDateFormat() {
         DateFormat dateFormat = DateFormat.getDateInstance(DateFormat.SHORT);
         dateFormat.setTimeZone(Calendar.getInstance().getTimeZone());  // todo [dale]: Нужно брать таймзону из бизнес-логики
         return dateFormat;
