@@ -2,7 +2,7 @@
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="project" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0">
 	<property name="ireport.zoom" value="1.5"/>
 	<property name="ireport.x" value="0"/>
-	<property name="ireport.y" value="0"/>
+	<property name="ireport.y" value="1302"/>
 	<style name="DefaultStyle" isDefault="true" vAlign="Middle" fontName="lsf.TimesNewRoman" fontSize="10"/>
 	<style name="BoldStyle" fontName="lsf.TimesNewRoman" fontSize="10" isBold="true">
 		<paragraph rightIndent="3"/>
@@ -107,17 +107,17 @@
 					<textElement verticalAlignment="Middle">
 						<font isBold="true"/>
 					</textElement>
-					<textFieldExpression class="java.lang.String"><![CDATA["GENERAL INFORMATION"]]></textFieldExpression>
+					<textFieldExpression><![CDATA["GENERAL INFORMATION"]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 					<reportElement style="DefaultStyle" positionType="Float" x="165" y="30" width="383" height="18"/>
 					<textElement textAlignment="Left" verticalAlignment="Top"/>
-					<textFieldExpression class="java.lang.String"><![CDATA[$F{nameForeignProject}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{nameForeignProject}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
 					<reportElement style="BoldStyle" positionType="Float" x="10" y="30" width="151" height="18"/>
 					<textElement verticalAlignment="Top"/>
-					<textFieldExpression class="java.lang.String"><![CDATA["Name of project"]]></textFieldExpression>
+					<textFieldExpression><![CDATA["Name of project"]]></textFieldExpression>
 				</textField>
 				<line>
 					<reportElement positionType="Float" x="10" y="19" width="538" height="1"/>
@@ -141,22 +141,22 @@
 				<textField isStretchWithOverflow="true">
 					<reportElement style="BoldStyle" positionType="Float" x="10" y="0" width="151" height="18"/>
 					<textElement verticalAlignment="Top"/>
-					<textFieldExpression class="java.lang.String"><![CDATA["Specify what is the purpose of your project:"]]></textFieldExpression>
+					<textFieldExpression><![CDATA["Specify what is the purpose of your project:"]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 					<reportElement style="DefaultStyle" positionType="Float" x="165" y="0" width="383" height="18"/>
 					<textElement textAlignment="Left" verticalAlignment="Top"/>
-					<textFieldExpression class="java.lang.String"><![CDATA[$F{foreignProjectMissionProject}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{foreignProjectMissionProject}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 					<reportElement style="DefaultStyle" positionType="Float" x="165" y="26" width="383" height="18"/>
 					<textElement textAlignment="Left" verticalAlignment="Top"/>
-					<textFieldExpression class="java.lang.String"><![CDATA[$F{foreignCommentMissionProject}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{foreignCommentMissionProject}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
 					<reportElement style="BoldStyle" positionType="Float" x="10" y="26" width="151" height="18"/>
 					<textElement verticalAlignment="Top"/>
-					<textFieldExpression class="java.lang.String"><![CDATA["Comment to the goal of your project"]]></textFieldExpression>
+					<textFieldExpression><![CDATA["Comment to the goal of your project"]]></textFieldExpression>
 				</textField>
 				<line>
 					<reportElement positionType="Float" x="10" y="45" width="538" height="1"/>
@@ -176,12 +176,12 @@
 				<textField isStretchWithOverflow="true">
 					<reportElement style="BoldStyle" positionType="Float" x="10" y="0" width="151" height="18"/>
 					<textElement verticalAlignment="Top"/>
-					<textFieldExpression class="java.lang.String"><![CDATA["Name of Applicant (Applicant for Preliminary Examination)"]]></textFieldExpression>
+					<textFieldExpression><![CDATA["Name of Applicant (Applicant for Preliminary Examination)"]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 					<reportElement style="DefaultStyle" positionType="Float" x="165" y="0" width="383" height="18"/>
 					<textElement textAlignment="Left" verticalAlignment="Top"/>
-					<textFieldExpression class="java.lang.String"><![CDATA[$F{nameForeignClaimerProject}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{nameForeignClaimerProject}]]></textFieldExpression>
 				</textField>
 				<line>
 					<reportElement positionType="Float" x="10" y="19" width="538" height="1"/>
@@ -195,19 +195,19 @@
 					<reportElement stretchType="RelativeToBandHeight" x="0" y="0" width="0" height="0"/>
 					<parametersMapExpression><![CDATA[$P{cluster_params}]]></parametersMapExpression>
 					<dataSourceExpression><![CDATA[$P{cluster_source}]]></dataSourceExpression>
-					<subreportExpression class="java.lang.String"><![CDATA[$P{cluster_report}]]></subreportExpression>
+					<subreportExpression><![CDATA[$P{cluster_report}]]></subreportExpression>
 				</subreport>
 			</band>
 			<band height="26">
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 					<reportElement style="DefaultStyle" positionType="Float" x="165" y="0" width="383" height="18"/>
 					<textElement textAlignment="Left" verticalAlignment="Top"/>
-					<textFieldExpression class="java.lang.String"><![CDATA[$F{foreignResumeProject}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{foreignResumeProject}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
 					<reportElement style="BoldStyle" positionType="Float" x="10" y="0" width="151" height="18"/>
 					<textElement verticalAlignment="Top"/>
-					<textFieldExpression class="java.lang.String"><![CDATA["A brief summary of the project (5 offers) with the existing developments and the main objectives of the project."]]></textFieldExpression>
+					<textFieldExpression><![CDATA["A brief summary of the project (5 offers) with the existing developments and the main objectives of the project."]]></textFieldExpression>
 				</textField>
 				<line>
 					<reportElement positionType="Float" x="10" y="19" width="538" height="1"/>
@@ -221,37 +221,37 @@
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 					<reportElement style="DefaultStyle" positionType="Float" x="10" y="52" width="217" height="18" isRemoveLineWhenBlank="true"/>
 					<textElement textAlignment="Left" verticalAlignment="Top"/>
-					<textFieldExpression class="java.lang.String"><![CDATA[$F{nameForeignContactProject}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{nameForeignContactProject}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
 					<reportElement style="BoldStyle" positionType="Float" x="10" y="0" width="538" height="18"/>
 					<textElement verticalAlignment="Top"/>
-					<textFieldExpression class="java.lang.String"><![CDATA["Contact person for the project (the person who fills in the questionnaire):"]]></textFieldExpression>
+					<textFieldExpression><![CDATA["Contact person for the project (the person who fills in the questionnaire):"]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 					<reportElement style="DefaultStyle" positionType="Float" x="227" y="52" width="151" height="18" isRemoveLineWhenBlank="true"/>
 					<textElement textAlignment="Left" verticalAlignment="Top"/>
-					<textFieldExpression class="java.lang.String"><![CDATA[$F{phoneContactProject}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{phoneContactProject}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 					<reportElement style="DefaultStyle" positionType="Float" x="378" y="52" width="170" height="18" isRemoveLineWhenBlank="true"/>
 					<textElement textAlignment="Left" verticalAlignment="Top"/>
-					<textFieldExpression class="java.lang.String"><![CDATA[$F{emailContactProject}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{emailContactProject}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
 					<reportElement style="BoldStyle" positionType="Float" x="10" y="26" width="217" height="18"/>
 					<textElement verticalAlignment="Top"/>
-					<textFieldExpression class="java.lang.String"><![CDATA["Name"]]></textFieldExpression>
+					<textFieldExpression><![CDATA["Name"]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
 					<reportElement style="BoldStyle" positionType="Float" x="227" y="26" width="151" height="18"/>
 					<textElement verticalAlignment="Top"/>
-					<textFieldExpression class="java.lang.String"><![CDATA["Telephone"]]></textFieldExpression>
+					<textFieldExpression><![CDATA["Telephone"]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
 					<reportElement style="BoldStyle" positionType="Float" x="378" y="26" width="170" height="18"/>
 					<textElement verticalAlignment="Top"/>
-					<textFieldExpression class="java.lang.String"><![CDATA["e-mail"]]></textFieldExpression>
+					<textFieldExpression><![CDATA["e-mail"]]></textFieldExpression>
 				</textField>
 			</band>
 			<band height="78">
@@ -260,17 +260,17 @@
 					<textElement verticalAlignment="Middle">
 						<font isBold="true"/>
 					</textElement>
-					<textFieldExpression class="java.lang.String"><![CDATA["PROBLEMS AND SOLUTIONS"]]></textFieldExpression>
+					<textFieldExpression><![CDATA["PROBLEMS AND SOLUTIONS"]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 					<reportElement style="DefaultStyle" positionType="Float" x="10" y="52" width="538" height="18"/>
 					<textElement textAlignment="Left" verticalAlignment="Top"/>
-					<textFieldExpression class="java.lang.String"><![CDATA[$F{foreignProblemProject}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{foreignProblemProject}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
 					<reportElement style="BoldStyle" positionType="Float" x="10" y="30" width="538" height="18"/>
 					<textElement verticalAlignment="Top"/>
-					<textFieldExpression class="java.lang.String"><![CDATA["Describe the problem addressed by the project:"]]></textFieldExpression>
+					<textFieldExpression><![CDATA["Describe the problem addressed by the project:"]]></textFieldExpression>
 				</textField>
 				<line>
 					<reportElement positionType="Float" x="10" y="20" width="538" height="1"/>
@@ -284,25 +284,28 @@
 						<pen lineWidth="0.25" lineStyle="Dotted"/>
 					</graphicElement>
 				</line>
+				<break>
+					<reportElement x="0" y="-1" width="100" height="1"/>
+				</break>
 			</band>
 			<band>
 				<subreport>
 					<reportElement stretchType="RelativeToBandHeight" x="0" y="0" width="0" height="0"/>
 					<parametersMapExpression><![CDATA[$P{research_params}]]></parametersMapExpression>
 					<dataSourceExpression><![CDATA[$P{research_source}]]></dataSourceExpression>
-					<subreportExpression class="java.lang.String"><![CDATA[$P{research_report}]]></subreportExpression>
+					<subreportExpression><![CDATA[$P{research_report}]]></subreportExpression>
 				</subreport>
 			</band>
 			<band height="48">
 				<textField isStretchWithOverflow="true">
 					<reportElement style="BoldStyle" positionType="Float" x="10" y="0" width="538" height="18"/>
 					<textElement verticalAlignment="Top"/>
-					<textFieldExpression class="java.lang.String"><![CDATA["As the project addresses the problem and what is the innovative approach:"]]></textFieldExpression>
+					<textFieldExpression><![CDATA["As the project addresses the problem and what is the innovative approach:"]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 					<reportElement style="DefaultStyle" positionType="Float" x="10" y="22" width="538" height="18"/>
 					<textElement textAlignment="Left" verticalAlignment="Top"/>
-					<textFieldExpression class="java.lang.String"><![CDATA[$F{foreignInnovativeProject}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{foreignInnovativeProject}]]></textFieldExpression>
 				</textField>
 				<line>
 					<reportElement positionType="Float" x="10" y="41" width="538" height="1"/>
@@ -315,12 +318,12 @@
 				<textField isStretchWithOverflow="true">
 					<reportElement style="BoldStyle" positionType="Float" x="10" y="0" width="151" height="18"/>
 					<textElement verticalAlignment="Top"/>
-					<textFieldExpression class="java.lang.String"><![CDATA["Describe the main technological and market trends in this sector"]]></textFieldExpression>
+					<textFieldExpression><![CDATA["Describe the main technological and market trends in this sector"]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 					<reportElement style="DefaultStyle" positionType="Float" x="165" y="0" width="383" height="18"/>
 					<textElement textAlignment="Left" verticalAlignment="Top"/>
-					<textFieldExpression class="java.lang.String"><![CDATA[$F{foreignMarketTrendsProject}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{foreignMarketTrendsProject}]]></textFieldExpression>
 				</textField>
 				<line>
 					<reportElement positionType="Float" x="10" y="19" width="538" height="1"/>
@@ -333,12 +336,12 @@
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 					<reportElement style="DefaultStyle" positionType="Float" x="10" y="22" width="538" height="18" isRemoveLineWhenBlank="true"/>
 					<textElement textAlignment="Left" verticalAlignment="Top"/>
-					<textFieldExpression class="java.lang.String"><![CDATA[$F{linksMarketTrendsProject}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{linksMarketTrendsProject}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
 					<reportElement style="BoldStyle" positionType="Float" x="10" y="0" width="538" height="18"/>
 					<textElement verticalAlignment="Top"/>
-					<textFieldExpression class="java.lang.String"><![CDATA["Give reference to relevant studies and materials:"]]></textFieldExpression>
+					<textFieldExpression><![CDATA["Give reference to relevant studies and materials:"]]></textFieldExpression>
 				</textField>
 				<line>
 					<reportElement positionType="Float" x="10" y="41" width="538" height="1"/>
@@ -351,12 +354,12 @@
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 					<reportElement style="DefaultStyle" positionType="Float" x="10" y="22" width="538" height="18"/>
 					<textElement textAlignment="Left" verticalAlignment="Top"/>
-					<textFieldExpression class="java.lang.String"><![CDATA[$F{linksAnalogProject}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{linksAnalogProject}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
 					<reportElement style="BoldStyle" positionType="Float" x="10" y="0" width="538" height="18"/>
 					<textElement verticalAlignment="Top"/>
-					<textFieldExpression class="java.lang.String"><![CDATA["If, for links to directly related to the project, Russian and (or) foreign patents, the owner of which are third parties, as well as links to directly related to the project developed algorithms, protocols, software and (or) database exclusive rights that belong to third parties. Under the direct relevance to the project of intellectual property here and below refers to the intellectual property that provide similar or identical technical effect "]]></textFieldExpression>
+					<textFieldExpression><![CDATA["If, for links to directly related to the project, Russian and (or) foreign patents, the owner of which are third parties, as well as links to directly related to the project developed algorithms, protocols, software and (or) database exclusive rights that belong to third parties. Under the direct relevance to the project of intellectual property here and below refers to the intellectual property that provide similar or identical technical effect "]]></textFieldExpression>
 				</textField>
 				<line>
 					<reportElement positionType="Float" x="10" y="41" width="538" height="1"/>
@@ -369,12 +372,12 @@
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 					<reportElement style="DefaultStyle" positionType="Float" x="10" y="22" width="538" height="18"/>
 					<textElement textAlignment="Left" verticalAlignment="Top"/>
-					<textFieldExpression class="java.lang.String"><![CDATA[$F{foreignRelevanceProject}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{foreignRelevanceProject}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
 					<reportElement style="BoldStyle" positionType="Float" x="10" y="0" width="538" height="18"/>
 					<textElement verticalAlignment="Top"/>
-					<textFieldExpression class="java.lang.String"><![CDATA["Give a rationale for the project's relevance:"]]></textFieldExpression>
+					<textFieldExpression><![CDATA["Give a rationale for the project's relevance:"]]></textFieldExpression>
 				</textField>
 			</band>
 			<band height="78">
@@ -383,17 +386,17 @@
 					<textElement verticalAlignment="Middle">
 						<font isBold="true"/>
 					</textElement>
-					<textFieldExpression class="java.lang.String"><![CDATA["TECHNOLOGY AND (OR) APPLIED RESEARCH"]]></textFieldExpression>
+					<textFieldExpression><![CDATA["TECHNOLOGY AND (OR) APPLIED RESEARCH"]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
 					<reportElement style="BoldStyle" positionType="Float" x="10" y="30" width="538" height="18"/>
 					<textElement verticalAlignment="Top"/>
-					<textFieldExpression class="java.lang.String"><![CDATA["Describe the basic technology and (or) Applied research"]]></textFieldExpression>
+					<textFieldExpression><![CDATA["Describe the basic technology and (or) Applied research"]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 					<reportElement style="DefaultStyle" positionType="Float" x="10" y="52" width="538" height="18"/>
 					<textElement textAlignment="Left" verticalAlignment="Top"/>
-					<textFieldExpression class="java.lang.String"><![CDATA[$F{foreignBasicTechnologyProject}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{foreignBasicTechnologyProject}]]></textFieldExpression>
 				</textField>
 				<line>
 					<reportElement positionType="Float" x="10" y="20" width="538" height="1"/>
@@ -407,13 +410,16 @@
 						<pen lineWidth="0.25" lineStyle="Dotted"/>
 					</graphicElement>
 				</line>
+				<break>
+					<reportElement x="0" y="-1" width="100" height="1"/>
+				</break>
 			</band>
 			<band>
 				<subreport>
 					<reportElement stretchType="RelativeToBandHeight" x="0" y="0" width="0" height="0"/>
 					<parametersMapExpression><![CDATA[$P{publications_params}]]></parametersMapExpression>
 					<dataSourceExpression><![CDATA[$P{publications_source}]]></dataSourceExpression>
-					<subreportExpression class="java.lang.String"><![CDATA[$P{publications_report}]]></subreportExpression>
+					<subreportExpression><![CDATA[$P{publications_report}]]></subreportExpression>
 				</subreport>
 			</band>
 			<band>
@@ -421,7 +427,7 @@
 					<reportElement stretchType="RelativeToBandHeight" x="0" y="0" width="0" height="0"/>
 					<parametersMapExpression><![CDATA[$P{patent_params}]]></parametersMapExpression>
 					<dataSourceExpression><![CDATA[$P{patent_source}]]></dataSourceExpression>
-					<subreportExpression class="java.lang.String"><![CDATA[$P{patent_report}]]></subreportExpression>
+					<subreportExpression><![CDATA[$P{patent_report}]]></subreportExpression>
 				</subreport>
 			</band>
 			<band height="22">
@@ -429,7 +435,7 @@
 				<textField isStretchWithOverflow="true">
 					<reportElement style="BoldStyle" positionType="Float" x="10" y="0" width="538" height="18"/>
 					<textElement verticalAlignment="Top"/>
-					<textFieldExpression class="java.lang.String"><![CDATA["See Annex 1"]]></textFieldExpression>
+					<textFieldExpression><![CDATA["See Annex 1"]]></textFieldExpression>
 				</textField>
 			</band>
 			<band height="30">
@@ -437,14 +443,14 @@
 					<reportElement stretchType="RelativeToBandHeight" x="0" y="25" width="0" height="0"/>
 					<parametersMapExpression><![CDATA[$P{commercialization_params}]]></parametersMapExpression>
 					<dataSourceExpression><![CDATA[$P{commercialization_source}]]></dataSourceExpression>
-					<subreportExpression class="java.lang.String"><![CDATA[$P{commercialization_report}]]></subreportExpression>
+					<subreportExpression><![CDATA[$P{commercialization_report}]]></subreportExpression>
 				</subreport>
 				<textField isStretchWithOverflow="true">
 					<reportElement style="BoldStyle2" positionType="Float" x="10" y="0" width="538" height="20"/>
 					<textElement verticalAlignment="Middle">
 						<font isBold="true"/>
 					</textElement>
-					<textFieldExpression class="java.lang.String"><![CDATA["MAP COMMERCIALIZATION (INCLUDING APPLIEDRESEARCH)"]]></textFieldExpression>
+					<textFieldExpression><![CDATA["MAP COMMERCIALIZATION (INCLUDING APPLIEDRESEARCH)"]]></textFieldExpression>
 				</textField>
 				<line>
 					<reportElement positionType="Float" x="10" y="19" width="538" height="1"/>
@@ -452,17 +458,20 @@
 				<line>
 					<reportElement positionType="Float" x="10" y="0" width="538" height="1"/>
 				</line>
+				<break>
+					<reportElement x="0" y="-1" width="100" height="1"/>
+				</break>
 			</band>
 			<band height="50">
 				<textField isStretchWithOverflow="true">
 					<reportElement style="BoldStyle" positionType="Float" x="10" y="0" width="538" height="18"/>
 					<textElement verticalAlignment="Top"/>
-					<textFieldExpression class="java.lang.String"><![CDATA["Give, if any, examples of successful companies, transactions involving the sale of these companies, examples of investments by venture capital funds and strategic investors in similar projects / companies, or if you are engaged in applied research, provide case studies of similar research and development into production: "]]></textFieldExpression>
+					<textFieldExpression><![CDATA["Give, if any, examples of successful companies, transactions involving the sale of these companies, examples of investments by venture capital funds and strategic investors in similar projects / companies, or if you are engaged in applied research, provide case studies of similar research and development into production: "]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 					<reportElement style="DefaultStyle" positionType="Float" x="10" y="22" width="538" height="18"/>
 					<textElement textAlignment="Left" verticalAlignment="Top"/>
-					<textFieldExpression class="java.lang.String"><![CDATA[$F{foreignCaseStudiesProject}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{foreignCaseStudiesProject}]]></textFieldExpression>
 				</textField>
 			</band>
 			<band height="30">
@@ -471,7 +480,7 @@
 					<textElement verticalAlignment="Middle">
 						<font isBold="true"/>
 					</textElement>
-					<textFieldExpression class="java.lang.String"><![CDATA["COMPETITIVE SOLUTIONS"]]></textFieldExpression>
+					<textFieldExpression><![CDATA["COMPETITIVE SOLUTIONS"]]></textFieldExpression>
 				</textField>
 				<line>
 					<reportElement positionType="Float" x="10" y="20" width="538" height="1"/>
@@ -479,25 +488,28 @@
 				<line>
 					<reportElement positionType="Float" x="10" y="0" width="538" height="1"/>
 				</line>
+				<break>
+					<reportElement x="0" y="-1" width="100" height="1"/>
+				</break>
 			</band>
 			<band>
 				<subreport>
 					<reportElement stretchType="RelativeToBandHeight" x="0" y="0" width="0" height="0"/>
 					<parametersMapExpression><![CDATA[$P{analogues_params}]]></parametersMapExpression>
 					<dataSourceExpression><![CDATA[$P{analogues_source}]]></dataSourceExpression>
-					<subreportExpression class="java.lang.String"><![CDATA[$P{analogues_report}]]></subreportExpression>
+					<subreportExpression><![CDATA[$P{analogues_report}]]></subreportExpression>
 				</subreport>
 			</band>
 			<band height="26">
 				<textField isStretchWithOverflow="true">
 					<reportElement style="BoldStyle" positionType="Float" x="10" y="0" width="151" height="18"/>
 					<textElement verticalAlignment="Top"/>
-					<textFieldExpression class="java.lang.String"><![CDATA["Describe the characteristics of the market these similar solutions"]]></textFieldExpression>
+					<textFieldExpression><![CDATA["Describe the characteristics of the market these similar solutions"]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 					<reportElement style="DefaultStyle" positionType="Float" x="165" y="0" width="383" height="18"/>
 					<textElement textAlignment="Left" verticalAlignment="Top"/>
-					<textFieldExpression class="java.lang.String"><![CDATA[$F{foreignCharacteristicsAnaloguesProject}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{foreignCharacteristicsAnaloguesProject}]]></textFieldExpression>
 				</textField>
 				<line>
 					<reportElement positionType="Float" x="10" y="19" width="538" height="1"/>
@@ -510,31 +522,31 @@
 				<textField isStretchWithOverflow="true">
 					<reportElement style="BoldStyle" positionType="Float" x="10" y="0" width="538" height="18"/>
 					<textElement verticalAlignment="Top"/>
-					<textFieldExpression class="java.lang.String"><![CDATA["List the research groups, institutions, companies engaged in similar or close to design and describe what is to your advantage, or if you are engaged in applied research, provide examples of such applied research in leading universities and, if available, tentative agreement with them on collaborative research:"]]></textFieldExpression>
+					<textFieldExpression><![CDATA["List the research groups, institutions, companies engaged in similar or close to design and describe what is to your advantage, or if you are engaged in applied research, provide examples of such applied research in leading universities and, if available, tentative agreement with them on collaborative research:"]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 					<reportElement style="DefaultStyle" positionType="Float" x="10" y="22" width="538" height="18"/>
 					<textElement textAlignment="Left" verticalAlignment="Top"/>
-					<textFieldExpression class="java.lang.String"><![CDATA[$F{foreignCompaniesAnaloguesProjec}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{foreignCompaniesAnaloguesProjec}]]></textFieldExpression>
 				</textField>
 			</band>
 			<band height="78">
 				<textField isStretchWithOverflow="true">
 					<reportElement style="BoldStyle" positionType="Float" x="10" y="30" width="538" height="18"/>
 					<textElement verticalAlignment="Top"/>
-					<textFieldExpression class="java.lang.String"><![CDATA["Specify the markets in which potentially can be implemented by the project (list the countries, regions, indicate the main consumers, evaluate the approximate amount of the market, its dynamics, positioning your future on it)"]]></textFieldExpression>
+					<textFieldExpression><![CDATA["Specify the markets in which potentially can be implemented by the project (list the countries, regions, indicate the main consumers, evaluate the approximate amount of the market, its dynamics, positioning your future on it)"]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
 					<reportElement style="BoldStyle2" positionType="Float" x="10" y="0" width="538" height="20"/>
 					<textElement verticalAlignment="Middle">
 						<font isBold="true"/>
 					</textElement>
-					<textFieldExpression class="java.lang.String"><![CDATA["OPTIONS MARKET"]]></textFieldExpression>
+					<textFieldExpression><![CDATA["OPTIONS MARKET"]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 					<reportElement style="DefaultStyle" positionType="Float" x="10" y="52" width="538" height="18"/>
 					<textElement textAlignment="Left" verticalAlignment="Top"/>
-					<textFieldExpression class="java.lang.String"><![CDATA[$F{foreignMarketIntroductionProject}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{foreignMarketIntroductionProject}]]></textFieldExpression>
 				</textField>
 				<line>
 					<reportElement positionType="Float" x="10" y="19" width="538" height="1"/>
@@ -548,17 +560,20 @@
 						<pen lineWidth="0.25" lineStyle="Dotted"/>
 					</graphicElement>
 				</line>
+				<break>
+					<reportElement x="0" y="-1" width="100" height="1"/>
+				</break>
 			</band>
 			<band height="50">
 				<textField isStretchWithOverflow="true">
 					<reportElement style="BoldStyle" positionType="Float" x="10" y="0" width="538" height="18"/>
 					<textElement verticalAlignment="Top"/>
-					<textFieldExpression class="java.lang.String"><![CDATA["Give reference to relevant market research (in Russian or English)"]]></textFieldExpression>
+					<textFieldExpression><![CDATA["Give reference to relevant market research (in Russian or English)"]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 					<reportElement style="DefaultStyle" positionType="Float" x="10" y="22" width="538" height="18"/>
 					<textElement textAlignment="Left" verticalAlignment="Top"/>
-					<textFieldExpression class="java.lang.String"><![CDATA[$F{linksForeignMarketIntroductionProject}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{linksForeignMarketIntroductionProject}]]></textFieldExpression>
 				</textField>
 			</band>
 			<band height="30">
@@ -567,7 +582,7 @@
 					<textElement verticalAlignment="Middle">
 						<font isBold="true"/>
 					</textElement>
-					<textFieldExpression class="java.lang.String"><![CDATA["TEAM"]]></textFieldExpression>
+					<textFieldExpression><![CDATA["TEAM"]]></textFieldExpression>
 				</textField>
 				<line>
 					<reportElement positionType="Float" x="10" y="19" width="538" height="1"/>
@@ -575,13 +590,16 @@
 				<line>
 					<reportElement positionType="Float" x="10" y="0" width="538" height="1"/>
 				</line>
+				<break>
+					<reportElement x="0" y="-1" width="100" height="1"/>
+				</break>
 			</band>
 			<band>
 				<subreport>
 					<reportElement stretchType="RelativeToBandHeight" x="0" y="0" width="0" height="0"/>
 					<parametersMapExpression><![CDATA[$P{specialist_params}]]></parametersMapExpression>
 					<dataSourceExpression><![CDATA[$P{specialist_source}]]></dataSourceExpression>
-					<subreportExpression class="java.lang.String"><![CDATA[$P{specialist_report}]]></subreportExpression>
+					<subreportExpression><![CDATA[$P{specialist_report}]]></subreportExpression>
 				</subreport>
 			</band>
 			<band height="56">
@@ -590,17 +608,17 @@
 					<textElement verticalAlignment="Middle">
 						<font isBold="true"/>
 					</textElement>
-					<textFieldExpression class="java.lang.String"><![CDATA["RESOURCES"]]></textFieldExpression>
+					<textFieldExpression><![CDATA["RESOURCES"]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 					<reportElement style="DefaultStyle" positionType="Float" x="165" y="30" width="383" height="18"/>
 					<textElement textAlignment="Left" verticalAlignment="Top"/>
-					<textFieldExpression class="java.lang.String"><![CDATA[$F{foreignHistoryProject}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{foreignHistoryProject}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
 					<reportElement style="BoldStyle" positionType="Float" x="10" y="30" width="151" height="18"/>
 					<textElement verticalAlignment="Top"/>
-					<textFieldExpression class="java.lang.String"><![CDATA["The history of the project:"]]></textFieldExpression>
+					<textFieldExpression><![CDATA["The history of the project:"]]></textFieldExpression>
 				</textField>
 				<line>
 					<reportElement positionType="Float" x="10" y="20" width="538" height="1"/>
@@ -614,17 +632,20 @@
 						<pen lineWidth="0.25" lineStyle="Dotted"/>
 					</graphicElement>
 				</line>
+				<break>
+					<reportElement x="0" y="-1" width="100" height="1"/>
+				</break>
 			</band>
 			<band height="26">
 				<textField isStretchWithOverflow="true">
 					<reportElement style="BoldStyle" positionType="Float" x="10" y="0" width="151" height="18"/>
 					<textElement verticalAlignment="Top"/>
-					<textFieldExpression class="java.lang.String"><![CDATA["The dynamics of the project:"]]></textFieldExpression>
+					<textFieldExpression><![CDATA["The dynamics of the project:"]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 					<reportElement style="DefaultStyle" positionType="Float" x="165" y="0" width="383" height="18"/>
 					<textElement textAlignment="Left" verticalAlignment="Top"/>
-					<textFieldExpression class="java.lang.String"><![CDATA[$F{foreignDynamicsProject}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{foreignDynamicsProject}]]></textFieldExpression>
 				</textField>
 				<line>
 					<reportElement positionType="Float" x="10" y="19" width="538" height="1"/>
@@ -637,12 +658,12 @@
 				<textField isStretchWithOverflow="true">
 					<reportElement style="BoldStyle" positionType="Float" x="10" y="0" width="151" height="18"/>
 					<textElement verticalAlignment="Top"/>
-					<textFieldExpression class="java.lang.String"><![CDATA["Have you and (or) the project team grants for this or similar subjects? (Date, amount, nature of projects, results):"]]></textFieldExpression>
+					<textFieldExpression><![CDATA["Have you and (or) the project team grants for this or similar subjects? (Date, amount, nature of projects, results):"]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 					<reportElement style="DefaultStyle" positionType="Float" x="165" y="0" width="383" height="18"/>
 					<textElement textAlignment="Left" verticalAlignment="Top"/>
-					<textFieldExpression class="java.lang.String"><![CDATA[$F{foreignGrantsProject}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{foreignGrantsProject}]]></textFieldExpression>
 				</textField>
 				<line>
 					<reportElement positionType="Float" x="10" y="19" width="538" height="1"/>
@@ -655,12 +676,12 @@
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 					<reportElement style="DefaultStyle" positionType="Float" x="165" y="0" width="383" height="18"/>
 					<textElement textAlignment="Left" verticalAlignment="Top"/>
-					<textFieldExpression class="java.lang.String"><![CDATA[$F{foreignLaboratoryProject}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{foreignLaboratoryProject}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
 					<reportElement style="BoldStyle" positionType="Float" x="10" y="0" width="151" height="18"/>
 					<textElement verticalAlignment="Top"/>
-					<textFieldExpression class="java.lang.String"><![CDATA["Laboratory (Describe laboratory infrastructure platform, which is / will the project)"]]></textFieldExpression>
+					<textFieldExpression><![CDATA["Laboratory (Describe laboratory infrastructure platform, which is / will the project)"]]></textFieldExpression>
 				</textField>
 				<line>
 					<reportElement positionType="Float" x="10" y="19" width="538" height="1"/>
@@ -673,12 +694,12 @@
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 					<reportElement style="DefaultStyle" positionType="Float" x="165" y="0" width="383" height="18"/>
 					<textElement textAlignment="Left" verticalAlignment="Top"/>
-					<textFieldExpression class="java.lang.String"><![CDATA[$F{foreignInvestmentProject}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{foreignInvestmentProject}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
 					<reportElement style="BoldStyle" positionType="Float" x="10" y="0" width="151" height="18"/>
 					<textElement verticalAlignment="Top"/>
-					<textFieldExpression class="java.lang.String"><![CDATA["Attention was whether the venture capital and (or) other funding? (Investors, the sum of the results):"]]></textFieldExpression>
+					<textFieldExpression><![CDATA["Attention was whether the venture capital and (or) other funding? (Investors, the sum of the results):"]]></textFieldExpression>
 				</textField>
 			</band>
 			<band height="56">
@@ -687,17 +708,17 @@
 					<textElement verticalAlignment="Middle">
 						<font isBold="true"/>
 					</textElement>
-					<textFieldExpression class="java.lang.String"><![CDATA["OBJECTIVES"]]></textFieldExpression>
+					<textFieldExpression><![CDATA["OBJECTIVES"]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 					<reportElement style="DefaultStyle" positionType="Float" x="165" y="30" width="383" height="18"/>
 					<textElement textAlignment="Left" verticalAlignment="Top"/>
-					<textFieldExpression class="java.lang.String"><![CDATA[$F{foreignResultsProject}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{foreignResultsProject}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
 					<reportElement style="BoldStyle" positionType="Float" x="10" y="30" width="151" height="18"/>
 					<textElement verticalAlignment="Top"/>
-					<textFieldExpression class="java.lang.String"><![CDATA["Enter the current status of the project (what the results have been achieved and what they are confirmed):"]]></textFieldExpression>
+					<textFieldExpression><![CDATA["Enter the current status of the project (what the results have been achieved and what they are confirmed):"]]></textFieldExpression>
 				</textField>
 				<line>
 					<reportElement positionType="Float" x="10" y="20" width="538" height="1"/>
@@ -711,20 +732,23 @@
 						<pen lineWidth="0.25" lineStyle="Dotted"/>
 					</graphicElement>
 				</line>
+				<break>
+					<reportElement x="0" y="-1" width="100" height="1"/>
+				</break>
 			</band>
 			<band>
 				<subreport>
 					<reportElement stretchType="RelativeToBandHeight" x="0" y="0" width="0" height="0"/>
 					<parametersMapExpression><![CDATA[$P{objectives_params}]]></parametersMapExpression>
 					<dataSourceExpression><![CDATA[$P{objectives_source}]]></dataSourceExpression>
-					<subreportExpression class="java.lang.String"><![CDATA[$P{objectives_report}]]></subreportExpression>
+					<subreportExpression><![CDATA[$P{objectives_report}]]></subreportExpression>
 				</subreport>
 			</band>
 			<band height="26">
 				<textField isStretchWithOverflow="true">
 					<reportElement style="BoldStyle" stretchType="RelativeToBandHeight" x="10" y="0" width="538" height="18"/>
 					<textElement/>
-					<textFieldExpression class="java.lang.String"><![CDATA["The plan of the project"]]></textFieldExpression>
+					<textFieldExpression><![CDATA["The plan of the project"]]></textFieldExpression>
 				</textField>
 				<line>
 					<reportElement positionType="Float" x="10" y="19" width="538" height="1"/>
@@ -738,19 +762,19 @@
 					<reportElement stretchType="RelativeToBandHeight" x="0" y="0" width="0" height="0"/>
 					<parametersMapExpression><![CDATA[$P{mileStoneYear_params}]]></parametersMapExpression>
 					<dataSourceExpression><![CDATA[$P{mileStoneYear_source}]]></dataSourceExpression>
-					<subreportExpression class="java.lang.String"><![CDATA[$P{mileStoneYear_report}]]></subreportExpression>
+					<subreportExpression><![CDATA[$P{mileStoneYear_report}]]></subreportExpression>
 				</subreport>
 			</band>
 			<band height="30">
 				<textField isStretchWithOverflow="true">
 					<reportElement style="BoldStyle" positionType="Float" x="10" y="5" width="151" height="18"/>
 					<textElement verticalAlignment="Top"/>
-					<textFieldExpression class="java.lang.String"><![CDATA["A generalized plan of future development (up to achieving commercial results):"]]></textFieldExpression>
+					<textFieldExpression><![CDATA["A generalized plan of future development (up to achieving commercial results):"]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 					<reportElement style="DefaultStyle" positionType="Float" x="165" y="5" width="383" height="18"/>
 					<textElement textAlignment="Left" verticalAlignment="Top"/>
-					<textFieldExpression class="java.lang.String"><![CDATA[$F{foreignGeneralizedPlanProject}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{foreignGeneralizedPlanProject}]]></textFieldExpression>
 				</textField>
 				<line>
 					<reportElement positionType="Float" x="10" y="24" width="538" height="1"/>
@@ -764,9 +788,12 @@
 				<textField isStretchWithOverflow="true">
 					<reportElement style="BoldStyle" positionType="Float" x="10" y="0" width="538" height="18"/>
 					<textElement textAlignment="Right" verticalAlignment="Top"/>
-					<textFieldExpression class="java.lang.String"><![CDATA["Annex 1, paragraph \n" +
+					<textFieldExpression><![CDATA["Annex 1, paragraph \n" +
 "«Technology and (or) the direction of applied research»"]]></textFieldExpression>
 				</textField>
+				<break>
+					<reportElement x="0" y="-1" width="100" height="1"/>
+				</break>
 			</band>
 		</groupHeader>
 	</group>
@@ -777,7 +804,7 @@
 				<textElement verticalAlignment="Top">
 					<font fontName="lsf.TimesNewRoman" size="18" isBold="true"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA["Project Summary for Expert"]]></textFieldExpression>
+				<textFieldExpression><![CDATA["Project Summary for Expert"]]></textFieldExpression>
 			</textField>
 		</band>
 	</title>

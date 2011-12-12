@@ -42,14 +42,14 @@
 				<textElement>
 					<font size="14"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA["Уважаемый заявитель! \n \n"]]></textFieldExpression>
+				<textFieldExpression><![CDATA["Уважаемый заявитель! \n \n"]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
 				<reportElement style="DefaultStyle" positionType="Float" x="21" y="54" width="525" height="19"/>
 				<textElement>
 					<font size="14"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA["Ваша заявка успешно прошла формальную проверку и в течение ближайших 10 дней будет направлена экспертам по направлению "+$F{nameNativeClusterProjectLegalCheck}+
+				<textFieldExpression><![CDATA["Ваша заявка успешно прошла формальную проверку и в течение ближайших 10 дней будет направлена экспертам по направлению "+$F{nameNativeClusterProjectLegalCheck}+
 " для прохождения экспертизы по существу. \n \n"+
 "Пожалуйста, ожидайте."]]></textFieldExpression>
 			</textField>
@@ -58,17 +58,17 @@
 				<textElement>
 					<font size="14" isUnderline="true"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA["app.i-gorod.com: Ваша заявка успешно прошла формальную проверку"]]></textFieldExpression>
+				<textFieldExpression><![CDATA["app.i-gorod.com: Ваша заявка успешно прошла формальную проверку"]]></textFieldExpression>
 			</textField>
 		</band>
 		<band height="76">
-			<printWhenExpression><![CDATA["positiveLegalCheckResult".equals($F{sidResultLegalCheck})&&$F{isPreliminaryAndStatusProjectLegalCheck}]]></printWhenExpression>
+			<printWhenExpression><![CDATA["positiveLegalCheckResult".equals($F{sidResultLegalCheck})&&$F{isPreliminaryAndStatusProjectLegalCheck}!=null]]></printWhenExpression>
 			<textField isStretchWithOverflow="true">
 				<reportElement style="DefaultStyle" x="22" y="32" width="525" height="17"/>
 				<textElement>
 					<font size="14"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA["Уважаемый заявитель! \n \n"+
+				<textFieldExpression><![CDATA["Уважаемый заявитель! \n \n"+
 "Ваша заявка успешно прошла формальную проверку. \n \n"+
 "Для успешного завершения процедуры рассмотрения Вашей заявки Вам необходимо в течение 10 дней с сегодняшней даты предоставить в Фонд следующие документы: \n \n"+
 "А) Заявление Соискателя о намерении стать Участником проекта, подписанное руководителем постоянно действующего исполнительного органа Соискателя, или иным лицом, имеющим право без доверенности действовать от имени этого юридического лица, или представителем Соискателя по доверенности (оригинал). Заявление должно быть  заверено печатью Соискателя; \n \n"+
@@ -85,7 +85,7 @@ $F{executiveLD}+"\n"+
 				<textElement>
 					<font size="14"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA["Пожалуйста, предварительно согласуйте с "+$F{executiveLD}+" время Вашего визита. \n \n"+
+				<textFieldExpression><![CDATA["Пожалуйста, предварительно согласуйте с "+$F{executiveLD}+" время Вашего визита. \n \n"+
 "Обращаем Ваше внимание, что в случае направления документов по почте предоставление незаверенных копий не допускается."]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
@@ -93,7 +93,7 @@ $F{executiveLD}+"\n"+
 				<textElement>
 					<font size="14" isUnderline="true"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA["app.i-gorod.com: Ваша заявка успешно прошла формальную проверку"]]></textFieldExpression>
+				<textFieldExpression><![CDATA["app.i-gorod.com: Ваша заявка успешно прошла формальную проверку"]]></textFieldExpression>
 			</textField>
 		</band>
 		<band height="77">
@@ -103,7 +103,7 @@ $F{executiveLD}+"\n"+
 				<textElement>
 					<font size="14"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA["Уважаемый заявитель! \n \n"+
+				<textFieldExpression><![CDATA["Уважаемый заявитель! \n \n"+
 "Мы провели формальную проверку Вашей заявки и выявили следующие несоответствия: \n"+
 $F{commentLegalCheck}]]></textFieldExpression>
 			</textField>
@@ -112,15 +112,15 @@ $F{commentLegalCheck}]]></textFieldExpression>
 				<textElement>
 					<font size="14"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA["Пожалуйста, устраните данные несоответствия и отправьте заявку повторно не позднее "+platform.base.BaseUtils.formatRussian($F{overdueDateLegalCheck})+".* Вам открыта возможность редактирования анкеты в личном кабинете. \n \n"+
-"*Согласно пункту 7 Положения о присвоении и утрате статуса участника проекта создания и обеспечения функционирования инновационного центра «Сколково» срок исправления несоответствий составляет тридцать дней с момента получения уведомления."]]></textFieldExpression>
+				<textFieldExpression><![CDATA["Пожалуйста, устраните данные несоответствия и отправьте заявку повторно не позднее "+platform.base.BaseUtils.formatRussian($F{overdueDateLegalCheck})+".* Вам открыта возможность редактирования анкеты в личном кабинете. \n \n"+
+"*Согласно пункту 16.1 Положения о присвоении и утрате статуса участника проекта создания и обеспечения функционирования инновационного центра «Сколково» срок исправления несоответствий составляет тридцать дней с момента получения уведомления."]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
 				<reportElement style="DefaultStyle" x="23" y="0" width="525" height="17"/>
 				<textElement>
 					<font size="14" isUnderline="true"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA["app.i-gorod.com: в ходе формальной проверки Вашей заявки выявлены несоответствия."]]></textFieldExpression>
+				<textFieldExpression><![CDATA["app.i-gorod.com: в ходе формальной проверки Вашей заявки выявлены несоответствия."]]></textFieldExpression>
 			</textField>
 		</band>
 		<band height="79">
@@ -130,7 +130,7 @@ $F{commentLegalCheck}]]></textFieldExpression>
 				<textElement>
 					<font size="14"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA["К сожалению, Вы не устранили несоответствия, о которых мы сообщили Вам в письме от "+ platform.base.BaseUtils.formatRussian($F{dateResultNoticedLegalCheck}) +". Мы вынуждены прекратить рассмотрение Вашей заявки*. \n \n"+
+				<textFieldExpression><![CDATA["К сожалению, Вы не устранили несоответствия, о которых мы сообщили Вам в письме от "+ platform.base.BaseUtils.formatRussian($F{dateResultNoticedLegalCheck}) +". Мы вынуждены прекратить рассмотрение Вашей заявки*. \n \n"+
 "Пожалуйста, подайте новую заявку после необходимой доработки.\n \n"+
 "* на основании пункта 7 Положения о присвоении и утрате статуса участника проекта создания и обеспечения функционирования инновационного центра «Сколково»"]]></textFieldExpression>
 			</textField>
@@ -139,14 +139,14 @@ $F{commentLegalCheck}]]></textFieldExpression>
 				<textElement>
 					<font size="14"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA["Уважаемый заявитель! \n"]]></textFieldExpression>
+				<textFieldExpression><![CDATA["Уважаемый заявитель! \n"]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
 				<reportElement style="DefaultStyle" x="23" y="0" width="525" height="17"/>
 				<textElement>
 					<font size="14" isUnderline="true"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA["app.i-gorod.com: Ваша заявка отклонена"]]></textFieldExpression>
+				<textFieldExpression><![CDATA["app.i-gorod.com: Ваша заявка отклонена"]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>

@@ -3116,7 +3116,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         dateTimeLegalCheck = addTCProp(Time.DATETIME, "dateTimeLegalCheck", true, "Дата проверки", resultLegalCheck);
         dateLegalCheck = addJProp("dateLegalCheck", "Дата отправки уведомления", baseLM.dateInTime, dateTimeLegalCheck, 1);
-        overdueDateLegalCheck = addJProp("overdueDateLegalCheck", "Дата просрочки юридической проверки", baseLM.addDate2, dateLegalCheck, 1, overduePeriod);
+//        overdueDateLegalCheck = addJProp("overdueDateLegalCheck", "Дата просрочки юридической проверки", baseLM.addDate2, dateLegalCheck, 1, overduePeriod);
+        overdueDateLegalCheck = addJProp("overdueDateLegalCheck", "Дата просрочки юридической проверки", baseLM.addDate2, dateResultNoticedLegalCheck, 1, overduePeriod);
 
         maxFormalControlProjectProps = addMGProp((AbstractGroup) null, new String[]{"maxDateFormalControlProject", "currentFCProject"}, new String[]{"Дата посл. формальной экспертизы.", "Посл. формальная экспертиза"}, 1,
                 dateTimeFormalControl, 1, projectFormalControl, 1);
@@ -3446,10 +3447,10 @@ public class SkolkovoLogicsModule extends LogicsModule {
         emailIO = addDProp(baseGroup, "emailIO", "E-mail инвестиционного отдела", StringClass.get(50));
         emailPresident = addDProp(baseGroup, "emailPresident", "E-mail аппарата президента Фонда", StringClass.get(50));
 
-        emailFondFC = addDProp(baseGroup, "emailFondFC", "E-mail для формальной проверки", StringClass.get(100));
-        emailForesightLC = addDProp(baseGroup, "emailForesightLC", "E-mail для решения проверки на соот. форсайту", StringClass.get(100));
-        emailFondTransferred = addDProp(baseGroup, "emailFondTransferred", "E-mail для решения о переводе", StringClass.get(100));
-        emailFondStartVote = addDProp(baseGroup, "emailFondStartVote", "E-mail для уведомления о начале заседания", StringClass.get(100));
+        emailFondFC = addDProp(baseGroup, "emailFondFC", "E-mail для формальной проверки", StringClass.get(100));      // внести записи kzosin@corp.i-gorod.com; Esinyatkina@corp.i-gorod.com; lkiselev@corp.i-gorod.com;
+        emailForesightLC = addDProp(baseGroup, "emailForesightLC", "E-mail для решения проверки на соот. форсайту", StringClass.get(100));    // внести записи EChapysheva@corp.i-gorod.com; Lmerchenko@corp.i-gorod.com; Sizotova@corp.i-gorod.com;
+        emailFondTransferred = addDProp(baseGroup, "emailFondTransferred", "E-mail для решения о переводе", StringClass.get(100));          // внести записи ddudina@corp.i-gorod.com;
+        emailFondStartVote = addDProp(baseGroup, "emailFondStartVote", "E-mail для уведомления о начале заседания", StringClass.get(100));  // внести записи kzosin@corp.i-gorod.com; esinyatkina@corp.i-gorod.com;
 
         emailLetterExpertVoteEA = addEAProp(expert, vote);
         addEARecepient(emailLetterExpertVoteEA, baseLM.email, 1);
@@ -4509,7 +4510,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         private ProjectFullR2FormEntity(NavigatorElement parent, String sID, String caption) {
             super(parent, sID, caption);
 
-            objProject = addSingleGroupObject(1, "project", project, "Проект", nameNativeProject, nameForeignProject, nameNativeClaimerProject, nameForeignClaimerProject, nameNativeFinalClusterProject, nameForeignFinalClusterProject,
+            objProject = addSingleGroupObject(1, "project", project, "Проект", nameNativeProject, nameForeignProject, sidProject, nameNativeClaimerProject, nameForeignClaimerProject, nameNativeFinalClusterProject, nameForeignFinalClusterProject, nameProjectActionProject, updateDateProject, nameStatusProject, dateStatusProject,
                     nativeProblemProject, foreignProblemProject, nativeInnovativeProject, foreignInnovativeProject, descGroup, techDescrGroup, minutesOfMettingGroup, writtenConsentGroup);
 
             addPropertyDraw(objProject, problemGroup, analoguesGroup, commercializationGroup, historyGroup, projectmissionGroup, nativeResultsProject, foreignResultsProject);
