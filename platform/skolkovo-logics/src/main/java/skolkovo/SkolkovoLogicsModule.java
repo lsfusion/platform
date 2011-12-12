@@ -3316,31 +3316,6 @@ public class SkolkovoLogicsModule extends LogicsModule {
         certifiedProject = addDProp(registerGroup, "certifiedProject", "Выдано свидетельство участника", LogicalClass.instance, project);
         dateCertifiedProject = addDCProp(registerGroup, "dateCertifiedProject", "Дата выдачи свидетельства участника", true, baseLM.currentDate, certifiedProject, 1);
 
-        certifiedStatusProject = addCaseUProp(idGroup, "certifiedStatusProject", true, "Статус (оформлен) (ИД)",
-                certifiedProject, 1, addCProp(projectStatus, "certified", project), 1,
-                preparedCertificateProject, 1, addCProp(projectStatus, "preparedCertificate", project), 1,
-                submittedToRegisterProject, 1, addCProp(projectStatus, "submittedToRegister", project), 1,
-                sentToFinDepProject, 1, addCProp(projectStatus, "sentToFinDep", project), 1,
-                signedProject, 1, addCProp(projectStatus, "signed", project), 1,
-                sentForSignatureProject, 1, addCProp(projectStatus, "sentForSignature", project), 1,
-                positiveOriginalDocsCheckProject, 1, addCProp(projectStatus, "appliedOriginalDocs", project), 1,
-                overdueOriginalDocsCheckProject, 1, addCProp(projectStatus, "overdueOriginalDocs", project), 1,
-                negativeOriginalDocsCheckProject, 1, addCProp(projectStatus, "notEnoughOriginalDocs", project), 1,
-                addCProp(projectStatus, "sentStatusAccepted", project), 1);
-
-        valuedStatusProject = addCaseUProp(idGroup, "valuedStatusProject", true, "Статус (оценен) (ИД)",
-                acceptedNoticedStatusProject, 1, addCProp(projectStatus, "sentStatusAccepted", project), 1,
-                acceptedNoticedPreliminaryProject, 1, addCProp(projectStatus, "sentPreliminaryAccepted", project), 1,
-                rejectedNoticedProject, 1, addCProp(projectStatus, "sentRejected", project), 1,
-                acceptedDecisionProject, 1, addCProp(projectStatus, "accepted", project), 1,
-                rejectedDecisionProject, 1, addCProp(projectStatus, "rejected", project), 1,
-                addCProp(projectStatus, "issuedVoteDocs", project), 1);
-
-        foresightCheckStatusProject = addCaseUProp(idGroup, "foresightCheckProject", true, "Статус (проверка на форсайты) (ИД)",
-                positiveResultForesightCheckProject, 1, addCProp(projectStatus, "positiveFSResult", project), 1,
-                negativeResultForesightCheckProject, 1, addCProp(projectStatus, "noCluster", project), 1,
-                addCProp(projectStatus, "unknown", project), 1);
-
         legalCheckStatusProject = addCaseUProp(idGroup, "legalCheckStatusProject", true, "Статус (юридич. пров.) (ИД)",
                 positiveLegalResultProject, 1, addCProp(projectStatus, "positiveLCResult", project), 1,
                 overdueLegalCheckProject, 1, addCProp(projectStatus, "overdueLC", project), 1,
@@ -3356,6 +3331,33 @@ public class SkolkovoLogicsModule extends LogicsModule {
                 notSuitableClusterProject, 1, addCProp(projectStatus, "noCluster", project), 1,
                 repeatedProject, 1, addCProp(projectStatus, "repeated", project), 1,
                 positiveFormalResultProject, 1, addCProp(projectStatus, "positiveFCResult", project), 1,
+                addCProp(projectStatus, "unknown", project), 1);
+
+        certifiedStatusProject = addCaseUProp(idGroup, "certifiedStatusProject", true, "Статус (оформлен) (ИД)",
+                certifiedProject, 1, addCProp(projectStatus, "certified", project), 1,
+                preparedCertificateProject, 1, addCProp(projectStatus, "preparedCertificate", project), 1,
+                submittedToRegisterProject, 1, addCProp(projectStatus, "submittedToRegister", project), 1,
+                sentToFinDepProject, 1, addCProp(projectStatus, "sentToFinDep", project), 1,
+                signedProject, 1, addCProp(projectStatus, "signed", project), 1,
+                sentForSignatureProject, 1, addCProp(projectStatus, "sentForSignature", project), 1,
+                positiveOriginalDocsCheckProject, 1, addCProp(projectStatus, "appliedOriginalDocs", project), 1,
+                overdueOriginalDocsCheckProject, 1, addCProp(projectStatus, "overdueOriginalDocs", project), 1,
+                negativeOriginalDocsCheckProject, 1, addCProp(projectStatus, "notEnoughOriginalDocs", project), 1,
+                resultExecuteLegalCheckProject, 1, legalCheckStatusProject, 1,
+                resultExecuteFormalControlProject, 1, formalCheckStatusProject, 1,
+                addCProp(projectStatus, "sentStatusAccepted", project), 1);
+
+        valuedStatusProject = addCaseUProp(idGroup, "valuedStatusProject", true, "Статус (оценен) (ИД)",
+                acceptedNoticedStatusProject, 1, addCProp(projectStatus, "sentStatusAccepted", project), 1,
+                acceptedNoticedPreliminaryProject, 1, addCProp(projectStatus, "sentPreliminaryAccepted", project), 1,
+                rejectedNoticedProject, 1, addCProp(projectStatus, "sentRejected", project), 1,
+                acceptedDecisionProject, 1, addCProp(projectStatus, "accepted", project), 1,
+                rejectedDecisionProject, 1, addCProp(projectStatus, "rejected", project), 1,
+                addCProp(projectStatus, "issuedVoteDocs", project), 1);
+
+        foresightCheckStatusProject = addCaseUProp(idGroup, "foresightCheckProject", true, "Статус (проверка на форсайты) (ИД)",
+                positiveResultForesightCheckProject, 1, addCProp(projectStatus, "positiveFSResult", project), 1,
+                negativeResultForesightCheckProject, 1, addCProp(projectStatus, "noCluster", project), 1,
                 addCProp(projectStatus, "unknown", project), 1);
 
         voteStatusProject = addCaseUProp(idGroup, "voteStatusProject", true, "Статус (заседание) (ИД)",

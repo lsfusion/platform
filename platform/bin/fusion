@@ -4,6 +4,7 @@
 #
 # Adapt the following lines to your configuration
 FUSION_HOME=/usr/local/fusion
+JAVA_HOME=/usr/lib/jvm/java-1.6.0-openjdk-1.6.0.0/jre
 FUSION_IP=174.129.46.47
 PID_FILE=/var/run/jsvc-fusion.pid
 
@@ -16,6 +17,7 @@ cd $FUSION_HOME
 case "$1" in
   start)
     jsvc \
+    -home $JAVA_HOME \
     -jvm server \
     -Djava.rmi.server.hostname=$FUSION_IP \
     -pidfile $PID_FILE \
@@ -29,6 +31,7 @@ case "$1" in
 
   stop)
     jsvc \
+    -home $JAVA_HOME \
     -stop \
     -pidfile $PID_FILE \
     platform.server.logics.BusinessLogicsBootstrap
