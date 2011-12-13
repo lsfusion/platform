@@ -3114,6 +3114,9 @@ public class SkolkovoLogicsModule extends LogicsModule {
         dateTimeSubmitLegalCheck.setDerivedForcedChange(true, updateDateLegalCheck, 1, is(legalCheck), 1);
         dateSubmitLegalCheck = addJProp("dateLegalCheck", "Дата отправки проекта", baseLM.dateInTime, dateTimeSubmitLegalCheck, 1);
 
+        resultNoticedLegalCheck = addDProp("resultNoticedLegalCheck", "Отослано уведомление", LogicalClass.instance, legalCheck);
+        dateResultNoticedLegalCheck = addDProp("dateResultNoticedLegalCheck", "Дата отсылки уведомления", DateClass.instance, legalCheck);
+
         dateTimeLegalCheck = addTCProp(Time.DATETIME, "dateTimeLegalCheck", true, "Дата проверки", resultLegalCheck);
         dateLegalCheck = addJProp("dateLegalCheck", "Дата отправки уведомления", baseLM.dateInTime, dateTimeLegalCheck, 1);
 //        overdueDateLegalCheck = addJProp("overdueDateLegalCheck", "Дата просрочки юридической проверки", baseLM.addDate2, dateLegalCheck, 1, overduePeriod);
@@ -3637,9 +3640,6 @@ public class SkolkovoLogicsModule extends LogicsModule {
         nameNativeClaimerLegalCheck = addIfElseUProp(baseGroup, "nameNativeClaimerLegalCheck", "Заявитель", addJProp(nameNativeUnionManagerProject, projectLegalCheck, 1), nameNativeJoinClaimerLegalCheck, isPreliminaryLegalCheck, 1);
         nameNativeClaimerLegalCheck.setMinimumWidth(10);
         nameNativeClaimerLegalCheck.setPreferredWidth(50);
-
-        resultNoticedLegalCheck = addDProp("resultNoticedLegalCheck", "Отослано уведомление", LogicalClass.instance, legalCheck);
-        dateResultNoticedLegalCheck = addDProp("dateResultNoticedLegalCheck", "Дата отсылки уведомления", DateClass.instance, legalCheck);
 
         setCurrentDateResultNoticedLegalCheck = addJProp(actionGroup, true, "setCurrentDateResultNoticedLegalCheck", "Установить текущую дату уведомления",
                 addEPAProp(EPA_INTERFACE, dateResultNoticedLegalCheck), 1, baseLM.currentDate);

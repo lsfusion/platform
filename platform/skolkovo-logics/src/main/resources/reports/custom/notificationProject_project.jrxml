@@ -55,7 +55,7 @@
 					<font fontName="Serif" size="14"/>
 					<paragraph firstLineIndent="40"/>
 				</textElement>
-				<textFieldExpression><![CDATA["Пожалуйста перейдите в систему голосования и произведите проверку до"+" "+ platform.base.BaseUtils.formatRussian($F{dateNotificationPeriodProject})+". При положительном решении Вы обязаны выбрать хотя бы один форсайт."]]></textFieldExpression>
+				<textFieldExpression><![CDATA["Пожалуйста перейдите в систему голосования и произведите проверку до"+" "+ platform.base.BaseUtils.formatRussian($F{dateNotificationPeriodProject})+". При положительном решении, пожалуйста, выберите инновационный приоритет."]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>
