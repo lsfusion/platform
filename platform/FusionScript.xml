@@ -24,7 +24,9 @@
       <keyword name="CONSTRAINT" />
       <keyword name="DATA" />
       <keyword name="DATE" />
+      <keyword name="DESC" />
       <keyword name="DOUBLE" />
+      <keyword name="EXCEPTLAST" />
       <keyword name="EXCLUSIVE" />
       <keyword name="FALSE" />
       <keyword name="FILTERS" />
@@ -47,8 +49,10 @@
       <keyword name="NULL" />
       <keyword name="OBJECTS" />
       <keyword name="OBJVALUE" />
+      <keyword name="ORDER" />
       <keyword name="OVERRIDE" />
       <keyword name="PANEL" />
+      <keyword name="PARTITION" />
       <keyword name="PERSISTENT" />
       <keyword name="PROPERTIES" />
       <keyword name="SELECTION" />
@@ -57,6 +61,7 @@
       <keyword name="SUM" />
       <keyword name="TRUE" />
       <keyword name="UNION" />
+      <keyword name="WINDOW" />
       <keyword name="XOR" />
     </keywords>
     <keywords2>

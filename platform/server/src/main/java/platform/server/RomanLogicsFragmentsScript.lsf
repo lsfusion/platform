@@ -48,9 +48,9 @@ invoicedOrderArticle2 = GROUP SUM invoicedOrderSku($1, $2) BY $1, articleSku($2)
 
 
 // UProp
-typeInvoiceFreightArticle2(freight, article) = UNION OVERRIDE (typeInvoiceCategoryFreightArticle(freight, article), typeInvoiceDataFreightArticle(freight, article)) IN idGroup;
-typeInvoiceFreightArticle3 = UNION OVERRIDE (typeInvoiceCategoryFreightArticle($1, $2), typeInvoiceDataFreightArticle($1, $2)) IN idGroup;
-sumSku2 = UNION SUM (sumStockedSku($1), sumDirectInvoicedSku($1)) IN baseGroup;
+typeInvoiceFreightArticle2(freight, article) = UNION OVERRIDE typeInvoiceCategoryFreightArticle(freight, article), typeInvoiceDataFreightArticle(freight, article) IN idGroup;
+typeInvoiceFreightArticle3 = UNION OVERRIDE typeInvoiceCategoryFreightArticle($1, $2), typeInvoiceDataFreightArticle($1, $2) IN idGroup;
+sumSku2 = UNION SUM sumStockedSku($1), sumDirectInvoicedSku($1) IN baseGroup;
 
 
 // Nested

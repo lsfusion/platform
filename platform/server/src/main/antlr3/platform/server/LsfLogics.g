@@ -8,6 +8,7 @@ grammar LsfLogics;
 	import platform.server.logics.linear.LP;
 	import platform.server.logics.ScriptingErrorLog;
 	import platform.interop.ClassViewType;
+	import platform.server.data.expr.query.OrderType;
 	import java.util.Collections;
 	import java.util.Set;
 	import java.util.HashSet;
@@ -464,6 +465,7 @@ propertyDefinition[List<String> context, boolean dynamic] returns [LP property, 
 contextDependentPD[List<String> context, boolean dynamic] returns [LP property, List<Integer> usedParams]
 	:	joinDef=joinPropertyDefinition[context, dynamic] { $property = $joinDef.property; $usedParams = $joinDef.usedParams; } 
 	|	unionDef=unionPropertyDefinition[context, dynamic] { $property = $unionDef.property; $usedParams = $unionDef.usedParams; } 
+	|	partDef=partitionPropertyDefinition[context, dynamic] { $property = $partDef.property; $usedParams = $partDef.usedParams; }
 	|	constDef=literal { $property = $constDef.property; $usedParams = new ArrayList<Integer>(); }
 	;
 
@@ -475,8 +477,8 @@ contextIndependentPD[boolean innerPD] returns [LP property, boolean isData]
 
 joinPropertyDefinition[List<String> context, boolean dynamic] returns [LP property, List<Integer> usedParams]
 @init {
-	List<LP<?>> paramProps = new ArrayList<LP<?>>();
-	List<List<Integer>> usedSubParams = new ArrayList<List<Integer>>();
+	List<LP<?>> paramProps;
+	List<List<Integer>> usedSubParams;
 	LP mainProp = null;
 }
 @after {
@@ -488,8 +490,7 @@ joinPropertyDefinition[List<String> context, boolean dynamic] returns [LP proper
 }
 	:	mainPropObj=propertyObject { mainProp = $mainPropObj.property; }
 		'('
-			(firstParam=propertyExpression[context, dynamic] { paramProps.add($firstParam.property); usedSubParams.add($firstParam.usedParams); }
-			(',' nextParam=propertyExpression[context, dynamic] { paramProps.add($nextParam.property); usedSubParams.add($nextParam.usedParams);})* )?
+		exprList=propertyExpressionList[context, dynamic] { paramProps = $exprList.props; usedSubParams = $exprList.usedParams; }	
 		')'
 	;
 
@@ -511,20 +512,40 @@ groupPropertyDefinition returns [LP property]
 	:	'GROUP' (('SUM') { isSGProp = true; } | ('MAX') { isSGProp = false; })
 		prop=propertyExpression[groupContext, true] { paramProps.add($prop.property); usedParams.add($prop.usedParams); }
 		'BY'
-		(firstParam=propertyExpression[groupContext, true] { paramProps.add($firstParam.property); usedParams.add($firstParam.usedParams); }
-		(',' nextParam=propertyExpression[groupContext, true] { paramProps.add($nextParam.property); usedParams.add($nextParam.usedParams);})* )
+		exprList=nonEmptyPropertyExpressionList[groupContext, true] 
+		{ paramProps.addAll($exprList.props); usedParams.addAll($exprList.usedParams); }
 	;
 
-//partitionPropertyDefinition[List<String> context, boolean dynamic] returns [LP property, List<Integer> usedParams]
-//@init {
-//	LP<?> mainProp = null;
-//	
-//}
-//@after {
-//}
-//	:	'PARTITION' (('SUM' ) | ('PREV'))
-//		prop=propertyExpression[context, dynamic] {}
-//	;
+
+
+partitionPropertyDefinition[List<String> context, boolean dynamic] returns [LP property, List<Integer> usedParams]
+@init {
+	List<List<Integer>> usedSubParams = new ArrayList<List<Integer>>();
+	List<LP<?>> paramProps = new ArrayList<LP<?>>();
+	OrderType type = null;
+	int groupExprCnt;
+	boolean ascending = true;
+	boolean useLast = true;
+}
+@after {
+	if (parseState == ScriptingLogicsModule.State.PROP) {
+		ScriptingLogicsModule.LPWithParams result = 
+			self.addScriptedOProp(type, ascending, useLast, groupExprCnt, paramProps, usedSubParams);
+		$property = result.property;
+		$usedParams = result.usedParams;	
+	}
+}
+	:	'PARTITION' ('SUM' {type = OrderType.SUM;} | 'PREV' {type = OrderType.PREVIOUS;})
+		expr=propertyExpression[context, dynamic] { paramProps.add($expr.property); usedSubParams.add($expr.usedParams); }
+		(	'BY'
+			exprList=nonEmptyPropertyExpressionList[context, dynamic] { paramProps.addAll($exprList.props); usedSubParams.addAll($exprList.usedParams); }
+		)?
+		{ groupExprCnt = paramProps.size() - 1; }
+		(	'ORDER' ('DESC' { ascending = false; } )?				
+			orderList=nonEmptyPropertyExpressionList[context, dynamic] { paramProps.addAll($orderList.props); usedSubParams.addAll($orderList.usedParams); }
+		)? 
+		('WINDOW' 'EXCEPTLAST' { useLast = false; })?
+	;
 
 
 dataPropertyDefinition[boolean innerPD] returns [LP property]
@@ -548,8 +569,8 @@ dataPropertyDefinition[boolean innerPD] returns [LP property]
 
 unionPropertyDefinition[List<String> context, boolean dynamic] returns [LP property, List<Integer> usedParams]
 @init {
-	List<LP<?>> paramProps = new ArrayList<LP<?>>();
-	List<List<Integer>> usedSubParams = new ArrayList<List<Integer>>();
+	List<LP<?>> paramProps;
+	List<List<Integer>> usedSubParams;
 	Union type = null;
 }
 @after {
@@ -561,10 +582,7 @@ unionPropertyDefinition[List<String> context, boolean dynamic] returns [LP prope
 }
 	:	'UNION'
 		(('MAX' {type = Union.MAX;}) | ('SUM' {type = Union.SUM;}) | ('OVERRIDE' {type = Union.OVERRIDE;}) | ('XOR' { type = Union.XOR;}) | ('EXCLUSIVE' {type = Union.EXCLUSIVE;}))
-		'('
-		firstParam=propertyExpression[context, dynamic] { paramProps.add($firstParam.property); usedSubParams.add($firstParam.usedParams); }
-		(',' nextParam=propertyExpression[context, dynamic] { paramProps.add($nextParam.property); usedSubParams.add($nextParam.usedParams);})*
-		')'
+		exprList=nonEmptyPropertyExpressionList[context, dynamic] { paramProps = $exprList.props; usedSubParams = $exprList.usedParams; }	
 	;
 
 
@@ -709,6 +727,24 @@ parameterList returns [List<String> ids]
 		(',' nextParam=parameter { $ids.add($nextParam.text); })* )?
 	;
 
+
+propertyExpressionList[List<String> context, boolean dynamic] returns [List<LP<?>> props, List<List<Integer>> usedParams] 
+@init {
+	$props = new ArrayList<LP<?>>();
+	$usedParams = new ArrayList<List<Integer>>(); 
+}
+	:	(neList=nonEmptyPropertyExpressionList[context, dynamic] { $props = $neList.props; $usedParams = $neList.usedParams; })?
+	;
+	
+
+nonEmptyPropertyExpressionList[List<String> context, boolean dynamic] returns [List<LP<?>> props, List<List<Integer>> usedParams]
+@init {
+	$props = new ArrayList<LP<?>>();
+	$usedParams = new ArrayList<List<Integer>>(); 
+}
+	:	first=propertyExpression[context, dynamic] { $props.add($first.property); $usedParams.add($first.usedParams); }
+		(',' next=propertyExpression[context, dynamic] { $props.add($next.property); $usedParams.add($next.usedParams);})* 
+	; 
 
 literal returns [LP property]
 @init {

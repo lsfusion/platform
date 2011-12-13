@@ -83,9 +83,16 @@ outcomeQuantity2(store, article) = GROUP SUM quantity(doc, art) IF doc IS outcom
 
 // Union property
 // Expression syntax:
-// UNION (SUM | MAX | OVERRIDE | XOR | EXCLUSIVE) ( propertyExpression1, ..., propertyExpressionN )
-testQuantity(store, article) = UNION SUM (incomeQuantity(store, article), outcomeQuantity(store, article));
+// UNION (SUM | MAX | OVERRIDE | XOR | EXCLUSIVE) propertyExpression1, ..., propertyExpressionN
+testUnion(store, article) = UNION SUM incomeQuantity(store, article), outcomeQuantity(store, article);
 
+// Partition property
+// Expression syntax:
+// PARTITION (SUM | PREV) propertyExpression
+// [BY propertyExpressionM1, ..., propertyExpressionMN]
+// [ORDER [DESC] propertyExpressionL1, ..., propertyExpressionLK]
+// [WINDOW EXCEPTLAST]
+testPartition(store, article) = PARTITION SUM inQuantity(store, article) BY store ORDER DESC name(article); // ??
 
 // Computational expressions
 // Priority:
@@ -154,5 +161,5 @@ PROPERTIES SELECTION(s), name(s), OBJVALUE(a), name(a)
 PROPERTIES incomeQuantity(s, a), incomeQuantity2(s, a), outcomeQuantity(s, a), outcomeQuantity2(s, a), storeSizeName(s),
            storeIsHuge(s), storeIsHuge2(s),
            foo(s, a), foo2(s, a), bar(s, a), foobar(s, a), bar2(s, a), baz(s, a), baz2(s, a),
-           balanceQuantity(s, a), testQuantity(s, a);
+           balanceQuantity(s, a), testUnion(s, a), testPartition(s, a);
 
