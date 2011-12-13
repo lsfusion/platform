@@ -6018,7 +6018,10 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
             objVote = addSingleGroupObject(1, "vote", vote, dateProjectVote, baseLM.date, dateEndVote, nameNativeProjectVote, nameNativeClaimerVote, nameNativeClusterVote,
                     quantityInVote, quantityRepliedVote, quantityDoneVote, quantityDoneNewVote, quantityDoneOldVote, quantityRefusedVote, quantityConnectedVote, succeededVote, acceptedVote,
-                    quantityInClusterVote, acceptedInClusterVote, quantityInnovativeVote, acceptedInnovativeVote, quantityForeignVote, acceptedForeignVote, prevDateStartVote, prevDateVote, countPrevVote, revisionVote, isStatusVote);
+                    quantityInClusterVote, acceptedInClusterVote, quantityInnovativeVote, acceptedInnovativeVote, quantityForeignVote,
+                    quantityCompetitiveAdvantagesVote, acceptedCompetitiveAdvantagesVote, quantityCommercePotentialVote, acceptedCommercePotentialVote, quantityCanBeImplementedVote, acceptedCanBeImplementedVote,
+                    quantityHaveExpertiseVote, acceptedHaveExpertiseVote, quantityInternationalExperienceVote, acceptedInternationalExperienceVote, quantityEnoughDocumentsVote, acceptedEnoughDocumentsVote,
+                    acceptedForeignVote, prevDateStartVote, prevDateVote, countPrevVote, revisionVote, isStatusVote);
             objVote.groupTo.initClassView = ClassViewType.PANEL;
 
             objPrevVote = addSingleGroupObject(5, "prevVote", vote, dateStartVote);
@@ -6029,7 +6032,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
             addPropertyDraw(voteResultGroup, true, objExpert, objVote);
 
-            addPropertyDraw(objExpert, objVote, connectedExpertVote,competitiveAdvantagesExpertVote, commercePotentialExpertVote, canBeImplementedExpertVote, haveExpertiseExpertVote, internationalExperienceExpertVote, enoughDocumentsExpertVote, commentCompetitiveAdvantagesExpertVote, commentCommercePotentialExpertVote, commentCanBeImplementedExpertVote, commentHaveExpertiseExpertVote, commentInternationalExperienceExpertVote, commentEnoughDocumentsExpertVote);
+            addPropertyDraw(objExpert, objVote, connectedExpertVote, competitiveAdvantagesExpertVote, commercePotentialExpertVote, canBeImplementedExpertVote, haveExpertiseExpertVote, internationalExperienceExpertVote, enoughDocumentsExpertVote, commentCompetitiveAdvantagesExpertVote, commentCommercePotentialExpertVote, commentCanBeImplementedExpertVote, commentHaveExpertiseExpertVote, commentInternationalExperienceExpertVote, commentEnoughDocumentsExpertVote);
             addPropertyDraw(objExpert, objVote, quantityCompetitiveAdvantagesVote, quantityCommercePotentialVote, quantityCanBeImplementedVote, quantityHaveExpertiseVote, quantityInternationalExperienceVote, quantityEnoughDocumentsVote, acceptedCompetitiveAdvantagesVote, acceptedCommercePotentialVote, acceptedCanBeImplementedVote, acceptedHaveExpertiseVote, acceptedInternationalExperienceVote, acceptedEnoughDocumentsVote);
 
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(isPrevVoteVote, objPrevVote, objVote)));
