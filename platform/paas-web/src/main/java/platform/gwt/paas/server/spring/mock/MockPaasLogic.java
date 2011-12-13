@@ -92,6 +92,21 @@ public class MockPaasLogic implements PaasRemoteInterface {
     }
 
     @Override
+    public byte[] readFile(String sid, String... params) throws RemoteException {
+        return new byte[0];
+    }
+
+    @Override
+    public boolean checkDefaultViewPermission(String propertySid) throws RemoteException {
+        return false;
+    }
+
+    @Override
+    public boolean checkPropertyViewPermission(String userName, String propertySID) throws RemoteException {
+        return false;
+    }
+
+    @Override
     public Object execute(MethodInvocation[] invocations) throws RemoteException {
         return null;
     }
