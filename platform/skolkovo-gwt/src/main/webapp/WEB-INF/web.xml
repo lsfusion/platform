@@ -88,6 +88,15 @@
         <url-pattern>/votes/conference.do</url-pattern>
     </servlet-mapping>
 
+    <servlet>
+        <servlet-name>readFileHandler</servlet-name>
+        <servlet-class>org.springframework.web.context.support.HttpRequestHandlerServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>readFileHandler</servlet-name>
+        <url-pattern>/readFile</url-pattern>
+    </servlet-mapping>
+
     <!--<servlet>-->
         <!--<servlet-name>applicantFormUploadHandler</servlet-name>-->
         <!--<servlet-class>org.springframework.web.context.support.HttpRequestHandlerServlet</servlet-class>-->

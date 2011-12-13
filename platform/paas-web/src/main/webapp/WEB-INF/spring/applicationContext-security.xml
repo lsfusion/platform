@@ -28,11 +28,19 @@
         <logout logout-url="/logout.jsp" logout-success-url="/Paas.jsp"/>
 
         <custom-filter ref="expiredSessionFilter" before="SESSION_MANAGEMENT_FILTER" />
+
+        <custom-filter ref="propertyReadAccessFilter" before="FILTER_SECURITY_INTERCEPTOR"/>
     </http>
 
     <b:bean id="expiredSessionFilter" class="platform.gwt.base.server.spring.ExpiredSessionFilter">
         <!-- фильтруем запросы к dispatch-сервису -->
         <b:property name="urlPattern" value="/dispatch.*"/>
+    </b:bean>
+
+    <b:bean id="readFileHandler" class="platform.gwt.base.server.handlers.ReadFileRequestHandler"/>
+
+    <b:bean id="propertyReadAccessFilter" class="platform.gwt.base.server.spring.PropertyReadAccessFilter">
+        <b:property name="URI" value="/readFile"/>
     </b:bean>
 
     <b:bean id="loginUrlAuthenticationEntryPoint"

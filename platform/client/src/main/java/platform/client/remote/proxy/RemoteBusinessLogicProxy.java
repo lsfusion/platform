@@ -128,4 +128,25 @@ public class RemoteBusinessLogicProxy<T extends RemoteLogicsInterface>
     public String getRemoteActionMessage() throws RemoteException {
         return target.getRemoteActionMessage();
     }
+
+    public byte[] readFile(String sid, String... params) throws RemoteException {
+        logRemoteMethodStartCall("readFile");
+        byte[] result = target.readFile(sid, params);
+        logRemoteMethodEndVoidCall("readFile");
+        return result;
+    }
+
+    public boolean checkDefaultViewPermission(String propertySid) throws RemoteException {
+        logRemoteMethodStartCall("checkDefaultViewPermission");
+        boolean result = target.checkDefaultViewPermission(propertySid);
+        logRemoteMethodEndVoidCall("checkDefaultViewPermission");
+        return result;
+    }
+
+    public boolean checkPropertyViewPermission(String userName, String propertySID) throws RemoteException {
+        logRemoteMethodStartCall("checkPropertyViewPermission");
+        boolean result = target.checkPropertyViewPermission(userName, propertySID);
+        logRemoteMethodEndVoidCall("checkPropertyViewPermission");
+        return result;
+    }
 }

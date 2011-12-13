@@ -2080,4 +2080,50 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     public void remindPassword(String email) throws RemoteException {
         throw new UnsupportedOperationException("Напоминание пароля не поддерживается...");
     }
+
+    @Override
+    public boolean checkPropertyViewPermission(String userName, String propertySID) {
+        boolean forbidView;
+        try {
+            User user = readUser(userName, createSession());
+            SecurityPolicy policy = user.getSecurityPolicy();
+            forbidView = policy.property.view.checkPermission(getProperty(propertySID));
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return forbidView;
+    }
+
+    @Override
+    public boolean checkDefaultViewPermission(String propertySid) throws RemoteException {
+        Property property = getProperty(propertySid);
+        boolean default1 = policyManager.defaultSecurityPolicy.property.view.checkPermission(property);
+        Boolean default2;
+        try {
+            DataSession session = createSession();
+            DataObject propertyObject = new DataObject(LM.SIDToProperty.read(session, new DataObject(propertySid)), LM.property);
+            default2 = (Boolean) LM.forbidViewProperty.read(session, propertyObject);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return default1 && default2 == null;
+    }
+
+    @Override
+    public byte[] readFile(String sid, String... params) throws RemoteException {
+        LP property = getLP(sid);
+        List<ClassPropertyInterface> interfaces = new ArrayList<ClassPropertyInterface>(property.property.interfaces);
+        DataObject[] objects = new DataObject[interfaces.size()];
+        byte[] fileBytes;
+        try {
+            DataSession session = createSession();
+            for (int i = 0; i < interfaces.size(); i++) {
+                objects[i] = session.getDataObject(Integer.decode(params[i]), interfaces.get(i).interfaceClass.getType());
+            }
+            fileBytes = (byte[]) property.read(session, objects);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        return fileBytes;
+    }
 }

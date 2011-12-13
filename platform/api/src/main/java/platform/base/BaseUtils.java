@@ -1726,7 +1726,6 @@ public class BaseUtils {
 
     public static String getExtension(byte[] array) {
         byte ext[] = new byte[array[0]];
-        byte file[] = new byte[array.length - array[0] - 1];
         System.arraycopy(array, 1, ext, 0, ext.length);
         return new String(ext);
     }
