@@ -3087,6 +3087,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         dateTimeFormalControl = addTCProp(Time.DATETIME, "dateTimeFormalControl", true, "Дата/время экспертизы", resultFormalControl);
         dateFormalControl = addJProp("dateFormalControl", "Дата экспертизы", baseLM.dateInTime, dateTimeFormalControl, 1);
+        resultNoticedFormalControl = addDProp("resultNoticedFormalControl", "Отослано уведомление", LogicalClass.instance, formalControl);
         dateResultNoticedFormalControl = addDProp("dateResultNoticedFormalControl", "Дата отсылки уведомления", DateClass.instance, formalControl);
         overdueDateFormalControl = addJProp("overdueDateFormalControl", "Дата просрочки формальной экспертизы", baseLM.addDate2, addJProp(baseLM.jumpWorkdays, baseLM.defaultCountry, dateResultNoticedFormalControl, 1, addCProp(IntegerClass.instance, 1)), 1, addJProp(baseLM.subtractDate2, overduePeriod, addCProp(IntegerClass.instance, 1)));
 
@@ -3123,8 +3124,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         dateTimeLegalCheck = addTCProp(Time.DATETIME, "dateTimeLegalCheck", true, "Дата проверки", resultLegalCheck);
         dateLegalCheck = addJProp("dateLegalCheck", "Дата отправки уведомления", baseLM.dateInTime, dateTimeLegalCheck, 1);
-//        overdueDateLegalCheck = addJProp("overdueDateLegalCheck", "Дата просрочки юридической проверки", baseLM.addDate2, dateLegalCheck, 1, overduePeriod);
-        overdueDateLegalCheck = addJProp("overdueDateLegalCheck", "Дата просрочки юридической проверки", baseLM.addDate2, dateResultNoticedLegalCheck, 1, overduePeriod);
+        overdueDateLegalCheck = addJProp("overdueDateLegalCheck", "Дата просрочки юридической проверки", baseLM.addDate2, addJProp(baseLM.jumpWorkdays, baseLM.defaultCountry, dateResultNoticedLegalCheck, 1, addCProp(IntegerClass.instance, 1)), 1, addJProp(baseLM.subtractDate2, overduePeriod, addCProp(IntegerClass.instance, 1)));
 
         maxFormalControlProjectProps = addMGProp((AbstractGroup) null, new String[]{"maxDateFormalControlProject", "currentFCProject"}, new String[]{"Дата посл. формальной экспертизы.", "Посл. формальная экспертиза"}, 1,
                 dateTimeFormalControl, 1, projectFormalControl, 1);
@@ -3281,7 +3281,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         nameResultOriginalDocsCheck = addJProp("nameResultOriginalDocsCheck", "Проверка оригиналов документов", baseLM.name, resultOriginalDocsCheck, 1);
 
         dateOriginalDocsCheck = addJProp("dateOriginalDocsCheck", "Дата оправки уведомления", baseLM.dateInTime, dateTimeOriginalDocsCheck, 1);
-        overdueDateOriginalDocsCheck = addJProp("overdueDateOriginalDocsCheck", "Дата просрочки подачи оригиналов документов", baseLM.addDate2, dateOriginalDocsCheck, 1, overduePeriod);
+        overdueDateOriginalDocsCheck = addJProp("overdueDateOriginalDocsCheck", "Дата просрочки подачи оригиналов документов", baseLM.addDate2, addJProp(baseLM.jumpWorkdays, baseLM.defaultCountry, dateOriginalDocsCheck, 1, addCProp(IntegerClass.instance, 1)), 1, addJProp(baseLM.subtractDate2, overduePeriod, addCProp(IntegerClass.instance, 1)));
 
         dateFirstSubmitOriginalDocsProject = addMGProp("dateFirstSubmitOriginalDocsProject", true, "Дата первой подачи документов", true, baseLM.date, projectOriginalDocsCheck, 1);
 
@@ -3455,6 +3455,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         emailDocuments = addDProp(baseGroup, "emailDocuments", "E-mail для документов", StringClass.get(50));
         emailIO = addDProp(baseGroup, "emailIO", "E-mail инвестиционного отдела", StringClass.get(50));
         emailPresident = addDProp(baseGroup, "emailPresident", "E-mail аппарата президента Фонда", StringClass.get(50));
+        emailBureauTranslation = addDProp(baseGroup, "emailBureauTranslation", "E-mail для отправкм в бюро переводов", StringClass.get(50));
 
         emailFondFC = addDProp(baseGroup, "emailFondFC", "E-mail для формальной проверки", StringClass.get(100));      // внести записи kzosin@corp.i-gorod.com; Esinyatkina@corp.i-gorod.com; lkiselev@corp.i-gorod.com;
         emailForesightLC = addDProp(baseGroup, "emailForesightLC", "E-mail для решения проверки на соот. форсайту", StringClass.get(100));    // внести записи EChapysheva@corp.i-gorod.com; Lmerchenko@corp.i-gorod.com; Sizotova@corp.i-gorod.com;
@@ -3614,7 +3615,6 @@ public class SkolkovoLogicsModule extends LogicsModule {
         nameNativeClaimerFormalControl.setMinimumWidth(10);
         nameNativeClaimerFormalControl.setPreferredWidth(50);
 
-        resultNoticedFormalControl = addDProp("resultNoticedFormalControl", "Отослано уведомление", LogicalClass.instance, formalControl);
 
         setCurrentDateResultNoticedFormalControl = addJProp(actionGroup, true, "setCurrentDateResultNoticedFormalControl", "Установить текущую дату уведомления",
                 addEPAProp(EPA_INTERFACE, dateResultNoticedFormalControl), 1, baseLM.currentDate);
