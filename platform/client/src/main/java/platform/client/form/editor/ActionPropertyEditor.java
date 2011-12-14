@@ -5,6 +5,7 @@ import platform.client.form.PropertyEditorComponent;
 import java.awt.*;
 import java.io.IOException;
 import java.rmi.RemoteException;
+import java.text.ParseException;
 import java.util.EventObject;
 
 public class ActionPropertyEditor implements PropertyEditorComponent {
@@ -19,5 +20,10 @@ public class ActionPropertyEditor implements PropertyEditorComponent {
 
     public boolean valueChanged() {
         return true;
+    }
+
+    @Override
+    public String checkValue(Object value) {
+        return null;
     }
 }

@@ -12,6 +12,7 @@ import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.io.IOException;
 import java.rmi.RemoteException;
+import java.text.ParseException;
 import java.util.EventObject;
 
 public class ObjectPropertyEditor extends JDialog implements PropertyEditorComponent {
@@ -61,5 +62,10 @@ public class ObjectPropertyEditor extends JDialog implements PropertyEditorCompo
 
     public boolean valueChanged() {
         return clientDialog.objectChosen != ClientDialog.NOT_CHOSEN;
+    }
+
+    @Override
+    public String checkValue(Object value){
+        return null;
     }
 }

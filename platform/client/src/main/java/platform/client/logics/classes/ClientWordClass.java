@@ -5,6 +5,7 @@ import platform.client.form.PropertyEditorComponent;
 import platform.client.form.PropertyRendererComponent;
 import platform.client.form.editor.DocumentPropertyEditor;
 import platform.client.form.renderer.WordPropertyRenderer;
+import platform.client.logics.ClientPropertyDraw;
 import platform.interop.ComponentDesign;
 import platform.interop.Data;
 
@@ -36,7 +37,7 @@ public class ClientWordClass extends ClientFileClass {
     }
 
     @Override
-    public PropertyEditorComponent getComponent(Object value, Format format, ComponentDesign design) {
+    public PropertyEditorComponent getComponent(Object value, ClientPropertyDraw property) {
         return new DocumentPropertyEditor(value, ClientResourceBundle.getString("logics.classes.word"), "doc", "docx");
     }
 

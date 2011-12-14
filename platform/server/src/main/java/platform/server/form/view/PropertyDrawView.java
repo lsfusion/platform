@@ -47,6 +47,8 @@ public class PropertyDrawView extends ComponentView {
     public boolean showTableFirst;
     public boolean editOnSingleClick;
     public boolean hide;
+    public String regexp;
+    public String regexpMessage;
 
     public Color highlightColor;
 
@@ -173,7 +175,8 @@ public class PropertyDrawView extends ComponentView {
         pool.writeString(outStream, SerializationType.VISUAL_SETUP.equals(serializationType)
                 ? caption
                 : getCaption());
-
+        pool.writeString(outStream, regexp);
+        pool.writeString(outStream, regexpMessage);
         outStream.writeInt(getMinimumCharWidth());
         outStream.writeInt(getMaximumCharWidth());
         outStream.writeInt(getPreferredCharWidth());
@@ -242,7 +245,8 @@ public class PropertyDrawView extends ComponentView {
         super.customDeserialize(pool, inStream);
 
         caption = pool.readString(inStream);
-
+        regexp = pool.readString(inStream);
+        regexpMessage = pool.readString(inStream);
         setMinimumCharWidth(inStream.readInt());
         setMaximumCharWidth(inStream.readInt());
         setPreferredCharWidth(inStream.readInt());

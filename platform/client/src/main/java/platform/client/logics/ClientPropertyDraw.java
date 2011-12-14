@@ -54,6 +54,8 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public Color highlightColor;
 
     public String caption;
+    public String regexp;
+    public String regexpMessage;
 
     public KeyStroke editKey;
     public boolean showEditKey;
@@ -159,18 +161,18 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
             }
         }
 
-        return changeType.getEditorComponent(ownerComponent, form, this, value, getFormat(), design);
+        return changeType.getEditorComponent(ownerComponent, form, this, value);
     }
 
     public PropertyEditorComponent getObjectEditorComponent(Component ownerComponent, ClientFormController form, ClientGroupObjectValue key, Object value) throws IOException, ClassNotFoundException {
         ClientType changeType = getPropertyChangeType(form, key, true);
         return changeType == null
                 ? null
-                : changeType.getObjectEditorComponent(ownerComponent, form, this, value, getFormat(), design);
+                : changeType.getObjectEditorComponent(ownerComponent, form, this, value);
     }
 
     public PropertyEditorComponent getClassComponent(ClientFormController form, Object value) throws IOException, ClassNotFoundException {
-        return baseType.getClassComponent(form, this, value, getFormat());
+        return baseType.getClassComponent(form, this, value);
     }
 
     public RemoteDialogInterface createEditorForm(RemoteFormInterface form) throws RemoteException {
@@ -270,7 +272,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         return baseType.getPanelComponent(this, columnKey, form);
     }
 
-    Format getFormat() {
+    public Format getFormat() {
         if (format == null) {
             return baseType.getDefaultFormat();
         }
@@ -325,7 +327,8 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         super.customSerialize(pool, outStream, serializationType);
 
         pool.writeString(outStream, caption);
-
+        pool.writeString(outStream,regexp);
+        pool.writeString(outStream,regexpMessage);
         outStream.writeInt(minimumCharWidth);
         outStream.writeInt(maximumCharWidth);
         outStream.writeInt(preferredCharWidth);
@@ -359,7 +362,8 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         super.customDeserialize(pool, inStream);
 
         caption = pool.readString(inStream);
-
+        regexp = pool.readString(inStream);
+        regexpMessage = pool.readString(inStream);
         minimumCharWidth = inStream.readInt();
         maximumCharWidth = inStream.readInt();
         preferredCharWidth = inStream.readInt();

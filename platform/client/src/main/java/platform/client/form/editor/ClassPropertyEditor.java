@@ -9,6 +9,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.io.IOException;
 import java.rmi.RemoteException;
+import java.text.ParseException;
 import java.util.EventObject;
 
 public class ClassPropertyEditor extends JComponent implements PropertyEditorComponent {
@@ -32,5 +33,10 @@ public class ClassPropertyEditor extends JComponent implements PropertyEditorCom
 
     public boolean valueChanged() {
         return dialog.getChosenClass() != null;
+    }
+
+    @Override
+    public String checkValue(Object value) {
+        return null;
     }
 }

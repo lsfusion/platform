@@ -10,6 +10,7 @@ import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.rmi.RemoteException;
+import java.text.ParseException;
 import java.util.EventObject;
 
 public class CustomFileEditor extends DocumentPropertyEditor {
@@ -61,6 +62,11 @@ public class CustomFileEditor extends DocumentPropertyEditor {
             throw new RuntimeException(e);
         }
         return returnValue == JFileChooser.APPROVE_OPTION ? result : null;
+    }
+
+   @Override
+    public String checkValue(Object value) {
+        return null;
     }
 
     @Override

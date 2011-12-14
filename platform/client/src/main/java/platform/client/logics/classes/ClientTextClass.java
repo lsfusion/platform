@@ -65,12 +65,12 @@ public class ClientTextClass extends ClientDataClass implements ClientTypeClass 
 
 
     @Override
-    public PropertyEditorComponent getEditorComponent(Component ownerComponent, ClientFormController form, ClientPropertyDraw property, Object value, Format format, ComponentDesign design) throws IOException, ClassNotFoundException {
-        return new TextPropertyEditor(ownerComponent, value, design);
+    public PropertyEditorComponent getEditorComponent(Component ownerComponent, ClientFormController form, ClientPropertyDraw property, Object value) throws IOException, ClassNotFoundException {
+        return new TextPropertyEditor(ownerComponent, value, property.design);
     }
 
-    public PropertyEditorComponent getComponent(Object value, Format format, ComponentDesign design) {
-        return new TextPropertyEditor(value, design);
+    public PropertyEditorComponent getComponent(Object value, ClientPropertyDraw property) {
+        return new TextPropertyEditor(value, property.design);
     }
 
     public Object parseString(String s) throws ParseException {

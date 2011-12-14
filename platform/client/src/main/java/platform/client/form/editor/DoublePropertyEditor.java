@@ -75,4 +75,9 @@ public class DoublePropertyEditor extends TextFieldPropertyEditor {
 
         return this.getValue();
     }
+
+    @Override
+    public String checkValue(Object value) {
+        return null;
+    }
 }

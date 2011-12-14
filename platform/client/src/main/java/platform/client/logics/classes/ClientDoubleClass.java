@@ -1,13 +1,16 @@
 package platform.client.logics.classes;
 
 import platform.client.ClientResourceBundle;
+import platform.client.form.ClientFormController;
 import platform.client.form.PropertyEditorComponent;
 import platform.client.form.editor.DoublePropertyEditor;
+import platform.client.logics.ClientPropertyDraw;
 import platform.gwt.view.classes.GDoubleType;
 import platform.gwt.view.classes.GType;
 import platform.interop.ComponentDesign;
 import platform.interop.Data;
 
+import java.awt.*;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.text.*;
@@ -47,6 +50,21 @@ public class ClientDoubleClass extends ClientIntegralClass implements ClientType
         return format;
     }
 
+    @Override
+    public PropertyEditorComponent getEditorComponent(Component ownerComponent, ClientFormController form, ClientPropertyDraw property, Object value) throws IOException, ClassNotFoundException {
+        return null;
+    }
+
+    @Override
+    public PropertyEditorComponent getObjectEditorComponent(Component ownerComponent, ClientFormController form, ClientPropertyDraw property, Object value) throws IOException, ClassNotFoundException {
+        return null;
+    }
+
+    @Override
+    public PropertyEditorComponent getClassComponent(ClientFormController form, ClientPropertyDraw property, Object value) throws IOException, ClassNotFoundException {
+        return null;
+    }
+
     public String reformatString(String string) {
         return string.replaceAll(",", ".");
     }
@@ -64,8 +82,8 @@ public class ClientDoubleClass extends ClientIntegralClass implements ClientType
         return reformatString(obj.toString());
     }
 
-    public PropertyEditorComponent getComponent(Object value, Format format, ComponentDesign design) {
-        return new DoublePropertyEditor(value, (NumberFormat) format, design, getJavaClass());
+    public PropertyEditorComponent getComponent(Object value, ClientPropertyDraw property) {
+        return new DoublePropertyEditor(value, (NumberFormat) property.getFormat(), property.design, getJavaClass());
     }
 
     @Override

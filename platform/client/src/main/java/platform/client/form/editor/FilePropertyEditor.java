@@ -11,6 +11,7 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.io.IOException;
 import java.rmi.RemoteException;
+import java.text.ParseException;
 import java.util.EventObject;
 
 public class FilePropertyEditor extends JFileChooser
@@ -69,5 +70,10 @@ public class FilePropertyEditor extends JFileChooser
     @Override
     public boolean valueChanged() {
         return returnValue == JFileChooser.APPROVE_OPTION;
+    }
+
+    @Override
+    public String checkValue(Object value) {
+        return null;
     }
 }

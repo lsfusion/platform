@@ -16,6 +16,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.rmi.RemoteException;
+import java.text.ParseException;
 import java.util.EventObject;
 
 
@@ -111,6 +112,11 @@ public class TextPropertyEditor extends JScrollPane implements PropertyEditorCom
 
     public boolean valueChanged() {
         return state;
+    }
+
+   @Override
+    public String checkValue(Object value) {
+        return null;
     }
 
     public void propertyChange(PropertyChangeEvent e) {

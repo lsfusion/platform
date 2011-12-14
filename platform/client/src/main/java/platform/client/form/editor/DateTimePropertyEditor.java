@@ -14,7 +14,6 @@ import javax.swing.event.PopupMenuListener;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.sql.Timestamp;
-import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -99,6 +98,11 @@ public class DateTimePropertyEditor extends JDateChooser
 
     public boolean valueChanged() {
         return true;
+    }
+
+    @Override
+    public String checkValue(Object value) {
+        return null;
     }
 
 }

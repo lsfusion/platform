@@ -95,6 +95,9 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
     public KeyStroke editKey;
     public Boolean showEditKey;
 
+    public String regexp;
+    public String regexpMessage;
+
     public PanelLocation panelLocation;
 
     public Boolean shouldBeLast;
@@ -638,11 +641,15 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
             propertyView.design.iconPath = iconPath;
             propertyView.design.setImage(image);
         }
-        
+
         if (editKey != null)
             propertyView.editKey = editKey;
         if (showEditKey != null)
             propertyView.showEditKey = showEditKey;
+        if (regexp != null)
+            propertyView.regexp = regexp;
+        if (regexpMessage != null)
+            propertyView.regexpMessage = regexpMessage;
 
         if (panelLocation != null)
             propertyView.setPanelLocation(panelLocation);

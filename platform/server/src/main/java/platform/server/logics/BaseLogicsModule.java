@@ -623,6 +623,9 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         inLoginSID = addJProp("inLoginSID", true, getString("logics.login.has.a.role"), inUserRole, loginToUser, 1, sidToRole, 2);
 
         email = addDProp(baseGroup, "email", getString("logics.email"), StringClass.get(50), emailObject);
+        email.setRegexp("^[-a-zA-Z0-9!#$%&'*+/=?^_`{|}~]+(?:\\.[-a-zA-Z0-9!#$%&'*+/=?^_`{|}~]+)*@(?:[a-zA-Z0-9]([-a-zA-Z0-9]{0,61}[a-zA-Z0-9])?\\.)*(?:aero|arpa|asia|biz|cat|com|coop|edu|gov|info|int|jobs|mil|mobi|museum|name|net|org|pro|tel|travel|[a-zA-Z][a-zA-Z])$");
+        email.setRegexpMessage("<html>Неверный формат e-mail</html>");
+
         emailToObject = addAGProp("emailToObject", getString("logics.email.to.object"), email);
 
         emailUserPassUser = addEAProp(getString("logics.user.password.reminder"), customUser);

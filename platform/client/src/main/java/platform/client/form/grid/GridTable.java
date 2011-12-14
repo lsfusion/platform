@@ -24,6 +24,7 @@ import platform.interop.Order;
 import platform.interop.Scroll;
 
 import javax.swing.*;
+import javax.swing.event.ChangeEvent;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelEvent;
@@ -616,15 +617,24 @@ public abstract class GridTable extends ClientFormTable
             }
         }
 
-        if (ks.equals(KeyStrokes.getEnter())) {
-            commitEditing();
-        }
-
+        //if (ks.equals(KeyStrokes.getEnter())) {
+        //    commitEditing();
+        //}
         return super.processKeyBinding(ks, e, condition, pressed);
     }
 
-    private void commitEditing() {
-        SwingUtils.commitEditing(this);
+    private boolean commitEditing() {
+        if (this.isEditing())
+            return SwingUtils.commitEditing(this);
+        else
+            return true;
+    }
+
+    @Override
+    public void removeEditor(){
+        ClientAbstractCellEditor abstractCellEditor = (ClientAbstractCellEditor) cellEditor;
+        abstractCellEditor.hidePopupIfNotNull();
+        super.removeEditor();
     }
 
     public ClientFormController getForm() {
@@ -1103,8 +1113,8 @@ public abstract class GridTable extends ClientFormTable
                 }
             } while ((oRow != row || oColumn != column) && !isCellFocusable(row, column));
 
-            commitEditing();
-            changeSelection(row, column, false, false);
+            if(commitEditing())
+                changeSelection(row, column, false, false);
             isInternalNavigating = false;
         }
     }

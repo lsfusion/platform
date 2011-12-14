@@ -61,7 +61,12 @@ public class ClientFileActionClass extends ClientActionClass {
     }
 
     @Override
-    public PropertyEditorComponent getEditorComponent(Component ownerComponent, ClientFormController form, ClientPropertyDraw property, Object value, Format format, ComponentDesign design) throws IOException, ClassNotFoundException {
+    protected PropertyEditorComponent getComponent(Object value, ClientPropertyDraw property) {
+        return null;
+    }
+
+    @Override
+    public PropertyEditorComponent getEditorComponent(Component ownerComponent, ClientFormController form, ClientPropertyDraw property, Object value) throws IOException, ClassNotFoundException {
         return custom ? new CustomFileEditor(value, false, multiple) : new CustomFileEditor(value, false, multiple, filterDescription, filterExtensions);
     }
 }

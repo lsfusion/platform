@@ -11,10 +11,13 @@ import platform.client.logics.ClientPropertyDraw;
 import platform.interop.KeyStrokes;
 
 import javax.swing.*;
+import javax.swing.border.Border;
+import javax.swing.event.CellEditorListener;
+import javax.swing.event.ChangeEvent;
 import javax.swing.table.TableCellEditor;
+import javax.swing.text.*;
 import java.awt.*;
-import java.awt.event.KeyEvent;
-import java.awt.event.MouseEvent;
+import java.awt.event.*;
 import java.rmi.RemoteException;
 import java.util.EventObject;
 
@@ -27,11 +30,53 @@ public class ClientAbstractCellEditor extends AbstractCellEditor
 
     public boolean editPerformed = false;
 
+    public Popup popup;
+
     public Object getCellEditorValue() {
         try {
             return propertyEditor.getCellEditorValue();
         } catch (RemoteException e) {
             throw new RuntimeException(ClientResourceBundle.getString("errors.error.getting.selected.value"), e);
+        }
+    }
+
+
+    public boolean stopCellEditing() {
+        try {
+            String message = propertyEditor.checkValue(propertyEditor.getCellEditorValue());
+            if (message == null) {
+                hidePopupIfNotNull();
+                return super.stopCellEditing();
+            } else {
+
+                Point location = SwingUtils.computeAbsoluteLocation((Component) propertyEditor);
+
+                JLabel component = new JLabel(message);
+                component.setFont(new Font("Tahoma", Font.PLAIN, 12));
+                component.setBackground(Color.YELLOW);
+                component.setFocusable(false);
+
+                JPanel pane = new JPanel();
+                pane.add(component);
+                pane.setBackground(Color.YELLOW);
+                pane.setFocusable(false);
+                pane.setBorder(BorderFactory.createLineBorder(Color.BLACK));
+
+                if (popup != null) popup.hide();
+
+                popup = new PopupFactory().getPopup(null, pane, location.x, location.y + ((Component) propertyEditor).getHeight());
+                popup.show();
+                return false;
+            }
+        } catch (RemoteException e) {
+            return false;
+        }
+    }
+
+    public void hidePopupIfNotNull() {
+        if (popup != null) {
+            popup.hide();
+            popup = null;
         }
     }
 
@@ -46,7 +91,10 @@ public class ClientAbstractCellEditor extends AbstractCellEditor
             if (event.getKeyChar() == KeyEvent.CHAR_UNDEFINED) return false;
 
             // ESC почему-то считается KEY_TYPED кнопкой, пока обрабатываем отдельно
-            if (KeyStrokes.isEscapeEvent(event)) return false;
+            if (KeyStrokes.isEscapeEvent(event)) {
+                hidePopupIfNotNull();
+                return false;
+            }
 
             //будем считать, что если нажата кнопка ALT или CTRL то явно пользователь не хочет вводить текст
             //noinspection RedundantIfStatement

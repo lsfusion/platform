@@ -7,6 +7,7 @@ import platform.client.form.PropertyEditorComponent;
 import platform.client.form.PropertyRendererComponent;
 import platform.client.form.editor.DatePropertyEditor;
 import platform.client.form.renderer.DatePropertyRenderer;
+import platform.client.logics.ClientPropertyDraw;
 import platform.gwt.view.classes.GDateType;
 import platform.gwt.view.classes.GType;
 import platform.interop.ComponentDesign;
@@ -46,8 +47,8 @@ public class ClientDateClass extends ClientDataClass implements ClientTypeClass 
         return new DatePropertyRenderer(format, design);
     }
 
-    public PropertyEditorComponent getComponent(Object value, Format format, ComponentDesign design) {
-        return new DatePropertyEditor(value, (SimpleDateFormat) format, design);
+    public PropertyEditorComponent getComponent(Object value, ClientPropertyDraw property) {
+        return new DatePropertyEditor(value, (SimpleDateFormat) property.getFormat(), property.design);
     }
 
     private DateFormat getSimpleDateFormat() {

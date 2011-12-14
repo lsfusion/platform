@@ -104,6 +104,11 @@ public class DatePropertyEditor extends JDateChooser
     }
 
     @Override
+    public String checkValue(Object value) {
+        return null;
+    }
+
+    @Override
     public void actionPerformed(ActionEvent e) {
 		int x = calendarButton.getWidth()
 				- (int) popup.getPreferredSize().getWidth();

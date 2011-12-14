@@ -6,6 +6,7 @@ import platform.client.form.PropertyEditorComponent;
 import platform.client.form.PropertyRendererComponent;
 import platform.client.form.editor.StringPropertyEditor;
 import platform.client.form.renderer.StringPropertyRenderer;
+import platform.client.logics.ClientPropertyDraw;
 import platform.gwt.view.classes.GStringType;
 import platform.gwt.view.classes.GType;
 import platform.interop.Compare;
@@ -90,7 +91,7 @@ public class ClientStringClass extends ClientDataClass {
     }
 
     public PropertyRendererComponent getRendererComponent(Format format, String caption, ComponentDesign design) { return new StringPropertyRenderer(format, design); }
-    public PropertyEditorComponent getComponent(Object value, Format format, ComponentDesign design) { return new StringPropertyEditor(length, value, design); }
+    public PropertyEditorComponent getComponent(Object value, ClientPropertyDraw property) { return new StringPropertyEditor(length, value, property); }
 
     public Object parseString(String s) throws ParseException {
         return s;

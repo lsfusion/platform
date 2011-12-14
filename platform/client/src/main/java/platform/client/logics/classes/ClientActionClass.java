@@ -69,7 +69,7 @@ public class ClientActionClass extends ClientDataClass implements ClientTypeClas
         return null;
     }
 
-    protected PropertyEditorComponent getComponent(Object value, Format format, ComponentDesign design) {
+    protected PropertyEditorComponent getComponent(Object value, ClientPropertyDraw property) {
         return null;
     }
 

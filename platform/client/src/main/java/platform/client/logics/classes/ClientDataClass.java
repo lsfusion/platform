@@ -83,22 +83,22 @@ public abstract class ClientDataClass extends ClientClass implements ClientType 
 
     abstract public String getPreferredMask();
 
-    protected abstract PropertyEditorComponent getComponent(Object value, Format format, ComponentDesign design);
+    protected abstract PropertyEditorComponent getComponent(Object value, ClientPropertyDraw property);
 
     public CellView getPanelComponent(ClientPropertyDraw key, ClientGroupObjectValue columnKey, ClientFormController form) {
         return new TableCellView(key, columnKey, form);
     }
 
-    public PropertyEditorComponent getEditorComponent(Component ownerComponent, ClientFormController form, ClientPropertyDraw property, Object value, Format format, ComponentDesign design) throws IOException, ClassNotFoundException {
-        return getComponent(value, format, design);
+    public PropertyEditorComponent getEditorComponent(Component ownerComponent, ClientFormController form, ClientPropertyDraw property, Object value) throws IOException, ClassNotFoundException {
+        return getComponent(value, property);
     }
 
-    public PropertyEditorComponent getObjectEditorComponent(Component ownerComponent, ClientFormController form, ClientPropertyDraw property, Object value, Format format, ComponentDesign design) throws IOException, ClassNotFoundException {
-        return getEditorComponent(ownerComponent, form, property, value, format, design);
+    public PropertyEditorComponent getObjectEditorComponent(Component ownerComponent, ClientFormController form, ClientPropertyDraw property, Object value) throws IOException, ClassNotFoundException {
+        return getEditorComponent(ownerComponent, form, property, value);
     }
 
-    public PropertyEditorComponent getClassComponent(ClientFormController form, ClientPropertyDraw property, Object value, Format format) throws IOException, ClassNotFoundException {
-        return getComponent(value, format, null);
+    public PropertyEditorComponent getClassComponent(ClientFormController form, ClientPropertyDraw property, Object value) throws IOException, ClassNotFoundException {
+        return getComponent(value, property);
     }
 
     public boolean shouldBeDrawn(ClientFormController form) {

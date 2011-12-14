@@ -7,6 +7,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.text.ParseException;
 import java.util.EventObject;
 
 public class LogicalPropertyEditor extends JCheckBox implements PropertyEditorComponent {
@@ -44,5 +45,10 @@ public class LogicalPropertyEditor extends JCheckBox implements PropertyEditorCo
 
     public boolean valueChanged() {
         return true;
+    }
+
+   @Override
+    public String checkValue(Object value){
+        return null;
     }
 }

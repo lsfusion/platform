@@ -6,6 +6,7 @@ import platform.client.form.PropertyEditorComponent;
 import platform.client.form.PropertyRendererComponent;
 import platform.client.form.editor.LogicalPropertyEditor;
 import platform.client.form.renderer.LogicalPropertyRenderer;
+import platform.client.logics.ClientPropertyDraw;
 import platform.gwt.view.classes.GLogicalType;
 import platform.gwt.view.classes.GType;
 import platform.interop.ComponentDesign;
@@ -51,7 +52,7 @@ public class ClientLogicalClass extends ClientDataClass implements ClientTypeCla
         return new LogicalPropertyRenderer();
     }
 
-    public PropertyEditorComponent getComponent(Object value, Format format, ComponentDesign design) {
+    public PropertyEditorComponent getComponent(Object value, ClientPropertyDraw property) {
         return new LogicalPropertyEditor(value);
     }
 

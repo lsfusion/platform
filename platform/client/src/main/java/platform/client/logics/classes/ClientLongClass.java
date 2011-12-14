@@ -1,6 +1,8 @@
 package platform.client.logics.classes;
 
 import platform.client.ClientResourceBundle;
+import platform.client.form.PropertyEditorComponent;
+import platform.client.logics.ClientPropertyDraw;
 import platform.gwt.view.classes.GLongType;
 import platform.gwt.view.classes.GType;
 import platform.interop.Data;
@@ -42,6 +44,11 @@ public class ClientLongClass extends ClientIntegralClass implements ClientTypeCl
     @Override
     public String toString() {
         return ClientResourceBundle.getString("logics.classes.long");
+    }
+
+    @Override
+    protected PropertyEditorComponent getComponent(Object value, ClientPropertyDraw property) {
+        return null;
     }
 
     @Override

@@ -102,7 +102,15 @@ public abstract class CellTable extends SingleCellTable
         CellEditor editor = getCellEditor();
         if (editor != null) {
             editor.stopCellEditing();
+            ((ClientAbstractCellEditor) cellEditor).hidePopupIfNotNull();
         }
+    }
+
+    @Override
+    public void removeEditor(){
+        ClientAbstractCellEditor abstractCellEditor = (ClientAbstractCellEditor) cellEditor;
+        abstractCellEditor.hidePopupIfNotNull();
+        super.removeEditor();
     }
 
     class PropertyModel extends AbstractTableModel {

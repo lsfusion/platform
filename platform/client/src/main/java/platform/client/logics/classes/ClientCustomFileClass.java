@@ -5,6 +5,7 @@ import platform.client.form.PropertyEditorComponent;
 import platform.client.form.PropertyRendererComponent;
 import platform.client.form.editor.CustomFileEditor;
 import platform.client.form.renderer.CustomFileRenderer;
+import platform.client.logics.ClientPropertyDraw;
 import platform.interop.ComponentDesign;
 import platform.interop.Data;
 
@@ -37,7 +38,7 @@ public class ClientCustomFileClass extends ClientFileClass {
     }
 
     @Override
-    public PropertyEditorComponent getComponent(Object value, Format format, ComponentDesign design) {
+    public PropertyEditorComponent getComponent(Object value, ClientPropertyDraw property) {
         return new CustomFileEditor(value, true, false);
     }
 

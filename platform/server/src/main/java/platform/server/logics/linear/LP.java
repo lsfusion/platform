@@ -303,6 +303,14 @@ public class LP<T extends PropertyInterface> {
         property.showEditKey = showEditKey;
     }
 
+    public void setRegexp(String regexp) {
+        property.regexp = regexp;
+    }
+
+    public void setRegexpMessage(String regexpMessage) {
+        property.regexpMessage = regexpMessage;
+    }
+
     public void setPanelLocation(PanelLocation panelLocation) {
         property.panelLocation = panelLocation;
     }

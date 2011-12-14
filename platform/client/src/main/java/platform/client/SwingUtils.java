@@ -62,7 +62,6 @@ public class SwingUtils {
         if (table.isEditing() && table.getCellEditor() != null) {
             boolean stopEditing = table.getCellEditor().stopCellEditing();
             if (!stopEditing) {
-                table.getCellEditor().cancelCellEditing();
                 return false;
             } else {
                 return true;

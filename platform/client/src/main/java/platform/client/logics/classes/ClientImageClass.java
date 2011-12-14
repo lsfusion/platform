@@ -5,6 +5,7 @@ import platform.client.form.PropertyEditorComponent;
 import platform.client.form.PropertyRendererComponent;
 import platform.client.form.editor.FilePropertyEditor;
 import platform.client.form.renderer.ImagePropertyRenderer;
+import platform.client.logics.ClientPropertyDraw;
 import platform.interop.ComponentDesign;
 import platform.interop.Data;
 
@@ -35,7 +36,7 @@ public class ClientImageClass extends ClientFileClass {
     }
 
     @Override
-    public PropertyEditorComponent getComponent(Object value, Format format, ComponentDesign design) {
+    public PropertyEditorComponent getComponent(Object value, ClientPropertyDraw property) {
         return new FilePropertyEditor(ClientResourceBundle.getString("logics.classes.image"), "jpg", "jpeg", "bmp", "png");
     }
 

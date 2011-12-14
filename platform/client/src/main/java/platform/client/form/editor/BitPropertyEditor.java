@@ -8,6 +8,7 @@ import javax.swing.event.ChangeListener;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.text.ParseException;
 import java.util.EventObject;
 
 public class BitPropertyEditor extends JCheckBox
@@ -59,6 +60,11 @@ public class BitPropertyEditor extends JCheckBox
 
     public boolean valueChanged() {
         return true;
+    }
+
+    @Override
+    public String checkValue(Object value){
+        return null;
     }
 
 }
