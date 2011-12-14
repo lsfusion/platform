@@ -42,6 +42,9 @@ public class ClientAbstractCellEditor extends AbstractCellEditor
 
 
     public boolean stopCellEditing() {
+        if (propertyEditor == null)
+            return super.stopCellEditing();
+
         try {
             String message = propertyEditor.checkValue(propertyEditor.getCellEditorValue());
             if (message == null) {
