@@ -98,11 +98,11 @@ public abstract class CellTable extends SingleCellTable
     }
 
     public void stopEditing() {
-
         CellEditor editor = getCellEditor();
         if (editor != null) {
+            if (editor instanceof ClientAbstractCellEditor)
+                ((ClientAbstractCellEditor) editor).hidePopupIfNotNull();
             editor.stopCellEditing();
-            ((ClientAbstractCellEditor) cellEditor).hidePopupIfNotNull();
         }
     }
 

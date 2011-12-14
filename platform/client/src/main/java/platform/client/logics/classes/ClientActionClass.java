@@ -61,7 +61,8 @@ public class ClientActionClass extends ClientDataClass implements ClientTypeClas
         return new ButtonCellView(key, columnKey, form);
     }
 
-    public PropertyEditorComponent getEditorComponent(Component ownerComponent, ClientFormController form, ClientPropertyDraw property, Object value, Format format, ComponentDesign design) throws IOException, ClassNotFoundException {
+    @Override
+    public PropertyEditorComponent getEditorComponent(Component ownerComponent, ClientFormController form, ClientPropertyDraw property, Object value) throws IOException, ClassNotFoundException {
         return new ActionPropertyEditor();
     }
 

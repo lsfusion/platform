@@ -48,7 +48,7 @@ public class ClientClassActionClass extends ClientActionClass {
     }
 
     @Override
-    public PropertyEditorComponent getEditorComponent(Component ownerComponent, ClientFormController form, ClientPropertyDraw property, Object value, Format format, ComponentDesign design) throws IOException, ClassNotFoundException {
+    public PropertyEditorComponent getEditorComponent(Component ownerComponent, ClientFormController form, ClientPropertyDraw property, Object value) throws IOException, ClassNotFoundException {
         return new ClassActionPropertyEditor(ownerComponent, baseClass, defaultClass);
     }
 }

@@ -47,11 +47,6 @@ public class ClientLongClass extends ClientIntegralClass implements ClientTypeCl
     }
 
     @Override
-    protected PropertyEditorComponent getComponent(Object value, ClientPropertyDraw property) {
-        return null;
-    }
-
-    @Override
     public GType getGwtType() {
         return GLongType.instance;
     }
