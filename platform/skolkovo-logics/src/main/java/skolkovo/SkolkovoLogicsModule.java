@@ -1172,7 +1172,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP setNegativeResultForesightCheckProject, setPositiveResultForesightCheckProject;
     LP commentForesightCheckProject;
     LP setNegativeResultForesightCheckProjectApply;
-    LP applyForesightCheckProject, rejectForesightCheckProject;
+    LP applyForesightCheckProjectCluster, rejectForesightCheckProject;
+    LP applyForesightCheckProject;
     LP needForesightCheckProject;
     LP resultLegalCheck, positiveResultLegalCheck, negativeResultLegalCheck;
     LP nameResultLegalCheck;
@@ -4706,6 +4707,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             addPropertyDraw(objProject, objForesight, isRootInProjectForesight);
             addPropertyDraw(objForesight, sidForesight, nameNative, nameForeign, nameNativeShortClusterForesight, quantityInExpertForesight);
 
+            addFixedFilter(new NotFilterEntity(new NotNullFilterEntity(addPropertyObject(inTestCluster, objCluster))));
             addFixedFilter(new CompareFilterEntity(addPropertyObject(clusterForesight, objForesight), Compare.EQUALS, objCluster));
 
             setReadOnly(true);
@@ -4720,9 +4722,14 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
             setPageSize(0);
 
-            applyForesightCheckProject = addMFAProp(actionGroup, "Прошла проверку на соответствие форсайту", this, new ObjectEntity[] {objProject}, true);
+            applyForesightCheckProjectCluster = addMFAProp(actionGroup, "Прошла проверку на соответствие форсайту", this, new ObjectEntity[] {objProject, objCluster}, true);
+            applyForesightCheckProjectCluster.property.askConfirm = true;
+            applyForesightCheckProjectCluster.setImage("sign_tick.png");
+
+            applyForesightCheckProject = addJProp(actionGroup, "applyForesightCheckProject", "Прошла проверку на соответствие форсайту", baseLM.andNot1,
+                    addJProp(applyForesightCheckProjectCluster, 1, finalClusterProject, 1), 1,
+                    resultForesightCheckProject, 1);
             applyForesightCheckProject.property.askConfirm = true;
-            applyForesightCheckProject.setImage("sign_tick.png");
         }
 
         @Override
@@ -4750,7 +4757,9 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
             addActionsOnOk(addPropertyObject(setNegativeResultForesightCheckProject, objProject));
 
-            rejectForesightCheckProject = addMFAProp(actionGroup, "Не прошла проверку на соответствие форсайту", this, new ObjectEntity[] {objProject}, true);
+            rejectForesightCheckProject = addJProp(actionGroup, "rejectForesightCheckProject", "Не прошла проверку на соответствие форсайту", baseLM.andNot1,
+                    addMFAProp(actionGroup, "Не прошла проверку на соответствие форсайту", this, new ObjectEntity[]{objProject}, true), 1,
+                    resultForesightCheckProject, 1);
             rejectForesightCheckProject.property.askConfirm = true;
             rejectForesightCheckProject.setImage("delete.png");
         }
@@ -4825,6 +4834,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
     public class ForesightExpertiseListFormEntity extends FormEntity<SkolkovoBusinessLogics> {
 
         private ObjectEntity objProject;
+        private ObjectEntity objForesight;
         private RegularFilterGroupEntity projectFilterGroup;
 
         public ForesightExpertiseListFormEntity(NavigatorElement parent, String sID, String caption, int mode) {
@@ -4839,6 +4849,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
                 addFixedFilter(new NotNullFilterEntity(addPropertyObject(inClusterCurrentUserProject, objProject)));
             }
 
+            objForesight = addSingleGroupObject(foresight, sidForesight, nameNative, nameForeign, nameNativeShortClusterForesight, quantityInExpertForesight);
+
             projectFilterGroup = new RegularFilterGroupEntity(genID());
             projectFilterGroup.addFilter(new RegularFilterEntity(genID(),
                     new NotFilterEntity(new NotNullFilterEntity(addPropertyObject(nameResultForesightCheckProject, objProject))),
@@ -4846,10 +4858,18 @@ public class SkolkovoLogicsModule extends LogicsModule {
                     KeyStroke.getKeyStroke(KeyEvent.VK_F10, 0)));
             addRegularFilterGroup(projectFilterGroup);
 
+            addFixedFilter(new NotNullFilterEntity(addPropertyObject(inProjectForesight, objProject, objForesight)));
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(needForesightCheckProject, objProject)));
 
             setReadOnly(true, objProject.groupTo);
             setReadOnly(actionGroup, false);
+        }
+
+        @Override
+        public FormView createDefaultRichDesign() {
+            DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign();
+            design.getGroupObjectContainer(objProject.groupTo).constraints.fillVertical = 5;
+            return design;
         }
     }
 
