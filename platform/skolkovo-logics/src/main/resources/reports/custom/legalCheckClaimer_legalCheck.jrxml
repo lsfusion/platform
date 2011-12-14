@@ -144,8 +144,7 @@ $F{commentLegalCheck}]]></textFieldExpression>
 				</textElement>
 				<textFieldExpression><![CDATA["С уважением, \n"+
 "Команда сопровождения проектов \n"+
-"Фонд «Сколково» \n"+
-"--"]]></textFieldExpression>
+"Фонд «Сколково» \n"]]></textFieldExpression>
 			</textField>
 		</band>
 		<band height="79">

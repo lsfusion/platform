@@ -29,7 +29,13 @@
 		<band height="46">
 			<textField isStretchWithOverflow="true">
 				<reportElement style="DefaultStyle" x="20" y="10" width="525" height="17"/>
-				<box leftPadding="1" rightPadding="1"/>
+				<box leftPadding="1" rightPadding="1">
+					<pen lineWidth="0.0"/>
+					<topPen lineWidth="0.0"/>
+					<leftPen lineWidth="0.0"/>
+					<bottomPen lineWidth="0.0"/>
+					<rightPen lineWidth="0.0"/>
+				</box>
 				<textElement>
 					<font size="14" isUnderline="false"/>
 					<paragraph leftIndent="10" spacingBefore="2" spacingAfter="2"/>
@@ -43,10 +49,7 @@
 "\n"+
 "Данное сообщение предназначено исключительно для указанного в нем получателя и может содержать информацию, составляющую коммерческую тайну. Любое неразрешенное ознакомление, использование или разглашение указанной информации запрещено. Если Вы не являетесь получателем данного сообщения, пожалуйста, незамедлительно свяжитесь с отправителем путем ответа на указанное сообщение, а также удалите сообщение и все его копии. \n"+
 "************************************************************************* \n"+
-"\n"+
-"\n"+
-"С уважением, \n"+
-"Пухов Илья. \n"]]></textFieldExpression>
+"\n"]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>
