@@ -50,21 +50,6 @@ public class ClientDoubleClass extends ClientIntegralClass implements ClientType
         return format;
     }
 
-    @Override
-    public PropertyEditorComponent getEditorComponent(Component ownerComponent, ClientFormController form, ClientPropertyDraw property, Object value) throws IOException, ClassNotFoundException {
-        return null;
-    }
-
-    @Override
-    public PropertyEditorComponent getObjectEditorComponent(Component ownerComponent, ClientFormController form, ClientPropertyDraw property, Object value) throws IOException, ClassNotFoundException {
-        return null;
-    }
-
-    @Override
-    public PropertyEditorComponent getClassComponent(ClientFormController form, ClientPropertyDraw property, Object value) throws IOException, ClassNotFoundException {
-        return null;
-    }
-
     public String reformatString(String string) {
         return string.replaceAll(",", ".");
     }
