@@ -92,7 +92,7 @@ testUnion(store, article) = UNION SUM incomeQuantity(store, article), outcomeQua
 // [BY propertyExpressionM1, ..., propertyExpressionMN]
 // [ORDER [DESC] propertyExpressionL1, ..., propertyExpressionLK]
 // [WINDOW EXCEPTLAST]
-testPartition(store, article) = PARTITION SUM inQuantity(store, article) BY store ORDER DESC name(article); // ??
+testPartition(store, article) = PARTITION SUM incomeQuantity(store, article) BY store ORDER DESC name(article);
 
 // Computational expressions
 // Priority:
