@@ -96,31 +96,56 @@ $F{executiveLD}+"\n"+
 				<textFieldExpression><![CDATA["app.i-gorod.com: Ваша заявка успешно прошла формальную проверку"]]></textFieldExpression>
 			</textField>
 		</band>
-		<band height="77">
+		<band height="100">
 			<printWhenExpression><![CDATA["negativeLegalCheckResult".equals($F{sidResultLegalCheck})&&!"overdueLC".equals($F{sidStatusProjectLegalCheck})]]></printWhenExpression>
 			<textField isStretchWithOverflow="true">
-				<reportElement style="DefaultStyle" x="23" y="28" width="525" height="17"/>
+				<reportElement style="DefaultStyle" x="23" y="0" width="525" height="17"/>
 				<textElement>
-					<font size="14"/>
+					<font size="14" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA["Уважаемый заявитель! \n \n"+
 "Мы провели формальную проверку Вашей заявки и выявили следующие несоответствия: \n"+
 $F{commentLegalCheck}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
-				<reportElement style="DefaultStyle" positionType="Float" x="23" y="45" width="525" height="19"/>
+				<reportElement style="DefaultStyle" positionType="Float" x="23" y="28" width="525" height="19"/>
 				<textElement>
-					<font size="14"/>
+					<font size="14" isBold="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA["Пожалуйста, устраните данные несоответствия и отправьте заявку повторно не позднее "+platform.base.BaseUtils.formatRussian($F{overdueDateLegalCheck})+".* Вам открыта возможность редактирования анкеты в личном кабинете. \n \n"+
-"*Согласно пункту 16.1 Положения о присвоении и утрате статуса участника проекта создания и обеспечения функционирования инновационного центра «Сколково» срок исправления несоответствий составляет тридцать дней с момента получения уведомления."]]></textFieldExpression>
+				<textFieldExpression><![CDATA["Пожалуйста, устраните данные несоответствия и отправьте заявку повторно не позднее "+platform.base.BaseUtils.formatRussian($F{overdueDateLegalCheck})+".* Вам открыта возможность редактирования анкеты в личном кабинете. \n"]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
-				<reportElement style="DefaultStyle" x="23" y="0" width="525" height="17"/>
+				<reportElement style="DefaultStyle" positionType="Float" x="23" y="47" width="525" height="17"/>
 				<textElement>
-					<font size="14" isUnderline="true"/>
+					<font size="14" isItalic="false" isUnderline="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA["app.i-gorod.com: в ходе формальной проверки Вашей заявки выявлены несоответствия."]]></textFieldExpression>
+				<textFieldExpression><![CDATA["*Согласно пункту 16.1 Положения о присвоении и утрате статуса участника проекта создания и обеспечения функционирования инновационного центра «Сколково» срок исправления несоответствий составляет тридцать дней с момента получения уведомления."]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement style="DefaultStyle" positionType="Float" x="23" y="64" width="525" height="17" forecolor="#666666"/>
+				<box leftPadding="0" rightPadding="0"/>
+				<textElement>
+					<font size="14" isUnderline="false"/>
+					<paragraph leftIndent="2"/>
+				</textElement>
+				<textFieldExpression><![CDATA["\n"+
+"****************************DISCLAIMER******************************** \n"+
+"This message is for the sole use of the intended recipient and may contain confidential information. Any unauthorized review, use or disclosure is prohibited. If you are not the intended recipient, please immediately contact the sender by reply email and delete the original message and destroy all copies thereof. \n"+
+"\n"+
+"Данное сообщение предназначено исключительно для указанного в нем получателя и может содержать информацию, составляющую коммерческую тайну. Любое неразрешенное ознакомление, использование или разглашение указанной информации запрещено. Если Вы не являетесь получателем данного сообщения, пожалуйста, незамедлительно свяжитесь с отправителем путем ответа на указанное сообщение, а также удалите сообщение и все его копии. \n"+
+"************************************************************************* \n"+
+"\n"+
+"\n"]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement style="DefaultStyle" positionType="Float" x="23" y="81" width="525" height="19"/>
+				<textElement>
+					<font size="14" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA["С уважением, \n"+
+"Команда сопровождения проектов \n"+
+"Фонд «Сколково» \n"+
+"--"]]></textFieldExpression>
 			</textField>
 		</band>
 		<band height="79">

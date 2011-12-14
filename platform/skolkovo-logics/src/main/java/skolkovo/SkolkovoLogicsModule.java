@@ -813,6 +813,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP resultNoticedLegalCheck, dateResultNoticedLegalCheck, setCurrentDateResultNoticedLegalCheck, emailClaimerHeaderLegalCheck, emailClaimerLegalCheck;
     LP emailFondFormalControlEA, emailFondHeaderFormalControl, emailFondFormalControl;
     LP emailTransferredProjectEA, emailTransferredHeaderProject, emailTransferredProject;
+    LP emailForesightClaimerProjectEA, emailForesightClaimerHeaderProject, emailForesightClaimerProject;
+    LP emailBureauTranslation, emailBureauTrProjectEA, emailBureauTrProject;
 
     LP generateDocumentsProjectDocumentType;
     LP includeDocumentsProject, hideIncludeDocumentsProject;
@@ -3085,7 +3087,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         dateTimeFormalControl = addTCProp(Time.DATETIME, "dateTimeFormalControl", true, "Дата/время экспертизы", resultFormalControl);
         dateFormalControl = addJProp("dateFormalControl", "Дата экспертизы", baseLM.dateInTime, dateTimeFormalControl, 1);
-        overdueDateFormalControl = addJProp("overdueDateFormalControl", "Дата просрочки формальной экспертизы", baseLM.addDate2, dateFormalControl, 1, overduePeriod);
+        dateResultNoticedFormalControl = addDProp("dateResultNoticedFormalControl", "Дата отсылки уведомления", DateClass.instance, formalControl);
+        overdueDateFormalControl = addJProp("overdueDateFormalControl", "Дата просрочки формальной экспертизы", baseLM.addDate2, addJProp(baseLM.jumpWorkdays, baseLM.defaultCountry, dateResultNoticedFormalControl, 1, addCProp(IntegerClass.instance, 1)), 1, addJProp(baseLM.subtractDate2, overduePeriod, addCProp(IntegerClass.instance, 1)));
 
         addNotEnoughDocumentsFCResult = addJProp(formalControlResultGroup, true, "addNotEnoughDocumentsFCResult", "Неполный перечень документов", addAAProp(formalControl, resultFormalControl), addCProp(formalControlResult, "notEnoughDocuments"));
         addNoListOfExpertsFCResult = addJProp(formalControlResultGroup, true, "Отсутствует перечень экспертов", addAAProp(formalControl, resultFormalControl), addCProp(formalControlResult, "noListOfExperts"));
@@ -3575,6 +3578,21 @@ public class SkolkovoLogicsModule extends LogicsModule {
         emailNotificationProject.property.askConfirm = true;
         emailNotificationProject.setDerivedForcedChange(addCProp(ActionClass.instance, true), needForesightCheckProject, 1);
 
+        emailForesightClaimerProjectEA = addEAProp(emailIO, project);
+        addEARecepient(emailForesightClaimerProjectEA, emailClaimerProject, 1);
+        emailForesightClaimerHeaderProject = addJProp("emailForesightClaimerHeaderProject", "Заголовок уведомления" ,add2Strings, addCProp(StringClass.get(2000), "Уведомление. "), nameNativeClaimerProject, 1);
+        emailForesightClaimerProject = addJProp(baseGroup, true, "emailForesightClaimerProject", "Уведомление о результатах проверки на форсайты (e-mail)", emailForesightClaimerProjectEA, 1, emailForesightClaimerHeaderProject, 1);
+        emailForesightClaimerProject.setImage("email.png");
+        emailForesightClaimerProject.property.askConfirm = true;
+        emailForesightClaimerProject.setDerivedForcedChange(addCProp(ActionClass.instance, true), negativeResultForesightCheckProject, 1);
+
+        emailBureauTrProjectEA = addEAProp(emailIO, project);
+        addEARecepient(emailBureauTrProjectEA, emailBureauTranslation);
+        emailBureauTrProject = addJProp(baseGroup, true, "emailBureauTrProject", "Письмо в бюро переводов (e-mail)", emailBureauTrProjectEA, 1, addCProp(StringClass.get(2000), "Заявка на перевод. "));
+        emailBureauTrProject.setImage("email.png");
+        emailBureauTrProject.property.askConfirm = true;
+        emailBureauTrProject.setDerivedForcedChange(addCProp(ActionClass.instance, true), sentForTranslationProject, 1);
+
         emailTransferredProjectEA = addEAProp(emailIO, project);
         addEARecepient(emailTransferredProjectEA, emailIO);
         addEARecepient(emailTransferredProjectEA, MimeMessage.RecipientType.CC, emailFondTransferred);
@@ -3597,7 +3615,6 @@ public class SkolkovoLogicsModule extends LogicsModule {
         nameNativeClaimerFormalControl.setPreferredWidth(50);
 
         resultNoticedFormalControl = addDProp("resultNoticedFormalControl", "Отослано уведомление", LogicalClass.instance, formalControl);
-        dateResultNoticedFormalControl = addDProp("dateResultNoticedFormalControl", "Дата отсылки уведомления", DateClass.instance, formalControl);
 
         setCurrentDateResultNoticedFormalControl = addJProp(actionGroup, true, "setCurrentDateResultNoticedFormalControl", "Установить текущую дату уведомления",
                 addEPAProp(EPA_INTERFACE, dateResultNoticedFormalControl), 1, baseLM.currentDate);
@@ -4193,6 +4210,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
         addFormEntity(new NotificationProjectFormEntity(print, "notificationProject", "Оповещение о соответствии направлению деятельности, фонд"));
         addFormEntity(new LegalCheckClaimerFormEntity(print, "legalCheckClaimer", "Уведомление о юридической проверке"));
         addFormEntity(new ForesightAdviceFormEntity(print, "foresightAdvice", "Оповещение по форсайту, фонд"));
+        addFormEntity(new ForesightClaimerProjectFormEntity(print, "foresightClaimerProject", "Уведомление об отрицательном результате проверки на форсайты"));  // непрохождении проверки
+        addFormEntity(new BureauTrProjectFormEntity(print, "bureauTrProject", "Письмо в бюро о необходимости перевода"));
         addFormEntity(new TransferredProjectFormEntity(print, "transferredProject", "Оповещение о прохождении перевода, фонд"));
         addFormEntity(new VoteFondFormEntity(print, "voteFond", "Оповещение о рассмотрении, фонд"));
         addFormEntity(new VoteClaimerFormEntity(print, "voteClaimer", "Уведомление о рассмотрении"));
@@ -4587,6 +4606,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
                         addMFAProp("Редактировать проект", this, new ObjectEntity[]{objProject}), 1, isR2Project, 1).setImage("edit.png");
 
             addDefaultHintsIncrementTable(this);
+
+            addAttachEAForm(emailBureauTrProjectEA, this, EmailActionProperty.Format.PDF, objProject, 1);
         }
 
         @Override
@@ -4810,6 +4831,38 @@ public class SkolkovoLogicsModule extends LogicsModule {
             setReadOnly(true);
 
             addInlineEAForm(emailNotificationProjectEA, this, objProject, 1);
+        }
+    }
+
+     public class ForesightClaimerProjectFormEntity extends FormEntity<SkolkovoBusinessLogics> {
+
+        private ObjectEntity objProject;
+
+        public ForesightClaimerProjectFormEntity(NavigatorElement parent, String sID, String caption) {
+            super(parent, sID, caption, true);
+
+            objProject = addSingleGroupObject(1, "project", project, "Проект", nameResultForesightCheckProject, dateResultForesightCheckProject, positiveResultForesightCheckProject, negativeResultForesightCheckProject, dateProject, nameNativeProject, nameForeignProject, nameNativeClaimerProject, emailClaimerProject);
+            objProject.groupTo.setSingleClassView(ClassViewType.PANEL);
+            addFixedFilter(new NotNullFilterEntity(addPropertyObject(positiveLegalResultProject, objProject)));   // или        positiveResultForesightCheckProject
+            setReadOnly(true);
+
+            addInlineEAForm(emailForesightClaimerProjectEA, this, objProject, 1);
+        }
+    }
+
+     public class BureauTrProjectFormEntity extends FormEntity<SkolkovoBusinessLogics> {
+
+        private ObjectEntity objProject;
+
+        public BureauTrProjectFormEntity(NavigatorElement parent, String sID, String caption) {
+            super(parent, sID, caption, true);
+
+            objProject = addSingleGroupObject(1, "project", project, "Проект", nameResultForesightCheckProject, dateResultForesightCheckProject, positiveResultForesightCheckProject, negativeResultForesightCheckProject, dateProject, nameNativeProject, nameForeignProject, nameNativeClaimerProject, emailClaimerProject);
+            objProject.groupTo.setSingleClassView(ClassViewType.PANEL);
+            addFixedFilter(new NotNullFilterEntity(addPropertyObject(positiveLegalResultProject, objProject)));   // или        positiveResultForesightCheckProject
+            setReadOnly(true);
+
+            addInlineEAForm(emailBureauTrProjectEA, this, objProject, 1);
         }
     }
 
