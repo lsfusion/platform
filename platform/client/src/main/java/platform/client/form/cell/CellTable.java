@@ -108,8 +108,8 @@ public abstract class CellTable extends SingleCellTable
 
     @Override
     public void removeEditor(){
-        ClientAbstractCellEditor abstractCellEditor = (ClientAbstractCellEditor) cellEditor;
-        abstractCellEditor.hidePopupIfNotNull();
+        if (cellEditor != null && cellEditor instanceof ClientAbstractCellEditor)
+            ((ClientAbstractCellEditor) cellEditor).hidePopupIfNotNull();
         super.removeEditor();
     }
 
