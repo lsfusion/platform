@@ -3605,6 +3605,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         emailNeedVoteProjectEA = addEAProp(emailIO, project);
         addEARecepient(emailNeedVoteProjectEA, emailPresident);
+        addEARecepient(emailNeedVoteProjectEA, MimeMessage.RecipientType.CC, emailIO);
         emailNeedVoteProject = addJProp(baseGroup, true, "emailNeedVoteProject", "Письмо в фонд о необходимости заседания (e-mail)", emailNeedVoteProjectEA, 1, addCProp(StringClass.get(2000), "Созвать заседание!"));
         emailNeedVoteProject.setImage("email.png");
         emailNeedVoteProject.property.askConfirm = true;
@@ -3805,7 +3806,6 @@ public class SkolkovoLogicsModule extends LogicsModule {
         nameProjectActionApplication = addJProp(baseGroup, "nameProjectActionApplication", "Тип заявки", baseLM.name, projectActionApplication, 1);
 
         projectApplication = addDProp(idGroup, "projectApplication", "Проект (ИД)", project, application);
-
 
         quantityStatusVoteApplication = addJProp("quantityStatusVoteApplication", true, "Количество заседаний", quantityStatusVoteProject, projectApplication, 1);
 
@@ -4891,7 +4891,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         public NeedVoteFondProjectFormEntity(NavigatorElement parent, String sID, String caption) {
             super(parent, sID, caption, true);
 
-            objProject = addSingleGroupObject(1, "project", project, "Проект", positiveLegalResultProject, dateProject, nameNativeProject, nameForeignProject, nameNativeClaimerProject, emailClaimerProject, datePositiveLegalResultProject, dateNotificationPeriodProject);      //    уточнить дату
+            objProject = addSingleGroupObject(1, "project", project, "Проект", positiveLegalResultProject, dateProject, nameNativeProject, nameForeignProject, nameNativeClaimerProject, emailClaimerProject, datePositiveLegalResultProject);
             objProject.groupTo.setSingleClassView(ClassViewType.PANEL);
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(positiveLegalResultProject, objProject)));
             setReadOnly(true);
