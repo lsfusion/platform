@@ -80,10 +80,10 @@ public class ExportProjectDocumentsActionProperty extends ActionProperty {
             }
 
             if ((!putFileIfNotNull(files, LM.fileNativeApplicationFormProject.read(context, projectObject), "Анкета заявителя"))
-                    && (LM.fillNativeProject.read(context, projectObject)) == (Object) true || (LM.translatedToRussianProject.read(context, projectObject)) == (Object) true)
+                    && LM.needsToBeTranslatedToRussianProject.read(context, projectObject) == null)
                 putFileIfNotNull(files, LM.generateApplicationFile(context, projectObject, false, newRegulation), "Анкета заявителя");
             if ((!putFileIfNotNull(files, LM.fileForeignApplicationFormProject.read(context, projectObject), "Анкета заявителя (иностр.)"))
-                    && (LM.fillForeignProject.read(context, projectObject) == (Object) true) || (LM.translatedToEnglishProject.read(context, projectObject) == (Object) true))
+                    && LM.needsToBeTranslatedToEnglishProject.read(context, projectObject) == null)
                 putFileIfNotNull(files, LM.generateApplicationFile(context, projectObject, true, newRegulation), "Анкета заявителя (иностр.)");
 
 

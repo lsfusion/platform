@@ -41,6 +41,8 @@ public class IncrementApply extends AbstractIncrementProps<KeyField, IncrementAp
         public UsedChanges(IncrementApply modifier) {
             super(modifier);
             previous = new HashMap<Property, MapValues>();
+            for(Map.Entry<Property, SinglePropertyTableUsage<? extends PropertyInterface>> prevTable : modifier.previous.entrySet())
+                previous.put(prevTable.getKey(), prevTable.getValue().getUsage());
         }
         public UsedChanges(IncrementApply modifier, boolean applyStart) {
             assert applyStart;

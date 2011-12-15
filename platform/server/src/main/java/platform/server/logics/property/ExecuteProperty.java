@@ -15,10 +15,6 @@ public abstract class ExecuteProperty extends UserProperty {
         return false;
     }
 
-    public Set<Property> getChangeProps() {
-        return new HashSet<Property>();
-    }
-
     public boolean pendingDerivedExecute() {
         return getChangeProps().size()==0;
     }

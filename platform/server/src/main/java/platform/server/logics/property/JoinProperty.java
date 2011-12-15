@@ -210,4 +210,9 @@ public class JoinProperty<T extends PropertyInterface> extends SimpleIncrementPr
             }
         }
     }
+
+    @Override
+    public Set<Property> getChangeProps() {
+        return implement.property.getChangeProps();
+    }
 }

@@ -35,7 +35,6 @@ public class StringPropertyEditor extends TextFieldPropertyEditor {
     }
 
     public Object getCellEditorValue(){
-
         String text = getText();
         if (text.isEmpty()) return null;
         return text;
@@ -44,11 +43,12 @@ public class StringPropertyEditor extends TextFieldPropertyEditor {
 
     @Override
     public String checkValue(Object value) {
-        if (property.regexp != null)
-            if (!getText().matches(property.regexp)) {
+        String text = (String)getCellEditorValue();
+        if (property.regexp != null && text != null)
+            if (!text.matches(property.regexp)) {
                 return property.regexpMessage==null ?
                         ClientResourceBundle.getString("form.editor.incorrect.value") : property.regexpMessage;
             }
         return null;
-        }
+    }
 }

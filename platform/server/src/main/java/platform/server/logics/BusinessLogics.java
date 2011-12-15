@@ -1260,15 +1260,12 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
                     fillPropertyList(property, linkedSet);
 
         List<Property> result = new ArrayList<Property>();
-        for (Property property : linkedSet) { // переставляет execute'ы заведомо до changeProps, чтобы разрешать циклы
+        for (Property<?> property : linkedSet) { // переставляет execute'ы заведомо до changeProps, чтобы разрешать циклы
             Integer minChange = null;
-            if (property instanceof ExecuteProperty) {
-                ExecuteProperty executeProperty = (ExecuteProperty) property;
-                for (Property changeProp : executeProperty.getChangeProps()) {
-                    int index = result.indexOf(changeProp);
-                    if (index >= 0 && (minChange == null || index < minChange))
-                        minChange = index;
-                }
+            for (Property changeProp : property.getChangeProps()) {
+                int index = result.indexOf(changeProp);
+                if (index >= 0 && (minChange == null || index < minChange))
+                    minChange = index;
             }
             if (minChange != null)
                 result.add(minChange, property);

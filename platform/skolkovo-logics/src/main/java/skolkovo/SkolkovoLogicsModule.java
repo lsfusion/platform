@@ -811,7 +811,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP needEmailClaimerFormalControl;
     LP resultNoticedFormalControl, dateResultNoticedFormalControl, setCurrentDateResultNoticedFormalControl, emailClaimerHeaderFormalControl, emailClaimerFormalControl;
     LP emailClaimerLegalCheckEA, claimerLegalCheck, claimerEmailLegalCheck, nameNativeJoinClaimerLegalCheck, nameForeignJoinClaimerLegalCheck, nameNativeClaimerLegalCheck;
-    LP resultNoticedLegalCheck, dateResultNoticedLegalCheck, setCurrentDateResultNoticedLegalCheck, emailClaimerHeaderLegalCheck, emailClaimerLegalCheck;
+    LP resultNoticedLegalCheck, dateResultNoticedLegalCheck, setCurrentDateResultNoticedLegalCheck, emailClaimerHeaderLegalCheck, emailClaimerLegalCheck, emailClaimerLegalCheckProject;
     LP emailFondFormalControlEA, emailFondHeaderFormalControl, emailFondFormalControl;
     LP emailTransferredProjectEA, emailTransferredHeaderProject, emailTransferredProject;
     LP emailForesightClaimerProjectEA, emailForesightClaimerHeaderProject, emailForesightClaimerProject;
@@ -3043,16 +3043,17 @@ public class SkolkovoLogicsModule extends LogicsModule {
                 addJProp(baseLM.and1, addCProp(StringClass.get(10), "Рус"), fillNativeProject, 1),
                 addJProp(baseLM.and1, addCProp(StringClass.get(10), "Англ"), fillForeignProject, 1));
 
-        translatedToRussianProject = addDProp(projectTranslationsGroup, "translatedToRussianProject", "Переведено на русский", LogicalClass.instance, project);
-        translatedToEnglishProject = addDProp(projectTranslationsGroup, "translatedToEnglishProject", "Переведено на английский", LogicalClass.instance, project);
+        transferredProject = addDProp(translationGroup, "transferredProject", "Переведена", LogicalClass.instance, project);
+        dateTransferredProject = addDCProp(translationGroup, "dateTransferredProject", "Дата перевода", true, baseLM.currentDate, transferredProject, 1);
+
+        translatedToRussianProject = transferredProject; // addDProp(projectTranslationsGroup, "translatedToRussianProject", "Переведено на русский", LogicalClass.instance, project);
+        translatedToEnglishProject = transferredProject; // addDProp(projectTranslationsGroup, "translatedToEnglishProject", "Переведено на английский", LogicalClass.instance, project);
 
         needsToBeTranslatedToRussianProject = addJProp(and(true, true), addCProp(LogicalClass.instance, true, project), 1, fillNativeProject, 1, translatedToRussianProject, 1);
         needsToBeTranslatedToEnglishProject = addJProp(and(true, true), addCProp(LogicalClass.instance, true, project), 1, fillForeignProject, 1, translatedToEnglishProject, 1);
 
-        hideTranslatedToRussianProject = addHideCaptionProp(privateGroup, "Переведено", translatedToRussianProject, fillForeignProject);
-        hideTranslatedToEnglishProject = addHideCaptionProp(privateGroup, "Переведено", translatedToEnglishProject, fillNativeProject);
-
-        needTranslationProject = addSUProp("needTranslationProject", true, "Требуется перевод", Union.OVERRIDE, needsToBeTranslatedToRussianProject, needsToBeTranslatedToEnglishProject);
+//        hideTranslatedToRussianProject = addHideCaptionProp(privateGroup, "Переведено", translatedToRussianProject, fillForeignProject);
+//        hideTranslatedToEnglishProject = addHideCaptionProp(privateGroup, "Переведено", translatedToEnglishProject, fillNativeProject);
 
         dateJoinProject = addJProp(baseLM.and1, baseLM.date, 1, is(project), 1);
         dateDataProject = addDProp("dateDataProject", "Дата", DateClass.instance, project);
@@ -3250,6 +3251,10 @@ public class SkolkovoLogicsModule extends LogicsModule {
                 isR2Project, 1,
                 positiveLegalResultProject, 1);
 
+        needTranslationProject = addJProp("needTranslationProject", true, "Требуется перевод", baseLM.and1,
+                addSUProp(Union.OVERRIDE, needsToBeTranslatedToRussianProject, needsToBeTranslatedToEnglishProject), 1,
+                positiveResultForesightCheckProject, 1);
+
         needVoteProject = addJProp("needVoteProject", true, "Треб. заседание", and(false, true, true, false, true),
                 is(project), 1,
                 positiveResultForesightCheckProject, 1,
@@ -3259,9 +3264,9 @@ public class SkolkovoLogicsModule extends LogicsModule {
                 needTranslationProject, 1);
 
         sentForTranslationProject = addDProp(translationGroup, "sentForTranslationProject", "Направлена на перевод", LogicalClass.instance, project);
+        sentForTranslationProject.setDerivedForcedChange(addCProp(LogicalClass.instance, true), needTranslationProject, 1);
+
         dateSentForTranslationProject = addDCProp(translationGroup, "dateSentForTranslationProject", "Дата направления на перевод", true, baseLM.currentDate, sentForTranslationProject, 1);
-        transferredProject = addDProp(translationGroup, "transferredProject", "Переведена", LogicalClass.instance, project);
-        dateTransferredProject = addDCProp(translationGroup, "dateTransferredProject", "Дата перевода", true, baseLM.currentDate, transferredProject, 1);
 
         oficialNameProjectStatus = addDProp(baseGroup, "oficialNameProjectStatus", "Наименование из регламента", StringClass.get(200), projectStatus);
         oficialNameProjectStatus.setMinimumWidth(10);
@@ -3599,6 +3604,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         emailForesightClaimerProjectEA = addEAProp(emailIO, project);
         addEARecepient(emailForesightClaimerProjectEA, emailClaimerProject, 1);
+        addEARecepient(emailForesightClaimerProjectEA, MimeMessage.RecipientType.CC, emailIO);
         emailForesightClaimerHeaderProject = addJProp("emailForesightClaimerHeaderProject", "Заголовок уведомления" ,add2Strings, addCProp(StringClass.get(2000), "Уведомление. "), nameNativeClaimerProject, 1);
         emailForesightClaimerProject = addJProp(baseGroup, true, "emailForesightClaimerProject", "Уведомление о результатах проверки на форсайты (e-mail)", emailForesightClaimerProjectEA, 1, emailForesightClaimerHeaderProject, 1);
         emailForesightClaimerProject.setImage("email.png");
@@ -3669,7 +3675,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         emailFondFormalControl = addJProp(actionGroup, true, "emailFondFormalControl", "Письмо о формальной экспертизе",   emailFondFormalControlEA, 1, emailFondHeaderFormalControl, 1);
         emailFondFormalControl.setImage("email.png");
         emailFondFormalControl.property.askConfirm = true;
-//        emailFondFormalControl.setDerivedForcedChange(addCProp(ActionClass.instance, true), resultFormalControl, 1);
+        emailFondFormalControl.setDerivedForcedChange(addCProp(ActionClass.instance, true), resultFormalControl, 1);
         nameNativeProjectFormalControl = addJProp(baseGroup, "nameNativeProjectFormalControl", "Проект", nameNativeProject, projectFormalControl, 1);
 
         // для отсылки по юридической проверке
@@ -3689,7 +3695,6 @@ public class SkolkovoLogicsModule extends LogicsModule {
                 addEPAProp(EPA_INTERFACE, dateResultNoticedLegalCheck), 1, baseLM.currentDate);
 
         addEARecepient(emailClaimerLegalCheckEA, claimerEmailLegalCheck, 1);
-        addEARecepient(emailClaimerLegalCheckEA, MimeMessage.RecipientType.BCC, emailPresident);
         addEARecepient(emailClaimerLegalCheckEA, MimeMessage.RecipientType.BCC, emailIO);
 //        addEARecepient(emailClaimerLegalCheckEA, MimeMessage.RecipientType.BCC, emailFinalClusterLegalCheck, 1);
 
@@ -3704,6 +3709,9 @@ public class SkolkovoLogicsModule extends LogicsModule {
         object(legalCheck), 1);
         emailClaimerLegalCheck.setImage("email.png");
         emailClaimerLegalCheck.property.askConfirm = true;
+
+        emailClaimerLegalCheckProject = addJProp(actionGroup, true, "emailClaimerLegalCheckProject", "Письмо о формальной экспертизе", emailClaimerLegalCheck, executeLegalCheckProject, 1);
+        emailClaimerLegalCheckProject.setDerivedForcedChange(addCProp(ActionClass.instance, true), positiveResultForesightCheckProject, 1);
 
         isForeignExpert = addJProp("isForeignExpert", "Иностр.", baseLM.equals2, languageExpert, 1, addCProp(language, "english"));
         localeExpert = addJProp("localeExpert", "Locale", localeLanguage, languageExpert, 1);
@@ -4311,7 +4319,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
                 voteLastProject, dateStartVoteLastProject, dateEndVoteLastProject,
                 acceptedProject, rejectedProject, acceptedDecisionProject, rejectedDecisionProject, valuedProject,
                 dateDecisionNoticedProject, rejectedNoticedProject, acceptedNoticedPreliminaryProject, acceptedNoticedStatusProject,
-                formalCheckStatusProject, legalCheckStatusProject, foresightCheckStatusProject, certifiedStatusProject, valuedStatusProject,
+                formalCheckStatusProject, legalCheckStatusProject, foresightCheckStatusProject, positiveResultForesightCheckProject, certifiedStatusProject, valuedStatusProject,
                 executeOriginalDocsCheckProject, dateExecuteOriginalDocsCheckProject, resultExecuteOriginalDocsCheckProject,
                 positiveOriginalDocsCheckProject, overdueOriginalDocsCheckProject, negativeOriginalDocsCheckProject,
                 certifiedProject, preparedCertificateProject, submittedToRegisterProject, sentToFinDepProject, signedProject,
@@ -4382,14 +4390,14 @@ public class SkolkovoLogicsModule extends LogicsModule {
             getPropertyDraw(commentEquipmentProject).propertyCaption = addPropertyObject(hideCommentEquipmentProject, objProject);
             objProject.groupTo.setSingleClassView(ClassViewType.PANEL);
 
-            addPropertyDraw(objProject, translatedToRussianProject, translatedToEnglishProject);
-
-            if ("eng".equals(lng)) {
-                getPropertyDraw(translatedToRussianProject).propertyCaption = addPropertyObject(hideTranslatedToRussianProject, objProject);
-            }
-            if ("rus".equals(lng)) {
-                getPropertyDraw(translatedToEnglishProject).propertyCaption = addPropertyObject(hideTranslatedToEnglishProject, objProject);
-            }
+//            addPropertyDraw(objProject, translatedToRussianProject, translatedToEnglishProject);
+//
+//            if ("eng".equals(lng)) {
+//                getPropertyDraw(translatedToRussianProject).propertyCaption = addPropertyObject(hideTranslatedToRussianProject, objProject);
+//            }
+//            if ("rus".equals(lng)) {
+//                getPropertyDraw(translatedToEnglishProject).propertyCaption = addPropertyObject(hideTranslatedToEnglishProject, objProject);
+//            }
 
             objCluster = addSingleGroupObject(5, "cluster", cluster, "Кластер");
             addPropertyDraw(inProjectCluster, objProject, objCluster);
@@ -4447,7 +4455,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             ContainerView row112 = design.createContainer();
             row112.constraints.childConstraints = DoNotIntersectSimplexConstraint.TOTHE_RIGHT;
             row112.add(design.getGroupPropertyContainer(objProject.groupTo, projectOptionsGroup));
-            row112.add(design.getGroupPropertyContainer(objProject.groupTo, projectTranslationsGroup));
+//            row112.add(design.getGroupPropertyContainer(objProject.groupTo, projectTranslationsGroup));
             row112.add(design.getGroupPropertyContainer(objProject.groupTo, projectStatusGroup));
 
             ContainerView col11 = design.createContainer();
@@ -4493,9 +4501,9 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
             design.getMainContainer().addBefore(design.getGroupPropertyContainer(objProject.groupTo, projectInformationGroup), specContainer);
 
-            if (!("both".equals(lng))) {
-                design.getMainContainer().addAfter(design.getGroupPropertyContainer(objProject.groupTo, projectTranslationsGroup), specContainer);
-            }
+//            if (!("both".equals(lng))) {
+//                design.getMainContainer().addAfter(design.getGroupPropertyContainer(objProject.groupTo, projectTranslationsGroup), specContainer);
+//            }
             design.setShowTableFirstLogical(true);
 
             PropertyObjectEntity sidProjectProperty = addPropertyObject(sidProject, objProject);
@@ -4626,6 +4634,12 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
             addObjectActions(this, objTypeMileStone);
 //            addPropertyDraw(objTypeMileStone, objMileStone, nativeDescriptionTypeMileStoneMileStoneMileStoneYear, foreignDescriptionTypeMileStoneMileStoneMileStoneYear);
+
+            addFixedFilter(new NotNullFilterEntity(addPropertyObject(isR2Project, objProject)));
+            if (sID.equals("projectFullR2Foreign"))
+                addFixedFilter(new NotNullFilterEntity(addPropertyObject(fillForeignProject, objProject)));
+            else
+                addFixedFilter(new NotNullFilterEntity(addPropertyObject(fillNativeProject, objProject)));
 
             if (editR2Project == null)
                 editR2Project = addJProp(true, "editR2Project", "Редактировать проект", baseLM.and1,
@@ -4885,7 +4899,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
             objProject = addSingleGroupObject(1, "project", project, "Проект", nameResultForesightCheckProject, dateResultForesightCheckProject, positiveResultForesightCheckProject, negativeResultForesightCheckProject, dateProject, nameNativeProject, nameForeignProject, nameNativeClaimerProject, emailClaimerProject);
             objProject.groupTo.setSingleClassView(ClassViewType.PANEL);
-            addFixedFilter(new NotNullFilterEntity(addPropertyObject(positiveLegalResultProject, objProject)));   // или        positiveResultForesightCheckProject
+//            addFixedFilter(new NotNullFilterEntity(addPropertyObject(positiveLegalResultProject, objProject)));   // или        positiveResultForesightCheckProject
             setReadOnly(true);
 
             addInlineEAForm(emailBureauTrProjectEA, this, objProject, 1);
@@ -5094,9 +5108,9 @@ public class SkolkovoLogicsModule extends LogicsModule {
             addPropertyDraw(nameNativeShortCurrentCluster).toDraw = objProject.groupTo;
             setForceViewType(nameNativeShortCurrentCluster, ClassViewType.PANEL);
 
-            addPropertyDraw(objProject, translateToRussianProject, translateToEnglishProject);
-            setForceViewType(translateToRussianProject, ClassViewType.PANEL);
-            setForceViewType(translateToEnglishProject, ClassViewType.PANEL);
+//            addPropertyDraw(objProject, translateToRussianProject, translateToEnglishProject);
+//            setForceViewType(translateToRussianProject, ClassViewType.PANEL);
+//            setForceViewType(translateToEnglishProject, ClassViewType.PANEL);
 
             nameNativeEntity = addPropertyDraw(nameNativeProject, objProject);
             nameForeignEntity = addPropertyDraw(nameForeignProject, objProject);
@@ -5131,11 +5145,11 @@ public class SkolkovoLogicsModule extends LogicsModule {
             //addPropertyDraw(openApplicationProjectAction, objProject).toDraw = objProject.groupTo;
             //setForceViewType(openApplicationProjectAction, ClassViewType.PANEL);
 
-            hideTranslateToRussianProject = addHideCaptionProp(privateGroup, "Перевести", translateToRussianProject, needsToBeTranslatedToRussianProject);
-            getPropertyDraw(translateToRussianProject).propertyCaption = addPropertyObject(hideTranslateToRussianProject, objProject);
-
-            hideTranslateToEnglishProject = addHideCaptionProp(privateGroup, "Перевести", translateToEnglishProject, needsToBeTranslatedToEnglishProject);
-            getPropertyDraw(translateToEnglishProject).propertyCaption = addPropertyObject(hideTranslateToEnglishProject, objProject);
+//            hideTranslateToRussianProject = addHideCaptionProp(privateGroup, "Перевести", translateToRussianProject, needsToBeTranslatedToRussianProject);
+//            getPropertyDraw(translateToRussianProject).propertyCaption = addPropertyObject(hideTranslateToRussianProject, objProject);
+//
+//            hideTranslateToEnglishProject = addHideCaptionProp(privateGroup, "Перевести", translateToEnglishProject, needsToBeTranslatedToEnglishProject);
+//            getPropertyDraw(translateToEnglishProject).propertyCaption = addPropertyObject(hideTranslateToEnglishProject, objProject);
 
             hideLoadFileResolutionIPProject = addHideCaptionProp(privateGroup, "Загрузить", loadFileResolutionIPProject, addJProp(baseLM.andNot1, addCProp(LogicalClass.instance, true, project), 1, openFileResolutionIPProject, 1));
             getPropertyDraw(loadFileResolutionIPProject).propertyCaption = addPropertyObject(hideLoadFileResolutionIPProject, objProject);
@@ -5336,9 +5350,9 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
 //            design.get(getPropertyDraw(addProject)).setPanelLocation(new ToolbarPanelLocation());
 
-            design.addIntersection(design.getGroupPropertyContainer(objProject.groupTo, projectInformationGroup),
-                    design.getGroupPropertyContainer(objProject.groupTo, translateActionGroup),
-                    DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
+//            design.addIntersection(design.getGroupPropertyContainer(objProject.groupTo, projectInformationGroup),
+//                    design.getGroupPropertyContainer(objProject.groupTo, translateActionGroup),
+//                    DoNotIntersectSimplexConstraint.TOTHE_RIGHT);
 
             design.get(getPropertyDraw(importProjectsAction)).setPanelLocation(new ToolbarPanelLocation());
             design.get(getPropertyDraw(copyProjectAction)).setPanelLocation(new ToolbarPanelLocation());
@@ -5419,7 +5433,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             translationContainer.add(translationHeaderContainer);
             translationContainer.add(projectDocumentsContainer);
             translationContainer.add(design.getGroupObjectContainer(objNonRussianSpecialist.groupTo));
-            translationContainer.add(design.getGroupPropertyContainer(objProject.groupTo, translateActionGroup));
+//            translationContainer.add(design.getGroupPropertyContainer(objProject.groupTo, translateActionGroup));
 
             ContainerView docContainer = design.createContainer("Документы");
             docContainer.add(design.getGroupObjectContainer(objDocumentTemplate.groupTo));
@@ -6970,7 +6984,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
                 languageDocument.execute(language.getID("russian"), context, documentObject);
                 if (file != null)
                     fileDocument.execute(file, context, documentObject);
-                else if ((fillNativeProject.read(context, projectObject)) == (Object) true || (translatedToRussianProject.read(context, projectObject)) == (Object) true)
+                else if (needsToBeTranslatedToRussianProject.read(context, projectObject) == null)
                     fileDocument.execute(generateApplicationFile(context, projectObject, false, false), context, documentObject);
 
                 file = fileForeignApplicationFormProject.read(context, projectObject);
@@ -6980,7 +6994,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
                 languageDocument.execute(language.getID("english"), context, documentObject);
                 if (file != null)
                     fileDocument.execute(file, context, documentObject);
-                else if ((fillForeignProject.read(context, projectObject)) == (Object) true || (translatedToEnglishProject.read(context, projectObject)) == (Object) true)
+                else if (needsToBeTranslatedToEnglishProject.read(context, projectObject) == null)
                     fileDocument.execute(generateApplicationFile(context, projectObject, true, false), context, documentObject);
 
                 file = fileNativeSummaryProject.read(context, projectObject);
@@ -7111,7 +7125,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
                         languageDocument.execute(language.getID("russian"), context, documentObject);
                         if (file != null)
                             fileDocument.execute(file, context, documentObject);
-                        else if ((fillNativeProject.read(context, projectObject)) == (Object) true || (translatedToRussianProject.read(context, projectObject)) == (Object) true)
+                        else if (needsToBeTranslatedToRussianProject.read(context, projectObject) == null)
                             fileDocument.execute(generateApplicationFile(context, projectObject, false, true), context, documentObject);
 
                         file = fileForeignApplicationFormProject.read(context, projectObject);
@@ -7121,7 +7135,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
                         languageDocument.execute(language.getID("english"), context, documentObject);
                         if (file != null)
                             fileDocument.execute(file, context, documentObject);
-                        else if ((fillForeignProject.read(context, projectObject)) == (Object) true || (translatedToEnglishProject.read(context, projectObject)) == (Object) true)
+                        else if (needsToBeTranslatedToEnglishProject.read(context, projectObject) == null)
                             fileDocument.execute(generateApplicationFile(context, projectObject, true, true), context, documentObject);
 /*
                         Query<String, String> query = new Query<String, String>(Collections.singleton("specialist"));
