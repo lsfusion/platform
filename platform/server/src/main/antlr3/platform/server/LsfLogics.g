@@ -471,6 +471,7 @@ contextDependentPD[List<String> context, boolean dynamic] returns [LP property, 
 
 contextIndependentPD[boolean innerPD] returns [LP property, boolean isData]
 	: 	dataDef=dataPropertyDefinition[innerPD] { $property = $dataDef.property; $isData = true; } 
+	|	formulaProp=formulaPropertyDefinition { $property = $formulaProp.property; $isData = false; }
 	|	groupDef=groupPropertyDefinition { $property = $groupDef.property; $isData = false; } 
 	|	typeDef=typePropertyDefinition { $property = $typeDef.property; $isData = false; }
 	;
@@ -583,6 +584,20 @@ unionPropertyDefinition[List<String> context, boolean dynamic] returns [LP prope
 	:	'UNION'
 		(('MAX' {type = Union.MAX;}) | ('SUM' {type = Union.SUM;}) | ('OVERRIDE' {type = Union.OVERRIDE;}) | ('XOR' { type = Union.XOR;}) | ('EXCLUSIVE' {type = Union.EXCLUSIVE;}))
 		exprList=nonEmptyPropertyExpressionList[context, dynamic] { paramProps = $exprList.props; usedSubParams = $exprList.usedParams; }	
+	;
+
+
+formulaPropertyDefinition returns [LP property]
+@init {
+	String className;
+	String formulaText;
+}
+@after {
+	if (parseState == ScriptingLogicsModule.State.PROP) {
+		$property = self.addScriptedSFProp(className, formulaText);
+	}
+}
+	:	'FORMULA' type=classId str=STRING_LITERAL { className = $type.text; formulaText = $str.text; }
 	;
 
 

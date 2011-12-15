@@ -94,6 +94,12 @@ testUnion(store, article) = UNION SUM incomeQuantity(store, article), outcomeQua
 // [WINDOW EXCEPTLAST]
 testPartition(store, article) = PARTITION SUM incomeQuantity(store, article) BY store ORDER DESC name(article);
 
+// Formula property
+// Expression syntax:
+// FORMULA primitiveType 'formula text $1 + $2'
+sum12 = FORMULA DOUBLE '($1)+($2)*2';
+testFormula(store, article) = sum12(incomeQuantity(store, article), outcomeQuantity(store, article));
+
 // Computational expressions
 // Priority:
 // AND  IF
@@ -161,5 +167,5 @@ PROPERTIES SELECTION(s), name(s), OBJVALUE(a), name(a)
 PROPERTIES incomeQuantity(s, a), incomeQuantity2(s, a), outcomeQuantity(s, a), outcomeQuantity2(s, a), storeSizeName(s),
            storeIsHuge(s), storeIsHuge2(s),
            foo(s, a), foo2(s, a), bar(s, a), foobar(s, a), bar2(s, a), baz(s, a), baz2(s, a),
-           balanceQuantity(s, a), testUnion(s, a), testPartition(s, a);
+           balanceQuantity(s, a), testUnion(s, a), testPartition(s, a), testFormula(s, a);
 

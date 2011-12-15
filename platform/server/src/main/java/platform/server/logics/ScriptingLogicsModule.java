@@ -20,6 +20,8 @@ import platform.server.logics.property.group.AbstractGroup;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * User: DAle
@@ -524,6 +526,32 @@ public class ScriptingLogicsModule extends LogicsModule {
         return new LPWithParams(prop, mergeLists(usedParams));
     }
 
+    public LP<?> addScriptedSFProp(String typeName, String formulaLiteral) throws ScriptingErrorLog.SemanticErrorException {
+        scriptLogger.info("addScriptedSFProp(" + typeName + ", " + formulaLiteral + ");");
+        ValueClass cls = findClassByCompoundName(typeName);
+        checkFormulaClass(cls, typeName);
+        String formulaText = transformStringLiteral(formulaLiteral);
+        Set<Integer> params = findFormulaParameters(formulaText);
+        checkFormulaParameters(params);
+        return addSFProp(transformFormulaText(formulaText), (DataClass) cls, params.size());
+    }
+
+    private Set<Integer> findFormulaParameters(String text) {
+        Set<Integer> params = new HashSet<Integer>();
+        Pattern pattern = Pattern.compile("\\$\\d+");
+        Matcher matcher = pattern.matcher(text);
+        while (matcher.find()) {
+            String group = matcher.group();
+            int paramNumber = Integer.valueOf(group.substring(1));
+            params.add(paramNumber);
+        }
+        return params;
+    }
+
+    private String transformFormulaText(String text) {
+        return text.replaceAll("\\$(\\d+)", "prm$1");
+    }
+
     public LP<?> addConstantProp(ConstType type, String text) throws ScriptingErrorLog.SemanticErrorException {
         scriptLogger.info("addConstantProp(" + type + ", " + text + ");");
 
@@ -672,6 +700,21 @@ public class ScriptingLogicsModule extends LogicsModule {
             }
             if (valueClass instanceof StaticCustomClass) {
                 errLog.emitStaticClassAsParentError(parser, parentName);
+            }
+        }
+    }
+
+    private void checkFormulaClass(ValueClass cls, String name) throws ScriptingErrorLog.SemanticErrorException {
+        checkClass(cls, name);
+        if (!(cls instanceof DataClass)) {
+            errLog.emitFormulaReturnClassError(parser);
+        }
+    }
+
+    private void checkFormulaParameters(Set<Integer> params) throws ScriptingErrorLog.SemanticErrorException {
+        for (int param : params) {
+            if (param == 0 || param > params.size()) {
+                errLog.emitParamIndexError(parser, param, params.size());
             }
         }
     }

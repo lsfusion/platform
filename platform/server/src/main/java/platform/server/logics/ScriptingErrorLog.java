@@ -119,9 +119,7 @@ public class ScriptingErrorLog {
     }
 
     public void emitAbstractStaticClassError(LsfLogicsParser parser) throws SemanticErrorException {
-        SemanticErrorException e = new SemanticErrorException(parser.input);
-        String msg = getSemanticRecognitionErrorText("static сlass cannot be abstract\n", parser, e);
-        emitSemanticError(msg, e);
+        emitSimpleError(parser, "static сlass cannot be abstract");
     }
 
     public void emitNonStaticHasInstancesError(LsfLogicsParser parser, String className) throws SemanticErrorException {
@@ -149,9 +147,7 @@ public class ScriptingErrorLog {
     }
 
     public void emitConstraintPropertyAlwaysNullError(LsfLogicsParser parser) throws SemanticErrorException {
-        SemanticErrorException e = new SemanticErrorException(parser.input);
-        String msg = getSemanticRecognitionErrorText("constrained property is always NULL\n", parser, e);
-        emitSemanticError(msg, e);
+        emitSimpleError(parser, "constrained property is always NULL");
     }
 
     public void emitPropertyAlwaysNullError(LsfLogicsParser parser, String propertyName) throws SemanticErrorException {
@@ -167,8 +163,16 @@ public class ScriptingErrorLog {
     }
 
     public void emitUnionPropParamsError(LsfLogicsParser parser) throws SemanticErrorException {
+        emitSimpleError(parser, "parameters of union property should all have same number of arguments");
+    }
+
+    public void emitFormulaReturnClassError(LsfLogicsParser parser) throws SemanticErrorException {
+        emitSimpleError(parser, "formula return class must be a built-in class");
+    }
+
+    private void emitSimpleError(LsfLogicsParser parser, String message) throws SemanticErrorException {
         SemanticErrorException e = new SemanticErrorException(parser.input);
-        String msg = getSemanticRecognitionErrorText("parameters of union property should all have same number of arguments\n", parser, e);
+        String msg = getSemanticRecognitionErrorText(message + "\n", parser, e);
         emitSemanticError(msg, e);
     }
 }
