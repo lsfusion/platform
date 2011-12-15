@@ -1199,6 +1199,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP sentForTranslationProject, dateSentForTranslationProject;
     LP positiveStatusLegalCheckProject, datePositiveStatusLegalCheckProject;
     LP transferredProject, dateTransferredProject;
+    LP needVoteProject;
 
     LP dateAgreementExpert;
     LP vone;
@@ -3249,6 +3250,14 @@ public class SkolkovoLogicsModule extends LogicsModule {
                 isR2Project, 1,
                 positiveLegalResultProject, 1);
 
+        needVoteProject = addJProp("needVoteProject", true, "Треб. заседание", and(false, true, true, false, true),
+                is(project), 1,
+                positiveResultForesightCheckProject, 1,
+                voteInProgressProject, 1,
+                clusterAcceptedProject, 1,
+                currentClusterProject, 1,
+                needTranslationProject, 1);
+
         sentForTranslationProject = addDProp(translationGroup, "sentForTranslationProject", "Направлена на перевод", LogicalClass.instance, project);
         dateSentForTranslationProject = addDCProp(translationGroup, "dateSentForTranslationProject", "Дата направления на перевод", true, baseLM.currentDate, sentForTranslationProject, 1);
         transferredProject = addDProp(translationGroup, "transferredProject", "Переведена", LogicalClass.instance, project);
@@ -3609,7 +3618,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         emailNeedVoteProject = addJProp(baseGroup, true, "emailNeedVoteProject", "Письмо в фонд о необходимости заседания (e-mail)", emailNeedVoteProjectEA, 1, addCProp(StringClass.get(2000), "Созвать заседание!"));
         emailNeedVoteProject.setImage("email.png");
         emailNeedVoteProject.property.askConfirm = true;
-        emailNeedVoteProject.setDerivedForcedChange(addCProp(ActionClass.instance, true), needExtraVoteProject, 1);
+        emailNeedVoteProject.setDerivedForcedChange(addCProp(ActionClass.instance, true), needVoteProject, 1);
 
         emailTransferredProjectEA = addEAProp(emailIO, project);
         addEARecepient(emailTransferredProjectEA, emailIO);
