@@ -616,8 +616,6 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
             hintsNoUpdate.add(prop);
     }
 
-    public Map<PropertyDrawEntity, GroupObjectEntity> forceDefaultDraw = new HashMap<PropertyDrawEntity, GroupObjectEntity>();
-
     public FormView createDefaultRichDesign() {
         return new DefaultFormView(this);
     }
@@ -671,7 +669,6 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         pool.serializeCollection(outStream, propertyDraws);
         pool.serializeCollection(outStream, fixedFilters);
         pool.serializeCollection(outStream, regularFilterGroups);
-        pool.serializeMap(outStream, forceDefaultDraw);
 
         outStream.writeInt(defaultOrders.size());
         for (Map.Entry<PropertyDrawEntity<?>, Boolean> entry : defaultOrders.entrySet()) {
