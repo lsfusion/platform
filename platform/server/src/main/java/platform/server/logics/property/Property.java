@@ -97,6 +97,7 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
 
     public String regexp;
     public String regexpMessage;
+    public Boolean echoSymbols;
 
     public PanelLocation panelLocation;
 
@@ -650,6 +651,8 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
             propertyView.regexp = regexp;
         if (regexpMessage != null)
             propertyView.regexpMessage = regexpMessage;
+        if (echoSymbols != null)
+            propertyView.echoSymbols = echoSymbols;
 
         if (panelLocation != null)
             propertyView.setPanelLocation(panelLocation);

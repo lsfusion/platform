@@ -1,6 +1,7 @@
 package platform.client.form.renderer;
 
 import platform.client.form.PropertyRendererComponent;
+import platform.client.logics.ClientPropertyDraw;
 import platform.interop.ComponentDesign;
 
 import javax.swing.*;
@@ -12,14 +13,13 @@ class LabelPropertyRenderer extends JLabel { //DefaultTableCellRenderer {
 
     Format format;
 
-    LabelPropertyRenderer(Format iformat, ComponentDesign design) {
+    LabelPropertyRenderer(ClientPropertyDraw property) {
         super();
-
-        format = iformat;
-        setOpaque(true);
-
-        if (design != null)
-            design.designCell(this);
+        if (property != null) {
+            format = property.getFormat();
+            setOpaque(true);
+            property.design.designCell(this);
+        }
     }
 
     void setSelected(boolean isSelected, boolean hasFocus) {

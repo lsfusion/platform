@@ -23,8 +23,8 @@ public class ClientExcelClass extends ClientFileClass {
         return sID;
     }
 
-    public PropertyRendererComponent getRendererComponent(Format format, String caption, ComponentDesign design) {
-        return new ExcelPropertyRenderer(format, design);
+    public PropertyRendererComponent getRendererComponent(String caption, ClientPropertyDraw property) {
+        return new ExcelPropertyRenderer(property);
     }
 
     @Override

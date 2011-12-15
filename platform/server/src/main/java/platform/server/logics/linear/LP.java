@@ -311,6 +311,10 @@ public class LP<T extends PropertyInterface> {
         property.regexpMessage = regexpMessage;
     }
 
+    public void setEchoSymbols(boolean echoSymbols) {
+        property.echoSymbols = echoSymbols;
+    }
+
     public void setPanelLocation(PanelLocation panelLocation) {
         property.panelLocation = panelLocation;
     }

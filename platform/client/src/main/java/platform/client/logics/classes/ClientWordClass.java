@@ -23,8 +23,8 @@ public class ClientWordClass extends ClientFileClass {
         return sID;
     }
 
-    public PropertyRendererComponent getRendererComponent(Format format, String caption, ComponentDesign design) {
-        return new WordPropertyRenderer(format, design);
+    public PropertyRendererComponent getRendererComponent(String caption, ClientPropertyDraw property) {
+        return new WordPropertyRenderer(property);
     }
 
     @Override

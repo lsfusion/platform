@@ -2,6 +2,7 @@ package platform.client.form.renderer;
 
 import platform.base.DateConverter;
 import platform.client.form.PropertyRendererComponent;
+import platform.client.logics.ClientPropertyDraw;
 import platform.interop.ComponentDesign;
 
 import javax.swing.*;
@@ -10,8 +11,8 @@ import java.text.Format;
 public class DatePropertyRenderer extends LabelPropertyRenderer
                            implements PropertyRendererComponent {
 
-    public DatePropertyRenderer(Format format, ComponentDesign design) {
-        super(format, design);
+    public DatePropertyRenderer(ClientPropertyDraw property) {
+        super(property);
 
         setHorizontalAlignment(JLabel.RIGHT);
 

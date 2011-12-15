@@ -56,6 +56,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
     public String caption;
     public String regexp;
     public String regexpMessage;
+    public boolean echoSymbols;
 
     public KeyStroke editKey;
     public boolean showEditKey;
@@ -263,7 +264,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
 
     public PropertyRendererComponent getRendererComponent() {
         if (renderer == null) {
-            renderer = baseType.getRendererComponent(getFormat(), caption, design);
+            renderer = baseType.getRendererComponent(caption, this);
         }
         return renderer;
     }
@@ -329,6 +330,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         pool.writeString(outStream, caption);
         pool.writeString(outStream,regexp);
         pool.writeString(outStream,regexpMessage);
+        outStream.writeBoolean(echoSymbols);
         outStream.writeInt(minimumCharWidth);
         outStream.writeInt(maximumCharWidth);
         outStream.writeInt(preferredCharWidth);
@@ -364,6 +366,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         caption = pool.readString(inStream);
         regexp = pool.readString(inStream);
         regexpMessage = pool.readString(inStream);
+        echoSymbols = inStream.readBoolean();
         minimumCharWidth = inStream.readInt();
         maximumCharWidth = inStream.readInt();
         preferredCharWidth = inStream.readInt();

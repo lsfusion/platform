@@ -66,8 +66,8 @@ public class ClientObjectType implements ClientType, ClientTypeClass {
         return NumberFormat.getInstance();
     }
 
-    public PropertyRendererComponent getRendererComponent(Format format, String caption, ComponentDesign design) {
-        return new IntegerPropertyRenderer(format, design);
+    public PropertyRendererComponent getRendererComponent(String caption, ClientPropertyDraw property) {
+        return new IntegerPropertyRenderer(property);
     }
 
     public CellView getPanelComponent(ClientPropertyDraw key, ClientGroupObjectValue columnKey, ClientFormController form) {

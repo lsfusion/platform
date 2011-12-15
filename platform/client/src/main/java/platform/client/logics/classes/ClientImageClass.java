@@ -26,8 +26,8 @@ public class ClientImageClass extends ClientFileClass {
         return Data.IMAGE;
     }
 
-    public PropertyRendererComponent getRendererComponent(Format format, String caption, ComponentDesign design) {
-        return new ImagePropertyRenderer(format, design);
+    public PropertyRendererComponent getRendererComponent(String caption, ClientPropertyDraw property) {
+        return new ImagePropertyRenderer(property);
     }
 
     @Override

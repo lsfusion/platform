@@ -1,6 +1,7 @@
 package platform.client.form.renderer;
 
 import platform.client.form.PropertyRendererComponent;
+import platform.client.logics.ClientPropertyDraw;
 import platform.interop.ComponentDesign;
 
 import javax.swing.*;
@@ -12,17 +13,17 @@ public class TextPropertyRenderer extends JTextArea implements PropertyRendererC
 
     Format format;
 
-    public TextPropertyRenderer(Format iformat, ComponentDesign design) {
+    public TextPropertyRenderer(ClientPropertyDraw property) {
         super();
 
-        format = iformat;
+        format = property.getFormat();
         setOpaque(true);
         setLineWrap(true);
         setWrapStyleWord(true);
         setFont(new Font("Tahoma", Font.PLAIN, 10));
 
-        if (design != null)
-            design.designCell(this);
+        if (property.design != null)
+            property.design.designCell(this);
         setEditable(false);
     }
 

@@ -1,5 +1,6 @@
 package platform.client.form.renderer;
 
+import platform.client.logics.ClientPropertyDraw;
 import platform.interop.ComponentDesign;
 
 import javax.swing.*;
@@ -8,8 +9,8 @@ import java.text.Format;
 
 public class FilePropertyRenderer extends LabelPropertyRenderer {
 
-    public FilePropertyRenderer(Format format, ComponentDesign design) {
-        super(format, design);
+    public FilePropertyRenderer(ClientPropertyDraw property) {
+        super(property);
 
         setHorizontalAlignment(JLabel.CENTER);
         setVerticalAlignment(JLabel.CENTER);

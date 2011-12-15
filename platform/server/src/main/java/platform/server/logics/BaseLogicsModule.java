@@ -609,7 +609,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         userLogin = addDProp(baseGroup, "userLogin", getString("logics.user.login"), StringClass.get(30), customUser);
         loginToUser = addAGProp("loginToUser", getString("logics.user"), userLogin);
         userPassword = addDProp(baseGroup, "userPassword", getString("logics.user.password"), StringClass.get(30), customUser);
-
+        userPassword.setEchoSymbols(true);
         userFirstName = addDProp(baseGroup, "userFirstName", getString("logics.user.firstname"), StringClass.get(30), customUser);
         userFirstName.setMinimumCharWidth(10);
 

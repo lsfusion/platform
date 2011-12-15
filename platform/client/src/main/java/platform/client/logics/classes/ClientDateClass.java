@@ -43,8 +43,8 @@ public class ClientDateClass extends ClientDataClass implements ClientTypeClass 
         return getSimpleDateFormat();
     }
 
-    public PropertyRendererComponent getRendererComponent(Format format, String caption, ComponentDesign design) {
-        return new DatePropertyRenderer(format, design);
+    public PropertyRendererComponent getRendererComponent(String caption, ClientPropertyDraw property) {
+        return new DatePropertyRenderer(property);
     }
 
     public PropertyEditorComponent getComponent(Object value, ClientPropertyDraw property) {

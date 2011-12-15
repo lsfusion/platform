@@ -29,7 +29,7 @@ public interface ClientType {
 
     Format getDefaultFormat();
 
-    PropertyRendererComponent getRendererComponent(Format format, String caption, ComponentDesign design);
+    PropertyRendererComponent getRendererComponent(String caption, ClientPropertyDraw property);
 
     CellView getPanelComponent(ClientPropertyDraw key, ClientGroupObjectValue columnKey, ClientFormController form);
 

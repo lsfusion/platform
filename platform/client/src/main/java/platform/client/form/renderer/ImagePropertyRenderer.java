@@ -1,6 +1,7 @@
 package platform.client.form.renderer;
 
 import platform.client.form.PropertyRendererComponent;
+import platform.client.logics.ClientPropertyDraw;
 import platform.interop.ComponentDesign;
 
 import javax.swing.*;
@@ -9,8 +10,8 @@ import java.text.Format;
 public class ImagePropertyRenderer extends FilePropertyRenderer
         implements PropertyRendererComponent {
 
-    public ImagePropertyRenderer(Format format, ComponentDesign design) {
-        super(format, design);
+    public ImagePropertyRenderer(ClientPropertyDraw property) {
+        super(property);
     }
 
     public void setValue(Object value, boolean isSelected, boolean hasFocus) {

@@ -50,8 +50,8 @@ abstract public class ClientIntegralClass extends ClientDataClass {
 
     protected abstract Class getJavaClass();
 
-    public PropertyRendererComponent getRendererComponent(Format format, String caption, ComponentDesign design) {
-        return new IntegerPropertyRenderer(format, design);
+    public PropertyRendererComponent getRendererComponent(String caption, ClientPropertyDraw property) {
+        return new IntegerPropertyRenderer(property);
     }
 
     @Override

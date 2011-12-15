@@ -59,8 +59,8 @@ public class ClientTextClass extends ClientDataClass implements ClientTypeClass 
         return fontMetrics.charWidth('0') * 25;//stringWidth(getPreferredMask()) + 8;
     }
 
-    public PropertyRendererComponent getRendererComponent(Format format, String caption, ComponentDesign design) {
-        return new TextPropertyRenderer(format, design);
+    public PropertyRendererComponent getRendererComponent(String caption, ClientPropertyDraw property) {
+        return new TextPropertyRenderer(property);
     }
 
 

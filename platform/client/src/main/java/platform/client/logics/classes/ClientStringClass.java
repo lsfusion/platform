@@ -90,7 +90,7 @@ public class ClientStringClass extends ClientDataClass {
         return null;
     }
 
-    public PropertyRendererComponent getRendererComponent(Format format, String caption, ComponentDesign design) { return new StringPropertyRenderer(format, design); }
+    public PropertyRendererComponent getRendererComponent(String caption, ClientPropertyDraw property) { return new StringPropertyRenderer(property); }
     public PropertyEditorComponent getComponent(Object value, ClientPropertyDraw property) { return new StringPropertyEditor(length, value, property); }
 
     public Object parseString(String s) throws ParseException {

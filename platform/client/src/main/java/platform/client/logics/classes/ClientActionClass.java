@@ -51,9 +51,9 @@ public class ClientActionClass extends ClientDataClass implements ClientTypeClas
         return null;
     }
 
-    public PropertyRendererComponent getRendererComponent(Format format, String caption, ComponentDesign design) {
+    public PropertyRendererComponent getRendererComponent(String caption, ClientPropertyDraw property) {
         ActionPropertyRenderer renderer = new ActionPropertyRenderer();
-        design.designComponent(renderer);
+        property.design.designComponent(renderer);
         return renderer;
     }
 

@@ -24,8 +24,8 @@ public class ClientCustomFileClass extends ClientFileClass {
         return sID;
     }
 
-    public PropertyRendererComponent getRendererComponent(Format format, String caption, ComponentDesign design) {
-        return new CustomFileRenderer(format, design);
+    public PropertyRendererComponent getRendererComponent(String caption, ClientPropertyDraw property) {
+        return new CustomFileRenderer(property);
     }
 
     @Override

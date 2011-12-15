@@ -14,7 +14,7 @@ import java.util.ArrayList;
 public class ClientAbstractCellRenderer extends JComponent
                                  implements TableCellRenderer {
 
-    private static final StringPropertyRenderer nullPropertyRenderer = new StringPropertyRenderer(null, new ComponentDesign());
+    private static final StringPropertyRenderer nullPropertyRenderer = new StringPropertyRenderer(null);
 
     public Component getTableCellRendererComponent(JTable table,
                                                    Object value,
