@@ -82,9 +82,9 @@ script
 
 importDirective
 @after {
-        if (parseState == ScriptingLogicsModule.State.GROUP) {
-        	self.addImportedModule($moduleName.text);
-        }
+	if (parseState == ScriptingLogicsModule.State.GROUP) {
+		self.addImportedModule($moduleName.text);
+	}
 }
 	:	'IMPORT' moduleName=ID ';'
 	;
@@ -128,12 +128,9 @@ classStatement
 	;	  
 
 
-
-
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////// GROUP STATEMENT /////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
-
 groupStatement
 @init {
 	String parent = null;
@@ -165,12 +162,12 @@ formStatement
 }
 	:	declaration=formDeclaration { form = $declaration.form; }
 		(	'OBJECTS' list=formGroupObjectsList[form] 
-		|	'PROPERTIES' list=formPropertiesList[form] 
 		|	'FILTERS' list=formFiltersList[form]
+		| 	propertiesListDeclaration[form]
 		)*
 	;
 
-	
+
 formDeclaration returns [ScriptingFormEntity form]
 @init {
 	String name = null;
@@ -210,7 +207,7 @@ formGroupObjectDeclaration returns [List<String> objectNames, List<String> class
 	$objectNames = new ArrayList<String>();
 	$classIds = new ArrayList<String>();
 }
-	:	(decl=formSingleGroupObjectDeclaration { $objectNames.add($decl.name); $classIds.add($decl.className); } 
+	:	(decl=formSingleGroupObjectDeclaration { $objectNames.add($decl.name); $classIds.add($decl.className); }
 	|	('(' 
 		objDecl=formObjectDeclaration { $objectNames.add($objDecl.name); $classIds.add($objDecl.className); }	
 		(',' objDecl=formObjectDeclaration { $objectNames.add($objDecl.name); $classIds.add($objDecl.className); })+	
@@ -236,7 +233,7 @@ formObjectDeclaration returns [String name, String className]
 	; 
 	
 	
-formPropertiesList[ScriptingFormEntity form] 
+propertiesListDeclaration[ScriptingFormEntity form]
 @init {
 	List<String> properties = new ArrayList<String>();
 	List<List<String>> mapping = new ArrayList<List<String>>();
@@ -246,22 +243,50 @@ formPropertiesList[ScriptingFormEntity form]
 		$form.addScriptedPropertyDraws(properties, mapping);
 	}
 }
-	:	decl=formPropertyDeclaration { properties.add($decl.name); mapping.add($decl.mapping); }
-		(',' decl=formPropertyDeclaration { properties.add($decl.name); mapping.add($decl.mapping); })*
+	: 'PROPERTIES' '((' objects=idList ')' list=formPropertiesList
+		{
+			properties = $list.properties;
+			mapping = Collections.nCopies(properties.size(), $objects.ids);
+		}
+	| 'PROPERTIES' mappedList=formMappedPropertiesList
+		{
+			properties = $mappedList.properties;
+			mapping = $mappedList.mapping;
+		}
+	;	
+
+
+formMappedPropertiesList returns [List<String> properties, List<List<String>> mapping]
+@init {
+	$properties = new ArrayList<String>();
+	$mapping = new ArrayList<List<String>>();
+}
+	:	mappedProp=formMappedProperty { $properties.add($mappedProp.name); $mapping.add($mappedProp.mapping); }
+		(',' mappedProp=formMappedProperty { $properties.add($mappedProp.name); $mapping.add($mappedProp.mapping); })*
 	;
 
 
-formPropertyDeclaration returns [String name, List<String> mapping]
-	:	(  id=compoundID { $name = $id.text; }
-		|  spid=formSpecialPropertyName { $name = $spid.text; }	 
-		)
-		'(' 
-		objects=idList { $mapping = $objects.ids; } 
-		')'
+formMappedProperty returns [String name, List<String> mapping]
+	: pname=formPropertyName { $name = $pname.text; }
+	'('
+		objects=idList { $mapping = $objects.ids; }
+	')'
 	;
 
-formSpecialPropertyName 
-	:	('OBJVALUE') | ('SELECTION') | ('ADDOBJ')
+
+formPropertiesList returns [List<String> properties]
+@init {
+	$properties = new ArrayList<String>();
+}
+	:	pname=formPropertyName { properties.add($pname.text); }
+		(
+			',' pname=formPropertyName { properties.add($pname.text); }
+		)*
+	;
+
+
+formPropertyName 
+	: compoundID | ('OBJVALUE') | ('SELECTION') | ('ADDOBJ')
 	;
 
 
@@ -281,7 +306,7 @@ formFiltersList[ScriptingFormEntity form]
 
 	
 formFilterDeclaration returns [String name, List<String> mapping] 
-	: 'NOT' 'NULL' propDecl=formPropertyDeclaration { $name = $propDecl.name; $mapping = $propDecl.mapping; }
+	: 'NOT' 'NULL' propDecl=formMappedProperty { $name = $propDecl.name; $mapping = $propDecl.mapping; }
 	;	
 
 ////////////////////////////////////////////////////////////////////////////////

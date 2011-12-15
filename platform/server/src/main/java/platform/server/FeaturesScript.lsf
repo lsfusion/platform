@@ -164,8 +164,8 @@ FILTERS NOT NULL name(article);
 FORM storeArticle 'По складам'
 OBJECTS s=store, a=article
 PROPERTIES SELECTION(s), name(s), OBJVALUE(a), name(a)
-PROPERTIES incomeQuantity(s, a), incomeQuantity2(s, a), outcomeQuantity(s, a), outcomeQuantity2(s, a), storeSizeName(s),
-           storeIsHuge(s), storeIsHuge2(s),
-           foo(s, a), foo2(s, a), bar(s, a), foobar(s, a), bar2(s, a), baz(s, a), baz2(s, a),
-           balanceQuantity(s, a), testUnion(s, a), testPartition(s, a), testFormula(s, a);
+PROPERTIES(s, a) incomeQuantity, incomeQuantity2, outcomeQuantity, outcomeQuantity2
+PROPERTIES(s) storeSizeName, storeIsHuge, storeIsHuge2
+PROPERTIES(s, a) foo, foo2, bar, foobar, bar2, baz, baz2, balanceQuantity, testUnion, testPartition, testFormula;
+
 
