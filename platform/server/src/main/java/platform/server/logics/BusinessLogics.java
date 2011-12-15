@@ -1746,6 +1746,14 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             }
     }
 
+    public void recalculateAggregationTableColumn(SQLSession session, String propertySID) throws SQLException {
+        for (Property property : getPropertyList())
+            if (property.isStored() && property instanceof AggregateProperty && property.getSID().equals(propertySID)) {
+                AggregateProperty aggregateProperty = (AggregateProperty) property;
+                aggregateProperty.recalculateAggregation(session);
+            }
+    }
+
     void packTables(SQLSession session, Collection<ImplementTable> tables) throws SQLException {
         for (Table table : tables) {
             logger.debug(getString("logics.info.packing.table")+" (" + table + ")... ");

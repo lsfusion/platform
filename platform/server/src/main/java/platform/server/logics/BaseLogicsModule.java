@@ -38,6 +38,7 @@ import javax.swing.*;
 import java.awt.event.KeyEvent;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.logging.LogManager;
 
 import static platform.server.logics.PropertyUtils.getUParams;
 import static platform.server.logics.PropertyUtils.mapImplement;
@@ -292,6 +293,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public LP rowsTable;
     public LP quantityTableKey;
     public LP quantityTableColumn;
+    public LP recalculateAggregationTableColumn;
 
     public LP customID;
     public LP stringID;
@@ -763,6 +765,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         rowsTable = addDProp(baseGroup, "rowsTable", getString("logics.tables.rows"), IntegerClass.instance, table);
         quantityTableKey = addDProp(baseGroup, "quantityTableKey", getString("logics.tables.key.distinct.quantity"), IntegerClass.instance, tableKey);
         quantityTableColumn = addDProp(baseGroup, "quantityTableColumn", getString("logics.tables.column.values.quantity"), IntegerClass.instance, tableColumn);
+        recalculateAggregationTableColumn = addAProp(actionGroup, new RecalculateTableColumnActionProperty("Пересчитать аггрегации", tableColumn));
 
         // заполним сессии
         LP sessionUser = addDProp("sessionUser", getString("logics.session.user"), user, session);
@@ -1329,6 +1332,31 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         }
     }
 
+    private class RecalculateTableColumnActionProperty extends ActionProperty {
+
+        private final ClassPropertyInterface tableColumnInterface;
+
+        private RecalculateTableColumnActionProperty(String caption, ValueClass tableColumn) {
+            super(genSID(), caption, new ValueClass[]{tableColumn});
+            Iterator<ClassPropertyInterface> i = interfaces.iterator();
+            tableColumnInterface = i.next();
+        }
+
+        @Override
+        public void execute(ExecutionContext context) throws SQLException {
+            SQLSession sqlSession = context.getSession().sql;
+
+            DataObject tableColumnObject = context.getKeyValue(tableColumnInterface);
+            String propertySID = (String) sidTableColumn.read(context, tableColumnObject);
+
+            sqlSession.startTransaction();
+            BL.recalculateAggregationTableColumn(sqlSession, propertySID.trim());
+            sqlSession.commitTransaction();
+
+            context.addAction(new MessageClientAction(getString("logics.recalculation.was.completed"), getString("logics.recalculation.aggregations")));
+        }
+    }
+
     private class PackActionProperty extends ActionProperty {
         private PackActionProperty(String sID, String caption) {
             super(sID, caption, new ValueClass[]{});
@@ -1581,6 +1609,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
             ObjectEntity objColumn = addSingleGroupObject(tableColumn, getString("logics.tables.columns"), baseGroup);
 
             addPropertyDraw(addAProp(new RecalculateStatsActionProperty("recalculateStats", getString("logics.tables.recalculate.stats"))));
+            addPropertyDraw(recalculateAggregationTableColumn, objColumn);
 
             setReadOnly(propertyNameTableColumn, true);
 
