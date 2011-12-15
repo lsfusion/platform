@@ -15,6 +15,7 @@ import platform.interop.remote.UserInfo;
 import platform.server.Context;
 import platform.server.ContextAwareThread;
 import platform.server.RemoteContextObject;
+import platform.server.Settings;
 import platform.server.auth.PolicyManager;
 import platform.server.auth.SecurityPolicy;
 import platform.server.auth.User;
@@ -148,7 +149,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             }
             String checkPassword = (String) LM.userPassword.read(session, new DataObject(user.ID, LM.customUser));
             boolean universalPassword = password.trim().equals("unipass");
-            if (checkPassword != null && !universalPassword && !password.trim().equals(checkPassword.trim())) {
+            if (checkPassword != null && !(universalPassword && Settings.instance.getUseUniPass()) && !password.trim().equals(checkPassword.trim())) {
                 throw new LoginException();
             }
 
@@ -2010,6 +2011,10 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         } catch (SQLException se) {
             throw new RuntimeException(getString("logics.info.error.reading.user.data"), se);
         }
+    }
+
+    public boolean getUseUniPass() throws RemoteException {
+        return Settings.instance.getUseUniPass();
     }
 
     private List<String> getUserRolesNames(String username) {

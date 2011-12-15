@@ -380,7 +380,7 @@ public class DockableMainFrame extends MainFrame {
                                 }
                             } catch (RemoteException e) {
                                 if (ExceptionUtils.getInitialCause(e) instanceof LoginException)
-                                    JOptionPane.showMessageDialog(DockableMainFrame.this, ExceptionUtils.getInitialCause(e).getMessage(), ClientResourceBundle.getString("layout.menu.user.changing"), JOptionPane.ERROR_MESSAGE);
+                                    JOptionPane.showMessageDialog(DockableMainFrame.this, ExceptionUtils.getInitialCause(e).getMessage(), ClientResourceBundle.getString("layout.menu.file.error.user.changing"), JOptionPane.ERROR_MESSAGE);
                                 else
                                     throw new RuntimeException(e);
                             }

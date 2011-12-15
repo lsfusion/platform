@@ -83,6 +83,11 @@ public class RemoteBusinessLogicProxy<T extends RemoteLogicsInterface>
         return target.checkUser(login, password);
     }
 
+    @Override
+    public boolean getUseUniPass() throws RemoteException {
+        return false;
+    }
+
     public TimeZone getTimeZone() throws RemoteException {
         return target.getTimeZone();
     }

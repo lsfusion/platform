@@ -74,6 +74,11 @@ public class MockPaasLogic implements PaasRemoteInterface {
     }
 
     @Override
+    public boolean getUseUniPass() throws RemoteException {
+        return false;
+    }
+
+    @Override
     public void ping() throws RemoteException {
     }
 

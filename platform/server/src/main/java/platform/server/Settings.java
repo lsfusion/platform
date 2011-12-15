@@ -286,4 +286,14 @@ public class Settings {
     public void setKillThread(boolean killThread) {
         this.killThread = killThread;
     }
+
+    private boolean useUniPass;
+
+    public void setUseUniPass(boolean useUniPass) {
+        this.useUniPass = useUniPass;
+    }
+
+    public boolean getUseUniPass() {
+        return useUniPass;
+    }
 }

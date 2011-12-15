@@ -34,6 +34,8 @@ public interface RemoteLogicsInterface extends PendingRemote, PingRemote, Remote
     void endSession(String clientInfo) throws RemoteException;
 
     boolean checkUser(String login, String password) throws RemoteException;
+
+    boolean getUseUniPass() throws  RemoteException;
     
     void ping() throws RemoteException;
 
