@@ -1796,6 +1796,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         nameNativeAblateManagerProject = addDProp(projectOptionsGroup, "nameNativeAblateManagerProject", "ФИО руководителя проекта (Кем)", InsensitiveStringClass.get(2000), project);
         nameNativeAblateManagerProject.setMinimumWidth(10);
         nameNativeAblateManagerProject.setPreferredWidth(50);
+        //makeLoggable(nameNativeAblateManagerProject);
 
         nameAblateManagerProject = addSUProp("nameAblateManagerProject", "Заявитель (Кем)", Union.OVERRIDE, nameNativeUnionManagerProject, nameNativeAblateManagerProject);
         nameAblateManagerProject.setMinimumWidth(10);

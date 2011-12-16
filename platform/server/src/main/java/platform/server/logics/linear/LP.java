@@ -279,6 +279,16 @@ public class LP<T extends PropertyInterface> {
         property.setLogFormProperty(logFormPropertyProp);
     }
 
+     public void makeUserLoggable(BaseLogicsModule LM) {
+        if (property.getLogProperty() == null) {
+            property.setLogProperty(LM.addLProp(this));
+        }
+        if (property.getLogFormProperty() == null) {
+            LogFormEntity logFormEntity = new LogFormEntity("log" + BaseUtils.capitalize(property.getSID()) + "Form", ServerResourceBundle.getString("logics.property.log.form"), LM.getLP(property.getSID()), property.getLogProperty(), LM);
+            property.setLogFormProperty(LM.addMFAProp(ServerResourceBundle.getString("logics.property.log.action"), logFormEntity, logFormEntity.params));
+        }
+    }
+
     public void makeLoggable(BaseLogicsModule LM) {
         property.loggable = true;
         if (property.getLogProperty() == null) {

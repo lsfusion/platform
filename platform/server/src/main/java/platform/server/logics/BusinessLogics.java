@@ -705,6 +705,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
             synchronizeDB();
 
+            //setUserLoggableProperties();
+
             initExternalScreens();
 
             logger.debug("Initializing navigators...");
@@ -926,23 +928,27 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     private void synchronizeProperties() {
         ImportField sidPropertyField = new ImportField(LM.propertySIDValueClass);
         ImportField captionPropertyField = new ImportField(LM.propertyCaptionValueClass);
+        ImportField loggablePropertyField = new ImportField(LM.propertyLoggableValueClass);
+        ImportField storedPropertyField = new ImportField(LM.propertyStoredValueClass);
 
         ImportKey<?> key = new ImportKey(LM.property, LM.SIDToProperty.getMapping(sidPropertyField));
 
         List<List<Object>> data = new ArrayList<List<Object>>();
-        for(Property property : getProperties()) {
+        for (Property property : getProperties()) {
             if (!LM.idSet.contains(property.getSID()))
-                data.add(Arrays.asList((Object) property.getSID(), property.caption));
+                data.add(Arrays.asList((Object) property.getSID(), property.caption, property.loggable ? true : null, property.isStored() ? true : null));
         }
 
         List<ImportProperty<?>> properties = new ArrayList<ImportProperty<?>>();
         properties.add(new ImportProperty(sidPropertyField, LM.SIDProperty.getMapping(key)));
         properties.add(new ImportProperty(captionPropertyField, LM.captionProperty.getMapping(key)));
+        properties.add(new ImportProperty(loggablePropertyField, LM.loggableProperty.getMapping(key)));
+        properties.add(new ImportProperty(storedPropertyField, LM.storedProperty.getMapping(key)));
 
         List<ImportDelete> deletes = new ArrayList<ImportDelete>();
         deletes.add(new ImportDelete(key, LM.is(LM.property).getMapping(key), false));
 
-        ImportTable table = new ImportTable(Arrays.asList(sidPropertyField, captionPropertyField), data);
+        ImportTable table = new ImportTable(Arrays.asList(sidPropertyField, captionPropertyField, loggablePropertyField, storedPropertyField), data);
 
         try {
             DataSession session = createSession();
@@ -1889,6 +1895,28 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
     public int generateNewID() throws RemoteException {
         return generateStaticNewID();
+    }
+
+    public void setUserLoggableProperties() throws SQLException {
+
+        DataSession session = createSession();
+
+        LP isProperty = LM.is(LM.property);
+        Map<Object, KeyExpr> keys = isProperty.getMapKeys();
+        KeyExpr key = BaseUtils.singleValue(keys);
+        Query<Object, Object> query = new Query<Object, Object>(keys);
+        query.properties.put("SIDProperty", LM.SIDProperty.getExpr(session.modifier, key));
+        query.properties.put("userLoggableProperty", LM.userLoggableProperty.getExpr(session.modifier, key));
+        query.and(isProperty.getExpr(key).getWhere());
+        OrderedMap<Map<Object, Object>, Map<Object, Object>> result = query.execute(session.sql);
+
+        for (Map<Object, Object> values : result.values()) {
+            Object userLoggable = values.get("userLoggableProperty");
+            if (userLoggable != null) {
+                LM.makeUserLoggable(getLP(values.get("SIDProperty").toString().trim()));
+            }
+        }
+
     }
 
     public byte[] getBaseClassByteArray() throws RemoteException {

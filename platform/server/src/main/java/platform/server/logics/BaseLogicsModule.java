@@ -38,7 +38,6 @@ import javax.swing.*;
 import java.awt.event.KeyEvent;
 import java.sql.SQLException;
 import java.util.*;
-import java.util.logging.LogManager;
 
 import static platform.server.logics.PropertyUtils.getUParams;
 import static platform.server.logics.PropertyUtils.mapImplement;
@@ -252,6 +251,9 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public LP navigatorElementCaption;
 
     public LP SIDProperty;
+    public LP loggableProperty;
+    public LP userLoggableProperty;
+    public LP storedProperty;
     public LP captionProperty;
     public LP SIDToProperty;
     public LP permitViewUserRoleProperty;
@@ -362,6 +364,8 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
     public final StringClass propertySIDValueClass = StringClass.get(100);
     public final StringClass propertyCaptionValueClass = StringClass.get(250);
+    public final LogicalClass propertyLoggableValueClass = LogicalClass.instance;
+    public final LogicalClass propertyStoredValueClass = LogicalClass.instance;
 
     public List<LP> lproperties = new ArrayList<LP>();
 
@@ -706,6 +710,9 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         parentNavigatorElement = addDProp("parentNavigatorElement", getString("logics.forms.parent.form"), navigatorElement, navigatorElement);
 
         SIDProperty = addDProp(baseGroup, "SIDProperty", getString("logics.property.sid"), propertySIDValueClass, property);
+        loggableProperty = addDProp(baseGroup, "loggableProperty", getString("logics.property.loggable"), LogicalClass.instance, property);
+        userLoggableProperty = addDProp(baseGroup, "userLoggableProperty", getString("logics.property.user.loggable"), LogicalClass.instance, property);
+        storedProperty = addDProp(baseGroup, "storedProperty", getString("logics.property.stored"), LogicalClass.instance, property);
         captionProperty = addDProp(baseGroup, "captionProperty", getString("logics.property.caption"), propertyCaptionValueClass, property);
         SIDToProperty = addAGProp("SIDToProperty", getString("logics.property"), SIDProperty);
         permitViewUserRoleProperty = addDProp(baseGroup, "permitViewUserRoleProperty", getString("logics.policy.permit.property.view"), LogicalClass.instance, userRole, property);
@@ -765,7 +772,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         rowsTable = addDProp(baseGroup, "rowsTable", getString("logics.tables.rows"), IntegerClass.instance, table);
         quantityTableKey = addDProp(baseGroup, "quantityTableKey", getString("logics.tables.key.distinct.quantity"), IntegerClass.instance, tableKey);
         quantityTableColumn = addDProp(baseGroup, "quantityTableColumn", getString("logics.tables.column.values.quantity"), IntegerClass.instance, tableColumn);
-        recalculateAggregationTableColumn = addAProp(actionGroup, new RecalculateTableColumnActionProperty("Пересчитать аггрегации", tableColumn));
+        recalculateAggregationTableColumn = addAProp(actionGroup, new RecalculateTableColumnActionProperty(getString("logics.recalculate.aggregations"), tableColumn));
 
         // заполним сессии
         LP sessionUser = addDProp("sessionUser", getString("logics.session.user"), user, session);
@@ -1096,6 +1103,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         addFormEntity(new SecurityPolicyFormEntity(adminElement, "securityPolicyForm"));
         addFormEntity(new ConnectionsFormEntity(adminElement, "connectionsForm"));
         addFormEntity(new PhysicalModelFormEntity(adminElement, "physicalModelForm"));
+        addFormEntity(new PropertiesFormEntity(adminElement, "propertiesForm"));
         addFormEntity(new AdminFormEntity(adminElement, "adminForm"));
         addFormEntity(new DaysOffFormEntity(adminElement, "daysOffForm"));
 
@@ -1615,6 +1623,16 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
             addFixedFilter(new CompareFilterEntity(addPropertyObject(tableTableKey, objKey), Compare.EQUALS, objTable));
             addFixedFilter(new CompareFilterEntity(addPropertyObject(tableTableColumn, objColumn), Compare.EQUALS, objTable));
+        }
+    }
+
+    class PropertiesFormEntity extends FormEntity {
+        protected PropertiesFormEntity(NavigatorElement parent, String sID) {
+            super(parent, sID, getString("logics.tables.properties"));
+            ObjectEntity objProperties = addSingleGroupObject(property, getString("logics.tables.properties"), captionProperty, SIDProperty, userLoggableProperty, loggableProperty, storedProperty);
+            setReadOnly(true);
+            setReadOnly(userLoggableProperty, false);
+            setReadOnly(storedProperty, false);
         }
     }
 

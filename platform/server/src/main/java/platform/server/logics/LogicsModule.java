@@ -1898,6 +1898,24 @@ public abstract class LogicsModule {
                         resolve));
     }
 
+    protected void makeUserLoggable(LP... lps) {
+        for (LP lp : lps)
+            lp.makeUserLoggable(baseLM);
+    }
+
+    protected void makeUserLoggable(AbstractGroup group) {
+        makeUserLoggable(group, false);
+    }
+
+    protected void makeUserLoggable(AbstractGroup group, boolean dataPropertiesOnly) {
+        for (Property property : group.getProperties()) {
+            if (!dataPropertiesOnly || property instanceof DataProperty) {
+                baseLM.getLP(property.getSID()).makeUserLoggable(baseLM);
+            }
+        }
+    }
+
+
     protected void makeLoggable(LP... lps) {
         for (LP lp : lps)
             lp.makeLoggable(baseLM);
