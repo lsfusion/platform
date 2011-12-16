@@ -3922,8 +3922,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
         inApplicationForesight = addJProp("inApplicationForesight", "Вкл.", inProjectForesight, projectApplication, 1, 2);
         isR2Application = addJProp("isR2Application", "Заявка R2", isR2Project, projectApplication, 1);
         isR1Application = addJProp("isR1Application", "Заявка R2", isR1Project, projectApplication, 1);
-        openApplicationProjectActionApplication = addJProp("openApplicationProjectActionApplication", "Открыть", openApplicationProjectAction, projectApplication, 1);
-        exportProjectDocumentsActionApplication = addJProp("exportProjectDocumentsActionApplication", "Экспортировать", exportProjectDocumentsAction, projectApplication, 1);
+        openApplicationProjectActionApplication = addJProp("openApplicationProjectActionApplication", "Открыть анкету", openApplicationProjectAction, projectApplication, 1);
+        exportProjectDocumentsActionApplication = addJProp("exportProjectDocumentsActionApplication", "Экспортировать документы", exportProjectDocumentsAction, projectApplication, 1);
 
         needLegalCheckStatusProject = addJProp("needLegalCheckStatusProject", and(true, true), addCProp(LogicalClass.instance, true, project), 1, positiveLegalResultProject, 1, overdueLegalCheckProject, 1);
 
@@ -5198,8 +5198,10 @@ public class SkolkovoLogicsModule extends LogicsModule {
 //            hideTranslateToEnglishProject = addHideCaptionProp(privateGroup, "Перевести", translateToEnglishProject, needsToBeTranslatedToEnglishProject);
 //            getPropertyDraw(translateToEnglishProject).propertyCaption = addPropertyObject(hideTranslateToEnglishProject, objProject);
 
-            hideLoadFileResolutionIPProject = addHideCaptionProp(privateGroup, "Загрузить", loadFileResolutionIPProject, addJProp(baseLM.andNot1, addCProp(LogicalClass.instance, true, project), 1, openFileResolutionIPProject, 1));
-            getPropertyDraw(loadFileResolutionIPProject).propertyCaption = addPropertyObject(hideLoadFileResolutionIPProject, objProject);
+//            hideLoadFileResolutionIPProject = addHideCaptionProp(privateGroup, "Загрузить", loadFileResolutionIPProject, addJProp(baseLM.andNot1, addCProp(LogicalClass.instance, true, project), 1, openFileResolutionIPProject, 1));
+//            getPropertyDraw(loadFileResolutionIPProject).propertyCaption = addPropertyObject(hideLoadFileResolutionIPProject, objProject);
+
+            showIf(this, loadFileResolutionIPProject, addJProp(baseLM.andNot1, isR1Project, 1, openFileResolutionIPProject, 1), objProject);
 
             addObjectActions(this, objProject, false, false);
 
@@ -5302,9 +5304,9 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
             //hideIncludeDocumentsProject = addHideCaptionProp(privateGroup, "Подключить", includeDocumentsProject, addJProp(baseLM.andNot1, openFileResolutionIPProject, 1, needTranslationProject, 1));
             //getPropertyDraw(includeDocumentsProject).propertyCaption = addPropertyObject(hideIncludeDocumentsProject, objProject);
-            hideIncludeDocumentsProject = addHideCaptionProp(privateGroup, "Подключить", includeDocumentsProject, openFileResolutionIPProject);
-            getPropertyDraw(includeDocumentsProject).propertyCaption = addPropertyObject(hideIncludeDocumentsProject, objProject);
-
+//            hideIncludeDocumentsProject = addHideCaptionProp(privateGroup, "Подключить", includeDocumentsProject, openFileResolutionIPProject);
+//            getPropertyDraw(includeDocumentsProject).propertyCaption = addPropertyObject(hideIncludeDocumentsProject, objProject);
+            showIf(this,includeDocumentsProject, addSUProp(Union.OVERRIDE, isR2Project, addJProp(baseLM.and1, isR1Project, 1, openFileResolutionIPProject, 1)), objProject);
 
             objExpert = addSingleGroupObject(expert);
             addPropertyDraw(objExpert, objVote, inExpertVote, oldExpertVote, businessExpertVote, exclExpertVote);
