@@ -325,13 +325,13 @@ public class SkolkovoLogicsModule extends LogicsModule {
                      "registered", "repeated", "withdrawn", "overdueFC", "overdueLC", "positiveFSResult",
                      "issuedVoteDocs", "applyStatus", "sentRejected", "sentPreliminaryAccepted", "sentStatusAccepted", "inProgressRepeat",
                      "haveStatus", "notEnoughOriginalDocs", "overdueOriginalDocs", "appliedOriginalDocs", "sentForSignature", "signed", "sentToFinDep",
-                     "submittedToRegister", "preparedCertificate", "certified"},
+                     "submittedToRegister", "preparedCertificate", "certified", "companyHasLostStatus"},
                 new String[]{"Неизвестный статус", "Направлена на перевод", "Требуется заседание (повторное)", "Идет заседание", "Оценен положительно", "Оценен отрицательно",
                      "Неполный перечень документов (на экспертизу)","Неполный перечень документов (на статус)",  "Отсутствует перечень экспертов", "Не соответствует направлению", "Направлена на юридическую проверку", "Не прошла юридическую проверку (на статус)", "Не прошла юридическую проверку (на предв.экспертизу)", "Прошла юридическую проверку",
                      "Зарегистрирована", "Подана повторно", "Отозвана заявителем", "Не исправлена в срок (ФЭ)", "Не исправлена в срок (ЮП)", "Прошла проверку на соответствие форсайту",
                      "Оформление документов по заседанию", "Подана заявка на статус", "Отправлено отрицательное решение", "Отправлено положительное решение предв.экспертизы", "Отправлено положительное решение экспертизы на статус", "Идет заседание (повторное)",
                      "Оставлена без рассмотрения", "Неполный пакет оригиналов документов", "Пакет оригиналов документов не пополнен в срок", "Предоставлены документы в бумажном виде", "Решение передано на подпись", "Решение подписано", "Документы переданы в Финансовый департамент",
-                     "Внесен в реестр участников", "Подготовлено свидетельство участника", "Выдано свидетельство участника"});
+                     "Внесен в реестр участников", "Подготовлено свидетельство участника", "Выдано свидетельство участника", "Компания утратила статус участника"});
 
         typeProjectStatus = addStaticClass("typeProjectStatus", "Тип статуса проекта",
                 new String[]{"inConsideration", "requestMaterials", "positiveResult", "negativeResult"},
@@ -1245,6 +1245,13 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP statusApplicationProject;
     LP inActTestApplication;
     LP inActTestApplicationDate;
+    LP inApplicationCluster;
+    LP nativeSubstantiationApplicationCluster;
+    LP foreignSubstantiationApplicationCluster;
+    LP inApplicationForesight;
+    LP isR2Application, isR1Application;
+    LP openApplicationProjectActionApplication;
+    LP exportProjectDocumentsActionApplication;
 
     LP inactiveApplication;
 
@@ -3879,6 +3886,15 @@ public class SkolkovoLogicsModule extends LogicsModule {
         inActTestApplicationDate =  addJProp("inActTestApplicationDate", baseLM.and1, inActTestApplication, 1, is(DateClass.instance), 2);
         needFormalCheckStatusProject = addJProp("needFormalCheckStatusProject", and(true, true), addCProp(LogicalClass.instance, true, project), 1, positiveFormalResultProject, 1, overdueFormalControlProject, 1);
 
+        inApplicationCluster = addJProp("inApplicationCluster", "Вкл.", inProjectCluster, projectApplication, 1, 2);
+        nativeSubstantiationApplicationCluster = addJProp("nativeSubstantiationApplicationCluster", "Обоснование выбора кластера", nativeSubstantiationProjectCluster, projectApplication, 1, 2);
+        foreignSubstantiationApplicationCluster = addJProp("foreignSubstantiationApplicationCluster", "Обоснование выбора кластера", foreignSubstantiationProjectCluster, projectApplication, 1, 2);
+        inApplicationForesight = addJProp("inApplicationForesight", "Вкл.", inProjectForesight, projectApplication, 1, 2);
+        isR2Application = addJProp("isR2Application", "Заявка R2", isR2Project, projectApplication, 1);
+        isR1Application = addJProp("isR1Application", "Заявка R2", isR1Project, projectApplication, 1);
+        openApplicationProjectActionApplication = addJProp("openApplicationProjectActionApplication", "Открыть", openApplicationProjectAction, projectApplication, 1);
+        exportProjectDocumentsActionApplication = addJProp("exportProjectDocumentsActionApplication", "Экспортировать", exportProjectDocumentsAction, projectApplication, 1);
+
         needLegalCheckStatusProject = addJProp("needLegalCheckStatusProject", and(true, true), addCProp(LogicalClass.instance, true, project), 1, positiveLegalResultProject, 1, overdueLegalCheckProject, 1);
 
         // статистика заявок
@@ -5517,18 +5533,82 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
     private class ApplicationFormEntity extends FormEntity<SkolkovoBusinessLogics> {
         private ObjectEntity objApplication;
+        private ObjectEntity objCluster;
+        private ObjectEntity objForesight;
+        private ObjectEntity objVote;
 
         private ApplicationFormEntity(NavigatorElement parent, String sID) {
             super(parent, sID, "Реестр заявок");
 
             objApplication = addSingleGroupObject(application, dateApplication, nameNativeClaimerApplication, nameProjectActionApplication, nameNativeProjectApplication,
-                    officialNameStatusApplication, dateInStatusApplication, normalPeriodStatusApplication, quantityDaysToOverdueDateStatusApplication, langApplication, nameNativeShortAggregateClusterApplication, nameNativeShortFinalClusterApplication, emailClaimerApplication, daysClaimerApplication);
+                    officialNameStatusApplication, dateInStatusApplication, normalPeriodStatusApplication, quantityDaysToOverdueDateStatusApplication, langApplication, nameNativeShortAggregateClusterApplication, nameNativeShortFinalClusterApplication, emailClaimerApplication, daysClaimerApplication, openApplicationProjectActionApplication, exportProjectDocumentsActionApplication);
+            objCluster = addSingleGroupObject(2,"cluster", cluster, "Кластер");
+                        addPropertyDraw(inApplicationCluster, objApplication, objCluster);
+                        addPropertyDraw(objCluster, nameNative, nameForeign, nameNativeShort);
+                        addPropertyDraw(nativeSubstantiationApplicationCluster, objApplication, objCluster);
+                        addPropertyDraw(foreignSubstantiationApplicationCluster, objApplication, objCluster);
+                        addPropertyDraw(numberCluster, objCluster);
 
+            objForesight = addSingleGroupObject(3,"foresight", foresight, "Форсайт");
+                        addPropertyDraw(inApplicationForesight, objApplication, objForesight);
+                        addPropertyDraw(objForesight, sidForesight, nameNative, nameForeign, nameNativeShortClusterForesight, quantityInExpertForesight);
+
+            objVote = addSingleGroupObject(4, "vote", vote, "Заседание", dateStartVote, dateEndVote, nameNativeClusterVote, nameProjectActionVote, requiredQuantityVote, percentNeededVote, openedVote, succeededVote, acceptedVote,
+                                quantityDoneVote,
+                                quantityInClusterVote, quantityInnovativeVote, quantityForeignVote,
+                                quantityCompetitiveAdvantagesVote, quantityCommercePotentialVote, quantityCanBeImplementedVote,
+                                quantityHaveExpertiseVote, quantityInternationalExperienceVote, quantityEnoughDocumentsVote,
+                                openFileDecisionVote, decisionNoticedVote, dateDecisionNoticedVote);
+                        objVote.groupTo.banClassView.addAll(BaseUtils.toList(ClassViewType.PANEL, ClassViewType.HIDE));
+
+                        getPropertyDraw(percentNeededVote).forceViewType = ClassViewType.GRID;
+                        showIf(this, percentNeededVote, isR2Application, objApplication);
+
+                        setForceViewType(voteResultGroup, ClassViewType.GRID, objVote.groupTo);
+
+                        showIf(this, new LP[] {quantityInClusterVote, quantityInnovativeVote, quantityForeignVote},
+                                isR1Application, objApplication);
+
+                        showIf(this, new LP[] {quantityCompetitiveAdvantagesVote, quantityCommercePotentialVote, quantityCanBeImplementedVote, quantityHaveExpertiseVote, quantityInternationalExperienceVote, quantityEnoughDocumentsVote},
+                                isR2Application, objApplication);
+
+
+            addFixedFilter(new NotNullFilterEntity(addPropertyObject(inApplicationCluster, objApplication, objCluster)));
+            addFixedFilter(new NotNullFilterEntity(addPropertyObject(inApplicationForesight, objApplication, objForesight)));
             addFixedFilter(new NotFilterEntity(new NotNullFilterEntity(addPropertyObject(inactiveApplication, objApplication))));
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(clusterForesight, objForesight), Compare.EQUALS, objCluster));
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(projectApplication, objApplication), Compare.EQUALS, addPropertyObject(projectVote, objVote)));
 
-            setReadOnly(false);
+            setReadOnly(true);
+            setReadOnly(openApplicationProjectActionApplication, false);
+            setReadOnly(exportProjectDocumentsActionApplication, false);
+            setReadOnly(openFileDecisionVote, false);
 
             addDefaultOrder(dateApplication, true);
+        }
+
+        @Override
+        public FormView createDefaultRichDesign() {
+            DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign();
+
+            ContainerView foresightContainer = design.createContainer("Кластеры и форсайты");
+            foresightContainer.constraints.childConstraints = DoNotIntersectSimplexConstraint.TOTHE_BOTTOM;
+            foresightContainer.add(design.getGroupObjectContainer(objCluster.groupTo));
+            foresightContainer.add(design.getGroupObjectContainer(objForesight.groupTo));
+
+            ContainerView expertizContainer = design.createContainer("Экспертиза по существу");
+            expertizContainer.constraints.childConstraints = DoNotIntersectSimplexConstraint.TOTHE_BOTTOM;
+            expertizContainer.add(design.getGroupObjectContainer(objVote.groupTo));
+
+            ContainerView specContainer = design.createContainer();
+            design.getMainContainer().addAfter(specContainer, design.getGroupObjectContainer(objApplication.groupTo));
+            specContainer.add(foresightContainer);
+            specContainer.add(expertizContainer);
+            specContainer.tabbedPane = true;
+
+            design.get(objApplication.groupTo).grid.getContainer().setFixedSize(new Dimension(-1, 500));
+
+            return design;
         }
     }
 
