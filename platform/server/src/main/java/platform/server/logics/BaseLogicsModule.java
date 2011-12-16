@@ -135,6 +135,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
     public LP vtrue, actionTrue, vzero;
     public LP vnull;
+    public LP charLength;
     public LP positive, negative;
 
     public LP round0;
@@ -553,6 +554,8 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         castText = addSFProp("CAST((prm1) as text)", TextClass.instance, 1);
         addText2 = addSFProp("((prm1)+(prm2))", TextClass.instance, 2);
 
+        charLength = addSFProp("char_length(prm1)", IntegerClass.instance, 1);
+        
         positive = addJProp(greater2, 1, vzero);
         negative = addJProp(less2, 1, vzero);
 
