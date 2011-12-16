@@ -163,7 +163,7 @@ formStatement
 	:	declaration=formDeclaration { form = $declaration.form; }
 		(	'OBJECTS' list=formGroupObjectsList[form] 
 		|	'FILTERS' list=formFiltersList[form]
-		| 	propertiesListDeclaration[form]
+		| 	formPropertiesList[form]
 		)*
 	;
 
@@ -233,7 +233,7 @@ formObjectDeclaration returns [String name, String className]
 	; 
 	
 	
-propertiesListDeclaration[ScriptingFormEntity form]
+formPropertiesList[ScriptingFormEntity form]
 @init {
 	List<String> properties = new ArrayList<String>();
 	List<List<String>> mapping = new ArrayList<List<String>>();
@@ -243,7 +243,7 @@ propertiesListDeclaration[ScriptingFormEntity form]
 		$form.addScriptedPropertyDraws(properties, mapping);
 	}
 }
-	: 'PROPERTIES' '((' objects=idList ')' list=formPropertiesList
+	: 'PROPERTIES' '(' objects=idList ')' list=formPropertiesNamesList
 		{
 			properties = $list.properties;
 			mapping = Collections.nCopies(properties.size(), $objects.ids);
@@ -274,7 +274,7 @@ formMappedProperty returns [String name, List<String> mapping]
 	;
 
 
-formPropertiesList returns [List<String> properties]
+formPropertiesNamesList returns [List<String> properties]
 @init {
 	$properties = new ArrayList<String>();
 }
