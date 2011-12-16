@@ -2031,12 +2031,12 @@ public class RomanLogicsModule extends LogicsModule {
 
         LP supplierSeasonSupplierArticle = addJProp(supplierSeasonSupplier, seasonSupplierArticle, 1);
         addConstraint(addJProp("Поставщик товара должен соответствовать сезону поставщика", baseLM.diff2,
-                supplierArticleSku, 1,
+                supplierArticle, 1,
                 supplierSeasonSupplierArticle, 1), true);
 
         LP supplierThemeArticle = addJProp(supplierThemeSupplier, themeSupplierArticle, 1);
         addConstraint(addJProp("Поставщик товара должен соответствовать теме поставщика", baseLM.diff2,
-                supplierArticleSku, 1,
+                supplierArticle, 1,
                 supplierThemeArticle, 1), true);
 
         equalsSeasonSupplierArticleSupplier = addJProp(baseLM.equals2, supplierSeasonSupplierArticle, 1, 2); // временное решение
