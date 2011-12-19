@@ -534,7 +534,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         subtractDate2 = addSFProp("((prm1)-(prm2))", DateClass.instance, 2);
         percent = addSFProp("((prm1)*(prm2)/100)", DoubleClass.instance, 2);
         percent2 = addSFProp("round(CAST(((prm1)*(prm2)/100) as numeric), 2)", DoubleClass.instance, 2);
-        share2 = addSFProp("round(CAST(((prm1)/(prm2)*100) as numeric), 2)", DoubleClass.instance, 2);
+        share2 = addSFProp("round(CAST(((prm1)*100/(prm2)) as numeric), 2)", DoubleClass.instance, 2);
         jumpWorkdays = addSFProp("jumpWorkdays(prm1, prm2, prm3)", DateClass.instance, 3); //1 - country, 2 - date, 3 - days to jump
         between = addJProp("between", getString("logics.between"), and1, groeq2, 1, 2, groeq2, 3, 1);
         vtrue = addCProp(getString("logics.true"), LogicalClass.instance, true);

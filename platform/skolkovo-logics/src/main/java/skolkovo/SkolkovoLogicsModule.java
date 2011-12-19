@@ -3666,7 +3666,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 //        emailNeedVoteProject = addJProp(baseGroup, true, "emailNeedVoteProject", "Письмо в фонд о необходимости заседания (e-mail)", emailNeedVoteProjectEA, 1, addCProp(StringClass.get(2000), "Созвать заседание!"));
         emailNeedVoteProject = addJProp(actionGroup, true, "emailNeedVoteProject", "Письмо в фонд о необходимости заседания (e-mail)", baseLM.and1,
                         addEPAProp(EPA_DEFAULT,
-                                addJProp(true, emailNeedVoteProjectEA, 1, addJProp(add2Strings, addCProp(StringClass.get(2000), "Запустить заседание по -  "), nameNativeClaimerProject, 1)), // отсылаем письмо
+                                addJProp(true, emailNeedVoteProjectEA, 1, addJProp(add2Strings, addCProp(StringClass.get(2000), "Запустить заседание по -  "), nameNativeClaimerProject, 1), 1), // отсылаем письмо
                                 resultNeedVoteProject, // пишем, что отослано
                                 setCurrentDateResultNeedVoteProject // записываем дату отсылки
                         ), 1,
@@ -4348,6 +4348,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         addFormEntity(new ProjectClusterFormEntity(summaryTables, "projectCluster"));
         baseLM.baseElement.add(summaryTables);
+
+        addFormEntity(new ExpertForesightFormEntity(summaryTables, "expertForesight"));
 
         NavigatorElement options = new NavigatorElement(baseLM.baseElement, "options", "Настройки");
         options.window = leftToolbar;
@@ -5684,6 +5686,33 @@ public class SkolkovoLogicsModule extends LogicsModule {
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(inProjectCluster, objProject, objCluster)));
 
             setReadOnly(true);
+        }
+    }
+
+    private class ExpertForesightFormEntity extends FormEntity<SkolkovoBusinessLogics> {
+            private ObjectEntity objExpert;
+            private ObjectEntity objForesight;
+
+        private ExpertForesightFormEntity(NavigatorElement parent, String sID) {
+            super(parent, sID, "Эксперт/Форсайт");
+
+
+            objExpert = addSingleGroupObject(1, "expert", expert, "Эксперт", baseLM.selection, baseLM.userFirstName, baseLM.userLastName, documentNameExpert,
+                            baseLM.email, disableExpert, nameLanguageExpert, dateAgreementExpert);
+
+            objForesight = addSingleGroupObject(2, "foresight", foresight, "Форсайты");
+                            addPropertyDraw(objForesight, sidForesight, nameNative, nameNativeShortClusterForesight);
+                            addPropertyDraw(objExpert, objForesight, commentExpertForesight, inExpertForesight);
+
+            addFixedFilter(new NotNullFilterEntity(addPropertyObject(inExpertForesight, objExpert, objForesight)));
+            RegularFilterGroupEntity inactiveFilterGroup = new RegularFilterGroupEntity(genID());
+            inactiveFilterGroup.addFilter(new RegularFilterEntity(genID(),
+                                new NotFilterEntity(new NotNullFilterEntity(addPropertyObject(disableExpert, objExpert))),
+                                "Только активные"), true);
+                        addRegularFilterGroup(inactiveFilterGroup);
+
+            setReadOnly(true);
+            setReadOnly(baseLM.selection, false);
         }
     }
 
