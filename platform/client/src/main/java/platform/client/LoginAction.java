@@ -88,6 +88,7 @@ public final class LoginAction {
                     loginDialog.setWarningMsg(getString("errors.error.cancel"));
                     break;
             }
+            loginDialog.setDefaultButtonOK();
             loginDialog.setAutoLogin(false);
             loginInfo = loginDialog.login();
             if (loginInfo == null) {

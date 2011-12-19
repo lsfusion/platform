@@ -47,7 +47,7 @@ public class LoginDialog extends JDialog {
         setUndecorated(true);
         setModal(true);
         getRootPane().setWindowDecorationStyle(JRootPane.PLAIN_DIALOG);
-        getRootPane().setDefaultButton(buttonOK);
+        setDefaultButtonOK();
 
         buttonOK.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -304,6 +304,10 @@ public class LoginDialog extends JDialog {
         }
 
         return defaultLoginInfo;
+    }
+
+    public void setDefaultButtonOK() {
+        getRootPane().setDefaultButton(buttonOK);
     }
 
     {
