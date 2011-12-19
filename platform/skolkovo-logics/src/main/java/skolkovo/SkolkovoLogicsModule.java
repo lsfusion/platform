@@ -821,6 +821,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP emailForesightClaimerProjectEA, emailForesightClaimerHeaderProject, emailForesightClaimerProject;
     LP emailBureauTranslation, emailBureauTrProjectEA, emailBureauTrProject;
     LP emailNeedVoteProjectEA, emailNeedVoteProject;
+    LP resultNeedVoteProject, dateResultNeedVoteProject, setCurrentDateResultNeedVoteProject, dateOverdueResultNeedVoteProject;
 
     LP generateDocumentsProjectDocumentType;
     LP includeDocumentsProject, hideIncludeDocumentsProject;
@@ -3655,13 +3656,25 @@ public class SkolkovoLogicsModule extends LogicsModule {
         emailBureauTrProject.property.askConfirm = true;
         emailBureauTrProject.setDerivedForcedChange(addCProp(ActionClass.instance, true), sentForTranslationProject, 1);
 
+        resultNeedVoteProject = addDProp("resultNeedVoteProject", "Отослано уведомление", LogicalClass.instance, project);
+        dateResultNeedVoteProject = addDProp("dateResultNeedVoteProject", "Дата отсылки уведомления", DateClass.instance, project);
+        setCurrentDateResultNeedVoteProject = addJProp(actionGroup, true, "setCurrentDateResultNeedVoteProject", "Установить текущую дату уведомления",
+                        addEPAProp(EPA_INTERFACE, dateResultNeedVoteProject), 1, baseLM.currentDate);
         emailNeedVoteProjectEA = addEAProp(emailIO, project);
         addEARecepient(emailNeedVoteProjectEA, emailPresident);
         addEARecepient(emailNeedVoteProjectEA, MimeMessage.RecipientType.CC, emailIO);
-        emailNeedVoteProject = addJProp(baseGroup, true, "emailNeedVoteProject", "Письмо в фонд о необходимости заседания (e-mail)", emailNeedVoteProjectEA, 1, addCProp(StringClass.get(2000), "Созвать заседание!"));
+//        emailNeedVoteProject = addJProp(baseGroup, true, "emailNeedVoteProject", "Письмо в фонд о необходимости заседания (e-mail)", emailNeedVoteProjectEA, 1, addCProp(StringClass.get(2000), "Созвать заседание!"));
+        emailNeedVoteProject = addJProp(actionGroup, true, "emailNeedVoteProject", "Письмо в фонд о необходимости заседания (e-mail)", baseLM.and1,
+                        addEPAProp(EPA_DEFAULT,
+                                addJProp(true, emailNeedVoteProjectEA, 1, addJProp(add2Strings, addCProp(StringClass.get(2000), "Запустить заседание по -  "), nameNativeClaimerProject, 1)), // отсылаем письмо
+                                resultNeedVoteProject, // пишем, что отослано
+                                setCurrentDateResultNeedVoteProject // записываем дату отсылки
+                        ), 1,
+                needVoteProject, 1);
         emailNeedVoteProject.setImage("email.png");
         emailNeedVoteProject.property.askConfirm = true;
         emailNeedVoteProject.setDerivedForcedChange(addCProp(ActionClass.instance, true), needVoteProject, 1);
+        dateOverdueResultNeedVoteProject = addJProp("dateOverdueResultNeedVoteProject", "Дата до которой д.б. созвано заседание", baseLM.jumpWorkdays, baseLM.defaultCountry, dateResultNeedVoteProject, 1, addCProp(IntegerClass.instance, 1));
 
         emailTransferredProjectEA = addEAProp(emailIO, project);
         addEARecepient(emailTransferredProjectEA, emailIO);
@@ -4961,7 +4974,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         public NeedVoteFondProjectFormEntity(NavigatorElement parent, String sID, String caption) {
             super(parent, sID, caption, true);
 
-            objProject = addSingleGroupObject(1, "project", project, "Проект", positiveLegalResultProject, dateProject, nameNativeProject, nameForeignProject, nameNativeClaimerProject, emailClaimerProject, datePositiveLegalResultProject);
+            objProject = addSingleGroupObject(1, "project", project, "Проект", positiveLegalResultProject, dateProject, nameNativeProject, nameForeignProject, nameNativeClaimerProject, emailClaimerProject, datePositiveLegalResultProject, resultNeedVoteProject, dateResultNeedVoteProject, dateOverdueResultNeedVoteProject);
             objProject.groupTo.setSingleClassView(ClassViewType.PANEL);
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(positiveLegalResultProject, objProject)));
             setReadOnly(true);
