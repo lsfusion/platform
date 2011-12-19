@@ -29,35 +29,35 @@
 				<textElement verticalAlignment="Top">
 					<font size="14"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA["Уважаемый заявитель!"]]></textFieldExpression>
+				<textFieldExpression><![CDATA["Уважаемый заявитель!"]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
 				<reportElement style="DefaultStyle" positionType="Float" x="20" y="31" width="509" height="20"/>
 				<textElement textAlignment="Justified" verticalAlignment="Top">
 					<font size="14"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA["Ваш проект был направлен на предварительную экспертизу 10 независимым экспертам. Мы рады сообщить Вам, что эксперты оценили проект положительно (проект соответствует установленным критериям*). Копию решения Фонда Вы найдете в приложении к данному письму."]]></textFieldExpression>
+				<textFieldExpression><![CDATA["Ваш проект был направлен на предварительную экспертизу 10 независимым экспертам. Мы рады сообщить Вам, что эксперты оценили проект положительно (проект соответствует установленным критериям*). Копию решения Фонда Вы найдете в приложении к данному письму."]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
 				<reportElement style="DefaultStyle" positionType="Float" x="20" y="61" width="509" height="20"/>
 				<textElement textAlignment="Justified" verticalAlignment="Top">
 					<font size="14"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA["Результаты предварительной экспертизы действительны в течение 6 месяцев и будут зачтены Фондом при подаче Вами заявки на статус участника."]]></textFieldExpression>
+				<textFieldExpression><![CDATA["Результаты предварительной экспертизы действительны в течение 6 месяцев и будут зачтены Фондом при подаче Вами заявки на статус участника."]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
 				<reportElement style="DefaultStyle" positionType="Float" x="20" y="91" width="509" height="20"/>
 				<textElement textAlignment="Justified" verticalAlignment="Top">
 					<font size="14"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA["Вы можете подать заявку на статус участника, заполнив форму “Юридическое лицо” в личном кабинете."]]></textFieldExpression>
+				<textFieldExpression><![CDATA["Вы можете подать заявку на статус участника, заполнив форму “Юридическое лицо” в личном кабинете."]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
 				<reportElement style="DefaultStyle" positionType="Float" x="20" y="111" width="509" height="20"/>
 				<textElement verticalAlignment="Top">
 					<font size="10"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA["* критериям, указанным в подпункте Е пункта 2 Положения о присвоении и утрате статуса участника проекта по созданию и обеспечению функционирования инновационного центра «Сколково»."]]></textFieldExpression>
+				<textFieldExpression><![CDATA["* критериям, указанным в пункте 26 Положения о присвоении и утрате статуса участника проекта по созданию и обеспечению функционирования инновационного центра «Сколково»."]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>

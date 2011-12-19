@@ -13,9 +13,11 @@ import java.text.ParseException;
 public class StringPropertyEditor extends TextFieldPropertyEditor {
 
     ClientPropertyDraw property;
+    boolean isClass;
 
-    public StringPropertyEditor(final int length, Object value, ClientPropertyDraw property) {
+    public StringPropertyEditor(boolean isClass, final int length, Object value, ClientPropertyDraw property) {
         super(property.design);
+        this.isClass = isClass;
         this.property = property;
 
         setDocument(new PlainDocument() {
@@ -44,7 +46,7 @@ public class StringPropertyEditor extends TextFieldPropertyEditor {
     @Override
     public String checkValue(Object value) {
         String text = (String)getCellEditorValue();
-        if (property.regexp != null && text != null)
+        if (property.regexp != null && text != null && !isClass)
             if (!text.matches(property.regexp)) {
                 return property.regexpMessage==null ?
                         ClientResourceBundle.getString("form.editor.incorrect.value") : property.regexpMessage;

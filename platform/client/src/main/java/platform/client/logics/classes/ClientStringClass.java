@@ -2,6 +2,7 @@ package platform.client.logics.classes;
 
 import platform.base.BaseUtils;
 import platform.client.ClientResourceBundle;
+import platform.client.form.ClientFormController;
 import platform.client.form.PropertyEditorComponent;
 import platform.client.form.PropertyRendererComponent;
 import platform.client.form.editor.StringPropertyEditor;
@@ -91,7 +92,15 @@ public class ClientStringClass extends ClientDataClass {
     }
 
     public PropertyRendererComponent getRendererComponent(String caption, ClientPropertyDraw property) { return new StringPropertyRenderer(property); }
-    public PropertyEditorComponent getComponent(Object value, ClientPropertyDraw property) { return new StringPropertyEditor(length, value, property); }
+
+    public PropertyEditorComponent getComponent(Object value, ClientPropertyDraw property) {
+        return new StringPropertyEditor(false, length, value, property);
+    }
+
+    @Override
+    public PropertyEditorComponent getClassComponent(ClientFormController form, ClientPropertyDraw property, Object value) throws IOException, ClassNotFoundException {
+        return new StringPropertyEditor(true, length, value, property);
+    }
 
     public Object parseString(String s) throws ParseException {
         return s;
