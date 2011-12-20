@@ -1257,6 +1257,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP isR2Application, isR1Application;
     LP openApplicationProjectActionApplication;
     LP exportProjectDocumentsActionApplication;
+    LP nameRegulationsApplication;
 
     LP inactiveApplication;
 
@@ -3935,6 +3936,9 @@ public class SkolkovoLogicsModule extends LogicsModule {
         inApplicationForesight = addJProp("inApplicationForesight", "Вкл.", inProjectForesight, projectApplication, 1, 2);
         isR2Application = addJProp("isR2Application", "Заявка R2", isR2Project, projectApplication, 1);
         isR1Application = addJProp("isR1Application", "Заявка R2", isR1Project, projectApplication, 1);
+        nameRegulationsApplication = addJProp(baseGroup, "nameRegulationsApplication", "Регламент заявки", nameRegulationsProject, projectApplication, 1);
+        nameRegulationsApplication.setFixedCharWidth(2);
+
         openApplicationProjectActionApplication = addJProp("openApplicationProjectActionApplication", "Открыть анкету", openApplicationProjectAction, projectApplication, 1);
         exportProjectDocumentsActionApplication = addJProp("exportProjectDocumentsActionApplication", "Экспортировать документы", exportProjectDocumentsAction, projectApplication, 1);
 
@@ -5589,7 +5593,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             super(parent, sID, "Реестр заявок");
 
             objApplication = addSingleGroupObject(application, dateApplication, nameNativeClaimerApplication, nameProjectActionApplication, nameNativeProjectApplication,
-                    officialNameStatusApplication, dateInStatusApplication, normalPeriodStatusApplication, quantityDaysToOverdueDateStatusApplication, langApplication, nameNativeShortAggregateClusterApplication, nameNativeShortFinalClusterApplication, emailClaimerApplication, daysClaimerApplication, openApplicationProjectActionApplication, exportProjectDocumentsActionApplication);
+                    officialNameStatusApplication, dateInStatusApplication, normalPeriodStatusApplication, quantityDaysToOverdueDateStatusApplication, langApplication, nameNativeShortAggregateClusterApplication, nameNativeShortFinalClusterApplication, emailClaimerApplication, daysClaimerApplication, nameRegulationsApplication, openApplicationProjectActionApplication, exportProjectDocumentsActionApplication);
             objCluster = addSingleGroupObject(2,"cluster", cluster, "Кластер");
                         addPropertyDraw(inApplicationCluster, objApplication, objCluster);
                         addPropertyDraw(objCluster, nameNative, nameForeign, nameNativeShort);

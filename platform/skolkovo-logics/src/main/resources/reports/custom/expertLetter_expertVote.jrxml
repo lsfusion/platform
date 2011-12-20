@@ -35,32 +35,32 @@
 					<textElement verticalAlignment="Top">
 						<font fontName="Serif" size="14"/>
 					</textElement>
-					<textFieldExpression class="java.lang.String"><![CDATA[($F{isForeignExpert}==null?"Вашему вниманию предлагается проект "+$F{nameNativeProjectVote}:"For your attention is a "+$F{nameForeignProjectVote}) + ($F{isForeignExpert}==null?". Во вложении находятся следующие материалы по проекту:":". Please find the following documents attached:")]]></textFieldExpression>
+					<textFieldExpression><![CDATA[($F{isForeignExpert}==null?"Вашему вниманию предлагается проект "+$F{nameNativeProjectVote}:"For your attention is a "+$F{nameForeignProjectVote}) + ($F{isForeignExpert}==null?". Во вложении находятся следующие материалы по проекту:":". Please find the following documents attached:")]]></textFieldExpression>
 				</textField>
 				<textField>
 					<reportElement x="31" y="23" width="712" height="20"/>
 					<textElement verticalAlignment="Top">
 						<font fontName="Serif" size="14"/>
 					</textElement>
-					<textFieldExpression class="java.lang.String"><![CDATA[($F{isForeignExpert}==null?"Уважаемый эксперт,":"Dear expert,")]]></textFieldExpression>
+					<textFieldExpression><![CDATA[($F{isForeignExpert}==null?"Уважаемый эксперт,":"Dear expert,")]]></textFieldExpression>
 				</textField>
 				<textField>
 					<reportElement x="31" y="54" width="712" height="45"/>
 					<textElement verticalAlignment="Top">
 						<font fontName="Serif" size="14"/>
 					</textElement>
-					<textFieldExpression class="java.lang.String"><![CDATA[($F{isForeignExpert}==null?"благодарим Вас за участие в оценке проектов будущих резидентов инновационного центра “Сколково”.":"thank you for taking part in the assessment procedure of Skolkovo Innovation Centre.")]]></textFieldExpression>
+					<textFieldExpression><![CDATA[($F{isForeignExpert}==null?"благодарим Вас за участие в оценке проектов будущих резидентов инновационного центра “Сколково”.":"thank you for taking part in the assessment procedure of Skolkovo Innovation Centre.")]]></textFieldExpression>
 				</textField>
 			</band>
 		</groupHeader>
 		<groupFooter>
-			<band height="332">
+			<band height="331">
 				<textField hyperlinkType="Reference" hyperlinkTarget="Blank">
 					<reportElement x="31" y="68" width="712" height="31" forecolor="#3399FF"/>
 					<textElement verticalAlignment="Top">
 						<font fontName="Serif" size="14"/>
 					</textElement>
-					<textFieldExpression class="java.lang.String"><![CDATA[($F{isForeignExpert}==null?"Ссылка для голосования":"Link")]]></textFieldExpression>
+					<textFieldExpression><![CDATA[($F{isForeignExpert}==null?"Ссылка для голосования":"Link")]]></textFieldExpression>
 					<hyperlinkReferenceExpression><![CDATA["http://"+$F{webHost}+"/expert.html?voteId="+platform.base.BaseUtils.encode($F{vote}, $F{expert})+"&locale="+$F{localeExpert}]]></hyperlinkReferenceExpression>
 				</textField>
 				<textField>
@@ -68,28 +68,64 @@
 					<textElement verticalAlignment="Top">
 						<font fontName="Serif" size="14"/>
 					</textElement>
-					<textFieldExpression class="java.lang.String"><![CDATA[($F{isForeignExpert}==null?"Вы можете оценить проект в течении "+$F{votePeriod}+" дней. Через "+$F{votePeriod}+" дней голосование по проекту будет прекращено.":"We kindly ask you to fill out the assessment form within "+$F{votePeriod}+" daysas after this time the link will be automatically terminated. ")]]></textFieldExpression>
+					<textFieldExpression><![CDATA[($F{isForeignExpert}==null?"Вы можете оценить проект в течении "+$F{votePeriod}+" дней. Через "+$F{votePeriod}+" дней голосование по проекту будет прекращено.":"We kindly ask you to fill out the assessment form within "+$F{votePeriod}+" daysas after this time the link will be automatically terminated. ")]]></textFieldExpression>
 				</textField>
 				<textField>
-					<reportElement x="31" y="162" width="712" height="18"/>
+					<reportElement positionType="Float" x="31" y="287" width="712" height="18"/>
 					<textElement verticalAlignment="Top">
 						<font fontName="Serif" size="14"/>
 					</textElement>
-					<textFieldExpression class="java.lang.String"><![CDATA[($F{isForeignExpert}==null?"С уважением,":"Faithfully yours,")]]></textFieldExpression>
+					<textFieldExpression><![CDATA[($F{isForeignExpert}==null?"С уважением,":"Faithfully yours,")]]></textFieldExpression>
 				</textField>
 				<textField>
 					<reportElement x="31" y="14" width="712" height="43"/>
 					<textElement verticalAlignment="Top">
 						<font fontName="Serif" size="14"/>
 					</textElement>
-					<textFieldExpression class="java.lang.String"><![CDATA[($F{isForeignExpert}==null?"Пожалуйста, заполните бюллетень оценки проекта по адресу : ":"Please, fill out the assessment ballot of the project at ")]]></textFieldExpression>
+					<textFieldExpression><![CDATA[($F{isForeignExpert}==null?"Пожалуйста, заполните бюллетень оценки проекта по адресу : ":"Please, fill out the assessment ballot of the project at ")]]></textFieldExpression>
 				</textField>
 				<textField>
-					<reportElement x="31" y="191" width="712" height="45"/>
+					<reportElement positionType="Float" x="31" y="305" width="712" height="18"/>
 					<textElement verticalAlignment="Top">
 						<font fontName="Serif" size="14"/>
 					</textElement>
-					<textFieldExpression class="java.lang.String"><![CDATA[($F{isForeignExpert}==null?"Команда экспертного портала Фонда “Сколково”":"The Skolkovo Foundation expert portal team")]]></textFieldExpression>
+					<textFieldExpression><![CDATA[($F{isForeignExpert}==null?"Команда экспертного портала Фонда “Сколково”":"The Skolkovo Foundation expert portal team")]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true">
+					<reportElement x="31" y="161" width="712" height="18" forecolor="#FF0000"/>
+					<textElement verticalAlignment="Top">
+						<font fontName="Serif" size="14"/>
+					</textElement>
+					<textFieldExpression><![CDATA[($F{isForeignExpert}==null?"Пожалуйста, обратите внимание, что согласно":"Please notice that, according to the")]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true">
+					<reportElement positionType="Float" x="31" y="193" width="712" height="18"/>
+					<textElement textAlignment="Center" verticalAlignment="Top">
+						<font fontName="Serif" size="14"/>
+					</textElement>
+					<textFieldExpression><![CDATA[($F{isForeignExpert}==null?"ПОЛОЖЕНИЮ ОБ ЭКСПЕРТНЫХ КОЛЛЕГИЯХ НЕКОММЕРЧЕСКОЙ ОРГАНИЗАЦИИ ФОНД РАЗВИТИЯ ЦЕНТРА РАЗРАБОТКИ  И КОММЕРЦИАЛИЗАЦИИ НОВЫХ ТЕХНОЛОГИЙ \n"+
+"(утверждено от 09.11.2011)":"REGULATION ON EXPERT BOARDS OF THE NON-COMMERCIAL ORGANISATION, THE FUND FOR DEVELOPMENT OF THE CENTER FOR ELABORATION AND COMMERCIALIZATION OF NEW TECHNOLOGIES \n"+
+"(approved on November 9, 2011)")]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true">
+					<reportElement positionType="Float" x="31" y="221" width="712" height="18"/>
+					<textElement verticalAlignment="Top">
+						<font fontName="Serif" size="14"/>
+					</textElement>
+					<textFieldExpression><![CDATA[($F{isForeignExpert}==null?"Ваш заполненный бюллетень голосования должен отвечать следующему обязательному требованию Регламента:":"Your completed expert Appraisal Bulletin must comply with the following obligatory Regulation requirement:")]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true">
+					<reportElement positionType="Float" x="31" y="249" width="712" height="18"/>
+					<textElement verticalAlignment="Top">
+						<font fontName="Serif" size="14" isItalic="true"/>
+						<paragraph firstLineIndent="40"/>
+					</textElement>
+					<textFieldExpression><![CDATA[($F{isForeignExpert}==null?"«14. Бюллетень оценки должен содержать обоснование вывода члена Экспертной коллегии по каждому из Критериев (не менее 100 и не более 1000 знаков). \n"+
+"В случае отсутствия в Бюллетене оценки члена Экспертной коллегии указанного обоснования такой член Экспертной коллегии считается не принявшим участия в заседании. \n"+
+"Бюллетень оценки должен содержать указание на то, какая информация и (или) документы по проекту не были предоставлены, но были необходимы для проведения экспертизы его соответствия (несоответствия) Критериям.»"
+:"«14. The Appraisal Bulletin shall contain justification for removal of a member of the Expert Board pursuant to each Criterion (not less than 100 and not more than 1,000 symbols). \n"+
+"In case there is no specified justification in the Appraisal Bulletin of a member of the Expert Board, such a member of the Expert Board shall be deemed non-participating in the meeting. \n"+
+"The Appraisal Bulletin shall specify the information and (or) documents on the project which were not submitted but were necessary for the purpose of carrying out the expertise of compliance thereof (non-compliance) with the Criteria.»")]]></textFieldExpression>
 				</textField>
 			</band>
 		</groupFooter>
@@ -100,7 +136,7 @@
 				<reportElement stretchType="RelativeToBandHeight" x="0" y="0" width="0" height="0"/>
 				<parametersMapExpression><![CDATA[$P{document_params}]]></parametersMapExpression>
 				<dataSourceExpression><![CDATA[$P{document_source}]]></dataSourceExpression>
-				<subreportExpression class="net.sf.jasperreports.engine.JasperReport"><![CDATA[$P{document_report}]]></subreportExpression>
+				<subreportExpression><![CDATA[$P{document_report}]]></subreportExpression>
 			</subreport>
 		</band>
 	</detail>
