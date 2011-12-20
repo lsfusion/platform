@@ -5697,12 +5697,19 @@ public class SkolkovoLogicsModule extends LogicsModule {
             super(parent, sID, "Эксперт/Форсайт");
 
 
-            objExpert = addSingleGroupObject(1, "expert", expert, "Эксперт", baseLM.selection, baseLM.userFirstName, baseLM.userLastName, documentNameExpert,
-                            baseLM.email, disableExpert, nameLanguageExpert, dateAgreementExpert);
+            objExpert = new ObjectEntity(genID(), expert, "Эксперт");
+            addPropertyDraw(objExpert, baseLM.userFirstName, baseLM.userLastName, documentNameExpert);        // baseLM.selection,
+            addPropertyDraw(objExpert, baseLM.email, disableExpert, nameLanguageExpert, dateAgreementExpert);
 
-            objForesight = addSingleGroupObject(2, "foresight", foresight, "Форсайты");
-                            addPropertyDraw(objForesight, sidForesight, nameNative, nameNativeShortClusterForesight);
-                            addPropertyDraw(objExpert, objForesight, commentExpertForesight, inExpertForesight);
+            objForesight = new ObjectEntity(genID(), foresight, "Форсайты");
+            addPropertyDraw(objForesight, sidForesight, nameNative, nameNativeShortClusterForesight);
+            addPropertyDraw(objExpert, objForesight, commentExpertForesight, inExpertForesight);
+
+            GroupObjectEntity gobjExpertForesight = new GroupObjectEntity(genID());
+            gobjExpertForesight.add(objExpert);
+            gobjExpertForesight.add(objForesight);
+            addGroup(gobjExpertForesight);
+            gobjExpertForesight.setSingleClassView(ClassViewType.GRID);
 
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(inExpertForesight, objExpert, objForesight)));
             RegularFilterGroupEntity inactiveFilterGroup = new RegularFilterGroupEntity(genID());
@@ -5712,7 +5719,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
                         addRegularFilterGroup(inactiveFilterGroup);
 
             setReadOnly(true);
-            setReadOnly(baseLM.selection, false);
+//            setReadOnly(baseLM.selection, false);
         }
     }
 
