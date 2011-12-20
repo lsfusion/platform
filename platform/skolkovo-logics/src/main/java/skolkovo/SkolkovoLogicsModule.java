@@ -2887,7 +2887,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         acceptedInternationalExperienceVote = addJProp(voteResultGroup, "acceptedInternationalExperienceVote", "Международный опыт", baseLM.groeq2,
                 quantityInternationalExperienceVote, 1, quantityNeededVote, 1);
 
-        acceptedEnoughDocumentsVote = addJProp(voteResultGroup, "acceptedEnoughDocumentsVote", "Достаточно голосов", baseLM.greater2,
+        acceptedEnoughDocumentsVote = addJProp(voteResultGroup, "acceptedEnoughDocumentsVote", "Достаточно голосов", baseLM.groeq2,
                 addJProp(baseLM.multiplyIntegerBy2, quantityEnoughDocumentsVote, 1), 1,
                 quantityDoneVote, 1);
 
@@ -3769,6 +3769,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         emailAuthExpertEA = addEAProp(expert);
         addEARecepient(emailAuthExpertEA, baseLM.email, 1);
+        addEARecepient(emailAuthExpertEA, MimeMessage.RecipientType.BCC, emailExperts);
 
         emailAuthExpert = addJProp(baseGroup, true, "emailAuthExpert", "Аутентификация эксперта (e-mail)",
                 emailAuthExpertEA, 1, addJProp(authExpertSubjectLanguage, languageExpert, 1), 1);
@@ -3777,6 +3778,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         emailAuthProfileExpertEA = addEAProp(expert);
         addEARecepient(emailAuthProfileExpertEA, baseLM.email, 1);
+        addEARecepient(emailAuthProfileExpertEA, MimeMessage.RecipientType.BCC, emailExperts);
 
         emailAuthProfileExpert = addJProp(baseGroup, true, "emailAuthProfileExpert", "Уведомление о заполнении профиля (e-mail)",
                 emailAuthProfileExpertEA, 1, addJProp(authProfileExpertSubjectLanguage, languageExpert, 1), 1);
@@ -3785,6 +3787,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         emailReminderProfileExpertEA = addEAProp(expert);
         addEARecepient(emailReminderProfileExpertEA, baseLM.email, 1);
+        addEARecepient(emailReminderProfileExpertEA, MimeMessage.RecipientType.BCC, emailExperts);
 
         emailReminderProfileExpert = addJProp(baseGroup, true, "emailReminderProfileExpert", "Напоминание о заполнении профиля (e-mail)",
                 emailReminderProfileExpertEA, 1, addJProp(reminderProfileExpertSubjectLanguage, languageExpert, 1), 1);
@@ -5658,7 +5661,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             specContainer.add(expertizContainer);
             specContainer.tabbedPane = true;
 
-            design.get(objApplication.groupTo).grid.getContainer().setFixedSize(new Dimension(-1, 500));
+            design.get(objApplication.groupTo).grid.getContainer().setFixedSize(new Dimension(-1, 400));
 
             return design;
         }
