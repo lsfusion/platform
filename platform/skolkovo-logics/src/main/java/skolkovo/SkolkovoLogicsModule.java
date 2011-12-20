@@ -4404,7 +4404,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
                 positiveOriginalDocsCheckProject, overdueOriginalDocsCheckProject, negativeOriginalDocsCheckProject,
                 certifiedProject, preparedCertificateProject, submittedToRegisterProject, sentToFinDepProject, signedProject,
                 sentForSignatureProject, certifiedStatusProject,
-                quantityVoteProject, voteStatusProject, statusProject, projectStatusProject,
+                quantityVoteProject, quantitySubDefaultVoteProject, voteStatusProject, statusProject, projectStatusProject,
                 acceptedCompetitiveAdvantagesVote, acceptedCommercePotentialVote, acceptedCanBeImplementedVote,
                 acceptedHaveExpertiseVote, acceptedInternationalExperienceVote, acceptedEnoughDocumentsVote);
     }
@@ -5002,6 +5002,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
             setReadOnly(true);
 
             addInlineEAForm(emailNeedVoteProjectEA, this, objProject, 1);
+
+            addDefaultHintsIncrementTable(this);
         }
     }
 
@@ -6600,6 +6602,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
             objLegalCheck.groupTo.initClassView = ClassViewType.PANEL;
 
             addInlineEAForm(emailClaimerLegalCheckEA, this, objLegalCheck, 1);
+
+            addDefaultHintsIncrementTable(this);
         }
     }
 
