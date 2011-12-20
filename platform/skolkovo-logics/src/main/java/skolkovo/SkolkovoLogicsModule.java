@@ -530,6 +530,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP revisionVote;
     LP projectVote, claimerVote, nameNativeProjectVote, nameForeignProjectVote;
     LP quantityVoteProject;
+    LP quantityDefaultVoteProject;
+    LP quantitySubDefaultVoteProject;
     LP quantityVoteProjectCluster;
     LP quantityClusterVotedProject;
     LP dataDocumentNameExpert, documentNameExpert;
@@ -1686,6 +1688,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         quantityVoteProject = addSGProp(baseGroup, "quantityVoteProject", true, "Кол-во заседаний", addCProp(IntegerClass.instance, 1, vote), projectVote, 1);
         quantityVoteProject.setFixedCharWidth(2);
+        quantityDefaultVoteProject = addDProp(baseGroup, "quantityDefaultVoteProject", "По-умолчанию, 1", IntegerClass.instance, project);
+        quantityDefaultVoteProject.setFixedCharWidth(2);
 
         nameNativeJoinProject = addJProp(baseLM.and1, nameNative, 1, is(project), 1);
         nameNativeDataProject = addDProp("nameNativeDataProject", "Название проекта", InsensitiveStringClass.get(2000), project);
@@ -3339,7 +3343,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         commentOriginalDocsCheck = addDProp("commentOriginalDocsCheck", "Комментарий", TextClass.instance, originalDocsCheck);
         nameResultOriginalDocsCheck = addJProp("nameResultOriginalDocsCheck", "Проверка оригиналов документов", baseLM.name, resultOriginalDocsCheck, 1);
 
-        dateOriginalDocsCheck = addJProp("dateOriginalDocsCheck", "Дата оправки уведомления", baseLM.dateInTime, dateTimeOriginalDocsCheck, 1);
+        dateOriginalDocsCheck = addJProp("dateOriginalDocsCheck", "Дата отправки уведомления", baseLM.dateInTime, dateTimeOriginalDocsCheck, 1);
         overdueDateOriginalDocsCheck = addJProp("overdueDateOriginalDocsCheck", "Дата просрочки подачи оригиналов документов", baseLM.addDate2, addJProp(baseLM.jumpWorkdays, baseLM.defaultCountry, dateOriginalDocsCheck, 1, addCProp(IntegerClass.instance, 1)), 1, addJProp(baseLM.subtractDate2, overduePeriod, addCProp(IntegerClass.instance, 1)));
 
         dateFirstSubmitOriginalDocsProject = addMGProp("dateFirstSubmitOriginalDocsProject", true, "Дата первой подачи документов", true, baseLM.date, projectOriginalDocsCheck, 1);
@@ -3381,6 +3385,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         certifiedProject = addDProp(registerGroup, "certifiedProject", "Выдано свидетельство участника", LogicalClass.instance, project);
         dateCertifiedProject = addDCProp(registerGroup, "dateCertifiedProject", "Дата выдачи свидетельства участника", true, baseLM.currentDate, certifiedProject, 1);
+        quantitySubDefaultVoteProject = addSUProp("quantitySubDefaultVoteProject", true, "Вместо заседаний", Union.OVERRIDE, quantityDefaultVoteProject, quantityVoteProject);
 
         legalCheckStatusProject = addCaseUProp(idGroup, "legalCheckStatusProject", true, "Статус (юридич. пров.) (ИД)",
                 positiveLegalResultProject, 1, addCProp(projectStatus, "positiveLCResult", project), 1,
@@ -3427,6 +3432,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
                 addCProp(projectStatus, "unknown", project), 1);
 
         voteStatusProject = addCaseUProp(idGroup, "voteStatusProject", true, "Статус (заседание) (ИД)",
+                quantityDefaultVoteProject, 1, certifiedStatusProject, 1,
                 acceptedNoticedStatusProject, 1, certifiedStatusProject, 1,
                 valuedProject, 1, valuedStatusProject, 1,
                 voteInProgressRepeatProject, 1, addCProp(projectStatus, "inProgressRepeat", project), 1,
@@ -3435,7 +3441,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
                 addCProp(projectStatus, "unknown", project), 1);
 
         statusProject = addCaseUProp(idGroup, "statusProject", true, "Статус (ИД)",
-                quantityVoteProject, 1, voteStatusProject, 1,
+                quantitySubDefaultVoteProject, 1, voteStatusProject, 1,
                 sentForTranslationProject, 1, addCProp(projectStatus, "needTranslation", project), 1,
                 resultForesightCheckProject, 1, foresightCheckStatusProject, 1,
                 resultExecuteLegalCheckProject, 1, legalCheckStatusProject, 1,
@@ -5176,6 +5182,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
             addPropertyDraw(nameNativeShortCurrentCluster).toDraw = objProject.groupTo;
             setForceViewType(nameNativeShortCurrentCluster, ClassViewType.PANEL);
+            addPropertyDraw(quantityDefaultVoteProject, objProject).forceViewType = ClassViewType.PANEL;
 
 //            addPropertyDraw(objProject, translateToRussianProject, translateToEnglishProject);
 //            setForceViewType(translateToRussianProject, ClassViewType.PANEL);
@@ -5514,6 +5521,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             ContainerView expertContainer = design.createContainer("Экспертиза по существу");
             expertContainer.add(design.getGroupObjectContainer(objVote.groupTo));
             expertContainer.add(design.getGroupObjectContainer(objExpert.groupTo));
+            expertContainer.add(design.get(getPropertyDraw(quantityDefaultVoteProject)));
 
             ContainerView originalDocsContainer = design.createContainer("Проверка оригиналов документов");
             originalDocsContainer.add(design.getGroupObjectContainer(objOriginalDocsCheck.groupTo));
