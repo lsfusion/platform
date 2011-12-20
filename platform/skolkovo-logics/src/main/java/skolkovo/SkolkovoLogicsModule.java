@@ -1237,6 +1237,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP previousDate;
     LP monthInPreviousDate, yearInPreviousDate;
     LP isNewMonth;
+    LP quantityIsR1DoneExpert;
+    LP quantityIsR2DoneExpert;
 
     LP hasPreliminaryVoteProject;
     LP isPreliminaryStatusProject;
@@ -3470,43 +3472,48 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         quantityDoneExpert = addSGProp(expertResultGroup, "quantityDoneExpert", "Проголосовал",
                 addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), doneNewExpertVote, 1, 2), 1);
+        quantityIsR1DoneExpert = addSGProp("quantityIsR1DoneExpert", "Проголосовал R1",
+                        addJProp(and(false, false), addCProp(IntegerClass.instance, 1), doneNewExpertVote, 1, 2, isR1ProjectVote, 2), 1);
+        quantityIsR2DoneExpert = addSGProp("quantityIsR2DoneExpert", "Проголосовал R2",
+                                addJProp(and(false, false), addCProp(IntegerClass.instance, 1), doneNewExpertVote, 1, 2, isR2ProjectVote, 2), 1);
+
         percentDoneExpert = addJProp(expertResultGroup, "percentDoneExpert", "Проголосовал (%)", baseLM.share2, quantityDoneExpert, 1, quantityTotalExpert, 1);
 
         LP quantityInClusterExpert = addSGProp("quantityInClusterExpert", "Соотв-ие кластеру (голоса)",
                 addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), inClusterNewExpertVote, 1, 2), 1);
-        percentInClusterExpert = addJProp(expertResultGroup, "percentInClusterExpert", "Соотв-ие кластеру (%)", baseLM.share2, quantityInClusterExpert, 1, quantityDoneExpert, 1);
+        percentInClusterExpert = addJProp(expertResultGroup, "percentInClusterExpert", "Соотв-ие кластеру (%)", baseLM.share2, quantityInClusterExpert, 1, quantityIsR1DoneExpert, 1);
 
         LP quantityInnovativeExpert = addSGProp("quantityInnovativeExpert", "Инновац. (голоса)",
                 addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), innovativeNewExpertVote, 1, 2), 1);
-        percentInnovativeExpert = addJProp(expertResultGroup, "percentInnovativeExpert", "Инновац. (%)", baseLM.share2, quantityInnovativeExpert, 1, quantityDoneExpert, 1);
+        percentInnovativeExpert = addJProp(expertResultGroup, "percentInnovativeExpert", "Инновац. (%)", baseLM.share2, quantityInnovativeExpert, 1, quantityIsR1DoneExpert, 1);
 
         LP quantityForeignExpert = addSGProp("quantityForeignExpert", "Иностр. специалист (голоса)",
                 addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), foreignNewExpertVote, 1, 2), 1);
-        percentForeignExpert = addJProp(expertResultGroup, "percentForeignExpert", "Иностр. специалист (%)", baseLM.share2, quantityForeignExpert, 1, quantityDoneExpert, 1);
+        percentForeignExpert = addJProp(expertResultGroup, "percentForeignExpert", "Иностр. специалист (%)", baseLM.share2, quantityForeignExpert, 1, quantityIsR1DoneExpert, 1);
 
         LP quantityCompetitiveAdvantagesExpert = addSGProp("quantityCompetitiveAdvantagesExpert", "Конкур. преим. (голоса)",
                 addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), competitiveAdvantagesCorExpertVote, 1, 2), 1);
-        percentCompetitiveAdvantagesExpert = addJProp(expertResultGroup, "percentCompetitiveAdvantagesExpert", "Конкур. преим. (%)", baseLM.share2, quantityCompetitiveAdvantagesExpert, 1, quantityDoneExpert, 1);
+        percentCompetitiveAdvantagesExpert = addJProp(expertResultGroup, "percentCompetitiveAdvantagesExpert", "Конкур. преим. (%)", baseLM.share2, quantityCompetitiveAdvantagesExpert, 1, quantityIsR2DoneExpert, 1);
 
         LP quantityCommercePotentialExpert = addSGProp("quantityCommercePotentialExpert", "Потенциал коммерц. (голоса)",
                 addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), commercePotentialCorExpertVote, 1, 2), 1);
-        percentCommercePotentialExpert = addJProp(expertResultGroup, "percentCommercePotentialExpert", "Потенциал коммерц. (%)", baseLM.share2, quantityCommercePotentialExpert, 1, quantityDoneExpert, 1);
+        percentCommercePotentialExpert = addJProp(expertResultGroup, "percentCommercePotentialExpert", "Потенциал коммерц. (%)", baseLM.share2, quantityCommercePotentialExpert, 1, quantityIsR2DoneExpert, 1);
 
         LP quantityCanBeImplementedExpert = addSGProp("quantityCanBeImplementedExpert", "Теоретически реализуем (голоса)",
                 addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), canBeImplementedCorExpertVote, 1, 2), 1);
-        percentCanBeImplementedExpert = addJProp(expertResultGroup, "percentCanBeImplementedExpert", "Теоретически реализуем (%)", baseLM.share2, quantityCanBeImplementedExpert, 1, quantityDoneExpert, 1);
+        percentCanBeImplementedExpert = addJProp(expertResultGroup, "percentCanBeImplementedExpert", "Теоретически реализуем (%)", baseLM.share2, quantityCanBeImplementedExpert, 1, quantityIsR2DoneExpert, 1);
 
         LP quantityHaveExpertiseExpert = addSGProp("quantityHaveExpertiseExpert", "Наличие экспертизы (голоса)",
                 addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), haveExpertiseCorExpertVote, 1, 2), 1);
-        percentHaveExpertiseExpert = addJProp(expertResultGroup, "percentHaveExpertiseExpert", "Наличие экспертизы (%)", baseLM.share2, quantityHaveExpertiseExpert, 1, quantityDoneExpert, 1);
+        percentHaveExpertiseExpert = addJProp(expertResultGroup, "percentHaveExpertiseExpert", "Наличие экспертизы (%)", baseLM.share2, quantityHaveExpertiseExpert, 1, quantityIsR2DoneExpert, 1);
 
         LP quantityInternationalExperienceExpert = addSGProp("quantityInternationalExperienceExpert", "Международный опыт (голоса)",
                 addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), internationalExperienceCorExpertVote, 1, 2), 1);
-        percentInternationalExperienceExpert = addJProp(expertResultGroup, "percentInternationalExperienceExpert", "Международный опыт (%)", baseLM.share2, quantityInternationalExperienceExpert, 1, quantityDoneExpert, 1);
+        percentInternationalExperienceExpert = addJProp(expertResultGroup, "percentInternationalExperienceExpert", "Международный опыт (%)", baseLM.share2, quantityInternationalExperienceExpert, 1, quantityIsR2DoneExpert, 1);
 
         LP quantityEnoughDocumentsExpert = addSGProp("quantityEnoughDocumentsExpert", "Достаточно голосов (голоса)",
                 addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), enoughDocumentsCorExpertVote, 1, 2), 1);
-        percentEnoughDocumentsExpert = addJProp(expertResultGroup, "percentEnoughDocumentsExpert", "Достаточно голосов (%)", baseLM.share2, quantityEnoughDocumentsExpert, 1, quantityDoneExpert, 1);
+        percentEnoughDocumentsExpert = addJProp(expertResultGroup, "percentEnoughDocumentsExpert", "Достаточно голосов (%)", baseLM.share2, quantityEnoughDocumentsExpert, 1, quantityIsR2DoneExpert, 1);
 
         prevDateStartVote = addOProp("prevDateStartVote", "Пред. засед. (старт)", OrderType.PREVIOUS, dateStartVote, true, true, 2, projectVote, 1, clusterVote, 1, baseLM.date, 1);
         prevDateVote = addOProp("prevDateVote", "Пред. засед. (окончание)", OrderType.PREVIOUS, dateEndVote, true, true, 2, projectVote, 1, clusterVote, 1, baseLM.date, 1);
@@ -5461,7 +5468,6 @@ public class SkolkovoLogicsModule extends LogicsModule {
             ContainerView infoContainer = design.createContainer("Информация");
             infoContainer.add(projectMainInformationContainer);
             infoContainer.add(design.getGroupObjectContainer(objCluster.groupTo));
-            infoContainer.add(design.getGroupObjectContainer(objForesight.groupTo));
             infoContainer.add(design.getGroupPropertyContainer(objProject.groupTo, projectOtherClusterGroup));
 
             ContainerView formalControlContainer = design.createContainer("Формальная экспертиза");
@@ -5490,6 +5496,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             foresightCheckContainer.add(design.get(getPropertyDraw(dateResultForesightCheckProject)));
             foresightCheckContainer.add(design.get(getPropertyDraw(nameUserResultForesightCheckProject)));
             foresightCheckContainer.add(design.get(getPropertyDraw(commentForesightCheckProject)));
+            foresightCheckContainer.add(design.getGroupObjectContainer(objForesight.groupTo));
 
             design.get(getPropertyDraw(commentForesightCheckProject)).panelLabelAbove = true;
             design.get(getPropertyDraw(commentForesightCheckProject)).constraints.fillHorizontal = 1;
