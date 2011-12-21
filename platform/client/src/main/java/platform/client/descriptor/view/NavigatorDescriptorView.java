@@ -123,6 +123,14 @@ public class NavigatorDescriptorView extends JPanel {
 
         add(splitPane, BorderLayout.CENTER);
         add(commandPanel, BorderLayout.SOUTH);
+
+        try {
+            String formSid = clientNavigator.remoteNavigator.getCurrentFormSID();
+            if (formSid != null)
+                openForm(formSid);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     private void cancelChanges() {

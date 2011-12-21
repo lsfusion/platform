@@ -49,6 +49,7 @@ import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
+import static platform.base.BaseUtils.nullBoolean;
 import static platform.base.BaseUtils.nvl;
 
 // приходится везде BusinessLogics Generics'ом гонять потому как при инстанцировании формы нужен конкретный класс
@@ -299,6 +300,13 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteContextO
             return null;
     }
 
+    public String getCurrentFormSID() {
+        if (weakCurrentForm != null)
+            return weakCurrentForm.get().entity.getSID();
+        else {
+            return null;
+        }
+    }
     public void gainedFocus(FormInstance<T> form) {
         weakCurrentForm = new WeakReference<FormInstance<T>>(form);
     }

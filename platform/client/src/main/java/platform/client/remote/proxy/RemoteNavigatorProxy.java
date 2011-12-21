@@ -159,6 +159,11 @@ public class RemoteNavigatorProxy<T extends RemoteNavigatorInterface>
         return target.getDaemonTasks(compId);
     }
 
+    @Override
+    public String getCurrentFormSID() throws RemoteException {
+        return target.getCurrentFormSID();
+    }
+
     public String getRemoteActionMessage() throws RemoteException {
         return target.getRemoteActionMessage();
     }
