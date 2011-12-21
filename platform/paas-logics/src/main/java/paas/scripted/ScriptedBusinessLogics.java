@@ -47,4 +47,9 @@ public class ScriptedBusinessLogics extends BusinessLogics<ScriptedBusinessLogic
 
         return new ScriptedBusinessLogics(adapter, port);
     }
+
+    @Override
+    public BusinessLogics getBL() {
+        return this;
+    }
 }

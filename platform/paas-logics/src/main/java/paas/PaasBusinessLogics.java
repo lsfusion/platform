@@ -802,6 +802,11 @@ public class PaasBusinessLogics extends BusinessLogics<PaasBusinessLogics> imple
         }
     }
 
+    @Override
+    public BusinessLogics getBL() {
+        return this;
+    }
+
     @Aspect
     private static class RemoteLogicsContextHoldingAspect {
         @Before("execution(* paas.api.remote.PaasRemoteInterface.*(..)) && target(remoteLogics)")

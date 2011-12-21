@@ -67,7 +67,7 @@ public class ClientExceptionManager {
                 if (!isInternalServerException) {
                     info += lineSeparator + erTrace;
                 }
-                Main.clientExceptionLog(info);
+                Main.clientExceptionLog(info, OSUtils.getLocalHostName(), message, e.getClass().getName(), erTrace);
             } catch (RemoteException exc) {
             }
             Log.printFailedMessage(ClientResourceBundle.getString("exceptions.error.on.executing") + message, erTrace);

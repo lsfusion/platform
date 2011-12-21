@@ -118,8 +118,8 @@ public class RemoteNavigatorProxy<T extends RemoteNavigatorInterface>
         target.changePassword(login, newPassword);
     }
 
-    public void clientExceptionLog(String info) throws RemoteException {
-        target.clientExceptionLog(info);
+    public void clientExceptionLog(String info, String client, String message, String type, String erTrace) throws RemoteException {
+        target.clientExceptionLog(info, client, message, type, erTrace);
     }
 
     public void close() throws RemoteException {

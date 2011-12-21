@@ -28,4 +28,8 @@ public class TestBusinessLogics extends BusinessLogics<TestBusinessLogics> {
     }
 
 
+    @Override
+    public BusinessLogics getBL() {
+        return this;
+    }
 }

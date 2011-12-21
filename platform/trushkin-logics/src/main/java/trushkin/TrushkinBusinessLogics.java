@@ -486,4 +486,9 @@ public class TrushkinBusinessLogics extends BusinessLogics<TrushkinBusinessLogic
     protected void initAuthentication() throws ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException {
         //To change body of implemented methods use File | Settings | File Templates.
     }
+
+    @Override
+    public BusinessLogics getBL() {
+        return this;
+    }
 }

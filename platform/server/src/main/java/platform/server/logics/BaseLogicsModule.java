@@ -7,6 +7,7 @@ import platform.base.identity.IDGenerator;
 import platform.interop.ClassViewType;
 import platform.interop.Compare;
 import platform.interop.action.*;
+import platform.interop.form.layout.DoNotIntersectSimplexConstraint;
 import platform.server.caches.IdentityLazy;
 import platform.server.classes.*;
 import platform.server.data.SQLSession;
@@ -35,9 +36,11 @@ import platform.server.logics.table.TableFactory;
 import platform.server.session.DataSession;
 
 import javax.swing.*;
+import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.List;
 
 import static platform.server.logics.PropertyUtils.getUParams;
 import static platform.server.logics.PropertyUtils.mapImplement;
@@ -66,6 +69,9 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public ConcreteCustomClass navigatorElement;
     public ConcreteCustomClass form;
     public ConcreteCustomClass property;
+    public AbstractCustomClass exception;
+    public ConcreteCustomClass clientException;
+    public ConcreteCustomClass serverException;
     public ConcreteCustomClass connection;
     public StaticCustomClass connectionStatus;
     public ConcreteCustomClass dictionary;
@@ -251,6 +257,12 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public LP numberNavigatorElement;
     public LP navigatorElementCaption;
 
+    public LP messageException;
+    public LP dateException;
+    public LP erTraceException;
+    public LP typeException;
+    public LP clientClientException;
+    public LP loginClientException;
     public LP SIDProperty;
     public LP loggableProperty;
     public LP userLoggableProperty;
@@ -367,7 +379,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public final StringClass propertyCaptionValueClass = StringClass.get(250);
     public final LogicalClass propertyLoggableValueClass = LogicalClass.instance;
     public final LogicalClass propertyStoredValueClass = LogicalClass.instance;
-
+    public final StringClass loginValueClass = StringClass.get(100);
     public List<LP> lproperties = new ArrayList<LP>();
 
     // счетчик идентификаторов
@@ -417,17 +429,19 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         connectionStatus = addStaticClass("connectionStatus", getString("logics.connection.status"),
                 new String[]{"connectedConnection", "disconnectedConnection"},
                 new String[]{getString("logics.connection.connected"), getString("logics.connection.disconnected")});
-
         country = addConcreteClass("country", getString("logics.country"), baseClass.named);
 
         navigatorElement = addConcreteClass("navigatorElement", getString("logics.navigator.element"), baseClass);
         form = addConcreteClass("form", getString("logics.forms.form"), navigatorElement);
         property = addConcreteClass("property", getString("logics.property"), baseClass);
+        exception = addAbstractClass("exception", getString("logics.exception"), baseClass);
+        clientException = addConcreteClass("clientException", getString("logics.exception.client"), exception);
+        serverException = addConcreteClass("serverException", getString("logics.exception.server"), exception);
         dictionary = addConcreteClass("dictionary", getString("logics.dictionary"), baseClass.named);
         dictionaryEntry = addConcreteClass("dictionaryEntry", getString("logics.dictionary.entries"), baseClass);
 
         table = addConcreteClass("table", getString("logics.tables.table"), baseClass);
-        tableKey = addConcreteClass("tableKey", getString("lodics.tables.key"), baseClass);
+        tableKey = addConcreteClass("tableKey", getString("logics.tables.key"), baseClass);
         tableColumn = addConcreteClass("tableColumn", getString("logics.tables.column"), baseClass);
     }
 
@@ -712,6 +726,14 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         SIDToNavigatorElement = addAGProp("SIDToNavigatorElement", getString("logics.forms.form"), navigatorElementSID);
         parentNavigatorElement = addDProp("parentNavigatorElement", getString("logics.forms.parent.form"), navigatorElement, navigatorElement);
 
+        messageException = addDProp(baseGroup, "messageException", getString("logics.exception.message"), propertyCaptionValueClass, exception);
+        dateException = addDProp(baseGroup, "dateException", getString("logics.exception.date"), DateTimeClass.instance, exception);
+        erTraceException = addDProp(baseGroup, "erTraceException", getString("logics.exception.ertrace"), TextClass.instance, exception);
+        erTraceException.setPreferredWidth(500);
+        typeException =  addDProp(baseGroup, "typeException", getString("logics.exception.type"), propertyCaptionValueClass, exception);
+        clientClientException = addDProp(baseGroup, "clientClientException", getString("logics.exception.client.client"), loginValueClass, clientException);
+        loginClientException = addDProp(baseGroup, "loginClientException", getString("logics.exception.client.login"), loginValueClass, clientException);
+
         SIDProperty = addDProp(baseGroup, "SIDProperty", getString("logics.property.sid"), propertySIDValueClass, property);
         loggableProperty = addDProp(baseGroup, "loggableProperty", getString("logics.property.loggable"), LogicalClass.instance, property);
         userLoggableProperty = addDProp(baseGroup, "userLoggableProperty", getString("logics.property.user.loggable"), LogicalClass.instance, property);
@@ -767,7 +789,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         propertyTableColumn = addJProp("propertyTableColumn", getString("logics.property"), SIDToProperty, sidTableColumn, 1);
         propertyNameTableColumn = addJProp(baseGroup, "propertyNameTableColumn", getString("logics.tables.property.name"), captionProperty, propertyTableColumn, 1);
         sidToTable = addAGProp("sidToTable", getString("logics.tables.table"), sidTable);
-        sidToTableKey = addAGProp("sidToTableKey", getString("lodics.tables.key"), sidTableKey);
+        sidToTableKey = addAGProp("sidToTableKey", getString("logics.tables.key"), sidTableKey);
         sidToTableColumn = addAGProp("sidToTableColumn", getString("logics.tables.column"), sidTableColumn);
         tableTableKey = addDProp("tableTableKey", getString("logics.tables.table"), table, tableKey);
         classTableKey = addDProp(baseGroup, "classTableKey", getString("logics.tables.key.class"), StringClass.get(40), tableKey);
@@ -1107,6 +1129,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         addFormEntity(new ConnectionsFormEntity(adminElement, "connectionsForm"));
         addFormEntity(new PhysicalModelFormEntity(adminElement, "physicalModelForm"));
         addFormEntity(new PropertiesFormEntity(adminElement, "propertiesForm"));
+        addFormEntity(new ExceptionsFormEntity(adminElement, "exceptionsForm"));
         addFormEntity(new AdminFormEntity(adminElement, "adminForm"));
         addFormEntity(new DaysOffFormEntity(adminElement, "daysOffForm"));
 
@@ -1616,7 +1639,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
             super(parent, sID, getString("logics.tables.physical.model"));
 
             ObjectEntity objTable = addSingleGroupObject(table, getString("logics.tables.tables"), baseGroup);
-            ObjectEntity objKey = addSingleGroupObject(tableKey, getString("lodics.tables.keys"), baseGroup);
+            ObjectEntity objKey = addSingleGroupObject(tableKey, getString("logics.tables.keys"), baseGroup);
             ObjectEntity objColumn = addSingleGroupObject(tableColumn, getString("logics.tables.columns"), baseGroup);
 
             addPropertyDraw(addAProp(new RecalculateStatsActionProperty("recalculateStats", getString("logics.tables.recalculate.stats"))));
@@ -1637,6 +1660,42 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
             setReadOnly(userLoggableProperty, false);
             setReadOnly(storedProperty, false);
         }
+    }
+
+    class ExceptionsFormEntity extends FormEntity {
+        ObjectEntity objExceptions;
+
+        protected ExceptionsFormEntity(NavigatorElement parent, String sID) {
+            super(parent, sID, getString("logics.tables.exceptions"));
+            objExceptions = addSingleGroupObject(exception, getString("logics.tables.exceptions"), messageException, clientClientException, loginClientException, typeException, dateException);
+            addPropertyDraw(erTraceException, objExceptions).forceViewType = ClassViewType.PANEL;
+            setReadOnly(true);
+        }
+
+        @Override
+        public FormView createDefaultRichDesign() {
+            DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign();
+
+            ContainerView textContainer = design.createContainer();
+            textContainer.constraints.childConstraints = DoNotIntersectSimplexConstraint.TOTHE_BOTTOM;
+            textContainer.add(design.get(getPropertyDraw(erTraceException, objExceptions)));
+            textContainer.constraints.fillHorizontal = 1.0;
+            textContainer.constraints.fillVertical = 1.0;
+
+            PropertyDrawView textView = design.get(getPropertyDraw(erTraceException, objExceptions));
+            textView.constraints.fillHorizontal = 1.0;
+            textView.constraints.fillVertical = 0.5;
+            textView.preferredSize = new Dimension(-1, 200);
+            textView.panelLabelAbove = true;
+
+            ContainerView specContainer = design.createContainer();
+            design.getMainContainer().addAfter(specContainer, design.getGroupObjectContainer(objExceptions.groupTo));
+            specContainer.add(design.getGroupObjectContainer(objExceptions.groupTo));
+            specContainer.add(textContainer);
+
+            return design;
+        }
+
     }
 
     class SelectFromListFormEntity extends FormEntity implements FormActionProperty.SelfInstancePostProcessor {

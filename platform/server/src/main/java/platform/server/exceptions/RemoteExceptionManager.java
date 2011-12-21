@@ -7,10 +7,18 @@ import org.aspectj.lang.annotation.Aspect;
 import platform.interop.exceptions.InternalServerException;
 import platform.interop.exceptions.LoginException;
 import platform.interop.exceptions.RemoteServerException;
+import platform.server.Context;
+import platform.server.logics.BusinessLogics;
+import platform.server.logics.DataObject;
+import platform.server.session.DataSession;
 
+import javax.mail.Session;
 import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.sql.SQLException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 
 @Aspect
 public class RemoteExceptionManager {
@@ -38,6 +46,14 @@ public class RemoteExceptionManager {
         if (!(e.getCause() instanceof LoginException)) {
             e.printStackTrace();
             logger.error("Internal server error: ", e);
+            BusinessLogics BL = Context.context.get().getBL();
+            try {
+                OutputStream os = new ByteArrayOutputStream();
+                e.printStackTrace(new PrintStream(os));
+                BL.logException(e.getCause().getMessage(), e.getClass().getName(), os.toString(), null, null, false);
+            } catch (SQLException e1) {
+                e1.printStackTrace();
+            }
         }
         OutputStream os = new ByteArrayOutputStream();
         e.printStackTrace(new PrintStream(os));

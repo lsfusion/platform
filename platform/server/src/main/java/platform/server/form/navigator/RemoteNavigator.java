@@ -138,10 +138,15 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteContextO
         }
     }
 
-    public void clientExceptionLog(String info) {
+    public void clientExceptionLog(String info, String client, String message, String type, String erTrace) {
         String errorMessage = info + " в " + new SimpleDateFormat().format(Calendar.getInstance().getTime());
         System.err.println(errorMessage);
         logger.error(errorMessage);
+        try {
+            BL.logException(message, type, erTrace, this.user, client, true);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
     // просто закэшируем, чтобы быстрее было
@@ -171,6 +176,11 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteContextO
     @Override
     public void unreferenced() {
         killThreads();
+    }
+
+    @Override
+    public BusinessLogics getBL() {
+        return BL;
     }
 
     @Aspect

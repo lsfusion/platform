@@ -35,7 +35,7 @@ public interface RemoteNavigatorInterface extends PendingRemote, RemoteContextIn
 
     void changePassword(String login, String newPassword) throws RemoteException;
 
-    void clientExceptionLog(String info) throws RemoteException;
+    void clientExceptionLog(String info, String client, String message, String type, String erTrace) throws RemoteException;
 
     final static String NAVIGATORGROUP_RELEVANTFORM = "_NAV_RELEVANTFORM_";
     final static String NAVIGATORGROUP_RELEVANTCLASS = "_NAV_RELEVANTCLASS_";

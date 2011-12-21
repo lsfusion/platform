@@ -463,6 +463,11 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         return (Integer) SkolkovoLM.emailToExpert.read(session, new DataObject(email));
     }
 
+    @Override
+    public BusinessLogics getBL() {
+        return this;
+    }
+
     private class VoteObjects {
 
         DataObject expertObj;

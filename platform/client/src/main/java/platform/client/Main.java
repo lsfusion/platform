@@ -279,9 +279,9 @@ public class Main {
         return baseClass;
     }
 
-    public static void clientExceptionLog(String info) throws RemoteException {
+    public static void clientExceptionLog(String info, String client, String message, String type, String erTrace) throws RemoteException {
         if (remoteNavigator != null) {
-            remoteNavigator.clientExceptionLog(info);
+            remoteNavigator.clientExceptionLog(info, client, message, type, erTrace);
         }
     }
 

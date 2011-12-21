@@ -840,4 +840,9 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
             throw new RuntimeException(e);
         }
     }
+
+    @Override
+    public BusinessLogics getBL() {
+        return form.BL;
+    }
 }

@@ -62,4 +62,9 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
         }
         return daemons;
     }
+
+    @Override
+    public BusinessLogics getBL() {
+        return this;
+    }
 }

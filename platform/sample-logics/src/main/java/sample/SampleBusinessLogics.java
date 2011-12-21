@@ -28,4 +28,8 @@ public class SampleBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
     }
 
 
+    @Override
+    public BusinessLogics getBL() {
+        return this;
+    }
 }

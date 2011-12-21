@@ -28,4 +28,9 @@ public class BudgetBusinessLogics extends BusinessLogics<BudgetBusinessLogics> {
     protected void initAuthentication() throws ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException {
         User admin = addUser("admin", "fusion");
     }
+
+    @Override
+    public BusinessLogics getBL() {
+        return this;
+    }
 }

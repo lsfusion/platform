@@ -37,4 +37,8 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> {
     }
 
 
+    @Override
+    public BusinessLogics getBL() {
+        return this;
+    }
 }

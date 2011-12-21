@@ -2110,6 +2110,26 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         }
     }
 
+    public void logException(String message, String errorType, String erTrace, DataObject user, String clientName, boolean client) throws SQLException {
+        DataSession session = createSession();
+        DataObject exceptionObject;
+        if (client) {
+            exceptionObject = session.addObject(LM.clientException, session.modifier);
+            LM.clientClientException.execute(clientName, session, exceptionObject);
+            String userLogin = (String) LM.userLogin.read(session, user);
+            LM.loginClientException.execute(userLogin, session, exceptionObject);
+        } else {
+            exceptionObject = session.addObject(LM.serverException, session.modifier);
+        }
+        LM.messageException.execute(message, session, exceptionObject);
+        LM.typeException.execute(errorType, session, exceptionObject);
+        LM.erTraceException.execute(erTrace, session, exceptionObject);
+        LM.dateException.execute(DateConverter.dateToStamp(Calendar.getInstance().getTime()), session, exceptionObject);
+
+        session.apply(this);
+        session.close();
+    }
+    
     public ArrayList<IDaemonTask> getDaemonTasks(int compId) {
         return new ArrayList<IDaemonTask>();
     }

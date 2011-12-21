@@ -95,4 +95,9 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
     public Scheduler getScheduler() {
         return scheduler;
     }
+
+    @Override
+    public BusinessLogics getBL() {
+        return this;
+    }
 }
