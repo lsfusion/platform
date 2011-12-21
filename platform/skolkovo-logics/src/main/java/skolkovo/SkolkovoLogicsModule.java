@@ -3680,9 +3680,9 @@ public class SkolkovoLogicsModule extends LogicsModule {
 //        emailNeedVoteProject = addJProp(baseGroup, true, "emailNeedVoteProject", "Письмо в фонд о необходимости заседания (e-mail)", emailNeedVoteProjectEA, 1, addCProp(StringClass.get(2000), "Созвать заседание!"));
         emailNeedVoteProject = addJProp(actionGroup, true, "emailNeedVoteProject", "Письмо в фонд о необходимости заседания (e-mail)", baseLM.and1,
                         addEPAProp(EPA_DEFAULT,
-                                addJProp(true, emailNeedVoteProjectEA, 1, addJProp(add2Strings, addCProp(StringClass.get(2000), "Запустить заседание по -  "), nameNativeClaimerProject, 1), 1), // отсылаем письмо
                                 resultNeedVoteProject, // пишем, что отослано
-                                setCurrentDateResultNeedVoteProject // записываем дату отсылки
+                                setCurrentDateResultNeedVoteProject, // записываем дату отсылки
+                                addJProp(true, emailNeedVoteProjectEA, 1, addJProp(add2Strings, addCProp(StringClass.get(2000), "Запустить заседание по -  "), nameNativeClaimerProject, 1), 1) // отсылаем письмо
                         ), 1,
                 needVoteProject, 1);
         emailNeedVoteProject.setImage("email.png");
@@ -5502,8 +5502,6 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
             design.get(getPropertyDraw(commentForesightCheckProject)).panelLabelAbove = true;
             design.get(getPropertyDraw(commentForesightCheckProject)).constraints.fillHorizontal = 1;
-            design.get(getPropertyDraw(commentForesightCheckProject)).constraints.fillVertical = 1;
-            design.get(getPropertyDraw(commentForesightCheckProject)).preferredSize = new Dimension(-1, 300);
 
             ContainerView projectDocumentsContainer = design.getGroupPropertyContainer(objProject.groupTo, projectDocumentsGroup);
             projectDocumentsContainer.constraints.childConstraints = DoNotIntersectSimplexConstraint.TOTHE_RIGHT;
