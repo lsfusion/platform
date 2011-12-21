@@ -2,6 +2,7 @@ package platform.gwt.login.server.handlers;
 
 import net.customware.gwt.dispatch.server.ExecutionContext;
 import net.customware.gwt.dispatch.shared.DispatchException;
+import platform.gwt.base.server.ServerUtils;
 import platform.gwt.base.server.handlers.SimpleActionHandlerEx;
 import platform.gwt.base.shared.actions.VoidResult;
 import platform.gwt.login.server.LoginServiceImpl;
@@ -18,7 +19,7 @@ public class RemindPasswordHandler extends SimpleActionHandlerEx<RemindPassword,
 
     @Override
     public VoidResult executeEx(RemindPassword action, ExecutionContext context) throws DispatchException, IOException {
-        servlet.getLogics().remindPassword(action.email);
+        servlet.getLogics().remindPassword(action.email, ServerUtils.getLocaleLanguage());
         return new VoidResult();
     }
 }

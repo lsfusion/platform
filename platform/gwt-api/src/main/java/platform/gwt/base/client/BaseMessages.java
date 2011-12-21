@@ -32,11 +32,25 @@ public interface BaseMessages extends Messages {
 
     String username();
 
+    String firstName();
+
+    String lastName();
+
     String password();
+
+    String repeatPassword();
+
+    String clickToReload();
+
+    String pictureText();
 
     String login();
 
     String forgot();
+
+    String register();
+
+    String registration();
 
     String loginFailed();
 
@@ -55,6 +69,10 @@ public interface BaseMessages extends Messages {
     String loginError();
 
     String loggedInMessage(String userName);
+
+    String passwordsDontMatch();
+
+    String wrongCaptcha();
 
     public static class Instance {
         private static final BaseMessages instance = (BaseMessages) GWT.create(BaseMessages.class);

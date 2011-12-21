@@ -97,6 +97,15 @@
         <url-pattern>/readFile</url-pattern>
     </servlet-mapping>
 
+    <servlet>
+        <servlet-name>captchaService</servlet-name>
+        <servlet-class>platform.gwt.base.server.captcha.ImageCaptchaServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>captchaService</servlet-name>
+        <url-pattern>/jcaptcha</url-pattern>
+    </servlet-mapping>
+
     <!--<servlet>-->
         <!--<servlet-name>applicantFormUploadHandler</servlet-name>-->
         <!--<servlet-class>org.springframework.web.context.support.HttpRequestHandlerServlet</servlet-class>-->

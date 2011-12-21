@@ -93,7 +93,7 @@ public class MockPaasLogic implements PaasRemoteInterface {
     }
 
     @Override
-    public void remindPassword(String email) throws RemoteException {
+    public void remindPassword(String email, String localeLanguage) throws RemoteException {
     }
 
     @Override
@@ -109,6 +109,11 @@ public class MockPaasLogic implements PaasRemoteInterface {
     @Override
     public boolean checkPropertyViewPermission(String userName, String propertySID) throws RemoteException {
         return false;
+    }
+
+    @Override
+    public String addUser(String username, String email, String password, String firstName, String lastName, String localeLanguage) throws RemoteException {
+        return null;
     }
 
     @Override

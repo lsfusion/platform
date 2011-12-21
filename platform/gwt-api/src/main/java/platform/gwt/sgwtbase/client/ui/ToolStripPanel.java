@@ -22,6 +22,8 @@ import java.util.LinkedHashMap;
 import static platform.gwt.base.client.GwtClientUtils.*;
 
 public class ToolStripPanel extends ToolStrip {
+    private Label lbTitle;
+
     public ToolStripPanel(String title) {
         this(null, title);
     }
@@ -57,7 +59,7 @@ public class ToolStripPanel extends ToolStrip {
         addMember(homeButton);
         addSpacer(6);
 
-        Label lbTitle = new Label(title);
+        lbTitle = new Label(title);
         lbTitle.setStyleName("logoTitle");
         lbTitle.setWidth(300);
         addMember(lbTitle);
@@ -141,5 +143,10 @@ public class ToolStripPanel extends ToolStrip {
         form.setFields(selectItem);
 
         return form;
+    }
+
+    public void setTitle(String title) {
+        lbTitle.setContents(title);
+        lbTitle.redraw();
     }
 }

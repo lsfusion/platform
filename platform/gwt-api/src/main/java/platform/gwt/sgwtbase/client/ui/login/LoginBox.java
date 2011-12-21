@@ -4,10 +4,7 @@ import com.smartgwt.client.types.Alignment;
 import com.smartgwt.client.types.TitleOrientation;
 import com.smartgwt.client.types.Visibility;
 import com.smartgwt.client.widgets.form.DynamicForm;
-import com.smartgwt.client.widgets.form.fields.ButtonItem;
-import com.smartgwt.client.widgets.form.fields.PasswordItem;
-import com.smartgwt.client.widgets.form.fields.SpacerItem;
-import com.smartgwt.client.widgets.form.fields.TextItem;
+import com.smartgwt.client.widgets.form.fields.*;
 import com.smartgwt.client.widgets.form.fields.events.ClickEvent;
 import com.smartgwt.client.widgets.form.fields.events.ClickHandler;
 import com.smartgwt.client.widgets.form.fields.events.KeyPressEvent;
@@ -21,7 +18,7 @@ public class LoginBox extends VLayout {
      * RFC 2822 compliant
      * http://www.regular-expressions.info/email.html
      */
-    private final static String EMAIL_VALIDATION_REGEX = "^[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$";
+    private final static String EMAIL_VALIDATION_REGEX = "^[a-zA-Z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[a-zA-Z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?\\.)+[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?$";
 
     private static final BaseMessages messages = BaseMessages.Instance.get();
 
@@ -29,7 +26,8 @@ public class LoginBox extends VLayout {
     private TextItem usernameBox;
     private PasswordItem passwordBox;
     private ButtonItem btnLogin;
-    private ButtonItem btnForget;
+    private LinkItem lnkForget;
+    private LinkItem lnkRegister;
 
     private DynamicForm remindForm;
     private TextItem emailBox;
@@ -38,20 +36,19 @@ public class LoginBox extends VLayout {
     private LoginBoxUiHandlers uiHandlers;
 
     public LoginBox() {
-        this(true);
+        this(true, true);
     }
 
-    public LoginBox(boolean showRemindForm) {
+    public LoginBox(boolean showRemindForm, boolean showRegisterLink) {
         setAutoHeight();
         setAutoWidth();
 
-        usernameBox = new TextItem("j_username", messages.username());
-        usernameBox.setColSpan(2);
+        String username = messages.username();
+        usernameBox = new TextItem("j_username", username);
         usernameBox.setWidth("*");
         usernameBox.setRequired(true);
         passwordBox = new PasswordItem("j_password", messages.password());
         passwordBox.setWidth("*");
-        passwordBox.setColSpan(2);
         passwordBox.setRequired(true);
         passwordBox.addKeyPressHandler(new KeyPressHandler() {
             @Override
@@ -63,8 +60,6 @@ public class LoginBox extends VLayout {
         });
 
         btnLogin = new ButtonItem("submit", messages.login());
-        btnLogin.setStartRow(false);
-        btnLogin.setAlign(Alignment.LEFT);
         btnLogin.setWidth("*");
         btnLogin.addClickHandler(new ClickHandler() {
             @Override
@@ -73,30 +68,45 @@ public class LoginBox extends VLayout {
             }
         });
 
-        btnForget = new ButtonItem("forget", messages.forgot());
-        btnForget.setStartRow(false);
-        btnForget.setAlign(Alignment.RIGHT);
-        btnForget.setWidth("*");
-        btnForget.addClickHandler(new ClickHandler() {
+        lnkForget = new LinkItem("forget");
+        lnkForget.setLinkTitle(messages.forgot());
+        lnkForget.setAlign(Alignment.RIGHT);
+        lnkForget.setShowTitle(false);
+        lnkForget.setWidth("*");
+        lnkForget.addClickHandler(new ClickHandler() {
             @Override
             public void onClick(ClickEvent event) {
                 toggleRemindForm();
             }
         });
 
+        lnkRegister = new LinkItem("register");
+        lnkRegister.setLinkTitle(messages.register());
+        lnkRegister.setAlign(Alignment.RIGHT);
+        lnkRegister.setShowTitle(false);
+        lnkRegister.setWidth("*");
+
         loginForm = new DynamicForm();
         loginForm.setTitleOrientation(TitleOrientation.TOP);
         loginForm.setAutoWidth();
         loginForm.setAutoHeight();
-        loginForm.setColWidths("120", "120");
-        if (showRemindForm) {
-            loginForm.setFields(usernameBox, passwordBox, new SpacerItem(), btnLogin, new SpacerItem(), btnForget);
+        loginForm.setColWidths("240");
+        loginForm.setNumCols(1);
+
+        if (showRegisterLink) {
+            if (showRemindForm)
+                loginForm.setFields(usernameBox, passwordBox, btnLogin, lnkRegister, lnkForget);
+            else
+                loginForm.setFields(usernameBox, passwordBox, btnLogin, lnkRegister);
         } else {
-            loginForm.setFields(usernameBox, passwordBox, new SpacerItem(), btnLogin);
+            if (showRemindForm)
+                loginForm.setFields(usernameBox, passwordBox, btnLogin, lnkForget);
+            else
+                loginForm.setFields(usernameBox, passwordBox, btnLogin);
         }
 
         emailBox = new TextItem("email", messages.emailPrompt());
-        emailBox.setWidth(200);
+        emailBox.setWidth("*");
         emailBox.setRequired(true);
         emailBox.setValidators(new RegExpValidator(EMAIL_VALIDATION_REGEX));
         emailBox.addKeyPressHandler(new KeyPressHandler() {
@@ -109,6 +119,7 @@ public class LoginBox extends VLayout {
         });
 
         btnRemind = new ButtonItem("remind", messages.remind());
+        btnRemind.setWidth("*");
         btnRemind.addClickHandler(new ClickHandler() {
             @Override
             public void onClick(ClickEvent event) {
@@ -116,11 +127,21 @@ public class LoginBox extends VLayout {
             }
         });
 
+        ButtonItem btnCancelRemind = new ButtonItem("cancelRemind", messages.cancel());
+        btnCancelRemind.setWidth("*");
+        btnCancelRemind.addClickHandler(new ClickHandler() {
+            @Override
+            public void onClick(ClickEvent event) {
+                toggleRemindForm();
+            }
+        });
+
         remindForm = new DynamicForm();
         remindForm.setTitleOrientation(TitleOrientation.TOP);
-        remindForm.setAutoWidth();
         remindForm.setAutoHeight();
-        remindForm.setFields(emailBox, btnRemind);
+        remindForm.setNumCols(1);
+        remindForm.setColWidths("240");
+        remindForm.setFields(emailBox, btnRemind, btnCancelRemind);
         remindForm.setVisibility(Visibility.HIDDEN);
         remindForm.setVisible(false);
 
@@ -153,7 +174,10 @@ public class LoginBox extends VLayout {
 
     public void toggleRemindForm() {
         boolean reminderShown = remindForm.isVisible();
-        btnForget.setTitle(reminderShown ? messages.forgot() : messages.cancel());
+        if (!reminderShown)
+            loginForm.hideItem(lnkForget.getName());
+        else
+            loginForm.showItem(lnkForget.getName());
         remindForm.setVisible(!reminderShown);
     }
 
@@ -167,7 +191,7 @@ public class LoginBox extends VLayout {
         }
     }
 
-    private void login() {
+    public void login() {
         if (!loginForm.validate(false)) {
             return;
         }
@@ -193,7 +217,11 @@ public class LoginBox extends VLayout {
         return btnLogin;
     }
 
-    public ButtonItem getForgetButton() {
-        return btnForget;
+    public LinkItem getForgetButton() {
+        return lnkForget;
+    }
+
+    public LinkItem getRegisterButton() {
+        return lnkRegister;
     }
 }

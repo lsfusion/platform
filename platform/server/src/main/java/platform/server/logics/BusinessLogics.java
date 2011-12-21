@@ -2114,9 +2114,30 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         return new ArrayList<IDaemonTask>();
     }
 
+    protected Integer getUserByEmail(DataSession session, String email) throws SQLException {
+        return (Integer) LM.emailToObject.read(session, new DataObject(email));
+    }
+
     @Override
-    public void remindPassword(String email) throws RemoteException {
-        throw new UnsupportedOperationException("Напоминание пароля не поддерживается...");
+    public void remindPassword(String email, String localeLanguage) throws RemoteException {
+        assert email != null;
+        ServerResourceBundle.load(localeLanguage);
+        try {
+            DataSession session = createSession();
+            try {
+                Integer userId = getUserByEmail(session, email);
+                if (userId == null) {
+                    throw new RuntimeException(ServerResourceBundle.getString("mail.user.not.found") + ": " + email);
+                }
+
+                LM.emailUserPassUser.execute(true, session, new DataObject(userId, LM.customUser));
+            } finally {
+                session.close();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RemoteException(ServerResourceBundle.getString("mail.error.sending.password.remind"), e);
+        }
     }
 
     @Override
@@ -2163,5 +2184,32 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             throw new RuntimeException(e);
         }
         return fileBytes;
+    }
+
+    @Override
+    public String addUser(String username, String email, String password, String firstName, String lastName, String localeLanguage) throws RemoteException {
+        try {
+            ServerResourceBundle.load(localeLanguage);
+            DataSession session = createSession();
+            Object userId = LM.loginToUser.read(session, new DataObject(username, StringClass.get(30)));
+            if (userId != null)
+                return ServerResourceBundle.getString("logics.error.user.duplicate");
+
+            Object emailId = LM.emailToObject.read(session, new DataObject(email, StringClass.get(50)));
+            if (emailId != null) {
+                return ServerResourceBundle.getString("logics.error.email.duplicate");
+            }
+
+            DataObject userObject = session.addObject(LM.customUser, session.modifier);
+            LM.userLogin.execute(username, session, userObject);
+            LM.email.execute(email, session, userObject);
+            LM.userPassword.execute(password, session, userObject);
+            LM.userFirstName.execute(firstName, session, userObject);
+            LM.userLastName.execute(lastName, session, userObject);
+            session.apply(this);
+        } catch (SQLException e) {
+            return ServerResourceBundle.getString("logics.error.registration");
+        }
+        return null;
     }
 }

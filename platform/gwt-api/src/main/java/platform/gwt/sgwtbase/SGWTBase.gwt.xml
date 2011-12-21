@@ -5,6 +5,7 @@
     <inherits name="com.smartgwt.SmartGwtNoSmartClient"/>
 
     <stylesheet src="css/toolstrip.css" />
+    <stylesheet src="css/register.css"/>
     <source path='client'/>
     <source path='shared'/>
 </module>

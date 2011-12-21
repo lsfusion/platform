@@ -124,9 +124,9 @@ public class RemoteBusinessLogicProxy<T extends RemoteLogicsInterface>
         return result;
     }
 
-    public void remindPassword(String email) throws RemoteException {
+    public void remindPassword(String email, String localeLanguage) throws RemoteException {
         logRemoteMethodStartCall("remindPassword");
-        target.remindPassword(email);
+        target.remindPassword(email, localeLanguage);
         logRemoteMethodEndVoidCall("remindPassword");
     }
 
@@ -152,6 +152,13 @@ public class RemoteBusinessLogicProxy<T extends RemoteLogicsInterface>
         logRemoteMethodStartCall("checkPropertyViewPermission");
         boolean result = target.checkPropertyViewPermission(userName, propertySID);
         logRemoteMethodEndVoidCall("checkPropertyViewPermission");
+        return result;
+    }
+
+    public String  addUser(String username, String email, String password, String firstName, String lastName, String localeLanguage) throws RemoteException {
+        logRemoteMethodStartCall("addUser");
+        String result = target.addUser(username, email, password, firstName, lastName, localeLanguage);
+        logRemoteMethodEndVoidCall("addUser");
         return result;
     }
 }

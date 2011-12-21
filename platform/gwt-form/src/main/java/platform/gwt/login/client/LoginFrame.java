@@ -6,17 +6,24 @@ import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.smartgwt.client.types.Alignment;
 import com.smartgwt.client.widgets.Label;
+import com.smartgwt.client.widgets.form.fields.events.ClickEvent;
+import com.smartgwt.client.widgets.form.fields.events.ClickHandler;
 import com.smartgwt.client.widgets.layout.VLayout;
 import net.customware.gwt.dispatch.client.DefaultExceptionHandler;
 import net.customware.gwt.dispatch.client.standard.StandardDispatchAsync;
+import net.customware.gwt.dispatch.shared.general.StringResult;
+import platform.gwt.base.client.ErrorAsyncCallback;
 import platform.gwt.base.client.GwtClientUtils;
+import platform.gwt.login.shared.actions.AddUser;
 import platform.gwt.sgwtbase.client.ui.CenterLayout;
+import platform.gwt.sgwtbase.client.ui.register.RegisterBox;
 import platform.gwt.sgwtbase.client.ui.ToolStripPanel;
 import platform.gwt.sgwtbase.client.ui.login.LoginBox;
 import platform.gwt.sgwtbase.client.ui.login.SpringLoginBoxUiHandlers;
 import platform.gwt.base.shared.MessageException;
 import platform.gwt.base.shared.actions.VoidResult;
 import platform.gwt.login.shared.actions.RemindPassword;
+import platform.gwt.sgwtbase.client.ui.register.RegisterBoxUiHandlers;
 
 public class LoginFrame extends VLayout implements EntryPoint {
     private static final LoginFrameMessages messages = LoginFrameMessages.Instance.get();
@@ -24,6 +31,9 @@ public class LoginFrame extends VLayout implements EntryPoint {
     private final static StandardDispatchAsync loginService = new StandardDispatchAsync(new DefaultExceptionHandler());
 
     private LoginBox loginBox = new LoginBox();
+    private RegisterBox registerBox = new RegisterBox();
+    private VLayout centerComponent;
+    private ToolStripPanel toolStrip;
 
     public void onModuleLoad() {
         Window.setTitle(messages.title());
@@ -31,16 +41,21 @@ public class LoginFrame extends VLayout implements EntryPoint {
         setWidth100();
         setHeight100();
 
-        VLayout centerComponent = new VLayout();
+        centerComponent = new VLayout();
         centerComponent.setAutoHeight();
         centerComponent.setAutoWidth();
 
         String userName = getUserName();
+        toolStrip = new ToolStripPanel("logo_toolbar.png", messages.title(), userName != null);
         if (userName == null) {
-            loginBox = new LoginBox();
+            loginBox = new LoginBox(true, false);
             loginBox.setUIHandlers(new MySpringLoginBoxUiHandlers());
 
+            registerBox.setUiHandlers(new RegisterBoxUiHandler());
+
             centerComponent.addMember(loginBox);
+            centerComponent.addMember(registerBox);
+            centerComponent.setVisibleMember(loginBox);
         } else {
             Label lbInfo = new Label(messages.loggedInMessage(userName));
             lbInfo.setAlign(Alignment.CENTER);
@@ -49,9 +64,27 @@ public class LoginFrame extends VLayout implements EntryPoint {
             centerComponent.addMember(lbInfo);
         }
 
-        CenterLayout main = new CenterLayout(centerComponent);
+        final CenterLayout main = new CenterLayout(centerComponent);
 
-        addMember(new ToolStripPanel("logo_toolbar.png", messages.title(), userName != null));
+        loginBox.getRegisterButton().addClickHandler(new ClickHandler() {
+            @Override
+            public void onClick(ClickEvent event) {
+                centerComponent.setVisibleMember(registerBox);
+                toolStrip.setTitle(messages.registerTitle());
+                Window.setTitle(messages.registerTitle());
+            }
+        });
+
+        registerBox.getCancelButton().addClickHandler(new ClickHandler() {
+            @Override
+            public void onClick(ClickEvent event) {
+                centerComponent.setVisibleMember(loginBox);
+                toolStrip.setTitle(messages.title());
+                Window.setTitle(messages.title());
+            }
+        });
+
+        addMember(toolStrip);
         addMember(main);
 
         draw();
@@ -69,6 +102,26 @@ public class LoginFrame extends VLayout implements EntryPoint {
         }
 
         return null;
+    }
+
+    private class RegisterBoxUiHandler implements RegisterBoxUiHandlers {
+        @Override
+        public void register() {
+            loginService.execute(new AddUser(registerBox.getUsername(), registerBox.getEmail(), registerBox.getPassword(),
+                    registerBox.getFirstName(), registerBox.getLastName(), registerBox.getCaptchaText(), registerBox.getCaptchaSalt()),
+                    new ErrorAsyncCallback<StringResult>() {
+                @Override
+                public void success(StringResult result) {
+                    if (result.get() == null) {
+                        loginBox.setUserName(registerBox.getUsername());
+                        loginBox.setPassword(registerBox.getPassword());
+                        loginBox.login();
+                    } else {
+                        registerBox.showError(result.get());
+                    }
+                }
+            });
+        }
     }
 
     private class MySpringLoginBoxUiHandlers extends SpringLoginBoxUiHandlers {

@@ -1,7 +1,9 @@
 <%@ page import="org.springframework.security.core.context.SecurityContextHolder" %>
+<%@ page import="platform.gwt.base.server.ServerUtils" %>
 <html>
     <head>
         <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <meta name="gwt:property" content="locale=<%=ServerUtils.getLocaleLanguage()%>">
 
         <title>Paas Application</title>
 

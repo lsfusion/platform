@@ -66,6 +66,10 @@ public class SpringLoginBoxUiHandlers implements LoginBoxUiHandlers {
         loginBox.getRemindButton().enable();
     }
 
+    protected void remindError() {
+        showError(messages.remindError());
+    }
+
     protected void onRemindFailed() {
         loginBox.getRemindButton().enable();
     }

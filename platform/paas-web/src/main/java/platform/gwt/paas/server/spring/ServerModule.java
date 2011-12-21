@@ -5,6 +5,7 @@ import com.gwtplatform.dispatch.server.spring.configuration.DefaultModule;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import platform.gwt.paas.server.handlers.*;
+import platform.gwt.paas.server.handlers.validators.AllowActionValidator;
 import platform.gwt.paas.shared.actions.*;
 
 @Configuration
@@ -20,6 +21,8 @@ public class ServerModule extends HandlerModule {
 //    }
 
     protected void configureHandlers() {
+        bindHandler(AddUserAction.class, AddUserHandler.class, AllowActionValidator.class);
+        bindHandler(RemindPasswordAction.class, RemindPasswordHandler.class, AllowActionValidator.class);
         bindHandler(LogoutAction.class, LogoutHandler.class);
 
         bindHandler(GetProjectsAction.class, GetProjectsHandler.class);

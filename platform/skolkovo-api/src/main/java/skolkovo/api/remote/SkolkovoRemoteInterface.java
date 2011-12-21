@@ -12,7 +12,6 @@ public interface SkolkovoRemoteInterface extends RemoteLogicsInterface {
     ProfileInfo getProfileInfo(String expertLogin, String locale) throws RemoteException;
     void setProfileInfo(String expertLogin, ProfileInfo profileInfo) throws RemoteException;
     void sentVoteDocuments(String login, int voteId) throws RemoteException;
-    void remindPassword(String email) throws RemoteException;
 
     void setConfResult(String conferenceHash, boolean result) throws RemoteException;
 }

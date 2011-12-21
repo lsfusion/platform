@@ -12,6 +12,8 @@ public interface LoginFrameMessages extends Messages {
 
     String title();
 
+    String registerTitle();
+
     String forgot();
 
     String loginFailed();

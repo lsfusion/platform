@@ -50,6 +50,24 @@
         <url-pattern>/platform.gwt.navigator.Navigator/dispatch</url-pattern>
     </servlet-mapping>
 
+    <servlet>
+        <servlet-name>readFileHandler</servlet-name>
+        <servlet-class>org.springframework.web.context.support.HttpRequestHandlerServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>readFileHandler</servlet-name>
+        <url-pattern>/readFile</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>captchaService</servlet-name>
+        <servlet-class>platform.gwt.base.server.captcha.ImageCaptchaServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>captchaService</servlet-name>
+        <url-pattern>/jcaptcha</url-pattern>
+    </servlet-mapping>
+
     <!-- Spring configuration -->
     <context-param>
         <param-name>log4jConfigLocation</param-name>

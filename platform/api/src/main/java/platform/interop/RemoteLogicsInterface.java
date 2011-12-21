@@ -43,11 +43,13 @@ public interface RemoteLogicsInterface extends PendingRemote, PingRemote, Remote
 
     UserInfo getUserInfo(String username) throws RemoteException;
 
-    void remindPassword(String email) throws RemoteException;
+    void remindPassword(String email, String localeLanguage) throws RemoteException;
 
     byte[] readFile(String sid, String... params) throws RemoteException;
 
     boolean checkDefaultViewPermission(String propertySid) throws RemoteException;
 
     boolean checkPropertyViewPermission(String userName, String propertySID) throws RemoteException;
+
+    String addUser(String username, String email, String password, String firstName, String lastName, String localeLanguage) throws RemoteException;
 }

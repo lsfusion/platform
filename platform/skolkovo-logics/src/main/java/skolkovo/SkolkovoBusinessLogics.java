@@ -459,24 +459,8 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
     }
 
     @Override
-    public void remindPassword(String email) throws RemoteException {
-        assert email != null;
-        try {
-            DataSession session = createSession();
-            try {
-                Integer expertId = (Integer) SkolkovoLM.emailToExpert.read(session, new DataObject(email));
-                if (expertId == null) {
-                    throw new RuntimeException("Не удалось найти пользователя с e-mail: " + email);
-                }
-
-                LM.emailUserPassUser.execute(true, session, new DataObject(expertId, LM.customUser));
-            } finally {
-                session.close();
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new RemoteException("Ошибка при попытке выслать напомиание пароля.", e);
-        }
+    protected Integer getUserByEmail(DataSession session, String email) throws SQLException {
+        return (Integer) SkolkovoLM.emailToExpert.read(session, new DataObject(email));
     }
 
     private class VoteObjects {
