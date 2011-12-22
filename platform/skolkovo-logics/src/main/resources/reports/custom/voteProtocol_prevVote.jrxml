@@ -12,9 +12,15 @@
 	</style>
 	<field name="prevVote" class="java.lang.Integer"/>
 	<field name="dateStartVote" class="java.util.Date"/>
+	<field name="isStatusVote" class="java.lang.Boolean"/>
+	<field name="isR1ProjectVote" class="java.lang.Boolean"/>
 	<variable name="voteNumber" class="java.lang.Integer" calculation="Sum">
 		<variableExpression><![CDATA[1]]></variableExpression>
 		<initialValueExpression><![CDATA[1]]></initialValueExpression>
+	</variable>
+	<variable name="statusPrev" class="java.lang.String">
+		<variableExpression><![CDATA[($F{isStatusVote}==null?"Заявителя по предварительной экспертизе":"Соискателя")]]></variableExpression>
+		<initialValueExpression><![CDATA[]]></initialValueExpression>
 	</variable>
 	<detail>
 		<band height="14">
@@ -23,7 +29,7 @@
 				<textElement textAlignment="Justified">
 					<paragraph firstLineIndent="40"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[$V{voteNumber}==1?$V{voteNumber} + ") решения Фонда о направлении заявки Соискателя на рассмотрение в Экспертную коллегию для проведения экспертизы заявки по существу и о созыве заседания Экспертной коллегии от " + platform.base.BaseUtils.formatRussian($F{dateStartVote}) + " года;":""]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$V{voteNumber}==1?$V{voteNumber} + ") решения Фонда о направлении заявки "+ ($F{isR1ProjectVote}==null?($V{statusPrev}):"Соискателя")+" на рассмотрение в Экспертную коллегию для проведения экспертизы заявки по существу и о созыве заседания Экспертной коллегии от " + platform.base.BaseUtils.formatRussian($F{dateStartVote}) + " года;":""]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>

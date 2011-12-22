@@ -1204,7 +1204,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP negativeLegalResultStatusProject;
     LP negativeLegalResultPreliminaryProject;
     LP positiveLegalResultProject;
-    LP sentForTranslationProject, dateSentForTranslationProject;
+    LP sentForTranslationProject, dateSentForTranslationProject, dateToSentForTranslationProject;
     LP positiveStatusLegalCheckProject, datePositiveStatusLegalCheckProject;
     LP transferredProject, dateTransferredProject;
     LP needVoteProject;
@@ -3315,6 +3315,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         sentForTranslationProject.setDerivedForcedChange(addCProp(LogicalClass.instance, true), needTranslationProject, 1);
 
         dateSentForTranslationProject = addDCProp(translationGroup, "dateSentForTranslationProject", "Дата направления на перевод", true, baseLM.currentDate, sentForTranslationProject, 1);
+        dateToSentForTranslationProject = addDCProp(translationGroup, "dateToSentForTranslationProject", "Дата до которой д.б. переведен", baseLM.jumpWorkdays, baseLM.defaultCountry, dateSentForTranslationProject, 1, addCProp(IntegerClass.instance, 5));
 
         oficialNameProjectStatus = addDProp(baseGroup, "oficialNameProjectStatus", "Наименование из регламента", StringClass.get(200), projectStatus);
         oficialNameProjectStatus.setMinimumWidth(10);
@@ -6304,7 +6305,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         private VoteStartFormEntity(NavigatorElement parent, String sID) {
             super(parent, sID, "Созыв заседания", true);
 
-            objVote = addSingleGroupObject(1, "vote", vote, baseLM.date, dateProjectVote, nameNativeClaimerVote, nameNativeProjectVote, nameAblateClaimerVote, prevDateStartVote, prevDateVote, quantityInVote, quantityInOldVote, countPrevVote, isStatusVote);
+            objVote = addSingleGroupObject(1, "vote", vote, baseLM.date, dateProjectVote, nameNativeClaimerVote, nameNativeProjectVote, nameAblateClaimerVote, prevDateStartVote, prevDateVote, quantityInVote, quantityInOldVote, countPrevVote, isStatusVote, isR1ProjectVote, nameNativeClusterVote, nameMaxForesightVote);
             objVote.groupTo.initClassView = ClassViewType.PANEL;
 
             objExpert = addSingleGroupObject(2, "expert", expert, baseLM.userLastName, baseLM.userFirstName, documentNameExpert);
@@ -6315,7 +6316,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             addPropertyDraw(numberOldExpertVote, objOldExpert, objVote);
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(inOldExpertVote, objOldExpert, objVote)));
 
-            objPrevVote = addSingleGroupObject(4, "prevVote", vote, dateEndVote);
+            objPrevVote = addSingleGroupObject(4, "prevVote", vote, dateEndVote, isR1ProjectVote, isStatusVote);
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(isPrevVoteVote, objPrevVote, objVote)));
 
             addAttachEAForm(emailStartVoteEA, this, EmailActionProperty.Format.PDF, objVote, 1);
@@ -6352,7 +6353,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
                     acceptedForeignVote, prevDateStartVote, prevDateVote, countPrevVote, revisionVote, isStatusVote, isR1ProjectVote, nameMaxForesightVote);
             objVote.groupTo.initClassView = ClassViewType.PANEL;
 
-            objPrevVote = addSingleGroupObject(5, "prevVote", vote, dateStartVote);
+            objPrevVote = addSingleGroupObject(5, "prevVote", vote, dateStartVote, isStatusVote, isR1ProjectVote);
 
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(closedVote, objVote)));
 
