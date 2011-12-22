@@ -594,7 +594,7 @@ public abstract class ExpertMainWidget extends Composite {
         }
 
         private void updateCounter() {
-            String text = taText.getValue();
+            String text = taText.getValue().trim();
             if (text == null) {
                 text = "";
             }
