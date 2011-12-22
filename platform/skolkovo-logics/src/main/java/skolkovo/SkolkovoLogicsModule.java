@@ -564,6 +564,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP foresightSID;
     LP nameNativeClusterForesight, nameForeignClusterForesight, nameNativeShortClusterForesight;
     LP quantityForesightProject;
+    LP maxForesightProjectCluster, nameMaxForesightVote, maxForesightVote, nMaxForesightVote;
     LP isPrevVoteVote;
     LP countPrevVote;
     public LP claimerProject;
@@ -2937,6 +2938,11 @@ public class SkolkovoLogicsModule extends LogicsModule {
         clusterVote = addDProp(idGroup, "clusterVote", "Кластер (ИД)", cluster, vote);
         nameNativeClusterVote = addJProp(baseGroup, "nameNativeClusterVote", "Кластер", nameNative, clusterVote, 1);
         nameForeignClusterVote = addJProp("nameForeignClusterVote", "Кластер (иностр.)", nameForeign, clusterVote, 1);
+
+        maxForesightProjectCluster = addMGProp("maxForesightProjectCluster", "Форсайт", addJProp(baseLM.and1, object(foresight), 2, inProjectForesight, 1, 2), 1, clusterForesight, 2);
+        nameMaxForesightVote = addJProp("nameMaxForesightVote", "Форсайт", nameNative, addJProp(maxForesightProjectCluster, projectVote, 1, clusterVote, 1), 1);
+//        maxForesightVote = addMGProp("maxForesightVote", "Форсайт", addJProp(and(false, false, false), 2, inProjectForesight, 1, 2, addJProp(baseLM.equals2, object(project), 1, projectVote, 3), 1, 2, 3, addJProp(baseLM.equals2, clusterForesight, 2, clusterVote, 3), 1, 2, 3), 3);
+//        nMaxForesightVote = addJProp("nMaxForesightVote", "Форсайт", nameNative, maxForesightVote, 1);
 
         doneClusterExpertVoteDateFromDateTo = addJProp(and(false, false), doneNewExpertVote, 2, 3, betweenExpertVoteDateFromDateTo, 2, 3, 4, 5, addJProp(baseLM.equals2, 1, clusterVote, 2), 1, 3);
         quantityDoneClusterExpertDateFromDateTo = addSGProp("quantityDoneClusterExpertDateFromDateTo", "Кол-во голосов.",
@@ -6152,7 +6158,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             addPropertyDraw(baseLM.webHost, gobjExpertVote);
             addPropertyDraw(requiredPeriod, gobjExpertVote);
             addPropertyDraw(objExpert, baseLM.name, documentNameExpert, isForeignExpert, localeExpert);
-            addPropertyDraw(objVote, nameNativeClaimerVote, nameForeignClaimerVote, nameNativeProjectVote, nameForeignProjectVote);
+            addPropertyDraw(objVote, nameNativeClaimerVote, nameForeignClaimerVote, nameNativeProjectVote, nameForeignProjectVote, isR1ProjectVote);
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(inNewExpertVote, objExpert, objVote)));
 
             //!!!
@@ -6343,7 +6349,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
                     quantityInClusterVote, acceptedInClusterVote, quantityInnovativeVote, acceptedInnovativeVote, quantityForeignVote,
                     quantityCompetitiveAdvantagesVote, acceptedCompetitiveAdvantagesVote, quantityCommercePotentialVote, acceptedCommercePotentialVote, quantityCanBeImplementedVote, acceptedCanBeImplementedVote,
                     quantityHaveExpertiseVote, acceptedHaveExpertiseVote, quantityInternationalExperienceVote, acceptedInternationalExperienceVote, quantityEnoughDocumentsVote, acceptedEnoughDocumentsVote,
-                    acceptedForeignVote, prevDateStartVote, prevDateVote, countPrevVote, revisionVote, isStatusVote);
+                    acceptedForeignVote, prevDateStartVote, prevDateVote, countPrevVote, revisionVote, isStatusVote, isR1ProjectVote, nameMaxForesightVote);
             objVote.groupTo.initClassView = ClassViewType.PANEL;
 
             objPrevVote = addSingleGroupObject(5, "prevVote", vote, dateStartVote);

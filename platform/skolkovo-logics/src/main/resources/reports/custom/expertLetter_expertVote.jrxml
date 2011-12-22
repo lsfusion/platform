@@ -23,6 +23,7 @@
 	<field name="localeExpert" class="java.lang.String"/>
 	<field name="webHost" class="java.lang.String"/>
 	<field name="votePeriod" class="java.lang.Integer"/>
+	<field name="isR1ProjectVote" class="java.lang.Boolean"/>
 	<group name="captionGroup1">
 		<groupExpression><![CDATA[String.valueOf($F{expert})+" "+String.valueOf($F{vote})]]></groupExpression>
 	</group>
@@ -54,24 +55,24 @@
 			</band>
 		</groupHeader>
 		<groupFooter>
-			<band height="331">
-				<textField hyperlinkType="Reference" hyperlinkTarget="Blank">
-					<reportElement x="31" y="68" width="712" height="31" forecolor="#3399FF"/>
+			<band height="238">
+				<textField isStretchWithOverflow="true" hyperlinkType="Reference" hyperlinkTarget="Blank">
+					<reportElement x="31" y="68" width="712" height="20" forecolor="#3399FF"/>
 					<textElement verticalAlignment="Top">
 						<font fontName="Serif" size="14"/>
 					</textElement>
 					<textFieldExpression><![CDATA[($F{isForeignExpert}==null?"Ссылка для голосования":"Link")]]></textFieldExpression>
 					<hyperlinkReferenceExpression><![CDATA["http://"+$F{webHost}+"/expert.html?voteId="+platform.base.BaseUtils.encode($F{vote}, $F{expert})+"&locale="+$F{localeExpert}]]></hyperlinkReferenceExpression>
 				</textField>
-				<textField>
-					<reportElement x="31" y="109" width="712" height="42"/>
+				<textField isStretchWithOverflow="true">
+					<reportElement positionType="Float" x="31" y="95" width="712" height="18"/>
 					<textElement verticalAlignment="Top">
 						<font fontName="Serif" size="14"/>
 					</textElement>
 					<textFieldExpression><![CDATA[($F{isForeignExpert}==null?"Вы можете оценить проект в течении "+$F{votePeriod}+" дней. Через "+$F{votePeriod}+" дней голосование по проекту будет прекращено.":"We kindly ask you to fill out the assessment form within "+$F{votePeriod}+" daysas after this time the link will be automatically terminated. ")]]></textFieldExpression>
 				</textField>
 				<textField>
-					<reportElement positionType="Float" x="31" y="287" width="712" height="18"/>
+					<reportElement positionType="Float" x="31" y="200" width="712" height="18"/>
 					<textElement verticalAlignment="Top">
 						<font fontName="Serif" size="14"/>
 					</textElement>
@@ -85,21 +86,25 @@
 					<textFieldExpression><![CDATA[($F{isForeignExpert}==null?"Пожалуйста, заполните бюллетень оценки проекта по адресу : ":"Please, fill out the assessment ballot of the project at ")]]></textFieldExpression>
 				</textField>
 				<textField>
-					<reportElement positionType="Float" x="31" y="305" width="712" height="18"/>
+					<reportElement positionType="Float" x="31" y="218" width="712" height="18"/>
 					<textElement verticalAlignment="Top">
 						<font fontName="Serif" size="14"/>
 					</textElement>
 					<textFieldExpression><![CDATA[($F{isForeignExpert}==null?"Команда экспертного портала Фонда “Сколково”":"The Skolkovo Foundation expert portal team")]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
-					<reportElement x="31" y="161" width="712" height="18" forecolor="#FF0000"/>
+					<reportElement positionType="Float" x="31" y="119" width="712" height="18" isRemoveLineWhenBlank="true" forecolor="#FF0000">
+						<printWhenExpression><![CDATA[$F{isR1ProjectVote}==null]]></printWhenExpression>
+					</reportElement>
 					<textElement verticalAlignment="Top">
 						<font fontName="Serif" size="14"/>
 					</textElement>
 					<textFieldExpression><![CDATA[($F{isForeignExpert}==null?"Пожалуйста, обратите внимание, что согласно":"Please notice that, according to the")]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
-					<reportElement positionType="Float" x="31" y="193" width="712" height="18"/>
+					<reportElement positionType="Float" x="31" y="141" width="712" height="18" isRemoveLineWhenBlank="true">
+						<printWhenExpression><![CDATA[$F{isR1ProjectVote}==null]]></printWhenExpression>
+					</reportElement>
 					<textElement textAlignment="Center" verticalAlignment="Top">
 						<font fontName="Serif" size="14"/>
 					</textElement>
@@ -108,14 +113,18 @@
 "(approved on November 9, 2011)")]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
-					<reportElement positionType="Float" x="31" y="221" width="712" height="18"/>
+					<reportElement positionType="Float" x="31" y="159" width="712" height="18" isRemoveLineWhenBlank="true">
+						<printWhenExpression><![CDATA[$F{isR1ProjectVote}==null]]></printWhenExpression>
+					</reportElement>
 					<textElement verticalAlignment="Top">
 						<font fontName="Serif" size="14"/>
 					</textElement>
 					<textFieldExpression><![CDATA[($F{isForeignExpert}==null?"Ваш заполненный бюллетень голосования должен отвечать следующему обязательному требованию Регламента:":"Your completed expert Appraisal Bulletin must comply with the following obligatory Regulation requirement:")]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true">
-					<reportElement positionType="Float" x="31" y="249" width="712" height="18"/>
+					<reportElement positionType="Float" x="31" y="177" width="712" height="18" isRemoveLineWhenBlank="true">
+						<printWhenExpression><![CDATA[$F{isR1ProjectVote}==null]]></printWhenExpression>
+					</reportElement>
 					<textElement verticalAlignment="Top">
 						<font fontName="Serif" size="14" isItalic="true"/>
 						<paragraph firstLineIndent="40"/>
