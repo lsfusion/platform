@@ -126,10 +126,19 @@ storeIsHuge2(store) = (storeSize(store) == storeSize.huge) == TRUE;
 documentBalance(document, article) = balanceQuantity(store(document), article);
 
 ///////////////CONSTRAINT STATEMENT//////////////
-
 // Syntax:
 // CONSTRAINT [CHECKED] propertyExpression MSG 'message';
 CONSTRAINT CHECKED foo(store, article) > 1000 MSG 'ошибка: >1000';
+
+
+////////////////FOLLOWS STATEMENT////////////////
+// Syntax:
+// propertyName(param1, ..., paramN) =>
+//      propertyExpression1 [RESOLVE (TRUE | FALSE | ALL | NOTHING)],
+//      ...
+//      propertyExpressionK [RESOLVE (TRUE | FALSE | ALL | NOTHING)];
+foo(store, article) => foo2(store, article) RESOLVE NOTHING, bar2(store, article);
+
 
 //////////////// FORM STATEMENT /////////////////
 

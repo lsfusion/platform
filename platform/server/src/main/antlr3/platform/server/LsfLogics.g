@@ -1,6 +1,6 @@
 grammar LsfLogics;
 
-@header { 
+ @header {
 	package platform.server; 
 	import platform.server.logics.ScriptingLogicsModule; 
 	import platform.server.logics.ScriptingFormEntity;
@@ -9,6 +9,7 @@ grammar LsfLogics;
 	import platform.server.logics.ScriptingErrorLog;
 	import platform.interop.ClassViewType;
 	import platform.server.data.expr.query.OrderType;
+	import platform.server.logics.property.PropertyFollows;
 	import java.util.Collections;
 	import java.util.Set;
 	import java.util.HashSet;
@@ -91,7 +92,15 @@ importDirective
 
 
 statement
-	:	(classStatement | groupStatement | propertyStatement | constraintStatement | tableStatement | indexStatement | formStatement) ';'
+	:	(classStatement 
+	| 	groupStatement 
+	| 	propertyStatement 
+	| 	constraintStatement 
+	|	followsStatement
+	| 	tableStatement 
+	| 	indexStatement 
+	| 	formStatement) 
+		';'
 	;
 
 
@@ -217,8 +226,8 @@ formGroupObjectDeclaration returns [List<String> objectNames, List<String> class
 
 
 formGroupObjectViewType returns [ClassViewType type, boolean isInitType]
-	: ('INIT' {$isInitType = true;} | 'FIXED' {$isInitType = false;})
-	  ('PANEL' {$type = ClassViewType.PANEL;} | 'HIDE' {$type = ClassViewType.HIDE;} | 'GRID' {$type = ClassViewType.GRID;})
+	: 	('INIT' {$isInitType = true;} | 'FIXED' {$isInitType = false;})
+	  	('PANEL' {$type = ClassViewType.PANEL;} | 'HIDE' {$type = ClassViewType.HIDE;} | 'GRID' {$type = ClassViewType.GRID;})
 	;
 
 
@@ -690,6 +699,47 @@ constraintStatement
 		'MSG' msg=STRING_LITERAL { message = $msg.text; }	 
 	;
 
+
+////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////// FOLLOWS STATEMENT ////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+
+followsStatement
+@init {
+	List<String> context;
+	String mainProp;
+	List<List<Integer>> usedParams = new ArrayList<List<Integer>>();
+	List<LP<?>> props = new ArrayList<LP<?>>(); 
+	List<Integer> options = new ArrayList<Integer>();
+}
+@after {
+	if (parseState == ScriptingLogicsModule.State.PROP) { 
+		self.addScriptedFollows(mainProp, options, props, usedParams);
+	}
+}
+	:	propName=ID { mainProp = $propName.text; } 
+		'(' 
+		paramList=idList { context = $paramList.ids; } 
+		')' 
+		'=>' 
+		firstExpr=propertyExpression[context, false] ('RESOLVE' type=followsResolveType)? 
+		{ 
+			props.add($firstExpr.property); usedParams.add($firstExpr.usedParams); 
+			options.add(type == null ? PropertyFollows.RESOLVE_ALL : $type.type); 
+		}
+		(',' nextExpr=propertyExpression[context, false] ('RESOLVE' type=followsResolveType)? 
+		     { 
+		     		props.add($nextExpr.property); usedParams.add($nextExpr.usedParams); 
+		     		options.add(type == null ? PropertyFollows.RESOLVE_ALL : $type.type); 
+		     }
+		)*
+	;	
+
+followsResolveType returns [Integer type]
+	:	lit=LOGICAL_LITERAL	{ $type = $lit.text.equals("TRUE") ? PropertyFollows.RESOLVE_TRUE : PropertyFollows.RESOLVE_FALSE; }
+	|	'ALL'			{ $type = PropertyFollows.RESOLVE_ALL; }
+	|	'NOTHING'		{ $type = PropertyFollows.RESOLVE_NOTHING; }
+	;
 
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////// TABLE STATEMENT /////////////////////////////

@@ -1,32 +1,33 @@
 IMPORT BaseLogicsModule;
 
-CLASS game 'Игра';
-CLASS team 'Команда' : named;
+CLASS game 'Game';
+CLASS team 'Team' : named;
 
-CLASS conference 'Конференция' : named;
+CLASS conference 'Conference' : named;
 
-CLASS STATIC gameResult 'Результат матча'
+CLASS STATIC gameResult 'S/O'
 {
-    win 'В основное время',
-    winOT 'В овертайме',
-    winSO 'По буллитам'
+    win '',
+    winOT 'OT',
+    winSO 'SO'
 };
 
-city 'Город' (team) = DATA STRING[100] (team) IN baseGroup;
+city 'City' (team) = DATA STRING[100] (team) IN baseGroup;
+teamName 'Team' (team) = name(team);
 
 conference(team) = DATA conference (team);
-conferenceName 'Конференция' (team) = name(conference(team)) IN baseGroup;
+conferenceName 'Conference' (team) = name(conference(team)) IN baseGroup;
 
 hostTeam(game) = DATA team (game);
 guestTeam(game) = DATA team (game);
 
-gameDate 'Дата' (game) = DATA DATE (game) IN baseGroup;
+gameDate 'Date' (game) = DATA DATE (game) IN baseGroup;
 
-hostTeamName 'Хозяева' = name(hostTeam(game)) IN baseGroup;
-guestTeamName 'Гости' = name(guestTeam(game)) IN baseGroup;
+hostTeamName 'Home' = name(hostTeam(game)) IN baseGroup;
+guestTeamName 'Visitor' = name(guestTeam(game)) IN baseGroup;
 
-hostGoals 'Голы хозяев' (game) = DATA INTEGER (game) IN baseGroup;
-guestGoals 'Голы гостей' (game) = DATA INTEGER (game) IN baseGroup;
+hostGoals 'H Score' (game) = DATA INTEGER (game) IN baseGroup;
+guestGoals 'V Score' (game) = DATA INTEGER (game) IN baseGroup;
 
 gameWinner(game) = UNION EXCLUSIVE hostTeam(game) IF hostGoals(game) > guestGoals(game),
                                    guestTeam(game) IF hostGoals(game) < guestGoals(game);
@@ -37,12 +38,12 @@ gameResultData(game) = DATA gameResult (game);
 
 gameResult(game) = UNION OVERRIDE gameResult.win IF game IS game, gameResultData(game);
 
-gameResultName 'Завершился' (game) = name(gameResult(game)) IN baseGroup;
+gameResultName 'O/S' (game) = name(gameResult(game)) IN baseGroup;
 
 hostGamesPlayed(team) = GROUP SUM 1 BY hostTeam(game);
 guestGamesPlayed(team) = GROUP SUM 1 BY guestTeam(game);
 
-gamesPlayed 'И' (team) = UNION SUM hostGamesPlayed(team), guestGamesPlayed(team);
+gamesPlayed 'GP' (team) = UNION SUM hostGamesPlayed(team), guestGamesPlayed(team);
 
 zeroIfTeamResult(obj1, obj2) = 0 IF obj1 IS team AND obj2 IS gameResult;
 
@@ -51,45 +52,45 @@ gamesWonByResult(team, type) = UNION SUM [GROUP SUM 1 BY gameWinner(game), gameR
 gamesLostByResult(team, type) = UNION SUM [GROUP SUM 1 BY gameLooser(game), gameResult(game)](team, type),
                                           zeroIfTeamResult(team, type);
 
-gamesWon 'В' (team) = gamesWonByResult(team, gameResult.win);
-gamesWonOT 'ВО' (team) = gamesWonByResult(team, gameResult.winOT);
-gamesWonSO 'ВБ' (team) = gamesWonByResult(team, gameResult.winSO);
+gamesWon 'W' (team) = gamesWonByResult(team, gameResult.win);
+gamesWonOT 'OTW' (team) = gamesWonByResult(team, gameResult.winOT);
+gamesWonSO 'SOW' (team) = gamesWonByResult(team, gameResult.winSO);
 
-gamesLost 'П' (team) = gamesLostByResult(team, gameResult.win);
-gamesLostOT 'ПО' (team) = gamesLostByResult(team, gameResult.winOT);
-gamesLostSO 'ПБ' (team) = gamesLostByResult(team, gameResult.winSO);
+gamesLost 'L' (team) = gamesLostByResult(team, gameResult.win);
+gamesLostOT 'OTL' (team) = gamesLostByResult(team, gameResult.winOT);
+gamesLostSO 'SOL' (team) = gamesLostByResult(team, gameResult.winSO);
 
-points 'О' (team) = gamesWon(team) * 3 + (gamesWonSO(team) + gamesWonOT(team)) * 2 + gamesLostOT(team) + gamesLostSO(team);
+points 'PTS' (team) = gamesWon(team) * 3 + (gamesWonSO(team) + gamesWonOT(team)) * 2 + gamesLostOT(team) + gamesLostSO(team);
 
 hostGoalsScored(team) = GROUP SUM hostGoals(game) BY hostTeam(game);
 guestGoalsScored(team) = GROUP SUM guestGoals(game) BY guestTeam(game);
-goalsScored 'ШЗ' (team) = UNION SUM hostGoalsScored(team), guestGoalsScored(team);
+goalsScored 'GF' (team) = UNION SUM hostGoalsScored(team), guestGoalsScored(team);
 
 hostGoalsConceded(team) = GROUP SUM guestGoals(game) BY hostTeam(game);
 guestGoalsConceded(team) = GROUP SUM hostGoals(game) BY guestTeam(game);
-goalsConceded 'ШП' (team) = UNION SUM hostGoalsConceded(team), guestGoalsConceded(team);
+goalsConceded 'GA' (team) = UNION SUM hostGoalsConceded(team), guestGoalsConceded(team);
 
 extendedGame(game) = gameResult(game) != gameResult.win;
 
-place 'Место' (team) = PARTITION SUM 1 ORDER DESC points(team), gamesWon(team), gamesWonOT(team), gamesWonSO(team),
-                                                  goalsScored(team) - goalsConceded(team), goalsScored(team);
+place 'PL' (team) = PARTITION SUM 1 ORDER DESC points(team), gamesWon(team), gamesWonOT(team), gamesWonSO(team),
+                                               goalsScored(team) - goalsConceded(team), goalsScored(team);
                                     
-conferencePlace 'Место в конференции' (team) = PARTITION SUM 1 BY conference(team) 
-                                               ORDER DESC points(team), gamesWon(team), gamesWonOT(team), gamesWonSO(team),
-                                                          goalsScored(team) - goalsConceded(team), goalsScored(team);
+conferencePlace 'Conf. PL' (team) = PARTITION SUM 1 BY conference(team)
+                                              ORDER DESC points(team), gamesWon(team), gamesWonOT(team), gamesWonSO(team),
+                                                         goalsScored(team) - goalsConceded(team), goalsScored(team);
                                     
 
-CONSTRAINT CHECKED hostTeam(team) == guestTeam(team) MSG 'Команда не может играть сама с собой';
-CONSTRAINT extendedGame(game) AND hostGoals(game) > guestGoals(game) + 1 MSG 'При таком счете матч должен закончиться в основное время';
-CONSTRAINT extendedGame(game) AND guestGoals(game) > hostGoals(game) + 1 MSG 'При таком счете матч должен закончиться в основное время';
-CONSTRAINT hostGoals(game) == guestGoals(game) MSG 'Матч не может закончиться вничью';
+CONSTRAINT CHECKED hostTeam(team) == guestTeam(team) MSG 'Home and Visitor teams should be different';
+CONSTRAINT extendedGame(game) AND hostGoals(game) > guestGoals(game) + 1 MSG 'Overtime is impossible';
+CONSTRAINT extendedGame(game) AND guestGoals(game) > hostGoals(game) + 1 MSG 'Overtime is impossible';
+CONSTRAINT hostGoals(game) == guestGoals(game) MSG 'The game cannot end in a draw';
 
 
-FORM MainForm 'Турнирная таблица'
+FORM MainForm 'Scoreboard'
 OBJECTS game, team
 PROPERTIES gameDate(game), hostTeamName(game), hostGoals(game), guestGoals(game), guestTeamName(game), gameResultName(game)
 PROPERTIES place(team), conferencePlace(team),
-           name(team), gamesPlayed(team), gamesWon(team), gamesWonOT(team), gamesWonSO(team), 
+           teamName(team), gamesPlayed(team), gamesWon(team), gamesWonOT(team), gamesWonSO(team),
            gamesLostSO(team), gamesLostOT(team), gamesLost(team), goalsScored(team), goalsConceded(team), points(team)
 PROPERTIES ADDOBJ(game), ADDOBJ(team);
            

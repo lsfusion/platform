@@ -757,7 +757,11 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
     public Set<PropertyFollows<T, ?>> follows = new HashSet<PropertyFollows<T, ?>>();
 
     public <L extends PropertyInterface> Property addFollows(PropertyMapImplement<L, T> implement) {
-        return addFollows(implement, ServerResourceBundle.getString("logics.property.violated.consequence.from") + "(" + this + ") => (" + implement.property + ")", PropertyFollows.RESOLVE_ALL);
+        return addFollows(implement, PropertyFollows.RESOLVE_ALL);
+    }
+
+    public <L extends PropertyInterface> Property addFollows(PropertyMapImplement<L, T> implement, int options) {
+        return addFollows(implement, ServerResourceBundle.getString("logics.property.violated.consequence.from") + "(" + this + ") => (" + implement.property + ")", options);
     }
 
     public <L extends PropertyInterface> Property addFollows(PropertyMapImplement<L, T> implement, String caption, int options) {

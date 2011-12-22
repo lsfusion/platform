@@ -597,6 +597,10 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
     }
 
+    public LP<?> addScriptedTypeExprProp(LP<?> mainProp, LP<?> property, List<Integer> usedParams) throws ScriptingErrorLog.SemanticErrorException {
+        return addScriptedJProp(mainProp, Arrays.<LP<?>>asList(property), Arrays.asList(usedParams)).property;
+    }
+
     public void addScriptedConstraint(LP<?> property, boolean checked, String message) throws ScriptingErrorLog.SemanticErrorException {
         scriptLogger.info("addScriptedConstraint(" + property + ", " + checked + ", " + message + ");");
         if (!property.property.check()) {
@@ -606,8 +610,18 @@ public class ScriptingLogicsModule extends LogicsModule {
         addConstraint(property, checked);
     }
 
-    public LP<?> addScriptedTypeExprProp(LP<?> mainProp, LP<?> property, List<Integer> usedParams) throws ScriptingErrorLog.SemanticErrorException {
-        return addScriptedJProp(mainProp, Arrays.<LP<?>>asList(property), Arrays.asList(usedParams)).property;
+    public void addScriptedFollows(String mainPropName, List<Integer> options, List<LP<?>> props, List<List<Integer>> usedParams) throws ScriptingErrorLog.SemanticErrorException {
+        scriptLogger.info("addScriptedFollows(" + mainPropName + ", " + options + ", " + props + ", " + usedParams + ");");
+        LP<?> mainProp = findLPByCompoundName(mainPropName);
+        checkProperty(mainProp, mainPropName);
+
+        for (int i = 0; i < props.size(); i++) {
+            int[] params = new int[usedParams.get(i).size()];
+            for (int j = 0; j < params.length; j++) {
+                params[j] = usedParams.get(i).get(j) + 1;
+            }
+            follows(mainProp, props.get(i), options.get(i), params);
+        }
     }
 
     private void checkGroup(AbstractGroup group, String name) throws ScriptingErrorLog.SemanticErrorException {

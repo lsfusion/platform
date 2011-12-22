@@ -14,7 +14,8 @@ CodeMirror.defineMode("fusion", function(config, parserConfig) {
                          "OVERRIDE XOR EXCLUSIVE IS AS IN PERSISTENT " +
                          "TRUE FALSE NOT NULL AND IF STATIC MSG " +
                          "OBJVALUE SELECTION ADDOBJ CONSTRAINT CHECKED " +
-                         "ORDER PARTITION DESC WINDOW EXCEPTLAST FORMULA");
+                         "ORDER PARTITION DESC WINDOW EXCEPTLAST FORMULA " +
+                         "RESOLVE ALL NOTHING");
 
     var isOperatorChar = /[+\-*&%=<>!?|]/;
 
