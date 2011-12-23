@@ -25,10 +25,11 @@
 	<field name="nameForeignProject" class="java.lang.String"/>
 	<field name="nameNativeClaimerProject" class="java.lang.String"/>
 	<field name="emailClaimerProject" class="java.lang.String"/>
+	<field name="dateToSentForTranslationProject" class="java.util.Date"/>
 	<detail>
 		<band height="46">
 			<textField isStretchWithOverflow="true">
-				<reportElement style="DefaultStyle" x="20" y="10" width="525" height="17"/>
+				<reportElement style="DefaultStyle" x="20" y="10" width="525" height="25" backcolor="#FFFFFF"/>
 				<box leftPadding="1" rightPadding="1">
 					<pen lineWidth="0.0"/>
 					<topPen lineWidth="0.0"/>
@@ -41,7 +42,8 @@
 					<paragraph leftIndent="10" spacingBefore="2" spacingAfter="2"/>
 				</textElement>
 				<textFieldExpression><![CDATA["Уважаемые коллеги! \n"+
-"Направляем материалы на перевод \n"+
+"На перевод направляются материалы заявки от заявителя: "+$F{nameNativeClaimerProject}+". \n"+
+"Перевод необходимо закончить до "+platform.base.BaseUtils.formatRussian($F{dateToSentForTranslationProject})+" года. \n"+
 "\n"+
 "\n"+
 "****************************DISCLAIMER******************************** \n"+

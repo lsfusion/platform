@@ -4986,9 +4986,9 @@ public class SkolkovoLogicsModule extends LogicsModule {
         public BureauTrProjectFormEntity(NavigatorElement parent, String sID, String caption) {
             super(parent, sID, caption, true);
 
-            objProject = addSingleGroupObject(1, "project", project, "Проект", nameResultForesightCheckProject, dateResultForesightCheckProject, positiveResultForesightCheckProject, negativeResultForesightCheckProject, dateProject, nameNativeProject, nameForeignProject, nameNativeClaimerProject, emailClaimerProject);
+            objProject = addSingleGroupObject(1, "project", project, "Проект", nameResultForesightCheckProject, dateResultForesightCheckProject, positiveResultForesightCheckProject, negativeResultForesightCheckProject, dateProject, nameNativeProject, nameForeignProject, nameNativeClaimerProject, emailClaimerProject, dateSentForTranslationProject, dateToSentForTranslationProject);
             objProject.groupTo.setSingleClassView(ClassViewType.PANEL);
-//            addFixedFilter(new NotNullFilterEntity(addPropertyObject(positiveLegalResultProject, objProject)));   // или        positiveResultForesightCheckProject
+            addFixedFilter(new NotNullFilterEntity(addPropertyObject(positiveResultForesightCheckProject, objProject)));   // или             positiveLegalResultProject
             setReadOnly(true);
 
             addInlineEAForm(emailBureauTrProjectEA, this, objProject, 1);
