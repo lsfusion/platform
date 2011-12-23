@@ -714,7 +714,7 @@ followsStatement
 }
 @after {
 	if (parseState == ScriptingLogicsModule.State.PROP) { 
-		self.addScriptedFollows(mainProp, options, props, usedParams);
+		self.addScriptedFollows(mainProp, context.size(), options, props, usedParams);
 	}
 }
 	:	propName=ID { mainProp = $propName.text; } 

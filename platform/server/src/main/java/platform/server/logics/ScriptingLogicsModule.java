@@ -332,6 +332,7 @@ public class ScriptingLogicsModule extends LogicsModule {
         scriptLogger.info("addSettingsToProperty(" + property.property.getSID() + ", " + name + ", " + caption + ", " +
                            namedParams + ", " + groupName + ", " + isPersistent + ");");
         checkDuplicateProperty(name);
+        checkNamedParams(property, namedParams);
         changePropertyName(property, name);
         AbstractGroup group = (groupName == null ? null : findGroupByCompoundName(groupName));
         property.property.caption = (caption == null ? name : transformStringLiteral(caption));
@@ -353,7 +354,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     public LPWithParams addScriptedJProp(LP<?> mainProp, List<LP<?>> paramProps, List<List<Integer>> usedParams) throws ScriptingErrorLog.SemanticErrorException {
-        checkParamCount(mainProp, paramProps);
+        checkParamCount(mainProp, paramProps.size());
         List<Object> resultParams = getParamsPlainList(paramProps, usedParams);
         LP<?> prop;
         if (isTrivialParamList(resultParams)) {
@@ -610,10 +611,11 @@ public class ScriptingLogicsModule extends LogicsModule {
         addConstraint(property, checked);
     }
 
-    public void addScriptedFollows(String mainPropName, List<Integer> options, List<LP<?>> props, List<List<Integer>> usedParams) throws ScriptingErrorLog.SemanticErrorException {
-        scriptLogger.info("addScriptedFollows(" + mainPropName + ", " + options + ", " + props + ", " + usedParams + ");");
+    public void addScriptedFollows(String mainPropName, int namedParamsCnt, List<Integer> options, List<LP<?>> props, List<List<Integer>> usedParams) throws ScriptingErrorLog.SemanticErrorException {
+        scriptLogger.info("addScriptedFollows(" + mainPropName + ", " + namedParamsCnt + ", " + options + ", " + props + ", " + usedParams + ");");
         LP<?> mainProp = findLPByCompoundName(mainPropName);
         checkProperty(mainProp, mainPropName);
+        checkParamCount(mainProp, namedParamsCnt);
 
         for (int i = 0; i < props.size(); i++) {
             int[] params = new int[usedParams.get(i).size()];
@@ -648,9 +650,9 @@ public class ScriptingLogicsModule extends LogicsModule {
         }
     }
 
-    private void checkParamCount(LP<?> mainProp, List<LP<?>> paramProps) throws ScriptingErrorLog.SemanticErrorException {
-        if (mainProp.property.interfaces.size() != paramProps.size()) {
-            errLog.emitParamCountError(parser, mainProp, paramProps.size());
+    private void checkParamCount(LP<?> mainProp, int paramCount) throws ScriptingErrorLog.SemanticErrorException {
+        if (mainProp.property.interfaces.size() != paramCount) {
+            errLog.emitParamCountError(parser, mainProp, paramCount);
         }
     }
 
@@ -730,6 +732,12 @@ public class ScriptingLogicsModule extends LogicsModule {
             if (param == 0 || param > params.size()) {
                 errLog.emitParamIndexError(parser, param, params.size());
             }
+        }
+    }
+
+    private void checkNamedParams(LP<?> property, List<String> namedParams) throws ScriptingErrorLog.SemanticErrorException {
+        if (property.property.interfaces.size() != namedParams.size()) {
+            errLog.emitNamedParamsError(parser);
         }
     }
 

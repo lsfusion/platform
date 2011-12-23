@@ -15,6 +15,7 @@
     <keywords ignore_case="false">
       <keyword name="ABSTRACT" />
       <keyword name="ADDOBJ" />
+      <keyword name="ALL" />
       <keyword name="AND" />
       <keyword name="AS" />
       <keyword name="BOOLEAN" />
@@ -47,6 +48,7 @@
       <keyword name="MAX" />
       <keyword name="MSG" />
       <keyword name="NOT" />
+      <keyword name="NOTHING" />
       <keyword name="NULL" />
       <keyword name="OBJECTS" />
       <keyword name="OBJVALUE" />
@@ -56,6 +58,7 @@
       <keyword name="PARTITION" />
       <keyword name="PERSISTENT" />
       <keyword name="PROPERTIES" />
+      <keyword name="RESOLVE" />
       <keyword name="SELECTION" />
       <keyword name="STATIC" />
       <keyword name="STRING" />

@@ -162,6 +162,10 @@ public class ScriptingErrorLog {
         emitSemanticError(msg, e);
     }
 
+    public void emitNamedParamsError(LsfLogicsParser parser) throws SemanticErrorException {
+        emitSimpleError(parser, "number of named parameters should be equal to actual number of parameters");
+    }
+
     public void emitUnionPropParamsError(LsfLogicsParser parser) throws SemanticErrorException {
         emitSimpleError(parser, "parameters of union property should all have same number of arguments");
     }
