@@ -1860,10 +1860,10 @@ public abstract class LogicsModule {
     }
 
     protected <L extends PropertyInterface, T extends PropertyInterface> void follows(LP<T> first, LP<L> second, int... mapping) {
-        follows(first, second, PropertyFollows.RESOLVE_ALL, mapping);
+        follows(first, PropertyFollows.RESOLVE_ALL, second, mapping);
     }
 
-    protected <L extends PropertyInterface, T extends PropertyInterface> void follows(LP<T> first, LP<L> second, int options, int... mapping) {
+    protected <L extends PropertyInterface, T extends PropertyInterface> void follows(LP<T> first, int options, LP<L> second, int... mapping) {
         Map<L, T> mapInterfaces = new HashMap<L, T>();
         for (int i = 0; i < second.listInterfaces.size(); i++) {
             mapInterfaces.put(second.listInterfaces.get(i), first.listInterfaces.get(mapping[i] - 1));

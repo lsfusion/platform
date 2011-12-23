@@ -620,7 +620,7 @@ public class ScriptingLogicsModule extends LogicsModule {
             for (int j = 0; j < params.length; j++) {
                 params[j] = usedParams.get(i).get(j) + 1;
             }
-            follows(mainProp, props.get(i), options.get(i), params);
+            follows(mainProp, options.get(i), props.get(i), params);
         }
     }
 

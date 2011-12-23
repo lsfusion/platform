@@ -23,7 +23,7 @@
 				<textElement verticalAlignment="Top">
 					<font fontName="Serif" size="14"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[($F{isForeignExpert}==null?
+				<textFieldExpression><![CDATA[($F{isForeignExpert}==null?
     "Уважаемый Эксперт Фонда \"Сколково\","
     :
     "Dear Skolkovo Foundation expert,"
@@ -34,7 +34,7 @@
 				<textElement verticalAlignment="Top">
 					<font fontName="Serif" size="14"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[($F{isForeignExpert}==null?
+				<textFieldExpression><![CDATA[($F{isForeignExpert}==null?
     "В связи с принятием новой редакции Положения о присвоении и утрате статуса участника Фонда \"Сколково\" мы имеем возможность учитывать предметные области (форсайты) поступающих заявок по каждому кластеру и, соответственно, направлять вам на экспертизу проекты, наиболее точно соответствующие Вашей области специализации. В целях эффективной организации экспертизы мы предлагаем Вам заполнить краткую анкету по ссылке ниже и выбрать предметные области, в которых Вы являетесь экспертом."
     :
     "We would like to announce that our new regulations will make it easier to identify cluster foresights for all incoming applications for Skolkovo participant status. As the result we can more precisely allocate the applications for your review in accordance with your background as an expert. We would appreciate if you could follow the link and complete the questionnaire which will help us better understand your areas of expertise. It will take just a few minutes."
@@ -45,10 +45,10 @@
 				<textElement verticalAlignment="Top">
 					<font fontName="Serif" size="14"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[($F{isForeignExpert}==null?
-    "Мы будем признательны, если Вы заполните анкету до 09.11.11. По всем вопросам, связанным с заполнением профиля, пожалуйста, обращайтесь по адресу:"
+				<textFieldExpression><![CDATA[($F{isForeignExpert}==null?
+    "По всем вопросам, связанным с заполнением профиля, пожалуйста, обращайтесь по адресу:"
     :
-    "We would be grateful if you could complete the questionnaire by Nov 9, 11. If you have any questions or comments please feel free contacting us at"
+    "If you have any questions or comments please feel free contacting us at"
 )]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
@@ -56,7 +56,7 @@
 				<textElement verticalAlignment="Top">
 					<font size="14" isBold="false" isItalic="false"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[($F{isForeignExpert}==null?
+				<textFieldExpression><![CDATA[($F{isForeignExpert}==null?
     "С уважением,\n\n" +
     "Фонд \"Сколково\""
     :
@@ -69,7 +69,7 @@
 				<textElement verticalAlignment="Top">
 					<font fontName="Serif" size="14"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[($F{isForeignExpert}==null?"Ссылка":"Link")]]></textFieldExpression>
+				<textFieldExpression><![CDATA[($F{isForeignExpert}==null?"Ссылка":"Link")]]></textFieldExpression>
 				<hyperlinkReferenceExpression><![CDATA["http://"+$F{webHost}+"/expertProfile.jsp?locale="+$F{localeExpert}]]></hyperlinkReferenceExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
@@ -77,7 +77,7 @@
 				<textElement verticalAlignment="Top">
 					<font fontName="Serif" size="14"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[($F{isForeignExpert}==null?
+				<textFieldExpression><![CDATA[($F{isForeignExpert}==null?
     "Логин : " + $F{userLogin} + "\n" +
     "Пароль : " + $F{userPassword}
     :
@@ -90,7 +90,7 @@
 				<textElement verticalAlignment="Top">
 					<font fontName="Serif" size="14"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA["expert_support@corp.i-gorod.com"]]></textFieldExpression>
+				<textFieldExpression><![CDATA["expert_support@corp.i-gorod.com"]]></textFieldExpression>
 				<hyperlinkReferenceExpression><![CDATA["mailto:expert_support@corp.i-gorod.com"]]></hyperlinkReferenceExpression>
 			</textField>
 		</band>
