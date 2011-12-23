@@ -16,6 +16,7 @@
 	<field name="nameNativeClaimerProject" class="java.lang.String"/>
 	<field name="nameDativusClaimerProject" class="java.lang.String"/>
 	<field name="nameGenitiveClaimerProject" class="java.lang.String"/>
+	<field name="isR1Project" class="java.lang.Boolean"/>
 	<detail>
 		<band height="429">
 			<staticText>
@@ -37,7 +38,7 @@
 				<textElement textAlignment="Justified">
 					<paragraph firstLineIndent="40"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA["«  »__________ 201_ года."]]></textFieldExpression>
+				<textFieldExpression><![CDATA["«  »__________ 201_ года."]]></textFieldExpression>
 			</textField>
 			<staticText>
 				<reportElement style="DefaultStyle" x="250" y="89" width="78" height="30"/>
@@ -51,44 +52,44 @@
 				</textElement>
 				<text><![CDATA[О присвоении статуса участника проекта]]></text>
 			</staticText>
-			<textField isStretchWithOverflow="true" isBlankWhenNull="false">
-				<reportElement style="DefaultStyle" positionType="Float" x="51" y="153" width="489" height="86"/>
-				<textElement textAlignment="Justified" verticalAlignment="Top">
-					<paragraph firstLineIndent="40"/>
-				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA["Некоммерческая организация Фонд развития Центра разработки и коммерциализации новых технологий, рассмотрев поданную " + $F{nameAblateClaimerProject} + " " +
-"заявку на присвоение статуса участника проекта от " +
-platform.base.BaseUtils.formatRussian($F{dateProject}) + " года (" + $F{nameNativeProject} + ") и документы, представленные Соискателем в порядке, предусмотренном пунктом 15 Положения о присвоении и утрате статуса участника проекта создания и обеспечения функционирования инновационного центра «Сколково», в соответствии с пунктами 16, 21, 22 указанного Положения, "+
-"учитывая, что проект, представленный Соискателем, прошел предварительную экспертизу в соответствии с Положением о предварительной экспертизе проектов и был признан соответствующим критериям, указанным в подпункте Е пункта 2 Положения о присвоении и утрате статуса участника проекта создания и обеспечения функционирования инновационного центра «Сколково» "+
-"(заявка "+$F{nameGenitiveClaimerProject}+" на проведение предварительной экспертизы проекта от " + platform.base.BaseUtils.formatRussian($F{dateProject}) + " года)"]]></textFieldExpression>
-			</textField>
 			<textField isStretchWithOverflow="true">
 				<reportElement style="DefaultStyle" positionType="Float" x="51" y="314" width="489" height="43"/>
 				<textElement textAlignment="Justified" verticalAlignment="Top">
 					<paragraph firstLineIndent="40"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA["3. Выдать указанному юридическому лицу Свидетельство, подтверждающее внесение записи в реестр участников проекта по созданию и обеспечению функционирования инновационного центра «Сколково» о присвоении указанному юридическому лицу статуса участника проекта."]]></textFieldExpression>
+				<textFieldExpression><![CDATA["3. Выдать указанному юридическому лицу Свидетельство, подтверждающее внесение записи в реестр участников проекта по созданию и обеспечению функционирования инновационного центра «Сколково» о присвоении указанному юридическому лицу статуса участника проекта."]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="false">
+				<reportElement style="DefaultStyle" positionType="Float" x="51" y="153" width="489" height="86"/>
+				<textElement textAlignment="Justified" verticalAlignment="Top">
+					<paragraph firstLineIndent="40"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Некоммерческая организация Фонд развития Центра разработки и коммерциализации новых технологий, рассмотрев поданную " + $F{nameAblateClaimerProject} + " " +
+"заявку на присвоение статуса участника проекта от " +
+platform.base.BaseUtils.formatRussian($F{dateProject}) + " года (" + $F{nameNativeProject} + ") и документы, представленные Соискателем в порядке, предусмотренном пунктом "+($F{isR1Project}!=null?"15":"25")+" Положения о присвоении и утрате статуса участника проекта создания и обеспечения функционирования инновационного центра «Сколково», в соответствии с пунктами "+($F{isR1Project}!=null?"16, 21, 22":"26, 32, 33")+" указанного Положения"+($F{isR1Project}!=null?", "+
+"учитывая, что проект, представленный Соискателем, прошел предварительную экспертизу в соответствии с Положением о предварительной экспертизе проектов и был признан соответствующим критериям, указанным в подпункте Е пункта 2 Положения о присвоении и утрате статуса участника проекта создания и обеспечения функционирования инновационного центра «Сколково» "+
+"(заявка "+$F{nameGenitiveClaimerProject}+" на проведение предварительной экспертизы проекта от " + platform.base.BaseUtils.formatRussian($F{dateProject}) + " года)":"")]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
 				<reportElement style="DefaultStyle" positionType="Float" x="51" y="284" width="489" height="30"/>
 				<textElement textAlignment="Justified" verticalAlignment="Top">
 					<paragraph firstLineIndent="40"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA["2. Включить указанное юридическое лицо в реестр участников проекта по созданию и обеспечению функционирования инновационного центра «Сколково» путем внесения в реестр участников проекта записи о присвоении указанному юридическому лицу статуса участника проекта."]]></textFieldExpression>
+				<textFieldExpression><![CDATA["2. Включить указанное юридическое лицо в реестр участников проекта по созданию и обеспечению функционирования инновационного центра «Сколково» путем внесения в реестр участников проекта записи о присвоении указанному юридическому лицу статуса участника проекта."]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
 				<reportElement style="DefaultStyle" positionType="Float" x="51" y="239" width="489" height="20"/>
 				<textElement textAlignment="Justified" verticalAlignment="Top">
 					<paragraph firstLineIndent="40"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA["р е ш и л:"]]></textFieldExpression>
+				<textFieldExpression><![CDATA["р е ш и л а:"]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
 				<reportElement style="DefaultStyle" positionType="Float" x="51" y="259" width="489" height="25"/>
 				<textElement textAlignment="Justified" verticalAlignment="Top">
 					<paragraph firstLineIndent="40"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA["1. Присвоить " + $F{nameDativusClaimerProject} + " статус участника проекта по созданию и обеспечению функционирования инновационного центра «Сколково»."]]></textFieldExpression>
+				<textFieldExpression><![CDATA["1. Присвоить " + $F{nameDativusClaimerProject} + " статус участника проекта по созданию и обеспечению функционирования инновационного центра «Сколково»."]]></textFieldExpression>
 			</textField>
 			<staticText>
 				<reportElement positionType="Float" x="50" y="374" width="247" height="48"/>

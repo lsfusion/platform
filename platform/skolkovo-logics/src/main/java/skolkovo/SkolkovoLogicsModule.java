@@ -2941,7 +2941,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         maxForesightProjectCluster = addMGProp("maxForesightProjectCluster", "Форсайт", addJProp(baseLM.and1, object(foresight), 2, inProjectForesight, 1, 2), 1, clusterForesight, 2);
         nameMaxForesightVote = addJProp("nameMaxForesightVote", "Форсайт", nameNative, addJProp(maxForesightProjectCluster, projectVote, 1, clusterVote, 1), 1);
-//        maxForesightVote = addMGProp("maxForesightVote", "Форсайт", addJProp(and(false, false, false), 2, inProjectForesight, 1, 2, addJProp(baseLM.equals2, object(project), 1, projectVote, 3), 1, 2, 3, addJProp(baseLM.equals2, clusterForesight, 2, clusterVote, 3), 1, 2, 3), 3);
+//        maxForesightVote = addMGProp("maxForesightVote", "Форсайт", addJProp(and(false, false, false), 2, inProjectForesight, 1, 2, addJProp(baseLM.equals2, object(project), 1, projectVote, 2), 1, 3, addJProp(baseLM.equals2, clusterForesight, 1, clusterVote, 2),  2, 3), 3);
 //        nMaxForesightVote = addJProp("nMaxForesightVote", "Форсайт", nameNative, maxForesightVote, 1);
 
         doneClusterExpertVoteDateFromDateTo = addJProp(and(false, false), doneNewExpertVote, 2, 3, betweenExpertVoteDateFromDateTo, 2, 3, 4, 5, addJProp(baseLM.equals2, 1, clusterVote, 2), 1, 3);
@@ -6684,7 +6684,9 @@ public class SkolkovoLogicsModule extends LogicsModule {
             super(parent, sID, caption, true);
 
             objVote = addSingleGroupObject(1, "vote", vote, "Заседание", nameNativeClusterVote, prevDateVote, nameNativePrevClusterVote, nameNativeFinalClusterProjectVote, isLastClusterVote,
-                    quantityDoneVote, quantityInClusterVote, acceptedInClusterVote, quantityInnovativeVote, acceptedInnovativeVote, quantityForeignVote, acceptedForeignVote);
+                    quantityDoneVote, quantityInClusterVote, acceptedInClusterVote, quantityInnovativeVote, acceptedInnovativeVote, quantityForeignVote, acceptedForeignVote, isR1ProjectVote, isStatusVote,
+                    quantityCompetitiveAdvantagesVote, acceptedCompetitiveAdvantagesVote, quantityCommercePotentialVote, acceptedCommercePotentialVote, quantityCanBeImplementedVote, acceptedCanBeImplementedVote,
+                    quantityHaveExpertiseVote, acceptedHaveExpertiseVote, quantityInternationalExperienceVote, acceptedInternationalExperienceVote, quantityEnoughDocumentsVote, acceptedEnoughDocumentsVote, nameMaxForesightVote);
             objVote.groupTo.initClassView = ClassViewType.PANEL;
 
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(closedRejectedVote, objVote)));
@@ -6831,7 +6833,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         private ClaimerStatusFormEntity(NavigatorElement parent, String sID) {
             super(parent, sID, "Решение о присвоении статуса участника", true);
 
-            objProject = addSingleGroupObject(genID(), "project", project, "Проект", dateProject, nameNativeProject, nameNativeClaimerProject, nameAblateClaimerProject, nameDativusClaimerProject, nameGenitiveClaimerProject);
+            objProject = addSingleGroupObject(genID(), "project", project, "Проект", dateProject, nameNativeProject, nameNativeClaimerProject, nameAblateClaimerProject, nameDativusClaimerProject, nameGenitiveClaimerProject, isR1Project);
             objProject.groupTo.initClassView = ClassViewType.PANEL;
 
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(acceptedProject, objProject)));
