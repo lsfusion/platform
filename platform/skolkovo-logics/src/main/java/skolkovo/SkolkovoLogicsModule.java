@@ -1536,6 +1536,9 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP isFileNativeTechnicalDescriptionProject;
     LP isFileForeignTechnicalDescriptionProject;
     LP nameNativeProjectFormalControl;
+    LP commentLegalCheckProject, setNegativeLegalResultProject, setNegativeLegalResultProjectApply, rejectLegalCheckProject;
+    LP setPositiveLegalResultProject, setPositiveLegalResultProjectApply, applyLegalCheckProject;
+    LP addPositiveLCResultProject, setPositiveLCResultApplyProject;
 
     @Override
     public void initProperties() {
@@ -3247,6 +3250,11 @@ public class SkolkovoLogicsModule extends LogicsModule {
         positiveLegalResultProject = addJProp("positiveLegalResultProject", true, "Прошла юридическую проверку", positiveResultLegalCheck, executeLegalCheckProject, 1);
         datePositiveLegalResultProject = addJProp("datePositiveLegalResultProject", "Дата прохождения юридической экспертизы", baseLM.and1, dateExecuteLegalCheckProject, 1, positiveLegalResultProject, 1);
 
+//        commentLegalCheckProject = addJProp("commentLegalCheckProject", true, "Комментарий юридической проверки", commentLegalCheck, executeLegalCheckProject, 1);
+        addPositiveLCResultProject = addJProp(legalCheckResultGroup, true, "Прошла юридическую проверку", addAAProp(legalCheck, projectLegalCheck, resultLegalCheck), 1, addCProp(legalCheckResult, "positiveLegalCheckResult"));
+        setPositiveLCResultApplyProject = addEPAProp("setPositiveLCResultApplyProject", "Прошла юридическую проверку", EPA_DEFAULT, addPositiveLCResultProject, 1, baseLM.apply, baseLM.cancel);
+        setPositiveLCResultApplyProject.property.askConfirm = true;
+
         // последняя юридическая проверка (на статус)
 
         isPreliminaryLegalCheck = addJProp("isPreliminaryLegalCheck", "На предв. экспертизу", baseLM.equals2, projectActionLegalCheck, 1, addCProp(projectAction, "preliminary"));
@@ -4264,6 +4272,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
     public ClaimerFullFormEntity claimerFull;
     public ProjectFullR2FormEntity projectFullR2Native;
     public ProjectFullR2FormEntity projectFullR2Foreign;
+    public ProjectFullR2FormEntity projectCompleteR2Native;
+    public ProjectFullR2FormEntity projectCompleteR2Foreign;
 
     private StatusLogFormEntity logNameStatusForm;
     private LP formLogNameStatusProject;
@@ -4303,6 +4313,9 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         projectFullR2Native = addFormEntity(new ProjectFullR2FormEntity(baseLM.objectElement, "projectFullR2Native", "Резюме проекта R2"));
         projectFullR2Foreign = addFormEntity(new ProjectFullR2FormEntity(baseLM.objectElement, "projectFullR2Foreign", "Resume project R2"));
+
+        projectCompleteR2Native = addFormEntity(new ProjectFullR2FormEntity(baseLM.objectElement, "projectCompleteR2Native", "Полная анкета R2"));
+        projectCompleteR2Foreign = addFormEntity(new ProjectFullR2FormEntity(baseLM.objectElement, "projectCompleteR2Foreign", "Full resume project R2"));
 
         claimerFull = addFormEntity(new ClaimerFullFormEntity(baseLM.objectElement, "claimerFull"));
         claimer.setEditForm(claimerFull);
@@ -4362,9 +4375,11 @@ public class SkolkovoLogicsModule extends LogicsModule {
         addFormEntity(new ConsultingCenterFormEntity(baseLM.baseElement, "consultingCenter"));
         addFormEntity(new ForesightExpertiseApplyFormEntity(baseLM.objectElement, "foresightExpertiseApply"));
         addFormEntity(new ForesightExpertiseRejectFormEntity(baseLM.objectElement, "foresightExpertiseReject"));
+//        addFormEntity(new LegalExpertiseRejectFormEntity(baseLM.objectElement, "legalExpertiseReject"));
         addFormEntity(new ForesightExpertiseListFormEntity(baseLM.baseElement, "foresightExpertiseList", "Соответствие кластеру", 2));
         addFormEntity(new ForesightExpertiseListFormEntity(baseLM.baseElement, "foresightExpertiseList2", "Проверка форсайтов", 1));
 //        addFormEntity(new ProjectDocumentsFormEntity(baseLM.baseElement, "projectdocs"));
+        addFormEntity(new LegalCheckExpertiseFormEntity(baseLM.baseElement, "legalCheckExpertise", "Юридическая проверка"));
         addFormEntity(new ConferenceFormEntity(baseLM.baseElement, "conferences"));
 
         baseLM.baseElement.add(print);
@@ -4725,7 +4740,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 //            addPropertyDraw(objTypeMileStone, objMileStone, nativeDescriptionTypeMileStoneMileStoneMileStoneYear, foreignDescriptionTypeMileStoneMileStoneMileStoneYear);
 
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(isR2Project, objProject)));
-            if (sID.equals("projectFullR2Foreign"))
+            if (sID.equals("projectFullR2Foreign") || sID.equals("projectCompleteR2Foreign"))
                 addFixedFilter(new NotNullFilterEntity(addPropertyObject(fillForeignProject, objProject)));
             else
                 addFixedFilter(new NotNullFilterEntity(addPropertyObject(fillNativeProject, objProject)));
@@ -4736,7 +4751,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
             addDefaultHintsIncrementTable(this);
 
-            addAttachEAForm(emailBureauTrProjectEA, this, EmailActionProperty.Format.PDF, objProject, 1);
+            if (sID.equals("projectFullR2Native") || sID.equals("projectFullR2Foreign"))
+                addAttachEAForm(emailBureauTrProjectEA, this, EmailActionProperty.Format.PDF, objProject, 1);
         }
 
         @Override
@@ -4946,6 +4962,41 @@ public class SkolkovoLogicsModule extends LogicsModule {
         }
     }
 
+//    public class LegalExpertiseRejectFormEntity extends FormEntity<SkolkovoBusinessLogics> {
+
+//        private ObjectEntity objProject;
+//        private ObjectEntity objLegalCheck;
+
+//        public LegalExpertiseRejectFormEntity(NavigatorElement parent, String sID) {
+//            super(parent, sID, "Проверка юридическая (отрицательная)");
+
+//            objProject = addSingleGroupObject(1, "project", project, "Проект", commentLegalCheckProject);
+//            objProject.groupTo.setSingleClassView(ClassViewType.PANEL);
+
+//            addActionsOnOk(addPropertyObject(setNegativeLegalResultProject, objProject));
+
+//            rejectLegalCheckProject = addJProp(actionGroup, "rejectLegalCheckProject", "Не прошла юридическую проверку", baseLM.andNot1,
+//                    addMFAProp(actionGroup, "Не прошла юридическую проверку", this, new ObjectEntity[]{objProject}, true), 1,
+//                    positiveLegalResultProject, 1);
+//            rejectLegalCheckProject.property.askConfirm = true;
+//            rejectLegalCheckProject.setImage("delete.png");
+//        }
+
+//        @Override
+//        public FormView createDefaultRichDesign() {
+//            DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign();
+//            design.getPrintFunction().setVisible(false);
+//            design.getXlsFunction().setVisible(false);
+//            design.getApplyFunction().setVisible(false);
+//            design.getCancelFunction().setVisible(false);
+
+//            design.get(getPropertyDraw(commentLegalCheckProject)).panelLabelAbove = true;
+//            design.get(getPropertyDraw(commentLegalCheckProject)).constraints.fillHorizontal = 1;
+//            design.get(getPropertyDraw(commentLegalCheckProject)).constraints.fillVertical = 1;
+//            return design;
+//        }
+//    }
+
     public class NotificationProjectFormEntity extends FormEntity<SkolkovoBusinessLogics> {
 
         private ObjectEntity objProject;
@@ -5073,6 +5124,57 @@ public class SkolkovoLogicsModule extends LogicsModule {
             return design;
         }
     }
+
+    public class LegalCheckExpertiseFormEntity extends FormEntity<SkolkovoBusinessLogics> {
+
+        private ObjectEntity objProject;
+        private ObjectEntity objLegalCheck;
+
+            private RegularFilterGroupEntity projectFilterGroup;
+
+            public LegalCheckExpertiseFormEntity(NavigatorElement parent, String sID, String caption) {
+                super(parent, sID, caption);
+
+
+            objProject = addSingleGroupObject(1, "project", project, "Проект", dateProject, dateStatusProject, nameNativeProject, nameForeignProject,
+                nameNativeShortFinalClusterProject, nameNativeClaimerProject, nameForeignClaimerProject, emailClaimerProject,
+                nameStatusProject, dateInStatusProject, normalPeriodStatusProject, quantityDaysToOverdueDateStatusProject, nameProjectActionProject, updateDateProject,
+                nameRegulationsProject, openApplicationProjectAction, exportProjectDocumentsAction, setPositiveLCResultApplyProject, rejectLegalCheckProject);
+
+            objLegalCheck = addSingleGroupObject(legalCheck);
+                addPropertyDraw(objLegalCheck, dateTimeSubmitLegalCheck, nameResultLegalCheck, nameProjectActionLegalCheck, dateTimeLegalCheck, emailClaimerLegalCheck, resultNoticedLegalCheck, dateResultNoticedLegalCheck, overdueDateLegalCheck, baseLM.delete);
+//                addPropertyDraw(objLegalCheck, addNegativeLCResult, addPositiveLCResult); //(new LP[]{addNegativeLCResult, addPositiveLCResult});
+                addPropertyDraw(commentLegalCheck, objLegalCheck).forceViewType = ClassViewType.PANEL;
+
+//                showIf(this, new LP[] {addPositiveLCResult, addNegativeLCResult},
+//                                    needLegalCheckStatusProject, objProject);
+
+                addFixedFilter(new CompareFilterEntity(addPropertyObject(projectLegalCheck, objLegalCheck), Compare.EQUALS, objProject));
+
+                addFixedFilter(new NotNullFilterEntity(addPropertyObject(positiveFormalResultProject, objProject)));
+
+            projectFilterGroup = new RegularFilterGroupEntity(genID());
+                projectFilterGroup.addFilter(new RegularFilterEntity(genID(),
+                new NotFilterEntity(new NotNullFilterEntity(addPropertyObject(nameResultLegalCheck, objProject))),
+                "Только неоцененные проекты",
+                KeyStroke.getKeyStroke(KeyEvent.VK_F10, 0)));
+                addRegularFilterGroup(projectFilterGroup);
+
+
+                setReadOnly(true, objProject.groupTo);
+                setReadOnly(actionGroup, false);
+            }
+
+            @Override
+            public FormView createDefaultRichDesign() {
+                DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign();
+                design.getGroupObjectContainer(objProject.groupTo).constraints.fillVertical = 4;
+                design.get(getPropertyDraw(commentLegalCheck)).constraints.fillHorizontal = 1;
+                design.get(getPropertyDraw(commentLegalCheck)).constraints.fillVertical = 1;
+
+                return design;
+            }
+        }
 
     public class FillLangProjectActionProperty extends ActionProperty {
 
