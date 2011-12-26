@@ -274,7 +274,7 @@ public abstract class GridTable extends ClientFormTable
         java.awt.Point p = e.getPoint();
         int rowIndex = rowAtPoint(p);
         int colIndex = columnAtPoint(p);
-        Object value = (rowIndex != -1 && colIndex != -1) ? getValueAt(rowIndex, colIndex) : null;
+        Object value = (rowIndex != -1 && colIndex != -1 && !getProperty(rowIndex, colIndex).echoSymbols) ? getValueAt(rowIndex, colIndex) : null;
         if (value instanceof Date) {
             value = Main.formatDate(value);
         }
