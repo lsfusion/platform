@@ -5139,7 +5139,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             objProject = addSingleGroupObject(1, "project", project, "Проект", dateProject, dateStatusProject, nameNativeProject, nameForeignProject,
                 nameNativeShortFinalClusterProject, nameNativeClaimerProject, nameForeignClaimerProject, emailClaimerProject,
                 nameStatusProject, dateInStatusProject, normalPeriodStatusProject, quantityDaysToOverdueDateStatusProject, nameProjectActionProject, updateDateProject,
-                nameRegulationsProject, openApplicationProjectAction, exportProjectDocumentsAction, setPositiveLCResultApplyProject, rejectLegalCheckProject);
+                nameRegulationsProject, openApplicationProjectAction, exportProjectDocumentsAction, setPositiveLCResultApplyProject);  // rejectLegalCheckProject
 
             objLegalCheck = addSingleGroupObject(legalCheck);
                 addPropertyDraw(objLegalCheck, dateTimeSubmitLegalCheck, nameResultLegalCheck, nameProjectActionLegalCheck, dateTimeLegalCheck, emailClaimerLegalCheck, resultNoticedLegalCheck, dateResultNoticedLegalCheck, overdueDateLegalCheck, baseLM.delete);
