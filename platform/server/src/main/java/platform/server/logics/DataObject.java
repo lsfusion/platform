@@ -3,6 +3,7 @@ package platform.server.logics;
 import platform.base.BaseUtils;
 import platform.base.TwinImmutableInterface;
 import platform.interop.Compare;
+import platform.server.auth.SecurityPolicy;
 import platform.server.caches.ManualLazy;
 import platform.server.caches.hash.HashValues;
 import platform.server.classes.*;

@@ -509,7 +509,16 @@ public class DockableMainFrame extends MainFrame {
         logicsConfigurator.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
-                openLogicSetupForm();
+                try {
+                    Boolean configurator = Main.frame.remoteNavigator.getConfiguratorSecurityPolicy();
+                    if ((configurator != null) && (configurator == true))
+                        openLogicSetupForm();
+                    else {
+                        JOptionPane.showMessageDialog(null, ClientResourceBundle.getString("descriptor.view.access.denied"), ClientResourceBundle.getString("descriptor.view.error"), JOptionPane.ERROR_MESSAGE);
+                    }
+                } catch (RemoteException e1) {
+                    e1.printStackTrace();
+                }
             }
         });
 

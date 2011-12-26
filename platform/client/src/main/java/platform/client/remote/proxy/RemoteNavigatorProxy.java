@@ -164,6 +164,11 @@ public class RemoteNavigatorProxy<T extends RemoteNavigatorInterface>
         return target.getCurrentFormSID();
     }
 
+    @Override
+    public Boolean getConfiguratorSecurityPolicy() throws RemoteException {
+        return target.getConfiguratorSecurityPolicy();
+    }
+
     public String getRemoteActionMessage() throws RemoteException {
         return target.getRemoteActionMessage();
     }

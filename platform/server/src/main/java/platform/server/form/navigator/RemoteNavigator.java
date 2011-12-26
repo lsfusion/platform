@@ -90,7 +90,7 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteContextO
 
     public void changeCurrentUser(DataObject user) {
         this.user = user;
-
+        this.securityPolicy = getUserSecurityPolicy();
         updateEnvironmentProperty(BL.LM.currentUser.property, user);
     }
 
@@ -103,22 +103,36 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteContextO
 
     public void relogin(String login) throws RemoteException {
         try {
-            DataSession session = createSession();
-            Integer userId = (Integer) BL.LM.loginToUser.read(session, new DataObject(login, StringClass.get(30)));
-            DataObject user = session.getDataObject(userId, ObjectType.instance);
-            changeCurrentUser(user);
-            session.close();
+            changeCurrentUser(getCurrentUser(login));
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
 
-    public void changePassword(String login, String newPassword) throws RemoteException {
+    public SecurityPolicy getUserSecurityPolicy() {
+        try {
+            return BL.readUser(getUserLogin(), createSession()).getSecurityPolicy();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public DataObject getCurrentUser(String login) {
         try {
             DataSession session = createSession();
             Integer userId = (Integer) BL.LM.loginToUser.read(session, new DataObject(login, StringClass.get(30)));
-            DataObject user = session.getDataObject(userId, BL.LM.customUser.getType());
-            BL.LM.userPassword.execute(newPassword, session, session.modifier, user);
+            DataObject user = session.getDataObject(userId, ObjectType.instance);
+            session.close();
+            return user;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+    
+    public void changePassword(String login, String newPassword) throws RemoteException {
+        try {
+            DataSession session = createSession();
+            BL.LM.userPassword.execute(newPassword, session, session.modifier, getCurrentUser(login));
             session.apply(BL);
             session.close();
         } catch (Exception e) {
@@ -134,6 +148,17 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteContextO
             String userLogin = (String)BL.LM.userLogin.read(session, currentUser);
             session.close();
             return userLogin.trim();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public String getUserLogin() {
+        try {
+            DataSession session = createSession();
+            String userLogin = (String) BL.LM.userLogin.read(session, user);
+            session.close();
+            return userLogin;
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -307,6 +332,12 @@ public class RemoteNavigator<T extends BusinessLogics<T>> extends RemoteContextO
             return null;
         }
     }
+
+    @Override
+    public Boolean getConfiguratorSecurityPolicy() throws RemoteException {
+        return securityPolicy.configurator;
+    }
+
     public void gainedFocus(FormInstance<T> form) {
         weakCurrentForm = new WeakReference<FormInstance<T>>(form);
     }

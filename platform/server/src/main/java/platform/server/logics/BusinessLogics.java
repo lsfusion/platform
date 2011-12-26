@@ -372,7 +372,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         return user;
     }
 
-    private User readUser(String login, DataSession session) throws SQLException {
+    public User readUser(String login, DataSession session) throws SQLException {
         Integer userId = (Integer) LM.loginToUser.read(session, new DataObject(login, StringClass.get(30)));
         if (userId == null) {
             return null;
@@ -636,7 +636,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
                 : null;
     }
 
-    protected SecurityPolicy permitAllPolicy, readOnlyPolicy;
+    protected SecurityPolicy permitAllPolicy, readOnlyPolicy, forbidConfiguratorPolicy;
 
     void initBaseAuthentication() throws ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException {
         permitAllPolicy = addPolicy(getString("logics.policy.allow.all"), getString("logics.policy.allows.all.actions"));
@@ -647,6 +647,9 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         readOnlyPolicy.cls.edit.add.defaultPermission = false;
         readOnlyPolicy.cls.edit.change.defaultPermission = false;
         readOnlyPolicy.cls.edit.remove.defaultPermission = false;
+
+        forbidConfiguratorPolicy = addPolicy(getString("logics.policy.forbid.configurator"), getString("logics.policy.logics.forbid.configurator"));
+        forbidConfiguratorPolicy.configurator = true;
     }
 
     public void ping() throws RemoteException {

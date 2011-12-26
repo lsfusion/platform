@@ -56,4 +56,6 @@ public interface RemoteNavigatorInterface extends PendingRemote, RemoteContextIn
     ArrayList<IDaemonTask> getDaemonTasks(int compId) throws RemoteException;
 
     String getCurrentFormSID() throws RemoteException;
+    
+    Boolean getConfiguratorSecurityPolicy() throws RemoteException;
 }
