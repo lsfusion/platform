@@ -17,6 +17,8 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Arrays;
 
 
 public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
@@ -89,8 +91,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
         permitCachRegister.navigator.permit(VEDLM.cachRegManagementForm);
 
         //админ игнорит настройки в базе, ему разрешено всё
-        policyManager.userPolicies.put(addUser("admin", "fusion").ID, permitAllPolicy);
-        policyManager.userPolicies.put(addUser("admin", "fusion").ID, forbidConfiguratorPolicy);
+        policyManager.userPolicies.put(addUser("admin", "fusion").ID, new ArrayList<SecurityPolicy>(Arrays.asList(permitAllPolicy, forbidConfiguratorPolicy)));
     }
 
     public Scheduler getScheduler() {

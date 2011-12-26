@@ -2,6 +2,7 @@ package roman;
 
 import net.sf.jasperreports.engine.JRException;
 import platform.interop.event.IDaemonTask;
+import platform.server.auth.SecurityPolicy;
 import platform.server.auth.User;
 import platform.server.daemons.ScannerDaemonTask;
 import platform.server.daemons.WeightDaemonTask;
@@ -14,6 +15,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 @SuppressWarnings({"FieldCanBeLocal", "UnusedDeclaration", "DuplicateThrows"})
 public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
@@ -34,8 +36,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
 
     @Override
     protected void initAuthentication() throws ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException {
-        policyManager.userPolicies.put(addUser("admin", "fusion").ID, permitAllPolicy);
-        policyManager.userPolicies.put(addUser("admin", "fusion").ID, forbidConfiguratorPolicy);
+        policyManager.userPolicies.put(addUser("admin", "fusion").ID, new ArrayList<SecurityPolicy>(Arrays.asList(permitAllPolicy, forbidConfiguratorPolicy)));
     }
 
 

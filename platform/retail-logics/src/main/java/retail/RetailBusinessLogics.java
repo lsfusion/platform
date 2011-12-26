@@ -1,6 +1,7 @@
 package retail;
 
 import net.sf.jasperreports.engine.JRException;
+import platform.server.auth.SecurityPolicy;
 import platform.server.auth.User;
 import platform.server.data.sql.DataAdapter;
 import platform.server.logics.BusinessLogics;
@@ -8,6 +9,10 @@ import platform.server.logics.BusinessLogics;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
 
 /**
  * Created by IntelliJ IDEA.
@@ -33,8 +38,7 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> {
 
     @Override
     protected void initAuthentication() throws ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException {
-        policyManager.userPolicies.put(addUser("admin", "fusion").ID, permitAllPolicy);
-        policyManager.userPolicies.put(addUser("admin", "fusion").ID, forbidConfiguratorPolicy);
+        policyManager.userPolicies.put(addUser("admin", "fusion").ID, new ArrayList<SecurityPolicy>(Arrays.asList(permitAllPolicy, forbidConfiguratorPolicy)));
     }
 
 

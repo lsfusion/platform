@@ -7,6 +7,7 @@ import platform.base.IOUtils;
 import platform.base.OrderedMap;
 import platform.interop.Compare;
 import platform.server.auth.PolicyManager;
+import platform.server.auth.SecurityPolicy;
 import platform.server.auth.User;
 import platform.server.classes.ConcreteClass;
 import platform.server.data.expr.Expr;
@@ -61,8 +62,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
         for (Property property : SkolkovoLM.voteResultGroup.getProperties())
             policyManager.defaultSecurityPolicy.property.change.deny(property);
 
-        policyManager.userPolicies.put(addUser("admin", "fusion").ID, permitAllPolicy);
-        policyManager.userPolicies.put(addUser("admin", "fusion").ID, forbidConfiguratorPolicy);
+        policyManager.userPolicies.put(addUser("admin", "fusion").ID, new ArrayList<SecurityPolicy>(Arrays.asList(permitAllPolicy, forbidConfiguratorPolicy)));
     }
     //!!!!
 

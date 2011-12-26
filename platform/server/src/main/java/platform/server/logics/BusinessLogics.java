@@ -381,9 +381,10 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
         applyDefaultPolicy(userObject);
 
-        SecurityPolicy codeUserPolicy = policyManager.userPolicies.get(userObject.ID);
+        List<SecurityPolicy> codeUserPolicy = policyManager.userPolicies.get(userObject.ID);
         if (codeUserPolicy != null) {
-            userObject.addSecurityPolicy(codeUserPolicy);
+            for (SecurityPolicy policy : codeUserPolicy)
+                userObject.addSecurityPolicy(policy);
         }
 
         applyFormDefinedUserPolicy(userObject);
