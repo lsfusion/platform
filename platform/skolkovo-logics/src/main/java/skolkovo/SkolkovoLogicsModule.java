@@ -1366,12 +1366,14 @@ public class SkolkovoLogicsModule extends LogicsModule {
     public LP dataResearch;
     public LP nativeCommentToResearch;
     public LP nativeCommentSIDToResearch;
+    public LP foreignCommentToResearch;
+    public LP foreignCommentSIDToResearch;
     public LP linksPatent;
     public LP nativeCommentMissionProject;
     public LP foreignCommentMissionProject;
     public LP projectPublications, equalsPublicationsProject;
-    public LP nativeToPublications;
-    public LP nativeSIDToPublications;
+    public LP nativeToPublications, nativeSIDToPublications;
+    public LP foreignToPublications, foreignSIDToPublications;
     public LP foreignPublications;
     public LP nativeAuthorPublications;
     public LP foreignAuthorPublications;
@@ -1379,15 +1381,15 @@ public class SkolkovoLogicsModule extends LogicsModule {
     public LP nativeLinksPublications;
     public LP projectCommercialization, equalsCommercializationProject;
     public LP nativeProjectCommercialization;
-    public LP nativeProjectToCommercialization;
-    public LP nativeProjectSIDToCommercialization;
+    public LP nativeProjectToCommercialization, nativeProjectSIDToCommercialization;
+    public LP foreignProjectToCommercialization, foreignProjectSIDToCommercialization;
     public LP foreignProjectCommercialization;
     public LP nativeCommentProjectCommercialization;
     public LP foreignCommentProjectCommercialization;
     public LP projectAnalogues, equalsAnaloguesProject;
     public LP nativeProjectAnalogues;
-    public LP nativeProjectToAnalogues;
-    public LP nativeProjectSIDToAnalogues;
+    public LP nativeProjectToAnalogues, nativeProjectSIDToAnalogues;
+    public LP foreignProjectToAnalogues, foreignProjectSIDToAnalogues;
     public LP foreignProjectAnalogues;
     public LP nativeDescriptionProjectAnalogues;
     public LP foreignDescriptionProjectAnalogues;
@@ -1395,12 +1397,12 @@ public class SkolkovoLogicsModule extends LogicsModule {
     public LP foreignCharacteristicsProjectAnalogues;
     public LP projectObjectives, equalsObjectivesProject;
     public LP nativeProjectObjectives;
-    public LP nativeProjectToObjectives;
-    public LP nativeProjectSIDToObjectives;
+    public LP nativeProjectToObjectives, nativeProjectSIDToObjectives;
+    public LP foreignProjectToObjectives, foreignProjectSIDToObjectives;
     public LP foreignProjectObjectives;
     public LP nameNativeSpecialist;
-    public LP nameNativeToSpecialist;
-    public LP nameNativeSIDToSpecialist;
+    public LP nameNativeToSpecialist, nameNativeSIDToSpecialist;
+    public LP nameForeignToSpecialist, nameForeignSIDToSpecialist;
     public LP nameForeignSpecialist;
     public LP nativePublications;
     public LP nativeEditionPublications;
@@ -1872,6 +1874,9 @@ public class SkolkovoLogicsModule extends LogicsModule {
         foreignCommentResearch.setMinimumWidth(10);
         foreignCommentResearch.setPreferredWidth(50);
 
+        foreignCommentToResearch = addAGProp("foreignCommentToResearch", "Исследование (номер комментария, внутренний ID проекта) (иностр.)", foreignCommentResearch, projectResearch);
+        foreignCommentSIDToResearch = addJProp("foreignCommentSIDToResearch", "Исследование (номер комментария, внешний ID проекта) (иностр.)", foreignCommentToResearch, 1, sidToProject, 2);
+
         dataResearch = addDProp(problemGroup, "dataResearch", "Ссылка", InsensitiveStringClass.get(2000), research);
         dataResearch.setMinimumWidth(10);
         dataResearch.setPreferredWidth(50);
@@ -1889,6 +1894,9 @@ public class SkolkovoLogicsModule extends LogicsModule {
         foreignPublications = addDProp(publicationsGroup, "foreignPublications", "Publications", InsensitiveStringClass.get(2000), publications);
         foreignPublications.setMinimumWidth(10);
         foreignPublications.setPreferredWidth(50);
+
+        foreignToPublications = addAGProp("foreignToPublications", "Публикация (иностр.)", foreignPublications, projectPublications);
+        foreignSIDToPublications = addJProp("foreignSIDToPublications", "Публикация (иностр.)", foreignToPublications, 1, sidToProject, 2);
 
         nativeAuthorPublications = addDProp(publicationsGroup, "nativeAuthorPublications", "Автор", InsensitiveStringClass.get(2000), publications);
         nativeAuthorPublications.setMinimumWidth(10);
@@ -1924,6 +1932,9 @@ public class SkolkovoLogicsModule extends LogicsModule {
         foreignProjectCommercialization = addDProp(commercializationGroup, "foreignProjectCommercialization", "Main areas of commercialization of the project", InsensitiveStringClass.get(2000), commercialization);
         foreignProjectCommercialization.setMinimumWidth(10);
         foreignProjectCommercialization.setPreferredWidth(50);
+
+        foreignProjectToCommercialization = addAGProp("foreignProjectToCommercialization", "Коммерциализация (иностр.)", foreignProjectCommercialization, projectCommercialization);
+        foreignProjectSIDToCommercialization = addJProp("foreignProjectSIDToCommercialization", "Коммерциализация (иностр.)", foreignProjectToCommercialization, 1, sidToProject, 2);
 
         nativeCommentProjectCommercialization = addDProp(commercializationGroup, "nativeCommentProjectCommercialization", "Комментарий", InsensitiveStringClass.get(2000), commercialization);
         nativeCommentProjectCommercialization.setMinimumWidth(10);
@@ -1986,6 +1997,9 @@ public class SkolkovoLogicsModule extends LogicsModule {
         foreignProjectAnalogues = addDProp(analoguesGroup, "foreignProjectAnalogues", "Analogues of the project and its benefit", InsensitiveStringClass.get(2000), analogues);
         foreignProjectAnalogues.setMinimumWidth(10);
         foreignProjectAnalogues.setPreferredWidth(50);
+
+        foreignProjectToAnalogues = addAGProp("foreignProjectToAnalogues", "Аналоги (иностр.)", foreignProjectAnalogues, projectAnalogues);
+        foreignProjectSIDToAnalogues = addJProp("foreignProjectSIDToAnalogues", "Аналоги (иностр.)", foreignProjectToAnalogues, 1, sidToProject, 2);
 
         nativeDescriptionProjectAnalogues = addDProp(analoguesGroup, "nativeDescriptionProjectAnalogues", "Описание", InsensitiveStringClass.get(2000), analogues);
         nativeDescriptionProjectAnalogues.setMinimumWidth(10);
@@ -2097,6 +2111,9 @@ public class SkolkovoLogicsModule extends LogicsModule {
         foreignProjectObjectives.setMinimumWidth(10);
         foreignProjectObjectives.setPreferredWidth(50);
 
+        foreignProjectToObjectives = addAGProp("foreignProjectToObjectives", "Цели проекта (иностр.)", foreignProjectObjectives, projectObjectives);
+        foreignProjectSIDToObjectives = addJProp("foreignProjectSIDToObjectives", "Цели проекта (иностр.)", foreignProjectToObjectives, 1, sidToProject, 2);
+
         nativeGeneralizedPlanProject = addDProp(projectmissionGroup, "nativeGeneralizedPlanProject", "Обобщенный план последующего развития", InsensitiveStringClass.get(2000), project);
         nativeGeneralizedPlanProject.setMinimumWidth(10);
         nativeGeneralizedPlanProject.setPreferredWidth(50);
@@ -2114,11 +2131,14 @@ public class SkolkovoLogicsModule extends LogicsModule {
         nameNativeSpecialist.setPreferredWidth(50);
 
         nameNativeToSpecialist = addAGProp("nameNativeToSpecialist", "Специалист", nameNativeSpecialist, projectSpecialist);
-        nameNativeSIDToSpecialist = addJProp("nameNativeSIDToSpecialist", "Аналоги", nameNativeToSpecialist, 1, sidToProject, 2);
-        
+        nameNativeSIDToSpecialist = addJProp("nameNativeSIDToSpecialist", "Специалист", nameNativeToSpecialist, 1, sidToProject, 2);
+
         nameForeignSpecialist = addDProp(teamGroup, "nameForeignSpecialist", "The name of the specialist", InsensitiveStringClass.get(2000), specialist);
         nameForeignSpecialist.setMinimumWidth(10);
         nameForeignSpecialist.setPreferredWidth(50);
+
+        nameForeignToSpecialist = addAGProp("nameForeignToSpecialist", "Специалист (иностр.)", nameForeignSpecialist, projectSpecialist);
+        nameForeignSIDToSpecialist = addJProp("nameForeignSIDToSpecialist", "Специалист (иностр.)", nameForeignToSpecialist, 1, sidToProject, 2);
 
         nativePostSpecialist = addDProp(teamGroup, "nativePostSpecialist", "Роль в прокте, должность в компании", InsensitiveStringClass.get(170), specialist);
         nativePostSpecialist.setMinimumWidth(10);

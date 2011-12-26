@@ -465,7 +465,7 @@ public class ImportProjectsActionProperty extends ActionProperty {
                 LM.baseLM.object(LM.project).getMapping(projectKey)));
     }
 
-    private void initNewFieldsNProperties() {
+    private void initNewFieldsNProperties(boolean fillNative) {
         dateProjectField = new ImportField(LM.baseLM.date);
         dateStatusProjectField = new ImportField(LM.statusDateProject);
         projectIdField = new ImportField(LM.sidProject);
@@ -800,14 +800,14 @@ public class ImportProjectsActionProperty extends ActionProperty {
         propertyOtherClusterNative = new ImportProperty(nativeSubstantiationOtherClusterProjectField, LM.nativeSubstantiationOtherClusterProject.getMapping(projectKey));
         propertyOtherClusterForeign = new ImportProperty(foreignSubstantiationOtherClusterProjectField, LM.foreignSubstantiationOtherClusterProject.getMapping(projectKey));
 
-        researchKey = new ImportKey(LM.research, LM.nativeCommentSIDToResearch.getMapping(nativeCommentResearchField, projectIdField));
+        researchKey = new ImportKey(LM.research, (fillNative ? LM.nativeCommentSIDToResearch : LM.foreignCommentSIDToResearch).getMapping(fillNative ? nativeCommentResearchField : foreignCommentResearchField, projectIdField));
         propertiesResearch.add(new ImportProperty(dataResearchField, LM.dataResearch.getMapping(researchKey)));
         propertiesResearch.add(new ImportProperty(projectIdField, LM.projectResearch.getMapping(researchKey),
                 LM.baseLM.object(LM.project).getMapping(projectKey)));
         propertiesResearchNative.add(new ImportProperty(nativeCommentResearchField, LM.nativeCommentResearch.getMapping(researchKey)));
         propertiesResearchForeign.add(new ImportProperty(foreignCommentResearchField, LM.foreignCommentResearch.getMapping(researchKey)));
 
-        publicationsKey = new ImportKey(LM.publications, LM.nativeSIDToPublications.getMapping(nativePublicationsField, projectIdField));
+        publicationsKey = new ImportKey(LM.publications, (fillNative ? LM.nativeSIDToPublications : LM.foreignSIDToPublications).getMapping(fillNative ? nativePublicationsField : foreignPublicationsField, projectIdField));
         propertiesPublications.add(new ImportProperty(datePublicationsField, LM.datePublications.getMapping(publicationsKey)));
         propertiesPublications.add(new ImportProperty(nativeLinksPublicationsField, LM.nativeLinksPublications.getMapping(publicationsKey)));
         propertiesPublications.add(new ImportProperty(projectIdField, LM.projectPublications.getMapping(publicationsKey),
@@ -820,7 +820,7 @@ public class ImportProjectsActionProperty extends ActionProperty {
         propertiesPublicationsForeign.add(new ImportProperty(foreignEditionPublicationsField, LM.foreignEditionPublications.getMapping(publicationsKey)));
 
 
-        commercializationKey = new ImportKey(LM.commercialization, LM.nativeProjectSIDToCommercialization.getMapping(nativeProjectCommercializationField, projectIdField));
+        commercializationKey = new ImportKey(LM.commercialization, (fillNative ? LM.nativeProjectSIDToCommercialization : LM.foreignProjectSIDToCommercialization).getMapping(fillNative ? nativeProjectCommercializationField : foreignProjectCommercializationField, projectIdField));
         propertiesCommercialization.add(new ImportProperty(projectIdField, LM.projectCommercialization.getMapping(commercializationKey),
                 LM.baseLM.object(LM.project).getMapping(projectKey)));
         propertiesCommercializationNative.add(new ImportProperty(nativeProjectCommercializationField, LM.nativeProjectCommercialization.getMapping(commercializationKey)));
@@ -828,7 +828,7 @@ public class ImportProjectsActionProperty extends ActionProperty {
         propertiesCommercializationForeign.add(new ImportProperty(foreignProjectCommercializationField, LM.foreignProjectCommercialization.getMapping(commercializationKey)));
         propertiesCommercializationForeign.add(new ImportProperty(foreignCommentProjectCommercializationField, LM.foreignCommentProjectCommercialization.getMapping(commercializationKey)));
 
-        analoguesKey = new ImportKey(LM.analogues, LM.nativeProjectSIDToAnalogues.getMapping(nativeProjectAnaloguesField, projectIdField));
+        analoguesKey = new ImportKey(LM.analogues, (fillNative ? LM.nativeProjectSIDToAnalogues : LM.foreignProjectSIDToAnalogues).getMapping(fillNative ? nativeProjectAnaloguesField : foreignProjectAnaloguesField, projectIdField));
         propertiesAnalogues.add(new ImportProperty(projectIdField, LM.projectAnalogues.getMapping(analoguesKey),
                 LM.baseLM.object(LM.project).getMapping(projectKey)));
         propertiesAnaloguesNative.add(new ImportProperty(nativeProjectAnaloguesField, LM.nativeProjectAnalogues.getMapping(analoguesKey)));
@@ -839,7 +839,7 @@ public class ImportProjectsActionProperty extends ActionProperty {
         propertiesAnaloguesForeign.add(new ImportProperty(foreignCharacteristicsProjectAnaloguesField, LM.foreignCharacteristicsProjectAnalogues.getMapping(analoguesKey)));
 
 
-        specialistKey = new ImportKey(LM.specialist, LM.nameNativeSIDToSpecialist.getMapping(nameNativeSpecialistField, projectIdField));
+        specialistKey = new ImportKey(LM.specialist, (fillNative ? LM.nameNativeSIDToSpecialist : LM.nameForeignSIDToSpecialist).getMapping(fillNative ? nameNativeSpecialistField : nameForeignSpecialistField, projectIdField));
         propertiesSpecialist.add(new ImportProperty(projectIdField, LM.projectSpecialist.getMapping(specialistKey),
                 LM.baseLM.object(LM.project).getMapping(projectKey)));
         propertiesSpecialist.add(new ImportProperty(filePassportSpecialistField, LM.filePassportSpecialist.getMapping(specialistKey)));
@@ -888,7 +888,7 @@ public class ImportProjectsActionProperty extends ActionProperty {
         propertiesMileStoneForeign.add(new ImportProperty(foreignPromotionDescriptionTypeMileStoneMileStoneField, LM.foreignPromotionDescriptionTypeMileStoneMileStoneYear.getMapping(mileStoneKey, mileStoneYearKey)));
         propertiesMileStoneForeign.add(new ImportProperty(foreignSellingDescriptionTypeMileStoneMileStoneField, LM.foreignSellingDescriptionTypeMileStoneMileStoneYear.getMapping(mileStoneKey, mileStoneYearKey)));
 
-        objectivesKey = new ImportKey(LM.objectives, LM.nativeProjectSIDToObjectives.getMapping(nativeProjectObjectivesField, projectIdField));
+        objectivesKey = new ImportKey(LM.objectives, (fillNative ? LM.nativeProjectSIDToObjectives : LM.foreignProjectSIDToObjectives).getMapping(fillNative ? nativeProjectObjectivesField : foreignProjectObjectivesField, projectIdField));
         propertiesObjectives.add(new ImportProperty(projectIdField, LM.projectObjectives.getMapping(objectivesKey),
                 LM.baseLM.object(LM.project).getMapping(projectKey)));
         propertiesObjectivesNative.add(new ImportProperty(nativeProjectObjectivesField, LM.nativeProjectObjectives.getMapping(objectivesKey)));
@@ -1625,7 +1625,7 @@ public class ImportProjectsActionProperty extends ActionProperty {
 
                 } else {
 
-                    initNewFieldsNProperties();
+                    initNewFieldsNProperties(fillNative);
 
                     if (fillNative) row.add(true);
                     else row.add(null); //fillNativeProject
@@ -1837,8 +1837,10 @@ public class ImportProjectsActionProperty extends ActionProperty {
 
                         rowResearch.add(projectId);
                         rowResearch.add(nodeResearch.getChildText("dataResearch"));
-                        rowResearch.add(nodeResearch.getChildText("nativeCommentResearch"));
-                        rowResearch.add(nodeResearch.getChildText("foreignCommentResearch"));
+                        if (fillNative)
+                            rowResearch.add(nodeResearch.getChildText("nativeCommentResearch"));
+                        if (fillForeign)
+                            rowResearch.add(nodeResearch.getChildText("foreignCommentResearch"));
                         dataResearch.add(rowResearch);
                     }
 
@@ -1850,12 +1852,16 @@ public class ImportProjectsActionProperty extends ActionProperty {
                         rowPublications.add(projectId);
                         rowPublications.add(BaseUtils.nullParseInt(nodePublications.getChildText("datePublications")));
                         rowPublications.add(nodePublications.getChildText("nativeLinksPublications"));
-                        rowPublications.add(nodePublications.getChildText("nativePublications"));
-                        rowPublications.add(nodePublications.getChildText("nativeAuthorPublications"));
-                        rowPublications.add(nodePublications.getChildText("nativeEditionPublications"));
-                        rowPublications.add(nodePublications.getChildText("foreignPublications"));
-                        rowPublications.add(nodePublications.getChildText("foreignAuthorPublications"));
-                        rowPublications.add(nodePublications.getChildText("foreignEditionPublications"));
+                        if (fillNative) {
+                            rowPublications.add(nodePublications.getChildText("nativePublications"));
+                            rowPublications.add(nodePublications.getChildText("nativeAuthorPublications"));
+                            rowPublications.add(nodePublications.getChildText("nativeEditionPublications"));
+                        }
+                        if (fillForeign) {
+                            rowPublications.add(nodePublications.getChildText("foreignPublications"));
+                            rowPublications.add(nodePublications.getChildText("foreignAuthorPublications"));
+                            rowPublications.add(nodePublications.getChildText("foreignEditionPublications"));
+                        }
 
                         dataPublications.add(rowPublications);
                     }
@@ -1866,10 +1872,14 @@ public class ImportProjectsActionProperty extends ActionProperty {
                         List<Object> rowCommercialization = new ArrayList<Object>();
 
                         rowCommercialization.add(projectId);
-                        rowCommercialization.add(nodeCommercialization.getChildText("nativeProjectCommercialization"));
-                        rowCommercialization.add(nodeCommercialization.getChildText("nativeCommentProjectCommercialization"));
-                        rowCommercialization.add(nodeCommercialization.getChildText("foreignProjectCommercialization"));
-                        rowCommercialization.add(nodeCommercialization.getChildText("foreignCommentProjectCommercialization"));
+                        if (fillNative) {
+                            rowCommercialization.add(nodeCommercialization.getChildText("nativeProjectCommercialization"));
+                            rowCommercialization.add(nodeCommercialization.getChildText("nativeCommentProjectCommercialization"));
+                        }
+                        if (fillForeign) {
+                            rowCommercialization.add(nodeCommercialization.getChildText("foreignProjectCommercialization"));
+                            rowCommercialization.add(nodeCommercialization.getChildText("foreignCommentProjectCommercialization"));
+                        }
                         dataCommercialization.add(rowCommercialization);
                     }
 
@@ -1879,12 +1889,16 @@ public class ImportProjectsActionProperty extends ActionProperty {
                         List<Object> rowAnalogues = new ArrayList<Object>();
 
                         rowAnalogues.add(projectId);
-                        rowAnalogues.add(nodeAnalogues.getChildText("nativeProjectAnalogues"));
-                        rowAnalogues.add(nodeAnalogues.getChildText("nativeDescriptionProjectAnalogues"));
-                        rowAnalogues.add(nodeAnalogues.getChildText("nativeCharacteristicsProjectAnalogues"));
-                        rowAnalogues.add(nodeAnalogues.getChildText("foreignProjectAnalogues"));
-                        rowAnalogues.add(nodeAnalogues.getChildText("foreignDescriptionProjectAnalogues"));
-                        rowAnalogues.add(nodeAnalogues.getChildText("foreignCharacteristicsProjectAnalogues"));
+                        if (fillNative) {
+                            rowAnalogues.add(nodeAnalogues.getChildText("nativeProjectAnalogues"));
+                            rowAnalogues.add(nodeAnalogues.getChildText("nativeDescriptionProjectAnalogues"));
+                            rowAnalogues.add(nodeAnalogues.getChildText("nativeCharacteristicsProjectAnalogues"));
+                        }
+                        if (fillForeign) {
+                            rowAnalogues.add(nodeAnalogues.getChildText("foreignProjectAnalogues"));
+                            rowAnalogues.add(nodeAnalogues.getChildText("foreignDescriptionProjectAnalogues"));
+                            rowAnalogues.add(nodeAnalogues.getChildText("foreignCharacteristicsProjectAnalogues"));
+                        }
                         dataAnalogues.add(rowAnalogues);
                     }
 
@@ -1896,26 +1910,30 @@ public class ImportProjectsActionProperty extends ActionProperty {
                         rowSpecialist.add(projectId);
                         rowSpecialist.add(buildFileByteArray(nodeSpecialist.getChild("filePassportSpecialist")));
                         rowSpecialist.add(buildFileByteArray(nodeSpecialist.getChild("fileStatementSpecialist")));
-                        rowSpecialist.add(nodeSpecialist.getChildText("nameNativeSpecialist"));
-                        rowSpecialist.add(nodeSpecialist.getChildText("nativePostSpecialist"));
-                        rowSpecialist.add(nodeSpecialist.getChildText("nativeFunctionSpecialist"));
-                        rowSpecialist.add(nodeSpecialist.getChildText("nativeScopeSpecialist"));
-                        rowSpecialist.add(nodeSpecialist.getChildText("nativeExperienceSpecialist"));
-                        rowSpecialist.add(nodeSpecialist.getChildText("nativeTitleSpecialist"));
-                        rowSpecialist.add(nodeSpecialist.getChildText("nativeWorkSpecialist"));
-                        rowSpecialist.add(nodeSpecialist.getChildText("nativePublicationsSpecialist"));
-                        rowSpecialist.add(nodeSpecialist.getChildText("nativeCitationSpecialist"));
-                        rowSpecialist.add(nodeSpecialist.getChildText("nativeIntellectualPropertySpecialist"));
-                        rowSpecialist.add(nodeSpecialist.getChildText("nameForeignSpecialist"));
-                        rowSpecialist.add(nodeSpecialist.getChildText("foreignPostSpecialist"));
-                        rowSpecialist.add(nodeSpecialist.getChildText("foreignFunctionSpecialist"));
-                        rowSpecialist.add(nodeSpecialist.getChildText("foreignScopeSpecialist"));
-                        rowSpecialist.add(nodeSpecialist.getChildText("foreignExperienceSpecialist"));
-                        rowSpecialist.add(nodeSpecialist.getChildText("foreignTitleSpecialist"));
-                        rowSpecialist.add(nodeSpecialist.getChildText("foreignWorkSpecialist"));
-                        rowSpecialist.add(nodeSpecialist.getChildText("foreignPublicationsSpecialist"));
-                        rowSpecialist.add(nodeSpecialist.getChildText("foreignCitationSpecialist"));
-                        rowSpecialist.add(nodeSpecialist.getChildText("foreignIntellectualPropertySpecialist"));
+                        if (fillNative) {
+                            rowSpecialist.add(nodeSpecialist.getChildText("nameNativeSpecialist"));
+                            rowSpecialist.add(nodeSpecialist.getChildText("nativePostSpecialist"));
+                            rowSpecialist.add(nodeSpecialist.getChildText("nativeFunctionSpecialist"));
+                            rowSpecialist.add(nodeSpecialist.getChildText("nativeScopeSpecialist"));
+                            rowSpecialist.add(nodeSpecialist.getChildText("nativeExperienceSpecialist"));
+                            rowSpecialist.add(nodeSpecialist.getChildText("nativeTitleSpecialist"));
+                            rowSpecialist.add(nodeSpecialist.getChildText("nativeWorkSpecialist"));
+                            rowSpecialist.add(nodeSpecialist.getChildText("nativePublicationsSpecialist"));
+                            rowSpecialist.add(nodeSpecialist.getChildText("nativeCitationSpecialist"));
+                            rowSpecialist.add(nodeSpecialist.getChildText("nativeIntellectualPropertySpecialist"));
+                        }
+                        if (fillForeign) {
+                            rowSpecialist.add(nodeSpecialist.getChildText("nameForeignSpecialist"));
+                            rowSpecialist.add(nodeSpecialist.getChildText("foreignPostSpecialist"));
+                            rowSpecialist.add(nodeSpecialist.getChildText("foreignFunctionSpecialist"));
+                            rowSpecialist.add(nodeSpecialist.getChildText("foreignScopeSpecialist"));
+                            rowSpecialist.add(nodeSpecialist.getChildText("foreignExperienceSpecialist"));
+                            rowSpecialist.add(nodeSpecialist.getChildText("foreignTitleSpecialist"));
+                            rowSpecialist.add(nodeSpecialist.getChildText("foreignWorkSpecialist"));
+                            rowSpecialist.add(nodeSpecialist.getChildText("foreignPublicationsSpecialist"));
+                            rowSpecialist.add(nodeSpecialist.getChildText("foreignCitationSpecialist"));
+                            rowSpecialist.add(nodeSpecialist.getChildText("foreignIntellectualPropertySpecialist"));
+                        }
                         dataSpecialist.add(rowSpecialist);
                     }
 
@@ -1928,18 +1946,22 @@ public class ImportProjectsActionProperty extends ActionProperty {
                         rowMileStone.add(nodeMileStone.getChildText("nativeMileStoneYear"));
                         rowMileStone.add(nodeMileStone.getChildText("nativeMileStone"));
                         rowMileStone.add(j+1); //orderNumberMileStone
-                        rowMileStone.add(nodeMileStone.getChildText("nativeResearch"));
-                        rowMileStone.add(nodeMileStone.getChildText("nativeProductCreation"));
-                        rowMileStone.add(nodeMileStone.getChildText("nativePlanOnHiring"));
-                        rowMileStone.add(nodeMileStone.getChildText("nativeLicensing"));
-                        rowMileStone.add(nodeMileStone.getChildText("nativePromotion"));
-                        rowMileStone.add(nodeMileStone.getChildText("nativeSelling"));
-                        rowMileStone.add(nodeMileStone.getChildText("foreignResearch"));
-                        rowMileStone.add(nodeMileStone.getChildText("foreignProductCreation"));
-                        rowMileStone.add(nodeMileStone.getChildText("foreignPlanOnHiring"));
-                        rowMileStone.add(nodeMileStone.getChildText("foreignLicensing"));
-                        rowMileStone.add(nodeMileStone.getChildText("foreignPromotion"));
-                        rowMileStone.add(nodeMileStone.getChildText("foreignSelling"));
+                        if (fillNative) {
+                            rowMileStone.add(nodeMileStone.getChildText("nativeResearch"));
+                            rowMileStone.add(nodeMileStone.getChildText("nativeProductCreation"));
+                            rowMileStone.add(nodeMileStone.getChildText("nativePlanOnHiring"));
+                            rowMileStone.add(nodeMileStone.getChildText("nativeLicensing"));
+                            rowMileStone.add(nodeMileStone.getChildText("nativePromotion"));
+                            rowMileStone.add(nodeMileStone.getChildText("nativeSelling"));
+                        }
+                        if (fillForeign) {
+                            rowMileStone.add(nodeMileStone.getChildText("foreignResearch"));
+                            rowMileStone.add(nodeMileStone.getChildText("foreignProductCreation"));
+                            rowMileStone.add(nodeMileStone.getChildText("foreignPlanOnHiring"));
+                            rowMileStone.add(nodeMileStone.getChildText("foreignLicensing"));
+                            rowMileStone.add(nodeMileStone.getChildText("foreignPromotion"));
+                            rowMileStone.add(nodeMileStone.getChildText("foreignSelling"));
+                        }
                         dataMileStone.add(rowMileStone);
                     }
 
@@ -1948,8 +1970,10 @@ public class ImportProjectsActionProperty extends ActionProperty {
                         Element nodeObjectives = (Element) listObjectives.get(j);
                         List<Object> rowObjectives = new ArrayList<Object>();
                         rowObjectives.add(projectId);
-                        rowObjectives.add(nodeObjectives.getChildText("nativeProjectObjectives"));
-                        rowObjectives.add(nodeObjectives.getChildText("foreignProjectObjectives"));
+                        if (fillNative)
+                            rowObjectives.add(nodeObjectives.getChildText("nativeProjectObjectives"));
+                        if (fillForeign)
+                            rowObjectives.add(nodeObjectives.getChildText("foreignProjectObjectives"));
                         dataObjectives.add(rowObjectives);
                     }
 
