@@ -736,7 +736,7 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     private void checkNamedParams(LP<?> property, List<String> namedParams) throws ScriptingErrorLog.SemanticErrorException {
-        if (property.property.interfaces.size() != namedParams.size()) {
+        if (property.property.interfaces.size() != namedParams.size() && !namedParams.isEmpty()) {
             errLog.emitNamedParamsError(parser);
         }
     }
