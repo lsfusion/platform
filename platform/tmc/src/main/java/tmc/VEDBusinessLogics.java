@@ -90,6 +90,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
 
         //админ игнорит настройки в базе, ему разрешено всё
         policyManager.userPolicies.put(addUser("admin", "fusion").ID, permitAllPolicy);
+        policyManager.userPolicies.put(addUser("admin", "fusion").ID, forbidConfiguratorPolicy);
     }
 
     public Scheduler getScheduler() {

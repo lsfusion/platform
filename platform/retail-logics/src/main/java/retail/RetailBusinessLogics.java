@@ -34,6 +34,7 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> {
     @Override
     protected void initAuthentication() throws ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException {
         policyManager.userPolicies.put(addUser("admin", "fusion").ID, permitAllPolicy);
+        policyManager.userPolicies.put(addUser("admin", "fusion").ID, forbidConfiguratorPolicy);
     }
 
 

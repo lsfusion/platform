@@ -62,6 +62,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
             policyManager.defaultSecurityPolicy.property.change.deny(property);
 
         policyManager.userPolicies.put(addUser("admin", "fusion").ID, permitAllPolicy);
+        policyManager.userPolicies.put(addUser("admin", "fusion").ID, forbidConfiguratorPolicy);
     }
     //!!!!
 
