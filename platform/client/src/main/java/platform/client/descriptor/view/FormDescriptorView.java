@@ -5,6 +5,7 @@ import platform.base.context.Lookup;
 import platform.client.ClientResourceBundle;
 import platform.client.descriptor.FormDescriptor;
 import platform.client.descriptor.nodes.FormNode;
+import platform.client.descriptor.nodes.GroupObjectFolder;
 import platform.client.descriptor.nodes.PlainTextNode;
 import platform.client.descriptor.nodes.actions.EditableTreeNode;
 import platform.client.tree.ClassFilteredAction;
@@ -100,6 +101,11 @@ public class FormDescriptorView extends JPanel implements IncrementView, Lookup.
             form.updateDependency(this, "form");
             trackUpdates = true;
         }
+    }
+
+    public void openActiveGroupObject() {
+        SwingUtilities.invokeLater(new OnUpdate());
+        SwingUtilities.invokeLater(new ExpandNode());
     }
 
     private void addDependencies(FormDescriptor form) {
@@ -198,7 +204,32 @@ public class FormDescriptorView extends JPanel implements IncrementView, Lookup.
         }
     }
 
-    private class OnUpdate implements Runnable {
+    public class ExpandNode implements Runnable {
+        public void run() {
+
+            if(model.getRoot() instanceof FormNode) {
+                GroupObjectFolder groupObjectFolder = ((FormNode) model.getRoot()).groupObjectFolder;
+                tree.expandPath((new TreePath(groupObjectFolder.getPath())));
+
+                String name;
+                String lastActive = "";
+                if (form.client.lastActiveGroupObject != null)
+                    lastActive = form.client.lastActiveGroupObject.toString();
+                for (int i = 0; i < groupObjectFolder.getChildCount(); i++) {
+                    name = groupObjectFolder.getChildAt(i).toString();
+                    if (name.equals(lastActive)) {
+                        TreePath path = new TreePath(
+                                ((DefaultTreeModel)tree.getModel()).getPathToRoot(groupObjectFolder.getChildAt(i)));
+                        tree.setSelectionPath(path);
+                        EditableTreeNode node = (EditableTreeNode) groupObjectFolder.getChildAt(i);
+
+                        view.setEditor(node.createEditor(form));
+                    }
+                }
+            }
+        }
+    }
+    public class OnUpdate implements Runnable {
         public void run() {
             TreeNode refreshNode;
             if (form != null) {

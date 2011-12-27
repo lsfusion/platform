@@ -33,7 +33,7 @@ import static platform.interop.Order.*;
 
 public class ClientFormController {
 
-    private final ClientForm form;
+    public final ClientForm form;
 
     public RemoteFormInterface remoteForm;
     public final ClientNavigator clientNavigator;

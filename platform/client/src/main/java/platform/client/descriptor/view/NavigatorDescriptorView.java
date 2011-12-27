@@ -12,6 +12,7 @@ import platform.client.remote.proxy.RemoteFormProxy;
 import platform.client.tree.ClientTreeNode;
 
 import javax.swing.*;
+import javax.swing.text.Position;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -126,8 +127,10 @@ public class NavigatorDescriptorView extends JPanel {
 
         try {
             String formSid = clientNavigator.remoteNavigator.getCurrentFormSID();
-            if (formSid != null)
+            if (formSid != null) {
                 openForm(formSid);
+                formView.openActiveGroupObject();
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }

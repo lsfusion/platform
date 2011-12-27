@@ -28,6 +28,8 @@ public class ClientForm extends IdentityObject implements LogicsSupplier, Client
 
     public String caption = "";
 
+    public static ClientGroupObject lastActiveGroupObject;
+
     // пока используется только для сериализации туда-назад
     public Integer overridePageWidth;
 

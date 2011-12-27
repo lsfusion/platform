@@ -129,6 +129,14 @@ public abstract class GridTable extends ClientFormTable
         setDefaultRenderer(Object.class, new ClientAbstractCellRenderer());
         setDefaultEditor(Object.class, new ClientAbstractCellEditor());
 
+        addFocusListener(new FocusAdapter() {
+            @Override
+            public void focusGained(FocusEvent e) {
+                if(groupObject!=null)
+                    form.form.lastActiveGroupObject = groupObject;
+            }
+        });
+
         addComponentListener(new ComponentAdapter() {
             private int pageSize = 50;
 

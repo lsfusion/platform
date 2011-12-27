@@ -8,12 +8,14 @@ import platform.client.tree.ClientTreeNode;
 
 public class FormNode extends ClientTreeNode<FormDescriptor, FormNode> implements EditableTreeNode {
     private final FormDescriptor descriptor;
+    public GroupObjectFolder groupObjectFolder;
 
     public FormNode(FormDescriptor descriptor) {
         super(descriptor);
         this.descriptor = descriptor;
 
-        add(new GroupObjectFolder(descriptor));
+        groupObjectFolder = new GroupObjectFolder(descriptor);
+        add(groupObjectFolder);
 
         add(new TreeGroupFolder(descriptor));
 
