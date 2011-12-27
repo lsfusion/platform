@@ -107,7 +107,10 @@ public class ExecutionContext {
     }
 
     public FormInstance<?> getFormInstance() {
-        return form.form;
+        if (form != null)
+            return form.form;
+        else
+            return null;
     }
 
     public Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> getObjectInstances() {

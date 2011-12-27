@@ -2,7 +2,7 @@
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="expert" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0">
 	<property name="ireport.zoom" value="1.5"/>
 	<property name="ireport.x" value="0"/>
-	<property name="ireport.y" value="755"/>
+	<property name="ireport.y" value="936"/>
 	<style name="DefaultStyle" isDefault="true" vAlign="Middle" fontName="lsf.TimesNewRoman" fontSize="10" pdfEncoding="Cp1251" isPdfEmbedded="false"/>
 	<style name="GroupCellStyle0" mode="Opaque" backcolor="#FFFFFF" fill="Solid" vAlign="Middle" fontName="Serif" fontSize="10" pdfFontName="lsf.Times" pdfEncoding="Cp1251" isPdfEmbedded="false">
 		<box leftPadding="2" rightPadding="2">
@@ -341,7 +341,7 @@
 				<text><![CDATA[1.]]></text>
 			</staticText>
 			<textField>
-				<reportElement positionType="Float" mode="Opaque" x="499" y="7" width="40" height="35" backcolor="#E6EED5"/>
+				<reportElement positionType="Float" mode="Opaque" x="499" y="7" width="40" height="34" backcolor="#E6EED5"/>
 				<box topPadding="2" leftPadding="2" bottomPadding="2" rightPadding="2">
 					<pen lineWidth="1.0" lineColor="#B3CC82"/>
 					<topPen lineWidth="1.0" lineColor="#B3CC82"/>
@@ -453,7 +453,7 @@
 				<text><![CDATA[Обладают ли ключевые исследователи, разработчики и менеджеры проекта (далее - Команда проекта) необходимыми знаниями и опытом для успешной реализации проекта и (или) проведения прикладных Исследований?]]></text>
 			</staticText>
 			<textField>
-				<reportElement positionType="Float" mode="Opaque" x="499" y="322" width="40" height="34" backcolor="#E6EED5"/>
+				<reportElement positionType="Float" mode="Opaque" x="501" y="322" width="38" height="34" backcolor="#E6EED5"/>
 				<box topPadding="2" leftPadding="2" bottomPadding="2" rightPadding="2">
 					<pen lineWidth="1.0" lineColor="#B3CC82"/>
 					<topPen lineWidth="1.0" lineColor="#B3CC82"/>

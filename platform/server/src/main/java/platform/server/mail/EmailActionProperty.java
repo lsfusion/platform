@@ -186,10 +186,12 @@ public class EmailActionProperty extends ActionProperty {
             Map<String, Message.RecipientType> recipientEmails = new HashMap<String, Message.RecipientType>();
             for(Map.Entry<PropertyMapImplement<?, ClassPropertyInterface>, Message.RecipientType> recipient : recipients.entrySet()) {
                 String recipientEmail = (String) recipient.getKey().read(context, context.getKeys());
-                String[] emailList = recipientEmail.split(";");
-                for(String email : emailList) {
-                    if(email != null && (!recipientEmails.containsKey(email.trim()) || Message.RecipientType.TO.equals(recipient.getValue()))) // приоритет отдается TO, так как без него письмо не улетит
-                        recipientEmails.put(email.trim(), recipient.getValue());
+                if (recipientEmail != null) {
+                    String[] emailList = recipientEmail.split(";");
+                    for(String email : emailList) {
+                        if(email != null && (!recipientEmails.containsKey(email.trim()) || Message.RecipientType.TO.equals(recipient.getValue()))) // приоритет отдается TO, так как без него письмо не улетит
+                            recipientEmails.put(email.trim(), recipient.getValue());
+                    }
                 }
             }
 

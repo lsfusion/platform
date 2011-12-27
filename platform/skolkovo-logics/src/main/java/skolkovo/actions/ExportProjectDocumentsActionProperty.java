@@ -1,27 +1,16 @@
 package skolkovo.actions;
 
 import net.sf.jasperreports.engine.JRException;
-import org.apache.commons.codec.binary.Base64;
-import org.apache.log4j.Logger;
-import org.jdom.Attribute;
-import org.jdom.Document;
-import org.jdom.Element;
-import org.jdom.input.JDOMParseException;
-import org.jdom.input.SAXBuilder;
 import platform.base.BaseUtils;
-import platform.base.IOUtils;
 import platform.base.OrderedMap;
 import platform.interop.Compare;
 import platform.interop.action.ClientAction;
 import platform.interop.action.ExportFileClientAction;
-import platform.interop.action.MessageClientAction;
-import platform.server.classes.CustomFileClass;
 import platform.server.classes.ValueClass;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.query.Query;
 import platform.server.form.instance.PropertyObjectInterfaceInstance;
 import platform.server.form.instance.remote.RemoteForm;
-import platform.server.integration.*;
 import platform.server.logics.DataObject;
 import platform.server.logics.ObjectValue;
 import platform.server.logics.linear.LP;
@@ -29,18 +18,11 @@ import platform.server.logics.property.ActionProperty;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.ExecutionContext;
 import platform.server.session.DataSession;
-import skolkovo.SkolkovoBusinessLogics;
 import skolkovo.SkolkovoLogicsModule;
 
 import java.io.*;
-import java.math.BigInteger;
-import java.net.URL;
-import java.net.URLConnection;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.sql.*;
 import java.util.*;
-import java.util.Date;
 
 public class ExportProjectDocumentsActionProperty extends ActionProperty {
 
@@ -81,10 +63,10 @@ public class ExportProjectDocumentsActionProperty extends ActionProperty {
 
             if ((!putFileIfNotNull(files, LM.fileNativeApplicationFormProject.read(context, projectObject), "Анкета заявителя"))
                     && LM.needsToBeTranslatedToRussianProject.read(context, projectObject) == null)
-                putFileIfNotNull(files, LM.generateApplicationFile(context, projectObject, false, newRegulation), "Анкета заявителя");
+                putFileIfNotNull(files, LM.generateApplicationFile(context, projectObject, false, newRegulation, true), "Анкета заявителя");
             if ((!putFileIfNotNull(files, LM.fileForeignApplicationFormProject.read(context, projectObject), "Анкета заявителя (иностр.)"))
                     && LM.needsToBeTranslatedToEnglishProject.read(context, projectObject) == null)
-                putFileIfNotNull(files, LM.generateApplicationFile(context, projectObject, true, newRegulation), "Анкета заявителя (иностр.)");
+                putFileIfNotNull(files, LM.generateApplicationFile(context, projectObject, true, newRegulation, true), "Анкета заявителя (иностр.)");
 
 
             if (!newRegulation) {

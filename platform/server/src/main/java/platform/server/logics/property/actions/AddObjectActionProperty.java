@@ -94,10 +94,17 @@ public class AddObjectActionProperty extends ActionProperty {
 
         for (int k = 0; k < quantityAdd; k++) {
             DataObject object;
-            if (valueClass.hasChildren())
-                object = form.addObject((ConcreteCustomClass) form.getCustomClass((Integer) context.getValueObject()));
-            else
-                object = form.addObject((ConcreteCustomClass) valueClass);
+            if (valueClass.hasChildren()) {
+                if (form != null)
+                    object = form.addObject((ConcreteCustomClass) form.getCustomClass((Integer) context.getValueObject()));
+                else
+                    object = context.getSession().addObject((ConcreteCustomClass)valueClass.findClassID((Integer) context.getValueObject()), context.getModifier());
+            } else {
+                if (form != null)
+                    object = form.addObject((ConcreteCustomClass) valueClass);
+                else
+                    object = context.getSession().addObject((ConcreteCustomClass)valueClass, context.getModifier());
+            }
 
             if (barcode != null) {
 
