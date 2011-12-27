@@ -4716,7 +4716,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
         private ProjectFullR2FormEntity(NavigatorElement parent, String sID, String caption) {
             super(parent, sID, caption);
 
-            objProject = addSingleGroupObject(1, "project", project, "Проект", nameNativeProject, nameForeignProject, sidProject, nameNativeClaimerProject, nameForeignClaimerProject, nameNativeFinalClusterProject, nameForeignFinalClusterProject, nameProjectActionProject, updateDateProject, nameStatusProject, dateStatusProject, isStatusProject,
+            objProject = addSingleGroupObject(1, "project", project, "Проект", nameNativeProject, nameForeignProject, sidProject, nameNativeClaimerProject, nameForeignClaimerProject, nameNativeFinalClusterProject,
+                    nameForeignFinalClusterProject, nameProjectActionProject, updateDateProject, nameStatusProject, dateStatusProject, isStatusProject, nameNativeJoinClaimerProject, nameForeignJoinClaimerProject,
                     nativeProblemProject, foreignProblemProject, nativeInnovativeProject, foreignInnovativeProject, descGroup, techDescrGroup, minutesOfMettingGroup, writtenConsentGroup, claimerInformationGroup);
 
             addPropertyDraw(objProject, problemGroup, analoguesGroup, commercializationGroup, historyGroup, projectmissionGroup, nativeResultsProject, foreignResultsProject);
@@ -4866,6 +4867,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
             dopContainer.constraints.childConstraints = DoNotIntersectSimplexConstraint.TOTHE_BOTTOM;
             dopContainer.add(design.getGroupPropertyContainer(objProject.groupTo, claimerInformationGroup));
             dopContainer.add(design.get(getPropertyDraw(isStatusProject)));
+            dopContainer.add(design.get(getPropertyDraw(nameNativeJoinClaimerProject)));
+            dopContainer.add(design.get(getPropertyDraw(nameForeignJoinClaimerProject)));
 
             ContainerView specContainer = design.createContainer();
 
