@@ -604,6 +604,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP nameGenitiveClaimerVote;
     LP nameDativusClaimerVote;
     LP nameAblateClaimerVote;
+    LP firmNameNativeClaimerProject, firmNameForeignClaimerProject, phoneClaimerProject, OGRNClaimerProject;
+    LP addressClaimerProject, postAddressClaimerProject, siteClaimerProject, emailFirmClaimerProject, INNClaimerProject;
 
     LP documentTemplateDocumentTemplateDetail;
 
@@ -1766,10 +1768,20 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         // project
         claimerProject = addDProp(idGroup, "claimerProject", "Заявитель (ИД)", claimer, project);
-        emailClaimerProject = addJProp("emailClaimerProject", "E-mail заявителя", emailClaimer, claimerProject, 1);
+        emailClaimerProject = addJProp(claimerInformationGroup, "emailClaimerProject", "E-mail заявителя", emailClaimer, claimerProject, 1);
         statementClaimerProject = addJProp("statementClaimerProject", "Заявление", statementClaimer, claimerProject, 1);
         constituentClaimerProject = addJProp("constituentClaimerProject", "Учредительные документы", constituentClaimer, claimerProject, 1);
         extractClaimerProject = addJProp("extractClaimerProject", "Выписка", extractClaimer, claimerProject, 1);
+
+        firmNameNativeClaimerProject = addJProp(claimerInformationGroup, "firmNameNativeClaimerProject", "Фирменное название", firmNameNativeClaimer, claimerProject, 1);
+        firmNameForeignClaimerProject = addJProp(claimerInformationGroup, "firmNameForeignClaimerProject", "Brand name", firmNameForeignClaimer, claimerProject, 1);
+        phoneClaimerProject = addJProp(claimerInformationGroup, "phoneClaimerProject", "Телефон", phoneClaimer, claimerProject, 1);
+        addressClaimerProject  = addJProp(claimerInformationGroup, "addressClaimerProject", "Адрес", addressClaimer, claimerProject, 1);
+        postAddressClaimerProject = addJProp(claimerInformationGroup, "postAddressClaimerProject", "Почтовый дрес", postAddressClaimer, claimerProject, 1);
+        siteClaimerProject = addJProp(claimerInformationGroup, "siteClaimerProject", "Сайт заявителя", siteClaimer, claimerProject, 1);
+        emailFirmClaimerProject = addJProp(claimerInformationGroup, "siteClaimerProject", "E-mail организации", emailFirmClaimer, claimerProject, 1);
+        OGRNClaimerProject = addJProp(claimerInformationGroup, "OGRNClaimerProject", "ОГРН заявителя", OGRNClaimer, claimerProject, 1);
+        INNClaimerProject = addJProp(claimerInformationGroup, "INNClaimerProject", "ИНН заявителя", INNClaimer, claimerProject, 1);
 
         claimerVote = addJProp(idGroup, "claimerVote", "Заявитель (ИД)", claimerProject, projectVote, 1);
 
@@ -4690,8 +4702,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
         private ProjectFullR2FormEntity(NavigatorElement parent, String sID, String caption) {
             super(parent, sID, caption);
 
-            objProject = addSingleGroupObject(1, "project", project, "Проект", nameNativeProject, nameForeignProject, sidProject, nameNativeClaimerProject, nameForeignClaimerProject, nameNativeFinalClusterProject, nameForeignFinalClusterProject, nameProjectActionProject, updateDateProject, nameStatusProject, dateStatusProject,
-                    nativeProblemProject, foreignProblemProject, nativeInnovativeProject, foreignInnovativeProject, descGroup, techDescrGroup, minutesOfMettingGroup, writtenConsentGroup);
+            objProject = addSingleGroupObject(1, "project", project, "Проект", nameNativeProject, nameForeignProject, sidProject, nameNativeClaimerProject, nameForeignClaimerProject, nameNativeFinalClusterProject, nameForeignFinalClusterProject, nameProjectActionProject, updateDateProject, nameStatusProject, dateStatusProject, isStatusProject,
+                    nativeProblemProject, foreignProblemProject, nativeInnovativeProject, foreignInnovativeProject, descGroup, techDescrGroup, minutesOfMettingGroup, writtenConsentGroup, claimerInformationGroup);
 
             addPropertyDraw(objProject, problemGroup, analoguesGroup, commercializationGroup, historyGroup, projectmissionGroup, nativeResultsProject, foreignResultsProject);
             objProject.groupTo.setSingleClassView(ClassViewType.PANEL);
@@ -4836,6 +4848,11 @@ public class SkolkovoLogicsModule extends LogicsModule {
             mapContainer.add(design.getGroupObjectContainer(objTypeMileStone.groupTo));
             mapContainer.add(design.getGroupPropertyContainer(objProject.groupTo, projectmissionGroup));
 
+            ContainerView dopContainer = design.createContainer("Дополнительные сведения");
+            dopContainer.constraints.childConstraints = DoNotIntersectSimplexConstraint.TOTHE_BOTTOM;
+            dopContainer.add(design.getGroupPropertyContainer(objProject.groupTo, claimerInformationGroup));
+            dopContainer.add(design.get(getPropertyDraw(isStatusProject)));
+
             ContainerView specContainer = design.createContainer();
 
             design.getGroupObjectContainer(objProject.groupTo).constraints.childConstraints = DoNotIntersectSimplexConstraint.TOTHE_RIGHT;
@@ -4850,6 +4867,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             specContainer.add(design.getGroupObjectContainer(objCluster.groupTo));
             specContainer.add(exchequerContainer);
             specContainer.add(mapContainer);
+            specContainer.add(dopContainer);
 
             specContainer.tabbedPane = true;
 
