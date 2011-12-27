@@ -104,7 +104,6 @@ public class FormDescriptorView extends JPanel implements IncrementView, Lookup.
     }
 
     public void openActiveGroupObject() {
-        SwingUtilities.invokeLater(new OnUpdate());
         SwingUtilities.invokeLater(new ExpandNode());
     }
 
