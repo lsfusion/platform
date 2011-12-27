@@ -116,8 +116,10 @@ public class GridSelectionController {
                 firstColumn = table.getProperty(0, columnIndex);
                 temporarySelectionAddition = true;
                 resetSelection();
-                addToSelection(newProperty, rowIndex);
-                addToTemporaryValues(rowIndex);
+                if (table.getTableModel().getRowCount() != 0) {
+                    addToSelection(newProperty, rowIndex);
+                    addToTemporaryValues(rowIndex);
+                }
             }
         }
     }
