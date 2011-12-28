@@ -6,7 +6,11 @@ public class StartupProperties {
 
     public static final String PLATFORM_CLIENT_HOSTPORT = "platform.client.hostport";
 
+    public static final String PLATFORM_CLIENT_LOGICSNAME = "platform.client.logicsname";
+
     public static final String PLATFORM_CLIENT_USER = "platform.client.user";
+
+    public static final String PLATFORM_CLIENT_SAVEPWD = "platform.client.savepwd";
 
     public static final String PLATFORM_CLIENT_PASSWORD = "platform.client.password";
 
@@ -30,5 +34,11 @@ public class StartupProperties {
 
     public static final String PLATFORM_CLIENT_BLOCKER_ACTIVATION_OFF = "platform.client.blocker.activation.off";
 
+    public static final String PLATFORM_CLIENT_BLOCKER_AUTORECONNECT = "platform.client.blocker.autoreconnect";
+
     public static final String PLATFORM_CLIENT_ISDEBUG = "platform.client.isdebug";
+
+    public final static boolean autoReconnect = System.getProperty(StartupProperties.PLATFORM_CLIENT_BLOCKER_AUTORECONNECT) != null;
+
+    public final static boolean preventBlockerActivation = autoReconnect || System.getProperty(StartupProperties.PLATFORM_CLIENT_BLOCKER_ACTIVATION_OFF) != null;
 }

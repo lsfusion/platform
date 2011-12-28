@@ -112,6 +112,16 @@ public final class ReconnectWorker extends SwingWorker<RemoteLoaderInterface, In
             setResizable(false);
 
             initUIHandlers();
+
+            setupDialogForDevMode();
+        }
+
+        private void setupDialogForDevMode() {
+            //чтобы диалог не забирал фокус
+            if (StartupProperties.preventBlockerActivation) {
+                setFocusableWindowState(false);
+                setAlwaysOnTop(false);
+            }
         }
 
         private void initUIHandlers() {

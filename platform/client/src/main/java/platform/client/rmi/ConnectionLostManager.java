@@ -14,9 +14,6 @@ import java.rmi.RemoteException;
 import static platform.client.ClientResourceBundle.getString;
 
 public class ConnectionLostManager {
-
-    private final static boolean preventBlockerActivation = System.getProperty(StartupProperties.PLATFORM_CLIENT_BLOCKER_ACTIVATION_OFF) != null;
-
     private static boolean connectionLost = false;
     private static ConnectionLostPainterUI connectionLostUI;
     private static JXLayer layer;
@@ -117,9 +114,6 @@ public class ConnectionLostManager {
 
             setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
             setLocationRelativeTo(owner);
-            if (preventBlockerActivation) {
-                setFocusableWindowState(false);
-            }
 
             String messageText =
                     message != null
@@ -163,6 +157,26 @@ public class ConnectionLostManager {
             setResizable(false);
 
             initUIHandlers();
+
+            setupDialogForDevMode();
+        }
+
+        private void setupDialogForDevMode() {
+            //сразу уходим на реконнект, без ожидания возможного восстановления соединения...
+            //полезно при частом перестарте сервера
+            if (StartupProperties.autoReconnect) {
+                addWindowListener(new WindowAdapter() {
+                    @Override
+                    public void windowOpened(WindowEvent e) {
+                        btnReconnect.doClick();
+                    }
+                });
+            }
+
+            //чтобы блокер-диалог не забирал фокус
+            if (StartupProperties.preventBlockerActivation) {
+                setFocusableWindowState(false);
+            }
         }
 
         private void initUIHandlers() {
