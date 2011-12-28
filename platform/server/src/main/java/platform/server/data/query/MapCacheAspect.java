@@ -1,6 +1,5 @@
 package platform.server.data.query;
 
-import org.apache.bcel.generic.FDIV;
 import org.apache.log4j.Logger;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
@@ -11,29 +10,23 @@ import platform.base.Result;
 import platform.base.TwinImmutableInterface;
 import platform.server.Message;
 import platform.server.ParamMessage;
+import platform.server.Settings;
 import platform.server.caches.*;
 import platform.server.caches.hash.HashContext;
-import platform.server.caches.hash.HashMapValues;
 import platform.server.caches.hash.HashValues;
 import platform.server.data.Value;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
 import platform.server.data.expr.ValueExpr;
-import platform.server.data.expr.where.extra.EqualsWhere;
-import platform.server.data.expr.where.ifs.IfExpr;
-import platform.server.data.query.stat.CalculateJoin;
 import platform.server.data.translator.HashLazy;
 import platform.server.data.translator.MapTranslate;
 import platform.server.data.translator.MapValuesTranslate;
 import platform.server.data.translator.MapValuesTranslator;
-import platform.server.data.where.AbstractWhere;
 import platform.server.data.where.Where;
 import platform.server.data.where.WhereBuilder;
 import platform.server.logics.property.*;
 import platform.server.session.*;
-import platform.server.Settings;
 
-import java.io.ObjectInputStream;
 import java.util.*;
 
 @Aspect
@@ -626,7 +619,7 @@ public class MapCacheAspect {
             }
 
             if(result.expr.getComplexity() > 20) {
-                System.out.println("COMPLEX " + property.getSID() + " : " + property + " " + result.expr.getComplexity());
+                logger.debug("COMPLEX " + property.getSID() + " : " + property + " " + result.expr.getComplexity());
             }
 
             if(checkCaches && !BaseUtils.hashEquals(result.expr, cacheResult))

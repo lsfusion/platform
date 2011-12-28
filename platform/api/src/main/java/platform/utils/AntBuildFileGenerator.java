@@ -10,7 +10,10 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.PrintStream;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Properties;
+import java.util.Set;
 
 public class AntBuildFileGenerator {
     private static final PropertyPlaceholderHelper stringResolver = new PropertyPlaceholderHelper("${", "}", ":", true);
@@ -26,7 +29,23 @@ public class AntBuildFileGenerator {
             "            <param name=\"artifactId\" value=\"${moduleName}\"/>\n" +
             "        </antcall>\n" +
             "    </target>\n" +
-            "";
+            "\n";
+
+    private static final String moduleTestTargetsTemplate =
+            "    <target name=\"${moduleName}-recursiveTestCompile\">\n" +
+            "        <antcall target=\"recursiveTestCompile\">\n" +
+            "            <param name=\"artifactId\" value=\"${moduleName}\"/>\n" +
+            "        </antcall>\n" +
+            "    </target>\n" +
+            "\n" +
+            "    <target name=\"${moduleName}-quickTestCompile\">\n" +
+            "        <antcall target=\"quickTestCompile\">\n" +
+            "            <param name=\"artifactId\" value=\"${moduleName}\"/>\n" +
+            "        </antcall>\n" +
+            "    </target>\n" +
+            "\n";
+
+    private static Set<String> modulesWithTests = new HashSet<String>(Arrays.asList("server"));
 
     public static void main(String[] args) {
         try {
@@ -41,6 +60,9 @@ public class AntBuildFileGenerator {
                 String moduleName = item.getTextContent();
 
                 modulesTargets += resolveString(moduleTargetsTemplate, "moduleName", moduleName);
+                if (modulesWithTests.contains(moduleName)) {
+                    modulesTargets += resolveString(moduleTestTargetsTemplate, "moduleName", moduleName);
+                }
             }
 
             String templateContent = IOUtils.readStreamToString(new FileInputStream("../build.template.xml"));
@@ -48,6 +70,7 @@ public class AntBuildFileGenerator {
 
             PrintStream ps = new PrintStream("../build.xml");
             ps.print(buildFileContent);
+            ps.close();
         } catch (Exception e) {
             e.printStackTrace();
         }

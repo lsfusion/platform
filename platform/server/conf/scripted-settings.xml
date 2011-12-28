@@ -6,23 +6,17 @@
     default-lazy-init="true">
 
     <bean id="dataAdapter" class="platform.server.data.sql.PostgreDataAdapter">
-        <constructor-arg value="#{systemProperties['paas.scripted.db.name']}"/>
+        <constructor-arg value="scripted_logics_test"/>
         <constructor-arg value="localhost"/>
         <constructor-arg value="postgres"/>
         <constructor-arg value="11111"/>
     </bean>
 
     <bean id="businessLogics" class="platform.server.logics.scripted.ScriptedBusinessLogics">
-        <constructor-arg index="0" value="scriptedLogic" />
+        <constructor-arg index="0" value="scriptedLogics" />
         <constructor-arg index="1" ref="dataAdapter" />
-        <constructor-arg index="2" value="#{systemProperties['paas.scripted.port']}" />
-        <constructor-arg index="3" value="#{systemProperties['paas.scripted.modules.names']}"/>
-        <constructor-arg index="4" value="#{systemProperties['paas.scripted.modules.paths']}"/>
-    </bean>
-
-    <bean id="lifecycleManager" class="platform.server.lifecycle.LifecycleManager">
-        <constructor-arg>
-            <bean class="paas.manager.client.AppManagerLifecycleNotifier"/>
-        </constructor-arg>
+        <constructor-arg index="2" value="1234" />
+        <constructor-arg index="3" value="SampleFeatures"/>
+        <constructor-arg index="4" value="src\main\java\platform\server\FeaturesScript.lsf"/>
     </bean>
 </beans>

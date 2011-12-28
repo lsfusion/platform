@@ -55,7 +55,7 @@ public class ClientTreeGroup extends ClientComponent implements ClientIdentitySe
             }
             result += group.toString();
         }
-        return result;
+        return result + "[sid:" + getSID() + "]";
     }
 
     public ClientComponent getComponent() {

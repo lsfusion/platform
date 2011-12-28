@@ -1,5 +1,6 @@
 package paas.manager.client;
 
+import org.apache.log4j.Logger;
 import org.jboss.netty.bootstrap.ClientBootstrap;
 import org.jboss.netty.channel.*;
 import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory;
@@ -12,9 +13,12 @@ import platform.server.lifecycle.LifecycleListener;
 import java.net.InetSocketAddress;
 import java.util.concurrent.Executors;
 
-import static platform.server.lifecycle.LifecycleEvent.*;
+import static platform.server.lifecycle.LifecycleEvent.LOGICS_CREATED;
+import static platform.server.lifecycle.LifecycleEvent.STOPPED;
 
 public class AppManagerLifecycleNotifier implements LifecycleListener {
+    private final static Logger logger = Logger.getLogger(AppManagerLifecycleNotifier.class);
+
     private ChannelFactory channelFactory;
 
     private int managerPort;
@@ -74,7 +78,7 @@ public class AppManagerLifecycleNotifier implements LifecycleListener {
 
         future.awaitUninterruptibly();
         if (!future.isSuccess()) {
-            future.getCause().printStackTrace();
+            logger.error("Error connecting to manager application: ", future.getCause());
         }
         future.getChannel().getCloseFuture().awaitUninterruptibly();
 

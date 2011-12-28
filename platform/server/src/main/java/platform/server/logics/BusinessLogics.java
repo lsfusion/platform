@@ -2,6 +2,7 @@ package platform.server.logics;
 
 import net.sf.jasperreports.engine.JRException;
 import org.apache.log4j.Logger;
+import org.springframework.beans.factory.InitializingBean;
 import platform.base.*;
 import platform.interop.Compare;
 import platform.interop.RemoteLogicsInterface;
@@ -56,11 +57,20 @@ import static platform.server.logics.ServerResourceBundle.getString;
 
 // @GenericImmutable нельзя так как Spring валится
 
-public abstract class BusinessLogics<T extends BusinessLogics<T>> extends RemoteContextObject implements RemoteLogicsInterface {
+public abstract class BusinessLogics<T extends BusinessLogics<T>> extends RemoteContextObject implements RemoteLogicsInterface, InitializingBean {
     protected List<LogicsModule> logicModules = new ArrayList<LogicsModule>();
     final public BaseLogicsModule<T> LM;
     public List<LogicsModule> getLogicModules() {
         return logicModules;
+    }
+
+    public LogicsModule findModule(String sid) {
+        for (LogicsModule module : logicModules) {
+            if (module.getSID().equals(sid)) {
+                return module;
+            }
+        }
+        return null;
     }
 
     protected final static Logger logger = Logger.getLogger(BusinessLogics.class);
@@ -108,7 +118,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
     protected final DataAdapter adapter;
 
-    protected ThreadLocal<SQLSession> sqlRef;
+    protected final ThreadLocal<SQLSession> sqlRef;
 
     public SQLSyntax getAdapter() {
         return adapter;
@@ -219,6 +229,12 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     private void removeNavigator(RemoteNavigator navigator, DataSession session) throws SQLException {
         if (navigator != null && navigator.getConnection() != null) {
             LM.connectionCurrentStatus.execute(LM.connectionStatus.getID("disconnectedConnection"), session, navigator.getConnection());
+        }
+    }
+
+    public boolean hasClientConnection(String login, String hostName) {
+        synchronized (navigators) {
+            return navigators.containsKey(new Pair<String, Integer>(login, getComputer(hostName)));
         }
     }
 
@@ -738,14 +754,15 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         }
     }
 
-    public BusinessLogics(DataAdapter adapter, int exportPort) throws IOException, ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException, JRException {
+    public BusinessLogics(DataAdapter adapter, int exportPort) throws RemoteException {
         super(exportPort);
 
         Context.context.set(this);
 
+        this.adapter = adapter;
+
         LM = new BaseLogicsModule(this, logger);
 
-        this.adapter = adapter;
         sqlRef = new ThreadLocal<SQLSession>() {
             @Override
             public SQLSession initialValue() {
@@ -756,7 +773,10 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
                 }
             }
         };
+    }
 
+    @Override
+    public void afterPropertiesSet() throws Exception {
         createModules();
         initModules();
 
@@ -1200,8 +1220,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         }
     }
 
-    public final int systemUserObject;
-    public final int systemComputer;
+    public int systemUserObject;
+    public int systemComputer;
 
     public PolicyManager policyManager = new PolicyManager();
 
@@ -1801,6 +1821,12 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         updateEnvironmentProperty(LM.isServerRestarting.property, ObjectValue.getValue(isRestarting, LogicalClass.instance));
     }
 
+    public int getNumberOfClients() {
+        synchronized (navigators) {
+            return navigators.size();
+        }
+    }
+
     public class RestartActionProperty extends ActionProperty {
         private RestartActionProperty(String sID, String caption) {
             super(sID, caption, new ValueClass[]{});
@@ -2235,5 +2261,10 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             return ServerResourceBundle.getString("logics.error.registration");
         }
         return null;
+    }
+
+    @Override
+    public BusinessLogics getBL() {
+        return this;
     }
 }

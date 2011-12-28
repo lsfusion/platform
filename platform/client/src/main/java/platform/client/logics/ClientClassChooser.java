@@ -57,7 +57,7 @@ public class ClientClassChooser extends ClientComponent {
 
     @Override
     public String toString() {
-        return getCaption() + " (" + object.toString() + ")";
+        return getCaption() + " (" + object.toString() + ")" + "[sid:" + getSID() + "]";
     }
 
     @Override

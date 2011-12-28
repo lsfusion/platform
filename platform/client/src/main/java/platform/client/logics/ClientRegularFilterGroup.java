@@ -74,7 +74,7 @@ public class ClientRegularFilterGroup extends ClientComponent {
 
     @Override
     public String toString() {
-        return filters.toString();
+        return filters.toString() + "[sid:" + getSID() + "]";
     }
 
     public String getCodeClass() {

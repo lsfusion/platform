@@ -19,7 +19,6 @@ import platform.server.form.instance.FormInstance;
 import platform.server.form.navigator.NavigatorElement;
 import platform.server.form.view.DefaultFormView;
 import platform.server.form.view.FormView;
-import platform.server.form.view.PropertyDrawView;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.ServerResourceBundle;
 import platform.server.logics.linear.LP;
@@ -564,6 +563,33 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         return getPropertyDraw(group, object.groupTo);
     }
 
+    /**
+     * ищет PropertyDrawEntity, который мэпит на входы LP переданные objects
+     */
+    public PropertyDrawEntity getPropertyDraw(LP lp, PropertyObjectInterfaceEntity... objects) {
+        if (lp.listInterfaces.size() != objects.length) {
+            return null;
+        }
+
+        for (PropertyDrawEntity propertyDraw : propertyDraws) {
+            PropertyObjectEntity propertyObject = propertyDraw.propertyObject;
+            if (propertyObject.property == lp.property) {
+                boolean found = true;
+                for (int i = 0; i < objects.length; ++i) {
+                    Object iFace = lp.listInterfaces.get(i);
+                    if (propertyObject.mapping.get(iFace) != objects[i]) {
+                        found = false;
+                        break;
+                    }
+                }
+                if (found) {
+                    return propertyDraw;
+                }
+            }
+        }
+        return null;
+    }
+
     public PropertyDrawEntity getPropertyDraw(AbstractNode group, GroupObjectEntity groupObject) {
 
         PropertyDrawEntity resultPropertyDraw = null;
@@ -934,11 +960,9 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
     }
 
     public void setNeedVerticalScroll(boolean scroll) {
-        if (richDesign instanceof DefaultFormView) {
-            DefaultFormView view = (DefaultFormView) richDesign;
-            for (GroupObjectEntity entity : groups) {
-                view.get(entity).needVerticalScroll = scroll;
-            }
+        FormView view = richDesign;
+        for (GroupObjectEntity entity : groups) {
+            view.get(entity).needVerticalScroll = scroll;
         }
     }
 

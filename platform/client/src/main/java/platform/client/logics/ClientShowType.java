@@ -49,7 +49,7 @@ public class ClientShowType extends ClientComponent {
 
     @Override
     public String toString() {
-        return getCaption() + " (" + groupObject.toString() + ")";
+        return getCaption() + " (" + groupObject.toString() + ")" + "[sid:" + getSID() + "]";
     }
 
     @Override

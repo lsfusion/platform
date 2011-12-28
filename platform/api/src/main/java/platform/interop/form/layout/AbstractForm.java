@@ -1,16 +1,15 @@
 package platform.interop.form.layout;
 
 public interface AbstractForm<C extends AbstractContainer<C, T>, T extends AbstractComponent<C, T>, F extends AbstractFunction<C, T>> {
+    C getMainContainer();
 
-    void setMainContainer(C mainContainer);
-
-    void setPrintFunction(F printFunction);
-    void setEditFunction(F editFunction);
-    void setXlsFunction(F xlsFunction);
-    void setNullFunction(F nullFunction);
-    void setRefreshFunction(F refreshFunction);
-    void setApplyFunction(F applyFunction);
-    void setCancelFunction(F cancelFunction);
-    void setOkFunction(F okFunction);
-    void setCloseFunction(F closeFunction);
+    F getPrintFunction();
+    F getEditFunction();
+    F getXlsFunction();
+    F getNullFunction();
+    F getRefreshFunction();
+    F getApplyFunction();
+    F getCancelFunction();
+    F getOkFunction();
+    F getCloseFunction();
 }

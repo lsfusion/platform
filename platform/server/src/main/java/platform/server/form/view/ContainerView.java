@@ -79,14 +79,22 @@ public class ContainerView extends ComponentView implements AbstractContainer<Co
         }
     }
 
-    private void remove(ComponentView comp) {
-        comp.setContainer(null);
-        children.remove(comp);
+    public boolean remove(ComponentView comp) {
+        if (children.remove(comp)) {
+            comp.setContainer(null);
+            return true;
+        } else {
+            return false;
+        }
     }
 
     public void fillOrderList(List<ContainerView> containers) {
         if(container!=null) container.fillOrderList(containers);
         if(!containers.contains(this)) containers.add(this);
+    }
+
+    public List<ComponentView> getChildren() {
+        return new ArrayList(children);
     }
 
     @Override
@@ -97,7 +105,6 @@ public class ContainerView extends ComponentView implements AbstractContainer<Co
 
         pool.writeString(outStream, title);
         pool.writeString(outStream, description);
-        pool.writeString(outStream, sID);
 
         outStream.writeBoolean(tabbedPane);
     }
@@ -110,7 +117,6 @@ public class ContainerView extends ComponentView implements AbstractContainer<Co
 
         title = pool.readString(inStream);
         description = pool.readString(inStream);
-        sID = pool.readString(inStream);
 
         tabbedPane = inStream.readBoolean();
     }

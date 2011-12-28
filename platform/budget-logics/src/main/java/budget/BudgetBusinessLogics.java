@@ -15,8 +15,6 @@ public class BudgetBusinessLogics extends BusinessLogics<BudgetBusinessLogics> {
 
     public BudgetBusinessLogics(DataAdapter iAdapter, int port) throws IOException, ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException, JRException, FileNotFoundException {
         super(iAdapter, port);
-
-        outputPropertyClasses();
     }
 
     public void createModules() {
@@ -30,7 +28,8 @@ public class BudgetBusinessLogics extends BusinessLogics<BudgetBusinessLogics> {
     }
 
     @Override
-    public BusinessLogics getBL() {
-        return this;
+    public void afterPropertiesSet() throws Exception {
+        super.afterPropertiesSet();
+        outputPropertyClasses();
     }
 }

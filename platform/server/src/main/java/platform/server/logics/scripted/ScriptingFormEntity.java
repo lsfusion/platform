@@ -1,4 +1,4 @@
-package platform.server.logics;
+package platform.server.logics.scripted;
 
 import platform.interop.ClassViewType;
 import platform.server.classes.ValueClass;
@@ -36,6 +36,7 @@ public class ScriptingFormEntity extends FormEntity {
             List<String> groupClassIds = classes.get(i);
             assert groupObjectNames.size() == groupClassIds.size();
             GroupObjectEntity groupObj = new GroupObjectEntity(genID());
+            String groupObjectSID = "";
             for (int j = 0; j < groupObjectNames.size(); j++) {
                 String objectName = groupObjectNames.get(j);
                 String objectSID = objectName;
@@ -48,6 +49,8 @@ public class ScriptingFormEntity extends FormEntity {
                 groupObj.add(obj);
                 assert !objectEntities.containsKey(objectName);
                 objectEntities.put(objectName, obj);
+
+                groupObjectSID = (groupObjectSID.length() == 0 ? "" : groupObjectSID + ".") + objectSID;
             }
 
             ClassViewType viewType = viewTypes.get(i);
@@ -58,11 +61,13 @@ public class ScriptingFormEntity extends FormEntity {
                     groupObj.setSingleClassView(viewType);
                 }
             }
+
+            groupObj.setSID(groupObjectSID);
             addGroup(groupObj);
         }
     }
 
-    private class MappedProperty {
+    public static final class MappedProperty {
         public LP<?> property;
         public PropertyObjectInterfaceEntity[] mapping;
 
@@ -83,7 +88,7 @@ public class ScriptingFormEntity extends FormEntity {
         return objects;
     }
 
-    private MappedProperty getPropertyWithMapping(String name, List<String> mapping) throws ScriptingErrorLog.SemanticErrorException {
+    public MappedProperty getPropertyWithMapping(String name, List<String> mapping) throws ScriptingErrorLog.SemanticErrorException {
         LP<?> property = LM.findLPByCompoundName(name);
         if (property.property.interfaces.size() != mapping.size()) {
             LM.getErrLog().emitParamCountError(LM.getParser(), property, mapping.size());

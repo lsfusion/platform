@@ -126,19 +126,10 @@ storeIsHuge2(store) = (storeSize(store) == storeSize.huge) == TRUE;
 documentBalance(document, article) = balanceQuantity(store(document), article);
 
 ///////////////CONSTRAINT STATEMENT//////////////
+
 // Syntax:
 // CONSTRAINT [CHECKED] propertyExpression MSG 'message';
 CONSTRAINT CHECKED foo(store, article) > 1000 MSG 'ошибка: >1000';
-
-
-////////////////FOLLOWS STATEMENT////////////////
-// Syntax:
-// propertyName(param1, ..., paramN) =>
-//      propertyExpression1 [RESOLVE (TRUE | FALSE | ALL | NOTHING)],
-//      ...
-//      propertyExpressionK [RESOLVE (TRUE | FALSE | ALL | NOTHING)];
-foo(store, article) => foo2(store, article) RESOLVE NOTHING, bar2(store, article);
-
 
 //////////////// FORM STATEMENT /////////////////
 
@@ -177,79 +168,3 @@ PROPERTIES(s, a) incomeQuantity, incomeQuantity2, outcomeQuantity, outcomeQuanti
 PROPERTIES(s) storeSizeName, storeIsHuge, storeIsHuge2
 PROPERTIES(s, a) foo, foo2, bar, foobar, bar2, baz, baz2, balanceQuantity, testUnion, testPartition, testFormula;
 
-
-//getMainContainer => CONTAINER main
-//
-//getTreeContainer => CONTAINER treeName.box
-//get(TreeGroupEntity) => COMPONENT treeName.tree
-//
-//getGroupObjectContainer => CONTAINER groupName.box
-//getPanelContainer => CONTAINER groupName.panel
-//get(GroupObjectEntity)
-//    .grid => COMPONENT groupName.grid
-//    .showType => COMPONENT groupName.showType
-//getGridContainer => CONTAINER groupName.grid.box
-//getControlsContainer => groupName.controls
-//getFilterContainer => groupName.filters
-//
-//getGroupPropertyContainer(AbstractGroup) CONTAINER groupName.propGroupName
-//
-//get(ObjectEntity)
-//    .classChooser => COMPONENT objectName.classChooser
-//
-//getRegularFilterGroup => COMPONENT filters.filterName
-//
-//get*Function => COMPONENT functions.*
-//getFormButtonContainer=> CONTAINER functions.box
-//
-//get(PropertyDrawEntity) => COMPONENT PROPERTY(propSelector(...))
-
-
-DESIGN storeArticle FROM DEFAULT {
-
-    title = 'Справочник складов';
-
-    GROUP(s) {
-        tableRowsCount = 10;
-        needVerticalScroll = FALSE;
-    }
-
-    s.grid {
-        minimumSize = 12;
-    }
-
-    main {
-        title = 'Главный контейнер';
-        ADD functions.box;
-        ADD tabs {
-            tabbedPane = TRUE:
-            ADD s.box {
-                title = 'Склад';
-                fillVertical = 0.3;
-            }
-            ADD a.box {
-                title = 'Артикль';
-                fillVertical = 2.5;
-            }
-        }
-    }
-
-    REMOVE s.box CASCADE;
-
-    PROPERTY(bar) { caption = 'Барр'; }
-
-    PROPERTY(storeSizeName(s)) { caption = 'Имя размера склада'; }
-
-    PROPERTY(name(a)) {
-        caption = 'Имя (a)';
-        editKey = 'ctrl F6';
-        showEditKey = TRUE;
-        clearText = TRUE;
-    }
-
-    PROPERTY(foo(s, a)) {
-        focusable = FALSE;
-        panelLabelAbove = TRUE;
-        caption = 'This is foo\'s caption!';
-    }
-}

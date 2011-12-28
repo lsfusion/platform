@@ -19,13 +19,48 @@ public class PostgreDataAdapter extends DataAdapter {
     }
 
     public PostgreDataAdapter(String dataBase, String server, String userID, String password) throws Exception, SQLException, InstantiationException, IllegalAccessException {
+        this(dataBase, server, userID, password, false);
+    }
+
+    public PostgreDataAdapter(String dataBase, String server, String userID, String password, boolean cleanDB) throws Exception, SQLException, InstantiationException, IllegalAccessException {
         super(dataBase, server, userID, password);
+        internalEnsureDB(cleanDB);
+    }
+
+    private void internalEnsureDB(boolean cleanDB) throws Exception, SQLException, InstantiationException, IllegalAccessException {
+        Connection connect = DriverManager.getConnection("jdbc:postgresql://" + server + "/postgres?user=" + userID + "&password=" + password);
+        if (cleanDB) {
+            try {
+                connect.createStatement().execute("DROP DATABASE " + dataBase);
+            } catch (SQLException e) {
+                logger.info(ServerResourceBundle.getString("data.sql.error.creating.database"), e);
+            }
+        }
+
+        try {
+            // обязательно нужно создавать на основе template0, так как иначе у template1 может быть другая кодировка и ошибка
+            connect.createStatement().execute("CREATE DATABASE " + dataBase + " WITH TEMPLATE template0 ENCODING='UTF8' ");
+        } catch (SQLException e) {
+            logger.info(ServerResourceBundle.getString("data.sql.error.creating.database"), e);
+        }
+        connect.close();
+
+        connect = startConnection();
+        connect.createStatement().execute(IOUtils.readStreamToString(BusinessLogics.class.getResourceAsStream("/sqlaggr/getAnyNotNull.sc")));
+        connect.createStatement().execute(IOUtils.readStreamToString(BusinessLogics.class.getResourceAsStream("/sqlfun/jumpWorkdays.sc")));
+        connect.createStatement().execute(IOUtils.readStreamToString(BusinessLogics.class.getResourceAsStream("/sqlaggr/aggf.sc")));
+        connect.close();
+    }
+
+    public void ensureDB() throws Exception, SQLException, InstantiationException, IllegalAccessException {
+        //всё делаем в internalEnsureDB
     }
 
     @Override
     public String getLongType() {
         return "int8";
     }
+
     @Override
     public int getLongSQL() {
         return Types.BIGINT;
@@ -41,28 +76,6 @@ public class PostgreDataAdapter extends DataAdapter {
 
     public String getClassName() {
         return "org.postgresql.Driver";
-    }
-
-    public void ensureDB() throws Exception, SQLException, InstantiationException, IllegalAccessException {
-
-        Connection connect = DriverManager.getConnection("jdbc:postgresql://" + server + "/postgres?user=" + userID + "&password=" + password);
-/*        try {
-            connect.createStatement().execute("DROP DATABASE "+ dataBase);
-        } catch (SQLException e) {
-        }*/
-        try {
-            // обязательно нужно создавать на основе template0, так как иначе у template1 может быть другая кодировка и ошибка
-            connect.createStatement().execute("CREATE DATABASE " + dataBase + " WITH TEMPLATE template0 ENCODING='UTF8' ");
-        } catch (SQLException e) {
-            logger.info(ServerResourceBundle.getString("data.sql.error.creating.database")+" " + e);
-        }
-        connect.close();
-
-        connect = startConnection();
-        connect.createStatement().execute(IOUtils.readStreamToString(BusinessLogics.class.getResourceAsStream("/sqlaggr/getAnyNotNull.sc")));
-        connect.createStatement().execute(IOUtils.readStreamToString(BusinessLogics.class.getResourceAsStream("/sqlfun/jumpWorkdays.sc")));
-        connect.createStatement().execute(IOUtils.readStreamToString(BusinessLogics.class.getResourceAsStream("/sqlaggr/aggf.sc")));
-        connect.close();
     }
 
     public Connection startConnection() throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {

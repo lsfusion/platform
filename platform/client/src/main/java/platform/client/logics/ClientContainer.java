@@ -45,7 +45,6 @@ public class ClientContainer extends ClientComponent implements ClientIdentitySe
 
         pool.writeString(outStream, title);
         pool.writeString(outStream, description);
-        pool.writeString(outStream, sID);
 
         outStream.writeBoolean(tabbedPane);
     }
@@ -58,7 +57,6 @@ public class ClientContainer extends ClientComponent implements ClientIdentitySe
 
         title = pool.readString(inStream);
         description = pool.readString(inStream);
-        sID = pool.readString(inStream);
 
         tabbedPane = inStream.readBoolean();
     }
@@ -89,7 +87,7 @@ public class ClientContainer extends ClientComponent implements ClientIdentitySe
             result += (result.isEmpty() ? "" : " ") + "(" + description + ",";
         result += getID();
         result += ")";
-        return result;
+        return result + "[sid:" + getSID() + "]";
     }
 
     @Override

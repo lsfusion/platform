@@ -1,4 +1,4 @@
-package platform.server.logics;
+package platform.server.logics.scripted;
 
 import org.antlr.runtime.BaseRecognizer;
 import org.antlr.runtime.IntStream;
@@ -94,6 +94,50 @@ public class ScriptingErrorLog {
         emitNotFoundError(parser, "parameter", name);
     }
 
+    public void emitFormNotFoundError(LsfLogicsParser parser, String name) throws SemanticErrorException {
+        emitNotFoundError(parser, "form", name);
+    }
+
+    public void emitComponentNotFoundError(LsfLogicsParser parser, String name) throws SemanticErrorException {
+        emitNotFoundError(parser, "component", name);
+    }
+
+    public void emitComponentIsNullError(LsfLogicsParser parser, String mainMsg) throws SemanticErrorException {
+        SemanticErrorException e = new SemanticErrorException(parser.input);
+        String msg = getSemanticRecognitionErrorText(mainMsg + " component is null\n", parser, e);
+        emitSemanticError(msg, e);
+    }
+
+    public void emitComponentMustBeAContainerError(LsfLogicsParser parser) throws SemanticErrorException {
+        SemanticErrorException e = new SemanticErrorException(parser.input);
+        String msg = getSemanticRecognitionErrorText("Component must be a continaer\n", parser, e);
+        emitSemanticError(msg, e);
+    }
+
+    public void emitInsertBeforeAfterMainContinaerError(LsfLogicsParser parser) throws SemanticErrorException {
+        SemanticErrorException e = new SemanticErrorException(parser.input);
+        String msg = getSemanticRecognitionErrorText("Can't insert before or after main container.\n", parser, e);
+        emitSemanticError(msg, e);
+    }
+
+    public void emitRemoveMainContinaerError(LsfLogicsParser parser) throws SemanticErrorException {
+        SemanticErrorException e = new SemanticErrorException(parser.input);
+        String msg = getSemanticRecognitionErrorText("Can't remove main container.\n", parser, e);
+        emitSemanticError(msg, e);
+    }
+
+    public void emitIntersectionInDifferentContainersError(LsfLogicsParser parser) throws SemanticErrorException {
+        SemanticErrorException e = new SemanticErrorException(parser.input);
+        String msg = getSemanticRecognitionErrorText("Forbidden to create the intersection of objects in different containers.\n", parser, e);
+        emitSemanticError(msg, e);
+    }
+
+    public void emitUnableToSetPropertyError(LsfLogicsParser parser, String propertyName, String cause) throws SemanticErrorException {
+        SemanticErrorException e = new SemanticErrorException(parser.input);
+        String msg = getSemanticRecognitionErrorText("Unable to set property '" + propertyName + "'. Cause: " + cause + "\n", parser, e);
+        emitSemanticError(msg, e);
+    }
+
     public void emitParamIndexError(LsfLogicsParser parser, int paramIndex, int paramCount) throws SemanticErrorException {
         SemanticErrorException e = new SemanticErrorException(parser.input);
         String errText = "wrong parameter index $" + String.valueOf(paramIndex);
@@ -142,7 +186,7 @@ public class ScriptingErrorLog {
     public void emitParamCountError(LsfLogicsParser parser, int interfacesCount, int paramCount) throws SemanticErrorException {
         SemanticErrorException e = new SemanticErrorException(parser.input);
         String msg = getSemanticRecognitionErrorText(String.valueOf(interfacesCount) + " parameter(s) expected, " +
-                String.valueOf(paramCount) + " provided\n", parser, e);
+                                                     String.valueOf(paramCount) + " provided\n", parser, e);
         emitSemanticError(msg, e);
     }
 

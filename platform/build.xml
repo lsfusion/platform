@@ -21,6 +21,27 @@
         </exec>
     </target>
 
+    <target name="recursiveTestCompile">
+        <exec dir="${basedir}" executable="cmd" failonerror="true">
+            <arg value="/c"/>
+            <arg value="mvn"/>
+            <!--<arg value="-X"/>-->
+            <arg value="--also-make" />
+            <arg value="--projects" />
+            <arg value="by.luxsoft.platform:${artifactId}" />
+            <arg value="test-compile" />
+        </exec>
+    </target>
+
+    <target name="quickTestCompile">
+        <exec dir="${basedir}/${artifactId}" executable="cmd" failonerror="true">
+            <arg value="/c"/>
+            <arg value="mvn"/>
+            <arg value="test-compile" />
+            <arg value="-Dquickbuild" />
+        </exec>
+    </target>
+
     <target name="base-recursiveCompile">
         <antcall target="recursiveCompile">
             <param name="artifactId" value="base"/>
@@ -32,6 +53,7 @@
             <param name="artifactId" value="base"/>
         </antcall>
     </target>
+
     <target name="logics-recursiveCompile">
         <antcall target="recursiveCompile">
             <param name="artifactId" value="logics"/>
@@ -43,6 +65,7 @@
             <param name="artifactId" value="logics"/>
         </antcall>
     </target>
+
     <target name="api-recursiveCompile">
         <antcall target="recursiveCompile">
             <param name="artifactId" value="api"/>
@@ -54,6 +77,7 @@
             <param name="artifactId" value="api"/>
         </antcall>
     </target>
+
     <target name="jasperapi-recursiveCompile">
         <antcall target="recursiveCompile">
             <param name="artifactId" value="jasperapi"/>
@@ -65,6 +89,7 @@
             <param name="artifactId" value="jasperapi"/>
         </antcall>
     </target>
+
     <target name="client-recursiveCompile">
         <antcall target="recursiveCompile">
             <param name="artifactId" value="client"/>
@@ -76,6 +101,7 @@
             <param name="artifactId" value="client"/>
         </antcall>
     </target>
+
     <target name="fullclient-recursiveCompile">
         <antcall target="recursiveCompile">
             <param name="artifactId" value="fullclient"/>
@@ -87,6 +113,7 @@
             <param name="artifactId" value="fullclient"/>
         </antcall>
     </target>
+
     <target name="server-recursiveCompile">
         <antcall target="recursiveCompile">
             <param name="artifactId" value="server"/>
@@ -98,6 +125,19 @@
             <param name="artifactId" value="server"/>
         </antcall>
     </target>
+
+    <target name="server-recursiveTestCompile">
+        <antcall target="recursiveTestCompile">
+            <param name="artifactId" value="server"/>
+        </antcall>
+    </target>
+
+    <target name="server-quickTestCompile">
+        <antcall target="quickTestCompile">
+            <param name="artifactId" value="server"/>
+        </antcall>
+    </target>
+
     <target name="tmc-recursiveCompile">
         <antcall target="recursiveCompile">
             <param name="artifactId" value="tmc"/>
@@ -109,6 +149,7 @@
             <param name="artifactId" value="tmc"/>
         </antcall>
     </target>
+
     <target name="skolkovo-api-recursiveCompile">
         <antcall target="recursiveCompile">
             <param name="artifactId" value="skolkovo-api"/>
@@ -120,6 +161,7 @@
             <param name="artifactId" value="skolkovo-api"/>
         </antcall>
     </target>
+
     <target name="skolkovo-logics-recursiveCompile">
         <antcall target="recursiveCompile">
             <param name="artifactId" value="skolkovo-logics"/>
@@ -131,6 +173,7 @@
             <param name="artifactId" value="skolkovo-logics"/>
         </antcall>
     </target>
+
     <target name="skolkovo-gwt-recursiveCompile">
         <antcall target="recursiveCompile">
             <param name="artifactId" value="skolkovo-gwt"/>
@@ -142,6 +185,7 @@
             <param name="artifactId" value="skolkovo-gwt"/>
         </antcall>
     </target>
+
     <target name="budget-logics-recursiveCompile">
         <antcall target="recursiveCompile">
             <param name="artifactId" value="budget-logics"/>
@@ -153,6 +197,7 @@
             <param name="artifactId" value="budget-logics"/>
         </antcall>
     </target>
+
     <target name="roman-logics-recursiveCompile">
         <antcall target="recursiveCompile">
             <param name="artifactId" value="roman-logics"/>
@@ -164,6 +209,7 @@
             <param name="artifactId" value="roman-logics"/>
         </antcall>
     </target>
+
     <target name="sample-logics-recursiveCompile">
         <antcall target="recursiveCompile">
             <param name="artifactId" value="sample-logics"/>
@@ -175,6 +221,7 @@
             <param name="artifactId" value="sample-logics"/>
         </antcall>
     </target>
+
     <target name="trushkin-logics-recursiveCompile">
         <antcall target="recursiveCompile">
             <param name="artifactId" value="trushkin-logics"/>
@@ -186,6 +233,7 @@
             <param name="artifactId" value="trushkin-logics"/>
         </antcall>
     </target>
+
     <target name="retail-logics-recursiveCompile">
         <antcall target="recursiveCompile">
             <param name="artifactId" value="retail-logics"/>
@@ -197,6 +245,7 @@
             <param name="artifactId" value="retail-logics"/>
         </antcall>
     </target>
+
     <target name="gwt-form-recursiveCompile">
         <antcall target="recursiveCompile">
             <param name="artifactId" value="gwt-form"/>
@@ -208,6 +257,7 @@
             <param name="artifactId" value="gwt-form"/>
         </antcall>
     </target>
+
     <target name="gwt-api-recursiveCompile">
         <antcall target="recursiveCompile">
             <param name="artifactId" value="gwt-api"/>
@@ -219,6 +269,7 @@
             <param name="artifactId" value="gwt-api"/>
         </antcall>
     </target>
+
     <target name="paas-api-recursiveCompile">
         <antcall target="recursiveCompile">
             <param name="artifactId" value="paas-api"/>
@@ -230,6 +281,7 @@
             <param name="artifactId" value="paas-api"/>
         </antcall>
     </target>
+
     <target name="paas-logics-recursiveCompile">
         <antcall target="recursiveCompile">
             <param name="artifactId" value="paas-logics"/>
@@ -241,6 +293,7 @@
             <param name="artifactId" value="paas-logics"/>
         </antcall>
     </target>
+
     <target name="paas-web-recursiveCompile">
         <antcall target="recursiveCompile">
             <param name="artifactId" value="paas-web"/>
@@ -252,6 +305,7 @@
             <param name="artifactId" value="paas-web"/>
         </antcall>
     </target>
+
     <target name="test-logics-recursiveCompile">
         <antcall target="recursiveCompile">
             <param name="artifactId" value="test-logics"/>
@@ -263,5 +317,6 @@
             <param name="artifactId" value="test-logics"/>
         </antcall>
     </target>
+
 
 </project>

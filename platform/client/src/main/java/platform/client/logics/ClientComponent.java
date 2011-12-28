@@ -71,6 +71,7 @@ public abstract class ClientComponent extends ContextIdentityObject implements S
         pool.writeObject(outStream, preferredSize);
 
         pool.writeObject(outStream, constraints);
+        pool.writeString(outStream, sID);
 
         outStream.writeInt(constraints.intersects.size());
         for (Map.Entry<ClientComponent, DoNotIntersectSimplexConstraint> intersect : constraints.intersects.entrySet()) {
@@ -92,6 +93,7 @@ public abstract class ClientComponent extends ContextIdentityObject implements S
         preferredSize = pool.readObject(inStream);
 
         constraints = pool.readObject(inStream);
+        sID = pool.readString(inStream);
 
         constraints.intersects = new HashMap<ClientComponent, DoNotIntersectSimplexConstraint>();
         int count = inStream.readInt();

@@ -1,4 +1,4 @@
-package platform.server.logics;
+package platform.server.logics.scripted;
 
 import net.sf.jasperreports.engine.JRException;
 import org.antlr.runtime.ANTLRFileStream;
@@ -12,6 +12,10 @@ import platform.server.LsfLogicsParser;
 import platform.server.classes.*;
 import platform.server.data.Union;
 import platform.server.data.expr.query.OrderType;
+import platform.server.form.navigator.NavigatorElement;
+import platform.server.logics.BaseLogicsModule;
+import platform.server.logics.BusinessLogics;
+import platform.server.logics.LogicsModule;
 import platform.server.logics.linear.LP;
 import platform.server.logics.property.ClassPropertyInterface;
 import platform.server.logics.property.StoredDataProperty;
@@ -90,17 +94,12 @@ public class ScriptingLogicsModule extends LogicsModule {
     }
 
     protected LogicsModule findModule(String sid) throws ScriptingErrorLog.SemanticErrorException {
-        List<LogicsModule> modules = BL.getLogicModules();
-        for (LogicsModule module : modules) {
-            if (module.getSID().equals(sid)) {
-                return module;
-            }
-        }
-        checkModule(null, sid);
-        return null;
+        LogicsModule module = BL.findModule(sid);
+        checkModule(module, sid);
+        return module;
     }
 
-    private String transformStringLiteral(String captionStr) {
+    public String transformStringLiteral(String captionStr) {
         String caption = captionStr.replace("\\'", "'");
         caption = caption.replace("\\n", "\n");
         caption = caption.replace("\\r", "\r");
@@ -261,6 +260,25 @@ public class ScriptingLogicsModule extends LogicsModule {
         scriptLogger.info("createScriptedForm(" + formName + ", " + caption + ");");
         caption = (caption == null ? formName : transformStringLiteral(caption));
         return new ScriptingFormEntity(baseLM.baseElement, this, formName, caption);
+    }
+
+    public ScriptedFormView createScriptedFormView(String formName, String caption, boolean applyDefault) throws ScriptingErrorLog.SemanticErrorException {
+        scriptLogger.info("createScriptedFormView(" + formName + ", " + applyDefault + ");");
+        NavigatorElement<? extends BusinessLogics<?>> formEntity = baseLM.baseElement.getNavigatorElement(formName);
+        if (!(formEntity instanceof ScriptingFormEntity)) {
+            errLog.emitFormNotFoundError(parser, formName);
+        }
+
+        ScriptingFormEntity scriptedEntity = (ScriptingFormEntity) formEntity;
+
+        ScriptedFormView formView = new ScriptedFormView(scriptedEntity, applyDefault, this);
+        if (caption != null) {
+            formView.caption = caption;
+        }
+
+        scriptedEntity.richDesign = formView;
+
+        return formView;
     }
 
     public void addScriptedForm(ScriptingFormEntity form) {

@@ -13,7 +13,6 @@ import paas.PaasBusinessLogics;
 import paas.PaasLogicsModule;
 import paas.PaasUtils;
 import paas.manager.common.ConfigurationEventData;
-import paas.scripted.ScriptedBusinessLogics;
 import platform.base.NullOutpuStream;
 import platform.base.OrderedMap;
 import platform.interop.remote.ApplicationTerminal;
@@ -24,6 +23,7 @@ import platform.server.data.query.Query;
 import platform.server.lifecycle.LifecycleAdapter;
 import platform.server.lifecycle.LifecycleEvent;
 import platform.server.logics.DataObject;
+import platform.server.logics.scripted.ScriptedBusinessLogics;
 import platform.server.session.DataSession;
 
 import java.io.File;

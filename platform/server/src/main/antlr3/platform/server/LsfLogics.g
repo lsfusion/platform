@@ -1,19 +1,28 @@
 grammar LsfLogics;
 
- @header {
-	package platform.server; 
-	import platform.server.logics.ScriptingLogicsModule; 
-	import platform.server.logics.ScriptingFormEntity;
-	import platform.server.data.Union;
-	import platform.server.logics.linear.LP;
-	import platform.server.logics.ScriptingErrorLog;
+@header { 
+	package platform.server;
+	
 	import platform.interop.ClassViewType;
+	import platform.interop.form.layout.DoNotIntersectSimplexConstraint;
+	import platform.server.data.Union;
 	import platform.server.data.expr.query.OrderType;
+	import platform.server.form.view.*;
+	import platform.server.logics.scripted.ScriptedFormView;
+	import platform.server.logics.scripted.ScriptedFormView.InsertPosition;
+	import platform.server.logics.ScriptingErrorLog;
+	import platform.server.logics.ScriptingFormEntity;
+	import platform.server.logics.ScriptingLogicsModule;
+	import platform.server.logics.linear.LP;
 	import platform.server.logics.property.PropertyFollows;
+	
+	import java.awt.*;
+	import java.util.ArrayList;
 	import java.util.Collections;
-	import java.util.Set;
-	import java.util.HashSet;
-	import java.util.Arrays;
+	import java.util.List;
+	import java.util.Stack;
+	
+	import static platform.interop.form.layout.SingleSimplexConstraint.*;
 }
 
 @lexer::header { 
@@ -47,6 +56,33 @@ grammar LsfLogics;
 	public ScriptingLogicsModule self;
 	public ScriptingLogicsModule.State parseState;
 	
+
+	public boolean inParseState(ScriptingLogicsModule.State parseState) {
+		return this.parseState == parseState;
+	}
+	
+	public boolean inGroupParseState() {
+		return inParseState(ScriptingLogicsModule.State.GROUP);
+	}
+	
+	public boolean inClassParseState() {
+		return inParseState(ScriptingLogicsModule.State.CLASS);
+	}
+	
+	public boolean inPropParseState() {
+		return inParseState(ScriptingLogicsModule.State.PROP);
+	}
+	
+	public boolean inNavigatorParseState() {
+		return inParseState(ScriptingLogicsModule.State.NAVIGATOR);
+	}
+	
+	public void setObjectProperty(Object propertyReceiver, String propertyName, Object propertyValue) throws ScriptingErrorLog.SemanticErrorException {
+		if (inNavigatorParseState()) {
+			$designStatement::design.setObjectProperty(propertyReceiver, propertyName, propertyValue);
+		}
+    }
+    
 	@Override
 	public void emitErrorMessage(String msg) {
 		if (parseState == ScriptingLogicsModule.State.GROUP) { 
@@ -92,15 +128,16 @@ importDirective
 
 
 statement
-	:	(classStatement 
-	| 	groupStatement 
-	| 	propertyStatement 
-	| 	constraintStatement 
-	|	followsStatement
-	| 	tableStatement 
-	| 	indexStatement 
-	| 	formStatement) 
-		';'
+	:   (   classStatement
+	    | 	groupStatement
+	    | 	propertyStatement
+	    | 	constraintStatement
+	    |	followsStatement
+	    | 	tableStatement
+	    | 	indexStatement
+	    | 	formStatement
+	    ) ';'
+    | designStatement
 	;
 
 
@@ -188,7 +225,7 @@ formDeclaration returns [ScriptingFormEntity form]
 	}
 }
 	:	'FORM' 
-		formNameCaption=simpleNameWithCaption { name = $formNameCaption.text; caption = $formNameCaption.caption; }
+		formNameCaption=simpleNameWithCaption { name = $formNameCaption.name; caption = $formNameCaption.caption; }
 	;
 
 
@@ -709,31 +746,31 @@ followsStatement
 	List<String> context;
 	String mainProp;
 	List<List<Integer>> usedParams = new ArrayList<List<Integer>>();
-	List<LP<?>> props = new ArrayList<LP<?>>(); 
+	List<LP<?>> props = new ArrayList<LP<?>>();
 	List<Integer> options = new ArrayList<Integer>();
 }
 @after {
-	if (parseState == ScriptingLogicsModule.State.PROP) { 
+	if (parseState == ScriptingLogicsModule.State.PROP) {
 		self.addScriptedFollows(mainProp, context.size(), options, props, usedParams);
 	}
 }
-	:	propName=ID { mainProp = $propName.text; } 
-		'(' 
-		paramList=idList { context = $paramList.ids; } 
-		')' 
-		'=>' 
-		firstExpr=propertyExpression[context, false] ('RESOLVE' type=followsResolveType)? 
-		{ 
-			props.add($firstExpr.property); usedParams.add($firstExpr.usedParams); 
-			options.add(type == null ? PropertyFollows.RESOLVE_ALL : $type.type); 
+	:	propName=ID { mainProp = $propName.text; }
+		'('
+		paramList=idList { context = $paramList.ids; }
+		')'
+		'=>'
+		firstExpr=propertyExpression[context, false] ('RESOLVE' type=followsResolveType)?
+		{
+			props.add($firstExpr.property); usedParams.add($firstExpr.usedParams);
+			options.add(type == null ? PropertyFollows.RESOLVE_ALL : $type.type);
 		}
-		(',' nextExpr=propertyExpression[context, false] ('RESOLVE' type=followsResolveType)? 
-		     { 
-		     		props.add($nextExpr.property); usedParams.add($nextExpr.usedParams); 
-		     		options.add(type == null ? PropertyFollows.RESOLVE_ALL : $type.type); 
+		(',' nextExpr=propertyExpression[context, false] ('RESOLVE' type=followsResolveType)?
+		     {
+		     		props.add($nextExpr.property); usedParams.add($nextExpr.usedParams);
+		     		options.add(type == null ? PropertyFollows.RESOLVE_ALL : $type.type);
 		     }
 		)*
-	;	
+	;
 
 followsResolveType returns [Integer type]
 	:	lit=LOGICAL_LITERAL	{ $type = $lit.text.equals("TRUE") ? PropertyFollows.RESOLVE_TRUE : PropertyFollows.RESOLVE_FALSE; }
@@ -756,6 +793,188 @@ tableStatement
 indexStatement
 	:	'z';
 
+
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////// DESIGN STATEMENT ////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+
+designStatement returns [ScriptedFormView formView]
+scope {
+	ScriptedFormView design;
+}
+@init {
+	boolean applyDefault = false;
+}
+@after {
+}
+	: 	'DESIGN'
+		 nameWithCaption=simpleNameWithCaption
+		 ('FROM' 'DEFAULT' {applyDefault = true;} )?
+		 {
+			if (inNavigatorParseState()) {
+				$designStatement::design = $formView = self.createScriptedFormView($nameWithCaption.name, $nameWithCaption.caption, applyDefault);
+			}
+	     }
+		componentStatementBody[formView, formView == null ? null : formView.mainContainer]
+	;
+	
+componentStatementBody [Object propertyReceiver, ComponentView parentComponent]
+	: '{'
+		( setObjectPropertyStatement[propertyReceiver]
+			| positionComponentsStatement[parentComponent]
+			| setupComponentStatement
+			| setupGroupObjectStatement
+			| addComponentStatement[parentComponent]
+			| removeComponentStatement )*
+	  '}'
+	| ';'
+	;
+	
+setupComponentStatement
+	: comp=componentSelector[true] componentStatementBody[$comp.component, $comp.component]
+	;
+	
+setupGroupObjectStatement
+@init {
+	GroupObjectView groupObject = null;
+}
+	: 'GROUP'
+	  '('
+		ID
+		{
+			if (inNavigatorParseState()) {
+				groupObject = $designStatement::design.getGroupObject($ID.text);
+			}
+		}
+	  ')' '{' setObjectPropertyStatement[groupObject]* '}'
+	;
+
+addComponentStatement[ComponentView parentComponent]
+@init {
+	boolean hasPosition = false;
+	ComponentView insComp = null;
+}
+	: 'ADD' insSelector=componentSelector[false] { insComp = $insSelector.component; }
+			   ( posDefinition=addPositionDefinition posSelector=componentSelector[true] { hasPosition = true; } )?
+		{
+			if (inNavigatorParseState()) {
+				insComp = $designStatement::design.addComponent($insSelector.sid,
+																insComp,
+																hasPosition ? $posDefinition.position : InsertPosition.IN,
+																hasPosition ? $posSelector.component : $parentComponent);
+			}
+		}
+   	    componentStatementBody[insComp, insComp]
+	;
+	
+removeComponentStatement
+@init {
+	boolean cascade = false;
+}
+	: 'REMOVE' compSelector=componentSelector[true] ('CASCADE' { cascade = true; } )? ';'
+		{
+			if (inNavigatorParseState()) {
+				$designStatement::design.removeComponent($compSelector.component, cascade);
+			}
+		}
+	;	
+	
+componentSelector[boolean hasToExist] returns [String sid, ComponentView component]
+	: 'PARENT' '(' child=componentSelector[true] ')'
+		{
+			if (inNavigatorParseState()) {
+				$designStatement::design.getParentContainer($child.component);
+			}
+		}
+	| 'PROPERTY' '(' prop=propertySelector ')' { $component = $prop.propertyView; }
+	| mid=multiCompoundID
+		{
+			if (inNavigatorParseState()) {
+				$sid = $mid.sid;
+				$component = $designStatement::design.getComponentBySID($sid, hasToExist);
+			}
+		}
+	;
+	
+	
+propertySelector returns [PropertyDrawView propertyView = null]
+	: pname=formPropertyName
+		{
+			if (inNavigatorParseState()) {
+				$propertyView = $designStatement::design.getPropertyView($pname.text);
+			}
+		}
+	| mappedProp=formMappedProperty
+		{
+			if (inNavigatorParseState()) {
+				$propertyView = $designStatement::design.getPropertyView($mappedProp.name, $mappedProp.mapping);
+			}
+		}
+	;
+
+positionComponentsStatement[ComponentView parentComponent]
+@init {
+	boolean hasSecondComponent = false;
+}
+	: 'POSITION' compSelector1=componentSelector[true] constrDefinition=constraintDefinition ( compSelector2=componentSelector[true]  { hasSecondComponent = true; } )? ';'
+    	{
+			if (inNavigatorParseState()) {
+	    		$designStatement::design.addIntersection($compSelector1.component,
+	    												 $constrDefinition.constraint,
+	    												 hasSecondComponent ? $compSelector2.component : parentComponent);
+	    	}
+    	}
+	;
+	
+constraintDefinition returns [DoNotIntersectSimplexConstraint constraint]
+	: 'TO' 'THE' 'LEFT' { $constraint = TOTHE_LEFT; }
+	| 'TO' 'THE' 'RIGHT' { $constraint = TOTHE_RIGHT; }
+	| 'TO' 'THE' 'BOTTOM' { $constraint = TOTHE_BOTTOM; }
+	| 'TO' 'THE' 'RIGHTBOTTOM' { $constraint = TOTHE_RIGHTBOTTOM; }
+	| 'TO' 'NOT' 'INTERSECT' { $constraint = DO_NOT_INTERSECT; }
+	;
+
+addPositionDefinition returns [InsertPosition position]
+	: 'IN' { $position = InsertPosition.IN; }
+	| 'BEFORE' { $position = InsertPosition.BEFORE; }
+	| 'AFTER' { $position = InsertPosition.AFTER; }
+	;
+	
+		
+setObjectPropertyStatement[Object propertyReceiver] returns [String id, Object value]
+	: ID '=' componentPropertyValue ';'  { setObjectProperty($propertyReceiver, $ID.text, $componentPropertyValue.value); }
+	;
+	
+componentPropertyValue returns [Object value]
+	: col=COLOR_LITERAL { $value = Color.decode($col.text); }
+	| str=STRING_LITERAL { $value = self.transformStringLiteral($str.text); }
+	| i=intLiteral { $value = $i.val; }
+	| d=doubleLiteral { $value = $d.val; }
+	| dim=dimensionsLiteral { $value = $dim.dimension; }
+	| bool=booleanLiteral { $value=Boolean.valueOf($bool.text); }
+	;
+
+intLiteral returns [int val]
+@init {
+	boolean isMinus = false;
+}
+	: (MINUS {isMinus=true;})? ui=uintLiteral  { $val = (isMinus ? -1 : 1) * Integer.parseInt($ui.text); }
+	;
+
+doubleLiteral returns [double val]
+@init {
+	boolean isMinus = false;
+}
+	: (MINUS {isMinus=true;})? ud=udoubleLiteral { $val = (isMinus ? -1 : 1) * Double.parseDouble($ud.text); }
+	;
+	
+booleanLiteral
+	: LOGICAL_LITERAL
+	;	
+	
+dimensionsLiteral returns [Dimension dimension]
+	: '{' x=intLiteral ',' y=intLiteral '}' { $dimension = new Dimension(Integer.parseInt($x.text), Integer.parseInt($y.text)); }
+	;	
 
 ////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////// COMMON /////////////////////////////////
@@ -846,8 +1065,8 @@ literal returns [LP property]
 		$property = self.addConstantProp(cls, text);	
 	}
 }
-	: 	strInt=intLiteral	{ cls = ScriptingLogicsModule.ConstType.INT; text = $strInt.text; }  
-	|	strReal=doubleLiteral	{ cls = ScriptingLogicsModule.ConstType.REAL; text = $strReal.text; } 
+	: 	strInt=uintLiteral	{ cls = ScriptingLogicsModule.ConstType.INT; text = $strInt.text; }  
+	|	strReal=udoubleLiteral	{ cls = ScriptingLogicsModule.ConstType.REAL; text = $strReal.text; } 
 	|	str=STRING_LITERAL	{ cls = ScriptingLogicsModule.ConstType.STRING; text = $str.text; }  
 	|	str=LOGICAL_LITERAL	{ cls = ScriptingLogicsModule.ConstType.LOGICAL; text = $str.text; }
 	|	strEnum=strictCompoundID{ cls = ScriptingLogicsModule.ConstType.ENUM; text = $strEnum.text; } 
@@ -865,12 +1084,16 @@ strictCompoundID
 	:	ID '.' ID
 	;
 	
-doubleLiteral 
+multiCompoundID returns [String sid]
+	:	id=ID { $sid = $id.text; } ('.' mid=multiCompoundID { $sid = $sid + "." + $mid.text; } )?
+	;
+	
+udoubleLiteral 
 	:	POSITIVE_DOUBLE_LITERAL
 	; 
 		
 
-intLiteral
+uintLiteral
 	:	UINT_LITERAL
 	;		
 
@@ -884,18 +1107,20 @@ fragment NEWLINE	:	'\r'?'\n';
 fragment SPACE		:	(' '|'\t');
 fragment STR_LITERAL_CHAR	: '\\\'' | ~('\r'|'\n'|'\'');	 // overcomplicated due to bug in ANTLR Works
 fragment DIGITS		:	('0'..'9')+;
+fragment HEX_DIGIT	: 	'0'..'9' | 'a'..'f' | 'A'..'F';
 	 
 PRIMITIVE_TYPE  :	'INTEGER' | 'DOUBLE' | 'LONG' | 'BOOLEAN' | 'DATE' | 'STRING[' DIGITS ']' | 'ISTRING[' DIGITS ']';		
 LOGICAL_LITERAL :	'TRUE' | 'FALSE';		
 ID          	:	('a'..'z'|'A'..'Z')('a'..'z'|'A'..'Z'|'_'|'0'..'9')*;
-WS		:	(NEWLINE | SPACE) { $channel=HIDDEN; }; 	
+WS				:	(NEWLINE | SPACE) { $channel=HIDDEN; }; 	
 STRING_LITERAL	:	'\'' STR_LITERAL_CHAR* '\'';
-COMMENTS	:	('//' .* '\n') { $channel=HIDDEN; };
+COLOR_LITERAL 	:	'#' HEX_DIGIT HEX_DIGIT HEX_DIGIT HEX_DIGIT HEX_DIGIT HEX_DIGIT;	
+COMMENTS		:	('//' .* '\n') { $channel=HIDDEN; };
 UINT_LITERAL 	:	DIGITS;
 POSITIVE_DOUBLE_LITERAL	: 	DIGITS '.' DIGITS;	  
 NUMBERED_PARAM	:	'$' DIGITS;
-EQ_OPERAND	:	('==') | ('!='); 
-REL_OPERAND	: 	('<') | ('>') | ('<=') | ('>=');
-MINUS		:	'-';
-PLUS		:	'+';
+EQ_OPERAND		:	('==') | ('!='); 
+REL_OPERAND		: 	('<') | ('>') | ('<=') | ('>=');
+MINUS			:	'-';
+PLUS			:	'+';
 MULT_OPERAND	:	('*') | ('/');

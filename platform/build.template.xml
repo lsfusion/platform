@@ -21,5 +21,26 @@
         </exec>
     </target>
 
+    <target name="recursiveTestCompile">
+        <exec dir="${basedir}" executable="cmd" failonerror="true">
+            <arg value="/c"/>
+            <arg value="mvn"/>
+            <!--<arg value="-X"/>-->
+            <arg value="--also-make" />
+            <arg value="--projects" />
+            <arg value="by.luxsoft.platform:${artifactId}" />
+            <arg value="test-compile" />
+        </exec>
+    </target>
+
+    <target name="quickTestCompile">
+        <exec dir="${basedir}/${artifactId}" executable="cmd" failonerror="true">
+            <arg value="/c"/>
+            <arg value="mvn"/>
+            <arg value="test-compile" />
+            <arg value="-Dquickbuild" />
+        </exec>
+    </target>
+
 ${modulesTargets}
 </project>

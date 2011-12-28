@@ -6,7 +6,6 @@ import platform.interop.PanelLocation;
 import platform.interop.form.layout.AbstractComponent;
 import platform.interop.form.layout.DoNotIntersectSimplexConstraint;
 import platform.interop.form.layout.SimplexConstraints;
-import platform.server.form.entity.GroupObjectEntity;
 import platform.server.serialization.ServerIdentitySerializable;
 import platform.server.serialization.ServerSerializationPool;
 
@@ -80,6 +79,7 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
         pool.writeObject(outStream, preferredSize);
 
         pool.writeObject(outStream, constraints);
+        pool.writeString(outStream, sID);
 
         outStream.writeInt(constraints.intersects.size());
         for (Map.Entry<ComponentView, DoNotIntersectSimplexConstraint> intersect : constraints.intersects.entrySet()) {
@@ -100,6 +100,7 @@ public class ComponentView extends IdentityObject implements ServerIdentitySeria
         preferredSize = pool.readObject(inStream);
 
         constraints = pool.readObject(inStream);
+        sID = pool.readString(inStream);
 
         constraints.intersects = new HashMap<ComponentView, DoNotIntersectSimplexConstraint>();
         int count = inStream.readInt();

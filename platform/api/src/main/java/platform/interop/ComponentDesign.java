@@ -19,7 +19,7 @@ public class ComponentDesign extends ContextObject implements Serializable {
 
     public Color background;
     public Color foreground;
-    public SerializableImageIconHolder imageHolder;
+    private SerializableImageIconHolder imageHolder;
     public String iconPath;
 
     public ComponentDesign() {

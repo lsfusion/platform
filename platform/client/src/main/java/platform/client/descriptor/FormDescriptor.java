@@ -77,6 +77,7 @@ public class FormDescriptor extends ContextIdentityObject implements ClientIdent
         initialize();
 
         setCaption(ClientResourceBundle.getString("descriptor.newform")+" (" + ID + ")");
+
         addFormDefaultContainers();
     }
 
@@ -690,14 +691,8 @@ public class FormDescriptor extends ContextIdentityObject implements ClientIdent
         }
     }
 
-    private class FormFunctionFactory implements FunctionFactory<ClientFunction> {
-        public ClientFunction createFunction() {
-            return new ClientFunction(getContext());
-        }
-    }
-
     private void addFormDefaultContainers() {
-        FormContainerSet.fillContainers(client, new FormContainerFactory(), new FormFunctionFactory());
+        FormContainerSet.fillContainers(client, new FormContainerFactory());
     }
 
     private void addGroupObjectDefaultContainers(GroupObjectDescriptor group) {

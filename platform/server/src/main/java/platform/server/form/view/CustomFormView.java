@@ -44,71 +44,63 @@ public class CustomFormView extends FormView {
     }
     */
     public FunctionView createPrintFunction(String caption) {
-        FunctionView function = new FunctionView(idGenerator.idShift());
+        FunctionView function = printFunction;
         function.setCaption(caption);
         function.setType("Print");
-        setPrintFunction(function);
         return function;
     }
 
     public FunctionView createXlsFunction(String caption) {
-        FunctionView function = new FunctionView(idGenerator.idShift());
+        FunctionView function = xlsFunction;
         function.setCaption(caption);
         function.setType("Xls");
-        setXlsFunction(function);
         return function;
     }
 
     public FunctionView createNullFunction(String caption) {
-        FunctionView function = new FunctionView(idGenerator.idShift());
+        FunctionView function = nullFunction;
         function.setCaption(caption);
         function.setType("Null");
-        setNullFunction(function);
         return function;
     }
 
     public FunctionView createRefreshFunction(String caption) {
-        FunctionView function = new FunctionView(idGenerator.idShift());
+        FunctionView function = refreshFunction;
         function.setCaption(caption);
         function.setType("Refresh");
         function.getConstraints().directions = new SimplexComponentDirections(0,0,0.01,0.01);
-        setRefreshFunction(function);
         return function;
     }
 
     public FunctionView createApplyFunction(String caption) {
-        FunctionView function = new FunctionView(idGenerator.idShift());
+        FunctionView function = applyFunction;
         function.setCaption(caption);
         function.setType("Apply");
         function.getConstraints().directions = new SimplexComponentDirections(0,0,0.01,0.01);
-        setApplyFunction(function);
         return function;
     }
 
     public FunctionView createCancelFunction(String caption) {
-        FunctionView function = new FunctionView(idGenerator.idShift());
+        FunctionView function = cancelFunction;
         function.setCaption(caption);
         function.setType("Cancel");
         function.getConstraints().directions = new SimplexComponentDirections(0,0,0.01,0.01);
-        setCancelFunction(function);
         return function;
     }
 
      public FunctionView createOkFunction(String caption) {
-        FunctionView function = new FunctionView(idGenerator.idShift());
+        FunctionView function = okFunction;
         function.setCaption(caption);
         function.setType("Ok");
         function.getConstraints().directions = new SimplexComponentDirections(0,0,0.01,0.01);
-        setOkFunction(function);
         return function;
     }
 
      public FunctionView createCloseFunction(String caption) {
-        FunctionView function = new FunctionView(idGenerator.idShift());
+        FunctionView function = closeFunction;
         function.setCaption(caption);
         function.setType("Close");
         function.getConstraints().directions = new SimplexComponentDirections(0,0,0.01,0.01);
-        setCloseFunction(function);
         return function;
     }
 
@@ -142,7 +134,6 @@ public class CustomFormView extends FormView {
     public PropertyDrawView createPropertyDraw(PropertyDrawEntity property) {
         PropertyDrawView view = new PropertyDrawView(property);
         properties.add(view);
-        order.add(view);
         return view;
     }
 

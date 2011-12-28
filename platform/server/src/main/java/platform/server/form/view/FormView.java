@@ -2,12 +2,11 @@ package platform.server.form.view;
 
 import platform.base.OrderedMap;
 import platform.base.identity.IDGenerator;
-import platform.interop.form.layout.AbstractForm;
-import platform.interop.form.layout.DoNotIntersectSimplexConstraint;
-import platform.server.classes.ActionClass;
+import platform.interop.form.layout.*;
 import platform.server.classes.LogicalClass;
 import platform.server.data.type.Type;
 import platform.server.form.entity.*;
+import platform.server.form.entity.filter.RegularFilterGroupEntity;
 import platform.server.logics.ServerResourceBundle;
 import platform.server.logics.linear.LP;
 import platform.server.logics.property.Property;
@@ -17,7 +16,6 @@ import platform.server.serialization.ServerIdentitySerializable;
 import platform.server.serialization.ServerSerializationPool;
 
 import javax.swing.*;
-import javax.swing.event.RowSorterEvent;
 import java.awt.*;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -32,13 +30,11 @@ public class FormView implements ServerIdentitySerializable, AbstractForm<Contai
     // нужен для того, чтобы генерировать уникальный идентификаторы объектам рисования, для передачи их клиенту
     protected IDGenerator idGenerator;
 
+    public KeyStroke keyStroke = null;
+
+    public String caption = "";
+
     public Integer overridePageWidth;
-
-    public ContainerView mainContainer;
-
-    public void setMainContainer(ContainerView mainContainer) {
-        this.mainContainer = mainContainer;
-    }
 
     // список деревеьев
     public List<TreeGroupView> treeGroups = new ArrayList<TreeGroupView>();
@@ -57,15 +53,116 @@ public class FormView implements ServerIdentitySerializable, AbstractForm<Contai
     // map с названиями функций, при которых дисплей сразу будет блокироваться
     public Map<String, String> blockedScreen = new HashMap<String, String>();
 
-    private FunctionView printFunction;
-    private FunctionView editFunction;
-    private FunctionView xlsFunction;
-    private FunctionView nullFunction;
-    private FunctionView refreshFunction;
-    private FunctionView applyFunction;
-    private FunctionView cancelFunction;
-    private FunctionView okFunction;
-    private FunctionView closeFunction;
+    public ContainerView mainContainer;
+    protected FunctionView printFunction;
+    protected FunctionView editFunction;
+    protected FunctionView xlsFunction;
+    protected FunctionView nullFunction;
+    protected FunctionView refreshFunction;
+    protected FunctionView applyFunction;
+    protected FunctionView cancelFunction;
+    protected FunctionView okFunction;
+    protected FunctionView closeFunction;
+
+    protected transient Map<TreeGroupEntity, TreeGroupView> mtreeGroups = new HashMap<TreeGroupEntity, TreeGroupView>();
+    public TreeGroupView get(TreeGroupEntity treeGroup) { return mtreeGroups.get(treeGroup); }
+
+    protected transient Map<GroupObjectEntity, GroupObjectView> mgroupObjects = new HashMap<GroupObjectEntity, GroupObjectView>();
+    public GroupObjectView get(GroupObjectEntity groupObject) { return mgroupObjects.get(groupObject); }
+
+    protected transient Map<ObjectEntity, ObjectView> mobjects = new HashMap<ObjectEntity, ObjectView>();
+    public ObjectView get(ObjectEntity object) { return mobjects.get(object); }
+
+    protected transient Map<PropertyDrawEntity, PropertyDrawView> mproperties = new HashMap<PropertyDrawEntity, PropertyDrawView>();
+    public PropertyDrawView get(PropertyDrawEntity property) { return mproperties.get(property); }
+
+    protected transient Map<RegularFilterGroupEntity, RegularFilterGroupView> mfilters = new HashMap<RegularFilterGroupEntity, RegularFilterGroupView>();
+    public RegularFilterGroupView get(RegularFilterGroupEntity filterGroup) { return mfilters.get(filterGroup); }
+
+    public FormView() {
+    }
+
+    public FormEntity<?> entity;
+
+    public FormView(FormEntity<?> entity) {
+        this.entity = entity;
+        this.idGenerator = entity.getIDGenerator();
+
+        mainContainer = new ContainerView(idGenerator.idShift());
+
+        printFunction = new FunctionView(idGenerator.idShift());
+        editFunction = new FunctionView(idGenerator.idShift());
+        xlsFunction = new FunctionView(idGenerator.idShift());
+        nullFunction = new FunctionView(idGenerator.idShift());
+        refreshFunction = new FunctionView(idGenerator.idShift());
+        applyFunction = new FunctionView(idGenerator.idShift());
+        cancelFunction = new FunctionView(idGenerator.idShift());
+        okFunction = new FunctionView(idGenerator.idShift());
+        closeFunction = new FunctionView(idGenerator.idShift());
+
+        for (GroupObjectEntity group : entity.groups) {
+            GroupObjectView clientGroup = new GroupObjectView(idGenerator, group);
+
+            mgroupObjects.put(group, clientGroup);
+            groupObjects.add(clientGroup);
+
+            for (ObjectView clientObject : clientGroup) {
+                mobjects.put(clientObject.entity, clientObject);
+            }
+        }
+
+        for (TreeGroupEntity treeGroup : entity.treeGroups) {
+            TreeGroupView treeGroupView = new TreeGroupView(this, treeGroup);
+
+            mtreeGroups.put(treeGroup, treeGroupView);
+            treeGroups.add(treeGroupView);
+        }
+
+        for (PropertyDrawEntity control : entity.propertyDraws) {
+            PropertyDrawView clientProperty = new PropertyDrawView(control);
+
+            mproperties.put(control, clientProperty);
+            properties.add(clientProperty);
+
+            //походу инициализируем порядки по умолчанию
+            Boolean ascending = entity.defaultOrders.get(control);
+            if (ascending != null) {
+                defaultOrders.put(clientProperty, ascending);
+            }
+        }
+
+        for (RegularFilterGroupEntity filterGroup : entity.regularFilterGroups) {
+            RegularFilterGroupView filterGroupView = new RegularFilterGroupView(filterGroup);
+
+            regularFilters.add(filterGroupView);
+            mfilters.put(filterGroup, filterGroupView);
+        }
+    }
+
+    public int getID() {
+        return entity.getID();
+    }
+
+    int ID;
+    public void setID(int ID) {
+        this.ID = ID;
+    }
+
+    public ContainerView createContainer() {
+        return createContainer(null);
+    }
+
+    public ContainerView createContainer(String title) {
+        return createContainer(title, null, null);
+    }
+
+    public ContainerView createContainer(String title, String description, String sID) {
+        ContainerView container = new ContainerView(idGenerator.idShift());
+        container.setTitle(title);
+        container.setDescription(description);
+        container.setSID(sID);
+        return container;
+    }
 
     public FunctionView getPrintFunction() {
         return printFunction;
@@ -103,145 +200,8 @@ public class FormView implements ServerIdentitySerializable, AbstractForm<Contai
         return closeFunction;
     }
 
-    public void setPrintFunction(FunctionView printFunction) {
-        this.printFunction = printFunction;
-    }
-
-    public void setEditFunction(FunctionView editFunction) {
-        this.editFunction = editFunction;
-    }
-
-    public void setXlsFunction(FunctionView xlsFunction) {
-        this.xlsFunction = xlsFunction;
-    }
-
-    public void setNullFunction(FunctionView nullFunction) {
-        this.nullFunction = nullFunction;
-    }
-
-    public void setRefreshFunction(FunctionView refreshFunction) {
-        this.refreshFunction = refreshFunction;
-    }
-
-    public void setApplyFunction(FunctionView applyFunction) {
-        this.applyFunction = applyFunction;
-    }
-
-    public void setCancelFunction(FunctionView cancelFunction) {
-        this.cancelFunction = cancelFunction;
-    }
-
-    public void setOkFunction(FunctionView okFunction) {
-        this.okFunction = okFunction;
-    }
-
-    public void setCloseFunction(FunctionView closeFunction) {
-        this.closeFunction = closeFunction;
-    }
-
-    public List<PropertyDrawView> order = new ArrayList<PropertyDrawView>();
-
-    public KeyStroke keyStroke = null;
-
-    public String caption = "";
-
-    public FormView() {
-    }
-
-    public FormEntity<?> entity;
-
-    public FormView(FormEntity<?> entity) {
-
-        this.entity = entity;
-        this.idGenerator = entity.getIDGenerator();
-    }
-
-    public int getID() {
-        return entity.getID();
-    }
-
-    int ID;
-    public void setID(int ID) {
-        this.ID = ID;
-    }
-
-    public ContainerView createContainer() {
-        return createContainer(null);
-    }
-
-    public ContainerView createContainer(String title) {
-        return createContainer(title, null, null);
-    }
-
-    public ContainerView createContainer(String title, String description, String sID) {
-        ContainerView container = new ContainerView(idGenerator.idShift());
-        container.setTitle(title);
-        container.setDescription(description);
-        container.setSID(sID);
-        return container;
-    }
-
-    public void customSerialize(ServerSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
-        pool.serializeObject(outStream, mainContainer, serializationType);
-        pool.serializeCollection(outStream, treeGroups, serializationType);
-        pool.serializeCollection(outStream, groupObjects, serializationType);
-        pool.serializeCollection(outStream, properties, serializationType);
-        pool.serializeCollection(outStream, regularFilters);
-
-        outStream.writeInt(defaultOrders.size());
-        for (Map.Entry<PropertyDrawView, Boolean> entry : defaultOrders.entrySet()) {
-            pool.serializeObject(outStream, entry.getKey(), serializationType);
-            outStream.writeBoolean(entry.getValue());
-        }
-
-        pool.serializeObject(outStream, printFunction);
-        pool.serializeObject(outStream, editFunction);
-        pool.serializeObject(outStream, xlsFunction);
-        pool.serializeObject(outStream, nullFunction);
-        pool.serializeObject(outStream, refreshFunction);
-        pool.serializeObject(outStream, applyFunction);
-        pool.serializeObject(outStream, cancelFunction);
-        pool.serializeObject(outStream, okFunction);
-        pool.serializeObject(outStream, closeFunction);
-
-        pool.serializeCollection(outStream, order, serializationType);
-
-        pool.writeObject(outStream, keyStroke);
-        pool.writeString(outStream, caption);
-        pool.writeInt(outStream, overridePageWidth);
-        pool.writeObject(outStream, blockedScreen);
-    }
-
-    public void customDeserialize(ServerSerializationPool pool, DataInputStream inStream) throws IOException {
-        mainContainer = pool.deserializeObject(inStream);
-        treeGroups = pool.deserializeList(inStream);
-        groupObjects = pool.deserializeList(inStream);
-        properties = pool.deserializeList(inStream);
-        regularFilters = pool.deserializeList(inStream);
-
-        int orderCount = inStream.readInt();
-        for (int i = 0; i < orderCount; i++) {
-            PropertyDrawView order = pool.deserializeObject(inStream);
-            defaultOrders.put(order, inStream.readBoolean());
-        }
-
-        printFunction = pool.deserializeObject(inStream);
-        editFunction = pool.deserializeObject(inStream);
-        xlsFunction = pool.deserializeObject(inStream);
-        nullFunction = pool.deserializeObject(inStream);
-        refreshFunction = pool.deserializeObject(inStream);
-        applyFunction = pool.deserializeObject(inStream);
-        cancelFunction = pool.deserializeObject(inStream);
-        okFunction = pool.deserializeObject(inStream);
-        closeFunction = pool.deserializeObject(inStream);
-
-        order = pool.deserializeList(inStream);
-
-        keyStroke = pool.readObject(inStream);
-        caption = pool.readString(inStream);
-        overridePageWidth = pool.readInt(inStream);
-
-        entity = pool.context.entity;
+    public ContainerView getMainContainer() {
+        return mainContainer;
     }
 
     public void addIntersection(ComponentView comp1, ComponentView comp2, DoNotIntersectSimplexConstraint cons) {
@@ -702,5 +662,74 @@ public class FormView implements ServerIdentitySerializable, AbstractForm<Contai
 
     private void setPreferredSize(PropertyDrawView property, Dimension size) {
         property.preferredSize = new Dimension(size);
+    }
+
+    public void setPropertyDrawViewHide(boolean hide, PropertyDrawEntity... properties) {
+        for (PropertyDrawEntity property : properties) {
+            setPropertyDrawViewHide(property, hide);
+        }
+    }
+
+    public void setPropertyDrawViewHide(PropertyDrawEntity property, boolean hide) {
+        getProperty(property).hide = hide;
+    }
+
+    public void customSerialize(ServerSerializationPool pool, DataOutputStream outStream, String serializationType) throws IOException {
+        pool.serializeObject(outStream, mainContainer, serializationType);
+        pool.serializeCollection(outStream, treeGroups, serializationType);
+        pool.serializeCollection(outStream, groupObjects, serializationType);
+        pool.serializeCollection(outStream, properties, serializationType);
+        pool.serializeCollection(outStream, regularFilters);
+
+        outStream.writeInt(defaultOrders.size());
+        for (Map.Entry<PropertyDrawView, Boolean> entry : defaultOrders.entrySet()) {
+            pool.serializeObject(outStream, entry.getKey(), serializationType);
+            outStream.writeBoolean(entry.getValue());
+        }
+
+        pool.serializeObject(outStream, printFunction);
+        pool.serializeObject(outStream, editFunction);
+        pool.serializeObject(outStream, xlsFunction);
+        pool.serializeObject(outStream, nullFunction);
+        pool.serializeObject(outStream, refreshFunction);
+        pool.serializeObject(outStream, applyFunction);
+        pool.serializeObject(outStream, cancelFunction);
+        pool.serializeObject(outStream, okFunction);
+        pool.serializeObject(outStream, closeFunction);
+
+        pool.writeObject(outStream, keyStroke);
+        pool.writeString(outStream, caption);
+        pool.writeInt(outStream, overridePageWidth);
+        pool.writeObject(outStream, blockedScreen);
+    }
+
+    public void customDeserialize(ServerSerializationPool pool, DataInputStream inStream) throws IOException {
+        mainContainer = pool.deserializeObject(inStream);
+        treeGroups = pool.deserializeList(inStream);
+        groupObjects = pool.deserializeList(inStream);
+        properties = pool.deserializeList(inStream);
+        regularFilters = pool.deserializeList(inStream);
+
+        int orderCount = inStream.readInt();
+        for (int i = 0; i < orderCount; i++) {
+            PropertyDrawView order = pool.deserializeObject(inStream);
+            defaultOrders.put(order, inStream.readBoolean());
+        }
+
+        printFunction = pool.deserializeObject(inStream);
+        editFunction = pool.deserializeObject(inStream);
+        xlsFunction = pool.deserializeObject(inStream);
+        nullFunction = pool.deserializeObject(inStream);
+        refreshFunction = pool.deserializeObject(inStream);
+        applyFunction = pool.deserializeObject(inStream);
+        cancelFunction = pool.deserializeObject(inStream);
+        okFunction = pool.deserializeObject(inStream);
+        closeFunction = pool.deserializeObject(inStream);
+
+        keyStroke = pool.readObject(inStream);
+        caption = pool.readString(inStream);
+        overridePageWidth = pool.readInt(inStream);
+
+        entity = pool.context.entity;
     }
 }

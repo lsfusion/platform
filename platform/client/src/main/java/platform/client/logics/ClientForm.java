@@ -33,11 +33,7 @@ public class ClientForm extends IdentityObject implements LogicsSupplier, Client
     // пока используется только для сериализации туда-назад
     public Integer overridePageWidth;
 
-    public ClientContainer mainContainer;
-
-    public void setMainContainer(ClientContainer mainContainer) {
-        this.mainContainer = mainContainer;
-    }
+    public ClientContainer mainContainer = new ClientContainer();
 
     public List<ClientTreeGroup> treeGroups = new ArrayList<ClientTreeGroup>();
     public List<ClientGroupObject> groupObjects = new ArrayList<ClientGroupObject>();
@@ -56,6 +52,10 @@ public class ClientForm extends IdentityObject implements LogicsSupplier, Client
     private ClientFunction cancelFunction;
     private ClientFunction okFunction;
     private ClientFunction closeFunction;
+
+    public ClientContainer getMainContainer() {
+        return mainContainer;
+    }
 
     public ClientFunction getPrintFunction() {
         return printFunction;
@@ -93,44 +93,6 @@ public class ClientForm extends IdentityObject implements LogicsSupplier, Client
         return closeFunction;
     }
 
-    public void setPrintFunction(ClientFunction printFunction) {
-        this.printFunction = printFunction;
-    }
-
-    public void setEditFunction(ClientFunction editFunction) {
-        this.editFunction = editFunction;
-    }
-
-    public void setXlsFunction(ClientFunction xlsFunction) {
-        this.xlsFunction = xlsFunction;
-    }
-
-    public void setNullFunction(ClientFunction nullFunction) {
-        this.nullFunction = nullFunction;
-    }
-
-    public void setRefreshFunction(ClientFunction refreshFunction) {
-        this.refreshFunction = refreshFunction;
-    }
-
-    public void setApplyFunction(ClientFunction applyFunction) {
-        this.applyFunction = applyFunction;
-    }
-
-    public void setCancelFunction(ClientFunction cancelFunction) {
-        this.cancelFunction = cancelFunction;
-    }
-
-    public void setOkFunction(ClientFunction okFunction) {
-        this.okFunction = okFunction;
-    }
-
-    public void setCloseFunction(ClientFunction closeFunction) {
-        this.closeFunction = closeFunction;
-    }
-
-    private List<ClientPropertyDraw> order = new ArrayList<ClientPropertyDraw>();
-
     private ApplicationContext context;
     public ApplicationContext getContext() {
         return context;
@@ -147,6 +109,16 @@ public class ClientForm extends IdentityObject implements LogicsSupplier, Client
         super(ID);
         
         this.context = context;
+
+        printFunction = new ClientFunction(getContext());
+        editFunction = new ClientFunction(getContext());
+        xlsFunction = new ClientFunction(getContext());
+        nullFunction = new ClientFunction(getContext());
+        refreshFunction = new ClientFunction(getContext());
+        applyFunction = new ClientFunction(getContext());
+        cancelFunction = new ClientFunction(getContext());
+        okFunction = new ClientFunction(getContext());
+        closeFunction = new ClientFunction(getContext());
     }
 
     public List<ClientObject> getObjects() {
@@ -266,8 +238,6 @@ public class ClientForm extends IdentityObject implements LogicsSupplier, Client
         pool.serializeObject(outStream, okFunction);
         pool.serializeObject(outStream, closeFunction);
 
-        pool.serializeCollection(outStream, order);
-
         pool.writeObject(outStream, keyStroke);
         pool.writeString(outStream, caption);
         pool.writeInt(outStream, overridePageWidth);
@@ -297,8 +267,6 @@ public class ClientForm extends IdentityObject implements LogicsSupplier, Client
         okFunction = pool.deserializeObject(inStream);
         closeFunction = pool.deserializeObject(inStream);
 
-        order = pool.deserializeList(inStream);
-
         keyStroke = pool.readObject(inStream);
         caption = pool.readString(inStream);
         overridePageWidth = pool.readInt(inStream);
@@ -310,7 +278,6 @@ public class ClientForm extends IdentityObject implements LogicsSupplier, Client
             clientPropertyDraw.container.removeFromChildren(clientPropertyDraw);
         }
         propertyDraws.remove(clientPropertyDraw);
-        order.remove(clientPropertyDraw);
         defaultOrders.remove(clientPropertyDraw);
 
         //drop caches

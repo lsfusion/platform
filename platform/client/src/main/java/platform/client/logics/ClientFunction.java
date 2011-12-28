@@ -59,7 +59,7 @@ public class ClientFunction extends ClientComponent implements AbstractFunction<
 
     @Override
     public String toString() {
-        return getCaption();
+        return getCaption() + "[sid:" + getSID() + "]";
     }
 
     @Override
