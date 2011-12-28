@@ -229,6 +229,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
     AbstractGroup originalDoscCheckGroup;
 
     AbstractGroup commentExpertiseGroup;
+    AbstractGroup changeLegalCheckGroup;
 
     AbstractGroup contactGroup;
     AbstractGroup documentGroup;
@@ -497,6 +498,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
         originalDoscCheckGroup = addAbstractGroup("originalDoscCheckGroup", "Проверка оригиналов документов", publicGroup);
 
         commentExpertiseGroup = addAbstractGroup("commentExpertiseGroup", "Опыт в областях", publicGroup);
+
+        changeLegalCheckGroup = addAbstractGroup("changeLegalCheckGroup", "Изменение типа заявки", publicGroup); 
     }
 
     public LP nameNative;
@@ -821,6 +824,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP resultNoticedFormalControl, dateResultNoticedFormalControl, setCurrentDateResultNoticedFormalControl, emailClaimerHeaderFormalControl, emailClaimerFormalControl;
     LP emailClaimerLegalCheckEA, claimerLegalCheck, claimerEmailLegalCheck, nameNativeJoinClaimerLegalCheck, nameForeignJoinClaimerLegalCheck, nameNativeClaimerLegalCheck;
     LP resultNoticedLegalCheck, dateResultNoticedLegalCheck, setCurrentDateResultNoticedLegalCheck, emailClaimerHeaderLegalCheck, emailClaimerLegalCheck, emailClaimerLegalCheckProject;
+    LP needNoticeNegativeLegalCheck, needNoticeChangeLegalCheck, needNoticeLegalCheck;
     LP emailFondFormalControlEA, emailFondHeaderFormalControl, emailFondFormalControl;
     LP emailTransferredProjectEA, emailTransferredHeaderProject, emailTransferredProject;
     LP emailForesightClaimerProjectEA, emailForesightClaimerHeaderProject, emailForesightClaimerProject;
@@ -1172,6 +1176,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP notSuitableClusterProject;
     LP repeatedProject;
     LP positiveFormalResultProject;
+    LP negativeFormalResultProject;
 
     LP projectActionFormalControl;
     LP nameProjectActionFormalControl;
@@ -1208,15 +1213,17 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP executeLegalCheckProject;
     LP dateExecuteLegalCheckProject;
     LP resultExecuteLegalCheckProject;
+    LP resultNoticedLegalCheckProject;
     LP negativeLegalResultProject;
     LP negativeLegalResultStatusProject;
     LP negativeLegalResultPreliminaryProject;
     LP positiveLegalResultProject;
+    LP needNoticeLegalResultProject;
     LP sentForTranslationProject, dateSentForTranslationProject, dateToSentForTranslationProject;
     LP positiveStatusLegalCheckProject, datePositiveStatusLegalCheckProject;
     LP transferredProject, dateTransferredProject;
     LP needVoteProject;
-    LP changeLegalCheck, dateChangeLegalCheck;
+    LP changeLegalCheck, noticedChangeLegalCheck, dateChangeLegalCheck;
 
     LP dateAgreementExpert;
     LP vone;
@@ -1548,7 +1555,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP isFileNativeTechnicalDescriptionProject;
     LP isFileForeignTechnicalDescriptionProject;
     LP nameNativeProjectFormalControl;
-    LP commentLegalCheckProject, setNegativeLegalResultProject, setNegativeLegalResultProjectApply, rejectLegalCheckProject;
+    LP commentLegalCheckProject, setNegativeLegalResultProject, setNegativeLegalResultProjectApply, acceptPreliminaryLegalCheckProject, rejectLegalCheckProject;
     LP setPositiveLegalResultProject, setPositiveLegalResultProjectApply, applyLegalCheckProject;
     LP addPositiveLCResultProject, setPositiveLCResultApplyProject;
 
@@ -3236,16 +3243,24 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         LCMinDateProjectActionProject = addMGProp("LCMinDateProjectActionProject", true, "Дата первой отсылки ЮП", true, dateResultNoticedLegalCheck, projectActionLegalCheck, 1, projectLegalCheck, 1);
         minDateLegalCheck = addJProp("minDateLegalCheck", "Дата отсылки", LCMinDateProjectActionProject, projectActionLegalCheck, 1, projectLegalCheck, 1);
-        overdueDateLegalCheck = addJProp("overdueDateLegalCheck", "Дата просрочки юридической проверки", baseLM.addDate2, addJProp(baseLM.jumpWorkdays, baseLM.defaultCountry, minDateLegalCheck, 1, addCProp(IntegerClass.instance, 1)), 1, addJProp(baseLM.subtractDate2, overduePeriod, addCProp(IntegerClass.instance, 1)));
+        overdueDateLegalCheck = addJProp("overdueDateLegalCheck", "Дата просрочки юридической проверки", baseLM.addDate2,
+                addJProp(baseLM.jumpWorkdays, baseLM.defaultCountry, minDateLegalCheck, 1, addCProp(IntegerClass.instance, 1)), 1,
+                addJProp(baseLM.subtractDate2, overduePeriod, addCProp(IntegerClass.instance, 1)));
 
         userLegalCheck = addDCProp("userLegalCheck", "Пользователь ЮП (ИД)", true, baseLM.currentUser, resultLegalCheck, 1);
         nameUserLegalCheck = addJProp("nameUserLegalCheck", "Пользователь ЮП", baseLM.name, userLegalCheck, 1);
+
         changeLegalCheck = addDProp("changeLegalCheck", "Изменен тип заявки", LogicalClass.instance, legalCheck);
-        dateChangeLegalCheck = addDProp("dateChangeLegalCheck", "Дата изменения типа заявки", DateClass.instance, legalCheck);
+        noticedChangeLegalCheck = addDProp(changeLegalCheckGroup, "noticedChangeLegalCheck", "Отослано уведомление", LogicalClass.instance, legalCheck);
+        dateChangeLegalCheck = addDProp(changeLegalCheckGroup, "dateChangeLegalCheck", "Дата отсылки уведомления типа заявки", DateClass.instance, legalCheck);
 //        maxFormalControlProjectProps = addMGProp((AbstractGroup) null, new String[]{"maxDateFormalControlProject", "currentFCProject"}, new String[]{"Дата посл. формальной экспертизы.", "Посл. формальная экспертиза"}, 1,
 //                dateTimeFormalControl, 1, projectFormalControl, 1);
 //        LP currentDateFormalControlProject = maxFormalControlProjectProps[0];
         currentFormalControlProject = addMGProp("currentFormalControlProject", "Последняя формальная проверка", object(formalControl), projectFormalControl, 1);
+
+        needNoticeNegativeLegalCheck = addJProp("needNoticeNegativeLegalCheck", true, "Требуется отсылка уведомления", baseLM.andNot1, negativeResultLegalCheck, 1, resultNoticedLegalCheck, 1);
+        needNoticeChangeLegalCheck = addJProp("needNoticeChangeLegalCheck", true, "Требуется отсылка уведомления (изменение типа заявки)", baseLM.andNot1, changeLegalCheck, 1, noticedChangeLegalCheck, 1);
+        needNoticeLegalCheck = addSUProp("needNoticeLegalCheck", true, "Требуется отсылка уведомления", Union.OVERRIDE, needNoticeNegativeLegalCheck, needNoticeChangeLegalCheck);
 
         projectActionFormalControl = addDProp(idGroup, "projectActionFormalControl", "Тип заявки (ИД)", projectAction, formalControl);
         nameProjectActionFormalControl = addJProp(baseGroup, "nameProjectActionFormalControl", "Тип заявки", baseLM.name, projectActionFormalControl, 1);
@@ -3268,6 +3283,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         notSuitableClusterProject = addJProp("notSuitableClusterProject", true, "Не соответствует направлению", baseLM.equals2, resultExecuteFormalControlProject, 1, addCProp(formalControlResult, "notSuitableCluster"));
         repeatedProject = addJProp("repeatedProject", true, "Подана повторно", baseLM.equals2, resultExecuteFormalControlProject, 1, addCProp(formalControlResult, "repeatedFC"));
         positiveFormalResultProject = addJProp("positiveFormalResultProject", true, "Прошла формальную экспертизу", baseLM.equals2, resultExecuteFormalControlProject, 1, addCProp(formalControlResult, "positiveFormalResult"));
+        negativeFormalResultProject = addJProp("negativeFormalResultProject", true, "Не прошла формальную экспертизу", baseLM.andNot1, resultExecuteFormalControlProject, 1, positiveFormalResultProject, 1);
 
         isPreliminaryFormalControl = addJProp("isPreliminaryFormalControl", "На предв. экспертизу", baseLM.equals2, projectActionFormalControl, 1, addCProp(projectAction, "preliminary"));
         isStatusFormalControl = addJProp("isStatusFormalControl", "На статус", baseLM.equals2, projectActionFormalControl, 1, addCProp(projectAction, "status"));
@@ -3293,12 +3309,15 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         dateExecuteLegalCheckProject = addJProp("dateExecuteLegalCheckProject", true, "Дата действующей юридической проверки", dateLegalCheck, executeLegalCheckProject, 1);
         resultExecuteLegalCheckProject = addJProp("resultExecuteLegalCheckProject", true, "Решение", resultLegalCheck, executeLegalCheckProject, 1);
+        resultNoticedLegalCheckProject = addJProp("resultNoticedLegalCheckProject", true, "Отослано уведомление", resultNoticedLegalCheck, executeLegalCheckProject, 1);
 
         negativeLegalResultProject = addJProp("negativeLegalResultProject", true, "Не прошла юридическую проверку", negativeResultLegalCheck, executeLegalCheckProject, 1);
         negativeLegalResultStatusProject = addJProp("negativeLegalResultStatusProject", true, "Не прошла юридическую проверку (на статус)", baseLM.and1, negativeLegalResultProject, 1, addJProp(baseLM.equals2, projectActionProject,  1, addCProp(projectAction, "status")), 1);
         negativeLegalResultPreliminaryProject = addJProp("negativeLegalResultPreliminaryProject", true, "Не прошла юридическую проверку (на предв.экспертизу)", baseLM.and1, negativeLegalResultProject, 1, addJProp(baseLM.equals2, projectActionProject,  1, addCProp(projectAction, "preliminary")), 1);
         positiveLegalResultProject = addJProp("positiveLegalResultProject", true, "Прошла юридическую проверку", positiveResultLegalCheck, executeLegalCheckProject, 1);
         datePositiveLegalResultProject = addJProp("datePositiveLegalResultProject", "Дата прохождения юридической экспертизы", baseLM.and1, dateExecuteLegalCheckProject, 1, positiveLegalResultProject, 1);
+
+        needNoticeLegalResultProject = addJProp("needNoticeLegalResultProject", true, "Требуется отсылка уведомления", needNoticeLegalCheck, executeLegalCheckProject, 1);
 
         // последняя юридическая проверка (на статус)
 
@@ -3784,9 +3803,9 @@ public class SkolkovoLogicsModule extends LogicsModule {
         needEmailClaimerFormalControl = addSUProp("needEmailClaimerFormalControl", "Требуется уведомление", Union.OVERRIDE, addJProp(baseLM.equals2, resultFormalControl, 1, addCProp(formalControlResult, "notEnoughDocuments")), addJProp(baseLM.equals2, resultFormalControl, 1, addCProp(formalControlResult, "repeatedFC")));
         emailClaimerFormalControl = addJProp(actionGroup, true, "emailClaimerFormalControl", "Письмо о формальной экспертизе", baseLM.and1,
                 addEPAProp(EPA_DEFAULT,
+                        setCurrentDateResultNoticedFormalControl, // записываем дату отсылки
                         addJProp(true, emailClaimerFormalControlEA, 1, emailClaimerHeaderFormalControl, 1), // отсылаем письмо
-                        resultNoticedFormalControl, // пишем, что отослано
-                        setCurrentDateResultNoticedFormalControl // записываем дату отсылки
+                        resultNoticedFormalControl // пишем, что отослано
                 ), 1,
         needEmailClaimerFormalControl, 1);
 
@@ -3797,6 +3816,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         addEARecepient(emailFondFormalControlEA, emailIO);
         addEARecepient(emailFondFormalControlEA, MimeMessage.RecipientType.CC, emailFondFC);
         emailFondHeaderFormalControl = addJProp("emailFondHeaderFormalControl", "Заголовок уведомления", baseLM.string2, addCProp(StringClass.get(2000), "Уведомление."), nameNativeClaimerFormalControl, 1);
+
         emailFondFormalControl = addJProp(actionGroup, true, "emailFondFormalControl", "Письмо о формальной экспертизе",   emailFondFormalControlEA, 1, emailFondHeaderFormalControl, 1);
         emailFondFormalControl.setImage("email.png");
         emailFondFormalControl.property.askConfirm = true;
@@ -3827,9 +3847,9 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         emailClaimerLegalCheck = addJProp(actionGroup, true, "emailClaimerLegalCheck", "Письмо о формальной экспертизе", baseLM.and1,
                 addEPAProp(EPA_DEFAULT,
+                        setCurrentDateResultNoticedLegalCheck, // записываем дату отсылки
                         addJProp(true, emailClaimerLegalCheckEA, 1, emailClaimerHeaderLegalCheck, 1), // отсылаем письмо
-                        resultNoticedLegalCheck, // пишем, что отослано
-                        setCurrentDateResultNoticedLegalCheck // записываем дату отсылки
+                        resultNoticedLegalCheck // пишем, что отослано
                 ), 1,
         object(legalCheck), 1);
         emailClaimerLegalCheck.setImage("email.png");
@@ -3843,13 +3863,13 @@ public class SkolkovoLogicsModule extends LogicsModule {
         addEARecepient(emailClaimerChangeLegalCheckEA, MimeMessage.RecipientType.BCC, emailIO);
 //        addEARecepient(emailClaimerLegalCheckEA, MimeMessage.RecipientType.BCC, emailFinalClusterLegalCheck, 1);
 
-        emailClaimerChangeLegalCheck = addJProp(actionGroup, true, "emailClaimerChangeLegalCheck", "Письмо об изменении типа заявки", baseLM.and1,
+        emailClaimerChangeLegalCheck = addJProp(changeLegalCheckGroup, true, "emailClaimerChangeLegalCheck", "Письмо об изменении типа заявки", baseLM.and1,
                 addEPAProp(EPA_DEFAULT,
+                        setCurrentDateChangeLegalCheck, // записываем дату отсылки
                         addJProp(true, emailClaimerChangeLegalCheckEA, 1, emailClaimerHeaderLegalCheck, 1), // отсылаем письмо
-                        changeLegalCheck, // пишем, что отослано
-                        setCurrentDateChangeLegalCheck // записываем дату отсылки
+                        noticedChangeLegalCheck // пишем, что отослано
                 ), 1,
-                object(legalCheck), 1);
+                changeLegalCheck, 1);
         emailClaimerChangeLegalCheck.setImage("email.png");
         emailClaimerChangeLegalCheck.property.askConfirm = true;
 
@@ -4039,9 +4059,9 @@ public class SkolkovoLogicsModule extends LogicsModule {
         openCompleteApplicationProjectActionApplication = addJProp("openCompleteApplicationProjectActionApplication", "Открыть анкету (полную)", openCompleteApplicationProjectAction, projectApplication, 1);
         exportProjectDocumentsActionApplication = addJProp("exportProjectDocumentsActionApplication", "Экспортировать документы", exportProjectDocumentsAction, projectApplication, 1);
 
-        needLegalCheckStatusProject = addJProp("needLegalCheckStatusProject", and(false, true, true),
+        needLegalCheckStatusProject = addJProp("needLegalCheckStatusProject", and(true, true, true),
                 addCProp(LogicalClass.instance, true, project), 1,
-                positiveFormalResultProject, 1,
+                negativeFormalResultProject, 1,
                 resultExecuteLegalCheckProject, 1,
                 overdueLegalCheckProject, 1);
 
@@ -4451,6 +4471,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         addFormEntity(new VoteExpertFormEntity(baseLM.baseElement, "voteExpert", false));
         addFormEntity(new VoteExpertFormEntity(baseLM.baseElement, "voteExpertRestricted", true));
         addFormEntity(new VoteFormEntity(baseLM.baseElement, "voterestricted", true));
+        addFormEntity(new LegalCheckAcceptPreliminaryFormEntity(baseLM.objectElement, "legalCheckAcceptPreliminary"));
         addFormEntity(new LegalCheckRejectFormEntity(baseLM.objectElement, "legalCheckReject"));
         addFormEntity(new LegalCheckExpertiseFormEntity(baseLM.baseElement, "legalCheckExpertise", "Юридическая проверка"));
         addFormEntity(new ForesightExpertiseApplyFormEntity(baseLM.objectElement, "foresightExpertiseApply"));
@@ -5177,6 +5198,51 @@ public class SkolkovoLogicsModule extends LogicsModule {
         }
     }
 
+    public class LegalCheckAcceptPreliminaryFormEntity extends FormEntity<SkolkovoBusinessLogics> {
+
+        private ObjectEntity objProject;
+        private ObjectEntity objComment;
+
+        public LegalCheckAcceptPreliminaryFormEntity(NavigatorElement parent, String sID) {
+            super(parent, sID, "Юридическая проверка (положительная на предварительную)");
+
+            objProject = addSingleGroupObject(1, "project", project, "Проект");
+            objProject.groupTo.setSingleClassView(ClassViewType.PANEL);
+
+            objComment = addSingleGroupObject(TextClass.instance, "Комментарий", baseLM.objectValue);
+            objComment.groupTo.setSingleClassView(ClassViewType.PANEL);
+
+            addActionsOnOk(addPropertyObject(addJProp(
+                    addEPAProp(EPA_INTERFACE, projectActionProject), 1, addCProp(projectAction, "preliminary")
+                    ), objProject));
+            
+            addActionsOnOk(addPropertyObject(addJProp(
+                    addAAProp(legalCheck, projectLegalCheck, commentLegalCheck, changeLegalCheck, resultLegalCheck),
+                    1, 2, addCProp(LogicalClass.instance, true), addCProp(legalCheckResult, "positiveLegalCheckResult")
+                    ), objProject, objComment));
+
+            acceptPreliminaryLegalCheckProject = addJProp(actionGroup, "rejectLegalCheckProject", "Прошла юридическую проверку (на предварительную экспертизу)", and(false, false),
+                    addMFAProp(actionGroup, "Не прошла юридическую проверку", this, new ObjectEntity[]{objProject}, true), 1,
+                    needLegalCheckStatusProject, 1, isStatusProject, 1);
+            acceptPreliminaryLegalCheckProject.property.askConfirm = true;
+            acceptPreliminaryLegalCheckProject.setImage("sign_tick.png");
+        }
+
+        @Override
+        public FormView createDefaultRichDesign() {
+            DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign();
+            design.getPrintFunction().setVisible(false);
+            design.getXlsFunction().setVisible(false);
+            design.getApplyFunction().setVisible(false);
+            design.getCancelFunction().setVisible(false);
+
+            design.get(getPropertyDraw(baseLM.objectValue, objComment)).panelLabelAbove = true;
+            design.get(getPropertyDraw(baseLM.objectValue, objComment)).constraints.fillHorizontal = 1;
+            design.get(getPropertyDraw(baseLM.objectValue, objComment)).constraints.fillVertical = 1;
+            return design;
+        }
+    }
+
     public class LegalCheckRejectFormEntity extends FormEntity<SkolkovoBusinessLogics> {
 
         private ObjectEntity objProject;
@@ -5232,18 +5298,24 @@ public class SkolkovoLogicsModule extends LogicsModule {
                 nameNativeShortFinalClusterProject, nameNativeClaimerProject, nameForeignClaimerProject, emailClaimerProject,
                 nameStatusProject, nameProjectActionProject, updateDateProject, nameRegulationsProject,
                 dateExecuteLegalCheckProject, openCompleteApplicationProjectAction, exportProjectDocumentsAction,
-                setPositiveLCResultApplyProject, rejectLegalCheckProject);
+                setPositiveLCResultApplyProject, acceptPreliminaryLegalCheckProject, rejectLegalCheckProject, needNoticeLegalResultProject);
 
 //                showIf(this, setPositiveLCResultApplyProject, needLegalCheckStatusProject, objProject);
 
             objLegalCheck = addSingleGroupObject(legalCheck);
-            addPropertyDraw(objLegalCheck, dateTimeSubmitLegalCheck, nameResultLegalCheck, nameProjectActionLegalCheck, dateTimeLegalCheck, nameUserLegalCheck, emailClaimerLegalCheck, resultNoticedLegalCheck, dateResultNoticedLegalCheck,
-            emailClaimerChangeLegalCheck, dateChangeLegalCheck, changeLegalCheck, overdueDateLegalCheck, baseLM.delete);
+            addPropertyDraw(objLegalCheck, dateTimeSubmitLegalCheck, nameResultLegalCheck, changeLegalCheck, nameProjectActionLegalCheck,
+                    dateTimeLegalCheck, nameUserLegalCheck, emailClaimerLegalCheck, resultNoticedLegalCheck,
+                    dateResultNoticedLegalCheck, overdueDateLegalCheck, baseLM.delete);
             addPropertyDraw(commentLegalCheck, objLegalCheck).forceViewType = ClassViewType.PANEL;
+            
+            addPropertyDraw(objLegalCheck, changeLegalCheckGroup);
+            setForceViewType(changeLegalCheckGroup, ClassViewType.PANEL);
+            
+            showIf(this, new LP[] {emailClaimerChangeLegalCheck, noticedChangeLegalCheck, dateChangeLegalCheck}, changeLegalCheck, objLegalCheck);
 
             addFixedFilter(new CompareFilterEntity(addPropertyObject(projectLegalCheck, objLegalCheck), Compare.EQUALS, objProject));
 
-            addFixedFilter(new NotNullFilterEntity(addPropertyObject(positiveFormalResultProject, objProject)));
+//            addFixedFilter(new NotNullFilterEntity(addPropertyObject(positiveFormalResultProject, objProject)));
 
             projectFilterGroup = new RegularFilterGroupEntity(genID());
             projectFilterGroup.addFilter(new RegularFilterEntity(genID(),
@@ -5252,8 +5324,11 @@ public class SkolkovoLogicsModule extends LogicsModule {
                 KeyStroke.getKeyStroke(KeyEvent.VK_F10, 0)));
             addRegularFilterGroup(projectFilterGroup);
 
-            setReadOnly(true);
+            setReadOnly(true, objProject.groupTo);
+            setReadOnly(nameUserLegalCheck, true);
             setReadOnly(actionGroup, false);
+
+            addDefaultOrder(updateDateProject, false);
 
             addDefaultHintsIncrementTable(this);
         }
@@ -5549,7 +5624,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             //getPropertyDraw(includeDocumentsProject).propertyCaption = addPropertyObject(hideIncludeDocumentsProject, objProject);
 //            hideIncludeDocumentsProject = addHideCaptionProp(privateGroup, "Подключить", includeDocumentsProject, openFileResolutionIPProject);
 //            getPropertyDraw(includeDocumentsProject).propertyCaption = addPropertyObject(hideIncludeDocumentsProject, objProject);
-            showIf(this,includeDocumentsProject, addSUProp(Union.OVERRIDE, isR2Project, addJProp(baseLM.and1, isR1Project, 1, openFileResolutionIPProject, 1)), objProject);
+            showIf(this, includeDocumentsProject, addJProp(baseLM.and1, addSUProp(Union.OVERRIDE, isR2Project, addJProp(baseLM.and1, isR1Project, 1, openFileResolutionIPProject, 1)), 1, positiveLegalResultProject, 1), objProject);
 
             objExpert = addSingleGroupObject(expert);
             addPropertyDraw(objExpert, objVote, inExpertVote, oldExpertVote, businessExpertVote, exclExpertVote);

@@ -154,7 +154,7 @@ public class ClientPropertyDraw extends ClientComponent implements ClientPropert
         if (askConfirm) {
             int n = JOptionPane.showConfirmDialog(
                     null,
-                    baseType.getConformedMessage() + " \"" + caption + "\"?",
+                    baseType.getConformedMessage() + (caption != null ? " \"" + caption + "\"?" : ""),
                     "LS Fusion",
                     JOptionPane.YES_NO_OPTION);
             if (n != JOptionPane.YES_OPTION) {
