@@ -10,9 +10,9 @@ grammar LsfLogics;
 	import platform.server.form.view.*;
 	import platform.server.logics.scripted.ScriptedFormView;
 	import platform.server.logics.scripted.ScriptedFormView.InsertPosition;
-	import platform.server.logics.ScriptingErrorLog;
-	import platform.server.logics.ScriptingFormEntity;
-	import platform.server.logics.ScriptingLogicsModule;
+	import platform.server.logics.scripted.ScriptingErrorLog;
+	import platform.server.logics.scripted.ScriptingFormEntity;
+	import platform.server.logics.scripted.ScriptingLogicsModule;
 	import platform.server.logics.linear.LP;
 	import platform.server.logics.property.PropertyFollows;
 	
@@ -27,7 +27,7 @@ grammar LsfLogics;
 
 @lexer::header { 
 	package platform.server; 
-	import platform.server.logics.ScriptingLogicsModule; 
+	import platform.server.logics.scripted.ScriptingLogicsModule; 
 }
 
 @lexer::members {

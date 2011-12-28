@@ -1717,7 +1717,7 @@ public abstract class LogicsModule {
     }
 
     @IdentityLazy
-    protected LP getAddObjectAction(ValueClass cls) {
+    public LP getAddObjectAction(ValueClass cls) {
         return addAProp(new AddObjectActionProperty("add" + BaseUtils.capitalize(cls.getSID()), (CustomClass) cls));
     }
 

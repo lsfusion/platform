@@ -107,7 +107,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public LP object1, and1, andNot1;
     public LP equals2, diff2;
     public LP sumDouble2;
-    protected LP subtractDouble2;
+    public LP subtractDouble2;
     protected LP deltaDouble2;
     public LP multiplyDouble2;
     public LP sumInteger2;

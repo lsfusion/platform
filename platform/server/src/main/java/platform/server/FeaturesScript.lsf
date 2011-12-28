@@ -206,7 +206,6 @@ PROPERTIES(s, a) foo, foo2, bar, foobar, bar2, baz, baz2, balanceQuantity, testU
 
 
 DESIGN storeArticle FROM DEFAULT {
-
     title = 'Справочник складов';
 
     GROUP(s) {
@@ -215,14 +214,13 @@ DESIGN storeArticle FROM DEFAULT {
     }
 
     s.grid {
-        minimumSize = 12;
+        minimumSize = {200, 200};
     }
 
     main {
-        title = 'Главный контейнер';
         ADD functions.box;
         ADD tabs {
-            tabbedPane = TRUE:
+            tabbedPane = TRUE;
             ADD s.box {
                 title = 'Склад';
                 fillVertical = 0.3;
@@ -234,7 +232,7 @@ DESIGN storeArticle FROM DEFAULT {
         }
     }
 
-    REMOVE s.box CASCADE;
+//    REMOVE s.box CASCADE;
 
     PROPERTY(bar) { caption = 'Барр'; }
 
