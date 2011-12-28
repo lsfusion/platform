@@ -51,22 +51,17 @@
 				<textElement>
 					<font size="14"/>
 				</textElement>
-				<textFieldExpression><![CDATA[($F{changeLegalCheck}==null?"Ваша заявка успешно прошла формальную проверку и в течение ближайших 10 дней будет направлена экспертам по направлению "+$F{nameNativeClusterProjectLegalCheck}+
+				<textFieldExpression><![CDATA["\n"+
+"Ваша заявка успешно прошла формальную проверку и в течение ближайших 10 дней будет направлена экспертам по направлению "+$F{nameNativeClusterProjectLegalCheck}+
 " для прохождения экспертизы по существу. \n \n"+
-"Пожалуйста, ожидайте.":
-"Мы провели формальную проверку Вашей заявки и выявили следующие несоответствия: \n"+
-$F{commentLegalCheck}+" \n"+
-"\n"+
-"Вместе с тем, так как указанные выше замечания касаются исключительно несоответствия Вашей заявки требованиям подпунктов 2.1, 2.2 и (или) 2.3 Положения о присвоении и утрате статуса и (или) отсутствия документов, указанных в пунктах 4.1, 4.2 и (или) 4.3 указанного Положения, при этом иных несоответствий в результате проведения Формальной проверки выявлено не было, Ваша заявка будет направлена на проведение предварительной экспертизы, а Ваш статус изменен на статус «Заявитель по предварительной экспертизе»*. \n"+
-"\n"+
-"*Согласно пункту 16.2 Положения о присвоении и утрате статуса участника проекта создания и обеспечения функционирования инновационного центра «Сколково» срок исправления несоответствий составляет тридцать дней с момента получения уведомления.")]]></textFieldExpression>
+"Пожалуйста, ожидайте."]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
 				<reportElement style="DefaultStyle" x="22" y="5" width="525" height="17"/>
 				<textElement>
 					<font size="14" isUnderline="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA["app.i-gorod.com:"+($F{changeLegalCheck}==null?" Ваша заявка успешно прошла формальную проверку":" в ходе формальной проверки Вашей заявки выявлены несоответствия")]]></textFieldExpression>
+				<textFieldExpression><![CDATA["app.i-gorod.com: Ваша заявка успешно прошла формальную проверку"]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
 				<reportElement style="DefaultStyle" positionType="Float" x="22" y="73" width="525" height="17" forecolor="#666666"/>
@@ -171,8 +166,7 @@ $F{commentLegalCheck}]]></textFieldExpression>
 					<font size="14" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA["Пожалуйста, устраните данные несоответствия и отправьте заявку повторно не позднее "+platform.base.BaseUtils.formatRussian($F{overdueDateLegalCheck})+".* Вам открыта возможность редактирования анкеты в личном кабинете. \n"+
-"Для правильного оформления документов воспользуйтесь разделом F.A.Q либо обратитесь в Консультационный центр (контактные данные находятся в Вашем личном кабинете)."
-]]></textFieldExpression>
+"Для правильного оформления документов воспользуйтесь разделом F.A.Q либо обратитесь в Консультационный центр (контактные данные находятся в Вашем личном кабинете)."]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
 				<reportElement style="DefaultStyle" positionType="Float" x="22" y="83" width="525" height="17"/>

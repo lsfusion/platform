@@ -4397,6 +4397,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         addFormEntity(new FormalControlClaimerFormEntity(print, "formalControlClaimer", "Уведомление о формальной экспертизе"));
         addFormEntity(new NotificationProjectFormEntity(print, "notificationProject", "Оповещение о соответствии направлению деятельности, фонд"));
         addFormEntity(new LegalCheckClaimerFormEntity(print, "legalCheckClaimer", "Уведомление о юридической проверке"));
+        addFormEntity(new LegalCheckClaimerChangeFormEntity(print, "legalCheckClaimerChange", "Уведомление о юридической проверке, с изменением типа заявки"));
         addFormEntity(new ForesightAdviceFormEntity(print, "foresightAdvice", "Оповещение по форсайту, фонд"));
         addFormEntity(new ForesightClaimerProjectFormEntity(print, "foresightClaimerProject", "Уведомление об отрицательном результате проверки на форсайты"));  // непрохождении проверки
         addFormEntity(new BureauTrProjectFormEntity(print, "bureauTrProject", "Письмо в бюро о необходимости перевода"));
@@ -6784,6 +6785,26 @@ public class SkolkovoLogicsModule extends LogicsModule {
             objLegalCheck.groupTo.initClassView = ClassViewType.PANEL;
 
             addInlineEAForm(emailClaimerLegalCheckEA, this, objLegalCheck, 1);
+
+            addDefaultHintsIncrementTable(this);
+        }
+    }
+
+    private class LegalCheckClaimerChangeFormEntity extends FormEntity<SkolkovoBusinessLogics> {
+
+        private ObjectEntity objLegalCheck;
+
+        private LegalCheckClaimerChangeFormEntity(NavigatorElement parent, String sID, String caption) {
+            super(parent, sID, caption, true);
+
+            objLegalCheck = addSingleGroupObject(1, "legalCheck", legalCheck, "Юридическая проверка", dateProjectLegalCheck, sidResultLegalCheck, sidStatusProjectLegalCheck, nameResultLegalCheck, nameNativeClusterProjectLegalCheck, nameProjectActionLegalCheck, commentLegalCheck,
+                    overdueDateLegalCheck, dateTimeLegalCheck, dateResultNoticedLegalCheck, isPreliminaryAndStatusProjectLegalCheck, isR1LegalCheck, changeLegalCheck);
+            addPropertyDraw(executiveLD, objLegalCheck).toDraw = objLegalCheck.groupTo;
+            addPropertyDraw(phoneExecutiveLD, objLegalCheck).toDraw = objLegalCheck.groupTo;
+            addPropertyDraw(mobileExecutiveLD, objLegalCheck).toDraw = objLegalCheck.groupTo;
+            objLegalCheck.groupTo.initClassView = ClassViewType.PANEL;
+
+//            addInlineEAForm(emailClaimerLegalCheckEA, this, objLegalCheck, 1);
 
             addDefaultHintsIncrementTable(this);
         }
