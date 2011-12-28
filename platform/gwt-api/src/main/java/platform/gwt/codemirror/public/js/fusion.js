@@ -15,7 +15,9 @@ CodeMirror.defineMode("fusion", function(config, parserConfig) {
                          "TRUE FALSE NOT NULL AND IF STATIC MSG " +
                          "OBJVALUE SELECTION ADDOBJ CONSTRAINT CHECKED " +
                          "ORDER PARTITION DESC WINDOW EXCEPTLAST FORMULA " +
-                         "RESOLVE ALL NOTHING");
+                         "RESOLVE ALL NOTHING" +
+                         "DESIGN FROM DEFAULT ADD REMOVE CASCADE PARENT PROPERTY" +
+                         "POSITION TO THE LEFT RIGHT BOTTOM RIGHTBOTTOM INTERSECT BEFORE AFTER");
 
     var isOperatorChar = /[+\-*&%=<>!?|]/;
 
