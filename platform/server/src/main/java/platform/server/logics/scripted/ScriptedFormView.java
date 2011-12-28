@@ -1,6 +1,5 @@
 package platform.server.logics.scripted;
 
-import org.apache.commons.beanutils.ConvertUtils;
 import platform.interop.form.layout.DoNotIntersectSimplexConstraint;
 import platform.server.LsfLogicsParser;
 import platform.server.form.entity.GroupObjectEntity;
@@ -9,21 +8,13 @@ import platform.server.form.entity.TreeGroupEntity;
 import platform.server.form.entity.filter.RegularFilterGroupEntity;
 import platform.server.form.view.*;
 import platform.server.logics.property.group.AbstractGroup;
-import platform.server.logics.scripted.converters.FontConverter;
-import platform.server.logics.scripted.converters.KeyStrokeConverter;
 import platform.server.logics.scripted.proxy.ViewProxyUtil;
 
-import javax.swing.*;
-import java.awt.*;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public class ScriptedFormView extends DefaultFormView {
-    static {
-        ConvertUtils.register(new FontConverter(), Font.class);
-        ConvertUtils.register(new KeyStrokeConverter(), KeyStroke.class);
-    }
 
     public enum InsertPosition {IN, BEFORE, AFTER}
 
