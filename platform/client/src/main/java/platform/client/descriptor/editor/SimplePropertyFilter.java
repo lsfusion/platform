@@ -1,11 +1,13 @@
 package platform.client.descriptor.editor;
 
+import org.jdesktop.swingx.JXStatusBar;
 import platform.client.ClientResourceBundle;
 import platform.client.Main;
 import platform.client.descriptor.FormDescriptor;
 import platform.client.descriptor.GroupObjectDescriptor;
 import platform.client.descriptor.PropertyObjectDescriptor;
 import platform.client.descriptor.editor.base.TitledPanel;
+import platform.client.descriptor.property.AbstractGroupDescriptor;
 import platform.client.descriptor.property.AbstractNodeDescriptor;
 
 import javax.swing.*;
@@ -13,11 +15,13 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.TreeNode;
+import javax.swing.tree.TreePath;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.awt.event.*;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyVetoException;
+import java.beans.VetoableChangeListener;
 import java.util.*;
 import java.util.List;
 
@@ -37,7 +41,8 @@ public class SimplePropertyFilter extends JPanel {
     JCheckBox isAnyCheckBox; //выбор логики all/any
     boolean and;    //and или or для GroupObject
     public List<GroupObjectDescriptor> groupObjects;
-
+    String searchFilter = "";
+    
     public SimplePropertyFilter(FormDescriptor form, GroupObjectDescriptor descriptor) {
         super(new BorderLayout(5, 5));
         this.form = form;
@@ -79,6 +84,7 @@ public class SimplePropertyFilter extends JPanel {
         radioPanel.add(getLogicPanel());
         radioPanel.add(getSetPanel());
         leftPane.add(radioPanel, BorderLayout.SOUTH);
+        rightPane.add(getSearchPanel(), BorderLayout.NORTH);
         rightPane.add(new JScrollPane(tree), BorderLayout.CENTER);
 
         add(leftPane, BorderLayout.WEST);
@@ -133,10 +139,29 @@ public class SimplePropertyFilter extends JPanel {
             if (prop.mapping.isEmpty() && !emptyCheckBox.isSelected()) {
                 continue;
             }
-            addPropertyToTree(prop);
+
+            boolean isMask = searchFilter.contains("%") || searchFilter.contains("_");
+            if ((isMask && (prop.property.getSID().matches(searchFilter.replace("%", ".*").replace("_", ".?"))))
+                    || ("".equals(searchFilter))
+                    || (prop.property.getSID().startsWith(searchFilter))
+                    || (prop.property.caption.startsWith(searchFilter)))
+                addPropertyToTree(prop);
         }
         treeModel.reload();
-        tree.expandRow(0);
+
+        expandTree(tree, (DefaultMutableTreeNode)treeModel.getRoot());
+    }
+
+    public static void expandTree(JTree tree, DefaultMutableTreeNode start) {
+        for (Enumeration children = start.children(); children.hasMoreElements();) {
+            DefaultMutableTreeNode dtm = (DefaultMutableTreeNode) children.nextElement();
+            if (!dtm.isLeaf()) {
+                TreePath tp = new TreePath( dtm.getPath() );
+                tree.expandPath(tp);
+                expandTree(tree, dtm);
+            }
+        }
+        return;
     }
 
     DefaultMutableTreeNode getNode(Object info) {
@@ -146,6 +171,7 @@ public class SimplePropertyFilter extends JPanel {
     private void addPropertyToTree(PropertyObjectDescriptor prop) {
         Stack<Object> stack = new Stack<Object>();
 
+        prop.property.caption += " - " + prop.property.getSID() + " - ";
         stack.push(prop);
         AbstractNodeDescriptor current = prop.property.parent;
 
@@ -224,6 +250,27 @@ public class SimplePropertyFilter extends JPanel {
         radioPanel.add(allButton);
 
         return new TitledPanel(ClientResourceBundle.getString("descriptor.editor.group.choice.logic"), radioPanel);
+    }
+
+    private JPanel getSearchPanel() {
+        JPanel searchPanel = new JPanel(new GridLayout(1, 1));
+        final JTextField textField = new JTextField();
+        textField.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                searchFilter = textField.getText();
+                updateTree();
+            }
+        });
+        textField.addFocusListener(new FocusAdapter() {
+            @Override
+            public void focusLost(FocusEvent e) {
+                searchFilter = textField.getText();
+            }
+        });
+
+        searchPanel.add(textField);
+        return new TitledPanel(ClientResourceBundle.getString("descriptor.editor.search"), searchPanel);
     }
 
     private JPanel getDirectPanel() {

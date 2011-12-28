@@ -82,7 +82,7 @@ public class GroupPropertyObjectEditor extends SimplePropertyFilter implements I
 
         tree.revalidate();
         tree.repaint();
-        tree.expandRow(0);
+        expandTree(tree, (DefaultMutableTreeNode)treeModel.getRoot());
     }
 
     public class CheckNode extends DefaultMutableTreeNode {
