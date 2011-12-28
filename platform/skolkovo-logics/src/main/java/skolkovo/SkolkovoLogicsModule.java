@@ -827,6 +827,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP emailBureauTranslation, emailBureauTrProjectEA, emailBureauTrProject;
     LP emailNeedVoteProjectEA, emailNeedVoteProject;
     LP resultNeedVoteProject, dateResultNeedVoteProject, setCurrentDateResultNeedVoteProject, dateOverdueResultNeedVoteProject;
+    LP emailClaimerChangeLegalCheckEA, setCurrentDateChangeLegalCheck, emailClaimerChangeLegalCheck;
 
     LP generateDocumentsProjectDocumentType;
     LP includeDocumentsProject, hideIncludeDocumentsProject;
@@ -1215,7 +1216,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP positiveStatusLegalCheckProject, datePositiveStatusLegalCheckProject;
     LP transferredProject, dateTransferredProject;
     LP needVoteProject;
-    LP changeLegalCheck;
+    LP changeLegalCheck, dateChangeLegalCheck;
 
     LP dateAgreementExpert;
     LP vone;
@@ -3240,7 +3241,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         userLegalCheck = addDCProp("userLegalCheck", "Пользователь ЮП (ИД)", true, baseLM.currentUser, resultLegalCheck, 1);
         nameUserLegalCheck = addJProp("nameUserLegalCheck", "Пользователь ЮП", baseLM.name, userLegalCheck, 1);
         changeLegalCheck = addDProp("changeLegalCheck", "Изменен тип заявки", LogicalClass.instance, legalCheck);
-
+        dateChangeLegalCheck = addDProp("dateChangeLegalCheck", "Дата изменения типа заявки", DateClass.instance, legalCheck);
 //        maxFormalControlProjectProps = addMGProp((AbstractGroup) null, new String[]{"maxDateFormalControlProject", "currentFCProject"}, new String[]{"Дата посл. формальной экспертизы.", "Посл. формальная экспертиза"}, 1,
 //                dateTimeFormalControl, 1, projectFormalControl, 1);
 //        LP currentDateFormalControlProject = maxFormalControlProjectProps[0];
@@ -3533,6 +3534,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
                 addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), doneNewExpertVote, 1, 2), 1);
         quantityIsR1DoneExpert = addSGProp("quantityIsR1DoneExpert", "Проголосовал R1",
                         addJProp(and(false, false), addCProp(IntegerClass.instance, 1), doneNewExpertVote, 1, 2, isR1ProjectVote, 2), 1);
+
         quantityIsR2DoneExpert = addSGProp("quantityIsR2DoneExpert", "Проголосовал R2",
                                 addJProp(and(false, false), addCProp(IntegerClass.instance, 1), doneNewExpertVote, 1, 2, isR2ProjectVote, 2), 1);
 
@@ -3832,6 +3834,24 @@ public class SkolkovoLogicsModule extends LogicsModule {
         object(legalCheck), 1);
         emailClaimerLegalCheck.setImage("email.png");
         emailClaimerLegalCheck.property.askConfirm = true;
+
+        emailClaimerChangeLegalCheckEA = addEAProp(emailClaimerFromAddress, emailClaimerFromAddress, legalCheck);
+        setCurrentDateChangeLegalCheck = addJProp(actionGroup, true, "setCurrentDateChangeLegalCheck", "Установить текущую дату уведомления",
+                addEPAProp(EPA_INTERFACE, dateChangeLegalCheck), 1, baseLM.currentDate);
+
+        addEARecepient(emailClaimerChangeLegalCheckEA, claimerEmailLegalCheck, 1);
+        addEARecepient(emailClaimerChangeLegalCheckEA, MimeMessage.RecipientType.BCC, emailIO);
+//        addEARecepient(emailClaimerLegalCheckEA, MimeMessage.RecipientType.BCC, emailFinalClusterLegalCheck, 1);
+
+        emailClaimerChangeLegalCheck = addJProp(actionGroup, true, "emailClaimerChangeLegalCheck", "Письмо об изменении типа заявки", baseLM.and1,
+                addEPAProp(EPA_DEFAULT,
+                        addJProp(true, emailClaimerChangeLegalCheckEA, 1, emailClaimerHeaderLegalCheck, 1), // отсылаем письмо
+                        changeLegalCheck, // пишем, что отослано
+                        setCurrentDateChangeLegalCheck // записываем дату отсылки
+                ), 1,
+                object(legalCheck), 1);
+        emailClaimerChangeLegalCheck.setImage("email.png");
+        emailClaimerChangeLegalCheck.property.askConfirm = true;
 
         emailClaimerLegalCheckProject = addJProp(actionGroup, true, "emailClaimerLegalCheckProject", "Письмо о формальной экспертизе", emailClaimerLegalCheck, executeLegalCheckProject, 1);
         emailClaimerLegalCheckProject.setDerivedForcedChange(addCProp(ActionClass.instance, true), positiveResultForesightCheckProject, 1);
@@ -4709,7 +4729,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             return objProject;
         }
     }
-    
+
     private class ProjectFullR2FormEntity extends FormEntity<SkolkovoBusinessLogics> {
 
         private ObjectEntity objProject;
@@ -5175,7 +5195,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
                     addAAProp(legalCheck, projectLegalCheck, commentLegalCheck, resultLegalCheck),
                         1, 2, addCProp(legalCheckResult, "negativeLegalCheckResult"))
                                              , objProject, objComment));
-            
+
             rejectLegalCheckProject = addJProp(actionGroup, "rejectLegalCheckProject", "Не прошла юридическую проверку", baseLM.and1,
                     addMFAProp(actionGroup, "Не прошла юридическую проверку", this, new ObjectEntity[]{objProject}, true), 1,
                     needLegalCheckStatusProject, 1);
@@ -5217,7 +5237,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
 //                showIf(this, setPositiveLCResultApplyProject, needLegalCheckStatusProject, objProject);
 
             objLegalCheck = addSingleGroupObject(legalCheck);
-            addPropertyDraw(objLegalCheck, dateTimeSubmitLegalCheck, nameResultLegalCheck, nameProjectActionLegalCheck, dateTimeLegalCheck, nameUserLegalCheck, emailClaimerLegalCheck, resultNoticedLegalCheck, dateResultNoticedLegalCheck, overdueDateLegalCheck, changeLegalCheck, baseLM.delete);
+            addPropertyDraw(objLegalCheck, dateTimeSubmitLegalCheck, nameResultLegalCheck, nameProjectActionLegalCheck, dateTimeLegalCheck, nameUserLegalCheck, emailClaimerLegalCheck, resultNoticedLegalCheck, dateResultNoticedLegalCheck,
+            emailClaimerChangeLegalCheck, dateChangeLegalCheck, changeLegalCheck, overdueDateLegalCheck, baseLM.delete);
             addPropertyDraw(commentLegalCheck, objLegalCheck).forceViewType = ClassViewType.PANEL;
 
             addFixedFilter(new CompareFilterEntity(addPropertyObject(projectLegalCheck, objLegalCheck), Compare.EQUALS, objProject));
@@ -5547,7 +5568,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
                     needFormalCheckStatusProject, objProject);
 
             objLegalCheck = addSingleGroupObject(legalCheck);
-            addPropertyDraw(objLegalCheck, dateTimeSubmitLegalCheck, nameResultLegalCheck, nameProjectActionLegalCheck, dateTimeLegalCheck, nameUserLegalCheck, emailClaimerLegalCheck, resultNoticedLegalCheck, dateResultNoticedLegalCheck, changeLegalCheck, baseLM.delete);
+            addPropertyDraw(objLegalCheck, dateTimeSubmitLegalCheck, nameResultLegalCheck, nameProjectActionLegalCheck, dateTimeLegalCheck, nameUserLegalCheck, emailClaimerLegalCheck, resultNoticedLegalCheck, dateResultNoticedLegalCheck, emailClaimerChangeLegalCheck, dateChangeLegalCheck, changeLegalCheck, baseLM.delete);
             addPropertyDraw(new LP[]{addNegativeLCResult, addPositiveLCResult});
             addPropertyDraw(commentLegalCheck, objLegalCheck).forceViewType = ClassViewType.PANEL;
 
@@ -6169,12 +6190,12 @@ public class SkolkovoLogicsModule extends LogicsModule {
                 addPropertyDraw(objExpert, objVote, allowedEmailLetterExpertVote);
 
             addPropertyDraw(objExpert, objVote, exclExpertVote);
-            
+
             addPropertyDraw(voteResultGroup, true, objExpert, objVote);
             if (!restricted)
                 addPropertyDraw(expertResultGroup, true, objExpert);
             setForceViewType(voteResultCommentGroup, ClassViewType.PANEL);
-            
+
             addPropertyDraw(voteResultLengthGroup, true, objExpert, objVote);
 
             GroupObjectEntity gobjVoteExpert = new GroupObjectEntity(genID());
@@ -6778,7 +6799,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             super(parent, sID, caption, true);
 
             objLegalCheck = addSingleGroupObject(1, "legalCheck", legalCheck, "Юридическая проверка", dateProjectLegalCheck, sidResultLegalCheck, sidStatusProjectLegalCheck, nameResultLegalCheck, nameNativeClusterProjectLegalCheck, nameProjectActionLegalCheck, commentLegalCheck,
-                    overdueDateLegalCheck, dateTimeLegalCheck, dateResultNoticedLegalCheck, isPreliminaryAndStatusProjectLegalCheck, isR1LegalCheck, changeLegalCheck);
+                    overdueDateLegalCheck, dateTimeLegalCheck, dateResultNoticedLegalCheck, isPreliminaryAndStatusProjectLegalCheck, isR1LegalCheck, changeLegalCheck, dateChangeLegalCheck, changeLegalCheck);
             addPropertyDraw(executiveLD, objLegalCheck).toDraw = objLegalCheck.groupTo;
             addPropertyDraw(phoneExecutiveLD, objLegalCheck).toDraw = objLegalCheck.groupTo;
             addPropertyDraw(mobileExecutiveLD, objLegalCheck).toDraw = objLegalCheck.groupTo;
@@ -6798,13 +6819,13 @@ public class SkolkovoLogicsModule extends LogicsModule {
             super(parent, sID, caption, true);
 
             objLegalCheck = addSingleGroupObject(1, "legalCheck", legalCheck, "Юридическая проверка", dateProjectLegalCheck, sidResultLegalCheck, sidStatusProjectLegalCheck, nameResultLegalCheck, nameNativeClusterProjectLegalCheck, nameProjectActionLegalCheck, commentLegalCheck,
-                    overdueDateLegalCheck, dateTimeLegalCheck, dateResultNoticedLegalCheck, isPreliminaryAndStatusProjectLegalCheck, isR1LegalCheck, changeLegalCheck);
+                    overdueDateLegalCheck, dateTimeLegalCheck, dateResultNoticedLegalCheck, isPreliminaryAndStatusProjectLegalCheck, isR1LegalCheck, changeLegalCheck, dateChangeLegalCheck, changeLegalCheck);
             addPropertyDraw(executiveLD, objLegalCheck).toDraw = objLegalCheck.groupTo;
             addPropertyDraw(phoneExecutiveLD, objLegalCheck).toDraw = objLegalCheck.groupTo;
             addPropertyDraw(mobileExecutiveLD, objLegalCheck).toDraw = objLegalCheck.groupTo;
             objLegalCheck.groupTo.initClassView = ClassViewType.PANEL;
 
-//            addInlineEAForm(emailClaimerLegalCheckEA, this, objLegalCheck, 1);
+            addInlineEAForm(emailClaimerChangeLegalCheckEA, this, objLegalCheck, 1);
 
             addDefaultHintsIncrementTable(this);
         }
