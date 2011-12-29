@@ -1085,7 +1085,7 @@ strictCompoundID
 	;
 	
 multiCompoundID returns [String sid]
-	:	id=ID { $sid = $id.text; } ('.' mid=multiCompoundID { $sid = $sid + "." + $mid.text; } )?
+	:	id=ID { $sid = $id.text; } ('.' cid=ID { $sid = $sid + "." + $cid.text; } )*
 	;
 	
 udoubleLiteral 
