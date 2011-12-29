@@ -2820,12 +2820,12 @@ public class SkolkovoLogicsModule extends LogicsModule {
         internationalExperienceExpertVote = addDProp(voteResultCheckGroup, "internationalExperienceExpertVote", "Международный опыт", LogicalClass.instance, expert, voteR2);
         enoughDocumentsExpertVote = addDProp(voteResultCheckGroup, "enoughDocumentsExpertVote", "Достаточно документов", LogicalClass.instance, expert, voteR2);
 
-        competitiveAdvantagesCorExpertVote = addJProp("competitiveAdvantagesCorExpertVote", "Конкур. преим. (не анулл.)", baseLM.andNot1, competitiveAdvantagesExpertVote, 1, 2, exclExpertVote, 1, 2);
-        commercePotentialCorExpertVote = addJProp("commercePotentialCorExpertVote", "Потенциал коммерц. (не анулл.)", baseLM.andNot1, commercePotentialExpertVote, 1, 2, exclExpertVote, 1, 2);
-        canBeImplementedCorExpertVote = addJProp("canBeImplementedCorExpertVote", "Теоретически реализуем (не анулл.)", baseLM.andNot1, canBeImplementedExpertVote, 1, 2, exclExpertVote, 1, 2);
-        haveExpertiseCorExpertVote = addJProp("haveExpertiseCorExpertVote", "Наличие экспертизы (не анулл.)", baseLM.andNot1, haveExpertiseExpertVote, 1, 2, exclExpertVote, 1, 2);
-        internationalExperienceCorExpertVote = addJProp("internationalExperienceCorExpertVote", "Международный опыт (не анулл.)", baseLM.andNot1, internationalExperienceExpertVote, 1, 2, exclExpertVote, 1, 2);
-        enoughDocumentsCorExpertVote = addJProp("enoughDocumentsCorExpertVote", "Достаточно документов (не анулл.)", baseLM.andNot1, enoughDocumentsExpertVote, 1, 2, exclExpertVote, 1, 2);
+        competitiveAdvantagesCorExpertVote = addJProp("competitiveAdvantagesCorExpertVote", "Конкур. преим. (не анулл.)", and(true, false), competitiveAdvantagesExpertVote, 1, 2, exclExpertVote, 1, 2, inNewExpertVote, 1, 2); // добавил, чтобы только новые
+        commercePotentialCorExpertVote = addJProp("commercePotentialCorExpertVote", "Потенциал коммерц. (не анулл.)", and(true, false), commercePotentialExpertVote, 1, 2, exclExpertVote, 1, 2, inNewExpertVote, 1, 2);       // добавил, чтобы только новые
+        canBeImplementedCorExpertVote = addJProp("canBeImplementedCorExpertVote", "Теоретически реализуем (не анулл.)", and(true, false), canBeImplementedExpertVote, 1, 2, exclExpertVote, 1, 2, inNewExpertVote, 1, 2);      // добавил, чтобы только новые
+        haveExpertiseCorExpertVote = addJProp("haveExpertiseCorExpertVote", "Наличие экспертизы (не анулл.)", and(true, false), haveExpertiseExpertVote, 1, 2, exclExpertVote, 1, 2, inNewExpertVote, 1, 2);                           // добавил, чтобы только новые
+        internationalExperienceCorExpertVote = addJProp("internationalExperienceCorExpertVote", "Международный опыт (не анулл.)", and(true, false), internationalExperienceExpertVote, 1, 2, exclExpertVote, 1, 2, inNewExpertVote, 1, 2);     // добавил, чтобы только новые
+        enoughDocumentsCorExpertVote = addJProp("enoughDocumentsCorExpertVote", "Достаточно документов (не анулл.)", and(true, false), enoughDocumentsExpertVote, 1, 2, exclExpertVote, 1, 2, inNewExpertVote, 1, 2);                 // добавил, чтобы только новые
 
         commentCompetitiveAdvantagesExpertVote = addDProp(voteResultCommentGroup, "commentCompetitiveAdvantagesExpertVote", "Конкур. преим. (обоснование)", TextClass.instance, expert, voteR2);
         commentCommercePotentialExpertVote = addDProp(voteResultCommentGroup, "commentCommercePotentialExpertVote", "Потенциал коммерц. (обоснование)", TextClass.instance, expert, voteR2);
@@ -3559,9 +3559,9 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         percentDoneExpert = addJProp(expertResultGroup, "percentDoneExpert", "Проголосовал (%)", baseLM.share2, quantityDoneExpert, 1, quantityTotalExpert, 1);
 
-        LP quantityInClusterExpert = addSGProp("quantityInClusterExpert", "Соотв-ие кластеру (голоса)",
+        LP quantityClusterExpert = addSGProp("quantityClusterExpert", "Соотв-ие кластеру (голоса)",
                 addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), inClusterNewExpertVote, 1, 2), 1);
-        percentInClusterExpert = addJProp(expertResultGroup, "percentInClusterExpert", "Соотв-ие кластеру (%)", baseLM.share2, quantityInClusterExpert, 1, quantityIsR1DoneExpert, 1);
+        percentInClusterExpert = addJProp(expertResultGroup, "percentInClusterExpert", "Соотв-ие кластеру (%)", baseLM.share2, quantityClusterExpert, 1, quantityIsR1DoneExpert, 1);
 
         LP quantityInnovativeExpert = addSGProp("quantityInnovativeExpert", "Инновац. (голоса)",
                 addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), innovativeNewExpertVote, 1, 2), 1);
@@ -3861,7 +3861,6 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
         addEARecepient(emailClaimerChangeLegalCheckEA, claimerEmailLegalCheck, 1);
         addEARecepient(emailClaimerChangeLegalCheckEA, MimeMessage.RecipientType.BCC, emailIO);
-//        addEARecepient(emailClaimerLegalCheckEA, MimeMessage.RecipientType.BCC, emailFinalClusterLegalCheck, 1);
 
         emailClaimerChangeLegalCheck = addJProp(changeLegalCheckGroup, true, "emailClaimerChangeLegalCheck", "Письмо об изменении типа заявки", baseLM.and1,
                 addEPAProp(EPA_DEFAULT,
@@ -5643,7 +5642,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
                     needFormalCheckStatusProject, objProject);
 
             objLegalCheck = addSingleGroupObject(legalCheck);
-            addPropertyDraw(objLegalCheck, dateTimeSubmitLegalCheck, nameResultLegalCheck, nameProjectActionLegalCheck, dateTimeLegalCheck, nameUserLegalCheck, emailClaimerLegalCheck, resultNoticedLegalCheck, dateResultNoticedLegalCheck, emailClaimerChangeLegalCheck, dateChangeLegalCheck, changeLegalCheck, baseLM.delete);
+            addPropertyDraw(objLegalCheck, dateTimeSubmitLegalCheck, nameResultLegalCheck, changeLegalCheck, nameProjectActionLegalCheck, dateTimeLegalCheck, nameUserLegalCheck, emailClaimerLegalCheck, resultNoticedLegalCheck, dateResultNoticedLegalCheck, baseLM.delete);
             addPropertyDraw(new LP[]{addNegativeLCResult, addPositiveLCResult});
             addPropertyDraw(commentLegalCheck, objLegalCheck).forceViewType = ClassViewType.PANEL;
 
@@ -6874,7 +6873,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             super(parent, sID, caption, true);
 
             objLegalCheck = addSingleGroupObject(1, "legalCheck", legalCheck, "Юридическая проверка", dateProjectLegalCheck, sidResultLegalCheck, sidStatusProjectLegalCheck, nameResultLegalCheck, nameNativeClusterProjectLegalCheck, nameProjectActionLegalCheck, commentLegalCheck,
-                    overdueDateLegalCheck, dateTimeLegalCheck, dateResultNoticedLegalCheck, isPreliminaryAndStatusProjectLegalCheck, isR1LegalCheck, changeLegalCheck, dateChangeLegalCheck, changeLegalCheck);
+                    overdueDateLegalCheck, dateTimeLegalCheck, dateResultNoticedLegalCheck, isPreliminaryAndStatusProjectLegalCheck, isR1LegalCheck, changeLegalCheck, noticedChangeLegalCheck, dateChangeLegalCheck);
             addPropertyDraw(executiveLD, objLegalCheck).toDraw = objLegalCheck.groupTo;
             addPropertyDraw(phoneExecutiveLD, objLegalCheck).toDraw = objLegalCheck.groupTo;
             addPropertyDraw(mobileExecutiveLD, objLegalCheck).toDraw = objLegalCheck.groupTo;
@@ -6894,7 +6893,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             super(parent, sID, caption, true);
 
             objLegalCheck = addSingleGroupObject(1, "legalCheck", legalCheck, "Юридическая проверка", dateProjectLegalCheck, sidResultLegalCheck, sidStatusProjectLegalCheck, nameResultLegalCheck, nameNativeClusterProjectLegalCheck, nameProjectActionLegalCheck, commentLegalCheck,
-                    overdueDateLegalCheck, dateTimeLegalCheck, dateResultNoticedLegalCheck, isPreliminaryAndStatusProjectLegalCheck, isR1LegalCheck, changeLegalCheck, dateChangeLegalCheck, changeLegalCheck);
+                    overdueDateLegalCheck, dateTimeLegalCheck, dateResultNoticedLegalCheck, isPreliminaryAndStatusProjectLegalCheck, isR1LegalCheck, changeLegalCheck, noticedChangeLegalCheck, dateChangeLegalCheck);
             addPropertyDraw(executiveLD, objLegalCheck).toDraw = objLegalCheck.groupTo;
             addPropertyDraw(phoneExecutiveLD, objLegalCheck).toDraw = objLegalCheck.groupTo;
             addPropertyDraw(mobileExecutiveLD, objLegalCheck).toDraw = objLegalCheck.groupTo;
