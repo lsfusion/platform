@@ -33,7 +33,7 @@ public class ClientForm extends IdentityObject implements LogicsSupplier, Client
     // пока используется только для сериализации туда-назад
     public Integer overridePageWidth;
 
-    public ClientContainer mainContainer = new ClientContainer();
+    public ClientContainer mainContainer;
 
     public List<ClientTreeGroup> treeGroups = new ArrayList<ClientTreeGroup>();
     public List<ClientGroupObject> groupObjects = new ArrayList<ClientGroupObject>();
@@ -109,6 +109,8 @@ public class ClientForm extends IdentityObject implements LogicsSupplier, Client
         super(ID);
         
         this.context = context;
+
+        mainContainer = new ClientContainer(getContext());
 
         printFunction = new ClientFunction(getContext());
         editFunction = new ClientFunction(getContext());
