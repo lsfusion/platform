@@ -15,6 +15,7 @@
 	<field name="numberOldExpertVote" class="java.lang.Integer"/>
 	<field name="documentNameExpert2" class="java.lang.String"/>
 	<field name="quantityInOldVote" class="java.lang.Integer"/>
+	<field name="sidExpert2" class="java.lang.String"/>
 	<detail>
 		<band height="16">
 			<textField isStretchWithOverflow="true" pattern="#,##0" isBlankWhenNull="true">
@@ -22,7 +23,7 @@
 				<textElement>
 					<paragraph firstLineIndent="40"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{numberOldExpertVote}+") "+$F{documentNameExpert2}+ ($F{numberOldExpertVote} == $F{quantityInOldVote} ? "." : ";")]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{numberOldExpertVote}+") "+$F{sidExpert2}+ ($F{numberOldExpertVote} == $F{quantityInOldVote} ? "." : ";")]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>
