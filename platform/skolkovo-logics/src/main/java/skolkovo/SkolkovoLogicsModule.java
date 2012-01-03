@@ -668,6 +668,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP dateSubmittedToRegisterProject;
     LP datePreparedCertificateProject;
     LP dateCertifiedProject;
+    LP withdrawnProject;
 
     LP inDefaultDocumentLanguage;
     LP inDefaultDocumentExpert;
@@ -3470,6 +3471,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
         certifiedProject = addDProp(registerGroup, "certifiedProject", "Выдано свидетельство участника", LogicalClass.instance, project);
         dateCertifiedProject = addDCProp(registerGroup, "dateCertifiedProject", "Дата выдачи свидетельства участника", true, baseLM.currentDate, certifiedProject, 1);
         quantitySubDefaultVoteProject = addSUProp("quantitySubDefaultVoteProject", true, "Вместо заседаний", Union.OVERRIDE, quantityDefaultVoteProject, quantityVoteProject);
+        withdrawnProject = addDProp("withdrawnProject", "Отозвана заявителем", LogicalClass.instance, project);
 
         legalCheckStatusProject = addCaseUProp(idGroup, "legalCheckStatusProject", true, "Статус (юридич. пров.) (ИД)",
                 positiveLegalResultProject, 1, addCProp(projectStatus, "positiveLCResult", project), 1,
@@ -3525,6 +3527,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
                 addCProp(projectStatus, "unknown", project), 1);
 
         statusProject = addCaseUProp(idGroup, "statusProject", true, "Статус (ИД)",
+                withdrawnProject, 1, addCProp(projectStatus, "withdrawn", project), 1,
                 quantitySubDefaultVoteProject, 1, voteStatusProject, 1,
                 sentForTranslationProject, 1, addCProp(projectStatus, "needTranslation", project), 1,
                 resultForesightCheckProject, 1, foresightCheckStatusProject, 1,
@@ -5187,6 +5190,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(inProjectForesight, objProject, objForesight)));
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(needForesightCheckProject, objProject)));
+            addFixedFilter(new NotFilterEntity(new NotNullFilterEntity(addPropertyObject(withdrawnProject, objProject))));
 
             setReadOnly(true, objProject.groupTo);
             setReadOnly(actionGroup, false);
@@ -5316,7 +5320,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             showIf(this, new LP[] {emailClaimerChangeLegalCheck, noticedChangeLegalCheck, dateChangeLegalCheck}, changeLegalCheck, objLegalCheck);
 
             addFixedFilter(new CompareFilterEntity(addPropertyObject(projectLegalCheck, objLegalCheck), Compare.EQUALS, objProject));
-
+            addFixedFilter(new NotFilterEntity(new NotNullFilterEntity(addPropertyObject(withdrawnProject, objProject))));
 //            addFixedFilter(new NotNullFilterEntity(addPropertyObject(positiveFormalResultProject, objProject)));
 
             projectFilterGroup = new RegularFilterGroupEntity(genID());
@@ -5474,6 +5478,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             addPropertyDraw(nameNativeShortCurrentCluster).toDraw = objProject.groupTo;
             setForceViewType(nameNativeShortCurrentCluster, ClassViewType.PANEL);
             addPropertyDraw(quantityDefaultVoteProject, objProject).forceViewType = ClassViewType.PANEL;
+            addPropertyDraw(withdrawnProject, objProject).forceViewType = ClassViewType.PANEL;
 
 //            addPropertyDraw(objProject, translateToRussianProject, translateToEnglishProject);
 //            setForceViewType(translateToRussianProject, ClassViewType.PANEL);
@@ -5761,6 +5766,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             formalControlContainer.add(design.get(getPropertyDraw(nameResultForesightCheckProject)));
             formalControlContainer.add(design.get(getPropertyDraw(dateResultForesightCheckProject)));
             formalControlContainer.add(design.get(getPropertyDraw(nameUserResultForesightCheckProject)));
+            formalControlContainer.add(design.get(getPropertyDraw(withdrawnProject)));
 
             PropertyDrawView commentFormalView = design.get(getPropertyDraw(commentFormalControl, objFormalControl));
             commentFormalView.constraints.fillHorizontal = 1.0;
