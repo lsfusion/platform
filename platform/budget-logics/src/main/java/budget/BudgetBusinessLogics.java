@@ -17,7 +17,7 @@ public class BudgetBusinessLogics extends BusinessLogics<BudgetBusinessLogics> {
         super(iAdapter, port);
     }
 
-    public void createModules() {
+    public void createModules() throws IOException {
         super.createModules();
         budgetLM = new BudgetLogicsModule(LM);
         addLogicsModule(budgetLM);

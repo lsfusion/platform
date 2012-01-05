@@ -3,7 +3,6 @@ package roman;
 import net.sf.jasperreports.engine.JRException;
 import platform.interop.event.IDaemonTask;
 import platform.server.auth.SecurityPolicy;
-import platform.server.auth.User;
 import platform.server.daemons.ScannerDaemonTask;
 import platform.server.daemons.WeightDaemonTask;
 import platform.server.data.sql.DataAdapter;
@@ -28,7 +27,7 @@ public class RomanBusinessLogics extends BusinessLogics<RomanBusinessLogics> {
     }
 
     @Override
-    protected void createModules() {
+    protected void createModules() throws IOException {
         super.createModules();
         RomanLM = new RomanLogicsModule(LM, this);
         addLogicsModule(RomanLM);

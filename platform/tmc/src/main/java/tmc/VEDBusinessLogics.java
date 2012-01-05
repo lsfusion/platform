@@ -3,7 +3,6 @@ package tmc;
 import net.sf.jasperreports.engine.JRException;
 import platform.interop.form.screen.ExternalScreenParameters;
 import platform.server.auth.SecurityPolicy;
-import platform.server.auth.User;
 import platform.server.data.sql.DataAdapter;
 import platform.server.logics.BusinessLogics;
 import platform.server.logics.DataObject;
@@ -32,7 +31,7 @@ public class VEDBusinessLogics extends BusinessLogics<VEDBusinessLogics> {
     }
 
     @Override
-    protected void createModules() {
+    protected void createModules() throws IOException {
         super.createModules();
         VEDLM = new VEDLogicsModule(LM, this, logger);
         addLogicsModule(VEDLM);

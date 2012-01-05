@@ -4,6 +4,7 @@ import platform.server.auth.User;
 import platform.server.data.sql.DataAdapter;
 import platform.server.logics.BusinessLogics;
 
+import java.io.IOException;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.Arrays;
@@ -30,7 +31,7 @@ public class ScriptedBusinessLogics extends BusinessLogics<ScriptedBusinessLogic
     }
 
     @Override
-    protected void createModules() {
+    protected void createModules() throws IOException {
         super.createModules();
 
         for (int i = 0; i < moduleNames.size(); ++i) {

@@ -7,6 +7,7 @@ import org.antlr.runtime.CharStream;
 import org.antlr.runtime.CommonTokenStream;
 import org.apache.log4j.Logger;
 import platform.base.BaseUtils;
+import platform.base.IOUtils;
 import platform.server.LsfLogicsLexer;
 import platform.server.LsfLogicsParser;
 import platform.server.classes.*;
@@ -23,6 +24,7 @@ import platform.server.logics.property.group.AbstractGroup;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -69,6 +71,12 @@ public class ScriptingLogicsModule extends LogicsModule {
     public static ScriptingLogicsModule createFromFile(String scriptName, String filename, BaseLogicsModule<?> baseModule, BusinessLogics<?> BL) {
         ScriptingLogicsModule module = new ScriptingLogicsModule(scriptName, baseModule, BL);
         module.filename = filename;
+        return module;
+    }
+
+    public static ScriptingLogicsModule createFromStream(String scriptName, InputStream stream, BaseLogicsModule<?> baseModule, BusinessLogics<?> BL) throws IOException {
+        ScriptingLogicsModule module = new ScriptingLogicsModule(scriptName, baseModule, BL);
+        module.code = IOUtils.readStreamToString(stream, "utf-8");
         return module;
     }
 
@@ -642,6 +650,21 @@ public class ScriptingLogicsModule extends LogicsModule {
             }
             follows(mainProp, options.get(i), props.get(i), params);
         }
+    }
+
+    public void addScriptedWriteOnChange(String mainPropName, int namedParamsCnt, boolean useOld, boolean anyChange,
+                                         LP<?> valueProp, List<Integer> valueParams, LP<?> changeProp, List<Integer> changeParams) throws ScriptingErrorLog.SemanticErrorException {
+        scriptLogger.info("addScriptedWriteOnChange(" + mainPropName + ", " + namedParamsCnt + ", " + useOld + ", " +
+                           anyChange + ", " + valueProp + ", " + valueParams + ", " + changeProp + ", " + changeParams + ");");
+        LP<?> mainProp = findLPByCompoundName(mainPropName);
+        checkProperty(mainProp, mainPropName);
+        checkParamCount(mainProp, namedParamsCnt);
+
+        List<LP<?>> props = BaseUtils.mergeList(Arrays.asList(mainProp), Arrays.asList(changeProp));
+        List<List<Integer>> usedParams = BaseUtils.mergeList(Arrays.asList(valueParams), Arrays.asList(changeParams));
+        List<Object> params = getParamsPlainList(props, usedParams);
+
+        mainProp.setDerivedChange(useOld, !anyChange, valueProp, BL, params.subList(1, params.size()).toArray());
     }
 
     private void checkGroup(AbstractGroup group, String name) throws ScriptingErrorLog.SemanticErrorException {

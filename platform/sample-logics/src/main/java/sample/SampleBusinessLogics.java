@@ -17,7 +17,7 @@ public class SampleBusinessLogics extends BusinessLogics<SampleBusinessLogics> {
     }
 
     @Override
-    protected void createModules() {
+    protected void createModules() throws IOException {
         super.createModules();
         sampleLM = new SampleLogicsModule(LM);
         addLogicsModule(sampleLM);

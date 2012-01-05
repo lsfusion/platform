@@ -1,9 +1,10 @@
-package retail;
+package rublevski;
 
 import net.sf.jasperreports.engine.JRException;
 import platform.server.auth.SecurityPolicy;
 import platform.server.data.sql.DataAdapter;
 import platform.server.logics.BusinessLogics;
+import platform.server.logics.scripted.ScriptingLogicsModule;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -12,25 +13,24 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 /**
- * Created by IntelliJ IDEA.
- * User: Paval
- * Date: 03.06.11
- * Time: 11:47
- * To change this template use File | Settings | File Templates.
+ * User: DAle
+ * Date: 05.01.12
+ * Time: 15:34
  */
 
-public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> {
-    RetailLogicsModule RetailLM;
 
-    public RetailBusinessLogics(DataAdapter adapter, int exportPort) throws IOException, ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException, FileNotFoundException, JRException {
+public class RublevskiBusinessLogics extends BusinessLogics<RublevskiBusinessLogics> {
+    ScriptingLogicsModule rublevskiLM;
+
+    public RublevskiBusinessLogics(DataAdapter adapter, int exportPort) throws IOException, ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException, FileNotFoundException, JRException {
         super(adapter, exportPort);
     }
 
     @Override
     protected void createModules() throws IOException {
         super.createModules();
-        RetailLM = new RetailLogicsModule(LM, this);
-        addLogicsModule(RetailLM);
+        rublevskiLM = ScriptingLogicsModule.createFromStream("Rublevski", getClass().getResourceAsStream("/scripts/Rublevski.lsf"), LM, this);
+        addLogicsModule(rublevskiLM);
     }
 
     @Override
@@ -38,9 +38,9 @@ public class RetailBusinessLogics extends BusinessLogics<RetailBusinessLogics> {
         policyManager.userPolicies.put(addUser("admin", "fusion").ID, new ArrayList<SecurityPolicy>(Arrays.asList(permitAllPolicy, forbidConfiguratorPolicy)));
     }
 
-
     @Override
     public BusinessLogics getBL() {
         return this;
     }
 }
+

@@ -690,7 +690,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         logicModules.add(module);
     }
 
-    protected void createModules() {
+    protected void createModules() throws IOException {
         addLogicsModule(LM);
     }
 

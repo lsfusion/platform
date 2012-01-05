@@ -246,6 +246,18 @@
         </antcall>
     </target>
 
+    <target name="rublevski-logics-recursiveCompile">
+        <antcall target="recursiveCompile">
+            <param name="artifactId" value="rublevski-logics"/>
+        </antcall>
+    </target>
+
+    <target name="rublevski-logics-quickCompile">
+        <antcall target="quickCompile">
+            <param name="artifactId" value="rublevski-logics"/>
+        </antcall>
+    </target>
+
     <target name="gwt-form-recursiveCompile">
         <antcall target="recursiveCompile">
             <param name="artifactId" value="gwt-form"/>

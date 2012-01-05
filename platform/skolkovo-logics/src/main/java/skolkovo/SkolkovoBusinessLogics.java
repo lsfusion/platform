@@ -6,9 +6,7 @@ import platform.base.DateConverter;
 import platform.base.IOUtils;
 import platform.base.OrderedMap;
 import platform.interop.Compare;
-import platform.server.auth.PolicyManager;
 import platform.server.auth.SecurityPolicy;
-import platform.server.auth.User;
 import platform.server.classes.ConcreteClass;
 import platform.server.data.expr.Expr;
 import platform.server.data.expr.KeyExpr;
@@ -45,7 +43,7 @@ public class SkolkovoBusinessLogics extends BusinessLogics<SkolkovoBusinessLogic
     }
 
     @Override
-    public void createModules() {
+    public void createModules() throws IOException {
         super.createModules();
         SkolkovoLM = new SkolkovoLogicsModule(LM, this);
         addLogicsModule(SkolkovoLM);
