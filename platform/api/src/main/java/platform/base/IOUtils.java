@@ -7,6 +7,7 @@ import java.io.*;
 
 public class IOUtils {
     public static final int BUFFER_SIZE = 16384;
+    public static final String lineSeparator = System.getProperty("line.separator", "\n");
 
     public static byte[] readBytesFromStream(InputStream in) throws IOException {
         return readBytesFromStream(in, Integer.MAX_VALUE);
@@ -54,17 +55,19 @@ public class IOUtils {
     }
 
     public static String readStreamToString(InputStream inStream) throws Exception {
+        return readStreamToString(inStream, null);
+    }
+
+    public static String readStreamToString(InputStream inStream, String charsetName) throws Exception {
         StringBuilder strBuf = new StringBuilder();
 
-        int numBytes = 0;
-        byte ba[] = new byte[1024];
-
+        BufferedReader in = new BufferedReader(charsetName == null
+                                               ? new InputStreamReader(inStream)
+                                               : new InputStreamReader(inStream, charsetName));
         try {
-            while (numBytes != -1) {
-                numBytes = inStream.read(ba);
-                if (numBytes != -1) {
-                    strBuf.append(new String(ba, 0, numBytes));
-                }
+            String line;
+            while ((line = in.readLine()) != null) {
+                strBuf.append(line).append(lineSeparator);
             }
         } finally {
             inStream.close();
