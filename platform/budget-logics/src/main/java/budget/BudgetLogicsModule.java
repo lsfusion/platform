@@ -45,6 +45,7 @@ public class BudgetLogicsModule extends LogicsModule {
     AbstractCustomClass investment, investmentMoney;
     ConcreteCustomClass investmentCash, investmentNotCash;
     ConcreteCustomClass investmentNotMoney;
+    ConcreteCustomClass transfer,incomeProfit;
 
     @Override
     public void initClasses() {
@@ -66,6 +67,8 @@ public class BudgetLogicsModule extends LogicsModule {
         misOperation = addConcreteClass("misOperation", "Опер. расход ком.", outAbsOperation, departmentAbs, payerAbs);
         payer = addAbstractClass("payer", "Плательщик", baseClass.named);
 
+        transfer = addConcreteClass("transfer","перемещение",operation);
+
         absMonth = addConcreteClass("absMonth", "Месяц", baseClass.named);
         currency = addConcreteClass("currency", "Валюта", baseClass.named);
         section = addConcreteClass("section", "Статья ком.", baseClass.named);
@@ -85,6 +88,8 @@ public class BudgetLogicsModule extends LogicsModule {
         incomeCash = addConcreteClass("incomeCash", "Приход по налу", inAbsOperation, departmentAbs);
         incomeNotCash = addConcreteClass("incomeNotCash", "Приход по безналу", inAbsOperation, departmentAbs);
         outcomeCost = addConcreteClass("outcomeCost", "Расходы на обороты", outAbsOperation, departmentAbs, payerAbs);
+
+        incomeProfit = addConcreteClass("incomeProfit","Доход отдела",operation);
 
         investor = addAbstractClass("investor", "Инвестор", baseClass.named);
 
@@ -283,9 +288,35 @@ public class BudgetLogicsModule extends LogicsModule {
         LP decVal = addJProp("Расход", baseLM.and1, outSum, 1, is(outAbsOperation), 1);
 
         //department
+
+
         opDep = addCUProp(operationDepartment, payOperationDepartment);
-        LP incDepSum = addSGProp(baseGroup, "Приход по отделу", inSum, inCur, 1, opDep, 1);
-        LP decDepSum = addSGProp(baseGroup, "Расход по отделу", decVal, outCur, 1, opDep, 1);
+
+        LP currencyTransfer = addDProp("currencyTransfer","валюта перем.",currency,transfer);
+        LP nameCurrencyTransfer = addJProp(baseGroup, "nameCurrencyTransfer","валюта перемещения",baseLM.name,currencyTransfer,1);
+        LP depFrom = addDProp("depFrom","отдел отправитель",department,transfer);
+        LP depFromName = addJProp(baseGroup,"depFromName","отдел отправитель",baseLM.name,depFrom,1);
+        LP depTo = addDProp("depTo","отдель получатель",department,transfer);
+        LP depToName = addJProp(baseGroup,"depToName","отдел получатель",baseLM.name,depTo,1);
+        LP valueTransfer = addDProp(baseGroup,"valueTransfer","сумма перемещения",DoubleClass.instance,transfer);
+        LP incSumTransfer = addSGProp("incSumTransfer","перемещение в отдел",valueTransfer,currencyTransfer,1,depTo,1);
+        LP outSumTransfer = addSGProp("outSumTransfer","перемещение от отдела",valueTransfer,currencyTransfer,1,depFrom,1);
+
+        LP currencyIncomeProfit = addDProp("currencyIncomeProfit","валюта выр.",currency,incomeProfit);
+        LP nameCurrencyIncomeProfit = addJProp(baseGroup, "nameCurrencyIncomeProfit","валюта выручки",baseLM.name,currencyIncomeProfit,1);
+        LP depProfit = addDProp("depProfit","Отдел",department,incomeProfit);
+        LP nameDepProfit = addJProp(baseGroup, "nameDepProfit","Отдел.",baseLM.name,depProfit,1);
+        LP valueProfit = addDProp(baseGroup, "valueProfit","доход",DoubleClass.instance,incomeProfit);
+        LP sumProfit =addSGProp("sumProfit","сумма дохода",valueProfit,currencyIncomeProfit,1,depProfit,1);
+
+        LP incDepSumOut = addSGProp("Приход по отделу внешний", inSum, inCur, 1, opDep, 1);
+        LP decDepSumOut = addSGProp("Расход по отделу внешний", decVal, outCur, 1, opDep, 1);
+
+        LP incDepSumTr = addSUProp("incDepSum","приход по отделу c перемещением", Union.SUM,incDepSumOut, incSumTransfer);
+        LP decDepSum = addSUProp(baseGroup,"decDepSum","расход по отделу", Union.SUM, decDepSumOut, outSumTransfer);
+
+        LP incDepSum = addSUProp(baseGroup,"incDepSum","приход по отделу", Union.SUM,incDepSumTr, sumProfit);
+
         depBalanceQuantity = addDUProp(baseGroup, "Ост. по отделу", incDepSum, decDepSum);
 
         LP perCent = addDProp(baseGroup, "perCent", "Процент", DoubleClass.instance, department);
@@ -474,6 +505,7 @@ public class BudgetLogicsModule extends LogicsModule {
         FormEntity missionForm = new MissionFormEntity(primaryData, "missionForm", "Командировка");
         FormEntity vacationForm = addFormEntity(new VacationFormEntity(primaryData, "vacationForm", "Отпуск сотрудников"));
         FormEntity exchangeRatesForm = new ExchangeRatesFormEntity(primaryData, "exchangeRatesForm", "Курсы валют");
+        FormEntity depTransfer = new depTransfer(primaryData,"depTransfer","Перемещение");
 
 
         NavigatorElement aggregateData = new NavigatorElement(baseLM.baseElement, "aggregateData", "Сводная информация");
@@ -530,6 +562,13 @@ public class BudgetLogicsModule extends LogicsModule {
             objOutcome = addSingleGroupObject(outcomeCost, baseGroup);
 
             addPropertyDraw(objIncCash, objIncNotCash, objOutcome, baseGroup);
+
+            ObjectEntity objTransfer = addSingleGroupObject(transfer,baseGroup);
+            addObjectActions(this,objTransfer);
+            addPropertyDraw(objDepartment,objTransfer,baseGroup);
+
+            ObjectEntity objProfit = addSingleGroupObject(incomeProfit,baseGroup);
+            addObjectActions(this, objProfit);
 
             addObjectActions(this, objIncCash);
             addObjectActions(this, objIncNotCash);
@@ -708,6 +747,23 @@ public class BudgetLogicsModule extends LogicsModule {
 
             addFixedFilter(new CompareFilterEntity(addPropertyObject(personDepartment, objPerson), Compare.EQUALS, objDepartment));
             addFixedFilter(new CompareFilterEntity(addPropertyObject(vacationPerson, objVacation), Compare.EQUALS, objPerson));
+        }
+    }
+
+    private class depTransfer extends FormEntity {
+
+        public depTransfer(NavigatorElement parent, String sID, String caption) {
+            super(parent, sID, caption);
+
+            ObjectEntity objDepartment = addSingleGroupObject(department, baseGroup);
+            objDepartment.groupTo.setSingleClassView(ClassViewType.PANEL);
+
+            ObjectEntity objCur = addSingleGroupObject(currency, baseGroup);
+            addPropertyDraw(baseGroup, false, objDepartment, objCur);
+
+            ObjectEntity objTransfer = addSingleGroupObject(transfer,baseGroup);
+            addObjectActions(this,objTransfer);
+            addPropertyDraw(objDepartment,objTransfer,baseGroup);
         }
     }
 
