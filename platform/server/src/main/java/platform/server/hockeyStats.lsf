@@ -13,7 +13,7 @@ CLASS STATIC gameResult 'S/O'
 };
 
 city 'City' (team) = DATA STRING[100] (team) IN baseGroup;
-teamName 'Team' (team) = name(team);
+teamName 'Team' (team) = name(team) IF team IS team;
 
 conference(team) = DATA conference (team);
 conferenceName 'Conference' (team) = name(conference(team)) IN baseGroup;
@@ -29,6 +29,8 @@ guestTeamName 'Visitor' = name(guestTeam(game)) IN baseGroup;
 hostGoals 'H Score' (game) = DATA INTEGER (game) IN baseGroup;
 guestGoals 'V Score' (game) = DATA INTEGER (game) IN baseGroup;
 
+//guestGoals(game) <- OLD hostGoals(game) ON CHANGE hostGoals(game);
+
 gameWinner(game) = UNION EXCLUSIVE hostTeam(game) IF hostGoals(game) > guestGoals(game),
                                    guestTeam(game) IF hostGoals(game) < guestGoals(game);
 
@@ -37,6 +39,10 @@ gameLooser(game) = UNION OVERRIDE hostTeam(game), guestTeam(game) IF gameWinner(
 gameResultData(game) = DATA gameResult (game);
 
 gameResult(game) = UNION OVERRIDE gameResult.win IF game IS game, gameResultData(game);
+
+pureWin(game) = deltaDouble2(hostGoals(game), guestGoals(game)) > 1;
+
+gameResult(game) <- gameResult.win ON ASSIGN pureWin(game);
 
 gameResultName 'O/S' (game) = name(gameResult(game)) IN baseGroup;
 

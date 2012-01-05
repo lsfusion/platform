@@ -140,8 +140,12 @@ CONSTRAINT CHECKED foo(store, article) > 1000 MSG 'ошибка: >1000';
 foo(store, article) => foo2(store, article) RESOLVE NOTHING, bar2(store, article);
 
 
-//////////////// FORM STATEMENT /////////////////
+//////////////WRITEONCHANGE STATEMENT////////////
+// Syntax:
+// propertyName(param1, ..., paramN) <- [OLD] valueProperty(param1, ..., paramK) ON (ASSIGN | CHANGE) changeProperty(param1, ..., paramL);
 
+
+//////////////// FORM STATEMENT /////////////////
 // Syntax:
 // FORM name ['caption']
 // [(Objects list | Properties list | Filters list)]

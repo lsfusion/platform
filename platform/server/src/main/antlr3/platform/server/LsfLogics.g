@@ -1,8 +1,8 @@
 grammar LsfLogics;
 
-@header { 
+@header {
 	package platform.server;
-	
+
 	import platform.interop.ClassViewType;
 	import platform.interop.form.layout.DoNotIntersectSimplexConstraint;
 	import platform.server.data.Union;
@@ -15,19 +15,19 @@ grammar LsfLogics;
 	import platform.server.logics.scripted.ScriptingLogicsModule;
 	import platform.server.logics.linear.LP;
 	import platform.server.logics.property.PropertyFollows;
-	
+
 	import java.awt.*;
 	import java.util.ArrayList;
 	import java.util.Collections;
 	import java.util.List;
 	import java.util.Stack;
-	
+
 	import static platform.interop.form.layout.SingleSimplexConstraint.*;
 }
 
 @lexer::header { 
 	package platform.server; 
-	import platform.server.logics.scripted.ScriptingLogicsModule; 
+	import platform.server.logics.scripted.ScriptingLogicsModule;
 }
 
 @lexer::members {
@@ -60,29 +60,29 @@ grammar LsfLogics;
 	public boolean inParseState(ScriptingLogicsModule.State parseState) {
 		return this.parseState == parseState;
 	}
-	
+
 	public boolean inGroupParseState() {
 		return inParseState(ScriptingLogicsModule.State.GROUP);
 	}
-	
+
 	public boolean inClassParseState() {
 		return inParseState(ScriptingLogicsModule.State.CLASS);
 	}
-	
+
 	public boolean inPropParseState() {
 		return inParseState(ScriptingLogicsModule.State.PROP);
 	}
-	
+
 	public boolean inNavigatorParseState() {
 		return inParseState(ScriptingLogicsModule.State.NAVIGATOR);
 	}
-	
+
 	public void setObjectProperty(Object propertyReceiver, String propertyName, Object propertyValue) throws ScriptingErrorLog.SemanticErrorException {
 		if (inNavigatorParseState()) {
 			$designStatement::design.setObjectProperty(propertyReceiver, propertyName, propertyValue);
 		}
     }
-    
+
 	@Override
 	public void emitErrorMessage(String msg) {
 		if (parseState == ScriptingLogicsModule.State.GROUP) { 
@@ -106,7 +106,7 @@ grammar LsfLogics;
 		if (re instanceof ScriptingErrorLog.SemanticErrorException) {
 			throw re;
 		} else {
-	        	reportError(re);
+			reportError(re);
 			recover(input,re);
 		}
 	}
@@ -133,6 +133,7 @@ statement
 	    | 	propertyStatement
 	    | 	constraintStatement
 	    |	followsStatement
+	    |	writeOnChangeStatement
 	    | 	tableStatement
 	    | 	indexStatement
 	    | 	formStatement
@@ -189,7 +190,7 @@ groupStatement
 	}
 }
 	:	'GROUP' groupNameCaption=simpleNameWithCaption { name = $groupNameCaption.name; captionStr = $groupNameCaption.caption; }
-			(':' parentName=compoundID { parent = $parentName.text; })?
+		(':' parentName=compoundID { parent = $parentName.text; })?
 	;
 
 
@@ -242,9 +243,9 @@ formGroupObjectsList[ScriptingFormEntity form]  // needs refactoring
 	}
 }
 	:	groupElement=formGroupObjectDeclaration { names.add($groupElement.objectNames); classNames.add($groupElement.classIds); 
-							  groupViewType.add($groupElement.type); isInitType.add($groupElement.isInitType);} 
+												  groupViewType.add($groupElement.type); isInitType.add($groupElement.isInitType); } 
 		(',' groupElement=formGroupObjectDeclaration { names.add($groupElement.objectNames); classNames.add($groupElement.classIds); 
-								groupViewType.add($groupElement.type); isInitType.add($groupElement.isInitType);})*
+													   groupViewType.add($groupElement.type); isInitType.add($groupElement.isInitType); })*
 	;
 
 
@@ -415,7 +416,7 @@ equalityPE[List<String> context, boolean dynamic] returns [LP property, List<Int
 }
 @after {
 	if (parseState == ScriptingLogicsModule.State.PROP && op != null) {
-		ScriptingLogicsModule.LPWithParams result =
+		ScriptingLogicsModule.LPWithParams result =	
 			self.addScriptedEqualityProp(op, leftProp, lUsedParams, rightProp, rUsedParams);
 		$property = result.property;
 		$usedParams = result.usedParams;
@@ -692,8 +693,8 @@ propertyObject returns [LP property, String propName, List<String> innerContext]
 	List<String> newContext = new ArrayList<String>(); 
 }
 	:	name=compoundID	{ if (parseState == ScriptingLogicsModule.State.PROP) 
-					{$property = self.findLPByCompoundName($name.text); $propName = $name.text;} 
-				} 
+							{$property = self.findLPByCompoundName($name.text); $propName = $name.text;} 
+						} 
 	|	'[' 
 			(expr=propertyExpression[newContext, true] { $property = $expr.property; $innerContext = newContext; } 
 		|	def=contextIndependentPD[true] { $property = $def.property; })
@@ -754,29 +755,56 @@ followsStatement
 		self.addScriptedFollows(mainProp, context.size(), options, props, usedParams);
 	}
 }
-	:	propName=ID { mainProp = $propName.text; }
-		'('
-		paramList=idList { context = $paramList.ids; }
-		')'
-		'=>'
-		firstExpr=propertyExpression[context, false] ('RESOLVE' type=followsResolveType)?
-		{
-			props.add($firstExpr.property); usedParams.add($firstExpr.usedParams);
-			options.add(type == null ? PropertyFollows.RESOLVE_ALL : $type.type);
+	:	prop=propertyWithNamedParams { mainProp = $prop.name; context = $prop.params; }	
+		'=>' 
+		firstExpr=propertyExpression[context, false] ('RESOLVE' type=followsResolveType)? 
+		{ 
+			props.add($firstExpr.property); usedParams.add($firstExpr.usedParams); 
+			options.add(type == null ? PropertyFollows.RESOLVE_ALL : $type.type); 
 		}
-		(',' nextExpr=propertyExpression[context, false] ('RESOLVE' type=followsResolveType)?
-		     {
-		     		props.add($nextExpr.property); usedParams.add($nextExpr.usedParams);
-		     		options.add(type == null ? PropertyFollows.RESOLVE_ALL : $type.type);
-		     }
+		(',' nextExpr=propertyExpression[context, false] ('RESOLVE' type=followsResolveType)? 
+			{ 
+		     	props.add($nextExpr.property); usedParams.add($nextExpr.usedParams); 
+		     	options.add(type == null ? PropertyFollows.RESOLVE_ALL : $type.type); 
+			}
 		)*
-	;
+	;	
 
 followsResolveType returns [Integer type]
 	:	lit=LOGICAL_LITERAL	{ $type = $lit.text.equals("TRUE") ? PropertyFollows.RESOLVE_TRUE : PropertyFollows.RESOLVE_FALSE; }
 	|	'ALL'			{ $type = PropertyFollows.RESOLVE_ALL; }
 	|	'NOTHING'		{ $type = PropertyFollows.RESOLVE_NOTHING; }
 	;
+
+
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////// CHANGE STATEMENT ////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+
+writeOnChangeStatement
+@init {
+	boolean old = false;
+	boolean anyChange = true;
+	String mainPropName;
+	List<String> context;
+	LP<?> valueProp = null;
+	List<Integer> valueUsedParams;
+	LP<?> changeProp = null;
+	List<Integer> changeUsedParams;
+}
+@after {
+	if (parseState == ScriptingLogicsModule.State.PROP) { 
+		self.addScriptedWriteOnChange(mainPropName, context.size(), old, anyChange, valueProp, valueUsedParams, changeProp, changeUsedParams);
+	}
+}
+	:	prop=propertyWithNamedParams { mainPropName = $prop.name; context = $prop.params; }
+		'<-'
+		('OLD' { old = true; })?
+		valueExpr=propertyExpression[context, false] { valueProp = $valueExpr.property; valueUsedParams = $valueExpr.usedParams; }
+		'ON' ('CHANGE' | 'ASSIGN' { anyChange = false; }) 
+		changeExpr=propertyExpression[context, false] { changeProp = $changeExpr.property; changeUsedParams = $changeExpr.usedParams; }
+	;
+
 
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////// TABLE STATEMENT /////////////////////////////
@@ -808,32 +836,32 @@ scope {
 @after {
 }
 	: 	'DESIGN'
-		 nameWithCaption=simpleNameWithCaption
-		 ('FROM' 'DEFAULT' {applyDefault = true;} )?
-		 {
+		nameWithCaption=simpleNameWithCaption
+		('FROM' 'DEFAULT' {applyDefault = true;} )?
+		{
 			if (inNavigatorParseState()) {
 				$designStatement::design = $formView = self.createScriptedFormView($nameWithCaption.name, $nameWithCaption.caption, applyDefault);
 			}
-	     }
+		}
 		componentStatementBody[formView, formView == null ? null : formView.mainContainer]
 	;
-	
+
 componentStatementBody [Object propertyReceiver, ComponentView parentComponent]
 	: '{'
 		( setObjectPropertyStatement[propertyReceiver]
-			| positionComponentsStatement[parentComponent]
-			| setupComponentStatement
-			| setupGroupObjectStatement
-			| addComponentStatement[parentComponent]
-			| removeComponentStatement )*
+		| positionComponentsStatement[parentComponent]
+		| setupComponentStatement
+		| setupGroupObjectStatement
+		| addComponentStatement[parentComponent]
+		| removeComponentStatement )*
 	  '}'
 	| ';'
 	;
-	
+
 setupComponentStatement
 	: comp=componentSelector[true] componentStatementBody[$comp.component, $comp.component]
 	;
-	
+
 setupGroupObjectStatement
 @init {
 	GroupObjectView groupObject = null;
@@ -855,7 +883,7 @@ addComponentStatement[ComponentView parentComponent]
 	ComponentView insComp = null;
 }
 	: 'ADD' insSelector=componentSelector[false] { insComp = $insSelector.component; }
-			   ( posDefinition=addPositionDefinition posSelector=componentSelector[true] { hasPosition = true; } )?
+		( posDefinition=addPositionDefinition posSelector=componentSelector[true] { hasPosition = true; } )?
 		{
 			if (inNavigatorParseState()) {
 				insComp = $designStatement::design.addComponent($insSelector.sid,
@@ -866,7 +894,7 @@ addComponentStatement[ComponentView parentComponent]
 		}
    	    componentStatementBody[insComp, insComp]
 	;
-	
+
 removeComponentStatement
 @init {
 	boolean cascade = false;
@@ -877,8 +905,8 @@ removeComponentStatement
 				$designStatement::design.removeComponent($compSelector.component, cascade);
 			}
 		}
-	;	
-	
+	;
+
 componentSelector[boolean hasToExist] returns [String sid, ComponentView component]
 	: 'PARENT' '(' child=componentSelector[true] ')'
 		{
@@ -895,8 +923,8 @@ componentSelector[boolean hasToExist] returns [String sid, ComponentView compone
 			}
 		}
 	;
-	
-	
+
+
 propertySelector returns [PropertyDrawView propertyView = null]
 	: pname=formPropertyName
 		{
@@ -918,14 +946,14 @@ positionComponentsStatement[ComponentView parentComponent]
 }
 	: 'POSITION' compSelector1=componentSelector[true] constrDefinition=constraintDefinition ( compSelector2=componentSelector[true]  { hasSecondComponent = true; } )? ';'
     	{
-			if (inNavigatorParseState()) {
+		if (inNavigatorParseState()) {
 	    		$designStatement::design.addIntersection($compSelector1.component,
-	    												 $constrDefinition.constraint,
-	    												 hasSecondComponent ? $compSelector2.component : parentComponent);
+	    							 					$constrDefinition.constraint,
+	    							 					hasSecondComponent ? $compSelector2.component : parentComponent);
 	    	}
     	}
 	;
-	
+
 constraintDefinition returns [DoNotIntersectSimplexConstraint constraint]
 	: 'TO' 'THE' 'LEFT' { $constraint = TOTHE_LEFT; }
 	| 'TO' 'THE' 'RIGHT' { $constraint = TOTHE_RIGHT; }
@@ -939,12 +967,12 @@ addPositionDefinition returns [InsertPosition position]
 	| 'BEFORE' { $position = InsertPosition.BEFORE; }
 	| 'AFTER' { $position = InsertPosition.AFTER; }
 	;
-	
-		
+
+
 setObjectPropertyStatement[Object propertyReceiver] returns [String id, Object value]
 	: ID '=' componentPropertyValue ';'  { setObjectProperty($propertyReceiver, $ID.text, $componentPropertyValue.value); }
 	;
-	
+
 componentPropertyValue returns [Object value]
 	: col=COLOR_LITERAL { $value = Color.decode($col.text); }
 	| str=STRING_LITERAL { $value = self.transformStringLiteral($str.text); }
@@ -967,18 +995,25 @@ doubleLiteral returns [double val]
 }
 	: (MINUS {isMinus=true;})? ud=udoubleLiteral { $val = (isMinus ? -1 : 1) * Double.parseDouble($ud.text); }
 	;
-	
+
 booleanLiteral
 	: LOGICAL_LITERAL
-	;	
-	
+	;
+
 dimensionsLiteral returns [Dimension dimension]
 	: '{' x=intLiteral ',' y=intLiteral '}' { $dimension = new Dimension(Integer.parseInt($x.text), Integer.parseInt($y.text)); }
-	;	
+	;
 
 ////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////// COMMON /////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
+
+propertyWithNamedParams returns [String name, List<String> params]
+	:	propName=compoundID { $name = $propName.text; }
+		'(' 
+		list=idList { $params = $list.ids; }
+		')'	
+	;
 
 parameter 
 	:	ID | NUMBERED_PARAM
@@ -1065,8 +1100,8 @@ literal returns [LP property]
 		$property = self.addConstantProp(cls, text);	
 	}
 }
-	: 	strInt=uintLiteral	{ cls = ScriptingLogicsModule.ConstType.INT; text = $strInt.text; }  
-	|	strReal=udoubleLiteral	{ cls = ScriptingLogicsModule.ConstType.REAL; text = $strReal.text; } 
+	: 	strInt=uintLiteral	{ cls = ScriptingLogicsModule.ConstType.INT; text = $strInt.text; }
+	|	strReal=udoubleLiteral	{ cls = ScriptingLogicsModule.ConstType.REAL; text = $strReal.text; }
 	|	str=STRING_LITERAL	{ cls = ScriptingLogicsModule.ConstType.STRING; text = $str.text; }  
 	|	str=LOGICAL_LITERAL	{ cls = ScriptingLogicsModule.ConstType.LOGICAL; text = $str.text; }
 	|	strEnum=strictCompoundID{ cls = ScriptingLogicsModule.ConstType.ENUM; text = $strEnum.text; } 
@@ -1087,8 +1122,8 @@ strictCompoundID
 multiCompoundID returns [String sid]
 	:	id=ID { $sid = $id.text; } ('.' cid=ID { $sid = $sid + "." + $cid.text; } )*
 	;
-	
-udoubleLiteral 
+
+udoubleLiteral
 	:	POSITIVE_DOUBLE_LITERAL
 	; 
 		
@@ -1108,18 +1143,18 @@ fragment SPACE		:	(' '|'\t');
 fragment STR_LITERAL_CHAR	: '\\\'' | ~('\r'|'\n'|'\'');	 // overcomplicated due to bug in ANTLR Works
 fragment DIGITS		:	('0'..'9')+;
 fragment HEX_DIGIT	: 	'0'..'9' | 'a'..'f' | 'A'..'F';
-	 
+
 PRIMITIVE_TYPE  :	'INTEGER' | 'DOUBLE' | 'LONG' | 'BOOLEAN' | 'DATE' | 'STRING[' DIGITS ']' | 'ISTRING[' DIGITS ']';		
 LOGICAL_LITERAL :	'TRUE' | 'FALSE';		
 ID          	:	('a'..'z'|'A'..'Z')('a'..'z'|'A'..'Z'|'_'|'0'..'9')*;
-WS				:	(NEWLINE | SPACE) { $channel=HIDDEN; }; 	
+WS				:	(NEWLINE | SPACE) { $channel=HIDDEN; };
 STRING_LITERAL	:	'\'' STR_LITERAL_CHAR* '\'';
-COLOR_LITERAL 	:	'#' HEX_DIGIT HEX_DIGIT HEX_DIGIT HEX_DIGIT HEX_DIGIT HEX_DIGIT;	
+COLOR_LITERAL 	:	'#' HEX_DIGIT HEX_DIGIT HEX_DIGIT HEX_DIGIT HEX_DIGIT HEX_DIGIT;
 COMMENTS		:	('//' .* '\n') { $channel=HIDDEN; };
 UINT_LITERAL 	:	DIGITS;
 POSITIVE_DOUBLE_LITERAL	: 	DIGITS '.' DIGITS;	  
 NUMBERED_PARAM	:	'$' DIGITS;
-EQ_OPERAND		:	('==') | ('!='); 
+EQ_OPERAND		:	('==') | ('!=');
 REL_OPERAND		: 	('<') | ('>') | ('<=') | ('>=');
 MINUS			:	'-';
 PLUS			:	'+';

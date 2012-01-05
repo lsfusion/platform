@@ -241,8 +241,8 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
             Set<String> keySet = customDesigns.keySet();
             for (String key : keySet){
                 ret.put(
-                        System.getProperty("user.dir") + "//src//main//resources//" + getCustomReportName(key, sid),
-                        System.getProperty("user.dir") + "//target//classes//" + getCustomReportName(key, sid)
+                        System.getProperty("user.dir") + "/src/main/resources/" + getCustomReportName(key, sid),
+                        System.getProperty("user.dir") + "/target/classes/" + getCustomReportName(key, sid)
                 );
             }
         }
@@ -263,8 +263,8 @@ public class RemoteForm<T extends BusinessLogics<T>, F extends FormInstance<T>> 
                     new File(reportName).getParentFile().mkdirs();
                     JRXmlWriter.writeReport(JasperCompileManager.compileReport(entry.getValue()), reportName, "UTF-8");
                     ret.put(
-                            System.getProperty("user.dir") + "//" + reportName,
-                            System.getProperty("user.dir") + "//target//classes//reports/custom//" + sid
+                            System.getProperty("user.dir") + "/" + reportName,
+                            System.getProperty("user.dir") + "/target/classes/reports/custom/" + sid
                     );
 
                 }

@@ -537,7 +537,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         diff2 = addCFProp(Compare.NOT_EQUALS);
         sumDouble2 = addSFProp("sumDouble2", "((prm1)+(prm2))", DoubleClass.instance, 2);
         subtractDouble2 = addSFProp("subtractDouble2", "((prm1)-(prm2))", DoubleClass.instance, 2);
-        deltaDouble2 = addSFProp("abs((prm1)-(prm2))", DoubleClass.instance, 2);
+        deltaDouble2 = addSFProp("deltaDouble2", "abs((prm1)-(prm2))", DoubleClass.instance, 2);
         multiplyDouble2 = addMFProp("multiplyDouble2", DoubleClass.instance, 2);
         sumInteger2 = addSFProp("sumInteger2", "((prm1)+(prm2))", IntegerClass.instance, 2);
         sumInteger3 = addSFProp("sumInteger2", "((prm1)+(prm2)+(prm3))", IntegerClass.instance, 3);
