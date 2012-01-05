@@ -34,6 +34,7 @@ import platform.server.logics.linear.LP;
 import platform.server.logics.property.derived.DerivedProperty;
 import platform.server.logics.property.derived.MaxChangeProperty;
 import platform.server.logics.property.derived.OnChangeProperty;
+import platform.server.logics.property.group.AbstractGroup;
 import platform.server.logics.property.group.AbstractNode;
 import platform.server.logics.table.MapKeysTable;
 import platform.server.logics.table.TableFactory;
@@ -839,6 +840,11 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
         return tableGroup;
     }
 
+    @Override
+    public List<AbstractGroup> fillGroups(List<AbstractGroup> groupsList) {
+        return groupsList;
+    }
+    
     public AbstractIncrementProps.PropertyGroup<PropertyInterface> getInterfaceGroup() {
         return new AbstractIncrementProps.PropertyGroup<PropertyInterface>() {
             public List<PropertyInterface> getKeys() {

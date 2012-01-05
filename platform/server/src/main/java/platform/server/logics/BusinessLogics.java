@@ -40,6 +40,8 @@ import platform.server.form.navigator.*;
 import platform.server.integration.*;
 import platform.server.logics.linear.LP;
 import platform.server.logics.property.*;
+import platform.server.logics.property.group.AbstractGroup;
+import platform.server.logics.property.group.AbstractNode;
 import platform.server.logics.scheduler.Scheduler;
 import platform.server.logics.table.ImplementTable;
 import platform.server.serialization.ServerSerializationPool;
@@ -781,6 +783,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         initModules();
 
         synchronizeForms();
+        synchronizeGroupProperties();
         synchronizeProperties();
         synchronizeTables();
 
@@ -952,6 +955,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
     private void synchronizeProperties() {
         ImportField sidPropertyField = new ImportField(LM.propertySIDValueClass);
         ImportField captionPropertyField = new ImportField(LM.propertyCaptionValueClass);
+        ImportField numberPropertyField = new ImportField(LM.numberProperty);
         ImportField loggablePropertyField = new ImportField(LM.propertyLoggableValueClass);
         ImportField storedPropertyField = new ImportField(LM.propertyStoredValueClass);
 
@@ -959,8 +963,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
         List<List<Object>> data = new ArrayList<List<Object>>();
         for (Property property : getProperties()) {
-            if (!LM.idSet.contains(property.getSID()))
-                data.add(Arrays.asList((Object) property.getSID(), property.caption, property.loggable ? true : null, property.isStored() ? true : null));
+            //if (!LM.idSet.contains(property.getSID()))
+            data.add(Arrays.asList((Object) property.getSID(), property.caption, /*count,*/ property.loggable ? true : null, property.isStored() ? true : null));
         }
 
         List<ImportProperty<?>> properties = new ArrayList<ImportProperty<?>>();
@@ -974,10 +978,26 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
         ImportTable table = new ImportTable(Arrays.asList(sidPropertyField, captionPropertyField, loggablePropertyField, storedPropertyField), data);
 
+        List<List<Object>> data2 = new ArrayList<List<Object>>();
+        for (Property property : getProperties()) {
+            data2.add(Arrays.asList(property.getSID(), (Object) property.getParent().getSID(), getNumberInListOfChildren(property)));
+        }
+
+        ImportField parentSidField = new ImportField(LM.formSIDValueClass);
+        ImportKey<?> key2 = new ImportKey(LM.abstractGroup, LM.SIDToAbstractGroup.getMapping(parentSidField));
+        List<ImportProperty<?>> props2 = new ArrayList<ImportProperty<?>>();
+        props2.add(new ImportProperty(parentSidField, LM.parentProperty.getMapping(key), LM.object(LM.abstractGroup).getMapping(key2)));
+        props2.add(new ImportProperty(numberPropertyField, LM.numberProperty.getMapping(key)));
+        ImportTable table2 = new ImportTable(Arrays.asList(sidPropertyField, parentSidField, numberPropertyField), data2);
+
         try {
             DataSession session = createSession();
             IntegrationService service = new IntegrationService(session, table, Arrays.asList(key), properties, deletes);
             service.synchronize(true, false);
+
+            service = new IntegrationService(session, table2, Arrays.asList(key, key2), props2);
+            service.synchronize(true, false);
+
             if (session.hasChanges()) {
                 session.apply(this);
             }
@@ -985,6 +1005,79 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    protected void synchronizeGroupProperties() {
+        ImportField sidField = new ImportField(LM.formSIDValueClass);
+        ImportField captionField = new ImportField(LM.formCaptionValueClass);
+        ImportField numberField = new ImportField(LM.numberAbstractGroup);
+
+        ImportKey<?> key = new ImportKey(LM.abstractGroup, LM.SIDToAbstractGroup.getMapping(sidField));
+
+        List<List<Object>> data = new ArrayList<List<Object>>();
+
+        for (AbstractGroup group : getParentGroups()) {
+            data.add(Arrays.asList(group.getSID(), (Object) group.caption));
+        }
+
+        List<ImportProperty<?>> props = new ArrayList<ImportProperty<?>>();
+        props.add(new ImportProperty(sidField, LM.SIDAbstractGroup.getMapping(key)));
+        props.add(new ImportProperty(captionField, LM.captionAbstractGroup.getMapping(key)));
+
+        List<ImportDelete> deletes = new ArrayList<ImportDelete>();
+        deletes.add(new ImportDelete(key, LM.is(LM.abstractGroup).getMapping(key), false));
+
+        ImportTable table = new ImportTable(Arrays.asList(sidField, captionField), data);
+
+        List<List<Object>> data2 = new ArrayList<List<Object>>();
+
+        for (AbstractGroup group : getParentGroups()) {
+            if (group.getParent() != null) {
+                data2.add(Arrays.asList(group.getSID(), (Object) group.getParent().getSID(), getNumberInListOfChildren(group)));
+            }
+        }
+
+        ImportField parentSidField = new ImportField(LM.formSIDValueClass);
+        ImportKey<?> key2 = new ImportKey(LM.abstractGroup, LM.SIDToAbstractGroup.getMapping(parentSidField));
+        List<ImportProperty<?>> props2 = new ArrayList<ImportProperty<?>>();
+        props2.add(new ImportProperty(parentSidField, LM.parentAbstractGroup.getMapping(key), LM.object(LM.abstractGroup).getMapping(key2)));
+        props2.add(new ImportProperty(numberField, LM.numberAbstractGroup.getMapping(key)));
+        ImportTable table2 = new ImportTable(Arrays.asList(sidField, parentSidField, numberField), data2);
+
+        try {
+            DataSession session = createSession();
+            IntegrationService service = new IntegrationService(session, table, Arrays.asList(key), props, deletes);
+            service.synchronize(true, false);
+
+            service = new IntegrationService(session, table2, Arrays.asList(key, key2), props2);
+            service.synchronize(true, false);
+
+            if (session.hasChanges())
+                session.apply(this);
+            session.close();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+
+    Integer getNumberInListOfChildren(AbstractNode abstractNode) {
+        int counter = 0;
+        for (AbstractNode node : abstractNode.getParent().children) {
+            counter++;
+            if (abstractNode instanceof Property) {
+                if (node instanceof Property)
+                    if (((Property) node).getSID().equals(((Property) abstractNode).getSID())) {
+                        return counter;
+                    }
+            } else {
+                if (node instanceof AbstractGroup)
+                    if (((AbstractGroup) node).getSID().equals(((AbstractGroup) abstractNode).getSID())) {
+                        return counter;
+                    }
+            }
+        }
+        return 0;
     }
 
     protected void resetConnectionStatus() {
@@ -1272,6 +1365,10 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
 
     public List<Property> getProperties() {
         return LM.rootGroup.getProperties();
+    }
+
+    public List<AbstractGroup> getParentGroups() {
+        return LM.rootGroup.getParentGroups();
     }
 
     public Iterable<Property> getPropertyList() {
@@ -2159,7 +2256,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         session.apply(this);
         session.close();
     }
-    
+
     public ArrayList<IDaemonTask> getDaemonTasks(int compId) {
         return new ArrayList<IDaemonTask>();
     }

@@ -36,7 +36,7 @@ public class AbstractGroup extends AbstractNode implements ServerIdentitySeriali
         return currentID++;
     }
 
-    Set<AbstractNode> children = new LinkedHashSet<AbstractNode>();
+    public Set<AbstractNode> children = new LinkedHashSet<AbstractNode>();
     public void add(AbstractNode prop) {
         if (prop.getParent() != null)
             prop.getParent().remove(prop);
@@ -63,6 +63,25 @@ public class AbstractGroup extends AbstractNode implements ServerIdentitySeriali
         return result;
     }
 
+    public List<AbstractGroup> getParentGroups() {
+        List<AbstractGroup> result = new ArrayList<AbstractGroup>();
+        if (this instanceof AbstractGroup)
+            result.add(this);
+        for (AbstractNode child : children) {
+            if (child instanceof AbstractGroup)
+                result.add((AbstractGroup) child);
+            List<AbstractGroup> childGroups = new ArrayList<AbstractGroup>();
+            childGroups = child.fillGroups(childGroups);
+            for (AbstractGroup c : childGroups) {
+                if (!c.children.isEmpty())
+                    result.addAll(c.getParentGroups());
+                else if (c instanceof AbstractGroup)
+                    result.add((c));
+            }
+        }
+        return result;
+    }
+
     public Property getProperty(String sid) {
         for (AbstractNode child : children) {
             Property property = child.getProperty(sid);
@@ -78,6 +97,15 @@ public class AbstractGroup extends AbstractNode implements ServerIdentitySeriali
         for (AbstractNode child : children)
             result.addAll(child.getProperties(classLists, anyInInterface));
         return result;
+    }
+
+    @Override
+    public List<AbstractGroup> fillGroups(List<AbstractGroup> groupsList) {
+        for (AbstractNode child : children)
+            if (child instanceof AbstractGroup)  {
+                groupsList.add((AbstractGroup) child);
+            }
+        return groupsList;
     }
 
     public int getID() {

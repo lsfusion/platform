@@ -5,10 +5,7 @@ import platform.server.logics.property.Property;
 import platform.server.logics.property.PropertyClassImplement;
 import platform.server.logics.property.ValueClassWrapper;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 // set'ы свойств, нужен в общем то когда входы динамической длины
 public abstract class PropertySet extends AbstractNode {
@@ -43,6 +40,11 @@ public abstract class PropertySet extends AbstractNode {
         }
 
         return result;
+    }
+
+    @Override
+    public List<AbstractGroup> fillGroups(List<AbstractGroup> groupsList) {
+        return groupsList;
     }
 
     protected abstract List<PropertyClassImplement> getProperties(List<ValueClassWrapper> classes);

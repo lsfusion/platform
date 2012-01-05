@@ -68,6 +68,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public ConcreteCustomClass country;
     public ConcreteCustomClass navigatorElement;
     public ConcreteCustomClass form;
+    public ConcreteCustomClass abstractGroup;
     public ConcreteCustomClass property;
     public AbstractCustomClass exception;
     public ConcreteCustomClass clientException;
@@ -263,6 +264,13 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     public LP typeException;
     public LP clientClientException;
     public LP loginClientException;
+    public LP captionAbstractGroup;
+    public LP parentAbstractGroup;
+    public LP numberAbstractGroup;
+    public LP SIDAbstractGroup;
+    public LP SIDToAbstractGroup;
+    public LP parentProperty;
+    public LP numberProperty;
     public LP SIDProperty;
     public LP loggableProperty;
     public LP userLoggableProperty;
@@ -433,6 +441,7 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
 
         navigatorElement = addConcreteClass("navigatorElement", getString("logics.navigator.element"), baseClass);
         form = addConcreteClass("form", getString("logics.forms.form"), navigatorElement);
+        abstractGroup = addConcreteClass("abstractGroup", getString("logics.property.group"), baseClass);
         property = addConcreteClass("property", getString("logics.property"), baseClass);
         exception = addAbstractClass("exception", getString("logics.exception"), baseClass);
         clientException = addConcreteClass("clientException", getString("logics.exception.client"), exception);
@@ -734,6 +743,14 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         clientClientException = addDProp(baseGroup, "clientClientException", getString("logics.exception.client.client"), loginValueClass, clientException);
         loginClientException = addDProp(baseGroup, "loginClientException", getString("logics.exception.client.login"), loginValueClass, clientException);
 
+        captionAbstractGroup = addDProp(baseGroup, "captionAbstractGroup", getString("logics.name"), propertyCaptionValueClass, abstractGroup);
+        parentAbstractGroup = addDProp(baseGroup, "parentAbstractGroup", getString("logics.property.group"), abstractGroup, abstractGroup);
+        numberAbstractGroup = addDProp(baseGroup, "numberAbstractGroup", getString("logics.property.number"), IntegerClass.instance, abstractGroup);
+        SIDAbstractGroup = addDProp(baseGroup, "SIDAbstractGroup", getString("logics.property.sid"), propertySIDValueClass, abstractGroup);
+        SIDToAbstractGroup = addAGProp("SIDToAbstractGroup", getString("logics.property"), SIDAbstractGroup);
+
+        parentProperty = addDProp(baseGroup, "parentProperty", getString("logics.property.group"), abstractGroup, property);
+        numberProperty = addDProp(baseGroup, "numberProperty", getString("logics.property.number"), IntegerClass.instance, property);
         SIDProperty = addDProp(baseGroup, "SIDProperty", getString("logics.property.sid"), propertySIDValueClass, property);
         loggableProperty = addDProp(baseGroup, "loggableProperty", getString("logics.property.loggable"), LogicalClass.instance, property);
         userLoggableProperty = addDProp(baseGroup, "userLoggableProperty", getString("logics.property.user.loggable"), LogicalClass.instance, property);
@@ -1519,10 +1536,16 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
         private ObjectEntity objTreeForm;
         private TreeGroupEntity treeFormObject;
         private ObjectEntity objProperty;
+        private ObjectEntity objTreeProps;
+        private ObjectEntity objProps;
+        private TreeGroupEntity treePropertyObject;
         private ObjectEntity objDefaultForm;
         private ObjectEntity objTreeDefaultForm;
         private TreeGroupEntity treeDefaultForm;
         private ObjectEntity objDefaultProperty;
+        private ObjectEntity objTreeDefaultProps;
+        private ObjectEntity objDefaultProps;
+        private TreeGroupEntity treeDefaultProperty;
 
         protected SecurityPolicyFormEntity(NavigatorElement parent, String sID) {
             super(parent, sID, getString("logics.policy.security.policy"));
@@ -1531,16 +1554,24 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
             objPolicy = addSingleGroupObject(policy, getString("logics.policy.additional.policies"), baseGroup, true);
             objForm = addSingleGroupObject(navigatorElement, getString("logics.grid"), true);
             objTreeForm = addSingleGroupObject(navigatorElement, getString("logics.tree"), true);
-            objProperty = addSingleGroupObject(property, getString("logics.property.properties"), true);
+            objProperty = addSingleGroupObject(property, getString("logics.grid"), true);
+            objTreeProps = addSingleGroupObject(abstractGroup, getString("logics.tree"), true);
+            objProps = addSingleGroupObject(property, getString("logics.tree"), true);
             objDefaultForm = addSingleGroupObject(navigatorElement, getString("logics.grid"), true);
             objTreeDefaultForm = addSingleGroupObject(navigatorElement, getString("logics.tree"), true);
-            objDefaultProperty = addSingleGroupObject(property, getString("logics.property.properties"), true);
+            objDefaultProperty = addSingleGroupObject(property, getString("logics.grid"), true);
+            objTreeDefaultProps = addSingleGroupObject(abstractGroup, getString("logics.tree"), true);
+            objDefaultProps = addSingleGroupObject(property, getString("logics.grid"), true);
 
             objTreeForm.groupTo.setIsParents(addPropertyObject(parentNavigatorElement, objTreeForm));
             treeFormObject = addTreeGroupObject(objTreeForm.groupTo);
+            objTreeProps.groupTo.setIsParents(addPropertyObject(parentAbstractGroup, objTreeProps));
+            treePropertyObject = addTreeGroupObject(objTreeProps.groupTo, objProps.groupTo);
 
             objTreeDefaultForm.groupTo.setIsParents(addPropertyObject(parentNavigatorElement, objTreeDefaultForm));
             treeDefaultForm = addTreeGroupObject(objTreeDefaultForm.groupTo);
+            objTreeDefaultProps.groupTo.setIsParents(addPropertyObject(parentAbstractGroup, objTreeDefaultProps));
+            treeDefaultProperty = addTreeGroupObject(objTreeDefaultProps.groupTo, objDefaultProps.groupTo);
 
             addObjectActions(this, objUserRole);
 
@@ -1554,11 +1585,20 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
             addPropertyDraw(objUserRole, objTreeForm, userRoleFormDefaultNumber);
             addPropertyDraw(new LP[]{captionProperty, SIDProperty}, objProperty);
             addPropertyDraw(objUserRole, objProperty, permitViewUserRoleProperty, forbidViewUserRoleProperty, permitChangeUserRoleProperty, forbidChangeUserRoleProperty);
+            addPropertyDraw(new LP[]{captionAbstractGroup, SIDAbstractGroup, numberAbstractGroup}, objTreeProps);
+            addPropertyDraw(new LP[]{captionProperty, SIDProperty, numberProperty}, objProps);
+            addPropertyDraw(objUserRole, objProps, permitViewUserRoleProperty, forbidViewUserRoleProperty, permitChangeUserRoleProperty, forbidChangeUserRoleProperty);
 
             addPropertyDraw(new LP[]{navigatorElementCaption, navigatorElementSID, numberNavigatorElement, permitForm, forbidForm}, objDefaultForm);
             addPropertyDraw(new LP[]{navigatorElementCaption, navigatorElementSID, numberNavigatorElement, permitForm, forbidForm}, objTreeDefaultForm);
             addPropertyDraw(new LP[]{captionProperty, SIDProperty}, objDefaultProperty);
             addPropertyDraw(objDefaultProperty, permitViewProperty, forbidViewProperty, permitChangeProperty, forbidChangeProperty);
+            addPropertyDraw(new LP[]{captionAbstractGroup, SIDAbstractGroup, numberAbstractGroup}, objTreeDefaultProps);
+            addPropertyDraw(new LP[]{captionProperty, SIDProperty, numberProperty}, objDefaultProps);
+            addPropertyDraw(objDefaultProps, permitViewProperty, forbidViewProperty, permitChangeProperty, forbidChangeProperty);
+
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(parentProperty, objProps), Compare.EQUALS, objTreeProps));
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(parentProperty, objDefaultProps), Compare.EQUALS, objTreeDefaultProps));
 
             setReadOnly(navigatorElementSID, true);
             setReadOnly(navigatorElementCaption, true);
@@ -1572,6 +1612,10 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
             addDefaultOrder(getPropertyDraw(numberNavigatorElement, objTreeDefaultForm.groupTo), true);
             addDefaultOrder(getPropertyDraw(SIDProperty, objProperty.groupTo), true);
             addDefaultOrder(getPropertyDraw(SIDProperty, objDefaultProperty.groupTo), true);
+            addDefaultOrder(getPropertyDraw(numberProperty, objProps.groupTo), true);
+            addDefaultOrder(getPropertyDraw(numberAbstractGroup, objTreeProps.groupTo), true);
+            addDefaultOrder(getPropertyDraw(numberProperty, objDefaultProps.groupTo), true);
+            addDefaultOrder(getPropertyDraw(numberAbstractGroup, objTreeDefaultProps.groupTo), true);
         }
 
         @Override
@@ -1586,9 +1630,13 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
             defaultFormsContainer.tabbedPane = true;
             defaultFormsContainer.add(design.getTreeContainer(treeDefaultForm));
             defaultFormsContainer.add(design.getGroupObjectContainer(objDefaultForm.groupTo));
+            ContainerView defaultPropertyContainer = design.createContainer(getString("logics.property.properties"));
+            defaultPropertyContainer.tabbedPane = true;
+            defaultPropertyContainer.add(design.getTreeContainer(treeDefaultProperty));
+            defaultPropertyContainer.add(design.getGroupObjectContainer(objDefaultProperty.groupTo));
             defaultPolicyContainer.tabbedPane = true;
             defaultPolicyContainer.add(defaultFormsContainer);
-            defaultPolicyContainer.add(design.getGroupObjectContainer(objDefaultProperty.groupTo));
+            defaultPolicyContainer.add(defaultPropertyContainer);
 
             ContainerView rolesContainer = design.createContainer(getString("logics.policy.roles"));
             ContainerView rolePolicyContainer = design.createContainer();
@@ -1598,7 +1646,11 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
             formsContainer.add(design.getTreeContainer(treeFormObject));
             formsContainer.add(design.getGroupObjectContainer(objForm.groupTo));
             rolePolicyContainer.add(formsContainer);
-            rolePolicyContainer.add(design.getGroupObjectContainer(objProperty.groupTo));
+            ContainerView propertiesContainer = design.createContainer(getString("logics.property.properties"));
+            propertiesContainer.tabbedPane = true;
+            propertiesContainer.add(design.getTreeContainer(treePropertyObject));
+            propertiesContainer.add(design.getGroupObjectContainer(objProperty.groupTo));
+            rolePolicyContainer.add(propertiesContainer);
             rolesContainer.add(design.getGroupObjectContainer(objUserRole.groupTo));
             rolesContainer.add(rolePolicyContainer);
 
@@ -1653,13 +1705,59 @@ public class BaseLogicsModule<T extends BusinessLogics<T>> extends LogicsModule 
     }
 
     class PropertiesFormEntity extends FormEntity {
+        ObjectEntity objProperties;
+        ObjectEntity objProps;
+        ObjectEntity objTreeProps;
+        TreeGroupEntity treePropertiesObject;
         protected PropertiesFormEntity(NavigatorElement parent, String sID) {
             super(parent, sID, getString("logics.tables.properties"));
-            ObjectEntity objProperties = addSingleGroupObject(property, getString("logics.tables.properties"), captionProperty, SIDProperty, userLoggableProperty, loggableProperty, storedProperty);
+
+            objProperties = addSingleGroupObject(property, true);
+
+            objTreeProps = addSingleGroupObject(abstractGroup, true);
+            objProps = addSingleGroupObject(property, true);
+
+            objTreeProps.groupTo.setIsParents(addPropertyObject(parentAbstractGroup, objTreeProps));
+            treePropertiesObject = addTreeGroupObject(objTreeProps.groupTo, objProps.groupTo);
+
+            addPropertyDraw(new LP[]{captionProperty, SIDProperty, parentProperty, numberProperty, userLoggableProperty, loggableProperty, storedProperty}, objProperties);
+            addPropertyDraw(new LP[]{captionAbstractGroup, SIDAbstractGroup, parentAbstractGroup, numberAbstractGroup, baseLM.dumb1, baseLM.dumb1, baseLM.dumb1}, objTreeProps);
+            addPropertyDraw(new LP[]{captionProperty, SIDProperty, parentProperty, numberProperty, userLoggableProperty, loggableProperty, storedProperty}, objProps);
+
+            addFixedFilter(new CompareFilterEntity(addPropertyObject(parentProperty, objProps), Compare.EQUALS, objTreeProps));
+
             setReadOnly(true);
             setReadOnly(userLoggableProperty, false);
             setReadOnly(storedProperty, false);
         }
+
+        @Override
+        public FormView createDefaultRichDesign() {
+            DefaultFormView design = (DefaultFormView) super.createDefaultRichDesign();
+
+            ContainerView container = design.createContainer();
+            container.tabbedPane = true;
+
+            ContainerView treeContainer = design.createContainer(getString("logics.tree"));
+            ContainerView tableContainer = design.createContainer(getString("logics.tables.table"));
+
+            treeContainer.add(design.getTreeContainer(treePropertiesObject));
+            treeContainer.add(design.getGroupObjectContainer(objProperties.groupTo));
+
+            tableContainer.add(design.getGroupObjectContainer(objProperties.groupTo));
+            
+            container.add(treeContainer);
+            container.add(tableContainer);
+
+            design.getMainContainer().add(0, container);
+
+            addDefaultOrder(getPropertyDraw(numberProperty, objProps.groupTo), true);
+            addDefaultOrder(getPropertyDraw(numberAbstractGroup, objTreeProps.groupTo), true);
+
+            return design;
+        }
+
+
     }
 
     class ExceptionsFormEntity extends FormEntity {
