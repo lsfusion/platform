@@ -3486,6 +3486,11 @@ public class SkolkovoLogicsModule extends LogicsModule {
         dateCertifiedProject = addDCProp(registerGroup, "dateCertifiedProject", "Дата выдачи свидетельства участника", true, baseLM.currentDate, certifiedProject, 1);
         quantitySubDefaultVoteProject = addSUProp("quantitySubDefaultVoteProject", true, "Вместо заседаний", Union.OVERRIDE, quantityDefaultVoteProject, quantityVoteProject);
 
+        hasPreliminaryVoteProject = addJProp("hasPreliminaryVoteProject", "Подавался на предв. экспертизу", baseLM.and1, is(project), 1, quantityPreliminaryVoteProject, 1);
+        isPreliminaryStatusProject = addSUProp("isPreliminaryStatusProject", "На предв. экспертизу", Union.OVERRIDE, hasPreliminaryVoteProject, isPreliminaryProject);
+
+        isPreliminaryAndStatusProject = addJProp("isPreliminaryAndStatusProject", "Прошла предварительную экспертизу", baseLM.and1, isStatusProject, 1, hasPreliminaryVoteProject, 1);
+
         legalCheckStatusProject = addCaseUProp(idGroup, "legalCheckStatusProject", true, "Статус (юридич. пров.) (ИД)",
                 positiveLegalResultProject, 1, addCProp(projectStatus, "positiveLCResult", project), 1,
                 overdueLegalCheckProject, 1, addCProp(projectStatus, "overdueLC", project), 1,
@@ -3515,6 +3520,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
                 negativeOriginalDocsCheckProject, 1, addCProp(projectStatus, "notEnoughOriginalDocs", project), 1,
                 resultExecuteLegalCheckProject, 1, legalCheckStatusProject, 1,
                 resultExecuteFormalControlProject, 1, formalCheckStatusProject, 1,
+                isPreliminaryAndStatusProject, 1, addCProp(projectStatus, "registered", project), 1,
                 addCProp(projectStatus, "sentStatusAccepted", project), 1);
 
         valuedStatusProject = addCaseUProp(idGroup, "valuedStatusProject", true, "Статус (оценен) (ИД)",
@@ -3987,10 +3993,6 @@ public class SkolkovoLogicsModule extends LogicsModule {
         // так конечно не совсем правильно, если поменяется дата с 01 числа одного месяца на 01 число другого месяца
         emailLetterCertificatesExpertMonthYear.setDerivedForcedChange(addCProp(ActionClass.instance, true), isNewMonth);
 
-        hasPreliminaryVoteProject = addJProp("hasPreliminaryVoteProject", "Подавался на предв. экспертизу", baseLM.and1, is(project), 1, quantityPreliminaryVoteProject, 1);
-        isPreliminaryStatusProject = addSUProp("isPreliminaryStatusProject", "На предв. экспертизу", Union.OVERRIDE, hasPreliminaryVoteProject, isPreliminaryProject);
-
-        isPreliminaryAndStatusProject = addJProp("isPreliminaryAndStatusProject", "На предв. экспертизу и статус", baseLM.and1, isStatusProject, 1, hasPreliminaryVoteProject, 1);
         isPreliminaryAndStatusProjectFormalControl = addJProp(true, "isPreliminaryAndStatusProjectFormalControl", "На предв. экспертизу и статус", isPreliminaryAndStatusProject, projectFormalControl, 1);
         isPreliminaryAndStatusProjectLegalCheck = addJProp(true, "isPreliminaryAndStatusProjectLegalCheck", "На предв. экспертизу и статус", isPreliminaryAndStatusProject, projectLegalCheck, 1);
 
@@ -5242,9 +5244,9 @@ public class SkolkovoLogicsModule extends LogicsModule {
                     1, 2, addCProp(LogicalClass.instance, true), addCProp(legalCheckResult, "positiveLegalCheckResult")
                     ), objProject, objComment));
 
-            acceptPreliminaryLegalCheckProject = addJProp(actionGroup, "rejectLegalCheckProject", "Прошла юридическую проверку (на предварительную экспертизу)", and(false, false),
+            acceptPreliminaryLegalCheckProject = addJProp(actionGroup, "rejectLegalCheckProject", "Прошла юридическую проверку (на предварительную экспертизу)", and(false, false, true),
                     addMFAProp(actionGroup, "Не прошла юридическую проверку", this, new ObjectEntity[]{objProject}, true), 1,
-                    needLegalCheckStatusProject, 1, isStatusProject, 1);
+                    needLegalCheckStatusProject, 1, isStatusProject, 1, isPreliminaryAndStatusProject, 1);
             acceptPreliminaryLegalCheckProject.property.askConfirm = true;
             acceptPreliminaryLegalCheckProject.setImage("sign_tick.png");
         }
@@ -5317,7 +5319,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
 
             objProject = addSingleGroupObject(1, "project", project, "Проект", dateProject, dateStatusProject, nameNativeProject, nameForeignProject,
                 nameNativeShortFinalClusterProject, nameNativeClaimerProject, nameForeignClaimerProject, emailClaimerProject,
-                nameStatusProject, nameProjectActionProject, updateDateProject, nameRegulationsProject,
+                nameStatusProject, isPreliminaryAndStatusProject, nameProjectActionProject, updateDateProject, nameRegulationsProject,
                 dateExecuteLegalCheckProject, openCompleteApplicationProjectAction, exportProjectDocumentsAction,
                 setPositiveLCResultApplyProject, acceptPreliminaryLegalCheckProject, rejectLegalCheckProject, needNoticeLegalResultProject);
 
@@ -5335,6 +5337,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
             showIf(this, new LP[] {emailClaimerChangeLegalCheck, noticedChangeLegalCheck, dateChangeLegalCheck}, changeLegalCheck, objLegalCheck);
 
             addFixedFilter(new CompareFilterEntity(addPropertyObject(projectLegalCheck, objLegalCheck), Compare.EQUALS, objProject));
+            addFixedFilter(new NotFilterEntity(new NotNullFilterEntity(addPropertyObject(inactiveProject, objProject))));
+
             addFixedFilter(new NotFilterEntity(new NotNullFilterEntity(addPropertyObject(withdrawnProject, objProject))));
 //            addFixedFilter(new NotNullFilterEntity(addPropertyObject(positiveFormalResultProject, objProject)));
 

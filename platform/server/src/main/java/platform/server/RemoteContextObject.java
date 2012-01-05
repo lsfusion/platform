@@ -72,7 +72,10 @@ public abstract class RemoteContextObject extends RemoteObject implements Contex
 
     public String popActionMessage() {
         synchronized (actionMessageStack) {
-            return actionMessageStack.pop();
+            if (!actionMessageStack.isEmpty())
+                return actionMessageStack.pop();
+            else
+                return "";
         }
     }
 
