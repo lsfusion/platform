@@ -54,11 +54,11 @@ public class IOUtils {
         }
     }
 
-    public static String readStreamToString(InputStream inStream) throws Exception {
+    public static String readStreamToString(InputStream inStream) throws IOException {
         return readStreamToString(inStream, null);
     }
 
-    public static String readStreamToString(InputStream inStream, String charsetName) throws Exception {
+    public static String readStreamToString(InputStream inStream, String charsetName) throws IOException {
         StringBuilder strBuf = new StringBuilder();
 
         BufferedReader in = new BufferedReader(charsetName == null
