@@ -40,6 +40,7 @@
 	<field name="commentInternationalExperienceExpertVote" class="java.lang.String"/>
 	<field name="commentEnoughDocumentsExpertVote" class="java.lang.String"/>
 	<field name="sidExpert" class="java.lang.String"/>
+	<field name="readInformation" class="java.lang.Boolean"/>
 	<detail>
 		<band height="181" splitType="Stretch">
 			<break>
@@ -70,7 +71,7 @@
 			<textField>
 				<reportElement x="169" y="79" width="312" height="20"/>
 				<textElement/>
-				<textFieldExpression><![CDATA[$F{sidExpert}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[($F{readInformation}==null?$F{sidExpert}:$F{documentNameExpert})]]></textFieldExpression>
 			</textField>
 			<staticText>
 				<reportElement x="39" y="136" width="90" height="20"/>
