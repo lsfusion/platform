@@ -35,7 +35,7 @@ public class ScriptedBusinessLogics extends BusinessLogics<ScriptedBusinessLogic
         super.createModules();
 
         for (int i = 0; i < moduleNames.size(); ++i) {
-            ScriptingLogicsModule scriptedLM = ScriptingLogicsModule.createFromFile(moduleNames.get(i), scriptFilePaths.get(i), LM, this);
+            ScriptingLogicsModule scriptedLM = ScriptingLogicsModule.createFromFile(scriptFilePaths.get(i), LM, this);
             addLogicsModule(scriptedLM);
         }
     }

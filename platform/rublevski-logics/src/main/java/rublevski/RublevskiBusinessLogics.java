@@ -29,7 +29,7 @@ public class RublevskiBusinessLogics extends BusinessLogics<RublevskiBusinessLog
     @Override
     protected void createModules() throws IOException {
         super.createModules();
-        rublevskiLM = ScriptingLogicsModule.createFromStream("Rublevski", getClass().getResourceAsStream("/scripts/Rublevski.lsf"), LM, this);
+        rublevskiLM = ScriptingLogicsModule.createFromStream(getClass().getResourceAsStream("/scripts/Rublevski.lsf"), LM, this);
         addLogicsModule(rublevskiLM);
     }
 

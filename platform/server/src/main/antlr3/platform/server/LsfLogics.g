@@ -113,9 +113,21 @@ grammar LsfLogics;
 }
 
 script	
-	:	importDirective* statement*
+	:	moduleHeader importDirective* statement*
 	;
 
+
+moduleHeader
+@init {
+	String moduleName;
+}
+@after {
+	if (inGroupParseState()) {
+		self.setModuleName(moduleName);
+	}
+}
+	:	'MODULE' name=ID ';'  { moduleName = $name.text; }
+	;
 
 importDirective
 @after {

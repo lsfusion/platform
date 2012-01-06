@@ -30,9 +30,9 @@
       <keyword name="CONSTRAINT" />
       <keyword name="DATA" />
       <keyword name="DATE" />
-      <keyword name="DESIGN" />
       <keyword name="DEFAULT" />
       <keyword name="DESC" />
+      <keyword name="DESIGN" />
       <keyword name="DOUBLE" />
       <keyword name="EXCEPTLAST" />
       <keyword name="EXCLUSIVE" />
@@ -56,6 +56,7 @@
       <keyword name="LEFT" />
       <keyword name="LONG" />
       <keyword name="MAX" />
+      <keyword name="MODULE" />
       <keyword name="MSG" />
       <keyword name="NOT" />
       <keyword name="NOTHING" />
@@ -79,9 +80,9 @@
       <keyword name="STATIC" />
       <keyword name="STRING" />
       <keyword name="SUM" />
+      <keyword name="THE" />
       <keyword name="TO" />
       <keyword name="TRUE" />
-      <keyword name="THE" />
       <keyword name="UNION" />
       <keyword name="WINDOW" />
       <keyword name="XOR" />

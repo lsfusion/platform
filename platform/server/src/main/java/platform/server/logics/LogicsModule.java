@@ -68,11 +68,11 @@ public abstract class LogicsModule {
         return transformNameToSID(getNamePrefix(), name);
     }
 
-    public static String transformNameToSID(String moduleSID, String name) {
-        if (moduleSID == null) {
+    public static String transformNameToSID(String modulePrefix, String name) {
+        if (modulePrefix == null) {
             return name;
         } else {
-            return moduleSID + "_" + name;
+            return modulePrefix + "_" + name;
         }
     }
 
@@ -84,6 +84,8 @@ public abstract class LogicsModule {
 
     private final Map<String, List<String>> propNamedParams = new HashMap<String, List<String>>();
 
+    protected LogicsModule() {}
+
     public LogicsModule(String sID) {
         this.sID = sID;
     }
@@ -92,6 +94,10 @@ public abstract class LogicsModule {
 
     protected String getSID() {
         return sID;
+    }
+
+    protected void setSID(String sID) {
+        this.sID = sID;
     }
 
     public LP<?> getLPBySID(String sID) {

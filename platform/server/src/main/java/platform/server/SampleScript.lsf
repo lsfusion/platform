@@ -1,3 +1,5 @@
+MODULE Sample;
+
 IMPORT BaseLogicsModule;
 
 GROUP base : baseGroup;

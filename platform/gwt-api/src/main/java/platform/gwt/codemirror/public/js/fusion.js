@@ -8,7 +8,7 @@ CodeMirror.defineMode("fusion", function(config, parserConfig) {
     }
 
     var types = words("INTEGER DOUBLE LONG BOOLEAN DATE STRING ISTRING");
-    var keywords = words("IMPORT CLASS ABSTRACT GROUP OBJECTS " +
+    var keywords = words("MODULE IMPORT CLASS ABSTRACT GROUP OBJECTS " +
                          "PROPERTIES FILTERS FORM INIT FIXED " +
                          "PANEL HIDE GRID SUM MAX BY DATA UNION " +
                          "OVERRIDE XOR EXCLUSIVE IS AS IN PERSISTENT " +

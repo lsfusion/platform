@@ -1,3 +1,5 @@
+MODULE Features;
+
 IMPORT BaseLogicsModule;
 
 /////////// GROUP STATEMENT ////////////

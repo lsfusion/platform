@@ -1,3 +1,5 @@
+MODULE Roman;
+
 IMPORT RomanLogicsModule;
 IMPORT BaseLogicsModule;
 

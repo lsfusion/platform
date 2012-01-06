@@ -38,7 +38,6 @@ import java.util.regex.Pattern;
 public class ScriptingLogicsModule extends LogicsModule {
 
     private final static Logger scriptLogger = Logger.getLogger(ScriptingLogicsModule.class);
-    private String scriptName;
     private String code = null;
     private String filename = null;
     private final BusinessLogics<?> BL;
@@ -54,30 +53,33 @@ public class ScriptingLogicsModule extends LogicsModule {
             Arrays.<ValueClass>asList(IntegerClass.instance, DoubleClass.instance, LongClass.instance, DateClass.instance, LogicalClass.instance)
     );
 
-    private ScriptingLogicsModule(String scriptName, BaseLogicsModule<?> baseModule, BusinessLogics<?> BL) {
-        super(scriptName);
+    private ScriptingLogicsModule(BaseLogicsModule<?> baseModule, BusinessLogics<?> BL) {
         setBaseLogicsModule(baseModule);
-        this.scriptName = scriptName;
         this.BL = BL;
-        errLog = new ScriptingErrorLog(scriptName);
+        errLog = new ScriptingErrorLog("");
     }
 
-    public static ScriptingLogicsModule createFromString(String scriptName, String code, BaseLogicsModule<?> baseModule, BusinessLogics<?> BL) {
-        ScriptingLogicsModule module = new ScriptingLogicsModule(scriptName, baseModule, BL);
+    public static ScriptingLogicsModule createFromString(String code, BaseLogicsModule<?> baseModule, BusinessLogics<?> BL) {
+        ScriptingLogicsModule module = new ScriptingLogicsModule(baseModule, BL);
         module.code = code;
         return module;
     }
 
-    public static ScriptingLogicsModule createFromFile(String scriptName, String filename, BaseLogicsModule<?> baseModule, BusinessLogics<?> BL) {
-        ScriptingLogicsModule module = new ScriptingLogicsModule(scriptName, baseModule, BL);
+    public static ScriptingLogicsModule createFromFile(String filename, BaseLogicsModule<?> baseModule, BusinessLogics<?> BL) {
+        ScriptingLogicsModule module = new ScriptingLogicsModule(baseModule, BL);
         module.filename = filename;
         return module;
     }
 
-    public static ScriptingLogicsModule createFromStream(String scriptName, InputStream stream, BaseLogicsModule<?> baseModule, BusinessLogics<?> BL) throws IOException {
-        ScriptingLogicsModule module = new ScriptingLogicsModule(scriptName, baseModule, BL);
+    public static ScriptingLogicsModule createFromStream(InputStream stream, BaseLogicsModule<?> baseModule, BusinessLogics<?> BL) throws IOException {
+        ScriptingLogicsModule module = new ScriptingLogicsModule(baseModule, BL);
         module.code = IOUtils.readStreamToString(stream, "utf-8");
         return module;
+    }
+
+    public void setModuleName(String moduleName) {
+        setSID(moduleName);
+        errLog.setModuleName(moduleName);
     }
 
     private CharStream createStream() throws IOException {
@@ -837,6 +839,6 @@ public class ScriptingLogicsModule extends LogicsModule {
 
     @Override
     public String getNamePrefix() {
-        return scriptName;
+        return getSID();
     }
 }

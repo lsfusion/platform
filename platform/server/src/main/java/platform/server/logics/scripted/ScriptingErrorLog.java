@@ -31,9 +31,13 @@ public class ScriptingErrorLog {
     }
 
     private final StringWriter errWriter = new StringWriter();
-    private final String moduleName;
+    private String moduleName;
 
     public ScriptingErrorLog(String moduleName) {
+        this.moduleName = moduleName;
+    }
+
+    public void setModuleName(String moduleName) {
         this.moduleName = moduleName;
     }
 
