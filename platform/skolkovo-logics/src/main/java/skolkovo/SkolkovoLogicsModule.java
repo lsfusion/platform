@@ -541,6 +541,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
     LP quantityClusterVotedProject;
     LP dataDocumentNameExpert, documentNameExpert;
     public LP emailExpert;
+    public LP generateSIDExpert;
     public LP clusterClusterUser, nameClusterClusterUser, clusterCurrentUser;
     public LP inClusterCurrentUserProject;
     LP clusterExpert, nameNativeClusterExpert, nameForeignClusterExpert, nameNativeShortClusterExpert;
@@ -1795,6 +1796,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
         inProjectForesightExpert = addJProp(baseGroup, "inProjectForesightExpert", "Вкл.", baseLM.and1, inProjectForesight, 1, 2, inExpertForesight, 3, 2);
         quantityForesightProjectExpert = addSGProp(baseGroup, "quantityForesightProjectExpert", "Кол-во форсайтов",
                 addJProp(baseLM.and1, addCProp(IntegerClass.instance, 1), inProjectForesightExpert, 1, 2, 3), 1, 3);
+
+        generateSIDExpert = addAProp(actionGroup, new GenerateExpertSIDsActionProperty());
 
         // project
         claimerProject = addDProp(idGroup, "claimerProject", "Заявитель (ИД)", claimer, project);
@@ -6164,13 +6167,13 @@ public class SkolkovoLogicsModule extends LogicsModule {
         private ExpertFormEntity(NavigatorElement parent, String sID) {
             super(parent, sID, "Реестр экспертов");
 
-            objExpert = addSingleGroupObject(expert, baseLM.selection, baseLM.userFirstName, baseLM.userLastName, documentNameExpert, sidExpert,
+            objExpert = addSingleGroupObject(expert, baseLM.selection, baseLM.userFirstName, baseLM.userLastName, documentNameExpert,
                     baseLM.userLogin, baseLM.userPassword, baseLM.email, disableExpert,
                     nameNativeShortClusterExpert, nameLanguageExpert,
                     dateAgreementExpert, nameCountryExpert, nameCurrencyExpert,
                     isScientificExpert, isTechnicalExpert, isBusinessExpert, expertiseExpert, grantExpert, profileBlockedExpert, profileUpdateDateExpert,
                     quantityInClusterExpert, quantityInForesightExpert,
-                    expertResultGroup, baseLM.generateLoginPassword, emailAuthExpert, emailAuthProfileExpert, emailReminderProfileExpert);
+                    expertResultGroup, sidExpert, generateSIDExpert, baseLM.generateLoginPassword, emailAuthExpert, emailAuthProfileExpert, emailReminderProfileExpert);
             addObjectActions(this, objExpert);
 
             addPropertyDraw(objExpert, commentExpertiseGroup);
@@ -7485,6 +7488,78 @@ public class SkolkovoLogicsModule extends LogicsModule {
         }
     }
 
+    public class GenerateExpertSIDsActionProperty extends ActionProperty {
+
+        private final ClassPropertyInterface expertInterface;
+
+        public GenerateExpertSIDsActionProperty() {
+            super(genSID(), "Сгенерировать SID экспертов", new ValueClass[]{expert});
+
+            expertInterface = interfaces.iterator().next();
+        }
+
+        public void execute(Map<ClassPropertyInterface, DataObject> keys, ObjectValue value, List<ClientAction> actions, RemoteForm executeForm, Map<ClassPropertyInterface, PropertyObjectInterfaceInstance> mapObjects) throws SQLException {
+            throw new RuntimeException("no need");
+        }
+
+        @Override
+        public void execute(ExecutionContext context) throws SQLException {
+
+            DataObject expertObject = context.getKeyValue(expertInterface);
+
+            List<String> expertSIDList = new ArrayList<String>();
+
+            LP isExpert = is(expert);
+            Map<Object, KeyExpr> keys = isExpert.getMapKeys();
+            KeyExpr key = BaseUtils.singleValue(keys);
+            Query<Object, Object> query = new Query<Object, Object>(keys);
+            query.properties.put("sidExpert", sidExpert.getExpr(context.getModifier(), key));
+            query.and(isExpert.getExpr(key).getWhere());
+            OrderedMap<Map<Object, Object>, Map<Object, Object>> result = query.execute(context.getSession().sql);
+
+            for (Map<Object, Object> values : result.values()) {
+                if (values.get("sidExpert") != null)
+                    expertSIDList.add(values.get("sidExpert").toString());
+            }
+
+            String prefix = "";
+
+            KeyExpr expertExpr = new KeyExpr("expert");
+            KeyExpr clusterExpr = new KeyExpr("cluster");
+            Map<Object, KeyExpr> newKeys = new HashMap<Object, KeyExpr>();
+            newKeys.put("expert", expertExpr);
+            newKeys.put("cluster", clusterExpr);
+
+            query = new Query<Object, Object>(newKeys);
+            query.properties.put(sidCluster, sidCluster.getExpr(context.getModifier(), clusterExpr));
+            query.and(inClusterExpert.getExpr(context.getModifier(), clusterExpr, expertExpr).getWhere());
+            query.and(expertExpr.compare(expertObject, Compare.EQUALS));
+            result = query.execute(context.getSession().sql);
+
+            for (Map.Entry<Map<Object, Object>, Map<Object, Object>> rows : result.entrySet()) {
+                DataObject clusterObject = new DataObject(rows.getKey().get("cluster"), cluster);
+                Object clusterSID = sidCluster.read(context.getSession(), clusterObject);
+                if (clusterSID != null)
+                    prefix = clusterSID.toString();
+            }
+
+            Random rand = new Random();
+
+            String generatedSid = generateExpertSID(prefix, rand);
+            while (expertSIDList.contains(generatedSid))
+                generatedSid = generateExpertSID(prefix, rand);
+
+            sidExpert.execute(generatedSid, context.getSession(), expertObject);
+        }
+    }
+
+    private String generateExpertSID(String prefix, Random rand) {
+        int nextRand = rand.nextInt(10000);
+        if (nextRand < 1000) prefix += "0";
+        if (nextRand < 100) prefix += "0";
+        if (nextRand < 10) prefix += "0";
+        return prefix + nextRand;
+    }
 
     public class IncludeDocumentsActionProperty extends ActionProperty {
 
