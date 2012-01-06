@@ -131,7 +131,7 @@ moduleHeader
 
 importDirective
 @after {
-	if (parseState == ScriptingLogicsModule.State.GROUP) {
+	if (inGroupParseState()) {
 		self.addImportedModule($moduleName.text);
 	}
 }
@@ -170,7 +170,7 @@ classStatement
 	List<String> instanceCaptions = new ArrayList<String>();
 }
 @after {
-	if (parseState == ScriptingLogicsModule.State.CLASS) {
+	if (inClassParseState()) {
 		self.addScriptedClass(name, captionStr, isAbstract, isStatic, instanceNames, instanceCaptions, classParents);
 	}
 }
@@ -197,7 +197,7 @@ groupStatement
 	String captionStr = null;
 }
 @after {
-	if (parseState == ScriptingLogicsModule.State.GROUP) {
+	if (inGroupParseState()) {
 		self.addScriptedGroup(name, captionStr, parent);
 	}
 }
@@ -215,7 +215,7 @@ formStatement
 	ScriptingFormEntity form;
 }
 @after {
-	if (parseState == ScriptingLogicsModule.State.NAVIGATOR) {
+	if (inNavigatorParseState()) {
 		self.addScriptedForm(form);
 	}
 }
@@ -233,7 +233,7 @@ formDeclaration returns [ScriptingFormEntity form]
 	String caption = null;
 }
 @after {
-	if (parseState == ScriptingLogicsModule.State.NAVIGATOR) {
+	if (inNavigatorParseState()) {
 		$form = self.createScriptedForm(name, caption);
 	}
 }
@@ -250,7 +250,7 @@ formGroupObjectsList[ScriptingFormEntity form]  // needs refactoring
 	List<Boolean> isInitType = new ArrayList<Boolean>();
 }
 @after {
-	if (parseState == ScriptingLogicsModule.State.NAVIGATOR) {
+	if (inNavigatorParseState()) {
 		$form.addScriptedGroupObjects(names, classNames, groupViewType, isInitType);
 	}
 }
@@ -298,7 +298,7 @@ formPropertiesList[ScriptingFormEntity form]
 	List<List<String>> mapping = new ArrayList<List<String>>();
 }
 @after {
-	if (parseState == ScriptingLogicsModule.State.NAVIGATOR) {
+	if (inNavigatorParseState()) {
 		$form.addScriptedPropertyDraws(properties, mapping);
 	}
 }
@@ -355,7 +355,7 @@ formFiltersList[ScriptingFormEntity form]
 	List<List<String>> propertyMappings = new ArrayList<List<String>>();
 }
 @after {
-	if (parseState == ScriptingLogicsModule.State.NAVIGATOR) {
+	if (inNavigatorParseState()) {
 		$form.addScriptedFilters(propertyNames, propertyMappings);
 	}
 }
@@ -406,7 +406,7 @@ andPE[List<String> context, boolean dynamic] returns [LP property, List<Integer>
 	List<Boolean> nots = new ArrayList<Boolean>();
 }
 @after {
-	if (parseState == ScriptingLogicsModule.State.PROP) {
+	if (inPropParseState()) {
 		ScriptingLogicsModule.LPWithParams result = self.addScriptedAndProp(nots, props, allUsedParams);				
 		$property = result.property;
 		$usedParams = result.usedParams;
@@ -427,7 +427,7 @@ equalityPE[List<String> context, boolean dynamic] returns [LP property, List<Int
 	String op = null;
 }
 @after {
-	if (parseState == ScriptingLogicsModule.State.PROP && op != null) {
+	if (inPropParseState() && op != null) {
 		ScriptingLogicsModule.LPWithParams result =	
 			self.addScriptedEqualityProp(op, leftProp, lUsedParams, rightProp, rUsedParams);
 		$property = result.property;
@@ -452,7 +452,7 @@ relationalPE[List<String> context, boolean dynamic] returns [LP property, List<I
 	String op = null;
 }
 @after {
-	if (parseState == ScriptingLogicsModule.State.PROP)
+	if (inPropParseState())
 	{
 		if (op != null) {
 			ScriptingLogicsModule.LPWithParams result =
@@ -484,7 +484,7 @@ additivePE[List<String> context, boolean dynamic] returns [LP property, List<Int
 	List<String> ops = new ArrayList<String>();
 }
 @after {
-	if (parseState == ScriptingLogicsModule.State.PROP) {
+	if (inPropParseState()) {
 		ScriptingLogicsModule.LPWithParams result = self.addScriptedAdditiveProp(ops, props, allUsedParams);				
 		$property = result.property;
 		$usedParams = result.usedParams;
@@ -503,7 +503,7 @@ multiplicativePE[List<String> context, boolean dynamic] returns [LP property, Li
 	List<String> ops = new ArrayList<String>();
 }
 @after {
-	if (parseState == ScriptingLogicsModule.State.PROP) {
+	if (inPropParseState()) {
 		ScriptingLogicsModule.LPWithParams result = self.addScriptedMultiplicativeProp(ops, props, allUsedParams);				
 		$property = result.property;
 		$usedParams = result.usedParams;
@@ -525,7 +525,7 @@ simplePE[List<String> context, boolean dynamic] returns [LP property, List<Integ
 	
 unaryMinusPE[List<String> context, boolean dynamic] returns [LP property, List<Integer> usedParams] 	
 @after {
-	if (parseState == ScriptingLogicsModule.State.PROP) { 
+	if (inPropParseState()) { 
 		$property = self.addScriptedUnaryMinusProp($property, $usedParams);
 	}
 }
@@ -535,7 +535,7 @@ unaryMinusPE[List<String> context, boolean dynamic] returns [LP property, List<I
 
 expressionPrimitive[List<String> context, boolean dynamic] returns [LP property, List<Integer> usedParams]
 	:	(paramName=parameter {
-			if (parseState == ScriptingLogicsModule.State.PROP)
+			if (inPropParseState())
 				$usedParams = Collections.singletonList(self.getParamIndex($paramName.text, $context, $dynamic));
 		 })
 	|	(expr=contextDependentPD[context, dynamic] { $property = $expr.property; $usedParams = $expr.usedParams; })
@@ -567,7 +567,7 @@ joinPropertyDefinition[List<String> context, boolean dynamic] returns [LP proper
 	LP mainProp = null;
 }
 @after {
-	if (parseState == ScriptingLogicsModule.State.PROP) {
+	if (inPropParseState()) {
 		ScriptingLogicsModule.LPWithParams result = self.addScriptedJProp(mainProp, paramProps, usedSubParams);
 		$property = result.property;
 		$usedParams = result.usedParams;
@@ -590,7 +590,7 @@ groupPropertyDefinition returns [LP property]
 	List<String> groupContext = new ArrayList<String>();
 }
 @after {
-	if (parseState == ScriptingLogicsModule.State.PROP) {
+	if (inPropParseState()) {
 		$property = self.addScriptedGProp(isSGProp, paramProps, usedParams);
 	}
 }
@@ -613,7 +613,7 @@ partitionPropertyDefinition[List<String> context, boolean dynamic] returns [LP p
 	boolean useLast = true;
 }
 @after {
-	if (parseState == ScriptingLogicsModule.State.PROP) {
+	if (inPropParseState()) {
 		ScriptingLogicsModule.LPWithParams result = 
 			self.addScriptedOProp(type, ascending, useLast, groupExprCnt, paramProps, usedSubParams);
 		$property = result.property;
@@ -639,7 +639,7 @@ dataPropertyDefinition[boolean innerPD] returns [LP property]
 	String returnClass = null;
 }
 @after {
-	if (parseState == ScriptingLogicsModule.State.PROP) {
+	if (inPropParseState()) {
 		$property = self.addScriptedDProp(returnClass, paramClassNames, innerPD);
 	}
 }
@@ -659,7 +659,7 @@ unionPropertyDefinition[List<String> context, boolean dynamic] returns [LP prope
 	Union type = null;
 }
 @after {
-	if (parseState == ScriptingLogicsModule.State.PROP) {
+	if (inPropParseState()) {
 		ScriptingLogicsModule.LPWithParams result = self.addScriptedUProp(type, paramProps, usedSubParams);
 		$property = result.property;
 		$usedParams = result.usedParams;	
@@ -677,7 +677,7 @@ formulaPropertyDefinition returns [LP property]
 	String formulaText;
 }
 @after {
-	if (parseState == ScriptingLogicsModule.State.PROP) {
+	if (inPropParseState()) {
 		$property = self.addScriptedSFProp(className, formulaText);
 	}
 }
@@ -691,7 +691,7 @@ typePropertyDefinition returns [LP property]
 	boolean bIs = false;
 }
 @after {
-	if (parseState == ScriptingLogicsModule.State.PROP) {
+	if (inPropParseState()) {
 		$property = self.addScriptedTypeProp(clsId, bIs);
 	}	
 }
@@ -704,7 +704,7 @@ propertyObject returns [LP property, String propName, List<String> innerContext]
 @init {
 	List<String> newContext = new ArrayList<String>(); 
 }
-	:	name=compoundID	{ if (parseState == ScriptingLogicsModule.State.PROP) 
+	:	name=compoundID	{ if (inPropParseState()) 
 							{$property = self.findLPByCompoundName($name.text); $propName = $name.text;} 
 						} 
 	|	'[' 
@@ -720,7 +720,7 @@ commonPropertySettings[LP property, String propertyName, String caption, List<St
 	boolean isPersistent = false;	
 }
 @after {
-	if (parseState == ScriptingLogicsModule.State.PROP) { 
+	if (inPropParseState()) { 
 		self.addSettingsToProperty(property, propertyName, caption, namedParams, groupName, isPersistent, isData);	
 	}
 } 
@@ -740,7 +740,7 @@ constraintStatement
 	String message = null;
 }
 @after {
-	if (parseState == ScriptingLogicsModule.State.PROP) { 
+	if (inPropParseState()) { 
 		self.addScriptedConstraint(prop, checked, message);	
 	}
 }
@@ -763,7 +763,7 @@ followsStatement
 	List<Integer> options = new ArrayList<Integer>();
 }
 @after {
-	if (parseState == ScriptingLogicsModule.State.PROP) {
+	if (inPropParseState()) {
 		self.addScriptedFollows(mainProp, context.size(), options, props, usedParams);
 	}
 }
@@ -805,7 +805,7 @@ writeOnChangeStatement
 	List<Integer> changeUsedParams;
 }
 @after {
-	if (parseState == ScriptingLogicsModule.State.PROP) { 
+	if (inPropParseState()) { 
 		self.addScriptedWriteOnChange(mainPropName, context.size(), old, anyChange, valueProp, valueUsedParams, changeProp, changeUsedParams);
 	}
 }
@@ -1108,7 +1108,7 @@ literal returns [LP property]
 	String text = null;
 }
 @after {
-	if (parseState == ScriptingLogicsModule.State.PROP) { 
+	if (inPropParseState()) { 
 		$property = self.addConstantProp(cls, text);	
 	}
 }
