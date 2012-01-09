@@ -230,7 +230,7 @@ public class ScriptedFormView extends DefaultFormView {
 
     public ComponentView addComponent(String sid, ComponentView component, InsertPosition pos, ComponentView anchorComponent) throws ScriptingErrorLog.SemanticErrorException {
         //дополнительная жёсткая проверка, такого не должно произойти в результате разбора грамматикой
-        assert sid == null || !sid.matches("[a-zA-Z][a-zA-Z_0-9]*(\\.[a-zA-Z][a-zA-Z_0-9]*)*");
+        assert sid == null || sid.matches("[a-zA-Z][a-zA-Z_0-9]*(\\.[a-zA-Z][a-zA-Z_0-9]*)*");
 
         if (component == null) {
             //если sid == null, то componentSelector содержит selector, для которого нельзя просто создать контейнер
