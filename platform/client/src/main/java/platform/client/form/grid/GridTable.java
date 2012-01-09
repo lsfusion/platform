@@ -1121,8 +1121,10 @@ public abstract class GridTable extends ClientFormTable
                 }
             } while ((oRow != row || oColumn != column) && !isCellFocusable(row, column));
 
-            if(commitEditing())
-                changeSelection(getSelectionModel().getLeadSelectionIndex(), column, false, false);
+            if(commitEditing()) {
+                int selectedRow = getSelectionModel().getLeadSelectionIndex();
+                changeSelection(selectedRow != -1 ? selectedRow : row, column, false, false);
+            }
             isInternalNavigating = false;
         }
     }
