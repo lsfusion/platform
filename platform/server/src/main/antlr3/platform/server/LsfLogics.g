@@ -3,18 +3,21 @@ grammar LsfLogics;
 @header {
 	package platform.server;
 
+	import org.antlr.runtime.*;
 	import platform.interop.ClassViewType;
 	import platform.interop.form.layout.DoNotIntersectSimplexConstraint;
 	import platform.server.data.Union;
 	import platform.server.data.expr.query.OrderType;
-	import platform.server.form.view.*;
-	import platform.server.logics.scripted.ScriptedFormView;
-	import platform.server.logics.scripted.ScriptedFormView.InsertPosition;
-	import platform.server.logics.scripted.ScriptingErrorLog;
-	import platform.server.logics.scripted.ScriptingFormEntity;
-	import platform.server.logics.scripted.ScriptingLogicsModule;
+	import platform.server.form.entity.GroupObjectEntity;
+	import platform.server.form.entity.PropertyObjectEntity;
+	import platform.server.form.view.ComponentView;
+	import platform.server.form.view.GroupObjectView;
+	import platform.server.form.view.PropertyDrawView;
 	import platform.server.logics.linear.LP;
 	import platform.server.logics.property.PropertyFollows;
+	import platform.server.logics.scripted.*;
+	import platform.server.logics.scripted.ScriptingFormEntity.MappedProperty;
+	import platform.server.logics.scripted.ScriptedFormView.InsertPosition;
 
 	import java.awt.*;
 	import java.util.ArrayList;
@@ -44,7 +47,7 @@ grammar LsfLogics;
 	@Override
 	public String getErrorMessage(RecognitionException e, String[] tokenNames) {
 		return self.getErrLog().getErrorMessage(this, super.getErrorMessage(e, tokenNames), e);
-	} 	
+	}
 	
 	@Override
 	public void displayRecognitionError(String[] tokenNames, RecognitionException e) {
@@ -55,7 +58,6 @@ grammar LsfLogics;
 @members {
 	public ScriptingLogicsModule self;
 	public ScriptingLogicsModule.State parseState;
-	
 
 	public boolean inParseState(ScriptingLogicsModule.State parseState) {
 		return this.parseState == parseState;
@@ -83,17 +85,31 @@ grammar LsfLogics;
 		}
     }
 
+	public List<GroupObjectEntity> getGroupObjectsList(List<String> ids) throws ScriptingErrorLog.SemanticErrorException {
+		if (inNavigatorParseState()) {
+			return $formStatement::form.getGroupObjectsList(ids);
+		}
+		return null;
+	}
+
+	public MappedProperty getPropertyWithMapping(String name, List<String> mapping) throws ScriptingErrorLog.SemanticErrorException {
+		if (inNavigatorParseState()) {
+			return $formStatement::form.getPropertyWithMapping(name, mapping);
+		}
+		return null;
+	}
+
 	@Override
 	public void emitErrorMessage(String msg) {
 		if (parseState == ScriptingLogicsModule.State.GROUP) { 
 			self.getErrLog().write(msg + "\n");
 		}
-	}	
+	}
 
 	@Override
 	public String getErrorMessage(RecognitionException e, String[] tokenNames) {
 		return self.getErrLog().getErrorMessage(this, super.getErrorMessage(e, tokenNames), e);
-	} 	
+	}
 
 	@Override
 	public void displayRecognitionError(String[] tokenNames, RecognitionException e) {
@@ -140,17 +156,17 @@ importDirective
 
 
 statement
-	:   (   classStatement
-	    | 	groupStatement
-	    | 	propertyStatement
-	    | 	constraintStatement
-	    |	followsStatement
-	    |	writeOnChangeStatement
-	    | 	tableStatement
-	    | 	indexStatement
-	    | 	formStatement
-	    ) ';'
-    | designStatement
+	:	(	classStatement
+		|	groupStatement
+		|	propertyStatement
+		|	constraintStatement
+		|	followsStatement
+		|	writeOnChangeStatement
+		|	tableStatement
+		|	indexStatement
+		|	formStatement
+		)	';'
+	|	designStatement
 	;
 
 
@@ -211,18 +227,20 @@ groupStatement
 ////////////////////////////////////////////////////////////////////////////////
 
 formStatement
-@init {
+scope {
 	ScriptingFormEntity form;
 }
 @after {
 	if (inNavigatorParseState()) {
-		self.addScriptedForm(form);
+		self.addScriptedForm($formStatement::form);
 	}
 }
-	:	declaration=formDeclaration { form = $declaration.form; }
-		(	'OBJECTS' list=formGroupObjectsList[form] 
-		|	'FILTERS' list=formFiltersList[form]
-		| 	formPropertiesList[form]
+	:	declaration=formDeclaration { $formStatement::form = $declaration.form; }
+		(	'OBJECTS' list=formGroupObjectsList 
+		|	'FILTERS' list=formFiltersList
+		|	formPropertiesList
+		|	filterGroupDeclaration
+		|	formOrderByList
 		)*
 	;
 
@@ -242,7 +260,7 @@ formDeclaration returns [ScriptingFormEntity form]
 	;
 
 
-formGroupObjectsList[ScriptingFormEntity form]  // needs refactoring
+formGroupObjectsList // needs refactoring
 @init {
 	List<List<String>> names = new ArrayList<List<String>>();
 	List<List<String>> classNames = new ArrayList<List<String>>(); 
@@ -251,11 +269,11 @@ formGroupObjectsList[ScriptingFormEntity form]  // needs refactoring
 }
 @after {
 	if (inNavigatorParseState()) {
-		$form.addScriptedGroupObjects(names, classNames, groupViewType, isInitType);
+		$formStatement::form.addScriptedGroupObjects(names, classNames, groupViewType, isInitType);
 	}
 }
 	:	groupElement=formGroupObjectDeclaration { names.add($groupElement.objectNames); classNames.add($groupElement.classIds); 
-												  groupViewType.add($groupElement.type); isInitType.add($groupElement.isInitType); } 
+												  groupViewType.add($groupElement.type); isInitType.add($groupElement.isInitType); }
 		(',' groupElement=formGroupObjectDeclaration { names.add($groupElement.objectNames); classNames.add($groupElement.classIds); 
 													   groupViewType.add($groupElement.type); isInitType.add($groupElement.isInitType); })*
 	;
@@ -292,38 +310,68 @@ formObjectDeclaration returns [String name, String className]
 	; 
 	
 	
-formPropertiesList[ScriptingFormEntity form]
+formPropertiesList
 @init {
 	List<String> properties = new ArrayList<String>();
 	List<List<String>> mapping = new ArrayList<List<String>>();
+	FormPropertyOptions commonOptions = null;
+	List<FormPropertyOptions> options = new ArrayList<FormPropertyOptions>();
 }
 @after {
 	if (inNavigatorParseState()) {
-		$form.addScriptedPropertyDraws(properties, mapping);
+		$formStatement::form.addScriptedPropertyDraws(properties, mapping, commonOptions, options);
 	}
 }
-	: 'PROPERTIES' '(' objects=idList ')' list=formPropertiesNamesList
+	: 'PROPERTIES' '(' objects=idList ')' opts=formPropertyOptionsList list=formPropertiesNamesList
 		{
+			commonOptions = $opts.options;
 			properties = $list.properties;
 			mapping = Collections.nCopies(properties.size(), $objects.ids);
+			options = $list.options;
 		}
-	| 'PROPERTIES' mappedList=formMappedPropertiesList
+	| 'PROPERTIES' opts=formPropertyOptionsList mappedList=formMappedPropertiesList
 		{
+			commonOptions = $opts.options;
 			properties = $mappedList.properties;
 			mapping = $mappedList.mapping;
+			options = $mappedList.options;
 		}
 	;	
 
+formPropertyOptionsList returns [FormPropertyOptions options]
+@init {
+	$options = new FormPropertyOptions();
+}
+	:
+	(	'READONLY' { $options.setReadOnly(true); }
+	|	'EDITABLE' { $options.setReadOnly(false); }
+	|	'COLUMNS' '(' ids=nonEmptyIdList ')' { $options.setColumns(getGroupObjectsList($ids.ids)); }
+	|	'SHOWIF' mappedProp=formMappedProperty { $options.setShowIf(getPropertyWithMapping($mappedProp.name, $mappedProp.mapping)); }
+	|	'HIGHLIGHTIF' propObj=formPropertyObject { $options.setHighlightIf($propObj.property); }
+	|	'HEADER' propObj=formPropertyObject { $options.setHeader($propObj.property); }
+	|	'FOOTER' propObj=formPropertyObject { $options.setFooter($propObj.property); }
+	)*
+	;
 
-formMappedPropertiesList returns [List<String> properties, List<List<String>> mapping]
+
+formMappedPropertiesList returns [List<String> properties, List<List<String>> mapping, List<FormPropertyOptions> options]
 @init {
 	$properties = new ArrayList<String>();
 	$mapping = new ArrayList<List<String>>();
+	$options = new ArrayList<FormPropertyOptions>();
 }
-	:	mappedProp=formMappedProperty { $properties.add($mappedProp.name); $mapping.add($mappedProp.mapping); }
-		(',' mappedProp=formMappedProperty { $properties.add($mappedProp.name); $mapping.add($mappedProp.mapping); })*
+	:	mappedProp=formMappedProperty opts=formPropertyOptionsList { $properties.add($mappedProp.name); $mapping.add($mappedProp.mapping); $options.add($opts.options); }
+		(',' mappedProp=formMappedProperty opts=formPropertyOptionsList { $properties.add($mappedProp.name); $mapping.add($mappedProp.mapping); $options.add($opts.options); })*
 	;
 
+formPropertyObject returns [PropertyObjectEntity property = null]
+	: mappedProperty=formMappedProperty
+		{
+			if (inNavigatorParseState()) {
+				$property = $formStatement::form.addPropertyObject(mappedProperty.name, mappedProperty.mapping);
+			}
+		}
+	;
 
 formMappedProperty returns [String name, List<String> mapping]
 	: pname=formPropertyName { $name = $pname.text; }
@@ -333,13 +381,14 @@ formMappedProperty returns [String name, List<String> mapping]
 	;
 
 
-formPropertiesNamesList returns [List<String> properties]
+formPropertiesNamesList returns [List<String> properties, List<FormPropertyOptions> options]
 @init {
 	$properties = new ArrayList<String>();
+	$options = new ArrayList<FormPropertyOptions>();
 }
-	:	pname=formPropertyName { properties.add($pname.text); }
+	:	pname=formPropertyName opts=formPropertyOptionsList { $properties.add($pname.text); $options.add($opts.options); }
 		(
-			',' pname=formPropertyName { properties.add($pname.text); }
+			',' pname=formPropertyName opts=formPropertyOptionsList { $properties.add($pname.text); $options.add($opts.options); }
 		)*
 	;
 
@@ -349,24 +398,69 @@ formPropertyName
 	;
 
 
-formFiltersList[ScriptingFormEntity form] 
+formFiltersList
 @init {
 	List<String> propertyNames = new ArrayList<String>();
 	List<List<String>> propertyMappings = new ArrayList<List<String>>();
 }
 @after {
 	if (inNavigatorParseState()) {
-		$form.addScriptedFilters(propertyNames, propertyMappings);
+		$formStatement::form.addScriptedFilters(propertyNames, propertyMappings);
 	}
 }
 	: decl=formFilterDeclaration { propertyNames.add($decl.name); propertyMappings.add($decl.mapping);}
 	  (',' decl=formFilterDeclaration { propertyNames.add($decl.name); propertyMappings.add($decl.mapping);})*
 	;
+	
+filterGroupDeclaration
+@init {
+	String filterGroupSID = null;
+	List<String> captions = new ArrayList<String>();
+	List<String> keystrokes = new ArrayList<String>();
+	List<String> properties = new ArrayList<String>();
+	List<List<String>> mappings = new ArrayList<List<String>>();
+}
+@after {
+	if (inNavigatorParseState()) {
+		$formStatement::form.addScriptedRegularFilterGroup(filterGroupSID, captions, keystrokes, properties, mappings);
+	}
+}
+	:	'FILTERGROUP' sid=ID { filterGroupSID = $sid.text; }
+		(
+			'FILTER' caption=stringLiteral keystroke=stringLiteral filter=formFilterDeclaration
+			{
+				captions.add($caption.val);
+				keystrokes.add($keystroke.val);
+				properties.add($filter.name);
+				mappings.add($filter.mapping);
+			}
+		)+
+	;
 
 	
 formFilterDeclaration returns [String name, List<String> mapping] 
 	: 'NOT' 'NULL' propDecl=formMappedProperty { $name = $propDecl.name; $mapping = $propDecl.mapping; }
-	;	
+	;
+	
+
+formOrderByList
+@init {
+	boolean ascending = true;
+	List<String> properties = new ArrayList<String>();
+	List<Boolean> orders = new ArrayList<Boolean>();
+}
+@after {
+	if (inNavigatorParseState()) {
+		$formStatement::form.addScriptedDefaultOrder(properties, orders);
+	}
+}
+	: 'ORDER' 'BY' orderedProp=formPropertyWithOrder { properties.add($orderedProp.id); orders.add($orderedProp.order); }
+		(',' orderedProp=formPropertyWithOrder { properties.add($orderedProp.id); orders.add($orderedProp.order); } )*
+	;
+	
+formPropertyWithOrder returns [String id, boolean order = true]
+	:	ID { $id = $ID.text; } ('ASC' | 'DESC' { $order = false; })?
+	;
 
 ////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////// PROPERTY STATEMENT ////////////////////////////
@@ -428,7 +522,7 @@ equalityPE[List<String> context, boolean dynamic] returns [LP property, List<Int
 }
 @after {
 	if (inPropParseState() && op != null) {
-		ScriptingLogicsModule.LPWithParams result =	
+		ScriptingLogicsModule.LPWithParams result =
 			self.addScriptedEqualityProp(op, leftProp, lUsedParams, rightProp, rUsedParams);
 		$property = result.property;
 		$usedParams = result.usedParams;
@@ -525,7 +619,7 @@ simplePE[List<String> context, boolean dynamic] returns [LP property, List<Integ
 	
 unaryMinusPE[List<String> context, boolean dynamic] returns [LP property, List<Integer> usedParams] 	
 @after {
-	if (inPropParseState()) { 
+	if (inPropParseState()) {
 		$property = self.addScriptedUnaryMinusProp($property, $usedParams);
 	}
 }
@@ -704,9 +798,9 @@ propertyObject returns [LP property, String propName, List<String> innerContext]
 @init {
 	List<String> newContext = new ArrayList<String>(); 
 }
-	:	name=compoundID	{ if (inPropParseState()) 
-							{$property = self.findLPByCompoundName($name.text); $propName = $name.text;} 
-						} 
+	:	name=compoundID	{ if (inPropParseState())
+							{$property = self.findLPByCompoundName($name.text); $propName = $name.text;}
+						}
 	|	'[' 
 			(expr=propertyExpression[newContext, true] { $property = $expr.property; $innerContext = newContext; } 
 		|	def=contextIndependentPD[true] { $property = $def.property; })
@@ -720,7 +814,7 @@ commonPropertySettings[LP property, String propertyName, String caption, List<St
 	boolean isPersistent = false;	
 }
 @after {
-	if (inPropParseState()) { 
+	if (inPropParseState()) {
 		self.addSettingsToProperty(property, propertyName, caption, namedParams, groupName, isPersistent, isData);	
 	}
 } 
@@ -740,7 +834,7 @@ constraintStatement
 	String message = null;
 }
 @after {
-	if (inPropParseState()) { 
+	if (inPropParseState()) {
 		self.addScriptedConstraint(prop, checked, message);	
 	}
 }
@@ -767,20 +861,20 @@ followsStatement
 		self.addScriptedFollows(mainProp, context.size(), options, props, usedParams);
 	}
 }
-	:	prop=propertyWithNamedParams { mainProp = $prop.name; context = $prop.params; }	
-		'=>' 
-		firstExpr=propertyExpression[context, false] ('RESOLVE' type=followsResolveType)? 
-		{ 
-			props.add($firstExpr.property); usedParams.add($firstExpr.usedParams); 
-			options.add(type == null ? PropertyFollows.RESOLVE_ALL : $type.type); 
+	:	prop=propertyWithNamedParams { mainProp = $prop.name; context = $prop.params; }
+		'=>'
+		firstExpr=propertyExpression[context, false] ('RESOLVE' type=followsResolveType)?
+		{
+			props.add($firstExpr.property); usedParams.add($firstExpr.usedParams);
+			options.add(type == null ? PropertyFollows.RESOLVE_ALL : $type.type);
 		}
-		(',' nextExpr=propertyExpression[context, false] ('RESOLVE' type=followsResolveType)? 
-			{ 
-		     	props.add($nextExpr.property); usedParams.add($nextExpr.usedParams); 
-		     	options.add(type == null ? PropertyFollows.RESOLVE_ALL : $type.type); 
+		(',' nextExpr=propertyExpression[context, false] ('RESOLVE' type=followsResolveType)?
+			{
+		     	props.add($nextExpr.property); usedParams.add($nextExpr.usedParams);
+		     	options.add(type == null ? PropertyFollows.RESOLVE_ALL : $type.type);
 			}
 		)*
-	;	
+	;
 
 followsResolveType returns [Integer type]
 	:	lit=LOGICAL_LITERAL	{ $type = $lit.text.equals("TRUE") ? PropertyFollows.RESOLVE_TRUE : PropertyFollows.RESOLVE_FALSE; }
@@ -805,7 +899,7 @@ writeOnChangeStatement
 	List<Integer> changeUsedParams;
 }
 @after {
-	if (inPropParseState()) { 
+	if (inPropParseState()) {
 		self.addScriptedWriteOnChange(mainPropName, context.size(), old, anyChange, valueProp, valueUsedParams, changeProp, changeUsedParams);
 	}
 }
@@ -813,7 +907,7 @@ writeOnChangeStatement
 		'<-'
 		('OLD' { old = true; })?
 		valueExpr=propertyExpression[context, false] { valueProp = $valueExpr.property; valueUsedParams = $valueExpr.usedParams; }
-		'ON' ('CHANGE' | 'ASSIGN' { anyChange = false; }) 
+		'ON' ('CHANGE' | 'ASSIGN' { anyChange = false; })
 		changeExpr=propertyExpression[context, false] { changeProp = $changeExpr.property; changeUsedParams = $changeExpr.usedParams; }
 	;
 
@@ -865,9 +959,14 @@ componentStatementBody [Object propertyReceiver, ComponentView parentComponent]
 		| setupComponentStatement
 		| setupGroupObjectStatement
 		| addComponentStatement[parentComponent]
-		| removeComponentStatement )*
+		| removeComponentStatement
+		| emptyStatement )*
 	  '}'
-	| ';'
+	| emptyStatement
+	;
+
+emptyStatement
+	: ';'	
 	;
 
 setupComponentStatement
@@ -886,7 +985,11 @@ setupGroupObjectStatement
 				groupObject = $designStatement::design.getGroupObject($ID.text);
 			}
 		}
-	  ')' '{' setObjectPropertyStatement[groupObject]* '}'
+	  ')'	'{'
+                ( setObjectPropertyStatement[groupObject]
+                | emptyStatement
+                )*
+            '}'
 	;
 
 addComponentStatement[ComponentView parentComponent]
@@ -986,12 +1089,20 @@ setObjectPropertyStatement[Object propertyReceiver] returns [String id, Object v
 	;
 
 componentPropertyValue returns [Object value]
-	: col=COLOR_LITERAL { $value = Color.decode($col.text); }
-	| str=STRING_LITERAL { $value = self.transformStringLiteral($str.text); }
+	: c=colorLiteral { $value = $c.val; }
+	| s=stringLiteral { $value = $s.val; }
 	| i=intLiteral { $value = $i.val; }
 	| d=doubleLiteral { $value = $d.val; }
-	| dim=dimensionsLiteral { $value = $dim.dimension; }
-	| bool=booleanLiteral { $value=Boolean.valueOf($bool.text); }
+	| dim=dimensionLiteral { $value = $dim.val; }
+	| b=booleanLiteral { $value = $b.val; }
+	;
+
+colorLiteral returns [Color val]
+	: c=COLOR_LITERAL { $val = Color.decode($c.text); }
+	;
+
+stringLiteral returns [String val]
+	: s=STRING_LITERAL { $val = self.transformStringLiteral($s.text); }
 	;
 
 intLiteral returns [int val]
@@ -1008,12 +1119,12 @@ doubleLiteral returns [double val]
 	: (MINUS {isMinus=true;})? ud=udoubleLiteral { $val = (isMinus ? -1 : 1) * Double.parseDouble($ud.text); }
 	;
 
-booleanLiteral
-	: LOGICAL_LITERAL
+booleanLiteral returns [boolean val]
+	: bool=LOGICAL_LITERAL { $val = Boolean.valueOf($bool.text); }
 	;
 
-dimensionsLiteral returns [Dimension dimension]
-	: '{' x=intLiteral ',' y=intLiteral '}' { $dimension = new Dimension(Integer.parseInt($x.text), Integer.parseInt($y.text)); }
+dimensionLiteral returns [Dimension val]
+	: '(' x=intLiteral ',' y=intLiteral ')' { $val = new Dimension(Integer.parseInt($x.text), Integer.parseInt($y.text)); }
 	;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1022,12 +1133,12 @@ dimensionsLiteral returns [Dimension dimension]
 
 propertyWithNamedParams returns [String name, List<String> params]
 	:	propName=compoundID { $name = $propName.text; }
-		'(' 
+		'('
 		list=idList { $params = $list.ids; }
-		')'	
+		')'
 	;
 
-parameter 
+parameter
 	:	ID | NUMBERED_PARAM
 	;
 
@@ -1108,7 +1219,7 @@ literal returns [LP property]
 	String text = null;
 }
 @after {
-	if (inPropParseState()) { 
+	if (inPropParseState()) {
 		$property = self.addConstantProp(cls, text);	
 	}
 }
@@ -1139,7 +1250,6 @@ udoubleLiteral
 	:	POSITIVE_DOUBLE_LITERAL
 	; 
 		
-
 uintLiteral
 	:	UINT_LITERAL
 	;		
@@ -1156,7 +1266,7 @@ fragment STR_LITERAL_CHAR	: '\\\'' | ~('\r'|'\n'|'\'');	 // overcomplicated due 
 fragment DIGITS		:	('0'..'9')+;
 fragment HEX_DIGIT	: 	'0'..'9' | 'a'..'f' | 'A'..'F';
 
-PRIMITIVE_TYPE  :	'INTEGER' | 'DOUBLE' | 'LONG' | 'BOOLEAN' | 'DATE' | 'STRING[' DIGITS ']' | 'ISTRING[' DIGITS ']';		
+PRIMITIVE_TYPE  :	'INTEGER' | 'DOUBLE' | 'LONG' | 'BOOLEAN' | 'DATE' | 'STRING[' DIGITS ']' | 'ISTRING[' DIGITS ']';
 LOGICAL_LITERAL :	'TRUE' | 'FALSE';		
 ID          	:	('a'..'z'|'A'..'Z')('a'..'z'|'A'..'Z'|'_'|'0'..'9')*;
 WS				:	(NEWLINE | SPACE) { $channel=HIDDEN; };

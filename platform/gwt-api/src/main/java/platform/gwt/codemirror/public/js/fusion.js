@@ -8,16 +8,16 @@ CodeMirror.defineMode("fusion", function(config, parserConfig) {
     }
 
     var types = words("INTEGER DOUBLE LONG BOOLEAN DATE STRING ISTRING");
-    var keywords = words("MODULE IMPORT CLASS ABSTRACT GROUP OBJECTS " +
-                         "PROPERTIES FILTERS FORM INIT FIXED " +
-                         "PANEL HIDE GRID SUM MAX BY DATA UNION " +
-                         "OVERRIDE XOR EXCLUSIVE IS AS IN PERSISTENT " +
-                         "TRUE FALSE NOT NULL AND IF STATIC MSG " +
-                         "OBJVALUE SELECTION ADDOBJ CONSTRAINT CHECKED " +
-                         "ORDER PARTITION DESC WINDOW EXCEPTLAST FORMULA " +
-                         "RESOLVE ALL NOTHING" +
-                         "DESIGN FROM DEFAULT ADD REMOVE CASCADE PARENT PROPERTY" +
-                         "POSITION TO THE LEFT RIGHT BOTTOM RIGHTBOTTOM INTERSECT BEFORE AFTER");
+    var keywords = words("ABSTRACT ACTION ADD ADDOBJ AFTER ALL AND APPLY AS ASC BEFORE " + 
+                           "BOTTOM BY CASCADE CHECKED CLASS COLUMNS CONSTRAINT DATA " + 
+                           "DEFAULT DESC DESIGN EDITABLE EXCEPTLAST EXCLUSIVE FALSE " + 
+                           "FILTER FILTERGROUP FILTERS FIXED FOOTER FORM FORMULA FROM " + 
+                           "GRID GROUP HEADER HIDE HIGHLIGHTIF HINT IF IMPORT IN INCREMENT " + 
+                           "INIT INTERSECT IS LEFT MAX MODULE MSG NO NOT NOTHING NULL " + 
+                           "OBJECTS OBJVALUE ORDER OVERRIDE PANEL PARENT PARTITION " + 
+                           "PERSISTENT POSITION PROPERTIES PROPERTY READONLY REMOVE " + 
+                           "RESOLVE RIGHT RIGHTBOTTOM SELECTION SHOWIF STATIC SUM " + 
+                           "TABLE THE TO TREE TRUE UNION UPDATE WINDOW XOR");
 
     var isOperatorChar = /[+\-*&%=<>!?|]/;
 

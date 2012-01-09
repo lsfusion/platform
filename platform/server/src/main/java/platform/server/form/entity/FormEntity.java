@@ -184,6 +184,20 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         return null;
     }
 
+    public RegularFilterGroupEntity getRegularFilterGroup(String sid) {
+        if (sid == null) {
+            return null;
+        }
+
+        for (RegularFilterGroupEntity filterGroup : regularFilterGroups) {
+            if (sid.equals(filterGroup.getSID())) {
+                return filterGroup;
+            }
+        }
+
+        return null;
+    }
+
     public RegularFilterEntity getRegularFilter(int id) {
         for (RegularFilterGroupEntity filterGroup : regularFilterGroups) {
             for (RegularFilterEntity filter : filterGroup.filters) {
@@ -305,8 +319,8 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         }
     }
 
-    protected void addPropertyDraw(AbstractNode group, boolean upClasses, ObjectEntity... objects) {
-        addPropertyDraw(group, upClasses, null, false, objects);
+    protected PropertyDrawEntity addPropertyDraw(AbstractNode group, boolean upClasses, ObjectEntity... objects) {
+        return BaseUtils.single(addPropertyDraw(group, upClasses, null, false, objects));
     }
 
     protected void addPropertyDraw(AbstractNode group, boolean upClasses, boolean useObjSubsets, ObjectEntity... objects) {
@@ -317,7 +331,7 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         addPropertyDraw(group, upClasses, groupObject, false, objects);
     }
 
-    protected void addPropertyDraw(AbstractNode group, boolean upClasses, GroupObjectEntity groupObject, boolean useObjSubsets, ObjectEntity... objects) {
+    protected List<PropertyDrawEntity> addPropertyDraw(AbstractNode group, boolean upClasses, GroupObjectEntity groupObject, boolean useObjSubsets, ObjectEntity... objects) {
         List<ValueClassWrapper> valueClasses = new ArrayList<ValueClassWrapper>();
         Map<ObjectEntity, ValueClassWrapper> objectToClass = new HashMap<ObjectEntity, ValueClassWrapper>();
         for (ObjectEntity object : objects) {
@@ -339,6 +353,8 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
             classSubsets = Collections.singletonList(valueClasses);
         }
 
+        List<PropertyDrawEntity> propertyDraws = new ArrayList<PropertyDrawEntity>();
+
         for (PropertyClassImplement implement : group.getProperties(classSubsets, upClasses)) {
             List<PropertyInterface> interfaces = new ArrayList<PropertyInterface>();
             Map<ObjectEntity, PropertyInterface> objectToInterface =
@@ -346,8 +362,10 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
             for (ObjectEntity object : objects) {
                 interfaces.add(objectToInterface.get(object));
             }
-            addPropertyDraw(new LP(implement.property, interfaces), groupObject, objects);
+            propertyDraws.add(addPropertyDraw(new LP(implement.property, interfaces), groupObject, objects));
         }
+
+        return propertyDraws;
     }
 
     public PropertyDrawEntity addPropertyDraw(LP property, PropertyObjectInterfaceEntity... objects) {

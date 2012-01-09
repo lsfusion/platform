@@ -24,6 +24,8 @@ import java.io.File;
 import static org.junit.Assert.*;
 
 public class LsfLogicsParserDesignTest {
+    private static final String SCRIPTS_FOLDER = "src/test/resources/testdesign/";
+
     @Rule
     public TestName name = new TestName();
 
@@ -43,7 +45,7 @@ public class LsfLogicsParserDesignTest {
     @BeforeClass
     public static void setUpTests() throws Exception {
         Settings.instance = new Settings();
-        File scriptsFolder = new File("src/test/resources/testscripts");
+        File scriptsFolder = new File(SCRIPTS_FOLDER);
         if (scriptsFolder.exists()) {
             FileUtils.cleanDirectory(scriptsFolder);
         }
@@ -67,8 +69,25 @@ public class LsfLogicsParserDesignTest {
     }
 
     @Test
+    public void testEmptyStatements() throws Exception {
+        setupTest("DESIGN storeArticle FROM DEFAULT {\n" +
+                  "    GROUP(s) {\n" +
+                  "        highlightColor = #321233;;;\n" +
+                  "        ;; tableRowsCount = 10;\n" +
+                  "        needVerticalScroll = FALSE;\n" +
+                  "    ;;};;\n" +
+                  "\n" +
+                  "    PROPERTY(bar) {\n" +
+                  "        hide = TRUE;;;\n" +
+                  "        ;;\n" +
+                  "    };;\n" +
+                  "\n" +
+                  "}");
+    }
+
+    @Test
     public void testDefaultDesignCreation() throws Exception {
-        createDesign("DESIGN storeArticle FROM DEFAULT;");
+        setupTest("DESIGN storeArticle FROM DEFAULT;");
 
         assertNotNull(design.getComponentBySID("main"));
 
@@ -97,7 +116,7 @@ public class LsfLogicsParserDesignTest {
 
     @Test
     public void testSkipDefaultDesignCreation() throws Exception {
-        createDesign("DESIGN storeArticle;", false);
+        setupTest("DESIGN storeArticle;", false);
 
         assertNotNull(design.getComponentBySID("main"));
 
@@ -124,11 +143,11 @@ public class LsfLogicsParserDesignTest {
 
     @Test
     public void testSetFormViewProperties() throws Exception {
-        createDesign("DESIGN storeArticle FROM DEFAULT {\n" +
-                     "    caption='some';\n" +
-                     "    title='some2';\n" + //title <==> caption
-                     "    overridePageWidth=12;\n" +
-                     "}");
+        setupTest("DESIGN storeArticle FROM DEFAULT {\n" +
+                  "    caption='some';\n" +
+                  "    title='some2';\n" + //title <==> caption
+                  "    overridePageWidth=12;\n" +
+                  "}");
 
         assertEquals(design.caption, "some2");
         assertEquals((long) design.overridePageWidth, 12);
@@ -136,13 +155,13 @@ public class LsfLogicsParserDesignTest {
 
     @Test
     public void testSetGroupViewProperties() throws Exception {
-        createDesign("DESIGN storeArticle FROM DEFAULT {\n" +
-                     "    GROUP(s) {\n" +
-                     "        highlightColor = #321233;\n" +
-                     "        tableRowsCount = 10;\n" +
-                     "        needVerticalScroll = FALSE;\n" +
-                     "    }" +
-                     "}");
+        setupTest("DESIGN storeArticle FROM DEFAULT {\n" +
+                  "    GROUP(s) {\n" +
+                  "        highlightColor = #321233;\n" +
+                  "        tableRowsCount = 10;\n" +
+                  "        needVerticalScroll = FALSE;\n" +
+                  "    }" +
+                  "}");
 
         assertEquals(sGroup.highlightColor, new Color(0x321233));
         assertEquals((long) sGroup.tableRowsCount, 10);
@@ -151,42 +170,43 @@ public class LsfLogicsParserDesignTest {
 
     @Test(expected = RuntimeException.class)
     public void testSetUnknownProperties() throws Exception {
-        createDesign("DESIGN storeArticle FROM DEFAULT {\n" +
-                     "    caption23='some';\n" +
-                     "}");
+        setupTest("DESIGN storeArticle FROM DEFAULT {\n" +
+                  "    caption23='some';\n" +
+                  "}");
     }
 
     @Test
     public void testSetPropertyDrawViewProperties() throws Exception {
-        createDesign("DESIGN storeArticle FROM DEFAULT {\n" +
-                     "    PROPERTY(bar) {\n" +
-                     "        autoHide = TRUE;\n" +
-                     "        showTableFirst = TRUE;\n" +
-                     "        editOnSingleClick = TRUE;\n" +
-                     "        hide = TRUE;\n" +
-                     "        regexp = '[\\d]+';\n" +
-                     "        regexpMessage = 'regexpmsg';\n" +
-                     "    }\n" +
-                     "\n" +
-                     "    PROPERTY(storeSizeName(s)) {\n" +
-                     "        echoSymbols = FALSE;\n" +
-                     "        highlightColor = #120BAC;\n" +
-                     "    }\n" +
-                     "\n" +
-                     "    PROPERTY(name(a)) {\n" +
-                     "        minimumCharWidth = 11;\n" +
-                     "        maximumCharWidth = 12;\n" +
-                     "        preferredCharWidth = 13;\n" +
-                     "        showEditKey = TRUE;\n" +
-                     "    }\n" +
-                     "\n" +
-                     "    PROPERTY(foo(s, a)) {\n" +
-                     "        focusable = FALSE;\n" +
-                     "        panelLabelAbove = TRUE;\n" +
-                     "        caption = 'This is bar\\'s caption!';\n" +
-                     "        clearText = TRUE;\n" +
-                     "    }\n" +
-                     "}");
+        setupTest("DESIGN storeArticle FROM DEFAULT {\n" +
+                  "    PROPERTY(bar) {\n" +
+                  "        autoHide = TRUE;\n" +
+                  "        showTableFirst = TRUE;\n" +
+                  "        editOnSingleClick = TRUE;\n" +
+                  "        hide = TRUE;\n" +
+                  "        regexp = '[\\d]+';\n" +
+                  "        regexpMessage = 'regexpmsg';\n" +
+                  "    }\n" +
+                  "\n" +
+                  "    PROPERTY(storeSizeName(s)) {\n" +
+                  "        echoSymbols = FALSE;\n" +
+                  "        highlightColor = #120BAC;\n" +
+                  "        minimumSize = (321, 123);" +
+                  "    }\n" +
+                  "\n" +
+                  "    PROPERTY(name(a)) {\n" +
+                  "        minimumCharWidth = 11;\n" +
+                  "        maximumCharWidth = 12;\n" +
+                  "        preferredCharWidth = 13;\n" +
+                  "        showEditKey = TRUE;\n" +
+                  "    }\n" +
+                  "\n" +
+                  "    PROPERTY(foo(s, a)) {\n" +
+                  "        focusable = FALSE;\n" +
+                  "        panelLabelAbove = TRUE;\n" +
+                  "        caption = 'This is bar\\'s caption!';\n" +
+                  "        clearText = TRUE;\n" +
+                  "    }\n" +
+                  "}");
 
         PropertyDrawView barView = design.get(entity.getPropertyDraw(findLPBySID("bar")));
         PropertyDrawView storeSizeView = design.get(entity.getPropertyDraw(findLPBySID("storeSizeName")));
@@ -200,6 +220,7 @@ public class LsfLogicsParserDesignTest {
         assertEquals(barView.regexp, "[\\d]+");
 
         assertEquals(storeSizeView.highlightColor, new Color(0x120BAC));
+        assertEquals(storeSizeView.minimumSize, new Dimension(321, 123));
 
         assertEquals(nameView.getMinimumCharWidth(), 11);
         assertEquals(nameView.getMaximumCharWidth(), 12);
@@ -210,13 +231,13 @@ public class LsfLogicsParserDesignTest {
 
     @Test
     public void testSetPropertiesWithCustomConverters() throws Exception {
-        createDesign("DESIGN storeArticle FROM DEFAULT {\n" +
-                     "    PROPERTY(bar) {\n" +
-                     "        editKey = 'alt shift X';\n" +
-                     "        headerFont = 'Tahoma bold 15';\n" +
-                     "        font = '12 Tahoma italic bold';\n" +
-                     "    }\n" +
-                     "}");
+        setupTest("DESIGN storeArticle FROM DEFAULT {\n" +
+                  "    PROPERTY(bar) {\n" +
+                  "        editKey = 'alt shift X';\n" +
+                  "        headerFont = 'Tahoma bold 15';\n" +
+                  "        font = '12 Tahoma italic bold';\n" +
+                  "    }\n" +
+                  "}");
 
         PropertyDrawView barView = design.get(entity.getPropertyDraw(findLPBySID("bar")));
 
@@ -228,51 +249,51 @@ public class LsfLogicsParserDesignTest {
 
     @Test(expected = RuntimeException.class)
     public void testSetKeyStrokePropertyFails() throws Exception {
-        createDesign("DESIGN storeArticle FROM DEFAULT {\n" +
-                     "    PROPERTY(bar) {\n" +
-                     "        editKey = 'alt shift Xdf';\n" +
-                     "    }\n" +
-                     "}");
+        setupTest("DESIGN storeArticle FROM DEFAULT {\n" +
+                  "    PROPERTY(bar) {\n" +
+                  "        editKey = 'alt shift Xdf';\n" +
+                  "    }\n" +
+                  "}");
     }
 
     @Test(expected = RuntimeException.class)
     public void testSetFontPropertyFails1() throws Exception {
-        createDesign("DESIGN storeArticle FROM DEFAULT {\n" +
-                     "    PROPERTY(bar) {\n" +
-                     "        font = 'alt shift Xdf';\n" +
-                     "    }\n" +
-                     "}");
+        setupTest("DESIGN storeArticle FROM DEFAULT {\n" +
+                  "    PROPERTY(bar) {\n" +
+                  "        font = 'alt shift Xdf';\n" +
+                  "    }\n" +
+                  "}");
     }
 
     @Test(expected = RuntimeException.class)
     public void testSetFontPropertyFails2() throws Exception {
-        createDesign("DESIGN storeArticle FROM DEFAULT {\n" +
-                     "    PROPERTY(bar) {\n" +
-                     "        font = '12 italic bold name1 name2';\n" +
-                     "    }\n" +
-                     "}");
+        setupTest("DESIGN storeArticle FROM DEFAULT {\n" +
+                  "    PROPERTY(bar) {\n" +
+                  "        font = '12 italic bold name1 name2';\n" +
+                  "    }\n" +
+                  "}");
     }
 
     @Test(expected = RuntimeException.class)
     public void testSetFontPropertyFails3() throws Exception {
-        createDesign("DESIGN storeArticle FROM DEFAULT {\n" +
-                     "    PROPERTY(bar) {\n" +
-                     "        font = '-12 italic Tahoma';\n" +
-                     "    }\n" +
-                     "}");
+        setupTest("DESIGN storeArticle FROM DEFAULT {\n" +
+                  "    PROPERTY(bar) {\n" +
+                  "        font = '-12 italic Tahoma';\n" +
+                  "    }\n" +
+                  "}");
     }
 
     private LP findLPBySID(String sid) throws ScriptingErrorLog.SemanticErrorException {
         return LM.findLPByCompoundName(sid);
     }
 
-    private void createDesign(String additionalPart) throws Exception {
-        createDesign(additionalPart, true);
+    private void setupTest(String testCode) throws Exception {
+        setupTest(testCode, true);
     }
 
-    private void createDesign(String additionalPart, boolean hasDefault) throws Exception {
-        String fileContent = FileUtils.readFileToString(new File("src/test/resources/testscript.lsf"), "UTF-8") + additionalPart;
-        testScriptFile = new File("src/test/resources/testscripts/" + name.getMethodName() + ".lsf");
+    private void setupTest(String testCode, boolean hasDefault) throws Exception {
+        String fileContent = FileUtils.readFileToString(new File("src/test/resources/testdesign.lsf"), "UTF-8") + testCode;
+        testScriptFile = new File(SCRIPTS_FOLDER + name.getMethodName() + ".lsf");
         FileUtils.writeStringToFile(testScriptFile, fileContent, "UTF-8");
 
         bl = new ScriptedBusinessLogics("scriptedLogicsUnitTest",

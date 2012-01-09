@@ -25,6 +25,7 @@
         <exec dir="${basedir}" executable="cmd" failonerror="true">
             <arg value="/c"/>
             <arg value="mvn"/>
+            <arg value="-Dmaven.test.skip=false"/>
             <!--<arg value="-X"/>-->
             <arg value="--also-make" />
             <arg value="--projects" />
@@ -37,6 +38,7 @@
         <exec dir="${basedir}/${artifactId}" executable="cmd" failonerror="true">
             <arg value="/c"/>
             <arg value="mvn"/>
+            <arg value="-Dmaven.test.skip=false"/>
             <arg value="test-compile" />
             <arg value="-Dquickbuild" />
         </exec>

@@ -487,7 +487,7 @@ public abstract class LogicsModule {
     }
 
     protected LP addEAProp(ValueClass... params) {
-        return addEAProp((String)null, params);
+        return addEAProp((String) null, params);
     }
 
     protected LP addEAProp(LP fromAddress, ValueClass... params) {
@@ -839,6 +839,10 @@ public abstract class LogicsModule {
         for (PropertyDrawEntity propertyDraw : form.getProperties(property.property)) {
             propertyDraw.propertyCaption = hideCaptionProp;
         }
+    }
+
+    public void showIf(FormEntity<?> form, PropertyDrawEntity property, LP ifProperty, PropertyObjectInterfaceEntity... objects) {
+        property.propertyCaption = form.addPropertyObject(addHideCaptionProp(property.propertyObject.property, ifProperty), objects);
     }
 
     private <P extends PropertyInterface, L extends PropertyInterface> LP mapLProp(AbstractGroup group, boolean persistent, PropertyMapImplement<L, P> implement, LP<P> property) {
@@ -1771,6 +1775,14 @@ public abstract class LogicsModule {
     }
 
 
+    protected LP addHideCaptionProp(LP original, LP hideProperty) {
+        return addHideCaptionProp(original.property, hideProperty);
+    }
+
+    protected LP addHideCaptionProp(Property original, LP hideProperty) {
+        return addHideCaptionProp(privateGroup, "hideCaption", original, hideProperty);
+    }
+
     /**
      * Нужно для скрытия свойств при соблюдении какого-то критерия
      * <p/>
@@ -1799,15 +1811,14 @@ public abstract class LogicsModule {
      * @param hideProperty критерий
      * @return свойство, которое должно использоваться в качестве propertyCaption для скрываемого свойства
      */
-
     protected LP addHideCaptionProp(AbstractGroup group, String caption, LP original, LP hideProperty) {
-        LP originalCaption = addCProp(StringClass.get(100), original.property.caption);
-        LP result = addJProp(group, caption, baseLM.and1, BaseUtils.add(new Object[]{originalCaption}, directLI(hideProperty)));
-        return result;
+        return addHideCaptionProp(group, caption, original.property, hideProperty);
     }
 
-    protected LP addHideCaptionProp(LP original, LP hideProperty) {
-        return addHideCaptionProp(privateGroup, "hideCaption", original, hideProperty);
+    protected LP addHideCaptionProp(AbstractGroup group, String caption, Property original, LP hideProperty) {
+        LP originalCaption = addCProp(StringClass.get(100), original.caption);
+        LP result = addJProp(group, caption, baseLM.and1, BaseUtils.add(new Object[]{originalCaption}, directLI(hideProperty)));
+        return result;
     }
 
     protected LP addProp(Property<? extends PropertyInterface> prop) {

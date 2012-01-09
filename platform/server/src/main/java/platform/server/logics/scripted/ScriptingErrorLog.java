@@ -107,39 +107,31 @@ public class ScriptingErrorLog {
     }
 
     public void emitComponentIsNullError(LsfLogicsParser parser, String mainMsg) throws SemanticErrorException {
-        SemanticErrorException e = new SemanticErrorException(parser.input);
-        String msg = getSemanticRecognitionErrorText(mainMsg + " component is null\n", parser, e);
-        emitSemanticError(msg, e);
+        emitSimpleError(parser, mainMsg + " component is null");
     }
 
     public void emitComponentMustBeAContainerError(LsfLogicsParser parser) throws SemanticErrorException {
-        SemanticErrorException e = new SemanticErrorException(parser.input);
-        String msg = getSemanticRecognitionErrorText("Component must be a continaer\n", parser, e);
-        emitSemanticError(msg, e);
+        emitSimpleError(parser, "Component must be a container.");
     }
 
     public void emitInsertBeforeAfterMainContinaerError(LsfLogicsParser parser) throws SemanticErrorException {
-        SemanticErrorException e = new SemanticErrorException(parser.input);
-        String msg = getSemanticRecognitionErrorText("Can't insert before or after main container.\n", parser, e);
-        emitSemanticError(msg, e);
+        emitSimpleError(parser, "Can't insert before or after main container.");
     }
 
     public void emitRemoveMainContinaerError(LsfLogicsParser parser) throws SemanticErrorException {
-        SemanticErrorException e = new SemanticErrorException(parser.input);
-        String msg = getSemanticRecognitionErrorText("Can't remove main container.\n", parser, e);
-        emitSemanticError(msg, e);
+        emitSimpleError(parser, "Can't remove main container.");
     }
 
     public void emitIntersectionInDifferentContainersError(LsfLogicsParser parser) throws SemanticErrorException {
-        SemanticErrorException e = new SemanticErrorException(parser.input);
-        String msg = getSemanticRecognitionErrorText("Forbidden to create the intersection of objects in different containers.\n", parser, e);
-        emitSemanticError(msg, e);
+        emitSimpleError(parser, "Forbidden to create the intersection of objects in different containers.");
     }
 
     public void emitUnableToSetPropertyError(LsfLogicsParser parser, String propertyName, String cause) throws SemanticErrorException {
-        SemanticErrorException e = new SemanticErrorException(parser.input);
-        String msg = getSemanticRecognitionErrorText("Unable to set property '" + propertyName + "'. Cause: " + cause + "\n", parser, e);
-        emitSemanticError(msg, e);
+        emitSimpleError(parser, "Unable to set property '" + propertyName + "'. Cause: " + cause);
+    }
+
+    public void emitWrongKeyStrokeFormat(LsfLogicsParser parser, String ksLiteral) throws SemanticErrorException {
+        emitSimpleError(parser, "Can't create keystroke from string '" + ksLiteral + "'");
     }
 
     public void emitParamIndexError(LsfLogicsParser parser, int paramIndex, int paramCount) throws SemanticErrorException {

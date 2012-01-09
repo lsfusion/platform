@@ -1,4 +1,4 @@
-MODULE Features;
+MODULE testDesign;
 
 IMPORT BaseLogicsModule;
 
@@ -128,145 +128,17 @@ storeIsHuge2(store) = (storeSize(store) == storeSize.huge) == TRUE;
 documentBalance(document, article) = balanceQuantity(store(document), article);
 
 ///////////////CONSTRAINT STATEMENT//////////////
+
 // Syntax:
 // CONSTRAINT [CHECKED] propertyExpression MSG 'message';
 CONSTRAINT CHECKED foo(store, article) > 1000 MSG 'ошибка: >1000';
 
-
-////////////////FOLLOWS STATEMENT////////////////
-// Syntax:
-// propertyName(param1, ..., paramN) =>
-//      propertyExpression1 [RESOLVE (TRUE | FALSE | ALL | NOTHING)],
-//      ...
-//      propertyExpressionK [RESOLVE (TRUE | FALSE | ALL | NOTHING)];
-foo(store, article) => foo2(store, article) RESOLVE NOTHING, bar2(store, article);
-
-
-//////////////WRITEONCHANGE STATEMENT////////////
-// Syntax:
-// propertyName(param1, ..., paramN) <- [OLD] valueProperty(param1, ..., paramK) ON (ASSIGN | CHANGE) changeProperty(param1, ..., paramL);
-
-
 //////////////// FORM STATEMENT /////////////////
-// Syntax:
-// FORM name ['caption']
-// [(Objects list | Properties list | Filters list)]
-// ...
-// [(Objects list | Properties list | Filters list)];
-FORM documentArticle 'По документам'
-
-// Objects list syntax:
-// OBJECTS [alias=] className | ([alias1=] className1, ..., [aliasN=] classNameN) [INIT | FIXED] [PANEL | HIDE | GRID],
-//         ...
-//         [alias=] className | ([alias1=] className1, ..., [aliasN=] classNameN) [INIT | FIXED] [PANEL | HIDE | GRID]
-OBJECTS document, article
-
-// Property list syntax:
-// PROPERTIES propName1(param1, ..., paramN1), ..., propNameK(param1, ..., paramNK)
-// Special properties: SELECTION, OBJVALUE, ADDOBJ
-PROPERTIES store(document), name(article), storeName(document)
-PROPERTIES quantity(document, article)
-PROPERTIES inQuantity(document, article), outQuantity(document, article), documentBalance(document, article)
-PROPERTIES ADDOBJ(document), ADDOBJ(article)
-
-// Filters list syntax:
-// FILTERS NOT NULL property1(param1, ..., paramN1),
-//         ...
-//         NOT NULL propertyK(param1, ..., paramNK)
-FILTERS NOT NULL name(article);
-
 
 FORM storeArticle 'По складам'
 OBJECTS s=store, a=article
-PROPERTIES SELECTION(s), name(s) READONLY, OBJVALUE(a), name(a)
-PROPERTIES(s, a) SHOWIF storeIsHuge(s) incomeQuantity, incomeQuantity2, outcomeQuantity, outcomeQuantity2
+PROPERTIES SELECTION(s), name(s), OBJVALUE(a), name(a)
+PROPERTIES(s, a) incomeQuantity, incomeQuantity2, outcomeQuantity, outcomeQuantity2
 PROPERTIES(s) storeSizeName, storeIsHuge, storeIsHuge2
-PROPERTIES(s, a) foo, foo2 SHOWIF storeIsHuge(s), bar, foobar HEADER name(a), bar2, baz, baz2, balanceQuantity, testUnion HEADER name(s), testPartition, testFormula
-FILTERGROUP filters1
-    FILTER 'Показывать только огромные склады' 'F10' NOT NULL storeIsHuge(s)
-ORDER BY name, foo
-;
+PROPERTIES(s, a) foo, foo2, bar, foobar, bar2, baz, baz2, balanceQuantity, testUnion, testPartition, testFormula;
 
-//getMainContainer => CONTAINER main
-//
-//getTreeContainer => CONTAINER treeName.box
-//get(TreeGroupEntity) => COMPONENT treeName.tree
-//
-//getGroupObjectContainer => CONTAINER groupName.box
-//getPanelContainer => CONTAINER groupName.panel
-//get(GroupObjectEntity)
-//    .grid => COMPONENT groupName.grid
-//    .showType => COMPONENT groupName.showType
-//getGridContainer => CONTAINER groupName.grid.box
-//getControlsContainer => groupName.controls
-//getFilterContainer => groupName.filters
-//
-//getGroupPropertyContainer(AbstractGroup) CONTAINER groupName.propGroupName
-//
-//get(ObjectEntity)
-//    .classChooser => COMPONENT objectName.classChooser
-//
-//getRegularFilterGroup => COMPONENT filters.filterName
-//
-//get*Function => COMPONENT functions.*
-//getFormButtonContainer=> CONTAINER functions.box
-//
-//get(PropertyDrawEntity) => COMPONENT PROPERTY(propSelector(...))
-
-
-DESIGN storeArticle FROM DEFAULT {
-    title = 'Справочник складов';
-
-    GROUP(s) {
-        tableRowsCount = 10;
-        needVerticalScroll = FALSE;
-    }
-
-    main {
-        ADD functions.box BEFORE s.box;
-        s.box {
-            title = 'Склад';
-            fillVertical = 0.3;
-        }
-        a.box {
-            title = 'Артикль';
-            fillVertical = 2.5;
-        }
-    }
-
-        //просто для демонстрации, пока не придумается реальный пример использования
-        ADD newContainer {
-            title = 'new';
-            ADD child1 {
-                background = #1232AC;
-                minimumSize = (200, 200);
-                font = 'Tahoma bold 12';
-            };
-            ADD child2 {
-                POSITION child1 TO NOT INTERSECT;
-
-                headerFont = '13 Tahoma';
-            }
-
-            POSITION child1 TO THE LEFT child2;
-        }
-        REMOVE newContainer CASCADE;
-    }
-
-    PROPERTY(bar) { caption = 'Барр'; }
-
-    PROPERTY(storeSizeName(s)) { caption = 'Имя размера склада'; }
-
-    PROPERTY(name(a)) {
-        caption = 'Имя (a)';
-        editKey = 'ctrl F6';
-        showEditKey = TRUE;
-        clearText = TRUE;
-    }
-
-    PROPERTY(foo(s, a)) {
-        focusable = FALSE;
-        panelLabelAbove = TRUE;
-        caption = 'This is foo\'s caption!';
-    }
-}

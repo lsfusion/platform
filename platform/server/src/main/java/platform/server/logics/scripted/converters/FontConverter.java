@@ -64,6 +64,14 @@ public class FontConverter extends AbstractConverter {
             }
         }
 
+        if (name == null) {
+            throw new ConversionException("Incorrect format: font name isn't specified");
+        }
+
+        if (size == -1) {
+            throw new ConversionException("Incorrect format: font size isn't specified");
+        }
+
         return new Font(name, style, size);
     }
 

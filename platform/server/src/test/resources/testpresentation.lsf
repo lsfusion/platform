@@ -1,4 +1,4 @@
-MODULE testDesign;
+MODULE testPresentation;
 
 IMPORT BaseLogicsModule;
 
@@ -135,38 +135,4 @@ CONSTRAINT CHECKED foo(store, article) > 1000 MSG 'ошибка: >1000';
 
 //////////////// FORM STATEMENT /////////////////
 
-// Syntax:
-// FORM name ['caption']
-// [(Objects list | Properties list | Filters list)]
-// ...
-// [(Objects list | Properties list | Filters list)];
-FORM documentArticle 'По документам'
-
-// Objects list syntax:
-// OBJECTS [alias=] className | ([alias1=] className1, ..., [aliasN=] classNameN) [INIT | FIXED] [PANEL | HIDE | GRID],
-//         ...
-//         [alias=] className | ([alias1=] className1, ..., [aliasN=] classNameN) [INIT | FIXED] [PANEL | HIDE | GRID]
-OBJECTS document, article
-
-// Property list syntax:
-// PROPERTIES propName1(param1, ..., paramN1), ..., propNameK(param1, ..., paramNK)
-// Special properties: SELECTION, OBJVALUE, ADDOBJ
-PROPERTIES store(document), name(article), storeName(document)
-PROPERTIES quantity(document, article)
-PROPERTIES inQuantity(document, article), outQuantity(document, article), documentBalance(document, article)
-PROPERTIES ADDOBJ(document), ADDOBJ(article)
-
-// Filters list syntax:
-// FILTERS NOT NULL property1(param1, ..., paramN1),
-//         ...
-//         NOT NULL propertyK(param1, ..., paramNK)
-FILTERS NOT NULL name(article);
-
-
-FORM storeArticle 'По складам'
-OBJECTS s=store, a=article
-PROPERTIES SELECTION(s), name(s), OBJVALUE(a), name(a)
-PROPERTIES(s, a) incomeQuantity, incomeQuantity2, outcomeQuantity, outcomeQuantity2
-PROPERTIES(s) storeSizeName, storeIsHuge, storeIsHuge2
-PROPERTIES(s, a) foo, foo2, bar, foobar, bar2, baz, baz2, balanceQuantity, testUnion, testPartition, testFormula;
 

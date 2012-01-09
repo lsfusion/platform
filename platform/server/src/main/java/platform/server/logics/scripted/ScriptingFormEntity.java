@@ -2,14 +2,15 @@ package platform.server.logics.scripted;
 
 import platform.interop.ClassViewType;
 import platform.server.classes.ValueClass;
-import platform.server.form.entity.FormEntity;
-import platform.server.form.entity.GroupObjectEntity;
-import platform.server.form.entity.ObjectEntity;
-import platform.server.form.entity.PropertyObjectInterfaceEntity;
+import platform.server.form.entity.*;
 import platform.server.form.entity.filter.NotNullFilterEntity;
+import platform.server.form.entity.filter.RegularFilterEntity;
+import platform.server.form.entity.filter.RegularFilterGroupEntity;
 import platform.server.form.navigator.NavigatorElement;
 import platform.server.logics.linear.LP;
 
+import javax.swing.*;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -88,6 +89,20 @@ public class ScriptingFormEntity extends FormEntity {
         return objects;
     }
 
+    public List<GroupObjectEntity> getGroupObjectsList(List<String> mapping) throws ScriptingErrorLog.SemanticErrorException {
+        List<GroupObjectEntity> groupObjects = new ArrayList<GroupObjectEntity>();
+        for (int i = 0; i < mapping.size(); i++) {
+            GroupObjectEntity groupObject = getGroupObject(mapping.get(i));
+            if (groupObject == null) {
+                LM.getErrLog().emitParamNotFoundError(LM.getParser(), mapping.get(i));
+            } else {
+                groupObjects.add(groupObject);
+            }
+
+        }
+        return groupObjects;
+    }
+
     public MappedProperty getPropertyWithMapping(String name, List<String> mapping) throws ScriptingErrorLog.SemanticErrorException {
         LP<?> property = LM.findLPByCompoundName(name);
         if (property.property.interfaces.size() != mapping.size()) {
@@ -96,17 +111,18 @@ public class ScriptingFormEntity extends FormEntity {
         return new MappedProperty(property, getMappingObjectsArray(mapping));
     }
 
-    public void addScriptedPropertyDraws(List<String> properties, List<List<String>> mappings) throws ScriptingErrorLog.SemanticErrorException {
+    public void addScriptedPropertyDraws(List<String> properties, List<List<String>> mappings, FormPropertyOptions commonOptions, List<FormPropertyOptions> options) throws ScriptingErrorLog.SemanticErrorException {
         assert properties.size() == mappings.size();
         for (int i = 0; i < properties.size(); i++) {
             List<String> mapping = mappings.get(i);
+            PropertyDrawEntity property;
             if (properties.get(i).equals("OBJVALUE")) {
                 if (mapping.size() != 1) {
                     LM.getErrLog().emitParamCountError(LM.getParser(), 1, mapping.size());
                 }
-                addPropertyDraw(LM.baseLM.objectValue, false, getMappingObjectsArray(mapping));
+                property = addPropertyDraw(LM.baseLM.objectValue, false, getMappingObjectsArray(mapping));
             } else if (properties.get(i).equals("SELECTION")) {
-                addPropertyDraw(LM.baseLM.sessionGroup, false, getMappingObjectsArray(mapping));
+                property = addPropertyDraw(LM.baseLM.sessionGroup, false, getMappingObjectsArray(mapping));
             } else if (properties.get(i).equals("ADDOBJ")) {
                 if (mapping.size() != 1) {
                     LM.getErrLog().emitParamCountError(LM.getParser(), 1, mapping.size());
@@ -114,11 +130,30 @@ public class ScriptingFormEntity extends FormEntity {
 
                 ObjectEntity[] obj = getMappingObjectsArray(mapping);
                 LP<?> addObjAction = LM.getAddObjectAction(obj[0].baseClass);
-                addPropertyDraw(addObjAction);
+                property = addPropertyDraw(addObjAction);
             } else {
                 MappedProperty prop = getPropertyWithMapping(properties.get(i), mapping);
-                addPropertyDraw(prop.property, prop.mapping);
+                property = addPropertyDraw(prop.property, prop.mapping);
             }
+            applyPropertyOptions(property, commonOptions.overrideWith(options.get(i)));
+        }
+    }
+
+    public void applyPropertyOptions(PropertyDrawEntity property, FormPropertyOptions options) {
+        if (options.getReadOnly() != null) {
+            property.readOnly = options.getReadOnly();
+        }
+
+        if (options.getColumns() != null) {
+            property.columnGroupObjects = options.getColumns();
+        }
+
+        property.propertyCaption = options.getHeader();
+        property.propertyFooter = options.getFooter();
+        property.propertyHighlight = options.getHighlightIf();
+        MappedProperty showIf = options.getShowIf();
+        if (showIf != null) {
+            LM.showIf(this, property, showIf.property, showIf.mapping);
         }
     }
 
@@ -128,5 +163,53 @@ public class ScriptingFormEntity extends FormEntity {
             MappedProperty prop = getPropertyWithMapping(properties.get(i), mappings.get(i));
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(prop.property, prop.mapping)));
         }
+    }
+
+    public void addScriptedRegularFilterGroup(String sid, List<String> captions, List<String> keystrokes, List<String> properties, List<List<String>> mappings) throws ScriptingErrorLog.SemanticErrorException {
+        assert captions.size() == mappings.size() && keystrokes.size() == mappings.size() && properties.size() == mappings.size();
+
+        RegularFilterGroupEntity regularFilterGroup = new RegularFilterGroupEntity(genID());
+        regularFilterGroup.setSID(sid);
+
+        for (int i = 0; i < properties.size(); i++) {
+            String caption = captions.get(i);
+            KeyStroke keyStroke = KeyStroke.getKeyStroke(keystrokes.get(i));
+            MappedProperty property = getPropertyWithMapping(properties.get(i), mappings.get(i));
+
+            if (keyStroke == null) {
+                LM.getErrLog().emitWrongKeyStrokeFormat(LM.getParser(), keystrokes.get(i));
+            }
+
+            regularFilterGroup.addFilter(
+                    new RegularFilterEntity(genID(), new NotNullFilterEntity(addPropertyObject(property.property, property.mapping)), caption, keyStroke)
+            );
+        }
+
+        addRegularFilterGroup(regularFilterGroup);
+    }
+
+    public PropertyObjectEntity addPropertyObject(String property, List<String> mapping) throws ScriptingErrorLog.SemanticErrorException {
+        MappedProperty prop = getPropertyWithMapping(property, mapping);
+        return addPropertyObject(prop.property, prop.mapping);
+    }
+
+    public void addScriptedDefaultOrder(List<String> properties, List<Boolean> orders) throws ScriptingErrorLog.SemanticErrorException {
+        for (int i = 0; i < properties.size(); ++i) {
+            String alias = properties.get(i);
+            Boolean order = orders.get(i);
+
+            addDefaultOrder(getPropertyDrawByAlias(alias), order);
+        }
+    }
+
+    private PropertyDrawEntity getPropertyDrawByAlias(String alias) throws ScriptingErrorLog.SemanticErrorException {
+        //todo: переделать, когда будут реализованы алиасы для свойств в форме
+
+        PropertyDrawEntity property = getPropertyDraw(LM.findLPByCompoundName(alias));
+        if (property == null) {
+            LM.getErrLog().emitPropertyNotFoundError(LM.getParser(), alias);
+        }
+
+        return property;
     }
 }
