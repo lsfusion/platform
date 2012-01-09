@@ -33,6 +33,8 @@ import platform.server.data.query.Query;
 import platform.server.data.type.ObjectType;
 import platform.server.form.entity.*;
 import platform.server.form.entity.filter.*;
+import platform.server.form.instance.FormInstance;
+import platform.server.form.instance.InstanceFactory;
 import platform.server.form.instance.PropertyObjectInterfaceInstance;
 import platform.server.form.instance.remote.RemoteForm;
 import platform.server.form.navigator.NavigatorElement;

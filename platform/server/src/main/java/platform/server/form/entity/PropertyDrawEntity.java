@@ -33,6 +33,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
 
     // предполагается что propertyCaption ссылается на все из propertyObject но без toDraw (хотя опять таки не обязательно)
     public PropertyObjectEntity<?> propertyCaption;
+    public PropertyObjectEntity<?> propertyReadOnly;
     public PropertyObjectEntity<?> propertyFooter;
     public PropertyObjectEntity<?> propertyHighlight;
 
@@ -78,6 +79,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         pool.serializeObject(outStream, toDraw);
         pool.serializeCollection(outStream, columnGroupObjects);
         pool.serializeObject(outStream, propertyCaption);
+        pool.serializeObject(outStream, propertyReadOnly);
         pool.serializeObject(outStream, propertyFooter);
         pool.serializeObject(outStream, propertyHighlight);
 
@@ -94,6 +96,7 @@ public class PropertyDrawEntity<P extends PropertyInterface> extends IdentityObj
         toDraw = (GroupObjectEntity) pool.deserializeObject(inStream);
         columnGroupObjects = pool.deserializeList(inStream);
         propertyCaption = (PropertyObjectEntity<?>) pool.deserializeObject(inStream);
+        propertyReadOnly = (PropertyObjectEntity<?>) pool.deserializeObject(inStream);
         propertyFooter = (PropertyObjectEntity<?>) pool.deserializeObject(inStream);
         propertyHighlight = (PropertyObjectEntity<?>) pool.deserializeObject(inStream);
 

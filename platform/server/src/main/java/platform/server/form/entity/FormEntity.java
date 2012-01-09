@@ -16,6 +16,7 @@ import platform.server.form.entity.filter.FilterEntity;
 import platform.server.form.entity.filter.RegularFilterEntity;
 import platform.server.form.entity.filter.RegularFilterGroupEntity;
 import platform.server.form.instance.FormInstance;
+import platform.server.form.instance.ObjectInstance;
 import platform.server.form.navigator.NavigatorElement;
 import platform.server.form.view.DefaultFormView;
 import platform.server.form.view.FormView;
@@ -893,6 +894,31 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         }
 
         return result;
+    }
+
+    public void setReadOnlyIf(boolean readOnly, PropertyObjectEntity condition) {
+        for (PropertyDrawEntity propertyView : propertyDraws) {
+            if (propertyView != getPropertyDraw(condition))
+                setReadOnlyIf(readOnly, propertyView, condition);
+        }
+    }
+
+    public void setReadOnlyIf(boolean readOnly, LP property, PropertyObjectEntity condition) {
+        setReadOnlyIf(readOnly, getPropertyDraw(property.property), condition);
+    }
+
+    public void setReadOnlyIf(boolean readOnly, GroupObjectEntity groupObject, PropertyObjectEntity condition) {
+        for (PropertyDrawEntity propertyView : getProperties(groupObject)) {
+            if (propertyView != getPropertyDraw(condition))
+                setReadOnlyIf(readOnly, propertyView, condition);
+        }
+    }
+
+    public void setReadOnlyIf(boolean readOnly, PropertyDrawEntity property, PropertyObjectEntity condition) {
+        if (readOnly)
+            property.propertyReadOnly = condition;
+        else
+            property.propertyReadOnly = null;
     }
 
     public void setReadOnly(AbstractGroup group, boolean readOnly, GroupObjectEntity groupObject) {

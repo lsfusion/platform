@@ -351,7 +351,8 @@ public class FormInstance<T extends BusinessLogics<T>> extends IncrementProps<Pr
 
     public void serializePropertyEditorType(DataOutputStream outStream, PropertyDrawInstance<?> propertyDraw, Map<ObjectInstance, DataObject> keys, boolean aggValue) throws SQLException, IOException {
         PropertyObjectInstance<?> change = propertyDraw.getChangeInstance(aggValue, BL, keys);
-        if (!propertyDraw.isReadOnly() && securityPolicy.property.change.checkPermission(change.property) &&
+        boolean isReadOnly = propertyDraw.isReadOnly() || (propertyDraw.propertyReadOnly!=null && propertyDraw.propertyReadOnly.read(session, this)!=null);
+        if (!isReadOnly && securityPolicy.property.change.checkPermission(change.property) &&
                 (entity.isActionOnChange(change.property) || change.getValueImplement().canBeChanged(this))) {
             outStream.writeBoolean(false);
             TypeSerializer.serializeType(outStream, change.getEditorType());
@@ -811,6 +812,9 @@ public class FormInstance<T extends BusinessLogics<T>> extends IncrementProps<Pr
             result.add(propertyDraw.propertyObject.property);
             if (propertyDraw.propertyCaption != null) {
                 result.add(propertyDraw.propertyCaption.property);
+            }
+            if (propertyDraw.propertyReadOnly != null) {
+                result.add(propertyDraw.propertyReadOnly.property);
             }
             if (propertyDraw.propertyFooter != null) {
                 result.add(propertyDraw.propertyFooter.property);
