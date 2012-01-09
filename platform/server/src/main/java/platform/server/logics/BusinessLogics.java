@@ -715,6 +715,14 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
                 module.initProperties();
             }
 
+            initExternalScreens();
+
+            logger.debug("Initializing navigators...");
+
+            for (LogicsModule module : logicModules) {
+                module.initNavigators();
+            }
+
             Set idSet = new HashSet<String>();
             for (Property property : getProperties()) {
     //            assert idSet.add(property.getSID()) : "Same sid " + property.getSID();
@@ -728,14 +736,6 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
             synchronizeDB();
 
             //setUserLoggableProperties();
-
-            initExternalScreens();
-
-            logger.debug("Initializing navigators...");
-
-            for (LogicsModule module : logicModules) {
-                module.initNavigators();
-            }
         } catch (Exception e) {
             e.printStackTrace();
             String msg = e.getMessage();

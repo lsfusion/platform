@@ -5232,8 +5232,8 @@ public class RomanLogicsModule extends LogicsModule {
             filterGroupInvoice.defaultFilter = 0;
             addRegularFilterGroup(filterGroupInvoice);
 
-            freightCompleteFA = addMFAProp(actionGroup, "Скомплектовать", this,
-                    new ObjectEntity[] {objFreight}, true, addPropertyObject(executeChangeFreightClass, objFreight, (DataObject) freightComplete.getClassObject()));
+            freightCompleteFA = addMFAProp(actionGroup, "Скомплектовать", this, new ObjectEntity[] {objFreight}, true,
+                    addPropertyObject(addJProp(executeChangeFreightClass, 1, addCProp(baseClass.objectClass, "freightComplete")), objFreight));
             freightCompleteFA.setImage("arrow_right.png");
         }
 
@@ -7300,8 +7300,8 @@ public class RomanLogicsModule extends LogicsModule {
 
             setPageSize(0);
 
-            freightPricedFA = addMFAProp(actionGroup, "Расценить", this,
-                    new ObjectEntity[] {objFreight}, true, addPropertyObject(executeChangeFreightClass, objFreight, (DataObject) freightPriced.getClassObject()));
+            freightPricedFA = addMFAProp(actionGroup, "Расценить", this, new ObjectEntity[] {objFreight}, true,
+                    addPropertyObject(addJProp(executeChangeFreightClass, 1, addCProp(baseClass.objectClass, "freightPriced")), objFreight));
             freightPricedFA.setImage("arrow_right.png");
         }
 
@@ -7575,7 +7575,7 @@ public class RomanLogicsModule extends LogicsModule {
 
             freightCreateFA = addMFAProp(actionGroup, "Создать фрахт", this, new ObjectEntity[] {},
                     new PropertyObjectEntity[] {addPropertyObject(getAddObjectAction(freight))},
-                    new OrderEntity[] {(DataObject)freight.getClassObject()}, true);
+                    new OrderEntity[] {addPropertyObject(addCProp(baseClass.objectClass, "freight"))}, true);
             ((FormActionProperty)freightCreateFA.property).seekOnOk.add(objFreight);
             freightEditFA = addMFAProp(actionGroup, "Редактировать фрахт", this, new ObjectEntity[] {objFreight}, true);
             freightEditFA.setImage("edit.png");
@@ -7617,9 +7617,10 @@ public class RomanLogicsModule extends LogicsModule {
             addPropertyDraw(freightEditFA, objFreight).forceViewType = ClassViewType.GRID;
             addPropertyDraw(freightCompleteFA, objFreight).forceViewType = ClassViewType.GRID;
             addPropertyDraw(freightChangedFA, objFreight).forceViewType = ClassViewType.GRID;
-            addPropertyDraw(executeChangeFreightChangedClass, objFreight, (DataObject)freightChanged.getClassObject()).forceViewType = ClassViewType.GRID;
+
+            addPropertyDraw(addJProp(executeChangeFreightChangedClass, 1, addCProp(baseClass.objectClass, "freightChanged")), objFreight).forceViewType = ClassViewType.GRID;
             addPropertyDraw(freightPricedFA, objFreight).forceViewType = ClassViewType.GRID;
-            addPropertyDraw(executeChangeFreightShippedClass, objFreight, (DataObject)freightShipped.getClassObject()).forceViewType = ClassViewType.GRID;
+            addPropertyDraw(addJProp(executeChangeFreightShippedClass, 1, addCProp(baseClass.objectClass,  "freightShipped")), objFreight).forceViewType = ClassViewType.GRID;
             addPropertyDraw(baseLM.delete, objFreight).forceViewType = ClassViewType.GRID;
 
             GroupObjectEntity gobjDates = new GroupObjectEntity(genID());
