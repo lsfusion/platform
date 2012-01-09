@@ -5783,18 +5783,20 @@ public class SkolkovoLogicsModule extends LogicsModule {
             infoContainer.add(design.getGroupObjectContainer(objCluster.groupTo));
             infoContainer.add(design.getGroupPropertyContainer(objProject.groupTo, projectOtherClusterGroup));
 
-            ContainerView withHeaderContainer = design.createContainer();
-            withHeaderContainer.constraints.childConstraints = DoNotIntersectSimplexConstraint.TOTHE_RIGHTBOTTOM;
-            withHeaderContainer.add(design.getGroupPropertyContainer(objProject.groupTo, withdrawnGroup));
+//            ContainerView withHeaderContainer = design.createContainer();
+//            withHeaderContainer.constraints.childConstraints = DoNotIntersectSimplexConstraint.TOTHE_RIGHTBOTTOM;
+//            withHeaderContainer.add(design.getGroupPropertyContainer(objProject.groupTo, withdrawnGroup));
 
             ContainerView formalControlContainer = design.createContainer("Формальная экспертиза");
             formalControlContainer.add(design.get(getPropertyDraw(exportProjectDocumentsAction)));
             formalControlContainer.add(design.getGroupObjectContainer(objFormalControl.groupTo));
+            formalControlContainer.add(design.getGroupPropertyContainer(objProject.groupTo, withdrawnGroup));
             formalControlContainer.add(design.getGroupPropertyContainer((GroupObjectEntity) null, formalControlResultGroup));
             formalControlContainer.add(design.get(getPropertyDraw(nameResultForesightCheckProject)));
             formalControlContainer.add(design.get(getPropertyDraw(dateResultForesightCheckProject)));
             formalControlContainer.add(design.get(getPropertyDraw(nameUserResultForesightCheckProject)));
-            formalControlContainer.add(withHeaderContainer);
+//            formalControlContainer.add(withHeaderContainer);
+
 
             PropertyDrawView commentFormalView = design.get(getPropertyDraw(commentFormalControl, objFormalControl));
             commentFormalView.constraints.fillHorizontal = 1.0;
@@ -7117,7 +7119,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             addAttachEAForm(emailLetterExpertMonthYearEA, this, EmailActionProperty.Format.DOCX, objMonth, 1, objYear, 2);
             //     setPageSize(0);
             addPropertyDraw(readInformation).toDraw = objYear.groupTo;
-//            setReadOnly(readInformation, false);
+            setReadOnly(readInformation, true);
         }
     }
 

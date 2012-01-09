@@ -2,3 +2,89 @@ MODULE Rublevski;
 
 IMPORT BaseLogicsModule;
 
+CLASS bank 'Банк' : named;
+
+addressBank 'Адрес банка' = DATA STRING[100] (bank) IN baseGroup;
+MFOBank 'Код МФО' = DATA STRING[9] (bank) IN baseGroup;
+departmentBank 'Отдел банка' = DATA STRING[100] (bank) IN baseGroup;
+CBUBank 'ЦБУ' = DATA STRING[3] (bank) IN baseGroup;
+infoBank 'Дополнительные сведения'  = DATA STRING[100] (bank) IN baseGroup;
+
+FORM BankForm 'Банк'
+OBJECTS b=bank
+PROPERTIES name(b), addressBank(b), MFOBank(b), departmentBank(b), CBUBank(b), infoBank(b)
+PROPERTIES ADDOBJ(b);
+
+
+CLASS account 'Расчетный счет';
+
+bankAccount 'Банк (ИД)' = DATA bank (account) IN idGroup;
+dataAccount 'Номер расчетного счета'  = DATA STRING[13] (account) IN baseGroup;
+nameBankAccount 'Наименование банка' (account) = name(bankAccount(account)) IN baseGroup;
+addressBankAccount 'Адрес банка' (account) = addressBank(bankAccount(account)) IN baseGroup;
+MFOBankAccount 'Код МФО банка' (account) = MFOBank(bankAccount(account)) IN baseGroup;
+departmentBankAccount 'Отдел банка' (account) = departmentBank(bankAccount(account)) IN baseGroup;
+CBUBankAccount 'ЦБУ банка' (account) = CBUBank(bankAccount(account)) IN baseGroup;
+
+FORM AccauntForm 'Расчетный счет'
+OBJECTS a=account
+PROPERTIES dataAccount(a), nameBankAccount(a), addressBankAccount(a), departmentBankAccount(a), CBUBankAccount(a), MFOBankAccount(a)
+PROPERTIES ADDOBJ(a);
+
+CLASS ABSTRACT legalEntity 'Юридическое лицо' : named;
+
+shortNameLegalEntity 'Сокращенное наименование' = DATA STRING[30] (legalEntity) IN baseGroup;
+fullNameLegalEntity 'Полное  наименование' = DATA STRING[200] (legalEntity) IN baseGroup;
+addressLegalEntity 'Фактический адрес :' = DATA STRING[100] (legalEntity) IN baseGroup;
+lawLegalEntity 'Юридический адрес :' = DATA STRING[100] (legalEntity) IN baseGroup;
+postAddressLegalEntity 'Почтовый адрес :' = DATA STRING[100] (legalEntity) IN baseGroup;
+phoneLegalEntity 'Телефоны' = DATA STRING[100] (legalEntity) IN baseGroup;
+UNPLegalEntity 'УНП' = DATA STRING[9] (legalEntity) IN baseGroup;
+OKPOLegalEntity 'ОКПО' = DATA STRING[20] (legalEntity) IN baseGroup;
+emailLegalEntuty 'e-mail' = DATA STRING[100] (legalEntity) IN baseGroup;
+siteLegalEntuty 'Сайт' = DATA STRING[100] (legalEntity) IN baseGroup;
+licenseLegalEntity 'Номер лицензии' = DATA STRING[20] (legalEntity) IN baseGroup;
+dateFromLicenseLegalEntity 'Дата выдачи лицензии' = DATA STRING[10] (legalEntity) IN baseGroup;
+dateToLicenseLegalEntity 'Дата окончания лицензии' = DATA STRING[10] (legalEntity) IN baseGroup;
+
+legalEntityAccount 'Ю.Л. (ИД)' = DATA legalEntity (account) IN idGroup;
+
+FORM LegalEntityForm 'Юридическое лицо'
+OBJECTS l=legalEntity
+PROPERTIES fullNameLegalEntity(l), shortNameLegalEntity(l), name(l), addressLegalEntity(l), lawLegalEntity(l), postAddressLegalEntity(l), phoneLegalEntity(l)
+PROPERTIES(l) UNPLegalEntity, UNPLegalEntity, OKPOLegalEntity, emailLegalEntuty, siteLegalEntuty, licenseLegalEntity, dateFromLicenseLegalEntity, dateToLicenseLegalEntity
+PROPERTIES ADDOBJ(l);
+
+FORM LegalEntityFormEdit 'Юридическое лицо (редактировать)'
+OBJECTS l=legalEntity FIXED PANEL
+PROPERTIES fullNameLegalEntity(l), shortNameLegalEntity(l), name(l), addressLegalEntity(l), lawLegalEntity(l), postAddressLegalEntity(l), phoneLegalEntity(l)
+PROPERTIES UNPLegalEntity(l), UNPLegalEntity(l), OKPOLegalEntity(l), emailLegalEntuty(l), siteLegalEntuty(l), licenseLegalEntity(l), dateFromLicenseLegalEntity(l), dateToLicenseLegalEntity(l);
+
+
+CLASS supplier 'Поставщик' : legalEntity;
+CLASS organization 'Организация' : legalEntity;
+CLASS ABSTRACT contract 'Договор' : named;
+CLASS contractProvider 'Договор с поставщиком' : contract;
+
+
+CLASS STATIC contractTypy 'Тип договора'
+{
+    sale 'договор купли-продажи',
+    commission 'договор комиссии'
+};
+
+CLASS STATIC contractForm 'Порядок оплаты'
+{
+    delay 'с отсрочкой платежа',
+    prepayment 'по предоплате',
+    partial 'частичная предоплата',
+    implement 'на реализацию'
+};
+
+dataContract 'Номер договора' = DATA STRING[30] (contract) IN baseGroup; // номер договора с и по валюта
+formContract 'Порядок оплаты договора' = DATA contractForm (contract) IN baseGroup;
+typeContract 'Тип договора' = DATA contractTypy (contract) IN baseGroup;
+dateFromContract 'Действует с' = DATA STRING[20] (contract) IN baseGroup;
+dateToContract 'Действует по' = DATA STRING[20] (contract) IN baseGroup;
+currencyContract 'Валюта взаиморасчетов' = DATA STRING[20] (contract) IN baseGroup; // может и не надо   или справочником
+
