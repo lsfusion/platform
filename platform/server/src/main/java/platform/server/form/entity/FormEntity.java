@@ -914,29 +914,26 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
         return result;
     }
 
-    public void setReadOnlyIf(boolean readOnly, PropertyObjectEntity condition) {
+    public void setReadOnlyIf(PropertyObjectEntity condition) {
         for (PropertyDrawEntity propertyView : propertyDraws) {
             if (propertyView != getPropertyDraw(condition))
-                setReadOnlyIf(readOnly, propertyView, condition);
+                setReadOnlyIf(propertyView, condition);
         }
     }
 
-    public void setReadOnlyIf(boolean readOnly, LP property, PropertyObjectEntity condition) {
-        setReadOnlyIf(readOnly, getPropertyDraw(property.property), condition);
+    public void setReadOnlyIf(LP property, PropertyObjectEntity condition) {
+        setReadOnlyIf(getPropertyDraw(property.property), condition);
     }
 
-    public void setReadOnlyIf(boolean readOnly, GroupObjectEntity groupObject, PropertyObjectEntity condition) {
+    public void setReadOnlyIf(GroupObjectEntity groupObject, PropertyObjectEntity condition) {
         for (PropertyDrawEntity propertyView : getProperties(groupObject)) {
             if (propertyView != getPropertyDraw(condition))
-                setReadOnlyIf(readOnly, propertyView, condition);
+                setReadOnlyIf(propertyView, condition);
         }
     }
 
-    public void setReadOnlyIf(boolean readOnly, PropertyDrawEntity property, PropertyObjectEntity condition) {
-        if (readOnly)
+    public void setReadOnlyIf(PropertyDrawEntity property, PropertyObjectEntity condition) {
             property.propertyReadOnly = condition;
-        else
-            property.propertyReadOnly = null;
     }
 
     public void setReadOnly(AbstractGroup group, boolean readOnly, GroupObjectEntity groupObject) {
