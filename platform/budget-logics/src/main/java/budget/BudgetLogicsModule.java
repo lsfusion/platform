@@ -9,8 +9,7 @@ import platform.server.data.Union;
 import platform.server.data.expr.query.OrderType;
 import platform.server.form.entity.FormEntity;
 import platform.server.form.entity.ObjectEntity;
-import platform.server.form.entity.filter.CompareFilterEntity;
-import platform.server.form.entity.filter.NotNullFilterEntity;
+import platform.server.form.entity.filter.*;
 import platform.server.form.navigator.NavigatorElement;
 import platform.server.form.view.DefaultFormView;
 import platform.server.logics.BaseLogicsModule;
@@ -18,6 +17,9 @@ import platform.server.logics.LogicsModule;
 import platform.server.logics.linear.LP;
 import platform.server.logics.property.group.AbstractGroup;
 
+import javax.swing.*;
+import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
 import java.io.FileNotFoundException;
 
 /**
@@ -135,7 +137,7 @@ public class BudgetLogicsModule extends LogicsModule {
     LP inSum, outSum, inCur, outCur, outPerson, outYear, outMonth;
     LP operationDepartment, nameOperationDepartment;
     LP personDepartment, reimbursementCurrencyIn, reimbursementPayer, vacationPerson;
-    LP balanceQuantity, salaryInMonth, missionOperation, roundSalary, dayInMonthOv, opDep, operationPayer, reimbursementDepartment, depBalanceQuantity;
+    LP balanceQuantity, salaryInMonth, missionOperation, roundSalary, dayInMonthOv, opDep, operationPayer, reimbursementDepartment, depBalanceQuantity, roundSalarySum, payTotalSum;
 
     LP isWorkingMonthForPerson;
 
@@ -159,6 +161,8 @@ public class BudgetLogicsModule extends LogicsModule {
     LP sumInvestmentInvestor;
     LP investmentTotal;
     LP shareInvestor;
+    
+    LP inactiveAbsOutPerson;
 
     @Override
     public void initProperties() {
@@ -206,8 +210,9 @@ public class BudgetLogicsModule extends LogicsModule {
         LP monthInDate = addJProp("Реальный месяц", internalNum, extMonthInDate, 1);
         dateByMY = addJProp("Дата курса для года/месяца", dateBy, rateDay, 1, 2, monthNum, 1, 2);
 
+        LP personEndDate = addJProp(dateBy, personEndWorkDay, 1, addJProp(monthNum, personEndWorkMonth, 1), 1, personEndWorkYear, 1);
         LP totalDaysWorkedTillDate = addJProp(baseGroup, "daysWorkedTillDate", "Дней отработано", daysBetweenDates,
-                addSUProp(Union.OVERRIDE, addJProp(baseLM.and1, baseLM.currentDate, is(person), 1), addJProp(dateBy, personEndWorkDay, 1, addJProp(monthNum, personEndWorkMonth, 1), 1, personEndWorkYear, 1)), 1,
+                addSUProp(Union.OVERRIDE, addJProp(baseLM.and1, baseLM.currentDate, is(person), 1), personEndDate), 1,
                 addJProp(dateBy, personStartWorkDay, 1, addJProp(monthNum, personStartWorkMonth, 1), 1, personStartWorkYear, 1), 1);
 
         vacationPerson = addDProp("vacationPerson", "Сотрудник", person, vacation);
@@ -249,6 +254,8 @@ public class BudgetLogicsModule extends LogicsModule {
         outPerson = addDProp("personP", "Сотрудник", person, absOutPerson);
         outMonth = addDProp("outM", "Месяц", absMonth, absOutTime);
         outYear = addDProp("outY", "Год", YearClass.instance, absOutTime);
+
+        inactiveAbsOutPerson = addJProp(baseLM.greater2, baseLM.currentDate, personEndDate, 1);
 
         reimbursementPayer = addDProp("reimbPayer", "Плательщик", payer, reimbursement);
         LP reimbursementSum = addDProp(baseGroup, "reimbSum", "Сумма", IntegerClass.instance, reimbursement);
@@ -404,6 +411,11 @@ public class BudgetLogicsModule extends LogicsModule {
 
         LP paySum = addJProp("Выплачено", roundMult, payRate, 1, outSum, 1);
         LP payTotal = addSGProp(baseGroup, "Всего заплачено", paySum, outPerson, 1, outMonth, 1, outYear, 1);
+        
+        roundSalarySum = addSGProp("roundSalarySum", "Сумарно к выплате", roundSalary, 3, curCurrency, 1, 2, 3);
+        payTotalSum = addSGProp("payTotalSum", "Сумарно выплачено", payTotal, 1, curCurrency, 2, 3, 1);
+
+
 
         //LP extraTotalPerson = addSGProp(addJProp(andNot1, addJProp(and(false,false), curExtra, 3, 4, 2, personDepartment, 1, is(person), 1, is(extraPersonSection), 2), 1, 2, 3, 4, extraAdd, 1, 2, 3, 4), 1, 3, 4);
         LP extraTotal = addJProp(baseLM.andNot1, addJProp(baseLM.and1, addJProp(curExtra, 3, 4, 2, personDepartment, 1), 1, 2, 3, 4, is(extraPersonSection), 2), 1, 2, 3, 4, extraAdd, 1, 2, 3, 4);
@@ -487,6 +499,8 @@ public class BudgetLogicsModule extends LogicsModule {
 
         shareInvestor = addJProp("shareInvestor", "Доля (%)", baseLM.share2, sumInvestmentInvestor, 1, investmentTotal);
     }
+
+    
 
     @Override
     public void initIndexes() {
@@ -679,12 +693,19 @@ public class BudgetLogicsModule extends LogicsModule {
             addPropertyDraw(objPersonOp, objExtraStateOp, objYearOp, objMonthOp, baseGroup);
             addPropertyDraw(objYearOp, objMonthOp, baseGroup);
             addPropertyDraw(objPayOp, payerGroup);
+            addPropertyDraw(objPersonOp, objCur, roundSalarySum, payTotalSum);
 
             addObjectActions(this, objPersonOp);
             addObjectActions(this, objPayOp);
 
 
             addPropertyDraw(objPersonOp, objYearOp, objMonthOp, objCur, baseGroup);
+            
+            RegularFilterGroupEntity filterGroup = new RegularFilterGroupEntity(genID());
+            filterGroup.addFilter(new RegularFilterEntity(genID(),
+                    new NotFilterEntity(new NotNullFilterEntity(addPropertyObject(inactiveAbsOutPerson, objPersonOp))),
+                    "Только активные"), true);
+            addRegularFilterGroup(filterGroup);
 
             addFixedFilter(new NotNullFilterEntity(addPropertyObject(isWorkingMonthForPerson, objPersonOp, objMonthOp, objYearOp)));
             addFixedFilter(new CompareFilterEntity(addPropertyObject(outPerson, objPayOp), Compare.EQUALS, objPersonOp));
@@ -759,7 +780,7 @@ public class BudgetLogicsModule extends LogicsModule {
             objDepartment.groupTo.setSingleClassView(ClassViewType.PANEL);
 
             ObjectEntity objCur = addSingleGroupObject(currency, baseGroup);
-            addPropertyDraw(baseGroup, false, objDepartment, objCur);
+            addPropertyDraw(baseGroup, false, false, objDepartment, objCur);
 
             ObjectEntity objTransfer = addSingleGroupObject(transfer, baseGroup);
             addObjectActions(this, objTransfer);
@@ -778,9 +799,9 @@ public class BudgetLogicsModule extends LogicsModule {
             ObjectEntity objCur = addSingleGroupObject(currency, baseGroup);
             ObjectEntity objInOp = addSingleGroupObject(inAbsOperation, baseGroup, true);
             ObjectEntity objOutOp = addSingleGroupObject(outAbsOperation, baseGroup, true);
-            addPropertyDraw(baseGroup, true, objCur, objInOp);
-            addPropertyDraw(baseGroup, true, objCur, objOutOp);
-            addPropertyDraw(baseGroup, false, objDepartment, objCur);
+            addPropertyDraw(baseGroup, true, false, objCur, objInOp);
+            addPropertyDraw(baseGroup, true, false, objCur, objOutOp);
+            addPropertyDraw(baseGroup, false, false, objDepartment, objCur);
 
             addFixedFilter(new CompareFilterEntity(addPropertyObject(inCur, objInOp), Compare.EQUALS, objCur));
             addFixedFilter(new CompareFilterEntity(addPropertyObject(outCur, objOutOp), Compare.EQUALS, objCur));
