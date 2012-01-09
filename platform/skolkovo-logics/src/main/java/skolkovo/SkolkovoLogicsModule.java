@@ -3386,12 +3386,12 @@ public class SkolkovoLogicsModule extends LogicsModule {
 //        addConstraint(addJProp("При отрицательном результате проверки на соответствие направлению деятельности Фонда необходимо указать комментарий.", baseLM.andNot1,
 //                negativeResultForesightCheckProject, 1, commentForesightCheckProject, 1), false);
 
-        needForesightCheckProject = addJProp("needForesightCheckProject", "Требуется проверка на форсайты", and(true, true),
+        needForesightCheckProject = addJProp("needForesightCheckProject", "Требуется проверка на форсайты", and(false, true),
                 isR2Project, 1,
                 positiveLegalResultProject, 1,
                 withdrawnProject, 1);
 
-        needTranslationProject = addJProp("needTranslationProject", true, "Требуется перевод", and(true, true),
+        needTranslationProject = addJProp("needTranslationProject", true, "Требуется перевод", and(false, true),
                 addSUProp(Union.OVERRIDE, needsToBeTranslatedToRussianProject, needsToBeTranslatedToEnglishProject), 1,
                 positiveResultForesightCheckProject, 1,
                 withdrawnProject, 1);
@@ -5247,7 +5247,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
                     1, 2, addCProp(LogicalClass.instance, true), addCProp(legalCheckResult, "positiveLegalCheckResult")
                     ), objProject, objComment));
 
-            acceptPreliminaryLegalCheckProject = addJProp(actionGroup, "rejectLegalCheckProject", "Прошла юридическую проверку (на предварительную экспертизу)", and(false, false, true),
+            acceptPreliminaryLegalCheckProject = addJProp(actionGroup, "acceptPreliminaryLegalCheckProject", "Прошла юридическую проверку (на предварительную экспертизу)", and(false, false, true),
                     addMFAProp(actionGroup, "Не прошла юридическую проверку", this, new ObjectEntity[]{objProject}, true), 1,
                     needLegalCheckStatusProject, 1, isStatusProject, 1, isPreliminaryAndStatusProject, 1);
             acceptPreliminaryLegalCheckProject.property.askConfirm = true;
@@ -6404,7 +6404,7 @@ public class SkolkovoLogicsModule extends LogicsModule {
             super(parent, sID, "Кластеры");
 
             objCluster = addSingleGroupObject(1, "Кластер", cluster);
-            addPropertyDraw(objCluster, nameNative, nameForeign, baseLM.email, inTestCluster);
+            addPropertyDraw(objCluster, nameNative, nameForeign, baseLM.email, sidCluster, inTestCluster);
             addObjectActions(this, objCluster);
 
             objForesight = addSingleGroupObject(2, "Форсайт", foresight);
@@ -7452,7 +7452,8 @@ public class SkolkovoLogicsModule extends LogicsModule {
         boolean complete = false;
 
         public OpenApplicationProjectActionProperty(boolean complete) {
-            super(genSID(), "Открыть анкету" + (complete ? " (полную)" : ""), new ValueClass[]{project});
+            super(complete ? "openCompleteApplicationProjectAction" : "openApplicationProjectAction",
+                    "Открыть анкету" + (complete ? " (полную)" : ""), new ValueClass[]{project});
 
             this.complete = complete;
 

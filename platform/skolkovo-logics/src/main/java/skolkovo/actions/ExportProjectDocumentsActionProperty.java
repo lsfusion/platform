@@ -31,7 +31,7 @@ public class ExportProjectDocumentsActionProperty extends ActionProperty {
     private final ClassPropertyInterface projectInterface;
 
     public ExportProjectDocumentsActionProperty(String caption, SkolkovoLogicsModule LM, ValueClass project) {
-        super(LM.genSID(), caption, new ValueClass[]{project});
+        super("exportProjectDocumentsAction", caption, new ValueClass[]{project});
         this.LM = LM;
 
         Iterator<ClassPropertyInterface> i = interfaces.iterator();
