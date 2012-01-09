@@ -1738,7 +1738,7 @@ public abstract class LogicsModule {
     }
 
     @IdentityLazy
-    protected LP getAddFormAction(CustomClass cls) {
+    public LP getAddFormAction(CustomClass cls) {
         ClassFormEntity form = cls.getEditForm(baseLM);
 
         LP addObjectAction = getAddObjectAction(cls);
@@ -1756,7 +1756,7 @@ public abstract class LogicsModule {
     }
 
     @IdentityLazy
-    protected LP getEditFormAction(CustomClass cls) {
+    public LP getEditFormAction(CustomClass cls) {
         ClassFormEntity form = cls.getEditForm(baseLM);
         LP property = addMFAProp(actionGroup, "editForm" + BaseUtils.capitalize(cls.getSID()), ServerResourceBundle.getString("logics.edit") + "(" + cls + ")",
                                 form, new ObjectEntity[] {form.getObject()}, true);

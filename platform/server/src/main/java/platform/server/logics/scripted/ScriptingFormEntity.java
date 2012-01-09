@@ -1,6 +1,7 @@
 package platform.server.logics.scripted;
 
 import platform.interop.ClassViewType;
+import platform.server.classes.CustomClass;
 import platform.server.classes.ValueClass;
 import platform.server.form.entity.*;
 import platform.server.form.entity.filter.NotNullFilterEntity;
@@ -131,6 +132,22 @@ public class ScriptingFormEntity extends FormEntity {
                 ObjectEntity[] obj = getMappingObjectsArray(mapping);
                 LP<?> addObjAction = LM.getAddObjectAction(obj[0].baseClass);
                 property = addPropertyDraw(addObjAction);
+            } else if (properties.get(i).equals("ADDFORM")) {
+                if (mapping.size() != 1) {
+                    LM.getErrLog().emitParamCountError(LM.getParser(), 1, mapping.size());
+                }
+
+                ObjectEntity[] obj = getMappingObjectsArray(mapping);
+                LP<?> addObjAction = LM.getAddFormAction((CustomClass)obj[0].baseClass);
+                property = addPropertyDraw(addObjAction);
+            } else if (properties.get(i).equals("EDITFORM")) {
+                if (mapping.size() != 1) {
+                    LM.getErrLog().emitParamCountError(LM.getParser(), 1, mapping.size());
+                }
+
+                ObjectEntity[] obj = getMappingObjectsArray(mapping);
+                LP<?> editObjAction = LM.getEditFormAction((CustomClass)obj[0].baseClass);
+                property = addPropertyDraw(editObjAction, obj[0]);
             } else {
                 MappedProperty prop = getPropertyWithMapping(properties.get(i), mapping);
                 property = addPropertyDraw(prop.property, prop.mapping);

@@ -2,19 +2,21 @@ MODULE Rublevski;
 
 IMPORT BaseLogicsModule;
 
+// ----------------------------------- Банк ------------------------------------------ //
+
 CLASS bank 'Банк' : named;
 
 addressBank 'Адрес банка' = DATA STRING[100] (bank) IN baseGroup;
 MFOBank 'Код МФО' = DATA STRING[9] (bank) IN baseGroup;
 departmentBank 'Отдел банка' = DATA STRING[100] (bank) IN baseGroup;
 CBUBank 'ЦБУ' = DATA STRING[3] (bank) IN baseGroup;
-infoBank 'Дополнительные сведения'  = DATA STRING[100] (bank) IN baseGroup;
+infoBank 'Дополнительные сведения' = DATA STRING[100] (bank) IN baseGroup;
 
-FORM BankForm 'Банк'
+FORM BankForm 'Банки'
 OBJECTS b=bank
-PROPERTIES name(b), addressBank(b), MFOBank(b), departmentBank(b), CBUBank(b), infoBank(b)
-PROPERTIES ADDOBJ(b);
+PROPERTIES(b) name, addressBank, MFOBank, departmentBank, CBUBank, infoBank, ADDOBJ, delete;
 
+// ----------------------------------- Расчетный счет ------------------------------------------ //
 
 CLASS account 'Расчетный счет';
 
@@ -26,10 +28,11 @@ MFOBankAccount 'Код МФО банка' (account) = MFOBank(bankAccount(accoun
 departmentBankAccount 'Отдел банка' (account) = departmentBank(bankAccount(account)) IN baseGroup;
 CBUBankAccount 'ЦБУ банка' (account) = CBUBank(bankAccount(account)) IN baseGroup;
 
-FORM AccauntForm 'Расчетный счет'
+FORM AccountForm 'Расчетные счета'
 OBJECTS a=account
-PROPERTIES dataAccount(a), nameBankAccount(a), addressBankAccount(a), departmentBankAccount(a), CBUBankAccount(a), MFOBankAccount(a)
-PROPERTIES ADDOBJ(a);
+PROPERTIES(a) dataAccount, nameBankAccount, addressBankAccount, departmentBankAccount, CBUBankAccount, MFOBankAccount, ADDOBJ;
+
+// ----------------------------------- Юридическое лицо ------------------------------------------ //
 
 CLASS ABSTRACT legalEntity 'Юридическое лицо' : named;
 
@@ -41,33 +44,27 @@ postAddressLegalEntity 'Почтовый адрес :' = DATA STRING[100] (legal
 phoneLegalEntity 'Телефоны' = DATA STRING[100] (legalEntity) IN baseGroup;
 UNPLegalEntity 'УНП' = DATA STRING[9] (legalEntity) IN baseGroup;
 OKPOLegalEntity 'ОКПО' = DATA STRING[20] (legalEntity) IN baseGroup;
-emailLegalEntuty 'e-mail' = DATA STRING[100] (legalEntity) IN baseGroup;
-siteLegalEntuty 'Сайт' = DATA STRING[100] (legalEntity) IN baseGroup;
+emailLegalEntity 'e-mail' = DATA STRING[100] (legalEntity) IN baseGroup;
+siteLegalEntity 'Сайт' = DATA STRING[100] (legalEntity) IN baseGroup;
 licenseLegalEntity 'Номер лицензии' = DATA STRING[20] (legalEntity) IN baseGroup;
 dateFromLicenseLegalEntity 'Дата выдачи лицензии' = DATA STRING[10] (legalEntity) IN baseGroup;
 dateToLicenseLegalEntity 'Дата окончания лицензии' = DATA STRING[10] (legalEntity) IN baseGroup;
 
 legalEntityAccount 'Ю.Л. (ИД)' = DATA legalEntity (account) IN idGroup;
 
-FORM LegalEntityForm 'Юридическое лицо'
-OBJECTS l=legalEntity
-PROPERTIES fullNameLegalEntity(l), shortNameLegalEntity(l), name(l), addressLegalEntity(l), lawLegalEntity(l), postAddressLegalEntity(l), phoneLegalEntity(l)
-PROPERTIES(l) UNPLegalEntity, UNPLegalEntity, OKPOLegalEntity, emailLegalEntuty, siteLegalEntuty, licenseLegalEntity, dateFromLicenseLegalEntity, dateToLicenseLegalEntity
-PROPERTIES ADDOBJ(l);
-
-FORM LegalEntityFormEdit 'Юридическое лицо (редактировать)'
+FORM LegalEntityFormEdit 'Юридическое лицо'
 OBJECTS l=legalEntity FIXED PANEL
-PROPERTIES fullNameLegalEntity(l), shortNameLegalEntity(l), name(l), addressLegalEntity(l), lawLegalEntity(l), postAddressLegalEntity(l), phoneLegalEntity(l)
-PROPERTIES UNPLegalEntity(l), UNPLegalEntity(l), OKPOLegalEntity(l), emailLegalEntuty(l), siteLegalEntuty(l), licenseLegalEntity(l), dateFromLicenseLegalEntity(l), dateToLicenseLegalEntity(l);
+PROPERTIES(l) fullNameLegalEntity, shortNameLegalEntity, name, addressLegalEntity, lawLegalEntity, postAddressLegalEntity, phoneLegalEntity,
+              UNPLegalEntity, UNPLegalEntity, OKPOLegalEntity, emailLegalEntity, siteLegalEntity, licenseLegalEntity, dateFromLicenseLegalEntity, dateToLicenseLegalEntity;
 
+FORM LegalEntityForm 'Юридические лица'
+OBJECTS l=legalEntity
+PROPERTIES(l) fullNameLegalEntity, shortNameLegalEntity, name, addressLegalEntity, lawLegalEntity, postAddressLegalEntity, phoneLegalEntity,
+              UNPLegalEntity, UNPLegalEntity, OKPOLegalEntity, emailLegalEntity, siteLegalEntity, licenseLegalEntity, dateFromLicenseLegalEntity, dateToLicenseLegalEntity, ADDOBJ;
 
-CLASS supplier 'Поставщик' : legalEntity;
-CLASS organization 'Организация' : legalEntity;
-CLASS ABSTRACT contract 'Договор' : named;
-CLASS contractProvider 'Договор с поставщиком' : contract;
+// ----------------------------------- Договор ------------------------------------------ //
 
-
-CLASS STATIC contractTypy 'Тип договора'
+CLASS STATIC contractType 'Тип договора'
 {
     sale 'договор купли-продажи',
     commission 'договор комиссии'
@@ -83,8 +80,14 @@ CLASS STATIC contractForm 'Порядок оплаты'
 
 dataContract 'Номер договора' = DATA STRING[30] (contract) IN baseGroup; // номер договора с и по валюта
 formContract 'Порядок оплаты договора' = DATA contractForm (contract) IN baseGroup;
-typeContract 'Тип договора' = DATA contractTypy (contract) IN baseGroup;
+typeContract 'Тип договора' = DATA contractType (contract) IN baseGroup;
 dateFromContract 'Действует с' = DATA STRING[20] (contract) IN baseGroup;
 dateToContract 'Действует по' = DATA STRING[20] (contract) IN baseGroup;
 currencyContract 'Валюта взаиморасчетов' = DATA STRING[20] (contract) IN baseGroup; // может и не надо   или справочником
 
+// ----------------------------------- Поставщик ------------------------------------------ //
+
+CLASS supplier 'Поставщик' : legalEntity;
+CLASS organization 'Организация' : legalEntity;
+CLASS ABSTRACT contract 'Договор' : named;
+CLASS contractProvider 'Договор с поставщиком' : contract;
