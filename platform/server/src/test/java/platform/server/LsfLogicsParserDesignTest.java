@@ -43,7 +43,10 @@ public class LsfLogicsParserDesignTest {
     @BeforeClass
     public static void setUpTests() throws Exception {
         Settings.instance = new Settings();
-        FileUtils.cleanDirectory(new File("src/test/resources/testscripts"));
+        File scriptsFolder = new File("src/test/resources/testscripts");
+        if (scriptsFolder.exists()) {
+            FileUtils.cleanDirectory(scriptsFolder);
+        }
     }
 
     @Before
@@ -273,13 +276,12 @@ public class LsfLogicsParserDesignTest {
         FileUtils.writeStringToFile(testScriptFile, fileContent, "UTF-8");
 
         bl = new ScriptedBusinessLogics("scriptedLogicsUnitTest",
-                                        new PostgreDataAdapter("scripted_logic_unittest", "localhost", "postgres", "11111", true),
+                                        new PostgreDataAdapter("scripted_logic_unittest", "localhost", "postgres", "11111", false),
                                         1234,
-                                        "SampleFeatures",
                                         testScriptFile.getAbsolutePath());
         bl.afterPropertiesSet();
 
-        LM = (ScriptingLogicsModule)bl.findModule("SampleFeatures");
+        LM = (ScriptingLogicsModule)bl.findModule("testDesign");
         assertNotNull(LM);
 
         entity = (ScriptingFormEntity) bl.LM.baseElement.getNavigatorElement("storeArticle");

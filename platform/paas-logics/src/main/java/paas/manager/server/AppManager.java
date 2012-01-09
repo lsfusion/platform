@@ -43,7 +43,6 @@ import java.util.Map;
 import java.util.concurrent.Executors;
 
 import static java.util.Arrays.asList;
-import static platform.base.BaseUtils.isRedundantString;
 import static platform.base.BaseUtils.nvl;
 
 public final class AppManager {
@@ -179,7 +178,6 @@ public final class AppManager {
                 paasLM.moduleInProject.getExpr(session.modifier, projExpr, moduleExpr).getWhere()
         );
         q.properties.put("moduleOrder", paasLM.moduleOrder.getExpr(session.modifier, projExpr, moduleExpr));
-        q.properties.put("moduleName", paasLM.baseLM.name.getExpr(session.modifier, moduleExpr));
         q.properties.put("moduleSource", paasLM.moduleSource.getExpr(session.modifier, moduleExpr));
 
         OrderedMap<String, Boolean> orders = new OrderedMap<String, Boolean>();
@@ -187,27 +185,17 @@ public final class AppManager {
 
         OrderedMap<Map<String, Object>, Map<String, Object>> values = q.execute(session.sql, orders);
 
-        List<String> moduleNames = new ArrayList<String>();
         List<String> moduleFilePaths = new ArrayList<String>();
         for (Map.Entry<Map<String, Object>, Map<String, Object>> entry : values.entrySet()) {
-            String moduleName = (String) entry.getValue().get("moduleName");
             String moduleSource = nvl((String) entry.getValue().get("moduleSource"), "");
-
-            if (isRedundantString(moduleName)) {
-                throw new IllegalStateException("Module isn't set.");
-            }
-
-            moduleNames.add(moduleName.trim());
             moduleFilePaths.add(createTemporaryScriptFile(moduleSource));
         }
 
-        executeScriptedBL((Integer) confObj.object, port, dbName, moduleNames, moduleFilePaths);
+        executeScriptedBL((Integer) confObj.object, port, dbName, moduleFilePaths);
     }
 
 
-    public void executeScriptedBL(int confId, int port, String dbName, List<String> moduleNames, List<String> scriptFilePaths) throws IOException, InterruptedException {
-        assert moduleNames.size() == scriptFilePaths.size();
-
+    public void executeScriptedBL(int confId, int port, String dbName, List<String> scriptFilePaths) throws IOException, InterruptedException {
         CommandLine commandLine = new CommandLine(javaExe);
         commandLine.addArgument("-Dlsf.settings.path=conf/scripted/settings.xml");
         commandLine.addArgument("-Dpaas.manager.conf.id=" + confId);
@@ -215,7 +203,6 @@ public final class AppManager {
         commandLine.addArgument("-Dpaas.manager.port=" + acceptPort);
         commandLine.addArgument("-Dpaas.scripted.port=" + port);
         commandLine.addArgument("-Dpaas.scripted.db.name=" + dbName);
-        commandLine.addArgument("-Dpaas.scripted.modules.names=" + toParameters(moduleNames), false);
         commandLine.addArgument("-Dpaas.scripted.modules.paths=" + toParameters(scriptFilePaths), false);
         String rmiServerHostname = System.getProperty("java.rmi.server.hostname");
         if (rmiServerHostname != null) {

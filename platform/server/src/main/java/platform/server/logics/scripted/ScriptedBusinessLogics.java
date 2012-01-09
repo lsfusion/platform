@@ -12,29 +12,23 @@ import java.util.List;
 
 public class ScriptedBusinessLogics extends BusinessLogics<ScriptedBusinessLogics> {
     private final String name;
-    private final List<String> moduleNames;
     private final List<String> scriptFilePaths;
 
-    public ScriptedBusinessLogics(String name, DataAdapter iAdapter, int port, String names, String paths) throws Exception {
-        this(name, iAdapter, port, Arrays.asList(names.split(";")), Arrays.asList(paths.split(";")));
+    public ScriptedBusinessLogics(String name, DataAdapter iAdapter, int port, String paths) throws Exception {
+        this(name, iAdapter, port, Arrays.asList(paths.split(";")));
     }
 
-    public ScriptedBusinessLogics(String name, DataAdapter adapter, int port, List<String> names, List<String> paths) throws Exception {
+    public ScriptedBusinessLogics(String name, DataAdapter adapter, int port, List<String> paths) throws Exception {
         super(adapter, port);
         this.name = name;
-        this.moduleNames = names;
         this.scriptFilePaths = paths;
-
-        if (moduleNames.size() != scriptFilePaths.size()) {
-            throw new RuntimeException("Количество имён модулей не равно количеству путей к файлам модулей.");
-        }
     }
 
     @Override
     protected void createModules() throws IOException {
         super.createModules();
 
-        for (int i = 0; i < moduleNames.size(); ++i) {
+        for (int i = 0; i < scriptFilePaths.size(); ++i) {
             ScriptingLogicsModule scriptedLM = ScriptingLogicsModule.createFromFile(scriptFilePaths.get(i), LM, this);
             addLogicsModule(scriptedLM);
         }
