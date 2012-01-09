@@ -655,7 +655,7 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
                 : null;
     }
 
-    protected SecurityPolicy permitAllPolicy, readOnlyPolicy, forbidConfiguratorPolicy;
+    protected SecurityPolicy permitAllPolicy, readOnlyPolicy, allowConfiguratorPolicy;
 
     void initBaseAuthentication() throws ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException {
         permitAllPolicy = addPolicy(getString("logics.policy.allow.all"), getString("logics.policy.allows.all.actions"));
@@ -667,8 +667,8 @@ public abstract class BusinessLogics<T extends BusinessLogics<T>> extends Remote
         readOnlyPolicy.cls.edit.change.defaultPermission = false;
         readOnlyPolicy.cls.edit.remove.defaultPermission = false;
 
-        forbidConfiguratorPolicy = addPolicy(getString("logics.policy.forbid.configurator"), getString("logics.policy.logics.forbid.configurator"));
-        forbidConfiguratorPolicy.configurator = true;
+        allowConfiguratorPolicy = addPolicy(getString("logics.policy.allow.configurator"), getString("logics.policy.logics.allow.configurator"));
+        allowConfiguratorPolicy.configurator = true;
     }
 
     public void ping() throws RemoteException {

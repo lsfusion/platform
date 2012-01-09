@@ -35,7 +35,7 @@ public class RublevskiBusinessLogics extends BusinessLogics<RublevskiBusinessLog
 
     @Override
     protected void initAuthentication() throws ClassNotFoundException, SQLException, IllegalAccessException, InstantiationException {
-        policyManager.userPolicies.put(addUser("admin", "fusion").ID, new ArrayList<SecurityPolicy>(Arrays.asList(permitAllPolicy, forbidConfiguratorPolicy)));
+        policyManager.userPolicies.put(addUser("admin", "fusion").ID, new ArrayList<SecurityPolicy>(Arrays.asList(permitAllPolicy, allowConfiguratorPolicy)));
     }
 
     @Override
