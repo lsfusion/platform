@@ -1983,15 +1983,15 @@ public class RomanLogicsModule extends LogicsModule {
 
         executeChangeFreightClassApply = addEPAProp(EPA_DEFAULT, executeChangeFreightClass, 1, 2, baseLM.apply, baseLM.cancel);
 
-        executeChangeFreightChangedClass = addJProp("Пометить как обработанный", and(false, true),
-                                                executeChangeFreightClassApply, 1, 2,
+        executeChangeFreightChangedClass = addJProp(true, "Пометить как обработанный", and(false, true),
+                                                addJProp(executeChangeFreightClassApply, 1, addCProp(baseClass.objectClass, "freightChanged")), 1,
                                                 is(freightComplete), 1,
                                                 is(freightChanged), 1);
         executeChangeFreightChangedClass.property.askConfirm = true;
         executeChangeFreightChangedClass.setImage("sign_tick.png");
 
-        executeChangeFreightShippedClass = addJProp("Пометить как отгруженный", and(false, true),
-                                                executeChangeFreightClassApply, 1, 2,
+        executeChangeFreightShippedClass = addJProp(true, "Пометить как отгруженный", and(false, true),
+                                                addJProp(executeChangeFreightClassApply, 1, addCProp(baseClass.objectClass, "freightShipped")), 1,
                                                 is(freightPriced), 1,
                                                 is(freightShipped), 1);
         executeChangeFreightShippedClass.property.askConfirm = true;
@@ -5233,7 +5233,7 @@ public class RomanLogicsModule extends LogicsModule {
             addRegularFilterGroup(filterGroupInvoice);
 
             freightCompleteFA = addMFAProp(actionGroup, "Скомплектовать", this, new ObjectEntity[] {objFreight}, true,
-                    addPropertyObject(addJProp(executeChangeFreightClass, 1, addCProp(baseClass.objectClass, "freightComplete")), objFreight));
+                    addPropertyObject(addJProp(true, executeChangeFreightClass, 1, addCProp(baseClass.objectClass, "freightComplete")), objFreight));
             freightCompleteFA.setImage("arrow_right.png");
         }
 
@@ -7301,7 +7301,7 @@ public class RomanLogicsModule extends LogicsModule {
             setPageSize(0);
 
             freightPricedFA = addMFAProp(actionGroup, "Расценить", this, new ObjectEntity[] {objFreight}, true,
-                    addPropertyObject(addJProp(executeChangeFreightClass, 1, addCProp(baseClass.objectClass, "freightPriced")), objFreight));
+                    addPropertyObject(addJProp(true, executeChangeFreightClass, 1, addCProp(baseClass.objectClass, "freightPriced")), objFreight));
             freightPricedFA.setImage("arrow_right.png");
         }
 
@@ -7618,9 +7618,9 @@ public class RomanLogicsModule extends LogicsModule {
             addPropertyDraw(freightCompleteFA, objFreight).forceViewType = ClassViewType.GRID;
             addPropertyDraw(freightChangedFA, objFreight).forceViewType = ClassViewType.GRID;
 
-            addPropertyDraw(addJProp(executeChangeFreightChangedClass, 1, addCProp(baseClass.objectClass, "freightChanged")), objFreight).forceViewType = ClassViewType.GRID;
+            addPropertyDraw(executeChangeFreightChangedClass, objFreight).forceViewType = ClassViewType.GRID;
             addPropertyDraw(freightPricedFA, objFreight).forceViewType = ClassViewType.GRID;
-            addPropertyDraw(addJProp(executeChangeFreightShippedClass, 1, addCProp(baseClass.objectClass,  "freightShipped")), objFreight).forceViewType = ClassViewType.GRID;
+            addPropertyDraw(executeChangeFreightShippedClass, objFreight).forceViewType = ClassViewType.GRID;
             addPropertyDraw(baseLM.delete, objFreight).forceViewType = ClassViewType.GRID;
 
             GroupObjectEntity gobjDates = new GroupObjectEntity(genID());
