@@ -320,7 +320,7 @@ public class FormEntity<T extends BusinessLogics<T>> extends NavigatorElement<T>
     }
 
     protected PropertyDrawEntity addPropertyDraw(AbstractNode group, boolean upClasses, ObjectEntity... objects) {
-        return BaseUtils.single(addPropertyDraw(group, upClasses, null, false, objects));
+        return addPropertyDraw(group, upClasses, null, false, objects).iterator().next();
     }
 
     protected void addPropertyDraw(AbstractNode group, boolean upClasses, boolean useObjSubsets, ObjectEntity... objects) {
