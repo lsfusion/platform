@@ -4108,7 +4108,7 @@ public class RomanLogicsModule extends LogicsModule {
                 // смотрим изменения
                 itemArticleCompositeColorSize.property.setNotNull(
                         BaseUtils.join(BaseUtils.buildMap(itemArticleCompositeColorSize.listInterfaces, quantityListArticleCompositeColorSize.listInterfaces.subList(1, 4)), change.mapKeys),
-                        change.expr.getWhere().and(change.where), session, BL);
+                        change.expr.getWhere().and(change.where), session);
             }
         }
     }
@@ -4397,7 +4397,7 @@ public class RomanLogicsModule extends LogicsModule {
                 // смотрим изменения
                 itemArticleCompositeColorSize.property.setNotNull(
                         BaseUtils.join(BaseUtils.buildMap(itemArticleCompositeColorSize.listInterfaces, quantityListArticleCompositeColorSize.listInterfaces.subList(1, 4)), change.mapKeys),
-                        change.expr.getWhere().and(change.where), session, BL);
+                        change.expr.getWhere().and(change.where), session);
             }
         }
     }

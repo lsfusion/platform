@@ -49,11 +49,6 @@ CLASS ABSTRACT stock 'Склад' : named;
 CLASS store 'Магазин' : named;
 addressStore 'Адрес магазина' = DATA STRING[100] (store) IN baseGroup;
 
-FORM StoreForm 'Магазины'
-OBJECTS str=store
-PROPERTIES(str) addressStore
-PROPERTIES(str) ADDFORM, EDITFORM, delete;
-
 // ----------------------------------- Отдел магазина (Подразделение) ----------------- //
 
 CLASS departmentStore 'Отдел магазина' : stock;
@@ -61,10 +56,18 @@ CLASS departmentStore 'Отдел магазина' : stock;
 storeDepartmentStore 'Магазин отдела (ИД)' = DATA store (departmentStore) IN idGroup;
 nameDepartmentStore 'Наименование отдела магазина' = DATA STRING[100] (departmentStore) IN baseGroup;
 
-FORM DepartmentStoreForm 'Cклады'
-OBJECTS stk=departmentStore
-PROPERTIES(stk) storeDepartmentStore, nameDepartmentStore;
-// PROPERTIES(stk) ADDFORM, EDITFORM, delete;
+inStoreDepartment(store, department) = storeDepartmentStore(department) == store;
+
+FORM StoreEditForm 'Магазин'
+OBJECTS s=store FIXED PANEL, d=departmentStore
+PROPERTIES(s) READONLY name, addressStore
+PROPERTIES(d) name, ADDOBJ, delete
+FILTERS NOT NULL inStoreDepartment(s, d);
+
+FORM StoreForm 'Магазины'
+OBJECTS s=store
+PROPERTIES(s) READONLY name, addressStore
+PROPERTIES(s) ADDFORM, EDITFORM, delete;
 
 //CLASS STATIC departmentStoreType 'Типа отдела магазина'
 //{

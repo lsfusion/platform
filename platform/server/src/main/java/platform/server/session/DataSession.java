@@ -569,9 +569,9 @@ public class DataSession extends MutableObject implements SessionChanges, ExprCh
 
         for(Property<?> property : BL.getFollowProperties()) {
             for(PropertyFollows<?, ?> follow : property.follows)
-                follow.resolveFalse(this, BL, recalculate);
+                follow.resolveFalse(this, recalculate);
             for(PropertyFollows<?, ?> follow : property.followed)
-                follow.resolveTrue(this, BL, recalculate);
+                follow.resolveTrue(this, recalculate);
         }
     }
 

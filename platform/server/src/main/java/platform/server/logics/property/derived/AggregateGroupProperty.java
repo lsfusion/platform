@@ -64,7 +64,7 @@ public class AggregateGroupProperty<T extends PropertyInterface, I extends Prope
     }
 
     @Override
-    protected void proceedNotNull(Map<Interface<I>, KeyExpr> mapKeys, Where where, DataSession session, BusinessLogics<?> BL) throws SQLException {
+    protected void proceedNotNull(Map<Interface<I>, KeyExpr> mapKeys, Where where, DataSession session) throws SQLException {
         Map<PropertyInterfaceImplement<T>, Interface<I>> aggrInterfaces = BaseUtils.reverse(DerivedProperty.mapImplements(getMapInterfaces(), mapping));
 
         for(Map<Interface<I>, DataObject> row : new Query<Interface<I>, Object>(mapKeys, where).executeClasses(session.sql, session.env, session.baseClass).keySet()) {
@@ -75,7 +75,7 @@ public class AggregateGroupProperty<T extends PropertyInterface, I extends Prope
                     BaseUtils.filterKeys(interfaceValues, BaseUtils.remove(property.interfaces, aggrInterface)));
 
             Map<T, KeyExpr> mapPropKeys = property.getMapKeys();
-            property.setNotNull(mapPropKeys, EqualsWhere.compareValues(mapPropKeys, propValues), session, BL);
+            property.setNotNull(mapPropKeys, EqualsWhere.compareValues(mapPropKeys, propValues), session);
 
             for(Map.Entry<PropertyMapImplement<?, T>, DataObject> propertyInterface : BaseUtils.filterKeys(interfaceValues, groupProps).entrySet())
                 propertyInterface.getKey().execute(propValues, session, propertyInterface.getValue().object, session.modifier);

@@ -94,33 +94,14 @@ public class CompareFilterInstance<P extends PropertyInterface> extends Property
         if(compare!=Compare.EQUALS)
             return;
 
-        // проверка на то, что в фильтре есть в качестве ключа свойства нужный ObjectInstance
-        boolean inInterface = false;
-        for (PropertyObjectInterfaceInstance interfaceInstance : property.mapping.values()) {
-            if (interfaceInstance == object) {
-                inInterface = true;
-                break;
-            }
-        }
-        if (!inInterface)
+        if (!hasObjectInInterface(object))
             return;
 
         Map<P, KeyExpr> mapKeys = property.property.getMapKeys();
         Map<PropertyObjectInterfaceInstance, KeyExpr> mapObjects = BaseUtils.crossJoin(property.mapping, mapKeys);
-        Where changeWhere = Where.TRUE;
-        Where mapWhere;
-        for(Map.Entry<PropertyObjectInterfaceInstance, KeyExpr> mapObject : mapObjects.entrySet()) {
-            if(mapObject.getKey().getApplyObject() != object.groupTo)
-                mapWhere = new EqualsWhere(mapObject.getValue(), mapObject.getKey().getDataObject().getExpr());
-            else // assert что тогда sibObject instanceof ObjectInstance потому как ApplyObject = null а object.groupTo !=null
-                if(!mapObject.getKey().equals(object))
-                    mapWhere = mapObject.getValue().isClass(((ObjectInstance)mapObject.getKey()).getGridClass().getUpSet());
-                else
-                    mapWhere = new EqualsWhere(mapObject.getValue(),addObject.getExpr());
-            changeWhere = changeWhere.and(mapWhere);
-        }
         session.execute(property.property, new PropertyChange<P>(mapKeys,
-                            value.getExpr(BaseUtils.filterKeys(mapObjects, object.groupTo.objects), modifier), changeWhere),
+                            value.getExpr(BaseUtils.filterKeys(mapObjects, object.groupTo.objects), modifier),
+                            getChangedWhere(object, mapObjects, addObject)),
                             modifier, null, null);
     }
 

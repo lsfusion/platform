@@ -584,9 +584,9 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
         return result;
     }
 
-    public void setJoinNotNull(Map<T, KeyExpr> implementKeys, Where where, DataSession session, BusinessLogics<?> BL) throws SQLException {
+    public void setJoinNotNull(Map<T, KeyExpr> implementKeys, Where where, DataSession session) throws SQLException {
         Map<T, KeyExpr> mapKeys = getMapKeys();
-        setNotNull(mapKeys, GroupExpr.create(implementKeys, where, mapKeys).getWhere(), session, BL);
+        setNotNull(mapKeys, GroupExpr.create(implementKeys, where, mapKeys).getWhere(), session);
     }
 
     public PropertyMapImplement<T, T> getImplement() {
@@ -795,23 +795,23 @@ public abstract class Property<T extends PropertyInterface> extends AbstractNode
             return null;
     }
 
-    public void setNotNull(Map<T, KeyExpr> mapKeys, Where where, DataSession session, BusinessLogics<?> BL) throws SQLException {
-        proceedNotNull(mapKeys, where.and(getExpr(mapKeys, session.modifier).getWhere().not()), session, BL);
+    public void setNotNull(Map<T, KeyExpr> mapKeys, Where where, DataSession session) throws SQLException {
+        proceedNotNull(mapKeys, where.and(getExpr(mapKeys, session.modifier).getWhere().not()), session);
     }
 
-    public void setNull(Map<T, KeyExpr> mapKeys, Where where, DataSession session, BusinessLogics<?> BL) throws SQLException {
-        proceedNull(mapKeys, where.and(getExpr(mapKeys, session.modifier).getWhere()), session, BL);
+    public void setNull(Map<T, KeyExpr> mapKeys, Where where, DataSession session) throws SQLException {
+        proceedNull(mapKeys, where.and(getExpr(mapKeys, session.modifier).getWhere()), session);
     }
 
     // assert что where содержит getWhere().not
-    protected void proceedNotNull(Map<T, KeyExpr> mapKeys, Where where, DataSession session, BusinessLogics<?> BL) throws SQLException {
+    protected void proceedNotNull(Map<T, KeyExpr> mapKeys, Where where, DataSession session) throws SQLException {
         Expr defaultExpr = getDefaultExpr(mapKeys);
         if(defaultExpr!=null)
             session.execute(this, new PropertyChange<T>(mapKeys, defaultExpr, where), session.modifier, null, null);
     }
 
     // assert что where содержит getWhere()
-    protected void proceedNull(Map<T, KeyExpr> mapKeys, Where where, DataSession session, BusinessLogics<?> BL) throws SQLException {
+    protected void proceedNull(Map<T, KeyExpr> mapKeys, Where where, DataSession session) throws SQLException {
         session.execute(this, new PropertyChange<T>(mapKeys, CaseExpr.NULL, where), session.modifier, null, null);
     }
 
