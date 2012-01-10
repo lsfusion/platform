@@ -2,7 +2,39 @@ MODULE Rublevski;
 
 IMPORT BaseLogicsModule;
 
-// ----------------------------------- Банк ------------------------------------------ //
+// ----------------------------------- Склад ------------------------------------------ //
+
+CLASS ABSTRACT stock 'Склад' : named;
+
+// ----------------------------------- Магазин ----------------------------------------- //
+
+CLASS store 'Магазин' : named;
+addressStore 'адресс магазина' = DATA STRING[100] (store) IN baseGroup;
+
+FORM StoreForm 'Магазины'
+OBJECTS str=store
+PROPERTIES(str) READONLY addressStore;
+PROPERTIES(str) ADDFORM, EDITFORM, delete;
+
+// ----------------------------------- Отдел магазина (Подразделение) ----------------- //
+
+CLASS departmentStore 'Отдел магазина' : stock;
+
+storeDepartmentStore 'Магазин отдела (ИД)' = DATA store (departmentStore) IN idGroup;
+nameDepartmentStore 'Наименование отдела магазина' = DATA STRING[100] (departmentSrore) IN baseGroup;
+
+FORM DepartmentStoreForm 'Cклады'
+OBJECTS stk=departmentStore
+PROPERTIES(stk) READONLY storeDepartmentStore, nameDepartmentStore;
+PROPERTIES(stk) ADDFORM, EDITFORM, delete;
+
+//CLASS STATIC departmentStoreType 'Типа отдела магазина'
+//{
+//    productionStore 'Производство магазина',
+//    tradingFloorStore 'Торговый зал магазина',
+//};
+
+// ----------------------------------- Банк ------------------------------------------- //
 
 CLASS bank 'Банк' : named;
 
